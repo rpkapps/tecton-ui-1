@@ -19,7 +19,7 @@ for file in "$PKG"/src/components/*.tsx; do
   checked=$((checked + 1))
   # Only the `"use client"` directive may differ: the CLI's --diff view and its
   # add transform disagree on it for rsc:false projects (see docs/UPSTREAM.md).
-  real_changes="$(echo "$output" | grep -E '^│ │ [-+]' | grep -vE '^│ │ [-+]("use client")?[[:space:]]*$' || true)"
+  real_changes="$(echo "$output" | grep -E '^│ │ [-+]' | grep -vE '^│ │ ([-+]{3} [ab]/|[-+]("use client")?[[:space:]]*$)' || true)"
   if [ $status -ne 0 ] || [ -n "$real_changes" ]; then
     echo "✗ $item"
     echo "$output" | head -40
