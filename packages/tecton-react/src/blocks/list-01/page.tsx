@@ -48,7 +48,7 @@ function applyFilter(wells: Well[], filter: WellsFilter): Well[] {
 
 /**
  * Wells list page — page header with actions, a filter bar (search,
- * selects, status chips) and a paginated, selectable `DataTable`, with
+ * selects, status chips) and a paginated, selectable TanStack `Table`, with
  * an empty state for no data / no matches.
  */
 function WellsListPage({

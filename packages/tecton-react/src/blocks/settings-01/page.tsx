@@ -2,8 +2,20 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { BellIcon, PaletteIcon, UserIcon } from "lucide-react"
+import {
+  BellIcon,
+  CircleCheckIcon,
+  PaletteIcon,
+  UserIcon,
+  XIcon,
+} from "lucide-react"
 
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from "@tecton/react/components/alert"
 import { Button } from "@tecton/react/components/button"
 import {
   Tabs,
@@ -18,7 +30,6 @@ import {
   PageHeaderEyebrow,
   PageHeaderTitle,
 } from "@tecton/react/tecton/page-header"
-import { StatusAlert } from "@tecton/react/tecton/status-alert"
 
 import {
   AppearanceForm,
@@ -34,7 +45,7 @@ type SettingsPageProps = React.ComponentProps<"div"> & {
 
 /**
  * Settings page — page header, Profile / Notifications / Appearance tabs
- * with TextField / SelectField / Switch forms and a sticky save footer.
+ * with Input / Select / Switch forms and a sticky save footer.
  */
 function SettingsPage({
   className,
@@ -76,12 +87,23 @@ function SettingsPage({
         </PageHeader>
 
         {toast && (
-          <StatusAlert
-            severity="success"
-            title="Settings saved"
-            description="Your preferences are synced across devices."
-            onDismiss={() => setToast(false)}
-          />
+          <Alert variant="success" appearance="filled">
+            <CircleCheckIcon />
+            <AlertTitle>Settings saved</AlertTitle>
+            <AlertDescription>
+              Your preferences are synced across devices.
+            </AlertDescription>
+            <AlertAction>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Dismiss"
+                onPress={() => setToast(false)}
+              >
+                <XIcon />
+              </Button>
+            </AlertAction>
+          </Alert>
         )}
 
         <Tabs defaultSelectedKey="profile" className="gap-6">

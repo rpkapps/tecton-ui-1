@@ -18,13 +18,13 @@ export type Well = {
 
 export const statusMeta: Record<
   WellStatus,
-  { label: string; color: "success" | "info" | "default" | "warning" | "error" }
+  { label: string; color: "success" | "info" | "secondary" | "warning" | "destructive" }
 > = {
   producing: { label: "Producing", color: "success" },
   drilling: { label: "Drilling", color: "info" },
-  planned: { label: "Planned", color: "default" },
+  planned: { label: "Planned", color: "secondary" },
   suspended: { label: "Suspended", color: "warning" },
-  abandoned: { label: "P&A", color: "error" },
+  abandoned: { label: "P&A", color: "destructive" },
 }
 
 export const typeMeta: Record<WellType, string> = {
