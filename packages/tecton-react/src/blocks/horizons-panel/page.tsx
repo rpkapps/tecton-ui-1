@@ -4,8 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { PanelRightIcon } from "lucide-react"
 
+import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
-import { Chip } from "@tecton/react/tecton/chip"
 import {
   Panel,
   PanelActions,
@@ -55,9 +55,9 @@ function HorizonsPanel({
     >
       <PanelHeader>
         <PanelTitle>2 Horizons</PanelTitle>
-        <Chip size="xs" variant="outlined">
+        <Badge variant="secondary" appearance="outline">
           {pair.label.split(" → ").length} surfaces
-        </Chip>
+        </Badge>
         <PanelActions>
           <Button
             variant="ghost"

@@ -4,8 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { PlusIcon } from "lucide-react"
 
+import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
-import { Chip } from "@tecton/react/tecton/chip"
 import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 import {
   TreeView,
@@ -65,9 +65,9 @@ function ProjectTree({
         }
         suffix={
           node.meta ? (
-            <Chip size="xs" variant="outlined" className="font-mono">
+            <Badge variant="secondary" appearance="outline" className="font-mono">
               {node.meta}
-            </Chip>
+            </Badge>
           ) : undefined
         }
         endAdornment={

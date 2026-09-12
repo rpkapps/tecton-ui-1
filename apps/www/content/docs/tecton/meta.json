@@ -8,17 +8,11 @@
     "color-swatch",
     "copy-button",
     "count-badge",
-    "data-table",
-    "divider",
-    "fab",
     "link",
     "meter",
     "page-header",
     "panel",
-    "select-field",
     "stat",
-    "status-alert",
-    "text-field",
     "tree-view"
   ]
 }

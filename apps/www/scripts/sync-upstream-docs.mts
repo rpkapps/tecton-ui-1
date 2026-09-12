@@ -113,6 +113,23 @@ function rewriteImports(source: string): { code: string; blocked?: string } {
   return { code, blocked }
 }
 
+// Tecton additions to a synced component page: the extra variants that the
+// `aria-tecton` overlay adds to the upstream component (alert severity,
+// separator emphasis, badge colours, input variants…). The content of
+// `scripts/docs-extras/<name>.mdx` is inserted before the upstream
+// "API Reference" section, or appended when the page has none.
+const EXTRAS_DIR = path.join(WWW, "scripts/docs-extras")
+
+async function withExtras(mdx: string, name: string) {
+  const file = path.join(EXTRAS_DIR, `${name}.mdx`)
+  if (!(await exists(file))) return mdx
+  const extras = (await fs.readFile(file, "utf8")).trim()
+  const marker = "\n## API Reference"
+  const index = mdx.indexOf(marker)
+  if (index === -1) return `${mdx.trimEnd()}\n\n${extras}\n`
+  return `${mdx.slice(0, index).trimEnd()}\n\n${extras}\n${mdx.slice(index)}`
+}
+
 const LOCAL_DOCS = new Set([
   "",
   "installation",
@@ -318,7 +335,10 @@ async function main() {
         await fs.copyFile(from, path.join(IMAGES_OUT, image))
       }
     }
-    await fs.writeFile(path.join(OUT_DOCS, `${name}.mdx`), transformMdx(mdx, name, removed))
+    await fs.writeFile(
+      path.join(OUT_DOCS, `${name}.mdx`),
+      await withExtras(transformMdx(mdx, name, removed), name)
+    )
     report.pages.push(name)
   }
 

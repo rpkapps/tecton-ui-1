@@ -3,7 +3,7 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { Divider } from "@tecton/react/tecton/divider"
+import { Separator } from "@tecton/react/components/separator"
 import { Meter } from "@tecton/react/tecton/meter"
 
 import type { DesignPoint, Metric, MetricCategory } from "../data"
@@ -47,7 +47,7 @@ function ComparisonList({
           />
           {metric.categories.map((category) => (
             <React.Fragment key={category.id}>
-              <Divider emphasis="subtle" />
+              <Separator emphasis="subtle" />
               <ComparisonGroup
                 title={category.label}
                 metric={metric}

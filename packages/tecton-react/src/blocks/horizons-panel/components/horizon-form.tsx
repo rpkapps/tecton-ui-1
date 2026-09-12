@@ -3,14 +3,18 @@
 import * as React from "react"
 import { cn } from "cn"
 
+import { Field, FieldLabel } from "@tecton/react/components/field"
+import { Input } from "@tecton/react/components/input"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@tecton/react/components/select"
+import { Separator } from "@tecton/react/components/separator"
 import { Slider } from "@tecton/react/components/slider"
 import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
-import { Divider } from "@tecton/react/tecton/divider"
-import {
-  SelectField,
-  SelectFieldItem,
-} from "@tecton/react/tecton/select-field"
-import { TextField } from "@tecton/react/tecton/text-field"
 
 import {
   getPair,
@@ -30,6 +34,7 @@ function HorizonForm({ className, value, onChange, ...props }: HorizonFormProps)
   const pair = getPair(value.pairId)
   const top = getSurface(pair.top)
   const base = getSurface(pair.base)
+  const id = React.useId()
 
   const set = <K extends keyof HorizonSettings>(key: K, next: HorizonSettings[K]) =>
     onChange({ ...value, [key]: next })
@@ -40,79 +45,104 @@ function HorizonForm({ className, value, onChange, ...props }: HorizonFormProps)
       className={cn("flex flex-col gap-4", className)}
       {...props}
     >
-      <SelectField
-        label="Surface pair"
-        variant="filled"
-        selectedKey={value.pairId}
-        onSelectionChange={(key) => {
-          const next = getPair(String(key))
-          onChange({
-            ...value,
-            pairId: next.id,
-            topDepth: getSurface(next.top).depth,
-            bottomDepth: getSurface(next.base).depth,
-          })
-        }}
-      >
-        {surfacePairs.map((item) => (
-          <SelectFieldItem key={item.id} id={item.id} textValue={item.label}>
-            {item.label}
-          </SelectFieldItem>
-        ))}
-      </SelectField>
+      <Field>
+        <FieldLabel htmlFor={`${id}-pair`}>Surface pair</FieldLabel>
+        <Select
+          className="w-full"
+          selectedKey={value.pairId}
+          onSelectionChange={(key) => {
+            const next = getPair(String(key))
+            onChange({
+              ...value,
+              pairId: next.id,
+              topDepth: getSurface(next.top).depth,
+              bottomDepth: getSurface(next.base).depth,
+            })
+          }}
+        >
+          <SelectTrigger id={`${id}-pair`} variant="filled">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {surfacePairs.map((item) => (
+              <SelectItem key={item.id} id={item.id} textValue={item.label}>
+                {item.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </Field>
 
       <div className="grid grid-cols-2 gap-3">
-        <SelectField
-          label="Volume"
-          variant="filled"
-          selectedKey={value.volumeId}
-          onSelectionChange={(key) => set("volumeId", String(key))}
-        >
-          {volumes.map((item) => (
-            <SelectFieldItem key={item.id} id={item.id} textValue={item.label}>
-              {item.label}
-            </SelectFieldItem>
-          ))}
-        </SelectField>
-        <SelectField
-          label="Line"
-          variant="filled"
-          selectedKey={String(value.lineWidth)}
-          onSelectionChange={(key) => set("lineWidth", Number(key))}
-        >
-          {lineWidths.map((width) => (
-            <SelectFieldItem key={width} id={String(width)} textValue={`${width} px`}>
-              <span className="font-mono tabular-nums">{width}</span>
-              <span className="text-muted-foreground">px</span>
-            </SelectFieldItem>
-          ))}
-        </SelectField>
+        <Field>
+          <FieldLabel htmlFor={`${id}-volume`}>Volume</FieldLabel>
+          <Select
+            className="w-full"
+            selectedKey={value.volumeId}
+            onSelectionChange={(key) => set("volumeId", String(key))}
+          >
+            <SelectTrigger id={`${id}-volume`} variant="filled">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {volumes.map((item) => (
+                <SelectItem key={item.id} id={item.id} textValue={item.label}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
+        <Field>
+          <FieldLabel htmlFor={`${id}-line`}>Line</FieldLabel>
+          <Select
+            className="w-full"
+            selectedKey={String(value.lineWidth)}
+            onSelectionChange={(key) => set("lineWidth", Number(key))}
+          >
+            <SelectTrigger id={`${id}-line`} variant="filled">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {lineWidths.map((width) => (
+                <SelectItem key={width} id={String(width)} textValue={`${width} px`}>
+                  <span className="font-mono tabular-nums">{width}</span>
+                  <span className="text-muted-foreground">px</span>
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </Field>
       </div>
 
       <HorizonRow label="Horizon 1" surface={top} />
       <HorizonRow label="Horizon 2" surface={base} />
 
-      <Divider emphasis="subtle" />
+      <Separator emphasis="subtle" />
 
       <div className="grid grid-cols-2 gap-3">
-        <TextField
-          label="Top depth (TVDSS)"
-          variant="filled"
-          size="sm"
-          type="number"
-          value={String(value.topDepth)}
-          onChange={(text) => set("topDepth", Number(text) || 0)}
-          className="[&_input]:font-mono [&_input]:tabular-nums"
-        />
-        <TextField
-          label="Bottom depth (TVDSS)"
-          variant="filled"
-          size="sm"
-          type="number"
-          value={String(value.bottomDepth)}
-          onChange={(text) => set("bottomDepth", Number(text) || 0)}
-          className="[&_input]:font-mono [&_input]:tabular-nums"
-        />
+        <Field>
+          <FieldLabel htmlFor={`${id}-top`}>Top depth (TVDSS)</FieldLabel>
+          <Input
+            id={`${id}-top`}
+            variant="filled"
+            type="number"
+            className="h-8 font-mono text-sm tabular-nums md:text-xs"
+            value={String(value.topDepth)}
+            onChange={(event) => set("topDepth", Number(event.target.value) || 0)}
+          />
+        </Field>
+        <Field>
+          <FieldLabel htmlFor={`${id}-bottom`}>Bottom depth (TVDSS)</FieldLabel>
+          <Input
+            id={`${id}-bottom`}
+            variant="filled"
+            type="number"
+            className="h-8 font-mono text-sm tabular-nums md:text-xs"
+            value={String(value.bottomDepth)}
+            onChange={(event) => set("bottomDepth", Number(event.target.value) || 0)}
+          />
+        </Field>
       </div>
 
       <LabelledSlider

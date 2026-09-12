@@ -4,6 +4,7 @@ import * as React from "react"
 import { cn } from "cn"
 import { DownloadIcon, PlusIcon, ShareIcon } from "lucide-react"
 
+import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
 import {
   AppShell,
@@ -12,7 +13,6 @@ import {
   AppShellMain,
   AppShellSidebar,
 } from "@tecton/react/tecton/app-shell"
-import { Chip } from "@tecton/react/tecton/chip"
 import {
   PageHeader,
   PageHeaderActions,
@@ -63,9 +63,9 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
               <PageHeaderEyebrow>{project.asset}</PageHeaderEyebrow>
               <PageHeaderTitle className="flex items-center gap-2">
                 {project.name}
-                <Chip size="xs" color="info" variant="outlined">
+                <Badge variant="info" appearance="outline">
                   Concept select
-                </Chip>
+                </Badge>
               </PageHeaderTitle>
               <PageHeaderDescription>{project.description}</PageHeaderDescription>
             </PageHeaderContent>

@@ -10,6 +10,7 @@ import {
   TrashIcon,
 } from "lucide-react"
 
+import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
 import {
   Card,
@@ -26,9 +27,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
-import { Chip } from "@tecton/react/tecton/chip"
+import { Separator } from "@tecton/react/components/separator"
 import { CircularProgress } from "@tecton/react/tecton/circular-progress"
-import { Divider } from "@tecton/react/tecton/divider"
 import { Meter } from "@tecton/react/tecton/meter"
 import {
   Stat,
@@ -80,9 +80,9 @@ function WellDesignCard({
             onChange={onSelectedChange}
           />
           <span className="truncate text-base">{design.name}</span>
-          <Chip size="xs" variant="outlined">
+          <Badge variant="secondary" appearance="outline">
             {trajectoryMeta[design.trajectory].label}
-          </Chip>
+          </Badge>
         </CardTitle>
         <CardAction>
           <DropdownMenuTrigger>
@@ -112,9 +112,9 @@ function WellDesignCard({
         >
           <div className="absolute top-2 left-2 flex items-center gap-1">
             {design.isPrimary && (
-              <Chip size="xs" variant="outlined" color="primary">
+              <Badge appearance="outline">
                 <CrownIcon /> Primary
-              </Chip>
+              </Badge>
             )}
           </div>
           <span className="absolute top-2 right-2 font-mono text-[0.625rem] text-muted-foreground">
@@ -138,7 +138,7 @@ function WellDesignCard({
           </Stat>
         </StatGroup>
 
-        <Divider emphasis="subtle" />
+        <Separator emphasis="subtle" />
 
         <dl className="flex flex-col gap-1.5 text-xs">
           <ReadoutRow label="AFE cost" value={`$${design.afeCost[0]}M – ${design.afeCost[1]}M`} />
@@ -147,7 +147,7 @@ function WellDesignCard({
           <ReadoutRow label="Kick-off" value={`${design.kickOff.toLocaleString()} ft`} />
         </dl>
 
-        <Divider emphasis="subtle" />
+        <Separator emphasis="subtle" />
 
         <div className="flex items-center gap-3">
           <CircularProgress

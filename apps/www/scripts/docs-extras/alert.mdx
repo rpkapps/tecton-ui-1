@@ -1,0 +1,21 @@
+## Tecton variants
+
+The Tecton style overlay adds the status colours and surface styles of the design system's *StatusAlert* to the shadcn `Alert`. `variant` is the severity (the former `severity` prop) and `appearance` is the surface (the former `variant="filled" | "outlined"`); the icon, title, description and toolbar are composed as in the examples above.
+
+### Severity
+
+Use `variant="success" | "warning" | "info" | "destructive"` and pass a lucide icon as the first child.
+
+<ComponentPreview name="alert-severities" />
+
+### Appearance
+
+Use `appearance="outline"` for a transparent alert with a coloured border and text, or `appearance="filled"` for a solid status surface. The default appearance keeps the card background.
+
+<ComponentPreview name="alert-appearance" />
+
+### Dismissible
+
+Place the action and the dismiss button in `AlertAction`; hide the alert from state.
+
+<ComponentPreview name="alert-dismissible" />
