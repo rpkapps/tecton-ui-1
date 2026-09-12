@@ -1,6 +1,13 @@
 import * as React from "react"
 
-import { TextField } from "@tecton/react/tecton/text-field"
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@tecton/react/components/field"
+import { Input } from "@tecton/react/components/input"
+import { Textarea } from "@tecton/react/components/textarea"
 
 import { Caption, Matrix, Page, Section } from "./matrix"
 
@@ -8,48 +15,90 @@ import { Caption, Matrix, Page, Section } from "./matrix"
  * Mirrors 105_components-textfield__variant-matrix.png.
  * Blocks Outlined · Filled · TextOnly; Storybook columns are Enabled ·
  * Hovered · Focused · Pressed · Disabled · Error — only the prop-driven
- * states (Enabled, Disabled, Error) are rendered.
+ * states (Enabled, Disabled, Error) are rendered, as Input and Textarea
+ * inside a Field.
  */
 const variants = [
-  { label: "Outlined", variant: "outlined" },
+  { label: "Outlined", variant: "outline" },
   { label: "Filled", variant: "filled" },
-  { label: "TextOnly", variant: "textOnly" },
+  { label: "TextOnly", variant: "text" },
 ] as const
 
-export default function TextFieldMatrix() {
+type State = "enabled" | "disabled" | "error"
+
+const states: { label: string; state: State }[] = [
+  { label: "Enabled", state: "enabled" },
+  { label: "Disabled", state: "disabled" },
+  { label: "Error", state: "error" },
+]
+
+function InputCell({
+  variant,
+  state,
+  multiline,
+}: {
+  variant: (typeof variants)[number]["variant"]
+  state: State
+  multiline?: boolean
+}) {
+  const id = `input-${variant}-${state}${multiline ? "-multiline" : ""}`
+  const isDisabled = state === "disabled"
+  const isInvalid = state === "error"
+  const control = multiline ? (
+    <Textarea
+      id={id}
+      variant={variant}
+      placeholder="Type here"
+      rows={2}
+      disabled={isDisabled}
+      aria-invalid={isInvalid}
+    />
+  ) : (
+    <Input
+      id={id}
+      variant={variant}
+      placeholder="Type here"
+      disabled={isDisabled}
+      aria-invalid={isInvalid}
+    />
+  )
+  return (
+    <Field data-disabled={isDisabled} data-invalid={isInvalid}>
+      <FieldLabel htmlFor={id}>Field label</FieldLabel>
+      {control}
+      {isInvalid ? (
+        <FieldError>Validation failed</FieldError>
+      ) : (
+        <FieldDescription>Helper text</FieldDescription>
+      )}
+    </Field>
+  )
+}
+
+export default function InputMatrix() {
   return (
     <Page>
       {variants.map(({ label, variant }) => (
         <Section key={variant} title={label}>
           <Matrix
-            columns={["Enabled", "Disabled", "Error"]}
+            columns={states.map(({ label }) => label)}
             rows={[
               {
-                label: "md",
-                cells: [
-                  <TextField
-                    key="enabled"
+                label: "Input",
+                cells: states.map(({ state }) => (
+                  <InputCell key={state} variant={variant} state={state} />
+                )),
+              },
+              {
+                label: "Textarea",
+                cells: states.map(({ state }) => (
+                  <InputCell
+                    key={state}
                     variant={variant}
-                    label="Field label"
-                    placeholder="Type here"
-                    description="Helper text"
-                  />,
-                  <TextField
-                    key="disabled"
-                    variant={variant}
-                    label="Field label"
-                    placeholder="Type here"
-                    description="Helper text"
-                    isDisabled
-                  />,
-                  <TextField
-                    key="error"
-                    variant={variant}
-                    label="Field label"
-                    placeholder="Type here"
-                    errorMessage="Validation failed"
-                  />,
-                ],
+                    state={state}
+                    multiline
+                  />
+                )),
               },
             ]}
             cellClassName="w-60"

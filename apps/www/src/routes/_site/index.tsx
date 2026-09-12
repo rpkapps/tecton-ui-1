@@ -8,6 +8,7 @@ import {
   TerminalIcon,
 } from "lucide-react"
 
+import { Badge } from "@tecton/react/components/badge"
 import { LinkButton } from "@tecton/react/components/button"
 import {
   Card,
@@ -16,7 +17,6 @@ import {
   CardHeader,
   CardTitle,
 } from "@tecton/react/components/card"
-import { Chip } from "@tecton/react/tecton/chip"
 import { CopyButton } from "@tecton/react/tecton/copy-button"
 
 import { HeroPreview } from "@/components/hero-preview"
@@ -38,7 +38,7 @@ const features = [
     icon: LayersIcon,
     title: "Tecton components",
     description:
-      "Chips, status alerts, FABs, field variants, tree views, meters, data tables and application scaffolding that Tecton needs beyond shadcn.",
+      "Chips, tree views, meters, stats, panels and application scaffolding that Tecton needs beyond shadcn. Status colours, field variants and the FAB are built into the shadcn components.",
     href: "/docs/tecton",
   },
   {
@@ -63,12 +63,10 @@ function Home() {
       <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
         <div className="flex flex-col gap-6">
           <div className="flex flex-wrap items-center gap-2">
-            <Chip color="primary" size="sm">
-              shadcn/ui · React Aria
-            </Chip>
-            <Chip size="sm" variant="outlined">
+            <Badge size="md">shadcn/ui · React Aria</Badge>
+            <Badge size="md" variant="secondary" appearance="outline">
               Tecton design system
-            </Chip>
+            </Badge>
           </div>
           <h1 className="text-4xl font-medium tracking-tight text-balance md:text-5xl">
             The Tecton component library, built on shadcn.

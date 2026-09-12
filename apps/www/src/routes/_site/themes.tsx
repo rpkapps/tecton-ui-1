@@ -2,8 +2,11 @@
 
 import * as React from "react"
 import { createFileRoute } from "@tanstack/react-router"
+import { InfoIcon } from "lucide-react"
 import { useTheme } from "next-themes"
 
+import { Alert, AlertDescription, AlertTitle } from "@tecton/react/components/alert"
+import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
 import { Input } from "@tecton/react/components/input"
@@ -11,11 +14,9 @@ import { Label } from "@tecton/react/components/label"
 import { Switch } from "@tecton/react/components/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@tecton/react/components/toggle-group"
-import { Chip } from "@tecton/react/tecton/chip"
 import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 import { CopyButton } from "@tecton/react/tecton/copy-button"
 import { PageHeader, PageHeaderContent, PageHeaderDescription, PageHeaderTitle } from "@tecton/react/tecton/page-header"
-import { StatusAlert } from "@tecton/react/tecton/status-alert"
 
 import { CodeBlock } from "@/components/code-block"
 import { HeroPreview } from "@/components/hero-preview"
@@ -142,12 +143,14 @@ function ThemesPage() {
               </div>
             ))}
           </div>
-          <StatusAlert
-            severity="info"
-            variant="outlined"
-            title="Both modes are Tecton tokens"
-            description="Every shadcn variable references a token from the Tecton CSS export in light and dark; the token file switches the value."
-          />
+          <Alert variant="info" appearance="outline">
+            <InfoIcon />
+            <AlertTitle>Both modes are Tecton tokens</AlertTitle>
+            <AlertDescription>
+              Every shadcn variable references a token from the Tecton CSS export in light and
+              dark; the token file switches the value.
+            </AlertDescription>
+          </Alert>
         </div>
         <div className="flex flex-col gap-6">
           <HeroPreview />
@@ -157,10 +160,10 @@ function ThemesPage() {
             <Button variant="outline">Outline</Button>
             <Button variant="ghost">Ghost</Button>
             <Button variant="destructive">Destructive</Button>
-            <Chip color="primary">Chip</Chip>
-            <Chip color="warning" variant="outlined">
+            <Badge>Badge</Badge>
+            <Badge variant="warning" appearance="outline">
               Warning
-            </Chip>
+            </Badge>
             <Input placeholder="Input" aria-label="Input" className="w-40" />
             <div className="flex items-center gap-2">
               <Checkbox id="themes-checkbox" defaultSelected />

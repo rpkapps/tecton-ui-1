@@ -25,7 +25,7 @@ export const compareMatrices: Record<string, CompareMatrix> = {
     load: () => import("./icon-button"),
   },
   chip: {
-    title: "Chip — variant matrix",
+    title: "Badge / Chip — variant matrix",
     reference: "042_components-chip__variant-matrix.png",
     load: () => import("./chip"),
   },
@@ -34,10 +34,10 @@ export const compareMatrices: Record<string, CompareMatrix> = {
     reference: "008_components-alert__variant-matrix.png",
     load: () => import("./alert"),
   },
-  "text-field": {
-    title: "TextField — variant matrix",
+  input: {
+    title: "Input / Textarea — variant matrix",
     reference: "105_components-textfield__variant-matrix.png",
-    load: () => import("./text-field"),
+    load: () => import("./input"),
   },
   select: {
     title: "Select — variant matrix",
@@ -65,7 +65,7 @@ export const compareMatrices: Record<string, CompareMatrix> = {
     load: () => import("./badge"),
   },
   fab: {
-    title: "FAB — variant matrix",
+    title: "FAB (Button recipe) — variant matrix",
     reference: "058_components-fab__variant-matrix.png",
     load: () => import("./fab"),
   },
@@ -79,10 +79,10 @@ export const compareMatrices: Record<string, CompareMatrix> = {
     reference: "113_components-tree-view__state-matrix.png",
     load: () => import("./tree-view"),
   },
-  divider: {
-    title: "Divider — emphases",
+  separator: {
+    title: "Separator — emphases",
     reference: "049_components-divider__variant-matrix.png",
-    load: () => import("./divider"),
+    load: () => import("./separator"),
   },
   tokens: {
     title: "Colour tokens — swatches",

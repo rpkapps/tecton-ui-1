@@ -1,18 +1,18 @@
 import * as React from "react"
 
-import { Divider } from "@tecton/react/tecton/divider"
+import { Separator } from "@tecton/react/components/separator"
 
 import { Matrix, Page, Section } from "./matrix"
 
 /**
  * Mirrors 049_components-divider__variant-matrix.png.
  * HORIZONTAL: columns Subtle · Medium · Strong, one card with three
- * placeholder lines separated by dividers. VERTICAL: two placeholder blocks
- * separated by a vertical divider, one per emphasis.
+ * placeholder lines separated by separators. VERTICAL: two placeholder
+ * blocks separated by a vertical separator, one per emphasis.
  */
 const emphases = [
   { label: "Subtle", emphasis: "subtle" },
-  { label: "Medium", emphasis: "medium" },
+  { label: "Medium", emphasis: "default" },
   { label: "Strong", emphasis: "strong" },
 ] as const
 
@@ -28,7 +28,7 @@ function Block() {
   )
 }
 
-export default function DividerMatrix() {
+export default function SeparatorMatrix() {
   return (
     <Page>
       <Section title="Horizontal" eyebrow>
@@ -43,9 +43,9 @@ export default function DividerMatrix() {
                   className="flex w-96 flex-col gap-2 rounded-md bg-card px-3 py-3"
                 >
                   <Line />
-                  <Divider emphasis={emphasis} />
+                  <Separator emphasis={emphasis} />
                   <Line />
-                  <Divider emphasis={emphasis} />
+                  <Separator emphasis={emphasis} />
                   <Line />
                 </div>
               )),
@@ -67,7 +67,7 @@ export default function DividerMatrix() {
                   className="flex items-stretch rounded-md bg-card"
                 >
                   <Block />
-                  <Divider emphasis={emphasis} orientation="vertical" />
+                  <Separator emphasis={emphasis} orientation="vertical" />
                   <Block />
                 </div>
               )),

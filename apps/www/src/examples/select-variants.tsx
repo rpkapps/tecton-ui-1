@@ -23,7 +23,9 @@ export default function SelectVariants() {
     <FieldGroup className="grid w-full max-w-2xl gap-6 md:grid-cols-3">
       {variants.map(({ variant, label }) => (
         <Field key={variant}>
-          <FieldLabel htmlFor={`select-variants-${variant}`}>{label}</FieldLabel>
+          <FieldLabel htmlFor={`select-variants-${variant}`}>
+            {label}
+          </FieldLabel>
           <Select
             placeholder="Datum"
             defaultSelectedKey="msl"

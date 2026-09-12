@@ -27,17 +27,15 @@ import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
   A static label is the shadcn [Badge](/docs/components/badge), which carries the Tecton status colours, the outline appearance and the size scale. `Chip` is the *interactive* label: a React Aria `Tag` inside a `ChipGroup` that can be selected and removed with the keyboard. It is styled with the same `badgeVariants`, so a chip and a badge with the same props look identical. What Tecton calls a *Badge* (a count anchored to an icon) is the [CountBadge](/docs/tecton/count-badge) component.
 </Callout>
 
+## Removable
+
+When the group has an `onRemove` handler (as in the demo above) every chip renders a `ChipRemove` button and supports the Backspace and Delete keys.
+
 ## Selectable
 
 Set `selectionMode="single"` or `"multiple"` on the `ChipGroup` and control it with `selectedKeys` and `onSelectionChange`. `isDisabled` disables a single chip.
 
 <ComponentPreview name="chip-selectable" />
-
-## Removable
-
-When the group has an `onRemove` handler every chip renders a `ChipRemove` button and supports the Backspace and Delete keys.
-
-<ComponentPreview name="chip-demo" />
 
 ## Variants and appearance
 
