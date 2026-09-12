@@ -83,7 +83,7 @@ function AlertAction({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="alert-action"
       className={cn(
-        "absolute top-2.5 right-3 flex items-center gap-1 *:data-[slot=button]:h-7 *:data-[slot=button]:text-current *:data-[slot=button]:hover:bg-current/10",
+        "absolute top-2.5 right-3 flex items-center gap-1 *:data-[slot=button]:h-7 *:data-[slot=button]:data-[variant=ghost]:text-current *:data-[slot=button]:data-[variant=ghost]:hover:bg-current/10 *:data-[slot=button]:data-[variant=link]:text-current",
         className
       )}
       {...props}
