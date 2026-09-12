@@ -186,6 +186,18 @@ const CONTRAST_PAIRS: [string, string, number][] = [
   ["info", "info-foreground", 4.5],
   ["neutral", "neutral-foreground", 4.5],
   ["destructive", "destructive-foreground", 4.5],
+  ["success-surface", "success-surface-foreground", 4.5],
+  ["warning-surface", "warning-surface-foreground", 4.5],
+  ["info-surface", "info-surface-foreground", 4.5],
+  ["neutral-surface", "neutral-surface-foreground", 4.5],
+  ["destructive-surface", "destructive-surface-foreground", 4.5],
+  // status colours used as text on the page and card surfaces
+  ["background", "success", 4.5],
+  ["background", "warning", 4.5],
+  ["background", "info", 4.5],
+  ["card", "success", 4.5],
+  ["card", "warning", 4.5],
+  ["card", "info", 4.5],
   ["background", "destructive", 3],
 ];
 

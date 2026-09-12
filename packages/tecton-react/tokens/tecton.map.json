@@ -7,52 +7,278 @@
     "note": "src/styles/tecton-tokens.css is the generated CSS export of the Tecton design system (light + dark). Every shadcn variable references a Tecton token in both modes; `light` defaults to the same token as `dark`."
   },
   "shadcn": {
-    "background": { "dark": "--tecton-color-bg-default", "confidence": "exact", "note": "App/page background." },
-    "foreground": { "dark": "--tecton-color-text-primary", "confidence": "exact", "note": "Default product UI text." },
-    "card": { "dark": "--tecton-color-bg-paper", "confidence": "exact", "note": "Paper surface (cards, panels, docks)." },
-    "card-foreground": { "dark": "--tecton-color-text-primary", "confidence": "exact", "note": "Tecton has no card-specific text token; text-primary is used on every surface." },
-    "popover": { "dark": "--tecton-color-bg-elevated", "confidence": "exact", "note": "Elevated surface for menus and popovers." },
-    "popover-foreground": { "dark": "--tecton-color-text-primary", "confidence": "exact", "note": "See card-foreground." },
-    "primary": { "dark": "--tecton-color-action-primary-bg", "confidence": "exact", "note": "Filled primary action surface." },
-    "primary-foreground": { "dark": "--tecton-color-action-primary-text", "confidence": "exact", "note": "Text on the primary action surface (Tecton switches to #ffffff on hover; Vega uses primary/80 instead)." },
-    "secondary": { "dark": "--tecton-color-action-secondary-bg", "confidence": "exact", "note": "Filled secondary action surface." },
-    "secondary-foreground": { "dark": "--tecton-color-action-secondary-text", "confidence": "exact", "note": "Text on the secondary action surface." },
-    "muted": { "dark": "--tecton-color-input-filled-bg", "confidence": "approximated", "note": "Tecton has no generic 'muted surface'; the filled-input background (also the table footer) is the closest subdued surface." },
-    "muted-foreground": { "dark": "--tecton-color-text-secondary", "confidence": "exact", "note": "Secondary labels, descriptions and metadata." },
-    "accent": { "dark": "--tecton-color-action-tertiary-bg-hover", "confidence": "approximated", "note": "shadcn uses accent for hover/selected rows and ghost hover; Tecton's tertiary hover surface (same as the table hover row) plays that role." },
-    "accent-foreground": { "dark": "--tecton-color-text-primary", "confidence": "exact", "note": "Text on hovered/selected surfaces." },
-    "destructive": { "dark": "--tecton-color-status-error", "confidence": "exact", "note": "Error status main colour; shadcn draws destructive text on background and destructive buttons with destructive/10." },
-    "border": { "dark": "--tecton-color-divider", "confidence": "exact", "note": "Default divider/border." },
-    "input": { "dark": "--tecton-color-input-outlined-border", "confidence": "exact", "note": "Outlined input border." },
-    "ring": { "dark": "--tecton-color-focus-ring", "confidence": "exact", "note": "Keyboard focus outline. Vega renders it as ring-3 ring-ring/50; Tecton draws a solid 2px ring." },
-    "chart-1": { "dark": "--tecton-color-accent-azure-fill", "confidence": "approximated", "note": "Chart series colours are chosen from the 7 Tecton accents in the order used by the Cost-vs-Risk panel." },
-    "chart-2": { "dark": "--tecton-color-accent-saffron-fill", "confidence": "approximated", "note": "See chart-1." },
-    "chart-3": { "dark": "--tecton-color-accent-lime-fill", "confidence": "approximated", "note": "See chart-1." },
-    "chart-4": { "dark": "--tecton-color-accent-blue-fill", "confidence": "approximated", "note": "See chart-1." },
-    "chart-5": { "dark": "--tecton-color-accent-pink-fill", "confidence": "approximated", "note": "See chart-1." },
-    "sidebar": { "dark": "--tecton-color-bg-paper", "confidence": "exact", "note": "Sidebar sits on the paper surface, like Tecton's side panels." },
-    "sidebar-foreground": { "dark": "--tecton-color-text-primary", "confidence": "exact", "note": "" },
-    "sidebar-primary": { "dark": "--tecton-color-action-primary-bg", "confidence": "exact", "note": "" },
-    "sidebar-primary-foreground": { "dark": "--tecton-color-action-primary-text", "confidence": "exact", "note": "" },
-    "sidebar-accent": { "dark": "--tecton-color-action-tertiary-bg-hover", "confidence": "approximated", "note": "See accent." },
-    "sidebar-accent-foreground": { "dark": "--tecton-color-text-primary", "confidence": "exact", "note": "" },
-    "sidebar-border": { "dark": "--tecton-color-divider-subtle", "confidence": "exact", "note": "Low-emphasis separator inside panels." },
-    "sidebar-ring": { "dark": "--tecton-color-focus-ring", "confidence": "exact", "note": "" },
-    "radius": { "dark": "--tecton-radius-50", "confidence": "exact", "note": "Default Tecton corner radius (4px). Non-colour, declared in :root only." }
+    "background": {
+      "dark": "--tecton-color-bg-default",
+      "confidence": "exact",
+      "note": "App/page background."
+    },
+    "foreground": {
+      "dark": "--tecton-color-text-primary",
+      "confidence": "exact",
+      "note": "Default product UI text."
+    },
+    "card": {
+      "dark": "--tecton-color-bg-paper",
+      "confidence": "exact",
+      "note": "Paper surface (cards, panels, docks)."
+    },
+    "card-foreground": {
+      "dark": "--tecton-color-text-primary",
+      "confidence": "exact",
+      "note": "Tecton has no card-specific text token; text-primary is used on every surface."
+    },
+    "popover": {
+      "dark": "--tecton-color-bg-elevated",
+      "confidence": "exact",
+      "note": "Elevated surface for menus and popovers."
+    },
+    "popover-foreground": {
+      "dark": "--tecton-color-text-primary",
+      "confidence": "exact",
+      "note": "See card-foreground."
+    },
+    "primary": {
+      "dark": "--tecton-color-action-primary-bg",
+      "confidence": "exact",
+      "note": "Filled primary action surface."
+    },
+    "primary-foreground": {
+      "dark": "--tecton-color-action-primary-text",
+      "confidence": "exact",
+      "note": "Text on the primary action surface (Tecton switches to #ffffff on hover; Vega uses primary/80 instead)."
+    },
+    "secondary": {
+      "dark": "--tecton-color-action-secondary-bg",
+      "confidence": "exact",
+      "note": "Filled secondary action surface."
+    },
+    "secondary-foreground": {
+      "dark": "--tecton-color-action-secondary-text",
+      "confidence": "exact",
+      "note": "Text on the secondary action surface."
+    },
+    "muted": {
+      "dark": "--tecton-color-input-filled-bg",
+      "confidence": "approximated",
+      "note": "Tecton has no generic 'muted surface'; the filled-input background (also the table footer) is the closest subdued surface."
+    },
+    "muted-foreground": {
+      "dark": "--tecton-color-text-secondary",
+      "confidence": "exact",
+      "note": "Secondary labels, descriptions and metadata."
+    },
+    "accent": {
+      "dark": "--tecton-color-action-tertiary-bg-hover",
+      "confidence": "approximated",
+      "note": "shadcn uses accent for hover/selected rows and ghost hover; Tecton's tertiary hover surface (same as the table hover row) plays that role."
+    },
+    "accent-foreground": {
+      "dark": "--tecton-color-text-primary",
+      "confidence": "exact",
+      "note": "Text on hovered/selected surfaces."
+    },
+    "destructive": {
+      "dark": "--tecton-color-status-error",
+      "confidence": "exact",
+      "note": "Error status main colour; shadcn draws destructive text on background and destructive buttons with destructive/10."
+    },
+    "border": {
+      "dark": "--tecton-color-divider",
+      "confidence": "exact",
+      "note": "Default divider/border."
+    },
+    "input": {
+      "dark": "--tecton-color-input-outlined-border",
+      "confidence": "exact",
+      "note": "Outlined input border."
+    },
+    "ring": {
+      "dark": "--tecton-color-focus-ring",
+      "confidence": "exact",
+      "note": "Keyboard focus outline. Vega renders it as ring-3 ring-ring/50; Tecton draws a solid 2px ring."
+    },
+    "chart-1": {
+      "dark": "--tecton-color-accent-azure-fill",
+      "confidence": "approximated",
+      "note": "Chart series colours are chosen from the 7 Tecton accents in the order used by the Cost-vs-Risk panel."
+    },
+    "chart-2": {
+      "dark": "--tecton-color-accent-saffron-fill",
+      "confidence": "approximated",
+      "note": "See chart-1."
+    },
+    "chart-3": {
+      "dark": "--tecton-color-accent-lime-fill",
+      "confidence": "approximated",
+      "note": "See chart-1."
+    },
+    "chart-4": {
+      "dark": "--tecton-color-accent-blue-fill",
+      "confidence": "approximated",
+      "note": "See chart-1."
+    },
+    "chart-5": {
+      "dark": "--tecton-color-accent-pink-fill",
+      "confidence": "approximated",
+      "note": "See chart-1."
+    },
+    "sidebar": {
+      "dark": "--tecton-color-bg-paper",
+      "confidence": "exact",
+      "note": "Sidebar sits on the paper surface, like Tecton's side panels."
+    },
+    "sidebar-foreground": {
+      "dark": "--tecton-color-text-primary",
+      "confidence": "exact",
+      "note": ""
+    },
+    "sidebar-primary": {
+      "dark": "--tecton-color-action-primary-bg",
+      "confidence": "exact",
+      "note": ""
+    },
+    "sidebar-primary-foreground": {
+      "dark": "--tecton-color-action-primary-text",
+      "confidence": "exact",
+      "note": ""
+    },
+    "sidebar-accent": {
+      "dark": "--tecton-color-action-tertiary-bg-hover",
+      "confidence": "approximated",
+      "note": "See accent."
+    },
+    "sidebar-accent-foreground": {
+      "dark": "--tecton-color-text-primary",
+      "confidence": "exact",
+      "note": ""
+    },
+    "sidebar-border": {
+      "dark": "--tecton-color-divider-subtle",
+      "confidence": "exact",
+      "note": "Low-emphasis separator inside panels."
+    },
+    "sidebar-ring": {
+      "dark": "--tecton-color-focus-ring",
+      "confidence": "exact",
+      "note": ""
+    },
+    "radius": {
+      "dark": "--tecton-radius-50",
+      "confidence": "exact",
+      "note": "Default Tecton corner radius (4px). Non-colour, declared in :root only."
+    }
   },
   "extra": {
-    "success": { "dark": "--tecton-color-status-success-filled-bg", "confidence": "exact", "note": "New token (documented shadcn pattern) for the filled success surface; used by custom components only." },
-    "success-foreground": { "dark": "--tecton-color-status-success-filled-text", "confidence": "exact", "note": "Text on the filled success surface." },
-    "warning": { "dark": "--tecton-color-status-warning-filled-bg", "confidence": "exact", "note": "Filled warning surface." },
-    "warning-foreground": { "dark": "--tecton-color-status-warning-filled-text", "confidence": "exact", "note": "Text on the filled warning surface." },
-    "info": { "dark": "--tecton-color-status-info-filled-bg", "confidence": "exact", "note": "Filled info surface." },
-    "info-foreground": { "dark": "--tecton-color-status-info-filled-text", "confidence": "exact", "note": "Text on the filled info surface." },
-    "neutral": { "dark": "--tecton-color-status-neutral-filled-bg", "confidence": "exact", "note": "Filled neutral surface." },
-    "neutral-foreground": { "dark": "--tecton-color-status-neutral-filled-text", "confidence": "exact", "note": "Text on the filled neutral surface." },
-    "surface-alt": { "dark": "--tecton-color-table-cell-bg-alt", "confidence": "exact", "note": "Alternate table row surface." },
-    "destructive-foreground": { "dark": "--tecton-color-status-error-filled-text", "confidence": "exact", "note": "Text on the filled error surface. shadcn v4 dropped this token; Tecton restores it for filled error chips/alerts." },
-    "border-subtle": { "dark": "--tecton-color-divider-subtle", "confidence": "exact", "note": "Low-emphasis divider (Divider emphasis=\"subtle\", panel separators)." },
-    "border-strong": { "dark": "--tecton-color-divider-strong", "confidence": "exact", "note": "High-emphasis divider (Divider emphasis=\"strong\")." }
+    "success": {
+      "dark": "--tecton-color-status-success",
+      "confidence": "exact",
+      "note": "Status success main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `success-foreground`."
+    },
+    "success-foreground": {
+      "dark": "--tecton-color-status-success-filled-text",
+      "confidence": "exact",
+      "note": "Text on a `success` surface."
+    },
+    "warning": {
+      "dark": "--tecton-color-status-warning",
+      "confidence": "exact",
+      "note": "Status warning main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `warning-foreground`."
+    },
+    "warning-foreground": {
+      "dark": "--tecton-color-text-inverse",
+      "confidence": "approximated",
+      "note": "Text on a `warning` surface: Tecton's filled-text is meant for the pale `warning-surface`, so the inverse text colour is used on the main colour."
+    },
+    "info": {
+      "dark": "--tecton-color-status-info",
+      "confidence": "exact",
+      "note": "Status info main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `info-foreground`."
+    },
+    "info-foreground": {
+      "dark": "--tecton-color-status-info-filled-text",
+      "confidence": "exact",
+      "note": "Text on an `info` surface."
+    },
+    "neutral": {
+      "dark": "--tecton-color-status-neutral",
+      "confidence": "exact",
+      "note": "Status neutral main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `neutral-foreground`."
+    },
+    "neutral-foreground": {
+      "dark": "--tecton-color-text-inverse",
+      "confidence": "approximated",
+      "note": "Text on a `neutral` surface (Tecton's filled-text is meant for the `neutral-surface`)."
+    },
+    "destructive-foreground": {
+      "dark": "--tecton-color-status-error-filled-text",
+      "confidence": "exact",
+      "note": "Text on the filled error surface. shadcn v4 dropped this token; Tecton restores it for filled error chips/alerts."
+    },
+    "success-surface": {
+      "dark": "--tecton-color-status-success-filled-bg",
+      "confidence": "exact",
+      "note": "Tecton's filled success surface (alert and badge `appearance=\"filled\"` / solid)."
+    },
+    "success-surface-foreground": {
+      "dark": "--tecton-color-status-success-filled-text",
+      "confidence": "exact",
+      "note": "Text on `success-surface`."
+    },
+    "warning-surface": {
+      "dark": "--tecton-color-status-warning-filled-bg",
+      "confidence": "exact",
+      "note": "Tecton's filled warning surface (alert and badge `appearance=\"filled\"` / solid)."
+    },
+    "warning-surface-foreground": {
+      "dark": "--tecton-color-status-warning-filled-text",
+      "confidence": "exact",
+      "note": "Text on `warning-surface`."
+    },
+    "info-surface": {
+      "dark": "--tecton-color-status-info-filled-bg",
+      "confidence": "exact",
+      "note": "Tecton's filled info surface (alert and badge `appearance=\"filled\"` / solid)."
+    },
+    "info-surface-foreground": {
+      "dark": "--tecton-color-status-info-filled-text",
+      "confidence": "exact",
+      "note": "Text on `info-surface`."
+    },
+    "neutral-surface": {
+      "dark": "--tecton-color-status-neutral-filled-bg",
+      "confidence": "exact",
+      "note": "Tecton's filled neutral surface (alert and badge `appearance=\"filled\"` / solid)."
+    },
+    "neutral-surface-foreground": {
+      "dark": "--tecton-color-status-neutral-filled-text",
+      "confidence": "exact",
+      "note": "Text on `neutral-surface`."
+    },
+    "destructive-surface": {
+      "dark": "--tecton-color-status-error-filled-bg",
+      "confidence": "exact",
+      "note": "Tecton's filled error surface (alert and badge `appearance=\"filled\"` / solid)."
+    },
+    "destructive-surface-foreground": {
+      "dark": "--tecton-color-status-error-filled-text",
+      "confidence": "exact",
+      "note": "Text on `destructive-surface`."
+    },
+    "surface-alt": {
+      "dark": "--tecton-color-table-cell-bg-alt",
+      "confidence": "exact",
+      "note": "Alternate table row surface."
+    },
+    "border-subtle": {
+      "dark": "--tecton-color-divider-subtle",
+      "confidence": "exact",
+      "note": "Low-emphasis divider (Divider emphasis=\"subtle\", panel separators)."
+    },
+    "border-strong": {
+      "dark": "--tecton-color-divider-strong",
+      "confidence": "exact",
+      "note": "High-emphasis divider (Divider emphasis=\"strong\")."
+    }
   },
   "theme": {
     "--font-sans": "var(--tecton-font-family-sans), ui-sans-serif, system-ui, sans-serif",

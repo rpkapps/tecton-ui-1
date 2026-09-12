@@ -66,6 +66,16 @@
     --color-destructive-foreground: var(--destructive-foreground);
     --color-border-subtle: var(--border-subtle);
     --color-border-strong: var(--border-strong);
+    --color-success-surface: var(--success-surface);
+    --color-success-surface-foreground: var(--success-surface-foreground);
+    --color-warning-surface: var(--warning-surface);
+    --color-warning-surface-foreground: var(--warning-surface-foreground);
+    --color-info-surface: var(--info-surface);
+    --color-info-surface-foreground: var(--info-surface-foreground);
+    --color-neutral-surface: var(--neutral-surface);
+    --color-neutral-surface-foreground: var(--neutral-surface-foreground);
+    --color-destructive-surface: var(--destructive-surface);
+    --color-destructive-surface-foreground: var(--destructive-surface-foreground);
 }
 
 :root {
@@ -101,18 +111,28 @@
     --sidebar-accent-foreground: var(--tecton-color-text-primary);
     --sidebar-border: var(--tecton-color-divider-subtle);
     --sidebar-ring: var(--tecton-color-focus-ring);
-    --success: var(--tecton-color-status-success-filled-bg);
+    --success: var(--tecton-color-status-success);
     --success-foreground: var(--tecton-color-status-success-filled-text);
-    --warning: var(--tecton-color-status-warning-filled-bg);
-    --warning-foreground: var(--tecton-color-status-warning-filled-text);
-    --info: var(--tecton-color-status-info-filled-bg);
+    --warning: var(--tecton-color-status-warning);
+    --warning-foreground: var(--tecton-color-text-inverse);
+    --info: var(--tecton-color-status-info);
     --info-foreground: var(--tecton-color-status-info-filled-text);
-    --neutral: var(--tecton-color-status-neutral-filled-bg);
-    --neutral-foreground: var(--tecton-color-status-neutral-filled-text);
+    --neutral: var(--tecton-color-status-neutral);
+    --neutral-foreground: var(--tecton-color-text-inverse);
     --surface-alt: var(--tecton-color-table-cell-bg-alt);
     --destructive-foreground: var(--tecton-color-status-error-filled-text);
     --border-subtle: var(--tecton-color-divider-subtle);
     --border-strong: var(--tecton-color-divider-strong);
+    --success-surface: var(--tecton-color-status-success-filled-bg);
+    --success-surface-foreground: var(--tecton-color-status-success-filled-text);
+    --warning-surface: var(--tecton-color-status-warning-filled-bg);
+    --warning-surface-foreground: var(--tecton-color-status-warning-filled-text);
+    --info-surface: var(--tecton-color-status-info-filled-bg);
+    --info-surface-foreground: var(--tecton-color-status-info-filled-text);
+    --neutral-surface: var(--tecton-color-status-neutral-filled-bg);
+    --neutral-surface-foreground: var(--tecton-color-status-neutral-filled-text);
+    --destructive-surface: var(--tecton-color-status-error-filled-bg);
+    --destructive-surface-foreground: var(--tecton-color-status-error-filled-text);
 }
 
 .dark {
@@ -147,18 +167,28 @@
     --sidebar-accent-foreground: var(--tecton-color-text-primary);
     --sidebar-border: var(--tecton-color-divider-subtle);
     --sidebar-ring: var(--tecton-color-focus-ring);
-    --success: var(--tecton-color-status-success-filled-bg);
+    --success: var(--tecton-color-status-success);
     --success-foreground: var(--tecton-color-status-success-filled-text);
-    --warning: var(--tecton-color-status-warning-filled-bg);
-    --warning-foreground: var(--tecton-color-status-warning-filled-text);
-    --info: var(--tecton-color-status-info-filled-bg);
+    --warning: var(--tecton-color-status-warning);
+    --warning-foreground: var(--tecton-color-text-inverse);
+    --info: var(--tecton-color-status-info);
     --info-foreground: var(--tecton-color-status-info-filled-text);
-    --neutral: var(--tecton-color-status-neutral-filled-bg);
-    --neutral-foreground: var(--tecton-color-status-neutral-filled-text);
+    --neutral: var(--tecton-color-status-neutral);
+    --neutral-foreground: var(--tecton-color-text-inverse);
     --surface-alt: var(--tecton-color-table-cell-bg-alt);
     --destructive-foreground: var(--tecton-color-status-error-filled-text);
     --border-subtle: var(--tecton-color-divider-subtle);
     --border-strong: var(--tecton-color-divider-strong);
+    --success-surface: var(--tecton-color-status-success-filled-bg);
+    --success-surface-foreground: var(--tecton-color-status-success-filled-text);
+    --warning-surface: var(--tecton-color-status-warning-filled-bg);
+    --warning-surface-foreground: var(--tecton-color-status-warning-filled-text);
+    --info-surface: var(--tecton-color-status-info-filled-bg);
+    --info-surface-foreground: var(--tecton-color-status-info-filled-text);
+    --neutral-surface: var(--tecton-color-status-neutral-filled-bg);
+    --neutral-surface-foreground: var(--tecton-color-status-neutral-filled-text);
+    --destructive-surface: var(--tecton-color-status-error-filled-bg);
+    --destructive-surface-foreground: var(--tecton-color-status-error-filled-text);
 }
 
 @layer base {

@@ -39,17 +39,15 @@ Toggle the mode with the `dark` class on `<html>` (or `data-theme="dark"`, which
 
 ## Extra tokens
 
-Tecton has semantics shadcn does not express through variables. They are added following the documented shadcn pattern (a variable in `:root`/`.dark` plus a `--color-*` entry in `@theme inline`) and are used **only by the Tecton components and blocks**:
+Tecton has semantics shadcn does not express through variables. They are added following the documented shadcn pattern (a variable in `:root`/`.dark` plus a `--color-*` entry in `@theme inline`) and are used by the Tecton variants of the shadcn components and by the Tecton components and blocks:
 
 | Token | Utilities | Used for |
 | --- | --- | --- |
-| `--success`, `--success-foreground` | `bg-success`, `text-success-foreground` | Filled success chips and alerts |
-| `--warning`, `--warning-foreground` | `bg-warning`, `text-warning` | Warning status |
-| `--info`, `--info-foreground` | `bg-info`, `text-info` | Info status |
-| `--neutral`, `--neutral-foreground` | `bg-neutral` | Neutral count badges |
-| `--destructive-foreground` | `text-destructive-foreground` | Text on filled error surfaces |
+| `--success`, `--warning`, `--info`, `--neutral` | `text-success`, `border-warning`, `bg-info` | Status colour: text, borders and icons (readable on the page and card in both modes); with `--<status>-foreground` also a solid surface |
+| `--success-surface`, `--warning-surface`, `--info-surface`, `--neutral-surface`, `--destructive-surface` | `bg-warning-surface`, `text-warning-surface-foreground` | Tecton's filled status surfaces (filled alerts, solid status badges); light mode keeps the pale yellow warning surface |
+| `--destructive-foreground` | `text-destructive-foreground` | Text on a `destructive` surface |
 | `--surface-alt` | `bg-surface-alt` | Alternate table rows |
-| `--border-subtle`, `--border-strong` | `border-border-subtle`, `bg-border-strong` | Divider emphasis levels |
+| `--border-subtle`, `--border-strong` | `border-border-subtle`, `bg-border-strong` | Separator emphasis levels |
 | `--font-sans`, `--font-mono` | `font-sans`, `font-mono` | Figtree / IBM Plex Mono |
 | `--radius-sm` … `--radius-2xl` | `rounded-sm` … `rounded-2xl` | Tecton radius scale (2/4/8/12/16px) |
 

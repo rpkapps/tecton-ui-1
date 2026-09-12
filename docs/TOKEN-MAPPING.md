@@ -53,16 +53,26 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 
 | shadcn var | Tecton token | dark value | light value | confidence | note |
 | --- | --- | --- | --- | --- | --- |
-| `--success` | `--tecton-color-status-success-filled-bg` | `#4fa66f` | `#0c703e` | exact | New token (documented shadcn pattern) for the filled success surface; used by custom components only. |
-| `--success-foreground` | `--tecton-color-status-success-filled-text` | `#001607` | `#f3fef8` | exact | Text on the filled success surface. |
-| `--warning` | `--tecton-color-status-warning-filled-bg` | `#e59306` | `#ffdd89` | exact | Filled warning surface. |
-| `--warning-foreground` | `--tecton-color-status-warning-filled-text` | `#1d0f01` | `#693f01` | exact | Text on the filled warning surface. |
-| `--info` | `--tecton-color-status-info-filled-bg` | `#6086d2` | `#2f5dba` | exact | Filled info surface. |
-| `--info-foreground` | `--tecton-color-status-info-filled-text` | `#0a1324` | `#f7f7fa` | exact | Text on the filled info surface. |
-| `--neutral` | `--tecton-color-status-neutral-filled-bg` | `#2c2b2e` | `#e1dee4` | exact | Filled neutral surface. |
-| `--neutral-foreground` | `--tecton-color-status-neutral-filled-text` | `#c8c7ca` | `#4e4556` | exact | Text on the filled neutral surface. |
-| `--surface-alt` | `--tecton-color-table-cell-bg-alt` | `#323134` | `#f6f4f7` | exact | Alternate table row surface. |
+| `--success` | `--tecton-color-status-success` | `#78c692` | `#0d7f46` | exact | Status success main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `success-foreground`. |
+| `--success-foreground` | `--tecton-color-status-success-filled-text` | `#001607` | `#f3fef8` | exact | Text on a `success` surface. |
+| `--warning` | `--tecton-color-status-warning` | `#f9a308` | `#9c6201` | exact | Status warning main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `warning-foreground`. |
+| `--warning-foreground` | `--tecton-color-text-inverse` | `#131214` | `#fafafb` | approximated | Text on a `warning` surface: Tecton's filled-text is meant for the pale `warning-surface`, so the inverse text colour is used on the main colour. |
+| `--info` | `--tecton-color-status-info` | `#8ca7de` | `#2f5dba` | exact | Status info main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `info-foreground`. |
+| `--info-foreground` | `--tecton-color-status-info-filled-text` | `#0a1324` | `#f7f7fa` | exact | Text on an `info` surface. |
+| `--neutral` | `--tecton-color-status-neutral` | `#959497` | `#685d72` | exact | Status neutral main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `neutral-foreground`. |
+| `--neutral-foreground` | `--tecton-color-text-inverse` | `#131214` | `#fafafb` | approximated | Text on a `neutral` surface (Tecton's filled-text is meant for the `neutral-surface`). |
 | `--destructive-foreground` | `--tecton-color-status-error-filled-text` | `#2e0000` | `#fffaf9` | exact | Text on the filled error surface. shadcn v4 dropped this token; Tecton restores it for filled error chips/alerts. |
+| `--success-surface` | `--tecton-color-status-success-filled-bg` | `#4fa66f` | `#0c703e` | exact | Tecton's filled success surface (alert and badge `appearance="filled"` / solid). |
+| `--success-surface-foreground` | `--tecton-color-status-success-filled-text` | `#001607` | `#f3fef8` | exact | Text on `success-surface`. |
+| `--warning-surface` | `--tecton-color-status-warning-filled-bg` | `#e59306` | `#ffdd89` | exact | Tecton's filled warning surface (alert and badge `appearance="filled"` / solid). |
+| `--warning-surface-foreground` | `--tecton-color-status-warning-filled-text` | `#1d0f01` | `#693f01` | exact | Text on `warning-surface`. |
+| `--info-surface` | `--tecton-color-status-info-filled-bg` | `#6086d2` | `#2f5dba` | exact | Tecton's filled info surface (alert and badge `appearance="filled"` / solid). |
+| `--info-surface-foreground` | `--tecton-color-status-info-filled-text` | `#0a1324` | `#f7f7fa` | exact | Text on `info-surface`. |
+| `--neutral-surface` | `--tecton-color-status-neutral-filled-bg` | `#2c2b2e` | `#e1dee4` | exact | Tecton's filled neutral surface (alert and badge `appearance="filled"` / solid). |
+| `--neutral-surface-foreground` | `--tecton-color-status-neutral-filled-text` | `#c8c7ca` | `#4e4556` | exact | Text on `neutral-surface`. |
+| `--destructive-surface` | `--tecton-color-status-error-filled-bg` | `#c16e6c` | `#a3240d` | exact | Tecton's filled error surface (alert and badge `appearance="filled"` / solid). |
+| `--destructive-surface-foreground` | `--tecton-color-status-error-filled-text` | `#2e0000` | `#fffaf9` | exact | Text on `destructive-surface`. |
+| `--surface-alt` | `--tecton-color-table-cell-bg-alt` | `#323134` | `#f6f4f7` | exact | Alternate table row surface. |
 | `--border-subtle` | `--tecton-color-divider-subtle` | `#342f39` | `#e4dde7` | exact | Low-emphasis divider (Divider emphasis="subtle", panel separators). |
 | `--border-strong` | `--tecton-color-divider-strong` | `#6e6873` | `#9884a4` | exact | High-emphasis divider (Divider emphasis="strong"). |
 
@@ -85,8 +95,18 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--color-info-foreground` | `var(--info-foreground)` | `var(--info-foreground)` |
 | `--color-neutral` | `var(--neutral)` | `var(--neutral)` |
 | `--color-neutral-foreground` | `var(--neutral-foreground)` | `var(--neutral-foreground)` |
-| `--color-surface-alt` | `var(--surface-alt)` | `var(--surface-alt)` |
 | `--color-destructive-foreground` | `var(--destructive-foreground)` | `var(--destructive-foreground)` |
+| `--color-success-surface` | `var(--success-surface)` | `var(--success-surface)` |
+| `--color-success-surface-foreground` | `var(--success-surface-foreground)` | `var(--success-surface-foreground)` |
+| `--color-warning-surface` | `var(--warning-surface)` | `var(--warning-surface)` |
+| `--color-warning-surface-foreground` | `var(--warning-surface-foreground)` | `var(--warning-surface-foreground)` |
+| `--color-info-surface` | `var(--info-surface)` | `var(--info-surface)` |
+| `--color-info-surface-foreground` | `var(--info-surface-foreground)` | `var(--info-surface-foreground)` |
+| `--color-neutral-surface` | `var(--neutral-surface)` | `var(--neutral-surface)` |
+| `--color-neutral-surface-foreground` | `var(--neutral-surface-foreground)` | `var(--neutral-surface-foreground)` |
+| `--color-destructive-surface` | `var(--destructive-surface)` | `var(--destructive-surface)` |
+| `--color-destructive-surface-foreground` | `var(--destructive-surface-foreground)` | `var(--destructive-surface-foreground)` |
+| `--color-surface-alt` | `var(--surface-alt)` | `var(--surface-alt)` |
 | `--color-border-subtle` | `var(--border-subtle)` | `var(--border-subtle)` |
 | `--color-border-strong` | `var(--border-strong)` | `var(--border-strong)` |
 
