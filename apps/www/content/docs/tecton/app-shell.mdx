@@ -19,6 +19,10 @@ import {
   AppShellSidebar,
   AppShellMain,
   AppShellAside,
+  AppShellSplit,
+  AppShellSplitPanel,
+  AppShellSplitHandle,
+  useMinWidth,
 } from "@tecton/react/tecton/app-shell"
 ```
 
@@ -69,7 +73,41 @@ AppShell
 
 <ComponentPreview name="app-shell-aside" />
 
+## Resizable split
+
+Wrap the main area and a full-height aside in `AppShellSplit`, each inside an `AppShellSplitPanel`, with an `AppShellSplitHandle` between them; the user drags the divider to resize. Sizes take the [react-resizable-panels](https://github.com/bvaughn/react-resizable-panels) units (`"320px"`, `"25%"`, `"20rem"`). Give the aside `h-full w-full border-l-0`, since the handle draws the divider.
+
+<ComponentPreview name="app-shell-split" />
+
+Render the aside panel only on wide viewports: `useMinWidth(1280)` returns whether the viewport is at least that wide, so a narrow screen gets the main area alone instead of a squeezed split.
+
+```tsx
+const showAside = useMinWidth(1280)
+
+<AppShellSplit>
+  <AppShellSplitPanel minSize="40%">
+    <AppShellMain>…</AppShellMain>
+  </AppShellSplitPanel>
+  {showAside && (
+    <>
+      <AppShellSplitHandle />
+      <AppShellSplitPanel defaultSize="384px" minSize="280px" maxSize="50%">
+        <AppShellAside className="h-full w-full border-l-0">…</AppShellAside>
+      </AppShellSplitPanel>
+    </>
+  )}
+</AppShellSplit>
+```
+
 ## API Reference
+
+### AppShellSplit, AppShellSplitPanel, AppShellSplitHandle
+
+Styled [Resizable](/docs/components/resizable) group, panel and handle; accept all their props (`orientation`, `defaultSize`, `minSize`, `maxSize`, `collapsible`, `onResize`, …).
+
+### useMinWidth
+
+`useMinWidth(minWidth: number): boolean` — true when the viewport is at least `minWidth` px wide; false during server rendering.
 
 ### AppShell
 

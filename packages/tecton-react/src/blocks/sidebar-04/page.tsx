@@ -17,6 +17,12 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@tecton/react/components/sidebar"
+import {
+  AppShellSplit,
+  AppShellSplitHandle,
+  AppShellSplitPanel,
+  useMinWidth,
+} from "@tecton/react/tecton/app-shell"
 
 import { NavRail } from "./components/nav-rail"
 import { ToolPanel } from "./components/tool-panel"
@@ -25,54 +31,72 @@ import type { WellProperties } from "./data"
 
 /**
  * Page layout with a navigation rail on the left (collapsed to icons by
- * default) and a tool panel on the right, around the work area.
+ * default) and a resizable tool panel on the right, around the work area.
  */
 export default function Page() {
   const [panelOpen, setPanelOpen] = React.useState(true)
   const [well, setWell] = React.useState<WellProperties>(defaultWell)
+  // The tool panel is a resizable split on `lg` and up only.
+  const isWide = useMinWidth(1024)
+  const showPanel = panelOpen && isWide
+
+  const inset = (
+    <SidebarInset className="min-h-0">
+      <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle px-3">
+        <SidebarTrigger className="-ml-1" />
+        <Separator
+          orientation="vertical"
+          className="mr-1 h-4 aria-[orientation=vertical]:self-center"
+        />
+        <Breadcrumb>
+          <BreadcrumbList>
+            <BreadcrumbItem className="hidden md:inline-flex">
+              <BreadcrumbLink href="#">Wells</BreadcrumbLink>
+            </BreadcrumbItem>
+            <BreadcrumbItem>
+              <BreadcrumbPage>{well.name}</BreadcrumbPage>
+            </BreadcrumbItem>
+          </BreadcrumbList>
+        </Breadcrumb>
+        {!panelOpen && (
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            className="ml-auto"
+            aria-label="Open well properties"
+            onPress={() => setPanelOpen(true)}
+          >
+            <PanelRightOpenIcon />
+          </Button>
+        )}
+      </header>
+      <div className="flex flex-1 flex-col gap-4 overflow-auto p-4">
+        <div className="grid auto-rows-min gap-4 md:grid-cols-2">
+          <div className="aspect-video rounded-lg bg-muted/50" />
+          <div className="aspect-video rounded-lg bg-muted/50" />
+        </div>
+        <div className="min-h-96 flex-1 rounded-lg bg-muted/50" />
+      </div>
+    </SidebarInset>
+  )
 
   return (
-    <SidebarProvider defaultOpen={false}>
+    <SidebarProvider defaultOpen={false} className="h-svh min-h-0 overflow-hidden">
       <NavRail />
-      <SidebarInset>
-        <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle px-3">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            orientation="vertical"
-            className="mr-1 h-4 aria-[orientation=vertical]:self-center"
-          />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem className="hidden md:inline-flex">
-                <BreadcrumbLink href="#">Wells</BreadcrumbLink>
-              </BreadcrumbItem>
-              <BreadcrumbItem>
-                <BreadcrumbPage>{well.name}</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-          {!panelOpen && (
-            <Button
-              variant="ghost"
-              size="icon-sm"
-              className="ml-auto"
-              aria-label="Open well properties"
-              onPress={() => setPanelOpen(true)}
-            >
-              <PanelRightOpenIcon />
-            </Button>
-          )}
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="grid auto-rows-min gap-4 md:grid-cols-2">
-            <div className="aspect-video rounded-lg bg-muted/50" />
-            <div className="aspect-video rounded-lg bg-muted/50" />
-          </div>
-          <div className="min-h-96 flex-1 rounded-lg bg-muted/50" />
-        </div>
-      </SidebarInset>
-      {panelOpen && (
-        <ToolPanel value={well} onChange={setWell} onClose={() => setPanelOpen(false)} />
+      {showPanel ? (
+        <AppShellSplit>
+          <AppShellSplitPanel minSize="40%">{inset}</AppShellSplitPanel>
+          <AppShellSplitHandle />
+          <AppShellSplitPanel defaultSize="320px" minSize="260px" maxSize="50%">
+            <ToolPanel
+              value={well}
+              onChange={setWell}
+              onClose={() => setPanelOpen(false)}
+            />
+          </AppShellSplitPanel>
+        </AppShellSplit>
+      ) : (
+        inset
       )}
     </SidebarProvider>
   )

@@ -12,6 +12,10 @@ import {
   AppShellBody,
   AppShellMain,
   AppShellSidebar,
+  AppShellSplit,
+  AppShellSplitHandle,
+  AppShellSplitPanel,
+  useMinWidth,
 } from "@tecton/react/tecton/app-shell"
 import {
   PageHeader,
@@ -45,6 +49,8 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
   const [agentOpen, setAgentOpen] = React.useState(!hideAgent)
   const [selectedFda, setSelectedFda] = React.useState<string[]>([])
   const [selectedWell, setSelectedWell] = React.useState<string[]>([])
+  // The agent aside is a resizable panel on wide screens only.
+  const showAgent = useMinWidth(1280)
 
   const cards = fdaSummaries.slice(0, 2)
   const primaryWell = wellDesigns[0]
@@ -57,6 +63,8 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
           <ProjectTree />
         </AppShellSidebar>
 
+        <AppShellSplit>
+        <AppShellSplitPanel minSize="40%">
         <AppShellMain className="flex flex-col gap-6 p-4 md:p-6">
           <PageHeader>
             <PageHeaderContent>
@@ -115,12 +123,19 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
             <CostVsRiskPanel className="h-auto md:col-span-2 2xl:col-span-1" />
           </div>
         </AppShellMain>
+        </AppShellSplitPanel>
 
-        {agentOpen && (
-          <AppShellAside className="hidden w-96 xl:flex">
-            <AiAgentPanel onClose={() => setAgentOpen(false)} />
-          </AppShellAside>
+        {agentOpen && showAgent && (
+          <>
+            <AppShellSplitHandle />
+            <AppShellSplitPanel defaultSize="384px" minSize="280px" maxSize="50%">
+              <AppShellAside className="h-full w-full border-l-0">
+                <AiAgentPanel onClose={() => setAgentOpen(false)} />
+              </AppShellAside>
+            </AppShellSplitPanel>
+          </>
         )}
+        </AppShellSplit>
       </AppShellBody>
     </AppShell>
   )

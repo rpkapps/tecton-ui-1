@@ -1,5 +1,13 @@
+"use client"
+
 import * as React from "react"
 import { cn } from "cn"
+
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@tecton/react/components/resizable"
 
 /**
  * Tecton AppShell — the application frame: a solid top navigation bar,
@@ -112,6 +120,77 @@ function AppShellAside({ className, ...props }: React.ComponentProps<"aside">) {
   )
 }
 
+/**
+ * Resizable split inside the body: wrap the main area and a full-height
+ * aside (or sidebar) in `AppShellSplit`, each in an `AppShellSplitPanel`,
+ * with an `AppShellSplitHandle` between them. Sizes accept the
+ * react-resizable-panels units (`"320px"`, `"25%"`, `"20rem"`).
+ */
+function AppShellSplit({
+  className,
+  orientation = "horizontal",
+  ...props
+}: React.ComponentProps<typeof ResizablePanelGroup>) {
+  return (
+    <ResizablePanelGroup
+      data-slot="app-shell-split"
+      orientation={orientation}
+      className={cn("min-h-0 min-w-0 flex-1", className)}
+      {...props}
+    />
+  )
+}
+
+function AppShellSplitPanel({
+  className,
+  ...props
+}: React.ComponentProps<typeof ResizablePanel>) {
+  return (
+    <ResizablePanel
+      data-slot="app-shell-split-panel"
+      className={cn("flex min-h-0 min-w-0 flex-col overflow-hidden", className)}
+      {...props}
+    />
+  )
+}
+
+function AppShellSplitHandle({
+  className,
+  ...props
+}: React.ComponentProps<typeof ResizableHandle>) {
+  return (
+    <ResizableHandle
+      data-slot="app-shell-split-handle"
+      className={cn(
+        "bg-border-subtle transition-colors after:z-10 after:w-1.5 hover:bg-primary/60 focus-visible:bg-primary active:bg-primary",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+/**
+ * True once the viewport is at least `minWidth` pixels wide (false during
+ * SSR). Use it to decide whether a full-height aside is rendered at all.
+ */
+function useMinWidth(minWidth: number) {
+  const query = `(min-width: ${minWidth}px)`
+  const subscribe = React.useCallback(
+    (onChange: () => void) => {
+      const mql = window.matchMedia(query)
+      mql.addEventListener("change", onChange)
+      return () => mql.removeEventListener("change", onChange)
+    },
+    [query]
+  )
+  return React.useSyncExternalStore(
+    subscribe,
+    () => window.matchMedia(query).matches,
+    () => false
+  )
+}
+
 export {
   AppShell,
   AppShellHeader,
@@ -122,4 +201,8 @@ export {
   AppShellSidebar,
   AppShellMain,
   AppShellAside,
+  AppShellSplit,
+  AppShellSplitPanel,
+  AppShellSplitHandle,
+  useMinWidth,
 }

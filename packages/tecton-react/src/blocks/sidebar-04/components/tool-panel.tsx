@@ -40,9 +40,9 @@ type ToolPanelProps = Omit<React.ComponentProps<typeof Sidebar>, "side" | "colla
 }
 
 /**
- * Right-hand tool panel: a fixed sidebar with the properties of the
- * selected well (name, type, colour, kick-off depth, toggles) and an
- * Apply / Reset footer.
+ * Right-hand tool panel with the properties of the selected well (name,
+ * type, colour, kick-off depth, toggles) and an Apply / Reset footer. It
+ * fills its container; the page places it in a resizable split panel.
  */
 function ToolPanel({
   className,
@@ -66,7 +66,7 @@ function ToolPanel({
       side="right"
       collapsible="none"
       data-slot="tool-panel"
-      className={cn("sticky top-0 hidden h-svh w-80 border-l border-border-subtle lg:flex", className)}
+      className={cn("h-full w-full min-w-0", className)}
       {...props}
     >
       <SidebarHeader className="flex-row items-center gap-2 border-b border-border-subtle px-3 py-2">

@@ -6,6 +6,7 @@ import {
   BugIcon,
   CircleHelpIcon,
   HomeIcon,
+  KeyboardIcon,
   LogOutIcon,
   SettingsIcon,
   SparklesIcon,
@@ -34,10 +35,17 @@ import {
   ShellActions,
   ShellCommandTrigger,
   ShellDivider,
+  ShellOverflow,
   ShellUserMenu,
 } from "@tecton/react/tecton/shell-actions"
+import {
+  ShortcutsProvider,
+  useShortcut,
+  useShortcuts,
+} from "@tecton/react/tecton/shortcuts"
 
 import { ShellCommandPalette } from "./shell-command-palette"
+import { ShellShortcutsDialog } from "./shell-shortcuts-dialog"
 import {
   apps as defaultApps,
   currentUser,
@@ -65,8 +73,25 @@ type ShellHeaderProps = Omit<
  * The host's top bar: app finder, home, application context and the
  * global action cluster. The mounted application only renders inside
  * `children` (its context) and the main region below.
+ *
+ * Responsive: the command trigger shrinks to an icon below `md`, and the
+ * secondary actions (what's new, bug report, settings) fold into an
+ * overflow menu below `lg`.
+ *
+ * Shortcuts: the header registers ⌘K / Ctrl+K (command palette) and `?`
+ * (shortcut list) with the nearest `ShortcutsProvider`, creating one when
+ * the host has none. Applications register theirs with `useShortcut` or
+ * `registry.register`; both the palette and the `?` dialog list them.
  */
-function ShellHeader({
+function ShellHeader(props: ShellHeaderProps) {
+  return (
+    <ShortcutsProvider>
+      <ShellHeaderInner {...props} />
+    </ShortcutsProvider>
+  )
+}
+
+function ShellHeaderInner({
   className,
   apps = defaultApps,
   appId,
@@ -80,31 +105,43 @@ function ShellHeader({
   const currentId = appId ?? internalAppId
   const current = apps.find((app) => app.id === currentId) ?? apps[0]
   const [paletteOpen, setPaletteOpen] = React.useState(false)
+  const [shortcutsOpen, setShortcutsOpen] = React.useState(false)
   const recent = recentAppIds
     .map((id) => apps.find((item) => item.id === id))
     .filter((item): item is ShellApp => Boolean(item))
   const groups = groupApps(apps)
+  const shortcuts = useShortcuts()
 
   const selectApp = (app: ShellApp) => {
     setInternalAppId(app.id)
     onAppChange?.(app)
   }
 
-  React.useEffect(() => {
-    const onKeyDown = (event: KeyboardEvent) => {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
-        event.preventDefault()
-        setPaletteOpen((open) => !open)
-      }
-    }
-    document.addEventListener("keydown", onKeyDown)
-    return () => document.removeEventListener("keydown", onKeyDown)
-  }, [])
+  useShortcut({
+    id: "shell.palette",
+    keys: "mod+k",
+    label: "Search or jump to…",
+    group: "Shell",
+    onAction: () => setPaletteOpen((open) => !open),
+  })
+  useShortcut({
+    id: "shell.shortcuts",
+    keys: "?",
+    label: "Keyboard shortcuts",
+    group: "Shell",
+    onAction: () => setShortcutsOpen((open) => !open),
+  })
+
+  const secondary = [
+    { id: "whats-new", label: "What's new", icon: SparklesIcon },
+    { id: "bug", label: "Report a bug", icon: BugIcon },
+    { id: "settings", label: "Settings", icon: SettingsIcon },
+  ]
 
   return (
     <AppShellHeader
       data-slot="shell-header"
-      className={cn("gap-2 px-2", className)}
+      className={cn("gap-1 px-2 sm:gap-2", className)}
       {...props}
     >
       <AppFinder>
@@ -155,27 +192,45 @@ function ShellHeader({
           </AppFinderList>
         </AppFinderMenu>
       </AppFinder>
-      <ShellDivider />
-      <Button variant="ghost" size="icon-sm" aria-label="Home">
+      <ShellDivider className="hidden sm:block" />
+      <Button
+        variant="ghost"
+        size="icon-sm"
+        aria-label="Home"
+        className="hidden sm:inline-flex"
+      >
         <HomeIcon />
       </Button>
-      <AppShellNav>{children}</AppShellNav>
+      <AppShellNav className="overflow-hidden">{children}</AppShellNav>
       <ShellActions>
         <ShellCommandTrigger onPress={() => setPaletteOpen(true)}>
           Search or jump to…
         </ShellCommandTrigger>
-        <ShellAction label="Help" shortcut="?">
+        <ShellAction
+          label="Keyboard shortcuts"
+          shortcut="?"
+          onPress={() => setShortcutsOpen(true)}
+        >
           <CircleHelpIcon />
         </ShellAction>
-        <ShellAction label="What's new">
-          <SparklesIcon />
-        </ShellAction>
-        <ShellAction label="Report a bug">
-          <BugIcon />
-        </ShellAction>
-        <ShellAction label="Settings">
-          <SettingsIcon />
-        </ShellAction>
+        {secondary.map((action) => (
+          <ShellAction
+            key={action.id}
+            label={action.label}
+            className="hidden lg:inline-flex"
+          >
+            <action.icon />
+          </ShellAction>
+        ))}
+        <ShellOverflow className="lg:hidden">
+          <DropdownMenuGroup>
+            {secondary.map((action) => (
+              <DropdownMenuItem key={action.id} textValue={action.label}>
+                <action.icon /> {action.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuGroup>
+        </ShellOverflow>
         <ShellUserMenu user={user}>
           <DropdownMenuGroup>
             <DropdownMenuLabel className="font-normal">
@@ -195,6 +250,12 @@ function ShellHeader({
             <DropdownMenuItem textValue="Preferences">
               <SettingsIcon /> Preferences
             </DropdownMenuItem>
+            <DropdownMenuItem
+              textValue="Keyboard shortcuts"
+              onAction={() => setShortcutsOpen(true)}
+            >
+              <KeyboardIcon /> Keyboard shortcuts
+            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
@@ -208,7 +269,13 @@ function ShellHeader({
         open={paletteOpen}
         onOpenChange={setPaletteOpen}
         apps={apps}
+        shortcuts={shortcuts}
         onSelectApp={selectApp}
+      />
+      <ShellShortcutsDialog
+        open={shortcutsOpen}
+        onOpenChange={setShortcutsOpen}
+        shortcuts={shortcuts}
       />
     </AppShellHeader>
   )

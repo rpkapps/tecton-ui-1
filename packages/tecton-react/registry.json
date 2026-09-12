@@ -462,7 +462,7 @@
       "name": "shell-01",
       "type": "registry:block",
       "title": "Application shell",
-      "description": "The micro-frontend host: app finder, home, context, command palette, help, release notes, bug report, settings and user menu above one region the mounted application fills. Requires the @tecton/react package.",
+      "description": "The micro-frontend host: responsive top bar with app finder, context, command palette, shortcuts help, overflow and user menu; the mounted application registers its keyboard shortcuts with the shell. Requires the @tecton/react package.",
       "categories": [
         "layouts"
       ],
@@ -481,6 +481,11 @@
           "path": "registry/src/blocks/shell-01/components/shell-header.tsx",
           "type": "registry:component",
           "target": "components/blocks/shell-01/components/shell-header.tsx"
+        },
+        {
+          "path": "registry/src/blocks/shell-01/components/shell-shortcuts-dialog.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/shell-01/components/shell-shortcuts-dialog.tsx"
         },
         {
           "path": "registry/src/blocks/shell-01/data.ts",
@@ -624,7 +629,7 @@
       "name": "sidebar-04",
       "type": "registry:block",
       "title": "Navigation and tool panel",
-      "description": "Icon navigation rail on the left and a collapsible tool panel on the right around the work area. Requires the @tecton/react package.",
+      "description": "Icon navigation rail on the left and a resizable, closable tool panel on the right around the work area. Requires the @tecton/react package.",
       "categories": [
         "layouts"
       ],
