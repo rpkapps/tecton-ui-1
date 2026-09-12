@@ -39,7 +39,6 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4",
     "@tanstack/eslint-config": "latest",
-    "@turbo/gen": "^2.9.15",
     "@types/culori": "^4.0.1",
     "@types/node": "^22",
     "@types/react": "^19",
