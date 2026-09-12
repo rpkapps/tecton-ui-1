@@ -57,7 +57,30 @@ function blockBody(css: string, selector: string): string {
   return css.slice(open + 1, j - 1);
 }
 
-const tokens = parseDecls(stripComments(readFileSync(TOKENS_CSS, "utf8")));
+/** Light (:root) and dark (.dark) token maps from the themed Tecton export. */
+function parseThemedTokens(css: string) {
+  const lightT = new Map<string, string>();
+  const darkT = new Map<string, string>();
+  let i = 0;
+  while (i < css.length) {
+    const open = css.indexOf("{", i);
+    if (open === -1) break;
+    const selector = css.slice(i, open).trim();
+    let depth = 1;
+    let j = open + 1;
+    while (j < css.length && depth > 0) {
+      if (css[j] === "{") depth++;
+      else if (css[j] === "}") depth--;
+      j++;
+    }
+    const body = parseDecls(css.slice(open + 1, j - 1));
+    for (const [k, v] of body) (/dark/.test(selector) ? darkT : lightT).set(k, v);
+    i = j;
+  }
+  for (const [k, v] of lightT) if (!darkT.has(k)) darkT.set(k, v);
+  return { light: lightT, dark: darkT };
+}
+const themedTokens = parseThemedTokens(stripComments(readFileSync(TOKENS_CSS, "utf8")));
 const themeCss = stripComments(readFileSync(THEME_CSS, "utf8"));
 const light = parseDecls(blockBody(themeCss, ":root"));
 const dark = parseDecls(blockBody(themeCss, ".dark"));
@@ -76,6 +99,7 @@ const modes: Record<Mode, Map<string, string>> = { light, dark };
 
 function resolve(value: string, scope: Map<string, string>, depth = 0): string {
   if (depth > 16) throw new Error(`var() too deep: ${value}`);
+  const tokens = scope === light ? themedTokens.light : themedTokens.dark;
   return value.replace(/var\((--[\w-]+)(?:\s*,\s*([^)]*))?\)/g, (_, name: string, fallback?: string) => {
     const v = scope.get(name) ?? tokens.get(name);
     if (v === undefined) {

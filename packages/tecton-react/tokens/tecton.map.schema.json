@@ -1,88 +1,48 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "tecton.map.schema.json",
-  "title": "Tecton → shadcn token mapping",
+  "title": "Tecton → shadcn token map",
   "type": "object",
   "required": ["version", "shadcn", "extra", "theme", "light"],
-  "additionalProperties": false,
   "properties": {
-    "$schema": { "type": "string" },
-    "version": { "type": "integer", "const": 1 },
-    "meta": {
-      "type": "object",
-      "additionalProperties": false,
-      "properties": {
-        "dataSource": { "type": "string", "enum": ["screenshot", "generated-css"] },
-        "nameReconstructed": { "type": "boolean" },
-        "note": { "type": "string" }
-      }
-    },
-    "shadcn": {
-      "description": "Standard shadcn CSS variables (without the leading --) → Tecton token.",
-      "type": "object",
-      "additionalProperties": { "$ref": "#/$defs/mapping" }
-    },
-    "extra": {
-      "description": "Additional tokens introduced by Tecton. Each becomes --<name> in :root/.dark and --color-<name> in @theme inline.",
-      "type": "object",
-      "propertyNames": { "pattern": "^[a-z][a-z0-9-]*$" },
-      "additionalProperties": { "$ref": "#/$defs/mapping" }
-    },
+    "version": { "type": "integer" },
+    "meta": { "type": "object" },
+    "shadcn": { "$ref": "#/$defs/mappings" },
+    "extra": { "$ref": "#/$defs/mappings" },
     "theme": {
-      "description": "Entries written verbatim into the @theme inline block.",
       "type": "object",
-      "propertyNames": { "pattern": "^--[a-z][a-z0-9-]*$" },
       "additionalProperties": { "type": "string" }
     },
     "light": {
       "type": "object",
       "required": ["strategy"],
-      "additionalProperties": false,
       "properties": {
-        "strategy": { "type": "string", "enum": ["oklch-lightness-inversion"] },
+        "strategy": { "type": "string" },
         "note": { "type": "string" },
-        "overrides": {
-          "description": "shadcn/extra variable name → literal CSS colour used for the light value instead of the derived one.",
-          "type": "object",
-          "additionalProperties": { "type": "string" }
-        },
-        "overrideNotes": {
-          "description": "Why an override exists (variable name → rationale).",
-          "type": "object",
-          "additionalProperties": { "type": "string" }
-        }
+        "overrides": { "type": "object", "additionalProperties": { "type": "string" } },
+        "overrideNotes": { "type": "object", "additionalProperties": { "type": "string" } }
       }
     },
     "checks": {
       "type": "object",
-      "additionalProperties": false,
       "properties": {
-        "allow": {
-          "description": "Contrast pairs that are known to fail because Tecton itself fails them. Either \"<bg>/<fg>\" (both modes) or \"<mode>:<bg>/<fg>\".",
-          "type": "array",
-          "items": { "type": "string", "pattern": "^((light|dark):)?[a-z0-9-]+/[a-z0-9-]+$" }
-        }
+        "allow": { "type": "array", "items": { "type": "string" } }
       }
     }
   },
   "$defs": {
     "mapping": {
       "type": "object",
-      "required": ["dark", "light", "confidence"],
-      "additionalProperties": false,
+      "required": ["dark", "confidence"],
       "properties": {
-        "dark": {
-          "description": "Name of the --tecton-* custom property that supplies the dark (canonical) value.",
-          "type": "string",
-          "pattern": "^--tecton-[a-z0-9-]+$"
-        },
-        "light": {
-          "description": "\"derived\" to compute the light value from the dark token, or a literal CSS value.",
-          "type": "string"
-        },
-        "confidence": { "type": "string", "enum": ["exact", "approximated", "derived"] },
+        "dark": { "type": "string", "pattern": "^--tecton-" , "description": "Tecton token used in dark mode (and in light mode unless `light` is set)." },
+        "light": { "type": "string", "description": "Tecton token (`--tecton-…`), literal CSS value, or \"derived\" (OKLCH lightness inversion of the dark value)." },
+        "confidence": { "enum": ["exact", "approximated", "derived"] },
         "note": { "type": "string" }
       }
+    },
+    "mappings": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/mapping" }
     }
   }
 }

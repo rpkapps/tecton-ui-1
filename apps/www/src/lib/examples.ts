@@ -49,5 +49,7 @@ export async function loadExampleSource(name: string): Promise<string> {
   if (!load) {
     throw new Error(`Unknown example: ${name}`)
   }
-  return load()
+  const source = await load()
+  // Hide the provenance header of synced upstream examples in the docs.
+  return source.replace(/^\/\/ Synced from shadcn\/ui[^\n]*\n/, "")
 }

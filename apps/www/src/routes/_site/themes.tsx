@@ -7,6 +7,7 @@ import { useTheme } from "next-themes"
 import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
 import { Input } from "@tecton/react/components/input"
+import { Label } from "@tecton/react/components/label"
 import { Switch } from "@tecton/react/components/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@tecton/react/components/toggle-group"
@@ -103,8 +104,8 @@ function ThemesPage() {
               disallowEmptySelection
               onSelectionChange={(keys) => setTheme(String([...keys][0]))}
             >
-              <ToggleGroupItem id="dark">Dark (Tecton)</ToggleGroupItem>
-              <ToggleGroupItem id="light">Light (derived)</ToggleGroupItem>
+              <ToggleGroupItem id="dark">Dark</ToggleGroupItem>
+              <ToggleGroupItem id="light">Light</ToggleGroupItem>
               <ToggleGroupItem id="system">System</ToggleGroupItem>
             </ToggleGroup>
           </div>
@@ -144,8 +145,8 @@ function ThemesPage() {
           <StatusAlert
             severity="info"
             variant="outlined"
-            title="Dark is canonical"
-            description="Every dark value is a Tecton token. Light values are derived from the dark palette and are marked approximated in the mapping."
+            title="Both modes are Tecton tokens"
+            description="Every shadcn variable references a token from the Tecton CSS export in light and dark; the token file switches the value."
           />
         </div>
         <div className="flex flex-col gap-6">
@@ -161,8 +162,14 @@ function ThemesPage() {
               Warning
             </Chip>
             <Input placeholder="Input" aria-label="Input" className="w-40" />
-            <Checkbox defaultSelected>Checkbox</Checkbox>
-            <Switch defaultSelected>Switch</Switch>
+            <div className="flex items-center gap-2">
+              <Checkbox id="themes-checkbox" defaultSelected />
+              <Label htmlFor="themes-checkbox">Checkbox</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch id="themes-switch" defaultSelected />
+              <Label htmlFor="themes-switch">Switch</Label>
+            </div>
           </div>
         </div>
       </section>

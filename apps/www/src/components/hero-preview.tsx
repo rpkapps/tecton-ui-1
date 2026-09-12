@@ -6,6 +6,7 @@ import { BellIcon, PlusIcon, SearchIcon } from "lucide-react"
 import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
 import { Input } from "@tecton/react/components/input"
+import { Label } from "@tecton/react/components/label"
 import { Slider } from "@tecton/react/components/slider"
 import { Switch } from "@tecton/react/components/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
@@ -86,8 +87,14 @@ export function HeroPreview() {
               </Button>
             </div>
             <div className="flex items-center gap-6 text-sm">
-              <Checkbox>Show hidden items</Checkbox>
-              <Switch defaultSelected>Auto-update</Switch>
+              <div className="flex items-center gap-2">
+                <Checkbox id="hero-hidden" />
+                <Label htmlFor="hero-hidden">Show hidden items</Label>
+              </div>
+              <div className="flex items-center gap-2">
+                <Switch id="hero-auto" defaultSelected />
+                <Label htmlFor="hero-auto">Auto-update</Label>
+              </div>
             </div>
           </TabsContent>
           <TabsContent id="risk" className="flex flex-col gap-3 pt-3">

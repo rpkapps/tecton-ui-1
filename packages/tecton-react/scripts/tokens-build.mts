@@ -4,11 +4,11 @@
  *   bun run scripts/tokens-build.mts        (or: tsx scripts/tokens-build.mts)
  *
  * Inputs
- *   src/styles/tecton-tokens.css   raw --tecton-* custom properties (dark = canonical)
- *   tokens/tecton.map.json         shadcn variable → Tecton token mapping
+ *   src/styles/tecton-tokens.css   generated Tecton export: light (:root) + dark (.dark) tokens
+ *   tokens/tecton.map.json         shadcn variable → Tecton token mapping (per mode)
  *
  * Outputs
- *   src/styles/tecton-theme.css    :root (derived light) / .dark (var() refs) / @theme inline
+ *   src/styles/tecton-theme.css    :root / .dark (var() refs) / @theme inline
  *   src/styles/globals.css         CLI-managed file, patched in place (values + imports only)
  *   registry/theme.json            shadcn `registry:theme` item with literal values
  *   ../../docs/TOKEN-MAPPING.md    mapping table + known deviations
@@ -41,7 +41,8 @@ const MAPPING_DOC = path.join(repoRoot, "docs/TOKEN-MAPPING.md");
 type Confidence = "exact" | "approximated" | "derived";
 interface Mapping {
   dark: string;
-  light: string;
+  /** Tecton token, literal value or "derived"; defaults to `dark`. */
+  light?: string;
   confidence: Confidence;
   note?: string;
 }
@@ -56,10 +57,12 @@ interface TokenMap {
 
 interface Resolved {
   name: string; // shadcn variable name without --
-  token: string; // --tecton-* name
+  token: string; // --tecton-* name (dark)
+  lightToken: string; // --tecton-* name (light) or literal
   dark: string; // var(--tecton-…) reference
   darkLiteral: string; // resolved literal (hex etc.)
-  light: string; // literal light value
+  light: string; // var(--tecton-…) reference or literal
+  lightLiteral: string;
   isColor: boolean;
   confidence: Confidence;
   note: string;
@@ -71,7 +74,7 @@ interface Resolved {
 // ---------------------------------------------------------------------------
 const toOklch = converter("oklch");
 
-/** Parse `--name: value;` declarations from a CSS file into a map. */
+/** Parse `--name: value;` declarations from a CSS string into a map. */
 export function parseCustomProperties(css: string): Map<string, string> {
   const out = new Map<string, string>();
   const noComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
@@ -79,6 +82,38 @@ export function parseCustomProperties(css: string): Map<string, string> {
   let m: RegExpExecArray | null;
   while ((m = re.exec(noComments))) out.set(m[1], m[2].trim());
   return out;
+}
+
+/**
+ * Split a themed token file into light and dark maps. Top-level blocks whose
+ * selector mentions "dark" override the base (light) declarations.
+ */
+export function parseThemedTokens(css: string): { light: Map<string, string>; dark: Map<string, string> } {
+  const noComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  const light = new Map<string, string>();
+  const dark = new Map<string, string>();
+  let i = 0;
+  while (i < noComments.length) {
+    const open = noComments.indexOf("{", i);
+    if (open === -1) break;
+    const selector = noComments.slice(i, open).trim();
+    let depth = 1;
+    let j = open + 1;
+    while (j < noComments.length && depth > 0) {
+      if (noComments[j] === "{") depth++;
+      else if (noComments[j] === "}") depth--;
+      j++;
+    }
+    const body = parseCustomProperties(noComments.slice(open + 1, j - 1));
+    const isDark = /dark/.test(selector);
+    for (const [k, v] of body) {
+      if (isDark) dark.set(k, v);
+      else light.set(k, v);
+    }
+    i = j;
+  }
+  for (const [k, v] of light) if (!dark.has(k)) dark.set(k, v);
+  return { light, dark };
 }
 
 /** Resolve nested var() references against a token map. */
@@ -120,10 +155,20 @@ function isColorValue(v: string): boolean {
   return parse(v) !== undefined;
 }
 
+/** Fontsource stylesheets registering the families named by the Tecton font tokens. */
+const FONT_IMPORTS = [
+  "@fontsource/figtree/400.css",
+  "@fontsource/figtree/500.css",
+  "@fontsource/ibm-plex-mono/400.css",
+  "@fontsource/ibm-plex-mono/500.css",
+];
+
 // ---------------------------------------------------------------------------
 // Resolve the mapping
 // ---------------------------------------------------------------------------
-const tokens = parseCustomProperties(readFileSync(TOKENS_CSS, "utf8"));
+const themed = parseThemedTokens(readFileSync(TOKENS_CSS, "utf8"));
+const tokens = themed.dark; // dark = canonical Tecton values
+const lightTokens = themed.light;
 const map = JSON.parse(readFileSync(MAP_JSON, "utf8")) as TokenMap;
 const overrides = map.light.overrides ?? {};
 
@@ -131,16 +176,22 @@ function resolveMapping(name: string, m: Mapping, extra: boolean): Resolved {
   if (!tokens.has(m.dark)) throw new Error(`${name}: unknown Tecton token ${m.dark}`);
   const darkLiteral = resolveValue(`var(${m.dark})`, tokens);
   const isColor = isColorValue(darkLiteral);
+  const lightSpec = overrides[name] ?? m.light ?? m.dark;
   let light: string;
-  if (overrides[name] !== undefined) light = overrides[name];
-  else if (m.light !== "derived") light = m.light;
-  else light = isColor ? deriveLight(darkLiteral) : `var(${m.dark})`;
+  if (lightSpec === "derived") light = isColor ? deriveLight(darkLiteral) : `var(${m.dark})`;
+  else if (lightSpec.startsWith("--")) {
+    if (!lightTokens.has(lightSpec)) throw new Error(`${name}: unknown Tecton token ${lightSpec}`);
+    light = `var(${lightSpec})`;
+  } else light = lightSpec;
+  const lightLiteral = resolveValue(light, lightTokens);
   return {
     name,
     token: m.dark,
+    lightToken: lightSpec,
     dark: `var(${m.dark})`,
     darkLiteral,
     light,
+    lightLiteral,
     isColor,
     confidence: m.confidence,
     note: m.note ?? "",
@@ -259,18 +310,20 @@ function patchGlobals(): boolean {
   const shadcnImport = '@import "shadcn/tailwind.css";';
   const tokensImport = '@import "./tecton-tokens.css";';
   const interImport = '@import "@fontsource-variable/inter";';
-  const figtreeImport = '@import "@fontsource-variable/figtree";';
-  const monoImport = '@import "@fontsource/ibm-plex-mono";';
+  const legacyFigtree = '@import "@fontsource-variable/figtree";';
+  const legacyMono = '@import "@fontsource/ibm-plex-mono";';
+  const fontImports = FONT_IMPORTS.map((f) => `@import "${f}";`);
 
   if (!css.includes(tokensImport)) {
     if (!css.includes(shadcnImport)) throw new Error(`globals.css: cannot find ${shadcnImport} to anchor ${tokensImport}`);
     css = css.replace(shadcnImport, `${shadcnImport}\n${tokensImport}`);
   }
-  if (css.includes(interImport)) {
-    css = css.replace(interImport, `${figtreeImport}\n${monoImport}`);
+  for (const legacy of [interImport, legacyFigtree, legacyMono]) css = css.replace(`${legacy}\n`, "");
+  let anchor = tokensImport;
+  for (const imp of fontImports) {
+    if (!css.includes(imp)) css = css.replace(anchor, `${anchor}\n${imp}`);
+    anchor = imp;
   }
-  if (!css.includes(figtreeImport)) css = css.replace(tokensImport, `${tokensImport}\n${figtreeImport}`);
-  if (!css.includes(monoImport)) css = css.replace(figtreeImport, `${figtreeImport}\n${monoImport}`);
 
   // -- :root ----------------------------------------------------------------
   const rootValues = new Map(resolved.map((r) => [`--${r.name}`, r.light]));
@@ -301,7 +354,7 @@ function buildRegistryTheme() {
   const light: Record<string, string> = {};
   const dark: Record<string, string> = {};
   for (const r of resolved) {
-    light[r.name] = resolveValue(r.light, tokens);
+    light[r.name] = r.lightLiteral;
     if (!rootOnly(r)) dark[r.name] = r.darkLiteral;
   }
   const theme: Record<string, string> = {};
@@ -310,15 +363,18 @@ function buildRegistryTheme() {
     // --color-<extra> as a reference to the :root/.dark variable.
     theme[k.replace(/^--/, "")] = k.startsWith("--color-") ? v : resolveValue(v, tokens);
   }
+  const css: Record<string, Record<string, never>> = {};
+  for (const f of FONT_IMPORTS) css[`@import "${f}"`] = {};
   return {
     $schema: "https://ui.shadcn.com/schema/registry-item.json",
     name: "tecton",
     type: "registry:theme",
     title: "Tecton",
     description:
-      "Tecton design tokens mapped onto the shadcn CSS variables. Dark is the canonical Tecton theme; light values are derived (OKLCH lightness inversion) and approximated.",
+      "Tecton design tokens mapped onto the shadcn CSS variables (light and dark, from the Tecton CSS export). Figtree + IBM Plex Mono via Fontsource.",
+    dependencies: ["@fontsource/figtree", "@fontsource/ibm-plex-mono"],
     cssVars: { theme, light, dark },
-    css: {},
+    css,
   };
 }
 
@@ -328,9 +384,9 @@ function buildRegistryTheme() {
 function buildMappingDoc(): string {
   const esc = (s: string) => s.replace(/\|/g, "\\|");
   const row = (r: Resolved) =>
-    `| \`--${r.name}\` | \`${r.token}\` | \`${r.darkLiteral}\` | \`${resolveValue(r.light, tokens)}\`${overrides[r.name] !== undefined ? " (override)" : ""} | ${r.confidence} | ${esc(r.note)} |`;
+    `| \`--${r.name}\` | \`${r.token}\`${r.lightToken !== r.token ? ` / \`${r.lightToken}\`` : ""} | \`${r.darkLiteral}\` | \`${r.lightLiteral}\`${overrides[r.name] !== undefined ? " (override)" : ""} | ${r.confidence} | ${esc(r.note)} |`;
   const header = [
-    "| shadcn var | Tecton token | dark value | light value (approx.) | confidence | note |",
+    "| shadcn var | Tecton token | dark value | light value | confidence | note |",
     "| --- | --- | --- | --- | --- | --- |",
   ];
   const std = resolved.filter((r) => !r.extra).map(row);
@@ -349,8 +405,8 @@ function buildMappingDoc(): string {
 > GENERATED by \`packages/tecton-react/scripts/tokens-build.mts\` from \`packages/tecton-react/tokens/tecton.map.json\` — do not edit.
 > Edit the map (or \`src/styles/tecton-tokens.css\`) and run \`pnpm --filter @tecton/react tokens:build\`.
 
-Tecton MUI v1.0 ships **dark only**; the dark column is the canonical Tecton value and the light
-column is derived by ${map.light.strategy} (${map.light.note ?? ""}).
+Both columns come from the Tecton CSS export (\`src/styles/tecton-tokens.css\`): light strategy
+**${map.light.strategy}** — ${map.light.note ?? ""}
 
 Confidence: **exact** = a Tecton token with the same meaning exists; **approximated** = the closest
 Tecton token was chosen (see note); **derived** = computed, no Tecton source.
@@ -389,7 +445,7 @@ are documented here (and, where the behaviour matters, addressed by a custom com
 - **Button hover** — Vega darkens with \`hover:bg-primary/80\` while Tecton lightens the surface to
   \`#74647f\` (and text to \`#ffffff\`). Same for secondary (\`#514659\`) and tertiary/ghost (\`#3a343e\`).
 - **Input variants** — shadcn has a single (outlined) input; Tecton has outlined, filled
-  (\`#28232c\` surface) and textOnly variants. Filled/textOnly are provided by the custom
+  (\`--tecton-color-input-filled-bg\` surface) and textOnly variants. Filled/textOnly are provided by the custom
   \`text-field\` / \`select-field\` components.
 - **Status colours** — Tecton's success/error/warning/info/neutral roles have no shadcn equivalent
   beyond \`destructive\`; they are exposed as the extra tokens above and used by custom components

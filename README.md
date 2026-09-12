@@ -37,7 +37,7 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 1. **Generated files are never edited.** `packages/tecton-react/src/{components,hooks,lib}/**` and the scaffold of `src/styles/globals.css` come from `shadcn add`. `pnpm generated:check` diffs every item against the registry.
 2. **Only the shadcn CSS variables change.** `tokens/tecton.map.json` maps Tecton tokens to `--background`, `--primary`, … with a confidence per value. `pnpm tokens:build` patches the variable values in `globals.css` (and nothing else); `pnpm tokens:check` verifies completeness and WCAG contrast. No `.style-*`, `[data-slot]` or `@layer` overrides exist.
 3. **Tecton-only behaviour is a separate component.** Chip, StatusAlert, FAB, TextField/SelectField variants, Divider emphasis, TreeView, Meter, DataTable, Stat, Panel, AppShell… live in `src/tecton/` and compose the generated components.
-4. **Dark is canonical.** Tecton ships dark only; the light theme is derived and marked approximated.
+4. **Dark first.** Both modes come from the Tecton token export; applications default to dark.
 
 ## Maintenance scripts
 
@@ -56,5 +56,3 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 ## Status / open items
 
 - **Icons:** the SVG sources live in the Tecton Storybook, which was unreachable from the build environment. All 131 icons exist as components (Lucide fallback or placeholder, reported through `data-tecton-source`); run `icons:extract` + `icons:build` once the host is reachable or an SVG export is committed.
-- **Token names:** values were transcribed from the Storybook captures; `--tecton-*` names are reconstructed and should be aligned with the generated CSS export.
-- **Light theme:** derived, see `docs/TOKEN-MAPPING.md`.

@@ -11,11 +11,11 @@ Tecton UI applies the Tecton visual language **only through the shadcn CSS varia
 
 <Step>Raw tokens</Step>
 
-`src/styles/tecton-tokens.css` declares every Tecton token as a CSS custom property (`--tecton-color-bg-default`, `--tecton-radius-50`, `--tecton-font-family-sans`…). The values were transcribed from the Tecton Storybook; the variable names are reconstructed and will be aligned with the generated CSS export when it is available.
+`src/styles/tecton-tokens.css` is the generated CSS export of the Tecton design system, pasted verbatim: every token as a CSS custom property (`--tecton-color-bg-default`, `--tecton-radius-50`, `--tecton-font-family-sans`…) with a light block (`:root`) and a dark block (`.dark` / `[data-theme="dark"]`).
 
 <Step>Mapping as data</Step>
 
-`tokens/tecton.map.json` says which Tecton token each shadcn variable takes, with a confidence (`exact`, `approximated`, `derived`) and a note.
+`tokens/tecton.map.json` says which Tecton token each shadcn variable takes, with a confidence (`exact` or `approximated`) and a note. Because the Tecton export is themed, the same `var(--tecton-…)` reference serves both modes.
 
 <Step>Generated theme</Step>
 
@@ -29,9 +29,9 @@ Tecton UI applies the Tecton visual language **only through the shadcn CSS varia
 
 ## Dark and light
 
-The Tecton design system is **dark-only**. The `.dark` theme is the canonical Tecton theme and every value in it is a Tecton token. The light theme (`:root`) is derived: it mirrors the palette using Tecton's own tokens where possible (page background = `text-primary`, foreground = `bg-default`, status surfaces = the status *muted* tokens…) and falls back to OKLCH lightness inversion. Every light value is flagged **approximated**.
+Both modes come from the Tecton export. `--background` is `var(--tecton-color-bg-default)` in `:root` and in `.dark`; the token file itself switches the value (`#f6f4f7` light, `#1d1c1f` dark). Tecton's applications are dark-first, so this site defaults to dark, but light is equally exact.
 
-Toggle the mode with the `dark` class on `<html>`. This site uses `next-themes` and defaults to dark.
+Toggle the mode with the `dark` class on `<html>` (or `data-theme="dark"`, which the token file also honours). This site uses `next-themes`.
 
 ## Token mapping
 
@@ -61,7 +61,6 @@ Some Tecton details cannot be reproduced through variables alone. They are docum
 - **Hover colours.** Vega hovers primary buttons with `primary/80`; Tecton lightens to `#74647f`. Similar for secondary/tertiary hover surfaces.
 - **Input variants.** shadcn has one input style (Tecton's *outlined*). The *filled* and *textOnly* variants are provided by the [TextField](/docs/tecton/text-field) and [SelectField](/docs/tecton/select-field) components.
 - **Status colours** and **divider emphasis** are extra tokens (above), used only by Tecton components.
-- **Light theme** is approximated (see above).
 
 ## Adding your own tokens
 

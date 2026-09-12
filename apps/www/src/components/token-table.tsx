@@ -10,7 +10,7 @@ import theme from "../../../../packages/tecton-react/registry/theme.json"
 
 type Mapping = {
   dark: string
-  light: string
+  light?: string
   confidence: "exact" | "approximated" | "derived"
   note?: string
 }
@@ -47,6 +47,9 @@ function Rows({
           <td className="py-2 pr-3 font-mono text-xs whitespace-nowrap">--{name}</td>
           <td className="py-2 pr-3 font-mono text-xs break-all text-muted-foreground">
             {mapping.dark}
+            {mapping.light && mapping.light !== mapping.dark && (
+              <span className="block opacity-70">light: {mapping.light}</span>
+            )}
           </td>
           <td className="py-2 pr-3 whitespace-nowrap">
             <Value value={dark[name] ?? "—"} />
@@ -80,8 +83,8 @@ export function TokenTable({ compact, className }: { compact?: boolean; classNam
           <tr className="border-b text-left text-xs text-muted-foreground">
             <th className="py-2 pr-3 font-medium">shadcn variable</th>
             <th className="py-2 pr-3 font-medium">Tecton token</th>
-            <th className="py-2 pr-3 font-medium">dark (exact)</th>
-            <th className="py-2 pr-3 font-medium">light (approx.)</th>
+            <th className="py-2 pr-3 font-medium">dark</th>
+            <th className="py-2 pr-3 font-medium">light</th>
             <th className="py-2 pr-3 font-medium">confidence</th>
             {!compact && <th className="py-2 font-medium">note</th>}
           </tr>

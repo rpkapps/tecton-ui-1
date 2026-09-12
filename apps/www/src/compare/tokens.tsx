@@ -17,7 +17,10 @@ type Token = { name: string; group: string; value: string }
 const PREFIX = "--tecton-color-"
 
 const tokens: Token[] = []
-for (const match of tokensCss.matchAll(/--tecton-color-([a-z0-9-]+)\s*:\s*([^;]+);/g)) {
+// The export declares light (:root) first and dark (.dark) second; the compare
+// pages render dark, so only the dark block is read.
+const darkBlock = tokensCss.slice(tokensCss.indexOf(".dark"))
+for (const match of darkBlock.matchAll(/--tecton-color-([a-z0-9-]+)\s*:\s*([^;]+);/g)) {
   const [, name, rawValue] = match
   const value = rawValue.trim()
   const group = name.split("-")[0] ?? name

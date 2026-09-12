@@ -18,7 +18,7 @@ description: Tecton UI is the Tecton design system for React, built on shadcn/ui
   The Tecton theme lives in `:root`, `.dark` and `@theme inline` inside `globals.css`. There are no `.style-*`, `[data-slot]` or `@layer` overrides of the generated components. Anything Tecton needs that cannot be expressed through the variables becomes a Tecton component instead.
 </Callout>
 
-- **Dark first.** The Tecton design system is dark-only today; the dark theme is exact and the light theme is derived from it (and marked approximated).
+- **Dark first.** Tecton applications run dark by default; both the dark and the light theme come straight from the Tecton token export.
 - **Accessible by default.** React Aria provides the interactions, keyboard behaviour and ARIA semantics.
 - **Composable.** Components are small, `data-slot`-tagged building blocks, styled with Tailwind and `class-variance-authority`.
 
@@ -27,7 +27,7 @@ description: Tecton UI is the Tecton design system for React, built on shadcn/ui
 | Section | What it covers |
 | --- | --- |
 | [Installation](/docs/installation) | Adding `@tecton/react` to a Vite, TanStack Start or Next.js app, or copying components with the shadcn CLI |
-| [Theming](/docs/theming) | The token mapping, light/dark, adding tokens, known deviations |
+| [Theming](/docs/theming) | The token mapping, light and dark, adding tokens, known deviations |
 | [Components](/docs/components) | The 60 shadcn/ui React Aria components |
 | [Tecton components](/docs/tecton) | Chip, StatusAlert, FAB, TextField variants, TreeView, DataTable, Meter… |
 | [Icons](/docs/icons) | The Tecton icon set and how it works alongside Lucide |
