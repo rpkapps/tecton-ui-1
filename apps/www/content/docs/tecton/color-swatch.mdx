@@ -36,6 +36,12 @@ Pass `label` and/or `value` to render text next to the swatch; the value is set 
 
 <ComponentPreview name="color-swatch-labels" />
 
+## Editable
+
+Pass `onChange` to make the swatch a button that opens a picker: a row of preset colours (the Tecton accent fills by default; override with `presets`) and a hex field for a custom colour. `onChange` receives the new colour as a hex string.
+
+<ComponentPreview name="color-swatch-editable" />
+
 ## API Reference
 
 ### ColorSwatch
@@ -49,4 +55,6 @@ React Aria [`ColorSwatch`](https://react-aria.adobe.com/ColorSwatch); accepts al
 | `shape` | `"square" \| "rounded" \| "circle"` | "rounded" | Corner radius. |
 | `label` | `ReactNode` | - | Text next to the swatch. |
 | `value` | `ReactNode` | - | Secondary mono text (e.g. the hex value). |
+| `onChange` | `(color: string) => void` | - | Makes the swatch editable; called with the picked colour as hex. |
+| `presets` | `string[]` | Tecton accents | Preset colours shown by the editable picker. |
 | `aria-label` | `string` | - | Accessible name when no label is rendered. |

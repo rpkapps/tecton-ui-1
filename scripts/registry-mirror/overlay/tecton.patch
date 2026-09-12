@@ -388,3 +388,42 @@ index 56b68155..04098814 100644
    {
      variants: {
        variant: {
+diff --git a/apps/v4/registry/bases/aria/ui/button-group.tsx b/apps/v4/registry/bases/aria/ui/button-group.tsx
+index 083fa498..ffec0abe 100644
+--- a/apps/v4/registry/bases/aria/ui/button-group.tsx
++++ b/apps/v4/registry/bases/aria/ui/button-group.tsx
+@@ -9,7 +9,7 @@ const buttonGroupVariants = cva(
+     variants: {
+       orientation: {
+         horizontal:
+-          "cn-button-group-orientation-horizontal **:data-slot:rounded-r-none [&_[data-slot]~[data-slot]]:rounded-l-none [&_[data-slot]~[data-slot]]:border-l-0",
++          "cn-button-group-orientation-horizontal **:data-slot:rounded-e-none [&_[data-slot]~[data-slot]]:rounded-s-none [&_[data-slot]~[data-slot]]:border-s-0",
+         vertical:
+           "cn-button-group-orientation-vertical flex-col **:data-slot:rounded-b-none [&_[data-slot]~[data-slot]]:rounded-t-none [&_[data-slot]~[data-slot]]:border-t-0",
+       },
+diff --git a/apps/v4/registry/bases/aria/ui/sonner.tsx b/apps/v4/registry/bases/aria/ui/sonner.tsx
+index 0c2e93ea..cd9933ad 100644
+--- a/apps/v4/registry/bases/aria/ui/sonner.tsx
++++ b/apps/v4/registry/bases/aria/ui/sonner.tsx
+@@ -70,8 +70,21 @@ const Toaster = ({ ...props }: ToasterProps) => {
+           "--normal-text": "var(--popover-foreground)",
+           "--normal-border": "var(--border)",
+           "--border-radius": "var(--radius)",
++          "--success-bg": "var(--success-surface)",
++          "--success-text": "var(--success-surface-foreground)",
++          "--success-border": "var(--success-surface)",
++          "--info-bg": "var(--info-surface)",
++          "--info-text": "var(--info-surface-foreground)",
++          "--info-border": "var(--info-surface)",
++          "--warning-bg": "var(--warning-surface)",
++          "--warning-text": "var(--warning-surface-foreground)",
++          "--warning-border": "var(--warning-surface)",
++          "--error-bg": "var(--destructive-surface)",
++          "--error-text": "var(--destructive-surface-foreground)",
++          "--error-border": "var(--destructive-surface)",
+         } as React.CSSProperties
+       }
++      richColors
+       toastOptions={{
+         classNames: {
+           toast: "cn-toast",

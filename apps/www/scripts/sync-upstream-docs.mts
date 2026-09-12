@@ -220,6 +220,13 @@ function transformMdx(
     /\nIf you have a single sidebar in your application, you can use the `SIDEBAR_WIDTH`[^\n]*\n\n```tsx[^\n]*\nconst SIDEBAR_WIDTH[\s\S]*?```\n\nFor multiple sidebars in your application, you can use/,
     "\nTo change the width, set"
   )
+  // The upstream RTL section links to shadcn's own configuration guide and a
+  // hosted preview (`<Button asChild>` has no React Aria equivalent either);
+  // the package supports RTL through its Direction provider.
+  mdx = mdx.replace(
+    /\n## RTL\n\nTo enable RTL support in shadcn\/ui, see the \[RTL configuration guide\]\([^)]*\)\.\n\n\{\/\* prettier-ignore \*\/\}\n<Button asChild[^\n]*\n[^\n]*\n<\/Button>\n/,
+    "\n## RTL\n\nThe sidebar follows the reading direction set with the [Direction](/docs/components/direction) provider; no extra configuration is needed.\n"
+  )
   // `shadcn init` is for projects that own the component sources
   mdx = mdx.replace(
     /\nYou can also enable this during project setup with `npx shadcn@latest init[^\n]*\n/,

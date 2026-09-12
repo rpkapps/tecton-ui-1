@@ -5,7 +5,7 @@
   }
 
   .cn-accordion-trigger {
-    @apply text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground data-pressed:bg-ghost-pressed data-pressed:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground focus-visible:ring-ring focus-visible:border-ring focus-visible:after:border-ring **:data-[slot=accordion-trigger-icon]:text-link-foreground rounded-md px-2 py-1.5 text-left text-sm font-normal focus-visible:ring-2 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-5;
+    @apply text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground data-pressed:bg-ghost-pressed data-pressed:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground focus-visible:ring-ring focus-visible:border-ring focus-visible:after:border-ring **:data-[slot=accordion-trigger-icon]:text-link-foreground rounded-none in-[[data-slot=accordion-item]:first-child]:rounded-t-md in-[[data-slot=accordion-item]:last-child]:not-aria-expanded:rounded-b-md px-2 py-1.5 text-left text-sm font-normal focus-visible:ring-2 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-5;
   }
 
   .cn-accordion-content {
@@ -240,11 +240,11 @@
 
   /* MARK: Button Group */
   .cn-button-group {
-    @apply has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-r-md;
+    @apply has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md;
   }
 
   .cn-button-group-orientation-horizontal {
-    @apply [&>[data-slot]:not(:has(~[data-slot]))]:rounded-r-md!;
+    @apply [&>[data-slot]:not(:has(~[data-slot]))]:rounded-e-md!;
   }
 
   .cn-button-group-orientation-vertical {
@@ -330,7 +330,7 @@
 
   /* MARK: Combobox */
   .cn-combobox-content {
-    @apply bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 *:data-[slot=input-group]:bg-input/30 *:data-[slot=input-group]:border-input/30 max-h-72 min-w-36 overflow-hidden rounded-md shadow-md ring-1 duration-100 *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none;
+    @apply bg-popover text-popover-foreground data-open:animate-in data-closed:animate-out data-closed:fade-out-0 data-open:fade-in-0 data-closed:zoom-out-95 data-open:zoom-in-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 ring-foreground/10 *:data-[slot=input-group]:bg-muted *:data-[slot=input-group]:border-transparent max-h-72 min-w-36 overflow-hidden rounded-md shadow-md ring-1 duration-100 *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none;
   }
 
   .cn-combobox-content-logical {
@@ -403,7 +403,7 @@
   }
 
   .cn-command-input-group {
-    @apply bg-input/30 border-input/30 h-8! rounded-lg! shadow-none! *:data-[slot=input-group-addon]:pl-2!;
+    @apply bg-muted border-transparent h-8! rounded-lg! shadow-none! *:data-[slot=input-group-addon]:ps-2!;
   }
 
   .cn-command-input-icon {
@@ -1487,11 +1487,11 @@
   }
 
   .cn-input-group-addon-align-inline-start {
-    @apply pl-2 has-[>button]:-ml-1 has-[>kbd]:ml-[-0.15rem];
+    @apply ps-2 has-[>button]:-ms-1 has-[>kbd]:ms-[-0.15rem];
   }
 
   .cn-input-group-addon-align-inline-end {
-    @apply pr-2 has-[>button]:-mr-1 has-[>kbd]:mr-[-0.15rem];
+    @apply pe-2 has-[>button]:-me-1 has-[>kbd]:me-[-0.15rem];
   }
 
   .cn-input-group-addon-align-block-start {
@@ -1532,11 +1532,11 @@
 
   /* MARK: Menu Translucent */
   .cn-menu-translucent {
-    @apply animate-none! relative bg-popover/70 before:pointer-events-none before:absolute before:inset-0 before:-z-1 before:rounded-[inherit] before:backdrop-blur-2xl before:backdrop-saturate-150 **:data-[slot$=-item]:focus:bg-foreground/10 **:data-[slot$=-item]:data-highlighted:bg-foreground/10 **:data-[slot$=-separator]:bg-foreground/5 **:data-[slot$=-trigger]:focus:bg-foreground/10 **:data-[slot$=-trigger]:aria-expanded:bg-foreground/10! **:data-[variant=destructive]:focus:bg-foreground/10! **:data-[variant=destructive]:text-accent-foreground! **:data-[variant=destructive]:**:text-accent-foreground!;
+    @apply **:data-[slot$=-item]:not-data-[variant=destructive]:focus:bg-accent **:data-[slot$=-item]:not-data-[variant=destructive]:data-highlighted:bg-accent **:data-[slot$=-trigger]:focus:bg-accent **:data-[slot$=-trigger]:aria-expanded:bg-accent;
   }
 
   .cn-menu-translucent-aria {
-    @apply **:data-[slot$=-item]:data-focused:bg-foreground/10;
+    @apply **:data-[slot$=-item]:not-data-[variant=destructive]:data-focused:bg-accent;
   }
 
   /* MARK: Bubble */
@@ -1787,7 +1787,7 @@
   }
 
   .cn-combobox-content-aria {
-    @apply bg-popover text-popover-foreground data-entering:animate-in data-exiting:animate-out data-exiting:fade-out-0 data-entering:fade-in-0 data-exiting:zoom-out-95 data-entering:zoom-in-95 data-[placement=bottom]:slide-in-from-top-2 data-[placement=left]:slide-in-from-right-2 data-[placement=right]:slide-in-from-left-2 data-[placement=top]:slide-in-from-bottom-2 ring-foreground/10 *:data-[slot=input-group]:bg-input/30 *:data-[slot=input-group]:border-input/30 max-h-72 min-w-36 overflow-hidden rounded-md shadow-md ring-1 duration-100 *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none;
+    @apply bg-popover text-popover-foreground data-entering:animate-in data-exiting:animate-out data-exiting:fade-out-0 data-entering:fade-in-0 data-exiting:zoom-out-95 data-entering:zoom-in-95 data-[placement=bottom]:slide-in-from-top-2 data-[placement=left]:slide-in-from-right-2 data-[placement=right]:slide-in-from-left-2 data-[placement=top]:slide-in-from-bottom-2 ring-foreground/10 *:data-[slot=input-group]:bg-muted *:data-[slot=input-group]:border-transparent max-h-72 min-w-36 overflow-hidden rounded-md shadow-md ring-1 duration-100 *:data-[slot=input-group]:m-1 *:data-[slot=input-group]:mb-0 *:data-[slot=input-group]:h-8 *:data-[slot=input-group]:shadow-none;
   }
 
   .cn-context-menu-content-aria {

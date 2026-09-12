@@ -21,7 +21,7 @@ built the same way, from the overlay in `scripts/registry-mirror/overlay/`:
 | File | What it is |
 | --- | --- |
 | `style-tecton.css` | Copy of `style-vega.css` with the Tecton deviations: solid 2px focus ring (`ring-2 ring-ring`), flat controls (no `shadow-xs`), buttons that lighten on hover / press, and the class lists of the extra variants below |
-| `tecton.patch` | Registers the style in `registry/styles.tsx` and adds variant axes to six aria base sources: `alert` (`variant` success/warning/info + `appearance` default/outline/filled), `badge` (`variant` success/warning/info + `appearance` solid/outline + `size` default/md/lg), `separator` (`emphasis` subtle/default/strong), `input` / `textarea` / `select` trigger (`variant` outline/filled/text); strips the hard-coded selected colours from `tabs` and the hover colour from `toggle` so the style file can set the Tecton ones |
+| `tecton.patch` | Registers the style in `registry/styles.tsx` and adds variant axes to six aria base sources: `alert` (`variant` success/warning/info + `appearance` default/outline/filled), `badge` (`variant` success/warning/info + `appearance` solid/outline + `size` default/md/lg), `separator` (`emphasis` subtle/default/strong), `input` / `textarea` / `select` trigger (`variant` outline/filled/text); strips the hard-coded selected colours from `tabs` and the hover colour from `toggle` so the style file can set the Tecton ones; makes `button-group` corners logical for RTL and gives `sonner` the filled status surfaces |
 
 `scripts/registry-mirror.sh build` re-applies the overlay (`git apply --3way`) and builds only
 `aria-tecton`. Because the style exists nowhere else, **every CLI command that touches

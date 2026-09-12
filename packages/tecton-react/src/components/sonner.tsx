@@ -32,8 +32,21 @@ const Toaster = ({ ...props }: ToasterProps) => {
           "--normal-text": "var(--popover-foreground)",
           "--normal-border": "var(--border)",
           "--border-radius": "var(--radius)",
+          "--success-bg": "var(--success-surface)",
+          "--success-text": "var(--success-surface-foreground)",
+          "--success-border": "var(--success-surface)",
+          "--info-bg": "var(--info-surface)",
+          "--info-text": "var(--info-surface-foreground)",
+          "--info-border": "var(--info-surface)",
+          "--warning-bg": "var(--warning-surface)",
+          "--warning-text": "var(--warning-surface-foreground)",
+          "--warning-border": "var(--warning-surface)",
+          "--error-bg": "var(--destructive-surface)",
+          "--error-text": "var(--destructive-surface-foreground)",
+          "--error-border": "var(--destructive-surface)",
         } as React.CSSProperties
       }
+      richColors
       toastOptions={{
         classNames: {
           toast: "cn-toast",
