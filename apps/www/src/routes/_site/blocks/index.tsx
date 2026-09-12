@@ -12,6 +12,7 @@ import {
 
 import { BlockViewer } from "@/components/block-viewer"
 import { blockCategories, blocks } from "@/lib/blocks"
+import type { BlockCategory } from "@/lib/blocks"
 import { siteConfig } from "@/lib/site"
 
 export const Route = createFileRoute("/_site/blocks/")({
@@ -19,36 +20,41 @@ export const Route = createFileRoute("/_site/blocks/")({
   component: BlocksIndex,
 })
 
-function useHash() {
-  const [hash, setHash] = React.useState("")
-  React.useEffect(() => {
-    const update = () => setHash(window.location.hash.slice(1))
-    update()
-    window.addEventListener("hashchange", update)
-    return () => window.removeEventListener("hashchange", update)
-  }, [])
-  return hash
-}
+type Filter = BlockCategory | "all"
 
-function BlocksNav() {
-  const hash = useHash()
+function BlocksNav({
+  value,
+  onChange,
+}: {
+  value: Filter
+  onChange: (next: Filter) => void
+}) {
+  const options: { id: Filter; title: string }[] = [
+    { id: "all", title: "All" },
+    ...blockCategories,
+  ]
   return (
-    <nav className="-mx-1 flex items-center gap-1 overflow-x-auto px-1 py-2">
-      {blockCategories.map((category) => (
-        <a
-          key={category.id}
-          href={`#${category.id}`}
-          data-active={hash === category.id}
-          className="flex h-7 shrink-0 items-center rounded-full px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground data-[active=true]:bg-muted data-[active=true]:text-foreground"
+    <nav aria-label="Filter blocks" className="-mx-1 flex items-center gap-1 overflow-x-auto px-1 py-2">
+      {options.map((option) => (
+        <button
+          key={option.id}
+          type="button"
+          aria-pressed={value === option.id}
+          onClick={() => onChange(option.id)}
+          className="flex h-7 shrink-0 cursor-pointer items-center rounded-full px-4 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground aria-pressed:bg-muted aria-pressed:text-foreground"
         >
-          {category.title}
-        </a>
+          {option.title}
+        </button>
       ))}
     </nav>
   )
 }
 
 function BlocksIndex() {
+  const [filter, setFilter] = React.useState<Filter>("all")
+  const visible = blockCategories.filter(
+    (category) => filter === "all" || category.id === filter
+  )
   return (
     <div className="flex flex-col">
       <PageHeader className="py-8 md:py-10">
@@ -74,11 +80,11 @@ function BlocksIndex() {
         id="blocks"
         className="sticky top-(--header-height) z-30 -mx-6 scroll-mt-24 border-y bg-background/95 px-6 backdrop-blur supports-[backdrop-filter]:bg-background/80"
       >
-        <BlocksNav />
+        <BlocksNav value={filter} onChange={setFilter} />
       </div>
 
       <div className="flex flex-col gap-16 py-8 md:gap-24 md:py-10">
-        {blockCategories.map((category) => {
+        {visible.map((category) => {
           const items = blocks.filter((block) => block.category === category.id)
           if (!items.length) return null
           return (

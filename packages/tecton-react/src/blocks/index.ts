@@ -5,6 +5,7 @@ export type BlockCategory =
   | "authentication"
   | "dashboard"
   | "forms"
+  | "layouts"
   | "lists"
 
 export type BlockEntry = {
@@ -19,6 +20,38 @@ export type BlockEntry = {
 
 /** Registry consumed by the docs site gallery. */
 export const blocks: BlockEntry[] = [
+  {
+    name: "sidebar-01",
+    title: "Project navigation",
+    description:
+      "Sidebar that collapses to an icon rail: project switcher, grouped navigation with collapsible sections and the user menu.",
+    category: "layouts",
+    component: () => import("./sidebar-01/page"),
+  },
+  {
+    name: "sidebar-02",
+    title: "Inset sidebar",
+    description:
+      "Inset sidebar with search, flat navigation, recent projects with actions and secondary links pinned to the bottom.",
+    category: "layouts",
+    component: () => import("./sidebar-02/page"),
+  },
+  {
+    name: "sidebar-03",
+    title: "Project tree sidebar",
+    description:
+      "Off-canvas sidebar hosting the project inventory tree with search and visibility toggles next to a map work area.",
+    category: "layouts",
+    component: () => import("./sidebar-03/page"),
+  },
+  {
+    name: "sidebar-04",
+    title: "Navigation and tool panel",
+    description:
+      "Icon navigation rail on the left and a collapsible tool panel on the right around the work area.",
+    category: "layouts",
+    component: () => import("./sidebar-04/page"),
+  },
   {
     name: "ai-agent-panel",
     title: "AI agent panel",
@@ -109,6 +142,7 @@ export const blocks: BlockEntry[] = [
 ]
 
 export const blockCategories: { id: BlockCategory; label: string }[] = [
+  { id: "layouts", label: "Sidebars & layouts" },
   { id: "application", label: "Application" },
   { id: "dashboard", label: "Dashboard" },
   { id: "forms", label: "Forms" },
