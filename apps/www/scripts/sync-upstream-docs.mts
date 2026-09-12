@@ -94,6 +94,19 @@ async function exists(file: string) {
   }
 }
 
+// Per-example source fixes for upstream demos that assume the vega look.
+const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
+  // The Tecton trigger paints a hover / expanded surface. Upstream pads the
+  // item, which insets that surface while the item dividers still run to the
+  // border; padding the trigger and content instead keeps the surface as wide
+  // as the dividers.
+  "accordion-borders": (code) =>
+    code
+      .replace('className="border-b px-4 last:border-b-0"', 'className="border-b last:border-b-0"')
+      .replace("<AccordionTrigger>{item.trigger}</AccordionTrigger>", '<AccordionTrigger className="px-4">{item.trigger}</AccordionTrigger>')
+      .replace("<AccordionContent>{item.content}</AccordionContent>", '<AccordionContent className="px-4">{item.content}</AccordionContent>'),
+}
+
 function rewriteImports(source: string): { code: string; blocked?: string } {
   let blocked: string | undefined
   const code = source.replace(
@@ -343,7 +356,8 @@ async function main() {
       return false
     }
     const source = await fs.readFile(file, "utf8")
-    const { code, blocked } = rewriteImports(source)
+    const { code: rewritten, blocked } = rewriteImports(source)
+    const code = EXAMPLE_REWRITES[exampleName]?.(rewritten) ?? rewritten
     if (blocked) {
       report.skippedExamples[exampleName] = `unsupported import: ${blocked}`
       exampleCache.set(exampleName, null)
