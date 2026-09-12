@@ -1,11 +1,15 @@
 .style-tecton {
   /* MARK: Accordion */
+  .cn-accordion {
+    @apply rounded-md;
+  }
+
   .cn-accordion-item {
-    @apply not-last:border-b;
+    @apply first:rounded-t-[inherit] last:rounded-b-[inherit] not-last:border-b *:rounded-[inherit];
   }
 
   .cn-accordion-trigger {
-    @apply text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground data-pressed:bg-ghost-pressed data-pressed:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground focus-visible:ring-ring focus-visible:border-ring focus-visible:after:border-ring **:data-[slot=accordion-trigger-icon]:text-link-foreground rounded-none in-[[data-slot=accordion-item]:first-child]:rounded-t-md in-[[data-slot=accordion-item]:last-child]:not-aria-expanded:rounded-b-md px-2 py-1.5 text-left text-sm font-normal focus-visible:ring-2 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-5;
+    @apply text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground data-pressed:bg-ghost-pressed data-pressed:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground focus-visible:ring-ring focus-visible:border-ring focus-visible:after:border-ring **:data-[slot=accordion-trigger-icon]:text-link-foreground rounded-none in-[[data-slot=accordion-item]:first-child]:rounded-t-[inherit] in-[[data-slot=accordion-item]:last-child]:not-aria-expanded:rounded-b-[inherit] px-2 py-1.5 text-left text-sm font-normal focus-visible:ring-2 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-5;
   }
 
   .cn-accordion-content {

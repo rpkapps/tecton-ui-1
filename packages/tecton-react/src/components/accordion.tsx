@@ -17,7 +17,7 @@ function Accordion({ className, ...props }: DisclosureGroupProps) {
   return (
     <AccordionPrimitive
       data-slot="accordion"
-      className={cn("flex w-full flex-col", className)}
+      className={cn("flex w-full flex-col rounded-md", className)}
       {...props}
     />
   )
@@ -27,7 +27,10 @@ function AccordionItem({ className, ...props }: DisclosureProps) {
   return (
     <AccordionItemPrimitive
       data-slot="accordion-item"
-      className={cn("not-last:border-b", className)}
+      className={cn(
+        "*:rounded-[inherit] not-last:border-b first:rounded-t-[inherit] last:rounded-b-[inherit]",
+        className
+      )}
       {...props}
     />
   )
@@ -44,7 +47,7 @@ function AccordionTrigger({
         slot="trigger"
         data-slot="accordion-trigger"
         className={cn(
-          "text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground data-pressed:bg-ghost-pressed data-pressed:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground **:data-[slot=accordion-trigger-icon]:text-link-foreground group/accordion-trigger relative flex flex-1 items-start justify-between rounded-none border border-transparent px-2 py-1.5 text-left text-sm font-normal transition-all outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:after:border-ring disabled:pointer-events-none disabled:opacity-50 in-[[data-slot=accordion-item]:first-child]:rounded-t-md in-[[data-slot=accordion-item]:last-child]:not-aria-expanded:rounded-b-md **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-5",
+          "text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground data-pressed:bg-ghost-pressed data-pressed:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground **:data-[slot=accordion-trigger-icon]:text-link-foreground group/accordion-trigger relative flex flex-1 items-start justify-between rounded-none border border-transparent px-2 py-1.5 text-left text-sm font-normal transition-all outline-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring focus-visible:after:border-ring disabled:pointer-events-none disabled:opacity-50 in-[[data-slot=accordion-item]:first-child]:rounded-t-[inherit] in-[[data-slot=accordion-item]:last-child]:not-aria-expanded:rounded-b-[inherit] **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-5",
           className
         )}
         {...props}
