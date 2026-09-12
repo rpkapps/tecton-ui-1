@@ -47,7 +47,7 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 | `pnpm generated:check` | Verify no generated component was hand-edited |
 | `pnpm registry:build` | Build the `@tecton` registry into `apps/www/public/r` |
 | `pnpm docs:sync` | Sync shadcn docs pages + examples for the React Aria base |
-| `pnpm --filter @tecton/react icons:build` | Regenerate icon components from `icons-src/` |
+| `pnpm --filter @tecton/react icons:build` | Regenerate icon components from the Tecton export in `icons-src/tecton/` |
 | `pnpm compare` | Playwright captures of the state matrices next to the Storybook screenshots |
 | `scripts/registry-mirror.sh` | Local mirror of `ui.shadcn.com/r` (for offline / restricted networks) |
 
@@ -55,4 +55,4 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 
 ## Status / open items
 
-- **Icons:** the SVG sources live in the Tecton Storybook, which was unreachable from the build environment. All 131 icons exist as components (Lucide fallback or placeholder, reported through `data-tecton-source`); run `icons:extract` + `icons:build` once the host is reachable or an SVG export is committed.
+- **Icons:** all 131 glyphs are generated from the Tecton icon export in `packages/tecton-react/icons-src/tecton/`; replace those files with a newer export and run `icons:build`.

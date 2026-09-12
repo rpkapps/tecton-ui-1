@@ -68,6 +68,7 @@
     "tokens",
     "registry/theme.json",
     "registry.json",
-    "components.json"
+    "components.json",
+    "icons-src"
   ]
 }

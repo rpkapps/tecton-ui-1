@@ -18,8 +18,8 @@ import { WellIcon, SeismicIcon } from "@tecton/react/icons"
 <SeismicIcon variant="filled" size={20} />
 ```
 
-<Callout variant="warning" title="Glyph sources">
-  The SVG sources of the Tecton icons live in the Tecton Storybook, which was not reachable from the build environment. Until `icons-src/` is populated (`pnpm --filter @tecton/react icons:extract`, or an SVG export), each icon renders its closest Lucide equivalent or a placeholder, and reports its origin through `data-tecton-source`. The gallery below shows the current source of every icon.
+<Callout title="Glyph sources">
+  The glyphs come from the Tecton icon export vendored in `packages/tecton-react/icons-src/tecton/` (one `defineTectonSvgIcon` definition per icon with outlined and filled markup). `icons:build` generates a React component per definition; every rendered `<svg>` reports its origin through `data-tecton-source` (`svg` for all 131 today). Drop a newer export into that folder and rebuild to update the set.
 </Callout>
 
 ## Gallery
@@ -28,7 +28,7 @@ import { WellIcon, SeismicIcon } from "@tecton/react/icons"
 
 ## Replacing Lucide inside the generated components
 
-If you want the shadcn components to render Tecton glyphs too (once the SVGs are available), alias `lucide-react` to the compatibility module in your bundler. The generated files keep importing `lucide-react`; only the resolution changes:
+If you want the shadcn components to render Tecton glyphs too, alias `lucide-react` to the compatibility module in your bundler. The generated files keep importing `lucide-react`; only the resolution changes:
 
 ```ts title="vite.config.ts"
 export default defineConfig({
@@ -45,6 +45,9 @@ The compat module re-exports every Lucide name the components use, mapped to the
 ## Regenerating
 
 ```bash
-pnpm --filter @tecton/react icons:extract   # pulls SVGs from the Storybook into icons-src/
+# replace icons-src/tecton/*.ts with a newer Tecton export, then
 pnpm --filter @tecton/react icons:build     # regenerates src/icons/*
+pnpm --filter @tecton/react icons:build -- --check   # CI drift guard
 ```
+
+Loose SVG files in `icons-src/outlined/` or `icons-src/filled/` override a definition for that variant (`icons:extract` can populate them from a Storybook).

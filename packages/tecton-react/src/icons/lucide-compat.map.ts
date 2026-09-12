@@ -7,62 +7,62 @@
 
 export * from "lucide-react"
 
-// 0 Tecton override(s)
+// 18 Tecton override(s)
+export { ArrowDownIcon } from "./arrow-down" // src/components/message-scroller.tsx
+export { CheckIcon } from "./check" // src/components/dropdown-menu.tsx, src/components/checkbox.tsx, src/components/combobox.tsx, src/components/questionnaire.tsx, src/components/command.tsx, src/components/context-menu.tsx, src/components/select.tsx, src/tecton/copy-button.tsx
+export { ChevronDownIcon } from "./chevron-down" // src/components/native-select.tsx, src/components/accordion.tsx, src/components/combobox.tsx, src/components/select.tsx
+export { ChevronLeftIcon } from "./chevron-left" // src/components/pagination.tsx, src/components/carousel.tsx, src/components/calendar.tsx, src/tecton/data-table.tsx
+export { ChevronRightIcon } from "./chevron-right" // src/components/breadcrumb.tsx, src/components/pagination.tsx, src/components/carousel.tsx, src/components/dropdown-menu.tsx, src/components/calendar.tsx, src/components/context-menu.tsx, src/tecton/tree-view.tsx, src/tecton/data-table.tsx
+export { ChevronUpIcon } from "./chevron-up" // src/components/accordion.tsx
+export { ErrorIcon as CircleAlertIcon } from "./error" // src/tecton/status-alert.tsx
+export { CheckCircleIcon as CircleCheckIcon } from "./check-circle" // src/components/sonner.tsx, src/tecton/status-alert.tsx
+export { CopyIcon } from "./copy" // src/tecton/copy-button.tsx
+export { VisibilityIcon as EyeIcon } from "./visibility" // src/tecton/tree-view.tsx
+export { VisibilityOffIcon as EyeOffIcon } from "./visibility-off" // src/tecton/tree-view.tsx
+export { FolderIcon } from "./folder" // src/tecton/tree-view.tsx
+export { FolderOpenIcon } from "./folder-open" // src/tecton/tree-view.tsx
+export { InfoIcon } from "./info" // src/components/sonner.tsx, src/tecton/status-alert.tsx
+export { RemoveIcon as MinusIcon } from "./remove" // src/components/input-otp.tsx, src/tecton/stat.tsx
+export { SearchIcon } from "./search" // src/components/command.tsx, src/components/select.tsx
+export { WarningIcon as TriangleAlertIcon } from "./warning" // src/components/sonner.tsx, src/tecton/status-alert.tsx
+export { CloseIcon as XIcon } from "./close" // src/components/dialog.tsx, src/components/combobox.tsx, src/components/sheet.tsx, src/tecton/status-alert.tsx, src/tecton/chip.tsx
 
-// 26 lucide pass-through(s) (no Tecton SVG source yet)
-export { ArrowDownIcon } from "lucide-react" // src/components/message-scroller.tsx
-export { CheckIcon } from "lucide-react" // src/components/dropdown-menu.tsx, src/components/checkbox.tsx, src/components/combobox.tsx, src/components/questionnaire.tsx, src/components/command.tsx, src/components/context-menu.tsx, src/components/select.tsx, src/tecton/copy-button.tsx
-export { ChevronDownIcon } from "lucide-react" // src/components/native-select.tsx, src/components/accordion.tsx, src/components/combobox.tsx, src/components/select.tsx
-export { ChevronLeftIcon } from "lucide-react" // src/components/pagination.tsx, src/components/carousel.tsx, src/components/calendar.tsx, src/tecton/data-table.tsx
-export { ChevronRightIcon } from "lucide-react" // src/components/breadcrumb.tsx, src/components/pagination.tsx, src/components/carousel.tsx, src/components/dropdown-menu.tsx, src/components/calendar.tsx, src/components/context-menu.tsx, src/tecton/tree-view.tsx, src/tecton/data-table.tsx
-export { ChevronUpIcon } from "lucide-react" // src/components/accordion.tsx
-export { CircleAlertIcon } from "lucide-react" // src/tecton/status-alert.tsx
-export { CircleCheckIcon } from "lucide-react" // src/components/sonner.tsx, src/tecton/status-alert.tsx
-export { CopyIcon } from "lucide-react" // src/tecton/copy-button.tsx
+// 8 lucide pass-through(s) (no Tecton SVG source yet)
 export { ExternalLinkIcon } from "lucide-react" // src/tecton/link.tsx
-export { EyeIcon } from "lucide-react" // src/tecton/tree-view.tsx
-export { EyeOffIcon } from "lucide-react" // src/tecton/tree-view.tsx
-export { FolderIcon } from "lucide-react" // src/tecton/tree-view.tsx
-export { FolderOpenIcon } from "lucide-react" // src/tecton/tree-view.tsx
-export { InfoIcon } from "lucide-react" // src/components/sonner.tsx, src/tecton/status-alert.tsx
 export { Loader2Icon } from "lucide-react" // src/components/spinner.tsx, src/components/sonner.tsx
-export { MinusIcon } from "lucide-react" // src/components/input-otp.tsx, src/tecton/stat.tsx
 export { MoreHorizontalIcon } from "lucide-react" // src/components/breadcrumb.tsx, src/components/pagination.tsx
 export { MoreVerticalIcon } from "lucide-react" // src/tecton/tree-view.tsx
 export { OctagonXIcon } from "lucide-react" // src/components/sonner.tsx
 export { PanelLeftIcon } from "lucide-react" // src/components/sidebar.tsx
-export { SearchIcon } from "lucide-react" // src/components/command.tsx, src/components/select.tsx
 export { TrendingDownIcon } from "lucide-react" // src/tecton/stat.tsx
 export { TrendingUpIcon } from "lucide-react" // src/tecton/stat.tsx
-export { TriangleAlertIcon } from "lucide-react" // src/components/sonner.tsx, src/tecton/status-alert.tsx
-export { XIcon } from "lucide-react" // src/components/dialog.tsx, src/components/combobox.tsx, src/components/sheet.tsx, src/tecton/status-alert.tsx, src/tecton/chip.tsx
 
 /** Which identifiers are served by Tecton vs lucide — handy for docs / tests. */
 export const tectonLucideCompat = {
-  ArrowDownIcon: "lucide",
-  CheckIcon: "lucide",
-  ChevronDownIcon: "lucide",
-  ChevronLeftIcon: "lucide",
-  ChevronRightIcon: "lucide",
-  ChevronUpIcon: "lucide",
-  CircleAlertIcon: "lucide",
-  CircleCheckIcon: "lucide",
-  CopyIcon: "lucide",
+  ArrowDownIcon: "arrow-down",
+  CheckIcon: "check",
+  ChevronDownIcon: "chevron-down",
+  ChevronLeftIcon: "chevron-left",
+  ChevronRightIcon: "chevron-right",
+  ChevronUpIcon: "chevron-up",
+  CircleAlertIcon: "error",
+  CircleCheckIcon: "check-circle",
+  CopyIcon: "copy",
   ExternalLinkIcon: "lucide",
-  EyeIcon: "lucide",
-  EyeOffIcon: "lucide",
-  FolderIcon: "lucide",
-  FolderOpenIcon: "lucide",
-  InfoIcon: "lucide",
+  EyeIcon: "visibility",
+  EyeOffIcon: "visibility-off",
+  FolderIcon: "folder",
+  FolderOpenIcon: "folder-open",
+  InfoIcon: "info",
   Loader2Icon: "lucide",
-  MinusIcon: "lucide",
+  MinusIcon: "remove",
   MoreHorizontalIcon: "lucide",
   MoreVerticalIcon: "lucide",
   OctagonXIcon: "lucide",
   PanelLeftIcon: "lucide",
-  SearchIcon: "lucide",
+  SearchIcon: "search",
   TrendingDownIcon: "lucide",
   TrendingUpIcon: "lucide",
-  TriangleAlertIcon: "lucide",
-  XIcon: "lucide",
+  TriangleAlertIcon: "warning",
+  XIcon: "close",
 } as const

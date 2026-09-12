@@ -1,0 +1,9 @@
+import { defineTectonSvgIcon } from '../icon-definition';
+
+export const tectonPulseIcon = defineTectonSvgIcon('pulse', {
+  viewBox: '0 0 16 16',
+  outline:
+    '<path d="M0.824997 8.47501V7.51668H4.33333L6.05 11.575L9.91666 1.92501L12.3333 7.51668H15.1833V8.47501H11.6667L9.95 4.45834L6.06666 14.1083L3.66666 8.47501H0.824997Z"></path>',
+  filled:
+    '<path d="M0.824997 8.47497V7.51663H4.33333L6.05 11.575L9.91666 1.92496L12.3333 7.51663H15.1833V8.47497H11.6667L9.95 4.4583L6.06666 14.1083L3.66666 8.47497H0.824997Z"></path>',
+});

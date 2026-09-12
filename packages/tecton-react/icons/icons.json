@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "source": "tecton-screenshots/059_components-icon__icon-gallery.png",
+  "source": "icons-src/tecton/*.ts (Tecton icon export); gallery order from tecton-screenshots/059_components-icon__icon-gallery.png",
   "notes": "Labels in the gallery carry an 'Icon' suffix (e.g. 'AddCircleIcon'); 'label' preserves the exact text, 'name' strips the suffix. Gallery header: 'Tecton Icons', with Variant toggle (Outlined | Filled), Size toggle (Small (16px) | Medium (20px) | Large (24px)) and a 'Search icons' text field; screenshot shows Outlined + Medium (20px) selected. Icons are listed in alphabetical order, 9 per row. StrataIcon renders in colour (pink/orange gradient top layer); all others are monochrome.",
   "variants": [
     "outlined",
@@ -240,7 +240,7 @@
     {
       "name": "Co2Leaf",
       "label": "Co2LeafIcon",
-      "slug": "co2-leaf",
+      "slug": "co-2-leaf",
       "description": "sprout with two leaves",
       "lucide": "sprout",
       "domain": false
@@ -792,7 +792,7 @@
     {
       "name": "Robot2",
       "label": "Robot2Icon",
-      "slug": "robot2",
+      "slug": "robot-2",
       "description": "robot head with eyes and separate body bar",
       "lucide": "bot",
       "domain": false
