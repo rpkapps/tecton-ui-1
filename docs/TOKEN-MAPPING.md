@@ -75,6 +75,40 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--surface-alt` | `--tecton-color-table-cell-bg-alt` | `#323134` | `#f6f4f7` | exact | Alternate table row surface. |
 | `--border-subtle` | `--tecton-color-divider-subtle` | `#342f39` | `#e4dde7` | exact | Low-emphasis divider (Divider emphasis="subtle", panel separators). |
 | `--border-strong` | `--tecton-color-divider-strong` | `#6e6873` | `#9884a4` | exact | High-emphasis divider (Divider emphasis="strong"). |
+| `--primary-hover` | `--tecton-color-action-primary-bg-hover` | `#74647f` | `#865fa0` | exact | Button variant=default hovered / focused surface (Tecton lightens on hover). |
+| `--primary-hover-foreground` | `--tecton-color-action-primary-text-hover` | `#ffffff` | `#ffffff` | exact | Text on the hovered primary surface. |
+| `--primary-pressed` | `--tecton-color-action-primary-bg-press` | `#80708b` | `#563f67` | exact | Button variant=default pressed surface. |
+| `--primary-pressed-foreground` | `--tecton-color-action-primary-text-press` | `#ffffff` | `#ffffff` | exact | Text on the pressed primary surface. |
+| `--primary-active` | `--tecton-color-action-primary-bg-active` | `#80708b` | `#765292` | exact | Button variant=default activated surface (aria-expanded / selected). |
+| `--primary-active-foreground` | `--tecton-color-action-primary-text-active` | `#ffffff` | `#ffffff` | exact | Text on the activated primary surface. |
+| `--secondary-hover` | `--tecton-color-action-secondary-bg-hover` | `#514659` | `#ece8f0` | exact | Button variant=secondary hovered / focused surface. |
+| `--secondary-hover-foreground` | `--tecton-color-action-secondary-text-hover` | `#e4e0ea` | `#765292` | exact | Text on the hovered secondary surface. |
+| `--secondary-pressed` | `--tecton-color-action-secondary-bg-press` | `#5a4f62` | `#ddd5e0` | exact | Button variant=secondary pressed surface. |
+| `--secondary-pressed-foreground` | `--tecton-color-action-secondary-text-press` | `#efecf3` | `#563f67` | exact | Text on the pressed secondary surface. |
+| `--secondary-active` | `--tecton-color-action-secondary-bg-active` | `#5a4f62` | `#dfd4e4` | exact | Button variant=secondary activated surface. |
+| `--secondary-active-foreground` | `--tecton-color-action-secondary-text-active` | `#efebf4` | `#593c70` | exact | Text on the activated secondary surface. |
+| `--ghost-foreground` | `--tecton-color-action-tertiary-text` | `#bab3c0` | `#725687` | exact | Button variant=ghost (Tecton tertiary) resting text. |
+| `--ghost-hover` | `--tecton-color-action-tertiary-bg-hover` | `#3a343e` | `#ece8f0` | exact | Button variant=ghost hovered / focused surface (same token as accent). |
+| `--ghost-hover-foreground` | `--tecton-color-action-tertiary-text-hover` | `#cac5d2` | `#765292` | exact | Text on the hovered ghost surface. |
+| `--ghost-pressed` | `--tecton-color-action-tertiary-bg-press` | `#433d47` | `#e4dde7` | exact | Button variant=ghost pressed surface. |
+| `--ghost-pressed-foreground` | `--tecton-color-action-tertiary-text-press` | `#e3e0e8` | `#563f67` | exact | Text on the pressed ghost surface. |
+| `--ghost-active` | `--tecton-color-action-tertiary-bg-active` | `#433d47` | `#e9e3ec` | exact | Button variant=ghost activated surface. |
+| `--ghost-active-foreground` | `--tecton-color-action-tertiary-text-active` | `#e3e0e8` | `#593c70` | exact | Text on the activated ghost surface. |
+| `--outline-border` | `--tecton-color-action-outlined-border-strong` | `#aaa1b2` | `#725687` | exact | Button variant=outline resting border (Tecton Button outlined uses the strong border). |
+| `--outline-foreground` | `--tecton-color-action-outlined-text` | `#aaa1b2` | `#644a78` | exact | Button variant=outline resting text. |
+| `--outline-hover` | `--tecton-color-action-outlined-bg-hover` | `#433d47` | `#f0edf4` | exact | Button variant=outline hovered / focused surface. |
+| `--outline-hover-border` | `--tecton-color-action-outlined-border-hover` | `#cac5d2` | `#865fa0` | exact | Button variant=outline hovered / focused border. |
+| `--outline-hover-foreground` | `--tecton-color-action-outlined-text-hover` | `#e4e0ea` | `#765292` | exact | Text on the hovered outline surface. |
+| `--outline-pressed` | `--tecton-color-action-outlined-bg-press` | `#4e4853` | `#ddd5e0` | exact | Button variant=outline pressed surface. |
+| `--outline-pressed-border` | `--tecton-color-action-outlined-border-press` | `#d8d5de` | `#563f67` | exact | Button variant=outline pressed border. |
+| `--outline-pressed-foreground` | `--tecton-color-action-outlined-text-press` | `#efecf3` | `#463458` | exact | Text on the pressed outline surface. |
+| `--outline-active` | `--tecton-color-action-outlined-bg-active` | `#4e4853` | `#e6ddea` | exact | Button variant=outline activated surface. |
+| `--outline-active-border` | `--tecton-color-action-outlined-border-active` | `#d9d5e1` | `#674782` | exact | Button variant=outline activated border. |
+| `--outline-active-foreground` | `--tecton-color-action-outlined-text-active` | `#efebf4` | `#674782` | exact | Text on the activated outline surface. |
+| `--link-foreground` | `--tecton-color-action-text-only-text` | `#9a91a2` | `#725687` | exact | Button variant=link (Tecton textOnly) resting text. |
+| `--link-hover-foreground` | `--tecton-color-action-text-only-text-hover` | `#bcb2c4` | `#6b438c` | exact | Button variant=link hovered / focused text. |
+| `--link-pressed-foreground` | `--tecton-color-action-text-only-text-press` | `#beb1c8` | `#463458` | exact | Button variant=link pressed text. |
+| `--link-active-foreground` | `--tecton-color-action-text-only-text-active` | `#beb1c8` | `#5c3878` | exact | Button variant=link activated text. |
 
 ## `@theme inline` entries
 
@@ -109,6 +143,40 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--color-surface-alt` | `var(--surface-alt)` | `var(--surface-alt)` |
 | `--color-border-subtle` | `var(--border-subtle)` | `var(--border-subtle)` |
 | `--color-border-strong` | `var(--border-strong)` | `var(--border-strong)` |
+| `--color-primary-hover` | `var(--primary-hover)` | `var(--primary-hover)` |
+| `--color-primary-hover-foreground` | `var(--primary-hover-foreground)` | `var(--primary-hover-foreground)` |
+| `--color-primary-pressed` | `var(--primary-pressed)` | `var(--primary-pressed)` |
+| `--color-primary-pressed-foreground` | `var(--primary-pressed-foreground)` | `var(--primary-pressed-foreground)` |
+| `--color-primary-active` | `var(--primary-active)` | `var(--primary-active)` |
+| `--color-primary-active-foreground` | `var(--primary-active-foreground)` | `var(--primary-active-foreground)` |
+| `--color-secondary-hover` | `var(--secondary-hover)` | `var(--secondary-hover)` |
+| `--color-secondary-hover-foreground` | `var(--secondary-hover-foreground)` | `var(--secondary-hover-foreground)` |
+| `--color-secondary-pressed` | `var(--secondary-pressed)` | `var(--secondary-pressed)` |
+| `--color-secondary-pressed-foreground` | `var(--secondary-pressed-foreground)` | `var(--secondary-pressed-foreground)` |
+| `--color-secondary-active` | `var(--secondary-active)` | `var(--secondary-active)` |
+| `--color-secondary-active-foreground` | `var(--secondary-active-foreground)` | `var(--secondary-active-foreground)` |
+| `--color-ghost-foreground` | `var(--ghost-foreground)` | `var(--ghost-foreground)` |
+| `--color-ghost-hover` | `var(--ghost-hover)` | `var(--ghost-hover)` |
+| `--color-ghost-hover-foreground` | `var(--ghost-hover-foreground)` | `var(--ghost-hover-foreground)` |
+| `--color-ghost-pressed` | `var(--ghost-pressed)` | `var(--ghost-pressed)` |
+| `--color-ghost-pressed-foreground` | `var(--ghost-pressed-foreground)` | `var(--ghost-pressed-foreground)` |
+| `--color-ghost-active` | `var(--ghost-active)` | `var(--ghost-active)` |
+| `--color-ghost-active-foreground` | `var(--ghost-active-foreground)` | `var(--ghost-active-foreground)` |
+| `--color-outline-border` | `var(--outline-border)` | `var(--outline-border)` |
+| `--color-outline-foreground` | `var(--outline-foreground)` | `var(--outline-foreground)` |
+| `--color-outline-hover` | `var(--outline-hover)` | `var(--outline-hover)` |
+| `--color-outline-hover-border` | `var(--outline-hover-border)` | `var(--outline-hover-border)` |
+| `--color-outline-hover-foreground` | `var(--outline-hover-foreground)` | `var(--outline-hover-foreground)` |
+| `--color-outline-pressed` | `var(--outline-pressed)` | `var(--outline-pressed)` |
+| `--color-outline-pressed-border` | `var(--outline-pressed-border)` | `var(--outline-pressed-border)` |
+| `--color-outline-pressed-foreground` | `var(--outline-pressed-foreground)` | `var(--outline-pressed-foreground)` |
+| `--color-outline-active` | `var(--outline-active)` | `var(--outline-active)` |
+| `--color-outline-active-border` | `var(--outline-active-border)` | `var(--outline-active-border)` |
+| `--color-outline-active-foreground` | `var(--outline-active-foreground)` | `var(--outline-active-foreground)` |
+| `--color-link-foreground` | `var(--link-foreground)` | `var(--link-foreground)` |
+| `--color-link-hover-foreground` | `var(--link-hover-foreground)` | `var(--link-hover-foreground)` |
+| `--color-link-pressed-foreground` | `var(--link-pressed-foreground)` | `var(--link-pressed-foreground)` |
+| `--color-link-active-foreground` | `var(--link-active-foreground)` | `var(--link-active-foreground)` |
 
 ## Contrast checks
 

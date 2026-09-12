@@ -278,6 +278,176 @@
       "dark": "--tecton-color-divider-strong",
       "confidence": "exact",
       "note": "High-emphasis divider (Divider emphasis=\"strong\")."
+    },
+    "primary-hover": {
+      "dark": "--tecton-color-action-primary-bg-hover",
+      "confidence": "exact",
+      "note": "Button variant=default hovered / focused surface (Tecton lightens on hover)."
+    },
+    "primary-hover-foreground": {
+      "dark": "--tecton-color-action-primary-text-hover",
+      "confidence": "exact",
+      "note": "Text on the hovered primary surface."
+    },
+    "primary-pressed": {
+      "dark": "--tecton-color-action-primary-bg-press",
+      "confidence": "exact",
+      "note": "Button variant=default pressed surface."
+    },
+    "primary-pressed-foreground": {
+      "dark": "--tecton-color-action-primary-text-press",
+      "confidence": "exact",
+      "note": "Text on the pressed primary surface."
+    },
+    "primary-active": {
+      "dark": "--tecton-color-action-primary-bg-active",
+      "confidence": "exact",
+      "note": "Button variant=default activated surface (aria-expanded / selected)."
+    },
+    "primary-active-foreground": {
+      "dark": "--tecton-color-action-primary-text-active",
+      "confidence": "exact",
+      "note": "Text on the activated primary surface."
+    },
+    "secondary-hover": {
+      "dark": "--tecton-color-action-secondary-bg-hover",
+      "confidence": "exact",
+      "note": "Button variant=secondary hovered / focused surface."
+    },
+    "secondary-hover-foreground": {
+      "dark": "--tecton-color-action-secondary-text-hover",
+      "confidence": "exact",
+      "note": "Text on the hovered secondary surface."
+    },
+    "secondary-pressed": {
+      "dark": "--tecton-color-action-secondary-bg-press",
+      "confidence": "exact",
+      "note": "Button variant=secondary pressed surface."
+    },
+    "secondary-pressed-foreground": {
+      "dark": "--tecton-color-action-secondary-text-press",
+      "confidence": "exact",
+      "note": "Text on the pressed secondary surface."
+    },
+    "secondary-active": {
+      "dark": "--tecton-color-action-secondary-bg-active",
+      "confidence": "exact",
+      "note": "Button variant=secondary activated surface."
+    },
+    "secondary-active-foreground": {
+      "dark": "--tecton-color-action-secondary-text-active",
+      "confidence": "exact",
+      "note": "Text on the activated secondary surface."
+    },
+    "ghost-foreground": {
+      "dark": "--tecton-color-action-tertiary-text",
+      "confidence": "exact",
+      "note": "Button variant=ghost (Tecton tertiary) resting text."
+    },
+    "ghost-hover": {
+      "dark": "--tecton-color-action-tertiary-bg-hover",
+      "confidence": "exact",
+      "note": "Button variant=ghost hovered / focused surface (same token as accent)."
+    },
+    "ghost-hover-foreground": {
+      "dark": "--tecton-color-action-tertiary-text-hover",
+      "confidence": "exact",
+      "note": "Text on the hovered ghost surface."
+    },
+    "ghost-pressed": {
+      "dark": "--tecton-color-action-tertiary-bg-press",
+      "confidence": "exact",
+      "note": "Button variant=ghost pressed surface."
+    },
+    "ghost-pressed-foreground": {
+      "dark": "--tecton-color-action-tertiary-text-press",
+      "confidence": "exact",
+      "note": "Text on the pressed ghost surface."
+    },
+    "ghost-active": {
+      "dark": "--tecton-color-action-tertiary-bg-active",
+      "confidence": "exact",
+      "note": "Button variant=ghost activated surface."
+    },
+    "ghost-active-foreground": {
+      "dark": "--tecton-color-action-tertiary-text-active",
+      "confidence": "exact",
+      "note": "Text on the activated ghost surface."
+    },
+    "outline-border": {
+      "dark": "--tecton-color-action-outlined-border-strong",
+      "confidence": "exact",
+      "note": "Button variant=outline resting border (Tecton Button outlined uses the strong border)."
+    },
+    "outline-foreground": {
+      "dark": "--tecton-color-action-outlined-text",
+      "confidence": "exact",
+      "note": "Button variant=outline resting text."
+    },
+    "outline-hover": {
+      "dark": "--tecton-color-action-outlined-bg-hover",
+      "confidence": "exact",
+      "note": "Button variant=outline hovered / focused surface."
+    },
+    "outline-hover-border": {
+      "dark": "--tecton-color-action-outlined-border-hover",
+      "confidence": "exact",
+      "note": "Button variant=outline hovered / focused border."
+    },
+    "outline-hover-foreground": {
+      "dark": "--tecton-color-action-outlined-text-hover",
+      "confidence": "exact",
+      "note": "Text on the hovered outline surface."
+    },
+    "outline-pressed": {
+      "dark": "--tecton-color-action-outlined-bg-press",
+      "confidence": "exact",
+      "note": "Button variant=outline pressed surface."
+    },
+    "outline-pressed-border": {
+      "dark": "--tecton-color-action-outlined-border-press",
+      "confidence": "exact",
+      "note": "Button variant=outline pressed border."
+    },
+    "outline-pressed-foreground": {
+      "dark": "--tecton-color-action-outlined-text-press",
+      "confidence": "exact",
+      "note": "Text on the pressed outline surface."
+    },
+    "outline-active": {
+      "dark": "--tecton-color-action-outlined-bg-active",
+      "confidence": "exact",
+      "note": "Button variant=outline activated surface."
+    },
+    "outline-active-border": {
+      "dark": "--tecton-color-action-outlined-border-active",
+      "confidence": "exact",
+      "note": "Button variant=outline activated border."
+    },
+    "outline-active-foreground": {
+      "dark": "--tecton-color-action-outlined-text-active",
+      "confidence": "exact",
+      "note": "Text on the activated outline surface."
+    },
+    "link-foreground": {
+      "dark": "--tecton-color-action-text-only-text",
+      "confidence": "exact",
+      "note": "Button variant=link (Tecton textOnly) resting text."
+    },
+    "link-hover-foreground": {
+      "dark": "--tecton-color-action-text-only-text-hover",
+      "confidence": "exact",
+      "note": "Button variant=link hovered / focused text."
+    },
+    "link-pressed-foreground": {
+      "dark": "--tecton-color-action-text-only-text-press",
+      "confidence": "exact",
+      "note": "Button variant=link pressed text."
+    },
+    "link-active-foreground": {
+      "dark": "--tecton-color-action-text-only-text-active",
+      "confidence": "exact",
+      "note": "Button variant=link activated text."
     }
   },
   "theme": {

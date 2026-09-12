@@ -183,19 +183,19 @@
   }
 
   .cn-button-variant-default {
-    @apply bg-primary text-primary-foreground hover:bg-[color-mix(in_oklch,var(--primary),var(--foreground)_12%)] data-pressed:bg-[color-mix(in_oklch,var(--primary),var(--foreground)_20%)] aria-expanded:bg-[color-mix(in_oklch,var(--primary),var(--foreground)_20%)];
+    @apply bg-primary text-primary-foreground hover:bg-primary-hover hover:text-primary-hover-foreground focus-visible:bg-primary-hover focus-visible:text-primary-hover-foreground data-pressed:bg-primary-pressed data-pressed:text-primary-pressed-foreground aria-expanded:bg-primary-active aria-expanded:text-primary-active-foreground;
   }
 
   .cn-button-variant-outline {
-    @apply border-border bg-transparent text-foreground hover:bg-accent hover:text-accent-foreground hover:border-muted-foreground data-pressed:bg-[color-mix(in_oklch,var(--accent),var(--foreground)_6%)] data-pressed:border-foreground aria-expanded:bg-accent aria-expanded:text-accent-foreground dark:bg-transparent dark:border-input dark:hover:bg-accent;
+    @apply border-outline-border bg-transparent text-outline-foreground hover:border-outline-hover-border hover:bg-outline-hover hover:text-outline-hover-foreground focus-visible:bg-outline-hover focus-visible:text-outline-hover-foreground data-pressed:border-outline-pressed-border data-pressed:bg-outline-pressed data-pressed:text-outline-pressed-foreground aria-expanded:border-outline-active-border aria-expanded:bg-outline-active aria-expanded:text-outline-active-foreground;
   }
 
   .cn-button-variant-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_8%)] data-pressed:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_14%)] aria-expanded:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_14%)];
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary-hover hover:text-secondary-hover-foreground focus-visible:bg-secondary-hover focus-visible:text-secondary-hover-foreground data-pressed:bg-secondary-pressed data-pressed:text-secondary-pressed-foreground aria-expanded:bg-secondary-active aria-expanded:text-secondary-active-foreground;
   }
 
   .cn-button-variant-ghost {
-    @apply text-secondary-foreground hover:bg-accent hover:text-accent-foreground data-pressed:bg-[color-mix(in_oklch,var(--accent),var(--foreground)_6%)] aria-expanded:bg-accent aria-expanded:text-accent-foreground;
+    @apply text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground data-pressed:bg-ghost-pressed data-pressed:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground;
   }
 
   .cn-button-variant-destructive {
@@ -203,7 +203,7 @@
   }
 
   .cn-button-variant-link {
-    @apply text-primary underline-offset-4 hover:underline;
+    @apply text-link-foreground underline-offset-4 hover:text-link-hover-foreground hover:underline data-pressed:text-link-pressed-foreground aria-expanded:text-link-active-foreground;
   }
 
   .cn-button-size-xs {
