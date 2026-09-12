@@ -11,16 +11,16 @@ const badgeVariants = cva(
         secondary:
           "bg-secondary text-secondary-foreground data-[appearance=outline]:border-border data-[appearance=outline]:bg-transparent data-[appearance=outline]:text-foreground [a]:hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_8%)] data-[appearance=outline]:[a]:hover:bg-accent",
         destructive:
-          "bg-destructive text-destructive-foreground focus-visible:ring-destructive/40 data-[appearance=outline]:border-destructive data-[appearance=outline]:bg-transparent data-[appearance=outline]:text-destructive [a]:hover:bg-destructive/80 data-[appearance=outline]:[a]:hover:bg-destructive/10",
+          "bg-destructive-surface text-destructive-surface-foreground [a]:hover:bg-destructive-surface/80 focus-visible:ring-destructive/40 data-[appearance=outline]:border-destructive data-[appearance=outline]:bg-transparent data-[appearance=outline]:text-destructive data-[appearance=outline]:[a]:hover:bg-destructive/10",
         outline:
           "border-border text-foreground [a]:hover:bg-accent [a]:hover:text-accent-foreground",
         ghost: "hover:bg-accent hover:text-accent-foreground",
         link: "text-primary underline-offset-4 hover:underline",
         success:
-          "bg-success text-success-foreground [a]:hover:bg-success/80 data-[appearance=outline]:border-success data-[appearance=outline]:text-success data-[appearance=outline]:[a]:hover:bg-success/10 data-[appearance=outline]:bg-transparent",
+          "bg-success-surface text-success-surface-foreground [a]:hover:bg-success-surface/80 data-[appearance=outline]:border-success data-[appearance=outline]:text-success data-[appearance=outline]:[a]:hover:bg-success/10 data-[appearance=outline]:bg-transparent",
         warning:
-          "bg-warning text-warning-foreground [a]:hover:bg-warning/80 data-[appearance=outline]:border-warning data-[appearance=outline]:text-warning data-[appearance=outline]:[a]:hover:bg-warning/10 data-[appearance=outline]:bg-transparent",
-        info: "bg-info text-info-foreground [a]:hover:bg-info/80 data-[appearance=outline]:border-info data-[appearance=outline]:text-info data-[appearance=outline]:[a]:hover:bg-info/10 data-[appearance=outline]:bg-transparent",
+          "bg-warning-surface text-warning-surface-foreground [a]:hover:bg-warning-surface/80 data-[appearance=outline]:border-warning data-[appearance=outline]:text-warning data-[appearance=outline]:[a]:hover:bg-warning/10 data-[appearance=outline]:bg-transparent",
+        info: "bg-info-surface text-info-surface-foreground [a]:hover:bg-info-surface/80 data-[appearance=outline]:border-info data-[appearance=outline]:text-info data-[appearance=outline]:[a]:hover:bg-info/10 data-[appearance=outline]:bg-transparent",
       },
       appearance: {
         solid: "",

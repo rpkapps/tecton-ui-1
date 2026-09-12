@@ -8,14 +8,14 @@ const alertVariants = cva(
     variants: {
       variant: {
         default:
-          "data-[appearance=filled]:bg-neutral data-[appearance=filled]:text-neutral-foreground data-[appearance=outline]:border-border-strong bg-card text-card-foreground data-[appearance=outline]:bg-transparent",
+          "data-[appearance=filled]:bg-neutral-surface data-[appearance=filled]:text-neutral-surface-foreground data-[appearance=outline]:border-border-strong bg-card text-card-foreground data-[appearance=outline]:bg-transparent",
         destructive:
-          "bg-card text-destructive data-[appearance=filled]:bg-destructive data-[appearance=filled]:text-destructive-foreground data-[appearance=outline]:border-destructive data-[appearance=outline]:bg-transparent *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
+          "data-[appearance=filled]:bg-destructive-surface data-[appearance=filled]:text-destructive-surface-foreground bg-card text-destructive data-[appearance=outline]:border-destructive data-[appearance=outline]:bg-transparent *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current",
         success:
-          "text-success *:data-[slot=alert-description]:text-success/90 data-[appearance=filled]:bg-success data-[appearance=filled]:text-success-foreground data-[appearance=outline]:border-success bg-card data-[appearance=outline]:bg-transparent *:[svg]:text-current",
+          "text-success *:data-[slot=alert-description]:text-success/90 data-[appearance=filled]:bg-success-surface data-[appearance=filled]:text-success-surface-foreground data-[appearance=outline]:border-success bg-card data-[appearance=outline]:bg-transparent *:[svg]:text-current",
         warning:
-          "text-warning *:data-[slot=alert-description]:text-warning/90 data-[appearance=filled]:bg-warning data-[appearance=filled]:text-warning-foreground data-[appearance=outline]:border-warning bg-card data-[appearance=outline]:bg-transparent *:[svg]:text-current",
-        info: "text-info *:data-[slot=alert-description]:text-info/90 data-[appearance=filled]:bg-info data-[appearance=filled]:text-info-foreground data-[appearance=outline]:border-info bg-card data-[appearance=outline]:bg-transparent *:[svg]:text-current",
+          "text-warning *:data-[slot=alert-description]:text-warning/90 data-[appearance=filled]:bg-warning-surface data-[appearance=filled]:text-warning-surface-foreground data-[appearance=outline]:border-warning bg-card data-[appearance=outline]:bg-transparent *:[svg]:text-current",
+        info: "text-info *:data-[slot=alert-description]:text-info/90 data-[appearance=filled]:bg-info-surface data-[appearance=filled]:text-info-surface-foreground data-[appearance=outline]:border-info bg-card data-[appearance=outline]:bg-transparent *:[svg]:text-current",
       },
       appearance: {
         default: "border-border",
