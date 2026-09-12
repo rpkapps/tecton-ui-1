@@ -121,7 +121,7 @@ function InputGroupInput({
     <Input
       data-slot="input-group-control"
       className={cn(
-        "flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 autofill:[-webkit-text-fill-color:var(--foreground)] autofill:[transition:background-color_0s_600000s,color_0s_600000s] focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent",
+        "flex-1 rounded-none border-0 bg-transparent shadow-none ring-0 autofill:[-webkit-background-clip:text] autofill:[-webkit-text-fill-color:var(--foreground)] autofill:[transition:background-color_0s_600000s,color_0s_600000s] focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent",
         className
       )}
       {...props}
@@ -137,7 +137,7 @@ function InputGroupTextarea({
     <Textarea
       data-slot="input-group-control"
       className={cn(
-        "flex-1 resize-none rounded-none border-0 bg-transparent py-2 shadow-none ring-0 autofill:[-webkit-text-fill-color:var(--foreground)] autofill:[transition:background-color_0s_600000s,color_0s_600000s] focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent",
+        "flex-1 resize-none rounded-none border-0 bg-transparent py-2 shadow-none ring-0 autofill:[-webkit-background-clip:text] autofill:[-webkit-text-fill-color:var(--foreground)] autofill:[transition:background-color_0s_600000s,color_0s_600000s] focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent",
         className
       )}
       {...props}
