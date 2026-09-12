@@ -17,7 +17,10 @@ for file in "$PKG"/src/components/*.tsx; do
   output="$("$CLI" add "$item" --diff "$item.tsx" -c "$PKG" 2>&1)"
   status=$?
   checked=$((checked + 1))
-  if [ $status -ne 0 ] || ! echo "$output" | grep -q "No changes." || echo "$output" | grep -q "(overwrite)"; then
+  # Only the `"use client"` directive may differ: the CLI's --diff view and its
+  # add transform disagree on it for rsc:false projects (see docs/UPSTREAM.md).
+  real_changes="$(echo "$output" | grep -E '^│ │ [-+]' | grep -vE '^│ │ [-+]("use client")?[[:space:]]*$' || true)"
+  if [ $status -ne 0 ] || [ -n "$real_changes" ]; then
     echo "✗ $item"
     echo "$output" | head -40
     failed=$((failed + 1))

@@ -108,6 +108,10 @@ async function main() {
           actual: getComputedStyle(node).backgroundColor,
         }))
       )
+      console.log(`[compare] measured ${measured.length} token swatches`)
+      if (measured.length === 0) {
+        tokenMismatches.push({ name: "(none)", expected: "swatches", actual: "no [data-token] elements rendered" })
+      }
       for (const m of measured) {
         const hex = m.expected.match(/^#([0-9a-f]{6})([0-9a-f]{2})?$/)
         if (!hex) continue

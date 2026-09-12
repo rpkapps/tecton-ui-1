@@ -58,3 +58,10 @@ whose first line is `// Synced from shadcn/ui …` are synced from the same upst
 `@tecton/react/...`. shadcn/ui is MIT licensed (see `LICENSE.md` in the upstream repository);
 the synced content keeps that license. Examples that need upstream-only infrastructure are
 skipped and listed in `apps/www/scripts/sync-report.json`.
+
+## Known CLI quirk: `"use client"` in `--diff`
+
+With `rsc: false`, `shadcn add … --diff` and `shadcn add … --overwrite` disagree on whether the
+`"use client"` directive is kept, so `--diff` reports a one-line difference for some files that
+were written by the CLI itself. `scripts/generated-check.sh` ignores differences that consist only
+of that directive; any other difference fails the check.

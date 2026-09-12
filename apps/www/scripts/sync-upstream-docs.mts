@@ -105,6 +105,16 @@ function rewriteImports(source: string): { code: string; blocked?: string } {
   return { code, blocked }
 }
 
+const LOCAL_DOCS = new Set(["", "installation", "theming", "typography", "spacing", "cli", "icons", "components", "tecton"])
+
+function isLocalDocsLink(href: string) {
+  const [pathname] = href.split(/[#?]/)
+  if (pathname === "/blocks" || pathname === "/themes") return true
+  if (!pathname.startsWith("/docs")) return false
+  const [, , first] = pathname.split("/")
+  return LOCAL_DOCS.has(first ?? "")
+}
+
 function transformMdx(mdx: string, name: string, removed: Set<string>) {
   // frontmatter
   mdx = mdx.replace(/^---\n([\s\S]*?)\n---/, (_m, fm: string) => {
@@ -142,6 +152,19 @@ function transformMdx(mdx: string, name: string, removed: Set<string>) {
 
   // docs links that point at other bases
   mdx = mdx.replace(/\]\(\/docs\/components\/(?:base|radix|aria)\//g, "](/docs/components/")
+  // links to upstream-only pages (rtl guide, charts library, dark-mode…) go to ui.shadcn.com
+  mdx = mdx.replace(/\]\((\/(?:docs|charts|blocks|colors|themes|examples)[^)\s]*)\)/g, (match, href: string) => {
+    if (isLocalDocsLink(href)) return match
+    return `](https://ui.shadcn.com${href})`
+  })
+  // upstream block viewer links (/view/<style>/<block>) point at ui.shadcn.com
+  mdx = mdx.replace(/href="\/view\/([a-z]+-[a-z]+)\//g, 'href="https://ui.shadcn.com/view/$1/')
+  // sources that only exist in the upstream Next.js app cannot be shown here
+  mdx = mdx.replace(
+    /<ComponentSource\s+src="(\/app\/[^"]+)"[^>]*\/>/g,
+    (_m, src: string) =>
+      `<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [${src.split("/").pop()}](https://github.com/shadcn-ui/ui/blob/main/apps/v4${src}).</Callout>`
+  )
 
   // Next.js-only bits in prose
   mdx = mdx.replace(/\n\n+/g, "\n\n")

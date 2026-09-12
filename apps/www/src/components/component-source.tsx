@@ -27,7 +27,8 @@ function resolve(name: string | undefined, src: string | undefined) {
     } else {
       promise = Promise.resolve("")
     }
-    cache.set(key, promise)
+    cache.set(key, promise.catch(() => ""))
+    promise = cache.get(key)!
   }
   return promise
 }
@@ -48,7 +49,13 @@ function Inner({
   className?: string
 }) {
   const code = React.use(resolve(name, src))
-  if (!code) return null
+  if (!code) {
+    return (
+      <p className="my-4 text-sm text-muted-foreground">
+        Source <code>{src ?? name}</code> is not available in this build.
+      </p>
+    )
+  }
   const resolvedTitle =
     title ??
     (src

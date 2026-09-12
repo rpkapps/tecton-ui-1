@@ -858,16 +858,13 @@ You can show the number of selected rows using the `table.getFilteredSelectedRow
 
 ## Reusable Components
 
-Here are some components you can use to build your data tables. This is from the [Tasks](/examples/tasks) demo, which shares its features object (and the matching `TasksTableFeatures` type) across every component via a `data-table-features.ts` module — the same pattern we set up in [Set up Table Features](#set-up-table-features).
+Here are some components you can use to build your data tables. This is from the [Tasks](https://ui.shadcn.com/examples/tasks) demo, which shares its features object (and the matching `TasksTableFeatures` type) across every component via a `data-table-features.ts` module — the same pattern we set up in [Set up Table Features](#set-up-table-features).
 
 ### Column header
 
 Make any column header sortable and hideable.
 
-<ComponentSource
-  src="/app/(app)/examples/tasks/components/data-table-column-header.tsx"
-  title="components/data-table-column-header.tsx"
-/>
+<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-column-header.tsx](https://github.com/shadcn-ui/ui/blob/main/apps/v4/app/(app)/examples/tasks/components/data-table-column-header.tsx).</Callout>
 
 ```tsx showLineNumbers {4}
 export const columns = columnHelper.columns([
@@ -883,9 +880,7 @@ export const columns = columnHelper.columns([
 
 Add pagination controls to your table including page size and selection count.
 
-<ComponentSource
-  src="/app/(app)/examples/tasks/components/data-table-pagination.tsx"
-/>
+<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-pagination.tsx](https://github.com/shadcn-ui/ui/blob/main/apps/v4/app/(app)/examples/tasks/components/data-table-pagination.tsx).</Callout>
 
 ```tsx
 <DataTablePagination table={table} />
@@ -895,9 +890,7 @@ Add pagination controls to your table including page size and selection count.
 
 A component to toggle column visibility.
 
-<ComponentSource
-  src="/app/(app)/examples/tasks/components/data-table-view-options.tsx"
-/>
+<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-view-options.tsx](https://github.com/shadcn-ui/ui/blob/main/apps/v4/app/(app)/examples/tasks/components/data-table-view-options.tsx).</Callout>
 
 ```tsx
 <DataTableViewOptions table={table} />
@@ -905,7 +898,7 @@ A component to toggle column visibility.
 
 ## RTL
 
-To enable RTL support in shadcn/ui, see the [RTL configuration guide](/docs/rtl).
+To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
 
 <ComponentPreview
   name="data-table-rtl"
