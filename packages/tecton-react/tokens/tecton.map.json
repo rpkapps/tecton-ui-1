@@ -448,6 +448,41 @@
       "dark": "--tecton-color-action-text-only-text-active",
       "confidence": "exact",
       "note": "Button variant=link activated text."
+    },
+    "avatar": {
+      "dark": "--tecton-color-avatar-fill",
+      "confidence": "exact",
+      "note": "Avatar fallback surface (Tecton's default avatar fill)."
+    },
+    "avatar-foreground": {
+      "dark": "--tecton-color-avatar-text",
+      "confidence": "exact",
+      "note": "Initials / icon on the avatar fallback surface."
+    },
+    "input-hover": {
+      "dark": "--tecton-color-input-outlined-border-hover",
+      "confidence": "exact",
+      "note": "Outlined input, textarea and select border while hovered."
+    },
+    "table-header": {
+      "dark": "--tecton-color-table-header-bg",
+      "confidence": "exact",
+      "note": "Table header row surface (Tecton draws the header as a filled band)."
+    },
+    "table-active": {
+      "dark": "--tecton-color-table-cell-bg-active",
+      "confidence": "exact",
+      "note": "Selected table row surface; the hovered row uses accent."
+    },
+    "slider": {
+      "dark": "--tecton-color-accent-graphite-fill",
+      "confidence": "approximated",
+      "note": "Slider range, thumb and (at 60%) track: Tecton's default slider is the graphite accent, not the primary action colour."
+    },
+    "progress": {
+      "dark": "--tecton-color-accent-graphite-fill",
+      "confidence": "approximated",
+      "note": "Linear progress indicator and (at 38%) track, same graphite accent as the slider."
     }
   },
   "theme": {

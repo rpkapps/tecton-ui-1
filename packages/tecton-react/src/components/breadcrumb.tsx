@@ -73,7 +73,10 @@ function BreadcrumbLink({ className, render, ...props }: LinkProps) {
   return (
     <LinkPrimitive
       data-slot="breadcrumb-link"
-      className={cn("transition-colors hover:text-foreground", className)}
+      className={cn(
+        "text-link-foreground hover:text-link-hover-foreground underline-offset-2 transition-colors hover:underline",
+        className
+      )}
       render={render}
       {...props}
     />

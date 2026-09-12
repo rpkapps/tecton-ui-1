@@ -375,3 +375,16 @@ index 073055fb..4a7d8fc5 100644
    {
      name: "vega",
      title: "Vega",
+diff --git a/apps/v4/registry/bases/aria/ui/toggle.tsx b/apps/v4/registry/bases/aria/ui/toggle.tsx
+index 56b68155..04098814 100644
+--- a/apps/v4/registry/bases/aria/ui/toggle.tsx
++++ b/apps/v4/registry/bases/aria/ui/toggle.tsx
+@@ -8,7 +8,7 @@ import {
+ } from "react-aria-components"
+ 
+ const toggleVariants = cva(
+-  "cn-toggle cn-toggle-aria group/toggle inline-flex items-center justify-center whitespace-nowrap outline-none hover:bg-muted focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
++  "cn-toggle cn-toggle-aria group/toggle inline-flex items-center justify-center whitespace-nowrap outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+   {
+     variants: {
+       variant: {

@@ -35,11 +35,11 @@ function Slider<T extends SliderValue = SliderValue>({
           <>
             <SliderTrack
               data-slot="slider-track"
-              className="relative grow overflow-hidden rounded-full bg-muted select-none data-horizontal:h-1.5 data-horizontal:w-full data-vertical:h-full data-vertical:w-1.5"
+              className="bg-slider/60 relative grow overflow-hidden rounded-full select-none data-horizontal:h-1 data-horizontal:w-full data-vertical:h-full data-vertical:w-1"
             >
               <SliderFill
                 data-slot="slider-range"
-                className="absolute bg-primary select-none data-horizontal:h-full data-vertical:w-full"
+                className="bg-slider absolute select-none data-horizontal:h-full data-vertical:w-full"
               />
             </SliderTrack>
             {state.values.map((_, index) => (
@@ -47,7 +47,7 @@ function Slider<T extends SliderValue = SliderValue>({
                 data-slot="slider-thumb"
                 key={index}
                 index={index}
-                className="block size-4 shrink-0 rounded-full border border-primary bg-white shadow-sm ring-ring transition-[color,box-shadow] select-none group-data-horizontal:top-[50%] group-data-vertical:left-[50%] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
+                className="bg-slider ring-slider/30 block size-5 shrink-0 rounded-full transition-[color,box-shadow] select-none group-data-horizontal:top-[50%] group-data-vertical:left-[50%] hover:ring-4 focus-visible:ring-4 focus-visible:ring-ring focus-visible:outline-hidden disabled:pointer-events-none disabled:opacity-50"
               />
             ))}
           </>

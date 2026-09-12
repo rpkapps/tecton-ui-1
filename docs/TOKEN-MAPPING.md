@@ -109,6 +109,13 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--link-hover-foreground` | `--tecton-color-action-text-only-text-hover` | `#bcb2c4` | `#6b438c` | exact | Button variant=link hovered / focused text. |
 | `--link-pressed-foreground` | `--tecton-color-action-text-only-text-press` | `#beb1c8` | `#463458` | exact | Button variant=link pressed text. |
 | `--link-active-foreground` | `--tecton-color-action-text-only-text-active` | `#beb1c8` | `#5c3878` | exact | Button variant=link activated text. |
+| `--avatar` | `--tecton-color-avatar-fill` | `#c2867a` | `#994c4c` | exact | Avatar fallback surface (Tecton's default avatar fill). |
+| `--avatar-foreground` | `--tecton-color-avatar-text` | `#131214` | `#fafafb` | exact | Initials / icon on the avatar fallback surface. |
+| `--input-hover` | `--tecton-color-input-outlined-border-hover` | `#a7a2ac` | `#6d5a7d` | exact | Outlined input, textarea and select border while hovered. |
+| `--table-header` | `--tecton-color-table-header-bg` | `#433d47` | `#d5cddb` | exact | Table header row surface (Tecton draws the header as a filled band). |
+| `--table-active` | `--tecton-color-table-cell-bg-active` | `#4e4853` | `#e4dde7` | exact | Selected table row surface; the hovered row uses accent. |
+| `--slider` | `--tecton-color-accent-graphite-fill` | `#98939d` | `#6d5a7d` | approximated | Slider range, thumb and (at 60%) track: Tecton's default slider is the graphite accent, not the primary action colour. |
+| `--progress` | `--tecton-color-accent-graphite-fill` | `#98939d` | `#6d5a7d` | approximated | Linear progress indicator and (at 38%) track, same graphite accent as the slider. |
 
 ## `@theme inline` entries
 
@@ -177,6 +184,13 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--color-link-hover-foreground` | `var(--link-hover-foreground)` | `var(--link-hover-foreground)` |
 | `--color-link-pressed-foreground` | `var(--link-pressed-foreground)` | `var(--link-pressed-foreground)` |
 | `--color-link-active-foreground` | `var(--link-active-foreground)` | `var(--link-active-foreground)` |
+| `--color-avatar` | `var(--avatar)` | `var(--avatar)` |
+| `--color-avatar-foreground` | `var(--avatar-foreground)` | `var(--avatar-foreground)` |
+| `--color-input-hover` | `var(--input-hover)` | `var(--input-hover)` |
+| `--color-table-header` | `var(--table-header)` | `var(--table-header)` |
+| `--color-table-active` | `var(--table-active)` | `var(--table-active)` |
+| `--color-slider` | `var(--slider)` | `var(--slider)` |
+| `--color-progress` | `var(--progress)` | `var(--progress)` |
 
 ## Contrast checks
 
