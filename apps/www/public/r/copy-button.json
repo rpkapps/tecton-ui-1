@@ -1,0 +1,22 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "copy-button",
+  "title": "Copy Button",
+  "description": "Tecton Copy Button component.",
+  "dependencies": [
+    "cn",
+    "lucide-react"
+  ],
+  "registryDependencies": [
+    "button"
+  ],
+  "files": [
+    {
+      "path": "registry/src/tecton/copy-button.tsx",
+      "content": "\"use client\"\n\nimport * as React from \"react\"\nimport { cn } from \"cn\"\nimport { CheckIcon, CopyIcon } from \"lucide-react\"\n\nimport { Button } from \"@/components/ui/button\"\n\n/**\n * Tecton CopyButton — copies `value` to the clipboard and shows a check\n * for `timeout` ms. Icon-only by default; pass children for a labelled\n * button.\n */\ntype CopyButtonProps = Omit<\n  React.ComponentProps<typeof Button>,\n  \"onPress\" | \"children\"\n> & {\n  children?: React.ReactNode\n  value: string\n  timeout?: number\n  onCopied?: (value: string) => void\n}\n\nfunction CopyButton({\n  value,\n  timeout = 2000,\n  onCopied,\n  className,\n  variant = \"ghost\",\n  size,\n  children,\n  ...props\n}: CopyButtonProps) {\n  const [copied, setCopied] = React.useState(false)\n  const timer = React.useRef<ReturnType<typeof setTimeout> | null>(null)\n\n  React.useEffect(\n    () => () => {\n      if (timer.current) clearTimeout(timer.current)\n    },\n    []\n  )\n\n  const resolvedSize = size ?? (children ? \"sm\" : \"icon-sm\")\n\n  return (\n    <Button\n      data-slot=\"copy-button\"\n      data-copied={copied ? \"true\" : undefined}\n      variant={variant}\n      size={resolvedSize}\n      aria-label={children ? undefined : copied ? \"Copied\" : \"Copy\"}\n      className={cn(\"data-[copied=true]:text-success\", className)}\n      onPress={async () => {\n        try {\n          await navigator.clipboard.writeText(value)\n          setCopied(true)\n          onCopied?.(value)\n          if (timer.current) clearTimeout(timer.current)\n          timer.current = setTimeout(() => setCopied(false), timeout)\n        } catch {\n          // Clipboard unavailable (insecure context / denied permission).\n        }\n      }}\n      {...props}\n    >\n      {copied ? <CheckIcon /> : <CopyIcon />}\n      {children}\n    </Button>\n  )\n}\n\nexport { CopyButton }\nexport type { CopyButtonProps }\n",
+      "type": "registry:component",
+      "target": "components/tecton/copy-button.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

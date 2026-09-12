@@ -1,0 +1,1006 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry.json",
+  "name": "tecton",
+  "homepage": "https://github.com/rpkapps/tecton-ui-1",
+  "items": [
+    {
+      "name": "theme",
+      "type": "registry:theme",
+      "title": "Tecton",
+      "description": "Tecton design tokens mapped onto the shadcn CSS variables (light and dark, from the Tecton CSS export). Figtree + IBM Plex Mono via Fontsource.",
+      "dependencies": [
+        "@fontsource-variable/figtree",
+        "@fontsource/ibm-plex-mono"
+      ],
+      "cssVars": {
+        "theme": {
+          "font-sans": "Figtree, ui-sans-serif, system-ui, sans-serif",
+          "font-mono": "IBM Plex Mono, ui-monospace, monospace",
+          "radius-sm": "2px",
+          "radius-md": "4px",
+          "radius-lg": "8px",
+          "radius-xl": "12px",
+          "radius-2xl": "16px",
+          "color-success": "var(--success)",
+          "color-success-foreground": "var(--success-foreground)",
+          "color-warning": "var(--warning)",
+          "color-warning-foreground": "var(--warning-foreground)",
+          "color-info": "var(--info)",
+          "color-info-foreground": "var(--info-foreground)",
+          "color-neutral": "var(--neutral)",
+          "color-neutral-foreground": "var(--neutral-foreground)",
+          "color-surface-alt": "var(--surface-alt)",
+          "color-destructive-foreground": "var(--destructive-foreground)",
+          "color-border-subtle": "var(--border-subtle)",
+          "color-border-strong": "var(--border-strong)"
+        },
+        "light": {
+          "background": "#f6f4f7",
+          "foreground": "#21172a",
+          "card": "#fafafb",
+          "card-foreground": "#21172a",
+          "popover": "#fafafb",
+          "popover-foreground": "#21172a",
+          "primary": "#644a78",
+          "primary-foreground": "#f7f3f8",
+          "secondary": "#e4dde7",
+          "secondary-foreground": "#644a78",
+          "muted": "#f0eef3",
+          "muted-foreground": "#604e6e",
+          "accent": "#ece8f0",
+          "accent-foreground": "#21172a",
+          "destructive": "#ba2a0f",
+          "border": "#b2a1bb",
+          "input": "#9884a4",
+          "ring": "#ff00aa",
+          "chart-1": "#1b6b6b",
+          "chart-2": "#914f20",
+          "chart-3": "#546918",
+          "chart-4": "#2f5dba",
+          "chart-5": "#994c4c",
+          "sidebar": "#fafafb",
+          "sidebar-foreground": "#21172a",
+          "sidebar-primary": "#644a78",
+          "sidebar-primary-foreground": "#f7f3f8",
+          "sidebar-accent": "#ece8f0",
+          "sidebar-accent-foreground": "#21172a",
+          "sidebar-border": "#e4dde7",
+          "sidebar-ring": "#ff00aa",
+          "radius": "4px",
+          "success": "#0c703e",
+          "success-foreground": "#f3fef8",
+          "warning": "#ffdd89",
+          "warning-foreground": "#693f01",
+          "info": "#2f5dba",
+          "info-foreground": "#f7f7fa",
+          "neutral": "#e1dee4",
+          "neutral-foreground": "#4e4556",
+          "surface-alt": "#f6f4f7",
+          "destructive-foreground": "#fffaf9",
+          "border-subtle": "#e4dde7",
+          "border-strong": "#9884a4"
+        },
+        "dark": {
+          "background": "#1d1c1f",
+          "foreground": "#f6f5f8",
+          "card": "#131214",
+          "card-foreground": "#f6f5f8",
+          "popover": "#131214",
+          "popover-foreground": "#f6f5f8",
+          "primary": "#5d4d68",
+          "primary-foreground": "#e5e0eb",
+          "secondary": "#3a343e",
+          "secondary-foreground": "#bab3c0",
+          "muted": "#28232c",
+          "muted-foreground": "#a7a2ac",
+          "accent": "#3a343e",
+          "accent-foreground": "#f6f5f8",
+          "destructive": "#c16e6c",
+          "border": "#57515c",
+          "input": "#57515c",
+          "ring": "#ff52a8",
+          "chart-1": "#29a6a6",
+          "chart-2": "#cb8553",
+          "chart-3": "#84a138",
+          "chart-4": "#8ca7de",
+          "chart-5": "#c2867a",
+          "sidebar": "#131214",
+          "sidebar-foreground": "#f6f5f8",
+          "sidebar-primary": "#5d4d68",
+          "sidebar-primary-foreground": "#e5e0eb",
+          "sidebar-accent": "#3a343e",
+          "sidebar-accent-foreground": "#f6f5f8",
+          "sidebar-border": "#342f39",
+          "sidebar-ring": "#ff52a8",
+          "success": "#4fa66f",
+          "success-foreground": "#001607",
+          "warning": "#e59306",
+          "warning-foreground": "#1d0f01",
+          "info": "#6086d2",
+          "info-foreground": "#0a1324",
+          "neutral": "#2c2b2e",
+          "neutral-foreground": "#c8c7ca",
+          "surface-alt": "#323134",
+          "destructive-foreground": "#2e0000",
+          "border-subtle": "#342f39",
+          "border-strong": "#6e6873"
+        }
+      },
+      "css": {
+        "@import \"@fontsource-variable/figtree\"": {},
+        "@import \"@fontsource/ibm-plex-mono\"": {}
+      }
+    },
+    {
+      "name": "tokens",
+      "type": "registry:style",
+      "title": "Tecton tokens",
+      "description": "Raw --tecton-* design tokens as CSS custom properties.",
+      "files": [
+        {
+          "path": "registry/src/styles/tecton-tokens.css",
+          "type": "registry:file",
+          "target": "styles/tecton-tokens.css"
+        }
+      ]
+    },
+    {
+      "name": "use-mobile",
+      "type": "registry:hook",
+      "files": [
+        {
+          "path": "registry/src/hooks/use-mobile.ts",
+          "type": "registry:hook"
+        }
+      ]
+    },
+    {
+      "name": "app-shell",
+      "type": "registry:component",
+      "title": "App Shell",
+      "description": "Tecton App Shell component.",
+      "dependencies": [
+        "cn"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/tecton/app-shell.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/app-shell.tsx"
+        }
+      ]
+    },
+    {
+      "name": "chip",
+      "type": "registry:component",
+      "title": "Chip",
+      "description": "Tecton Chip component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn",
+        "lucide-react",
+        "react-aria-components"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/tecton/chip.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/chip.tsx"
+        }
+      ]
+    },
+    {
+      "name": "circular-progress",
+      "type": "registry:component",
+      "title": "Circular Progress",
+      "description": "Tecton Circular Progress component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn",
+        "react-aria-components"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/tecton/circular-progress.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/circular-progress.tsx"
+        }
+      ]
+    },
+    {
+      "name": "color-swatch",
+      "type": "registry:component",
+      "title": "Color Swatch",
+      "description": "Tecton Color Swatch component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn",
+        "react-aria-components"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/tecton/color-swatch.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/color-swatch.tsx"
+        }
+      ]
+    },
+    {
+      "name": "copy-button",
+      "type": "registry:component",
+      "title": "Copy Button",
+      "description": "Tecton Copy Button component.",
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "button"
+      ],
+      "files": [
+        {
+          "path": "registry/src/tecton/copy-button.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/copy-button.tsx"
+        }
+      ]
+    },
+    {
+      "name": "count-badge",
+      "type": "registry:component",
+      "title": "Count Badge",
+      "description": "Tecton Count Badge component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/tecton/count-badge.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/count-badge.tsx"
+        }
+      ]
+    },
+    {
+      "name": "data-table",
+      "type": "registry:component",
+      "title": "Data Table",
+      "description": "Tecton Data Table component.",
+      "dependencies": [
+        "@tanstack/react-table",
+        "class-variance-authority",
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "button",
+        "checkbox",
+        "select",
+        "table"
+      ],
+      "files": [
+        {
+          "path": "registry/src/tecton/data-table.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/data-table.tsx"
+        }
+      ]
+    },
+    {
+      "name": "divider",
+      "type": "registry:component",
+      "title": "Divider",
+      "description": "Tecton Divider component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn"
+      ],
+      "registryDependencies": [
+        "separator"
+      ],
+      "files": [
+        {
+          "path": "registry/src/tecton/divider.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/divider.tsx"
+        }
+      ]
+    },
+    {
+      "name": "fab",
+      "type": "registry:component",
+      "title": "Fab",
+      "description": "Tecton Fab component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn",
+        "react-aria-components"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/tecton/fab.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/fab.tsx"
+        }
+      ]
+    },
+    {
+      "name": "link",
+      "type": "registry:component",
+      "title": "Link",
+      "description": "Tecton Link component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn",
+        "lucide-react",
+        "react-aria-components"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/tecton/link.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/link.tsx"
+        }
+      ]
+    },
+    {
+      "name": "meter",
+      "type": "registry:component",
+      "title": "Meter",
+      "description": "Tecton Meter component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn",
+        "react-aria-components"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/tecton/meter.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/meter.tsx"
+        }
+      ]
+    },
+    {
+      "name": "page-header",
+      "type": "registry:component",
+      "title": "Page Header",
+      "description": "Tecton Page Header component.",
+      "dependencies": [
+        "cn"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/tecton/page-header.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/page-header.tsx"
+        }
+      ]
+    },
+    {
+      "name": "panel",
+      "type": "registry:component",
+      "title": "Panel",
+      "description": "Tecton Panel component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/tecton/panel.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/panel.tsx"
+        }
+      ]
+    },
+    {
+      "name": "select-field",
+      "type": "registry:component",
+      "title": "Select Field",
+      "description": "Tecton Select Field component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn",
+        "react-aria-components"
+      ],
+      "registryDependencies": [
+        "label",
+        "select"
+      ],
+      "files": [
+        {
+          "path": "registry/src/tecton/select-field.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/select-field.tsx"
+        }
+      ]
+    },
+    {
+      "name": "stat",
+      "type": "registry:component",
+      "title": "Stat",
+      "description": "Tecton Stat component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/tecton/stat.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/stat.tsx"
+        }
+      ]
+    },
+    {
+      "name": "status-alert",
+      "type": "registry:component",
+      "title": "Status Alert",
+      "description": "Tecton Status Alert component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "alert",
+        "button"
+      ],
+      "files": [
+        {
+          "path": "registry/src/tecton/status-alert.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/status-alert.tsx"
+        }
+      ]
+    },
+    {
+      "name": "text-field",
+      "type": "registry:component",
+      "title": "Text Field",
+      "description": "Tecton Text Field component.",
+      "dependencies": [
+        "class-variance-authority",
+        "cn",
+        "react-aria-components"
+      ],
+      "registryDependencies": [
+        "input",
+        "label",
+        "textarea"
+      ],
+      "files": [
+        {
+          "path": "registry/src/tecton/text-field.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/text-field.tsx"
+        }
+      ]
+    },
+    {
+      "name": "tree-view",
+      "type": "registry:component",
+      "title": "Tree View",
+      "description": "Tecton Tree View component.",
+      "dependencies": [
+        "cn",
+        "lucide-react",
+        "react-aria-components"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/tecton/tree-view.tsx",
+          "type": "registry:component",
+          "target": "components/tecton/tree-view.tsx"
+        }
+      ]
+    },
+    {
+      "name": "ai-agent-panel",
+      "type": "registry:block",
+      "title": "AI agent panel",
+      "description": "Chat side panel with assistant, user and tool-activity messages, action chips and a composer.",
+      "categories": [
+        "application"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/chip",
+        "@tecton/panel",
+        "bubble",
+        "button",
+        "collapsible",
+        "dropdown-menu",
+        "input-group",
+        "message",
+        "message-scroller",
+        "spinner",
+        "tooltip"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/ai-agent-panel/components/agent-message-list.tsx",
+          "type": "registry:component",
+          "target": "components/ai-agent-panel/components/agent-message-list.tsx"
+        },
+        {
+          "path": "registry/src/blocks/ai-agent-panel/components/agent-composer.tsx",
+          "type": "registry:component",
+          "target": "components/ai-agent-panel/components/agent-composer.tsx"
+        },
+        {
+          "path": "registry/src/blocks/ai-agent-panel/components/agent-panel-header.tsx",
+          "type": "registry:component",
+          "target": "components/ai-agent-panel/components/agent-panel-header.tsx"
+        },
+        {
+          "path": "registry/src/blocks/ai-agent-panel/page.tsx",
+          "type": "registry:page",
+          "target": "app/ai-agent-panel/page.tsx"
+        },
+        {
+          "path": "registry/src/blocks/ai-agent-panel/data.ts",
+          "type": "registry:component",
+          "target": "components/ai-agent-panel/data.ts"
+        }
+      ]
+    },
+    {
+      "name": "cost-vs-risk-panel",
+      "type": "registry:block",
+      "title": "Cost vs risk panel",
+      "description": "Quadrant bubble chart of well designs with legend chips and a cost / risk comparison bar list.",
+      "categories": [
+        "application"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react",
+        "recharts"
+      ],
+      "registryDependencies": [
+        "@tecton/chip",
+        "@tecton/divider",
+        "@tecton/meter",
+        "@tecton/panel",
+        "@tecton/select-field",
+        "button",
+        "chart"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/cost-vs-risk-panel/components/comparison-list.tsx",
+          "type": "registry:component",
+          "target": "components/cost-vs-risk-panel/components/comparison-list.tsx"
+        },
+        {
+          "path": "registry/src/blocks/cost-vs-risk-panel/components/quadrant-chart.tsx",
+          "type": "registry:component",
+          "target": "components/cost-vs-risk-panel/components/quadrant-chart.tsx"
+        },
+        {
+          "path": "registry/src/blocks/cost-vs-risk-panel/page.tsx",
+          "type": "registry:page",
+          "target": "app/cost-vs-risk-panel/page.tsx"
+        },
+        {
+          "path": "registry/src/blocks/cost-vs-risk-panel/data.ts",
+          "type": "registry:component",
+          "target": "components/cost-vs-risk-panel/data.ts"
+        }
+      ]
+    },
+    {
+      "name": "dashboard-01",
+      "type": "registry:block",
+      "title": "Dashboard",
+      "description": "Full app shell: top navigation, project tree sidebar, FDA and well cards, cost vs risk and the AI agent aside.",
+      "categories": [
+        "dashboard"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/app-shell",
+        "@tecton/chip",
+        "@tecton/color-swatch",
+        "@tecton/count-badge",
+        "@tecton/page-header",
+        "@tecton/tree-view",
+        "avatar",
+        "button",
+        "dropdown-menu",
+        "input-group",
+        "kbd",
+        "tooltip"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/dashboard-01/components/project-tree.tsx",
+          "type": "registry:component",
+          "target": "components/dashboard-01/components/project-tree.tsx"
+        },
+        {
+          "path": "registry/src/blocks/dashboard-01/components/top-nav.tsx",
+          "type": "registry:component",
+          "target": "components/dashboard-01/components/top-nav.tsx"
+        },
+        {
+          "path": "registry/src/blocks/dashboard-01/page.tsx",
+          "type": "registry:page",
+          "target": "app/dashboard-01/page.tsx"
+        },
+        {
+          "path": "registry/src/blocks/dashboard-01/data.ts",
+          "type": "registry:component",
+          "target": "components/dashboard-01/data.ts"
+        }
+      ]
+    },
+    {
+      "name": "facies-modeling-panel",
+      "type": "registry:block",
+      "title": "Facies modeling panel",
+      "description": "Stochastic facies (SEM) set-up: method and seed selects, variogram sliders, options and Run model.",
+      "categories": [
+        "forms"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/color-swatch",
+        "@tecton/divider",
+        "@tecton/panel",
+        "@tecton/select-field",
+        "@tecton/status-alert",
+        "@tecton/text-field",
+        "button",
+        "checkbox",
+        "collapsible",
+        "field",
+        "slider",
+        "spinner"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/facies-modeling-panel/components/parameter-slider.tsx",
+          "type": "registry:component",
+          "target": "components/facies-modeling-panel/components/parameter-slider.tsx"
+        },
+        {
+          "path": "registry/src/blocks/facies-modeling-panel/components/facies-form.tsx",
+          "type": "registry:component",
+          "target": "components/facies-modeling-panel/components/facies-form.tsx"
+        },
+        {
+          "path": "registry/src/blocks/facies-modeling-panel/page.tsx",
+          "type": "registry:page",
+          "target": "app/facies-modeling-panel/page.tsx"
+        },
+        {
+          "path": "registry/src/blocks/facies-modeling-panel/data.ts",
+          "type": "registry:component",
+          "target": "components/facies-modeling-panel/data.ts"
+        }
+      ]
+    },
+    {
+      "name": "fda-card",
+      "type": "registry:block",
+      "title": "FDA card",
+      "description": "Field development alternative summary: KPIs, complexity / risk / emissions meters and actions.",
+      "categories": [
+        "application"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/chip",
+        "@tecton/divider",
+        "@tecton/meter",
+        "@tecton/stat",
+        "button",
+        "card",
+        "checkbox",
+        "dropdown-menu"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/fda-card/components/fda-card.tsx",
+          "type": "registry:component",
+          "target": "components/fda-card/components/fda-card.tsx"
+        },
+        {
+          "path": "registry/src/blocks/fda-card/page.tsx",
+          "type": "registry:page",
+          "target": "app/fda-card/page.tsx"
+        },
+        {
+          "path": "registry/src/blocks/fda-card/data.ts",
+          "type": "registry:component",
+          "target": "components/fda-card/data.ts"
+        }
+      ]
+    },
+    {
+      "name": "fda-comparison-table",
+      "type": "registry:block",
+      "title": "FDA comparison table",
+      "description": "Selectable data table ranking field development alternatives by NPV, CAPEX, risk and status.",
+      "categories": [
+        "lists"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/chip",
+        "@tecton/data-table",
+        "@tecton/meter",
+        "button",
+        "dropdown-menu"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/fda-comparison-table/components/fda-columns.tsx",
+          "type": "registry:component",
+          "target": "components/fda-comparison-table/components/fda-columns.tsx"
+        },
+        {
+          "path": "registry/src/blocks/fda-comparison-table/page.tsx",
+          "type": "registry:page",
+          "target": "app/fda-comparison-table/page.tsx"
+        },
+        {
+          "path": "registry/src/blocks/fda-comparison-table/data.ts",
+          "type": "registry:component",
+          "target": "components/fda-comparison-table/data.ts"
+        }
+      ]
+    },
+    {
+      "name": "horizons-panel",
+      "type": "registry:block",
+      "title": "Horizons panel",
+      "description": "Surface-pair form panel with depth fields, sliders, colour tags and an Apply footer.",
+      "categories": [
+        "forms"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/chip",
+        "@tecton/color-swatch",
+        "@tecton/divider",
+        "@tecton/panel",
+        "@tecton/select-field",
+        "@tecton/text-field",
+        "button",
+        "slider"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/horizons-panel/components/horizon-form.tsx",
+          "type": "registry:component",
+          "target": "components/horizons-panel/components/horizon-form.tsx"
+        },
+        {
+          "path": "registry/src/blocks/horizons-panel/components/horizon-readout.tsx",
+          "type": "registry:component",
+          "target": "components/horizons-panel/components/horizon-readout.tsx"
+        },
+        {
+          "path": "registry/src/blocks/horizons-panel/page.tsx",
+          "type": "registry:page",
+          "target": "app/horizons-panel/page.tsx"
+        },
+        {
+          "path": "registry/src/blocks/horizons-panel/data.ts",
+          "type": "registry:component",
+          "target": "components/horizons-panel/data.ts"
+        }
+      ]
+    },
+    {
+      "name": "list-01",
+      "type": "registry:block",
+      "title": "Wells list",
+      "description": "Filterable, paginated wells table with search, selects, status chips and an empty state.",
+      "categories": [
+        "lists"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/chip",
+        "@tecton/data-table",
+        "@tecton/page-header",
+        "@tecton/select-field",
+        "@tecton/text-field",
+        "button",
+        "dropdown-menu",
+        "empty"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/list-01/components/wells-filter-bar.tsx",
+          "type": "registry:component",
+          "target": "components/list-01/components/wells-filter-bar.tsx"
+        },
+        {
+          "path": "registry/src/blocks/list-01/components/wells-table.tsx",
+          "type": "registry:component",
+          "target": "components/list-01/components/wells-table.tsx"
+        },
+        {
+          "path": "registry/src/blocks/list-01/page.tsx",
+          "type": "registry:page",
+          "target": "app/list-01/page.tsx"
+        },
+        {
+          "path": "registry/src/blocks/list-01/data.ts",
+          "type": "registry:component",
+          "target": "components/list-01/data.ts"
+        }
+      ]
+    },
+    {
+      "name": "login-01",
+      "type": "registry:block",
+      "title": "Login",
+      "description": "Centred sign-in card with validation, remember-me, SSO and request-access link.",
+      "categories": [
+        "authentication"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/divider",
+        "@tecton/link",
+        "@tecton/status-alert",
+        "@tecton/text-field",
+        "button",
+        "card",
+        "checkbox",
+        "field",
+        "spinner"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/login-01/components/login-form.tsx",
+          "type": "registry:component",
+          "target": "components/login-01/components/login-form.tsx"
+        },
+        {
+          "path": "registry/src/blocks/login-01/page.tsx",
+          "type": "registry:page",
+          "target": "app/login-01/page.tsx"
+        },
+        {
+          "path": "registry/src/blocks/login-01/data.ts",
+          "type": "registry:component",
+          "target": "components/login-01/data.ts"
+        }
+      ]
+    },
+    {
+      "name": "settings-01",
+      "type": "registry:block",
+      "title": "Settings",
+      "description": "Profile, notifications and appearance tabs with text / select fields, switches and a save footer.",
+      "categories": [
+        "forms"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/color-swatch",
+        "@tecton/divider",
+        "@tecton/page-header",
+        "@tecton/select-field",
+        "@tecton/status-alert",
+        "@tecton/text-field",
+        "button",
+        "field",
+        "switch",
+        "tabs"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/settings-01/components/settings-forms.tsx",
+          "type": "registry:component",
+          "target": "components/settings-01/components/settings-forms.tsx"
+        },
+        {
+          "path": "registry/src/blocks/settings-01/page.tsx",
+          "type": "registry:page",
+          "target": "app/settings-01/page.tsx"
+        },
+        {
+          "path": "registry/src/blocks/settings-01/data.ts",
+          "type": "registry:component",
+          "target": "components/settings-01/data.ts"
+        }
+      ]
+    },
+    {
+      "name": "well-design-card",
+      "type": "registry:block",
+      "title": "Well design card",
+      "description": "Well summary with trajectory sketch, TD / MD / inclination stats, phase progress and risk.",
+      "categories": [
+        "application"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/chip",
+        "@tecton/circular-progress",
+        "@tecton/divider",
+        "@tecton/meter",
+        "@tecton/stat",
+        "button",
+        "card",
+        "checkbox",
+        "dropdown-menu"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/well-design-card/components/well-design-card.tsx",
+          "type": "registry:component",
+          "target": "components/well-design-card/components/well-design-card.tsx"
+        },
+        {
+          "path": "registry/src/blocks/well-design-card/components/trajectory-sketch.tsx",
+          "type": "registry:component",
+          "target": "components/well-design-card/components/trajectory-sketch.tsx"
+        },
+        {
+          "path": "registry/src/blocks/well-design-card/page.tsx",
+          "type": "registry:page",
+          "target": "app/well-design-card/page.tsx"
+        },
+        {
+          "path": "registry/src/blocks/well-design-card/data.ts",
+          "type": "registry:component",
+          "target": "components/well-design-card/data.ts"
+        }
+      ]
+    }
+  ]
+}

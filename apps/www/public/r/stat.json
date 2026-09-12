@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "stat",
+  "title": "Stat",
+  "description": "Tecton Stat component.",
+  "dependencies": [
+    "class-variance-authority",
+    "cn",
+    "lucide-react"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/src/tecton/stat.tsx",
+      "content": "import * as React from \"react\"\nimport { cva, type VariantProps } from \"class-variance-authority\"\nimport { cn } from \"cn\"\nimport { MinusIcon, TrendingDownIcon, TrendingUpIcon } from \"lucide-react\"\n\n/**\n * Tecton Stat — a KPI readout: label, value in tabular mono (IBM Plex Mono),\n * optional unit, delta/trend and helper text. Used on the FDA and Well\n * Design cards.\n */\nconst statVariants = cva(\"flex min-w-0 flex-col gap-0.5\", {\n  variants: {\n    size: {\n      sm: \"[--stat-value:0.875rem]\",\n      md: \"[--stat-value:1.25rem]\",\n      lg: \"[--stat-value:1.75rem]\",\n    },\n    align: {\n      start: \"items-start text-left\",\n      center: \"items-center text-center\",\n      end: \"items-end text-right\",\n    },\n  },\n  defaultVariants: {\n    size: \"md\",\n    align: \"start\",\n  },\n})\n\nfunction Stat({\n  className,\n  size = \"md\",\n  align = \"start\",\n  ...props\n}: React.ComponentProps<\"div\"> & VariantProps<typeof statVariants>) {\n  return (\n    <div\n      data-slot=\"stat\"\n      data-size={size}\n      className={cn(statVariants({ size, align }), className)}\n      {...props}\n    />\n  )\n}\n\nfunction StatLabel({ className, ...props }: React.ComponentProps<\"span\">) {\n  return (\n    <span\n      data-slot=\"stat-label\"\n      className={cn(\"truncate text-xs text-muted-foreground\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction StatValue({\n  className,\n  unit,\n  children,\n  ...props\n}: React.ComponentProps<\"span\"> & { unit?: React.ReactNode }) {\n  return (\n    <span\n      data-slot=\"stat-value\"\n      className={cn(\n        \"inline-flex items-baseline gap-1 font-mono text-(length:--stat-value) leading-none font-medium tabular-nums\",\n        className\n      )}\n      {...props}\n    >\n      {children}\n      {unit && (\n        <span\n          data-slot=\"stat-unit\"\n          className=\"font-sans text-[0.6em] font-normal text-muted-foreground\"\n        >\n          {unit}\n        </span>\n      )}\n    </span>\n  )\n}\n\nconst statDeltaVariants = cva(\n  \"inline-flex items-center gap-0.5 text-xs font-medium tabular-nums [&_svg]:size-3\",\n  {\n    variants: {\n      trend: {\n        up: \"text-success\",\n        down: \"text-destructive\",\n        flat: \"text-muted-foreground\",\n      },\n    },\n    defaultVariants: {\n      trend: \"flat\",\n    },\n  }\n)\n\nfunction StatDelta({\n  className,\n  trend = \"flat\",\n  children,\n  ...props\n}: React.ComponentProps<\"span\"> & VariantProps<typeof statDeltaVariants>) {\n  const Icon =\n    trend === \"up\" ? TrendingUpIcon : trend === \"down\" ? TrendingDownIcon : MinusIcon\n  return (\n    <span\n      data-slot=\"stat-delta\"\n      data-trend={trend}\n      className={cn(statDeltaVariants({ trend }), className)}\n      {...props}\n    >\n      <Icon aria-hidden />\n      {children}\n    </span>\n  )\n}\n\nfunction StatHelp({ className, ...props }: React.ComponentProps<\"span\">) {\n  return (\n    <span\n      data-slot=\"stat-help\"\n      className={cn(\"text-xs text-muted-foreground\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction StatGroup({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"stat-group\"\n      className={cn(\n        \"grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-x-6 gap-y-4\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nexport { Stat, StatLabel, StatValue, StatDelta, StatHelp, StatGroup, statVariants }\n",
+      "type": "registry:component",
+      "target": "components/tecton/stat.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

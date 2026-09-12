@@ -1,0 +1,21 @@
+// Synced from shadcn/ui (apps/v4/examples/aria/alert-destructive.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+import { AlertCircleIcon } from "lucide-react"
+
+import {
+  Alert,
+  AlertDescription,
+  AlertTitle,
+} from "@tecton/react/components/alert"
+
+export default function AlertDestructive() {
+  return (
+    <Alert variant="destructive" className="max-w-md">
+      <AlertCircleIcon />
+      <AlertTitle>Payment failed</AlertTitle>
+      <AlertDescription>
+        Your payment could not be processed. Please check your payment method
+        and try again.
+      </AlertDescription>
+    </Alert>
+  )
+}

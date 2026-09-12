@@ -1,0 +1,100 @@
+---
+title: Circular Progress
+description: "Determinate progress ring with an optional centred value, or an indeterminate spinner."
+links:
+  doc: https://react-aria.adobe.com/ProgressBar
+---
+
+<ComponentPreview name="circular-progress-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/circular-progress
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/circular-progress"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-aria-components class-variance-authority
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="circular-progress" title="@tecton/react/tecton/circular-progress.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import { CircularProgress } from "@tecton/react/tecton/circular-progress"
+```
+
+```tsx
+<CircularProgress aria-label="Resampling" value={64} showValue />
+```
+
+<Callout>
+  The shadcn [Progress](/docs/components/progress) is a linear bar and [Spinner](/docs/components/spinner) is an icon. Tecton's circular progress with a value label is a separate component.
+</Callout>
+
+## Sizes
+
+Use the `size` prop from 16 px (`xs`) to 96 px (`xl`). Stroke width and label size scale with it.
+
+<ComponentPreview name="circular-progress-sizes" />
+
+## Colors
+
+Use the `color` prop for the ring colour.
+
+<ComponentPreview name="circular-progress-colors" />
+
+## Value label
+
+Set `showValue` to render the formatted value in the centre, or pass children for custom content. `minValue`, `maxValue` and `formatOptions` come from React Aria.
+
+<ComponentPreview name="circular-progress-value" />
+
+## Indeterminate
+
+Set `isIndeterminate` for a spinning ring while the amount of work is unknown.
+
+<ComponentPreview name="circular-progress-indeterminate" />
+
+## API Reference
+
+### CircularProgress
+
+React Aria [`ProgressBar`](https://react-aria.adobe.com/ProgressBar); accepts all its props (`value`, `minValue`, `maxValue`, `isIndeterminate`, `formatOptions`, `valueLabel`…).
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | "md" | Diameter 16 / 24 / 40 / 64 / 96 px. |
+| `color` | `"primary" \| "foreground" \| "success" \| "warning" \| "error" \| "info"` | "primary" | Ring colour. |
+| `showValue` | `boolean` | false | Show the formatted value in the centre. |
+| `children` | `ReactNode` | - | Custom centre content (overrides `showValue`). |
+| `aria-label` | `string` | - | Accessible name (required without a visible label). |

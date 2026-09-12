@@ -1,0 +1,142 @@
+"use client"
+
+import * as React from "react"
+import { cn } from "cn"
+import { PanelRightIcon, PlayIcon } from "lucide-react"
+
+import { Button } from "@tecton/react/components/button"
+import { Spinner } from "@tecton/react/components/spinner"
+import {
+  Panel,
+  PanelActions,
+  PanelContent,
+  PanelFooter,
+  PanelHeader,
+  PanelTitle,
+} from "@tecton/react/tecton/panel"
+import { StatusAlert } from "@tecton/react/tecton/status-alert"
+
+import { FaciesForm } from "./components/facies-form"
+import { ParameterSlider } from "./components/parameter-slider"
+import { defaultFaciesSettings, type FaciesSettings } from "./data"
+
+type FaciesModelingPanelProps = Omit<
+  React.ComponentProps<typeof Panel>,
+  "children"
+> & {
+  initialSettings?: FaciesSettings
+  onRun?: (value: FaciesSettings) => void
+  onCollapse?: () => void
+}
+
+/**
+ * Facies modelling (SEM) tool panel — method/seed selects, labelled
+ * variogram sliders with mono readouts, option checkboxes and a
+ * Run model / Reset footer.
+ */
+function FaciesModelingPanel({
+  className,
+  initialSettings = defaultFaciesSettings,
+  onRun,
+  onCollapse,
+  ...props
+}: FaciesModelingPanelProps) {
+  const [value, setValue] = React.useState<FaciesSettings>(initialSettings)
+  const [running, setRunning] = React.useState(false)
+  const [lastRun, setLastRun] = React.useState<string | null>(null)
+
+  const total = value.lithotypes.reduce((sum, item) => sum + item.density, 0)
+  const invalid = total !== 100
+
+  const run = () => {
+    setRunning(true)
+    onRun?.(value)
+    window.setTimeout(() => {
+      setRunning(false)
+      setLastRun(new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }))
+    }, 1200)
+  }
+
+  return (
+    <Panel
+      data-slot="facies-modeling-panel"
+      className={cn("h-full", className)}
+      {...props}
+    >
+      <PanelHeader>
+        <PanelTitle>Facies Modeling</PanelTitle>
+        <PanelActions>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Collapse panel"
+            onPress={onCollapse}
+          >
+            <PanelRightIcon />
+          </Button>
+        </PanelActions>
+      </PanelHeader>
+      <PanelContent className="flex flex-col gap-4">
+        {invalid && (
+          <StatusAlert
+            severity="warning"
+            variant="outlined"
+            title="Proportions must sum to 100%"
+            description={`Lithotype densities currently total ${total}%.`}
+          />
+        )}
+        {lastRun && !invalid && (
+          <StatusAlert
+            severity="success"
+            variant="outlined"
+            title="Model generated"
+            description={`${value.realizations} realizations written at ${lastRun}.`}
+            onDismiss={() => setLastRun(null)}
+          />
+        )}
+        <FaciesForm value={value} onChange={setValue} />
+      </PanelContent>
+      <PanelFooter className="justify-end">
+        <Button
+          variant="secondary"
+          size="sm"
+          isDisabled={running}
+          onPress={() => setValue(initialSettings)}
+        >
+          Reset
+        </Button>
+        <Button size="sm" isDisabled={running || invalid} onPress={run}>
+          {running ? <Spinner /> : <PlayIcon />}
+          {running ? "Running…" : "Run model"}
+        </Button>
+      </PanelFooter>
+    </Panel>
+  )
+}
+
+/** Route-ready page: the panel docked to the left of an empty canvas. */
+export default function FaciesModelingPanelPage() {
+  return (
+    <div
+      data-slot="facies-modeling-panel-page"
+      className="flex h-svh w-full bg-background text-foreground"
+    >
+      <div className="flex h-full w-full max-w-sm shrink-0 flex-col border-r border-border-subtle">
+        <FaciesModelingPanel variant="flat" className="rounded-none border-0" />
+      </div>
+      <div className="hidden min-w-0 flex-1 items-center justify-center p-6 text-sm text-muted-foreground md:flex">
+        3D viewport
+      </div>
+    </div>
+  )
+}
+
+export { FaciesModelingPanel, FaciesForm, ParameterSlider }
+export {
+  defaultFaciesSettings,
+  faciesTemplates,
+  methods,
+  densityLabel,
+} from "./data"
+export type { FaciesModelingPanelProps }
+export type { FaciesSettings, Lithotype, FaciesTemplate } from "./data"

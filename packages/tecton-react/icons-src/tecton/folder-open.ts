@@ -1,0 +1,9 @@
+import { defineTectonSvgIcon } from '../icon-definition';
+
+export const tectonFolderOpenIcon = defineTectonSvgIcon('folder-open', {
+  viewBox: '0 0 16 16',
+  outline:
+    '<path d="M1.41667 13.25V2.75H7.05834L8.01667 3.70833H14.5833V4.66667H7.6L6.64167 3.70833H2.37501V12.225L4.05834 5.625H15.6417L13.6667 13.25H1.41667ZM3.35834 12.2917H12.9333L14.35 6.58333H4.775L3.35834 12.2917Z"></path>',
+  filled:
+    '<path d="M1.41667 13.25V2.75H7.05834L8.01667 3.70833H14.5833V4.66667H2.37501V12.225L4.05834 5.625H15.6417L13.6667 13.25H1.41667Z"></path>',
+});

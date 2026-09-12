@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "color-swatch",
+  "title": "Color Swatch",
+  "description": "Tecton Color Swatch component.",
+  "dependencies": [
+    "class-variance-authority",
+    "cn",
+    "react-aria-components"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/src/tecton/color-swatch.tsx",
+      "content": "\"use client\"\n\nimport * as React from \"react\"\nimport { cva, type VariantProps } from \"class-variance-authority\"\nimport { cn } from \"cn\"\nimport {\n  ColorSwatch as ColorSwatchPrimitive,\n  composeRenderProps,\n  parseColor,\n  type ColorSwatchProps as ColorSwatchPrimitiveProps,\n} from \"react-aria-components\"\n\n/**\n * Tecton ColorSwatch — a colour preview chip (React Aria `ColorSwatch`)\n * with optional label / value text. Used for colour tags, legends and the\n * theme documentation.\n */\nconst colorSwatchVariants = cva(\n  \"shrink-0 border border-border-subtle shadow-xs\",\n  {\n    variants: {\n      size: {\n        xs: \"size-3\",\n        sm: \"size-4\",\n        md: \"size-6\",\n        lg: \"size-8\",\n        xl: \"size-12\",\n      },\n      shape: {\n        square: \"rounded-sm\",\n        rounded: \"rounded-md\",\n        circle: \"rounded-full\",\n      },\n    },\n    defaultVariants: {\n      size: \"md\",\n      shape: \"rounded\",\n    },\n  }\n)\n\n/**\n * React Aria's ColorSwatch only parses hex/rgb/hsl(a) strings. Tecton tokens\n * may be `oklch(...)` or `var(--...)`, so anything it cannot parse is rendered\n * as a plain swatch with the value as CSS background.\n */\nfunction isParseable(color: ColorSwatchPrimitiveProps[\"color\"]) {\n  if (typeof color !== \"string\") return true\n  try {\n    parseColor(color)\n    return true\n  } catch {\n    return false\n  }\n}\n\ntype ColorSwatchProps = Omit<ColorSwatchPrimitiveProps, \"className\"> &\n  VariantProps<typeof colorSwatchVariants> & {\n    className?: string\n    /** Text rendered next to the swatch. */\n    label?: React.ReactNode\n    /** Secondary text (e.g. the hex value), rendered in mono. */\n    value?: React.ReactNode\n  }\n\nfunction ColorSwatch({\n  className,\n  size = \"md\",\n  shape = \"rounded\",\n  label,\n  value,\n  ...props\n}: ColorSwatchProps) {\n  const swatchClass = cn(colorSwatchVariants({ size, shape }), label || value ? \"\" : className)\n  const swatch = isParseable(props.color) ? (\n    <ColorSwatchPrimitive\n      data-slot=\"color-swatch\"\n      className={composeRenderProps(className, () => swatchClass)}\n      {...props}\n    />\n  ) : (\n    <span\n      data-slot=\"color-swatch\"\n      role=\"img\"\n      aria-label={props[\"aria-label\"] ?? String(props.color)}\n      className={swatchClass}\n      style={{ background: String(props.color) }}\n    />\n  )\n\n  if (!label && !value) {\n    return swatch\n  }\n\n  return (\n    <span\n      data-slot=\"color-swatch-item\"\n      className={cn(\"inline-flex items-center gap-2 text-sm\", className)}\n    >\n      {swatch}\n      <span className=\"flex min-w-0 flex-col leading-tight\">\n        {label && <span className=\"truncate font-medium\">{label}</span>}\n        {value && (\n          <span className=\"truncate font-mono text-xs text-muted-foreground\">\n            {value}\n          </span>\n        )}\n      </span>\n    </span>\n  )\n}\n\nexport { ColorSwatch, colorSwatchVariants }\nexport type { ColorSwatchProps }\n",
+      "type": "registry:component",
+      "target": "components/tecton/color-swatch.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

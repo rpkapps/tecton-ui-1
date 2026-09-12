@@ -1,0 +1,24 @@
+{
+  "title": "Tecton",
+  "pages": [
+    "index",
+    "app-shell",
+    "chip",
+    "circular-progress",
+    "color-swatch",
+    "copy-button",
+    "count-badge",
+    "data-table",
+    "divider",
+    "fab",
+    "link",
+    "meter",
+    "page-header",
+    "panel",
+    "select-field",
+    "stat",
+    "status-alert",
+    "text-field",
+    "tree-view"
+  ]
+}

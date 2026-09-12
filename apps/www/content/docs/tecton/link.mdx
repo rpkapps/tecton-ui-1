@@ -1,0 +1,95 @@
+---
+title: Link
+description: "Inline text link on React Aria Link with default, primary, muted and subtle variants and an external-link icon."
+links:
+  doc: https://react-aria.adobe.com/Link
+---
+
+<ComponentPreview name="link-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/link
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/link"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-aria-components lucide-react class-variance-authority
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="link" title="@tecton/react/tecton/link.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import { Link } from "@tecton/react/tecton/link"
+```
+
+```tsx
+<Link href="/wells/34-10-A-12" variant="primary">
+  34/10-A-12
+</Link>
+```
+
+<Callout>
+  The shadcn `Button` has a `link` variant for buttons that look like links; `Link` is the opposite: a real anchor for navigation. Use `buttonVariants` on an `<a>` when a link should look like a button.
+</Callout>
+
+## Variants
+
+Use the `variant` prop. `subtle` is always underlined, the others underline on hover.
+
+<ComponentPreview name="link-variants" />
+
+## Sizes
+
+By default the link inherits the surrounding font size; use `size` to set it explicitly.
+
+<ComponentPreview name="link-sizes" />
+
+## External
+
+Set `isExternal` to open in a new tab with `rel="noreferrer noopener"` and append an icon.
+
+<ComponentPreview name="link-external" />
+
+## API Reference
+
+### Link
+
+React Aria [`Link`](https://react-aria.adobe.com/Link); accepts all its props (`href`, `routerOptions`, `isDisabled`, `onPress`…).
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `"default" \| "primary" \| "muted" \| "subtle"` | "default" | Colour and underline behaviour. |
+| `size` | `"inherit" \| "sm" \| "md" \| "lg"` | "inherit" | Font size. |
+| `isExternal` | `boolean` | false | Opens in a new tab and shows an icon. |
+| `isDisabled` | `boolean` | false | Disables the link. |

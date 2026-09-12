@@ -1,0 +1,101 @@
+---
+title: Page Header
+description: "Page title block with optional eyebrow, description and trailing actions."
+---
+
+<ComponentPreview name="page-header-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/page-header
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/page-header"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="page-header" title="@tecton/react/tecton/page-header.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import {
+  PageHeader,
+  PageHeaderContent,
+  PageHeaderEyebrow,
+  PageHeaderTitle,
+  PageHeaderDescription,
+  PageHeaderActions,
+} from "@tecton/react/tecton/page-header"
+```
+
+```tsx
+<PageHeader>
+  <PageHeaderContent>
+    <PageHeaderEyebrow>Gullfaks / Wells</PageHeaderEyebrow>
+    <PageHeaderTitle>34/10-A-12</PageHeaderTitle>
+    <PageHeaderDescription>Drilled 2019 · TD 3 250 m</PageHeaderDescription>
+  </PageHeaderContent>
+  <PageHeaderActions>
+    <Button>New well</Button>
+  </PageHeaderActions>
+</PageHeader>
+```
+
+## Composition
+
+Use the following composition:
+
+```text
+PageHeader
+├── PageHeaderContent
+│   ├── PageHeaderEyebrow
+│   ├── PageHeaderTitle
+│   └── PageHeaderDescription
+└── PageHeaderActions
+```
+
+## Actions
+
+`PageHeaderActions` renders at the end; the header stacks on small screens and becomes a row from `md`.
+
+<ComponentPreview name="page-header-actions" />
+
+## Eyebrow
+
+Use `PageHeaderEyebrow` for a breadcrumb or category above the title.
+
+<ComponentPreview name="page-header-eyebrow" />
+
+## API Reference
+
+### PageHeader, PageHeaderContent, PageHeaderEyebrow, PageHeaderTitle, PageHeaderDescription, PageHeaderActions
+
+Plain styled elements; `PageHeaderTitle` is an `h1`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `className` | `string` | - |  |

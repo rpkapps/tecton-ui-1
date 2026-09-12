@@ -1,0 +1,9 @@
+import { defineTectonSvgIcon } from '../icon-definition';
+
+export const tectonProjectIcon = defineTectonSvgIcon('project', {
+  viewBox: '0 0 16 16',
+  outline:
+    '<path d="M1.41667 13.2582V2.74158H14.5833V13.2582H1.41667ZM2.37501 11.4082L10.6083 9.26658L9.17784 3.69991H2.37501V11.4082ZM2.76667 12.2999H13.625V3.69991H10.175L11.7917 9.96658L2.76667 12.2999Z"></path>',
+  filled:
+    '<path d="M1.41667 13.2582V2.74158H14.5833V13.2582H1.41667ZM2.76667 12.2999H13.625V3.69991H10.175L11.7917 9.96658L2.76667 12.2999Z"></path>',
+});

@@ -1,0 +1,115 @@
+/* Docs-site stylesheet. The design system itself lives in @tecton/react/globals.css
+   (CLI-managed; Tecton is applied there through the shadcn CSS variables only). */
+@import "@tecton/react/globals.css";
+
+@source "../../content/**/*.mdx";
+
+/* shiki dual-theme output (`themes: { light, dark }`, defaultColor: false) */
+.shiki,
+.shiki span {
+  color: var(--shiki-light);
+  background-color: transparent;
+}
+.dark .shiki,
+.dark .shiki span {
+  color: var(--shiki-dark);
+}
+
+/* Code blocks (MDX fences via fumadocs rehype-code, and ComponentSource) */
+figure[data-rehype-pretty-code-figure],
+.code-figure {
+  @apply relative my-6 overflow-hidden rounded-lg border bg-card text-sm;
+}
+figure[data-rehype-pretty-code-figure] figcaption,
+.code-figure figcaption {
+  @apply flex items-center gap-2 border-b bg-muted/50 px-4 py-2 font-mono text-xs text-muted-foreground;
+}
+figure[data-rehype-pretty-code-figure] pre,
+.code-figure pre,
+.prose pre {
+  @apply m-0 overflow-x-auto bg-transparent px-4 py-3.5 font-mono text-[0.8125rem] leading-6;
+}
+.prose pre code {
+  @apply grid;
+  counter-reset: line;
+}
+.prose pre code [data-line] {
+  @apply px-0;
+}
+.prose pre code[data-line-numbers] [data-line]::before {
+  counter-increment: line;
+  content: counter(line);
+  @apply mr-6 inline-block w-4 text-right text-muted-foreground;
+}
+.prose pre code [data-highlighted-line] {
+  @apply -mx-4 bg-accent/60 px-4;
+}
+.prose pre code mark[data-highlighted-chars] {
+  @apply rounded-sm bg-accent px-1;
+}
+
+/* Prose (MDX body) */
+.prose {
+  @apply text-[0.9375rem] leading-7 text-foreground;
+}
+.prose > :first-child {
+  @apply mt-0;
+}
+.prose h1 {
+  @apply mt-2 scroll-m-20 text-3xl font-medium tracking-tight;
+}
+.prose h2 {
+  @apply mt-12 mb-4 scroll-m-20 border-b pb-2 text-xl font-medium tracking-tight first:mt-0;
+}
+.prose h3 {
+  @apply mt-8 mb-3 scroll-m-20 text-lg font-medium tracking-tight;
+}
+.prose h4 {
+  @apply mt-6 mb-2 scroll-m-20 text-base font-medium;
+}
+.prose p {
+  @apply leading-7 not-first:mt-5;
+}
+.prose a:not([data-slot]) {
+  @apply font-medium underline underline-offset-4 decoration-border hover:decoration-current;
+}
+.prose ul {
+  @apply my-5 ml-6 list-disc [&>li]:mt-2;
+}
+.prose ol {
+  @apply my-5 ml-6 list-decimal [&>li]:mt-2;
+}
+.prose blockquote {
+  @apply mt-6 border-l-2 pl-6 italic text-muted-foreground;
+}
+.prose :not(pre) > code {
+  @apply relative rounded-sm bg-muted px-[0.3rem] py-[0.15rem] font-mono text-[0.8125rem];
+}
+.prose table {
+  @apply my-6 w-full overflow-y-auto text-sm;
+}
+.prose table th {
+  @apply border-b bg-muted/40 px-3 py-2 text-left font-medium;
+}
+.prose table td {
+  @apply border-b px-3 py-2 align-top;
+}
+.prose hr {
+  @apply my-8;
+}
+.prose img {
+  @apply rounded-md border;
+}
+.prose [data-not-typeset] p,
+.prose [data-not-typeset] ul,
+.prose [data-not-typeset] ol {
+  @apply my-0 ml-0 list-none;
+}
+
+/* Scrollbars in previews */
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}

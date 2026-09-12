@@ -1,0 +1,9 @@
+import { defineTectonSvgIcon } from '../icon-definition';
+
+export const tectonCaretCollapseIcon = defineTectonSvgIcon('caret-collapse', {
+  viewBox: '0 0 16 16',
+  outline:
+    '<path d="M5.71667 13.3332L5 12.6165L8 9.6165L11 12.6165L10.2833 13.3332L8 11.0498L5.71667 13.3332ZM8 6.38317L5 3.38317L5.71667 2.6665L8 4.94984L10.2833 2.6665L11 3.38317L8 6.38317Z"></path>',
+  filled:
+    '<path d="M5.71667 13.3332L5 12.6165L8 9.6165L11 12.6165L10.2833 13.3332L8 11.0498L5.71667 13.3332ZM8 6.38317L5 3.38317L5.71667 2.6665L8 4.94984L10.2833 2.6665L11 3.38317L8 6.38317Z"></path>',
+});

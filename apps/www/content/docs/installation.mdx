@@ -1,0 +1,189 @@
+---
+title: Installation
+description: Add @tecton/react to your application, or copy individual components with the shadcn CLI.
+---
+
+There are two ways to use Tecton UI. Most applications should use the **package**; use the **registry** when you want the source files in your own repository.
+
+## Package
+
+`@tecton/react` is a private workspace package. It is not published to the public npm registry; consume it from the monorepo (`workspace:*`), from a packed tarball, or from a private registry.
+
+<Tabs defaultValue="workspace">
+
+<TabsList>
+  <TabsTrigger value="workspace">pnpm workspace</TabsTrigger>
+  <TabsTrigger value="tarball">Tarball</TabsTrigger>
+  <TabsTrigger value="verdaccio">Private registry</TabsTrigger>
+</TabsList>
+
+<TabsContent value="workspace">
+
+Add the app to the workspace and reference the package:
+
+```json title="apps/my-app/package.json"
+{
+  "dependencies": {
+    "@tecton/react": "workspace:*"
+  }
+}
+```
+
+</TabsContent>
+
+<TabsContent value="tarball">
+
+Pack the library and install the tarball in any project (handy for quick local testing):
+
+```bash
+pnpm --filter @tecton/react pack --pack-destination ./dist
+# in the consuming project
+pnpm add ./path/to/tecton-react-0.0.0.tgz
+```
+
+</TabsContent>
+
+<TabsContent value="verdaccio">
+
+Run a private registry locally and publish there:
+
+```bash
+npx verdaccio
+npm adduser --registry http://localhost:4873
+pnpm --filter @tecton/react publish --registry http://localhost:4873 --no-git-checks
+# consuming project
+pnpm add @tecton/react --registry http://localhost:4873
+```
+
+</TabsContent>
+
+</Tabs>
+
+### Peer requirements
+
+- React 19
+- Tailwind CSS v4 (the package ships Tailwind sources, not compiled CSS)
+- A bundler that resolves `package.json` `exports` (Vite, Next.js, TanStack Start all do)
+
+### Stylesheet
+
+Import the theme once. It contains Tailwind, the shadcn runtime styles, the Tecton tokens and the theme variables:
+
+```css title="src/styles/app.css"
+@import "@tecton/react/globals.css";
+```
+
+The stylesheet already declares `@source` for the package and for `apps/**`; if your app lives elsewhere, add your own `@source` directive after the import.
+
+### Dark mode
+
+Tecton is dark-first. Add the `dark` class to `<html>` (for example with `next-themes` and `attribute="class"`). Without the class you get the Tecton light theme.
+
+```tsx title="app.tsx"
+import { ThemeProvider } from "next-themes"
+
+export function App({ children }) {
+  return (
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+      {children}
+    </ThemeProvider>
+  )
+}
+```
+
+### Usage
+
+```tsx
+import { Button } from "@tecton/react/components/button"
+import { Chip } from "@tecton/react/tecton/chip"
+import { WellIcon } from "@tecton/react/icons"
+
+export function Example() {
+  return (
+    <div className="flex items-center gap-2">
+      <Button>
+        <WellIcon data-icon="inline-start" /> New well
+      </Button>
+      <Chip color="success">Active</Chip>
+    </div>
+  )
+}
+```
+
+## Frameworks
+
+<Tabs defaultValue="vite">
+
+<TabsList>
+  <TabsTrigger value="vite">Vite</TabsTrigger>
+  <TabsTrigger value="start">TanStack Start</TabsTrigger>
+  <TabsTrigger value="next">Next.js</TabsTrigger>
+</TabsList>
+
+<TabsContent value="vite">
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite"
+import react from "@vitejs/plugin-react"
+import tailwindcss from "@tailwindcss/vite"
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+})
+```
+
+```tsx title="src/main.tsx"
+import "./styles/app.css"
+```
+
+</TabsContent>
+
+<TabsContent value="start">
+
+This documentation site is a TanStack Start app. Import the stylesheet with `?url` in the root route:
+
+```tsx title="src/routes/__root.tsx"
+import appCss from "@tecton/react/globals.css?url"
+
+export const Route = createRootRoute({
+  head: () => ({ links: [{ rel: "stylesheet", href: appCss }] }),
+})
+```
+
+</TabsContent>
+
+<TabsContent value="next">
+
+```tsx title="app/layout.tsx"
+import "@tecton/react/globals.css"
+```
+
+Components that use hooks carry a `"use client"` directive already.
+
+</TabsContent>
+
+</Tabs>
+
+## Registry (copy the source)
+
+The docs site also serves a shadcn registry named `@tecton` with the theme, the Tecton components and the blocks. Point your `components.json` at it and use the CLI as usual:
+
+```json title="components.json"
+{
+  "registries": {
+    "@tecton": "https://<your-docs-host>/r/{name}.json"
+  }
+}
+```
+
+```bash
+npx shadcn@latest add @tecton/theme      # Tecton CSS variables into your globals.css
+npx shadcn@latest add @tecton/chip       # a Tecton component (+ its shadcn dependencies)
+npx shadcn@latest add button             # standard shadcn/ui component (React Aria base)
+```
+
+<Callout variant="info" title="Base and style">
+  Your project must be initialised with the React Aria base: `npx shadcn@latest init --base aria --preset vega`. Tecton UI is built and verified against the **Vega** style.
+</Callout>
+
+For a private host add `headers` to the registry entry (`"@tecton": { "url": "…", "headers": { "Authorization": "Bearer ${TECTON_TOKEN}" } }`).

@@ -1,0 +1,29 @@
+---
+title: Tecton components
+description: "Components that exist only in the Tecton design system, or whose Tecton variants cannot be expressed through the shadcn CSS variables."
+---
+
+The Tecton theme changes nothing but the shadcn CSS variables, so every component in [Components](/docs/components) is the unmodified shadcn/ui React Aria implementation. Some Tecton semantics do not fit into variables: a chip has six colours and an outlined variant, a text field has three surface styles, an alert has four severities, a data table has an emphasised header and density options, and there are patterns — a segmented meter, a tree view, an app shell — that shadcn does not have at all. Those become the components on this page. Each one composes the shadcn primitives where they exist (`StatusAlert` renders `Alert`, `TextField` renders `Input`, `Divider` renders `Separator`) or builds directly on React Aria, follows the same `data-slot` and `class-variance-authority` conventions, and is installed the same way.
+
+All of them are exported from `@tecton/react/tecton/<name>` and can be added to a project with `npx shadcn@latest add @tecton/<name>`.
+
+| Component | Description |
+| --- | --- |
+| [App Shell](/docs/tecton/app-shell) | Application frame: top bar, sidebar, main area and aside. |
+| [Chip](/docs/tecton/chip) | Compact label with colour, outlined and size scales; clickable, deletable, groupable. |
+| [Circular Progress](/docs/tecton/circular-progress) | Progress ring with value label or indeterminate spinner. |
+| [Color Swatch](/docs/tecton/color-swatch) | Colour preview with optional label and value. |
+| [Copy Button](/docs/tecton/copy-button) | Copies a value to the clipboard with check-mark feedback. |
+| [Count Badge](/docs/tecton/count-badge) | Count or dot anchored to the corner of an avatar or icon button. |
+| [Data Table](/docs/tecton/data-table) | Sortable, selectable grid with density, pagination and small-screen layout. |
+| [Divider](/docs/tecton/divider) | Separator with three emphasis levels and an inline label. |
+| [FAB](/docs/tecton/fab) | Floating action button, extended or round. |
+| [Link](/docs/tecton/link) | Inline text link with variants and an external-link icon. |
+| [Meter](/docs/tecton/meter) | Segmented gauge for risk, complexity and confidence. |
+| [Page Header](/docs/tecton/page-header) | Page title block with eyebrow, description and actions. |
+| [Panel](/docs/tecton/panel) | Titled application surface with scrolling body and pinned footer. |
+| [Select Field](/docs/tecton/select-field) | Select with label, helper text and the outlined / filled / text-only variants. |
+| [Stat](/docs/tecton/stat) | KPI readout with mono value, unit and trend delta. |
+| [Status Alert](/docs/tecton/status-alert) | Severity-coloured alert with action and dismiss. |
+| [Text Field](/docs/tecton/text-field) | Input with label, helper text and the outlined / filled / text-only variants. |
+| [Tree View](/docs/tecton/tree-view) | Hierarchical tree with folder / item rows, states and adornments. |

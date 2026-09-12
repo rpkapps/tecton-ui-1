@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "page-header",
+  "title": "Page Header",
+  "description": "Tecton Page Header component.",
+  "dependencies": [
+    "cn"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/src/tecton/page-header.tsx",
+      "content": "import * as React from \"react\"\nimport { cn } from \"cn\"\n\n/**\n * Tecton PageHeader — page title block with optional eyebrow (breadcrumb),\n * description, leading media and trailing actions.\n */\nfunction PageHeader({ className, ...props }: React.ComponentProps<\"header\">) {\n  return (\n    <header\n      data-slot=\"page-header\"\n      className={cn(\n        \"flex flex-col gap-3 md:flex-row md:items-start md:justify-between\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nfunction PageHeaderContent({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"page-header-content\"\n      className={cn(\"flex min-w-0 flex-1 flex-col gap-1\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction PageHeaderEyebrow({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"page-header-eyebrow\"\n      className={cn(\"text-xs text-muted-foreground\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction PageHeaderTitle({ className, ...props }: React.ComponentProps<\"h1\">) {\n  return (\n    <h1\n      data-slot=\"page-header-title\"\n      className={cn(\n        \"truncate text-2xl leading-tight font-medium tracking-tight\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nfunction PageHeaderDescription({\n  className,\n  ...props\n}: React.ComponentProps<\"p\">) {\n  return (\n    <p\n      data-slot=\"page-header-description\"\n      className={cn(\"max-w-prose text-sm text-muted-foreground\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction PageHeaderActions({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"page-header-actions\"\n      className={cn(\"flex shrink-0 flex-wrap items-center gap-2\", className)}\n      {...props}\n    />\n  )\n}\n\nexport {\n  PageHeader,\n  PageHeaderContent,\n  PageHeaderEyebrow,\n  PageHeaderTitle,\n  PageHeaderDescription,\n  PageHeaderActions,\n}\n",
+      "type": "registry:component",
+      "target": "components/tecton/page-header.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

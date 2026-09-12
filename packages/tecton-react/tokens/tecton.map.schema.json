@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Tecton → shadcn token map",
+  "type": "object",
+  "required": ["version", "shadcn", "extra", "theme", "light"],
+  "properties": {
+    "version": { "type": "integer" },
+    "meta": { "type": "object" },
+    "shadcn": { "$ref": "#/$defs/mappings" },
+    "extra": { "$ref": "#/$defs/mappings" },
+    "theme": {
+      "type": "object",
+      "additionalProperties": { "type": "string" }
+    },
+    "light": {
+      "type": "object",
+      "required": ["strategy"],
+      "properties": {
+        "strategy": { "type": "string" },
+        "note": { "type": "string" },
+        "overrides": { "type": "object", "additionalProperties": { "type": "string" } },
+        "overrideNotes": { "type": "object", "additionalProperties": { "type": "string" } }
+      }
+    },
+    "checks": {
+      "type": "object",
+      "properties": {
+        "allow": { "type": "array", "items": { "type": "string" } }
+      }
+    }
+  },
+  "$defs": {
+    "mapping": {
+      "type": "object",
+      "required": ["dark", "confidence"],
+      "properties": {
+        "dark": { "type": "string", "pattern": "^--tecton-" , "description": "Tecton token used in dark mode (and in light mode unless `light` is set)." },
+        "light": { "type": "string", "description": "Tecton token (`--tecton-…`), literal CSS value, or \"derived\" (OKLCH lightness inversion of the dark value)." },
+        "confidence": { "enum": ["exact", "approximated", "derived"] },
+        "note": { "type": "string" }
+      }
+    },
+    "mappings": {
+      "type": "object",
+      "additionalProperties": { "$ref": "#/$defs/mapping" }
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "app-shell",
+  "title": "App Shell",
+  "description": "Tecton App Shell component.",
+  "dependencies": [
+    "cn"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/src/tecton/app-shell.tsx",
+      "content": "import * as React from \"react\"\nimport { cn } from \"cn\"\n\n/**\n * Tecton AppShell — the application frame: a solid top navigation bar,\n * an optional left rail/sidebar, the main work area and an optional right\n * aside for tool panels. Pure layout; combine with `Sidebar` for the\n * collapsible navigation or with `Panel` for the aside.\n */\nfunction AppShell({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"app-shell\"\n      className={cn(\n        \"grid h-svh w-full grid-rows-[auto_1fr] overflow-hidden bg-background text-foreground\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nfunction AppShellHeader({ className, ...props }: React.ComponentProps<\"header\">) {\n  return (\n    <header\n      data-slot=\"app-shell-header\"\n      className={cn(\n        \"flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle bg-card px-3 text-sm\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nfunction AppShellBrand({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"app-shell-brand\"\n      className={cn(\"flex items-center gap-2 font-medium [&_svg]:size-5\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction AppShellNav({ className, ...props }: React.ComponentProps<\"nav\">) {\n  return (\n    <nav\n      data-slot=\"app-shell-nav\"\n      className={cn(\"flex min-w-0 flex-1 items-center gap-1\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction AppShellHeaderActions({\n  className,\n  ...props\n}: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"app-shell-header-actions\"\n      className={cn(\"ml-auto flex shrink-0 items-center gap-1\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction AppShellBody({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"app-shell-body\"\n      className={cn(\"flex min-h-0 w-full overflow-hidden\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction AppShellSidebar({ className, ...props }: React.ComponentProps<\"aside\">) {\n  return (\n    <aside\n      data-slot=\"app-shell-sidebar\"\n      className={cn(\n        \"flex w-64 shrink-0 flex-col overflow-auto border-r border-border-subtle bg-sidebar text-sidebar-foreground\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nfunction AppShellMain({ className, ...props }: React.ComponentProps<\"main\">) {\n  return (\n    <main\n      data-slot=\"app-shell-main\"\n      className={cn(\"relative min-w-0 flex-1 overflow-auto\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction AppShellAside({ className, ...props }: React.ComponentProps<\"aside\">) {\n  return (\n    <aside\n      data-slot=\"app-shell-aside\"\n      className={cn(\n        \"flex w-80 shrink-0 flex-col overflow-auto border-l border-border-subtle bg-card\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nexport {\n  AppShell,\n  AppShellHeader,\n  AppShellBrand,\n  AppShellNav,\n  AppShellHeaderActions,\n  AppShellBody,\n  AppShellSidebar,\n  AppShellMain,\n  AppShellAside,\n}\n",
+      "type": "registry:component",
+      "target": "components/tecton/app-shell.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

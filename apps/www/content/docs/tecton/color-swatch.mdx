@@ -1,0 +1,91 @@
+---
+title: Color Swatch
+description: "A colour preview chip with optional label and value, for colour tags, legends and theme documentation."
+links:
+  doc: https://react-aria.adobe.com/ColorSwatch
+---
+
+<ComponentPreview name="color-swatch-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/color-swatch
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/color-swatch"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-aria-components class-variance-authority
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="color-swatch" title="@tecton/react/tecton/color-swatch.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+```
+
+```tsx
+<ColorSwatch color="#f59e0b" label="Sandstone" value="#f59e0b" />
+```
+
+## Sizes
+
+Use the `size` prop, from 12 px (`xs`) to 48 px (`xl`).
+
+<ComponentPreview name="color-swatch-sizes" />
+
+## Shapes
+
+Use the `shape` prop for square, rounded or circular swatches.
+
+<ComponentPreview name="color-swatch-shapes" />
+
+## Labels
+
+Pass `label` and/or `value` to render text next to the swatch; the value is set in the mono font.
+
+<ComponentPreview name="color-swatch-labels" />
+
+## API Reference
+
+### ColorSwatch
+
+React Aria [`ColorSwatch`](https://react-aria.adobe.com/ColorSwatch); accepts all its props.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `color` | `string \| Color` | - | Any CSS colour string or React Aria `Color`. |
+| `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | "md" | Swatch size. |
+| `shape` | `"square" \| "rounded" \| "circle"` | "rounded" | Corner radius. |
+| `label` | `ReactNode` | - | Text next to the swatch. |
+| `value` | `ReactNode` | - | Secondary mono text (e.g. the hex value). |
+| `aria-label` | `string` | - | Accessible name when no label is rendered. |

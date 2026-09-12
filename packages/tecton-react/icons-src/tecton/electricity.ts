@@ -1,0 +1,9 @@
+import { defineTectonSvgIcon } from '../icon-definition';
+
+export const tectonElectricityIcon = defineTectonSvgIcon('electricity', {
+  viewBox: '0 0 16 16',
+  outline:
+    '<path d="M6.55001 13.2502L11.2 7.66683H8.20001L8.80001 2.90016L4.58334 9.00016H7.15001L6.55001 13.2502ZM5.33334 14.6668L6.00001 10.0002H2.66667L8.66667 1.3335H10L9.33334 6.66683H13.3333L6.66667 14.6668H5.33334Z"></path>',
+  filled:
+    '<path d="M5.33331 14.6668L5.99997 10.0002H2.66664L8.66664 1.3335H9.99997L9.33331 6.66683H13.3333L6.66664 14.6668H5.33331Z"></path>',
+});

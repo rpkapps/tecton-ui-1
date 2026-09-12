@@ -1,0 +1,151 @@
+---
+title: Chip
+description: "Compact label for attributes, filters and selections, with Tecton's colour, outlined and size scales."
+links:
+  doc: https://react-aria.adobe.com/TagGroup
+---
+
+<ComponentPreview name="chip-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/chip
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/chip"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-aria-components lucide-react class-variance-authority
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="chip" title="@tecton/react/tecton/chip.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import { Chip, ChipRemove, ChipGroup, ChipList, ChipTag } from "@tecton/react/tecton/chip"
+```
+
+```tsx
+<Chip color="primary" variant="outlined" size="sm">
+  Top Balder
+</Chip>
+```
+
+<Callout title="Chip, not Badge">
+  In the Tecton design system a small label is a *Chip*; the shadcn `Badge` component is intentionally left untouched. What Tecton calls a *Badge* (a count anchored to an icon) is the [CountBadge](/docs/tecton/count-badge) component.
+</Callout>
+
+## Colors
+
+Use the `color` prop for the six Tecton semantic colours. The colour maps to the shadcn `secondary`, `primary`, `destructive`, `warning`, `info` and `success` variables.
+
+<ComponentPreview name="chip-colors" />
+
+## Outlined
+
+Use `variant="outlined"` for a transparent chip with a coloured border.
+
+<ComponentPreview name="chip-outlined" />
+
+## Sizes
+
+Use the `size` prop. Icons inside the chip scale with the size.
+
+<ComponentPreview name="chip-sizes" />
+
+## Clickable
+
+Pass `onPress` to render the chip as a React Aria `Button`; it becomes focusable and gets hover and pressed states. `isDisabled` disables it.
+
+<ComponentPreview name="chip-clickable" />
+
+## Deletable
+
+Add a `ChipRemove` button inside the chip and handle `onPress` yourself.
+
+<ComponentPreview name="chip-deletable" />
+
+## Group
+
+`ChipGroup`, `ChipList` and `ChipTag` wrap React Aria's `TagGroup` for a keyboard-navigable, selectable and removable collection. `ChipTag` renders the remove button automatically when the group has an `onRemove` handler.
+
+<ComponentPreview name="chip-group" />
+
+## API Reference
+
+### Chip
+
+A static chip (`span`) or, when `onPress` is set, a React Aria `Button`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `color` | `"default" \| "primary" \| "error" \| "warning" \| "info" \| "success"` | "default" | Semantic colour. |
+| `variant` | `"filled" \| "outlined"` | "filled" | Filled surface or coloured border. |
+| `size` | `"md" \| "sm" \| "xs"` | "md" | Height 28 / 24 / 20 px. |
+| `onPress` | `(e: PressEvent) => void` | - | Makes the chip interactive. |
+| `isDisabled` | `boolean` | false | Disables the chip. |
+
+### ChipRemove
+
+A small React Aria `Button` with an `X` icon, placed at the end of a `Chip`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `onPress` | `(e: PressEvent) => void` | - | Remove handler. |
+| `children` | `ReactNode` | `<XIcon />` | Custom icon. |
+
+### ChipGroup
+
+React Aria [`TagGroup`](https://react-aria.adobe.com/TagGroup) with Tecton spacing. Accepts all `TagGroup` props.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `selectionMode` | `"none" \| "single" \| "multiple"` | "none" | Enables selection of `ChipTag`s. |
+| `onRemove` | `(keys: Set<Key>) => void` | - | When set, tags render a remove button. |
+| `aria-label` | `string` | - | Accessible name of the group. |
+
+### ChipList
+
+React Aria `TagList`; pass `items` and a render function or static `ChipTag` children.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `items` | `Iterable<T>` | - | Dynamic collection items. |
+| `renderEmptyState` | `() => ReactNode` | - | Content when the list is empty. |
+
+### ChipTag
+
+React Aria `Tag` styled as a chip. Accepts `color`, `variant` and `size` like `Chip`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `id` | `Key` | - | Unique key (required for selection and removal). |
+| `textValue` | `string` | - | Plain-text label for typeahead and screen readers. |

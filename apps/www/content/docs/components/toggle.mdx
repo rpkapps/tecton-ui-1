@@ -1,0 +1,91 @@
+---
+title: Toggle
+description: A two-state button that can be either on or off.
+links:
+  doc: https://react-aria.adobe.com/ToggleButton
+  api: https://react-aria.adobe.com/ToggleButton#api
+upstream: apps/v4/content/docs/components/aria/toggle.mdx
+---
+
+<ComponentPreview name="toggle-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add toggle
+```
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-aria-components
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource
+  name="toggle"
+  title="@tecton/react/components/toggle.tsx"
+/>
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import { Toggle } from "@tecton/react/components/toggle"
+```
+
+```tsx
+<Toggle>Toggle</Toggle>
+```
+
+## Outline
+
+Use `variant="outline"` for an outline style.
+
+<ComponentPreview name="toggle-outline" />
+
+## With Text
+
+<ComponentPreview name="toggle-text" />
+
+## Size
+
+Use the `size` prop to change the size of the toggle.
+
+<ComponentPreview name="toggle-sizes" />
+
+## Disabled
+
+<ComponentPreview name="toggle-disabled" />
+
+## RTL
+
+To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+
+<ComponentPreview name="toggle-rtl" direction="rtl" />
+
+## API Reference
+
+See the [React Aria ToggleButton](https://react-aria.adobe.com/ToggleButton#api) documentation.

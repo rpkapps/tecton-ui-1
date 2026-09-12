@@ -1,0 +1,21 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "circular-progress",
+  "title": "Circular Progress",
+  "description": "Tecton Circular Progress component.",
+  "dependencies": [
+    "class-variance-authority",
+    "cn",
+    "react-aria-components"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/src/tecton/circular-progress.tsx",
+      "content": "\"use client\"\n\nimport * as React from \"react\"\nimport { cva, type VariantProps } from \"class-variance-authority\"\nimport { cn } from \"cn\"\nimport {\n  composeRenderProps,\n  ProgressBar as ProgressBarPrimitive,\n  type ProgressBarProps,\n} from \"react-aria-components\"\n\n/**\n * Tecton circular Progress — determinate ring with optional centred value\n * label, or indeterminate spinner. Built on React Aria `ProgressBar`.\n */\nconst circularProgressVariants = cva(\"relative inline-flex shrink-0\", {\n  variants: {\n    size: {\n      xs: \"size-4 [--stroke:2.5px] text-[0.5rem]\",\n      sm: \"size-6 [--stroke:3px] text-[0.625rem]\",\n      md: \"size-10 [--stroke:3.5px] text-xs\",\n      lg: \"size-16 [--stroke:4px] text-sm\",\n      xl: \"size-24 [--stroke:5px] text-base\",\n    },\n    color: {\n      primary: \"text-primary\",\n      foreground: \"text-foreground\",\n      success: \"text-success\",\n      warning: \"text-warning\",\n      error: \"text-destructive\",\n      info: \"text-info\",\n    },\n  },\n  defaultVariants: {\n    size: \"md\",\n    color: \"primary\",\n  },\n})\n\ntype CircularProgressProps = Omit<ProgressBarProps, \"className\" | \"children\"> &\n  VariantProps<typeof circularProgressVariants> & {\n    className?: string\n    /** Show the formatted value in the centre (determinate only). */\n    showValue?: boolean\n    /** Custom centre content (overrides `showValue`). */\n    children?: React.ReactNode\n  }\n\nconst RADIUS = 20\nconst CIRCUMFERENCE = 2 * Math.PI * RADIUS\n\nfunction CircularProgress({\n  className,\n  size = \"md\",\n  color = \"primary\",\n  showValue,\n  children,\n  ...props\n}: CircularProgressProps) {\n  return (\n    <ProgressBarPrimitive\n      data-slot=\"circular-progress\"\n      data-size={size}\n      className={composeRenderProps(className, (className) =>\n        cn(circularProgressVariants({ size, color }), className)\n      )}\n      {...props}\n    >\n      {({ percentage, valueText, isIndeterminate }) => {\n        const pct = isIndeterminate ? 25 : (percentage ?? 0)\n        const offset = CIRCUMFERENCE - (pct / 100) * CIRCUMFERENCE\n        return (\n          <>\n            <svg\n              viewBox=\"0 0 48 48\"\n              className={cn(\n                \"size-full -rotate-90\",\n                isIndeterminate && \"animate-spin\"\n              )}\n              aria-hidden\n            >\n              <circle\n                cx=\"24\"\n                cy=\"24\"\n                r={RADIUS}\n                fill=\"none\"\n                strokeWidth=\"var(--stroke)\"\n                className=\"stroke-current opacity-20\"\n              />\n              <circle\n                cx=\"24\"\n                cy=\"24\"\n                r={RADIUS}\n                fill=\"none\"\n                strokeWidth=\"var(--stroke)\"\n                strokeLinecap=\"round\"\n                strokeDasharray={CIRCUMFERENCE}\n                strokeDashoffset={offset}\n                className=\"stroke-current transition-[stroke-dashoffset] duration-300\"\n              />\n            </svg>\n            {(children || (showValue && !isIndeterminate)) && (\n              <span\n                data-slot=\"circular-progress-value\"\n                className=\"absolute inset-0 flex items-center justify-center font-medium text-foreground tabular-nums\"\n              >\n                {children ?? valueText}\n              </span>\n            )}\n          </>\n        )\n      }}\n    </ProgressBarPrimitive>\n  )\n}\n\nexport { CircularProgress, circularProgressVariants }\nexport type { CircularProgressProps }\n",
+      "type": "registry:component",
+      "target": "components/tecton/circular-progress.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

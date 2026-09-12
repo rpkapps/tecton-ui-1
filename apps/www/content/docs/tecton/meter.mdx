@@ -1,0 +1,101 @@
+---
+title: Meter
+description: "Segmented gauge for risk, complexity and confidence readouts, with automatic colour by value."
+links:
+  doc: https://react-aria.adobe.com/Meter
+---
+
+<ComponentPreview name="meter-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/meter
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/meter"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-aria-components class-variance-authority
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="meter" title="@tecton/react/tecton/meter.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import { Meter } from "@tecton/react/tecton/meter"
+```
+
+```tsx
+<Meter label="Drilling complexity" value={60} valueLabel="Medium" color="auto" />
+```
+
+<Callout>
+  The segmented gauge from the FDA and Well Design cards has no shadcn equivalent; [Progress](/docs/components/progress) is kept for task progress.
+</Callout>
+
+## Segments
+
+Use `segments` to control the number of blocks; `segments={1}` renders a continuous bar. Partially filled segments show the exact value.
+
+<ComponentPreview name="meter-segments" />
+
+## Auto color
+
+Use `color="auto"` to pick `success`, `warning` or `error` from the value (below 34 %, below 67 %, otherwise).
+
+<ComponentPreview name="meter-auto-color" />
+
+## Colors
+
+Or use a fixed `color`.
+
+<ComponentPreview name="meter-colors" />
+
+## Sizes
+
+Use the `size` prop for the track height.
+
+<ComponentPreview name="meter-sizes" />
+
+## API Reference
+
+### Meter
+
+React Aria [`Meter`](https://react-aria.adobe.com/Meter); accepts all its props (`value`, `minValue`, `maxValue`, `formatOptions`…).
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `label` | `ReactNode` | - | Visible label; use `aria-label` otherwise. |
+| `segments` | `number` | 5 | Number of blocks; `1` for a continuous bar. |
+| `color` | `"primary" \| "success" \| "warning" \| "error" \| "info" \| "auto"` | "primary" | Fill colour. |
+| `size` | `"sm" \| "md" \| "lg"` | "md" | Track height 4 / 6 / 10 px. |
+| `showValue` | `boolean` | false | Show the formatted value at the end of the label row. |
+| `valueLabel` | `ReactNode` | - | Custom value text (e.g. "High"). |
