@@ -1,5 +1,3 @@
-"use client"
-
 import type * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
@@ -16,16 +14,16 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground hover:bg-[color-mix(in_oklch,var(--primary),var(--foreground)_12%)] aria-expanded:bg-[color-mix(in_oklch,var(--primary),var(--foreground)_20%)] data-pressed:bg-[color-mix(in_oklch,var(--primary),var(--foreground)_20%)]",
+          "hover:bg-primary-hover hover:text-primary-hover-foreground focus-visible:bg-primary-hover focus-visible:text-primary-hover-foreground data-pressed:bg-primary-pressed data-pressed:text-primary-pressed-foreground aria-expanded:bg-primary-active aria-expanded:text-primary-active-foreground bg-primary text-primary-foreground",
         outline:
-          "border-border bg-transparent text-foreground hover:border-muted-foreground hover:bg-accent hover:text-accent-foreground aria-expanded:bg-accent aria-expanded:text-accent-foreground data-pressed:border-foreground data-pressed:bg-[color-mix(in_oklch,var(--accent),var(--foreground)_6%)] dark:border-input dark:bg-transparent dark:hover:bg-accent",
+          "border-outline-border text-outline-foreground hover:border-outline-hover-border hover:bg-outline-hover hover:text-outline-hover-foreground focus-visible:bg-outline-hover focus-visible:text-outline-hover-foreground data-pressed:border-outline-pressed-border data-pressed:bg-outline-pressed data-pressed:text-outline-pressed-foreground aria-expanded:border-outline-active-border aria-expanded:bg-outline-active aria-expanded:text-outline-active-foreground bg-transparent",
         secondary:
-          "bg-secondary text-secondary-foreground hover:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_8%)] aria-expanded:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_14%)] data-pressed:bg-[color-mix(in_oklch,var(--secondary),var(--foreground)_14%)]",
+          "hover:bg-secondary-hover hover:text-secondary-hover-foreground focus-visible:bg-secondary-hover focus-visible:text-secondary-hover-foreground data-pressed:bg-secondary-pressed data-pressed:text-secondary-pressed-foreground aria-expanded:bg-secondary-active aria-expanded:text-secondary-active-foreground bg-secondary text-secondary-foreground",
         ghost:
-          "text-secondary-foreground hover:bg-accent hover:text-accent-foreground aria-expanded:bg-accent aria-expanded:text-accent-foreground data-pressed:bg-[color-mix(in_oklch,var(--accent),var(--foreground)_6%)]",
+          "text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground data-pressed:bg-ghost-pressed data-pressed:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground",
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-link-foreground hover:text-link-hover-foreground data-pressed:text-link-pressed-foreground aria-expanded:text-link-active-foreground underline-offset-4 hover:underline",
       },
       size: {
         default:
