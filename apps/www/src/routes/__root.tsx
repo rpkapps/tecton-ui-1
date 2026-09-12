@@ -4,9 +4,11 @@ import {
   HeadContent,
   Outlet,
   Scripts,
+  useRouter,
 } from "@tanstack/react-router"
 import { TanstackProvider } from "fumadocs-core/framework/tanstack"
 import { ThemeProvider } from "next-themes"
+import { RouterProvider as AriaRouterProvider } from "react-aria-components"
 
 import { Toaster } from "@tecton/react/components/sonner"
 
@@ -39,6 +41,23 @@ export const Route = createRootRoute({
   component: () => <Outlet />,
 })
 
+/**
+ * Client-side routing for every React Aria `Link` (sidebar items, breadcrumbs,
+ * `Button` links…): `href` navigates through the TanStack router instead of a
+ * full page load.
+ */
+function AriaRouter({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+  return (
+    <AriaRouterProvider
+      navigate={(to) => void router.navigate({ to })}
+      useHref={(to) => router.buildLocation({ to }).href}
+    >
+      {children}
+    </AriaRouterProvider>
+  )
+}
+
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html
@@ -56,7 +75,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <TanstackProvider>{children}</TanstackProvider>
+          <TanstackProvider>
+            <AriaRouter>{children}</AriaRouter>
+          </TanstackProvider>
           <Toaster position="top-center" />
         </ThemeProvider>
         <Scripts />
