@@ -204,6 +204,27 @@ function transformMdx(
       ? "\n## Installation\n\nNothing to install: the utility ships with `@tecton/react/globals.css`, which imports `shadcn/tailwind.css`.\n"
       : "\n"
   )
+  // the form guides keep their npm dependencies but not the shadcn CLI step
+  mdx = mdx.replace(
+    /\n(?:Add|Install) the components used in this guide:\n\n```bash\nnpx shadcn@latest add [^\n]*\n```\n/,
+    "\n"
+  )
+
+  // Upstream release notes and migration steps between shadcn versions do not
+  // apply to a versioned package.
+  mdx = mdx.replace(/\n## Changelog\n[\s\S]*?(?=\n## |$)/, "\n")
+  // Sections that ask the reader to edit the generated component file: the
+  // package files are read-only for applications.
+  mdx = mdx.replace(/\n## Next\.js\n[\s\S]*?(?=\n## |$)/, "\n")
+  mdx = mdx.replace(
+    /\nIf you have a single sidebar in your application, you can use the `SIDEBAR_WIDTH`[^\n]*\n\n```tsx[^\n]*\nconst SIDEBAR_WIDTH[\s\S]*?```\n\nFor multiple sidebars in your application, you can use/,
+    "\nTo change the width, set"
+  )
+  // `shadcn init` is for projects that own the component sources
+  mdx = mdx.replace(
+    /\nYou can also enable this during project setup with `npx shadcn@latest init[^\n]*\n/,
+    "\n"
+  )
 
   // remove previews that reference skipped examples or upstream blocks
   mdx = mdx.replace(/<ComponentPreview\b[^>]*?\/>/gs, (tag) => {

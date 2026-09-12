@@ -10,6 +10,7 @@
  * Outputs
  *   src/styles/tecton-theme.css    :root / .dark (var() refs) / @theme inline
  *   src/styles/globals.css         CLI-managed file, patched in place (values + imports only)
+ *   src/styles/tecton-base.css     hand-authored base rules (thin scrollbars), import kept in globals.css
  *   registry/theme.json            shadcn `registry:theme` item with literal values
  *   ../../docs/TOKEN-MAPPING.md    mapping table + known deviations
  *
@@ -162,6 +163,15 @@ const FONT_IMPORTS = [
   "@fontsource/ibm-plex-mono/400.css",
   "@fontsource/ibm-plex-mono/500.css",
 ];
+
+/** Hand-authored base rules (src/styles/tecton-base.css), imported by globals.css after the fonts. */
+const BASE_IMPORT = '@import "./tecton-base.css";';
+/** The same rules for registry consumers, who do not get tecton-base.css. */
+const BASE_CSS: Record<string, Record<string, Record<string, string>>> = {
+  "@layer base": {
+    "*": { "scrollbar-width": "thin", "scrollbar-color": "var(--border) transparent" },
+  },
+};
 
 // ---------------------------------------------------------------------------
 // Resolve the mapping
@@ -324,6 +334,8 @@ function patchGlobals(): boolean {
     if (!css.includes(imp)) css = css.replace(anchor, `${anchor}\n${imp}`);
     anchor = imp;
   }
+  // base rules that are not variable values (thin scrollbars…), see tecton-base.css
+  if (!css.includes(BASE_IMPORT)) css = css.replace(anchor, `${anchor}\n${BASE_IMPORT}`);
 
   // -- :root ----------------------------------------------------------------
   const rootValues = new Map(resolved.map((r) => [`--${r.name}`, r.light]));
@@ -363,8 +375,9 @@ function buildRegistryTheme() {
     // --color-<extra> as a reference to the :root/.dark variable.
     theme[k.replace(/^--/, "")] = k.startsWith("--color-") ? v : resolveValue(v, tokens);
   }
-  const css: Record<string, Record<string, never>> = {};
+  const css: Record<string, Record<string, unknown>> = {};
   for (const f of FONT_IMPORTS) css[`@import "${f}"`] = {};
+  Object.assign(css, BASE_CSS);
   return {
     $schema: "https://ui.shadcn.com/schema/registry-item.json",
     name: "tecton",

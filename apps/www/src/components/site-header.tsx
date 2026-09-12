@@ -26,7 +26,7 @@ export function SiteHeader({ tree }: { tree: PageTree.Root }) {
   return (
     <header className="sticky top-0 z-50 w-full bg-background">
       <div className="container-wrapper px-6">
-        <div className="flex h-(--header-height) items-center **:data-[slot=separator]:h-4!">
+        <div className="flex h-(--header-height) items-center **:data-[slot=separator]:h-4! **:data-[slot=separator]:self-center">
           <MobileNav tree={tree} pathname={pathname} className="flex lg:hidden" />
           <MainNav pathname={pathname} className="hidden lg:flex" />
           <div className="ml-auto flex items-center gap-2 md:flex-1 md:justify-end">
