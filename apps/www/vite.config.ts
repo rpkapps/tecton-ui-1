@@ -15,6 +15,11 @@ const blockNames = readdirSync(
 
 const config = defineConfig({
   server: { port: 3000 },
+  // The prerender crawler fetches every page from a Vite preview server that
+  // runs in the same process. Bind it to IPv4 explicitly: with `localhost`,
+  // Node's fetch races ::1 against 127.0.0.1 and on Windows the ::1 attempt
+  // times out under load while 127.0.0.1 is refused (ETIMEDOUT/ECONNREFUSED).
+  preview: { host: "127.0.0.1" },
   resolve: {
     tsconfigPaths: true,
     alias: {
@@ -29,6 +34,11 @@ const config = defineConfig({
       prerender: {
         enabled: true,
         crawlLinks: true,
+        // Every page renders in one process, so more workers only add
+        // contention; retry transient connection errors instead of aborting.
+        concurrency: 4,
+        retryCount: 3,
+        retryDelay: 1000,
         // Example previews contain demo links (breadcrumbs, pagination…) that
         // point nowhere; only crawl the site's own sections.
         filter: (page) => {
