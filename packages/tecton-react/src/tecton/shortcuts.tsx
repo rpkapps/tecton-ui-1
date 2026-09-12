@@ -340,31 +340,36 @@ function formatShortcut(keys: string, isMac = isMacPlatform()): string[][] {
   })
 }
 
-/** Renders a shortcut as key caps (`Kbd`), one group per chord. */
+const subscribeNoop = () => () => {}
+
+/**
+ * Renders a shortcut as key caps (`Kbd`) joined with "+" (`Ctrl + K`,
+ * `G + W`); the accessible name spells a sequence out ("G, then W").
+ */
 function ShortcutKeys({
   keys,
   className,
   ...props
 }: React.ComponentProps<"span"> & { keys: string }) {
-  const [isMac, setIsMac] = React.useState(false)
-  React.useEffect(() => setIsMac(isMacPlatform()), [])
+  const isMac = React.useSyncExternalStore(subscribeNoop, isMacPlatform, () => false)
   const chords = formatShortcut(keys, isMac)
+  const caps = chords.flat()
+  const spoken = chords.map((chord) => chord.join(" + ")).join(", then ")
   return (
     <span
       data-slot="shortcut-keys"
-      className={cn("inline-flex items-center gap-1", className)}
+      aria-label={spoken}
+      className={cn("inline-flex items-center", className)}
       {...props}
     >
-      {chords.map((chord, index) => (
-        <React.Fragment key={index}>
-          {index > 0 && <span className="text-xs text-muted-foreground">then</span>}
-          <KbdGroup>
-            {chord.map((cap) => (
-              <Kbd key={cap}>{cap}</Kbd>
-            ))}
-          </KbdGroup>
-        </React.Fragment>
-      ))}
+      <KbdGroup aria-hidden className="gap-1">
+        {caps.map((cap, index) => (
+          <React.Fragment key={`${index}-${cap}`}>
+            {index > 0 && <span className="text-xs text-muted-foreground">+</span>}
+            <Kbd>{cap}</Kbd>
+          </React.Fragment>
+        ))}
+      </KbdGroup>
     </span>
   )
 }
