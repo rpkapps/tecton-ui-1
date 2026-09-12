@@ -2,8 +2,12 @@ import { Link } from "@tanstack/react-router"
 
 import { docs } from "@/lib/docs"
 
-/** Grid of all component pages (standard or Tecton). */
-export function ComponentsList({ section = "components" }: { section?: "components" | "tecton" }) {
+/** Text-link grid of all component pages of a section (like the shadcn docs). */
+export function ComponentsList({
+  section = "components",
+}: {
+  section?: "components" | "tecton"
+}) {
   const pages = docs.docs
     .filter(
       (page) =>
@@ -12,16 +16,18 @@ export function ComponentsList({ section = "components" }: { section?: "componen
     .sort((a, b) => a.title.localeCompare(b.title))
 
   return (
-    <div data-not-typeset className="my-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+    <div
+      data-not-typeset
+      className="mt-8 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-x-8 lg:gap-x-16 lg:gap-y-6 xl:gap-x-20"
+    >
       {pages.map((page) => (
         <Link
           key={page.info.path}
           to="/docs/$"
           params={{ _splat: page.info.path.replace(/\.mdx$/, "") }}
-          className="flex flex-col gap-1 rounded-lg border bg-card p-4 outline-none hover:bg-accent/50 focus-visible:ring-2 focus-visible:ring-ring/60"
+          className="inline-flex items-center gap-2 text-lg font-medium underline-offset-4 hover:underline md:text-base"
         >
-          <span className="text-sm font-medium">{page.title}</span>
-          <span className="line-clamp-2 text-xs text-muted-foreground">{page.description}</span>
+          {page.title}
         </Link>
       ))}
     </div>

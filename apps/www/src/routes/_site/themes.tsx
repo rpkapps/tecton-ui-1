@@ -82,7 +82,7 @@ function ThemesPage() {
   >
 
   return (
-    <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-1 flex-col gap-10 px-4 py-8 md:px-6 md:py-10">
+    <main className="container-wrapper flex flex-1 flex-col gap-10 px-6 py-8 md:py-10">
       <PageHeader>
         <PageHeaderContent>
           <PageHeaderTitle>Themes</PageHeaderTitle>

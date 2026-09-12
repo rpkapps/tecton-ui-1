@@ -10,8 +10,10 @@
     "spacing",
     "cli",
     "icons",
+    "forms",
     "---Library---",
     "components",
-    "tecton"
+    "tecton",
+    "utils"
   ]
 }

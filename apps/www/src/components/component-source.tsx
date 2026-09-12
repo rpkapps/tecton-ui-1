@@ -2,9 +2,9 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { ChevronDownIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
+import { Separator } from "@tecton/react/components/separator"
 
 import { CodeBlock } from "@/components/code-block"
 import { loadExampleSource } from "@/lib/examples"
@@ -99,12 +99,12 @@ export function ComponentSource({
   maxLines?: number
   className?: string
 }) {
-  const [expanded, setExpanded] = React.useState(false)
-
   if (!name && !src) return null
 
   const content = (
-    <React.Suspense fallback={<div className="code-figure my-0 h-24 animate-pulse" />}>
+    <React.Suspense
+      fallback={<div className="mt-6 h-24 animate-pulse rounded-2xl bg-code" />}
+    >
       <Inner
         name={name}
         src={src}
@@ -116,38 +116,49 @@ export function ComponentSource({
     </React.Suspense>
   )
 
-  if (!collapsible) return content
+  if (!collapsible) return <div className={cn("relative", className)}>{content}</div>
+
+  return <CodeCollapsibleWrapper className={className}>{content}</CodeCollapsibleWrapper>
+}
+
+export function CodeCollapsibleWrapper({
+  className,
+  children,
+}: {
+  className?: string
+  children: React.ReactNode
+}) {
+  const [isOpened, setIsOpened] = React.useState(false)
 
   return (
     <div
       data-not-typeset
-      data-expanded={expanded}
-      className={cn(
-        "group/source relative my-6 overflow-hidden rounded-lg",
-        "[&_.code-figure]:my-0 [&_.code-figure_pre]:max-h-[calc(100svh-20rem)]",
-        !expanded && "[&_.code-figure_pre]:max-h-72 [&_.code-figure_pre]:overflow-hidden"
-      )}
+      data-state={isOpened ? "open" : "closed"}
+      className={cn("group/collapsible relative md:-mx-1", className)}
     >
-      {content}
-      <div
-        className={cn(
-          "absolute inset-x-0 bottom-0 flex items-end justify-center pb-3",
-          expanded ? "h-auto bg-transparent" : "h-24 bg-linear-to-t from-card via-card/80 to-transparent"
-        )}
-      >
+      <div className="absolute top-1.5 right-9 z-10 flex items-center">
         <Button
-          variant="secondary"
-          size="xs"
-          className="rounded-full"
-          onPress={() => setExpanded((v) => !v)}
+          variant="ghost"
+          size="sm"
+          className="h-7 rounded-md px-2 text-muted-foreground"
+          onPress={() => setIsOpened((v) => !v)}
         >
-          {expanded ? "Collapse" : "Expand"}
-          <ChevronDownIcon
-            data-icon="inline-end"
-            className={cn("transition-transform", expanded && "rotate-180")}
-          />
+          {isOpened ? "Collapse" : "Expand"}
         </Button>
+        <Separator orientation="vertical" className="mx-1.5 h-4!" />
       </div>
+      <div className="relative mt-6 overflow-hidden group-data-[state=closed]/collapsible:max-h-64 [&>figure]:mt-0 [&>figure]:md:mx-0!">
+        {children}
+      </div>
+      {!isOpened && (
+        <button
+          type="button"
+          onClick={() => setIsOpened(true)}
+          className="absolute inset-x-0 -bottom-2 flex h-20 items-center justify-center rounded-b-2xl bg-gradient-to-b from-code/70 to-code text-sm text-muted-foreground"
+        >
+          Expand
+        </button>
+      )}
     </div>
   )
 }

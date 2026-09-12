@@ -2,7 +2,9 @@
 
 import * as React from "react"
 import { useNavigate } from "@tanstack/react-router"
-import { FileTextIcon, LayoutGridIcon, PaletteIcon, SearchIcon } from "lucide-react"
+import { cn } from "cn"
+import type * as PageTree from "fumadocs-core/page-tree"
+import { ArrowRightIcon, CornerDownLeftIcon, SquareDashedIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -14,27 +16,40 @@ import {
   CommandItem,
   CommandList,
 } from "@tecton/react/components/command"
-import { Kbd } from "@tecton/react/components/kbd"
 
-import { getSearchIndex, type SearchEntry } from "@/lib/search"
+import { siteConfig } from "@/lib/site"
+import { getPagesFromFolder, getRootFolders, getRootPages, nodeName } from "@/lib/tree"
 
-const staticEntries: SearchEntry[] = [
-  { title: "Blocks", url: "/blocks", section: "Site" },
-  { title: "Themes", url: "/themes", section: "Site" },
-]
+const itemClassName =
+  "h-9 rounded-md border border-transparent px-3! font-medium data-focused:border-input data-focused:bg-input/50 data-selected:border-input data-selected:bg-input/50"
 
-export function CommandMenu() {
+const groupClassName =
+  "p-0! **:[[cmdk-group-heading]]:scroll-mt-16 **:[[cmdk-group-heading]]:p-3! **:[[cmdk-group-heading]]:pb-1!"
+
+function CommandMenuKbd({ className, ...props }: React.ComponentProps<"kbd">) {
+  return (
+    <kbd
+      className={cn(
+        "pointer-events-none flex h-5 items-center justify-center gap-1 rounded border bg-background px-1 font-sans text-[0.7rem] font-medium text-muted-foreground select-none [&_svg:not([class*='size-'])]:size-3",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
+export function CommandMenu({ tree }: { tree: PageTree.Root }) {
   const [open, setOpen] = React.useState(false)
-  const [entries, setEntries] = React.useState<SearchEntry[] | null>(null)
   const navigate = useNavigate()
 
   React.useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if ((e.key === "k" && (e.metaKey || e.ctrlKey)) || e.key === "/") {
         if (
-          e.target instanceof HTMLElement &&
-          (e.target.isContentEditable ||
-            ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName))
+          (e.target instanceof HTMLElement && e.target.isContentEditable) ||
+          e.target instanceof HTMLInputElement ||
+          e.target instanceof HTMLTextAreaElement ||
+          e.target instanceof HTMLSelectElement
         ) {
           return
         }
@@ -46,78 +61,91 @@ export function CommandMenu() {
     return () => document.removeEventListener("keydown", down)
   }, [])
 
-  React.useEffect(() => {
-    if (open && !entries) {
-      getSearchIndex()
-        .then((index) => setEntries([...index, ...staticEntries]))
-        .catch(() => setEntries(staticEntries))
+  const groups = React.useMemo(() => {
+    const result: { heading: string; items: { url: string; name: string; component?: boolean }[] }[] =
+      []
+    result.push({
+      heading: "Pages",
+      items: siteConfig.nav.map((item) => ({ url: item.href, name: item.title })),
+    })
+    result.push({
+      heading: "Docs",
+      items: getRootPages(tree).map((page) => ({ url: page.url, name: nodeName(page) })),
+    })
+    for (const folder of getRootFolders(tree)) {
+      const items = getPagesFromFolder(folder).map((page) => ({
+        url: page.url,
+        name: nodeName(page),
+        component: page.url.includes("/components/") || page.url.includes("/tecton/"),
+      }))
+      if (items.length) result.push({ heading: nodeName(folder), items })
     }
-  }, [open, entries])
-
-  const sections = React.useMemo(() => {
-    const map = new Map<string, SearchEntry[]>()
-    for (const entry of entries ?? []) {
-      const list = map.get(entry.section) ?? []
-      list.push(entry)
-      map.set(entry.section, list)
-    }
-    return [...map.entries()]
-  }, [entries])
+    return result
+  }, [tree])
 
   return (
     <>
       <Button
         variant="outline"
-        size="sm"
-        className="h-8 w-8 justify-start gap-2 px-0 text-muted-foreground md:w-56 md:px-2.5"
+        className="relative h-8 w-full justify-start rounded-lg border-none bg-muted pl-3 font-normal text-foreground shadow-none transition-colors hover:bg-muted/50 md:w-48 lg:w-40 xl:w-64 dark:bg-card"
         onPress={() => setOpen(true)}
         aria-label="Search documentation"
       >
-        <SearchIcon className="md:hidden" />
-        <span className="hidden flex-1 text-left text-xs font-normal md:inline">
-          Search documentation…
-        </span>
-        <Kbd className="hidden md:inline-flex">⌘K</Kbd>
+        <span className="hidden xl:inline-flex">Search documentation...</span>
+        <span className="inline-flex xl:hidden">Search...</span>
       </Button>
-      <CommandDialog open={open} onOpenChange={setOpen} title="Search" description="Search the documentation">
-        <Command>
-          <CommandInput placeholder="Search components, pages…" />
+      <CommandDialog
+        open={open}
+        onOpenChange={setOpen}
+        title="Search documentation..."
+        description="Search for a page to open..."
+        className="top-[15%] rounded-xl! border-none bg-popover bg-clip-padding p-2! pb-11! shadow-2xl ring-4 ring-border/60"
+      >
+        <Command className="rounded-none bg-transparent **:data-[slot=command-input]:h-9! **:data-[slot=command-input]:py-0 **:data-[slot=command-input-wrapper]:mb-0 **:data-[slot=command-input-wrapper]:h-9! **:data-[slot=command-input-wrapper]:rounded-md **:data-[slot=command-input-wrapper]:border **:data-[slot=command-input-wrapper]:border-input **:data-[slot=command-input-wrapper]:bg-input/50">
+          <CommandInput placeholder="Search documentation..." />
           <CommandList
+            className="no-scrollbar min-h-80 max-h-[60svh] scroll-pt-2 scroll-pb-1.5"
             onAction={(key) => {
               setOpen(false)
               navigate({ to: String(key) })
             }}
             renderEmptyState={() => (
-              <CommandEmpty>
-                {entries ? "No results found." : "Loading…"}
+              <CommandEmpty className="py-12 text-center text-sm text-muted-foreground">
+                No results found.
               </CommandEmpty>
             )}
           >
-            {sections.map(([section, items]) => (
-              <CommandGroup key={section} heading={section}>
-                {items.map((item) => (
-                  <CommandItem key={item.url} id={item.url} textValue={item.title}>
-                    {section === "Site" ? (
-                      item.url === "/themes" ? (
-                        <PaletteIcon />
-                      ) : (
-                        <LayoutGridIcon />
-                      )
+            {groups.map((group) => (
+              <CommandGroup key={group.heading} heading={group.heading} className={groupClassName}>
+                {group.items.map((item) => (
+                  <CommandItem
+                    key={item.url}
+                    id={item.url}
+                    textValue={`${group.heading} ${item.name}`}
+                    className={itemClassName}
+                  >
+                    {item.component ? (
+                      <div className="aspect-square size-4 rounded-full border border-dashed border-muted-foreground" />
+                    ) : group.heading === "Pages" ? (
+                      <ArrowRightIcon />
                     ) : (
-                      <FileTextIcon />
+                      <SquareDashedIcon />
                     )}
-                    <span>{item.title}</span>
-                    {item.description && (
-                      <span className="ml-1 truncate text-xs text-muted-foreground">
-                        {item.description}
-                      </span>
-                    )}
+                    {item.name}
                   </CommandItem>
                 ))}
               </CommandGroup>
             ))}
           </CommandList>
         </Command>
+        <div className="absolute inset-x-0 bottom-0 z-20 flex h-10 items-center gap-2 rounded-b-xl border-t bg-muted/60 px-4 text-xs font-medium text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <CommandMenuKbd>
+              <CornerDownLeftIcon />
+            </CommandMenuKbd>{" "}
+            Go to Page
+          </div>
+        </div>
       </CommandDialog>
     </>
   )

@@ -61,7 +61,7 @@ function BlockSources({ name }: { name: string }) {
           </li>
         ))}
       </ul>
-      <div className="min-w-0 flex-1 [&_.code-figure]:my-0 [&_.code-figure]:rounded-none [&_.code-figure]:border-0 [&_pre]:max-h-[36rem]">
+      <div className="min-w-0 flex-1 [&_[data-rehype-pretty-code-figure]]:m-0! [&_[data-rehype-pretty-code-figure]]:rounded-none [&_pre]:max-h-[36rem]">
         {code === null ? (
           <div className="h-48 animate-pulse" />
         ) : (

@@ -59,7 +59,7 @@ const features = [
 
 function Home() {
   return (
-    <main className="mx-auto flex w-full max-w-(--breakpoint-2xl) flex-1 flex-col gap-16 px-4 py-12 md:px-6 md:py-20">
+    <div className="container-wrapper flex flex-1 flex-col px-6"><div className="container flex flex-1 flex-col gap-16 py-12 md:py-20">
       <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
         <div className="flex flex-col gap-6">
           <div className="flex flex-wrap items-center gap-2">
@@ -126,6 +126,6 @@ function Home() {
           Open the theme page
         </LinkButton>
       </section>
-    </main>
+    </div></div>
   )
 }

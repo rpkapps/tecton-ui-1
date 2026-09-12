@@ -39,6 +39,14 @@ const BROKEN_EXAMPLES: Record<string, string> = {
 /** Upstream docs pages without a component file that are still worth keeping. */
 const EXTRA_PAGES = ["data-table", "date-picker"]
 
+/**
+ * Other upstream docs folders that are synced page by page. The pages reference
+ * `examples/aria/*` like the component pages do.
+ */
+const EXTRA_FOLDERS: Record<string, { title: string; pages: string[] }> = {
+  utils: { title: "Utilities", pages: ["scroll-fade", "shimmer"] },
+}
+
 /** Module specifiers examples may import, and how to rewrite them. */
 const IMPORT_REWRITES: [RegExp, string][] = [
   [/^@\/styles\/aria-[a-z]+\/ui(?:-rtl)?\/(.+)$/, "@tecton/react/components/$1"],
@@ -105,7 +113,19 @@ function rewriteImports(source: string): { code: string; blocked?: string } {
   return { code, blocked }
 }
 
-const LOCAL_DOCS = new Set(["", "installation", "theming", "typography", "spacing", "cli", "icons", "components", "tecton"])
+const LOCAL_DOCS = new Set([
+  "",
+  "installation",
+  "theming",
+  "typography",
+  "spacing",
+  "cli",
+  "icons",
+  "forms",
+  "components",
+  "tecton",
+  "utils",
+])
 
 function isLocalDocsLink(href: string) {
   const [pathname] = href.split(/[#?]/)
@@ -115,13 +135,18 @@ function isLocalDocsLink(href: string) {
   return LOCAL_DOCS.has(first ?? "")
 }
 
-function transformMdx(mdx: string, name: string, removed: Set<string>) {
+function transformMdx(
+  mdx: string,
+  name: string,
+  removed: Set<string>,
+  upstreamDir = "content/docs/components/aria"
+) {
   // frontmatter
   mdx = mdx.replace(/^---\n([\s\S]*?)\n---/, (_m, fm: string) => {
     const lines = fm
       .split("\n")
       .filter((line) => !/^(base|component|featured):/.test(line))
-    lines.push(`upstream: apps/v4/content/docs/components/aria/${name}.mdx`)
+    lines.push(`upstream: apps/v4/${upstreamDir}/${name}.mdx`)
     return `---\n${lines.join("\n")}\n---`
   })
 
@@ -202,6 +227,15 @@ async function main() {
     const content = await fs.readFile(path.join(OUT_DOCS, file), "utf8")
     if (/^upstream: apps\/v4\//m.test(content)) await fs.rm(path.join(OUT_DOCS, file))
   }
+  for (const folder of Object.keys(EXTRA_FOLDERS)) {
+    const dir = path.join(WWW, "content/docs", folder)
+    await fs.mkdir(dir, { recursive: true })
+    for (const file of await fs.readdir(dir)) {
+      if (!file.endsWith(".mdx")) continue
+      const content = await fs.readFile(path.join(dir, file), "utf8")
+      if (/^upstream: apps\/v4\//m.test(content)) await fs.rm(path.join(dir, file))
+    }
+  }
   await fs.mkdir(OUT_EXAMPLES, { recursive: true })
   for (const file of await fs.readdir(OUT_EXAMPLES)) {
     const content = await fs.readFile(path.join(OUT_EXAMPLES, file), "utf8")
@@ -279,6 +313,35 @@ async function main() {
     path.join(OUT_DOCS, "meta.json"),
     JSON.stringify({ title: "Components", pages: ["index", ...report.pages] }, null, 2) + "\n"
   )
+
+  for (const [folder, { title, pages }] of Object.entries(EXTRA_FOLDERS)) {
+    const outDir = path.join(WWW, "content/docs", folder)
+    const synced: string[] = []
+    for (const name of pages) {
+      const src = path.join(V4, "content/docs", folder, `${name}.mdx`)
+      if (!(await exists(src))) continue
+      const mdx = await fs.readFile(src, "utf8")
+      const removed = new Set<string>()
+      const previewNames = [
+        ...mdx.matchAll(/<ComponentPreview\b[^>]*?\bname="([^"]+)"[^>]*?\/>/gs),
+      ].map((m) => m[1])
+      for (const previewName of previewNames) {
+        const ok = await syncExample(previewName)
+        if (!ok) removed.add(previewName)
+      }
+      if (removed.size) report.removedPreviews[`${folder}/${name}`] = [...removed]
+      await fs.writeFile(
+        path.join(outDir, `${name}.mdx`),
+        transformMdx(mdx, name, removed, `content/docs/${folder}`)
+      )
+      synced.push(name)
+      report.pages.push(`${folder}/${name}`)
+    }
+    await fs.writeFile(
+      path.join(outDir, "meta.json"),
+      JSON.stringify({ title, pages: synced }, null, 2) + "\n"
+    )
+  }
   report.examples.sort()
   await fs.writeFile(path.join(HERE, "sync-report.json"), JSON.stringify(report, null, 2) + "\n")
 
