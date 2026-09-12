@@ -7,8 +7,8 @@ import {
   rowPaginationFeature,
   tableFeatures,
   useTable,
-  type PaginationState,
 } from "@tanstack/react-table"
+import type { PaginationState } from "@tanstack/react-table"
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 
 import { Badge } from "@tecton/react/components/badge"
@@ -105,8 +105,14 @@ export default function DataTablePagination() {
         <Table aria-label="Wells">
           <TableHeader>
             {table.getFlatHeaders().map((header) => (
-              <TableHead key={header.id} id={header.id} isRowHeader={header.index === 0}>
-                {header.isPlaceholder ? null : <table.FlexRender header={header} />}
+              <TableHead
+                key={header.id}
+                id={header.id}
+                isRowHeader={header.index === 0}
+              >
+                {header.isPlaceholder ? null : (
+                  <table.FlexRender header={header} />
+                )}
               </TableHead>
             ))}
           </TableHeader>
@@ -137,7 +143,11 @@ export default function DataTablePagination() {
             </SelectTrigger>
             <SelectContent>
               {pageSizes.map((size) => (
-                <SelectItem key={size} id={String(size)} textValue={String(size)}>
+                <SelectItem
+                  key={size}
+                  id={String(size)}
+                  textValue={String(size)}
+                >
                   {size}
                 </SelectItem>
               ))}

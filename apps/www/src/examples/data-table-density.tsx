@@ -31,11 +31,38 @@ type Well = {
 }
 
 const wells: Well[] = [
-  { id: "a12", name: "34/10-A-12", field: "Gullfaks", status: "Producing", depth: 3250, operator: "Equinor" },
-  { id: "b3", name: "34/10-B-3", field: "Gullfaks", status: "Shut in", depth: 2980, operator: "Equinor" },
-  { id: "c7", name: "33/9-C-7", field: "Statfjord", status: "Drilling", depth: 1420, operator: "Equinor" },
-  { id: "d2", name: "34/7-D-2", field: "Snorre", status: "Producing", depth: 2735, operator: "Equinor" },
-  { id: "e9", name: "34/8-E-9", field: "Visund", status: "Producing", depth: 3610, operator: "Petoro" },
+  {
+    id: "a12",
+    name: "34/10-A-12",
+    field: "Gullfaks",
+    status: "Producing",
+    depth: 3250,
+    operator: "Equinor",
+  },
+  {
+    id: "b3",
+    name: "34/10-B-3",
+    field: "Gullfaks",
+    status: "Shut in",
+    depth: 2980,
+    operator: "Equinor",
+  },
+  {
+    id: "c7",
+    name: "33/9-C-7",
+    field: "Statfjord",
+    status: "Drilling",
+    depth: 1420,
+    operator: "Equinor",
+  },
+  {
+    id: "d2",
+    name: "34/7-D-2",
+    field: "Snorre",
+    status: "Producing",
+    depth: 2735,
+    operator: "Equinor",
+  },
 ]
 
 const statusVariant = {
