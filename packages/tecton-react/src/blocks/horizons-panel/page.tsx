@@ -17,12 +17,8 @@ import {
 
 import { HorizonForm } from "./components/horizon-form"
 import { HorizonReadout } from "./components/horizon-readout"
-import {
-  defaultHorizonSettings,
-  getPair,
-  volumes,
-  type HorizonSettings,
-} from "./data"
+import { defaultHorizonSettings, getPair, volumes } from "./data"
+import type { HorizonSettings } from "./data"
 
 type HorizonsPanelProps = Omit<React.ComponentProps<typeof Panel>, "children"> & {
   initialSettings?: HorizonSettings

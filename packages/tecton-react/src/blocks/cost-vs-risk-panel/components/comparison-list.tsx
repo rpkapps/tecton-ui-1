@@ -81,7 +81,6 @@ function ComparisonGroup({
       <div className="flex flex-col gap-1">
         {designs.map((design) => {
           const entry = category.values[design.id]
-          if (!entry) return null
           return (
             <ComparisonBar
               key={design.id}

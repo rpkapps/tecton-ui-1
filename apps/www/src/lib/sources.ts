@@ -58,6 +58,7 @@ export function listSources(prefix: string) {
 
 export async function loadSource(path: string): Promise<string> {
   const load = all[path]
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- record lookup by user input
   if (!load) {
     throw new Error(`Unknown source: ${path}`)
   }

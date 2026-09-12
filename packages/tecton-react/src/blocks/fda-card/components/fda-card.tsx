@@ -36,7 +36,8 @@ import {
   StatValue,
 } from "@tecton/react/tecton/stat"
 
-import { levelLabel, ratingMeta, statusMeta, type FdaSummary } from "../data"
+import { levelLabel, ratingMeta, statusMeta } from "../data"
+import type { FdaSummary } from "../data"
 
 type FdaCardProps = Omit<React.ComponentProps<typeof Card>, "children"> & {
   fda: FdaSummary

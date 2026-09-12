@@ -1,11 +1,8 @@
 "use client"
 
 import * as React from "react"
-import {
-  useTable,
-  type RowSelectionState,
-  type SortingState,
-} from "@tanstack/react-table"
+import { useTable } from "@tanstack/react-table"
+import type { RowSelectionState, SortingState } from "@tanstack/react-table"
 import { cn } from "cn"
 import { PlusIcon } from "lucide-react"
 
@@ -20,10 +17,8 @@ import {
 } from "@tecton/react/components/table"
 
 import { createFdaColumns, fdaTableFeatures, MonoValue } from "./components/fda-columns"
-import {
-  alternatives as allAlternatives,
-  type FieldDevelopmentAlternative,
-} from "./data"
+import { alternatives as allAlternatives } from "./data"
+import type { FieldDevelopmentAlternative } from "./data"
 
 type FdaComparisonTableProps = React.ComponentProps<"div"> & {
   data?: FieldDevelopmentAlternative[]

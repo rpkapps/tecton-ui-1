@@ -130,6 +130,28 @@ async function withExtras(mdx: string, name: string) {
   return `${mdx.slice(0, index).trimEnd()}\n\n${extras}\n${mdx.slice(index)}`
 }
 
+// The synced examples are listed in the repository's .prettierignore (between
+// the markers below) so `pnpm format` leaves upstream code untouched.
+const PRETTIER_IGNORE = path.join(REPO, ".prettierignore")
+const IGNORE_START = "# synced-examples:start (written by apps/www/scripts/sync-upstream-docs.mts)"
+const IGNORE_END = "# synced-examples:end"
+
+async function writePrettierIgnore(examples: string[]) {
+  const block = [
+    IGNORE_START,
+    ...examples.map((name) => `apps/www/src/examples/${name}.tsx`),
+    IGNORE_END,
+  ].join("\n")
+  const current = (await exists(PRETTIER_IGNORE)) ? await fs.readFile(PRETTIER_IGNORE, "utf8") : ""
+  const start = current.indexOf(IGNORE_START)
+  const end = current.indexOf(IGNORE_END)
+  const next =
+    start !== -1 && end !== -1
+      ? current.slice(0, start) + block + current.slice(end + IGNORE_END.length)
+      : `${current.trimEnd()}\n\n${block}\n`
+  if (next !== current) await fs.writeFile(PRETTIER_IGNORE, next)
+}
+
 const LOCAL_DOCS = new Set([
   "",
   "installation",
@@ -296,6 +318,8 @@ async function main() {
       exampleCache.set(exampleName, null)
       return false
     }
+    // Synced examples are upstream code: eslint.config.js ignores them (it
+    // reads the list from sync-report.json) and .prettierignore lists them.
     const header = `// Synced from shadcn/ui (apps/v4/examples/aria/${exampleName}.tsx) by scripts/sync-upstream-docs.mts — do not edit.\n`
     await fs.writeFile(path.join(OUT_EXAMPLES, `${exampleName}.tsx`), header + code)
     exampleCache.set(exampleName, code)
@@ -377,6 +401,7 @@ async function main() {
   }
   report.examples.sort()
   await fs.writeFile(path.join(HERE, "sync-report.json"), JSON.stringify(report, null, 2) + "\n")
+  await writePrettierIgnore(report.examples)
 
   console.log(
     `[docs:sync] ${report.pages.length} pages, ${report.examples.length} examples, ${Object.keys(report.skippedExamples).length} skipped (see scripts/sync-report.json)`

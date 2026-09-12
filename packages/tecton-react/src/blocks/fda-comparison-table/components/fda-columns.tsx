@@ -28,12 +28,8 @@ import {
 } from "@tecton/react/components/dropdown-menu"
 import { Meter } from "@tecton/react/tecton/meter"
 
-import {
-  formatFirstOil,
-  riskLabel,
-  statusMeta,
-  type FieldDevelopmentAlternative,
-} from "../data"
+import { formatFirstOil, riskLabel, statusMeta } from "../data"
+import type { FieldDevelopmentAlternative } from "../data"
 
 // TanStack Table v9: the features the FDA comparison table uses.
 const fdaTableFeatures = tableFeatures({

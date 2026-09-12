@@ -16,6 +16,7 @@ export const Route = createFileRoute("/compare/$component")({
   }),
   loader: ({ params }) => {
     const matrix = compareMatrices[params.component]
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- route param
     if (!matrix) throw notFound()
     return { component: params.component, title: matrix.title, reference: matrix.reference }
   },
@@ -28,7 +29,7 @@ export const Route = createFileRoute("/compare/$component")({
 function ComparePage() {
   const { component, title, reference } = Route.useLoaderData()
   const { theme } = Route.useSearch()
-  const matrix = compareMatrices[component]!
+  const matrix = compareMatrices[component]
   const Matrix = React.useMemo(() => React.lazy(matrix.load), [matrix])
 
   React.useEffect(() => {

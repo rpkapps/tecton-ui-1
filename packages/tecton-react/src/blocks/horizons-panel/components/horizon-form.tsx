@@ -22,8 +22,8 @@ import {
   lineWidths,
   surfacePairs,
   volumes,
-  type HorizonSettings,
 } from "../data"
+import type { HorizonSettings } from "../data"
 
 type HorizonFormProps = Omit<React.ComponentProps<"div">, "onChange"> & {
   value: HorizonSettings
@@ -36,7 +36,7 @@ function HorizonForm({ className, value, onChange, ...props }: HorizonFormProps)
   const base = getSurface(pair.base)
   const id = React.useId()
 
-  const set = <K extends keyof HorizonSettings>(key: K, next: HorizonSettings[K]) =>
+  const set = <TKey extends keyof HorizonSettings>(key: TKey, next: HorizonSettings[TKey]) =>
     onChange({ ...value, [key]: next })
 
   return (

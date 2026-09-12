@@ -133,7 +133,7 @@ function QuadrantChart({
         <ChartTooltip
           cursor={false}
           content={({ active, payload }) => {
-            const point = payload?.[0]?.payload as DesignPoint | undefined
+            const point = payload[0]?.payload as DesignPoint | undefined
             if (!active || !point) return null
             return <QuadrantTooltip point={point} />
           }}

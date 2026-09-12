@@ -37,7 +37,8 @@ import {
   StatValue,
 } from "@tecton/react/tecton/stat"
 
-import { phaseMeta, riskLabel, trajectoryMeta, type WellDesign } from "../data"
+import { phaseMeta, riskLabel, trajectoryMeta } from "../data"
+import type { WellDesign } from "../data"
 import { TrajectorySketch } from "./trajectory-sketch"
 
 type WellDesignCardProps = Omit<React.ComponentProps<typeof Card>, "children"> & {

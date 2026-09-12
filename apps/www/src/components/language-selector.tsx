@@ -112,7 +112,7 @@ export function LanguageSelector({
       >
         <SelectGroup>
           {languageOptions
-            .filter((option) => languages.includes(option.value as Language))
+            .filter((option) => languages.includes(option.value))
             .map((option) => (
               <SelectItem
                 key={option.value}

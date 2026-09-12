@@ -96,6 +96,7 @@ export function IconGallery() {
               )}
               onClick={() => {
                 const snippet = `import { ${icon.name}Icon } from "@tecton/react/icons"`
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- undefined in insecure contexts
                 navigator.clipboard?.writeText(snippet)
                 toast(`Copied ${icon.name}Icon import`)
               }}

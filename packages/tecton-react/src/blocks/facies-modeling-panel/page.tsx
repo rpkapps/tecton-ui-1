@@ -29,7 +29,8 @@ import {
 
 import { FaciesForm } from "./components/facies-form"
 import { ParameterSlider } from "./components/parameter-slider"
-import { defaultFaciesSettings, type FaciesSettings } from "./data"
+import { defaultFaciesSettings } from "./data"
+import type { FaciesSettings } from "./data"
 
 type FaciesModelingPanelProps = Omit<
   React.ComponentProps<typeof Panel>,

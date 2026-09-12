@@ -19,7 +19,8 @@ import {
 } from "@tecton/react/components/select"
 import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
 
-import { fields, statusMeta, typeMeta, type WellStatus, type WellType } from "../data"
+import { fields, statusMeta, typeMeta } from "../data"
+import type { WellStatus, WellType } from "../data"
 
 export type WellsFilter = {
   query: string
@@ -51,7 +52,7 @@ function WellsFilterBar({
   resultCount,
   ...props
 }: WellsFilterBarProps) {
-  const set = <K extends keyof WellsFilter>(key: K, next: WellsFilter[K]) =>
+  const set = <TKey extends keyof WellsFilter>(key: TKey, next: WellsFilter[TKey]) =>
     onChange({ ...value, [key]: next })
 
   const active =

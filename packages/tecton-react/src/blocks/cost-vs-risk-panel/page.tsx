@@ -23,7 +23,8 @@ import {
 
 import { ComparisonList } from "./components/comparison-list"
 import { QuadrantChart } from "./components/quadrant-chart"
-import { axisOptions, designs as allDesigns, metrics, type DesignPoint } from "./data"
+import { axisOptions, designs as allDesigns, metrics } from "./data"
+import type { DesignPoint } from "./data"
 
 type CostVsRiskPanelProps = Omit<React.ComponentProps<typeof Panel>, "children"> & {
   designs?: DesignPoint[]

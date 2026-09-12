@@ -35,8 +35,8 @@ import {
   methods,
   targetSurfaces,
   volumes,
-  type FaciesSettings,
 } from "../data"
+import type { FaciesSettings } from "../data"
 import { ParameterSlider } from "./parameter-slider"
 
 type FaciesFormProps = Omit<React.ComponentProps<"div">, "onChange"> & {
@@ -47,7 +47,7 @@ type FaciesFormProps = Omit<React.ComponentProps<"div">, "onChange"> & {
 function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
   const id = React.useId()
 
-  const set = <K extends keyof FaciesSettings>(key: K, next: FaciesSettings[K]) =>
+  const set = <TKey extends keyof FaciesSettings>(key: TKey, next: FaciesSettings[TKey]) =>
     onChange({ ...value, [key]: next })
 
   const setVariogram = (key: keyof FaciesSettings["variogram"], next: number) =>
@@ -56,11 +56,11 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
   const setOption = (key: keyof FaciesSettings["options"], next: boolean) =>
     set("options", { ...value.options, [key]: next })
 
-  const setDensity = (id: string, density: number) =>
+  const setDensity = (lithotypeId: string, density: number) =>
     set(
       "lithotypes",
       value.lithotypes.map((lithotype) =>
-        lithotype.id === id ? { ...lithotype, density } : lithotype
+        lithotype.id === lithotypeId ? { ...lithotype, density } : lithotype
       )
     )
 

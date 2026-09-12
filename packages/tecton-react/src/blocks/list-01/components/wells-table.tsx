@@ -10,9 +10,8 @@ import {
   rowSortingFeature,
   tableFeatures,
   useTable,
-  type RowSelectionState,
-  type SortingState,
 } from "@tanstack/react-table"
+import type { RowSelectionState, SortingState } from "@tanstack/react-table"
 import { cn } from "cn"
 import {
   ChevronLeftIcon,
@@ -55,7 +54,8 @@ import {
   TableRow,
 } from "@tecton/react/components/table"
 
-import { formatDate, statusMeta, typeMeta, type Well } from "../data"
+import { formatDate, statusMeta, typeMeta } from "../data"
+import type { Well } from "../data"
 
 // TanStack Table v9: declare the features the wells table uses.
 const features = tableFeatures({

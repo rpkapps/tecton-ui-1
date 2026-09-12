@@ -38,13 +38,13 @@ import {
   themes,
   timezones,
   unitSystems,
-  type Settings,
 } from "../data"
+import type { Settings } from "../data"
 
-type SectionProps<K extends keyof Settings> = {
+type SectionProps<TKey extends keyof Settings> = {
   className?: string
-  value: Settings[K]
-  onChange: (next: Settings[K]) => void
+  value: Settings[TKey]
+  onChange: (next: Settings[TKey]) => void
 }
 
 function SettingsSection({
@@ -131,8 +131,10 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
   const id = React.useId()
   const bioError = value.bio.length > 160 ? "Keep it under 160 characters." : undefined
 
-  const set = <K extends keyof Settings["profile"]>(key: K, next: Settings["profile"][K]) =>
-    onChange({ ...value, [key]: next })
+  const set = <TKey extends keyof Settings["profile"]>(
+    key: TKey,
+    next: Settings["profile"][TKey]
+  ) => onChange({ ...value, [key]: next })
 
   return (
     <div data-slot="profile-form" className={cn("flex flex-col gap-8", className)}>
@@ -223,9 +225,9 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
 }
 
 function NotificationsForm({ className, value, onChange }: SectionProps<"notifications">) {
-  const set = <K extends keyof Settings["notifications"]>(
-    key: K,
-    next: Settings["notifications"][K]
+  const set = <TKey extends keyof Settings["notifications"]>(
+    key: TKey,
+    next: Settings["notifications"][TKey]
   ) => onChange({ ...value, [key]: next })
 
   return (
@@ -310,9 +312,9 @@ function NotificationsForm({ className, value, onChange }: SectionProps<"notific
 }
 
 function AppearanceForm({ className, value, onChange }: SectionProps<"appearance">) {
-  const set = <K extends keyof Settings["appearance"]>(
-    key: K,
-    next: Settings["appearance"][K]
+  const set = <TKey extends keyof Settings["appearance"]>(
+    key: TKey,
+    next: Settings["appearance"][TKey]
   ) => onChange({ ...value, [key]: next })
 
   return (

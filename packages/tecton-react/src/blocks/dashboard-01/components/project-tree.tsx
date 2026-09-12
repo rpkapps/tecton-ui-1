@@ -16,7 +16,8 @@ import {
   TreeViewVisibilityToggle,
 } from "@tecton/react/tecton/tree-view"
 
-import { projectTree, type ProjectNode } from "../data"
+import { projectTree } from "../data"
+import type { ProjectNode } from "../data"
 
 type ProjectTreeProps = React.ComponentProps<"div"> & {
   nodes?: ProjectNode[]
@@ -114,9 +115,10 @@ function ProjectTree({
         selectionMode="single"
         defaultExpandedKeys={defaultExpanded}
         onSelectionChange={(keys) => {
-          if (keys === "all") return
-          const [first] = keys
-          if (first !== undefined) onSelect?.(String(first))
+          for (const first of keys) {
+            onSelect?.(String(first))
+            break
+          }
         }}
       >
         {renderNode}

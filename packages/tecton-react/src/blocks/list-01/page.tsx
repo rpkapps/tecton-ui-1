@@ -14,13 +14,11 @@ import {
   PageHeaderTitle,
 } from "@tecton/react/tecton/page-header"
 
-import {
-  emptyFilter,
-  WellsFilterBar,
-  type WellsFilter,
-} from "./components/wells-filter-bar"
+import { emptyFilter, WellsFilterBar } from "./components/wells-filter-bar"
+import type { WellsFilter } from "./components/wells-filter-bar"
 import { WellsEmptyState, WellsTable } from "./components/wells-table"
-import { wells as allWells, type Well } from "./data"
+import { wells as allWells } from "./data"
+import type { Well } from "./data"
 
 type WellsListPageProps = React.ComponentProps<"div"> & {
   wells?: Well[]

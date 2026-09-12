@@ -19,7 +19,7 @@ export type BlockMeta = {
 type BlockModule = { default: React.ComponentType }
 
 export const blocks: (BlockMeta & { component: () => Promise<BlockModule> })[] =
-  registry as never
+  registry
 
 export const blockCategories: { id: BlockCategory; title: string }[] = [
   { id: "application", title: "Application panels" },

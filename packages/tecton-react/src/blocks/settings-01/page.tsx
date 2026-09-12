@@ -36,7 +36,8 @@ import {
   NotificationsForm,
   ProfileForm,
 } from "./components/settings-forms"
-import { defaultSettings, type Settings } from "./data"
+import { defaultSettings } from "./data"
+import type { Settings } from "./data"
 
 type SettingsPageProps = React.ComponentProps<"div"> & {
   initialSettings?: Settings
