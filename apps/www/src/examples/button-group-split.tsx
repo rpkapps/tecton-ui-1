@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/button-group-split.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { IconPlus } from "@tabler/icons-react"
+import { PlusIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -13,7 +13,7 @@ export default function ButtonGroupSplit() {
       <Button variant="secondary">Button</Button>
       <ButtonGroupSeparator />
       <Button size="icon" variant="secondary">
-        <IconPlus />
+        <PlusIcon />
       </Button>
     </ButtonGroup>
   )

@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/empty-background.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { IconBell } from "@tabler/icons-react"
+import { BellIcon } from "lucide-react"
 import { RefreshCcwIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
@@ -17,7 +17,7 @@ export function EmptyMuted() {
     <Empty className="h-full bg-muted/30">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <IconBell />
+          <BellIcon />
         </EmptyMedia>
         <EmptyTitle>No Notifications</EmptyTitle>
         <EmptyDescription className="max-w-xs text-pretty">

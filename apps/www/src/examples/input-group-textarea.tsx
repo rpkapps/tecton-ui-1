@@ -1,10 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/input-group-textarea.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import {
-  IconBrandJavascript,
-  IconCopy,
-  IconCornerDownLeft,
-  IconRefresh,
-} from "@tabler/icons-react"
+import { BracesIcon, CopyIcon, CornerDownLeftIcon, RefreshCwIcon } from "lucide-react"
 
 import {
   InputGroup,
@@ -26,19 +21,19 @@ export default function InputGroupTextareaExample() {
         <InputGroupAddon align="block-end" className="border-t">
           <InputGroupText>Line 1, Column 1</InputGroupText>
           <InputGroupButton size="sm" className="ml-auto" variant="default">
-            Run <IconCornerDownLeft />
+            Run <CornerDownLeftIcon />
           </InputGroupButton>
         </InputGroupAddon>
         <InputGroupAddon align="block-start" className="border-b">
           <InputGroupText className="font-mono font-medium">
-            <IconBrandJavascript />
+            <BracesIcon />
             script.js
           </InputGroupText>
           <InputGroupButton className="ml-auto" size="icon-xs">
-            <IconRefresh />
+            <RefreshCwIcon />
           </InputGroupButton>
           <InputGroupButton variant="ghost" size="icon-xs">
-            <IconCopy />
+            <CopyIcon />
           </InputGroupButton>
         </InputGroupAddon>
       </InputGroup>

@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/empty-outline.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { IconCloud } from "@tabler/icons-react"
+import { CloudIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -16,7 +16,7 @@ export default function EmptyOutline() {
     <Empty className="border border-dashed">
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <IconCloud />
+          <CloudIcon />
         </EmptyMedia>
         <EmptyTitle>Cloud Storage Empty</EmptyTitle>
         <EmptyDescription>

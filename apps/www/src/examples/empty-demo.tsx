@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/empty-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { IconFolderCode } from "@tabler/icons-react"
+import { FolderCodeIcon } from "lucide-react"
 import { ArrowUpRightIcon } from "lucide-react"
 
 import { Button, LinkButton } from "@tecton/react/components/button"
@@ -17,7 +17,7 @@ export default function EmptyDemo() {
     <Empty>
       <EmptyHeader>
         <EmptyMedia variant="icon">
-          <IconFolderCode />
+          <FolderCodeIcon />
         </EmptyMedia>
         <EmptyTitle>No Projects Yet</EmptyTitle>
         <EmptyDescription>
