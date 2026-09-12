@@ -205,7 +205,7 @@ function ColorSwatchEditor({
       <ButtonPrimitive
         data-slot="color-swatch-trigger"
         aria-label={ariaLabel}
-        className="inline-flex rounded-[inherit] outline-none data-focus-visible:ring-2 data-focus-visible:ring-ring data-focus-visible:ring-offset-1 data-focus-visible:ring-offset-background"
+        className="inline-flex cursor-pointer rounded-[inherit] outline-none transition-[filter,transform] data-hovered:brightness-110 data-pressed:translate-y-px data-pressed:brightness-95 data-focus-visible:ring-2 data-focus-visible:ring-ring data-focus-visible:ring-offset-1 data-focus-visible:ring-offset-background"
       >
         {children}
       </ButtonPrimitive>
@@ -245,11 +245,23 @@ function ColorSwatchEditor({
           <div className="flex flex-col gap-2">
             <span className="text-xs font-medium text-muted-foreground">Custom</span>
             <div className="flex items-center gap-2">
-              <ColorSwatchPrimitive
-                aria-hidden
-                color={current ?? "#000000"}
-                className={colorSwatchVariants({ size: "lg", shape })}
-              />
+              {/* The custom swatch opens the platform colour picker, like a button. */}
+              <label
+                data-slot="color-swatch-native"
+                className={cn(
+                  colorSwatchVariants({ size: "lg", shape }),
+                  "relative cursor-pointer overflow-hidden transition-[filter,transform] hover:brightness-110 active:translate-y-px has-focus-visible:ring-2 has-focus-visible:ring-ring has-focus-visible:ring-offset-1 has-focus-visible:ring-offset-popover"
+                )}
+                style={{ background: current ?? "#000000" }}
+              >
+                <input
+                  type="color"
+                  aria-label="Pick a custom colour"
+                  value={current ?? "#000000"}
+                  onChange={(e) => onChange(e.target.value)}
+                  className="absolute inset-0 size-full cursor-pointer opacity-0"
+                />
+              </label>
               <ColorFieldPrimitive
                 aria-label="Hex colour"
                 value={current}
