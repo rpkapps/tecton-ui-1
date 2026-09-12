@@ -4,11 +4,11 @@ import * as React from "react"
 import { cn } from "cn"
 import { toast } from "sonner"
 
+import { Badge } from "@tecton/react/components/badge"
 import { Input } from "@tecton/react/components/input"
 import { ToggleGroup, ToggleGroupItem } from "@tecton/react/components/toggle-group"
 import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
 import { tectonIcons } from "@tecton/react/icons"
-import { Chip } from "@tecton/react/tecton/chip"
 
 const sizes = [16, 20, 24] as const
 
@@ -74,15 +74,15 @@ export function IconGallery() {
           ))}
         </ToggleGroup>
         <div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
-          <Chip size="xs" color="success" variant="outlined">
+          <Badge variant="success" appearance="outline">
             {counts.svg} svg
-          </Chip>
-          <Chip size="xs" color="info" variant="outlined">
+          </Badge>
+          <Badge variant="info" appearance="outline">
             {counts["lucide-fallback"]} lucide
-          </Chip>
-          <Chip size="xs" variant="outlined">
+          </Badge>
+          <Badge variant="secondary" appearance="outline">
             {counts.placeholder} placeholder
-          </Chip>
+          </Badge>
         </div>
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-2">
@@ -96,6 +96,7 @@ export function IconGallery() {
               )}
               onClick={() => {
                 const snippet = `import { ${icon.name}Icon } from "@tecton/react/icons"`
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- undefined in insecure contexts
                 navigator.clipboard?.writeText(snippet)
                 toast(`Copied ${icon.name}Icon import`)
               }}

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { Link, useRouterState } from "@tanstack/react-router"
+import { useRouterState } from "@tanstack/react-router"
 import type * as PageTree from "fumadocs-core/page-tree"
 
 import {
@@ -55,11 +55,9 @@ function SidebarLink({
 }) {
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton isActive={active} className={itemClassName}>
-        <Link to={href}>
-          <span className="absolute inset-0 flex w-(--sidebar-menu-width) bg-transparent" />
-          {children}
-        </Link>
+      <SidebarMenuButton href={href} isActive={active} className={itemClassName}>
+        <span className="absolute inset-0 flex w-(--sidebar-menu-width) bg-transparent" />
+        {children}
       </SidebarMenuButton>
     </SidebarMenuItem>
   )

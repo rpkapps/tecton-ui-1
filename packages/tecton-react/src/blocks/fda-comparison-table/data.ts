@@ -25,13 +25,13 @@ export type FieldDevelopmentAlternative = {
 
 export const statusMeta: Record<
   FdaStatus,
-  { label: string; color: "primary" | "default" | "info" | "warning" | "success" }
+  { label: string; color: "default" | "secondary" | "info" | "warning" | "success" }
 > = {
-  nominated: { label: "Nominated", color: "primary" },
-  reference: { label: "Ref case", color: "default" },
+  nominated: { label: "Nominated", color: "default" },
+  reference: { label: "Ref case", color: "secondary" },
   ongoing: { label: "Ongoing", color: "info" },
   screening: { label: "Screening", color: "warning" },
-  archived: { label: "Archived", color: "default" },
+  archived: { label: "Archived", color: "secondary" },
 }
 
 export const alternatives: FieldDevelopmentAlternative[] = [

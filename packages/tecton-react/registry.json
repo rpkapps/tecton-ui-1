@@ -198,6 +198,7 @@
         "lists"
       ],
       "dependencies": [
+        "@tanstack/react-table",
         "cn",
         "lucide-react"
       ],
@@ -265,6 +266,7 @@
         "lists"
       ],
       "dependencies": [
+        "@tanstack/react-table",
         "cn",
         "lucide-react"
       ],

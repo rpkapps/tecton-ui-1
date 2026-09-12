@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { Chip } from "@tecton/react/tecton/chip"
+import { Badge } from "@tecton/react/components/badge"
 import {
   TreeView,
   TreeViewAction,
@@ -44,11 +44,7 @@ function Tree({
 }) {
   const hidden = state === "hidden"
   const suffix =
-    state === "suffix" ? (
-      <Chip size="xs" color="info">
-        Chip
-      </Chip>
-    ) : undefined
+    state === "suffix" ? <Badge variant="info">Badge</Badge> : undefined
   const endAdornment = hidden ? (
     <TreeViewVisibilityToggle isVisible={false} />
   ) : (

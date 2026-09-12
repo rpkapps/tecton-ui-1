@@ -62,15 +62,27 @@ export function CommandMenu({ tree }: { tree: PageTree.Root }) {
   }, [])
 
   const groups = React.useMemo(() => {
-    const result: { heading: string; items: { url: string; name: string; component?: boolean }[] }[] =
-      []
+    const result: {
+      heading: string
+      items: { id: string; url: string; name: string; component?: boolean }[]
+    }[] = []
+    // React Aria collections need unique keys: the same url appears in
+    // several groups ("/docs" is both the Docs page and the Introduction).
+    const withIds = (heading: string, items: { url: string; name: string; component?: boolean }[]) =>
+      items.map((item) => ({ ...item, id: `${heading}:${item.url}` }))
     result.push({
       heading: "Pages",
-      items: siteConfig.nav.map((item) => ({ url: item.href, name: item.title })),
+      items: withIds(
+        "Pages",
+        siteConfig.nav.map((item) => ({ url: item.href, name: item.title }))
+      ),
     })
     result.push({
       heading: "Docs",
-      items: getRootPages(tree).map((page) => ({ url: page.url, name: nodeName(page) })),
+      items: withIds(
+        "Docs",
+        getRootPages(tree).map((page) => ({ url: page.url, name: nodeName(page) }))
+      ),
     })
     for (const folder of getRootFolders(tree)) {
       const items = getPagesFromFolder(folder).map((page) => ({
@@ -78,7 +90,9 @@ export function CommandMenu({ tree }: { tree: PageTree.Root }) {
         name: nodeName(page),
         component: page.url.includes("/components/") || page.url.includes("/tecton/"),
       }))
-      if (items.length) result.push({ heading: nodeName(folder), items })
+      if (items.length) {
+        result.push({ heading: nodeName(folder), items: withIds(nodeName(folder), items) })
+      }
     }
     return result
   }, [tree])
@@ -101,13 +115,13 @@ export function CommandMenu({ tree }: { tree: PageTree.Root }) {
         description="Search for a page to open..."
         className="top-[15%] rounded-xl! border-none bg-popover bg-clip-padding p-2! pb-11! shadow-2xl ring-4 ring-border/60"
       >
-        <Command className="rounded-none bg-transparent **:data-[slot=command-input]:h-9! **:data-[slot=command-input]:py-0 **:data-[slot=command-input-wrapper]:mb-0 **:data-[slot=command-input-wrapper]:h-9! **:data-[slot=command-input-wrapper]:rounded-md **:data-[slot=command-input-wrapper]:border **:data-[slot=command-input-wrapper]:border-input **:data-[slot=command-input-wrapper]:bg-input/50">
+        <Command className="rounded-none bg-transparent **:data-[slot=command-input-wrapper]:p-0 **:data-[slot=command-input-wrapper]:pb-1 **:data-[slot=input-group]:h-9! **:data-[slot=input-group]:rounded-md! **:data-[slot=input-group]:border-input **:data-[slot=input-group]:bg-input/50">
           <CommandInput placeholder="Search documentation..." />
           <CommandList
             className="no-scrollbar min-h-80 max-h-[60svh] scroll-pt-2 scroll-pb-1.5"
             onAction={(key) => {
               setOpen(false)
-              navigate({ to: String(key) })
+              navigate({ to: String(key).slice(String(key).indexOf(":") + 1) })
             }}
             renderEmptyState={() => (
               <CommandEmpty className="py-12 text-center text-sm text-muted-foreground">
@@ -119,8 +133,8 @@ export function CommandMenu({ tree }: { tree: PageTree.Root }) {
               <CommandGroup key={group.heading} heading={group.heading} className={groupClassName}>
                 {group.items.map((item) => (
                   <CommandItem
-                    key={item.url}
-                    id={item.url}
+                    key={item.id}
+                    id={item.id}
                     textValue={`${group.heading} ${item.name}`}
                     className={itemClassName}
                   >

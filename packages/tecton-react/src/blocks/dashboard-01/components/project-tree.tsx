@@ -4,8 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { PlusIcon } from "lucide-react"
 
+import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
-import { Chip } from "@tecton/react/tecton/chip"
 import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 import {
   TreeView,
@@ -16,7 +16,8 @@ import {
   TreeViewVisibilityToggle,
 } from "@tecton/react/tecton/tree-view"
 
-import { projectTree, type ProjectNode } from "../data"
+import { projectTree } from "../data"
+import type { ProjectNode } from "../data"
 
 type ProjectTreeProps = React.ComponentProps<"div"> & {
   nodes?: ProjectNode[]
@@ -65,9 +66,9 @@ function ProjectTree({
         }
         suffix={
           node.meta ? (
-            <Chip size="xs" variant="outlined" className="font-mono">
+            <Badge variant="secondary" appearance="outline" className="font-mono">
               {node.meta}
-            </Chip>
+            </Badge>
           ) : undefined
         }
         endAdornment={
@@ -114,9 +115,10 @@ function ProjectTree({
         selectionMode="single"
         defaultExpandedKeys={defaultExpanded}
         onSelectionChange={(keys) => {
-          if (keys === "all") return
-          const [first] = keys
-          if (first !== undefined) onSelect?.(String(first))
+          for (const first of keys) {
+            onSelect?.(String(first))
+            break
+          }
         }}
       >
         {renderNode}

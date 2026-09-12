@@ -1,26 +1,27 @@
 import * as React from "react"
 import { PlusIcon } from "lucide-react"
 
-import { Fab } from "@tecton/react/tecton/fab"
+import { Button } from "@tecton/react/components/button"
 
-import { Matrix, Page, Section } from "./matrix"
+import { Caption, Matrix, Page, Section } from "./matrix"
 
 /**
- * Mirrors 058_components-fab__variant-matrix.png.
+ * Mirrors 058_components-fab__variant-matrix.png with the Button FAB
+ * recipe (`rounded-full shadow-md`).
  * EXTENDED: columns Primary · Secondary · Tertiary · Outlined; per size
- * (medium / small) rows With icon · No icon · Activated · Disabled.
- * ROUND: same columns; per size rows Enabled · Activated · Disabled.
+ * (medium / small) rows With icon · No icon · Disabled.
+ * ROUND: same columns; per size rows Enabled · Disabled.
  */
 const variants = [
-  { label: "Primary", variant: "primary" },
+  { label: "Primary", variant: "default" },
   { label: "Secondary", variant: "secondary" },
-  { label: "Tertiary", variant: "tertiary" },
-  { label: "Outlined", variant: "outlined" },
+  { label: "Tertiary", variant: "ghost" },
+  { label: "Outlined", variant: "outline" },
 ] as const
 
 const sizes = [
-  { label: "size=medium", size: "md" },
-  { label: "size=small", size: "sm" },
+  { label: "size=medium", extended: "h-10", icon: "icon-lg" },
+  { label: "size=small", extended: "h-9", icon: "icon" },
 ] as const
 
 const columns = variants.map(({ label }) => label)
@@ -29,45 +30,49 @@ export default function FabMatrix() {
   return (
     <Page>
       <Section title="Extended" eyebrow>
-        {sizes.map(({ label, size }) => (
+        {sizes.map(({ label, extended }) => (
           <Matrix
-            key={size}
+            key={label}
             title={label}
             columns={columns}
             rows={[
               {
                 label: "With icon",
                 cells: variants.map(({ variant }) => (
-                  <Fab key={variant} variant={variant} size={size}>
-                    <PlusIcon />
+                  <Button
+                    key={variant}
+                    variant={variant}
+                    className={`${extended} rounded-full shadow-md`}
+                  >
+                    <PlusIcon data-icon="inline-start" />
                     Fab
-                  </Fab>
+                  </Button>
                 )),
               },
               {
                 label: "No icon",
                 cells: variants.map(({ variant }) => (
-                  <Fab key={variant} variant={variant} size={size}>
+                  <Button
+                    key={variant}
+                    variant={variant}
+                    className={`${extended} rounded-full shadow-md`}
+                  >
                     Fab
-                  </Fab>
-                )),
-              },
-              {
-                label: "Activated",
-                cells: variants.map(({ variant }) => (
-                  <Fab key={variant} variant={variant} size={size} isActive>
-                    <PlusIcon />
-                    Fab
-                  </Fab>
+                  </Button>
                 )),
               },
               {
                 label: "Disabled",
                 cells: variants.map(({ variant }) => (
-                  <Fab key={variant} variant={variant} size={size} isDisabled>
-                    <PlusIcon />
+                  <Button
+                    key={variant}
+                    variant={variant}
+                    className={`${extended} rounded-full shadow-md`}
+                    isDisabled
+                  >
+                    <PlusIcon data-icon="inline-start" />
                     Fab
-                  </Fab>
+                  </Button>
                 )),
               },
             ]}
@@ -76,60 +81,49 @@ export default function FabMatrix() {
       </Section>
 
       <Section title="Round" eyebrow>
-        {sizes.map(({ label, size }) => (
+        {sizes.map(({ label, icon }) => (
           <Matrix
-            key={size}
+            key={label}
             title={label}
             columns={columns}
             rows={[
               {
                 label: "Enabled",
                 cells: variants.map(({ variant }) => (
-                  <Fab
+                  <Button
                     key={variant}
                     variant={variant}
-                    size={size}
-                    shape="round"
+                    size={icon}
+                    className="rounded-full shadow-md"
                     aria-label="Add"
                   >
                     <PlusIcon />
-                  </Fab>
-                )),
-              },
-              {
-                label: "Activated",
-                cells: variants.map(({ variant }) => (
-                  <Fab
-                    key={variant}
-                    variant={variant}
-                    size={size}
-                    shape="round"
-                    aria-label="Add"
-                    isActive
-                  >
-                    <PlusIcon />
-                  </Fab>
+                  </Button>
                 )),
               },
               {
                 label: "Disabled",
                 cells: variants.map(({ variant }) => (
-                  <Fab
+                  <Button
                     key={variant}
                     variant={variant}
-                    size={size}
-                    shape="round"
+                    size={icon}
+                    className="rounded-full shadow-md"
                     aria-label="Add"
                     isDisabled
                   >
                     <PlusIcon />
-                  </Fab>
+                  </Button>
                 )),
               },
             ]}
           />
         ))}
       </Section>
+      <Caption>
+        The Activated row from Storybook is omitted: the FAB is a Button recipe
+        without a persistent active state.
+      </Caption>
     </Page>
   )
 }

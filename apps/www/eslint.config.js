@@ -2,6 +2,12 @@
 
 import { tanstackConfig } from "@tanstack/eslint-config"
 
+import syncReport from "./scripts/sync-report.json" with { type: "json" }
+
+// Examples synced from shadcn/ui (docs:sync) are upstream code and are not
+// linted; the list comes from the sync report so it never goes stale.
+const syncedExamples = syncReport.examples.map((name) => `src/examples/${name}.tsx`)
+
 export default [
   ...tanstackConfig,
   {
@@ -12,9 +18,14 @@ export default [
       "@typescript-eslint/array-type": "off",
       "@typescript-eslint/require-await": "off",
       "pnpm/json-enforce-catalog": "off",
+      // shadcn conventions used by the generated components and followed by
+      // the Tecton components and examples: inline `type` import specifiers
+      // and `composeRenderProps(className, (className) => …)`.
+      "import/consistent-type-specifier-style": "off",
+      "no-shadow": "off",
     },
   },
   {
-    ignores: ["eslint.config.js", ".prettierrc"],
+    ignores: ["eslint.config.js", ".prettierrc", ...syncedExamples],
   },
 ]

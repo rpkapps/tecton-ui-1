@@ -17,13 +17,16 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@tecton/react/components/collapsible"
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
-import { Divider } from "@tecton/react/tecton/divider"
+import { Input } from "@tecton/react/components/input"
 import {
-  SelectField,
-  SelectFieldItem,
-} from "@tecton/react/tecton/select-field"
-import { TextField } from "@tecton/react/tecton/text-field"
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@tecton/react/components/select"
+import { Separator } from "@tecton/react/components/separator"
+import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 
 import {
   densityLabel,
@@ -32,8 +35,8 @@ import {
   methods,
   targetSurfaces,
   volumes,
-  type FaciesSettings,
 } from "../data"
+import type { FaciesSettings } from "../data"
 import { ParameterSlider } from "./parameter-slider"
 
 type FaciesFormProps = Omit<React.ComponentProps<"div">, "onChange"> & {
@@ -42,7 +45,9 @@ type FaciesFormProps = Omit<React.ComponentProps<"div">, "onChange"> & {
 }
 
 function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
-  const set = <K extends keyof FaciesSettings>(key: K, next: FaciesSettings[K]) =>
+  const id = React.useId()
+
+  const set = <TKey extends keyof FaciesSettings>(key: TKey, next: FaciesSettings[TKey]) =>
     onChange({ ...value, [key]: next })
 
   const setVariogram = (key: keyof FaciesSettings["variogram"], next: number) =>
@@ -51,11 +56,11 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
   const setOption = (key: keyof FaciesSettings["options"], next: boolean) =>
     set("options", { ...value.options, [key]: next })
 
-  const setDensity = (id: string, density: number) =>
+  const setDensity = (lithotypeId: string, density: number) =>
     set(
       "lithotypes",
       value.lithotypes.map((lithotype) =>
-        lithotype.id === id ? { ...lithotype, density } : lithotype
+        lithotype.id === lithotypeId ? { ...lithotype, density } : lithotype
       )
     )
 
@@ -65,98 +70,105 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
       className={cn("flex flex-col gap-4", className)}
       {...props}
     >
-      <TextField
-        label="Model name"
-        variant="filled"
-        value={value.modelName}
-        onChange={(text) => set("modelName", text)}
-      />
+      <Field>
+        <FieldLabel htmlFor={`${id}-name`}>Model name</FieldLabel>
+        <Input
+          id={`${id}-name`}
+          variant="filled"
+          value={value.modelName}
+          onChange={(event) => set("modelName", event.target.value)}
+        />
+      </Field>
 
       <FormSection title="Parameters" defaultExpanded>
         <SelectField
+          id={`${id}-template`}
           label="Facies template"
-          variant="filled"
           selectedKey={value.templateId}
           onSelectionChange={(key) => set("templateId", String(key))}
         >
           {faciesTemplates.map((template) => (
-            <SelectFieldItem
-              key={template.id}
-              id={template.id}
-              textValue={template.name}
-            >
+            <SelectItem key={template.id} id={template.id} textValue={template.name}>
               <ColorSwatch color={template.color} size="xs" shape="square" />
               {template.name}
-            </SelectFieldItem>
+            </SelectItem>
           ))}
         </SelectField>
         <SelectField
+          id={`${id}-input`}
           label="Input data"
-          variant="filled"
           selectedKey={value.inputDataId}
           onSelectionChange={(key) => set("inputDataId", String(key))}
         >
           {inputData.map((item) => (
-            <SelectFieldItem key={item.id} id={item.id} textValue={item.label}>
+            <SelectItem key={item.id} id={item.id} textValue={item.label}>
               {item.label}
-            </SelectFieldItem>
+            </SelectItem>
           ))}
         </SelectField>
         <SelectField
+          id={`${id}-surface`}
           label="Target surface"
-          variant="filled"
           selectedKey={value.targetSurfaceId}
           onSelectionChange={(key) => set("targetSurfaceId", String(key))}
         >
           {targetSurfaces.map((item) => (
-            <SelectFieldItem key={item.id} id={item.id} textValue={item.label}>
+            <SelectItem key={item.id} id={item.id} textValue={item.label}>
               {item.label}
-            </SelectFieldItem>
+            </SelectItem>
           ))}
         </SelectField>
         <SelectField
+          id={`${id}-volume`}
           label="Volume"
-          variant="filled"
           selectedKey={value.volumeId}
           onSelectionChange={(key) => set("volumeId", String(key))}
         >
           {volumes.map((item) => (
-            <SelectFieldItem key={item.id} id={item.id} textValue={item.label}>
+            <SelectItem key={item.id} id={item.id} textValue={item.label}>
               {item.label}
-            </SelectFieldItem>
+            </SelectItem>
           ))}
         </SelectField>
         <div className="grid grid-cols-[1fr_auto] items-end gap-3">
           <SelectField
+            id={`${id}-method`}
             label="Method"
-            variant="filled"
             selectedKey={value.methodId}
             onSelectionChange={(key) => set("methodId", String(key))}
           >
             {methods.map((item) => (
-              <SelectFieldItem key={item.id} id={item.id} textValue={item.label}>
+              <SelectItem key={item.id} id={item.id} textValue={item.label}>
                 {item.label}
-              </SelectFieldItem>
+              </SelectItem>
             ))}
           </SelectField>
-          <TextField
-            label="Realizations"
-            variant="filled"
-            type="number"
-            className="w-24 [&_input]:font-mono [&_input]:tabular-nums"
-            value={String(value.realizations)}
-            onChange={(text) => set("realizations", Math.max(1, Number(text) || 1))}
-          />
+          <Field className="w-24">
+            <FieldLabel htmlFor={`${id}-realizations`}>Realizations</FieldLabel>
+            <Input
+              id={`${id}-realizations`}
+              variant="filled"
+              type="number"
+              className="font-mono tabular-nums"
+              value={String(value.realizations)}
+              onChange={(event) =>
+                set("realizations", Math.max(1, Number(event.target.value) || 1))
+              }
+            />
+          </Field>
         </div>
         <div className="grid grid-cols-[1fr_auto] items-end gap-2">
-          <TextField
-            label="Seed"
-            variant="filled"
-            className="[&_input]:font-mono [&_input]:tabular-nums"
-            value={value.seed}
-            isDisabled={value.options.lockSeed}
-            onChange={(text) => set("seed", text.replace(/\D/g, ""))}
-          />
+          <Field data-disabled={value.options.lockSeed}>
+            <FieldLabel htmlFor={`${id}-seed`}>Seed</FieldLabel>
+            <Input
+              id={`${id}-seed`}
+              variant="filled"
+              className="font-mono tabular-nums"
+              value={value.seed}
+              disabled={value.options.lockSeed}
+              onChange={(event) => set("seed", event.target.value.replace(/\D/g, ""))}
+            />
+          </Field>
           <Button
             variant="outline"
             size="icon"
@@ -276,6 +288,30 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
   )
 }
 
+/** Labelled, filled single `Select` inside a `Field`. */
+function SelectField({
+  id,
+  label,
+  children,
+  ...props
+}: Omit<React.ComponentProps<typeof Select<object, "single">>, "children"> & {
+  id: string
+  label: string
+  children: React.ReactNode
+}) {
+  return (
+    <Field>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Select className="w-full" {...props}>
+        <SelectTrigger id={id} variant="filled">
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>{children}</SelectContent>
+      </Select>
+    </Field>
+  )
+}
+
 function FormSection({
   title,
   defaultExpanded = false,
@@ -291,7 +327,7 @@ function FormSection({
       className="group/section flex flex-col gap-3"
       defaultExpanded={defaultExpanded}
     >
-      <Divider emphasis="subtle" />
+      <Separator emphasis="subtle" />
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-medium">{title}</h3>
         <span className="flex items-center gap-0.5 text-muted-foreground">

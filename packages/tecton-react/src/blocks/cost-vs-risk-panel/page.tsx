@@ -5,7 +5,14 @@ import { cn } from "cn"
 import { CrownIcon, PanelRightIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
-import { Chip } from "@tecton/react/tecton/chip"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@tecton/react/components/select"
+import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
 import {
   Panel,
   PanelActions,
@@ -13,14 +20,11 @@ import {
   PanelHeader,
   PanelTitle,
 } from "@tecton/react/tecton/panel"
-import {
-  SelectField,
-  SelectFieldItem,
-} from "@tecton/react/tecton/select-field"
 
 import { ComparisonList } from "./components/comparison-list"
 import { QuadrantChart } from "./components/quadrant-chart"
-import { axisOptions, designs as allDesigns, metrics, type DesignPoint } from "./data"
+import { axisOptions, designs as allDesigns, metrics } from "./data"
+import type { DesignPoint } from "./data"
 
 type CostVsRiskPanelProps = Omit<React.ComponentProps<typeof Panel>, "children"> & {
   designs?: DesignPoint[]
@@ -42,15 +46,6 @@ function CostVsRiskPanel({
   const [selected, setSelected] = React.useState<string[]>(defaultSelected)
   const [xAxis, setXAxis] = React.useState("cost")
   const [yAxis, setYAxis] = React.useState("risk")
-
-  const toggle = (id: string) =>
-    setSelected((current) =>
-      current.includes(id)
-        ? current.length > 1
-          ? current.filter((item) => item !== id)
-          : current
-        : [...current, id]
-    )
 
   const xLabel = axisOptions.find((option) => option.id === xAxis)?.label ?? "Cost"
   const yLabel = axisOptions.find((option) => option.id === yAxis)?.label ?? "Risk"
@@ -79,35 +74,41 @@ function CostVsRiskPanel({
       <PanelContent className="flex flex-col gap-4">
         <div className="flex flex-wrap items-center justify-end gap-2 text-xs text-muted-foreground">
           <span>Compare</span>
-          <SelectField
+          <Select
             aria-label="X axis"
-            variant="filled"
-            size="sm"
             className="w-28"
             selectedKey={xAxis}
             onSelectionChange={(key) => setXAxis(String(key))}
           >
-            {axisOptions.map((option) => (
-              <SelectFieldItem key={option.id} id={option.id} textValue={option.label}>
-                {option.label}
-              </SelectFieldItem>
-            ))}
-          </SelectField>
+            <SelectTrigger variant="filled" size="sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {axisOptions.map((option) => (
+                <SelectItem key={option.id} id={option.id} textValue={option.label}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
           <span>and</span>
-          <SelectField
+          <Select
             aria-label="Y axis"
-            variant="filled"
-            size="sm"
             className="w-28"
             selectedKey={yAxis}
             onSelectionChange={(key) => setYAxis(String(key))}
           >
-            {axisOptions.map((option) => (
-              <SelectFieldItem key={option.id} id={option.id} textValue={option.label}>
-                {option.label}
-              </SelectFieldItem>
-            ))}
-          </SelectField>
+            <SelectTrigger variant="filled" size="sm">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {axisOptions.map((option) => (
+                <SelectItem key={option.id} id={option.id} textValue={option.label}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
 
         <QuadrantChart
@@ -117,33 +118,45 @@ function CostVsRiskPanel({
           yLabel={yLabel}
         />
 
-        <div
+        <ChipGroup
           data-slot="cost-vs-risk-legend"
-          className="flex flex-wrap gap-1.5"
-          role="group"
           aria-label="Designs"
-        >
-          {designs.map((design) => {
-            const active = selected.includes(design.id)
-            return (
-              <Chip
-                key={design.id}
-                size="sm"
-                variant={active ? "filled" : "outlined"}
-                aria-pressed={active}
-                onPress={() => toggle(design.id)}
-              >
-                <span
-                  aria-hidden
-                  className="size-2 rounded-[2px]"
-                  style={{ background: design.color, opacity: active ? 1 : 0.6 }}
-                />
-                {design.name}
-                {design.isRecommended && <CrownIcon className="size-3" />}
-              </Chip>
+          selectionMode="multiple"
+          disallowEmptySelection
+          selectedKeys={selected}
+          onSelectionChange={(keys) =>
+            setSelected(
+              keys === "all"
+                ? designs.map((design) => design.id)
+                : designs
+                    .filter((design) => keys.has(design.id))
+                    .map((design) => design.id)
             )
-          })}
-        </div>
+          }
+        >
+          <ChipList>
+            {designs.map((design) => {
+              const active = selected.includes(design.id)
+              return (
+                <Chip
+                  key={design.id}
+                  id={design.id}
+                  textValue={design.name}
+                  size="md"
+                  appearance={active ? "solid" : "outline"}
+                >
+                  <span
+                    aria-hidden
+                    className="size-2 rounded-[2px]"
+                    style={{ background: design.color, opacity: active ? 1 : 0.6 }}
+                  />
+                  {design.name}
+                  {design.isRecommended && <CrownIcon className="size-3" />}
+                </Chip>
+              )
+            })}
+          </ChipList>
+        </ChipGroup>
 
         <ComparisonList metrics={metrics} designs={designs} selected={selected} />
       </PanelContent>

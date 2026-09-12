@@ -113,6 +113,45 @@ function rewriteImports(source: string): { code: string; blocked?: string } {
   return { code, blocked }
 }
 
+// Tecton additions to a synced component page: the extra variants that the
+// `aria-tecton` overlay adds to the upstream component (alert severity,
+// separator emphasis, badge colours, input variants…). The content of
+// `scripts/docs-extras/<name>.mdx` is inserted before the upstream
+// "API Reference" section, or appended when the page has none.
+const EXTRAS_DIR = path.join(WWW, "scripts/docs-extras")
+
+async function withExtras(mdx: string, name: string) {
+  const file = path.join(EXTRAS_DIR, `${name}.mdx`)
+  if (!(await exists(file))) return mdx
+  const extras = (await fs.readFile(file, "utf8")).trim()
+  const marker = "\n## API Reference"
+  const index = mdx.indexOf(marker)
+  if (index === -1) return `${mdx.trimEnd()}\n\n${extras}\n`
+  return `${mdx.slice(0, index).trimEnd()}\n\n${extras}\n${mdx.slice(index)}`
+}
+
+// The synced examples are listed in the repository's .prettierignore (between
+// the markers below) so `pnpm format` leaves upstream code untouched.
+const PRETTIER_IGNORE = path.join(REPO, ".prettierignore")
+const IGNORE_START = "# synced-examples:start (written by apps/www/scripts/sync-upstream-docs.mts)"
+const IGNORE_END = "# synced-examples:end"
+
+async function writePrettierIgnore(examples: string[]) {
+  const block = [
+    IGNORE_START,
+    ...examples.map((name) => `apps/www/src/examples/${name}.tsx`),
+    IGNORE_END,
+  ].join("\n")
+  const current = (await exists(PRETTIER_IGNORE)) ? await fs.readFile(PRETTIER_IGNORE, "utf8") : ""
+  const start = current.indexOf(IGNORE_START)
+  const end = current.indexOf(IGNORE_END)
+  const next =
+    start !== -1 && end !== -1
+      ? current.slice(0, start) + block + current.slice(end + IGNORE_END.length)
+      : `${current.trimEnd()}\n\n${block}\n`
+  if (next !== current) await fs.writeFile(PRETTIER_IGNORE, next)
+}
+
 const LOCAL_DOCS = new Set([
   "",
   "installation",
@@ -131,7 +170,10 @@ function isLocalDocsLink(href: string) {
   const [pathname] = href.split(/[#?]/)
   if (pathname === "/blocks" || pathname === "/themes") return true
   if (!pathname.startsWith("/docs")) return false
-  const [, , first] = pathname.split("/")
+  const [, , first, second] = pathname.split("/")
+  // only the TanStack Form guide exists locally; the other upstream form guides
+  // (react-hook-form, formisch…) stay on ui.shadcn.com
+  if (first === "forms") return !second || second === "tanstack-form"
   return LOCAL_DOCS.has(first ?? "")
 }
 
@@ -279,6 +321,8 @@ async function main() {
       exampleCache.set(exampleName, null)
       return false
     }
+    // Synced examples are upstream code: eslint.config.js ignores them (it
+    // reads the list from sync-report.json) and .prettierignore lists them.
     const header = `// Synced from shadcn/ui (apps/v4/examples/aria/${exampleName}.tsx) by scripts/sync-upstream-docs.mts — do not edit.\n`
     await fs.writeFile(path.join(OUT_EXAMPLES, `${exampleName}.tsx`), header + code)
     exampleCache.set(exampleName, code)
@@ -318,7 +362,10 @@ async function main() {
         await fs.copyFile(from, path.join(IMAGES_OUT, image))
       }
     }
-    await fs.writeFile(path.join(OUT_DOCS, `${name}.mdx`), transformMdx(mdx, name, removed))
+    await fs.writeFile(
+      path.join(OUT_DOCS, `${name}.mdx`),
+      await withExtras(transformMdx(mdx, name, removed), name)
+    )
     report.pages.push(name)
   }
 
@@ -357,6 +404,7 @@ async function main() {
   }
   report.examples.sort()
   await fs.writeFile(path.join(HERE, "sync-report.json"), JSON.stringify(report, null, 2) + "\n")
+  await writePrettierIgnore(report.examples)
 
   console.log(
     `[docs:sync] ${report.pages.length} pages, ${report.examples.length} examples, ${Object.keys(report.skippedExamples).length} skipped (see scripts/sync-report.json)`

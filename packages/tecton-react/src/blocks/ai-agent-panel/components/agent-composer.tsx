@@ -4,6 +4,7 @@ import * as React from "react"
 import { cn } from "cn"
 import { ArrowUpIcon, MicIcon, PaperclipIcon } from "lucide-react"
 
+import { Button } from "@tecton/react/components/button"
 import {
   InputGroup,
   InputGroupAddon,
@@ -11,7 +12,6 @@ import {
   InputGroupInput,
 } from "@tecton/react/components/input-group"
 import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
-import { Chip } from "@tecton/react/tecton/chip"
 
 type AgentComposerProps = Omit<React.ComponentProps<"form">, "onSubmit"> & {
   placeholder?: string
@@ -50,14 +50,16 @@ function AgentComposer({
       {suggestions.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {suggestions.map((suggestion) => (
-            <Chip
+            <Button
               key={suggestion}
-              variant="outlined"
+              type="button"
+              variant="outline"
               size="xs"
+              className="rounded-full"
               onPress={() => onSubmit?.(suggestion)}
             >
               {suggestion}
-            </Chip>
+            </Button>
           ))}
         </div>
       )}

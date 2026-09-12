@@ -1,6 +1,13 @@
 "use client"
 
 import * as React from "react"
+import {
+  createColumnHelper,
+  createSortedRowModel,
+  rowSelectionFeature,
+  rowSortingFeature,
+  tableFeatures,
+} from "@tanstack/react-table"
 import { cn } from "cn"
 import {
   CopyIcon,
@@ -10,25 +17,28 @@ import {
   TrashIcon,
 } from "lucide-react"
 
+import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
+import { Checkbox } from "@tecton/react/components/checkbox"
 import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
-import { Chip } from "@tecton/react/tecton/chip"
-import { createDataTableColumns } from "@tecton/react/tecton/data-table"
 import { Meter } from "@tecton/react/tecton/meter"
 
-import {
-  formatFirstOil,
-  riskLabel,
-  statusMeta,
-  type FieldDevelopmentAlternative,
-} from "../data"
+import { formatFirstOil, riskLabel, statusMeta } from "../data"
+import type { FieldDevelopmentAlternative } from "../data"
 
-const columns = createDataTableColumns<FieldDevelopmentAlternative>()
+// TanStack Table v9: the features the FDA comparison table uses.
+const fdaTableFeatures = tableFeatures({
+  rowSelectionFeature,
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+})
+
+const columns = createColumnHelper<typeof fdaTableFeatures, FieldDevelopmentAlternative>()
 
 function MonoValue({
   value,
@@ -63,9 +73,15 @@ type ColumnCallbacks = {
   onDelete?: (fda: FieldDevelopmentAlternative) => void
 }
 
-/** Column definitions for the FDA comparison `DataTable`. */
+/** Column definitions for the FDA comparison table. */
 function createFdaColumns(callbacks: ColumnCallbacks = {}) {
-  return [
+  return columns.columns([
+    columns.display({
+      id: "select",
+      header: () => <Checkbox slot="selection" aria-label="Select all rows" />,
+      cell: () => <Checkbox slot="selection" aria-label="Select row" />,
+      enableSorting: false,
+    }),
     columns.display({
       id: "rank",
       header: "Rank",
@@ -134,13 +150,12 @@ function createFdaColumns(callbacks: ColumnCallbacks = {}) {
       cell: ({ getValue }) => {
         const meta = statusMeta[getValue()]
         return (
-          <Chip
-            size="xs"
-            color={meta.color}
-            variant={getValue() === "archived" ? "outlined" : "filled"}
+          <Badge
+            variant={meta.color}
+            appearance={getValue() === "archived" ? "outline" : "solid"}
           >
             {meta.label}
-          </Chip>
+          </Badge>
         )
       },
     }),
@@ -180,8 +195,8 @@ function createFdaColumns(callbacks: ColumnCallbacks = {}) {
         </span>
       ),
     }),
-  ]
+  ])
 }
 
-export { createFdaColumns, MonoValue }
+export { createFdaColumns, fdaTableFeatures, MonoValue }
 export type { ColumnCallbacks }

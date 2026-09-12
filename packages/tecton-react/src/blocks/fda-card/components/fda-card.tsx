@@ -10,6 +10,7 @@ import {
   TrashIcon,
 } from "lucide-react"
 
+import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
 import {
   Card,
@@ -26,8 +27,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
-import { Chip } from "@tecton/react/tecton/chip"
-import { Divider } from "@tecton/react/tecton/divider"
+import { Separator } from "@tecton/react/components/separator"
 import { Meter } from "@tecton/react/tecton/meter"
 import {
   Stat,
@@ -36,7 +36,8 @@ import {
   StatValue,
 } from "@tecton/react/tecton/stat"
 
-import { levelLabel, ratingMeta, statusMeta, type FdaSummary } from "../data"
+import { levelLabel, ratingMeta, statusMeta } from "../data"
+import type { FdaSummary } from "../data"
 
 type FdaCardProps = Omit<React.ComponentProps<typeof Card>, "children"> & {
   fda: FdaSummary
@@ -83,9 +84,9 @@ function FdaCard({
           </span>
         </CardTitle>
         <CardAction className="flex items-center gap-1">
-          <Chip size="xs" variant="outlined" color={status.color}>
+          <Badge variant={status.color} appearance="outline">
             {status.label}
-          </Chip>
+          </Badge>
           <DropdownMenuTrigger>
             <Button variant="ghost" size="icon-xs" aria-label="More actions">
               <MoreVerticalIcon />
@@ -123,9 +124,9 @@ function FdaCard({
         <SectionHeading
           title="Economics"
           trailing={
-            <Chip size="xs" variant="outlined" color={rating.color}>
+            <Badge variant={rating.color} appearance="outline">
               {rating.label}
-            </Chip>
+            </Badge>
           }
           onPress={() => onOpen?.(fda)}
         />
@@ -148,12 +149,12 @@ function FdaCard({
           </Stat>
         </StatGroup>
 
-        <Divider emphasis="subtle" />
+        <Separator emphasis="subtle" />
 
         <LevelMeter label="Complexity" value={fda.complexity} onPress={() => onOpen?.(fda)} />
-        <Divider emphasis="subtle" />
+        <Separator emphasis="subtle" />
         <LevelMeter label="Risk" value={fda.risk} onPress={() => onOpen?.(fda)} />
-        <Divider emphasis="subtle" />
+        <Separator emphasis="subtle" />
         <LevelMeter label="Emissions" value={fda.emissions} onPress={() => onOpen?.(fda)} />
       </CardContent>
 

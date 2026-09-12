@@ -1,22 +1,24 @@
 import { MapPinIcon } from "lucide-react"
 
-import { Chip } from "@tecton/react/tecton/chip"
+import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
 
 export default function ChipSizes() {
   return (
-    <div className="flex flex-wrap items-center gap-2">
-      <Chip size="md" color="primary">
-        <MapPinIcon />
-        Medium
-      </Chip>
-      <Chip size="sm" color="primary">
-        <MapPinIcon />
-        Small
-      </Chip>
-      <Chip size="xs" color="primary">
-        <MapPinIcon />
-        Extra small
-      </Chip>
-    </div>
+    <ChipGroup aria-label="Locations" selectionMode="single">
+      <ChipList className="items-center">
+        <Chip id="lg" size="lg" variant="default">
+          <MapPinIcon data-icon="inline-start" />
+          Large
+        </Chip>
+        <Chip id="md" size="md" variant="default">
+          <MapPinIcon data-icon="inline-start" />
+          Medium
+        </Chip>
+        <Chip id="default" variant="default">
+          <MapPinIcon data-icon="inline-start" />
+          Default
+        </Chip>
+      </ChipList>
+    </ChipGroup>
   )
 }

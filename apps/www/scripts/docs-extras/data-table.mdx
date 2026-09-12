@@ -1,0 +1,27 @@
+## Tecton recipes
+
+Tecton ships no `DataTable` component: build tables directly with [TanStack Table](https://tanstack.com/table/latest) and the `Table` primitives, exactly as the guide above does. The recipes below are copy-paste starting points for the layouts a Tecton application usually needs; each one is a self-contained example built on `useTable` and the shadcn `Table` components.
+
+### Density and alternating rows
+
+Density is nothing more than Tailwind classes on the `Table`: an emphasised header (`[&_thead]:bg-muted`), alternating rows (`[&_tbody_tr:nth-child(even)]:bg-surface-alt`) and, for the compact variant, shorter rows and smaller text (`[&_th]:h-8 [&_td]:py-1 text-xs`).
+
+<ComponentPreview name="data-table-density" align="start" />
+
+### Row selection
+
+Add a display column with a React Aria `Checkbox slot="selection"` in the header and in each cell, turn on `selectionMode="multiple"` on the `Table` and mirror its selection into TanStack's `rowSelection` state. Summarise the selection below the table.
+
+<ComponentPreview name="data-table-selection" align="start" />
+
+### Pagination
+
+Register `rowPaginationFeature` with `createPaginatedRowModel()`, keep the `pagination` state in React and render previous/next buttons, a page-size `Select` and a "Page x of y" label in a footer line.
+
+<ComponentPreview name="data-table-pagination" align="start" />
+
+### Small screens
+
+Hide low-priority columns below `md` with `hidden md:table-cell` on both the header and the cell, and let the primary cell carry that information as a subtitle so nothing is lost on a phone.
+
+<ComponentPreview name="data-table-small-screen" align="start" />

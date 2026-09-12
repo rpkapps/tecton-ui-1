@@ -2,7 +2,7 @@
 
 import { cn } from "cn"
 
-import { Chip } from "@tecton/react/tecton/chip"
+import { Badge } from "@tecton/react/components/badge"
 import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 
 import map from "../../../../packages/tecton-react/tokens/tecton.map.json"
@@ -58,9 +58,9 @@ function Rows({
             <Value value={light[name] ?? "—"} />
           </td>
           <td className="py-2 pr-3">
-            <Chip size="xs" variant="outlined" color={confidenceColor[mapping.confidence]}>
+            <Badge appearance="outline" variant={confidenceColor[mapping.confidence]}>
               {mapping.confidence}
-            </Chip>
+            </Badge>
           </td>
           {!compact && (
             <td className="py-2 text-xs text-muted-foreground">{mapping.note}</td>

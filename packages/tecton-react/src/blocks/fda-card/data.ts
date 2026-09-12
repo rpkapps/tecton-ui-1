@@ -34,19 +34,19 @@ export type FdaSummary = {
 
 export const statusMeta: Record<
   FdaCardStatus,
-  { label: string; color: "info" | "primary" | "default" }
+  { label: string; color: "info" | "default" | "secondary" }
 > = {
   ongoing: { label: "Ongoing", color: "info" },
-  nominated: { label: "Nominated", color: "primary" },
-  reference: { label: "Ref case", color: "default" },
-  archived: { label: "Archived", color: "default" },
+  nominated: { label: "Nominated", color: "default" },
+  reference: { label: "Ref case", color: "secondary" },
+  archived: { label: "Archived", color: "secondary" },
 }
 
-export const ratingMeta: Record<FdaRating, { label: string; color: "success" | "warning" | "error" }> =
+export const ratingMeta: Record<FdaRating, { label: string; color: "success" | "warning" | "destructive" }> =
   {
     good: { label: "Good", color: "success" },
     fair: { label: "Fair", color: "warning" },
-    poor: { label: "Poor", color: "error" },
+    poor: { label: "Poor", color: "destructive" },
   }
 
 export const fdaSummaries: FdaSummary[] = [

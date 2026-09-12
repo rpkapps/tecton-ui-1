@@ -4,9 +4,11 @@ import {
   HeadContent,
   Outlet,
   Scripts,
+  useRouter,
 } from "@tanstack/react-router"
 import { TanstackProvider } from "fumadocs-core/framework/tanstack"
 import { ThemeProvider } from "next-themes"
+import { RouterProvider as AriaRouterProvider } from "react-aria-components"
 
 import { Toaster } from "@tecton/react/components/sonner"
 
@@ -24,7 +26,10 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.ico" },
+      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
+      { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+      { rel: "apple-touch-icon", href: "/apple-touch-icon.png", sizes: "180x180" },
+      { rel: "manifest", href: "/manifest.json" },
     ],
   }),
   notFoundComponent: () => (
@@ -38,6 +43,23 @@ export const Route = createRootRoute({
   shellComponent: RootDocument,
   component: () => <Outlet />,
 })
+
+/**
+ * Client-side routing for every React Aria `Link` (sidebar items, breadcrumbs,
+ * `Button` links…): `href` navigates through the TanStack router instead of a
+ * full page load.
+ */
+function AriaRouter({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+  return (
+    <AriaRouterProvider
+      navigate={(to) => void router.navigate({ to })}
+      useHref={(to) => router.buildLocation({ to }).href}
+    >
+      {children}
+    </AriaRouterProvider>
+  )
+}
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
@@ -56,7 +78,9 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           enableSystem
           disableTransitionOnChange
         >
-          <TanstackProvider>{children}</TanstackProvider>
+          <TanstackProvider>
+            <AriaRouter>{children}</AriaRouter>
+          </TanstackProvider>
           <Toaster position="top-center" />
         </ThemeProvider>
         <Scripts />

@@ -9,10 +9,10 @@ import {
   TabletIcon,
 } from "lucide-react"
 
+import { Badge } from "@tecton/react/components/badge"
 import { LinkButton } from "@tecton/react/components/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@tecton/react/components/toggle-group"
-import { Chip } from "@tecton/react/tecton/chip"
 import { CopyButton } from "@tecton/react/tecton/copy-button"
 
 import { CodeBlock } from "@/components/code-block"
@@ -68,8 +68,8 @@ function BlockSources({ name }: { name: string }) {
         ) : (
           <CodeBlock
             code={code}
-            lang={selected?.endsWith(".ts") ? "ts" : "tsx"}
-            title={`@tecton/react/${selected}${selected?.includes(".") ? "" : ".tsx"}`}
+            lang={selected.endsWith(".ts") ? "ts" : "tsx"}
+            title={`@tecton/react/${selected}${selected.includes(".") ? "" : ".tsx"}`}
           />
         )}
       </div>
@@ -94,9 +94,9 @@ export function BlockViewer({
         <div className="flex min-w-0 flex-col">
           <div className="flex items-center gap-2">
             <h3 className="text-sm font-medium">{block.title}</h3>
-            <Chip size="xs" variant="outlined">
+            <Badge variant="secondary" appearance="outline">
               {block.name}
-            </Chip>
+            </Badge>
           </div>
           <p className="text-xs text-muted-foreground">{block.description}</p>
           <div className="mt-1.5 flex w-fit items-center gap-1 rounded-md border bg-code py-0.5 pr-0.5 pl-2 font-mono text-xs text-muted-foreground">

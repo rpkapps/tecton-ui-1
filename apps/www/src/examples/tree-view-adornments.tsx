@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { Chip } from "@tecton/react/tecton/chip"
+import { Badge } from "@tecton/react/components/badge"
 import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 import {
   TreeView,
@@ -31,9 +31,7 @@ export default function TreeViewAdornments() {
               colorTag={<ColorSwatch color={horizon.color} aria-label={`${horizon.name} colour`} />}
               suffix={
                 horizon.picks > 0 && (
-                  <Chip size="xs" color="info">
-                    {horizon.picks} picks
-                  </Chip>
+                  <Badge variant="info">{horizon.picks} picks</Badge>
                 )
               }
               endAdornment={

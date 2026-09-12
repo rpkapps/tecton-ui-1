@@ -1,6 +1,6 @@
 # Tecton UI
 
-Enterprise React component library for **Tecton**, built on [shadcn/ui](https://ui.shadcn.com) with the **React Aria** base. Consumers see Tecton branding and `@tecton/react` imports; underneath, every standard component is the unmodified shadcn/ui implementation, installed and updated with the shadcn CLI. Tecton's visual language is applied **only through the shadcn CSS variables**.
+Enterprise React component library for **Tecton**, built on [shadcn/ui](https://ui.shadcn.com) with the **React Aria** base. Consumers see Tecton branding and `@tecton/react` imports; underneath, every standard component is the shadcn/ui implementation, installed and updated with the shadcn CLI from a Tecton **style** (`aria-tecton`) that is built exactly like upstream's own presets. Colours, radii and fonts come from the shadcn CSS variables; everything else Tecton-specific (focus ring, hover colours, the extra variants) is Tailwind class lists in that style.
 
 ```
 apps/www                 TanStack Start documentation site (docs, blocks, themes, registry host)
@@ -35,9 +35,10 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 ## Design rules
 
 1. **Generated files are never edited.** `packages/tecton-react/src/{components,hooks,lib}/**` and the scaffold of `src/styles/globals.css` come from `shadcn add`. `pnpm generated:check` diffs every item against the registry.
-2. **Only the shadcn CSS variables change.** `tokens/tecton.map.json` maps Tecton tokens to `--background`, `--primary`, … with a confidence per value. `pnpm tokens:build` patches the variable values in `globals.css` (and nothing else); `pnpm tokens:check` verifies completeness and WCAG contrast. No `.style-*`, `[data-slot]` or `@layer` overrides exist.
-3. **Tecton-only behaviour is a separate component.** Chip, StatusAlert, FAB, TextField/SelectField variants, Divider emphasis, TreeView, Meter, DataTable, Stat, Panel, AppShell… live in `src/tecton/` and compose the generated components.
-4. **Dark first.** Both modes come from the Tecton token export; applications default to dark.
+2. **The Tecton style is a shadcn preset.** Upstream authors each preset as a CSS file of Tailwind `@apply` lists that its build inlines into the component sources. `scripts/registry-mirror/overlay/` holds `style-tecton.css` (Vega plus the Tecton deviations) and a small patch adding variant axes to `alert`, `badge`, `separator`, `input`, `textarea` and `select`. The mirror builds `aria-tecton` from it and the CLI installs the result. No `.style-*`, `[data-slot]` or `@layer` overrides exist.
+3. **Only the shadcn CSS variables carry colours.** `tokens/tecton.map.json` maps Tecton tokens to `--background`, `--primary`, … with a confidence per value. `pnpm tokens:build` patches the variable values in `globals.css` (and nothing else); `pnpm tokens:check` verifies completeness and WCAG contrast.
+4. **A Tecton component exists only when shadcn has no counterpart.** Chip (selectable / removable tags), CountBadge, CircularProgress, Meter, ColorSwatch, TreeView, Stat, Panel, PageHeader, AppShell, CopyButton and Link live in `src/tecton/` and compose the generated components. Alerts with a severity, dividers with an emphasis, filled inputs, status badges and floating action buttons are variants of the shadcn components; data tables are built with TanStack Table on the shadcn `Table` (the docs carry the recipes).
+5. **Dark first.** Both modes come from the Tecton token export; applications default to dark.
 
 ## Maintenance scripts
 
@@ -49,7 +50,7 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 | `pnpm docs:sync` | Sync shadcn docs pages + examples for the React Aria base |
 | `pnpm --filter @tecton/react icons:build` | Regenerate icon components from the Tecton export in `icons-src/tecton/` |
 | `pnpm compare` | Playwright captures of the state matrices next to the Storybook screenshots |
-| `scripts/registry-mirror.sh` | Local mirror of `ui.shadcn.com/r` (for offline / restricted networks) |
+| `scripts/registry-mirror.sh` | Builds and serves the shadcn registry with the Tecton overlay (`aria-tecton`); required for every CLI command |
 
 `docs/UPSTREAM.md` records the pinned shadcn/ui commit and the exact generation commands.
 

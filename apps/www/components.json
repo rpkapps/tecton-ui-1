@@ -1,6 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "aria-vega",
+  "style": "aria-tecton",
   "rsc": false,
   "tsx": true,
   "tailwind": {

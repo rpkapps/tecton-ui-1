@@ -29,6 +29,7 @@ export const exampleNames = Object.keys(modules)
 
 export async function loadExample(name: string): Promise<React.ComponentType> {
   const load = modules[keyFor(name)]
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- record lookup by user input
   if (!load) {
     throw new Error(`Unknown example: ${name}`)
   }
@@ -46,6 +47,7 @@ export async function loadExample(name: string): Promise<React.ComponentType> {
 
 export async function loadExampleSource(name: string): Promise<string> {
   const load = sources[keyFor(name)]
+  // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- record lookup by user input
   if (!load) {
     throw new Error(`Unknown example: ${name}`)
   }

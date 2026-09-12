@@ -1,0 +1,351 @@
+diff --git a/apps/v4/registry/bases/aria/ui/alert.tsx b/apps/v4/registry/bases/aria/ui/alert.tsx
+index e9aa02f..62d2098 100644
+--- a/apps/v4/registry/bases/aria/ui/alert.tsx
++++ b/apps/v4/registry/bases/aria/ui/alert.tsx
+@@ -7,23 +7,35 @@ const alertVariants = cva("cn-alert group/alert relative w-full", {
+     variant: {
+       default: "cn-alert-variant-default",
+       destructive: "cn-alert-variant-destructive",
++      success: "cn-alert-variant-success",
++      warning: "cn-alert-variant-warning",
++      info: "cn-alert-variant-info",
++    },
++    appearance: {
++      default: "cn-alert-appearance-default",
++      outline: "cn-alert-appearance-outline",
++      filled: "cn-alert-appearance-filled",
+     },
+   },
+   defaultVariants: {
+     variant: "default",
++    appearance: "default",
+   },
+ })
+ 
+ function Alert({
+   className,
+-  variant,
++  variant = "default",
++  appearance = "default",
+   ...props
+ }: React.ComponentProps<"div"> & VariantProps<typeof alertVariants>) {
+   return (
+     <div
+       data-slot="alert"
++      data-variant={variant}
++      data-appearance={appearance}
+       role="alert"
+-      className={cn(alertVariants({ variant }), className)}
++      className={cn(alertVariants({ variant, appearance }), className)}
+       {...props}
+     />
+   )
+@@ -68,4 +80,4 @@ function AlertAction({ className, ...props }: React.ComponentProps<"div">) {
+   )
+ }
+ 
+-export { Alert, AlertTitle, AlertDescription, AlertAction }
++export { Alert, AlertTitle, AlertDescription, AlertAction, alertVariants }
+diff --git a/apps/v4/registry/bases/aria/ui/badge.tsx b/apps/v4/registry/bases/aria/ui/badge.tsx
+index 1d546cc..c1624f9 100644
+--- a/apps/v4/registry/bases/aria/ui/badge.tsx
++++ b/apps/v4/registry/bases/aria/ui/badge.tsx
+@@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority"
+ import { cn } from "cn"
+ 
+ const badgeVariants = cva(
+-  "cn-badge group/badge inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none",
++  "cn-badge group/badge inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none",
+   {
+     variants: {
+       variant: {
+@@ -12,10 +12,24 @@ const badgeVariants = cva(
+         outline: "cn-badge-variant-outline",
+         ghost: "cn-badge-variant-ghost",
+         link: "cn-badge-variant-link",
++        success: "cn-badge-variant-success",
++        warning: "cn-badge-variant-warning",
++        info: "cn-badge-variant-info",
++      },
++      appearance: {
++        solid: "",
++        outline: "",
++      },
++      size: {
++        default: "",
++        md: "",
++        lg: "",
+       },
+     },
+     defaultVariants: {
+       variant: "default",
++      appearance: "solid",
++      size: "default",
+     },
+   }
+ )
+@@ -23,6 +37,8 @@ const badgeVariants = cva(
+ function Badge({
+   className,
+   variant = "default",
++  appearance = "solid",
++  size = "default",
+   render,
+   ...props
+ }: React.ComponentProps<"span"> &
+@@ -33,7 +49,9 @@ function Badge({
+     const renderProps = {
+       "data-slot": "badge",
+       "data-variant": variant,
+-      className: cn(badgeVariants({ variant }), className),
++      "data-appearance": appearance,
++      "data-size": size,
++      className: cn(badgeVariants({ variant, appearance, size }), className),
+       ...props,
+     }
+ 
+@@ -44,7 +62,9 @@ function Badge({
+     <span
+       data-slot="badge"
+       data-variant={variant}
+-      className={cn(badgeVariants({ variant }), className)}
++      data-appearance={appearance}
++      data-size={size}
++      className={cn(badgeVariants({ variant, appearance, size }), className)}
+       {...props}
+     />
+   )
+diff --git a/apps/v4/registry/bases/aria/ui/input.tsx b/apps/v4/registry/bases/aria/ui/input.tsx
+index b09cd35..c7a991d 100644
+--- a/apps/v4/registry/bases/aria/ui/input.tsx
++++ b/apps/v4/registry/bases/aria/ui/input.tsx
+@@ -1,30 +1,47 @@
+ "use client"
+ 
+ import * as React from "react"
++import { cva, type VariantProps } from "class-variance-authority"
+ import { cn } from "cn"
+ import {
+   composeRenderProps,
+   Input as InputPrimitive,
+ } from "react-aria-components"
+ 
++const inputVariants = cva(
++  "cn-input w-full min-w-0 outline-none file:inline-flex file:border-0 file:bg-transparent file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
++  {
++    variants: {
++      variant: {
++        outline: "cn-input-variant-outline",
++        filled: "cn-input-variant-filled",
++        text: "cn-input-variant-text",
++      },
++    },
++    defaultVariants: {
++      variant: "outline",
++    },
++  }
++)
++
+ function Input({
+   className,
+   type,
++  variant = "outline",
+   ...props
+-}: React.ComponentProps<typeof InputPrimitive>) {
++}: React.ComponentProps<typeof InputPrimitive> &
++  VariantProps<typeof inputVariants>) {
+   return (
+     <InputPrimitive
+       type={type}
+       data-slot="input"
++      data-variant={variant}
+       className={composeRenderProps(className, (className) =>
+-        cn(
+-          "cn-input w-full min-w-0 outline-none file:inline-flex file:border-0 file:bg-transparent file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
+-          className
+-        )
++        cn(inputVariants({ variant }), className)
+       )}
+       {...props}
+     />
+   )
+ }
+ 
+-export { Input }
++export { Input, inputVariants }
+diff --git a/apps/v4/registry/bases/aria/ui/select.tsx b/apps/v4/registry/bases/aria/ui/select.tsx
+index b6eb51b..1c408ac 100644
+--- a/apps/v4/registry/bases/aria/ui/select.tsx
++++ b/apps/v4/registry/bases/aria/ui/select.tsx
+@@ -73,21 +73,31 @@ function SelectValue<T extends object>({
+   )
+ }
+ 
++const selectTriggerVariants = {
++  outline: "cn-select-trigger-variant-outline",
++  filled: "cn-select-trigger-variant-filled",
++  text: "cn-select-trigger-variant-text",
++} as const
++
+ function SelectTrigger({
+   className,
+   size = "default",
++  variant = "outline",
+   children,
+   ...props
+ }: Omit<React.ComponentProps<typeof ButtonPrimitive>, "children"> & {
+   children?: React.ReactNode
+   size?: "sm" | "default"
++  variant?: keyof typeof selectTriggerVariants
+ }) {
+   return (
+     <ButtonPrimitive
+       data-slot="select-trigger"
+       data-size={size}
++      data-variant={variant}
+       className={cn(
+         "cn-select-trigger flex w-full items-center justify-between whitespace-nowrap outline-none disabled:cursor-not-allowed disabled:opacity-50 *:data-[slot=select-value]:line-clamp-1 *:data-[slot=select-value]:flex *:data-[slot=select-value]:items-center [&_svg]:pointer-events-none [&_svg]:shrink-0",
++        selectTriggerVariants[variant],
+         className
+       )}
+       {...props}
+diff --git a/apps/v4/registry/bases/aria/ui/separator.tsx b/apps/v4/registry/bases/aria/ui/separator.tsx
+index f4c57e8..d41ff0e 100644
+--- a/apps/v4/registry/bases/aria/ui/separator.tsx
++++ b/apps/v4/registry/bases/aria/ui/separator.tsx
+@@ -1,24 +1,41 @@
+ "use client"
+ 
++import { cva, type VariantProps } from "class-variance-authority"
+ import { cn } from "cn"
+ import { Separator as SeparatorPrimitive } from "react-aria-components"
+ 
++const separatorVariants = cva(
++  "block shrink-0 border-0 aria-[orientation=horizontal]:h-px aria-[orientation=horizontal]:w-full aria-[orientation=vertical]:w-px aria-[orientation=vertical]:self-stretch [:is(hr)]:h-px [:is(hr)]:w-full",
++  {
++    variants: {
++      emphasis: {
++        subtle: "cn-separator-emphasis-subtle",
++        default: "cn-separator-emphasis-default",
++        strong: "cn-separator-emphasis-strong",
++      },
++    },
++    defaultVariants: {
++      emphasis: "default",
++    },
++  }
++)
++
+ function Separator({
+   className,
+   orientation = "horizontal",
++  emphasis = "default",
+   ...props
+-}: React.ComponentProps<typeof SeparatorPrimitive>) {
++}: React.ComponentProps<typeof SeparatorPrimitive> &
++  VariantProps<typeof separatorVariants>) {
+   return (
+     <SeparatorPrimitive
+       data-slot="separator"
++      data-emphasis={emphasis}
+       orientation={orientation}
+-      className={cn(
+-        "block shrink-0 border-0 bg-border aria-[orientation=horizontal]:h-px aria-[orientation=horizontal]:w-full aria-[orientation=vertical]:w-px aria-[orientation=vertical]:self-stretch [:is(hr)]:h-px [:is(hr)]:w-full",
+-        className
+-      )}
++      className={cn(separatorVariants({ emphasis }), className)}
+       {...props}
+     />
+   )
+ }
+ 
+-export { Separator }
++export { Separator, separatorVariants }
+diff --git a/apps/v4/registry/bases/aria/ui/textarea.tsx b/apps/v4/registry/bases/aria/ui/textarea.tsx
+index e6575a4..d9553e7 100644
+--- a/apps/v4/registry/bases/aria/ui/textarea.tsx
++++ b/apps/v4/registry/bases/aria/ui/textarea.tsx
+@@ -1,28 +1,45 @@
+ "use client"
+ 
+ import * as React from "react"
++import { cva, type VariantProps } from "class-variance-authority"
+ import { cn } from "cn"
+ import {
+   composeRenderProps,
+   TextArea as TextareaPrimitive,
+ } from "react-aria-components"
+ 
++const textareaVariants = cva(
++  "cn-textarea flex field-sizing-content min-h-16 w-full outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
++  {
++    variants: {
++      variant: {
++        outline: "cn-textarea-variant-outline",
++        filled: "cn-textarea-variant-filled",
++        text: "cn-textarea-variant-text",
++      },
++    },
++    defaultVariants: {
++      variant: "outline",
++    },
++  }
++)
++
+ function Textarea({
+   className,
++  variant = "outline",
+   ...props
+-}: React.ComponentProps<typeof TextareaPrimitive>) {
++}: React.ComponentProps<typeof TextareaPrimitive> &
++  VariantProps<typeof textareaVariants>) {
+   return (
+     <TextareaPrimitive
+       data-slot="textarea"
++      data-variant={variant}
+       className={composeRenderProps(className, (className) =>
+-        cn(
+-          "cn-textarea flex field-sizing-content min-h-16 w-full outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
+-          className
+-        )
++        cn(textareaVariants({ variant }), className)
+       )}
+       {...props}
+     />
+   )
+ }
+ 
+-export { Textarea }
++export { Textarea, textareaVariants }
+diff --git a/apps/v4/registry/styles.tsx b/apps/v4/registry/styles.tsx
+index 073055f..4a7d8fc 100644
+--- a/apps/v4/registry/styles.tsx
++++ b/apps/v4/registry/styles.tsx
+@@ -1,4 +1,27 @@
+ export const STYLES = [
++  {
++    name: "tecton",
++    title: "Tecton",
++    description: "Vega with the Tecton design language",
++    icon: (
++      <svg
++        xmlns="http://www.w3.org/2000/svg"
++        width="128"
++        height="128"
++        viewBox="0 0 24 24"
++        fill="none"
++        role="img"
++        color="currentColor"
++      >
++        <path
++          d="M4 6h16M4 12h16M4 18h16"
++          stroke="currentColor"
++          strokeWidth="2"
++          strokeLinecap="round"
++        ></path>
++      </svg>
++    ),
++  },
+   {
+     name: "vega",
+     title: "Vega",

@@ -2,8 +2,14 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { BuildingIcon, LayersIcon } from "lucide-react"
+import { BuildingIcon, CircleAlertIcon, LayersIcon, XIcon } from "lucide-react"
 
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from "@tecton/react/components/alert"
 import { Button } from "@tecton/react/components/button"
 import {
   Card,
@@ -14,12 +20,11 @@ import {
   CardTitle,
 } from "@tecton/react/components/card"
 import { Checkbox } from "@tecton/react/components/checkbox"
-import { Field, FieldLabel } from "@tecton/react/components/field"
+import { Field, FieldError, FieldLabel } from "@tecton/react/components/field"
+import { Input } from "@tecton/react/components/input"
+import { Separator } from "@tecton/react/components/separator"
 import { Spinner } from "@tecton/react/components/spinner"
-import { Divider } from "@tecton/react/tecton/divider"
 import { Link } from "@tecton/react/tecton/link"
-import { StatusAlert } from "@tecton/react/tecton/status-alert"
-import { TextField } from "@tecton/react/tecton/text-field"
 
 import { demoAccount, loginCopy, validateEmail, validatePassword } from "../data"
 
@@ -34,6 +39,8 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
   const [remember, setRemember] = React.useState(true)
   const [submitted, setSubmitted] = React.useState(false)
   const [status, setStatus] = React.useState<"idle" | "loading" | "error">("idle")
+  const emailId = React.useId()
+  const passwordId = React.useId()
   const rememberId = React.useId()
 
   const emailError = submitted ? validateEmail(email) : undefined
@@ -67,36 +74,54 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
       <CardContent>
         <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
           {status === "error" && (
-            <StatusAlert
-              severity="error"
-              variant="outlined"
-              title="Incorrect email or password"
-              description={`Try ${demoAccount.email} / ${demoAccount.password}.`}
-              onDismiss={() => setStatus("idle")}
-            />
+            <Alert variant="destructive" appearance="outline">
+              <CircleAlertIcon />
+              <AlertTitle>Incorrect email or password</AlertTitle>
+              <AlertDescription>
+                Try {demoAccount.email} / {demoAccount.password}.
+              </AlertDescription>
+              <AlertAction>
+                <Button
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Dismiss"
+                  onPress={() => setStatus("idle")}
+                >
+                  <XIcon />
+                </Button>
+              </AlertAction>
+            </Alert>
           )}
-          <TextField
-            label="Email"
-            type="email"
-            name="email"
-            autoComplete="email"
-            placeholder="name@company.com"
-            value={email}
-            onChange={setEmail}
-            errorMessage={emailError}
-            isRequired
-          />
-          <TextField
-            label="Password"
-            type="password"
-            name="password"
-            autoComplete="current-password"
-            placeholder="••••••••"
-            value={password}
-            onChange={setPassword}
-            errorMessage={passwordError}
-            isRequired
-          />
+          <Field data-invalid={!!emailError}>
+            <FieldLabel htmlFor={emailId}>Email</FieldLabel>
+            <Input
+              id={emailId}
+              type="email"
+              name="email"
+              autoComplete="email"
+              placeholder="name@company.com"
+              value={email}
+              onChange={(event) => setEmail(event.target.value)}
+              aria-invalid={!!emailError}
+              required
+            />
+            <FieldError>{emailError}</FieldError>
+          </Field>
+          <Field data-invalid={!!passwordError}>
+            <FieldLabel htmlFor={passwordId}>Password</FieldLabel>
+            <Input
+              id={passwordId}
+              type="password"
+              name="password"
+              autoComplete="current-password"
+              placeholder="••••••••"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
+              aria-invalid={!!passwordError}
+              required
+            />
+            <FieldError>{passwordError}</FieldError>
+          </Field>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <Field orientation="horizontal" className="w-auto">
               <Checkbox id={rememberId} isSelected={remember} onChange={setRemember} />
@@ -112,7 +137,14 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
             {status === "loading" && <Spinner />}
             Sign in
           </Button>
-          <Divider emphasis="subtle">or</Divider>
+          <div
+            role="separator"
+            className="flex items-center gap-3 text-xs text-muted-foreground"
+          >
+            <Separator emphasis="subtle" className="flex-1" />
+            or
+            <Separator emphasis="subtle" className="flex-1" />
+          </div>
           <Button type="button" variant="secondary" className="w-full" onPress={onSso}>
             <BuildingIcon /> Continue with {loginCopy.ssoProvider}
           </Button>

@@ -46,6 +46,7 @@ export function useCopyToClipboard({
 
     let hasCopied = false
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- undefined in insecure contexts
     if (navigator.clipboard?.writeText) {
       try {
         await navigator.clipboard.writeText(value)

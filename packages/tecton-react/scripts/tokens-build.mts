@@ -436,20 +436,17 @@ ${allow.length ? `Expected failures (Tecton's own values fail these pairs): ${al
 
 ## Known deviations
 
-Everything Tecton-specific must be expressed through the shadcn CSS variables above; generated
-component files are never edited. The following Tecton behaviours cannot be reproduced that way and
-are documented here (and, where the behaviour matters, addressed by a custom component instead):
+Colours, radii and fonts come from the shadcn CSS variables above. Everything else Tecton-specific
+about the generated components (focus ring, hover / pressed colours, flat controls, the extra
+\`alert\`, \`badge\`, \`separator\`, \`input\`, \`textarea\` and \`select\` variants) lives in the
+\`aria-tecton\` style overlay applied to the registry mirror (\`scripts/registry-mirror/overlay\`), so
+the generated files still come unmodified from the CLI. What remains different from Tecton:
 
-- **Focus ring** — Vega renders focus as \`ring-3 ring-ring/50\` (3px, 50% alpha) while Tecton draws
-  a solid 2px \`#ff52a8\` outline. The colour matches; width and opacity do not.
-- **Button hover** — Vega darkens with \`hover:bg-primary/80\` while Tecton lightens the surface to
-  \`#74647f\` (and text to \`#ffffff\`). Same for secondary (\`#514659\`) and tertiary/ghost (\`#3a343e\`).
-- **Input variants** — shadcn has a single (outlined) input; Tecton has outlined, filled
-  (\`--tecton-color-input-filled-bg\` surface) and textOnly variants. Filled/textOnly are provided by the custom
-  \`text-field\` / \`select-field\` components.
+- **Focus ring inside a few base sources** — \`calendar\`, \`item\`, \`scroll-area\` and \`tabs\` hard-code
+  \`ring-ring/50\` in the upstream source (not in the style file), so they keep the 50% alpha halo.
 - **Status colours** — Tecton's success/error/warning/info/neutral roles have no shadcn equivalent
-  beyond \`destructive\`; they are exposed as the extra tokens above and used by custom components
-  (\`status-alert\`, \`chip\`, \`count-badge\`).
+  beyond \`destructive\`; they are exposed as the extra tokens above and used by the overlay variants
+  and by the custom components (\`count-badge\`, \`chip\`).
 `;
 }
 

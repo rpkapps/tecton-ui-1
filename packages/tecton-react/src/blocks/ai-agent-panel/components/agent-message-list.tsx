@@ -5,6 +5,7 @@ import { cn } from "cn"
 import { CheckIcon, ChevronDownIcon, SparklesIcon } from "lucide-react"
 
 import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
+import { Button } from "@tecton/react/components/button"
 import {
   Collapsible,
   CollapsibleContent,
@@ -25,9 +26,15 @@ import {
   MessageScrollerViewport,
 } from "@tecton/react/components/message-scroller"
 import { Spinner } from "@tecton/react/components/spinner"
-import { Chip } from "@tecton/react/tecton/chip"
 
 import type { AgentAction, AgentMessage } from "../data"
+
+/** Button variant for each action colour; a completed action is outlined in success. */
+const actionVariant = {
+  primary: "default",
+  default: "secondary",
+  success: "default",
+} as const
 
 type AgentMessageListProps = React.ComponentProps<"div"> & {
   messages: AgentMessage[]
@@ -130,17 +137,21 @@ function AssistantMessage({
           {actions.map((action) => {
             const done = completedActions.includes(action.id)
             return (
-              <Chip
+              <Button
                 key={action.id}
-                color={done ? "success" : (action.color ?? "primary")}
-                variant={done ? "outlined" : "filled"}
-                size="sm"
+                variant={done ? "outline" : actionVariant[action.color ?? "primary"]}
+                size="xs"
+                className={cn(
+                  "rounded-full",
+                  done && "border-success text-success",
+                  !done && action.color === "success" && "bg-success text-success-foreground"
+                )}
                 isDisabled={done}
                 onPress={() => onAction?.(action)}
               >
                 {done && <CheckIcon />}
                 {action.label}
-              </Chip>
+              </Button>
             )
           })}
         </div>

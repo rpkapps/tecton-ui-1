@@ -1,38 +1,165 @@
+"use client"
+
 import * as React from "react"
+import {
+  createColumnHelper,
+  rowSelectionFeature,
+  tableFeatures,
+  useTable,
+} from "@tanstack/react-table"
+import type { RowSelectionState } from "@tanstack/react-table"
 
-import { createDataTableColumns, DataTable, type RowSelectionState } from "@tecton/react/tecton/data-table"
+import { Badge } from "@tecton/react/components/badge"
+import { Checkbox } from "@tecton/react/components/checkbox"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@tecton/react/components/table"
 
-type Alternative = { id: string; name: string; wells: number; costPerBbl: number }
+type Well = {
+  id: string
+  name: string
+  field: string
+  status: "Producing" | "Shut in" | "Drilling"
+  depth: number
+  operator: string
+}
 
-const alternatives: Alternative[] = [
-  { id: "a", name: "Alternative A", wells: 3, costPerBbl: 18.4 },
-  { id: "b", name: "Alternative B", wells: 4, costPerBbl: 16.9 },
-  { id: "c", name: "Alternative C", wells: 2, costPerBbl: 21.2 },
+const wells: Well[] = [
+  {
+    id: "a12",
+    name: "34/10-A-12",
+    field: "Gullfaks",
+    status: "Producing",
+    depth: 3250,
+    operator: "Equinor",
+  },
+  {
+    id: "b3",
+    name: "34/10-B-3",
+    field: "Gullfaks",
+    status: "Shut in",
+    depth: 2980,
+    operator: "Equinor",
+  },
+  {
+    id: "c7",
+    name: "33/9-C-7",
+    field: "Statfjord",
+    status: "Drilling",
+    depth: 1420,
+    operator: "Equinor",
+  },
+  {
+    id: "d2",
+    name: "34/7-D-2",
+    field: "Snorre",
+    status: "Producing",
+    depth: 2735,
+    operator: "Equinor",
+  },
 ]
 
-const helper = createDataTableColumns<Alternative>()
-const columns = helper.columns([
-  helper.accessor("name", { header: "Alternative" }),
-  helper.accessor("wells", { header: "Wells" }),
-  helper.accessor("costPerBbl", { header: "USD / bbl", cell: (info) => info.getValue().toFixed(1) }),
+const statusVariant = {
+  Producing: "success",
+  "Shut in": "warning",
+  Drilling: "info",
+} as const
+
+const features = tableFeatures({ rowSelectionFeature })
+const columnHelper = createColumnHelper<typeof features, Well>()
+
+const columns = columnHelper.columns([
+  // `slot="selection"` wires the checkbox to the React Aria table selection:
+  // the header checkbox selects all rows, the cell checkbox its own row.
+  columnHelper.display({
+    id: "select",
+    header: () => <Checkbox slot="selection" aria-label="Select all wells" />,
+    cell: () => <Checkbox slot="selection" aria-label="Select well" />,
+  }),
+  columnHelper.accessor("name", { header: "Well" }),
+  columnHelper.accessor("field", { header: "Field" }),
+  columnHelper.accessor("status", {
+    header: "Status",
+    cell: ({ getValue }) => (
+      <Badge variant={statusVariant[getValue()]} appearance="outline">
+        {getValue()}
+      </Badge>
+    ),
+  }),
+  columnHelper.accessor("depth", {
+    header: () => <div className="text-right">TD (m)</div>,
+    cell: ({ getValue }) => (
+      <div className="text-right font-mono tabular-nums">
+        {getValue().toLocaleString("en-US")}
+      </div>
+    ),
+  }),
+  columnHelper.accessor("operator", { header: "Operator" }),
 ])
 
 export default function DataTableSelection() {
-  const [selection, setSelection] = React.useState<RowSelectionState>({})
-  const selected = Object.keys(selection).filter((id) => selection[id])
+  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
+  const table = useTable({
+    features,
+    data: wells,
+    columns,
+    getRowId: (row) => row.id,
+    state: { rowSelection },
+    onRowSelectionChange: setRowSelection,
+  })
 
   return (
-    <div className="flex w-full max-w-xl flex-col gap-3">
-      <DataTable
-        label="FDA alternatives"
-        columns={columns}
-        data={alternatives}
-        enableSelection
-        getRowId={(row) => row.id}
-        onRowSelectionChange={setSelection}
-      />
-      <p className="text-xs text-muted-foreground">
-        Selected: {selected.length ? selected.join(", ") : "none"}
+    <div className="flex w-full max-w-3xl flex-col gap-3">
+      <div className="overflow-hidden rounded-md border">
+        <Table
+          aria-label="Wells"
+          selectionMode="multiple"
+          selectedKeys={table.getSelectedRowModel().rows.map((row) => row.id)}
+          onSelectionChange={(selection) => {
+            if (selection === "all") {
+              table.toggleAllRowsSelected(true)
+            } else {
+              table.setRowSelection(
+                Object.fromEntries([...selection].map((key) => [key, true]))
+              )
+            }
+          }}
+        >
+          <TableHeader>
+            {table.getFlatHeaders().map((header) => (
+              <TableHead
+                key={header.id}
+                id={header.id}
+                isRowHeader={header.index === 1}
+                className={header.column.id === "select" ? "w-10" : undefined}
+              >
+                {header.isPlaceholder ? null : (
+                  <table.FlexRender header={header} />
+                )}
+              </TableHead>
+            ))}
+          </TableHeader>
+          <TableBody renderEmptyState={() => "No wells."}>
+            {table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id} id={row.id}>
+                {row.getAllCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    <table.FlexRender cell={cell} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <p className="text-sm text-muted-foreground tabular-nums">
+        {table.getSelectedRowModel().rows.length} of{" "}
+        {table.getRowModel().rows.length} row(s) selected.
       </p>
     </div>
   )

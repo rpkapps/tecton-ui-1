@@ -1,7 +1,19 @@
 import * as React from "react"
 import { SearchIcon } from "lucide-react"
 
-import { SelectField, SelectFieldItem } from "@tecton/react/tecton/select-field"
+import {
+  Field,
+  FieldDescription,
+  FieldError,
+  FieldLabel,
+} from "@tecton/react/components/field"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@tecton/react/components/select"
 
 import { Caption, Matrix, Page, Section } from "./matrix"
 
@@ -13,23 +25,58 @@ import { Caption, Matrix, Page, Section } from "./matrix"
  * "Option 1" pre-selected and a leading search icon like the story.
  */
 const variants = [
-  { label: "Outlined", variant: "outlined" },
+  { label: "Outlined", variant: "outline" },
   { label: "Filled", variant: "filled" },
-  { label: "TextOnly", variant: "textOnly" },
+  { label: "TextOnly", variant: "text" },
 ] as const
+
+type State = "enabled" | "disabled" | "error"
+
+const states: { label: string; state: State }[] = [
+  { label: "Enabled", state: "enabled" },
+  { label: "Disabled", state: "disabled" },
+  { label: "Error", state: "error" },
+]
 
 const options = ["Option 1", "Option 2", "Option 3"]
 
-function Options() {
+function SelectCell({
+  variant,
+  state,
+}: {
+  variant: (typeof variants)[number]["variant"]
+  state: State
+}) {
+  const id = `select-${variant}-${state}`
+  const isDisabled = state === "disabled"
+  const isInvalid = state === "error"
   return (
-    <>
-      {options.map((option, index) => (
-        <SelectFieldItem key={index} id={String(index + 1)} textValue={option}>
-          <SearchIcon className="text-muted-foreground" />
-          {option}
-        </SelectFieldItem>
-      ))}
-    </>
+    <Field data-disabled={isDisabled} data-invalid={isInvalid}>
+      <FieldLabel htmlFor={id}>Field label</FieldLabel>
+      <Select
+        defaultSelectedKey="1"
+        isDisabled={isDisabled}
+        isInvalid={isInvalid}
+        className="w-full"
+      >
+        <SelectTrigger id={id} variant={variant}>
+          <SelectValue />
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option, index) => (
+            <SelectItem key={index} id={String(index + 1)} textValue={option}>
+              <SearchIcon className="text-muted-foreground" />
+              {option}
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+      {isInvalid ? (
+        <FieldError>Validation failed</FieldError>
+      ) : (
+        <FieldDescription>Helper text</FieldDescription>
+      )}
+    </Field>
   )
 }
 
@@ -39,43 +86,13 @@ export default function SelectMatrix() {
       {variants.map(({ label, variant }) => (
         <Section key={variant} title={label}>
           <Matrix
-            columns={["Enabled", "Disabled", "Error"]}
+            columns={states.map(({ label }) => label)}
             rows={[
               {
                 label: "md",
-                cells: [
-                  <SelectField
-                    key="enabled"
-                    aria-label="Field label"
-                    variant={variant}
-                    label="Field label"
-                    description="Helper text"
-                    defaultSelectedKey="1"
-                  >
-                    <Options />
-                  </SelectField>,
-                  <SelectField
-                    key="disabled"
-                    aria-label="Field label"
-                    variant={variant}
-                    label="Field label"
-                    description="Helper text"
-                    defaultSelectedKey="1"
-                    isDisabled
-                  >
-                    <Options />
-                  </SelectField>,
-                  <SelectField
-                    key="error"
-                    aria-label="Field label"
-                    variant={variant}
-                    label="Field label"
-                    errorMessage="Validation failed"
-                    defaultSelectedKey="1"
-                  >
-                    <Options />
-                  </SelectField>,
-                ],
+                cells: states.map(({ state }) => (
+                  <SelectCell key={state} variant={variant} state={state} />
+                )),
               },
             ]}
             cellClassName="w-56"
@@ -83,8 +100,7 @@ export default function SelectMatrix() {
         </Section>
       ))}
       <Caption>
-        Hovered, Focused, Pressed and Active columns from Storybook are
-        omitted.
+        Hovered, Focused, Pressed and Active columns from Storybook are omitted.
       </Caption>
     </Page>
   )

@@ -1,4 +1,4 @@
-import { Chip } from "@tecton/react/tecton/chip"
+import { Badge } from "@tecton/react/components/badge"
 import { Link } from "@tecton/react/tecton/link"
 import {
   PageHeader,
@@ -23,11 +23,13 @@ export default function PageHeaderEyebrowExample() {
         </PageHeaderEyebrow>
         <PageHeaderTitle className="flex items-center gap-3">
           34/10-A-12
-          <Chip size="sm" color="success">
+          <Badge size="md" variant="success">
             Producing
-          </Chip>
+          </Badge>
         </PageHeaderTitle>
-        <PageHeaderDescription>Drilled 2019 · TD 3 250 m · 2 sidetracks</PageHeaderDescription>
+        <PageHeaderDescription>
+          Drilled 2019 · TD 3 250 m · 2 sidetracks
+        </PageHeaderDescription>
       </PageHeaderContent>
     </PageHeader>
   )

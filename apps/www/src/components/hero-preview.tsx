@@ -1,8 +1,10 @@
 "use client"
 
 import * as React from "react"
-import { BellIcon, PlusIcon, SearchIcon } from "lucide-react"
+import { BellIcon, PlusIcon, SearchIcon, TriangleAlertIcon } from "lucide-react"
 
+import { Alert, AlertAction, AlertDescription, AlertTitle } from "@tecton/react/components/alert"
+import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
 import { Input } from "@tecton/react/components/input"
@@ -10,14 +12,11 @@ import { Label } from "@tecton/react/components/label"
 import { Slider } from "@tecton/react/components/slider"
 import { Switch } from "@tecton/react/components/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
-import { Chip } from "@tecton/react/tecton/chip"
 import { CircularProgress } from "@tecton/react/tecton/circular-progress"
 import { CountBadge } from "@tecton/react/tecton/count-badge"
-import { Fab } from "@tecton/react/tecton/fab"
 import { Meter } from "@tecton/react/tecton/meter"
 import { Panel, PanelActions, PanelContent, PanelHeader, PanelTitle } from "@tecton/react/tecton/panel"
 import { Stat, StatDelta, StatGroup, StatLabel, StatValue } from "@tecton/react/tecton/stat"
-import { StatusAlert } from "@tecton/react/tecton/status-alert"
 
 export function HeroPreview() {
   const [value, setValue] = React.useState(64)
@@ -31,22 +30,22 @@ export function HeroPreview() {
               <BellIcon />
             </Button>
           </CountBadge>
-          <Fab size="sm" variant="secondary">
-            <PlusIcon /> Add
-          </Fab>
+          <Button variant="secondary" size="sm" className="rounded-full shadow-md">
+            <PlusIcon data-icon="inline-start" /> Add
+          </Button>
         </PanelActions>
       </PanelHeader>
       <PanelContent className="flex flex-col gap-5">
         <div className="flex flex-wrap items-center gap-2">
-          <Chip color="success" size="sm">
+          <Badge variant="success" size="md">
             Active
-          </Chip>
-          <Chip color="info" variant="outlined" size="sm">
+          </Badge>
+          <Badge variant="info" appearance="outline" size="md">
             Reservoir interval
-          </Chip>
-          <Chip size="sm" variant="outlined" onPress={() => {}}>
+          </Badge>
+          <Button variant="outline" size="xs" className="rounded-full">
             Facies model
-          </Chip>
+          </Button>
         </div>
         <StatGroup>
           <Stat>
@@ -102,17 +101,16 @@ export function HeroPreview() {
             <Meter aria-label="Complexity" label="Complexity" value={35} color="auto" showValue />
           </TabsContent>
         </Tabs>
-        <StatusAlert
-          severity="warning"
-          variant="outlined"
-          title="Model out of date"
-          description="Horizon K70 changed after the last run."
-          action={
+        <Alert variant="warning" appearance="outline">
+          <TriangleAlertIcon />
+          <AlertTitle>Model out of date</AlertTitle>
+          <AlertDescription>Horizon K70 changed after the last run.</AlertDescription>
+          <AlertAction>
             <Button variant="ghost" size="xs">
               Re-run
             </Button>
-          }
-        />
+          </AlertAction>
+        </Alert>
       </PanelContent>
     </Panel>
   )

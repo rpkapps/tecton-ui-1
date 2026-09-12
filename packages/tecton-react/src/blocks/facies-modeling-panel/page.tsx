@@ -2,8 +2,20 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { PanelRightIcon, PlayIcon } from "lucide-react"
+import {
+  CircleCheckIcon,
+  PanelRightIcon,
+  PlayIcon,
+  TriangleAlertIcon,
+  XIcon,
+} from "lucide-react"
 
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from "@tecton/react/components/alert"
 import { Button } from "@tecton/react/components/button"
 import { Spinner } from "@tecton/react/components/spinner"
 import {
@@ -14,11 +26,11 @@ import {
   PanelHeader,
   PanelTitle,
 } from "@tecton/react/tecton/panel"
-import { StatusAlert } from "@tecton/react/tecton/status-alert"
 
 import { FaciesForm } from "./components/facies-form"
 import { ParameterSlider } from "./components/parameter-slider"
-import { defaultFaciesSettings, type FaciesSettings } from "./data"
+import { defaultFaciesSettings } from "./data"
+import type { FaciesSettings } from "./data"
 
 type FaciesModelingPanelProps = Omit<
   React.ComponentProps<typeof Panel>,
@@ -78,21 +90,32 @@ function FaciesModelingPanel({
       </PanelHeader>
       <PanelContent className="flex flex-col gap-4">
         {invalid && (
-          <StatusAlert
-            severity="warning"
-            variant="outlined"
-            title="Proportions must sum to 100%"
-            description={`Lithotype densities currently total ${total}%.`}
-          />
+          <Alert variant="warning" appearance="outline">
+            <TriangleAlertIcon />
+            <AlertTitle>Proportions must sum to 100%</AlertTitle>
+            <AlertDescription>
+              Lithotype densities currently total {total}%.
+            </AlertDescription>
+          </Alert>
         )}
         {lastRun && !invalid && (
-          <StatusAlert
-            severity="success"
-            variant="outlined"
-            title="Model generated"
-            description={`${value.realizations} realizations written at ${lastRun}.`}
-            onDismiss={() => setLastRun(null)}
-          />
+          <Alert variant="success" appearance="outline">
+            <CircleCheckIcon />
+            <AlertTitle>Model generated</AlertTitle>
+            <AlertDescription>
+              {value.realizations} realizations written at {lastRun}.
+            </AlertDescription>
+            <AlertAction>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Dismiss"
+                onPress={() => setLastRun(null)}
+              >
+                <XIcon />
+              </Button>
+            </AlertAction>
+          </Alert>
         )}
         <FaciesForm value={value} onChange={setValue} />
       </PanelContent>

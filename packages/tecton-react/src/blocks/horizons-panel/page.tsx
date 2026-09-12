@@ -4,8 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { PanelRightIcon } from "lucide-react"
 
+import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
-import { Chip } from "@tecton/react/tecton/chip"
 import {
   Panel,
   PanelActions,
@@ -17,12 +17,8 @@ import {
 
 import { HorizonForm } from "./components/horizon-form"
 import { HorizonReadout } from "./components/horizon-readout"
-import {
-  defaultHorizonSettings,
-  getPair,
-  volumes,
-  type HorizonSettings,
-} from "./data"
+import { defaultHorizonSettings, getPair, volumes } from "./data"
+import type { HorizonSettings } from "./data"
 
 type HorizonsPanelProps = Omit<React.ComponentProps<typeof Panel>, "children"> & {
   initialSettings?: HorizonSettings
@@ -55,9 +51,9 @@ function HorizonsPanel({
     >
       <PanelHeader>
         <PanelTitle>2 Horizons</PanelTitle>
-        <Chip size="xs" variant="outlined">
+        <Badge variant="secondary" appearance="outline">
           {pair.label.split(" → ").length} surfaces
-        </Chip>
+        </Badge>
         <PanelActions>
           <Button
             variant="ghost"
