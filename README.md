@@ -22,7 +22,7 @@ Requirements: Node ≥ 20, pnpm 10, [bun](https://bun.sh) for the maintenance sc
 
 ## Using the library
 
-`@tecton/react` is private. Consume it as a workspace package, a packed tarball (`pnpm --filter @tecton/react pack`) or through a private registry — see the [Installation](apps/www/content/docs/installation.mdx) page. The docs site also serves a shadcn registry (`/r/{name}.json`, namespace `@tecton`) with the theme, the Tecton components and the blocks.
+`@tecton/react` is private. Consume it as a workspace package, a packed tarball (`pnpm --filter @tecton/react pack`) or through a private registry — see the [Installation](apps/www/content/docs/installation.mdx) page. Components are not installed one by one. The docs site serves a shadcn registry (`/r/{name}.json`, namespace `@tecton`) for the **blocks** only; copied blocks import the components from the package.
 
 ```tsx
 import "@tecton/react/globals.css"
@@ -45,7 +45,7 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 | --- | --- |
 | `pnpm tokens:build` / `pnpm tokens:check` | Regenerate / verify the theme from the token map |
 | `pnpm generated:check` | Verify no generated component was hand-edited |
-| `pnpm registry:build` | Build the `@tecton` registry into `apps/www/public/r` |
+| `pnpm registry:build` | Build the `@tecton` blocks registry into `apps/www/public/r` |
 | `pnpm docs:sync` | Sync shadcn docs pages + examples for the React Aria base |
 | `pnpm --filter @tecton/react icons:build` | Regenerate icon components from the Tecton export in `icons-src/tecton/` |
 | `pnpm compare` | Playwright captures of the state matrices next to the Storybook screenshots |

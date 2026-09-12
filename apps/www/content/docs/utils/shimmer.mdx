@@ -8,20 +8,7 @@ upstream: apps/v4/content/docs/utils/shimmer.mdx
 
 ## Installation
 
-If your project was set up with `npx shadcn@latest init`, you already have `shimmer`. It ships with the `shadcn` package, which the CLI imports in your global CSS file.
-
-Otherwise, install the `shadcn` package:
-
-```bash
-npm install shadcn
-```
-
-Then import the shared utilities in your global CSS file:
-
-```css
-@import "tailwindcss";
-@import "shadcn/tailwind.css";
-```
+Nothing to install: the utility ships with `@tecton/react/globals.css`, which imports `shadcn/tailwind.css`.
 
 ## Usage
 

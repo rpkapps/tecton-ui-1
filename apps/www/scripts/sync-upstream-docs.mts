@@ -153,6 +153,16 @@ function transformMdx(
   // drop styleName props (aria-nova / aria-rhea …)
   mdx = mdx.replace(/\s+styleName="[^"]*"/g, "")
 
+  // Components are consumed from the @tecton/react package, not installed one
+  // by one, so the upstream "Installation" section (CLI command + manual copy)
+  // is removed. Utilities ship with the package stylesheet.
+  mdx = mdx.replace(
+    /\n## Installation\n[\s\S]*?(?=\n## )/,
+    upstreamDir.startsWith("content/docs/utils")
+      ? "\n## Installation\n\nNothing to install: the utility ships with `@tecton/react/globals.css`, which imports `shadcn/tailwind.css`.\n"
+      : "\n"
+  )
+
   // remove previews that reference skipped examples or upstream blocks
   mdx = mdx.replace(/<ComponentPreview\b[^>]*?\/>/gs, (tag) => {
     const nameMatch = tag.match(/\bname="([^"]+)"/)
@@ -169,6 +179,9 @@ function transformMdx(
     "\n"
   )
   mdx = mdx.replace(/\n?<!-- removed: [^>]+ -->\n/g, "\n")
+
+  // links to the removed section point at the package installation page
+  mdx = mdx.replace(/\]\(#installation\)/g, "](/docs/installation)")
 
   // import paths and file titles
   mdx = mdx.replace(/@\/components\/ui\//g, "@tecton/react/components/")
