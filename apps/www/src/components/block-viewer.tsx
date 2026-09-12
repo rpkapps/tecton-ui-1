@@ -3,26 +3,42 @@
 import * as React from "react"
 import { cn } from "cn"
 import {
-  ExternalLinkIcon,
+  FullscreenIcon,
   MonitorIcon,
   SmartphoneIcon,
   TabletIcon,
 } from "lucide-react"
-
-import { Badge } from "@tecton/react/components/badge"
 import { LinkButton } from "@tecton/react/components/button"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
-import { ToggleGroup, ToggleGroupItem } from "@tecton/react/components/toggle-group"
+import {
+  ResizableHandle,
+  ResizablePanel,
+  ResizablePanelGroup,
+} from "@tecton/react/components/resizable"
+import { Separator } from "@tecton/react/components/separator"
+import { Tabs, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@tecton/react/components/toggle-group"
 import { CopyButton } from "@tecton/react/tecton/copy-button"
 
 import { CodeBlock } from "@/components/code-block"
 import type { BlockMeta } from "@/lib/blocks"
 import { listSources, loadSource } from "@/lib/sources"
 
-const widths = { desktop: "100%", tablet: "768px", mobile: "400px" } as const
-type Width = keyof typeof widths
+type View = "preview" | "code"
+/** Preview width as a percentage of the available width (desktop / tablet / mobile). */
+const sizes = { "100": "Desktop", "60": "Tablet", "30": "Mobile" } as const
+type Size = keyof typeof sizes
+/** react-resizable-panels' PanelImperativeHandle, derived from the generated component. */
+type PanelHandle =
+  NonNullable<
+    React.ComponentProps<typeof ResizablePanel>["panelRef"]
+  > extends React.Ref<infer T>
+    ? NonNullable<T>
+    : never
 
-function BlockSources({ name }: { name: string }) {
+function BlockCode({ name }: { name: string }) {
   const files = React.useMemo(() => listSources(`blocks/${name}/`), [name])
   const [selected, setSelected] = React.useState(files[0])
   const [code, setCode] = React.useState<string | null>(null)
@@ -40,19 +56,24 @@ function BlockSources({ name }: { name: string }) {
   }, [selected])
 
   if (!files.length) {
-    return <p className="p-4 text-sm text-muted-foreground">No source files found.</p>
+    return (
+      <p className="p-4 text-sm text-muted-foreground">
+        No source files found.
+      </p>
+    )
   }
 
   return (
-    <div className="flex min-h-96 divide-x">
-      <ul className="w-56 shrink-0 overflow-auto py-2 text-xs">
+    <div className="flex h-full min-h-96 divide-x">
+      <ul className="hidden w-60 shrink-0 overflow-auto p-2 text-xs md:block">
+        <li className="px-2 py-1.5 font-medium text-muted-foreground">Files</li>
         {files.map((file) => (
           <li key={file}>
             <button
               type="button"
               onClick={() => setSelected(file)}
               className={cn(
-                "w-full truncate px-3 py-1.5 text-left font-mono text-muted-foreground hover:text-foreground",
+                "w-full truncate rounded-md px-2 py-1.5 text-left font-mono text-muted-foreground hover:text-foreground",
                 file === selected && "bg-accent text-foreground"
               )}
               title={file}
@@ -62,7 +83,7 @@ function BlockSources({ name }: { name: string }) {
           </li>
         ))}
       </ul>
-      <div className="min-w-0 flex-1 [&_[data-rehype-pretty-code-figure]]:m-0! [&_[data-rehype-pretty-code-figure]]:rounded-none [&_pre]:max-h-[36rem]">
+      <div className="min-w-0 flex-1 overflow-auto [&_[data-rehype-pretty-code-figure]]:m-0! [&_[data-rehype-pretty-code-figure]]:rounded-none [&_[data-rehype-pretty-code-figure]]:border-0">
         {code === null ? (
           <div className="h-48 animate-pulse" />
         ) : (
@@ -70,6 +91,7 @@ function BlockSources({ name }: { name: string }) {
             code={code}
             lang={selected.endsWith(".ts") ? "ts" : "tsx"}
             title={`@tecton/react/${selected}${selected.includes(".") ? "" : ".tsx"}`}
+            className="min-h-full [&>div>pre]:max-h-none"
           />
         )}
       </div>
@@ -77,89 +99,158 @@ function BlockSources({ name }: { name: string }) {
   )
 }
 
+/**
+ * Gallery entry for a block, after ui.shadcn.com/blocks: one toolbar row
+ * (view switch, title, viewport toggles, full screen, install command) above
+ * a resizable iframe preview or the block's source files.
+ */
 export function BlockViewer({
   block,
-  compact = false,
-  children,
+  height = "720px",
+  className,
 }: {
   block: BlockMeta
-  compact?: boolean
-  children?: React.ReactNode
+  /** Height of the preview / code area on `md` and up. */
+  height?: string
+  className?: string
 }) {
-  const [width, setWidth] = React.useState<Width>("desktop")
+  const [view, setView] = React.useState<View>("preview")
+  const [size, setSize] = React.useState<Size>("100")
+  const panel = React.useRef<PanelHandle | null>(null)
+  const command = `npx shadcn@latest add @tecton/${block.name}`
+
+  const resize = (next: Size) => {
+    setSize(next)
+    panel.current?.resize(`${next}%`)
+  }
 
   return (
-    <div data-slot="block-viewer" className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="flex min-w-0 flex-col">
-          <div className="flex items-center gap-2">
-            <h3 className="text-sm font-medium">{block.title}</h3>
-            <Badge variant="secondary" appearance="outline">
-              {block.name}
-            </Badge>
+    <div
+      id={block.name}
+      data-slot="block-viewer"
+      data-view={view}
+      style={{ "--height": height } as React.CSSProperties}
+      className={cn(
+        "group/block-viewer flex min-w-0 scroll-mt-24 flex-col gap-4",
+        className
+      )}
+    >
+      <div className="flex w-full items-center gap-2 **:data-[slot=separator]:h-4! **:data-[slot=separator]:self-center">
+        <Tabs
+          selectedKey={view}
+          onSelectionChange={(key) => setView(key as View)}
+          className="gap-0"
+        >
+          <TabsList className="bg-transparent p-0 group-data-horizontal/tabs:h-8">
+            <TabsTrigger id="preview">Preview</TabsTrigger>
+            <TabsTrigger id="code">Code</TabsTrigger>
+          </TabsList>
+        </Tabs>
+        <Separator orientation="vertical" className="mx-1 hidden lg:block" />
+        <a
+          href={`#${block.name}`}
+          className="min-w-0 truncate text-sm font-medium underline-offset-4 hover:underline"
+        >
+          {block.title}
+        </a>
+        <span className="hidden min-w-0 truncate text-sm text-muted-foreground xl:inline">
+          {block.description}
+        </span>
+        <div className="ml-auto flex shrink-0 items-center gap-2">
+          <div className="hidden h-7 items-center gap-1 rounded-md border p-[2px] lg:flex">
+            <ToggleGroup
+              aria-label="Preview width"
+              selectionMode="single"
+              selectedKeys={[size]}
+              disallowEmptySelection
+              onSelectionChange={(keys) => resize(String([...keys][0]) as Size)}
+              spacing={0}
+              className="gap-0.5"
+            >
+              <ToggleGroupItem
+                id="100"
+                aria-label={sizes["100"]}
+                className="size-[22px] min-w-0 rounded-sm p-0"
+              >
+                <MonitorIcon className="size-3.5" />
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                id="60"
+                aria-label={sizes["60"]}
+                className="size-[22px] min-w-0 rounded-sm p-0"
+              >
+                <TabletIcon className="size-3.5" />
+              </ToggleGroupItem>
+              <ToggleGroupItem
+                id="30"
+                aria-label={sizes["30"]}
+                className="size-[22px] min-w-0 rounded-sm p-0"
+              >
+                <SmartphoneIcon className="size-3.5" />
+              </ToggleGroupItem>
+            </ToggleGroup>
+            <Separator orientation="vertical" className="mx-0.5" />
+            <LinkButton
+              variant="ghost"
+              size="icon-xs"
+              className="size-[22px] rounded-sm"
+              href={`/view/${block.name}`}
+              target="_blank"
+              rel="noreferrer"
+              aria-label="Open in a new tab"
+            >
+              <FullscreenIcon className="size-3.5" />
+            </LinkButton>
           </div>
-          <p className="text-xs text-muted-foreground">{block.description}</p>
-          <div className="mt-1.5 flex w-fit items-center gap-1 rounded-md border bg-code py-0.5 pr-0.5 pl-2 font-mono text-xs text-muted-foreground">
-            <span>npx shadcn@latest add @tecton/{block.name}</span>
-            <CopyButton value={`npx shadcn@latest add @tecton/${block.name}`} size="icon-xs" />
-          </div>
-        </div>
-        <div className="ml-auto flex items-center gap-2">
-          {children}
-          <ToggleGroup
-            aria-label="Preview width"
-            selectionMode="single"
-            selectedKeys={[width]}
-            disallowEmptySelection
-            onSelectionChange={(keys) => setWidth([...keys][0] as Width)}
-            className="hidden md:flex"
-          >
-            <ToggleGroupItem id="desktop" aria-label="Desktop">
-              <MonitorIcon />
-            </ToggleGroupItem>
-            <ToggleGroupItem id="tablet" aria-label="Tablet">
-              <TabletIcon />
-            </ToggleGroupItem>
-            <ToggleGroupItem id="mobile" aria-label="Mobile">
-              <SmartphoneIcon />
-            </ToggleGroupItem>
-          </ToggleGroup>
           <LinkButton
             variant="outline"
-            size="sm"
+            size="icon-sm"
+            className="lg:hidden"
             href={`/view/${block.name}`}
             target="_blank"
             rel="noreferrer"
+            aria-label="Open in a new tab"
           >
-            <ExternalLinkIcon data-icon="inline-start" /> Full screen
+            <FullscreenIcon />
           </LinkButton>
+          <Separator orientation="vertical" className="mx-1 hidden lg:block" />
+          <CopyButton
+            value={command}
+            size="sm"
+            variant="outline"
+            aria-label={`Copy ${command}`}
+          >
+            <span className="hidden sm:inline">Copy command</span>
+          </CopyButton>
         </div>
       </div>
-      <Tabs defaultSelectedKey="preview" className="gap-3">
-        <TabsList variant="line" className="h-8">
-          <TabsTrigger id="preview">Preview</TabsTrigger>
-          <TabsTrigger id="code">Code</TabsTrigger>
-        </TabsList>
-        <TabsContent id="preview">
-          <div className="flex w-full justify-center overflow-hidden rounded-xl border bg-muted/30 p-2">
+
+      <div className="relative group-data-[view=code]/block-viewer:hidden">
+        <ResizablePanelGroup
+          orientation="horizontal"
+          className="relative z-10 md:min-h-(--height)"
+        >
+          <ResizablePanel
+            panelRef={panel}
+            defaultSize="100%"
+            minSize="30%"
+            className="relative aspect-[4/2.5] overflow-hidden rounded-xl border bg-background md:aspect-auto md:h-(--height)"
+          >
             <iframe
               src={`/view/${block.name}`}
               title={block.title}
               loading="lazy"
-              className={cn(
-                "rounded-lg bg-background transition-[width]",
-                compact ? "h-[560px]" : "h-[calc(100svh-14rem)] min-h-[600px]"
-              )}
-              style={{ width: widths[width], maxWidth: "100%" }}
+              className="relative z-20 size-full bg-background"
             />
-          </div>
-        </TabsContent>
-        <TabsContent id="code">
-          <div className="overflow-hidden rounded-xl border">
-            <BlockSources name={block.name} />
-          </div>
-        </TabsContent>
-      </Tabs>
+          </ResizablePanel>
+          <ResizableHandle className="relative hidden w-3 bg-transparent after:absolute after:inset-y-auto after:top-1/2 after:right-0 after:left-auto after:h-8 after:w-[6px] after:translate-x-[-1px] after:-translate-y-1/2 after:rounded-full after:bg-border after:transition-all hover:after:h-10 md:block" />
+          <ResizablePanel defaultSize="0%" minSize="0%" />
+        </ResizablePanelGroup>
+      </div>
+
+      <div className="bg-code text-code-foreground mr-[14px] hidden overflow-hidden rounded-xl border group-data-[view=code]/block-viewer:block md:h-(--height)">
+        {view === "code" && <BlockCode name={block.name} />}
+      </div>
     </div>
   )
 }

@@ -13,7 +13,9 @@ export const Route = createFileRoute("/_site/blocks/$name")({
     return meta
   },
   head: ({ loaderData }) => ({
-    meta: loaderData ? [{ title: `${loaderData.title} – Blocks – ${siteConfig.name}` }] : [],
+    meta: loaderData
+      ? [{ title: `${loaderData.title} – Blocks – ${siteConfig.name}` }]
+      : [],
   }),
   component: BlockPage,
 })
@@ -22,14 +24,14 @@ function BlockPage() {
   const meta = Route.useLoaderData()
   const block = getBlock(meta.name)!
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-6 py-8 md:py-10">
       <Link
         to="/blocks"
         className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
       >
         <ArrowLeftIcon className="size-4" /> All blocks
       </Link>
-      <BlockViewer block={block} />
+      <BlockViewer block={block} height="calc(100svh - 12rem)" />
     </div>
   )
 }

@@ -1,5 +1,5 @@
 diff --git a/apps/v4/registry/bases/aria/ui/alert.tsx b/apps/v4/registry/bases/aria/ui/alert.tsx
-index e9aa02f..62d2098 100644
+index e9aa02f3..62d20980 100644
 --- a/apps/v4/registry/bases/aria/ui/alert.tsx
 +++ b/apps/v4/registry/bases/aria/ui/alert.tsx
 @@ -7,23 +7,35 @@ const alertVariants = cva("cn-alert group/alert relative w-full", {
@@ -47,7 +47,7 @@ index e9aa02f..62d2098 100644
 -export { Alert, AlertTitle, AlertDescription, AlertAction }
 +export { Alert, AlertTitle, AlertDescription, AlertAction, alertVariants }
 diff --git a/apps/v4/registry/bases/aria/ui/badge.tsx b/apps/v4/registry/bases/aria/ui/badge.tsx
-index 1d546cc..c1624f9 100644
+index 1d546cce..c1624f95 100644
 --- a/apps/v4/registry/bases/aria/ui/badge.tsx
 +++ b/apps/v4/registry/bases/aria/ui/badge.tsx
 @@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority"
@@ -116,7 +116,7 @@ index 1d546cc..c1624f9 100644
      />
    )
 diff --git a/apps/v4/registry/bases/aria/ui/input.tsx b/apps/v4/registry/bases/aria/ui/input.tsx
-index b09cd35..c7a991d 100644
+index b09cd353..c7a991df 100644
 --- a/apps/v4/registry/bases/aria/ui/input.tsx
 +++ b/apps/v4/registry/bases/aria/ui/input.tsx
 @@ -1,30 +1,47 @@
@@ -174,7 +174,7 @@ index b09cd35..c7a991d 100644
 -export { Input }
 +export { Input, inputVariants }
 diff --git a/apps/v4/registry/bases/aria/ui/select.tsx b/apps/v4/registry/bases/aria/ui/select.tsx
-index b6eb51b..1c408ac 100644
+index b6eb51be..1c408ac9 100644
 --- a/apps/v4/registry/bases/aria/ui/select.tsx
 +++ b/apps/v4/registry/bases/aria/ui/select.tsx
 @@ -73,21 +73,31 @@ function SelectValue<T extends object>({
@@ -210,7 +210,7 @@ index b6eb51b..1c408ac 100644
        )}
        {...props}
 diff --git a/apps/v4/registry/bases/aria/ui/separator.tsx b/apps/v4/registry/bases/aria/ui/separator.tsx
-index f4c57e8..d41ff0e 100644
+index f4c57e85..d41ff0e0 100644
 --- a/apps/v4/registry/bases/aria/ui/separator.tsx
 +++ b/apps/v4/registry/bases/aria/ui/separator.tsx
 @@ -1,24 +1,41 @@
@@ -261,8 +261,34 @@ index f4c57e8..d41ff0e 100644
  
 -export { Separator }
 +export { Separator, separatorVariants }
+diff --git a/apps/v4/registry/bases/aria/ui/tabs.tsx b/apps/v4/registry/bases/aria/ui/tabs.tsx
+index a20aca1b..8e96d811 100644
+--- a/apps/v4/registry/bases/aria/ui/tabs.tsx
++++ b/apps/v4/registry/bases/aria/ui/tabs.tsx
+@@ -31,7 +31,7 @@ const tabsListVariants = cva(
+   {
+     variants: {
+       variant: {
+-        default: "cn-tabs-list-variant-default bg-muted",
++        default: "cn-tabs-list-variant-default bg-card",
+         line: "cn-tabs-list-variant-line gap-1 bg-transparent",
+       },
+     },
+@@ -65,10 +65,9 @@ function TabsTrigger({
+     <TabPrimitive
+       data-slot="tabs-trigger"
+       className={cn(
+-        "cn-tabs-trigger cn-tabs-trigger-aria relative inline-flex h-[calc(100%-1px)] flex-1 cursor-default items-center justify-center whitespace-nowrap text-foreground/60 transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start hover:text-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 dark:text-muted-foreground dark:hover:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
++        "cn-tabs-trigger cn-tabs-trigger-aria relative inline-flex h-[calc(100%-1px)] flex-1 cursor-default items-center justify-center whitespace-nowrap transition-all group-data-vertical/tabs:w-full group-data-vertical/tabs:justify-start focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 focus-visible:outline-1 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-50 data-[disabled]:pointer-events-none data-[disabled]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+         "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-selected:bg-transparent dark:group-data-[variant=line]/tabs-list:data-selected:border-transparent dark:group-data-[variant=line]/tabs-list:data-selected:bg-transparent",
+-        "data-selected:bg-background data-selected:text-foreground dark:data-selected:border-input dark:data-selected:bg-input/30 dark:data-selected:text-foreground",
+-        "after:absolute after:bg-foreground after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-selected:after:opacity-100",
++        "after:absolute after:opacity-0 after:transition-opacity group-data-horizontal/tabs:after:inset-x-0 group-data-horizontal/tabs:after:bottom-[-5px] group-data-horizontal/tabs:after:h-0.5 group-data-vertical/tabs:after:inset-y-0 group-data-vertical/tabs:after:-right-1 group-data-vertical/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-selected:after:opacity-100",
+         className
+       )}
+       {...props}
 diff --git a/apps/v4/registry/bases/aria/ui/textarea.tsx b/apps/v4/registry/bases/aria/ui/textarea.tsx
-index e6575a4..d9553e7 100644
+index e6575a44..d9553e71 100644
 --- a/apps/v4/registry/bases/aria/ui/textarea.tsx
 +++ b/apps/v4/registry/bases/aria/ui/textarea.tsx
 @@ -1,28 +1,45 @@
@@ -318,7 +344,7 @@ index e6575a4..d9553e7 100644
 -export { Textarea }
 +export { Textarea, textareaVariants }
 diff --git a/apps/v4/registry/styles.tsx b/apps/v4/registry/styles.tsx
-index 073055f..4a7d8fc 100644
+index 073055fb..4a7d8fc5 100644
 --- a/apps/v4/registry/styles.tsx
 +++ b/apps/v4/registry/styles.tsx
 @@ -1,4 +1,27 @@
