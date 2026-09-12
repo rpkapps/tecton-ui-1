@@ -94,6 +94,24 @@ async function exists(file: string) {
   }
 }
 
+// Per-example source fixes for upstream demos that assume the vega look.
+const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
+  // The Tecton trigger paints a hover / expanded surface. Upstream pads the
+  // item, which insets that surface while the item dividers still run to the
+  // border; padding the trigger and content instead keeps the surface as wide
+  // as the dividers.
+  "accordion-borders": (code) =>
+    code
+      .replace('className="border-b px-4 last:border-b-0"', 'className="border-b last:border-b-0"')
+      .replace("<AccordionTrigger>{item.trigger}</AccordionTrigger>", '<AccordionTrigger className="px-4">{item.trigger}</AccordionTrigger>')
+      .replace("<AccordionContent>{item.content}</AccordionContent>", '<AccordionContent className="px-4">{item.content}</AccordionContent>'),
+  // The edge-to-edge scroll area draws a divider above itself; the footer
+  // below it gets the matching divider (and, through the card's
+  // `[.border-t]:pt-(--card-spacing)` rule, its top inset back).
+  "card-edge-to-edge": (code) =>
+    code.replace('<CardFooter className="justify-end gap-2">', '<CardFooter className="justify-end gap-2 border-t">'),
+}
+
 function rewriteImports(source: string): { code: string; blocked?: string } {
   let blocked: string | undefined
   const code = source.replace(
@@ -220,6 +238,13 @@ function transformMdx(
     /\nIf you have a single sidebar in your application, you can use the `SIDEBAR_WIDTH`[^\n]*\n\n```tsx[^\n]*\nconst SIDEBAR_WIDTH[\s\S]*?```\n\nFor multiple sidebars in your application, you can use/,
     "\nTo change the width, set"
   )
+  // The upstream RTL section links to shadcn's own configuration guide and a
+  // hosted preview (`<Button asChild>` has no React Aria equivalent either);
+  // the package supports RTL through its Direction provider.
+  mdx = mdx.replace(
+    /\n## RTL\n\nTo enable RTL support in shadcn\/ui, see the \[RTL configuration guide\]\([^)]*\)\.\n\n\{\/\* prettier-ignore \*\/\}\n<Button asChild[^\n]*\n[^\n]*\n<\/Button>\n/,
+    "\n## RTL\n\nThe sidebar follows the reading direction set with the [Direction](/docs/components/direction) provider; no extra configuration is needed.\n"
+  )
   // `shadcn init` is for projects that own the component sources
   mdx = mdx.replace(
     /\nYou can also enable this during project setup with `npx shadcn@latest init[^\n]*\n/,
@@ -336,7 +361,8 @@ async function main() {
       return false
     }
     const source = await fs.readFile(file, "utf8")
-    const { code, blocked } = rewriteImports(source)
+    const { code: rewritten, blocked } = rewriteImports(source)
+    const code = EXAMPLE_REWRITES[exampleName]?.(rewritten) ?? rewritten
     if (blocked) {
       report.skippedExamples[exampleName] = `unsupported import: ${blocked}`
       exampleCache.set(exampleName, null)

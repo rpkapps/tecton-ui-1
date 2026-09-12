@@ -39,7 +39,7 @@ export function CardEdgeToEdge() {
           </p>
         </div>
       </CardContent>
-      <CardFooter className="justify-end gap-2">
+      <CardFooter className="justify-end gap-2 border-t">
         <Button variant="outline">Decline</Button>
         <Button>Accept</Button>
       </CardFooter>

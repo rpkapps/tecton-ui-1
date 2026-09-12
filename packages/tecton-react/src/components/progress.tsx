@@ -78,7 +78,7 @@ function ProgressTrack({ className, ...props }: React.ComponentProps<"span">) {
   return (
     <span
       className={cn(
-        "relative flex h-1.5 w-full items-center overflow-x-hidden rounded-full bg-muted",
+        "bg-progress/38 relative flex h-1 w-full items-center overflow-x-hidden rounded-none",
         className
       )}
       data-slot="progress-track"
@@ -97,7 +97,7 @@ function ProgressIndicator({
   return (
     <span
       data-slot="progress-indicator"
-      className={cn("h-full bg-primary transition-all", className)}
+      className={cn("bg-progress h-full transition-all", className)}
       style={{
         ...style,
         width: `${isIndeterminate ? 100 : (percentage ?? 0)}%`,

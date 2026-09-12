@@ -72,7 +72,14 @@
       "color-link-foreground": "var(--link-foreground)",
       "color-link-hover-foreground": "var(--link-hover-foreground)",
       "color-link-pressed-foreground": "var(--link-pressed-foreground)",
-      "color-link-active-foreground": "var(--link-active-foreground)"
+      "color-link-active-foreground": "var(--link-active-foreground)",
+      "color-avatar": "var(--avatar)",
+      "color-avatar-foreground": "var(--avatar-foreground)",
+      "color-input-hover": "var(--input-hover)",
+      "color-table-header": "var(--table-header)",
+      "color-table-active": "var(--table-active)",
+      "color-slider": "var(--slider)",
+      "color-progress": "var(--progress)"
     },
     "light": {
       "background": "#f6f4f7",
@@ -162,7 +169,14 @@
       "link-foreground": "#725687",
       "link-hover-foreground": "#6b438c",
       "link-pressed-foreground": "#463458",
-      "link-active-foreground": "#5c3878"
+      "link-active-foreground": "#5c3878",
+      "avatar": "#994c4c",
+      "avatar-foreground": "#fafafb",
+      "input-hover": "#6d5a7d",
+      "table-header": "#d5cddb",
+      "table-active": "#e4dde7",
+      "slider": "#6d5a7d",
+      "progress": "#6d5a7d"
     },
     "dark": {
       "background": "#1d1c1f",
@@ -251,7 +265,14 @@
       "link-foreground": "#9a91a2",
       "link-hover-foreground": "#bcb2c4",
       "link-pressed-foreground": "#beb1c8",
-      "link-active-foreground": "#beb1c8"
+      "link-active-foreground": "#beb1c8",
+      "avatar": "#c2867a",
+      "avatar-foreground": "#131214",
+      "input-hover": "#a7a2ac",
+      "table-header": "#433d47",
+      "table-active": "#4e4853",
+      "slider": "#98939d",
+      "progress": "#98939d"
     }
   },
   "css": {

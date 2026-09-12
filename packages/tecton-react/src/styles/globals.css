@@ -111,6 +111,13 @@
     --color-link-hover-foreground: var(--link-hover-foreground);
     --color-link-pressed-foreground: var(--link-pressed-foreground);
     --color-link-active-foreground: var(--link-active-foreground);
+    --color-avatar: var(--avatar);
+    --color-avatar-foreground: var(--avatar-foreground);
+    --color-input-hover: var(--input-hover);
+    --color-table-header: var(--table-header);
+    --color-table-active: var(--table-active);
+    --color-slider: var(--slider);
+    --color-progress: var(--progress);
 }
 
 :root {
@@ -202,6 +209,13 @@
     --link-hover-foreground: var(--tecton-color-action-text-only-text-hover);
     --link-pressed-foreground: var(--tecton-color-action-text-only-text-press);
     --link-active-foreground: var(--tecton-color-action-text-only-text-active);
+    --avatar: var(--tecton-color-avatar-fill);
+    --avatar-foreground: var(--tecton-color-avatar-text);
+    --input-hover: var(--tecton-color-input-outlined-border-hover);
+    --table-header: var(--tecton-color-table-header-bg);
+    --table-active: var(--tecton-color-table-cell-bg-active);
+    --slider: var(--tecton-color-accent-graphite-fill);
+    --progress: var(--tecton-color-accent-graphite-fill);
 }
 
 .dark {
@@ -292,6 +306,13 @@
     --link-hover-foreground: var(--tecton-color-action-text-only-text-hover);
     --link-pressed-foreground: var(--tecton-color-action-text-only-text-press);
     --link-active-foreground: var(--tecton-color-action-text-only-text-active);
+    --avatar: var(--tecton-color-avatar-fill);
+    --avatar-foreground: var(--tecton-color-avatar-text);
+    --input-hover: var(--tecton-color-input-outlined-border-hover);
+    --table-header: var(--tecton-color-table-header-bg);
+    --table-active: var(--tecton-color-table-cell-bg-active);
+    --slider: var(--tecton-color-accent-graphite-fill);
+    --progress: var(--tecton-color-accent-graphite-fill);
 }
 
 @layer base {

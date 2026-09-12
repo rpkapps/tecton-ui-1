@@ -37,10 +37,10 @@ export default function AccordionBorders() {
         <AccordionItem
           key={item.value}
           id={item.value}
-          className="border-b px-4 last:border-b-0"
+          className="border-b last:border-b-0"
         >
-          <AccordionTrigger>{item.trigger}</AccordionTrigger>
-          <AccordionContent>{item.content}</AccordionContent>
+          <AccordionTrigger className="px-4">{item.trigger}</AccordionTrigger>
+          <AccordionContent className="px-4">{item.content}</AccordionContent>
         </AccordionItem>
       ))}
     </Accordion>
