@@ -13,6 +13,7 @@ import { LinkButton } from "@tecton/react/components/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
 import { ToggleGroup, ToggleGroupItem } from "@tecton/react/components/toggle-group"
 import { Chip } from "@tecton/react/tecton/chip"
+import { CopyButton } from "@tecton/react/tecton/copy-button"
 
 import { CodeBlock } from "@/components/code-block"
 import type { BlockMeta } from "@/lib/blocks"
@@ -61,7 +62,7 @@ function BlockSources({ name }: { name: string }) {
           </li>
         ))}
       </ul>
-      <div className="min-w-0 flex-1 [&_.code-figure]:my-0 [&_.code-figure]:rounded-none [&_.code-figure]:border-0 [&_pre]:max-h-[36rem]">
+      <div className="min-w-0 flex-1 [&_[data-rehype-pretty-code-figure]]:m-0! [&_[data-rehype-pretty-code-figure]]:rounded-none [&_pre]:max-h-[36rem]">
         {code === null ? (
           <div className="h-48 animate-pulse" />
         ) : (
@@ -98,6 +99,10 @@ export function BlockViewer({
             </Chip>
           </div>
           <p className="text-xs text-muted-foreground">{block.description}</p>
+          <div className="mt-1.5 flex w-fit items-center gap-1 rounded-md border bg-code py-0.5 pr-0.5 pl-2 font-mono text-xs text-muted-foreground">
+            <span>npx shadcn@latest add @tecton/{block.name}</span>
+            <CopyButton value={`npx shadcn@latest add @tecton/${block.name}`} size="icon-xs" />
+          </div>
         </div>
         <div className="ml-auto flex items-center gap-2">
           {children}

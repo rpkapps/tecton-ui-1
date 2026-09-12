@@ -4,48 +4,60 @@ import * as React from "react"
 import { cn } from "cn"
 import type { TOCItemType } from "fumadocs-core/toc"
 
-export function DocsToc({ toc }: { toc: TOCItemType[] }) {
-  const items = toc.filter((item) => item.depth <= 3)
-  const [active, setActive] = React.useState<string | null>(null)
+function useActiveItem(itemIds: string[]) {
+  const [activeId, setActiveId] = React.useState<string | null>(null)
 
   React.useEffect(() => {
-    if (!items.length) return
-    const headings = items
-      .map((item) => document.getElementById(item.url.slice(1)))
-      .filter((el): el is HTMLElement => Boolean(el))
     const observer = new IntersectionObserver(
       (entries) => {
-        const visible = entries
-          .filter((entry) => entry.isIntersecting)
-          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top)
-        if (visible[0]) setActive(`#${visible[0].target.id}`)
+        for (const entry of entries) {
+          if (entry.isIntersecting) setActiveId(entry.target.id)
+        }
       },
-      { rootMargin: "-80px 0px -70% 0px", threshold: [0, 1] }
+      { rootMargin: "0% 0% -80% 0%" }
     )
-    headings.forEach((el) => observer.observe(el))
+    for (const id of itemIds) {
+      const element = document.getElementById(id)
+      if (element) observer.observe(element)
+    }
     return () => observer.disconnect()
-  }, [items])
+  }, [itemIds])
+
+  return activeId
+}
+
+export function DocsTableOfContents({
+  toc,
+  className,
+}: {
+  toc: TOCItemType[]
+  className?: string
+}) {
+  const items = React.useMemo(() => toc.filter((item) => item.depth <= 4), [toc])
+  const itemIds = React.useMemo(
+    () => items.map((item) => item.url.replace("#", "")),
+    [items]
+  )
+  const activeHeading = useActiveItem(itemIds)
 
   if (!items.length) return null
 
   return (
-    <aside className="sticky top-14 hidden h-[calc(100svh-3.5rem)] w-52 shrink-0 py-10 xl:block">
-      <p className="mb-2 text-xs font-medium text-muted-foreground">On this page</p>
-      <ul className="flex flex-col gap-1 text-sm">
-        {items.map((item) => (
-          <li key={item.url} style={{ paddingLeft: (item.depth - 2) * 12 }}>
-            <a
-              href={item.url}
-              className={cn(
-                "block truncate text-muted-foreground transition-colors hover:text-foreground",
-                active === item.url && "text-foreground"
-              )}
-            >
-              {item.title}
-            </a>
-          </li>
-        ))}
-      </ul>
-    </aside>
+    <div className={cn("flex flex-col gap-2 p-4 pt-0 text-sm", className)}>
+      <p className="h-6 bg-background text-xs font-medium text-muted-foreground">
+        On This Page
+      </p>
+      {items.map((item) => (
+        <a
+          key={item.url}
+          href={item.url}
+          className="text-[0.8rem] text-muted-foreground no-underline transition-colors hover:text-foreground data-[active=true]:font-medium data-[active=true]:text-foreground data-[depth=3]:pl-4 data-[depth=4]:pl-6"
+          data-active={item.url === `#${activeHeading}`}
+          data-depth={item.depth}
+        >
+          {item.title}
+        </a>
+      ))}
+    </div>
   )
 }

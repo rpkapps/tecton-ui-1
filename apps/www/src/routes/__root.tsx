@@ -41,11 +41,15 @@ export const Route = createRootRoute({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      className="[--header-height:calc(var(--spacing)*14)] lg:[--header-height:calc(var(--spacing)*16)]"
+    >
       <head>
         <HeadContent />
       </head>
-      <body className="min-h-svh bg-background font-sans text-foreground antialiased">
+      <body className="group/body min-h-svh overscroll-none bg-background font-sans text-foreground antialiased [--footer-height:calc(var(--spacing)*14)] xl:[--footer-height:calc(var(--spacing)*24)]">
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
@@ -53,7 +57,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           disableTransitionOnChange
         >
           <TanstackProvider>{children}</TanstackProvider>
-          <Toaster />
+          <Toaster position="top-center" />
         </ThemeProvider>
         <Scripts />
       </body>

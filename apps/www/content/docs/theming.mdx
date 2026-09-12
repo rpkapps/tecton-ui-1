@@ -19,7 +19,7 @@ Tecton UI applies the Tecton visual language **only through the shadcn CSS varia
 
 <Step>Generated theme</Step>
 
-`pnpm --filter @tecton/react tokens:build` writes `tecton-theme.css`, patches the variable values inside the CLI-managed `globals.css` (`:root`, `.dark`, `@theme inline` — nothing else), emits the `@tecton/theme` registry item and the mapping document.
+`pnpm --filter @tecton/react tokens:build` writes `tecton-theme.css`, patches the variable values inside the CLI-managed `globals.css` (`:root`, `.dark`, `@theme inline` — nothing else) and the mapping document.
 
 <Step>Verification</Step>
 
@@ -80,10 +80,3 @@ Follow the same pattern as the extra tokens: declare the variable in `:root` and
 
 If you use the token pipeline, add the entry to `tokens/tecton.map.json` under `extra` instead and run `tokens:build`.
 
-## Using the registry theme
-
-Consumers who copy components with the CLI can apply the Tecton variables to their own `globals.css` with:
-
-```bash
-npx shadcn@latest add @tecton/theme
-```

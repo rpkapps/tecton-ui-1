@@ -11,41 +11,6 @@ upstream: apps/v4/content/docs/components/aria/marker.mdx
 
 The `Marker` component displays inline conversation markers such as status updates, system notes, bordered rows, and labeled separators. Compose it with [`Message`](/docs/components/message) in a conversation thread.
 
-## Installation
-
-<CodeTabs>
-
-<TabsList>
-  <TabsTrigger value="cli">Command</TabsTrigger>
-  <TabsTrigger value="manual">Manual</TabsTrigger>
-</TabsList>
-<TabsContent value="cli">
-
-```bash
-npx shadcn@latest add marker
-```
-
-</TabsContent>
-
-<TabsContent value="manual">
-
-<Steps className="mb-0 pt-2">
-
-<Step>Copy and paste the following code into your project.</Step>
-
-<ComponentSource
-  name="marker"
-  title="@tecton/react/components/marker.tsx"
-/>
-
-<Step>Update the import paths to match your project setup.</Step>
-
-</Steps>
-
-</TabsContent>
-
-</CodeTabs>
-
 ## Usage
 
 ```tsx showLineNumbers
@@ -76,7 +41,7 @@ Marker
 - Inline marker, bordered row, and labeled separator variants
 - Decorative icon slot that is hidden from assistive tech
 - Polymorphic root via `render` for link and button markers
-- Pairs with the [`shimmer`](https://ui.shadcn.com/docs/utils/shimmer) utility for streaming status text
+- Pairs with the [`shimmer`](/docs/utils/shimmer) utility for streaming status text
 - Customizable styling through the `className` prop on every part
 
 ## Variants
@@ -105,7 +70,7 @@ Set `role="status"` and include a [`Spinner`](/docs/components/spinner) for stre
 
 ## Shimmer
 
-Add the [`shimmer`](https://ui.shadcn.com/docs/utils/shimmer) utility class to `MarkerContent` for an animated streaming-text effect. The utility ships with the `shadcn` package — see the shimmer docs for installation.
+Add the [`shimmer`](/docs/utils/shimmer) utility class to `MarkerContent` for an animated streaming-text effect. The utility ships with the `shadcn` package — see the shimmer docs for installation.
 
 <ComponentPreview
   name="marker-shimmer"

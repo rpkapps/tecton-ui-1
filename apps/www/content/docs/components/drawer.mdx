@@ -14,55 +14,6 @@ upstream: apps/v4/content/docs/components/aria/drawer.mdx
   UI](https://base-ui.com/react/components/drawer).
 </Callout>
 
-## Installation
-
-<CodeTabs>
-
-<TabsList>
-  <TabsTrigger value="cli">Command</TabsTrigger>
-  <TabsTrigger value="manual">Manual</TabsTrigger>
-</TabsList>
-<TabsContent value="cli">
-
-```bash
-npx shadcn@latest add drawer
-```
-
-</TabsContent>
-
-<TabsContent value="manual">
-
-<Steps className="mb-0 pt-2">
-
-<Step>Install the following dependencies:</Step>
-
-```bash
-npm install @base-ui/react
-```
-
-<Step>Copy and paste the following code into your project.</Step>
-
-<ComponentSource
-  name="drawer"
-  title="@tecton/react/components/drawer.tsx"
-/>
-
-<Step>Update the import paths to match your project setup.</Step>
-
-</Steps>
-
-</TabsContent>
-
-</CodeTabs>
-
-Add the following to your global styles. On iOS Safari, the drawer overlay is absolutely positioned and requires a positioned `body` to cover the viewport after the page is scrolled. See the [Base UI docs](https://base-ui.com/react/overview/quick-start#ios-26-safari) for details.
-
-```css
-body {
-  position: relative;
-}
-```
-
 ## Usage
 
 ```tsx showLineNumbers

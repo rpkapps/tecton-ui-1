@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { InfoIcon, LightbulbIcon, TriangleAlertIcon } from "lucide-react"
 
 import { Alert, AlertDescription, AlertTitle } from "@tecton/react/components/alert"
 import {
@@ -14,7 +13,7 @@ import {
 
 /* ------------------------------------------------------------------------ */
 /* CodeTabs — "Command" / "Manual" installation tabs. The chosen tab is       */
-/* remembered across pages.                                                  */
+/* remembered across pages (like the shadcn docs' installation type).        */
 /* ------------------------------------------------------------------------ */
 
 const INSTALL_KEY = "tecton-docs:installation-type"
@@ -53,7 +52,7 @@ export function CodeTabs({
           // ignore
         }
       }}
-      className={cn("relative mt-6 w-full gap-3", className)}
+      className={cn("relative mt-6 w-full gap-4", className)}
       {...props}
     >
       {children}
@@ -65,9 +64,19 @@ export function CodeTabs({
 export function DocsTabsTrigger({
   value,
   id,
+  className,
   ...props
 }: React.ComponentProps<typeof TabsTrigger> & { value?: string }) {
-  return <TabsTrigger id={id ?? value} {...props} />
+  return (
+    <TabsTrigger
+      id={id ?? value}
+      className={cn(
+        "h-auto px-0 pb-3 text-base font-medium text-muted-foreground hover:text-foreground data-selected:text-foreground",
+        className
+      )}
+      {...props}
+    />
+  )
 }
 
 export function DocsTabsContent({
@@ -79,7 +88,10 @@ export function DocsTabsContent({
   return (
     <TabsContent
       id={id ?? value}
-      className={cn("[&>*:first-child]:mt-0 [&>figure:first-child]:mt-0", className)}
+      className={cn(
+        "relative *:[figure]:first:mt-0 [&>.steps]:mt-6 [&>[data-rehype-pretty-code-figure]:first-child]:mt-0",
+        className
+      )}
       {...props}
     />
   )
@@ -89,7 +101,13 @@ export function DocsTabsList({
   className,
   ...props
 }: React.ComponentProps<typeof TabsList>) {
-  return <TabsList variant="line" className={cn("gap-4 border-b px-0", className)} {...props} />
+  return (
+    <TabsList
+      variant="line"
+      className={cn("h-auto justify-start gap-6 rounded-none bg-transparent p-0", className)}
+      {...props}
+    />
+  )
 }
 
 export function DocsTabs({
@@ -101,7 +119,7 @@ export function DocsTabs({
     <Tabs
       data-not-typeset
       defaultSelectedKey={defaultValue}
-      className={cn("relative mt-6 w-full gap-3", className)}
+      className={cn("relative mt-6 w-full gap-4", className)}
       {...props}
     />
   )
@@ -114,9 +132,8 @@ export function DocsTabs({
 export function Steps({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
-      data-slot="steps"
       className={cn(
-        "mt-6 mb-10 ml-3.5 border-l border-border-subtle pl-8 [counter-reset:step]",
+        "steps mb-12 [counter-reset:step] md:ml-4 md:border-l md:pl-8 [&>h3]:step",
         className
       )}
       {...props}
@@ -125,28 +142,12 @@ export function Steps({ className, ...props }: React.ComponentProps<"div">) {
 }
 
 export function Step({ className, ...props }: React.ComponentProps<"h3">) {
-  return (
-    <h3
-      data-slot="step"
-      className={cn(
-        "relative mt-8 mb-4 scroll-m-20 text-base font-medium tracking-tight first:mt-0 [counter-increment:step]",
-        "before:absolute before:-left-[3.05rem] before:flex before:size-8 before:items-center before:justify-center before:rounded-full before:border before:bg-card before:text-xs before:font-medium before:text-muted-foreground before:content-[counter(step)]",
-        className
-      )}
-      {...props}
-    />
-  )
+  return <h3 className={className} {...props} />
 }
 
 /* ------------------------------------------------------------------------ */
 /* Callout                                                                   */
 /* ------------------------------------------------------------------------ */
-
-const calloutIcons = {
-  default: LightbulbIcon,
-  info: InfoIcon,
-  warning: TriangleAlertIcon,
-}
 
 export function Callout({
   title,
@@ -159,24 +160,43 @@ export function Callout({
   icon?: React.ReactNode
   variant?: "default" | "info" | "warning"
 }) {
-  const Icon = calloutIcons[variant]
   return (
     <Alert
       data-not-typeset
       data-variant={variant}
       className={cn(
-        "mt-6 w-auto rounded-lg border-border-subtle bg-card",
-        variant === "warning" && "border-warning/50 [&>svg]:text-warning",
+        "mt-6 w-auto rounded-2xl border-surface bg-surface text-surface-foreground md:-mx-1 **:[code]:border",
+        variant === "warning" && "[&>svg]:text-warning",
         variant === "info" && "[&>svg]:text-info",
         className
       )}
       {...props}
     >
-      {icon ?? <Icon />}
+      {icon}
       {title && <AlertTitle>{title}</AlertTitle>}
       <AlertDescription className="text-card-foreground/80 [&_p]:my-0 [&_ul]:my-2 [&_ul]:list-disc">
         {children}
       </AlertDescription>
     </Alert>
+  )
+}
+
+/* ------------------------------------------------------------------------ */
+/* LinkedCard (used by index pages such as /docs/forms)                       */
+/* ------------------------------------------------------------------------ */
+
+export function LinkedCard({
+  className,
+  ...props
+}: React.ComponentProps<"a">) {
+  return (
+    <a
+      data-not-typeset
+      className={cn(
+        "flex w-full flex-col items-center rounded-2xl bg-surface p-6 text-surface-foreground transition-colors hover:bg-surface/80 sm:p-10",
+        className
+      )}
+      {...props}
+    />
   )
 }

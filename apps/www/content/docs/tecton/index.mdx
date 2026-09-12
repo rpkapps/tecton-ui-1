@@ -5,7 +5,7 @@ description: "Components that exist only in the Tecton design system, or whose T
 
 The Tecton theme changes nothing but the shadcn CSS variables, so every component in [Components](/docs/components) is the unmodified shadcn/ui React Aria implementation. Some Tecton semantics do not fit into variables: a chip has six colours and an outlined variant, a text field has three surface styles, an alert has four severities, a data table has an emphasised header and density options, and there are patterns — a segmented meter, a tree view, an app shell — that shadcn does not have at all. Those become the components on this page. Each one composes the shadcn primitives where they exist (`StatusAlert` renders `Alert`, `TextField` renders `Input`, `Divider` renders `Separator`) or builds directly on React Aria, follows the same `data-slot` and `class-variance-authority` conventions, and is installed the same way.
 
-All of them are exported from `@tecton/react/tecton/<name>` and can be added to a project with `npx shadcn@latest add @tecton/<name>`.
+All of them are exported from `@tecton/react/tecton/<name>`.
 
 | Component | Description |
 | --- | --- |

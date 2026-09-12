@@ -8,6 +8,9 @@ import { Kbd } from "@tecton/react/components/kbd"
 
 import { ComponentPreview } from "@/components/component-preview"
 import { ComponentSource } from "@/components/component-source"
+import { ComponentsList } from "@/components/components-list"
+import { CodeBlockCommand, getPackageManagerCommands } from "@/components/code-block-command"
+import { CopyButton } from "@/components/copy-button"
 import {
   Callout,
   CodeTabs,
@@ -15,12 +18,12 @@ import {
   DocsTabsContent,
   DocsTabsList,
   DocsTabsTrigger,
+  LinkedCard,
   Step,
   Steps,
 } from "@/components/docs-blocks"
-import { CopyButton } from "@tecton/react/tecton/copy-button"
-import { ComponentsList } from "@/components/components-list"
 import { IconGallery } from "@/components/icon-gallery"
+import { getIconForLanguageExtension } from "@/components/language-icon"
 import { TokenTable } from "@/components/token-table"
 
 function getNodeText(node: React.ReactNode): string {
@@ -32,11 +35,32 @@ function getNodeText(node: React.ReactNode): string {
   return ""
 }
 
-function DocsLink({
-  href = "",
-  className,
-  ...props
-}: React.ComponentProps<"a">) {
+function HeadingAnchor({ id, children }: { id?: string; children: React.ReactNode }) {
+  if (!id) return children
+  return (
+    <a className="group no-underline" href={`#${id}`}>
+      <span className="underline-offset-4 group-hover:underline">{children}</span>
+      <span
+        aria-hidden="true"
+        className="ml-2 text-muted-foreground opacity-0 group-hover:opacity-100"
+      >
+        #
+      </span>
+    </a>
+  )
+}
+
+function heading(Tag: "h1" | "h2" | "h3" | "h4" | "h5" | "h6") {
+  return function Heading({ children, id, ...props }: React.ComponentProps<typeof Tag>) {
+    return (
+      <Tag id={id} {...props}>
+        <HeadingAnchor id={id}>{children}</HeadingAnchor>
+      </Tag>
+    )
+  }
+}
+
+function DocsLink({ href = "", className, ...props }: React.ComponentProps<"a">) {
   const isInternal = href.startsWith("/") && !href.startsWith("//")
   if (isInternal) {
     return <Link to={href} className={className} {...(props as object)} />
@@ -53,28 +77,88 @@ function DocsLink({
   )
 }
 
-/** Code fences compiled by fumadocs (rehype-code) arrive as <figure><pre><code>. */
+function getFenceLanguage(children: React.ReactNode): string | null {
+  let language: string | null = null
+  React.Children.forEach(children, (child) => {
+    if (React.isValidElement<Record<string, unknown>>(child)) {
+      const value = child.props["data-language"]
+      if (typeof value === "string") language = value
+    }
+  })
+  return language
+}
+
+/**
+ * Code fences compiled by fumadocs (rehype-code) arrive as <figure><pre><code>.
+ * A single-line `bash` fence with an npm command becomes package-manager tabs.
+ */
 function Figure({ className, children, ...props }: React.ComponentProps<"figure">) {
   const isCode = "data-rehype-pretty-code-figure" in props
   const code = isCode ? getNodeText(children) : ""
+  if (isCode && getFenceLanguage(children) === "bash") {
+    const commands = getPackageManagerCommands(code)
+    if (commands) return <CodeBlockCommand commands={commands} className={className} />
+  }
   return (
-    <figure className={cn("group/code", className)} {...props}>
-      {isCode && (
-        <CopyButton
-          value={code}
-          data-slot="copy-button"
-          className="absolute top-1.5 right-1.5 z-10 bg-card/80 opacity-0 transition-opacity group-hover/code:opacity-100 focus-visible:opacity-100 data-[copied=true]:opacity-100 [figure:has(figcaption)_&]:top-1"
-        />
-      )}
+    <figure className={className} {...props}>
+      {isCode && <CopyButton value={code} />}
       {children}
     </figure>
   )
 }
 
+function Figcaption({ className, children, ...props }: React.ComponentProps<"figcaption">) {
+  const language =
+    "data-language" in props && typeof props["data-language"] === "string"
+      ? props["data-language"]
+      : null
+  return (
+    <figcaption
+      className={cn(
+        "flex items-center gap-2 text-code-foreground [&_svg]:size-4 [&_svg]:text-code-foreground [&_svg]:opacity-70",
+        className
+      )}
+      {...props}
+    >
+      {language && getIconForLanguageExtension(language)}
+      {children}
+    </figcaption>
+  )
+}
+
+function Pre({ className, children, ...props }: React.ComponentProps<"pre">) {
+  return (
+    <pre
+      data-not-typeset
+      className={cn(
+        "no-scrollbar min-w-0 overflow-x-auto overflow-y-auto overscroll-x-contain overscroll-y-auto px-4 py-3.5 outline-none has-data-highlighted-line:px-0 has-data-line-numbers:px-0",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </pre>
+  )
+}
+
 export function getMDXComponents(components?: MDXComponents): MDXComponents {
   return {
+    h1: heading("h1"),
+    h2: heading("h2"),
+    h3: heading("h3"),
+    h4: heading("h4"),
+    h5: heading("h5"),
+    h6: heading("h6"),
     a: DocsLink,
     figure: Figure,
+    figcaption: Figcaption,
+    pre: Pre,
+    // Typeset tables stay real tables; wide ones scroll horizontally.
+    table: (props: React.ComponentProps<"table">) => (
+      <div className="typeset-scroll scroll-fade-x no-scrollbar *:[table]:w-full">
+        <table {...props} />
+      </div>
+    ),
     ComponentPreview,
     ComponentSource,
     CodeTabs,
@@ -85,14 +169,17 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     Steps,
     Step,
     Callout,
-    Button,
+    LinkedCard,
+    Button: ({ className, ...props }: React.ComponentProps<typeof Button>) => (
+      <Button className={cn("not-typeset", className)} {...props} />
+    ),
     Kbd,
     ComponentsList,
     IconGallery,
     TokenTable,
     Link: DocsLink,
-    Image: (props: React.ComponentProps<"img">) => (
-      <img {...props} alt={props.alt ?? ""} />
+    Image: ({ className, ...props }: React.ComponentProps<"img">) => (
+      <img className={cn("mt-6 rounded-2xl border", className)} {...props} alt={props.alt ?? ""} />
     ),
     ...components,
   }

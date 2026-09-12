@@ -1,9 +1,9 @@
 ---
 title: Installation
-description: Add @tecton/react to your application, or copy individual components with the shadcn CLI.
+description: Add @tecton/react to your application. Blocks can be added with the shadcn CLI.
 ---
 
-There are two ways to use Tecton UI. Most applications should use the **package**; use the **registry** when you want the source files in your own repository.
+Tecton UI is consumed as the **package** `@tecton/react`: components, Tecton components, icons and the theme are all imported from it and are not installed one by one. **Blocks** are the exception: they are starting points meant to be copied into your application, so they are published in a shadcn registry.
 
 ## Package
 
@@ -164,9 +164,9 @@ Components that use hooks carry a `"use client"` directive already.
 
 </Tabs>
 
-## Registry (copy the source)
+## Blocks (shadcn registry)
 
-The docs site also serves a shadcn registry named `@tecton` with the theme, the Tecton components and the blocks. Point your `components.json` at it and use the CLI as usual:
+Blocks are full compositions (panels, dashboards, forms, tables) that you copy into your application and adapt. The docs site serves them as a shadcn registry named `@tecton`. Point your `components.json` at it and add a block with the CLI; the copied files import the components from `@tecton/react`, so the package must already be installed.
 
 ```json title="components.json"
 {
@@ -177,13 +177,7 @@ The docs site also serves a shadcn registry named `@tecton` with the theme, the 
 ```
 
 ```bash
-npx shadcn@latest add @tecton/theme      # Tecton CSS variables into your globals.css
-npx shadcn@latest add @tecton/chip       # a Tecton component (+ its shadcn dependencies)
-npx shadcn@latest add button             # standard shadcn/ui component (React Aria base)
+npx shadcn@latest add @tecton/dashboard-01
 ```
 
-<Callout variant="info" title="Base and style">
-  Your project must be initialised with the React Aria base: `npx shadcn@latest init --base aria --preset vega`. Tecton UI is built and verified against the **Vega** style.
-</Callout>
-
-For a private host add `headers` to the registry entry (`"@tecton": { "url": "…", "headers": { "Authorization": "Bearer ${TECTON_TOKEN}" } }`).
+Every block on the [Blocks](/blocks) page shows its command. For a private host add `headers` to the registry entry (`"@tecton": { "url": "…", "headers": { "Authorization": "Bearer ${TECTON_TOKEN}" } }`).

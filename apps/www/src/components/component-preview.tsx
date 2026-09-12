@@ -7,12 +7,6 @@ import { I18nProvider } from "react-aria-components"
 import { Button } from "@tecton/react/components/button"
 import { DirectionProvider } from "@tecton/react/components/direction"
 import { Spinner } from "@tecton/react/components/spinner"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@tecton/react/components/tabs"
 
 import { CodeBlock } from "@/components/code-block"
 import {
@@ -86,7 +80,7 @@ export function ComponentPreview({
     const content = (
       <div
         data-not-typeset
-        className="relative mt-6 aspect-[4/2.5] w-full overflow-hidden rounded-xl border bg-background"
+        className="relative mt-6 aspect-[4/2.5] w-full overflow-hidden rounded-2xl border bg-background md:-mx-1"
       >
         <iframe
           src={`/view/${name}`}
@@ -128,13 +122,13 @@ export function ComponentPreview({
         </React.Suspense>
       }
       source={
-        <React.Suspense fallback={<div className="h-24 animate-pulse" />}>
+        <React.Suspense fallback={<div className="h-24 animate-pulse bg-code" />}>
           <ExampleSource name={name} />
         </React.Suspense>
       }
       sourcePreview={
-        <React.Suspense fallback={<div className="h-24" />}>
-          <ExampleSource name={name} maxLines={4} />
+        <React.Suspense fallback={<div className="h-24 bg-code" />}>
+          <ExampleSource name={name} maxLines={3} />
         </React.Suspense>
       }
       {...props}
@@ -176,19 +170,20 @@ function ComponentPreviewTabs({
   sourcePreview?: React.ReactNode
   direction?: "ltr" | "rtl"
 }) {
-  const [codeVisible, setCodeVisible] = React.useState(false)
+  const [isMobileCodeVisible, setIsMobileCodeVisible] = React.useState(false)
 
   const preview = (
-    <div
-      data-slot="preview"
-      data-align={align}
-      className={cn(
-        "preview flex min-h-[350px] w-full justify-center p-6 data-[align=center]:items-center data-[align=end]:items-end data-[align=start]:items-start md:p-10",
-        chromeLessOnMobile && "p-0 md:p-10",
-        previewClassName
-      )}
-    >
-      {component}
+    <div data-slot="preview" dir={direction === "rtl" ? undefined : "ltr"}>
+      <div
+        data-align={align}
+        data-chromeless={chromeLessOnMobile}
+        className={cn(
+          "preview relative flex h-72 w-full justify-center p-10 data-[align=center]:items-center data-[align=end]:items-start data-[align=start]:items-start data-[chromeless=true]:h-auto data-[chromeless=true]:p-0 sm:data-[align=end]:items-end",
+          previewClassName
+        )}
+      >
+        {component}
+      </div>
     </div>
   )
 
@@ -197,14 +192,14 @@ function ComponentPreviewTabs({
       data-slot="component-preview"
       data-not-typeset
       className={cn(
-        "group relative mt-4 mb-12 flex flex-col overflow-hidden rounded-xl border bg-background",
+        "group relative mt-4 mb-12 flex flex-col overflow-hidden rounded-2xl border",
         className
       )}
       {...props}
     >
       {direction === "rtl" ? (
         <LanguageProvider defaultLanguage="ar">
-          <div className="flex h-12 items-center border-b px-4">
+          <div className="flex h-16 items-center border-b px-4">
             <RtlLanguageSelector />
           </div>
           <RtlPreview>{preview}</RtlPreview>
@@ -215,25 +210,28 @@ function ComponentPreviewTabs({
       {!hideCode && (
         <div
           data-slot="code"
-          data-code-visible={codeVisible}
-          className="relative overflow-hidden border-t [&_.code-figure]:my-0 [&_.code-figure]:rounded-none [&_.code-figure]:border-0 [&_pre]:max-h-72"
+          data-mobile-code-visible={isMobileCodeVisible}
+          className="relative overflow-hidden **:data-[slot=copy-button]:right-4 **:data-[slot=copy-button]:hidden data-[mobile-code-visible=true]:**:data-[slot=copy-button]:flex [&_[data-rehype-pretty-code-figure]]:m-0! [&_[data-rehype-pretty-code-figure]]:rounded-t-none [&_[data-rehype-pretty-code-figure]]:border-t [&_pre]:max-h-72"
         >
-          {codeVisible ? (
-            <Tabs defaultSelectedKey="code" className="gap-0">
-              <TabsList variant="line" className="h-9 border-b px-3">
-                <TabsTrigger id="code">Code</TabsTrigger>
-              </TabsList>
-              <TabsContent id="code">{source}</TabsContent>
-            </Tabs>
+          {isMobileCodeVisible ? (
+            source
           ) : (
             <div className="relative">
               {sourcePreview}
-              <div className="absolute inset-0 flex items-center justify-center bg-linear-to-t from-card via-card/70 to-transparent pb-2">
+              <div className="absolute inset-0 flex items-center justify-center pb-4">
+                <div
+                  className="absolute inset-0"
+                  style={{
+                    background:
+                      "linear-gradient(to top, var(--color-code), color-mix(in oklab, var(--color-code) 60%, transparent), transparent)",
+                  }}
+                />
                 <Button
+                  type="button"
                   size="sm"
                   variant="outline"
-                  className="relative z-10 rounded-full"
-                  onPress={() => setCodeVisible(true)}
+                  className="relative z-10 rounded-lg bg-background text-foreground shadow-none hover:bg-muted"
+                  onPress={() => setIsMobileCodeVisible(true)}
                 >
                   View Code
                 </Button>
