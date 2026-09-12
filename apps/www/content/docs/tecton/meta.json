@@ -2,7 +2,9 @@
   "title": "Tecton",
   "pages": [
     "index",
+    "app-finder",
     "app-shell",
+    "canvas",
     "chip",
     "circular-progress",
     "color-swatch",
@@ -12,6 +14,7 @@
     "meter",
     "page-header",
     "panel",
+    "shell-actions",
     "stat",
     "tree-view"
   ]

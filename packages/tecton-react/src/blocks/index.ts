@@ -5,6 +5,7 @@ export type BlockCategory =
   | "authentication"
   | "dashboard"
   | "forms"
+  | "layouts"
   | "lists"
 
 export type BlockEntry = {
@@ -19,6 +20,70 @@ export type BlockEntry = {
 
 /** Registry consumed by the docs site gallery. */
 export const blocks: BlockEntry[] = [
+  {
+    name: "shell-01",
+    title: "Application shell",
+    description:
+      "The micro-frontend host: app finder, home, context, command palette, help, release notes, bug report, settings and user menu above one region the mounted application fills.",
+    category: "layouts",
+    component: () => import("./shell-01/page"),
+  },
+  {
+    name: "content-01",
+    title: "Plain content page",
+    description:
+      "Single width-constrained column with a page header and a data-entry form; the layout for forms, tables and chat.",
+    category: "layouts",
+    component: () => import("./content-01/page"),
+  },
+  {
+    name: "detail-01",
+    title: "Detail page with section tabs",
+    description:
+      "Project details sidebar, page header with section tabs and a list / graph toggle, and a body of concept sections with decision cards.",
+    category: "layouts",
+    component: () => import("./detail-01/page"),
+  },
+  {
+    name: "canvas-01",
+    title: "Canvas with floating chrome",
+    description:
+      "Preset sidebar next to a full-bleed map with view selectors, tool rails, legend and scale bar floating over the surface.",
+    category: "layouts",
+    component: () => import("./canvas-01/page"),
+  },
+  {
+    name: "sidebar-01",
+    title: "Project navigation",
+    description:
+      "Sidebar that collapses to an icon rail: project switcher, grouped navigation with collapsible sections and the user menu.",
+    category: "layouts",
+    component: () => import("./sidebar-01/page"),
+  },
+  {
+    name: "sidebar-02",
+    title: "Inset sidebar",
+    description:
+      "Inset sidebar with search, flat navigation, recent projects with actions and secondary links pinned to the bottom.",
+    category: "layouts",
+    component: () => import("./sidebar-02/page"),
+  },
+  {
+    name: "sidebar-03",
+    title: "Project tree sidebar",
+    description:
+      "Off-canvas sidebar hosting the project inventory tree with search and visibility toggles next to a map work area.",
+    category: "layouts",
+    component: () => import("./sidebar-03/page"),
+  },
+  {
+    name: "sidebar-04",
+    title: "Navigation and tool panel",
+    description:
+      "Icon navigation rail on the left and a collapsible tool panel on the right around the work area.",
+    category: "layouts",
+    component: () => import("./sidebar-04/page"),
+  },
   {
     name: "ai-agent-panel",
     title: "AI agent panel",
@@ -109,6 +174,7 @@ export const blocks: BlockEntry[] = [
 ]
 
 export const blockCategories: { id: BlockCategory; label: string }[] = [
+  { id: "layouts", label: "Sidebars & layouts" },
   { id: "application", label: "Application" },
   { id: "dashboard", label: "Dashboard" },
   { id: "forms", label: "Forms" },

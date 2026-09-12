@@ -80,12 +80,21 @@ function rewrite(source: string, blockName: string) {
 }
 
 async function stage(relative: string, blockName: string) {
-  const source = await fs.readFile(path.join(SRC, relative), "utf8")
+  // Sources may be checked out with CRLF on Windows; the registry ships LF.
+  const source = (await fs.readFile(path.join(SRC, relative), "utf8")).replace(
+    /\r\n/g,
+    "\n"
+  )
   const { code, deps, registryDeps } = rewrite(source, blockName)
   const out = path.join(STAGE, relative)
   await fs.mkdir(path.dirname(out), { recursive: true })
   await fs.writeFile(out, code)
-  return { path: path.relative(PKG, out), deps, registryDeps }
+  return { path: posix(path.relative(PKG, out)), deps, registryDeps }
+}
+
+/** Registry paths are always "/"-separated, whatever the build platform. */
+function posix(p: string) {
+  return p.split(path.sep).join("/")
 }
 
 function titleCase(slug: string) {
@@ -107,20 +116,23 @@ async function main() {
     const deps = new Set<string>()
     const registryDeps = new Set<string>()
     const walk = async (dir: string) => {
-      for (const entry of await fs.readdir(dir, { withFileTypes: true })) {
+      const entries = (await fs.readdir(dir, { withFileTypes: true })).sort((a, b) =>
+        a.name.localeCompare(b.name)
+      )
+      for (const entry of entries) {
         const full = path.join(dir, entry.name)
         if (entry.isDirectory()) {
           await walk(full)
           continue
         }
         if (!/\.(tsx?|css)$/.test(entry.name)) continue
-        const relative = path.relative(SRC, full)
+        const relative = posix(path.relative(SRC, full))
         const staged = await stage(relative, block.name)
         staged.deps.forEach((d) => deps.add(d))
         staged.registryDeps.forEach((d) => registryDeps.add(d))
         // Every file of a block lands under components/blocks/<name>/ so the
         // relative imports inside a block (and between blocks) keep working.
-        const inBlock = path.relative(path.join(blocksDir, block.name), full)
+        const inBlock = posix(path.relative(path.join(blocksDir, block.name), full))
         files.push({
           path: staged.path,
           type: /\.tsx?$/.test(entry.name) ? "registry:component" : "registry:file",

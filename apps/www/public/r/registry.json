@@ -18,14 +18,14 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "registry/src/blocks/ai-agent-panel/components/agent-message-list.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/ai-agent-panel/components/agent-message-list.tsx"
-        },
-        {
           "path": "registry/src/blocks/ai-agent-panel/components/agent-composer.tsx",
           "type": "registry:component",
           "target": "components/blocks/ai-agent-panel/components/agent-composer.tsx"
+        },
+        {
+          "path": "registry/src/blocks/ai-agent-panel/components/agent-message-list.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/ai-agent-panel/components/agent-message-list.tsx"
         },
         {
           "path": "registry/src/blocks/ai-agent-panel/components/agent-panel-header.tsx",
@@ -33,14 +33,80 @@
           "target": "components/blocks/ai-agent-panel/components/agent-panel-header.tsx"
         },
         {
-          "path": "registry/src/blocks/ai-agent-panel/page.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/ai-agent-panel/page.tsx"
-        },
-        {
           "path": "registry/src/blocks/ai-agent-panel/data.ts",
           "type": "registry:component",
           "target": "components/blocks/ai-agent-panel/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/ai-agent-panel/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/ai-agent-panel/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "canvas-01",
+      "type": "registry:block",
+      "title": "Canvas with floating chrome",
+      "description": "Preset sidebar next to a full-bleed map with view selectors, tool rails, legend and scale bar floating over the surface. Requires the @tecton/react package.",
+      "categories": [
+        "layouts"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/canvas-01/components/fairway-map.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/canvas-01/components/fairway-map.tsx"
+        },
+        {
+          "path": "registry/src/blocks/canvas-01/components/preset-list.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/canvas-01/components/preset-list.tsx"
+        },
+        {
+          "path": "registry/src/blocks/canvas-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/canvas-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/canvas-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/canvas-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "content-01",
+      "type": "registry:block",
+      "title": "Plain content page",
+      "description": "Single width-constrained column with a page header and a data-entry form; the layout for forms, tables and chat. Requires the @tecton/react package.",
+      "categories": [
+        "layouts"
+      ],
+      "dependencies": [
+        "cn"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/content-01/components/well-header-form.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/content-01/components/well-header-form.tsx"
+        },
+        {
+          "path": "registry/src/blocks/content-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/content-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/content-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/content-01/page.tsx"
         }
       ]
     },
@@ -70,14 +136,14 @@
           "target": "components/blocks/cost-vs-risk-panel/components/quadrant-chart.tsx"
         },
         {
-          "path": "registry/src/blocks/cost-vs-risk-panel/page.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/cost-vs-risk-panel/page.tsx"
-        },
-        {
           "path": "registry/src/blocks/cost-vs-risk-panel/data.ts",
           "type": "registry:component",
           "target": "components/blocks/cost-vs-risk-panel/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/cost-vs-risk-panel/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/cost-vs-risk-panel/page.tsx"
         }
       ]
     },
@@ -111,14 +177,50 @@
           "target": "components/blocks/dashboard-01/components/top-nav.tsx"
         },
         {
-          "path": "registry/src/blocks/dashboard-01/page.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/dashboard-01/page.tsx"
-        },
-        {
           "path": "registry/src/blocks/dashboard-01/data.ts",
           "type": "registry:component",
           "target": "components/blocks/dashboard-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/dashboard-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/dashboard-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "detail-01",
+      "type": "registry:block",
+      "title": "Detail page with section tabs",
+      "description": "Project details sidebar, page header with section tabs and a list / graph toggle, and a body of concept sections with decision cards. Requires the @tecton/react package.",
+      "categories": [
+        "layouts"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/detail-01/components/concept-section.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/detail-01/components/concept-section.tsx"
+        },
+        {
+          "path": "registry/src/blocks/detail-01/components/project-sidebar.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/detail-01/components/project-sidebar.tsx"
+        },
+        {
+          "path": "registry/src/blocks/detail-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/detail-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/detail-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/detail-01/page.tsx"
         }
       ]
     },
@@ -137,24 +239,24 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "registry/src/blocks/facies-modeling-panel/components/parameter-slider.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/facies-modeling-panel/components/parameter-slider.tsx"
-        },
-        {
           "path": "registry/src/blocks/facies-modeling-panel/components/facies-form.tsx",
           "type": "registry:component",
           "target": "components/blocks/facies-modeling-panel/components/facies-form.tsx"
         },
         {
-          "path": "registry/src/blocks/facies-modeling-panel/page.tsx",
+          "path": "registry/src/blocks/facies-modeling-panel/components/parameter-slider.tsx",
           "type": "registry:component",
-          "target": "components/blocks/facies-modeling-panel/page.tsx"
+          "target": "components/blocks/facies-modeling-panel/components/parameter-slider.tsx"
         },
         {
           "path": "registry/src/blocks/facies-modeling-panel/data.ts",
           "type": "registry:component",
           "target": "components/blocks/facies-modeling-panel/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/facies-modeling-panel/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/facies-modeling-panel/page.tsx"
         }
       ]
     },
@@ -178,14 +280,14 @@
           "target": "components/blocks/fda-card/components/fda-card.tsx"
         },
         {
-          "path": "registry/src/blocks/fda-card/page.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/fda-card/page.tsx"
-        },
-        {
           "path": "registry/src/blocks/fda-card/data.ts",
           "type": "registry:component",
           "target": "components/blocks/fda-card/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/fda-card/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/fda-card/page.tsx"
         }
       ]
     },
@@ -210,14 +312,14 @@
           "target": "components/blocks/fda-comparison-table/components/fda-columns.tsx"
         },
         {
-          "path": "registry/src/blocks/fda-comparison-table/page.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/fda-comparison-table/page.tsx"
-        },
-        {
           "path": "registry/src/blocks/fda-comparison-table/data.ts",
           "type": "registry:component",
           "target": "components/blocks/fda-comparison-table/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/fda-comparison-table/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/fda-comparison-table/page.tsx"
         }
       ]
     },
@@ -246,14 +348,14 @@
           "target": "components/blocks/horizons-panel/components/horizon-readout.tsx"
         },
         {
-          "path": "registry/src/blocks/horizons-panel/page.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/horizons-panel/page.tsx"
-        },
-        {
           "path": "registry/src/blocks/horizons-panel/data.ts",
           "type": "registry:component",
           "target": "components/blocks/horizons-panel/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/horizons-panel/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/horizons-panel/page.tsx"
         }
       ]
     },
@@ -283,14 +385,14 @@
           "target": "components/blocks/list-01/components/wells-table.tsx"
         },
         {
-          "path": "registry/src/blocks/list-01/page.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/list-01/page.tsx"
-        },
-        {
           "path": "registry/src/blocks/list-01/data.ts",
           "type": "registry:component",
           "target": "components/blocks/list-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/list-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/list-01/page.tsx"
         }
       ]
     },
@@ -314,14 +416,14 @@
           "target": "components/blocks/login-01/components/login-form.tsx"
         },
         {
-          "path": "registry/src/blocks/login-01/page.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/login-01/page.tsx"
-        },
-        {
           "path": "registry/src/blocks/login-01/data.ts",
           "type": "registry:component",
           "target": "components/blocks/login-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/login-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/login-01/page.tsx"
         }
       ]
     },
@@ -345,14 +447,217 @@
           "target": "components/blocks/settings-01/components/settings-forms.tsx"
         },
         {
-          "path": "registry/src/blocks/settings-01/page.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/settings-01/page.tsx"
-        },
-        {
           "path": "registry/src/blocks/settings-01/data.ts",
           "type": "registry:component",
           "target": "components/blocks/settings-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/settings-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/settings-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "shell-01",
+      "type": "registry:block",
+      "title": "Application shell",
+      "description": "The micro-frontend host: app finder, home, context, command palette, help, release notes, bug report, settings and user menu above one region the mounted application fills. Requires the @tecton/react package.",
+      "categories": [
+        "layouts"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/shell-01/components/shell-command-palette.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/shell-01/components/shell-command-palette.tsx"
+        },
+        {
+          "path": "registry/src/blocks/shell-01/components/shell-header.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/shell-01/components/shell-header.tsx"
+        },
+        {
+          "path": "registry/src/blocks/shell-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/shell-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/shell-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/shell-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "sidebar-01",
+      "type": "registry:block",
+      "title": "Project navigation",
+      "description": "Sidebar that collapses to an icon rail: project switcher, grouped navigation with collapsible sections and the user menu. Requires the @tecton/react package.",
+      "categories": [
+        "layouts"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/sidebar-01/components/app-sidebar.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-01/components/app-sidebar.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-01/components/nav-main.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-01/components/nav-main.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-01/components/nav-user.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-01/components/nav-user.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-01/components/project-switcher.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-01/components/project-switcher.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "sidebar-02",
+      "type": "registry:block",
+      "title": "Inset sidebar",
+      "description": "Inset sidebar with search, flat navigation, recent projects with actions and secondary links pinned to the bottom. Requires the @tecton/react package.",
+      "categories": [
+        "layouts"
+      ],
+      "dependencies": [
+        "lucide-react"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/sidebar-02/components/app-sidebar.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-02/components/app-sidebar.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-02/components/nav-main.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-02/components/nav-main.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-02/components/nav-recent.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-02/components/nav-recent.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-02/components/nav-secondary.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-02/components/nav-secondary.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-02/components/nav-user.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-02/components/nav-user.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-02/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-02/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-02/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-02/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "sidebar-03",
+      "type": "registry:block",
+      "title": "Project tree sidebar",
+      "description": "Off-canvas sidebar hosting the project inventory tree with search and visibility toggles next to a map work area. Requires the @tecton/react package.",
+      "categories": [
+        "layouts"
+      ],
+      "dependencies": [
+        "lucide-react",
+        "react-aria-components"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/sidebar-03/components/app-sidebar.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-03/components/app-sidebar.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-03/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-03/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-03/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-03/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "sidebar-04",
+      "type": "registry:block",
+      "title": "Navigation and tool panel",
+      "description": "Icon navigation rail on the left and a collapsible tool panel on the right around the work area. Requires the @tecton/react package.",
+      "categories": [
+        "layouts"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/sidebar-04/components/nav-rail.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-04/components/nav-rail.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-04/components/nav-user.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-04/components/nav-user.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-04/components/tool-panel.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-04/components/tool-panel.tsx"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-04/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-04/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/sidebar-04/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/sidebar-04/page.tsx"
         }
       ]
     },
@@ -371,24 +676,24 @@
       "registryDependencies": [],
       "files": [
         {
-          "path": "registry/src/blocks/well-design-card/components/well-design-card.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/well-design-card/components/well-design-card.tsx"
-        },
-        {
           "path": "registry/src/blocks/well-design-card/components/trajectory-sketch.tsx",
           "type": "registry:component",
           "target": "components/blocks/well-design-card/components/trajectory-sketch.tsx"
         },
         {
-          "path": "registry/src/blocks/well-design-card/page.tsx",
+          "path": "registry/src/blocks/well-design-card/components/well-design-card.tsx",
           "type": "registry:component",
-          "target": "components/blocks/well-design-card/page.tsx"
+          "target": "components/blocks/well-design-card/components/well-design-card.tsx"
         },
         {
           "path": "registry/src/blocks/well-design-card/data.ts",
           "type": "registry:component",
           "target": "components/blocks/well-design-card/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/well-design-card/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/well-design-card/page.tsx"
         }
       ]
     }

@@ -7,6 +7,7 @@ export type BlockCategory =
   | "authentication"
   | "dashboard"
   | "forms"
+  | "layouts"
   | "lists"
 
 export type BlockMeta = {
@@ -22,6 +23,7 @@ export const blocks: (BlockMeta & { component: () => Promise<BlockModule> })[] =
   registry
 
 export const blockCategories: { id: BlockCategory; title: string }[] = [
+  { id: "layouts", title: "Sidebars & layouts" },
   { id: "application", title: "Application panels" },
   { id: "dashboard", title: "Dashboards" },
   { id: "forms", title: "Forms" },

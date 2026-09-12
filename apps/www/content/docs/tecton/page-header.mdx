@@ -1,6 +1,6 @@
 ---
 title: Page Header
-description: "Page title block with optional eyebrow, description and trailing actions."
+description: "Page title block with optional eyebrow, description, section tabs and trailing actions."
 ---
 
 <ComponentPreview name="page-header-demo" />
@@ -15,6 +15,7 @@ import {
   PageHeaderEyebrow,
   PageHeaderTitle,
   PageHeaderDescription,
+  PageHeaderNav,
   PageHeaderActions,
 } from "@tecton/react/tecton/page-header"
 ```
@@ -51,6 +52,12 @@ PageHeader
 
 <ComponentPreview name="page-header-actions" />
 
+## Section tabs
+
+`PageHeaderNav` sits between the title and the actions for section navigation. Put a `Tabs` list in it and a view toggle in `PageHeaderActions`; on small screens the nav wraps onto its own row.
+
+<ComponentPreview name="page-header-nav" />
+
 ## Eyebrow
 
 Use `PageHeaderEyebrow` for a breadcrumb or category above the title.
@@ -59,9 +66,9 @@ Use `PageHeaderEyebrow` for a breadcrumb or category above the title.
 
 ## API Reference
 
-### PageHeader, PageHeaderContent, PageHeaderEyebrow, PageHeaderTitle, PageHeaderDescription, PageHeaderActions
+### PageHeader, PageHeaderContent, PageHeaderEyebrow, PageHeaderTitle, PageHeaderDescription, PageHeaderNav, PageHeaderActions
 
-Plain styled elements; `PageHeaderTitle` is an `h1`.
+Plain styled elements; `PageHeaderTitle` is an `h1` and `PageHeaderNav` is a `nav` (give it an `aria-label`).
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |

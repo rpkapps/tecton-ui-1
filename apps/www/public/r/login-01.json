@@ -16,16 +16,16 @@
       "target": "components/blocks/login-01/components/login-form.tsx"
     },
     {
-      "path": "registry/src/blocks/login-01/page.tsx",
-      "content": "\"use client\"\n\nimport * as React from \"react\"\n\nimport { LoginForm } from \"./components/login-form\"\nimport { loginCopy } from \"./data\"\n\n/** Route-ready page: centred login card on the application background. */\nexport default function LoginPage() {\n  return (\n    <div\n      data-slot=\"login-page\"\n      className=\"flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-background px-4 py-10 text-foreground\"\n    >\n      <LoginForm />\n      <p className=\"max-w-sm text-center text-xs text-muted-foreground\">\n        By signing in you agree to the {loginCopy.brand} acceptable-use policy.\n        Access is logged for security auditing.\n      </p>\n    </div>\n  )\n}\n\nexport { LoginForm }\nexport { loginCopy, demoAccount, validateEmail, validatePassword } from \"./data\"\nexport type { LoginFormProps } from \"./components/login-form\"\n",
-      "type": "registry:component",
-      "target": "components/blocks/login-01/page.tsx"
-    },
-    {
       "path": "registry/src/blocks/login-01/data.ts",
       "content": "export const loginCopy = {\n  brand: \"Tecton\",\n  title: \"Sign in to your workspace\",\n  description: \"Use your company account to access projects and models.\",\n  ssoProvider: \"Equinor SSO\",\n  helpUrl: \"#request-access\",\n}\n\n/** Demo credentials accepted by the mock sign-in. */\nexport const demoAccount = {\n  email: \"lena.haugen@example.com\",\n  password: \"tecton-demo\",\n}\n\nexport function validateEmail(value: string): string | undefined {\n  if (!value.trim()) return \"Email is required.\"\n  if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(value)) return \"Enter a valid email address.\"\n  return undefined\n}\n\nexport function validatePassword(value: string): string | undefined {\n  if (!value) return \"Password is required.\"\n  if (value.length < 8) return \"Password must be at least 8 characters.\"\n  return undefined\n}\n",
       "type": "registry:component",
       "target": "components/blocks/login-01/data.ts"
+    },
+    {
+      "path": "registry/src/blocks/login-01/page.tsx",
+      "content": "\"use client\"\n\nimport * as React from \"react\"\n\nimport { LoginForm } from \"./components/login-form\"\nimport { loginCopy } from \"./data\"\n\n/** Route-ready page: centred login card on the application background. */\nexport default function LoginPage() {\n  return (\n    <div\n      data-slot=\"login-page\"\n      className=\"flex min-h-svh w-full flex-col items-center justify-center gap-6 bg-background px-4 py-10 text-foreground\"\n    >\n      <LoginForm />\n      <p className=\"max-w-sm text-center text-xs text-muted-foreground\">\n        By signing in you agree to the {loginCopy.brand} acceptable-use policy.\n        Access is logged for security auditing.\n      </p>\n    </div>\n  )\n}\n\nexport { LoginForm }\nexport { loginCopy, demoAccount, validateEmail, validatePassword } from \"./data\"\nexport type { LoginFormProps } from \"./components/login-form\"\n",
+      "type": "registry:component",
+      "target": "components/blocks/login-01/page.tsx"
     }
   ],
   "categories": [
