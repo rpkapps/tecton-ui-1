@@ -17,7 +17,6 @@
   "dependencies": {
     "@internationalized/date": "^3.12.3",
     "@shadcn/react": "^0.3.1",
-    "@tabler/icons-react": "^3.31.0",
     "@tailwindcss/vite": "^4",
     "@tanstack/react-form": "^1.33.5",
     "@tanstack/react-router": "^1.170.35",

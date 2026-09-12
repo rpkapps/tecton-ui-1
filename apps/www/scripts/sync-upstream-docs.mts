@@ -66,7 +66,6 @@ const ALLOWED_MODULES = new Set([
   "react-aria-components",
   "sonner",
   "@internationalized/date",
-  "@tabler/icons-react",
   "recharts",
   "input-otp",
   "@tanstack/react-table",
@@ -112,9 +111,53 @@ const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
     code.replace('<CardFooter className="justify-end gap-2">', '<CardFooter className="justify-end gap-2 border-t">'),
 }
 
+/**
+ * Upstream examples occasionally use `@tabler/icons-react`; Tecton UI ships
+ * lucide (and the Tecton icon set) only, so those identifiers are mapped to
+ * their lucide equivalents and the import is rewritten.
+ */
+const TABLER_TO_LUCIDE: Record<string, string> = {
+  IconBell: "BellIcon",
+  IconBrandJavascript: "BracesIcon",
+  IconCheck: "CheckIcon",
+  IconCloud: "CloudIcon",
+  IconCopy: "CopyIcon",
+  IconCornerDownLeft: "CornerDownLeftIcon",
+  IconFolderCode: "FolderCodeIcon",
+  IconGitBranch: "GitBranchIcon",
+  IconGitFork: "GitForkIcon",
+  IconInfoCircle: "InfoIcon",
+  IconPlus: "PlusIcon",
+  IconRefresh: "RefreshCwIcon",
+  IconStar: "StarIcon",
+}
+
+function rewriteTablerIcons(source: string): string {
+  const match = source.match(
+    /import\s*\{([^}]*)\}\s*from\s*["']@tabler\/icons-react["']\n?/
+  )
+  if (!match) return source
+  const idents = match[1]
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean)
+  const unknown = idents.filter((id) => !(id in TABLER_TO_LUCIDE))
+  if (unknown.length) {
+    throw new Error(
+      `unmapped @tabler/icons-react identifier(s): ${unknown.join(", ")} — add them to TABLER_TO_LUCIDE`
+    )
+  }
+  const lucideImport = `import { ${idents.map((id) => TABLER_TO_LUCIDE[id]).sort().join(", ")} } from "lucide-react"\n`
+  let code = source.replace(match[0], lucideImport)
+  for (const id of idents) {
+    code = code.replace(new RegExp(`\\b${id}\\b`, "g"), TABLER_TO_LUCIDE[id])
+  }
+  return code
+}
+
 function rewriteImports(source: string): { code: string; blocked?: string } {
   let blocked: string | undefined
-  const code = source.replace(
+  const code = rewriteTablerIcons(source).replace(
     /(from\s+|import\s+|import\()\s*(["'])([^"']+)\2/g,
     (match, prefix: string, quote: string, spec: string) => {
       if (spec.startsWith(".")) return match
