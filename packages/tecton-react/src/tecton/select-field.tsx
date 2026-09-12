@@ -41,10 +41,13 @@ const selectFieldTriggerVariants = cva("", {
   },
 })
 
-type SelectFieldProps<T extends object> = React.ComponentProps<
-  typeof Select<T, "single">
+type SelectFieldProps<T extends object> = Omit<
+  React.ComponentProps<typeof Select<T, "single">>,
+  "children"
 > &
   VariantProps<typeof selectFieldTriggerVariants> & {
+    /** `SelectFieldItem`s, or a render function when `items` is provided. */
+    children?: React.ReactNode | ((item: T) => React.ReactNode)
     label?: React.ReactNode
     description?: React.ReactNode
     errorMessage?: React.ReactNode
@@ -94,9 +97,7 @@ function SelectField<T extends object>({
       {hasError && <SelectFieldError>{errorMessage}</SelectFieldError>}
       <SelectContent {...contentProps}>
         {items && typeof children === "function"
-          ? (Array.from(items) as T[]).map((item) =>
-              (children as (item: T) => React.ReactNode)(item)
-            )
+          ? Array.from(items).map((item) => children(item))
           : (children as React.ReactNode)}
       </SelectContent>
     </Select>

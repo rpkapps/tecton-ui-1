@@ -1,0 +1,103 @@
+---
+title: FAB
+description: "Floating action button: an extended pill with icon and label, or an icon-only circle."
+links:
+  doc: https://react-aria.adobe.com/Button
+---
+
+<ComponentPreview name="fab-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/fab
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/fab"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-aria-components class-variance-authority
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="fab" title="@tecton/react/tecton/fab.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import { Fab } from "@tecton/react/tecton/fab"
+```
+
+```tsx
+<Fab onPress={() => createWell()}>
+  <PlusIcon />
+  New well
+</Fab>
+```
+
+<Callout>
+  The shadcn [Button](/docs/components/button) has no floating or elevated variant. `Fab` is a separate component so the shadcn `Button` stays untouched.
+</Callout>
+
+## Variants
+
+Use the `variant` prop. `primary` and `secondary` are elevated; `tertiary` and `outlined` are flat.
+
+<ComponentPreview name="fab-variants" />
+
+## Round
+
+Use `shape="round"` for an icon-only FAB. Always provide an `aria-label`.
+
+<ComponentPreview name="fab-round" />
+
+## Sizes
+
+Use the `size` prop: `md` is 40 px, `sm` is 32 px.
+
+<ComponentPreview name="fab-sizes" />
+
+## Active
+
+Set `isActive` to reproduce the design system's *activated* state, e.g. for the current tool in a toolbar.
+
+<ComponentPreview name="fab-active" />
+
+## API Reference
+
+### Fab
+
+React Aria `Button` with the FAB styles; accepts all `Button` props (`onPress`, `isDisabled`…).
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `"primary" \| "secondary" \| "tertiary" \| "outlined"` | "primary" | Visual style. |
+| `size` | `"md" \| "sm"` | "md" | Height 40 / 32 px. |
+| `shape` | `"extended" \| "round"` | "extended" | Pill with label or icon-only circle. |
+| `isActive` | `boolean` | false | Activated visual state. |
+| `isDisabled` | `boolean` | false | Disables the button. |

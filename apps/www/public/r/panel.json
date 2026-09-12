@@ -1,0 +1,20 @@
+{
+  "$schema": "https://ui.shadcn.com/schema/registry-item.json",
+  "name": "panel",
+  "title": "Panel",
+  "description": "Tecton Panel component.",
+  "dependencies": [
+    "class-variance-authority",
+    "cn"
+  ],
+  "registryDependencies": [],
+  "files": [
+    {
+      "path": "registry/src/tecton/panel.tsx",
+      "content": "import * as React from \"react\"\nimport { cva, type VariantProps } from \"class-variance-authority\"\nimport { cn } from \"cn\"\n\n/**\n * Tecton Panel — a titled application surface (side panels, tool panels,\n * card-like sections in a dashboard). `PanelHeader` holds the title,\n * optional description and a trailing `PanelActions` slot; `PanelContent`\n * scrolls; `PanelFooter` pins actions to the bottom.\n */\nconst panelVariants = cva(\n  \"group/panel flex min-h-0 flex-col overflow-hidden text-card-foreground\",\n  {\n    variants: {\n      variant: {\n        default: \"rounded-lg border bg-card\",\n        elevated: \"rounded-lg border bg-card shadow-md\",\n        flat: \"bg-card\",\n        outline: \"rounded-lg border bg-transparent\",\n      },\n      size: {\n        sm: \"[--panel-px:0.75rem] [--panel-py:0.5rem] text-sm\",\n        md: \"[--panel-px:1rem] [--panel-py:0.75rem] text-sm\",\n        lg: \"[--panel-px:1.5rem] [--panel-py:1rem]\",\n      },\n    },\n    defaultVariants: {\n      variant: \"default\",\n      size: \"md\",\n    },\n  }\n)\n\nfunction Panel({\n  className,\n  variant = \"default\",\n  size = \"md\",\n  ...props\n}: React.ComponentProps<\"section\"> & VariantProps<typeof panelVariants>) {\n  return (\n    <section\n      data-slot=\"panel\"\n      data-variant={variant}\n      data-size={size}\n      className={cn(panelVariants({ variant, size }), className)}\n      {...props}\n    />\n  )\n}\n\nfunction PanelHeader({ className, ...props }: React.ComponentProps<\"header\">) {\n  return (\n    <header\n      data-slot=\"panel-header\"\n      className={cn(\n        \"flex shrink-0 items-start gap-2 border-b px-(--panel-px) py-(--panel-py) has-data-[slot=panel-actions]:items-center\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nfunction PanelTitle({ className, ...props }: React.ComponentProps<\"h2\">) {\n  return (\n    <h2\n      data-slot=\"panel-title\"\n      className={cn(\n        \"min-w-0 flex-1 truncate text-sm leading-none font-medium\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nfunction PanelDescription({ className, ...props }: React.ComponentProps<\"p\">) {\n  return (\n    <p\n      data-slot=\"panel-description\"\n      className={cn(\"basis-full text-xs text-muted-foreground\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction PanelActions({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"panel-actions\"\n      className={cn(\"-my-1 -mr-2 ml-auto flex shrink-0 items-center gap-1\", className)}\n      {...props}\n    />\n  )\n}\n\nfunction PanelContent({ className, ...props }: React.ComponentProps<\"div\">) {\n  return (\n    <div\n      data-slot=\"panel-content\"\n      className={cn(\n        \"min-h-0 flex-1 overflow-auto px-(--panel-px) py-(--panel-py)\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nfunction PanelFooter({ className, ...props }: React.ComponentProps<\"footer\">) {\n  return (\n    <footer\n      data-slot=\"panel-footer\"\n      className={cn(\n        \"flex shrink-0 items-center gap-2 border-t px-(--panel-px) py-(--panel-py)\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nexport {\n  Panel,\n  PanelHeader,\n  PanelTitle,\n  PanelDescription,\n  PanelActions,\n  PanelContent,\n  PanelFooter,\n  panelVariants,\n}\n",
+      "type": "registry:component",
+      "target": "components/tecton/panel.tsx"
+    }
+  ],
+  "type": "registry:component"
+}

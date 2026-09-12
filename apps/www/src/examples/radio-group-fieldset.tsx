@@ -1,0 +1,40 @@
+// Synced from shadcn/ui (apps/v4/examples/aria/radio-group-fieldset.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+import {
+  Field,
+  FieldDescription,
+  FieldLabel,
+  FieldLegend,
+  FieldSet,
+} from "@tecton/react/components/field"
+import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group"
+
+export function RadioGroupFieldset() {
+  return (
+    <FieldSet className="w-full max-w-xs">
+      <FieldLegend variant="label">Subscription Plan</FieldLegend>
+      <FieldDescription>
+        Yearly and lifetime plans offer significant savings.
+      </FieldDescription>
+      <RadioGroup aria-label="Subscription Plan" defaultValue="monthly">
+        <Field orientation="horizontal">
+          <RadioGroupItem value="monthly" id="plan-monthly" />
+          <FieldLabel htmlFor="plan-monthly" className="font-normal">
+            Monthly ($9.99/month)
+          </FieldLabel>
+        </Field>
+        <Field orientation="horizontal">
+          <RadioGroupItem value="yearly" id="plan-yearly" />
+          <FieldLabel htmlFor="plan-yearly" className="font-normal">
+            Yearly ($99.99/year)
+          </FieldLabel>
+        </Field>
+        <Field orientation="horizontal">
+          <RadioGroupItem value="lifetime" id="plan-lifetime" />
+          <FieldLabel htmlFor="plan-lifetime" className="font-normal">
+            Lifetime ($299.99)
+          </FieldLabel>
+        </Field>
+      </RadioGroup>
+    </FieldSet>
+  )
+}

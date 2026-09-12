@@ -9,50 +9,264 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
-import { Route as IndexRouteImport } from './routes/index'
+import { Route as SiteRouteImport } from './routes/_site'
+import { Route as SiteIndexRouteImport } from './routes/_site/index'
+import { Route as SiteBlocksRouteImport } from './routes/_site/blocks'
+import { Route as SiteDocsRouteImport } from './routes/_site/docs'
+import { Route as SiteThemesRouteImport } from './routes/_site/themes'
+import { Route as CompareComponentRouteImport } from './routes/compare/$component'
+import { Route as ViewNameRouteImport } from './routes/view/$name'
+import { Route as SiteBlocksIndexRouteImport } from './routes/_site/blocks/index'
+import { Route as SiteBlocksNameRouteImport } from './routes/_site/blocks/$name'
+import { Route as SiteDocsSplatRouteImport } from './routes/_site/docs/$'
 
-const IndexRoute = IndexRouteImport.update({
+const SiteRoute = SiteRouteImport.update({
+  id: '/_site',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SiteIndexRoute = SiteIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteBlocksRoute = SiteBlocksRouteImport.update({
+  id: '/blocks',
+  path: '/blocks',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteDocsRoute = SiteDocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteThemesRoute = SiteThemesRouteImport.update({
+  id: '/themes',
+  path: '/themes',
+  getParentRoute: () => SiteRoute,
+} as any)
+const CompareComponentRoute = CompareComponentRouteImport.update({
+  id: '/compare/$component',
+  path: '/compare/$component',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ViewNameRoute = ViewNameRouteImport.update({
+  id: '/view/$name',
+  path: '/view/$name',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SiteBlocksIndexRoute = SiteBlocksIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SiteBlocksRoute,
+} as any)
+const SiteBlocksNameRoute = SiteBlocksNameRouteImport.update({
+  id: '/$name',
+  path: '/$name',
+  getParentRoute: () => SiteBlocksRoute,
+} as any)
+const SiteDocsSplatRoute = SiteDocsSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => SiteDocsRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
-  '/': typeof IndexRoute
+  '/': typeof SiteIndexRoute
+  '/blocks': typeof SiteBlocksRouteWithChildren
+  '/docs': typeof SiteDocsRouteWithChildren
+  '/themes': typeof SiteThemesRoute
+  '/compare/$component': typeof CompareComponentRoute
+  '/view/$name': typeof ViewNameRoute
+  '/blocks/$name': typeof SiteBlocksNameRoute
+  '/docs/$': typeof SiteDocsSplatRoute
+  '/blocks/': typeof SiteBlocksIndexRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof IndexRoute
+  '/docs': typeof SiteDocsRouteWithChildren
+  '/themes': typeof SiteThemesRoute
+  '/compare/$component': typeof CompareComponentRoute
+  '/view/$name': typeof ViewNameRoute
+  '/': typeof SiteIndexRoute
+  '/blocks/$name': typeof SiteBlocksNameRoute
+  '/docs/$': typeof SiteDocsSplatRoute
+  '/blocks': typeof SiteBlocksIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
-  '/': typeof IndexRoute
+  '/_site': typeof SiteRouteWithChildren
+  '/_site/blocks': typeof SiteBlocksRouteWithChildren
+  '/_site/docs': typeof SiteDocsRouteWithChildren
+  '/_site/themes': typeof SiteThemesRoute
+  '/compare/$component': typeof CompareComponentRoute
+  '/view/$name': typeof ViewNameRoute
+  '/_site/': typeof SiteIndexRoute
+  '/_site/blocks/$name': typeof SiteBlocksNameRoute
+  '/_site/docs/$': typeof SiteDocsSplatRoute
+  '/_site/blocks/': typeof SiteBlocksIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/blocks'
+    | '/docs'
+    | '/themes'
+    | '/compare/$component'
+    | '/view/$name'
+    | '/blocks/$name'
+    | '/docs/$'
+    | '/blocks/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/docs'
+    | '/themes'
+    | '/compare/$component'
+    | '/view/$name'
+    | '/'
+    | '/blocks/$name'
+    | '/docs/$'
+    | '/blocks'
+  id:
+    | '__root__'
+    | '/_site'
+    | '/_site/blocks'
+    | '/_site/docs'
+    | '/_site/themes'
+    | '/compare/$component'
+    | '/view/$name'
+    | '/_site/'
+    | '/_site/blocks/$name'
+    | '/_site/docs/$'
+    | '/_site/blocks/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
-  IndexRoute: typeof IndexRoute
+  SiteRoute: typeof SiteRouteWithChildren
+  CompareComponentRoute: typeof CompareComponentRoute
+  ViewNameRoute: typeof ViewNameRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
-    '/': {
-      id: '/'
+    '/_site': {
+      id: '/_site'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof SiteRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_site/': {
+      id: '/_site/'
       path: '/'
       fullPath: '/'
-      preLoaderRoute: typeof IndexRouteImport
+      preLoaderRoute: typeof SiteIndexRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/blocks': {
+      id: '/_site/blocks'
+      path: '/blocks'
+      fullPath: '/blocks'
+      preLoaderRoute: typeof SiteBlocksRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/docs': {
+      id: '/_site/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof SiteDocsRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/themes': {
+      id: '/_site/themes'
+      path: '/themes'
+      fullPath: '/themes'
+      preLoaderRoute: typeof SiteThemesRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/compare/$component': {
+      id: '/compare/$component'
+      path: '/compare/$component'
+      fullPath: '/compare/$component'
+      preLoaderRoute: typeof CompareComponentRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/view/$name': {
+      id: '/view/$name'
+      path: '/view/$name'
+      fullPath: '/view/$name'
+      preLoaderRoute: typeof ViewNameRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_site/blocks/': {
+      id: '/_site/blocks/'
+      path: '/'
+      fullPath: '/blocks/'
+      preLoaderRoute: typeof SiteBlocksIndexRouteImport
+      parentRoute: typeof SiteBlocksRoute
+    }
+    '/_site/blocks/$name': {
+      id: '/_site/blocks/$name'
+      path: '/$name'
+      fullPath: '/blocks/$name'
+      preLoaderRoute: typeof SiteBlocksNameRouteImport
+      parentRoute: typeof SiteBlocksRoute
+    }
+    '/_site/docs/$': {
+      id: '/_site/docs/$'
+      path: '/$'
+      fullPath: '/docs/$'
+      preLoaderRoute: typeof SiteDocsSplatRouteImport
+      parentRoute: typeof SiteDocsRoute
     }
   }
 }
 
+interface SiteBlocksRouteChildren {
+  SiteBlocksNameRoute: typeof SiteBlocksNameRoute
+  SiteBlocksIndexRoute: typeof SiteBlocksIndexRoute
+}
+
+const SiteBlocksRouteChildren: SiteBlocksRouteChildren = {
+  SiteBlocksNameRoute: SiteBlocksNameRoute,
+  SiteBlocksIndexRoute: SiteBlocksIndexRoute,
+}
+
+const SiteBlocksRouteWithChildren = SiteBlocksRoute._addFileChildren(
+  SiteBlocksRouteChildren,
+)
+
+interface SiteDocsRouteChildren {
+  SiteDocsSplatRoute: typeof SiteDocsSplatRoute
+}
+
+const SiteDocsRouteChildren: SiteDocsRouteChildren = {
+  SiteDocsSplatRoute: SiteDocsSplatRoute,
+}
+
+const SiteDocsRouteWithChildren = SiteDocsRoute._addFileChildren(
+  SiteDocsRouteChildren,
+)
+
+interface SiteRouteChildren {
+  SiteBlocksRoute: typeof SiteBlocksRouteWithChildren
+  SiteDocsRoute: typeof SiteDocsRouteWithChildren
+  SiteThemesRoute: typeof SiteThemesRoute
+  SiteIndexRoute: typeof SiteIndexRoute
+}
+
+const SiteRouteChildren: SiteRouteChildren = {
+  SiteBlocksRoute: SiteBlocksRouteWithChildren,
+  SiteDocsRoute: SiteDocsRouteWithChildren,
+  SiteThemesRoute: SiteThemesRoute,
+  SiteIndexRoute: SiteIndexRoute,
+}
+
+const SiteRouteWithChildren = SiteRoute._addFileChildren(SiteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
-  IndexRoute: IndexRoute,
+  SiteRoute: SiteRouteWithChildren,
+  CompareComponentRoute: CompareComponentRoute,
+  ViewNameRoute: ViewNameRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

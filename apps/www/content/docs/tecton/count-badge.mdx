@@ -1,0 +1,105 @@
+---
+title: Count Badge
+description: "A count or status dot anchored to the corner of an avatar, icon button or tab."
+---
+
+<ComponentPreview name="count-badge-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/count-badge
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/count-badge"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install class-variance-authority
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="count-badge" title="@tecton/react/tecton/count-badge.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import { CountBadge } from "@tecton/react/tecton/count-badge"
+```
+
+```tsx
+<CountBadge count={4} color="error">
+  <Button variant="outline" size="icon" aria-label="Notifications">
+    <BellIcon />
+  </Button>
+</CountBadge>
+```
+
+<Callout title="Naming">
+  This is the Tecton *Badge* from the design system. It is named `CountBadge` in the library so it does not collide with the shadcn `Badge`, which Tecton uses for [Chip](/docs/tecton/chip)-like labels.
+</Callout>
+
+## Colors
+
+Use the `color` prop. `neutral` uses the Tecton neutral surface, the others map to the shadcn semantic variables.
+
+<ComponentPreview name="count-badge-colors" />
+
+## Dot
+
+Use `variant="dot"` for a presence or status indicator without a number.
+
+<ComponentPreview name="count-badge-dot" />
+
+## Anchor
+
+Use the `anchor` prop to place the badge on any corner of its child.
+
+<ComponentPreview name="count-badge-anchor" />
+
+## Max, zero and custom content
+
+Counts above `max` render as `max+`. A count of `0` hides the badge unless `showZero` is set; `content` replaces the number with arbitrary content.
+
+<ComponentPreview name="count-badge-max" />
+
+## API Reference
+
+### CountBadge
+
+Wraps its child in a relatively positioned `span` and renders the badge absolutely.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `count` | `number` | - | Number to display. |
+| `max` | `number` | 99 | Counts above this render as `max+`. |
+| `showZero` | `boolean` | false | Render the badge when `count` is 0. |
+| `content` | `ReactNode` | - | Custom content instead of the count. |
+| `invisible` | `boolean` | false | Hide the badge but keep the anchor. |
+| `color` | `"default" \| "primary" \| "error" \| "warning" \| "info" \| "success" \| "neutral"` | "primary" | Badge colour. |
+| `variant` | `"standard" \| "dot"` | "standard" | Number pill or 8 px dot. |
+| `anchor` | `"top-right" \| "top-left" \| "bottom-right" \| "bottom-left"` | "top-right" | Corner of the child. |

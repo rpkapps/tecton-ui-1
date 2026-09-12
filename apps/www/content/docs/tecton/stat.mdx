@@ -1,0 +1,137 @@
+---
+title: Stat
+description: "KPI readout with label, tabular mono value, unit, trend delta and helper text."
+---
+
+<ComponentPreview name="stat-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/stat
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/stat"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install lucide-react class-variance-authority
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="stat" title="@tecton/react/tecton/stat.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import {
+  Stat,
+  StatLabel,
+  StatValue,
+  StatDelta,
+  StatHelp,
+  StatGroup,
+} from "@tecton/react/tecton/stat"
+```
+
+```tsx
+<Stat>
+  <StatLabel>Cost per barrel</StatLabel>
+  <StatValue unit="USD">16.9</StatValue>
+  <StatDelta trend="down">-8% vs. Alternative A</StatDelta>
+  <StatHelp>Base case, P50 volumes</StatHelp>
+</Stat>
+```
+
+<Callout>
+  The IBM Plex Mono value with a sans unit is a Tecton typography rule that no shadcn component carries; `Stat` is the building block for the FDA and Well Design cards.
+</Callout>
+
+## Composition
+
+Use the following composition:
+
+```text
+Stat
+├── StatLabel
+├── StatValue (unit)
+├── StatDelta
+└── StatHelp
+```
+
+## Sizes
+
+Use the `size` prop on `Stat` to scale the value.
+
+<ComponentPreview name="stat-sizes" />
+
+## Delta
+
+Use `StatDelta` with `trend` for an up, down or flat indicator with the matching colour.
+
+<ComponentPreview name="stat-delta" />
+
+## Group
+
+`StatGroup` lays out several stats in a responsive grid; use `align` on each `Stat`.
+
+<ComponentPreview name="stat-group" />
+
+## API Reference
+
+### Stat
+
+Container that sets the value size and alignment.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `size` | `"sm" \| "md" \| "lg"` | "md" | Value font size 14 / 20 / 28 px. |
+| `align` | `"start" \| "center" \| "end"` | "start" | Alignment of the parts. |
+
+### StatValue
+
+The value in the mono font with tabular numbers.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `unit` | `ReactNode` | - | Unit rendered after the value. |
+
+### StatDelta
+
+Trend indicator with icon.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `trend` | `"up" \| "down" \| "flat"` | "flat" | Direction and colour. |
+
+### StatLabel, StatHelp, StatGroup
+
+Plain styled elements.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `className` | `string` | - |  |

@@ -48,3 +48,13 @@ pnpm generated:check                                                            
 ```
 
 Bump the commit above when the mirror is rebuilt from a newer upstream.
+
+## Docs pages and examples
+
+`apps/www/content/docs/components/*.mdx` and the examples in `apps/www/src/examples/*.tsx`
+whose first line is `// Synced from shadcn/ui …` are synced from the same upstream commit
+(`apps/v4/content/docs/components/aria/*.mdx`, `apps/v4/examples/aria/*.tsx`) by
+`pnpm docs:sync` (`apps/www/scripts/sync-upstream-docs.mts`), with import paths rewritten to
+`@tecton/react/...`. shadcn/ui is MIT licensed (see `LICENSE.md` in the upstream repository);
+the synced content keeps that license. Examples that need upstream-only infrastructure are
+skipped and listed in `apps/www/scripts/sync-report.json`.

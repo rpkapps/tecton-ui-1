@@ -6,6 +6,7 @@ import { cn } from "cn"
 import {
   ColorSwatch as ColorSwatchPrimitive,
   composeRenderProps,
+  parseColor,
   type ColorSwatchProps as ColorSwatchPrimitiveProps,
 } from "react-aria-components"
 
@@ -38,6 +39,21 @@ const colorSwatchVariants = cva(
   }
 )
 
+/**
+ * React Aria's ColorSwatch only parses hex/rgb/hsl(a) strings. Tecton tokens
+ * may be `oklch(...)` or `var(--...)`, so anything it cannot parse is rendered
+ * as a plain swatch with the value as CSS background.
+ */
+function isParseable(color: ColorSwatchPrimitiveProps["color"]) {
+  if (typeof color !== "string") return true
+  try {
+    parseColor(color)
+    return true
+  } catch {
+    return false
+  }
+}
+
 type ColorSwatchProps = Omit<ColorSwatchPrimitiveProps, "className"> &
   VariantProps<typeof colorSwatchVariants> & {
     className?: string
@@ -55,13 +71,20 @@ function ColorSwatch({
   value,
   ...props
 }: ColorSwatchProps) {
-  const swatch = (
+  const swatchClass = cn(colorSwatchVariants({ size, shape }), label || value ? "" : className)
+  const swatch = isParseable(props.color) ? (
     <ColorSwatchPrimitive
       data-slot="color-swatch"
-      className={composeRenderProps(className, (className) =>
-        cn(colorSwatchVariants({ size, shape }), label || value ? "" : className)
-      )}
+      className={composeRenderProps(className, () => swatchClass)}
       {...props}
+    />
+  ) : (
+    <span
+      data-slot="color-swatch"
+      role="img"
+      aria-label={props["aria-label"] ?? String(props.color)}
+      className={swatchClass}
+      style={{ background: String(props.color) }}
     />
   )
 

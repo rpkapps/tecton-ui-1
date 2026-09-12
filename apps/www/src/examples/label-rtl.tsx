@@ -1,0 +1,45 @@
+// Synced from shadcn/ui (apps/v4/examples/aria/label-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+"use client"
+
+import * as React from "react"
+
+import {
+  useTranslation,
+  type Translations,
+} from "@/components/language-selector"
+import { Checkbox } from "@tecton/react/components/checkbox"
+import { Label } from "@tecton/react/components/label"
+
+const translations: Translations = {
+  en: {
+    dir: "ltr",
+    values: {
+      label: "Accept terms and conditions",
+    },
+  },
+  ar: {
+    dir: "rtl",
+    values: {
+      label: "قبول الشروط والأحكام",
+    },
+  },
+  he: {
+    dir: "rtl",
+    values: {
+      label: "קבל תנאים והגבלות",
+    },
+  },
+}
+
+export function LabelRtl() {
+  const { dir, t } = useTranslation(translations, "ar")
+
+  return (
+    <div className="flex gap-2" dir={dir}>
+      <Checkbox id="terms-rtl" dir={dir} />
+      <Label htmlFor="terms-rtl" dir={dir}>
+        {t.label}
+      </Label>
+    </div>
+  )
+}

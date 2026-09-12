@@ -1,0 +1,17 @@
+{
+  "root": true,
+  "title": "Docs",
+  "pages": [
+    "---Getting started---",
+    "index",
+    "installation",
+    "theming",
+    "typography",
+    "spacing",
+    "cli",
+    "icons",
+    "---Library---",
+    "components",
+    "tecton"
+  ]
+}

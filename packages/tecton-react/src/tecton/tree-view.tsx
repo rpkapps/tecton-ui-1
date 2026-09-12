@@ -210,8 +210,8 @@ function TreeViewVisibilityToggle({
       aria-label={isVisible ? "Hide" : "Show"}
       aria-pressed={!isVisible}
       className={className}
-      onPress={() => onChange?.(!isVisible)}
       {...props}
+      onPress={() => onChange?.(!isVisible)}
     >
       {isVisible ? <EyeIcon /> : <EyeOffIcon />}
     </TreeViewAction>

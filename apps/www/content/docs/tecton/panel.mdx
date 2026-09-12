@@ -1,0 +1,126 @@
+---
+title: Panel
+description: "Titled application surface for side panels, tool panels and dashboard sections, with a scrolling body and a pinned footer."
+---
+
+<ComponentPreview name="panel-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/panel
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/panel"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install class-variance-authority
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="panel" title="@tecton/react/tecton/panel.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import {
+  Panel,
+  PanelHeader,
+  PanelTitle,
+  PanelDescription,
+  PanelActions,
+  PanelContent,
+  PanelFooter,
+} from "@tecton/react/tecton/panel"
+```
+
+```tsx
+<Panel>
+  <PanelHeader>
+    <PanelTitle>Well properties</PanelTitle>
+    <PanelActions>…</PanelActions>
+  </PanelHeader>
+  <PanelContent>…</PanelContent>
+  <PanelFooter>…</PanelFooter>
+</Panel>
+```
+
+<Callout>
+  [Card](/docs/components/card) is for content; `Panel` is the application chrome around a tool: it fills its container, scrolls its body and pins its footer.
+</Callout>
+
+## Composition
+
+Use the following composition:
+
+```text
+Panel
+├── PanelHeader
+│   ├── PanelTitle
+│   ├── PanelDescription
+│   └── PanelActions
+├── PanelContent
+└── PanelFooter
+```
+
+## Variants
+
+Use the `variant` prop: bordered `default`, `elevated` with a shadow, `flat` without border and `outline` on a transparent background.
+
+<ComponentPreview name="panel-variants" />
+
+## Sizes
+
+Use the `size` prop to scale the padding of header, content and footer.
+
+<ComponentPreview name="panel-sizes" />
+
+## Footer
+
+Give the panel a height: `PanelContent` scrolls and `PanelFooter` stays pinned to the bottom.
+
+<ComponentPreview name="panel-footer" />
+
+## API Reference
+
+### Panel
+
+A `section` element.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `"default" \| "elevated" \| "flat" \| "outline"` | "default" | Surface style. |
+| `size` | `"sm" \| "md" \| "lg"` | "md" | Padding scale. |
+
+### PanelHeader, PanelTitle, PanelDescription, PanelActions, PanelContent, PanelFooter
+
+Structural parts; `PanelActions` sits at the end of the header, `PanelContent` scrolls.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `className` | `string` | - |  |

@@ -1,0 +1,50 @@
+---
+title: Icons
+description: The Tecton icon set (131 icons, outlined and filled) and how it works alongside Lucide.
+---
+
+Tecton UI supports **two icon libraries**:
+
+- **Lucide** (`lucide-react`) — the library the generated shadcn components use internally (chevrons, check marks, close buttons…). It stays the CLI's `iconLibrary`, so generated files never change.
+- **Tecton icons** (`@tecton/react/icons`) — the 131 custom icons of the design system, including the domain glyphs (wells, horizons, seismic, drill bits…). Every icon is a React component with the Lucide-compatible signature (`size`, `strokeWidth`, `className`, SVG props) plus `variant="outlined" | "filled"`.
+
+```tsx
+import { SearchIcon } from "lucide-react"
+import { WellIcon, SeismicIcon } from "@tecton/react/icons"
+
+<Button>
+  <WellIcon data-icon="inline-start" /> New well
+</Button>
+<SeismicIcon variant="filled" size={20} />
+```
+
+<Callout variant="warning" title="Glyph sources">
+  The SVG sources of the Tecton icons live in the Tecton Storybook, which was not reachable from the build environment. Until `icons-src/` is populated (`pnpm --filter @tecton/react icons:extract`, or an SVG export), each icon renders its closest Lucide equivalent or a placeholder, and reports its origin through `data-tecton-source`. The gallery below shows the current source of every icon.
+</Callout>
+
+## Gallery
+
+<IconGallery />
+
+## Replacing Lucide inside the generated components
+
+If you want the shadcn components to render Tecton glyphs too (once the SVGs are available), alias `lucide-react` to the compatibility module in your bundler. The generated files keep importing `lucide-react`; only the resolution changes:
+
+```ts title="vite.config.ts"
+export default defineConfig({
+  resolve: {
+    alias: {
+      "lucide-react": "@tecton/react/icons/lucide-compat",
+    },
+  },
+})
+```
+
+The compat module re-exports every Lucide name the components use, mapped to the matching Tecton icon when one exists and to Lucide otherwise.
+
+## Regenerating
+
+```bash
+pnpm --filter @tecton/react icons:extract   # pulls SVGs from the Storybook into icons-src/
+pnpm --filter @tecton/react icons:build     # regenerates src/icons/*
+```

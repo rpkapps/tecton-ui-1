@@ -1,0 +1,84 @@
+---
+title: Copy Button
+description: "Copies a value to the clipboard and shows a check mark for a moment."
+---
+
+<ComponentPreview name="copy-button-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/copy-button
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/copy-button"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install lucide-react
+npx shadcn@latest add button
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="copy-button" title="@tecton/react/tecton/copy-button.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import { CopyButton } from "@tecton/react/tecton/copy-button"
+```
+
+```tsx
+<CopyButton value="34/10-A-12" />
+```
+
+## Labelled
+
+Pass children for a labelled button; the size then defaults to `sm` instead of `icon-sm`. All `Button` variants are available.
+
+<ComponentPreview name="copy-button-labelled" />
+
+## Feedback
+
+Use `onCopied` to react to a successful copy and `timeout` to control how long the check is shown.
+
+<ComponentPreview name="copy-button-feedback" />
+
+## API Reference
+
+### CopyButton
+
+The shadcn `Button` with clipboard behaviour; accepts all `Button` props except `onPress`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | - | Text written to the clipboard. |
+| `timeout` | `number` | 2000 | Milliseconds the check is shown. |
+| `onCopied` | `(value: string) => void` | - | Called after a successful copy. |
+| `variant` | `ButtonProps["variant"]` | "ghost" | Button variant. |
+| `size` | `ButtonProps["size"]` | "icon-sm" \| "sm" | Defaults by presence of children. |
+| `children` | `ReactNode` | - | Label. |

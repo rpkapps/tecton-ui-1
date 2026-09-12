@@ -29,7 +29,15 @@ const meterVariants = cva("flex w-full flex-col gap-1", {
   },
 })
 
-type MeterColor = "primary" | "success" | "warning" | "error" | "info" | "auto"
+type MeterColor =
+  | "primary"
+  | "success"
+  | "warning"
+  | "error"
+  | "info"
+  | "auto"
+  /** Fill from the `--meter-fill` CSS variable (e.g. `style={{ "--meter-fill": "var(--chart-2)" }}`). */
+  | "custom"
 
 const fillClass: Record<Exclude<MeterColor, "auto">, string> = {
   primary: "bg-primary",
@@ -37,9 +45,10 @@ const fillClass: Record<Exclude<MeterColor, "auto">, string> = {
   warning: "bg-warning",
   error: "bg-destructive",
   info: "bg-info",
+  custom: "bg-(--meter-fill,var(--primary))",
 }
 
-function autoColor(percentage: number): Exclude<MeterColor, "auto"> {
+function autoColor(percentage: number): Exclude<MeterColor, "auto" | "custom"> {
   if (percentage >= 67) return "error"
   if (percentage >= 34) return "warning"
   return "success"

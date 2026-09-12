@@ -8,7 +8,11 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
     "tokens:build": "bun run scripts/tokens-build.mts",
-    "tokens:check": "bun run scripts/tokens-check.mts"
+    "tokens:check": "bun run scripts/tokens-check.mts",
+    "icons:build": "bun run scripts/build-icons.mts",
+    "icons:extract": "bun run scripts/extract-icons.mts",
+    "registry:build": "bun run scripts/registry-build.mts",
+    "registry:validate": "shadcn registry validate registry.json"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -53,6 +57,7 @@
     "./hooks/*": "./src/hooks/*.ts",
     "./tecton/*": "./src/tecton/*.tsx",
     "./icons": "./src/icons/index.ts",
+    "./icons/lucide-compat": "./src/icons/lucide-compat.ts",
     "./icons/*": "./src/icons/*.tsx",
     "./blocks/*": "./src/blocks/*"
   },

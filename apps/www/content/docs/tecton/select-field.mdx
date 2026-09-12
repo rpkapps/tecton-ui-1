@@ -1,0 +1,116 @@
+---
+title: Select Field
+description: "Label, select trigger and helper or error text with the outlined, filled and text-only variants."
+links:
+  doc: https://react-aria.adobe.com/Select
+---
+
+<ComponentPreview name="select-field-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/select-field
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/select-field"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Install the following dependencies:</Step>
+
+```bash
+npm install react-aria-components class-variance-authority
+npx shadcn@latest add label select
+```
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="select-field" title="@tecton/react/tecton/select-field.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import {
+  SelectField,
+  SelectFieldItem,
+  SelectFieldLabel,
+  SelectFieldDescription,
+  SelectFieldError,
+} from "@tecton/react/tecton/select-field"
+```
+
+```tsx
+<SelectField label="Facies" placeholder="Select a facies">
+  <SelectFieldItem id="sandstone">Sandstone</SelectFieldItem>
+  <SelectFieldItem id="shale">Shale</SelectFieldItem>
+</SelectField>
+```
+
+<Callout title="Composes the shadcn Select">
+  `SelectField` renders `Select`, `SelectTrigger`, `SelectValue` and `SelectContent` from [Select](/docs/components/select) and only adds the label, helper text and Tecton variants. The `items` prop with a render-function child is typed as the `Select` render props rather than as an item, so the examples map over data instead.
+</Callout>
+
+## Variants
+
+Use the `variant` prop; the trigger gets the same treatment as the [Text Field](/docs/tecton/text-field) variants.
+
+<ComponentPreview name="select-field-variants" />
+
+## Dynamic items
+
+Map over your data to render `SelectFieldItem`s. Give each item an `id` and a `textValue`; control the value with `selectedKey` / `onSelectionChange`.
+
+<ComponentPreview name="select-field-dynamic" />
+
+## Error and disabled
+
+Pass `errorMessage` to mark the field invalid. `isDisabled` and `size="sm"` come from the shadcn `Select`.
+
+<ComponentPreview name="select-field-error" />
+
+## API Reference
+
+### SelectField
+
+The shadcn `Select` (single selection) with a label, trigger, helper text and popover already composed. Accepts all `Select` props (`selectedKey`, `defaultSelectedKey`, `onSelectionChange`, `isDisabled`, `isRequired`, `name`…).
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | `"outlined" \| "filled" \| "textOnly"` | "outlined" | Visual variant of the trigger. |
+| `size` | `"default" \| "sm"` | "default" | Trigger height. |
+| `label` | `ReactNode` | - | Renders a `SelectFieldLabel`. |
+| `description` | `ReactNode` | - | Renders a `SelectFieldDescription`. |
+| `errorMessage` | `ReactNode` | - | Renders a `SelectFieldError` and sets `isInvalid`. |
+| `placeholder` | `string` | - | Placeholder shown in the trigger. |
+| `items` | `Iterable<T>` | - | Dynamic items; children must then be a render function (see note below). |
+| `contentProps` | `SelectContentProps` | - | Props forwarded to the popover content. |
+
+### SelectFieldItem
+
+Alias of the shadcn `SelectItem` (React Aria `ListBoxItem`).
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `id` | `Key` | - | Value of the option. |
+| `textValue` | `string` | - | Plain-text label; inferred from string children. |

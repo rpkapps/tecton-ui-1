@@ -1,0 +1,121 @@
+---
+title: App Shell
+description: "The application frame: top bar, optional sidebar, main work area and optional right aside."
+---
+
+<ComponentPreview name="app-shell-demo" />
+
+## Installation
+
+<CodeTabs>
+
+<TabsList>
+  <TabsTrigger value="cli">Command</TabsTrigger>
+  <TabsTrigger value="manual">Manual</TabsTrigger>
+</TabsList>
+<TabsContent value="cli">
+
+```bash
+npx shadcn@latest add @tecton/app-shell
+```
+
+The component also ships in the package: `import { … } from "@tecton/react/tecton/app-shell"`.
+
+</TabsContent>
+
+<TabsContent value="manual">
+
+<Steps className="mb-0 pt-2">
+
+<Step>Copy and paste the following code into your project.</Step>
+
+<ComponentSource name="app-shell" title="@tecton/react/tecton/app-shell.tsx" />
+
+<Step>Update the import paths to match your project setup.</Step>
+
+</Steps>
+
+</TabsContent>
+
+</CodeTabs>
+
+## Usage
+
+```tsx
+import {
+  AppShell,
+  AppShellHeader,
+  AppShellBrand,
+  AppShellNav,
+  AppShellHeaderActions,
+  AppShellBody,
+  AppShellSidebar,
+  AppShellMain,
+  AppShellAside,
+} from "@tecton/react/tecton/app-shell"
+```
+
+```tsx
+<AppShell>
+  <AppShellHeader>
+    <AppShellBrand>Tecton</AppShellBrand>
+    <AppShellNav>…</AppShellNav>
+    <AppShellHeaderActions>…</AppShellHeaderActions>
+  </AppShellHeader>
+  <AppShellBody>
+    <AppShellSidebar>…</AppShellSidebar>
+    <AppShellMain>…</AppShellMain>
+    <AppShellAside>…</AppShellAside>
+  </AppShellBody>
+</AppShell>
+```
+
+<Callout>
+  The shell fills the viewport by default. The previews on this page pass a fixed height through `className`.
+</Callout>
+
+## Composition
+
+Use the following composition:
+
+```text
+AppShell
+├── AppShellHeader
+│   ├── AppShellBrand
+│   ├── AppShellNav
+│   └── AppShellHeaderActions
+└── AppShellBody
+    ├── AppShellSidebar
+    ├── AppShellMain
+    └── AppShellAside
+```
+
+## Sidebar
+
+`AppShellSidebar` is a 256 px left column on the sidebar surface; put a [Tree View](/docs/tecton/tree-view) or the shadcn [Sidebar](/docs/components/sidebar) inside.
+
+<ComponentPreview name="app-shell-sidebar" />
+
+## Aside
+
+`AppShellAside` is a 320 px right column for tool panels; combine it with [Panel](/docs/tecton/panel).
+
+<ComponentPreview name="app-shell-aside" />
+
+## API Reference
+
+### AppShell
+
+Grid with the header row and the body; fills the viewport (`h-svh`).
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `className` | `string` | - | Override the height in embedded contexts. |
+
+### AppShellHeader, AppShellBrand, AppShellNav, AppShellHeaderActions, AppShellBody, AppShellSidebar, AppShellMain, AppShellAside
+
+Plain styled layout elements.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `className` | `string` | - |  |

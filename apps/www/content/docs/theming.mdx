@@ -1,0 +1,90 @@
+---
+title: Theming
+description: How the Tecton design tokens map to the shadcn CSS variables, what is exact and what is approximated, and how to extend the theme.
+---
+
+Tecton UI applies the Tecton visual language **only through the shadcn CSS variables**. The generated component files are never edited and no extra CSS targets them; the theme is a set of values for `--background`, `--primary`, `--ring` and friends in `globals.css`, plus a few additional tokens for Tecton-only semantics.
+
+## How it works
+
+<Steps>
+
+<Step>Raw tokens</Step>
+
+`src/styles/tecton-tokens.css` declares every Tecton token as a CSS custom property (`--tecton-color-bg-default`, `--tecton-radius-50`, `--tecton-font-family-sans`…). The values were transcribed from the Tecton Storybook; the variable names are reconstructed and will be aligned with the generated CSS export when it is available.
+
+<Step>Mapping as data</Step>
+
+`tokens/tecton.map.json` says which Tecton token each shadcn variable takes, with a confidence (`exact`, `approximated`, `derived`) and a note.
+
+<Step>Generated theme</Step>
+
+`pnpm --filter @tecton/react tokens:build` writes `tecton-theme.css`, patches the variable values inside the CLI-managed `globals.css` (`:root`, `.dark`, `@theme inline` — nothing else), emits the `@tecton/theme` registry item and the mapping document.
+
+<Step>Verification</Step>
+
+`pnpm --filter @tecton/react tokens:check` verifies completeness, WCAG contrast for every surface/foreground pair and a few sanity rules. The table below is generated from the same data.
+
+</Steps>
+
+## Dark and light
+
+The Tecton design system is **dark-only**. The `.dark` theme is the canonical Tecton theme and every value in it is a Tecton token. The light theme (`:root`) is derived: it mirrors the palette using Tecton's own tokens where possible (page background = `text-primary`, foreground = `bg-default`, status surfaces = the status *muted* tokens…) and falls back to OKLCH lightness inversion. Every light value is flagged **approximated**.
+
+Toggle the mode with the `dark` class on `<html>`. This site uses `next-themes` and defaults to dark.
+
+## Token mapping
+
+<TokenTable />
+
+## Extra tokens
+
+Tecton has semantics shadcn does not express through variables. They are added following the documented shadcn pattern (a variable in `:root`/`.dark` plus a `--color-*` entry in `@theme inline`) and are used **only by the Tecton components and blocks**:
+
+| Token | Utilities | Used for |
+| --- | --- | --- |
+| `--success`, `--success-foreground` | `bg-success`, `text-success-foreground` | Filled success chips and alerts |
+| `--warning`, `--warning-foreground` | `bg-warning`, `text-warning` | Warning status |
+| `--info`, `--info-foreground` | `bg-info`, `text-info` | Info status |
+| `--neutral`, `--neutral-foreground` | `bg-neutral` | Neutral count badges |
+| `--destructive-foreground` | `text-destructive-foreground` | Text on filled error surfaces |
+| `--surface-alt` | `bg-surface-alt` | Alternate table rows |
+| `--border-subtle`, `--border-strong` | `border-border-subtle`, `bg-border-strong` | Divider emphasis levels |
+| `--font-sans`, `--font-mono` | `font-sans`, `font-mono` | Figtree / IBM Plex Mono |
+| `--radius-sm` … `--radius-2xl` | `rounded-sm` … `rounded-2xl` | Tecton radius scale (2/4/8/12/16px) |
+
+## Known deviations
+
+Some Tecton details cannot be reproduced through variables alone. They are documented rather than patched into the generated files:
+
+- **Focus ring.** Vega renders focus as `ring-3 ring-ring/50` (a soft 3px halo); Tecton draws a solid 2px `#ff52a8` ring. The colour matches, the shape differs.
+- **Hover colours.** Vega hovers primary buttons with `primary/80`; Tecton lightens to `#74647f`. Similar for secondary/tertiary hover surfaces.
+- **Input variants.** shadcn has one input style (Tecton's *outlined*). The *filled* and *textOnly* variants are provided by the [TextField](/docs/tecton/text-field) and [SelectField](/docs/tecton/select-field) components.
+- **Status colours** and **divider emphasis** are extra tokens (above), used only by Tecton components.
+- **Light theme** is approximated (see above).
+
+## Adding your own tokens
+
+Follow the same pattern as the extra tokens: declare the variable in `:root` and `.dark`, then expose it to Tailwind in `@theme inline`:
+
+```css title="globals.css"
+:root {
+  --highlight: #fbbc3b;
+}
+.dark {
+  --highlight: #f9a308;
+}
+@theme inline {
+  --color-highlight: var(--highlight);
+}
+```
+
+If you use the token pipeline, add the entry to `tokens/tecton.map.json` under `extra` instead and run `tokens:build`.
+
+## Using the registry theme
+
+Consumers who copy components with the CLI can apply the Tecton variables to their own `globals.css` with:
+
+```bash
+npx shadcn@latest add @tecton/theme
+```

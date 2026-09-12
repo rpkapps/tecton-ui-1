@@ -1,45 +1,60 @@
-import { HeadContent, Scripts, createRootRoute } from "@tanstack/react-router"
+import * as React from "react"
+import {
+  createRootRoute,
+  HeadContent,
+  Outlet,
+  Scripts,
+} from "@tanstack/react-router"
+import { TanstackProvider } from "fumadocs-core/framework/tanstack"
+import { ThemeProvider } from "next-themes"
 
-import appCss from "@tecton/react/globals.css?url"
+import { Toaster } from "@tecton/react/components/sonner"
+
+import { siteConfig } from "@/lib/site"
+import appCss from "@/styles/app.css?url"
 
 export const Route = createRootRoute({
   head: () => ({
     meta: [
-      {
-        charSet: "utf-8",
-      },
-      {
-        name: "viewport",
-        content: "width=device-width, initial-scale=1",
-      },
-      {
-        title: "TanStack Start Starter",
-      },
+      { charSet: "utf-8" },
+      { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { title: siteConfig.name },
+      { name: "description", content: siteConfig.description },
+      { name: "color-scheme", content: "dark light" },
     ],
     links: [
-      {
-        rel: "stylesheet",
-        href: appCss,
-      },
+      { rel: "stylesheet", href: appCss },
+      { rel: "icon", href: "/favicon.ico" },
     ],
   }),
   notFoundComponent: () => (
-    <main className="container mx-auto p-4 pt-16">
-      <h1>404</h1>
-      <p>The requested page could not be found.</p>
+    <main className="container mx-auto flex min-h-[60vh] flex-col items-center justify-center gap-2 p-4">
+      <h1 className="text-2xl font-medium">404</h1>
+      <p className="text-muted-foreground">
+        The requested page could not be found.
+      </p>
     </main>
   ),
   shellComponent: RootDocument,
+  component: () => <Outlet />,
 })
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <head>
         <HeadContent />
       </head>
-      <body>
-        {children}
+      <body className="min-h-svh bg-background font-sans text-foreground antialiased">
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
+          <TanstackProvider>{children}</TanstackProvider>
+          <Toaster />
+        </ThemeProvider>
         <Scripts />
       </body>
     </html>
