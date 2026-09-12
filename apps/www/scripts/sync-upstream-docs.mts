@@ -105,6 +105,11 @@ const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
       .replace('className="border-b px-4 last:border-b-0"', 'className="border-b last:border-b-0"')
       .replace("<AccordionTrigger>{item.trigger}</AccordionTrigger>", '<AccordionTrigger className="px-4">{item.trigger}</AccordionTrigger>')
       .replace("<AccordionContent>{item.content}</AccordionContent>", '<AccordionContent className="px-4">{item.content}</AccordionContent>'),
+  // The edge-to-edge scroll area draws a divider above itself; the footer
+  // below it gets the matching divider (and, through the card's
+  // `[.border-t]:pt-(--card-spacing)` rule, its top inset back).
+  "card-edge-to-edge": (code) =>
+    code.replace('<CardFooter className="justify-end gap-2">', '<CardFooter className="justify-end gap-2 border-t">'),
 }
 
 function rewriteImports(source: string): { code: string; blocked?: string } {
