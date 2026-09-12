@@ -715,7 +715,7 @@
 
   /* MARK: Input */
   .cn-input {
-    @apply border-input hover:border-input-hover focus-visible:border-ring focus-visible:ring-ring aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 h-8 rounded-md border bg-transparent px-2 py-1 text-base transition-[color,box-shadow] file:h-6 file:text-sm file:font-medium focus-visible:ring-2 aria-invalid:ring-2 md:text-sm autofill:[-webkit-text-fill-color:var(--foreground)] autofill:[transition:background-color_0s_600000s,color_0s_600000s];
+    @apply border-input hover:border-input-hover focus-visible:border-ring focus-visible:ring-ring aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 h-8 rounded-md border bg-transparent px-2 py-1 text-base transition-[color,box-shadow] file:h-6 file:text-sm file:font-medium focus-visible:ring-2 aria-invalid:ring-2 md:text-sm autofill:[-webkit-text-fill-color:var(--foreground)] autofill:[transition:background-color_0s_600000s,color_0s_600000s] autofill:[-webkit-background-clip:text];
   }
 
   .cn-input-variant-outline {
@@ -723,7 +723,7 @@
   }
 
   .cn-input-variant-filled {
-    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-0 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive;
+    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-0 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive autofill:[-webkit-background-clip:border-box] autofill:shadow-[inset_0_0_0_1000px_var(--muted)];
   }
 
   .cn-input-variant-text {
@@ -1411,7 +1411,7 @@
 
   /* MARK: Textarea */
   .cn-textarea {
-    @apply border-input hover:border-input-hover focus-visible:border-ring focus-visible:ring-ring aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 rounded-md border bg-transparent px-2 py-1.5 text-base transition-[color,box-shadow] focus-visible:ring-2 aria-invalid:ring-2 md:text-sm autofill:[-webkit-text-fill-color:var(--foreground)] autofill:[transition:background-color_0s_600000s,color_0s_600000s];
+    @apply border-input hover:border-input-hover focus-visible:border-ring focus-visible:ring-ring aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive dark:aria-invalid:border-destructive/50 rounded-md border bg-transparent px-2 py-1.5 text-base transition-[color,box-shadow] focus-visible:ring-2 aria-invalid:ring-2 md:text-sm autofill:[-webkit-text-fill-color:var(--foreground)] autofill:[transition:background-color_0s_600000s,color_0s_600000s] autofill:[-webkit-background-clip:text];
   }
 
   .cn-textarea-variant-outline {
@@ -1419,7 +1419,7 @@
   }
 
   .cn-textarea-variant-filled {
-    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-0 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive;
+    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-0 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive autofill:[-webkit-background-clip:border-box] autofill:shadow-[inset_0_0_0_1000px_var(--muted)];
   }
 
   .cn-textarea-variant-text {
@@ -1527,11 +1527,11 @@
   }
 
   .cn-input-group-input {
-    @apply rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent autofill:[-webkit-text-fill-color:var(--foreground)] autofill:[transition:background-color_0s_600000s,color_0s_600000s];
+    @apply rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent autofill:[-webkit-text-fill-color:var(--foreground)] autofill:[transition:background-color_0s_600000s,color_0s_600000s] autofill:[-webkit-background-clip:text];
   }
 
   .cn-input-group-textarea {
-    @apply rounded-none border-0 bg-transparent py-2 shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent autofill:[-webkit-text-fill-color:var(--foreground)] autofill:[transition:background-color_0s_600000s,color_0s_600000s];
+    @apply rounded-none border-0 bg-transparent py-2 shadow-none ring-0 focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent autofill:[-webkit-text-fill-color:var(--foreground)] autofill:[transition:background-color_0s_600000s,color_0s_600000s] autofill:[-webkit-background-clip:text];
   }
 
   /* MARK: Menu Translucent */

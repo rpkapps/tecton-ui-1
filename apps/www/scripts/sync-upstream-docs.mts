@@ -256,6 +256,9 @@ function transformMdx(
   // drop styleName props (aria-nova / aria-rhea …)
   mdx = mdx.replace(/\s+styleName="[^"]*"/g, "")
 
+  // pages import icons too (a Callout icon, say); map tabler to lucide as in examples
+  mdx = rewriteTablerIcons(mdx)
+
   // Components are consumed from the @tecton/react package, not installed one
   // by one, so the upstream "Installation" section (CLI command + manual copy)
   // is removed. Utilities ship with the package stylesheet.

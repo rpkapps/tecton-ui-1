@@ -24,7 +24,7 @@ export const blocks: BlockEntry[] = [
     name: "shell-01",
     title: "Application shell",
     description:
-      "The micro-frontend host: app finder, home, context, command palette, help, release notes, bug report, settings and user menu above one region the mounted application fills.",
+      "The micro-frontend host: responsive top bar with app finder, context, command palette, shortcuts help, overflow and user menu; the mounted application registers its keyboard shortcuts with the shell.",
     category: "layouts",
     component: () => import("./shell-01/page"),
   },
@@ -80,7 +80,7 @@ export const blocks: BlockEntry[] = [
     name: "sidebar-04",
     title: "Navigation and tool panel",
     description:
-      "Icon navigation rail on the left and a collapsible tool panel on the right around the work area.",
+      "Icon navigation rail on the left and a resizable, closable tool panel on the right around the work area.",
     category: "layouts",
     component: () => import("./sidebar-04/page"),
   },
