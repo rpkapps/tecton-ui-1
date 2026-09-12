@@ -170,7 +170,10 @@ function isLocalDocsLink(href: string) {
   const [pathname] = href.split(/[#?]/)
   if (pathname === "/blocks" || pathname === "/themes") return true
   if (!pathname.startsWith("/docs")) return false
-  const [, , first] = pathname.split("/")
+  const [, , first, second] = pathname.split("/")
+  // only the TanStack Form guide exists locally; the other upstream form guides
+  // (react-hook-form, formisch…) stay on ui.shadcn.com
+  if (first === "forms") return !second || second === "tanstack-form"
   return LOCAL_DOCS.has(first ?? "")
 }
 
