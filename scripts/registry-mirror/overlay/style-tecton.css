@@ -47,23 +47,23 @@
   }
 
   .cn-alert-variant-default {
-    @apply bg-card text-card-foreground data-[appearance=filled]:bg-neutral data-[appearance=filled]:text-neutral-foreground data-[appearance=outline]:border-border-strong data-[appearance=outline]:bg-transparent;
+    @apply bg-card text-card-foreground data-[appearance=filled]:bg-neutral-surface data-[appearance=filled]:text-neutral-surface-foreground data-[appearance=outline]:border-border-strong data-[appearance=outline]:bg-transparent;
   }
 
   .cn-alert-variant-destructive {
-    @apply text-destructive bg-card *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current data-[appearance=filled]:bg-destructive data-[appearance=filled]:text-destructive-foreground data-[appearance=outline]:border-destructive data-[appearance=outline]:bg-transparent;
+    @apply text-destructive bg-card *:data-[slot=alert-description]:text-destructive/90 *:[svg]:text-current data-[appearance=filled]:bg-destructive-surface data-[appearance=filled]:text-destructive-surface-foreground data-[appearance=outline]:border-destructive data-[appearance=outline]:bg-transparent;
   }
 
   .cn-alert-variant-success {
-    @apply text-success bg-card *:data-[slot=alert-description]:text-success/90 *:[svg]:text-current data-[appearance=filled]:bg-success data-[appearance=filled]:text-success-foreground data-[appearance=outline]:border-success data-[appearance=outline]:bg-transparent;
+    @apply text-success bg-card *:data-[slot=alert-description]:text-success/90 *:[svg]:text-current data-[appearance=filled]:bg-success-surface data-[appearance=filled]:text-success-surface-foreground data-[appearance=outline]:border-success data-[appearance=outline]:bg-transparent;
   }
 
   .cn-alert-variant-warning {
-    @apply text-warning bg-card *:data-[slot=alert-description]:text-warning/90 *:[svg]:text-current data-[appearance=filled]:bg-warning data-[appearance=filled]:text-warning-foreground data-[appearance=outline]:border-warning data-[appearance=outline]:bg-transparent;
+    @apply text-warning bg-card *:data-[slot=alert-description]:text-warning/90 *:[svg]:text-current data-[appearance=filled]:bg-warning-surface data-[appearance=filled]:text-warning-surface-foreground data-[appearance=outline]:border-warning data-[appearance=outline]:bg-transparent;
   }
 
   .cn-alert-variant-info {
-    @apply text-info bg-card *:data-[slot=alert-description]:text-info/90 *:[svg]:text-current data-[appearance=filled]:bg-info data-[appearance=filled]:text-info-foreground data-[appearance=outline]:border-info data-[appearance=outline]:bg-transparent;
+    @apply text-info bg-card *:data-[slot=alert-description]:text-info/90 *:[svg]:text-current data-[appearance=filled]:bg-info-surface data-[appearance=filled]:text-info-surface-foreground data-[appearance=outline]:border-info data-[appearance=outline]:bg-transparent;
   }
 
   .cn-alert-appearance-default {
@@ -129,19 +129,19 @@
   }
 
   .cn-badge-variant-destructive {
-    @apply bg-destructive text-destructive-foreground [a]:hover:bg-destructive/80 focus-visible:ring-destructive/40 data-[appearance=outline]:border-destructive data-[appearance=outline]:bg-transparent data-[appearance=outline]:text-destructive data-[appearance=outline]:[a]:hover:bg-destructive/10;
+    @apply bg-destructive-surface text-destructive-surface-foreground [a]:hover:bg-destructive-surface/80 focus-visible:ring-destructive/40 data-[appearance=outline]:border-destructive data-[appearance=outline]:bg-transparent data-[appearance=outline]:text-destructive data-[appearance=outline]:[a]:hover:bg-destructive/10;
   }
 
   .cn-badge-variant-success {
-    @apply bg-success text-success-foreground [a]:hover:bg-success/80 data-[appearance=outline]:border-success data-[appearance=outline]:bg-transparent data-[appearance=outline]:text-success data-[appearance=outline]:[a]:hover:bg-success/10;
+    @apply bg-success-surface text-success-surface-foreground [a]:hover:bg-success-surface/80 data-[appearance=outline]:border-success data-[appearance=outline]:bg-transparent data-[appearance=outline]:text-success data-[appearance=outline]:[a]:hover:bg-success/10;
   }
 
   .cn-badge-variant-warning {
-    @apply bg-warning text-warning-foreground [a]:hover:bg-warning/80 data-[appearance=outline]:border-warning data-[appearance=outline]:bg-transparent data-[appearance=outline]:text-warning data-[appearance=outline]:[a]:hover:bg-warning/10;
+    @apply bg-warning-surface text-warning-surface-foreground [a]:hover:bg-warning-surface/80 data-[appearance=outline]:border-warning data-[appearance=outline]:bg-transparent data-[appearance=outline]:text-warning data-[appearance=outline]:[a]:hover:bg-warning/10;
   }
 
   .cn-badge-variant-info {
-    @apply bg-info text-info-foreground [a]:hover:bg-info/80 data-[appearance=outline]:border-info data-[appearance=outline]:bg-transparent data-[appearance=outline]:text-info data-[appearance=outline]:[a]:hover:bg-info/10;
+    @apply bg-info-surface text-info-surface-foreground [a]:hover:bg-info-surface/80 data-[appearance=outline]:border-info data-[appearance=outline]:bg-transparent data-[appearance=outline]:text-info data-[appearance=outline]:[a]:hover:bg-info/10;
   }
 
   .cn-badge-variant-ghost {
