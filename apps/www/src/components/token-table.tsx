@@ -21,10 +21,13 @@ const confidenceColor = {
   derived: "info",
 } as const
 
-function Value({ value }: { value: string }) {
+function Value({ label, value }: { label: string; value: string }) {
   const isColor = /^(#|oklch|rgb|hsl)/.test(value)
   return (
-    <span className="inline-flex items-center gap-2 font-mono text-xs">
+    <span className="flex items-center gap-2 font-mono text-xs whitespace-nowrap">
+      <span className="w-8 text-[10px] text-muted-foreground uppercase">
+        {label}
+      </span>
       {isColor && <ColorSwatch color={value} size="sm" shape="square" />}
       {value}
     </span>
@@ -44,26 +47,31 @@ function Rows({
     <>
       {entries.map(([name, mapping]) => (
         <tr key={name} className="border-b border-border-subtle align-top">
-          <td className="py-2 pr-3 font-mono text-xs whitespace-nowrap">--{name}</td>
-          <td className="py-2 pr-3 font-mono text-xs break-all text-muted-foreground">
-            {mapping.dark}
+          <td className="max-w-56 py-2 pr-4 font-mono text-xs">
+            <span className="block whitespace-nowrap">--{name}</span>
+            <span className="block text-muted-foreground">{mapping.dark}</span>
             {mapping.light && mapping.light !== mapping.dark && (
-              <span className="block opacity-70">light: {mapping.light}</span>
+              <span className="block text-muted-foreground opacity-70">
+                light: {mapping.light}
+              </span>
             )}
           </td>
-          <td className="py-2 pr-3 whitespace-nowrap">
-            <Value value={dark[name] ?? "—"} />
+          <td className="flex flex-col gap-1 py-2 pr-4">
+            <Value label="dark" value={dark[name] ?? "�"} />
+            <Value label="light" value={light[name] ?? "�"} />
           </td>
-          <td className="py-2 pr-3 whitespace-nowrap">
-            <Value value={light[name] ?? "—"} />
-          </td>
-          <td className="py-2 pr-3">
-            <Badge appearance="outline" variant={confidenceColor[mapping.confidence]}>
+          <td className="py-2 pr-4">
+            <Badge
+              appearance="outline"
+              variant={confidenceColor[mapping.confidence]}
+            >
               {mapping.confidence}
             </Badge>
           </td>
           {!compact && (
-            <td className="py-2 text-xs text-muted-foreground">{mapping.note}</td>
+            <td className="py-2 text-xs text-muted-foreground">
+              {mapping.note}
+            </td>
           )}
         </tr>
       ))}
@@ -72,7 +80,13 @@ function Rows({
 }
 
 /** Generated from tokens/tecton.map.json + registry/theme.json. */
-export function TokenTable({ compact, className }: { compact?: boolean; className?: string }) {
+export function TokenTable({
+  compact,
+  className,
+}: {
+  compact?: boolean
+  className?: string
+}) {
   const standard = Object.entries(map.shadcn as Record<string, Mapping>)
   const extra = Object.entries(map.extra as Record<string, Mapping>)
 
@@ -81,18 +95,21 @@ export function TokenTable({ compact, className }: { compact?: boolean; classNam
       <table className="w-full text-sm">
         <thead>
           <tr className="border-b text-left text-xs text-muted-foreground">
-            <th className="py-2 pr-3 font-medium">shadcn variable</th>
-            <th className="py-2 pr-3 font-medium">Tecton token</th>
-            <th className="py-2 pr-3 font-medium">dark</th>
-            <th className="py-2 pr-3 font-medium">light</th>
-            <th className="py-2 pr-3 font-medium">confidence</th>
+            <th className="py-2 pr-4 font-medium">
+              shadcn variable / Tecton token
+            </th>
+            <th className="py-2 pr-4 font-medium">value</th>
+            <th className="py-2 pr-4 font-medium">confidence</th>
             {!compact && <th className="py-2 font-medium">note</th>}
           </tr>
         </thead>
         <tbody>
           <Rows entries={standard} compact={compact} />
           <tr>
-            <td colSpan={compact ? 5 : 6} className="pt-6 pb-2 text-xs font-medium text-muted-foreground">
+            <td
+              colSpan={compact ? 3 : 4}
+              className="pt-6 pb-2 text-xs font-medium text-muted-foreground"
+            >
               Extra tokens (Tecton components only)
             </td>
           </tr>

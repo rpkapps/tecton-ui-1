@@ -45,6 +45,72 @@
       ]
     },
     {
+      "name": "canvas-01",
+      "type": "registry:block",
+      "title": "Canvas with floating chrome",
+      "description": "Preset sidebar next to a full-bleed map with view selectors, tool rails, legend and scale bar floating over the surface. Requires the @tecton/react package.",
+      "categories": [
+        "layouts"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/canvas-01/components/fairway-map.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/canvas-01/components/fairway-map.tsx"
+        },
+        {
+          "path": "registry/src/blocks/canvas-01/components/preset-list.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/canvas-01/components/preset-list.tsx"
+        },
+        {
+          "path": "registry/src/blocks/canvas-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/canvas-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/canvas-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/canvas-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "content-01",
+      "type": "registry:block",
+      "title": "Plain content page",
+      "description": "Single width-constrained column with a page header and a data-entry form; the layout for forms, tables and chat. Requires the @tecton/react package.",
+      "categories": [
+        "layouts"
+      ],
+      "dependencies": [
+        "cn"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/content-01/components/well-header-form.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/content-01/components/well-header-form.tsx"
+        },
+        {
+          "path": "registry/src/blocks/content-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/content-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/content-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/content-01/page.tsx"
+        }
+      ]
+    },
+    {
       "name": "cost-vs-risk-panel",
       "type": "registry:block",
       "title": "Cost vs risk panel",
@@ -119,6 +185,42 @@
           "path": "registry/src/blocks/dashboard-01/page.tsx",
           "type": "registry:component",
           "target": "components/blocks/dashboard-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "detail-01",
+      "type": "registry:block",
+      "title": "Detail page with section tabs",
+      "description": "Project details sidebar, page header with section tabs and a list / graph toggle, and a body of concept sections with decision cards. Requires the @tecton/react package.",
+      "categories": [
+        "layouts"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/detail-01/components/concept-section.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/detail-01/components/concept-section.tsx"
+        },
+        {
+          "path": "registry/src/blocks/detail-01/components/project-sidebar.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/detail-01/components/project-sidebar.tsx"
+        },
+        {
+          "path": "registry/src/blocks/detail-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/detail-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/detail-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/detail-01/page.tsx"
         }
       ]
     },
@@ -353,6 +455,42 @@
           "path": "registry/src/blocks/settings-01/page.tsx",
           "type": "registry:component",
           "target": "components/blocks/settings-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "shell-01",
+      "type": "registry:block",
+      "title": "Application shell",
+      "description": "The micro-frontend host: app finder, home, context, command palette, help, release notes, bug report, settings and user menu above one region the mounted application fills. Requires the @tecton/react package.",
+      "categories": [
+        "layouts"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/shell-01/components/shell-command-palette.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/shell-01/components/shell-command-palette.tsx"
+        },
+        {
+          "path": "registry/src/blocks/shell-01/components/shell-header.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/shell-01/components/shell-header.tsx"
+        },
+        {
+          "path": "registry/src/blocks/shell-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/shell-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/shell-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/shell-01/page.tsx"
         }
       ]
     },

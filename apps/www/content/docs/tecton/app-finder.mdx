@@ -1,0 +1,129 @@
+---
+title: App Finder
+description: "Application switcher for the shell header: a compact badge for the current app and a searchable, category-grouped palette of every registered application."
+links:
+  doc: https://react-aria.adobe.com/Autocomplete
+---
+
+<ComponentPreview name="app-finder-demo" />
+
+
+## Usage
+
+```tsx
+import {
+  AppFinder,
+  AppFinderTrigger,
+  AppFinderMenu,
+  AppFinderInput,
+  AppFinderList,
+  AppFinderGroup,
+  AppFinderItem,
+} from "@tecton/react/tecton/app-finder"
+```
+
+```tsx
+<AppFinder>
+  <AppFinderTrigger aria-label="Switch application, current: Well Planning">
+    DWP
+  </AppFinderTrigger>
+  <AppFinderMenu>
+    <AppFinderInput />
+    <AppFinderList onAction={(key) => navigateTo(String(key))}>
+      <AppFinderGroup heading="Recent">
+        <AppFinderItem id="recent-dwp" icon="DWP" name="Well Planning" isCurrent />
+      </AppFinderGroup>
+      <AppFinderGroup heading="Subsurface">
+        <AppFinderItem id="dsg" icon="DSG" name="Discovery" description="Regional geology" keywords={["DSG"]} />
+      </AppFinderGroup>
+      <AppFinderGroup heading="Wells">
+        <AppFinderItem id="dwp" icon="DWP" name="Well Planning" keywords={["DWP"]} />
+      </AppFinderGroup>
+    </AppFinderList>
+  </AppFinderMenu>
+</AppFinder>
+```
+
+<Callout>
+  The app finder is owned by the micro-frontend host and replaces the static brand in `AppShellBrand`. It is built on [Command](/docs/components/command) inside a popover: typing filters every group at once, arrow keys move through the matches, and the list scrolls, so a catalogue of a hundred applications stays usable. Group by category and put a "Recent" or "Favourites" group first.
+</Callout>
+
+## Composition
+
+```text
+AppFinder
+├── AppFinderTrigger
+└── AppFinderMenu
+    ├── AppFinderInput
+    └── AppFinderList
+        └── AppFinderGroup (heading)
+            └── AppFinderItem …
+```
+
+## Large catalogues
+
+Keep item ids unique across groups: an app listed under both "Recent" and its category needs two ids (`recent-dwp` and `dwp`). Pass the short code and the category name in `keywords` so a search for either finds the app. The list is capped at 24 rem or 60 % of the viewport and scrolls; the filter runs on the client, which is fine for a few hundred entries.
+
+## API Reference
+
+### AppFinder
+
+React Aria `DialogTrigger`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `isOpen` / `onOpenChange` | `boolean` / `(open: boolean) => void` | - | Controlled open state. |
+
+### AppFinderTrigger
+
+`Button` styled as the shell badge (pill, uppercase, chevron).
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | - | The short code of the current app. |
+| `aria-label` | `string` | - | Name the action and the current app. |
+
+### AppFinderMenu
+
+Popover anchored bottom-start, 28 rem wide, wrapping a `Command`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `aria-label` | `string` | "Applications" | Accessible name of the palette. |
+| `placement` | `Placement` | "bottom start" | Popover placement. |
+
+### AppFinderInput
+
+`CommandInput`; autofocuses when the menu opens.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `placeholder` | `string` | "Search applications…" |  |
+
+### AppFinderList
+
+`CommandList` that closes the menu after a choice.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `onAction` | `(key: Key) => void` | - | Called with the `id` of the chosen app. |
+| `emptyMessage` | `ReactNode` | "No applications match." | Shown when the filter matches nothing. |
+
+### AppFinderGroup
+
+`CommandGroup`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `heading` | `string` | - | Category label. |
+
+### AppFinderItem
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `id` | `Key` | - | Unique key passed to `onAction`. |
+| `name` | `string` | - | Display name; part of the filter text. |
+| `description` | `ReactNode` | - | Secondary line. |
+| `icon` | `ReactNode` | - | Glyph or short code in the leading tile. |
+| `keywords` | `string[]` | - | Extra words the filter matches (short code, category, aliases). |
+| `isCurrent` | `boolean` | false | Marks the mounted app with a "Current" tag and `data-current`. |

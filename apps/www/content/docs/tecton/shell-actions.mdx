@@ -1,0 +1,88 @@
+---
+title: Shell Actions
+description: "The global action cluster at the end of the shell header: command palette trigger, icon actions with tooltips and the user menu."
+---
+
+<ComponentPreview name="shell-actions-demo" />
+
+
+## Usage
+
+```tsx
+import {
+  ShellActions,
+  ShellAction,
+  ShellCommandTrigger,
+  ShellDivider,
+  ShellUserMenu,
+} from "@tecton/react/tecton/shell-actions"
+```
+
+```tsx
+<AppShellHeader>
+  <AppShellBrand>Tecton</AppShellBrand>
+  <ShellActions>
+    <ShellCommandTrigger onPress={openPalette}>Search or jump to…</ShellCommandTrigger>
+    <ShellAction label="Help" shortcut="?"><CircleHelpIcon /></ShellAction>
+    <ShellAction label="What's new"><SparklesIcon /></ShellAction>
+    <ShellAction label="Report a bug"><BugIcon /></ShellAction>
+    <ShellAction label="Settings"><SettingsIcon /></ShellAction>
+    <ShellUserMenu user={{ name: "Sarah Elliott", initials: "SE" }}>
+      <DropdownMenuItem textValue="Sign out">Sign out</DropdownMenuItem>
+    </ShellUserMenu>
+  </ShellActions>
+</AppShellHeader>
+```
+
+<Callout>
+  These controls belong to the micro-frontend host, not to the mounted application. Every application sees the same cluster, and a change to it (moving bug reports into a drawer, say) ships once through the package.
+</Callout>
+
+## Composition
+
+```text
+ShellActions
+├── ShellCommandTrigger
+├── ShellAction …
+├── ShellDivider
+└── ShellUserMenu
+    └── DropdownMenuGroup / DropdownMenuItem …
+```
+
+## API Reference
+
+### ShellActions
+
+Flex container aligned to the end of the header (`ml-auto`).
+
+### ShellAction
+
+Ghost icon `Button` wrapped in a `TooltipTrigger`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `label` | `string` | - | Accessible name and tooltip text. |
+| `shortcut` | `string` | - | Key hint rendered in the tooltip as a `Kbd`. |
+| `onPress` | `(e: PressEvent) => void` | - | Press handler. |
+
+### ShellCommandTrigger
+
+Outline `Button` that looks like a search field and opens the command palette.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | "Search" | Placeholder text. |
+| `shortcut` | `ReactNode` | "⌘K" | Key hint at the end; pass `null` to hide it. |
+
+### ShellUserMenu
+
+Avatar button opening a `DropdownMenu` anchored bottom-end.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `user` | `{ name; initials; image? }` | - | Shown in the avatar and used for the accessible name. |
+| `children` | `ReactNode` | - | Menu contents: `DropdownMenuGroup`, `DropdownMenuItem`, … |
+
+### ShellDivider
+
+Vertical hairline (`role="separator"`) between groups of actions.

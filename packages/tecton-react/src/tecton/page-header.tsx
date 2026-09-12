@@ -10,7 +10,7 @@ function PageHeader({ className, ...props }: React.ComponentProps<"header">) {
     <header
       data-slot="page-header"
       className={cn(
-        "flex flex-col gap-3 md:flex-row md:items-start md:justify-between",
+        "flex flex-col gap-3 md:flex-row md:flex-wrap md:items-start md:justify-between md:gap-x-6",
         className
       )}
       {...props}
@@ -64,6 +64,19 @@ function PageHeaderDescription({
   )
 }
 
+function PageHeaderNav({ className, ...props }: React.ComponentProps<"nav">) {
+  return (
+    <nav
+      data-slot="page-header-nav"
+      className={cn(
+        "flex min-w-0 shrink-0 basis-full items-center md:basis-auto md:self-center",
+        className
+      )}
+      {...props}
+    />
+  )
+}
+
 function PageHeaderActions({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
@@ -80,5 +93,6 @@ export {
   PageHeaderEyebrow,
   PageHeaderTitle,
   PageHeaderDescription,
+  PageHeaderNav,
   PageHeaderActions,
 }
