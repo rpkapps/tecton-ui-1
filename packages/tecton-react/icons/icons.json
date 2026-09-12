@@ -1,0 +1,1065 @@
+{
+  "version": 1,
+  "source": "tecton-screenshots/059_components-icon__icon-gallery.png",
+  "notes": "Labels in the gallery carry an 'Icon' suffix (e.g. 'AddCircleIcon'); 'label' preserves the exact text, 'name' strips the suffix. Gallery header: 'Tecton Icons', with Variant toggle (Outlined | Filled), Size toggle (Small (16px) | Medium (20px) | Large (24px)) and a 'Search icons' text field; screenshot shows Outlined + Medium (20px) selected. Icons are listed in alphabetical order, 9 per row. StrataIcon renders in colour (pink/orange gradient top layer); all others are monochrome.",
+  "variants": [
+    "outlined",
+    "filled"
+  ],
+  "sizes": [
+    16,
+    20,
+    24
+  ],
+  "count": 131,
+  "icons": [
+    {
+      "name": "AddCircle",
+      "label": "AddCircleIcon",
+      "slug": "add-circle",
+      "description": "circle with plus",
+      "lucide": "circle-plus",
+      "domain": false
+    },
+    {
+      "name": "Add",
+      "label": "AddIcon",
+      "slug": "add",
+      "description": "plus sign",
+      "lucide": "plus",
+      "domain": false
+    },
+    {
+      "name": "AddPin",
+      "label": "AddPinIcon",
+      "slug": "add-pin",
+      "description": "map pin with small plus at top right",
+      "lucide": "map-pin-plus",
+      "domain": false
+    },
+    {
+      "name": "Annotate",
+      "label": "AnnotateIcon",
+      "slug": "annotate",
+      "description": "diagonal marker pen",
+      "lucide": "highlighter",
+      "domain": false
+    },
+    {
+      "name": "Apps",
+      "label": "AppsIcon",
+      "slug": "apps",
+      "description": "3x3 grid of dots",
+      "lucide": "grip",
+      "domain": false
+    },
+    {
+      "name": "ArrowDown",
+      "label": "ArrowDownIcon",
+      "slug": "arrow-down",
+      "description": "arrow pointing down",
+      "lucide": "arrow-down",
+      "domain": false
+    },
+    {
+      "name": "ArrowLeft",
+      "label": "ArrowLeftIcon",
+      "slug": "arrow-left",
+      "description": "arrow pointing left",
+      "lucide": "arrow-left",
+      "domain": false
+    },
+    {
+      "name": "ArrowRight",
+      "label": "ArrowRightIcon",
+      "slug": "arrow-right",
+      "description": "arrow pointing right",
+      "lucide": "arrow-right",
+      "domain": false
+    },
+    {
+      "name": "ArrowUp",
+      "label": "ArrowUpIcon",
+      "slug": "arrow-up",
+      "description": "arrow pointing up",
+      "lucide": "arrow-up",
+      "domain": false
+    },
+    {
+      "name": "CancelCircle",
+      "label": "CancelCircleIcon",
+      "slug": "cancel-circle",
+      "description": "circle with x",
+      "lucide": "circle-x",
+      "domain": false
+    },
+    {
+      "name": "CaretCollapse",
+      "label": "CaretCollapseIcon",
+      "slug": "caret-collapse",
+      "description": "two chevrons pointing toward each other vertically (down over up)",
+      "lucide": "chevrons-down-up",
+      "domain": false
+    },
+    {
+      "name": "CaretUpDown",
+      "label": "CaretUpDownIcon",
+      "slug": "caret-up-down",
+      "description": "two chevrons pointing away from each other vertically (up over down)",
+      "lucide": "chevrons-up-down",
+      "domain": false
+    },
+    {
+      "name": "CheckCircle",
+      "label": "CheckCircleIcon",
+      "slug": "check-circle",
+      "description": "circle with check mark",
+      "lucide": "circle-check",
+      "domain": false
+    },
+    {
+      "name": "CheckCircleOpen",
+      "label": "CheckCircleOpenIcon",
+      "slug": "check-circle-open",
+      "description": "dashed circle with check mark",
+      "lucide": "circle-dashed",
+      "domain": false
+    },
+    {
+      "name": "Check",
+      "label": "CheckIcon",
+      "slug": "check",
+      "description": "check mark",
+      "lucide": "check",
+      "domain": false
+    },
+    {
+      "name": "Checkbox",
+      "label": "CheckboxIcon",
+      "slug": "checkbox",
+      "description": "square with check mark",
+      "lucide": "square-check",
+      "domain": false
+    },
+    {
+      "name": "CheckboxOutlineBlank",
+      "label": "CheckboxOutlineBlankIcon",
+      "slug": "checkbox-outline-blank",
+      "description": "empty square outline",
+      "lucide": "square",
+      "domain": false
+    },
+    {
+      "name": "ChevronDown",
+      "label": "ChevronDownIcon",
+      "slug": "chevron-down",
+      "description": "chevron pointing down",
+      "lucide": "chevron-down",
+      "domain": false
+    },
+    {
+      "name": "ChevronDownSmall",
+      "label": "ChevronDownSmallIcon",
+      "slug": "chevron-down-small",
+      "description": "small chevron pointing down",
+      "lucide": "chevron-down",
+      "domain": false
+    },
+    {
+      "name": "ChevronLeft",
+      "label": "ChevronLeftIcon",
+      "slug": "chevron-left",
+      "description": "chevron pointing left",
+      "lucide": "chevron-left",
+      "domain": false
+    },
+    {
+      "name": "ChevronLeftSmall",
+      "label": "ChevronLeftSmallIcon",
+      "slug": "chevron-left-small",
+      "description": "small chevron pointing left",
+      "lucide": "chevron-left",
+      "domain": false
+    },
+    {
+      "name": "ChevronRight",
+      "label": "ChevronRightIcon",
+      "slug": "chevron-right",
+      "description": "chevron pointing right",
+      "lucide": "chevron-right",
+      "domain": false
+    },
+    {
+      "name": "ChevronRightSmall",
+      "label": "ChevronRightSmallIcon",
+      "slug": "chevron-right-small",
+      "description": "small chevron pointing right",
+      "lucide": "chevron-right",
+      "domain": false
+    },
+    {
+      "name": "ChevronUp",
+      "label": "ChevronUpIcon",
+      "slug": "chevron-up",
+      "description": "chevron pointing up",
+      "lucide": "chevron-up",
+      "domain": false
+    },
+    {
+      "name": "ChevronUpSmall",
+      "label": "ChevronUpSmallIcon",
+      "slug": "chevron-up-small",
+      "description": "small chevron pointing up",
+      "lucide": "chevron-up",
+      "domain": false
+    },
+    {
+      "name": "ChristmasTree",
+      "label": "ChristmasTreeIcon",
+      "slug": "christmas-tree",
+      "description": "wellhead 'christmas tree' valve stack: vertical pipe with stacked crossbars",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "Close",
+      "label": "CloseIcon",
+      "slug": "close",
+      "description": "x cross",
+      "lucide": "x",
+      "domain": false
+    },
+    {
+      "name": "CloseSmall",
+      "label": "CloseSmallIcon",
+      "slug": "close-small",
+      "description": "small x cross",
+      "lucide": "x",
+      "domain": false
+    },
+    {
+      "name": "Co2Leaf",
+      "label": "Co2LeafIcon",
+      "slug": "co2-leaf",
+      "description": "sprout with two leaves",
+      "lucide": "sprout",
+      "domain": false
+    },
+    {
+      "name": "Code",
+      "label": "CodeIcon",
+      "slug": "code",
+      "description": "angle brackets with slash",
+      "lucide": "code",
+      "domain": false
+    },
+    {
+      "name": "CollapseContent",
+      "label": "CollapseContentIcon",
+      "slug": "collapse-content",
+      "description": "two corner brackets with short arrows pointing inward",
+      "lucide": "minimize",
+      "domain": false
+    },
+    {
+      "name": "Controls",
+      "label": "ControlsIcon",
+      "slug": "controls",
+      "description": "three horizontal sliders with knobs",
+      "lucide": "sliders-horizontal",
+      "domain": false
+    },
+    {
+      "name": "Copy",
+      "label": "CopyIcon",
+      "slug": "copy",
+      "description": "two overlapping rounded squares",
+      "lucide": "copy",
+      "domain": false
+    },
+    {
+      "name": "Crown",
+      "label": "CrownIcon",
+      "slug": "crown",
+      "description": "crown outline",
+      "lucide": "crown",
+      "domain": false
+    },
+    {
+      "name": "Cube",
+      "label": "CubeIcon",
+      "slug": "cube",
+      "description": "isometric cube outline",
+      "lucide": "box",
+      "domain": false
+    },
+    {
+      "name": "Database",
+      "label": "DatabaseIcon",
+      "slug": "database",
+      "description": "stacked cylinder",
+      "lucide": "database",
+      "domain": false
+    },
+    {
+      "name": "Delete",
+      "label": "DeleteIcon",
+      "slug": "delete",
+      "description": "trash can",
+      "lucide": "trash-2",
+      "domain": false
+    },
+    {
+      "name": "Design",
+      "label": "DesignIcon",
+      "slug": "design",
+      "description": "crossed pencil and ruler",
+      "lucide": "pencil-ruler",
+      "domain": false
+    },
+    {
+      "name": "DiamondMark",
+      "label": "DiamondMarkIcon",
+      "slug": "diamond-mark",
+      "description": "diamond (rotated square) outline",
+      "lucide": "diamond",
+      "domain": false
+    },
+    {
+      "name": "Discovery",
+      "label": "DiscoveryIcon",
+      "slug": "discovery",
+      "description": "compass with needle",
+      "lucide": "compass",
+      "domain": false
+    },
+    {
+      "name": "DragIndicator",
+      "label": "DragIndicatorIcon",
+      "slug": "drag-indicator",
+      "description": "2x3 grid of dots",
+      "lucide": "grip-vertical",
+      "domain": false
+    },
+    {
+      "name": "DrillBit",
+      "label": "DrillBitIcon",
+      "slug": "drill-bit",
+      "description": "drill bit: tapered bit head with shank",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "EditSquare",
+      "label": "EditSquareIcon",
+      "slug": "edit-square",
+      "description": "square with pencil over top right corner",
+      "lucide": "square-pen",
+      "domain": false
+    },
+    {
+      "name": "Electricity",
+      "label": "ElectricityIcon",
+      "slug": "electricity",
+      "description": "lightning bolt",
+      "lucide": "zap",
+      "domain": false
+    },
+    {
+      "name": "Engineering",
+      "label": "EngineeringIcon",
+      "slug": "engineering",
+      "description": "drafting compass / divider",
+      "lucide": "drafting-compass",
+      "domain": false
+    },
+    {
+      "name": "Error",
+      "label": "ErrorIcon",
+      "slug": "error",
+      "description": "circle with exclamation mark",
+      "lucide": "circle-alert",
+      "domain": false
+    },
+    {
+      "name": "ExpandContent",
+      "label": "ExpandContentIcon",
+      "slug": "expand-content",
+      "description": "two corner brackets with short arrows pointing outward",
+      "lucide": "expand",
+      "domain": false
+    },
+    {
+      "name": "ExportUpload",
+      "label": "ExportUploadIcon",
+      "slug": "export-upload",
+      "description": "arrow up out of a tray",
+      "lucide": "upload",
+      "domain": false
+    },
+    {
+      "name": "Facility",
+      "label": "FacilityIcon",
+      "slug": "facility",
+      "description": "factory / plant building with sawtooth roof and stack",
+      "lucide": "factory",
+      "domain": false
+    },
+    {
+      "name": "Fault",
+      "label": "FaultIcon",
+      "slug": "fault",
+      "description": "diagonal line with offset crossing segment (geologic fault)",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "Filter",
+      "label": "FilterIcon",
+      "slug": "filter",
+      "description": "funnel",
+      "lucide": "funnel",
+      "domain": false
+    },
+    {
+      "name": "Folder",
+      "label": "FolderIcon",
+      "slug": "folder",
+      "description": "folder outline",
+      "lucide": "folder",
+      "domain": false
+    },
+    {
+      "name": "FolderNew",
+      "label": "FolderNewIcon",
+      "slug": "folder-new",
+      "description": "folder with plus",
+      "lucide": "folder-plus",
+      "domain": false
+    },
+    {
+      "name": "FolderOpen",
+      "label": "FolderOpenIcon",
+      "slug": "folder-open",
+      "description": "open folder",
+      "lucide": "folder-open",
+      "domain": false
+    },
+    {
+      "name": "Frameworks",
+      "label": "FrameworksIcon",
+      "slug": "frameworks",
+      "description": "three stacked wavy lines",
+      "lucide": "waves",
+      "domain": false
+    },
+    {
+      "name": "Geobodies",
+      "label": "GeobodiesIcon",
+      "slug": "geobodies",
+      "description": "cluster of three hexagons",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "Geostructure",
+      "label": "GeostructureIcon",
+      "slug": "geostructure",
+      "description": "irregular hexagon-like blob outline (geologic structure)",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "GridView",
+      "label": "GridViewIcon",
+      "slug": "grid-view",
+      "description": "2x2 grid of squares",
+      "lucide": "layout-grid",
+      "domain": false
+    },
+    {
+      "name": "History",
+      "label": "HistoryIcon",
+      "slug": "history",
+      "description": "clock with counter-clockwise arrow",
+      "lucide": "history",
+      "domain": false
+    },
+    {
+      "name": "Home",
+      "label": "HomeIcon",
+      "slug": "home",
+      "description": "house outline",
+      "lucide": "house",
+      "domain": false
+    },
+    {
+      "name": "Horizon",
+      "label": "HorizonIcon",
+      "slug": "horizon",
+      "description": "single wave line (seismic horizon)",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "Image",
+      "label": "ImageIcon",
+      "slug": "image",
+      "description": "picture frame with mountains",
+      "lucide": "image",
+      "domain": false
+    },
+    {
+      "name": "IndeterminateCheckbox",
+      "label": "IndeterminateCheckboxIcon",
+      "slug": "indeterminate-checkbox",
+      "description": "square with minus",
+      "lucide": "square-minus",
+      "domain": false
+    },
+    {
+      "name": "Info",
+      "label": "InfoIcon",
+      "slug": "info",
+      "description": "circle with i",
+      "lucide": "info",
+      "domain": false
+    },
+    {
+      "name": "Inspect",
+      "label": "InspectIcon",
+      "slug": "inspect",
+      "description": "scan corners with magnifier in center",
+      "lucide": "scan-search",
+      "domain": false
+    },
+    {
+      "name": "Kanban",
+      "label": "KanbanIcon",
+      "slug": "kanban",
+      "description": "square with three vertical bars of different height",
+      "lucide": "square-kanban",
+      "domain": false
+    },
+    {
+      "name": "Layers",
+      "label": "LayersIcon",
+      "slug": "layers",
+      "description": "two stacked diamonds",
+      "lucide": "layers",
+      "domain": false
+    },
+    {
+      "name": "LineWeight",
+      "label": "LineWeightIcon",
+      "slug": "line-weight",
+      "description": "stacked horizontal bars of increasing thickness",
+      "lucide": null,
+      "domain": false
+    },
+    {
+      "name": "Link",
+      "label": "LinkIcon",
+      "slug": "link",
+      "description": "chain link",
+      "lucide": "link",
+      "domain": false
+    },
+    {
+      "name": "LinkOff",
+      "label": "LinkOffIcon",
+      "slug": "link-off",
+      "description": "chain link with diagonal strike",
+      "lucide": "unlink",
+      "domain": false
+    },
+    {
+      "name": "List",
+      "label": "ListIcon",
+      "slug": "list",
+      "description": "three bullet lines",
+      "lucide": "list",
+      "domain": false
+    },
+    {
+      "name": "Lock",
+      "label": "LockIcon",
+      "slug": "lock",
+      "description": "closed padlock",
+      "lucide": "lock",
+      "domain": false
+    },
+    {
+      "name": "LockOpen",
+      "label": "LockOpenIcon",
+      "slug": "lock-open",
+      "description": "open padlock",
+      "lucide": "lock-open",
+      "domain": false
+    },
+    {
+      "name": "LogCurve",
+      "label": "LogCurveIcon",
+      "slug": "log-curve",
+      "description": "vertical zig-zag curve (well log trace)",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "Map",
+      "label": "MapIcon",
+      "slug": "map",
+      "description": "folded map",
+      "lucide": "map",
+      "domain": false
+    },
+    {
+      "name": "Menu",
+      "label": "MenuIcon",
+      "slug": "menu",
+      "description": "three horizontal lines",
+      "lucide": "menu",
+      "domain": false
+    },
+    {
+      "name": "Microphone",
+      "label": "MicrophoneIcon",
+      "slug": "microphone",
+      "description": "microphone",
+      "lucide": "mic",
+      "domain": false
+    },
+    {
+      "name": "Money",
+      "label": "MoneyIcon",
+      "slug": "money",
+      "description": "dollar sign",
+      "lucide": "dollar-sign",
+      "domain": false
+    },
+    {
+      "name": "MoreVert",
+      "label": "MoreVertIcon",
+      "slug": "more-vert",
+      "description": "three vertical dots",
+      "lucide": "ellipsis-vertical",
+      "domain": false
+    },
+    {
+      "name": "Node",
+      "label": "NodeIcon",
+      "slug": "node",
+      "description": "three circle nodes connected by lines",
+      "lucide": "waypoints",
+      "domain": false
+    },
+    {
+      "name": "Notifications",
+      "label": "NotificationsIcon",
+      "slug": "notifications",
+      "description": "bell",
+      "lucide": "bell",
+      "domain": false
+    },
+    {
+      "name": "Numeric",
+      "label": "NumericIcon",
+      "slug": "numeric",
+      "description": "hash / number sign",
+      "lucide": "hash",
+      "domain": false
+    },
+    {
+      "name": "OilRigOffshore",
+      "label": "OilRigOffshoreIcon",
+      "slug": "oil-rig-offshore",
+      "description": "offshore platform: derrick on deck over water",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "OpenInNew",
+      "label": "OpenInNewIcon",
+      "slug": "open-in-new",
+      "description": "square with arrow out of top right corner",
+      "lucide": "square-arrow-out-up-right",
+      "domain": false
+    },
+    {
+      "name": "PanTool",
+      "label": "PanToolIcon",
+      "slug": "pan-tool",
+      "description": "open hand",
+      "lucide": "hand",
+      "domain": false
+    },
+    {
+      "name": "Panel",
+      "label": "PanelIcon",
+      "slug": "panel",
+      "description": "rectangle with vertical divider toward the right",
+      "lucide": "panel-right",
+      "domain": false
+    },
+    {
+      "name": "Person",
+      "label": "PersonIcon",
+      "slug": "person",
+      "description": "person bust",
+      "lucide": "user",
+      "domain": false
+    },
+    {
+      "name": "Play",
+      "label": "PlayIcon",
+      "slug": "play",
+      "description": "right-pointing triangle",
+      "lucide": "play",
+      "domain": false
+    },
+    {
+      "name": "Preview",
+      "label": "PreviewIcon",
+      "slug": "preview",
+      "description": "eye inside a rounded window",
+      "lucide": "scan-eye",
+      "domain": false
+    },
+    {
+      "name": "Project",
+      "label": "ProjectIcon",
+      "slug": "project",
+      "description": "framed rectangle with angled inner panel",
+      "lucide": null,
+      "domain": false
+    },
+    {
+      "name": "Pulse",
+      "label": "PulseIcon",
+      "slug": "pulse",
+      "description": "heartbeat / activity line",
+      "lucide": "activity",
+      "domain": false
+    },
+    {
+      "name": "RadioButton",
+      "label": "RadioButtonIcon",
+      "slug": "radio-button",
+      "description": "empty circle",
+      "lucide": "circle",
+      "domain": false
+    },
+    {
+      "name": "Redo",
+      "label": "RedoIcon",
+      "slug": "redo",
+      "description": "curved arrow to the right",
+      "lucide": "redo",
+      "domain": false
+    },
+    {
+      "name": "RemoveCircle",
+      "label": "RemoveCircleIcon",
+      "slug": "remove-circle",
+      "description": "circle with minus",
+      "lucide": "circle-minus",
+      "domain": false
+    },
+    {
+      "name": "Remove",
+      "label": "RemoveIcon",
+      "slug": "remove",
+      "description": "minus sign",
+      "lucide": "minus",
+      "domain": false
+    },
+    {
+      "name": "ReportsAnalytics",
+      "label": "ReportsAnalyticsIcon",
+      "slug": "reports-analytics",
+      "description": "bar chart inside a square",
+      "lucide": "chart-column",
+      "domain": false
+    },
+    {
+      "name": "RiskSkull",
+      "label": "RiskSkullIcon",
+      "slug": "risk-skull",
+      "description": "skull with three list lines to the right",
+      "lucide": "skull",
+      "domain": false
+    },
+    {
+      "name": "Robot2",
+      "label": "Robot2Icon",
+      "slug": "robot2",
+      "description": "robot head with eyes and separate body bar",
+      "lucide": "bot",
+      "domain": false
+    },
+    {
+      "name": "RockFormations",
+      "label": "RockFormationsIcon",
+      "slug": "rock-formations",
+      "description": "triangle with layered strata lines (rock formations)",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "Rotate",
+      "label": "RotateIcon",
+      "slug": "rotate",
+      "description": "curved arrow around a flat ellipse",
+      "lucide": "rotate-3d",
+      "domain": false
+    },
+    {
+      "name": "Ruler",
+      "label": "RulerIcon",
+      "slug": "ruler",
+      "description": "right-triangle set square with tick marks",
+      "lucide": "ruler",
+      "domain": false
+    },
+    {
+      "name": "Search",
+      "label": "SearchIcon",
+      "slug": "search",
+      "description": "magnifying glass",
+      "lucide": "search",
+      "domain": false
+    },
+    {
+      "name": "Seismic",
+      "label": "SeismicIcon",
+      "slug": "seismic",
+      "description": "horizontal line over concentric arcs (seismic reflection)",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "SelectCursor",
+      "label": "SelectCursorIcon",
+      "slug": "select-cursor",
+      "description": "mouse pointer arrow",
+      "lucide": "mouse-pointer",
+      "domain": false
+    },
+    {
+      "name": "Select",
+      "label": "SelectIcon",
+      "slug": "select",
+      "description": "dashed square outline",
+      "lucide": "square-dashed",
+      "domain": false
+    },
+    {
+      "name": "Settings",
+      "label": "SettingsIcon",
+      "slug": "settings",
+      "description": "gear",
+      "lucide": "settings",
+      "domain": false
+    },
+    {
+      "name": "Slice",
+      "label": "SliceIcon",
+      "slug": "slice",
+      "description": "dashed horizontal band between two dotted lines",
+      "lucide": null,
+      "domain": false
+    },
+    {
+      "name": "SortEnabled",
+      "label": "SortEnabledIcon",
+      "slug": "sort-enabled",
+      "description": "paired up and down arrows",
+      "lucide": "arrow-up-down",
+      "domain": false
+    },
+    {
+      "name": "Splitscreen",
+      "label": "SplitscreenIcon",
+      "slug": "splitscreen",
+      "description": "two side-by-side panels with small plus",
+      "lucide": "columns-2",
+      "domain": false
+    },
+    {
+      "name": "Strata",
+      "label": "StrataIcon",
+      "slug": "strata",
+      "description": "stacked layers with colored (pink-orange gradient) top layer",
+      "lucide": "layers",
+      "domain": true
+    },
+    {
+      "name": "Surface",
+      "label": "SurfaceIcon",
+      "slug": "surface",
+      "description": "curved 3D mesh/grid surface",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "Swap",
+      "label": "SwapIcon",
+      "slug": "swap",
+      "description": "two horizontal arrows pointing toward each other",
+      "lucide": "fold-horizontal",
+      "domain": false
+    },
+    {
+      "name": "Target",
+      "label": "TargetIcon",
+      "slug": "target",
+      "description": "scan corners with circle in center",
+      "lucide": "focus",
+      "domain": false
+    },
+    {
+      "name": "ThreeD",
+      "label": "ThreeDIcon",
+      "slug": "three-d",
+      "description": "isometric cube inside scan corners",
+      "lucide": "box",
+      "domain": false
+    },
+    {
+      "name": "Trajectory",
+      "label": "TrajectoryIcon",
+      "slug": "trajectory",
+      "description": "curve from vertical to horizontal (well trajectory)",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "Trend",
+      "label": "TrendIcon",
+      "slug": "trend",
+      "description": "rising line chart over bar columns",
+      "lucide": "chart-no-axes-combined",
+      "domain": false
+    },
+    {
+      "name": "Undo",
+      "label": "UndoIcon",
+      "slug": "undo",
+      "description": "curved arrow to the left",
+      "lucide": "undo",
+      "domain": false
+    },
+    {
+      "name": "Valve",
+      "label": "ValveIcon",
+      "slug": "valve",
+      "description": "valve symbol: pipe with T-handle stem",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "VelocityModel",
+      "label": "VelocityModelIcon",
+      "slug": "velocity-model",
+      "description": "upward arrow through layered arcs (velocity model)",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "ViewColumn",
+      "label": "ViewColumnIcon",
+      "slug": "view-column",
+      "description": "rectangle split into three vertical columns",
+      "lucide": "columns-3",
+      "domain": false
+    },
+    {
+      "name": "ViewModule",
+      "label": "ViewModuleIcon",
+      "slug": "view-module",
+      "description": "rectangle split into 3x2 grid of cells",
+      "lucide": "grid-3x3",
+      "domain": false
+    },
+    {
+      "name": "Visibility",
+      "label": "VisibilityIcon",
+      "slug": "visibility",
+      "description": "eye",
+      "lucide": "eye",
+      "domain": false
+    },
+    {
+      "name": "VisibilityOff",
+      "label": "VisibilityOffIcon",
+      "slug": "visibility-off",
+      "description": "eye with diagonal strike",
+      "lucide": "eye-off",
+      "domain": false
+    },
+    {
+      "name": "Warning",
+      "label": "WarningIcon",
+      "slug": "warning",
+      "description": "triangle with exclamation mark",
+      "lucide": "triangle-alert",
+      "domain": false
+    },
+    {
+      "name": "Water",
+      "label": "WaterIcon",
+      "slug": "water",
+      "description": "water droplet",
+      "lucide": "droplet",
+      "domain": false
+    },
+    {
+      "name": "Well",
+      "label": "WellIcon",
+      "slug": "well",
+      "description": "wellhead symbol: vertical line with two short side bars",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "WellPick",
+      "label": "WellPickIcon",
+      "slug": "well-pick",
+      "description": "vertical line crossed by a horizontal pick marker with dot",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "WellPlan",
+      "label": "WellPlanIcon",
+      "slug": "well-plan",
+      "description": "dotted vertical line with wellhead symbol (planned well)",
+      "lucide": null,
+      "domain": true
+    },
+    {
+      "name": "Window",
+      "label": "WindowIcon",
+      "slug": "window",
+      "description": "square split into 2x2 panes",
+      "lucide": "grid-2x2",
+      "domain": false
+    },
+    {
+      "name": "ZoomIn",
+      "label": "ZoomInIcon",
+      "slug": "zoom-in",
+      "description": "magnifying glass with plus",
+      "lucide": "zoom-in",
+      "domain": false
+    },
+    {
+      "name": "ZoomOut",
+      "label": "ZoomOutIcon",
+      "slug": "zoom-out",
+      "description": "magnifying glass with minus",
+      "lucide": "zoom-out",
+      "domain": false
+    }
+  ]
+}

@@ -6,12 +6,16 @@
   "scripts": {
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "tokens:build": "bun run scripts/tokens-build.mts",
+    "tokens:check": "bun run scripts/tokens-check.mts"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
-    "@fontsource-variable/inter": "^5.3.0",
+    "@fontsource-variable/figtree": "^5.3.0",
+    "@fontsource/ibm-plex-mono": "^5.3.0",
     "@shadcn/react": "^0.3.1",
+    "@tanstack/react-table": "^9.2.4",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.2.6",
     "embla-carousel-react": "^8.6.0",
@@ -32,17 +36,25 @@
     "@tailwindcss/vite": "^4",
     "@tanstack/eslint-config": "latest",
     "@turbo/gen": "^2.9.15",
+    "@types/culori": "^4.0.1",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "culori": "^4.0.2",
     "eslint": "^9",
     "tailwindcss": "^4",
     "typescript": "^6"
   },
   "exports": {
     "./globals.css": "./src/styles/globals.css",
+    "./styles/*": "./src/styles/*",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
-    "./hooks/*": "./src/hooks/*.ts"
-  }
+    "./hooks/*": "./src/hooks/*.ts",
+    "./tecton/*": "./src/tecton/*.tsx",
+    "./icons": "./src/icons/index.ts",
+    "./icons/*": "./src/icons/*.tsx",
+    "./blocks/*": "./src/blocks/*"
+  },
+  "description": "Tecton design system for React \u2014 shadcn/ui (React Aria base) components themed through Tecton tokens, plus Tecton-specific components, icons and blocks."
 }
