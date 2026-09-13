@@ -4,6 +4,11 @@ import * as React from "react"
 import { ListIcon, WaypointsIcon } from "lucide-react"
 
 import {
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+} from "@tecton/react/components/dropdown-menu"
+import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
@@ -20,6 +25,7 @@ import {
   PageHeaderNav,
   PageHeaderTitle,
 } from "@tecton/react/tecton/page-header"
+import { OverflowItem, OverflowSpacer } from "@tecton/react/tecton/overflow"
 
 import { ConceptSection } from "./components/concept-section"
 import { ProjectSidebar } from "./components/project-sidebar"
@@ -43,48 +49,97 @@ export default function Page() {
       />
       <SidebarInset className="min-w-0">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-4 md:px-6">
-          <PageHeader className="md:items-center">
-            <PageHeaderContent className="flex-row items-center gap-2 md:flex-none">
+          <PageHeader className="items-center">
+            <PageHeaderContent className="flex-none flex-row items-center gap-2">
               <SidebarTrigger className="-ml-1 md:hidden" />
               <PageHeaderTitle className="text-xl">
                 {project.name}
               </PageHeaderTitle>
             </PageHeaderContent>
-            <PageHeaderNav aria-label="Project sections" className="md:flex-1">
-              <Tabs
-                selectedKey={section}
-                onSelectionChange={(key) => setSection(String(key))}
-              >
-                <TabsList className="h-9 p-1">
-                  {sectionTabs.map((tab) => (
-                    <TabsTrigger key={tab.id} id={tab.id}>
-                      {tab.label}
-                    </TabsTrigger>
-                  ))}
-                </TabsList>
-              </Tabs>
-            </PageHeaderNav>
             <PageHeaderActions>
-              <ToggleGroup
-                aria-label="View"
-                selectionMode="single"
-                selectedKeys={[view]}
-                onSelectionChange={(keys) => {
-                  const next = [...keys][0]
-                  if (next) setView(next as "list" | "graph")
-                }}
-                disallowEmptySelection
-                variant="outline"
-                size="sm"
-                spacing={0}
+              {/* The tabs are one item: they collapse together into a section list in the More menu. */}
+              <OverflowItem
+                id="sections"
+                priority={2}
+                overflow={
+                  <DropdownMenuGroup
+                    selectionMode="single"
+                    selectedKeys={[section]}
+                    onSelectionChange={(keys) => {
+                      const next = [...keys][0]
+                      if (next) setSection(String(next))
+                    }}
+                  >
+                    <DropdownMenuLabel>Section</DropdownMenuLabel>
+                    {sectionTabs.map((tab) => (
+                      <DropdownMenuItem key={tab.id} id={tab.id}>
+                        {tab.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                }
               >
-                <ToggleGroupItem id="list" aria-label="List view">
-                  <ListIcon /> List
-                </ToggleGroupItem>
-                <ToggleGroupItem id="graph" aria-label="Graph view">
-                  <WaypointsIcon /> Graph
-                </ToggleGroupItem>
-              </ToggleGroup>
+                <PageHeaderNav aria-label="Project sections">
+                  <Tabs
+                    selectedKey={section}
+                    onSelectionChange={(key) => setSection(String(key))}
+                  >
+                    <TabsList className="h-9 p-1">
+                      {sectionTabs.map((tab) => (
+                        <TabsTrigger key={tab.id} id={tab.id}>
+                          {tab.label}
+                        </TabsTrigger>
+                      ))}
+                    </TabsList>
+                  </Tabs>
+                </PageHeaderNav>
+              </OverflowItem>
+              <OverflowSpacer />
+              <OverflowItem
+                id="view"
+                priority={1}
+                overflow={
+                  <DropdownMenuGroup
+                    selectionMode="single"
+                    selectedKeys={[view]}
+                    onSelectionChange={(keys) => {
+                      const next = [...keys][0]
+                      if (next) setView(next as "list" | "graph")
+                    }}
+                  >
+                    <DropdownMenuLabel>View</DropdownMenuLabel>
+                    <DropdownMenuItem id="list">
+                      <ListIcon />
+                      List
+                    </DropdownMenuItem>
+                    <DropdownMenuItem id="graph">
+                      <WaypointsIcon />
+                      Graph
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                }
+              >
+                <ToggleGroup
+                  aria-label="View"
+                  selectionMode="single"
+                  selectedKeys={[view]}
+                  onSelectionChange={(keys) => {
+                    const next = [...keys][0]
+                    if (next) setView(next as "list" | "graph")
+                  }}
+                  disallowEmptySelection
+                  variant="outline"
+                  size="sm"
+                  spacing={0}
+                >
+                  <ToggleGroupItem id="list" aria-label="List view">
+                    <ListIcon /> List
+                  </ToggleGroupItem>
+                  <ToggleGroupItem id="graph" aria-label="Graph view">
+                    <WaypointsIcon /> Graph
+                  </ToggleGroupItem>
+                </ToggleGroup>
+              </OverflowItem>
             </PageHeaderActions>
           </PageHeader>
 

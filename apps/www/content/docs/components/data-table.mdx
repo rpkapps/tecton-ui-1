@@ -909,6 +909,12 @@ Add a display column with a React Aria `Checkbox slot="selection"` in the header
 
 <ComponentPreview name="data-table-selection" align="start" />
 
+### Bulk actions
+
+While rows are selected, replace the table toolbar with an [Action Bar](/docs/tecton/action-bar): the count and a Clear control, then the actions in an overflow toolbar that collapses into a More menu when the table is narrow. Escape, while focus is in the bar, clears the selection.
+
+<ComponentPreview name="action-bar-demo" align="start" />
+
 ### Pagination
 
 Register `rowPaginationFeature` with `createPaginatedRowModel()`, keep the `pagination` state in React and render previous/next buttons, a page-size `Select` and a "Page x of y" label in a footer line.

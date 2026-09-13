@@ -19,8 +19,8 @@ const panelVariants = cva(
         outline: "rounded-lg border bg-transparent",
       },
       size: {
-        sm: "[--panel-px:0.75rem] [--panel-py:0.5rem] text-sm",
-        md: "[--panel-px:1rem] [--panel-py:0.75rem] text-sm",
+        sm: "text-sm [--panel-px:0.75rem] [--panel-py:0.5rem]",
+        md: "text-sm [--panel-px:1rem] [--panel-py:0.75rem]",
         lg: "[--panel-px:1.5rem] [--panel-py:1rem]",
       },
     },
@@ -61,12 +61,17 @@ function PanelHeader({ className, ...props }: React.ComponentProps<"header">) {
   )
 }
 
+/**
+ * Beside an overflow row in `PanelActions` the title keeps its natural
+ * width up to 60% of the header, so the row has a stable width to collapse
+ * against; otherwise it fills the header as before.
+ */
 function PanelTitle({ className, ...props }: React.ComponentProps<"h2">) {
   return (
     <h2
       data-slot="panel-title"
       className={cn(
-        "min-w-0 flex-1 truncate text-sm leading-none font-medium",
+        "min-w-0 flex-1 truncate text-sm leading-none font-medium [[data-slot=panel-header]:has([data-overflow-root])>&]:max-w-3/5 [[data-slot=panel-header]:has([data-overflow-root])>&]:flex-initial",
         className
       )}
       {...props}
@@ -84,11 +89,19 @@ function PanelDescription({ className, ...props }: React.ComponentProps<"p">) {
   )
 }
 
+/**
+ * Trailing actions. A plain slot: put an `Overflow` or `Toolbar` inside it
+ * when a panel has more actions than fit, and the slot takes the width the
+ * title leaves so the row can collapse.
+ */
 function PanelActions({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="panel-actions"
-      className={cn("-my-1 -mr-2 ml-auto flex shrink-0 items-center gap-1", className)}
+      className={cn(
+        "-my-1 -mr-2 ml-auto flex shrink-0 items-center gap-1 has-[[data-overflow-root]]:min-w-0 has-[[data-overflow-root]]:flex-1 has-[[data-overflow-root]]:shrink has-[[data-overflow-root]]:basis-0 has-[[data-overflow-root]]:justify-end [&>[data-overflow-root]]:min-w-0 [&>[data-overflow-root]]:flex-1 [&>[data-overflow-root]]:justify-end",
+        className
+      )}
       {...props}
     />
   )
