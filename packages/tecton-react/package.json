@@ -10,6 +10,9 @@
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "tokens:build": "bun run scripts/tokens-build.mts",
     "tokens:check": "bun run scripts/tokens-check.mts",
     "icons:build": "bun run scripts/build-icons.mts",
@@ -42,14 +45,21 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4",
     "@tanstack/eslint-config": "latest",
+    "@testing-library/dom": "^10.4.1",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.7",
     "@types/culori": "^4.0.1",
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitest/coverage-v8": "^5.0.0",
     "culori": "^4.0.2",
     "eslint": "^9",
+    "jsdom": "^30.0.1",
     "tailwindcss": "^4",
-    "typescript": "^6"
+    "typescript": "^6",
+    "vitest": "^5.0.0"
   },
   "exports": {
     "./globals.css": "./src/styles/globals.css",
@@ -63,7 +73,7 @@
     "./icons/*": "./src/icons/*.tsx",
     "./blocks/*": "./src/blocks/*"
   },
-  "description": "Tecton design system for React \u2014 shadcn/ui (React Aria base) components themed through Tecton tokens, plus Tecton-specific components, icons and blocks.",
+  "description": "Tecton design system for React — shadcn/ui (React Aria base) components themed through Tecton tokens, plus Tecton-specific components, icons and blocks.",
   "files": [
     "src",
     "icons/icons.json",
