@@ -44,12 +44,12 @@ Every effect behind the same sample text, in the tone `--chart-1` (azure); switc
 
 | Effect | Motif | Motion | Suggested use |
 | --- | --- | --- | --- |
-| `SeismicBackground` | Seismogram record | Scrolls slowly to the left | Hero and summary cards |
+| `SeismicBackground` | Survey in section: seismogram, surface, faulted strata, source with wavefront rings | Rings ripple out from the source | Hero and summary cards |
 | `ContourBackground` | Structure map isolines, coloured by elevation | Gentle wander | The calm default for most surfaces |
 | `StrataBackground` | Cross-section of bedding planes with tints | Pans very slowly along the section | Dense dashboards |
 | `PipelineGridBackground` | Orthogonal line grid with nodes | Nodes glow in turn; optional pointer reveal | Landing, onboarding |
-| `FlowBackground` | Process-flow schematic: pipe runs, elbows, junctions | Fluid pulses move through the pipes | Pipelines and process screens; the liveliest one |
-| `WellLogBackground` | Vertical log traces | Pages upwards very slowly, as if scrolling deeper | Sidebars, login panels |
+| `FlowBackground` | Gathering and distribution: streams converge into a hub, then branch out through junctions with nodes | Pulses travel along the lines; the hub rings breathe | Pipelines and process screens; the liveliest one |
+| `WellLogBackground` | Cross-section around a wellbore: strata, log tracks, casing | Tool string runs down the hole; the logging tool pulses | Wide hero and sign-in surfaces |
 | `DrillBackground` | Bit seen from above | Slow rotation | Centred hero content |
 | `ReservoirCellsBackground` | Hexagonal simulation mesh | Cells glow in turn | Simulation and modelling screens |
 | `PressureBackground` | Soft gradient field | Blobs migrate | Busy screens; the most abstract |
@@ -70,7 +70,7 @@ Every effect behind the same sample text, in the tone `--chart-1` (azure); switc
 
 ## Intensity and speed
 
-`intensity` caps the effect's peak opacity (`low` 12%, `medium` 20%, `high` 32%) so text over it keeps its contrast; `speed` sets the base cycle (`slow` 60s, `normal` 36s, `fast` 18s). Even `high` and `fast` stay within a texture rather than a picture.
+`intensity` caps the effect's peak opacity (`low` 8%, `medium` 16%, `high` 32%) so text over it keeps its contrast; `speed` sets the base cycle (`slow` 60s, `normal` 36s, `fast` 18s). Even `high` and `fast` stay within a texture rather than a picture.
 
 <ComponentPreview name="background-intensity" />
 
@@ -107,7 +107,7 @@ Every effect accepts the props of `div` plus:
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `tone` | `"neutral" \| "primary" \| "azure" \| "saffron" \| "lime" \| "blue"` | "neutral" | Ink colour, from the theme. |
-| `intensity` | `"low" \| "medium" \| "high"` | "medium" | Peak opacity of the ink: 12%, 20% or 32%. Lines cover little area, so even `high` reads as a texture. |
+| `intensity` | `"low" \| "medium" \| "high"` | "medium" | Peak opacity of the ink: 8%, 16% or 32%. Lines cover little area, so even `high` reads as a texture. |
 | `speed` | `"slow" \| "normal" \| "fast"` | "normal" | Base cycle length: 60s, 36s or 18s. |
 | `animate` | `boolean` | true | Play the motion. Reduced motion, off-screen and hidden tab pause it regardless. |
 

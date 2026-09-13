@@ -36,8 +36,8 @@ const backgroundVariants = cva(
         primary: "[--bg-tone:var(--primary)]",
       },
       intensity: {
-        low: "[--bg-alpha:0.12]",
-        medium: "[--bg-alpha:0.2]",
+        low: "[--bg-alpha:0.08]",
+        medium: "[--bg-alpha:0.16]",
         high: "[--bg-alpha:0.32]",
       },
       speed: {
@@ -188,55 +188,203 @@ function PatternSvg({
 }
 
 /* ---------------------------------------------------------------------------
- * 1. Seismic — a seismogram record scrolling slowly to the left.
+ * 1. Seismic — a survey in section: the seismogram across the top with its
+ *    main event, the surface line, faulted strata below, and the source with
+ *    wavefront rings rippling out, joined up to the trace.
  * ------------------------------------------------------------------------- */
 
-function seismicTrace(random: () => number, y: number, width: number) {
-  const points: string[] = [`M0 ${y}`]
-  const step = 8
-  let phase = random() * Math.PI * 2
-  const bursts = Array.from({ length: 6 }, () => ({
-    at: random() * width,
-    size: 100 + random() * 200,
-    amp: 3 + random() * 6,
-  }))
-  for (let x = step; x <= width; x += step) {
-    let amp = 1
-    for (const burst of bursts) {
-      const d = (x - burst.at) / burst.size
-      amp += burst.amp * Math.exp(-d * d * 4)
+const SEIS_W = 2400
+const SEIS_H = 1200
+const SEIS_SURFACE = 380
+const SEIS_TRACE_Y = 190
+const SEIS_SOURCE = [820, 780] as const
+const SEIS_FAULT_X = 1420
+const SEIS_RING = 420
+
+function seismogram(random: () => number) {
+  const [sx] = SEIS_SOURCE
+  const bursts = [
+    { at: sx, size: 110, amp: 95 },
+    ...Array.from({ length: 6 }, () => ({
+      at: random() * SEIS_W,
+      size: 40 + random() * 60,
+      amp: 10 + random() * 26,
+    })),
+  ]
+  const points: string[] = [`M0 ${SEIS_TRACE_Y}`]
+  let phase = 0
+  for (let x = 4; x <= SEIS_W; x += 4) {
+    let amp = 2.2
+    for (const b of bursts) {
+      const d = (x - b.at) / b.size
+      amp += b.amp * Math.exp(-d * d * 3)
     }
-    // Same start and end so the tile joins seamlessly.
-    const edge = Math.min(1, x / 60, (width - x) / 60)
-    const dy = Math.sin(x / 7 + phase) * amp * edge
-    points.push(`L${x} ${(y + dy).toFixed(1)}`)
-    if (x % 120 === 0) phase += (random() - 0.5) * 0.6
+    phase += 0.9 + random() * 0.4
+    points.push(`L${x} ${(SEIS_TRACE_Y + Math.sin(phase) * amp).toFixed(1)}`)
   }
-  return points.join(" ")
+  return points.join("")
 }
 
 function SeismicBackground({ className, ...props }: BackgroundProps) {
   const id = React.useId()
   const random = seeded(7)
-  const spacing = 32
-  const traces = Array.from({ length: TILE_H / spacing }, (_, i) =>
-    seismicTrace(random, spacing / 2 + i * spacing, TILE_W)
-  )
+  const [sx, sy] = SEIS_SOURCE
+  const trace = seismogram(random)
+  // Bedding planes below the surface, dropped on the far side of the fault.
+  const step = 16
+  const xs = Array.from({ length: SEIS_W / step + 1 }, (_, i) => i * step)
+  const planes: { y: number; wave: (x: number) => number; drop: number }[] = []
+  let y = SEIS_SURFACE + 70
+  while (y < SEIS_H + 80) {
+    planes.push({
+      y,
+      wave: beddingPlane(random, 12 + random() * 26),
+      drop: 50 + random() * 50,
+    })
+    y += 70 + random() * 80
+  }
+  const at = (plane: (typeof planes)[number], x: number) => {
+    const t = Math.min(1, Math.max(0, (x - SEIS_FAULT_X + 30) / 60))
+    return (plane.y + plane.wave(x) + plane.drop * t * t * (3 - 2 * t)).toFixed(
+      0
+    )
+  }
+  const line = (plane: (typeof planes)[number]) =>
+    `M0 ${at(plane, 0)}${xs.map((x) => `L${x} ${at(plane, x)}`).join("")}`
+  const layers = planes.slice(0, -1).map((top, i) => {
+    const bottom = planes[i + 1]
+    const back = [...xs]
+      .reverse()
+      .map((x) => `L${x} ${at(bottom, x)}`)
+      .join("")
+    return {
+      d: `${line(top)}${back}Z`,
+      fill: i % 3 === 1 ? "var(--bg-ink-soft)" : "none",
+    }
+  })
+  const rings = Array.from({ length: 8 })
   return (
     <Background data-effect="seismic" className={className} {...props}>
-      <PatternSvg
-        id={id}
-        style={{
-          animation:
-            "tecton-bg-drift-x calc(var(--bg-duration) * 2) linear infinite",
-        }}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="absolute inset-0 size-full"
+        viewBox={`0 0 ${SEIS_W} ${SEIS_H}`}
+        preserveAspectRatio="xMidYMid slice"
       >
-        <g fill="none" stroke="var(--bg-ink)" strokeWidth="1">
-          {traces.map((d, i) => (
-            <path key={i} d={d} strokeOpacity={i % 3 === 0 ? 1 : 0.45} />
+        <defs>
+          <clipPath id={`${id}-below`}>
+            <rect x="0" y={SEIS_SURFACE} width={SEIS_W} height={SEIS_H} />
+          </clipPath>
+        </defs>
+        {/* Survey grid above the surface */}
+        <g stroke="var(--bg-ink-soft)" strokeOpacity="0.5">
+          {Array.from({ length: SEIS_W / 120 + 1 }, (_, i) => (
+            <line
+              key={`v${i}`}
+              x1={i * 120}
+              x2={i * 120}
+              y1="0"
+              y2={SEIS_SURFACE}
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+          {[SEIS_TRACE_Y - 100, SEIS_TRACE_Y + 100].map((gy) => (
+            <line
+              key={gy}
+              x1="0"
+              x2={SEIS_W}
+              y1={gy}
+              y2={gy}
+              vectorEffect="non-scaling-stroke"
+            />
           ))}
         </g>
-      </PatternSvg>
+        {/* Strata with the fault */}
+        <g clipPath={`url(#${id}-below)`}>
+          {layers.map(({ d, fill }, i) => (
+            <path key={`layer-${i}`} d={d} fill={fill} />
+          ))}
+          <g fill="none" stroke="var(--bg-ink)">
+            {planes.map((plane, i) => (
+              <path
+                key={`plane-${i}`}
+                d={line(plane)}
+                strokeOpacity={i % 2 ? 0.55 : 1}
+                strokeDasharray={i % 3 === 2 ? "6 8" : undefined}
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+            <line
+              x1={SEIS_FAULT_X - 30}
+              x2={SEIS_FAULT_X + 90}
+              y1={SEIS_SURFACE}
+              y2={SEIS_H}
+              stroke="var(--bg-ink-strong)"
+              strokeOpacity="0.7"
+              vectorEffect="non-scaling-stroke"
+            />
+          </g>
+          {/* Wavefront rings rippling out from the source: identical rings,
+              each scaling up from the source and fading, staggered so one
+              is always emitting. Vector scaling keeps them crisp. */}
+          <g fill="none" stroke="var(--bg-ink)">
+            {rings.map((_, i) => (
+              <circle
+                key={i}
+                cx={sx}
+                cy={sy}
+                r={SEIS_RING}
+                strokeDasharray={i % 2 ? "4 8" : undefined}
+                vectorEffect="non-scaling-stroke"
+                style={{
+                  transformOrigin: `${sx}px ${sy}px`,
+                  animation:
+                    "tecton-bg-ripple calc(var(--bg-duration) / 3) linear infinite",
+                  animationDelay: `calc(var(--bg-duration) / 3 * ${(-i / rings.length).toFixed(3)})`,
+                }}
+              />
+            ))}
+          </g>
+        </g>
+        {/* Surface */}
+        <line
+          x1="0"
+          x2={SEIS_W}
+          y1={SEIS_SURFACE}
+          y2={SEIS_SURFACE}
+          stroke="var(--bg-ink-strong)"
+          strokeWidth="1.5"
+          vectorEffect="non-scaling-stroke"
+        />
+        {/* Shot line from the event down to the source, and the source */}
+        <line
+          x1={sx}
+          x2={sx}
+          y1={SEIS_TRACE_Y}
+          y2={sy}
+          stroke="var(--bg-ink)"
+          strokeOpacity="0.7"
+          vectorEffect="non-scaling-stroke"
+        />
+        <circle cx={sx} cy={sy} r="10" fill="var(--bg-ink-strong)" />
+        <circle
+          cx={sx}
+          cy={sy}
+          r="20"
+          fill="none"
+          stroke="var(--bg-ink-strong)"
+          vectorEffect="non-scaling-stroke"
+        />
+        {/* Seismogram */}
+        <path
+          d={trace}
+          fill="none"
+          stroke="var(--bg-ink-strong)"
+          strokeWidth="1.2"
+          strokeLinejoin="round"
+          vectorEffect="non-scaling-stroke"
+        />
+      </svg>
     </Background>
   )
 }
@@ -847,133 +995,220 @@ function PipelineGridBackground({
 }
 
 /* ---------------------------------------------------------------------------
- * 5. Flow — a process-flow schematic: orthogonal pipe runs with rounded
- *    elbows and junction nodes, fluid pulses moving through them. One large
- *    network rather than a tile, so nothing repeats on a full screen.
+ * 5. Flow — gathering and distribution: streams converge from the left into
+ *    a hub, then branch out to the right through rounded junctions with
+ *    nodes, pulses travelling along all of it over a faint grid.
  * ------------------------------------------------------------------------- */
 
-const FLOW_GRID = 48
-const FLOW_COLS = 80
-const FLOW_ROWS = 40
-const FLOW_ELBOW = 12
-const FLOW_PULSE = 240
-
-type Dir = readonly [number, number]
-const DIRS: Dir[] = [
-  [1, 0],
-  [-1, 0],
-  [0, 1],
-  [0, -1],
-]
-
-/**
- * A pipe run is a random walk on the grid that keeps going straight most of
- * the time and never doubles back; the corners are rounded with arcs.
- */
-function pipeRun(random: () => number) {
-  let x = 1 + Math.floor(random() * (FLOW_COLS - 2))
-  let y = 1 + Math.floor(random() * (FLOW_ROWS - 2))
-  let dir = DIRS[Math.floor(random() * 4)]
-  const points: [number, number][] = [[x, y]]
-  const length = 6 + Math.floor(random() * 12)
-  for (let i = 0; i < length; i++) {
-    if (random() < 0.3) {
-      const turns = DIRS.filter(
-        (d) => d[0] !== dir[0] || d[1] !== dir[1]
-      ).filter((d) => d[0] !== -dir[0] || d[1] !== -dir[1])
-      dir = turns[Math.floor(random() * turns.length)]
-    }
-    const run = 1 + Math.floor(random() * 3)
-    x = Math.min(FLOW_COLS - 1, Math.max(1, x + dir[0] * run))
-    y = Math.min(FLOW_ROWS - 1, Math.max(1, y + dir[1] * run))
-    const last = points[points.length - 1]
-    if (last[0] !== x || last[1] !== y) points.push([x, y])
-  }
-  return points
-}
-
-/** Path data for a polyline on the grid with rounded corners. */
-function pipePath(points: [number, number][]) {
-  const px = points.map(([x, y]) => [x * FLOW_GRID, y * FLOW_GRID] as const)
-  let d = `M${px[0][0]} ${px[0][1]}`
-  for (let i = 1; i < px.length; i++) {
-    const [x, y] = px[i]
-    const [px0, py0] = px[i - 1]
-    if (i === px.length - 1) {
-      d += ` L${x} ${y}`
-      continue
-    }
-    const next = px[i + 1]
-    const inDir = [Math.sign(x - px0), Math.sign(y - py0)]
-    const outDir = [Math.sign(next[0] - x), Math.sign(next[1] - y)]
-    if (inDir[0] === outDir[0] && inDir[1] === outDir[1]) {
-      d += ` L${x} ${y}`
-      continue
-    }
-    // Stop short of the corner, arc into the new direction.
-    const ax = x - inDir[0] * FLOW_ELBOW
-    const ay = y - inDir[1] * FLOW_ELBOW
-    const bx = x + outDir[0] * FLOW_ELBOW
-    const by = y + outDir[1] * FLOW_ELBOW
-    const cross = inDir[0] * outDir[1] - inDir[1] * outDir[0]
-    d += ` L${ax} ${ay} A${FLOW_ELBOW} ${FLOW_ELBOW} 0 0 ${cross > 0 ? 1 : 0} ${bx} ${by}`
-  }
-  return d
-}
+const FLOW_W = 2400
+const FLOW_H = 1200
+const FLOW_HUB = [FLOW_W / 2, FLOW_H / 2] as const
+const FLOW_PULSE = 220
 
 function FlowBackground({ className, ...props }: BackgroundProps) {
   const random = seeded(23)
-  const runs = Array.from({ length: 150 }, () => {
-    const points = pipeRun(random)
+  const [hx, hy] = FLOW_HUB
+  // Inbound streams: spread across the left edge, bending into the hub.
+  const streams = Array.from({ length: 26 }, (_, i) => {
+    const y = hy - 520 + (i / 25) * 1040 + (random() - 0.5) * 30
+    const c1 = 380 + random() * 220
     return {
-      d: pipePath(points),
-      start: points[0],
-      end: points[points.length - 1],
-      pulse: random() < 0.6,
+      d: `M-20 ${y.toFixed(0)} C ${c1.toFixed(0)} ${y.toFixed(0)}, ${(hx - 420).toFixed(0)} ${hy}, ${hx} ${hy}`,
+      pulse: i % 2 === 0,
       speed: 0.7 + random() * 0.8,
-      delay: -random() * 40,
+      delay: -random() * 30,
+      strong: i % 4 === 0,
     }
   })
-  const nodes = runs.flatMap((run) => [run.start, run.end])
+  // Outbound tree: trunk, three branches, each splitting in two.
+  const trunkEnd = hx + 300
+  const branchX = hx + 620
+  const leafX = hx + 980
+  const branches = [-230, 0, 230].map((dy) => ({
+    y: hy + dy,
+    d: `M${trunkEnd} ${hy} C ${trunkEnd + 160} ${hy}, ${trunkEnd + 160} ${hy + dy}, ${branchX} ${hy + dy}`,
+    leaves: [-95, 95].map((ly) => ({
+      y: hy + dy + ly,
+      d: `M${branchX} ${hy + dy} C ${branchX + 180} ${hy + dy}, ${branchX + 180} ${hy + dy + ly}, ${leafX} ${hy + dy + ly} L ${FLOW_W + 20} ${hy + dy + ly}`,
+      dashed: ly > 0,
+    })),
+  }))
+  const nodes = [
+    { x: hx - 300, y: hy, r: 7 },
+    { x: trunkEnd, y: hy, r: 9 },
+    ...branches.map((b) => ({ x: branchX, y: b.y, r: 9 })),
+    ...branches.flatMap((b) =>
+      b.leaves.map((l) => ({ x: leafX, y: l.y, r: 7 }))
+    ),
+  ]
+  const pulse = (speed: number, delay: number) => ({
+    animation: `tecton-bg-flow calc(var(--bg-duration) * ${speed.toFixed(2)} / 3) linear infinite`,
+    animationDelay: `${delay.toFixed(1)}s`,
+  })
   return (
     <Background data-effect="flow" className={className} {...props}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="absolute inset-0 size-full"
+        viewBox={`0 0 ${FLOW_W} ${FLOW_H}`}
+        preserveAspectRatio="xMidYMid slice"
         style={{ "--bg-dash": `${FLOW_PULSE}px` } as React.CSSProperties}
       >
-        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
-          {runs.map((run, i) => (
-            <path
-              key={`pipe-${i}`}
-              d={run.d}
-              stroke="var(--bg-ink)"
-              strokeWidth="1.5"
+        {/* Grid */}
+        <g stroke="var(--bg-ink-soft)" strokeOpacity="0.5">
+          {Array.from({ length: FLOW_W / 120 + 1 }, (_, i) => (
+            <line
+              key={`v${i}`}
+              x1={i * 120}
+              x2={i * 120}
+              y1="0"
+              y2={FLOW_H}
+              vectorEffect="non-scaling-stroke"
             />
           ))}
-          {runs
-            .filter((run) => run.pulse)
-            .map((run, i) => (
+          {Array.from({ length: FLOW_H / 120 + 1 }, (_, i) => (
+            <line
+              key={`h${i}`}
+              x1="0"
+              x2={FLOW_W}
+              y1={i * 120}
+              y2={i * 120}
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </g>
+        {/* Inbound streams */}
+        <g fill="none" strokeLinecap="round">
+          {streams.map(({ d, strong }, i) => (
+            <path
+              key={`s${i}`}
+              d={d}
+              stroke={strong ? "var(--bg-ink)" : "var(--bg-ink-soft)"}
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+          {streams
+            .filter((st) => st.pulse)
+            .map(({ d, speed, delay }, i) => (
               <path
-                key={`pulse-${i}`}
-                d={run.d}
+                key={`p${i}`}
+                d={d}
                 stroke="var(--bg-ink-strong)"
-                strokeWidth="1.5"
-                strokeDasharray={`${FLOW_PULSE * 0.2} ${FLOW_PULSE * 0.8}`}
-                style={{
-                  animation: `tecton-bg-flow calc(var(--bg-duration) * ${run.speed.toFixed(2)} / 3) linear infinite`,
-                  animationDelay: `${run.delay.toFixed(1)}s`,
-                }}
+                strokeWidth="2"
+                strokeDasharray={`${FLOW_PULSE * 0.06} ${FLOW_PULSE * 0.94}`}
+                vectorEffect="non-scaling-stroke"
+                style={pulse(speed, delay)}
               />
             ))}
         </g>
-        <g
-          fill="var(--background)"
+        {/* Hub: crosshair and rings */}
+        <g fill="none" stroke="var(--bg-ink-soft)">
+          <line
+            x1={hx}
+            x2={hx}
+            y1="0"
+            y2={FLOW_H}
+            vectorEffect="non-scaling-stroke"
+          />
+          <line
+            x1="0"
+            x2={FLOW_W}
+            y1={hy}
+            y2={hy}
+            vectorEffect="non-scaling-stroke"
+          />
+        </g>
+        <g fill="none" stroke="var(--bg-ink)">
+          {[60, 110, 170].map((r, i) => (
+            <circle
+              key={r}
+              cx={hx}
+              cy={hy}
+              r={r}
+              strokeOpacity={1 - i * 0.3}
+              vectorEffect="non-scaling-stroke"
+              style={{
+                animation: `tecton-bg-pulse ${(6 + i * 2).toFixed(0)}s ease-in-out infinite`,
+                animationDelay: `${(-i * 2).toFixed(0)}s`,
+              }}
+            />
+          ))}
+        </g>
+        <circle cx={hx} cy={hy} r="16" fill="var(--bg-ink-strong)" />
+        <circle
+          cx={hx}
+          cy={hy}
+          r="28"
+          fill="none"
           stroke="var(--bg-ink-strong)"
-          strokeWidth="1.5"
-        >
-          {nodes.map(([x, y], i) => (
-            <circle key={i} cx={x * FLOW_GRID} cy={y * FLOW_GRID} r="3.5" />
+          vectorEffect="non-scaling-stroke"
+        />
+        {/* Outbound tree */}
+        <g fill="none" strokeLinecap="round" strokeLinejoin="round">
+          <line
+            x1={hx}
+            x2={trunkEnd}
+            y1={hy}
+            y2={hy}
+            stroke="var(--bg-ink)"
+            strokeWidth="2"
+            vectorEffect="non-scaling-stroke"
+          />
+          {branches.map((b, i) => (
+            <React.Fragment key={i}>
+              <path
+                d={b.d}
+                stroke="var(--bg-ink)"
+                strokeWidth="1.5"
+                vectorEffect="non-scaling-stroke"
+              />
+              <path
+                d={b.d}
+                stroke="var(--bg-ink-strong)"
+                strokeWidth="2"
+                strokeDasharray={`${FLOW_PULSE * 0.08} ${FLOW_PULSE * 0.92}`}
+                vectorEffect="non-scaling-stroke"
+                style={pulse(1 + i * 0.15, -i * 3)}
+              />
+              {b.leaves.map((l, j) => (
+                <path
+                  key={j}
+                  d={l.d}
+                  stroke={l.dashed ? "var(--bg-ink-soft)" : "var(--bg-ink)"}
+                  strokeDasharray={l.dashed ? "6 8" : undefined}
+                  vectorEffect="non-scaling-stroke"
+                />
+              ))}
+            </React.Fragment>
+          ))}
+        </g>
+        {/* Nodes */}
+        <g stroke="var(--bg-ink-strong)" fill="var(--background)">
+          {nodes.map(({ x, y, r }, i) => (
+            <React.Fragment key={i}>
+              <circle
+                cx={x}
+                cy={y}
+                r={r + 8}
+                fill="none"
+                stroke="var(--bg-ink-soft)"
+                vectorEffect="non-scaling-stroke"
+              />
+              <circle
+                cx={x}
+                cy={y}
+                r={r}
+                strokeWidth="1.5"
+                vectorEffect="non-scaling-stroke"
+              />
+              <circle
+                cx={x}
+                cy={y}
+                r={r * 0.45}
+                fill="var(--bg-ink-strong)"
+                stroke="none"
+              />
+            </React.Fragment>
           ))}
         </g>
       </svg>
@@ -982,20 +1217,30 @@ function FlowBackground({ className, ...props }: BackgroundProps) {
 }
 
 /* ---------------------------------------------------------------------------
- * 6. Well log — vertical log traces paging upwards very slowly, as if
- *    scrolling deeper down the log.
+ * 6. Well log — a cross-section around a wellbore: bedding planes with
+ *    textures behind, log tracks either side of the hole, the casing in the
+ *    centre with the tool string running down it, and the surface above.
  * ------------------------------------------------------------------------- */
 
-function wellLogTrace(random: () => number, x: number, height: number) {
-  const points: string[] = [`M${x} 0`]
+const WELL_W = 2400
+const WELL_H = 1200
+const WELL_SURFACE = 140
+const WELL_TRACKS = [-420, -300, 300, 420]
+
+function wellLogTrace(
+  random: () => number,
+  x: number,
+  top: number,
+  bottom: number,
+  amplitude: number
+) {
+  const points: string[] = [`M${x} ${top}`]
   let value = 0
-  for (let y = 5; y <= height; y += 5) {
-    value += (random() - 0.5) * 6
+  for (let y = top + 5; y <= bottom; y += 5) {
+    value += (random() - 0.5) * amplitude
     value *= 0.88
-    const spike = random() > 0.985 ? (random() - 0.5) * 18 : 0
-    // Return to the axis at the bottom so the tile joins seamlessly.
-    const edge = Math.min(1, y / 40, (height - y) / 40)
-    points.push(`L${(x + (value + spike) * edge).toFixed(1)} ${y}`)
+    const spike = random() > 0.985 ? (random() - 0.5) * amplitude * 3 : 0
+    points.push(`L${(x + value + spike).toFixed(1)} ${y}`)
   }
   return points.join(" ")
 }
@@ -1003,40 +1248,192 @@ function wellLogTrace(random: () => number, x: number, height: number) {
 function WellLogBackground({ className, ...props }: BackgroundProps) {
   const id = React.useId()
   const random = seeded(31)
-  const spacing = 120
-  const xs = Array.from(
-    { length: TILE_W / spacing },
-    (_, i) => spacing / 2 + i * spacing
-  )
+  const step = 16
+  const xs = Array.from({ length: WELL_W / step + 1 }, (_, i) => i * step)
+  // Bedding planes from just below the surface to the bottom of the section.
+  const planes: { y: number; wave: (x: number) => number }[] = []
+  let y = WELL_SURFACE + 50
+  while (y < WELL_H + 60) {
+    planes.push({ y, wave: beddingPlane(random, 10 + random() * 22) })
+    y += 56 + random() * 90
+  }
+  const at = (plane: (typeof planes)[number], x: number) =>
+    (plane.y + plane.wave(x)).toFixed(0)
+  const layers = planes.slice(0, -1).map((top, i) => {
+    const bottom = planes[i + 1]
+    const down = xs.map((x) => `L${x} ${at(top, x)}`).join("")
+    const back = [...xs]
+      .reverse()
+      .map((x) => `L${x} ${at(bottom, x)}`)
+      .join("")
+    const kind = i % 4
+    return {
+      d: `M0 ${at(top, 0)}${down}${back}Z`,
+      fill:
+        kind === 1
+          ? "var(--bg-ink-soft)"
+          : kind === 3
+            ? `url(#${id}-dots)`
+            : "none",
+    }
+  })
+  const cx = WELL_W / 2
+  const tracks = WELL_TRACKS.map((offset) => ({
+    x: cx + offset,
+    d: wellLogTrace(random, cx + offset, WELL_SURFACE, WELL_H, 15),
+  }))
   return (
     <Background data-effect="well-log" className={className} {...props}>
-      <PatternSvg
-        id={id}
-        style={{
-          animation:
-            "tecton-bg-drift-y calc(var(--bg-duration) * 4) linear infinite reverse",
-        }}
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        className="absolute inset-0 size-full"
+        viewBox={`0 0 ${WELL_W} ${WELL_H}`}
+        preserveAspectRatio="xMidYMid slice"
+        style={{ "--bg-dash": "48px" } as React.CSSProperties}
       >
-        <g fill="none" stroke="var(--bg-ink)" strokeWidth="1">
-          {xs.map((x, i) => (
-            <React.Fragment key={x}>
+        <defs>
+          <pattern
+            id={`${id}-dots`}
+            width="14"
+            height="14"
+            patternUnits="userSpaceOnUse"
+          >
+            <circle cx="7" cy="7" r="1.6" fill="var(--bg-ink)" />
+          </pattern>
+          <linearGradient id={`${id}-fade`} x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" stopColor="#fff" stopOpacity="0" />
+            <stop offset="0.12" stopColor="#fff" stopOpacity="1" />
+            <stop offset="0.88" stopColor="#fff" stopOpacity="1" />
+            <stop offset="1" stopColor="#fff" stopOpacity="0" />
+          </linearGradient>
+          <mask id={`${id}-mask`}>
+            <rect width={WELL_W} height={WELL_H} fill={`url(#${id}-fade)`} />
+          </mask>
+        </defs>
+        {/* Strata, fading out towards the edges of the section. */}
+        <g mask={`url(#${id}-mask)`}>
+          {layers.map(({ d, fill }, i) => (
+            <path key={`layer-${i}`} d={d} fill={fill} />
+          ))}
+          <g fill="none" stroke="var(--bg-ink)">
+            {planes.map((plane, i) => (
+              <path
+                key={`plane-${i}`}
+                d={`M0 ${at(plane, 0)}${xs.map((x) => `L${x} ${at(plane, x)}`).join("")}`}
+                strokeOpacity={i % 2 ? 0.55 : 1}
+                strokeDasharray={i % 3 === 2 ? "6 8" : undefined}
+                vectorEffect="non-scaling-stroke"
+              />
+            ))}
+          </g>
+        </g>
+        {/* Survey grid above the surface, faint verticals through the section. */}
+        <g stroke="var(--bg-ink-soft)" fill="none">
+          {Array.from({ length: WELL_W / 120 + 1 }, (_, i) => (
+            <line
+              key={`v${i}`}
+              x1={i * 120}
+              x2={i * 120}
+              y1="0"
+              y2={WELL_H}
+              strokeOpacity={i % 5 === 0 ? 0.8 : 0.35}
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+          {[40, 80].map((gy) => (
+            <line
+              key={`h${gy}`}
+              x1="0"
+              x2={WELL_W}
+              y1={gy}
+              y2={gy}
+              strokeOpacity="0.5"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+        </g>
+        <line
+          x1="0"
+          x2={WELL_W}
+          y1={WELL_SURFACE}
+          y2={WELL_SURFACE}
+          stroke="var(--bg-ink-strong)"
+          strokeWidth="1.5"
+          vectorEffect="non-scaling-stroke"
+        />
+        {/* Log tracks: a dashed track boundary and the trace. */}
+        <g fill="none">
+          {tracks.map(({ x, d }, i) => (
+            <React.Fragment key={i}>
               <line
                 x1={x}
                 x2={x}
-                y1="0"
-                y2={TILE_H}
+                y1={WELL_SURFACE}
+                y2={WELL_H}
                 stroke="var(--bg-ink-soft)"
                 strokeDasharray="2 6"
+                vectorEffect="non-scaling-stroke"
+              />
+              {/* Shade between the trace and its axis, as a log does. */}
+              <path
+                d={`${d}L${x} ${WELL_H}Z`}
+                fill="var(--bg-ink-soft)"
+                stroke="none"
               />
               <path
-                d={wellLogTrace(random, x, TILE_H)}
-                stroke={i % 2 === 0 ? "var(--bg-ink)" : "var(--bg-ink-soft)"}
-                strokeWidth={i % 2 === 0 ? 1.2 : 1}
+                d={d}
+                stroke="var(--bg-ink-strong)"
+                strokeWidth={i % 2 === 0 ? 1 : 1.3}
+                vectorEffect="non-scaling-stroke"
               />
             </React.Fragment>
           ))}
         </g>
-      </PatternSvg>
+        {/* The wellbore: casing lines and the tool string running down. */}
+        <g fill="none" vectorEffect="non-scaling-stroke">
+          {[-14, 14].map((dx) => (
+            <line
+              key={dx}
+              x1={cx + dx}
+              x2={cx + dx}
+              y1={WELL_SURFACE - 20}
+              y2={WELL_H}
+              stroke="var(--bg-ink-strong)"
+              strokeWidth="1.5"
+              vectorEffect="non-scaling-stroke"
+            />
+          ))}
+          <line
+            x1={cx}
+            x2={cx}
+            y1={WELL_SURFACE - 20}
+            y2={WELL_H}
+            stroke="var(--bg-ink-strong)"
+            strokeWidth="3"
+            strokeDasharray="20 28"
+            vectorEffect="non-scaling-stroke"
+            style={{
+              animation:
+                "tecton-bg-flow calc(var(--bg-duration) / 6) linear infinite",
+            }}
+          />
+          {[40, 70, 100].map((r, i) => (
+            <circle
+              key={r}
+              cx={cx}
+              cy={WELL_H * 0.52}
+              r={r}
+              stroke="var(--bg-ink)"
+              strokeOpacity={0.9 - i * 0.3}
+              vectorEffect="non-scaling-stroke"
+              style={{
+                animation: `tecton-bg-pulse ${(6 + i * 2).toFixed(0)}s ease-in-out infinite`,
+                animationDelay: `${(-i * 2).toFixed(0)}s`,
+              }}
+            />
+          ))}
+        </g>
+      </svg>
     </Background>
   )
 }
