@@ -2,6 +2,7 @@
   "title": "Tecton",
   "pages": [
     "index",
+    "action-bar",
     "app-finder",
     "app-shell",
     "canvas",
@@ -12,6 +13,7 @@
     "count-badge",
     "link",
     "meter",
+    "overflow",
     "page-header",
     "panel",
     "shell-actions",
