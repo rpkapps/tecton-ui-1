@@ -20,6 +20,7 @@ import { PageHeader, PageHeaderContent, PageHeaderDescription, PageHeaderTitle }
 
 import { CodeBlock } from "@/components/code-block"
 import { HeroPreview } from "@/components/hero-preview"
+import { PaletteTable } from "@/components/palette-table"
 import { TokenTable } from "@/components/token-table"
 import { siteConfig } from "@/lib/site"
 
@@ -174,6 +175,20 @@ function ThemesPage() {
               <Label htmlFor="themes-switch">Switch</Label>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section className="flex flex-col gap-4">
+        <div className="flex flex-col gap-1">
+          <h2 className="text-lg font-medium">Palette</h2>
+          <p className="text-sm text-muted-foreground">
+            The Tecton colour ramps that replace Tailwind&apos;s stock palette: fifteen families, twenty-three
+            contrast steps each, switching value with the mode. The semantic variables above are picks from
+            these ramps.
+          </p>
+        </div>
+        <div className="w-fit max-w-full rounded-lg border bg-card p-4">
+          <PaletteTable className="my-0" />
         </div>
       </section>
 

@@ -498,7 +498,34 @@
     "strategy": "tecton-light-tokens",
     "note": "The Tecton export defines both modes, so light and dark both reference the same Tecton token; tecton-tokens.css switches the value under `.dark` / `[data-theme=\"dark\"]`. No value is derived."
   },
+  "palette": {
+    "source": "tecton.tokens.json",
+    "note": "Foundational colour ramps from the Tecton Figma variables export (`foundational/color`). Each family has one 23-step contrast ramp per mode (50 … 1570; the direct steps, or `contrasts` for gray on dark). A step is the same perceived distance from the page background in both modes, so `bg-red-140` needs no `dark:` counterpart. Exposed as `--tecton-palette-<family>-<step>` in `:root` / `.dark` and as the Tailwind `--color-<family>-<step>` theme entries; Tailwind's stock palette is reset first (`--color-*: initial`) so only Tecton colours can appear. The `core`, `surface`, `transparent`, `saturations` and `washes` sub-ramps, the data-vis colormaps (`MPL`, `Colorcet`) and `custom/appColors` are not exposed.",
+    "prefix": "tecton-palette",
+    "resetTailwind": true,
+    "shades": ["white", "black"],
+    "families": [
+      "gray",
+      "graphite",
+      "mauve",
+      "violet",
+      "lilac",
+      "orchid",
+      "pink",
+      "red",
+      "saffron",
+      "yellow",
+      "lemon",
+      "lime",
+      "green",
+      "azure",
+      "blue"
+    ]
+  },
   "checks": {
-    "allow": []
+    "allow": ["palette:--tecton-color-focus-ring"],
+    "allowNotes": {
+      "palette:--tecton-color-focus-ring": "The focus ring is Tecton's single `hotPink/460 (focus outline)` value, not a step of a 23-step ramp, so the palette does not expose a hot-pink family."
+    }
   }
 }

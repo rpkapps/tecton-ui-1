@@ -59,7 +59,7 @@ export default function InputGroupButtonExample() {
           >
             <StarIcon
               data-favorite={isFavorite}
-              className="data-[favorite=true]:fill-blue-600 data-[favorite=true]:stroke-blue-600"
+              className="data-[favorite=true]:fill-blue-560 data-[favorite=true]:stroke-blue-560"
             />
           </InputGroupButton>
         </InputGroupAddon>
