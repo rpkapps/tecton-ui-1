@@ -99,7 +99,7 @@ function PanelActions({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="panel-actions"
       className={cn(
-        "-my-1 -mr-2 ml-auto flex shrink-0 items-center gap-1 has-[[data-overflow-root]]:min-w-0 has-[[data-overflow-root]]:flex-1 has-[[data-overflow-root]]:shrink has-[[data-overflow-root]]:basis-0 has-[[data-overflow-root]]:justify-end [&>[data-overflow-root]]:min-w-0 [&>[data-overflow-root]]:flex-1",
+        "-my-1 -mr-2 ml-auto flex shrink-0 items-center gap-1 has-[[data-overflow-root]]:min-w-0 has-[[data-overflow-root]]:flex-1 has-[[data-overflow-root]]:shrink has-[[data-overflow-root]]:basis-0 has-[[data-overflow-root]]:justify-end [&>[data-overflow-root]]:min-w-0 [&>[data-overflow-root]]:flex-1 [&>[data-overflow-root]]:justify-end",
         className
       )}
       {...props}
