@@ -832,7 +832,7 @@ function ContourBackground({
           soft when the wander moves it by a fraction of a pixel. */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="absolute inset-0 size-full"
+        className="absolute -inset-12 size-[calc(100%+6rem)]"
       >
         <g
           style={{
@@ -1448,7 +1448,7 @@ function WellLogBackground({ className, ...props }: BackgroundProps) {
           ))}
         </g>
         {/* The wellbore: casing lines and the tool string running down. */}
-        <g fill="none" vectorEffect="non-scaling-stroke">
+        <g fill="none">
           {[-14, 14].map((dx) => (
             <line
               key={dx}
@@ -1912,13 +1912,25 @@ const backgroundEffects = {
 
 type BackgroundEffectName = keyof typeof backgroundEffects
 
-/** Picks an effect by name; handy for a consumer's settings screen. */
-function BackgroundEffect({
+/**
+ * Picks an effect by name; handy for a consumer's settings screen. The props
+ * are those of the chosen effect, so `interactive`, `palette` and `grid`
+ * pass through where the effect takes them.
+ */
+function BackgroundEffect<TName extends BackgroundEffectName>({
   effect,
   ...props
-}: BackgroundProps & { effect: BackgroundEffectName }) {
-  const Effect = backgroundEffects[effect]
-  return <Effect {...props} />
+}: { effect: TName } & React.ComponentProps<
+  (typeof backgroundEffects)[TName]
+>) {
+  const Effect = backgroundEffects[effect] as React.ComponentType<
+    React.ComponentProps<(typeof backgroundEffects)[TName]>
+  >
+  return (
+    <Effect
+      {...(props as React.ComponentProps<(typeof backgroundEffects)[TName]>)}
+    />
+  )
 }
 
 export {

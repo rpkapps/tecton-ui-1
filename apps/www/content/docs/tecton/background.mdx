@@ -70,7 +70,7 @@ Every effect behind the same sample text, in the tone `--chart-1` (azure); switc
 
 ## Intensity and speed
 
-`intensity` caps the effect's peak opacity (`low` 8%, `medium` 16%, `high` 32%) so text over it keeps its contrast; `speed` sets the base cycle (`slow` 60s, `normal` 36s, `fast` 18s). Even `high` and `fast` stay within a texture rather than a picture.
+`intensity` sets the opacity of the effect's ink (`low` 8%, `medium` 16%, `high` 32%), so text over it keeps its contrast; small accents such as nodes, the casing or the main seismic event are drawn at up to 1.8 times that, and soft fills at under half; `speed` sets the base cycle (`slow` 60s, `normal` 36s, `fast` 18s). Even `high` and `fast` stay within a texture rather than a picture.
 
 <ComponentPreview name="background-intensity" />
 
@@ -107,7 +107,7 @@ Every effect accepts the props of `div` plus:
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `tone` | `"neutral" \| "primary" \| "azure" \| "saffron" \| "lime" \| "blue"` | "neutral" | Ink colour, from the theme. |
-| `intensity` | `"low" \| "medium" \| "high"` | "medium" | Peak opacity of the ink: 8%, 16% or 32%. Lines cover little area, so even `high` reads as a texture. |
+| `intensity` | `"low" \| "medium" \| "high"` | "medium" | Opacity of the ink: 8%, 16% or 32%. Accents go up to 1.8 times that, soft fills to under half. Lines cover little area, so even `high` reads as a texture. |
 | `speed` | `"slow" \| "normal" \| "fast"` | "normal" | Base cycle length: 60s, 36s or 18s. |
 | `animate` | `boolean` | true | Play the motion. Reduced motion, off-screen and hidden tab pause it regardless. |
 
@@ -130,7 +130,7 @@ The rendered element is `aria-hidden` with `role="presentation"`, `pointer-event
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `effect` | `BackgroundEffectName` | — | Which effect to render. The union of the keys of `backgroundEffects`. |
+| `effect` | `BackgroundEffectName` | — | Which effect to render. The union of the keys of `backgroundEffects`. The other props are those of the chosen effect, so `interactive`, `palette` and `grid` pass through. |
 
 ### Background
 

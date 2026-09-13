@@ -5,11 +5,13 @@ import { cn } from "cn"
 import { Maximize2Icon, XIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
+import { Dialog, DialogClose } from "@tecton/react/components/dialog"
 
 /**
  * A preview tile for a background effect in the docs: the effect behind
  * `children`, with a button that opens the same effect and content full
- * screen (Escape or the Close button leaves it).
+ * screen in a modal dialog (focus is trapped and restored; Escape or the
+ * Close button leaves it).
  */
 export function BackgroundPreview({
   background,
@@ -22,15 +24,6 @@ export function BackgroundPreview({
   children?: React.ReactNode
 }) {
   const [fullscreen, setFullscreen] = React.useState(false)
-
-  React.useEffect(() => {
-    if (!fullscreen) return
-    const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setFullscreen(false)
-    }
-    window.addEventListener("keydown", onKey)
-    return () => window.removeEventListener("keydown", onKey)
-  }, [fullscreen])
 
   return (
     <>
@@ -52,24 +45,21 @@ export function BackgroundPreview({
         </Button>
         {children}
       </div>
-      {fullscreen && (
-        <div
-          role="dialog"
-          aria-label="Background preview"
-          className="fixed inset-0 isolate z-50 flex flex-col justify-end bg-background p-10"
-        >
+      <Dialog
+        isOpen={fullscreen}
+        onOpenChange={setFullscreen}
+        showCloseButton={false}
+        aria-label="Background preview"
+        className="top-0 left-0 h-full max-w-none translate-x-0 translate-y-0 rounded-none bg-background p-0 text-base text-foreground ring-0 sm:max-w-none"
+      >
+        <div className="relative isolate flex h-full flex-col justify-end p-10">
           {background}
-          <Button
-            variant="outline"
-            size="sm"
-            className="absolute top-4 right-4"
-            onPress={() => setFullscreen(false)}
-          >
+          <DialogClose size="sm" className="absolute top-4 right-4">
             <XIcon /> Close
-          </Button>
+          </DialogClose>
           <div className="max-w-3xl">{children}</div>
         </div>
-      )}
+      </Dialog>
     </>
   )
 }
