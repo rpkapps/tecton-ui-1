@@ -1,0 +1,137 @@
+---
+title: Background
+description: "Eleven decorative background effects drawn from oil and gas imagery: seismic traces, contour maps, strata, pipeline grids, flow lines, well logs, a drill bit, reservoir cells, pressure fields and a horizon, plus a perspective wireframe terrain. Quiet by design, themed in both modes."
+---
+
+<ComponentPreview name="background-demo" />
+
+## Usage
+
+```tsx
+import {
+  SeismicBackground,
+  ContourBackground,
+  StrataBackground,
+  PipelineGridBackground,
+  FlowBackground,
+  WellLogBackground,
+  DrillBackground,
+  ReservoirCellsBackground,
+  PressureBackground,
+  HorizonBackground,
+  TerrainGridBackground,
+  BackgroundEffect,
+} from "@tecton/react/tecton/background"
+```
+
+```tsx
+<section className="relative isolate overflow-hidden rounded-lg border bg-background p-6">
+  <ContourBackground tone="azure" />
+  <h2>Northern Fairway</h2>
+  <p>Content goes after the background and renders on top of it.</p>
+</section>
+```
+
+<Callout>
+  Give the container `relative` and `isolate`. The effect is `absolute inset-0 -z-10`, so `isolate` keeps it above the container's own background and below everything else in it. Without `isolate` it can disappear behind the container's `bg-*`.
+</Callout>
+
+## Gallery
+
+Every effect behind the same sample text, in the tone `--chart-1` (azure); switch the site theme to see the other mode. The effect only sets its opacity, so the theme decides how it reads. The contour map uses its own elevation ramp.
+
+<ComponentPreview name="background-gallery" />
+
+| Effect | Motif | Motion | Suggested use |
+| --- | --- | --- | --- |
+| `SeismicBackground` | Seismogram record | Scrolls slowly to the left | Hero and summary cards |
+| `ContourBackground` | Structure map isolines, coloured by elevation | Gentle wander | The calm default for most surfaces |
+| `StrataBackground` | Cross-section of bedding planes with tints | Pans very slowly along the section | Dense dashboards |
+| `PipelineGridBackground` | Orthogonal line grid with nodes | Nodes glow in turn; optional pointer reveal | Landing, onboarding |
+| `FlowBackground` | Process-flow schematic: pipe runs, elbows, junctions | Fluid pulses move through the pipes | Pipelines and process screens; the liveliest one |
+| `WellLogBackground` | Vertical log traces | Pages upwards very slowly, as if scrolling deeper | Sidebars, login panels |
+| `DrillBackground` | Bit seen from above | Slow rotation | Centred hero content |
+| `ReservoirCellsBackground` | Hexagonal simulation mesh | Cells glow in turn | Simulation and modelling screens |
+| `PressureBackground` | Soft gradient field | Blobs migrate | Busy screens; the most abstract |
+| `HorizonBackground` | Ground line with layers | Breathing opacity | Empty states, onboarding |
+| `TerrainGridBackground` | Wireframe surface of squares in perspective, glowing nodes | Nodes pulse | Landing and sign-in pages |
+
+## Tone
+
+`tone` picks the ink from the theme: `neutral` uses `--foreground`, `primary` uses `--primary`, and the others use the chart accents (`--chart-1` azure, `--chart-2` saffron, `--chart-3` lime, `--chart-4` blue), which already flip between modes. Red is deliberately absent: it is the alarm colour in every control room.
+
+<ComponentPreview name="background-tones" />
+
+### Contour map colours
+
+`ContourBackground` is a continuous structure map: isolines of one height field, coloured by elevation like a printed map, deep to high: blue, azure, lime, saffron, with every fourth line drawn as an index contour and a flat stepped tint between the lines. That is `palette="map"`, the default; `palette="tone"` draws it in the single `tone` like the other effects. `grid` adds a survey grid under the isolines. The map is 4K-sized.
+
+<ComponentPreview name="background-contour" />
+
+## Intensity and speed
+
+`intensity` caps the effect's peak opacity (`low` 12%, `medium` 20%, `high` 32%) so text over it keeps its contrast; `speed` sets the base cycle (`slow` 60s, `normal` 36s, `fast` 18s). Even `high` and `fast` stay within a texture rather than a picture.
+
+<ComponentPreview name="background-intensity" />
+
+## Motion
+
+Every effect freezes on its static frame with `animate={false}`, under `prefers-reduced-motion: reduce`, while it is scrolled out of view and while the tab is hidden. In print and forced-colours mode it is hidden altogether. Nothing tracks the pointer unless you ask for it.
+
+<ComponentPreview name="background-static" />
+
+### Pointer reveal
+
+`PipelineGridBackground` takes `interactive` to light up the grid around the pointer as it moves over the container. It listens on the parent element, so the background itself stays `pointer-events: none`.
+
+<ComponentPreview name="background-interactive" />
+
+## Picking by name
+
+`BackgroundEffect` renders an effect from its name, and `backgroundEffects` maps the names to the components, for a settings screen where the person chooses their own background.
+
+```tsx
+import { BackgroundEffect, backgroundEffects } from "@tecton/react/tecton/background"
+
+const names = Object.keys(backgroundEffects) // "seismic" | "contour" | …
+
+<BackgroundEffect effect={preference} tone="azure" intensity="low" />
+```
+
+## API Reference
+
+### Shared props
+
+Every effect accepts the props of `div` plus:
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `tone` | `"neutral" \| "primary" \| "azure" \| "saffron" \| "lime" \| "blue"` | "neutral" | Ink colour, from the theme. |
+| `intensity` | `"low" \| "medium" \| "high"` | "medium" | Peak opacity of the ink: 12%, 20% or 32%. Lines cover little area, so even `high` reads as a texture. |
+| `speed` | `"slow" \| "normal" \| "fast"` | "normal" | Base cycle length: 60s, 36s or 18s. |
+| `animate` | `boolean` | true | Play the motion. Reduced motion, off-screen and hidden tab pause it regardless. |
+
+The rendered element is `aria-hidden` with `role="presentation"`, `pointer-events: none`, and carries `data-slot="background"`, `data-effect`, `data-tone`, `data-intensity`, `data-speed`, `data-animate` and, while paused, `data-paused`.
+
+### ContourBackground
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `palette` | `"map" \| "tone"` | "map" | `map` colours the isolines by elevation with the chart accents; `tone` uses the single `tone`. |
+| `grid` | `boolean` | false | Draw a survey grid under the isolines. |
+
+### PipelineGridBackground
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `interactive` | `boolean` | false | Reveal the grid around the pointer as it moves over the parent element. |
+
+### BackgroundEffect
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `effect` | `BackgroundEffectName` | — | Which effect to render. The union of the keys of `backgroundEffects`. |
+
+### Background
+
+The shared layer the effects are built on. Use it to compose your own effect with the same positioning, tone variables (`--bg-tone`, `--bg-alpha`, `--bg-duration`, and the derived `--bg-ink`, `--bg-ink-soft`, `--bg-ink-strong`), pausing and reduced-motion handling.
