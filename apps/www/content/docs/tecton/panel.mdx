@@ -67,6 +67,12 @@ Give the panel a height: `PanelContent` scrolls and `PanelFooter` stays pinned t
 
 <ComponentPreview name="panel-footer" />
 
+## Many actions
+
+`PanelActions` is a plain slot: one to three icon buttons beside a title that truncates. When a panel carries more, put an [Overflow](/docs/tecton/overflow) `Toolbar` inside the slot. The title then keeps its natural width up to 60% of the header, the slot takes the rest, and the actions move into a More menu lowest priority first. Panels that do not opt in pay nothing.
+
+<ComponentPreview name="panel-actions" align="start" />
+
 ## API Reference
 
 ### Panel

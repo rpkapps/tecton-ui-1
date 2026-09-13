@@ -582,6 +582,7 @@ function OverflowRoot({
       <Component
         ref={ref}
         data-slot={Component === "div" ? "overflow" : "toolbar"}
+        data-overflow-root=""
         data-orientation={orientation}
         orientation={Component === "div" ? undefined : orientation}
         className={cn(
