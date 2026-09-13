@@ -48,6 +48,7 @@ import { ShellCommandPalette } from "./shell-command-palette"
 import { ShellShortcutsDialog } from "./shell-shortcuts-dialog"
 import {
   apps as defaultApps,
+  appTones,
   currentUser,
   groupApps,
   recentAppIds as defaultRecentAppIds,
@@ -108,7 +109,9 @@ function ShellHeaderInner({
   const [shortcutsOpen, setShortcutsOpen] = React.useState(false)
   const recent = recentAppIds
     .map((id) => apps.find((item) => item.id === id))
-    .filter((item): item is ShellApp => Boolean(item))
+    .filter(
+      (item): item is ShellApp => item !== undefined && item.id !== current.id
+    )
   const groups = groupApps(apps)
   const shortcuts = useShortcuts()
 
@@ -145,9 +148,7 @@ function ShellHeaderInner({
       {...props}
     >
       <AppFinder>
-        <AppFinderTrigger
-          aria-label={`Switch application, current: ${current.name}`}
-        >
+        <AppFinderTrigger name={current.name} tone={appTones[current.category]}>
           {current.code}
         </AppFinderTrigger>
         <AppFinderMenu>
@@ -160,16 +161,16 @@ function ShellHeaderInner({
             }}
           >
             {recent.length ? (
-              <AppFinderGroup heading="Recent">
+              <AppFinderGroup heading="Recent" hideWhileSearching>
                 {recent.map((app) => (
                   <AppFinderItem
                     key={`recent-${app.id}`}
                     id={`recent-${app.id}`}
                     icon={app.code}
+                    tone={appTones[app.category]}
                     name={app.name}
                     description={app.description}
                     keywords={[app.code, app.category]}
-                    isCurrent={app.id === current.id}
                   />
                 ))}
               </AppFinderGroup>
@@ -181,6 +182,7 @@ function ShellHeaderInner({
                     key={app.id}
                     id={app.id}
                     icon={app.code}
+                    tone={appTones[app.category]}
                     name={app.name}
                     description={app.description}
                     keywords={[app.code, app.category]}
