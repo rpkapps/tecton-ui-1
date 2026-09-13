@@ -64,7 +64,7 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
       className={cn("w-full max-w-sm", className)}
       {...props}
     >
-      <CardHeader className="items-center text-center">
+      <CardHeader className="justify-items-center text-center">
         <span className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <LayersIcon className="size-5" aria-hidden />
         </span>

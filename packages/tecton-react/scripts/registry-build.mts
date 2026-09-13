@@ -67,9 +67,11 @@ function rewrite(source: string, blockName: string) {
   const code = source.replace(
     /(from\s+|import\s+|import\()\s*(["'])([^"']+)\2/g,
     (match, _prefix: string, _quote: string, spec: string) => {
-      // `../<other-block>/…` or `@tecton/react/blocks/<other-block>/…`
+      // `../<other-block>/…` (or `../../<other-block>/…` from a block's
+      // components/ folder) or `@tecton/react/blocks/<other-block>/…`
       const sibling =
-        spec.match(/^\.\.\/([^/]+)\//)?.[1] ?? spec.match(/^@tecton\/react\/blocks\/([^/]+)\//)?.[1]
+        spec.match(/^(?:\.\.\/)+([^./][^/]*)\//)?.[1] ??
+        spec.match(/^@tecton\/react\/blocks\/([^/]+)\//)?.[1]
       if (sibling && sibling !== blockName) registryDeps.add(`@tecton/${sibling}`)
       const bare = spec.startsWith("@") ? spec.split("/").slice(0, 2).join("/") : spec.split("/")[0]
       if (KNOWN_DEPENDENCIES.has(bare)) deps.add(bare)

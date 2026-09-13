@@ -9,6 +9,7 @@ export type BlockCategory =
   | "forms"
   | "layouts"
   | "lists"
+  | "states"
 
 export type BlockMeta = {
   name: string
@@ -29,6 +30,7 @@ export const blockCategories: { id: BlockCategory; title: string }[] = [
   { id: "forms", title: "Forms" },
   { id: "lists", title: "Lists & tables" },
   { id: "authentication", title: "Authentication" },
+  { id: "states", title: "Page states" },
 ]
 
 export function getBlock(name: string) {
