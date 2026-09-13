@@ -10,11 +10,15 @@
  *   - ring vs background < 3:1 (border/input vs background < 1.5:1 is reported only)
  *   - sanity rules: dark L(background) < L(foreground) (light: the opposite);
  *     muted-foreground lightness between background and foreground
+ *   - palette (src/styles/tecton-palette.css): the stock reset comes first, every
+ *     --color-<family>-<step> resolves in both modes, both modes declare the same
+ *     ramps, and every semantic colour is a literal member of an exposed ramp
+ *     (except the ones allow-listed under `checks.allow` as `palette:<token>`)
  * Pairs listed in tecton.map.json `checks.allow` are reported as expected failures and
  * do not fail the run.
  */
 /// <reference types="node" />
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { converter, parse, wcagContrast } from "culori";
@@ -23,6 +27,7 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const pkgRoot = path.resolve(here, "..");
 const TOKENS_CSS = path.join(pkgRoot, "src/styles/tecton-tokens.css");
 const THEME_CSS = path.join(pkgRoot, "src/styles/tecton-theme.css");
+const PALETTE_CSS = path.join(pkgRoot, "src/styles/tecton-palette.css");
 const MAP_JSON = path.join(pkgRoot, "tokens/tecton.map.json");
 const asJson = process.argv.includes("--json");
 
@@ -35,7 +40,7 @@ function stripComments(css: string): string {
 
 function parseDecls(body: string): Map<string, string> {
   const out = new Map<string, string>();
-  const re = /(--[\w-]+)\s*:\s*([^;]+);/g;
+  const re = /(--[\w*-]+)\s*:\s*([^;]+);/g; // `*` for the `--color-*: initial` reset
   let m: RegExpExecArray | null;
   while ((m = re.exec(body))) out.set(m[1], m[2].trim());
   return out;
@@ -88,6 +93,7 @@ const map = JSON.parse(readFileSync(MAP_JSON, "utf8")) as {
   shadcn: Record<string, unknown>;
   extra: Record<string, unknown>;
   checks?: { allow?: string[] };
+  palette?: { prefix?: string; resetTailwind?: boolean; families: string[]; shades?: string[] };
 };
 const allow = new Set(map.checks?.allow ?? []);
 
@@ -264,6 +270,87 @@ for (const mode of ["light", "dark"] as Mode[]) {
     threshold: `(${Math.min(lBg, lFg).toFixed(3)}, ${Math.max(lBg, lFg).toFixed(3)})`,
     status: between ? "pass" : "fail",
   });
+}
+
+// ---------------------------------------------------------------------------
+// Palette
+// ---------------------------------------------------------------------------
+if (map.palette && existsSync(PALETTE_CSS)) {
+  const paletteCss = stripComments(readFileSync(PALETTE_CSS, "utf8"));
+  const ramps = parseThemedTokens(paletteCss); // :root (+ .light) and .dark blocks
+  const prefix = `--${map.palette.prefix ?? "tecton-palette"}-`;
+  const lightKeys = [...ramps.light.keys()].filter((k) => k.startsWith(prefix));
+  const darkKeys = [...ramps.dark.keys()].filter((k) => k.startsWith(prefix));
+  const sameKeys = lightKeys.length === darkKeys.length && lightKeys.every((k) => ramps.dark.has(k));
+  results.push({
+    mode: "both",
+    check: "palette: light and dark declare the same ramps",
+    value: `${lightKeys.length} / ${darkKeys.length}`,
+    threshold: "equal sets",
+    status: sameKeys ? "pass" : "fail",
+  });
+
+  // the @theme inline block: reset first, then one entry per ramp value
+  const theme = parseDecls(blockBody(paletteCss, "@theme inline"));
+  const themeKeys = [...theme.keys()];
+  const reset = map.palette.resetTailwind ?? true;
+  results.push({
+    mode: "both",
+    check: "palette: `--color-*: initial` precedes the ramps",
+    value: themeKeys[0] === "--color-*" ? "first" : (themeKeys.indexOf("--color-*") === -1 ? "missing" : "not first"),
+    threshold: reset ? "first entry" : "absent",
+    status: reset ? (themeKeys[0] === "--color-*" ? "pass" : "fail") : (themeKeys.includes("--color-*") ? "fail" : "pass"),
+  });
+  let unresolved = 0;
+  const paletteColors = new Map<string, string>(); // --color-x -> --tecton-palette-x
+  for (const [k, v] of theme) {
+    if (k === "--color-*") continue;
+    const m = /^var\((--[\w-]+)\)$/.exec(v);
+    if (!m || !ramps.light.has(m[1]) || !ramps.dark.has(m[1])) unresolved++;
+    else paletteColors.set(k, m[1]);
+  }
+  results.push({
+    mode: "both",
+    check: "palette: every --color-<family>-<step> resolves in both modes",
+    value: `${paletteColors.size} resolved, ${unresolved} unresolved`,
+    threshold: "0 unresolved",
+    status: unresolved ? "fail" : "pass",
+  });
+  const families = map.palette.families.length;
+  const shades = map.palette.shades?.length ?? 0;
+  const perFamily = families ? (paletteColors.size - shades) / families : 0;
+  results.push({
+    mode: "both",
+    check: "palette: families × steps",
+    value: `${families} families × ${perFamily} steps + ${shades} shades`,
+    threshold: "integer steps",
+    status: Number.isInteger(perFamily) && perFamily > 0 ? "pass" : "fail",
+  });
+
+  // every semantic colour token of the export is a literal pick from an exposed ramp
+  for (const mode of ["light", "dark"] as Mode[]) {
+    const values = new Set([...ramps[mode].entries()].filter(([k]) => k.startsWith(prefix)).map(([, v]) => v.toLowerCase()));
+    const source = themedTokens[mode];
+    const misses: string[] = [];
+    let total = 0;
+    for (const [name, raw] of source) {
+      if (!name.startsWith("--tecton-color-")) continue;
+      const v = raw.trim().toLowerCase();
+      if (!/^#[0-9a-f]{6}$/.test(v)) continue;
+      total++;
+      if (!values.has(v)) misses.push(name);
+    }
+    const unexpected = misses.filter((m) => !allow.has(`palette:${m}`));
+    const expected = misses.filter((m) => allow.has(`palette:${m}`));
+    results.push({
+      mode,
+      check: "palette: semantic colours are ramp members",
+      value: `${total - misses.length}/${total}`,
+      threshold: "all (except allow-listed)",
+      status: unexpected.length ? "fail" : expected.length ? "expected-fail" : "pass",
+      detail: misses.length ? `off-ramp: ${misses.join(", ")}` : undefined,
+    });
+  }
 }
 
 // ---------------------------------------------------------------------------

@@ -22,10 +22,23 @@
         "overrideNotes": { "type": "object", "additionalProperties": { "type": "string" } }
       }
     },
+    "palette": {
+      "type": "object",
+      "required": ["source", "families"],
+      "properties": {
+        "source": { "type": "string", "description": "Figma variables export (DTCG JSON) next to this file; `foundational/color` holds the ramps." },
+        "note": { "type": "string" },
+        "prefix": { "type": "string", "description": "CSS variable prefix for the raw ramp values (default `tecton-palette`)." },
+        "resetTailwind": { "type": "boolean", "description": "Emit `--color-*: initial` before the palette so Tailwind's stock colours disappear (default true)." },
+        "shades": { "type": "array", "items": { "type": "string" }, "description": "Keys of `foundational/color/shades` exposed as `--color-<shade>` (white, black)." },
+        "families": { "type": "array", "items": { "type": "string" }, "description": "Keys of `foundational/color` exposed as `--color-<family>-<step>`, in documentation order. Camel case becomes kebab case." }
+      }
+    },
     "checks": {
       "type": "object",
       "properties": {
-        "allow": { "type": "array", "items": { "type": "string" } }
+        "allow": { "type": "array", "items": { "type": "string" }, "description": "Checks that are expected to fail: a contrast pair (`a/b`) or `palette:<--tecton-color-token>` for a semantic colour that is not a ramp member." },
+        "allowNotes": { "type": "object", "additionalProperties": { "type": "string" } }
       }
     }
   },

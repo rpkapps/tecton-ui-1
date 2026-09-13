@@ -24,6 +24,7 @@ import {
 } from "@/components/docs-blocks"
 import { IconGallery } from "@/components/icon-gallery"
 import { getIconForLanguageExtension } from "@/components/language-icon"
+import { PaletteTable } from "@/components/palette-table"
 import { TokenTable } from "@/components/token-table"
 
 function getNodeText(node: React.ReactNode): string {
@@ -177,6 +178,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     ComponentsList,
     IconGallery,
     TokenTable,
+    PaletteTable,
     Link: DocsLink,
     Image: ({ className, ...props }: React.ComponentProps<"img">) => (
       <img className={cn("mt-6 rounded-2xl border", className)} {...props} alt={props.alt ?? ""} />

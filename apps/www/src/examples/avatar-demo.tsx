@@ -25,7 +25,7 @@ export default function AvatarDemo() {
           alt="@evilrabbit"
         />
         <AvatarFallback>ER</AvatarFallback>
-        <AvatarBadge className="bg-green-600 dark:bg-green-800" />
+        <AvatarBadge className="bg-green-560" />
       </Avatar>
       <AvatarGroup className="grayscale">
         <Avatar>

@@ -109,6 +109,57 @@ const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
   // `[.border-t]:pt-(--card-spacing)` rule, its top inset back).
   "card-edge-to-edge": (code) =>
     code.replace('<CardFooter className="justify-end gap-2">', '<CardFooter className="justify-end gap-2 border-t">'),
+  // Custom-colour demos use Tailwind's stock palette, which the Tecton theme
+  // removes (`--color-*: initial`); see TECTON_PALETTE_REWRITES.
+  "badge-colors": rewriteStockColors,
+  "alert-colors": rewriteStockColors,
+  "avatar-badge": rewriteStockColors,
+  "avatar-demo": rewriteStockColors,
+  "avatar-rtl": rewriteStockColors,
+  "button-group-input-group": rewriteStockColors,
+  "input-group-button": rewriteStockColors,
+}
+
+/**
+ * Tailwind stock colour classes used by upstream demos, and the Tecton palette
+ * classes that replace them. Tecton ramp steps are contrast levels that switch
+ * value with the mode, so one class replaces a light + `dark:` pair: a tinted
+ * surface is step 120 with text at 830 (the filled status badge recipe), a
+ * solid fill is 560 (the filled status button recipe).
+ */
+const TECTON_PALETTE_REWRITES: [string, string][] = [
+  // badge-colors
+  ["bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300", "bg-blue-120 text-blue-830"],
+  ["bg-green-50 text-green-700 dark:bg-green-950 dark:text-green-300", "bg-green-120 text-green-830"],
+  ["bg-sky-50 text-sky-700 dark:bg-sky-950 dark:text-sky-300", "bg-azure-120 text-azure-830"],
+  ["bg-purple-50 text-purple-700 dark:bg-purple-950 dark:text-purple-300", "bg-orchid-120 text-orchid-830"],
+  ["bg-red-50 text-red-700 dark:bg-red-950 dark:text-red-300", "bg-red-120 text-red-830"],
+  // alert-colors
+  [
+    "border-amber-200 bg-amber-50 text-amber-900 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-50",
+    "border-yellow-160 bg-yellow-120 text-yellow-1000",
+  ],
+  // avatar-badge, avatar-demo, avatar-rtl
+  ["bg-green-600 dark:bg-green-800", "bg-green-560"],
+  // button-group-input-group
+  [
+    "data-[active=true]:bg-orange-100 data-[active=true]:text-orange-700 dark:data-[active=true]:bg-orange-800 dark:data-[active=true]:text-orange-100",
+    "data-[active=true]:bg-saffron-120 data-[active=true]:text-saffron-830",
+  ],
+  // input-group-button
+  ["data-[favorite=true]:fill-blue-600 data-[favorite=true]:stroke-blue-600", "data-[favorite=true]:fill-blue-560 data-[favorite=true]:stroke-blue-560"],
+]
+
+function rewriteStockColors(code: string): string {
+  for (const [stock, tecton] of TECTON_PALETTE_REWRITES) code = code.split(stock).join(tecton)
+  // families Tecton does not have, or steps only Tailwind has (200 … 950; 50
+  // and 100 exist on both scales and cannot be told apart here)
+  const leftover =
+    /\b(?:bg|text|border|fill|stroke|ring)-(?:(?:orange|amber|emerald|teal|cyan|sky|indigo|purple|fuchsia|rose|slate|zinc|neutral|stone)-\d+|(?:red|yellow|lime|green|blue|violet|pink|gray)-(?:[2-9]00|950))\b/.exec(
+      code
+    )
+  if (leftover) throw new Error(`stock Tailwind colour left in a synced example: ${leftover[0]} (add it to TECTON_PALETTE_REWRITES)`)
+  return code
 }
 
 /**
@@ -296,6 +347,23 @@ function transformMdx(
     /\nYou can also enable this during project setup with `npx shadcn@latest init[^\n]*\n/,
     "\n"
   )
+
+  // Tailwind's stock palette is removed by the Tecton theme; prose and inline
+  // snippets name Tecton palette steps instead (see TECTON_PALETTE_REWRITES).
+  mdx = mdx.replace(
+    "adding custom classes such as `bg-amber-50 dark:bg-amber-950` to the `Alert` component.",
+    "adding [palette](/docs/theming#palette) classes such as `bg-yellow-120 text-yellow-1000` to the `Alert` component (a step is a contrast level, so no `dark:` variant is needed)."
+  )
+  mdx = mdx.replace(
+    "adding custom classes such as `bg-green-50 dark:bg-green-800` to the `Badge` component.",
+    "adding [palette](/docs/theming#palette) classes such as `bg-green-120 text-green-830` to the `Badge` component (a step is a contrast level, so no `dark:` variant is needed)."
+  )
+  mdx = mdx.replace(/\btext-gray-500\b/g, "text-muted-foreground")
+  mdx = mdx.replace(
+    'className="mt-4 bg-amber-50 border-amber-200 dark:bg-amber-950/50 dark:border-amber-950"',
+    'className="mt-4 border-yellow-160 bg-yellow-110"'
+  )
+  for (const [stock, tecton] of TECTON_PALETTE_REWRITES) mdx = mdx.split(stock).join(tecton)
 
   // remove previews that reference skipped examples or upstream blocks
   mdx = mdx.replace(/<ComponentPreview\b[^>]*?\/>/gs, (tag) => {

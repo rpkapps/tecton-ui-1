@@ -5,9 +5,11 @@
  *
  * Inputs
  *   src/styles/tecton-tokens.css   generated Tecton export: light (:root) + dark (.dark) tokens
- *   tokens/tecton.map.json         shadcn variable → Tecton token mapping (per mode)
+ *   tokens/tecton.map.json         shadcn variable → Tecton token mapping (per mode) + palette config
+ *   tokens/tecton.tokens.json      Tecton Figma variables export (DTCG JSON): the foundational colour ramps
  *
  * Outputs
+ *   src/styles/tecton-palette.css  :root / .dark raw ramp values + @theme inline (Tailwind palette, stock reset)
  *   src/styles/tecton-theme.css    :root / .dark (var() refs) / @theme inline
  *   src/styles/globals.css         CLI-managed file, patched in place (values + imports only)
  *   src/styles/tecton-base.css     hand-authored base rules (thin scrollbars), import kept in globals.css
@@ -32,6 +34,7 @@ const repoRoot = path.resolve(pkgRoot, "..", "..");
 const TOKENS_CSS = path.join(pkgRoot, "src/styles/tecton-tokens.css");
 const MAP_JSON = path.join(pkgRoot, "tokens/tecton.map.json");
 const THEME_CSS = path.join(pkgRoot, "src/styles/tecton-theme.css");
+const PALETTE_CSS = path.join(pkgRoot, "src/styles/tecton-palette.css");
 const GLOBALS_CSS = process.env.GLOBALS_CSS ?? path.join(pkgRoot, "src/styles/globals.css");
 const REGISTRY_THEME = path.join(pkgRoot, "registry/theme.json");
 const MAPPING_DOC = path.join(repoRoot, "docs/TOKEN-MAPPING.md");
@@ -54,6 +57,23 @@ interface TokenMap {
   theme: Record<string, string>;
   light: { strategy: string; note?: string; overrides?: Record<string, string>; overrideNotes?: Record<string, string> };
   checks?: { allow?: string[] };
+  palette?: PaletteConfig;
+}
+interface PaletteConfig {
+  source: string;
+  note?: string;
+  prefix?: string;
+  resetTailwind?: boolean;
+  shades?: string[];
+  families: string[];
+}
+/** One palette colour: a shade (`white`) or a ramp step (`red-140`), with its value per mode. */
+interface PaletteEntry {
+  name: string; // CSS suffix: white | red-140
+  family: string; // white | red
+  step?: string; // 140
+  light: string;
+  dark: string;
 }
 
 interface Resolved {
@@ -224,12 +244,142 @@ const themeEntries: [string, string][] = [
 const rootOnly = (r: Resolved) => !r.isColor;
 
 // ---------------------------------------------------------------------------
+// Palette (foundational colour ramps from the Figma variables export)
+// ---------------------------------------------------------------------------
+type Dtcg = { $value?: unknown; [key: string]: unknown };
+
+const kebab = (s: string) => s.replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase();
+
+/** Direct `<step>: { $value }` children of a DTCG group, ordered numerically. */
+function rampSteps(group: Dtcg | undefined): [string, string][] {
+  if (!group) return [];
+  const steps: [string, string][] = [];
+  for (const [key, node] of Object.entries(group)) {
+    if (key.startsWith("$") || typeof node !== "object" || node === null) continue;
+    const value = (node as Dtcg).$value;
+    if (typeof value !== "string") continue; // nested group (transparent, core, surface…)
+    const m = /^\d+/.exec(key);
+    if (!m) throw new Error(`palette: step "${key}" is not numeric`);
+    steps.push([m[0], value.toLowerCase()]);
+  }
+  return steps.sort((a, b) => Number(a[0]) - Number(b[0]));
+}
+
+/**
+ * The contrast ramp of a family in one mode: its direct steps, or the
+ * `contrasts` sub-group when the direct level only holds sub-groups (gray on dark).
+ */
+function contrastRamp(family: string, node: Dtcg, mode: "onLight" | "onDark"): [string, string][] {
+  const modeNode = node[mode] as Dtcg | undefined;
+  if (!modeNode) throw new Error(`palette: ${family} has no ${mode} ramp`);
+  const direct = rampSteps(modeNode);
+  if (direct.length) return direct;
+  const contrasts = rampSteps(modeNode.contrasts as Dtcg | undefined);
+  if (!contrasts.length) throw new Error(`palette: ${family}/${mode} has no steps`);
+  return contrasts;
+}
+
+function loadPalette(config: PaletteConfig | undefined): PaletteEntry[] {
+  if (!config) return [];
+  const file = path.join(path.dirname(MAP_JSON), config.source);
+  const root = JSON.parse(readFileSync(file, "utf8")) as { foundational?: { color?: Record<string, Dtcg> } };
+  const colors = root.foundational?.color;
+  if (!colors) throw new Error(`palette: ${config.source} has no foundational/color group`);
+  const entries: PaletteEntry[] = [];
+  for (const shade of config.shades ?? []) {
+    const value = (colors.shades?.[shade] as Dtcg | undefined)?.$value;
+    if (typeof value !== "string") throw new Error(`palette: shades/${shade} not found`);
+    entries.push({ name: kebab(shade), family: kebab(shade), light: value.toLowerCase(), dark: value.toLowerCase() });
+  }
+  let stepSet: string | undefined;
+  for (const family of config.families) {
+    const node = colors[family];
+    if (!node) throw new Error(`palette: family ${family} not found`);
+    const light = contrastRamp(family, node, "onLight");
+    const dark = contrastRamp(family, node, "onDark");
+    const steps = light.map(([s]) => s).join(",");
+    if (steps !== dark.map(([s]) => s).join(",")) throw new Error(`palette: ${family} light/dark steps differ`);
+    stepSet ??= steps;
+    if (steps !== stepSet) throw new Error(`palette: ${family} steps (${steps}) differ from ${config.families[0]} (${stepSet})`);
+    const name = kebab(family);
+    light.forEach(([step, value], i) => {
+      entries.push({ name: `${name}-${step}`, family: name, step, light: value, dark: dark[i][1] });
+    });
+  }
+  return entries;
+}
+
+const paletteConfig = map.palette;
+const palette = loadPalette(paletteConfig);
+const palettePrefix = paletteConfig?.prefix ?? "tecton-palette";
+const paletteVar = (e: PaletteEntry) => `--${palettePrefix}-${e.name}`;
+const paletteReset = paletteConfig?.resetTailwind ?? true;
+/** `@theme inline` entries of the palette, reset first. */
+const paletteThemeEntries: [string, string][] = [
+  ...(paletteReset && palette.length ? [["--color-*", "initial"] as [string, string]] : []),
+  ...palette.map((e): [string, string] => [`--color-${e.name}`, `var(${paletteVar(e)})`]),
+];
+const PALETTE_IMPORT = '@import "./tecton-palette.css";';
+
+/**
+ * How many opaque colour tokens of the Tecton export are literal members of the
+ * exposed ramps (per mode). Reported in TOKEN-MAPPING.md; the semantic tokens
+ * are picks from these ramps, so a low number means the two exports drifted.
+ */
+function paletteCoverage(mode: "light" | "dark") {
+  const values = new Set(palette.map((e) => e[mode]));
+  const source = mode === "light" ? lightTokens : tokens;
+  let total = 0;
+  let member = 0;
+  const misses: string[] = [];
+  for (const [name, raw] of source) {
+    if (!name.startsWith("--tecton-color-")) continue;
+    const v = raw.trim().toLowerCase();
+    if (!/^#[0-9a-f]{6}$/.test(v)) continue; // alpha and non-hex values are not ramp members
+    total++;
+    if (values.has(v)) member++;
+    else misses.push(name);
+  }
+  return { total, member, misses };
+}
+
+function buildPaletteCss(): string {
+  const lines: string[] = [];
+  lines.push(
+    `/* GENERATED by scripts/tokens-build.mts from tokens/${paletteConfig?.source ?? "tecton.tokens.json"} (Tecton Figma variables export, foundational/color) — do not edit */`
+  );
+  lines.push("/*");
+  lines.push(" * Foundational colour ramps: one 23-step contrast ramp per family and mode. A step is");
+  lines.push(" * the same perceived distance from the page background in light and dark, so a single");
+  lines.push(" * utility (bg-red-140) is correct in both modes; the raw values switch with the mode.");
+  lines.push(" * Tailwind's stock palette is reset so only Tecton colours can appear.");
+  lines.push(" */");
+  lines.push(":root,");
+  lines.push('[data-theme="light"],');
+  lines.push(".light {");
+  for (const e of palette) lines.push(`  ${paletteVar(e)}: ${e.light};`);
+  lines.push("}");
+  lines.push("");
+  lines.push(".dark,");
+  lines.push('[data-theme="dark"] {');
+  for (const e of palette) if (e.dark !== e.light) lines.push(`  ${paletteVar(e)}: ${e.dark};`);
+  lines.push("}");
+  lines.push("");
+  lines.push("@theme inline {");
+  for (const [k, v] of paletteThemeEntries) lines.push(`  ${k}: ${v};`);
+  lines.push("}");
+  lines.push("");
+  return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
 // 1. tecton-theme.css
 // ---------------------------------------------------------------------------
 function buildThemeCss(): string {
   const lines: string[] = [];
   lines.push("/* GENERATED by scripts/tokens-build.mts from tokens/tecton.map.json — do not edit */");
   lines.push('@import "./tecton-tokens.css";');
+  if (palette.length) lines.push(PALETTE_IMPORT);
   lines.push("");
   lines.push(":root {");
   for (const r of resolved) lines.push(`  --${r.name}: ${r.light};`);
@@ -330,6 +480,12 @@ function patchGlobals(): boolean {
   }
   for (const legacy of [interImport, legacyFigtree, legacyMono]) css = css.replace(`${legacy}\n`, "");
   let anchor = tokensImport;
+  // the palette (raw ramps + Tailwind @theme with the stock reset) must come before
+  // the semantic @theme inline block below, which the reset would otherwise wipe
+  if (palette.length) {
+    if (!css.includes(PALETTE_IMPORT)) css = css.replace(anchor, `${anchor}\n${PALETTE_IMPORT}`);
+    anchor = PALETTE_IMPORT;
+  } else css = css.replace(`${PALETTE_IMPORT}\n`, "");
   for (const imp of fontImports) {
     if (!css.includes(imp)) css = css.replace(anchor, `${anchor}\n${imp}`);
     anchor = imp;
@@ -369,7 +525,15 @@ function buildRegistryTheme() {
     light[r.name] = r.lightLiteral;
     if (!rootOnly(r)) dark[r.name] = r.darkLiteral;
   }
+  // raw palette ramps, then the semantic variables that pick from them
+  for (const e of palette) {
+    light[`${palettePrefix}-${e.name}`] = e.light;
+    dark[`${palettePrefix}-${e.name}`] = e.dark;
+  }
   const theme: Record<string, string> = {};
+  // palette first: `color-*: initial` resets Tailwind's stock colours before the
+  // Tecton ramps and the semantic --color-* entries are (re)declared
+  for (const [k, v] of paletteThemeEntries) theme[k.replace(/^--/, "")] = v;
   for (const [k, v] of themeEntries) {
     // registry consumers have no --tecton-* tokens: resolve to literals, keep
     // --color-<extra> as a reference to the :root/.dark variable.
@@ -384,7 +548,7 @@ function buildRegistryTheme() {
     type: "registry:theme",
     title: "Tecton",
     description:
-      "Tecton design tokens mapped onto the shadcn CSS variables (light and dark, from the Tecton CSS export). Figtree + IBM Plex Mono via Fontsource.",
+      "Tecton design tokens mapped onto the shadcn CSS variables (light and dark, from the Tecton CSS export), the Tecton colour ramps as the Tailwind palette (stock palette reset), Figtree + IBM Plex Mono via Fontsource.",
     dependencies: ["@fontsource/figtree", "@fontsource/ibm-plex-mono"],
     cssVars: { theme, light, dark },
     css,
@@ -394,6 +558,42 @@ function buildRegistryTheme() {
 // ---------------------------------------------------------------------------
 // 4. docs/TOKEN-MAPPING.md
 // ---------------------------------------------------------------------------
+function paletteSection(): string {
+  if (!paletteConfig || !palette.length) return "";
+  const families = [...new Set(palette.filter((e) => e.step).map((e) => e.family))];
+  const steps = [...new Set(palette.filter((e) => e.step).map((e) => e.step as string))];
+  const shades = palette.filter((e) => !e.step);
+  const light = paletteCoverage("light");
+  const dark = paletteCoverage("dark");
+  const rows = families.map((f) => {
+    const cells = steps.map((s) => {
+      const e = palette.find((x) => x.family === f && x.step === s)!;
+      return `\`${e.light}\`<br>\`${e.dark}\``;
+    });
+    return `| \`${f}\` | ${cells.join(" | ")} |`;
+  });
+  const misses = [...new Set([...light.misses, ...dark.misses])];
+  return `
+## Palette (Tailwind colour scale)
+
+Source: \`packages/tecton-react/tokens/${paletteConfig.source}\` (Tecton Figma variables export, \`foundational/color\`).
+${paletteConfig.note ?? ""}
+
+Generated into \`src/styles/tecton-palette.css\`: \`--${palettePrefix}-<family>-<step>\` in \`:root\` / \`.dark\`
+and \`--color-<family>-<step>\` in \`@theme inline\`${paletteReset ? ", after `--color-*: initial` (Tailwind's stock palette is removed)" : ""}.
+Shades: ${shades.map((s) => `\`--color-${s.name}\` (\`${s.light}\`)`).join(", ")}.
+Steps (contrast from the page background, both modes): ${steps.map((s) => `\`${s}\``).join(" ")}.
+
+Coverage: ${light.member}/${light.total} opaque colour tokens of the CSS export are ramp members in light mode, ${dark.member}/${dark.total} in dark mode${misses.length ? ` (not on any exposed ramp: ${misses.map((m) => `\`${m}\``).join(", ")})` : ""}.
+
+Values are light<br>dark.
+
+| family | ${steps.join(" | ")} |
+| --- |${steps.map(() => " --- |").join("")}
+${rows.join("\n")}
+`;
+}
+
 function buildMappingDoc(): string {
   const esc = (s: string) => s.replace(/\|/g, "\\|");
   const row = (r: Resolved) =>
@@ -441,6 +641,7 @@ ${[...header, ...ext].join("\n")}
 | --- | --- | --- |
 ${theme.join("\n")}
 
+${paletteSection()}
 ## Contrast checks
 
 \`pnpm --filter @tecton/react tokens:check\` verifies completeness, dangling \`var()\` references,
@@ -466,6 +667,10 @@ the generated files still come unmodified from the CLI. What remains different f
 // ---------------------------------------------------------------------------
 // Run
 // ---------------------------------------------------------------------------
+if (palette.length) {
+  writeFileSync(PALETTE_CSS, buildPaletteCss());
+  console.log(`[tokens-build] wrote ${path.relative(repoRoot, PALETTE_CSS)} (${palette.length} colours)`);
+}
 writeFileSync(THEME_CSS, buildThemeCss());
 console.log(`[tokens-build] wrote ${path.relative(repoRoot, THEME_CSS)}`);
 
