@@ -4,8 +4,6 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
-import "./background.css"
-
 /**
  * Tecton Background — decorative, non-interactive background effects drawn
  * from oil and gas imagery (seismic traces, contour maps, strata, pipeline
@@ -21,7 +19,29 @@ import "./background.css"
  *
  * Put a `Background` as the first child of a `relative isolate` container and
  * place the content after it.
+ *
+ * The rules the effects need beyond Tailwind utilities (the ink variables,
+ * the pause and reduced-motion handling, the keyframes) ship inside the
+ * component as a hoistable `<style>`: React puts it in the document head
+ * once, on the server too, so nothing loads unless a background renders and
+ * no stylesheet import is needed.
  */
+
+const backgroundStyles = `
+[data-slot="background"]{--bg-ink:color-mix(in oklab,var(--bg-tone) calc(var(--bg-alpha) * 100%),transparent);--bg-ink-soft:color-mix(in oklab,var(--bg-tone) calc(var(--bg-alpha) * 45%),transparent);--bg-ink-strong:color-mix(in oklab,var(--bg-tone) calc(var(--bg-alpha) * 180%),transparent)}
+[data-slot="background"][data-paused] *,[data-slot="background"][data-animate="false"] *{animation-play-state:paused!important}
+@media (prefers-reduced-motion:reduce){[data-slot="background"] *{animation-play-state:paused!important}}
+@media print,(forced-colors:active){[data-slot="background"]{display:none!important}}
+@keyframes tecton-bg-drift-y{from{transform:translateY(0)}to{transform:translateY(var(--bg-tile-h))}}
+@keyframes tecton-bg-drift-x{from{transform:translateX(0)}to{transform:translateX(calc(-1 * var(--bg-tile-w)))}}
+@keyframes tecton-bg-wander{0%{transform:translate(0,0)}50%{transform:translate(-40px,-24px)}100%{transform:translate(0,0)}}
+@keyframes tecton-bg-breathe{0%,100%{opacity:.7}50%{opacity:1}}
+@keyframes tecton-bg-pulse{0%,100%{opacity:.15}50%{opacity:1}}
+@keyframes tecton-bg-flow{from{stroke-dashoffset:0}to{stroke-dashoffset:calc(-1 * var(--bg-dash,260px))}}
+@keyframes tecton-bg-rotate{from{transform:rotate(0)}to{transform:rotate(360deg)}}
+@keyframes tecton-bg-migrate{0%{transform:translate(0,0) scale(1)}33%{transform:translate(6%,-5%) scale(1.08)}66%{transform:translate(-5%,5%) scale(.94)}100%{transform:translate(0,0) scale(1)}}
+@keyframes tecton-bg-ripple{from{transform:scale(.05);opacity:1}to{transform:scale(1);opacity:0}}
+`
 
 const backgroundVariants = cva(
   "pointer-events-none absolute inset-0 -z-10 overflow-hidden select-none",
@@ -101,19 +121,27 @@ function Background({
   const ref = React.useRef<HTMLDivElement>(null)
   const paused = useVisibilityPause(ref)
   return (
-    <div
-      ref={ref}
-      aria-hidden="true"
-      role="presentation"
-      data-slot="background"
-      data-tone={tone}
-      data-intensity={intensity}
-      data-speed={speed}
-      data-animate={animate}
-      data-paused={paused ? "" : undefined}
-      className={cn(backgroundVariants({ tone, intensity, speed }), className)}
-      {...props}
-    />
+    <>
+      <style href="tecton-background" precedence="tecton">
+        {backgroundStyles}
+      </style>
+      <div
+        ref={ref}
+        aria-hidden="true"
+        role="presentation"
+        data-slot="background"
+        data-tone={tone}
+        data-intensity={intensity}
+        data-speed={speed}
+        data-animate={animate}
+        data-paused={paused ? "" : undefined}
+        className={cn(
+          backgroundVariants({ tone, intensity, speed }),
+          className
+        )}
+        {...props}
+      />
+    </>
   )
 }
 
