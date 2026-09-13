@@ -187,6 +187,58 @@ function PatternSvg({
   )
 }
 
+/**
+ * Pointer reveal. The hook follows the pointer over the effect's container
+ * (the background itself ignores the pointer) and writes its position to the
+ * returned element as `--bg-x` / `--bg-y`, flagging `data-hover` while it is
+ * inside. `Reveal` is the layer that shows through a soft circle around it.
+ */
+function usePointerReveal(enabled: boolean) {
+  const ref = React.useRef<HTMLDivElement>(null)
+  React.useEffect(() => {
+    if (!enabled) return
+    const node = ref.current
+    const parent = node?.closest("[data-slot=background]")?.parentElement
+    if (!node || !parent) return
+    const onMove = (event: PointerEvent) => {
+      const rect = parent.getBoundingClientRect()
+      node.style.setProperty("--bg-x", `${event.clientX - rect.left}px`)
+      node.style.setProperty("--bg-y", `${event.clientY - rect.top}px`)
+      node.dataset.hover = ""
+    }
+    const onLeave = () => {
+      delete node.dataset.hover
+    }
+    parent.addEventListener("pointermove", onMove)
+    parent.addEventListener("pointerleave", onLeave)
+    return () => {
+      parent.removeEventListener("pointermove", onMove)
+      parent.removeEventListener("pointerleave", onLeave)
+    }
+  }, [enabled])
+  return ref
+}
+
+function Reveal({
+  radius = 180,
+  children,
+}: {
+  radius?: number
+  children: React.ReactNode
+}) {
+  return (
+    <div
+      data-slot="background-reveal"
+      className="absolute inset-0 opacity-0 transition-opacity duration-500 [[data-hover]>&]:opacity-100"
+      style={{
+        maskImage: `radial-gradient(${radius}px circle at var(--bg-x, -9999px) var(--bg-y, -9999px), black, transparent)`,
+      }}
+    >
+      {children}
+    </div>
+  )
+}
+
 /* ---------------------------------------------------------------------------
  * 1. Seismic — a survey in section: the seismogram across the top with its
  *    main event, the surface line, faulted strata below, and the source with
@@ -906,13 +958,13 @@ function StrataBackground({ className, ...props }: BackgroundProps) {
 }
 
 /* ---------------------------------------------------------------------------
- * 4. Pipeline grid — orthogonal lines with nodes lighting up; optionally
- *    reactive to the pointer.
+ * 4. Grid — orthogonal lines with nodes lighting up; optionally reactive to
+ *    the pointer.
  * ------------------------------------------------------------------------- */
 
 const GRID = 48
 
-function PipelineGridBackground({
+function GridBackground({
   className,
   interactive = false,
   ...props
@@ -927,33 +979,11 @@ function PipelineGridBackground({
     delay: -random() * 30,
     duration: 4 + random() * 6,
   }))
-  const ref = React.useRef<HTMLDivElement>(null)
-  React.useEffect(() => {
-    if (!interactive) return
-    const node = ref.current
-    // The background layer ignores the pointer, so listen on its container.
-    const parent = node?.closest("[data-slot=background]")?.parentElement
-    if (!node || !parent) return
-    const onMove = (event: PointerEvent) => {
-      const rect = parent.getBoundingClientRect()
-      node.style.setProperty("--bg-x", `${event.clientX - rect.left}px`)
-      node.style.setProperty("--bg-y", `${event.clientY - rect.top}px`)
-      node.dataset.hover = ""
-    }
-    const onLeave = () => {
-      delete node.dataset.hover
-    }
-    parent.addEventListener("pointermove", onMove)
-    parent.addEventListener("pointerleave", onLeave)
-    return () => {
-      parent.removeEventListener("pointermove", onMove)
-      parent.removeEventListener("pointerleave", onLeave)
-    }
-  }, [interactive])
+  const ref = usePointerReveal(interactive)
   const lines = (ink: string) =>
     `linear-gradient(to right, ${ink} 1px, transparent 1px), linear-gradient(to bottom, ${ink} 1px, transparent 1px)`
   return (
-    <Background data-effect="pipeline-grid" className={className} {...props}>
+    <Background data-effect="grid" className={className} {...props}>
       <div
         ref={ref}
         className="absolute inset-0"
@@ -964,16 +994,16 @@ function PipelineGridBackground({
         }}
       >
         {interactive && (
-          <div
-            className="absolute inset-0 opacity-0 transition-opacity duration-500 [[data-hover]>&]:opacity-100"
-            style={{
-              backgroundImage: lines("var(--bg-ink-strong)"),
-              backgroundSize: `${GRID}px ${GRID}px`,
-              backgroundPosition: "-1px -1px",
-              maskImage:
-                "radial-gradient(180px circle at var(--bg-x, -999px) var(--bg-y, -999px), black, transparent)",
-            }}
-          />
+          <Reveal>
+            <div
+              className="absolute inset-0"
+              style={{
+                backgroundImage: lines("var(--bg-ink-strong)"),
+                backgroundSize: `${GRID}px ${GRID}px`,
+                backgroundPosition: "-1px -1px",
+              }}
+            />
+          </Reveal>
         )}
         {nodes.map((node, i) => (
           <span
@@ -1503,7 +1533,8 @@ function DrillBackground({ className, ...props }: BackgroundProps) {
 }
 
 /* ---------------------------------------------------------------------------
- * 8. Reservoir cells — a simulation mesh with cells lighting up in turn.
+ * 8. Hexagons — a simulation mesh with cells lighting up in turn; optionally
+ *    reactive to the pointer.
  * ------------------------------------------------------------------------- */
 
 /*
@@ -1546,9 +1577,17 @@ function hexClip(inset: number) {
     .join(", ")})`
 }
 
-function ReservoirCellsBackground({ className, ...props }: BackgroundProps) {
+function HexagonsBackground({
+  className,
+  interactive = false,
+  ...props
+}: BackgroundProps & {
+  /** Reveal the mesh around the pointer as it moves over the parent. */
+  interactive?: boolean
+}) {
   const id = React.useId()
   const random = seeded(41)
+  const ref = usePointerReveal(interactive)
   // One tile holds two rows (the second offset by half a cell), so it repeats.
   const tileW = HEX_W
   const tileH = HEX_H * 2
@@ -1563,16 +1602,31 @@ function ReservoirCellsBackground({ className, ...props }: BackgroundProps) {
     }
   })
   return (
-    <Background data-effect="reservoir-cells" className={className} {...props}>
-      <PatternSvg id={id} width={tileW} height={tileH}>
-        <g fill="none" stroke="var(--bg-ink)" strokeWidth="1">
-          <path d={hexPath(0, 0)} />
-          <path d={hexPath(tileW, 0)} />
-          <path d={hexPath(tileW / 2, HEX_H)} />
-          <path d={hexPath(0, tileH)} />
-          <path d={hexPath(tileW, tileH)} />
-        </g>
-      </PatternSvg>
+    <Background data-effect="hexagons" className={className} {...props}>
+      <div ref={ref} className="absolute inset-0">
+        <PatternSvg id={id} width={tileW} height={tileH}>
+          <g fill="none" stroke="var(--bg-ink)" strokeWidth="1">
+            <path d={hexPath(0, 0)} />
+            <path d={hexPath(tileW, 0)} />
+            <path d={hexPath(tileW / 2, HEX_H)} />
+            <path d={hexPath(0, tileH)} />
+            <path d={hexPath(tileW, tileH)} />
+          </g>
+        </PatternSvg>
+        {interactive && (
+          <Reveal>
+            <PatternSvg id={`${id}-reveal`} width={tileW} height={tileH}>
+              <g fill="none" stroke="var(--bg-ink-strong)" strokeWidth="1.5">
+                <path d={hexPath(0, 0)} />
+                <path d={hexPath(tileW, 0)} />
+                <path d={hexPath(tileW / 2, HEX_H)} />
+                <path d={hexPath(0, tileH)} />
+                <path d={hexPath(tileW, tileH)} />
+              </g>
+            </PatternSvg>
+          </Reveal>
+        )}
+      </div>
       {lit.map((cell, i) => (
         <span
           key={i}
@@ -1688,8 +1742,16 @@ function terrainProject(x: number, d: number) {
   ] as const
 }
 
-function TerrainGridBackground({ className, ...props }: BackgroundProps) {
+function TerrainGridBackground({
+  className,
+  interactive = false,
+  ...props
+}: BackgroundProps & {
+  /** Reveal the surface around the pointer as it moves over the parent. */
+  interactive?: boolean
+}) {
   const id = React.useId()
+  const ref = usePointerReveal(interactive)
   const columns = Array.from({ length: 67 }, (_, i) => -9.9 + i * 0.3)
   // Depth rows spaced geometrically so they look evenly spaced on screen.
   const depths = Array.from(
@@ -1716,69 +1778,90 @@ function TerrainGridBackground({ className, ...props }: BackgroundProps) {
     )
   return (
     <Background data-effect="terrain-grid" className={className} {...props}>
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        className="absolute inset-0 size-full"
-        viewBox={`0 0 ${TERRAIN_W} ${TERRAIN_H}`}
-        preserveAspectRatio="xMidYMax slice"
-      >
-        <defs>
-          <linearGradient id={`${id}-fade`} x1="0" y1="0" x2="0" y2="1">
-            <stop
-              offset={TERRAIN_HORIZON / TERRAIN_H}
-              stopColor="#fff"
-              stopOpacity="0"
-            />
-            <stop
-              offset={(TERRAIN_HORIZON + 160) / TERRAIN_H}
-              stopColor="#fff"
-              stopOpacity="1"
-            />
-          </linearGradient>
-          <mask id={`${id}-mask`}>
-            <rect
-              width={TERRAIN_W}
-              height={TERRAIN_H}
-              fill={`url(#${id}-fade)`}
-            />
-          </mask>
-          <radialGradient id={`${id}-glow`}>
-            <stop offset="0%" stopColor="var(--bg-tone)" stopOpacity="1" />
-            <stop offset="100%" stopColor="var(--bg-tone)" stopOpacity="0" />
-          </radialGradient>
-        </defs>
-        <ellipse
-          cx={TERRAIN_W / 2}
-          cy={TERRAIN_HORIZON + 20}
-          rx="700"
-          ry="120"
-          fill={`url(#${id}-glow)`}
-          style={{ opacity: "calc(var(--bg-alpha) * 0.8)" }}
-        />
-        <g mask={`url(#${id}-mask)`} fill="none" stroke="var(--bg-ink)">
-          {rows.map((d, i) => (
-            <path key={`r${i}`} d={d} vectorEffect="non-scaling-stroke" />
-          ))}
-          {cols.map((d, i) => (
-            <path key={`c${i}`} d={d} vectorEffect="non-scaling-stroke" />
-          ))}
-        </g>
-        <g fill="var(--bg-ink-strong)">
-          {nodes.map(({ p, r, d }, i) => (
-            <circle
-              key={i}
-              cx={p[0].toFixed(0)}
-              cy={p[1].toFixed(0)}
-              r={r.toFixed(1)}
-              style={{
-                animation: `tecton-bg-pulse ${(4 + (i % 5)).toFixed(0)}s ease-in-out infinite`,
-                animationDelay: `${(-(i * 0.7) % 9).toFixed(1)}s`,
-                opacity: d > 6 ? 0.5 : 1,
-              }}
-            />
-          ))}
-        </g>
-      </svg>
+      <div ref={ref} className="absolute inset-0">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          className="absolute inset-0 size-full"
+          viewBox={`0 0 ${TERRAIN_W} ${TERRAIN_H}`}
+          preserveAspectRatio="xMidYMax slice"
+        >
+          <defs>
+            <linearGradient id={`${id}-fade`} x1="0" y1="0" x2="0" y2="1">
+              <stop
+                offset={TERRAIN_HORIZON / TERRAIN_H}
+                stopColor="#fff"
+                stopOpacity="0"
+              />
+              <stop
+                offset={(TERRAIN_HORIZON + 160) / TERRAIN_H}
+                stopColor="#fff"
+                stopOpacity="1"
+              />
+            </linearGradient>
+            <mask id={`${id}-mask`}>
+              <rect
+                width={TERRAIN_W}
+                height={TERRAIN_H}
+                fill={`url(#${id}-fade)`}
+              />
+            </mask>
+            <radialGradient id={`${id}-glow`}>
+              <stop offset="0%" stopColor="var(--bg-tone)" stopOpacity="1" />
+              <stop offset="100%" stopColor="var(--bg-tone)" stopOpacity="0" />
+            </radialGradient>
+          </defs>
+          <ellipse
+            cx={TERRAIN_W / 2}
+            cy={TERRAIN_HORIZON + 20}
+            rx="700"
+            ry="120"
+            fill={`url(#${id}-glow)`}
+            style={{ opacity: "calc(var(--bg-alpha) * 0.8)" }}
+          />
+          <g mask={`url(#${id}-mask)`} fill="none" stroke="var(--bg-ink)">
+            {rows.map((d, i) => (
+              <path key={`r${i}`} d={d} vectorEffect="non-scaling-stroke" />
+            ))}
+            {cols.map((d, i) => (
+              <path key={`c${i}`} d={d} vectorEffect="non-scaling-stroke" />
+            ))}
+          </g>
+          <g fill="var(--bg-ink-strong)">
+            {nodes.map(({ p, r, d }, i) => (
+              <circle
+                key={i}
+                cx={p[0].toFixed(0)}
+                cy={p[1].toFixed(0)}
+                r={r.toFixed(1)}
+                style={{
+                  animation: `tecton-bg-pulse ${(4 + (i % 5)).toFixed(0)}s ease-in-out infinite`,
+                  animationDelay: `${(-(i * 0.7) % 9).toFixed(1)}s`,
+                  opacity: d > 6 ? 0.5 : 1,
+                }}
+              />
+            ))}
+          </g>
+        </svg>
+        {interactive && (
+          <Reveal radius={240}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              className="absolute inset-0 size-full"
+              viewBox={`0 0 ${TERRAIN_W} ${TERRAIN_H}`}
+              preserveAspectRatio="xMidYMax slice"
+            >
+              <g fill="none" stroke="var(--bg-ink-strong)" strokeWidth="1.5">
+                {rows.map((d, i) => (
+                  <path key={`r${i}`} d={d} vectorEffect="non-scaling-stroke" />
+                ))}
+                {cols.map((d, i) => (
+                  <path key={`c${i}`} d={d} vectorEffect="non-scaling-stroke" />
+                ))}
+              </g>
+            </svg>
+          </Reveal>
+        )}
+      </div>
     </Background>
   )
 }
@@ -1789,11 +1872,11 @@ const backgroundEffects = {
   seismic: SeismicBackground,
   contour: ContourBackground,
   strata: StrataBackground,
-  "pipeline-grid": PipelineGridBackground,
+  grid: GridBackground,
   flow: FlowBackground,
   "well-log": WellLogBackground,
   drill: DrillBackground,
-  "reservoir-cells": ReservoirCellsBackground,
+  hexagons: HexagonsBackground,
   pressure: PressureBackground,
   horizon: HorizonBackground,
   "terrain-grid": TerrainGridBackground,
@@ -1816,11 +1899,11 @@ export {
   SeismicBackground,
   ContourBackground,
   StrataBackground,
-  PipelineGridBackground,
+  GridBackground,
   FlowBackground,
   WellLogBackground,
   DrillBackground,
-  ReservoirCellsBackground,
+  HexagonsBackground,
   PressureBackground,
   HorizonBackground,
   TerrainGridBackground,

@@ -1,6 +1,6 @@
 ---
 title: Background
-description: "Eleven decorative background effects drawn from oil and gas imagery: seismic traces, contour maps, strata, pipeline grids, flow lines, well logs, a drill bit, reservoir cells, pressure fields and a horizon, plus a perspective wireframe terrain. Quiet by design, themed in both modes."
+description: "Eleven decorative background effects drawn from oil and gas imagery: seismic sections, contour maps, strata, grids, flow lines, well logs, a drill bit, hexagon meshes, pressure fields and a horizon, plus a perspective wireframe terrain. Quiet by design, themed in both modes."
 ---
 
 <ComponentPreview name="background-demo" />
@@ -12,11 +12,11 @@ import {
   SeismicBackground,
   ContourBackground,
   StrataBackground,
-  PipelineGridBackground,
+  GridBackground,
   FlowBackground,
   WellLogBackground,
   DrillBackground,
-  ReservoirCellsBackground,
+  HexagonsBackground,
   PressureBackground,
   HorizonBackground,
   TerrainGridBackground,
@@ -47,14 +47,14 @@ Every effect behind the same sample text, in the tone `--chart-1` (azure); switc
 | `SeismicBackground` | Survey in section: seismogram, surface, faulted strata, source with wavefront rings | Rings ripple out from the source | Hero and summary cards |
 | `ContourBackground` | Structure map isolines, coloured by elevation | Gentle wander | The calm default for most surfaces |
 | `StrataBackground` | Cross-section of bedding planes with tints | Pans very slowly along the section | Dense dashboards |
-| `PipelineGridBackground` | Orthogonal line grid with nodes | Nodes glow in turn; optional pointer reveal | Landing, onboarding |
+| `GridBackground` | Orthogonal line grid with nodes | Nodes glow in turn; optional pointer reveal | Landing, onboarding |
 | `FlowBackground` | Gathering and distribution: streams converge into a hub, then branch out through junctions with nodes | Pulses travel along the lines; the hub rings breathe | Pipelines and process screens; the liveliest one |
 | `WellLogBackground` | Cross-section around a wellbore: strata, log tracks, casing | Tool string runs down the hole; the logging tool pulses | Wide hero and sign-in surfaces |
 | `DrillBackground` | Bit seen from above | Slow rotation | Centred hero content |
-| `ReservoirCellsBackground` | Hexagonal simulation mesh | Cells glow in turn | Simulation and modelling screens |
+| `HexagonsBackground` | Hexagonal simulation mesh | Cells glow in turn; optional pointer reveal | Simulation and modelling screens |
 | `PressureBackground` | Soft gradient field | Blobs migrate | Busy screens; the most abstract |
 | `HorizonBackground` | Ground line with layers | Breathing opacity | Empty states, onboarding |
-| `TerrainGridBackground` | Wireframe surface of squares in perspective, glowing nodes | Nodes pulse | Landing and sign-in pages |
+| `TerrainGridBackground` | Wireframe surface of squares in perspective, glowing nodes | Nodes pulse; optional pointer reveal | Landing and sign-in pages |
 
 ## Tone
 
@@ -82,7 +82,7 @@ Every effect freezes on its static frame with `animate={false}`, under `prefers-
 
 ### Pointer reveal
 
-`PipelineGridBackground` takes `interactive` to light up the grid around the pointer as it moves over the container. It listens on the parent element, so the background itself stays `pointer-events: none`.
+`GridBackground`, `HexagonsBackground` and `TerrainGridBackground` take `interactive` to light up the pattern around the pointer as it moves over the container. They listen on the parent element, so the background itself stays `pointer-events: none`.
 
 <ComponentPreview name="background-interactive" />
 
@@ -120,11 +120,11 @@ The rendered element is `aria-hidden` with `role="presentation"`, `pointer-event
 | `palette` | `"map" \| "tone"` | "map" | `map` colours the isolines by elevation with the chart accents; `tone` uses the single `tone`. |
 | `grid` | `boolean` | false | Draw a survey grid under the isolines. |
 
-### PipelineGridBackground
+### GridBackground, HexagonsBackground, TerrainGridBackground
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `interactive` | `boolean` | false | Reveal the grid around the pointer as it moves over the parent element. |
+| `interactive` | `boolean` | false | Reveal the pattern around the pointer as it moves over the parent element. |
 
 ### BackgroundEffect
 

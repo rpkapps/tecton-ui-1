@@ -1,5 +1,7 @@
 import { SeismicBackground } from "@tecton/react/tecton/background"
 
+import { BackgroundPreview } from "@/components/background-preview"
+
 const tones = [
   "neutral",
   "primary",
@@ -13,13 +15,13 @@ export default function BackgroundTones() {
   return (
     <div className="grid w-full max-w-3xl grid-cols-2 gap-3 sm:grid-cols-3">
       {tones.map((tone) => (
-        <div
+        <BackgroundPreview
           key={tone}
-          className="relative isolate flex h-32 items-end overflow-hidden rounded-lg border bg-background p-3"
+          className="h-32"
+          background={<SeismicBackground tone={tone} intensity="high" />}
         >
-          <SeismicBackground tone={tone} intensity="high" />
           <span className="text-sm font-medium">{tone}</span>
-        </div>
+        </BackgroundPreview>
       ))}
     </div>
   )

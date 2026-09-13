@@ -1,17 +1,33 @@
-import { Button } from "@tecton/react/components/button"
-import { PipelineGridBackground } from "@tecton/react/tecton/background"
+import {
+  GridBackground,
+  HexagonsBackground,
+  TerrainGridBackground,
+} from "@tecton/react/tecton/background"
 
-/** The pointer reveals the grid around it; the effect stays quiet otherwise. */
+import { BackgroundPreview } from "@/components/background-preview"
+
+/** The pointer reveals the pattern around it; the effects stay quiet otherwise. */
 export default function BackgroundInteractive() {
   return (
-    <div className="relative isolate flex h-64 w-full max-w-3xl flex-col items-center justify-center gap-3 overflow-hidden rounded-lg border bg-background p-6 text-center">
-      <PipelineGridBackground tone="blue" interactive />
-      <h3 className="text-2xl font-medium">Move the pointer over this area</h3>
-      <p className="max-w-md text-sm text-muted-foreground">
-        Pointer reactivity is opt in. Keep it for landing and onboarding
-        surfaces, not behind dashboards people stare at all day.
-      </p>
-      <Button size="sm">Open pipeline map</Button>
+    <div className="grid w-full max-w-3xl grid-cols-1 gap-3 sm:grid-cols-3">
+      <BackgroundPreview
+        className="h-48"
+        background={<GridBackground tone="blue" interactive />}
+      >
+        <span className="text-sm font-medium">grid</span>
+      </BackgroundPreview>
+      <BackgroundPreview
+        className="h-48"
+        background={<HexagonsBackground tone="blue" interactive />}
+      >
+        <span className="text-sm font-medium">hexagons</span>
+      </BackgroundPreview>
+      <BackgroundPreview
+        className="h-48"
+        background={<TerrainGridBackground tone="blue" interactive />}
+      >
+        <span className="text-sm font-medium">terrain-grid</span>
+      </BackgroundPreview>
     </div>
   )
 }
