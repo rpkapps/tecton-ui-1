@@ -9,6 +9,8 @@ import {
 import {
   BackgroundEffect,
   backgroundEffects,
+  backgroundIntensities,
+  backgroundTones,
   type BackgroundEffectName,
 } from "@tecton/react/tecton/background"
 import {
@@ -21,15 +23,8 @@ import {
 import { BackgroundPreview } from "@/components/background-preview"
 
 const effects = Object.keys(backgroundEffects) as BackgroundEffectName[]
-const tones = [
-  "neutral",
-  "primary",
-  "azure",
-  "saffron",
-  "lime",
-  "blue",
-] as const
-const intensities = ["low", "medium", "high"] as const
+const tones = backgroundTones
+const intensities = backgroundIntensities
 
 export default function BackgroundDemo() {
   const [effect, setEffect] = React.useState<BackgroundEffectName>("seismic")
