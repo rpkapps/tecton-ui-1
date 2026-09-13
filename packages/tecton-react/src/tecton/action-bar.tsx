@@ -24,8 +24,12 @@ const actionBarVariants = cva(
     variants: {
       placement: {
         toolbar: "w-full rounded-md bg-muted px-2 py-1.5",
+        // Not `w-fit`: `@container` contains the inline size, so a fit-content
+        // bar would resolve to its padding alone and the toolbar would measure
+        // no room. The card takes the width of its scroll container instead;
+        // pass `mx-auto max-w-*` to centre a narrower one.
         floating:
-          "sticky bottom-4 z-20 mx-auto w-fit max-w-full rounded-lg border bg-popover px-3 py-2 text-popover-foreground shadow-lg slide-in-from-bottom-2",
+          "sticky bottom-4 z-20 mx-4 rounded-lg border bg-popover px-3 py-2 text-popover-foreground shadow-lg slide-in-from-bottom-2",
       },
     },
     defaultVariants: {
