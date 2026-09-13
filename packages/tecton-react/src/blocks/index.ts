@@ -7,6 +7,7 @@ export type BlockCategory =
   | "forms"
   | "layouts"
   | "lists"
+  | "states"
 
 export type BlockEntry = {
   /** Folder name under `src/blocks/`. */
@@ -151,7 +152,8 @@ export const blocks: BlockEntry[] = [
   {
     name: "login-01",
     title: "Login",
-    description: "Centred sign-in card with validation, remember-me, SSO and request-access link.",
+    description:
+      "Centred sign-in card with validation, remember-me, SSO and request-access link.",
     category: "authentication",
     component: () => import("./login-01/page"),
   },
@@ -171,6 +173,62 @@ export const blocks: BlockEntry[] = [
     category: "lists",
     component: () => import("./list-01/page"),
   },
+  {
+    name: "page-state",
+    title: "Page state scaffold",
+    description:
+      "The shared layout of every page state: status row, code, title, actions and diagnostics next to an annotated well-log figure. Shown here as a page that is not available yet.",
+    category: "states",
+    component: () => import("./page-state/page"),
+  },
+  {
+    name: "not-found-01",
+    title: "404 · Not found",
+    description:
+      "Page not found: way back, command-palette search, likely pages for a stale link and the requested path; the log stops at TD.",
+    category: "states",
+    component: () => import("./not-found-01/page"),
+  },
+  {
+    name: "forbidden-01",
+    title: "403 · Access restricted",
+    description:
+      "No permission: inline access request with validation and a sent state, switch account; the lower log is locked.",
+    category: "states",
+    component: () => import("./forbidden-01/page"),
+  },
+  {
+    name: "session-expired-01",
+    title: "401 · Session expired",
+    description:
+      "Session timed out: unsaved-edits reassurance, password and SSO sign-in, return-to route; the log fades past the moment the session ended.",
+    category: "states",
+    component: () => import("./session-expired-01/page"),
+  },
+  {
+    name: "server-error-01",
+    title: "500 · Server error",
+    description:
+      "Unexpected error: retry, last saved view, copyable support report, collapsible stack trace; the log spikes off-scale at the anomaly.",
+    category: "states",
+    component: () => import("./server-error-01/page"),
+  },
+  {
+    name: "maintenance-01",
+    title: "503 · Scheduled maintenance",
+    description:
+      "Planned downtime: window progress, step checklist, status page and notify-me toggle; a hatched workover band crosses the log.",
+    category: "states",
+    component: () => import("./maintenance-01/page"),
+  },
+  {
+    name: "offline-01",
+    title: "Offline",
+    description:
+      "Connection lost: retry countdown, per-hop connection checks, work-offline fallback and queued edits; the log flat-lines after the last sample.",
+    category: "states",
+    component: () => import("./offline-01/page"),
+  },
 ]
 
 export const blockCategories: { id: BlockCategory; label: string }[] = [
@@ -180,6 +238,7 @@ export const blockCategories: { id: BlockCategory; label: string }[] = [
   { id: "forms", label: "Forms" },
   { id: "lists", label: "Lists" },
   { id: "authentication", label: "Authentication" },
+  { id: "states", label: "Page states" },
 ]
 
 export function getBlock(name: string): BlockEntry | undefined {

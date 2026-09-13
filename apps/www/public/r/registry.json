@@ -324,6 +324,39 @@
       ]
     },
     {
+      "name": "forbidden-01",
+      "type": "registry:block",
+      "title": "403 · Access restricted",
+      "description": "No permission: inline access request with validation and a sent state, switch account; the lower log is locked. Requires the @tecton/react package.",
+      "categories": [
+        "states"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/page-state"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/forbidden-01/components/forbidden.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/forbidden-01/components/forbidden.tsx"
+        },
+        {
+          "path": "registry/src/blocks/forbidden-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/forbidden-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/forbidden-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/forbidden-01/page.tsx"
+        }
+      ]
+    },
+    {
       "name": "horizons-panel",
       "type": "registry:block",
       "title": "Horizons panel",
@@ -424,6 +457,208 @@
           "path": "registry/src/blocks/login-01/page.tsx",
           "type": "registry:component",
           "target": "components/blocks/login-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "maintenance-01",
+      "type": "registry:block",
+      "title": "503 · Scheduled maintenance",
+      "description": "Planned downtime: window progress, step checklist, status page and notify-me toggle; a hatched workover band crosses the log. Requires the @tecton/react package.",
+      "categories": [
+        "states"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/page-state"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/maintenance-01/components/maintenance.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/maintenance-01/components/maintenance.tsx"
+        },
+        {
+          "path": "registry/src/blocks/maintenance-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/maintenance-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/maintenance-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/maintenance-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "not-found-01",
+      "type": "registry:block",
+      "title": "404 · Not found",
+      "description": "Page not found: way back, command-palette search, likely pages for a stale link and the requested path; the log stops at TD. Requires the @tecton/react package.",
+      "categories": [
+        "states"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/page-state"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/not-found-01/components/not-found.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/not-found-01/components/not-found.tsx"
+        },
+        {
+          "path": "registry/src/blocks/not-found-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/not-found-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/not-found-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/not-found-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "offline-01",
+      "type": "registry:block",
+      "title": "Offline",
+      "description": "Connection lost: retry countdown, per-hop connection checks, work-offline fallback and queued edits; the log flat-lines after the last sample. Requires the @tecton/react package.",
+      "categories": [
+        "states"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/page-state"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/offline-01/components/offline.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/offline-01/components/offline.tsx"
+        },
+        {
+          "path": "registry/src/blocks/offline-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/offline-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/offline-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/offline-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "page-state",
+      "type": "registry:block",
+      "title": "Page state scaffold",
+      "description": "The shared layout of every page state: status row, code, title, actions and diagnostics next to an annotated well-log figure. Shown here as a page that is not available yet. Requires the @tecton/react package.",
+      "categories": [
+        "states"
+      ],
+      "dependencies": [
+        "class-variance-authority",
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [],
+      "files": [
+        {
+          "path": "registry/src/blocks/page-state/components/log-track.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/page-state/components/log-track.tsx"
+        },
+        {
+          "path": "registry/src/blocks/page-state/components/page-state.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/page-state/components/page-state.tsx"
+        },
+        {
+          "path": "registry/src/blocks/page-state/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/page-state/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/page-state/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/page-state/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "server-error-01",
+      "type": "registry:block",
+      "title": "500 · Server error",
+      "description": "Unexpected error: retry, last saved view, copyable support report, collapsible stack trace; the log spikes off-scale at the anomaly. Requires the @tecton/react package.",
+      "categories": [
+        "states"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/page-state"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/server-error-01/components/server-error.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/server-error-01/components/server-error.tsx"
+        },
+        {
+          "path": "registry/src/blocks/server-error-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/server-error-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/server-error-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/server-error-01/page.tsx"
+        }
+      ]
+    },
+    {
+      "name": "session-expired-01",
+      "type": "registry:block",
+      "title": "401 · Session expired",
+      "description": "Session timed out: unsaved-edits reassurance, password and SSO sign-in, return-to route; the log fades past the moment the session ended. Requires the @tecton/react package.",
+      "categories": [
+        "states"
+      ],
+      "dependencies": [
+        "cn",
+        "lucide-react"
+      ],
+      "registryDependencies": [
+        "@tecton/page-state"
+      ],
+      "files": [
+        {
+          "path": "registry/src/blocks/session-expired-01/components/session-expired.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/session-expired-01/components/session-expired.tsx"
+        },
+        {
+          "path": "registry/src/blocks/session-expired-01/data.ts",
+          "type": "registry:component",
+          "target": "components/blocks/session-expired-01/data.ts"
+        },
+        {
+          "path": "registry/src/blocks/session-expired-01/page.tsx",
+          "type": "registry:component",
+          "target": "components/blocks/session-expired-01/page.tsx"
         }
       ]
     },
