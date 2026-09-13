@@ -8,11 +8,17 @@ import {
   AppFinderList,
   AppFinderMenu,
   AppFinderTrigger,
+  type AppFinderTone,
 } from "@tecton/react/tecton/app-finder"
 
-const catalogue = [
+const catalogue: {
+  category: string
+  tone: AppFinderTone
+  apps: { id: string; code: string; name: string; description: string }[]
+}[] = [
   {
     category: "Subsurface",
+    tone: "blue",
     apps: [
       {
         id: "dsg",
@@ -36,6 +42,7 @@ const catalogue = [
   },
   {
     category: "Wells",
+    tone: "green",
     apps: [
       {
         id: "dwp",
@@ -53,6 +60,7 @@ const catalogue = [
   },
   {
     category: "Facilities",
+    tone: "saffron",
     apps: [
       {
         id: "aam",
@@ -70,16 +78,16 @@ const catalogue = [
   },
 ]
 
-const allApps = catalogue.flatMap((group) => group.apps)
+const allApps = catalogue.flatMap((group) =>
+  group.apps.map((app) => ({ ...app, tone: group.tone }))
+)
 
 export default function AppFinderDemo() {
   const [current, setCurrent] = React.useState(allApps[0])
 
   return (
     <AppFinder>
-      <AppFinderTrigger
-        aria-label={`Switch application, current: ${current.name}`}
-      >
+      <AppFinderTrigger name={current.name} tone={current.tone}>
         {current.code}
       </AppFinderTrigger>
       <AppFinderMenu>
@@ -97,6 +105,7 @@ export default function AppFinderDemo() {
                   key={app.id}
                   id={app.id}
                   icon={app.code}
+                  tone={group.tone}
                   name={app.name}
                   description={app.description}
                   keywords={[app.code, group.category]}

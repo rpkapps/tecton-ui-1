@@ -1,3 +1,5 @@
+import type { AppFinderTone } from "@tecton/react/tecton/app-finder"
+
 export type AppCategory =
   | "Subsurface"
   | "Wells"
@@ -29,6 +31,16 @@ export type ShellCommand = {
   shortcut?: string
 }
 
+/** Tile colour of each category in the app finder and command palette. */
+export const appTones: Record<AppCategory, AppFinderTone> = {
+  Subsurface: "blue",
+  Wells: "green",
+  Facilities: "saffron",
+  Economics: "violet",
+  Operations: "red",
+  "Data & Admin": "neutral",
+}
+
 export const appCategories: AppCategory[] = [
   "Subsurface",
   "Wells",
@@ -53,154 +65,154 @@ export const apps: ShellApp[] = [
     "DSG",
     "Discovery",
     "Subsurface",
-    "Regional geology, fairway maps and prospect inventory."
+    "Regional geology, fairway maps and prospect inventory"
   ),
   app(
     "fwm",
     "FWM",
     "Framework Modeling",
     "Subsurface",
-    "Horizons, faults and the structural framework."
+    "Horizons, faults and the structural framework"
   ),
   app(
     "fcm",
     "FCM",
     "Facies Modeling",
     "Subsurface",
-    "Facies belts, variograms and property models."
+    "Facies belts, variograms and property models"
   ),
   app(
     "wcr",
     "WCR",
     "Well Correlation",
     "Subsurface",
-    "Log correlation across wells and markers."
+    "Log correlation across wells and markers"
   ),
   app(
     "vol",
     "VOL",
     "Volumetrics",
     "Subsurface",
-    "In-place volumes and uncertainty ranges."
+    "In-place volumes and uncertainty ranges"
   ),
   app(
     "dwp",
     "DWP",
     "Well Planning",
     "Wells",
-    "Well design, casing schematics and design comparison."
+    "Well design, casing schematics and design comparison"
   ),
   app(
     "trj",
     "TRJ",
     "Trajectory Design",
     "Wells",
-    "Planned trajectories, targets and anti-collision."
+    "Planned trajectories, targets and anti-collision"
   ),
   app(
     "cmp",
     "CMP",
     "Completions",
     "Wells",
-    "Completion design and lower-completion equipment."
+    "Completion design and lower-completion equipment"
   ),
   app(
     "dfr",
     "DFR",
     "Drilling Reports",
     "Wells",
-    "Daily drilling reports and rig activity."
+    "Daily drilling reports and rig activity"
   ),
   app(
     "aam",
     "AAM",
     "Asset Management",
     "Facilities",
-    "Field development alternatives and decision gates."
+    "Field development alternatives and decision gates"
   ),
   app(
     "sub",
     "SUB",
     "Subsea Layout",
     "Facilities",
-    "Templates, manifolds, flowlines and umbilicals."
+    "Templates, manifolds, flowlines and umbilicals"
   ),
   app(
     "hst",
     "HST",
     "Host Selection",
     "Facilities",
-    "Host capacity, tie-back distance and tariff cases."
+    "Host capacity, tie-back distance and tariff cases"
   ),
   app(
     "flw",
     "FLW",
     "Flow Assurance",
     "Facilities",
-    "Hydrate, wax and slugging screening."
+    "Hydrate, wax and slugging screening"
   ),
   app(
     "eco",
     "ECO",
     "Economics",
     "Economics",
-    "Cost, schedule and NPV of the active concepts."
+    "Cost, schedule and NPV of the active concepts"
   ),
   app(
     "cst",
     "CST",
     "Cost Estimating",
     "Economics",
-    "Class estimates and cost breakdown structures."
+    "Class estimates and cost breakdown structures"
   ),
   app(
     "rsk",
     "RSK",
     "Risk Register",
     "Economics",
-    "Project risks, owners and mitigations."
+    "Project risks, owners and mitigations"
   ),
   app(
     "ops",
     "OPS",
     "Operations",
     "Operations",
-    "Production surveillance and well status."
+    "Production surveillance and well status"
   ),
   app(
     "mnt",
     "MNT",
     "Maintenance",
     "Operations",
-    "Work orders and integrity inspections."
+    "Work orders and integrity inspections"
   ),
   app(
     "hse",
     "HSE",
     "HSE Reporting",
     "Operations",
-    "Incidents, observations and safety KPIs."
+    "Incidents, observations and safety KPIs"
   ),
   app(
     "dat",
     "DAT",
     "Data Catalogue",
     "Data & Admin",
-    "Datasets, lineage and quality checks."
+    "Datasets, lineage and quality checks"
   ),
   app(
     "adm",
     "ADM",
     "Administration",
     "Data & Admin",
-    "Users, roles and application access."
+    "Users, roles and application access"
   ),
   app(
     "rel",
     "REL",
     "Release Notes",
     "Data & Admin",
-    "What changed across the platform."
+    "What changed across the platform"
   ),
 ]
 
