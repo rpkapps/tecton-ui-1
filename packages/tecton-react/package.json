@@ -2,6 +2,9 @@
   "name": "@tecton/react",
   "version": "0.0.0",
   "type": "module",
+  "sideEffects": [
+    "**/*.css"
+  ],
   "private": true,
   "scripts": {
     "lint": "eslint",
@@ -60,7 +63,7 @@
     "./icons/*": "./src/icons/*.tsx",
     "./blocks/*": "./src/blocks/*"
   },
-  "description": "Tecton design system for React \u2014 shadcn/ui (React Aria base) components themed through Tecton tokens, plus Tecton-specific components, icons and blocks.",
+  "description": "Tecton design system for React — shadcn/ui (React Aria base) components themed through Tecton tokens, plus Tecton-specific components, icons and blocks.",
   "files": [
     "src",
     "icons/icons.json",
