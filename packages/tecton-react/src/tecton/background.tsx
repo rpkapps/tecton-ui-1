@@ -43,6 +43,18 @@ const backgroundStyles = `
 @keyframes tecton-bg-ripple{from{transform:scale(.05);opacity:1}to{transform:scale(1);opacity:0}}
 `
 
+/** The values of the shared variants, for pickers and settings screens. */
+const backgroundTones = [
+  "neutral",
+  "primary",
+  "azure",
+  "saffron",
+  "lime",
+  "blue",
+] as const
+const backgroundIntensities = ["low", "medium", "high"] as const
+const backgroundSpeeds = ["slow", "normal", "fast"] as const
+
 const backgroundVariants = cva(
   "pointer-events-none absolute inset-0 -z-10 overflow-hidden select-none",
   {
@@ -76,6 +88,9 @@ const backgroundVariants = cva(
 
 type BackgroundProps = React.ComponentProps<"div"> &
   VariantProps<typeof backgroundVariants> & {
+    tone?: (typeof backgroundTones)[number] | null
+    intensity?: (typeof backgroundIntensities)[number] | null
+    speed?: (typeof backgroundSpeeds)[number] | null
     /** Play the effect's motion. Reduced motion and off-screen always pause it. */
     animate?: boolean
   }
@@ -156,11 +171,12 @@ function seeded(seed: number) {
 }
 
 /**
- * Tile size of the repeating patterns, in CSS pixels. Large enough that a
- * repeat only ever shows on screens wider than 2400px or taller than 1200px.
+ * Size of a section drawn by the survey effects, and the tile of the
+ * repeating patterns, in CSS pixels. Large enough that a repeat only ever
+ * shows on screens wider than 2400px or taller than 1200px.
  */
-const TILE_W = 2400
-const TILE_H = 1200
+const SECTION_W = 2400
+const SECTION_H = 1200
 
 /**
  * A full-size SVG whose content is a repeating pixel-scale pattern. `children`
@@ -170,8 +186,8 @@ const TILE_H = 1200
  */
 function PatternSvg({
   id,
-  width = TILE_W,
-  height = TILE_H,
+  width = SECTION_W,
+  height = SECTION_H,
   style,
   children,
 }: {
@@ -268,13 +284,152 @@ function Reveal({
 }
 
 /* ---------------------------------------------------------------------------
+ * Shared drawing: survey grid, pulsing rings, and the bedding-plane section
+ * used by seismic, strata and well log.
+ * ------------------------------------------------------------------------- */
+
+/**
+ * Faint survey grid in soft ink: verticals every `step` px down to
+ * `verticalsTo`, plus either a matching set of horizontals (`"grid"`) or the
+ * given rows. Every fifth vertical can be stronger.
+ */
+function SurveyGrid({
+  width,
+  height,
+  step = 120,
+  verticalsTo = height,
+  horizontals,
+  weak = 0.5,
+  strong = weak,
+  horizontalOpacity = weak,
+}: {
+  width: number
+  height: number
+  step?: number
+  verticalsTo?: number
+  horizontals?: "grid" | number[]
+  weak?: number
+  strong?: number
+  horizontalOpacity?: number
+}) {
+  const rows =
+    horizontals === "grid"
+      ? Array.from({ length: height / step + 1 }, (_, i) => i * step)
+      : (horizontals ?? [])
+  return (
+    <g stroke="var(--bg-ink-soft)" fill="none">
+      {Array.from({ length: width / step + 1 }, (_, i) => (
+        <line
+          key={`v${i}`}
+          x1={i * step}
+          x2={i * step}
+          y1="0"
+          y2={verticalsTo}
+          strokeOpacity={i % 5 === 0 ? strong : weak}
+          vectorEffect="non-scaling-stroke"
+        />
+      ))}
+      {rows.map((y, i) => (
+        <line
+          key={`h${i}`}
+          x1="0"
+          x2={width}
+          y1={y}
+          y2={y}
+          strokeOpacity={
+            horizontals === "grid" && i % 5 === 0 ? strong : horizontalOpacity
+          }
+          vectorEffect="non-scaling-stroke"
+        />
+      ))}
+    </g>
+  )
+}
+
+/** Concentric rings that breathe in turn, fading outwards. */
+function PulseRings({
+  cx,
+  cy,
+  radii,
+  opacity = 1,
+}: {
+  cx: number
+  cy: number
+  radii: number[]
+  opacity?: number
+}) {
+  return (
+    <g fill="none" stroke="var(--bg-ink)">
+      {radii.map((r, i) => (
+        <circle
+          key={r}
+          cx={cx}
+          cy={cy}
+          r={r}
+          strokeOpacity={opacity - i * 0.3}
+          vectorEffect="non-scaling-stroke"
+          style={{
+            animation: `tecton-bg-pulse ${(6 + i * 2).toFixed(0)}s ease-in-out infinite`,
+            animationDelay: `${(-i * 2).toFixed(0)}s`,
+          }}
+        />
+      ))}
+    </g>
+  )
+}
+
+/** A bedding plane: its base depth and the wave along it. */
+type Plane = { y: number; wave: (x: number) => number }
+
+/** A bedding plane across the section; whole wavelengths, so a tile repeats. */
+function beddingPlane(random: () => number, amplitude: number): Plane["wave"] {
+  const waves = [1, 2, 3].map((k) => ({
+    k,
+    amp: (amplitude / k) * (0.5 + random()),
+    phase: random() * Math.PI * 2,
+  }))
+  return (x: number) =>
+    waves.reduce(
+      (sum, w) =>
+        sum + w.amp * Math.sin((2 * Math.PI * w.k * x) / SECTION_W + w.phase),
+      0
+    )
+}
+
+/**
+ * Path data for a stack of bedding planes: one open line per plane and one
+ * closed layer between each pair of neighbours. `depth` gives a plane's depth
+ * at x, so a caller can add a fault or other offset.
+ */
+function sectionPaths<TPlane extends Plane>(
+  planes: TPlane[],
+  step: number,
+  depth: (plane: TPlane, x: number) => number = (plane, x) =>
+    plane.y + plane.wave(x)
+) {
+  const xs = Array.from({ length: SECTION_W / step + 1 }, (_, i) => i * step)
+  const along = (plane: TPlane) =>
+    xs.map((x) => `L${x} ${Math.round(depth(plane, x))}`).join("")
+  const back = (plane: TPlane) =>
+    [...xs]
+      .reverse()
+      .map((x) => `L${x} ${Math.round(depth(plane, x))}`)
+      .join("")
+  const lines = planes.map(
+    (plane) => `M0 ${Math.round(depth(plane, 0))}${along(plane)}`
+  )
+  const layers = planes
+    .slice(0, -1)
+    .map((top, i) => `${lines[i]}${back(planes[i + 1])}Z`)
+  return { lines, layers }
+}
+
+/* ---------------------------------------------------------------------------
  * 1. Seismic — a survey in section: the seismogram across the top with its
  *    main event, the surface line, faulted strata below, and the source with
  *    wavefront rings rippling out, joined up to the trace.
  * ------------------------------------------------------------------------- */
 
-const SEIS_W = 2400
-const SEIS_H = 1200
 const SEIS_SURFACE = 380
 const SEIS_TRACE_Y = 190
 const SEIS_SOURCE = [820, 780] as const
@@ -286,14 +441,14 @@ function seismogram(random: () => number) {
   const bursts = [
     { at: sx, size: 110, amp: 95 },
     ...Array.from({ length: 6 }, () => ({
-      at: random() * SEIS_W,
+      at: random() * SECTION_W,
       size: 40 + random() * 60,
       amp: 10 + random() * 26,
     })),
   ]
   const points: string[] = [`M0 ${SEIS_TRACE_Y}`]
   let phase = 0
-  for (let x = 4; x <= SEIS_W; x += 4) {
+  for (let x = 4; x <= SECTION_W; x += 4) {
     let amp = 2.2
     for (const b of bursts) {
       const d = (x - b.at) / b.size
@@ -307,88 +462,61 @@ function seismogram(random: () => number) {
 
 function SeismicBackground({ className, ...props }: BackgroundProps) {
   const id = React.useId()
-  const random = seeded(7)
   const [sx, sy] = SEIS_SOURCE
-  const trace = seismogram(random)
-  // Bedding planes below the surface, dropped on the far side of the fault.
-  const step = 16
-  const xs = Array.from({ length: SEIS_W / step + 1 }, (_, i) => i * step)
-  const planes: { y: number; wave: (x: number) => number; drop: number }[] = []
-  let y = SEIS_SURFACE + 70
-  while (y < SEIS_H + 80) {
-    planes.push({
-      y,
-      wave: beddingPlane(random, 12 + random() * 26),
-      drop: 50 + random() * 50,
-    })
-    y += 70 + random() * 80
-  }
-  const at = (plane: (typeof planes)[number], x: number) => {
-    const t = Math.min(1, Math.max(0, (x - SEIS_FAULT_X + 30) / 60))
-    return (plane.y + plane.wave(x) + plane.drop * t * t * (3 - 2 * t)).toFixed(
-      0
-    )
-  }
-  const line = (plane: (typeof planes)[number]) =>
-    `M0 ${at(plane, 0)}${xs.map((x) => `L${x} ${at(plane, x)}`).join("")}`
-  const layers = planes.slice(0, -1).map((top, i) => {
-    const bottom = planes[i + 1]
-    const back = [...xs]
-      .reverse()
-      .map((x) => `L${x} ${at(bottom, x)}`)
-      .join("")
-    return {
-      d: `${line(top)}${back}Z`,
-      fill: i % 3 === 1 ? "var(--bg-ink-soft)" : "none",
+  const { trace, lines, layers } = React.useMemo(() => {
+    const random = seeded(7)
+    const trace = seismogram(random)
+    // Bedding planes below the surface, dropped on the far side of the fault.
+    const planes: (Plane & { drop: number })[] = []
+    let y = SEIS_SURFACE + 70
+    while (y < SECTION_H + 80) {
+      planes.push({
+        y,
+        wave: beddingPlane(random, 12 + random() * 26),
+        drop: 50 + random() * 50,
+      })
+      y += 70 + random() * 80
     }
-  })
+    const { lines, layers } = sectionPaths(planes, 16, (plane, x) => {
+      const t = Math.min(1, Math.max(0, (x - SEIS_FAULT_X + 30) / 60))
+      return plane.y + plane.wave(x) + plane.drop * t * t * (3 - 2 * t)
+    })
+    return { trace, lines, layers }
+  }, [])
   const rings = Array.from({ length: 8 })
   return (
     <Background data-effect="seismic" className={className} {...props}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="absolute inset-0 size-full"
-        viewBox={`0 0 ${SEIS_W} ${SEIS_H}`}
+        viewBox={`0 0 ${SECTION_W} ${SECTION_H}`}
         preserveAspectRatio="xMidYMid slice"
       >
         <defs>
           <clipPath id={`${id}-below`}>
-            <rect x="0" y={SEIS_SURFACE} width={SEIS_W} height={SEIS_H} />
+            <rect x="0" y={SEIS_SURFACE} width={SECTION_W} height={SECTION_H} />
           </clipPath>
         </defs>
-        {/* Survey grid above the surface */}
-        <g stroke="var(--bg-ink-soft)" strokeOpacity="0.5">
-          {Array.from({ length: SEIS_W / 120 + 1 }, (_, i) => (
-            <line
-              key={`v${i}`}
-              x1={i * 120}
-              x2={i * 120}
-              y1="0"
-              y2={SEIS_SURFACE}
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-          {[SEIS_TRACE_Y - 100, SEIS_TRACE_Y + 100].map((gy) => (
-            <line
-              key={gy}
-              x1="0"
-              x2={SEIS_W}
-              y1={gy}
-              y2={gy}
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-        </g>
+        <SurveyGrid
+          width={SECTION_W}
+          height={SECTION_H}
+          verticalsTo={SEIS_SURFACE}
+          horizontals={[SEIS_TRACE_Y - 100, SEIS_TRACE_Y + 100]}
+        />
         {/* Strata with the fault */}
         <g clipPath={`url(#${id}-below)`}>
-          {layers.map(({ d, fill }, i) => (
-            <path key={`layer-${i}`} d={d} fill={fill} />
+          {layers.map((d, i) => (
+            <path
+              key={`layer-${i}`}
+              d={d}
+              fill={i % 3 === 1 ? "var(--bg-ink-soft)" : "none"}
+            />
           ))}
           <g fill="none" stroke="var(--bg-ink)">
-            {planes.map((plane, i) => (
+            {lines.map((d, i) => (
               <path
                 key={`plane-${i}`}
-                d={line(plane)}
+                d={d}
                 strokeOpacity={i % 2 ? 0.55 : 1}
                 strokeDasharray={i % 3 === 2 ? "6 8" : undefined}
                 vectorEffect="non-scaling-stroke"
@@ -398,7 +526,7 @@ function SeismicBackground({ className, ...props }: BackgroundProps) {
               x1={SEIS_FAULT_X - 30}
               x2={SEIS_FAULT_X + 90}
               y1={SEIS_SURFACE}
-              y2={SEIS_H}
+              y2={SECTION_H}
               stroke="var(--bg-ink-strong)"
               strokeOpacity="0.7"
               vectorEffect="non-scaling-stroke"
@@ -429,7 +557,7 @@ function SeismicBackground({ className, ...props }: BackgroundProps) {
         {/* Surface */}
         <line
           x1="0"
-          x2={SEIS_W}
+          x2={SECTION_W}
           y1={SEIS_SURFACE}
           y2={SEIS_SURFACE}
           stroke="var(--bg-ink-strong)"
@@ -853,28 +981,13 @@ function ContourBackground({
             ))}
           </g>
           {grid && (
-            <g stroke="var(--bg-ink-soft)" strokeWidth="1">
-              {Array.from({ length: CONTOUR_W / CONTOUR_GRID }, (_, i) => (
-                <line
-                  key={`v${i}`}
-                  x1={i * CONTOUR_GRID}
-                  x2={i * CONTOUR_GRID}
-                  y1="0"
-                  y2={CONTOUR_H}
-                  strokeOpacity={i % 5 === 0 ? 1 : 0.5}
-                />
-              ))}
-              {Array.from({ length: CONTOUR_H / CONTOUR_GRID }, (_, i) => (
-                <line
-                  key={`h${i}`}
-                  x1="0"
-                  x2={CONTOUR_W}
-                  y1={i * CONTOUR_GRID}
-                  y2={i * CONTOUR_GRID}
-                  strokeOpacity={i % 5 === 0 ? 1 : 0.5}
-                />
-              ))}
-            </g>
+            <SurveyGrid
+              width={CONTOUR_W}
+              height={CONTOUR_H}
+              horizontals="grid"
+              weak={0.5}
+              strong={1}
+            />
           )}
           <g fill="none" strokeLinejoin="round" strokeLinecap="round">
             {levels.map(({ d, color, index }, i) => (
@@ -898,56 +1011,29 @@ function ContourBackground({
  *    alternating tints, panning very slowly along the section.
  * ------------------------------------------------------------------------- */
 
-/** A bedding plane across the tile; whole wavelengths, so the tile repeats. */
-function beddingPlane(random: () => number, amplitude: number) {
-  const waves = [1, 2, 3].map((k) => ({
-    k,
-    amp: (amplitude / k) * (0.5 + random()),
-    phase: random() * Math.PI * 2,
-  }))
-  return (x: number) =>
-    waves.reduce(
-      (sum, w) =>
-        sum + w.amp * Math.sin((2 * Math.PI * w.k * x) / TILE_W + w.phase),
-      0
-    )
-}
+/** Fill of every third layer, top to bottom. */
+const STRATA_TINTS = [
+  { fill: "var(--bg-ink-soft)", opacity: 1 },
+  { fill: "var(--bg-ink)", opacity: 0.5 },
+  { fill: "none", opacity: 1 },
+]
 
 function StrataBackground({ className, ...props }: BackgroundProps) {
   const id = React.useId()
-  const random = seeded(3)
-  const step = 12
-  const xs = Array.from({ length: TILE_W / step + 1 }, (_, i) => i * step)
-  // Layer boundaries from the top of the tile to the bottom; the last plane
-  // reuses the first one's wave so the tile also repeats vertically.
-  const first = beddingPlane(random, 14)
-  const planes: { y: number; wave: (x: number) => number }[] = [
-    { y: 0, wave: first },
-  ]
-  let y = 0
-  while (y < TILE_H - 70) {
-    y += 26 + random() * 44
-    planes.push({ y, wave: beddingPlane(random, 8 + random() * 12) })
-  }
-  planes.push({ y: TILE_H, wave: first })
-  const line = (plane: (typeof planes)[number]) =>
-    xs
-      .map(
-        (x, i) =>
-          `${i === 0 ? "M" : "L"}${x} ${(plane.y + plane.wave(x)).toFixed(1)}`
-      )
-      .join(" ")
-  const layers = planes.slice(0, -1).map((top, i) => {
-    const bottom = planes[i + 1]
-    const down = xs.map((x) => `L${x} ${(top.y + top.wave(x)).toFixed(1)}`)
-    const back = [...xs]
-      .reverse()
-      .map((x) => `L${x} ${(bottom.y + bottom.wave(x)).toFixed(1)}`)
-    return {
-      d: `M0 ${(top.y + top.wave(0)).toFixed(1)} ${down.join(" ")} ${back.join(" ")} Z`,
-      tint: i % 3,
+  const { lines, layers } = React.useMemo(() => {
+    const random = seeded(3)
+    // Layer boundaries from the top of the tile to the bottom; the last plane
+    // reuses the first one's wave so the tile also repeats vertically.
+    const first = beddingPlane(random, 14)
+    const planes: Plane[] = [{ y: 0, wave: first }]
+    let y = 0
+    while (y < SECTION_H - 70) {
+      y += 26 + random() * 44
+      planes.push({ y, wave: beddingPlane(random, 8 + random() * 12) })
     }
-  })
+    planes.push({ y: SECTION_H, wave: first })
+    return sectionPaths(planes, 12)
+  }, [])
   return (
     <Background data-effect="strata" className={className} {...props}>
       <PatternSvg
@@ -957,27 +1043,17 @@ function StrataBackground({ className, ...props }: BackgroundProps) {
             "tecton-bg-drift-x calc(var(--bg-duration) * 5) linear infinite",
         }}
       >
-        {layers.map(({ d, tint }, i) => (
+        {layers.map((d, i) => (
           <path
             key={`layer-${i}`}
             d={d}
-            fill={
-              tint === 0
-                ? "var(--bg-ink-soft)"
-                : tint === 1
-                  ? "var(--bg-ink)"
-                  : "none"
-            }
-            fillOpacity={tint === 1 ? 0.5 : 1}
+            fill={STRATA_TINTS[i % 3].fill}
+            fillOpacity={STRATA_TINTS[i % 3].opacity}
           />
         ))}
         <g fill="none" stroke="var(--bg-ink)" strokeWidth="1">
-          {planes.slice(0, -1).map((plane, i) => (
-            <path
-              key={`plane-${i}`}
-              d={line(plane)}
-              strokeOpacity={i % 2 ? 0.6 : 1}
-            />
+          {lines.slice(0, -1).map((d, i) => (
+            <path key={`plane-${i}`} d={d} strokeOpacity={i % 2 ? 0.6 : 1} />
           ))}
         </g>
       </PatternSvg>
@@ -1000,13 +1076,15 @@ function GridBackground({
   /** Reveal the grid around the pointer as it moves over the parent. */
   interactive?: boolean
 }) {
-  const random = seeded(19)
-  const nodes = Array.from({ length: 40 }, () => ({
-    x: Math.round(random() * 40) * GRID,
-    y: Math.round(random() * 22) * GRID,
-    delay: -random() * 30,
-    duration: 4 + random() * 6,
-  }))
+  const nodes = React.useMemo(() => {
+    const random = seeded(19)
+    return Array.from({ length: 40 }, () => ({
+      x: Math.round(random() * 40) * GRID,
+      y: Math.round(random() * 22) * GRID,
+      delay: -random() * 30,
+      duration: 4 + random() * 6,
+    }))
+  }, [])
   const ref = usePointerReveal(interactive)
   const lines = (ink: string) =>
     `linear-gradient(to right, ${ink} 1px, transparent 1px), linear-gradient(to bottom, ${ink} 1px, transparent 1px)`
@@ -1058,26 +1136,26 @@ function GridBackground({
  *    nodes, pulses travelling along all of it over a faint grid.
  * ------------------------------------------------------------------------- */
 
-const FLOW_W = 2400
-const FLOW_H = 1200
-const FLOW_HUB = [FLOW_W / 2, FLOW_H / 2] as const
+const FLOW_HUB = [SECTION_W / 2, SECTION_H / 2] as const
 const FLOW_PULSE = 220
 
 function FlowBackground({ className, ...props }: BackgroundProps) {
-  const random = seeded(23)
   const [hx, hy] = FLOW_HUB
   // Inbound streams: spread across the left edge, bending into the hub.
-  const streams = Array.from({ length: 26 }, (_, i) => {
-    const y = hy - 520 + (i / 25) * 1040 + (random() - 0.5) * 30
-    const c1 = 380 + random() * 220
-    return {
-      d: `M-20 ${y.toFixed(0)} C ${c1.toFixed(0)} ${y.toFixed(0)}, ${(hx - 420).toFixed(0)} ${hy}, ${hx} ${hy}`,
-      pulse: i % 2 === 0,
-      speed: 0.7 + random() * 0.8,
-      delay: -random() * 30,
-      strong: i % 4 === 0,
-    }
-  })
+  const streams = React.useMemo(() => {
+    const random = seeded(23)
+    return Array.from({ length: 26 }, (_, i) => {
+      const y = hy - 520 + (i / 25) * 1040 + (random() - 0.5) * 30
+      const c1 = 380 + random() * 220
+      return {
+        d: `M-20 ${y.toFixed(0)} C ${c1.toFixed(0)} ${y.toFixed(0)}, ${(hx - 420).toFixed(0)} ${hy}, ${hx} ${hy}`,
+        pulse: i % 2 === 0,
+        speed: 0.7 + random() * 0.8,
+        delay: -random() * 30,
+        strong: i % 4 === 0,
+      }
+    })
+  }, [hx, hy])
   // Outbound tree: trunk, three branches, each splitting in two.
   const trunkEnd = hx + 300
   const branchX = hx + 620
@@ -1087,7 +1165,7 @@ function FlowBackground({ className, ...props }: BackgroundProps) {
     d: `M${trunkEnd} ${hy} C ${trunkEnd + 160} ${hy}, ${trunkEnd + 160} ${hy + dy}, ${branchX} ${hy + dy}`,
     leaves: [-95, 95].map((ly) => ({
       y: hy + dy + ly,
-      d: `M${branchX} ${hy + dy} C ${branchX + 180} ${hy + dy}, ${branchX + 180} ${hy + dy + ly}, ${leafX} ${hy + dy + ly} L ${FLOW_W + 20} ${hy + dy + ly}`,
+      d: `M${branchX} ${hy + dy} C ${branchX + 180} ${hy + dy}, ${branchX + 180} ${hy + dy + ly}, ${leafX} ${hy + dy + ly} L ${SECTION_W + 20} ${hy + dy + ly}`,
       dashed: ly > 0,
     })),
   }))
@@ -1108,33 +1186,11 @@ function FlowBackground({ className, ...props }: BackgroundProps) {
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="absolute inset-0 size-full"
-        viewBox={`0 0 ${FLOW_W} ${FLOW_H}`}
+        viewBox={`0 0 ${SECTION_W} ${SECTION_H}`}
         preserveAspectRatio="xMidYMid slice"
         style={{ "--bg-dash": `${FLOW_PULSE}px` } as React.CSSProperties}
       >
-        {/* Grid */}
-        <g stroke="var(--bg-ink-soft)" strokeOpacity="0.5">
-          {Array.from({ length: FLOW_W / 120 + 1 }, (_, i) => (
-            <line
-              key={`v${i}`}
-              x1={i * 120}
-              x2={i * 120}
-              y1="0"
-              y2={FLOW_H}
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-          {Array.from({ length: FLOW_H / 120 + 1 }, (_, i) => (
-            <line
-              key={`h${i}`}
-              x1="0"
-              x2={FLOW_W}
-              y1={i * 120}
-              y2={i * 120}
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-        </g>
+        <SurveyGrid width={SECTION_W} height={SECTION_H} horizontals="grid" />
         {/* Inbound streams */}
         <g fill="none" strokeLinecap="round">
           {streams.map(({ d, strong }, i) => (
@@ -1165,33 +1221,18 @@ function FlowBackground({ className, ...props }: BackgroundProps) {
             x1={hx}
             x2={hx}
             y1="0"
-            y2={FLOW_H}
+            y2={SECTION_H}
             vectorEffect="non-scaling-stroke"
           />
           <line
             x1="0"
-            x2={FLOW_W}
+            x2={SECTION_W}
             y1={hy}
             y2={hy}
             vectorEffect="non-scaling-stroke"
           />
         </g>
-        <g fill="none" stroke="var(--bg-ink)">
-          {[60, 110, 170].map((r, i) => (
-            <circle
-              key={r}
-              cx={hx}
-              cy={hy}
-              r={r}
-              strokeOpacity={1 - i * 0.3}
-              vectorEffect="non-scaling-stroke"
-              style={{
-                animation: `tecton-bg-pulse ${(6 + i * 2).toFixed(0)}s ease-in-out infinite`,
-                animationDelay: `${(-i * 2).toFixed(0)}s`,
-              }}
-            />
-          ))}
-        </g>
+        <PulseRings cx={hx} cy={hy} radii={[60, 110, 170]} />
         <circle cx={hx} cy={hy} r="16" fill="var(--bg-ink-strong)" />
         <circle
           cx={hx}
@@ -1280,8 +1321,6 @@ function FlowBackground({ className, ...props }: BackgroundProps) {
  *    centre with the tool string running down it, and the surface above.
  * ------------------------------------------------------------------------- */
 
-const WELL_W = 2400
-const WELL_H = 1200
 const WELL_SURFACE = 140
 const WELL_TRACKS = [-420, -300, 300, 420]
 
@@ -1305,47 +1344,30 @@ function wellLogTrace(
 
 function WellLogBackground({ className, ...props }: BackgroundProps) {
   const id = React.useId()
-  const random = seeded(31)
-  const step = 16
-  const xs = Array.from({ length: WELL_W / step + 1 }, (_, i) => i * step)
-  // Bedding planes from just below the surface to the bottom of the section.
-  const planes: { y: number; wave: (x: number) => number }[] = []
-  let y = WELL_SURFACE + 50
-  while (y < WELL_H + 60) {
-    planes.push({ y, wave: beddingPlane(random, 10 + random() * 22) })
-    y += 56 + random() * 90
-  }
-  const at = (plane: (typeof planes)[number], x: number) =>
-    (plane.y + plane.wave(x)).toFixed(0)
-  const layers = planes.slice(0, -1).map((top, i) => {
-    const bottom = planes[i + 1]
-    const down = xs.map((x) => `L${x} ${at(top, x)}`).join("")
-    const back = [...xs]
-      .reverse()
-      .map((x) => `L${x} ${at(bottom, x)}`)
-      .join("")
-    const kind = i % 4
-    return {
-      d: `M0 ${at(top, 0)}${down}${back}Z`,
-      fill:
-        kind === 1
-          ? "var(--bg-ink-soft)"
-          : kind === 3
-            ? `url(#${id}-dots)`
-            : "none",
+  const cx = SECTION_W / 2
+  const { lines, layers, tracks } = React.useMemo(() => {
+    const random = seeded(31)
+    // Bedding planes from just below the surface to the bottom of the section.
+    const planes: Plane[] = []
+    let y = WELL_SURFACE + 50
+    while (y < SECTION_H + 60) {
+      planes.push({ y, wave: beddingPlane(random, 10 + random() * 22) })
+      y += 56 + random() * 90
     }
-  })
-  const cx = WELL_W / 2
-  const tracks = WELL_TRACKS.map((offset) => ({
-    x: cx + offset,
-    d: wellLogTrace(random, cx + offset, WELL_SURFACE, WELL_H, 15),
-  }))
+    const tracks = WELL_TRACKS.map((offset) => ({
+      x: cx + offset,
+      d: wellLogTrace(random, cx + offset, WELL_SURFACE, SECTION_H, 15),
+    }))
+    return { ...sectionPaths(planes, 16), tracks }
+  }, [cx])
+  // Fill of every fourth layer: plain, soft, plain, dotted.
+  const fills = ["none", "var(--bg-ink-soft)", "none", `url(#${id}-dots)`]
   return (
     <Background data-effect="well-log" className={className} {...props}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         className="absolute inset-0 size-full"
-        viewBox={`0 0 ${WELL_W} ${WELL_H}`}
+        viewBox={`0 0 ${SECTION_W} ${SECTION_H}`}
         preserveAspectRatio="xMidYMid slice"
         style={{ "--bg-dash": "48px" } as React.CSSProperties}
       >
@@ -1365,19 +1387,23 @@ function WellLogBackground({ className, ...props }: BackgroundProps) {
             <stop offset="1" stopColor="#fff" stopOpacity="0" />
           </linearGradient>
           <mask id={`${id}-mask`}>
-            <rect width={WELL_W} height={WELL_H} fill={`url(#${id}-fade)`} />
+            <rect
+              width={SECTION_W}
+              height={SECTION_H}
+              fill={`url(#${id}-fade)`}
+            />
           </mask>
         </defs>
         {/* Strata, fading out towards the edges of the section. */}
         <g mask={`url(#${id}-mask)`}>
-          {layers.map(({ d, fill }, i) => (
-            <path key={`layer-${i}`} d={d} fill={fill} />
+          {layers.map((d, i) => (
+            <path key={`layer-${i}`} d={d} fill={fills[i % 4]} />
           ))}
           <g fill="none" stroke="var(--bg-ink)">
-            {planes.map((plane, i) => (
+            {lines.map((d, i) => (
               <path
                 key={`plane-${i}`}
-                d={`M0 ${at(plane, 0)}${xs.map((x) => `L${x} ${at(plane, x)}`).join("")}`}
+                d={d}
                 strokeOpacity={i % 2 ? 0.55 : 1}
                 strokeDasharray={i % 3 === 2 ? "6 8" : undefined}
                 vectorEffect="non-scaling-stroke"
@@ -1386,33 +1412,17 @@ function WellLogBackground({ className, ...props }: BackgroundProps) {
           </g>
         </g>
         {/* Survey grid above the surface, faint verticals through the section. */}
-        <g stroke="var(--bg-ink-soft)" fill="none">
-          {Array.from({ length: WELL_W / 120 + 1 }, (_, i) => (
-            <line
-              key={`v${i}`}
-              x1={i * 120}
-              x2={i * 120}
-              y1="0"
-              y2={WELL_H}
-              strokeOpacity={i % 5 === 0 ? 0.8 : 0.35}
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-          {[40, 80].map((gy) => (
-            <line
-              key={`h${gy}`}
-              x1="0"
-              x2={WELL_W}
-              y1={gy}
-              y2={gy}
-              strokeOpacity="0.5"
-              vectorEffect="non-scaling-stroke"
-            />
-          ))}
-        </g>
+        <SurveyGrid
+          width={SECTION_W}
+          height={SECTION_H}
+          horizontals={[40, 80]}
+          weak={0.35}
+          strong={0.8}
+          horizontalOpacity={0.5}
+        />
         <line
           x1="0"
-          x2={WELL_W}
+          x2={SECTION_W}
           y1={WELL_SURFACE}
           y2={WELL_SURFACE}
           stroke="var(--bg-ink-strong)"
@@ -1427,14 +1437,14 @@ function WellLogBackground({ className, ...props }: BackgroundProps) {
                 x1={x}
                 x2={x}
                 y1={WELL_SURFACE}
-                y2={WELL_H}
+                y2={SECTION_H}
                 stroke="var(--bg-ink-soft)"
                 strokeDasharray="2 6"
                 vectorEffect="non-scaling-stroke"
               />
               {/* Shade between the trace and its axis, as a log does. */}
               <path
-                d={`${d}L${x} ${WELL_H}Z`}
+                d={`${d}L${x} ${SECTION_H}Z`}
                 fill="var(--bg-ink-soft)"
                 stroke="none"
               />
@@ -1455,7 +1465,7 @@ function WellLogBackground({ className, ...props }: BackgroundProps) {
               x1={cx + dx}
               x2={cx + dx}
               y1={WELL_SURFACE - 20}
-              y2={WELL_H}
+              y2={SECTION_H}
               stroke="var(--bg-ink-strong)"
               strokeWidth="1.5"
               vectorEffect="non-scaling-stroke"
@@ -1465,7 +1475,7 @@ function WellLogBackground({ className, ...props }: BackgroundProps) {
             x1={cx}
             x2={cx}
             y1={WELL_SURFACE - 20}
-            y2={WELL_H}
+            y2={SECTION_H}
             stroke="var(--bg-ink-strong)"
             strokeWidth="3"
             strokeDasharray="20 28"
@@ -1475,22 +1485,13 @@ function WellLogBackground({ className, ...props }: BackgroundProps) {
                 "tecton-bg-flow calc(var(--bg-duration) / 6) linear infinite",
             }}
           />
-          {[40, 70, 100].map((r, i) => (
-            <circle
-              key={r}
-              cx={cx}
-              cy={WELL_H * 0.52}
-              r={r}
-              stroke="var(--bg-ink)"
-              strokeOpacity={0.9 - i * 0.3}
-              vectorEffect="non-scaling-stroke"
-              style={{
-                animation: `tecton-bg-pulse ${(6 + i * 2).toFixed(0)}s ease-in-out infinite`,
-                animationDelay: `${(-i * 2).toFixed(0)}s`,
-              }}
-            />
-          ))}
         </g>
+        <PulseRings
+          cx={cx}
+          cy={SECTION_H * 0.52}
+          radii={[40, 70, 100]}
+          opacity={0.9}
+        />
       </svg>
     </Background>
   )
@@ -1605,6 +1606,27 @@ function hexClip(inset: number) {
     .join(", ")})`
 }
 
+/** The five hexagon outlines of one repeating tile. */
+function HexTile({
+  stroke,
+  strokeWidth,
+}: {
+  stroke: string
+  strokeWidth: number
+}) {
+  const tileW = HEX_W
+  const tileH = HEX_H * 2
+  return (
+    <g fill="none" stroke={stroke} strokeWidth={strokeWidth}>
+      <path d={hexPath(0, 0)} />
+      <path d={hexPath(tileW, 0)} />
+      <path d={hexPath(tileW / 2, HEX_H)} />
+      <path d={hexPath(0, tileH)} />
+      <path d={hexPath(tileW, tileH)} />
+    </g>
+  )
+}
+
 function HexagonsBackground({
   className,
   interactive = false,
@@ -1614,43 +1636,33 @@ function HexagonsBackground({
   interactive?: boolean
 }) {
   const id = React.useId()
-  const random = seeded(41)
   const ref = usePointerReveal(interactive)
   // One tile holds two rows (the second offset by half a cell), so it repeats.
   const tileW = HEX_W
   const tileH = HEX_H * 2
-  const lit = Array.from({ length: 36 }, () => {
-    const row = Math.floor(random() * 24)
-    const col = Math.floor(random() * 44)
-    return {
-      x: col * HEX_W + (row % 2 ? HEX_W / 2 : 0),
-      y: row * HEX_H,
-      duration: 5 + random() * 7,
-      delay: -random() * 30,
-    }
-  })
+  const lit = React.useMemo(() => {
+    const random = seeded(41)
+    return Array.from({ length: 36 }, () => {
+      const row = Math.floor(random() * 24)
+      const col = Math.floor(random() * 44)
+      return {
+        x: col * HEX_W + (row % 2 ? HEX_W / 2 : 0),
+        y: row * HEX_H,
+        duration: 5 + random() * 7,
+        delay: -random() * 30,
+      }
+    })
+  }, [])
   return (
     <Background data-effect="hexagons" className={className} {...props}>
       <div ref={ref} className="absolute inset-0">
         <PatternSvg id={id} width={tileW} height={tileH}>
-          <g fill="none" stroke="var(--bg-ink)" strokeWidth="1">
-            <path d={hexPath(0, 0)} />
-            <path d={hexPath(tileW, 0)} />
-            <path d={hexPath(tileW / 2, HEX_H)} />
-            <path d={hexPath(0, tileH)} />
-            <path d={hexPath(tileW, tileH)} />
-          </g>
+          <HexTile stroke="var(--bg-ink)" strokeWidth={1} />
         </PatternSvg>
         {interactive && (
           <Reveal>
             <PatternSvg id={`${id}-reveal`} width={tileW} height={tileH}>
-              <g fill="none" stroke="var(--bg-ink-strong)" strokeWidth="1.5">
-                <path d={hexPath(0, 0)} />
-                <path d={hexPath(tileW, 0)} />
-                <path d={hexPath(tileW / 2, HEX_H)} />
-                <path d={hexPath(0, tileH)} />
-                <path d={hexPath(tileW, tileH)} />
-              </g>
+              <HexTile stroke="var(--bg-ink-strong)" strokeWidth={1.5} />
             </PatternSvg>
           </Reveal>
         )}
@@ -1770,6 +1782,32 @@ function terrainProject(x: number, d: number) {
   ] as const
 }
 
+/** The wireframe's rows and columns, in one stroke. */
+function TerrainLines({
+  rows,
+  cols,
+  stroke,
+  strokeWidth = 1,
+  mask,
+}: {
+  rows: string[]
+  cols: string[]
+  stroke: string
+  strokeWidth?: number
+  mask?: string
+}) {
+  return (
+    <g mask={mask} fill="none" stroke={stroke} strokeWidth={strokeWidth}>
+      {rows.map((d, i) => (
+        <path key={`r${i}`} d={d} vectorEffect="non-scaling-stroke" />
+      ))}
+      {cols.map((d, i) => (
+        <path key={`c${i}`} d={d} vectorEffect="non-scaling-stroke" />
+      ))}
+    </g>
+  )
+}
+
 function TerrainGridBackground({
   className,
   interactive = false,
@@ -1780,30 +1818,37 @@ function TerrainGridBackground({
 }) {
   const id = React.useId()
   const ref = usePointerReveal(interactive)
-  const columns = Array.from({ length: 67 }, (_, i) => -9.9 + i * 0.3)
-  // Depth rows spaced geometrically so they look evenly spaced on screen.
-  const depths = Array.from(
-    { length: 44 },
-    (_, i) => 2 * Math.pow(22 / 2, i / 43)
-  )
-  const line = (points: (readonly [number, number])[]) =>
-    points
-      .map(
-        ([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(0)} ${y.toFixed(0)}`
+  const { rows, cols, nodes } = React.useMemo(() => {
+    const columns = Array.from({ length: 67 }, (_, i) => -9.9 + i * 0.3)
+    // Depth rows spaced geometrically so they look evenly spaced on screen.
+    const depths = Array.from(
+      { length: 44 },
+      (_, i) => 2 * Math.pow(22 / 2, i / 43)
+    )
+    const line = (points: (readonly [number, number])[]) =>
+      points
+        .map(
+          ([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(0)} ${y.toFixed(0)}`
+        )
+        .join("")
+    const rows = depths.map((d) =>
+      line(columns.map((x) => terrainProject(x, d)))
+    )
+    const cols = columns.map((x) =>
+      line(depths.map((d) => terrainProject(x, d)))
+    )
+    const nodes = depths
+      .slice(0, 18)
+      .flatMap((d, j) =>
+        columns
+          .filter((_, i) => (i + j) % 4 === 0)
+          .map((x) => ({ p: terrainProject(x, d), r: 0.8 + 3.2 / d, d }))
       )
-      .join("")
-  const rows = depths.map((d) => line(columns.map((x) => terrainProject(x, d))))
-  const cols = columns.map((x) => line(depths.map((d) => terrainProject(x, d))))
-  const nodes = depths
-    .slice(0, 18)
-    .flatMap((d, j) =>
-      columns
-        .filter((_, i) => (i + j) % 4 === 0)
-        .map((x) => ({ p: terrainProject(x, d), r: 0.8 + 3.2 / d, d }))
-    )
-    .filter(
-      ({ p }) => p[0] > -40 && p[0] < TERRAIN_W + 40 && p[1] < TERRAIN_H + 40
-    )
+      .filter(
+        ({ p }) => p[0] > -40 && p[0] < TERRAIN_W + 40 && p[1] < TERRAIN_H + 40
+      )
+    return { rows, cols, nodes }
+  }, [])
   return (
     <Background data-effect="terrain-grid" className={className} {...props}>
       <div ref={ref} className="absolute inset-0">
@@ -1846,14 +1891,12 @@ function TerrainGridBackground({
             fill={`url(#${id}-glow)`}
             style={{ opacity: "calc(var(--bg-alpha) * 0.8)" }}
           />
-          <g mask={`url(#${id}-mask)`} fill="none" stroke="var(--bg-ink)">
-            {rows.map((d, i) => (
-              <path key={`r${i}`} d={d} vectorEffect="non-scaling-stroke" />
-            ))}
-            {cols.map((d, i) => (
-              <path key={`c${i}`} d={d} vectorEffect="non-scaling-stroke" />
-            ))}
-          </g>
+          <TerrainLines
+            rows={rows}
+            cols={cols}
+            stroke="var(--bg-ink)"
+            mask={`url(#${id}-mask)`}
+          />
           <g fill="var(--bg-ink-strong)">
             {nodes.map(({ p, r, d }, i) => (
               <circle
@@ -1878,14 +1921,12 @@ function TerrainGridBackground({
               viewBox={`0 0 ${TERRAIN_W} ${TERRAIN_H}`}
               preserveAspectRatio="xMidYMax slice"
             >
-              <g fill="none" stroke="var(--bg-ink-strong)" strokeWidth="1.5">
-                {rows.map((d, i) => (
-                  <path key={`r${i}`} d={d} vectorEffect="non-scaling-stroke" />
-                ))}
-                {cols.map((d, i) => (
-                  <path key={`c${i}`} d={d} vectorEffect="non-scaling-stroke" />
-                ))}
-              </g>
+              <TerrainLines
+                rows={rows}
+                cols={cols}
+                stroke="var(--bg-ink-strong)"
+                strokeWidth={1.5}
+              />
             </svg>
           </Reveal>
         )}
@@ -1949,6 +1990,9 @@ export {
   TerrainGridBackground,
   backgroundEffects,
   backgroundVariants,
+  backgroundTones,
+  backgroundIntensities,
+  backgroundSpeeds,
   type BackgroundProps,
   type BackgroundEffectName,
 }
