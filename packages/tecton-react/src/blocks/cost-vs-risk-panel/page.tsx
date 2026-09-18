@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { CrownIcon, PanelRightIcon } from "lucide-react"
+import { CrownIcon, PanelRightIcon, PanelRightOpenIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -166,6 +166,8 @@ function CostVsRiskPanel({
 
 /** Route-ready page: the panel docked on the right of an empty canvas. */
 export default function CostVsRiskPanelPage() {
+  const [open, setOpen] = React.useState(true)
+
   return (
     <div
       data-slot="cost-vs-risk-panel-page"
@@ -174,9 +176,26 @@ export default function CostVsRiskPanelPage() {
       <div className="hidden min-w-0 flex-1 items-center justify-center p-6 text-sm text-muted-foreground md:flex">
         Well design comparison
       </div>
-      <div className="flex h-full w-full max-w-md shrink-0 flex-col border-l border-border-subtle">
-        <CostVsRiskPanel variant="flat" className="rounded-none border-0" />
-      </div>
+      {open ? (
+        <div className="flex h-full w-full max-w-md shrink-0 flex-col border-l border-border-subtle">
+          <CostVsRiskPanel
+            variant="flat"
+            className="rounded-none border-0"
+            onCollapse={() => setOpen(false)}
+          />
+        </div>
+      ) : (
+        <div className="flex h-full shrink-0 flex-col border-l border-border-subtle p-2">
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label="Expand cost vs risk panel"
+            onPress={() => setOpen(true)}
+          >
+            <PanelRightOpenIcon />
+          </Button>
+        </div>
+      )}
     </div>
   )
 }

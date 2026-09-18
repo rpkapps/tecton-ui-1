@@ -7,10 +7,14 @@ import {
   ChevronUpIcon,
   CircleCheckIcon,
   CircleDashedIcon,
+  CopyIcon,
   DropletIcon,
   FactoryIcon,
   MoreVerticalIcon,
+  PencilIcon,
   PlusIcon,
+  StarIcon,
+  TrashIcon,
   WavesIcon,
 } from "lucide-react"
 
@@ -21,6 +25,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@tecton/react/components/collapsible"
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@tecton/react/components/dropdown-menu"
 import {
   Panel,
   PanelContent,
@@ -111,13 +121,30 @@ function AlternativeRow({
             Reference case
           </Badge>
         ) : null}
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          aria-label={`Actions for ${alternative.name}`}
-        >
-          <MoreVerticalIcon />
-        </Button>
+        <DropdownMenuTrigger>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label={`Actions for ${alternative.name}`}
+          >
+            <MoreVerticalIcon />
+          </Button>
+          <DropdownMenu placement="bottom start">
+            <DropdownMenuItem>
+              <PencilIcon /> Rename
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <CopyIcon /> Duplicate
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <StarIcon /> Set as reference case
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive">
+              <TrashIcon /> Delete alternative
+            </DropdownMenuItem>
+          </DropdownMenu>
+        </DropdownMenuTrigger>
         <Button
           variant="ghost"
           size="icon-xs"
@@ -167,13 +194,27 @@ function ConceptSection({
         <Badge variant="outline" size="default" className="capitalize">
           {concept.status}
         </Badge>
-        <Button
-          variant="ghost"
-          size="icon-xs"
-          aria-label={`Actions for ${concept.name}`}
-        >
-          <MoreVerticalIcon />
-        </Button>
+        <DropdownMenuTrigger>
+          <Button
+            variant="ghost"
+            size="icon-xs"
+            aria-label={`Actions for ${concept.name}`}
+          >
+            <MoreVerticalIcon />
+          </Button>
+          <DropdownMenu placement="bottom start">
+            <DropdownMenuItem>
+              <PencilIcon /> Rename concept
+            </DropdownMenuItem>
+            <DropdownMenuItem>
+              <PlusIcon /> Add alternative
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem variant="destructive">
+              <TrashIcon /> Delete concept
+            </DropdownMenuItem>
+          </DropdownMenu>
+        </DropdownMenuTrigger>
       </header>
 
       <div className="grid gap-4 lg:grid-cols-3">

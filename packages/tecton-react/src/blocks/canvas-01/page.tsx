@@ -20,6 +20,14 @@ import {
 
 import { Button } from "@tecton/react/components/button"
 import {
+  DropdownMenu,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@tecton/react/components/dropdown-menu"
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -44,17 +52,27 @@ import {
 
 import { FairwayMap } from "./components/fairway-map"
 import { PresetList } from "./components/preset-list"
-import { depthViews, geologyLayers, legend, mapViews, presets } from "./data"
+import {
+  depthViews,
+  features,
+  geologyLayers,
+  legend,
+  mapViews,
+  presets,
+  surveys,
+} from "./data"
 
 /** Icon button used in the floating rails, with a tooltip as its name. */
 function Tool({
   label,
   isActive,
+  isDisabled,
   children,
   onPress,
 }: {
   label: string
   isActive?: boolean
+  isDisabled?: boolean
   children: React.ReactNode
   onPress?: () => void
 }) {
@@ -65,6 +83,7 @@ function Tool({
         size="icon-sm"
         aria-label={label}
         aria-pressed={isActive}
+        isDisabled={isDisabled}
         className="aria-pressed:bg-ghost-active aria-pressed:text-ghost-active-foreground"
         onPress={onPress}
       >
@@ -108,6 +127,19 @@ function ViewSelect({
   )
 }
 
+/** Feature kinds the Layers menu switches on and off. */
+const mapLayers = [
+  { id: "field", label: "Existing fields" },
+  { id: "prospect", label: "Prospect areas" },
+  { id: "survey", label: "Survey outlines" },
+]
+
+/** Zoom levels the magnifier buttons step through. */
+const zoomLevels = [1, 1.5, 2, 3, 4]
+
+/** Ground distance the scale bar spans at 1×, in metres and feet. */
+const scaleBar = { metres: 750, feet: 2500 }
+
 /**
  * Canvas page: saved view presets in the sidebar and a full-bleed map
  * with its chrome floating over the surface — view selectors, a tool
@@ -117,6 +149,17 @@ export default function Page() {
   const [preset, setPreset] = React.useState(presets[0].id)
   const [tool, setTool] = React.useState("pan")
   const [selected, setSelected] = React.useState<string | null>(null)
+  const [zoom, setZoom] = React.useState(1)
+  const [layers, setLayers] = React.useState<string[]>(
+    mapLayers.map((layer) => layer.id)
+  )
+
+  const zoomIn = () =>
+    setZoom((level) => zoomLevels.find((next) => next > level) ?? level)
+  const zoomOut = () =>
+    setZoom(
+      (level) => [...zoomLevels].reverse().find((next) => next < level) ?? level
+    )
 
   return (
     <SidebarProvider>
@@ -142,7 +185,15 @@ export default function Page() {
         </header>
         <Canvas>
           <CanvasSurface>
-            <FairwayMap selected={selected} onSelect={setSelected} />
+            <FairwayMap
+              zoom={zoom}
+              features={features.filter((feature) =>
+                layers.includes(feature.kind)
+              )}
+              surveys={layers.includes("survey") ? surveys : []}
+              selected={selected}
+              onSelect={setSelected}
+            />
           </CanvasSurface>
 
           <CanvasOverlay position="top-left">
@@ -157,10 +208,18 @@ export default function Page() {
               defaultKey="depth"
             />
             <CanvasToolbar aria-label="Navigation tools">
-              <Tool label="Zoom in">
+              <Tool
+                label="Zoom in"
+                isDisabled={zoom >= zoomLevels[zoomLevels.length - 1]}
+                onPress={zoomIn}
+              >
                 <ZoomInIcon />
               </Tool>
-              <Tool label="Zoom out">
+              <Tool
+                label="Zoom out"
+                isDisabled={zoom <= zoomLevels[0]}
+                onPress={zoomOut}
+              >
                 <ZoomOutIcon />
               </Tool>
               <Tool
@@ -179,9 +238,40 @@ export default function Page() {
               </Tool>
             </CanvasToolbar>
             <CanvasToolbar aria-label="Editing tools">
-              <Tool label="Layers">
-                <LayersIcon />
-              </Tool>
+              <DropdownMenuTrigger>
+                <Tool
+                  label="Layers"
+                  isActive={layers.length < mapLayers.length}
+                >
+                  <LayersIcon />
+                </Tool>
+                <DropdownMenu placement="right top" className="w-48">
+                  <DropdownMenuLabel>Layers</DropdownMenuLabel>
+                  <DropdownMenuGroup
+                    selectionMode="multiple"
+                    selectedKeys={layers}
+                    onSelectionChange={(keys) =>
+                      setLayers(
+                        keys === "all"
+                          ? mapLayers.map((layer) => layer.id)
+                          : mapLayers
+                              .filter((layer) => keys.has(layer.id))
+                              .map((layer) => layer.id)
+                      )
+                    }
+                  >
+                    {mapLayers.map((layer) => (
+                      <DropdownMenuItem
+                        key={layer.id}
+                        id={layer.id}
+                        textValue={layer.label}
+                      >
+                        {layer.label}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </DropdownMenu>
+              </DropdownMenuTrigger>
               <Tool
                 label="Measure"
                 isActive={tool === "measure"}
@@ -189,14 +279,19 @@ export default function Page() {
               >
                 <RulerIcon />
               </Tool>
-              <Tool label="Section">
+              <Tool
+                label="Section"
+                isActive={tool === "section"}
+                onPress={() => setTool("section")}
+              >
                 <ScanIcon />
               </Tool>
               <Separator className="mx-1 w-auto" />
-              <Tool label="Undo">
+              {/* Nothing has been edited yet, so there is nothing to step through. */}
+              <Tool label="Undo" isDisabled>
                 <UndoIcon />
               </Tool>
-              <Tool label="Redo">
+              <Tool label="Redo" isDisabled>
                 <RedoIcon />
               </Tool>
             </CanvasToolbar>
@@ -216,11 +311,19 @@ export default function Page() {
               >
                 <MousePointer2Icon />
               </Tool>
-              <Tool label="Marquee">
+              <Tool
+                label="Marquee"
+                isActive={tool === "marquee"}
+                onPress={() => setTool("marquee")}
+              >
                 <SquareDashedIcon />
               </Tool>
               <Separator className="mx-1 w-auto" />
-              <Tool label="Edit polygon">
+              <Tool
+                label="Edit polygon"
+                isActive={tool === "polygon"}
+                onPress={() => setTool("polygon")}
+              >
                 <PencilIcon />
               </Tool>
               <Tool label="Export">
@@ -228,9 +331,28 @@ export default function Page() {
               </Tool>
             </CanvasToolbar>
             <CanvasToolbar aria-label="More">
-              <Tool label="More">
-                <MoreVerticalIcon />
-              </Tool>
+              <DropdownMenuTrigger>
+                <Tool label="More">
+                  <MoreVerticalIcon />
+                </Tool>
+                <DropdownMenu placement="bottom end" className="w-48">
+                  <DropdownMenuItem
+                    onAction={() => setSelected(null)}
+                    isDisabled={!selected}
+                  >
+                    Clear selection
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onAction={() => setZoom(1)}
+                    isDisabled={zoom === 1}
+                  >
+                    Reset zoom
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>Copy map image</DropdownMenuItem>
+                  <DropdownMenuItem>Map settings</DropdownMenuItem>
+                </DropdownMenu>
+              </DropdownMenuTrigger>
             </CanvasToolbar>
           </CanvasOverlay>
 
@@ -263,11 +385,11 @@ export default function Page() {
             >
               <span className="flex items-center gap-2">
                 <span className="h-1.5 w-20 border-x border-b border-foreground" />
-                750 m
+                {Math.round(scaleBar.metres / zoom).toLocaleString()} m
               </span>
               <span className="flex items-center gap-2">
                 <span className="h-1.5 w-24 border-x border-t border-foreground" />
-                2,500 ft
+                {Math.round(scaleBar.feet / zoom).toLocaleString()} ft
               </span>
             </div>
           </CanvasOverlay>

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { PanelRightIcon } from "lucide-react"
+import { PanelRightIcon, PanelRightOpenIcon } from "lucide-react"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -115,12 +115,23 @@ function HorizonsPanel({
 
 /** Route-ready page: the panel centred on the canvas. */
 export default function HorizonsPanelPage() {
+  const [open, setOpen] = React.useState(true)
+
   return (
     <div
       data-slot="horizons-panel-page"
       className="flex min-h-svh w-full items-start justify-center bg-background px-4 py-8 text-foreground md:items-center"
     >
-      <HorizonsPanel className="w-full max-w-sm" />
+      {open ? (
+        <HorizonsPanel
+          className="w-full max-w-sm"
+          onCollapse={() => setOpen(false)}
+        />
+      ) : (
+        <Button variant="outline" size="sm" onPress={() => setOpen(true)}>
+          <PanelRightOpenIcon data-icon="inline-start" /> Show horizons
+        </Button>
+      )}
     </div>
   )
 }
