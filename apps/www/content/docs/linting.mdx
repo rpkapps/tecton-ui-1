@@ -1,0 +1,172 @@
+---
+title: Linting
+description: Design-system guardrails that keep applications — and coding agents — from breaking the Tecton look.
+---
+
+Tecton is an enterprise design system: the look belongs to the components and the
+theme, not to the application. `@tecton/eslint-config` enforces that. It wraps
+[`@shadcn/lint`](https://github.com/shadcn-ui/lint), an agent-first linter for Tailwind
+design systems, with the Tecton component surface and the Tecton policy on what an
+application may restyle.
+
+<Callout title="Why a linter and not documentation">
+  The rules that matter most fail *silently*. Tecton resets Tailwind's stock palette
+  (`--color-*: initial`), so `bg-red-500` generates no CSS at all — it type-checks, it
+  passes an ordinary lint, and it renders unstyled. Nothing in a normal toolchain catches
+  it. That is also why this matters for agents: an agent's prior is stock Tailwind and
+  Radix, and without a rule it has no signal that it got it wrong.
+</Callout>
+
+## Install
+
+```bash
+pnpm add -D @tecton/eslint-config eslint @typescript-eslint/parser
+```
+
+```js title="eslint.config.js"
+import tecton from "@tecton/eslint-config"
+import tsParser from "@typescript-eslint/parser"
+
+export default [
+  {
+    files: ["**/*.{ts,tsx}"],
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: { ecmaFeatures: { jsx: true } },
+    },
+  },
+  ...tecton.configs.recommended,
+]
+```
+
+<Callout title="Point components.json at your own stylesheet">
+  The colour rules read your project's **real** Tailwind theme, resolved from the
+  stylesheet named by `components.json` (`tailwind.css`). Point it at the CSS file that
+  imports `@tecton/react/globals.css`. If it points somewhere else, every token your app
+  declares is reported as unknown and the output is noise.
+</Callout>
+
+## What it catches
+
+Errors name the fix, not just the problem — that is what lets an agent correct itself:
+
+```text
+"rounded-full" is not allowed on <Button>: <Button> owns its shape.
+  Use a variant: default, outline, secondary, ghost, destructive, link.
+
+"bg-red-500" is not allowed on <Button>: <Button> owns its color.
+  Use a variant: default, outline, secondary, ghost, destructive, link.
+```
+
+The variant list is read from the component's source. When `@tecton/react` is installed
+from a registry its source sits inside `node_modules`, which the linter does not read, so
+the message shortens to "Use one of its variants". **Every error still fires, with the
+same rule and the same location** — only the list of valid values is lost. Apps inside
+the Tecton workspace get the full message.
+
+| Rule | Catches |
+| --- | --- |
+| `no-restyle` | `className` on a Tecton component that overrides what its variants own — colour, shape, typography, size, padding |
+| `require-static-classes` | Class names assembled at runtime on a Tecton component, which no linter can verify |
+| `no-restricted-imports` | Stock shadcn components, and the `@tecton/react` root that does not exist |
+
+<Callout title="Your components are yours">
+  `recommended` looks at **Tecton components only** — elements imported from
+  `@tecton/react`. Your own components and your plain markup are never reported. The
+  design system governs its own components; how you style yours is your call.
+
+  The trade-off is real: `bg-red-500` in your own component still generates no CSS and
+  still renders unstyled, and nothing here will tell you. If you want every class in the
+  project checked against the Tecton theme, use `strict` below.
+</Callout>
+
+## Checking the whole project
+
+`tecton.configs.strict` adds four rules that validate **every** `className`, not just
+Tecton components:
+
+| Rule | Catches |
+| --- | --- |
+| `no-raw-colors` | Stock Tailwind colours that emit no CSS — `bg-red-500`, `text-zinc-400` |
+| `no-unknown-classes` | Classes this project's Tailwind cannot generate — typos, invented utilities |
+| `no-arbitrary-values` | Off-token values — `text-[13px]`, `p-[7px]` |
+| `no-inline-styles` | Inline `style` props and `<style>` elements |
+
+```js
+export default [...tecton.configs.strict]
+```
+
+<Callout variant="warning" title="strict needs the stylesheet outside node_modules">
+  These four rules read your project's resolved Tailwind theme, and the linter does not
+  read theme sources from inside `node_modules`. With an ordinary registry install it
+  therefore sees an **empty** theme and reports every valid Tecton class — `bg-blue-120`
+  included — as a raw colour.
+
+  Use `strict` only where `components.json`'s `tailwind.css` reaches the Tecton
+  stylesheet outside `node_modules`: an app inside the Tecton workspace, or one that
+  vendors a copy. Everywhere else, stay on `recommended`, which has no such dependency
+  and is correct in every layout.
+</Callout>
+
+<Callout title="Applications do not define colours">
+  The stock `no-raw-colors` message invites you to declare a new `--color-*` when a
+  colour is missing. Tecton overrides that, because the palette is the Tecton token
+  export and `globals.css` ships inside `@tecton/react`. A colour invented in an
+  application is off-palette, has no dark-mode pair and has passed no contrast check.
+  If the palette genuinely doesn't cover a case, that's a change to the token export —
+  raise it with the design system.
+
+  Note the limit: once a colour **is** declared in your own stylesheet, Tailwind can
+  generate it and every rule here accepts it. The linter checks the theme your project
+  resolves, so it cannot tell a sanctioned token from an invented one.
+</Callout>
+
+## What you may put in className
+
+Layout is yours — an application must be able to place a component. The control's own
+box and appearance are the design system's.
+
+| | Examples |
+| --- | --- |
+| **Allowed** | `w-full`, `mt-4`, `flex-1`, `col-span-2`, `absolute top-0`, `gap-2` |
+| **Denied** | `bg-blue-600`, `h-12`, `p-6`, `rounded-full`, `text-[13px]`, `border-slate-200` |
+
+`h-12` on a `Button` is its `size` variant being overridden by hand; use `size="lg"`. If
+the design genuinely needs something no variant provides, add the variant to the library
+rather than patching it at the call site — that is how the deviation gets reviewed once
+instead of spreading.
+
+## Components come from the package
+
+Only **blocks** are published to the `@tecton` registry. Components ship inside
+`@tecton/react`, so every application runs the same themed build and upgrades with it.
+
+Running `npx shadcn@latest add button` without a namespace installs from the **public**
+shadcn registry: a Radix component with the stock palette, the wrong base and the wrong
+theme. Nothing can stop the command, so the config flags the result instead — any import
+from a `components/ui/` directory is an error.
+
+```bash
+npx shadcn@latest add @tecton/dashboard-01   # a block — correct
+npx shadcn@latest add button                 # public shadcn — flagged on import
+```
+
+## Adopting in an existing codebase
+
+`tecton.configs.warn` is the same rules at warning level, so CI keeps passing while the
+backlog is cleared:
+
+```js
+export default [...tecton.configs.warn]
+```
+
+Switch to `recommended` once the count reaches zero. Inside a component library of your
+own that legitimately composes Tecton primitives — a wrapper that adds a variant the
+design system doesn't have yet — turn `no-restyle` off for that directory:
+
+```js
+export default [
+  ...tecton.configs.recommended,
+  { files: ["src/ui/**"], rules: { "shadcn/no-restyle": "off" } },
+]
+```
