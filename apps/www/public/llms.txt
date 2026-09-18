@@ -183,19 +183,42 @@ Inside a Button, mark the icon so it gets the right spacing:
 Tecton applications run dark by default; both modes come from the same token export. Use
 semantic tokens and palette steps and you do not need `dark:` variants at all.
 
-### 8. Do not restyle the generated components
+### 8. Do not restyle the components
 
-Never target a component with `.style-*`, `[data-slot]` or `@layer` overrides. If the
-design calls for something the variants do not cover, compose a new component instead.
+The look belongs to the component and the theme. In `className`, **layout is yours, the
+control's own box and appearance are not**:
 
-### 9. Blocks are installed, not copied
+| | Examples |
+| --- | --- |
+| Allowed | `w-full`, `mt-4`, `flex-1`, `col-span-2`, `absolute top-0`, `gap-2` |
+| Denied | `bg-blue-600`, `h-12`, `p-6`, `rounded-full`, `text-[13px]`, `border-slate-200` |
+
+`h-12` on a `Button` overrides its `size` variant by hand — use `size="lg"`. Never target
+a component with `.style-*`, `[data-slot]` or `@layer` overrides, and never use
+`style={{…}}`. If the design needs something no variant provides, add the variant to the
+library rather than patching it at the call site.
+
+This is enforced: applications install `@tecton/eslint-config`, which reports raw
+palette colours, unknown classes, arbitrary values and variant overrides — with the
+correct token named in the error. Run the linter and fix what it reports rather than
+working around it.
+
+### 9. Only blocks come from the registry — never components
 
 Blocks are full-page compositions (dashboards, sidebars, error pages, domain panels).
-Install one with the shadcn CLI from the `@tecton` registry rather than pasting it:
+They are the **only** thing the `@tecton` registry publishes:
 
 ```bash
-npx shadcn@latest add @tecton/dashboard-01
+npx shadcn@latest add @tecton/dashboard-01   # a block — correct
 ```
+
+Components are **never** installed. They ship inside `@tecton/react` and are imported
+from it, so every application runs the same themed build. Never run
+`npx shadcn@latest add <component>` without the `@tecton/` namespace: that pulls from the
+**public** shadcn registry and installs a Radix component with the stock Tailwind palette
+— the wrong base and the wrong theme. If you find yourself importing from
+`@/components/ui/...`, that is the mistake; import from `@tecton/react/components/...`
+instead.
 
 Installed blocks import their primitives from `@tecton/react/...`, so the package must be
 a dependency of the consuming app.
@@ -209,6 +232,7 @@ a dependency of the consuming app.
 - [Theming](/docs/theming.md): How the Tecton design tokens map to the shadcn CSS variables, what is exact and what is approximated, how the Tecton colour ramps become the Tailwind palette, and how to extend the theme.
 - [Typography](/docs/typography.md): Figtree for the interface, IBM Plex Mono for data — mapped to the Tailwind font and text utilities.
 - [Spacing & radius](/docs/spacing.md): Tecton's spacing scale and corner radii, and how they map to the Tailwind and shadcn utilities.
+- [Linting](/docs/linting.md): Design-system guardrails that keep applications — and coding agents — from breaking the Tecton look.
 - [CLI & updates](/docs/cli.md): How the generated components are managed with the shadcn CLI, where the Tecton style lives, and how to update both.
 - [Icons](/docs/icons.md): The Tecton icon set (131 icons, outlined and filled) and how it works alongside Lucide.
 

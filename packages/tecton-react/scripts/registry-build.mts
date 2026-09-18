@@ -105,7 +105,6 @@ function titleCase(slug: string) {
 
 async function main() {
   await fs.rm(STAGE, { recursive: true, force: true })
-  await fs.rm(OUTPUT, { recursive: true, force: true })
   const items: RegistryItem[] = []
 
   // Blocks --------------------------------------------------------------------
@@ -158,6 +157,22 @@ async function main() {
       files,
     })
   }
+
+  // Only blocks are published. Components ship in the package so that every
+  // application runs the same themed build and upgrades with it; publishing one
+  // as a registry item would hand consumers a copy to edit and diverge from.
+  const notBlocks = items.filter((item) => item.type !== "registry:block")
+  if (notBlocks.length) {
+    throw new Error(
+      `registry:build publishes blocks only, but ${notBlocks.length} item(s) are not ` +
+        `registry:block: ${notBlocks.map((item) => `${item.name} (${item.type})`).join(", ")}. ` +
+        `Components belong in the package, imported from @tecton/react/components/*.`
+    )
+  }
+
+  // Everything above only reads and stages, so a failed check leaves the
+  // published registry as it was. Clearing it comes after validation.
+  await fs.rm(OUTPUT, { recursive: true, force: true })
 
   const registry = {
     $schema: "https://ui.shadcn.com/schema/registry.json",
