@@ -1,5 +1,4 @@
-"use client"
-
+import { usePortalTarget } from "@tecton/react/tecton/portal"
 import { cn } from "cn"
 import {
   Popover as PopoverPrimitive,
@@ -25,6 +24,7 @@ function HoverCard({
 }: Omit<PopoverPrimitiveProps, "className"> & {
   className?: string
 }) {
+  const portalTarget = usePortalTarget()
   return (
     <PopoverPrimitive
       data-slot="hover-card-content"
@@ -36,6 +36,7 @@ function HoverCard({
         className
       )}
       {...props}
+      UNSTABLE_portalContainer={portalTarget}
     />
   )
 }

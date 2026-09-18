@@ -1,3 +1,31 @@
+diff --git a/apps/v4/registry/bases/aria/ui/alert-dialog.tsx b/apps/v4/registry/bases/aria/ui/alert-dialog.tsx
+index 4686fbae..fb22a8e4 100644
+--- a/apps/v4/registry/bases/aria/ui/alert-dialog.tsx
++++ b/apps/v4/registry/bases/aria/ui/alert-dialog.tsx
+@@ -2,6 +2,7 @@
+ 
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Dialog as AlertDialogPrimitive,
+   DialogTrigger as AlertDialogTriggerPrimitive,
+@@ -29,6 +30,7 @@ function AlertDialogOverlay({
+   className?: string
+   children: React.ReactNode
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <ModalOverlayPrimitive
+       data-slot="alert-dialog-overlay"
+@@ -37,6 +39,7 @@ function AlertDialogOverlay({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     >
+       {children}
+     </ModalOverlayPrimitive>
 diff --git a/apps/v4/registry/bases/aria/ui/alert.tsx b/apps/v4/registry/bases/aria/ui/alert.tsx
 index e9aa02f3..62d20980 100644
 --- a/apps/v4/registry/bases/aria/ui/alert.tsx
@@ -115,6 +143,197 @@ index 1d546cce..c1624f95 100644
        {...props}
      />
    )
+diff --git a/apps/v4/registry/bases/aria/ui/button-group.tsx b/apps/v4/registry/bases/aria/ui/button-group.tsx
+index 083fa498..ffec0abe 100644
+--- a/apps/v4/registry/bases/aria/ui/button-group.tsx
++++ b/apps/v4/registry/bases/aria/ui/button-group.tsx
+@@ -9,7 +9,7 @@ const buttonGroupVariants = cva(
+     variants: {
+       orientation: {
+         horizontal:
+-          "cn-button-group-orientation-horizontal **:data-slot:rounded-r-none [&_[data-slot]~[data-slot]]:rounded-l-none [&_[data-slot]~[data-slot]]:border-l-0",
++          "cn-button-group-orientation-horizontal **:data-slot:rounded-e-none [&_[data-slot]~[data-slot]]:rounded-s-none [&_[data-slot]~[data-slot]]:border-s-0",
+         vertical:
+           "cn-button-group-orientation-vertical flex-col **:data-slot:rounded-b-none [&_[data-slot]~[data-slot]]:rounded-t-none [&_[data-slot]~[data-slot]]:border-t-0",
+       },
+diff --git a/apps/v4/registry/bases/aria/ui/combobox.tsx b/apps/v4/registry/bases/aria/ui/combobox.tsx
+index 862ddcc0..ddacfca1 100644
+--- a/apps/v4/registry/bases/aria/ui/combobox.tsx
++++ b/apps/v4/registry/bases/aria/ui/combobox.tsx
+@@ -2,6 +2,7 @@
+ 
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Button as ButtonPrimitive,
+   Collection,
+@@ -161,6 +162,7 @@ function ComboboxContent({
+   children?: React.ReactNode
+   anchor?: React.RefObject<HTMLDivElement | null>
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <PopoverPrimitive
+       data-slot="combobox-content"
+@@ -173,6 +175,7 @@ function ComboboxContent({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     />
+   )
+ }
+diff --git a/apps/v4/registry/bases/aria/ui/context-menu.tsx b/apps/v4/registry/bases/aria/ui/context-menu.tsx
+index 87143849..41b00f3e 100644
+--- a/apps/v4/registry/bases/aria/ui/context-menu.tsx
++++ b/apps/v4/registry/bases/aria/ui/context-menu.tsx
+@@ -3,6 +3,7 @@
+ import * as React from "react"
+ import { cva } from "class-variance-authority"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   composeRenderProps,
+   Header as HeaderPrimitive,
+@@ -10,9 +11,11 @@ import {
+   Menu as MenuPrimitive,
+   MenuSection as MenuSectionPrimitive,
+   MenuTrigger as MenuTriggerPrimitive,
++  PopoverContext,
+   Popover as PopoverPrimitive,
+   Separator as SeparatorPrimitive,
+   SubmenuTrigger as SubmenuTriggerPrimitive,
++  useSlottedContext,
+   type MenuItemProps as MenuItemPrimitiveProps,
+   type MenuSectionProps as MenuSectionPrimitiveProps,
+ } from "react-aria-components"
+@@ -39,6 +42,14 @@ function ContextMenu({
+     className?: string
+     children?: React.ReactNode
+   }) {
++  // Submenus stay out of the portal target on purpose: React Aria mounts a
++  // `SubmenuTrigger` popover into the root popover's own container, which is
++  // already inside the target, and a set container would break that nesting.
++  // `trigger` is what React Aria itself branches on, and reaches the popover
++  // through the same context that renders it as `data-trigger`.
++  const portalTarget = usePortalTarget()
++  const isSubmenu =
++    useSlottedContext(PopoverContext)?.trigger === "SubmenuTrigger"
+   return (
+     <PopoverPrimitive
+       data-slot={dataSlot}
+@@ -49,6 +60,7 @@ function ContextMenu({
+         "cn-context-menu-content-aria cn-menu-target cn-menu-translucent cn-menu-translucent-aria z-50 w-(--trigger-width) origin-(--trigger-anchor-point) overflow-x-hidden overflow-y-auto outline-none data-exiting:overflow-hidden",
+         className
+       )}
++      UNSTABLE_portalContainer={isSubmenu ? undefined : portalTarget}
+     >
+       <MenuPrimitive
+         className="max-h-[inherit] overflow-x-hidden overflow-y-auto outline-hidden"
+diff --git a/apps/v4/registry/bases/aria/ui/dialog.tsx b/apps/v4/registry/bases/aria/ui/dialog.tsx
+index 9132b423..1ed743a7 100644
+--- a/apps/v4/registry/bases/aria/ui/dialog.tsx
++++ b/apps/v4/registry/bases/aria/ui/dialog.tsx
+@@ -2,6 +2,7 @@
+ 
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Dialog as DialogPrimitive,
+   DialogTrigger as DialogTriggerPrimitive,
+@@ -46,6 +47,7 @@ function DialogOverlay({
+   className?: string
+   children: React.ReactNode
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <ModalOverlayPrimitive
+       data-slot="dialog-overlay"
+@@ -54,6 +56,7 @@ function DialogOverlay({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     >
+       {children}
+     </ModalOverlayPrimitive>
+diff --git a/apps/v4/registry/bases/aria/ui/dropdown-menu.tsx b/apps/v4/registry/bases/aria/ui/dropdown-menu.tsx
+index 33d656b9..9035f17a 100644
+--- a/apps/v4/registry/bases/aria/ui/dropdown-menu.tsx
++++ b/apps/v4/registry/bases/aria/ui/dropdown-menu.tsx
+@@ -3,6 +3,7 @@
+ import * as React from "react"
+ import { cva } from "class-variance-authority"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   composeRenderProps,
+   Header as HeaderPrimitive,
+@@ -10,9 +11,11 @@ import {
+   Menu as MenuPrimitive,
+   MenuSection as MenuSectionPrimitive,
+   MenuTrigger as MenuTriggerPrimitive,
++  PopoverContext,
+   Popover as PopoverPrimitive,
+   Separator as SeparatorPrimitive,
+   SubmenuTrigger as SubmenuTriggerPrimitive,
++  useSlottedContext,
+   type MenuItemProps as MenuItemPrimitiveProps,
+   type MenuSectionProps as MenuSectionPrimitiveProps,
+ } from "react-aria-components"
+@@ -45,6 +48,14 @@ function DropdownMenu({
+     className?: string
+     children?: React.ReactNode
+   }) {
++  // Submenus stay out of the portal target on purpose: React Aria mounts a
++  // `SubmenuTrigger` popover into the root popover's own container, which is
++  // already inside the target, and a set container would break that nesting.
++  // `trigger` is what React Aria itself branches on, and reaches the popover
++  // through the same context that renders it as `data-trigger`.
++  const portalTarget = usePortalTarget()
++  const isSubmenu =
++    useSlottedContext(PopoverContext)?.trigger === "SubmenuTrigger"
+   return (
+     <PopoverPrimitive
+       data-slot={dataSlot}
+@@ -55,6 +66,7 @@ function DropdownMenu({
+         "cn-dropdown-menu-content-aria cn-menu-target cn-menu-translucent cn-menu-translucent-aria z-50 w-(--trigger-width) origin-(--trigger-anchor-point) overflow-x-hidden overflow-y-auto outline-none data-exiting:overflow-hidden",
+         className
+       )}
++      UNSTABLE_portalContainer={isSubmenu ? undefined : portalTarget}
+     >
+       <MenuPrimitive
+         className="max-h-[inherit] overflow-x-hidden overflow-y-auto outline-hidden"
+diff --git a/apps/v4/registry/bases/aria/ui/hover-card.tsx b/apps/v4/registry/bases/aria/ui/hover-card.tsx
+index 317a1123..692a53da 100644
+--- a/apps/v4/registry/bases/aria/ui/hover-card.tsx
++++ b/apps/v4/registry/bases/aria/ui/hover-card.tsx
+@@ -1,6 +1,7 @@
+ "use client"
+ 
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Popover as PopoverPrimitive,
+   PreviewTrigger as PreviewTriggerPrimitive,
+@@ -25,6 +26,7 @@ function HoverCard({
+ }: Omit<PopoverPrimitiveProps, "className"> & {
+   className?: string
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <PopoverPrimitive
+       data-slot="hover-card-content"
+@@ -36,6 +38,7 @@ function HoverCard({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     />
+   )
+ }
 diff --git a/apps/v4/registry/bases/aria/ui/input.tsx b/apps/v4/registry/bases/aria/ui/input.tsx
 index b09cd353..c7a991df 100644
 --- a/apps/v4/registry/bases/aria/ui/input.tsx
@@ -173,11 +392,47 @@ index b09cd353..c7a991df 100644
  
 -export { Input }
 +export { Input, inputVariants }
+diff --git a/apps/v4/registry/bases/aria/ui/popover.tsx b/apps/v4/registry/bases/aria/ui/popover.tsx
+index 848b235e..e177727b 100644
+--- a/apps/v4/registry/bases/aria/ui/popover.tsx
++++ b/apps/v4/registry/bases/aria/ui/popover.tsx
+@@ -2,6 +2,7 @@
+ 
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   DialogTrigger,
+   Heading,
+@@ -27,6 +28,7 @@ function Popover({
+ }: Omit<PopoverPrimitiveProps, "className"> & {
+   className?: string
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <PopoverPrimitive
+       data-slot="popover-content"
+@@ -38,6 +40,7 @@ function Popover({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     />
+   )
+ }
 diff --git a/apps/v4/registry/bases/aria/ui/select.tsx b/apps/v4/registry/bases/aria/ui/select.tsx
-index b6eb51be..1c408ac9 100644
+index b6eb51be..2a894a12 100644
 --- a/apps/v4/registry/bases/aria/ui/select.tsx
 +++ b/apps/v4/registry/bases/aria/ui/select.tsx
-@@ -73,21 +73,31 @@ function SelectValue<T extends object>({
+@@ -2,6 +2,7 @@
+ 
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Button as ButtonPrimitive,
+   composeRenderProps,
+@@ -73,21 +74,31 @@ function SelectValue<T extends object>({
    )
  }
  
@@ -209,6 +464,22 @@ index b6eb51be..1c408ac9 100644
          className
        )}
        {...props}
+@@ -146,6 +157,7 @@ function SelectPopover({
+   className?: string
+   children?: React.ReactNode
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <PopoverPrimitive
+       data-slot="select-content"
+@@ -157,6 +169,7 @@ function SelectPopover({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     >
+       {children}
+     </PopoverPrimitive>
 diff --git a/apps/v4/registry/bases/aria/ui/separator.tsx b/apps/v4/registry/bases/aria/ui/separator.tsx
 index f4c57e85..d41ff0e0 100644
 --- a/apps/v4/registry/bases/aria/ui/separator.tsx
@@ -261,6 +532,60 @@ index f4c57e85..d41ff0e0 100644
  
 -export { Separator }
 +export { Separator, separatorVariants }
+diff --git a/apps/v4/registry/bases/aria/ui/sheet.tsx b/apps/v4/registry/bases/aria/ui/sheet.tsx
+index 563f1e0b..55e3900e 100644
+--- a/apps/v4/registry/bases/aria/ui/sheet.tsx
++++ b/apps/v4/registry/bases/aria/ui/sheet.tsx
+@@ -2,6 +2,7 @@
+ 
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Heading,
+   ModalOverlay as ModalOverlayPrimitive,
+@@ -46,6 +47,7 @@ function SheetOverlay({
+   className?: string
+   children: React.ReactNode
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <ModalOverlayPrimitive
+       data-slot="sheet-overlay"
+@@ -55,6 +57,7 @@ function SheetOverlay({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     >
+       {children}
+     </ModalOverlayPrimitive>
+diff --git a/apps/v4/registry/bases/aria/ui/sonner.tsx b/apps/v4/registry/bases/aria/ui/sonner.tsx
+index 0c2e93ea..c153e0af 100644
+--- a/apps/v4/registry/bases/aria/ui/sonner.tsx
++++ b/apps/v4/registry/bases/aria/ui/sonner.tsx
+@@ -70,8 +70,21 @@ const Toaster = ({ ...props }: ToasterProps) => {
+           "--normal-text": "var(--popover-foreground)",
+           "--normal-border": "var(--border)",
+           "--border-radius": "var(--radius)",
++          "--success-bg": "var(--popover)",
++          "--success-text": "var(--success)",
++          "--success-border": "var(--success)",
++          "--info-bg": "var(--popover)",
++          "--info-text": "var(--info)",
++          "--info-border": "var(--info)",
++          "--warning-bg": "var(--popover)",
++          "--warning-text": "var(--warning)",
++          "--warning-border": "var(--warning)",
++          "--error-bg": "var(--popover)",
++          "--error-text": "var(--destructive)",
++          "--error-border": "var(--destructive)",
+         } as React.CSSProperties
+       }
++      richColors
+       toastOptions={{
+         classNames: {
+           toast: "cn-toast",
 diff --git a/apps/v4/registry/bases/aria/ui/tabs.tsx b/apps/v4/registry/bases/aria/ui/tabs.tsx
 index a20aca1b..8e96d811 100644
 --- a/apps/v4/registry/bases/aria/ui/tabs.tsx
@@ -343,6 +668,47 @@ index e6575a44..d9553e71 100644
  
 -export { Textarea }
 +export { Textarea, textareaVariants }
+diff --git a/apps/v4/registry/bases/aria/ui/toggle.tsx b/apps/v4/registry/bases/aria/ui/toggle.tsx
+index 56b68155..04098814 100644
+--- a/apps/v4/registry/bases/aria/ui/toggle.tsx
++++ b/apps/v4/registry/bases/aria/ui/toggle.tsx
+@@ -8,7 +8,7 @@ import {
+ } from "react-aria-components"
+ 
+ const toggleVariants = cva(
+-  "cn-toggle cn-toggle-aria group/toggle inline-flex items-center justify-center whitespace-nowrap outline-none hover:bg-muted focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
++  "cn-toggle cn-toggle-aria group/toggle inline-flex items-center justify-center whitespace-nowrap outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
+   {
+     variants: {
+       variant: {
+diff --git a/apps/v4/registry/bases/aria/ui/tooltip.tsx b/apps/v4/registry/bases/aria/ui/tooltip.tsx
+index 131908dc..62bfac7a 100644
+--- a/apps/v4/registry/bases/aria/ui/tooltip.tsx
++++ b/apps/v4/registry/bases/aria/ui/tooltip.tsx
+@@ -2,6 +2,7 @@
+ 
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Focusable,
+   OverlayArrow,
+@@ -44,6 +45,7 @@ function Tooltip({
+   className?: string
+   children?: React.ReactNode
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <TooltipPrimitive
+       data-slot="tooltip-content"
+@@ -55,6 +57,7 @@ function Tooltip({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     >
+       {children}
+       <OverlayArrow
 diff --git a/apps/v4/registry/styles.tsx b/apps/v4/registry/styles.tsx
 index 073055fb..4a7d8fc5 100644
 --- a/apps/v4/registry/styles.tsx
@@ -375,55 +741,3 @@ index 073055fb..4a7d8fc5 100644
    {
      name: "vega",
      title: "Vega",
-diff --git a/apps/v4/registry/bases/aria/ui/toggle.tsx b/apps/v4/registry/bases/aria/ui/toggle.tsx
-index 56b68155..04098814 100644
---- a/apps/v4/registry/bases/aria/ui/toggle.tsx
-+++ b/apps/v4/registry/bases/aria/ui/toggle.tsx
-@@ -8,7 +8,7 @@ import {
- } from "react-aria-components"
- 
- const toggleVariants = cva(
--  "cn-toggle cn-toggle-aria group/toggle inline-flex items-center justify-center whitespace-nowrap outline-none hover:bg-muted focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-+  "cn-toggle cn-toggle-aria group/toggle inline-flex items-center justify-center whitespace-nowrap outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-   {
-     variants: {
-       variant: {
-diff --git a/apps/v4/registry/bases/aria/ui/button-group.tsx b/apps/v4/registry/bases/aria/ui/button-group.tsx
-index 083fa498..ffec0abe 100644
---- a/apps/v4/registry/bases/aria/ui/button-group.tsx
-+++ b/apps/v4/registry/bases/aria/ui/button-group.tsx
-@@ -9,7 +9,7 @@ const buttonGroupVariants = cva(
-     variants: {
-       orientation: {
-         horizontal:
--          "cn-button-group-orientation-horizontal **:data-slot:rounded-r-none [&_[data-slot]~[data-slot]]:rounded-l-none [&_[data-slot]~[data-slot]]:border-l-0",
-+          "cn-button-group-orientation-horizontal **:data-slot:rounded-e-none [&_[data-slot]~[data-slot]]:rounded-s-none [&_[data-slot]~[data-slot]]:border-s-0",
-         vertical:
-           "cn-button-group-orientation-vertical flex-col **:data-slot:rounded-b-none [&_[data-slot]~[data-slot]]:rounded-t-none [&_[data-slot]~[data-slot]]:border-t-0",
-       },
-diff --git a/apps/v4/registry/bases/aria/ui/sonner.tsx b/apps/v4/registry/bases/aria/ui/sonner.tsx
-index 0c2e93ea..cd9933ad 100644
---- a/apps/v4/registry/bases/aria/ui/sonner.tsx
-+++ b/apps/v4/registry/bases/aria/ui/sonner.tsx
-@@ -70,8 +70,21 @@ const Toaster = ({ ...props }: ToasterProps) => {
-           "--normal-text": "var(--popover-foreground)",
-           "--normal-border": "var(--border)",
-           "--border-radius": "var(--radius)",
-+          "--success-bg": "var(--popover)",
-+          "--success-text": "var(--success)",
-+          "--success-border": "var(--success)",
-+          "--info-bg": "var(--popover)",
-+          "--info-text": "var(--info)",
-+          "--info-border": "var(--info)",
-+          "--warning-bg": "var(--popover)",
-+          "--warning-text": "var(--warning)",
-+          "--warning-border": "var(--warning)",
-+          "--error-bg": "var(--popover)",
-+          "--error-text": "var(--destructive)",
-+          "--error-border": "var(--destructive)",
-         } as React.CSSProperties
-       }
-+      richColors
-       toastOptions={{
-         classNames: {
-           toast: "cn-toast",
