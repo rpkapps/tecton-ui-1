@@ -146,8 +146,7 @@ close and cancellation behavior, persistence, transport, and branching.
 ## Server Rendering
 
 Pass `items` to server-render the active item, progress, actions, and answer
-shortcuts. See the
-[headless Questionnaire](https://ui.shadcn.com/docs/react/questionnaire) for the complete behavior.
+shortcuts. The active item, its progress and its actions all render on the server.
 
 ## Multiple Selection
 
@@ -291,20 +290,12 @@ actions are hidden and inert. Successful navigation focuses the newly active
 item; failed validation focuses an available answer control.
 
 Always give `QuestionnaireInput` an accessible name with a visible label,
-`aria-label`, or `aria-labelledby`. A placeholder is not a label. See the
-[Questionnaire accessibility guide](https://ui.shadcn.com/docs/react/questionnaire#accessibility)
-for labeling custom compositions and the complete keyboard behavior.
-
-## Unstyled
-
-The behavior in `Questionnaire` comes from the `@shadcn/react` package. To use
-it directly with your own markup and styles, see
-[Questionnaire](https://ui.shadcn.com/docs/react/questionnaire) under @shadcn/react.
+`aria-label`, or `aria-labelledby`. A placeholder is not a label. The same applies to custom compositions: every answer control needs a name of
+its own.
 
 ## API Reference
 
-The props, data attributes, and render states for every part are documented on
-the [@shadcn/react Questionnaire](https://ui.shadcn.com/docs/react/questionnaire#api-reference) page.
-The styled components inherit the corresponding unstyled props. Navigation
+Every part forwards the props of the element it renders, along with the data
+attributes and render states used throughout this page. Navigation
 components also accept Button `size` and `variant` props, and
 `QuestionnaireActions` is a styled-only layout helper.

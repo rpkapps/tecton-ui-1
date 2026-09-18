@@ -39,7 +39,7 @@ import {
 Wrap every control that may leave the row in an `OverflowItem`. Unwrapped children are fixed: they never leave, so the primary action goes in bare. Put the label text in an `OverflowLabel` so it can drop to icon-only. The `More` menu is rendered at the end automatically.
 
 <Callout>
-  `Toolbar` is a React Aria toolbar: one tab stop, arrow keys move between the visible controls. Use `Overflow` when the row is not a toolbar semantically (a breadcrumb, a chip row). Both need their items and dividers as direct children.
+  `Toolbar` has toolbar semantics: one tab stop, arrow keys move between the visible controls. Use `Overflow` when the row is not a toolbar semantically (a breadcrumb, a chip row). Both need their items and dividers as direct children.
 </Callout>
 
 ## Stages
@@ -64,7 +64,7 @@ Stage 2 collapses every label at once and brings them back only when every item 
 
 ## Other controls
 
-Each item declares what it becomes in the menu with `overflow`. A button needs nothing: its menu item is built from `label`, `icon`, `shortcut` and `onAction`, and `onAction` is injected into the React Aria `Button` child, so the handler is passed once. Other controls pass their own menu form:
+Each item declares what it becomes in the menu with `overflow`. A button needs nothing: its menu item is built from `label`, `icon`, `shortcut` and `onAction`, and `onAction` is injected into the `Button` child, so the handler is passed once. Other controls pass their own menu form:
 
 | Control | Overflow form |
 | --- | --- |
@@ -94,7 +94,7 @@ One `ResizeObserver` per row observes the row and its direct children. Sizes are
 
 ### Toolbar, Overflow
 
-`Toolbar` is a React Aria `Toolbar` (give it an `aria-label`); `Overflow` is a `div`. Both accept:
+`Toolbar` renders with toolbar semantics (give it an `aria-label`); `Overflow` is a `div`. Both accept:
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -115,7 +115,7 @@ A `div` wrapper around one control. Must be a direct child of the row.
 | `label` | `string` | - | Menu item text, tooltip, and the accessible name while icon-only. |
 | `icon` | `ReactNode` | - | Icon of the menu item. |
 | `shortcut` | `ReactNode` | - | Shortcut hint of the menu item. |
-| `onAction` | `() => void` | - | Handler of the default menu item; also injected into a React Aria `Button` child. |
+| `onAction` | `() => void` | - | Handler of the default menu item; also injected into a `Button` child. |
 | `isDisabled` | `boolean` | - | Disables the child button and the menu item. |
 | `variant` | `"default" \| "destructive"` | "default" | Menu item variant. |
 | `labelBehavior` | `"collapse" \| "keep"` | "collapse" when `label` is set | Whether the label drops to icon-only. |

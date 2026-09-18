@@ -73,7 +73,7 @@ export default function FormTanstackInput() {
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
                       aria-invalid={isInvalid}
-                      placeholder="shadcn"
+                      placeholder="casey"
                       autoComplete="username"
                     />
                     <FieldDescription>

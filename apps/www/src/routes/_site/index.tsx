@@ -29,23 +29,23 @@ export const Route = createFileRoute("/_site/")({
 const features = [
   {
     icon: ShapesIcon,
-    title: "60 shadcn components",
+    title: "60+ components",
     description:
-      "Every component of the shadcn/ui React Aria base, installed and updated with the shadcn CLI. Same names, props, variants and composition.",
+      "Buttons, fields, menus, tables, overlays and charts — accessible out of the box, with the keyboard and focus behaviour built in.",
     href: "/docs/components",
   },
   {
     icon: LayersIcon,
     title: "Tecton components",
     description:
-      "Chips, tree views, meters, stats, panels and application scaffolding that Tecton needs beyond shadcn. Status colours, field variants and the FAB are built into the shadcn components.",
+      "Chips, tree views, meters, stats, panels and application scaffolding. Status colours, field variants and the FAB are variants of the components you already have.",
     href: "/docs/tecton",
   },
   {
     icon: PaletteIcon,
     title: "Tokens, not overrides",
     description:
-      "Tecton's colours, radii and type are applied only through the shadcn CSS variables. No generated file is hand-edited, so updates stay a CLI command away.",
+      "Colours, radii and type come from the Tecton design tokens and reach every component through the theme. Nothing to configure, nothing to restyle.",
     href: "/docs/theming",
   },
   {
@@ -63,18 +63,17 @@ function Home() {
       <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
         <div className="flex flex-col gap-6">
           <div className="flex flex-wrap items-center gap-2">
-            <Badge size="md">shadcn/ui · React Aria</Badge>
+            <Badge size="md">React 19 · Tailwind v4</Badge>
             <Badge size="md" variant="secondary" appearance="outline">
               Tecton design system
             </Badge>
           </div>
           <h1 className="text-4xl font-medium tracking-tight text-balance md:text-5xl">
-            The Tecton component library, built on shadcn.
+            The Tecton component library for React.
           </h1>
           <p className="max-w-prose text-base text-muted-foreground md:text-lg">
-            {siteConfig.description} Consumers see only Tecton branding and
-            imports — everything underneath stays upgradeable with the shadcn
-            CLI.
+            {siteConfig.description} Add the package, import a component, and
+            the design system comes with it — in dark and light.
           </p>
           <div className="flex flex-wrap items-center gap-3">
             <LinkButton href="/docs" size="lg">
@@ -112,12 +111,12 @@ function Home() {
 
       <section className="flex flex-col gap-4 rounded-xl border bg-card p-6 md:flex-row md:items-center md:justify-between">
         <div>
-          <h2 className="text-lg font-medium">Only the shadcn CSS variables change.</h2>
+          <h2 className="text-lg font-medium">The theme is the design system.</h2>
           <p className="max-w-prose text-sm text-muted-foreground">
-            The Tecton palette is mapped to <code>--background</code>,{" "}
-            <code>--primary</code>, <code>--ring</code> and friends. The mapping,
-            its confidence and the contrast checks are documented and verified by{" "}
-            <code>pnpm tokens:check</code>.
+            The Tecton palette reaches every component through{" "}
+            <code>--background</code>, <code>--primary</code>,{" "}
+            <code>--ring</code> and friends — every pair contrast-checked in both
+            modes. Try the scales on the theme page.
           </p>
         </div>
         <LinkButton href="/themes" variant="secondary" size="sm">

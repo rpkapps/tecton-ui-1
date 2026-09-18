@@ -1,12 +1,17 @@
 ---
 title: Icons
-description: The Tecton icon set (131 icons, outlined and filled) and how it works alongside Lucide.
+description: The Tecton icon set — 131 icons in outlined and filled, and how it works alongside Lucide.
 ---
 
-Tecton UI supports **two icon libraries**:
+Tecton UI gives you **two icon sets**:
 
-- **Lucide** (`lucide-react`) — the library the generated shadcn components use internally (chevrons, check marks, close buttons…). It stays the CLI's `iconLibrary`, so generated files never change.
-- **Tecton icons** (`@tecton/react/icons`) — the 131 custom icons of the design system, including the domain glyphs (wells, horizons, seismic, drill bits…). Every icon is a React component with the Lucide-compatible signature (`size`, `strokeWidth`, `className`, SVG props) plus `variant="outlined" | "filled"`.
+- **Tecton icons** (`@tecton/react/icons`) — the 131 icons of the design system,
+  including the domain glyphs (wells, horizons, seismic, drill bits…). Every icon is a
+  React component taking `size`, `strokeWidth`, `className` and the usual SVG props,
+  plus `variant="outlined" | "filled"`.
+- **Lucide** (`lucide-react`) — the general-purpose set the components use internally
+  for chevrons, check marks and close buttons. Use it for anything the Tecton set does
+  not cover.
 
 ```tsx
 import { SearchIcon } from "lucide-react"
@@ -18,17 +23,21 @@ import { WellIcon, SeismicIcon } from "@tecton/react/icons"
 <SeismicIcon variant="filled" size={20} />
 ```
 
-<Callout title="Glyph sources">
-  The glyphs come from the Tecton icon export vendored in `packages/tecton-react/icons-src/tecton/` (one `defineTectonSvgIcon` definition per icon with outlined and filled markup). `icons:build` generates a React component per definition; every rendered `<svg>` reports its origin through `data-tecton-source` (`svg` for all 131 today). Drop a newer export into that folder and rebuild to update the set.
+<Callout title="Sizing and spacing">
+  Inside a button, an input group or a menu item, mark the icon with
+  `data-icon="inline-start"` or `data-icon="inline-end"` instead of adding margin: the
+  component then owns the gap, and the icon stays aligned at every size.
 </Callout>
 
 ## Gallery
 
 <IconGallery />
 
-## Replacing Lucide inside the generated components
+## Tecton glyphs inside the components
 
-If you want the shadcn components to render Tecton glyphs too, alias `lucide-react` to the compatibility module in your bundler. The generated files keep importing `lucide-react`; only the resolution changes:
+The components reach for Lucide internally. If you want them to render Tecton glyphs
+too — a Tecton check mark in every checkbox, a Tecton chevron in every select — alias
+`lucide-react` to the compatibility module in your bundler:
 
 ```ts title="vite.config.ts"
 export default defineConfig({
@@ -40,14 +49,12 @@ export default defineConfig({
 })
 ```
 
-The compat module re-exports every Lucide name the components use, mapped to the matching Tecton icon when one exists and to Lucide otherwise.
+The compat module re-exports every Lucide name the components use, mapped to the
+matching Tecton icon where one exists and to Lucide otherwise, so nothing goes missing.
+The alias is all-or-nothing and affects your own `lucide-react` imports as well.
 
-## Regenerating
+## Missing a glyph?
 
-```bash
-# replace icons-src/tecton/*.ts with a newer Tecton export, then
-pnpm --filter @tecton/react icons:build     # regenerates src/icons/*
-pnpm --filter @tecton/react icons:build -- --check   # CI drift guard
-```
-
-Loose SVG files in `icons-src/outlined/` or `icons-src/filled/` override a definition for that variant (`icons:extract` can populate them from a Storybook).
+The set is the design system's icon export, so it is not extended per application. If
+you need a glyph Tecton does not have, use the closest Lucide icon and raise the gap
+with the design system.

@@ -1,9 +1,6 @@
 ---
 title: Command
 description: Command menu for search and quick actions.
-links:
-  doc: https://react-aria.adobe.com/Autocomplete
-  api: https://react-aria.adobe.com/Autocomplete#api
 upstream: apps/v4/content/docs/components/aria/command.mdx
 ---
 
@@ -91,7 +88,7 @@ Scrollable command menu with multiple items.
 
 ## RTL
 
-To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+Wrap your application in the [DirectionProvider](/docs/components/direction) and the component follows the reading direction — there is nothing else to configure.
 
 <ComponentPreview
   name="command-rtl"
@@ -102,4 +99,4 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ## API Reference
 
-See the [React Aria](https://react-aria.adobe.com/Autocomplete) documentation for more information.
+Each component forwards the props and `data-*` state attributes of the element it renders.

@@ -1,3 +1,5 @@
+import { Link } from "@tanstack/react-router"
+
 import { siteConfig } from "@/lib/site"
 
 export function SiteFooter() {
@@ -6,17 +8,17 @@ export function SiteFooter() {
       <div className="container-wrapper px-4 xl:px-6">
         <div className="flex h-(--footer-height) items-center justify-between">
           <div className="w-full px-1 text-center text-xs leading-loose text-muted-foreground sm:text-sm">
-            {siteConfig.name} is built on{" "}
-            <a
-              href="https://ui.shadcn.com"
-              target="_blank"
-              rel="noreferrer"
+            {siteConfig.name} is the Tecton design system for React. Package:{" "}
+            <span className="font-mono">{siteConfig.package}</span>. Building
+            the library itself?{" "}
+            <Link
+              to="/docs/$"
+              params={{ _splat: "contributing" }}
               className="font-medium underline underline-offset-4"
             >
-              shadcn/ui
-            </a>{" "}
-            (React Aria base) and themed through the Tecton design tokens.
-            Package: <span className="font-mono">{siteConfig.package}</span>.
+              Contributing
+            </Link>
+            .
           </div>
         </div>
       </div>

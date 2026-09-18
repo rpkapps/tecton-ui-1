@@ -1,8 +1,6 @@
 ---
 title: Color Swatch
 description: "A colour preview chip with optional label and value, for colour tags, legends and theme documentation."
-links:
-  doc: https://react-aria.adobe.com/ColorSwatch
 ---
 
 <ComponentPreview name="color-swatch-demo" />
@@ -46,11 +44,11 @@ Pass `onChange` to make the swatch a button that opens a picker: a row of preset
 
 ### ColorSwatch
 
-React Aria [`ColorSwatch`](https://react-aria.adobe.com/ColorSwatch); accepts all its props.
+The swatch itself: renders the colour with an accessible name derived from its value.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `color` | `string \| Color` | - | Any CSS colour string or React Aria `Color`. |
+| `color` | `string \| Color` | - | Any CSS colour string, or a parsed colour object. |
 | `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | "md" | Swatch size. |
 | `shape` | `"square" \| "rounded" \| "circle"` | "rounded" | Corner radius. |
 | `label` | `ReactNode` | - | Text next to the swatch. |

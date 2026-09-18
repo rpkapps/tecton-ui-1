@@ -37,9 +37,11 @@ function Value({ label, value }: { label: string; value: string }) {
 function Rows({
   entries,
   compact,
+  provenance,
 }: {
   entries: [string, Mapping][]
   compact?: boolean
+  provenance: boolean
 }) {
   const light = theme.cssVars.light as Record<string, string>
   const dark = theme.cssVars.dark as Record<string, string>
@@ -60,15 +62,17 @@ function Rows({
             <Value label="dark" value={dark[name] ?? "�"} />
             <Value label="light" value={light[name] ?? "�"} />
           </td>
-          <td className="py-2 pr-4">
-            <Badge
-              appearance="outline"
-              variant={confidenceColor[mapping.confidence]}
-            >
-              {mapping.confidence}
-            </Badge>
-          </td>
-          {!compact && (
+          {provenance && (
+            <td className="py-2 pr-4">
+              <Badge
+                appearance="outline"
+                variant={confidenceColor[mapping.confidence]}
+              >
+                {mapping.confidence}
+              </Badge>
+            </td>
+          )}
+          {provenance && !compact && (
             <td className="py-2 text-xs text-muted-foreground">
               {mapping.note}
             </td>
@@ -79,16 +83,25 @@ function Rows({
   )
 }
 
-/** Generated from tokens/tecton.map.json + registry/theme.json. */
+/**
+ * Generated from tokens/tecton.map.json + registry/theme.json.
+ *
+ * `provenance` adds how the value was derived (confidence + note). That is
+ * maintenance information, so the application-facing Theming page turns it off
+ * and only the contributor page shows it.
+ */
 export function TokenTable({
   compact,
+  provenance = true,
   className,
 }: {
   compact?: boolean
+  provenance?: boolean
   className?: string
 }) {
   const standard = Object.entries(map.shadcn as Record<string, Mapping>)
   const extra = Object.entries(map.extra as Record<string, Mapping>)
+  const columns = 2 + (provenance ? (compact ? 1 : 2) : 0)
 
   return (
     <div data-not-typeset className={cn("my-6 overflow-x-auto", className)}>
@@ -96,24 +109,24 @@ export function TokenTable({
         <thead>
           <tr className="border-b text-left text-xs text-muted-foreground">
             <th className="py-2 pr-4 font-medium">
-              shadcn variable / Tecton token
+              theme variable / Tecton token
             </th>
             <th className="py-2 pr-4 font-medium">value</th>
-            <th className="py-2 pr-4 font-medium">confidence</th>
-            {!compact && <th className="py-2 font-medium">note</th>}
+            {provenance && <th className="py-2 pr-4 font-medium">confidence</th>}
+            {provenance && !compact && <th className="py-2 font-medium">note</th>}
           </tr>
         </thead>
         <tbody>
-          <Rows entries={standard} compact={compact} />
+          <Rows entries={standard} compact={compact} provenance={provenance} />
           <tr>
             <td
-              colSpan={compact ? 3 : 4}
+              colSpan={columns}
               className="pt-6 pb-2 text-xs font-medium text-muted-foreground"
             >
               Extra tokens (Tecton components only)
             </td>
           </tr>
-          <Rows entries={extra} compact={compact} />
+          <Rows entries={extra} compact={compact} provenance={provenance} />
         </tbody>
       </table>
     </div>

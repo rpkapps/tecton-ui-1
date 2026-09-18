@@ -1,0 +1,116 @@
+---
+title: Tokens & theme
+description: How the Tecton design tokens become the theme variables and the Tailwind palette, and how the mapping is verified.
+---
+
+The Tecton visual language reaches the generated components **only through the theme
+variables**. No generated file is edited and no extra CSS targets one; the theme is a
+set of values for `--background`, `--primary`, `--ring` and friends in `globals.css`,
+plus a few extra variables for Tecton-only semantics. Underneath, the Tecton colour
+ramps replace Tailwind's stock palette, so `bg-red-140` in application code is a Tecton
+colour too.
+
+## The pipeline
+
+<Steps>
+
+<Step>Raw tokens</Step>
+
+`src/styles/tecton-tokens.css` is the generated CSS export of the Tecton design system,
+pasted verbatim: every token as a CSS custom property (`--tecton-color-bg-default`,
+`--tecton-radius-50`, `--tecton-font-family-sans`…) with a light block (`:root`) and a
+dark block (`.dark` / `[data-theme="dark"]`). `tokens/tecton.tokens.json` is the Figma
+variables export the semantic tokens are picked from; its `foundational/color` ramps are
+the source of the palette.
+
+<Step>Mapping as data</Step>
+
+`tokens/tecton.map.json` says which Tecton token each theme variable takes, with a
+confidence (`exact` or `approximated`) and a note. Because the Tecton export is themed,
+the same `var(--tecton-…)` reference serves both modes.
+
+<Step>Generated theme</Step>
+
+`pnpm --filter @tecton/react tokens:build` writes `tecton-palette.css` (the ramps, and
+the Tailwind `@theme` that exposes them) and `tecton-theme.css`, patches the variable
+values inside the CLI-managed `globals.css` (`:root`, `.dark`, `@theme inline` and the
+two `@import`s — nothing else) and the mapping document `docs/TOKEN-MAPPING.md`.
+
+<Step>Verification</Step>
+
+`pnpm --filter @tecton/react tokens:check` verifies completeness, WCAG contrast for
+every surface/foreground pair, a few sanity rules, and that every semantic colour is a
+literal member of an exposed palette ramp.
+
+</Steps>
+
+<Callout title="Only the variable values may change">
+  `globals.css` is CLI-managed. `tokens:build` patches the *values* of the variables in
+  `:root`, `.dark` and `@theme inline` and nothing else — no new selectors, no
+  `[data-slot]` rules, no `@layer` blocks. Anything Tecton needs that cannot be
+  expressed as a variable becomes a style-overlay variant or a Tecton component instead.
+</Callout>
+
+## The mapping, with provenance
+
+Every row below is a theme variable, the Tecton token it takes, how exact the match is
+and why. The same data is written to `docs/TOKEN-MAPPING.md` on every build; the
+[Theming](/docs/theming) page shows the reader-facing half of it.
+
+<TokenTable />
+
+## Changing a value
+
+Edit `tokens/tecton.map.json` — never `globals.css`:
+
+```jsonc
+{
+  "shadcn": {
+    "--primary": {
+      "token": "--tecton-color-action-primary-default",
+      "confidence": "exact",
+      "note": "Tecton primary action"
+    }
+  }
+}
+```
+
+Then:
+
+```bash
+pnpm --filter @tecton/react tokens:build
+pnpm --filter @tecton/react tokens:check
+```
+
+A value that has no Tecton token at all goes into `src/styles/tecton-tokens.css` first
+(as part of a new design-system export), not straight into the map.
+
+## Updating the palette
+
+`tokens/tecton.tokens.json` is a whole-file Figma variables export — replace it, do not
+patch it. `tokens:build` then rewrites `src/styles/tecton-palette.css`: the raw values
+as `--tecton-palette-<family>-<step>`, and one `--color-<family>-<step>` theme entry per
+value, emitted **after** `--color-*: initial` so Tailwind's stock palette is gone.
+
+The family list lives under `palette` in `tokens/tecton.map.json`. Deliberately not
+exposed: the `core` ramps, the `surface` / `transparent` / `saturations` / `washes`
+sub-ramps, the Matplotlib and Colorcet colormaps and the app accent colours.
+
+Because the stock palette is removed, a stock colour class anywhere in this repository
+is dead code. Synced upstream examples that use one are rewritten during the docs sync —
+see `TECTON_PALETTE_REWRITES` in `apps/www/scripts/sync-upstream-docs.mts`.
+
+## Adding an extra token
+
+Tecton has semantics the upstream variables do not express (status colours, surface
+levels, separator emphasis). They are added under `extra` in the map, following the
+documented shadcn pattern — a variable in `:root` / `.dark` plus a `--color-*` entry in
+`@theme inline` — and are then usable as ordinary Tailwind utilities. The current set is
+listed on the [Theming](/docs/theming#extra-tokens) page.
+
+## Beyond the variables
+
+Variables carry colours, radii and fonts. The rest of the Tecton look — the solid 2px
+focus ring, the lighten-on-hover buttons, the flat controls, the extra variant axes —
+comes from the `aria-tecton` style overlay, not from the token pipeline. See
+[Components](/docs/contributing/components#the-tecton-style).

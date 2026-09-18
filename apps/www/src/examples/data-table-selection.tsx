@@ -74,7 +74,7 @@ const features = tableFeatures({ rowSelectionFeature })
 const columnHelper = createColumnHelper<typeof features, Well>()
 
 const columns = columnHelper.columns([
-  // `slot="selection"` wires the checkbox to the React Aria table selection:
+  // `slot="selection"` wires the checkbox to the table's own selection state:
   // the header checkbox selects all rows, the cell checkbox its own row.
   columnHelper.display({
     id: "select",

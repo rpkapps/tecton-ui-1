@@ -1,6 +1,6 @@
 ---
 title: Spacing & radius
-description: Tecton's spacing scale and corner radii, and how they map to the Tailwind and shadcn utilities.
+description: Tecton's spacing scale and corner radii, and the Tailwind utilities that carry them.
 ---
 
 ## Spacing
@@ -34,9 +34,9 @@ The values are also exposed as `--tecton-space-*` variables for non-Tailwind con
 
 ## Radius
 
-Tecton's default corner radius is **4px**; the scale is not a multiple of a single base, so the shadcn radius variables are set explicitly instead of being derived from `--radius`:
+Tecton's default corner radius is **4px**. The scale is not a multiple of a single base, so each radius variable is set explicitly rather than derived from `--radius`:
 
-| Tecton | px | shadcn / Tailwind |
+| Tecton | px | Variable / Tailwind |
 | --- | --- | --- |
 | radius-0 | 0 | `rounded-none` |
 | radius-25 | 2 | `--radius-sm` → `rounded-sm` |

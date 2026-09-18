@@ -6,8 +6,8 @@ export default function LinkExternal() {
       <Link href="https://factpages.sodir.no" isExternal>
         Sodir FactPages
       </Link>
-      <Link href="https://react-aria.adobe.com/Link" isExternal variant="muted">
-        React Aria Link
+      <Link href="https://tanstack.com/table/latest" isExternal variant="muted">
+        TanStack Table
       </Link>
     </div>
   )

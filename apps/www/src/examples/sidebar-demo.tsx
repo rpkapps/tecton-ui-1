@@ -70,9 +70,9 @@ import {
 // This is sample data.
 const data = {
   user: {
-    name: "shadcn",
+    name: "Casey Nolan",
     email: "m@example.com",
-    avatar: "/avatars/shadcn.jpg",
+    avatar: "/avatars/casey.jpg",
   },
   teams: [
     {
@@ -231,7 +231,7 @@ function TeamSwitcher({
             <ChevronsUpDown className="ml-auto" />
           </SidebarMenuButton>
           <DropdownMenu
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            className="w-(--trigger-width) min-w-56 rounded-lg"
             placement={isMobile ? "bottom start" : "right top"}
             offset={4}
           >
@@ -408,7 +408,7 @@ function NavUser({
             <ChevronsUpDown className="ml-auto size-4" />
           </SidebarMenuButton>
           <DropdownMenu
-            className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
+            className="w-(--trigger-width) min-w-56 rounded-lg"
             placement={isMobile ? "bottom end" : "right bottom"}
             offset={4}
           >

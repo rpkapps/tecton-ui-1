@@ -14,14 +14,48 @@ export function getPagesFromFolder(folder: TreeFolder): TreePage[] {
   return pages
 }
 
-/** Top-level pages of the tree (the "Sections" group of the sidebar). */
-export function getRootPages(tree: PageTree.Root): TreePage[] {
-  return tree.children.filter((node): node is TreePage => node.type === "page")
-}
-
 /** Top-level folders of the tree (one sidebar / command-menu group each). */
 export function getRootFolders(tree: PageTree.Root): TreeFolder[] {
   return tree.children.filter((node): node is TreeFolder => node.type === "folder")
+}
+
+/** A top-level entry of the tree: a page, or a folder linked through its index. */
+export type TreeRootNode = TreePage | TreeFolder
+
+/** Top-level entries under one `---Label---` separator of the root meta.json. */
+export type TreeGroup = { label: string; nodes: TreeRootNode[] }
+
+const UNLABELLED_GROUP = "Sections"
+
+/**
+ * Top-level entries grouped by the `---Label---` separators of the root
+ * meta.json — the docs are split by audience, and the labels are what makes
+ * that split visible. Entries before the first separator fall into one
+ * unlabelled group, so a tree without separators renders as it always did.
+ */
+export function getRootGroups(tree: PageTree.Root): TreeGroup[] {
+  const groups: TreeGroup[] = []
+  let current: TreeGroup | undefined
+
+  for (const node of tree.children) {
+    if (node.type === "separator") {
+      current = { label: nodeName(node) || UNLABELLED_GROUP, nodes: [] }
+      groups.push(current)
+      continue
+    }
+    if (!current) {
+      current = { label: UNLABELLED_GROUP, nodes: [] }
+      groups.push(current)
+    }
+    current.nodes.push(node)
+  }
+
+  return groups.filter((group) => group.nodes.length > 0)
+}
+
+/** Page a top-level entry links to: itself, or the folder's index page. */
+export function rootNodeLink(node: TreeRootNode): TreePage | undefined {
+  return node.type === "page" ? node : node.index
 }
 
 const ENTITIES: Record<string, string> = {

@@ -1,9 +1,9 @@
 ---
 title: Installation
-description: Add @tecton/react to your application. Blocks can be added with the shadcn CLI.
+description: Add @tecton/react to your application, and copy blocks in from the Tecton registry.
 ---
 
-Tecton UI is consumed as the **package** `@tecton/react`: components, Tecton components, icons and the theme are all imported from it and are not installed one by one. **Blocks** are the exception: they are starting points meant to be copied into your application, so they are published in a shadcn registry.
+Tecton UI is consumed as the **package** `@tecton/react`: components, Tecton components, icons and the theme are all imported from it and are not installed one by one. **Blocks** are the exception — they are starting points meant to be copied into your application and edited, so they are published through a registry instead.
 
 ## Package
 
@@ -67,7 +67,7 @@ pnpm add @tecton/react --registry http://localhost:4873
 
 ### Stylesheet
 
-Import the theme once. It contains Tailwind, the shadcn runtime styles, the Tecton tokens and the theme variables:
+Import the theme once. It contains Tailwind, the component runtime styles, the Tecton tokens and the theme variables:
 
 ```css title="src/styles/app.css"
 @import "@tecton/react/globals.css";
@@ -164,9 +164,9 @@ Components that use hooks carry a `"use client"` directive already.
 
 </Tabs>
 
-## Blocks (shadcn registry)
+## Blocks
 
-Blocks are full compositions (panels, dashboards, forms, tables) that you copy into your application and adapt. The docs site serves them as a shadcn registry named `@tecton`. Point your `components.json` at it and add a block with the CLI; the copied files import the components from `@tecton/react`, so the package must already be installed.
+Blocks are full compositions (panels, dashboards, forms, tables) that you copy into your application and adapt. This site serves them as a component registry named `@tecton`. Point your `components.json` at it and copy a block in with the registry CLI; the copied files import their components from `@tecton/react`, so the package must already be installed.
 
 ```json title="components.json"
 {
@@ -181,3 +181,10 @@ npx shadcn@latest add @tecton/dashboard-01
 ```
 
 Every block on the [Blocks](/blocks) page shows its command. For a private host add `headers` to the registry entry (`"@tecton": { "url": "…", "headers": { "Authorization": "Bearer ${TECTON_TOKEN}" } }`).
+
+<Callout variant="warning" title="Always name the registry">
+  The `@tecton/` prefix is what selects the Tecton registry. Without it the CLI installs
+  from its own default registry — an unthemed component with a palette Tecton removes,
+  which renders unstyled. [`@tecton/eslint-config`](/docs/linting) reports the result on
+  import.
+</Callout>

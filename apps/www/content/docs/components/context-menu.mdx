@@ -1,9 +1,6 @@
 ---
 title: Context Menu
 description: Displays a menu of actions triggered by a right click.
-links:
-  doc: https://react-aria.adobe.com/Menu
-  api: https://react-aria.adobe.com/Menu#api
 upstream: apps/v4/content/docs/components/aria/context-menu.mdx
 ---
 
@@ -119,7 +116,7 @@ Control submenu placement with the `placement` prop.
 
 ## RTL
 
-To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+Wrap your application in the [DirectionProvider](/docs/components/direction) and the component follows the reading direction — there is nothing else to configure.
 
 <ComponentPreview
   name="context-menu-rtl"
@@ -144,4 +141,4 @@ Use `placement="end"` to place the menu on the logical end side of the trigger.
 
 ## API Reference
 
-See the [React Aria](https://react-aria.adobe.com/Menu#api) documentation for more information.
+Each component forwards the props and `data-*` state attributes of the element it renders.

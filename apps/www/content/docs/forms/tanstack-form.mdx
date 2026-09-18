@@ -1,6 +1,6 @@
 ---
 title: TanStack Form
-description: Build forms in React using TanStack Form, Zod and the React Aria components.
+description: Build forms in React using TanStack Form, Zod and the Tecton form controls.
 links:
   doc: https://tanstack.com/form
 ---
@@ -9,7 +9,7 @@ import { InfoIcon } from "lucide-react"
 
 This guide explores how to build forms using TanStack Form. You'll learn to create forms with the `<Field />` component, implement schema validation with Zod, handle errors, and ensure accessibility.
 
-It follows the [upstream shadcn/ui guide](https://ui.shadcn.com/docs/forms/tanstack-form); the examples are rewritten for the React Aria components, whose controls use `isSelected` / `onChange`, `selectedKey` / `onSelectionChange` and `isInvalid` instead of the Radix `checked` / `onCheckedChange`, `value` / `onValueChange` and `aria-invalid` props.
+Every example uses the Tecton controls as they are. If you are porting a form from another component library, note the prop names: Tecton's controlled inputs use `isSelected` / `onChange`, `selectedKey` / `onSelectionChange` and `isInvalid` where others use `checked` / `onCheckedChange`, `value` / `onValueChange` and `aria-invalid`. [Working with different field types](#working-with-different-field-types) lists them per control.
 
 ## Demo
 
@@ -222,7 +222,7 @@ const form = useForm({
 Display errors next to the field using `<FieldError />`. For styling and accessibility:
 
 - Add the `data-invalid` prop to the `<Field />` component.
-- Add `aria-invalid` to native controls such as `<Input />` and `<Textarea />`, and `isInvalid` to the React Aria controls (`<Select />`, `<Checkbox />`, `<RadioGroup />`).
+- Add `aria-invalid` to the controls that render a native element (`<Input />`, `<Textarea />`), and `isInvalid` to the composed ones (`<Select />`, `<Checkbox />`, `<RadioGroup />`).
 
 ```tsx showLineNumbers title="form.tsx" {4,18}
 <form.Field
@@ -277,7 +277,7 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
           onBlur={field.handleBlur}
           onChange={(e) => field.handleChange(e.target.value)}
           aria-invalid={isInvalid}
-          placeholder="shadcn"
+          placeholder="casey"
           autoComplete="username"
         />
         <FieldDescription>
@@ -335,7 +335,7 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
 
 ### Select
 
-- For select components, use `selectedKey` and `onSelectionChange` on the `<Select />` component. React Aria selects use `null` for "nothing selected", so map the empty string to `null` and back.
+- For select components, use `selectedKey` and `onSelectionChange` on the `<Select />` component. `Select` uses `null` for "nothing selected", so map the empty string to `null` and back.
 - To show errors, add the `isInvalid` prop to the `<Select />` component and the `data-invalid` prop to the `<Field />` component.
 
 <ComponentPreview
@@ -503,7 +503,7 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
 ### Switch
 
 - For switches, use `isSelected` and `onChange` on the `<Switch />` component.
-- To show errors, add the `data-invalid` prop to the `<Field />` component (React Aria switches have no invalid state of their own).
+- To show errors, add the `data-invalid` prop to the `<Field />` component (`Switch` has no invalid state of its own).
 
 <ComponentPreview
   name="form-tanstack-switch"

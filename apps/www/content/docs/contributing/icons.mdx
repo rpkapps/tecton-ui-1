@@ -1,0 +1,42 @@
+---
+title: Icons
+description: How the Tecton icon components are generated from the design-system export, and how Lucide fits underneath.
+---
+
+The 131 icon components in `packages/tecton-react/src/icons/` are generated. Neither
+they nor the vendored export are edited by hand: you replace the export and rebuild.
+
+## Sources
+
+| Path | What it is |
+| --- | --- |
+| `packages/tecton-react/icons-src/tecton/*.ts` | The vendored Tecton icon export — one `defineTectonSvgIcon` definition per icon, with outlined and filled markup |
+| `packages/tecton-react/icons-src/outlined/`, `icons-src/filled/` | Loose SVG files that override a definition for that one variant |
+| `packages/tecton-react/icons/icons.json` | The generated manifest (names, variants, source per icon) |
+| `packages/tecton-react/src/icons/` | The generated components and `index.ts` |
+
+## Regenerating
+
+```bash
+# replace icons-src/tecton/*.ts with a newer Tecton export, then
+pnpm --filter @tecton/react icons:build
+pnpm --filter @tecton/react icons:build -- --check   # CI drift guard
+```
+
+`icons:extract` can populate `icons-src/outlined/` and `icons-src/filled/` from a
+Storybook when only loose SVGs are available. Every rendered `<svg>` reports where its
+glyph came from through `data-tecton-source` (`svg` for all 131 today), so a regression
+to a Lucide fallback is visible in the DOM.
+
+## Why Lucide is still there
+
+The generated components import their own chevrons, check marks and close buttons from
+`lucide-react`. That stays the CLI's `iconLibrary`: changing it would rewrite every
+generated file and break `generated:check`.
+
+Applications that want Tecton glyphs inside those components alias `lucide-react` to
+`@tecton/react/icons/lucide-compat` in their bundler — the generated files keep
+importing `lucide-react`, only the resolution changes. The compat module re-exports
+every Lucide name the components use, mapped to the matching Tecton icon when one exists
+and to Lucide otherwise. Adding a new mapping there is the supported way to cover one
+more glyph; editing a generated component is not.

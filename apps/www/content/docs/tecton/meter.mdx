@@ -1,8 +1,6 @@
 ---
 title: Meter
 description: "Segmented gauge for risk, complexity and confidence readouts, with automatic colour by value."
-links:
-  doc: https://react-aria.adobe.com/Meter
 ---
 
 <ComponentPreview name="meter-demo" />
@@ -19,7 +17,7 @@ import { Meter } from "@tecton/react/tecton/meter"
 ```
 
 <Callout>
-  The segmented gauge from the FDA and Well Design cards has no shadcn equivalent; [Progress](/docs/components/progress) is kept for task progress.
+  The segmented gauge from the FDA and Well Design cards is a Tecton pattern of its own; [Progress](/docs/components/progress) is kept for task progress.
 </Callout>
 
 ## Segments
@@ -50,7 +48,7 @@ Use the `size` prop for the track height.
 
 ### Meter
 
-React Aria [`Meter`](https://react-aria.adobe.com/Meter); accepts all its props (`value`, `minValue`, `maxValue`, `formatOptions`…).
+An accessible meter rendered as segments. Accepts `value`, `minValue`, `maxValue` and `formatOptions`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |

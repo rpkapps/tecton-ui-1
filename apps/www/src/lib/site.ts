@@ -1,7 +1,7 @@
 export const siteConfig = {
   name: "Tecton UI",
   description:
-    "Enterprise React components for Tecton — shadcn/ui on the React Aria base, themed through Tecton design tokens.",
+    "Enterprise React components for Tecton — accessible, themed with the Tecton design tokens, shipped as one package.",
   package: "@tecton/react",
   nav: [
     { title: "Docs", href: "/docs" },
@@ -9,5 +9,6 @@ export const siteConfig = {
     { title: "Tecton", href: "/docs/tecton" },
     { title: "Blocks", href: "/blocks" },
     { title: "Themes", href: "/themes" },
+    { title: "Contributing", href: "/docs/contributing" },
   ],
 }

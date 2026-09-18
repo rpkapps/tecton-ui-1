@@ -13,16 +13,16 @@ const translations: Translations = {
   en: {
     dir: "ltr",
     values: {
-      title: "shadcn/ui",
-      subtitle: "The Foundation for your Design System",
+      title: "Tecton UI",
+      subtitle: "The Tecton design system for React",
       description:
-        "A set of beautifully designed components that you can customize, extend, and build on.",
+        "Components, icons and blocks that carry the Tecton look in every application.",
     },
   },
   ar: {
     dir: "rtl",
     values: {
-      title: "shadcn/ui",
+      title: "Tecton UI",
       subtitle: "الأساس لنظام التصميم الخاص بك",
       description:
         "مجموعة من المكونات المصممة بشكل جميل يمكنك تخصيصها وتوسيعها والبناء عليها.",
@@ -31,7 +31,7 @@ const translations: Translations = {
   he: {
     dir: "rtl",
     values: {
-      title: "shadcn/ui",
+      title: "Tecton UI",
       subtitle: "הבסיס למערכת העיצוב שלך",
       description:
         "סט של רכיבים מעוצבים בצורה יפה שאתה יכול להתאים אישית, להרחיב ולבנות עליהם.",

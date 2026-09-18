@@ -15,7 +15,13 @@ import {
   SidebarMenuItem,
 } from "@tecton/react/components/sidebar"
 
-import { getPagesFromFolder, getRootFolders, getRootPages, nodeName } from "@/lib/tree"
+import {
+  getPagesFromFolder,
+  getRootFolders,
+  getRootGroups,
+  nodeName,
+  rootNodeLink,
+} from "@/lib/tree"
 
 const SCROLL_KEY = "tecton-docs:sidebar-scroll"
 
@@ -43,6 +49,16 @@ function saveScrollState(container: HTMLElement) {
 
 const itemClassName =
   "relative h-[30px] w-fit overflow-visible border border-transparent text-[0.8rem] font-medium after:absolute after:inset-x-0 after:-inset-y-1 after:z-0 after:rounded-md data-[active=true]:border-accent data-[active=true]:bg-accent"
+
+/**
+ * A folder entry links to its index and is only active on it — its pages have
+ * their own group below. A page entry also matches its sub-paths, except the
+ * docs root, which every page would otherwise match.
+ */
+function isRootEntryActive(pathname: string, type: "page" | "folder", url: string) {
+  if (type === "folder" || url === "/docs") return pathname === url
+  return pathname.startsWith(url)
+}
 
 function SidebarLink({
   href,
@@ -99,7 +115,7 @@ export function DocsSidebar({
     return () => container.removeEventListener("scroll", onScroll)
   }, [])
 
-  const sections = getRootPages(tree)
+  const groups = getRootGroups(tree)
   const folders = getRootFolders(tree)
 
   return (
@@ -114,37 +130,30 @@ export function DocsSidebar({
         data-docs-sidebar-content=""
         className="w-(--sidebar-menu-width) scroll-fade no-scrollbar overflow-x-hidden pl-2.5"
       >
-        <SidebarGroup className="pt-12">
-          <SidebarGroupLabel className="font-medium text-muted-foreground">
-            Sections
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {sections.map((page) => (
-                <SidebarLink
-                  key={page.url}
-                  href={page.url}
-                  active={
-                    page.url === "/docs" ? pathname === page.url : pathname.startsWith(page.url)
-                  }
-                >
-                  {nodeName(page)}
-                </SidebarLink>
-              ))}
-              {folders
-                .filter((folder) => folder.index)
-                .map((folder) => (
-                  <SidebarLink
-                    key={folder.index!.url}
-                    href={folder.index!.url}
-                    active={pathname === folder.index!.url}
-                  >
-                    {nodeName(folder)}
-                  </SidebarLink>
-                ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {groups.map((group, index) => (
+          <SidebarGroup key={group.label} className={index === 0 ? "pt-12" : undefined}>
+            <SidebarGroupLabel className="font-medium text-muted-foreground">
+              {group.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {group.nodes.map((node) => {
+                  const link = rootNodeLink(node)
+                  if (!link) return null
+                  return (
+                    <SidebarLink
+                      key={link.url}
+                      href={link.url}
+                      active={isRootEntryActive(pathname, node.type, link.url)}
+                    >
+                      {nodeName(node)}
+                    </SidebarLink>
+                  )
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
         {folders.map((folder) => {
           const pages = getPagesFromFolder(folder)
           if (!pages.length) return null

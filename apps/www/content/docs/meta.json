@@ -2,19 +2,22 @@
   "root": true,
   "title": "Docs",
   "pages": [
-    "---Getting started---",
+    "---Get started---",
     "index",
     "installation",
+    "---Foundations---",
     "theming",
     "typography",
     "spacing",
-    "linting",
-    "cli",
     "icons",
+    "---Guides---",
     "forms",
+    "linting",
     "---Library---",
     "components",
     "tecton",
-    "utils"
+    "utils",
+    "---Contributing---",
+    "contributing"
   ]
 }

@@ -70,8 +70,8 @@ function BlocksIndex() {
           <LinkButton href="#blocks" size="sm">
             Browse blocks
           </LinkButton>
-          <LinkButton href="/docs/cli" variant="ghost" size="sm">
-            Using the CLI
+          <LinkButton href="/docs/installation#blocks" variant="ghost" size="sm">
+            How to add a block
           </LinkButton>
         </PageHeaderActions>
       </PageHeader>

@@ -20,7 +20,7 @@ export function AvatarDropdown() {
     <DropdownMenuTrigger>
       <Button variant="ghost" size="icon" className="rounded-full">
         <Avatar>
-          <AvatarImage src="https://github.com/shadcn.png" alt="shadcn" />
+          <AvatarImage src="https://avatar.vercel.sh/casey" alt="casey" />
           <AvatarFallback>CN</AvatarFallback>
         </Avatar>
       </Button>

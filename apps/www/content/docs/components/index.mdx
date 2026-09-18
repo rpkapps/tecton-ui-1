@@ -1,12 +1,22 @@
 ---
 title: Components
-description: The 60 shadcn/ui components of the React Aria base, unchanged and themed through the Tecton tokens.
+description: The Tecton UI component reference — over 60 accessible, themed building blocks.
 ---
 
-These pages are the shadcn/ui documentation for the React Aria base, synced from upstream and adjusted for `@tecton/react` imports. The components are what the shadcn CLI generates for the React Aria base with the Tecton style overlay: the same names, props and composition as upstream, plus the variants Tecton needs — status colours and appearances on `Alert` and `Badge`, `emphasis` on `Separator`, the outline / filled / text surfaces on `Input`, `Textarea` and `Select`, and the Tecton hover and pressed colours on `Button`. Each page documents those additions in a Tecton section that the docs sync inserts before the API reference.
+Every component on these pages ships in `@tecton/react`, themed with the Tecton design
+tokens and accessible out of the box: keyboard behaviour, focus management, selection
+and ARIA semantics are part of the component, not something to add on top.
+
+Several components carry variants that exist because Tecton needs them — the status
+colours and appearances on `Alert` and `Badge`, `emphasis` on `Separator`, the outline /
+filled / text surfaces on `Input`, `Textarea` and `Select`. Each page documents those in
+its own section.
 
 <Callout title="One import">
-  Every component is imported from the package: `import { Button } from "@tecton/react/components/button"`. There is nothing to install per component; see [Installation](/docs/installation) for adding the package to an application.
+  Every component is imported from the package:
+  `import { Button } from "@tecton/react/components/button"`. There is nothing to install
+  per component; see [Installation](/docs/installation) for adding the package to an
+  application.
 </Callout>
 
 <ComponentsList />

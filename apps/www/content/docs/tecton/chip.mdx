@@ -1,8 +1,6 @@
 ---
 title: Chip
 description: "Selectable and removable tags in a group. Static labels are Badges."
-links:
-  doc: https://react-aria.adobe.com/TagGroup
 ---
 
 <ComponentPreview name="chip-demo" />
@@ -24,7 +22,7 @@ import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
 ```
 
 <Callout title="Chip or Badge?">
-  A static label is the shadcn [Badge](/docs/components/badge), which carries the Tecton status colours, the outline appearance and the size scale. `Chip` is the *interactive* label: a React Aria `Tag` inside a `ChipGroup` that can be selected and removed with the keyboard. It is styled with the same `badgeVariants`, so a chip and a badge with the same props look identical. What Tecton calls a *Badge* (a count anchored to an icon) is the [CountBadge](/docs/tecton/count-badge) component.
+  A static label is a [Badge](/docs/components/badge), which carries the Tecton status colours, the outline appearance and the size scale. `Chip` is the *interactive* label: a tag inside a `ChipGroup` that can be selected and removed with the keyboard. It is styled with the same `badgeVariants`, so a chip and a badge with the same props look identical. What Tecton calls a *Badge* (a count anchored to an icon) is the [CountBadge](/docs/tecton/count-badge) component.
 </Callout>
 
 ## Removable
@@ -53,7 +51,7 @@ Use `size="default" | "md" | "lg"` (20 / 24 / 28 px). Icons inside the chip scal
 
 ### ChipGroup
 
-React Aria [`TagGroup`](https://react-aria.adobe.com/TagGroup) with Tecton spacing. Accepts all `TagGroup` props.
+The group wrapper: owns selection, removal and the keyboard behaviour of the whole row, and applies Tecton spacing.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -66,7 +64,7 @@ React Aria [`TagGroup`](https://react-aria.adobe.com/TagGroup) with Tecton spaci
 
 ### ChipList
 
-React Aria `TagList`; pass `items` and a render function, or static `Chip` children.
+The list of chips. Pass `items` and a render function, or static `Chip` children.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -75,7 +73,7 @@ React Aria `TagList`; pass `items` and a render function, or static `Chip` child
 
 ### Chip
 
-React Aria `Tag` styled with the Badge variants. Accepts all `Tag` props.
+A single chip, styled with the Badge variants. Give it an `id` so the group can address it in `selectedKeys` and `onRemove`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -88,7 +86,7 @@ React Aria `Tag` styled with the Badge variants. Accepts all `Tag` props.
 
 ### ChipRemove
 
-A small React Aria `Button` with an `X` icon. It is rendered automatically inside a `Chip` when the group has `onRemove`; pass `children` to replace the icon.
+A small button with an `X` icon. It is rendered automatically inside a `Chip` when the group has `onRemove`; pass `children` to replace the icon.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |

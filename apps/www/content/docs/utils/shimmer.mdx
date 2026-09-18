@@ -8,7 +8,7 @@ upstream: apps/v4/content/docs/utils/shimmer.mdx
 
 ## Installation
 
-Nothing to install: the utility ships with `@tecton/react/globals.css`, which imports `shadcn/tailwind.css`.
+Nothing to install: the utility ships with `@tecton/react/globals.css`.
 
 ## Usage
 
@@ -148,7 +148,7 @@ When the user prefers reduced motion, the animation is disabled automatically an
 
 ## RTL
 
-To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+Wrap your application in the [DirectionProvider](/docs/components/direction) and the component follows the reading direction — there is nothing else to configure.
 
 The sweep follows the reading direction, left to right in LTR and right to left in RTL, with no extra classes. Use `shimmer-reverse` to flip the direction manually.
 

@@ -2,7 +2,6 @@
 "use client"
 
 import * as React from "react"
-import type { QuestionnaireItemStatus } from "@shadcn/react/questionnaire"
 import { toast } from "sonner"
 
 import {
@@ -19,6 +18,10 @@ import {
   QuestionnaireSubmit,
   QuestionnaireTitle,
 } from "@tecton/react/components/questionnaire"
+
+type QuestionnaireItemStatus = Parameters<
+  NonNullable<React.ComponentProps<typeof QuestionnaireItem>["onStatusChange"]>
+>[0]
 
 const items = [
   { name: "permission", required: true },

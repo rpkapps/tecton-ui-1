@@ -1,34 +1,56 @@
 ---
 title: Introduction
-description: Tecton UI is the Tecton design system for React, built on shadcn/ui with the React Aria base.
+description: Tecton UI is the Tecton design system for React — components, icons, theme and blocks in a single package.
 ---
 
-**Tecton UI** gives product teams the Tecton look and behaviour without giving up the shadcn/ui ecosystem. Every standard component is the shadcn/ui React Aria implementation, installed and updated with the shadcn CLI; Tecton's visual language is applied only through the theme variables, and everything Tecton needs beyond shadcn ships as separate, clearly named components.
+**Tecton UI** is the React implementation of the Tecton design system. Add one package,
+import a component, and you get the Tecton look, the Tecton behaviour and both themes —
+with no design decisions left for your application to make.
 
 ## What you get
 
-- **`@tecton/react`** — a private package with all 60 shadcn/ui React Aria components (`@tecton/react/components/*`), the Tecton-specific components (`@tecton/react/tecton/*`), the icon set (`@tecton/react/icons`), blocks and the theme stylesheet.
-- **shadcn parity** — the public API, names, variants and composition patterns are exactly shadcn's. Snippets from the shadcn docs work after changing the import path.
-- **Tecton tokens** — colours, radii and typography come from the Tecton design tokens, mapped to the shadcn CSS variables with a documented confidence for every value. See [Theming](/docs/theming).
-- **Upgradeable** — no generated file is edited by hand, so the library maintainers update a component with a single shadcn CLI command. See [CLI & updates](/docs/cli).
+- **`@tecton/react`** — over 60 interface components (`@tecton/react/components/*`), the
+  Tecton-specific components (`@tecton/react/tecton/*`), the icon set
+  (`@tecton/react/icons`), ready-made blocks and the theme stylesheet.
+- **Accessible by default** — keyboard behaviour, focus management, selection and ARIA
+  semantics are part of every component, not something you add later.
+- **The Tecton design tokens** — colours, radii, spacing and typography come straight
+  from the design-system export, in dark and light. See [Theming](/docs/theming).
+- **Guardrails** — `@tecton/eslint-config` catches the changes that silently break the
+  look, and tells you the variant to use instead. See [Linting](/docs/linting).
 
 ## Principles
 
-<Callout title="Only the shadcn CSS variables change">
-  The Tecton theme lives in `:root`, `.dark` and `@theme inline` inside `globals.css`. There are no `.style-*`, `[data-slot]` or `@layer` overrides of the generated components. Anything Tecton needs that cannot be expressed through the variables becomes a Tecton component instead.
+<Callout title="The component owns its appearance">
+  Colour, shape, size, spacing and type belong to the component and its variants;
+  placement belongs to your application. If a design needs something no variant offers,
+  that is a change to the design system, not a `className` at the call site — which is
+  why the same screen looks the same in every Tecton application.
 </Callout>
 
-- **Dark first.** Tecton applications run dark by default; both the dark and the light theme come straight from the Tecton token export.
-- **Accessible by default.** React Aria provides the interactions, keyboard behaviour and ARIA semantics.
-- **Composable.** Components are small, `data-slot`-tagged building blocks, styled with Tailwind and `class-variance-authority`.
+- **Dark first.** Tecton applications run dark by default; the light theme is equally
+  complete and comes from the same token export.
+- **One import path.** Nothing is copied into your repository and nothing is per-project
+  configuration, so every application upgrades with the package.
+- **Composable.** Components are small building blocks styled with Tailwind, designed to
+  be assembled rather than configured.
 
 ## Where to go next
 
 | Section | What it covers |
 | --- | --- |
-| [Installation](/docs/installation) | Adding `@tecton/react` to a Vite, TanStack Start or Next.js app, and adding blocks with the shadcn CLI |
-| [Theming](/docs/theming) | The token mapping, light and dark, adding tokens, known deviations |
-| [Components](/docs/components) | The 60 shadcn/ui React Aria components |
+| [Installation](/docs/installation) | Adding `@tecton/react` to a Vite, TanStack Start or Next.js app |
+| [Theming](/docs/theming) | The theme variables, the colour palette, dark and light, adding your own tokens |
+| [Typography](/docs/typography) · [Spacing & radius](/docs/spacing) | The type, spacing and radius scales |
+| [Icons](/docs/icons) | The Tecton icon set |
+| [Forms](/docs/forms) | Building forms with `Field` and a headless form library |
+| [Linting](/docs/linting) | The design-system guardrails for applications and coding agents |
+| [Components](/docs/components) | The component reference |
 | [Tecton components](/docs/tecton) | Chip, TreeView, Meter, Stat, Panel, AppShell… |
-| [Icons](/docs/icons) | The Tecton icon set and how it works alongside Lucide |
-| [Blocks](/blocks) | Application patterns and layouts |
+| [Blocks](/blocks) | Application patterns and layouts, ready to copy |
+
+<Callout title="Working on Tecton UI itself?">
+  How the library is built — where the components come from, how the theme is generated
+  and how these docs are produced — is documented separately under
+  [Contributing](/docs/contributing). Nothing there is needed to build an application.
+</Callout>

@@ -1,6 +1,6 @@
 ## Tecton recipes
 
-Tecton ships no `DataTable` component: build tables directly with [TanStack Table](https://tanstack.com/table/latest) and the `Table` primitives, exactly as the guide above does. The recipes below are copy-paste starting points for the layouts a Tecton application usually needs; each one is a self-contained example built on `useTable` and the shadcn `Table` components.
+Tecton ships no `DataTable` component: build tables directly with [TanStack Table](https://tanstack.com/table/latest) and the `Table` primitives, exactly as the guide above does. The recipes below are starting points for the layouts a Tecton application usually needs; each one is a self-contained example built on `useTable` and the `Table` components.
 
 ### Density and alternating rows
 
@@ -10,7 +10,7 @@ Density is nothing more than Tailwind classes on the `Table`: an emphasised head
 
 ### Row selection
 
-Add a display column with a React Aria `Checkbox slot="selection"` in the header and in each cell, turn on `selectionMode="multiple"` on the `Table` and mirror its selection into TanStack's `rowSelection` state. Summarise the selection below the table.
+Add a display column with a `Checkbox slot="selection"` in the header and in each cell, turn on `selectionMode="multiple"` on the `Table` and mirror its selection into TanStack's `rowSelection` state. Summarise the selection below the table.
 
 <ComponentPreview name="data-table-selection" align="start" />
 

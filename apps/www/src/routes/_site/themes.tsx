@@ -36,7 +36,7 @@ const radii = [
   { label: "Tecton (4px)", value: "0.25rem" },
   { label: "0", value: "0rem" },
   { label: "0.5rem", value: "0.5rem" },
-  { label: "0.625rem (shadcn)", value: "0.625rem" },
+  { label: "0.625rem", value: "0.625rem" },
   { label: "1rem", value: "1rem" },
 ]
 
@@ -89,8 +89,8 @@ function ThemesPage() {
         <PageHeaderContent>
           <PageHeaderTitle>Themes</PageHeaderTitle>
           <PageHeaderDescription>
-            The Tecton theme is a set of values for the shadcn CSS variables. Switch
-            the mode, try a different radius scale and copy the generated CSS.
+            The Tecton theme is a set of values for the theme variables. Switch the
+            mode, try a different radius scale and copy the generated CSS.
           </PageHeaderDescription>
         </PageHeaderContent>
       </PageHeader>
@@ -148,8 +148,8 @@ function ThemesPage() {
             <InfoIcon />
             <AlertTitle>Both modes are Tecton tokens</AlertTitle>
             <AlertDescription>
-              Every shadcn variable references a token from the Tecton CSS export in light and
-              dark; the token file switches the value.
+              Every theme variable references a token from the Tecton design-system
+              export in light and dark; the token file switches the value.
             </AlertDescription>
           </Alert>
         </div>

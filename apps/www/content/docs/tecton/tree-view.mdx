@@ -1,8 +1,6 @@
 ---
 title: Tree View
-description: "Hierarchical project, inventory and file structures on React Aria Tree, with folder and item rows, states, colour tags and row actions."
-links:
-  doc: https://react-aria.adobe.com/Tree
+description: "Hierarchical project, inventory and file structures, with folder and item rows, states, colour tags and row actions."
 ---
 
 <ComponentPreview name="tree-view-demo" />
@@ -33,7 +31,7 @@ import {
 ```
 
 <Callout>
-  shadcn has no tree component; the closest is the file tree built from `Collapsible` and `Sidebar`. `TreeView` uses React Aria `Tree` for keyboard navigation, selection and expansion, and adds the Tecton row anatomy.
+  A file tree can be assembled from `Collapsible` and `Sidebar`, but it carries none of the tree semantics. `TreeView` is a real tree: keyboard navigation, selection and expansion come with it, and it adds the Tecton row anatomy.
 </Callout>
 
 ## Nested
@@ -44,7 +42,7 @@ Nest `TreeViewItem`s inside each other. For dynamic data pass `items` to `TreeVi
 
 ## States
 
-Selection, disabled and expanded state come from React Aria (`selectionMode`, `disabledKeys`, `expandedKeys`). `isHidden` on `TreeViewItem` renders the dimmed *hidden* state from the design system.
+Selection, disabled and expanded state are controlled with `selectionMode`, `disabledKeys` and `expandedKeys`. `isHidden` on `TreeViewItem` renders the dimmed *hidden* state from the design system.
 
 <ComponentPreview name="tree-view-states" />
 
@@ -58,7 +56,7 @@ Selection, disabled and expanded state come from React Aria (`selectionMode`, `d
 
 ### TreeView
 
-React Aria [`Tree`](https://react-aria.adobe.com/Tree); accepts all its props (`items`, `selectionMode`, `selectedKeys`, `expandedKeys`, `disabledKeys`, `onAction`…).
+The tree root: owns keyboard navigation, selection and expansion. Accepts `items`, `selectionMode`, `selectedKeys`, `expandedKeys`, `disabledKeys` and `onAction`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -68,7 +66,7 @@ React Aria [`Tree`](https://react-aria.adobe.com/Tree); accepts all its props (`
 
 ### TreeViewItem
 
-React Aria `TreeItem`. Put a `TreeViewItemContent` first, then child `TreeViewItem`s or a `TreeViewCollection`.
+One row of the tree. Put a `TreeViewItemContent` first, then child `TreeViewItem`s or a `TreeViewCollection`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |

@@ -10,7 +10,7 @@ export function AspectRatioSquare() {
       className="w-full max-w-[12rem] rounded-lg bg-muted"
     >
       <Image
-        src="https://avatar.vercel.sh/shadcn1"
+        src="https://avatar.vercel.sh/tecton1"
         alt="Photo"
         fill
         className="rounded-lg object-cover grayscale dark:brightness-20"

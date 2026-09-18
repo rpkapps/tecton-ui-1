@@ -26,16 +26,16 @@ export function Denied() {
   return (
     <>
       {/* The component owns its colour, shape, typography and size. */}
-      <Button className="bg-blue-600" /> {/* expect: shadcn/no-restyle */}
-      <Button className="h-12" /> {/* expect: shadcn/no-restyle */}
-      <Button className="rounded-full" /> {/* expect: shadcn/no-restyle */}
-      <Button className="p-6" /> {/* expect: shadcn/no-restyle */}
-      <Button className="text-[13px] " /> {/* expect: shadcn/no-restyle */}
+      <Button className="bg-blue-600" /> {/* expect: tecton/no-restyle */}
+      <Button className="h-12" /> {/* expect: tecton/no-restyle */}
+      <Button className="rounded-full" /> {/* expect: tecton/no-restyle */}
+      <Button className="p-6" /> {/* expect: tecton/no-restyle */}
+      <Button className="text-[13px] " /> {/* expect: tecton/no-restyle */}
       {/* Stock palette: no CSS at all, and still a restyle of a Tecton component. */}
-      <Button className="bg-red-500" /> {/* expect: shadcn/no-restyle */}
-      <Panel className="border-slate-200" /> {/* expect: shadcn/no-restyle */}
+      <Button className="bg-red-500" /> {/* expect: tecton/no-restyle */}
+      <Panel className="border-slate-200" /> {/* expect: tecton/no-restyle */}
       {/* Nothing can check a class assembled at runtime. */}
-      <Button className={`bg-${String(1)}`} /> {/* expect: shadcn/require-static-classes */}
+      <Button className={`bg-${String(1)}`} /> {/* expect: tecton/require-static-classes */}
     </>
   )
 }

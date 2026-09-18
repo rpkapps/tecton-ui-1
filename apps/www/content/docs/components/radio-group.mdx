@@ -1,9 +1,6 @@
 ---
 title: Radio Group
 description: A set of checkable buttons—known as radio buttons—where no more than one of the buttons can be checked at a time.
-links:
-  doc: https://react-aria.adobe.com/RadioGroup
-  api: https://react-aria.adobe.com/RadioGroup#api
 upstream: apps/v4/content/docs/components/aria/radio-group.mdx
 ---
 
@@ -71,7 +68,7 @@ Use `isInvalid` on `RadioGroupItem` and `data-invalid` on `Field` to show valida
 
 ## RTL
 
-To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+Wrap your application in the [DirectionProvider](/docs/components/direction) and the component follows the reading direction — there is nothing else to configure.
 
 <ComponentPreview
   name="radio-group-rtl"
@@ -80,4 +77,4 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ## API Reference
 
-See the [React Aria Radio Group](https://react-aria.adobe.com/RadioGroup#api) documentation.
+Each component forwards the props and `data-*` state attributes of the element it renders.

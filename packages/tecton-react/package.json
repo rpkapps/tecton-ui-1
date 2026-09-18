@@ -74,7 +74,7 @@
     "./icons/*": "./src/icons/*.tsx",
     "./blocks/*": "./src/blocks/*"
   },
-  "description": "Tecton design system for React — shadcn/ui (React Aria base) components themed through Tecton tokens, plus Tecton-specific components, icons and blocks.",
+  "description": "Tecton design system for React — accessible components themed with the Tecton design tokens, plus Tecton-specific components, icons and blocks.",
   "files": [
     "src",
     "icons/icons.json",

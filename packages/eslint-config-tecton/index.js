@@ -96,10 +96,10 @@ const messages = {
 }
 
 /**
- * Stock shadcn/ui components installed from the public registry. Tecton ships
- * its components in the package, so a file under a `components/ui` directory
- * means someone ran `shadcn add <name>` against the default registry and got a
- * Radix component with the stock palette — the wrong base and the wrong theme.
+ * Components installed from a public registry into `components/ui/`. Tecton
+ * ships its components inside the package, so a file there means the registry
+ * CLI was run without the `@tecton/` namespace and copied in an unthemed
+ * component with a palette Tecton removes — it will render unstyled.
  */
 const restrictedImports = {
   // `paths` matches the specifier exactly; a `patterns` glob would also catch
@@ -115,7 +115,7 @@ const restrictedImports = {
     {
       group: ["**/components/ui/*"],
       message:
-        "Stock shadcn/ui component. Tecton components are imported from the package: @tecton/react/components/<name>. Only blocks are installed from the @tecton registry.",
+        "Not a Tecton component: files under components/ui/ come from a public registry and are not themed. Import from @tecton/react/components/<name>. Only blocks are copied in, and only from the @tecton registry.",
     },
   ],
 }
@@ -131,8 +131,8 @@ const restrictedImports = {
  * themselves: `<Button className="bg-red-500">` is still an error.
  */
 const scopedRules = {
-  "shadcn/no-restyle": ["error", { allow: allowed, deny: variantOwned }],
-  "shadcn/require-static-classes": "error",
+  "tecton/no-restyle": ["error", { allow: allowed, deny: variantOwned }],
+  "tecton/require-static-classes": "error",
   "no-restricted-imports": ["error", restrictedImports],
 }
 
@@ -143,15 +143,22 @@ const scopedRules = {
  * the design system does not own, so they are opt-in through `strict`.
  */
 const projectRules = {
-  "shadcn/no-raw-colors": ["error", { message: messages.rawColor }],
-  "shadcn/no-unknown-classes": ["error", { message: messages.unknown }],
-  "shadcn/no-arbitrary-values": ["error", { message: messages.arbitrary }],
-  "shadcn/no-inline-styles": "error",
+  "tecton/no-raw-colors": ["error", { message: messages.rawColor }],
+  "tecton/no-unknown-classes": ["error", { message: messages.unknown }],
+  "tecton/no-arbitrary-values": ["error", { message: messages.arbitrary }],
+  "tecton/no-inline-styles": "error",
 }
 
+/**
+ * The rules are Tecton's guardrails as far as an application is concerned, so
+ * they are reported under a `tecton/` prefix: `tecton/no-restyle`, not the
+ * underlying plugin's own name. The plugin stays registered under its original
+ * key as well, so an `eslint-disable` or an override written against the old
+ * ids keeps resolving.
+ */
 const base = {
   files: ["**/*.{js,jsx,ts,tsx}"],
-  plugins: { shadcn },
+  plugins: { tecton: shadcn, shadcn },
   settings,
 }
 

@@ -1,8 +1,6 @@
 ---
 title: Link
-description: "Inline text link on React Aria Link with default, primary, muted and subtle variants and an external-link icon."
-links:
-  doc: https://react-aria.adobe.com/Link
+description: "Inline text link with default, primary, muted and subtle variants and an external-link icon."
 ---
 
 <ComponentPreview name="link-demo" />
@@ -21,7 +19,7 @@ import { Link } from "@tecton/react/tecton/link"
 ```
 
 <Callout>
-  The shadcn `Button` has a `link` variant for buttons that look like links; `Link` is the opposite: a real anchor for navigation. Use `buttonVariants` on an `<a>` when a link should look like a button.
+  `Button` has a `link` variant for buttons that look like links; `Link` is the opposite: a real anchor for navigation. Use `buttonVariants` on an `<a>` when a link should look like a button.
 </Callout>
 
 ## Variants
@@ -46,7 +44,7 @@ Set `isExternal` to open in a new tab with `rel="noreferrer noopener"` and appen
 
 ### Link
 
-React Aria [`Link`](https://react-aria.adobe.com/Link); accepts all its props (`href`, `routerOptions`, `isDisabled`, `onPress`…).
+An anchor with the Tecton link styles and focus ring. Accepts `href`, `routerOptions`, `isDisabled` and `onPress`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |

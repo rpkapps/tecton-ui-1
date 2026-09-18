@@ -18,7 +18,13 @@ import {
 } from "@tecton/react/components/command"
 
 import { siteConfig } from "@/lib/site"
-import { getPagesFromFolder, getRootFolders, getRootPages, nodeName } from "@/lib/tree"
+import {
+  getPagesFromFolder,
+  getRootFolders,
+  getRootGroups,
+  nodeName,
+  rootNodeLink,
+} from "@/lib/tree"
 
 const itemClassName =
   "h-9 rounded-md border border-transparent px-3! font-medium data-focused:border-input data-focused:bg-input/50 data-selected:border-input data-selected:bg-input/50"
@@ -77,13 +83,17 @@ export function CommandMenu({ tree }: { tree: PageTree.Root }) {
         siteConfig.nav.map((item) => ({ url: item.href, name: item.title }))
       ),
     })
-    result.push({
-      heading: "Docs",
-      items: withIds(
-        "Docs",
-        getRootPages(tree).map((page) => ({ url: page.url, name: nodeName(page) }))
-      ),
-    })
+    // One group per `---Label---` separator of the root meta.json, so a search
+    // result says which track it belongs to.
+    for (const group of getRootGroups(tree)) {
+      const items = group.nodes.flatMap((node) => {
+        const link = rootNodeLink(node)
+        return link ? [{ url: link.url, name: nodeName(node) }] : []
+      })
+      if (items.length) {
+        result.push({ heading: group.label, items: withIds(group.label, items) })
+      }
+    }
     for (const folder of getRootFolders(tree)) {
       const items = getPagesFromFolder(folder).map((page) => ({
         url: page.url,

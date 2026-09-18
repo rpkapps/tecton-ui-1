@@ -1,45 +1,43 @@
 ---
 title: Theming
-description: How the Tecton design tokens map to the shadcn CSS variables, what is exact and what is approximated, how the Tecton colour ramps become the Tailwind palette, and how to extend the theme.
+description: The Tecton theme variables, the colour palette behind them, dark and light, and how to add tokens of your own.
 ---
 
-Tecton UI applies the Tecton visual language **only through the shadcn CSS variables**. The generated component files are never edited and no extra CSS targets them; the theme is a set of values for `--background`, `--primary`, `--ring` and friends in `globals.css`, plus a few additional tokens for Tecton-only semantics. Underneath, the Tecton colour ramps replace Tailwind's stock palette (see [Palette](#palette)), so a `bg-red-140` in application code is a Tecton colour too.
+Tecton UI carries the design system in **CSS variables**. `@tecton/react/globals.css`
+declares a value for `--background`, `--primary`, `--ring` and the rest in `:root` and
+`.dark`, exposes them to Tailwind, and the components read nothing else. Underneath, the
+Tecton colour ramps replace Tailwind's stock palette (see [Palette](#palette)), so
+`bg-red-140` in your own markup is a Tecton colour too.
 
-## How it works
-
-<Steps>
-
-<Step>Raw tokens</Step>
-
-`src/styles/tecton-tokens.css` is the generated CSS export of the Tecton design system, pasted verbatim: every token as a CSS custom property (`--tecton-color-bg-default`, `--tecton-radius-50`, `--tecton-font-family-sans`…) with a light block (`:root`) and a dark block (`.dark` / `[data-theme="dark"]`). `tokens/tecton.tokens.json` is the Figma variables export the semantic tokens are picked from; its `foundational/color` ramps are the source of the [palette](#palette).
-
-<Step>Mapping as data</Step>
-
-`tokens/tecton.map.json` says which Tecton token each shadcn variable takes, with a confidence (`exact` or `approximated`) and a note. Because the Tecton export is themed, the same `var(--tecton-…)` reference serves both modes.
-
-<Step>Generated theme</Step>
-
-`pnpm --filter @tecton/react tokens:build` writes `tecton-palette.css` (the ramps, and the Tailwind `@theme` that exposes them) and `tecton-theme.css`, patches the variable values inside the CLI-managed `globals.css` (`:root`, `.dark`, `@theme inline` and the two `@import`s — nothing else) and the mapping document.
-
-<Step>Verification</Step>
-
-`pnpm --filter @tecton/react tokens:check` verifies completeness, WCAG contrast for every surface/foreground pair, a few sanity rules, and that every semantic colour is a literal member of an exposed palette ramp. The tables below are generated from the same data.
-
-</Steps>
+You do not need to configure any of it. This page is for the cases where you want to
+read a value, reuse one, or add a token of your own.
 
 ## Dark and light
 
-Both modes come from the Tecton export. `--background` is `var(--tecton-color-bg-default)` in `:root` and in `.dark`; the token file itself switches the value (`#f6f4f7` light, `#1d1c1f` dark). Tecton's applications are dark-first, so this site defaults to dark, but light is equally exact.
+Both modes come from the same design-system export: `--background` is the same reference
+in `:root` and in `.dark`, and the token underneath switches value (`#f6f4f7` light,
+`#1d1c1f` dark). Tecton applications are dark-first, so this site defaults to dark, but
+light is equally complete.
 
-Toggle the mode with the `dark` class on `<html>` (or `data-theme="dark"`, which the token file also honours). This site uses `next-themes`.
+Toggle the mode with the `dark` class on `<html>` (or `data-theme="dark"`, which the
+tokens also honour). This site uses `next-themes`:
 
-## Token mapping
+```tsx
+<ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
+```
 
-<TokenTable />
+## Theme variables
+
+Every variable below is available as a Tailwind utility (`bg-background`,
+`text-muted-foreground`, `border-input`…). Prefer these over a literal colour: they
+carry meaning, they follow the mode, and they move with the design system.
+
+<TokenTable provenance={false} />
 
 ## Extra tokens
 
-Tecton has semantics shadcn does not express through variables. They are added following the documented shadcn pattern (a variable in `:root`/`.dark` plus a `--color-*` entry in `@theme inline`) and are used by the Tecton variants of the shadcn components and by the Tecton components and blocks:
+Tecton has semantics that the standard variables do not cover. They are declared the
+same way and used by the Tecton variants and components:
 
 | Token | Utilities | Used for |
 | --- | --- | --- |
@@ -53,13 +51,29 @@ Tecton has semantics shadcn does not express through variables. They are added f
 
 ## Palette
 
-Tecton's foundational colours are **contrast ramps**: fifteen families, each with twenty-three steps from `50` (barely off the page background) to `1570` (maximum contrast), and a separate set of values for light and dark mode. A step is the same perceived distance from the background in both modes — `gray-120` is the pale grey of a filled neutral badge on light and the deep grey of the same badge on dark — so one utility class serves both modes and `dark:` variants are not needed.
+Tecton's foundational colours are **contrast ramps**: fifteen families, each with
+twenty-three steps from `50` (barely off the page background) to `1570` (maximum
+contrast), and a separate set of values for light and dark mode. A step is the same
+perceived distance from the background in both modes — `gray-120` is the pale grey of a
+filled neutral badge on light and the deep grey of the same badge on dark — so one
+utility class serves both modes and `dark:` variants are not needed.
 
-`tokens:build` exposes these ramps to Tailwind in `tecton-palette.css`: the raw values as `--tecton-palette-<family>-<step>` in `:root` / `.dark`, and one `--color-<family>-<step>` theme entry per value, so `bg-blue-560`, `text-orchid-830`, `border-yellow-160`, `fill-green-560` and every other colour utility work. **Tailwind's stock palette is removed first** (`--color-*: initial`): `bg-red-500` or `text-zinc-400` produce no CSS, so a colour that is not Tecton's cannot slip into a screen. Only `white` and `black` are kept (Tecton's own shades, used for overlays such as `bg-black/10`).
+The ramps are exposed to Tailwind as `--color-<family>-<step>`, so `bg-blue-560`,
+`text-orchid-830`, `border-yellow-160`, `fill-green-560` and every other colour utility
+work.
+
+<Callout variant="warning" title="Tailwind's stock palette is removed">
+  The stylesheet resets `--color-*: initial` before declaring the Tecton ramps, so
+  `bg-red-500` or `text-zinc-400` produce **no CSS at all**. They type-check, they pass
+  an ordinary lint, and they render unstyled — which is exactly what
+  [`@tecton/eslint-config`](/docs/linting) exists to catch. Only `white` and `black` are
+  kept (Tecton's own shades, for overlays such as `bg-black/10`).
+</Callout>
 
 <PaletteTable feedback="toast" />
 
-Hover a cell for the utility name and both values. The semantic variables are literal picks from these ramps (`tokens:check` verifies it), which gives a few recipes:
+Hover a cell for the utility name and both values. The semantic variables are literal
+picks from these ramps, which gives a few recipes:
 
 | Recipe | Classes | Where Tecton uses it |
 | --- | --- | --- |
@@ -68,39 +82,50 @@ Hover a cell for the utility name and both values. The semantic variables are li
 | Coloured text or icon on the page | `text-<family>-560` (light) ≈ `text-<family>-460` | Status text, links |
 | Border | `border-<family>-160` | Tinted alerts |
 
-Prefer the semantic tokens (`bg-primary`, `text-success`, `bg-warning-surface`…) whenever one exists: they carry meaning and follow theme changes. Reach for a palette step for the rest — a chart series, a tag colour, a custom badge — instead of a hex value.
+Reach for a palette step when no semantic token fits — a chart series, a tag colour, a
+custom badge — instead of a hex value.
 
-Not exposed on purpose: the `core` ramps (a plain 50–900 lightness scale the semantic tokens do not use), the `surface`, `transparent`, `saturations` and `washes` sub-ramps (use the opacity modifier, `bg-gray-370/20`, for translucency), the Matplotlib and Colorcet colormaps (chart scales, not UI colours) and the app accent colours. The hot-pink focus outline is a single value, not a ramp; it is `--ring`.
+Not part of the palette on purpose: the `core` lightness scale, the `surface`,
+`transparent`, `saturations` and `washes` sub-ramps (use the opacity modifier,
+`bg-gray-370/20`, for translucency), the Matplotlib and Colorcet colormaps (chart
+scales, not UI colours) and the app accent colours. The hot-pink focus outline is a
+single value, not a ramp; it is `--ring`.
 
-To update the palette, replace `tokens/tecton.tokens.json` with a newer Figma export and run `tokens:build` and `tokens:check`; the family list lives under `palette` in `tokens/tecton.map.json`.
+## What the variables do not carry
 
-## Beyond the variables
+Colours, radii and fonts are variables. The rest of the Tecton look is built into the
+components themselves, as variants rather than as CSS you have to apply:
 
-Variables carry colours, radii and fonts. The rest of the Tecton look of the generated components comes from the `aria-tecton` **style**, a shadcn preset built exactly like Vega or Nova (see [CLI & updates](/docs/cli)), not from overrides of the generated files:
+- **Focus ring.** A solid 2px `#ff52a8` ring on every focusable control.
+- **Hover and pressed colours.** Buttons lighten towards the foreground instead of
+  darkening.
+- **Flat controls.** No drop shadow on buttons, inputs and triggers.
+- **Field surfaces.** The *outline*, *filled* and *text* variants of
+  [Input](/docs/components/input), [Textarea](/docs/components/textarea) and
+  [Select](/docs/components/select).
+- **Status colours** and **divider emphasis** on [Alert](/docs/components/alert),
+  [Badge](/docs/components/badge) and [Separator](/docs/components/separator).
 
-- **Focus ring.** A solid 2px `#ff52a8` ring (`ring-2 ring-ring`) instead of Vega's soft 3px halo.
-- **Hover and pressed colours.** Buttons lighten towards the foreground on hover and press, like Tecton's action colours, instead of darkening with `primary/80`.
-- **Flat controls.** No `shadow-xs` on buttons, inputs and triggers.
-- **Input variants.** The *filled* and *text* variants of [Input](/docs/components/input), [Textarea](/docs/components/textarea) and [Select](/docs/components/select).
-- **Status colours** and **divider emphasis** are extra tokens (above), used by the Tecton variants of [Alert](/docs/components/alert), [Badge](/docs/components/badge) and [Separator](/docs/components/separator) and by the Tecton components.
+Reproducing any of these with `className` is the one thing to avoid: the variant already
+exists, and a hand-written copy stops following the design system.
 
 ## Adding your own tokens
 
-Follow the same pattern as the extra tokens: declare the variable in `:root` and `.dark`, then expose it to Tailwind in `@theme inline`:
+An application-specific colour — a chart series, a status your product has and the
+design system does not — is declared once as a variable and exposed to Tailwind:
 
-```css title="globals.css"
+```css title="src/styles/app.css"
+@import "@tecton/react/globals.css";
+
 :root {
-  --highlight: #fbbc3b;
-}
-.dark {
-  --highlight: #f9a308;
+  --highlight: var(--tecton-palette-yellow-830);
 }
 @theme inline {
   --color-highlight: var(--highlight);
 }
 ```
 
-Pick values from the palette rather than typing hex codes, so the token follows both modes: `--highlight: var(--tecton-palette-yellow-830);` in `:root` is all that is needed — the palette variable already switches in `.dark`.
-
-If you use the token pipeline, add the entry to `tokens/tecton.map.json` under `extra` instead and run `tokens:build`.
-
+Pick the value from the palette rather than typing a hex code: the palette variable
+already switches with the mode, so one declaration covers dark and light. A colour the
+palette genuinely does not cover is a change to the design system — raise it rather than
+inventing one locally, where it has no dark pair and has passed no contrast check.

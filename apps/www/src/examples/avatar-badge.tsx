@@ -9,7 +9,7 @@ import {
 export function AvatarWithBadge() {
   return (
     <Avatar>
-      <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+      <AvatarImage src="https://avatar.vercel.sh/casey" alt="@casey" />
       <AvatarFallback>CN</AvatarFallback>
       <AvatarBadge className="bg-green-560" />
     </Avatar>

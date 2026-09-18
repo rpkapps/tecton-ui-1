@@ -11,6 +11,21 @@ scripts/                 registry mirror, generated-file integrity check
 tecton-screenshots/      Tecton Storybook captures used as the visual reference
 ```
 
+## Documentation
+
+The docs site is written for **two audiences, kept apart on purpose**:
+
+| Track | Path | Written for |
+| --- | --- | --- |
+| Application docs | `apps/www/content/docs/*` (`/docs`) | Teams building with `@tecton/react`. Never mentions shadcn/ui, React Aria, the registry mirror or the generated-file pipeline — an application cannot see them and must not depend on them. |
+| Contributing | `apps/www/content/docs/contributing/*` (`/docs/contributing`) | People working on the library. The base, the style overlay, the token pipeline, the icon build and the docs sync. |
+
+Pick the audience before writing a page. The docs sync enforces the split for the
+generated pages: `apps/www/scripts/sync-upstream-docs.mts` rewrites the upstream
+vocabulary and **fails** on anything it does not recognise, so a new leak is a build
+error rather than a published page. `bun run apps/www/scripts/deleak-synced.mts`
+re-applies those rules to the already-synced files without a full upstream checkout.
+
 ## Quick start
 
 ```bash
@@ -28,7 +43,7 @@ Requirements: Node ≥ 20, pnpm 10, [bun](https://bun.sh) for the maintenance sc
 ```tsx
 import "@tecton/react/globals.css"
 
-import { Button } from "@tecton/react/components/button" // shadcn/ui (React Aria base)
+import { Button } from "@tecton/react/components/button" // generated component
 import { Chip } from "@tecton/react/tecton/chip"         // Tecton-specific component
 import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 ```
@@ -40,7 +55,7 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 3. **Only the shadcn CSS variables carry colours.** `tokens/tecton.map.json` maps Tecton tokens to `--background`, `--primary`, … with a confidence per value. `pnpm tokens:build` patches the variable values in `globals.css` (and nothing else); `pnpm tokens:check` verifies completeness and WCAG contrast.
 4. **The Tecton colour ramps are the Tailwind palette.** `tokens/tecton.tokens.json` (Figma variables export) provides fifteen 23-step contrast ramps; `tokens:build` writes them to `src/styles/tecton-palette.css` as `--color-<family>-<step>` after resetting Tailwind's stock palette (`--color-*: initial`), so `bg-blue-560` is a Tecton colour and `bg-red-500` produces nothing. A step is a contrast level that switches value with the mode, so no `dark:` pairs are needed. Docs: `/docs/theming#palette`.
 5. **A Tecton component exists only when shadcn has no counterpart.** Chip (selectable / removable tags), CountBadge, CircularProgress, Meter, ColorSwatch, TreeView, Stat, Panel, PageHeader, AppShell, CopyButton and Link live in `src/tecton/` and compose the generated components. Alerts with a severity, dividers with an emphasis, filled inputs, status badges and floating action buttons are variants of the shadcn components; data tables are built with TanStack Table on the shadcn `Table` (the docs carry the recipes).
-6. **Only blocks are published to the registry.** Components ship in the package so every application runs the same themed build and upgrades with it; `registry:build` fails if a non-block item ever reaches `registry.json`. Consuming applications install `@tecton/eslint-config`, which flags stock shadcn components pulled from the public registry and `className` overriding what a Tecton variant owns. It looks at Tecton components only; `configs.strict` additionally checks every class in the project against the theme. Docs: `/docs/linting`.
+6. **Only blocks are published to the registry.** Components ship in the package so every application runs the same themed build and upgrades with it; `registry:build` fails if a non-block item ever reaches `registry.json`. Consuming applications install `@tecton/eslint-config`, which flags components pulled from the public registry and `className` overriding what a Tecton variant owns (rules are reported under a `tecton/` prefix). It looks at Tecton components only; `configs.strict` additionally checks every class in the project against the theme. Docs: `/docs/linting`.
 7. **Dark first.** Both modes come from the Tecton token export; applications default to dark.
 
 ## Maintenance scripts
@@ -50,7 +65,7 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 | `pnpm tokens:build` / `pnpm tokens:check` | Regenerate / verify the theme from the token map |
 | `pnpm generated:check` | Verify no generated component was hand-edited |
 | `pnpm registry:build` | Build the `@tecton` blocks registry into `apps/www/public/r` |
-| `pnpm docs:sync` | Sync shadcn docs pages + examples for the React Aria base |
+| `pnpm docs:sync` | Sync shadcn docs pages + examples for the React Aria base, rewritten for the application-docs audience |
 | `pnpm --filter @tecton/react icons:build` | Regenerate icon components from the Tecton export in `icons-src/tecton/` |
 | `pnpm compare` | Playwright captures of the state matrices next to the Storybook screenshots |
 | `scripts/registry-mirror.sh` | Builds and serves the shadcn registry with the Tecton overlay (`aria-tecton`); required for every CLI command |

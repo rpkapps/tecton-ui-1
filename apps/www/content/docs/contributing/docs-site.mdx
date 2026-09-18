@@ -1,0 +1,87 @@
+---
+title: Docs site
+description: How this site is assembled — the upstream docs sync, the Tecton sections, the examples and the block registry.
+---
+
+`apps/www` is a TanStack Start application with [fumadocs](https://fumadocs.dev) for the
+MDX collection. It is also the host of the `@tecton` block registry (`public/r/*.json`).
+
+## What is generated and what is written
+
+| Path | Source of truth |
+| --- | --- |
+| `content/docs/components/*.mdx` | **Generated** by `pnpm docs:sync` from the upstream page (frontmatter carries `upstream:`) |
+| `content/docs/utils/*.mdx` | **Generated** the same way |
+| `src/examples/*.tsx` | **Generated** — every synced file starts with `// Synced from shadcn/ui` |
+| `scripts/docs-extras/*.mdx` | Hand-written Tecton sections, injected into a synced page |
+| everything else under `content/docs/` | Hand-written |
+
+Editing a generated file is pointless: the next sync deletes it. Change
+`apps/www/scripts/sync-upstream-docs.mts` instead.
+
+## Running the sync
+
+```bash
+SHADCN_UPSTREAM_DIR=.cache/shadcn-ui pnpm --filter www docs:sync
+```
+
+The checkout must sit at the commit pinned in `docs/UPSTREAM.md`;
+`scripts/registry-mirror.sh setup` creates it. The run writes
+`apps/www/scripts/sync-report.json` with the pages, the examples, the examples that were
+skipped and why, and the previews that were removed as a result — read it after every
+sync.
+
+## What the sync rewrites
+
+`transformMdx()` and `rewriteImports()` do the porting. The important passes:
+
+- **Imports** — `@/components/ui/*` becomes `@tecton/react/components/*`; Next.js-only
+  modules resolve to the shims in `src/components/shims/`; an example importing anything
+  outside `ALLOWED_MODULES` is skipped and its preview removed from the page.
+- **Installation** — the per-component CLI step is dropped: applications consume the
+  package.
+- **Palette** — stock Tailwind colour classes are replaced from
+  `TECTON_PALETTE_REWRITES`; an unmapped one throws, because the class would emit no CSS
+  (see [Tokens & theme](/docs/contributing/tokens#updating-the-palette)).
+- **Icons** — `@tabler/icons-react` identifiers are mapped to Lucide equivalents.
+- **Audience** — the base-library vocabulary is removed. `deleak()` rewrites shadcn and
+  React Aria references, the upstream RTL paragraph, the demo identity (`@shadcn`,
+  `github.com/shadcn.png`, `shadcn/ui` sample copy) and the `links:` frontmatter that
+  pointed at the React Aria API pages. Application-facing docs never name the base.
+
+<Callout title="Adding a rewrite">
+  Every rewrite belongs in the script, never in the output. If you find a leak on a
+  synced page, add the rule to `deleak()` (or the matching table) and re-run the sync, so
+  the fix survives the next upstream bump.
+</Callout>
+
+## Tecton sections
+
+The extra variant axes the style overlay adds are Tecton's, so upstream has no copy for
+them. Write it in `apps/www/scripts/docs-extras/<name>.mdx`; the sync inserts the file
+before the page's `## API Reference` heading, or appends it when the page has none.
+
+Keep those sections in the application-developer voice: describe the variant and when to
+use it, not where it came from.
+
+## Examples
+
+A preview is `<ComponentPreview name="button-demo" />`, resolved against
+`src/examples/<name>.tsx`. Synced examples are upstream code: ESLint ignores them (the
+list comes from `sync-report.json`) and `.prettierignore` is rewritten by the sync.
+Hand-written examples — the Tecton components' demos — live beside them without the
+header and are linted and formatted normally.
+
+## Blocks
+
+`pnpm registry:build` writes `apps/www/public/r/*.json` from
+`packages/tecton-react/src/blocks`. Only blocks are published; the build throws if a
+non-block item reaches `registry.json`. Each block page shows the command an application
+runs to copy it.
+
+## Site chrome
+
+Navigation comes from the `meta.json` files. The root `content/docs/meta.json` groups
+the tree with `---Label---` separators, and the sidebar renders one group per separator
+— that is what keeps the application-developer pages and this Contributing section
+visibly apart.

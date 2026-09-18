@@ -13,7 +13,7 @@ export function AvatarGroupCountIconExample() {
   return (
     <AvatarGroup className="grayscale">
       <Avatar>
-        <AvatarImage src="https://github.com/shadcn.png" alt="@shadcn" />
+        <AvatarImage src="https://avatar.vercel.sh/casey" alt="@casey" />
         <AvatarFallback>CN</AvatarFallback>
       </Avatar>
       <Avatar>

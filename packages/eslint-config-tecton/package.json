@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "type": "module",
   "private": true,
-  "description": "Design-system guardrails for applications using @tecton/react: the @shadcn/lint rules configured for the Tecton theme and component surface.",
+  "description": "Design-system guardrails for applications using @tecton/react: lint rules configured for the Tecton theme and component surface.",
   "main": "./index.js",
   "exports": {
     ".": "./index.js"

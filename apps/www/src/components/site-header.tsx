@@ -18,7 +18,13 @@ import { CommandMenu } from "@/components/command-menu"
 import { ModeToggle } from "@/components/mode-toggle"
 import { TectonLogo } from "@/components/tecton-logo"
 import { siteConfig } from "@/lib/site"
-import { getPagesFromFolder, getRootFolders, getRootPages, nodeName } from "@/lib/tree"
+import {
+  getPagesFromFolder,
+  getRootFolders,
+  getRootGroups,
+  nodeName,
+  rootNodeLink,
+} from "@/lib/tree"
 
 export function SiteHeader({ tree }: { tree: PageTree.Root }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -42,13 +48,15 @@ export function SiteHeader({ tree }: { tree: PageTree.Root }) {
   )
 }
 
+/** Sections with a nav entry of their own; "Docs" covers everything else. */
+const NAV_SECTIONS = ["/docs/components", "/docs/tecton", "/docs/contributing"]
+
 function isActive(pathname: string, href: string) {
   if (href === "/docs") {
     return (
       pathname === "/docs" ||
       (pathname.startsWith("/docs/") &&
-        !pathname.startsWith("/docs/components") &&
-        !pathname.startsWith("/docs/tecton"))
+        !NAV_SECTIONS.some((section) => pathname.startsWith(section)))
     )
   }
   return pathname === href || pathname.startsWith(`${href}/`)
@@ -93,7 +101,7 @@ function MobileNav({
     setOpen(false)
   }, [pathname])
 
-  const sections = getRootPages(tree)
+  const groups = getRootGroups(tree)
   const folders = getRootFolders(tree)
 
   return (
@@ -142,16 +150,22 @@ function MobileNav({
               ))}
             </div>
           </div>
-          <div className="flex flex-col gap-4">
-            <div className="text-sm font-medium text-muted-foreground">Sections</div>
-            <div className="flex flex-col gap-3">
-              {sections.map((page) => (
-                <Link key={page.url} to={page.url} className="text-2xl font-medium">
-                  {nodeName(page)}
-                </Link>
-              ))}
+          {groups.map((group) => (
+            <div key={group.label} className="flex flex-col gap-4">
+              <div className="text-sm font-medium text-muted-foreground">{group.label}</div>
+              <div className="flex flex-col gap-3">
+                {group.nodes.map((node) => {
+                  const link = rootNodeLink(node)
+                  if (!link) return null
+                  return (
+                    <Link key={link.url} to={link.url} className="text-2xl font-medium">
+                      {nodeName(node)}
+                    </Link>
+                  )
+                })}
+              </div>
             </div>
-          </div>
+          ))}
           {folders.map((folder) => (
             <div key={folder.$id ?? nodeName(folder)} className="flex flex-col gap-4">
               <div className="text-sm font-medium text-muted-foreground">

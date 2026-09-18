@@ -12,6 +12,13 @@
  * reference them are removed from the page. A report is written next to this
  * script so the skips are visible.
  *
+ * The output lands in the application-facing half of the documentation, which is
+ * written for people building with `@tecton/react` and never names the base the
+ * library is generated from — that belongs under /docs/contributing. So the sync
+ * also rewrites the upstream vocabulary and demo identity (see `deleak` and
+ * `rewriteSampleIdentity`) and then *fails* on anything it did not recognise,
+ * rather than publishing a page that reads as another project's documentation.
+ *
  * Usage:  bun run scripts/sync-upstream-docs.mts
  * Env:    SHADCN_UPSTREAM_DIR  path to a shadcn-ui/ui checkout at the commit
  *         pinned in docs/UPSTREAM.md (default: <repo>/.cache/shadcn-ui)
@@ -94,7 +101,7 @@ async function exists(file: string) {
 }
 
 // Per-example source fixes for upstream demos that assume the vega look.
-const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
+export const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
   // The Tecton trigger paints a hover / expanded surface. Upstream pads the
   // item, which insets that surface while the item dividers still run to the
   // border; padding the trigger and content instead keeps the surface as wide
@@ -109,6 +116,19 @@ const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
   // `[.border-t]:pt-(--card-spacing)` rule, its top inset back).
   "card-edge-to-edge": (code) =>
     code.replace('<CardFooter className="justify-end gap-2">', '<CardFooter className="justify-end gap-2 border-t">'),
+  // The sidebar demo's sample user is the upstream persona; the rest of the
+  // identity is handled by SAMPLE_REWRITES.
+  // `--radix-dropdown-menu-trigger-width` is a leftover from the Radix base and
+  // generates no CSS here; the menus expose `--trigger-width`.
+  "sidebar-demo": (code) =>
+    code
+      .replace('name: "casey"', 'name: "Casey Nolan"')
+      .split("w-(--radix-dropdown-menu-trigger-width)")
+      .join("w-(--trigger-width)"),
+  // The questionnaire behaviour type is re-derived from the Tecton component,
+  // so the example needs no import from the headless package it wraps.
+  "questionnaire-skip": rewriteQuestionnaireStatusType,
+  "questionnaire-navigation-state": rewriteQuestionnaireStatusType,
   // Custom-colour demos use Tailwind's stock palette, which the Tecton theme
   // removes (`--color-*: initial`); see TECTON_PALETTE_REWRITES.
   "badge-colors": rewriteStockColors,
@@ -150,6 +170,20 @@ const TECTON_PALETTE_REWRITES: [string, string][] = [
   ["data-[favorite=true]:fill-blue-600 data-[favorite=true]:stroke-blue-600", "data-[favorite=true]:fill-blue-560 data-[favorite=true]:stroke-blue-560"],
 ]
 
+/**
+ * `QuestionnaireItemStatus` is the headless primitive's type. An application
+ * reads it off the component it already imports, so the example does too.
+ */
+export function rewriteQuestionnaireStatusType(code: string): string {
+  if (code.includes("type QuestionnaireItemStatus =")) return code
+  return code
+    .replace(/import type \{ QuestionnaireItemStatus \} from "@shadcn\/react\/questionnaire"\n/, "")
+    .replace(
+      /(\n)(const items = )/,
+      "$1type QuestionnaireItemStatus = Parameters<\n  NonNullable<React.ComponentProps<typeof QuestionnaireItem>[\"onStatusChange\"]>\n>[0]\n\n$2"
+    )
+}
+
 function rewriteStockColors(code: string): string {
   for (const [stock, tecton] of TECTON_PALETTE_REWRITES) code = code.split(stock).join(tecton)
   // families Tecton does not have, or steps only Tailwind has (200 … 950; 50
@@ -160,6 +194,165 @@ function rewriteStockColors(code: string): string {
     )
   if (leftover) throw new Error(`stock Tailwind colour left in a synced example: ${leftover[0]} (add it to TECTON_PALETTE_REWRITES)`)
   return code
+}
+
+/* --------------------------------------------------------------------------
+ * Audience
+ *
+ * Application docs never name shadcn/ui, React Aria or Radix: an application
+ * cannot see them, cannot install them and must not code against them. The
+ * tables below carry the upstream vocabulary and the upstream demo persona
+ * across; `assertNoBaseLeak` catches everything they miss.
+ * ------------------------------------------------------------------------ */
+
+/** Demo identity and sample copy of the upstream examples, as Tecton's. */
+const SAMPLE_REWRITES: [string, string][] = [
+  ["https://github.com/shadcn.png", "https://avatar.vercel.sh/casey"],
+  ["https://avatar.vercel.sh/shadcn1", "https://avatar.vercel.sh/tecton1"],
+  ["https://ui.shadcn.com/docs/installation", "https://example.com/docs/installation"],
+  ["https://x.com/shadcn", "https://example.com/s/8f2c1a"],
+  ["/avatars/shadcn.jpg", "/avatars/casey.jpg"],
+  ["shadcn@example.com", "casey@example.com"],
+  ['"shadcn"', '"casey"'],
+  ["shadcn/ui", "Tecton UI"],
+]
+
+/** Sample prose, matched across whatever line wrapping the source uses. */
+const SAMPLE_PHRASES: [RegExp, string][] = [
+  // `@shadcn` the handle, never the `@shadcn/react` package specifier
+  [/@shadcn\b(?!\/)/g, "@casey"],
+  [/The Foundation for your Design System/g, "The Tecton design system for React"],
+  [
+    /A set of beautifully designed components that you can customize,\s+extend,\s+and build on\./g,
+    "Components, icons and blocks that carry the Tecton look in every application.",
+  ],
+]
+
+export function rewriteSampleIdentity(source: string): string {
+  for (const [from, to] of SAMPLE_REWRITES) source = source.split(from).join(to)
+  for (const [pattern, to] of SAMPLE_PHRASES) source = source.replace(pattern, to)
+  return source
+}
+
+/**
+ * Modules an example may legitimately import although the name gives the base
+ * away. `Pressable` has no equivalent in `@tecton/react`, so a context-menu
+ * trigger really is written this way and the docs have to say so.
+ */
+const BASE_IMPORT_EXCEPTIONS = [/from "react-aria-components"/]
+
+/** The upstream vocabulary, page by page, in the Tecton voice. */
+const MDX_DELEAK: [RegExp | string, string][] = [
+  // The per-component "Docs" / "API Reference" buttons pointed at the base
+  // library's reference; every page documents its own API below.
+  [/\nlinks:\n(?:[ \t]+\w+: https:\/\/react-aria\.adobe\.com\S*\n)+/, "\n"],
+  // Upstream defers the prop tables to the base library's reference. An
+  // application should not be reading that reference, so every pointer at it
+  // becomes a statement of what the parts actually accept.
+  [
+    /^(?:See|For (?:more|the full)[^\n]*?,? see)\s[^\n]*\[[^\]]*\]\(https:\/\/react-aria\.adobe\.com[^\n]*$/gm,
+    "Each component forwards the props and `data-*` state attributes of the element it renders.",
+  ],
+
+  // Select: the searchable composition is spelled out in the example below it.
+  [
+    "Use the [Autocomplete](https://react-aria.adobe.com/Autocomplete) component from React Aria to add search support.",
+    "Wrap the list in an `Autocomplete` with a `SelectInput` to filter the options as you type.",
+  ],
+
+  // RTL: upstream sends the reader to its own configuration guide.
+  [
+    /To enable RTL support in shadcn\/ui, see the \[RTL configuration guide\]\(https:\/\/ui\.shadcn\.com\/docs\/rtl\)\./g,
+    "Wrap your application in the [DirectionProvider](/docs/components/direction) and the component follows the reading direction — there is nothing else to configure.",
+  ],
+
+  // Button
+  [
+    "The React Aria `Button` component always applies `role=\"button\"`, which overrides the semantic link role on `<a>` elements.",
+    "`Button` always renders with `role=\"button\"`, which overrides the semantic link role on `<a>` elements.",
+  ],
+
+  // Chart: an upstream release note and a link to the upstream gallery.
+  [
+    /<Callout>\n\n\*\*Note:\*\* We're working on upgrading to Recharts v3[\s\S]*?<\/Callout>\n\n/,
+    "",
+  ],
+  [/\n\[Browse the Charts Library\]\(https:\/\/ui\.shadcn\.com\/charts\)\.\n/, "\n"],
+  [
+    "description: Beautiful charts. Built using Recharts. Copy and paste into your apps.",
+    "description: Charts built with Recharts, themed with the Tecton tokens.",
+  ],
+  [
+    "Introducing **Charts**. A collection of chart components that you can copy and paste into your apps.",
+    "**Charts** is a set of chart components that compose Recharts with the Tecton theme.",
+  ],
+
+  // Field / Table: guides and demos that live on the upstream site.
+  [
+    "See the [Form](/docs/forms) documentation for building forms with the `Field` component and [React Hook Form](https://ui.shadcn.com/docs/forms/react-hook-form) or [Tanstack Form](/docs/forms/tanstack-form), or [Formisch](https://ui.shadcn.com/docs/forms/formisch).",
+    "See the [Forms](/docs/forms) documentation for building forms with the `Field` component and a headless form library.",
+  ],
+  [
+    "You can also see an example of a data table in the [Tasks](https://ui.shadcn.com/examples/tasks) demo.",
+    "See [Data Table](/docs/components/data-table) for a complete example.",
+  ],
+  [
+    "Here are some components you can use to build your data tables. This is from the [Tasks](https://ui.shadcn.com/examples/tasks) demo, which shares its features object (and the matching `TasksTableFeatures` type) across every component via a `data-table-features.ts` module — the same pattern we set up in [Set up Table Features](#set-up-table-features).",
+    "Here are some components you can use to build your data tables. They share a features object (and the matching `TasksTableFeatures` type) across every component through a `data-table-features.ts` module — the same pattern set up in [Set up Table Features](#set-up-table-features).",
+  ],
+
+  // Marker: the shimmer utility ships with the Tecton stylesheet.
+  [
+    "The utility ships with the `shadcn` package — see the shimmer docs for installation.",
+    "The utility ships with `@tecton/react/globals.css` — see the shimmer docs.",
+  ],
+
+  // Questionnaire / Message Scroller: the styled components are the supported
+  // surface, so the "use the headless package instead" section goes.
+  [/\n## Unstyled\n\nThe behavior in `[A-Za-z]+` comes from the `@shadcn\/react` package\.[\s\S]*?(?=\n## )/, "\n"],
+  [
+    /The props, data attributes, and render states for every part are documented on\nthe \[@shadcn\/react Questionnaire\]\([^)]*\) page\.\nThe styled components inherit the corresponding unstyled props\./,
+    "Every part forwards the props of the element it renders, along with the data\nattributes and render states used throughout this page.",
+  ],
+  [
+    /The props, data attributes, and hooks for every part are documented on the\n\[@shadcn\/react Message Scroller\]\([^)]*\) page\.\nThey are identical for the styled component and the unstyled parts\./,
+    "Every part forwards the props of the element it renders, along with the data\nattributes and hooks used throughout this page.",
+  ],
+  [
+    /See the\n\[headless Questionnaire\]\([^)]*\) for the complete behavior\./,
+    "The active item, its progress and its actions all render on the server.",
+  ],
+  [
+    /See the\n\[Questionnaire accessibility guide\]\([^)]*\)\nfor labeling custom compositions and the complete keyboard behavior\./,
+    "The same applies to custom compositions: every answer control needs a name of\nits own.",
+  ],
+]
+
+export function deleak(mdx: string): string {
+  for (const [pattern, replacement] of MDX_DELEAK) {
+    mdx = typeof pattern === "string" ? mdx.split(pattern).join(replacement) : mdx.replace(pattern, replacement)
+  }
+  return rewriteSampleIdentity(mdx)
+}
+
+/**
+ * Last line of defence: an application-facing file must not name the base the
+ * library is generated from. A new leak is a sync failure, not a silent
+ * publish — add a rule to `MDX_DELEAK` (or `SAMPLE_REWRITES`) and re-run.
+ */
+export function assertNoBaseLeak(text: string, where: string) {
+  for (const line of text.split("\n")) {
+    // the generated `upstream:` provenance line is not reader-facing
+    if (/^upstream: apps\/v4\//.test(line)) continue
+    if (BASE_IMPORT_EXCEPTIONS.some((pattern) => pattern.test(line))) continue
+    const leak = /\bshadcn\b|\bReact Aria\b|\bradix\b/i.exec(line)
+    if (leak) {
+      throw new Error(
+        `base library named in application-facing docs (${where}): ${line.trim()}\n` +
+          "  -> add a rule to MDX_DELEAK / SAMPLE_REWRITES in apps/www/scripts/sync-upstream-docs.mts"
+      )
+    }
+  }
 }
 
 /**
@@ -316,7 +509,7 @@ function transformMdx(
   mdx = mdx.replace(
     /\n## Installation\n[\s\S]*?(?=\n## )/,
     upstreamDir.startsWith("content/docs/utils")
-      ? "\n## Installation\n\nNothing to install: the utility ships with `@tecton/react/globals.css`, which imports `shadcn/tailwind.css`.\n"
+      ? "\n## Installation\n\nNothing to install: the utility ships with `@tecton/react/globals.css`.\n"
       : "\n"
   )
   // the form guides keep their npm dependencies but not the shadcn CLI step
@@ -399,16 +592,22 @@ function transformMdx(
   })
   // upstream block viewer links (/view/<style>/<block>) point at ui.shadcn.com
   mdx = mdx.replace(/href="\/view\/([a-z]+-[a-z]+)\//g, 'href="https://ui.shadcn.com/view/$1/')
-  // sources that only exist in the upstream Next.js app cannot be shown here
+  // Files that only exist in the upstream Next.js app cannot be shown here, and
+  // an application would not import them anyway: they are helpers it writes
+  // itself. Say that instead of linking to another project's repository.
   mdx = mdx.replace(
-    /<ComponentSource\s+src="(\/app\/[^"]+)"[^>]*\/>/g,
-    (_m, src: string) =>
-      `<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [${src.split("/").pop()}](https://github.com/shadcn-ui/ui/blob/main/apps/v4${src}).</Callout>`
+    /<ComponentSource\s+src="\/app\/[^"]+"[^>]*\/>/g,
+    '<Callout variant="info">This helper lives in your own project — it is not part of `@tecton/react`. The snippet below shows how it is used.</Callout>'
   )
+
+  // Written for application developers: no shadcn, no React Aria, no Radix.
+  mdx = deleak(mdx)
 
   // Next.js-only bits in prose
   mdx = mdx.replace(/\n\n+/g, "\n\n")
-  return mdx.trimEnd() + "\n"
+  mdx = mdx.trimEnd() + "\n"
+  assertNoBaseLeak(mdx, `${upstreamDir}/${name}.mdx`)
+  return mdx
 }
 
 async function main() {
@@ -476,7 +675,8 @@ async function main() {
     }
     const source = await fs.readFile(file, "utf8")
     const { code: rewritten, blocked } = rewriteImports(source)
-    const code = EXAMPLE_REWRITES[exampleName]?.(rewritten) ?? rewritten
+    const identity = rewriteSampleIdentity(rewritten)
+    const code = EXAMPLE_REWRITES[exampleName]?.(identity) ?? identity
     if (blocked) {
       report.skippedExamples[exampleName] = `unsupported import: ${blocked}`
       exampleCache.set(exampleName, null)
@@ -484,6 +684,9 @@ async function main() {
     }
     // Synced examples are upstream code: eslint.config.js ignores them (it
     // reads the list from sync-report.json) and .prettierignore lists them.
+    // The header is stripped before an example is shown (src/lib/examples.ts),
+    // so it is added after the leak check rather than exempted from it.
+    assertNoBaseLeak(code, `examples/aria/${exampleName}.tsx`)
     const header = `// Synced from shadcn/ui (apps/v4/examples/aria/${exampleName}.tsx) by scripts/sync-upstream-docs.mts — do not edit.\n`
     await fs.writeFile(path.join(OUT_EXAMPLES, `${exampleName}.tsx`), header + code)
     exampleCache.set(exampleName, code)
@@ -572,7 +775,11 @@ async function main() {
   )
 }
 
-main().catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+// Importable: `scripts/deleak-synced.mts` reuses the rewrites above to bring
+// already-synced files in line without a full upstream checkout.
+if (import.meta.main) {
+  main().catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })
+}
