@@ -1,0 +1,16 @@
+{
+  "generatedAt": "2026-09-18T01:22:41.295Z",
+  "siteUrl": "(root-relative)",
+  "allExamples": false,
+  "pages": 94,
+  "examplesInlined": 615,
+  "missingExamples": [
+    "chart-demo"
+  ],
+  "missingSources": [],
+  "unhandledTags": {},
+  "bytes": {
+    "llms.txt": 29173,
+    "llms-full.txt": 536863
+  }
+}

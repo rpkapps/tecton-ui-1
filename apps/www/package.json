@@ -5,12 +5,13 @@
   "private": true,
   "scripts": {
     "dev": "vite dev --port 3000",
-    "build": "vite build",
+    "build": "pnpm docs:llms && vite build",
     "preview": "vite preview",
     "lint": "eslint",
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
     "docs:sync": "bun run scripts/sync-upstream-docs.mts",
+    "docs:llms": "bun run scripts/build-llms.mts",
     "registry:build": "pnpm --filter @tecton/react registry:build",
     "compare": "bun run e2e/compare.spec.ts"
   },

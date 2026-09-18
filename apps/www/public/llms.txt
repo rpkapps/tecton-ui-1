@@ -1,0 +1,357 @@
+# Tecton UI
+
+Enterprise React component library for Tecton. Built on [shadcn/ui](https://ui.shadcn.com)
+with the **React Aria** base, themed through Tecton design tokens. Published as the
+package `@tecton/react`.
+
+Standard components are the shadcn/ui React Aria implementations, so shadcn snippets work
+after changing the import path. Everything Tecton needs beyond shadcn ships as separate,
+clearly named components.
+
+## Rules
+
+If you are generating code against this library, these are the rules that matter. Each one
+describes a real failure, not a style preference.
+
+### 1. Import paths are deep and explicit
+
+There is **no root barrel**. `import { Button } from "@tecton/react"` does not resolve —
+the package has no `"."` export.
+
+```tsx
+import "@tecton/react/globals.css"                        // once, at the app root
+
+import { Button } from "@tecton/react/components/button"  // shadcn component
+import { Chip } from "@tecton/react/tecton/chip"          // Tecton-specific component
+import { WellIcon } from "@tecton/react/icons"            // Tecton icon (barrel)
+import { useIsMobile } from "@tecton/react/hooks/use-mobile"
+import { cn } from "cn"                                   // not "@/lib/utils"
+```
+
+| Specifier | Contents |
+| --- | --- |
+| `@tecton/react/components/<name>` | the 60 shadcn/ui React Aria components |
+| `@tecton/react/tecton/<name>` | the 20 Tecton-specific components |
+| `@tecton/react/icons` | all 131 Tecton icons (`@tecton/react/icons/<slug>` also works) |
+| `@tecton/react/hooks/<name>`, `@tecton/react/lib/<name>` | hooks and utilities |
+| `@tecton/react/globals.css` | the theme stylesheet |
+
+The file name is the kebab-case component name: `Button` → `components/button`,
+`DropdownMenu` → `components/dropdown-menu`, `TreeView` → `tecton/tree-view`.
+
+### 2. Never use stock Tailwind colour classes
+
+**This is the one failure nothing catches.** The Tecton palette replaces Tailwind's:
+`globals.css` resets the theme namespace with `--color-*: initial` before declaring the
+Tecton ramps. So `bg-red-500`, `text-zinc-400`, `border-slate-200` and friends **generate
+no CSS at all** — they do not error, do not warn, and do not fall back. The element simply
+renders unstyled.
+
+Use one of two things instead.
+
+**A semantic token** — always the first choice, because it tracks light and dark:
+
+```
+background foreground card card-foreground popover popover-foreground
+primary primary-foreground secondary secondary-foreground
+muted muted-foreground accent accent-foreground
+destructive destructive-foreground success success-foreground
+warning warning-foreground info info-foreground neutral neutral-foreground
+border border-subtle border-strong input input-hover ring surface-alt
+chart-1 … chart-5   sidebar sidebar-foreground sidebar-primary sidebar-accent sidebar-border sidebar-ring
+```
+
+Status surfaces (tinted backgrounds): `success-surface`, `warning-surface`,
+`info-surface`, `neutral-surface`, `destructive-surface`, each with a `-foreground`.
+Interaction states exist as tokens too — `primary-hover`, `primary-pressed`,
+`primary-active`, the same for `secondary`, plus `ghost-*`, `outline-*` and `link-*`
+families, each with matching `-foreground`.
+
+**A Tecton palette step** — when you need a specific hue:
+
+```
+bg-blue-120   text-blue-830   border-graphite-160
+```
+
+- Families: `gray graphite mauve violet lilac orchid pink red saffron yellow lemon lime green azure blue` (plus `white`, `black`).
+- Steps: `50 100 105 110 115 120 130 140 160 190 220 260 310 370 460 560 680 830 1000 1170 1300 1440 1570`.
+- A step is a **contrast level**, not a fixed colour: it means "this far from the page
+  background", and its raw value switches with the mode. So `bg-blue-120` is already
+  correct in light and dark — **never write a `dark:` pair for a palette step.**
+
+### 3. React Aria, not Radix
+
+The base is `react-aria-components`. Radix idioms do not apply.
+
+| Instead of | Write |
+| --- | --- |
+| `onClick` | `onPress` |
+| `disabled` | `isDisabled` |
+| `checked` | `isSelected` (or `isIndeterminate`) |
+| `open` | `isOpen` |
+| `value` / `onValueChange` on a collection | `selectedKeys` / `onSelectionChange` |
+| `type="single" \| "multiple"` | `selectionMode="none" \| "single" \| "multiple"` |
+| `onSelect` on a menu item | `onAction` |
+| `side` + `align` on a popover | `placement` (e.g. `"bottom start"`) + `offset` |
+| `aria-invalid` | `isInvalid` |
+| `data-state="open"` in a class | `aria-expanded:` |
+| `data-state="checked"` in a class | `data-selected:` |
+
+Collection items (menu, select, combobox, tree) need a `textValue` when their children are
+not plain text, so typeahead works.
+
+**`asChild` does not exist.** There is no Radix `Slot` in this library. Two replacements:
+
+- A button that navigates is `LinkButton` — the React Aria `Link` wearing the button
+  styles. It takes `href`, not `onPress`:
+  ```tsx
+  import { LinkButton } from "@tecton/react/components/button"
+
+  <LinkButton href="/wells" variant="outline">All wells</LinkButton>
+  ```
+- Where a component must render as a different element, it takes a `render` prop:
+  ```tsx
+  <Badge render={(props) => <a {...props} href="/status" />}>Active</Badge>
+  ```
+
+Style interaction states with the React Aria data attributes: `data-hovered`,
+`data-pressed`, `data-selected`, `data-focus-visible`, `data-disabled`, `data-entering`,
+`data-exiting`. Every component also emits `data-slot="<name>"`.
+
+### 4. Pick the right component
+
+Tecton adds components where shadcn has no counterpart. Reach for these before building
+something by hand.
+
+| If you need | Use | Not |
+| --- | --- | --- |
+| A static label or status pill | `Badge` (`components/badge`) | Chip |
+| A tag the user can select or remove | `Chip` + `ChipGroup` + `ChipList` (`tecton/chip`) | Badge |
+| A count anchored to an icon or avatar | `CountBadge` (`tecton/count-badge`) | Badge |
+| A titled content region with header actions | `Panel` (`tecton/panel`) | Card |
+| A plain surface, no header contract | `Card` (`components/card`) | Panel |
+| A gauge with a value the user reads | `Meter` (`tecton/meter`) | Progress |
+| Task completion over time | `Progress` (`components/progress`) or `CircularProgress` (`tecton/circular-progress`) | Meter |
+| An inline text link | `Link` (`tecton/link`) | LinkButton |
+| A hierarchical, expandable list | `TreeView` (`tecton/tree-view`) | nested Accordion |
+| A KPI figure with label and delta | `Stat` (`tecton/stat`) | hand-rolled markup |
+| A toolbar row that must collapse when narrow | `Overflow` (`tecton/overflow`) | manual media queries |
+| Application chrome (header, sidebar, split) | `AppShell` (`tecton/app-shell`) | hand-rolled layout |
+| A page title block | `PageHeader` (`tecton/page-header`) | hand-rolled markup |
+| A selection-context action bar | `ActionBar` (`tecton/action-bar`) | hand-rolled markup |
+
+The rest of `@tecton/react/tecton/*`: `app-finder`, `background`, `canvas`,
+`color-swatch`, `copy-button`, `portal`, `shell-actions`, `shortcuts`.
+
+### 5. Tecton adds variant axes that upstream shadcn does not have
+
+Do not assume the shadcn prop set. These are the values that exist:
+
+| Component | Axis | Values |
+| --- | --- | --- |
+| `Button` | `variant` | `default` `outline` `secondary` `ghost` `destructive` `link` |
+| `Button` | `size` | `default` `xs` `sm` `lg` `icon` `icon-xs` `icon-sm` `icon-lg` |
+| `Alert` | `variant` | `default` `destructive` `success` `warning` `info` |
+| `Alert` | `appearance` | `default` `outline` `filled` |
+| `Badge` / `Chip` | `variant` | `default` `secondary` `destructive` `outline` `ghost` `link` `success` `warning` `info` |
+| `Badge` / `Chip` | `appearance` | `solid` `outline` |
+| `Badge` / `Chip` | `size` | `default` `md` `lg` |
+| `Separator` | `emphasis` | `subtle` `default` `strong` |
+| `Input` / `Textarea` | `variant` | `outline` `filled` `text` |
+| `SelectTrigger` | `variant` | `outline` `filled` `text` |
+
+There is no `size="md"` on `Button` and no `variant="primary"` anywhere — the default
+button variant *is* the primary one.
+
+### 6. Icons
+
+131 Tecton glyphs, imported from `@tecton/react/icons` as `<Name>Icon`
+(`AddIcon`, `WellIcon`, `SeismicIcon`). Props are lucide-compatible: `size` (default 24),
+`strokeWidth`, `absoluteStrokeWidth`, plus `variant="outlined" | "filled"`. An icon is
+`aria-hidden` unless you pass `aria-label`.
+
+Inside a Button, mark the icon so it gets the right spacing:
+
+```tsx
+<Button><AddIcon data-icon="inline-start" />Add well</Button>
+```
+
+`lucide-react` also works and is what the generated components import internally.
+
+### 7. Dark first
+
+Tecton applications run dark by default; both modes come from the same token export. Use
+semantic tokens and palette steps and you do not need `dark:` variants at all.
+
+### 8. Do not restyle the generated components
+
+Never target a component with `.style-*`, `[data-slot]` or `@layer` overrides. If the
+design calls for something the variants do not cover, compose a new component instead.
+
+### 9. Blocks are installed, not copied
+
+Blocks are full-page compositions (dashboards, sidebars, error pages, domain panels).
+Install one with the shadcn CLI from the `@tecton` registry rather than pasting it:
+
+```bash
+npx shadcn@latest add @tecton/dashboard-01
+```
+
+Installed blocks import their primitives from `@tecton/react/...`, so the package must be
+a dependency of the consuming app.
+
+## Documentation
+
+### Getting started
+
+- [Introduction](/docs/index.md): Tecton UI is the Tecton design system for React, built on shadcn/ui with the React Aria base.
+- [Installation](/docs/installation.md): Add @tecton/react to your application. Blocks can be added with the shadcn CLI.
+- [Theming](/docs/theming.md): How the Tecton design tokens map to the shadcn CSS variables, what is exact and what is approximated, how the Tecton colour ramps become the Tailwind palette, and how to extend the theme.
+- [Typography](/docs/typography.md): Figtree for the interface, IBM Plex Mono for data — mapped to the Tailwind font and text utilities.
+- [Spacing & radius](/docs/spacing.md): Tecton's spacing scale and corner radii, and how they map to the Tailwind and shadcn utilities.
+- [CLI & updates](/docs/cli.md): How the generated components are managed with the shadcn CLI, where the Tecton style lives, and how to update both.
+- [Icons](/docs/icons.md): The Tecton icon set (131 icons, outlined and filled) and how it works alongside Lucide.
+
+### Forms
+
+- [Forms](/docs/forms/index.md): Build forms with React Aria components and a headless form library.
+- [TanStack Form](/docs/forms/tanstack-form.md): Build forms in React using TanStack Form, Zod and the React Aria components.
+
+### Components
+
+- [Components](/docs/components/index.md): The 60 shadcn/ui components of the React Aria base, unchanged and themed through the Tecton tokens.
+- [Accordion](/docs/components/accordion.md): A vertically stacked set of interactive headings that each reveal a section of content.
+- [Alert](/docs/components/alert.md): Displays a callout for user attention.
+- [Alert Dialog](/docs/components/alert-dialog.md): A modal dialog that interrupts the user with important content and expects a response.
+- [Aspect Ratio](/docs/components/aspect-ratio.md): Displays content within a desired ratio.
+- [Attachment](/docs/components/attachment.md): Displays a file or image attachment with media, metadata, upload state, and actions.
+- [Avatar](/docs/components/avatar.md): An image element with a fallback for representing the user.
+- [Badge](/docs/components/badge.md): Displays a badge or a component that looks like a badge.
+- [Breadcrumb](/docs/components/breadcrumb.md): Displays the path to the current resource using a hierarchy of links.
+- [Bubble](/docs/components/bubble.md): Displays conversational content in a message bubble. Supports variants, alignment, grouping, reactions, and collapsible content.
+- [Button](/docs/components/button.md): Displays a button or a component that looks like a button.
+- [Button Group](/docs/components/button-group.md): A container that groups related buttons together with consistent styling.
+- [Calendar](/docs/components/calendar.md): A calendar component that allows users to select a date or a range of dates.
+- [Card](/docs/components/card.md): Displays a card with header, content, and footer.
+- [Carousel](/docs/components/carousel.md): A carousel with motion and swipe built using Embla.
+- [Chart](/docs/components/chart.md): Beautiful charts. Built using Recharts. Copy and paste into your apps.
+- [Checkbox](/docs/components/checkbox.md): A control that allows the user to toggle between checked and not checked.
+- [Collapsible](/docs/components/collapsible.md): An interactive component which expands/collapses a panel.
+- [Combobox](/docs/components/combobox.md): Autocomplete input with a list of suggestions.
+- [Command](/docs/components/command.md): Command menu for search and quick actions.
+- [Context Menu](/docs/components/context-menu.md): Displays a menu of actions triggered by a right click.
+- [Data Table](/docs/components/data-table.md): Powerful table and datagrids built using TanStack Table.
+- [Date Picker](/docs/components/date-picker.md): A date picker component with range and presets.
+- [Dialog](/docs/components/dialog.md): A window overlaid on either the primary window or another dialog window, rendering the content underneath inert.
+- [Direction](/docs/components/direction.md): A provider component that sets the text direction for your application.
+- [Drawer](/docs/components/drawer.md): A drawer component for React.
+- [Dropdown Menu](/docs/components/dropdown-menu.md): Displays a menu to the user — such as a set of actions or functions — triggered by a button.
+- [Empty](/docs/components/empty.md): Use the Empty component to display an empty state.
+- [Field](/docs/components/field.md): Combine labels, controls, and help text to compose accessible form fields and grouped inputs.
+- [Hover Card](/docs/components/hover-card.md): A popover that appears on hover, focus, or long press to preview content available behind a link.
+- [Input](/docs/components/input.md): A text input component for forms and user data entry with built-in styling and accessibility features.
+- [Input Group](/docs/components/input-group.md): Add addons, buttons, and helper content to inputs.
+- [Input OTP](/docs/components/input-otp.md): Accessible one-time password component with copy paste functionality.
+- [Item](/docs/components/item.md): A versatile component for displaying content with media, title, description, and actions.
+- [Kbd](/docs/components/kbd.md): Used to display textual user input from keyboard.
+- [Label](/docs/components/label.md): Renders an accessible label associated with controls.
+- [Marker](/docs/components/marker.md): Displays an inline status, system note, bordered row, or labeled separator in a conversation.
+- [Message](/docs/components/message.md): Displays a message in a conversation, with optional avatar, header, footer, and alignment.
+- [Message Scroller](/docs/components/message-scroller.md): A chat scroll container that anchors turns, opens saved transcripts, follows streamed responses, loads history without jumping, and jumps to any message.
+- [Native Select](/docs/components/native-select.md): A styled native HTML select element with consistent design system integration.
+- [Pagination](/docs/components/pagination.md): Pagination with page navigation, next and previous links.
+- [Popover](/docs/components/popover.md): Displays rich content in a portal, triggered by a button.
+- [Progress](/docs/components/progress.md): Displays an indicator showing the completion progress of a task, typically displayed as a progress bar.
+- [Questionnaire](/docs/components/questionnaire.md): A multi-step questionnaire with single-choice, multiple-choice, freeform, and skippable questions.
+- [Radio Group](/docs/components/radio-group.md): A set of checkable buttons—known as radio buttons—where no more than one of the buttons can be checked at a time.
+- [Resizable](/docs/components/resizable.md): Accessible resizable panel groups and layouts with keyboard support.
+- [Scroll Area](/docs/components/scroll-area.md): Augments native scroll functionality for custom, cross-browser styling.
+- [Select](/docs/components/select.md): Displays a list of options for the user to pick from—triggered by a button.
+- [Separator](/docs/components/separator.md): Visually or semantically separates content.
+- [Sheet](/docs/components/sheet.md): Extends the Dialog component to display content that complements the main content of the screen.
+- [Sidebar](/docs/components/sidebar.md): A composable, themeable and customizable sidebar component.
+- [Skeleton](/docs/components/skeleton.md): Use to show a placeholder while content is loading.
+- [Slider](/docs/components/slider.md): An input where the user selects a value from within a given range.
+- [Sonner](/docs/components/sonner.md): An opinionated toast component for React.
+- [Spinner](/docs/components/spinner.md): An indicator that can be used to show a loading state.
+- [Switch](/docs/components/switch.md): A control that allows the user to toggle between checked and not checked.
+- [Table](/docs/components/table.md): A responsive table component.
+- [Tabs](/docs/components/tabs.md): A set of layered sections of content—known as tab panels—that are displayed one at a time.
+- [Textarea](/docs/components/textarea.md): Displays a form textarea or a component that looks like a textarea.
+- [Toggle](/docs/components/toggle.md): A two-state button that can be either on or off.
+- [Toggle Group](/docs/components/toggle-group.md): A set of two-state buttons that can be toggled on or off.
+- [Tooltip](/docs/components/tooltip.md): A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.
+
+### Tecton
+
+- [Tecton components](/docs/tecton/index.md): Components that exist only in the Tecton design system and have no shadcn counterpart.
+- [Action Bar](/docs/tecton/action-bar.md): A transient bar for acting on a selection or on unsaved changes: a summary, then actions that collapse into a More menu as the bar narrows.
+- [App Finder](/docs/tecton/app-finder.md): Application switcher for the shell header: a compact badge for the current app and a searchable, category-grouped palette of every registered application.
+- [App Shell](/docs/tecton/app-shell.md): The application frame: top bar, optional sidebar, main work area and optional right aside.
+- [Background](/docs/tecton/background.md): Eleven decorative background effects drawn from oil and gas imagery: seismic sections, contour maps, strata, grids, flow lines, well logs, a drill bit, hexagon meshes, pressure fields and a horizon, plus a perspective wireframe terrain. Quiet by design, themed in both modes.
+- [Canvas](/docs/tecton/canvas.md): Full-bleed work surface (map, schematic, 3D view) with floating chrome: overlays pinned to edges and corners, tool rails and a legend.
+- [Chip](/docs/tecton/chip.md): Selectable and removable tags in a group. Static labels are Badges.
+- [Circular Progress](/docs/tecton/circular-progress.md): Determinate progress ring with an optional centred value, or an indeterminate spinner.
+- [Color Swatch](/docs/tecton/color-swatch.md): A colour preview chip with optional label and value, for colour tags, legends and theme documentation.
+- [Copy Button](/docs/tecton/copy-button.md): Copies a value to the clipboard and shows a check mark for a moment.
+- [Count Badge](/docs/tecton/count-badge.md): A count or status dot anchored to the corner of an avatar, icon button or tab.
+- [Link](/docs/tecton/link.md): Inline text link on React Aria Link with default, primary, muted and subtle variants and an external-link icon.
+- [Meter](/docs/tecton/meter.md): Segmented gauge for risk, complexity and confidence readouts, with automatic colour by value.
+- [Overflow](/docs/tecton/overflow.md): A row of controls that collapses in stages when its container gets narrow: labels drop to icons, then items move into a More menu. Toolbar is the same row with arrow-key navigation.
+- [Page Header](/docs/tecton/page-header.md): Page title block with optional eyebrow, description, section tabs and trailing actions.
+- [Panel](/docs/tecton/panel.md): Titled application surface for side panels, tool panels and dashboard sections, with a scrolling body and a pinned footer.
+- [Portal Provider](/docs/tecton/portal.md): Chooses the element that Tecton overlays portal into. For pages that render several isolated React roots.
+- [Shell Actions](/docs/tecton/shell-actions.md): The global action cluster at the end of the shell header: command palette trigger, icon actions with tooltips and the user menu.
+- [Shortcuts](/docs/tecton/shortcuts.md): A keyboard shortcut registry for the shell: the host listens once, applications register their shortcuts, and the shell lists them.
+- [Stat](/docs/tecton/stat.md): KPI readout with label, tabular mono value, unit, trend delta and helper text.
+- [Tree View](/docs/tecton/tree-view.md): Hierarchical project, inventory and file structures on React Aria Tree, with folder and item rows, states, colour tags and row actions.
+
+### Utilities
+
+- [scroll-fade](/docs/utils/scroll-fade.md): Utilities for adding a fade effect to the edges of a scroll container.
+- [shimmer](/docs/utils/shimmer.md): Utilities for adding a shimmer effect to text elements.
+
+
+## Blocks
+
+Full-page compositions, installed from the `@tecton` shadcn registry with
+`npx shadcn@latest add @tecton/<name>`.
+
+| Block | Category | Description |
+| --- | --- | --- |
+| `@tecton/ai-agent-panel` | application | AI agent panel — Chat side panel with assistant, user and tool-activity messages, action chips and a composer. Requires the @tecton/react package. |
+| `@tecton/canvas-01` | layouts | Canvas with floating chrome — Preset sidebar next to a full-bleed map with view selectors, tool rails, legend and scale bar floating over the surface. Requires the @tecton/react package. |
+| `@tecton/content-01` | layouts | Plain content page — Single width-constrained column with a page header and a data-entry form; the layout for forms, tables and chat. Requires the @tecton/react package. |
+| `@tecton/cost-vs-risk-panel` | application | Cost vs risk panel — Quadrant bubble chart of well designs with legend chips and a cost / risk comparison bar list. Requires the @tecton/react package. |
+| `@tecton/dashboard-01` | dashboard | Dashboard — Full app shell: top navigation, project tree sidebar, FDA and well cards, cost vs risk and the AI agent aside. Requires the @tecton/react package. |
+| `@tecton/detail-01` | layouts | Detail page with section tabs — Project details sidebar, page header with section tabs and a list / graph toggle, and a body of concept sections with decision cards. Requires the @tecton/react package. |
+| `@tecton/facies-modeling-panel` | forms | Facies modeling panel — Stochastic facies (SEM) set-up: method and seed selects, variogram sliders, options and Run model. Requires the @tecton/react package. |
+| `@tecton/fda-card` | application | FDA card — Field development alternative summary: KPIs, complexity / risk / emissions meters and actions. Requires the @tecton/react package. |
+| `@tecton/fda-comparison-table` | lists | FDA comparison table — Selectable data table ranking field development alternatives by NPV, CAPEX, risk and status. Requires the @tecton/react package. |
+| `@tecton/forbidden-01` | states | 403 · Access restricted — No permission: inline access request with validation and a sent state, switch account; the lower log is locked. Requires the @tecton/react package. |
+| `@tecton/horizons-panel` | forms | Horizons panel — Surface-pair form panel with depth fields, sliders, colour tags and an Apply footer. Requires the @tecton/react package. |
+| `@tecton/list-01` | lists | Wells list — Filterable, paginated wells table with search, selects, status chips and an empty state. Requires the @tecton/react package. |
+| `@tecton/login-01` | authentication | Login — Centred sign-in card with validation, remember-me, SSO and request-access link. Requires the @tecton/react package. |
+| `@tecton/maintenance-01` | states | 503 · Scheduled maintenance — Planned downtime: window progress, step checklist, status page and notify-me toggle; a hatched workover band crosses the log. Requires the @tecton/react package. |
+| `@tecton/not-found-01` | states | 404 · Not found — Page not found: way back, command-palette search, likely pages for a stale link and the requested path; the log stops at TD. Requires the @tecton/react package. |
+| `@tecton/offline-01` | states | Offline — Connection lost: retry countdown, per-hop connection checks, work-offline fallback and queued edits; the log flat-lines after the last sample. Requires the @tecton/react package. |
+| `@tecton/page-state` | states | Page state scaffold — The shared layout of every page state: status row, code, title, actions and diagnostics next to an annotated well-log figure. Shown here as a page that is not available yet. Requires the @tecton/react package. |
+| `@tecton/server-error-01` | states | 500 · Server error — Unexpected error: retry, last saved view, copyable support report, collapsible stack trace; the log spikes off-scale at the anomaly. Requires the @tecton/react package. |
+| `@tecton/session-expired-01` | states | 401 · Session expired — Session timed out: unsaved-edits reassurance, password and SSO sign-in, return-to route; the log fades past the moment the session ended. Requires the @tecton/react package. |
+| `@tecton/settings-01` | forms | Settings — Profile, notifications and appearance tabs with text / select fields, switches and a save footer. Requires the @tecton/react package. |
+| `@tecton/shell-01` | layouts | Application shell — The micro-frontend host: responsive top bar with app finder, context, command palette, shortcuts help, overflow and user menu; the mounted application registers its keyboard shortcuts with the shell. Requires the @tecton/react package. |
+| `@tecton/sidebar-01` | layouts | Project navigation — Sidebar that collapses to an icon rail: project switcher, grouped navigation with collapsible sections and the user menu. Requires the @tecton/react package. |
+| `@tecton/sidebar-02` | layouts | Inset sidebar — Inset sidebar with search, flat navigation, recent projects with actions and secondary links pinned to the bottom. Requires the @tecton/react package. |
+| `@tecton/sidebar-03` | layouts | Project tree sidebar — Off-canvas sidebar hosting the project inventory tree with search and visibility toggles next to a map work area. Requires the @tecton/react package. |
+| `@tecton/sidebar-04` | layouts | Navigation and tool panel — Icon navigation rail on the left and a resizable, closable tool panel on the right around the work area. Requires the @tecton/react package. |
+| `@tecton/well-design-card` | application | Well design card — Well summary with trajectory sketch, TD / MD / inclination stats, phase progress and risk. Requires the @tecton/react package. |
+
+
+
+## Icons
+
+131 glyphs, imported as `<Name>Icon` from `@tecton/react/icons`:
+
+AddIcon, AddCircleIcon, AddPinIcon, AnnotateIcon, AppsIcon, ArrowDownIcon, ArrowLeftIcon, ArrowRightIcon, ArrowUpIcon, CancelCircleIcon, CaretCollapseIcon, CaretUpDownIcon, CheckIcon, CheckboxIcon, CheckboxOutlineBlankIcon, CheckCircleIcon, CheckCircleOpenIcon, ChevronDownIcon, ChevronDownSmallIcon, ChevronLeftIcon, ChevronLeftSmallIcon, ChevronRightIcon, ChevronRightSmallIcon, ChevronUpIcon, ChevronUpSmallIcon, ChristmasTreeIcon, CloseIcon, CloseSmallIcon, Co2LeafIcon, CodeIcon, CollapseContentIcon, ControlsIcon, CopyIcon, CrownIcon, CubeIcon, DatabaseIcon, DeleteIcon, DesignIcon, DiamondMarkIcon, DiscoveryIcon, DragIndicatorIcon, DrillBitIcon, EditSquareIcon, ElectricityIcon, EngineeringIcon, ErrorIcon, ExpandContentIcon, ExportUploadIcon, FacilityIcon, FaultIcon, FilterIcon, FolderIcon, FolderNewIcon, FolderOpenIcon, FrameworksIcon, GeobodiesIcon, GeostructureIcon, GridViewIcon, HistoryIcon, HomeIcon, HorizonIcon, ImageIcon, IndeterminateCheckboxIcon, InfoIcon, InspectIcon, KanbanIcon, LayersIcon, LineWeightIcon, LinkIcon, LinkOffIcon, ListIcon, LockIcon, LockOpenIcon, LogCurveIcon, MapIcon, MenuIcon, MicrophoneIcon, MoneyIcon, MoreVertIcon, NodeIcon, NotificationsIcon, NumericIcon, OilRigOffshoreIcon, OpenInNewIcon, PanelIcon, PanToolIcon, PersonIcon, PlayIcon, PreviewIcon, ProjectIcon, PulseIcon, RadioButtonIcon, RedoIcon, RemoveIcon, RemoveCircleIcon, ReportsAnalyticsIcon, RiskSkullIcon, Robot2Icon, RockFormationsIcon, RotateIcon, RulerIcon, SearchIcon, SeismicIcon, SelectIcon, SelectCursorIcon, SettingsIcon, SliceIcon, SortEnabledIcon, SplitscreenIcon, StrataIcon, SurfaceIcon, SwapIcon, TargetIcon, ThreeDIcon, TrajectoryIcon, TrendIcon, UndoIcon, ValveIcon, VelocityModelIcon, ViewColumnIcon, ViewModuleIcon, VisibilityIcon, VisibilityOffIcon, WarningIcon, WaterIcon, WellIcon, WellPickIcon, WellPlanIcon, WindowIcon, ZoomInIcon, ZoomOutIcon
+
+

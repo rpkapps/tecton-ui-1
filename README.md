@@ -49,6 +49,7 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 | `pnpm generated:check` | Verify no generated component was hand-edited |
 | `pnpm registry:build` | Build the `@tecton` blocks registry into `apps/www/public/r` |
 | `pnpm docs:sync` | Sync shadcn docs pages + examples for the React Aria base |
+| `pnpm docs:llms` | Render the docs corpus into `llms.txt`, `llms-full.txt` and per-page `.md` twins for AI agents (runs as part of the site build) |
 | `pnpm --filter @tecton/react icons:build` | Regenerate icon components from the Tecton export in `icons-src/tecton/` |
 | `pnpm compare` | Playwright captures of the state matrices next to the Storybook screenshots |
 | `scripts/registry-mirror.sh` | Builds and serves the shadcn registry with the Tecton overlay (`aria-tecton`); required for every CLI command |

@@ -43,6 +43,9 @@ const config = defineConfig({
         // point nowhere; only crawl the site's own sections.
         filter: (page) => {
           if (page.path === "/") return true
+          // The agent artefacts (llms.txt, the per-page .md twins) are static
+          // files in public/ that the docs link to; they are not routes.
+          if (/\.(md|txt)$/.test(page.path)) return false
           const view = page.path.match(/^\/view\/([^/]+)$/)
           if (view) return blockNames.includes(view[1])
           return /^\/(docs|blocks|themes|compare)(\/|$)/.test(page.path)

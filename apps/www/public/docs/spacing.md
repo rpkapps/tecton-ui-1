@@ -1,0 +1,77 @@
+# Spacing & radius
+
+Tecton's spacing scale and corner radii, and how they map to the Tailwind and shadcn utilities.
+
+Source: /docs/spacing.md
+
+## Spacing
+
+Tecton's spacing scale is 4px-based and coincides with Tailwind's default spacing (`--spacing: 0.25rem`), so no configuration is needed:
+
+| Tecton | px | Tailwind |
+| --- | --- | --- |
+| space-0 | 0 | `0` |
+| space-25 | 2 | `0.5` |
+| space-50 | 4 | `1` |
+| space-75 | 6 | `1.5` |
+| space-100 | 8 | `2` |
+| space-150 | 12 | `3` |
+| space-200 | 16 | `4` |
+| space-250 | 20 | `5` |
+| space-300 | 24 | `6` |
+| space-400 | 32 | `8` |
+| space-500 | 40 | `10` |
+| space-600 | 48 | `12` |
+| space-700 | 56 | `14` |
+| space-800 | 64 | `16` |
+| space-900 | 72 | `18` |
+| space-1000 | 80 | `20` |
+| space-1200 | 96 | `24` |
+| space-1400 | 112 | `28` |
+| space-1600 | 128 | `32` |
+| space-1800 | 144 | `36` |
+
+The values are also exposed as `--tecton-space-*` variables for non-Tailwind consumers.
+
+## Radius
+
+Tecton's default corner radius is **4px**; the scale is not a multiple of a single base, so the shadcn radius variables are set explicitly instead of being derived from `--radius`:
+
+| Tecton | px | shadcn / Tailwind |
+| --- | --- | --- |
+| radius-0 | 0 | `rounded-none` |
+| radius-25 | 2 | `--radius-sm` → `rounded-sm` |
+| radius-50 | 4 | `--radius`, `--radius-md` → `rounded-md` (default) |
+| radius-100 | 8 | `--radius-lg` → `rounded-lg` |
+| radius-150 | 12 | `--radius-xl` → `rounded-xl` |
+| radius-200 | 16 | `--radius-2xl` → `rounded-2xl` |
+| radius-round | 1000 | `rounded-full` |
+
+**Example — `radius-demo`**
+
+```tsx
+const radii = [
+  ["rounded-sm", "2px"],
+  ["rounded-md", "4px"],
+  ["rounded-lg", "8px"],
+  ["rounded-xl", "12px"],
+  ["rounded-2xl", "16px"],
+  ["rounded-full", "round"],
+] as const
+
+export default function RadiusDemo() {
+  return (
+    <div className="flex flex-wrap items-end gap-6">
+      {radii.map(([cls, px]) => (
+        <div key={cls} className="flex flex-col items-center gap-2 text-xs text-muted-foreground">
+          <div className={`size-16 border bg-secondary ${cls}`} />
+          <span className="font-mono">{cls}</span>
+          <span>{px}</span>
+        </div>
+      ))}
+    </div>
+  )
+}
+```
+
+> Components that use `rounded-md` (buttons, inputs, cards' inner elements) render Tecton's 4px; `rounded-lg` surfaces (cards, alerts, dialogs) render 8px. You can adjust the whole scale on the [Themes](/themes) page.

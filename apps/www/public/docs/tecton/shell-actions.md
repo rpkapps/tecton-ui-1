@@ -1,0 +1,171 @@
+# Shell Actions
+
+The global action cluster at the end of the shell header: command palette trigger, icon actions with tooltips and the user menu.
+
+Source: /docs/tecton/shell-actions.md
+
+**Example — `shell-actions-demo`**
+
+```tsx
+import {
+  BugIcon,
+  CircleHelpIcon,
+  LogOutIcon,
+  SettingsIcon,
+  SparklesIcon,
+  UserIcon,
+} from "lucide-react"
+
+import {
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@tecton/react/components/dropdown-menu"
+import {
+  AppShell,
+  AppShellBrand,
+  AppShellHeader,
+} from "@tecton/react/tecton/app-shell"
+import {
+  ShellAction,
+  ShellActions,
+  ShellCommandTrigger,
+  ShellUserMenu,
+} from "@tecton/react/tecton/shell-actions"
+
+export default function ShellActionsDemo() {
+  return (
+    <AppShell className="h-auto w-full max-w-3xl overflow-visible rounded-lg border">
+      <AppShellHeader className="rounded-lg border-b-0">
+        <AppShellBrand>Tecton</AppShellBrand>
+        <ShellActions>
+          <ShellCommandTrigger>Search or jump to…</ShellCommandTrigger>
+          <ShellAction label="Help" shortcut="?">
+            <CircleHelpIcon />
+          </ShellAction>
+          <ShellAction label="What's new">
+            <SparklesIcon />
+          </ShellAction>
+          <ShellAction label="Report a bug">
+            <BugIcon />
+          </ShellAction>
+          <ShellAction label="Settings">
+            <SettingsIcon />
+          </ShellAction>
+          <ShellUserMenu user={{ name: "Sarah Elliott", initials: "SE" }}>
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>Sarah Elliott</DropdownMenuLabel>
+            </DropdownMenuGroup>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem textValue="Profile">
+                <UserIcon /> Profile
+              </DropdownMenuItem>
+              <DropdownMenuItem textValue="Sign out">
+                <LogOutIcon /> Sign out
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </ShellUserMenu>
+        </ShellActions>
+      </AppShellHeader>
+    </AppShell>
+  )
+}
+```
+
+## Usage
+
+```tsx
+import {
+  ShellActions,
+  ShellAction,
+  ShellCommandTrigger,
+  ShellDivider,
+  ShellOverflow,
+  ShellUserMenu,
+} from "@tecton/react/tecton/shell-actions"
+```
+
+```tsx
+<AppShellHeader>
+  <AppShellBrand>Tecton</AppShellBrand>
+  <ShellActions>
+    <ShellCommandTrigger onPress={openPalette}>Search or jump to…</ShellCommandTrigger>
+    <ShellAction label="Help" shortcut="?"><CircleHelpIcon /></ShellAction>
+    <ShellAction label="What's new"><SparklesIcon /></ShellAction>
+    <ShellAction label="Report a bug"><BugIcon /></ShellAction>
+    <ShellAction label="Settings"><SettingsIcon /></ShellAction>
+    <ShellUserMenu user={{ name: "Sarah Elliott", initials: "SE" }}>
+      <DropdownMenuItem textValue="Sign out">Sign out</DropdownMenuItem>
+    </ShellUserMenu>
+  </ShellActions>
+</AppShellHeader>
+```
+
+> These controls belong to the micro-frontend host, not to the mounted application. Every application sees the same cluster, and a change to it (moving bug reports into a drawer, say) ships once through the package.
+
+## Composition
+
+```text
+ShellActions
+├── ShellCommandTrigger
+├── ShellAction …
+├── ShellDivider
+└── ShellUserMenu
+    └── DropdownMenuGroup / DropdownMenuItem …
+```
+
+## API Reference
+
+### ShellActions
+
+Flex container aligned to the end of the header (`ml-auto`).
+
+### ShellAction
+
+Ghost icon `Button` wrapped in a `TooltipTrigger`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `label` | `string` | - | Accessible name and tooltip text. |
+| `shortcut` | `string` | - | Key hint rendered in the tooltip, in [Shortcuts](/docs/tecton/shortcuts.md) key syntax (`"mod+k"`, `"?"`, `"g w"`). |
+| `onPress` | `(e: PressEvent) => void` | - | Press handler. |
+
+### ShellCommandTrigger
+
+Outline `Button` that looks like a search field and opens the command palette. Below `md` it collapses to an icon button; the key hint shows from `lg`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | "Search" | Placeholder text. |
+| `shortcut` | `ReactNode` | "⌘K" | Key hint at the end; pass `null` to hide it. |
+
+### ShellUserMenu
+
+Avatar button opening a `DropdownMenu` anchored bottom-end.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `user` | `{ name; initials; image? }` | - | Shown in the avatar and used for the accessible name. |
+| `children` | `ReactNode` | - | Menu contents: `DropdownMenuGroup`, `DropdownMenuItem`, … |
+
+### ShellOverflow
+
+Ellipsis button opening a `DropdownMenu` for actions that do not fit a narrow header. Hide the icon actions below a breakpoint and show this instead:
+
+```tsx
+<ShellAction label="Settings" className="hidden lg:inline-flex"><SettingsIcon /></ShellAction>
+<ShellOverflow className="lg:hidden">
+  <DropdownMenuItem textValue="Settings"><SettingsIcon /> Settings</DropdownMenuItem>
+</ShellOverflow>
+```
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `label` | `string` | "More" | Accessible name of the trigger. |
+| `children` | `ReactNode` | - | Menu contents. |
+
+### ShellDivider
+
+Vertical hairline (`role="separator"`) between groups of actions.
