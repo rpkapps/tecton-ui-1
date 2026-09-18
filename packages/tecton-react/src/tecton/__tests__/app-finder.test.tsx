@@ -44,7 +44,11 @@ describe("AppFinder", () => {
     render(<Finder />)
     const trigger = screen.getByRole("button", { name: "DSG" })
     expect(trigger).toHaveAttribute("data-slot", "app-finder-trigger")
-    expect(trigger).toHaveClass("rounded-full", "uppercase")
+    expect(trigger).toHaveClass("rounded-lg")
+    // The tile carries the monospaced, uppercased app code; the trigger does not.
+    expect(
+      trigger.querySelector('[data-slot="app-finder-icon"]')
+    ).toHaveClass("uppercase")
     expect(trigger.querySelector("svg")).toHaveAttribute(
       "data-icon",
       "inline-end"
@@ -107,7 +111,7 @@ describe("AppFinder", () => {
     const input = await screen.findByPlaceholderText("Search applications…")
     await userEvent.type(input, "zzz")
     expect(
-      await screen.findByText("No applications match.")
+      await screen.findByText("No applications match")
     ).toBeInTheDocument()
     expect(
       document.querySelectorAll('[data-slot="command-item"]')

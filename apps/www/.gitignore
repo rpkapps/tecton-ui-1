@@ -4,3 +4,9 @@ node_modules
 .tanstack
 .source
 dist
+
+# Agent artefacts rendered from the docs corpus by `pnpm docs:llms`,
+# which runs as part of the site build (regenerated, never reviewed).
+public/llms.txt
+public/llms-full.txt
+public/docs/
