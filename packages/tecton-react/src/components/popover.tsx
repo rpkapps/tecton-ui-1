@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
+import { usePortalTarget } from "@tecton/react/tecton/portal"
 import {
   DialogTrigger,
   Heading,
@@ -27,6 +28,7 @@ function Popover({
 }: Omit<PopoverPrimitiveProps, "className"> & {
   className?: string
 }) {
+  const portalTarget = usePortalTarget()
   return (
     <PopoverPrimitive
       data-slot="popover-content"
@@ -38,6 +40,7 @@ function Popover({
         className
       )}
       {...props}
+      UNSTABLE_portalContainer={portalTarget}
     />
   )
 }

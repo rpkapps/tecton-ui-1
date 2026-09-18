@@ -25,7 +25,7 @@ MIRROR_DIR="${SHADCN_MIRROR_DIR:-$ROOT/.cache/shadcn-ui}"
 UPSTREAM_SHA="$(sed -n 's/^- Commit: `\([0-9a-f]*\)`.*/\1/p' "$ROOT/docs/UPSTREAM.md")"
 STYLE="${SHADCN_STYLE:-aria-tecton}"
 OVERLAY="$ROOT/scripts/registry-mirror/overlay"
-OVERLAY_FILES="apps/v4/registry/bases/aria/ui/alert.tsx apps/v4/registry/bases/aria/ui/tabs.tsx apps/v4/registry/bases/aria/ui/badge.tsx apps/v4/registry/bases/aria/ui/input.tsx apps/v4/registry/bases/aria/ui/select.tsx apps/v4/registry/bases/aria/ui/separator.tsx apps/v4/registry/bases/aria/ui/textarea.tsx apps/v4/registry/bases/aria/ui/toggle.tsx apps/v4/registry/bases/aria/ui/button-group.tsx apps/v4/registry/bases/aria/ui/sonner.tsx apps/v4/registry/styles.tsx"
+OVERLAY_FILES="apps/v4/registry/bases/aria/ui/alert.tsx apps/v4/registry/bases/aria/ui/tabs.tsx apps/v4/registry/bases/aria/ui/badge.tsx apps/v4/registry/bases/aria/ui/input.tsx apps/v4/registry/bases/aria/ui/select.tsx apps/v4/registry/bases/aria/ui/separator.tsx apps/v4/registry/bases/aria/ui/textarea.tsx apps/v4/registry/bases/aria/ui/toggle.tsx apps/v4/registry/bases/aria/ui/button-group.tsx apps/v4/registry/bases/aria/ui/sonner.tsx apps/v4/registry/styles.tsx apps/v4/registry/bases/aria/ui/alert-dialog.tsx apps/v4/registry/bases/aria/ui/combobox.tsx apps/v4/registry/bases/aria/ui/context-menu.tsx apps/v4/registry/bases/aria/ui/dialog.tsx apps/v4/registry/bases/aria/ui/dropdown-menu.tsx apps/v4/registry/bases/aria/ui/hover-card.tsx apps/v4/registry/bases/aria/ui/popover.tsx apps/v4/registry/bases/aria/ui/sheet.tsx apps/v4/registry/bases/aria/ui/tooltip.tsx"
 BUN="${BUN:-$HOME/.bun/bin/bun}"
 
 setup() {
