@@ -116,6 +116,11 @@ export const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
   // `[.border-t]:pt-(--card-spacing)` rule, its top inset back).
   "card-edge-to-edge": (code) =>
     code.replace('<CardFooter className="justify-end gap-2">', '<CardFooter className="justify-end gap-2 border-t">'),
+  // Upstream reaches for the unstyled base Button as a menu trigger. A Tecton
+  // application uses a Tecton Button, which owns the shape and spacing, so the
+  // hand-rolled layout classes go with it.
+  "breadcrumb-dropdown": rewriteUnstyledTrigger,
+  "breadcrumb-rtl": rewriteUnstyledTrigger,
   // The sidebar demo's sample user is the upstream persona; the rest of the
   // identity is handled by SAMPLE_REWRITES.
   // `--radix-dropdown-menu-trigger-width` is a leftover from the Radix base and
@@ -169,6 +174,11 @@ const TECTON_PALETTE_REWRITES: [string, string][] = [
   // input-group-button
   ["data-[favorite=true]:fill-blue-600 data-[favorite=true]:stroke-blue-600", "data-[favorite=true]:fill-blue-560 data-[favorite=true]:stroke-blue-560"],
 ]
+
+/** `<Button className="flex items-center gap-1">` -> a ghost Tecton Button. */
+function rewriteUnstyledTrigger(code: string): string {
+  return code.split('<Button className="flex items-center gap-1">').join('<Button variant="ghost" size="sm">')
+}
 
 /**
  * `QuestionnaireItemStatus` is the headless primitive's type. An application
@@ -235,11 +245,60 @@ export function rewriteSampleIdentity(source: string): string {
 }
 
 /**
- * Modules an example may legitimately import although the name gives the base
- * away. `Pressable` has no equivalent in `@tecton/react`, so a context-menu
- * trigger really is written this way and the docs have to say so.
+ * Where each thing upstream imports from `react-aria-components` is re-exported
+ * by `@tecton/react`. An application never imports the behaviour layer itself:
+ * everything a documented composition needs is part of the package surface, so
+ * the docs import it from there.
+ *
+ * An identifier that is not listed is a sync failure, not a passthrough — if a
+ * new composition needs one, re-export it from
+ * `packages/tecton-react/src/tecton/primitives.ts` first and add it here.
  */
-const BASE_IMPORT_EXCEPTIONS = [/from "react-aria-components"/]
+const BASE_PRIMITIVE_MODULES: Record<string, string> = {
+  Pressable: "@tecton/react/primitives",
+  Autocomplete: "@tecton/react/primitives",
+  useFilter: "@tecton/react/primitives",
+  Key: "@tecton/react/primitives",
+  Selection: "@tecton/react/primitives",
+  DateRange: "@tecton/react/primitives",
+  // already re-exported by the Direction component
+  I18nProvider: "@tecton/react/components/direction",
+  useLocale: "@tecton/react/components/direction",
+  // the unstyled trigger: a Tecton application uses a Tecton Button (the
+  // examples that do this also get the variant, see EXAMPLE_REWRITES)
+  Button: "@tecton/react/components/button",
+}
+
+/**
+ * Rewrites every `react-aria-components` import into the `@tecton/react` module
+ * that re-exports it, one import statement per target module. Works on example
+ * sources and on the code fences of a page alike.
+ */
+export function rewriteBasePrimitives(source: string): string {
+  return source.replace(
+    /^import\s+(type\s+)?\{([^}]*)\}\s+from\s+"react-aria-components"\n/gm,
+    (_match, typeOnly: string | undefined, names: string) => {
+      const byModule = new Map<string, string[]>()
+      for (const raw of names.split(",")) {
+        const entry = raw.trim()
+        if (!entry) continue
+        const identifier = entry.replace(/^type\s+/, "").trim()
+        const target = BASE_PRIMITIVE_MODULES[identifier]
+        if (!target) {
+          throw new Error(
+            `no @tecton/react home for the react-aria-components import "${identifier}" — ` +
+              "re-export it from packages/tecton-react/src/tecton/primitives.ts and add it to BASE_PRIMITIVE_MODULES"
+          )
+        }
+        byModule.set(target, [...(byModule.get(target) ?? []), typeOnly ? `type ${identifier}` : entry])
+      }
+      return [...byModule]
+        .sort(([a], [b]) => a.localeCompare(b))
+        .map(([module, entries]) => `import { ${entries.join(", ")} } from "${module}"\n`)
+        .join("")
+    }
+  )
+}
 
 /** The upstream vocabulary, page by page, in the Tecton voice. */
 const MDX_DELEAK: [RegExp | string, string][] = [
@@ -332,7 +391,7 @@ export function deleak(mdx: string): string {
   for (const [pattern, replacement] of MDX_DELEAK) {
     mdx = typeof pattern === "string" ? mdx.split(pattern).join(replacement) : mdx.replace(pattern, replacement)
   }
-  return rewriteSampleIdentity(mdx)
+  return rewriteSampleIdentity(rewriteBasePrimitives(mdx))
 }
 
 /**
@@ -344,7 +403,6 @@ export function assertNoBaseLeak(text: string, where: string) {
   for (const line of text.split("\n")) {
     // the generated `upstream:` provenance line is not reader-facing
     if (/^upstream: apps\/v4\//.test(line)) continue
-    if (BASE_IMPORT_EXCEPTIONS.some((pattern) => pattern.test(line))) continue
     const leak = /\bshadcn\b|\bReact Aria\b|\bradix\b/i.exec(line)
     if (leak) {
       throw new Error(
@@ -675,7 +733,7 @@ async function main() {
     }
     const source = await fs.readFile(file, "utf8")
     const { code: rewritten, blocked } = rewriteImports(source)
-    const identity = rewriteSampleIdentity(rewritten)
+    const identity = rewriteSampleIdentity(rewriteBasePrimitives(rewritten))
     const code = EXAMPLE_REWRITES[exampleName]?.(identity) ?? identity
     if (blocked) {
       report.skippedExamples[exampleName] = `unsupported import: ${blocked}`

@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { ArrowLeftIcon, ArrowRightIcon, RotateCwIcon } from "lucide-react"
-import { Pressable, type Selection } from "react-aria-components"
+import { Pressable, type Selection } from "@tecton/react/primitives"
 
 import {
   useTranslation,

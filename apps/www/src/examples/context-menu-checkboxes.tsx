@@ -2,7 +2,7 @@
 "use client"
 
 import { useState } from "react"
-import { Pressable, type Selection } from "react-aria-components"
+import { Pressable, type Selection } from "@tecton/react/primitives"
 
 import {
   ContextMenu,

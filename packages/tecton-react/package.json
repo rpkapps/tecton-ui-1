@@ -67,6 +67,7 @@
     "./styles/*": "./src/styles/*",
     "./lib/*": "./src/lib/*.ts",
     "./components/*": "./src/components/*.tsx",
+    "./primitives": "./src/tecton/primitives.ts",
     "./hooks/*": "./src/hooks/*.ts",
     "./tecton/*": "./src/tecton/*.tsx",
     "./icons": "./src/icons/index.ts",

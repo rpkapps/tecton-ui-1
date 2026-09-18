@@ -48,6 +48,10 @@ sync.
   React Aria references, the upstream RTL paragraph, the demo identity (`@shadcn`,
   `github.com/shadcn.png`, `shadcn/ui` sample copy) and the `links:` frontmatter that
   pointed at the React Aria API pages. Application-facing docs never name the base.
+- **Primitives** — `rewriteBasePrimitives()` routes every `react-aria-components` import
+  to the `@tecton/react` module that re-exports it (see
+  [The primitives seam](/docs/contributing/components#the-primitives-seam)). An
+  identifier with no Tecton home throws.
 
 <Callout title="Adding a rewrite">
   Every rewrite belongs in the script, never in the output. If you find a leak on a

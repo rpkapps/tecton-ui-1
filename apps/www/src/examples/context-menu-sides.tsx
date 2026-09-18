@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/context-menu-sides.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { Pressable } from "react-aria-components"
+import { Pressable } from "@tecton/react/primitives"
 
 import {
   ContextMenu,

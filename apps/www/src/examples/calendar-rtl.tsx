@@ -7,7 +7,7 @@ import {
   today,
   type CalendarDate,
 } from "@internationalized/date"
-import { I18nProvider } from "react-aria-components"
+import { I18nProvider } from "@tecton/react/components/direction"
 
 import { Calendar } from "@tecton/react/components/calendar"
 

@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Pressable } from "react-aria-components"
+import { Pressable } from "@tecton/react/primitives"
 
 import {
   ContextMenu,

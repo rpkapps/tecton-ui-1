@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import type { Selection } from "react-aria-components"
+import { type Selection } from "@tecton/react/primitives"
 
 import { Button } from "@tecton/react/components/button"
 import {

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import type { Key } from "react-aria-components"
+import type { Key } from "@tecton/react/primitives"
 
 import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
 

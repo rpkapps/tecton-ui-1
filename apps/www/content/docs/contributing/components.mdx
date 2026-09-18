@@ -124,6 +124,21 @@ pnpm dlx shadcn@latest add <name> -c packages/tecton-react
 pnpm --filter www docs:sync   # pulls the upstream docs page + examples into this site
 ```
 
+## The primitives seam
+
+`packages/tecton-react/src/tecton/primitives.ts` re-exports the React Aria pieces a
+documented composition cannot do without — `Pressable`, `Autocomplete`, `useFilter` and
+the `Key` / `Selection` / `DateRange` types — as `@tecton/react/primitives`. It exists so
+that an application never imports `react-aria-components` itself: the base is an
+implementation detail it must be able to ignore, and one the design system is free to
+change.
+
+Keep it minimal, and add to it only when a Tecton composition genuinely requires the
+piece. Then register the identifier in `BASE_PRIMITIVE_MODULES` in
+`apps/www/scripts/sync-upstream-docs.mts`, which rewrites the upstream imports — an
+unregistered one fails the sync rather than shipping a `react-aria-components` import
+into the application docs.
+
 ## Tecton components
 
 A Tecton component exists only when upstream has no counterpart (Chip groups,

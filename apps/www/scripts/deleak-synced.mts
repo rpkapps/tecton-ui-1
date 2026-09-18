@@ -20,6 +20,7 @@ import {
   assertNoBaseLeak,
   deleak,
   EXAMPLE_REWRITES,
+  rewriteBasePrimitives,
   rewriteSampleIdentity,
 } from "./sync-upstream-docs.mts"
 
@@ -110,7 +111,7 @@ async function main() {
       const newline = current.indexOf("\n")
       const header = current.slice(0, newline + 1)
       const body = current.slice(newline + 1)
-      const identity = rewriteSampleIdentity(body)
+      const identity = rewriteSampleIdentity(rewriteBasePrimitives(body))
       const next =
         EXAMPLE_REWRITES[name.replace(/\.tsx$/, "")]?.(identity) ?? identity
       assertNoBaseLeak(next, `src/examples/${name}`)

@@ -4,7 +4,7 @@
 import * as React from "react"
 import { CalendarDate, getLocalTimeZone } from "@internationalized/date"
 import { CalendarIcon } from "lucide-react"
-import { type DateRange } from "react-aria-components"
+import { type DateRange } from "@tecton/react/primitives"
 
 import { Button } from "@tecton/react/components/button"
 import { RangeCalendar } from "@tecton/react/components/calendar"

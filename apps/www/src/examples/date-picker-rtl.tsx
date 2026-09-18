@@ -4,7 +4,7 @@
 import * as React from "react"
 import { getLocalTimeZone, type CalendarDate } from "@internationalized/date"
 import { ChevronDownIcon } from "lucide-react"
-import { I18nProvider } from "react-aria-components"
+import { I18nProvider } from "@tecton/react/components/direction"
 
 import {
   useTranslation,

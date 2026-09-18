@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/select-autocomplete.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { Autocomplete, useFilter } from "react-aria-components"
+import { Autocomplete, useFilter } from "@tecton/react/primitives"
 
 import { Button } from "@tecton/react/components/button"
 import {

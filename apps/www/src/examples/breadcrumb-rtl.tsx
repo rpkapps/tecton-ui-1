@@ -3,7 +3,7 @@
 
 import Link from "@/components/shims/link"
 import { ChevronDownIcon } from "lucide-react"
-import { Button } from "react-aria-components"
+import { Button } from "@tecton/react/components/button"
 
 import {
   useTranslation,
@@ -78,7 +78,7 @@ export function BreadcrumbRtl() {
 
         <BreadcrumbItem>
           <DropdownMenuTrigger>
-            <Button className="flex items-center gap-1">
+            <Button variant="ghost" size="sm">
               {t.components}
               <ChevronDownIcon data-icon="inline-end" className="size-3.5" />
             </Button>

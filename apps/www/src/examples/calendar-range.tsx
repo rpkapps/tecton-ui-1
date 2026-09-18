@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { CalendarDate } from "@internationalized/date"
-import { type DateRange } from "react-aria-components"
+import { type DateRange } from "@tecton/react/primitives"
 
 import { RangeCalendar } from "@tecton/react/components/calendar"
 

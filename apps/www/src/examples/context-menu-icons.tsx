@@ -7,7 +7,7 @@ import {
   ScissorsIcon,
   TrashIcon,
 } from "lucide-react"
-import { Pressable } from "react-aria-components"
+import { Pressable } from "@tecton/react/primitives"
 
 import {
   ContextMenu,

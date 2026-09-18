@@ -3,7 +3,8 @@
 
 import * as React from "react"
 import { CalendarDate, isWeekend } from "@internationalized/date"
-import { useLocale, type DateRange } from "react-aria-components"
+import { useLocale } from "@tecton/react/components/direction"
+import { type DateRange } from "@tecton/react/primitives"
 
 import { RangeCalendar } from "@tecton/react/components/calendar"
 import { Card, CardContent } from "@tecton/react/components/card"

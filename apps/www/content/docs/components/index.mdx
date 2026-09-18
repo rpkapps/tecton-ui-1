@@ -19,4 +19,27 @@ its own section.
   application.
 </Callout>
 
+## Primitives
+
+A few compositions need more than a component: a context menu needs a press target around
+your own markup, a searchable select needs a filter, and controlled selection or range
+props need their types named. Those come from `@tecton/react/primitives`:
+
+```tsx
+import { Autocomplete, Pressable, useFilter } from "@tecton/react/primitives"
+import type { DateRange, Key, Selection } from "@tecton/react/primitives"
+```
+
+| Export | Used with |
+| --- | --- |
+| `Pressable` | The child of a [ContextMenuTrigger](/docs/components/context-menu) — makes arbitrary markup a press target |
+| `Autocomplete`, `useFilter` | Filtering the list of a [Select](/docs/components/select#searchable) or [Command](/docs/components/command) |
+| `Key` | The identity of a collection item — `SelectItem`, `Chip`, `TreeViewItem`… |
+| `Selection` | The controlled selection of a multi-select collection: a `Set` of keys, or `"all"` |
+| `DateRange` | The controlled value of a range [Calendar](/docs/components/calendar) or [Date Picker](/docs/components/date-picker) |
+
+Everything a Tecton composition needs is in the package. If you find yourself reaching for
+another library to make a component work, that is a gap in Tecton — raise it rather than
+importing around it.
+
 <ComponentsList />
