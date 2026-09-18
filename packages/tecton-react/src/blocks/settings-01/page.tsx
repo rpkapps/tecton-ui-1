@@ -88,7 +88,7 @@ function SettingsPage({
         </PageHeader>
 
         {toast && (
-          <Alert variant="success" appearance="filled">
+          <Alert variant="success" appearance="outline">
             <CircleCheckIcon />
             <AlertTitle>Settings saved</AlertTitle>
             <AlertDescription>

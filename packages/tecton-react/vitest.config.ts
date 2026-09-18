@@ -9,7 +9,7 @@ export default defineConfig({
   },
   test: {
     environment: "jsdom",
-    include: ["src/tecton/__tests__/**/*.test.{ts,tsx}"],
+    include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
     setupFiles: ["./src/tecton/__tests__/setup.ts"],
     css: false,
     coverage: {

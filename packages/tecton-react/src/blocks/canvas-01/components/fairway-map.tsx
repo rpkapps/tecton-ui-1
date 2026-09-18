@@ -9,7 +9,12 @@ type FairwayMapProps = Omit<React.ComponentProps<"svg">, "onSelect"> & {
   surveys?: MapFeature[]
   selected?: string | null
   onSelect?: (id: string | null) => void
+  /** Magnification of the view; 1 fits the whole extent, 2 halves it. */
+  zoom?: number
 }
+
+/** Extent of the map in map units; the view box is a window onto it. */
+const extent = { width: 1000, height: 600 }
 
 /**
  * Stand-in for the map engine: an SVG fairway map with sub-basin and
@@ -22,13 +27,17 @@ function FairwayMap({
   surveys = defaultSurveys,
   selected,
   onSelect,
+  zoom = 1,
   ...props
 }: FairwayMapProps) {
   const id = React.useId()
+  const scale = Math.max(zoom, 0.1)
+  const width = extent.width / scale
+  const height = extent.height / scale
   return (
     <svg
       data-slot="fairway-map"
-      viewBox="0 0 1000 600"
+      viewBox={`${(extent.width - width) / 2} ${(extent.height - height) / 2} ${width} ${height}`}
       preserveAspectRatio="xMidYMid slice"
       className={cn("size-full select-none", className)}
       role="img"
@@ -65,6 +74,7 @@ function FairwayMap({
             stroke="var(--color-border)"
             strokeWidth="0.5"
             strokeOpacity="0.6"
+            vectorEffect="non-scaling-stroke"
           />
         </pattern>
       </defs>
@@ -108,11 +118,13 @@ function FairwayMap({
             strokeWidth="1"
             strokeDasharray="2 4"
             strokeOpacity="0.8"
+            vectorEffect="non-scaling-stroke"
           />
           <text
             x={survey.label[0]}
             y={survey.label[1]}
-            className="fill-current font-mono text-[11px]"
+            className="fill-current font-mono"
+            style={{ fontSize: 11 / scale }}
             opacity="0.8"
           >
             {survey.name}
@@ -142,12 +154,14 @@ function FairwayMap({
               strokeWidth={isSelected ? 2 : 1}
               strokeOpacity={isSelected ? 1 : 0.7}
               strokeLinejoin="round"
+              vectorEffect="non-scaling-stroke"
             />
             <text
               x={feature.label[0]}
               y={feature.label[1]}
               textAnchor="middle"
-              className="fill-foreground font-mono text-[12px]"
+              className="fill-foreground font-mono"
+              style={{ fontSize: 12 / scale }}
             >
               {feature.name}
             </text>

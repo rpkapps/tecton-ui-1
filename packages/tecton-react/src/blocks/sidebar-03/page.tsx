@@ -18,16 +18,32 @@ import {
 import { AppSidebar } from "./components/app-sidebar"
 import { flattenTree, projectTree } from "./data"
 
+/** Zoom levels the magnifier buttons step through. */
+const zoomLevels = [0.5, 0.75, 1, 1.5, 2, 3]
+
+/** Spacing of the work-area grid at 1x, in pixels. */
+const gridSpacing = 24
+
 /**
  * Page layout for a map or model view: the project inventory tree in an
  * off-canvas sidebar, a view toolbar and the full-bleed work area.
  */
 export default function Page() {
   const [selected, setSelected] = React.useState<string | null>(null)
+  const [view, setView] = React.useState<"map" | "section">("map")
+  const [measuring, setMeasuring] = React.useState(false)
+  const [zoom, setZoom] = React.useState(1)
   const selectedLabel = React.useMemo(
     () => flattenTree(projectTree).find((node) => node.id === selected)?.label ?? null,
     [selected]
   )
+
+  const zoomIn = () =>
+    setZoom((level) => zoomLevels.find((next) => next > level) ?? level)
+  const zoomOut = () =>
+    setZoom(
+      (level) => [...zoomLevels].reverse().find((next) => next < level) ?? level
+    )
 
   return (
     <SidebarProvider>
@@ -42,7 +58,11 @@ export default function Page() {
           <ToggleGroup
             aria-label="View"
             selectionMode="single"
-            defaultSelectedKeys={["map"]}
+            selectedKeys={[view]}
+            onSelectionChange={(keys) => {
+              const next = [...keys][0]
+              if (next) setView(next as "map" | "section")
+            }}
             disallowEmptySelection
             size="sm"
           >
@@ -54,30 +74,64 @@ export default function Page() {
             </ToggleGroupItem>
           </ToggleGroup>
           <div className="ml-auto flex items-center gap-1">
-            <Button variant="ghost" size="icon-sm" aria-label="Measure">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Measure"
+              aria-pressed={measuring}
+              className="aria-pressed:bg-ghost-active aria-pressed:text-ghost-active-foreground"
+              onPress={() => setMeasuring((value) => !value)}
+            >
               <RulerIcon />
             </Button>
-            <Button variant="ghost" size="icon-sm" aria-label="Zoom in">
+            <span className="w-11 text-center font-mono text-xs text-muted-foreground tabular-nums">
+              {Math.round(zoom * 100)}%
+            </span>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Zoom in"
+              isDisabled={zoom >= zoomLevels[zoomLevels.length - 1]}
+              onPress={zoomIn}
+            >
               <ZoomInIcon />
             </Button>
-            <Button variant="ghost" size="icon-sm" aria-label="Zoom out">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Zoom out"
+              isDisabled={zoom <= zoomLevels[0]}
+              onPress={zoomOut}
+            >
               <ZoomOutIcon />
             </Button>
           </div>
         </header>
-        <div className="relative flex flex-1 flex-col bg-muted/40">
+        <div
+          data-measuring={measuring || undefined}
+          className="relative flex flex-1 flex-col bg-muted/40 data-measuring:cursor-crosshair"
+        >
           <div
             aria-hidden
-            className="absolute inset-0 bg-[radial-gradient(circle,var(--color-border)_1px,transparent_1px)] [background-size:24px_24px] opacity-60"
+            className="absolute inset-0 bg-[radial-gradient(circle,var(--color-border)_1px,transparent_1px)] opacity-60"
+            style={{
+              backgroundSize: `${gridSpacing * zoom}px ${gridSpacing * zoom}px`,
+            }}
           />
-          <div className="relative m-auto text-center text-sm text-muted-foreground">
+          <div className="relative m-auto flex flex-col items-center gap-1 text-center text-sm text-muted-foreground">
             {selectedLabel ? (
-              <>
-                Showing <span className="font-medium text-foreground">{selectedLabel}</span>
-              </>
+              <span>
+                Showing{" "}
+                <span className="font-medium text-foreground">
+                  {selectedLabel}
+                </span>
+                {" in "}
+                {view === "map" ? "map" : "section"} view
+              </span>
             ) : (
-              "Select an item in the project tree"
+              <span>Select an item in the project tree</span>
             )}
+            {measuring && <span className="text-xs">Measure tool active</span>}
           </div>
         </div>
       </SidebarInset>

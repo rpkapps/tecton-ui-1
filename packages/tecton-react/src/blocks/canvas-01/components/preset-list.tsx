@@ -2,7 +2,14 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { ChevronDownIcon, DatabaseIcon, MoreVerticalIcon } from "lucide-react"
+import {
+  ChevronDownIcon,
+  CopyIcon,
+  DatabaseIcon,
+  MoreVerticalIcon,
+  PencilIcon,
+  TrashIcon,
+} from "lucide-react"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -11,6 +18,12 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@tecton/react/components/collapsible"
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@tecton/react/components/dropdown-menu"
 import {
   Sidebar,
   SidebarContent,
@@ -207,14 +220,33 @@ function PresetList({
                           <Badge variant={status.variant} size="default">
                             {status.label}
                           </Badge>
-                          <Button
-                            variant="ghost"
-                            size="icon-xs"
-                            className="relative"
-                            aria-label={`Actions for ${preset.name}`}
-                          >
-                            <MoreVerticalIcon />
-                          </Button>
+                          <DropdownMenuTrigger>
+                            <Button
+                              variant="ghost"
+                              size="icon-xs"
+                              className="relative"
+                              aria-label={`Actions for ${preset.name}`}
+                            >
+                              <MoreVerticalIcon />
+                            </Button>
+                            <DropdownMenu placement="bottom end">
+                              <DropdownMenuItem
+                                onAction={() => onSelect?.(preset.id)}
+                              >
+                                Open view
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <PencilIcon /> Rename
+                              </DropdownMenuItem>
+                              <DropdownMenuItem>
+                                <CopyIcon /> Duplicate
+                              </DropdownMenuItem>
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem variant="destructive">
+                                <TrashIcon /> Delete view
+                              </DropdownMenuItem>
+                            </DropdownMenu>
+                          </DropdownMenuTrigger>
                         </div>
                       </div>
                     </li>
