@@ -38,7 +38,8 @@ A single-root application does not need it.
 ## Notes
 
 - The provider owns a Tecton container context. Each overlay passes its resolved target directly to its React Aria Components primitive, so isolated React roots do not depend on sharing React Aria's private context.
-- With no provider, or with `container={null}`, overlays explicitly target `document.body` (and remain SSR-safe before `document` exists).
+- With no provider, or with `container={null}`, overlays pass no container at all and React Aria applies its own default (`document.body`, once hydration is over).
+- A submenu is the exception: React Aria mounts it inside the root popover's container, which is already in the provider's container. Overriding that would detach the submenu from its parent menu, so Tecton leaves it to React Aria.
 - `Drawer` is built on Base UI, which has no portal context; it keeps portalling into `document.body`.
 - `container={null}` clears an outer provider and restores the default.
 
@@ -48,9 +49,13 @@ A single-root application does not need it.
 
 | Prop        | Type                                                 | Default | Description                                                                                            |
 | ----------- | ---------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------ |
-| `container` | `HTMLElement \| null \| (() => HTMLElement \| null)` | -       | Element the overlays portal into. A function is called on every open. `null` restores `document.body`. |
+| `container` | `HTMLElement \| null \| (() => HTMLElement \| null)` | -       | Element the overlays portal into. A function is called while each overlay renders. `null` restores `document.body`. |
 | `children`  | `ReactNode`                                          | -       | Subtree whose overlays are redirected.                                                                 |
 
 ### usePortalContainer
 
 `usePortalContainer(): HTMLElement | null` — the current portal container, or `null` when React Aria will use `document.body`.
+
+### usePortalTarget
+
+`usePortalTarget(): HTMLElement | undefined` — what the overlays hand to their React Aria primitive: the container, or `undefined` to let React Aria resolve the target itself. Tecton's own overlays call it; applications use `PortalProvider`.

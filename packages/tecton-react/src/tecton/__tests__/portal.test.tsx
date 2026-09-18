@@ -1,9 +1,17 @@
 import { render, renderHook, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { Button } from "@tecton/react/components/button"
 import { Dialog, DialogTrigger } from "@tecton/react/components/dialog"
+import {
+  DropdownMenu,
+  DropdownMenuItem,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@tecton/react/components/dropdown-menu"
 import { Popover, PopoverTrigger } from "@tecton/react/components/popover"
 import {
   PortalProvider,
@@ -115,13 +123,69 @@ describe("PortalProvider", () => {
     outer.remove()
   })
 
-  it("resolves the default and null target to document.body", () => {
-    expect(renderHook(() => usePortalTarget()).result.current).toBe(document.body)
+  it("leaves the default and null target unset for React Aria to resolve", () => {
+    expect(renderHook(() => usePortalTarget()).result.current).toBeUndefined()
     const { result } = renderHook(() => usePortalTarget(), {
       wrapper: ({ children }) => (
         <PortalProvider container={null}>{children}</PortalProvider>
       ),
     })
-    expect(result.current).toBe(document.body)
+    expect(result.current).toBeUndefined()
+  })
+
+  it("keeps a submenu usable and inside the container", async () => {
+    const container = makeContainer("menus")
+    const onAction = vi.fn()
+    render(
+      <PortalProvider container={container}>
+        <DropdownMenuTrigger>
+          <Button>Open menu</Button>
+          <DropdownMenu>
+            <DropdownMenuItem>Plain item</DropdownMenuItem>
+            <DropdownMenuSub>
+              <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem onAction={onAction}>Nested item</DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuSub>
+          </DropdownMenu>
+        </DropdownMenuTrigger>
+      </PortalProvider>
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Open menu" }))
+    const root = document.querySelector('[data-slot="dropdown-menu-content"]')!
+    expect(container.contains(root)).toBe(true)
+    await userEvent.click(screen.getByText("More"))
+    const nested = await screen.findByText("Nested item")
+    // React Aria nests a submenu inside the root popover's own container, so it
+    // rides along into the provider's container instead of portalling itself.
+    expect(container.contains(nested)).toBe(true)
+    expect(root.parentElement!.contains(nested)).toBe(true)
+    // A submenu mounted outside the root popover reads as an interact-outside:
+    // the menus close and the item never fires.
+    await userEvent.click(nested)
+    expect(onAction).toHaveBeenCalledTimes(1)
+    container.remove()
+  })
+
+  it("keeps a submenu usable with no provider in scope", async () => {
+    const onAction = vi.fn()
+    render(
+      <DropdownMenuTrigger>
+        <Button>Open plain menu</Button>
+        <DropdownMenu>
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
+            <DropdownMenuSubContent>
+              <DropdownMenuItem onAction={onAction}>Plain nested</DropdownMenuItem>
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+        </DropdownMenu>
+      </DropdownMenuTrigger>
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Open plain menu" }))
+    await userEvent.click(screen.getByText("More"))
+    await userEvent.click(await screen.findByText("Plain nested"))
+    expect(onAction).toHaveBeenCalledTimes(1)
   })
 })

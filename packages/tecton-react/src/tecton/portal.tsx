@@ -43,10 +43,16 @@ function usePortalContainer(): HTMLElement | null {
   return typeof container === "function" ? container() : (container ?? null)
 }
 
-/** The concrete target passed to React Aria Components overlay primitives. */
+/**
+ * The target passed to React Aria Components overlay primitives, or
+ * `undefined` when no `PortalProvider` is in scope. `undefined` matters: React
+ * Aria reads a set `UNSTABLE_portalContainer` as "the caller has decided" and
+ * stops resolving the target itself, which would defeat its own defaults — the
+ * root popover's container for submenus, and `document.body` only once
+ * hydration is over.
+ */
 function usePortalTarget(): HTMLElement | undefined {
-  const container = usePortalContainer()
-  return container ?? (typeof document === "undefined" ? undefined : document.body)
+  return usePortalContainer() ?? undefined
 }
 
 export { PortalProvider, usePortalContainer, usePortalTarget }

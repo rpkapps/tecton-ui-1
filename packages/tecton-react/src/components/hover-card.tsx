@@ -1,7 +1,5 @@
-"use client"
-
-import { cn } from "cn"
 import { usePortalTarget } from "@tecton/react/tecton/portal"
+import { cn } from "cn"
 import {
   Popover as PopoverPrimitive,
   PreviewTrigger as PreviewTriggerPrimitive,
