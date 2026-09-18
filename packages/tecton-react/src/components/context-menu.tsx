@@ -9,9 +9,11 @@ import {
   Menu as MenuPrimitive,
   MenuSection as MenuSectionPrimitive,
   MenuTrigger as MenuTriggerPrimitive,
+  PopoverContext,
   Popover as PopoverPrimitive,
   Separator as SeparatorPrimitive,
   SubmenuTrigger as SubmenuTriggerPrimitive,
+  useSlottedContext,
   type MenuItemProps as MenuItemPrimitiveProps,
   type MenuSectionProps as MenuSectionPrimitiveProps,
 } from "react-aria-components"
@@ -40,8 +42,11 @@ function ContextMenu({
   // Submenus stay out of the portal target on purpose: React Aria mounts a
   // `SubmenuTrigger` popover into the root popover's own container, which is
   // already inside the target, and a set container would break that nesting.
+  // `trigger` is what React Aria itself branches on, and reaches the popover
+  // through the same context that renders it as `data-trigger`.
   const portalTarget = usePortalTarget()
-  const isSubmenu = dataSlot.endsWith("-sub-content")
+  const isSubmenu =
+    useSlottedContext(PopoverContext)?.trigger === "SubmenuTrigger"
   return (
     <PopoverPrimitive
       data-slot={dataSlot}

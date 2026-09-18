@@ -185,7 +185,7 @@ index 862ddcc0..ddacfca1 100644
    )
  }
 diff --git a/apps/v4/registry/bases/aria/ui/context-menu.tsx b/apps/v4/registry/bases/aria/ui/context-menu.tsx
-index 87143849..6a1eb967 100644
+index 87143849..41b00f3e 100644
 --- a/apps/v4/registry/bases/aria/ui/context-menu.tsx
 +++ b/apps/v4/registry/bases/aria/ui/context-menu.tsx
 @@ -3,6 +3,7 @@
@@ -196,19 +196,34 @@ index 87143849..6a1eb967 100644
  import {
    composeRenderProps,
    Header as HeaderPrimitive,
-@@ -39,6 +40,11 @@ function ContextMenu({
+@@ -10,9 +11,11 @@ import {
+   Menu as MenuPrimitive,
+   MenuSection as MenuSectionPrimitive,
+   MenuTrigger as MenuTriggerPrimitive,
++  PopoverContext,
+   Popover as PopoverPrimitive,
+   Separator as SeparatorPrimitive,
+   SubmenuTrigger as SubmenuTriggerPrimitive,
++  useSlottedContext,
+   type MenuItemProps as MenuItemPrimitiveProps,
+   type MenuSectionProps as MenuSectionPrimitiveProps,
+ } from "react-aria-components"
+@@ -39,6 +42,14 @@ function ContextMenu({
      className?: string
      children?: React.ReactNode
    }) {
 +  // Submenus stay out of the portal target on purpose: React Aria mounts a
 +  // `SubmenuTrigger` popover into the root popover's own container, which is
 +  // already inside the target, and a set container would break that nesting.
++  // `trigger` is what React Aria itself branches on, and reaches the popover
++  // through the same context that renders it as `data-trigger`.
 +  const portalTarget = usePortalTarget()
-+  const isSubmenu = dataSlot.endsWith("-sub-content")
++  const isSubmenu =
++    useSlottedContext(PopoverContext)?.trigger === "SubmenuTrigger"
    return (
      <PopoverPrimitive
        data-slot={dataSlot}
-@@ -49,6 +55,7 @@ function ContextMenu({
+@@ -49,6 +60,7 @@ function ContextMenu({
          "cn-context-menu-content-aria cn-menu-target cn-menu-translucent cn-menu-translucent-aria z-50 w-(--trigger-width) origin-(--trigger-anchor-point) overflow-x-hidden overflow-y-auto outline-none data-exiting:overflow-hidden",
          className
        )}
@@ -245,7 +260,7 @@ index 9132b423..1ed743a7 100644
        {children}
      </ModalOverlayPrimitive>
 diff --git a/apps/v4/registry/bases/aria/ui/dropdown-menu.tsx b/apps/v4/registry/bases/aria/ui/dropdown-menu.tsx
-index 33d656b9..52b8634b 100644
+index 33d656b9..9035f17a 100644
 --- a/apps/v4/registry/bases/aria/ui/dropdown-menu.tsx
 +++ b/apps/v4/registry/bases/aria/ui/dropdown-menu.tsx
 @@ -3,6 +3,7 @@
@@ -256,19 +271,34 @@ index 33d656b9..52b8634b 100644
  import {
    composeRenderProps,
    Header as HeaderPrimitive,
-@@ -45,6 +46,11 @@ function DropdownMenu({
+@@ -10,9 +11,11 @@ import {
+   Menu as MenuPrimitive,
+   MenuSection as MenuSectionPrimitive,
+   MenuTrigger as MenuTriggerPrimitive,
++  PopoverContext,
+   Popover as PopoverPrimitive,
+   Separator as SeparatorPrimitive,
+   SubmenuTrigger as SubmenuTriggerPrimitive,
++  useSlottedContext,
+   type MenuItemProps as MenuItemPrimitiveProps,
+   type MenuSectionProps as MenuSectionPrimitiveProps,
+ } from "react-aria-components"
+@@ -45,6 +48,14 @@ function DropdownMenu({
      className?: string
      children?: React.ReactNode
    }) {
 +  // Submenus stay out of the portal target on purpose: React Aria mounts a
 +  // `SubmenuTrigger` popover into the root popover's own container, which is
 +  // already inside the target, and a set container would break that nesting.
++  // `trigger` is what React Aria itself branches on, and reaches the popover
++  // through the same context that renders it as `data-trigger`.
 +  const portalTarget = usePortalTarget()
-+  const isSubmenu = dataSlot.endsWith("-sub-content")
++  const isSubmenu =
++    useSlottedContext(PopoverContext)?.trigger === "SubmenuTrigger"
    return (
      <PopoverPrimitive
        data-slot={dataSlot}
-@@ -55,6 +61,7 @@ function DropdownMenu({
+@@ -55,6 +66,7 @@ function DropdownMenu({
          "cn-dropdown-menu-content-aria cn-menu-target cn-menu-translucent cn-menu-translucent-aria z-50 w-(--trigger-width) origin-(--trigger-anchor-point) overflow-x-hidden overflow-y-auto outline-none data-exiting:overflow-hidden",
          className
        )}
