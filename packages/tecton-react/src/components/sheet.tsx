@@ -1,6 +1,8 @@
+"use client"
+
 import * as React from "react"
-import { cn } from "cn"
 import { usePortalTarget } from "@tecton/react/tecton/portal"
+import { cn } from "cn"
 import {
   Heading,
   ModalOverlay as ModalOverlayPrimitive,
