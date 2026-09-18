@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
+import { usePortalTarget } from "@tecton/react/tecton/portal"
 import {
   Dialog as AlertDialogPrimitive,
   DialogTrigger as AlertDialogTriggerPrimitive,
@@ -29,6 +30,7 @@ function AlertDialogOverlay({
   className?: string
   children: React.ReactNode
 }) {
+  const portalTarget = usePortalTarget()
   return (
     <ModalOverlayPrimitive
       data-slot="alert-dialog-overlay"
@@ -37,6 +39,7 @@ function AlertDialogOverlay({
         className
       )}
       {...props}
+      UNSTABLE_portalContainer={portalTarget}
     >
       {children}
     </ModalOverlayPrimitive>

@@ -21,7 +21,7 @@ index e9aa02f3..62d20980 100644
 +    appearance: "default",
    },
  })
- 
+
  function Alert({
    className,
 -  variant,
@@ -43,7 +43,7 @@ index e9aa02f3..62d20980 100644
 @@ -68,4 +80,4 @@ function AlertAction({ className, ...props }: React.ComponentProps<"div">) {
    )
  }
- 
+
 -export { Alert, AlertTitle, AlertDescription, AlertAction }
 +export { Alert, AlertTitle, AlertDescription, AlertAction, alertVariants }
 diff --git a/apps/v4/registry/bases/aria/ui/badge.tsx b/apps/v4/registry/bases/aria/ui/badge.tsx
@@ -52,7 +52,7 @@ index 1d546cce..c1624f95 100644
 +++ b/apps/v4/registry/bases/aria/ui/badge.tsx
 @@ -2,7 +2,7 @@ import { cva, type VariantProps } from "class-variance-authority"
  import { cn } from "cn"
- 
+
  const badgeVariants = cva(
 -  "cn-badge group/badge inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none",
 +  "cn-badge group/badge inline-flex w-fit shrink-0 items-center justify-center overflow-hidden whitespace-nowrap focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring aria-invalid:border-destructive aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none",
@@ -103,7 +103,7 @@ index 1d546cce..c1624f95 100644
 +      className: cn(badgeVariants({ variant, appearance, size }), className),
        ...props,
      }
- 
+
 @@ -44,7 +62,9 @@ function Badge({
      <span
        data-slot="badge"
@@ -121,7 +121,7 @@ index b09cd353..c7a991df 100644
 +++ b/apps/v4/registry/bases/aria/ui/input.tsx
 @@ -1,30 +1,47 @@
  "use client"
- 
+
  import * as React from "react"
 +import { cva, type VariantProps } from "class-variance-authority"
  import { cn } from "cn"
@@ -129,7 +129,7 @@ index b09cd353..c7a991df 100644
    composeRenderProps,
    Input as InputPrimitive,
  } from "react-aria-components"
- 
+
 +const inputVariants = cva(
 +  "cn-input w-full min-w-0 outline-none file:inline-flex file:border-0 file:bg-transparent file:text-foreground placeholder:text-muted-foreground disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50",
 +  {
@@ -170,7 +170,7 @@ index b09cd353..c7a991df 100644
      />
    )
  }
- 
+
 -export { Input }
 +export { Input, inputVariants }
 diff --git a/apps/v4/registry/bases/aria/ui/select.tsx b/apps/v4/registry/bases/aria/ui/select.tsx
@@ -180,7 +180,7 @@ index b6eb51be..1c408ac9 100644
 @@ -73,21 +73,31 @@ function SelectValue<T extends object>({
    )
  }
- 
+
 +const selectTriggerVariants = {
 +  outline: "cn-select-trigger-variant-outline",
 +  filled: "cn-select-trigger-variant-filled",
@@ -215,11 +215,11 @@ index f4c57e85..d41ff0e0 100644
 +++ b/apps/v4/registry/bases/aria/ui/separator.tsx
 @@ -1,24 +1,41 @@
  "use client"
- 
+
 +import { cva, type VariantProps } from "class-variance-authority"
  import { cn } from "cn"
  import { Separator as SeparatorPrimitive } from "react-aria-components"
- 
+
 +const separatorVariants = cva(
 +  "block shrink-0 border-0 aria-[orientation=horizontal]:h-px aria-[orientation=horizontal]:w-full aria-[orientation=vertical]:w-px aria-[orientation=vertical]:self-stretch [:is(hr)]:h-px [:is(hr)]:w-full",
 +  {
@@ -258,7 +258,7 @@ index f4c57e85..d41ff0e0 100644
      />
    )
  }
- 
+
 -export { Separator }
 +export { Separator, separatorVariants }
 diff --git a/apps/v4/registry/bases/aria/ui/tabs.tsx b/apps/v4/registry/bases/aria/ui/tabs.tsx
@@ -293,7 +293,7 @@ index e6575a44..d9553e71 100644
 +++ b/apps/v4/registry/bases/aria/ui/textarea.tsx
 @@ -1,28 +1,45 @@
  "use client"
- 
+
  import * as React from "react"
 +import { cva, type VariantProps } from "class-variance-authority"
  import { cn } from "cn"
@@ -301,7 +301,7 @@ index e6575a44..d9553e71 100644
    composeRenderProps,
    TextArea as TextareaPrimitive,
  } from "react-aria-components"
- 
+
 +const textareaVariants = cva(
 +  "cn-textarea flex field-sizing-content min-h-16 w-full outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50",
 +  {
@@ -340,7 +340,7 @@ index e6575a44..d9553e71 100644
      />
    )
  }
- 
+
 -export { Textarea }
 +export { Textarea, textareaVariants }
 diff --git a/apps/v4/registry/styles.tsx b/apps/v4/registry/styles.tsx
@@ -381,7 +381,7 @@ index 56b68155..04098814 100644
 +++ b/apps/v4/registry/bases/aria/ui/toggle.tsx
 @@ -8,7 +8,7 @@ import {
  } from "react-aria-components"
- 
+
  const toggleVariants = cva(
 -  "cn-toggle cn-toggle-aria group/toggle inline-flex items-center justify-center whitespace-nowrap outline-none hover:bg-muted focus-visible:ring-[3px] disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
 +  "cn-toggle cn-toggle-aria group/toggle inline-flex items-center justify-center whitespace-nowrap outline-none focus-visible:ring-2 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
@@ -427,3 +427,283 @@ index 0c2e93ea..cd9933ad 100644
        toastOptions={{
          classNames: {
            toast: "cn-toast",
+diff --git a/apps/v4/registry/bases/aria/ui/alert-dialog.tsx b/apps/v4/registry/bases/aria/ui/alert-dialog.tsx
+index 4686fbae..fb22a8e4 100644
+--- a/apps/v4/registry/bases/aria/ui/alert-dialog.tsx
++++ b/apps/v4/registry/bases/aria/ui/alert-dialog.tsx
+@@ -2,6 +2,7 @@
+
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Dialog as AlertDialogPrimitive,
+   DialogTrigger as AlertDialogTriggerPrimitive,
+@@ -29,6 +30,7 @@ function AlertDialogOverlay({
+   className?: string
+   children: React.ReactNode
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <ModalOverlayPrimitive
+       data-slot="alert-dialog-overlay"
+@@ -37,6 +39,7 @@ function AlertDialogOverlay({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     >
+       {children}
+     </ModalOverlayPrimitive>
+diff --git a/apps/v4/registry/bases/aria/ui/combobox.tsx b/apps/v4/registry/bases/aria/ui/combobox.tsx
+index 862ddcc0..ddacfca1 100644
+--- a/apps/v4/registry/bases/aria/ui/combobox.tsx
++++ b/apps/v4/registry/bases/aria/ui/combobox.tsx
+@@ -2,6 +2,7 @@
+
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Button as ButtonPrimitive,
+   Collection,
+@@ -161,6 +162,7 @@ function ComboboxContent({
+   children?: React.ReactNode
+   anchor?: React.RefObject<HTMLDivElement | null>
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <PopoverPrimitive
+       data-slot="combobox-content"
+@@ -173,6 +175,7 @@ function ComboboxContent({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     />
+   )
+ }
+diff --git a/apps/v4/registry/bases/aria/ui/context-menu.tsx b/apps/v4/registry/bases/aria/ui/context-menu.tsx
+index 87143849..f42faf99 100644
+--- a/apps/v4/registry/bases/aria/ui/context-menu.tsx
++++ b/apps/v4/registry/bases/aria/ui/context-menu.tsx
+@@ -3,6 +3,7 @@
+ import * as React from "react"
+ import { cva } from "class-variance-authority"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   composeRenderProps,
+   Header as HeaderPrimitive,
+@@ -39,6 +40,7 @@ function ContextMenu({
+     className?: string
+     children?: React.ReactNode
+   }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <PopoverPrimitive
+       data-slot={dataSlot}
+@@ -49,6 +51,7 @@ function ContextMenu({
+         "cn-context-menu-content-aria cn-menu-target cn-menu-translucent cn-menu-translucent-aria z-50 w-(--trigger-width) origin-(--trigger-anchor-point) overflow-x-hidden overflow-y-auto outline-none data-exiting:overflow-hidden",
+         className
+       )}
++      UNSTABLE_portalContainer={portalTarget}
+     >
+       <MenuPrimitive
+         className="max-h-[inherit] overflow-x-hidden overflow-y-auto outline-hidden"
+diff --git a/apps/v4/registry/bases/aria/ui/dialog.tsx b/apps/v4/registry/bases/aria/ui/dialog.tsx
+index 9132b423..1ed743a7 100644
+--- a/apps/v4/registry/bases/aria/ui/dialog.tsx
++++ b/apps/v4/registry/bases/aria/ui/dialog.tsx
+@@ -2,6 +2,7 @@
+
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Dialog as DialogPrimitive,
+   DialogTrigger as DialogTriggerPrimitive,
+@@ -46,6 +47,7 @@ function DialogOverlay({
+   className?: string
+   children: React.ReactNode
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <ModalOverlayPrimitive
+       data-slot="dialog-overlay"
+@@ -54,6 +56,7 @@ function DialogOverlay({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     >
+       {children}
+     </ModalOverlayPrimitive>
+diff --git a/apps/v4/registry/bases/aria/ui/dropdown-menu.tsx b/apps/v4/registry/bases/aria/ui/dropdown-menu.tsx
+index 33d656b9..9f20c36a 100644
+--- a/apps/v4/registry/bases/aria/ui/dropdown-menu.tsx
++++ b/apps/v4/registry/bases/aria/ui/dropdown-menu.tsx
+@@ -3,6 +3,7 @@
+ import * as React from "react"
+ import { cva } from "class-variance-authority"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   composeRenderProps,
+   Header as HeaderPrimitive,
+@@ -45,6 +46,7 @@ function DropdownMenu({
+     className?: string
+     children?: React.ReactNode
+   }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <PopoverPrimitive
+       data-slot={dataSlot}
+@@ -55,6 +57,7 @@ function DropdownMenu({
+         "cn-dropdown-menu-content-aria cn-menu-target cn-menu-translucent cn-menu-translucent-aria z-50 w-(--trigger-width) origin-(--trigger-anchor-point) overflow-x-hidden overflow-y-auto outline-none data-exiting:overflow-hidden",
+         className
+       )}
++      UNSTABLE_portalContainer={portalTarget}
+     >
+       <MenuPrimitive
+         className="max-h-[inherit] overflow-x-hidden overflow-y-auto outline-hidden"
+diff --git a/apps/v4/registry/bases/aria/ui/hover-card.tsx b/apps/v4/registry/bases/aria/ui/hover-card.tsx
+index 317a1123..692a53da 100644
+--- a/apps/v4/registry/bases/aria/ui/hover-card.tsx
++++ b/apps/v4/registry/bases/aria/ui/hover-card.tsx
+@@ -1,6 +1,7 @@
+ "use client"
+
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Popover as PopoverPrimitive,
+   PreviewTrigger as PreviewTriggerPrimitive,
+@@ -25,6 +26,7 @@ function HoverCard({
+ }: Omit<PopoverPrimitiveProps, "className"> & {
+   className?: string
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <PopoverPrimitive
+       data-slot="hover-card-content"
+@@ -36,6 +38,7 @@ function HoverCard({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     />
+   )
+ }
+diff --git a/apps/v4/registry/bases/aria/ui/popover.tsx b/apps/v4/registry/bases/aria/ui/popover.tsx
+index 848b235e..e177727b 100644
+--- a/apps/v4/registry/bases/aria/ui/popover.tsx
++++ b/apps/v4/registry/bases/aria/ui/popover.tsx
+@@ -2,6 +2,7 @@
+
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   DialogTrigger,
+   Heading,
+@@ -27,6 +28,7 @@ function Popover({
+ }: Omit<PopoverPrimitiveProps, "className"> & {
+   className?: string
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <PopoverPrimitive
+       data-slot="popover-content"
+@@ -38,6 +40,7 @@ function Popover({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     />
+   )
+ }
+diff --git a/apps/v4/registry/bases/aria/ui/select.tsx b/apps/v4/registry/bases/aria/ui/select.tsx
+index b6eb51be..e09d0061 100644
+--- a/apps/v4/registry/bases/aria/ui/select.tsx
++++ b/apps/v4/registry/bases/aria/ui/select.tsx
+@@ -2,6 +2,7 @@
+
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Button as ButtonPrimitive,
+   composeRenderProps,
+@@ -146,6 +147,7 @@ function SelectPopover({
+   className?: string
+   children?: React.ReactNode
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <PopoverPrimitive
+       data-slot="select-content"
+@@ -157,6 +159,7 @@ function SelectPopover({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     >
+       {children}
+     </PopoverPrimitive>
+diff --git a/apps/v4/registry/bases/aria/ui/sheet.tsx b/apps/v4/registry/bases/aria/ui/sheet.tsx
+index 563f1e0b..55e3900e 100644
+--- a/apps/v4/registry/bases/aria/ui/sheet.tsx
++++ b/apps/v4/registry/bases/aria/ui/sheet.tsx
+@@ -2,6 +2,7 @@
+
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Heading,
+   ModalOverlay as ModalOverlayPrimitive,
+@@ -46,6 +47,7 @@ function SheetOverlay({
+   className?: string
+   children: React.ReactNode
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <ModalOverlayPrimitive
+       data-slot="sheet-overlay"
+@@ -55,6 +57,7 @@ function SheetOverlay({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     >
+       {children}
+     </ModalOverlayPrimitive>
+diff --git a/apps/v4/registry/bases/aria/ui/tooltip.tsx b/apps/v4/registry/bases/aria/ui/tooltip.tsx
+index 131908dc..62bfac7a 100644
+--- a/apps/v4/registry/bases/aria/ui/tooltip.tsx
++++ b/apps/v4/registry/bases/aria/ui/tooltip.tsx
+@@ -2,6 +2,7 @@
+
+ import * as React from "react"
+ import { cn } from "cn"
++import { usePortalTarget } from "@tecton/react/tecton/portal"
+ import {
+   Focusable,
+   OverlayArrow,
+@@ -44,6 +45,7 @@ function Tooltip({
+   className?: string
+   children?: React.ReactNode
+ }) {
++  const portalTarget = usePortalTarget()
+   return (
+     <TooltipPrimitive
+       data-slot="tooltip-content"
+@@ -55,6 +57,7 @@ function Tooltip({
+         className
+       )}
+       {...props}
++      UNSTABLE_portalContainer={portalTarget}
+     >
+       {children}
+       <OverlayArrow

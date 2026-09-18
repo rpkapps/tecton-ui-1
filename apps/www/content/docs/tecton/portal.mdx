@@ -37,8 +37,8 @@ A single-root application does not need it.
 
 ## Notes
 
-- The provider is a narrow adapter over React Aria's portal context (`UNSAFE_PortalProvider` from `react-aria`). It patches nothing: not the DOM, not `document.body`, not React portals.
-- `@tecton/react` pins the same `react-aria` version as `react-aria-components` so both resolve to one module instance; keep the two in step when updating.
+- The provider owns a Tecton container context. Each overlay passes its resolved target directly to its React Aria Components primitive, so isolated React roots do not depend on sharing React Aria's private context.
+- With no provider, or with `container={null}`, overlays explicitly target `document.body` (and remain SSR-safe before `document` exists).
 - `Drawer` is built on Base UI, which has no portal context; it keeps portalling into `document.body`.
 - `container={null}` clears an outer provider and restores the default.
 

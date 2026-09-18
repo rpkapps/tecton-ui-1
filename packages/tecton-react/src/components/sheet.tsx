@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "cn"
+import { usePortalTarget } from "@tecton/react/tecton/portal"
 import {
   Heading,
   ModalOverlay as ModalOverlayPrimitive,
@@ -44,6 +45,7 @@ function SheetOverlay({
   className?: string
   children: React.ReactNode
 }) {
+  const portalTarget = usePortalTarget()
   return (
     <ModalOverlayPrimitive
       data-slot="sheet-overlay"
@@ -53,6 +55,7 @@ function SheetOverlay({
         className
       )}
       {...props}
+      UNSTABLE_portalContainer={portalTarget}
     >
       {children}
     </ModalOverlayPrimitive>

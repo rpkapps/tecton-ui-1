@@ -1,11 +1,15 @@
-import { render, renderHook, screen } from "@testing-library/react"
+import { render, renderHook, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 
 import { Button } from "@tecton/react/components/button"
 import { Dialog, DialogTrigger } from "@tecton/react/components/dialog"
 import { Popover, PopoverTrigger } from "@tecton/react/components/popover"
-import { PortalProvider, usePortalContainer } from "@tecton/react/tecton/portal"
+import {
+  PortalProvider,
+  usePortalContainer,
+  usePortalTarget,
+} from "@tecton/react/tecton/portal"
 
 function makeContainer(name: string) {
   const container = document.createElement("div")
@@ -30,6 +34,27 @@ describe("PortalProvider", () => {
     await userEvent.click(screen.getByRole("button", { name: "Open" }))
     const body = await screen.findByText("Dialog body")
     expect(container.contains(body)).toBe(true)
+    container.remove()
+  })
+
+  it("keeps dialog Escape dismissal and focus restoration in its container", async () => {
+    const container = makeContainer("dialog")
+    render(
+      <PortalProvider container={container}>
+        <DialogTrigger>
+          <Button>Open dialog</Button>
+          <Dialog>
+            <p>Dialog body</p>
+          </Dialog>
+        </DialogTrigger>
+      </PortalProvider>
+    )
+    const trigger = screen.getByRole("button", { name: "Open dialog" })
+    await userEvent.click(trigger)
+    expect(container).toContainElement(screen.getByRole("dialog"))
+    await userEvent.keyboard("{Escape}")
+    expect(screen.queryByRole("dialog")).toBeNull()
+    await waitFor(() => expect(trigger).toHaveFocus())
     container.remove()
   })
 
@@ -88,5 +113,15 @@ describe("PortalProvider", () => {
     })
     expect(result.current).toBeNull()
     outer.remove()
+  })
+
+  it("resolves the default and null target to document.body", () => {
+    expect(renderHook(() => usePortalTarget()).result.current).toBe(document.body)
+    const { result } = renderHook(() => usePortalTarget(), {
+      wrapper: ({ children }) => (
+        <PortalProvider container={null}>{children}</PortalProvider>
+      ),
+    })
+    expect(result.current).toBe(document.body)
   })
 })
