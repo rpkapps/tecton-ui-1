@@ -511,3 +511,22 @@ Here are some tips for styling the sidebar based on different states.
 ## RTL
 
 The sidebar follows the reading direction set with the [Direction](/docs/components/direction) provider; no extra configuration is needed.
+
+## Several sidebars in one document
+
+A page that mounts independently deployed applications ([Micro-frontends](/docs/micro-frontends)) can end up with more than one `SidebarProvider`. Two defaults get in the way: both providers write the same `sidebar_state` cookie, so the last one to toggle decides what every sidebar restores, and both listen on `window` for `⌘B` / `Ctrl+B`, so one key press toggles all of them.
+
+Two props on `SidebarProvider` make a provider self-contained:
+
+| Name | Type | Default | Description |
+| --- | --- | --- | --- |
+| `cookieName` | `string \| false` | `"sidebar_state"` | Cookie the open state is persisted in. `false` writes no cookie at all. |
+| `keyboardShortcut` | `string \| false` | `"b"` | Key used with ⌘ / Ctrl to toggle the sidebar. `false` registers no `keydown` listener. |
+
+```tsx showLineNumbers
+<SidebarProvider cookieName="mfe_a_sidebar" keyboardShortcut={false}>
+  <Sidebar />
+</SidebarProvider>
+```
+
+Give the shell the defaults and each mounted application a name of its own, then either another letter or `false` for the shortcut. When a mounted sidebar still needs a key, register it with the shell's [shortcut registry](/docs/tecton/shortcuts) instead, so it shows up in the command palette and the shortcut dialog with everything else.

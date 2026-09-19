@@ -33,26 +33,34 @@ Add the app to the workspace and reference the package:
 
 <TabsContent value="tarball">
 
-Pack the library and install the tarball in any project (handy for quick local testing):
+Pack the library and install the tarball in any project (handy for quick local testing). `prepack` runs `pnpm --filter @tecton/react build` for you, so the tarball always carries a fresh `dist/`:
 
 ```bash
 pnpm --filter @tecton/react pack --pack-destination ./dist
 # in the consuming project
-pnpm add ./path/to/tecton-react-0.0.0.tgz
+pnpm add ./path/to/tecton-react-0.1.0.tgz
 ```
 
 </TabsContent>
 
 <TabsContent value="verdaccio">
 
-Run a private registry locally and publish there:
+Run a private registry locally and publish there (`prepack` builds `dist/` first):
 
 ```bash
 npx verdaccio
 npm adduser --registry http://localhost:4873
-pnpm --filter @tecton/react publish --registry http://localhost:4873 --no-git-checks
-# consuming project
-pnpm add @tecton/react --registry http://localhost:4873
+pnpm --filter @tecton/react publish --registry http://localhost:4873
+```
+
+Point the consuming project's `.npmrc` at it for the `@tecton` scope, then install:
+
+```ini title=".npmrc"
+@tecton:registry=http://localhost:4873
+```
+
+```bash
+pnpm add @tecton/react
 ```
 
 </TabsContent>
@@ -63,7 +71,10 @@ pnpm add @tecton/react --registry http://localhost:4873
 
 - React 19
 - Tailwind CSS v4 (the package ships Tailwind sources, not compiled CSS)
-- A bundler that resolves `package.json` `exports` (Vite, Next.js, TanStack Start all do)
+- A bundler that resolves `package.json` `exports` (Vite, Next.js, TanStack Start all do). The map is enumerated — one entry per module — so `@tecton/react/components/button` resolves and a typo fails immediately.
+- TypeScript with `"moduleResolution": "bundler"` (or `"node16"` / `"nodenext"`); the older `"node"` algorithm ignores `exports` and finds nothing
+
+The package ships unbundled ESM with a `.d.ts` next to every module, and each file keeps its own `"use client"` directive, so there is no need to transpile it from `node_modules`.
 
 ### Stylesheet
 
@@ -73,7 +84,7 @@ Import the theme once. It contains Tailwind, the shadcn runtime styles, the Tect
 @import "@tecton/react/globals.css";
 ```
 
-The stylesheet already declares `@source` for the package and for `apps/**`; if your app lives elsewhere, add your own `@source` directive after the import.
+The stylesheet already declares an `@source` for the package's own build output, so every class the components use is generated. Tailwind scans your project from its auto-detected root on top of that; if your application's sources sit outside it, add your own `@source` directive after the import.
 
 ### Dark mode
 

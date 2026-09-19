@@ -1,0 +1,5 @@
+## Portal container
+
+`Drawer` is built on Base UI, but it reads Tecton's [`PortalProvider`](/docs/tecton/portal) like every other Tecton overlay and forwards the resolved element to Base UI's `Drawer.Portal`. Without a provider nothing changes: Base UI portals into `document.body`.
+
+That matters for an application mounted into a page that has its own copy of Tecton. Wrap it in [`ThemeRoot`](/docs/tecton/theme-root) and the drawer lands in that root's body-level overlay container, which carries the same theme class, scope class and token overrides as the application itself — so the drawer is styled by the copy of Tecton that rendered it. See [Micro-frontends](/docs/micro-frontends).

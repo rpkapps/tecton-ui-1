@@ -4,7 +4,8 @@ Enterprise React component library for **Tecton**, built on [shadcn/ui](https://
 
 ```
 apps/www                 TanStack Start documentation site (docs, blocks, themes, registry host)
-packages/tecton-react    @tecton/react (private) — components, Tecton components, icons, blocks, theme
+packages/tecton-react    @tecton/react (private) — components, Tecton components, icons, theme
+packages/tecton-blocks   @tecton/blocks (private) — the blocks and the @tecton registry build
 packages/eslint-config-tecton  @tecton/eslint-config — design-system guardrails for consuming apps
 docs/                    UPSTREAM.md (pinned shadcn commit), TOKEN-MAPPING.md (generated)
 scripts/                 registry mirror, generated-file integrity check
@@ -23,7 +24,7 @@ Requirements: Node ≥ 20, pnpm 10, [bun](https://bun.sh) for the maintenance sc
 
 ## Using the library
 
-`@tecton/react` is private. Consume it as a workspace package, a packed tarball (`pnpm --filter @tecton/react pack`) or through a private registry — see the [Installation](apps/www/content/docs/installation.mdx) page. Components are not installed one by one. The docs site serves a shadcn registry (`/r/{name}.json`, namespace `@tecton`) for the **blocks** only; copied blocks import the components from the package.
+`@tecton/react` is private. Consume it as a workspace package, a packed tarball (`pnpm --filter @tecton/react pack`) or through a private registry — see the [Installation](apps/www/content/docs/installation.mdx) page. Components are not installed one by one. The docs site serves a shadcn registry (`/r/{name}.json`, namespace `@tecton`) for the **blocks** only; they live in `packages/tecton-blocks` and the copies import the components from the package.
 
 ```tsx
 import "@tecton/react/globals.css"
@@ -40,16 +41,18 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 3. **Only the shadcn CSS variables carry colours.** `tokens/tecton.map.json` maps Tecton tokens to `--background`, `--primary`, … with a confidence per value. `pnpm tokens:build` patches the variable values in `globals.css` (and nothing else); `pnpm tokens:check` verifies completeness and WCAG contrast.
 4. **The Tecton colour ramps are the Tailwind palette.** `tokens/tecton.tokens.json` (Figma variables export) provides fifteen 23-step contrast ramps; `tokens:build` writes them to `src/styles/tecton-palette.css` as `--color-<family>-<step>` after resetting Tailwind's stock palette (`--color-*: initial`), so `bg-blue-560` is a Tecton colour and `bg-red-500` produces nothing. A step is a contrast level that switches value with the mode, so no `dark:` pairs are needed. Docs: `/docs/theming#palette`.
 5. **A Tecton component exists only when shadcn has no counterpart.** Chip (selectable / removable tags), CountBadge, CircularProgress, Meter, ColorSwatch, TreeView, Stat, Panel, PageHeader, AppShell, CopyButton and Link live in `src/tecton/` and compose the generated components. Alerts with a severity, dividers with an emphasis, filled inputs, status badges and floating action buttons are variants of the shadcn components; data tables are built with TanStack Table on the shadcn `Table` (the docs carry the recipes).
-6. **Only blocks are published to the registry.** Components ship in the package so every application runs the same themed build and upgrades with it; `registry:build` fails if a non-block item ever reaches `registry.json`. Consuming applications install `@tecton/eslint-config`, which flags stock shadcn components pulled from the public registry and `className` overriding what a Tecton variant owns. It looks at Tecton components only; `configs.strict` additionally checks every class in the project against the theme. Docs: `/docs/linting`.
+6. **Only blocks are published to the registry.** They are copy-paste snippets and live in their own package, `packages/tecton-blocks`; components ship in `@tecton/react` so every application runs the same themed build and upgrades with it. `registry:build` fails if a non-block item ever reaches `registry.json`. Consuming applications install `@tecton/eslint-config`, which flags stock shadcn components pulled from the public registry and `className` overriding what a Tecton variant owns. It looks at Tecton components only; `configs.strict` additionally checks every class in the project against the theme. Docs: `/docs/linting`.
 7. **Dark first.** Both modes come from the Tecton token export; applications default to dark.
 
 ## Maintenance scripts
 
 | Command | Purpose |
 | --- | --- |
+| `pnpm --filter @tecton/react build` | Compile the publishable output to `dist/{components,tecton,hooks,lib,icons,styles}` (unbundled ESM + `.d.ts`); `pnpm build:lib` from the root |
+| `pnpm --filter @tecton/react exports:build` / `exports:check` | Regenerate / verify the enumerated `exports` map in the package manifest |
 | `pnpm tokens:build` / `pnpm tokens:check` | Regenerate / verify the theme from the token map |
 | `pnpm generated:check` | Verify no generated component was hand-edited |
-| `pnpm registry:build` | Build the `@tecton` blocks registry into `apps/www/public/r` |
+| `pnpm registry:build` / `pnpm registry:validate` | Build / validate the `@tecton` blocks registry (`packages/tecton-blocks`) into `apps/www/public/r` |
 | `pnpm docs:sync` | Sync shadcn docs pages + examples for the React Aria base |
 | `pnpm --filter @tecton/react icons:build` | Regenerate icon components from the Tecton export in `icons-src/tecton/` |
 | `pnpm compare` | Playwright captures of the state matrices next to the Storybook screenshots |

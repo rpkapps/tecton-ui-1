@@ -21,6 +21,7 @@
     "shell-actions",
     "shortcuts",
     "stat",
+    "theme-root",
     "tree-view"
   ]
 }
