@@ -88,9 +88,9 @@
       "note": "Default divider/border."
     },
     "input": {
-      "dark": "--tecton-color-input-outlined-border",
-      "confidence": "exact",
-      "note": "Outlined input border."
+      "dark": "--tecton-color-input-outlined-border-hover",
+      "confidence": "approximated",
+      "note": "Outlined input border. Uses Tecton's hovered value as the resting one so the border does not change under the pointer; the field keeps a steadier outline at the cost of its hover affordance, and focus / invalid still recolour it."
     },
     "ring": {
       "dark": "--tecton-color-focus-ring",
@@ -375,9 +375,9 @@
       "note": "Text on the activated ghost surface."
     },
     "outline-border": {
-      "dark": "--tecton-color-input-outlined-border",
+      "dark": "--tecton-color-input-outlined-border-hover",
       "confidence": "approximated",
-      "note": "Button variant=outline resting border. Tecton Button outlined uses --tecton-color-action-outlined-border-strong, but shadcn compositions put an outline button flush against an input (button group, input group, a Date button next to a Time input), where the strong border reads as a heavier line than the field beside it. Borrows the input border so the two match in both themes; the hover / pressed / active borders stay on the action-outlined ramp."
+      "note": "Button variant=outline resting border. Tracks --input so a button flush against a field draws the same line (button group, input group, a Date button beside a Time input), and takes Tecton's hovered value as the resting one so hover does not move the border. Tecton's own resting Button border is --tecton-color-action-outlined-border-strong."
     },
     "outline-foreground": {
       "dark": "--tecton-color-action-outlined-text",
@@ -390,9 +390,9 @@
       "note": "Button variant=outline hovered / focused surface."
     },
     "outline-hover-border": {
-      "dark": "--tecton-color-action-outlined-border-hover",
-      "confidence": "exact",
-      "note": "Button variant=outline hovered / focused border."
+      "dark": "--tecton-color-input-outlined-border-hover",
+      "confidence": "approximated",
+      "note": "Button variant=outline hovered border. Equal to the resting border on purpose: hover changes the surface, not the outline."
     },
     "outline-hover-foreground": {
       "dark": "--tecton-color-action-outlined-text-hover",
