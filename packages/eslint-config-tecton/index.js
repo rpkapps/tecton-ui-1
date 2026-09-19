@@ -13,6 +13,12 @@
  * `no-unknown-classes` read the project's real Tailwind theme, turn that into
  * an error, and name the nearest Tecton token to use instead.
  *
+ * Every rule here is scoped to Tecton components. An application's own
+ * components and its plain markup belong to the application, and a guardrail
+ * that errors on someone else's `<div>` is a guardrail they switch off — so
+ * `recommended`, `strict` and `warn` all leave them alone, and widening the
+ * rules to the whole project is a separate, deliberate opt-in (`project`).
+ *
  * Usage (consumer app, eslint.config.js):
  *
  *     import tecton from "@tecton/eslint-config"
@@ -137,15 +143,57 @@ const scopedRules = {
 }
 
 /**
- * Rules that validate every `className` in the project, not just Tecton
- * components. They catch real breakage — `bg-red-500` generates no CSS
- * anywhere, including in an application's own component — but they police code
- * the design system does not own, so they are opt-in through `strict`.
+ * The theme rules read *every* `className` in the file, not only the ones on a
+ * Tecton component, so on their own they report an application's own markup.
+ * This scopes them back to the design system.
+ *
+ * Their `allow`/`contracts` options are an exemption list — a token the policy
+ * allows is skipped, everything else is reported — and the rules look the
+ * policy up by the name of the component the class sits on, falling back to the
+ * baseline when there is no component, which is the case for plain markup.
+ * Exempting everything at the baseline and withdrawing the exemption for any
+ * component name therefore scopes the rule to Tecton components without
+ * weakening a single check on them.
+ */
+const componentsOnly = {
+  allow: ["*"],
+  contracts: [{ pattern: "^[A-Z]", allow: [] }],
+}
+
+/**
+ * Theme rules on Tecton components, added by `strict`. `no-restyle` already
+ * covers the colour, shape, typography and size a component owns, so these add
+ * the classes its contract *allows*: an off-scale `mt-[13px]`, a `grid-cols-[…]`
+ * the theme cannot generate, a layout utility that is a typo.
+ */
+const themeRules = {
+  "shadcn/no-raw-colors": [
+    "error",
+    { ...componentsOnly, message: messages.rawColor },
+  ],
+  "shadcn/no-unknown-classes": [
+    "error",
+    { ...componentsOnly, message: messages.unknown },
+  ],
+  "shadcn/no-arbitrary-values": [
+    "error",
+    { ...componentsOnly, message: messages.arbitrary },
+  ],
+}
+
+/**
+ * The same rules over the whole project, added by `project`. They catch real
+ * breakage — `bg-red-500` generates no CSS anywhere, including in an
+ * application's own component — but they police code the design system does not
+ * own, which is why no preset a team reaches for by default includes them.
  */
 const projectRules = {
   "shadcn/no-raw-colors": ["error", { message: messages.rawColor }],
   "shadcn/no-unknown-classes": ["error", { message: messages.unknown }],
   "shadcn/no-arbitrary-values": ["error", { message: messages.arbitrary }],
+  // `no-inline-styles` reports a `style` prop it cannot read — `style={style}`
+  // forwarded from props — before it consults its policy, and on any element.
+  // That cannot be scoped to Tecton components, so it stays project-only.
   "shadcn/no-inline-styles": "error",
 }
 
@@ -156,11 +204,14 @@ const base = {
 }
 
 /** The guardrails. Every rule is an error: a silent break is the thing to avoid. */
-const recommended = [{ ...base, name: "tecton/recommended", rules: scopedRules }]
+const recommended = [
+  { ...base, name: "tecton/recommended", rules: scopedRules },
+]
 
 /**
- * `recommended` plus the project-wide theme rules, for teams that want every
- * class in the application checked against the Tecton theme.
+ * `recommended` plus the theme rules, still on Tecton components only, for
+ * teams that want the full check on every class the component contract lets
+ * through.
  *
  * Requires the Tecton stylesheet to resolve to a path **outside `node_modules`**.
  * The linter does not read theme sources from inside `node_modules`, so with an
@@ -172,7 +223,24 @@ const recommended = [{ ...base, name: "tecton/recommended", rules: scopedRules }
  * `recommended` has no such dependency and is correct in every layout.
  */
 const strict = [
-  { ...base, name: "tecton/strict", rules: { ...scopedRules, ...projectRules } },
+  { ...base, name: "tecton/strict", rules: { ...scopedRules, ...themeRules } },
+]
+
+/**
+ * `strict` widened to every `className` and `style` in the project, for teams
+ * that want their own components held to the Tecton theme as well.
+ *
+ * This is the one preset that reports code the design system does not own, so
+ * it is never what a team gets by default: adopt it deliberately, and expect
+ * findings on plain markup. It carries the same `node_modules` dependency as
+ * `strict`.
+ */
+const project = [
+  {
+    ...base,
+    name: "tecton/project",
+    rules: { ...scopedRules, ...projectRules },
+  },
 ]
 
 /**
@@ -193,5 +261,9 @@ const warn = [
   },
 ]
 
-export default { configs: { recommended, strict, warn }, plugin: shadcn, settings }
-export { recommended, strict, warn, shadcn as plugin, settings }
+export default {
+  configs: { recommended, strict, project, warn },
+  plugin: shadcn,
+  settings,
+}
+export { recommended, strict, project, warn, shadcn as plugin, settings }

@@ -71,41 +71,67 @@ the Tecton workspace get the full message.
 | `no-restricted-imports` | Stock shadcn components, and the `@tecton/react` root that does not exist |
 
 <Callout title="Your components are yours">
-  `recommended` looks at **Tecton components only** — elements imported from
-  `@tecton/react`. Your own components and your plain markup are never reported. The
-  design system governs its own components; how you style yours is your call.
+  `recommended`, `strict` and `warn` look at **Tecton components only** — elements
+  imported from `@tecton/react`. Your own components and your plain markup are never
+  reported. The design system governs its own components; how you style yours is your
+  call.
 
-  The trade-off is real: `bg-red-500` in your own component still generates no CSS and
-  still renders unstyled, and nothing here will tell you. If you want every class in the
-  project checked against the Tecton theme, use `strict` below.
+  The trade-off is real: `bg-red-500` in your own `<div>` still generates no CSS and
+  still renders unstyled, and none of those presets will tell you. If you want every
+  class in the project checked against the Tecton theme, opt into `project` below.
 </Callout>
 
-## Checking the whole project
+## Checking the whole component
 
-`tecton.configs.strict` adds four rules that validate **every** `className`, not just
-Tecton components:
+`tecton.configs.strict` adds the theme rules, still **on Tecton components only**:
 
 | Rule | Catches |
 | --- | --- |
 | `no-raw-colors` | Stock Tailwind colours that emit no CSS — `bg-red-500`, `text-zinc-400` |
 | `no-unknown-classes` | Classes this project's Tailwind cannot generate — typos, invented utilities |
 | `no-arbitrary-values` | Off-token values — `text-[13px]`, `p-[7px]` |
-| `no-inline-styles` | Inline `style` props and `<style>` elements |
 
 ```js
 export default [...tecton.configs.strict]
 ```
 
-<Callout variant="warning" title="strict needs the stylesheet outside node_modules">
-  These four rules read your project's resolved Tailwind theme, and the linter does not
+`no-restyle` already owns colour, shape, typography and size, so what these add is the
+classes its contract *lets through*: layout that leaves the scale. `<Button
+className="mt-4">` is composition and stays fine; `<Button className="mt-[13px]">` and
+`<Panel className="grid-cols-[1fr_2fr]">` are off-token and are now errors.
+
+## Checking the whole project
+
+`tecton.configs.project` is `strict` widened to every `className` and `style` in the
+application — your own components and your plain markup included — plus one rule that
+only exists there:
+
+| Rule | Catches |
+| --- | --- |
+| `no-inline-styles` | Inline `style` props and `<style>` elements |
+
+```js
+export default [...tecton.configs.project]
+```
+
+<Callout title="project is the one preset that reports your own code">
+  Adopt it deliberately and expect findings on plain markup — that is the point of it,
+  and the reason it is not what you get by default. `no-inline-styles` lives here and
+  nowhere else: it reports a `style` prop it cannot read, such as `style={style}`
+  forwarded from props, before it looks at what element the prop sits on, so unlike the
+  other three it cannot be held to Tecton components.
+</Callout>
+
+<Callout variant="warning" title="strict and project need the stylesheet outside node_modules">
+  The theme rules read your project's resolved Tailwind theme, and the linter does not
   read theme sources from inside `node_modules`. With an ordinary registry install it
   therefore sees an **empty** theme and reports every valid Tecton class — `bg-blue-120`
   included — as a raw colour.
 
-  Use `strict` only where `components.json`'s `tailwind.css` reaches the Tecton
-  stylesheet outside `node_modules`: an app inside the Tecton workspace, or one that
-  vendors a copy. Everywhere else, stay on `recommended`, which has no such dependency
-  and is correct in every layout.
+  Use them only where `components.json`'s `tailwind.css` reaches the Tecton stylesheet
+  outside `node_modules`: an app inside the Tecton workspace, or one that vendors a
+  copy. Everywhere else, stay on `recommended`, which has no such dependency and is
+  correct in every layout.
 </Callout>
 
 <Callout title="Applications do not define colours">
