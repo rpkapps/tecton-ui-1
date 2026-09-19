@@ -144,18 +144,30 @@ index 1d546cce..c1624f95 100644
      />
    )
 diff --git a/apps/v4/registry/bases/aria/ui/button-group.tsx b/apps/v4/registry/bases/aria/ui/button-group.tsx
-index 083fa498..ffec0abe 100644
+index 083fa498..17c8dffe 100644
 --- a/apps/v4/registry/bases/aria/ui/button-group.tsx
 +++ b/apps/v4/registry/bases/aria/ui/button-group.tsx
-@@ -9,7 +9,7 @@ const buttonGroupVariants = cva(
+@@ -9,9 +9,9 @@ const buttonGroupVariants = cva(
      variants: {
        orientation: {
          horizontal:
 -          "cn-button-group-orientation-horizontal **:data-slot:rounded-r-none [&_[data-slot]~[data-slot]]:rounded-l-none [&_[data-slot]~[data-slot]]:border-l-0",
-+          "cn-button-group-orientation-horizontal **:data-slot:rounded-e-none [&_[data-slot]~[data-slot]]:rounded-s-none [&_[data-slot]~[data-slot]]:border-s-0",
++          "cn-button-group-orientation-horizontal **:data-slot:rounded-e-none [&_[data-slot]~[data-slot]]:rounded-s-none [&_[data-slot]~[data-slot]:not([data-slot=button-group])]:-ms-px",
          vertical:
-           "cn-button-group-orientation-vertical flex-col **:data-slot:rounded-b-none [&_[data-slot]~[data-slot]]:rounded-t-none [&_[data-slot]~[data-slot]]:border-t-0",
+-          "cn-button-group-orientation-vertical flex-col **:data-slot:rounded-b-none [&_[data-slot]~[data-slot]]:rounded-t-none [&_[data-slot]~[data-slot]]:border-t-0",
++          "cn-button-group-orientation-vertical flex-col **:data-slot:rounded-b-none [&_[data-slot]~[data-slot]]:rounded-t-none [&_[data-slot]~[data-slot]:not([data-slot=button-group])]:-mt-px",
        },
+     },
+     defaultVariants: {
+@@ -78,7 +78,7 @@ function ButtonGroupSeparator({
+       data-slot="button-group-separator"
+       orientation={orientation}
+       className={cn(
+-        "cn-button-group-separator relative self-stretch data-horizontal:mx-px data-horizontal:w-auto data-vertical:my-px data-vertical:h-auto",
++        "cn-button-group-separator relative self-stretch aria-[orientation=horizontal]:mx-px aria-[orientation=horizontal]:w-auto aria-[orientation=vertical]:my-px aria-[orientation=vertical]:h-auto",
+         className
+       )}
+       {...props}
 diff --git a/apps/v4/registry/bases/aria/ui/combobox.tsx b/apps/v4/registry/bases/aria/ui/combobox.tsx
 index 862ddcc0..ddacfca1 100644
 --- a/apps/v4/registry/bases/aria/ui/combobox.tsx

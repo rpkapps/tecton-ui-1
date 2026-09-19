@@ -381,7 +381,7 @@
   --color-chart-2: var(--chart-2, var(--tecton-color-accent-saffron-fill, #914f20));
   --color-chart-1: var(--chart-1, var(--tecton-color-accent-azure-fill, #1b6b6b));
   --color-ring: var(--ring, var(--tecton-color-focus-ring, #ff00aa));
-  --color-input: var(--input, var(--tecton-color-input-outlined-border, #9884a4));
+  --color-input: var(--input, var(--tecton-color-input-outlined-border-hover, #6d5a7d));
   --color-border: var(--border, var(--tecton-color-divider, #b2a1bb));
   --color-destructive: var(--destructive, var(--tecton-color-status-error, #ba2a0f));
   --color-accent-foreground: var(--accent-foreground, var(--tecton-color-text-primary, #21172a));
@@ -448,10 +448,10 @@
   --color-ghost-pressed-foreground: var(--ghost-pressed-foreground, var(--tecton-color-action-tertiary-text-press, #563f67));
   --color-ghost-active: var(--ghost-active, var(--tecton-color-action-tertiary-bg-active, #e9e3ec));
   --color-ghost-active-foreground: var(--ghost-active-foreground, var(--tecton-color-action-tertiary-text-active, #593c70));
-  --color-outline-border: var(--outline-border, var(--tecton-color-action-outlined-border-strong, #725687));
+  --color-outline-border: var(--outline-border, var(--tecton-color-input-outlined-border-hover, #6d5a7d));
   --color-outline-foreground: var(--outline-foreground, var(--tecton-color-action-outlined-text, #644a78));
   --color-outline-hover: var(--outline-hover, var(--tecton-color-action-outlined-bg-hover, #f0edf4));
-  --color-outline-hover-border: var(--outline-hover-border, var(--tecton-color-action-outlined-border-hover, #865fa0));
+  --color-outline-hover-border: var(--outline-hover-border, var(--tecton-color-input-outlined-border-hover, #6d5a7d));
   --color-outline-hover-foreground: var(--outline-hover-foreground, var(--tecton-color-action-outlined-text-hover, #765292));
   --color-outline-pressed: var(--outline-pressed, var(--tecton-color-action-outlined-bg-press, #ddd5e0));
   --color-outline-pressed-border: var(--outline-pressed-border, var(--tecton-color-action-outlined-border-press, #563f67));

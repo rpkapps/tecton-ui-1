@@ -35,7 +35,8 @@ const devAliases = [
 ]
 
 const config = defineConfig(({ command }) => ({
-  server: { port: 3000 },
+  // PORT lets a harness or a second checkout run the dev server off 3000.
+  server: { port: Number(process.env.PORT) || 3000 },
   // The prerender crawler fetches every page from a Vite preview server that
   // runs in the same process. Bind it to IPv4 explicitly: with `localhost`,
   // Node's fetch races ::1 against 127.0.0.1 and on Windows the ::1 attempt

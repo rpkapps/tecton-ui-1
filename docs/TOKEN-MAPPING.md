@@ -29,7 +29,7 @@ Tecton token was chosen (see note); **derived** = computed, no Tecton source.
 | `--accent-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | Text on hovered/selected surfaces. |
 | `--destructive` | `--tecton-color-status-error` | `#c16e6c` | `#ba2a0f` | exact | Error status main colour; shadcn draws destructive text on background and destructive buttons with destructive/10. |
 | `--border` | `--tecton-color-divider` | `#57515c` | `#b2a1bb` | exact | Default divider/border. |
-| `--input` | `--tecton-color-input-outlined-border` | `#57515c` | `#9884a4` | exact | Outlined input border. |
+| `--input` | `--tecton-color-input-outlined-border-hover` | `#a7a2ac` | `#6d5a7d` | approximated | Outlined input border. Uses Tecton's hovered value as the resting one so the border does not change under the pointer; the field keeps a steadier outline at the cost of its hover affordance, and focus / invalid still recolour it. |
 | `--ring` | `--tecton-color-focus-ring` | `#ff52a8` | `#ff00aa` | exact | Keyboard focus outline. Vega renders it as ring-3 ring-ring/50; Tecton draws a solid 2px ring. |
 | `--chart-1` | `--tecton-color-accent-azure-fill` | `#29a6a6` | `#1b6b6b` | approximated | Chart series colours are chosen from the 7 Tecton accents in the order used by the Cost-vs-Risk panel. |
 | `--chart-2` | `--tecton-color-accent-saffron-fill` | `#cb8553` | `#914f20` | approximated | See chart-1. |
@@ -94,10 +94,10 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--ghost-pressed-foreground` | `--tecton-color-action-tertiary-text-press` | `#e3e0e8` | `#563f67` | exact | Text on the pressed ghost surface. |
 | `--ghost-active` | `--tecton-color-action-tertiary-bg-active` | `#433d47` | `#e9e3ec` | exact | Button variant=ghost activated surface. |
 | `--ghost-active-foreground` | `--tecton-color-action-tertiary-text-active` | `#e3e0e8` | `#593c70` | exact | Text on the activated ghost surface. |
-| `--outline-border` | `--tecton-color-action-outlined-border-strong` | `#aaa1b2` | `#725687` | exact | Button variant=outline resting border (Tecton Button outlined uses the strong border). |
+| `--outline-border` | `--tecton-color-input-outlined-border-hover` | `#a7a2ac` | `#6d5a7d` | approximated | Button variant=outline resting border. Tracks --input so a button flush against a field draws the same line (button group, input group, a Date button beside a Time input), and takes Tecton's hovered value as the resting one so hover does not move the border. Tecton's own resting Button border is --tecton-color-action-outlined-border-strong. |
 | `--outline-foreground` | `--tecton-color-action-outlined-text` | `#aaa1b2` | `#644a78` | exact | Button variant=outline resting text. |
 | `--outline-hover` | `--tecton-color-action-outlined-bg-hover` | `#433d47` | `#f0edf4` | exact | Button variant=outline hovered / focused surface. |
-| `--outline-hover-border` | `--tecton-color-action-outlined-border-hover` | `#cac5d2` | `#865fa0` | exact | Button variant=outline hovered / focused border. |
+| `--outline-hover-border` | `--tecton-color-input-outlined-border-hover` | `#a7a2ac` | `#6d5a7d` | approximated | Button variant=outline hovered border. Equal to the resting border on purpose: hover changes the surface, not the outline. |
 | `--outline-hover-foreground` | `--tecton-color-action-outlined-text-hover` | `#e4e0ea` | `#765292` | exact | Text on the hovered outline surface. |
 | `--outline-pressed` | `--tecton-color-action-outlined-bg-press` | `#4e4853` | `#ddd5e0` | exact | Button variant=outline pressed surface. |
 | `--outline-pressed-border` | `--tecton-color-action-outlined-border-press` | `#d8d5de` | `#563f67` | exact | Button variant=outline pressed border. |
