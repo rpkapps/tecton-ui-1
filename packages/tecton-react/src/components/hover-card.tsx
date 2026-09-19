@@ -1,3 +1,5 @@
+"use client"
+
 import { usePortalTarget } from "@tecton/react/tecton/portal"
 import { cn } from "cn"
 import {
