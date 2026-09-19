@@ -7,21 +7,27 @@ import {
   Panel,
   PanelHeader,
   PanelTitle,
+  WellIcon,
   cn,
+  tectonIcons,
   useIsMobile,
 } from "../index"
 
 /**
- * Every module the barrel is generated from (scripts/barrel-build.mts keeps
- * the same four directories). Loaded eagerly so the runtime export names can
- * be compared with the barrel's — a `shadcn add` that introduces a new export
- * fails here as well as in `pnpm barrel:check`.
+ * Every module the barrel is generated from — the same sources as `SOURCES`
+ * in scripts/barrel-build.mts. Loaded eagerly so the runtime export names can
+ * be compared with the barrel's: a `shadcn add` or an `icons:build` that
+ * introduces a new export fails here as well as in `pnpm barrel:check`.
+ *
+ * `../icons` is the generated icon barrel, not the glyph files: it is what the
+ * barrel re-exports, and it carries the `tectonIcons` gallery arrays too.
  */
 const modules: Record<string, Record<string, unknown>> = {
   ...import.meta.glob("../components/*.tsx", { eager: true }),
   ...import.meta.glob("../hooks/*.ts", { eager: true }),
   ...import.meta.glob("../lib/*.ts", { eager: true }),
   ...import.meta.glob("../tecton/*.tsx", { eager: true }),
+  ...import.meta.glob("../icons/index.ts", { eager: true }),
 }
 
 describe("@tecton/react barrel", () => {
@@ -70,5 +76,23 @@ describe("@tecton/react barrel", () => {
 
   it("exposes hooks through the single entry", () => {
     expect(typeof useIsMobile).toBe("function")
+  })
+
+  it("renders an icon through the single entry", () => {
+    render(<WellIcon data-testid="glyph" />)
+
+    const glyph = screen.getByTestId("glyph")
+    expect(glyph.tagName).toBe("svg")
+    expect(glyph).toHaveAttribute("data-tecton-icon", "well")
+  })
+
+  it("carries the icon gallery, which stays tree-shakeable", () => {
+    // Re-exported here only because dropping it is the bundler's job: the
+    // package marks its JS side-effect-free, so an application that never
+    // touches `tectonIcons` does not pay for the glyphs it references.
+    expect(tectonIcons.length).toBe(131)
+    expect(tectonIcons.every((entry) => typeof entry.Icon === "function")).toBe(
+      true
+    )
   })
 })

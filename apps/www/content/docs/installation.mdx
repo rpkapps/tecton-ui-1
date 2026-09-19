@@ -112,19 +112,25 @@ export function Example() {
 
 ### One import for everything
 
-Every component, hook and utility is *also* exported from the package root, so
-the whole surface can be pulled from a single module:
+Every component, hook, utility and icon is *also* exported from the package
+root, so the whole surface can be pulled from a single module:
 
 ```tsx
-import { Button, Badge, Panel, useIsMobile, cn } from "@tecton/react"
-import { WellIcon } from "@tecton/react/icons"
+import { Button, Badge, Panel, WellIcon, useIsMobile, cn } from "@tecton/react"
 ```
 
-Prefer the subpath imports above in an ordinary application: they keep the
-module graph narrow and let the bundler drop what you never render. The root
-entry exists for **Module Federation**, where the per-component subpaths turn
-into one `shared` key each — dozens of entries to declare, version and keep in
-sync across every remote. Sharing the root instead collapses them to one:
+The two forms cost the same in a production build. The package marks its
+JavaScript side-effect-free, so a bundler drops everything you never
+reference: importing `Button` through the root barrel and through
+`@tecton/react/components/button` produce the same output to within rounding
+(27.7 kB gzipped either way, measured with Vite), and adding `WellIcon` adds
+0.6 kB rather than the whole icon set. Use whichever reads better — the
+subpaths are what the shadcn CLI writes into the blocks it copies.
+
+Where the root entry does matter is **Module Federation**. Shared modules are
+declared one `shared` key at a time, so per-component subpaths mean dozens of
+keys to declare, version and keep in sync across every remote. The root entry
+collapses them to one:
 
 ```ts title="rspack.config.ts"
 new ModuleFederationPlugin({
@@ -133,7 +139,6 @@ new ModuleFederationPlugin({
     "react-dom": { singleton: true, requiredVersion: "^19" },
     // one entry, not one per component
     "@tecton/react": { singleton: true },
-    "@tecton/react/icons": { singleton: true },
   },
 })
 ```
@@ -141,19 +146,22 @@ new ModuleFederationPlugin({
 Share it as a `singleton`. Two copies of Tecton in one page mean two copies of
 the React Aria context that the overlays, the shell and the shortcut registry
 read across a remote boundary — a menu that opens behind its trigger, or a
-shortcut the host never receives.
+shortcut the host never receives. For the same reason, give each remote its own
+overlay container with [`PortalProvider`](/docs/tecton/portal): it is built for
+pages that mount several isolated React roots.
 
-<Callout title="Why icons are a second entry">
-  `@tecton/react/icons` is already a single module, so it costs one more key
-  rather than 136. It stays separate because its `tectonIcons` gallery array
-  references every glyph: re-exporting it from the root would pull all of them
-  into any application that imports a `Button`. Import icons from
-  `@tecton/react/icons`, or a single glyph from `@tecton/react/icons/well`.
+<Callout title="A federated share is all-or-nothing">
+  Tree-shaking is your build's, not the share's. The chunk behind a `shared`
+  key has to serve every remote that might ask for it, so the whole surface
+  ships — roughly 500 kB gzipped, icons included. It is fetched once for the
+  page and reused by every remote, which is the trade you make when you
+  collapse the subpaths into a single key. Nothing changes for applications
+  that import `@tecton/react` normally.
 </Callout>
 
-The root entry is generated from the component, hook, utility and Tecton
-directories by `pnpm barrel:build`, and `pnpm barrel:check` (wired into CI)
-fails when a newly added component is missing from it.
+The root entry is generated from the component, hook, utility, Tecton and icon
+modules by `pnpm barrel:build`, and `pnpm barrel:check` (wired into CI) fails
+when a newly added component is missing from it.
 
 ## Frameworks
 
