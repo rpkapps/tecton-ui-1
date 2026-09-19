@@ -144,7 +144,7 @@ index 1d546cce..c1624f95 100644
      />
    )
 diff --git a/apps/v4/registry/bases/aria/ui/button-group.tsx b/apps/v4/registry/bases/aria/ui/button-group.tsx
-index 083fa498..693808b7 100644
+index 083fa498..17c8dffe 100644
 --- a/apps/v4/registry/bases/aria/ui/button-group.tsx
 +++ b/apps/v4/registry/bases/aria/ui/button-group.tsx
 @@ -9,9 +9,9 @@ const buttonGroupVariants = cva(
@@ -159,6 +159,15 @@ index 083fa498..693808b7 100644
        },
      },
      defaultVariants: {
+@@ -78,7 +78,7 @@ function ButtonGroupSeparator({
+       data-slot="button-group-separator"
+       orientation={orientation}
+       className={cn(
+-        "cn-button-group-separator relative self-stretch data-horizontal:mx-px data-horizontal:w-auto data-vertical:my-px data-vertical:h-auto",
++        "cn-button-group-separator relative self-stretch aria-[orientation=horizontal]:mx-px aria-[orientation=horizontal]:w-auto aria-[orientation=vertical]:my-px aria-[orientation=vertical]:h-auto",
+         className
+       )}
+       {...props}
 diff --git a/apps/v4/registry/bases/aria/ui/combobox.tsx b/apps/v4/registry/bases/aria/ui/combobox.tsx
 index 862ddcc0..ddacfca1 100644
 --- a/apps/v4/registry/bases/aria/ui/combobox.tsx
