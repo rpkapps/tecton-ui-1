@@ -1,0 +1,47 @@
+name: Agent skills
+
+on:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  skills-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.19.0
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.4
+
+      - name: Set up Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: 1.4.2
+
+      - name: Install workspace dependencies
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      # Frontmatter, naming, size limits and packaging for the Agent Skills spec.
+      - name: Validate SKILL.md files
+        run: pnpm skills:validate
+
+      # Fails when a skill's source doc changed without the skill being revisited,
+      # or when the generated artifacts drift from the SKILL.md files.
+      - name: Check skills against their sources
+        run: pnpm --filter @tecton/react skills:check
+
+      # Version drift and workspace coverage.
+      - name: Check for stale skills
+        run: pnpm skills:stale

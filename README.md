@@ -6,6 +6,7 @@ Enterprise React component library for **Tecton**, built on [shadcn/ui](https://
 apps/www                 TanStack Start documentation site (docs, blocks, themes, registry host)
 packages/tecton-react    @tecton/react (private) — components, Tecton components, icons, blocks, theme
 packages/eslint-config-tecton  @tecton/eslint-config — design-system guardrails for consuming apps
+packages/tecton-react/skills   Agent Skills shipped with the package (TanStack Intent)
 docs/                    UPSTREAM.md (pinned shadcn commit), TOKEN-MAPPING.md (generated)
 scripts/                 registry mirror, generated-file integrity check
 tecton-screenshots/      Tecton Storybook captures used as the visual reference
@@ -42,6 +43,7 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 5. **A Tecton component exists only when shadcn has no counterpart.** Chip (selectable / removable tags), CountBadge, CircularProgress, Meter, ColorSwatch, TreeView, Stat, Panel, PageHeader, AppShell, CopyButton and Link live in `src/tecton/` and compose the generated components. Alerts with a severity, dividers with an emphasis, filled inputs, status badges and floating action buttons are variants of the shadcn components; data tables are built with TanStack Table on the shadcn `Table` (the docs carry the recipes).
 6. **Only blocks are published to the registry.** Components ship in the package so every application runs the same themed build and upgrades with it; `registry:build` fails if a non-block item ever reaches `registry.json`. Consuming applications install `@tecton/eslint-config`, which flags stock shadcn components pulled from the public registry and `className` overriding what a Tecton variant owns. It looks at Tecton components only; `configs.strict` additionally checks every class in the project against the theme. Docs: `/docs/linting`.
 7. **Dark first.** Both modes come from the Tecton token export; applications default to dark.
+8. **Agents get the rules too.** `packages/tecton-react/skills/` ships versioned [Agent Skills](https://tanstack.com/intent) inside the package, so an AI coding agent working in a consuming application discovers them with `npx @tanstack/intent@latest install` and loads them from `node_modules`. They cover the same ground the linter enforces, before the code is written rather than after. Each skill declares the files it was derived from, and `pnpm skills:check` fails when one of those files changes without the skill being revisited. Docs: `/docs/agent-skills`.
 
 ## Maintenance scripts
 
@@ -54,6 +56,9 @@ import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 | `pnpm --filter @tecton/react icons:build` | Regenerate icon components from the Tecton export in `icons-src/tecton/` |
 | `pnpm compare` | Playwright captures of the state matrices next to the Storybook screenshots |
 | `scripts/registry-mirror.sh` | Builds and serves the shadcn registry with the Tecton overlay (`aria-tecton`); required for every CLI command |
+| `pnpm skills:validate` | Validate the shipped Agent Skills (frontmatter, naming, size, packaging) |
+| `pnpm skills:check` / `pnpm skills:sync` | Detect skills whose source docs changed / regenerate the skill artifacts |
+| `pnpm skills:stale` | Version drift and workspace skill coverage |
 
 `docs/UPSTREAM.md` records the pinned shadcn/ui commit and the exact generation commands.
 

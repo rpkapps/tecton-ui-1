@@ -9,6 +9,12 @@ coverage/
 pnpm-lock.yaml
 .pnpm-store/
 
+# Generated Agent Skill artifacts (scripts/skills-sync.mts) are byte-compared by
+# `pnpm skills:check`, so reformatting them would break the staleness check
+packages/tecton-react/skills/_artifacts/skill_tree.yaml
+packages/tecton-react/skills/_artifacts/skill_spec.md
+packages/tecton-react/skills/sync-state.json
+
 # CLI-generated shadcn files (docs/UPSTREAM.md) keep the formatting the CLI wrote
 packages/tecton-react/src/components/
 packages/tecton-react/src/hooks/

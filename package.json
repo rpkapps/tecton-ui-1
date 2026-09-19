@@ -15,9 +15,14 @@
     "tokens:check": "pnpm --filter @tecton/react tokens:check",
     "registry:build": "pnpm --filter @tecton/react registry:build",
     "docs:sync": "pnpm --filter www docs:sync",
+    "skills:validate": "pnpm --filter @tecton/react skills:validate",
+    "skills:stale": "intent stale",
+    "skills:check": "pnpm --filter @tecton/react skills:check",
+    "skills:sync": "pnpm --filter @tecton/react skills:sync",
     "compare": "pnpm --filter www compare"
   },
   "devDependencies": {
+    "@tanstack/intent": "^0.4.0",
     "prettier": "^3.8.3",
     "prettier-plugin-tailwindcss": "^0.8.0",
     "typescript": "^6"

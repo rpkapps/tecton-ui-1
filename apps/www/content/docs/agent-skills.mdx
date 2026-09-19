@@ -1,0 +1,84 @@
+---
+title: Agent Skills
+description: Tecton ships versioned Agent Skills inside @tecton/react, so AI coding agents use the design system the way it is meant to be used.
+links:
+  doc: https://tanstack.com/intent
+---
+
+`@tecton/react` ships **Agent Skills** — short, versioned documents that teach an AI coding agent how to use Tecton correctly. They travel inside the package and are discovered with [TanStack Intent](https://tanstack.com/intent), so they update when the package updates.
+
+<Callout title="Why a design system needs this">
+  An agent's prior for "shadcn/ui and Tailwind" is the **Radix** build with the **stock palette**. On Tecton both halves of that prior are wrong, and both fail quietly: `onClick` on a React Aria `Button` never fires from the keyboard, and `bg-red-500` generates no CSS at all because [the stock palette is removed](/docs/theming#palette). The code type-checks and renders — just not correctly. [Linting](/docs/linting) catches this after the fact; skills prevent it.
+</Callout>
+
+## For application developers
+
+Run this once in your project. It writes guidance into your agent config files (`CLAUDE.md`, `.cursorrules`, …) telling the agent to discover and load skills from installed packages:
+
+```bash
+npx @tanstack/intent@latest install
+```
+
+That is the whole setup — there is nothing Tecton-specific to configure, and nothing to keep up to date by hand. To see what is available:
+
+```bash
+npx @tanstack/intent@latest list
+npx @tanstack/intent@latest load @tecton/react#tecton-core
+```
+
+Skills are plain Markdown; you can read any of them yourself.
+
+## What ships
+
+One core skill routes to nine focused sub-skills. An agent loads `tecton-core` first and follows the table to whatever it is actually doing.
+
+| Skill | Covers |
+| --- | --- |
+| `tecton-core` | The import surface, the React Aria base, the deleted palette, and the routing table |
+| `tecton-core/setup` | Installing the private package, `globals.css`, `@source`, dark mode, the ESLint guardrails |
+| `tecton-core/styling` | Semantic tokens, the contrast-ramp palette, and what `className` may and may not set |
+| `tecton-core/components` | The 59 shadcn modules and the React Aria prop translation table |
+| `tecton-core/tecton-components` | The Tecton-only components, and component-versus-variant |
+| `tecton-core/icons` | The Tecton icon set beside Lucide, and `data-icon` |
+| `tecton-core/forms` | `Field` with TanStack Form, and the `onChange` shape of every control |
+| `tecton-core/data-tables` | TanStack Table on the shadcn `Table`, selection and bulk actions |
+| `tecton-core/layout` | `AppShell`, `PageHeader`, and the measured `Overflow` contract |
+| `tecton-core/blocks` | The `@tecton` registry, and copied-versus-imported code |
+
+Every skill carries its **Common Mistakes** section: the wrong code, the correct code, the mechanism by which the wrong version fails, and the source in this repository that proves it.
+
+## For Tecton maintainers
+
+Skills live in `packages/tecton-react/skills/`. They are shipped in the package (`files` includes `skills`) and excluded from the published tarball only for the maintainer artifacts under `_artifacts`.
+
+```bash
+pnpm skills:validate   # frontmatter, naming, size limits, packaging
+pnpm skills:check      # have the source docs changed since a skill was written?
+pnpm skills:stale      # version drift and workspace coverage
+pnpm skills:sync       # regenerate the artifacts after editing a skill
+```
+
+Each skill declares the files it was derived from in a `sources` array. `skills:sync` records a SHA per source in `skills/sync-state.json`; `skills:check` recomputes them and fails when one has moved, naming the skill and the source:
+
+```text
+✗ Skill artifacts are out of date.
+  skills/sync-state.json differs — a source doc changed since the skills were written
+    tecton-core/styling ← rpkapps/tecton-ui-1:apps/www/content/docs/theming.mdx
+```
+
+That is the point of the whole arrangement: **one source of truth, one derived artifact that cannot quietly fall behind it.** When you change a component's variants, the palette, the overflow rules or the lint config, CI tells you which skill to revisit. Re-read the skill against the change, edit it, then run `pnpm skills:sync`.
+
+<Callout variant="warning" title="Do not regenerate to silence the check">
+  `skills:sync` only re-records the hashes. Running it without re-reading the skill marks it current while leaving it wrong — which is worse than stale, because nothing will flag it again.
+</Callout>
+
+`skills/_artifacts/` holds the provenance: `domain_map.yaml` (hand-maintained — domains, skills and every failure mode with its source) and `skill_tree.yaml` plus `skill_spec.md`, both generated from it by `skills:sync`.
+
+### Adding a skill
+
+1. Add an entry to `skills/_artifacts/domain_map.yaml` with its domain, what it covers, and at least three failure modes — each one plausible, silent and traceable to a file in this repo.
+2. Write `skills/tecton-core/<slug>/SKILL.md`. `name` must equal the directory name; keep it under 500 lines and move dense tables to `references/`.
+3. Add it to the routing table in `skills/tecton-core/SKILL.md`.
+4. `pnpm skills:sync && pnpm skills:validate`.
+
+The `skills-check` GitHub Actions workflow runs all three checks on every pull request.

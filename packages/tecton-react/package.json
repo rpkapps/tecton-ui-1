@@ -18,7 +18,10 @@
     "icons:build": "bun run scripts/build-icons.mts",
     "icons:extract": "bun run scripts/extract-icons.mts",
     "registry:build": "bun run scripts/registry-build.mts",
-    "registry:validate": "shadcn registry validate registry.json"
+    "registry:validate": "shadcn registry validate registry.json",
+    "skills:validate": "intent validate skills",
+    "skills:sync": "bun run scripts/skills-sync.mts",
+    "skills:check": "bun run scripts/skills-sync.mts --check"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -46,6 +49,7 @@
   "devDependencies": {
     "@tailwindcss/vite": "^4",
     "@tanstack/eslint-config": "latest",
+    "@tanstack/intent": "^0.4.0",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
@@ -60,7 +64,8 @@
     "jsdom": "^30.0.1",
     "tailwindcss": "^4",
     "typescript": "^6",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.0",
+    "yaml": "^2.9.1"
   },
   "exports": {
     "./globals.css": "./src/styles/globals.css",
@@ -76,12 +81,28 @@
   },
   "description": "Tecton design system for React — shadcn/ui (React Aria base) components themed through Tecton tokens, plus Tecton-specific components, icons and blocks.",
   "files": [
+    "skills",
     "src",
     "icons/icons.json",
     "tokens",
     "registry/theme.json",
     "registry.json",
     "components.json",
-    "icons-src"
-  ]
+    "icons-src",
+    "!skills/_artifacts",
+    "!skills/sync-state.json"
+  ],
+  "keywords": [
+    "tecton",
+    "design-system",
+    "react",
+    "shadcn",
+    "tailwind",
+    "tanstack-intent"
+  ],
+  "intent": {
+    "version": 1,
+    "repo": "rpkapps/tecton-ui-1",
+    "docs": "https://github.com/rpkapps/tecton-ui-1/tree/main/apps/www/content/docs"
+  }
 }

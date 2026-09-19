@@ -1,0 +1,75 @@
+{
+  "skills": {
+    "tecton-core/blocks": {
+      "sources_sha": {
+        "rpkapps/tecton-ui-1:packages/tecton-react/src/blocks/README.md": "f31ab98421398aa0a82da4befbcca6cc555475990883fa9b0a05debe99ac4bed",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/installation.mdx": "97d98056aaca64d1cec033355c6b9208f60fffa80e8f9facffc8bb1e4b7d30e2",
+        "rpkapps/tecton-ui-1:packages/tecton-react/registry.json": "3dfea945a49bec9fe8e041d3064e37369391aad8475dc76cd949570a57e72895"
+      }
+    },
+    "tecton-core/components": {
+      "sources_sha": {
+        "rpkapps/tecton-ui-1:docs/UPSTREAM.md": "8b1dba2eeffb62f5b7c7c78c84f4766c31366580a94744e92e31a6d3eb376acd",
+        "rpkapps/tecton-ui-1:packages/tecton-react/src/components/button.tsx": "feadbf734a60b4b31ea25ebad4da3e8690b89f279c248d66aa75edd8fc9d6b4f",
+        "rpkapps/tecton-ui-1:packages/tecton-react/src/components/badge.tsx": "d342fa0b0c17e2641282f7f3ba5e6d75c914b998254f9833d260f95a174f759a",
+        "rpkapps/tecton-ui-1:packages/tecton-react/src/components/alert.tsx": "e3e517ac1878b032beb80471476c45ced415ff8e81d438e43d09da5561c17f23",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/components": "1731d5229141bd41712b1ebf4b1d0346aca7ad95e7d1bdea5a34039cc647cdd5"
+      }
+    },
+    "tecton-core/data-tables": {
+      "sources_sha": {
+        "rpkapps/tecton-ui-1:apps/www/content/docs/components/data-table.mdx": "4070d8a7641598ef04d736fc0efc86e17ea95fb6f0a673d928b9f1e27611b201",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/components/table.mdx": "0755c9ec664542d9266724a2e9c12342764d4f2458afb23eacdab8e8d10b8961"
+      }
+    },
+    "tecton-core/forms": {
+      "sources_sha": {
+        "rpkapps/tecton-ui-1:apps/www/content/docs/forms/index.mdx": "92532e7e1dec03378fc70409ab8d752cba4e4449ba2f5dba2f5a166d4c172c91",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/forms/tanstack-form.mdx": "0cc49e524ecc34c648fe1cf2718f8a957244cf7a65acd720647609ca946a9e29",
+        "rpkapps/tecton-ui-1:apps/www/src/examples/form-tanstack-demo.tsx": "e27d88bea1792c4a56fc6c449a706cd8af67adc9cdd8d0ba4ca67312bd88bb71"
+      }
+    },
+    "tecton-core/icons": {
+      "sources_sha": {
+        "rpkapps/tecton-ui-1:apps/www/content/docs/icons.mdx": "f77a6a12ab48705ec87b16c677e30068b38a02315145f4d9657b87259746c57e",
+        "rpkapps/tecton-ui-1:packages/tecton-react/icons/icons.json": "cfcc3a9f1b2a6a6468e7f2410421f3c1679a4e036b07c377e98be97eee80640d"
+      }
+    },
+    "tecton-core/layout": {
+      "sources_sha": {
+        "rpkapps/tecton-ui-1:docs/OVERFLOW-RULES.md": "6f6785124c366567406f98063a4186325483f9a10051204aab6fbcc487a19377",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/tecton/overflow.mdx": "24d60e576e9a3f14aa28988f1b6b4acb79a2f8e301b18d3619cee9f30b7e117f",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/tecton/app-shell.mdx": "17c82bb37ee48d0d763f0e2a924835d166125976586efeb1596b8401338cd2d8",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/tecton/page-header.mdx": "09f52978a74c0bab81426c91f682eba7029626dfccea1c13833fcf9ac0c5fdbf"
+      }
+    },
+    "tecton-core/setup": {
+      "sources_sha": {
+        "rpkapps/tecton-ui-1:apps/www/content/docs/installation.mdx": "97d98056aaca64d1cec033355c6b9208f60fffa80e8f9facffc8bb1e4b7d30e2",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/linting.mdx": "df2e21b6b67aa0c5a72737542d7980cc2175ad1da76b2173fc63a72652cb6038"
+      }
+    },
+    "tecton-core": {
+      "sources_sha": {
+        "rpkapps/tecton-ui-1:README.md": "51997ccb07426bb529d457a00c37541c98f3df9b0e5330647059fc623eae4b7b",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/index.mdx": "e6eead564a9bb8e4b3caf445a68875fea0377e92c4cb1d41265bfd6f66bb116a",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/linting.mdx": "df2e21b6b67aa0c5a72737542d7980cc2175ad1da76b2173fc63a72652cb6038"
+      }
+    },
+    "tecton-core/styling": {
+      "sources_sha": {
+        "rpkapps/tecton-ui-1:apps/www/content/docs/theming.mdx": "402f73f423059753824a402ce13fbfdc4b611adabe444aba29729dfc92e290db",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/linting.mdx": "df2e21b6b67aa0c5a72737542d7980cc2175ad1da76b2173fc63a72652cb6038",
+        "rpkapps/tecton-ui-1:packages/eslint-config-tecton/index.js": "513ce87176ef7ce64f61640b63816d057f69e38eb8932d21c180e36e931255c8",
+        "rpkapps/tecton-ui-1:packages/tecton-react/src/styles/tecton-palette.css": "a932b1774cda4e79214c55fbc31936dd9a32cfd04063c64cecc40b828b28a32f"
+      }
+    },
+    "tecton-core/tecton-components": {
+      "sources_sha": {
+        "rpkapps/tecton-ui-1:README.md": "51997ccb07426bb529d457a00c37541c98f3df9b0e5330647059fc623eae4b7b",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/tecton": "e25057677a13e2b88183f342e61e5c4e8adc91b7ceb0557686def60a3e117d1a",
+        "rpkapps/tecton-ui-1:packages/tecton-react/src/tecton": "d1cc8cb258bfc52b91f0a04d1346b534bfdf42e8604912d22dce2d1629413866"
+      }
+    }
+  }
+}
