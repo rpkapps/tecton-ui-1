@@ -7,10 +7,15 @@
  *   src/styles/tecton-tokens.css   generated Tecton export: light (:root) + dark (.dark) tokens
  *   tokens/tecton.map.json         shadcn variable → Tecton token mapping (per mode) + palette config
  *   tokens/tecton.tokens.json      Tecton Figma variables export (DTCG JSON): the foundational colour ramps
+ *   shadcn/tailwind.css            installed shadcn stylesheet, vendored (scripts/vendor-shadcn-css.mts)
  *
  * Outputs
+ *   src/styles/shadcn.css          vendored copy of shadcn/tailwind.css (so consumers need no CLI)
  *   src/styles/tecton-palette.css  :root / .dark raw ramp values + @theme inline (Tailwind palette, stock reset)
  *   src/styles/tecton-theme.css    :root / .dark (var() refs) / @theme inline
+ *   src/styles/scoped.css          utilities-only entry for micro-frontend remotes (no preflight, no
+ *                                  fonts, no variables: @theme inline with a fallback chain per token)
+ *   src/styles/scoped-theme.css    opt-in [data-tecton-root] variable blocks for a remote without a shell
  *   src/styles/globals.css         CLI-managed file, patched in place (values + imports only)
  *   src/styles/tecton-base.css     hand-authored base rules (thin scrollbars), import kept in globals.css
  *   registry/theme.json            shadcn `registry:theme` item with literal values
@@ -23,6 +28,7 @@ import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { clampChroma, converter, parse } from "culori";
+import { VENDORED_CSS as SHADCN_CSS, vendorShadcnCss } from "./vendor-shadcn-css.mjs";
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -34,10 +40,19 @@ const repoRoot = path.resolve(pkgRoot, "..", "..");
 const TOKENS_CSS = path.join(pkgRoot, "src/styles/tecton-tokens.css");
 const MAP_JSON = path.join(pkgRoot, "tokens/tecton.map.json");
 const THEME_CSS = path.join(pkgRoot, "src/styles/tecton-theme.css");
+const SCOPED_CSS = path.join(pkgRoot, "src/styles/scoped.css");
+const SCOPED_THEME_CSS = path.join(pkgRoot, "src/styles/scoped-theme.css");
 const PALETTE_CSS = path.join(pkgRoot, "src/styles/tecton-palette.css");
 const GLOBALS_CSS = process.env.GLOBALS_CSS ?? path.join(pkgRoot, "src/styles/globals.css");
 const REGISTRY_THEME = path.join(pkgRoot, "registry/theme.json");
 const MAPPING_DOC = path.join(repoRoot, "docs/TOKEN-MAPPING.md");
+
+// The shadcn stylesheet globals.css imports is vendored first: the import is
+// rewritten to the local copy below, so the shadcn CLI stays a devDependency.
+const vendoredShadcn = vendorShadcnCss();
+console.log(
+  `[tokens-build] ${vendoredShadcn.changed ? "wrote" : "unchanged"} ${path.relative(repoRoot, SHADCN_CSS)} (shadcn@${vendoredShadcn.version})`
+);
 
 // ---------------------------------------------------------------------------
 // Types
@@ -184,6 +199,10 @@ const FONT_IMPORTS = [
   "@fontsource/ibm-plex-mono/500.css",
 ];
 
+/** The vendored shadcn stylesheet, replacing `@import "shadcn/tailwind.css";` in globals.css. */
+const SHADCN_IMPORT = `@import "./${path.basename(SHADCN_CSS)}";`;
+/** What the shadcn CLI writes, and what the import above replaces. */
+const UPSTREAM_SHADCN_IMPORT = '@import "shadcn/tailwind.css";';
 /** Hand-authored base rules (src/styles/tecton-base.css), imported by globals.css after the fonts. */
 const BASE_IMPORT = '@import "./tecton-base.css";';
 /** The same rules for registry consumers, who do not get tecton-base.css. */
@@ -397,7 +416,205 @@ function buildThemeCss(): string {
 }
 
 // ---------------------------------------------------------------------------
-// 2. globals.css (surgical patch)
+// 2. scoped.css (utilities-only remote entry) + scoped-theme.css (opt-in theme)
+// ---------------------------------------------------------------------------
+/** The remote's root marker, set by `<ThemeRoot>` (src/tecton/theme-root.tsx). */
+const SCOPED_ROOT = "[data-tecton-root]";
+/** Dark when the marker itself or any ancestor carries the dark class/attribute. */
+const SCOPED_DARK = `${SCOPED_ROOT}:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *)`;
+/** Light again, last, so an explicitly light root inside a dark host wins. */
+const SCOPED_LIGHT = `${SCOPED_ROOT}:where(.light, [data-theme="light"])`;
+/** The dark variant, byte-identical to the one the CLI writes into globals.css. */
+const DARK_VARIANT = "@custom-variant dark (&:is(.dark *));";
+
+/**
+ * Every theme variable of one mode in a stable order — the raw Tecton export,
+ * the palette ramps, then the shadcn variables that reference them — declared on
+ * the root marker instead of `:root`. `tecton-tokens.css` and `tecton-palette.css`
+ * are keyed on `:root`/`.dark` and cannot be reused under `@scope`, so their
+ * values are inlined here. Non-colour shadcn variables (`--radius`) are skipped
+ * in dark, exactly as buildThemeCss does.
+ */
+function scopedDecls(mode: "light" | "dark"): string[] {
+  const lines = [`  color-scheme: ${mode};`];
+  for (const [name, value] of mode === "light" ? lightTokens : tokens) lines.push(`  ${name}: ${value};`);
+  for (const e of palette) lines.push(`  ${paletteVar(e)}: ${e[mode]};`);
+  for (const r of resolved) {
+    if (mode === "dark" && rootOnly(r)) continue;
+    lines.push(`  --${r.name}: ${mode === "light" ? r.light : r.dark};`);
+  }
+  return lines;
+}
+
+/**
+ * The `@theme inline` entries the remote needs to compile the library's utilities:
+ * the whole block of globals.css, where the CLI writes the standard shadcn mappings
+ * (`--color-background`, `--radius-*`, `--font-sans`…) and tokens-build patches the
+ * Tecton ones in — this run's values win — plus any entry the block lacks.
+ */
+function scopedThemeEntries(): [string, string][] {
+  const owned = new Map(themeEntries);
+  const seen = new Set<string>();
+  const entries: [string, string][] = [];
+  if (existsSync(GLOBALS_CSS)) {
+    const css = readFileSync(GLOBALS_CSS, "utf8");
+    const block = findBlock(css, "@theme inline");
+    if (block) {
+      for (const [k, v] of parseCustomProperties(css.slice(block.start + 1, block.end))) {
+        entries.push([k, owned.get(k) ?? v]);
+        seen.add(k);
+      }
+    }
+  }
+  for (const [k, v] of themeEntries) if (!seen.has(k)) entries.push([k, v]);
+  return entries;
+}
+
+/**
+ * The `@theme inline` entries of scoped.css in emission order (the palette reset
+ * first, so it cannot wipe the semantic entries), before the fallbacks below are
+ * added. Read once, before globals.css is patched, exactly as before.
+ */
+const scopedThemeRaw: [string, string][] = [...paletteThemeEntries, ...scopedThemeEntries()];
+/** Where `lightDefinition` looks up a theme entry that references another one. */
+const scopedThemeValues = new Map(scopedThemeRaw);
+/** Light values of the palette ramps, keyed by their custom-property name. */
+const paletteLight = new Map(palette.map((e): [string, string] => [paletteVar(e), e.light]));
+
+/** A value that is exactly one reference and nothing else — no fallback, no list, no calc(). */
+const BARE_VAR = /^var\(\s*(--[\w-]+)\s*\)$/;
+/** How many links of a var() chain the fallback spells out. */
+const FALLBACK_DEPTH = 4;
+/** References left bare because no light literal could be resolved (reported at the end). */
+const unresolvedFallbacks = new Set<string>();
+
+/**
+ * Where a variable gets its light value from: the shadcn mapping, a palette ramp,
+ * the raw Tecton export, or another `@theme inline` entry (`--font-heading`).
+ */
+function lightDefinition(name: string): string | undefined {
+  const shadcn = byName.get(name.replace(/^--/, ""));
+  if (shadcn) return shadcn.light;
+  return paletteLight.get(name) ?? lightTokens.get(name) ?? scopedThemeValues.get(name);
+}
+
+/** The nested `var(<next>, …)` fallback for `name`, ending in its light literal. */
+function fallbackFor(name: string, depth: number): string | undefined {
+  if (depth > FALLBACK_DEPTH) return undefined;
+  const definition = lightDefinition(name);
+  if (definition === undefined) return undefined;
+  const next = BARE_VAR.exec(definition.trim());
+  if (next) {
+    const inner = fallbackFor(next[1], depth + 1);
+    return inner === undefined ? undefined : `var(${next[1]}, ${inner})`;
+  }
+  try {
+    return resolveValue(definition, lightTokens);
+  } catch {
+    return undefined; // dangling reference: leave the entry bare
+  }
+}
+
+/**
+ * Give a `@theme inline` value the fallback chain that makes a remote survive a
+ * shell that does not know the token: `var(--primary)` becomes
+ * `var(--primary, var(--tecton-color-action-primary-bg, #644a78))`. The literals are
+ * the **light** values — a shell always provides a mode. Anything that is not a
+ * single bare reference (an existing fallback, `calc()`, a font list, `initial`) is
+ * left alone; scoped.css is the only file that carries these chains.
+ */
+function withFallback(value: string): string {
+  const m = BARE_VAR.exec(value.trim());
+  if (!m) return value;
+  const fallback = fallbackFor(m[1], 1);
+  if (fallback === undefined) {
+    unresolvedFallbacks.add(m[1]);
+    return value;
+  }
+  return `var(${m[1]}, ${fallback})`;
+}
+
+function buildScopedCss(): string {
+  const lines: string[] = [];
+  lines.push("/* GENERATED by scripts/tokens-build.mts — scoped entry for micro-frontend remotes; do not edit */");
+  lines.push("/*");
+  lines.push(" * A Module Federation remote may run a different @tecton/react than its host, so it");
+  lines.push(" * compiles its own Tailwind and wraps the output in `@scope (.mfe-a)`, where `:root`");
+  lines.push(" * matches nothing. Import this instead of globals.css — after Tailwind's split imports");
+  lines.push(" * (theme + utilities, no preflight, no fonts) — and mark the remote root with <ThemeRoot>.");
+  lines.push(" *");
+  lines.push(" * Utilities only: not one variable is declared here. The theme variables are inherited");
+  lines.push(" * from the shell, which owns them — the tenant palette, its own --primary, the current");
+  lines.push(" * mode — and a declaration on the remote's root would beat every one of them. Version");
+  lines.push(" * skew is absorbed by the fallback chain each @theme inline entry carries instead: the");
+  lines.push(" * raw Tecton token, then the light literal this build was made with.");
+  lines.push(" *");
+  lines.push(" * Add `./scoped-theme.css` after this file only for a remote with no Tecton shell to");
+  lines.push(" * inherit from, or one that must deliberately run its own token set.");
+  lines.push(" */");
+  lines.push('@import "tw-animate-css";');
+  lines.push(SHADCN_IMPORT);
+  lines.push("");
+  // the palette reset first (it wipes Tailwind's stock colours), then the semantic
+  // entries; `inline` means utilities inline the value — var(--primary, …) — so the
+  // shell's declaration, or the fallback, reaches the utility untouched
+  lines.push("@theme inline {");
+  for (const [k, v] of scopedThemeRaw) lines.push(`  ${k}: ${withFallback(v)};`);
+  lines.push("}");
+  lines.push("");
+  lines.push(DARK_VARIANT);
+  lines.push('@source "../**/*.{ts,tsx}";');
+  lines.push("");
+  // the border colour and the focus outline, which preflight would have put on
+  // `html`/`body`; the page itself is the shell's to paint (see scoped-theme.css)
+  lines.push("@layer base {");
+  lines.push(`  ${SCOPED_ROOT},`);
+  lines.push(`  ${SCOPED_ROOT} * {`);
+  lines.push("    @apply border-border outline-ring/50;");
+  lines.push("  }");
+  lines.push("}");
+  lines.push("");
+  return lines.join("\n");
+}
+
+function buildScopedThemeCss(): string {
+  const lines: string[] = [];
+  lines.push("/* GENERATED by scripts/tokens-build.mts — opt-in theme for micro-frontend remotes; do not edit */");
+  lines.push("/*");
+  lines.push(" * The variable half of the scoped entry, imported AFTER ./scoped.css:");
+  lines.push(" *");
+  lines.push(' *   @import "@tecton/react/styles/scoped.css";');
+  lines.push(' *   @import "@tecton/react/styles/scoped-theme.css";');
+  lines.push(" *");
+  lines.push(" * Opt-in, and only for a remote that has no Tecton shell to inherit the theme from (a");
+  lines.push(" * standalone demo, a test harness, an embed in a foreign page) or one that must run a");
+  lines.push(" * different token set than its host. With a shell, importing this stops the remote from");
+  lines.push(" * following it: a declaration on the root beats the value that would have been inherited.");
+  lines.push(" */");
+  lines.push("");
+  // all three blocks are (0,1,0) thanks to :where(), so source order decides:
+  // explicit-on-root > inherited from a dark ancestor > the light default
+  const lightDecls = scopedDecls("light");
+  lines.push(`${SCOPED_ROOT} {`, ...lightDecls, "}");
+  lines.push("");
+  lines.push(`${SCOPED_DARK} {`, ...scopedDecls("dark"), "}");
+  lines.push("");
+  lines.push(`${SCOPED_LIGHT} {`, ...lightDecls, "}");
+  lines.push("");
+  // owning the theme means painting the page too
+  lines.push("@layer base {");
+  lines.push(`  ${SCOPED_ROOT} {`);
+  lines.push("    @apply bg-background text-foreground;");
+  lines.push("    scrollbar-width: thin;");
+  lines.push("    scrollbar-color: var(--border) transparent;");
+  lines.push("  }");
+  lines.push("}");
+  lines.push("");
+  return lines.join("\n");
+}
+
+// ---------------------------------------------------------------------------
+// 3. globals.css (surgical patch)
 // ---------------------------------------------------------------------------
 interface Block {
   start: number; // index of the opening brace
@@ -465,33 +682,43 @@ function patchGlobals(): boolean {
     return false;
   }
   let css = readFileSync(GLOBALS_CSS, "utf8");
+  const nl = css.includes("\r\n") ? "\r\n" : "\n";
 
   // -- imports -------------------------------------------------------------
-  const shadcnImport = '@import "shadcn/tailwind.css";';
+  const animateImport = '@import "tw-animate-css";';
   const tokensImport = '@import "./tecton-tokens.css";';
   const interImport = '@import "@fontsource-variable/inter";';
   const legacyFigtree = '@import "@fontsource-variable/figtree";';
   const legacyMono = '@import "@fontsource/ibm-plex-mono";';
   const fontImports = FONT_IMPORTS.map((f) => `@import "${f}";`);
 
-  if (!css.includes(tokensImport)) {
-    if (!css.includes(shadcnImport)) throw new Error(`globals.css: cannot find ${shadcnImport} to anchor ${tokensImport}`);
-    css = css.replace(shadcnImport, `${shadcnImport}\n${tokensImport}`);
+  // the CLI writes `@import "shadcn/tailwind.css";`, which would make the whole
+  // shadcn CLI a runtime dependency of every consumer: point it at the vendored
+  // copy instead (scripts/vendor-shadcn-css.mts)
+  if (css.includes(UPSTREAM_SHADCN_IMPORT)) css = css.replace(UPSTREAM_SHADCN_IMPORT, SHADCN_IMPORT);
+  else if (!css.includes(SHADCN_IMPORT)) {
+    if (!css.includes(animateImport)) throw new Error(`globals.css: cannot find ${animateImport} to anchor ${SHADCN_IMPORT}`);
+    css = css.replace(animateImport, `${animateImport}${nl}${SHADCN_IMPORT}`);
   }
-  for (const legacy of [interImport, legacyFigtree, legacyMono]) css = css.replace(`${legacy}\n`, "");
+
+  if (!css.includes(tokensImport)) {
+    if (!css.includes(SHADCN_IMPORT)) throw new Error(`globals.css: cannot find ${SHADCN_IMPORT} to anchor ${tokensImport}`);
+    css = css.replace(SHADCN_IMPORT, `${SHADCN_IMPORT}${nl}${tokensImport}`);
+  }
+  for (const legacy of [interImport, legacyFigtree, legacyMono]) css = css.replace(`${legacy}${nl}`, "");
   let anchor = tokensImport;
   // the palette (raw ramps + Tailwind @theme with the stock reset) must come before
   // the semantic @theme inline block below, which the reset would otherwise wipe
   if (palette.length) {
-    if (!css.includes(PALETTE_IMPORT)) css = css.replace(anchor, `${anchor}\n${PALETTE_IMPORT}`);
+    if (!css.includes(PALETTE_IMPORT)) css = css.replace(anchor, `${anchor}${nl}${PALETTE_IMPORT}`);
     anchor = PALETTE_IMPORT;
-  } else css = css.replace(`${PALETTE_IMPORT}\n`, "");
+  } else css = css.replace(`${PALETTE_IMPORT}${nl}`, "");
   for (const imp of fontImports) {
-    if (!css.includes(imp)) css = css.replace(anchor, `${anchor}\n${imp}`);
+    if (!css.includes(imp)) css = css.replace(anchor, `${anchor}${nl}${imp}`);
     anchor = imp;
   }
   // base rules that are not variable values (thin scrollbars…), see tecton-base.css
-  if (!css.includes(BASE_IMPORT)) css = css.replace(anchor, `${anchor}\n${BASE_IMPORT}`);
+  if (!css.includes(BASE_IMPORT)) css = css.replace(anchor, `${anchor}${nl}${BASE_IMPORT}`);
 
   // -- :root ----------------------------------------------------------------
   const rootValues = new Map(resolved.map((r) => [`--${r.name}`, r.light]));
@@ -516,7 +743,7 @@ function patchGlobals(): boolean {
 }
 
 // ---------------------------------------------------------------------------
-// 3. registry/theme.json
+// 4. registry/theme.json
 // ---------------------------------------------------------------------------
 function buildRegistryTheme() {
   const light: Record<string, string> = {};
@@ -556,7 +783,7 @@ function buildRegistryTheme() {
 }
 
 // ---------------------------------------------------------------------------
-// 4. docs/TOKEN-MAPPING.md
+// 5. docs/TOKEN-MAPPING.md
 // ---------------------------------------------------------------------------
 function paletteSection(): string {
   if (!paletteConfig || !palette.length) return "";
@@ -674,6 +901,17 @@ if (palette.length) {
 writeFileSync(THEME_CSS, buildThemeCss());
 console.log(`[tokens-build] wrote ${path.relative(repoRoot, THEME_CSS)}`);
 
+writeFileSync(SCOPED_CSS, buildScopedCss());
+const withChain = scopedThemeRaw.filter(([, v]) => withFallback(v) !== v).length;
+console.log(
+  `[tokens-build] wrote ${path.relative(repoRoot, SCOPED_CSS)} (utilities only: ${scopedThemeRaw.length} @theme inline entries, ${withChain} with a fallback chain, ${scopedThemeRaw.length - withChain} bare)`
+);
+
+writeFileSync(SCOPED_THEME_CSS, buildScopedThemeCss());
+console.log(
+  `[tokens-build] wrote ${path.relative(repoRoot, SCOPED_THEME_CSS)} (${lightTokens.size} tokens + ${palette.length} palette + ${resolved.length} shadcn vars on ${SCOPED_ROOT})`
+);
+
 if (patchGlobals()) console.log(`[tokens-build] patched ${path.relative(repoRoot, GLOBALS_CSS)}`);
 
 mkdirSync(path.dirname(REGISTRY_THEME), { recursive: true });
@@ -683,3 +921,11 @@ console.log(`[tokens-build] wrote ${path.relative(repoRoot, REGISTRY_THEME)}`);
 mkdirSync(path.dirname(MAPPING_DOC), { recursive: true });
 writeFileSync(MAPPING_DOC, buildMappingDoc());
 console.log(`[tokens-build] wrote ${path.relative(repoRoot, MAPPING_DOC)}`);
+
+// a scoped.css entry without a fallback chain works, it just gives a remote nothing
+// to fall back to when the shell does not know the token — worth knowing about
+if (unresolvedFallbacks.size) {
+  console.warn(
+    `[tokens-build] warning: no light literal for ${unresolvedFallbacks.size} reference(s), left bare in ${path.basename(SCOPED_CSS)}: ${[...unresolvedFallbacks].join(", ")}`
+  );
+}

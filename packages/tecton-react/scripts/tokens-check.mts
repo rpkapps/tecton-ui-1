@@ -14,6 +14,19 @@
  *     --color-<family>-<step> resolves in both modes, both modes declare the same
  *     ramps, and every semantic colour is a literal member of an exposed ramp
  *     (except the ones allow-listed under `checks.allow` as `palette:<token>`)
+ *   - opt-in scoped theme (src/styles/scoped-theme.css): the same variable/contrast/sanity
+ *     checks run against its [data-tecton-root] blocks as the modes `scoped-light` and
+ *     `scoped-dark`; the light block is repeated last unchanged and the shadcn variable
+ *     names match tecton-theme.css
+ *   - scoped entry (src/styles/scoped.css): utilities only — not one variable block (the
+ *     `@layer base` border/outline rule is all that may name the root), no :root, no body
+ *     rule, neither a tailwindcss nor a fontsource import, and an `@theme inline` block
+ *     whose `--color-*: initial` reset comes first and whose every fallback chain ends in
+ *     the light literal of the outermost variable (so the chains cannot drift from the
+ *     token export); the entries left bare must be calc(), a font list or `initial`
+ *   - vendored shadcn stylesheet (src/styles/shadcn.css): present, its header names the
+ *     installed shadcn version, its body is byte-identical to `shadcn/tailwind.css`,
+ *     and globals.css imports the copy instead of the package
  * Pairs listed in tecton.map.json `checks.allow` are reported as expected failures and
  * do not fail the run.
  */
@@ -22,12 +35,16 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { converter, parse, wcagContrast } from "culori";
+import { VENDORED_CSS, normalizeNewlines, parseVendored, readUpstream } from "./vendor-shadcn-css.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const pkgRoot = path.resolve(here, "..");
 const TOKENS_CSS = path.join(pkgRoot, "src/styles/tecton-tokens.css");
 const THEME_CSS = path.join(pkgRoot, "src/styles/tecton-theme.css");
+const SCOPED_CSS = path.join(pkgRoot, "src/styles/scoped.css");
+const SCOPED_THEME_CSS = path.join(pkgRoot, "src/styles/scoped-theme.css");
 const PALETTE_CSS = path.join(pkgRoot, "src/styles/tecton-palette.css");
+const GLOBALS_CSS = process.env.GLOBALS_CSS ?? path.join(pkgRoot, "src/styles/globals.css");
 const MAP_JSON = path.join(pkgRoot, "tokens/tecton.map.json");
 const asJson = process.argv.includes("--json");
 
@@ -89,6 +106,19 @@ const themedTokens = parseThemedTokens(stripComments(readFileSync(TOKENS_CSS, "u
 const themeCss = stripComments(readFileSync(THEME_CSS, "utf8"));
 const light = parseDecls(blockBody(themeCss, ":root"));
 const dark = parseDecls(blockBody(themeCss, ".dark"));
+
+// The opt-in scoped theme declares the same variables on the remote's root marker
+// instead of :root, so the checks below can run against it as two more modes. The
+// scoped entry itself (scoped.css) declares none and is checked separately.
+const SCOPED_ROOT = "[data-tecton-root]";
+const SCOPED_DARK = `${SCOPED_ROOT}:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *)`;
+const SCOPED_LIGHT = `${SCOPED_ROOT}:where(.light, [data-theme="light"])`;
+const scopedCss = stripComments(readFileSync(SCOPED_CSS, "utf8"));
+const scopedThemeCss = stripComments(readFileSync(SCOPED_THEME_CSS, "utf8"));
+const scopedLight = parseDecls(blockBody(scopedThemeCss, SCOPED_ROOT));
+const scopedDark = parseDecls(blockBody(scopedThemeCss, SCOPED_DARK));
+const scopedLightAgain = parseDecls(blockBody(scopedThemeCss, SCOPED_LIGHT));
+const paletteCss = existsSync(PALETTE_CSS) ? stripComments(readFileSync(PALETTE_CSS, "utf8")) : "";
 const map = JSON.parse(readFileSync(MAP_JSON, "utf8")) as {
   shadcn: Record<string, unknown>;
   extra: Record<string, unknown>;
@@ -100,12 +130,23 @@ const allow = new Set(map.checks?.allow ?? []);
 // ---------------------------------------------------------------------------
 // Resolution
 // ---------------------------------------------------------------------------
-type Mode = "light" | "dark";
-const modes: Record<Mode, Map<string, string>> = { light, dark };
+type Mode = "light" | "dark" | "scoped-light" | "scoped-dark";
+const modes: Record<Mode, Map<string, string>> = { light, dark, "scoped-light": scopedLight, "scoped-dark": scopedDark };
+/** Every mode the variable, contrast and sanity checks run against. */
+const CHECK_MODES = Object.keys(modes) as Mode[];
+/** The colour scheme a mode belongs to (a scoped mode shares its allow-list entries). */
+const baseMode = (mode: Mode): "light" | "dark" => (mode.endsWith("dark") ? "dark" : "light");
+/** The Tecton export a scope falls back to (the scoped blocks declare their own). */
+const scopeTokens = new Map<Map<string, string>, Map<string, string>>([
+  [light, themedTokens.light],
+  [dark, themedTokens.dark],
+  [scopedLight, themedTokens.light],
+  [scopedDark, themedTokens.dark],
+]);
 
 function resolve(value: string, scope: Map<string, string>, depth = 0): string {
   if (depth > 16) throw new Error(`var() too deep: ${value}`);
-  const tokens = scope === light ? themedTokens.light : themedTokens.dark;
+  const tokens = scopeTokens.get(scope) ?? themedTokens.dark;
   return value.replace(/var\((--[\w-]+)(?:\s*,\s*([^)]*))?\)/g, (_, name: string, fallback?: string) => {
     const v = scope.get(name) ?? tokens.get(name);
     if (v === undefined) {
@@ -160,9 +201,9 @@ const results: Check[] = [];
 
 // completeness + dangling var()
 const expected = [...Object.keys(map.shadcn), ...Object.keys(map.extra)];
-for (const mode of ["light", "dark"] as Mode[]) {
+for (const mode of CHECK_MODES) {
   for (const name of expected) {
-    if (name === "radius" && mode === "dark") continue; // non-colour, :root only
+    if (name === "radius" && baseMode(mode) === "dark") continue; // non-colour, :root only
     const raw = modes[mode].get(`--${name}`);
     if (raw === undefined) {
       results.push({ mode, check: `defined --${name}`, value: "missing", threshold: "present", status: "fail" });
@@ -217,7 +258,7 @@ const NON_TEXT: [string, string, number, "warn" | "fail"][] = [
 
 const fmt = (n: number) => n.toFixed(2);
 
-for (const mode of ["light", "dark"] as Mode[]) {
+for (const mode of CHECK_MODES) {
   const bgLit = literal(mode, "background");
   for (const [bg, fg, min] of CONTRAST_PAIRS) {
     const b = color(mode, bg, bgLit);
@@ -228,7 +269,7 @@ for (const mode of ["light", "dark"] as Mode[]) {
     }
     const ratio = wcagContrast(b, f);
     const key = `${bg}/${fg}`;
-    const allowed = allow.has(key) || allow.has(`${mode}:${key}`);
+    const allowed = allow.has(key) || allow.has(`${mode}:${key}`) || allow.has(`${baseMode(mode)}:${key}`);
     const status: Status = ratio >= min ? "pass" : allowed ? "expected-fail" : "fail";
     results.push({ mode, check: `contrast ${key}`, value: `${fmt(ratio)}:1`, threshold: `≥ ${min}:1`, status, detail: `${literal(mode, bg)} / ${literal(mode, fg)}` });
   }
@@ -241,7 +282,7 @@ for (const mode of ["light", "dark"] as Mode[]) {
     }
     const ratio = wcagContrast(b, f);
     const key = `${bg}/${fg}`;
-    const allowed = allow.has(key) || allow.has(`${mode}:${key}`);
+    const allowed = allow.has(key) || allow.has(`${mode}:${key}`) || allow.has(`${baseMode(mode)}:${key}`);
     const status: Status = ratio >= min ? "pass" : severity === "warn" ? "warn" : allowed ? "expected-fail" : "fail";
     results.push({ mode, check: `contrast ${key} (non-text)`, value: `${fmt(ratio)}:1`, threshold: `≥ ${min}:1${severity === "warn" ? " (report only)" : ""}`, status, detail: `${literal(mode, bg)} / ${literal(mode, fg)}` });
   }
@@ -254,15 +295,16 @@ for (const mode of ["light", "dark"] as Mode[]) {
   const lBg = L("background");
   const lFg = L("foreground");
   const lMuted = L("muted-foreground");
-  const orderOk = mode === "dark" ? lBg < lFg : lBg > lFg;
+  const isDark = baseMode(mode) === "dark";
+  const orderOk = isDark ? lBg < lFg : lBg > lFg;
   results.push({
     mode,
-    check: mode === "dark" ? "L(background) < L(foreground)" : "L(background) > L(foreground)",
+    check: isDark ? "L(background) < L(foreground)" : "L(background) > L(foreground)",
     value: `${lBg.toFixed(3)} vs ${lFg.toFixed(3)}`,
     threshold: "ordering",
     status: orderOk ? "pass" : "fail",
   });
-  const between = mode === "dark" ? lBg < lMuted && lMuted < lFg : lFg < lMuted && lMuted < lBg;
+  const between = isDark ? lBg < lMuted && lMuted < lFg : lFg < lMuted && lMuted < lBg;
   results.push({
     mode,
     check: "L(muted-foreground) between background and foreground",
@@ -275,8 +317,7 @@ for (const mode of ["light", "dark"] as Mode[]) {
 // ---------------------------------------------------------------------------
 // Palette
 // ---------------------------------------------------------------------------
-if (map.palette && existsSync(PALETTE_CSS)) {
-  const paletteCss = stripComments(readFileSync(PALETTE_CSS, "utf8"));
+if (map.palette && paletteCss) {
   const ramps = parseThemedTokens(paletteCss); // :root (+ .light) and .dark blocks
   const prefix = `--${map.palette.prefix ?? "tecton-palette"}-`;
   const lightKeys = [...ramps.light.keys()].filter((k) => k.startsWith(prefix));
@@ -328,7 +369,7 @@ if (map.palette && existsSync(PALETTE_CSS)) {
   });
 
   // every semantic colour token of the export is a literal pick from an exposed ramp
-  for (const mode of ["light", "dark"] as Mode[]) {
+  for (const mode of ["light", "dark"] as ("light" | "dark")[]) {
     const values = new Set([...ramps[mode].entries()].filter(([k]) => k.startsWith(prefix)).map(([, v]) => v.toLowerCase()));
     const source = themedTokens[mode];
     const misses: string[] = [];
@@ -351,6 +392,221 @@ if (map.palette && existsSync(PALETTE_CSS)) {
       detail: misses.length ? `off-ramp: ${misses.join(", ")}` : undefined,
     });
   }
+}
+
+// ---------------------------------------------------------------------------
+// Scoped theme (src/styles/scoped-theme.css): the three variable blocks
+// ---------------------------------------------------------------------------
+{
+  /** The shadcn variables of a block: everything that is not a raw Tecton token. */
+  const shadcnVars = (decls: Map<string, string>) => [...decls.keys()].filter((k) => !k.startsWith("--tecton-")).sort();
+  const sameNames = (a: string[], b: string[]) => a.length === b.length && a.every((n, i) => n === b[i]);
+  for (const [selector, scoped, reference, label] of [
+    [SCOPED_ROOT, scopedLight, light, ":root"],
+    [SCOPED_DARK, scopedDark, dark, ".dark"],
+  ] as [string, Map<string, string>, Map<string, string>, string][]) {
+    const got = shadcnVars(scoped);
+    const want = shadcnVars(reference);
+    const missing = want.filter((n) => !got.includes(n));
+    const extra = got.filter((n) => !want.includes(n));
+    results.push({
+      mode: "both",
+      check: `scoped-theme: ${selector} declares the tecton-theme.css ${label} variables`,
+      value: `${got.length} / ${want.length}`,
+      threshold: "equal sets",
+      status: sameNames(got, want) ? "pass" : "fail",
+      detail: missing.length || extra.length ? `missing: ${missing.join(", ") || "—"}; extra: ${extra.join(", ") || "—"}` : undefined,
+    });
+  }
+
+  // the light block is repeated last so that an explicitly light root inside a
+  // dark host wins on source order; it must be the same declarations
+  const repeated =
+    scopedLightAgain.size === scopedLight.size && [...scopedLight].every(([k, v]) => scopedLightAgain.get(k) === v);
+  results.push({
+    mode: "both",
+    check: `scoped-theme: ${SCOPED_LIGHT} repeats the root block`,
+    value: `${scopedLightAgain.size} / ${scopedLight.size} declarations`,
+    threshold: "identical",
+    status: repeated ? "pass" : "fail",
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Scoped entry (src/styles/scoped.css): utilities only
+// ---------------------------------------------------------------------------
+{
+  // a declaration on the remote's root beats the value inherited from the shell,
+  // so the entry declares nothing: only the @layer base border/outline rule may
+  // name the root, and it does so as part of a selector list
+  const declaresVars = /\[data-tecton-root\]\s*\{/.test(scopedCss);
+  results.push({
+    mode: "both",
+    check: `scoped: no ${SCOPED_ROOT} variable block`,
+    value: declaresVars ? "present" : "absent",
+    threshold: "absent (the @layer base rule only)",
+    status: declaresVars ? "fail" : "pass",
+    detail: declaresVars ? "the shell owns the variables; move them to scoped-theme.css" : undefined,
+  });
+
+  // the remote compiles its own Tailwind and wraps the output in @scope: :root
+  // matches nothing there, a body rule would leak out of the remote's subtree,
+  // and preflight or fonts would be the host's to ship
+  for (const [label, css] of [
+    ["scoped", scopedCss],
+    ["scoped-theme", scopedThemeCss],
+  ] as [string, string][]) {
+    const forbidden: [string, boolean][] = [
+      [":root", /:root/.test(css)],
+      ["body {", /\bbody\s*\{/.test(css)],
+      ["tailwindcss import", /@import\s+["'][^"']*tailwindcss/.test(css)],
+      ["fontsource import", /@import\s+["'][^"']*fontsource/.test(css)],
+    ];
+    for (const [what, present] of forbidden) {
+      results.push({
+        mode: "both",
+        check: `${label}: no ${what}`,
+        value: present ? "present" : "absent",
+        threshold: "absent",
+        status: present ? "fail" : "pass",
+      });
+    }
+  }
+
+  const scopedTheme = parseDecls(blockBody(scopedCss, "@theme inline"));
+  const themeKeys = [...scopedTheme.keys()];
+  results.push({
+    mode: "both",
+    check: "scoped: `--color-*: initial` precedes the ramps",
+    value: themeKeys[0] === "--color-*" ? "first" : themeKeys.indexOf("--color-*") === -1 ? "missing" : "not first",
+    threshold: "first entry",
+    status: themeKeys[0] === "--color-*" ? "pass" : "fail",
+  });
+
+  // ---- the fallback chains -------------------------------------------------
+  // `--color-primary: var(--primary, var(--tecton-color-action-primary-bg, #644a78))`
+  // lets a remote survive a shell that does not know the token. The literal at the
+  // end of the chain must be what the token export resolves the outermost variable
+  // to in light mode, or the chains have drifted from tecton-theme.css.
+  const themeInline = parseDecls(blockBody(themeCss, "@theme inline"));
+  const rampPrefix = `--${map.palette?.prefix ?? "tecton-palette"}-`;
+  const ramps = paletteCss ? parseThemedTokens(paletteCss).light : new Map<string, string>();
+
+  /** Where a variable of a chain gets its light value from, in lookup order. */
+  const lightValue = (name: string): string | undefined =>
+    light.get(name) ??
+    (name.startsWith(rampPrefix) ? ramps.get(name) : undefined) ??
+    themedTokens.light.get(name) ??
+    themeInline.get(name);
+
+  const VAR_WITH_FALLBACK = /^var\(\s*(--[\w-]+)\s*,\s*([\s\S]+)\)$/;
+  /** The outermost variable and the innermost fallback literal of a chain. */
+  function chainOf(value: string): { outer: string; literal: string } | undefined {
+    const m = VAR_WITH_FALLBACK.exec(value.trim());
+    if (!m) return undefined;
+    let literal = m[2].trim();
+    for (let i = 0; i < 8; i++) {
+      const inner = VAR_WITH_FALLBACK.exec(literal);
+      if (!inner) break;
+      literal = inner[2].trim();
+    }
+    return { outer: m[1], literal };
+  }
+  const norm = (s: string) => s.replace(/\s+/g, " ").trim().toLowerCase();
+
+  let chained = 0;
+  const bare: string[] = [];
+  const mismatched: string[] = [];
+  for (const [name, value] of scopedTheme) {
+    const chain = chainOf(value);
+    if (!chain) {
+      // documented exceptions only: calc(), a font list, `initial` — never a bare
+      // reference, which would leave the remote with nothing to fall back to
+      bare.push(`${name}: ${value}`);
+      continue;
+    }
+    chained++;
+    const definition = lightValue(chain.outer);
+    let want: string | undefined;
+    try {
+      want = definition === undefined ? undefined : resolve(definition, light);
+    } catch {
+      want = undefined;
+    }
+    if (want === undefined || norm(want) !== norm(chain.literal)) {
+      mismatched.push(`${name} → ${chain.literal} (expected ${want ?? "unresolvable"})`);
+    }
+  }
+  results.push({
+    mode: "both",
+    check: "scoped: every fallback chain ends in the light literal of the token export",
+    value: `${chained} chained, ${mismatched.length} inconsistent`,
+    threshold: "0 inconsistent",
+    status: mismatched.length ? "fail" : "pass",
+    detail: mismatched.slice(0, 5).join("; ") || undefined,
+  });
+  const unexpectedBare = bare.filter((entry) => /:\s*var\(\s*--[\w-]+\s*\)$/.test(entry));
+  results.push({
+    mode: "both",
+    check: "scoped: entries without a fallback are calc(), a font list or `initial`",
+    value: `${bare.length} bare, ${unexpectedBare.length} unexpected`,
+    threshold: "0 unexpected",
+    status: unexpectedBare.length ? "fail" : "pass",
+    detail: unexpectedBare.length ? unexpectedBare.join("; ") : bare.map((b) => b.split(":")[0]).join(", "),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// Vendored shadcn stylesheet (src/styles/shadcn.css)
+// ---------------------------------------------------------------------------
+{
+  const upstream = readUpstream();
+  const exists = existsSync(VENDORED_CSS);
+  results.push({
+    mode: "both",
+    check: `vendor: ${path.basename(VENDORED_CSS)} exists`,
+    value: exists ? "present" : "missing",
+    threshold: "present",
+    status: exists ? "pass" : "fail",
+    detail: exists ? undefined : "run tokens:build",
+  });
+  if (exists) {
+    const { version, body } = parseVendored(readFileSync(VENDORED_CSS, "utf8"));
+    results.push({
+      mode: "both",
+      check: "vendor: header names the installed shadcn version",
+      value: version ?? "no header",
+      threshold: upstream.version,
+      status: version === upstream.version ? "pass" : "fail",
+    });
+    // compared through the newline normalisation, so a CRLF checkout still matches
+    const want = normalizeNewlines(upstream.css);
+    results.push({
+      mode: "both",
+      check: "vendor: body is byte-identical to shadcn/tailwind.css",
+      value: body === want ? "identical" : `${body.length} vs ${want.length} chars`,
+      threshold: "identical",
+      status: body === want ? "pass" : "fail",
+      detail: body === want ? undefined : "run tokens:build to re-vendor",
+    });
+  }
+  const globals = existsSync(GLOBALS_CSS) ? readFileSync(GLOBALS_CSS, "utf8") : "";
+  const vendoredImport = `@import "./${path.basename(VENDORED_CSS)}";`;
+  results.push({
+    mode: "both",
+    check: `globals.css imports ${vendoredImport}`,
+    value: globals.includes(vendoredImport) ? "present" : "missing",
+    threshold: "present",
+    status: globals.includes(vendoredImport) ? "pass" : "fail",
+  });
+  results.push({
+    mode: "both",
+    check: "globals.css does not import shadcn/tailwind.css",
+    value: globals.includes('@import "shadcn/tailwind.css";') ? "present" : "absent",
+    threshold: "absent",
+    status: globals.includes('@import "shadcn/tailwind.css";') ? "fail" : "pass",
+    detail: globals.includes('@import "shadcn/tailwind.css";') ? "the shadcn CLI would become a consumer dependency" : undefined,
+  });
 }
 
 // ---------------------------------------------------------------------------

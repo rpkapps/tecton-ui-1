@@ -1,6 +1,6 @@
 @import "tailwindcss";
 @import "tw-animate-css";
-@import "shadcn/tailwind.css";
+@import "./shadcn.css";
 @import "./tecton-tokens.css";
 @import "./tecton-palette.css";
 @import "@fontsource/figtree/400.css";
