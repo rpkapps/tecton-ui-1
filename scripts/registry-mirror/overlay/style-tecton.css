@@ -243,31 +243,30 @@
   }
 
   /* MARK: Button Group */
-  /* A group strips the inline-start border of every child after the first, so
-     the members have to agree on drawing one. Filled buttons carry a
-     transparent border, which leaves a mixed group (filled + outline, or a
-     field + a filled button) with an outline that starts in mid-air at the
-     seam. Give the filled members the same stroke whenever a bordered member
-     is present; a group of only filled buttons keeps its borderless look. */
+  /* Members overlap their borders by a pixel (-ms-px / -mt-px, in the patched
+     upstream source) rather than the group stripping the inline-start one, so
+     every member always draws a complete ring and a state only has to recolour
+     its own border. Two things follow.
+
+     Filled buttons carry a transparent border, so a mixed group (filled +
+     outline, or a field + a filled button) would show an outline interrupted
+     wherever a filled member sits. Give the filled members the same stroke
+     whenever a bordered member is present; a group of only filled buttons
+     keeps its borderless look.
+
+     And the overlap means a neighbour paints over the leading edge, so lift
+     the member that is in a state above it. position:relative with no offsets
+     moves nothing, so this costs no layout. */
   .cn-button-group {
-    @apply has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md [&:has(>[data-variant=outline],>[data-slot=input],>[data-slot=textarea],>[data-slot=select-trigger],>[data-slot=input-group],>[data-slot=button-group-text])>[data-slot=button]:not([data-variant=outline])]:border-outline-border has-[[data-slot=button][data-variant=outline]:hover]:[--seam-hover:var(--outline-hover-border)] has-[:is([data-slot=input],[data-slot=textarea],[data-slot=select-trigger],[data-slot=input-group]):hover]:[--seam-hover:var(--input-hover)] has-[[data-slot=button][data-variant=outline][data-pressed]]:[--seam-held:var(--outline-pressed-border)] has-[[data-slot=button][data-variant=outline][aria-expanded=true]]:[--seam-held:var(--outline-active-border)] has-[:is([data-slot=button][data-variant=outline],[data-slot=input],[data-slot=textarea],[data-slot=select-trigger],[data-slot=input-group]):focus-visible]:[--seam-focus:var(--ring)] has-[[data-slot=input-group-control]:focus-visible]:[--seam-focus:var(--ring)] has-[:is([data-slot=button][data-variant=outline],[data-slot=input],[data-slot=textarea],[data-slot=select-trigger],[data-slot=input-group])[aria-invalid=true]]:[--seam-invalid:var(--destructive)];
+    @apply has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md [&:has(>[data-variant=outline],>[data-slot=input],>[data-slot=textarea],>[data-slot=select-trigger],>[data-slot=input-group],>[data-slot=button-group-text])>[data-slot=button]:not([data-variant=outline])]:border-outline-border [&_[data-slot]:is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:relative [&_[data-slot]:is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:z-10;
   }
 
-  /* A member lights up its whole border on hover / focus / press, but the group
-     has stripped its inline-start one, so the highlight would be a ring that is
-     open on the leading edge. That edge is already drawn by the previous
-     member's inline-end border, so recolour that: giving the member a border
-     back would be absorbed by a fixed-width icon button and shift the group.
-     Which colour is decided by --seam-* above, so this only has to say which
-     border; the fallback chain gives the precedence and needs no :not() rungs.
-     The reach goes one level in because Select wraps its trigger in a plain
-     div, and recolouring is inert where there is no border. */
   .cn-button-group-orientation-horizontal {
-    @apply [&>[data-slot]:not(:has(~[data-slot]))]:rounded-e-md! [&_[data-slot]:has(+:is([data-slot=button][data-variant=outline],[data-slot=input],[data-slot=textarea],[data-slot=select-trigger],[data-slot=input-group]):is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true])),&_[data-slot]:has(+:is([data-slot=button][data-variant=outline],[data-slot=input],[data-slot=textarea],[data-slot=select-trigger],[data-slot=input-group]):is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true]))_[data-slot]]:border-e-[var(--seam-invalid,var(--seam-focus,var(--seam-held,var(--seam-hover,var(--input)))))];
+    @apply [&>[data-slot]:not(:has(~[data-slot]))]:rounded-e-md!;
   }
 
   .cn-button-group-orientation-vertical {
-    @apply [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md! [&_[data-slot]:has(+:is([data-slot=button][data-variant=outline],[data-slot=input],[data-slot=textarea],[data-slot=select-trigger],[data-slot=input-group]):is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true])),&_[data-slot]:has(+:is([data-slot=button][data-variant=outline],[data-slot=input],[data-slot=textarea],[data-slot=select-trigger],[data-slot=input-group]):is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true]))_[data-slot]]:border-b-[var(--seam-invalid,var(--seam-focus,var(--seam-held,var(--seam-hover,var(--input)))))];
+    @apply [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md!;
   }
 
   .cn-button-group-text {
