@@ -72,14 +72,56 @@ the Tecton workspace get the full message.
 
 <Callout title="Your components are yours">
   `recommended`, `strict` and `warn` look at **Tecton components only** — elements
-  imported from `@tecton/react`. Your own components and your plain markup are never
-  reported. The design system governs its own components; how you style yours is your
-  call.
+  imported from `@tecton/react`. Your plain markup is never reported, and neither are
+  your own components (with the two exceptions below). The design system governs its
+  own components; how you style yours is your call.
 
   The trade-off is real: `bg-red-500` in your own `<div>` still generates no CSS and
   still renders unstyled, and none of those presets will tell you. If you want every
   class in the project checked against the Tecton theme, opt into `project` below.
 </Callout>
+
+### When your own component is still named
+
+Two cases put one of your components in an error. Both are about a Tecton component
+being restyled through yours, not about the design system policing your code:
+
+```tsx
+// 1. Your component passes className into a Tecton component.
+function SubmitButton({ className, ...props }: React.ComponentProps<typeof Button>) {
+  return <Button className={cn("shrink-0", className)} {...props} />
+}
+
+<SubmitButton className="h-12" />
+// "h-12" is not allowed on <Button> — SubmitButton forwards className to it
+```
+
+That one is the rule working: the height lands on a Tecton `Button` either way, and
+one level of indirection shouldn't hide it. Use the `size` prop, or add the variant.
+
+```tsx
+// 2. Your component's NAME matches a Tecton component's.
+function Card({ className }: { className?: string }) {
+  return <div className={className} />
+}
+
+<Card className="bg-red-500" />
+// "bg-red-500" is not allowed on <Card> — pointing at Tecton's card.tsx
+```
+
+That one is a false positive, and it is not something this config can switch off: the
+linter also recognises components **by name**, from the directory your
+`components.json` names in `aliases.ui`, so any local component sharing a name with a
+Tecton one (`Card`, `Panel`, `Item`, `Field`, `Table`, `Empty`…) is mistaken for it —
+even when it is a plain `<div>` you never imported. Rename it, or turn the rule off
+where those components live:
+
+```js
+export default [
+  ...tecton.configs.recommended,
+  { files: ["src/components/**"], rules: { "shadcn/no-restyle": "off" } },
+]
+```
 
 ## Checking the whole component
 
