@@ -243,8 +243,22 @@
   }
 
   /* MARK: Button Group */
+  /* Members overlap their borders by a pixel (-ms-px / -mt-px, in the patched
+     upstream source) rather than the group stripping the inline-start one, so
+     every member always draws a complete ring and a state only has to recolour
+     its own border. Two things follow.
+
+     Filled buttons carry a transparent border, so a mixed group (filled +
+     outline, or a field + a filled button) would show an outline interrupted
+     wherever a filled member sits. Give the filled members the same stroke
+     whenever a bordered member is present; a group of only filled buttons
+     keeps its borderless look.
+
+     And the overlap means a neighbour paints over the leading edge, so lift
+     the member that is in a state above it. position:relative with no offsets
+     moves nothing, so this costs no layout. */
   .cn-button-group {
-    @apply has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md;
+    @apply has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md [&:has(>[data-variant=outline],>[data-slot=input],>[data-slot=textarea],>[data-slot=select-trigger],>[data-slot=input-group],>[data-slot=button-group-text])>[data-slot=button]:not([data-variant=outline])]:border-outline-border [&_[data-slot]:is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:relative [&_[data-slot]:is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:z-10;
   }
 
   .cn-button-group-orientation-horizontal {
@@ -1754,6 +1768,10 @@
   /* MARK: Message Scroller */
   .cn-message-scroller-content {
     @apply gap-8;
+  }
+
+  .cn-message-scroller-button {
+    @apply rounded-full;
   }
 
   /* MARK: Message */

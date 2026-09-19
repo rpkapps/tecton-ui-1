@@ -4,14 +4,14 @@ import { cn } from "cn"
 import { Separator } from "@tecton/react/components/separator"
 
 const buttonGroupVariants = cva(
-  "flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
+  "[&:has(>[data-variant=outline],>[data-slot=input],>[data-slot=textarea],>[data-slot=select-trigger],>[data-slot=input-group],>[data-slot=button-group-text])>[data-slot=button]:not([data-variant=outline])]:border-outline-border flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 has-[>[data-slot=button-group]]:gap-2 [&_[data-slot]:is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:relative [&_[data-slot]:is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:z-10 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
   {
     variants: {
       orientation: {
         horizontal:
-          "**:data-slot:rounded-e-none [&_[data-slot]~[data-slot]]:rounded-s-none [&_[data-slot]~[data-slot]]:border-s-0 [&>[data-slot]:not(:has(~[data-slot]))]:rounded-e-md!",
+          "**:data-slot:rounded-e-none [&_[data-slot]~[data-slot]]:rounded-s-none [&_[data-slot]~[data-slot]:not([data-slot=button-group])]:-ms-px [&>[data-slot]:not(:has(~[data-slot]))]:rounded-e-md!",
         vertical:
-          "flex-col **:data-slot:rounded-b-none [&_[data-slot]~[data-slot]]:rounded-t-none [&_[data-slot]~[data-slot]]:border-t-0 [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md!",
+          "flex-col **:data-slot:rounded-b-none [&_[data-slot]~[data-slot]]:rounded-t-none [&_[data-slot]~[data-slot]:not([data-slot=button-group])]:-mt-px [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md!",
       },
     },
     defaultVariants: {
@@ -78,7 +78,7 @@ function ButtonGroupSeparator({
       data-slot="button-group-separator"
       orientation={orientation}
       className={cn(
-        "relative self-stretch bg-input data-horizontal:mx-px data-horizontal:w-auto data-vertical:my-px data-vertical:h-auto",
+        "relative self-stretch bg-input aria-[orientation=horizontal]:mx-px aria-[orientation=horizontal]:w-auto aria-[orientation=vertical]:my-px aria-[orientation=vertical]:h-auto",
         className
       )}
       {...props}
