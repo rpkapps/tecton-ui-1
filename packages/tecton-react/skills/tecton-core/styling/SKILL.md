@@ -33,6 +33,14 @@ them. Two mechanisms carry the theme: **semantic tokens** (the shadcn CSS
 variables, retuned to Tecton values) and the **Tecton palette** (the design
 system's colour ramps, installed as Tailwind's palette).
 
+## Non-negotiable: props
+
+This skill covers colour. The other rule that holds everywhere: **props are
+React Aria's, not Radix's** — `onPress` not `onClick`; `is*` state props
+(`isDisabled`, `isSelected`, `isRequired`); `id` not `value` on Select, Tabs,
+Accordion, ToggleGroup and Menu items; no `asChild`. Detail:
+`tecton-core/components`.
+
 ## The one rule that breaks everything
 
 `globals.css` resets Tailwind's stock palette before declaring Tecton's:

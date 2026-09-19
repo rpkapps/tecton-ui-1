@@ -38,6 +38,15 @@ is wrong for almost every interactive component, and the failure is usually
 quiet: an extra prop is dropped, a handler never fires, a control never
 disables.
 
+## Non-negotiable: colour
+
+This skill covers the API. The other rule that holds everywhere: **stock
+Tailwind colours emit no CSS.** `globals.css` resets `--color-*: initial`, so
+`bg-red-500` and `text-zinc-400` produce no rule and render unstyled — no
+error, no fallback. Use a variant where one exists, else a semantic token
+(`bg-primary`) or a palette step (`bg-blue-120`). Detail:
+`tecton-core/styling`.
+
 ## Setup
 
 ```tsx

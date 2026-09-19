@@ -25,7 +25,7 @@
     "tecton-core/forms": {
       "sources_sha": {
         "rpkapps/tecton-ui-1:apps/www/content/docs/forms/index.mdx": "92532e7e1dec03378fc70409ab8d752cba4e4449ba2f5dba2f5a166d4c172c91",
-        "rpkapps/tecton-ui-1:apps/www/content/docs/forms/tanstack-form.mdx": "0cc49e524ecc34c648fe1cf2718f8a957244cf7a65acd720647609ca946a9e29",
+        "rpkapps/tecton-ui-1:apps/www/content/docs/forms/tanstack-form.mdx": "d14036c14f885f1c9edba7c3aab15524845b924cb34c84857dcd05576d31d3d5",
         "rpkapps/tecton-ui-1:apps/www/src/examples/form-tanstack-demo.tsx": "e27d88bea1792c4a56fc6c449a706cd8af67adc9cdd8d0ba4ca67312bd88bb71"
       }
     },

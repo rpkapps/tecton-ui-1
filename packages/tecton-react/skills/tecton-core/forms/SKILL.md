@@ -36,6 +36,20 @@ and **Zod** for schema validation.
 npm install @tanstack/react-form zod
 ```
 
+## Non-negotiables
+
+True everywhere in Tecton, whichever skill you loaded.
+
+1. **Stock Tailwind colours emit no CSS.** `globals.css` resets
+   `--color-*: initial`, so `bg-red-500` and `text-zinc-400` produce no rule
+   and render unstyled — no error, no fallback. Use a semantic token
+   (`bg-primary`, `text-success`) or a palette step (`bg-blue-120`).
+   Detail: `tecton-core/styling`.
+2. **Props are React Aria's, not Radix's.** `onPress` not `onClick`; `is*`
+   state props (`isDisabled`, `isSelected`, `isRequired`); `id` not `value`
+   on Select, Tabs, Accordion, ToggleGroup and Menu items; no `asChild`.
+   Detail: `tecton-core/components`.
+
 ## Setup
 
 ```tsx
@@ -140,9 +154,18 @@ the control hands over a value — and must be wrapped for `Input`/`Textarea`.
 
 ## Required, disabled, invalid
 
-React Aria names: `isRequired`, `isDisabled`, `isInvalid`. `isInvalid` on a
-React Aria control does what `aria-invalid` does on a DOM input; on `Input` and
-`Textarea` use `aria-invalid`, as in the example above.
+React Aria names them `isRequired` and `isDisabled`. Invalidity splits the same
+way the `onChange` shapes do, and for the same reason:
+
+| Control | Mark it invalid with |
+| --- | --- |
+| `Input`, `Textarea` | `aria-invalid` — they wrap raw DOM elements |
+| `Checkbox`, `Select`, `RadioGroup`, `Combobox` | `isInvalid` |
+| `Switch` | `data-invalid` — React Aria's `SwitchProps` omits `isInvalid` **and** `isRequired` |
+
+In every case the enclosing `Field` also takes `data-invalid` (see the mistake
+below). A prop on the wrong control is dropped as unknown: no destructive
+border, no announcement, and no error.
 
 ## Structure
 

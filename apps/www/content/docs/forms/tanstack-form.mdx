@@ -9,7 +9,7 @@ import { InfoIcon } from "lucide-react"
 
 This guide explores how to build forms using TanStack Form. You'll learn to create forms with the `<Field />` component, implement schema validation with Zod, handle errors, and ensure accessibility.
 
-It follows the [upstream shadcn/ui guide](https://ui.shadcn.com/docs/forms/tanstack-form); the examples are rewritten for the React Aria components, whose controls use `isSelected` / `onChange`, `selectedKey` / `onSelectionChange` and `isInvalid` instead of the Radix `checked` / `onCheckedChange`, `value` / `onValueChange` and `aria-invalid` props.
+It follows the [upstream shadcn/ui guide](https://ui.shadcn.com/docs/forms/tanstack-form); the examples are rewritten for the React Aria components, whose controls use `isSelected` / `onChange` and `selectedKey` / `onSelectionChange` instead of the Radix `checked` / `onCheckedChange` and `value` / `onValueChange`. Invalidity is not uniform: `<Input />` and `<Textarea />` wrap real DOM elements and take `aria-invalid`, the React Aria controls take `isInvalid`, and `<Switch />` takes neither — see [Displaying errors](#displaying-errors).
 
 ## Demo
 
@@ -222,7 +222,8 @@ const form = useForm({
 Display errors next to the field using `<FieldError />`. For styling and accessibility:
 
 - Add the `data-invalid` prop to the `<Field />` component.
-- Add `aria-invalid` to native controls such as `<Input />` and `<Textarea />`, and `isInvalid` to the React Aria controls (`<Select />`, `<Checkbox />`, `<RadioGroup />`).
+- Add `aria-invalid` to native controls such as `<Input />` and `<Textarea />`, and `isInvalid` to the React Aria controls (`<Select />`, `<Checkbox />`, `<RadioGroup />`, `<Combobox />`).
+- `<Switch />` is the exception: React Aria's `SwitchProps` omits `isInvalid` and `isRequired`, so mark it with `data-invalid` (as the [Switch](/docs/components/switch) invalid example does).
 
 ```tsx showLineNumbers title="form.tsx" {4,18}
 <form.Field

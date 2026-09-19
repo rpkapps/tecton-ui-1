@@ -39,6 +39,20 @@ import { Stat, StatLabel, StatValue } from "@tecton/react/tecton/stat"
 They follow the same conventions as the generated components — `data-slot`,
 `cva` variants, `cn`, React Aria primitives, `onPress` not `onClick`.
 
+## Non-negotiables
+
+True everywhere in Tecton, whichever skill you loaded.
+
+1. **Stock Tailwind colours emit no CSS.** `globals.css` resets
+   `--color-*: initial`, so `bg-red-500` and `text-zinc-400` produce no rule
+   and render unstyled — no error, no fallback. Use a semantic token
+   (`bg-primary`, `text-success`) or a palette step (`bg-blue-120`).
+   Detail: `tecton-core/styling`.
+2. **Props are React Aria's, not Radix's.** `onPress` not `onClick`; `is*`
+   state props (`isDisabled`, `isSelected`, `isRequired`); `id` not `value`
+   on Select, Tabs, Accordion, ToggleGroup and Menu items; no `asChild`.
+   Detail: `tecton-core/components`.
+
 ## Before you build one
 
 Work down this list. Stop at the first match.
