@@ -6,6 +6,12 @@
       "runtimeExecutable": "pnpm",
       "runtimeArgs": ["--filter", "www", "dev"],
       "port": 3000
+    },
+    {
+      "name": "www-3030",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["--filter", "www", "exec", "vite", "dev", "--port", "3030"],
+      "port": 3030
     }
   ]
 }

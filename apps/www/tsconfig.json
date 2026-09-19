@@ -16,7 +16,8 @@
     "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/*"],
-      "@tecton/react/*": ["../../packages/tecton-react/src/*"]
+      "@tecton/blocks": ["../../packages/tecton-blocks/src/blocks/index.ts"],
+      "@tecton/blocks/*": ["../../packages/tecton-blocks/src/blocks/*"]
     },
 
     /* Bundler mode */
