@@ -6,7 +6,15 @@ import {
   renderHook,
   screen,
 } from "@testing-library/react"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  expectTypeOf,
+  it,
+  vi,
+} from "vitest"
 
 import {
   createShortcutRegistry,
@@ -280,6 +288,67 @@ describe("createShortcutRegistry", () => {
       expect(registry.handleKeyDown(key({ key: "g" }))).toBe(true)
       expect(g.onAction).toHaveBeenCalledTimes(1)
     })
+  })
+})
+
+// The registry is the contract between the shell and the applications it
+// mounts, which may ship a different @tecton/react version: renaming a method
+// or changing a signature breaks them silently, so both are pinned here.
+describe("registry contract", () => {
+  it("pins the public shape of ShortcutRegistry", () => {
+    expectTypeOf<keyof ShortcutRegistry>().toEqualTypeOf<
+      "register" | "unregister" | "getAll" | "subscribe" | "handleKeyDown"
+    >()
+    expectTypeOf<ShortcutRegistry["register"]>().toEqualTypeOf<
+      (shortcut: Shortcut | Shortcut[]) => () => void
+    >()
+    expectTypeOf<ShortcutRegistry["unregister"]>().toEqualTypeOf<
+      (id: string) => void
+    >()
+    expectTypeOf<ShortcutRegistry["getAll"]>().toEqualTypeOf<() => Shortcut[]>()
+    expectTypeOf<ShortcutRegistry["subscribe"]>().toEqualTypeOf<
+      (listener: () => void) => () => void
+    >()
+    expectTypeOf<ShortcutRegistry["handleKeyDown"]>().toEqualTypeOf<
+      (event: KeyboardEvent) => boolean
+    >()
+    expectTypeOf(createShortcutRegistry).toEqualTypeOf<() => ShortcutRegistry>()
+    // `register` is only as stable as the shortcut it takes.
+    expectTypeOf<keyof Shortcut>().toEqualTypeOf<
+      | "id"
+      | "keys"
+      | "label"
+      | "group"
+      | "onAction"
+      | "allowInInput"
+      | "isEnabled"
+      | "hidden"
+    >()
+  })
+
+  it("registers, lists, dispatches and unregisters without React", () => {
+    const registry = createShortcutRegistry()
+    const listener = vi.fn()
+    const unsubscribe = registry.subscribe(listener)
+
+    const save = shortcut({ id: "save", keys: "ctrl+s" })
+    const remove = registry.register(save)
+    expect(listener).toHaveBeenCalledTimes(1)
+    expect(registry.getAll()).toEqual([save])
+
+    const event = key({ key: "s", ctrlKey: true })
+    expect(registry.handleKeyDown(event)).toBe(true)
+    expect(save.onAction).toHaveBeenCalledWith(event)
+
+    registry.unregister("save")
+    expect(registry.getAll()).toEqual([])
+    expect(registry.handleKeyDown(key({ key: "s", ctrlKey: true }))).toBe(false)
+    expect(save.onAction).toHaveBeenCalledTimes(1)
+
+    // The disposer stays safe once the shortcut is already gone.
+    remove()
+    expect(registry.getAll()).toEqual([])
+    unsubscribe()
   })
 })
 
