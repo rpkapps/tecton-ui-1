@@ -375,9 +375,9 @@
       "note": "Text on the activated ghost surface."
     },
     "outline-border": {
-      "dark": "--tecton-color-action-outlined-border-strong",
-      "confidence": "exact",
-      "note": "Button variant=outline resting border (Tecton Button outlined uses the strong border)."
+      "dark": "--tecton-color-input-outlined-border",
+      "confidence": "approximated",
+      "note": "Button variant=outline resting border. Tecton Button outlined uses --tecton-color-action-outlined-border-strong, but shadcn compositions put an outline button flush against an input (button group, input group, a Date button next to a Time input), where the strong border reads as a heavier line than the field beside it. Borrows the input border so the two match in both themes; the hover / pressed / active borders stay on the action-outlined ramp."
     },
     "outline-foreground": {
       "dark": "--tecton-color-action-outlined-text",

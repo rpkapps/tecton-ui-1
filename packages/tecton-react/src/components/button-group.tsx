@@ -4,14 +4,14 @@ import { cn } from "cn"
 import { Separator } from "@tecton/react/components/separator"
 
 const buttonGroupVariants = cva(
-  "flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
+  "[&:has(>[data-variant=outline],>[data-slot=input],>[data-slot=textarea],>[data-slot=select-trigger],>[data-slot=input-group],>[data-slot=button-group-text])>[data-slot=button]:not([data-variant=outline])]:border-outline-border flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
   {
     variants: {
       orientation: {
         horizontal:
-          "**:data-slot:rounded-e-none [&_[data-slot]~[data-slot]]:rounded-s-none [&_[data-slot]~[data-slot]]:border-s-0 [&>[data-slot]:not(:has(~[data-slot]))]:rounded-e-md!",
+          "[&_[data-slot]:has(+[data-variant=outline]:hover)]:border-e-outline-hover-border [&_[data-slot]:has(+[data-variant=outline][data-pressed])]:border-e-outline-pressed-border [&_[data-slot]:has(+[data-variant=outline][aria-expanded=true])]:border-e-outline-active-border **:data-slot:rounded-e-none [&_[data-slot]:has(+[data-variant=outline]:focus-visible)]:border-e-ring [&_[data-slot]~[data-slot]]:rounded-s-none [&_[data-slot]~[data-slot]]:border-s-0 [&>[data-slot]:not(:has(~[data-slot]))]:rounded-e-md!",
         vertical:
-          "flex-col **:data-slot:rounded-b-none [&_[data-slot]~[data-slot]]:rounded-t-none [&_[data-slot]~[data-slot]]:border-t-0 [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md!",
+          "[&_[data-slot]:has(+[data-variant=outline]:hover)]:border-b-outline-hover-border [&_[data-slot]:has(+[data-variant=outline][data-pressed])]:border-b-outline-pressed-border [&_[data-slot]:has(+[data-variant=outline][aria-expanded=true])]:border-b-outline-active-border flex-col **:data-slot:rounded-b-none [&_[data-slot]:has(+[data-variant=outline]:focus-visible)]:border-b-ring [&_[data-slot]~[data-slot]]:rounded-t-none [&_[data-slot]~[data-slot]]:border-t-0 [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md!",
       },
     },
     defaultVariants: {

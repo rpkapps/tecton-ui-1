@@ -94,7 +94,7 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--ghost-pressed-foreground` | `--tecton-color-action-tertiary-text-press` | `#e3e0e8` | `#563f67` | exact | Text on the pressed ghost surface. |
 | `--ghost-active` | `--tecton-color-action-tertiary-bg-active` | `#433d47` | `#e9e3ec` | exact | Button variant=ghost activated surface. |
 | `--ghost-active-foreground` | `--tecton-color-action-tertiary-text-active` | `#e3e0e8` | `#593c70` | exact | Text on the activated ghost surface. |
-| `--outline-border` | `--tecton-color-action-outlined-border-strong` | `#aaa1b2` | `#725687` | exact | Button variant=outline resting border (Tecton Button outlined uses the strong border). |
+| `--outline-border` | `--tecton-color-input-outlined-border` | `#57515c` | `#9884a4` | approximated | Button variant=outline resting border. Tecton Button outlined uses --tecton-color-action-outlined-border-strong, but shadcn compositions put an outline button flush against an input (button group, input group, a Date button next to a Time input), where the strong border reads as a heavier line than the field beside it. Borrows the input border so the two match in both themes; the hover / pressed / active borders stay on the action-outlined ramp. |
 | `--outline-foreground` | `--tecton-color-action-outlined-text` | `#aaa1b2` | `#644a78` | exact | Button variant=outline resting text. |
 | `--outline-hover` | `--tecton-color-action-outlined-bg-hover` | `#433d47` | `#f0edf4` | exact | Button variant=outline hovered / focused surface. |
 | `--outline-hover-border` | `--tecton-color-action-outlined-border-hover` | `#cac5d2` | `#865fa0` | exact | Button variant=outline hovered / focused border. |

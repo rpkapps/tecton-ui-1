@@ -243,16 +243,28 @@
   }
 
   /* MARK: Button Group */
+  /* A group strips the inline-start border of every child after the first, so
+     the members have to agree on drawing one. Filled buttons carry a
+     transparent border, which leaves a mixed group (filled + outline, or a
+     field + a filled button) with an outline that starts in mid-air at the
+     seam. Give the filled members the same stroke whenever a bordered member
+     is present; a group of only filled buttons keeps its borderless look. */
   .cn-button-group {
-    @apply has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md;
+    @apply has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md [&:has(>[data-variant=outline],>[data-slot=input],>[data-slot=textarea],>[data-slot=select-trigger],>[data-slot=input-group],>[data-slot=button-group-text])>[data-slot=button]:not([data-variant=outline])]:border-outline-border;
   }
 
+  /* An outline button lights up its whole border on hover / focus / press, but
+     the group has stripped its inline-start one, so the highlight would be a
+     ring that is open on the leading edge. The missing edge is already drawn
+     by the previous sibling's inline-end border, so recolour that instead of
+     giving the button a border back: a border added here would be absorbed by
+     a fixed-width icon button and shift the group. */
   .cn-button-group-orientation-horizontal {
-    @apply [&>[data-slot]:not(:has(~[data-slot]))]:rounded-e-md!;
+    @apply [&>[data-slot]:not(:has(~[data-slot]))]:rounded-e-md! [&_[data-slot]:has(+[data-variant=outline]:hover)]:border-e-outline-hover-border [&_[data-slot]:has(+[data-variant=outline]:focus-visible)]:border-e-ring [&_[data-slot]:has(+[data-variant=outline][data-pressed])]:border-e-outline-pressed-border [&_[data-slot]:has(+[data-variant=outline][aria-expanded=true])]:border-e-outline-active-border;
   }
 
   .cn-button-group-orientation-vertical {
-    @apply [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md!;
+    @apply [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md! [&_[data-slot]:has(+[data-variant=outline]:hover)]:border-b-outline-hover-border [&_[data-slot]:has(+[data-variant=outline]:focus-visible)]:border-b-ring [&_[data-slot]:has(+[data-variant=outline][data-pressed])]:border-b-outline-pressed-border [&_[data-slot]:has(+[data-variant=outline][aria-expanded=true])]:border-b-outline-active-border;
   }
 
   .cn-button-group-text {
@@ -1754,6 +1766,10 @@
   /* MARK: Message Scroller */
   .cn-message-scroller-content {
     @apply gap-8;
+  }
+
+  .cn-message-scroller-button {
+    @apply rounded-full;
   }
 
   /* MARK: Message */
