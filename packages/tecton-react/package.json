@@ -13,6 +13,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
+    "barrel:build": "bun run scripts/barrel-build.mts",
+    "barrel:check": "bun run scripts/barrel-build.mts --check",
     "tokens:build": "bun run scripts/tokens-build.mts",
     "tokens:check": "bun run scripts/tokens-check.mts",
     "icons:build": "bun run scripts/build-icons.mts",
@@ -63,6 +65,7 @@
     "vitest": "^5.0.0"
   },
   "exports": {
+    ".": "./src/index.ts",
     "./globals.css": "./src/styles/globals.css",
     "./styles/*": "./src/styles/*",
     "./lib/*": "./src/lib/*.ts",

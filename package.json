@@ -11,6 +11,8 @@
     "typecheck": "pnpm -r run typecheck",
     "test": "pnpm -r run test",
     "generated:check": "scripts/generated-check.sh",
+    "barrel:build": "pnpm --filter @tecton/react barrel:build",
+    "barrel:check": "pnpm --filter @tecton/react barrel:check",
     "tokens:build": "pnpm --filter @tecton/react tokens:build",
     "tokens:check": "pnpm --filter @tecton/react tokens:check",
     "registry:build": "pnpm --filter @tecton/react registry:build",

@@ -36,6 +36,9 @@ jobs:
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
+      - name: Verify the generated barrel
+        run: pnpm barrel:check
+
       - name: Build the Tecton registry mirror
         run: scripts/registry-mirror.sh setup
 

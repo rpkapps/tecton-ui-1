@@ -110,6 +110,51 @@ export function Example() {
 }
 ```
 
+### One import for everything
+
+Every component, hook and utility is *also* exported from the package root, so
+the whole surface can be pulled from a single module:
+
+```tsx
+import { Button, Badge, Panel, useIsMobile, cn } from "@tecton/react"
+import { WellIcon } from "@tecton/react/icons"
+```
+
+Prefer the subpath imports above in an ordinary application: they keep the
+module graph narrow and let the bundler drop what you never render. The root
+entry exists for **Module Federation**, where the per-component subpaths turn
+into one `shared` key each — dozens of entries to declare, version and keep in
+sync across every remote. Sharing the root instead collapses them to one:
+
+```ts title="rspack.config.ts"
+new ModuleFederationPlugin({
+  shared: {
+    react: { singleton: true, requiredVersion: "^19" },
+    "react-dom": { singleton: true, requiredVersion: "^19" },
+    // one entry, not one per component
+    "@tecton/react": { singleton: true },
+    "@tecton/react/icons": { singleton: true },
+  },
+})
+```
+
+Share it as a `singleton`. Two copies of Tecton in one page mean two copies of
+the React Aria context that the overlays, the shell and the shortcut registry
+read across a remote boundary — a menu that opens behind its trigger, or a
+shortcut the host never receives.
+
+<Callout title="Why icons are a second entry">
+  `@tecton/react/icons` is already a single module, so it costs one more key
+  rather than 136. It stays separate because its `tectonIcons` gallery array
+  references every glyph: re-exporting it from the root would pull all of them
+  into any application that imports a `Button`. Import icons from
+  `@tecton/react/icons`, or a single glyph from `@tecton/react/icons/well`.
+</Callout>
+
+The root entry is generated from the component, hook, utility and Tecton
+directories by `pnpm barrel:build`, and `pnpm barrel:check` (wired into CI)
+fails when a newly added component is missing from it.
+
 ## Frameworks
 
 <Tabs defaultValue="vite">
