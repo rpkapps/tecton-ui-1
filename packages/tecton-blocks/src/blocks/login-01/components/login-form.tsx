@@ -172,7 +172,7 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
             type="button"
             variant="secondary"
             className="w-full"
-            onPress={onSso}
+            {...(onSso === undefined ? {} : { onPress: onSso })}
           >
             <BuildingIcon /> Continue with {loginCopy.ssoProvider}
           </Button>

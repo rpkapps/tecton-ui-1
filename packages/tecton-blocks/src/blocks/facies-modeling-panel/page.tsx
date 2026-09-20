@@ -88,7 +88,7 @@ function FaciesModelingPanel({
             variant="ghost"
             size="icon-sm"
             aria-label="Collapse panel"
-            onPress={onCollapse}
+            {...(onCollapse === undefined ? {} : { onPress: onCollapse })}
           >
             <PanelRightIcon />
           </Button>

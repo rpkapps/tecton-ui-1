@@ -59,7 +59,7 @@ const app = (
 ): ShellApp => ({ id, code, name, category, description })
 
 /** A representative slice of a large app catalogue, grouped by category. */
-export const apps: ShellApp[] = [
+export const apps: [ShellApp, ...ShellApp[]] = [
   app(
     "dsg",
     "DSG",

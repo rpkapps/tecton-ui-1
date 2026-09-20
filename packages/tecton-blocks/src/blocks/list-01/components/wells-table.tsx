@@ -147,7 +147,7 @@ const pageSizeOptions = [10, 25, 50, 100]
 
 type WellsTableProps = React.ComponentProps<"div"> & {
   data: Well[]
-  onOpen?: (well: Well) => void
+  onOpen?: ((well: Well) => void) | undefined
   /** Rows per page. */
   pageSize?: number
   onRowSelectionChange?: (selection: RowSelectionState) => void
@@ -187,6 +187,13 @@ function WellsTable({
   })
 
   const rows = table.getRowModel().rows
+  const [primarySort] = sorting
+  const sortDirection: "ascending" | "descending" = primarySort?.desc
+    ? "descending"
+    : "ascending"
+  const sortDescriptor = primarySort
+    ? { column: primarySort.id, direction: sortDirection }
+    : undefined
 
   return (
     <div
@@ -212,14 +219,7 @@ function WellsTable({
             )
           }
         }}
-        sortDescriptor={
-          sorting.length
-            ? {
-                column: sorting[0].id,
-                direction: sorting[0].desc ? "descending" : "ascending",
-              }
-            : undefined
-        }
+        {...(sortDescriptor === undefined ? {} : { sortDescriptor })}
         onSortChange={(descriptor) =>
           table.setSorting([
             {
@@ -380,7 +380,11 @@ function WellsEmptyState({
       </EmptyHeader>
       <EmptyContent className="flex-row justify-center">
         {filtered ? (
-          <Button variant="outline" size="sm" onPress={onClear}>
+          <Button
+            variant="outline"
+            size="sm"
+            {...(onClear === undefined ? {} : { onPress: onClear })}
+          >
             Clear filters
           </Button>
         ) : (
@@ -388,7 +392,10 @@ function WellsEmptyState({
             <Button variant="outline" size="sm">
               Import
             </Button>
-            <Button size="sm" onPress={onCreate}>
+            <Button
+              size="sm"
+              {...(onCreate === undefined ? {} : { onPress: onCreate })}
+            >
               <PlusIcon /> New well
             </Button>
           </>

@@ -1,3 +1,5 @@
 # Blocks
 
 Blocks are ready-made, self-contained compositions of Tecton components for the oil & gas / subsurface domain (wells, horizons, facies, field development alternatives). Each block lives in its own folder: `page.tsx` default-exports a full-page composition usable as a route and named-exports the reusable sub-components; `components/*.tsx` hold those parts; `data.ts` carries realistic mock data and domain types so the block renders without any backend. Blocks import generated primitives from `@tecton/react/components/*`, Tecton components from `@tecton/react/tecton/*`, icons from `lucide-react`, use only theme tokens (chart series use `var(--chart-n)`), are responsive and dark-first, and follow shadcn conventions (`data-slot` attributes, `cn`, React Aria `onPress` / `onChange`). `index.ts` exports the `blocks` registry (`name`, `title`, `description`, `category`, lazy `component`) that the docs gallery renders.
+
+The blocks type-check under `exactOptionalPropertyTypes` and `noUncheckedIndexedAccess` on top of `strict`, so a project that enables those options can copy a block verbatim and get no diagnostics from it.

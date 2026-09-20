@@ -26,6 +26,8 @@ import { flattenTree, projectTree } from "./data"
 
 /** Zoom levels the magnifier buttons step through. */
 const zoomLevels = [0.5, 0.75, 1, 1.5, 2, 3]
+const minZoom = zoomLevels[0] ?? 1
+const maxZoom = zoomLevels[zoomLevels.length - 1] ?? 1
 
 /** Spacing of the work-area grid at 1x, in pixels. */
 const gridSpacing = 24
@@ -99,7 +101,7 @@ export default function Page() {
               variant="ghost"
               size="icon-sm"
               aria-label="Zoom in"
-              isDisabled={zoom >= zoomLevels[zoomLevels.length - 1]}
+              isDisabled={zoom >= maxZoom}
               onPress={zoomIn}
             >
               <ZoomInIcon />
@@ -108,7 +110,7 @@ export default function Page() {
               variant="ghost"
               size="icon-sm"
               aria-label="Zoom out"
-              isDisabled={zoom <= zoomLevels[0]}
+              isDisabled={zoom <= minZoom}
               onPress={zoomOut}
             >
               <ZoomOutIcon />

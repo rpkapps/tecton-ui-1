@@ -119,13 +119,15 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
                     }
                   />
                 ))}
-                <WellDesignCard
-                  design={primaryWell}
-                  isSelected={selectedWell.includes(primaryWell.id)}
-                  onSelectedChange={(next) =>
-                    setSelectedWell(next ? [primaryWell.id] : [])
-                  }
-                />
+                {primaryWell && (
+                  <WellDesignCard
+                    design={primaryWell}
+                    isSelected={selectedWell.includes(primaryWell.id)}
+                    onSelectedChange={(next) =>
+                      setSelectedWell(next ? [primaryWell.id] : [])
+                    }
+                  />
+                )}
                 <CostVsRiskPanel className="h-auto md:col-span-2 2xl:col-span-1" />
               </div>
             </AppShellMain>

@@ -76,8 +76,10 @@ function FdaCard({
         <CardTitle className="flex items-center gap-2">
           <Checkbox
             aria-label={`Select ${fda.code}`}
-            isSelected={isSelected}
-            onChange={onSelectedChange}
+            {...(isSelected === undefined ? {} : { isSelected })}
+            {...(onSelectedChange === undefined
+              ? {}
+              : { onChange: onSelectedChange })}
           />
           <span className="font-mono text-sm font-normal tracking-wide text-muted-foreground">
             {fda.code}
@@ -191,7 +193,7 @@ function SectionHeading({
 }: {
   title: string
   trailing?: React.ReactNode
-  onPress?: () => void
+  onPress?: (() => void) | undefined
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
@@ -202,7 +204,7 @@ function SectionHeading({
           variant="ghost"
           size="icon-xs"
           aria-label={`Open ${title.toLowerCase()} details`}
-          onPress={onPress}
+          {...(onPress === undefined ? {} : { onPress })}
         >
           <ChevronRightIcon />
         </Button>

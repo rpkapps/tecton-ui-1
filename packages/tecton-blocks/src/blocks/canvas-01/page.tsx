@@ -66,7 +66,7 @@ import {
 function Tool({
   label,
   isActive,
-  isDisabled,
+  isDisabled = false,
   children,
   onPress,
 }: {
@@ -82,10 +82,10 @@ function Tool({
         variant="ghost"
         size="icon-sm"
         aria-label={label}
-        aria-pressed={isActive}
         isDisabled={isDisabled}
         className="aria-pressed:bg-ghost-active aria-pressed:text-ghost-active-foreground"
-        onPress={onPress}
+        {...(isActive === undefined ? {} : { "aria-pressed": isActive })}
+        {...(onPress === undefined ? {} : { onPress })}
       >
         {children}
       </Button>
@@ -136,6 +136,8 @@ const mapLayers = [
 
 /** Zoom levels the magnifier buttons step through. */
 const zoomLevels = [1, 1.5, 2, 3, 4]
+const minZoom = zoomLevels[0] ?? 1
+const maxZoom = zoomLevels[zoomLevels.length - 1] ?? 1
 
 /** Ground distance the scale bar spans at 1×, in metres and feet. */
 const scaleBar = { metres: 750, feet: 2500 }
@@ -146,7 +148,7 @@ const scaleBar = { metres: 750, feet: 2500 }
  * rail on each side, the legend and the scale bar.
  */
 export default function Page() {
-  const [preset, setPreset] = React.useState(presets[0].id)
+  const [preset, setPreset] = React.useState(presets[0]?.id ?? "")
   const [tool, setTool] = React.useState("pan")
   const [selected, setSelected] = React.useState<string | null>(null)
   const [zoom, setZoom] = React.useState(1)
@@ -210,14 +212,14 @@ export default function Page() {
             <CanvasToolbar aria-label="Navigation tools">
               <Tool
                 label="Zoom in"
-                isDisabled={zoom >= zoomLevels[zoomLevels.length - 1]}
+                isDisabled={zoom >= maxZoom}
                 onPress={zoomIn}
               >
                 <ZoomInIcon />
               </Tool>
               <Tool
                 label="Zoom out"
-                isDisabled={zoom <= zoomLevels[0]}
+                isDisabled={zoom <= minZoom}
                 onPress={zoomOut}
               >
                 <ZoomOutIcon />

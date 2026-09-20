@@ -18,7 +18,10 @@ function NavMain({ items }: { items: NavLink[] }) {
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton href={item.url} isActive={item.isActive}>
+              <SidebarMenuButton
+                href={item.url}
+                isActive={item.isActive ?? false}
+              >
                 <item.icon />
                 <span>{item.title}</span>
               </SidebarMenuButton>

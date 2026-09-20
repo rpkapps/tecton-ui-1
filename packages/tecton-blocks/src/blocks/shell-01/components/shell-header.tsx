@@ -110,7 +110,7 @@ function ShellHeaderInner({
   const recent = recentAppIds
     .map((id) => apps.find((item) => item.id === id))
     .filter(
-      (item): item is ShellApp => item !== undefined && item.id !== current.id
+      (item): item is ShellApp => item !== undefined && item.id !== current?.id
     )
   const groups = groupApps(apps)
   const shortcuts = useShortcuts()
@@ -134,6 +134,10 @@ function ShellHeaderInner({
     group: "Shell",
     onAction: () => setShortcutsOpen((open) => !open),
   })
+
+  // The shell always mounts an application; with an empty app list there is
+  // nothing for the header to name.
+  if (!current) return null
 
   const secondary = [
     { id: "whats-new", label: "What's new", icon: SparklesIcon },

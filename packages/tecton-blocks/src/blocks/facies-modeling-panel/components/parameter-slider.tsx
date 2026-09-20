@@ -28,11 +28,11 @@ function ParameterSlider({
   value,
   minValue,
   maxValue,
-  step,
+  step = 1,
   unit,
   valueLabel,
   adornment,
-  isDisabled,
+  isDisabled = false,
   onChange,
 }: ParameterSliderProps) {
   const ariaLabel = typeof label === "string" ? label : undefined
@@ -60,12 +60,12 @@ function ParameterSlider({
         </span>
       </div>
       <Slider
-        aria-label={ariaLabel}
         value={value}
         minValue={minValue}
         maxValue={maxValue}
         step={step}
         isDisabled={isDisabled}
+        {...(ariaLabel === undefined ? {} : { "aria-label": ariaLabel })}
         onChange={(next) => onChange(Array.isArray(next) ? next[0] : next)}
       />
     </div>

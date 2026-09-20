@@ -10,6 +10,13 @@ import Sidebar03Page from "../blocks/sidebar-03/page"
 import { ConceptSection } from "../blocks/detail-01/components/concept-section"
 import { project } from "../blocks/detail-01/data"
 
+/** First entry of a query result, failing the test when there is none. */
+function first<T>(items: T[]): T {
+  const [item] = items
+  if (item === undefined) throw new Error("expected at least one match")
+  return item
+}
+
 describe("block chrome", () => {
   it("collapses and restores the horizons panel", async () => {
     const user = userEvent.setup()
@@ -101,7 +108,9 @@ describe("block chrome", () => {
   it("opens the preset actions menu", async () => {
     const user = userEvent.setup()
     render(<CanvasPage />)
-    const [trigger] = screen.getAllByRole("button", { name: /^Actions for / })
+    const trigger = first(
+      screen.getAllByRole("button", { name: /^Actions for / })
+    )
     await user.click(trigger)
     expect(await screen.findByRole("menu")).toBeInTheDocument()
   })
@@ -125,9 +134,9 @@ describe("block chrome", () => {
 
   it("opens the concept and alternative action menus", async () => {
     const user = userEvent.setup()
-    render(<ConceptSection concept={project.concepts[0]} />)
+    render(<ConceptSection concept={first(project.concepts)} />)
     const triggers = screen.getAllByRole("button", { name: /^Actions for / })
-    await user.click(triggers[0])
+    await user.click(first(triggers))
     expect(await screen.findByRole("menu")).toBeInTheDocument()
   })
 })

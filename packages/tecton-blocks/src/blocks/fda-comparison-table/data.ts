@@ -132,7 +132,7 @@ export function riskLabel(value: number): string {
 }
 
 export function formatFirstOil(iso: string): string {
-  const [year, month] = iso.split("-").map(Number)
+  const [year, month = 1] = iso.split("-").map(Number)
   const quarter = Math.ceil(month / 3)
   return `Q${quarter} ${year}`
 }

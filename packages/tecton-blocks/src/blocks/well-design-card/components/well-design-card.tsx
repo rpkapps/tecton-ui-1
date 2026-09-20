@@ -80,8 +80,10 @@ function WellDesignCard({
         <CardTitle className="flex min-w-0 items-center gap-2">
           <Checkbox
             aria-label={`Select ${design.name}`}
-            isSelected={isSelected}
-            onChange={onSelectedChange}
+            {...(isSelected === undefined ? {} : { isSelected })}
+            {...(onSelectedChange === undefined
+              ? {}
+              : { onChange: onSelectedChange })}
           />
           <span className="truncate text-base">{design.name}</span>
           <Badge variant="secondary" appearance="outline">

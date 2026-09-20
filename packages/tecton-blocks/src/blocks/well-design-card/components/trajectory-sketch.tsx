@@ -27,20 +27,25 @@ function TrajectorySketch({
   const innerH = H - PAD.top - PAD.bottom
   const toX = (x: number) => PAD.left + x * innerW
   const toY = (y: number) => PAD.top + y * innerH
-  const points = design.path.map(([x, y]) => `${toX(x)},${toY(y)}`).join(" ")
+  const path = design.path
+  const points = path.map(([x, y]) => `${toX(x)},${toY(y)}`).join(" ")
+  /** Total-depth point: the trajectory always ends at TD. */
+  const tdPoint: [number, number] = path[path.length - 1] ?? [0, 0]
 
   /** Approximate x on the path at a given normalised depth. */
   const xAtDepth = (depth: number) => {
-    const path = design.path
     for (let i = 1; i < path.length; i++) {
-      const [x0, y0] = path[i - 1]
-      const [x1, y1] = path[i]
+      const from = path[i - 1]
+      const to = path[i]
+      if (from === undefined || to === undefined) continue
+      const [x0, y0] = from
+      const [x1, y1] = to
       if (depth <= y1) {
         const t = y1 === y0 ? 0 : (depth - y0) / (y1 - y0)
         return x0 + (x1 - x0) * t
       }
     }
-    return path[path.length - 1][0]
+    return tdPoint[0]
   }
 
   const depthFt = (fraction: number) => Math.round(design.td * fraction)
@@ -130,8 +135,8 @@ function TrajectorySketch({
       })}
       {/* TD marker */}
       <circle
-        cx={toX(design.path[design.path.length - 1][0])}
-        cy={toY(design.path[design.path.length - 1][1])}
+        cx={toX(tdPoint[0])}
+        cy={toY(tdPoint[1])}
         r={3.5}
         fill="var(--chart-5)"
       />

@@ -6,7 +6,7 @@ export type ProjectNode = {
   color?: string
   /** Secondary label, e.g. a count. */
   meta?: string
-  children?: ProjectNode[]
+  children?: ProjectNode[] | undefined
 }
 
 export const project = {

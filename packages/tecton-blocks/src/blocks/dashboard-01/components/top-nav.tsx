@@ -64,7 +64,9 @@ function TopNav({
             key={link.id}
             variant={link.id === activeId ? "secondary" : "ghost"}
             size="sm"
-            aria-current={link.id === activeId ? "page" : undefined}
+            {...(link.id === activeId
+              ? { "aria-current": "page" as const }
+              : {})}
             onPress={() => onNavigate?.(link.id)}
           >
             {link.label}

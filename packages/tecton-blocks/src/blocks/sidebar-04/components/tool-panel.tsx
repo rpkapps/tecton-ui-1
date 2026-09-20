@@ -83,7 +83,7 @@ function ToolPanel({
           variant="ghost"
           size="icon-sm"
           aria-label="Close panel"
-          onPress={onClose}
+          {...(onClose === undefined ? {} : { onPress: onClose })}
         >
           <PanelRightCloseIcon />
         </Button>
