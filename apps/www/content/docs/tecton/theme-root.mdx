@@ -49,7 +49,11 @@ Both elements carry `data-tecton-root`, which is the selector the scoped stylesh
 | --- | --- |
 | `inherit` (default) | No class: the subtree follows the shell's `dark` class (or `data-theme`), which is what a remote mounted in a Tecton shell wants. |
 | `dark` | Pins the subtree to dark. That switches the `dark:` utility variants inside it and, for a remote that imports `scoped-theme.css`, its variable blocks — a dark island in a light shell. |
-| `light` | Pins it to light. Only meaningful with `scoped-theme.css`, and the weaker of the two: it flips that sheet's variables, while `dark:` variants written against an ancestor's `dark` class still apply. Prefer `inherit` or `dark` inside a dark shell. |
+| `light` | Pins it to light, and no longer the weaker of the two: the `dark:` variant matches on the [nearest theme marker](/docs/theming#inverted-sections), so every `dark:` utility in the subtree stops applying, and a remote that imports `scoped-theme.css` gets that sheet's light variable block, which wins over a dark ancestor. |
+
+Pinning a mode switches the variants and the raw `--tecton-*` tokens (so palette utilities such as `bg-blue-560` follow it); the shadcn variables — `--background`, `--primary` and the rest — keep coming from whoever declares them, which is the shell unless the remote imports [`scoped-theme.css`](/docs/micro-frontends#theme-variables). Pin a mode on a remote that owns its tokens, or set the ones the island needs in `className` (see [Notes](#notes)).
+
+One inversion level is supported: a light island inside a dark page, or a dark island inside a light one, but not a dark island inside a light island inside a dark page.
 
 ## Overlay container
 

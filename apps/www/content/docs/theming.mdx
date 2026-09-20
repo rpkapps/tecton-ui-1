@@ -19,7 +19,7 @@ Tecton UI applies the Tecton visual language **only through the shadcn CSS varia
 
 <Step>Generated theme</Step>
 
-`pnpm --filter @tecton/react tokens:build` writes `tecton-palette.css` (the ramps, and the Tailwind `@theme` that exposes them) and `tecton-theme.css`, patches the variable values inside the CLI-managed `globals.css` (`:root`, `.dark`, `@theme inline` and the two `@import`s — nothing else) and the mapping document.
+`pnpm --filter @tecton/react tokens:build` writes `tecton-palette.css` (the ramps, and the Tailwind `@theme` that exposes them) and `tecton-theme.css`, patches the CLI-managed `globals.css` in place (the variable values in `:root`, `.dark` and `@theme inline`, the `@import`s, and the `dark` custom variant — nothing else) and the mapping document.
 
 <Step>Verification</Step>
 
@@ -31,7 +31,32 @@ Tecton UI applies the Tecton visual language **only through the shadcn CSS varia
 
 Both modes come from the Tecton export. `--background` is `var(--tecton-color-bg-default)` in `:root` and in `.dark`; the token file itself switches the value (`#f6f4f7` light, `#1d1c1f` dark). Tecton's applications are dark-first, so this site defaults to dark, but light is equally exact.
 
-Toggle the mode with the **`dark` class** on `<html>`. This site uses `next-themes` with `attribute="class"`. `data-theme="dark"` is not an alternative: in `globals.css` it only switches the `--tecton-*` layer (the raw token export and the palette), while the shadcn variables are declared in `:root` and `.dark` and the `dark:` utility variant resolves to `&:is(.dark *)`, so both keep reading light values. The one place the attribute is equivalent is `@tecton/react/styles/scoped.css`, which honours the class and the attribute on the root element of a mounted application (see [Micro-frontends](/docs/micro-frontends)).
+Toggle the mode with the **`dark` class** on `<html>`. This site uses `next-themes` with `attribute="class"`. `data-theme="dark"` on the document root works too — the raw token export and the palette both key on `.dark, [data-theme="dark"]`, the shadcn variables in `:root` re-read them there, and the `dark:` utility variant (below) matches the attribute as well. Use the class: it is what the shadcn ecosystem, `next-themes` and every example assume, and on a **subtree** the attribute is not equivalent — see [Inverted sections](#inverted-sections).
+
+### Inverted sections
+
+A section can run in the opposite mode to the page: `<div class="light">` inside a dark page, `<div class="dark">` inside a light one, or [`ThemeRoot`](/docs/tecton/theme-root) with `theme="light"` / `theme="dark"` for a mounted application. The `dark:` utility variant follows the **nearest** theme marker rather than the outermost one:
+
+```css
+/* globals.css and scoped.css, both written by tokens:build */
+@custom-variant dark (&:where(.dark *, [data-theme="dark"] *):not(:where(:is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]), :is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) *)));
+```
+
+An element matches when it is inside a dark marker and not inside a light marker that sits within it. The `:where()` keeps the whole selector at the specificity of the utility class alone, `:not()` included, so nothing changes weight relative to an application's own overrides. Writing `.light` on a page root is fine too (it is what `next-themes` emits for the light theme): a dark island inside it still matches.
+
+The line is the CLI's to create and `tokens:build`'s to keep correct — the shadcn CLI writes `&:is(.dark *)` once, from a string hard-coded in its own transform, and never touches a file that already has a `@custom-variant`. `tokens:check` fails if `globals.css` and `scoped.css` ever stop agreeing on it.
+
+<Callout>
+  **One inversion level.** A light island inside a dark page works, and so does a dark island inside a light page. A dark island inside a light island inside a dark page does not — the variant reads it as light. Two inversions are not supported.
+</Callout>
+
+What an inverted section switches, and what it does not:
+
+| Layer | Follows `.light` / `.dark` on a subtree |
+| --- | --- |
+| `color-scheme`, the raw `--tecton-*` tokens and the palette ramps | Yes — `tecton-tokens.css` and `tecton-palette.css` declare both modes on `:root, [data-theme="light"], .light` and `.dark, [data-theme="dark"]`, so palette utilities (`bg-blue-560`, `text-gray-830`) switch with the section. |
+| The `dark:` utility variant | Yes, with the variant above. |
+| The shadcn variables (`--background`, `--primary`, …) | Only for `.dark`. `globals.css` declares them in `:root` and `.dark` only, and a custom property is substituted on the element that declares it — so a `.light` subtree of a dark page keeps the dark values it inherits. Set the tokens the section needs on it (`class="light [--background:var(--tecton-palette-gray-50)]"`), or, for a mounted application, import [`scoped-theme.css`](/docs/micro-frontends#theme-variables), which declares the full set on `[data-tecton-root]` for both modes. |
 
 ## Token mapping
 

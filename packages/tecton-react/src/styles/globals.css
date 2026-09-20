@@ -9,7 +9,7 @@
 @import "@fontsource/ibm-plex-mono/500.css";
 @import "./tecton-base.css";
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:where(.dark *, [data-theme="dark"] *):not(:where(:is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]), :is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) *)));
 @source "../../../apps/**/*.{ts,tsx}";
 @source "../../../components/**/*.{ts,tsx}";
 @source "../**/*.{ts,tsx}";

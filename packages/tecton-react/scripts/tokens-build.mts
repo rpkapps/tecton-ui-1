@@ -16,7 +16,7 @@
  *   src/styles/scoped.css          utilities-only entry for micro-frontend remotes (no preflight, no
  *                                  fonts, no variables: @theme inline with a fallback chain per token)
  *   src/styles/scoped-theme.css    opt-in [data-tecton-root] variable blocks for a remote without a shell
- *   src/styles/globals.css         CLI-managed file, patched in place (values + imports only)
+ *   src/styles/globals.css         CLI-managed file, patched in place (values, imports, dark variant)
  *   src/styles/tecton-base.css     hand-authored base rules (thin scrollbars), import kept in globals.css
  *   registry/theme.json            shadcn `registry:theme` item with literal values
  *   ../../docs/TOKEN-MAPPING.md    mapping table + known deviations
@@ -424,8 +424,34 @@ const SCOPED_ROOT = "[data-tecton-root]";
 const SCOPED_DARK = `${SCOPED_ROOT}:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *)`;
 /** Light again, last, so an explicitly light root inside a dark host wins. */
 const SCOPED_LIGHT = `${SCOPED_ROOT}:where(.light, [data-theme="light"])`;
-/** The dark variant, byte-identical to the one the CLI writes into globals.css. */
-const DARK_VARIANT = "@custom-variant dark (&:is(.dark *));";
+
+/** `.dark` / `[data-theme="dark"]`, and the same for light — the theme markers. */
+const DARK_MARK = '.dark, [data-theme="dark"]';
+const LIGHT_MARK = '.light, [data-theme="light"]';
+/**
+ * The `dark:` utility variant, written into globals.css and scoped.css alike (the
+ * two must agree, or a remote and its shell disagree about what `dark:` means).
+ *
+ * The shadcn CLI hard-codes `&:is(.dark *)` — descendants of a dark marker, with no
+ * way to leave it again. An inverted section (`<div class="light">` in a dark page,
+ * `<ThemeRoot theme="light">` in a dark shell) switches the tokens under it but not
+ * the variants, so the section renders half dark. The variant below matches an
+ * element whose **nearest** theme marker is dark instead:
+ *
+ *   - subject: a descendant of a dark marker, exactly as before (the marker element
+ *     itself never matched and still does not);
+ *   - minus: anything at or below a light marker that sits *inside* that dark one —
+ *     `<dark> <light>` and `<dark> <light> *`, not a bare `<light> *`, which would
+ *     also cancel a dark island inside a page whose root is explicitly `.light`
+ *     (what next-themes writes for the light theme).
+ *
+ * One inversion level: a dark island inside a light island inside a dark page is
+ * not supported (see the theming docs). `:where()` keeps the whole thing at the
+ * specificity of the utility class alone, `:not()` included.
+ */
+const DARK_VARIANT =
+  `@custom-variant dark (&:where(.dark *, [data-theme="dark"] *)` +
+  `:not(:where(:is(${DARK_MARK}) :is(${LIGHT_MARK}), :is(${DARK_MARK}) :is(${LIGHT_MARK}) *)));`;
 
 /**
  * Every theme variable of one mode in a stable order — the raw Tecton export,
@@ -480,6 +506,8 @@ const scopedThemeRaw: [string, string][] = [...paletteThemeEntries, ...scopedThe
 const scopedThemeValues = new Map(scopedThemeRaw);
 /** Light values of the palette ramps, keyed by their custom-property name. */
 const paletteLight = new Map(palette.map((e): [string, string] => [paletteVar(e), e.light]));
+/** Dark values of the palette ramps, keyed by their custom-property name. */
+const paletteDark = new Map(palette.map((e): [string, string] => [paletteVar(e), e.dark]));
 
 /** A value that is exactly one reference and nothing else — no fallback, no list, no calc(). */
 const BARE_VAR = /^var\(\s*(--[\w-]+)\s*\)$/;
@@ -489,44 +517,80 @@ const FALLBACK_DEPTH = 4;
 const unresolvedFallbacks = new Set<string>();
 
 /**
- * Where a variable gets its light value from: the shadcn mapping, a palette ramp,
- * the raw Tecton export, or another `@theme inline` entry (`--font-heading`).
+ * Where a variable gets its value for one mode from: the shadcn mapping, a palette
+ * ramp, the raw Tecton export, or another `@theme inline` entry (`--font-heading`).
+ * Non-colour shadcn variables (`--radius`) are declared in `:root` only, so their
+ * light definition is their definition in both modes.
  */
-function lightDefinition(name: string): string | undefined {
+function definitionFor(name: string, mode: "light" | "dark"): string | undefined {
   const shadcn = byName.get(name.replace(/^--/, ""));
-  if (shadcn) return shadcn.light;
-  return paletteLight.get(name) ?? lightTokens.get(name) ?? scopedThemeValues.get(name);
+  if (shadcn) return mode === "dark" && !rootOnly(shadcn) ? shadcn.dark : shadcn.light;
+  return (
+    (mode === "light" ? paletteLight : paletteDark).get(name) ??
+    (mode === "light" ? lightTokens : tokens).get(name) ??
+    scopedThemeValues.get(name)
+  );
 }
 
-/** The nested `var(<next>, …)` fallback for `name`, ending in its light literal. */
-function fallbackFor(name: string, depth: number): string | undefined {
+/** The literal `name` resolves to in one mode, following a chain of bare references. */
+function literalFor(name: string, mode: "light" | "dark", depth: number): string | undefined {
   if (depth > FALLBACK_DEPTH) return undefined;
-  const definition = lightDefinition(name);
+  const definition = definitionFor(name, mode);
   if (definition === undefined) return undefined;
   const next = BARE_VAR.exec(definition.trim());
-  if (next) {
-    const inner = fallbackFor(next[1], depth + 1);
-    return inner === undefined ? undefined : `var(${next[1]}, ${inner})`;
-  }
+  if (next) return literalFor(next[1], mode, depth + 1);
   try {
-    return resolveValue(definition, lightTokens);
+    return resolveValue(definition, mode === "light" ? lightTokens : tokens);
   } catch {
     return undefined; // dangling reference: leave the entry bare
   }
 }
 
 /**
+ * The literal the chain for `name` ends in. A colour whose two modes differ is
+ * emitted as `light-dark(<light>, <dark>)`: the shell's tokens declare
+ * `color-scheme` per mode, so the fallback follows the shell even when the shell
+ * is too old to know the variable itself, and a remote with no Tecton shell at all
+ * resolves it light — the value this ended in before. Everything else (a colour
+ * both modes agree on, a radius, a font) stays a single literal.
+ */
+function terminalLiteral(name: string): string | undefined {
+  const lightLit = literalFor(name, "light", 1);
+  if (lightLit === undefined) return undefined;
+  const darkLit = literalFor(name, "dark", 1);
+  if (darkLit === undefined || darkLit === lightLit) return lightLit;
+  // light-dark() takes two <color>s; anything else keeps the light literal
+  if (!isColorValue(lightLit) || !isColorValue(darkLit)) return lightLit;
+  return `light-dark(${lightLit}, ${darkLit})`;
+}
+
+/** The nested `var(<next>, …)` chain for `name`, ending in `terminal`. */
+function chainFor(name: string, depth: number, terminal: string): string | undefined {
+  if (depth > FALLBACK_DEPTH) return undefined;
+  const definition = definitionFor(name, "light");
+  if (definition === undefined) return undefined;
+  const next = BARE_VAR.exec(definition.trim());
+  if (next) {
+    const inner = chainFor(next[1], depth + 1, terminal);
+    return inner === undefined ? undefined : `var(${next[1]}, ${inner})`;
+  }
+  return terminal;
+}
+
+/**
  * Give a `@theme inline` value the fallback chain that makes a remote survive a
  * shell that does not know the token: `var(--primary)` becomes
- * `var(--primary, var(--tecton-color-action-primary-bg, #644a78))`. The literals are
- * the **light** values — a shell always provides a mode. Anything that is not a
- * single bare reference (an existing fallback, `calc()`, a font list, `initial`) is
- * left alone; scoped.css is the only file that carries these chains.
+ * `var(--primary, var(--tecton-color-action-primary-bg, light-dark(#644a78, #5d4d68)))`.
+ * The intermediate links are the raw Tecton tokens, which the shell declares per
+ * mode; only the literal the chain ends in has to name both modes itself. Anything
+ * that is not a single bare reference (an existing fallback, `calc()`, a font list,
+ * `initial`) is left alone; scoped.css is the only file that carries these chains.
  */
 function withFallback(value: string): string {
   const m = BARE_VAR.exec(value.trim());
   if (!m) return value;
-  const fallback = fallbackFor(m[1], 1);
+  const terminal = terminalLiteral(m[1]);
+  const fallback = terminal === undefined ? undefined : chainFor(m[1], 1, terminal);
   if (fallback === undefined) {
     unresolvedFallbacks.add(m[1]);
     return value;
@@ -547,7 +611,11 @@ function buildScopedCss(): string {
   lines.push(" * from the shell, which owns them — the tenant palette, its own --primary, the current");
   lines.push(" * mode — and a declaration on the remote's root would beat every one of them. Version");
   lines.push(" * skew is absorbed by the fallback chain each @theme inline entry carries instead: the");
-  lines.push(" * raw Tecton token, then the light literal this build was made with.");
+  lines.push(" * raw Tecton token, then the literal this build was made with. A colour whose two modes");
+  lines.push(" * differ ends in light-dark(<light>, <dark>), which follows the color-scheme the shell's");
+  lines.push(" * own tokens declare per mode — so even a shell too old to know the variable puts the");
+  lines.push(" * remote in the right mode, and a page with no Tecton shell at all resolves it light.");
+  lines.push(" * (light-dark() needs Chrome 123, Safari 17.5, Firefox 120.)");
   lines.push(" *");
   lines.push(" * Add `./scoped-theme.css` after this file only for a remote with no Tecton shell to");
   lines.push(" * inherit from, or one that must deliberately run its own token set.");
@@ -719,6 +787,17 @@ function patchGlobals(): boolean {
   }
   // base rules that are not variable values (thin scrollbars…), see tecton-base.css
   if (!css.includes(BASE_IMPORT)) css = css.replace(anchor, `${anchor}${nl}${BASE_IMPORT}`);
+
+  // -- the dark variant ------------------------------------------------------
+  // The CLI creates this line once, from a string hard-coded in its own
+  // `add-custom-variant` transform, and that transform is a no-op as soon as the
+  // file holds any @custom-variant at all — so the line is the CLI's to write and
+  // this generator's to keep correct and in step with scoped.css. Nothing in the
+  // registry (`registry/theme.json`, the mirror overlay) owns it; see
+  // docs/UPSTREAM.md, "The `dark:` variant".
+  const variantLine = /^@custom-variant\s+dark\b[^\r\n]*/m;
+  if (!variantLine.test(css)) throw new Error("globals.css: no @custom-variant dark line");
+  css = css.replace(variantLine, DARK_VARIANT);
 
   // -- :root ----------------------------------------------------------------
   const rootValues = new Map(resolved.map((r) => [`--${r.name}`, r.light]));
@@ -902,9 +981,11 @@ writeFileSync(THEME_CSS, buildThemeCss());
 console.log(`[tokens-build] wrote ${path.relative(repoRoot, THEME_CSS)}`);
 
 writeFileSync(SCOPED_CSS, buildScopedCss());
-const withChain = scopedThemeRaw.filter(([, v]) => withFallback(v) !== v).length;
+const chains = scopedThemeRaw.map(([, v]) => withFallback(v));
+const withChain = chains.filter((v, i) => v !== scopedThemeRaw[i][1]).length;
+const withLightDark = chains.filter((v) => v.includes("light-dark(")).length;
 console.log(
-  `[tokens-build] wrote ${path.relative(repoRoot, SCOPED_CSS)} (utilities only: ${scopedThemeRaw.length} @theme inline entries, ${withChain} with a fallback chain, ${scopedThemeRaw.length - withChain} bare)`
+  `[tokens-build] wrote ${path.relative(repoRoot, SCOPED_CSS)} (utilities only: ${scopedThemeRaw.length} @theme inline entries, ${withChain} with a fallback chain, ${withLightDark} of them light-dark(), ${scopedThemeRaw.length - withChain} bare)`
 );
 
 writeFileSync(SCOPED_THEME_CSS, buildScopedThemeCss());
