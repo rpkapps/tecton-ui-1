@@ -51,6 +51,16 @@
  *     `@layer a, b;` order statements are document-global: inside `@scope` they are
  *     ignored, so they are hoisted to the top of the sheet, unchanged and in
  *     document order (`@charset` / `@import` keep coming first).
+ *   - Being document-global, a `@keyframes` is also last-definition-wins, and two
+ *     remotes hoist their frames into the same document: whichever `shimmer` was
+ *     parsed last animates both. So every set of frames *this sheet defines* is
+ *     renamed `<name>--<suffix>`, with the suffix derived from the scope selector
+ *     (`.mfe-a` → `shimmer--mfe-a`), and the references to exactly those names are
+ *     rewritten in `animation`, `animation-name` and any `--animate-*` custom
+ *     property — the three places a name can appear, since `@theme inline` inlines
+ *     the variable into the shorthand. A name the sheet does not define is one the
+ *     host owns, and is never touched. `keyframes: { suffix }` sets the suffix,
+ *     `keyframes: false` keeps the names as they are.
  *   - `:root` inside `@scope` matches nothing, because the scope root is not the
  *     document root. A selector whose *leading compound* is `:root`, `html` or `body`
  *     is therefore rewritten to `:scope`, keeping the rest of the compound and the
@@ -77,7 +87,7 @@
  *     therefore get a `:scope`-anchored twin (`[data-tecton-root], :scope`), which is
  *     what makes `scoped.css`'s base reset and an opted-in `scoped-theme.css` apply
  *     to the remote's own root and to its overlay container while leaving the host's
- *     root alone. Selectors inside `@keyframes` are never rewritten.
+ *     root alone. Selectors inside `@keyframes` — the steps — are never rewritten.
  *
  * `@scope` needs Chrome/Edge 118+, Safari 17.4+, Firefox 146+. There is no polyfill;
  * an older browser falls back to the unscoped cascade, where the last sheet wins.
@@ -240,6 +250,42 @@ const resolveBoundary = (boundary) => {
   return boundary.trim()
 }
 
+/** A keyframe suffix is part of an identifier, so it may hold nothing else. */
+const IDENTIFIER = /^[A-Za-z0-9_-]+$/
+
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+
+/** `.mfe-a` → `mfe-a`, `[data-mfe-scope="operations"]` → `data-mfe-scope-operations`. */
+const identifierSafe = (value) =>
+  value.replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "")
+
+const resolveKeyframes = (keyframes, scope) => {
+  if (keyframes === false || keyframes === null) return null
+  if (keyframes === undefined || keyframes === true) {
+    const derived = identifierSafe(scope)
+    if (!derived) {
+      throw new TypeError(
+        `scopeTecton: no keyframe suffix can be derived from \`scope\` (${scope}). Pass \`keyframes: { suffix: "…" }\`, or \`keyframes: false\` to leave the names alone.`
+      )
+    }
+    return derived
+  }
+  const suffix = keyframes?.suffix
+  if (typeof suffix !== "string" || !IDENTIFIER.test(suffix)) {
+    throw new TypeError(
+      "scopeTecton: `keyframes` must be `{ suffix }` with a non-empty identifier ([A-Za-z0-9_-]), `false` to keep the names as they are, or left out to derive the suffix from `scope`."
+    )
+  }
+  return suffix
+}
+
+/** The three places an animation name appears, and nowhere else. */
+const namesAnimation = (prop) =>
+  prop.startsWith("--")
+    ? prop.startsWith("--animate-")
+    : prop.toLowerCase() === "animation" ||
+      prop.toLowerCase() === "animation-name"
+
 const ROOT_RULE_MODES = new Set(["scope", "document"])
 
 const resolveRootRules = (rootRules) => {
@@ -253,10 +299,10 @@ const resolveRootRules = (rootRules) => {
 }
 
 /**
- * @param {{ scope: string, boundary?: string | false | null, rootRules?: "scope" | "document" }} options
+ * @param {{ scope: string, boundary?: string | false | null, rootRules?: "scope" | "document", keyframes?: { suffix: string } | boolean }} options
  */
 export default function scopeTecton(options) {
-  const { scope, boundary, rootRules } = options ?? {}
+  const { scope, boundary, rootRules, keyframes } = options ?? {}
   if (typeof scope !== "string" || !scope.trim()) {
     throw new TypeError(
       'scopeTecton: `scope` is required and must be a non-empty selector string, e.g. scopeTecton({ scope: ".mfe-a" }).'
@@ -265,11 +311,40 @@ export default function scopeTecton(options) {
   const root = scope.trim()
   const limit = resolveBoundary(boundary)
   const roots = resolveRootRules(rootRules)
+  const suffix = resolveKeyframes(keyframes, root)
   const params = limit ? `(${root}) to (${limit})` : `(${root})`
 
   return {
     postcssPlugin: "tecton-scope",
     OnceExit(sheet, { AtRule }) {
+      /**
+       * A hoisted `@keyframes` is last-definition-wins for the whole document, so
+       * the frames this sheet defines get a name of the remote's own — and every
+       * reference to one of those names, wherever an animation names it, follows.
+       */
+      const versionKeyframes = () => {
+        const defined = new Set()
+        sheet.walkAtRules((node) => {
+          if (isKeyframes(atRuleName(node))) defined.add(node.params.trim())
+        })
+        if (!defined.size) return
+        const names = [...defined].sort((a, b) => b.length - a.length)
+        // `(?![\w-])` is what keeps `spin` out of `spin-slow`.
+        const pattern = new RegExp(
+          `(?<![\\w-])(?:${names.map(escapeRegExp).join("|")})(?![\\w-])`,
+          "g"
+        )
+        const version = (value) =>
+          value.replace(pattern, (name) => `${name}--${suffix}`)
+        sheet.walkAtRules((node) => {
+          if (isKeyframes(atRuleName(node))) node.params = version(node.params)
+        })
+        sheet.walkDecls((decl) => {
+          if (namesAnimation(decl.prop)) decl.value = version(decl.value)
+        })
+      }
+      if (suffix) versionKeyframes()
+
       /** Document-global at-rules, in the order they appeared. */
       const global = []
       const lift = (container) => {

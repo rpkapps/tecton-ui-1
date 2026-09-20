@@ -33,6 +33,19 @@ export interface ScopeTectonOptions {
    * where they are, in the layer and the conditions they came with.
    */
   rootRules?: "scope" | "document"
+  /**
+   * Versions the `@keyframes` the sheet itself defines, so two remotes that hoist
+   * the same name into one document stop animating each other's elements.
+   *
+   * On by default, with the suffix derived from `scope` (`.mfe-a` → `shimmer` is
+   * emitted as `shimmer--mfe-a`). Every reference to a renamed name follows, in
+   * `animation`, `animation-name` and any `--animate-*` custom property; a name
+   * the sheet does not define is the host's, and is left alone.
+   *
+   * `{ suffix }` sets the suffix — a non-empty `[A-Za-z0-9_-]` identifier —
+   * and `false` keeps the names as they are.
+   */
+  keyframes?: { suffix: string } | boolean
 }
 
 /**

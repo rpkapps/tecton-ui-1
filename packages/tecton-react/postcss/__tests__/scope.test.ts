@@ -141,8 +141,8 @@ describe("scopeTecton", () => {
       '@import "./fonts.css"',
       "@layer theme, base, components, utilities",
       "@font-face",
-      "@keyframes shimmer",
-      "@-webkit-keyframes shimmer",
+      "@keyframes shimmer--mfe-a",
+      "@-webkit-keyframes shimmer--mfe-a",
       "@property --tw-shadow",
     ])
   })
@@ -292,6 +292,108 @@ describe("scopeTecton", () => {
     expect(supports.name).toBe("supports")
     expect(scopeIn(supports)).toBeUndefined()
     expect(selectorsIn(supports)).toEqual([":root, :host"])
+  })
+
+  describe("keyframes", () => {
+    const FRAMES = `@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+@-webkit-keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@layer theme {
+  :root, :host {
+    --animate-spin: spin 1s linear infinite;
+  }
+}
+.animate-spin {
+  animation: spin 1s linear infinite, spin-slow 3s, bounce 1s;
+}
+.animate-spin-name {
+  animation-name: spin, bounce;
+}
+.not-an-animation {
+  transition: spin 1s;
+}
+`
+
+    it("renames the frames the sheet defines, keeping their steps", () => {
+      const root = parse(run(FRAMES, { scope: ".mfe-a" }))
+      const frames = children(root).filter(
+        (node): node is AtRule =>
+          node.type === "atrule" && node.name.endsWith("keyframes")
+      )
+
+      expect(frames.map(describeNode)).toEqual([
+        "@keyframes spin--mfe-a",
+        "@keyframes spin-slow--mfe-a",
+        "@-webkit-keyframes spin--mfe-a",
+      ])
+      expect(frames.flatMap((frame) => selectorsIn(frame))).toEqual([
+        "to",
+        "to",
+        "to",
+      ])
+    })
+
+    it("rewrites every animation of a renamed name, and nothing else", () => {
+      const css = run(FRAMES, { scope: ".mfe-a" })
+
+      expect(css).toContain(
+        "animation: spin--mfe-a 1s linear infinite, spin-slow--mfe-a 3s, bounce 1s;"
+      )
+      expect(css).toContain("animation-name: spin--mfe-a, bounce;")
+      expect(css).toContain("--animate-spin: spin--mfe-a 1s linear infinite;")
+      // `bounce` is the host's, `transition` is not an animation, and `spin` is
+      // never found inside `spin-slow`.
+      expect(css).toContain("transition: spin 1s;")
+      expect(css).not.toContain("spin--mfe-a-slow")
+      expect(css).not.toContain("bounce--mfe-a")
+    })
+
+    it("derives an identifier-safe suffix from the scope selector", () => {
+      expect(run(FRAMES, { scope: '[data-mfe-scope="operations"]' })).toContain(
+        "@keyframes spin--data-mfe-scope-operations"
+      )
+      expect(run(FRAMES, { scope: "#remote .app" })).toContain(
+        "@keyframes spin--remote-app"
+      )
+    })
+
+    it("takes a suffix of its own", () => {
+      const css = run(FRAMES, { scope: ".mfe-a", keyframes: { suffix: "ops" } })
+
+      expect(css).toContain("@keyframes spin--ops")
+      expect(css).toContain("animation-name: spin--ops, bounce;")
+    })
+
+    it("keeps the names as they are when `keyframes` is false", () => {
+      const css = run(FRAMES, { scope: ".mfe-a", keyframes: false })
+
+      expect(css).toContain("@keyframes spin {")
+      expect(css).toContain("animation-name: spin, bounce;")
+      expect(css).toContain("--animate-spin: spin 1s linear infinite;")
+    })
+
+    it("rejects a suffix that is not an identifier", () => {
+      expect(() =>
+        scopeTecton({ scope: ".mfe-a", keyframes: { suffix: "" } })
+      ).toThrow(/`keyframes`/)
+      expect(() =>
+        scopeTecton({ scope: ".mfe-a", keyframes: { suffix: ".mfe a" } })
+      ).toThrow(/`keyframes`/)
+      // @ts-expect-error — the guard exists for JavaScript callers.
+      expect(() => scopeTecton({ scope: ".mfe-a", keyframes: "ops" })).toThrow(
+        /`keyframes`/
+      )
+    })
+
+    it("rejects a scope selector no suffix can be derived from", () => {
+      expect(() => scopeTecton({ scope: "*" })).toThrow(/keyframe suffix/)
+    })
   })
 
   it("rejects a `rootRules` that is neither mode", () => {
