@@ -72,7 +72,7 @@ import { Badge } from "@tecton/react/components/badge"
 - Pick meaning with `variant`, weight with `appearance="solid" | "outline"`, height with `size="default" | "md" | "lg"` (20 / 24 / 28 px).
 - Give an icon or a `Spinner` child `data-icon="inline-start"` or `data-icon="inline-end"` so the badge trims its padding on that side.
 - Make it a link with `render={(props) => <a {...props} href="/wells/12" />}`; there is no `asChild`, and an outer `<a>` gets none of the badge's `[a]:hover:` rules.
-- A category colour that no `variant` carries is the one documented exception: a Tecton palette pair, `className="bg-blue-120 text-blue-830"`, never a stock Tailwind colour. Otherwise `className` is for placement.
+- A category colour that no `variant` carries is a variant to add in the Tecton overlay (`scripts/registry-mirror/overlay`), never a `className`; `className` on a Badge is for placement only.
 
 ### Don't
 

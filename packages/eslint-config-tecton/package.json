@@ -12,7 +12,7 @@
     "index.js"
   ],
   "scripts": {
-    "test": "node scripts/smoke.mjs"
+    "test": "node scripts/smoke.mjs && node scripts/guidelines.mjs"
   },
   "dependencies": {
     "@shadcn/lint": "^0.1.1"

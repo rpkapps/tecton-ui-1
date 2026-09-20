@@ -129,12 +129,48 @@ box and appearance are the design system's.
 | | Examples |
 | --- | --- |
 | **Allowed** | `w-full`, `mt-4`, `flex-1`, `col-span-2`, `absolute top-0`, `gap-2` |
-| **Denied** | `bg-blue-600`, `h-12`, `p-6`, `rounded-full`, `text-[13px]`, `border-slate-200` |
+| **Denied** | `bg-blue-600`, `h-12`, `p-6`, `rounded-lg`, `text-[13px]`, `border-slate-200` |
 
 `h-12` on a `Button` is its `size` variant being overridden by hand; use `size="lg"`. If
 the design genuinely needs something no variant provides, add the variant to the library
 rather than patching it at the call site — that is how the deviation gets reviewed once
 instead of spreading.
+
+### Where a component's contract is wider
+
+A contract only widens `no-restyle` for a part whose box or frame belongs to the
+application by design — a viewport with no size of its own, a divider the source already
+prices into its padding, a scoping root. It never narrows the rule. The list below is the
+source of truth for the component guidelines and the Agent Skills built from them: change
+it there first, not in a `className`.
+
+| Component | Also allowed | Why |
+| --- | --- | --- |
+| `ScrollArea`, `ResizablePanelGroup` | height, `rounded-*`, `border` | a viewport with no size or frame of its own; padding goes on an inner wrapper |
+| `ChartContainer`, `CarouselContent`, `Canvas`, `Panel`, `MessageScroller`, `Slider`, `AppShell` | height | the size comes from the column or parent the part sits in; padding stays denied |
+| `AppShellAside` | height, `border-l-0` | inside a resizable split the aside's own left border would double the handle |
+| `AppShellMain` | padding | the scrolling work area takes the page inset; height is the shell's |
+| `Empty`, `Skeleton` | height, `rounded-*`, `border` | the dashed box and the loading placeholder are sized from outside; colour stays the component's |
+| `Accordion` | `rounded-*`, `border` | `className` is width and frame only |
+| `AspectRatio` | `rounded-*`, `border`, the exact `bg-muted` | an unstyled ratio box; the radius and the muted tone show while the media loads |
+| `Spinner` | a text colour | it is an svg icon coloured through `currentColor` |
+| `AvatarBadge` | a background colour | the one avatar part whose colour the application picks |
+| `TableCell`, `TableHead` | `font-weight`, `tabular-nums`, `truncate` | emphasis of a key column; size and colour stay the table's |
+| `CardHeader` | the exact `border-b` | the divider the source already prices into its padding |
+| `CardFooter` | the exact `border-t` | the footer half of the same divider |
+| `FieldGroup` | padding | a layout group with no padding of its own |
+| `ThemeRoot` | anything | its `className` is a scoping hook mirrored onto the overlay container it owns, not a style surface |
+| `Button`, `LinkButton` | `rounded-full`, `shadow-*` | the documented FAB recipe; heights stay denied |
+| `MarkerContent` | the exact `shimmer` | the utility the Tecton stylesheet declares for streaming text |
+
+<Callout title="Stock colours are still denied by name">
+  On `AvatarBadge` and `Spinner` the preset rejects stock Tailwind steps and families by
+  name, so `bg-green-500` is still an error even though `bg-green-560` passes. Everything
+  else colour-related — a project's own tokens, arbitrary values — is `strict`'s job.
+</Callout>
+
+The package test lints every `Correct:` example in the component guidelines against
+`recommended`, so the guidelines, this page and the linter cannot drift apart.
 
 ## Components come from the package
 

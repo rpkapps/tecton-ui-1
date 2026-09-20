@@ -115,3 +115,7 @@ explanations of React or Tailwind, no repetition of the API reference.
   `skills/choose-component/SKILL.md` from these files; `skills:check` fails on drift.
 - `pnpm --filter www docs:guidelines` renders the section into the component pages;
   `docs:sync` runs it too.
+- Every `Correct:` block must pass the shipped lint preset: `pnpm --filter @tecton/eslint-config test`
+  lints every `Correct:` block of every guideline with `configs.recommended`. When a guideline
+  legitimately needs a class the preset denies, widen that component's contract in
+  `packages/eslint-config-tecton/index.js` with the reason — never soften the guideline to dodge it.

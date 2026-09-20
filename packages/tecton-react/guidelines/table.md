@@ -21,7 +21,7 @@ related: [Item, TreeView, "TanStack Table"]
 
 - Put `TableHead` children straight inside `TableHeader`; React Aria renders the header row itself, while `TableFooter` does take a `TableRow`.
 - Name the grid with `aria-label` on `Table`, mark the identifying column `isRowHeader`, and give every `TableRow` an `id`: `selectionMode`, `selectedKeys` and `onSelectionChange` work off those keys, and a `Checkbox slot="selection"` fills itself in.
-- Render the empty case with `TableBody`'s `renderEmptyState`, which is what the `data-empty:h-24 data-empty:text-center` rules are waiting for, and keep `className` on the parts to alignment and width (`text-right`, `w-24`).
+- Render the empty case with `TableBody`'s `renderEmptyState`, which is what the `data-empty:h-24 data-empty:text-center` rules are waiting for, and keep `className` on the parts to alignment, width and emphasis (`text-right`, `w-24`, `font-medium`, `tabular-nums`, `truncate`); size and colour stay the table's.
 
 ## Don't
 

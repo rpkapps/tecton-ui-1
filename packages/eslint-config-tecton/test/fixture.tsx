@@ -18,6 +18,8 @@ export function Allowed() {
       <Button className="absolute top-0" />
       <Button className="gap-2" />
       <Panel className="col-span-2" />
+      {/* Button's contract widens shape to the FAB recipe: rounded-full shadow-md. */}
+      <Button className="rounded-full" />
     </>
   )
 }
@@ -28,14 +30,19 @@ export function Denied() {
       {/* The component owns its colour, shape, typography and size. */}
       <Button className="bg-blue-600" /> {/* expect: shadcn/no-restyle */}
       <Button className="h-12" /> {/* expect: shadcn/no-restyle */}
-      <Button className="rounded-full" /> {/* expect: shadcn/no-restyle */}
+      <Button className="rounded-lg" /> {/* expect: shadcn/no-restyle */}
       <Button className="p-6" /> {/* expect: shadcn/no-restyle */}
-      <Button className="text-[13px] " /> {/* expect: shadcn/no-restyle */}
+      <Button className="text-[13px]" /> {/* expect: shadcn/no-restyle */}
       {/* Stock palette: no CSS at all, and still a restyle of a Tecton component. */}
       <Button className="bg-red-500" /> {/* expect: shadcn/no-restyle */}
       <Panel className="border-slate-200" /> {/* expect: shadcn/no-restyle */}
-      {/* Nothing can check a class assembled at runtime. */}
-      <Button className={`bg-${String(1)}`} /> {/* expect: shadcn/require-static-classes */}
     </>
   )
+}
+
+// A long component paired with a long rule name is one prettier would break
+// across two lines, separating the element from its `// expect:` comment —
+// a trailing line comment after a lone returned element is never reflowed.
+export function RuntimeClassDenied() {
+  return <Button className={`bg-${String(1)}`} /> // expect: shadcn/require-static-classes
 }

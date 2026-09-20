@@ -232,7 +232,7 @@ import { AppShell, AppShellHeader, AppShellBrand, AppShellNav, AppShellHeaderAct
 - Put the page content in `AppShellMain`; it is the scrolling region of the work area.
 - For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them.
 - Gate a full-height aside on `useMinWidth(1280)` instead of squeezing it onto a narrow screen.
-- Override only the height through `className` (`h-full` in an embedded context); the shell owns its surfaces and borders.
+- The height (`h-full` when embedded) and, on `AppShellMain`, the page inset (`p-6`) are the application's to set through `className`; the shell owns its surfaces and borders, except `border-l-0` on an `AppShellAside` inside a split panel.
 
 ### Don't
 

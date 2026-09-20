@@ -52,9 +52,16 @@ loaded. Every line is a condition that has to hold in that file.
   `bg-blue-120`, `text-blue-830`, `border-yellow-160`, no `dark:` pair.
 - **`className` carries layout only** — `w-full`, `mt-4`, `flex-1`,
   `col-span-2`, `gap-2`. Not `h-*`, `p-*`, `size-*`, `rounded-*`, `bg-*`, and
-  not a colour or typography `text-*` / `font-*` on a component that owns it:
-  `size-8` on an icon `Button` is `size="icon-sm"`, and `text-muted-foreground`
-  or `font-medium` on a `TableCell` replaces styling the part already has.
+  not a colour or typography on a part that owns it: `size-8` on an icon
+  `Button` is `size="icon-sm"`. The exception is a part whose box or frame is
+  the application's by design: a sized container (`ScrollArea`,
+  `ResizablePanelGroup`, `ChartContainer`, `Panel`, `Canvas`, `Slider`,
+  `Empty`, `Skeleton`, `AspectRatio`) takes a height and a `border` /
+  `rounded-*` frame, `CardHeader` / `CardFooter` a bare `border-b` /
+  `border-t`, `TableCell` / `TableHead` `font-medium` / `tabular-nums` /
+  `truncate`, `AvatarBadge` a palette-step `bg-*`, `Spinner` a `text-*` token,
+  and `Button` the `rounded-full shadow-md` FAB recipe — the lint preset's
+  contracts are the list.
 - **Every control in a `Field` is labelled** — the control has an `id` and a
   `FieldLabel htmlFor` points at it; for a `Select` that `id` goes on
   `SelectTrigger`, which renders the button, because `Select` renders a `div`.
@@ -200,7 +207,8 @@ palette does not cover is a change to the Tecton token export.
 | | Examples |
 | --- | --- |
 | **Allowed in `className`** | `w-full`, `mt-4`, `flex-1`, `col-span-2`, `absolute top-0`, `gap-2` |
-| **Denied — a variant owns it** | `bg-blue-600`, `h-12`, `p-6`, `rounded-full`, `text-[13px]`, `border-slate-200` |
+| **Denied — a variant owns it** | `bg-blue-600`, `h-12`, `p-6`, `rounded-lg`, `text-[13px]`, `border-slate-200` |
+| **Allowed by a component's contract** | `h-72 rounded-md border` on `ScrollArea`, `border-b` on `CardHeader`, `font-medium` on `TableCell`, `bg-green-560` on `AvatarBadge` |
 
 The Tecton variant axes that replace hand-styling:
 
@@ -303,7 +311,7 @@ registry: a Radix component with the stock palette, the wrong base and the wrong
 theme, which renders next to the real ones and drifts on every upgrade.
 `no-restricted-imports` flags every import from a `components/ui/` directory.
 
-Source: apps/www/content/docs/linting.mdx (Components come from the package); packages/eslint-config-tecton/index.js:116
+Source: apps/www/content/docs/linting.mdx (Components come from the package); packages/eslint-config-tecton/index.js
 
 ### [HIGH] Importing from the package root
 
@@ -324,14 +332,14 @@ The `exports` map is enumerated with one entry per module and has no `.` entry,
 so the root specifier resolves to nothing; `no-restricted-imports` names the
 three real namespaces in its message.
 
-Source: apps/www/content/docs/installation.mdx (Peer requirements); packages/eslint-config-tecton/index.js:109
+Source: apps/www/content/docs/installation.mdx (Peer requirements); packages/eslint-config-tecton/index.js
 
 ### [HIGH] className overriding what a variant owns
 
 Wrong:
 
 ```tsx
-<Button className="h-12 rounded-full bg-blue-600 px-6">
+<Button className="h-12 rounded-lg bg-blue-600 px-6">
   Run simulation
 </Button>
 ```
@@ -348,7 +356,7 @@ Correct:
 `size` variant are replaced silently, while `bg-blue-600` is not a Tecton step
 and emits no CSS — the button ends up the wrong size with the default fill.
 
-Source: apps/www/content/docs/linting.mdx (What you may put in className); packages/eslint-config-tecton/index.js:45
+Source: apps/www/content/docs/linting.mdx (What you may put in className); packages/eslint-config-tecton/index.js
 
 ### [HIGH] Hand-built status colours where a variant exists
 

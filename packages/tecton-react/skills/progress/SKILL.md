@@ -222,7 +222,7 @@ import { Spinner } from "@tecton/react/components/spinner"
 
 - Inside a `Button`, a `Badge` or an `InputGroupAddon`, give it `data-icon="inline-start"` or `data-icon="inline-end"` so the control trims its padding on that side.
 - Disable the control while it spins with `isDisabled`, and make the label a verb: "Saving…".
-- Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so set the colour on the parent with a semantic token.
+- Resize with `size-*` (`size-3`, `size-6`); colour it with a semantic text token or a Tecton step, on the spinner itself or on the parent it inherits from, since the stroke is `currentColor` — never a stock Tailwind colour.
 - `Spinner` already carries `role="status"` and `aria-label="Loading"`; do not wrap it in a second live region.
 
 ### Don't
