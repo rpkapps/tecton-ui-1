@@ -19,7 +19,7 @@ Every Tecton overlay — `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Com
 
 ## When to use it
 
-Applications that render **several isolated React roots on one page** (micro frontends, embedded widgets) give each root a body-level container of its own. The overlays still escape any `overflow: hidden` ancestor, while the container carries that root's scoped styles, theme tokens and ownership attributes:
+Applications that render **several isolated React roots on one page** (micro frontends, embedded widgets) give each root a body-level container of its own. The overlays still escape any `overflow: hidden` ancestor, while the container carries that root's scope class, mode class and ownership attributes, so the styles compiled for that root still reach its overlays:
 
 ```tsx
 const overlayRoot = document.createElement("div")
@@ -40,8 +40,9 @@ A single-root application does not need it.
 - The provider owns a Tecton container context. Each overlay passes its resolved target directly to its React Aria Components primitive, so isolated React roots do not depend on sharing React Aria's private context.
 - With no provider, or with `container={null}`, overlays pass no container at all and React Aria applies its own default (`document.body`, once hydration is over).
 - A submenu is the exception: React Aria mounts it inside the root popover's container, which is already in the provider's container. Overriding that would detach the submenu from its parent menu, so Tecton leaves it to React Aria.
-- `Drawer` is built on Base UI, which has no portal context; it keeps portalling into `document.body`.
+- `Drawer` is built on Base UI, which has no portal context of its own, but it reads this one and forwards the resolved container to its Base UI portal, so it lands in the same place as the other overlays.
 - `container={null}` clears an outer provider and restores the default.
+- [`ThemeRoot`](/docs/tecton/theme-root) is the recommended way to get a container: it creates one body-level element that mirrors the root's classes, marks it with `data-tecton-root` and wires it to this provider, so an independently deployed application does not have to manage the element itself.
 
 ## API Reference
 

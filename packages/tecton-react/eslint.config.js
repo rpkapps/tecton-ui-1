@@ -30,6 +30,7 @@ export default [
       "src/hooks/**",
       "src/lib/**",
       "registry/**",
+      "dist/**",
     ],
   },
 ]

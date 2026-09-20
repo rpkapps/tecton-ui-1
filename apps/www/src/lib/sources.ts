@@ -20,7 +20,7 @@ const libSources = import.meta.glob<string>(
   { query: "?raw", import: "default" }
 )
 const blockSources = import.meta.glob<string>(
-  "../../../../packages/tecton-react/src/blocks/*/**/*.{ts,tsx}",
+  "../../../../packages/tecton-blocks/src/blocks/*/**/*.{ts,tsx}",
   { query: "?raw", import: "default" }
 )
 const styleSources = import.meta.glob<string>(
@@ -29,6 +29,7 @@ const styleSources = import.meta.glob<string>(
 )
 
 const PREFIX = "../../../../packages/tecton-react/src/"
+const BLOCK_PREFIX = "../../../../packages/tecton-blocks/src/"
 
 const all: Record<string, () => Promise<string>> = {}
 for (const [map, ext] of [
@@ -43,7 +44,7 @@ for (const [map, ext] of [
   }
 }
 for (const [key, load] of Object.entries(blockSources)) {
-  all[key.replace(PREFIX, "").replace(/\.tsx?$/, "")] = load
+  all[key.replace(BLOCK_PREFIX, "").replace(/\.tsx?$/, "")] = load
 }
 
 export function hasSource(path: string) {

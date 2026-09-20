@@ -1,3 +1,5 @@
+"use client"
+
 import * as React from "react"
 import { I18nProvider, useLocale } from "react-aria-components"
 
@@ -19,7 +21,10 @@ function DirectionProvider(
   return <I18nProvider {...props} locale={locale} />
 }
 
-function useDirection() {
+// The return type is spelled out on purpose: inferring it names React Aria's
+// `Direction`, which lives in @react-types/shared and is not exported from
+// react-aria-components, so declaration emit fails with TS2883.
+function useDirection(): "ltr" | "rtl" {
   const { direction } = useLocale()
   return direction
 }

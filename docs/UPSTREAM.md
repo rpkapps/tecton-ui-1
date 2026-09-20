@@ -24,7 +24,9 @@ built the same way, from the overlay in `scripts/registry-mirror/overlay/`:
 | `tecton.patch` | Registers the style in `registry/styles.tsx`, forwards the Tecton portal target on the ten overlay aria base sources, and adds variant axes to six aria base sources: `alert` (`variant` success/warning/info + `appearance` default/outline/filled), `badge` (`variant` success/warning/info + `appearance` solid/outline + `size` default/md/lg), `separator` (`emphasis` subtle/default/strong), `input` / `textarea` / `select` trigger (`variant` outline/filled/text); strips the hard-coded selected colours from `tabs` and the hover colour from `toggle` so the style file can set the Tecton ones; makes `button-group` corners logical for RTL and gives `sonner` outlined status colours (the popover surface with a status border and text, matching `alert` with `appearance="outline"`) |
 
 `scripts/registry-mirror.sh build` re-applies the overlay (`git apply --3way`) and builds only
-`aria-tecton`. Because the style exists nowhere else, **every CLI command that touches
+`aria-tecton`. The patch is piped through `tr -d '\r'` first: `--3way` matches it against the
+clone's index blobs, which are always LF, so a CRLF working copy of `tecton.patch`
+(`core.autocrlf` on Windows) would otherwise fail to apply on every file. Because the style exists nowhere else, **every CLI command that touches
 `packages/tecton-react` runs against the mirror** (`REGISTRY_URL=http://127.0.0.1:4000/r`), and
 `pnpm generated:check` diffs the installed files against what the mirror serves.
 
@@ -61,9 +63,15 @@ the command abort.
 export REGISTRY_URL=http://127.0.0.1:4000/r
 pnpm dlx shadcn@latest add button --diff button.tsx -c packages/tecton-react   # preview
 pnpm dlx shadcn@latest add button --overwrite -c packages/tecton-react          # apply
+pnpm --filter @tecton/react use-client:restore                                  # put back the dropped directives
 pnpm tokens:build                                                               # re-apply Tecton variables
 pnpm generated:check                                                            # confirm nothing was hand-edited
 ```
+
+Run the CLI with `packages/tecton-react/dist/` **absent**. When a build is lying around, the CLI
+resolves the `@tecton/react/...` aliases to the emitted declarations and rewrites the generated
+components' self-imports to `@tecton/react/dist/components/button.d`; `rm -rf packages/tecton-react/dist`
+and re-add to undo it.
 
 ### Changing the Tecton style
 
@@ -99,3 +107,110 @@ With `rsc: false`, `shadcn add … --diff` and `shadcn add … --overwrite` disa
 `"use client"` directive is kept, so `--diff` reports a one-line difference for some files that
 were written by the CLI itself. `scripts/generated-check.sh` ignores differences that consist only
 of that directive; any other difference fails the check.
+
+## Restoring `"use client"`
+
+The same quirk is a bug, and it drops the directive from files the CLI writes. With `rsc: false`
+the CLI runs `transformRsc` over every written file
+(`packages/shadcn/src/utils/transformers/transform-rsc.ts` at the pinned commit), and that
+transform tests a **module-level `/g` regex**:
+
+```ts
+const directiveRegex = /^["']use client["']$/g
+if (first && directiveRegex.test(first.getText())) first.remove()
+```
+
+A `/g` regex keeps `lastIndex` across calls and `test` only resets it on a miss, so within one
+`shadcn add` run the directive is removed from the first file, kept in the second, removed from the
+third… Which components keep it depends on how many files that invocation happened to touch and in
+what order, so `shadcn add button` and `shadcn add sidebar` disagree about `button.tsx`.
+
+`@tecton/react` is a client component library, so **every** file whose aria base source is marked
+`"use client"` must keep the directive or an RSC consumer breaks at build time. After every
+`shadcn add`, run:
+
+```bash
+pnpm --filter @tecton/react use-client:restore   # copies the directive back from the mirror clone
+pnpm --filter @tecton/react use-client:check     # same counts, fails instead of writing
+```
+
+`scripts/restore-use-client.mts` reads each `src/components/<name>.tsx` alongside the aria base
+source in the mirror clone, only ever **adds** the directive (a component upstream does not mark is
+left alone) and preserves each file's line endings. It prints
+`restored N / already present M / upstream has no directive K`; 45 of the 59 aria UI items carry the
+directive. Restoring it never breaks `pnpm generated:check`, which ignores directive-only
+differences (above).
+
+## Overlay hunks on this branch
+
+Three Tecton hunks in `tecton.patch` go beyond the variant axes and the portal target listed in the
+overlay table:
+
+- **`drawer.tsx`** — the Drawer is the one overlay built on Base UI rather than React Aria, so
+  `DrawerPortal` takes the Tecton portal target through Base UI's own prop:
+  `container={container ?? portalTarget}`, with an explicit `container` passed by the caller
+  winning. The React Aria overlays use `UNSTABLE_portalContainer` instead.
+- **`sidebar.tsx`** — `SidebarProvider` gains `cookieName?: string | false` (default
+  `"sidebar_state"`) and `keyboardShortcut?: string | false` (default `"b"`). Upstream hard-codes
+  both, so several micro frontends rendering a sidebar on one page would share a cookie and one
+  Ctrl/Cmd+B would toggle all of them; `false` opts out of the cookie write and of the `window`
+  keydown listener entirely. Covered by
+  `packages/tecton-react/src/tecton/__tests__/sidebar-provider.test.tsx`.
+- **`direction.tsx`** — `useDirection()` is annotated `"ltr" | "rtl"`. Inferring it names React
+  Aria's `Direction`, which lives in `@react-types/shared` and is not re-exported by
+  `react-aria-components`, so declaration emit failed with TS2883 and the file shipped without a
+  `.d.ts`.
+
+## Renaming the package
+
+The literal `@tecton/react` appears in generated component self-imports, hand-written
+`src/tecton` and block imports, apps/www examples and docs, config (tsconfig paths, the vitest
+alias, the eslint config, the registry mirror overlay, the blocks registry builder) and prose —
+about 800 tracked files. `scripts/rename-package.mts` rewrites all of it in one pass: run
+`bun run scripts/rename-package.mts <new-name> --dry-run` first to preview the per-category file
+and occurrence counts, then drop `--dry-run` against a clean working tree (it refuses a dirty one)
+to write the changes. It skips generated output that must be rebuilt instead of edited
+(`pnpm-lock.yaml`, `apps/www/public/r/**`, `packages/tecton-blocks/registry.json`,
+`packages/tecton-react/src/icons/lucide-compat.map.ts`, `docs/TOKEN-MAPPING.md`) and prints the
+follow-up checklist afterwards: `pnpm install`; rebuild and re-serve the registry mirror, then
+re-add every item under `packages/tecton-react/src/components` with `--overwrite` and run
+`scripts/generated-check.sh`; `icons:build`, `tokens:build` and (if present) `exports:build` for
+the renamed package; `@tecton/blocks`'s `registry:build`; `pnpm docs:sync`; and
+`pnpm typecheck && pnpm test && pnpm lint`.
+
+Three things it does not handle: `packages/eslint-config-tecton/index.js` embeds the name inside a
+regex (`^@tecton/react(/|$)`) and two prose messages, which need a manual look if the new name has
+regex metacharacters; `scripts/registry-mirror/overlay/tecton.patch` only has its added-line
+content rewritten, so re-verify with `scripts/registry-mirror.sh build`; and the shadcn registry
+namespace `@tecton` (block item names, `registryDependencies`, consumers' `components.json`
+registry key) is a distinct literal, left untouched on purpose.
+
+## Build output
+
+`pnpm --filter @tecton/react build` (`scripts/build.mts`, also run by `prepack` and by the root
+`build:lib` / `typecheck`) writes `packages/tecton-react/dist/`, which is what the package
+publishes — `src/` is not shipped. The output is **unbundled**: one `.js` + `.js.map` + `.d.ts` +
+`.d.ts.map` per source module, mirroring `src/`.
+
+- **JS** — esbuild with every specifier marked external, so each file keeps its own
+  `"use client"` directive and its imports: the `@tecton/react/...` self-imports of the generated
+  components stay verbatim and the relative ones inside `src/icons` gain the `.js` extension ESM
+  needs.
+- **`.d.ts`** — `tsconfig.build.json` (`emitDeclarationOnly`) through the TypeScript API, with the
+  `paths` mapping kept so the declarations also name `@tecton/react/...` verbatim; relative
+  specifiers are rewritten to `.js` afterwards. `KNOWN_DTS_FAILURES` in `scripts/build.mts` lists
+  the generated files whose declaration emit is known to fail; it is **empty** — the one entry it
+  held, `src/components/direction.tsx` (TS2883 on `useDirection`), is fixed in the overlay (see
+  "Overlay hunks on this branch"). Anything it does not list fails the build, so a new declaration
+  error has to be fixed in the overlay rather than waived here.
+- **CSS** — `src/styles/*.css` copied to `dist/styles/` with every `@source` directive collapsed
+  into a single `@source "../**/*.js";`, so a consumer's Tailwind scans the built output.
+
+The `exports` map in `packages/tecton-react/package.json` is **generated**, not hand-written:
+`pnpm --filter @tecton/react exports:build` (`scripts/exports-build.mts`) enumerates one entry per
+publishable module from the `src/` layout and points it at `dist/`; `exports:check` fails in CI when
+the committed map is stale. There is no `"."` entry on purpose — the bare `@tecton/react` import is
+banned by `@tecton/eslint-config`.
+
+`pnpm generated:check` is unaffected by all of this: it diffs `src/components/*.tsx` against the
+registry, and `dist/` is build output that is gitignored and never diffed.

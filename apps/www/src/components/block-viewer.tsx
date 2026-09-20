@@ -90,7 +90,7 @@ function BlockCode({ name }: { name: string }) {
           <CodeBlock
             code={code}
             lang={selected.endsWith(".ts") ? "ts" : "tsx"}
-            title={`@tecton/react/${selected}${selected.includes(".") ? "" : ".tsx"}`}
+            title={`${selected}${selected.includes(".") ? "" : ".tsx"}`}
             className="min-h-full [&>div>pre]:max-h-none"
           />
         )}

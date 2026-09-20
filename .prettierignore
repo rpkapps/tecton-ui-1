@@ -9,12 +9,16 @@ coverage/
 pnpm-lock.yaml
 .pnpm-store/
 
+# build output (pnpm --filter @tecton/react build)
+packages/tecton-react/dist/
+
 # CLI-generated shadcn files (docs/UPSTREAM.md) keep the formatting the CLI wrote
 packages/tecton-react/src/components/
 packages/tecton-react/src/hooks/
 packages/tecton-react/src/lib/
 packages/tecton-react/src/styles/globals.css
 packages/tecton-react/registry/
+packages/tecton-blocks/registry/
 
 # synced-examples:start (written by apps/www/scripts/sync-upstream-docs.mts)
 apps/www/src/examples/accordion-basic.tsx

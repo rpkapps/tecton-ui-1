@@ -31,7 +31,7 @@ Tecton UI applies the Tecton visual language **only through the shadcn CSS varia
 
 Both modes come from the Tecton export. `--background` is `var(--tecton-color-bg-default)` in `:root` and in `.dark`; the token file itself switches the value (`#f6f4f7` light, `#1d1c1f` dark). Tecton's applications are dark-first, so this site defaults to dark, but light is equally exact.
 
-Toggle the mode with the `dark` class on `<html>` (or `data-theme="dark"`, which the token file also honours). This site uses `next-themes`.
+Toggle the mode with the **`dark` class** on `<html>`. This site uses `next-themes` with `attribute="class"`. `data-theme="dark"` is not an alternative: in `globals.css` it only switches the `--tecton-*` layer (the raw token export and the palette), while the shadcn variables are declared in `:root` and `.dark` and the `dark:` utility variant resolves to `&:is(.dark *)`, so both keep reading light values. The one place the attribute is equivalent is `@tecton/react/styles/scoped.css`, which honours the class and the attribute on the root element of a mounted application (see [Micro-frontends](/docs/micro-frontends)).
 
 ## Token mapping
 

@@ -11,7 +11,7 @@
     "format": "prettier --write \"**/*.{ts,tsx}\"",
     "typecheck": "tsc --noEmit",
     "docs:sync": "bun run scripts/sync-upstream-docs.mts",
-    "registry:build": "pnpm --filter @tecton/react registry:build",
+    "registry:build": "pnpm --filter @tecton/blocks registry:build",
     "compare": "bun run e2e/compare.spec.ts"
   },
   "dependencies": {
@@ -22,6 +22,7 @@
     "@tanstack/react-router": "^1.170.35",
     "@tanstack/react-start": "^1.168.52",
     "@tanstack/react-table": "^9.2.4",
+    "@tecton/blocks": "workspace:*",
     "@tecton/react": "workspace:*",
     "class-variance-authority": "^0.7.1",
     "cn": "^0.2.6",

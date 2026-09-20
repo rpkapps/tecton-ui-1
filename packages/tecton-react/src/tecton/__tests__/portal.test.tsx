@@ -5,6 +5,12 @@ import { describe, expect, it, vi } from "vitest"
 import { Button } from "@tecton/react/components/button"
 import { Dialog, DialogTrigger } from "@tecton/react/components/dialog"
 import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@tecton/react/components/drawer"
+import {
   DropdownMenu,
   DropdownMenuItem,
   DropdownMenuSub,
@@ -64,6 +70,44 @@ describe("PortalProvider", () => {
     expect(screen.queryByRole("dialog")).toBeNull()
     await waitFor(() => expect(trigger).toHaveFocus())
     container.remove()
+  })
+
+  // The Drawer is the one overlay built on Base UI rather than React Aria, so
+  // it honours the container through `Drawer.Portal`'s own `container` prop.
+  it("portals a Drawer into the given container", async () => {
+    const container = makeContainer("drawer")
+    render(
+      <PortalProvider container={container}>
+        <Drawer>
+          <DrawerTrigger render={<Button />}>Open drawer</DrawerTrigger>
+          <DrawerContent>
+            <DrawerTitle>Drawer title</DrawerTitle>
+            <p>Drawer body</p>
+          </DrawerContent>
+        </Drawer>
+      </PortalProvider>
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Open drawer" }))
+    const body = await screen.findByText("Drawer body")
+    expect(container.contains(body)).toBe(true)
+    container.remove()
+  })
+
+  it("leaves a Drawer in document.body without a provider", async () => {
+    render(
+      <Drawer>
+        <DrawerTrigger render={<Button />}>Open plain drawer</DrawerTrigger>
+        <DrawerContent>
+          <DrawerTitle>Plain drawer title</DrawerTitle>
+          <p>Plain drawer body</p>
+        </DrawerContent>
+      </Drawer>
+    )
+    await userEvent.click(
+      screen.getByRole("button", { name: "Open plain drawer" })
+    )
+    const body = await screen.findByText("Plain drawer body")
+    expect(body.closest("[data-mfe]")).toBeNull()
   })
 
   it("portals a Popover into the container returned by a function", async () => {

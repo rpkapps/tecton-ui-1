@@ -7,13 +7,34 @@ import tailwindcss from "@tailwindcss/vite"
 import { fumadocsMdx } from "fumadocs-mdx/vite"
 
 const blockNames = readdirSync(
-  fileURLToPath(new URL("../../packages/tecton-react/src/blocks", import.meta.url)),
+  fileURLToPath(new URL("../../packages/tecton-blocks/src/blocks", import.meta.url)),
   { withFileTypes: true }
 )
   .filter((entry) => entry.isDirectory())
   .map((entry) => entry.name)
 
-const config = defineConfig({
+// Forward slashes: the replacement is concatenated with the rest of the request,
+// and a mixed `C:\…\src\styles/globals.css` is not a path Vite normalises.
+const tectonSrc = fileURLToPath(
+  new URL("../../packages/tecton-react/src/", import.meta.url)
+).replace(/\\/g, "/")
+
+// `@tecton/react` resolves through its `exports` map, which points at the built
+// `dist/`. That is what `vite build` (and `tsc`) must see, so the docs site
+// validates the published surface. For `vite dev` there is nothing to rebuild on
+// every edit: alias the package back onto its sources. The order matters —
+// `globals.css` and `styles/` sit under `src/styles/`, everything else under
+// `src/`.
+const devAliases = [
+  {
+    find: /^@tecton\/react\/globals\.css$/,
+    replacement: `${tectonSrc}styles/globals.css`,
+  },
+  { find: /^@tecton\/react\/styles\//, replacement: `${tectonSrc}styles/` },
+  { find: /^@tecton\/react\//, replacement: tectonSrc },
+]
+
+const config = defineConfig(({ command }) => ({
   // PORT lets a harness or a second checkout run the dev server off 3000.
   server: { port: Number(process.env.PORT) || 3000 },
   // The prerender crawler fetches every page from a Vite preview server that
@@ -23,9 +44,10 @@ const config = defineConfig({
   preview: { host: "127.0.0.1" },
   resolve: {
     tsconfigPaths: true,
-    alias: {
-      "@": fileURLToPath(new URL("./src", import.meta.url)),
-    },
+    alias: [
+      ...(command === "serve" ? devAliases : []),
+      { find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) },
+    ],
   },
   plugins: [
     // Must run before tanstackStart/react so .mdx and `fumadocs-mdx/macro` calls are transformed first.
@@ -52,6 +74,6 @@ const config = defineConfig({
     }),
     viteReact(),
   ],
-})
+}))
 
 export default config

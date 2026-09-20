@@ -7,7 +7,7 @@
  * one by one. Block files keep their `@tecton/react/...` imports, so the
  * package must be installed in the consuming application.
  *
- * 1. Stages src/blocks into registry/src.
+ * 1. Stages this package's src/blocks into registry/src.
  * 2. Writes registry.json (one `registry:block` item per block; a block that
  *    imports another block lists it as a registry dependency).
  * 3. Runs `shadcn build registry.json --output <out>` (the CLI ships with the
@@ -68,10 +68,8 @@ function rewrite(source: string, blockName: string) {
     /(from\s+|import\s+|import\()\s*(["'])([^"']+)\2/g,
     (match, _prefix: string, _quote: string, spec: string) => {
       // `../<other-block>/…` (or `../../<other-block>/…` from a block's
-      // components/ folder) or `@tecton/react/blocks/<other-block>/…`
-      const sibling =
-        spec.match(/^(?:\.\.\/)+([^./][^/]*)\//)?.[1] ??
-        spec.match(/^@tecton\/react\/blocks\/([^/]+)\//)?.[1]
+      // components/ folder): cross-block imports are always relative.
+      const sibling = spec.match(/^(?:\.\.\/)+([^./][^/]*)\//)?.[1]
       if (sibling && sibling !== blockName) registryDeps.add(`@tecton/${sibling}`)
       const bare = spec.startsWith("@") ? spec.split("/").slice(0, 2).join("/") : spec.split("/")[0]
       if (KNOWN_DEPENDENCIES.has(bare)) deps.add(bare)

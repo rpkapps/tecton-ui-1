@@ -1,6 +1,6 @@
 import type * as React from "react"
 
-import { blocks as registry } from "@tecton/react/blocks/index"
+import { blocks as registry } from "@tecton/blocks"
 
 export type BlockCategory =
   | "application"
