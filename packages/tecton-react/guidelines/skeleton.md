@@ -80,4 +80,4 @@ Correct:
 <Skeleton className="h-4 w-60" />
 ```
 
-Arbitrary values are exactly what `no-arbitrary-values` rejects in `configs.strict`, and a placeholder measured in loose pixels stops matching the line height of the text it stands in for.
+An off-scale pixel size stops matching the line height of the text it stands in for and the spacing scale everything else uses.

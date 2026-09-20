@@ -113,7 +113,7 @@ Correct:
 React Aria's `Button` has no `asChild`, so the prop is dropped and the anchor is nested inside a `button` that forces `role="button"`: invalid markup, and the link is announced and activated as a button.
 
 - **HIGH** The disabled prop instead of isDisabled — `disabled` is not part of React Aria's button props, so it never reaches the DOM element and the button stays focusable, hoverable and pressable. (guidelines/button.md)
-- **HIGH** Sizing and colouring a Button with className — The variant owns colour, shape, size and padding, and Tailwind's stock palette is reset here, so `bg-blue-600` emits no CSS while the hand-set height breaks the `size` scale; `@tecton/eslint-config` reports both. (guidelines/button.md)
+- **HIGH** Sizing and colouring a Button with className — The variant owns colour, shape, size and padding, and Tailwind's stock palette is reset here, so `bg-blue-600` emits no CSS while the hand-set height breaks the `size` scale. (guidelines/button.md)
 - **MEDIUM** onClick instead of the onPress handler — `onClick` survives only as React Aria's deprecated compatibility alias: it is handed a synthetic mouse event with no `pointerType`, so keyboard and touch activations are indistinguishable from a click. (guidelines/button.md)
 
 ## ButtonGroup

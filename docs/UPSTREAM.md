@@ -227,11 +227,9 @@ re-add every item under `packages/tecton-react/src/components` with `--overwrite
 the renamed package; `@tecton/blocks`'s `registry:build`; `pnpm docs:sync`; and
 `pnpm typecheck && pnpm test && pnpm lint`.
 
-Three things it does not handle: `packages/eslint-config-tecton/index.js` embeds the name inside a
-regex (`^@tecton/react(/|$)`) and two prose messages, which need a manual look if the new name has
-regex metacharacters; `scripts/registry-mirror/overlay/tecton.patch` only has its added-line
-content rewritten, so re-verify with `scripts/registry-mirror.sh build`; and the shadcn registry
-namespace `@tecton` (block item names, `registryDependencies`, consumers' `components.json`
+Two things it does not handle: `scripts/registry-mirror/overlay/tecton.patch` only has its
+added-line content rewritten, so re-verify with `scripts/registry-mirror.sh build`; and the shadcn
+registry namespace `@tecton` (block item names, `registryDependencies`, consumers' `components.json`
 registry key) is a distinct literal, left untouched on purpose.
 
 ## Build output
@@ -258,8 +256,9 @@ publishes — `src/` is not shipped. The output is **unbundled**: one `.js` + `.
 The `exports` map in `packages/tecton-react/package.json` is **generated**, not hand-written:
 `pnpm --filter @tecton/react exports:build` (`scripts/exports-build.mts`) enumerates one entry per
 publishable module from the `src/` layout and points it at `dist/`; `exports:check` fails in CI when
-the committed map is stale. There is no `"."` entry on purpose — the bare `@tecton/react` import is
-banned by `@tecton/eslint-config`.
+the committed map is stale. There is no `"."` entry on purpose — the micro-frontend setup shares
+the `@tecton/react/` prefix rather than a root module, so the bare import is intentionally
+unsupported.
 
 `pnpm generated:check` is unaffected by all of this: it diffs `src/components/*.tsx` against the
 registry, and `dist/` is build output that is gitignored and never diffed.

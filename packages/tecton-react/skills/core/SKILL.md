@@ -11,9 +11,9 @@ description: >
   bg-warning-surface) and the Tecton palette steps (bg-blue-120, text-blue-830),
   the rule that variants own colour, shape, size and padding while className
   carries layout only, the Tecton variant axes on Alert, Badge, Separator, Input,
-  Textarea and SelectTrigger, data-icon="inline-start" spacing, Tecton domain
-  glyphs versus Lucide, and the @tecton/eslint-config guardrails. Load before
-  writing or editing any Tecton markup, className, import or stylesheet.
+  Textarea and SelectTrigger, data-icon="inline-start" spacing, and Tecton
+  domain glyphs versus Lucide. Load before writing or editing any Tecton
+  markup, className, import or stylesheet.
 metadata:
   type: core
   library: "@tecton/react"
@@ -21,10 +21,8 @@ metadata:
 sources:
   - "../../README.md"
   - "../../apps/www/content/docs/installation.mdx"
-  - "../../apps/www/content/docs/linting.mdx"
   - "../../apps/www/content/docs/theming.mdx"
   - "../../apps/www/content/docs/icons.mdx"
-  - "../eslint-config-tecton/index.js"
 ---
 
 # Building with @tecton/react
@@ -132,33 +130,11 @@ export function WellHeader() {
 }
 ```
 
-Add the guardrails; they are the only thing that reports the failures below,
-which are otherwise silent:
-
-```js title="eslint.config.js"
-import tecton from "@tecton/eslint-config"
-import tsParser from "@typescript-eslint/parser"
-
-export default [
-  {
-    files: ["**/*.{ts,tsx}"],
-    languageOptions: {
-      parser: tsParser,
-      parserOptions: { ecmaFeatures: { jsx: true } },
-    },
-  },
-  ...tecton.configs.recommended,
-]
-```
-
-`configs.recommended` looks at Tecton components only: `shadcn/no-restyle`
-(a `className` that overrides what a variant owns), `shadcn/require-static-classes`
-(class names assembled at runtime) and `no-restricted-imports` (the `@tecton/react`
-root, and anything under `components/ui/`). `configs.strict` adds `no-raw-colors`,
-`no-unknown-classes`, `no-arbitrary-values` and `no-inline-styles` over every
-`className` in the project, and needs `components.json`'s `tailwind.css` to reach
-the Tecton stylesheet outside `node_modules`. `configs.warn` is `recommended` at
-warning level for adoption.
+Nothing at build time checks the rules below. A stock colour class like
+`bg-red-500` type-checks, builds and renders unstyled, and a `className` that
+overrides what a variant owns compiles clean and just looks wrong — nothing
+fails and nothing warns. The *Before you finish* list at the top of this skill
+is the check: re-read it against the file you wrote before you report it done.
 
 ## Three import namespaces, no root export
 
@@ -177,8 +153,7 @@ block files import their components from `@tecton/react`.
 
 `globals.css` resets Tailwind's palette (`--color-*: initial`) and replaces it
 with Tecton's fifteen contrast ramps, so `bg-red-500` and `text-zinc-400`
-generate **no CSS at all** — they type-check, they lint clean without
-`@tecton/eslint-config`, and they render unstyled.
+generate **no CSS at all** — they type-check and they render unstyled.
 
 1. **A semantic token first**: `bg-primary`, `text-primary-foreground`,
    `bg-card`, `text-muted-foreground`, `border-border`, `text-destructive`,
@@ -301,9 +276,8 @@ import { Button } from "@tecton/react/components/button"
 Without the `@tecton` namespace the CLI installs from the public shadcn
 registry: a Radix component with the stock palette, the wrong base and the wrong
 theme, which renders next to the real ones and drifts on every upgrade.
-`no-restricted-imports` flags every import from a `components/ui/` directory.
 
-Source: apps/www/content/docs/linting.mdx (Components come from the package); packages/eslint-config-tecton/index.js:116
+Source: apps/www/content/docs/installation.mdx (Package)
 
 ### [HIGH] Importing from the package root
 
@@ -321,10 +295,9 @@ import { Button } from "@tecton/react/components/button"
 ```
 
 The `exports` map is enumerated with one entry per module and has no `.` entry,
-so the root specifier resolves to nothing; `no-restricted-imports` names the
-three real namespaces in its message.
+so the root specifier resolves to nothing at build time.
 
-Source: apps/www/content/docs/installation.mdx (Peer requirements); packages/eslint-config-tecton/index.js:109
+Source: apps/www/content/docs/installation.mdx (Peer requirements)
 
 ### [HIGH] className overriding what a variant owns
 
@@ -348,7 +321,7 @@ Correct:
 `size` variant are replaced silently, while `bg-blue-600` is not a Tecton step
 and emits no CSS — the button ends up the wrong size with the default fill.
 
-Source: apps/www/content/docs/linting.mdx (What you may put in className); packages/eslint-config-tecton/index.js:45
+Source: packages/tecton-react/guidelines/button.md (Do)
 
 ### [HIGH] Hand-built status colours where a variant exists
 

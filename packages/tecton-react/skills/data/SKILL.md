@@ -193,7 +193,7 @@ Correct:
 
 Each `Collapsible` is its own widget, so the result is a pile of buttons with no `role="treegrid"`, no arrow-key or type-ahead movement between rows and no selection; `TreeView` is React Aria's `Tree` and gets all of it from `id`, `textValue` and the nesting.
 
-- **HIGH** Indenting rows with padding classes — `TreeViewItemContent` writes `paddingInlineStart` as an inline style computed from React Aria's `level`, which no `className` can outrank, so the row keeps the depth it really has in the collection and `pl-8` is dead weight that `no-restyle` reports. (guidelines/tree-view.md)
+- **HIGH** Indenting rows with padding classes — `TreeViewItemContent` writes `paddingInlineStart` as an inline style computed from React Aria's `level`, which no `className` can outrank, so the row keeps the depth it really has in the collection and `pl-8` is dead weight. (guidelines/tree-view.md)
 - **MEDIUM** A row without textValue — `textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included. (guidelines/tree-view.md)
 
 ## ChartContainer

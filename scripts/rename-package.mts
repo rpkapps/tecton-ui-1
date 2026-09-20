@@ -227,10 +227,8 @@ const CONFIG_FILES = new Set([
   "scripts/registry-mirror/overlay/tecton.patch",
   "packages/tecton-blocks/scripts/registry-build.mts",
 ]);
-const CONFIG_PREFIXES = ["packages/eslint-config-tecton/"];
-
 function categorize(file: string): Category {
-  if (CONFIG_FILES.has(file) || CONFIG_PREFIXES.some((p) => file.startsWith(p))) return "config";
+  if (CONFIG_FILES.has(file)) return "config";
   if (file.startsWith("packages/tecton-react/src/components/")) return "generated self-imports (packages/tecton-react/src/components)";
   if (file.startsWith("packages/tecton-react/src/tecton/")) return "src/tecton";
   if (file.startsWith("packages/tecton-blocks/")) return "blocks";
@@ -327,11 +325,6 @@ console.log("");
 console.log("  pnpm typecheck && pnpm test && pnpm lint");
 console.log("");
 console.log("Not handled by this script:");
-console.log(
-  "  - packages/eslint-config-tecton/index.js embeds the name inside a regex " +
-    '("^@tecton/react(/|$)" at about line 32) — escape regex metacharacters if the ' +
-    "new name has any, and review the two prose messages (about lines 111 and 118)."
-);
 console.log(
   "  - scripts/registry-mirror/overlay/tecton.patch only had its added-line content " +
     "changed; re-verify with scripts/registry-mirror.sh build."

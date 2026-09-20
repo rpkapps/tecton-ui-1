@@ -11,7 +11,7 @@ Eighteen skills live at `packages/tecton-react/skills/<name>/SKILL.md` in the pa
 
 | Skill | Covers |
 | --- | --- |
-| `core` | Import paths, the reset Tailwind palette, semantic tokens versus Tecton steps, variants own styling, and the ESLint guardrails. Load before writing any Tecton markup. |
+| `core` | Import paths, the reset Tailwind palette, semantic tokens versus Tecton steps, and variants own styling. Load before writing any Tecton markup. |
 | `react-aria` | The Radix-to-React-Aria prop map: `onPress`, `isDisabled`, `isSelected`, `selectedKey`, `isOpen`, and what replaces `asChild`. |
 | `theming` | How colour reaches the screen: the shadcn CSS variables, palette steps, dark-first, `ThemeRoot`, and micro-frontend scoping. |
 | `choose-component` | The decision table across every family; maps a need to one component, its import path, and the family skill to load next. |
@@ -86,4 +86,4 @@ Skills are versioned with the package: each `SKILL.md` records the `@tecton/reac
 
 ## Restyling and imports
 
-Skills describe intended usage; they don't enforce it. For the ESLint rules that catch restyled Tecton components and stock-registry imports at build time, see [Linting](/docs/linting).
+Skills describe intended usage rather than enforcing it: the `core` skill's "Before you finish" list is the self-check an agent runs against the file it just wrote.

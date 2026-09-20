@@ -76,7 +76,7 @@ Correct:
 <Button size="lg">Assign</Button>
 ```
 
-The variant owns colour, shape, size and padding, and Tailwind's stock palette is reset here, so `bg-blue-600` emits no CSS while the hand-set height breaks the `size` scale; `@tecton/eslint-config` reports both.
+The variant owns colour, shape, size and padding, and Tailwind's stock palette is reset here, so `bg-blue-600` emits no CSS while the hand-set height breaks the `size` scale.
 
 ### MEDIUM onClick instead of the onPress handler
 

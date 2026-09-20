@@ -75,7 +75,7 @@ Correct:
 </AvatarGroup>
 ```
 
-`size` is what writes `data-size`, and `AvatarBadge` and `AvatarGroupCount` size themselves from it through `group-data-[size=lg]/avatar` and `group-has-data-[size=lg]/avatar-group`, so a hand-set `size-10` leaves the dot and the count bubble at the default 32 px; `size-*` is on the `no-restyle` deny list for the same reason.
+`size` is what writes `data-size`, and `AvatarBadge` and `AvatarGroupCount` size themselves from it through `group-data-[size=lg]/avatar` and `group-has-data-[size=lg]/avatar-group`, so a hand-set `size-10` leaves the dot and the count bubble at the default 32 px.
 
 ### HIGH A stock colour on the status dot
 

@@ -26,9 +26,9 @@
  * hand-written ESM a consumer's build config imports (no build step, Node-only),
  * shipped as-is.
  *
- * There is deliberately no "." entry: the bare `@tecton/react` import is banned by
- * @tecton/eslint-config, and the micro-frontend setup shares the `@tecton/react/`
- * prefix rather than a root module.
+ * There is deliberately no "." entry: the micro-frontend setup shares the
+ * `@tecton/react/` prefix rather than a root module, so the bare import is
+ * intentionally unsupported.
  */
 /// <reference types="node" />
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";

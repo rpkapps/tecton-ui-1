@@ -130,9 +130,6 @@ jobs:
       - name: Registry output is committed
         run: git diff --exit-code -- apps/www/public/r packages/tecton-blocks/registry.json
 
-      - name: Test @tecton/eslint-config
-        run: pnpm --filter @tecton/eslint-config test
-
   # Builds @tecton/react and prerenders the docs site on every PR (slower crawl, kept out of `checks`).
   docs-build:
     runs-on: ubuntu-latest
