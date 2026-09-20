@@ -187,7 +187,7 @@ import { Textarea } from "@tecton/react/components/textarea"
 
 ### Don't
 
-- **MEDIUM** Pinning the textarea to a fixed height — `field-sizing-content` grows the box with its value, so a fixed `h-[120px]` freezes it and long text scrolls inside a short field; the arbitrary value is also rejected by `configs.strict`. (guidelines/textarea.md)
+- **MEDIUM** Pinning the textarea to a fixed height — `field-sizing-content` grows the box with its value, so a fixed `h-[120px]` freezes it and long text scrolls inside a short field. (guidelines/textarea.md)
 - **HIGH** Turning the border red for an invalid value — `border-red-500` emits no CSS after the palette reset, while `aria-invalid` is both what `textareaVariants` styles and what assistive tech reads. (guidelines/textarea.md)
 - **HIGH** Putting the send button outside the control — A sibling button sits outside the control's border and its focus ring; `align="block-end"` switches the group to a column and keeps the button inside the field. (guidelines/textarea.md)
 
@@ -242,7 +242,7 @@ Correct:
 React Aria reads `isSelected` and `onChange`; the Radix names are unknown props that never reach the hidden input, so the box toggles its own uncontrolled state and `agreed` never changes.
 
 - **HIGH** Labelling the checkbox with a plain span — A `span` is not a label, so the hidden input has no accessible name and the text does not toggle it; `Field` also supplies the alignment and the disabled state the checkbox styles read. (guidelines/checkbox.md)
-- **MEDIUM** Colouring the checked box with a class — The checked fill is already `bg-ghost-active-foreground` from the component, and `bg-emerald-600` is outside the Tecton palette, so the class generates no CSS and `no-restyle` rejects it. (guidelines/checkbox.md)
+- **MEDIUM** Colouring the checked box with a class — The checked fill is already `bg-ghost-active-foreground` from the component, and `bg-emerald-600` is outside the Tecton palette, so the class generates no CSS. (guidelines/checkbox.md)
 
 ## Switch
 

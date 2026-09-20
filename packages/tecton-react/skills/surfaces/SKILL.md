@@ -89,7 +89,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent, 
 
 ### Don't
 
-- **HIGH** Re-declaring the card's own padding and shape — `Card` pads itself through `--card-spacing` and its parts read the same variable, so `p-6` double-pads the header; `border-gray-200` is stock Tailwind, which Tecton resets to nothing, and `no-restyle` reports the colour, radius and padding. (guidelines/card.md)
+- **HIGH** Re-declaring the card's own padding and shape — `Card` pads itself through `--card-spacing` and its parts read the same variable, so `p-6` double-pads the header, while `rounded-xl` and `border-gray-200` override the radius and colour the variant already owns; `border-gray-200` is also stock Tailwind, which Tecton resets to nothing, so it emits no CSS besides. (guidelines/card.md)
 - **MEDIUM** A hand-drawn rule between header and content — `CardHeader` already carries `[.border-b]:pb-(--card-spacing)`, so the bare `border-b` picks up the themed border colour and the right padding, while `border-gray-200` emits no CSS and `pb-4` fights the spacing variable. (guidelines/card.md)
 
 ## Panel
@@ -122,7 +122,7 @@ import { Panel, PanelHeader, PanelTitle, PanelDescription, PanelActions, PanelCo
 ### Don't
 
 - **HIGH** A body that is not in PanelContent — `Panel` is `flex min-h-0 flex-col overflow-hidden`, and only `PanelContent` carries `flex-1 overflow-auto`, so a plain `div` in its place is clipped instead of scrolling and pushes the footer out of view. (guidelines/panel.md)
-- **MEDIUM** Painting the variant by hand — The shadow is the `elevated` variant and the padding is the `size` scale, which the parts read through `--panel-px` / `--panel-py`; `border-gray-200` is stock Tailwind and emits no CSS, and `no-restyle` reports the rest. (guidelines/panel.md)
+- **MEDIUM** Painting the variant by hand — The shadow is the `elevated` variant and the padding is the `size` scale, which the parts read through `--panel-px` / `--panel-py`; `border-gray-200` is stock Tailwind and emits no CSS, while `rounded-lg`, `px-6 py-4` and `shadow-md` override the radius, padding and shadow the variant already owns. (guidelines/panel.md)
 
 ## Item
 
@@ -267,7 +267,7 @@ import { Separator } from "@tecton/react/components/separator"
 ### Don't
 
 - **HIGH** A hand-drawn rule with a stock Tailwind colour — Tecton resets Tailwind's stock palette to `initial`, so `border-gray-200` generates no CSS and the rule is invisible in both modes; `Separator` also carries `role="separator"`, which a bare `div` does not. (guidelines/separator.md)
-- **MEDIUM** Recolouring the rule instead of raising its emphasis — The three emphases map to `--border-subtle`, `--border` and `--border-strong`, which already switch between modes; the stock `zinc` classes emit nothing, and `no-restyle` reports a colour the variant owns. (guidelines/separator.md)
-- **MEDIUM** A vertical rule with a hand-set height — A vertical `Separator` is `w-px self-stretch`, so it takes its height from the flex row; setting `h-4` freezes it at one size and `no-restyle` reports the size and colour. (guidelines/separator.md)
+- **MEDIUM** Recolouring the rule instead of raising its emphasis — The three emphases map to `--border-subtle`, `--border` and `--border-strong`, which already switch between modes; the stock `zinc` classes emit nothing, and `bg-zinc-300` overrides the colour the `emphasis` variant already owns. (guidelines/separator.md)
+- **MEDIUM** A vertical rule with a hand-set height — A vertical `Separator` is `w-px self-stretch`, so it takes its height from the flex row; `h-4` freezes it at one size instead, and `bg-border` overrides the colour the `emphasis` variant already owns. (guidelines/separator.md)
 
 Re-read the checklist above against the file you wrote before you report it done.

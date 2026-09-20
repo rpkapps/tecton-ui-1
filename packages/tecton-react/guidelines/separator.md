@@ -66,7 +66,7 @@ Correct:
 <Separator emphasis="strong" />
 ```
 
-The three emphases map to `--border-subtle`, `--border` and `--border-strong`, which already switch between modes; the stock `zinc` classes emit nothing, and `no-restyle` reports a colour the variant owns.
+The three emphases map to `--border-subtle`, `--border` and `--border-strong`, which already switch between modes; the stock `zinc` classes emit nothing, and `bg-zinc-300` overrides the colour the `emphasis` variant already owns.
 
 ### MEDIUM A vertical rule with a hand-set height
 
@@ -90,4 +90,4 @@ Correct:
 </div>
 ```
 
-A vertical `Separator` is `w-px self-stretch`, so it takes its height from the flex row; setting `h-4` freezes it at one size and `no-restyle` reports the size and colour.
+A vertical `Separator` is `w-px self-stretch`, so it takes its height from the flex row; `h-4` freezes it at one size instead, and `bg-border` overrides the colour the `emphasis` variant already owns.

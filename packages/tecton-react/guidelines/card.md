@@ -51,7 +51,7 @@ Correct:
 </Card>
 ```
 
-`Card` pads itself through `--card-spacing` and its parts read the same variable, so `p-6` double-pads the header; `border-gray-200` is stock Tailwind, which Tecton resets to nothing, and `no-restyle` reports the colour, radius and padding.
+`Card` pads itself through `--card-spacing` and its parts read the same variable, so `p-6` double-pads the header, while `rounded-xl` and `border-gray-200` override the radius and colour the variant already owns; `border-gray-200` is also stock Tailwind, which Tecton resets to nothing, so it emits no CSS besides.
 
 ### MEDIUM A hand-drawn rule between header and content
 

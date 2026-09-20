@@ -74,4 +74,4 @@ Correct:
 </Popover>
 ```
 
-Tecton resets Tailwind's stock palette, so `border-gray-200` emits no CSS at all, and the padding and radius duplicate what the component already owns — `no-restyle` reports both.
+Tecton resets Tailwind's stock palette, so `border-gray-200` emits no CSS at all, and the padding and radius duplicate what the component already owns.

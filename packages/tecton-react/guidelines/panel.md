@@ -83,4 +83,4 @@ Correct:
 </Panel>
 ```
 
-The shadow is the `elevated` variant and the padding is the `size` scale, which the parts read through `--panel-px` / `--panel-py`; `border-gray-200` is stock Tailwind and emits no CSS, and `no-restyle` reports the rest.
+The shadow is the `elevated` variant and the padding is the `size` scale, which the parts read through `--panel-px` / `--panel-py`; `border-gray-200` is stock Tailwind and emits no CSS, while `rounded-lg`, `px-6 py-4` and `shadow-md` override the radius, padding and shadow the variant already owns.

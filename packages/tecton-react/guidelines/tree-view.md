@@ -77,7 +77,7 @@ Correct:
 </TreeViewItem>
 ```
 
-`TreeViewItemContent` writes `paddingInlineStart` as an inline style computed from React Aria's `level`, which no `className` can outrank, so the row keeps the depth it really has in the collection and `pl-8` is dead weight that `no-restyle` reports.
+`TreeViewItemContent` writes `paddingInlineStart` as an inline style computed from React Aria's `level`, which no `className` can outrank, so the row keeps the depth it really has in the collection and `pl-8` is dead weight.
 
 ### MEDIUM A row without textValue
 

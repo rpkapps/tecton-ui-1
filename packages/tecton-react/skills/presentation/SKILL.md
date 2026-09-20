@@ -116,7 +116,7 @@ import { Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount, Ava
 ### Don't
 
 - **HIGH** An avatar image with no fallback — `AvatarImage` starts in `data-state="error"` when `src` is empty and switches to it on the first failed request, and the class that acts on that is `data-[state=error]:hidden`, so with nothing behind it the avatar is an empty ring — only `AvatarFallback` carries the `peer-data-[state=error]:flex` that brings content back. (guidelines/avatar.md)
-- **MEDIUM** An avatar sized with className — `size` is what writes `data-size`, and `AvatarBadge` and `AvatarGroupCount` size themselves from it through `group-data-[size=lg]/avatar` and `group-has-data-[size=lg]/avatar-group`, so a hand-set `size-10` leaves the dot and the count bubble at the default 32 px; `size-*` is on the `no-restyle` deny list for the same reason. (guidelines/avatar.md)
+- **MEDIUM** An avatar sized with className — `size` is what writes `data-size`, and `AvatarBadge` and `AvatarGroupCount` size themselves from it through `group-data-[size=lg]/avatar` and `group-has-data-[size=lg]/avatar-group`, so a hand-set `size-10` leaves the dot and the count bubble at the default 32 px. (guidelines/avatar.md)
 - **HIGH** A stock colour on the status dot — `AvatarBadge` is the one part whose colour the application picks, but the Tecton palette is declared after `--color-*: initial`, so `green-500` is not a step, the class emits no CSS and the dot silently falls back to `bg-primary`. (guidelines/avatar.md)
 
 ## Overflow

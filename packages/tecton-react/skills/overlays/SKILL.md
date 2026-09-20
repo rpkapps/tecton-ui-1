@@ -221,7 +221,7 @@ import { Popover, PopoverTrigger, PopoverHeader, PopoverTitle, PopoverDescriptio
 ### Don't
 
 - **HIGH** Radix side and align props — React Aria takes one `placement` string; `side`, `align` and `sideOffset` are not part of its positioning contract, so the popover silently keeps the default `placement="bottom"`. (guidelines/popover.md)
-- **MEDIUM** Repainting the popover surface with className — Tecton resets Tailwind's stock palette, so `border-gray-200` emits no CSS at all, and the padding and radius duplicate what the component already owns — `no-restyle` reports both. (guidelines/popover.md)
+- **MEDIUM** Repainting the popover surface with className — Tecton resets Tailwind's stock palette, so `border-gray-200` emits no CSS at all, and the padding and radius duplicate what the component already owns. (guidelines/popover.md)
 
 ## HoverCard
 

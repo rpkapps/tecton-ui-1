@@ -237,11 +237,11 @@ Correct:
 The palette is the Tecton token export and `globals.css` is generated inside the
 package, so a colour invented in an application is off-ramp, has no second value
 for the other mode and has passed no contrast check — and once it is declared
-Tailwind can generate it, so `no-raw-colors` accepts it and nothing ever reports
-it again. A genuinely uncovered colour is an entry in
-`tokens/tecton.map.json`, raised with the design system.
+in the application's own stylesheet, Tailwind generates it and nothing
+distinguishes it from a sanctioned token. A genuinely uncovered colour is an
+entry in `tokens/tecton.map.json`, raised with the design system.
 
-Source: apps/www/content/docs/linting.mdx (Applications do not define colours); packages/eslint-config-tecton/index.js:84
+Source: apps/www/content/docs/theming.mdx (Palette)
 
 ### [HIGH] A dark: pair on a palette step
 

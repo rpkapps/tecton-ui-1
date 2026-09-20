@@ -260,6 +260,6 @@ import { Skeleton } from "@tecton/react/components/skeleton"
 
 - **HIGH** A skeleton with no height — `Skeleton` is an empty `div` with no intrinsic size, so without `h-*`, an aspect ratio or a child it computes to zero height and nothing appears on the page. (guidelines/skeleton.md)
 - **HIGH** Recolouring the placeholder with a stock class — `cn` drops the component's `bg-muted` in favour of `bg-gray-200`, which is not a Tecton step and emits no CSS, so the placeholder renders transparent and the region looks empty rather than loading. (guidelines/skeleton.md)
-- **MEDIUM** Off-token pixel sizes on a skeleton — Arbitrary values are exactly what `no-arbitrary-values` rejects in `configs.strict`, and a placeholder measured in loose pixels stops matching the line height of the text it stands in for. (guidelines/skeleton.md)
+- **MEDIUM** Off-token pixel sizes on a skeleton — An off-scale pixel size stops matching the line height of the text it stands in for and the spacing scale everything else uses. (guidelines/skeleton.md)
 
 Re-read the checklist above against the file you wrote before you report it done.

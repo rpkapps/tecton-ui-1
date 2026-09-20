@@ -97,7 +97,7 @@ Rules for the sections:
     runtime error, or it is a type error that a Vite dev server still runs because esbuild strips
     types; a loud runtime failure earns an entry only when the error does not name the fix),
     **specific** to this library (React Aria props, the Tecton palette, the variants), and
-    **grounded** (traceable to the component source, its docs page or a lint rule).
+    **grounded** (traceable to the component source or its docs page).
   - Code blocks are `tsx`, complete enough to paste, with real export names and React Aria prop
     names (`onPress`, `isDisabled`, `isSelected`, `selectedKey`, `isOpen`). No `// ...`.
   - The wrong version must be something that looks right from a Radix or stock-Tailwind prior:

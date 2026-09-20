@@ -49,7 +49,7 @@ Correct:
 </Field>
 ```
 
-`field-sizing-content` grows the box with its value, so a fixed `h-[120px]` freezes it and long text scrolls inside a short field; the arbitrary value is also rejected by `configs.strict`.
+`field-sizing-content` grows the box with its value, so a fixed `h-[120px]` freezes it and long text scrolls inside a short field.
 
 ### HIGH Turning the border red for an invalid value
 
