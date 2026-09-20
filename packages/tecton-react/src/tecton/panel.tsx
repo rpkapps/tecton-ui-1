@@ -14,8 +14,6 @@ const panelVariants = cva(
     variants: {
       // Edge and radius are Card's: `rounded-xl` with a `ring-1` hairline
       // instead of a border, so a Panel and a Card sit flush side by side.
-      // `PanelHeader` and `PanelFooter` draw their dividers in the same
-      // `foreground/10` hairline, so an internal rule never outweighs the edge.
       variant: {
         default: "rounded-xl bg-card ring-1 ring-foreground/10",
         elevated: "rounded-xl bg-card shadow-md ring-1 ring-foreground/10",
@@ -57,7 +55,7 @@ function PanelHeader({ className, ...props }: React.ComponentProps<"header">) {
     <header
       data-slot="panel-header"
       className={cn(
-        "flex shrink-0 items-start gap-2 border-b border-foreground/10 px-(--panel-px) py-(--panel-py) has-data-[slot=panel-actions]:items-center",
+        "flex shrink-0 items-start gap-2 border-b px-(--panel-px) py-(--panel-py) has-data-[slot=panel-actions]:items-center",
         className
       )}
       {...props}
@@ -129,7 +127,7 @@ function PanelFooter({ className, ...props }: React.ComponentProps<"footer">) {
     <footer
       data-slot="panel-footer"
       className={cn(
-        "flex shrink-0 items-center gap-2 border-t border-foreground/10 px-(--panel-px) py-(--panel-py)",
+        "flex shrink-0 items-center gap-2 border-t px-(--panel-px) py-(--panel-py)",
         className
       )}
       {...props}
