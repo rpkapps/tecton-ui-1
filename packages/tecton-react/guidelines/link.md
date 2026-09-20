@@ -1,0 +1,78 @@
+---
+component: Link
+module: "@tecton/react/tecton/link"
+family: actions
+exports: [Link, linkVariants]
+notFor:
+  - need: a navigation target that should look like a button
+    use: LinkButton
+  - need: something that happens in place instead of navigation
+    use: Button
+related: [Button, LinkButton]
+---
+
+## Use it when
+
+- A word or phrase inside running text navigates somewhere: a well, a report, an external register.
+- The link sits in a sentence and should inherit the surrounding font size.
+- The destination leaves the application and needs the external marker.
+
+## Do
+
+- Always pass `href`; React Aria renders a real anchor only when there is one.
+- Choose colour and underline behaviour with `variant="default" | "primary" | "muted" | "subtle"`.
+- Leave `size="inherit"` inside prose; set `sm`, `md` or `lg` only when the link stands on its own.
+- Reach outside the app with `isExternal` instead of writing `target` and `rel` by hand.
+- Disable with `isDisabled`, and pass router behaviour through `routerOptions`.
+
+## Don't
+
+### HIGH A Link used to run an action
+
+Wrong:
+
+```tsx
+<Link onPress={() => archive(well.id)}>Archive</Link>
+```
+
+Correct:
+
+```tsx
+<Button variant="link" onPress={() => archive(well.id)}>Archive</Button>
+```
+
+With no `href` React Aria renders a `span` with `role="link"`, so the control promises navigation it cannot do: no new-tab, no copy-address, no status-bar target.
+
+### HIGH Hand-built target, rel and external icon
+
+Wrong:
+
+```tsx
+<Link href="https://factpages.sodir.no" target="_blank">
+  Sodir FactPages <ExternalLinkIcon />
+</Link>
+```
+
+Correct:
+
+```tsx
+<Link href="https://factpages.sodir.no" isExternal>Sodir FactPages</Link>
+```
+
+`isExternal` sets `target` and `rel="noreferrer noopener"` together and appends the icon at the variant's `0.85em` size; `target="_blank"` alone leaves the opened page with a handle on `window.opener`.
+
+### MEDIUM Colouring the link with className
+
+Wrong:
+
+```tsx
+<Link href="/wells/34-10-A-12" className="text-blue-600 underline">34/10-A-12</Link>
+```
+
+Correct:
+
+```tsx
+<Link href="/wells/34-10-A-12" variant="primary">34/10-A-12</Link>
+```
+
+The variant owns the colour and when the underline appears, and Tailwind's stock palette is reset here, so `text-blue-600` emits no CSS and the link renders in the inherited text colour.

@@ -1,0 +1,203 @@
+{
+  "$comment": "Families group the modules of @tecton/react by the choice an agent makes between them. Each family with `skill` becomes one generated skill (skills/<family>/SKILL.md). `modules` lists module basenames: components/<name> for the shadcn components, tecton/<name> for the Tecton ones. Families without `skill` are reported for coverage only until their guideline files exist.",
+  "families": {
+    "labels": {
+      "title": "Labels",
+      "choice": "A static label, a selectable tag, a count on an icon, or a keyboard key",
+      "modules": ["components/badge", "tecton/chip", "tecton/count-badge", "components/kbd"],
+      "skill": {
+        "description": "Choose and use Tecton labels: Badge for static status or category labels with variant and appearance, Chip and ChipGroup for selectable or removable tags, CountBadge for a count or dot anchored to an icon or avatar, Kbd for keyboard keys. Load when rendering a status, tag, pill, chip, label, counter or shortcut hint, or when tempted to colour a label with className."
+      }
+    },
+    "feedback": {
+      "title": "Feedback",
+      "choice": "A message that stays on the page, a transient toast, or an empty state",
+      "modules": ["components/alert", "components/sonner", "components/empty"],
+      "skill": {
+        "description": "Choose and use Tecton feedback: Alert with variant (success, warning, info, destructive) and appearance for messages that stay on the page, toast from sonner for transient confirmations, Empty for empty states, FieldError for validation. Load when showing a status message, banner, notification, error, warning, success or empty result."
+      }
+    },
+    "overlays": {
+      "title": "Overlays",
+      "choice": "A modal decision, a destructive confirmation, a side panel, a bottom drawer, an anchored popover, a hover preview or a tooltip",
+      "modules": [
+        "components/dialog",
+        "components/alert-dialog",
+        "components/sheet",
+        "components/drawer",
+        "components/popover",
+        "components/hover-card",
+        "components/tooltip"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton overlays built on React Aria: Dialog inside DialogTrigger for modal decisions and short forms, AlertDialog for destructive confirmations, Sheet for side panels, Drawer for bottom sheets, Popover for anchored content, HoverCard for previews, Tooltip for labels. Covers isOpen and onOpenChange, DialogTrigger composition and portal targets. Load when opening a modal, dialog, sheet, drawer, popover, tooltip or confirmation."
+      }
+    },
+    "selection": {
+      "title": "Selection",
+      "choice": "Pick one or many from a list: dropdown, searchable, native, radio, segmented toggle, tabs or a command palette",
+      "modules": [
+        "components/select",
+        "components/combobox",
+        "components/native-select",
+        "components/radio-group",
+        "components/toggle-group",
+        "components/tabs",
+        "components/command"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton selection controls built on React Aria: Select with SelectTrigger, SelectValue, SelectContent and SelectItem, Combobox for searchable lists, NativeSelect for plain forms, RadioGroup, ToggleGroup for segmented choices, Tabs with selectedKey, Command for palettes. Covers selectedKey, onSelectionChange, id on items and the variant surfaces. Load when building a dropdown, select, picker, autocomplete, radio, segmented control, tabs or command menu."
+      }
+    },
+    "actions": {
+      "title": "Actions",
+      "choice": "A button, a link that looks like one, an inline link, a toggle, a grouped set of buttons, a menu or a selection bar",
+      "modules": [
+        "components/button",
+        "components/button-group",
+        "tecton/link",
+        "components/toggle",
+        "components/dropdown-menu",
+        "components/context-menu",
+        "tecton/copy-button",
+        "tecton/action-bar"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton actions built on React Aria: Button with variant and size and onPress, LinkButton for navigation styled as a button, Link for inline links, ButtonGroup, Toggle, DropdownMenu and ContextMenu, CopyButton, ActionBar for a selection or unsaved changes. Covers onPress versus onClick, isDisabled, data-icon spacing, icon-only buttons with aria-label and the FAB recipe. Load when adding a button, link, menu, toolbar, toggle or action bar."
+      }
+    },
+    "progress": {
+      "title": "Progress",
+      "choice": "A determinate bar, a ring, a segmented gauge, an indeterminate spinner or a loading placeholder",
+      "modules": [
+        "components/progress",
+        "tecton/circular-progress",
+        "tecton/meter",
+        "components/spinner",
+        "components/skeleton"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton progress and loading indicators: Progress for a determinate bar, CircularProgress for a ring or indeterminate spinner with a label, Meter for a segmented gauge of risk, complexity or confidence, Spinner inside buttons and inline, Skeleton for loading placeholders. Load when showing loading, progress, percentage, a gauge, a score or a placeholder."
+      }
+    },
+    "surfaces": {
+      "title": "Surfaces",
+      "choice": "A content card, a titled application panel, a list row, a page title block, the application frame or a divider",
+      "modules": [
+        "components/card",
+        "tecton/panel",
+        "components/item",
+        "tecton/page-header",
+        "tecton/app-shell",
+        "components/separator"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton surfaces: Card with CardHeader, CardContent and CardFooter for content, Panel for a titled application surface with scrolling body and pinned footer, Item for list rows, PageHeader for the title block with eyebrow, description, tabs and actions, AppShell for the application frame, Separator with emphasis. Load when laying out a page, panel, card, section, list row, header or divider."
+      }
+    },
+    "forms": {
+      "title": "Forms",
+      "choice": "A labelled field with description and error, and the controls that go inside it",
+      "modules": [
+        "components/field",
+        "components/input",
+        "components/textarea",
+        "components/checkbox",
+        "components/switch",
+        "components/slider",
+        "components/input-group",
+        "components/input-otp",
+        "components/label"
+      ],
+      "skill": {
+        "description": "Build Tecton forms with React Aria controls: Field with FieldLabel, FieldDescription and FieldError around Input, Textarea, Select, Checkbox, Switch, Slider, InputGroup and InputOTP. Covers isInvalid and data-invalid, isSelected and onChange instead of checked and onCheckedChange, value and onChange on text fields, the outline, filled and text variants, and TanStack Form wiring. Load when building a form, input, text field, checkbox, switch, slider or validation message."
+      }
+    },
+    "navigation": {
+      "title": "Navigation",
+      "choice": "Where the user is and where they can go",
+      "modules": [
+        "components/breadcrumb",
+        "components/sidebar",
+        "components/pagination",
+        "tecton/app-finder",
+        "tecton/shell-actions"
+      ]
+    },
+    "data": {
+      "title": "Data",
+      "choice": "Rows, trees, charts, KPIs, colours and dates",
+      "modules": [
+        "components/table",
+        "tecton/tree-view",
+        "components/chart",
+        "tecton/stat",
+        "tecton/color-swatch",
+        "components/calendar"
+      ]
+    },
+    "layout": {
+      "title": "Layout",
+      "choice": "Disclosure, splitting, scrolling and decorative surfaces",
+      "modules": [
+        "components/accordion",
+        "components/collapsible",
+        "components/resizable",
+        "components/scroll-area",
+        "components/aspect-ratio",
+        "components/carousel",
+        "components/avatar",
+        "tecton/overflow",
+        "tecton/canvas",
+        "tecton/background"
+      ]
+    },
+    "conversation": {
+      "title": "Conversation",
+      "choice": "Chat and assistant surfaces",
+      "modules": [
+        "components/message",
+        "components/message-scroller",
+        "components/bubble",
+        "components/attachment",
+        "components/questionnaire",
+        "components/marker"
+      ]
+    },
+    "infrastructure": {
+      "title": "Infrastructure",
+      "choice": "Providers and roots, not visible components",
+      "modules": [
+        "components/direction",
+        "tecton/portal",
+        "tecton/theme-root",
+        "tecton/shortcuts"
+      ]
+    }
+  },
+  "externals": {
+    "toast": {
+      "import": "import { toast } from \"sonner\"",
+      "docs": "/docs/components/sonner",
+      "note": "The Toaster component is @tecton/react/components/sonner; toast() itself comes from the sonner package."
+    },
+    "TanStack Table": {
+      "import": "import { useReactTable } from \"@tanstack/react-table\"",
+      "docs": "/docs/components/data-table",
+      "note": "Data tables are a recipe on the shadcn Table, not a component."
+    },
+    "TanStack Form": {
+      "import": "import { useForm } from \"@tanstack/react-form\"",
+      "docs": "/docs/forms/tanstack-form"
+    },
+    "Lucide": {
+      "import": "import { SearchIcon } from \"lucide-react\"",
+      "docs": "/docs/icons",
+      "note": "Generic glyphs; Tecton domain glyphs come from @tecton/react/icons."
+    },
+    "Tecton icons": {
+      "import": "import { WellIcon } from \"@tecton/react/icons\"",
+      "docs": "/docs/icons"
+    }
+  }
+}

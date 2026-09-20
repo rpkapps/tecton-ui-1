@@ -1,0 +1,82 @@
+---
+component: Dialog
+module: "@tecton/react/components/dialog"
+family: overlays
+exports: [Dialog, DialogTrigger, DialogClose, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogOverlay]
+notFor:
+  - need: a confirmation before a destructive action
+    use: AlertDialog
+  - need: a side panel that keeps the page visible behind it
+    use: Sheet
+  - need: a bottom sheet the user drags with a thumb
+    use: Drawer
+  - need: content anchored to the control that opened it
+    use: Popover
+related: [AlertDialog, Sheet, Popover]
+---
+
+## Use it when
+
+- A decision or a short form must be finished before the page continues.
+- The task deserves the whole screen: everything behind it goes inert.
+- The user may abandon it — Escape and the backdrop both cancel.
+
+## Do
+
+- Put the trigger `Button` and the `Dialog` inside one `DialogTrigger`; it hands press behaviour and open state to its whole subtree.
+- Control it with `isOpen` and `onOpenChange` on `DialogTrigger`, or on `Dialog` itself when nothing on the page triggers it.
+- Give every dialog a `DialogTitle`: React Aria takes the accessible name from it.
+- Close from the footer with `DialogClose` — a plain `Button` setting your own state closes nothing, because the state lives in `DialogTrigger` — and pass `isDismissable={false}` with `showCloseButton={false}` when the user must pick a footer action.
+- Keep `className` to width and layout (`sm:max-w-lg`): `Dialog` owns the surface, radius and padding.
+
+## Don't
+
+### HIGH Radix trigger shape with asChild
+
+Wrong:
+
+```tsx
+<>
+  <DialogTrigger asChild>
+    <Button variant="outline">Edit well</Button>
+  </DialogTrigger>
+  <Dialog>
+    <DialogTitle>Edit well</DialogTitle>
+  </Dialog>
+</>
+```
+
+Correct:
+
+```tsx
+<DialogTrigger>
+  <Button variant="outline">Edit well</Button>
+  <Dialog>
+    <DialogTitle>Edit well</DialogTitle>
+  </Dialog>
+</DialogTrigger>
+```
+
+`DialogTrigger` publishes the open state to its subtree only, so a sibling `Dialog` never receives it and renders nothing; `asChild` is not a React Aria prop and is dropped.
+
+### HIGH Controlling the dialog with open
+
+Wrong:
+
+```tsx
+<Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogTitle>Rename well</DialogTitle>
+  <DialogDescription>Pick a new name for 34/10-A-12.</DialogDescription>
+</Dialog>
+```
+
+Correct:
+
+```tsx
+<Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
+  <DialogTitle>Rename well</DialogTitle>
+  <DialogDescription>Pick a new name for 34/10-A-12.</DialogDescription>
+</Dialog>
+```
+
+`Dialog` forwards its props to React Aria's `ModalOverlay`, which reads `isOpen`; without it, and with no `DialogTrigger` above, the overlay keeps its own uncontrolled state and returns `null`.

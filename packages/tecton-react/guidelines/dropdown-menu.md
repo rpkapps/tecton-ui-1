@@ -1,0 +1,82 @@
+---
+component: DropdownMenu
+module: "@tecton/react/components/dropdown-menu"
+family: actions
+exports: [DropdownMenu, DropdownMenuTrigger, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent]
+notFor:
+  - need: a menu opened by right click on the content
+    use: ContextMenu
+  - need: choosing a value for a form field
+    use: Select
+  - need: a searchable palette of commands
+    use: Command
+related: [ContextMenu, Button, Select]
+---
+
+## Use it when
+
+- A button opens a short list of actions: row actions, an account menu, a "more" overflow.
+- Some of those entries are toggles or one exclusive choice, shown with check marks.
+- The list wants submenus, shortcut hints, or a destructive entry at the end.
+
+## Do
+
+- Give `DropdownMenuTrigger` exactly two children, the trigger `Button` and the `DropdownMenu`; there is no `DropdownMenuContent` and no `asChild`.
+- Run actions from `onAction` on `DropdownMenuItem`, or from `onAction(key)` on `DropdownMenu` with an `id` per item.
+- Make a group behave as checkboxes or radios with `selectionMode` plus `selectedKeys` / `defaultSelectedKeys` on `DropdownMenuGroup`.
+- Title groups with `DropdownMenuLabel`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut`.
+- Anchor with `placement` (for example `"bottom end"`) and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`.
+
+## Don't
+
+### MEDIUM onClick on a menu item instead of onAction
+
+Wrong:
+
+```tsx
+<DropdownMenuItem onClick={() => archive(well.id)}>Archive</DropdownMenuItem>
+```
+
+Correct:
+
+```tsx
+<DropdownMenuItem onAction={() => archive(well.id)}>Archive</DropdownMenuItem>
+```
+
+`onClick` survives only as React Aria's deprecated press alias: it still fires, but on a bare mouse event with no `pointerType`, while `onAction` is the item's own activation hook and the one `onAction(key)` on the menu reports through.
+
+### HIGH Radix checked props instead of group selection
+
+Wrong:
+
+```tsx
+<DropdownMenuGroup>
+  <DropdownMenuItem checked={showPanel} onCheckedChange={setShowPanel}>Panel</DropdownMenuItem>
+</DropdownMenuGroup>
+```
+
+Correct:
+
+```tsx
+<DropdownMenuGroup selectionMode="multiple" selectedKeys={visible} onSelectionChange={setVisible}>
+  <DropdownMenuItem id="panel">Panel</DropdownMenuItem>
+</DropdownMenuGroup>
+```
+
+There is no checkbox or radio item component here: selection lives on `DropdownMenuGroup` as a set of keys, so `checked` and `onCheckedChange` are dropped and no check mark is ever rendered.
+
+### MEDIUM Colouring a destructive item with className
+
+Wrong:
+
+```tsx
+<DropdownMenuItem className="text-red-600" onAction={remove}>Delete</DropdownMenuItem>
+```
+
+Correct:
+
+```tsx
+<DropdownMenuItem variant="destructive" onAction={remove}>Delete</DropdownMenuItem>
+```
+
+Tailwind's stock palette is reset, so `text-red-600` emits no CSS, while `variant="destructive"` is what sets the label, the icon and the focus background for the whole row.

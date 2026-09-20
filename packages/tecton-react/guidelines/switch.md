@@ -1,0 +1,88 @@
+---
+component: Switch
+module: "@tecton/react/components/switch"
+family: forms
+exports: [Switch]
+notFor:
+  - need: a term the user ticks as part of submitting a form
+    use: Checkbox
+  - need: the label, description and layout around the control
+    use: Field
+  - need: a value picked from a continuous range
+    use: Slider
+related: [Checkbox, Field]
+---
+
+## Use it when
+
+- A setting that takes effect the moment it is flipped, with no submit step.
+- An on/off preference in a settings panel or a choice card.
+- The two states are opposites of one thing, not two options to choose between.
+
+## Do
+
+- Control it with `isSelected` and `onChange(isSelected: boolean)`, or leave it uncontrolled with `defaultSelected`.
+- Pick the scale with `size="sm" | "default"`; the thumb travel is matched to each.
+- Give it an `id` and point a `FieldLabel htmlFor` at it inside a `Field orientation="horizontal"`, with `FieldContent` for the description.
+- Disable with `isDisabled` and put `data-disabled` on the `Field`; for an invalid value put `data-invalid` on both the `Switch` and the `Field` — React Aria's Switch has no validation state of its own.
+- For a choice card, wrap the whole `Field` in a `FieldLabel` so the card surface is the hit target.
+
+## Don't
+
+### CRITICAL Reading the toggled value off an event
+
+Wrong:
+
+```tsx
+<Switch
+  id="two-factor"
+  isSelected={enabled}
+  onChange={(e) => setEnabled(e.target.checked)}
+/>
+```
+
+Correct:
+
+```tsx
+<Switch id="two-factor" isSelected={enabled} onChange={setEnabled} />
+```
+
+React Aria calls `onChange` with the new boolean rather than a DOM event, so `e.target` is undefined and the handler throws the first time the user flips the switch.
+
+### HIGH Disabling the switch with the disabled prop
+
+Wrong:
+
+```tsx
+<Field orientation="horizontal">
+  <Switch id="sync" disabled />
+  <FieldLabel htmlFor="sync">Sync across devices</FieldLabel>
+</Field>
+```
+
+Correct:
+
+```tsx
+<Field orientation="horizontal" data-disabled>
+  <Switch id="sync" isDisabled />
+  <FieldLabel htmlFor="sync">Sync across devices</FieldLabel>
+</Field>
+```
+
+React Aria reads `isDisabled`; `disabled` is dropped, so the switch stays focusable and operable and neither it nor the label dims.
+
+### MEDIUM Sizing the switch with height and width
+
+Wrong:
+
+```tsx
+<Switch id="compact" className="h-6 w-11" />
+```
+
+Correct:
+
+```tsx
+<Switch id="compact" size="default" />
+```
+
+The track is sized by `data-[size=…]` and the thumb's `translate-x` is matched to each size, so a `className` size widens the track while the thumb still stops where the old one ended.

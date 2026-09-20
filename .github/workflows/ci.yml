@@ -112,6 +112,18 @@ jobs:
       - name: Check theme tokens
         run: pnpm tokens:check
 
+      - name: Check component guidelines
+        run: pnpm --filter @tecton/react guidelines:check
+
+      - name: Check generated skills
+        run: pnpm --filter @tecton/react skills:check
+
+      - name: Check docs guideline sections
+        run: pnpm --filter www docs:guidelines --check
+
+      - name: Validate Intent skills
+        run: pnpm dlx @tanstack/intent@0.4.0 validate packages/tecton-react/skills
+
       - name: Build blocks registry
         run: pnpm --filter @tecton/blocks registry:build
 

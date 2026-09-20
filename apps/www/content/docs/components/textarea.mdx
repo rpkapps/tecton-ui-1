@@ -69,3 +69,106 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 Use `variant="outline" | "filled" | "text"` for the three Tecton surface styles, the same as on [Input](/docs/components/input). Label, description and error message come from `Field` (see [Forms](/docs/forms)).
 
 <ComponentPreview name="textarea-variants" />
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- Several lines of free text: a description, a note, a comment, a message.
+- The content grows while the user types and the box should follow it.
+- Inside a `Field`, so the control arrives with a label and room for an error.
+
+### Not for
+
+- a single line of text: use [Input](/docs/components/input)
+- a toolbar, a counter or a send button attached to the box: use [InputGroupTextarea](/docs/components/input-group)
+- the label, description and error message around the control: use [Field](/docs/components/field)
+
+### Do
+
+- Pick the surface with `variant="outline" | "filled" | "text"` — the same three axes as `Input`.
+- Set the starting height with `rows`; the box already carries `field-sizing-content` and `min-h-16` and grows from there.
+- `Textarea` renders React Aria's `TextArea`, a real `<textarea>`: use `value`, `onChange(event)`, `disabled`, `required` and `aria-invalid`.
+- Mirror the state on the `Field`: `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid`.
+- Keep `className` to layout only — `w-full`, `col-span-2`.
+
+### Don't
+
+**MEDIUM**
+
+#### Pinning the textarea to a fixed height
+
+Wrong:
+
+```tsx
+<Field>
+  <FieldLabel htmlFor="notes">Notes</FieldLabel>
+  <Textarea id="notes" className="h-[120px] resize-none" />
+</Field>
+```
+
+Correct:
+
+```tsx
+<Field>
+  <FieldLabel htmlFor="notes">Notes</FieldLabel>
+  <Textarea id="notes" rows={5} />
+</Field>
+```
+
+`field-sizing-content` grows the box with its value, so a fixed `h-[120px]` freezes it and long text scrolls inside a short field; the arbitrary value is also rejected by `configs.strict`.
+
+**HIGH**
+
+#### Turning the border red for an invalid value
+
+Wrong:
+
+```tsx
+<Field>
+  <FieldLabel htmlFor="about">About</FieldLabel>
+  <Textarea id="about" className="border-red-500 focus:border-red-500" />
+</Field>
+```
+
+Correct:
+
+```tsx
+<Field data-invalid>
+  <FieldLabel htmlFor="about">About</FieldLabel>
+  <Textarea id="about" aria-invalid />
+  <FieldError>Keep this under 500 characters.</FieldError>
+</Field>
+```
+
+`border-red-500` emits no CSS after the palette reset, while `aria-invalid` is both what `textareaVariants` styles and what assistive tech reads.
+
+**HIGH**
+
+#### Putting the send button outside the control
+
+Wrong:
+
+```tsx
+<div className="flex items-end gap-2">
+  <Textarea id="reply" placeholder="Write a reply" />
+  <Button type="submit">Send</Button>
+</div>
+```
+
+Correct:
+
+```tsx
+<InputGroup>
+  <InputGroupTextarea id="reply" placeholder="Write a reply" />
+  <InputGroupAddon align="block-end">
+    <InputGroupButton variant="default">Send</InputGroupButton>
+  </InputGroupAddon>
+</InputGroup>
+```
+
+A sibling button sits outside the control's border and its focus ring; `align="block-end"` switches the group to a column and keeps the button inside the field.
+
+{/* guidelines:end */}
