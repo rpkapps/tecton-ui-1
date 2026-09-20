@@ -7,8 +7,8 @@ export default function LinkDemo() {
       <Link href="#" variant="primary">
         Alternative B
       </Link>{" "}
-      as its base case. See the{" "}
-      <Link href="#">FDA summary</Link> for the full comparison.
+      as its base case. See the <Link href="#">FDA summary</Link> for the full
+      comparison.
     </p>
   )
 }

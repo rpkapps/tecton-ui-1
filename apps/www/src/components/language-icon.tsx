@@ -1,4 +1,10 @@
-import { BracesIcon, FileCodeIcon, FileTextIcon, PaletteIcon, TerminalIcon } from "lucide-react"
+import {
+  BracesIcon,
+  FileCodeIcon,
+  FileTextIcon,
+  PaletteIcon,
+  TerminalIcon,
+} from "lucide-react"
 
 /** Small icon for a code block title, keyed by file extension / language. */
 export function getIconForLanguageExtension(language: string) {

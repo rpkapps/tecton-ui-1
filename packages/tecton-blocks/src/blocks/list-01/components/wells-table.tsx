@@ -120,11 +120,17 @@ function createWellColumns(onOpen?: (well: Well) => void) {
       cell: ({ row }) => (
         <span className="flex justify-end">
           <DropdownMenuTrigger>
-            <Button variant="ghost" size="icon-xs" aria-label={`Actions for ${row.original.name}`}>
+            <Button
+              variant="ghost"
+              size="icon-xs"
+              aria-label={`Actions for ${row.original.name}`}
+            >
               <MoreVerticalIcon />
             </Button>
             <DropdownMenu placement="bottom end">
-              <DropdownMenuItem onAction={() => onOpen?.(row.original)}>Open</DropdownMenuItem>
+              <DropdownMenuItem onAction={() => onOpen?.(row.original)}>
+                Open
+              </DropdownMenuItem>
               <DropdownMenuItem>Add to project</DropdownMenuItem>
               <DropdownMenuItem>Export logs</DropdownMenuItem>
               <DropdownMenuSeparator />
@@ -200,7 +206,9 @@ function WellsTable({
             table.toggleAllRowsSelected(true)
           } else {
             table.setRowSelection(
-              Object.fromEntries([...selection].map((key) => [String(key), true]))
+              Object.fromEntries(
+                [...selection].map((key) => [String(key), true])
+              )
             )
           }
         }}
@@ -233,15 +241,19 @@ function WellsTable({
                 header.column.id === "select" && "w-10"
               )}
             >
-              {header.isPlaceholder ? null : <table.FlexRender header={header} />}
+              {header.isPlaceholder ? null : (
+                <table.FlexRender header={header} />
+              )}
             </TableHead>
           ))}
         </TableHeader>
         <TableBody
           renderEmptyState={() => (
-            <div className="py-8 text-center text-muted-foreground">No results.</div>
+            <div className="py-8 text-center text-muted-foreground">
+              No results.
+            </div>
           )}
-          className="[&_tr:nth-child(even)]:bg-surface-alt/60 [&_tr]:border-border-subtle max-md:[&_td]:flex max-md:[&_td]:h-auto max-md:[&_td]:justify-between max-md:[&_td]:py-1.5 max-md:[&_td]:before:text-muted-foreground max-md:[&_td]:before:content-[attr(data-label)] max-md:[&_tr]:flex max-md:[&_tr]:flex-col max-md:[&_tr]:py-2"
+          className="max-md:[&_td]:flex max-md:[&_td]:h-auto max-md:[&_td]:justify-between max-md:[&_td]:py-1.5 max-md:[&_td]:before:text-muted-foreground max-md:[&_td]:before:content-[attr(data-label)] [&_tr]:border-border-subtle max-md:[&_tr]:flex max-md:[&_tr]:flex-col max-md:[&_tr]:py-2 [&_tr:nth-child(even)]:bg-surface-alt/60"
         >
           {rows.map((row) => (
             <TableRow
@@ -258,7 +270,10 @@ function WellsTable({
                       ? cell.column.columnDef.header
                       : undefined
                   }
-                  className={cn("h-11 px-3", cell.column.id === "select" && "w-10")}
+                  className={cn(
+                    "h-11 px-3",
+                    cell.column.id === "select" && "w-10"
+                  )}
                 >
                   <table.FlexRender cell={cell} />
                 </TableCell>
@@ -288,7 +303,11 @@ function WellsTable({
               </SelectTrigger>
               <SelectContent>
                 {pageSizeOptions.map((size) => (
-                  <SelectItem key={size} id={String(size)} textValue={String(size)}>
+                  <SelectItem
+                    key={size}
+                    id={String(size)}
+                    textValue={String(size)}
+                  >
                     {size}
                   </SelectItem>
                 ))}
@@ -296,7 +315,8 @@ function WellsTable({
             </Select>
           </div>
           <span className="tabular-nums">
-            Page {pagination.pageIndex + 1} of {Math.max(1, table.getPageCount())}
+            Page {pagination.pageIndex + 1} of{" "}
+            {Math.max(1, table.getPageCount())}
           </span>
           <div className="flex items-center">
             <Button
@@ -341,7 +361,10 @@ function WellsEmptyState({
   return (
     <Empty
       data-slot="wells-empty-state"
-      className={cn("rounded-md border border-dashed border-border bg-card/50", className)}
+      className={cn(
+        "rounded-md border border-dashed border-border bg-card/50",
+        className
+      )}
       {...props}
     >
       <EmptyHeader>

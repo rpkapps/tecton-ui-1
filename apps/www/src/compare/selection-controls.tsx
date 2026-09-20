@@ -1,7 +1,10 @@
 import * as React from "react"
 
 import { Checkbox } from "@tecton/react/components/checkbox"
-import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group"
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from "@tecton/react/components/radio-group"
 import { Switch } from "@tecton/react/components/switch"
 
 import { Caption, Matrix, Page, Section } from "./matrix"
@@ -48,7 +51,11 @@ function Radio({
       <RadioGroupItem
         value="on"
         aria-label="Option"
-        className={small ? "size-3.5 [&_[data-slot=radio-group-indicator]]:size-3.5 [&_[data-slot=radio-group-indicator]>span]:size-1.5" : undefined}
+        className={
+          small
+            ? "size-3.5 [&_[data-slot=radio-group-indicator]]:size-3.5 [&_[data-slot=radio-group-indicator]>span]:size-1.5"
+            : undefined
+        }
       />
     </RadioGroup>
   )
@@ -104,7 +111,12 @@ export default function SelectionControlsMatrix() {
                   <Radio key="unchecked" small={small} />,
                   <Radio key="checked" small={small} checked />,
                   <Radio key="disabled" small={small} disabled />,
-                  <Radio key="disabled-checked" small={small} checked disabled />,
+                  <Radio
+                    key="disabled-checked"
+                    small={small}
+                    checked
+                    disabled
+                  />,
                 ],
               },
             ]}
@@ -123,7 +135,12 @@ export default function SelectionControlsMatrix() {
                 label: size === "sm" ? "sm" : "md",
                 cells: [
                   <Switch key="off" size={size} aria-label="Off" />,
-                  <Switch key="on" size={size} aria-label="On" defaultSelected />,
+                  <Switch
+                    key="on"
+                    size={size}
+                    aria-label="On"
+                    defaultSelected
+                  />,
                   <Switch
                     key="disabled-off"
                     size={size}

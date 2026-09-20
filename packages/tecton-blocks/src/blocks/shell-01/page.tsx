@@ -57,7 +57,9 @@ export default function Page() {
                 <BreadcrumbLink href="#">{app.name}</BreadcrumbLink>
               </BreadcrumbItem>
               <BreadcrumbItem className="min-w-0">
-                <BreadcrumbPage className="truncate">Orion Discovery</BreadcrumbPage>
+                <BreadcrumbPage className="truncate">
+                  Orion Discovery
+                </BreadcrumbPage>
               </BreadcrumbItem>
             </BreadcrumbList>
           </Breadcrumb>
@@ -117,7 +119,10 @@ function MountedApp({ app }: { app: ShellApp }) {
           <span aria-live="polite">
             {lastAction ? (
               <>
-                Last action: <span className="font-medium text-foreground">{lastAction}</span>
+                Last action:{" "}
+                <span className="font-medium text-foreground">
+                  {lastAction}
+                </span>
               </>
             ) : (
               "No shortcut pressed yet"

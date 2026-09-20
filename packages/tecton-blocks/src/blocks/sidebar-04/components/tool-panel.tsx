@@ -32,7 +32,10 @@ import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 import { defaultWell, wellTypes } from "../data"
 import type { WellProperties, WellType } from "../data"
 
-type ToolPanelProps = Omit<React.ComponentProps<typeof Sidebar>, "side" | "collapsible" | "onChange"> & {
+type ToolPanelProps = Omit<
+  React.ComponentProps<typeof Sidebar>,
+  "side" | "collapsible" | "onChange"
+> & {
   value?: WellProperties
   onChange?: (next: WellProperties) => void
   onApply?: (value: WellProperties) => void
@@ -72,9 +75,16 @@ function ToolPanel({
       <SidebarHeader className="flex-row items-center gap-2 border-b border-border-subtle px-3 py-2">
         <div className="grid min-w-0 flex-1 leading-tight">
           <span className="truncate text-sm font-medium">Well properties</span>
-          <span className="truncate font-mono text-xs text-muted-foreground">{value.name}</span>
+          <span className="truncate font-mono text-xs text-muted-foreground">
+            {value.name}
+          </span>
         </div>
-        <Button variant="ghost" size="icon-sm" aria-label="Close panel" onPress={onClose}>
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          aria-label="Close panel"
+          onPress={onClose}
+        >
           <PanelRightCloseIcon />
         </Button>
       </SidebarHeader>
@@ -135,7 +145,9 @@ function ToolPanel({
               update({ kickOffDepth: Array.isArray(next) ? next[0] : next })
             }
           />
-          <FieldDescription>Measured depth where the well leaves vertical.</FieldDescription>
+          <FieldDescription>
+            Measured depth where the well leaves vertical.
+          </FieldDescription>
         </Field>
         <Separator emphasis="subtle" />
         <div className="flex items-center justify-between gap-3">

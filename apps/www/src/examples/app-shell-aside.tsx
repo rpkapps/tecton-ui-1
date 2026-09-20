@@ -8,7 +8,12 @@ import {
   AppShellHeader,
   AppShellMain,
 } from "@tecton/react/tecton/app-shell"
-import { Panel, PanelContent, PanelHeader, PanelTitle } from "@tecton/react/tecton/panel"
+import {
+  Panel,
+  PanelContent,
+  PanelHeader,
+  PanelTitle,
+} from "@tecton/react/tecton/panel"
 import { Stat, StatLabel, StatValue } from "@tecton/react/tecton/stat"
 
 export default function AppShellAsideExample() {
@@ -21,7 +26,9 @@ export default function AppShellAsideExample() {
         </AppShellBrand>
       </AppShellHeader>
       <AppShellBody>
-        <AppShellMain className="p-4 text-sm text-muted-foreground">Seismic section</AppShellMain>
+        <AppShellMain className="p-4 text-sm text-muted-foreground">
+          Seismic section
+        </AppShellMain>
         <AppShellAside className="w-64 gap-2 p-2">
           <Panel variant="flat" size="sm">
             <PanelHeader>

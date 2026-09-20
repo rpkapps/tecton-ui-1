@@ -71,11 +71,17 @@ function Editor() {
       </p>
       <ul className="flex flex-col gap-1">
         {shortcuts.map((shortcut) => (
-          <li key={shortcut.id} className="flex items-center justify-between gap-4">
+          <li
+            key={shortcut.id}
+            className="flex items-center justify-between gap-4"
+          >
             <span>
               {shortcut.label}
               {shortcut.id === "save" && locked ? (
-                <span className="text-muted-foreground"> (disabled while locked)</span>
+                <span className="text-muted-foreground">
+                  {" "}
+                  (disabled while locked)
+                </span>
               ) : null}
             </span>
             <ShortcutKeys keys={shortcut.keys} />

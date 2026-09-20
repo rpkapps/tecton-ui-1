@@ -31,11 +31,41 @@ import { Page } from "./matrix"
  * The third row is selected like the capture.
  */
 const users = [
-  { id: "USR-2048", name: "Avery Stone", email: "avery.stone@landmark.dev", location: "Houston", status: "Active" },
-  { id: "USR-2049", name: "Maya Chen", email: "maya.chen@landmark.dev", location: "Calgary", status: "Active" },
-  { id: "USR-2050", name: "Noah Patel", email: "noah.patel@landmark.dev", location: "London", status: "Pending" },
-  { id: "USR-2051", name: "Elena Ruiz", email: "elena.ruiz@landmark.dev", location: "Stavanger", status: "Active" },
-  { id: "USR-2052", name: "Theo Brooks", email: "theo.brooks@landmark.dev", location: "Perth", status: "Disabled" },
+  {
+    id: "USR-2048",
+    name: "Avery Stone",
+    email: "avery.stone@landmark.dev",
+    location: "Houston",
+    status: "Active",
+  },
+  {
+    id: "USR-2049",
+    name: "Maya Chen",
+    email: "maya.chen@landmark.dev",
+    location: "Calgary",
+    status: "Active",
+  },
+  {
+    id: "USR-2050",
+    name: "Noah Patel",
+    email: "noah.patel@landmark.dev",
+    location: "London",
+    status: "Pending",
+  },
+  {
+    id: "USR-2051",
+    name: "Elena Ruiz",
+    email: "elena.ruiz@landmark.dev",
+    location: "Stavanger",
+    status: "Active",
+  },
+  {
+    id: "USR-2052",
+    name: "Theo Brooks",
+    email: "theo.brooks@landmark.dev",
+    location: "Perth",
+    status: "Disabled",
+  },
 ]
 
 function SortableHead({
@@ -94,7 +124,10 @@ export default function TableMatrix() {
                 className={index % 2 === 1 ? "bg-muted/30" : undefined}
               >
                 <TableCell>
-                  <Checkbox slot="selection" aria-label={`Select ${user.name}`} />
+                  <Checkbox
+                    slot="selection"
+                    aria-label={`Select ${user.name}`}
+                  />
                 </TableCell>
                 <TableCell>
                   <span className="inline-flex items-center gap-2">
@@ -112,7 +145,11 @@ export default function TableMatrix() {
                 </TableCell>
                 <TableCell className="text-right">{user.id}</TableCell>
                 <TableCell className="text-right">
-                  <Button variant="ghost" size="icon-xs" aria-label="Row actions">
+                  <Button
+                    variant="ghost"
+                    size="icon-xs"
+                    aria-label="Row actions"
+                  >
                     <MoreVerticalIcon />
                   </Button>
                 </TableCell>
@@ -133,7 +170,12 @@ export default function TableMatrix() {
           </span>
           <span>Page 1 of 13</span>
           <span className="inline-flex items-center">
-            <Button variant="ghost" size="icon-sm" aria-label="Previous page" isDisabled>
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              aria-label="Previous page"
+              isDisabled
+            >
               <ChevronLeftIcon />
             </Button>
             <Button variant="ghost" size="icon-sm" aria-label="Next page">

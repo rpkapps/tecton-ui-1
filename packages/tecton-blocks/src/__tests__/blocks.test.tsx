@@ -65,7 +65,9 @@ describe("block chrome", () => {
     expect(screen.getByText("Orion West A")).toBeInTheDocument()
     await user.click(screen.getByRole("button", { name: "Layers" }))
     const menu = await screen.findByRole("menu")
-    await user.click(within(menu).getByRole("menuitemcheckbox", { name: "Prospect areas" }))
+    await user.click(
+      within(menu).getByRole("menuitemcheckbox", { name: "Prospect areas" })
+    )
     expect(screen.queryByText("Orion West A")).not.toBeInTheDocument()
   })
 
@@ -74,7 +76,9 @@ describe("block chrome", () => {
     const { container } = render(<CanvasPage />)
     await user.click(screen.getByRole("button", { name: "Zoom in" }))
     await user.click(screen.getByRole("button", { name: "More" }))
-    await user.click(await screen.findByRole("menuitem", { name: "Reset zoom" }))
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Reset zoom" })
+    )
     const map = container.querySelector("[data-slot=fairway-map]")!
     expect(map).toHaveAttribute("viewBox", "0 0 1000 600")
   })

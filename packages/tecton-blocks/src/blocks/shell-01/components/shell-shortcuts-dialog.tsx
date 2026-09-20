@@ -51,21 +51,26 @@ function ShellShortcutsDialog({
       <DialogHeader>
         <DialogTitle>Keyboard shortcuts</DialogTitle>
         <DialogDescription>
-          Shortcuts registered by the shell and by {groups.length > 1 ? "the current application" : "applications"}.
+          Shortcuts registered by the shell and by{" "}
+          {groups.length > 1 ? "the current application" : "applications"}.
         </DialogDescription>
       </DialogHeader>
       {groups.length === 0 ? (
         <Empty className="py-8">
           <EmptyHeader>
             <EmptyTitle>No shortcuts</EmptyTitle>
-            <EmptyDescription>The current application has not registered any.</EmptyDescription>
+            <EmptyDescription>
+              The current application has not registered any.
+            </EmptyDescription>
           </EmptyHeader>
         </Empty>
       ) : (
         <div className="grid gap-5 sm:grid-cols-2">
           {groups.map(([group, items]) => (
             <section key={group} className="flex flex-col gap-1">
-              <h3 className="mb-1 text-xs font-medium text-muted-foreground">{group}</h3>
+              <h3 className="mb-1 text-xs font-medium text-muted-foreground">
+                {group}
+              </h3>
               {items.map((shortcut) => (
                 <div
                   key={shortcut.id}

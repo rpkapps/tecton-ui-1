@@ -1,6 +1,13 @@
 import { CircularProgress } from "@tecton/react/tecton/circular-progress"
 
-const colors = ["primary", "foreground", "info", "success", "warning", "error"] as const
+const colors = [
+  "primary",
+  "foreground",
+  "info",
+  "success",
+  "warning",
+  "error",
+] as const
 
 export default function CircularProgressColors() {
   return (

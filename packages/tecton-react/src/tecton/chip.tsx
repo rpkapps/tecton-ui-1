@@ -69,9 +69,9 @@ function Chip({
       className={composeRenderProps(className, (className) =>
         cn(
           badgeVariants({ variant, appearance, size }),
-          "cursor-pointer outline-none transition-colors select-none data-focus-visible:border-ring data-focus-visible:ring-2 data-focus-visible:ring-ring data-disabled:pointer-events-none data-disabled:opacity-50",
+          "cursor-pointer transition-colors outline-none select-none data-focus-visible:border-ring data-focus-visible:ring-2 data-focus-visible:ring-ring data-disabled:pointer-events-none data-disabled:opacity-50",
           // React Aria's Tag wraps its children, so the badge's `[&>svg]` sizes do not reach the icon.
-          "data-[size=default]:**:data-[icon]:size-3 data-[size=md]:**:data-[icon]:size-3.5 data-[size=lg]:**:data-[icon]:size-4 **:data-[icon]:shrink-0",
+          "**:data-[icon]:shrink-0 data-[size=default]:**:data-[icon]:size-3 data-[size=lg]:**:data-[icon]:size-4 data-[size=md]:**:data-[icon]:size-3.5",
           "data-hovered:brightness-110 data-selected:border-foreground data-selected:ring-1 data-selected:ring-foreground",
           className
         )
@@ -99,7 +99,7 @@ function ChipRemove({
       aria-label="Remove"
       className={composeRenderProps(className, (className) =>
         cn(
-          "-me-1 ms-0.5 inline-flex size-4 shrink-0 items-center justify-center rounded-full opacity-70 outline-none hover:opacity-100 data-focus-visible:ring-2 data-focus-visible:ring-ring [&_svg]:size-3",
+          "ms-0.5 -me-1 inline-flex size-4 shrink-0 items-center justify-center rounded-full opacity-70 outline-none hover:opacity-100 data-focus-visible:ring-2 data-focus-visible:ring-ring [&_svg]:size-3",
           className
         )
       )}

@@ -92,7 +92,9 @@ function FdaCard({
               <MoreVerticalIcon />
             </Button>
             <DropdownMenu placement="bottom end">
-              <DropdownMenuItem onAction={() => onOpen?.(fda)}>Open</DropdownMenuItem>
+              <DropdownMenuItem onAction={() => onOpen?.(fda)}>
+                Open
+              </DropdownMenuItem>
               <DropdownMenuItem>
                 <CopyIcon /> Duplicate
               </DropdownMenuItem>
@@ -151,11 +153,23 @@ function FdaCard({
 
         <Separator emphasis="subtle" />
 
-        <LevelMeter label="Complexity" value={fda.complexity} onPress={() => onOpen?.(fda)} />
+        <LevelMeter
+          label="Complexity"
+          value={fda.complexity}
+          onPress={() => onOpen?.(fda)}
+        />
         <Separator emphasis="subtle" />
-        <LevelMeter label="Risk" value={fda.risk} onPress={() => onOpen?.(fda)} />
+        <LevelMeter
+          label="Risk"
+          value={fda.risk}
+          onPress={() => onOpen?.(fda)}
+        />
         <Separator emphasis="subtle" />
-        <LevelMeter label="Emissions" value={fda.emissions} onPress={() => onOpen?.(fda)} />
+        <LevelMeter
+          label="Emissions"
+          value={fda.emissions}
+          onPress={() => onOpen?.(fda)}
+        />
       </CardContent>
 
       <CardFooter className="justify-end gap-2">
@@ -227,7 +241,13 @@ function LevelMeter({
           </span>
         }
       />
-      <Meter aria-label={`${label}: ${level}`} value={value} color="auto" segments={7} size="sm" />
+      <Meter
+        aria-label={`${label}: ${level}`}
+        value={value}
+        color="auto"
+        segments={7}
+        size="sm"
+      />
     </div>
   )
 }

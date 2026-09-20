@@ -116,7 +116,10 @@ function ColorSwatch({
   presets = colorSwatchPresets,
   ...props
 }: ColorSwatchProps) {
-  const swatchClass = cn(colorSwatchVariants({ size, shape }), label || value ? "" : className)
+  const swatchClass = cn(
+    colorSwatchVariants({ size, shape }),
+    label || value ? "" : className
+  )
   let swatch = isParseable(props.color) ? (
     <ColorSwatchPrimitive
       data-slot="color-swatch"
@@ -187,10 +190,15 @@ function ColorSwatchEditor({
   const [root, setRoot] = React.useState<HTMLElement | null>(null)
   const current = React.useMemo(() => {
     if (!color) return null
-    return typeof color === "string" ? toHex(color, root) : color.toString("hex")
+    return typeof color === "string"
+      ? toHex(color, root)
+      : color.toString("hex")
   }, [color, root])
   const presetValues = React.useMemo(
-    () => presets.map((p) => ({ preset: p, hex: toHex(p, root) })).filter((p) => p.hex),
+    () =>
+      presets
+        .map((p) => ({ preset: p, hex: toHex(p, root) }))
+        .filter((p) => p.hex),
     [presets, root]
   )
   const emit = React.useCallback(
@@ -205,7 +213,7 @@ function ColorSwatchEditor({
       <ButtonPrimitive
         data-slot="color-swatch-trigger"
         aria-label={ariaLabel}
-        className="inline-flex cursor-pointer rounded-[inherit] outline-none transition-[filter,transform] data-hovered:brightness-110 data-pressed:translate-y-px data-pressed:brightness-95 data-focus-visible:ring-2 data-focus-visible:ring-ring data-focus-visible:ring-offset-1 data-focus-visible:ring-offset-background"
+        className="inline-flex cursor-pointer rounded-[inherit] transition-[filter,transform] outline-none data-focus-visible:ring-2 data-focus-visible:ring-ring data-focus-visible:ring-offset-1 data-focus-visible:ring-offset-background data-hovered:brightness-110 data-pressed:translate-y-px data-pressed:brightness-95"
       >
         {children}
       </ButtonPrimitive>
@@ -216,7 +224,9 @@ function ColorSwatchEditor({
         <div ref={setRoot} className="flex flex-col gap-3">
           {presetValues.length > 0 && (
             <div className="flex flex-col gap-2">
-              <span className="text-xs font-medium text-muted-foreground">Presets</span>
+              <span className="text-xs font-medium text-muted-foreground">
+                Presets
+              </span>
               <ColorSwatchPickerPrimitive
                 value={current ?? undefined}
                 onChange={emit}
@@ -243,7 +253,9 @@ function ColorSwatchEditor({
           )}
           {presetValues.length > 0 && <Separator emphasis="subtle" />}
           <div className="flex flex-col gap-2">
-            <span className="text-xs font-medium text-muted-foreground">Custom</span>
+            <span className="text-xs font-medium text-muted-foreground">
+              Custom
+            </span>
             <div className="flex items-center gap-2">
               {/* The custom swatch opens the platform colour picker, like a button. */}
               <label

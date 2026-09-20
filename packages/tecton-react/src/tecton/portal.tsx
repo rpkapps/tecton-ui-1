@@ -31,7 +31,11 @@ const PortalContainerContext = React.createContext<PortalContainer | undefined>(
 )
 
 function PortalProvider({ container, children }: PortalProviderProps) {
-  return <PortalContainerContext value={container}>{children}</PortalContainerContext>
+  return (
+    <PortalContainerContext value={container}>
+      {children}
+    </PortalContainerContext>
+  )
 }
 
 /**

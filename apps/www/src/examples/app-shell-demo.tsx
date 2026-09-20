@@ -18,7 +18,9 @@ export default function AppShellDemo() {
         </AppShellBrand>
       </AppShellHeader>
       <AppShellBody>
-        <AppShellMain className="p-4 text-sm text-muted-foreground">Work area</AppShellMain>
+        <AppShellMain className="p-4 text-sm text-muted-foreground">
+          Work area
+        </AppShellMain>
       </AppShellBody>
     </AppShell>
   )

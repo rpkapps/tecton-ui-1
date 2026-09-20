@@ -47,7 +47,9 @@ export default function FormTanstackSwitch() {
     <Card className="w-full sm:max-w-md">
       <CardHeader>
         <CardTitle>Security Settings</CardTitle>
-        <CardDescription>Manage your account security preferences.</CardDescription>
+        <CardDescription>
+          Manage your account security preferences.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form
@@ -61,7 +63,8 @@ export default function FormTanstackSwitch() {
             <form.Field
               name="twoFactor"
               children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <Field orientation="horizontal" data-invalid={isInvalid}>
                     <FieldContent>
@@ -69,9 +72,12 @@ export default function FormTanstackSwitch() {
                         Multi-factor authentication
                       </FieldLabel>
                       <FieldDescription>
-                        Enable multi-factor authentication to secure your account.
+                        Enable multi-factor authentication to secure your
+                        account.
                       </FieldDescription>
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
                     </FieldContent>
                     <Switch
                       id="form-tanstack-switch-twoFactor"

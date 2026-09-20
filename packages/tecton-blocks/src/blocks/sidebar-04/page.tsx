@@ -81,7 +81,10 @@ export default function Page() {
   )
 
   return (
-    <SidebarProvider defaultOpen={false} className="h-svh min-h-0 overflow-hidden">
+    <SidebarProvider
+      defaultOpen={false}
+      className="h-svh min-h-0 overflow-hidden"
+    >
       <NavRail />
       {showPanel ? (
         <AppShellSplit>
@@ -105,5 +108,11 @@ export default function Page() {
 export { NavRail } from "./components/nav-rail"
 export { ToolPanel } from "./components/tool-panel"
 export { NavUser } from "./components/nav-user"
-export { railMain, railSecondary, wellTypes, defaultWell, currentUser } from "./data"
+export {
+  railMain,
+  railSecondary,
+  wellTypes,
+  defaultWell,
+  currentUser,
+} from "./data"
 export type { RailItem, WellProperties, WellType } from "./data"

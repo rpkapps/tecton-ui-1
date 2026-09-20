@@ -1,7 +1,13 @@
 "use client"
 
 import * as React from "react"
-import { LayersIcon, MapIcon, RulerIcon, ZoomInIcon, ZoomOutIcon } from "lucide-react"
+import {
+  LayersIcon,
+  MapIcon,
+  RulerIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
+} from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import { Separator } from "@tecton/react/components/separator"
@@ -34,7 +40,9 @@ export default function Page() {
   const [measuring, setMeasuring] = React.useState(false)
   const [zoom, setZoom] = React.useState(1)
   const selectedLabel = React.useMemo(
-    () => flattenTree(projectTree).find((node) => node.id === selected)?.label ?? null,
+    () =>
+      flattenTree(projectTree).find((node) => node.id === selected)?.label ??
+      null,
     [selected]
   )
 

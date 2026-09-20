@@ -27,19 +27,63 @@ export type HorizonSettings = {
 }
 
 export const surfaces: Surface[] = [
-  { id: "k70", code: "K70", name: "Spekk FM Top", color: "#218585", depth: 2525 },
+  {
+    id: "k70",
+    code: "K70",
+    name: "Spekk FM Top",
+    color: "#218585",
+    depth: 2525,
+  },
   { id: "l70", code: "L70", name: "Are FM Top", color: "#2D7856", depth: 2639 },
-  { id: "j80", code: "J80", name: "Melke FM Top", color: "#84A138", depth: 2481 },
-  { id: "m10", code: "M10", name: "Garn FM Top", color: "#CB8553", depth: 2712 },
+  {
+    id: "j80",
+    code: "J80",
+    name: "Melke FM Top",
+    color: "#84A138",
+    depth: 2481,
+  },
+  {
+    id: "m10",
+    code: "M10",
+    name: "Garn FM Top",
+    color: "#CB8553",
+    depth: 2712,
+  },
   { id: "m40", code: "M40", name: "Ile FM Top", color: "#8CA7DE", depth: 2790 },
-  { id: "n20", code: "N20", name: "Tofte FM Top", color: "#C2867A", depth: 2874 },
+  {
+    id: "n20",
+    code: "N20",
+    name: "Tofte FM Top",
+    color: "#C2867A",
+    depth: 2874,
+  },
 ]
 
 export const surfacePairs: SurfacePair[] = [
-  { id: "spekk-are", label: "Spekk FM Top → Are FM Top", top: "k70", base: "l70" },
-  { id: "melke-spekk", label: "Melke FM Top → Spekk FM Top", top: "j80", base: "k70" },
-  { id: "garn-ile", label: "Garn FM Top → Ile FM Top", top: "m10", base: "m40" },
-  { id: "ile-tofte", label: "Ile FM Top → Tofte FM Top", top: "m40", base: "n20" },
+  {
+    id: "spekk-are",
+    label: "Spekk FM Top → Are FM Top",
+    top: "k70",
+    base: "l70",
+  },
+  {
+    id: "melke-spekk",
+    label: "Melke FM Top → Spekk FM Top",
+    top: "j80",
+    base: "k70",
+  },
+  {
+    id: "garn-ile",
+    label: "Garn FM Top → Ile FM Top",
+    top: "m10",
+    base: "m40",
+  },
+  {
+    id: "ile-tofte",
+    label: "Ile FM Top → Tofte FM Top",
+    top: "m40",
+    base: "n20",
+  },
 ]
 
 export const volumes = [

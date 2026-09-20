@@ -19,9 +19,9 @@ import {
 const meterVariants = cva("flex w-full flex-col gap-1", {
   variants: {
     size: {
-      sm: "[--meter-h:0.25rem] text-xs",
-      md: "[--meter-h:0.375rem] text-sm",
-      lg: "[--meter-h:0.625rem] text-sm",
+      sm: "text-xs [--meter-h:0.25rem]",
+      md: "text-sm [--meter-h:0.375rem]",
+      lg: "text-sm [--meter-h:0.625rem]",
     },
   },
   defaultVariants: {

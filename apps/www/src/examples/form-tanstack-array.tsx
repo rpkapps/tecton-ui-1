@@ -71,7 +71,8 @@ export default function FormTanstackArray() {
         >
           <form.Field name="emails" mode="array">
             {(field) => {
-              const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+              const isInvalid =
+                field.state.meta.isTouched && !field.state.meta.isValid
               return (
                 <FieldSet className="gap-4">
                   <FieldLegend variant="label">Email Addresses</FieldLegend>
@@ -85,9 +86,13 @@ export default function FormTanstackArray() {
                         name={`emails[${index}].address`}
                         children={(subField) => {
                           const isSubFieldInvalid =
-                            subField.state.meta.isTouched && !subField.state.meta.isValid
+                            subField.state.meta.isTouched &&
+                            !subField.state.meta.isValid
                           return (
-                            <Field orientation="horizontal" data-invalid={isSubFieldInvalid}>
+                            <Field
+                              orientation="horizontal"
+                              data-invalid={isSubFieldInvalid}
+                            >
                               <FieldContent>
                                 <InputGroup>
                                   <InputGroupInput
@@ -95,7 +100,9 @@ export default function FormTanstackArray() {
                                     name={subField.name}
                                     value={subField.state.value}
                                     onBlur={subField.handleBlur}
-                                    onChange={(e) => subField.handleChange(e.target.value)}
+                                    onChange={(e) =>
+                                      subField.handleChange(e.target.value)
+                                    }
                                     aria-invalid={isSubFieldInvalid}
                                     placeholder="name@example.com"
                                     type="email"
@@ -116,7 +123,9 @@ export default function FormTanstackArray() {
                                   )}
                                 </InputGroup>
                                 {isSubFieldInvalid && (
-                                  <FieldError errors={subField.state.meta.errors} />
+                                  <FieldError
+                                    errors={subField.state.meta.errors}
+                                  />
                                 )}
                               </FieldContent>
                             </Field>

@@ -189,7 +189,9 @@ describe("PortalProvider", () => {
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
-                <DropdownMenuItem onAction={onAction}>Nested item</DropdownMenuItem>
+                <DropdownMenuItem onAction={onAction}>
+                  Nested item
+                </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
           </DropdownMenu>
@@ -221,13 +223,17 @@ describe("PortalProvider", () => {
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-              <DropdownMenuItem onAction={onAction}>Plain nested</DropdownMenuItem>
+              <DropdownMenuItem onAction={onAction}>
+                Plain nested
+              </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
         </DropdownMenu>
       </DropdownMenuTrigger>
     )
-    await userEvent.click(screen.getByRole("button", { name: "Open plain menu" }))
+    await userEvent.click(
+      screen.getByRole("button", { name: "Open plain menu" })
+    )
     await userEvent.click(screen.getByText("More"))
     await userEvent.click(await screen.findByText("Plain nested"))
     expect(onAction).toHaveBeenCalledTimes(1)

@@ -64,77 +64,87 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
         </AppShellSidebar>
 
         <AppShellSplit>
-        <AppShellSplitPanel minSize="40%">
-        <AppShellMain className="flex flex-col gap-6 p-4 md:p-6">
-          <PageHeader>
-            <PageHeaderContent>
-              <PageHeaderEyebrow>{project.asset}</PageHeaderEyebrow>
-              <PageHeaderTitle className="flex items-center gap-2">
-                {project.name}
-                <Badge variant="info" appearance="outline">
-                  Concept select
-                </Badge>
-              </PageHeaderTitle>
-              <PageHeaderDescription>{project.description}</PageHeaderDescription>
-            </PageHeaderContent>
-            <PageHeaderActions>
-              <Button variant="ghost" size="sm">
-                <ShareIcon /> Share
-              </Button>
-              <Button variant="outline" size="sm">
-                <DownloadIcon /> Export
-              </Button>
-              <Button size="sm">
-                <PlusIcon /> New alternative
-              </Button>
-              {!agentOpen && (
-                <Button variant="secondary" size="sm" onPress={() => setAgentOpen(true)}>
-                  Open agent
-                </Button>
-              )}
-            </PageHeaderActions>
-          </PageHeader>
+          <AppShellSplitPanel minSize="40%">
+            <AppShellMain className="flex flex-col gap-6 p-4 md:p-6">
+              <PageHeader>
+                <PageHeaderContent>
+                  <PageHeaderEyebrow>{project.asset}</PageHeaderEyebrow>
+                  <PageHeaderTitle className="flex items-center gap-2">
+                    {project.name}
+                    <Badge variant="info" appearance="outline">
+                      Concept select
+                    </Badge>
+                  </PageHeaderTitle>
+                  <PageHeaderDescription>
+                    {project.description}
+                  </PageHeaderDescription>
+                </PageHeaderContent>
+                <PageHeaderActions>
+                  <Button variant="ghost" size="sm">
+                    <ShareIcon /> Share
+                  </Button>
+                  <Button variant="outline" size="sm">
+                    <DownloadIcon /> Export
+                  </Button>
+                  <Button size="sm">
+                    <PlusIcon /> New alternative
+                  </Button>
+                  {!agentOpen && (
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onPress={() => setAgentOpen(true)}
+                    >
+                      Open agent
+                    </Button>
+                  )}
+                </PageHeaderActions>
+              </PageHeader>
 
-          <div
-            data-slot="dashboard-grid"
-            className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-[repeat(auto-fit,minmax(20rem,1fr))]"
-          >
-            {cards.map((fda) => (
-              <FdaCard
-                key={fda.id}
-                fda={fda}
-                isSelected={selectedFda.includes(fda.id)}
-                onSelectedChange={(next) =>
-                  setSelectedFda((current) =>
-                    next
-                      ? [...current, fda.id]
-                      : current.filter((id) => id !== fda.id)
-                  )
-                }
-              />
-            ))}
-            <WellDesignCard
-              design={primaryWell}
-              isSelected={selectedWell.includes(primaryWell.id)}
-              onSelectedChange={(next) =>
-                setSelectedWell(next ? [primaryWell.id] : [])
-              }
-            />
-            <CostVsRiskPanel className="h-auto md:col-span-2 2xl:col-span-1" />
-          </div>
-        </AppShellMain>
-        </AppShellSplitPanel>
+              <div
+                data-slot="dashboard-grid"
+                className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-[repeat(auto-fit,minmax(20rem,1fr))]"
+              >
+                {cards.map((fda) => (
+                  <FdaCard
+                    key={fda.id}
+                    fda={fda}
+                    isSelected={selectedFda.includes(fda.id)}
+                    onSelectedChange={(next) =>
+                      setSelectedFda((current) =>
+                        next
+                          ? [...current, fda.id]
+                          : current.filter((id) => id !== fda.id)
+                      )
+                    }
+                  />
+                ))}
+                <WellDesignCard
+                  design={primaryWell}
+                  isSelected={selectedWell.includes(primaryWell.id)}
+                  onSelectedChange={(next) =>
+                    setSelectedWell(next ? [primaryWell.id] : [])
+                  }
+                />
+                <CostVsRiskPanel className="h-auto md:col-span-2 2xl:col-span-1" />
+              </div>
+            </AppShellMain>
+          </AppShellSplitPanel>
 
-        {agentOpen && showAgent && (
-          <>
-            <AppShellSplitHandle />
-            <AppShellSplitPanel defaultSize="384px" minSize="280px" maxSize="50%">
-              <AppShellAside className="h-full w-full border-l-0">
-                <AiAgentPanel onClose={() => setAgentOpen(false)} />
-              </AppShellAside>
-            </AppShellSplitPanel>
-          </>
-        )}
+          {agentOpen && showAgent && (
+            <>
+              <AppShellSplitHandle />
+              <AppShellSplitPanel
+                defaultSize="384px"
+                minSize="280px"
+                maxSize="50%"
+              >
+                <AppShellAside className="h-full w-full border-l-0">
+                  <AiAgentPanel onClose={() => setAgentOpen(false)} />
+                </AppShellAside>
+              </AppShellSplitPanel>
+            </>
+          )}
         </AppShellSplit>
       </AppShellBody>
     </AppShell>

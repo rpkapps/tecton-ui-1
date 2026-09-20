@@ -51,7 +51,10 @@ function TrajectorySketch({
       viewBox={`0 0 ${W} ${H}`}
       role="img"
       aria-label="Well trajectory sketch"
-      className={cn("h-auto w-full max-w-full text-muted-foreground", className)}
+      className={cn(
+        "h-auto w-full max-w-full text-muted-foreground",
+        className
+      )}
       {...props}
     >
       {/* surface line */}

@@ -23,8 +23,10 @@ const linkVariants = cva(
       variant: {
         default: "text-foreground data-hovered:underline",
         primary: "text-primary-foreground data-hovered:underline",
-        muted: "text-muted-foreground data-hovered:text-foreground data-hovered:underline",
-        subtle: "text-foreground underline decoration-border data-hovered:decoration-current",
+        muted:
+          "text-muted-foreground data-hovered:text-foreground data-hovered:underline",
+        subtle:
+          "text-foreground underline decoration-border data-hovered:decoration-current",
       },
       size: {
         inherit: "",

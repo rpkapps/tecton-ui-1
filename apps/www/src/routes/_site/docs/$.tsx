@@ -35,7 +35,9 @@ function DocsPage() {
 
   return (
     <React.Suspense
-      fallback={<div className="px-4 py-8 text-sm text-muted-foreground">Loading…</div>}
+      fallback={
+        <div className="px-4 py-8 text-sm text-muted-foreground">Loading…</div>
+      }
     >
       <Content
         key={data.path}
@@ -145,7 +147,12 @@ function Content({
           </div>
           <div className="hidden h-16 w-full items-center gap-2 px-4 sm:flex sm:px-0">
             {previous && (
-              <LinkButton variant="secondary" size="sm" className="shadow-none" href={previous.url}>
+              <LinkButton
+                variant="secondary"
+                size="sm"
+                className="shadow-none"
+                href={previous.url}
+              >
                 <ArrowLeftIcon data-icon="inline-start" /> {previous.title}
               </LinkButton>
             )}
@@ -165,7 +172,7 @@ function Content({
       <div className="sticky top-[calc(var(--header-height)+1px)] z-30 ml-auto hidden h-[90svh] w-(--sidebar-width) flex-col gap-4 overflow-hidden overscroll-none pb-8 xl:flex">
         <div className="h-(--top-spacing) shrink-0" />
         {toc.length ? (
-          <div className="flex scroll-fade no-scrollbar flex-col gap-8 overflow-y-auto px-8">
+          <div className="no-scrollbar flex scroll-fade flex-col gap-8 overflow-y-auto px-8">
             <DocsTableOfContents toc={toc} />
           </div>
         ) : null}
@@ -173,4 +180,3 @@ function Content({
     </div>
   )
 }
-

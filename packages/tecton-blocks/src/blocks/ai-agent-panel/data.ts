@@ -37,7 +37,7 @@ export const agentConversation: AgentMessage[] = [
     id: "m1",
     role: "user",
     content:
-      "The 7\" production casing is showing collapse risk below 12,800 ft. What are our options?",
+      'The 7" production casing is showing collapse risk below 12,800 ft. What are our options?',
   },
   {
     id: "t1",
@@ -47,7 +47,7 @@ export const agentConversation: AgentMessage[] = [
     steps: [
       {
         id: "s1",
-        label: "Checked casing inventory for 5\" liner",
+        label: 'Checked casing inventory for 5" liner',
         detail: "3 joints available at Mongstad base",
         duration: "4s",
       },
@@ -69,7 +69,7 @@ export const agentConversation: AgentMessage[] = [
     id: "m2",
     role: "assistant",
     content: [
-      "We have a 5\" production liner in available inventory which should work for this situation. The estimated impact is +0.5 days and +$2.0–2.3M.",
+      'We have a 5" production liner in available inventory which should work for this situation. The estimated impact is +0.5 days and +$2.0–2.3M.',
       "Would you like to add this to the design?",
     ],
     actions: [{ id: "a1", label: "Add casing liner", color: "primary" }],
@@ -95,7 +95,7 @@ export const agentConversation: AgentMessage[] = [
       {
         id: "s4",
         label: "Drafted Production Liner section",
-        detail: "5\" × 18 lb/ft, 12,600 – 13,900 ft MD",
+        detail: '5" × 18 lb/ft, 12,600 – 13,900 ft MD',
         duration: "9s",
       },
       {

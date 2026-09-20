@@ -104,7 +104,9 @@ function ShellCommandTrigger({
       {...props}
     >
       <SearchIcon className="size-4 md:size-3.5" />
-      <span className="hidden flex-1 truncate text-left md:inline">{children}</span>
+      <span className="hidden flex-1 truncate text-left md:inline">
+        {children}
+      </span>
       {shortcut ? (
         <Kbd className="pointer-events-none hidden lg:inline-flex">
           {shortcut}

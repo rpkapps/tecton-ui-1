@@ -20,7 +20,10 @@ import { HorizonReadout } from "./components/horizon-readout"
 import { defaultHorizonSettings, getPair, volumes } from "./data"
 import type { HorizonSettings } from "./data"
 
-type HorizonsPanelProps = Omit<React.ComponentProps<typeof Panel>, "children"> & {
+type HorizonsPanelProps = Omit<
+  React.ComponentProps<typeof Panel>,
+  "children"
+> & {
   initialSettings?: HorizonSettings
   onApply?: (value: HorizonSettings) => void
   onCollapse?: () => void
@@ -83,7 +86,10 @@ function HorizonsPanel({
             },
             {
               label: "Thickness",
-              value: Math.max(0, value.bottomDepth - value.topDepth).toLocaleString(),
+              value: Math.max(
+                0,
+                value.bottomDepth - value.topDepth
+              ).toLocaleString(),
               unit: "m",
             },
           ]}
@@ -137,11 +143,6 @@ export default function HorizonsPanelPage() {
 }
 
 export { HorizonsPanel, HorizonForm, HorizonReadout }
-export {
-  surfaces,
-  surfacePairs,
-  volumes,
-  defaultHorizonSettings,
-} from "./data"
+export { surfaces, surfacePairs, volumes, defaultHorizonSettings } from "./data"
 export type { HorizonsPanelProps }
 export type { Surface, SurfacePair, HorizonSettings } from "./data"

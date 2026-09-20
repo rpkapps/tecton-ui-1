@@ -33,16 +33,36 @@ export type NavGroup = {
 }
 
 export const projects: Project[] = [
-  { id: "jsp3", name: "Johan Sverdrup Phase 3", asset: "North Sea · PL 265", phase: "Concept select" },
-  { id: "troll-w", name: "Troll West", asset: "North Sea · PL 054", phase: "Execute" },
-  { id: "snorre-x", name: "Snorre Expansion", asset: "Tampen · PL 057", phase: "Define" },
+  {
+    id: "jsp3",
+    name: "Johan Sverdrup Phase 3",
+    asset: "North Sea · PL 265",
+    phase: "Concept select",
+  },
+  {
+    id: "troll-w",
+    name: "Troll West",
+    asset: "North Sea · PL 054",
+    phase: "Execute",
+  },
+  {
+    id: "snorre-x",
+    name: "Snorre Expansion",
+    asset: "Tampen · PL 057",
+    phase: "Define",
+  },
 ]
 
 export const navGroups: NavGroup[] = [
   {
     label: "Project",
     items: [
-      { title: "Overview", url: "#", icon: LayoutDashboardIcon, isActive: true },
+      {
+        title: "Overview",
+        url: "#",
+        icon: LayoutDashboardIcon,
+        isActive: true,
+      },
       {
         title: "Wells",
         url: "#",

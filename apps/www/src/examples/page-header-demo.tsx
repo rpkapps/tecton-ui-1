@@ -11,7 +11,8 @@ export default function PageHeaderDemo() {
       <PageHeaderContent>
         <PageHeaderTitle>Gullfaks field development</PageHeaderTitle>
         <PageHeaderDescription>
-          Three alternatives evaluated against the P50 volumes from the 2025 reservoir model.
+          Three alternatives evaluated against the P50 volumes from the 2025
+          reservoir model.
         </PageHeaderDescription>
       </PageHeaderContent>
     </PageHeader>

@@ -42,12 +42,14 @@ export const statusMeta: Record<
   archived: { label: "Archived", color: "secondary" },
 }
 
-export const ratingMeta: Record<FdaRating, { label: string; color: "success" | "warning" | "destructive" }> =
-  {
-    good: { label: "Good", color: "success" },
-    fair: { label: "Fair", color: "warning" },
-    poor: { label: "Poor", color: "destructive" },
-  }
+export const ratingMeta: Record<
+  FdaRating,
+  { label: string; color: "success" | "warning" | "destructive" }
+> = {
+  good: { label: "Good", color: "success" },
+  fair: { label: "Fair", color: "warning" },
+  poor: { label: "Poor", color: "destructive" },
+}
 
 export const fdaSummaries: FdaSummary[] = [
   {

@@ -25,6 +25,9 @@ export interface TectonSvgIcon extends TectonSvgIconDefinition {
   slug: string
 }
 
-export function defineTectonSvgIcon(slug: string, definition: TectonSvgIconDefinition): TectonSvgIcon {
+export function defineTectonSvgIcon(
+  slug: string,
+  definition: TectonSvgIconDefinition
+): TectonSvgIcon {
   return { slug, ...definition }
 }

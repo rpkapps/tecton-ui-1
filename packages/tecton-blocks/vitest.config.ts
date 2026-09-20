@@ -4,7 +4,9 @@ import { defineConfig } from "vitest/config"
 export default defineConfig({
   resolve: {
     alias: {
-      "@tecton/react": fileURLToPath(new URL("../tecton-react/src", import.meta.url)),
+      "@tecton/react": fileURLToPath(
+        new URL("../tecton-react/src", import.meta.url)
+      ),
     },
   },
   test: {

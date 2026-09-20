@@ -38,7 +38,10 @@ const fdaTableFeatures = tableFeatures({
   sortedRowModel: createSortedRowModel(),
 })
 
-const columns = createColumnHelper<typeof fdaTableFeatures, FieldDevelopmentAlternative>()
+const columns = createColumnHelper<
+  typeof fdaTableFeatures,
+  FieldDevelopmentAlternative
+>()
 
 function MonoValue({
   value,
@@ -110,7 +113,12 @@ function createFdaColumns(callbacks: ColumnCallbacks = {}) {
     columns.accessor("npv", {
       header: "NPV",
       cell: ({ getValue }) => (
-        <MonoValue value={getValue()} prefix="$" unit="MM" className="text-success" />
+        <MonoValue
+          value={getValue()}
+          prefix="$"
+          unit="MM"
+          className="text-success"
+        />
       ),
     }),
     columns.accessor("irr", {
@@ -119,7 +127,9 @@ function createFdaColumns(callbacks: ColumnCallbacks = {}) {
     }),
     columns.accessor("capex", {
       header: "CAPEX",
-      cell: ({ getValue }) => <MonoValue value={getValue()} prefix="$" unit="MM" />,
+      cell: ({ getValue }) => (
+        <MonoValue value={getValue()} prefix="$" unit="MM" />
+      ),
     }),
     columns.accessor("peakProduction", {
       header: "Peak production",
@@ -128,7 +138,9 @@ function createFdaColumns(callbacks: ColumnCallbacks = {}) {
     columns.accessor("firstOil", {
       header: "First oil",
       cell: ({ getValue }) => (
-        <span className="font-mono tabular-nums">{formatFirstOil(getValue())}</span>
+        <span className="font-mono tabular-nums">
+          {formatFirstOil(getValue())}
+        </span>
       ),
     }),
     columns.accessor("risk", {
@@ -174,10 +186,14 @@ function createFdaColumns(callbacks: ColumnCallbacks = {}) {
               <MoreVerticalIcon />
             </Button>
             <DropdownMenu placement="bottom end">
-              <DropdownMenuItem onAction={() => callbacks.onOpen?.(row.original)}>
+              <DropdownMenuItem
+                onAction={() => callbacks.onOpen?.(row.original)}
+              >
                 <PencilIcon /> Open
               </DropdownMenuItem>
-              <DropdownMenuItem onAction={() => callbacks.onDuplicate?.(row.original)}>
+              <DropdownMenuItem
+                onAction={() => callbacks.onDuplicate?.(row.original)}
+              >
                 <CopyIcon /> Duplicate
               </DropdownMenuItem>
               <DropdownMenuItem>

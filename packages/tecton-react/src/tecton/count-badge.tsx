@@ -8,7 +8,7 @@ import { cn } from "cn"
  * label component, which Tecton calls a Chip.
  */
 const countBadgeVariants = cva(
-  "pointer-events-none absolute z-10 flex items-center justify-center rounded-full font-medium tabular-nums whitespace-nowrap ring-2 ring-background",
+  "pointer-events-none absolute z-10 flex items-center justify-center rounded-full font-medium whitespace-nowrap tabular-nums ring-2 ring-background",
   {
     variants: {
       color: {

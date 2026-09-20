@@ -7,7 +7,9 @@ import tailwindcss from "@tailwindcss/vite"
 import { fumadocsMdx } from "fumadocs-mdx/vite"
 
 const blockNames = readdirSync(
-  fileURLToPath(new URL("../../packages/tecton-blocks/src/blocks", import.meta.url)),
+  fileURLToPath(
+    new URL("../../packages/tecton-blocks/src/blocks", import.meta.url)
+  ),
   { withFileTypes: true }
 )
   .filter((entry) => entry.isDirectory())
@@ -46,7 +48,10 @@ const config = defineConfig(({ command }) => ({
     tsconfigPaths: true,
     alias: [
       ...(command === "serve" ? devAliases : []),
-      { find: "@", replacement: fileURLToPath(new URL("./src", import.meta.url)) },
+      {
+        find: "@",
+        replacement: fileURLToPath(new URL("./src", import.meta.url)),
+      },
     ],
   },
   plugins: [

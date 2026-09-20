@@ -16,11 +16,11 @@ import {
 const circularProgressVariants = cva("relative inline-flex shrink-0", {
   variants: {
     size: {
-      xs: "size-4 [--stroke:2.5px] text-[0.5rem]",
-      sm: "size-6 [--stroke:3px] text-[0.625rem]",
-      md: "size-10 [--stroke:3.5px] text-xs",
-      lg: "size-16 [--stroke:4px] text-sm",
-      xl: "size-24 [--stroke:5px] text-base",
+      xs: "size-4 text-[0.5rem] [--stroke:2.5px]",
+      sm: "size-6 text-[0.625rem] [--stroke:3px]",
+      md: "size-10 text-xs [--stroke:3.5px]",
+      lg: "size-16 text-sm [--stroke:4px]",
+      xl: "size-24 text-base [--stroke:5px]",
     },
     color: {
       primary: "text-primary",

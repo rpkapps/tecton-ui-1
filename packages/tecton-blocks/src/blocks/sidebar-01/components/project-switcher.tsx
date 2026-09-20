@@ -100,7 +100,9 @@ function ProjectSwitcher({
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                   <PlusIcon className="size-4" />
                 </div>
-                <span className="font-medium text-muted-foreground">New project</span>
+                <span className="font-medium text-muted-foreground">
+                  New project
+                </span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenu>

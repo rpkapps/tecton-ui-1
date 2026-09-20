@@ -77,7 +77,9 @@ function ComparisonGroup({
 }) {
   return (
     <div data-slot="comparison-group" className="flex flex-col gap-1.5">
-      <h4 className={cn("text-xs font-medium", emphasis && "text-sm")}>{title}</h4>
+      <h4 className={cn("text-xs font-medium", emphasis && "text-sm")}>
+        {title}
+      </h4>
       <div className="flex flex-col gap-1">
         {designs.map((design) => {
           const entry = category.values[design.id]
@@ -128,10 +130,7 @@ function ComparisonBar({
       <span className="min-w-20 text-right font-mono text-xs tabular-nums">
         {format(value)}
         {range && (
-          <span className="text-muted-foreground">
-            {" "}
-            –{format(range[1])}
-          </span>
+          <span className="text-muted-foreground"> –{format(range[1])}</span>
         )}
       </span>
     </div>

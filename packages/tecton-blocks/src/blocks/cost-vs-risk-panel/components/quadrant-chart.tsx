@@ -61,7 +61,10 @@ function QuadrantChart({
     <ChartContainer
       data-slot="quadrant-chart"
       config={config}
-      className={cn("aspect-square w-full rounded-md bg-surface-alt/60", className)}
+      className={cn(
+        "aspect-square w-full rounded-md bg-surface-alt/60",
+        className
+      )}
       {...props}
     >
       <ScatterChart margin={{ top: 24, right: 24, bottom: 24, left: 8 }}>

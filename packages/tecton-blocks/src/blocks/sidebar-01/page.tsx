@@ -28,13 +28,21 @@ export default function Page() {
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle px-3">
           <SidebarTrigger className="-ml-1" />
-          <Separator orientation="vertical" className="mr-1 h-4 aria-[orientation=vertical]:self-center" />
+          <Separator
+            orientation="vertical"
+            className="mr-1 h-4 aria-[orientation=vertical]:self-center"
+          />
           <Breadcrumb>
             <BreadcrumbList>
               {breadcrumbs.map((crumb) =>
                 crumb.url ? (
-                  <BreadcrumbItem key={crumb.title} className="hidden md:inline-flex">
-                    <BreadcrumbLink href={crumb.url}>{crumb.title}</BreadcrumbLink>
+                  <BreadcrumbItem
+                    key={crumb.title}
+                    className="hidden md:inline-flex"
+                  >
+                    <BreadcrumbLink href={crumb.url}>
+                      {crumb.title}
+                    </BreadcrumbLink>
                   </BreadcrumbItem>
                 ) : (
                   <BreadcrumbItem key={crumb.title}>

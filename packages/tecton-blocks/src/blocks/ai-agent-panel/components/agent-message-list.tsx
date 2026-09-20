@@ -139,12 +139,16 @@ function AssistantMessage({
             return (
               <Button
                 key={action.id}
-                variant={done ? "outline" : actionVariant[action.color ?? "primary"]}
+                variant={
+                  done ? "outline" : actionVariant[action.color ?? "primary"]
+                }
                 size="xs"
                 className={cn(
                   "rounded-full",
                   done && "border-success text-success",
-                  !done && action.color === "success" && "bg-success text-success-foreground"
+                  !done &&
+                    action.color === "success" &&
+                    "bg-success text-success-foreground"
                 )}
                 isDisabled={done}
                 onPress={() => onAction?.(action)}

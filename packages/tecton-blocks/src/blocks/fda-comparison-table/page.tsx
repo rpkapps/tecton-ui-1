@@ -16,7 +16,11 @@ import {
   TableRow,
 } from "@tecton/react/components/table"
 
-import { createFdaColumns, fdaTableFeatures, MonoValue } from "./components/fda-columns"
+import {
+  createFdaColumns,
+  fdaTableFeatures,
+  MonoValue,
+} from "./components/fda-columns"
 import { alternatives as allAlternatives } from "./data"
 import type { FieldDevelopmentAlternative } from "./data"
 
@@ -93,7 +97,9 @@ function FdaComparisonTable({
             table.toggleAllRowsSelected(true)
           } else {
             table.setRowSelection(
-              Object.fromEntries([...selection].map((key) => [String(key), true]))
+              Object.fromEntries(
+                [...selection].map((key) => [String(key), true])
+              )
             )
           }
         }}
@@ -121,9 +127,14 @@ function FdaComparisonTable({
               id={header.id}
               isRowHeader={header.index === 2}
               allowsSorting={header.column.getCanSort()}
-              className={cn("h-9 px-2 text-xs", header.column.id === "select" && "w-10")}
+              className={cn(
+                "h-9 px-2 text-xs",
+                header.column.id === "select" && "w-10"
+              )}
             >
-              {header.isPlaceholder ? null : <table.FlexRender header={header} />}
+              {header.isPlaceholder ? null : (
+                <table.FlexRender header={header} />
+              )}
             </TableHead>
           ))}
         </TableHeader>
@@ -133,7 +144,7 @@ function FdaComparisonTable({
               No alternatives yet.
             </div>
           )}
-          className="[&_tr:nth-child(even)]:bg-surface-alt/60 [&_tr]:border-border-subtle"
+          className="[&_tr]:border-border-subtle [&_tr:nth-child(even)]:bg-surface-alt/60"
         >
           {table.getRowModel().rows.map((row) => (
             <TableRow
@@ -145,7 +156,10 @@ function FdaComparisonTable({
               {row.getAllCells().map((cell) => (
                 <TableCell
                   key={cell.id}
-                  className={cn("h-9 px-2", cell.column.id === "select" && "w-10")}
+                  className={cn(
+                    "h-9 px-2",
+                    cell.column.id === "select" && "w-10"
+                  )}
                 >
                   <table.FlexRender cell={cell} />
                 </TableCell>

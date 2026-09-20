@@ -37,7 +37,10 @@ function AgentPanelHeader({
       className={cn("gap-2", className)}
       {...props}
     >
-      <LayersIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+      <LayersIcon
+        className="size-4 shrink-0 text-muted-foreground"
+        aria-hidden
+      />
       <PanelTitle>{title}</PanelTitle>
       <PanelActions>
         <DropdownMenuTrigger>
@@ -45,7 +48,9 @@ function AgentPanelHeader({
             <MoreVerticalIcon />
           </Button>
           <DropdownMenu placement="bottom end">
-            <DropdownMenuItem onAction={onClear}>New conversation</DropdownMenuItem>
+            <DropdownMenuItem onAction={onClear}>
+              New conversation
+            </DropdownMenuItem>
             <DropdownMenuItem>Export transcript</DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive" onAction={onClear}>

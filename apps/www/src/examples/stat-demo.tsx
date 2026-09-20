@@ -1,4 +1,10 @@
-import { Stat, StatDelta, StatHelp, StatLabel, StatValue } from "@tecton/react/tecton/stat"
+import {
+  Stat,
+  StatDelta,
+  StatHelp,
+  StatLabel,
+  StatValue,
+} from "@tecton/react/tecton/stat"
 
 export default function StatDemo() {
   return (

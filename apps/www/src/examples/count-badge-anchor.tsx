@@ -1,6 +1,11 @@
 import { CountBadge } from "@tecton/react/tecton/count-badge"
 
-const anchors = ["top-left", "top-right", "bottom-left", "bottom-right"] as const
+const anchors = [
+  "top-left",
+  "top-right",
+  "bottom-left",
+  "bottom-right",
+] as const
 
 export default function CountBadgeAnchor() {
   return (

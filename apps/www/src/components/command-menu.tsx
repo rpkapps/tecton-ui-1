@@ -4,7 +4,11 @@ import * as React from "react"
 import { useNavigate } from "@tanstack/react-router"
 import { cn } from "cn"
 import type * as PageTree from "fumadocs-core/page-tree"
-import { ArrowRightIcon, CornerDownLeftIcon, SquareDashedIcon } from "lucide-react"
+import {
+  ArrowRightIcon,
+  CornerDownLeftIcon,
+  SquareDashedIcon,
+} from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -18,7 +22,12 @@ import {
 } from "@tecton/react/components/command"
 
 import { siteConfig } from "@/lib/site"
-import { getPagesFromFolder, getRootFolders, getRootPages, nodeName } from "@/lib/tree"
+import {
+  getPagesFromFolder,
+  getRootFolders,
+  getRootPages,
+  nodeName,
+} from "@/lib/tree"
 
 const itemClassName =
   "h-9 rounded-md border border-transparent px-3! font-medium data-focused:border-input data-focused:bg-input/50 data-selected:border-input data-selected:bg-input/50"
@@ -68,8 +77,10 @@ export function CommandMenu({ tree }: { tree: PageTree.Root }) {
     }[] = []
     // React Aria collections need unique keys: the same url appears in
     // several groups ("/docs" is both the Docs page and the Introduction).
-    const withIds = (heading: string, items: { url: string; name: string; component?: boolean }[]) =>
-      items.map((item) => ({ ...item, id: `${heading}:${item.url}` }))
+    const withIds = (
+      heading: string,
+      items: { url: string; name: string; component?: boolean }[]
+    ) => items.map((item) => ({ ...item, id: `${heading}:${item.url}` }))
     result.push({
       heading: "Pages",
       items: withIds(
@@ -81,17 +92,24 @@ export function CommandMenu({ tree }: { tree: PageTree.Root }) {
       heading: "Docs",
       items: withIds(
         "Docs",
-        getRootPages(tree).map((page) => ({ url: page.url, name: nodeName(page) }))
+        getRootPages(tree).map((page) => ({
+          url: page.url,
+          name: nodeName(page),
+        }))
       ),
     })
     for (const folder of getRootFolders(tree)) {
       const items = getPagesFromFolder(folder).map((page) => ({
         url: page.url,
         name: nodeName(page),
-        component: page.url.includes("/components/") || page.url.includes("/tecton/"),
+        component:
+          page.url.includes("/components/") || page.url.includes("/tecton/"),
       }))
       if (items.length) {
-        result.push({ heading: nodeName(folder), items: withIds(nodeName(folder), items) })
+        result.push({
+          heading: nodeName(folder),
+          items: withIds(nodeName(folder), items),
+        })
       }
     }
     return result
@@ -118,7 +136,7 @@ export function CommandMenu({ tree }: { tree: PageTree.Root }) {
         <Command className="rounded-none bg-transparent **:data-[slot=command-input-wrapper]:p-0 **:data-[slot=command-input-wrapper]:pb-1 **:data-[slot=input-group]:h-9! **:data-[slot=input-group]:rounded-md! **:data-[slot=input-group]:border-input **:data-[slot=input-group]:bg-input/50">
           <CommandInput placeholder="Search documentation..." />
           <CommandList
-            className="no-scrollbar min-h-80 max-h-[60svh] scroll-pt-2 scroll-pb-1.5"
+            className="no-scrollbar max-h-[60svh] min-h-80 scroll-pt-2 scroll-pb-1.5"
             onAction={(key) => {
               setOpen(false)
               navigate({ to: String(key).slice(String(key).indexOf(":") + 1) })
@@ -130,7 +148,11 @@ export function CommandMenu({ tree }: { tree: PageTree.Root }) {
             )}
           >
             {groups.map((group) => (
-              <CommandGroup key={group.heading} heading={group.heading} className={groupClassName}>
+              <CommandGroup
+                key={group.heading}
+                heading={group.heading}
+                className={groupClassName}
+              >
                 {group.items.map((item) => (
                   <CommandItem
                     key={item.id}

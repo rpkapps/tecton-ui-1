@@ -96,7 +96,8 @@ function parseChord(source: string, isMac: boolean): Chord {
     } else if (part === "ctrl" || part === "control") chord.ctrl = true
     else if (part === "alt" || part === "option") chord.alt = true
     else if (part === "shift") chord.shift = true
-    else if (part === "meta" || part === "cmd" || part === "command") chord.meta = true
+    else if (part === "meta" || part === "cmd" || part === "command")
+      chord.meta = true
     else chord.key = KEY_ALIASES[part] ?? part
   }
   if (source.endsWith("+") && !chord.key) chord.key = "+"
@@ -107,7 +108,11 @@ function parseChord(source: string, isMac: boolean): Chord {
 }
 
 function parseKeys(keys: string, isMac: boolean): Chord[] {
-  return keys.trim().split(/\s+/).filter(Boolean).map((chord) => parseChord(chord, isMac))
+  return keys
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .map((chord) => parseChord(chord, isMac))
 }
 
 function chordFromEvent(event: KeyboardEvent): Chord {
@@ -166,7 +171,8 @@ function createShortcutRegistry(): ShortcutRegistry {
     notify()
     return () => {
       for (const shortcut of list) {
-        if (shortcuts.get(shortcut.id) === shortcut) shortcuts.delete(shortcut.id)
+        if (shortcuts.get(shortcut.id) === shortcut)
+          shortcuts.delete(shortcut.id)
       }
       notify()
     }
@@ -195,7 +201,9 @@ function createShortcutRegistry(): ShortcutRegistry {
       for (const shortcut of candidates) {
         const sequence = parseKeys(shortcut.keys, isMac)
         if (sequence.length < buffer.length) continue
-        const matches = buffer.every((entry, index) => chordMatches(sequence[index], entry))
+        const matches = buffer.every((entry, index) =>
+          chordMatches(sequence[index], entry)
+        )
         if (!matches) continue
         const allowed = shortcut.allowInInput ?? sequence.every(hasModifier)
         if (editable && !allowed) continue
@@ -251,7 +259,11 @@ type ShortcutsProviderProps = {
  * Nested providers without a `registry` of their own reuse the parent's, so
  * a component can wrap itself in one and still share the host's registry.
  */
-function ShortcutsProvider({ registry, target, children }: ShortcutsProviderProps) {
+function ShortcutsProvider({
+  registry,
+  target,
+  children,
+}: ShortcutsProviderProps) {
   const parent = React.useContext(ShortcutsContext)
   const [fallback] = React.useState(createShortcutRegistry)
   const value = registry ?? parent ?? fallback
@@ -268,14 +280,20 @@ function ShortcutsProvider({ registry, target, children }: ShortcutsProviderProp
     return () => node.removeEventListener("keydown", onKeyDown)
   }, [value, parent, target])
 
-  return <ShortcutsContext.Provider value={value}>{children}</ShortcutsContext.Provider>
+  return (
+    <ShortcutsContext.Provider value={value}>
+      {children}
+    </ShortcutsContext.Provider>
+  )
 }
 
 /** The registry of the nearest `ShortcutsProvider`. */
 function useShortcutRegistry() {
   const registry = React.useContext(ShortcutsContext)
   if (!registry) {
-    throw new Error("useShortcutRegistry must be used within a ShortcutsProvider")
+    throw new Error(
+      "useShortcutRegistry must be used within a ShortcutsProvider"
+    )
   }
   return registry
 }
@@ -283,14 +301,20 @@ function useShortcutRegistry() {
 /** The registered shortcuts, re-rendering as applications register and unregister. */
 function useShortcuts() {
   const registry = useShortcutRegistry()
-  return React.useSyncExternalStore(registry.subscribe, registry.getAll, registry.getAll)
+  return React.useSyncExternalStore(
+    registry.subscribe,
+    registry.getAll,
+    registry.getAll
+  )
 }
 
 /**
  * Registers a shortcut for the lifetime of the component. The handler
  * always sees the latest render, so it needs no dependency list.
  */
-function useShortcut(shortcut: Omit<Shortcut, "onAction"> & { onAction: Shortcut["onAction"] }) {
+function useShortcut(
+  shortcut: Omit<Shortcut, "onAction"> & { onAction: Shortcut["onAction"] }
+) {
   const registry = useShortcutRegistry()
   const onAction = React.useRef(shortcut.onAction)
   const isEnabled = React.useRef(shortcut.isEnabled)
@@ -351,7 +375,11 @@ function ShortcutKeys({
   className,
   ...props
 }: React.ComponentProps<"span"> & { keys: string }) {
-  const isMac = React.useSyncExternalStore(subscribeNoop, isMacPlatform, () => false)
+  const isMac = React.useSyncExternalStore(
+    subscribeNoop,
+    isMacPlatform,
+    () => false
+  )
   const chords = formatShortcut(keys, isMac)
   const caps = chords.flat()
   const spoken = chords.map((chord) => chord.join(" + ")).join(", then ")
@@ -365,7 +393,9 @@ function ShortcutKeys({
       <KbdGroup aria-hidden className="gap-1">
         {caps.map((cap, index) => (
           <React.Fragment key={`${index}-${cap}`}>
-            {index > 0 && <span className="text-xs text-muted-foreground">+</span>}
+            {index > 0 && (
+              <span className="text-xs text-muted-foreground">+</span>
+            )}
             <Kbd>{cap}</Kbd>
           </React.Fragment>
         ))}

@@ -18,7 +18,10 @@ import {
   FieldSet,
   FieldTitle,
 } from "@tecton/react/components/field"
-import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group"
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from "@tecton/react/components/radio-group"
 import {
   Select,
   SelectContent,
@@ -31,9 +34,17 @@ import { Switch } from "@tecton/react/components/switch"
 import { showSubmitted } from "./form-tanstack-demo"
 
 const addons = [
-  { id: "analytics", title: "Analytics", description: "Advanced analytics and reporting" },
+  {
+    id: "analytics",
+    title: "Analytics",
+    description: "Advanced analytics and reporting",
+  },
   { id: "backup", title: "Backup", description: "Automated daily backups" },
-  { id: "support", title: "Priority Support", description: "24/7 premium customer support" },
+  {
+    id: "support",
+    title: "Priority Support",
+    description: "24/7 premium customer support",
+  },
 ] as const
 
 const formSchema = z.object({
@@ -48,9 +59,12 @@ const formSchema = z.object({
     .array(z.string())
     .min(1, "Please select at least one add-on")
     .max(3, "You can select up to 3 add-ons")
-    .refine((value) => value.every((addon) => addons.some((a) => a.id === addon)), {
-      message: "You selected an invalid add-on",
-    }),
+    .refine(
+      (value) => value.every((addon) => addons.some((a) => a.id === addon)),
+      {
+        message: "You selected an invalid add-on",
+      }
+    ),
   emailNotifications: z.boolean(),
 })
 
@@ -84,11 +98,14 @@ export default function FormTanstackComplex() {
             <form.Field
               name="plan"
               children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <FieldSet>
                     <FieldLegend>Subscription Plan</FieldLegend>
-                    <FieldDescription>Choose your subscription plan.</FieldDescription>
+                    <FieldDescription>
+                      Choose your subscription plan.
+                    </FieldDescription>
                     <RadioGroup
                       name={field.name}
                       value={field.state.value}
@@ -97,25 +114,37 @@ export default function FormTanstackComplex() {
                       aria-label="Subscription plan"
                     >
                       <FieldLabel htmlFor="basic">
-                        <Field orientation="horizontal" data-invalid={isInvalid}>
+                        <Field
+                          orientation="horizontal"
+                          data-invalid={isInvalid}
+                        >
                           <FieldContent>
                             <FieldTitle>Basic</FieldTitle>
-                            <FieldDescription>For individuals and small teams</FieldDescription>
+                            <FieldDescription>
+                              For individuals and small teams
+                            </FieldDescription>
                           </FieldContent>
                           <RadioGroupItem value="basic" id="basic" />
                         </Field>
                       </FieldLabel>
                       <FieldLabel htmlFor="pro">
-                        <Field orientation="horizontal" data-invalid={isInvalid}>
+                        <Field
+                          orientation="horizontal"
+                          data-invalid={isInvalid}
+                        >
                           <FieldContent>
                             <FieldTitle>Pro</FieldTitle>
-                            <FieldDescription>For businesses with higher demands</FieldDescription>
+                            <FieldDescription>
+                              For businesses with higher demands
+                            </FieldDescription>
                           </FieldContent>
                           <RadioGroupItem value="pro" id="pro" />
                         </Field>
                       </FieldLabel>
                     </RadioGroup>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldSet>
                 )
               }}
@@ -124,7 +153,8 @@ export default function FormTanstackComplex() {
             <form.Field
               name="billingPeriod"
               children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>Billing Period</FieldLabel>
@@ -132,7 +162,9 @@ export default function FormTanstackComplex() {
                       name={field.name}
                       placeholder="Select"
                       selectedKey={field.state.value || null}
-                      onSelectionChange={(key) => field.handleChange(key ? String(key) : "")}
+                      onSelectionChange={(key) =>
+                        field.handleChange(key ? String(key) : "")
+                      }
                       isInvalid={isInvalid}
                       className="w-full"
                     >
@@ -144,8 +176,12 @@ export default function FormTanstackComplex() {
                         <SelectItem id="yearly">Yearly</SelectItem>
                       </SelectContent>
                     </Select>
-                    <FieldDescription>Choose how often you want to be billed.</FieldDescription>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    <FieldDescription>
+                      Choose how often you want to be billed.
+                    </FieldDescription>
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </Field>
                 )
               }}
@@ -155,7 +191,8 @@ export default function FormTanstackComplex() {
               name="addons"
               mode="array"
               children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <FieldSet>
                     <FieldLegend>Add-ons</FieldLegend>
@@ -164,7 +201,11 @@ export default function FormTanstackComplex() {
                     </FieldDescription>
                     <FieldGroup data-slot="checkbox-group">
                       {addons.map((addon) => (
-                        <Field key={addon.id} orientation="horizontal" data-invalid={isInvalid}>
+                        <Field
+                          key={addon.id}
+                          orientation="horizontal"
+                          data-invalid={isInvalid}
+                        >
                           <Checkbox
                             id={addon.id}
                             name={field.name}
@@ -174,19 +215,27 @@ export default function FormTanstackComplex() {
                               if (checked) {
                                 field.pushValue(addon.id)
                               } else {
-                                const index = field.state.value.indexOf(addon.id)
+                                const index = field.state.value.indexOf(
+                                  addon.id
+                                )
                                 if (index > -1) field.removeValue(index)
                               }
                             }}
                           />
                           <FieldContent>
-                            <FieldLabel htmlFor={addon.id}>{addon.title}</FieldLabel>
-                            <FieldDescription>{addon.description}</FieldDescription>
+                            <FieldLabel htmlFor={addon.id}>
+                              {addon.title}
+                            </FieldLabel>
+                            <FieldDescription>
+                              {addon.description}
+                            </FieldDescription>
                           </FieldContent>
                         </Field>
                       ))}
                     </FieldGroup>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldSet>
                 )
               }}
@@ -195,11 +244,14 @@ export default function FormTanstackComplex() {
             <form.Field
               name="emailNotifications"
               children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <Field orientation="horizontal" data-invalid={isInvalid}>
                     <FieldContent>
-                      <FieldLabel htmlFor={field.name}>Email Notifications</FieldLabel>
+                      <FieldLabel htmlFor={field.name}>
+                        Email Notifications
+                      </FieldLabel>
                       <FieldDescription>
                         Receive email updates about your subscription
                       </FieldDescription>
@@ -210,7 +262,9 @@ export default function FormTanstackComplex() {
                       isSelected={field.state.value}
                       onChange={field.handleChange}
                     />
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </Field>
                 )
               }}

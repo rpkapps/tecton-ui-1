@@ -21,7 +21,9 @@ export function getRootPages(tree: PageTree.Root): TreePage[] {
 
 /** Top-level folders of the tree (one sidebar / command-menu group each). */
 export function getRootFolders(tree: PageTree.Root): TreeFolder[] {
-  return tree.children.filter((node): node is TreeFolder => node.type === "folder")
+  return tree.children.filter(
+    (node): node is TreeFolder => node.type === "folder"
+  )
 }
 
 const ENTITIES: Record<string, string> = {
@@ -33,7 +35,10 @@ const ENTITIES: Record<string, string> = {
 }
 
 function decodeEntities(text: string) {
-  return text.replace(/&(?:amp|lt|gt|quot|#39);/g, (entity) => ENTITIES[entity] ?? entity)
+  return text.replace(
+    /&(?:amp|lt|gt|quot|#39);/g,
+    (entity) => ENTITIES[entity] ?? entity
+  )
 }
 
 function nodeText(node: React.ReactNode): string {
@@ -47,7 +52,8 @@ function nodeText(node: React.ReactNode): string {
   ) {
     // `useFumadocsLoader` turns names into <span dangerouslySetInnerHTML />.
     const html = node.props.dangerouslySetInnerHTML?.__html
-    if (typeof html === "string") return decodeEntities(html.replace(/<[^>]+>/g, ""))
+    if (typeof html === "string")
+      return decodeEntities(html.replace(/<[^>]+>/g, ""))
     return nodeText(node.props.children)
   }
   return ""
