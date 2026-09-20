@@ -77,7 +77,7 @@ export function Dont({
     <div
       data-slot="dont"
       data-severity={severity}
-      className={cn("mt-8 border-l-2 border-destructive pl-4", className)}
+      className={cn("mt-8", className)}
       {...props}
     >
       <div
