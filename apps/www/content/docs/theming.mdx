@@ -19,7 +19,7 @@ Tecton UI applies the Tecton visual language **only through the shadcn CSS varia
 
 <Step>Generated theme</Step>
 
-`pnpm --filter @tecton/react tokens:build` writes `tecton-palette.css` (the ramps, and the Tailwind `@theme` that exposes them) and `tecton-theme.css`, patches the variable values inside the CLI-managed `globals.css` (`:root`, `.dark`, `@theme inline` and the two `@import`s — nothing else) and the mapping document.
+`pnpm --filter @tecton/react tokens:build` writes `tecton-palette.css` (the ramps, and the Tailwind `@theme` that exposes them) and `tecton-theme.css`, patches the CLI-managed `globals.css` in place (the variable values in `:root`, `.dark` and `.light`, `@theme inline`, the `@import`s and the `dark` custom variant — nothing else) and the mapping document.
 
 <Step>Verification</Step>
 
@@ -31,7 +31,21 @@ Tecton UI applies the Tecton visual language **only through the shadcn CSS varia
 
 Both modes come from the Tecton export. `--background` is `var(--tecton-color-bg-default)` in `:root` and in `.dark`; the token file itself switches the value (`#f6f4f7` light, `#1d1c1f` dark). Tecton's applications are dark-first, so this site defaults to dark, but light is equally exact.
 
-Toggle the mode with the **`dark` class** on `<html>`. This site uses `next-themes` with `attribute="class"`. `data-theme="dark"` is not an alternative: in `globals.css` it only switches the `--tecton-*` layer (the raw token export and the palette), while the shadcn variables are declared in `:root` and `.dark` and the `dark:` utility variant resolves to `&:is(.dark *)`, so both keep reading light values. The one place the attribute is equivalent is `@tecton/react/styles/scoped.css`, which honours the class and the attribute on the root element of a mounted application (see [Micro-frontends](/docs/micro-frontends)).
+Toggle the mode with the **`dark` class** on `<html>`; this site uses `next-themes` with `attribute="class"`. `data-theme="dark"` on the document root works the same way.
+
+### Inverted sections
+
+A section can run in the opposite mode to the page: put the `light` or `dark` class on any element — or `theme="light"` / `theme="dark"` on [`ThemeRoot`](/docs/tecton/theme-root) for a mounted application — and everything below it follows: `color-scheme`, the raw `--tecton-*` tokens, the palette ramps, the shadcn variables and the `dark:` utilities. Inside a page, use the class: `data-theme="dark"` switches a whole document, not a subtree.
+
+```tsx
+<div className="light rounded-lg bg-background p-6 text-foreground">
+  {/* a light panel in a dark page */}
+</div>
+```
+
+<Callout>
+  **One inversion for the `dark:` utilities.** A light island in a dark page renders completely, and so does a dark island in a light one. Nest a third marker inside that and its variables still follow it, while its `dark:` utilities read the inversion above.
+</Callout>
 
 ## Token mapping
 

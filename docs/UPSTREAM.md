@@ -101,6 +101,55 @@ shadcn/ui is MIT licensed (see `LICENSE.md` in the upstream repository);
 the synced content keeps that license. Examples that need upstream-only infrastructure are
 skipped and listed in `apps/www/scripts/sync-report.json`.
 
+## The `dark:` variant
+
+`packages/tecton-react/src/styles/globals.css` line 12 is **not** the CLI's to keep up to date.
+The `add-custom-variant` transform the CLI runs while updating a Tailwind v4 CSS file writes
+`@custom-variant dark (&:is(.dark *));` from a string hard-coded in the CLI itself
+(`params: "dark (&:is(.dark *))"`, `updateCssVars`), and it is a **no-op as soon as the file holds
+any `@custom-variant` at all**. Nothing in the registry owns the line either: the mirror overlay
+patches component sources and `style-tecton.css`, and `registry/theme.json`'s `css` field carries
+only the font imports and the scrollbar rule. `scripts/generated-check.sh` does not look at
+`globals.css` — it diffs `src/components/*.tsx`.
+
+So the line is the CLI's to *create* and `scripts/tokens-build.mts`'s to keep correct, alongside
+the variable values and the imports it already patches into the same file (`patchGlobals`). Tecton
+needs more than `&:is(.dark *)`, which has no way of leaving a dark subtree again: an inverted
+section (`<div class="light">` in a dark page, `<ThemeRoot theme="light">` in a dark shell) would
+switch the tokens under it but not the variants. `DARK_VARIANT` in `tokens-build.mts` is the single
+source of truth; it is written into `globals.css` and into the generated `scoped.css`, and
+`tokens:check` fails if the two ever differ or if the CLI's stock line reappears.
+
+## The light block
+
+The same reasoning, one file further. `globals.css` gets its shadcn variables from the CLI in two
+blocks, `:root` and `.dark`, and `.dark` repeats every `:root` declaration verbatim rather than
+relying on inheritance — it has to, because an unregistered custom property's computed value is its
+specified value **with `var()` already substituted**, resolved on the element that declares it. A
+descendant inherits the substituted value, so `--primary: var(--tecton-color-action-primary-bg)`
+only picks up the dark token because `.dark` declares it again on the dark element.
+
+Nothing does that for light, and an inverted *light* section needs it: `<div class="light">` inside
+a dark page (or `<ThemeRoot theme="light">` inside a dark shell) re-declares the raw `--tecton-*`
+tokens — the export and the palette are keyed on `.light` / `[data-theme="light"]` as well as on
+`:root` — but inherits `--background`, `--primary` and the rest already substituted from the dark
+values above it, and renders half dark.
+
+So `scripts/tokens-build.mts` rebuilds a `.light, [data-theme="light"]` block from the patched
+`:root` body on every run and places it immediately after `.dark`. Both blocks are a single class or
+attribute, (0,1,0) either way, so source order decides for an element that somehow carries both —
+and light last is what `scoped-theme.css` already does for its own blocks. The same block is written
+into `tecton-theme.css`, and `registry/theme.json` carries it under `css` (`cssVars` has no key that
+reaches a light marker — the CLI maps `light` to `:root` and `dark` to `.dark`, and everything else
+to `.<key>`; a plain selector under `css` is appended to the root of the consumer's stylesheet,
+after the `:root`/`.dark` rules the same run writes). `registry/theme.json` also carries the Tecton
+`dark` variant under `css`, appended after the CLI's own stock line, because Tailwind takes the last
+definition of a variant name — without it a registry consumer would get the light block but keep
+`dark:` utilities applying inside it.
+
+`pnpm tokens:check` fails if the light block stops mirroring `:root` declaration for declaration, if
+it moves before `.dark`, or if either copy of it drifts.
+
 ## Known CLI quirk: `"use client"` in `--diff`
 
 With `rsc: false`, `shadcn add … --diff` and `shadcn add … --overwrite` disagree on whether the

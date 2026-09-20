@@ -19,11 +19,9 @@ import { ThemeRoot } from "@tecton/react/tecton/theme-root"
 
 ## When to use it
 
-An application that owns the document imports `@tecton/react/globals.css` and needs nothing here: the theme variables live on `:root` and every overlay can portal into `document.body`.
+An application that owns the document imports `@tecton/react/globals.css` and needs nothing here: its variables live on `:root` and its overlays can portal into `document.body`.
 
-`ThemeRoot` is for the other case — a Module Federation remote, an embedded widget, any application mounted into a page that already has its own copy of Tecton. It marks that application's subtree with `data-tecton-root`, which is what `@tecton/react/styles/scoped.css` hangs its base-layer reset and its `@scope`-anchored rules on, and it owns the container the application's overlays portal into.
-
-It does not bring theme variables with it. `scoped.css` declares none: the shell's `--primary`, palette, radii and current mode inherit into the subtree, so a remote follows the shell it is mounted in. A remote that runs without a shell, or deliberately on a different token set, imports `@tecton/react/styles/scoped-theme.css` after `scoped.css` and gets the full variable set on this element instead. See [Micro-frontends](/docs/micro-frontends) for the stylesheet and the build step that go with it.
+`ThemeRoot` is for an application mounted into a page that already has its own copy of Tecton — a Module Federation remote, an embedded widget. It marks that application's subtree with `data-tecton-root`, which is what `@tecton/react/styles/scoped.css` keys on, and it owns the container the application's overlays portal into. It declares no theme variables: the shell's `--primary`, palette, radii and current mode inherit into the subtree. See [Micro-frontends](/docs/micro-frontends) for the stylesheet and the build step that go with it.
 
 ## What it renders
 
@@ -37,9 +35,7 @@ and, appended to `document.body`, one container with the same classes:
 <div data-slot="theme-root-overlay" data-tecton-root class="dark mfe-a"></div>
 ```
 
-The container is handed to [`PortalProvider`](/docs/tecton/portal), so every Tecton overlay in the subtree — `Dialog`, `Sheet`, `AlertDialog`, `Popover`, `HoverCard`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `ContextMenu`, `Drawer` — renders inside it. That keeps the overlays out of any `overflow: hidden` ancestor while they stay inside the application's `@scope` rule, so the utilities that style them still apply.
-
-Both elements carry `data-tecton-root`, which is the selector the scoped stylesheet uses, and the container mirrors the root's `className`: the scope class, a pinned theme and inline `[--token:…]` overrides all reach the overlays. The demo above is exactly that — an inline `[--primary:…]` on the root beats the value inherited from the shell, for the subtree and for the dialog alike, and it is how a remote overrides a single token for itself.
+Every Tecton overlay in the subtree — `Dialog`, `Sheet`, `AlertDialog`, `Popover`, `HoverCard`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `ContextMenu`, `Drawer` — portals into that container. It keeps them out of any `overflow: hidden` ancestor while they stay inside the application's own `@scope` rule, so the utilities that style them still apply, and the container mirrors the root's `className`: the scope class, a pinned theme and inline `[--token:…]` overrides all reach the overlays too.
 
 ## Theme
 
@@ -48,8 +44,10 @@ Both elements carry `data-tecton-root`, which is the selector the scoped stylesh
 | Value | Effect |
 | --- | --- |
 | `inherit` (default) | No class: the subtree follows the shell's `dark` class (or `data-theme`), which is what a remote mounted in a Tecton shell wants. |
-| `dark` | Pins the subtree to dark. That switches the `dark:` utility variants inside it and, for a remote that imports `scoped-theme.css`, its variable blocks — a dark island in a light shell. |
-| `light` | Pins it to light. Only meaningful with `scoped-theme.css`, and the weaker of the two: it flips that sheet's variables, while `dark:` variants written against an ancestor's `dark` class still apply. Prefer `inherit` or `dark` inside a dark shell. |
+| `dark` | Pins the subtree to dark — a dark island such as a map or a log viewer in a light shell. |
+| `light` | Pins it to light, the same way round. |
+
+A pinned mode inverts everything the subtree renders with: the `dark:` utilities, the palette ramps (`bg-blue-560`) and the shadcn variables (`--background`, `--primary`, …). The overlay container carries the same class, so the subtree's overlays are in that mode as well. See [Inverted sections](/docs/theming#inverted-sections).
 
 ## Overlay container
 
@@ -67,9 +65,9 @@ Pass `overlayContainer` to take over the placement:
 
 ## Notes
 
-- The container is created in an effect, so the **first paint has no container**: `usePortalTarget()` returns `undefined` and React Aria resolves its own default. Everything opened by an interaction — every overlay in practice — sees the container. Rendering is SSR-safe; nothing touches `document` during render.
+- The container is created in an effect, so the **first paint has no container** and React Aria resolves its own default. Everything opened by an interaction — every overlay in practice — sees the container. Rendering is SSR-safe.
 - Each `ThemeRoot` owns exactly one container, and two roots on a page get one each.
-- Variables can be overridden per root with an arbitrary property in `className`: `className="mfe-a [--primary:var(--tecton-palette-green-560)]"` retints that application, overlays included.
+- Variables can be overridden per root with an arbitrary property in `className`: `className="mfe-a [--primary:var(--tecton-palette-green-560)]"` retints that application, overlays included. The demo above is exactly that.
 - `ThemeRoot` renders a plain `div`. It sets no layout of its own — give it the classes the mount point needs.
 
 ## API Reference

@@ -22,8 +22,16 @@
  *     `@layer base` border/outline rule is all that may name the root), no :root, no body
  *     rule, neither a tailwindcss nor a fontsource import, and an `@theme inline` block
  *     whose `--color-*: initial` reset comes first and whose every fallback chain ends in
- *     the light literal of the outermost variable (so the chains cannot drift from the
- *     token export); the entries left bare must be calc(), a font list or `initial`
+ *     the literal of the outermost variable — `light-dark(<light>, <dark>)` when the two
+ *     modes differ, the single literal when they agree (so the chains cannot drift from
+ *     the token export); the entries left bare must be calc(), a font list or `initial`
+ *   - the light block: `.light, [data-theme="light"]` mirrors `:root` declaration for
+ *     declaration (same properties, values and order) and comes after `.dark`, in
+ *     tecton-theme.css and globals.css alike, and rides along in registry/theme.json's
+ *     `css` — without it an inverted light section keeps the dark values it inherits
+ *   - the `dark:` variant: globals.css and scoped.css declare the same `@custom-variant
+ *     dark`, it is the one tokens-build writes (not the CLI's stock line), and
+ *     registry/theme.json ships it too
  *   - vendored shadcn stylesheet (src/styles/shadcn.css): present, its header names the
  *     installed shadcn version, its body is byte-identical to `shadcn/tailwind.css`,
  *     and globals.css imports the copy instead of the package
@@ -106,6 +114,8 @@ const themedTokens = parseThemedTokens(stripComments(readFileSync(TOKENS_CSS, "u
 const themeCss = stripComments(readFileSync(THEME_CSS, "utf8"));
 const light = parseDecls(blockBody(themeCss, ":root"));
 const dark = parseDecls(blockBody(themeCss, ".dark"));
+/** The light block repeated after `.dark`, so an inverted section re-substitutes. */
+const LIGHT_BLOCK = '.light, [data-theme="light"]';
 
 // The opt-in scoped theme declares the same variables on the remote's root marker
 // instead of :root, so the checks below can run against it as two more modes. The
@@ -118,6 +128,9 @@ const scopedThemeCss = stripComments(readFileSync(SCOPED_THEME_CSS, "utf8"));
 const scopedLight = parseDecls(blockBody(scopedThemeCss, SCOPED_ROOT));
 const scopedDark = parseDecls(blockBody(scopedThemeCss, SCOPED_DARK));
 const scopedLightAgain = parseDecls(blockBody(scopedThemeCss, SCOPED_LIGHT));
+/** The `@custom-variant dark` line of a stylesheet, exactly as written. */
+const variantOf = (css: string) => /^@custom-variant\s+dark\b[^\r\n]*/m.exec(css)?.[0].trim();
+const scopedVariant = variantOf(scopedCss);
 const paletteCss = existsSync(PALETTE_CSS) ? stripComments(readFileSync(PALETTE_CSS, "utf8")) : "";
 const map = JSON.parse(readFileSync(MAP_JSON, "utf8")) as {
   shadcn: Record<string, unknown>;
@@ -484,22 +497,27 @@ if (map.palette && paletteCss) {
   });
 
   // ---- the fallback chains -------------------------------------------------
-  // `--color-primary: var(--primary, var(--tecton-color-action-primary-bg, #644a78))`
-  // lets a remote survive a shell that does not know the token. The literal at the
-  // end of the chain must be what the token export resolves the outermost variable
-  // to in light mode, or the chains have drifted from tecton-theme.css.
+  // `--color-primary: var(--primary, var(--tecton-color-action-primary-bg,
+  // light-dark(#644a78, #5d4d68)))` lets a remote survive a shell that does not know
+  // the token. The literal at the end of the chain must be what the token export
+  // resolves the outermost variable to — both modes, as `light-dark()`, when they
+  // differ — or the chains have drifted from tecton-theme.css.
   const themeInline = parseDecls(blockBody(themeCss, "@theme inline"));
   const rampPrefix = `--${map.palette?.prefix ?? "tecton-palette"}-`;
-  const ramps = paletteCss ? parseThemedTokens(paletteCss).light : new Map<string, string>();
+  const allRamps = paletteCss
+    ? parseThemedTokens(paletteCss)
+    : { light: new Map<string, string>(), dark: new Map<string, string>() };
 
-  /** Where a variable of a chain gets its light value from, in lookup order. */
-  const lightValue = (name: string): string | undefined =>
-    light.get(name) ??
-    (name.startsWith(rampPrefix) ? ramps.get(name) : undefined) ??
-    themedTokens.light.get(name) ??
+  /** Where a variable of a chain gets its value for one mode from, in lookup order. */
+  const modeValue = (name: string, mode: "light" | "dark"): string | undefined =>
+    (mode === "light" ? light : dark).get(name) ??
+    (name.startsWith(rampPrefix) ? allRamps[mode].get(name) : undefined) ??
+    themedTokens[mode].get(name) ??
     themeInline.get(name);
 
   const VAR_WITH_FALLBACK = /^var\(\s*(--[\w-]+)\s*,\s*([\s\S]+)\)$/;
+  /** The terminal literal when it names both modes. */
+  const LIGHT_DARK = /^light-dark\(\s*([\s\S]+?)\s*,\s*([\s\S]+?)\s*\)$/;
   /** The outermost variable and the innermost fallback literal of a chain. */
   function chainOf(value: string): { outer: string; literal: string } | undefined {
     const m = VAR_WITH_FALLBACK.exec(value.trim());
@@ -514,7 +532,19 @@ if (map.palette && paletteCss) {
   }
   const norm = (s: string) => s.replace(/\s+/g, " ").trim().toLowerCase();
 
+  /** What the token export resolves `name` to in one mode, or undefined. */
+  const wantFor = (name: string, mode: "light" | "dark"): string | undefined => {
+    const definition = modeValue(name, mode);
+    if (definition === undefined) return undefined;
+    try {
+      return resolve(definition, mode === "light" ? light : dark);
+    } catch {
+      return undefined;
+    }
+  };
+
   let chained = 0;
+  let modeDependent = 0;
   const bare: string[] = [];
   const mismatched: string[] = [];
   for (const [name, value] of scopedTheme) {
@@ -526,21 +556,34 @@ if (map.palette && paletteCss) {
       continue;
     }
     chained++;
-    const definition = lightValue(chain.outer);
-    let want: string | undefined;
-    try {
-      want = definition === undefined ? undefined : resolve(definition, light);
-    } catch {
-      want = undefined;
+    const wantLight = wantFor(chain.outer, "light");
+    const wantDark = wantFor(chain.outer, "dark");
+    // both modes named: the colour differs between them and the fallback has to
+    // follow the shell's color-scheme rather than pin the remote to light
+    const both = LIGHT_DARK.exec(chain.literal);
+    if (both) {
+      modeDependent++;
+      if (wantLight === undefined || norm(wantLight) !== norm(both[1])) {
+        mismatched.push(`${name} → light-dark(${both[1]}, …) (expected light ${wantLight ?? "unresolvable"})`);
+      } else if (wantDark === undefined || norm(wantDark) !== norm(both[2])) {
+        mismatched.push(`${name} → light-dark(…, ${both[2]}) (expected dark ${wantDark ?? "unresolvable"})`);
+      } else if (norm(wantLight) === norm(wantDark)) {
+        mismatched.push(`${name} → ${chain.literal} (the two modes agree: expected the single literal)`);
+      }
+      continue;
     }
-    if (want === undefined || norm(want) !== norm(chain.literal)) {
-      mismatched.push(`${name} → ${chain.literal} (expected ${want ?? "unresolvable"})`);
+    if (wantLight === undefined || norm(wantLight) !== norm(chain.literal)) {
+      mismatched.push(`${name} → ${chain.literal} (expected ${wantLight ?? "unresolvable"})`);
+    } else if (wantDark !== undefined && norm(wantDark) !== norm(wantLight) && parse(wantLight) && parse(wantDark)) {
+      // a colour the export gives two values: the chain must name both or the
+      // remote would pin itself to light under a dark shell that lacks the token
+      mismatched.push(`${name} → ${chain.literal} (expected light-dark(${wantLight}, ${wantDark}))`);
     }
   }
   results.push({
     mode: "both",
-    check: "scoped: every fallback chain ends in the light literal of the token export",
-    value: `${chained} chained, ${mismatched.length} inconsistent`,
+    check: "scoped: every fallback chain ends in the literal(s) of the token export",
+    value: `${chained} chained, ${modeDependent} light-dark(), ${mismatched.length} inconsistent`,
     threshold: "0 inconsistent",
     status: mismatched.length ? "fail" : "pass",
     detail: mismatched.slice(0, 5).join("; ") || undefined,
@@ -553,6 +596,136 @@ if (map.palette && paletteCss) {
     threshold: "0 unexpected",
     status: unexpectedBare.length ? "fail" : "pass",
     detail: unexpectedBare.length ? unexpectedBare.join("; ") : bare.map((b) => b.split(":")[0]).join(", "),
+  });
+}
+
+// ---------------------------------------------------------------------------
+// The light block: `.light, [data-theme="light"]` mirrors `:root`, after `.dark`
+// ---------------------------------------------------------------------------
+{
+  // A custom property is substituted on the element that declares it, so an
+  // inverted light section only re-reads the tokens if the whole `:root` set is
+  // declared again on the marker. Same properties, same values, same order — and
+  // after `.dark`, because both blocks weigh (0,1,0) and source order decides.
+  const globalsRaw = existsSync(GLOBALS_CSS) ? readFileSync(GLOBALS_CSS, "utf8") : "";
+  const globalsCss = stripComments(globalsRaw);
+  for (const [label, css] of [
+    ["theme", themeCss],
+    ["globals.css", globalsCss],
+  ] as [string, string][]) {
+    if (!css) continue;
+    let root: Map<string, string> | undefined;
+    let mirror: Map<string, string> | undefined;
+    try {
+      root = parseDecls(blockBody(css, ":root"));
+      mirror = parseDecls(blockBody(css, LIGHT_BLOCK));
+    } catch {
+      // one of the blocks is missing: reported as the failure below
+    }
+    const rootEntries = root ? [...root] : [];
+    const mirrorEntries = mirror ? [...mirror] : [];
+    const same =
+      root !== undefined &&
+      mirror !== undefined &&
+      rootEntries.length === mirrorEntries.length &&
+      rootEntries.every(([k, v], i) => mirrorEntries[i][0] === k && mirrorEntries[i][1] === v);
+    const drift = rootEntries
+      .map(([k, v], i) => {
+        const got = mirrorEntries[i];
+        if (!got) return `missing ${k}`;
+        if (got[0] !== k) return `${k} vs ${got[0]} (order)`;
+        if (got[1] !== v) return `${k}: ${got[1]} (expected ${v})`;
+        return "";
+      })
+      .filter(Boolean);
+    results.push({
+      mode: "both",
+      check: `${label}: ${LIGHT_BLOCK} mirrors :root declaration for declaration`,
+      value: mirror === undefined ? "missing" : `${mirrorEntries.length} / ${rootEntries.length}`,
+      threshold: "identical, in order",
+      status: same ? "pass" : "fail",
+      detail: same ? undefined : drift.slice(0, 5).join("; ") || "run tokens:build",
+    });
+    // the light block has to come last of the three, or a `.light` element that
+    // also carries a dark marker would read dark
+    const at = (selector: string) => css.indexOf(`${selector} {`);
+    const darkAt = at(".dark");
+    const lightAt = at(LIGHT_BLOCK);
+    const ordered = darkAt !== -1 && lightAt > darkAt;
+    results.push({
+      mode: "both",
+      check: `${label}: ${LIGHT_BLOCK} comes after .dark`,
+      value: ordered ? "after" : "before or missing",
+      threshold: "after",
+      status: ordered ? "pass" : "fail",
+    });
+  }
+
+  // registry consumers get :root and .dark from `cssVars`, which has no key for a
+  // light marker, so the same block rides along in `css`
+  const registryTheme = path.join(pkgRoot, "registry/theme.json");
+  if (existsSync(registryTheme)) {
+    const item = JSON.parse(readFileSync(registryTheme, "utf8")) as {
+      cssVars?: { light?: Record<string, string> };
+      css?: Record<string, Record<string, string>>;
+    };
+    const vars = Object.entries(item.cssVars?.light ?? {});
+    const block = Object.entries(item.css?.[LIGHT_BLOCK] ?? {});
+    const same =
+      vars.length > 0 &&
+      vars.length === block.length &&
+      vars.every(([k, v], i) => block[i][0] === `--${k}` && block[i][1] === v);
+    results.push({
+      mode: "both",
+      check: `registry/theme.json: css["${LIGHT_BLOCK}"] mirrors cssVars.light`,
+      value: `${block.length} / ${vars.length}`,
+      threshold: "identical, in order",
+      status: same ? "pass" : "fail",
+      detail: same ? undefined : "run tokens:build",
+    });
+    // and the variant that goes with it: the CLI writes its own stock line into a
+    // consumer's stylesheet first and will not rewrite it, so this one is appended
+    // after it and Tailwind takes the last definition of the name
+    const variantKey = Object.keys(item.css ?? {}).find((k) => k.startsWith("@custom-variant dark"));
+    const wanted = scopedVariant?.replace(/;$/, "");
+    results.push({
+      mode: "both",
+      check: "registry/theme.json: css carries the same `dark` variant",
+      value: variantKey === undefined ? "missing" : variantKey === wanted ? "identical" : "different",
+      threshold: "identical to scoped.css",
+      status: variantKey !== undefined && variantKey === wanted ? "pass" : "fail",
+      detail: variantKey === wanted ? undefined : "run tokens:build",
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
+// The `dark:` variant: the same line in globals.css and scoped.css
+// ---------------------------------------------------------------------------
+{
+  // A shell and a remote that disagree about what `dark:` means paint the same
+  // component two ways, so tokens-build writes one line into both files. The CLI's
+  // stock `&:is(.dark *)` has no way out of a dark subtree, which is what the
+  // `:not()` half adds: an inverted section follows its nearest theme marker.
+  const globalsCss = existsSync(GLOBALS_CSS) ? readFileSync(GLOBALS_CSS, "utf8") : "";
+  const inGlobals = variantOf(globalsCss);
+  const inScoped = scopedVariant;
+  results.push({
+    mode: "both",
+    check: "variant: globals.css and scoped.css declare the same `dark`",
+    value: inGlobals === undefined || inScoped === undefined ? "missing" : inGlobals === inScoped ? "identical" : "different",
+    threshold: "identical",
+    status: inGlobals !== undefined && inGlobals === inScoped ? "pass" : "fail",
+    detail: inGlobals === inScoped ? undefined : `globals.css: ${inGlobals ?? "—"}; scoped.css: ${inScoped ?? "—"}`,
+  });
+  const inverts = inGlobals?.includes(":not(") ?? false;
+  results.push({
+    mode: "both",
+    check: "variant: `dark` stops at the nearest light marker",
+    value: inverts ? "inverting" : "stock `&:is(.dark *)`",
+    threshold: "inverting",
+    status: inverts ? "pass" : "fail",
+    detail: inverts ? undefined : "the shadcn CLI rewrote the line; run tokens:build",
   });
 }
 
