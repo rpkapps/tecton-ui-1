@@ -18,12 +18,28 @@ export interface ScopeTectonOptions {
    * `false` (or `null`) scopes without a lower limit.
    */
   boundary?: string | false | null
+  /**
+   * What to do with the rules Tailwind writes for the document root.
+   *
+   * `"scope"` (the default) rewrites a selector whose leading compound is `:root`,
+   * `html` or `body` to `:scope`, keeping the rest of the compound and the rest of
+   * the selector (`:root.dark` → `:scope.dark`), and drops a list member that is
+   * nothing but `:host`. Tailwind's own defaults then land on the remote's own root
+   * and inherit into its subtree instead of sitting at document level. A `:root`,
+   * `:host`, `html` or `body` anywhere else in a selector throws, naming the file
+   * and the line: under `@scope` it matches nothing.
+   *
+   * `"document"` leaves rules whose every selector is `:root` or `:host` unscoped
+   * where they are, in the layer and the conditions they came with.
+   */
+  rootRules?: "scope" | "document"
 }
 
 /**
  * PostCSS plugin that wraps a micro-frontend remote's compiled Tailwind output in
- * `@scope`, hoisting the document-global at-rules and Tailwind's `:root, :host`
- * defaults out of it. Run it after `@tailwindcss/postcss`.
+ * `@scope`, hoisting the document-global at-rules out of it and moving Tailwind's
+ * `:root, :host` defaults onto the remote's own root. Run it after
+ * `@tailwindcss/postcss`.
  *
  * @see the header comment of `postcss/scope.mjs` for the full recipe.
  */

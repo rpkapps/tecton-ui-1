@@ -51,12 +51,22 @@
  *     `@layer a, b;` order statements are document-global: inside `@scope` they are
  *     ignored, so they are hoisted to the top of the sheet, unchanged and in
  *     document order (`@charset` / `@import` keep coming first).
- *   - Rules whose every selector is `:root` or `:host` stay where they are, keeping
- *     their layer and conditions: `:root` inside `@scope` matches nothing, because
- *     the scope root is not the document root. These are Tailwind's own defaults
- *     (`--spacing`, the `--text-*` scale, the `@layer properties` fallbacks hidden
- *     inside an `@supports`), identical across versions, so a document-level
- *     duplicate is harmless — and `scoped.css` declares no Tecton token at all.
+ *   - `:root` inside `@scope` matches nothing, because the scope root is not the
+ *     document root. A selector whose *leading compound* is `:root`, `html` or `body`
+ *     is therefore rewritten to `:scope`, keeping the rest of the compound and the
+ *     rest of the selector (`:root` → `:scope`, `:root.dark` → `:scope.dark`,
+ *     `html.dark .x` → `:scope.dark .x`), and a list member that is nothing but
+ *     `:host` is dropped — Tailwind pairs `:root, :host` for a sheet adopted into a
+ *     shadow root, which a remote never is. Tailwind's own defaults (`--spacing`, the
+ *     `--text-*` and `--animate-*` scales, the `@layer properties` fallbacks hidden
+ *     inside an `@supports`) then land on the remote's own root and inherit into its
+ *     subtree and its body-level overlay container, instead of sitting at document
+ *     level where two remotes built on different Tailwind versions would race for
+ *     them. A `:root`, `:host`, `html` or `body` left anywhere else in a selector is
+ *     an error naming the file and the line: under `@scope` it matches nothing, so it
+ *     would be dead CSS rather than the global it was written as. Pass
+ *     `rootRules: "document"` to keep such rules unscoped where they are instead, in
+ *     the layer and the conditions they came with.
  *   - `@layer` blocks are recursed into, so the result is
  *     `@layer utilities { @scope (…) { … } }` and never a scope holding a layer.
  *   - Everything else — including unlayered output such as the vendored shadcn
@@ -106,8 +116,8 @@ const isGlobalAtRule = (node) => {
 }
 
 /**
- * `:root` / `:host` match nothing inside `@scope`, so Tailwind's own defaults stay at
- * document level — wherever they sit, keeping their layer and conditions.
+ * `rootRules: "document"` only: the rules that stay at document level — wherever they
+ * sit, keeping their layer and their conditions.
  */
 const isRootRule = (node) =>
   node.type === "rule" &&
@@ -136,18 +146,73 @@ const indent = (node) => {
   if (node.raws.after?.includes("\n")) node.raws.after += "  "
 }
 
+/** The leading compound that means "the document root", in either spelling. */
+const LEADING_ROOT = /^(?::root|html|body)(?![\w-])/
+
+/** A selector-list member that is nothing but `:host` / `:host(…)`. */
+const HOST_ONLY = /^:host(?:\([^)]*\))?$/
+
+/** Strings and attribute values carry arbitrary text: blank them before scanning. */
+const blankValues = (selector) =>
+  selector.replace(/"[^"]*"|'[^']*'/g, '""').replace(/\[[^\]]*\]/g, "[]")
+
+/** What may not survive the rewrite, because under `@scope` it matches nothing. */
+const LEFTOVER_PSEUDO = /:(?:root|host)(?![\w-])/
+const LEFTOVER_ELEMENT = /(?<![\w.#:-])(?:html|body)(?![\w-])/
+
+/**
+ * The remote's root stands in for the document root: a leading `:root`, `html` or
+ * `body` becomes `:scope`, keeping the rest of the compound and the rest of the
+ * selector. A member that is only `:host` disappears — Tailwind pairs `:root, :host`
+ * for a sheet adopted into a shadow root, which a remote never is.
+ */
+const toScope = (selector) =>
+  HOST_ONLY.test(selector) ? null : selector.replace(LEADING_ROOT, ":scope")
+
+/**
+ * Anywhere but the leading compound, those selectors match nothing under `@scope`:
+ * the rule would be dead CSS rather than the global it was written as, so name it,
+ * with the file and the line, instead of shipping it.
+ */
+const assertScopable = (rule, selector) => {
+  const bare = blankValues(selector)
+  if (!LEFTOVER_PSEUDO.test(bare) && !LEFTOVER_ELEMENT.test(bare)) return
+  throw rule.error(
+    `\`${selector}\` matches nothing inside \`@scope\`: the scope root is not the document root, so \`:root\`, \`:host\`, \`html\` and \`body\` only mean anything as the leading compound. Write the rule against \`[data-tecton-root]\`, or pass \`rootRules: "document"\` to keep it at document level.`,
+    { plugin: "tecton-scope" }
+  )
+}
+
 /**
  * A plain selector inside `@scope` matches descendants only, and the remote's root
  * carries both the scope class and the marker: give it a `:scope` twin, keeping the
  * rest of the leading compound (`[data-tecton-root].dark` → `:scope.dark`).
  */
-const anchor = (rule) => {
-  const selectors = rule.selectors.flatMap((selector) =>
-    selector.startsWith(MARKER)
-      ? [selector, `:scope${selector.slice(MARKER.length)}`]
-      : [selector]
-  )
-  if (selectors.length === rule.selectors.length) return
+const twin = (selector) =>
+  selector.startsWith(MARKER)
+    ? [selector, `:scope${selector.slice(MARKER.length)}`]
+    : [selector]
+
+/** Rewrites one rule's selector list for the life it is about to lead in a scope. */
+const anchor = (rule, rootRules) => {
+  let selectors = rule.selectors
+  if (rootRules === "scope") {
+    selectors = selectors.flatMap((selector) => {
+      const scoped = toScope(selector)
+      if (scoped === null) return []
+      assertScopable(rule, scoped)
+      return [scoped]
+    })
+    // A rule that was only `:host` still has somewhere to go: the root itself.
+    if (!selectors.length) selectors = [":scope"]
+  }
+  selectors = selectors.flatMap(twin)
+  // `:root, :host` and `:root, html` alike collapse onto a single `:scope`.
+  if (rootRules === "scope") selectors = [...new Set(selectors)]
+  const unchanged =
+    selectors.length === rule.selectors.length &&
+    selectors.every((selector, index) => selector === rule.selectors[index])
+  if (unchanged) return
   // Keep a selector list that was written one per line that way.
   const separator = rule.selector.includes("\n")
     ? `,\n${indentOf(rule.raws.before)}`
@@ -156,11 +221,11 @@ const anchor = (rule) => {
 }
 
 /** Anchors every rule in the tree except the steps of a `@keyframes`. */
-const anchorRules = (container) => {
+const anchorRules = (container, rootRules) => {
   for (const node of container.nodes ?? []) {
-    if (node.type === "rule") anchor(node)
+    if (node.type === "rule") anchor(node, rootRules)
     else if (node.type === "atrule" && !isKeyframes(atRuleName(node)))
-      anchorRules(node)
+      anchorRules(node, rootRules)
   }
 }
 
@@ -175,11 +240,23 @@ const resolveBoundary = (boundary) => {
   return boundary.trim()
 }
 
+const ROOT_RULE_MODES = new Set(["scope", "document"])
+
+const resolveRootRules = (rootRules) => {
+  if (rootRules === undefined) return "scope"
+  if (!ROOT_RULE_MODES.has(rootRules)) {
+    throw new TypeError(
+      'scopeTecton: `rootRules` must be "scope" (rewrite a leading `:root` / `html` / `body` to `:scope`) or "document" (leave those rules unscoped where they are).'
+    )
+  }
+  return rootRules
+}
+
 /**
- * @param {{ scope: string, boundary?: string | false | null }} options
+ * @param {{ scope: string, boundary?: string | false | null, rootRules?: "scope" | "document" }} options
  */
 export default function scopeTecton(options) {
-  const { scope, boundary } = options ?? {}
+  const { scope, boundary, rootRules } = options ?? {}
   if (typeof scope !== "string" || !scope.trim()) {
     throw new TypeError(
       'scopeTecton: `scope` is required and must be a non-empty selector string, e.g. scopeTecton({ scope: ".mfe-a" }).'
@@ -187,6 +264,7 @@ export default function scopeTecton(options) {
   }
   const root = scope.trim()
   const limit = resolveBoundary(boundary)
+  const roots = resolveRootRules(rootRules)
   const params = limit ? `(${root}) to (${limit})` : `(${root})`
 
   return {
@@ -204,8 +282,10 @@ export default function scopeTecton(options) {
       lift(sheet)
 
       /**
-       * Wraps each run of scopable children in one `@scope`; layers and any at-rule
-       * that holds a `:root` / `:host` rule are recursed into instead.
+       * Wraps each run of scopable children in one `@scope`; a `@layer` is recursed
+       * into instead, and so, in `"document"` mode, is any at-rule holding a `:root`
+       * / `:host` rule. With the roots rewritten to `:scope` those are ordinary
+       * scoped rules, so their at-rule is wrapped like any other.
        */
       const scopeInto = (container) => {
         let run = []
@@ -219,7 +299,7 @@ export default function scopeTecton(options) {
           if (!run[0].raws.before?.includes("\n")) {
             run[0].raws.before = `\n${indentOf(before)}  `
           }
-          anchorRules(scoped)
+          anchorRules(scoped, roots)
           scoped.raws.before = before
           scoped.raws.between = " "
           scoped.raws.after = `\n${indentOf(before)}`
@@ -229,8 +309,9 @@ export default function scopeTecton(options) {
           const recurse =
             node.type === "atrule" &&
             node.nodes &&
-            (atRuleName(node) === "layer" || hasRootRule(node))
-          if (isRootRule(node)) flush()
+            (atRuleName(node) === "layer" ||
+              (roots === "document" && hasRootRule(node)))
+          if (roots === "document" && isRootRule(node)) flush()
           else if (recurse) {
             flush()
             scopeInto(node)
