@@ -54,6 +54,151 @@ Selection, disabled and expanded state come from React Aria (`selectionMode`, `d
 
 <ComponentPreview name="tree-view-adornments" />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- A hierarchy is browsed rather than read: a project tree, a field and well inventory, a layer list.
+- Rows carry more than a label: selection, disabled, hidden, a colour, a count, a per-row menu.
+- Arrow-key navigation, expansion and type-ahead have to work across the whole structure.
+
+### Not for
+
+- stacked sections that expand, with no parent and child structure: use [Accordion](/docs/components/accordion)
+- a flat list of rows with media, a title and actions: use [Item](/docs/components/item)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Give `TreeView` an `aria-label`, and every `TreeViewItem` an `id` and a `textValue`.
+
+</Do>
+
+<Do>
+
+Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or a `TreeViewCollection` with `items` for dynamic data.
+
+</Do>
+
+<Do>
+
+Pick the leading glyph with `kind="folder" | "item"` or replace it with `icon`; the chevron and the indent are handled for you.
+
+</Do>
+
+<Do>
+
+Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, `TreeViewAction`).
+
+</Do>
+
+<Do>
+
+Drive state from `TreeView` — `selectionMode` with `selectedKeys`, `disabledKeys`, `expandedKeys` — and dim a row with `isHidden` on `TreeViewItem`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="A tree built from nested Collapsibles">
+
+<Wrong>
+
+```tsx
+<Collapsible>
+  <CollapsibleTrigger>Wells</CollapsibleTrigger>
+  <CollapsibleContent className="pl-4">
+    <Collapsible>
+      <CollapsibleTrigger>34/10-A-12</CollapsibleTrigger>
+      <CollapsibleContent className="pl-4">Completions</CollapsibleContent>
+    </Collapsible>
+  </CollapsibleContent>
+</Collapsible>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<TreeView aria-label="Project" selectionMode="single" defaultExpandedKeys={["wells"]}>
+  <TreeViewItem id="wells" textValue="Wells">
+    <TreeViewItemContent kind="folder">Wells</TreeViewItemContent>
+    <TreeViewItem id="a12" textValue="34/10-A-12">
+      <TreeViewItemContent>34/10-A-12</TreeViewItemContent>
+    </TreeViewItem>
+  </TreeViewItem>
+</TreeView>
+```
+
+</Correct>
+
+Each `Collapsible` is its own widget, so the result is a pile of buttons with no `role="treegrid"`, no arrow-key or type-ahead movement between rows and no selection; `TreeView` is React Aria's `Tree` and gets all of it from `id`, `textValue` and the nesting.
+
+</Dont>
+
+<Dont severity="HIGH" title="Indenting rows with padding classes">
+
+<Wrong>
+
+```tsx
+<TreeViewItemContent className="pl-8">34/10-A-12</TreeViewItemContent>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<TreeViewItem id="wells" textValue="Wells">
+  <TreeViewItemContent kind="folder">Wells</TreeViewItemContent>
+  <TreeViewItem id="a12" textValue="34/10-A-12">
+    <TreeViewItemContent>34/10-A-12</TreeViewItemContent>
+  </TreeViewItem>
+</TreeViewItem>
+```
+
+</Correct>
+
+`TreeViewItemContent` writes `paddingInlineStart` as an inline style computed from React Aria's `level`, which no `className` can outrank, so the row keeps the depth it really has in the collection and `pl-8` is dead weight that `no-restyle` reports.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="A row without textValue">
+
+<Wrong>
+
+```tsx
+<TreeViewItem id="balder">
+  <TreeViewItemContent suffix={<Badge variant="info">12</Badge>}>Top Balder</TreeViewItemContent>
+</TreeViewItem>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<TreeViewItem id="balder" textValue="Top Balder">
+  <TreeViewItemContent suffix={<Badge variant="info">12</Badge>}>Top Balder</TreeViewItemContent>
+</TreeViewItem>
+```
+
+</Correct>
+
+`textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 ### TreeView

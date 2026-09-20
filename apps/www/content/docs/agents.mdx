@@ -7,7 +7,7 @@ description: How @tecton/react ships Agent Skills so a coding agent gets the des
 
 ## What ships
 
-Twelve skills live at `packages/tecton-react/skills/<name>/SKILL.md` in the package source. Three are hand-written (`core`, `react-aria`, `theming`); the rest are generated per component family from the guideline files described below.
+Eighteen skills live at `packages/tecton-react/skills/<name>/SKILL.md` in the package source. Three are hand-written (`core`, `react-aria`, `theming`); the rest are generated per component family from the guideline files described below, one per family, so every one of the package's eighty modules is covered.
 
 | Skill | Covers |
 | --- | --- |
@@ -23,6 +23,12 @@ Twelve skills live at `packages/tecton-react/skills/<name>/SKILL.md` in the pack
 | `progress` | Progress, CircularProgress, Meter, Spinner, Skeleton. |
 | `surfaces` | Card, Panel, Item, PageHeader, AppShell, Separator. |
 | `forms` | Field, Input, Textarea, Select, Checkbox, Switch, Slider, InputGroup, InputOTP, Label, and TanStack Form wiring. |
+| `navigation` | Breadcrumb, Sidebar, Pagination, AppFinder, ShellActions. |
+| `data` | Table and the TanStack Table recipe, TreeView, Chart, Stat, ColorSwatch, Calendar and the date picker recipe. |
+| `layout` | Accordion, Collapsible, Resizable, ScrollArea, AspectRatio. |
+| `presentation` | Carousel, Avatar, Overflow, Canvas, Background. |
+| `conversation` | Message, MessageScroller, Bubble, Attachment, Questionnaire, Marker. |
+| `infrastructure` | DirectionProvider, PortalProvider, ThemeRoot, Shortcuts. |
 
 Every generated skill is distilled from the same **guideline files** — one Markdown file per component in `packages/tecton-react/guidelines/`, each with a "Use it when", "Do" and "Don't" section. Those files are rendered twice: as the **"Usage guidelines"** section you see on every component's docs page, and, grouped by family, into the skill table above. Change a guideline once and both the docs page and the shipped skill pick it up.
 

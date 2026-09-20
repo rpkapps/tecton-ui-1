@@ -97,7 +97,18 @@ function cell(text: string) {
  * one row per `notFor` entry — the boundaries are what makes the table a
  * decision table rather than a list of components.
  */
-function decisionRows(members: Guideline[], catalog: Catalog): Row[] {
+function decisionRows(
+  members: Guideline[],
+  catalog: Catalog,
+  options: {
+    /**
+     * When set, `notFor` rows whose replacement lives in one of these modules
+     * are left out: the family skill carries the boundaries between its own
+     * members, so the cross-family table only needs the ones that leave it.
+     */
+    omitTargetsIn?: Set<string>
+  } = {}
+): Row[] {
   const rows: Row[] = []
   const seen = new Set<string>()
   const push = (row: Row) => {
@@ -116,6 +127,7 @@ function decisionRows(members: Guideline[], catalog: Catalog): Row[] {
     for (const entry of guideline.meta.notFor) {
       const reference = resolveReference(entry.use, catalog)
       if (!reference) continue
+      if (reference.kind === "module" && options.omitTargetsIn?.has(reference.module)) continue
       push({
         need: entry.need,
         use: reference.name,
@@ -242,9 +254,11 @@ function chooseComponentSkill(
         "",
         `${lowerFirst(entry.choice)}.`,
         "",
-        renderTable(decisionRows(members, catalog)),
+        renderTable(
+          decisionRows(members, catalog, { omitTargetsIn: new Set(entry.modules) })
+        ),
         "",
-        `Load @tecton/react#${family} for the patterns.`,
+        `Load @tecton/react#${family} for the boundaries between these and the patterns.`,
       ].join("\n")
     )
   }

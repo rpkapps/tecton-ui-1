@@ -122,7 +122,10 @@
         "components/pagination",
         "tecton/app-finder",
         "tecton/shell-actions"
-      ]
+      ],
+      "skill": {
+        "description": "Choose and use Tecton navigation: Breadcrumb for the path to the current page, Sidebar with SidebarProvider, SidebarMenu and SidebarMenuButton for the application navigation rail, Pagination for paged lists, AppFinder for switching applications from the shell header, ShellActions for the global action cluster with command palette trigger, icon actions, overflow and user menu. Load when building navigation, a breadcrumb trail, a sidebar, paging controls, an app switcher or the shell header actions."
+      }
     },
     "data": {
       "title": "Data",
@@ -134,23 +137,38 @@
         "tecton/stat",
         "tecton/color-swatch",
         "components/calendar"
-      ]
+      ],
+      "skill": {
+        "description": "Choose and use Tecton data display: Table with TableHeader, TableRow and TableCell plus the TanStack Table recipe for sorting, filtering and pagination, TreeView for hierarchies with folder and item rows, Chart with ChartContainer, ChartTooltip and ChartLegend over Recharts, Stat with StatValue and StatDelta for KPI readouts, ColorSwatch for colour previews, Calendar and the date picker recipe. Load when rendering rows, a data grid, a tree, a chart, a KPI, a colour value or a date."
+      }
     },
     "layout": {
       "title": "Layout",
-      "choice": "Disclosure, splitting, scrolling and decorative surfaces",
+      "choice": "Disclosure, splitting, scrolling and ratio boxes",
       "modules": [
         "components/accordion",
         "components/collapsible",
         "components/resizable",
         "components/scroll-area",
-        "components/aspect-ratio",
+        "components/aspect-ratio"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton layout and disclosure: Accordion for stacked expandable sections, Collapsible for one toggled region with Button slot trigger, Resizable panels with ResizablePanelGroup, ResizablePanel and ResizableHandle, ScrollArea for styled scrolling, AspectRatio for media boxes. Covers orientation instead of direction, pixel versus percent sizes, and the React Aria disclosure props instead of the Radix ones. Load when laying out expandable, split, scrolling or fixed-ratio regions."
+      }
+    },
+    "presentation": {
+      "title": "Presentation",
+      "choice": "Slides, avatars, collapsing toolbars, a full-bleed work surface or a decorative background",
+      "modules": [
         "components/carousel",
         "components/avatar",
         "tecton/overflow",
         "tecton/canvas",
         "tecton/background"
-      ]
+      ],
+      "skill": {
+        "description": "Choose and use Tecton presentation surfaces: Carousel with CarouselContent and CarouselItem for slides, Avatar with AvatarImage, AvatarFallback and AvatarBadge, Overflow with OverflowItem and OverflowLabel for toolbars that collapse into a More menu, Canvas with CanvasSurface and its floating chrome slots for a full-bleed work surface, Background for the eleven decorative themed effects. Load when building slides, avatars, a collapsing toolbar, a map or canvas surface, or a decorative background."
+      }
     },
     "conversation": {
       "title": "Conversation",
@@ -162,11 +180,17 @@
         "components/attachment",
         "components/questionnaire",
         "components/marker"
-      ]
+      ],
+      "skill": {
+        "description": "Build Tecton chat and assistant surfaces: Message with MessageContent, MessageFooter, MessageHeader and MessageAvatar for assistant, user and tool turns, MessageScroller with MessageScrollerProvider and MessageScrollerItem for the auto-following transcript, Bubble with BubbleContent and the align axis for compact chat bubbles, Attachment for files in a composer or a message, Questionnaire with QuestionnaireChoice and QuestionnaireSubmit for structured questions the assistant asks, Marker for full-width status rows and labelled dividers in a transcript. Load when building a chat panel, an AI assistant transcript, a composer, message attachments or transcript status rows."
+      }
     },
     "infrastructure": {
       "title": "Infrastructure",
       "choice": "Providers and roots, not visible components",
+      "skill": {
+        "description": "Wire the Tecton providers and roots: DirectionProvider for right-to-left layouts, PortalProvider and usePortalTarget for choosing where overlays portal in pages with several React roots, ThemeRoot for an independently deployed application with its own scope class, mode and overlay container, ShortcutsProvider and useShortcut for the keyboard shortcut registry the shell lists. Load when mounting an application, a micro-frontend, an RTL locale, overlay portals or keyboard shortcuts."
+      },
       "modules": [
         "components/direction",
         "tecton/portal",

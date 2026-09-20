@@ -103,6 +103,140 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
   previewClassName="h-auto"
 />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- Records of the same shape have to line up in columns: invoices, wells, run results.
+- Rows are selectable, activatable, sortable or sometimes absent — React Aria gives all four on these parts.
+- A footer totals the columns, or a caption names the table.
+
+### Not for
+
+- sorting, filtering, paging or column visibility over the rows: use [TanStack Table](/docs/components/data-table)
+- a list of rows with media, a title and actions rather than columns: use [Item](/docs/components/item)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Put `TableHead` children straight inside `TableHeader`; React Aria renders the header row itself, while `TableFooter` does take a `TableRow`.
+
+</Do>
+
+<Do>
+
+Name the grid with `aria-label` on `Table`, mark the identifying column `isRowHeader`, and give every `TableRow` an `id`: `selectionMode`, `selectedKeys` and `onSelectionChange` work off those keys, and a `Checkbox slot="selection"` fills itself in.
+
+</Do>
+
+<Do>
+
+Render the empty case with `TableBody`'s `renderEmptyState`, which is what the `data-empty:h-24 data-empty:text-center` rules are waiting for, and keep `className` on the parts to alignment and width (`text-right`, `w-24`).
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="A table built from divs and grid classes">
+
+<Wrong>
+
+```tsx
+<div className="grid grid-cols-2 text-sm">
+  <div className="bg-zinc-100 px-4 py-3 font-medium">Invoice</div>
+  <div className="bg-zinc-100 px-4 py-3 font-medium">Status</div>
+  <div className="px-4 py-3">INV001</div>
+  <div className="px-4 py-3">Paid</div>
+</div>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Table aria-label="Invoices">
+  <TableHeader>
+    <TableHead id="invoice" isRowHeader>Invoice</TableHead>
+    <TableHead id="status">Status</TableHead>
+  </TableHeader>
+  <TableBody>
+    <TableRow id="INV001">
+      <TableCell className="font-medium">INV001</TableCell>
+      <TableCell>Paid</TableCell>
+    </TableRow>
+  </TableBody>
+</Table>
+```
+
+</Correct>
+
+The grid emits no `role="grid"`, `columnheader` or `rowheader`, so assistive technology reads a stream of unassociated cells with no row or column count, and `bg-zinc-100` is stock Tailwind the reset palette emits no CSS for — the header band is `bg-table-header` on `TableHead`.
+
+</Dont>
+
+<Dont severity="CRITICAL" title="Activating a row with onClick">
+
+<Wrong>
+
+```tsx
+<TableRow key={well.id} id={well.id} onClick={() => openWell(well.id)}>
+  <TableCell>{well.name}</TableCell>
+</TableRow>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<TableRow key={well.id} id={well.id} onAction={() => openWell(well.id)}>
+  <TableCell>{well.name}</TableCell>
+</TableRow>
+```
+
+</Correct>
+
+React Aria's `Row` runs `delete DOMProps.onClick` before it renders the `<tr>`, so the handler never reaches the DOM; `onAction` is the row's activation hook and fires on Enter and Space as well as on a click.
+
+</Dont>
+
+<Dont severity="HIGH" title="Sorting from a click handler on the header">
+
+<Wrong>
+
+```tsx
+<TableHead id="email" onClick={() => setSort("email")}>Email</TableHead>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Table aria-label="Payments" sortDescriptor={sort} onSortChange={setSort}>
+  <TableHeader>
+    <TableHead id="email" isRowHeader allowsSorting>Email</TableHead>
+  </TableHeader>
+  <TableBody>{rows}</TableBody>
+</Table>
+```
+
+</Correct>
+
+`allowsSorting` is what makes the column a sort control — it sets `aria-sort`, sorts on Enter and Space, draws the direction indicator and routes the change through the table's `onSortChange`; a bare `onClick` on the `th` answers a mouse and nothing else.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 See the [React Aria Table](https://react-aria.adobe.com/Table#api) documentation.

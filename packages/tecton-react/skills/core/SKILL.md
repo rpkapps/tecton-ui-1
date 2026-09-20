@@ -362,3 +362,9 @@ Source: apps/www/content/docs/components/button.mdx (With Icon); packages/tecton
 | `@tecton/react#progress` | Progress, CircularProgress, Meter, Spinner, Skeleton. |
 | `@tecton/react#surfaces` | Card, Panel, Item, PageHeader, AppShell, Separator. |
 | `@tecton/react#forms` | Field, Input, Textarea, Checkbox, Switch, Slider, InputGroup, InputOTP. |
+| `@tecton/react#navigation` | Breadcrumb, Sidebar, Pagination, AppFinder, ShellActions. |
+| `@tecton/react#data` | Table and the TanStack Table recipe, TreeView, Chart, Stat, ColorSwatch, Calendar. |
+| `@tecton/react#layout` | Accordion, Collapsible, Resizable, ScrollArea, AspectRatio. |
+| `@tecton/react#presentation` | Carousel, Avatar, Overflow, Canvas, Background. |
+| `@tecton/react#conversation` | Message, MessageScroller, Bubble, Attachment, Questionnaire, Marker. |
+| `@tecton/react#infrastructure` | DirectionProvider, PortalProvider, ThemeRoot, Shortcuts — providers and roots. |

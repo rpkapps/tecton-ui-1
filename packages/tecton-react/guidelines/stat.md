@@ -1,0 +1,100 @@
+---
+component: Stat
+module: "@tecton/react/tecton/stat"
+family: data
+exports: [Stat, StatLabel, StatValue, StatDelta, StatHelp, StatGroup]
+notFor:
+  - need: a word that names a status or a category
+    use: Badge
+  - need: a value read against a fixed scale with named bands
+    use: Meter
+  - need: a series compared over time or across categories
+    use: ChartContainer
+related: [Meter, Badge, ChartContainer]
+---
+
+## Use it when
+
+- A card, a panel or a header reports one measured number: cost per barrel, NPV, drilling days.
+- The number wants a unit and a change against a baseline or a previous period.
+- Several KPIs sit side by side and their digits have to align: that is `StatGroup`.
+
+## Do
+
+- Compose the parts inside `Stat`: `StatLabel`, `StatValue` with its `unit`, `StatDelta`, `StatHelp`.
+- Scale the value with `size="sm" | "md" | "lg"` (14 / 20 / 28 px) and place the block with `align="start" | "center" | "end"`.
+- Say which way the number moved with `StatDelta`'s `trend="up" | "down" | "flat"`; it picks both the icon and the semantic colour.
+- Pass the unit to `StatValue`'s `unit` prop rather than writing it into the text, so it renders in the sans face at `0.6em`.
+- Lay a row of KPIs out with `StatGroup`, the responsive `auto-fit` grid; `className` on it is for width and placement only.
+
+## Don't
+
+### CRITICAL A KPI as a heading and a coloured span
+
+Wrong:
+
+```tsx
+<div className="flex flex-col gap-0.5">
+  <span className="text-xs text-gray-500">NPV</span>
+  <h3 className="text-2xl font-semibold">1 240 MUSD</h3>
+  <span className="text-sm text-green-600">+11%</span>
+</div>
+```
+
+Correct:
+
+```tsx
+<Stat size="lg">
+  <StatLabel>NPV</StatLabel>
+  <StatValue unit="MUSD">1 240</StatValue>
+  <StatDelta trend="up">+11%</StatDelta>
+</Stat>
+```
+
+`text-gray-500` and `text-green-600` are stock Tailwind that the reset palette emits no CSS for, so the label and the change both render in the body colour, and the value loses the `font-mono tabular-nums` that stops a column of KPIs jittering as the digits change.
+
+### HIGH Colouring the delta by hand instead of with trend
+
+Wrong:
+
+```tsx
+<Stat>
+  <StatLabel>CAPEX</StatLabel>
+  <StatValue unit="MUSD">312</StatValue>
+  <StatDelta className="text-red-600">-4%</StatDelta>
+</Stat>
+```
+
+Correct:
+
+```tsx
+<Stat>
+  <StatLabel>CAPEX</StatLabel>
+  <StatValue unit="MUSD">312</StatValue>
+  <StatDelta trend="down">-4%</StatDelta>
+</Stat>
+```
+
+`trend` chooses both halves of the indicator — the `text-success` / `text-destructive` / `text-muted-foreground` colour and the `TrendingUp` / `TrendingDown` / `Minus` icon — so the hand-coloured version keeps the default flat dash while `cn` drops `text-muted-foreground` for a `text-red-600` that emits nothing.
+
+### MEDIUM The unit written into the value
+
+Wrong:
+
+```tsx
+<Stat>
+  <StatLabel>Recoverable volume</StatLabel>
+  <StatValue>42.1 MSm³</StatValue>
+</Stat>
+```
+
+Correct:
+
+```tsx
+<Stat>
+  <StatLabel>Recoverable volume</StatLabel>
+  <StatValue unit="MSm³">42.1</StatValue>
+</Stat>
+```
+
+The `unit` slot renders `font-sans text-[0.6em] text-muted-foreground` beside the number; inside the children the unit is set in IBM Plex Mono at the full value size and counted by `tabular-nums`, so it reads as part of the figure and the columns of a `StatGroup` stop lining up.

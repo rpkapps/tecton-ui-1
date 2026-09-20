@@ -530,3 +530,140 @@ Two props on `SidebarProvider` make a provider self-contained:
 ```
 
 Give the shell the defaults and each mounted application a name of its own, then either another letter or `false` for the shortcut. When a mounted sidebar still needs a key, register it with the shell's [shortcut registry](/docs/tecton/shortcuts) instead, so it shows up in the command palette and the shortcut dialog with everything else.
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The application's navigation rail: groups of destinations, an active row, a collapse control.
+- The rail has to survive a phone — below the mobile breakpoint `Sidebar` renders itself as a `Sheet`.
+- Rows carry a count, a per-row action or a second level of destinations.
+
+### Not for
+
+- a fixed navigation column inside the application frame: use [AppShellSidebar](/docs/tecton/app-shell)
+- a panel that floats over the content and is dismissed: use [Sheet](/docs/components/sheet)
+- a hierarchy of folders and records expanded in place: use [TreeView](/docs/tecton/tree-view)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it.
+
+</Do>
+
+<Do>
+
+Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `href` for a destination and `isActive` for the current one.
+
+</Do>
+
+<Do>
+
+Pick the behaviour with `collapsible="offcanvas" | "icon" | "none"` and the surface with `variant="sidebar" | "floating" | "inset"`.
+
+</Do>
+
+<Do>
+
+Pass `tooltip="Wells"` on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="A navigation row built as a button with a handler">
+
+<Wrong>
+
+```tsx
+<SidebarMenuItem>
+  <SidebarMenuButton onClick={() => navigate("/wells")}>Wells</SidebarMenuButton>
+</SidebarMenuItem>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<SidebarMenuItem>
+  <SidebarMenuButton href="/wells" isActive={pathname === "/wells"}>Wells</SidebarMenuButton>
+</SidebarMenuItem>
+```
+
+</Correct>
+
+`SidebarMenuButton` renders a React Aria `Link` only when it is given an `href`; without one it is a `button`, so the row is no destination for middle-click, Cmd-click or "copy link address", and `onClick` survives only as React Aria's deprecated press alias.
+
+</Dont>
+
+<Dont severity="HIGH" title="Two providers sharing one cookie and one ⌘B">
+
+<Wrong>
+
+```tsx
+<SidebarProvider>
+  <AssetTrackerSidebar />
+</SidebarProvider>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<SidebarProvider cookieName="asset_tracker_sidebar" keyboardShortcut={false}>
+  <AssetTrackerSidebar />
+</SidebarProvider>
+```
+
+</Correct>
+
+Every `SidebarProvider` writes the `sidebar_state` cookie and adds a `window` keydown listener for ⌘B / Ctrl+B by default, so a rail mounted beside the shell's own overwrites the state both of them restore from and one key press toggles the pair.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="A hand-built Sheet for the mobile rail">
+
+<Wrong>
+
+```tsx
+const isMobile = useIsMobile()
+return isMobile ? (
+  <Sheet isOpen={isOpen} onOpenChange={setIsOpen} side="left">
+    <SidebarMenu>{rows}</SidebarMenu>
+  </Sheet>
+) : (
+  <Sidebar>
+    <SidebarContent>{rows}</SidebarContent>
+  </Sidebar>
+)
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Sidebar collapsible="offcanvas">
+  <SidebarContent>
+    <SidebarMenu>{rows}</SidebarMenu>
+  </SidebarContent>
+</Sidebar>
+```
+
+</Correct>
+
+`Sidebar` already swaps itself for a `Sheet` bound to the provider's `openMobile` state below the mobile breakpoint, so the hand-built branch is a second one and `SidebarTrigger`, which toggles that state, now opens nothing.
+
+</Dont>
+
+{/* guidelines:end */}

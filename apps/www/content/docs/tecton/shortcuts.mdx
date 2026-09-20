@@ -109,6 +109,144 @@ By default the provider listens on `document`. Pass `target` to listen on one el
   See the [Application shell](/blocks/shell-01) block for the whole loop: the host registers ⌘K and `?`, the mounted application registers its own, and both show up in the palette and the shortcut dialog.
 </Callout>
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The host listens for keys once and every mounted application registers against the same registry.
+- A shortcut must be listed as well as bound: the help dialog and the command palette read `useShortcuts()`.
+- A region owns keys only while focus is inside it — `target` scopes the listener to one element.
+
+### Not for
+
+- one key cap rendered inside a label or a menu row: use [Kbd](/docs/components/kbd)
+- the header button whose tooltip shows a shortcut: use [ShellAction](/docs/tecton/shell-actions)
+- a searchable palette of the commands themselves: use [Command](/docs/components/command)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Wrap the shell in one `ShortcutsProvider`; a nested provider with no `registry` of its own reuses the parent's.
+
+</Do>
+
+<Do>
+
+Register from React with `useShortcut`, which removes the shortcut on unmount and always calls the latest render's handler.
+
+</Do>
+
+<Do>
+
+Create the registry with `createShortcutRegistry()` in the host and hand the object to each mounted application; that shape is versioned public API, so the two sides may be on different package versions.
+
+</Do>
+
+<Do>
+
+Write keys in the registry syntax: `mod+k` for ⌘ / Ctrl, `?` for a symbol, `g w` for a sequence.
+
+</Do>
+
+<Do>
+
+Give every shortcut a stable `id`, a `label` and a `group`, and render its caps with `ShortcutKeys`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="A shortcut registered with a window listener">
+
+<Wrong>
+
+```tsx
+React.useEffect(() => {
+  const onKeyDown = (event: KeyboardEvent) => {
+    if (event.key === "n") openNewWellDialog()
+  }
+  window.addEventListener("keydown", onKeyDown)
+  return () => window.removeEventListener("keydown", onKeyDown)
+}, [])
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+useShortcut({
+  id: "wells.new",
+  keys: "n",
+  label: "Create well",
+  group: "Wells",
+  onAction: () => openNewWellDialog(),
+})
+```
+
+</Correct>
+
+The registry suppresses unmodified keys while an input, textarea or editable element has focus, so a hand-rolled listener opens the dialog on the first `n` the user types into a form — and the shortcut never reaches `useShortcuts()`, so neither the help dialog nor the command palette lists it.
+
+</Dont>
+
+<Dont severity="HIGH" title="A mounted application creating its own registry">
+
+<Wrong>
+
+```tsx
+<ShortcutsProvider registry={createShortcutRegistry()}>
+  <App />
+</ShortcutsProvider>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<ShortcutsProvider registry={props.shortcuts}>
+  <App />
+</ShortcutsProvider>
+```
+
+</Correct>
+
+A registry of its own adds a second `document` listener with a list the host cannot see, so the application's keys are missing from the shell's shortcut dialog, both registries answer the same press, and a fresh object on every render re-subscribes the listener each time.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Key caps typed out by hand">
+
+<Wrong>
+
+```tsx
+<span>Go to wells <Kbd>G</Kbd> <Kbd>W</Kbd></span>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<span>{shortcut.label} <ShortcutKeys keys={shortcut.keys} /></span>
+```
+
+</Correct>
+
+`ShortcutKeys` resolves `mod` to ⌘ or Ctrl for the reader's platform, splits a chord or a sequence into caps and gives the group one accessible name ("G, then W"), where hand-typed caps freeze the author's platform and are read out letter by letter.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 ### ShortcutsProvider
