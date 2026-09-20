@@ -4,21 +4,21 @@ import { cn } from "cn"
 
 /**
  * Tecton Badge — a count or dot anchored to the corner of its child
- * (avatar, icon button, tab). Not to be confused with the shadcn `Badge`
- * label component, which Tecton calls a Chip.
+ * (avatar, icon button, tab). Not to be confused with the shadcn `Badge`,
+ * which is the static label; the interactive React Aria tag is `Chip`.
  */
 const countBadgeVariants = cva(
   "pointer-events-none absolute z-10 flex items-center justify-center rounded-full font-medium whitespace-nowrap tabular-nums ring-2 ring-background",
   {
     variants: {
+      // Names mirror Badge's `variant`; solid fills (not `*-surface`) stay legible at pill size.
       color: {
-        default: "bg-secondary text-secondary-foreground",
-        primary: "bg-primary text-primary-foreground",
-        error: "bg-destructive text-destructive-foreground",
+        default: "bg-primary text-primary-foreground",
+        secondary: "bg-secondary text-secondary-foreground",
+        destructive: "bg-destructive text-destructive-foreground",
+        success: "bg-success text-success-foreground",
         warning: "bg-warning text-warning-foreground",
         info: "bg-info text-info-foreground",
-        success: "bg-success text-success-foreground",
-        neutral: "bg-neutral text-neutral-foreground",
       },
       variant: {
         standard: "h-4 min-w-4 px-1 text-[0.625rem] leading-none",
@@ -32,7 +32,7 @@ const countBadgeVariants = cva(
       },
     },
     defaultVariants: {
-      color: "primary",
+      color: "default",
       variant: "standard",
       anchor: "top-right",
     },
@@ -54,7 +54,7 @@ type CountBadgeProps = React.ComponentProps<"span"> &
 
 function CountBadge({
   className,
-  color = "primary",
+  color = "default",
   variant = "standard",
   anchor = "top-right",
   count,

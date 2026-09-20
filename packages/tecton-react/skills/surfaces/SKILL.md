@@ -1,6 +1,6 @@
 ---
 name: surfaces
-description: "Choose and use Tecton surfaces: Card with CardHeader, CardContent and CardFooter for content, Panel for a titled application surface with scrolling body and pinned footer, Item for list rows, PageHeader for the title block with eyebrow, description, tabs and actions, AppShell for the application frame, Separator with emphasis. Load when laying out a page, panel, card, section, list row, header or divider."
+description: "Choose and use Tecton surfaces: Card with CardHeader, CardContent and CardFooter for content, Panel for a titled application surface with scrolling body and pinned footer, Item for list rows, PageHeader for the title block with eyebrow, description, tabs and actions, AppShell for the application frame with its global header action cluster (command palette trigger, icon actions, overflow and user menu), Separator with emphasis. Load when laying out a page, panel, card, section, list row, header, the shell header actions or a divider."
 metadata:
   type: sub-skill
   library: "@tecton/react"
@@ -31,6 +31,8 @@ Surfaces — a content card, a titled application panel, a list row, a page titl
 - Rows inside an `ItemGroup` are divided with `ItemSeparator` and card sections with a bare `border-b` on `CardHeader`, never with a hand-written border colour.
 - A page title block is a `PageHeader` with the eyebrow, title and description inside `PageHeaderContent` and the actions in `PageHeaderActions`, and `PageHeaderTitle` is the page's single `h1`.
 - The application frame is `AppShell` > `AppShellHeader` plus `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`, with the page content in `AppShellMain` and never straight into `AppShellBody`.
+- The shell's header actions are `AppShellAction`s with a `label` — both the accessible name and the tooltip — inside `AppShellActions`, not icon `Button`s with a `title`.
+- A key hint rendered by `shortcut` on `AppShellAction` or `AppShellCommandTrigger` is also registered with `useShortcut`, or nothing is bound and the key is missing from `useShortcuts()`.
 - A divider is a `Separator` with `emphasis="subtle" | "default" | "strong"` (or the surface's own `ItemSeparator` / `border-b`), never a bare `div` with a border colour.
 
 | You need … | Use … | Import |
@@ -55,6 +57,9 @@ Surfaces — a content card, a titled application panel, a list row, a page titl
 | The outermost frame of an application: a top bar, an optional left rail, a work area, an optional right aside | `AppShell` | `@tecton/react/tecton/app-shell` |
 | A titled tool surface inside the work area | `Panel` | `@tecton/react/tecton/panel` |
 | The title block at the top of the page inside the main area | `PageHeader` | `@tecton/react/tecton/page-header` |
+| Actions that belong to the page rather than to the shell | `PageHeaderActions` | `@tecton/react/tecton/page-header` |
+| A toolbar that folds into a More menu by measured width | `Overflow` | `@tecton/react/tecton/overflow` |
+| Switching between applications from the header | `AppFinder` | `@tecton/react/tecton/app-finder` |
 | Two groups of content need a visible break that no heading or spacing gives them | `Separator` | `@tecton/react/components/separator` |
 | A divider between the rows of a list | `ItemSeparator` | `@tecton/react/components/item` |
 | The rule under a panel title | `PanelHeader` | `@tecton/react/tecton/panel` |
@@ -211,33 +216,57 @@ import { PageHeader, PageHeaderContent, PageHeaderEyebrow, PageHeaderTitle, Page
 ## AppShell
 
 ```tsx
-import { AppShell, AppShellHeader, AppShellBrand, AppShellNav, AppShellHeaderActions, AppShellBody, AppShellSidebar, AppShellMain, AppShellAside, AppShellSplit, AppShellSplitPanel, AppShellSplitHandle, useMinWidth } from "@tecton/react/tecton/app-shell"
+import { AppShell, AppShellHeader, AppShellBrand, AppShellNav, AppShellActions, AppShellAction, AppShellCommandTrigger, AppShellDivider, AppShellOverflow, AppShellUserMenu, AppShellBody, AppShellSidebar, AppShellMain, AppShellAside, AppShellSplit, AppShellSplitPanel, AppShellSplitHandle, useMinWidth } from "@tecton/react/tecton/app-shell"
 ```
 
 ### Use it when
 
 - The outermost frame of an application: a top bar, an optional left rail, a work area, an optional right aside.
 - The frame fills the viewport (`h-svh`) and clips its own overflow, so each region scrolls on its own.
+- The header carries the host's own cluster — search, help, settings, the account menu — so every mounted application shows the same set.
 - A tool panel lives beside the content and the user may drag the divider between them.
 
 ### Not for
 
 - a titled tool surface inside the work area: use `Panel` — `import { Panel } from "@tecton/react/tecton/panel"`
 - the title block at the top of the page inside the main area: use `PageHeader` — `import { PageHeader } from "@tecton/react/tecton/page-header"`
+- actions that belong to the page rather than to the shell: use `PageHeaderActions` — `import { PageHeaderActions } from "@tecton/react/tecton/page-header"`
 - a panel that floats over the page and is dismissed: use `Sheet` — `import { Sheet } from "@tecton/react/components/sheet"`
+- a toolbar that folds into a More menu by measured width: use `Overflow` — `import { Overflow } from "@tecton/react/tecton/overflow"`
+- switching between applications from the header: use `AppFinder` — `import { AppFinder } from "@tecton/react/tecton/app-finder"`
 
 ### Do
 
-- Compose it: `AppShellHeader` (with `AppShellBrand`, `AppShellNav`, `AppShellHeaderActions`), then `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`.
+- Compose it: `AppShellHeader` (with `AppShellBrand`, `AppShellNav`, `AppShellActions`), then `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`.
 - Put the page content in `AppShellMain`; it is the scrolling region of the work area.
-- For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them.
-- Gate a full-height aside on `useMinWidth(1280)` instead of squeezing it onto a narrow screen.
-- Override only the height through `className` (`h-full` in an embedded context); the shell owns its surfaces and borders.
+- Give every `AppShellAction` a `label` — both the accessible name and the tooltip — separate groups with `AppShellDivider`, and on a narrow header hide the low-priority ones (`hidden lg:inline-flex`) in favour of `AppShellOverflow` (`lg:hidden`).
+- For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them, and gate a full-height aside on `useMinWidth(1280)`.
+- Inside an `AppShellSplitPanel` give the `AppShellAside` `className="h-full w-full border-l-0"`; otherwise `className` overrides the height alone (`h-full` in an embedded context) and the shell keeps its surfaces and borders.
 
 ### Don't
 
+#### CRITICAL An icon Button with a title instead of AppShellAction
+
+Wrong:
+
+```tsx
+<Button variant="ghost" size="icon-sm" title="Settings" onPress={openSettings}>
+  <SettingsIcon />
+</Button>
+```
+
+Correct:
+
+```tsx
+<AppShellAction label="Settings" onPress={openSettings}>
+  <SettingsIcon />
+</AppShellAction>
+```
+
+`title` is not a `Button` prop, and React Aria's `filterDOMProps` keeps only `id`, `data-*`, labelling and global DOM attributes, so it never reaches the `button`: an icon-only button with no text node is left with no accessible name and no tooltip either, while `AppShellAction` sets `aria-label` from `label` and wraps the button in the `TooltipTrigger` that also opens on keyboard focus.
+
 - **HIGH** Page content placed straight into AppShellBody — `AppShellBody` is the `flex min-h-0 overflow-hidden` row that holds the regions side by side, so content dropped into it is clipped at the fold and the sidebar and aside have nothing to sit beside. (guidelines/app-shell.md)
-- **MEDIUM** A split aside that keeps its own border — `AppShellAside` is a fixed 320 px column with its own left border, so inside a resizable panel it ignores the dragged width and draws a second divider next to the handle. (guidelines/app-shell.md)
+- **HIGH** The key hint mistaken for a registration — `shortcut` on `AppShellCommandTrigger` only renders a `Kbd` and binds nothing, so ⌘K never opens the palette and the key is missing from `useShortcuts()` — the list the shell's help dialog and command palette are built from. (guidelines/app-shell.md)
 
 ## Separator
 

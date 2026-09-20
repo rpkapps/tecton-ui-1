@@ -1,7 +1,7 @@
 import { CircularProgress } from "@tecton/react/tecton/circular-progress"
 
 const colors = [
-  "primary",
+  "default",
   "foreground",
   "info",
   "success",

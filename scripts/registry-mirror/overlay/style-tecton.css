@@ -1595,7 +1595,7 @@
   }
 
   .cn-bubble-reactions {
-    @apply rounded-full ring-2 ring-card bg-muted shrink-0 gap-1 px-1.5 py-0.5 has-[button]:p-0 text-sm;
+    @apply rounded-full ring-2 ring-card bg-muted shrink-0 gap-1 px-1.5 py-0.5 has-[button]:p-0 text-sm **:data-[slot=button]:rounded-full;
   }
 
   .cn-bubble-reactions-side-top {

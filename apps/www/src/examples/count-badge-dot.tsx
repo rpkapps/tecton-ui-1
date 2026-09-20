@@ -14,7 +14,7 @@ export default function CountBadgeDot() {
           <AvatarFallback>AK</AvatarFallback>
         </Avatar>
       </CountBadge>
-      <CountBadge variant="dot" color="neutral" anchor="bottom-right">
+      <CountBadge variant="dot" color="secondary" anchor="bottom-right">
         <Avatar>
           <AvatarFallback>MS</AvatarFallback>
         </Avatar>

@@ -29,15 +29,16 @@ import {
   AppFinderMenu,
   AppFinderTrigger,
 } from "@tecton/react/tecton/app-finder"
-import { AppShellHeader, AppShellNav } from "@tecton/react/tecton/app-shell"
 import {
-  ShellAction,
-  ShellActions,
-  ShellCommandTrigger,
-  ShellDivider,
-  ShellOverflow,
-  ShellUserMenu,
-} from "@tecton/react/tecton/shell-actions"
+  AppShellAction,
+  AppShellActions,
+  AppShellCommandTrigger,
+  AppShellDivider,
+  AppShellHeader,
+  AppShellNav,
+  AppShellOverflow,
+  AppShellUserMenu,
+} from "@tecton/react/tecton/app-shell"
 import {
   ShortcutsProvider,
   useShortcut,
@@ -198,7 +199,7 @@ function ShellHeaderInner({
           </AppFinderList>
         </AppFinderMenu>
       </AppFinder>
-      <ShellDivider className="hidden sm:block" />
+      <AppShellDivider className="hidden sm:block" />
       <Button
         variant="ghost"
         size="icon-sm"
@@ -208,27 +209,27 @@ function ShellHeaderInner({
         <HomeIcon />
       </Button>
       <AppShellNav className="overflow-hidden">{children}</AppShellNav>
-      <ShellActions>
-        <ShellCommandTrigger onPress={() => setPaletteOpen(true)}>
+      <AppShellActions>
+        <AppShellCommandTrigger onPress={() => setPaletteOpen(true)}>
           Search or jump to…
-        </ShellCommandTrigger>
-        <ShellAction
+        </AppShellCommandTrigger>
+        <AppShellAction
           label="Keyboard shortcuts"
           shortcut="?"
           onPress={() => setShortcutsOpen(true)}
         >
           <CircleHelpIcon />
-        </ShellAction>
+        </AppShellAction>
         {secondary.map((action) => (
-          <ShellAction
+          <AppShellAction
             key={action.id}
             label={action.label}
             className="hidden lg:inline-flex"
           >
             <action.icon />
-          </ShellAction>
+          </AppShellAction>
         ))}
-        <ShellOverflow className="lg:hidden">
+        <AppShellOverflow className="lg:hidden">
           <DropdownMenuGroup>
             {secondary.map((action) => (
               <DropdownMenuItem key={action.id} textValue={action.label}>
@@ -236,8 +237,8 @@ function ShellHeaderInner({
               </DropdownMenuItem>
             ))}
           </DropdownMenuGroup>
-        </ShellOverflow>
-        <ShellUserMenu user={user}>
+        </AppShellOverflow>
+        <AppShellUserMenu user={user}>
           <DropdownMenuGroup>
             <DropdownMenuLabel className="font-normal">
               <div className="grid leading-tight">
@@ -269,8 +270,8 @@ function ShellHeaderInner({
               <LogOutIcon /> Sign out
             </DropdownMenuItem>
           </DropdownMenuGroup>
-        </ShellUserMenu>
-      </ShellActions>
+        </AppShellUserMenu>
+      </AppShellActions>
       <ShellCommandPalette
         open={paletteOpen}
         onOpenChange={setPaletteOpen}

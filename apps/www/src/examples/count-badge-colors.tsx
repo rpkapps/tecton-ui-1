@@ -2,12 +2,11 @@ import { CountBadge } from "@tecton/react/tecton/count-badge"
 
 const colors = [
   "default",
-  "primary",
-  "info",
+  "secondary",
+  "destructive",
   "success",
   "warning",
-  "error",
-  "neutral",
+  "info",
 ] as const
 
 export default function CountBadgeColors() {

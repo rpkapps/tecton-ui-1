@@ -44,15 +44,15 @@ export { TrendIcon as ChartNoAxesCombinedIcon } from "./trend" // catalogue
 export { CheckIcon as Check } from "./check" // catalogue
 export { CheckCircleIcon as CheckCircle2 } from "./check-circle" // catalogue
 export { CheckCircleIcon as CheckCircle2Icon } from "./check-circle" // catalogue
-export { CheckIcon } from "./check" // src/components/checkbox.tsx, src/components/combobox.tsx, src/components/command.tsx, src/components/context-menu.tsx, src/components/dropdown-menu.tsx, src/components/questionnaire.tsx, src/components/select.tsx, src/tecton/app-finder.tsx, src/tecton/copy-button.tsx
+export { CheckIcon } from "./check" // src/components/dropdown-menu.tsx, src/components/checkbox.tsx, src/components/combobox.tsx, src/components/questionnaire.tsx, src/components/command.tsx, src/components/context-menu.tsx, src/components/select.tsx, src/tecton/app-finder.tsx, src/tecton/copy-button.tsx
 export { CheckboxIcon as CheckSquare2 } from "./checkbox" // catalogue
 export { CheckboxIcon as CheckSquare2Icon } from "./checkbox" // catalogue
 export { ChevronDownIcon as ChevronDown } from "./chevron-down" // catalogue
-export { ChevronDownIcon } from "./chevron-down" // src/components/accordion.tsx, src/components/combobox.tsx, src/components/native-select.tsx, src/components/select.tsx, src/tecton/app-finder.tsx
+export { ChevronDownIcon } from "./chevron-down" // src/components/native-select.tsx, src/components/accordion.tsx, src/components/combobox.tsx, src/components/select.tsx, src/tecton/app-finder.tsx
 export { ChevronLeftIcon as ChevronLeft } from "./chevron-left" // catalogue
-export { ChevronLeftIcon } from "./chevron-left" // src/components/calendar.tsx, src/components/carousel.tsx, src/components/pagination.tsx
+export { ChevronLeftIcon } from "./chevron-left" // src/components/pagination.tsx, src/components/carousel.tsx, src/components/calendar.tsx
 export { ChevronRightIcon as ChevronRight } from "./chevron-right" // catalogue
-export { ChevronRightIcon } from "./chevron-right" // src/components/breadcrumb.tsx, src/components/calendar.tsx, src/components/carousel.tsx, src/components/context-menu.tsx, src/components/dropdown-menu.tsx, src/components/pagination.tsx, src/tecton/tree-view.tsx
+export { ChevronRightIcon } from "./chevron-right" // src/components/breadcrumb.tsx, src/components/pagination.tsx, src/components/carousel.tsx, src/components/dropdown-menu.tsx, src/components/calendar.tsx, src/components/context-menu.tsx, src/tecton/tree-view.tsx
 export { CaretCollapseIcon as ChevronsDownUp } from "./caret-collapse" // catalogue
 export { CaretCollapseIcon as ChevronsDownUpIcon } from "./caret-collapse" // catalogue
 export { CaretUpDownIcon as ChevronsUpDown } from "./caret-up-down" // catalogue
@@ -100,7 +100,7 @@ export { WaterIcon as DropletIcon } from "./water" // catalogue
 export { EditSquareIcon as Edit } from "./edit-square" // catalogue
 export { EditSquareIcon as EditIcon } from "./edit-square" // catalogue
 export { MoreVertIcon as EllipsisVertical } from "./more-vert" // catalogue
-export { MoreVertIcon as EllipsisVerticalIcon } from "./more-vert" // src/tecton/shell-actions.tsx
+export { MoreVertIcon as EllipsisVerticalIcon } from "./more-vert" // src/tecton/app-shell.tsx
 export { ExpandContentIcon as Expand } from "./expand-content" // catalogue
 export { ExpandContentIcon as ExpandIcon } from "./expand-content" // catalogue
 export { VisibilityIcon as Eye } from "./visibility" // catalogue
@@ -343,7 +343,7 @@ export { PreviewIcon as ScanEyeIcon } from "./preview" // catalogue
 export { InspectIcon as ScanSearch } from "./inspect" // catalogue
 export { InspectIcon as ScanSearchIcon } from "./inspect" // catalogue
 export { SearchIcon as Search } from "./search" // catalogue
-export { SearchIcon } from "./search" // src/components/command.tsx, src/components/select.tsx, src/tecton/shell-actions.tsx
+export { SearchIcon } from "./search" // src/components/command.tsx, src/components/select.tsx, src/tecton/app-shell.tsx
 export { SettingsIcon as Settings } from "./settings" // catalogue
 export { SettingsIcon } from "./settings" // catalogue
 export { RiskSkullIcon as Skull } from "./risk-skull" // catalogue
@@ -383,7 +383,7 @@ export { NodeIcon as WaypointsIcon } from "./node" // catalogue
 export { CloseIcon as X } from "./close" // catalogue
 export { CancelCircleIcon as XCircle } from "./cancel-circle" // catalogue
 export { CancelCircleIcon as XCircleIcon } from "./cancel-circle" // catalogue
-export { CloseIcon as XIcon } from "./close" // src/components/combobox.tsx, src/components/dialog.tsx, src/components/sheet.tsx, src/tecton/action-bar.tsx, src/tecton/chip.tsx
+export { CloseIcon as XIcon } from "./close" // src/components/dialog.tsx, src/components/combobox.tsx, src/components/sheet.tsx, src/tecton/chip.tsx, src/tecton/action-bar.tsx
 export { ElectricityIcon as Zap } from "./electricity" // catalogue
 export { ElectricityIcon as ZapIcon } from "./electricity" // catalogue
 export { ZoomInIcon as ZoomIn } from "./zoom-in" // catalogue
@@ -394,7 +394,7 @@ export { ZoomOutIcon } from "./zoom-out" // catalogue
 // 9 lucide pass-through(s) (no Tecton SVG source yet)
 export { EllipsisIcon } from "lucide-react" // src/tecton/overflow.tsx
 export { ExternalLinkIcon } from "lucide-react" // src/tecton/link.tsx
-export { Loader2Icon } from "lucide-react" // src/components/sonner.tsx, src/components/spinner.tsx
+export { Loader2Icon } from "lucide-react" // src/components/spinner.tsx, src/components/sonner.tsx
 export { MoreHorizontalIcon } from "lucide-react" // src/components/breadcrumb.tsx, src/components/pagination.tsx
 export { OctagonXIcon } from "lucide-react" // src/components/sonner.tsx
 export { PanelLeftIcon } from "lucide-react" // src/components/sidebar.tsx

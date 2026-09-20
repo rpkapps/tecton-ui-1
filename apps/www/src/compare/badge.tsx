@@ -7,15 +7,15 @@ import { Caption, Matrix, Page } from "./matrix"
 /**
  * Mirrors 024_components-badge__standard-all-colors.png: a row of avatar
  * placeholders with a "1" count badge in every colour, captioned beneath.
- * Tecton's "secondary" badge colour has no CountBadge equivalent and is
- * rendered with `neutral`. A second row shows the dot variant (the sibling
- * "all colors" story).
+ * CountBadge's colours are Badge's variant names, so Tecton's "primary" is
+ * `default` and both "default" and "secondary" land on `secondary`. A second
+ * row shows the dot variant (the sibling "all colors" story).
  */
 const colors = [
-  { label: "default", color: "default" },
-  { label: "primary", color: "primary" },
-  { label: "secondary", color: "neutral" },
-  { label: "error", color: "error" },
+  { label: "default", color: "secondary" },
+  { label: "primary", color: "default" },
+  { label: "secondary", color: "secondary" },
+  { label: "error", color: "destructive" },
   { label: "warning", color: "warning" },
   { label: "info", color: "info" },
   { label: "success", color: "success" },
@@ -60,7 +60,8 @@ export default function BadgeMatrix() {
         ]}
       />
       <Caption>
-        "secondary" is rendered with the CountBadge `neutral` colour.
+        "default" and "secondary" are both rendered with the CountBadge
+        `secondary` colour; "primary" is its `default`.
       </Caption>
     </Page>
   )

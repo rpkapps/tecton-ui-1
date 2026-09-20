@@ -47,7 +47,7 @@ export function HeroPreview() {
       <PanelHeader>
         <PanelTitle>Well K70 — Spekk fm top</PanelTitle>
         <PanelActions>
-          <CountBadge count={3} color="error">
+          <CountBadge count={3} color="destructive">
             <Button variant="ghost" size="icon-sm" aria-label="Notifications">
               <BellIcon />
             </Button>

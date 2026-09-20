@@ -28,9 +28,9 @@ import {
 import { Kbd, KbdGroup } from "@tecton/react/components/kbd"
 import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
 import {
+  AppShellActions,
   AppShellBrand,
   AppShellHeader,
-  AppShellHeaderActions,
   AppShellNav,
 } from "@tecton/react/tecton/app-shell"
 import { CountBadge } from "@tecton/react/tecton/count-badge"
@@ -73,7 +73,7 @@ function TopNav({
           </Button>
         ))}
       </AppShellNav>
-      <AppShellHeaderActions className="gap-2">
+      <AppShellActions className="gap-2">
         <InputGroup
           className="hidden h-8 w-56 lg:flex"
           aria-label="Search project"
@@ -90,7 +90,7 @@ function TopNav({
           </InputGroupAddon>
         </InputGroup>
         <TooltipTrigger>
-          <CountBadge count={project.unreadNotifications} color="error">
+          <CountBadge count={project.unreadNotifications} color="destructive">
             <Button variant="ghost" size="icon-sm" aria-label="Notifications">
               <BellIcon />
             </Button>
@@ -132,7 +132,7 @@ function TopNav({
             </DropdownMenuItem>
           </DropdownMenu>
         </DropdownMenuTrigger>
-      </AppShellHeaderActions>
+      </AppShellActions>
     </AppShellHeader>
   )
 }

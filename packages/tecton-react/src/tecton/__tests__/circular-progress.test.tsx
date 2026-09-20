@@ -101,7 +101,7 @@ describe("CircularProgress", () => {
   })
 
   it.each([
-    ["primary", "text-primary"],
+    ["default", "text-progress"],
     ["foreground", "text-foreground"],
     ["success", "text-success"],
     ["warning", "text-warning"],

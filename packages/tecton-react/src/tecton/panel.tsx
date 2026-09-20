@@ -12,11 +12,14 @@ const panelVariants = cva(
   "group/panel flex min-h-0 flex-col overflow-hidden text-card-foreground",
   {
     variants: {
+      // Radius and hairline colour are Card's, but Panel draws the edge as a
+      // border inside its own box: a Panel fills containers that clip overflow
+      // (resizable wrappers, split panels), where an outset ring is cut off.
       variant: {
-        default: "rounded-lg border bg-card",
-        elevated: "rounded-lg border bg-card shadow-md",
-        flat: "bg-card",
-        outline: "rounded-lg border bg-transparent",
+        default: "rounded-xl border border-foreground/10 bg-card",
+        elevated: "rounded-xl border border-foreground/10 bg-card shadow-md",
+        flat: "rounded-xl bg-card",
+        outline: "rounded-xl border border-border bg-transparent",
       },
       size: {
         sm: "text-sm [--panel-px:0.75rem] [--panel-py:0.5rem]",

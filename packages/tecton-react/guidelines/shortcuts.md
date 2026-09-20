@@ -7,10 +7,10 @@ notFor:
   - need: one key cap rendered inside a label or a menu row
     use: Kbd
   - need: the header button whose tooltip shows a shortcut
-    use: ShellAction
+    use: AppShellAction
   - need: a searchable palette of the commands themselves
     use: Command
-related: [Kbd, ShellActions, Command]
+related: [Kbd, AppShellActions, Command]
 ---
 
 ## Use it when

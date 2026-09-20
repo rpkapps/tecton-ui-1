@@ -30,7 +30,7 @@ const meterVariants = cva("flex w-full flex-col gap-1", {
 })
 
 type MeterColor =
-  | "primary"
+  | "default"
   | "success"
   | "warning"
   | "error"
@@ -40,7 +40,7 @@ type MeterColor =
   | "custom"
 
 const fillClass: Record<Exclude<MeterColor, "auto">, string> = {
-  primary: "bg-primary",
+  default: "bg-primary",
   success: "bg-success",
   warning: "bg-warning",
   error: "bg-destructive",
@@ -72,7 +72,7 @@ function Meter({
   size = "md",
   label,
   segments = 5,
-  color = "primary",
+  color = "default",
   showValue,
   valueLabel,
   ...props

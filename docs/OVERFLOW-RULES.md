@@ -1,7 +1,7 @@
 # Overflow and collapse rules
 
 How a row of controls (`Overflow`, `Toolbar`, `ActionBar`, `PageHeaderActions`,
-`PanelActions`, `ShellActions`, canvas toolbars) gives up space when its
+`PanelActions`, `AppShellActions`, canvas toolbars) gives up space when its
 container gets narrower, and how it takes the space back. These rules are the
 contract for `src/tecton/overflow.tsx` and for every host built on it.
 
@@ -239,7 +239,7 @@ fixed items alone do not fit. Default for `ActionBar` and `PageHeaderActions`.
 
 9.2. `lastResort="scroll"` clips the row and scrolls it inline, with the
 overflow trigger stuck to the end. Default for canvas toolbars and
-`ShellActions`, which sit on a single line by design.
+`AppShellActions`, which sit on a single line by design.
 
 9.3. Reaching stage 5 is logged once in development. It means a host was
 given too many fixed items for its container.

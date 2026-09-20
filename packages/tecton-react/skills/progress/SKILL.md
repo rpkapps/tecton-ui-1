@@ -127,7 +127,7 @@ import { CircularProgress } from "@tecton/react/tecton/circular-progress"
 
 - Always pass `aria-label`; there is no visible label slot.
 - Size with `size="xs" | "sm" | "md" | "lg" | "xl"` (16 / 24 / 40 / 64 / 96 px): one prop drives the diameter, the stroke width and the centre type together.
-- Colour with `color="primary" | "foreground" | "success" | "warning" | "error" | "info"`.
+- Colour with `color="default" | "foreground" | "success" | "warning" | "error" | "info"`; `default` is the shared `progress` fill.
 - Give the scale with `minValue` and `maxValue`, shape the text with `formatOptions`, or pass children for custom centre content.
 - Use `isIndeterminate`, not `value={0}`, while the total is unknown.
 
@@ -149,7 +149,7 @@ Correct:
 
 The `svg` is `aria-hidden` and `role="progressbar"` takes no name from its contents, so without `aria-label` the ring is announced as an unnamed progress bar.
 
-- **HIGH** Sizing or colouring the ring with className — `size` also sets the `--stroke` width and the centre label's type scale, so overriding only the diameter leaves a hairline ring, and `blue-600` is not a Tecton step — `cn` drops `text-primary` for a class that emits nothing and the stroke falls back to the inherited text colour. (guidelines/circular-progress.md)
+- **HIGH** Sizing or colouring the ring with className — `size` also sets the `--stroke` width and the centre label's type scale, so overriding only the diameter leaves a hairline ring, and `blue-600` is not a Tecton step — `cn` drops `text-progress` for a class that emits nothing and the stroke falls back to the inherited text colour. (guidelines/circular-progress.md)
 - **MEDIUM** showValue on an indeterminate ring — The centre label renders only when `showValue && !isIndeterminate`, so the prop is ignored and the ring spins with an empty middle where the caption was expected. (guidelines/circular-progress.md)
 
 ## Meter

@@ -30,7 +30,7 @@ Use the `size` prop from 16 px (`xs`) to 96 px (`xl`). Stroke width and label si
 
 ## Colors
 
-Use the `color` prop for the ring colour.
+Use the `color` prop for the ring colour. `default` paints the ring with the shared `progress` token, the same fill as the linear [Progress](/docs/components/progress); the track is that colour at 38 %.
 
 <ComponentPreview name="circular-progress-colors" />
 
@@ -80,7 +80,7 @@ Size with `size="xs" | "sm" | "md" | "lg" | "xl"` (16 / 24 / 40 / 64 / 96 px): o
 
 <Do>
 
-Colour with `color="primary" | "foreground" | "success" | "warning" | "error" | "info"`.
+Colour with `color="default" | "foreground" | "success" | "warning" | "error" | "info"`; `default` is the shared `progress` fill.
 
 </Do>
 
@@ -139,12 +139,12 @@ The `svg` is `aria-hidden` and `role="progressbar"` takes no name from its conte
 <Correct>
 
 ```tsx
-<CircularProgress aria-label="Export" value={40} size="lg" color="primary" />
+<CircularProgress aria-label="Export" value={40} size="lg" color="default" />
 ```
 
 </Correct>
 
-`size` also sets the `--stroke` width and the centre label's type scale, so overriding only the diameter leaves a hairline ring, and `blue-600` is not a Tecton step — `cn` drops `text-primary` for a class that emits nothing and the stroke falls back to the inherited text colour.
+`size` also sets the `--stroke` width and the centre label's type scale, so overriding only the diameter leaves a hairline ring, and `blue-600` is not a Tecton step — `cn` drops `text-progress` for a class that emits nothing and the stroke falls back to the inherited text colour.
 
 </Dont>
 
@@ -184,7 +184,7 @@ React Aria [`ProgressBar`](https://react-aria.adobe.com/ProgressBar); accepts al
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | "md" | Diameter 16 / 24 / 40 / 64 / 96 px. |
-| `color` | `"primary" \| "foreground" \| "success" \| "warning" \| "error" \| "info"` | "primary" | Ring colour. |
+| `color` | `"default" \| "foreground" \| "success" \| "warning" \| "error" \| "info"` | "default" | Ring colour; `default` is the `progress` token. |
 | `showValue` | `boolean` | false | Show the formatted value in the centre. |
 | `children` | `ReactNode` | - | Custom centre content (overrides `showValue`). |
 | `aria-label` | `string` | - | Accessible name (required without a visible label). |

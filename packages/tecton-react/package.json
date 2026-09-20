@@ -404,10 +404,6 @@
       "types": "./dist/tecton/portal.d.ts",
       "import": "./dist/tecton/portal.js"
     },
-    "./tecton/shell-actions": {
-      "types": "./dist/tecton/shell-actions.d.ts",
-      "import": "./dist/tecton/shell-actions.js"
-    },
     "./tecton/shortcuts": {
       "types": "./dist/tecton/shortcuts.d.ts",
       "import": "./dist/tecton/shortcuts.js"

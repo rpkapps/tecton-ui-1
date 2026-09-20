@@ -23,7 +23,9 @@ const circularProgressVariants = cva("relative inline-flex shrink-0", {
       xl: "size-24 text-base [--stroke:5px]",
     },
     color: {
-      primary: "text-primary",
+      // `default` is painted with the shared `progress` token, like the
+      // shadcn Progress indicator; the track follows at its /38 opacity.
+      default: "text-progress",
       foreground: "text-foreground",
       success: "text-success",
       warning: "text-warning",
@@ -33,7 +35,7 @@ const circularProgressVariants = cva("relative inline-flex shrink-0", {
   },
   defaultVariants: {
     size: "md",
-    color: "primary",
+    color: "default",
   },
 })
 
@@ -52,7 +54,7 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 function CircularProgress({
   className,
   size = "md",
-  color = "primary",
+  color = "default",
   showValue,
   children,
   ...props
@@ -85,7 +87,7 @@ function CircularProgress({
                 r={RADIUS}
                 fill="none"
                 strokeWidth="var(--stroke)"
-                className="stroke-current opacity-20"
+                className="stroke-current opacity-38"
               />
               <circle
                 cx="24"
