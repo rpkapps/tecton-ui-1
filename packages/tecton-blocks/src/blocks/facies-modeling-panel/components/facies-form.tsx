@@ -47,8 +47,10 @@ type FaciesFormProps = Omit<React.ComponentProps<"div">, "onChange"> & {
 function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
   const id = React.useId()
 
-  const set = <TKey extends keyof FaciesSettings>(key: TKey, next: FaciesSettings[TKey]) =>
-    onChange({ ...value, [key]: next })
+  const set = <TKey extends keyof FaciesSettings>(
+    key: TKey,
+    next: FaciesSettings[TKey]
+  ) => onChange({ ...value, [key]: next })
 
   const setVariogram = (key: keyof FaciesSettings["variogram"], next: number) =>
     set("variogram", { ...value.variogram, [key]: next })
@@ -88,7 +90,11 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
           onSelectionChange={(key) => set("templateId", String(key))}
         >
           {faciesTemplates.map((template) => (
-            <SelectItem key={template.id} id={template.id} textValue={template.name}>
+            <SelectItem
+              key={template.id}
+              id={template.id}
+              textValue={template.name}
+            >
               <ColorSwatch color={template.color} size="xs" shape="square" />
               {template.name}
             </SelectItem>
@@ -152,7 +158,10 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
               className="font-mono tabular-nums"
               value={String(value.realizations)}
               onChange={(event) =>
-                set("realizations", Math.max(1, Number(event.target.value) || 1))
+                set(
+                  "realizations",
+                  Math.max(1, Number(event.target.value) || 1)
+                )
               }
             />
           </Field>
@@ -166,7 +175,9 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
               className="font-mono tabular-nums"
               value={value.seed}
               disabled={value.options.lockSeed}
-              onChange={(event) => set("seed", event.target.value.replace(/\D/g, ""))}
+              onChange={(event) =>
+                set("seed", event.target.value.replace(/\D/g, ""))
+              }
             />
           </Field>
           <Button
@@ -174,7 +185,9 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
             size="icon"
             aria-label="Randomise seed"
             isDisabled={value.options.lockSeed}
-            onPress={() => set("seed", String(Math.floor(Math.random() * 90000) + 10000))}
+            onPress={() =>
+              set("seed", String(Math.floor(Math.random() * 90000) + 10000))
+            }
           >
             <DicesIcon />
           </Button>
@@ -343,7 +356,9 @@ function FormSection({
           </CollapsibleTrigger>
         </span>
       </div>
-      <CollapsibleContent className="flex flex-col gap-4">{children}</CollapsibleContent>
+      <CollapsibleContent className="flex flex-col gap-4">
+        {children}
+      </CollapsibleContent>
     </Collapsible>
   )
 }

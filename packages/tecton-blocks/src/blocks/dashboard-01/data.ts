@@ -28,12 +28,42 @@ export const projectTree: ProjectNode[] = [
     kind: "folder",
     meta: "6",
     children: [
-      { id: "hz-k70", label: "K70: Spekk FM Top", kind: "item", color: "#218585" },
-      { id: "hz-l70", label: "L70: Are FM Top", kind: "item", color: "#2D7856" },
-      { id: "hz-j80", label: "J80: Melke FM Top", kind: "item", color: "#84A138" },
-      { id: "hz-m10", label: "M10: Garn FM Top", kind: "item", color: "#CB8553" },
-      { id: "hz-m40", label: "M40: Ile FM Top", kind: "item", color: "#8CA7DE" },
-      { id: "hz-n20", label: "N20: Tofte FM Top", kind: "item", color: "#C2867A" },
+      {
+        id: "hz-k70",
+        label: "K70: Spekk FM Top",
+        kind: "item",
+        color: "#218585",
+      },
+      {
+        id: "hz-l70",
+        label: "L70: Are FM Top",
+        kind: "item",
+        color: "#2D7856",
+      },
+      {
+        id: "hz-j80",
+        label: "J80: Melke FM Top",
+        kind: "item",
+        color: "#84A138",
+      },
+      {
+        id: "hz-m10",
+        label: "M10: Garn FM Top",
+        kind: "item",
+        color: "#CB8553",
+      },
+      {
+        id: "hz-m40",
+        label: "M40: Ile FM Top",
+        kind: "item",
+        color: "#8CA7DE",
+      },
+      {
+        id: "hz-n20",
+        label: "N20: Tofte FM Top",
+        kind: "item",
+        color: "#C2867A",
+      },
     ],
   },
   {
@@ -47,11 +77,26 @@ export const projectTree: ProjectNode[] = [
         label: "Facies",
         kind: "folder",
         children: [
-          { id: "facies-01", label: "Facies Model 01", kind: "item", color: "#CB8553" },
-          { id: "facies-02", label: "Facies Model 02 (SIS)", kind: "item", color: "#84A138" },
+          {
+            id: "facies-01",
+            label: "Facies Model 01",
+            kind: "item",
+            color: "#CB8553",
+          },
+          {
+            id: "facies-02",
+            label: "Facies Model 02 (SIS)",
+            kind: "item",
+            color: "#84A138",
+          },
         ],
       },
-      { id: "model-velocity", label: "Velocity model v3", kind: "item", color: "#8CA7DE" },
+      {
+        id: "model-velocity",
+        label: "Velocity model v3",
+        kind: "item",
+        color: "#8CA7DE",
+      },
     ],
   },
 ]

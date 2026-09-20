@@ -47,7 +47,9 @@ export default function FormTanstackTextarea() {
     <Card className="w-full sm:max-w-md">
       <CardHeader>
         <CardTitle>Profile Settings</CardTitle>
-        <CardDescription>Update your profile information below.</CardDescription>
+        <CardDescription>
+          Update your profile information below.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form
@@ -61,10 +63,13 @@ export default function FormTanstackTextarea() {
             <form.Field
               name="about"
               children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor="form-tanstack-textarea-about">More about you</FieldLabel>
+                    <FieldLabel htmlFor="form-tanstack-textarea-about">
+                      More about you
+                    </FieldLabel>
                     <Textarea
                       id="form-tanstack-textarea-about"
                       name={field.name}
@@ -76,10 +81,12 @@ export default function FormTanstackTextarea() {
                       className="min-h-[120px]"
                     />
                     <FieldDescription>
-                      Tell us more about yourself. This will be used to help us personalize your
-                      experience.
+                      Tell us more about yourself. This will be used to help us
+                      personalize your experience.
                     </FieldDescription>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </Field>
                 )
               }}

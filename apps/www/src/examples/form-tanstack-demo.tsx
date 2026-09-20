@@ -70,7 +70,9 @@ export default function BugReportForm() {
     <Card className="w-full sm:max-w-md">
       <CardHeader>
         <CardTitle>Bug Report</CardTitle>
-        <CardDescription>Help us improve by reporting bugs you encounter.</CardDescription>
+        <CardDescription>
+          Help us improve by reporting bugs you encounter.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form
@@ -84,7 +86,8 @@ export default function BugReportForm() {
             <form.Field
               name="title"
               children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>Bug Title</FieldLabel>
@@ -98,7 +101,9 @@ export default function BugReportForm() {
                       placeholder="Login button not working on mobile"
                       autoComplete="off"
                     />
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </Field>
                 )
               }}
@@ -106,7 +111,8 @@ export default function BugReportForm() {
             <form.Field
               name="description"
               children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <Field data-invalid={isInvalid}>
                     <FieldLabel htmlFor={field.name}>Description</FieldLabel>
@@ -129,9 +135,12 @@ export default function BugReportForm() {
                       </InputGroupAddon>
                     </InputGroup>
                     <FieldDescription>
-                      Include steps to reproduce, expected behavior, and what actually happened.
+                      Include steps to reproduce, expected behavior, and what
+                      actually happened.
                     </FieldDescription>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </Field>
                 )
               }}

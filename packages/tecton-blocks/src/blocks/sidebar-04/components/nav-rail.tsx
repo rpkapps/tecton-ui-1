@@ -49,7 +49,11 @@ function NavRail(props: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               {railMain.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton href={item.url} isActive={item.isActive} tooltip={item.title}>
+                  <SidebarMenuButton
+                    href={item.url}
+                    isActive={item.isActive}
+                    tooltip={item.title}
+                  >
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>

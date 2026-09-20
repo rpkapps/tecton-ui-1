@@ -32,7 +32,8 @@ function applyFilter(wells: Well[], filter: WellsFilter): Well[] {
   return wells.filter((well) => {
     if (filter.field !== "all" && well.field !== filter.field) return false
     if (filter.type !== "all" && well.type !== filter.type) return false
-    if (filter.statuses.length > 0 && !filter.statuses.includes(well.status)) return false
+    if (filter.statuses.length > 0 && !filter.statuses.includes(well.status))
+      return false
     if (
       query &&
       ![well.name, well.rig, well.operator, well.field].some((text) =>
@@ -58,7 +59,10 @@ function WellsListPage({
 }: WellsListPageProps) {
   const [filter, setFilter] = React.useState<WellsFilter>(emptyFilter)
   const source = empty ? [] : wells
-  const rows = React.useMemo(() => applyFilter(source, filter), [source, filter])
+  const rows = React.useMemo(
+    () => applyFilter(source, filter),
+    [source, filter]
+  )
   const filtered = JSON.stringify(filter) !== JSON.stringify(emptyFilter)
 
   return (
@@ -75,8 +79,8 @@ function WellsListPage({
           <PageHeaderEyebrow>Inventory</PageHeaderEyebrow>
           <PageHeaderTitle>Wells</PageHeaderTitle>
           <PageHeaderDescription>
-            All wells across your licences. Select rows to add them to a
-            project or export their logs.
+            All wells across your licences. Select rows to add them to a project
+            or export their logs.
           </PageHeaderDescription>
         </PageHeaderContent>
         <PageHeaderActions>
@@ -93,7 +97,11 @@ function WellsListPage({
       </PageHeader>
 
       {source.length > 0 && (
-        <WellsFilterBar value={filter} onChange={setFilter} resultCount={rows.length} />
+        <WellsFilterBar
+          value={filter}
+          onChange={setFilter}
+          resultCount={rows.length}
+        />
       )}
 
       {rows.length === 0 ? (
@@ -113,7 +121,13 @@ export default function WellsListRoute() {
   return <WellsListPage />
 }
 
-export { WellsListPage, WellsFilterBar, WellsTable, WellsEmptyState, applyFilter }
+export {
+  WellsListPage,
+  WellsFilterBar,
+  WellsTable,
+  WellsEmptyState,
+  applyFilter,
+}
 export { wells, statusMeta, typeMeta, fields, formatDate } from "./data"
 export { emptyFilter } from "./components/wells-filter-bar"
 export type { WellsListPageProps }

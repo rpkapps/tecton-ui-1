@@ -46,7 +46,8 @@ const formSchema = z.object({
     .string()
     .min(1, "Please select your spoken language.")
     .refine((val) => val !== "auto", {
-      message: "Auto-detection is not allowed. Please select a specific language.",
+      message:
+        "Auto-detection is not allowed. Please select a specific language.",
     }),
 })
 
@@ -67,7 +68,9 @@ export default function FormTanstackSelect() {
     <Card className="w-full sm:max-w-lg">
       <CardHeader>
         <CardTitle>Language Preferences</CardTitle>
-        <CardDescription>Select your preferred spoken language.</CardDescription>
+        <CardDescription>
+          Select your preferred spoken language.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form
@@ -81,7 +84,8 @@ export default function FormTanstackSelect() {
             <form.Field
               name="language"
               children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <Field orientation="responsive" data-invalid={isInvalid}>
                     <FieldContent>
@@ -91,13 +95,17 @@ export default function FormTanstackSelect() {
                       <FieldDescription>
                         For best results, select the language you speak.
                       </FieldDescription>
-                      {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
                     </FieldContent>
                     <Select
                       name={field.name}
                       placeholder="Select"
                       selectedKey={field.state.value || null}
-                      onSelectionChange={(key) => field.handleChange(key ? String(key) : "")}
+                      onSelectionChange={(key) =>
+                        field.handleChange(key ? String(key) : "")
+                      }
                       onBlur={field.handleBlur}
                       isInvalid={isInvalid}
                       className="min-w-[120px]"

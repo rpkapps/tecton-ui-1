@@ -7,7 +7,12 @@ export default function CircularProgressSizes() {
     <div className="flex items-end gap-6">
       {sizes.map((size) => (
         <div key={size} className="flex flex-col items-center gap-2">
-          <CircularProgress size={size} value={64} aria-label={`Size ${size}`} showValue={size !== "xs"} />
+          <CircularProgress
+            size={size}
+            value={64}
+            aria-label={`Size ${size}`}
+            showValue={size !== "xs"}
+          />
           <span className="text-xs text-muted-foreground">{size}</span>
         </div>
       ))}

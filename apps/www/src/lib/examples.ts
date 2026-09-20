@@ -37,8 +37,7 @@ export async function loadExample(name: string): Promise<React.ComponentType> {
   const component =
     mod.default ??
     (Object.values(mod).find((value) => typeof value === "function") as
-      | React.ComponentType
-      | undefined)
+      React.ComponentType | undefined)
   if (!component) {
     throw new Error(`Example ${name} does not export a component`)
   }

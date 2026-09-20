@@ -35,7 +35,7 @@ export default function ThemeRootDemo() {
   }, [open])
 
   return (
-    <ThemeRoot className="[--primary:var(--tecton-palette-green-560)] rounded-lg border p-6">
+    <ThemeRoot className="rounded-lg border p-6 [--primary:var(--tecton-palette-green-560)]">
       <div className="flex flex-col items-start gap-4 text-sm">
         <p className="text-muted-foreground">
           Everything inside this root uses its own <code>--primary</code>.
@@ -60,10 +60,13 @@ export default function ThemeRootDemo() {
           {open ? (
             slot === "theme-root-overlay" ? (
               <>
-                Portalled into <code>data-slot=&quot;theme-root-overlay&quot;</code>
+                Portalled into{" "}
+                <code>data-slot=&quot;theme-root-overlay&quot;</code>
               </>
             ) : (
-              <>Portalled outside the root container ({slot ?? "no container"})</>
+              <>
+                Portalled outside the root container ({slot ?? "no container"})
+              </>
             )
           ) : (
             "Open the dialog to see where it lands."

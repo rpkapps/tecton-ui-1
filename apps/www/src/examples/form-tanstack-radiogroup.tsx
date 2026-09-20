@@ -23,7 +23,10 @@ import {
   FieldSet,
   FieldTitle,
 } from "@tecton/react/components/field"
-import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group"
+import {
+  RadioGroup,
+  RadioGroupItem,
+} from "@tecton/react/components/radio-group"
 
 import { showSubmitted } from "./form-tanstack-demo"
 
@@ -66,7 +69,9 @@ export default function FormTanstackRadioGroup() {
     <Card className="w-full sm:max-w-md">
       <CardHeader>
         <CardTitle>Subscription Plan</CardTitle>
-        <CardDescription>See pricing and features for each plan.</CardDescription>
+        <CardDescription>
+          See pricing and features for each plan.
+        </CardDescription>
       </CardHeader>
       <CardContent>
         <form
@@ -80,7 +85,8 @@ export default function FormTanstackRadioGroup() {
             <form.Field
               name="plan"
               children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <FieldSet>
                     <FieldLegend>Plan</FieldLegend>
@@ -96,11 +102,19 @@ export default function FormTanstackRadioGroup() {
                       aria-label="Plan"
                     >
                       {plans.map((plan) => (
-                        <FieldLabel key={plan.id} htmlFor={`form-tanstack-radiogroup-${plan.id}`}>
-                          <Field orientation="horizontal" data-invalid={isInvalid}>
+                        <FieldLabel
+                          key={plan.id}
+                          htmlFor={`form-tanstack-radiogroup-${plan.id}`}
+                        >
+                          <Field
+                            orientation="horizontal"
+                            data-invalid={isInvalid}
+                          >
                             <FieldContent>
                               <FieldTitle>{plan.title}</FieldTitle>
-                              <FieldDescription>{plan.description}</FieldDescription>
+                              <FieldDescription>
+                                {plan.description}
+                              </FieldDescription>
                             </FieldContent>
                             <RadioGroupItem
                               value={plan.id}
@@ -110,7 +124,9 @@ export default function FormTanstackRadioGroup() {
                         </FieldLabel>
                       ))}
                     </RadioGroup>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldSet>
                 )
               }}

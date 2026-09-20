@@ -11,7 +11,12 @@ import {
   AppShellSplitHandle,
   AppShellSplitPanel,
 } from "@tecton/react/tecton/app-shell"
-import { Panel, PanelContent, PanelHeader, PanelTitle } from "@tecton/react/tecton/panel"
+import {
+  Panel,
+  PanelContent,
+  PanelHeader,
+  PanelTitle,
+} from "@tecton/react/tecton/panel"
 
 export default function AppShellSplitExample() {
   return (

@@ -18,7 +18,12 @@ import { CommandMenu } from "@/components/command-menu"
 import { ModeToggle } from "@/components/mode-toggle"
 import { TectonLogo } from "@/components/tecton-logo"
 import { siteConfig } from "@/lib/site"
-import { getPagesFromFolder, getRootFolders, getRootPages, nodeName } from "@/lib/tree"
+import {
+  getPagesFromFolder,
+  getRootFolders,
+  getRootPages,
+  nodeName,
+} from "@/lib/tree"
 
 export function SiteHeader({ tree }: { tree: PageTree.Root }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname })
@@ -27,13 +32,20 @@ export function SiteHeader({ tree }: { tree: PageTree.Root }) {
     <header className="sticky top-0 z-50 w-full bg-background">
       <div className="container-wrapper px-6">
         <div className="flex h-(--header-height) items-center **:data-[slot=separator]:h-4! **:data-[slot=separator]:self-center">
-          <MobileNav tree={tree} pathname={pathname} className="flex lg:hidden" />
+          <MobileNav
+            tree={tree}
+            pathname={pathname}
+            className="flex lg:hidden"
+          />
           <MainNav pathname={pathname} className="hidden lg:flex" />
           <div className="ml-auto flex items-center gap-2 md:flex-1 md:justify-end">
             <div className="hidden w-full flex-1 md:flex md:w-auto md:flex-none">
               <CommandMenu tree={tree} />
             </div>
-            <Separator orientation="vertical" className="ml-2 hidden lg:block" />
+            <Separator
+              orientation="vertical"
+              className="ml-2 hidden lg:block"
+            />
             <ModeToggle />
           </div>
         </div>
@@ -54,7 +66,13 @@ function isActive(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 
-function MainNav({ pathname, className }: { pathname: string; className?: string }) {
+function MainNav({
+  pathname,
+  className,
+}: {
+  pathname: string
+  className?: string
+}) {
   return (
     <nav className={cn("items-center gap-0", className)}>
       <Link
@@ -122,7 +140,9 @@ function MobileNav({
             />
           </div>
         </div>
-        <span className="flex h-8 items-center text-lg leading-none font-medium">Menu</span>
+        <span className="flex h-8 items-center text-lg leading-none font-medium">
+          Menu
+        </span>
       </Button>
       <Sheet side="left" className="w-80 overflow-y-auto">
         <SheetHeader>
@@ -133,33 +153,52 @@ function MobileNav({
         </SheetHeader>
         <div className="flex flex-col gap-12 px-6 pb-6">
           <div className="flex flex-col gap-4">
-            <div className="text-sm font-medium text-muted-foreground">Menu</div>
+            <div className="text-sm font-medium text-muted-foreground">
+              Menu
+            </div>
             <div className="flex flex-col gap-3">
               {siteConfig.nav.map((item) => (
-                <Link key={item.href} to={item.href} className="text-2xl font-medium">
+                <Link
+                  key={item.href}
+                  to={item.href}
+                  className="text-2xl font-medium"
+                >
                   {item.title}
                 </Link>
               ))}
             </div>
           </div>
           <div className="flex flex-col gap-4">
-            <div className="text-sm font-medium text-muted-foreground">Sections</div>
+            <div className="text-sm font-medium text-muted-foreground">
+              Sections
+            </div>
             <div className="flex flex-col gap-3">
               {sections.map((page) => (
-                <Link key={page.url} to={page.url} className="text-2xl font-medium">
+                <Link
+                  key={page.url}
+                  to={page.url}
+                  className="text-2xl font-medium"
+                >
                   {nodeName(page)}
                 </Link>
               ))}
             </div>
           </div>
           {folders.map((folder) => (
-            <div key={folder.$id ?? nodeName(folder)} className="flex flex-col gap-4">
+            <div
+              key={folder.$id ?? nodeName(folder)}
+              className="flex flex-col gap-4"
+            >
               <div className="text-sm font-medium text-muted-foreground">
                 {nodeName(folder)}
               </div>
               <div className="flex flex-col gap-3">
                 {getPagesFromFolder(folder).map((page) => (
-                  <Link key={page.url} to={page.url} className="text-2xl font-medium">
+                  <Link
+                    key={page.url}
+                    to={page.url}
+                    className="text-2xl font-medium"
+                  >
                     {nodeName(page)}
                   </Link>
                 ))}

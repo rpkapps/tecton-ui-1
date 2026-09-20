@@ -128,7 +128,9 @@ function SettingsPage({
           <TabsContent id="notifications">
             <NotificationsForm
               value={draft.notifications}
-              onChange={(notifications) => setDraft({ ...draft, notifications })}
+              onChange={(notifications) =>
+                setDraft({ ...draft, notifications })
+              }
             />
           </TabsContent>
           <TabsContent id="appearance">

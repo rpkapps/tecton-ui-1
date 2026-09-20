@@ -11,7 +11,11 @@ import {
   AppShellNav,
   AppShellSidebar,
 } from "@tecton/react/tecton/app-shell"
-import { TreeView, TreeViewItem, TreeViewItemContent } from "@tecton/react/tecton/tree-view"
+import {
+  TreeView,
+  TreeViewItem,
+  TreeViewItemContent,
+} from "@tecton/react/tecton/tree-view"
 
 export default function AppShellSidebarExample() {
   return (
@@ -49,7 +53,9 @@ export default function AppShellSidebarExample() {
             </TreeViewItem>
           </TreeView>
         </AppShellSidebar>
-        <AppShellMain className="p-4 text-sm text-muted-foreground">Map view</AppShellMain>
+        <AppShellMain className="p-4 text-sm text-muted-foreground">
+          Map view
+        </AppShellMain>
       </AppShellBody>
     </AppShell>
   )

@@ -18,7 +18,11 @@ export const Route = createFileRoute("/compare/$component")({
     const matrix = compareMatrices[params.component]
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- route param
     if (!matrix) throw notFound()
-    return { component: params.component, title: matrix.title, reference: matrix.reference }
+    return {
+      component: params.component,
+      title: matrix.title,
+      reference: matrix.reference,
+    }
   },
   head: ({ loaderData }) => ({
     meta: loaderData ? [{ title: `Compare – ${loaderData.title}` }] : [],

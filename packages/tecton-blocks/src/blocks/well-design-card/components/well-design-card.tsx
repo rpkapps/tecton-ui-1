@@ -41,7 +41,10 @@ import { phaseMeta, riskLabel, trajectoryMeta } from "../data"
 import type { WellDesign } from "../data"
 import { TrajectorySketch } from "./trajectory-sketch"
 
-type WellDesignCardProps = Omit<React.ComponentProps<typeof Card>, "children"> & {
+type WellDesignCardProps = Omit<
+  React.ComponentProps<typeof Card>,
+  "children"
+> & {
   design: WellDesign
   isSelected?: boolean
   onSelectedChange?: (selected: boolean) => void
@@ -142,10 +145,19 @@ function WellDesignCard({
         <Separator emphasis="subtle" />
 
         <dl className="flex flex-col gap-1.5 text-xs">
-          <ReadoutRow label="AFE cost" value={`$${design.afeCost[0]}M – ${design.afeCost[1]}M`} />
-          <ReadoutRow label="Plan days" value={`${design.planDays[0]}d – ${design.planDays[1]}d`} />
+          <ReadoutRow
+            label="AFE cost"
+            value={`$${design.afeCost[0]}M – ${design.afeCost[1]}M`}
+          />
+          <ReadoutRow
+            label="Plan days"
+            value={`${design.planDays[0]}d – ${design.planDays[1]}d`}
+          />
           <ReadoutRow label="DDI" value={design.ddi.toFixed(1)} />
-          <ReadoutRow label="Kick-off" value={`${design.kickOff.toLocaleString()} ft`} />
+          <ReadoutRow
+            label="Kick-off"
+            value={`${design.kickOff.toLocaleString()} ft`}
+          />
         </dl>
 
         <Separator emphasis="subtle" />
@@ -191,7 +203,11 @@ function WellDesignCard({
       </CardContent>
 
       <CardFooter>
-        <Button className="w-full" variant="secondary" onPress={() => onView?.(design)}>
+        <Button
+          className="w-full"
+          variant="secondary"
+          onPress={() => onView?.(design)}
+        >
           View design
         </Button>
       </CardFooter>
@@ -199,7 +215,13 @@ function WellDesignCard({
   )
 }
 
-function ReadoutRow({ label, value }: { label: string; value: React.ReactNode }) {
+function ReadoutRow({
+  label,
+  value,
+}: {
+  label: string
+  value: React.ReactNode
+}) {
   return (
     <div className="flex items-baseline justify-between gap-3">
       <dt className="text-muted-foreground">{label}</dt>

@@ -1,4 +1,9 @@
-import { Panel, PanelContent, PanelHeader, PanelTitle } from "@tecton/react/tecton/panel"
+import {
+  Panel,
+  PanelContent,
+  PanelHeader,
+  PanelTitle,
+} from "@tecton/react/tecton/panel"
 
 const variants = ["default", "elevated", "flat", "outline"] as const
 

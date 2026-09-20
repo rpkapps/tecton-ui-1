@@ -87,7 +87,11 @@ function SwitchRow({
 }) {
   const id = React.useId()
   return (
-    <Field orientation="horizontal" data-slot="switch-row" className="justify-between">
+    <Field
+      orientation="horizontal"
+      data-slot="switch-row"
+      className="justify-between"
+    >
       <FieldContent>
         <FieldLabel htmlFor={id} className="text-sm font-normal">
           {label}
@@ -129,7 +133,8 @@ function SelectRow({
 
 function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
   const id = React.useId()
-  const bioError = value.bio.length > 160 ? "Keep it under 160 characters." : undefined
+  const bioError =
+    value.bio.length > 160 ? "Keep it under 160 characters." : undefined
 
   const set = <TKey extends keyof Settings["profile"]>(
     key: TKey,
@@ -137,7 +142,10 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
   ) => onChange({ ...value, [key]: next })
 
   return (
-    <div data-slot="profile-form" className={cn("flex flex-col gap-8", className)}>
+    <div
+      data-slot="profile-form"
+      className={cn("flex flex-col gap-8", className)}
+    >
       <SettingsSection
         title="Identity"
         description="How you appear to teammates in comments and change history."
@@ -163,7 +171,9 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
         <Field>
           <FieldLabel htmlFor={`${id}-email`}>Email</FieldLabel>
           <Input id={`${id}-email`} type="email" value={value.email} readOnly />
-          <FieldDescription>Managed by your identity provider.</FieldDescription>
+          <FieldDescription>
+            Managed by your identity provider.
+          </FieldDescription>
         </Field>
         <SelectRow
           label="Role"
@@ -210,7 +220,9 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
         <SelectRow
           label="Unit system"
           selectedKey={value.units}
-          onSelectionChange={(key) => set("units", String(key) as Settings["profile"]["units"])}
+          onSelectionChange={(key) =>
+            set("units", String(key) as Settings["profile"]["units"])
+          }
           description="Changing units re-formats depths, pressures and volumes; stored values are unaffected."
         >
           {unitSystems.map((system) => (
@@ -224,14 +236,21 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
   )
 }
 
-function NotificationsForm({ className, value, onChange }: SectionProps<"notifications">) {
+function NotificationsForm({
+  className,
+  value,
+  onChange,
+}: SectionProps<"notifications">) {
   const set = <TKey extends keyof Settings["notifications"]>(
     key: TKey,
     next: Settings["notifications"][TKey]
   ) => onChange({ ...value, [key]: next })
 
   return (
-    <div data-slot="notifications-form" className={cn("flex flex-col gap-8", className)}>
+    <div
+      data-slot="notifications-form"
+      className={cn("flex flex-col gap-8", className)}
+    >
       <Alert variant="info" appearance="outline">
         <InfoIcon />
         <AlertTitle>Rig schedule alerts are off</AlertTitle>
@@ -240,7 +259,10 @@ function NotificationsForm({ className, value, onChange }: SectionProps<"notific
           to stay on top of schedule changes.
         </AlertDescription>
       </Alert>
-      <SettingsSection title="Delivery" description="Where and how often notifications reach you.">
+      <SettingsSection
+        title="Delivery"
+        description="Where and how often notifications reach you."
+      >
         <SelectRow
           label="Channel"
           selectedKey={value.channel}
@@ -249,7 +271,11 @@ function NotificationsForm({ className, value, onChange }: SectionProps<"notific
           }
         >
           {channels.map((channel) => (
-            <SelectItem key={channel.id} id={channel.id} textValue={channel.label}>
+            <SelectItem
+              key={channel.id}
+              id={channel.id}
+              textValue={channel.label}
+            >
               {channel.label}
             </SelectItem>
           ))}
@@ -271,7 +297,10 @@ function NotificationsForm({ className, value, onChange }: SectionProps<"notific
 
       <Separator emphasis="subtle" />
 
-      <SettingsSection title="Activity" description="Events in the projects you are a member of.">
+      <SettingsSection
+        title="Activity"
+        description="Events in the projects you are a member of."
+      >
         <SwitchRow
           label="Model runs"
           description="When a facies or velocity model you started finishes or fails."
@@ -300,7 +329,10 @@ function NotificationsForm({ className, value, onChange }: SectionProps<"notific
 
       <Separator emphasis="subtle" />
 
-      <SettingsSection title="Product" description="Occasional product news from Tecton.">
+      <SettingsSection
+        title="Product"
+        description="Occasional product news from Tecton."
+      >
         <SwitchRow
           label="Release notes and tips"
           isSelected={value.marketing}
@@ -311,15 +343,25 @@ function NotificationsForm({ className, value, onChange }: SectionProps<"notific
   )
 }
 
-function AppearanceForm({ className, value, onChange }: SectionProps<"appearance">) {
+function AppearanceForm({
+  className,
+  value,
+  onChange,
+}: SectionProps<"appearance">) {
   const set = <TKey extends keyof Settings["appearance"]>(
     key: TKey,
     next: Settings["appearance"][TKey]
   ) => onChange({ ...value, [key]: next })
 
   return (
-    <div data-slot="appearance-form" className={cn("flex flex-col gap-8", className)}>
-      <SettingsSection title="Theme" description="Dark is the canonical Tecton theme.">
+    <div
+      data-slot="appearance-form"
+      className={cn("flex flex-col gap-8", className)}
+    >
+      <SettingsSection
+        title="Theme"
+        description="Dark is the canonical Tecton theme."
+      >
         <SelectRow
           label="Colour scheme"
           selectedKey={value.theme}
@@ -353,7 +395,11 @@ function AppearanceForm({ className, value, onChange }: SectionProps<"appearance
           }
         >
           {densities.map((density) => (
-            <SelectItem key={density.id} id={density.id} textValue={density.label}>
+            <SelectItem
+              key={density.id}
+              id={density.id}
+              textValue={density.label}
+            >
               {density.label}
             </SelectItem>
           ))}
@@ -380,4 +426,11 @@ function AppearanceForm({ className, value, onChange }: SectionProps<"appearance
   )
 }
 
-export { ProfileForm, NotificationsForm, AppearanceForm, SettingsSection, SwitchRow, SelectRow }
+export {
+  ProfileForm,
+  NotificationsForm,
+  AppearanceForm,
+  SettingsSection,
+  SwitchRow,
+  SelectRow,
+}

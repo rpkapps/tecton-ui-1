@@ -11,7 +11,10 @@ export default function RadiusDemo() {
   return (
     <div className="flex flex-wrap items-end gap-6">
       {radii.map(([cls, px]) => (
-        <div key={cls} className="flex flex-col items-center gap-2 text-xs text-muted-foreground">
+        <div
+          key={cls}
+          className="flex flex-col items-center gap-2 text-xs text-muted-foreground"
+        >
           <div className={`size-16 border bg-secondary ${cls}`} />
           <span className="font-mono">{cls}</span>
           <span>{px}</span>

@@ -7,7 +7,11 @@ export default function ColorSwatchSizes() {
     <div className="flex items-end gap-4">
       {sizes.map((size) => (
         <div key={size} className="flex flex-col items-center gap-2">
-          <ColorSwatch size={size} color="#38bdf8" aria-label={`Size ${size}`} />
+          <ColorSwatch
+            size={size}
+            color="#38bdf8"
+            aria-label={`Size ${size}`}
+          />
           <span className="text-xs text-muted-foreground">{size}</span>
         </div>
       ))}

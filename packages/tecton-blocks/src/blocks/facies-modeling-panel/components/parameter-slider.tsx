@@ -50,7 +50,11 @@ function ParameterSlider({
           {valueLabel ?? (
             <>
               {value.toLocaleString()}
-              {unit && <span className="ml-0.5 font-normal text-muted-foreground">{unit}</span>}
+              {unit && (
+                <span className="ml-0.5 font-normal text-muted-foreground">
+                  {unit}
+                </span>
+              )}
             </>
           )}
         </span>

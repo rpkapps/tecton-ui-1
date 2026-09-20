@@ -39,7 +39,13 @@ function Example({ name }: { name: string }) {
   return <Component />
 }
 
-function ExampleSource({ name, maxLines }: { name: string; maxLines?: number }) {
+function ExampleSource({
+  name,
+  maxLines,
+}: {
+  name: string
+  maxLines?: number
+}) {
   const { source } = useExample(name)
   const code = React.use(source)
   return <CodeBlock code={code} lang="tsx" maxLines={maxLines} />
@@ -93,7 +99,9 @@ export function ComponentPreview({
     return caption ? (
       <figure className="flex flex-col gap-4">
         {content}
-        <figcaption className="text-center text-sm text-muted-foreground">{caption}</figcaption>
+        <figcaption className="text-center text-sm text-muted-foreground">
+          {caption}
+        </figcaption>
       </figure>
     ) : (
       content
@@ -117,17 +125,21 @@ export function ComponentPreview({
       chromeLessOnMobile={chromeLessOnMobile}
       direction={direction}
       component={
-        <React.Suspense fallback={<Spinner className="text-muted-foreground" />}>
+        <React.Suspense
+          fallback={<Spinner className="text-muted-foreground" />}
+        >
           <Example name={name} />
         </React.Suspense>
       }
       source={
-        <React.Suspense fallback={<div className="h-24 animate-pulse bg-code" />}>
+        <React.Suspense
+          fallback={<div className="bg-code h-24 animate-pulse" />}
+        >
           <ExampleSource name={name} />
         </React.Suspense>
       }
       sourcePreview={
-        <React.Suspense fallback={<div className="h-24 bg-code" />}>
+        <React.Suspense fallback={<div className="bg-code h-24" />}>
           <ExampleSource name={name} maxLines={3} />
         </React.Suspense>
       }
@@ -137,7 +149,10 @@ export function ComponentPreview({
 
   if (caption) {
     return (
-      <figure data-hide-code={hideCode} className="flex flex-col data-[hide-code=true]:gap-4">
+      <figure
+        data-hide-code={hideCode}
+        className="flex flex-col data-[hide-code=true]:gap-4"
+      >
         {content}
         <figcaption className="-mt-8 text-center text-sm text-muted-foreground data-[hide-code=true]:mt-0">
           {caption}
@@ -248,7 +263,8 @@ function RtlPreview({ children }: { children: React.ReactNode }) {
   const context = useLanguageContext()
   const language = context?.language ?? "ar"
   const dir = language === "en" ? "ltr" : "rtl"
-  const locale = language === "ar" ? "ar-EG" : language === "he" ? "he-IL" : "en-US"
+  const locale =
+    language === "ar" ? "ar-EG" : language === "he" ? "he-IL" : "en-US"
   return (
     <I18nProvider locale={locale}>
       <DirectionProvider direction={dir}>

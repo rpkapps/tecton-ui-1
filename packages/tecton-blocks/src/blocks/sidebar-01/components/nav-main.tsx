@@ -70,7 +70,9 @@ function NavMain({ groups }: { groups: NavGroup[] }) {
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>
-                  {item.badge && <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>}
+                  {item.badge && (
+                    <SidebarMenuBadge>{item.badge}</SidebarMenuBadge>
+                  )}
                 </SidebarMenuItem>
               )
             )}

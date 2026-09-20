@@ -18,7 +18,13 @@ type PackageManager = "pnpm" | "npm" | "yarn" | "bun"
 function readPackageManager(): PackageManager {
   try {
     const value = window.localStorage.getItem(PM_KEY)
-    if (value === "pnpm" || value === "npm" || value === "yarn" || value === "bun") return value
+    if (
+      value === "pnpm" ||
+      value === "npm" ||
+      value === "yarn" ||
+      value === "bun"
+    )
+      return value
   } catch {
     // ignore
   }
@@ -83,7 +89,8 @@ export function CodeBlockCommand({
   commands: Record<PackageManager, string>
   className?: string
 }) {
-  const [packageManager, setPackageManager] = React.useState<PackageManager>("pnpm")
+  const [packageManager, setPackageManager] =
+    React.useState<PackageManager>("pnpm")
   const [hasCopied, setHasCopied] = React.useState(false)
 
   React.useEffect(() => {
@@ -119,7 +126,7 @@ export function CodeBlockCommand({
       >
         <div className="flex items-center gap-2 border-b border-border/50 px-3 py-1">
           <div className="flex size-4 items-center justify-center rounded-[1px] bg-foreground opacity-70">
-            <TerminalIcon className="size-3 text-code" />
+            <TerminalIcon className="text-code size-3" />
           </div>
           <TabsList className="h-auto rounded-none bg-transparent p-0">
             {order.map((key) => (
@@ -137,7 +144,10 @@ export function CodeBlockCommand({
           {order.map((key) => (
             <TabsContent key={key} id={key} className="mt-0 px-4 py-3.5">
               <pre className="p-0!">
-                <code className="relative font-mono text-sm leading-none" data-language="bash">
+                <code
+                  className="relative font-mono text-sm leading-none"
+                  data-language="bash"
+                >
                   {commands[key]}
                 </code>
               </pre>

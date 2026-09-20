@@ -10,7 +10,11 @@ export default function CopyButtonFeedback() {
       <div className="flex items-center gap-2">
         <CopyButton value="Top Balder" variant="ghost" onCopied={setLast} />
         <CopyButton value="Top Sele" variant="ghost" onCopied={setLast} />
-        <CopyButton value="Base Cretaceous" variant="ghost" onCopied={setLast} />
+        <CopyButton
+          value="Base Cretaceous"
+          variant="ghost"
+          onCopied={setLast}
+        />
       </div>
       <p className="text-xs text-muted-foreground">
         {last ? `Copied "${last}"` : "Nothing copied yet"}

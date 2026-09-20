@@ -28,7 +28,10 @@ function AppShell({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function AppShellHeader({ className, ...props }: React.ComponentProps<"header">) {
+function AppShellHeader({
+  className,
+  ...props
+}: React.ComponentProps<"header">) {
   return (
     <header
       data-slot="app-shell-header"
@@ -45,7 +48,10 @@ function AppShellBrand({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="app-shell-brand"
-      className={cn("flex items-center gap-2 font-medium [&_svg]:size-5", className)}
+      className={cn(
+        "flex items-center gap-2 font-medium [&_svg]:size-5",
+        className
+      )}
       {...props}
     />
   )
@@ -84,7 +90,10 @@ function AppShellBody({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-function AppShellSidebar({ className, ...props }: React.ComponentProps<"aside">) {
+function AppShellSidebar({
+  className,
+  ...props
+}: React.ComponentProps<"aside">) {
   return (
     <aside
       data-slot="app-shell-sidebar"

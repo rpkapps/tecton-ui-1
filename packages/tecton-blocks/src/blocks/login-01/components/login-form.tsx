@@ -26,10 +26,22 @@ import { Separator } from "@tecton/react/components/separator"
 import { Spinner } from "@tecton/react/components/spinner"
 import { Link } from "@tecton/react/tecton/link"
 
-import { demoAccount, loginCopy, validateEmail, validatePassword } from "../data"
+import {
+  demoAccount,
+  loginCopy,
+  validateEmail,
+  validatePassword,
+} from "../data"
 
-type LoginFormProps = Omit<React.ComponentProps<typeof Card>, "children" | "onSubmit"> & {
-  onSubmit?: (values: { email: string; password: string; remember: boolean }) => void
+type LoginFormProps = Omit<
+  React.ComponentProps<typeof Card>,
+  "children" | "onSubmit"
+> & {
+  onSubmit?: (values: {
+    email: string
+    password: string
+    remember: boolean
+  }) => void
   onSso?: () => void
 }
 
@@ -38,7 +50,9 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
   const [password, setPassword] = React.useState("")
   const [remember, setRemember] = React.useState(true)
   const [submitted, setSubmitted] = React.useState(false)
-  const [status, setStatus] = React.useState<"idle" | "loading" | "error">("idle")
+  const [status, setStatus] = React.useState<"idle" | "loading" | "error">(
+    "idle"
+  )
   const emailId = React.useId()
   const passwordId = React.useId()
   const rememberId = React.useId()
@@ -52,7 +66,8 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
     if (validateEmail(email) || validatePassword(password)) return
     setStatus("loading")
     window.setTimeout(() => {
-      const ok = email === demoAccount.email && password === demoAccount.password
+      const ok =
+        email === demoAccount.email && password === demoAccount.password
       setStatus(ok ? "idle" : "error")
       if (ok) onSubmit?.({ email, password, remember })
     }, 800)
@@ -124,7 +139,11 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
           </Field>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <Field orientation="horizontal" className="w-auto">
-              <Checkbox id={rememberId} isSelected={remember} onChange={setRemember} />
+              <Checkbox
+                id={rememberId}
+                isSelected={remember}
+                onChange={setRemember}
+              />
               <FieldLabel htmlFor={rememberId} className="text-sm font-normal">
                 Keep me signed in
               </FieldLabel>
@@ -133,7 +152,11 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
               Forgot password?
             </Link>
           </div>
-          <Button type="submit" className="w-full" isDisabled={status === "loading"}>
+          <Button
+            type="submit"
+            className="w-full"
+            isDisabled={status === "loading"}
+          >
             {status === "loading" && <Spinner />}
             Sign in
           </Button>
@@ -145,7 +168,12 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
             or
             <Separator emphasis="subtle" className="flex-1" />
           </div>
-          <Button type="button" variant="secondary" className="w-full" onPress={onSso}>
+          <Button
+            type="button"
+            variant="secondary"
+            className="w-full"
+            onPress={onSso}
+          >
             <BuildingIcon /> Continue with {loginCopy.ssoProvider}
           </Button>
         </form>

@@ -1,4 +1,5 @@
-export type FdaStatus = "nominated" | "reference" | "ongoing" | "screening" | "archived"
+export type FdaStatus =
+  "nominated" | "reference" | "ongoing" | "screening" | "archived"
 
 export type FieldDevelopmentAlternative = {
   id: string
@@ -25,7 +26,10 @@ export type FieldDevelopmentAlternative = {
 
 export const statusMeta: Record<
   FdaStatus,
-  { label: string; color: "default" | "secondary" | "info" | "warning" | "success" }
+  {
+    label: string
+    color: "default" | "secondary" | "info" | "warning" | "success"
+  }
 > = {
   nominated: { label: "Nominated", color: "default" },
   reference: { label: "Ref case", color: "secondary" },

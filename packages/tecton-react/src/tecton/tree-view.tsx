@@ -66,8 +66,8 @@ function TreeViewItem<T extends object>({
       className={composeRenderProps(className, (className) =>
         cn(
           "group/tree-item relative flex cursor-default items-center rounded-md outline-none select-none",
-          "data-hovered:bg-accent/60 data-pressed:bg-accent data-selected:bg-accent data-selected:text-accent-foreground data-focus-visible:ring-2 data-focus-visible:ring-ring/60 data-focus-visible:ring-inset",
-          "data-disabled:pointer-events-none data-disabled:opacity-50 data-[hidden=true]:text-muted-foreground",
+          "data-focus-visible:ring-2 data-focus-visible:ring-ring/60 data-focus-visible:ring-inset data-hovered:bg-accent/60 data-pressed:bg-accent data-selected:bg-accent data-selected:text-accent-foreground",
+          "data-[hidden=true]:text-muted-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
           className
         )
       )}
@@ -117,7 +117,7 @@ function TreeViewItemContent({
             data-slot="tree-view-chevron"
             aria-hidden={!hasChildItems}
             className={cn(
-              "flex size-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground outline-none data-hovered:bg-accent data-hovered:text-foreground data-focus-visible:ring-2 data-focus-visible:ring-ring/60",
+              "flex size-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground outline-none data-focus-visible:ring-2 data-focus-visible:ring-ring/60 data-hovered:bg-accent data-hovered:text-foreground",
               !hasChildItems && "invisible"
             )}
           >
@@ -155,7 +155,10 @@ function TreeViewItemContent({
             {children}
           </span>
           {suffix && (
-            <span data-slot="tree-view-suffix" className="flex shrink-0 items-center">
+            <span
+              data-slot="tree-view-suffix"
+              className="flex shrink-0 items-center"
+            >
               {suffix}
             </span>
           )}
@@ -185,7 +188,7 @@ function TreeViewAction({
       data-slot="tree-view-action"
       className={composeRenderProps(className, (className) =>
         cn(
-          "flex size-6 items-center justify-center rounded-sm text-muted-foreground outline-none data-hovered:bg-accent data-hovered:text-foreground data-focus-visible:ring-2 data-focus-visible:ring-ring/60 [&_svg]:size-4",
+          "flex size-6 items-center justify-center rounded-sm text-muted-foreground outline-none data-focus-visible:ring-2 data-focus-visible:ring-ring/60 data-hovered:bg-accent data-hovered:text-foreground [&_svg]:size-4",
           className
         )
       )}

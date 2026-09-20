@@ -1,4 +1,10 @@
-import { Panel, PanelContent, PanelDescription, PanelHeader, PanelTitle } from "@tecton/react/tecton/panel"
+import {
+  Panel,
+  PanelContent,
+  PanelDescription,
+  PanelHeader,
+  PanelTitle,
+} from "@tecton/react/tecton/panel"
 
 export default function PanelSizes() {
   return (
@@ -9,7 +15,9 @@ export default function PanelSizes() {
             <PanelTitle>Size {size}</PanelTitle>
             <PanelDescription>Padding scales with size.</PanelDescription>
           </PanelHeader>
-          <PanelContent className="text-sm text-muted-foreground">Content</PanelContent>
+          <PanelContent className="text-sm text-muted-foreground">
+            Content
+          </PanelContent>
         </Panel>
       ))}
     </div>

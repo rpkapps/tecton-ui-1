@@ -40,7 +40,10 @@ function Matrix({
   )
 
   return (
-    <section data-slot="matrix" className={cn("flex flex-col gap-3", className)}>
+    <section
+      data-slot="matrix"
+      className={cn("flex flex-col gap-3", className)}
+    >
       {title !== undefined && (
         <h3
           data-slot="matrix-title"

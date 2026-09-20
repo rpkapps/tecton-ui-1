@@ -6,7 +6,10 @@ import { toast } from "sonner"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Input } from "@tecton/react/components/input"
-import { ToggleGroup, ToggleGroupItem } from "@tecton/react/components/toggle-group"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@tecton/react/components/toggle-group"
 import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
 import { tectonIcons } from "@tecton/react/icons"
 
@@ -14,7 +17,9 @@ const sizes = [16, 20, 24] as const
 
 export function IconGallery() {
   const [query, setQuery] = React.useState("")
-  const [variant, setVariant] = React.useState<"outlined" | "filled">("outlined")
+  const [variant, setVariant] = React.useState<"outlined" | "filled">(
+    "outlined"
+  )
   const [size, setSize] = React.useState<(typeof sizes)[number]>(20)
 
   const items = React.useMemo(() => {
@@ -64,7 +69,8 @@ export function IconGallery() {
           disallowEmptySelection
           onSelectionChange={(keys) => {
             const next = Number([...keys][0])
-            if (sizes.includes(next as (typeof sizes)[number])) setSize(next as (typeof sizes)[number])
+            if (sizes.includes(next as (typeof sizes)[number]))
+              setSize(next as (typeof sizes)[number])
           }}
         >
           {sizes.map((s) => (
@@ -102,17 +108,22 @@ export function IconGallery() {
               }}
             >
               <icon.Icon size={size} variant={variant} />
-              <span className="w-full truncate text-center text-muted-foreground">{icon.name}</span>
+              <span className="w-full truncate text-center text-muted-foreground">
+                {icon.name}
+              </span>
             </button>
             <Tooltip>
               {icon.description}
-              {icon.source !== "svg" && ` · ${icon.source === "placeholder" ? "placeholder" : `lucide ${icon.lucide}`}`}
+              {icon.source !== "svg" &&
+                ` · ${icon.source === "placeholder" ? "placeholder" : `lucide ${icon.lucide}`}`}
             </Tooltip>
           </TooltipTrigger>
         ))}
       </div>
       {!items.length && (
-        <p className="text-sm text-muted-foreground">No icons match “{query}”.</p>
+        <p className="text-sm text-muted-foreground">
+          No icons match “{query}”.
+        </p>
       )}
     </div>
   )

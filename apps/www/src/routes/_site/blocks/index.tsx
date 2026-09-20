@@ -34,7 +34,10 @@ function BlocksNav({
     ...blockCategories,
   ]
   return (
-    <nav aria-label="Filter blocks" className="-mx-1 flex items-center gap-1 overflow-x-auto px-1 py-2">
+    <nav
+      aria-label="Filter blocks"
+      className="-mx-1 flex items-center gap-1 overflow-x-auto px-1 py-2"
+    >
       {options.map((option) => (
         <button
           key={option.id}

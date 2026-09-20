@@ -52,8 +52,10 @@ function WellsFilterBar({
   resultCount,
   ...props
 }: WellsFilterBarProps) {
-  const set = <TKey extends keyof WellsFilter>(key: TKey, next: WellsFilter[TKey]) =>
-    onChange({ ...value, [key]: next })
+  const set = <TKey extends keyof WellsFilter>(
+    key: TKey,
+    next: WellsFilter[TKey]
+  ) => onChange({ ...value, [key]: next })
 
   const active =
     value.query.trim() !== "" ||
@@ -102,7 +104,9 @@ function WellsFilterBar({
           aria-label="Well type"
           className="md:w-44"
           selectedKey={value.type}
-          onSelectionChange={(key) => set("type", String(key) as WellsFilter["type"])}
+          onSelectionChange={(key) =>
+            set("type", String(key) as WellsFilter["type"])
+          }
         >
           <SelectTrigger>
             <SelectValue />
@@ -176,7 +180,11 @@ function WellsFilterBar({
           >
             <ChipList>
               {value.statuses.map((status) => (
-                <Chip key={status} id={status} textValue={statusMeta[status].label}>
+                <Chip
+                  key={status}
+                  id={status}
+                  textValue={statusMeta[status].label}
+                >
                   {statusMeta[status].label}
                 </Chip>
               ))}

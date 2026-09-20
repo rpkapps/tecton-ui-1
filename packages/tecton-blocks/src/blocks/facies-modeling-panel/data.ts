@@ -96,7 +96,12 @@ export const defaultFaciesSettings: FaciesSettings = {
     { id: "floodplain", name: "Floodplain", color: "#8CA7DE", density: 40 },
     { id: "levee", name: "Levee sand", color: "#84A138", density: 20 },
     { id: "channel", name: "Channel sand", color: "#CB8553", density: 25 },
-    { id: "crevasse", name: "Crevasse splay sand", color: "#B4A5C8", density: 15 },
+    {
+      id: "crevasse",
+      name: "Crevasse splay sand",
+      color: "#B4A5C8",
+      density: 15,
+    },
   ],
 }
 

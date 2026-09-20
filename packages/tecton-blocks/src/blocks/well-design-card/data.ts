@@ -42,12 +42,13 @@ export const trajectoryMeta: Record<TrajectoryType, { label: string }> = {
   horizontal: { label: "Horizontal" },
 }
 
-export const phaseMeta: Record<DesignPhase, { label: string; order: number }> = {
-  concept: { label: "Concept", order: 1 },
-  basis: { label: "Basis of design", order: 2 },
-  detailed: { label: "Detailed design", order: 3 },
-  approved: { label: "Approved", order: 4 },
-}
+export const phaseMeta: Record<DesignPhase, { label: string; order: number }> =
+  {
+    concept: { label: "Concept", order: 1 },
+    basis: { label: "Basis of design", order: 2 },
+    detailed: { label: "Detailed design", order: 3 },
+    approved: { label: "Approved", order: 4 },
+  }
 
 export const wellDesigns: WellDesign[] = [
   {

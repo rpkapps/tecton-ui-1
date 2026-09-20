@@ -36,8 +36,13 @@ export default function Page() {
             <BreadcrumbList>
               {breadcrumbs.map((crumb) =>
                 crumb.url ? (
-                  <BreadcrumbItem key={crumb.title} className="hidden md:inline-flex">
-                    <BreadcrumbLink href={crumb.url}>{crumb.title}</BreadcrumbLink>
+                  <BreadcrumbItem
+                    key={crumb.title}
+                    className="hidden md:inline-flex"
+                  >
+                    <BreadcrumbLink href={crumb.url}>
+                      {crumb.title}
+                    </BreadcrumbLink>
                   </BreadcrumbItem>
                 ) : (
                   <BreadcrumbItem key={crumb.title}>

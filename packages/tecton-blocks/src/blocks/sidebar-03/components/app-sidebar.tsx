@@ -41,7 +41,10 @@ import {
 import { filterTree, flattenTree, project, projectTree } from "../data"
 import type { ProjectNode } from "../data"
 
-type AppSidebarProps = Omit<React.ComponentProps<typeof Sidebar>, "onSelect"> & {
+type AppSidebarProps = Omit<
+  React.ComponentProps<typeof Sidebar>,
+  "onSelect"
+> & {
   nodes?: ProjectNode[]
   /** Called with the id of the selected tree node. */
   onSelect?: (id: string) => void
@@ -52,14 +55,21 @@ type AppSidebarProps = Omit<React.ComponentProps<typeof Sidebar>, "onSelect"> & 
  * that filters the tree, the inventory tree with colour tags and visibility
  * toggles, and an "Add data" footer.
  */
-function AppSidebar({ nodes = projectTree, onSelect, ...props }: AppSidebarProps) {
+function AppSidebar({
+  nodes = projectTree,
+  onSelect,
+  ...props
+}: AppSidebarProps) {
   const [query, setQuery] = React.useState("")
   const [hidden, setHidden] = React.useState<Set<string>>(() => new Set())
   const [expanded, setExpanded] = React.useState<Set<Key>>(
     () => new Set(nodes.map((node) => node.id))
   )
 
-  const visibleNodes = React.useMemo(() => filterTree(nodes, query), [nodes, query])
+  const visibleNodes = React.useMemo(
+    () => filterTree(nodes, query),
+    [nodes, query]
+  )
   const folderIds = React.useMemo(
     () =>
       flattenTree(visibleNodes)
@@ -77,7 +87,11 @@ function AppSidebar({ nodes = projectTree, onSelect, ...props }: AppSidebarProps
     })
 
   const renderNode = (node: ProjectNode): React.ReactElement => (
-    <TreeViewItem id={node.id} textValue={node.label} isHidden={hidden.has(node.id)}>
+    <TreeViewItem
+      id={node.id}
+      textValue={node.label}
+      isHidden={hidden.has(node.id)}
+    >
       <TreeViewItemContent
         kind={node.kind}
         colorTag={
@@ -92,7 +106,11 @@ function AppSidebar({ nodes = projectTree, onSelect, ...props }: AppSidebarProps
         }
         suffix={
           node.meta ? (
-            <Badge variant="secondary" appearance="outline" className="font-mono">
+            <Badge
+              variant="secondary"
+              appearance="outline"
+              className="font-mono"
+            >
               {node.meta}
             </Badge>
           ) : undefined
@@ -100,7 +118,7 @@ function AppSidebar({ nodes = projectTree, onSelect, ...props }: AppSidebarProps
         endAdornment={
           node.kind === "item" ? (
             <TreeViewVisibilityToggle
-              className="opacity-0 group-data-hovered/tree-item:opacity-100 group-data-selected/tree-item:opacity-100 aria-pressed:opacity-100 focus-visible:opacity-100"
+              className="opacity-0 group-data-hovered/tree-item:opacity-100 group-data-selected/tree-item:opacity-100 focus-visible:opacity-100 aria-pressed:opacity-100"
               isVisible={!hidden.has(node.id)}
               onChange={(visible) => setVisible(node.id, visible)}
             />
@@ -109,7 +127,9 @@ function AppSidebar({ nodes = projectTree, onSelect, ...props }: AppSidebarProps
       >
         {node.label}
       </TreeViewItemContent>
-      <TreeViewCollection items={node.children ?? []}>{renderNode}</TreeViewCollection>
+      <TreeViewCollection items={node.children ?? []}>
+        {renderNode}
+      </TreeViewCollection>
     </TreeViewItem>
   )
 
@@ -131,7 +151,10 @@ function AppSidebar({ nodes = projectTree, onSelect, ...props }: AppSidebarProps
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <InputGroup className="h-8 bg-background" aria-label="Search project data">
+        <InputGroup
+          className="h-8 bg-background"
+          aria-label="Search project data"
+        >
           <InputGroupInput
             placeholder="Search wells, horizons…"
             className="h-8 text-sm"
@@ -151,7 +174,9 @@ function AppSidebar({ nodes = projectTree, onSelect, ...props }: AppSidebarProps
               <Empty className="py-8">
                 <EmptyHeader>
                   <EmptyTitle>No matches</EmptyTitle>
-                  <EmptyDescription>Nothing in the project matches “{query}”.</EmptyDescription>
+                  <EmptyDescription>
+                    Nothing in the project matches “{query}”.
+                  </EmptyDescription>
                 </EmptyHeader>
               </Empty>
             ) : (

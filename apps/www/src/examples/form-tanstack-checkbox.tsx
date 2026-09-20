@@ -36,9 +36,12 @@ const formSchema = z.object({
   tasks: z
     .array(z.string())
     .min(1, "Please select at least one notification type.")
-    .refine((value) => value.every((task) => tasks.some((t) => t.id === task)), {
-      message: "Invalid notification type selected.",
-    }),
+    .refine(
+      (value) => value.every((task) => tasks.some((t) => t.id === task)),
+      {
+        message: "Invalid notification type selected.",
+      }
+    ),
 })
 
 export default function FormTanstackCheckbox() {
@@ -73,17 +76,21 @@ export default function FormTanstackCheckbox() {
             <form.Field
               name="responses"
               children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <div>
                     <FieldSet>
                       <FieldLegend variant="label">Responses</FieldLegend>
                       <FieldDescription>
-                        Get notified for requests that take time, like research or image
-                        generation.
+                        Get notified for requests that take time, like research
+                        or image generation.
                       </FieldDescription>
                       <FieldGroup data-slot="checkbox-group">
-                        <Field orientation="horizontal" data-invalid={isInvalid}>
+                        <Field
+                          orientation="horizontal"
+                          data-invalid={isInvalid}
+                        >
                           <Checkbox
                             id="form-tanstack-checkbox-responses"
                             name={field.name}
@@ -100,7 +107,9 @@ export default function FormTanstackCheckbox() {
                         </Field>
                       </FieldGroup>
                     </FieldSet>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </div>
                 )
               }}
@@ -110,17 +119,23 @@ export default function FormTanstackCheckbox() {
               name="tasks"
               mode="array"
               children={(field) => {
-                const isInvalid = field.state.meta.isTouched && !field.state.meta.isValid
+                const isInvalid =
+                  field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <FieldGroup>
                     <FieldSet data-invalid={isInvalid}>
                       <FieldLegend variant="label">Tasks</FieldLegend>
                       <FieldDescription>
-                        Get notified when tasks you&apos;ve created have updates.
+                        Get notified when tasks you&apos;ve created have
+                        updates.
                       </FieldDescription>
                       <FieldGroup data-slot="checkbox-group">
                         {tasks.map((task) => (
-                          <Field key={task.id} orientation="horizontal" data-invalid={isInvalid}>
+                          <Field
+                            key={task.id}
+                            orientation="horizontal"
+                            data-invalid={isInvalid}
+                          >
                             <Checkbox
                               id={`form-tanstack-checkbox-${task.id}`}
                               name={field.name}
@@ -130,7 +145,9 @@ export default function FormTanstackCheckbox() {
                                 if (checked) {
                                   field.pushValue(task.id)
                                 } else {
-                                  const index = field.state.value.indexOf(task.id)
+                                  const index = field.state.value.indexOf(
+                                    task.id
+                                  )
                                   if (index > -1) field.removeValue(index)
                                 }
                               }}
@@ -145,7 +162,9 @@ export default function FormTanstackCheckbox() {
                         ))}
                       </FieldGroup>
                     </FieldSet>
-                    {isInvalid && <FieldError errors={field.state.meta.errors} />}
+                    {isInvalid && (
+                      <FieldError errors={field.state.meta.errors} />
+                    )}
                   </FieldGroup>
                 )
               }}

@@ -19,11 +19,16 @@ function HorizonReadout({
       {...props}
     >
       {rows.map((row) => (
-        <div key={row.label} className="flex items-baseline justify-between gap-3">
+        <div
+          key={row.label}
+          className="flex items-baseline justify-between gap-3"
+        >
           <dt className="text-muted-foreground">{row.label}</dt>
           <dd className="font-mono tabular-nums">
             {row.value}
-            {row.unit && <span className="text-muted-foreground">{row.unit}</span>}
+            {row.unit && (
+              <span className="text-muted-foreground">{row.unit}</span>
+            )}
           </dd>
         </div>
       ))}

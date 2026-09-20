@@ -70,8 +70,12 @@ function ShellCommandPalette({
   // label or keys, so an application binding a host command lists once.
   const commandGroups = React.useMemo(() => {
     const takenIds = new Set(shortcuts.map((shortcut) => shortcut.id))
-    const takenLabels = new Set(shortcuts.map((shortcut) => shortcut.label.toLowerCase()))
-    const takenKeys = new Set(shortcuts.map((shortcut) => shortcut.keys.toLowerCase()))
+    const takenLabels = new Set(
+      shortcuts.map((shortcut) => shortcut.label.toLowerCase())
+    )
+    const takenKeys = new Set(
+      shortcuts.map((shortcut) => shortcut.keys.toLowerCase())
+    )
     return groupBy(
       commands.filter(
         (command) =>
@@ -88,81 +92,83 @@ function ShellCommandPalette({
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <Command className="rounded-none bg-transparent">
-      <CommandInput placeholder="Search apps and commands…" />
-      <CommandList
-        className="max-h-[60svh]"
-        renderEmptyState={() => <CommandEmpty>No results found.</CommandEmpty>}
-      >
-        {groupApps(apps).map((group) => (
-          <CommandGroup key={group.category} heading={group.category}>
-            {group.apps.map((app) => (
-              <CommandItem
-                key={app.id}
-                id={`app-${app.id}`}
-                textValue={`${app.code} ${app.name} ${app.category}`}
-                onAction={() => {
-                  onSelectApp?.(app)
-                  close()
-                }}
-              >
-                <AppWindowIcon />
-                <span>{app.name}</span>
-                <span className="font-mono text-xs text-muted-foreground">
-                  {app.code}
-                </span>
-              </CommandItem>
-            ))}
-          </CommandGroup>
-        ))}
-        {shortcutGroups.map(([group, items]) => (
-          <React.Fragment key={`shortcuts-${group}`}>
-            <CommandSeparator />
-            <CommandGroup heading={group}>
-              {items.map((shortcut) => (
+        <CommandInput placeholder="Search apps and commands…" />
+        <CommandList
+          className="max-h-[60svh]"
+          renderEmptyState={() => (
+            <CommandEmpty>No results found.</CommandEmpty>
+          )}
+        >
+          {groupApps(apps).map((group) => (
+            <CommandGroup key={group.category} heading={group.category}>
+              {group.apps.map((app) => (
                 <CommandItem
-                  key={shortcut.id}
-                  id={`shortcut-${shortcut.id}`}
-                  textValue={shortcut.label}
+                  key={app.id}
+                  id={`app-${app.id}`}
+                  textValue={`${app.code} ${app.name} ${app.category}`}
                   onAction={() => {
-                    close()
-                    shortcut.onAction(new KeyboardEvent("keydown"))
-                  }}
-                >
-                  <KeyboardIcon />
-                  <span>{shortcut.label}</span>
-                  <CommandShortcut>
-                    <ShortcutKeys keys={shortcut.keys} />
-                  </CommandShortcut>
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </React.Fragment>
-        ))}
-        {commandGroups.map(([group, items]) => (
-          <React.Fragment key={`commands-${group}`}>
-            <CommandSeparator />
-            <CommandGroup heading={group}>
-              {items.map((command) => (
-                <CommandItem
-                  key={command.id}
-                  id={command.id}
-                  textValue={command.label}
-                  onAction={() => {
-                    onRunCommand?.(command)
+                    onSelectApp?.(app)
                     close()
                   }}
                 >
-                  <CommandIcon />
-                  <span>{command.label}</span>
-                  {command.shortcut ? (
-                    <CommandShortcut>{command.shortcut}</CommandShortcut>
-                  ) : null}
+                  <AppWindowIcon />
+                  <span>{app.name}</span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {app.code}
+                  </span>
                 </CommandItem>
               ))}
             </CommandGroup>
-          </React.Fragment>
-        ))}
-      </CommandList>
+          ))}
+          {shortcutGroups.map(([group, items]) => (
+            <React.Fragment key={`shortcuts-${group}`}>
+              <CommandSeparator />
+              <CommandGroup heading={group}>
+                {items.map((shortcut) => (
+                  <CommandItem
+                    key={shortcut.id}
+                    id={`shortcut-${shortcut.id}`}
+                    textValue={shortcut.label}
+                    onAction={() => {
+                      close()
+                      shortcut.onAction(new KeyboardEvent("keydown"))
+                    }}
+                  >
+                    <KeyboardIcon />
+                    <span>{shortcut.label}</span>
+                    <CommandShortcut>
+                      <ShortcutKeys keys={shortcut.keys} />
+                    </CommandShortcut>
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </React.Fragment>
+          ))}
+          {commandGroups.map(([group, items]) => (
+            <React.Fragment key={`commands-${group}`}>
+              <CommandSeparator />
+              <CommandGroup heading={group}>
+                {items.map((command) => (
+                  <CommandItem
+                    key={command.id}
+                    id={command.id}
+                    textValue={command.label}
+                    onAction={() => {
+                      onRunCommand?.(command)
+                      close()
+                    }}
+                  >
+                    <CommandIcon />
+                    <span>{command.label}</span>
+                    {command.shortcut ? (
+                      <CommandShortcut>{command.shortcut}</CommandShortcut>
+                    ) : null}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </React.Fragment>
+          ))}
+        </CommandList>
       </Command>
     </CommandDialog>
   )

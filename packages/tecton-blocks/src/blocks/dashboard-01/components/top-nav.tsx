@@ -42,9 +42,18 @@ type TopNavProps = React.ComponentProps<typeof AppShellHeader> & {
   onNavigate?: (id: string) => void
 }
 
-function TopNav({ className, activeId = "overview", onNavigate, ...props }: TopNavProps) {
+function TopNav({
+  className,
+  activeId = "overview",
+  onNavigate,
+  ...props
+}: TopNavProps) {
   return (
-    <AppShellHeader data-slot="top-nav" className={cn("gap-4", className)} {...props}>
+    <AppShellHeader
+      data-slot="top-nav"
+      className={cn("gap-4", className)}
+      {...props}
+    >
       <AppShellBrand>
         <LayersIcon className="text-primary-foreground" aria-hidden />
         <span>Tecton</span>
@@ -63,7 +72,10 @@ function TopNav({ className, activeId = "overview", onNavigate, ...props }: TopN
         ))}
       </AppShellNav>
       <AppShellHeaderActions className="gap-2">
-        <InputGroup className="hidden h-8 w-56 lg:flex" aria-label="Search project">
+        <InputGroup
+          className="hidden h-8 w-56 lg:flex"
+          aria-label="Search project"
+        >
           <InputGroupInput placeholder="Search…" className="h-8 text-sm" />
           <InputGroupAddon align="inline-start">
             <SearchIcon />
@@ -99,7 +111,9 @@ function TopNav({ className, activeId = "overview", onNavigate, ...props }: TopN
           <DropdownMenu placement="bottom end" className="w-56">
             <DropdownMenuLabel>
               <span className="flex flex-col gap-0.5">
-                <span className="text-sm text-foreground">{currentUser.name}</span>
+                <span className="text-sm text-foreground">
+                  {currentUser.name}
+                </span>
                 <span className="font-normal">{currentUser.role}</span>
               </span>
             </DropdownMenuLabel>

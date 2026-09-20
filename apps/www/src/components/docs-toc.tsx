@@ -33,7 +33,10 @@ export function DocsTableOfContents({
   toc: TOCItemType[]
   className?: string
 }) {
-  const items = React.useMemo(() => toc.filter((item) => item.depth <= 4), [toc])
+  const items = React.useMemo(
+    () => toc.filter((item) => item.depth <= 4),
+    [toc]
+  )
   const itemIds = React.useMemo(
     () => items.map((item) => item.url.replace("#", "")),
     [items]

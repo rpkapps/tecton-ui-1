@@ -15,7 +15,10 @@ import {
   type AgentMessage,
 } from "./data"
 
-type AiAgentPanelProps = Omit<React.ComponentProps<typeof Panel>, "children"> & {
+type AiAgentPanelProps = Omit<
+  React.ComponentProps<typeof Panel>,
+  "children"
+> & {
   initialMessages?: AgentMessage[]
   suggestions?: string[]
   onClose?: () => void
@@ -33,7 +36,8 @@ function AiAgentPanel({
   variant = "flat",
   ...props
 }: AiAgentPanelProps) {
-  const [messages, setMessages] = React.useState<AgentMessage[]>(initialMessages)
+  const [messages, setMessages] =
+    React.useState<AgentMessage[]>(initialMessages)
   const [completed, setCompleted] = React.useState<string[]>([])
   const [busy, setBusy] = React.useState(false)
 

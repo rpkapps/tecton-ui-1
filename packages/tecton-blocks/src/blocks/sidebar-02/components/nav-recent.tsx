@@ -41,7 +41,10 @@ function NavRecent({ projects }: { projects: RecentProject[] }) {
               <span>{project.name}</span>
             </SidebarMenuButton>
             <DropdownMenuTrigger>
-              <SidebarMenuAction showOnHover aria-label={`Actions for ${project.name}`}>
+              <SidebarMenuAction
+                showOnHover
+                aria-label={`Actions for ${project.name}`}
+              >
                 <MoreHorizontalIcon />
               </SidebarMenuAction>
               <DropdownMenu

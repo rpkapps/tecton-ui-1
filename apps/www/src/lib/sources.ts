@@ -67,7 +67,9 @@ export async function loadSource(path: string): Promise<string> {
 }
 
 export function sourceTitle(path: string) {
-  if (path.startsWith("styles/")) return `@tecton/react/${path.replace("styles/", "")}`
-  const ext = path.startsWith("hooks/") || path.startsWith("lib/") ? ".ts" : ".tsx"
+  if (path.startsWith("styles/"))
+    return `@tecton/react/${path.replace("styles/", "")}`
+  const ext =
+    path.startsWith("hooks/") || path.startsWith("lib/") ? ".ts" : ".tsx"
   return `@tecton/react/${path}${ext}`
 }

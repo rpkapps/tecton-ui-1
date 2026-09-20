@@ -66,7 +66,11 @@ function ProjectTree({
         }
         suffix={
           node.meta ? (
-            <Badge variant="secondary" appearance="outline" className="font-mono">
+            <Badge
+              variant="secondary"
+              appearance="outline"
+              className="font-mono"
+            >
               {node.meta}
             </Badge>
           ) : undefined
@@ -74,7 +78,7 @@ function ProjectTree({
         endAdornment={
           node.kind === "item" ? (
             <TreeViewVisibilityToggle
-              className="opacity-0 group-data-hovered/tree-item:opacity-100 group-data-selected/tree-item:opacity-100 aria-pressed:opacity-100 focus-visible:opacity-100"
+              className="opacity-0 group-data-hovered/tree-item:opacity-100 group-data-selected/tree-item:opacity-100 focus-visible:opacity-100 aria-pressed:opacity-100"
               isVisible={!hidden.has(node.id)}
               onChange={(visible) => setVisible(node.id, visible)}
             />

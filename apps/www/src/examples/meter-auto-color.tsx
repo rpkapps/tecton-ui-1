@@ -14,7 +14,11 @@ export default function MeterAutoColor() {
         value={risk}
         valueLabel={risk >= 67 ? "High" : risk >= 34 ? "Medium" : "Low"}
       />
-      <Slider aria-label="Risk" value={risk} onChange={(v) => setRisk(Array.isArray(v) ? v[0] : v)} />
+      <Slider
+        aria-label="Risk"
+        value={risk}
+        onChange={(v) => setRisk(Array.isArray(v) ? v[0] : v)}
+      />
     </div>
   )
 }

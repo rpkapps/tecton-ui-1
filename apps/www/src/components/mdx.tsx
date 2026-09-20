@@ -9,7 +9,10 @@ import { Kbd } from "@tecton/react/components/kbd"
 import { ComponentPreview } from "@/components/component-preview"
 import { ComponentSource } from "@/components/component-source"
 import { ComponentsList } from "@/components/components-list"
-import { CodeBlockCommand, getPackageManagerCommands } from "@/components/code-block-command"
+import {
+  CodeBlockCommand,
+  getPackageManagerCommands,
+} from "@/components/code-block-command"
 import { CopyButton } from "@/components/copy-button"
 import {
   Callout,
@@ -36,11 +39,19 @@ function getNodeText(node: React.ReactNode): string {
   return ""
 }
 
-function HeadingAnchor({ id, children }: { id?: string; children: React.ReactNode }) {
+function HeadingAnchor({
+  id,
+  children,
+}: {
+  id?: string
+  children: React.ReactNode
+}) {
   if (!id) return children
   return (
     <a className="group no-underline" href={`#${id}`}>
-      <span className="underline-offset-4 group-hover:underline">{children}</span>
+      <span className="underline-offset-4 group-hover:underline">
+        {children}
+      </span>
       <span
         aria-hidden="true"
         className="ml-2 text-muted-foreground opacity-0 group-hover:opacity-100"
@@ -52,7 +63,11 @@ function HeadingAnchor({ id, children }: { id?: string; children: React.ReactNod
 }
 
 function heading(Tag: "h1" | "h2" | "h3" | "h4" | "h5" | "h6") {
-  return function Heading({ children, id, ...props }: React.ComponentProps<typeof Tag>) {
+  return function Heading({
+    children,
+    id,
+    ...props
+  }: React.ComponentProps<typeof Tag>) {
     return (
       <Tag id={id} {...props}>
         <HeadingAnchor id={id}>{children}</HeadingAnchor>
@@ -61,7 +76,11 @@ function heading(Tag: "h1" | "h2" | "h3" | "h4" | "h5" | "h6") {
   }
 }
 
-function DocsLink({ href = "", className, ...props }: React.ComponentProps<"a">) {
+function DocsLink({
+  href = "",
+  className,
+  ...props
+}: React.ComponentProps<"a">) {
   const isInternal = href.startsWith("/") && !href.startsWith("//")
   if (isInternal) {
     return <Link to={href} className={className} {...(props as object)} />
@@ -93,12 +112,17 @@ function getFenceLanguage(children: React.ReactNode): string | null {
  * Code fences compiled by fumadocs (rehype-code) arrive as <figure><pre><code>.
  * A single-line `bash` fence with an npm command becomes package-manager tabs.
  */
-function Figure({ className, children, ...props }: React.ComponentProps<"figure">) {
+function Figure({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"figure">) {
   const isCode = "data-rehype-pretty-code-figure" in props
   const code = isCode ? getNodeText(children) : ""
   if (isCode && getFenceLanguage(children) === "bash") {
     const commands = getPackageManagerCommands(code)
-    if (commands) return <CodeBlockCommand commands={commands} className={className} />
+    if (commands)
+      return <CodeBlockCommand commands={commands} className={className} />
   }
   return (
     <figure className={className} {...props}>
@@ -108,7 +132,11 @@ function Figure({ className, children, ...props }: React.ComponentProps<"figure"
   )
 }
 
-function Figcaption({ className, children, ...props }: React.ComponentProps<"figcaption">) {
+function Figcaption({
+  className,
+  children,
+  ...props
+}: React.ComponentProps<"figcaption">) {
   const language =
     "data-language" in props && typeof props["data-language"] === "string"
       ? props["data-language"]
@@ -116,7 +144,7 @@ function Figcaption({ className, children, ...props }: React.ComponentProps<"fig
   return (
     <figcaption
       className={cn(
-        "flex items-center gap-2 text-code-foreground [&_svg]:size-4 [&_svg]:text-code-foreground [&_svg]:opacity-70",
+        "text-code-foreground [&_svg]:text-code-foreground flex items-center gap-2 [&_svg]:size-4 [&_svg]:opacity-70",
         className
       )}
       {...props}
@@ -156,7 +184,7 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     pre: Pre,
     // Typeset tables stay real tables; wide ones scroll horizontally.
     table: (props: React.ComponentProps<"table">) => (
-      <div className="typeset-scroll scroll-fade-x no-scrollbar *:[table]:w-full">
+      <div className="typeset-scroll no-scrollbar scroll-fade-x *:[table]:w-full">
         <table {...props} />
       </div>
     ),
@@ -181,7 +209,11 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     PaletteTable,
     Link: DocsLink,
     Image: ({ className, ...props }: React.ComponentProps<"img">) => (
-      <img className={cn("mt-6 rounded-2xl border", className)} {...props} alt={props.alt ?? ""} />
+      <img
+        className={cn("mt-6 rounded-2xl border", className)}
+        {...props}
+        alt={props.alt ?? ""}
+      />
     ),
     ...components,
   }

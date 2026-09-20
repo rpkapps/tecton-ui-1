@@ -16,13 +16,7 @@ import { Separator } from "@tecton/react/components/separator"
 import { Slider } from "@tecton/react/components/slider"
 import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 
-import {
-  getPair,
-  getSurface,
-  lineWidths,
-  surfacePairs,
-  volumes,
-} from "../data"
+import { getPair, getSurface, lineWidths, surfacePairs, volumes } from "../data"
 import type { HorizonSettings } from "../data"
 
 type HorizonFormProps = Omit<React.ComponentProps<"div">, "onChange"> & {
@@ -30,14 +24,21 @@ type HorizonFormProps = Omit<React.ComponentProps<"div">, "onChange"> & {
   onChange: (next: HorizonSettings) => void
 }
 
-function HorizonForm({ className, value, onChange, ...props }: HorizonFormProps) {
+function HorizonForm({
+  className,
+  value,
+  onChange,
+  ...props
+}: HorizonFormProps) {
   const pair = getPair(value.pairId)
   const top = getSurface(pair.top)
   const base = getSurface(pair.base)
   const id = React.useId()
 
-  const set = <TKey extends keyof HorizonSettings>(key: TKey, next: HorizonSettings[TKey]) =>
-    onChange({ ...value, [key]: next })
+  const set = <TKey extends keyof HorizonSettings>(
+    key: TKey,
+    next: HorizonSettings[TKey]
+  ) => onChange({ ...value, [key]: next })
 
   return (
     <div
@@ -105,7 +106,11 @@ function HorizonForm({ className, value, onChange, ...props }: HorizonFormProps)
             </SelectTrigger>
             <SelectContent>
               {lineWidths.map((width) => (
-                <SelectItem key={width} id={String(width)} textValue={`${width} px`}>
+                <SelectItem
+                  key={width}
+                  id={String(width)}
+                  textValue={`${width} px`}
+                >
                   <span className="font-mono tabular-nums">{width}</span>
                   <span className="text-muted-foreground">px</span>
                 </SelectItem>
@@ -129,7 +134,9 @@ function HorizonForm({ className, value, onChange, ...props }: HorizonFormProps)
             type="number"
             className="h-8 font-mono text-sm tabular-nums md:text-xs"
             value={String(value.topDepth)}
-            onChange={(event) => set("topDepth", Number(event.target.value) || 0)}
+            onChange={(event) =>
+              set("topDepth", Number(event.target.value) || 0)
+            }
           />
         </Field>
         <Field>
@@ -140,7 +147,9 @@ function HorizonForm({ className, value, onChange, ...props }: HorizonFormProps)
             type="number"
             className="h-8 font-mono text-sm tabular-nums md:text-xs"
             value={String(value.bottomDepth)}
-            onChange={(event) => set("bottomDepth", Number(event.target.value) || 0)}
+            onChange={(event) =>
+              set("bottomDepth", Number(event.target.value) || 0)
+            }
           />
         </Field>
       </div>

@@ -20,15 +20,32 @@ export default function TreeViewAdornments() {
   const [hidden, setHidden] = React.useState<Set<string>>(new Set(["bcu"]))
 
   return (
-    <TreeView aria-label="Horizons" className="max-w-sm" defaultExpandedKeys={["horizons"]}>
+    <TreeView
+      aria-label="Horizons"
+      className="max-w-sm"
+      defaultExpandedKeys={["horizons"]}
+    >
       <TreeViewItem id="horizons" textValue="Horizons">
-        <TreeViewItemContent kind="folder" endAdornment={<TreeViewAction aria-label="More" />}>
+        <TreeViewItemContent
+          kind="folder"
+          endAdornment={<TreeViewAction aria-label="More" />}
+        >
           Horizons
         </TreeViewItemContent>
         {horizons.map((horizon) => (
-          <TreeViewItem key={horizon.id} id={horizon.id} textValue={horizon.name} isHidden={hidden.has(horizon.id)}>
+          <TreeViewItem
+            key={horizon.id}
+            id={horizon.id}
+            textValue={horizon.name}
+            isHidden={hidden.has(horizon.id)}
+          >
             <TreeViewItemContent
-              colorTag={<ColorSwatch color={horizon.color} aria-label={`${horizon.name} colour`} />}
+              colorTag={
+                <ColorSwatch
+                  color={horizon.color}
+                  aria-label={`${horizon.name} colour`}
+                />
+              }
               suffix={
                 horizon.picks > 0 && (
                   <Badge variant="info">{horizon.picks} picks</Badge>

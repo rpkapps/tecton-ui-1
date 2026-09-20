@@ -15,7 +15,12 @@ import {
   SidebarMenuItem,
 } from "@tecton/react/components/sidebar"
 
-import { getPagesFromFolder, getRootFolders, getRootPages, nodeName } from "@/lib/tree"
+import {
+  getPagesFromFolder,
+  getRootFolders,
+  getRootPages,
+  nodeName,
+} from "@/lib/tree"
 
 const SCROLL_KEY = "tecton-docs:sidebar-scroll"
 
@@ -34,7 +39,10 @@ function saveScrollState(container: HTMLElement) {
   try {
     sessionStorage.setItem(
       SCROLL_KEY,
-      JSON.stringify({ pathname: location.pathname, scrollTop: container.scrollTop })
+      JSON.stringify({
+        pathname: location.pathname,
+        scrollTop: container.scrollTop,
+      })
     )
   } catch {
     // ignore
@@ -55,7 +63,11 @@ function SidebarLink({
 }) {
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton href={href} isActive={active} className={itemClassName}>
+      <SidebarMenuButton
+        href={href}
+        isActive={active}
+        className={itemClassName}
+      >
         <span className="absolute inset-0 flex w-(--sidebar-menu-width) bg-transparent" />
         {children}
       </SidebarMenuButton>
@@ -78,13 +90,20 @@ export function DocsSidebar({
     if (scrollState?.pathname === pathname) {
       container.scrollTop = scrollState.scrollTop
     } else {
-      const active = container.querySelector<HTMLElement>('[data-active="true"]')
+      const active = container.querySelector<HTMLElement>(
+        '[data-active="true"]'
+      )
       if (active) {
         const containerRect = container.getBoundingClientRect()
         const activeRect = active.getBoundingClientRect()
-        if (activeRect.top < containerRect.top || activeRect.bottom > containerRect.bottom) {
+        if (
+          activeRect.top < containerRect.top ||
+          activeRect.bottom > containerRect.bottom
+        ) {
           container.scrollTop +=
-            activeRect.top - containerRect.top - (container.clientHeight - activeRect.height) / 2
+            activeRect.top -
+            containerRect.top -
+            (container.clientHeight - activeRect.height) / 2
         }
       }
     }
@@ -112,7 +131,7 @@ export function DocsSidebar({
       <SidebarContent
         ref={contentRef}
         data-docs-sidebar-content=""
-        className="w-(--sidebar-menu-width) scroll-fade no-scrollbar overflow-x-hidden pl-2.5"
+        className="no-scrollbar w-(--sidebar-menu-width) scroll-fade overflow-x-hidden pl-2.5"
       >
         <SidebarGroup className="pt-12">
           <SidebarGroupLabel className="font-medium text-muted-foreground">
@@ -125,7 +144,9 @@ export function DocsSidebar({
                   key={page.url}
                   href={page.url}
                   active={
-                    page.url === "/docs" ? pathname === page.url : pathname.startsWith(page.url)
+                    page.url === "/docs"
+                      ? pathname === page.url
+                      : pathname.startsWith(page.url)
                   }
                 >
                   {nodeName(page)}
@@ -156,7 +177,11 @@ export function DocsSidebar({
               <SidebarGroupContent>
                 <SidebarMenu className="gap-0.5">
                   {pages.map((page) => (
-                    <SidebarLink key={page.url} href={page.url} active={page.url === pathname}>
+                    <SidebarLink
+                      key={page.url}
+                      href={page.url}
+                      active={page.url === pathname}
+                    >
                       {nodeName(page)}
                     </SidebarLink>
                   ))}

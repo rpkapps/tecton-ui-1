@@ -14,7 +14,8 @@ export const demoAccount = {
 
 export function validateEmail(value: string): string | undefined {
   if (!value.trim()) return "Email is required."
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Enter a valid email address."
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value))
+    return "Enter a valid email address."
   return undefined
 }
 

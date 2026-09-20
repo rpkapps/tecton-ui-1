@@ -104,7 +104,11 @@ function StatDelta({
   ...props
 }: React.ComponentProps<"span"> & VariantProps<typeof statDeltaVariants>) {
   const Icon =
-    trend === "up" ? TrendingUpIcon : trend === "down" ? TrendingDownIcon : MinusIcon
+    trend === "up"
+      ? TrendingUpIcon
+      : trend === "down"
+        ? TrendingDownIcon
+        : MinusIcon
   return (
     <span
       data-slot="stat-delta"
@@ -141,4 +145,12 @@ function StatGroup({ className, ...props }: React.ComponentProps<"div">) {
   )
 }
 
-export { Stat, StatLabel, StatValue, StatDelta, StatHelp, StatGroup, statVariants }
+export {
+  Stat,
+  StatLabel,
+  StatValue,
+  StatDelta,
+  StatHelp,
+  StatGroup,
+  statVariants,
+}

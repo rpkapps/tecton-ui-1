@@ -3,7 +3,12 @@
 import * as React from "react"
 import { BellIcon, PlusIcon, SearchIcon, TriangleAlertIcon } from "lucide-react"
 
-import { Alert, AlertAction, AlertDescription, AlertTitle } from "@tecton/react/components/alert"
+import {
+  Alert,
+  AlertAction,
+  AlertDescription,
+  AlertTitle,
+} from "@tecton/react/components/alert"
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
@@ -11,12 +16,29 @@ import { Input } from "@tecton/react/components/input"
 import { Label } from "@tecton/react/components/label"
 import { Slider } from "@tecton/react/components/slider"
 import { Switch } from "@tecton/react/components/switch"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@tecton/react/components/tabs"
 import { CircularProgress } from "@tecton/react/tecton/circular-progress"
 import { CountBadge } from "@tecton/react/tecton/count-badge"
 import { Meter } from "@tecton/react/tecton/meter"
-import { Panel, PanelActions, PanelContent, PanelHeader, PanelTitle } from "@tecton/react/tecton/panel"
-import { Stat, StatDelta, StatGroup, StatLabel, StatValue } from "@tecton/react/tecton/stat"
+import {
+  Panel,
+  PanelActions,
+  PanelContent,
+  PanelHeader,
+  PanelTitle,
+} from "@tecton/react/tecton/panel"
+import {
+  Stat,
+  StatDelta,
+  StatGroup,
+  StatLabel,
+  StatValue,
+} from "@tecton/react/tecton/stat"
 
 export function HeroPreview() {
   const [value, setValue] = React.useState(64)
@@ -30,7 +52,11 @@ export function HeroPreview() {
               <BellIcon />
             </Button>
           </CountBadge>
-          <Button variant="secondary" size="sm" className="rounded-full shadow-md">
+          <Button
+            variant="secondary"
+            size="sm"
+            className="rounded-full shadow-md"
+          >
             <PlusIcon data-icon="inline-start" /> Add
           </Button>
         </PanelActions>
@@ -61,7 +87,12 @@ export function HeroPreview() {
           <Stat>
             <StatLabel>Confidence</StatLabel>
             <div className="flex items-center gap-2">
-              <CircularProgress value={72} size="sm" color="success" aria-label="Confidence" />
+              <CircularProgress
+                value={72}
+                size="sm"
+                color="success"
+                aria-label="Confidence"
+              />
               <StatValue>72%</StatValue>
             </div>
           </Stat>
@@ -97,14 +128,28 @@ export function HeroPreview() {
             </div>
           </TabsContent>
           <TabsContent id="risk" className="flex flex-col gap-3 pt-3">
-            <Meter aria-label="Risk" label="Risk" value={68} color="auto" showValue />
-            <Meter aria-label="Complexity" label="Complexity" value={35} color="auto" showValue />
+            <Meter
+              aria-label="Risk"
+              label="Risk"
+              value={68}
+              color="auto"
+              showValue
+            />
+            <Meter
+              aria-label="Complexity"
+              label="Complexity"
+              value={35}
+              color="auto"
+              showValue
+            />
           </TabsContent>
         </Tabs>
         <Alert variant="warning" appearance="outline">
           <TriangleAlertIcon />
           <AlertTitle>Model out of date</AlertTitle>
-          <AlertDescription>Horizon K70 changed after the last run.</AlertDescription>
+          <AlertDescription>
+            Horizon K70 changed after the last run.
+          </AlertDescription>
           <AlertAction>
             <Button variant="ghost" size="xs">
               Re-run

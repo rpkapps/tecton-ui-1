@@ -47,7 +47,11 @@ function TabRow({
       {states.map((state) => (
         <ColumnHeader
           key={state.id}
-          className={cn("flex items-center", slot, horizontal && "justify-center")}
+          className={cn(
+            "flex items-center",
+            slot,
+            horizontal && "justify-center"
+          )}
         >
           {state.label}
         </ColumnHeader>
@@ -72,7 +76,8 @@ function TabRow({
             className={cn(
               "flex-none justify-center",
               slot,
-              size === "sm" && "px-1.5 text-xs [&_svg:not([class*='size-'])]:size-3.5"
+              size === "sm" &&
+                "px-1.5 text-xs [&_svg:not([class*='size-'])]:size-3.5"
             )}
           >
             <SearchIcon data-icon="inline-start" />
@@ -115,7 +120,11 @@ export default function TabsMatrix() {
                   <span className="text-xs text-muted-foreground">
                     {size === "md" ? "Medium" : "Small"}
                   </span>
-                  <TabRow variant={variant} orientation={orientation} size={size} />
+                  <TabRow
+                    variant={variant}
+                    orientation={orientation}
+                    size={size}
+                  />
                 </div>
               ))}
             </Section>

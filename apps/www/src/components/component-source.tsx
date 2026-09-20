@@ -27,7 +27,10 @@ function resolve(name: string | undefined, src: string | undefined) {
     } else {
       promise = Promise.resolve("")
     }
-    cache.set(key, promise.catch(() => ""))
+    cache.set(
+      key,
+      promise.catch(() => "")
+    )
     promise = cache.get(key)!
   }
   return promise
@@ -103,7 +106,7 @@ export function ComponentSource({
 
   const content = (
     <React.Suspense
-      fallback={<div className="mt-6 h-24 animate-pulse rounded-2xl bg-code" />}
+      fallback={<div className="bg-code mt-6 h-24 animate-pulse rounded-2xl" />}
     >
       <Inner
         name={name}
@@ -116,9 +119,14 @@ export function ComponentSource({
     </React.Suspense>
   )
 
-  if (!collapsible) return <div className={cn("relative", className)}>{content}</div>
+  if (!collapsible)
+    return <div className={cn("relative", className)}>{content}</div>
 
-  return <CodeCollapsibleWrapper className={className}>{content}</CodeCollapsibleWrapper>
+  return (
+    <CodeCollapsibleWrapper className={className}>
+      {content}
+    </CodeCollapsibleWrapper>
+  )
 }
 
 export function CodeCollapsibleWrapper({
@@ -154,7 +162,7 @@ export function CodeCollapsibleWrapper({
         <button
           type="button"
           onClick={() => setIsOpened(true)}
-          className="absolute inset-x-0 -bottom-2 flex h-20 items-center justify-center rounded-b-2xl bg-gradient-to-b from-code/70 to-code text-sm text-muted-foreground"
+          className="from-code/70 to-code absolute inset-x-0 -bottom-2 flex h-20 items-center justify-center rounded-b-2xl bg-gradient-to-b text-sm text-muted-foreground"
         >
           Expand
         </button>

@@ -11,7 +11,8 @@ export function ComponentsList({
   const pages = docs.docs
     .filter(
       (page) =>
-        page.info.path.startsWith(`${section}/`) && !page.info.path.endsWith("index.mdx")
+        page.info.path.startsWith(`${section}/`) &&
+        !page.info.path.endsWith("index.mdx")
     )
     .sort((a, b) => a.title.localeCompare(b.title))
 
