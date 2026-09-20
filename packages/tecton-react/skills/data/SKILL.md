@@ -22,6 +22,17 @@ sources:
 
 Data — rows, trees, charts, KPIs, colours and dates. Start from the table, then read the section of the component it sends you to: Table, TreeView, ChartContainer, Stat, ColorSwatch, Calendar. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- A table is `Table > TableHeader / TableBody / TableFooter` with the `TableHead` children straight inside `TableHeader` (React Aria renders the header row itself), an `aria-label` on `Table`, `isRowHeader` on the identifying column and an `id` on every `TableRow`.
+- An empty table renders through `TableBody`'s `renderEmptyState`, returning `Empty` or a string — never a `TableRow` with a `colSpan` cell.
+- Row activation is `onAction` on `TableRow` and sorting is `allowsSorting` on `TableHead` with the table's `onSortChange`; React Aria deletes `onClick` before the `<tr>` is rendered.
+- `className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-right`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.
+- A KPI is a `Stat` with `StatLabel`, `StatValue` (its unit in the `unit` prop) and `StatDelta` with `trend="up" | "down" | "flat"`, never a heading and a coloured span, and `className` on `StatGroup` carries width and placement only.
+- A hierarchy is a `TreeView` with an `aria-label` and an `id` plus `textValue` on every `TreeViewItem`, not a pile of nested `Collapsible`s, and rows are never indented with `pl-*`.
+- A chart is a Recharts chart inside a `ChartContainer` with a `ChartConfig` keyed by `dataKey`, painted with `fill="var(--color-<key>)"` from that config and given a size in `className`, never a Tailwind colour class or a hard-coded hex.
+- `Calendar` and `RangeCalendar` are React Aria: `value` / `onChange` hold `@internationalized/date` values and days are blocked with `isDateUnavailable`, `minValue` and `maxValue`, while react-day-picker's `mode`, `selected`, `onSelect` and `disabled` are filtered out.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | Records of the same shape have to line up in columns: invoices, wells, run results | `Table` | `@tecton/react/components/table` |
@@ -122,9 +133,7 @@ Correct:
 
 React Aria's `Row` runs `delete DOMProps.onClick` before it renders the `<tr>`, so the handler never reaches the DOM; `onAction` is the row's activation hook and fires on Enter and Space as well as on a click.
 
-#### HIGH Sorting from a click handler on the header
-
-`allowsSorting` is what makes the column a sort control — it sets `aria-sort`, sorts on Enter and Space, draws the direction indicator and routes the change through the table's `onSortChange`; a bare `onClick` on the `th` answers a mouse and nothing else. Wrong and correct code: `guidelines/table.md`.
+- **HIGH** Sorting from a click handler on the header — `allowsSorting` is what makes the column a sort control — it sets `aria-sort`, sorts on Enter and Space, draws the direction indicator and routes the change through the table's `onSortChange`; a bare `onClick` on the `th` answers a mouse and nothing else. (guidelines/table.md)
 
 ## TreeView
 
@@ -184,13 +193,8 @@ Correct:
 
 Each `Collapsible` is its own widget, so the result is a pile of buttons with no `role="treegrid"`, no arrow-key or type-ahead movement between rows and no selection; `TreeView` is React Aria's `Tree` and gets all of it from `id`, `textValue` and the nesting.
 
-#### HIGH Indenting rows with padding classes
-
-`TreeViewItemContent` writes `paddingInlineStart` as an inline style computed from React Aria's `level`, which no `className` can outrank, so the row keeps the depth it really has in the collection and `pl-8` is dead weight that `no-restyle` reports. Wrong and correct code: `guidelines/tree-view.md`.
-
-#### MEDIUM A row without textValue
-
-`textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included. Wrong and correct code: `guidelines/tree-view.md`.
+- **HIGH** Indenting rows with padding classes — `TreeViewItemContent` writes `paddingInlineStart` as an inline style computed from React Aria's `level`, which no `className` can outrank, so the row keeps the depth it really has in the collection and `pl-8` is dead weight that `no-restyle` reports. (guidelines/tree-view.md)
+- **MEDIUM** A row without textValue — `textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included. (guidelines/tree-view.md)
 
 ## ChartContainer
 
@@ -275,9 +279,7 @@ Correct:
 
 `ChartContainer` is what supplies the config context, renders `ChartStyle` so `var(--color-<key>)` resolves, and wraps the chart in Recharts' `ResponsiveContainer`; a fixed `width` and `height` chart never reflows, and Recharts' own `Tooltip` ignores the theme instead of rendering the bordered popover the container styles.
 
-#### MEDIUM A config key that is not the dataKey
-
-`ChartStyle` emits one `--color-<key>` per config key, so the `<Bar dataKey="desktop" fill="var(--color-desktop)" />` above it resolves to nothing and takes Recharts' default fill, while `ChartTooltipContent` looks each item up by its `dataKey` and shows the raw key instead of the label. Wrong and correct code: `guidelines/chart.md`.
+- **MEDIUM** A config key that is not the dataKey — `ChartStyle` emits one `--color-<key>` per config key, so the `<Bar dataKey="desktop" fill="var(--color-desktop)" />` above it resolves to nothing and takes Recharts' default fill, while `ChartTooltipContent` looks each item up by its `dataKey` and shows the raw key instead of the label. (guidelines/chart.md)
 
 ## Stat
 
@@ -331,13 +333,8 @@ Correct:
 
 `text-gray-500` and `text-green-600` are stock Tailwind that the reset palette emits no CSS for, so the label and the change both render in the body colour, and the value loses the `font-mono tabular-nums` that stops a column of KPIs jittering as the digits change.
 
-#### HIGH Colouring the delta by hand instead of with trend
-
-`trend` chooses both halves of the indicator — the `text-success` / `text-destructive` / `text-muted-foreground` colour and the `TrendingUp` / `TrendingDown` / `Minus` icon — so the hand-coloured version keeps the default flat dash while `cn` drops `text-muted-foreground` for a `text-red-600` that emits nothing. Wrong and correct code: `guidelines/stat.md`.
-
-#### MEDIUM The unit written into the value
-
-The `unit` slot renders `font-sans text-[0.6em] text-muted-foreground` beside the number; inside the children the unit is set in IBM Plex Mono at the full value size and counted by `tabular-nums`, so it reads as part of the figure and the columns of a `StatGroup` stop lining up. Wrong and correct code: `guidelines/stat.md`.
+- **HIGH** Colouring the delta by hand instead of with trend — `trend` chooses both halves of the indicator — the `text-success` / `text-destructive` / `text-muted-foreground` colour and the `TrendingUp` / `TrendingDown` / `Minus` icon — so the hand-coloured version keeps the default flat dash while `cn` drops `text-muted-foreground` for a `text-red-600` that emits nothing. (guidelines/stat.md)
+- **MEDIUM** The unit written into the value — The `unit` slot renders `font-sans text-[0.6em] text-muted-foreground` beside the number; inside the children the unit is set in IBM Plex Mono at the full value size and counted by `tabular-nums`, so it reads as part of the figure and the columns of a `StatGroup` stop lining up. (guidelines/stat.md)
 
 ## ColorSwatch
 
@@ -366,17 +363,9 @@ import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 
 ### Don't
 
-#### HIGH A coloured div in place of the swatch
-
-The swatch is `role="img"` with an accessible name and carries `border border-border-subtle shadow-xs`, which is what keeps a white, pale or transparent colour visible against the surface; a bare div is silent to assistive technology and its inline `style` is what `no-inline-styles` reports. Wrong and correct code: `guidelines/color-swatch.md`.
-
-#### HIGH Opening the picker with a press handler
-
-`ColorSwatch` renders React Aria's non-interactive swatch unless `onChange` is given; only `onChange` wraps it in the `color-swatch-trigger` button with the preset row and the hex field, so `onPress` is not in the props type and lands on a `span` that never fires it. Wrong and correct code: `guidelines/color-swatch.md`.
-
-#### MEDIUM Label and value written as sibling spans
-
-With `label` and `value` the component renders the `color-swatch-item` row itself — name over value, the value in the mono face and `muted-foreground`, `className` moved from the swatch to the row — while `text-zinc-500` is stock Tailwind that emits no CSS at all. Wrong and correct code: `guidelines/color-swatch.md`.
+- **HIGH** A coloured div in place of the swatch — The swatch is `role="img"` with an accessible name and carries `border border-border-subtle shadow-xs`, which is what keeps a white, pale or transparent colour visible against the surface; a bare div is silent to assistive technology and its inline `style` is what `no-inline-styles` reports. (guidelines/color-swatch.md)
+- **HIGH** Opening the picker with a press handler — `ColorSwatch` renders React Aria's non-interactive swatch unless `onChange` is given; only `onChange` wraps it in the `color-swatch-trigger` button with the preset row and the hex field, so `onPress` is not in the props type and lands on a `span` that never fires it. (guidelines/color-swatch.md)
+- **MEDIUM** Label and value written as sibling spans — With `label` and `value` the component renders the `color-swatch-item` row itself — name over value, the value in the mono face and `muted-foreground`, `className` moved from the swatch to the row — while `text-zinc-500` is stock Tailwind that emits no CSS at all. (guidelines/color-swatch.md)
 
 ## Calendar
 
@@ -431,10 +420,7 @@ Correct:
 
 This `Calendar` wraps React Aria, not react-day-picker: `mode`, `selected`, `onSelect` and `disabled` are not in `CalendarProps`, so they are filtered out before the grid renders and the calendar comes up uncontrolled with every day still selectable.
 
-#### HIGH A JavaScript Date as the value
+- **HIGH** A JavaScript Date as the value — React Aria reads `calendar`, `era`, `year`, `month` and `day` off the value and hands a `CalendarDate` back from `onChange`, so a `Date` leaves the grid with nothing selected and formatting the value again needs `date.toDate(getLocalTimeZone())`. (guidelines/calendar.md)
+- **MEDIUM** Two Calendars for a start and an end — `RangeCalendar` is React Aria's range widget: it owns the `data-range-start`, `data-range-middle` and `data-range-end` cell states that draw the span, and it keeps the end on or after the start — neither of which two independent single calendars can produce. (guidelines/calendar.md)
 
-React Aria reads `calendar`, `era`, `year`, `month` and `day` off the value and hands a `CalendarDate` back from `onChange`, so a `Date` leaves the grid with nothing selected and formatting the value again needs `date.toDate(getLocalTimeZone())`. Wrong and correct code: `guidelines/calendar.md`.
-
-#### MEDIUM Two Calendars for a start and an end
-
-`RangeCalendar` is React Aria's range widget: it owns the `data-range-start`, `data-range-middle` and `data-range-end` cell states that draw the span, and it keeps the end on or after the start — neither of which two independent single calendars can produce. Wrong and correct code: `guidelines/calendar.md`.
+Re-read the checklist above against the file you wrote before you report it done.

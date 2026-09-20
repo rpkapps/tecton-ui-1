@@ -21,6 +21,17 @@ sources:
 
 Layout — disclosure, splitting, scrolling and ratio boxes. Start from the table, then read the section of the component it sends you to: Accordion, Collapsible, ResizablePanelGroup, ScrollArea, AspectRatio. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- `Accordion` is a React Aria `DisclosureGroup`: every `AccordionItem` has an `id`, state is `expandedKeys` / `defaultExpandedKeys` / `onExpandedChange` (a `Set`), and `type`, `collapsible`, `value` and `defaultValue` are dropped.
+- `Collapsible` is a React Aria `Disclosure` controlled with `isExpanded` / `defaultExpanded` / `onExpandedChange`, never with `open` and `onOpenChange`.
+- The revealed markup is inside `CollapsibleContent` — the panel the trigger's `aria-expanded` and `aria-controls` refer to — not a hand-rolled conditional.
+- The collapsible trigger is a Tecton `Button` carrying `slot="trigger"` and no `onPress` of its own, and `AccordionTrigger` is left to render its own heading, button and chevron.
+- `ResizablePanelGroup` wraps react-resizable-panels, not React Aria: the axis prop is `orientation`, `defaultSize` / `minSize` / `maxSize` take unit strings (`"25%"`, `"320px"`), and disabling is `disabled`.
+- A `ResizablePanelGroup` is given its height from outside (`h-96` or a flex parent) and every `ResizableHandle` is a direct child of its group.
+- A `ScrollArea` has a height (`h-*`, `max-h-*`, or `min-h-0 flex-1`) because it only sets `overflow-auto`, and it takes `tabIndex={0}` with `role="region"` and an `aria-label` when nothing inside it is focusable.
+- `AspectRatio` is given its required numeric `ratio`, a child that fills it (`absolute inset-0 size-full object-cover`) and its width from outside, with no fixed height competing with the ratio.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | Several independent sections stack vertically and the reader opens the ones they need: an FAQ, grouped settings, a long form in parts | `Accordion` | `@tecton/react/components/accordion` |
@@ -96,35 +107,8 @@ Correct:
 
 `Accordion` is a React Aria `DisclosureGroup`, which passes its props through `filterDOMProps`: `type`, `collapsible`, `defaultValue` and `value` are dropped before they reach the DOM or the state, and an item with no `id` falls back to a generated `useId` key, so nothing opens and no key you write ever matches.
 
-#### HIGH Tracking the open section with onClick on the trigger
-
-Wrong:
-
-```tsx
-<Accordion>
-  <AccordionItem id="privacy">
-    <AccordionTrigger onClick={() => setSection("privacy")}>Privacy</AccordionTrigger>
-    <AccordionContent>Two-factor authentication and active sessions.</AccordionContent>
-  </AccordionItem>
-</Accordion>
-```
-
-Correct:
-
-```tsx
-<Accordion expandedKeys={sections} onExpandedChange={setSections}>
-  <AccordionItem id="privacy">
-    <AccordionTrigger>Privacy</AccordionTrigger>
-    <AccordionContent>Two-factor authentication and active sessions.</AccordionContent>
-  </AccordionItem>
-</Accordion>
-```
-
-`onClick` is only React Aria's press alias on the trigger button, so it fires on the collapse as well as the expand and never sees the group closing a different section under `allowsMultipleExpanded={false}`; `onExpandedChange` reports the whole key set.
-
-#### MEDIUM A chevron added to the trigger
-
-`AccordionTrigger` already appends a `ChevronDownIcon`/`ChevronUpIcon` pair tagged `data-slot="accordion-trigger-icon"`, which is what the `ml-auto`, `size-5` and `group-aria-expanded` swap rules target, so a hand-added icon becomes a second, static chevron in the middle of the row. Wrong and correct code: `guidelines/accordion.md`.
+- **HIGH** Tracking the open section with onClick on the trigger — `onClick` is only React Aria's press alias on the trigger button, so it fires on the collapse as well as the expand and never sees the group closing a different section under `allowsMultipleExpanded={false}`; `onExpandedChange` reports the whole key set. (guidelines/accordion.md)
+- **MEDIUM** A chevron added to the trigger — `AccordionTrigger` already appends a `ChevronDownIcon`/`ChevronUpIcon` pair tagged `data-slot="accordion-trigger-icon"`, which is what the `ml-auto`, `size-5` and `group-aria-expanded` swap rules target, so a hand-added icon becomes a second, static chevron in the middle of the row. (guidelines/accordion.md)
 
 ## Collapsible
 
@@ -178,31 +162,8 @@ Correct:
 
 `Collapsible` is a React Aria `Disclosure` and runs its props through `filterDOMProps`, which keeps only `id`, `data-*`, labelling and global DOM events: `open` and `onOpenChange` are dropped outright, so the region stays uncontrolled, `showDetail` never changes and anything else keyed off it — a chevron, a count, a Save button — never updates.
 
-#### HIGH Rendering the region conditionally instead of in CollapsibleContent
-
-Wrong:
-
-```tsx
-<Collapsible isExpanded={showDetail} onExpandedChange={setShowDetail}>
-  <Button slot="trigger" variant="outline">Details</Button>
-  {showDetail ? <div className="rounded-md border p-4">{detail}</div> : null}
-</Collapsible>
-```
-
-Correct:
-
-```tsx
-<Collapsible isExpanded={showDetail} onExpandedChange={setShowDetail}>
-  <Button slot="trigger" variant="outline">Details</Button>
-  <CollapsibleContent><div className="rounded-md border p-4">{detail}</div></CollapsibleContent>
-</Collapsible>
-```
-
-`Disclosure` hands the panel id to `CollapsibleContent` and the matching `aria-controls` to the `slot="trigger"` button, so a hand-rolled conditional leaves the trigger pointing at an element that is not in the document and the panel with no `role="group"`.
-
-#### MEDIUM A trigger with its own onPress
-
-`Disclosure` publishes the toggle, `aria-expanded` and `aria-controls` through `ButtonContext` under the `trigger` slot only, so a button without it gets an empty default slot: the region still opens, but the control announces no expanded state and drops out of the keyboard contract the panel is built on. Wrong and correct code: `guidelines/collapsible.md`.
+- **HIGH** Rendering the region conditionally instead of in CollapsibleContent — `Disclosure` hands the panel id to `CollapsibleContent` and the matching `aria-controls` to the `slot="trigger"` button, so a hand-rolled conditional leaves the trigger pointing at an element that is not in the document and the panel with no `role="group"`. (guidelines/collapsible.md)
+- **MEDIUM** A trigger with its own onPress — `Disclosure` publishes the toggle, `aria-expanded` and `aria-controls` through `ButtonContext` under the `trigger` slot only, so a button without it gets an empty default slot: the region still opens, but the control announces no expanded state and drops out of the keyboard contract the panel is built on. (guidelines/collapsible.md)
 
 ## ResizablePanelGroup
 
@@ -230,57 +191,9 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@tecton/re
 
 ### Don't
 
-#### HIGH The v3 direction prop instead of orientation
-
-Wrong:
-
-```tsx
-<ResizablePanelGroup direction="vertical" className="h-96 rounded-lg border">
-  <ResizablePanel defaultSize="30%">{results}</ResizablePanel>
-  <ResizableHandle withHandle />
-  <ResizablePanel defaultSize="70%">{detail}</ResizablePanel>
-</ResizablePanelGroup>
-```
-
-Correct:
-
-```tsx
-<ResizablePanelGroup orientation="vertical" className="h-96 rounded-lg border">
-  <ResizablePanel defaultSize="30%">{results}</ResizablePanel>
-  <ResizableHandle withHandle />
-  <ResizablePanel defaultSize="70%">{detail}</ResizablePanel>
-</ResizablePanelGroup>
-```
-
-react-resizable-panels v4 renamed the axis prop to `orientation`, so `direction` is spread onto the group `div` as a stray attribute: the group keeps the default horizontal axis, and the `aria-[orientation=vertical]:flex-col` rule that stacks the panels never matches.
-
-#### HIGH A bare number for defaultSize
-
-Wrong:
-
-```tsx
-<ResizablePanelGroup orientation="horizontal" className="h-96">
-  <ResizablePanel defaultSize={25} minSize={20}>{tree}</ResizablePanel>
-  <ResizableHandle withHandle />
-  <ResizablePanel defaultSize={75}>{editor}</ResizablePanel>
-</ResizablePanelGroup>
-```
-
-Correct:
-
-```tsx
-<ResizablePanelGroup orientation="horizontal" className="h-96">
-  <ResizablePanel defaultSize="25%" minSize="20%">{tree}</ResizablePanel>
-  <ResizableHandle withHandle />
-  <ResizablePanel defaultSize="75%">{editor}</ResizablePanel>
-</ResizablePanelGroup>
-```
-
-In v4 a number means **pixels** and only a string is read as a percentage, so this type-checks and renders a 25 px tree with a 20 px minimum next to a 75 px editor — the split looks collapsed on first paint.
-
-#### MEDIUM React Aria prop names on a panel or handle
-
-Resizable is the one layout module not built on React Aria: `Separator` destructures `disabled` and spreads everything else onto the `div`, so `isDisabled` becomes a stray attribute and the divider stays draggable while the interface says it is locked. Wrong and correct code: `guidelines/resizable.md`.
+- **HIGH** The v3 direction prop instead of orientation — react-resizable-panels v4 renamed the axis prop to `orientation`, so `direction` is spread onto the group `div` as a stray attribute: the group keeps the default horizontal axis, and the `aria-[orientation=vertical]:flex-col` rule that stacks the panels never matches. (guidelines/resizable.md)
+- **HIGH** A bare number for defaultSize — In v4 a number means **pixels** and only a string is read as a percentage, so this type-checks and renders a 25 px tree with a 20 px minimum next to a 75 px editor — the split looks collapsed on first paint. (guidelines/resizable.md)
+- **MEDIUM** React Aria prop names on a panel or handle — Resizable is the one layout module not built on React Aria: `Separator` destructures `disabled` and spreads everything else onto the `div`, so `isDisabled` becomes a stray attribute and the divider stays draggable while the interface says it is locked. (guidelines/resizable.md)
 
 ## ScrollArea
 
@@ -309,49 +222,9 @@ import { ScrollArea } from "@tecton/react/components/scroll-area"
 
 ### Don't
 
-#### HIGH A hand-styled scrollbar on a plain overflow-auto box
-
-Wrong:
-
-```tsx
-<div className="h-72 w-48 overflow-auto rounded-md border [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
-  <div className="p-4">{versions}</div>
-</div>
-```
-
-Correct:
-
-```tsx
-<ScrollArea className="h-72 w-48 rounded-md border">
-  <div className="p-4">{versions}</div>
-</ScrollArea>
-```
-
-`ScrollArea` styles the real scrollbar with the standard `scrollbar-width: thin` and `scrollbar-color: var(--color-border) transparent`, so it follows the theme in every engine; the `::-webkit-scrollbar` pseudo-elements do nothing in Firefox, and `bg-gray-300` is stock Tailwind, which the reset palette turns into no CSS at all.
-
-#### HIGH A scroll area with no height
-
-Wrong:
-
-```tsx
-<ScrollArea className="w-full rounded-md border">
-  <Table>{rows}</Table>
-</ScrollArea>
-```
-
-Correct:
-
-```tsx
-<ScrollArea className="h-96 w-full rounded-md border">
-  <Table>{rows}</Table>
-</ScrollArea>
-```
-
-The component is one `div` carrying `overflow-auto` and nothing else, so with no height it grows to its content, never overflows, and the whole page scrolls instead of the region.
-
-#### MEDIUM A scroll region the keyboard cannot reach
-
-`ScrollArea` ships `outline-none focus-visible:ring-[3px]` but sets no `tabIndex`, so a region whose content has no focusable children can never take focus: the ring is unreachable and the text can only be read with a pointer. Wrong and correct code: `guidelines/scroll-area.md`.
+- **HIGH** A hand-styled scrollbar on a plain overflow-auto box — `ScrollArea` styles the real scrollbar with the standard `scrollbar-width: thin` and `scrollbar-color: var(--color-border) transparent`, so it follows the theme in every engine; the `::-webkit-scrollbar` pseudo-elements do nothing in Firefox, and `bg-gray-300` is stock Tailwind, which the reset palette turns into no CSS at all. (guidelines/scroll-area.md)
+- **HIGH** A scroll area with no height — The component is one `div` carrying `overflow-auto` and nothing else, so with no height it grows to its content, never overflows, and the whole page scrolls instead of the region. (guidelines/scroll-area.md)
+- **MEDIUM** A scroll region the keyboard cannot reach — `ScrollArea` ships `outline-none focus-visible:ring-[3px]` but sets no `tabIndex`, so a region whose content has no focusable children can never take focus: the ring is unreachable and the text can only be read with a pointer. (guidelines/scroll-area.md)
 
 ## AspectRatio
 
@@ -380,34 +253,8 @@ import { AspectRatio } from "@tecton/react/components/aspect-ratio"
 
 ### Don't
 
-#### HIGH A child left at its intrinsic size
+- **HIGH** A child left at its intrinsic size — `AspectRatio` is one `div` with `relative aspect-(--ratio)` and no rules for its children, so the image keeps its own dimensions: it overflows or floats inside the box whose shape it was meant to define. (guidelines/aspect-ratio.md)
+- **MEDIUM** A fixed height beside the ratio — `aspect-ratio` only computes the dimension that is not already definite, so on a full-width block `h-48` wins and the ratio is dead weight — a box that needs a fixed height does not need this component at all. (guidelines/aspect-ratio.md)
+- **MEDIUM** An AspectRatio with no ratio — Unlike the Radix component this one has no default: `ratio` is required, React drops the `undefined` custom property, and `aspect-ratio: var(--ratio)` then resolves to nothing, so the box collapses around an absolutely positioned child and disappears. (guidelines/aspect-ratio.md)
 
-Wrong:
-
-```tsx
-<AspectRatio ratio={16 / 9} className="w-full max-w-sm rounded-lg bg-muted">
-  <img src={survey.thumbnail} alt="Survey outline" className="rounded-lg" />
-</AspectRatio>
-```
-
-Correct:
-
-```tsx
-<AspectRatio ratio={16 / 9} className="w-full max-w-sm rounded-lg bg-muted">
-  <img
-    src={survey.thumbnail}
-    alt="Survey outline"
-    className="absolute inset-0 size-full rounded-lg object-cover"
-  />
-</AspectRatio>
-```
-
-`AspectRatio` is one `div` with `relative aspect-(--ratio)` and no rules for its children, so the image keeps its own dimensions: it overflows or floats inside the box whose shape it was meant to define.
-
-#### MEDIUM A fixed height beside the ratio
-
-`aspect-ratio` only computes the dimension that is not already definite, so on a full-width block `h-48` wins and the ratio is dead weight — a box that needs a fixed height does not need this component at all. Wrong and correct code: `guidelines/aspect-ratio.md`.
-
-#### MEDIUM An AspectRatio with no ratio
-
-Unlike the Radix component this one has no default: `ratio` is required, React drops the `undefined` custom property, and `aspect-ratio: var(--ratio)` then resolves to nothing, so the box collapses around an absolutely positioned child and disappears. Wrong and correct code: `guidelines/aspect-ratio.md`.
+Re-read the checklist above against the file you wrote before you report it done.

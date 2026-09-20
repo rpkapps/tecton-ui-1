@@ -35,6 +35,60 @@ shipped as one package. Every component the application uses is already in it.
 Load `@tecton/react#react-aria` before writing props — the controls are React
 Aria, not Radix, and `onClick` / `checked` / `value` silently do the wrong thing.
 
+## Before you finish
+
+Run this list against the file you just wrote, whatever family skills you
+loaded. Every line is a condition that has to hold in that file.
+
+- **Imports** — every component comes from `@tecton/react/components/<name>`,
+  `@tecton/react/tecton/<name>` or `@tecton/react/icons`. Nothing is imported
+  from the `@tecton/react` root (there is no `.` export) or from a
+  `components/ui/` directory.
+- **No stock Tailwind colour** — no `bg-red-500`, `text-zinc-400`,
+  `border-slate-300`, `bg-emerald-600`; the palette is reset, so they emit no
+  CSS. A Tecton colour is a semantic token (`bg-primary`,
+  `text-muted-foreground`, `text-destructive`, `bg-warning-surface`) or a
+  palette step — one of the fifteen families with a step from `50 … 1570`:
+  `bg-blue-120`, `text-blue-830`, `border-yellow-160`, no `dark:` pair.
+- **`className` carries layout only** — `w-full`, `mt-4`, `flex-1`,
+  `col-span-2`, `gap-2`. Not `h-*`, `p-*`, `size-*`, `rounded-*`, `bg-*`, and
+  not a colour or typography `text-*` / `font-*` on a component that owns it:
+  `size-8` on an icon `Button` is `size="icon-sm"`, and `text-muted-foreground`
+  or `font-medium` on a `TableCell` replaces styling the part already has.
+- **Every control in a `Field` is labelled** — the control has an `id` and a
+  `FieldLabel htmlFor` points at it; for a `Select` that `id` goes on
+  `SelectTrigger`, which renders the button, because `Select` renders a `div`.
+  A group of controls — a `RadioGroup`, a `ChipGroup`, a set of checkboxes — is
+  named by `FieldSet` + `FieldLegend`, never by a stray `FieldLabel`.
+- **React Aria prop names** — `onPress` not `onClick`, `isDisabled` not
+  `disabled`, `isSelected` with `onChange(isSelected: boolean)` not `checked` /
+  `onCheckedChange`, `isOpen` / `onOpenChange` not `open`, and `selectedKey` /
+  `onSelectionChange` keyed by `id`, with the `Key | null` the handler receives
+  narrowed rather than cast away with `as`.
+- **Empty results are `Empty`** — a list, table, panel or search result with
+  nothing to show renders `Empty` with `EmptyTitle` and `EmptyDescription`, not
+  a stack of divs and not a `TableRow` with a `colSpan` cell; inside a `Table`
+  it is what `TableBody`'s `renderEmptyState` returns.
+- **Confirmations** — a transient one is `toast` from `sonner` with exactly one
+  `<Toaster />` mounted at the application root; one that stays on the page
+  until the user reads or resolves it is an `Alert` with a `variant`.
+- **The component that already exists** — a KPI is a `Stat` (`StatLabel`,
+  `StatValue`, `StatDelta`), a status label is a `Badge` with a `variant`, and a
+  tag the user selects or removes is a `Chip` inside a `ChipGroup`. None of the
+  three is a `div` with classes.
+- **Icons and spinners inside controls** — every icon or `Spinner` child of a
+  `Button`, `Badge`, `Chip`, `TabsTrigger` or `InputGroupAddon` carries
+  `data-icon="inline-start"` or `data-icon="inline-end"`.
+- **Icon-only controls are named** — every `Button`, `Toggle`,
+  `ToggleGroupItem`, `InputGroupButton` and `ShellAction` with no text child has
+  an `aria-label`; a `Tooltip` describes, it does not name.
+- **Menu items act through `onAction`** — on the `DropdownMenuItem`,
+  `ContextMenuItem` or `CommandItem` itself, or `onAction(key)` on the menu with
+  an `id` per item.
+- **The `AlertDialog` confirm is `AlertDialogAction`** — it is the `Button` that
+  carries `slot="close"`, so the action closes the prompt; a plain `Button`
+  belongs there only when the dialog must stay open while async work runs.
+
 ## Setup
 
 Import the stylesheet once. It carries Tailwind, the shadcn runtime styles, the
@@ -368,3 +422,5 @@ Source: apps/www/content/docs/components/button.mdx (With Icon); packages/tecton
 | `@tecton/react#presentation` | Carousel, Avatar, Overflow, Canvas, Background. |
 | `@tecton/react#conversation` | Message, MessageScroller, Bubble, Attachment, Questionnaire, Marker. |
 | `@tecton/react#infrastructure` | DirectionProvider, PortalProvider, ThemeRoot, Shortcuts — providers and roots. |
+
+Re-read *Before you finish* against the file you wrote before you report it done.

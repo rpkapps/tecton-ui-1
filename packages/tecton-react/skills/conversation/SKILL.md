@@ -22,6 +22,17 @@ sources:
 
 Conversation — chat and assistant surfaces. Start from the table, then read the section of the component it sends you to: Message, MessageScroller, Bubble, Attachment, Questionnaire, Marker. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- A turn is a `Message` with `MessageAvatar` and `MessageContent` holding `MessageHeader`, a `Bubble` and `MessageFooter`, and its side comes from `align="start" | "end"` — there is no `role` axis and no hand-written `justify-end`.
+- Message text always goes inside `BubbleContent`, because every `Bubble` variant styles `*:data-[slot=bubble-content]` and a bare child renders unpadded and unframed.
+- A `Bubble`'s fill comes from `variant` and its side from `align`, never from a colour class or a margin, and a pressable bubble is built with `render` rather than `onClick`.
+- A transcript is `MessageScrollerProvider > MessageScroller > MessageScrollerViewport > MessageScrollerContent` with every row wrapped in a `MessageScrollerItem` carrying a stable `messageId`, not a plain `overflow-auto` div.
+- An attached file is an `Attachment` (`AttachmentMedia`, `AttachmentContent`, `AttachmentActions`) driven through `state="idle" | "uploading" | "processing" | "error" | "done"`, not a `Badge` and not a hand-painted error border.
+- Every `AttachmentAction` has an `aria-label` naming the action and the file and fires through `onPress`, and the card opens through `AttachmentTrigger` rather than an `onClick` on the root `div`.
+- A structured set of questions is a `Questionnaire` with `items`, a `name` per `QuestionnaireItem`, answers read from `new FormData(event.currentTarget)` in `onSubmit`, and navigation only through `QuestionnairePrevious`, `QuestionnaireSkip`, `QuestionnaireNext` and `QuestionnaireSubmit` — these parts take `disabled` and `onChange`, not React Aria props.
+- A full-width status row or labelled divider in a transcript is a `Marker` with `MarkerIcon` and `MarkerContent` (`variant="separator"` for a divider, `role="status"` for work in progress), never a coloured span and never `role="separator"`.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | One turn of a conversation: the avatar, the sender name, the message surface and the actions under it | `Message` | `@tecton/react/components/message` |
@@ -77,13 +88,8 @@ import { Message, MessageGroup, MessageAvatar, MessageContent, MessageHeader, Me
 
 ### Don't
 
-#### HIGH Choosing the message side by hand
-
-`Message` has no `role` axis, so `role="user"` type-checks and lands on the `div` as an invalid ARIA role, while the reversal, the bubble's `self-end` and the footer's `justify-end` are all `data-[align=end]` rules that the hand-written classes never switch on. Wrong and correct code: `guidelines/message.md`.
-
-#### HIGH A hand-built action row under the message
-
-`MessageAvatar` lifts itself with `group-has-data-[slot=message-footer]/message:-translate-y-8` and only `MessageFooter` follows the row to `justify-end`, so a plain `div` leaves the avatar and the actions misaligned, and `text-gray-500` emits no CSS in the reset palette. Wrong and correct code: `guidelines/message.md`.
+- **HIGH** Choosing the message side by hand — `Message` has no `role` axis, so `role="user"` type-checks and lands on the `div` as an invalid ARIA role, while the reversal, the bubble's `self-end` and the footer's `justify-end` are all `data-[align=end]` rules that the hand-written classes never switch on. (guidelines/message.md)
+- **HIGH** A hand-built action row under the message — `MessageAvatar` lifts itself with `group-has-data-[slot=message-footer]/message:-translate-y-8` and only `MessageFooter` follows the row to `justify-end`, so a plain `div` leaves the avatar and the actions misaligned, and `text-gray-500` emits no CSS in the reset palette. (guidelines/message.md)
 
 ## MessageScroller
 
@@ -159,9 +165,7 @@ Correct:
 
 Every part reads the provider's context, so the page throws `useMessageScroller must be used within a MessageScroller.` — an error that names the frame you already rendered instead of the `MessageScrollerProvider` that is missing.
 
-#### HIGH Rows dropped straight into the content
-
-Registration happens on the item, which writes `data-message-id` and `data-scroll-anchor`, so unwrapped rows never anchor a new turn, are skipped by visibility tracking, and make `scrollToMessage` return `false`. Wrong and correct code: `guidelines/message-scroller.md`.
+- **HIGH** Rows dropped straight into the content — Registration happens on the item, which writes `data-message-id` and `data-scroll-anchor`, so unwrapped rows never anchor a new turn, are skipped by visibility tracking, and make `scrollToMessage` return `false`. (guidelines/message-scroller.md)
 
 ## Bubble
 
@@ -209,13 +213,8 @@ Correct:
 
 Every variant is a `*:data-[slot=bubble-content]` rule and the padding, radius and `text-sm leading-relaxed` live on `BubbleContent`, so a bare child renders as unpadded, unframed text with no bubble around it at all.
 
-#### HIGH Painting the user bubble with className
-
-`bg-blue-600` is stock Tailwind, which this palette resets to nothing, and a fill on the root would miss the `bubble-content` child that carries it anyway, while `self-end` comes from `data-[align=end]`, not from a margin. Wrong and correct code: `guidelines/bubble.md`.
-
-#### HIGH A clickable bubble built with onClick
-
-Without `render` the content stays a `div`, so the handler answers a mouse only — no tab stop, no Enter, no role — and the hover and `focus-visible:ring-2` treatments are `[button,a]:` selectors that never match it. Wrong and correct code: `guidelines/bubble.md`.
+- **HIGH** Painting the user bubble with className — `bg-blue-600` is stock Tailwind, which this palette resets to nothing, and a fill on the root would miss the `bubble-content` child that carries it anyway, while `self-end` comes from `data-[align=end]`, not from a margin. (guidelines/bubble.md)
+- **HIGH** A clickable bubble built with onClick — Without `render` the content stays a `div`, so the handler answers a mouse only — no tab stop, no Enter, no role — and the hover and `focus-visible:ring-2` treatments are `[button,a]:` selectors that never match it. (guidelines/bubble.md)
 
 ## Attachment
 
@@ -244,17 +243,9 @@ import { Attachment, AttachmentGroup, AttachmentMedia, AttachmentContent, Attach
 
 ### Don't
 
-#### HIGH A file rendered as a Badge with a paperclip
-
-`Badge` is a one-line `span` with a single text slot: the name gets none of `AttachmentTitle`'s `truncate`, the size and the upload status have nowhere to go, and there is no `state` axis to move the card through. Wrong and correct code: `guidelines/attachment.md`.
-
-#### HIGH Hand-painting the failed upload
-
-`state` writes `data-state` on the root, and the border, the media tint and the description colour are `data-[state=error]` and `group-data-[state=error]/attachment:` rules, while `border-red-500` is stock Tailwind and emits no CSS at all. Wrong and correct code: `guidelines/attachment.md`.
-
-#### MEDIUM Opening the preview from the card's onClick
-
-The root is a `div`, so the handler is mouse-only; `AttachmentTrigger` is a real `button` whose `absolute inset-0 z-10` covers the card but stays under `AttachmentActions` at `z-20`, so remove and retry keep working. Wrong and correct code: `guidelines/attachment.md`.
+- **HIGH** A file rendered as a Badge with a paperclip — `Badge` is a one-line `span` with a single text slot: the name gets none of `AttachmentTitle`'s `truncate`, the size and the upload status have nowhere to go, and there is no `state` axis to move the card through. (guidelines/attachment.md)
+- **HIGH** Hand-painting the failed upload — `state` writes `data-state` on the root, and the border, the media tint and the description colour are `data-[state=error]` and `group-data-[state=error]/attachment:` rules, while `border-red-500` is stock Tailwind and emits no CSS at all. (guidelines/attachment.md)
+- **MEDIUM** Opening the preview from the card's onClick — The root is a `div`, so the handler is mouse-only; `AttachmentTrigger` is a real `button` whose `absolute inset-0 z-10` covers the card but stays under `AttachmentActions` at `z-20`, so remove and retry keep working. (guidelines/attachment.md)
 
 ## Questionnaire
 
@@ -315,13 +306,8 @@ Correct:
 
 `Questionnaire` is the `form` and each item is a `fieldset` whose `QuestionnaireTitle` is its `legend`, so the hand-built version puts nothing in `FormData`, enforces no `required`, and leaves the question unassociated with its answers.
 
-#### HIGH A plain submit Button in the actions row
-
-`QuestionnaireSubmit` is `hidden`, `inert` and `tabIndex={-1}` until the last item is the active one, so a plain button is reachable from the first question and submits the form with every later item still unanswered. Wrong and correct code: `guidelines/questionnaire.md`.
-
-#### MEDIUM React Aria props on a choice
-
-These parts come from `@shadcn/react/questionnaire`, not React Aria, so `isDisabled` is a type error the dev server strips instead of checking, then forwards to the `label` as an unknown attribute: no `data-disabled`, and the choice stays selectable. Wrong and correct code: `guidelines/questionnaire.md`.
+- **HIGH** A plain submit Button in the actions row — `QuestionnaireSubmit` is `hidden`, `inert` and `tabIndex={-1}` until the last item is the active one, so a plain button is reachable from the first question and submits the form with every later item still unanswered. (guidelines/questionnaire.md)
+- **MEDIUM** React Aria props on a choice — These parts come from `@shadcn/react/questionnaire`, not React Aria, so `isDisabled` is a type error the dev server strips instead of checking, then forwards to the `label` as an unknown attribute: no `data-disabled`, and the choice stays selectable. (guidelines/questionnaire.md)
 
 ## Marker
 
@@ -352,14 +338,8 @@ import { Marker, MarkerIcon, MarkerContent, markerVariants } from "@tecton/react
 
 ### Don't
 
-#### HIGH A status line faked with a coloured span
+- **HIGH** A status line faked with a coloured span — `text-gray-500` emits no CSS once the stock palette is reset, so the row renders at the inherited colour and size, and it loses `MarkerIcon`'s `aria-hidden` and the `size-4` rule that keeps every glyph in the transcript the same. (guidelines/marker.md)
+- **HIGH** role="separator" on a labelled divider — A `separator` takes its accessible name from `aria-label` and its contents are treated as presentational, so the visible "Today" is never announced; the rules on each side are decorative `before:` / `after:` pseudo-elements and need no role at all. (guidelines/marker.md)
+- **MEDIUM** An anchor wrapped around the marker — The underline and `hover:text-foreground` treatments are `[a]:` descendant rules inside `markerVariants`, so an outer anchor matches none of them and nests a `w-full` flex row inside an inline element. (guidelines/marker.md)
 
-`text-gray-500` emits no CSS once the stock palette is reset, so the row renders at the inherited colour and size, and it loses `MarkerIcon`'s `aria-hidden` and the `size-4` rule that keeps every glyph in the transcript the same. Wrong and correct code: `guidelines/marker.md`.
-
-#### HIGH role="separator" on a labelled divider
-
-A `separator` takes its accessible name from `aria-label` and its contents are treated as presentational, so the visible "Today" is never announced; the rules on each side are decorative `before:` / `after:` pseudo-elements and need no role at all. Wrong and correct code: `guidelines/marker.md`.
-
-#### MEDIUM An anchor wrapped around the marker
-
-The underline and `hover:text-foreground` treatments are `[a]:` descendant rules inside `markerVariants`, so an outer anchor matches none of them and nests a `w-full` flex row inside an inline element. Wrong and correct code: `guidelines/marker.md`.
+Re-read the checklist above against the file you wrote before you report it done.

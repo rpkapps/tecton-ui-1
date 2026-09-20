@@ -104,7 +104,8 @@ export type Family = {
   title: string
   choice: string
   modules: string[]
-  skill?: { description: string }
+  /** `checklist` is the family's rules in one list; the skill opens with it. */
+  skill?: { description: string; checklist?: string[] }
 }
 
 export type External = { import: string; docs: string; note?: string }

@@ -22,6 +22,17 @@ sources:
 
 Surfaces — a content card, a titled application panel, a list row, a page title block, the application frame or a divider. Start from the table, then read the section of the component it sends you to: Card, Panel, Item, PageHeader, AppShell, Separator. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- A self-contained block of content is a `Card` composed of `CardHeader` (`CardTitle`, `CardDescription`, `CardAction`), `CardContent` and `CardFooter`; a hand-drawn `rounded-lg border bg-card p-4` on some other component is that `Card` written out by hand.
+- A titled application surface whose body has to scroll is a `Panel`, and the body is inside `PanelContent` — only that part carries `min-h-0 flex-1 overflow-auto`.
+- `className` on `Card` and `Panel` is placement, width and height only (`w-full max-w-sm`, `h-72`); their padding comes from `--card-spacing` or the `size` scale, so a `p-6` double-pads.
+- A list row is an `Item` with `ItemMedia`, `ItemContent` (`ItemTitle`, `ItemDescription`) and `ItemActions`, and a clickable row is given an `href` rather than an `onClick` on a `div`.
+- Rows inside an `ItemGroup` are divided with `ItemSeparator` and card sections with a bare `border-b` on `CardHeader`, never with a hand-written border colour.
+- A page title block is a `PageHeader` with the eyebrow, title and description inside `PageHeaderContent` and the actions in `PageHeaderActions`, and `PageHeaderTitle` is the page's single `h1`.
+- The application frame is `AppShell` > `AppShellHeader` plus `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`, with the page content in `AppShellMain` and never straight into `AppShellBody`.
+- A divider is a `Separator` with `emphasis="subtle" | "default" | "strong"` (or the surface's own `ItemSeparator` / `border-b`), never a bare `div` with a border colour.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | A self-contained piece of content stands on its own: a summary, a sign-in form, a media tile | `Card` | `@tecton/react/components/card` |
@@ -78,31 +89,8 @@ import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent, 
 
 ### Don't
 
-#### HIGH Re-declaring the card's own padding and shape
-
-Wrong:
-
-```tsx
-<Card className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
-  <CardTitle>Reserves</CardTitle>
-</Card>
-```
-
-Correct:
-
-```tsx
-<Card size="sm" className="w-full max-w-sm">
-  <CardHeader>
-    <CardTitle>Reserves</CardTitle>
-  </CardHeader>
-</Card>
-```
-
-`Card` pads itself through `--card-spacing` and its parts read the same variable, so `p-6` double-pads the header; `border-gray-200` is stock Tailwind, which Tecton resets to nothing, and `no-restyle` reports the colour, radius and padding.
-
-#### MEDIUM A hand-drawn rule between header and content
-
-`CardHeader` already carries `[.border-b]:pb-(--card-spacing)`, so the bare `border-b` picks up the themed border colour and the right padding, while `border-gray-200` emits no CSS and `pb-4` fights the spacing variable. Wrong and correct code: `guidelines/card.md`.
+- **HIGH** Re-declaring the card's own padding and shape — `Card` pads itself through `--card-spacing` and its parts read the same variable, so `p-6` double-pads the header; `border-gray-200` is stock Tailwind, which Tecton resets to nothing, and `no-restyle` reports the colour, radius and padding. (guidelines/card.md)
+- **MEDIUM** A hand-drawn rule between header and content — `CardHeader` already carries `[.border-b]:pb-(--card-spacing)`, so the bare `border-b` picks up the themed border colour and the right padding, while `border-gray-200` emits no CSS and `pb-4` fights the spacing variable. (guidelines/card.md)
 
 ## Panel
 
@@ -133,41 +121,8 @@ import { Panel, PanelHeader, PanelTitle, PanelDescription, PanelActions, PanelCo
 
 ### Don't
 
-#### HIGH A body that is not in PanelContent
-
-Wrong:
-
-```tsx
-<Panel className="h-72">
-  <PanelHeader>
-    <PanelTitle>Well properties</PanelTitle>
-  </PanelHeader>
-  <div className="p-4">{properties}</div>
-  <PanelFooter>
-    <Button size="sm">Open</Button>
-  </PanelFooter>
-</Panel>
-```
-
-Correct:
-
-```tsx
-<Panel className="h-72">
-  <PanelHeader>
-    <PanelTitle>Well properties</PanelTitle>
-  </PanelHeader>
-  <PanelContent>{properties}</PanelContent>
-  <PanelFooter>
-    <Button size="sm">Open</Button>
-  </PanelFooter>
-</Panel>
-```
-
-`Panel` is `flex min-h-0 flex-col overflow-hidden`, and only `PanelContent` carries `flex-1 overflow-auto`, so a plain `div` in its place is clipped instead of scrolling and pushes the footer out of view.
-
-#### MEDIUM Painting the variant by hand
-
-The shadow is the `elevated` variant and the padding is the `size` scale, which the parts read through `--panel-px` / `--panel-py`; `border-gray-200` is stock Tailwind and emits no CSS, and `no-restyle` reports the rest. Wrong and correct code: `guidelines/panel.md`.
+- **HIGH** A body that is not in PanelContent — `Panel` is `flex min-h-0 flex-col overflow-hidden`, and only `PanelContent` carries `flex-1 overflow-auto`, so a plain `div` in its place is clipped instead of scrolling and pushes the footer out of view. (guidelines/panel.md)
+- **MEDIUM** Painting the variant by hand — The shadow is the `elevated` variant and the padding is the `size` scale, which the parts read through `--panel-px` / `--panel-py`; `border-gray-200` is stock Tailwind and emits no CSS, and `no-restyle` reports the rest. (guidelines/panel.md)
 
 ## Item
 
@@ -221,9 +176,7 @@ Correct:
 
 Without an `href`, `Item` renders a plain `div`, so `onClick` gives the row no role, no tab stop and no Enter key: it is reachable with a mouse only.
 
-#### MEDIUM Sizing and colouring the row by hand
-
-`size="sm"` already is `gap-2.5 px-3 py-2.5` and `variant="outline"` already is the themed border; the hand-written version desynchronises from the other rows, and `border-gray-200` emits no CSS because Tecton resets the stock palette. Wrong and correct code: `guidelines/item.md`.
+- **MEDIUM** Sizing and colouring the row by hand — `size="sm"` already is `gap-2.5 px-3 py-2.5` and `variant="outline"` already is the themed border; the hand-written version desynchronises from the other rows, and `border-gray-200` emits no CSS because Tecton resets the stock palette. (guidelines/item.md)
 
 ## PageHeader
 
@@ -252,39 +205,8 @@ import { PageHeader, PageHeaderContent, PageHeaderEyebrow, PageHeaderTitle, Page
 
 ### Don't
 
-#### HIGH Title and actions as direct children of PageHeader
-
-Wrong:
-
-```tsx
-<PageHeader>
-  <PageHeaderTitle>Gullfaks field development</PageHeaderTitle>
-  <PageHeaderDescription>Three alternatives.</PageHeaderDescription>
-  <PageHeaderActions>
-    <Button>New alternative</Button>
-  </PageHeaderActions>
-</PageHeader>
-```
-
-Correct:
-
-```tsx
-<PageHeader>
-  <PageHeaderContent>
-    <PageHeaderTitle>Gullfaks field development</PageHeaderTitle>
-    <PageHeaderDescription>Three alternatives.</PageHeaderDescription>
-  </PageHeaderContent>
-  <PageHeaderActions>
-    <Button>New alternative</Button>
-  </PageHeaderActions>
-</PageHeader>
-```
-
-`PageHeader` is a `flex flex-wrap` row, so without `PageHeaderContent` the title and the description become siblings of the action row: the title loses its truncation and its 60% cap, and the description wraps onto its own line.
-
-#### MEDIUM A hand-built header row instead of PageHeader
-
-`text-zinc-900` is stock Tailwind and emits no CSS under Tecton's reset palette, and a hand-built row has neither the title truncation nor the collapsing action row, so it overflows as soon as the window narrows. Wrong and correct code: `guidelines/page-header.md`.
+- **HIGH** Title and actions as direct children of PageHeader — `PageHeader` is a `flex flex-wrap` row, so without `PageHeaderContent` the title and the description become siblings of the action row: the title loses its truncation and its 60% cap, and the description wraps onto its own line. (guidelines/page-header.md)
+- **MEDIUM** A hand-built header row instead of PageHeader — `text-zinc-900` is stock Tailwind and emits no CSS under Tecton's reset palette, and a hand-built row has neither the title truncation nor the collapsing action row, so it overflows as soon as the window narrows. (guidelines/page-header.md)
 
 ## AppShell
 
@@ -314,37 +236,8 @@ import { AppShell, AppShellHeader, AppShellBrand, AppShellNav, AppShellHeaderAct
 
 ### Don't
 
-#### HIGH Page content placed straight into AppShellBody
-
-Wrong:
-
-```tsx
-<AppShell>
-  <AppShellHeader>
-    <AppShellBrand>Tecton</AppShellBrand>
-  </AppShellHeader>
-  <AppShellBody className="overflow-y-auto p-6">{page}</AppShellBody>
-</AppShell>
-```
-
-Correct:
-
-```tsx
-<AppShell>
-  <AppShellHeader>
-    <AppShellBrand>Tecton</AppShellBrand>
-  </AppShellHeader>
-  <AppShellBody>
-    <AppShellMain className="p-6">{page}</AppShellMain>
-  </AppShellBody>
-</AppShell>
-```
-
-`AppShellBody` is the `flex min-h-0 overflow-hidden` row that holds the regions side by side, so content dropped into it is clipped at the fold and the sidebar and aside have nothing to sit beside.
-
-#### MEDIUM A split aside that keeps its own border
-
-`AppShellAside` is a fixed 320 px column with its own left border, so inside a resizable panel it ignores the dragged width and draws a second divider next to the handle. Wrong and correct code: `guidelines/app-shell.md`.
+- **HIGH** Page content placed straight into AppShellBody — `AppShellBody` is the `flex min-h-0 overflow-hidden` row that holds the regions side by side, so content dropped into it is clipped at the fold and the sidebar and aside have nothing to sit beside. (guidelines/app-shell.md)
+- **MEDIUM** A split aside that keeps its own border — `AppShellAside` is a fixed 320 px column with its own left border, so inside a resizable panel it ignores the dragged width and draws a second divider next to the handle. (guidelines/app-shell.md)
 
 ## Separator
 
@@ -373,34 +266,8 @@ import { Separator } from "@tecton/react/components/separator"
 
 ### Don't
 
-#### HIGH A hand-drawn rule with a stock Tailwind colour
+- **HIGH** A hand-drawn rule with a stock Tailwind colour — Tecton resets Tailwind's stock palette to `initial`, so `border-gray-200` generates no CSS and the rule is invisible in both modes; `Separator` also carries `role="separator"`, which a bare `div` does not. (guidelines/separator.md)
+- **MEDIUM** Recolouring the rule instead of raising its emphasis — The three emphases map to `--border-subtle`, `--border` and `--border-strong`, which already switch between modes; the stock `zinc` classes emit nothing, and `no-restyle` reports a colour the variant owns. (guidelines/separator.md)
+- **MEDIUM** A vertical rule with a hand-set height — A vertical `Separator` is `w-px self-stretch`, so it takes its height from the flex row; setting `h-4` freezes it at one size and `no-restyle` reports the size and colour. (guidelines/separator.md)
 
-Wrong:
-
-```tsx
-<div className="flex flex-col gap-4">
-  <p>Alternative A</p>
-  <div className="border-t border-gray-200" />
-  <p>Alternative B</p>
-</div>
-```
-
-Correct:
-
-```tsx
-<div className="flex flex-col gap-4">
-  <p>Alternative A</p>
-  <Separator emphasis="subtle" />
-  <p>Alternative B</p>
-</div>
-```
-
-Tecton resets Tailwind's stock palette to `initial`, so `border-gray-200` generates no CSS and the rule is invisible in both modes; `Separator` also carries `role="separator"`, which a bare `div` does not.
-
-#### MEDIUM Recolouring the rule instead of raising its emphasis
-
-The three emphases map to `--border-subtle`, `--border` and `--border-strong`, which already switch between modes; the stock `zinc` classes emit nothing, and `no-restyle` reports a colour the variant owns. Wrong and correct code: `guidelines/separator.md`.
-
-#### MEDIUM A vertical rule with a hand-set height
-
-A vertical `Separator` is `w-px self-stretch`, so it takes its height from the flex row; setting `h-4` freezes it at one size and `no-restyle` reports the size and colour. Wrong and correct code: `guidelines/separator.md`.
+Re-read the checklist above against the file you wrote before you report it done.

@@ -23,6 +23,17 @@ sources:
 
 Overlays — a modal decision, a destructive confirmation, a side panel, a bottom drawer, an anchored popover, a hover preview or a tooltip. Start from the table, then read the section of the component it sends you to: Dialog, AlertDialog, Sheet, Drawer, Popover, HoverCard, Tooltip. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- The confirm inside an `AlertDialog` is `AlertDialogAction` (with `variant="destructive"`) and the escape is `AlertDialogCancel` — both carry `slot="close"`, so a plain `Button` runs the action and leaves the prompt on screen over the deleted record.
+- Every `Dialog`, `AlertDialog`, `Sheet` and `Popover` sits inside its own trigger component (`DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `PopoverTrigger`) together with its trigger `Button`; a sibling never receives the open state.
+- Controlled overlays use React Aria's `isOpen` and `onOpenChange`, and the footer closes with `DialogClose` or `SheetClose` rather than your own state.
+- Every `Dialog` and `AlertDialog` has a `DialogTitle` / `AlertDialogTitle`, because React Aria takes the accessible name from it.
+- There is no `asChild` on any overlay: React Aria composes through `render`, and `Drawer` (Base UI) takes `render` on its trigger and close elements too.
+- `Drawer` is Base UI, not React Aria: its state props are `open`, `defaultOpen` and `onOpenChange`, and its edge is `swipeDirection="up" | "down" | "left" | "right"`.
+- Placement is one React Aria `placement` string (`"bottom start"`, `"top"`) on `Popover`, `HoverCard` or `SelectContent`, never Radix's `side`, `align` and `sideOffset`.
+- An icon-only trigger has its own `aria-label`; a `Tooltip` is `aria-describedby` and never the name, a `TooltipTrigger` has exactly two children, and nothing interactive goes inside a tooltip.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | A decision or a short form must be finished before the page continues | `Dialog` | `@tecton/react/components/dialog` |
@@ -84,13 +95,8 @@ import { Dialog, DialogTrigger, DialogClose, DialogHeader, DialogTitle, DialogDe
 
 ### Don't
 
-#### HIGH Radix trigger shape with asChild
-
-`DialogTrigger` publishes the open state to its subtree only, so a sibling `Dialog` never receives it and renders nothing; `asChild` is not a React Aria prop and is dropped. Wrong and correct code: `guidelines/dialog.md`.
-
-#### HIGH Controlling the dialog with open
-
-`Dialog` forwards its props to React Aria's `ModalOverlay`, which reads `isOpen`; without it, and with no `DialogTrigger` above, the overlay keeps its own uncontrolled state and returns `null`. Wrong and correct code: `guidelines/dialog.md`.
+- **HIGH** Radix trigger shape with asChild — `DialogTrigger` publishes the open state to its subtree only, so a sibling `Dialog` never receives it and renders nothing; `asChild` is not a React Aria prop and is dropped. (guidelines/dialog.md)
+- **HIGH** Controlling the dialog with open — `Dialog` forwards its props to React Aria's `ModalOverlay`, which reads `isOpen`; without it, and with no `DialogTrigger` above, the overlay keeps its own uncontrolled state and returns `null`. (guidelines/dialog.md)
 
 ## AlertDialog
 
@@ -119,17 +125,9 @@ import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
 
 ### Don't
 
-#### HIGH Confirming with a plain Button
-
-`AlertDialogAction` is a `Button` with `slot="close"`, which React Aria binds to the overlay state; a plain `Button` runs the action and leaves the prompt on screen over the deleted record. Wrong and correct code: `guidelines/alert-dialog.md`.
-
-#### HIGH Content rendered as a sibling of the trigger
-
-`AlertDialogContent` is an alias of `AlertDialog`, so both names compile; outside the trigger's subtree neither reads its overlay state, and pressing the button does nothing at all. Wrong and correct code: `guidelines/alert-dialog.md`.
-
-#### MEDIUM Letting a backdrop click answer the question
-
-`AlertDialogOverlay` leaves React Aria's `isDismissable` off on purpose, which is the only thing separating this from `Dialog`; turning it on lets a stray backdrop click answer the question. Wrong and correct code: `guidelines/alert-dialog.md`.
+- **HIGH** Confirming with a plain Button — `AlertDialogAction` is a `Button` with `slot="close"`, which React Aria binds to the overlay state; a plain `Button` runs the action and leaves the prompt on screen over the deleted record. (guidelines/alert-dialog.md)
+- **HIGH** Content rendered as a sibling of the trigger — `AlertDialogContent` is an alias of `AlertDialog`, so both names compile; outside the trigger's subtree neither reads its overlay state, and pressing the button does nothing at all. (guidelines/alert-dialog.md)
+- **MEDIUM** Letting a backdrop click answer the question — `AlertDialogOverlay` leaves React Aria's `isDismissable` off on purpose, which is the only thing separating this from `Dialog`; turning it on lets a stray backdrop click answer the question. (guidelines/alert-dialog.md)
 
 ## Sheet
 
@@ -160,13 +158,8 @@ import { Sheet, SheetTrigger, SheetContent, SheetClose, SheetHeader, SheetTitle,
 
 ### Don't
 
-#### HIGH Positioning the sheet with className
-
-`Sheet` sets its edge, size and enter/exit transforms from `data-side`, so hand-placed `fixed`/`inset` classes fight the variant and the animation slides the panel from the wrong edge. Wrong and correct code: `guidelines/sheet.md`.
-
-#### HIGH Body content with no padding of its own
-
-The padding lives on `SheetHeader` and `SheetFooter`, not on the sheet, so anything in between runs edge to edge against the panel border. Wrong and correct code: `guidelines/sheet.md`.
+- **HIGH** Positioning the sheet with className — `Sheet` sets its edge, size and enter/exit transforms from `data-side`, so hand-placed `fixed`/`inset` classes fight the variant and the animation slides the panel from the wrong edge. (guidelines/sheet.md)
+- **HIGH** Body content with no padding of its own — The padding lives on `SheetHeader` and `SheetFooter`, not on the sheet, so anything in between runs edge to edge against the panel border. (guidelines/sheet.md)
 
 ## Drawer
 
@@ -195,17 +188,9 @@ import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, Drawer
 
 ### Don't
 
-#### HIGH React Aria state props on this drawer
-
-Every other Tecton overlay is React Aria, but `Drawer` wraps Base UI's `Drawer.Root`, which reads `open` and renders no element of its own; `isOpen` is not among its props, so TypeScript rejects it and, forced past that, it reaches nothing and the drawer stays uncontrolled. Wrong and correct code: `guidelines/drawer.md`.
-
-#### HIGH Vaul's direction values on swipeDirection
-
-Base UI types `swipeDirection` as `"up" | "down" | "left" | "right"`, so TypeScript rejects `"bottom"`; forced past that, the axis falls back to `x` and none of the `data-[swipe-direction=*]` rules match: the panel gets no edge, no radius and no closed transform. Wrong and correct code: `guidelines/drawer.md`.
-
-#### MEDIUM asChild on the trigger instead of render
-
-Base UI has no `asChild`: the trigger renders its own `button` and nests the `Button` inside it, giving two stacked buttons and an invalid interactive element. Wrong and correct code: `guidelines/drawer.md`.
+- **HIGH** React Aria state props on this drawer — Every other Tecton overlay is React Aria, but `Drawer` wraps Base UI's `Drawer.Root`, which reads `open` and renders no element of its own; `isOpen` is not among its props, so TypeScript rejects it and, forced past that, it reaches nothing and the drawer stays uncontrolled. (guidelines/drawer.md)
+- **HIGH** Vaul's direction values on swipeDirection — Base UI types `swipeDirection` as `"up" | "down" | "left" | "right"`, so TypeScript rejects `"bottom"`; forced past that, the axis falls back to `x` and none of the `data-[swipe-direction=*]` rules match: the panel gets no edge, no radius and no closed transform. (guidelines/drawer.md)
+- **MEDIUM** asChild on the trigger instead of render — Base UI has no `asChild`: the trigger renders its own `button` and nests the `Button` inside it, giving two stacked buttons and an invalid interactive element. (guidelines/drawer.md)
 
 ## Popover
 
@@ -235,13 +220,8 @@ import { Popover, PopoverTrigger, PopoverHeader, PopoverTitle, PopoverDescriptio
 
 ### Don't
 
-#### HIGH Radix side and align props
-
-React Aria takes one `placement` string; `side`, `align` and `sideOffset` are not part of its positioning contract, so the popover silently keeps the default `placement="bottom"`. Wrong and correct code: `guidelines/popover.md`.
-
-#### MEDIUM Repainting the popover surface with className
-
-Tecton resets Tailwind's stock palette, so `border-gray-200` emits no CSS at all, and the padding and radius duplicate what the component already owns — `no-restyle` reports both. Wrong and correct code: `guidelines/popover.md`.
+- **HIGH** Radix side and align props — React Aria takes one `placement` string; `side`, `align` and `sideOffset` are not part of its positioning contract, so the popover silently keeps the default `placement="bottom"`. (guidelines/popover.md)
+- **MEDIUM** Repainting the popover surface with className — Tecton resets Tailwind's stock palette, so `border-gray-200` emits no CSS at all, and the padding and radius duplicate what the component already owns — `no-restyle` reports both. (guidelines/popover.md)
 
 ## HoverCard
 
@@ -270,13 +250,8 @@ import { HoverCard, HoverCardTrigger } from "@tecton/react/components/hover-card
 
 ### Don't
 
-#### HIGH Labelling an icon button with a hover card
-
-`PreviewTrigger` marks the button `aria-haspopup="dialog"` and only points `aria-describedby` at the card while it is open, so the icon button still reaches a screen reader with no accessible name. Wrong and correct code: `guidelines/hover-card.md`.
-
-#### MEDIUM Radix openDelay on the card
-
-React Aria's `PreviewTrigger` names the open delay `delay`; `openDelay` is dropped and the card keeps waiting the default 600 ms, which reads as the hover card being broken. Wrong and correct code: `guidelines/hover-card.md`.
+- **HIGH** Labelling an icon button with a hover card — `PreviewTrigger` marks the button `aria-haspopup="dialog"` and only points `aria-describedby` at the card while it is open, so the icon button still reaches a screen reader with no accessible name. (guidelines/hover-card.md)
+- **MEDIUM** Radix openDelay on the card — React Aria's `PreviewTrigger` names the open delay `delay`; `openDelay` is dropped and the card keeps waiting the default 600 ms, which reads as the hover card being broken. (guidelines/hover-card.md)
 
 ## Tooltip
 
@@ -352,6 +327,6 @@ Correct:
 
 React Aria closes the tooltip as soon as focus leaves the trigger, and its contents sit inside `role="tooltip"`, so the link can never be tabbed to and is never announced as a link.
 
-#### HIGH More than two children in a TooltipTrigger
+- **HIGH** More than two children in a TooltipTrigger — Tecton's `TooltipTrigger` destructures its children into `[trigger, tooltip]`, so the second button is rendered where the tooltip belongs and the real `Tooltip` is thrown away. (guidelines/tooltip.md)
 
-Tecton's `TooltipTrigger` destructures its children into `[trigger, tooltip]`, so the second button is rendered where the tooltip belongs and the real `Tooltip` is thrown away. Wrong and correct code: `guidelines/tooltip.md`.
+Re-read the checklist above against the file you wrote before you report it done.

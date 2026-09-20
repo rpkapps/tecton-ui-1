@@ -20,6 +20,17 @@ sources:
 
 Labels — a static label, a selectable tag, a count on an icon, or a keyboard key. Start from the table, then read the section of the component it sends you to: Badge, Chip, CountBadge, Kbd. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- Every status, category or state label is a `Badge` carrying its meaning in `variant` (`success`, `warning`, `info`, `destructive`) and its weight in `appearance`, never a `bg-*` or `text-*` colour class.
+- Any label the user can select or remove is a `Chip`, not a `Badge` with a handler — `Badge` renders a `span` with no role, no `tabIndex` and no key handling.
+- Every `Chip` sits inside `ChipGroup > ChipList` and carries an `id`, with removal turned on by `onRemove` on the `ChipGroup` rather than a hand-built button.
+- A `ChipGroup` is named by `aria-label` on the group, or by `FieldSet` + `FieldLegend` when it sits in a form; it renders a `div`, so a bare `FieldLabel htmlFor` has nothing to point at.
+- A count or dot on an icon button, avatar or tab is a `CountBadge` wrapping that control, with `count`, `max` and `color`, and the number repeated in the control's `aria-label` because the badge is decorative.
+- Every icon or `Spinner` child of a `Badge` or a `Chip` carries `data-icon="inline-start"` or `data-icon="inline-end"` so the label trims its padding on that side.
+- Keyboard keys are `Kbd` (inside a `KbdGroup` for a combination), never hand-built markup, and no handler is attached because `Kbd` is `pointer-events-none`.
+- A category colour that no `variant` carries is a Tecton palette pair in `className` (`bg-blue-120 text-blue-830`), never a stock Tailwind colour.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | A static label names a status, a category or a state: "Draft", "Producing", "12 errors" | `Badge` | `@tecton/react/components/badge` |
@@ -81,55 +92,8 @@ Correct:
 
 `cn` merges away the variant's `bg-primary`, and `green-600` is not a Tecton step, so the reset palette emits no rule at all and the badge renders with no background.
 
-#### HIGH Making a Badge clickable with a handler
-
-Wrong:
-
-```tsx
-<Badge variant="info" onClick={() => setFilter("fault-seal")}>
-  Fault seal
-</Badge>
-```
-
-Correct:
-
-```tsx
-<ChipGroup
-  aria-label="Filters"
-  selectionMode="single"
-  onSelectionChange={(keys) => setFilter([...keys][0])}
->
-  <ChipList>
-    <Chip id="fault-seal" variant="info">
-      Fault seal
-    </Chip>
-  </ChipList>
-</ChipGroup>
-```
-
-Badge renders a `span` with no `role`, no `tabIndex` and no key handling, so the label answers a mouse click and is unreachable by keyboard and silent to assistive technology.
-
-#### MEDIUM An icon child without data-icon
-
-Wrong:
-
-```tsx
-<Badge variant="warning">
-  <TriangleAlertIcon />
-  Unsaved
-</Badge>
-```
-
-Correct:
-
-```tsx
-<Badge variant="warning">
-  <TriangleAlertIcon data-icon="inline-start" />
-  Unsaved
-</Badge>
-```
-
-The padding compensation is `has-data-[icon=inline-start]:pl-1.5`, so without the attribute the icon sits in full text padding and the badge is wider than every other badge in the row.
+- **HIGH** Making a Badge clickable with a handler — Badge renders a `span` with no `role`, no `tabIndex` and no key handling, so the label answers a mouse click and is unreachable by keyboard and silent to assistive technology. (guidelines/badge.md)
+- **MEDIUM** An icon child without data-icon — The padding compensation is `has-data-[icon=inline-start]:pl-1.5`, so without the attribute the icon sits in full text padding and the badge is wider than every other badge in the row. (guidelines/badge.md)
 
 ## Chip
 
@@ -181,48 +145,8 @@ Correct:
 
 `Chip` is a React Aria `Tag`, a collection item that only the owning `TagList` builds and renders, so outside a `ChipList` it throws "cannot be rendered outside a collection" and takes the surrounding tree down with it.
 
-#### HIGH Building the remove button by hand
-
-Wrong:
-
-```tsx
-<ChipGroup aria-label="Horizons">
-  <ChipList>
-    <Chip id="balder">
-      Top Balder
-      <Button variant="ghost" size="icon-xs" onPress={() => remove("balder")}><XIcon /></Button>
-    </Chip>
-  </ChipList>
-</ChipGroup>
-```
-
-Correct:
-
-```tsx
-<ChipGroup aria-label="Horizons" onRemove={(keys) => remove([...keys])}>
-  <ChipList>
-    <Chip id="balder">Top Balder</Chip>
-  </ChipList>
-</ChipGroup>
-```
-
-`onRemove` on the group is what makes a chip removable — it renders `ChipRemove` and binds Backspace and Delete — so a nested button removes the chip by mouse only and adds a focus stop the tag's own key handling does not expect.
-
-#### HIGH Colouring a chip with className
-
-Wrong:
-
-```tsx
-<Chip id="fault" className="bg-orange-500 text-white">Fault seal</Chip>
-```
-
-Correct:
-
-```tsx
-<Chip id="fault" variant="warning">Fault seal</Chip>
-```
-
-The chip's `className` is merged over `badgeVariants` by `cn`, so `bg-orange-500` replaces `bg-secondary`, and `orange` is not a Tecton family — the reset palette emits nothing and the chip loses its surface.
+- **HIGH** Building the remove button by hand — `onRemove` on the group is what makes a chip removable — it renders `ChipRemove` and binds Backspace and Delete — so a nested button removes the chip by mouse only and adds a focus stop the tag's own key handling does not expect. (guidelines/chip.md)
+- **HIGH** Colouring a chip with className — The chip's `className` is merged over `badgeVariants` by `cn`, so `bg-orange-500` replaces `bg-secondary`, and `orange` is not a Tecton family — the reset palette emits nothing and the chip loses its surface. (guidelines/chip.md)
 
 ## CountBadge
 
@@ -251,74 +175,9 @@ import { CountBadge } from "@tecton/react/tecton/count-badge"
 
 ### Don't
 
-#### HIGH Hiding the control along with the count
-
-Wrong:
-
-```tsx
-{unread > 0 && (
-  <CountBadge count={unread} color="error">
-    <Button variant="outline" size="icon" aria-label="Messages">
-      <MailIcon />
-    </Button>
-  </CountBadge>
-)}
-```
-
-Correct:
-
-```tsx
-<CountBadge count={unread} color="error">
-  <Button variant="outline" size="icon" aria-label={`Messages, ${unread} unread`}>
-    <MailIcon />
-  </Button>
-</CountBadge>
-```
-
-`CountBadge` is the wrapper, not the badge, so guarding it removes the button from the page as well; the component already hides the badge itself when `count` is 0.
-
-#### HIGH Building the count by hand
-
-Wrong:
-
-```tsx
-<div className="relative inline-flex">
-  <Button variant="outline" size="icon" aria-label="Notifications"><BellIcon /></Button>
-  <span className="absolute -top-1 -right-1 rounded-full bg-red-500 px-1 text-white">{count}</span>
-</div>
-```
-
-Correct:
-
-```tsx
-<CountBadge count={count} color="error">
-  <Button variant="outline" size="icon" aria-label="Notifications">
-    <BellIcon />
-  </Button>
-</CountBadge>
-```
-
-`red-500` is not a Tecton step, so the reset palette gives the pill no background at all, and the hand-built span has none of the `ring-2 ring-background` cut-out, the `max` cap or the zero handling.
-
-#### MEDIUM Putting a count on a dot
-
-Wrong:
-
-```tsx
-<CountBadge variant="dot" color="error" count={5}>
-  <Avatar><AvatarFallback>JD</AvatarFallback></Avatar>
-</CountBadge>
-```
-
-Correct:
-
-```tsx
-<CountBadge color="error" count={5}>
-  <Avatar><AvatarFallback>JD</AvatarFallback></Avatar>
-</CountBadge>
-```
-
-The dot variant is an 8 px circle that renders no children by design, so the number is dropped and only the dot appears.
+- **HIGH** Hiding the control along with the count — `CountBadge` is the wrapper, not the badge, so guarding it removes the button from the page as well; the component already hides the badge itself when `count` is 0. (guidelines/count-badge.md)
+- **HIGH** Building the count by hand — `red-500` is not a Tecton step, so the reset palette gives the pill no background at all, and the hand-built span has none of the `ring-2 ring-background` cut-out, the `max` cap or the zero handling. (guidelines/count-badge.md)
+- **MEDIUM** Putting a count on a dot — The dot variant is an 8 px circle that renders no children by design, so the number is dropped and only the dot appears. (guidelines/count-badge.md)
 
 ## Kbd
 
@@ -346,63 +205,8 @@ import { Kbd, KbdGroup } from "@tecton/react/components/kbd"
 
 ### Don't
 
-#### HIGH Expecting a Kbd to be pressable
+- **HIGH** Expecting a Kbd to be pressable — `Kbd` sets `pointer-events-none`, so no pointer event ever reaches it and the handler never fires. (guidelines/kbd.md)
+- **HIGH** Hand-building the key from raw markup — `gray-200`, `gray-300` and `gray-600` are not Tecton steps, so the reset palette emits no rule for any of them and the key renders as bare text on the page background. (guidelines/kbd.md)
+- **MEDIUM** A key inside a button without data-icon — The button trims its trailing padding only through `has-data-[icon=inline-end]:pr-1.5`, so without the attribute the key sits in full text padding and the button grows. (guidelines/kbd.md)
 
-Wrong:
-
-```tsx
-<Kbd onClick={() => setPaletteOpen(true)}>⌘K</Kbd>
-```
-
-Correct:
-
-```tsx
-<Button variant="outline" onPress={() => setPaletteOpen(true)}>
-  Search
-  <Kbd data-icon="inline-end">⌘K</Kbd>
-</Button>
-```
-
-`Kbd` sets `pointer-events-none`, so no pointer event ever reaches it and the handler never fires.
-
-#### HIGH Hand-building the key from raw markup
-
-Wrong:
-
-```tsx
-<kbd className="rounded border border-gray-300 bg-gray-200 px-1 text-xs text-gray-600">
-  ⌘
-</kbd>
-```
-
-Correct:
-
-```tsx
-<Kbd>⌘</Kbd>
-```
-
-`gray-200`, `gray-300` and `gray-600` are not Tecton steps, so the reset palette emits no rule for any of them and the key renders as bare text on the page background.
-
-#### MEDIUM A key inside a button without data-icon
-
-Wrong:
-
-```tsx
-<Button variant="outline">
-  Accept
-  <Kbd>⏎</Kbd>
-</Button>
-```
-
-Correct:
-
-```tsx
-<Button variant="outline">
-  Accept
-  <Kbd data-icon="inline-end" className="translate-x-0.5">
-    ⏎
-  </Kbd>
-</Button>
-```
-
-The button trims its trailing padding only through `has-data-[icon=inline-end]:pr-1.5`, so without the attribute the key sits in full text padding and the button grows.
+Re-read the checklist above against the file you wrote before you report it done.

@@ -23,6 +23,17 @@ sources:
 
 Selection — pick one or many from a list: dropdown, searchable, native, radio, segmented toggle, tabs or a command palette. Start from the table, then read the section of the component it sends you to: Select, Combobox, NativeSelect, RadioGroup, ToggleGroup, Tabs, Command. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- A `Select` inside a `Field` puts the `id` on `SelectTrigger` and points `FieldLabel htmlFor` at that id — `Select` renders a `div` and `SelectTrigger` renders the `button`.
+- `Select`'s `onSelectionChange` is handed `Key | null`, so the handler narrows the `null` that means nothing is selected instead of casting it away with `as`.
+- Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value`, `defaultValue` and `onValueChange` are Radix names React Aria drops.
+- `RadioGroup` is the exception: each `RadioGroupItem` identifies itself by `value` and the group reports through `onChange`, with `id` used only so a `FieldLabel htmlFor` can reach it.
+- `ToggleGroup` reads `selectedKeys` / `defaultSelectedKeys` and its `onSelectionChange` hands back a `Set`, not a single value.
+- `placeholder` sits on `Select` (`SelectValue` takes none), while `NativeSelect` is a real `select` driven by `value` / `onChange(event)` / `disabled` with an empty-valued first `NativeSelectOption` as its placeholder.
+- Every group carries a name: `aria-label` on `Combobox`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
+- `CommandItem` acts through `onAction` and carries `textValue` when its children are JSX, and an empty filter renders through `renderEmptyState` returning `CommandEmpty` / `ComboboxEmpty` (with `allowsEmptyCollection` on a `Combobox`).
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | A field picks one value out of a known, closed list: a datum, a unit, a status | `Select` | `@tecton/react/components/select` |
@@ -106,13 +117,8 @@ Correct:
 
 `onValueChange` is not a React Aria prop and `value` on `SelectItem` is the item's object value rather than its collection key, so the handler never fires and no item ever matches the selection.
 
-#### HIGH Restyling the trigger with className instead of variant
-
-`SelectTrigger` owns height, border and surface through `size` and `variant`; the stock palette is reset, so `border-slate-300` and `bg-gray-200` emit no CSS and only the hand-set height survives. Wrong and correct code: `guidelines/select.md`.
-
-#### MEDIUM Disabling with the HTML disabled prop
-
-React Aria reads `isDisabled` on both `Select` and `SelectItem`; `disabled` is not in either props type, so it is dropped and the option stays selectable. Wrong and correct code: `guidelines/select.md`.
+- **HIGH** Restyling the trigger with className instead of variant — `SelectTrigger` owns height, border and surface through `size` and `variant`; the stock palette is reset, so `border-slate-300` and `bg-gray-200` emit no CSS and only the hand-set height survives. (guidelines/select.md)
+- **MEDIUM** Disabling with the HTML disabled prop — React Aria reads `isDisabled` on both `Select` and `SelectItem`; `disabled` is not in either props type, so it is dropped and the option stays selectable. (guidelines/select.md)
 
 ## Combobox
 
@@ -185,9 +191,7 @@ Correct:
 
 `ComboboxInput` renders a bare `input` inside an `InputGroup` with no label element, so without `aria-label` (or a `Field` label) the control is announced as an unnamed combobox.
 
-#### MEDIUM No empty state when the filter matches nothing
-
-Without `allowsEmptyCollection` React Aria closes the popover as soon as the filtered collection is empty, so the typist sees the list vanish instead of a "no results" message. Wrong and correct code: `guidelines/combobox.md`.
+- **MEDIUM** No empty state when the filter matches nothing — Without `allowsEmptyCollection` React Aria closes the popover as soon as the filtered collection is empty, so the typist sees the list vanish instead of a "no results" message. (guidelines/combobox.md)
 
 ## NativeSelect
 
@@ -217,17 +221,9 @@ import { NativeSelect, NativeSelectOption, NativeSelectOptGroup } from "@tecton/
 
 ### Don't
 
-#### HIGH React Aria props on a native select element
-
-`NativeSelect` renders a real `select` and spreads its props onto it, so React Aria names like `isDisabled` and `onSelectionChange` reach the DOM as unknown attributes and the control stays enabled and unwired. Wrong and correct code: `guidelines/native-select.md`.
-
-#### MEDIUM Passing a native row count to size
-
-The component omits the DOM `size` and redefines it as the Tecton height token, so a number is written to `data-size` only, matches no height rule and never expands the list. Wrong and correct code: `guidelines/native-select.md`.
-
-#### MEDIUM A placeholder prop instead of an empty option
-
-`select` elements have no `placeholder` attribute, so the prop is dropped and the field silently shows the first real option as if it had been chosen. Wrong and correct code: `guidelines/native-select.md`.
+- **HIGH** React Aria props on a native select element — `NativeSelect` renders a real `select` and spreads its props onto it, so React Aria names like `isDisabled` and `onSelectionChange` reach the DOM as unknown attributes and the control stays enabled and unwired. (guidelines/native-select.md)
+- **MEDIUM** Passing a native row count to size — The component omits the DOM `size` and redefines it as the Tecton height token, so a number is written to `data-size` only, matches no height rule and never expands the list. (guidelines/native-select.md)
+- **MEDIUM** A placeholder prop instead of an empty option — `select` elements have no `placeholder` attribute, so the prop is dropped and the field silently shows the first real option as if it had been chosen. (guidelines/native-select.md)
 
 ## RadioGroup
 
@@ -277,13 +273,8 @@ Correct:
 
 React Aria's `RadioGroup` reports the new value through `onChange`; `onValueChange` is not part of its props, so it is dropped and a controlled group can never leave its initial value.
 
-#### HIGH Keying radio items with id instead of value
-
-Unlike the collection components, a `Radio` identifies itself to its group by `value` and `id` is only the DOM id used by `htmlFor`, so nothing matches `defaultValue` and no option renders as selected. Wrong and correct code: `guidelines/radio-group.md`.
-
-#### MEDIUM A radio group with no accessible name
-
-`RadioGroup` renders a bare `div` with `role="radiogroup"` and no label of its own, so the group is announced without a name and the options lose the question they answer. Wrong and correct code: `guidelines/radio-group.md`.
+- **HIGH** Keying radio items with id instead of value — Unlike the collection components, a `Radio` identifies itself to its group by `value` and `id` is only the DOM id used by `htmlFor`, so nothing matches `defaultValue` and no option renders as selected. (guidelines/radio-group.md)
+- **MEDIUM** A radio group with no accessible name — `RadioGroup` renders a bare `div` with `role="radiogroup"` and no label of its own, so the group is announced without a name and the options lose the question they answer. (guidelines/radio-group.md)
 
 ## ToggleGroup
 
@@ -336,13 +327,8 @@ Correct:
 
 React Aria keys toggle items by `id` and reports a `Set` through `onSelectionChange`; `type`, `value` and `onValueChange` are not props here, so the group renders but never records a selection.
 
-#### HIGH A toggle group used to switch content panels
-
-Toggle buttons carry `aria-pressed`, not the `tab` and `tabpanel` roles, so the panel is never associated with its control and arrow-key navigation between views is lost. Wrong and correct code: `guidelines/toggle-group.md`.
-
-#### MEDIUM Icon-only items with no accessible name
-
-The item's only child is an SVG with no text, so its accessible name is empty and the button is announced as an unlabelled toggle. Wrong and correct code: `guidelines/toggle-group.md`.
+- **HIGH** A toggle group used to switch content panels — Toggle buttons carry `aria-pressed`, not the `tab` and `tabpanel` roles, so the panel is never associated with its control and arrow-key navigation between views is lost. (guidelines/toggle-group.md)
+- **MEDIUM** Icon-only items with no accessible name — The item's only child is an SVG with no text, so its accessible name is empty and the button is announced as an unlabelled toggle. (guidelines/toggle-group.md)
 
 ## Tabs
 
@@ -396,13 +382,8 @@ Correct:
 
 React Aria pairs a panel with its tab by `id` and reports the key through `onSelectionChange`; `defaultValue`, `value` and `onValueChange` are not Tabs props, so the handler never fires and the pairing falls back to generated keys.
 
-#### HIGH Rendering the panel yourself instead of TabsContent
-
-Only `TabsContent` gets the `tabpanel` role, the `aria-labelledby` back to its tab and the focusable container, so a hand-rolled panel leaves the tab announcing a relationship the page does not have. Wrong and correct code: `guidelines/tabs.md`.
-
-#### MEDIUM Hand-styling the selected tab with data-state
-
-React Aria marks the selected tab with `data-selected`, not `data-state="active"`, and the stock palette is reset so `bg-blue-600` emits no CSS; the selected colours belong to the `TabsList` variant. Wrong and correct code: `guidelines/tabs.md`.
+- **HIGH** Rendering the panel yourself instead of TabsContent — Only `TabsContent` gets the `tabpanel` role, the `aria-labelledby` back to its tab and the focusable container, so a hand-rolled panel leaves the tab announcing a relationship the page does not have. (guidelines/tabs.md)
+- **MEDIUM** Hand-styling the selected tab with data-state — React Aria marks the selected tab with `data-selected`, not `data-state="active"`, and the stock palette is reset so `bg-blue-600` emits no CSS; the selected colours belong to the `TabsList` variant. (guidelines/tabs.md)
 
 ## Command
 
@@ -448,10 +429,7 @@ Correct:
 
 `CommandItem` is a React Aria `MenuItem`, whose activation handler is `onAction`; `onSelect` is not in its props, so it is dropped and pressing Enter or clicking the row does nothing at all.
 
-#### HIGH JSX item children with no textValue
+- **HIGH** JSX item children with no textValue — `CommandItem` derives `textValue` only when its children are a plain string, so an item built from an icon and a `span` has none and the palette's filter and typeahead cannot match it. (guidelines/command.md)
+- **MEDIUM** An empty search that renders nothing — `CommandList` is a React Aria `Menu`, and a collection with no matching items renders nothing unless `renderEmptyState` is given; `CommandEmpty` is what that function returns, not a child of the list. (guidelines/command.md)
 
-`CommandItem` derives `textValue` only when its children are a plain string, so an item built from an icon and a `span` has none and the palette's filter and typeahead cannot match it. Wrong and correct code: `guidelines/command.md`.
-
-#### MEDIUM An empty search that renders nothing
-
-`CommandList` is a React Aria `Menu`, and a collection with no matching items renders nothing unless `renderEmptyState` is given; `CommandEmpty` is what that function returns, not a child of the list. Wrong and correct code: `guidelines/command.md`.
+Re-read the checklist above against the file you wrote before you report it done.

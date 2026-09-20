@@ -24,6 +24,17 @@ sources:
 
 Actions — a button, a link that looks like one, an inline link, a toggle, a grouped set of buttons, a menu or a selection bar. Start from the table, then read the section of the component it sends you to: Button, ButtonGroup, Link, Toggle, DropdownMenu, ContextMenu, CopyButton, ActionBar. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
+- A `Button`'s box comes from `size` (`icon`, `icon-xs`, `icon-sm`, `icon-lg` for icon-only) and its weight from `variant`; `size-8`, `h-*`, `p-*`, `rounded-*` and `bg-*` in `className` replace what the variant owns.
+- Every icon-only `Button`, `Toggle`, `ToggleGroupItem` and `InputGroupButton` has an `aria-label`, and every icon or `Spinner` inside a control carries `data-icon="inline-start"` or `data-icon="inline-end"`.
+- Every `DropdownMenuItem` and `ContextMenuItem` acts through `onAction` (or `onAction(key)` on the menu with an `id` per item), and a dangerous entry is marked `variant="destructive"` rather than `text-red-*`.
+- `DropdownMenuTrigger` and `ContextMenuTrigger` take exactly two children — the trigger and the menu — with no `DropdownMenuContent` and no `asChild`, and check marks come from `selectionMode` plus `selectedKeys` on the `Group`, never `checked` / `onCheckedChange`.
+- Navigation is a `LinkButton` or a `Link` with an `href` (and `isExternal` instead of hand-written `target` and `rel`), never an anchor nested inside a `Button` and never a `Link` that only runs a handler.
+- A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `isOpen`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.
+- Copy-to-clipboard is `CopyButton value={…}` with `onCopied`, with no `onPress` passed to it, no icon child and no hand-written clipboard handler.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | Something happens in place: submit, open a dialog, run an action, trigger a menu | `Button` | `@tecton/react/components/button` |
@@ -101,17 +112,9 @@ Correct:
 
 React Aria's `Button` has no `asChild`, so the prop is dropped and the anchor is nested inside a `button` that forces `role="button"`: invalid markup, and the link is announced and activated as a button.
 
-#### HIGH The disabled prop instead of isDisabled
-
-`disabled` is not part of React Aria's button props, so it never reaches the DOM element and the button stays focusable, hoverable and pressable. Wrong and correct code: `guidelines/button.md`.
-
-#### HIGH Sizing and colouring a Button with className
-
-The variant owns colour, shape, size and padding, and Tailwind's stock palette is reset here, so `bg-blue-600` emits no CSS while the hand-set height breaks the `size` scale; `@tecton/eslint-config` reports both. Wrong and correct code: `guidelines/button.md`.
-
-#### MEDIUM onClick instead of the onPress handler
-
-`onClick` survives only as React Aria's deprecated compatibility alias: it is handed a synthetic mouse event with no `pointerType`, so keyboard and touch activations are indistinguishable from a click. Wrong and correct code: `guidelines/button.md`.
+- **HIGH** The disabled prop instead of isDisabled — `disabled` is not part of React Aria's button props, so it never reaches the DOM element and the button stays focusable, hoverable and pressable. (guidelines/button.md)
+- **HIGH** Sizing and colouring a Button with className — The variant owns colour, shape, size and padding, and Tailwind's stock palette is reset here, so `bg-blue-600` emits no CSS while the hand-set height breaks the `size` scale; `@tecton/eslint-config` reports both. (guidelines/button.md)
+- **MEDIUM** onClick instead of the onPress handler — `onClick` survives only as React Aria's deprecated compatibility alias: it is handed a synthetic mouse event with no `pointerType`, so keyboard and touch activations are indistinguishable from a click. (guidelines/button.md)
 
 ## ButtonGroup
 
@@ -141,17 +144,9 @@ import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText, buttonGroupVariants
 
 ### Don't
 
-#### HIGH Joining the buttons by hand with className
-
-`ButtonGroup` already strips the inner corners and overlaps the borders with logical properties, so hand-written physical corners duplicate the work and flip to the wrong side in RTL. Wrong and correct code: `guidelines/button-group.md`.
-
-#### HIGH A button group holding a selected state
-
-`ButtonGroup` is a presentational `role="group"`, so a colour swap is the only signal: nothing sets `aria-pressed` and assistive technology cannot tell which view is current. Wrong and correct code: `guidelines/button-group.md`.
-
-#### MEDIUM Adding gap utilities inside a button group
-
-The corner and negative-margin rules stay active whatever the gap is, so a bare `gap-2` yields separated buttons with flattened inner edges; a nested group is what the variant spaces apart. Wrong and correct code: `guidelines/button-group.md`.
+- **HIGH** Joining the buttons by hand with className — `ButtonGroup` already strips the inner corners and overlaps the borders with logical properties, so hand-written physical corners duplicate the work and flip to the wrong side in RTL. (guidelines/button-group.md)
+- **HIGH** A button group holding a selected state — `ButtonGroup` is a presentational `role="group"`, so a colour swap is the only signal: nothing sets `aria-pressed` and assistive technology cannot tell which view is current. (guidelines/button-group.md)
+- **MEDIUM** Adding gap utilities inside a button group — The corner and negative-margin rules stay active whatever the gap is, so a bare `gap-2` yields separated buttons with flattened inner edges; a nested group is what the variant spaces apart. (guidelines/button-group.md)
 
 ## Link
 
@@ -180,17 +175,9 @@ import { Link, linkVariants } from "@tecton/react/tecton/link"
 
 ### Don't
 
-#### HIGH A Link used to run an action
-
-With no `href` React Aria renders a `span` with `role="link"`, so the control promises navigation it cannot do: no new-tab, no copy-address, no status-bar target. Wrong and correct code: `guidelines/link.md`.
-
-#### HIGH Hand-built target, rel and external icon
-
-`isExternal` sets `target` and `rel="noreferrer noopener"` together and appends the icon at the variant's `0.85em` size; `target="_blank"` alone leaves the opened page with a handle on `window.opener`. Wrong and correct code: `guidelines/link.md`.
-
-#### MEDIUM Colouring the link with className
-
-The variant owns the colour and when the underline appears, and Tailwind's stock palette is reset here, so `text-blue-600` emits no CSS and the link renders in the inherited text colour. Wrong and correct code: `guidelines/link.md`.
+- **HIGH** A Link used to run an action — With no `href` React Aria renders a `span` with `role="link"`, so the control promises navigation it cannot do: no new-tab, no copy-address, no status-bar target. (guidelines/link.md)
+- **HIGH** Hand-built target, rel and external icon — `isExternal` sets `target` and `rel="noreferrer noopener"` together and appends the icon at the variant's `0.85em` size; `target="_blank"` alone leaves the opened page with a handle on `window.opener`. (guidelines/link.md)
+- **MEDIUM** Colouring the link with className — The variant owns the colour and when the underline appears, and Tailwind's stock palette is reset here, so `text-blue-600` emits no CSS and the link renders in the inherited text colour. (guidelines/link.md)
 
 ## Toggle
 
@@ -239,13 +226,8 @@ Correct:
 
 React Aria's `ToggleButton` reads `isSelected` and reports through `onChange(isSelected)`; `pressed` and `onPressedChange` are not in its props, so they are dropped and the button never leaves its initial state.
 
-#### HIGH A Toggle used as a labelled form setting
-
-`Toggle` renders a button with `aria-pressed`, which announces a pressed control rather than an on/off setting and submits no value with the form. Wrong and correct code: `guidelines/toggle.md`.
-
-#### MEDIUM An icon-only Toggle with no accessible name
-
-The button's only child is an SVG with no text, so its accessible name is empty and it is announced as an unlabelled toggle button. Wrong and correct code: `guidelines/toggle.md`.
+- **HIGH** A Toggle used as a labelled form setting — `Toggle` renders a button with `aria-pressed`, which announces a pressed control rather than an on/off setting and submits no value with the form. (guidelines/toggle.md)
+- **MEDIUM** An icon-only Toggle with no accessible name — The button's only child is an SVG with no text, so its accessible name is empty and it is announced as an unlabelled toggle button. (guidelines/toggle.md)
 
 ## DropdownMenu
 
@@ -275,17 +257,9 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuGroup, DropdownMenuLabel
 
 ### Don't
 
-#### MEDIUM onClick on a menu item instead of onAction
-
-`onClick` survives only as React Aria's deprecated press alias: it still fires, but on a bare mouse event with no `pointerType`, while `onAction` is the item's own activation hook and the one `onAction(key)` on the menu reports through. Wrong and correct code: `guidelines/dropdown-menu.md`.
-
-#### HIGH Radix checked props instead of group selection
-
-There is no checkbox or radio item component here: selection lives on `DropdownMenuGroup` as a set of keys, so `checked` and `onCheckedChange` are dropped and no check mark is ever rendered. Wrong and correct code: `guidelines/dropdown-menu.md`.
-
-#### MEDIUM Colouring a destructive item with className
-
-Tailwind's stock palette is reset, so `text-red-600` emits no CSS, while `variant="destructive"` is what sets the label, the icon and the focus background for the whole row. Wrong and correct code: `guidelines/dropdown-menu.md`.
+- **MEDIUM** onClick on a menu item instead of onAction — `onClick` survives only as React Aria's deprecated press alias: it still fires, but on a bare mouse event with no `pointerType`, while `onAction` is the item's own activation hook and the one `onAction(key)` on the menu reports through. (guidelines/dropdown-menu.md)
+- **HIGH** Radix checked props instead of group selection — There is no checkbox or radio item component here: selection lives on `DropdownMenuGroup` as a set of keys, so `checked` and `onCheckedChange` are dropped and no check mark is ever rendered. (guidelines/dropdown-menu.md)
+- **MEDIUM** Colouring a destructive item with className — Tailwind's stock palette is reset, so `text-red-600` emits no CSS, while `variant="destructive"` is what sets the label, the icon and the focus background for the whole row. (guidelines/dropdown-menu.md)
 
 ## ContextMenu
 
@@ -339,13 +313,8 @@ Correct:
 
 React Aria hands the trigger's interaction props down through a press responder that only `Pressable` consumes, so a plain element receives nothing and right click falls through to the browser's own menu.
 
-#### HIGH The Radix onSelect prop instead of onAction
-
-`onSelect` is not part of React Aria's `MenuItemProps`, so it is dropped and the entry renders, highlights and closes the menu while running nothing. Wrong and correct code: `guidelines/context-menu.md`.
-
-#### MEDIUM A hand-rolled onContextMenu handler and popover
-
-`ContextMenuTrigger` adds what the raw event does not: long press for touch, positioning the popover at the pointer, and closing the menu when the next right click lands outside it. Wrong and correct code: `guidelines/context-menu.md`.
+- **HIGH** The Radix onSelect prop instead of onAction — `onSelect` is not part of React Aria's `MenuItemProps`, so it is dropped and the entry renders, highlights and closes the menu while running nothing. (guidelines/context-menu.md)
+- **MEDIUM** A hand-rolled onContextMenu handler and popover — `ContextMenuTrigger` adds what the raw event does not: long press for touch, positioning the popover at the pointer, and closing the menu when the next right click lands outside it. (guidelines/context-menu.md)
 
 ## CopyButton
 
@@ -374,17 +343,9 @@ import { CopyButton } from "@tecton/react/tecton/copy-button"
 
 ### Don't
 
-#### HIGH A Button with a hand-written clipboard handler
-
-The hand-rolled version drops everything the component adds: the copied state and check-mark swap, the `aria-label` that flips to "Copied", and the catch for a denied or insecure clipboard, which otherwise rejects unhandled. Wrong and correct code: `guidelines/copy-button.md`.
-
-#### HIGH An onPress handler passed to CopyButton
-
-`CopyButton` omits `onPress` from its props and spreads the remaining props after its own, so an `onPress` you pass replaces the clipboard handler and the button quietly stops copying. Wrong and correct code: `guidelines/copy-button.md`.
-
-#### HIGH Supplying the icon as the child
-
-The component already renders `CopyIcon` or `CheckIcon` itself, so a child icon is drawn twice, switches the size default from `icon-sm` to `sm`, and suppresses the automatic accessible name because children are now present. Wrong and correct code: `guidelines/copy-button.md`.
+- **HIGH** A Button with a hand-written clipboard handler — The hand-rolled version drops everything the component adds: the copied state and check-mark swap, the `aria-label` that flips to "Copied", and the catch for a denied or insecure clipboard, which otherwise rejects unhandled. (guidelines/copy-button.md)
+- **HIGH** An onPress handler passed to CopyButton — `CopyButton` omits `onPress` from its props and spreads the remaining props after its own, so an `onPress` you pass replaces the clipboard handler and the button quietly stops copying. (guidelines/copy-button.md)
+- **HIGH** Supplying the icon as the child — The component already renders `CopyIcon` or `CheckIcon` itself, so a child icon is drawn twice, switches the size default from `icon-sm` to `sm`, and suppresses the automatic accessible name because children are now present. (guidelines/copy-button.md)
 
 ## ActionBar
 
@@ -414,14 +375,8 @@ import { ActionBar, ActionBarSelection, ActionBarMessage, ActionBarActions, acti
 
 ### Don't
 
-#### HIGH A hand-written selection summary and Clear button
+- **HIGH** A hand-written selection summary and Clear button — `ActionBarSelection` carries the visually hidden `aria-live` announcement and the container queries that compact the text to "12 selected" and then to a count badge; a plain span announces nothing and overflows as the bar narrows. (guidelines/action-bar.md)
+- **HIGH** Bare buttons inside the ActionBarActions toolbar — `ActionBarActions` is an overflow `Toolbar`, and only an `OverflowItem` can be measured and moved into the More menu, so unwrapped actions never collapse and the row clips instead. (guidelines/action-bar.md)
+- **MEDIUM** A floating bar sized with w-fit — The bar is its own `@container`, so a fit-content inline size resolves from its padding alone: the toolbar measures no room and collapses every action into the More menu. (guidelines/action-bar.md)
 
-`ActionBarSelection` carries the visually hidden `aria-live` announcement and the container queries that compact the text to "12 selected" and then to a count badge; a plain span announces nothing and overflows as the bar narrows. Wrong and correct code: `guidelines/action-bar.md`.
-
-#### HIGH Bare buttons inside the ActionBarActions toolbar
-
-`ActionBarActions` is an overflow `Toolbar`, and only an `OverflowItem` can be measured and moved into the More menu, so unwrapped actions never collapse and the row clips instead. Wrong and correct code: `guidelines/action-bar.md`.
-
-#### MEDIUM A floating bar sized with w-fit
-
-The bar is its own `@container`, so a fit-content inline size resolves from its padding alone: the toolbar measures no room and collapses every action into the More menu. Wrong and correct code: `guidelines/action-bar.md`.
+Re-read the checklist above against the file you wrote before you report it done.

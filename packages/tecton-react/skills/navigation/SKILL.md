@@ -21,6 +21,17 @@ sources:
 
 Navigation — where the user is and where they can go. Start from the table, then read the section of the component it sends you to: Breadcrumb, Sidebar, Pagination, AppFinder, ShellActions. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- A breadcrumb is `Breadcrumb > BreadcrumbList > BreadcrumbItem` ending in `BreadcrumbPage` (the element marked `aria-current="page"`), never a row of anchors and slashes.
+- A routing library's link is mounted through `render={(props) => <Link {...props} />}` on `BreadcrumbLink` or `SidebarMenuButton`; there is no `asChild`, and React Aria renders a `span[role="link"]` whenever it has no `href`.
+- Every `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` is inside one `SidebarProvider` — `useSidebar` throws outside it, and a second provider fights the first over the `sidebar_state` cookie and ⌘B.
+- A navigation row is `SidebarMenuItem > SidebarMenuButton href="…"` with `isActive` on the current one, not a button with a handler.
+- Paging controls are `Pagination > PaginationContent > PaginationItem`, every control carries an `href`, the current page is marked with `isActive` on `PaginationLink` (which sets both the outline variant and `aria-current="page"`), and a dead end is `isDisabled`, never `disabled` or a colour class.
+- The app switcher is an `AppFinder` whose search is `AppFinderInput` inside `AppFinderMenu` (never an `Input` of your own) and whose tile is tinted with `tone`, never with `className`.
+- The shell's header actions are `ShellAction`s with a `label` — both the accessible name and the tooltip — inside `ShellActions`, not icon `Button`s with a `title`.
+- A key hint rendered by `shortcut` on `ShellAction` or `ShellCommandTrigger` is also registered with `useShortcut`, or nothing is bound and the key is missing from `useShortcuts()`.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | The path from the application root down to the record on screen, one link per level | `Breadcrumb` | `@tecton/react/components/breadcrumb` |
@@ -105,29 +116,7 @@ Correct:
 
 `zinc` is not a Tecton palette family, so both colour classes emit no CSS under the reset palette, and the row has none of the structure a breadcrumb is read by: `Breadcrumb` is the `nav[aria-label="breadcrumb"]`, `BreadcrumbList` the `ol`, `BreadcrumbItem` the `li`, and `BreadcrumbPage` the element marked `aria-current="page"`.
 
-#### HIGH asChild to mount the routing library's link
-
-Wrong:
-
-```tsx
-<BreadcrumbItem>
-  <BreadcrumbLink asChild>
-    <Link to="/fields/gullfaks">Gullfaks</Link>
-  </BreadcrumbLink>
-</BreadcrumbItem>
-```
-
-Correct:
-
-```tsx
-<BreadcrumbItem>
-  <BreadcrumbLink href="/fields/gullfaks" render={(props) => <Link {...props} />}>
-    Gullfaks
-  </BreadcrumbLink>
-</BreadcrumbItem>
-```
-
-`BreadcrumbLink` is a React Aria `Link`, which has `render` and no `asChild`, so the prop is dropped and the routing link is left nested inside it — and React Aria renders its own element as a `span[role="link"]` whenever it has no `href`, so the element it focuses, styles and marks current leads nowhere and the trail gains a second tab stop per level.
+- **HIGH** asChild to mount the routing library's link — `BreadcrumbLink` is a React Aria `Link`, which has `render` and no `asChild`, so the prop is dropped and the routing link is left nested inside it — and React Aria renders its own element as a `span[role="link"]` whenever it has no `href`, so the element it focuses, styles and marks current leads nowhere and the trail gains a second tab stop per level. (guidelines/breadcrumb.md)
 
 ## Sidebar
 
@@ -156,74 +145,9 @@ import { Sidebar, SidebarProvider, SidebarTrigger, SidebarRail, SidebarInset, Si
 
 ### Don't
 
-#### HIGH A navigation row built as a button with a handler
-
-Wrong:
-
-```tsx
-<SidebarMenuItem>
-  <SidebarMenuButton onClick={() => navigate("/wells")}>Wells</SidebarMenuButton>
-</SidebarMenuItem>
-```
-
-Correct:
-
-```tsx
-<SidebarMenuItem>
-  <SidebarMenuButton href="/wells" isActive={pathname === "/wells"}>Wells</SidebarMenuButton>
-</SidebarMenuItem>
-```
-
-`SidebarMenuButton` renders a React Aria `Link` only when it is given an `href`; without one it is a `button`, so the row is no destination for middle-click, Cmd-click or "copy link address", and `onClick` survives only as React Aria's deprecated press alias.
-
-#### HIGH Two providers sharing one cookie and one ⌘B
-
-Wrong:
-
-```tsx
-<SidebarProvider>
-  <AssetTrackerSidebar />
-</SidebarProvider>
-```
-
-Correct:
-
-```tsx
-<SidebarProvider cookieName="asset_tracker_sidebar" keyboardShortcut={false}>
-  <AssetTrackerSidebar />
-</SidebarProvider>
-```
-
-Every `SidebarProvider` writes the `sidebar_state` cookie and adds a `window` keydown listener for ⌘B / Ctrl+B by default, so a rail mounted beside the shell's own overwrites the state both of them restore from and one key press toggles the pair.
-
-#### MEDIUM A hand-built Sheet for the mobile rail
-
-Wrong:
-
-```tsx
-const isMobile = useIsMobile()
-return isMobile ? (
-  <Sheet isOpen={isOpen} onOpenChange={setIsOpen} side="left">
-    <SidebarMenu>{rows}</SidebarMenu>
-  </Sheet>
-) : (
-  <Sidebar>
-    <SidebarContent>{rows}</SidebarContent>
-  </Sidebar>
-)
-```
-
-Correct:
-
-```tsx
-<Sidebar collapsible="offcanvas">
-  <SidebarContent>
-    <SidebarMenu>{rows}</SidebarMenu>
-  </SidebarContent>
-</Sidebar>
-```
-
-`Sidebar` already swaps itself for a `Sheet` bound to the provider's `openMobile` state below the mobile breakpoint, so the hand-built branch is a second one and `SidebarTrigger`, which toggles that state, now opens nothing.
+- **HIGH** A navigation row built as a button with a handler — `SidebarMenuButton` renders a React Aria `Link` only when it is given an `href`; without one it is a `button`, so the row is no destination for middle-click, Cmd-click or "copy link address", and `onClick` survives only as React Aria's deprecated press alias. (guidelines/sidebar.md)
+- **HIGH** Two providers sharing one cookie and one ⌘B — Every `SidebarProvider` writes the `sidebar_state` cookie and adds a `window` keydown listener for ⌘B / Ctrl+B by default, so a rail mounted beside the shell's own overwrites the state both of them restore from and one key press toggles the pair. (guidelines/sidebar.md)
+- **MEDIUM** A hand-built Sheet for the mobile rail — `Sidebar` already swaps itself for a `Sheet` bound to the provider's `openMobile` state below the mobile breakpoint, so the hand-built branch is a second one and `SidebarTrigger`, which toggles that state, now opens nothing. (guidelines/sidebar.md)
 
 ## Pagination
 
@@ -253,69 +177,9 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 
 ### Don't
 
-#### HIGH Page buttons wired to local state
-
-Wrong:
-
-```tsx
-<div className="flex justify-center gap-1">
-  {pages.map((number) => (
-    <Button key={number} size="icon" variant={number === page ? "outline" : "ghost"} onPress={() => setPage(number)}>
-      {number}
-    </Button>
-  ))}
-</div>
-```
-
-Correct:
-
-```tsx
-<Pagination>
-  <PaginationContent>
-    {pages.map((number) => (
-      <PaginationItem key={number}>
-        <PaginationLink href={`?page=${number}`} isActive={number === page}>
-          {number}
-        </PaginationLink>
-      </PaginationItem>
-    ))}
-  </PaginationContent>
-</Pagination>
-```
-
-The hand-built row is a bare `div` with no `role="navigation"` and no `aria-label="pagination"`, and every page is a button rather than a URL, so nothing is shareable and `aria-current="page"` — which only `isActive` on `PaginationLink` sets — is never announced.
-
-#### MEDIUM The current page marked with className
-
-Wrong:
-
-```tsx
-<PaginationLink href="?page=2" className="bg-blue-600 text-white">2</PaginationLink>
-```
-
-Correct:
-
-```tsx
-<PaginationLink href="?page=2" isActive>2</PaginationLink>
-```
-
-`PaginationLink` omits `variant` from its props on purpose — `isActive` is the one switch, and it sets both the `outline` variant and `aria-current="page"` — while `blue-600` is not a Tecton step, so the reset palette emits no rule and the marker is invisible as well as unannounced.
-
-#### MEDIUM disabled on the control at either end
-
-Wrong:
-
-```tsx
-<PaginationPrevious href="?page=0" disabled={page === 1} />
-```
-
-Correct:
-
-```tsx
-<PaginationPrevious href={`?page=${page - 1}`} isDisabled={page === 1} />
-```
-
-`PaginationPrevious` ends up on a React Aria `Link`, whose prop is `isDisabled`; `disabled` is not in `LinkProps`, so it is filtered out of the DOM and the control stays a live link to a page that does not exist.
+- **HIGH** Page buttons wired to local state — The hand-built row is a bare `div` with no `role="navigation"` and no `aria-label="pagination"`, and every page is a button rather than a URL, so nothing is shareable and `aria-current="page"` — which only `isActive` on `PaginationLink` sets — is never announced. (guidelines/pagination.md)
+- **MEDIUM** The current page marked with className — `PaginationLink` omits `variant` from its props on purpose — `isActive` is the one switch, and it sets both the `outline` variant and `aria-current="page"` — while `blue-600` is not a Tecton step, so the reset palette emits no rule and the marker is invisible as well as unannounced. (guidelines/pagination.md)
+- **MEDIUM** disabled on the control at either end — `PaginationPrevious` ends up on a React Aria `Link`, whose prop is `isDisabled`; `disabled` is not in `LinkProps`, so it is filtered out of the DOM and the control stays a live link to a page that does not exist. (guidelines/pagination.md)
 
 ## AppFinder
 
@@ -361,47 +225,8 @@ Correct:
 
 `className` lands on the row and never on the tile, and `emerald` is not a Tecton palette family, so both classes emit no CSS under the reset palette — `tone` is the `cva` axis that paints the tile `bg-green-120 text-green-830`.
 
-#### HIGH A search field of your own above the list
-
-Wrong:
-
-```tsx
-<AppFinderMenu>
-  <Input value={query} onChange={(event) => setQuery(event.target.value)} />
-  <AppFinderList onAction={switchTo}>{appsMatching(query)}</AppFinderList>
-</AppFinderMenu>
-```
-
-Correct:
-
-```tsx
-<AppFinderMenu>
-  <AppFinderInput />
-  <AppFinderList onAction={switchTo}>{everyApp}</AppFinderList>
-</AppFinderMenu>
-```
-
-`AppFinderMenu` mounts a `Command` that owns `inputValue`, and `AppFinderInput` is the `CommandInput` bound to it: a separate `Input` leaves that value empty, so the filter over each item's `name` and `keywords` never runs, the match is never highlighted, and the arrow keys no longer move from the field into the list.
-
-#### MEDIUM A Recent group left visible while searching
-
-Wrong:
-
-```tsx
-<AppFinderGroup heading="Recent">
-  <AppFinderItem id="recent-dwp" icon="DWP" tone="green" name="Well Planning" />
-</AppFinderGroup>
-```
-
-Correct:
-
-```tsx
-<AppFinderGroup heading="Recent" hideWhileSearching>
-  <AppFinderItem id="recent-dwp" icon="DWP" tone="green" name="Well Planning" />
-</AppFinderGroup>
-```
-
-The filter runs across every group at once, so without `hideWhileSearching` a query lists the same application twice — once from "Recent", once from its category — under two different ids, and `onAction` reports whichever row the user happened to press.
+- **HIGH** A search field of your own above the list — `AppFinderMenu` mounts a `Command` that owns `inputValue`, and `AppFinderInput` is the `CommandInput` bound to it: a separate `Input` leaves that value empty, so the filter over each item's `name` and `keywords` never runs, the match is never highlighted, and the arrow keys no longer move from the field into the list. (guidelines/app-finder.md)
+- **MEDIUM** A Recent group left visible while searching — The filter runs across every group at once, so without `hideWhileSearching` a query lists the same application twice — once from "Recent", once from its category — under two different ids, and `onAction` reports whichever row the user happened to press. (guidelines/app-finder.md)
 
 ## ShellActions
 
@@ -451,48 +276,7 @@ Correct:
 
 `title` is not a `Button` prop, and React Aria's `filterDOMProps` keeps only `id`, `data-*`, labelling and global DOM attributes, so it never reaches the `button`: an icon-only button with no text node is left with no accessible name and no tooltip either, while `ShellAction` sets `aria-label` from `label` and wraps the button in the `TooltipTrigger` that also opens on keyboard focus.
 
-#### HIGH The key hint mistaken for a registration
+- **HIGH** The key hint mistaken for a registration — `shortcut` on `ShellCommandTrigger` only renders a `Kbd` and binds nothing, so ⌘K never opens the palette and the key is missing from `useShortcuts()` — the list the shell's help dialog and command palette are built from. (guidelines/shell-actions.md)
+- **MEDIUM** A hand-built overflow menu in the header — `DropdownMenu` defaults to `placement="bottom start"` and `min-w-32`, so a hand-built copy on the last control in the header runs off the right edge of the window and is narrower than the other menus in the cluster — `ShellOverflow` is that trigger with its menu already anchored `bottom end` at `min-w-48 rounded-lg`. (guidelines/shell-actions.md)
 
-Wrong:
-
-```tsx
-function ShellSearch({ open }: { open: () => void }) {
-  return <ShellCommandTrigger shortcut="⌘K" onPress={open}>Search or jump to…</ShellCommandTrigger>
-}
-```
-
-Correct:
-
-```tsx
-function ShellSearch({ open }: { open: () => void }) {
-  useShortcut({ id: "shell.palette", keys: "mod+k", label: "Command palette", onAction: open })
-  return <ShellCommandTrigger shortcut="⌘K" onPress={open}>Search or jump to…</ShellCommandTrigger>
-}
-```
-
-`shortcut` on `ShellCommandTrigger` only renders a `Kbd` and binds nothing, so ⌘K never opens the palette and the key is missing from `useShortcuts()` — the list the shell's help dialog and command palette are built from.
-
-#### MEDIUM A hand-built overflow menu in the header
-
-Wrong:
-
-```tsx
-<DropdownMenuTrigger>
-  <Button variant="ghost" size="icon-sm" aria-label="More">
-    <EllipsisVerticalIcon />
-  </Button>
-  <DropdownMenu>
-    <DropdownMenuItem textValue="Settings">Settings</DropdownMenuItem>
-  </DropdownMenu>
-</DropdownMenuTrigger>
-```
-
-Correct:
-
-```tsx
-<ShellOverflow className="lg:hidden">
-  <DropdownMenuItem textValue="Settings">Settings</DropdownMenuItem>
-</ShellOverflow>
-```
-
-`DropdownMenu` defaults to `placement="bottom start"` and `min-w-32`, so a hand-built copy on the last control in the header runs off the right edge of the window and is narrower than the other menus in the cluster — `ShellOverflow` is that trigger with its menu already anchored `bottom end` at `min-w-48 rounded-lg`.
+Re-read the checklist above against the file you wrote before you report it done.

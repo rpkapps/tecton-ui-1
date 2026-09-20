@@ -20,6 +20,17 @@ sources:
 
 Infrastructure — providers and roots, not visible components. Start from the table, then read the section of the component it sends you to: DirectionProvider, PortalProvider, ThemeRoot, ShortcutsProvider. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- A right-to-left application is wrapped once in a `DirectionProvider` (with a real `locale` where there is one) and also sets `dir` on `<html>`; React Aria reads `useLocale()`, not the DOM, so `dir` on a wrapper changes nothing.
+- Inside a flipped tree every spacing and alignment class is logical (`ms-*`, `pe-*`, `text-start`, `border-s`), and the direction is read with `useDirection()` rather than from `document.dir`.
+- A page holding several React roots wraps each root in a `PortalProvider` with its own body-level `container`, because `document.body` falls outside that root's `@scope` rule.
+- No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal context themselves.
+- An independently mounted application is wrapped in a `ThemeRoot` carrying its scope class with `theme="inherit"`, and it imports `@tecton/react/styles/scoped.css`, never `globals.css`.
+- A theme override for one root goes in `ThemeRoot`'s `className` (`[--primary:var(--tecton-palette-green-560)]`), which is mirrored onto the overlay container; inline CSS variables never reach a portalled overlay.
+- Every keyboard shortcut is registered with `useShortcut` inside one `ShortcutsProvider` rather than a `window` keydown listener, so it is suppressed while an input has focus and is listed by `useShortcuts()`.
+- A mounted application reuses the host's registry object from `createShortcutRegistry()` instead of creating a second one, and its shortcuts are written in the registry syntax (`mod+k`, `?`, `g w`) with a stable `id`, `label` and `group`.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | The application runs in a right-to-left locale and every Tecton component has to follow it | `DirectionProvider` | `@tecton/react/components/direction` |
@@ -65,65 +76,9 @@ import { DirectionProvider, I18nProvider, useDirection, useLocale } from "@tecto
 
 ### Don't
 
-#### HIGH dir on a wrapper instead of the provider
-
-Wrong:
-
-```tsx
-<div dir="rtl">
-  <App />
-</div>
-```
-
-Correct:
-
-```tsx
-<DirectionProvider direction="rtl">
-  <App />
-</DirectionProvider>
-```
-
-React Aria takes the direction from `useLocale()` and not from the DOM, so keyboard navigation, a popover's `placement` and the collator keep running left-to-right — and every overlay portals out of that `div` anyway, so even the inherited `dir` is gone.
-
-#### MEDIUM A locale and a direction that disagree
-
-Wrong:
-
-```tsx
-<DirectionProvider locale="en-US" direction="rtl">
-  <App />
-</DirectionProvider>
-```
-
-Correct:
-
-```tsx
-<DirectionProvider locale="ar-EG">
-  <App />
-</DirectionProvider>
-```
-
-`direction` is consulted only when no `locale` is given — it exists to synthesise one — so with both set the explicit locale wins and the tree stays left-to-right, with no warning.
-
-#### MEDIUM Physical spacing classes inside a flipped tree
-
-Wrong:
-
-```tsx
-<PageHeaderActions className="ml-4 text-left">
-  <Button>Save</Button>
-</PageHeaderActions>
-```
-
-Correct:
-
-```tsx
-<PageHeaderActions className="ms-4 text-start">
-  <Button>Save</Button>
-</PageHeaderActions>
-```
-
-`ml-*` and `text-left` compile to physical `margin-left` and `text-align: left`, which ignore `direction`, so the actions stay pinned to the left of a right-to-left header while the components around them flip.
+- **HIGH** dir on a wrapper instead of the provider — React Aria takes the direction from `useLocale()` and not from the DOM, so keyboard navigation, a popover's `placement` and the collator keep running left-to-right — and every overlay portals out of that `div` anyway, so even the inherited `dir` is gone. (guidelines/direction.md)
+- **MEDIUM** A locale and a direction that disagree — `direction` is consulted only when no `locale` is given — it exists to synthesise one — so with both set the explicit locale wins and the tree stays left-to-right, with no warning. (guidelines/direction.md)
+- **MEDIUM** Physical spacing classes inside a flipped tree — `ml-*` and `text-left` compile to physical `margin-left` and `text-align: left`, which ignore `direction`, so the actions stay pinned to the left of a right-to-left header while the components around them flip. (guidelines/direction.md)
 
 ## PortalProvider
 
@@ -181,45 +136,8 @@ createRoot(mountNode, { identifierPrefix: "mfe-a" }).render(
 
 The container earns its keep through the class and the marker it carries: a remote's utilities are wrapped in `@scope (.mfe-a) to ([data-tecton-root])`, so an overlay dropped straight into `document.body` falls outside that scope and renders with the host's styles or with none.
 
-#### HIGH An overlay portalled by hand with createPortal
-
-Wrong:
-
-```tsx
-createPortal(<Dialog isOpen={isOpen} onOpenChange={setIsOpen}>{body}</Dialog>, overlayRoot)
-```
-
-Correct:
-
-```tsx
-<PortalProvider container={overlayRoot}>
-  <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>{body}</Dialog>
-</PortalProvider>
-```
-
-`Dialog` portals itself through React Aria, so the outer `createPortal` only relocates the element that renders it: the modal still lands in `document.body`, and the container's classes and variables never reach it.
-
-#### MEDIUM Defaulting the target to document.body in a custom overlay
-
-Wrong:
-
-```tsx
-function Inspector(props: React.ComponentProps<typeof PopoverPrimitive>) {
-  const container = usePortalContainer()
-  return <PopoverPrimitive {...props} UNSTABLE_portalContainer={container ?? document.body} />
-}
-```
-
-Correct:
-
-```tsx
-function Inspector(props: React.ComponentProps<typeof PopoverPrimitive>) {
-  const container = usePortalTarget()
-  return <PopoverPrimitive {...props} UNSTABLE_portalContainer={container} />
-}
-```
-
-React Aria reads any set `UNSTABLE_portalContainer` as "the caller has decided" and stops resolving the target itself, so pinning `document.body` throws away its own defaults — the root popover's container for submenus, and `document.body` only once hydration is over — which is why `usePortalTarget` returns `undefined` rather than a fallback.
+- **HIGH** An overlay portalled by hand with createPortal — `Dialog` portals itself through React Aria, so the outer `createPortal` only relocates the element that renders it: the modal still lands in `document.body`, and the container's classes and variables never reach it. (guidelines/portal.md)
+- **MEDIUM** Defaulting the target to document.body in a custom overlay — React Aria reads any set `UNSTABLE_portalContainer` as "the caller has decided" and stops resolving the target itself, so pinning `document.body` throws away its own defaults — the root popover's container for submenus, and `document.body` only once hydration is over — which is why `usePortalTarget` returns `undefined` rather than a fallback. (guidelines/portal.md)
 
 ## ThemeRoot
 
@@ -275,45 +193,8 @@ createRoot(element, { identifierPrefix: "mfe-a" }).render(
 
 `globals.css` carries preflight, the fonts and the whole variable set on `:root`, so a remote that imports it resets the document the shell owns and repaints the shell with the remote's version of the theme — a remote's sheet is `scoped.css`, scoped to the `data-tecton-root` marker `ThemeRoot` renders.
 
-#### HIGH A theme applied as inline CSS variables
-
-Wrong:
-
-```tsx
-<div style={{ "--primary": "#2f7d32" } as React.CSSProperties}>
-  <App />
-</div>
-```
-
-Correct:
-
-```tsx
-<ThemeRoot className="mfe-a [--primary:var(--tecton-palette-green-560)]">
-  <App />
-</ThemeRoot>
-```
-
-Inline variables reach only the elements under that `div`, and every `Dialog`, `Select`, `Tooltip` and `DropdownMenu` portals out of it, so the overlays keep the shell's colours; `ThemeRoot` copies its `className` onto the body-level container it owns, which is what carries an override across the portal.
-
-#### MEDIUM The dark class toggled on a plain root element
-
-Wrong:
-
-```tsx
-<div className={mode === "dark" ? "mfe-a dark" : "mfe-a"}>
-  <App />
-</div>
-```
-
-Correct:
-
-```tsx
-<ThemeRoot className="mfe-a" theme={mode === "dark" ? "dark" : "light"}>
-  <App />
-</ThemeRoot>
-```
-
-The mode class has to sit on the overlay container as well, or the subtree's portalled overlays render in the shell's mode; `themeRootVariants` and the sync effect are what put it on both and swap it when `mode` flips.
+- **HIGH** A theme applied as inline CSS variables — Inline variables reach only the elements under that `div`, and every `Dialog`, `Select`, `Tooltip` and `DropdownMenu` portals out of it, so the overlays keep the shell's colours; `ThemeRoot` copies its `className` onto the body-level container it owns, which is what carries an override across the portal. (guidelines/theme-root.md)
+- **MEDIUM** The dark class toggled on a plain root element — The mode class has to sit on the overlay container as well, or the subtree's portalled overlays render in the shell's mode; `themeRootVariants` and the sync effect are what put it on both and swap it when `mode` flips. (guidelines/theme-root.md)
 
 ## ShortcutsProvider
 
@@ -343,66 +224,8 @@ import { ShortcutsProvider, createShortcutRegistry, useShortcut, useShortcuts, u
 
 ### Don't
 
-#### HIGH A shortcut registered with a window listener
+- **HIGH** A shortcut registered with a window listener — The registry suppresses unmodified keys while an input, textarea or editable element has focus, so a hand-rolled listener opens the dialog on the first `n` the user types into a form — and the shortcut never reaches `useShortcuts()`, so neither the help dialog nor the command palette lists it. (guidelines/shortcuts.md)
+- **HIGH** A mounted application creating its own registry — A registry of its own adds a second `document` listener with a list the host cannot see, so the application's keys are missing from the shell's shortcut dialog, both registries answer the same press, and a fresh object on every render re-subscribes the listener each time. (guidelines/shortcuts.md)
+- **MEDIUM** Key caps typed out by hand — `ShortcutKeys` resolves `mod` to ⌘ or Ctrl for the reader's platform, splits a chord or a sequence into caps and gives the group one accessible name ("G, then W"), where hand-typed caps freeze the author's platform and are read out letter by letter. (guidelines/shortcuts.md)
 
-Wrong:
-
-```tsx
-React.useEffect(() => {
-  const onKeyDown = (event: KeyboardEvent) => {
-    if (event.key === "n") openNewWellDialog()
-  }
-  window.addEventListener("keydown", onKeyDown)
-  return () => window.removeEventListener("keydown", onKeyDown)
-}, [])
-```
-
-Correct:
-
-```tsx
-useShortcut({
-  id: "wells.new",
-  keys: "n",
-  label: "Create well",
-  group: "Wells",
-  onAction: () => openNewWellDialog(),
-})
-```
-
-The registry suppresses unmodified keys while an input, textarea or editable element has focus, so a hand-rolled listener opens the dialog on the first `n` the user types into a form — and the shortcut never reaches `useShortcuts()`, so neither the help dialog nor the command palette lists it.
-
-#### HIGH A mounted application creating its own registry
-
-Wrong:
-
-```tsx
-<ShortcutsProvider registry={createShortcutRegistry()}>
-  <App />
-</ShortcutsProvider>
-```
-
-Correct:
-
-```tsx
-<ShortcutsProvider registry={props.shortcuts}>
-  <App />
-</ShortcutsProvider>
-```
-
-A registry of its own adds a second `document` listener with a list the host cannot see, so the application's keys are missing from the shell's shortcut dialog, both registries answer the same press, and a fresh object on every render re-subscribes the listener each time.
-
-#### MEDIUM Key caps typed out by hand
-
-Wrong:
-
-```tsx
-<span>Go to wells <Kbd>G</Kbd> <Kbd>W</Kbd></span>
-```
-
-Correct:
-
-```tsx
-<span>{shortcut.label} <ShortcutKeys keys={shortcut.keys} /></span>
-```
-
-`ShortcutKeys` resolves `mod` to ⌘ or Ctrl for the reader's platform, splits a chord or a sequence into caps and gives the group one accessible name ("G, then W"), where hand-typed caps freeze the author's platform and are read out letter by letter.
+Re-read the checklist above against the file you wrote before you report it done.

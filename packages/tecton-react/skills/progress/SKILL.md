@@ -21,6 +21,17 @@ sources:
 
 Progress — a determinate bar, a ring, a segmented gauge, an indeterminate spinner or a loading placeholder. Start from the table, then read the section of the component it sends you to: Progress, CircularProgress, Meter, Spinner, Skeleton. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- Every `Spinner` inside a `Button`, `Badge` or `InputGroupAddon` carries `data-icon="inline-start"` or `data-icon="inline-end"`, and the control is `isDisabled` while it spins.
+- Every `Progress`, `CircularProgress` and `Meter` has a name: a `ProgressLabel` child, `label` on the meter, or `aria-label` when the name is already beside it.
+- A value that is not on a 0–100 scale states its scale with `minValue` and `maxValue` (`value={loaded} maxValue={total}`, a 4-out-of-5 score with `maxValue={5}`).
+- An unknown total is `isIndeterminate`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.
+- A measured task is `Progress` or `CircularProgress`; a score or level that is read rather than completed is a `Meter`, with `color="auto"` choosing the band instead of a hand-written ternary.
+- `className` on `Progress`, `CircularProgress` and `Meter` sets width and placement only — the height, the stroke width and the fill come from `size` and `color`.
+- Every `Skeleton` has a height or an aspect ratio (`h-4 w-full`, `size-12 rounded-full`, `aspect-video w-full`), because an empty `div` with no intrinsic size renders nothing.
+- A `Spinner` is never wrapped in a second live region: it already carries `role="status"` and `aria-label="Loading"`.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | A task has a start, an end and a measurable fraction between them: an upload, an import, a batch run | `Progress` | `@tecton/react/components/progress` |
@@ -91,37 +102,8 @@ Correct:
 
 React Aria's `ProgressBar` takes its name only from a `Label` child or `aria-label`, so the bar is announced as an unnamed progressbar with a bare percentage.
 
-#### HIGH A fraction on the default 0–100 scale
-
-Wrong:
-
-```tsx
-<Progress aria-label="Uploading survey" value={0.66} className="w-full" />
-```
-
-Correct:
-
-```tsx
-<Progress aria-label="Uploading survey" value={0.66} maxValue={1} className="w-full" />
-```
-
-`ProgressBar` defaults to `minValue={0} maxValue={100}`, so `0.66` is 0.66 % — the indicator is under a pixel wide and the bar looks stuck at zero.
-
-#### HIGH Styling the bar through className
-
-Wrong:
-
-```tsx
-<Progress aria-label="Uploading survey" value={66} className="h-2 rounded-full bg-blue-600" />
-```
-
-Correct:
-
-```tsx
-<Progress aria-label="Uploading survey" value={66} className="w-full max-w-sm" />
-```
-
-`className` lands on the flex wrapper that `Progress` renders, not on `ProgressTrack` inside it, so the track keeps its own height, and `blue-600` is not a Tecton step, so it emits no CSS anywhere.
+- **HIGH** A fraction on the default 0–100 scale — `ProgressBar` defaults to `minValue={0} maxValue={100}`, so `0.66` is 0.66 % — the indicator is under a pixel wide and the bar looks stuck at zero. (guidelines/progress.md)
+- **HIGH** Styling the bar through className — `className` lands on the flex wrapper that `Progress` renders, not on `ProgressTrack` inside it, so the track keeps its own height, and `blue-600` is not a Tecton step, so it emits no CSS anywhere. (guidelines/progress.md)
 
 ## CircularProgress
 
@@ -167,44 +149,8 @@ Correct:
 
 The `svg` is `aria-hidden` and `role="progressbar"` takes no name from its contents, so without `aria-label` the ring is announced as an unnamed progress bar.
 
-#### HIGH Sizing or colouring the ring with className
-
-Wrong:
-
-```tsx
-<CircularProgress
-  aria-label="Export"
-  value={40}
-  className="size-20 text-blue-600"
-/>
-```
-
-Correct:
-
-```tsx
-<CircularProgress aria-label="Export" value={40} size="lg" color="primary" />
-```
-
-`size` also sets the `--stroke` width and the centre label's type scale, so overriding only the diameter leaves a hairline ring, and `blue-600` is not a Tecton step — `cn` drops `text-primary` for a class that emits nothing and the stroke falls back to the inherited text colour.
-
-#### MEDIUM showValue on an indeterminate ring
-
-Wrong:
-
-```tsx
-<CircularProgress size="sm" isIndeterminate showValue aria-label="Loading well logs" />
-```
-
-Correct:
-
-```tsx
-<div className="flex items-center gap-3 text-sm text-muted-foreground">
-  <CircularProgress size="sm" isIndeterminate aria-label="Loading well logs" />
-  Loading well logs…
-</div>
-```
-
-The centre label renders only when `showValue && !isIndeterminate`, so the prop is ignored and the ring spins with an empty middle where the caption was expected.
+- **HIGH** Sizing or colouring the ring with className — `size` also sets the `--stroke` width and the centre label's type scale, so overriding only the diameter leaves a hairline ring, and `blue-600` is not a Tecton step — `cn` drops `text-primary` for a class that emits nothing and the stroke falls back to the inherited text colour. (guidelines/circular-progress.md)
+- **MEDIUM** showValue on an indeterminate ring — The centre label renders only when `showValue && !isIndeterminate`, so the prop is ignored and the ring spins with an empty middle where the caption was expected. (guidelines/circular-progress.md)
 
 ## Meter
 
@@ -250,57 +196,9 @@ Correct:
 
 The segments are plain `span`s and `role="meter"` takes no name from them, so without `label` or `aria-label` the gauge announces a number with nothing to attach it to.
 
-#### HIGH A raw score on the default 0–100 scale
-
-Wrong:
-
-```tsx
-<Meter label="Confidence" value={4} showValue />
-```
-
-Correct:
-
-```tsx
-<Meter label="Confidence" value={4} maxValue={5} showValue />
-```
-
-React Aria's `Meter` defaults to `maxValue={100}`, so a 4-out-of-5 score fills 4 % of the track and is announced as 4 %.
-
-#### MEDIUM Re-deriving the colour bands by hand
-
-Wrong:
-
-```tsx
-<Meter
-  label="Geological risk"
-  value={risk}
-  color={risk >= 67 ? "error" : risk >= 34 ? "warning" : "success"}
-/>
-```
-
-Correct:
-
-```tsx
-<Meter label="Geological risk" value={risk} color="auto" />
-```
-
-`color="auto"` already applies the 34 / 67 thresholds to the percentage, so the hand-written ternary duplicates a design-system decision and disagrees with it as soon as `minValue` or `maxValue` is not 0–100.
-
-#### MEDIUM Colouring the segments with className
-
-Wrong:
-
-```tsx
-<Meter label="Data quality" value={80} className="bg-green-600" />
-```
-
-Correct:
-
-```tsx
-<Meter label="Data quality" value={80} color="success" />
-```
-
-`className` lands on the meter's outer flex column, not on the segment fills, which take their class from `color` — and `green-600` is not a Tecton step, so nothing is emitted for it either.
+- **HIGH** A raw score on the default 0–100 scale — React Aria's `Meter` defaults to `maxValue={100}`, so a 4-out-of-5 score fills 4 % of the track and is announced as 4 %. (guidelines/meter.md)
+- **MEDIUM** Re-deriving the colour bands by hand — `color="auto"` already applies the 34 / 67 thresholds to the percentage, so the hand-written ternary duplicates a design-system decision and disagrees with it as soon as `minValue` or `maxValue` is not 0–100. (guidelines/meter.md)
+- **MEDIUM** Colouring the segments with className — `className` lands on the meter's outer flex column, not on the segment fills, which take their class from `color` — and `green-600` is not a Tecton step, so nothing is emitted for it either. (guidelines/meter.md)
 
 ## Spinner
 
@@ -329,59 +227,9 @@ import { Spinner } from "@tecton/react/components/spinner"
 
 ### Don't
 
-#### HIGH A spinner in a button without data-icon
-
-Wrong:
-
-```tsx
-<Button isDisabled size="sm">
-  <Spinner />
-  Saving…
-</Button>
-```
-
-Correct:
-
-```tsx
-<Button isDisabled size="sm">
-  <Spinner data-icon="inline-start" />
-  Saving…
-</Button>
-```
-
-The button trims its leading padding only through `has-data-[icon=inline-start]:pl-1.5`, so without the attribute the spinner sits in full text padding and the button jumps in width the moment it appears.
-
-#### HIGH A hand-rolled spinner div with borders
-
-Wrong:
-
-```tsx
-<div className="size-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
-```
-
-Correct:
-
-```tsx
-<Spinner />
-```
-
-`gray-300` and `blue-600` are not Tecton steps, so the reset palette gives the ring no colour at all, and the bare `div` has neither `role="status"` nor an accessible name.
-
-#### MEDIUM Colouring the spinner with a stock class
-
-Wrong:
-
-```tsx
-<Spinner className="size-5 text-gray-500" />
-```
-
-Correct:
-
-```tsx
-<Spinner className="size-5 text-muted-foreground" />
-```
-
-`gray-500` is not a Tecton step, so the class emits no CSS and the spinner keeps whatever colour it inherits — it looks right only where the parent already happens to be muted.
+- **HIGH** A spinner in a button without data-icon — The button trims its leading padding only through `has-data-[icon=inline-start]:pl-1.5`, so without the attribute the spinner sits in full text padding and the button jumps in width the moment it appears. (guidelines/spinner.md)
+- **HIGH** A hand-rolled spinner div with borders — `gray-300` and `blue-600` are not Tecton steps, so the reset palette gives the ring no colour at all, and the bare `div` has neither `role="status"` nor an accessible name. (guidelines/spinner.md)
+- **MEDIUM** Colouring the spinner with a stock class — `gray-500` is not a Tecton step, so the class emits no CSS and the spinner keeps whatever colour it inherits — it looks right only where the parent already happens to be muted. (guidelines/spinner.md)
 
 ## Skeleton
 
@@ -410,56 +258,8 @@ import { Skeleton } from "@tecton/react/components/skeleton"
 
 ### Don't
 
-#### HIGH A skeleton with no height
+- **HIGH** A skeleton with no height — `Skeleton` is an empty `div` with no intrinsic size, so without `h-*`, an aspect ratio or a child it computes to zero height and nothing appears on the page. (guidelines/skeleton.md)
+- **HIGH** Recolouring the placeholder with a stock class — `cn` drops the component's `bg-muted` in favour of `bg-gray-200`, which is not a Tecton step and emits no CSS, so the placeholder renders transparent and the region looks empty rather than loading. (guidelines/skeleton.md)
+- **MEDIUM** Off-token pixel sizes on a skeleton — Arbitrary values are exactly what `no-arbitrary-values` rejects in `configs.strict`, and a placeholder measured in loose pixels stops matching the line height of the text it stands in for. (guidelines/skeleton.md)
 
-Wrong:
-
-```tsx
-<div className="flex flex-col gap-2">
-  <Skeleton className="w-full" />
-  <Skeleton className="w-3/4" />
-</div>
-```
-
-Correct:
-
-```tsx
-<div className="flex flex-col gap-2">
-  <Skeleton className="h-4 w-full" />
-  <Skeleton className="h-4 w-3/4" />
-</div>
-```
-
-`Skeleton` is an empty `div` with no intrinsic size, so without `h-*`, an aspect ratio or a child it computes to zero height and nothing appears on the page.
-
-#### HIGH Recolouring the placeholder with a stock class
-
-Wrong:
-
-```tsx
-<Skeleton className="h-4 w-full bg-gray-200" />
-```
-
-Correct:
-
-```tsx
-<Skeleton className="h-4 w-full" />
-```
-
-`cn` drops the component's `bg-muted` in favour of `bg-gray-200`, which is not a Tecton step and emits no CSS, so the placeholder renders transparent and the region looks empty rather than loading.
-
-#### MEDIUM Off-token pixel sizes on a skeleton
-
-Wrong:
-
-```tsx
-<Skeleton className="h-[18px] w-[240px]" />
-```
-
-Correct:
-
-```tsx
-<Skeleton className="h-4 w-60" />
-```
-
-Arbitrary values are exactly what `no-arbitrary-values` rejects in `configs.strict`, and a placeholder measured in loose pixels stops matching the line height of the text it stands in for.
+Re-read the checklist above against the file you wrote before you report it done.

@@ -19,6 +19,17 @@ sources:
 
 Feedback — a message that stays on the page, a transient toast, or an empty state. Start from the table, then read the section of the component it sends you to: Alert, Toaster, Empty. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- A message that stays on the page until it is read or resolved is an `Alert` with `variant` for the severity and `appearance` for the surface; a transient confirmation of something just done is `toast` from `sonner`.
+- Every `toast()` call has exactly one `<Toaster />` mounted at the application root — with nothing subscribed the toast renders nothing and throws nothing.
+- Toast severity comes from the typed helpers (`toast.success`, `toast.info`, `toast.warning`, `toast.error`, `toast.promise`), never from a colour class, and any `toast.loading` id is reused by the toast that resolves it.
+- The `Alert` icon is a direct child of `Alert` (the two-column grid is a `has-[>svg]` rule), and every button in it, including the dismiss control, is inside `AlertAction` and wired with `onPress`.
+- An empty list, table, panel or search result renders `Empty` with `EmptyHeader`, `EmptyMedia`, `EmptyTitle` and `EmptyDescription` — not a stack of divs and not a `TableRow` with a `colSpan` cell.
+- The icon in an empty state is inside `EmptyMedia variant="icon"`, and the next step is one primary `Button` in `EmptyContent` with at most one secondary beside it.
+- A validation message belongs to its field as `FieldError` inside the `Field`, not as an `Alert` and not as a red paragraph.
+- `className` on `Alert` and `Empty` sets width, placement and the dashed `border` only; the status colours and the type belong to the component.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | A message must stay on the page until the user reads or resolves it: a failed run, unsaved changes, a stale model | `Alert` | `@tecton/react/components/alert` |
@@ -83,52 +94,8 @@ Correct:
 
 `red-500` and `red-700` are not Tecton steps so the reset palette emits nothing for them, while `cn` has already dropped the variant's own `bg-card` and `border-border` — the alert renders as unstyled text.
 
-#### HIGH Putting the icon inside the title
-
-Wrong:
-
-```tsx
-<Alert variant="warning" appearance="filled">
-  <AlertTitle><TriangleAlertIcon /> Unsaved changes</AlertTitle>
-  <AlertDescription>Three horizons have uncommitted edits.</AlertDescription>
-</Alert>
-```
-
-Correct:
-
-```tsx
-<Alert variant="warning" appearance="filled">
-  <TriangleAlertIcon />
-  <AlertTitle>Unsaved changes</AlertTitle>
-  <AlertDescription>Three horizons have uncommitted edits.</AlertDescription>
-</Alert>
-```
-
-The two-column grid and the icon's `row-span-2` come from `has-[>svg]`, a direct-child selector, so an icon nested in the title leaves the alert in one column and the description no longer aligns under the title.
-
-#### MEDIUM An action that is not in AlertAction
-
-Wrong:
-
-```tsx
-<Alert variant="success">
-  <AlertTitle>Three FDA alternatives ranked</AlertTitle>
-  <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onPress={dismiss}><XIcon /></Button>
-</Alert>
-```
-
-Correct:
-
-```tsx
-<Alert variant="success">
-  <AlertTitle>Three FDA alternatives ranked</AlertTitle>
-  <AlertAction>
-    <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onPress={dismiss}><XIcon /></Button>
-  </AlertAction>
-</Alert>
-```
-
-The alert clears its corner with `has-data-[slot=alert-action]:pr-18`, so a bare button joins the grid flow under the title instead of sitting in the reserved top-right corner.
+- **HIGH** Putting the icon inside the title — The two-column grid and the icon's `row-span-2` come from `has-[>svg]`, a direct-child selector, so an icon nested in the title leaves the alert in one column and the description no longer aligns under the title. (guidelines/alert.md)
+- **MEDIUM** An action that is not in AlertAction — The alert clears its corner with `has-data-[slot=alert-action]:pr-18`, so a bare button joins the grid flow under the title instead of sitting in the reserved top-right corner. (guidelines/alert.md)
 
 ## Toaster
 
@@ -187,45 +154,8 @@ export function App() {
 
 `toast()` pushes onto sonner's global store and returns an id; with no `Toaster` subscribed nothing renders and nothing throws, so the confirmation is lost in silence.
 
-#### HIGH A pending toast that is never resolved
-
-Wrong:
-
-```tsx
-toast.loading("Running simulation…")
-await runSimulation()
-toast.success("Simulation finished")
-```
-
-Correct:
-
-```tsx
-toast.promise(runSimulation(), {
-  loading: "Running simulation…",
-  success: "Simulation finished",
-  error: "Simulation failed",
-})
-```
-
-`toast.loading` has no duration, so unless its returned id is reused it stays on screen for the rest of the session and the success toast stacks beneath it.
-
-#### HIGH Colouring a toast by hand
-
-Wrong:
-
-```tsx
-toast("Simulation failed", { className: "bg-red-600 text-white" })
-```
-
-Correct:
-
-```tsx
-toast.error("Simulation failed", {
-  description: "12 cells have negative volume.",
-})
-```
-
-The Toaster maps sonner's types onto `--error-text`, `--error-border` and the popover surface, and `red-600` is not a Tecton step, so the class emits no CSS and the toast shows no severity at all.
+- **HIGH** A pending toast that is never resolved — `toast.loading` has no duration, so unless its returned id is reused it stays on screen for the rest of the session and the success toast stacks beneath it. (guidelines/sonner.md)
+- **HIGH** Colouring a toast by hand — The Toaster maps sonner's types onto `--error-text`, `--error-border` and the popover surface, and `red-600` is not a Tecton step, so the class emits no CSS and the toast shows no severity at all. (guidelines/sonner.md)
 
 ## Empty
 
@@ -255,54 +185,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyCont
 
 ### Don't
 
-#### HIGH Hand-building the empty state from divs
+- **HIGH** Hand-building the empty state from divs — `gray-400` and `gray-500` are not Tecton steps, so the reset palette emits nothing and both lines keep the default foreground colour, while the heading misses the `font-heading` face that `EmptyTitle` carries. (guidelines/empty.md)
+- **MEDIUM** An icon without its EmptyMedia tile — The rounded muted tile and the 24 px icon size live in the `icon` variant only; the default variant is a transparent box, so the icon renders at its own size with no surface behind it. (guidelines/empty.md)
 
-Wrong:
-
-```tsx
-<div className="flex flex-col items-center gap-2 p-12 text-center">
-  <FolderCodeIcon className="size-10 text-gray-400" />
-  <h3 className="text-lg font-semibold">No projects yet</h3>
-  <p className="text-sm text-gray-500">Create your first project to get started.</p>
-  <Button>Create project</Button>
-</div>
-```
-
-Correct:
-
-```tsx
-<Empty>
-  <EmptyHeader>
-    <EmptyMedia variant="icon"><FolderCodeIcon /></EmptyMedia>
-    <EmptyTitle>No projects yet</EmptyTitle>
-    <EmptyDescription>Create your first project to get started.</EmptyDescription>
-  </EmptyHeader>
-  <EmptyContent>
-    <Button>Create project</Button>
-  </EmptyContent>
-</Empty>
-```
-
-`gray-400` and `gray-500` are not Tecton steps, so the reset palette emits nothing and both lines keep the default foreground colour, while the heading misses the `font-heading` face that `EmptyTitle` carries.
-
-#### MEDIUM An icon without its EmptyMedia tile
-
-Wrong:
-
-```tsx
-<EmptyHeader>
-  <EmptyMedia><CloudIcon /></EmptyMedia>
-  <EmptyTitle>Cloud storage empty</EmptyTitle>
-</EmptyHeader>
-```
-
-Correct:
-
-```tsx
-<EmptyHeader>
-  <EmptyMedia variant="icon"><CloudIcon /></EmptyMedia>
-  <EmptyTitle>Cloud storage empty</EmptyTitle>
-</EmptyHeader>
-```
-
-The rounded muted tile and the 24 px icon size live in the `icon` variant only; the default variant is a transparent box, so the icon renders at its own size with no surface behind it.
+Re-read the checklist above against the file you wrote before you report it done.

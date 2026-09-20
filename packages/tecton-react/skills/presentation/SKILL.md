@@ -21,6 +21,17 @@ sources:
 
 Presentation — slides, avatars, collapsing toolbars, a full-bleed work surface or a decorative background. Start from the table, then read the section of the component it sends you to: Carousel, Avatar, Overflow, Canvas, Background. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- Embla options go in `opts` on `Carousel` and never on `CarouselContent`, the axis comes from `orientation` rather than an Embla `axis`, and slide width is `basis-*` on `CarouselItem`, never `w-*`.
+- Every `Avatar` has an `AvatarFallback` behind its `AvatarImage`, and its box comes from `size="sm" | "default" | "lg"` — a `size-*` class leaves `AvatarBadge` and `AvatarGroupCount` at the default size.
+- `AvatarBadge` is the one part the application recolours, and only with a Tecton step (`className="bg-green-560"`).
+- Every control that may leave a collapsing row is wrapped in an `OverflowItem` with a stable `id`, its text in an `OverflowLabel` and its handler on the item's `onAction` rather than on the button; the primary action is left unwrapped.
+- A collapsing row of controls uses `Toolbar` with an `aria-label` when it is a toolbar (one tab stop, arrow keys) and `Overflow` when it is not.
+- Floating canvas chrome is a `CanvasOverlay` with a `position`, holding `CanvasToolbar`s and a `CanvasLegend`, never a hand-placed absolute box that swallows the drags passing over it.
+- A `Canvas` takes its height from a flex column or an explicit `h-*`, because `CanvasSurface` is `absolute inset-0` and leaves nothing in flow to size it.
+- A decorative background is a named effect (`ContourBackground`, `SeismicBackground`, …) rendered as the first child of a `relative isolate overflow-hidden` container and tuned with `tone`, `intensity` and `speed`, never a gradient in `className`.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | A short, ordered set of equal tiles does not fit and stepping through them is the point: onboarding slides, a gallery, featured records | `Carousel` | `@tecton/react/components/carousel` |
@@ -72,61 +83,9 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 
 ### Don't
 
-#### HIGH Embla options on CarouselContent
-
-Wrong:
-
-```tsx
-<Carousel className="w-full max-w-sm">
-  <CarouselContent opts={{ align: "start", loop: true }}>
-    <CarouselItem className="basis-1/2">{first}</CarouselItem>
-  </CarouselContent>
-  <CarouselPrevious /><CarouselNext />
-</Carousel>
-```
-
-Correct:
-
-```tsx
-<Carousel opts={{ align: "start", loop: true }} className="w-full max-w-sm">
-  <CarouselContent>
-    <CarouselItem className="basis-1/2">{first}</CarouselItem>
-  </CarouselContent>
-  <CarouselPrevious /><CarouselNext />
-</Carousel>
-```
-
-`useEmblaCarousel(opts)` is called in `Carousel`; `CarouselContent` only holds the viewport ref and spreads the rest onto a plain `div`, so the object becomes a stray attribute and the carousel runs on Embla's defaults.
-
-#### HIGH A vertical carousel set through the Embla axis
-
-Wrong:
-
-```tsx
-<Carousel opts={{ axis: "y" }} className="h-80 w-full max-w-xs">
-  <CarouselContent>
-    <CarouselItem className="basis-1/2">{first}</CarouselItem>
-  </CarouselContent>
-  <CarouselPrevious /><CarouselNext />
-</Carousel>
-```
-
-Correct:
-
-```tsx
-<Carousel orientation="vertical" className="w-full max-w-xs">
-  <CarouselContent className="h-80">
-    <CarouselItem className="basis-1/2">{first}</CarouselItem>
-  </CarouselContent>
-  <CarouselPrevious /><CarouselNext />
-</Carousel>
-```
-
-`Carousel` builds the options as `{ ...opts, axis: orientation === "horizontal" ? "x" : "y" }`, so an `axis` in `opts` is always overwritten — and only `orientation` also switches the content to `flex-col` and moves the previous and next buttons onto the vertical axis.
-
-#### MEDIUM Slide width set with w-* instead of basis-*
-
-`CarouselItem` is `min-w-0 shrink-0 grow-0 basis-full`, and in a flex row `flex-basis` sets the main size, so `w-1/3` survives the `cn` merge, changes nothing, and every slide still fills the viewport. Wrong and correct code: `guidelines/carousel.md`.
+- **HIGH** Embla options on CarouselContent — `useEmblaCarousel(opts)` is called in `Carousel`; `CarouselContent` only holds the viewport ref and spreads the rest onto a plain `div`, so the object becomes a stray attribute and the carousel runs on Embla's defaults. (guidelines/carousel.md)
+- **HIGH** A vertical carousel set through the Embla axis — `Carousel` builds the options as `{ ...opts, axis: orientation === "horizontal" ? "x" : "y" }`, so an `axis` in `opts` is always overwritten — and only `orientation` also switches the content to `flex-col` and moves the previous and next buttons onto the vertical axis. (guidelines/carousel.md)
+- **MEDIUM** Slide width set with w-* instead of basis-* — `CarouselItem` is `min-w-0 shrink-0 grow-0 basis-full`, and in a flex row `flex-basis` sets the main size, so `w-1/3` survives the `cn` merge, changes nothing, and every slide still fills the viewport. (guidelines/carousel.md)
 
 ## Avatar
 
@@ -156,52 +115,9 @@ import { Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount, Ava
 
 ### Don't
 
-#### HIGH An avatar image with no fallback
-
-Wrong:
-
-```tsx
-<Avatar>
-  <AvatarImage src={user.avatarUrl} alt={user.name} />
-</Avatar>
-```
-
-Correct:
-
-```tsx
-<Avatar>
-  <AvatarImage src={user.avatarUrl} alt={user.name} />
-  <AvatarFallback>{initials(user.name)}</AvatarFallback>
-</Avatar>
-```
-
-`AvatarImage` starts in `data-state="error"` when `src` is empty and switches to it on the first failed request, and the class that acts on that is `data-[state=error]:hidden`, so with nothing behind it the avatar is an empty ring — only `AvatarFallback` carries the `peer-data-[state=error]:flex` that brings content back.
-
-#### MEDIUM An avatar sized with className
-
-`size` is what writes `data-size`, and `AvatarBadge` and `AvatarGroupCount` size themselves from it through `group-data-[size=lg]/avatar` and `group-has-data-[size=lg]/avatar-group`, so a hand-set `size-10` leaves the dot and the count bubble at the default 32 px; `size-*` is on the `no-restyle` deny list for the same reason. Wrong and correct code: `guidelines/avatar.md`.
-
-#### HIGH A stock colour on the status dot
-
-Wrong:
-
-```tsx
-<Avatar>
-  <AvatarImage src={user.avatarUrl} alt={user.name} /><AvatarFallback>RK</AvatarFallback>
-  <AvatarBadge className="bg-green-500" />
-</Avatar>
-```
-
-Correct:
-
-```tsx
-<Avatar>
-  <AvatarImage src={user.avatarUrl} alt={user.name} /><AvatarFallback>RK</AvatarFallback>
-  <AvatarBadge className="bg-green-560" />
-</Avatar>
-```
-
-`AvatarBadge` is the one part whose colour the application picks, but the Tecton palette is declared after `--color-*: initial`, so `green-500` is not a step, the class emits no CSS and the dot silently falls back to `bg-primary`.
+- **HIGH** An avatar image with no fallback — `AvatarImage` starts in `data-state="error"` when `src` is empty and switches to it on the first failed request, and the class that acts on that is `data-[state=error]:hidden`, so with nothing behind it the avatar is an empty ring — only `AvatarFallback` carries the `peer-data-[state=error]:flex` that brings content back. (guidelines/avatar.md)
+- **MEDIUM** An avatar sized with className — `size` is what writes `data-size`, and `AvatarBadge` and `AvatarGroupCount` size themselves from it through `group-data-[size=lg]/avatar` and `group-has-data-[size=lg]/avatar-group`, so a hand-set `size-10` leaves the dot and the count bubble at the default 32 px; `size-*` is on the `no-restyle` deny list for the same reason. (guidelines/avatar.md)
+- **HIGH** A stock colour on the status dot — `AvatarBadge` is the one part whose colour the application picks, but the Tecton palette is declared after `--color-*: initial`, so `green-500` is not a step, the class emits no CSS and the dot silently falls back to `bg-primary`. (guidelines/avatar.md)
 
 ## Overflow
 
@@ -259,45 +175,8 @@ Correct:
 
 Only an `OverflowItem` registers itself with the row's store, so only it can be measured, collapsed or moved into the menu: a row of bare buttons is entirely fixed, no More button is ever rendered, and the row wraps or scrolls instead.
 
-#### HIGH Label text that is not in an OverflowLabel
-
-Wrong:
-
-```tsx
-<OverflowItem id="export" label="Export" icon={<DownloadIcon />} onAction={exportRows}>
-  <Button variant="outline"><DownloadIcon data-icon="inline-start" />Export</Button>
-</OverflowItem>
-```
-
-Correct:
-
-```tsx
-<OverflowItem id="export" label="Export" icon={<DownloadIcon />} onAction={exportRows}>
-  <Button variant="outline"><DownloadIcon data-icon="inline-start" /><OverflowLabel>Export</OverflowLabel></Button>
-</OverflowItem>
-```
-
-The icon-only stage works by putting `sr-only` on `OverflowLabel` alone, so plain text keeps its width: the item never reaches a compact size, the measured pair is wrong, and the row skips the collapse stage and starts hiding items instead.
-
-#### HIGH The handler on the button instead of on the item
-
-Wrong:
-
-```tsx
-<OverflowItem id="delete" label="Delete" icon={<Trash2Icon />} variant="destructive">
-  <Button variant="destructive" onPress={remove}><Trash2Icon data-icon="inline-start" /><OverflowLabel>Delete</OverflowLabel></Button>
-</OverflowItem>
-```
-
-Correct:
-
-```tsx
-<OverflowItem id="delete" label="Delete" icon={<Trash2Icon />} variant="destructive" onAction={remove}>
-  <Button variant="destructive"><Trash2Icon data-icon="inline-start" /><OverflowLabel>Delete</OverflowLabel></Button>
-</OverflowItem>
-```
-
-`onAction` is both the handler of the generated `DropdownMenuItem` and the `onPress` injected into the React Aria `Button` child through `ButtonContext`, so it fires in both places; left on the button alone, the More-menu entry is built with no handler and does nothing once the item is hidden.
+- **HIGH** Label text that is not in an OverflowLabel — The icon-only stage works by putting `sr-only` on `OverflowLabel` alone, so plain text keeps its width: the item never reaches a compact size, the measured pair is wrong, and the row skips the collapse stage and starts hiding items instead. (guidelines/overflow.md)
+- **HIGH** The handler on the button instead of on the item — `onAction` is both the handler of the generated `DropdownMenuItem` and the `onPress` injected into the React Aria `Button` child through `ButtonContext`, so it fires in both places; left on the button alone, the More-menu entry is built with no handler and does nothing once the item is hidden. (guidelines/overflow.md)
 
 ## Canvas
 
@@ -328,39 +207,8 @@ import { Canvas, CanvasSurface, CanvasOverlay, CanvasToolbar, CanvasLegend, Canv
 
 ### Don't
 
-#### HIGH Floating chrome positioned by hand
-
-Wrong:
-
-```tsx
-<Canvas className="h-full">
-  <CanvasSurface><MapEngine /></CanvasSurface>
-  <div className="absolute top-3 left-3 z-10 flex flex-col gap-2 rounded-md border border-slate-200 bg-slate-50/90 p-1 shadow-md">
-    <Button variant="ghost" size="icon-sm" aria-label="Zoom in"><ZoomInIcon /></Button>
-    <Button variant="ghost" size="icon-sm" aria-label="Zoom out"><ZoomOutIcon /></Button>
-  </div>
-</Canvas>
-```
-
-Correct:
-
-```tsx
-<Canvas className="h-full">
-  <CanvasSurface><MapEngine /></CanvasSurface>
-  <CanvasOverlay position="top-left">
-    <CanvasToolbar aria-label="Navigation">
-      <Button variant="ghost" size="icon-sm" aria-label="Zoom in"><ZoomInIcon /></Button>
-      <Button variant="ghost" size="icon-sm" aria-label="Zoom out"><ZoomOutIcon /></Button>
-    </CanvasToolbar>
-  </CanvasOverlay>
-</Canvas>
-```
-
-`CanvasOverlay` is `pointer-events-none` with `*:pointer-events-auto`, so the gaps between its children still pan the map; a hand-placed box swallows every drag that starts in its padding, has no `role="toolbar"`, and `border-slate-200` and `bg-slate-50` are stock Tailwind that the reset palette turns into no CSS at all.
-
-#### MEDIUM A canvas dropped into a block wrapper
-
-`Canvas` is `min-h-0 flex-1` and takes its height from a flex column; in a block wrapper `flex-1` does nothing, and because `CanvasSurface` is `absolute inset-0` there is no in-flow content left to give the canvas a height, so it collapses to zero and nothing renders. Wrong and correct code: `guidelines/canvas.md`.
+- **HIGH** Floating chrome positioned by hand — `CanvasOverlay` is `pointer-events-none` with `*:pointer-events-auto`, so the gaps between its children still pan the map; a hand-placed box swallows every drag that starts in its padding, has no `role="toolbar"`, and `border-slate-200` and `bg-slate-50` are stock Tailwind that the reset palette turns into no CSS at all. (guidelines/canvas.md)
+- **MEDIUM** A canvas dropped into a block wrapper — `Canvas` is `min-h-0 flex-1` and takes its height from a flex column; in a block wrapper `flex-1` does nothing, and because `CanvasSurface` is `absolute inset-0` there is no in-flow content left to give the canvas a height, so it collapses to zero and nothing renders. (guidelines/canvas.md)
 
 ## Background
 
@@ -391,49 +239,8 @@ import { Background, BackgroundEffect, SeismicBackground, ContourBackground, Str
 
 ### Don't
 
-#### HIGH A gradient in className instead of an effect
+- **HIGH** A gradient in className instead of an effect — `from-blue-500` is stock Tailwind and the palette is declared after `--color-*: initial`, so the gradient emits no CSS and the surface stays flat; an effect takes its ink from the theme through `tone` and flips with the mode on its own. (guidelines/background.md)
+- **HIGH** A background layer without relative isolate — The layer is `absolute inset-0 -z-10`: `Card` sets `bg-card` but neither `relative` nor `isolate`, so the effect positions itself against some ancestor further up and its negative z-index puts it behind the card's own background, where it is invisible. (guidelines/background.md)
+- **MEDIUM** The interactive prop on an effect that has none — Only `GridBackground`, `HexagonsBackground` and `TerrainGridBackground` take `interactive`; on any other effect it is a type error that esbuild strips, the boolean is spread onto the layer `div` as a stray attribute, and the pointer reveal silently never happens. (guidelines/background.md)
 
-Wrong:
-
-```tsx
-<section className="relative isolate rounded-lg border bg-gradient-to-br from-blue-500/20 to-transparent p-6">
-  <h2 className="text-lg font-medium">Northern Fairway</h2>
-</section>
-```
-
-Correct:
-
-```tsx
-<section className="relative isolate overflow-hidden rounded-lg border bg-background p-6">
-  <ContourBackground tone="azure" intensity="low" />
-  <h2 className="text-lg font-medium">Northern Fairway</h2>
-</section>
-```
-
-`from-blue-500` is stock Tailwind and the palette is declared after `--color-*: initial`, so the gradient emits no CSS and the surface stays flat; an effect takes its ink from the theme through `tone` and flips with the mode on its own.
-
-#### HIGH A background layer without relative isolate
-
-Wrong:
-
-```tsx
-<Card>
-  <SeismicBackground tone="primary" intensity="low" />
-  <CardHeader><CardTitle>Survey 24-B</CardTitle></CardHeader>
-</Card>
-```
-
-Correct:
-
-```tsx
-<Card className="relative isolate">
-  <SeismicBackground tone="primary" intensity="low" />
-  <CardHeader><CardTitle>Survey 24-B</CardTitle></CardHeader>
-</Card>
-```
-
-The layer is `absolute inset-0 -z-10`: `Card` sets `bg-card` but neither `relative` nor `isolate`, so the effect positions itself against some ancestor further up and its negative z-index puts it behind the card's own background, where it is invisible.
-
-#### MEDIUM The interactive prop on an effect that has none
-
-Only `GridBackground`, `HexagonsBackground` and `TerrainGridBackground` take `interactive`; on any other effect it is a type error that esbuild strips, the boolean is spread onto the layer `div` as a stray attribute, and the pointer reveal silently never happens. Wrong and correct code: `guidelines/background.md`.
+Re-read the checklist above against the file you wrote before you report it done.

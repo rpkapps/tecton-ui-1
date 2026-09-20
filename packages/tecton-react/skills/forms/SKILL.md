@@ -25,6 +25,17 @@ sources:
 
 Forms — a labelled field with description and error, and the controls that go inside it. Start from the table, then read the section of the component it sends you to: Field, Input, Textarea, Checkbox, Switch, Slider, InputGroup, InputOTP, Label. Each one is imported from its own module; `@tecton/react` has no root export.
 
+## Checklist
+
+- Every control in a `Field` has an `id` and a `FieldLabel htmlFor` pointing at it — `Field` renders `role="group"` and associates nothing by itself.
+- For a `Select` the `id` goes on `SelectTrigger`; a `Slider` has no `htmlFor` target at all and takes `aria-label` with `FieldTitle` and `FieldDescription`; a group of controls — a `RadioGroup`, a `ChipGroup`, a set of checkboxes — is named by `FieldSet` + `FieldLegend`, never by a stray `FieldLabel`.
+- `Checkbox` and `Switch` are driven by `isSelected` / `defaultSelected` and `onChange(isSelected: boolean)`: no `checked`, no `onCheckedChange`, and no reading `e.target` off the callback.
+- `Input`, `Textarea` and `NativeSelect` are real DOM elements, so they take `value`, `onChange(event)` read through `event.target.value`, `disabled`, `required` and `aria-invalid`.
+- An invalid value sets `aria-invalid` (or `isInvalid`) on the control **and** `data-invalid` on the `Field`, with the message rendered in `FieldError` rather than a red paragraph.
+- `Input`, `Textarea` and `SelectTrigger` take their surface from `variant="outline" | "filled" | "text"`, and `className` on them carries layout only (`w-full`, `col-span-2`).
+- An icon, unit, hint or in-field button lives in an `InputGroup` with `InputGroupInput` (never a plain `Input`) and an `InputGroupAddon` placed after the control in the DOM and positioned with `align`.
+- `Slider` is bounded with `minValue`, `maxValue` and `step`, holds an array `value` and narrows the `number | number[]` it reports; `FieldTitle` renders a `div` and never names a control.
+
 | You need … | Use … | Import |
 | --- | --- | --- |
 | Any control needs a label: `Input`, `Textarea`, `Select`, `Checkbox`, `Switch`, `Slider` | `Field` | `@tecton/react/components/field` |
@@ -114,13 +125,8 @@ Correct:
 
 `text-red-500` emits no CSS once the Tecton palette replaces Tailwind's, and the paragraph carries no `role="alert"`, so the message is both invisible and unannounced.
 
-#### HIGH Marking the control invalid but not the field
-
-`fieldVariants` turns the whole block destructive from `data-[invalid=true]` on `Field`, so without it only the input's own ring reacts and the label keeps the default colour. Wrong and correct code: `guidelines/field.md`.
-
-#### HIGH Reaching for FieldTitle where a label belongs
-
-`FieldTitle` renders a `div`, so the switch is left unnamed; it is only for the heading inside a `FieldContent` whose whole `Field` is already wrapped in a `FieldLabel`. Wrong and correct code: `guidelines/field.md`.
+- **HIGH** Marking the control invalid but not the field — `fieldVariants` turns the whole block destructive from `data-[invalid=true]` on `Field`, so without it only the input's own ring reacts and the label keeps the default colour. (guidelines/field.md)
+- **HIGH** Reaching for FieldTitle where a label belongs — `FieldTitle` renders a `div`, so the switch is left unnamed; it is only for the heading inside a `FieldContent` whose whole `Field` is already wrapped in a `FieldLabel`. (guidelines/field.md)
 
 ## Input
 
@@ -149,17 +155,9 @@ import { Input } from "@tecton/react/components/input"
 
 ### Don't
 
-#### HIGH Faking the filled surface with background classes
-
-The Tecton palette resets Tailwind's (`--color-*: initial`), so `bg-zinc-100` and `border-zinc-300` emit no CSS at all and the field renders as a plain outline input. Wrong and correct code: `guidelines/input.md`.
-
-#### HIGH Treating onChange as a value callback
-
-Unlike `Checkbox` and `Switch`, which hand `onChange` a boolean, `Input` is a DOM `<input>`, so `setTitle` stores the `ChangeEvent` and the field renders `[object Object]`. Wrong and correct code: `guidelines/input.md`.
-
-#### HIGH Positioning an icon on top of the input
-
-`pl-8` overrides the padding `inputVariants` owns, the icon is not clickable into the field, and the overlay is outside the focus ring instead of inside it. Wrong and correct code: `guidelines/input.md`.
+- **HIGH** Faking the filled surface with background classes — The Tecton palette resets Tailwind's (`--color-*: initial`), so `bg-zinc-100` and `border-zinc-300` emit no CSS at all and the field renders as a plain outline input. (guidelines/input.md)
+- **HIGH** Treating onChange as a value callback — Unlike `Checkbox` and `Switch`, which hand `onChange` a boolean, `Input` is a DOM `<input>`, so `setTitle` stores the `ChangeEvent` and the field renders `[object Object]`. (guidelines/input.md)
+- **HIGH** Positioning an icon on top of the input — `pl-8` overrides the padding `inputVariants` owns, the icon is not clickable into the field, and the overlay is outside the focus ring instead of inside it. (guidelines/input.md)
 
 ## Textarea
 
@@ -189,17 +187,9 @@ import { Textarea } from "@tecton/react/components/textarea"
 
 ### Don't
 
-#### MEDIUM Pinning the textarea to a fixed height
-
-`field-sizing-content` grows the box with its value, so a fixed `h-[120px]` freezes it and long text scrolls inside a short field; the arbitrary value is also rejected by `configs.strict`. Wrong and correct code: `guidelines/textarea.md`.
-
-#### HIGH Turning the border red for an invalid value
-
-`border-red-500` emits no CSS after the palette reset, while `aria-invalid` is both what `textareaVariants` styles and what assistive tech reads. Wrong and correct code: `guidelines/textarea.md`.
-
-#### HIGH Putting the send button outside the control
-
-A sibling button sits outside the control's border and its focus ring; `align="block-end"` switches the group to a column and keeps the button inside the field. Wrong and correct code: `guidelines/textarea.md`.
+- **MEDIUM** Pinning the textarea to a fixed height — `field-sizing-content` grows the box with its value, so a fixed `h-[120px]` freezes it and long text scrolls inside a short field; the arbitrary value is also rejected by `configs.strict`. (guidelines/textarea.md)
+- **HIGH** Turning the border red for an invalid value — `border-red-500` emits no CSS after the palette reset, while `aria-invalid` is both what `textareaVariants` styles and what assistive tech reads. (guidelines/textarea.md)
+- **HIGH** Putting the send button outside the control — A sibling button sits outside the control's border and its focus ring; `align="block-end"` switches the group to a column and keeps the button inside the field. (guidelines/textarea.md)
 
 ## Checkbox
 
@@ -251,13 +241,8 @@ Correct:
 
 React Aria reads `isSelected` and `onChange`; the Radix names are unknown props that never reach the hidden input, so the box toggles its own uncontrolled state and `agreed` never changes.
 
-#### HIGH Labelling the checkbox with a plain span
-
-A `span` is not a label, so the hidden input has no accessible name and the text does not toggle it; `Field` also supplies the alignment and the disabled state the checkbox styles read. Wrong and correct code: `guidelines/checkbox.md`.
-
-#### MEDIUM Colouring the checked box with a class
-
-The checked fill is already `bg-ghost-active-foreground` from the component, and `bg-emerald-600` is outside the Tecton palette, so the class generates no CSS and `no-restyle` rejects it. Wrong and correct code: `guidelines/checkbox.md`.
+- **HIGH** Labelling the checkbox with a plain span — A `span` is not a label, so the hidden input has no accessible name and the text does not toggle it; `Field` also supplies the alignment and the disabled state the checkbox styles read. (guidelines/checkbox.md)
+- **MEDIUM** Colouring the checked box with a class — The checked fill is already `bg-ghost-active-foreground` from the component, and `bg-emerald-600` is outside the Tecton palette, so the class generates no CSS and `no-restyle` rejects it. (guidelines/checkbox.md)
 
 ## Switch
 
@@ -307,13 +292,8 @@ Correct:
 
 React Aria calls `onChange` with the new boolean rather than a DOM event, so `e.target` is undefined and the handler throws the first time the user flips the switch.
 
-#### HIGH Disabling the switch with the disabled prop
-
-React Aria reads `isDisabled`; `disabled` is dropped, so the switch stays focusable and operable and neither it nor the label dims. Wrong and correct code: `guidelines/switch.md`.
-
-#### MEDIUM Sizing the switch with height and width
-
-The track is sized by `data-[size=…]` and the thumb's `translate-x` is matched to each size, so a `className` size widens the track while the thumb still stops where the old one ended. Wrong and correct code: `guidelines/switch.md`.
+- **HIGH** Disabling the switch with the disabled prop — React Aria reads `isDisabled`; `disabled` is dropped, so the switch stays focusable and operable and neither it nor the label dims. (guidelines/switch.md)
+- **MEDIUM** Sizing the switch with height and width — The track is sized by `data-[size=…]` and the thumb's `translate-x` is matched to each size, so a `className` size widens the track while the thumb still stops where the old one ended. (guidelines/switch.md)
 
 ## Slider
 
@@ -343,17 +323,9 @@ import { Slider } from "@tecton/react/components/slider"
 
 ### Don't
 
-#### HIGH Bounding the range with min and max
-
-React Aria reads `minValue` and `maxValue`; `min` and `max` are not slider props and never reach the range state, so the slider keeps its default 0–100 range and the thumb barely moves. Wrong and correct code: `guidelines/slider.md`.
-
-#### HIGH Labelling the slider with FieldLabel and htmlFor
-
-The `id` lands on the slider's wrapper `div`, which a `label htmlFor` cannot address, so the thumb's `input[type=range]` is left with no accessible name. Wrong and correct code: `guidelines/slider.md`.
-
-#### MEDIUM Disabling the slider with the disabled prop
-
-`disabled` is not a valid attribute on the wrapper `div`, so it is dropped: the thumbs stay draggable and the `data-disabled` dimming never applies. Wrong and correct code: `guidelines/slider.md`.
+- **HIGH** Bounding the range with min and max — React Aria reads `minValue` and `maxValue`; `min` and `max` are not slider props and never reach the range state, so the slider keeps its default 0–100 range and the thumb barely moves. (guidelines/slider.md)
+- **HIGH** Labelling the slider with FieldLabel and htmlFor — The `id` lands on the slider's wrapper `div`, which a `label htmlFor` cannot address, so the thumb's `input[type=range]` is left with no accessible name. (guidelines/slider.md)
+- **MEDIUM** Disabling the slider with the disabled prop — `disabled` is not a valid attribute on the wrapper `div`, so it is dropped: the thumbs stay draggable and the `data-disabled` dimming never applies. (guidelines/slider.md)
 
 ## InputGroup
 
@@ -381,17 +353,9 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGr
 
 ### Don't
 
-#### HIGH Putting a plain Input inside the group
-
-`InputGroupInput` is the same `Input` with `data-slot="input-group-control"` and its own border, ring and radius removed; a plain `Input` keeps them, so a box appears inside the box and the group's focus ring never fires. Wrong and correct code: `guidelines/input-group.md`.
-
-#### HIGH Placing the addon before the control
-
-`align` moves the addon visually with `order-first`, but tab order follows the DOM, so a leading addon puts its button ahead of the field the user came to type in. Wrong and correct code: `guidelines/input-group.md`.
-
-#### MEDIUM Aligning a textarea addon inline
-
-Only `block-start` and `block-end` switch the group to a column, so an inline addon holds the single row and squeezes the textarea beside the button. Wrong and correct code: `guidelines/input-group.md`.
+- **HIGH** Putting a plain Input inside the group — `InputGroupInput` is the same `Input` with `data-slot="input-group-control"` and its own border, ring and radius removed; a plain `Input` keeps them, so a box appears inside the box and the group's focus ring never fires. (guidelines/input-group.md)
+- **HIGH** Placing the addon before the control — `align` moves the addon visually with `order-first`, but tab order follows the DOM, so a leading addon puts its button ahead of the field the user came to type in. (guidelines/input-group.md)
+- **MEDIUM** Aligning a textarea addon inline — Only `block-start` and `block-end` switch the group to a column, so an inline addon holds the single row and squeezes the textarea beside the button. (guidelines/input-group.md)
 
 ## InputOTP
 
@@ -421,13 +385,8 @@ import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@tecto
 
 ### Don't
 
-#### HIGH Restarting the slot index in each group
-
-`index` addresses the shared `OTPInputContext` slot array, so repeated indices echo the first characters twice and the rest of the code is never displayed. Wrong and correct code: `guidelines/input-otp.md`.
-
-#### MEDIUM Marking the group invalid instead of the slots
-
-`InputOTPGroup` paints its error state with `has-aria-invalid:`, which looks for a descendant, so `aria-invalid` on the group itself styles nothing. Wrong and correct code: `guidelines/input-otp.md`.
+- **HIGH** Restarting the slot index in each group — `index` addresses the shared `OTPInputContext` slot array, so repeated indices echo the first characters twice and the rest of the code is never displayed. (guidelines/input-otp.md)
+- **MEDIUM** Marking the group invalid instead of the slots — `InputOTPGroup` paints its error state with `has-aria-invalid:`, which looks for a descendant, so `aria-invalid` on the group itself styles nothing. (guidelines/input-otp.md)
 
 ## Label
 
@@ -478,10 +437,7 @@ Correct:
 
 Outside a React Aria field there is no `LabelContext` to fill in the association, so the label renders as a bare `<label>`: the input has no accessible name and clicking the text does not focus it.
 
-#### HIGH Styling a bare label element by hand
+- **HIGH** Styling a bare label element by hand — `text-zinc-700` emits no CSS after the palette reset, and the bare element misses the `peer-disabled` and `group-data-[disabled=true]` rules that dim a label together with its control. (guidelines/label.md)
+- **MEDIUM** Using Label where FieldLabel belongs — `Field`'s horizontal and responsive rules select on `data-slot="field-label"`, which `FieldLabel` and `FieldTitle` set and `Label` does not, so a plain `Label` does not take its share of the row. (guidelines/label.md)
 
-`text-zinc-700` emits no CSS after the palette reset, and the bare element misses the `peer-disabled` and `group-data-[disabled=true]` rules that dim a label together with its control. Wrong and correct code: `guidelines/label.md`.
-
-#### MEDIUM Using Label where FieldLabel belongs
-
-`Field`'s horizontal and responsive rules select on `data-slot="field-label"`, which `FieldLabel` and `FieldTitle` set and `Label` does not, so a plain `Label` does not take its share of the row. Wrong and correct code: `guidelines/label.md`.
+Re-read the checklist above against the file you wrote before you report it done.
