@@ -22,8 +22,9 @@
  *   ./tecton/<name>, ./hooks/<name>, ./lib/<name>, ./icons,
  *   ./icons/lucide-compat, ./icons/<name>
  *
- * The one entry that does not point into dist/ is ./postcss/scope: hand-written ESM
- * for a consumer's PostCSS config (no build step, Node-only), shipped as-is.
+ * Two entries do not point into dist/ — ./federation/shared and ./postcss/scope:
+ * hand-written ESM a consumer's build config imports (no build step, Node-only),
+ * shipped as-is.
  *
  * There is deliberately no "." entry: the bare `@tecton/react` import is banned by
  * @tecton/eslint-config, and the micro-frontend setup shares the `@tecton/react/`
@@ -74,15 +75,14 @@ function buildExports() {
     map[`./styles/${name}.css`] = `./dist/styles/${name}.css`;
   }
 
-  // Published verbatim from the package root: plain ESM a consumer's postcss.config
-  // imports, with a hand-written declaration file next to it.
-  for (const file of ["postcss/scope.mjs", "postcss/scope.d.mts"]) {
-    if (!existsSync(path.join(pkgRoot, file))) throw new Error(`${file} is missing`);
+  // Published verbatim from the package root: plain ESM a consumer's build config
+  // imports, each with a hand-written declaration file next to it.
+  for (const name of ["federation/shared", "postcss/scope"]) {
+    for (const file of [`${name}.mjs`, `${name}.d.mts`]) {
+      if (!existsSync(path.join(pkgRoot, file))) throw new Error(`${file} is missing`);
+    }
+    map[`./${name}`] = { types: `./${name}.d.mts`, default: `./${name}.mjs` };
   }
-  map["./postcss/scope"] = {
-    types: "./postcss/scope.d.mts",
-    default: "./postcss/scope.mjs",
-  };
 
   for (const name of moduleNames("components", ".tsx")) {
     map[`./components/${name}`] = jsEntry(`components/${name}`);

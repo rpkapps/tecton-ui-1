@@ -25,13 +25,17 @@ export default defineConfig({
         },
       },
       {
-        // The PostCSS plugin is Node-only: no DOM, and none of the jsdom shims the
-        // component setup file installs.
+        // What the package ships for a consumer's build — the PostCSS plugin, the
+        // federation contract — is Node-only: no DOM, and none of the jsdom shims
+        // the component setup file installs.
         extends: true,
         test: {
-          name: "postcss",
+          name: "node",
           environment: "node",
-          include: ["postcss/__tests__/**/*.test.ts"],
+          include: [
+            "postcss/__tests__/**/*.test.ts",
+            "federation/__tests__/**/*.test.ts",
+          ],
         },
       },
     ],

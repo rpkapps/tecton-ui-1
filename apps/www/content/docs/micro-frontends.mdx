@@ -5,6 +5,12 @@ description: Run several independently deployed applications, each with its own 
 
 A Tecton shell can mount applications that are built, versioned and deployed on their own — Module Federation remotes, embedded widgets, a legacy application in the same page. Each of them brings its own `@tecton/react`, and the versions will not match. This page is the contract that keeps them from repainting each other.
 
+## Who owns what
+
+Tecton publishes the ingredients: the utilities-only stylesheet `@tecton/react/styles/scoped.css`, the [`ThemeRoot`](/docs/tecton/theme-root) component, the `@tecton/react/postcss/scope` plugin and the `@tecton/react/federation/shared` contract. Each of them encodes something only the design system can know — which selector its sheet hangs its reset on, where its overlays are portalled, what a remote must never redeclare, which of its dependencies hold state that cannot exist twice.
+
+A build integration or an application framework composes them: it generates the remote's stylesheet entry, wires the PostCSS plugin with the deployable's scope class, renders the root around the mounted application, and fills in the versions from its own install. Nothing about how Tecton is scoped or shared is re-implemented downstream — when the recipe changes it changes here, and every integration picks it up with the upgrade.
+
 ## Why it needs care
 
 `globals.css` is written for an application that owns the document: it declares every theme variable on `:root`, imports Tailwind with preflight, and emits utilities and component classes unscoped. Two copies of that stylesheet in one document fight over the same names:
@@ -136,27 +142,34 @@ See [Theming](/docs/theming) for the tokens themselves.
 
 ## Module Federation
 
-The shared modules are what keeps two copies of Tecton from colliding — and what keeps them from being loaded twice for nothing:
+The shared modules are what keeps two copies of Tecton from colliding — and what keeps them from being loaded twice for nothing. Which of Tecton's dependencies may exist twice follows from where the library keeps module state, so the list ships with the package as data, and the host and every remote import the same one:
 
 ```js title="rspack.config.mjs"
+import { dependencies } from "./package.json" with { type: "json" }
+import { shared } from "@tecton/react/federation/shared"
+
+// The policy is Tecton's; the versions are this application's own.
+const requiredVersion = (name) => dependencies[name.replace(/\/$/, "")]
+
 new ModuleFederationPlugin({
-  shared: {
-    // One renderer and one DOM binding per document, always.
-    react: { singleton: true },
-    "react-dom": { singleton: true },
-    // Sonner's queue is module state: two copies mean two toast stacks.
-    sonner: { singleton: true },
-    // Prefix share (trailing slash): the package has no root export, so each
-    // subpath is shared on its own. Not a singleton — versions may differ.
-    "@tecton/react/": { singleton: false },
-    // React Aria may differ between host and remote; its contexts are not shared.
-    "react-aria-components": { singleton: false },
-    // The chart component pulls all of recharts (~145 KB gzipped). Share it,
-    // but never eagerly: only the applications that chart should pay for it.
-    recharts: { singleton: false, eager: false },
-  },
+  shared: Object.fromEntries(
+    Object.entries(shared).map(([name, policy]) => [
+      name,
+      { ...policy, requiredVersion: requiredVersion(name) },
+    ])
+  ),
 })
 ```
+
+`shared` carries no versions: `requiredVersion` and `version` come from the consumer's own `package.json` and lockfile, which the library cannot see. Spread an entry to override it, or pass `shared` straight through where the bundler's own resolution is good enough.
+
+What it says, and why:
+
+- **`react` and `react-dom` are singletons.** One renderer and one DOM binding per document, always.
+- **`sonner` is a singleton.** Its queue is module state: two copies mean two toast stacks — see [Toasts](#toasts).
+- **`@tecton/react/` is a prefix share**, with the trailing slash: the package has no root export, so each subpath is shared on its own. Not a singleton — versions may differ, which is what the scoping above is for.
+- **`react-aria-components` is shared, not a singleton.** It may differ between host and remote; its contexts are not shared across copies.
+- **`recharts` is shared and never eager.** The chart component pulls all of it (~145 KB gzipped), so only the applications that chart should pay for it.
 
 Embla, `input-otp`, `react-resizable-panels` and Base UI need no entry: they hold no cross-copy state, and a second instance is only bytes.
 

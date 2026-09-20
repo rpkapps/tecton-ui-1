@@ -92,6 +92,10 @@
     "./styles/tecton-palette.css": "./dist/styles/tecton-palette.css",
     "./styles/tecton-theme.css": "./dist/styles/tecton-theme.css",
     "./styles/tecton-tokens.css": "./dist/styles/tecton-tokens.css",
+    "./federation/shared": {
+      "types": "./federation/shared.d.mts",
+      "default": "./federation/shared.mjs"
+    },
     "./postcss/scope": {
       "types": "./postcss/scope.d.mts",
       "default": "./postcss/scope.mjs"
@@ -960,6 +964,8 @@
   "description": "Tecton design system for React — shadcn/ui (React Aria base) components themed through Tecton tokens, plus Tecton-specific components and icons.",
   "files": [
     "dist",
+    "federation/shared.mjs",
+    "federation/shared.d.mts",
     "postcss/scope.mjs",
     "postcss/scope.d.mts",
     "icons/icons.json",
