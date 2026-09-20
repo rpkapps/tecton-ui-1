@@ -104,7 +104,7 @@ A scope root that matches its own `boundary` is not excluded by it — a limit o
 
 A remote declares no theme variables of its own. The shell's `--primary`, its palette, radii, tenant customisations and current mode inherit into the mounted subtree and into its overlay container, so a tenant switch or a mode toggle in the shell repaints every remote with it. Where a shell is too old to know a variable, the remote's utilities fall back to the raw Tecton token and then to the literal they were built with — a `light-dark()` pair, which follows the shell's `color-scheme`, so a remote on its fallbacks is still in the right mode.
 
-For an inverted remote, pass `theme` to `ThemeRoot`: `theme="dark"` pins the subtree to dark — a map or a log viewer in a light shell — and `theme="light"` the other way round. Either switches the `dark:` utilities inside the subtree, which follow the nearest theme marker, and the raw `--tecton-*` tokens the palette utilities read. The shadcn variables keep coming from whoever declares them, so an island that must fully invert either overrides the ones it needs in `className` or brings its own `scoped-theme.css` (below). See [Theming](/docs/theming) for the tokens themselves.
+For an inverted remote, pass `theme` to `ThemeRoot`: `theme="dark"` pins the subtree to dark — a map or a log viewer in a light shell — and `theme="light"` the other way round. The whole subtree follows, overlays included: the `dark:` utilities, the palette ramps and the shadcn variables. See [Theming](/docs/theming) for the tokens themselves and for [inverted sections](/docs/theming#inverted-sections).
 
 A remote with no Tecton shell to inherit from — a demo, a test harness, an embed in someone else's page — or one that must deliberately run its own token set, adds the theme sheet after `scoped.css` and loads the two font families itself:
 
@@ -127,7 +127,7 @@ Two applications that each render a sidebar must not share one cookie or one `�
 <SidebarProvider cookieName="mfe_a_sidebar" keyboardShortcut={false}>
 ```
 
-Keyboard shortcuts belong to the host too: it creates the registry, listens once and hands the object to each application through its mount props, which registers against it. [That shape is versioned public API](/docs/tecton/shortcuts#registry-contract), so the two sides may be on different `@tecton/react` versions.
+Keyboard shortcuts belong to the host too: it creates the registry, listens once and hands the object to each application through its mount props; the application registers against it. [That shape is versioned public API](/docs/tecton/shortcuts#registry-contract), so the two sides may be on different `@tecton/react` versions.
 
 ```tsx
 const registry = createShortcutRegistry() // host
@@ -143,5 +143,5 @@ mount(element, { shortcuts: registry })
 - **Browser floor.** `@scope` needs Chrome/Edge 118+, Safari 17.4+, Firefox 146+, and has no polyfill. An older browser gets the unscoped cascade, where the last stylesheet wins; keep one Tecton version in the document for those.
 - **`@property` and `@font-face` are last-definition-wins.** Neither can be scoped or renamed, so two Tecton versions that define the same name end up with whichever was parsed last. The names are stable, so only the values differ.
 - **DOM-shape selectors cross versions.** Variants that match on structure rather than on a class — `in-data-[slot=button-group]`, `has-data-[slot=…]`, `peer-data-*` — reach markup rendered by another copy of the library. Do not nest one application's components inside another's compound component.
-- **The `dark:` variant follows one inversion.** A light island in a dark page works, and a dark island in a light page; nest a third marker and its `dark:` utilities read as light.
+- **The `dark:` variant follows one inversion.** A light island in a dark page renders completely, and so does a dark island in a light one; nest a third marker and its `dark:` utilities read the inversion above it.
 - **A remote's overlay inside a host modal** is treated as outside it: the host's focus containment pulls focus back and its outside-press handler closes on the first click. Let the host own the modal, or the remote own the whole flow.

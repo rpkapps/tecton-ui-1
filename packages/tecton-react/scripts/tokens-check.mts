@@ -25,8 +25,13 @@
  *     the literal of the outermost variable — `light-dark(<light>, <dark>)` when the two
  *     modes differ, the single literal when they agree (so the chains cannot drift from
  *     the token export); the entries left bare must be calc(), a font list or `initial`
+ *   - the light block: `.light, [data-theme="light"]` mirrors `:root` declaration for
+ *     declaration (same properties, values and order) and comes after `.dark`, in
+ *     tecton-theme.css and globals.css alike, and rides along in registry/theme.json's
+ *     `css` — without it an inverted light section keeps the dark values it inherits
  *   - the `dark:` variant: globals.css and scoped.css declare the same `@custom-variant
- *     dark`, and it is the one tokens-build writes
+ *     dark`, it is the one tokens-build writes (not the CLI's stock line), and
+ *     registry/theme.json ships it too
  *   - vendored shadcn stylesheet (src/styles/shadcn.css): present, its header names the
  *     installed shadcn version, its body is byte-identical to `shadcn/tailwind.css`,
  *     and globals.css imports the copy instead of the package
@@ -109,6 +114,8 @@ const themedTokens = parseThemedTokens(stripComments(readFileSync(TOKENS_CSS, "u
 const themeCss = stripComments(readFileSync(THEME_CSS, "utf8"));
 const light = parseDecls(blockBody(themeCss, ":root"));
 const dark = parseDecls(blockBody(themeCss, ".dark"));
+/** The light block repeated after `.dark`, so an inverted section re-substitutes. */
+const LIGHT_BLOCK = '.light, [data-theme="light"]';
 
 // The opt-in scoped theme declares the same variables on the remote's root marker
 // instead of :root, so the checks below can run against it as two more modes. The
@@ -121,6 +128,9 @@ const scopedThemeCss = stripComments(readFileSync(SCOPED_THEME_CSS, "utf8"));
 const scopedLight = parseDecls(blockBody(scopedThemeCss, SCOPED_ROOT));
 const scopedDark = parseDecls(blockBody(scopedThemeCss, SCOPED_DARK));
 const scopedLightAgain = parseDecls(blockBody(scopedThemeCss, SCOPED_LIGHT));
+/** The `@custom-variant dark` line of a stylesheet, exactly as written. */
+const variantOf = (css: string) => /^@custom-variant\s+dark\b[^\r\n]*/m.exec(css)?.[0].trim();
+const scopedVariant = variantOf(scopedCss);
 const paletteCss = existsSync(PALETTE_CSS) ? stripComments(readFileSync(PALETTE_CSS, "utf8")) : "";
 const map = JSON.parse(readFileSync(MAP_JSON, "utf8")) as {
   shadcn: Record<string, unknown>;
@@ -590,6 +600,106 @@ if (map.palette && paletteCss) {
 }
 
 // ---------------------------------------------------------------------------
+// The light block: `.light, [data-theme="light"]` mirrors `:root`, after `.dark`
+// ---------------------------------------------------------------------------
+{
+  // A custom property is substituted on the element that declares it, so an
+  // inverted light section only re-reads the tokens if the whole `:root` set is
+  // declared again on the marker. Same properties, same values, same order — and
+  // after `.dark`, because both blocks weigh (0,1,0) and source order decides.
+  const globalsRaw = existsSync(GLOBALS_CSS) ? readFileSync(GLOBALS_CSS, "utf8") : "";
+  const globalsCss = stripComments(globalsRaw);
+  for (const [label, css] of [
+    ["theme", themeCss],
+    ["globals.css", globalsCss],
+  ] as [string, string][]) {
+    if (!css) continue;
+    let root: Map<string, string> | undefined;
+    let mirror: Map<string, string> | undefined;
+    try {
+      root = parseDecls(blockBody(css, ":root"));
+      mirror = parseDecls(blockBody(css, LIGHT_BLOCK));
+    } catch {
+      // one of the blocks is missing: reported as the failure below
+    }
+    const rootEntries = root ? [...root] : [];
+    const mirrorEntries = mirror ? [...mirror] : [];
+    const same =
+      root !== undefined &&
+      mirror !== undefined &&
+      rootEntries.length === mirrorEntries.length &&
+      rootEntries.every(([k, v], i) => mirrorEntries[i][0] === k && mirrorEntries[i][1] === v);
+    const drift = rootEntries
+      .map(([k, v], i) => {
+        const got = mirrorEntries[i];
+        if (!got) return `missing ${k}`;
+        if (got[0] !== k) return `${k} vs ${got[0]} (order)`;
+        if (got[1] !== v) return `${k}: ${got[1]} (expected ${v})`;
+        return "";
+      })
+      .filter(Boolean);
+    results.push({
+      mode: "both",
+      check: `${label}: ${LIGHT_BLOCK} mirrors :root declaration for declaration`,
+      value: mirror === undefined ? "missing" : `${mirrorEntries.length} / ${rootEntries.length}`,
+      threshold: "identical, in order",
+      status: same ? "pass" : "fail",
+      detail: same ? undefined : drift.slice(0, 5).join("; ") || "run tokens:build",
+    });
+    // the light block has to come last of the three, or a `.light` element that
+    // also carries a dark marker would read dark
+    const at = (selector: string) => css.indexOf(`${selector} {`);
+    const darkAt = at(".dark");
+    const lightAt = at(LIGHT_BLOCK);
+    const ordered = darkAt !== -1 && lightAt > darkAt;
+    results.push({
+      mode: "both",
+      check: `${label}: ${LIGHT_BLOCK} comes after .dark`,
+      value: ordered ? "after" : "before or missing",
+      threshold: "after",
+      status: ordered ? "pass" : "fail",
+    });
+  }
+
+  // registry consumers get :root and .dark from `cssVars`, which has no key for a
+  // light marker, so the same block rides along in `css`
+  const registryTheme = path.join(pkgRoot, "registry/theme.json");
+  if (existsSync(registryTheme)) {
+    const item = JSON.parse(readFileSync(registryTheme, "utf8")) as {
+      cssVars?: { light?: Record<string, string> };
+      css?: Record<string, Record<string, string>>;
+    };
+    const vars = Object.entries(item.cssVars?.light ?? {});
+    const block = Object.entries(item.css?.[LIGHT_BLOCK] ?? {});
+    const same =
+      vars.length > 0 &&
+      vars.length === block.length &&
+      vars.every(([k, v], i) => block[i][0] === `--${k}` && block[i][1] === v);
+    results.push({
+      mode: "both",
+      check: `registry/theme.json: css["${LIGHT_BLOCK}"] mirrors cssVars.light`,
+      value: `${block.length} / ${vars.length}`,
+      threshold: "identical, in order",
+      status: same ? "pass" : "fail",
+      detail: same ? undefined : "run tokens:build",
+    });
+    // and the variant that goes with it: the CLI writes its own stock line into a
+    // consumer's stylesheet first and will not rewrite it, so this one is appended
+    // after it and Tailwind takes the last definition of the name
+    const variantKey = Object.keys(item.css ?? {}).find((k) => k.startsWith("@custom-variant dark"));
+    const wanted = scopedVariant?.replace(/;$/, "");
+    results.push({
+      mode: "both",
+      check: "registry/theme.json: css carries the same `dark` variant",
+      value: variantKey === undefined ? "missing" : variantKey === wanted ? "identical" : "different",
+      threshold: "identical to scoped.css",
+      status: variantKey !== undefined && variantKey === wanted ? "pass" : "fail",
+      detail: variantKey === wanted ? undefined : "run tokens:build",
+    });
+  }
+}
+
+// ---------------------------------------------------------------------------
 // The `dark:` variant: the same line in globals.css and scoped.css
 // ---------------------------------------------------------------------------
 {
@@ -597,10 +707,9 @@ if (map.palette && paletteCss) {
   // component two ways, so tokens-build writes one line into both files. The CLI's
   // stock `&:is(.dark *)` has no way out of a dark subtree, which is what the
   // `:not()` half adds: an inverted section follows its nearest theme marker.
-  const variantOf = (css: string) => /^@custom-variant\s+dark\b[^\r\n]*/m.exec(css)?.[0].trim();
   const globalsCss = existsSync(GLOBALS_CSS) ? readFileSync(GLOBALS_CSS, "utf8") : "";
   const inGlobals = variantOf(globalsCss);
-  const inScoped = variantOf(scopedCss);
+  const inScoped = scopedVariant;
   results.push({
     mode: "both",
     check: "variant: globals.css and scoped.css declare the same `dark`",

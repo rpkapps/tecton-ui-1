@@ -12,11 +12,12 @@
  * Outputs
  *   src/styles/shadcn.css          vendored copy of shadcn/tailwind.css (so consumers need no CLI)
  *   src/styles/tecton-palette.css  :root / .dark raw ramp values + @theme inline (Tailwind palette, stock reset)
- *   src/styles/tecton-theme.css    :root / .dark (var() refs) / @theme inline
+ *   src/styles/tecton-theme.css    :root / .dark / .light (var() refs) / @theme inline
  *   src/styles/scoped.css          utilities-only entry for micro-frontend remotes (no preflight, no
  *                                  fonts, no variables: @theme inline with a fallback chain per token)
  *   src/styles/scoped-theme.css    opt-in [data-tecton-root] variable blocks for a remote without a shell
- *   src/styles/globals.css         CLI-managed file, patched in place (values, imports, dark variant)
+ *   src/styles/globals.css         CLI-managed file, patched in place (values, imports, dark
+ *                                  variant, the .light block)
  *   src/styles/tecton-base.css     hand-authored base rules (thin scrollbars), import kept in globals.css
  *   registry/theme.json            shadcn `registry:theme` item with literal values
  *   ../../docs/TOKEN-MAPPING.md    mapping table + known deviations
@@ -392,6 +393,31 @@ function buildPaletteCss(): string {
 }
 
 // ---------------------------------------------------------------------------
+// The theme markers
+// ---------------------------------------------------------------------------
+/** `.dark` / `[data-theme="dark"]`, and the same for light — the theme markers. */
+const DARK_MARK = '.dark, [data-theme="dark"]';
+const LIGHT_MARK = '.light, [data-theme="light"]';
+/**
+ * The selector of the light block, repeated after `.dark` in every file that
+ * declares the shadcn variables.
+ *
+ * A custom property's computed value is its specified value **with `var()` already
+ * substituted**, resolved on the element that declares it — which is why `.dark`
+ * repeats the `:root` declarations verbatim rather than being able to leave them to
+ * inheritance. The same is true in the other direction: without a light block a
+ * `.light` element inside a dark page re-declares the raw `--tecton-*` tokens (they
+ * are keyed on the marker in the export and in the palette) but inherits `--primary`
+ * and friends already substituted from the dark values above it, so the section
+ * renders half dark.
+ *
+ * Both blocks are a single class or attribute — (0,1,0) either way — and the light
+ * one is emitted **last**, so an element that somehow carries both markers reads
+ * light, exactly as `scoped-theme.css` orders its blocks.
+ */
+const LIGHT_BLOCK = LIGHT_MARK;
+
+// ---------------------------------------------------------------------------
 // 1. tecton-theme.css
 // ---------------------------------------------------------------------------
 function buildThemeCss(): string {
@@ -406,6 +432,11 @@ function buildThemeCss(): string {
   lines.push("");
   lines.push(".dark {");
   for (const r of resolved) if (!rootOnly(r)) lines.push(`  --${r.name}: ${r.dark};`);
+  lines.push("}");
+  lines.push("");
+  // the same declarations as :root, so an inverted section re-substitutes them
+  lines.push(`${LIGHT_BLOCK} {`);
+  for (const r of resolved) lines.push(`  --${r.name}: ${r.light};`);
   lines.push("}");
   lines.push("");
   lines.push("@theme inline {");
@@ -425,9 +456,6 @@ const SCOPED_DARK = `${SCOPED_ROOT}:where(.dark, .dark *, [data-theme="dark"], [
 /** Light again, last, so an explicitly light root inside a dark host wins. */
 const SCOPED_LIGHT = `${SCOPED_ROOT}:where(.light, [data-theme="light"])`;
 
-/** `.dark` / `[data-theme="dark"]`, and the same for light — the theme markers. */
-const DARK_MARK = '.dark, [data-theme="dark"]';
-const LIGHT_MARK = '.light, [data-theme="light"]';
 /**
  * The `dark:` utility variant, written into globals.css and scoped.css alike (the
  * two must agree, or a remote and its shell disagree about what `dark:` means).
@@ -811,6 +839,26 @@ function patchGlobals(): boolean {
   if (!darkBlock) throw new Error("globals.css: no .dark block");
   css = patchBlock(css, darkBlock, darkValues, extraNames.map((n) => `--${n}`));
 
+  // -- .light, [data-theme="light"] -------------------------------------------
+  // A structural block the CLI does not write: shadcn's variables stop at `:root`
+  // and `.dark`, which leaves an inverted *light* section reading the dark values
+  // it inherits (see LIGHT_BLOCK). It is rebuilt from the patched `:root` body on
+  // every run — same declarations, same order, same indentation — and placed right
+  // after `.dark`, so at equal specificity source order gives light the win. See
+  // docs/UPSTREAM.md, "The light block".
+  const patchedRoot = findBlock(css, ":root");
+  if (!patchedRoot) throw new Error("globals.css: no :root block");
+  const rootBody = css.slice(patchedRoot.start + 1, patchedRoot.end);
+  const existingLight = findBlock(css, LIGHT_BLOCK);
+  if (existingLight) {
+    css = css.slice(0, existingLight.start + 1) + rootBody + css.slice(existingLight.end);
+  } else {
+    const patchedDark = findBlock(css, ".dark");
+    if (!patchedDark) throw new Error("globals.css: no .dark block");
+    const after = patchedDark.end + 1; // just past the closing brace
+    css = `${css.slice(0, after)}${nl}${nl}${LIGHT_BLOCK} {${rootBody}}${css.slice(after)}`;
+  }
+
   // -- @theme inline --------------------------------------------------------
   const themeValues = new Map(themeEntries);
   const themeBlock = findBlock(css, "@theme inline");
@@ -847,6 +895,18 @@ function buildRegistryTheme() {
   }
   const css: Record<string, Record<string, unknown>> = {};
   for (const f of FONT_IMPORTS) css[`@import "${f}"`] = {};
+  // `cssVars` can only reach `:root` (`light`) and `.dark` (`dark`) — the CLI maps
+  // those two keys itself — so the light block an inverted section needs comes
+  // through `css`, where a plain selector is appended to the root of the consumer's
+  // stylesheet, after the `:root`/`.dark` rules the same run appends. Same
+  // declarations as `light` above, literals like the rest of this file.
+  css[LIGHT_BLOCK] = Object.fromEntries(Object.entries(light).map(([k, v]) => [`--${k}`, v]));
+  // …and the variant that goes with it. The CLI writes its own stock
+  // `@custom-variant dark (&:is(.dark *));` into a v4 stylesheet before it applies
+  // this field, and it will not rewrite it, so the Tecton one is appended after it:
+  // Tailwind takes the last definition of a variant name, and without it a consumer
+  // would get the light block but keep `dark:` utilities applying inside it.
+  css[DARK_VARIANT.replace(/;$/, "")] = {};
   Object.assign(css, BASE_CSS);
   return {
     $schema: "https://ui.shadcn.com/schema/registry-item.json",

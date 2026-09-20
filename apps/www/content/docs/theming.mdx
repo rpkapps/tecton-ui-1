@@ -19,7 +19,7 @@ Tecton UI applies the Tecton visual language **only through the shadcn CSS varia
 
 <Step>Generated theme</Step>
 
-`pnpm --filter @tecton/react tokens:build` writes `tecton-palette.css` (the ramps, and the Tailwind `@theme` that exposes them) and `tecton-theme.css`, patches the CLI-managed `globals.css` in place (the variable values in `:root`, `.dark` and `@theme inline`, the `@import`s, and the `dark` custom variant — nothing else) and the mapping document.
+`pnpm --filter @tecton/react tokens:build` writes `tecton-palette.css` (the ramps, and the Tailwind `@theme` that exposes them) and `tecton-theme.css`, patches the CLI-managed `globals.css` in place (the variable values in `:root`, `.dark` and `@theme inline`, the `@import`s, the `dark` custom variant and the `.light` block that mirrors `:root` — nothing else) and the mapping document.
 
 <Step>Verification</Step>
 
@@ -46,17 +46,35 @@ An element matches when it is inside a dark marker and not inside a light marker
 
 The line is the CLI's to create and `tokens:build`'s to keep correct — the shadcn CLI writes `&:is(.dark *)` once, from a string hard-coded in its own transform, and never touches a file that already has a `@custom-variant`. `tokens:check` fails if `globals.css` and `scoped.css` ever stop agreeing on it.
 
-<Callout>
-  **One inversion level.** A light island inside a dark page works, and so does a dark island inside a light page. A dark island inside a light island inside a dark page does not — the variant reads it as light. Two inversions are not supported.
-</Callout>
+### The light block
 
-What an inverted section switches, and what it does not:
+The variant is only half of it. `globals.css` also carries a `.light, [data-theme="light"]` block that repeats every `:root` declaration, immediately after `.dark`:
+
+```css
+:root { --primary: var(--tecton-color-action-primary-bg); /* … */ }
+.dark { --primary: var(--tecton-color-action-primary-bg); /* … */ }
+.light, [data-theme="light"] { --primary: var(--tecton-color-action-primary-bg); /* … */ }
+```
+
+Three identical-looking blocks, and all three are needed. A custom property's computed value is its specified value **with `var()` already substituted**, resolved on the element that declares it; a descendant inherits the result, not the reference. That is why `.dark` repeats `:root` instead of leaving it to inheritance — the repetition is what makes the dark element re-read the dark tokens — and it is why light needs the same treatment: without the third block a `.light` element inside a dark page would re-declare the raw `--tecton-*` tokens and still inherit `--primary` frozen at the dark value.
+
+Both `.dark` and `.light, [data-theme="light"]` weigh a single class or attribute, so source order decides for an element that carries both markers; light comes last and wins, matching how `scoped-theme.css` orders its own blocks. `tokens:check` fails if the light block stops mirroring `:root` declaration for declaration, or moves ahead of `.dark`.
+
+The three blocks are generated, so this is not something to hand-write: `tokens:build` rebuilds the light block from `:root` on every run, in `globals.css`, in `tecton-theme.css` and in `registry/theme.json` (where it rides in the item's `css`, since `cssVars` can only reach `:root` and `.dark`).
+
+### What switches
+
+Everything an inverted section renders with:
 
 | Layer | Follows `.light` / `.dark` on a subtree |
 | --- | --- |
-| `color-scheme`, the raw `--tecton-*` tokens and the palette ramps | Yes — `tecton-tokens.css` and `tecton-palette.css` declare both modes on `:root, [data-theme="light"], .light` and `.dark, [data-theme="dark"]`, so palette utilities (`bg-blue-560`, `text-gray-830`) switch with the section. |
-| The `dark:` utility variant | Yes, with the variant above. |
-| The shadcn variables (`--background`, `--primary`, …) | Only for `.dark`. `globals.css` declares them in `:root` and `.dark` only, and a custom property is substituted on the element that declares it — so a `.light` subtree of a dark page keeps the dark values it inherits. Set the tokens the section needs on it (`class="light [--background:var(--tecton-palette-gray-50)]"`), or, for a mounted application, import [`scoped-theme.css`](/docs/micro-frontends#theme-variables), which declares the full set on `[data-tecton-root]` for both modes. |
+| `color-scheme`, the raw `--tecton-*` tokens and the palette ramps | Yes — `tecton-tokens.css` and `tecton-palette.css` declare both modes on `:root, [data-theme="light"], .light` and `.dark, [data-theme="dark"]`, so palette utilities (`bg-blue-560`, `text-gray-830`) switch with the section, and `light-dark()` follows it too. |
+| The shadcn variables (`--background`, `--primary`, …) | Yes, through the light block above — at any nesting depth, since every marker re-declares the whole set on itself. |
+| The `dark:` utility variant | Yes, for the first inversion. |
+
+<Callout>
+  **The variant handles one inversion.** The variables invert as deep as you nest them; the `dark:` variant reads one level. A *dark* section inside a light section inside a dark page — the third marker — keeps its dark variables but has its `dark:` utilities switched off, so anything whose dark styling comes from a `dark:` class rather than from a token renders light there. One inversion is the supported depth.
+</Callout>
 
 ## Token mapping
 
