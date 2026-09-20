@@ -102,7 +102,7 @@ describe("Meter", () => {
   })
 
   it.each([
-    ["default", "bg-progress"],
+    ["default", "bg-primary"],
     ["success", "bg-success"],
     ["warning", "bg-warning"],
     ["error", "bg-destructive"],
