@@ -207,6 +207,140 @@ When a bubble is clickable, render it as a real `<button>` or `<a>` with the `re
 
 Bubble variants signal role and tone with color. Pair them with text, alignment, or icons so meaning is not conveyed by color alone. For a `destructive` bubble, keep the error context in the message text rather than relying on the color treatment.
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The framed surface one message is printed on: chat text, a quoted reply, a short structured answer.
+- Assistant prose or rich content must span the row: `variant="ghost"` drops the frame and the 80% cap.
+- The surface itself is pressable: a suggestion, a quick reply, a failed action that opens its error.
+
+### Not for
+
+- the whole turn, with avatar, sender name and message actions: use [Message](/docs/components/message)
+- a row of an application list, with media, title and actions: use [Item](/docs/components/item)
+- a file or an image card inside a message or a composer: use [Attachment](/docs/components/attachment)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Always put the text inside `BubbleContent`; every variant styles `*:data-[slot=bubble-content]`, not the root.
+
+</Do>
+
+<Do>
+
+Pick the role with `variant="default" | "secondary" | "muted" | "tinted" | "outline" | "ghost" | "destructive"`.
+
+</Do>
+
+<Do>
+
+Set the side with `align="end"` on the `Bubble`, or let the surrounding `Message align="end"` do it.
+
+</Do>
+
+<Do>
+
+Anchor emoji or quick actions with `BubbleReactions side="top" | "bottom"`; give a static row `role="img"` and an `aria-label`.
+
+</Do>
+
+<Do>
+
+Keep `className` for width and inner layout; the padding, radius and fill belong to the variant.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="Assistant text dropped straight into Bubble">
+
+<Wrong>
+
+```tsx
+<Bubble variant="ghost">{answer}</Bubble>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Bubble variant="ghost">
+  <BubbleContent className="flex flex-col gap-2">{answer}</BubbleContent>
+</Bubble>
+```
+
+</Correct>
+
+Every variant is a `*:data-[slot=bubble-content]` rule and the padding, radius and `text-sm leading-relaxed` live on `BubbleContent`, so a bare child renders as unpadded, unframed text with no bubble around it at all.
+
+</Dont>
+
+<Dont severity="HIGH" title="Painting the user bubble with className">
+
+<Wrong>
+
+```tsx
+<Bubble className="ml-auto bg-blue-600 text-white">
+  <BubbleContent>{text}</BubbleContent>
+</Bubble>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Bubble variant="default" align="end">
+  <BubbleContent>{text}</BubbleContent>
+</Bubble>
+```
+
+</Correct>
+
+`bg-blue-600` is stock Tailwind, which this palette resets to nothing, and a fill on the root would miss the `bubble-content` child that carries it anyway, while `self-end` comes from `data-[align=end]`, not from a margin.
+
+</Dont>
+
+<Dont severity="HIGH" title="A clickable bubble built with onClick">
+
+<Wrong>
+
+```tsx
+<Bubble variant="muted">
+  <BubbleContent onClick={() => reply(suggestion)}>{suggestion}</BubbleContent>
+</Bubble>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Bubble variant="muted">
+  <BubbleContent render={(props) => <button {...props} type="button" onClick={() => reply(suggestion)} />}>
+    {suggestion}
+  </BubbleContent>
+</Bubble>
+```
+
+</Correct>
+
+Without `render` the content stays a `div`, so the handler answers a mouse only — no tab stop, no Enter, no role — and the hover and `focus-visible:ring-2` treatments are `[button,a]:` selectors that never match it.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 ### Bubble

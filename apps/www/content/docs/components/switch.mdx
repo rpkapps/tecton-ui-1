@@ -53,6 +53,138 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <ComponentPreview name="switch-rtl" direction="rtl" />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- A setting that takes effect the moment it is flipped, with no submit step.
+- An on/off preference in a settings panel or a choice card.
+- The two states are opposites of one thing, not two options to choose between.
+
+### Not for
+
+- a term the user ticks as part of submitting a form: use [Checkbox](/docs/components/checkbox)
+- the label, description and layout around the control: use [Field](/docs/components/field)
+- a value picked from a continuous range: use [Slider](/docs/components/slider)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Control it with `isSelected` and `onChange(isSelected: boolean)`, or leave it uncontrolled with `defaultSelected`.
+
+</Do>
+
+<Do>
+
+Pick the scale with `size="sm" | "default"`; the thumb travel is matched to each.
+
+</Do>
+
+<Do>
+
+Give it an `id` and point a `FieldLabel htmlFor` at it inside a `Field orientation="horizontal"`, with `FieldContent` for the description.
+
+</Do>
+
+<Do>
+
+Disable with `isDisabled` and put `data-disabled` on the `Field`; for an invalid value put `data-invalid` on both the `Switch` and the `Field` — React Aria's Switch has no validation state of its own.
+
+</Do>
+
+<Do>
+
+For a choice card, wrap the whole `Field` in a `FieldLabel` so the card surface is the hit target.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="Reading the toggled value off an event">
+
+<Wrong>
+
+```tsx
+<Switch
+  id="two-factor"
+  isSelected={enabled}
+  onChange={(e) => setEnabled(e.target.checked)}
+/>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Switch id="two-factor" isSelected={enabled} onChange={setEnabled} />
+```
+
+</Correct>
+
+React Aria calls `onChange` with the new boolean rather than a DOM event, so `e.target` is undefined and the handler throws the first time the user flips the switch.
+
+</Dont>
+
+<Dont severity="HIGH" title="Disabling the switch with the disabled prop">
+
+<Wrong>
+
+```tsx
+<Field orientation="horizontal">
+  <Switch id="sync" disabled />
+  <FieldLabel htmlFor="sync">Sync across devices</FieldLabel>
+</Field>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Field orientation="horizontal" data-disabled>
+  <Switch id="sync" isDisabled />
+  <FieldLabel htmlFor="sync">Sync across devices</FieldLabel>
+</Field>
+```
+
+</Correct>
+
+React Aria reads `isDisabled`; `disabled` is dropped, so the switch stays focusable and operable and neither it nor the label dims.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Sizing the switch with height and width">
+
+<Wrong>
+
+```tsx
+<Switch id="compact" className="h-6 w-11" />
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Switch id="compact" size="default" />
+```
+
+</Correct>
+
+The track is sized by `data-[size=…]` and the thumb's `translate-x` is matched to each size, so a `className` size widens the track while the thumb still stops where the old one ended.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 See the [React Aria Switch](https://react-aria.adobe.com/Switch#api) documentation.

@@ -197,6 +197,147 @@ When a marker links or triggers an action, render it as a real `<button>` or `<a
 </Marker>
 ```
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- A full-width row between turns: "Thinking...", "Explored 4 files", "Marcus joined the chat".
+- A labelled divider inside a transcript: a date, a section break, an unread line.
+- The row leads back to what the agent touched: a file, a diff, a pull request.
+
+### Not for
+
+- a status or category label that sits inside a line of text: use [Badge](/docs/components/badge)
+- a keyboard key or a shortcut hint: use [Kbd](/docs/components/kbd)
+- a link inside a sentence: use [Link](/docs/tecton/link)
+- a divider with no label on it: use [Separator](/docs/components/separator)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Compose it: `MarkerIcon` for the glyph, `MarkerContent` for the text, which carries the meaning on its own.
+
+</Do>
+
+<Do>
+
+Pick the layout with `variant="default" | "border" | "separator"`; `separator` draws its own rules to each side.
+
+</Do>
+
+<Do>
+
+Announce work in progress with `role="status"` and a `Spinner` inside `MarkerIcon`.
+
+</Do>
+
+<Do>
+
+Shimmer streaming text with `className="shimmer"` on `MarkerContent`.
+
+</Do>
+
+<Do>
+
+Make it interactive with `render={(props) => <a {...props} href={url} />}`, and wrap it in a `MessageScrollerItem` to anchor it.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="A status line faked with a coloured span">
+
+<Wrong>
+
+```tsx
+<span className="flex items-center gap-2 text-xs text-gray-500">
+  <CheckIcon className="h-4 w-4" />
+  Explored 4 files
+</span>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Marker>
+  <MarkerIcon>
+    <CheckIcon />
+  </MarkerIcon>
+  <MarkerContent>Explored 4 files</MarkerContent>
+</Marker>
+```
+
+</Correct>
+
+`text-gray-500` emits no CSS once the stock palette is reset, so the row renders at the inherited colour and size, and it loses `MarkerIcon`'s `aria-hidden` and the `size-4` rule that keeps every glyph in the transcript the same.
+
+</Dont>
+
+<Dont severity="HIGH" title="role=&quot;separator&quot; on a labelled divider">
+
+<Wrong>
+
+```tsx
+<Marker variant="separator" role="separator">
+  <MarkerContent>Today</MarkerContent>
+</Marker>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Marker variant="separator">
+  <MarkerContent>Today</MarkerContent>
+</Marker>
+```
+
+</Correct>
+
+A `separator` takes its accessible name from `aria-label` and its contents are treated as presentational, so the visible "Today" is never announced; the rules on each side are decorative `before:` / `after:` pseudo-elements and need no role at all.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="An anchor wrapped around the marker">
+
+<Wrong>
+
+```tsx
+<a href="/pull/482">
+  <Marker>
+    <MarkerContent>View the pull request</MarkerContent>
+  </Marker>
+</a>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Marker render={(props) => <a {...props} href="/pull/482" />}>
+  <MarkerContent>View the pull request</MarkerContent>
+</Marker>
+```
+
+</Correct>
+
+The underline and `hover:text-foreground` treatments are `[a]:` descendant rules inside `markerVariants`, so an outer anchor matches none of them and nests a `w-full` flex row inside an inline element.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 ### Marker

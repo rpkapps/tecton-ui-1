@@ -100,6 +100,142 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
   previewClassName="h-[24.5rem]"
 />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The user should reach commands and records by typing, from anywhere in the application.
+- The surface is a palette, usually inside `CommandDialog`, rather than a field in a form.
+- The list mixes groups of actions and wants keyboard-shortcut hints beside them.
+
+### Not for
+
+- picking a value for a form field: use [Combobox](/docs/components/combobox)
+- a menu of actions opened from a button: use [DropdownMenu](/docs/components/dropdown-menu)
+- a menu opened by right click: use [ContextMenu](/docs/components/context-menu)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Run the action from `onAction` on `CommandItem`, or from `onAction(key)` on `CommandList` with an `id` per item.
+
+</Do>
+
+<Do>
+
+Give `CommandList` a `renderEmptyState` that returns `CommandEmpty`.
+
+</Do>
+
+<Do>
+
+Pass `textValue` to any item whose children are JSX rather than a plain string.
+
+</Do>
+
+<Do>
+
+Group with `CommandGroup heading="…"`, divide with `CommandSeparator`, hint keys with `CommandShortcut`.
+
+</Do>
+
+<Do>
+
+Open the palette with `CommandDialog` and its `open` / `onOpenChange` props, wrapping a `Command`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="The cmdk onSelect prop instead of onAction">
+
+<Wrong>
+
+```tsx
+<CommandItem onSelect={() => router.navigate({ to: "/wells" })}>Go to wells</CommandItem>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<CommandItem onAction={() => router.navigate({ to: "/wells" })}>Go to wells</CommandItem>
+```
+
+</Correct>
+
+`CommandItem` is a React Aria `MenuItem`, whose activation handler is `onAction`; `onSelect` is not in its props, so it is dropped and pressing Enter or clicking the row does nothing at all.
+
+</Dont>
+
+<Dont severity="HIGH" title="JSX item children with no textValue">
+
+<Wrong>
+
+```tsx
+<CommandItem onAction={openBilling}>
+  <CreditCardIcon />
+  <span>Billing</span>
+</CommandItem>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<CommandItem textValue="Billing" onAction={openBilling}>
+  <CreditCardIcon />
+  <span>Billing</span>
+</CommandItem>
+```
+
+</Correct>
+
+`CommandItem` derives `textValue` only when its children are a plain string, so an item built from an icon and a `span` has none and the palette's filter and typeahead cannot match it.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="An empty search that renders nothing">
+
+<Wrong>
+
+```tsx
+<Command>
+  <CommandInput placeholder="Type a command or search…" />
+  <CommandList>{items}</CommandList>
+</Command>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Command>
+  <CommandInput placeholder="Type a command or search…" />
+  <CommandList renderEmptyState={() => <CommandEmpty>No results found.</CommandEmpty>}>
+    {items}
+  </CommandList>
+</Command>
+```
+
+</Correct>
+
+`CommandList` is a React Aria `Menu`, and a collection with no matching items renders nothing unless `renderEmptyState` is given; `CommandEmpty` is what that function returns, not a child of the list.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 See the [React Aria](https://react-aria.adobe.com/Autocomplete) documentation for more information.

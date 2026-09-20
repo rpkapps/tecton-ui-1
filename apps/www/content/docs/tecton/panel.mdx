@@ -73,6 +73,129 @@ Give the panel a height: `PanelContent` scrolls and `PanelFooter` stays pinned t
 
 <ComponentPreview name="panel-actions" align="start" />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- A tool surface inside the application: a properties panel, an inspector, a dashboard section.
+- The panel is given a height by its container and its body has to scroll inside it.
+- Actions belong to the panel itself — in the header row, or pinned at the bottom.
+
+### Not for
+
+- a self-contained content block that grows with its text: use [Card](/docs/components/card)
+- the title block at the top of a page: use [PageHeader](/docs/tecton/page-header)
+- a panel that floats over the page and is dismissed: use [Sheet](/docs/components/sheet)
+- the application frame around the work area: use [AppShell](/docs/tecton/app-shell)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Compose it: `PanelHeader` with `PanelTitle`, `PanelDescription` and `PanelActions`, then `PanelContent`, then `PanelFooter`.
+
+</Do>
+
+<Do>
+
+Choose the surface with `variant="default" | "elevated" | "flat" | "outline"` and the padding with `size="sm" | "md" | "lg"`.
+
+</Do>
+
+<Do>
+
+Put the body in `PanelContent`: it is the flex child that carries `min-h-0 flex-1 overflow-auto`.
+
+</Do>
+
+<Do>
+
+Give the panel its height from the outside (`className="h-72"`, or an `AppShellAside`); the parts handle the rest.
+
+</Do>
+
+<Do>
+
+Keep one to three icon buttons in `PanelActions`; beyond that put an `Overflow` toolbar inside the slot and the title yields width to it.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="A body that is not in PanelContent">
+
+<Wrong>
+
+```tsx
+<Panel className="h-72">
+  <PanelHeader>
+    <PanelTitle>Well properties</PanelTitle>
+  </PanelHeader>
+  <div className="p-4">{properties}</div>
+  <PanelFooter>
+    <Button size="sm">Open</Button>
+  </PanelFooter>
+</Panel>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Panel className="h-72">
+  <PanelHeader>
+    <PanelTitle>Well properties</PanelTitle>
+  </PanelHeader>
+  <PanelContent>{properties}</PanelContent>
+  <PanelFooter>
+    <Button size="sm">Open</Button>
+  </PanelFooter>
+</Panel>
+```
+
+</Correct>
+
+`Panel` is `flex min-h-0 flex-col overflow-hidden`, and only `PanelContent` carries `flex-1 overflow-auto`, so a plain `div` in its place is clipped instead of scrolling and pushes the footer out of view.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Painting the variant by hand">
+
+<Wrong>
+
+```tsx
+<Panel className="rounded-lg border border-gray-200 bg-white px-6 py-4 shadow-md">
+  <PanelTitle>Alternatives</PanelTitle>
+</Panel>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Panel variant="elevated" size="lg">
+  <PanelHeader>
+    <PanelTitle>Alternatives</PanelTitle>
+  </PanelHeader>
+</Panel>
+```
+
+</Correct>
+
+The shadow is the `elevated` variant and the padding is the `size` scale, which the parts read through `--panel-px` / `--panel-py`; `border-gray-200` is stock Tailwind and emits no CSS, and `no-restyle` reports the rest.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 ### Panel

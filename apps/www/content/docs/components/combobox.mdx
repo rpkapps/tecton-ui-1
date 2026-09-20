@@ -265,6 +265,149 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
   align="start"
 />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The list is long enough that typing to narrow it beats scrolling a popover.
+- The user picks several values and should see them as removable chips.
+- The field still resolves to keys from a known collection, not to free text.
+
+### Not for
+
+- a short fixed list that needs no typing: use [Select](/docs/components/select)
+- a palette that runs commands instead of setting a value: use [Command](/docs/components/command)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Give every `ComboboxItem` an `id`; read the selection from `value` / `defaultValue` / `onChange`.
+
+</Do>
+
+<Do>
+
+Name the field: `aria-label` on `Combobox`, or a `FieldLabel` when it sits inside a `Field`.
+
+</Do>
+
+<Do>
+
+Pass `allowsEmptyCollection` and a `renderEmptyState` that returns `ComboboxEmpty`.
+
+</Do>
+
+<Do>
+
+Add `textValue` to any item whose children are JSX, so filtering and typeahead have a string.
+
+</Do>
+
+<Do>
+
+For multi-select pass `selectionMode="multiple"` and swap `ComboboxInput` for `ComboboxChips`, `ComboboxChipList`, `ComboboxChip` and `ComboboxChipsInput`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="Radix value props instead of onChange and id">
+
+<Wrong>
+
+```tsx
+<Combobox value={framework} onValueChange={setFramework} allowsEmptyCollection>
+  <ComboboxInput placeholder="Select a framework" />
+  <ComboboxContent>
+    <ComboboxList><ComboboxItem value="remix">Remix</ComboboxItem></ComboboxList>
+  </ComboboxContent>
+</Combobox>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Combobox aria-label="Framework" value={framework} onChange={setFramework} allowsEmptyCollection>
+  <ComboboxInput placeholder="Select a framework" />
+  <ComboboxContent>
+    <ComboboxList><ComboboxItem id="remix">Remix</ComboboxItem></ComboboxList>
+  </ComboboxContent>
+</Combobox>
+```
+
+</Correct>
+
+React Aria reports the selected key through `onChange`; `onValueChange` is not a prop and `value` on `ComboboxItem` is the item's object value, so the handler never fires and nothing matches.
+
+</Dont>
+
+<Dont severity="CRITICAL" title="A combobox rendered with no accessible name">
+
+<Wrong>
+
+```tsx
+<Combobox allowsEmptyCollection><ComboboxInput placeholder="Framework" /></Combobox>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Combobox aria-label="Framework" allowsEmptyCollection>
+  <ComboboxInput placeholder="Framework" />
+</Combobox>
+```
+
+</Correct>
+
+`ComboboxInput` renders a bare `input` inside an `InputGroup` with no label element, so without `aria-label` (or a `Field` label) the control is announced as an unnamed combobox.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="No empty state when the filter matches nothing">
+
+<Wrong>
+
+```tsx
+<Combobox aria-label="Framework">
+  <ComboboxInput />
+  <ComboboxContent>
+    <ComboboxList>{items}</ComboboxList>
+  </ComboboxContent>
+</Combobox>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Combobox aria-label="Framework" allowsEmptyCollection>
+  <ComboboxInput />
+  <ComboboxContent>
+    <ComboboxList renderEmptyState={() => <ComboboxEmpty>No items found.</ComboboxEmpty>}>{items}</ComboboxList>
+  </ComboboxContent>
+</Combobox>
+```
+
+</Correct>
+
+Without `allowsEmptyCollection` React Aria closes the popover as soon as the filtered collection is empty, so the typist sees the list vanish instead of a "no results" message.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 See the [React Aria](https://react-aria.adobe.com/ComboBox#api) documentation for more information.

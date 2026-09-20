@@ -1,0 +1,82 @@
+---
+component: Empty
+module: "@tecton/react/components/empty"
+family: feedback
+exports: [Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyContent]
+notFor:
+  - need: a message about something that failed on a page that does have content
+    use: Alert
+  - need: a placeholder while the content is still loading
+    use: Skeleton
+  - need: a confirmation that disappears on its own
+    use: toast
+related: [Alert, Skeleton]
+---
+
+## Use it when
+
+- A list, table, panel or search result has nothing to show, and the user needs to know why and what to do next.
+- A feature has not been used yet: no projects, no wells, no saved views.
+- One long operation owns the whole region and there is nothing else to show (`EmptyMedia` holding a `Spinner`).
+
+## Do
+
+- Compose `Empty > EmptyHeader > (EmptyMedia, EmptyTitle, EmptyDescription)` and put the actions in `EmptyContent`.
+- Give an icon its tile with `EmptyMedia variant="icon"`; an avatar or an illustration uses the default variant.
+- Add the dashed outline with the `border` utility — the component already carries `border-dashed`.
+- Name the next step: one primary `Button` in `EmptyContent`, at most one secondary beside it.
+- `className` is for the box (`w-full`, `min-h-64`, `border`), not for the type or the colours.
+
+## Don't
+
+### HIGH Hand-building the empty state from divs
+
+Wrong:
+
+```tsx
+<div className="flex flex-col items-center gap-2 p-12 text-center">
+  <FolderCodeIcon className="size-10 text-gray-400" />
+  <h3 className="text-lg font-semibold">No projects yet</h3>
+  <p className="text-sm text-gray-500">Create your first project to get started.</p>
+  <Button>Create project</Button>
+</div>
+```
+
+Correct:
+
+```tsx
+<Empty>
+  <EmptyHeader>
+    <EmptyMedia variant="icon"><FolderCodeIcon /></EmptyMedia>
+    <EmptyTitle>No projects yet</EmptyTitle>
+    <EmptyDescription>Create your first project to get started.</EmptyDescription>
+  </EmptyHeader>
+  <EmptyContent>
+    <Button>Create project</Button>
+  </EmptyContent>
+</Empty>
+```
+
+`gray-400` and `gray-500` are not Tecton steps, so the reset palette emits nothing and both lines keep the default foreground colour, while the heading misses the `font-heading` face that `EmptyTitle` carries.
+
+### MEDIUM An icon without its EmptyMedia tile
+
+Wrong:
+
+```tsx
+<EmptyHeader>
+  <EmptyMedia><CloudIcon /></EmptyMedia>
+  <EmptyTitle>Cloud storage empty</EmptyTitle>
+</EmptyHeader>
+```
+
+Correct:
+
+```tsx
+<EmptyHeader>
+  <EmptyMedia variant="icon"><CloudIcon /></EmptyMedia>
+  <EmptyTitle>Cloud storage empty</EmptyTitle>
+</EmptyHeader>
+```
+
+The rounded muted tile and the 24 px icon size live in the `icon` variant only; the default variant is a transparent box, so the icon renders at its own size with no surface behind it.

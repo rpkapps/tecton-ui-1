@@ -19,6 +19,7 @@
 import { promises as fs } from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
+import { withGuidelines } from "./sync-guidelines.mts"
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
 const WWW = path.resolve(HERE, "..")
@@ -523,9 +524,13 @@ async function main() {
         await fs.copyFile(from, path.join(IMAGES_OUT, image))
       }
     }
+    // The usage guidelines section is rendered from
+    // packages/tecton-react/guidelines/<name>.md, after the docs-extras block,
+    // so a synced page keeps it (pnpm --filter www docs:guidelines does the
+    // same for the hand-written pages).
     await fs.writeFile(
       path.join(OUT_DOCS, `${name}.mdx`),
-      await withExtras(transformMdx(mdx, name, removed), name)
+      withGuidelines(await withExtras(transformMdx(mdx, name, removed), name), `components/${name}`)
     )
     report.pages.push(name)
   }

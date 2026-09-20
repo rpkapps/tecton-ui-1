@@ -64,6 +64,141 @@ Use `size="default" | "md" | "lg"` (20 / 24 / 28 px); icons scale with the size.
 
 <ComponentPreview name="badge-sizes" />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- A static label names a status, a category or a state: "Draft", "Producing", "12 errors".
+- The label carries a severity: `variant="success" | "warning" | "info" | "destructive"`.
+- The label links to the thing it names, inside a table cell, a list row or a card header.
+
+### Not for
+
+- a tag the user can select or remove: use [Chip](/docs/tecton/chip)
+- a count or dot pinned to the corner of an icon or avatar: use [CountBadge](/docs/tecton/count-badge)
+- a confirmation that disappears on its own: use [toast](/docs/components/sonner)
+- a keyboard key or a shortcut hint: use [Kbd](/docs/components/kbd)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Pick meaning with `variant`, weight with `appearance="solid" | "outline"`, height with `size="default" | "md" | "lg"` (20 / 24 / 28 px).
+
+</Do>
+
+<Do>
+
+Give an icon or a `Spinner` child `data-icon="inline-start"` or `data-icon="inline-end"` so the badge trims its padding on that side.
+
+</Do>
+
+<Do>
+
+Make it a link with `render={(props) => <a {...props} href="/wells/12" />}`; there is no `asChild`, and an outer `<a>` gets none of the badge's `[a]:hover:` rules.
+
+</Do>
+
+<Do>
+
+A category colour that no `variant` carries is the one documented exception: a Tecton palette pair, `className="bg-blue-120 text-blue-830"`, never a stock Tailwind colour. Otherwise `className` is for placement.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="Hand-colouring a status label with className">
+
+<Wrong>
+
+```tsx
+<Badge className="bg-green-600 text-white">Producing</Badge>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Badge variant="success">Producing</Badge>
+```
+
+</Correct>
+
+`cn` merges away the variant's `bg-primary`, and `green-600` is not a Tecton step, so the reset palette emits no rule at all and the badge renders with no background.
+
+</Dont>
+
+<Dont severity="HIGH" title="Making a Badge clickable with a handler">
+
+<Wrong>
+
+```tsx
+<Badge variant="info" onClick={() => setFilter("fault-seal")}>
+  Fault seal
+</Badge>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<ChipGroup
+  aria-label="Filters"
+  selectionMode="single"
+  onSelectionChange={(keys) => setFilter([...keys][0])}
+>
+  <ChipList>
+    <Chip id="fault-seal" variant="info">
+      Fault seal
+    </Chip>
+  </ChipList>
+</ChipGroup>
+```
+
+</Correct>
+
+Badge renders a `span` with no `role`, no `tabIndex` and no key handling, so the label answers a mouse click and is unreachable by keyboard and silent to assistive technology.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="An icon child without data-icon">
+
+<Wrong>
+
+```tsx
+<Badge variant="warning">
+  <TriangleAlertIcon />
+  Unsaved
+</Badge>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Badge variant="warning">
+  <TriangleAlertIcon data-icon="inline-start" />
+  Unsaved
+</Badge>
+```
+
+</Correct>
+
+The padding compensation is `has-data-[icon=inline-start]:pl-1.5`, so without the attribute the icon sits in full text padding and the badge is wider than every other badge in the row.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 ### Badge

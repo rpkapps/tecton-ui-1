@@ -1,0 +1,95 @@
+---
+component: Chip
+module: "@tecton/react/tecton/chip"
+family: labels
+exports: [Chip, ChipGroup, ChipList, ChipRemove]
+notFor:
+  - need: a label that is never selected or removed
+    use: Badge
+  - need: a count or dot pinned to the corner of an icon or avatar
+    use: CountBadge
+  - need: a confirmation that a tag was removed
+    use: toast
+related: [Badge, CountBadge]
+---
+
+## Use it when
+
+- The user toggles the label: active filters, selected facies, chosen horizons.
+- The user removes the label: applied filters, recipients, keywords, attachments.
+- The set is small enough that every chip is on screen at once.
+
+## Do
+
+- Compose `ChipGroup > ChipList > Chip` and give the group an `aria-label`: React Aria puts that name on the `ChipList`, which is the `role="grid"`.
+- Turn on removal with `onRemove` on the `ChipGroup`; the `ChipRemove` button and the Backspace and Delete keys come with it.
+- Turn on selection with `selectionMode="single" | "multiple"` plus `selectedKeys` and `onSelectionChange` on the group; `isDisabled` disables one chip.
+- Give every `Chip` an `id` — it is the key in `onSelectionChange` and `onRemove` — and a `textValue` when the children are not plain text.
+- Take the look from the Badge axes: `variant`, `appearance="outline"`, `size`. `className` is for layout only.
+
+## Don't
+
+### CRITICAL Rendering a Chip outside its group
+
+Wrong:
+
+```tsx
+<div className="flex flex-wrap gap-1.5">
+  <Chip id="sandstone" variant="info">Sandstone</Chip>
+</div>
+```
+
+Correct:
+
+```tsx
+<ChipGroup aria-label="Facies" selectionMode="multiple">
+  <ChipList>
+    <Chip id="sandstone" variant="info">Sandstone</Chip>
+  </ChipList>
+</ChipGroup>
+```
+
+`Chip` is a React Aria `Tag`, a collection item that only the owning `TagList` builds and renders, so outside a `ChipList` it throws "cannot be rendered outside a collection" and takes the surrounding tree down with it.
+
+### HIGH Building the remove button by hand
+
+Wrong:
+
+```tsx
+<ChipGroup aria-label="Horizons">
+  <ChipList>
+    <Chip id="balder">
+      Top Balder
+      <Button variant="ghost" size="icon-xs" onPress={() => remove("balder")}><XIcon /></Button>
+    </Chip>
+  </ChipList>
+</ChipGroup>
+```
+
+Correct:
+
+```tsx
+<ChipGroup aria-label="Horizons" onRemove={(keys) => remove([...keys])}>
+  <ChipList>
+    <Chip id="balder">Top Balder</Chip>
+  </ChipList>
+</ChipGroup>
+```
+
+`onRemove` on the group is what makes a chip removable — it renders `ChipRemove` and binds Backspace and Delete — so a nested button removes the chip by mouse only and adds a focus stop the tag's own key handling does not expect.
+
+### HIGH Colouring a chip with className
+
+Wrong:
+
+```tsx
+<Chip id="fault" className="bg-orange-500 text-white">Fault seal</Chip>
+```
+
+Correct:
+
+```tsx
+<Chip id="fault" variant="warning">Fault seal</Chip>
+```
+
+The chip's `className` is merged over `badgeVariants` by `cn`, so `bg-orange-500` replaces `bg-secondary`, and `orange` is not a Tecton family — the reset palette emits nothing and the chip loses its surface.

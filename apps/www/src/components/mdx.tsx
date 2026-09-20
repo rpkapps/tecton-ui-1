@@ -25,6 +25,7 @@ import {
   Step,
   Steps,
 } from "@/components/docs-blocks"
+import { Correct, Do, DoList, Dont, Wrong } from "@/components/guideline"
 import { IconGallery } from "@/components/icon-gallery"
 import { getIconForLanguageExtension } from "@/components/language-icon"
 import { PaletteTable } from "@/components/palette-table"
@@ -198,6 +199,11 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     Steps,
     Step,
     Callout,
+    DoList,
+    Do,
+    Dont,
+    Wrong,
+    Correct,
     LinkedCard,
     Button: ({ className, ...props }: React.ComponentProps<typeof Button>) => (
       <Button className={cn("not-typeset", className)} {...props} />

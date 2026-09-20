@@ -118,6 +118,144 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
   previewClassName="h-56"
 />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- An action destroys or overwrites something: delete, discard, overwrite, revoke.
+- The consequence cannot be undone once the user continues.
+- The user must answer: there is no outside-press dismissal and no close button.
+
+### Not for
+
+- a form, or a decision the user may walk away from: use [Dialog](/docs/components/dialog)
+- a confirmation of something the user can undo afterwards: use [toast](/docs/components/sonner)
+- a side panel listing what is about to change: use [Sheet](/docs/components/sheet)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Wrap the trigger `Button` and the `AlertDialog` in one `AlertDialogTrigger`, as for `Dialog`.
+
+</Do>
+
+<Do>
+
+End the title with a question and state the consequence in `AlertDialogDescription`.
+
+</Do>
+
+<Do>
+
+Use `AlertDialogCancel` and `AlertDialogAction` in the footer; both carry `slot="close"`, so the dialog closes either way.
+
+</Do>
+
+<Do>
+
+Colour the confirm with `variant="destructive"` on `AlertDialogAction` — never with `className` — and use `size="sm"` with `AlertDialogMedia` for a short, centred prompt.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="Confirming with a plain Button">
+
+<Wrong>
+
+```tsx
+<AlertDialogFooter>
+  <AlertDialogCancel>Cancel</AlertDialogCancel>
+  <Button variant="destructive" onPress={deleteWell}>Delete</Button>
+</AlertDialogFooter>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<AlertDialogFooter>
+  <AlertDialogCancel>Cancel</AlertDialogCancel>
+  <AlertDialogAction variant="destructive" onPress={deleteWell}>Delete</AlertDialogAction>
+</AlertDialogFooter>
+```
+
+</Correct>
+
+`AlertDialogAction` is a `Button` with `slot="close"`, which React Aria binds to the overlay state; a plain `Button` runs the action and leaves the prompt on screen over the deleted record.
+
+</Dont>
+
+<Dont severity="HIGH" title="Content rendered as a sibling of the trigger">
+
+<Wrong>
+
+```tsx
+<>
+  <AlertDialogTrigger>
+    <Button variant="destructive">Delete well</Button>
+  </AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogTitle>Delete 34/10-A-12?</AlertDialogTitle>
+  </AlertDialogContent>
+</>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<AlertDialogTrigger>
+  <Button variant="destructive">Delete well</Button>
+  <AlertDialog>
+    <AlertDialogTitle>Delete 34/10-A-12?</AlertDialogTitle>
+  </AlertDialog>
+</AlertDialogTrigger>
+```
+
+</Correct>
+
+`AlertDialogContent` is an alias of `AlertDialog`, so both names compile; outside the trigger's subtree neither reads its overlay state, and pressing the button does nothing at all.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Letting a backdrop click answer the question">
+
+<Wrong>
+
+```tsx
+<AlertDialog isDismissable>
+  <AlertDialogTitle>Discard 12 unsaved edits?</AlertDialogTitle>
+</AlertDialog>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<AlertDialog>
+  <AlertDialogTitle>Discard 12 unsaved edits?</AlertDialogTitle>
+</AlertDialog>
+```
+
+</Correct>
+
+`AlertDialogOverlay` leaves React Aria's `isDismissable` off on purpose, which is the only thing separating this from `Dialog`; turning it on lets a stray backdrop click answer the question.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 ### size

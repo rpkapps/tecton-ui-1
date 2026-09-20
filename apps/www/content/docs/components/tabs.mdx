@@ -68,6 +68,141 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <ComponentPreview name="tabs-rtl" direction="rtl" />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- A page or panel has two to about six sections the user moves between without navigating away.
+- Exactly one section is visible at a time and each one is a real chunk of content.
+- The strip belongs to the surface it sits on: a page header, a panel, a card.
+
+### Not for
+
+- a filter that narrows a list in place: use [ToggleGroup](/docs/components/toggle-group)
+- picking a value for a form field: use [Select](/docs/components/select)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Match every `TabsTrigger` to its `TabsContent` by `id`, the same string on both.
+
+</Do>
+
+<Do>
+
+Select with `defaultSelectedKey` / `selectedKey` and `onSelectionChange`, which receives the key.
+
+</Do>
+
+<Do>
+
+Choose the strip with `TabsList` `variant="default" | "line"`, and a side strip with `orientation="vertical"` on `Tabs`.
+
+</Do>
+
+<Do>
+
+Give `TabsList` an `aria-label` when no nearby heading names the set; disable one tab with `isDisabled`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="Radix value props instead of selectedKey and id">
+
+<Wrong>
+
+```tsx
+<Tabs defaultValue="overview" onValueChange={setView}>
+  <TabsList>
+    <TabsTrigger value="overview">Overview</TabsTrigger>
+  </TabsList>
+  <TabsContent value="overview"><Overview /></TabsContent>
+</Tabs>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Tabs defaultSelectedKey="overview" onSelectionChange={(key) => setView(String(key))}>
+  <TabsList>
+    <TabsTrigger id="overview">Overview</TabsTrigger>
+  </TabsList>
+  <TabsContent id="overview"><Overview /></TabsContent>
+</Tabs>
+```
+
+</Correct>
+
+React Aria pairs a panel with its tab by `id` and reports the key through `onSelectionChange`; `defaultValue`, `value` and `onValueChange` are not Tabs props, so the handler never fires and the pairing falls back to generated keys.
+
+</Dont>
+
+<Dont severity="HIGH" title="Rendering the panel yourself instead of TabsContent">
+
+<Wrong>
+
+```tsx
+<Tabs selectedKey={view} onSelectionChange={(key) => setView(String(key))}>
+  <TabsList><TabsTrigger id="overview">Overview</TabsTrigger></TabsList>
+</Tabs>
+{view === "overview" ? <Overview /> : <Reports />}
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Tabs selectedKey={view} onSelectionChange={(key) => setView(String(key))}>
+  <TabsList><TabsTrigger id="overview">Overview</TabsTrigger></TabsList>
+  <TabsContent id="overview"><Overview /></TabsContent>
+</Tabs>
+```
+
+</Correct>
+
+Only `TabsContent` gets the `tabpanel` role, the `aria-labelledby` back to its tab and the focusable container, so a hand-rolled panel leaves the tab announcing a relationship the page does not have.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Hand-styling the selected tab with data-state">
+
+<Wrong>
+
+```tsx
+<TabsTrigger id="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+  Overview
+</TabsTrigger>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<TabsList variant="line">
+  <TabsTrigger id="overview">Overview</TabsTrigger>
+</TabsList>
+```
+
+</Correct>
+
+React Aria marks the selected tab with `data-selected`, not `data-state="active"`, and the stock palette is reset so `bg-blue-600` emits no CSS; the selected colours belong to the `TabsList` variant.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 See the [React Aria Tabs](https://react-aria.adobe.com/Tabs#api) documentation.

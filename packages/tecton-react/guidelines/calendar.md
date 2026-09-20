@@ -1,0 +1,96 @@
+---
+component: Calendar
+module: "@tecton/react/components/calendar"
+family: data
+exports: [Calendar, RangeCalendar]
+notFor:
+  - need: a compact date field that opens a calendar on demand
+    use: Popover
+  - need: a year or a month picked in a dense form row
+    use: NativeSelect
+  - need: two dates bounding a period
+    use: RangeCalendar
+related: [Popover, Field, NativeSelect]
+---
+
+## Use it when
+
+- A month grid is the point: choosing a spud date, reading which days are booked, stepping through a schedule.
+- The calendar stays on the page — in a `Card`, a panel or a wizard step — rather than hiding behind a trigger.
+- Days need state the value alone cannot carry: unavailable dates, a highlighted span, two months side by side.
+
+## Do
+
+- Hold the value as an `@internationalized/date` value (a `CalendarDate`, or a `DateRange` of them) and drive it with `value` / `onChange`.
+- Show more months with `numberOfMonths`, month and year dropdowns with `captionLayout="dropdown"`, week numbers with `showWeekNumber`.
+- Block days with `isDateUnavailable`, `minValue` and `maxValue`; they carry the struck-through and dimmed cell styling.
+- Resize the grid through its variable, `className="[--cell-size:--spacing(11)]"`, and add per-day content with `renderCell`, never by restyling the cells.
+- For a date field, put the `Calendar` in a `Popover` behind a `Button` inside a `Field`; there is no `DatePicker` component.
+
+## Don't
+
+### CRITICAL react-day-picker props on a React Aria calendar
+
+Wrong:
+
+```tsx
+<Calendar
+  mode="single"
+  selected={date}
+  onSelect={setDate}
+  disabled={(day) => day < new Date()}
+/>
+```
+
+Correct:
+
+```tsx
+<Calendar
+  value={date}
+  onChange={setDate}
+  minValue={today(getLocalTimeZone())}
+/>
+```
+
+This `Calendar` wraps React Aria, not react-day-picker: `mode`, `selected`, `onSelect` and `disabled` are not in `CalendarProps`, so they are filtered out before the grid renders and the calendar comes up uncontrolled with every day still selectable.
+
+### HIGH A JavaScript Date as the value
+
+Wrong:
+
+```tsx
+const [date, setDate] = React.useState<Date>(new Date())
+
+return <Calendar value={date} onChange={setDate} />
+```
+
+Correct:
+
+```tsx
+const [date, setDate] = React.useState<CalendarDate | null>(
+  today(getLocalTimeZone())
+)
+
+return <Calendar value={date} onChange={setDate} />
+```
+
+React Aria reads `calendar`, `era`, `year`, `month` and `day` off the value and hands a `CalendarDate` back from `onChange`, so a `Date` leaves the grid with nothing selected and formatting the value again needs `date.toDate(getLocalTimeZone())`.
+
+### MEDIUM Two Calendars for a start and an end
+
+Wrong:
+
+```tsx
+<div className="flex gap-4">
+  <Calendar value={start} onChange={setStart} />
+  <Calendar value={end} onChange={setEnd} />
+</div>
+```
+
+Correct:
+
+```tsx
+<RangeCalendar value={range} onChange={setRange} numberOfMonths={2} />
+```
+
+`RangeCalendar` is React Aria's range widget: it owns the `data-range-start`, `data-range-middle` and `data-range-end` cell states that draw the span, and it keeps the end on or after the start — neither of which two independent single calendars can produce.

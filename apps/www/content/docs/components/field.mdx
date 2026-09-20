@@ -211,6 +211,144 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 - `Field` outputs `role="group"` so nested controls inherit labeling from `FieldLabel` and `FieldLegend` when combined.
 - Apply `FieldSeparator` sparingly to ensure screen readers encounter clear section boundaries.
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- Any control needs a label: `Input`, `Textarea`, `Select`, `Checkbox`, `Switch`, `Slider`.
+- The control needs helper text, a validation message, or both.
+- Related controls need one legend (`FieldSet` + `FieldLegend`) or even spacing (`FieldGroup`).
+
+### Not for
+
+- a label for a control that stands on its own, outside a field: use [Label](/docs/components/label)
+- the single-line text control itself: use [Input](/docs/components/input)
+- form state, validation and typed error objects: use [TanStack Form](/docs/forms/tanstack-form)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Give the control an `id` and point `FieldLabel htmlFor` at it. `Field` renders `role="group"`; it associates nothing by itself.
+
+</Do>
+
+<Do>
+
+Choose the layout with `orientation="vertical" | "horizontal" | "responsive"`, and add `FieldContent` when the label and description sit beside the control.
+
+</Do>
+
+<Do>
+
+Put state on `Field` as data attributes: `data-invalid` when the value is rejected, `data-disabled` next to a disabled control.
+
+</Do>
+
+<Do>
+
+Write helper text as `FieldDescription` and the message as `FieldError` — children, or `errors={field.state.meta.errors}` for a validator's issue list.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="Announcing the error with a red paragraph">
+
+<Wrong>
+
+```tsx
+<Field>
+  <FieldLabel htmlFor="email">Email</FieldLabel>
+  <Input id="email" type="email" />
+  <p className="mt-1 text-sm text-red-500">Enter a valid email address.</p>
+</Field>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Field data-invalid>
+  <FieldLabel htmlFor="email">Email</FieldLabel>
+  <Input id="email" type="email" aria-invalid />
+  <FieldError>Enter a valid email address.</FieldError>
+</Field>
+```
+
+</Correct>
+
+`text-red-500` emits no CSS once the Tecton palette replaces Tailwind's, and the paragraph carries no `role="alert"`, so the message is both invisible and unannounced.
+
+</Dont>
+
+<Dont severity="HIGH" title="Marking the control invalid but not the field">
+
+<Wrong>
+
+```tsx
+<Field>
+  <FieldLabel htmlFor="user">Username</FieldLabel>
+  <Input id="user" aria-invalid />
+  <FieldError>Choose another username.</FieldError>
+</Field>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Field data-invalid>
+  <FieldLabel htmlFor="user">Username</FieldLabel>
+  <Input id="user" aria-invalid />
+  <FieldError>Choose another username.</FieldError>
+</Field>
+```
+
+</Correct>
+
+`fieldVariants` turns the whole block destructive from `data-[invalid=true]` on `Field`, so without it only the input's own ring reacts and the label keeps the default colour.
+
+</Dont>
+
+<Dont severity="HIGH" title="Reaching for FieldTitle where a label belongs">
+
+<Wrong>
+
+```tsx
+<Field orientation="horizontal">
+  <FieldTitle>Marketing emails</FieldTitle>
+  <Switch id="marketing" />
+</Field>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Field orientation="horizontal">
+  <FieldLabel htmlFor="marketing">Marketing emails</FieldLabel>
+  <Switch id="marketing" />
+</Field>
+```
+
+</Correct>
+
+`FieldTitle` renders a `div`, so the switch is left unnamed; it is only for the heading inside a `FieldContent` whose whole `Field` is already wrapped in a `FieldLabel`.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 ### FieldSet

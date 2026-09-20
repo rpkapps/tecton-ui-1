@@ -46,3 +46,131 @@ function MyComponent() {
   return <div>Current direction: {direction}</div>
 }
 ```
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The application runs in a right-to-left locale and every Tecton component has to follow it.
+- One subtree reads in the other direction from the document: a translation pane, an embedded preview.
+- A component of your own needs the resolved direction at runtime, through `useDirection()`.
+
+### Not for
+
+- a locale for date, number and collation formatting, direction aside: use [I18nProvider](/docs/components/direction)
+- the root element of an independently deployed application: use [ThemeRoot](/docs/tecton/theme-root)
+- the element overlays portal into: use [PortalProvider](/docs/tecton/portal)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Wrap the application once, as high as it goes, and set `dir` on `<html>` as well so the document's own text flow and scrollbars match.
+
+</Do>
+
+<Do>
+
+Pass a real `locale` when you have one; `direction` alone is a compatibility shim that synthesises a locale by forcing the `Arab` or `Latn` script.
+
+</Do>
+
+<Do>
+
+Read the direction with `useDirection()` (`"ltr" | "rtl"`), never from `document.dir` or a prop threaded down.
+
+</Do>
+
+<Do>
+
+Write logical utilities in your own markup — `ms-*`, `pe-*`, `text-start`, `border-s` — the way the Tecton components do.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="dir on a wrapper instead of the provider">
+
+<Wrong>
+
+```tsx
+<div dir="rtl">
+  <App />
+</div>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<DirectionProvider direction="rtl">
+  <App />
+</DirectionProvider>
+```
+
+</Correct>
+
+React Aria takes the direction from `useLocale()` and not from the DOM, so keyboard navigation, a popover's `placement` and the collator keep running left-to-right — and every overlay portals out of that `div` anyway, so even the inherited `dir` is gone.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="A locale and a direction that disagree">
+
+<Wrong>
+
+```tsx
+<DirectionProvider locale="en-US" direction="rtl">
+  <App />
+</DirectionProvider>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<DirectionProvider locale="ar-EG">
+  <App />
+</DirectionProvider>
+```
+
+</Correct>
+
+`direction` is consulted only when no `locale` is given — it exists to synthesise one — so with both set the explicit locale wins and the tree stays left-to-right, with no warning.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Physical spacing classes inside a flipped tree">
+
+<Wrong>
+
+```tsx
+<PageHeaderActions className="ml-4 text-left">
+  <Button>Save</Button>
+</PageHeaderActions>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<PageHeaderActions className="ms-4 text-start">
+  <Button>Save</Button>
+</PageHeaderActions>
+```
+
+</Correct>
+
+`ml-*` and `text-left` compile to physical `margin-left` and `text-align: left`, which ignore `direction`, so the actions stay pinned to the left of a right-to-left header while the components around them flip.
+
+</Dont>
+
+{/* guidelines:end */}

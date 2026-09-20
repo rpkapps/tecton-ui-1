@@ -67,6 +67,115 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <ComponentPreview name="popover-rtl" direction="rtl" />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- A few controls belong to one trigger and should appear next to it: dimensions, a colour, a filter.
+- The user opens it deliberately by pressing, and the page behind it stays live.
+- The content is interactive — inputs, buttons, a small form — so a `Tooltip` is out.
+
+### Not for
+
+- a short label on a control: use [Tooltip](/docs/components/tooltip)
+- a preview that appears when the pointer rests on a link: use [HoverCard](/docs/components/hover-card)
+- a decision that must block the rest of the page: use [Dialog](/docs/components/dialog)
+- a form long enough to need its own header and footer: use [Sheet](/docs/components/sheet)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Wrap the trigger `Button` and the `Popover` in one `PopoverTrigger` (it is React Aria's `DialogTrigger`), and control it with `isOpen` / `onOpenChange` there.
+
+</Do>
+
+<Do>
+
+Position with `placement` (`"bottom start"`, `"top"`, `"right end"`) and nudge with `offset` / `crossOffset`.
+
+</Do>
+
+<Do>
+
+Structure the top with `PopoverHeader`, `PopoverTitle` and `PopoverDescription`; the popover is already a `flex flex-col gap-4`.
+
+</Do>
+
+<Do>
+
+Use `className` for width only (`w-80`): the popover owns its padding, radius, shadow and surface.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="Radix side and align props">
+
+<Wrong>
+
+```tsx
+<PopoverTrigger>
+  <Button variant="outline">Dimensions</Button>
+  <Popover side="top" align="start" sideOffset={8}>
+    <PopoverTitle>Dimensions</PopoverTitle>
+  </Popover>
+</PopoverTrigger>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<PopoverTrigger>
+  <Button variant="outline">Dimensions</Button>
+  <Popover placement="top start" offset={8}>
+    <PopoverTitle>Dimensions</PopoverTitle>
+  </Popover>
+</PopoverTrigger>
+```
+
+</Correct>
+
+React Aria takes one `placement` string; `side`, `align` and `sideOffset` are not part of its positioning contract, so the popover silently keeps the default `placement="bottom"`.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Repainting the popover surface with className">
+
+<Wrong>
+
+```tsx
+<Popover className="w-80 rounded-lg border border-gray-200 bg-white p-6 shadow-xl">
+  <PopoverTitle>Filter wells</PopoverTitle>
+</Popover>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Popover className="w-80">
+  <PopoverTitle>Filter wells</PopoverTitle>
+</Popover>
+```
+
+</Correct>
+
+Tecton resets Tailwind's stock palette, so `border-gray-200` emits no CSS at all, and the padding and radius duplicate what the component already owns — `no-restyle` reports both.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 See the [React Aria Popover](https://react-aria.adobe.com/Popover#api) documentation.

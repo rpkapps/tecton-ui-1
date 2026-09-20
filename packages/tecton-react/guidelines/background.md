@@ -1,0 +1,97 @@
+---
+component: Background
+module: "@tecton/react/tecton/background"
+family: presentation
+exports: [Background, BackgroundEffect, SeismicBackground, ContourBackground, StrataBackground, GridBackground, FlowBackground, WellLogBackground, DrillBackground, HexagonsBackground, PressureBackground, HorizonBackground, TerrainGridBackground, backgroundEffects, backgroundVariants, backgroundTones, backgroundIntensities, backgroundSpeeds]
+notFor:
+  - need: an interactive map, schematic or 3D view
+    use: Canvas
+  - need: a placeholder shape while real content loads
+    use: Skeleton
+  - need: an empty state with a message and an action
+    use: Empty
+  - need: a picture of real data
+    use: ChartContainer
+related: [Canvas, Empty, AspectRatio]
+---
+
+## Use it when
+
+- A large, otherwise plain surface needs texture: a hero, a sign-in page, an onboarding step, a dashboard header.
+- The imagery is decoration — it says nothing a reader has to read, and losing it costs nothing.
+- The surface belongs to this product, so an oil and gas motif reads as the domain rather than as clip art.
+
+## Do
+
+- Render the named effect (`ContourBackground`, `SeismicBackground`, …) as the first child of a `relative isolate overflow-hidden` container, with the content after it.
+- Pick the ink with `tone`, the weight with `intensity` and the cycle with `speed`; on busy screens stay at `intensity="low"`.
+- Let the effect decide when to move: it already freezes under `prefers-reduced-motion`, off screen and in a hidden tab, and hides itself in print and forced colours. `animate={false}` pins it to its static frame.
+- Choose an effect by name with `BackgroundEffect` and the `backgroundEffects`, `backgroundTones`, `backgroundIntensities` and `backgroundSpeeds` lists when the person picks their own.
+- Build a new effect on the shared `Background` layer so it inherits `--bg-ink`, the pausing and the print rules; do not reimplement the layer.
+
+## Don't
+
+### HIGH A gradient in className instead of an effect
+
+Wrong:
+
+```tsx
+<section className="relative isolate rounded-lg border bg-gradient-to-br from-blue-500/20 to-transparent p-6">
+  <h2 className="text-lg font-medium">Northern Fairway</h2>
+</section>
+```
+
+Correct:
+
+```tsx
+<section className="relative isolate overflow-hidden rounded-lg border bg-background p-6">
+  <ContourBackground tone="azure" intensity="low" />
+  <h2 className="text-lg font-medium">Northern Fairway</h2>
+</section>
+```
+
+`from-blue-500` is stock Tailwind and the palette is declared after `--color-*: initial`, so the gradient emits no CSS and the surface stays flat; an effect takes its ink from the theme through `tone` and flips with the mode on its own.
+
+### HIGH A background layer without relative isolate
+
+Wrong:
+
+```tsx
+<Card>
+  <SeismicBackground tone="primary" intensity="low" />
+  <CardHeader><CardTitle>Survey 24-B</CardTitle></CardHeader>
+</Card>
+```
+
+Correct:
+
+```tsx
+<Card className="relative isolate">
+  <SeismicBackground tone="primary" intensity="low" />
+  <CardHeader><CardTitle>Survey 24-B</CardTitle></CardHeader>
+</Card>
+```
+
+The layer is `absolute inset-0 -z-10`: `Card` sets `bg-card` but neither `relative` nor `isolate`, so the effect positions itself against some ancestor further up and its negative z-index puts it behind the card's own background, where it is invisible.
+
+### MEDIUM The interactive prop on an effect that has none
+
+Wrong:
+
+```tsx
+<div className="relative isolate overflow-hidden rounded-lg p-8">
+  <SeismicBackground interactive tone="azure" />
+  <p className="text-sm">Choose a project to open.</p>
+</div>
+```
+
+Correct:
+
+```tsx
+<div className="relative isolate overflow-hidden rounded-lg p-8">
+  <GridBackground interactive tone="azure" />
+  <p className="text-sm">Choose a project to open.</p>
+</div>
+```
+
+Only `GridBackground`, `HexagonsBackground` and `TerrainGridBackground` take `interactive`; on any other effect it is a type error that esbuild strips, the boolean is spread onto the layer `div` as a stray attribute, and the pointer reveal silently never happens.

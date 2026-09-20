@@ -46,6 +46,135 @@ Set `isIndeterminate` for a spinning ring while the amount of work is unknown.
 
 <ComponentPreview name="circular-progress-indeterminate" />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The progress belongs in a compact space: a card corner, a table cell, a tile, a KPI.
+- The number matters as much as the arc: `showValue`, or children such as `7/12`.
+- A ring, not an icon, is the right weight for an indeterminate wait inside a panel or a dialog.
+
+### Not for
+
+- a full-width determinate bar in the flow of a panel: use [Progress](/docs/components/progress)
+- a small busy glyph inside a button or an input: use [Spinner](/docs/components/spinner)
+- a segmented readout of risk, complexity or confidence: use [Meter](/docs/tecton/meter)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Always pass `aria-label`; there is no visible label slot.
+
+</Do>
+
+<Do>
+
+Size with `size="xs" | "sm" | "md" | "lg" | "xl"` (16 / 24 / 40 / 64 / 96 px): one prop drives the diameter, the stroke width and the centre type together.
+
+</Do>
+
+<Do>
+
+Colour with `color="primary" | "foreground" | "success" | "warning" | "error" | "info"`.
+
+</Do>
+
+<Do>
+
+Give the scale with `minValue` and `maxValue`, shape the text with `formatOptions`, or pass children for custom centre content.
+
+</Do>
+
+<Do>
+
+Use `isIndeterminate`, not `value={0}`, while the total is unknown.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="A ring with no accessible name">
+
+<Wrong>
+
+```tsx
+<CircularProgress value={64} showValue />
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<CircularProgress aria-label="Resampling" value={64} showValue />
+```
+
+</Correct>
+
+The `svg` is `aria-hidden` and `role="progressbar"` takes no name from its contents, so without `aria-label` the ring is announced as an unnamed progress bar.
+
+</Dont>
+
+<Dont severity="HIGH" title="Sizing or colouring the ring with className">
+
+<Wrong>
+
+```tsx
+<CircularProgress
+  aria-label="Export"
+  value={40}
+  className="size-20 text-blue-600"
+/>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<CircularProgress aria-label="Export" value={40} size="lg" color="primary" />
+```
+
+</Correct>
+
+`size` also sets the `--stroke` width and the centre label's type scale, so overriding only the diameter leaves a hairline ring, and `blue-600` is not a Tecton step — `cn` drops `text-primary` for a class that emits nothing and the stroke falls back to the inherited text colour.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="showValue on an indeterminate ring">
+
+<Wrong>
+
+```tsx
+<CircularProgress size="sm" isIndeterminate showValue aria-label="Loading well logs" />
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<div className="flex items-center gap-3 text-sm text-muted-foreground">
+  <CircularProgress size="sm" isIndeterminate aria-label="Loading well logs" />
+  Loading well logs…
+</div>
+```
+
+</Correct>
+
+The centre label renders only when `showValue && !isIndeterminate`, so the prop is ignored and the ring spins with an empty middle where the caption was expected.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 ### CircularProgress

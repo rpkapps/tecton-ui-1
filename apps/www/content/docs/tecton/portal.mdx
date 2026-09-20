@@ -44,6 +44,143 @@ A single-root application does not need it.
 - `container={null}` clears an outer provider and restores the default.
 - [`ThemeRoot`](/docs/tecton/theme-root) is the recommended way to get a container: it creates one body-level element that mirrors the root's classes, marks it with `data-tecton-root` and wires it to this provider, so an independently deployed application does not have to manage the element itself.
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- One page holds several isolated React roots — micro frontends, embedded widgets — and each needs a body-level overlay container of its own.
+- That container has to carry a root's scope class, mode class and ownership attributes, so the styles compiled for the root still reach its portalled overlays.
+- An overlay must escape an `overflow: hidden` ancestor and still land somewhere marked, not in a bare `document.body`.
+
+### Not for
+
+- the root of an independently deployed application, container included: use [ThemeRoot](/docs/tecton/theme-root)
+- the resolved container inside an overlay you are writing yourself: use [usePortalTarget](/docs/tecton/portal)
+- a right-to-left subtree: use [DirectionProvider](/docs/components/direction)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Wrap the root of the subtree, not individual overlays: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the context.
+
+</Do>
+
+<Do>
+
+Create the container once at body level and pass it as `container`; pass a function instead when the element only exists after the first render.
+
+</Do>
+
+<Do>
+
+Clear an outer provider with `container={null}` — overlays then pass no container and React Aria applies its own default.
+
+</Do>
+
+<Do>
+
+Reach for `ThemeRoot` first: it creates, classes, syncs and removes that container and wires this provider for you.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="document.body as the container in a page with several roots">
+
+<Wrong>
+
+```tsx
+createRoot(mountNode).render(
+  <PortalProvider container={document.body}>
+    <AssetTracker />
+  </PortalProvider>
+)
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+const overlayRoot = document.createElement("div")
+overlayRoot.className = "mfe-a"
+overlayRoot.setAttribute("data-tecton-root", "")
+document.body.append(overlayRoot)
+
+createRoot(mountNode, { identifierPrefix: "mfe-a" }).render(
+  <PortalProvider container={overlayRoot}>
+    <AssetTracker />
+  </PortalProvider>
+)
+```
+
+</Correct>
+
+The container earns its keep through the class and the marker it carries: a remote's utilities are wrapped in `@scope (.mfe-a) to ([data-tecton-root])`, so an overlay dropped straight into `document.body` falls outside that scope and renders with the host's styles or with none.
+
+</Dont>
+
+<Dont severity="HIGH" title="An overlay portalled by hand with createPortal">
+
+<Wrong>
+
+```tsx
+createPortal(<Dialog isOpen={isOpen} onOpenChange={setIsOpen}>{body}</Dialog>, overlayRoot)
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<PortalProvider container={overlayRoot}>
+  <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>{body}</Dialog>
+</PortalProvider>
+```
+
+</Correct>
+
+`Dialog` portals itself through React Aria, so the outer `createPortal` only relocates the element that renders it: the modal still lands in `document.body`, and the container's classes and variables never reach it.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Defaulting the target to document.body in a custom overlay">
+
+<Wrong>
+
+```tsx
+function Inspector(props: React.ComponentProps<typeof PopoverPrimitive>) {
+  const container = usePortalContainer()
+  return <PopoverPrimitive {...props} UNSTABLE_portalContainer={container ?? document.body} />
+}
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+function Inspector(props: React.ComponentProps<typeof PopoverPrimitive>) {
+  const container = usePortalTarget()
+  return <PopoverPrimitive {...props} UNSTABLE_portalContainer={container} />
+}
+```
+
+</Correct>
+
+React Aria reads any set `UNSTABLE_portalContainer` as "the caller has decided" and stops resolving the target itself, so pinning `document.body` throws away its own defaults — the root popover's container for submenus, and `document.body` only once hydration is over — which is why `usePortalTarget` returns `undefined` rather than a fallback.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 ### PortalProvider

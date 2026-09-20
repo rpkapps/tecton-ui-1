@@ -53,6 +53,140 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <ComponentPreview name="slider-rtl" direction="rtl" />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- An approximate value inside a known range: opacity, threshold, zoom, temperature.
+- A range with two or more thumbs, such as a price or depth filter.
+- The exact number matters less than the gesture of moving through the range.
+
+### Not for
+
+- an exact number the user types, with units or validation: use [Input](/docs/components/input)
+- the title, description and layout around the control: use [Field](/docs/components/field)
+- an on/off setting rather than a value: use [Switch](/docs/components/switch)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Bound the range with `minValue`, `maxValue` and `step` — React Aria's names, not `min` and `max`.
+
+</Do>
+
+<Do>
+
+Pass `value` / `defaultValue` as an array and read the array back in `onChange`; the callback type is `number | number[]`, so narrow it.
+
+</Do>
+
+<Do>
+
+Name it with `aria-label` (or `aria-labelledby`). The component renders a track and thumbs only, with no label slot.
+
+</Do>
+
+<Do>
+
+Inside a `Field`, use `FieldTitle` and `FieldDescription` and show the live value in the description.
+
+</Do>
+
+<Do>
+
+Disable with `isDisabled`; switch axis with `orientation="vertical"` plus a height class such as `h-40`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="Bounding the range with min and max">
+
+<Wrong>
+
+```tsx
+<Slider aria-label="Zoom" defaultValue={[2]} min={0} max={5} step={0.5} />
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Slider
+  aria-label="Zoom"
+  defaultValue={[2]}
+  minValue={0}
+  maxValue={5}
+  step={0.5}
+/>
+```
+
+</Correct>
+
+React Aria reads `minValue` and `maxValue`; `min` and `max` are not slider props and never reach the range state, so the slider keeps its default 0–100 range and the thumb barely moves.
+
+</Dont>
+
+<Dont severity="HIGH" title="Labelling the slider with FieldLabel and htmlFor">
+
+<Wrong>
+
+```tsx
+<Field>
+  <FieldLabel htmlFor="zoom">Zoom</FieldLabel>
+  <Slider id="zoom" defaultValue={[50]} maxValue={100} />
+</Field>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Field>
+  <FieldTitle>Zoom</FieldTitle>
+  <Slider aria-label="Zoom" defaultValue={[50]} maxValue={100} />
+</Field>
+```
+
+</Correct>
+
+The `id` lands on the slider's wrapper `div`, which a `label htmlFor` cannot address, so the thumb's `input[type=range]` is left with no accessible name.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Disabling the slider with the disabled prop">
+
+<Wrong>
+
+```tsx
+<Slider aria-label="Opacity" defaultValue={[40]} maxValue={100} disabled />
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Slider aria-label="Opacity" defaultValue={[40]} maxValue={100} isDisabled />
+```
+
+</Correct>
+
+`disabled` is not a valid attribute on the wrapper `div`, so it is dropped: the thumbs stay draggable and the `data-disabled` dimming never applies.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 See the [React Aria Slider](https://react-aria.adobe.com/Slider#api) documentation.

@@ -93,6 +93,141 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
   direction="rtl"
 />
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- You want the platform's own dropdown: native keyboard behaviour and the mobile wheel, with no popover.
+- A form posts natively and the value has to come from a real `select` element in the DOM.
+- The row is dense and the options are plain text, with no icons or descriptions.
+
+### Not for
+
+- a themed popover with icons, rich items or a searchable list: use [Select](/docs/components/select)
+- typing to narrow a long list: use [Combobox](/docs/components/combobox)
+- two to five options that all stay visible: use [RadioGroup](/docs/components/radio-group)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Treat it as a `select`: `value` / `defaultValue` / `onChange(event)`, `disabled`, `required`, `name`.
+
+</Do>
+
+<Do>
+
+Set the height with `size="sm" | "default"`; the native row-count `size` is deliberately not available.
+
+</Do>
+
+<Do>
+
+Make the first `NativeSelectOption` an empty-valued row when you need a placeholder.
+
+</Do>
+
+<Do>
+
+Group options with `NativeSelectOptGroup label="…"`.
+
+</Do>
+
+<Do>
+
+Signal errors with `aria-invalid` on the select and `data-invalid` on the surrounding `Field`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="React Aria props on a native select element">
+
+<Wrong>
+
+```tsx
+<NativeSelect isDisabled onSelectionChange={setStatus}>
+  <NativeSelectOption value="todo">Todo</NativeSelectOption>
+</NativeSelect>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<NativeSelect disabled value={status} onChange={(event) => setStatus(event.target.value)}>
+  <NativeSelectOption value="todo">Todo</NativeSelectOption>
+</NativeSelect>
+```
+
+</Correct>
+
+`NativeSelect` renders a real `select` and spreads its props onto it, so React Aria names like `isDisabled` and `onSelectionChange` reach the DOM as unknown attributes and the control stays enabled and unwired.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Passing a native row count to size">
+
+<Wrong>
+
+```tsx
+<NativeSelect size={5}>
+  <NativeSelectOption value="todo">Todo</NativeSelectOption>
+</NativeSelect>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<NativeSelect size="sm">
+  <NativeSelectOption value="todo">Todo</NativeSelectOption>
+</NativeSelect>
+```
+
+</Correct>
+
+The component omits the DOM `size` and redefines it as the Tecton height token, so a number is written to `data-size` only, matches no height rule and never expands the list.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="A placeholder prop instead of an empty option">
+
+<Wrong>
+
+```tsx
+<NativeSelect placeholder="Select status">
+  <NativeSelectOption value="todo">Todo</NativeSelectOption>
+</NativeSelect>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<NativeSelect defaultValue="">
+  <NativeSelectOption value="">Select status</NativeSelectOption>
+  <NativeSelectOption value="todo">Todo</NativeSelectOption>
+</NativeSelect>
+```
+
+</Correct>
+
+`select` elements have no `placeholder` attribute, so the prop is dropped and the field silently shows the first real option as if it had been chosen.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 ### NativeSelect

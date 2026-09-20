@@ -510,6 +510,145 @@ The behavior in `MessageScroller` comes from the `@shadcn/react` package. To use
 it directly with your own markup and styles, see
 [Message Scroller](https://ui.shadcn.com/docs/react/message-scroller) under @shadcn/react.
 
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- A transcript grows while the reader is inside it: a reply streams in, or a group chat appends.
+- Reopening a saved thread should land on the last turn, not on the absolute bottom edge, and a permalink, a search hit or a jump menu can drive it from outside the list.
+
+### Not for
+
+- a styled scroll region for content that does not grow at its end: use [ScrollArea](/docs/components/scroll-area)
+- the row layout of one turn inside the transcript: use [Message](/docs/components/message)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Compose all of it: `MessageScrollerProvider`, `MessageScroller`, `MessageScrollerViewport`, `MessageScrollerContent`, `MessageScrollerItem`, `MessageScrollerButton`.
+
+</Do>
+
+<Do>
+
+Put the behaviour on the provider: `autoScroll` (off by default), `defaultScrollPosition="last-anchor"`, `scrollPreviousItemPeek`.
+
+</Do>
+
+<Do>
+
+Give every row a stable `messageId`, `scrollAnchor` to the row that starts a turn, and the scroller its height from outside (`className="flex-1"` in a constrained parent).
+
+</Do>
+
+<Do>
+
+Drive it from anywhere inside the provider with `useMessageScroller`, `useMessageScrollerScrollable` and `useMessageScrollerVisibility`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="A transcript in a plain overflow-auto div">
+
+<Wrong>
+
+```tsx
+<div className="h-full overflow-y-auto">{rows}</div>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<MessageScrollerProvider autoScroll defaultScrollPosition="last-anchor">
+  <MessageScroller className="flex-1">
+    <MessageScrollerViewport>
+      <MessageScrollerContent>{rows}</MessageScrollerContent>
+    </MessageScrollerViewport>
+    <MessageScrollerButton />
+  </MessageScroller>
+</MessageScrollerProvider>
+```
+
+</Correct>
+
+The div never follows a streamed reply, and it loses what the parts give for free: `role="region"` with `aria-label="Messages"` and a tab stop on the viewport, `role="log"` on the content, and the reader's place kept when older messages are prepended.
+
+</Dont>
+
+<Dont severity="CRITICAL" title="The scroller frame without its provider">
+
+<Wrong>
+
+```tsx
+<MessageScroller className="flex-1">
+  <MessageScrollerViewport>
+    <MessageScrollerContent>{rows}</MessageScrollerContent>
+  </MessageScrollerViewport>
+</MessageScroller>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<MessageScrollerProvider autoScroll>
+  <MessageScroller className="flex-1">
+    <MessageScrollerViewport>
+      <MessageScrollerContent>{rows}</MessageScrollerContent>
+    </MessageScrollerViewport>
+  </MessageScroller>
+</MessageScrollerProvider>
+```
+
+</Correct>
+
+Every part reads the provider's context, so the page throws `useMessageScroller must be used within a MessageScroller.` — an error that names the frame you already rendered instead of the `MessageScrollerProvider` that is missing.
+
+</Dont>
+
+<Dont severity="HIGH" title="Rows dropped straight into the content">
+
+<Wrong>
+
+```tsx
+<MessageScrollerContent>
+  {messages.map((message) => <Message key={message.id}>{message.content}</Message>)}
+</MessageScrollerContent>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<MessageScrollerContent>
+  {messages.map((message) => (
+    <MessageScrollerItem key={message.id} messageId={message.id} scrollAnchor={message.role === "user"}>
+      <Message>{message.content}</Message>
+    </MessageScrollerItem>
+  ))}
+</MessageScrollerContent>
+```
+
+</Correct>
+
+Registration happens on the item, which writes `data-message-id` and `data-scroll-anchor`, so unwrapped rows never anchor a new turn, are skipped by visibility tracking, and make `scrollToMessage` return `false`.
+
+</Dont>
+
+{/* guidelines:end */}
+
 ## API Reference
 
 The props, data attributes, and hooks for every part are documented on the

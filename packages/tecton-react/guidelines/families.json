@@ -1,0 +1,367 @@
+{
+  "$comment": "Families group the modules of @tecton/react by the choice an agent makes between them. Each family with `skill` becomes one generated skill (skills/<family>/SKILL.md). `modules` lists module basenames: components/<name> for the shadcn components, tecton/<name> for the Tecton ones. Families without `skill` are reported for coverage only until their guideline files exist.",
+  "families": {
+    "labels": {
+      "title": "Labels",
+      "choice": "A static label, a selectable tag, a count on an icon, or a keyboard key",
+      "modules": ["components/badge", "tecton/chip", "tecton/count-badge", "components/kbd"],
+      "skill": {
+        "description": "Choose and use Tecton labels: Badge for static status or category labels with variant and appearance, Chip and ChipGroup for selectable or removable tags, CountBadge for a count or dot anchored to an icon or avatar, Kbd for keyboard keys. Load when rendering a status, tag, pill, chip, label, counter or shortcut hint, or when tempted to colour a label with className.",
+        "checklist": [
+          "Every status, category or state label is a `Badge` carrying its meaning in `variant` (`success`, `warning`, `info`, `destructive`) and its weight in `appearance`, never a `bg-*` or `text-*` colour class.",
+          "Any label the user can select or remove is a `Chip`, not a `Badge` with a handler — `Badge` renders a `span` with no role, no `tabIndex` and no key handling.",
+          "Every `Chip` sits inside `ChipGroup > ChipList` and carries an `id`, with removal turned on by `onRemove` on the `ChipGroup` rather than a hand-built button.",
+          "A `ChipGroup` is named by `aria-label` on the group, or by `FieldSet` + `FieldLegend` when it sits in a form; it renders a `div`, so a bare `FieldLabel htmlFor` has nothing to point at.",
+          "A count or dot on an icon button, avatar or tab is a `CountBadge` wrapping that control, with `count`, `max` and `color`, and the number repeated in the control's `aria-label` because the badge is decorative.",
+          "Every icon or `Spinner` child of a `Badge` or a `Chip` carries `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"` so the label trims its padding on that side.",
+          "Keyboard keys are `Kbd` (inside a `KbdGroup` for a combination), never hand-built markup, and no handler is attached because `Kbd` is `pointer-events-none`.",
+          "A category colour that no `variant` carries is a Tecton palette pair in `className` (`bg-blue-120 text-blue-830`), never a stock Tailwind colour."
+        ]
+      }
+    },
+    "feedback": {
+      "title": "Feedback",
+      "choice": "A message that stays on the page, a transient toast, or an empty state",
+      "modules": ["components/alert", "components/sonner", "components/empty"],
+      "skill": {
+        "description": "Choose and use Tecton feedback: Alert with variant (success, warning, info, destructive) and appearance for messages that stay on the page, toast from sonner for transient confirmations, Empty for empty states, FieldError for validation. Load when showing a status message, banner, notification, error, warning, success or empty result.",
+        "checklist": [
+          "A message that stays on the page until it is read or resolved is an `Alert` with `variant` for the severity and `appearance` for the surface; a transient confirmation of something just done is `toast` from `sonner`.",
+          "Every `toast()` call has exactly one `<Toaster />` mounted at the application root — with nothing subscribed the toast renders nothing and throws nothing.",
+          "Toast severity comes from the typed helpers (`toast.success`, `toast.info`, `toast.warning`, `toast.error`, `toast.promise`), never from a colour class, and any `toast.loading` id is reused by the toast that resolves it.",
+          "The `Alert` icon is a direct child of `Alert` (the two-column grid is a `has-[>svg]` rule), and every button in it, including the dismiss control, is inside `AlertAction` and wired with `onPress`.",
+          "An empty list, table, panel or search result renders `Empty` with `EmptyHeader`, `EmptyMedia`, `EmptyTitle` and `EmptyDescription` — not a stack of divs and not a `TableRow` with a `colSpan` cell.",
+          "The icon in an empty state is inside `EmptyMedia variant=\"icon\"`, and the next step is one primary `Button` in `EmptyContent` with at most one secondary beside it.",
+          "A validation message belongs to its field as `FieldError` inside the `Field`, not as an `Alert` and not as a red paragraph.",
+          "`className` on `Alert` and `Empty` sets width, placement and the dashed `border` only; the status colours and the type belong to the component."
+        ]
+      }
+    },
+    "overlays": {
+      "title": "Overlays",
+      "choice": "A modal decision, a destructive confirmation, a side panel, a bottom drawer, an anchored popover, a hover preview or a tooltip",
+      "modules": [
+        "components/dialog",
+        "components/alert-dialog",
+        "components/sheet",
+        "components/drawer",
+        "components/popover",
+        "components/hover-card",
+        "components/tooltip"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton overlays built on React Aria: Dialog inside DialogTrigger for modal decisions and short forms, AlertDialog for destructive confirmations, Sheet for side panels, Drawer for bottom sheets, Popover for anchored content, HoverCard for previews, Tooltip for labels. Covers isOpen and onOpenChange, DialogTrigger composition and portal targets. Load when opening a modal, dialog, sheet, drawer, popover, tooltip or confirmation.",
+        "checklist": [
+          "The confirm inside an `AlertDialog` is `AlertDialogAction` (with `variant=\"destructive\"`) and the escape is `AlertDialogCancel` — both carry `slot=\"close\"`, so a plain `Button` runs the action and leaves the prompt on screen over the deleted record.",
+          "Every `Dialog`, `AlertDialog`, `Sheet` and `Popover` sits inside its own trigger component (`DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `PopoverTrigger`) together with its trigger `Button`; a sibling never receives the open state.",
+          "Controlled overlays use React Aria's `isOpen` and `onOpenChange`, and the footer closes with `DialogClose` or `SheetClose` rather than your own state.",
+          "Every `Dialog` and `AlertDialog` has a `DialogTitle` / `AlertDialogTitle`, because React Aria takes the accessible name from it.",
+          "There is no `asChild` on any overlay: React Aria composes through `render`, and `Drawer` (Base UI) takes `render` on its trigger and close elements too.",
+          "`Drawer` is Base UI, not React Aria: its state props are `open`, `defaultOpen` and `onOpenChange`, and its edge is `swipeDirection=\"up\" | \"down\" | \"left\" | \"right\"`.",
+          "Placement is one React Aria `placement` string (`\"bottom start\"`, `\"top\"`) on `Popover`, `HoverCard` or `SelectContent`, never Radix's `side`, `align` and `sideOffset`.",
+          "An icon-only trigger has its own `aria-label`; a `Tooltip` is `aria-describedby` and never the name, a `TooltipTrigger` has exactly two children, and nothing interactive goes inside a tooltip."
+        ]
+      }
+    },
+    "selection": {
+      "title": "Selection",
+      "choice": "Pick one or many from a list: dropdown, searchable, native, radio, segmented toggle, tabs or a command palette",
+      "modules": [
+        "components/select",
+        "components/combobox",
+        "components/native-select",
+        "components/radio-group",
+        "components/toggle-group",
+        "components/tabs",
+        "components/command"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton selection controls built on React Aria: Select with SelectTrigger, SelectValue, SelectContent and SelectItem, Combobox for searchable lists, NativeSelect for plain forms, RadioGroup, ToggleGroup for segmented choices, Tabs with selectedKey, Command for palettes. Covers selectedKey, onSelectionChange, id on items and the variant surfaces. Load when building a dropdown, select, picker, autocomplete, radio, segmented control, tabs or command menu.",
+        "checklist": [
+          "A `Select` inside a `Field` puts the `id` on `SelectTrigger` and points `FieldLabel htmlFor` at that id — `Select` renders a `div` and `SelectTrigger` renders the `button`.",
+          "`Select`'s `onSelectionChange` is handed `Key | null`, so the handler narrows the `null` that means nothing is selected instead of casting it away with `as`.",
+          "Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value`, `defaultValue` and `onValueChange` are Radix names React Aria drops.",
+          "`RadioGroup` is the exception: each `RadioGroupItem` identifies itself by `value` and the group reports through `onChange`, with `id` used only so a `FieldLabel htmlFor` can reach it.",
+          "`ToggleGroup` reads `selectedKeys` / `defaultSelectedKeys` and its `onSelectionChange` hands back a `Set`, not a single value.",
+          "`placeholder` sits on `Select` (`SelectValue` takes none), while `NativeSelect` is a real `select` driven by `value` / `onChange(event)` / `disabled` with an empty-valued first `NativeSelectOption` as its placeholder.",
+          "Every group carries a name: `aria-label` on `Combobox`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.",
+          "`CommandItem` acts through `onAction` and carries `textValue` when its children are JSX, and an empty filter renders through `renderEmptyState` returning `CommandEmpty` / `ComboboxEmpty` (with `allowsEmptyCollection` on a `Combobox`)."
+        ]
+      }
+    },
+    "actions": {
+      "title": "Actions",
+      "choice": "A button, a link that looks like one, an inline link, a toggle, a grouped set of buttons, a menu or a selection bar",
+      "modules": [
+        "components/button",
+        "components/button-group",
+        "tecton/link",
+        "components/toggle",
+        "components/dropdown-menu",
+        "components/context-menu",
+        "tecton/copy-button",
+        "tecton/action-bar"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton actions built on React Aria: Button with variant and size and onPress, LinkButton for navigation styled as a button, Link for inline links, ButtonGroup, Toggle, DropdownMenu and ContextMenu, CopyButton, ActionBar for a selection or unsaved changes. Covers onPress versus onClick, isDisabled, data-icon spacing, icon-only buttons with aria-label and the FAB recipe. Load when adding a button, link, menu, toolbar, toggle or action bar.",
+        "checklist": [
+          "Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.",
+          "A `Button`'s box comes from `size` (`icon`, `icon-xs`, `icon-sm`, `icon-lg` for icon-only) and its weight from `variant`; `size-8`, `h-*`, `p-*`, `rounded-*` and `bg-*` in `className` replace what the variant owns.",
+          "Every icon-only `Button`, `Toggle`, `ToggleGroupItem` and `InputGroupButton` has an `aria-label`, and every icon or `Spinner` inside a control carries `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"`.",
+          "Every `DropdownMenuItem` and `ContextMenuItem` acts through `onAction` (or `onAction(key)` on the menu with an `id` per item), and a dangerous entry is marked `variant=\"destructive\"` rather than `text-red-*`.",
+          "`DropdownMenuTrigger` and `ContextMenuTrigger` take exactly two children — the trigger and the menu — with no `DropdownMenuContent` and no `asChild`, and check marks come from `selectionMode` plus `selectedKeys` on the `Group`, never `checked` / `onCheckedChange`.",
+          "Navigation is a `LinkButton` or a `Link` with an `href` (and `isExternal` instead of hand-written `target` and `rel`), never an anchor nested inside a `Button` and never a `Link` that only runs a handler.",
+          "A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `isOpen`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.",
+          "Copy-to-clipboard is `CopyButton value={…}` with `onCopied`, with no `onPress` passed to it, no icon child and no hand-written clipboard handler."
+        ]
+      }
+    },
+    "progress": {
+      "title": "Progress",
+      "choice": "A determinate bar, a ring, a segmented gauge, an indeterminate spinner or a loading placeholder",
+      "modules": [
+        "components/progress",
+        "tecton/circular-progress",
+        "tecton/meter",
+        "components/spinner",
+        "components/skeleton"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton progress and loading indicators: Progress for a determinate bar, CircularProgress for a ring or indeterminate spinner with a label, Meter for a segmented gauge of risk, complexity or confidence, Spinner inside buttons and inline, Skeleton for loading placeholders. Load when showing loading, progress, percentage, a gauge, a score or a placeholder.",
+        "checklist": [
+          "Every `Spinner` inside a `Button`, `Badge` or `InputGroupAddon` carries `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"`, and the control is `isDisabled` while it spins.",
+          "Every `Progress`, `CircularProgress` and `Meter` has a name: a `ProgressLabel` child, `label` on the meter, or `aria-label` when the name is already beside it.",
+          "A value that is not on a 0–100 scale states its scale with `minValue` and `maxValue` (`value={loaded} maxValue={total}`, a 4-out-of-5 score with `maxValue={5}`).",
+          "An unknown total is `isIndeterminate`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.",
+          "A measured task is `Progress` or `CircularProgress`; a score or level that is read rather than completed is a `Meter`, with `color=\"auto\"` choosing the band instead of a hand-written ternary.",
+          "`className` on `Progress`, `CircularProgress` and `Meter` sets width and placement only — the height, the stroke width and the fill come from `size` and `color`.",
+          "Every `Skeleton` has a height or an aspect ratio (`h-4 w-full`, `size-12 rounded-full`, `aspect-video w-full`), because an empty `div` with no intrinsic size renders nothing.",
+          "A `Spinner` is never wrapped in a second live region: it already carries `role=\"status\"` and `aria-label=\"Loading\"`."
+        ]
+      }
+    },
+    "surfaces": {
+      "title": "Surfaces",
+      "choice": "A content card, a titled application panel, a list row, a page title block, the application frame or a divider",
+      "modules": [
+        "components/card",
+        "tecton/panel",
+        "components/item",
+        "tecton/page-header",
+        "tecton/app-shell",
+        "components/separator"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton surfaces: Card with CardHeader, CardContent and CardFooter for content, Panel for a titled application surface with scrolling body and pinned footer, Item for list rows, PageHeader for the title block with eyebrow, description, tabs and actions, AppShell for the application frame, Separator with emphasis. Load when laying out a page, panel, card, section, list row, header or divider.",
+        "checklist": [
+          "A self-contained block of content is a `Card` composed of `CardHeader` (`CardTitle`, `CardDescription`, `CardAction`), `CardContent` and `CardFooter`; a hand-drawn `rounded-lg border bg-card p-4` on some other component is that `Card` written out by hand.",
+          "A titled application surface whose body has to scroll is a `Panel`, and the body is inside `PanelContent` — only that part carries `min-h-0 flex-1 overflow-auto`.",
+          "`className` on `Card` and `Panel` is placement, width and height only (`w-full max-w-sm`, `h-72`); their padding comes from `--card-spacing` or the `size` scale, so a `p-6` double-pads.",
+          "A list row is an `Item` with `ItemMedia`, `ItemContent` (`ItemTitle`, `ItemDescription`) and `ItemActions`, and a clickable row is given an `href` rather than an `onClick` on a `div`.",
+          "Rows inside an `ItemGroup` are divided with `ItemSeparator` and card sections with a bare `border-b` on `CardHeader`, never with a hand-written border colour.",
+          "A page title block is a `PageHeader` with the eyebrow, title and description inside `PageHeaderContent` and the actions in `PageHeaderActions`, and `PageHeaderTitle` is the page's single `h1`.",
+          "The application frame is `AppShell` > `AppShellHeader` plus `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`, with the page content in `AppShellMain` and never straight into `AppShellBody`.",
+          "A divider is a `Separator` with `emphasis=\"subtle\" | \"default\" | \"strong\"` (or the surface's own `ItemSeparator` / `border-b`), never a bare `div` with a border colour."
+        ]
+      }
+    },
+    "forms": {
+      "title": "Forms",
+      "choice": "A labelled field with description and error, and the controls that go inside it",
+      "modules": [
+        "components/field",
+        "components/input",
+        "components/textarea",
+        "components/checkbox",
+        "components/switch",
+        "components/slider",
+        "components/input-group",
+        "components/input-otp",
+        "components/label"
+      ],
+      "skill": {
+        "description": "Build Tecton forms with React Aria controls: Field with FieldLabel, FieldDescription and FieldError around Input, Textarea, Select, Checkbox, Switch, Slider, InputGroup and InputOTP. Covers isInvalid and data-invalid, isSelected and onChange instead of checked and onCheckedChange, value and onChange on text fields, the outline, filled and text variants, and TanStack Form wiring. Load when building a form, input, text field, checkbox, switch, slider or validation message.",
+        "checklist": [
+          "Every control in a `Field` has an `id` and a `FieldLabel htmlFor` pointing at it — `Field` renders `role=\"group\"` and associates nothing by itself.",
+          "For a `Select` the `id` goes on `SelectTrigger`; a `Slider` has no `htmlFor` target at all and takes `aria-label` with `FieldTitle` and `FieldDescription`; a group of controls — a `RadioGroup`, a `ChipGroup`, a set of checkboxes — is named by `FieldSet` + `FieldLegend`, never by a stray `FieldLabel`.",
+          "`Checkbox` and `Switch` are driven by `isSelected` / `defaultSelected` and `onChange(isSelected: boolean)`: no `checked`, no `onCheckedChange`, and no reading `e.target` off the callback.",
+          "`Input`, `Textarea` and `NativeSelect` are real DOM elements, so they take `value`, `onChange(event)` read through `event.target.value`, `disabled`, `required` and `aria-invalid`.",
+          "An invalid value sets `aria-invalid` (or `isInvalid`) on the control **and** `data-invalid` on the `Field`, with the message rendered in `FieldError` rather than a red paragraph.",
+          "`Input`, `Textarea` and `SelectTrigger` take their surface from `variant=\"outline\" | \"filled\" | \"text\"`, and `className` on them carries layout only (`w-full`, `col-span-2`).",
+          "An icon, unit, hint or in-field button lives in an `InputGroup` with `InputGroupInput` (never a plain `Input`) and an `InputGroupAddon` placed after the control in the DOM and positioned with `align`.",
+          "`Slider` is bounded with `minValue`, `maxValue` and `step`, holds an array `value` and narrows the `number | number[]` it reports; `FieldTitle` renders a `div` and never names a control."
+        ]
+      }
+    },
+    "navigation": {
+      "title": "Navigation",
+      "choice": "Where the user is and where they can go",
+      "modules": [
+        "components/breadcrumb",
+        "components/sidebar",
+        "components/pagination",
+        "tecton/app-finder",
+        "tecton/shell-actions"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton navigation: Breadcrumb for the path to the current page, Sidebar with SidebarProvider, SidebarMenu and SidebarMenuButton for the application navigation rail, Pagination for paged lists, AppFinder for switching applications from the shell header, ShellActions for the global action cluster with command palette trigger, icon actions, overflow and user menu. Load when building navigation, a breadcrumb trail, a sidebar, paging controls, an app switcher or the shell header actions.",
+        "checklist": [
+          "A breadcrumb is `Breadcrumb > BreadcrumbList > BreadcrumbItem` ending in `BreadcrumbPage` (the element marked `aria-current=\"page\"`), never a row of anchors and slashes.",
+          "A routing library's link is mounted through `render={(props) => <Link {...props} />}` on `BreadcrumbLink` or `SidebarMenuButton`; there is no `asChild`, and React Aria renders a `span[role=\"link\"]` whenever it has no `href`.",
+          "Every `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` is inside one `SidebarProvider` — `useSidebar` throws outside it, and a second provider fights the first over the `sidebar_state` cookie and ⌘B.",
+          "A navigation row is `SidebarMenuItem > SidebarMenuButton href=\"…\"` with `isActive` on the current one, not a button with a handler.",
+          "Paging controls are `Pagination > PaginationContent > PaginationItem`, every control carries an `href`, the current page is marked with `isActive` on `PaginationLink` (which sets both the outline variant and `aria-current=\"page\"`), and a dead end is `isDisabled`, never `disabled` or a colour class.",
+          "The app switcher is an `AppFinder` whose search is `AppFinderInput` inside `AppFinderMenu` (never an `Input` of your own) and whose tile is tinted with `tone`, never with `className`.",
+          "The shell's header actions are `ShellAction`s with a `label` — both the accessible name and the tooltip — inside `ShellActions`, not icon `Button`s with a `title`.",
+          "A key hint rendered by `shortcut` on `ShellAction` or `ShellCommandTrigger` is also registered with `useShortcut`, or nothing is bound and the key is missing from `useShortcuts()`."
+        ]
+      }
+    },
+    "data": {
+      "title": "Data",
+      "choice": "Rows, trees, charts, KPIs, colours and dates",
+      "modules": [
+        "components/table",
+        "tecton/tree-view",
+        "components/chart",
+        "tecton/stat",
+        "tecton/color-swatch",
+        "components/calendar"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton data display: Table with TableHeader, TableRow and TableCell plus the TanStack Table recipe for sorting, filtering and pagination, TreeView for hierarchies with folder and item rows, Chart with ChartContainer, ChartTooltip and ChartLegend over Recharts, Stat with StatValue and StatDelta for KPI readouts, ColorSwatch for colour previews, Calendar and the date picker recipe. Load when rendering rows, a data grid, a tree, a chart, a KPI, a colour value or a date.",
+        "checklist": [
+          "A table is `Table > TableHeader / TableBody / TableFooter` with the `TableHead` children straight inside `TableHeader` (React Aria renders the header row itself), an `aria-label` on `Table`, `isRowHeader` on the identifying column and an `id` on every `TableRow`.",
+          "An empty table renders through `TableBody`'s `renderEmptyState`, returning `Empty` or a string — never a `TableRow` with a `colSpan` cell.",
+          "Row activation is `onAction` on `TableRow` and sorting is `allowsSorting` on `TableHead` with the table's `onSortChange`; React Aria deletes `onClick` before the `<tr>` is rendered.",
+          "`className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-right`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.",
+          "A KPI is a `Stat` with `StatLabel`, `StatValue` (its unit in the `unit` prop) and `StatDelta` with `trend=\"up\" | \"down\" | \"flat\"`, never a heading and a coloured span, and `className` on `StatGroup` carries width and placement only.",
+          "A hierarchy is a `TreeView` with an `aria-label` and an `id` plus `textValue` on every `TreeViewItem`, not a pile of nested `Collapsible`s, and rows are never indented with `pl-*`.",
+          "A chart is a Recharts chart inside a `ChartContainer` with a `ChartConfig` keyed by `dataKey`, painted with `fill=\"var(--color-<key>)\"` from that config and given a size in `className`, never a Tailwind colour class or a hard-coded hex.",
+          "`Calendar` and `RangeCalendar` are React Aria: `value` / `onChange` hold `@internationalized/date` values and days are blocked with `isDateUnavailable`, `minValue` and `maxValue`, while react-day-picker's `mode`, `selected`, `onSelect` and `disabled` are filtered out."
+        ]
+      }
+    },
+    "layout": {
+      "title": "Layout",
+      "choice": "Disclosure, splitting, scrolling and ratio boxes",
+      "modules": [
+        "components/accordion",
+        "components/collapsible",
+        "components/resizable",
+        "components/scroll-area",
+        "components/aspect-ratio"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton layout and disclosure: Accordion for stacked expandable sections, Collapsible for one toggled region with Button slot trigger, Resizable panels with ResizablePanelGroup, ResizablePanel and ResizableHandle, ScrollArea for styled scrolling, AspectRatio for media boxes. Covers orientation instead of direction, pixel versus percent sizes, and the React Aria disclosure props instead of the Radix ones. Load when laying out expandable, split, scrolling or fixed-ratio regions.",
+        "checklist": [
+          "`Accordion` is a React Aria `DisclosureGroup`: every `AccordionItem` has an `id`, state is `expandedKeys` / `defaultExpandedKeys` / `onExpandedChange` (a `Set`), and `type`, `collapsible`, `value` and `defaultValue` are dropped.",
+          "`Collapsible` is a React Aria `Disclosure` controlled with `isExpanded` / `defaultExpanded` / `onExpandedChange`, never with `open` and `onOpenChange`.",
+          "The revealed markup is inside `CollapsibleContent` — the panel the trigger's `aria-expanded` and `aria-controls` refer to — not a hand-rolled conditional.",
+          "The collapsible trigger is a Tecton `Button` carrying `slot=\"trigger\"` and no `onPress` of its own, and `AccordionTrigger` is left to render its own heading, button and chevron.",
+          "`ResizablePanelGroup` wraps react-resizable-panels, not React Aria: the axis prop is `orientation`, `defaultSize` / `minSize` / `maxSize` take unit strings (`\"25%\"`, `\"320px\"`), and disabling is `disabled`.",
+          "A `ResizablePanelGroup` is given its height from outside (`h-96` or a flex parent) and every `ResizableHandle` is a direct child of its group.",
+          "A `ScrollArea` has a height (`h-*`, `max-h-*`, or `min-h-0 flex-1`) because it only sets `overflow-auto`, and it takes `tabIndex={0}` with `role=\"region\"` and an `aria-label` when nothing inside it is focusable.",
+          "`AspectRatio` is given its required numeric `ratio`, a child that fills it (`absolute inset-0 size-full object-cover`) and its width from outside, with no fixed height competing with the ratio."
+        ]
+      }
+    },
+    "presentation": {
+      "title": "Presentation",
+      "choice": "Slides, avatars, collapsing toolbars, a full-bleed work surface or a decorative background",
+      "modules": [
+        "components/carousel",
+        "components/avatar",
+        "tecton/overflow",
+        "tecton/canvas",
+        "tecton/background"
+      ],
+      "skill": {
+        "description": "Choose and use Tecton presentation surfaces: Carousel with CarouselContent and CarouselItem for slides, Avatar with AvatarImage, AvatarFallback and AvatarBadge, Overflow with OverflowItem and OverflowLabel for toolbars that collapse into a More menu, Canvas with CanvasSurface and its floating chrome slots for a full-bleed work surface, Background for the eleven decorative themed effects. Load when building slides, avatars, a collapsing toolbar, a map or canvas surface, or a decorative background.",
+        "checklist": [
+          "Embla options go in `opts` on `Carousel` and never on `CarouselContent`, the axis comes from `orientation` rather than an Embla `axis`, and slide width is `basis-*` on `CarouselItem`, never `w-*`.",
+          "Every `Avatar` has an `AvatarFallback` behind its `AvatarImage`, and its box comes from `size=\"sm\" | \"default\" | \"lg\"` — a `size-*` class leaves `AvatarBadge` and `AvatarGroupCount` at the default size.",
+          "`AvatarBadge` is the one part the application recolours, and only with a Tecton step (`className=\"bg-green-560\"`).",
+          "Every control that may leave a collapsing row is wrapped in an `OverflowItem` with a stable `id`, its text in an `OverflowLabel` and its handler on the item's `onAction` rather than on the button; the primary action is left unwrapped.",
+          "A collapsing row of controls uses `Toolbar` with an `aria-label` when it is a toolbar (one tab stop, arrow keys) and `Overflow` when it is not.",
+          "Floating canvas chrome is a `CanvasOverlay` with a `position`, holding `CanvasToolbar`s and a `CanvasLegend`, never a hand-placed absolute box that swallows the drags passing over it.",
+          "A `Canvas` takes its height from a flex column or an explicit `h-*`, because `CanvasSurface` is `absolute inset-0` and leaves nothing in flow to size it.",
+          "A decorative background is a named effect (`ContourBackground`, `SeismicBackground`, …) rendered as the first child of a `relative isolate overflow-hidden` container and tuned with `tone`, `intensity` and `speed`, never a gradient in `className`."
+        ]
+      }
+    },
+    "conversation": {
+      "title": "Conversation",
+      "choice": "Chat and assistant surfaces",
+      "modules": [
+        "components/message",
+        "components/message-scroller",
+        "components/bubble",
+        "components/attachment",
+        "components/questionnaire",
+        "components/marker"
+      ],
+      "skill": {
+        "description": "Build Tecton chat and assistant surfaces: Message with MessageContent, MessageFooter, MessageHeader and MessageAvatar for assistant, user and tool turns, MessageScroller with MessageScrollerProvider and MessageScrollerItem for the auto-following transcript, Bubble with BubbleContent and the align axis for compact chat bubbles, Attachment for files in a composer or a message, Questionnaire with QuestionnaireChoice and QuestionnaireSubmit for structured questions the assistant asks, Marker for full-width status rows and labelled dividers in a transcript. Load when building a chat panel, an AI assistant transcript, a composer, message attachments or transcript status rows.",
+        "checklist": [
+          "A turn is a `Message` with `MessageAvatar` and `MessageContent` holding `MessageHeader`, a `Bubble` and `MessageFooter`, and its side comes from `align=\"start\" | \"end\"` — there is no `role` axis and no hand-written `justify-end`.",
+          "Message text always goes inside `BubbleContent`, because every `Bubble` variant styles `*:data-[slot=bubble-content]` and a bare child renders unpadded and unframed.",
+          "A `Bubble`'s fill comes from `variant` and its side from `align`, never from a colour class or a margin, and a pressable bubble is built with `render` rather than `onClick`.",
+          "A transcript is `MessageScrollerProvider > MessageScroller > MessageScrollerViewport > MessageScrollerContent` with every row wrapped in a `MessageScrollerItem` carrying a stable `messageId`, not a plain `overflow-auto` div.",
+          "An attached file is an `Attachment` (`AttachmentMedia`, `AttachmentContent`, `AttachmentActions`) driven through `state=\"idle\" | \"uploading\" | \"processing\" | \"error\" | \"done\"`, not a `Badge` and not a hand-painted error border.",
+          "Every `AttachmentAction` has an `aria-label` naming the action and the file and fires through `onPress`, and the card opens through `AttachmentTrigger` rather than an `onClick` on the root `div`.",
+          "A structured set of questions is a `Questionnaire` with `items`, a `name` per `QuestionnaireItem`, answers read from `new FormData(event.currentTarget)` in `onSubmit`, and navigation only through `QuestionnairePrevious`, `QuestionnaireSkip`, `QuestionnaireNext` and `QuestionnaireSubmit` — these parts take `disabled` and `onChange`, not React Aria props.",
+          "A full-width status row or labelled divider in a transcript is a `Marker` with `MarkerIcon` and `MarkerContent` (`variant=\"separator\"` for a divider, `role=\"status\"` for work in progress), never a coloured span and never `role=\"separator\"`."
+        ]
+      }
+    },
+    "infrastructure": {
+      "title": "Infrastructure",
+      "choice": "Providers and roots, not visible components",
+      "skill": {
+        "description": "Wire the Tecton providers and roots: DirectionProvider for right-to-left layouts, PortalProvider and usePortalTarget for choosing where overlays portal in pages with several React roots, ThemeRoot for an independently deployed application with its own scope class, mode and overlay container, ShortcutsProvider and useShortcut for the keyboard shortcut registry the shell lists. Load when mounting an application, a micro-frontend, an RTL locale, overlay portals or keyboard shortcuts.",
+        "checklist": [
+          "A right-to-left application is wrapped once in a `DirectionProvider` (with a real `locale` where there is one) and also sets `dir` on `<html>`; React Aria reads `useLocale()`, not the DOM, so `dir` on a wrapper changes nothing.",
+          "Inside a flipped tree every spacing and alignment class is logical (`ms-*`, `pe-*`, `text-start`, `border-s`), and the direction is read with `useDirection()` rather than from `document.dir`.",
+          "A page holding several React roots wraps each root in a `PortalProvider` with its own body-level `container`, because `document.body` falls outside that root's `@scope` rule.",
+          "No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal context themselves.",
+          "An independently mounted application is wrapped in a `ThemeRoot` carrying its scope class with `theme=\"inherit\"`, and it imports `@tecton/react/styles/scoped.css`, never `globals.css`.",
+          "A theme override for one root goes in `ThemeRoot`'s `className` (`[--primary:var(--tecton-palette-green-560)]`), which is mirrored onto the overlay container; inline CSS variables never reach a portalled overlay.",
+          "Every keyboard shortcut is registered with `useShortcut` inside one `ShortcutsProvider` rather than a `window` keydown listener, so it is suppressed while an input has focus and is listed by `useShortcuts()`.",
+          "A mounted application reuses the host's registry object from `createShortcutRegistry()` instead of creating a second one, and its shortcuts are written in the registry syntax (`mod+k`, `?`, `g w`) with a stable `id`, `label` and `group`."
+        ]
+      },
+      "modules": [
+        "components/direction",
+        "tecton/portal",
+        "tecton/theme-root",
+        "tecton/shortcuts"
+      ]
+    }
+  },
+  "externals": {
+    "toast": {
+      "import": "import { toast } from \"sonner\"",
+      "docs": "/docs/components/sonner",
+      "note": "The Toaster component is @tecton/react/components/sonner; toast() itself comes from the sonner package."
+    },
+    "TanStack Table": {
+      "import": "import { useReactTable } from \"@tanstack/react-table\"",
+      "docs": "/docs/components/data-table",
+      "note": "Data tables are a recipe on the shadcn Table, not a component."
+    },
+    "TanStack Form": {
+      "import": "import { useForm } from \"@tanstack/react-form\"",
+      "docs": "/docs/forms/tanstack-form"
+    },
+    "Lucide": {
+      "import": "import { SearchIcon } from \"lucide-react\"",
+      "docs": "/docs/icons",
+      "note": "Generic glyphs; Tecton domain glyphs come from @tecton/react/icons."
+    },
+    "Tecton icons": {
+      "import": "import { WellIcon } from \"@tecton/react/icons\"",
+      "docs": "/docs/icons"
+    }
+  }
+}
