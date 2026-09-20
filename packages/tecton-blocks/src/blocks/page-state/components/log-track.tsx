@@ -217,7 +217,7 @@ function LogTrack({
 
       {/* curves */}
       {tracks.map((track, index) => {
-        const values = curves[index]
+        const values = curves[index] ?? []
         const points = values.map((value, i) => {
           const fraction = i / (SAMPLES - 1)
           return {
@@ -240,12 +240,13 @@ function LogTrack({
                   p.fraction >= fadeFrom &&
                   (stopAt === undefined || p.fraction <= stopAt)
               )
+        const solidEnd = solid[solid.length - 1]
         const flat =
-          flatFrom === undefined || solid.length === 0
+          flatFrom === undefined || solidEnd === undefined
             ? null
             : {
-                x: solid[solid.length - 1].x,
-                y0: solid[solid.length - 1].y,
+                x: solidEnd.x,
+                y0: solidEnd.y,
                 y1: geometry.toY(stopAt ?? 1),
               }
         const spikeHere = spike && spike.track === index
@@ -254,6 +255,7 @@ function LogTrack({
               const i = Math.round(spike.at * (SAMPLES - 1))
               const before = points[Math.max(0, i - 2)]
               const after = points[Math.min(SAMPLES - 1, i + 2)]
+              if (before === undefined || after === undefined) return null
               return `${before.x},${before.y} ${trackX(index) + trackW + 20},${geometry.toY(spike.at)} ${after.x},${after.y}`
             })()
           : null

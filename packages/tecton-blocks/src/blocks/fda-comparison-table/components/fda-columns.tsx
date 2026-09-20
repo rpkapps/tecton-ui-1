@@ -71,7 +71,7 @@ function MonoValue({
 }
 
 type ColumnCallbacks = {
-  onOpen?: (fda: FieldDevelopmentAlternative) => void
+  onOpen?: ((fda: FieldDevelopmentAlternative) => void) | undefined
   onDuplicate?: (fda: FieldDevelopmentAlternative) => void
   onDelete?: (fda: FieldDevelopmentAlternative) => void
 }

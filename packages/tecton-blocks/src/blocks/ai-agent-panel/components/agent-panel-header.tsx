@@ -20,7 +20,7 @@ import {
 
 type AgentPanelHeaderProps = React.ComponentProps<typeof PanelHeader> & {
   title?: string
-  onClose?: () => void
+  onClose?: (() => void) | undefined
   onClear?: () => void
 }
 
@@ -48,12 +48,17 @@ function AgentPanelHeader({
             <MoreVerticalIcon />
           </Button>
           <DropdownMenu placement="bottom end">
-            <DropdownMenuItem onAction={onClear}>
+            <DropdownMenuItem
+              {...(onClear === undefined ? {} : { onAction: onClear })}
+            >
               New conversation
             </DropdownMenuItem>
             <DropdownMenuItem>Export transcript</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onAction={onClear}>
+            <DropdownMenuItem
+              variant="destructive"
+              {...(onClear === undefined ? {} : { onAction: onClear })}
+            >
               Clear history
             </DropdownMenuItem>
           </DropdownMenu>
@@ -63,7 +68,7 @@ function AgentPanelHeader({
             variant="ghost"
             size="icon-sm"
             aria-label="Close panel"
-            onPress={onClose}
+            {...(onClose === undefined ? {} : { onPress: onClose })}
           >
             <XIcon />
           </Button>

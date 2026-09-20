@@ -11,9 +11,12 @@
     "jsx": "react-jsx",
     "skipLibCheck": true,
     "strict": true,
+    "exactOptionalPropertyTypes": true,
+    "noUncheckedIndexedAccess": true,
     "noEmit": true,
     "paths": {
       "@tecton/react/*": [
+        "../tecton-react/dist/*",
         "../tecton-react/src/*"
       ]
     }

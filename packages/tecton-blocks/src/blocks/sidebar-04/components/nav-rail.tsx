@@ -51,7 +51,7 @@ function NavRail(props: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     href={item.url}
-                    isActive={item.isActive}
+                    isActive={item.isActive ?? false}
                     tooltip={item.title}
                   >
                     <item.icon />

@@ -35,7 +35,7 @@ function NavMain({ groups }: { groups: NavGroup[] }) {
               item.items?.length ? (
                 <Collapsible
                   key={item.title}
-                  defaultExpanded={item.isActive}
+                  defaultExpanded={item.isActive ?? false}
                   className="group/collapsible"
                 >
                   <SidebarMenuItem>
@@ -50,7 +50,7 @@ function NavMain({ groups }: { groups: NavGroup[] }) {
                           <SidebarMenuSubItem key={subItem.title}>
                             <SidebarMenuSubButton
                               href={subItem.url}
-                              isActive={subItem.isActive}
+                              isActive={subItem.isActive ?? false}
                             >
                               <span>{subItem.title}</span>
                             </SidebarMenuSubButton>
@@ -64,7 +64,7 @@ function NavMain({ groups }: { groups: NavGroup[] }) {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     href={item.url}
-                    isActive={item.isActive}
+                    isActive={item.isActive ?? false}
                     tooltip={item.title}
                   >
                     <item.icon />

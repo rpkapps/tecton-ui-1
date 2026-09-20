@@ -78,6 +78,13 @@ function FdaComparisonTable({
   })
 
   const selectedCount = table.getSelectedRowModel().rows.length
+  const [primarySort] = sorting
+  const sortDirection: "ascending" | "descending" = primarySort?.desc
+    ? "descending"
+    : "ascending"
+  const sortDescriptor = primarySort
+    ? { column: primarySort.id, direction: sortDirection }
+    : undefined
 
   return (
     <div
@@ -103,14 +110,7 @@ function FdaComparisonTable({
             )
           }
         }}
-        sortDescriptor={
-          sorting.length
-            ? {
-                column: sorting[0].id,
-                direction: sorting[0].desc ? "descending" : "ascending",
-              }
-            : undefined
-        }
+        {...(sortDescriptor === undefined ? {} : { sortDescriptor })}
         onSortChange={(descriptor) =>
           table.setSorting([
             {
@@ -176,7 +176,13 @@ function FdaComparisonTable({
           <span className="tabular-nums">
             {selectedCount} of {table.getRowModel().rows.length} selected
           </span>
-          <Button variant="ghost" size="xs" onPress={onAddComparison}>
+          <Button
+            variant="ghost"
+            size="xs"
+            {...(onAddComparison === undefined
+              ? {}
+              : { onPress: onAddComparison })}
+          >
             <PlusIcon /> Add comparison
             {selectedCount > 1 && (
               <span className="text-muted-foreground">({selectedCount})</span>

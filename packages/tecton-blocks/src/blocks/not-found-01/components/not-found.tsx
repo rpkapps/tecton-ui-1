@@ -79,7 +79,10 @@ function NotFound({
           <LinkButton href={notFoundCopy.homeHref}>
             <ArrowLeftIcon data-icon="inline-start" /> Back to dashboard
           </LinkButton>
-          <Button variant="outline" onPress={onSearch}>
+          <Button
+            variant="outline"
+            {...(onSearch === undefined ? {} : { onPress: onSearch })}
+          >
             <SearchIcon data-icon="inline-start" />
             Search
             <KbdGroup className="ms-1">

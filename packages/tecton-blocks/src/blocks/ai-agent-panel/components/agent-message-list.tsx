@@ -109,7 +109,7 @@ function AssistantMessage({
   onAction,
 }: {
   content: string[]
-  actions?: AgentAction[]
+  actions?: AgentAction[] | undefined
   completedActions: string[]
   onAction?: (action: AgentAction) => void
 }) {

@@ -26,7 +26,7 @@ export type HorizonSettings = {
   smoothing: number
 }
 
-export const surfaces: Surface[] = [
+export const surfaces: [Surface, ...Surface[]] = [
   {
     id: "k70",
     code: "K70",
@@ -59,7 +59,7 @@ export const surfaces: Surface[] = [
   },
 ]
 
-export const surfacePairs: SurfacePair[] = [
+export const surfacePairs: [SurfacePair, ...SurfacePair[]] = [
   {
     id: "spekk-are",
     label: "Spekk FM Top → Are FM Top",

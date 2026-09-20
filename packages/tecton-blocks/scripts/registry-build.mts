@@ -25,10 +25,8 @@ const PKG = path.resolve(HERE, "..")
 const SRC = path.join(PKG, "src")
 const STAGE = path.join(PKG, "registry/src")
 const outputFlag = process.argv.indexOf("--output")
-const OUTPUT = path.resolve(
-  PKG,
-  outputFlag > -1 ? process.argv[outputFlag + 1] : "../../apps/www/public/r"
-)
+const outputArg = outputFlag > -1 ? process.argv[outputFlag + 1] : undefined
+const OUTPUT = path.resolve(PKG, outputArg ?? "../../apps/www/public/r")
 
 type RegistryFile = {
   path: string
@@ -43,7 +41,7 @@ type RegistryItem = {
   description?: string
   dependencies?: string[]
   registryDependencies?: string[]
-  categories?: string[]
+  categories?: string[] | undefined
   files?: RegistryFile[]
   cssVars?: Record<string, Record<string, string>>
   css?: Record<string, unknown>
@@ -71,7 +69,7 @@ function rewrite(source: string, blockName: string) {
       // components/ folder): cross-block imports are always relative.
       const sibling = spec.match(/^(?:\.\.\/)+([^./][^/]*)\//)?.[1]
       if (sibling && sibling !== blockName) registryDeps.add(`@tecton/${sibling}`)
-      const bare = spec.startsWith("@") ? spec.split("/").slice(0, 2).join("/") : spec.split("/")[0]
+      const bare = spec.startsWith("@") ? spec.split("/").slice(0, 2).join("/") : (spec.split("/")[0] ?? spec)
       if (KNOWN_DEPENDENCIES.has(bare)) deps.add(bare)
       return match
     }
@@ -144,12 +142,13 @@ async function main() {
     const meta = registryMeta.match(
       new RegExp(`name: "${block.name}",\\s*title: "([^"]+)",\\s*description:\\s*"([^"]+)",\\s*category: "([^"]+)"`)
     )
+    const category = meta?.[3]
     items.push({
       name: block.name,
       type: "registry:block",
       title: meta?.[1] ?? titleCase(block.name),
       description: `${meta?.[2] ?? ""} Requires the @tecton/react package.`.trim(),
-      categories: meta ? [meta[3]] : undefined,
+      categories: category === undefined ? undefined : [category],
       dependencies: [...deps].sort(),
       registryDependencies: [...registryDeps].sort(),
       files,

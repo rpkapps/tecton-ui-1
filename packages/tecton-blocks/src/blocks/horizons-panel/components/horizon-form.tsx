@@ -211,7 +211,7 @@ function LabelledSlider({
   unit,
   minValue,
   maxValue,
-  step,
+  step = 1,
   onChange,
 }: {
   label: string
