@@ -30,7 +30,7 @@ const meterVariants = cva("flex w-full flex-col gap-1", {
 })
 
 type MeterColor =
-  | "primary"
+  | "default"
   | "success"
   | "warning"
   | "error"
@@ -39,8 +39,10 @@ type MeterColor =
   /** Fill from the `--meter-fill` CSS variable (e.g. `style={{ "--meter-fill": "var(--chart-2)" }}`). */
   | "custom"
 
+// `default` is painted with the shared `progress` token, like the shadcn
+// Progress indicator; the unfilled segment is that token at /38, its track.
 const fillClass: Record<Exclude<MeterColor, "auto">, string> = {
-  primary: "bg-primary",
+  default: "bg-progress",
   success: "bg-success",
   warning: "bg-warning",
   error: "bg-destructive",
@@ -72,7 +74,7 @@ function Meter({
   size = "md",
   label,
   segments = 5,
-  color = "primary",
+  color = "default",
   showValue,
   valueLabel,
   ...props
@@ -123,7 +125,7 @@ function Meter({
                   <span
                     key={i}
                     data-slot="meter-segment"
-                    className="relative flex-1 overflow-hidden rounded-full bg-muted first:rounded-l-full last:rounded-r-full"
+                    className="relative flex-1 overflow-hidden rounded-full bg-progress/38 first:rounded-l-full last:rounded-r-full"
                   >
                     <span
                       className={cn(

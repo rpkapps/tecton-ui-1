@@ -1,6 +1,6 @@
 import { Meter } from "@tecton/react/tecton/meter"
 
-const colors = ["primary", "info", "success", "warning", "error"] as const
+const colors = ["default", "info", "success", "warning", "error"] as const
 
 export default function MeterColors() {
   return (

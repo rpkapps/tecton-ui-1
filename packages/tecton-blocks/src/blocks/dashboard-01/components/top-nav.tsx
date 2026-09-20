@@ -90,7 +90,7 @@ function TopNav({
           </InputGroupAddon>
         </InputGroup>
         <TooltipTrigger>
-          <CountBadge count={project.unreadNotifications} color="error">
+          <CountBadge count={project.unreadNotifications} color="destructive">
             <Button variant="ghost" size="icon-sm" aria-label="Notifications">
               <BellIcon />
             </Button>

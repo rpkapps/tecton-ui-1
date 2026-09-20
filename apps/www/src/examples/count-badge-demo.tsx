@@ -11,7 +11,7 @@ export default function CountBadgeDemo() {
           <BellIcon />
         </Button>
       </CountBadge>
-      <CountBadge count={128} color="error">
+      <CountBadge count={128} color="destructive">
         <Button variant="outline" size="icon" aria-label="Messages">
           <MailIcon />
         </Button>

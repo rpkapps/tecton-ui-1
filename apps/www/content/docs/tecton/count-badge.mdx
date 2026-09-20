@@ -13,7 +13,7 @@ import { CountBadge } from "@tecton/react/tecton/count-badge"
 ```
 
 ```tsx
-<CountBadge count={4} color="error">
+<CountBadge count={4} color="destructive">
   <Button variant="outline" size="icon" aria-label="Notifications">
     <BellIcon />
   </Button>
@@ -21,12 +21,12 @@ import { CountBadge } from "@tecton/react/tecton/count-badge"
 ```
 
 <Callout title="Naming">
-  This is the Tecton *Badge* from the design system. It is named `CountBadge` in the library so it does not collide with the shadcn `Badge`, which Tecton uses for chip-like labels (the interactive [Chip](/docs/tecton/chip) shares its variants).
+  This is the Tecton *Badge* from the design system. It is named `CountBadge` in the library so it does not collide with the shadcn `Badge`, which is the static label (the interactive [Chip](/docs/tecton/chip) shares its variants).
 </Callout>
 
 ## Colors
 
-Use the `color` prop. `neutral` uses the Tecton neutral surface, the others map to the shadcn semantic variables.
+Use the `color` prop. The values are [Badge](/docs/components/badge)'s `variant` names — `default`, `secondary`, `destructive`, `success`, `warning`, `info` — so the same word means the same status on both. The fills stay solid rather than the `*-surface` tokens a badge uses: a 16 px pill needs the contrast to stay legible.
 
 <ComponentPreview name="count-badge-colors" />
 
@@ -82,7 +82,7 @@ Let the badge hide itself: `count={0}` renders nothing unless `showZero`, and `i
 
 <Do>
 
-Pick `color` (`primary`, `error`, `warning`, `success`, `info`, `neutral`, `default`), `anchor` (`top-right` … `bottom-left`) and `max` (counts above it render as `99+`).
+Pick `color` — `default`, `secondary`, `destructive`, `success`, `warning`, `info`, the same names as Badge's `variant` — `anchor` (`top-right` … `bottom-left`) and `max` (counts above it render as `99+`).
 
 </Do>
 
@@ -102,7 +102,7 @@ Put the number in the control's accessible name — `aria-label="Messages, 4 unr
 
 ```tsx
 {unread > 0 && (
-  <CountBadge count={unread} color="error">
+  <CountBadge count={unread} color="destructive">
     <Button variant="outline" size="icon" aria-label="Messages">
       <MailIcon />
     </Button>
@@ -115,7 +115,7 @@ Put the number in the control's accessible name — `aria-label="Messages, 4 unr
 <Correct>
 
 ```tsx
-<CountBadge count={unread} color="error">
+<CountBadge count={unread} color="destructive">
   <Button variant="outline" size="icon" aria-label={`Messages, ${unread} unread`}>
     <MailIcon />
   </Button>
@@ -144,7 +144,7 @@ Put the number in the control's accessible name — `aria-label="Messages, 4 unr
 <Correct>
 
 ```tsx
-<CountBadge count={count} color="error">
+<CountBadge count={count} color="destructive">
   <Button variant="outline" size="icon" aria-label="Notifications">
     <BellIcon />
   </Button>
@@ -162,7 +162,7 @@ Put the number in the control's accessible name — `aria-label="Messages, 4 unr
 <Wrong>
 
 ```tsx
-<CountBadge variant="dot" color="error" count={5}>
+<CountBadge variant="dot" color="destructive" count={5}>
   <Avatar><AvatarFallback>JD</AvatarFallback></Avatar>
 </CountBadge>
 ```
@@ -172,7 +172,7 @@ Put the number in the control's accessible name — `aria-label="Messages, 4 unr
 <Correct>
 
 ```tsx
-<CountBadge color="error" count={5}>
+<CountBadge color="destructive" count={5}>
   <Avatar><AvatarFallback>JD</AvatarFallback></Avatar>
 </CountBadge>
 ```
@@ -198,6 +198,6 @@ Wraps its child in a relatively positioned `span` and renders the badge absolute
 | `showZero` | `boolean` | false | Render the badge when `count` is 0. |
 | `content` | `ReactNode` | - | Custom content instead of the count. |
 | `invisible` | `boolean` | false | Hide the badge but keep the anchor. |
-| `color` | `"default" \| "primary" \| "error" \| "warning" \| "info" \| "success" \| "neutral"` | "primary" | Badge colour. |
+| `color` | `"default" \| "secondary" \| "destructive" \| "success" \| "warning" \| "info"` | "default" | Badge colour, named after Badge's `variant`. |
 | `variant` | `"standard" \| "dot"` | "standard" | Number pill or 8 px dot. |
 | `anchor` | `"top-right" \| "top-left" \| "bottom-right" \| "bottom-left"` | "top-right" | Corner of the child. |

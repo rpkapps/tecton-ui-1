@@ -19,14 +19,19 @@ describe("Panel", () => {
     expect(panel).toHaveAttribute("data-slot", "panel")
     expect(panel).toHaveAttribute("data-variant", "default")
     expect(panel).toHaveAttribute("data-size", "md")
-    expect(panel).toHaveClass("rounded-lg", "border", "bg-card")
+    expect(panel).toHaveClass(
+      "rounded-xl",
+      "ring-1",
+      "ring-foreground/10",
+      "bg-card"
+    )
   })
 
   it.each([
-    ["default", ["rounded-lg", "border", "bg-card"]],
-    ["elevated", ["shadow-md"]],
-    ["flat", ["bg-card"]],
-    ["outline", ["border", "bg-transparent"]],
+    ["default", ["rounded-xl", "ring-1", "ring-foreground/10", "bg-card"]],
+    ["elevated", ["rounded-xl", "ring-1", "shadow-md"]],
+    ["flat", ["rounded-xl", "bg-card"]],
+    ["outline", ["rounded-xl", "ring-border", "bg-transparent"]],
   ] as const)("variant=%s", (variant, classes) => {
     const { container } = render(<Panel variant={variant} />)
     const panel = container.querySelector('[data-slot="panel"]')

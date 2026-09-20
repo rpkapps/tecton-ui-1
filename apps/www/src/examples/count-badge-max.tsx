@@ -17,10 +17,10 @@ export default function CountBadgeMax() {
       <CountBadge count={0}>
         <Inbox />
       </CountBadge>
-      <CountBadge count={0} showZero color="neutral">
+      <CountBadge count={0} showZero color="secondary">
         <Inbox />
       </CountBadge>
-      <CountBadge count={1250} max={999} color="error">
+      <CountBadge count={1250} max={999} color="destructive">
         <Inbox />
       </CountBadge>
       <CountBadge content="New" color="success">

@@ -37,7 +37,7 @@ export default function AppShellSplitExample() {
           <AppShellSplitHandle />
           <AppShellSplitPanel defaultSize="240px" minSize="160px" maxSize="60%">
             <AppShellAside className="h-full w-full border-l-0">
-              <Panel className="h-full rounded-none border-0">
+              <Panel className="h-full rounded-none ring-0">
                 <PanelHeader>
                   <PanelTitle>Properties</PanelTitle>
                 </PanelHeader>

@@ -19,7 +19,8 @@ describe("CountBadge", () => {
     )
     expect(badge(container)).toHaveTextContent("5")
     expect(badge(container)).toHaveAttribute("data-variant", "standard")
-    expect(badge(container)).toHaveAttribute("data-color", "primary")
+    expect(badge(container)).toHaveAttribute("data-color", "default")
+    expect(badge(container)).toHaveClass("bg-primary")
   })
 
   it("hides when there is no count", () => {
@@ -113,11 +114,11 @@ describe("CountBadge", () => {
 
   it("applies the colour variant", () => {
     const { container } = render(
-      <CountBadge count={1} color="error">
+      <CountBadge count={1} color="destructive">
         x
       </CountBadge>
     )
-    expect(badge(container)).toHaveAttribute("data-color", "error")
+    expect(badge(container)).toHaveAttribute("data-color", "destructive")
     expect(badge(container)).toHaveClass("bg-destructive")
   })
 
