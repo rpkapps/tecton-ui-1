@@ -102,18 +102,39 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Wrap the trigger and the `HoverCard` in one `HoverCardTrigger` (React Aria's `PreviewTrigger`), which opens on hover, focus and long press.
-- Tune the timing with `delay` and `closeDelay` on `HoverCardTrigger` — the defaults are 600 ms and 200 ms.
-- Position with `placement` on `HoverCard`, and set width with `className` (`w-72`) only.
-- Make the trigger something the keyboard can reach — a `Button variant="link"` or a `Link` — so focus can open the card.
+<DoList>
+
+<Do>
+
+Wrap the trigger and the `HoverCard` in one `HoverCardTrigger` (React Aria's `PreviewTrigger`), which opens on hover, focus and long press.
+
+</Do>
+
+<Do>
+
+Tune the timing with `delay` and `closeDelay` on `HoverCardTrigger` — the defaults are 600 ms and 200 ms.
+
+</Do>
+
+<Do>
+
+Position with `placement` on `HoverCard`, and set width with `className` (`w-72`) only.
+
+</Do>
+
+<Do>
+
+Make the trigger something the keyboard can reach — a `Button variant="link"` or a `Link` — so focus can open the card.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Labelling an icon button with a hover card">
 
-#### Labelling an icon button with a hover card
-
-Wrong:
+<Wrong>
 
 ```tsx
 <HoverCardTrigger>
@@ -124,7 +145,9 @@ Wrong:
 </HoverCardTrigger>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <TooltipTrigger>
@@ -135,13 +158,15 @@ Correct:
 </TooltipTrigger>
 ```
 
+</Correct>
+
 `PreviewTrigger` marks the button `aria-haspopup="dialog"` and only points `aria-describedby` at the card while it is open, so the icon button still reaches a screen reader with no accessible name.
 
-**MEDIUM**
+</Dont>
 
-#### Radix openDelay on the card
+<Dont severity="MEDIUM" title="Radix openDelay on the card">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <HoverCardTrigger openDelay={100} closeDelay={200}>
@@ -150,7 +175,9 @@ Wrong:
 </HoverCardTrigger>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <HoverCardTrigger delay={100} closeDelay={200}>
@@ -159,7 +186,11 @@ Correct:
 </HoverCardTrigger>
 ```
 
+</Correct>
+
 React Aria's `PreviewTrigger` names the open delay `delay`; `openDelay` is dropped and the card keeps waiting the default 600 ms, which reads as the hover card being broken.
+
+</Dont>
 
 {/* guidelines:end */}
 

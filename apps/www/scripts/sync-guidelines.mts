@@ -17,9 +17,12 @@
  * and docs:sync calls `withGuidelines` itself, right after it inserts the
  * docs-extras block, so a synced page keeps its section.
  *
- * Plain markdown only: the section has to render in a page that knows nothing
- * about it, so it uses headings, bullets, bold and fenced code and no MDX
- * components.
+ * "Use it when" and "Not for" are plain markdown. "Do" and "Don't" are rendered
+ * with the MDX components in src/components/guideline.tsx (registered in
+ * src/components/mdx.tsx) so a Do reads as a check mark and a Don't as a red
+ * entry with its severity and a Wrong/Correct pair. The tags sit on their own
+ * lines with blank lines around the content: that is the only shape in which
+ * MDX parses markdown — bullets, inline code, fenced code — inside JSX.
  */
 import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs"
 import path from "node:path"
@@ -59,10 +62,54 @@ function guidelines(): Loaded {
 // rendering
 // ---------------------------------------------------------------------------
 
+/**
+ * Plain text as the value of a double-quoted JSX attribute.
+ *
+ * Titles are plain prose today, so this never fires; it is here so a title that
+ * one day carries a quote, an angle bracket or a brace cannot break 49 pages.
+ * JSX attribute values take HTML entities and no backslash escapes, so every
+ * character that JSX would read goes through one.
+ */
+function jsxAttributeValue(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/"/g, "&quot;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\{/g, "&#123;")
+    .replace(/\}/g, "&#125;")
+    .replace(/\\/g, "&#92;")
+}
+
+/** `<Tag …>` with `body` as markdown children — blank lines and all. */
+function jsxBlock(open: string, close: string, body: string[]): string[] {
+  return [open, "", ...body, "", close]
+}
+
 export function renderSection(guideline: Guideline, catalog: Catalog): string {
-  const dont = guideline.sections.dontEntries.map((entry) =>
-    [`**${entry.severity}**`, "", `#### ${entry.title}`, "", entry.body].join("\n")
+  const doList = jsxBlock(
+    "<DoList>",
+    "</DoList>",
+    guideline.sections.doBullets.flatMap((bullet, index) => [
+      ...(index ? [""] : []),
+      ...jsxBlock("<Do>", "</Do>", [bullet]),
+    ])
   )
+
+  const dont = guideline.sections.dontEntries.map((entry) =>
+    jsxBlock(
+      `<Dont severity="${jsxAttributeValue(entry.severity)}" title="${jsxAttributeValue(entry.title)}">`,
+      "</Dont>",
+      [
+        ...jsxBlock("<Wrong>", "</Wrong>", entry.wrong.split("\n")),
+        "",
+        ...jsxBlock("<Correct>", "</Correct>", entry.correct.split("\n")),
+        "",
+        entry.closing,
+      ]
+    ).join("\n")
+  )
+
   return [
     START,
     "",
@@ -78,7 +125,7 @@ export function renderSection(guideline: Guideline, catalog: Catalog): string {
     "",
     "### Do",
     "",
-    guideline.sections.do,
+    doList.join("\n"),
     "",
     "### Don't",
     "",

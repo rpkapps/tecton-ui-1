@@ -119,19 +119,45 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Compose `Empty > EmptyHeader > (EmptyMedia, EmptyTitle, EmptyDescription)` and put the actions in `EmptyContent`.
-- Give an icon its tile with `EmptyMedia variant="icon"`; an avatar or an illustration uses the default variant.
-- Add the dashed outline with the `border` utility — the component already carries `border-dashed`.
-- Name the next step: one primary `Button` in `EmptyContent`, at most one secondary beside it.
-- `className` is for the box (`w-full`, `min-h-64`, `border`), not for the type or the colours.
+<DoList>
+
+<Do>
+
+Compose `Empty > EmptyHeader > (EmptyMedia, EmptyTitle, EmptyDescription)` and put the actions in `EmptyContent`.
+
+</Do>
+
+<Do>
+
+Give an icon its tile with `EmptyMedia variant="icon"`; an avatar or an illustration uses the default variant.
+
+</Do>
+
+<Do>
+
+Add the dashed outline with the `border` utility — the component already carries `border-dashed`.
+
+</Do>
+
+<Do>
+
+Name the next step: one primary `Button` in `EmptyContent`, at most one secondary beside it.
+
+</Do>
+
+<Do>
+
+`className` is for the box (`w-full`, `min-h-64`, `border`), not for the type or the colours.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Hand-building the empty state from divs">
 
-#### Hand-building the empty state from divs
-
-Wrong:
+<Wrong>
 
 ```tsx
 <div className="flex flex-col items-center gap-2 p-12 text-center">
@@ -142,7 +168,9 @@ Wrong:
 </div>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Empty>
@@ -157,13 +185,15 @@ Correct:
 </Empty>
 ```
 
+</Correct>
+
 `gray-400` and `gray-500` are not Tecton steps, so the reset palette emits nothing and both lines keep the default foreground colour, while the heading misses the `font-heading` face that `EmptyTitle` carries.
 
-**MEDIUM**
+</Dont>
 
-#### An icon without its EmptyMedia tile
+<Dont severity="MEDIUM" title="An icon without its EmptyMedia tile">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <EmptyHeader>
@@ -172,7 +202,9 @@ Wrong:
 </EmptyHeader>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <EmptyHeader>
@@ -181,7 +213,11 @@ Correct:
 </EmptyHeader>
 ```
 
+</Correct>
+
 The rounded muted tile and the 24 px icon size live in the `icon` variant only; the default variant is a transparent box, so the icon renders at its own size with no surface behind it.
+
+</Dont>
 
 {/* guidelines:end */}
 

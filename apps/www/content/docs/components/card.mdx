@@ -116,19 +116,45 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Compose it: `CardHeader` with `CardTitle`, `CardDescription` and `CardAction`, then `CardContent`, then `CardFooter`.
-- Set density with `size="sm"`, or with the documented `[--card-spacing:--spacing(4)]` on `Card` when a design needs another step.
-- Divide sections with a bare `border-b` on `CardHeader` or `border-t` on `CardFooter`; the card adds the matching padding itself.
-- Bleed content to the edges with `-mx-(--card-spacing)`, so it still lines up with the card inset.
-- Keep `className` to placement and width (`w-full max-w-sm`): the card owns the surface, ring, radius and padding.
+<DoList>
+
+<Do>
+
+Compose it: `CardHeader` with `CardTitle`, `CardDescription` and `CardAction`, then `CardContent`, then `CardFooter`.
+
+</Do>
+
+<Do>
+
+Set density with `size="sm"`, or with the documented `[--card-spacing:--spacing(4)]` on `Card` when a design needs another step.
+
+</Do>
+
+<Do>
+
+Divide sections with a bare `border-b` on `CardHeader` or `border-t` on `CardFooter`; the card adds the matching padding itself.
+
+</Do>
+
+<Do>
+
+Bleed content to the edges with `-mx-(--card-spacing)`, so it still lines up with the card inset.
+
+</Do>
+
+<Do>
+
+Keep `className` to placement and width (`w-full max-w-sm`): the card owns the surface, ring, radius and padding.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Re-declaring the card's own padding and shape">
 
-#### Re-declaring the card's own padding and shape
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Card className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
@@ -136,7 +162,9 @@ Wrong:
 </Card>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Card size="sm" className="w-full max-w-sm">
@@ -146,13 +174,15 @@ Correct:
 </Card>
 ```
 
+</Correct>
+
 `Card` pads itself through `--card-spacing` and its parts read the same variable, so `p-6` double-pads the header; `border-gray-200` is stock Tailwind, which Tecton resets to nothing, and `no-restyle` reports the colour, radius and padding.
 
-**MEDIUM**
+</Dont>
 
-#### A hand-drawn rule between header and content
+<Dont severity="MEDIUM" title="A hand-drawn rule between header and content">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Card>
@@ -163,7 +193,9 @@ Wrong:
 </Card>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Card>
@@ -174,7 +206,11 @@ Correct:
 </Card>
 ```
 
+</Correct>
+
 `CardHeader` already carries `[.border-b]:pb-(--card-spacing)`, so the bare `border-b` picks up the themed border colour and the right padding, while `border-gray-200` emits no CSS and `pb-4` fights the spacing variable.
+
+</Dont>
 
 {/* guidelines:end */}
 

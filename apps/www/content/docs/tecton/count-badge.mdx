@@ -66,18 +66,39 @@ Counts above `max` render as `max+`. A count of `0` hides the badge unless `show
 
 ### Do
 
-- Wrap the control — `CountBadge` renders the positioned anchor and the badge, and the control stays its child.
-- Let the badge hide itself: `count={0}` renders nothing unless `showZero`, and `invisible` hides it while keeping the anchor.
-- Pick `color` (`primary`, `error`, `warning`, `success`, `info`, `neutral`, `default`), `anchor` (`top-right` … `bottom-left`) and `max` (counts above it render as `99+`).
-- Put the number in the control's accessible name — `aria-label="Messages, 4 unread"` — because the badge is decorative.
+<DoList>
+
+<Do>
+
+Wrap the control — `CountBadge` renders the positioned anchor and the badge, and the control stays its child.
+
+</Do>
+
+<Do>
+
+Let the badge hide itself: `count={0}` renders nothing unless `showZero`, and `invisible` hides it while keeping the anchor.
+
+</Do>
+
+<Do>
+
+Pick `color` (`primary`, `error`, `warning`, `success`, `info`, `neutral`, `default`), `anchor` (`top-right` … `bottom-left`) and `max` (counts above it render as `99+`).
+
+</Do>
+
+<Do>
+
+Put the number in the control's accessible name — `aria-label="Messages, 4 unread"` — because the badge is decorative.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Hiding the control along with the count">
 
-#### Hiding the control along with the count
-
-Wrong:
+<Wrong>
 
 ```tsx
 {unread > 0 && (
@@ -89,7 +110,9 @@ Wrong:
 )}
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <CountBadge count={unread} color="error">
@@ -99,13 +122,15 @@ Correct:
 </CountBadge>
 ```
 
+</Correct>
+
 `CountBadge` is the wrapper, not the badge, so guarding it removes the button from the page as well; the component already hides the badge itself when `count` is 0.
 
-**HIGH**
+</Dont>
 
-#### Building the count by hand
+<Dont severity="HIGH" title="Building the count by hand">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <div className="relative inline-flex">
@@ -114,7 +139,9 @@ Wrong:
 </div>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <CountBadge count={count} color="error">
@@ -124,13 +151,15 @@ Correct:
 </CountBadge>
 ```
 
+</Correct>
+
 `red-500` is not a Tecton step, so the reset palette gives the pill no background at all, and the hand-built span has none of the `ring-2 ring-background` cut-out, the `max` cap or the zero handling.
 
-**MEDIUM**
+</Dont>
 
-#### Putting a count on a dot
+<Dont severity="MEDIUM" title="Putting a count on a dot">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <CountBadge variant="dot" color="error" count={5}>
@@ -138,7 +167,9 @@ Wrong:
 </CountBadge>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <CountBadge color="error" count={5}>
@@ -146,7 +177,11 @@ Correct:
 </CountBadge>
 ```
 
+</Correct>
+
 The dot variant is an 8 px circle that renders no children by design, so the number is dropped and only the dot appears.
+
+</Dont>
 
 {/* guidelines:end */}
 

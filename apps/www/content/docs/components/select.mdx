@@ -131,19 +131,45 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Put `placeholder` on `Select`; `SelectValue` renders it and takes no placeholder of its own.
-- Key every item with `id`, drive selection with `selectedKey` / `defaultSelectedKey` / `onSelectionChange`.
-- Choose the surface with `SelectTrigger`'s `variant`, the height with its `size="sm" | "default"`.
-- Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`.
-- To make it searchable, wrap `SelectPopover` in React Aria's `Autocomplete` with `SelectInput` and `SelectList`.
+<DoList>
+
+<Do>
+
+Put `placeholder` on `Select`; `SelectValue` renders it and takes no placeholder of its own.
+
+</Do>
+
+<Do>
+
+Key every item with `id`, drive selection with `selectedKey` / `defaultSelectedKey` / `onSelectionChange`.
+
+</Do>
+
+<Do>
+
+Choose the surface with `SelectTrigger`'s `variant`, the height with its `size="sm" | "default"`.
+
+</Do>
+
+<Do>
+
+Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`.
+
+</Do>
+
+<Do>
+
+To make it searchable, wrap `SelectPopover` in React Aria's `Autocomplete` with `SelectInput` and `SelectList`.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="Radix value props instead of selectedKey and id">
 
-#### Radix value props instead of selectedKey and id
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Select value={datum} onValueChange={setDatum}>
@@ -154,7 +180,9 @@ Wrong:
 </Select>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Select placeholder="Datum" selectedKey={datum} onSelectionChange={(key) => setDatum(String(key))}>
@@ -165,13 +193,15 @@ Correct:
 </Select>
 ```
 
+</Correct>
+
 `onValueChange` is not a React Aria prop and `value` on `SelectItem` is the item's object value rather than its collection key, so the handler never fires and no item ever matches the selection.
 
-**HIGH**
+</Dont>
 
-#### Restyling the trigger with className instead of variant
+<Dont severity="HIGH" title="Restyling the trigger with className instead of variant">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <SelectTrigger className="h-10 rounded-full border-slate-300 bg-gray-200">
@@ -179,7 +209,9 @@ Wrong:
 </SelectTrigger>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <SelectTrigger variant="filled" size="sm">
@@ -187,13 +219,15 @@ Correct:
 </SelectTrigger>
 ```
 
+</Correct>
+
 `SelectTrigger` owns height, border and surface through `size` and `variant`; the stock palette is reset, so `border-slate-300` and `bg-gray-200` emit no CSS and only the hand-set height survives.
 
-**MEDIUM**
+</Dont>
 
-#### Disabling with the HTML disabled prop
+<Dont severity="MEDIUM" title="Disabling with the HTML disabled prop">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <SelectContent>
@@ -201,7 +235,9 @@ Wrong:
 </SelectContent>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <SelectContent>
@@ -209,7 +245,11 @@ Correct:
 </SelectContent>
 ```
 
+</Correct>
+
 React Aria reads `isDisabled` on both `Select` and `SelectItem`; `disabled` is not in either props type, so it is dropped and the option stays selectable.
+
+</Dont>
 
 {/* guidelines:end */}
 

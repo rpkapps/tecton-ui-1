@@ -182,17 +182,33 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Compose `InputGroup` > `InputGroupInput` or `InputGroupTextarea`, then the addons; the group owns the border, ring and height.
-- Always place `InputGroupAddon` **after** the control in the DOM and position it with `align`: `inline-start` / `inline-end` beside an input, `block-start` / `block-end` above or below a textarea.
-- Put buttons in `InputGroupButton` (`size="xs" | "icon-xs" | "sm" | "icon-sm"`, `onPress`, `aria-label` when icon-only), static copy in `InputGroupText`, and mark errors with `aria-invalid` on the control.
+<DoList>
+
+<Do>
+
+Compose `InputGroup` > `InputGroupInput` or `InputGroupTextarea`, then the addons; the group owns the border, ring and height.
+
+</Do>
+
+<Do>
+
+Always place `InputGroupAddon` **after** the control in the DOM and position it with `align`: `inline-start` / `inline-end` beside an input, `block-start` / `block-end` above or below a textarea.
+
+</Do>
+
+<Do>
+
+Put buttons in `InputGroupButton` (`size="xs" | "icon-xs" | "sm" | "icon-sm"`, `onPress`, `aria-label` when icon-only), static copy in `InputGroupText`, and mark errors with `aria-invalid` on the control.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Putting a plain Input inside the group">
 
-#### Putting a plain Input inside the group
-
-Wrong:
+<Wrong>
 
 ```tsx
 <InputGroup>
@@ -201,7 +217,9 @@ Wrong:
 </InputGroup>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <InputGroup>
@@ -210,13 +228,15 @@ Correct:
 </InputGroup>
 ```
 
+</Correct>
+
 `InputGroupInput` is the same `Input` with `data-slot="input-group-control"` and its own border, ring and radius removed; a plain `Input` keeps them, so a box appears inside the box and the group's focus ring never fires.
 
-**HIGH**
+</Dont>
 
-#### Placing the addon before the control
+<Dont severity="HIGH" title="Placing the addon before the control">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <InputGroup>
@@ -227,7 +247,9 @@ Wrong:
 </InputGroup>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <InputGroup>
@@ -238,13 +260,15 @@ Correct:
 </InputGroup>
 ```
 
+</Correct>
+
 `align` moves the addon visually with `order-first`, but tab order follows the DOM, so a leading addon puts its button ahead of the field the user came to type in.
 
-**MEDIUM**
+</Dont>
 
-#### Aligning a textarea addon inline
+<Dont severity="MEDIUM" title="Aligning a textarea addon inline">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <InputGroup>
@@ -253,7 +277,9 @@ Wrong:
 </InputGroup>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <InputGroup>
@@ -262,7 +288,11 @@ Correct:
 </InputGroup>
 ```
 
+</Correct>
+
 Only `block-start` and `block-end` switch the group to a column, so an inline addon holds the single row and squeezes the textarea beside the button.
+
+</Dont>
 
 {/* guidelines:end */}
 

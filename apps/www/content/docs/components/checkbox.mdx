@@ -103,19 +103,45 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Control it with `isSelected` and `onChange(isSelected: boolean)`, or leave it uncontrolled with `defaultSelected`.
-- Give it an `id` and point a `FieldLabel htmlFor` at it inside a `Field orientation="horizontal"`; add `FieldContent` when there is a description.
-- Disable with `isDisabled` and put `data-disabled` on the `Field` so the label dims with it.
-- Mark errors with `isInvalid` on the checkbox and `data-invalid` on the `Field`, then render the message in `FieldError`.
-- Inside a `Table` with `selectionMode`, use `slot="selection"` instead of wiring state yourself.
+<DoList>
+
+<Do>
+
+Control it with `isSelected` and `onChange(isSelected: boolean)`, or leave it uncontrolled with `defaultSelected`.
+
+</Do>
+
+<Do>
+
+Give it an `id` and point a `FieldLabel htmlFor` at it inside a `Field orientation="horizontal"`; add `FieldContent` when there is a description.
+
+</Do>
+
+<Do>
+
+Disable with `isDisabled` and put `data-disabled` on the `Field` so the label dims with it.
+
+</Do>
+
+<Do>
+
+Mark errors with `isInvalid` on the checkbox and `data-invalid` on the `Field`, then render the message in `FieldError`.
+
+</Do>
+
+<Do>
+
+Inside a `Table` with `selectionMode`, use `slot="selection"` instead of wiring state yourself.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="Using checked and onCheckedChange from Radix">
 
-#### Using checked and onCheckedChange from Radix
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Field orientation="horizontal">
@@ -124,7 +150,9 @@ Wrong:
 </Field>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Field orientation="horizontal">
@@ -133,13 +161,15 @@ Correct:
 </Field>
 ```
 
+</Correct>
+
 React Aria reads `isSelected` and `onChange`; the Radix names are unknown props that never reach the hidden input, so the box toggles its own uncontrolled state and `agreed` never changes.
 
-**HIGH**
+</Dont>
 
-#### Labelling the checkbox with a plain span
+<Dont severity="HIGH" title="Labelling the checkbox with a plain span">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <div className="flex items-center gap-2">
@@ -148,7 +178,9 @@ Wrong:
 </div>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Field orientation="horizontal">
@@ -157,25 +189,33 @@ Correct:
 </Field>
 ```
 
+</Correct>
+
 A `span` is not a label, so the hidden input has no accessible name and the text does not toggle it; `Field` also supplies the alignment and the disabled state the checkbox styles read.
 
-**MEDIUM**
+</Dont>
 
-#### Colouring the checked box with a class
+<Dont severity="MEDIUM" title="Colouring the checked box with a class">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Checkbox id="ready" className="data-[selected=true]:bg-emerald-600" />
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Checkbox id="ready" />
 ```
 
+</Correct>
+
 The checked fill is already `bg-ghost-active-foreground` from the component, and `bg-emerald-600` is outside the Tecton palette, so the class generates no CSS and `no-restyle` rejects it.
+
+</Dont>
 
 {/* guidelines:end */}
 

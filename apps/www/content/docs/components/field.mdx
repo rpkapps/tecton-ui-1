@@ -229,18 +229,39 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Give the control an `id` and point `FieldLabel htmlFor` at it. `Field` renders `role="group"`; it associates nothing by itself.
-- Choose the layout with `orientation="vertical" | "horizontal" | "responsive"`, and add `FieldContent` when the label and description sit beside the control.
-- Put state on `Field` as data attributes: `data-invalid` when the value is rejected, `data-disabled` next to a disabled control.
-- Write helper text as `FieldDescription` and the message as `FieldError` — children, or `errors={field.state.meta.errors}` for a validator's issue list.
+<DoList>
+
+<Do>
+
+Give the control an `id` and point `FieldLabel htmlFor` at it. `Field` renders `role="group"`; it associates nothing by itself.
+
+</Do>
+
+<Do>
+
+Choose the layout with `orientation="vertical" | "horizontal" | "responsive"`, and add `FieldContent` when the label and description sit beside the control.
+
+</Do>
+
+<Do>
+
+Put state on `Field` as data attributes: `data-invalid` when the value is rejected, `data-disabled` next to a disabled control.
+
+</Do>
+
+<Do>
+
+Write helper text as `FieldDescription` and the message as `FieldError` — children, or `errors={field.state.meta.errors}` for a validator's issue list.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="Announcing the error with a red paragraph">
 
-#### Announcing the error with a red paragraph
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Field>
@@ -250,7 +271,9 @@ Wrong:
 </Field>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Field data-invalid>
@@ -260,13 +283,15 @@ Correct:
 </Field>
 ```
 
+</Correct>
+
 `text-red-500` emits no CSS once the Tecton palette replaces Tailwind's, and the paragraph carries no `role="alert"`, so the message is both invisible and unannounced.
 
-**HIGH**
+</Dont>
 
-#### Marking the control invalid but not the field
+<Dont severity="HIGH" title="Marking the control invalid but not the field">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Field>
@@ -276,7 +301,9 @@ Wrong:
 </Field>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Field data-invalid>
@@ -286,13 +313,15 @@ Correct:
 </Field>
 ```
 
+</Correct>
+
 `fieldVariants` turns the whole block destructive from `data-[invalid=true]` on `Field`, so without it only the input's own ring reacts and the label keeps the default colour.
 
-**HIGH**
+</Dont>
 
-#### Reaching for FieldTitle where a label belongs
+<Dont severity="HIGH" title="Reaching for FieldTitle where a label belongs">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Field orientation="horizontal">
@@ -301,7 +330,9 @@ Wrong:
 </Field>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Field orientation="horizontal">
@@ -310,7 +341,11 @@ Correct:
 </Field>
 ```
 
+</Correct>
+
 `FieldTitle` renders a `div`, so the switch is left unnamed; it is only for the heading inside a `FieldContent` whose whole `Field` is already wrapped in a `FieldLabel`.
+
+</Dont>
 
 {/* guidelines:end */}
 

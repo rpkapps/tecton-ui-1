@@ -62,19 +62,45 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Hold state with `isSelected` / `defaultSelected` and read changes from `onChange`, which receives a boolean.
-- Pick `variant="default" | "outline"` and `size="default" | "sm" | "lg"`; they own colour, height and padding.
-- Give an icon-only `Toggle` an `aria-label`, and mark a paired icon with `data-icon="inline-start"`.
-- Disable with `isDisabled`; React Aria ignores `disabled`.
-- Style the pressed look through the variant's `data-selected` rules, never with your own colour classes.
+<DoList>
+
+<Do>
+
+Hold state with `isSelected` / `defaultSelected` and read changes from `onChange`, which receives a boolean.
+
+</Do>
+
+<Do>
+
+Pick `variant="default" | "outline"` and `size="default" | "sm" | "lg"`; they own colour, height and padding.
+
+</Do>
+
+<Do>
+
+Give an icon-only `Toggle` an `aria-label`, and mark a paired icon with `data-icon="inline-start"`.
+
+</Do>
+
+<Do>
+
+Disable with `isDisabled`; React Aria ignores `disabled`.
+
+</Do>
+
+<Do>
+
+Style the pressed look through the variant's `data-selected` rules, never with your own colour classes.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="Radix pressed and onPressedChange props">
 
-#### Radix pressed and onPressedChange props
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Toggle aria-label="Toggle bold" pressed={bold} onPressedChange={setBold}>
@@ -82,7 +108,9 @@ Wrong:
 </Toggle>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Toggle aria-label="Toggle bold" isSelected={bold} onChange={setBold}>
@@ -90,13 +118,15 @@ Correct:
 </Toggle>
 ```
 
+</Correct>
+
 React Aria's `ToggleButton` reads `isSelected` and reports through `onChange(isSelected)`; `pressed` and `onPressedChange` are not in its props, so they are dropped and the button never leaves its initial state.
 
-**HIGH**
+</Dont>
 
-#### A Toggle used as a labelled form setting
+<Dont severity="HIGH" title="A Toggle used as a labelled form setting">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Field orientation="horizontal">
@@ -104,7 +134,9 @@ Wrong:
 </Field>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Field orientation="horizontal">
@@ -113,25 +145,33 @@ Correct:
 </Field>
 ```
 
+</Correct>
+
 `Toggle` renders a button with `aria-pressed`, which announces a pressed control rather than an on/off setting and submits no value with the form.
 
-**MEDIUM**
+</Dont>
 
-#### An icon-only Toggle with no accessible name
+<Dont severity="MEDIUM" title="An icon-only Toggle with no accessible name">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Toggle variant="outline"><BookmarkIcon /></Toggle>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Toggle variant="outline" aria-label="Toggle bookmark"><BookmarkIcon /></Toggle>
 ```
 
+</Correct>
+
 The button's only child is an SVG with no text, so its accessible name is empty and it is announced as an unlabelled toggle button.
+
+</Dont>
 
 {/* guidelines:end */}
 

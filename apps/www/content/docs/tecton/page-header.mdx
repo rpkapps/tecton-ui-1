@@ -84,18 +84,39 @@ Use `PageHeaderEyebrow` for a breadcrumb or category above the title.
 
 ### Do
 
-- Put the eyebrow, title and description inside `PageHeaderContent`; put the actions in `PageHeaderActions`.
-- Leave the primary action unwrapped in `PageHeaderActions`, and wrap secondary ones in `OverflowItem` with a `priority` so they collapse first.
-- Use `PageHeaderNav` for section tabs and give it an `aria-label`; it is a bare `nav`.
-- Let `PageHeaderTitle` be the `h1`: one per page, no heading level or size set through `className`.
+<DoList>
+
+<Do>
+
+Put the eyebrow, title and description inside `PageHeaderContent`; put the actions in `PageHeaderActions`.
+
+</Do>
+
+<Do>
+
+Leave the primary action unwrapped in `PageHeaderActions`, and wrap secondary ones in `OverflowItem` with a `priority` so they collapse first.
+
+</Do>
+
+<Do>
+
+Use `PageHeaderNav` for section tabs and give it an `aria-label`; it is a bare `nav`.
+
+</Do>
+
+<Do>
+
+Let `PageHeaderTitle` be the `h1`: one per page, no heading level or size set through `className`.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Title and actions as direct children of PageHeader">
 
-#### Title and actions as direct children of PageHeader
-
-Wrong:
+<Wrong>
 
 ```tsx
 <PageHeader>
@@ -107,7 +128,9 @@ Wrong:
 </PageHeader>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <PageHeader>
@@ -121,13 +144,15 @@ Correct:
 </PageHeader>
 ```
 
+</Correct>
+
 `PageHeader` is a `flex flex-wrap` row, so without `PageHeaderContent` the title and the description become siblings of the action row: the title loses its truncation and its 60% cap, and the description wraps onto its own line.
 
-**MEDIUM**
+</Dont>
 
-#### A hand-built header row instead of PageHeader
+<Dont severity="MEDIUM" title="A hand-built header row instead of PageHeader">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <div className="flex items-center justify-between">
@@ -136,7 +161,9 @@ Wrong:
 </div>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <PageHeader>
@@ -149,7 +176,11 @@ Correct:
 </PageHeader>
 ```
 
+</Correct>
+
 `text-zinc-900` is stock Tailwind and emits no CSS under Tecton's reset palette, and a hand-built row has neither the title truncation nor the collapsing action row, so it overflows as soon as the window narrows.
+
+</Dont>
 
 {/* guidelines:end */}
 

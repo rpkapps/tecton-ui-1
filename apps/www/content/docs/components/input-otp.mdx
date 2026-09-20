@@ -141,19 +141,45 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Set `maxLength` to the number of `InputOTPSlot` children, and give each slot its absolute `index` across every group.
-- Control it with `value` and `onChange(value: string)`, or leave it uncontrolled with `defaultValue`.
-- Restrict the alphabet with `pattern={REGEXP_ONLY_DIGITS}` or `REGEXP_ONLY_DIGITS_AND_CHARS` from `input-otp`.
-- Split long codes with `InputOTPGroup` and `InputOTPSeparator`, and mark errors with `aria-invalid` on each `InputOTPSlot`.
-- Wrap it in a `Field` with a `FieldLabel htmlFor` pointing at the `InputOTP` id, and disable with `disabled`.
+<DoList>
+
+<Do>
+
+Set `maxLength` to the number of `InputOTPSlot` children, and give each slot its absolute `index` across every group.
+
+</Do>
+
+<Do>
+
+Control it with `value` and `onChange(value: string)`, or leave it uncontrolled with `defaultValue`.
+
+</Do>
+
+<Do>
+
+Restrict the alphabet with `pattern={REGEXP_ONLY_DIGITS}` or `REGEXP_ONLY_DIGITS_AND_CHARS` from `input-otp`.
+
+</Do>
+
+<Do>
+
+Split long codes with `InputOTPGroup` and `InputOTPSeparator`, and mark errors with `aria-invalid` on each `InputOTPSlot`.
+
+</Do>
+
+<Do>
+
+Wrap it in a `Field` with a `FieldLabel htmlFor` pointing at the `InputOTP` id, and disable with `disabled`.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Restarting the slot index in each group">
 
-#### Restarting the slot index in each group
-
-Wrong:
+<Wrong>
 
 ```tsx
 <InputOTP maxLength={4}>
@@ -169,7 +195,9 @@ Wrong:
 </InputOTP>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <InputOTP maxLength={4}>
@@ -185,13 +213,15 @@ Correct:
 </InputOTP>
 ```
 
+</Correct>
+
 `index` addresses the shared `OTPInputContext` slot array, so repeated indices echo the first characters twice and the rest of the code is never displayed.
 
-**MEDIUM**
+</Dont>
 
-#### Marking the group invalid instead of the slots
+<Dont severity="MEDIUM" title="Marking the group invalid instead of the slots">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <InputOTPGroup aria-invalid>
@@ -200,7 +230,9 @@ Wrong:
 </InputOTPGroup>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <InputOTPGroup>
@@ -209,7 +241,11 @@ Correct:
 </InputOTPGroup>
 ```
 
+</Correct>
+
 `InputOTPGroup` paints its error state with `has-aria-invalid:`, which looks for a descendant, so `aria-invalid` on the group itself styles nothing.
+
+</Dont>
 
 {/* guidelines:end */}
 

@@ -129,19 +129,45 @@ A Tecton FAB is a `Button` recipe: `className="h-10 rounded-full shadow-md"` for
 
 ### Do
 
-- Handle presses with `onPress` and disable with `isDisabled`; React Aria has no `disabled` contract.
-- Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`).
-- Mark icons with `data-icon="inline-start" | "inline-end"` so the padding adjusts, and give icon-only buttons an `aria-label`.
-- Navigate with `LinkButton` from this module, or with `buttonVariants()` on a plain `a`.
-- Show work with a `Spinner` child plus `isDisabled`; a FAB is the documented `rounded-full shadow-md` recipe.
+<DoList>
+
+<Do>
+
+Handle presses with `onPress` and disable with `isDisabled`; React Aria has no `disabled` contract.
+
+</Do>
+
+<Do>
+
+Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`).
+
+</Do>
+
+<Do>
+
+Mark icons with `data-icon="inline-start" | "inline-end"` so the padding adjusts, and give icon-only buttons an `aria-label`.
+
+</Do>
+
+<Do>
+
+Navigate with `LinkButton` from this module, or with `buttonVariants()` on a plain `a`.
+
+</Do>
+
+<Do>
+
+Show work with a `Spinner` child plus `isDisabled`; a FAB is the documented `rounded-full shadow-md` recipe.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="An anchor nested inside a React Aria Button">
 
-#### An anchor nested inside a React Aria Button
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Button variant="secondary" size="sm" asChild>
@@ -149,67 +175,85 @@ Wrong:
 </Button>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <LinkButton variant="secondary" size="sm" href="/wells/34-10-A-12">Open well</LinkButton>
 ```
 
+</Correct>
+
 React Aria's `Button` has no `asChild`, so the prop is dropped and the anchor is nested inside a `button` that forces `role="button"`: invalid markup, and the link is announced and activated as a button.
 
-**HIGH**
+</Dont>
 
-#### The disabled prop instead of isDisabled
+<Dont severity="HIGH" title="The disabled prop instead of isDisabled">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Button disabled onPress={submit}>Save</Button>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Button isDisabled onPress={submit}>Save</Button>
 ```
 
+</Correct>
+
 `disabled` is not part of React Aria's button props, so it never reaches the DOM element and the button stays focusable, hoverable and pressable.
 
-**HIGH**
+</Dont>
 
-#### Sizing and colouring a Button with className
+<Dont severity="HIGH" title="Sizing and colouring a Button with className">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Button className="h-12 bg-blue-600 px-6 text-white">Assign</Button>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Button size="lg">Assign</Button>
 ```
 
+</Correct>
+
 The variant owns colour, shape, size and padding, and Tailwind's stock palette is reset here, so `bg-blue-600` emits no CSS while the hand-set height breaks the `size` scale; `@tecton/eslint-config` reports both.
 
-**MEDIUM**
+</Dont>
 
-#### onClick instead of the onPress handler
+<Dont severity="MEDIUM" title="onClick instead of the onPress handler">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Button onClick={() => setOpen(true)}>Open</Button>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Button onPress={() => setOpen(true)}>Open</Button>
 ```
 
+</Correct>
+
 `onClick` survives only as React Aria's deprecated compatibility alias: it is handed a synthetic mouse event with no `pointerType`, so keyboard and touch activations are indistinguishable from a click.
+
+</Dont>
 
 {/* guidelines:end */}
 

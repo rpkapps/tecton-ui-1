@@ -54,18 +54,39 @@ Use the `position` prop to change the position of the toast.
 
 ### Do
 
-- Mount `<Toaster />` once, at the application root; everywhere else import `toast` from `sonner` and call it.
-- Use the typed helpers — `toast.success`, `toast.info`, `toast.warning`, `toast.error`, `toast.promise` — so the Toaster's icons and the Tecton outlined status colours apply.
-- Put the detail in `description` and a single undo in `action`; a toast is one sentence and at most one action.
-- Set the placement once on the Toaster (`position="top-center"`), not per call, and let `toast.promise` own a pending toast so it resolves itself.
+<DoList>
+
+<Do>
+
+Mount `<Toaster />` once, at the application root; everywhere else import `toast` from `sonner` and call it.
+
+</Do>
+
+<Do>
+
+Use the typed helpers — `toast.success`, `toast.info`, `toast.warning`, `toast.error`, `toast.promise` — so the Toaster's icons and the Tecton outlined status colours apply.
+
+</Do>
+
+<Do>
+
+Put the detail in `description` and a single undo in `action`; a toast is one sentence and at most one action.
+
+</Do>
+
+<Do>
+
+Set the placement once on the Toaster (`position="top-center"`), not per call, and let `toast.promise` own a pending toast so it resolves itself.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="Calling toast() with no Toaster mounted">
 
-#### Calling toast() with no Toaster mounted
-
-Wrong:
+<Wrong>
 
 ```tsx
 import { toast } from "sonner"
@@ -75,7 +96,9 @@ export function SaveButton() {
 }
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 import { toast } from "sonner"
@@ -91,13 +114,15 @@ export function App() {
 }
 ```
 
+</Correct>
+
 `toast()` pushes onto sonner's global store and returns an id; with no `Toaster` subscribed nothing renders and nothing throws, so the confirmation is lost in silence.
 
-**HIGH**
+</Dont>
 
-#### A pending toast that is never resolved
+<Dont severity="HIGH" title="A pending toast that is never resolved">
 
-Wrong:
+<Wrong>
 
 ```tsx
 toast.loading("Running simulation…")
@@ -105,7 +130,9 @@ await runSimulation()
 toast.success("Simulation finished")
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 toast.promise(runSimulation(), {
@@ -115,19 +142,23 @@ toast.promise(runSimulation(), {
 })
 ```
 
+</Correct>
+
 `toast.loading` has no duration, so unless its returned id is reused it stays on screen for the rest of the session and the success toast stacks beneath it.
 
-**HIGH**
+</Dont>
 
-#### Colouring a toast by hand
+<Dont severity="HIGH" title="Colouring a toast by hand">
 
-Wrong:
+<Wrong>
 
 ```tsx
 toast("Simulation failed", { className: "bg-red-600 text-white" })
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 toast.error("Simulation failed", {
@@ -135,7 +166,11 @@ toast.error("Simulation failed", {
 })
 ```
 
+</Correct>
+
 The Toaster maps sonner's types onto `--error-text`, `--error-border` and the popover surface, and `red-600` is not a Tecton step, so the class emits no CSS and the toast shows no severity at all.
+
+</Dont>
 
 {/* guidelines:end */}
 

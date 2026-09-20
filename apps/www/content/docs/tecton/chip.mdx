@@ -67,19 +67,45 @@ Use `size="default" | "md" | "lg"` (20 / 24 / 28 px). Icons inside the chip scal
 
 ### Do
 
-- Compose `ChipGroup > ChipList > Chip` and give the group an `aria-label`: React Aria puts that name on the `ChipList`, which is the `role="grid"`.
-- Turn on removal with `onRemove` on the `ChipGroup`; the `ChipRemove` button and the Backspace and Delete keys come with it.
-- Turn on selection with `selectionMode="single" | "multiple"` plus `selectedKeys` and `onSelectionChange` on the group; `isDisabled` disables one chip.
-- Give every `Chip` an `id` — it is the key in `onSelectionChange` and `onRemove` — and a `textValue` when the children are not plain text.
-- Take the look from the Badge axes: `variant`, `appearance="outline"`, `size`. `className` is for layout only.
+<DoList>
+
+<Do>
+
+Compose `ChipGroup > ChipList > Chip` and give the group an `aria-label`: React Aria puts that name on the `ChipList`, which is the `role="grid"`.
+
+</Do>
+
+<Do>
+
+Turn on removal with `onRemove` on the `ChipGroup`; the `ChipRemove` button and the Backspace and Delete keys come with it.
+
+</Do>
+
+<Do>
+
+Turn on selection with `selectionMode="single" | "multiple"` plus `selectedKeys` and `onSelectionChange` on the group; `isDisabled` disables one chip.
+
+</Do>
+
+<Do>
+
+Give every `Chip` an `id` — it is the key in `onSelectionChange` and `onRemove` — and a `textValue` when the children are not plain text.
+
+</Do>
+
+<Do>
+
+Take the look from the Badge axes: `variant`, `appearance="outline"`, `size`. `className` is for layout only.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="Rendering a Chip outside its group">
 
-#### Rendering a Chip outside its group
-
-Wrong:
+<Wrong>
 
 ```tsx
 <div className="flex flex-wrap gap-1.5">
@@ -87,7 +113,9 @@ Wrong:
 </div>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <ChipGroup aria-label="Facies" selectionMode="multiple">
@@ -97,13 +125,15 @@ Correct:
 </ChipGroup>
 ```
 
+</Correct>
+
 `Chip` is a React Aria `Tag`, a collection item that only the owning `TagList` builds and renders, so outside a `ChipList` it throws "cannot be rendered outside a collection" and takes the surrounding tree down with it.
 
-**HIGH**
+</Dont>
 
-#### Building the remove button by hand
+<Dont severity="HIGH" title="Building the remove button by hand">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <ChipGroup aria-label="Horizons">
@@ -116,7 +146,9 @@ Wrong:
 </ChipGroup>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <ChipGroup aria-label="Horizons" onRemove={(keys) => remove([...keys])}>
@@ -126,25 +158,33 @@ Correct:
 </ChipGroup>
 ```
 
+</Correct>
+
 `onRemove` on the group is what makes a chip removable — it renders `ChipRemove` and binds Backspace and Delete — so a nested button removes the chip by mouse only and adds a focus stop the tag's own key handling does not expect.
 
-**HIGH**
+</Dont>
 
-#### Colouring a chip with className
+<Dont severity="HIGH" title="Colouring a chip with className">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Chip id="fault" className="bg-orange-500 text-white">Fault seal</Chip>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Chip id="fault" variant="warning">Fault seal</Chip>
 ```
 
+</Correct>
+
 The chip's `className` is merged over `badgeVariants` by `cn`, so `bg-orange-500` replaces `bg-secondary`, and `orange` is not a Tecton family — the reset palette emits nothing and the chip loses its surface.
+
+</Dont>
 
 {/* guidelines:end */}
 

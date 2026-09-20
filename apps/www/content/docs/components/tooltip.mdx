@@ -73,18 +73,39 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Give `TooltipTrigger` exactly two children, in this order: the trigger element, then the `Tooltip`.
-- Give an icon-only trigger its own `aria-label`; the tooltip is `aria-describedby`, not the name.
-- Set `delay` and `closeDelay` on `TooltipTrigger` (Tecton opens at `delay={0}`) and `placement` on `Tooltip`; a `Kbd` inside gets its own spacing, as in `Save changes <Kbd>S</Kbd>`.
-- To explain a disabled control, wrap it: `<span className="inline-block w-fit"><Button isDisabled>Export</Button></span>`.
+<DoList>
+
+<Do>
+
+Give `TooltipTrigger` exactly two children, in this order: the trigger element, then the `Tooltip`.
+
+</Do>
+
+<Do>
+
+Give an icon-only trigger its own `aria-label`; the tooltip is `aria-describedby`, not the name.
+
+</Do>
+
+<Do>
+
+Set `delay` and `closeDelay` on `TooltipTrigger` (Tecton opens at `delay={0}`) and `placement` on `Tooltip`; a `Kbd` inside gets its own spacing, as in `Save changes <Kbd>S</Kbd>`.
+
+</Do>
+
+<Do>
+
+To explain a disabled control, wrap it: `<span className="inline-block w-fit"><Button isDisabled>Export</Button></span>`.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="An icon button named only by its tooltip">
 
-#### An icon button named only by its tooltip
-
-Wrong:
+<Wrong>
 
 ```tsx
 <TooltipTrigger>
@@ -93,7 +114,9 @@ Wrong:
 </TooltipTrigger>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <TooltipTrigger>
@@ -102,13 +125,15 @@ Correct:
 </TooltipTrigger>
 ```
 
+</Correct>
+
 React Aria points `aria-describedby` at the tooltip and only while it is open, so the button's accessible name stays empty and the control is unusable with a screen reader.
 
-**CRITICAL**
+</Dont>
 
-#### Interactive content inside a tooltip
+<Dont severity="CRITICAL" title="Interactive content inside a tooltip">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <TooltipTrigger>
@@ -119,7 +144,9 @@ Wrong:
 </TooltipTrigger>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <PopoverTrigger>
@@ -130,13 +157,15 @@ Correct:
 </PopoverTrigger>
 ```
 
+</Correct>
+
 React Aria closes the tooltip as soon as focus leaves the trigger, and its contents sit inside `role="tooltip"`, so the link can never be tabbed to and is never announced as a link.
 
-**HIGH**
+</Dont>
 
-#### More than two children in a TooltipTrigger
+<Dont severity="HIGH" title="More than two children in a TooltipTrigger">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <TooltipTrigger>
@@ -146,7 +175,9 @@ Wrong:
 </TooltipTrigger>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <TooltipTrigger>
@@ -155,7 +186,11 @@ Correct:
 </TooltipTrigger>
 ```
 
+</Correct>
+
 Tecton's `TooltipTrigger` destructures its children into `[trigger, tooltip]`, so the second button is rendered where the tooltip belongs and the real `Tooltip` is thrown away.
+
+</Dont>
 
 {/* guidelines:end */}
 

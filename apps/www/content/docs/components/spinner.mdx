@@ -90,18 +90,39 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Inside a `Button`, a `Badge` or an `InputGroupAddon`, give it `data-icon="inline-start"` or `data-icon="inline-end"` so the control trims its padding on that side.
-- Disable the control while it spins with `isDisabled`, and make the label a verb: "Saving…".
-- Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so set the colour on the parent with a semantic token.
-- `Spinner` already carries `role="status"` and `aria-label="Loading"`; do not wrap it in a second live region.
+<DoList>
+
+<Do>
+
+Inside a `Button`, a `Badge` or an `InputGroupAddon`, give it `data-icon="inline-start"` or `data-icon="inline-end"` so the control trims its padding on that side.
+
+</Do>
+
+<Do>
+
+Disable the control while it spins with `isDisabled`, and make the label a verb: "Saving…".
+
+</Do>
+
+<Do>
+
+Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so set the colour on the parent with a semantic token.
+
+</Do>
+
+<Do>
+
+`Spinner` already carries `role="status"` and `aria-label="Loading"`; do not wrap it in a second live region.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="A spinner in a button without data-icon">
 
-#### A spinner in a button without data-icon
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Button isDisabled size="sm">
@@ -110,7 +131,9 @@ Wrong:
 </Button>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Button isDisabled size="sm">
@@ -119,42 +142,54 @@ Correct:
 </Button>
 ```
 
+</Correct>
+
 The button trims its leading padding only through `has-data-[icon=inline-start]:pl-1.5`, so without the attribute the spinner sits in full text padding and the button jumps in width the moment it appears.
 
-**HIGH**
+</Dont>
 
-#### A hand-rolled spinner div with borders
+<Dont severity="HIGH" title="A hand-rolled spinner div with borders">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <div className="size-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Spinner />
 ```
 
+</Correct>
+
 `gray-300` and `blue-600` are not Tecton steps, so the reset palette gives the ring no colour at all, and the bare `div` has neither `role="status"` nor an accessible name.
 
-**MEDIUM**
+</Dont>
 
-#### Colouring the spinner with a stock class
+<Dont severity="MEDIUM" title="Colouring the spinner with a stock class">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Spinner className="size-5 text-gray-500" />
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Spinner className="size-5 text-muted-foreground" />
 ```
 
+</Correct>
+
 `gray-500` is not a Tecton step, so the class emits no CSS and the spinner keeps whatever colour it inherits — it looks right only where the parent already happens to be muted.
+
+</Dont>
 
 {/* guidelines:end */}

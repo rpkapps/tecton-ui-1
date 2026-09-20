@@ -141,19 +141,45 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Wrap the children and let the group join them; use `orientation="vertical"` for a stacked cluster.
-- Give the group an `aria-label` or `aria-labelledby`; it renders a bare `div` with `role="group"`.
-- Put a `ButtonGroupSeparator` between filled buttons; `variant="outline"` buttons already carry a border.
-- Use `ButtonGroupText` for static text, with its `render` prop when the text must be a `Label`.
-- Nest `ButtonGroup`s to separate clusters; the outer group adds the gap itself.
+<DoList>
+
+<Do>
+
+Wrap the children and let the group join them; use `orientation="vertical"` for a stacked cluster.
+
+</Do>
+
+<Do>
+
+Give the group an `aria-label` or `aria-labelledby`; it renders a bare `div` with `role="group"`.
+
+</Do>
+
+<Do>
+
+Put a `ButtonGroupSeparator` between filled buttons; `variant="outline"` buttons already carry a border.
+
+</Do>
+
+<Do>
+
+Use `ButtonGroupText` for static text, with its `render` prop when the text must be a `Label`.
+
+</Do>
+
+<Do>
+
+Nest `ButtonGroup`s to separate clusters; the outer group adds the gap itself.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Joining the buttons by hand with className">
 
-#### Joining the buttons by hand with className
-
-Wrong:
+<Wrong>
 
 ```tsx
 <div className="flex">
@@ -162,7 +188,9 @@ Wrong:
 </div>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <ButtonGroup aria-label="Message actions">
@@ -171,13 +199,15 @@ Correct:
 </ButtonGroup>
 ```
 
+</Correct>
+
 `ButtonGroup` already strips the inner corners and overlaps the borders with logical properties, so hand-written physical corners duplicate the work and flip to the wrong side in RTL.
 
-**HIGH**
+</Dont>
 
-#### A button group holding a selected state
+<Dont severity="HIGH" title="A button group holding a selected state">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <ButtonGroup aria-label="View">
@@ -186,7 +216,9 @@ Wrong:
 </ButtonGroup>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <ToggleGroup aria-label="View" selectionMode="single" selectedKeys={[view]} onSelectionChange={(keys) => setView([...keys][0] as string)}>
@@ -195,13 +227,15 @@ Correct:
 </ToggleGroup>
 ```
 
+</Correct>
+
 `ButtonGroup` is a presentational `role="group"`, so a colour swap is the only signal: nothing sets `aria-pressed` and assistive technology cannot tell which view is current.
 
-**MEDIUM**
+</Dont>
 
-#### Adding gap utilities inside a button group
+<Dont severity="MEDIUM" title="Adding gap utilities inside a button group">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <ButtonGroup className="gap-2" aria-label="Mail actions">
@@ -210,7 +244,9 @@ Wrong:
 </ButtonGroup>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <ButtonGroup aria-label="Mail actions">
@@ -219,7 +255,11 @@ Correct:
 </ButtonGroup>
 ```
 
+</Correct>
+
 The corner and negative-margin rules stay active whatever the gap is, so a bare `gap-2` yields separated buttons with flattened inner edges; a nested group is what the variant spaces apart.
+
+</Dont>
 
 {/* guidelines:end */}
 

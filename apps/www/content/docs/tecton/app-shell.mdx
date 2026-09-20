@@ -117,19 +117,45 @@ const showAside = useMinWidth(1280)
 
 ### Do
 
-- Compose it: `AppShellHeader` (with `AppShellBrand`, `AppShellNav`, `AppShellHeaderActions`), then `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`.
-- Put the page content in `AppShellMain`; it is the scrolling region of the work area.
-- For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them.
-- Gate a full-height aside on `useMinWidth(1280)` instead of squeezing it onto a narrow screen.
-- Override only the height through `className` (`h-full` in an embedded context); the shell owns its surfaces and borders.
+<DoList>
+
+<Do>
+
+Compose it: `AppShellHeader` (with `AppShellBrand`, `AppShellNav`, `AppShellHeaderActions`), then `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`.
+
+</Do>
+
+<Do>
+
+Put the page content in `AppShellMain`; it is the scrolling region of the work area.
+
+</Do>
+
+<Do>
+
+For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them.
+
+</Do>
+
+<Do>
+
+Gate a full-height aside on `useMinWidth(1280)` instead of squeezing it onto a narrow screen.
+
+</Do>
+
+<Do>
+
+Override only the height through `className` (`h-full` in an embedded context); the shell owns its surfaces and borders.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Page content placed straight into AppShellBody">
 
-#### Page content placed straight into AppShellBody
-
-Wrong:
+<Wrong>
 
 ```tsx
 <AppShell>
@@ -140,7 +166,9 @@ Wrong:
 </AppShell>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <AppShell>
@@ -153,13 +181,15 @@ Correct:
 </AppShell>
 ```
 
+</Correct>
+
 `AppShellBody` is the `flex min-h-0 overflow-hidden` row that holds the regions side by side, so content dropped into it is clipped at the fold and the sidebar and aside have nothing to sit beside.
 
-**MEDIUM**
+</Dont>
 
-#### A split aside that keeps its own border
+<Dont severity="MEDIUM" title="A split aside that keeps its own border">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <AppShellSplitPanel defaultSize="384px" minSize="280px">
@@ -167,7 +197,9 @@ Wrong:
 </AppShellSplitPanel>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <AppShellSplitPanel defaultSize="384px" minSize="280px">
@@ -175,7 +207,11 @@ Correct:
 </AppShellSplitPanel>
 ```
 
+</Correct>
+
 `AppShellAside` is a fixed 320 px column with its own left border, so inside a resizable panel it ignores the dragged width and draws a second divider next to the handle.
+
+</Dont>
 
 {/* guidelines:end */}
 

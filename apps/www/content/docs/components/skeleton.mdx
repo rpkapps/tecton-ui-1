@@ -63,18 +63,39 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Give every `Skeleton` a size from the spacing scale: `h-4 w-full`, `size-12 rounded-full`, `aspect-video w-full`.
-- Mirror the real layout — the same wrappers, the same gaps, one `Skeleton` per box the content will occupy.
-- Vary the widths with fractions (`w-2/3`, `w-3/4`) so a block reads as text.
-- `className` is for the box; the pulse and the muted surface belong to the component.
+<DoList>
+
+<Do>
+
+Give every `Skeleton` a size from the spacing scale: `h-4 w-full`, `size-12 rounded-full`, `aspect-video w-full`.
+
+</Do>
+
+<Do>
+
+Mirror the real layout — the same wrappers, the same gaps, one `Skeleton` per box the content will occupy.
+
+</Do>
+
+<Do>
+
+Vary the widths with fractions (`w-2/3`, `w-3/4`) so a block reads as text.
+
+</Do>
+
+<Do>
+
+`className` is for the box; the pulse and the muted surface belong to the component.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="A skeleton with no height">
 
-#### A skeleton with no height
-
-Wrong:
+<Wrong>
 
 ```tsx
 <div className="flex flex-col gap-2">
@@ -83,7 +104,9 @@ Wrong:
 </div>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <div className="flex flex-col gap-2">
@@ -92,42 +115,54 @@ Correct:
 </div>
 ```
 
+</Correct>
+
 `Skeleton` is an empty `div` with no intrinsic size, so without `h-*`, an aspect ratio or a child it computes to zero height and nothing appears on the page.
 
-**HIGH**
+</Dont>
 
-#### Recolouring the placeholder with a stock class
+<Dont severity="HIGH" title="Recolouring the placeholder with a stock class">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Skeleton className="h-4 w-full bg-gray-200" />
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Skeleton className="h-4 w-full" />
 ```
 
+</Correct>
+
 `cn` drops the component's `bg-muted` in favour of `bg-gray-200`, which is not a Tecton step and emits no CSS, so the placeholder renders transparent and the region looks empty rather than loading.
 
-**MEDIUM**
+</Dont>
 
-#### Off-token pixel sizes on a skeleton
+<Dont severity="MEDIUM" title="Off-token pixel sizes on a skeleton">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Skeleton className="h-[18px] w-[240px]" />
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Skeleton className="h-4 w-60" />
 ```
 
+</Correct>
+
 Arbitrary values are exactly what `no-arbitrary-values` rejects in `configs.strict`, and a placeholder measured in loose pixels stops matching the line height of the text it stands in for.
+
+</Dont>
 
 {/* guidelines:end */}

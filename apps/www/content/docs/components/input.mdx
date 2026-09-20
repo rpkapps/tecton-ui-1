@@ -173,18 +173,39 @@ Use `variant="outline" | "filled" | "text"` for the three Tecton surface styles.
 
 ### Do
 
-- Pick the surface with `variant="outline" | "filled" | "text"` — outline in forms, filled in dense panels, text for inline editing.
-- Wire the label by hand: `<FieldLabel htmlFor="x">` plus `<Input id="x">`. Nothing associates them implicitly.
-- `Input` renders React Aria's `Input`, a real `<input>`: use the DOM props `value`, `onChange(event)`, `disabled`, `required`, `type` and `aria-invalid`.
-- Mirror the state on the `Field` — `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid` — and keep `className` to layout (`w-full`, `col-span-2`).
+<DoList>
+
+<Do>
+
+Pick the surface with `variant="outline" | "filled" | "text"` — outline in forms, filled in dense panels, text for inline editing.
+
+</Do>
+
+<Do>
+
+Wire the label by hand: `<FieldLabel htmlFor="x">` plus `<Input id="x">`. Nothing associates them implicitly.
+
+</Do>
+
+<Do>
+
+`Input` renders React Aria's `Input`, a real `<input>`: use the DOM props `value`, `onChange(event)`, `disabled`, `required`, `type` and `aria-invalid`.
+
+</Do>
+
+<Do>
+
+Mirror the state on the `Field` — `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid` — and keep `className` to layout (`w-full`, `col-span-2`).
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Faking the filled surface with background classes">
 
-#### Faking the filled surface with background classes
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Field>
@@ -193,7 +214,9 @@ Wrong:
 </Field>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Field>
@@ -202,13 +225,15 @@ Correct:
 </Field>
 ```
 
+</Correct>
+
 The Tecton palette resets Tailwind's (`--color-*: initial`), so `bg-zinc-100` and `border-zinc-300` emit no CSS at all and the field renders as a plain outline input.
 
-**HIGH**
+</Dont>
 
-#### Treating onChange as a value callback
+<Dont severity="HIGH" title="Treating onChange as a value callback">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Field>
@@ -217,7 +242,9 @@ Wrong:
 </Field>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Field>
@@ -226,13 +253,15 @@ Correct:
 </Field>
 ```
 
+</Correct>
+
 Unlike `Checkbox` and `Switch`, which hand `onChange` a boolean, `Input` is a DOM `<input>`, so `setTitle` stores the `ChangeEvent` and the field renders `[object Object]`.
 
-**HIGH**
+</Dont>
 
-#### Positioning an icon on top of the input
+<Dont severity="HIGH" title="Positioning an icon on top of the input">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <div className="relative">
@@ -241,7 +270,9 @@ Wrong:
 </div>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <InputGroup>
@@ -252,6 +283,10 @@ Correct:
 </InputGroup>
 ```
 
+</Correct>
+
 `pl-8` overrides the padding `inputVariants` owns, the icon is not clickable into the field, and the overlay is outside the focus ring instead of inside it.
+
+</Dont>
 
 {/* guidelines:end */}

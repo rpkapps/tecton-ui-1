@@ -132,18 +132,39 @@ Place the action and the dismiss button in `AlertAction`; hide the alert from st
 
 ### Do
 
-- `variant` is the severity (`default`, `info`, `success`, `warning`, `destructive`); `appearance` is the surface (`default` keeps the card background, `outline` is a coloured border, `filled` is the Tecton status surface).
-- Compose `Alert > icon, AlertTitle, AlertDescription, AlertAction`, with the icon as a direct child of `Alert`.
-- Put every button, including the dismiss control, inside `AlertAction` and wire it with `onPress`; a decision that blocks the user is an `AlertDialog`, not an alert.
-- `className` is for width and placement (`max-w-md`, `mb-4`), never for the status colours.
+<DoList>
+
+<Do>
+
+`variant` is the severity (`default`, `info`, `success`, `warning`, `destructive`); `appearance` is the surface (`default` keeps the card background, `outline` is a coloured border, `filled` is the Tecton status surface).
+
+</Do>
+
+<Do>
+
+Compose `Alert > icon, AlertTitle, AlertDescription, AlertAction`, with the icon as a direct child of `Alert`.
+
+</Do>
+
+<Do>
+
+Put every button, including the dismiss control, inside `AlertAction` and wire it with `onPress`; a decision that blocks the user is an `AlertDialog`, not an alert.
+
+</Do>
+
+<Do>
+
+`className` is for width and placement (`max-w-md`, `mb-4`), never for the status colours.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="Hand-colouring the severity with stock classes">
 
-#### Hand-colouring the severity with stock classes
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Alert className="border-red-500 bg-red-500/10 text-red-700">
@@ -151,7 +172,9 @@ Wrong:
 </Alert>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Alert variant="destructive" appearance="outline">
@@ -159,13 +182,15 @@ Correct:
 </Alert>
 ```
 
+</Correct>
+
 `red-500` and `red-700` are not Tecton steps so the reset palette emits nothing for them, while `cn` has already dropped the variant's own `bg-card` and `border-border` — the alert renders as unstyled text.
 
-**HIGH**
+</Dont>
 
-#### Putting the icon inside the title
+<Dont severity="HIGH" title="Putting the icon inside the title">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Alert variant="warning" appearance="filled">
@@ -174,7 +199,9 @@ Wrong:
 </Alert>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Alert variant="warning" appearance="filled">
@@ -184,13 +211,15 @@ Correct:
 </Alert>
 ```
 
+</Correct>
+
 The two-column grid and the icon's `row-span-2` come from `has-[>svg]`, a direct-child selector, so an icon nested in the title leaves the alert in one column and the description no longer aligns under the title.
 
-**MEDIUM**
+</Dont>
 
-#### An action that is not in AlertAction
+<Dont severity="MEDIUM" title="An action that is not in AlertAction">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Alert variant="success">
@@ -199,7 +228,9 @@ Wrong:
 </Alert>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Alert variant="success">
@@ -210,7 +241,11 @@ Correct:
 </Alert>
 ```
 
+</Correct>
+
 The alert clears its corner with `has-data-[slot=alert-action]:pr-18`, so a bare button joins the grid flow under the title instead of sitting in the reserved top-right corner.
+
+</Dont>
 
 {/* guidelines:end */}
 

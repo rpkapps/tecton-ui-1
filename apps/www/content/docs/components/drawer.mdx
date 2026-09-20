@@ -291,18 +291,39 @@ That matters for an application mounted into a page that has its own copy of Tec
 
 ### Do
 
-- Remember this one is **Base UI**, not React Aria: the state props are `open`, `defaultOpen` and `onOpenChange`.
-- Pass the trigger and close elements through `render`, not as children: `<DrawerTrigger render={<Button variant="outline" />}>Open</DrawerTrigger>`.
-- Pick the edge with `swipeDirection="down" | "up" | "left" | "right"` and add the grab handle with `showSwipeHandle`, both on `Drawer`.
-- Make the scrolling region a flex item — `<div className="flex-1 overflow-y-auto p-4">` — because `h-full` does not resolve inside a content-sized drawer.
+<DoList>
+
+<Do>
+
+Remember this one is **Base UI**, not React Aria: the state props are `open`, `defaultOpen` and `onOpenChange`.
+
+</Do>
+
+<Do>
+
+Pass the trigger and close elements through `render`, not as children: `<DrawerTrigger render={<Button variant="outline" />}>Open</DrawerTrigger>`.
+
+</Do>
+
+<Do>
+
+Pick the edge with `swipeDirection="down" | "up" | "left" | "right"` and add the grab handle with `showSwipeHandle`, both on `Drawer`.
+
+</Do>
+
+<Do>
+
+Make the scrolling region a flex item — `<div className="flex-1 overflow-y-auto p-4">` — because `h-full` does not resolve inside a content-sized drawer.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="React Aria state props on this drawer">
 
-#### React Aria state props on this drawer
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Drawer isOpen={isOpen} onOpenChange={setIsOpen}>
@@ -312,7 +333,9 @@ Wrong:
 </Drawer>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Drawer open={isOpen} onOpenChange={setIsOpen}>
@@ -322,13 +345,15 @@ Correct:
 </Drawer>
 ```
 
+</Correct>
+
 Every other Tecton overlay is React Aria, but `Drawer` wraps Base UI's `Drawer.Root`, which reads `open` and renders no element of its own; `isOpen` is not among its props, so TypeScript rejects it and, forced past that, it reaches nothing and the drawer stays uncontrolled.
 
-**HIGH**
+</Dont>
 
-#### Vaul's direction values on swipeDirection
+<Dont severity="HIGH" title="Vaul's direction values on swipeDirection">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Drawer swipeDirection="bottom">
@@ -339,7 +364,9 @@ Wrong:
 </Drawer>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Drawer swipeDirection="down">
@@ -350,13 +377,15 @@ Correct:
 </Drawer>
 ```
 
+</Correct>
+
 Base UI types `swipeDirection` as `"up" | "down" | "left" | "right"`, so TypeScript rejects `"bottom"`; forced past that, the axis falls back to `x` and none of the `data-[swipe-direction=*]` rules match: the panel gets no edge, no radius and no closed transform.
 
-**MEDIUM**
+</Dont>
 
-#### asChild on the trigger instead of render
+<Dont severity="MEDIUM" title="asChild on the trigger instead of render">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <DrawerTrigger asChild>
@@ -364,13 +393,19 @@ Wrong:
 </DrawerTrigger>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <DrawerTrigger render={<Button variant="outline" />}>Open</DrawerTrigger>
 ```
 
+</Correct>
+
 Base UI has no `asChild`: the trigger renders its own `button` and nests the `Button` inside it, giving two stacked buttons and an invalid interactive element.
+
+</Dont>
 
 {/* guidelines:end */}
 

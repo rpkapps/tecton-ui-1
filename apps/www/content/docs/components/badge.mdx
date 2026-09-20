@@ -83,36 +83,61 @@ Use `size="default" | "md" | "lg"` (20 / 24 / 28 px); icons scale with the size.
 
 ### Do
 
-- Pick meaning with `variant`, weight with `appearance="solid" | "outline"`, height with `size="default" | "md" | "lg"` (20 / 24 / 28 px).
-- Give an icon or a `Spinner` child `data-icon="inline-start"` or `data-icon="inline-end"` so the badge trims its padding on that side.
-- Make it a link with `render={(props) => <a {...props} href="/wells/12" />}`; there is no `asChild`, and an outer `<a>` gets none of the badge's `[a]:hover:` rules.
-- A category colour that no `variant` carries is the one documented exception: a Tecton palette pair, `className="bg-blue-120 text-blue-830"`, never a stock Tailwind colour. Otherwise `className` is for placement.
+<DoList>
+
+<Do>
+
+Pick meaning with `variant`, weight with `appearance="solid" | "outline"`, height with `size="default" | "md" | "lg"` (20 / 24 / 28 px).
+
+</Do>
+
+<Do>
+
+Give an icon or a `Spinner` child `data-icon="inline-start"` or `data-icon="inline-end"` so the badge trims its padding on that side.
+
+</Do>
+
+<Do>
+
+Make it a link with `render={(props) => <a {...props} href="/wells/12" />}`; there is no `asChild`, and an outer `<a>` gets none of the badge's `[a]:hover:` rules.
+
+</Do>
+
+<Do>
+
+A category colour that no `variant` carries is the one documented exception: a Tecton palette pair, `className="bg-blue-120 text-blue-830"`, never a stock Tailwind colour. Otherwise `className` is for placement.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="Hand-colouring a status label with className">
 
-#### Hand-colouring a status label with className
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Badge className="bg-green-600 text-white">Producing</Badge>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Badge variant="success">Producing</Badge>
 ```
 
+</Correct>
+
 `cn` merges away the variant's `bg-primary`, and `green-600` is not a Tecton step, so the reset palette emits no rule at all and the badge renders with no background.
 
-**HIGH**
+</Dont>
 
-#### Making a Badge clickable with a handler
+<Dont severity="HIGH" title="Making a Badge clickable with a handler">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Badge variant="info" onClick={() => setFilter("fault-seal")}>
@@ -120,7 +145,9 @@ Wrong:
 </Badge>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <ChipGroup
@@ -136,13 +163,15 @@ Correct:
 </ChipGroup>
 ```
 
+</Correct>
+
 Badge renders a `span` with no `role`, no `tabIndex` and no key handling, so the label answers a mouse click and is unreachable by keyboard and silent to assistive technology.
 
-**MEDIUM**
+</Dont>
 
-#### An icon child without data-icon
+<Dont severity="MEDIUM" title="An icon child without data-icon">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Badge variant="warning">
@@ -151,7 +180,9 @@ Wrong:
 </Badge>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Badge variant="warning">
@@ -160,7 +191,11 @@ Correct:
 </Badge>
 ```
 
+</Correct>
+
 The padding compensation is `has-data-[icon=inline-start]:pl-1.5`, so without the attribute the icon sits in full text padding and the badge is wider than every other badge in the row.
+
+</Dont>
 
 {/* guidelines:end */}
 

@@ -86,18 +86,39 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Wrap the trigger `Button` and the `Popover` in one `PopoverTrigger` (it is React Aria's `DialogTrigger`), and control it with `isOpen` / `onOpenChange` there.
-- Position with `placement` (`"bottom start"`, `"top"`, `"right end"`) and nudge with `offset` / `crossOffset`.
-- Structure the top with `PopoverHeader`, `PopoverTitle` and `PopoverDescription`; the popover is already a `flex flex-col gap-4`.
-- Use `className` for width only (`w-80`): the popover owns its padding, radius, shadow and surface.
+<DoList>
+
+<Do>
+
+Wrap the trigger `Button` and the `Popover` in one `PopoverTrigger` (it is React Aria's `DialogTrigger`), and control it with `isOpen` / `onOpenChange` there.
+
+</Do>
+
+<Do>
+
+Position with `placement` (`"bottom start"`, `"top"`, `"right end"`) and nudge with `offset` / `crossOffset`.
+
+</Do>
+
+<Do>
+
+Structure the top with `PopoverHeader`, `PopoverTitle` and `PopoverDescription`; the popover is already a `flex flex-col gap-4`.
+
+</Do>
+
+<Do>
+
+Use `className` for width only (`w-80`): the popover owns its padding, radius, shadow and surface.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Radix side and align props">
 
-#### Radix side and align props
-
-Wrong:
+<Wrong>
 
 ```tsx
 <PopoverTrigger>
@@ -108,7 +129,9 @@ Wrong:
 </PopoverTrigger>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <PopoverTrigger>
@@ -119,13 +142,15 @@ Correct:
 </PopoverTrigger>
 ```
 
+</Correct>
+
 React Aria takes one `placement` string; `side`, `align` and `sideOffset` are not part of its positioning contract, so the popover silently keeps the default `placement="bottom"`.
 
-**MEDIUM**
+</Dont>
 
-#### Repainting the popover surface with className
+<Dont severity="MEDIUM" title="Repainting the popover surface with className">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Popover className="w-80 rounded-lg border border-gray-200 bg-white p-6 shadow-xl">
@@ -133,7 +158,9 @@ Wrong:
 </Popover>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Popover className="w-80">
@@ -141,7 +168,11 @@ Correct:
 </Popover>
 ```
 
+</Correct>
+
 Tecton resets Tailwind's stock palette, so `border-gray-200` emits no CSS at all, and the padding and radius duplicate what the component already owns — `no-restyle` reports both.
+
+</Dont>
 
 {/* guidelines:end */}
 

@@ -163,37 +163,67 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Give `DropdownMenuTrigger` exactly two children, the trigger `Button` and the `DropdownMenu`; there is no `DropdownMenuContent` and no `asChild`.
-- Run actions from `onAction` on `DropdownMenuItem`, or from `onAction(key)` on `DropdownMenu` with an `id` per item.
-- Make a group behave as checkboxes or radios with `selectionMode` plus `selectedKeys` / `defaultSelectedKeys` on `DropdownMenuGroup`.
-- Title groups with `DropdownMenuLabel`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut`.
-- Anchor with `placement` (for example `"bottom end"`) and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`.
+<DoList>
+
+<Do>
+
+Give `DropdownMenuTrigger` exactly two children, the trigger `Button` and the `DropdownMenu`; there is no `DropdownMenuContent` and no `asChild`.
+
+</Do>
+
+<Do>
+
+Run actions from `onAction` on `DropdownMenuItem`, or from `onAction(key)` on `DropdownMenu` with an `id` per item.
+
+</Do>
+
+<Do>
+
+Make a group behave as checkboxes or radios with `selectionMode` plus `selectedKeys` / `defaultSelectedKeys` on `DropdownMenuGroup`.
+
+</Do>
+
+<Do>
+
+Title groups with `DropdownMenuLabel`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut`.
+
+</Do>
+
+<Do>
+
+Anchor with `placement` (for example `"bottom end"`) and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**MEDIUM**
+<Dont severity="MEDIUM" title="onClick on a menu item instead of onAction">
 
-#### onClick on a menu item instead of onAction
-
-Wrong:
+<Wrong>
 
 ```tsx
 <DropdownMenuItem onClick={() => archive(well.id)}>Archive</DropdownMenuItem>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <DropdownMenuItem onAction={() => archive(well.id)}>Archive</DropdownMenuItem>
 ```
 
+</Correct>
+
 `onClick` survives only as React Aria's deprecated press alias: it still fires, but on a bare mouse event with no `pointerType`, while `onAction` is the item's own activation hook and the one `onAction(key)` on the menu reports through.
 
-**HIGH**
+</Dont>
 
-#### Radix checked props instead of group selection
+<Dont severity="HIGH" title="Radix checked props instead of group selection">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <DropdownMenuGroup>
@@ -201,7 +231,9 @@ Wrong:
 </DropdownMenuGroup>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <DropdownMenuGroup selectionMode="multiple" selectedKeys={visible} onSelectionChange={setVisible}>
@@ -209,25 +241,33 @@ Correct:
 </DropdownMenuGroup>
 ```
 
+</Correct>
+
 There is no checkbox or radio item component here: selection lives on `DropdownMenuGroup` as a set of keys, so `checked` and `onCheckedChange` are dropped and no check mark is ever rendered.
 
-**MEDIUM**
+</Dont>
 
-#### Colouring a destructive item with className
+<Dont severity="MEDIUM" title="Colouring a destructive item with className">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <DropdownMenuItem className="text-red-600" onAction={remove}>Delete</DropdownMenuItem>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <DropdownMenuItem variant="destructive" onAction={remove}>Delete</DropdownMenuItem>
 ```
 
+</Correct>
+
 Tailwind's stock palette is reset, so `text-red-600` emits no CSS, while `variant="destructive"` is what sets the label, the icon and the focus background for the whole row.
+
+</Dont>
 
 {/* guidelines:end */}
 

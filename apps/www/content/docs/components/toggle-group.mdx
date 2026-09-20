@@ -97,18 +97,39 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Key each item with `id`; read `selectedKeys` / `defaultSelectedKeys` and `onSelectionChange`, which hands you a `Set`.
-- Choose `selectionMode="single"` for an exclusive choice, `"multiple"` for independent toggles.
-- Shape the bar with `variant="outline"`, `size` and `spacing={0}`; the joined corners and shared borders come from the variant.
-- Give every icon-only `ToggleGroupItem` an `aria-label`, and stack with `orientation="vertical"`.
+<DoList>
+
+<Do>
+
+Key each item with `id`; read `selectedKeys` / `defaultSelectedKeys` and `onSelectionChange`, which hands you a `Set`.
+
+</Do>
+
+<Do>
+
+Choose `selectionMode="single"` for an exclusive choice, `"multiple"` for independent toggles.
+
+</Do>
+
+<Do>
+
+Shape the bar with `variant="outline"`, `size` and `spacing={0}`; the joined corners and shared borders come from the variant.
+
+</Do>
+
+<Do>
+
+Give every icon-only `ToggleGroupItem` an `aria-label`, and stack with `orientation="vertical"`.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="Radix value props instead of selectedKeys and id">
 
-#### Radix value props instead of selectedKeys and id
-
-Wrong:
+<Wrong>
 
 ```tsx
 <ToggleGroup type="single" value={weight} onValueChange={setWeight}>
@@ -116,7 +137,9 @@ Wrong:
 </ToggleGroup>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <ToggleGroup
@@ -128,13 +151,15 @@ Correct:
 </ToggleGroup>
 ```
 
+</Correct>
+
 React Aria keys toggle items by `id` and reports a `Set` through `onSelectionChange`; `type`, `value` and `onValueChange` are not props here, so the group renders but never records a selection.
 
-**HIGH**
+</Dont>
 
-#### A toggle group used to switch content panels
+<Dont severity="HIGH" title="A toggle group used to switch content panels">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <ToggleGroup selectionMode="single" defaultSelectedKeys={["overview"]}>
@@ -144,7 +169,9 @@ Wrong:
 {view === "overview" ? <Overview /> : <Reports />}
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Tabs defaultSelectedKey="overview">
@@ -157,25 +184,33 @@ Correct:
 </Tabs>
 ```
 
+</Correct>
+
 Toggle buttons carry `aria-pressed`, not the `tab` and `tabpanel` roles, so the panel is never associated with its control and arrow-key navigation between views is lost.
 
-**MEDIUM**
+</Dont>
 
-#### Icon-only items with no accessible name
+<Dont severity="MEDIUM" title="Icon-only items with no accessible name">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <ToggleGroupItem id="bold"><BoldIcon /></ToggleGroupItem>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <ToggleGroupItem id="bold" aria-label="Toggle bold"><BoldIcon /></ToggleGroupItem>
 ```
 
+</Correct>
+
 The item's only child is an SVG with no text, so its accessible name is empty and the button is announced as an unlabelled toggle.
+
+</Dont>
 
 {/* guidelines:end */}
 

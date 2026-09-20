@@ -103,19 +103,45 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Put the trigger `Button` and the `Dialog` inside one `DialogTrigger`; it hands press behaviour and open state to its whole subtree.
-- Control it with `isOpen` and `onOpenChange` on `DialogTrigger`, or on `Dialog` itself when nothing on the page triggers it.
-- Give every dialog a `DialogTitle`: React Aria takes the accessible name from it.
-- Close from the footer with `DialogClose` — a plain `Button` setting your own state closes nothing, because the state lives in `DialogTrigger` — and pass `isDismissable={false}` with `showCloseButton={false}` when the user must pick a footer action.
-- Keep `className` to width and layout (`sm:max-w-lg`): `Dialog` owns the surface, radius and padding.
+<DoList>
+
+<Do>
+
+Put the trigger `Button` and the `Dialog` inside one `DialogTrigger`; it hands press behaviour and open state to its whole subtree.
+
+</Do>
+
+<Do>
+
+Control it with `isOpen` and `onOpenChange` on `DialogTrigger`, or on `Dialog` itself when nothing on the page triggers it.
+
+</Do>
+
+<Do>
+
+Give every dialog a `DialogTitle`: React Aria takes the accessible name from it.
+
+</Do>
+
+<Do>
+
+Close from the footer with `DialogClose` — a plain `Button` setting your own state closes nothing, because the state lives in `DialogTrigger` — and pass `isDismissable={false}` with `showCloseButton={false}` when the user must pick a footer action.
+
+</Do>
+
+<Do>
+
+Keep `className` to width and layout (`sm:max-w-lg`): `Dialog` owns the surface, radius and padding.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Radix trigger shape with asChild">
 
-#### Radix trigger shape with asChild
-
-Wrong:
+<Wrong>
 
 ```tsx
 <>
@@ -128,7 +154,9 @@ Wrong:
 </>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <DialogTrigger>
@@ -139,13 +167,15 @@ Correct:
 </DialogTrigger>
 ```
 
+</Correct>
+
 `DialogTrigger` publishes the open state to its subtree only, so a sibling `Dialog` never receives it and renders nothing; `asChild` is not a React Aria prop and is dropped.
 
-**HIGH**
+</Dont>
 
-#### Controlling the dialog with open
+<Dont severity="HIGH" title="Controlling the dialog with open">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -154,7 +184,9 @@ Wrong:
 </Dialog>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
@@ -163,7 +195,11 @@ Correct:
 </Dialog>
 ```
 
+</Correct>
+
 `Dialog` forwards its props to React Aria's `ModalOverlay`, which reads `isOpen`; without it, and with no `DialogTrigger` above, the overlay keeps its own uncontrolled state and returns `null`.
+
+</Dont>
 
 {/* guidelines:end */}
 

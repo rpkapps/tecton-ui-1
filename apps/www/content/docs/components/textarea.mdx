@@ -88,19 +88,45 @@ Use `variant="outline" | "filled" | "text"` for the three Tecton surface styles,
 
 ### Do
 
-- Pick the surface with `variant="outline" | "filled" | "text"` — the same three axes as `Input`.
-- Set the starting height with `rows`; the box already carries `field-sizing-content` and `min-h-16` and grows from there.
-- `Textarea` renders React Aria's `TextArea`, a real `<textarea>`: use `value`, `onChange(event)`, `disabled`, `required` and `aria-invalid`.
-- Mirror the state on the `Field`: `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid`.
-- Keep `className` to layout only — `w-full`, `col-span-2`.
+<DoList>
+
+<Do>
+
+Pick the surface with `variant="outline" | "filled" | "text"` — the same three axes as `Input`.
+
+</Do>
+
+<Do>
+
+Set the starting height with `rows`; the box already carries `field-sizing-content` and `min-h-16` and grows from there.
+
+</Do>
+
+<Do>
+
+`Textarea` renders React Aria's `TextArea`, a real `<textarea>`: use `value`, `onChange(event)`, `disabled`, `required` and `aria-invalid`.
+
+</Do>
+
+<Do>
+
+Mirror the state on the `Field`: `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid`.
+
+</Do>
+
+<Do>
+
+Keep `className` to layout only — `w-full`, `col-span-2`.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**MEDIUM**
+<Dont severity="MEDIUM" title="Pinning the textarea to a fixed height">
 
-#### Pinning the textarea to a fixed height
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Field>
@@ -109,7 +135,9 @@ Wrong:
 </Field>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Field>
@@ -118,13 +146,15 @@ Correct:
 </Field>
 ```
 
+</Correct>
+
 `field-sizing-content` grows the box with its value, so a fixed `h-[120px]` freezes it and long text scrolls inside a short field; the arbitrary value is also rejected by `configs.strict`.
 
-**HIGH**
+</Dont>
 
-#### Turning the border red for an invalid value
+<Dont severity="HIGH" title="Turning the border red for an invalid value">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Field>
@@ -133,7 +163,9 @@ Wrong:
 </Field>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Field data-invalid>
@@ -143,13 +175,15 @@ Correct:
 </Field>
 ```
 
+</Correct>
+
 `border-red-500` emits no CSS after the palette reset, while `aria-invalid` is both what `textareaVariants` styles and what assistive tech reads.
 
-**HIGH**
+</Dont>
 
-#### Putting the send button outside the control
+<Dont severity="HIGH" title="Putting the send button outside the control">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <div className="flex items-end gap-2">
@@ -158,7 +192,9 @@ Wrong:
 </div>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <InputGroup>
@@ -169,6 +205,10 @@ Correct:
 </InputGroup>
 ```
 
+</Correct>
+
 A sibling button sits outside the control's border and its focus ring; `align="block-end"` switches the group to a column and keeps the button inside the field.
+
+</Dont>
 
 {/* guidelines:end */}

@@ -111,19 +111,45 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Treat it as a `select`: `value` / `defaultValue` / `onChange(event)`, `disabled`, `required`, `name`.
-- Set the height with `size="sm" | "default"`; the native row-count `size` is deliberately not available.
-- Make the first `NativeSelectOption` an empty-valued row when you need a placeholder.
-- Group options with `NativeSelectOptGroup label="…"`.
-- Signal errors with `aria-invalid` on the select and `data-invalid` on the surrounding `Field`.
+<DoList>
+
+<Do>
+
+Treat it as a `select`: `value` / `defaultValue` / `onChange(event)`, `disabled`, `required`, `name`.
+
+</Do>
+
+<Do>
+
+Set the height with `size="sm" | "default"`; the native row-count `size` is deliberately not available.
+
+</Do>
+
+<Do>
+
+Make the first `NativeSelectOption` an empty-valued row when you need a placeholder.
+
+</Do>
+
+<Do>
+
+Group options with `NativeSelectOptGroup label="…"`.
+
+</Do>
+
+<Do>
+
+Signal errors with `aria-invalid` on the select and `data-invalid` on the surrounding `Field`.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="React Aria props on a native select element">
 
-#### React Aria props on a native select element
-
-Wrong:
+<Wrong>
 
 ```tsx
 <NativeSelect isDisabled onSelectionChange={setStatus}>
@@ -131,7 +157,9 @@ Wrong:
 </NativeSelect>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <NativeSelect disabled value={status} onChange={(event) => setStatus(event.target.value)}>
@@ -139,13 +167,15 @@ Correct:
 </NativeSelect>
 ```
 
+</Correct>
+
 `NativeSelect` renders a real `select` and spreads its props onto it, so React Aria names like `isDisabled` and `onSelectionChange` reach the DOM as unknown attributes and the control stays enabled and unwired.
 
-**MEDIUM**
+</Dont>
 
-#### Passing a native row count to size
+<Dont severity="MEDIUM" title="Passing a native row count to size">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <NativeSelect size={5}>
@@ -153,7 +183,9 @@ Wrong:
 </NativeSelect>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <NativeSelect size="sm">
@@ -161,13 +193,15 @@ Correct:
 </NativeSelect>
 ```
 
+</Correct>
+
 The component omits the DOM `size` and redefines it as the Tecton height token, so a number is written to `data-size` only, matches no height rule and never expands the list.
 
-**MEDIUM**
+</Dont>
 
-#### A placeholder prop instead of an empty option
+<Dont severity="MEDIUM" title="A placeholder prop instead of an empty option">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <NativeSelect placeholder="Select status">
@@ -175,7 +209,9 @@ Wrong:
 </NativeSelect>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <NativeSelect defaultValue="">
@@ -184,7 +220,11 @@ Correct:
 </NativeSelect>
 ```
 
+</Correct>
+
 `select` elements have no `placeholder` attribute, so the prop is dropped and the field silently shows the first real option as if it had been chosen.
+
+</Dont>
 
 {/* guidelines:end */}
 

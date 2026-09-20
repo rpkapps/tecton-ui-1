@@ -86,19 +86,45 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Wrap the trigger `Button` and the `Sheet` in one `SheetTrigger`, exactly as for `Dialog`.
-- Pick the edge with `side="right" | "left" | "top" | "bottom"` on `Sheet` (`SheetContent` is an alias of it).
-- Let `SheetHeader` and `SheetFooter` carry their own `p-4`; the sheet body is yours, so give it `px-4` and `flex-1`.
-- Drop the corner control with `showCloseButton={false}` and close from the footer with `SheetClose`.
-- Set width with `className` (`sm:max-w-lg`) only; `Sheet` owns the surface, the edge and the animation.
+<DoList>
+
+<Do>
+
+Wrap the trigger `Button` and the `Sheet` in one `SheetTrigger`, exactly as for `Dialog`.
+
+</Do>
+
+<Do>
+
+Pick the edge with `side="right" | "left" | "top" | "bottom"` on `Sheet` (`SheetContent` is an alias of it).
+
+</Do>
+
+<Do>
+
+Let `SheetHeader` and `SheetFooter` carry their own `p-4`; the sheet body is yours, so give it `px-4` and `flex-1`.
+
+</Do>
+
+<Do>
+
+Drop the corner control with `showCloseButton={false}` and close from the footer with `SheetClose`.
+
+</Do>
+
+<Do>
+
+Set width with `className` (`sm:max-w-lg`) only; `Sheet` owns the surface, the edge and the animation.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Positioning the sheet with className">
 
-#### Positioning the sheet with className
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Sheet className="fixed top-0 left-0 h-full w-96 bg-white p-6">
@@ -106,7 +132,9 @@ Wrong:
 </Sheet>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Sheet side="left" className="sm:max-w-md">
@@ -116,13 +144,15 @@ Correct:
 </Sheet>
 ```
 
+</Correct>
+
 `Sheet` sets its edge, size and enter/exit transforms from `data-side`, so hand-placed `fixed`/`inset` classes fight the variant and the animation slides the panel from the wrong edge.
 
-**HIGH**
+</Dont>
 
-#### Body content with no padding of its own
+<Dont severity="HIGH" title="Body content with no padding of its own">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Sheet>
@@ -138,7 +168,9 @@ Wrong:
 </Sheet>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Sheet>
@@ -154,7 +186,11 @@ Correct:
 </Sheet>
 ```
 
+</Correct>
+
 The padding lives on `SheetHeader` and `SheetFooter`, not on the sheet, so anything in between runs edge to edge against the panel border.
+
+</Dont>
 
 {/* guidelines:end */}
 

@@ -65,18 +65,39 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Pair `htmlFor` with the control's `id`; `Label` renders React Aria's `Label`, which is a plain `<label>`.
-- Leave `htmlFor` off only inside a React Aria control that supplies a `LabelContext` — setting it there opts the label out of that context.
-- Reach for `FieldLabel` the moment the control gains a description, an error or a `Field` wrapper.
-- Keep `className` to layout; the size, weight and the disabled dimming belong to the component.
+<DoList>
+
+<Do>
+
+Pair `htmlFor` with the control's `id`; `Label` renders React Aria's `Label`, which is a plain `<label>`.
+
+</Do>
+
+<Do>
+
+Leave `htmlFor` off only inside a React Aria control that supplies a `LabelContext` — setting it there opts the label out of that context.
+
+</Do>
+
+<Do>
+
+Reach for `FieldLabel` the moment the control gains a description, an error or a `Field` wrapper.
+
+</Do>
+
+<Do>
+
+Keep `className` to layout; the size, weight and the disabled dimming belong to the component.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="Rendering a label with nothing to associate">
 
-#### Rendering a label with nothing to associate
-
-Wrong:
+<Wrong>
 
 ```tsx
 <div className="flex items-center gap-2">
@@ -85,7 +106,9 @@ Wrong:
 </div>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <div className="flex items-center gap-2">
@@ -94,13 +117,15 @@ Correct:
 </div>
 ```
 
+</Correct>
+
 Outside a React Aria field there is no `LabelContext` to fill in the association, so the label renders as a bare `<label>`: the input has no accessible name and clicking the text does not focus it.
 
-**HIGH**
+</Dont>
 
-#### Styling a bare label element by hand
+<Dont severity="HIGH" title="Styling a bare label element by hand">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <label htmlFor="rows" className="text-sm font-medium text-zinc-700">
@@ -108,19 +133,23 @@ Wrong:
 </label>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Label htmlFor="rows">Rows per page</Label>
 ```
 
+</Correct>
+
 `text-zinc-700` emits no CSS after the palette reset, and the bare element misses the `peer-disabled` and `group-data-[disabled=true]` rules that dim a label together with its control.
 
-**MEDIUM**
+</Dont>
 
-#### Using Label where FieldLabel belongs
+<Dont severity="MEDIUM" title="Using Label where FieldLabel belongs">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Field orientation="horizontal">
@@ -129,7 +158,9 @@ Wrong:
 </Field>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Field orientation="horizontal">
@@ -138,6 +169,10 @@ Correct:
 </Field>
 ```
 
+</Correct>
+
 `Field`'s horizontal and responsive rules select on `data-slot="field-label"`, which `FieldLabel` and `FieldTitle` set and `Label` does not, so a plain `Label` does not take its share of the row.
+
+</Dont>
 
 {/* guidelines:end */}

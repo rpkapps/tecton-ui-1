@@ -118,37 +118,67 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Run the action from `onAction` on `CommandItem`, or from `onAction(key)` on `CommandList` with an `id` per item.
-- Give `CommandList` a `renderEmptyState` that returns `CommandEmpty`.
-- Pass `textValue` to any item whose children are JSX rather than a plain string.
-- Group with `CommandGroup heading="…"`, divide with `CommandSeparator`, hint keys with `CommandShortcut`.
-- Open the palette with `CommandDialog` and its `open` / `onOpenChange` props, wrapping a `Command`.
+<DoList>
+
+<Do>
+
+Run the action from `onAction` on `CommandItem`, or from `onAction(key)` on `CommandList` with an `id` per item.
+
+</Do>
+
+<Do>
+
+Give `CommandList` a `renderEmptyState` that returns `CommandEmpty`.
+
+</Do>
+
+<Do>
+
+Pass `textValue` to any item whose children are JSX rather than a plain string.
+
+</Do>
+
+<Do>
+
+Group with `CommandGroup heading="…"`, divide with `CommandSeparator`, hint keys with `CommandShortcut`.
+
+</Do>
+
+<Do>
+
+Open the palette with `CommandDialog` and its `open` / `onOpenChange` props, wrapping a `Command`.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="The cmdk onSelect prop instead of onAction">
 
-#### The cmdk onSelect prop instead of onAction
-
-Wrong:
+<Wrong>
 
 ```tsx
 <CommandItem onSelect={() => router.navigate({ to: "/wells" })}>Go to wells</CommandItem>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <CommandItem onAction={() => router.navigate({ to: "/wells" })}>Go to wells</CommandItem>
 ```
 
+</Correct>
+
 `CommandItem` is a React Aria `MenuItem`, whose activation handler is `onAction`; `onSelect` is not in its props, so it is dropped and pressing Enter or clicking the row does nothing at all.
 
-**HIGH**
+</Dont>
 
-#### JSX item children with no textValue
+<Dont severity="HIGH" title="JSX item children with no textValue">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <CommandItem onAction={openBilling}>
@@ -157,7 +187,9 @@ Wrong:
 </CommandItem>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <CommandItem textValue="Billing" onAction={openBilling}>
@@ -166,13 +198,15 @@ Correct:
 </CommandItem>
 ```
 
+</Correct>
+
 `CommandItem` derives `textValue` only when its children are a plain string, so an item built from an icon and a `span` has none and the palette's filter and typeahead cannot match it.
 
-**MEDIUM**
+</Dont>
 
-#### An empty search that renders nothing
+<Dont severity="MEDIUM" title="An empty search that renders nothing">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Command>
@@ -181,7 +215,9 @@ Wrong:
 </Command>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Command>
@@ -192,7 +228,11 @@ Correct:
 </Command>
 ```
 
+</Correct>
+
 `CommandList` is a React Aria `Menu`, and a collection with no matching items renders nothing unless `renderEmptyState` is given; `CommandEmpty` is what that function returns, not a child of the list.
+
+</Dont>
 
 {/* guidelines:end */}
 

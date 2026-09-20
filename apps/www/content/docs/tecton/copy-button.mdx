@@ -45,19 +45,45 @@ Use `onCopied` to react to a successful copy and `timeout` to control how long t
 
 ### Do
 
-- Pass the text as `value` and let the component own the press handler.
-- Leave it icon-only for a quiet affordance, or pass text `children` for a prominent labelled one.
-- Set weight with `variant` (it defaults to `ghost`) and hold time with `timeout`.
-- React to a successful copy with `onCopied`, not by wrapping the button in your own handler.
-- Let the component name itself: with no children it sets `aria-label` to "Copy", then "Copied".
+<DoList>
+
+<Do>
+
+Pass the text as `value` and let the component own the press handler.
+
+</Do>
+
+<Do>
+
+Leave it icon-only for a quiet affordance, or pass text `children` for a prominent labelled one.
+
+</Do>
+
+<Do>
+
+Set weight with `variant` (it defaults to `ghost`) and hold time with `timeout`.
+
+</Do>
+
+<Do>
+
+React to a successful copy with `onCopied`, not by wrapping the button in your own handler.
+
+</Do>
+
+<Do>
+
+Let the component name itself: with no children it sets `aria-label` to "Copy", then "Copied".
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="A Button with a hand-written clipboard handler">
 
-#### A Button with a hand-written clipboard handler
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Button variant="ghost" size="icon-sm" onPress={() => navigator.clipboard.writeText(well.id)}>
@@ -65,49 +91,63 @@ Wrong:
 </Button>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <CopyButton value={well.id} />
 ```
 
+</Correct>
+
 The hand-rolled version drops everything the component adds: the copied state and check-mark swap, the `aria-label` that flips to "Copied", and the catch for a denied or insecure clipboard, which otherwise rejects unhandled.
 
-**HIGH**
+</Dont>
 
-#### An onPress handler passed to CopyButton
+<Dont severity="HIGH" title="An onPress handler passed to CopyButton">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <CopyButton value={well.id} onPress={() => track("copy")} />
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <CopyButton value={well.id} onCopied={() => track("copy")} />
 ```
 
+</Correct>
+
 `CopyButton` omits `onPress` from its props and spreads the remaining props after its own, so an `onPress` you pass replaces the clipboard handler and the button quietly stops copying.
 
-**HIGH**
+</Dont>
 
-#### Supplying the icon as the child
+<Dont severity="HIGH" title="Supplying the icon as the child">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <CopyButton value={well.id}><CopyIcon /></CopyButton>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <CopyButton value={well.id} />
 ```
 
+</Correct>
+
 The component already renders `CopyIcon` or `CheckIcon` itself, so a child icon is drawn twice, switches the size default from `icon-sm` to `sm`, and suppresses the automatic accessible name because children are now present.
+
+</Dont>
 
 {/* guidelines:end */}
 

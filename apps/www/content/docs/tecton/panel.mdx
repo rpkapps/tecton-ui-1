@@ -92,19 +92,45 @@ Give the panel a height: `PanelContent` scrolls and `PanelFooter` stays pinned t
 
 ### Do
 
-- Compose it: `PanelHeader` with `PanelTitle`, `PanelDescription` and `PanelActions`, then `PanelContent`, then `PanelFooter`.
-- Choose the surface with `variant="default" | "elevated" | "flat" | "outline"` and the padding with `size="sm" | "md" | "lg"`.
-- Put the body in `PanelContent`: it is the flex child that carries `min-h-0 flex-1 overflow-auto`.
-- Give the panel its height from the outside (`className="h-72"`, or an `AppShellAside`); the parts handle the rest.
-- Keep one to three icon buttons in `PanelActions`; beyond that put an `Overflow` toolbar inside the slot and the title yields width to it.
+<DoList>
+
+<Do>
+
+Compose it: `PanelHeader` with `PanelTitle`, `PanelDescription` and `PanelActions`, then `PanelContent`, then `PanelFooter`.
+
+</Do>
+
+<Do>
+
+Choose the surface with `variant="default" | "elevated" | "flat" | "outline"` and the padding with `size="sm" | "md" | "lg"`.
+
+</Do>
+
+<Do>
+
+Put the body in `PanelContent`: it is the flex child that carries `min-h-0 flex-1 overflow-auto`.
+
+</Do>
+
+<Do>
+
+Give the panel its height from the outside (`className="h-72"`, or an `AppShellAside`); the parts handle the rest.
+
+</Do>
+
+<Do>
+
+Keep one to three icon buttons in `PanelActions`; beyond that put an `Overflow` toolbar inside the slot and the title yields width to it.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="A body that is not in PanelContent">
 
-#### A body that is not in PanelContent
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Panel className="h-72">
@@ -118,7 +144,9 @@ Wrong:
 </Panel>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Panel className="h-72">
@@ -132,13 +160,15 @@ Correct:
 </Panel>
 ```
 
+</Correct>
+
 `Panel` is `flex min-h-0 flex-col overflow-hidden`, and only `PanelContent` carries `flex-1 overflow-auto`, so a plain `div` in its place is clipped instead of scrolling and pushes the footer out of view.
 
-**MEDIUM**
+</Dont>
 
-#### Painting the variant by hand
+<Dont severity="MEDIUM" title="Painting the variant by hand">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Panel className="rounded-lg border border-gray-200 bg-white px-6 py-4 shadow-md">
@@ -146,7 +176,9 @@ Wrong:
 </Panel>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Panel variant="elevated" size="lg">
@@ -156,7 +188,11 @@ Correct:
 </Panel>
 ```
 
+</Correct>
+
 The shadow is the `elevated` variant and the padding is the `size` scale, which the parts read through `--panel-px` / `--panel-py`; `border-gray-200` is stock Tailwind and emits no CSS, and `no-restyle` reports the rest.
+
+</Dont>
 
 {/* guidelines:end */}
 

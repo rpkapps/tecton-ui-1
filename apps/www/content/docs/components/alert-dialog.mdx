@@ -136,18 +136,39 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Wrap the trigger `Button` and the `AlertDialog` in one `AlertDialogTrigger`, as for `Dialog`.
-- End the title with a question and state the consequence in `AlertDialogDescription`.
-- Use `AlertDialogCancel` and `AlertDialogAction` in the footer; both carry `slot="close"`, so the dialog closes either way.
-- Colour the confirm with `variant="destructive"` on `AlertDialogAction` — never with `className` — and use `size="sm"` with `AlertDialogMedia` for a short, centred prompt.
+<DoList>
+
+<Do>
+
+Wrap the trigger `Button` and the `AlertDialog` in one `AlertDialogTrigger`, as for `Dialog`.
+
+</Do>
+
+<Do>
+
+End the title with a question and state the consequence in `AlertDialogDescription`.
+
+</Do>
+
+<Do>
+
+Use `AlertDialogCancel` and `AlertDialogAction` in the footer; both carry `slot="close"`, so the dialog closes either way.
+
+</Do>
+
+<Do>
+
+Colour the confirm with `variant="destructive"` on `AlertDialogAction` — never with `className` — and use `size="sm"` with `AlertDialogMedia` for a short, centred prompt.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**HIGH**
+<Dont severity="HIGH" title="Confirming with a plain Button">
 
-#### Confirming with a plain Button
-
-Wrong:
+<Wrong>
 
 ```tsx
 <AlertDialogFooter>
@@ -156,7 +177,9 @@ Wrong:
 </AlertDialogFooter>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <AlertDialogFooter>
@@ -165,13 +188,15 @@ Correct:
 </AlertDialogFooter>
 ```
 
+</Correct>
+
 `AlertDialogAction` is a `Button` with `slot="close"`, which React Aria binds to the overlay state; a plain `Button` runs the action and leaves the prompt on screen over the deleted record.
 
-**HIGH**
+</Dont>
 
-#### Content rendered as a sibling of the trigger
+<Dont severity="HIGH" title="Content rendered as a sibling of the trigger">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <>
@@ -184,7 +209,9 @@ Wrong:
 </>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <AlertDialogTrigger>
@@ -195,13 +222,15 @@ Correct:
 </AlertDialogTrigger>
 ```
 
+</Correct>
+
 `AlertDialogContent` is an alias of `AlertDialog`, so both names compile; outside the trigger's subtree neither reads its overlay state, and pressing the button does nothing at all.
 
-**MEDIUM**
+</Dont>
 
-#### Letting a backdrop click answer the question
+<Dont severity="MEDIUM" title="Letting a backdrop click answer the question">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <AlertDialog isDismissable>
@@ -209,7 +238,9 @@ Wrong:
 </AlertDialog>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <AlertDialog>
@@ -217,7 +248,11 @@ Correct:
 </AlertDialog>
 ```
 
+</Correct>
+
 `AlertDialogOverlay` leaves React Aria's `isDismissable` off on purpose, which is the only thing separating this from `Dialog`; turning it on lets a stray backdrop click answer the question.
+
+</Dont>
 
 {/* guidelines:end */}
 

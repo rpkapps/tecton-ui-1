@@ -83,25 +83,53 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Do
 
-- Name it: a `ProgressLabel` child, or `aria-label` when the label is already on screen.
-- Let `ProgressValue` print the number; it reads React Aria's formatted `valueText` and follows `formatOptions`, `minValue` and `maxValue`.
-- State the scale when it is not 0–100: `value={loaded} maxValue={total}`.
-- Use `isIndeterminate` while the total is unknown.
-- `className` sets the width (`w-full max-w-sm`), never the height or the colour.
+<DoList>
+
+<Do>
+
+Name it: a `ProgressLabel` child, or `aria-label` when the label is already on screen.
+
+</Do>
+
+<Do>
+
+Let `ProgressValue` print the number; it reads React Aria's formatted `valueText` and follows `formatOptions`, `minValue` and `maxValue`.
+
+</Do>
+
+<Do>
+
+State the scale when it is not 0–100: `value={loaded} maxValue={total}`.
+
+</Do>
+
+<Do>
+
+Use `isIndeterminate` while the total is unknown.
+
+</Do>
+
+<Do>
+
+`className` sets the width (`w-full max-w-sm`), never the height or the colour.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="A progress bar with no accessible name">
 
-#### A progress bar with no accessible name
-
-Wrong:
+<Wrong>
 
 ```tsx
 <Progress value={66} className="w-full max-w-sm" />
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Progress value={66} className="w-full max-w-sm">
@@ -110,43 +138,55 @@ Correct:
 </Progress>
 ```
 
+</Correct>
+
 React Aria's `ProgressBar` takes its name only from a `Label` child or `aria-label`, so the bar is announced as an unnamed progressbar with a bare percentage.
 
-**HIGH**
+</Dont>
 
-#### A fraction on the default 0–100 scale
+<Dont severity="HIGH" title="A fraction on the default 0–100 scale">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Progress aria-label="Uploading survey" value={0.66} className="w-full" />
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Progress aria-label="Uploading survey" value={0.66} maxValue={1} className="w-full" />
 ```
 
+</Correct>
+
 `ProgressBar` defaults to `minValue={0} maxValue={100}`, so `0.66` is 0.66 % — the indicator is under a pixel wide and the bar looks stuck at zero.
 
-**HIGH**
+</Dont>
 
-#### Styling the bar through className
+<Dont severity="HIGH" title="Styling the bar through className">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <Progress aria-label="Uploading survey" value={66} className="h-2 rounded-full bg-blue-600" />
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Progress aria-label="Uploading survey" value={66} className="w-full max-w-sm" />
 ```
 
+</Correct>
+
 `className` lands on the flex wrapper that `Progress` renders, not on `ProgressTrack` inside it, so the track keeps its own height, and `blue-600` is not a Tecton step, so it emits no CSS anywhere.
+
+</Dont>
 
 {/* guidelines:end */}
 

@@ -160,19 +160,45 @@ Use `placement="end"` to place the menu on the logical end side of the trigger.
 
 ### Do
 
-- Wrap the target in React Aria's `Pressable` and give the wrapped element `role="button"`.
-- Give `ContextMenuTrigger` exactly two children: the `Pressable` target and the `ContextMenu`.
-- Run actions from `onAction` on `ContextMenuItem`, or `onAction(key)` on `ContextMenu` with an `id` per item.
-- Build toggles and exclusive choices with `selectionMode` and `selectedKeys` on `ContextMenuGroup`.
-- Mark the dangerous entry with `variant="destructive"`; nest with `ContextMenuSub`, `ContextMenuSubTrigger` and `ContextMenuSubContent`.
+<DoList>
+
+<Do>
+
+Wrap the target in React Aria's `Pressable` and give the wrapped element `role="button"`.
+
+</Do>
+
+<Do>
+
+Give `ContextMenuTrigger` exactly two children: the `Pressable` target and the `ContextMenu`.
+
+</Do>
+
+<Do>
+
+Run actions from `onAction` on `ContextMenuItem`, or `onAction(key)` on `ContextMenu` with an `id` per item.
+
+</Do>
+
+<Do>
+
+Build toggles and exclusive choices with `selectionMode` and `selectedKeys` on `ContextMenuGroup`.
+
+</Do>
+
+<Do>
+
+Mark the dangerous entry with `variant="destructive"`; nest with `ContextMenuSub`, `ContextMenuSubTrigger` and `ContextMenuSubContent`.
+
+</Do>
+
+</DoList>
 
 ### Don't
 
-**CRITICAL**
+<Dont severity="CRITICAL" title="A bare element as the context menu target">
 
-#### A bare element as the context menu target
-
-Wrong:
+<Wrong>
 
 ```tsx
 <ContextMenuTrigger>
@@ -181,7 +207,9 @@ Wrong:
 </ContextMenuTrigger>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <ContextMenuTrigger>
@@ -192,31 +220,37 @@ Correct:
 </ContextMenuTrigger>
 ```
 
+</Correct>
+
 React Aria hands the trigger's interaction props down through a press responder that only `Pressable` consumes, so a plain element receives nothing and right click falls through to the browser's own menu.
 
-**HIGH**
+</Dont>
 
-#### The Radix onSelect prop instead of onAction
+<Dont severity="HIGH" title="The Radix onSelect prop instead of onAction">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <ContextMenuItem onSelect={() => reload()}>Reload</ContextMenuItem>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <ContextMenuItem onAction={() => reload()}>Reload</ContextMenuItem>
 ```
 
+</Correct>
+
 `onSelect` is not part of React Aria's `MenuItemProps`, so it is dropped and the entry renders, highlights and closes the menu while running nothing.
 
-**MEDIUM**
+</Dont>
 
-#### A hand-rolled onContextMenu handler and popover
+<Dont severity="MEDIUM" title="A hand-rolled onContextMenu handler and popover">
 
-Wrong:
+<Wrong>
 
 ```tsx
 <div role="button" onContextMenu={(event) => { event.preventDefault(); setOpen(true) }}>
@@ -224,7 +258,9 @@ Wrong:
 </div>
 ```
 
-Correct:
+</Wrong>
+
+<Correct>
 
 ```tsx
 <ContextMenuTrigger>
@@ -235,7 +271,11 @@ Correct:
 </ContextMenuTrigger>
 ```
 
+</Correct>
+
 `ContextMenuTrigger` adds what the raw event does not: long press for touch, positioning the popover at the pointer, and closing the menu when the next right click lands outside it.
+
+</Dont>
 
 {/* guidelines:end */}
 
