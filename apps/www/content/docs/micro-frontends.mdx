@@ -3,21 +3,15 @@ title: Micro-frontends
 description: Run several independently deployed applications, each with its own copy of @tecton/react, in one document — scoped utilities, inherited shell variables, one overlay container per root, and the shared modules they must agree on.
 ---
 
-A Tecton shell can mount applications that are built, versioned and deployed on their own — Module Federation remotes, embedded widgets, a legacy application in the same page. Each of them brings its own `@tecton/react`, and the versions will not match. This page is the contract that keeps them from repainting each other.
+A remote is an application built, versioned and deployed on its own and mounted into a Tecton shell: a Module Federation remote, an embedded widget, a legacy application in the same page. It brings its own `@tecton/react`, whose version will not match the shell's, so it compiles its utilities into a CSS `@scope` around its own root instead of over the whole document. This page is what that takes. The shell needs nothing beyond its usual `globals.css` — it owns the document, loads the fonts and sets the theme, and its variables inherit into everything mounted inside it — and the scope plugin and the Module Federation contract ship with the package, so nothing about scoping or sharing is copied into a build config.
 
-## Why it needs care
+## Set up a remote
 
-`globals.css` is written for an application that owns the document: it declares every theme variable on `:root`, imports Tailwind with preflight, and emits utilities and component classes unscoped. Two copies of that stylesheet in one document fight over the same names:
+<Steps>
 
-- **Class names.** `bg-primary`, `text-sm`, `rounded-md` and every component class are spelled the same in both builds, and they do not necessarily mean the same thing: two versions can map the same utility to a different token in their `@theme inline` (a changed `--radius-md`, a re-pointed palette step). At equal layer and specificity the copy injected last wins, and injection order depends on chunk loading, not on ownership.
-- **DOM-shape selectors.** Variants that match on structure rather than on a class (`in-data-[slot=button-group]`, `peer-data-*`) are written against `data-slot` names both versions emit, so one version's rules reach the other version's markup.
-- **Preflight.** A second reset restyles the whole document, including the host's own markup.
+<Step>Render `ThemeRoot` around the mounted tree</Step>
 
-**Variables are not on that list.** Custom properties inherit, so the shell's `--primary`, its tenant customisations, its radii and its current mode reach the remote's subtree on their own — and, through the body-level overlay container, the remote's overlays too. What must not happen is a remote *redeclaring* them: a second `:root { --primary: … }` repaints the shell. So the remote's stylesheet ships no variable declarations at all (see [Theme variables](#theme-variables)), and its utilities are wrapped in a CSS `@scope` around its own root element.
-
-## The remote root
-
-Render [`ThemeRoot`](/docs/tecton/theme-root) as the outermost element of the mounted application, with the same class the stylesheet is scoped to:
+Pick one scope class per deployable, and give the React root the same name as its `identifierPrefix` so two roots cannot generate the same React Aria ids.
 
 ```tsx title="src/mount.tsx"
 import { createRoot } from "react-dom/client"
@@ -36,17 +30,11 @@ export function mount(element: HTMLElement, props: MountProps) {
 }
 ```
 
-`ThemeRoot` does two things. It marks its element with `data-tecton-root`, the selector `scoped.css` hangs its base-layer reset on and the hook every Tecton overlay is anchored to. And it creates one body-level container that carries the same classes and the same marker, hands it to [`PortalProvider`](/docs/tecton/portal), and every Tecton overlay — dialog, sheet, alert dialog, popover, hover card, tooltip, select, combobox, dropdown menu, context menu, drawer — portals into it. Without that container an overlay would land in a bare `document.body`, outside the remote's `@scope` rule, and would lose the utilities that style it.
+[`ThemeRoot`](/docs/tecton/theme-root) marks its element with `data-tecton-root`, the selector the scoped stylesheet keys on, and gives the application one body-level container with the same classes for its overlays to portal into.
 
-It does **not** bring variables of its own. The shell declares them at document level, so they inherit into the mounted subtree and into the body-level container alike, and the container mirrors the root's `className` — which is how a remote's own `[--primary:…]` override, or a pinned `theme`, reaches its overlays as well.
+<Step>Write the stylesheet entry</Step>
 
-Pass `overlayContainer` when the shell already owns an element the overlays should live in (a layer above the host's chrome, a container inside a shadow-root-free region it controls), or `overlayContainer={null}` to opt out and let React Aria use `document.body`.
-
-Do **not** mount a `Toaster` in the remote — see [Toasts](#toasts).
-
-## Stylesheet
-
-The remote's CSS entry imports Tailwind's theme and utilities plus the scoped Tecton stylesheet, and nothing else:
+Tailwind's theme and utilities, then `scoped.css` — utilities only: no variable declarations, no preflight, no fonts. Importing `tailwindcss` itself instead would reset the document the shell owns.
 
 ```css title="src/styles/remote.css"
 @layer theme, base, components, utilities;
@@ -56,215 +44,103 @@ The remote's CSS entry imports Tailwind's theme and utilities plus the scoped Te
 @source "./src/**/*.{ts,tsx}";
 ```
 
-There is deliberately no `@import "tailwindcss"`: that would pull in `preflight.css`, and the reset belongs to whoever owns the document. There are no `@font-face` rules and no font imports either — the host loads Figtree and IBM Plex Mono once through its own `globals.css`, and the remote inherits them through `--font-sans` and `--font-mono`.
+<Step>Scope the output</Step>
 
-`@tecton/react/styles/scoped.css` is generated next to `globals.css` from the same tokens, and it is **utilities-only**: the `@theme inline` mappings that turn the theme variables into utilities, the `dark` custom variant, `@source` for the library itself, and a small `@layer base` block that puts the border colour and focus outline on the root and its descendants instead of on `html` and `body`. It pulls in `tw-animate-css` and the shadcn runtime styles (`shadcn.css`) the way `globals.css` does. What it does not contain is a single variable declaration.
-
-### Theme variables
-
-The shell owns the values. `--primary`, the palette, the radii, a tenant's customisations and the current mode are declared once, at document level, and inherit into every mounted application — nothing to wire up, and a tenant switch in the shell repaints the remotes with it.
-
-Version skew is handled inside the `@theme inline` mappings instead, with a fallback chain per token, so a remote never depends on the shell having its exact token set:
-
-```css
-/* scoped.css, and what the remote's own utilities compile to */
---color-primary: var(--primary, var(--tecton-color-action-primary-bg, #644a78));
---color-blue-560: var(--tecton-palette-blue-560, #2f5dba);
-```
-
-A token the shell defines wins. A token the shell's older version does not know falls back to the raw Tecton token, then to the literal the remote was built with — so the remote renders correctly on its own defaults rather than unstyled, and the shell is never overridden either way. The literals are the **light** values, because a shell always provides a mode.
-
-Two cases need the variables after all: a remote deployed standalone (a demo, a test harness, an embed in a page that has no Tecton shell), and one that must deliberately run a different token set than its host. Both add the opt-in theme sheet **after** `scoped.css`:
-
-```css title="src/styles/remote.css"
-@import "@tecton/react/styles/scoped.css";
-@import "@tecton/react/styles/scoped-theme.css";
-```
-
-`scoped-theme.css` declares the full variable set on `[data-tecton-root]` — light by default, dark under `:where(.dark, .dark *, [data-theme="dark"], …)`, an explicit `.light` or `data-theme="light"` on the root winning over a dark ancestor — and puts `bg-background text-foreground` on the root. Importing it means the remote stops following the shell's tokens, so leave it out whenever there is a shell.
-
-## Scoping the output
-
-The remote owns one more build step, after `@tailwindcss/postcss`: wrap what Tailwind emitted in `@scope (.mfe-a)`.
-
-Why this works, and why the details matter:
-
-- The cascade compares **layer, then specificity, then scope proximity, then source order**. An unscoped declaration counts as infinitely far from the scope root, so at the same layer and specificity a scoped `bg-primary` beats the host's unscoped copy of `bg-primary` — whatever the injection order.
-- The `@scope` prelude adds **no specificity**, so nothing inside changes weight relative to the application's own overrides.
-- Only the **subject** of a selector has to be inside the scope. `:where(.dark, .dark *) .foo` still matches when `dark` sits on `<html>`, far outside the scope root.
-- A plain selector inside `@scope` matches the scope root's **descendants, not the root itself**. `ThemeRoot` puts the scope class and `data-tecton-root` on one element, so a rule written for `[data-tecton-root]` would skip exactly that element. The wrapper therefore gives every selector whose leading compound is `[data-tecton-root]` a `:scope`-anchored twin — `[data-tecton-root], :scope`, `[data-tecton-root]:where(.dark, …), :scope:where(.dark, …)` — which is what makes `scoped.css`'s `@layer base` reset, and the variable blocks of an opted-in `scoped-theme.css`, apply to the remote's own root and to its overlay container, while the host's root is left alone. Neither sheet may ship `:scope` itself: outside an `@scope` block `:scope` is the document root, and the rules would leak into the host.
-- `:root` inside `@scope` matches **nothing** (the scope root is not the document root), which is exactly why `scoped.css` targets `[data-tecton-root]`.
-- `@property`, `@font-face`, `@keyframes` and `@layer` order statements are **document-global**. They must be hoisted out of the `@scope` block, where they would be ignored.
-- Rules whose selector is `:root`, `:host` or `:root, :host` have to stay **unscoped as well**, in the layer and the conditions they came with. Tailwind's theme layer emits two of them (`--spacing`, the `--text-*` scale and the rest of its defaults) and its `@layer properties` hides one more inside an `@supports`, so the lift has to recurse. These are Tailwind's own defaults, identical across versions, so a document-level duplicate is harmless — the Tecton tokens they sit next to are the shell's, and `scoped.css` declares none of them.
-- **Unlayered output needs wrapping too.** The vendored shadcn styles contribute top-level rules and conditional at-rules (`@media (prefers-reduced-motion: reduce) { .shimmer … }`); left alone they stay document-global and reach the host's markup.
-
-A plugin that does it:
-
-```js title="postcss-scope-tecton.mjs"
-// Document-global at-rules: meaningless inside `@scope`, so they are hoisted.
-const GLOBAL = new Set(["charset", "import", "property", "font-face", "keyframes"])
-const MARKER = "[data-tecton-root]"
-
-// `:root` / `:host` match nothing inside `@scope`, so Tailwind's own defaults
-// stay at document level — wherever they sit, keeping their layer and conditions.
-const isRootRule = (node) =>
-  node.type === "rule" && node.selectors.every((sel) => sel === ":root" || sel === ":host")
-const hasRootRule = (node) =>
-  isRootRule(node) || (node.type === "atrule" && (node.nodes ?? []).some(hasRootRule))
-
-// A plain selector inside `@scope` matches descendants only, and the root
-// element carries both the scope class and the marker: give it a `:scope` twin.
-const anchor = (rule) => {
-  rule.selectors = rule.selectors.flatMap((sel) =>
-    sel.startsWith(MARKER) ? [sel, `:scope${sel.slice(MARKER.length)}`] : [sel]
-  )
-}
-
-export default function scopeTecton({ scope }) {
-  return {
-    postcssPlugin: "scope-tecton",
-    OnceExit(root, { AtRule }) {
-      const global = []
-      const lift = (container) => {
-        for (const node of [...container.nodes]) {
-          if (node.type !== "atrule") continue
-          const name = node.name.toLowerCase()
-          // `@layer a, b;` has no body: a layer-order statement, not a block.
-          if (GLOBAL.has(name) || (name === "layer" && !node.nodes)) global.push(node.remove())
-          else if (node.nodes) lift(node)
-        }
-      }
-      lift(root)
-
-      // Wraps each run of scopable children in one `@scope`; layers and any
-      // at-rule that holds a `:root` / `:host` rule are recursed into instead.
-      const scopeInto = (container) => {
-        let run = []
-        const flush = () => {
-          if (!run.length) return
-          const scoped = new AtRule({ name: "scope", params: `(${scope})` })
-          container.insertBefore(run[0], scoped)
-          scoped.append(run)
-          scoped.walkRules(anchor)
-          run = []
-        }
-        for (const node of [...container.nodes]) {
-          const recurse =
-            node.type === "atrule" && node.nodes && (node.name === "layer" || hasRootRule(node))
-          if (isRootRule(node)) flush()
-          else if (recurse) {
-            flush()
-            scopeInto(node)
-          } else run.push(node)
-        }
-        flush()
-      }
-      scopeInto(root)
-      root.prepend(global) // `@charset` / `@import` keep their document order
-    },
-  }
-}
-```
+Run the plugin after `@tailwindcss/postcss`, with the same scope class. It wraps the compiled sheet in `@scope (.mfe-a) to ([data-tecton-root])`, so the remote's utilities apply to the remote's elements whatever order the stylesheets load in, and the host keeps its plain `globals.css`.
 
 ```js title="postcss.config.mjs"
 import tailwindcss from "@tailwindcss/postcss"
 
-import scopeTecton from "./postcss-scope-tecton.mjs"
+import scopeTecton from "@tecton/react/postcss/scope"
 
 export default { plugins: [tailwindcss(), scopeTecton({ scope: ".mfe-a" })] }
 ```
 
-The result is `@layer utilities { @scope (.mfe-a) { … } }` per layer, the keyframes and registered properties above it, Tailwind's `:root, :host` blocks beside the `@scope` inside `@layer theme` (and inside the `@supports` of `@layer properties`), and one more `@scope` at the top level for everything that was not in a layer. The host keeps its plain `globals.css`; only the mounted applications pay the extra step.
+<Step>Share the modules that may exist only once</Step>
 
-<Callout>
-  Pick a scope class per deployable, not per mount, and use it in three places: the `@scope` prelude, `ThemeRoot`'s `className`, and the `identifierPrefix` of the React root.
-</Callout>
-
-## Dark mode
-
-The mode belongs to the shell. It puts `dark` on `<html>`, that flips the variables it declares there (Tecton is dark-first), and the values inherit into every mounted application; the `dark:` utility variants in the remote's own build resolve to `&:is(.dark *)`, so they follow the same class. Leave `theme="inherit"`, the default, and a remote is in the right mode without knowing anything about it.
-
-`theme="dark"` on `ThemeRoot` puts the class on the subtree, which switches the `dark:` variants inside it — and, for a remote that imports `scoped-theme.css`, its variable blocks as well. That is how a dark island such as a map or a log viewer lives in a light shell. Without `scoped-theme.css` the variables keep coming from the shell, so the island needs the token overrides (or the theme sheet) to actually turn dark.
-
-`theme="light"` is the mirror image and the weaker of the two, and only meaningful with `scoped-theme.css`: it flips that sheet's variables, while `dark:` variants written against an ancestor's `dark` class still apply, so a few details render as if the subtree were dark. Prefer `inherit` or `dark`.
-
-See [Theming](/docs/theming) for the tokens themselves.
-
-## Module Federation
-
-The shared modules are what keeps two copies of Tecton from colliding — and what keeps them from being loaded twice for nothing:
+`@tecton/react/federation/shared` is that list as data — `react`, `react-dom` and `sonner` as singletons, `@tecton/react/` as a prefix share, `react-aria-components` and `recharts` shared but not singletons. It carries no versions: those come from the application's own install.
 
 ```js title="rspack.config.mjs"
+import { dependencies } from "./package.json" with { type: "json" }
+import { shared } from "@tecton/react/federation/shared"
+
+const requiredVersion = (name) => dependencies[name.replace(/\/$/, "")]
+
 new ModuleFederationPlugin({
-  shared: {
-    // One renderer and one DOM binding per document, always.
-    react: { singleton: true },
-    "react-dom": { singleton: true },
-    // Sonner's queue is module state: two copies mean two toast stacks.
-    sonner: { singleton: true },
-    // Prefix share (trailing slash): the package has no root export, so each
-    // subpath is shared on its own. Not a singleton — versions may differ.
-    "@tecton/react/": { singleton: false },
-    // React Aria may differ between host and remote; its contexts are not shared.
-    "react-aria-components": { singleton: false },
-    // The chart component pulls all of recharts (~145 KB gzipped). Share it,
-    // but never eagerly: only the applications that chart should pay for it.
-    recharts: { singleton: false, eager: false },
-  },
+  shared: Object.fromEntries(
+    Object.entries(shared).map(([name, policy]) => [
+      name,
+      { ...policy, requiredVersion: requiredVersion(name) },
+    ])
+  ),
 })
 ```
 
-Embla, `input-otp`, `react-resizable-panels` and Base UI need no entry: they hold no cross-copy state, and a second instance is only bytes.
+<Step>Leave the toasts to the host</Step>
 
-### Ids
-
-React Aria wires a label to its field, and a trigger to its popover, through generated ids. Two React roots that both start counting at `«r0»` produce colliding ids and, with them, mislabelled fields and popovers that point at the wrong trigger. Give every root a prefix:
+Sonner's queue is module state, so the host mounts exactly one `Toaster` and a remote none. Remotes call `toast` from the shared copy, and it lands in the host's stack.
 
 ```tsx
-createRoot(element, { identifierPrefix: "mfe-a" })
-```
-
-### Toasts
-
-The `Toaster` from `@tecton/react/components/sonner` renders in place, and sonner's queue is module state. The **host mounts exactly one** `Toaster`; remotes import `toast` from the shared sonner and call it. With `sonner` shared as a singleton the toast lands in the host's stack, themed by the host.
-
-The library's `Toaster` reads the mode from `next-themes` and falls back to `"system"` when there is no provider, so a host without `next-themes` should pass `theme` explicitly.
-
-### Keyboard shortcuts
-
-The host creates the registry, listens once, and hands the object to each mounted application through its mount props. The application registers against it — directly, or by wrapping its tree in a provider that reuses the same registry:
-
-```tsx
-// host
-const registry = createShortcutRegistry()
-;<ShortcutsProvider registry={registry}>{/* shell */}</ShortcutsProvider>
-mount(element, { shortcuts: registry })
-
 // remote
-<ShortcutsProvider registry={props.shortcuts}>
-  <App />
-</ShortcutsProvider>
-// …or without React
-const dispose = props.shortcuts.register([
-  { id: "wells.new", keys: "n", label: "Create well", group: "Wells", onAction: openNewWell },
-])
+import { toast } from "sonner"
+
+toast.success("Simulation finished")
 ```
 
-The registry is a plain object with five methods and no React dependency, and [that shape is versioned public API](/docs/tecton/shortcuts#registry-contract): a host on one `@tecton/react` version can hand it to a remote on another.
+</Steps>
 
-### Sidebars
+## Plugin options
 
-Two applications that each render a sidebar must not share one cookie or one `⌘B`. `SidebarProvider` takes `cookieName` (default `"sidebar_state"`, `false` to never write a cookie) and `keyboardShortcut` (default `"b"`, `false` to register no window listener):
+| Option | Default | What it does |
+| --- | --- | --- |
+| `scope` | required | Selector of the remote root: the class `ThemeRoot` renders. |
+| `boundary` | `"[data-tecton-root]"` | Lower limit, `@scope (…) to (…)`: the scope ends at the next Tecton root below, so a remote mounted inside this one keeps its own styles. A selector of your own, or `false` for no limit. |
+| `rootRules` | `"scope"` | Rewrites a leading `:root` / `html` / `body` to `:scope`, so Tailwind's own defaults land on the remote root. `"document"` leaves those rules unscoped at document level instead. |
+| `keyframes` | derived from `scope` | Renames the sheet's own `@keyframes` to `<name>--<suffix>` and rewrites the animations that use them. `{ suffix: "…" }` sets the suffix, `false` keeps the names. |
+
+A scope root that matches its own `boundary` is not excluded by it — a limit only applies to descendants — so a custom boundary may match the remote's own root.
+
+## Theme
+
+A remote declares no theme variables of its own. The shell's `--primary`, its palette, radii, tenant customisations and current mode inherit into the mounted subtree and into its overlay container, so a tenant switch or a mode toggle in the shell repaints every remote with it. Where a shell is too old to know a variable, the remote's utilities fall back to the raw Tecton token and then to the literal they were built with, rather than rendering unstyled.
+
+For an inverted remote, pass `theme` to `ThemeRoot`: `theme="dark"` pins the subtree to dark — a map or a log viewer in a light shell — switching the `dark:` utilities inside it and, for a remote that imports `scoped-theme.css`, that sheet's variables. `theme="light"` flips only those variables; `dark:` utilities written against an ancestor's `dark` class keep applying inside it, so prefer `inherit` or `dark` in a dark shell. See [Theming](/docs/theming) for the tokens themselves.
+
+A remote with no Tecton shell to inherit from — a demo, a test harness, an embed in someone else's page — or one that must deliberately run its own token set, adds the theme sheet after `scoped.css` and loads the two font families itself:
+
+```css title="src/styles/remote.css"
+@import "@tecton/react/styles/scoped.css";
+@import "@tecton/react/styles/scoped-theme.css";
+@import "@fontsource/figtree/400.css";
+@import "@fontsource/figtree/500.css";
+@import "@fontsource/ibm-plex-mono/400.css";
+@import "@fontsource/ibm-plex-mono/500.css";
+```
+
+`scoped-theme.css` declares the full variable set on the remote's root, which stops it following its host — leave it out whenever there is a shell.
+
+## Sidebars and shortcuts
+
+Two applications that each render a sidebar must not share one cookie or one `⌘B`. Give the host the defaults and every remote its own cookie and another letter — or no window listener at all:
 
 ```tsx
 <SidebarProvider cookieName="mfe_a_sidebar" keyboardShortcut={false}>
 ```
 
-Give the host the default `"b"` and the remotes either another letter or `false`, and let the shell's own shortcut registry toggle them if they need a key at all.
+Keyboard shortcuts belong to the host too: it creates the registry, listens once and hands the object to each application through its mount props, which registers against it. [That shape is versioned public API](/docs/tecton/shortcuts#registry-contract), so the two sides may be on different `@tecton/react` versions.
 
-## Known limits
+```tsx
+const registry = createShortcutRegistry() // host
+mount(element, { shortcuts: registry })
 
-- **Overlays inside a host modal.** A remote's dialog or popover opened from inside a *host* modal is treated as outside it: the host's focus containment pulls focus back and its outside-press handler closes on the first click. Let the host own the modal, or the remote own the whole flow.
-- **Document-global at-rules are last-definition-wins.** `@property`, `@keyframes` and `@font-face` cannot be scoped. Two Tecton versions with different definitions of the same name end up with whichever was parsed last. The names are stable, so the practical effect is limited to the values of registered properties and animation frames.
-- **DOM-shape selectors cross versions.** Variants that match on structure rather than on a class — `in-data-[slot=button-group]`, `has-data-[slot=…]`, `peer-data-*` — match markup rendered by another copy of the library, because the `data-slot` names are the same. Do not nest one application's components inside another's compound component.
-- **Browser floor.** `@scope` requires Chrome/Edge 118+, Safari 17.4+, Firefox 146+. There is no polyfill; an older browser gets the unscoped cascade, so the last stylesheet wins. Applications that still support older browsers should keep one Tecton version in the document instead.
+<ShortcutsProvider registry={props.shortcuts}> {/* remote */}
+  <App />
+</ShortcutsProvider>
+```
+
+## Limits
+
+- **Browser floor.** `@scope` needs Chrome/Edge 118+, Safari 17.4+, Firefox 146+, and has no polyfill. An older browser gets the unscoped cascade, where the last stylesheet wins; keep one Tecton version in the document for those.
+- **`@property` and `@font-face` are last-definition-wins.** Neither can be scoped or renamed, so two Tecton versions that define the same name end up with whichever was parsed last. The names are stable, so only the values differ.
+- **DOM-shape selectors cross versions.** Variants that match on structure rather than on a class — `in-data-[slot=button-group]`, `has-data-[slot=…]`, `peer-data-*` — reach markup rendered by another copy of the library. Do not nest one application's components inside another's compound component.
+- **A remote's overlay inside a host modal** is treated as outside it: the host's focus containment pulls focus back and its outside-press handler closes on the first click. Let the host own the modal, or the remote own the whole flow.

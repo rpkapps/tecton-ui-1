@@ -22,12 +22,16 @@
  *   ./tecton/<name>, ./hooks/<name>, ./lib/<name>, ./icons,
  *   ./icons/lucide-compat, ./icons/<name>
  *
+ * Two entries do not point into dist/ — ./federation/shared and ./postcss/scope:
+ * hand-written ESM a consumer's build config imports (no build step, Node-only),
+ * shipped as-is.
+ *
  * There is deliberately no "." entry: the bare `@tecton/react` import is banned by
  * @tecton/eslint-config, and the micro-frontend setup shares the `@tecton/react/`
  * prefix rather than a root module.
  */
 /// <reference types="node" />
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -39,7 +43,10 @@ const PKG_JSON = path.join(pkgRoot, "package.json");
 /** `src/icons/*.ts` that the build emits but the package does not expose. */
 const ICON_INTERNALS = new Set(["_runtime", "types", "lucide-compat.map"]);
 
-type ExportEntry = string | { types: string; import: string };
+type ExportEntry =
+  | string
+  | { types: string; import: string }
+  | { types: string; default: string };
 
 function moduleNames(dir: string, ext: string) {
   return readdirSync(path.join(SRC, dir), { withFileTypes: true })
@@ -66,6 +73,15 @@ function buildExports() {
   map["./globals.css"] = "./dist/styles/globals.css";
   for (const name of sheets) {
     map[`./styles/${name}.css`] = `./dist/styles/${name}.css`;
+  }
+
+  // Published verbatim from the package root: plain ESM a consumer's build config
+  // imports, each with a hand-written declaration file next to it.
+  for (const name of ["federation/shared", "postcss/scope"]) {
+    for (const file of [`${name}.mjs`, `${name}.d.mts`]) {
+      if (!existsSync(path.join(pkgRoot, file))) throw new Error(`${file} is missing`);
+    }
+    map[`./${name}`] = { types: `./${name}.d.mts`, default: `./${name}.mjs` };
   }
 
   for (const name of moduleNames("components", ".tsx")) {

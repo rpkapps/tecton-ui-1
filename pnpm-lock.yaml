@@ -309,6 +309,9 @@ importers:
       jsdom:
         specifier: ^30.0.1
         version: 30.0.1
+      postcss:
+        specifier: ^8
+        version: 8.5.28
       react:
         specifier: ^19.2.6
         version: 19.3.0

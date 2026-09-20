@@ -8,14 +8,36 @@ export default defineConfig({
     },
   },
   test: {
-    environment: "jsdom",
-    include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
-    setupFiles: ["./src/tecton/__tests__/setup.ts"],
     css: false,
     coverage: {
       provider: "v8",
       include: ["src/tecton/**/*.tsx"],
       exclude: ["src/tecton/__tests__/**"],
     },
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "components",
+          environment: "jsdom",
+          include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
+          setupFiles: ["./src/tecton/__tests__/setup.ts"],
+        },
+      },
+      {
+        // What the package ships for a consumer's build — the PostCSS plugin, the
+        // federation contract — is Node-only: no DOM, and none of the jsdom shims
+        // the component setup file installs.
+        extends: true,
+        test: {
+          name: "node",
+          environment: "node",
+          include: [
+            "postcss/__tests__/**/*.test.ts",
+            "federation/__tests__/**/*.test.ts",
+          ],
+        },
+      },
+    ],
   },
 })

@@ -73,7 +73,7 @@ type ShortcutRegistry = {
 }
 ```
 
-This shape, and the `Shortcut` fields it takes, are **versioned public API**: a type test pins them, and they only change in a major version. That is what makes the registry safe to pass across a micro-frontend boundary — the host can hand its registry to an application built against a different `@tecton/react` version, and both sides keep working. Everything else (`ShortcutsProvider`, the hooks, `ShortcutKeys`) is React-side sugar over the same object; see [Micro-frontends](/docs/micro-frontends#keyboard-shortcuts).
+This shape, and the `Shortcut` fields it takes, are **versioned public API**: a type test pins them, and they only change in a major version. That is what makes the registry safe to pass across a micro-frontend boundary — the host can hand its registry to an application built against a different `@tecton/react` version, and both sides keep working. Everything else (`ShortcutsProvider`, the hooks, `ShortcutKeys`) is React-side sugar over the same object; see [Micro-frontends](/docs/micro-frontends#sidebars-and-shortcuts).
 
 ## Key syntax
 
