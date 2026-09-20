@@ -9,8 +9,8 @@ notFor:
   - need: a palette of commands and records inside one application
     use: Command
   - need: the global action cluster at the end of the shell header
-    use: ShellActions
-related: [Command, ShellActions, AppShell]
+    use: AppShellActions
+related: [Command, AppShellActions, AppShell]
 ---
 
 ## Use it when

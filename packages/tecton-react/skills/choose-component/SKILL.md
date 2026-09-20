@@ -62,7 +62,6 @@ sources:
   - guidelines/sidebar.md
   - guidelines/pagination.md
   - guidelines/app-finder.md
-  - guidelines/shell-actions.md
   - guidelines/table.md
   - guidelines/tree-view.md
   - guidelines/chart.md
@@ -226,6 +225,8 @@ a content card, a titled application panel, a list row, a page title block, the 
 | Rows with columns, sorting, paging and selection | `TanStack Table` | `@tanstack/react-table` |
 | The block at the top of a page: what the user is looking at, and what they can do to it | `PageHeader` | `@tecton/react/tecton/page-header` |
 | The outermost frame of an application: a top bar, an optional left rail, a work area, an optional right aside | `AppShell` | `@tecton/react/tecton/app-shell` |
+| A toolbar that folds into a More menu by measured width | `Overflow` | `@tecton/react/tecton/overflow` |
+| Switching between applications from the header | `AppFinder` | `@tecton/react/tecton/app-finder` |
 | Two groups of content need a visible break that no heading or spacing gives them | `Separator` | `@tecton/react/components/separator` |
 
 Load @tecton/react#surfaces for the boundaries between these and the patterns.
@@ -270,9 +271,7 @@ where the user is and where they can go.
 | The shell header switches between independently deployed applications | `AppFinder` | `@tecton/react/tecton/app-finder` |
 | A short list of actions opened from a header button | `DropdownMenu` | `@tecton/react/components/dropdown-menu` |
 | A palette of commands and records inside one application | `Command` | `@tecton/react/components/command` |
-| The cluster at the end of the shell header: search, help, settings, the account menu | `ShellActions` | `@tecton/react/tecton/shell-actions` |
-| Actions that belong to the page rather than to the shell | `PageHeaderActions` | `@tecton/react/tecton/page-header` |
-| A toolbar that folds into a More menu by measured width | `Overflow` | `@tecton/react/tecton/overflow` |
+| The global action cluster at the end of the shell header | `AppShellActions` | `@tecton/react/tecton/app-shell` |
 
 Load @tecton/react#navigation for the boundaries between these and the patterns.
 
@@ -395,7 +394,7 @@ providers and roots, not visible components.
 | The header, rail and work area of an application that owns the document | `AppShell` | `@tecton/react/tecton/app-shell` |
 | The host listens for keys once and every mounted application registers against the same registry | `ShortcutsProvider` | `@tecton/react/tecton/shortcuts` |
 | One key cap rendered inside a label or a menu row | `Kbd` | `@tecton/react/components/kbd` |
-| The header button whose tooltip shows a shortcut | `ShellAction` | `@tecton/react/tecton/shell-actions` |
+| The header button whose tooltip shows a shortcut | `AppShellAction` | `@tecton/react/tecton/app-shell` |
 | A searchable palette of the commands themselves | `Command` | `@tecton/react/components/command` |
 
 Load @tecton/react#infrastructure for the boundaries between these and the patterns.

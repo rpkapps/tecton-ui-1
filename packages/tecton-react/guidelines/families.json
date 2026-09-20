@@ -152,7 +152,7 @@
         "components/separator"
       ],
       "skill": {
-        "description": "Choose and use Tecton surfaces: Card with CardHeader, CardContent and CardFooter for content, Panel for a titled application surface with scrolling body and pinned footer, Item for list rows, PageHeader for the title block with eyebrow, description, tabs and actions, AppShell for the application frame, Separator with emphasis. Load when laying out a page, panel, card, section, list row, header or divider.",
+        "description": "Choose and use Tecton surfaces: Card with CardHeader, CardContent and CardFooter for content, Panel for a titled application surface with scrolling body and pinned footer, Item for list rows, PageHeader for the title block with eyebrow, description, tabs and actions, AppShell for the application frame with its global header action cluster (command palette trigger, icon actions, overflow and user menu), Separator with emphasis. Load when laying out a page, panel, card, section, list row, header, the shell header actions or a divider.",
         "checklist": [
           "A self-contained block of content is a `Card` composed of `CardHeader` (`CardTitle`, `CardDescription`, `CardAction`), `CardContent` and `CardFooter`; a hand-drawn `rounded-lg border bg-card p-4` on some other component is that `Card` written out by hand.",
           "A titled application surface whose body has to scroll is a `Panel`, and the body is inside `PanelContent` — only that part carries `min-h-0 flex-1 overflow-auto`.",
@@ -161,6 +161,8 @@
           "Rows inside an `ItemGroup` are divided with `ItemSeparator` and card sections with a bare `border-b` on `CardHeader`, never with a hand-written border colour.",
           "A page title block is a `PageHeader` with the eyebrow, title and description inside `PageHeaderContent` and the actions in `PageHeaderActions`, and `PageHeaderTitle` is the page's single `h1`.",
           "The application frame is `AppShell` > `AppShellHeader` plus `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`, with the page content in `AppShellMain` and never straight into `AppShellBody`.",
+          "The shell's header actions are `AppShellAction`s with a `label` — both the accessible name and the tooltip — inside `AppShellActions`, not icon `Button`s with a `title`.",
+          "A key hint rendered by `shortcut` on `AppShellAction` or `AppShellCommandTrigger` is also registered with `useShortcut`, or nothing is bound and the key is missing from `useShortcuts()`.",
           "A divider is a `Separator` with `emphasis=\"subtle\" | \"default\" | \"strong\"` (or the surface's own `ItemSeparator` / `border-b`), never a bare `div` with a border colour."
         ]
       }
@@ -200,20 +202,17 @@
         "components/breadcrumb",
         "components/sidebar",
         "components/pagination",
-        "tecton/app-finder",
-        "tecton/shell-actions"
+        "tecton/app-finder"
       ],
       "skill": {
-        "description": "Choose and use Tecton navigation: Breadcrumb for the path to the current page, Sidebar with SidebarProvider, SidebarMenu and SidebarMenuButton for the application navigation rail, Pagination for paged lists, AppFinder for switching applications from the shell header, ShellActions for the global action cluster with command palette trigger, icon actions, overflow and user menu. Load when building navigation, a breadcrumb trail, a sidebar, paging controls, an app switcher or the shell header actions.",
+        "description": "Choose and use Tecton navigation: Breadcrumb for the path to the current page, Sidebar with SidebarProvider, SidebarMenu and SidebarMenuButton for the application navigation rail, Pagination for paged lists, AppFinder for switching applications from the shell header. Load when building navigation, a breadcrumb trail, a sidebar, paging controls or an app switcher.",
         "checklist": [
           "A breadcrumb is `Breadcrumb > BreadcrumbList > BreadcrumbItem` ending in `BreadcrumbPage` (the element marked `aria-current=\"page\"`), never a row of anchors and slashes.",
           "A routing library's link is mounted through `render={(props) => <Link {...props} />}` on `BreadcrumbLink` or `SidebarMenuButton`; there is no `asChild`, and React Aria renders a `span[role=\"link\"]` whenever it has no `href`.",
           "Every `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` is inside one `SidebarProvider` — `useSidebar` throws outside it, and a second provider fights the first over the `sidebar_state` cookie and ⌘B.",
           "A navigation row is `SidebarMenuItem > SidebarMenuButton href=\"…\"` with `isActive` on the current one, not a button with a handler.",
           "Paging controls are `Pagination > PaginationContent > PaginationItem`, every control carries an `href`, the current page is marked with `isActive` on `PaginationLink` (which sets both the outline variant and `aria-current=\"page\"`), and a dead end is `isDisabled`, never `disabled` or a colour class.",
-          "The app switcher is an `AppFinder` whose search is `AppFinderInput` inside `AppFinderMenu` (never an `Input` of your own) and whose tile is tinted with `tone`, never with `className`.",
-          "The shell's header actions are `ShellAction`s with a `label` — both the accessible name and the tooltip — inside `ShellActions`, not icon `Button`s with a `title`.",
-          "A key hint rendered by `shortcut` on `ShellAction` or `ShellCommandTrigger` is also registered with `useShortcut`, or nothing is bound and the key is missing from `useShortcuts()`."
+          "The app switcher is an `AppFinder` whose search is `AppFinderInput` inside `AppFinderMenu` (never an `Input` of your own) and whose tile is tinted with `tone`, never with `className`."
         ]
       }
     },

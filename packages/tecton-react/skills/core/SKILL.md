@@ -80,7 +80,8 @@ loaded. Every line is a condition that has to hold in that file.
   `Button`, `Badge`, `Chip`, `TabsTrigger` or `InputGroupAddon` carries
   `data-icon="inline-start"` or `data-icon="inline-end"`.
 - **Icon-only controls are named** — every `Button`, `Toggle`,
-  `ToggleGroupItem`, `InputGroupButton` and `ShellAction` with no text child has
+  `ToggleGroupItem`, `InputGroupButton` and `AppShellAction` with no text child
+  has
   an `aria-label`; a `Tooltip` describes, it does not name.
 - **Menu items act through `onAction`** — on the `DropdownMenuItem`,
   `ContextMenuItem` or `CommandItem` itself, or `onAction(key)` on the menu with
@@ -414,9 +415,9 @@ Source: apps/www/content/docs/components/button.mdx (With Icon); packages/tecton
 | `@tecton/react#selection` | Select, Combobox, RadioGroup, ToggleGroup, Tabs, Command. |
 | `@tecton/react#actions` | Button, LinkButton, Link, ButtonGroup, Toggle, menus, ActionBar. |
 | `@tecton/react#progress` | Progress, CircularProgress, Meter, Spinner, Skeleton. |
-| `@tecton/react#surfaces` | Card, Panel, Item, PageHeader, AppShell, Separator. |
+| `@tecton/react#surfaces` | Card, Panel, Item, PageHeader, AppShell and its header actions, Separator. |
 | `@tecton/react#forms` | Field, Input, Textarea, Checkbox, Switch, Slider, InputGroup, InputOTP. |
-| `@tecton/react#navigation` | Breadcrumb, Sidebar, Pagination, AppFinder, ShellActions. |
+| `@tecton/react#navigation` | Breadcrumb, Sidebar, Pagination, AppFinder. |
 | `@tecton/react#data` | Table and the TanStack Table recipe, TreeView, Chart, Stat, ColorSwatch, Calendar. |
 | `@tecton/react#layout` | Accordion, Collapsible, Resizable, ScrollArea, AspectRatio. |
 | `@tecton/react#presentation` | Carousel, Avatar, Overflow, Canvas, Background. |

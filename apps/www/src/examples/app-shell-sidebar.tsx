@@ -3,10 +3,10 @@ import { HexagonIcon, SettingsIcon } from "lucide-react"
 import { Button } from "@tecton/react/components/button"
 import {
   AppShell,
+  AppShellActions,
   AppShellBody,
   AppShellBrand,
   AppShellHeader,
-  AppShellHeaderActions,
   AppShellMain,
   AppShellNav,
   AppShellSidebar,
@@ -33,11 +33,11 @@ export default function AppShellSidebarExample() {
             FDA
           </Button>
         </AppShellNav>
-        <AppShellHeaderActions>
+        <AppShellActions>
           <Button variant="ghost" size="icon-sm" aria-label="Settings">
             <SettingsIcon />
           </Button>
-        </AppShellHeaderActions>
+        </AppShellActions>
       </AppShellHeader>
       <AppShellBody>
         <AppShellSidebar className="w-48 p-2">

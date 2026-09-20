@@ -1,6 +1,6 @@
 ---
 title: App Shell
-description: "The application frame: top bar, optional sidebar, main work area and optional right aside."
+description: "The application frame: top bar with the global action cluster, optional sidebar, main work area and optional right aside."
 ---
 
 <ComponentPreview name="app-shell-demo" />
@@ -14,7 +14,12 @@ import {
   AppShellHeader,
   AppShellBrand,
   AppShellNav,
-  AppShellHeaderActions,
+  AppShellActions,
+  AppShellAction,
+  AppShellCommandTrigger,
+  AppShellDivider,
+  AppShellOverflow,
+  AppShellUserMenu,
   AppShellBody,
   AppShellSidebar,
   AppShellMain,
@@ -31,7 +36,7 @@ import {
   <AppShellHeader>
     <AppShellBrand>Tecton</AppShellBrand>
     <AppShellNav>…</AppShellNav>
-    <AppShellHeaderActions>…</AppShellHeaderActions>
+    <AppShellActions>…</AppShellActions>
   </AppShellHeader>
   <AppShellBody>
     <AppShellSidebar>…</AppShellSidebar>
@@ -54,12 +59,47 @@ AppShell
 ├── AppShellHeader
 │   ├── AppShellBrand
 │   ├── AppShellNav
-│   └── AppShellHeaderActions
+│   └── AppShellActions
+│       ├── AppShellCommandTrigger
+│       ├── AppShellAction …
+│       ├── AppShellDivider
+│       ├── AppShellOverflow
+│       └── AppShellUserMenu
 └── AppShellBody
     ├── AppShellSidebar
     ├── AppShellMain
     └── AppShellAside
 ```
+
+## Actions
+
+`AppShellActions` is the global action cluster at the end of the header: the command palette trigger, the icon actions (help, settings, release notes, bug report) and the user menu. It is `ml-auto`, so it pins itself to the end of the header.
+
+<ComponentPreview name="app-shell-actions" />
+
+<Callout>
+  These controls belong to the micro-frontend host, not to the mounted application. Every application sees the same cluster, and a change to it (moving bug reports into a drawer, say) ships once through the package.
+</Callout>
+
+```tsx
+<AppShellHeader>
+  <AppShellBrand>Tecton</AppShellBrand>
+  <AppShellActions>
+    <AppShellCommandTrigger onPress={openPalette}>Search or jump to…</AppShellCommandTrigger>
+    <AppShellAction label="Help" shortcut="?"><CircleHelpIcon /></AppShellAction>
+    <AppShellAction label="Settings" className="hidden lg:inline-flex"><SettingsIcon /></AppShellAction>
+    <AppShellOverflow className="lg:hidden">
+      <DropdownMenuItem textValue="Settings"><SettingsIcon /> Settings</DropdownMenuItem>
+    </AppShellOverflow>
+    <AppShellDivider />
+    <AppShellUserMenu user={{ name: "Sarah Elliott", initials: "SE" }}>
+      <DropdownMenuItem textValue="Sign out">Sign out</DropdownMenuItem>
+    </AppShellUserMenu>
+  </AppShellActions>
+</AppShellHeader>
+```
+
+`AppShellAction` is a ghost icon button whose `label` is both the accessible name and the tooltip; `shortcut` adds the key hint in [Shortcuts](/docs/tecton/shortcuts) key syntax. `AppShellCommandTrigger` looks like a search field from `md` up and collapses to an icon button below it. `AppShellOverflow` is the "More" menu for the actions a narrow header cannot show, and `AppShellDivider` is the hairline between groups.
 
 ## Sidebar
 
@@ -107,13 +147,17 @@ const showAside = useMinWidth(1280)
 
 - The outermost frame of an application: a top bar, an optional left rail, a work area, an optional right aside.
 - The frame fills the viewport (`h-svh`) and clips its own overflow, so each region scrolls on its own.
+- The header carries the host's own cluster — search, help, settings, the account menu — so every mounted application shows the same set.
 - A tool panel lives beside the content and the user may drag the divider between them.
 
 ### Not for
 
 - a titled tool surface inside the work area: use [Panel](/docs/tecton/panel)
 - the title block at the top of the page inside the main area: use [PageHeader](/docs/tecton/page-header)
+- actions that belong to the page rather than to the shell: use [PageHeaderActions](/docs/tecton/page-header)
 - a panel that floats over the page and is dismissed: use [Sheet](/docs/components/sheet)
+- a toolbar that folds into a More menu by measured width: use [Overflow](/docs/tecton/overflow)
+- switching between applications from the header: use [AppFinder](/docs/tecton/app-finder)
 
 ### Do
 
@@ -121,7 +165,7 @@ const showAside = useMinWidth(1280)
 
 <Do>
 
-Compose it: `AppShellHeader` (with `AppShellBrand`, `AppShellNav`, `AppShellHeaderActions`), then `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`.
+Compose it: `AppShellHeader` (with `AppShellBrand`, `AppShellNav`, `AppShellActions`), then `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`.
 
 </Do>
 
@@ -133,19 +177,19 @@ Put the page content in `AppShellMain`; it is the scrolling region of the work a
 
 <Do>
 
-For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them.
+Give every `AppShellAction` a `label` — both the accessible name and the tooltip — separate groups with `AppShellDivider`, and on a narrow header hide the low-priority ones (`hidden lg:inline-flex`) in favour of `AppShellOverflow` (`lg:hidden`).
 
 </Do>
 
 <Do>
 
-Gate a full-height aside on `useMinWidth(1280)` instead of squeezing it onto a narrow screen.
+For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them, and gate a full-height aside on `useMinWidth(1280)`.
 
 </Do>
 
 <Do>
 
-Override only the height through `className` (`h-full` in an embedded context); the shell owns its surfaces and borders.
+Inside an `AppShellSplitPanel` give the `AppShellAside` `className="h-full w-full border-l-0"`; otherwise `className` overrides the height alone (`h-full` in an embedded context) and the shell keeps its surfaces and borders.
 
 </Do>
 
@@ -153,17 +197,14 @@ Override only the height through `className` (`h-full` in an embedded context); 
 
 ### Don't
 
-<Dont severity="HIGH" title="Page content placed straight into AppShellBody">
+<Dont severity="CRITICAL" title="An icon Button with a title instead of AppShellAction">
 
 <Wrong>
 
 ```tsx
-<AppShell>
-  <AppShellHeader>
-    <AppShellBrand>Tecton</AppShellBrand>
-  </AppShellHeader>
-  <AppShellBody className="overflow-y-auto p-6">{page}</AppShellBody>
-</AppShell>
+<Button variant="ghost" size="icon-sm" title="Settings" onPress={openSettings}>
+  <SettingsIcon />
+</Button>
 ```
 
 </Wrong>
@@ -171,14 +212,33 @@ Override only the height through `className` (`h-full` in an embedded context); 
 <Correct>
 
 ```tsx
-<AppShell>
-  <AppShellHeader>
-    <AppShellBrand>Tecton</AppShellBrand>
-  </AppShellHeader>
-  <AppShellBody>
-    <AppShellMain className="p-6">{page}</AppShellMain>
-  </AppShellBody>
-</AppShell>
+<AppShellAction label="Settings" onPress={openSettings}>
+  <SettingsIcon />
+</AppShellAction>
+```
+
+</Correct>
+
+`title` is not a `Button` prop, and React Aria's `filterDOMProps` keeps only `id`, `data-*`, labelling and global DOM attributes, so it never reaches the `button`: an icon-only button with no text node is left with no accessible name and no tooltip either, while `AppShellAction` sets `aria-label` from `label` and wraps the button in the `TooltipTrigger` that also opens on keyboard focus.
+
+</Dont>
+
+<Dont severity="HIGH" title="Page content placed straight into AppShellBody">
+
+<Wrong>
+
+```tsx
+<AppShellBody className="overflow-y-auto p-6">{page}</AppShellBody>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<AppShellBody>
+  <AppShellMain className="p-6">{page}</AppShellMain>
+</AppShellBody>
 ```
 
 </Correct>
@@ -187,14 +247,14 @@ Override only the height through `className` (`h-full` in an embedded context); 
 
 </Dont>
 
-<Dont severity="MEDIUM" title="A split aside that keeps its own border">
+<Dont severity="HIGH" title="The key hint mistaken for a registration">
 
 <Wrong>
 
 ```tsx
-<AppShellSplitPanel defaultSize="384px" minSize="280px">
-  <AppShellAside>{inspector}</AppShellAside>
-</AppShellSplitPanel>
+function ShellSearch({ open }: { open: () => void }) {
+  return <AppShellCommandTrigger shortcut="⌘K" onPress={open}>Search</AppShellCommandTrigger>
+}
 ```
 
 </Wrong>
@@ -202,14 +262,15 @@ Override only the height through `className` (`h-full` in an embedded context); 
 <Correct>
 
 ```tsx
-<AppShellSplitPanel defaultSize="384px" minSize="280px">
-  <AppShellAside className="h-full w-full border-l-0">{inspector}</AppShellAside>
-</AppShellSplitPanel>
+function ShellSearch({ open }: { open: () => void }) {
+  useShortcut({ id: "shell.palette", keys: "mod+k", label: "Command palette", onAction: open })
+  return <AppShellCommandTrigger shortcut="⌘K" onPress={open}>Search</AppShellCommandTrigger>
+}
 ```
 
 </Correct>
 
-`AppShellAside` is a fixed 320 px column with its own left border, so inside a resizable panel it ignores the dragged width and draws a second divider next to the handle.
+`shortcut` on `AppShellCommandTrigger` only renders a `Kbd` and binds nothing, so ⌘K never opens the palette and the key is missing from `useShortcuts()` — the list the shell's help dialog and command palette are built from.
 
 </Dont>
 
@@ -233,10 +294,58 @@ Grid with the header row and the body; fills the viewport (`h-svh`).
 | --- | --- | --- | --- |
 | `className` | `string` | - | Override the height in embedded contexts. |
 
-### AppShellHeader, AppShellBrand, AppShellNav, AppShellHeaderActions, AppShellBody, AppShellSidebar, AppShellMain, AppShellAside
+### AppShellHeader, AppShellBrand, AppShellNav, AppShellActions, AppShellBody, AppShellSidebar, AppShellMain, AppShellAside
 
 Plain styled layout elements.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `className` | `string` | - |  |
+
+### AppShellAction
+
+Ghost icon `Button` wrapped in a `TooltipTrigger`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `label` | `string` | - | Accessible name and tooltip text. |
+| `shortcut` | `string` | - | Key hint rendered in the tooltip, in [Shortcuts](/docs/tecton/shortcuts) key syntax (`"mod+k"`, `"?"`, `"g w"`). |
+| `onPress` | `(e: PressEvent) => void` | - | Press handler. |
+
+### AppShellCommandTrigger
+
+Outline `Button` that looks like a search field and opens the command palette. Below `md` it collapses to an icon button; the key hint shows from `lg`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `children` | `ReactNode` | "Search" | Placeholder text. |
+| `shortcut` | `ReactNode` | "⌘K" | Key hint at the end; pass `null` to hide it. |
+
+### AppShellUserMenu
+
+Avatar button opening a `DropdownMenu` anchored bottom-end.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `user` | `{ name; initials; image? }` | - | Shown in the avatar and used for the accessible name. |
+| `children` | `ReactNode` | - | Menu contents: `DropdownMenuGroup`, `DropdownMenuItem`, … |
+
+### AppShellOverflow
+
+Ellipsis button opening a `DropdownMenu` for actions that do not fit a narrow header. Hide the icon actions below a breakpoint and show this instead:
+
+```tsx
+<AppShellAction label="Settings" className="hidden lg:inline-flex"><SettingsIcon /></AppShellAction>
+<AppShellOverflow className="lg:hidden">
+  <DropdownMenuItem textValue="Settings"><SettingsIcon /> Settings</DropdownMenuItem>
+</AppShellOverflow>
+```
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `label` | `string` | "More" | Accessible name of the trigger. |
+| `children` | `ReactNode` | - | Menu contents. |
+
+### AppShellDivider
+
+Vertical hairline (`role="separator"`) between groups of actions.

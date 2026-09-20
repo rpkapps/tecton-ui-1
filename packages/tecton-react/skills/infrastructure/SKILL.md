@@ -46,7 +46,7 @@ Infrastructure — providers and roots, not visible components. Start from the t
 | The header, rail and work area of an application that owns the document | `AppShell` | `@tecton/react/tecton/app-shell` |
 | The host listens for keys once and every mounted application registers against the same registry | `ShortcutsProvider` | `@tecton/react/tecton/shortcuts` |
 | One key cap rendered inside a label or a menu row | `Kbd` | `@tecton/react/components/kbd` |
-| The header button whose tooltip shows a shortcut | `ShellAction` | `@tecton/react/tecton/shell-actions` |
+| The header button whose tooltip shows a shortcut | `AppShellAction` | `@tecton/react/tecton/app-shell` |
 | A searchable palette of the commands themselves | `Command` | `@tecton/react/components/command` |
 
 ## DirectionProvider
@@ -211,7 +211,7 @@ import { ShortcutsProvider, createShortcutRegistry, useShortcut, useShortcuts, u
 ### Not for
 
 - one key cap rendered inside a label or a menu row: use `Kbd` — `import { Kbd } from "@tecton/react/components/kbd"`
-- the header button whose tooltip shows a shortcut: use `ShellAction` — `import { ShellAction } from "@tecton/react/tecton/shell-actions"`
+- the header button whose tooltip shows a shortcut: use `AppShellAction` — `import { AppShellAction } from "@tecton/react/tecton/app-shell"`
 - a searchable palette of the commands themselves: use `Command` — `import { Command } from "@tecton/react/components/command"`
 
 ### Do

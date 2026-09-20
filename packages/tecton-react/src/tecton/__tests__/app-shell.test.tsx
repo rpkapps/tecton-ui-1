@@ -1,19 +1,26 @@
 import { act, render, renderHook, screen } from "@testing-library/react"
-import { afterEach, describe, expect, it, vi } from "vitest"
+import userEvent from "@testing-library/user-event"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { DropdownMenuItem } from "@tecton/react/components/dropdown-menu"
 import {
   AppShell,
+  AppShellAction,
+  AppShellActions,
   AppShellAside,
   AppShellBody,
   AppShellBrand,
+  AppShellCommandTrigger,
+  AppShellDivider,
   AppShellHeader,
-  AppShellHeaderActions,
   AppShellMain,
   AppShellNav,
+  AppShellOverflow,
   AppShellSidebar,
   AppShellSplit,
   AppShellSplitHandle,
   AppShellSplitPanel,
+  AppShellUserMenu,
   useMinWidth,
 } from "@tecton/react/tecton/app-shell"
 
@@ -26,9 +33,9 @@ describe("AppShell", () => {
           <AppShellNav aria-label="Primary">
             <a href="#">Home</a>
           </AppShellNav>
-          <AppShellHeaderActions>
+          <AppShellActions>
             <button>Help</button>
-          </AppShellHeaderActions>
+          </AppShellActions>
         </AppShellHeader>
         <AppShellBody>
           <AppShellSidebar aria-label="Sidebar">side</AppShellSidebar>
@@ -54,7 +61,7 @@ describe("AppShell", () => {
       "app-shell-nav"
     )
     expect(
-      container.querySelector('[data-slot="app-shell-header-actions"]')
+      container.querySelector('[data-slot="app-shell-actions"]')
     ).toContainElement(screen.getByRole("button", { name: "Help" }))
     expect(
       container.querySelector('[data-slot="app-shell-body"]')
@@ -109,6 +116,139 @@ describe("AppShell", () => {
       "data-slot",
       "app-shell-split-handle"
     )
+  })
+})
+
+describe("AppShellActions", () => {
+  beforeEach(() => {
+    vi.spyOn(navigator, "platform", "get").mockReturnValue("Win32")
+  })
+
+  it("renders the cluster", () => {
+    const { container } = render(
+      <AppShellActions className="x">y</AppShellActions>
+    )
+    expect(
+      container.querySelector('[data-slot="app-shell-actions"]')
+    ).toHaveClass("x", "ml-auto")
+  })
+
+  it("AppShellAction is an icon button named by its label with a tooltip", async () => {
+    const onPress = vi.fn()
+    render(
+      <AppShellAction label="Help" shortcut="?" onPress={onPress}>
+        <svg />
+      </AppShellAction>
+    )
+    const button = screen.getByRole("button", { name: "Help" })
+    expect(button).toHaveAttribute("data-slot", "app-shell-action")
+    expect(button).toHaveAttribute("data-size", "icon-sm")
+    expect(button).toHaveAttribute("data-variant", "ghost")
+
+    // Keyboard focus shows the tooltip without the hover delay.
+    await userEvent.tab()
+    expect(button).toHaveFocus()
+    const tooltip = await screen.findByRole("tooltip")
+    expect(tooltip).toHaveTextContent("Help")
+    expect(
+      tooltip.querySelector('[data-slot="shortcut-keys"]')
+    ).toHaveAttribute("aria-label", "?")
+
+    await userEvent.click(button)
+    expect(onPress).toHaveBeenCalled()
+  })
+
+  it("AppShellAction without a shortcut has no key caps", async () => {
+    render(<AppShellAction label="Settings" />)
+    await userEvent.tab()
+    const tooltip = await screen.findByRole("tooltip")
+    expect(tooltip.querySelector('[data-slot="shortcut-keys"]')).toBeNull()
+  })
+
+  it("AppShellCommandTrigger defaults to Search with a ⌘K hint", () => {
+    render(<AppShellCommandTrigger />)
+    const button = screen.getByRole("button", { name: "Search" })
+    expect(button).toHaveAttribute("data-slot", "app-shell-command-trigger")
+    expect(button).toHaveTextContent("Search")
+    expect(button.querySelector('[data-slot="kbd"]')).toHaveTextContent("⌘K")
+  })
+
+  it("AppShellCommandTrigger accepts a label, a shortcut and no shortcut", () => {
+    const { rerender } = render(
+      <AppShellCommandTrigger shortcut="/">Jump to</AppShellCommandTrigger>
+    )
+    const button = screen.getByRole("button", { name: "Jump to" })
+    expect(button.querySelector('[data-slot="kbd"]')).toHaveTextContent("/")
+    rerender(<AppShellCommandTrigger shortcut={null} />)
+    expect(
+      screen.getByRole("button").querySelector('[data-slot="kbd"]')
+    ).toBeNull()
+  })
+
+  it("AppShellCommandTrigger falls back to Search for a non-string label", () => {
+    render(
+      <AppShellCommandTrigger>
+        <em>Find</em>
+      </AppShellCommandTrigger>
+    )
+    expect(screen.getByRole("button", { name: "Search" })).toHaveTextContent(
+      "Find"
+    )
+  })
+
+  it("AppShellDivider is a vertical separator", () => {
+    render(<AppShellDivider className="x" />)
+    const divider = screen.getByRole("separator")
+    expect(divider).toHaveAttribute("aria-orientation", "vertical")
+    expect(divider).toHaveAttribute("data-slot", "app-shell-divider")
+    expect(divider).toHaveClass("x", "w-px")
+  })
+
+  it("AppShellOverflow opens a menu from a More button", async () => {
+    render(
+      <AppShellOverflow>
+        <DropdownMenuItem>Release notes</DropdownMenuItem>
+      </AppShellOverflow>
+    )
+    const trigger = screen.getByRole("button", { name: "More" })
+    await userEvent.click(trigger)
+    expect(
+      await screen.findByRole("menuitem", { name: "Release notes" })
+    ).toBeInTheDocument()
+  })
+
+  it("AppShellOverflow accepts a custom label", () => {
+    render(<AppShellOverflow label="Extra">x</AppShellOverflow>)
+    expect(screen.getByRole("button", { name: "Extra" })).toBeInTheDocument()
+  })
+
+  it("AppShellUserMenu shows the avatar and opens the account menu", async () => {
+    render(
+      <AppShellUserMenu user={{ name: "Ada Lovelace", initials: "AL" }}>
+        <DropdownMenuItem>Sign out</DropdownMenuItem>
+      </AppShellUserMenu>
+    )
+    const trigger = screen.getByRole("button", {
+      name: "Account: Ada Lovelace",
+    })
+    expect(trigger).toHaveTextContent("AL")
+    expect(trigger.querySelector("img")).toBeNull()
+    await userEvent.click(trigger)
+    expect(
+      await screen.findByRole("menuitem", { name: "Sign out" })
+    ).toBeInTheDocument()
+  })
+
+  it("AppShellUserMenu renders the image when given", () => {
+    render(
+      <AppShellUserMenu
+        user={{ name: "Ada", initials: "A", image: "/ada.png" }}
+      >
+        x
+      </AppShellUserMenu>
+    )
+    const img = screen.getByRole("button").querySelector("img")
+    expect(img).toHaveAttribute("src", "/ada.png")
   })
 })
 
