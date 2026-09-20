@@ -34,6 +34,8 @@ import { Chip } from "@tecton/react/tecton/chip"         // Tecton-specific comp
 import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 ```
 
+An application mounted inside another one (a Module Federation remote, an embedded widget) imports `@tecton/react/styles/scoped.css` instead of `globals.css` — utilities only, the shell keeps the variables — and runs `@tecton/react/postcss/scope` after `@tailwindcss/postcss`, which wraps its output in `@scope (.mfe-a) to ([data-tecton-root])` so two copies of the library in one document stop repainting each other. See [Micro-frontends](apps/www/content/docs/micro-frontends.mdx); the plugin itself is `packages/tecton-react/postcss/scope.mjs`.
+
 ## Design rules
 
 1. **Generated files are never edited.** `packages/tecton-react/src/{components,hooks,lib}/**` and the scaffold of `src/styles/globals.css` come from `shadcn add`. `pnpm generated:check` diffs every item against the registry.

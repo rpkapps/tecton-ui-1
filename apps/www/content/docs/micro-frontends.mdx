@@ -85,96 +85,38 @@ Two cases need the variables after all: a remote deployed standalone (a demo, a 
 
 ## Scoping the output
 
-The remote owns one more build step, after `@tailwindcss/postcss`: wrap what Tailwind emitted in `@scope (.mfe-a)`.
+The remote owns one more build step, after `@tailwindcss/postcss`: wrap what Tailwind emitted in `@scope (.mfe-a) to ([data-tecton-root])`. `@tecton/react` ships the plugin that does it.
 
 Why this works, and why the details matter:
 
 - The cascade compares **layer, then specificity, then scope proximity, then source order**. An unscoped declaration counts as infinitely far from the scope root, so at the same layer and specificity a scoped `bg-primary` beats the host's unscoped copy of `bg-primary` — whatever the injection order.
 - The `@scope` prelude adds **no specificity**, so nothing inside changes weight relative to the application's own overrides.
 - Only the **subject** of a selector has to be inside the scope. `:where(.dark, .dark *) .foo` still matches when `dark` sits on `<html>`, far outside the scope root.
+- Without a **lower limit** the scope reaches every descendant, including a remote mounted *inside* this one: a class only this version emits would style that remote's markup, with no copy of its own to win on proximity. The limit `to ([data-tecton-root])` ends the scope at the next Tecton root below, since every `ThemeRoot` marks its element and its overlay container with the attribute. A scope root that matches the limit selector is **not** excluded by its own limit — a limit only applies to descendants — so the remote's own root, which carries the marker too, stays in scope, and `:scope` keeps selecting it.
 - A plain selector inside `@scope` matches the scope root's **descendants, not the root itself**. `ThemeRoot` puts the scope class and `data-tecton-root` on one element, so a rule written for `[data-tecton-root]` would skip exactly that element. The wrapper therefore gives every selector whose leading compound is `[data-tecton-root]` a `:scope`-anchored twin — `[data-tecton-root], :scope`, `[data-tecton-root]:where(.dark, …), :scope:where(.dark, …)` — which is what makes `scoped.css`'s `@layer base` reset, and the variable blocks of an opted-in `scoped-theme.css`, apply to the remote's own root and to its overlay container, while the host's root is left alone. Neither sheet may ship `:scope` itself: outside an `@scope` block `:scope` is the document root, and the rules would leak into the host.
 - `:root` inside `@scope` matches **nothing** (the scope root is not the document root), which is exactly why `scoped.css` targets `[data-tecton-root]`.
 - `@property`, `@font-face`, `@keyframes` and `@layer` order statements are **document-global**. They must be hoisted out of the `@scope` block, where they would be ignored.
 - Rules whose selector is `:root`, `:host` or `:root, :host` have to stay **unscoped as well**, in the layer and the conditions they came with. Tailwind's theme layer emits two of them (`--spacing`, the `--text-*` scale and the rest of its defaults) and its `@layer properties` hides one more inside an `@supports`, so the lift has to recurse. These are Tailwind's own defaults, identical across versions, so a document-level duplicate is harmless — the Tecton tokens they sit next to are the shell's, and `scoped.css` declares none of them.
 - **Unlayered output needs wrapping too.** The vendored shadcn styles contribute top-level rules and conditional at-rules (`@media (prefers-reduced-motion: reduce) { .shimmer … }`); left alone they stay document-global and reach the host's markup.
 
-A plugin that does it:
-
-```js title="postcss-scope-tecton.mjs"
-// Document-global at-rules: meaningless inside `@scope`, so they are hoisted.
-const GLOBAL = new Set(["charset", "import", "property", "font-face", "keyframes"])
-const MARKER = "[data-tecton-root]"
-
-// `:root` / `:host` match nothing inside `@scope`, so Tailwind's own defaults
-// stay at document level — wherever they sit, keeping their layer and conditions.
-const isRootRule = (node) =>
-  node.type === "rule" && node.selectors.every((sel) => sel === ":root" || sel === ":host")
-const hasRootRule = (node) =>
-  isRootRule(node) || (node.type === "atrule" && (node.nodes ?? []).some(hasRootRule))
-
-// A plain selector inside `@scope` matches descendants only, and the root
-// element carries both the scope class and the marker: give it a `:scope` twin.
-const anchor = (rule) => {
-  rule.selectors = rule.selectors.flatMap((sel) =>
-    sel.startsWith(MARKER) ? [sel, `:scope${sel.slice(MARKER.length)}`] : [sel]
-  )
-}
-
-export default function scopeTecton({ scope }) {
-  return {
-    postcssPlugin: "scope-tecton",
-    OnceExit(root, { AtRule }) {
-      const global = []
-      const lift = (container) => {
-        for (const node of [...container.nodes]) {
-          if (node.type !== "atrule") continue
-          const name = node.name.toLowerCase()
-          // `@layer a, b;` has no body: a layer-order statement, not a block.
-          if (GLOBAL.has(name) || (name === "layer" && !node.nodes)) global.push(node.remove())
-          else if (node.nodes) lift(node)
-        }
-      }
-      lift(root)
-
-      // Wraps each run of scopable children in one `@scope`; layers and any
-      // at-rule that holds a `:root` / `:host` rule are recursed into instead.
-      const scopeInto = (container) => {
-        let run = []
-        const flush = () => {
-          if (!run.length) return
-          const scoped = new AtRule({ name: "scope", params: `(${scope})` })
-          container.insertBefore(run[0], scoped)
-          scoped.append(run)
-          scoped.walkRules(anchor)
-          run = []
-        }
-        for (const node of [...container.nodes]) {
-          const recurse =
-            node.type === "atrule" && node.nodes && (node.name === "layer" || hasRootRule(node))
-          if (isRootRule(node)) flush()
-          else if (recurse) {
-            flush()
-            scopeInto(node)
-          } else run.push(node)
-        }
-        flush()
-      }
-      scopeInto(root)
-      root.prepend(global) // `@charset` / `@import` keep their document order
-    },
-  }
-}
-```
+The plugin ships with the package, so there is nothing to copy:
 
 ```js title="postcss.config.mjs"
 import tailwindcss from "@tailwindcss/postcss"
 
-import scopeTecton from "./postcss-scope-tecton.mjs"
+import scopeTecton from "@tecton/react/postcss/scope"
 
 export default { plugins: [tailwindcss(), scopeTecton({ scope: ".mfe-a" })] }
 ```
 
-The result is `@layer utilities { @scope (.mfe-a) { … } }` per layer, the keyframes and registered properties above it, Tailwind's `:root, :host` blocks beside the `@scope` inside `@layer theme` (and inside the `@supports` of `@layer properties`), and one more `@scope` at the top level for everything that was not in a layer. The host keeps its plain `globals.css`; only the mounted applications pay the extra step.
+It is plain ESM with no build step, and `postcss` is an optional peer dependency — the copy the remote already has for `@tailwindcss/postcss`.
+
+| Option | Default | What it does |
+| --- | --- | --- |
+| `scope` | required | Selector of the remote root: the class `ThemeRoot` renders. |
+| `boundary` | `"[data-tecton-root]"` | Lower limit, `@scope (…) to (…)`. A selector of your own, or `false` for no limit. |
+
+The result is `@layer utilities { @scope (.mfe-a) to ([data-tecton-root]) { … } }` per layer, the keyframes and registered properties above it, Tailwind's `:root, :host` blocks beside the `@scope` inside `@layer theme` (and inside the `@supports` of `@layer properties`), and one more `@scope` at the top level for everything that was not in a layer. The host keeps its plain `globals.css`; only the mounted applications pay the extra step.
 
 <Callout>
   Pick a scope class per deployable, not per mount, and use it in three places: the `@scope` prelude, `ThemeRoot`'s `className`, and the `identifierPrefix` of the React root.

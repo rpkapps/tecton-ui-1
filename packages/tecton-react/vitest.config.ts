@@ -8,14 +8,32 @@ export default defineConfig({
     },
   },
   test: {
-    environment: "jsdom",
-    include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
-    setupFiles: ["./src/tecton/__tests__/setup.ts"],
     css: false,
     coverage: {
       provider: "v8",
       include: ["src/tecton/**/*.tsx"],
       exclude: ["src/tecton/__tests__/**"],
     },
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "components",
+          environment: "jsdom",
+          include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
+          setupFiles: ["./src/tecton/__tests__/setup.ts"],
+        },
+      },
+      {
+        // The PostCSS plugin is Node-only: no DOM, and none of the jsdom shims the
+        // component setup file installs.
+        extends: true,
+        test: {
+          name: "postcss",
+          environment: "node",
+          include: ["postcss/__tests__/**/*.test.ts"],
+        },
+      },
+    ],
   },
 })

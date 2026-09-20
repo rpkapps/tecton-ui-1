@@ -22,12 +22,15 @@
  *   ./tecton/<name>, ./hooks/<name>, ./lib/<name>, ./icons,
  *   ./icons/lucide-compat, ./icons/<name>
  *
+ * The one entry that does not point into dist/ is ./postcss/scope: hand-written ESM
+ * for a consumer's PostCSS config (no build step, Node-only), shipped as-is.
+ *
  * There is deliberately no "." entry: the bare `@tecton/react` import is banned by
  * @tecton/eslint-config, and the micro-frontend setup shares the `@tecton/react/`
  * prefix rather than a root module.
  */
 /// <reference types="node" />
-import { readFileSync, readdirSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -39,7 +42,10 @@ const PKG_JSON = path.join(pkgRoot, "package.json");
 /** `src/icons/*.ts` that the build emits but the package does not expose. */
 const ICON_INTERNALS = new Set(["_runtime", "types", "lucide-compat.map"]);
 
-type ExportEntry = string | { types: string; import: string };
+type ExportEntry =
+  | string
+  | { types: string; import: string }
+  | { types: string; default: string };
 
 function moduleNames(dir: string, ext: string) {
   return readdirSync(path.join(SRC, dir), { withFileTypes: true })
@@ -67,6 +73,16 @@ function buildExports() {
   for (const name of sheets) {
     map[`./styles/${name}.css`] = `./dist/styles/${name}.css`;
   }
+
+  // Published verbatim from the package root: plain ESM a consumer's postcss.config
+  // imports, with a hand-written declaration file next to it.
+  for (const file of ["postcss/scope.mjs", "postcss/scope.d.mts"]) {
+    if (!existsSync(path.join(pkgRoot, file))) throw new Error(`${file} is missing`);
+  }
+  map["./postcss/scope"] = {
+    types: "./postcss/scope.d.mts",
+    default: "./postcss/scope.mjs",
+  };
 
   for (const name of moduleNames("components", ".tsx")) {
     map[`./components/${name}`] = jsEntry(`components/${name}`);
