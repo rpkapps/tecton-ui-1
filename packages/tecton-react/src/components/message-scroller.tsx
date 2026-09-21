@@ -10,7 +10,7 @@ import {
 import { cn } from "cn"
 
 import { Button } from "@tecton/react/components/button"
-import { ArrowDownIcon } from "@tecton/react/icons/lucide-compat"
+import { ArrowDownIcon } from "@tecton/react/icons"
 
 function MessageScrollerProvider(
   props: React.ComponentProps<typeof MessageScrollerPrimitive.Provider>

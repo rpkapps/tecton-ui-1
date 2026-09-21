@@ -13,7 +13,7 @@ import {
   type DisclosurePanelProps,
   type DisclosureProps,
 } from "react-aria-components"
-import { ChevronDownIcon, ChevronUpIcon } from "@tecton/react/icons/lucide-compat"
+import { ChevronDownIcon, ChevronUpIcon } from "@tecton/react/icons"
 
 function Accordion({ className, ...props }: DisclosureGroupProps) {
   return (
@@ -55,8 +55,14 @@ function AccordionTrigger({
         {...props}
       >
         {children}
-        <ChevronDownIcon data-slot="accordion-trigger-icon" className="pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden" />
-        <ChevronUpIcon data-slot="accordion-trigger-icon" className="pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline" />
+        <ChevronDownIcon
+          data-slot="accordion-trigger-icon"
+          className="pointer-events-none shrink-0 group-aria-expanded/accordion-trigger:hidden"
+        />
+        <ChevronUpIcon
+          data-slot="accordion-trigger-icon"
+          className="pointer-events-none hidden shrink-0 group-aria-expanded/accordion-trigger:inline"
+        />
       </AccordionTriggerPrimitive>
     </AccordionHeaderPrimitive>
   )

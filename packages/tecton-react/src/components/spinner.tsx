@@ -1,9 +1,15 @@
 import { cn } from "cn"
-import { Loader2Icon } from "@tecton/react/icons/lucide-compat"
+import { ProgressActivityIcon } from "@tecton/react/icons"
 
 function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
   return (
-    <Loader2Icon data-slot="spinner" role="status" aria-label="Loading" className={cn("size-4 animate-spin", className)} {...props} />
+    <ProgressActivityIcon
+      data-slot="spinner"
+      role="status"
+      aria-label="Loading"
+      className={cn("size-4 animate-spin", className)}
+      {...props}
+    />
   )
 }
 

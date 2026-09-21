@@ -26,8 +26,8 @@
  * are only written once every file has been read and rewritten successfully.
  *
  * Does NOT touch: pnpm-lock.yaml, apps/www/public/r/**, the blocks registry
- * output, the lucide compat map, docs/TOKEN-MAPPING.md, or the shadcn
- * registry namespace `@tecton` (a different literal from the package name).
+ * output, docs/TOKEN-MAPPING.md, or the shadcn registry namespace `@tecton`
+ * (a different literal from the package name).
  */
 /// <reference types="node" />
 import { execFileSync } from "node:child_process";
@@ -119,7 +119,6 @@ const trackedFiles = lsFiles.split("\0").filter(Boolean);
 const SKIP_EXACT = new Set([
   "pnpm-lock.yaml",
   "packages/tecton-blocks/registry.json",
-  "packages/tecton-react/src/icons/lucide-compat.map.ts",
   "docs/TOKEN-MAPPING.md",
 ]);
 const SKIP_PREFIXES = ["apps/www/public/r/"];

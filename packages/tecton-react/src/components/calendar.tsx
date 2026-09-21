@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@tecton/react/components/select"
-import { ChevronLeftIcon, ChevronRightIcon } from "@tecton/react/icons/lucide-compat"
+import { ChevronLeftIcon, ChevronRightIcon } from "@tecton/react/icons"
 
 const cellVariants = cva(
   "group/day relative mt-2 aspect-square h-full w-full cursor-default rounded-(--cell-radius) p-0 text-center select-none [&:is(:last-child>[data-selected=true])>div]:rounded-r-(--cell-radius)",
@@ -150,14 +150,18 @@ function CalendarInner({
           slot="previous"
           className="size-(--cell-size) p-0 select-none aria-disabled:opacity-50"
         >
-          <ChevronLeftIcon className="size-4" />
+          <ChevronLeftIcon
+            className="size-4"
+          />
         </Button>
         <Button
           variant={buttonVariant}
           slot="next"
           className="size-(--cell-size) p-0 select-none aria-disabled:opacity-50"
         >
-          <ChevronRightIcon className="size-4" />
+          <ChevronRightIcon
+            className="size-4"
+          />
         </Button>
       </header>
       {Array.from({ length: numberOfMonths }, (_, i) => (

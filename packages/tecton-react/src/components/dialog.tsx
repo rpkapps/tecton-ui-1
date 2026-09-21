@@ -15,7 +15,7 @@ import {
 } from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
-import { XIcon } from "@tecton/react/icons/lucide-compat"
+import { CloseIcon } from "@tecton/react/icons"
 
 function DialogTrigger({ ...props }: DialogTriggerPrimitiveProps) {
   return <DialogTriggerPrimitive data-slot="dialog-trigger" {...props} />
@@ -95,7 +95,7 @@ function Dialog({
               className="absolute top-4 right-4"
               size="icon-sm"
             >
-              <XIcon
+              <CloseIcon
               />
               <span className="sr-only">Close</span>
             </DialogClose>

@@ -22,7 +22,7 @@ built the same way, from the overlay in `scripts/registry-mirror/overlay/`:
 | --- | --- |
 | `style-tecton.css` | Copy of `style-vega.css` with the Tecton deviations: solid 2px focus ring (`ring-2 ring-ring`), flat controls (no `shadow-xs`), buttons that lighten on hover / press, and the class lists of the extra variants below |
 | `tecton.patch` | Registers the style in `registry/styles.tsx`, forwards the Tecton portal target on the ten overlay aria base sources, and adds variant axes to six aria base sources: `alert` (`variant` success/warning/info + `appearance` default/outline/filled), `badge` (`variant` success/warning/info + `appearance` solid/outline + `size` default/md/lg), `separator` (`emphasis` subtle/default/strong), `input` / `textarea` / `select` trigger (`variant` outline/filled/text); strips the hard-coded selected colours from `tabs` and the hover colour from `toggle` so the style file can set the Tecton ones; makes `button-group` corners logical for RTL and gives `sonner` outlined status colours (the popover surface with a status border and text, matching `alert` with `appearance="outline"`) |
-| `../icon-imports.mts` | Not a patch: a rewrite of the **built** registry that points the twenty items with icons at `@tecton/react/icons/lucide-compat` (below) |
+| `../icon-imports.mts` | Not a patch: a rewrite of the **built** registry that resolves the icon placeholders in the twenty items with icons to Tecton icons from `@tecton/react/icons` (below) |
 
 `scripts/registry-mirror.sh build` re-applies the overlay (`git apply --3way`) and builds only
 `aria-tecton`. The patch is piped through `tr -d '\r'` first: `--3way` matches it against the
@@ -34,34 +34,46 @@ clone's index blobs, which are always LF, so a CRLF working copy of `tecton.patc
 ## Where the icon imports come from
 
 Upstream's aria base sources import **no** icon library. They render
-`<IconPlaceholder lucide="CheckIcon" tabler="IconCheck" hugeicons="…" …/>`, the registry ships
-that placeholder verbatim, and the *CLI* turns it into
-`import { CheckIcon } from "lucide-react"` while it writes the file — from its own hard-coded
-`iconLibraries` table and `components.json`'s `"iconLibrary": "lucide"`. There is no
-registry-side knob for the module name and no import line to patch in the sources.
+`<IconPlaceholder lucide="CheckIcon" tabler="IconCheck" hugeicons="…" …/>` — one identifier per
+icon library shadcn supports — the registry ships that placeholder verbatim, and the *CLI* turns
+it into a component plus an import while it writes the file, from its own hard-coded
+`iconLibraries` table and `components.json`'s `iconLibrary` key. There is no registry-side knob
+for which icon set is used and no import line to patch in the sources.
 
-So `scripts/registry-mirror/icon-imports.mts` does it one step later, on the built registry, as
-the last thing `scripts/registry-mirror.sh build` runs. For every `registry:ui` file that still
-holds a placeholder it applies the CLI's own `transformIcons` (same transform, same ts-morph
-settings as `applyIconTransform` in `build-registry.mts`) and then renames the module of the
-import it just added to `@tecton/react/icons/lucide-compat`. The CLI's own pass then finds no
-placeholder left and writes the file through unchanged, so the installed component is what it
-always was apart from that one specifier. The script fails if the count is not the expected 20
-items, so a silent no-op cannot pass.
+Tecton ships its own icon set and no compatibility layer for anyone else's, so
+`scripts/registry-mirror/icon-imports.mts` resolves the placeholders itself, one step later — on
+the built registry, as the last thing `scripts/registry-mirror.sh build` runs, and therefore
+before the CLI ever sees them. For every `registry:ui` file that holds a placeholder it reads the
+`lucide` identifier (that is simply the vocabulary upstream writes), translates it through
+`scripts/upstream-icons.mts` to a Tecton icon, replaces the JSX tag with that component keeping
+the placeholder's own props, drops the per-library props and adds one
+`import { … } from "@tecton/react/icons"`. It is a ts-morph rewrite, not a text substitution.
+The CLI's own icon transform then finds no placeholder left and writes the file through
+unchanged. The script fails if an identifier is not in the table, if a placeholder survives, or
+if the count is not the expected 20 items, so a silent no-op cannot pass.
+
+`scripts/upstream-icons.mts` is shared with `apps/www/scripts/sync-upstream-docs.mts`, the other
+place where upstream code crosses into this repository: `pnpm docs:sync` translates the same
+identifiers in the synced examples and pages. One table, two consumers, both failing loudly on a
+name it does not know.
+
+Because the placeholders are already resolved, `components.json` needs **no** `iconLibrary` key:
+the CLI's `transformIcons` returns early when the key is absent, finds nothing to do either way,
+and `pnpm generated:check` passes without it. The key is gone from both `components.json` files.
 
 It is deliberately **not** part of `overlay()`:
 
-- there is no `from "lucide-react"` line in `apps/v4/registry/bases/aria/ui/*.tsx` to sed, and
-  rewriting the placeholders there would put twenty icon hunks in the way of every upstream bump;
+- there is no icon import line in `apps/v4/registry/bases/aria/ui/*.tsx` to sed, and rewriting
+  the placeholders there would put twenty icon hunks in the way of every upstream bump;
 - eight of the twenty files (`combobox`, `context-menu`, `dialog`, `dropdown-menu`, `select`,
   `sheet`, `sidebar`, `sonner`) are also in `OVERLAY_FILES`, so
   `scripts/registry-mirror.sh export` — `git diff HEAD -- $OVERLAY_FILES` — would bake the icon
   rewrite into `tecton.patch` for those eight and not for the other twelve.
 
-`@tecton/react/icons/lucide-compat` inside a generated component is the same convention as the
+`@tecton/react/icons` inside a generated component is the same convention as the
 `@tecton/react/tecton/portal` import the patch already writes: it is not a registry `dependency`
 (those are the hand-declared list in `registry/bases/aria/ui/_registry.ts` plus `cn`), the CLI
-leaves the specifier alone, and `checkbox`'s `dependencies` stay `["cn"]` — `lucide-react` was
+leaves the specifier alone, and `checkbox`'s `dependencies` stay `["cn"]` — an icon package was
 never listed there either, it only ever reached the project through the `style` item at
 `init` time.
 
@@ -255,7 +267,7 @@ about 800 tracked files. `scripts/rename-package.mts` rewrites all of it in one 
 and occurrence counts, then drop `--dry-run` against a clean working tree (it refuses a dirty one)
 to write the changes. It skips generated output that must be rebuilt instead of edited
 (`pnpm-lock.yaml`, `apps/www/public/r/**`, `packages/tecton-blocks/registry.json`,
-`packages/tecton-react/src/icons/lucide-compat.map.ts`, `docs/TOKEN-MAPPING.md`) and prints the
+`docs/TOKEN-MAPPING.md`) and prints the
 follow-up checklist afterwards: `pnpm install`; rebuild and re-serve the registry mirror, then
 re-add every item under `packages/tecton-react/src/components` with `--overwrite` and run
 `scripts/generated-check.sh`; `icons:build`, `tokens:build` and (if present) `exports:build` for

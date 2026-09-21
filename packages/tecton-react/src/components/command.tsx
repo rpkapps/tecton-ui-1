@@ -32,7 +32,7 @@ import {
   InputGroup,
   InputGroupAddon,
 } from "@tecton/react/components/input-group"
-import { SearchIcon, CheckIcon } from "@tecton/react/icons/lucide-compat"
+import { CheckIcon, SearchIcon } from "@tecton/react/icons"
 
 function Command({
   className,
@@ -122,7 +122,9 @@ function CommandInput({ className, ...props }: InputProps) {
           )}
         />
         <InputGroupAddon>
-          <SearchIcon className="size-4 shrink-0 opacity-50" />
+          <SearchIcon
+            className="size-4 shrink-0 opacity-50"
+          />
         </InputGroupAddon>
       </InputGroup>
     </SearchField>
@@ -205,7 +207,9 @@ function CommandItem<T extends object>({
       {composeRenderProps(children, (children) => (
         <>
           {children}
-          <CheckIcon className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100" />
+          <CheckIcon
+            className="ml-auto opacity-0 group-has-data-[slot=command-shortcut]/command-item:hidden group-data-[checked=true]/command-item:opacity-100"
+          />
         </>
       ))}
     </MenuItem>

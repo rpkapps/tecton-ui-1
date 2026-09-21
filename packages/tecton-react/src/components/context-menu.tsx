@@ -19,7 +19,7 @@ import {
   type MenuItemProps as MenuItemPrimitiveProps,
   type MenuSectionProps as MenuSectionPrimitiveProps,
 } from "react-aria-components"
-import { CheckIcon, ChevronRightIcon } from "@tecton/react/icons/lucide-compat"
+import { CheckIcon, ChevronRightIcon } from "@tecton/react/icons"
 
 function ContextMenu({
   "data-slot": dataSlot = "context-menu-content",
@@ -199,7 +199,9 @@ function ContextMenuSubTrigger({
       {composeRenderProps(children, (children) => (
         <>
           {children}
-          <ChevronRightIcon className="ml-auto" />
+          <ChevronRightIcon
+            className="ml-auto"
+          />
         </>
       ))}
     </MenuItemPrimitive>

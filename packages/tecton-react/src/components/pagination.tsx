@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "cn"
 
 import { LinkButton } from "@tecton/react/components/button"
-import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "@tecton/react/icons/lucide-compat"
+import { ChevronLeftIcon, ChevronRightIcon, MoreHorizIcon } from "@tecton/react/icons"
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -68,7 +68,9 @@ function PaginationPrevious({
       className={cn("pl-2!", className)}
       {...props}
     >
-      <ChevronLeftIcon data-icon="inline-start" />
+      <ChevronLeftIcon
+        data-icon="inline-start"
+      />
       <span className="hidden sm:block">{text}</span>
     </PaginationLink>
   )
@@ -87,7 +89,9 @@ function PaginationNext({
       {...props}
     >
       <span className="hidden sm:block">{text}</span>
-      <ChevronRightIcon data-icon="inline-end" />
+      <ChevronRightIcon
+        data-icon="inline-end"
+      />
     </PaginationLink>
   )
 }
@@ -106,7 +110,7 @@ function PaginationEllipsis({
       )}
       {...props}
     >
-      <MoreHorizontalIcon
+      <MoreHorizIcon
       />
       <span className="sr-only">More pages</span>
     </span>

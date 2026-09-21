@@ -41,7 +41,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@tecton/react/components/input-group"
-import { ChevronDownIcon, XIcon, CheckIcon } from "@tecton/react/icons/lucide-compat"
+import { CheckIcon, ChevronDownIcon, CloseIcon } from "@tecton/react/icons"
 
 function ComboboxValue<T>({ ...props }: ComboBoxValueProps<T>) {
   return <ComboBoxValuePrimitive data-slot="combobox-value" {...props} />
@@ -61,7 +61,9 @@ function ComboboxTrigger({
       {...props}
     >
       {children}
-      <ChevronDownIcon className="pointer-events-none size-4 text-muted-foreground" />
+      <ChevronDownIcon
+        className="pointer-events-none size-4 text-muted-foreground"
+      />
     </ButtonPrimitive>
   )
 }
@@ -88,7 +90,9 @@ function ComboboxClear({
       slot={null}
       {...props}
     >
-      <XIcon className="pointer-events-none" />
+      <CloseIcon
+        className="pointer-events-none"
+      />
     </InputGroupButton>
   )
 }
@@ -116,7 +120,9 @@ function ComboboxInput({
             className="group-has-data-[slot=combobox-clear]/input-group:hidden data-pressed:bg-transparent [&_svg:not([class*='size-'])]:size-4"
             isDisabled={disabled}
           >
-            <ChevronDownIcon className="pointer-events-none size-4 text-muted-foreground" />
+            <ChevronDownIcon
+              className="pointer-events-none size-4 text-muted-foreground"
+            />
           </InputGroupButton>
         )}
         {showClear && <ComboboxClear isDisabled={disabled} />}
@@ -192,7 +198,9 @@ function ComboboxItem<T extends object>({
           {children}
           <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center">
             {isSelected ? (
-              <CheckIcon className="pointer-events-none" />
+              <CheckIcon
+                className="pointer-events-none"
+              />
             ) : null}
           </span>
         </>
@@ -318,7 +326,9 @@ function ComboboxChip({
           className="-ml-1 opacity-50 hover:opacity-100"
           data-slot="combobox-chip-remove"
         >
-          <XIcon className="pointer-events-none" />
+          <CloseIcon
+            className="pointer-events-none"
+          />
         </Button>
       )}
     </TagPrimitive>

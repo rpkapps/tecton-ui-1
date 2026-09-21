@@ -218,7 +218,7 @@ function SymbolGlyph({
   size = 24,
   variant = "outlined",
   className,
-  // Accepted for lucide compatibility; a glyph has no stroke to widen.
+  // Accepted so an icon is a drop-in <svg>; a glyph has no stroke to widen.
   strokeWidth: _strokeWidth,
   absoluteStrokeWidth: _absoluteStrokeWidth,
   ...props

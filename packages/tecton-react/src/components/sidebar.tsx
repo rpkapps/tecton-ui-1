@@ -22,7 +22,7 @@ import {
 } from "@tecton/react/components/sheet"
 import { Skeleton } from "@tecton/react/components/skeleton"
 import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
-import { PanelLeftIcon } from "@tecton/react/icons/lucide-compat"
+import { PanelLeftIcon } from "@tecton/react/icons"
 
 const SIDEBAR_COOKIE_NAME = "sidebar_state"
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
@@ -298,7 +298,8 @@ function SidebarTrigger({
       }}
       {...props}
     >
-      <PanelLeftIcon />
+      <PanelLeftIcon
+      />
       <span className="sr-only">Toggle Sidebar</span>
     </Button>
   )

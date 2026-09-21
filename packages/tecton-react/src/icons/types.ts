@@ -15,15 +15,15 @@ export type TectonIconVariant = "outlined" | "filled"
 export type TectonIconSource = "symbol" | "domain" | "svg"
 
 /**
- * lucide-compatible icon props. Every Tecton icon is a plain function
- * component (React 19 forwards `ref` as a prop, so no forwardRef needed).
+ * Icon props. Every Tecton icon is a plain function component (React 19
+ * forwards `ref` as a prop, so no forwardRef needed).
  */
 export interface TectonIconProps extends SVGProps<SVGSVGElement> {
   /** Width and height (default 24). */
   size?: number | string
-  /** Accepted for lucide compatibility — a font glyph has no stroke to widen. */
+  /** Accepted so an icon is a drop-in `<svg>` — a font glyph has no stroke to widen. */
   strokeWidth?: number | string
-  /** Accepted for lucide compatibility — no effect on a font glyph. */
+  /** Accepted alongside `strokeWidth` — no effect on a font glyph. */
   absoluteStrokeWidth?: boolean
   /** Glyph style (default `outlined`). */
   variant?: TectonIconVariant
@@ -38,10 +38,8 @@ export interface TectonIconMeta {
   /** Exported identifier / gallery label, e.g. `AddCircleIcon`. */
   label: string
   description: string
-  /** Oil & gas / subsurface domain glyph. */
+  /** Oil & gas / subsurface domain glyph — a drawing Tecton owns. */
   domain: boolean
-  /** Closest lucide-react icon (kebab-case lucide name) or null. */
-  lucide: string | null
   /** Material Symbols name, when a Material glyph draws it. */
   symbol: string | null
 }

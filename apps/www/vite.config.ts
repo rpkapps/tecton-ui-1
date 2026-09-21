@@ -1,6 +1,6 @@
 import { readdirSync } from "node:fs"
 import { fileURLToPath } from "node:url"
-import { defineConfig, type Plugin } from "vite"
+import { defineConfig } from "vite"
 import { tanstackStart } from "@tanstack/react-start/plugin/vite"
 import viteReact from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
@@ -20,37 +20,6 @@ const blockNames = readdirSync(
 const tectonSrc = fileURLToPath(
   new URL("../../packages/tecton-react/src/", import.meta.url)
 ).replace(/\\/g, "/")
-
-// Every `lucide-react` import in this site — the synced examples, the blocks —
-// renders a Tecton glyph instead, by resolving to the compat module documented
-// at the top of packages/tecton-react/src/icons/lucide-compat.ts. The generated
-// components no longer need it (the registry writes the compat import into them
-// directly); this is the alias an *application* adds for its own code, and the
-// docs site is that application.
-//
-// It cannot be a plain `resolve.alias`: the compat module's own map ends with
-// `export * from "lucide-react"`, so aliasing that import too would resolve the
-// module to itself. Hence a `pre` plugin that skips importers inside the
-// package's icons folder — `src/icons/` when the dev aliases point at the
-// sources, `dist/icons/` when the build resolves the published `exports` map.
-const tectonIconsDir = /[\\/](?:tecton-react|@tecton[\\/]react)[\\/](?:src|dist)[\\/]icons[\\/]/
-
-function tectonLucideCompat(): Plugin {
-  return {
-    name: "tecton-lucide-compat",
-    enforce: "pre",
-    async resolveId(source, importer) {
-      if (source !== "lucide-react" || !importer) return null
-      if (tectonIconsDir.test(importer)) return null
-      const resolved = await this.resolve(
-        "@tecton/react/icons/lucide-compat",
-        importer,
-        { skipSelf: true }
-      )
-      return resolved?.id ?? null
-    },
-  }
-}
 
 // `@tecton/react` resolves through its `exports` map, which points at the built
 // `dist/`. That is what `vite build` (and `tsc`) must see, so the docs site
@@ -86,7 +55,6 @@ const config = defineConfig(({ command }) => ({
     ],
   },
   plugins: [
-    tectonLucideCompat(),
     // Must run before tanstackStart/react so .mdx and `fumadocs-mdx/macro` calls are transformed first.
     fumadocsMdx({ index: false }),
     tailwindcss(),

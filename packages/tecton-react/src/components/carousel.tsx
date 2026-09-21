@@ -7,7 +7,7 @@ import useEmblaCarousel, {
 } from "embla-carousel-react"
 
 import { Button } from "@tecton/react/components/button"
-import { ChevronLeftIcon, ChevronRightIcon } from "@tecton/react/icons/lucide-compat"
+import { ChevronLeftIcon, ChevronRightIcon } from "@tecton/react/icons"
 
 type CarouselApi = UseEmblaCarouselType[1]
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>
@@ -195,7 +195,8 @@ function CarouselPrevious({
       onPress={scrollPrev}
       {...props}
     >
-      <ChevronLeftIcon />
+      <ChevronLeftIcon
+      />
       <span className="sr-only">Previous slide</span>
     </Button>
   )
@@ -225,7 +226,8 @@ function CarouselNext({
       onPress={scrollNext}
       {...props}
     >
-      <ChevronRightIcon />
+      <ChevronRightIcon
+      />
       <span className="sr-only">Next slide</span>
     </Button>
   )

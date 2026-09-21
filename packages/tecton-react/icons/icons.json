@@ -1,7 +1,7 @@
 {
   "version": 1,
   "source": "icons-src/tecton/*.ts (Tecton icon export); gallery order from tecton-screenshots/059_components-icon__icon-gallery.png",
-  "notes": "Labels in the gallery carry an 'Icon' suffix (e.g. 'AddCircleIcon'); 'label' preserves the exact text, 'name' strips the suffix. Gallery header: 'Tecton Icons', with Variant toggle (Outlined | Filled), Size toggle (Small (16px) | Medium (20px) | Large (24px)) and a 'Search icons' text field; screenshot shows Outlined + Medium (20px) selected. Icons are listed in alphabetical order, 9 per row. StrataIcon renders in colour (pink/orange gradient top layer); all others are monochrome. `symbol` names the Material Symbols Sharp glyph an icon renders (the ligature name in icons/material-symbols.codepoints); null keeps Tecton's own drawing, which ships in the domain font. 112 entries have no Tecton drawing at all: they exist as Material glyphs only (the seven the generated shadcn components needed — DangerousIcon, MoreHorizIcon, PanelLeftIcon, ProgressActivityIcon, SearchOffIcon, TrendingDownIcon, TrendingUpIcon — plus the 105 added so that every lucide identifier used by the blocks and the docs site resolves to a Tecton icon and nothing falls through to lucide-react). `lucide` names lucide's DECLARED ROOT export in kebab case (Trash, not the Trash2 alias); `lucideAliases` carries further roots one Tecton glyph also stands in for. build-icons.mts fails when either names something that is not a root, which is how three rows used to emit nothing at all.",
+  "notes": "Labels in the gallery carry an 'Icon' suffix (e.g. 'AddCircleIcon'); 'label' preserves the exact text, 'name' strips the suffix. Gallery header: 'Tecton Icons', with Variant toggle (Outlined | Filled), Size toggle (Small (16px) | Medium (20px) | Large (24px)) and a 'Search icons' text field; screenshot shows Outlined + Medium (20px) selected. Icons are listed in alphabetical order, 9 per row. StrataIcon renders in colour (pink/orange gradient top layer); all others are monochrome. `symbol` names the Material Symbols Sharp glyph an icon renders (the ligature name in icons/material-symbols.codepoints); null keeps Tecton's own drawing, which ships in the domain font. 112 entries have no Tecton drawing at all: they exist as Material glyphs only (the seven the generated shadcn components needed — DangerousIcon, MoreHorizIcon, PanelLeftIcon, ProgressActivityIcon, SearchOffIcon, TrendingDownIcon, TrendingUpIcon — plus the 105 added so that every icon the blocks and the docs site render is a Tecton one). Tecton ships its own names and no compatibility layer for another icon set: the two places where upstream shadcn/ui code crosses into this repository translate the identifiers it writes through scripts/upstream-icons.mts.",
   "variants": [
     "outlined",
     "filled"
@@ -19,7 +19,6 @@
       "slug": "account-tree",
       "description": "hierarchy of nodes joined by connectors",
       "symbol": "account_tree",
-      "lucide": "git-branch",
       "domain": false
     },
     {
@@ -28,10 +27,6 @@
       "slug": "add-circle",
       "description": "circle with plus",
       "symbol": "add_circle",
-      "lucide": "circle-plus",
-      "lucideAliases": [
-        "circle-fading-plus"
-      ],
       "domain": false
     },
     {
@@ -40,7 +35,6 @@
       "slug": "add",
       "description": "plus sign",
       "symbol": "add",
-      "lucide": "plus",
       "domain": false
     },
     {
@@ -49,7 +43,6 @@
       "slug": "add-pin",
       "description": "map pin with small plus at top right",
       "symbol": "add_location_alt",
-      "lucide": "map-pin-plus",
       "domain": false
     },
     {
@@ -58,7 +51,6 @@
       "slug": "airwave",
       "description": "three stacked wavy lines",
       "symbol": "airwave",
-      "lucide": "audio-waveform",
       "domain": false
     },
     {
@@ -67,7 +59,6 @@
       "slug": "annotate",
       "description": "diagonal marker pen",
       "symbol": null,
-      "lucide": "highlighter",
       "domain": false
     },
     {
@@ -76,7 +67,6 @@
       "slug": "apartment",
       "description": "multi-storey building with windows",
       "symbol": "apartment",
-      "lucide": "building",
       "domain": false
     },
     {
@@ -85,7 +75,6 @@
       "slug": "apps",
       "description": "3x3 grid of dots",
       "symbol": "apps",
-      "lucide": "grip",
       "domain": false
     },
     {
@@ -94,7 +83,6 @@
       "slug": "archive",
       "description": "box with a lid and a slot",
       "symbol": "archive",
-      "lucide": "archive",
       "domain": false
     },
     {
@@ -103,7 +91,6 @@
       "slug": "arrow-down",
       "description": "arrow pointing down",
       "symbol": "arrow_downward",
-      "lucide": "arrow-down",
       "domain": false
     },
     {
@@ -112,7 +99,6 @@
       "slug": "arrow-left",
       "description": "arrow pointing left",
       "symbol": "arrow_back",
-      "lucide": "arrow-left",
       "domain": false
     },
     {
@@ -121,7 +107,6 @@
       "slug": "arrow-outward",
       "description": "arrow pointing up and to the right",
       "symbol": "arrow_outward",
-      "lucide": "arrow-up-right",
       "domain": false
     },
     {
@@ -130,7 +115,6 @@
       "slug": "arrow-right",
       "description": "arrow pointing right",
       "symbol": "arrow_forward",
-      "lucide": "arrow-right",
       "domain": false
     },
     {
@@ -139,7 +123,6 @@
       "slug": "arrow-up",
       "description": "arrow pointing up",
       "symbol": "arrow_upward",
-      "lucide": "arrow-up",
       "domain": false
     },
     {
@@ -148,7 +131,6 @@
       "slug": "attach-file",
       "description": "paperclip",
       "symbol": "attach_file",
-      "lucide": "paperclip",
       "domain": false
     },
     {
@@ -157,7 +139,6 @@
       "slug": "auto-awesome",
       "description": "large four-point star with two small ones",
       "symbol": "auto_awesome",
-      "lucide": "sparkles",
       "domain": false
     },
     {
@@ -166,7 +147,6 @@
       "slug": "bluetooth",
       "description": "bluetooth rune",
       "symbol": "bluetooth",
-      "lucide": "bluetooth",
       "domain": false
     },
     {
@@ -175,7 +155,6 @@
       "slug": "bookmark",
       "description": "ribbon bookmark",
       "symbol": "bookmark",
-      "lucide": "bookmark",
       "domain": false
     },
     {
@@ -184,7 +163,6 @@
       "slug": "bug-report",
       "description": "beetle seen from above",
       "symbol": "bug_report",
-      "lucide": "bug",
       "domain": false
     },
     {
@@ -193,7 +171,6 @@
       "slug": "build",
       "description": "wrench at an angle",
       "symbol": "build",
-      "lucide": "wrench",
       "domain": false
     },
     {
@@ -202,7 +179,6 @@
       "slug": "calculate",
       "description": "calculator keypad with operators",
       "symbol": "calculate",
-      "lucide": "calculator",
       "domain": false
     },
     {
@@ -211,7 +187,6 @@
       "slug": "calendar-add-on",
       "description": "calendar with a plus",
       "symbol": "calendar_add_on",
-      "lucide": "calendar-plus",
       "domain": false
     },
     {
@@ -220,7 +195,6 @@
       "slug": "calendar-month",
       "description": "calendar page with a month grid",
       "symbol": "calendar_month",
-      "lucide": "calendar",
       "domain": false
     },
     {
@@ -229,7 +203,6 @@
       "slug": "cancel-circle",
       "description": "circle with x",
       "symbol": "cancel",
-      "lucide": "circle-x",
       "domain": false
     },
     {
@@ -238,7 +211,6 @@
       "slug": "caret-collapse",
       "description": "two chevrons pointing toward each other vertically (down over up)",
       "symbol": "unfold_less",
-      "lucide": "chevrons-down-up",
       "domain": false
     },
     {
@@ -247,7 +219,6 @@
       "slug": "caret-up-down",
       "description": "two chevrons pointing away from each other vertically (up over down)",
       "symbol": "unfold_more",
-      "lucide": "chevrons-up-down",
       "domain": false
     },
     {
@@ -256,7 +227,6 @@
       "slug": "casino",
       "description": "die face with pips",
       "symbol": "casino",
-      "lucide": "dices",
       "domain": false
     },
     {
@@ -265,7 +235,6 @@
       "slug": "chat",
       "description": "rounded speech bubble with lines",
       "symbol": "chat",
-      "lucide": "message-square",
       "domain": false
     },
     {
@@ -274,7 +243,6 @@
       "slug": "check-circle",
       "description": "circle with check mark",
       "symbol": "check_circle",
-      "lucide": "circle-check",
       "domain": false
     },
     {
@@ -283,7 +251,6 @@
       "slug": "check-circle-open",
       "description": "dashed circle with check mark",
       "symbol": null,
-      "lucide": "circle-dashed",
       "domain": false
     },
     {
@@ -292,7 +259,6 @@
       "slug": "check",
       "description": "check mark",
       "symbol": "check",
-      "lucide": "check",
       "domain": false
     },
     {
@@ -301,7 +267,6 @@
       "slug": "checkbox",
       "description": "square with check mark",
       "symbol": "check_box",
-      "lucide": "square-check",
       "domain": false
     },
     {
@@ -310,7 +275,6 @@
       "slug": "checkbox-outline-blank",
       "description": "empty square outline",
       "symbol": "check_box_outline_blank",
-      "lucide": "square",
       "domain": false
     },
     {
@@ -319,7 +283,6 @@
       "slug": "chevron-down",
       "description": "chevron pointing down",
       "symbol": "keyboard_arrow_down",
-      "lucide": "chevron-down",
       "domain": false
     },
     {
@@ -328,7 +291,6 @@
       "slug": "chevron-down-small",
       "description": "small chevron pointing down",
       "symbol": null,
-      "lucide": "chevron-down",
       "domain": false
     },
     {
@@ -337,7 +299,6 @@
       "slug": "chevron-left",
       "description": "chevron pointing left",
       "symbol": "chevron_left",
-      "lucide": "chevron-left",
       "domain": false
     },
     {
@@ -346,7 +307,6 @@
       "slug": "chevron-left-small",
       "description": "small chevron pointing left",
       "symbol": null,
-      "lucide": "chevron-left",
       "domain": false
     },
     {
@@ -355,7 +315,6 @@
       "slug": "chevron-right",
       "description": "chevron pointing right",
       "symbol": "chevron_right",
-      "lucide": "chevron-right",
       "domain": false
     },
     {
@@ -364,7 +323,6 @@
       "slug": "chevron-right-small",
       "description": "small chevron pointing right",
       "symbol": null,
-      "lucide": "chevron-right",
       "domain": false
     },
     {
@@ -373,7 +331,6 @@
       "slug": "chevron-up",
       "description": "chevron pointing up",
       "symbol": "keyboard_arrow_up",
-      "lucide": "chevron-up",
       "domain": false
     },
     {
@@ -382,7 +339,6 @@
       "slug": "chevron-up-small",
       "description": "small chevron pointing up",
       "symbol": null,
-      "lucide": "chevron-up",
       "domain": false
     },
     {
@@ -391,7 +347,6 @@
       "slug": "christmas-tree",
       "description": "wellhead 'christmas tree' valve stack: vertical pipe with stacked crossbars",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -400,7 +355,6 @@
       "slug": "close",
       "description": "x cross",
       "symbol": "close",
-      "lucide": "x",
       "domain": false
     },
     {
@@ -409,7 +363,6 @@
       "slug": "close-small",
       "description": "small x cross",
       "symbol": null,
-      "lucide": "x",
       "domain": false
     },
     {
@@ -418,7 +371,6 @@
       "slug": "cloud",
       "description": "cloud outline",
       "symbol": "cloud",
-      "lucide": "cloud",
       "domain": false
     },
     {
@@ -427,7 +379,6 @@
       "slug": "cloud-off",
       "description": "cloud with a diagonal strike",
       "symbol": "cloud_off",
-      "lucide": "cloud-off",
       "domain": false
     },
     {
@@ -436,7 +387,6 @@
       "slug": "co-2-leaf",
       "description": "sprout with two leaves",
       "symbol": "psychiatry",
-      "lucide": "sprout",
       "domain": false
     },
     {
@@ -445,7 +395,6 @@
       "slug": "code-blocks",
       "description": "rounded frame containing angle brackets",
       "symbol": "code_blocks",
-      "lucide": "file-code",
       "domain": false
     },
     {
@@ -454,7 +403,6 @@
       "slug": "code",
       "description": "angle brackets with slash",
       "symbol": null,
-      "lucide": "code",
       "domain": false
     },
     {
@@ -463,7 +411,6 @@
       "slug": "collapse-content",
       "description": "two corner brackets with short arrows pointing inward",
       "symbol": "collapse_content",
-      "lucide": "minimize",
       "domain": false
     },
     {
@@ -472,7 +419,6 @@
       "slug": "construction",
       "description": "crossed hammer and wrench over a barrier",
       "symbol": "construction",
-      "lucide": "construction",
       "domain": false
     },
     {
@@ -481,7 +427,6 @@
       "slug": "content-cut",
       "description": "open scissors",
       "symbol": "content_cut",
-      "lucide": "scissors",
       "domain": false
     },
     {
@@ -490,7 +435,6 @@
       "slug": "content-paste",
       "description": "clipboard with a page",
       "symbol": "content_paste",
-      "lucide": "clipboard-paste",
       "domain": false
     },
     {
@@ -499,10 +443,6 @@
       "slug": "controls",
       "description": "three horizontal sliders with knobs",
       "symbol": "tune",
-      "lucide": "sliders-horizontal",
-      "lucideAliases": [
-        "settings-2"
-      ],
       "domain": false
     },
     {
@@ -511,7 +451,6 @@
       "slug": "copy",
       "description": "two overlapping rounded squares",
       "symbol": null,
-      "lucide": "copy",
       "domain": false
     },
     {
@@ -520,7 +459,6 @@
       "slug": "corporate-fare",
       "description": "two buildings side by side",
       "symbol": "corporate_fare",
-      "lucide": "building-complex",
       "domain": false
     },
     {
@@ -529,7 +467,6 @@
       "slug": "credit-card",
       "description": "card with a magnetic stripe",
       "symbol": "credit_card",
-      "lucide": "credit-card",
       "domain": false
     },
     {
@@ -538,7 +475,6 @@
       "slug": "crop-free",
       "description": "four corner brackets",
       "symbol": "crop_free",
-      "lucide": "scan",
       "domain": false
     },
     {
@@ -547,7 +483,6 @@
       "slug": "crown",
       "description": "crown outline",
       "symbol": null,
-      "lucide": "crown",
       "domain": false
     },
     {
@@ -556,7 +491,6 @@
       "slug": "cube",
       "description": "isometric cube outline",
       "symbol": "deployed_code",
-      "lucide": "box",
       "domain": false
     },
     {
@@ -565,7 +499,6 @@
       "slug": "dangerous",
       "description": "octagon with an x",
       "symbol": "dangerous",
-      "lucide": "octagon-x",
       "domain": false
     },
     {
@@ -574,7 +507,6 @@
       "slug": "dark-mode",
       "description": "crescent moon",
       "symbol": "dark_mode",
-      "lucide": "moon",
       "domain": false
     },
     {
@@ -583,7 +515,6 @@
       "slug": "dashboard",
       "description": "four unequal panels",
       "symbol": "dashboard",
-      "lucide": "layout-dashboard",
       "domain": false
     },
     {
@@ -592,7 +523,6 @@
       "slug": "data-object",
       "description": "pair of curly braces",
       "symbol": "data_object",
-      "lucide": "braces",
       "domain": false
     },
     {
@@ -601,7 +531,6 @@
       "slug": "database",
       "description": "stacked cylinder",
       "symbol": "database",
-      "lucide": "database",
       "domain": false
     },
     {
@@ -610,7 +539,6 @@
       "slug": "delete",
       "description": "trash can",
       "symbol": "delete",
-      "lucide": "trash",
       "domain": false
     },
     {
@@ -619,7 +547,6 @@
       "slug": "description",
       "description": "page with lines of text",
       "symbol": "description",
-      "lucide": "file-text",
       "domain": false
     },
     {
@@ -628,7 +555,6 @@
       "slug": "design",
       "description": "crossed pencil and ruler",
       "symbol": "design_services",
-      "lucide": "pencil-ruler",
       "domain": false
     },
     {
@@ -637,7 +563,6 @@
       "slug": "diamond-mark",
       "description": "diamond (rotated square) outline",
       "symbol": null,
-      "lucide": "diamond",
       "domain": false
     },
     {
@@ -646,7 +571,6 @@
       "slug": "difference",
       "description": "two overlapping rounded squares",
       "symbol": "difference",
-      "lucide": "git-compare",
       "domain": false
     },
     {
@@ -655,7 +579,6 @@
       "slug": "discovery",
       "description": "compass with needle",
       "symbol": "explore",
-      "lucide": "compass",
       "domain": false
     },
     {
@@ -664,7 +587,6 @@
       "slug": "download",
       "description": "arrow down onto a line",
       "symbol": "download",
-      "lucide": "download",
       "domain": false
     },
     {
@@ -673,7 +595,6 @@
       "slug": "draft",
       "description": "blank page with a folded corner",
       "symbol": "draft",
-      "lucide": "file",
       "domain": false
     },
     {
@@ -682,7 +603,6 @@
       "slug": "drag-indicator",
       "description": "2x3 grid of dots",
       "symbol": "drag_indicator",
-      "lucide": "grip-vertical",
       "domain": false
     },
     {
@@ -691,7 +611,6 @@
       "slug": "drill-bit",
       "description": "drill bit: tapered bit head with shank",
       "symbol": null,
-      "lucide": "drill",
       "domain": true
     },
     {
@@ -700,7 +619,6 @@
       "slug": "drive-file-move",
       "description": "folder with an arrow pointing into it",
       "symbol": "drive_file_move",
-      "lucide": "folder-input",
       "domain": false
     },
     {
@@ -709,7 +627,6 @@
       "slug": "eco",
       "description": "single leaf",
       "symbol": "eco",
-      "lucide": "leaf",
       "domain": false
     },
     {
@@ -718,10 +635,6 @@
       "slug": "edit-square",
       "description": "square with pencil over top right corner",
       "symbol": "edit_square",
-      "lucide": "square-pen",
-      "lucideAliases": [
-        "pencil"
-      ],
       "domain": false
     },
     {
@@ -730,7 +643,6 @@
       "slug": "electricity",
       "description": "lightning bolt",
       "symbol": "bolt",
-      "lucide": "zap",
       "domain": false
     },
     {
@@ -739,7 +651,6 @@
       "slug": "engineering",
       "description": "drafting compass / divider",
       "symbol": "architecture",
-      "lucide": "drafting-compass",
       "domain": false
     },
     {
@@ -748,7 +659,6 @@
       "slug": "error",
       "description": "circle with exclamation mark",
       "symbol": "error",
-      "lucide": "circle-alert",
       "domain": false
     },
     {
@@ -757,10 +667,6 @@
       "slug": "expand-content",
       "description": "two corner brackets with short arrows pointing outward",
       "symbol": "expand_content",
-      "lucide": "expand",
-      "lucideAliases": [
-        "maximize"
-      ],
       "domain": false
     },
     {
@@ -769,7 +675,6 @@
       "slug": "export-upload",
       "description": "arrow up out of a tray",
       "symbol": null,
-      "lucide": "upload",
       "domain": false
     },
     {
@@ -778,7 +683,6 @@
       "slug": "facility",
       "description": "factory / plant building with sawtooth roof and stack",
       "symbol": "factory",
-      "lucide": "factory",
       "domain": false
     },
     {
@@ -787,7 +691,6 @@
       "slug": "fault",
       "description": "diagonal line with offset crossing segment (geologic fault)",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -796,7 +699,6 @@
       "slug": "filter",
       "description": "funnel",
       "symbol": null,
-      "lucide": "funnel",
       "domain": false
     },
     {
@@ -805,7 +707,6 @@
       "slug": "filter-list",
       "description": "three lines of decreasing length",
       "symbol": "filter_list",
-      "lucide": "list-filter",
       "domain": false
     },
     {
@@ -814,7 +715,6 @@
       "slug": "find-in-page",
       "description": "page with a magnifier",
       "symbol": "find_in_page",
-      "lucide": "file-search",
       "domain": false
     },
     {
@@ -823,7 +723,6 @@
       "slug": "flag",
       "description": "flag on a pole",
       "symbol": "flag",
-      "lucide": "flag",
       "domain": false
     },
     {
@@ -832,7 +731,6 @@
       "slug": "folder-code",
       "description": "folder with angle brackets",
       "symbol": "folder_code",
-      "lucide": "folder-code",
       "domain": false
     },
     {
@@ -841,7 +739,6 @@
       "slug": "folder",
       "description": "folder outline",
       "symbol": "folder",
-      "lucide": "folder",
       "domain": false
     },
     {
@@ -850,7 +747,6 @@
       "slug": "folder-match",
       "description": "folder with a magnifier and a document",
       "symbol": "folder_match",
-      "lucide": "folder-search",
       "domain": false
     },
     {
@@ -859,7 +755,6 @@
       "slug": "folder-new",
       "description": "folder with plus",
       "symbol": "create_new_folder",
-      "lucide": "folder-plus",
       "domain": false
     },
     {
@@ -868,7 +763,6 @@
       "slug": "folder-open",
       "description": "open folder",
       "symbol": "folder_open",
-      "lucide": "folder-open",
       "domain": false
     },
     {
@@ -877,7 +771,6 @@
       "slug": "fork-right",
       "description": "path splitting to the right",
       "symbol": "fork_right",
-      "lucide": "git-fork",
       "domain": false
     },
     {
@@ -886,7 +779,6 @@
       "slug": "format-bold",
       "description": "bold letter B",
       "symbol": "format_bold",
-      "lucide": "bold",
       "domain": false
     },
     {
@@ -895,7 +787,6 @@
       "slug": "format-italic",
       "description": "slanted letter I",
       "symbol": "format_italic",
-      "lucide": "italic",
       "domain": false
     },
     {
@@ -904,7 +795,6 @@
       "slug": "format-underlined",
       "description": "letter U over a rule",
       "symbol": "format_underlined",
-      "lucide": "underline",
       "domain": false
     },
     {
@@ -913,7 +803,6 @@
       "slug": "forward",
       "description": "arrow bending to the right (mirrored reply)",
       "symbol": "forward",
-      "lucide": "forward",
       "domain": false
     },
     {
@@ -922,7 +811,6 @@
       "slug": "frameworks",
       "description": "three stacked wavy lines",
       "symbol": null,
-      "lucide": "waves-horizontal",
       "domain": false
     },
     {
@@ -931,7 +819,6 @@
       "slug": "fullscreen",
       "description": "rectangle with corner brackets",
       "symbol": "fullscreen",
-      "lucide": "fullscreen",
       "domain": false
     },
     {
@@ -940,7 +827,6 @@
       "slug": "geobodies",
       "description": "cluster of three hexagons",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -949,7 +835,6 @@
       "slug": "geostructure",
       "description": "irregular hexagon-like blob outline (geologic structure)",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -958,7 +843,6 @@
       "slug": "graphic-eq",
       "description": "five vertical bars of varying height",
       "symbol": "graphic_eq",
-      "lucide": "audio-lines",
       "domain": false
     },
     {
@@ -967,7 +851,6 @@
       "slug": "grid-view",
       "description": "2x2 grid of squares",
       "symbol": "grid_view",
-      "lucide": "layout-grid",
       "domain": false
     },
     {
@@ -976,7 +859,6 @@
       "slug": "help",
       "description": "circle with a question mark",
       "symbol": "help",
-      "lucide": "circle-question-mark",
       "domain": false
     },
     {
@@ -985,7 +867,6 @@
       "slug": "hexagon",
       "description": "regular hexagon outline",
       "symbol": "hexagon",
-      "lucide": "hexagon",
       "domain": false
     },
     {
@@ -994,7 +875,6 @@
       "slug": "history",
       "description": "clock with counter-clockwise arrow",
       "symbol": "history",
-      "lucide": "rotate-ccw-clock",
       "domain": false
     },
     {
@@ -1003,7 +883,6 @@
       "slug": "home",
       "description": "house outline",
       "symbol": "home",
-      "lucide": "house",
       "domain": false
     },
     {
@@ -1012,7 +891,6 @@
       "slug": "horizon",
       "description": "single wave line (seismic horizon)",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -1021,7 +899,6 @@
       "slug": "image",
       "description": "picture frame with mountains",
       "symbol": "image",
-      "lucide": "image",
       "domain": false
     },
     {
@@ -1030,7 +907,6 @@
       "slug": "inbox",
       "description": "tray with an opening",
       "symbol": "inbox",
-      "lucide": "inbox",
       "domain": false
     },
     {
@@ -1039,7 +915,6 @@
       "slug": "indeterminate-checkbox",
       "description": "square with minus",
       "symbol": "indeterminate_check_box",
-      "lucide": "square-minus",
       "domain": false
     },
     {
@@ -1048,7 +923,6 @@
       "slug": "info",
       "description": "circle with i",
       "symbol": "info",
-      "lucide": "info",
       "domain": false
     },
     {
@@ -1057,7 +931,6 @@
       "slug": "inspect",
       "description": "scan corners with magnifier in center",
       "symbol": "frame_inspect",
-      "lucide": "scan-search",
       "domain": false
     },
     {
@@ -1066,7 +939,6 @@
       "slug": "kanban",
       "description": "square with three vertical bars of different height",
       "symbol": "view_kanban",
-      "lucide": "square-kanban",
       "domain": false
     },
     {
@@ -1075,7 +947,6 @@
       "slug": "keyboard-command-key",
       "description": "looped command key symbol",
       "symbol": "keyboard_command_key",
-      "lucide": "command",
       "domain": false
     },
     {
@@ -1084,7 +955,6 @@
       "slug": "keyboard",
       "description": "keyboard with key rows",
       "symbol": "keyboard",
-      "lucide": "keyboard",
       "domain": false
     },
     {
@@ -1093,7 +963,6 @@
       "slug": "keyboard-return",
       "description": "arrow turning down and left (return key)",
       "symbol": "keyboard_return",
-      "lucide": "corner-down-left",
       "domain": false
     },
     {
@@ -1102,7 +971,6 @@
       "slug": "label",
       "description": "tag with a notched end and a hole",
       "symbol": "label",
-      "lucide": "tag",
       "domain": false
     },
     {
@@ -1111,7 +979,6 @@
       "slug": "lasso-select",
       "description": "lasso loop with a tail",
       "symbol": "lasso_select",
-      "lucide": "lasso",
       "domain": false
     },
     {
@@ -1120,7 +987,6 @@
       "slug": "layers",
       "description": "two stacked diamonds",
       "symbol": null,
-      "lucide": "layers",
       "domain": false
     },
     {
@@ -1129,7 +995,6 @@
       "slug": "left-panel-open",
       "description": "frame with the left panel opening",
       "symbol": "left_panel_open",
-      "lucide": "panel-left-open",
       "domain": false
     },
     {
@@ -1138,7 +1003,6 @@
       "slug": "library-add-check",
       "description": "stacked pages with a check mark",
       "symbol": "library_add_check",
-      "lucide": "book-open-check",
       "domain": false
     },
     {
@@ -1147,7 +1011,6 @@
       "slug": "light-mode",
       "description": "sun with rays",
       "symbol": "light_mode",
-      "lucide": "sun",
       "domain": false
     },
     {
@@ -1156,7 +1019,6 @@
       "slug": "line-weight",
       "description": "stacked horizontal bars of increasing thickness",
       "symbol": null,
-      "lucide": null,
       "domain": false
     },
     {
@@ -1165,7 +1027,6 @@
       "slug": "link",
       "description": "chain link",
       "symbol": "link",
-      "lucide": "link",
       "domain": false
     },
     {
@@ -1174,7 +1035,6 @@
       "slug": "link-off",
       "description": "chain link with diagonal strike",
       "symbol": "link_off",
-      "lucide": "unlink",
       "domain": false
     },
     {
@@ -1183,7 +1043,6 @@
       "slug": "list",
       "description": "three bullet lines",
       "symbol": "list",
-      "lucide": "list",
       "domain": false
     },
     {
@@ -1192,7 +1051,6 @@
       "slug": "location-on",
       "description": "map pin with a hole",
       "symbol": "location_on",
-      "lucide": "map-pin",
       "domain": false
     },
     {
@@ -1201,7 +1059,6 @@
       "slug": "lock",
       "description": "closed padlock",
       "symbol": "lock",
-      "lucide": "lock",
       "domain": false
     },
     {
@@ -1210,7 +1067,6 @@
       "slug": "lock-open",
       "description": "open padlock",
       "symbol": "lock_open",
-      "lucide": "lock-open",
       "domain": false
     },
     {
@@ -1219,7 +1075,6 @@
       "slug": "log-curve",
       "description": "vertical zig-zag curve (well log trace)",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -1228,7 +1083,6 @@
       "slug": "login",
       "description": "arrow entering a bracket",
       "symbol": "login",
-      "lucide": "log-in",
       "domain": false
     },
     {
@@ -1237,7 +1091,6 @@
       "slug": "logout",
       "description": "arrow leaving a bracket",
       "symbol": "logout",
-      "lucide": "log-out",
       "domain": false
     },
     {
@@ -1246,7 +1099,6 @@
       "slug": "mail",
       "description": "envelope",
       "symbol": "mail",
-      "lucide": "mail",
       "domain": false
     },
     {
@@ -1255,7 +1107,6 @@
       "slug": "map",
       "description": "folded map",
       "symbol": "map",
-      "lucide": "map",
       "domain": false
     },
     {
@@ -1264,7 +1115,6 @@
       "slug": "mark-email-read",
       "description": "envelope with a check mark",
       "symbol": "mark_email_read",
-      "lucide": "mail-check",
       "domain": false
     },
     {
@@ -1273,7 +1123,6 @@
       "slug": "menu-book",
       "description": "open book with two pages",
       "symbol": "menu_book",
-      "lucide": "book-open",
       "domain": false
     },
     {
@@ -1282,7 +1131,6 @@
       "slug": "menu",
       "description": "three horizontal lines",
       "symbol": "menu",
-      "lucide": "menu",
       "domain": false
     },
     {
@@ -1291,7 +1139,6 @@
       "slug": "microphone",
       "description": "microphone",
       "symbol": null,
-      "lucide": "mic",
       "domain": false
     },
     {
@@ -1300,7 +1147,6 @@
       "slug": "money",
       "description": "dollar sign",
       "symbol": "attach_money",
-      "lucide": "dollar-sign",
       "domain": false
     },
     {
@@ -1309,7 +1155,6 @@
       "slug": "monitor",
       "description": "display on a stand",
       "symbol": "monitor",
-      "lucide": "monitor",
       "domain": false
     },
     {
@@ -1318,7 +1163,6 @@
       "slug": "more-horiz",
       "description": "three horizontal dots",
       "symbol": "more_horiz",
-      "lucide": "ellipsis",
       "domain": false
     },
     {
@@ -1327,7 +1171,6 @@
       "slug": "more-vert",
       "description": "three vertical dots",
       "symbol": null,
-      "lucide": "ellipsis-vertical",
       "domain": false
     },
     {
@@ -1336,7 +1179,6 @@
       "slug": "node",
       "description": "three circle nodes connected by lines",
       "symbol": null,
-      "lucide": "waypoints",
       "domain": false
     },
     {
@@ -1345,7 +1187,6 @@
       "slug": "notifications-active",
       "description": "bell with motion lines",
       "symbol": "notifications_active",
-      "lucide": "bell-ring",
       "domain": false
     },
     {
@@ -1354,7 +1195,6 @@
       "slug": "notifications",
       "description": "bell",
       "symbol": "notifications",
-      "lucide": "bell",
       "domain": false
     },
     {
@@ -1363,7 +1203,6 @@
       "slug": "numeric",
       "description": "hash / number sign",
       "symbol": null,
-      "lucide": "hash",
       "domain": false
     },
     {
@@ -1372,7 +1211,6 @@
       "slug": "oil-rig-offshore",
       "description": "offshore platform: derrick on deck over water",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -1381,7 +1219,6 @@
       "slug": "open-in-full",
       "description": "two diagonal arrows pointing apart",
       "symbol": "open_in_full",
-      "lucide": "maximize-2",
       "domain": false
     },
     {
@@ -1390,7 +1227,6 @@
       "slug": "open-in-new",
       "description": "square with arrow out of top right corner",
       "symbol": "open_in_new",
-      "lucide": "external-link",
       "domain": false
     },
     {
@@ -1399,7 +1235,6 @@
       "slug": "palette",
       "description": "painter's palette with wells",
       "symbol": "palette",
-      "lucide": "palette",
       "domain": false
     },
     {
@@ -1408,7 +1243,6 @@
       "slug": "pan-tool",
       "description": "open hand",
       "symbol": "pan_tool_alt",
-      "lucide": "hand",
       "domain": false
     },
     {
@@ -1417,7 +1251,6 @@
       "slug": "panel",
       "description": "rectangle with vertical divider toward the right",
       "symbol": "dock_to_left",
-      "lucide": "panel-right",
       "domain": false
     },
     {
@@ -1426,7 +1259,6 @@
       "slug": "panel-left",
       "description": "rectangle with a vertical divider toward the left",
       "symbol": "dock_to_right",
-      "lucide": "panel-left",
       "domain": false
     },
     {
@@ -1435,7 +1267,6 @@
       "slug": "person-add",
       "description": "person bust with a plus",
       "symbol": "person_add",
-      "lucide": "user-plus",
       "domain": false
     },
     {
@@ -1444,10 +1275,6 @@
       "slug": "person",
       "description": "person bust",
       "symbol": "person",
-      "lucide": "user",
-      "lucideAliases": [
-        "user-round"
-      ],
       "domain": false
     },
     {
@@ -1456,7 +1283,6 @@
       "slug": "person-remove",
       "description": "person bust with a minus",
       "symbol": "person_remove",
-      "lucide": "user-round-x",
       "domain": false
     },
     {
@@ -1465,7 +1291,6 @@
       "slug": "pie-chart",
       "description": "circle divided into sectors",
       "symbol": "pie_chart",
-      "lucide": "chart-pie",
       "domain": false
     },
     {
@@ -1474,7 +1299,6 @@
       "slug": "play",
       "description": "right-pointing triangle",
       "symbol": "play_arrow",
-      "lucide": "play",
       "domain": false
     },
     {
@@ -1483,7 +1307,6 @@
       "slug": "preview",
       "description": "eye inside a rounded window",
       "symbol": "preview",
-      "lucide": "scan-eye",
       "domain": false
     },
     {
@@ -1492,10 +1315,6 @@
       "slug": "progress-activity",
       "description": "circular spinner arc",
       "symbol": "progress_activity",
-      "lucide": "loader-circle",
-      "lucideAliases": [
-        "loader"
-      ],
       "domain": false
     },
     {
@@ -1504,7 +1323,6 @@
       "slug": "project",
       "description": "framed rectangle with angled inner panel",
       "symbol": null,
-      "lucide": "frame",
       "domain": false
     },
     {
@@ -1513,7 +1331,6 @@
       "slug": "public",
       "description": "globe with meridians",
       "symbol": "public",
-      "lucide": "globe",
       "domain": false
     },
     {
@@ -1522,7 +1339,6 @@
       "slug": "pulse",
       "description": "heartbeat / activity line",
       "symbol": null,
-      "lucide": "activity",
       "domain": false
     },
     {
@@ -1531,7 +1347,6 @@
       "slug": "push-pin",
       "description": "push pin seen from the side",
       "symbol": "push_pin",
-      "lucide": "pin",
       "domain": false
     },
     {
@@ -1540,7 +1355,6 @@
       "slug": "radio-button",
       "description": "empty circle",
       "symbol": "radio_button_unchecked",
-      "lucide": "circle",
       "domain": false
     },
     {
@@ -1549,7 +1363,6 @@
       "slug": "redo",
       "description": "curved arrow to the right",
       "symbol": "redo",
-      "lucide": "redo",
       "domain": false
     },
     {
@@ -1558,7 +1371,6 @@
       "slug": "remove-circle",
       "description": "circle with minus",
       "symbol": "remove_circle",
-      "lucide": "circle-minus",
       "domain": false
     },
     {
@@ -1567,7 +1379,6 @@
       "slug": "remove",
       "description": "minus sign",
       "symbol": "remove",
-      "lucide": "minus",
       "domain": false
     },
     {
@@ -1576,7 +1387,6 @@
       "slug": "reports-analytics",
       "description": "bar chart inside a square",
       "symbol": "analytics",
-      "lucide": "chart-column",
       "domain": false
     },
     {
@@ -1585,7 +1395,6 @@
       "slug": "right-panel-close",
       "description": "frame with the right panel closing",
       "symbol": "right_panel_close",
-      "lucide": "panel-right-close",
       "domain": false
     },
     {
@@ -1594,7 +1403,6 @@
       "slug": "right-panel-open",
       "description": "frame with the right panel opening",
       "symbol": "right_panel_open",
-      "lucide": "panel-right-open",
       "domain": false
     },
     {
@@ -1603,7 +1411,6 @@
       "slug": "risk-skull",
       "description": "skull with three list lines to the right",
       "symbol": null,
-      "lucide": "skull",
       "domain": false
     },
     {
@@ -1612,7 +1419,6 @@
       "slug": "robot-2",
       "description": "robot head with eyes and separate body bar",
       "symbol": "robot_2",
-      "lucide": "bot",
       "domain": false
     },
     {
@@ -1621,7 +1427,6 @@
       "slug": "rock-formations",
       "description": "triangle with layered strata lines (rock formations)",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -1630,7 +1435,6 @@
       "slug": "rotate",
       "description": "curved arrow around a flat ellipse",
       "symbol": null,
-      "lucide": "rotate-3d",
       "domain": false
     },
     {
@@ -1639,7 +1443,6 @@
       "slug": "rotate-left",
       "description": "circular arrow turning counter-clockwise",
       "symbol": "rotate_left",
-      "lucide": "rotate-ccw",
       "domain": false
     },
     {
@@ -1648,7 +1451,6 @@
       "slug": "rotate-right",
       "description": "circular arrow turning clockwise",
       "symbol": "rotate_right",
-      "lucide": "rotate-cw",
       "domain": false
     },
     {
@@ -1657,7 +1459,6 @@
       "slug": "ruler",
       "description": "right-triangle set square with tick marks",
       "symbol": null,
-      "lucide": "ruler",
       "domain": false
     },
     {
@@ -1666,7 +1467,6 @@
       "slug": "save",
       "description": "floppy disk",
       "symbol": "save",
-      "lucide": "save",
       "domain": false
     },
     {
@@ -1675,10 +1475,6 @@
       "slug": "schedule",
       "description": "clock face with hands",
       "symbol": "schedule",
-      "lucide": "clock",
-      "lucideAliases": [
-        "clock-2"
-      ],
       "domain": false
     },
     {
@@ -1687,7 +1483,6 @@
       "slug": "search",
       "description": "magnifying glass",
       "symbol": "search",
-      "lucide": "search",
       "domain": false
     },
     {
@@ -1696,7 +1491,6 @@
       "slug": "search-off",
       "description": "magnifier with a slash",
       "symbol": "search_off",
-      "lucide": "search-x",
       "domain": false
     },
     {
@@ -1705,7 +1499,6 @@
       "slug": "seismic",
       "description": "horizontal line over concentric arcs (seismic reflection)",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -1714,10 +1507,6 @@
       "slug": "select-cursor",
       "description": "mouse pointer arrow",
       "symbol": "arrow_selector_tool",
-      "lucide": "mouse-pointer",
-      "lucideAliases": [
-        "mouse-pointer-2"
-      ],
       "domain": false
     },
     {
@@ -1726,7 +1515,6 @@
       "slug": "select",
       "description": "dashed square outline",
       "symbol": "select",
-      "lucide": "square-dashed",
       "domain": false
     },
     {
@@ -1735,7 +1523,6 @@
       "slug": "send",
       "description": "paper plane",
       "symbol": "send",
-      "lucide": "send",
       "domain": false
     },
     {
@@ -1744,7 +1531,6 @@
       "slug": "sentiment-satisfied",
       "description": "smiling face",
       "symbol": "sentiment_satisfied",
-      "lucide": "face-slightly-smiling",
       "domain": false
     },
     {
@@ -1753,7 +1539,6 @@
       "slug": "settings",
       "description": "gear",
       "symbol": null,
-      "lucide": "settings",
       "domain": false
     },
     {
@@ -1762,7 +1547,6 @@
       "slug": "shapes",
       "description": "overlapping circle, square and triangle",
       "symbol": "shapes",
-      "lucide": "shapes",
       "domain": false
     },
     {
@@ -1771,7 +1555,6 @@
       "slug": "share",
       "description": "box with an arrow leaving the top",
       "symbol": "ios_share",
-      "lucide": "share",
       "domain": false
     },
     {
@@ -1780,7 +1563,6 @@
       "slug": "share-nodes",
       "description": "three nodes joined by two lines",
       "symbol": "share",
-      "lucide": "share-2",
       "domain": false
     },
     {
@@ -1789,7 +1571,6 @@
       "slug": "shield-alert",
       "description": "shield with an exclamation mark",
       "symbol": "gpp_maybe",
-      "lucide": "shield-alert",
       "domain": false
     },
     {
@@ -1798,7 +1579,6 @@
       "slug": "shield",
       "description": "shield outline",
       "symbol": "shield",
-      "lucide": "shield",
       "domain": false
     },
     {
@@ -1807,7 +1587,6 @@
       "slug": "slice",
       "description": "dashed horizontal band between two dotted lines",
       "symbol": null,
-      "lucide": null,
       "domain": false
     },
     {
@@ -1816,7 +1595,6 @@
       "slug": "smartphone",
       "description": "phone outline",
       "symbol": "smartphone",
-      "lucide": "smartphone",
       "domain": false
     },
     {
@@ -1825,7 +1603,6 @@
       "slug": "sort-enabled",
       "description": "paired up and down arrows",
       "symbol": null,
-      "lucide": "arrow-up-down",
       "domain": false
     },
     {
@@ -1834,7 +1611,6 @@
       "slug": "space-dashboard",
       "description": "frame split into a wide left panel and two right panels",
       "symbol": "space_dashboard",
-      "lucide": "panels-top-left",
       "domain": false
     },
     {
@@ -1843,7 +1619,6 @@
       "slug": "splitscreen",
       "description": "two side-by-side panels with small plus",
       "symbol": "splitscreen_vertical_add",
-      "lucide": "columns-2",
       "domain": false
     },
     {
@@ -1852,7 +1627,6 @@
       "slug": "stacks",
       "description": "stacked rounded cards",
       "symbol": "stacks",
-      "lucide": "gallery-vertical-end",
       "domain": false
     },
     {
@@ -1861,7 +1635,6 @@
       "slug": "star",
       "description": "five-point star",
       "symbol": "star",
-      "lucide": "star",
       "domain": false
     },
     {
@@ -1870,7 +1643,6 @@
       "slug": "strata",
       "description": "stacked layers with colored (pink-orange gradient) top layer",
       "symbol": null,
-      "lucide": "layers",
       "domain": true
     },
     {
@@ -1879,7 +1651,6 @@
       "slug": "support",
       "description": "life ring",
       "symbol": "support",
-      "lucide": "life-buoy",
       "domain": false
     },
     {
@@ -1888,7 +1659,6 @@
       "slug": "surface",
       "description": "curved 3D mesh/grid surface",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -1897,7 +1667,6 @@
       "slug": "swap",
       "description": "two horizontal arrows pointing toward each other",
       "symbol": "compare_arrows",
-      "lucide": "fold-horizontal",
       "domain": false
     },
     {
@@ -1906,10 +1675,6 @@
       "slug": "sync",
       "description": "two arrows in a clockwise circular loop",
       "symbol": "sync",
-      "lucide": "refresh-cw",
-      "lucideAliases": [
-        "refresh-ccw"
-      ],
       "domain": false
     },
     {
@@ -1918,7 +1683,6 @@
       "slug": "table",
       "description": "grid with a header row",
       "symbol": "table",
-      "lucide": "table",
       "domain": false
     },
     {
@@ -1927,7 +1691,6 @@
       "slug": "tablet",
       "description": "tablet outline",
       "symbol": "tablet",
-      "lucide": "tablet",
       "domain": false
     },
     {
@@ -1936,7 +1699,6 @@
       "slug": "target",
       "description": "scan corners with circle in center",
       "symbol": null,
-      "lucide": "focus",
       "domain": false
     },
     {
@@ -1945,10 +1707,6 @@
       "slug": "terminal",
       "description": "framed prompt chevron and cursor line",
       "symbol": "terminal",
-      "lucide": "terminal",
-      "lucideAliases": [
-        "square-terminal"
-      ],
       "domain": false
     },
     {
@@ -1957,7 +1715,6 @@
       "slug": "terrain",
       "description": "mountain peaks",
       "symbol": "terrain",
-      "lucide": "mountain",
       "domain": false
     },
     {
@@ -1966,7 +1723,6 @@
       "slug": "text",
       "description": "capital letter T",
       "symbol": "title",
-      "lucide": "type",
       "domain": false
     },
     {
@@ -1975,7 +1731,6 @@
       "slug": "three-d",
       "description": "isometric cube inside scan corners",
       "symbol": "view_in_ar",
-      "lucide": "box",
       "domain": false
     },
     {
@@ -1984,7 +1739,6 @@
       "slug": "thumb-down",
       "description": "hand with the thumb down",
       "symbol": "thumb_down",
-      "lucide": "thumbs-down",
       "domain": false
     },
     {
@@ -1993,7 +1747,6 @@
       "slug": "thumb-up",
       "description": "hand with the thumb up",
       "symbol": "thumb_up",
-      "lucide": "thumbs-up",
       "domain": false
     },
     {
@@ -2002,7 +1755,6 @@
       "slug": "trajectory",
       "description": "curve from vertical to horizontal (well trajectory)",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -2011,7 +1763,6 @@
       "slug": "translate",
       "description": "letter A beside a CJK glyph",
       "symbol": "translate",
-      "lucide": "languages",
       "domain": false
     },
     {
@@ -2020,7 +1771,6 @@
       "slug": "trend",
       "description": "rising line chart over bar columns",
       "symbol": "monitoring",
-      "lucide": "chart-no-axes-combined",
       "domain": false
     },
     {
@@ -2029,7 +1779,6 @@
       "slug": "trending-down",
       "description": "falling arrow line",
       "symbol": "trending_down",
-      "lucide": "trending-down",
       "domain": false
     },
     {
@@ -2038,7 +1787,6 @@
       "slug": "trending-up",
       "description": "rising arrow line",
       "symbol": "trending_up",
-      "lucide": "trending-up",
       "domain": false
     },
     {
@@ -2047,7 +1795,6 @@
       "slug": "undo",
       "description": "curved arrow to the left",
       "symbol": "undo",
-      "lucide": "undo",
       "domain": false
     },
     {
@@ -2056,7 +1803,6 @@
       "slug": "upgrade",
       "description": "up arrow over a horizontal bar",
       "symbol": "upgrade",
-      "lucide": "circle-fading-arrow-up",
       "domain": false
     },
     {
@@ -2065,7 +1811,6 @@
       "slug": "valve",
       "description": "valve symbol: pipe with T-handle stem",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -2074,7 +1819,6 @@
       "slug": "velocity-model",
       "description": "upward arrow through layered arcs (velocity model)",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -2083,7 +1827,6 @@
       "slug": "verified",
       "description": "scalloped badge with a check mark",
       "symbol": "verified",
-      "lucide": "badge-check",
       "domain": false
     },
     {
@@ -2092,7 +1835,6 @@
       "slug": "view-column",
       "description": "rectangle split into three vertical columns",
       "symbol": "view_column",
-      "lucide": "columns-3",
       "domain": false
     },
     {
@@ -2101,7 +1843,6 @@
       "slug": "view-module",
       "description": "rectangle split into 3x2 grid of cells",
       "symbol": "view_module",
-      "lucide": "grid-3x3",
       "domain": false
     },
     {
@@ -2110,7 +1851,6 @@
       "slug": "visibility",
       "description": "eye",
       "symbol": "visibility",
-      "lucide": "eye",
       "domain": false
     },
     {
@@ -2119,7 +1859,6 @@
       "slug": "visibility-off",
       "description": "eye with diagonal strike",
       "symbol": "visibility_off",
-      "lucide": "eye-off",
       "domain": false
     },
     {
@@ -2128,7 +1867,6 @@
       "slug": "volume-off",
       "description": "speaker with no waves",
       "symbol": "volume_off",
-      "lucide": "volume-off",
       "domain": false
     },
     {
@@ -2137,7 +1875,6 @@
       "slug": "wallet",
       "description": "folded wallet",
       "symbol": "wallet",
-      "lucide": "wallet",
       "domain": false
     },
     {
@@ -2146,10 +1883,6 @@
       "slug": "warning",
       "description": "triangle with exclamation mark",
       "symbol": "warning",
-      "lucide": "triangle-alert",
-      "lucideAliases": [
-        "file-exclamation-point"
-      ],
       "domain": false
     },
     {
@@ -2158,7 +1891,6 @@
       "slug": "water",
       "description": "water droplet",
       "symbol": "water_drop",
-      "lucide": "droplet",
       "domain": false
     },
     {
@@ -2167,7 +1899,6 @@
       "slug": "web-asset",
       "description": "browser window with a title bar",
       "symbol": "web_asset",
-      "lucide": "app-window",
       "domain": false
     },
     {
@@ -2176,7 +1907,6 @@
       "slug": "well",
       "description": "wellhead symbol: vertical line with two short side bars",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -2185,7 +1915,6 @@
       "slug": "well-pick",
       "description": "vertical line crossed by a horizontal pick marker with dot",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -2194,7 +1923,6 @@
       "slug": "well-plan",
       "description": "dotted vertical line with wellhead symbol (planned well)",
       "symbol": null,
-      "lucide": null,
       "domain": true
     },
     {
@@ -2203,7 +1931,6 @@
       "slug": "widgets",
       "description": "four squares, one offset",
       "symbol": "widgets",
-      "lucide": "blocks",
       "domain": false
     },
     {
@@ -2212,7 +1939,6 @@
       "slug": "window",
       "description": "square split into 2x2 panes",
       "symbol": "window",
-      "lucide": "grid-2x2",
       "domain": false
     },
     {
@@ -2221,7 +1947,6 @@
       "slug": "zoom-in",
       "description": "magnifying glass with plus",
       "symbol": "zoom_in",
-      "lucide": "zoom-in",
       "domain": false
     },
     {
@@ -2230,7 +1955,6 @@
       "slug": "zoom-out",
       "description": "magnifying glass with minus",
       "symbol": "zoom_out",
-      "lucide": "zoom-out",
       "domain": false
     }
   ]

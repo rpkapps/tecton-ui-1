@@ -64,7 +64,6 @@
     "esbuild": "^0.28.2",
     "eslint": "^9",
     "jsdom": "^30.0.1",
-    "lucide-react": "^1.45.0",
     "material-symbols": "0.47.4",
     "opentype.js": "^2.0.0",
     "postcss": "^8",
@@ -441,10 +440,6 @@
     "./icons": {
       "types": "./dist/icons/index.d.ts",
       "import": "./dist/icons/index.js"
-    },
-    "./icons/lucide-compat": {
-      "types": "./dist/icons/lucide-compat.d.ts",
-      "import": "./dist/icons/lucide-compat.js"
     },
     "./icons/account-tree": {
       "types": "./dist/icons/account-tree.d.ts",

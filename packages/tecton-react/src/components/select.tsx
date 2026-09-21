@@ -27,7 +27,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@tecton/react/components/input-group"
-import { ChevronDownIcon, SearchIcon, CheckIcon } from "@tecton/react/icons/lucide-compat"
+import { CheckIcon, ChevronDownIcon, SearchIcon } from "@tecton/react/icons"
 
 function Select<T extends object, M extends "single" | "multiple" = "single">({
   className,
@@ -107,7 +107,9 @@ function SelectTrigger({
       {...props}
     >
       {children}
-      <ChevronDownIcon className="pointer-events-none size-4 text-muted-foreground" />
+      <ChevronDownIcon
+        className="pointer-events-none size-4 text-muted-foreground"
+      />
     </ButtonPrimitive>
   )
 }
@@ -199,7 +201,9 @@ function SelectInput({ className, ...props }: SearchFieldProps) {
           className="[&::-webkit-search-cancel-button]:hidden"
         />
         <InputGroupAddon>
-          <SearchIcon className="size-4 shrink-0 opacity-50" />
+          <SearchIcon
+            className="size-4 shrink-0 opacity-50"
+          />
         </InputGroupAddon>
       </InputGroup>
     </SearchField>
@@ -241,7 +245,9 @@ function SelectItem({
           </span>
           <span className="pointer-events-none absolute right-2 flex size-4 items-center justify-center">
             {isSelected ? (
-              <CheckIcon className="pointer-events-none" />
+              <CheckIcon
+                className="pointer-events-none"
+              />
             ) : null}
           </span>
         </>

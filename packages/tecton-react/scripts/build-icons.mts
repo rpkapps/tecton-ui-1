@@ -5,7 +5,7 @@
  *
  * Inputs
  *   icons/icons.json               manifest: name / slug / label / description /
- *                                  symbol / lucide / lucideAliases / domain
+ *                                  symbol / domain
  *   icons/material-symbols.codepoints  Material Symbols Sharp's name → codepoint
  *                                  table; every manifest `symbol` resolves here
  *   icons/tecton-codepoints.json   the append-only allocation of Tecton's own
@@ -13,9 +13,6 @@
  *   icons-src/tecton/<slug>.ts     the Tecton icon export (defineTectonSvgIcon
  *                                  definitions with outline + filled markup)
  *   icons-src/<variant>/<slug>.svg loose SVG overrides (see scripts/extract-icons.mts)
- *   src/components/*.tsx           scanned for the identifiers imported from
- *                                  lucide-react or from the compat module
- *   src/tecton/*.tsx               (same — used to build the lucide compat map)
  *
  * Outputs (all GENERATED, all overwritten on every run)
  *   src/icons/<slug>.tsx           one component per manifest icon: a one-line
@@ -29,10 +26,9 @@
  *   src/icons/types.ts             TectonIconProps & friends
  *   src/icons/_runtime.ts          tiny shared helper (size / stroke-width maths)
  *   src/icons/index.ts             named exports + `tectonIcons` gallery array
- *   src/icons/lucide-compat.map.ts lucide identifier → Tecton override / pass-through
  *
- * `src/icons/icon.tsx` (the `Icon` primitive and the font-readiness store),
- * `src/icons/material.tsx` and `src/icons/lucide-compat.ts` are hand-written.
+ * `src/icons/icon.tsx` (the `Icon` primitive and the font-readiness store) and
+ * `src/icons/material.tsx` are hand-written.
  *
  * Every icon needs exactly one primary source, and the build fails when it has
  * none:
@@ -80,102 +76,9 @@ const GENERATED_MARKER = HEADER.trim();
 /** Every generated component is a client component (`Icon` subscribes to font loading). */
 const USE_CLIENT = '"use client"\n';
 const CHECK_MODE = process.argv.includes("--check");
-const LUCIDE_DTS = path.join(pkgRoot, "node_modules/lucide-react/dist/lucide-react.d.ts");
 /** The Tecton glyph allocation, written by scripts/build-symbol-fonts.mts. */
 const ALLOCATION_PATH = path.join(pkgRoot, "icons/tecton-codepoints.json");
-/** Folders scanned (recursively) for lucide-react imports when building the compat map. */
-const COMPAT_SCAN_DIRS = ["src/components", "src/tecton"];
-/**
- * Specifiers a scanned file can import the compat surface from. The generated
- * components no longer name `lucide-react`: the registry mirror rewrites their
- * import to the compat module before the CLI writes them
- * (scripts/registry-mirror/icon-imports.mts), so the scan has to recognise it
- * too or the component-usage entries silently empty out — and with them the
- * pass-through count that says which names still fall through to lucide.
- */
-const COMPAT_MODULES = [
-  "lucide-react",
-  "@tecton/react/icons/lucide-compat",
-  // The same module named from inside the package (a generated component that
-  // was installed relative, or a src/tecton file that reaches for it).
-  "../icons/lucide-compat",
-  "./lucide-compat",
-];
-const COMPAT_IMPORT_RE = new RegExp(
-  String.raw`import\s+(type\s+)?\{([^}]*)\}\s*from\s*["'](?:${COMPAT_MODULES.map((m) =>
-    m.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
-  ).join("|")})["']`,
-  "g"
-);
-
 type Source = "symbol" | "domain" | "svg";
-
-// ---------------------------------------------------------------------------
-// lucide-react export table (parsed from the bundled .d.ts)
-// ---------------------------------------------------------------------------
-interface LucideExports {
-  /** Value exports that are icon components (e.g. `CirclePlus`, `CirclePlusIcon`). */
-  values: Set<string>;
-  /** Type-only exports (e.g. `LucideIcon`, `LucideProps`). */
-  types: Set<string>;
-  /** Exported alias → the declared const it points at (`MoreVerticalIcon` → `EllipsisVertical`). */
-  canonical: Map<string, string>;
-  /** Declared const → every export name that resolves to it (itself included). */
-  aliases: Map<string, string[]>;
-}
-
-function loadLucideExports(): LucideExports | null {
-  if (!existsSync(LUCIDE_DTS)) {
-    console.warn(`warning: ${path.relative(pkgRoot, LUCIDE_DTS)} not found — skipping lucide name validation`);
-    return null;
-  }
-  const dts = readFileSync(LUCIDE_DTS, "utf8");
-  const values = new Set<string>();
-  const types = new Set<string>();
-  const canonical = new Map<string, string>();
-
-  // `declare const CirclePlus: LucideIcon;`  and friends (createLucideIcon, Icon, …)
-  for (const m of dts.matchAll(/^declare (?:const|function|class) (\w+)/gm)) values.add(m[1]);
-  // `type LucideIcon = …` / `interface LucideProps …`
-  for (const m of dts.matchAll(/^(?:declare )?(?:type|interface) (\w+)\b/gm)) types.add(m[1]);
-  // The final `export { index_CirclePlus as CirclePlus, … }` block: aliases such as
-  // `CirclePlusIcon` / `LucideCirclePlus` map to declared consts.
-  for (const m of dts.matchAll(/\b(?:index_)?(\w+) as (\w+)/g)) {
-    const [, target, alias] = m;
-    if (values.has(target)) {
-      values.add(alias);
-      canonical.set(alias, canonical.get(target) ?? target);
-    } else if (types.has(target)) types.add(alias);
-  }
-  const aliases = new Map<string, string[]>();
-  for (const value of values) {
-    const root = canonical.get(value) ?? value;
-    aliases.set(root, [...(aliases.get(root) ?? []), value]);
-  }
-  return { values, types, canonical, aliases };
-}
-
-/**
- * Every export name lucide resolves to `root` (the root itself, its `…Icon`
- * spelling, its `Lucide…` spelling and every deprecated alias). A manifest
- * `lucide` / `lucideAliases` value names a root, so one entry serves all of them.
- */
-function lucideNamesFor(root: string, exports: LucideExports): string[] {
-  return exports.aliases.get(root) ?? [];
-}
-
-/** Closest lucide export names for an unknown one — makes manifest typos easy to fix. */
-function suggestLucide(name: string, exports: LucideExports): string[] {
-  const needle = name.toLowerCase().replace(/[^a-z0-9]/g, "");
-  const out: string[] = [];
-  for (const value of exports.values) {
-    if (/^(Lucide|index_)/.test(value) || value.endsWith("Icon")) continue;
-    const hay = value.toLowerCase();
-    if (hay.includes(needle) || needle.includes(hay)) out.push(value);
-    if (out.length >= 5) break;
-  }
-  return out;
-}
 
 // ---------------------------------------------------------------------------
 // SVG → JSX
@@ -300,8 +203,6 @@ interface IconBuild {
   codepoint: number | null;
   /** Tecton's two codepoints, when source === "domain". */
   domain: { outlined: number; filled: number } | null;
-  /** lucide-react roots (PascalCase) this icon stands in for — `lucide` first. */
-  lucideExports: string[];
   code: string;
 }
 
@@ -367,7 +268,7 @@ function definitionToSources(def: TectonSvgIcon, origin: string): Record<IconVar
     return withoutGradientHack.replace(/\s+data-figma-[\w-]+="(?:[^"\\]|\\.)*"/g, "");
   };
   // The export's paths carry no fill: they inherit from the root, so the root
-  // fills with currentColor (the same contract as lucide's stroke="currentColor").
+  // fills with currentColor.
   const wrap = (inner: string) =>
     normalizeSvg(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="${def.viewBox}" fill="currentColor">${clean(inner)}</svg>`, {
       keepColors: def.colored,
@@ -478,7 +379,7 @@ ${ident}.displayName = ${JSON.stringify(ident)}
  * name, so `./icons/<slug>` stays a module of its own and the component keeps
  * its displayName. `Icon` does the rest.
  */
-function genWrapperComponent(entry: IconManifestEntry, ident: string, build: Omit<IconBuild, "code" | "entry" | "ident" | "lucideExports">): string {
+function genWrapperComponent(entry: IconManifestEntry, ident: string, build: Omit<IconBuild, "code" | "entry" | "ident">): string {
   const drawn =
     build.source === "symbol"
       ? `Material Symbols Sharp \`${entry.symbol}\` (${hex(build.codepoint!)}), FILL ${"`"}variant${"`"}`
@@ -512,15 +413,15 @@ export type TectonIconVariant = "outlined" | "filled"
 export type TectonIconSource = "symbol" | "domain" | "svg"
 
 /**
- * lucide-compatible icon props. Every Tecton icon is a plain function
- * component (React 19 forwards \`ref\` as a prop, so no forwardRef needed).
+ * Icon props. Every Tecton icon is a plain function component (React 19
+ * forwards \`ref\` as a prop, so no forwardRef needed).
  */
 export interface TectonIconProps extends SVGProps<SVGSVGElement> {
   /** Width and height (default 24). */
   size?: number | string
-  /** Accepted for lucide compatibility — a font glyph has no stroke to widen. */
+  /** Accepted so an icon is a drop-in \`<svg>\` — a font glyph has no stroke to widen. */
   strokeWidth?: number | string
-  /** Accepted for lucide compatibility — no effect on a font glyph. */
+  /** Accepted alongside \`strokeWidth\` — no effect on a font glyph. */
   absoluteStrokeWidth?: boolean
   /** Glyph style (default \`outlined\`). */
   variant?: TectonIconVariant
@@ -535,10 +436,8 @@ export interface TectonIconMeta {
   /** Exported identifier / gallery label, e.g. \`AddCircleIcon\`. */
   label: string
   description: string
-  /** Oil & gas / subsurface domain glyph. */
+  /** Oil & gas / subsurface domain glyph — a drawing Tecton owns. */
   domain: boolean
-  /** Closest lucide-react icon (kebab-case lucide name) or null. */
-  lucide: string | null
   /** Material Symbols name, when a Material glyph draws it. */
   symbol: string | null
 }
@@ -561,7 +460,7 @@ function recordLiteral(build: IconBuild): string {
   const e = build.entry;
   const meta =
     `name: ${JSON.stringify(e.name)}, label: ${JSON.stringify(e.label)}, description: ${JSON.stringify(e.description)}, ` +
-    `domain: ${e.domain}, lucide: ${JSON.stringify(e.lucide)}, symbol: ${JSON.stringify(e.symbol)}`;
+    `domain: ${e.domain}, symbol: ${JSON.stringify(e.symbol)}`;
   if (build.source === "symbol") return `{ ${meta}, source: "symbol", codepoint: 0x${build.codepoint!.toString(16)} }`;
   if (build.source === "domain") {
     return `{ ${meta}, source: "domain", outlined: 0x${build.domain!.outlined.toString(16)}, filled: 0x${build.domain!.filled.toString(16)} }`;
@@ -634,9 +533,9 @@ ${rows}
 }
 
 const RUNTIME_TS = `${HEADER}/**
- * Size / stroke-width maths shared by generated SVG-backed icons.
- * Mirrors lucide: with \`absoluteStrokeWidth\` the stroke stays visually
- * constant across sizes (strokeWidth * viewBoxSize / size).
+ * Size / stroke-width maths shared by generated SVG-backed icons: with
+ * \`absoluteStrokeWidth\` the stroke stays visually constant across sizes
+ * (strokeWidth * viewBoxSize / size).
  */
 export function tectonSvgAttrs(
   size: number | string,
@@ -704,168 +603,10 @@ export const tectonIconsBySlug: Readonly<Record<string, TectonIconEntry>> = Obje
 }
 
 // ---------------------------------------------------------------------------
-// lucide compat map
-// ---------------------------------------------------------------------------
-
-/** Collect `{ A, B as C }` identifiers imported from a COMPAT_MODULES specifier. */
-function collectLucideIdentifiers(): Map<string, string[]> {
-  const uses = new Map<string, string[]>(); // identifier → files
-  const visit = (dir: string, rel: string) => {
-    for (const entry of readdirSync(dir, { withFileTypes: true })) {
-      if (entry.isDirectory()) {
-        visit(path.join(dir, entry.name), `${rel}/${entry.name}`);
-        continue;
-      }
-      if (!/\.tsx?$/.test(entry.name)) continue;
-      const src = readFileSync(path.join(dir, entry.name), "utf8");
-      for (const m of src.matchAll(COMPAT_IMPORT_RE)) {
-        for (const spec of m[2].split(",")) {
-          const cleaned = spec.replace(/\btype\s+/, "").trim();
-          if (!cleaned) continue;
-          const original = cleaned.split(/\s+as\s+/)[0].trim();
-          const files = uses.get(original) ?? [];
-          files.push(`${rel}/${entry.name}`);
-          uses.set(original, files);
-        }
-      }
-    }
-  };
-  for (const rel of COMPAT_SCAN_DIRS) {
-    const dir = path.join(pkgRoot, rel);
-    if (existsSync(dir)) visit(dir, rel);
-  }
-  return new Map([...uses.entries()].sort(([a], [b]) => a.localeCompare(b)));
-}
-
-interface CompatRow {
-  ident: string;
-  kind: "type" | "lucide" | "tecton";
-  /** Tecton build providing the override, when kind === "tecton". */
-  build?: IconBuild;
-  files: string[];
-}
-
-function resolveCompat(uses: Map<string, string[]>, builds: IconBuild[], lucide: LucideExports | null): CompatRow[] {
-  // Tecton icons keyed by the PascalCase lucide name they stand in for. Every
-  // icon has a glyph now (a Material symbol or a Tecton drawing), so every one
-  // of them can shadow its lucide peer.
-  const byLucide = new Map<string, Array<IconBuild>>();
-  for (const b of builds) {
-    // `lucide` and every `lucideAliases` root resolve to the same component.
-    for (const key of b.lucideExports) byLucide.set(key, [...(byLucide.get(key) ?? []), b]);
-  }
-
-  // ChevronDownIcon / LucideChevronDown / MoreVerticalIcon → ChevronDown / EllipsisVertical
-  const baseOf = (ident: string) => {
-    const bare = ident.replace(/^Lucide/, "").replace(/Icon$/, "");
-    return lucide?.canonical.get(ident) ?? lucide?.canonical.get(bare) ?? bare;
-  };
-  const overrideFor = (ident: string): IconBuild | undefined => {
-    const candidates = byLucide.get(baseOf(ident)) ?? [];
-    // Prefer the icon whose own name equals the lucide name (chevron-down over chevron-down-small).
-    return candidates.find((b) => b.entry.slug === b.entry.lucide) ?? candidates[0];
-  };
-
-  const rows: CompatRow[] = [];
-  const seen = new Set<string>();
-  for (const [ident, files] of uses) {
-    seen.add(ident);
-    if (lucide?.types.has(ident)) {
-      rows.push({ ident, kind: "type", files });
-      continue;
-    }
-    if (lucide && !lucide.values.has(ident)) {
-      throw new Error(`"${ident}" is imported from lucide-react in ${files.join(", ")} but lucide-react does not export it`);
-    }
-    const pick = overrideFor(ident);
-    rows.push(pick ? { ident, kind: "tecton", build: pick, files } : { ident, kind: "lucide", files });
-  }
-
-  // The rest of the catalogue: every lucide export name (and alias) that a
-  // Tecton icon stands in for, so application code importing other lucide
-  // icons also gets the Tecton glyph through the bundler alias.
-  if (lucide) {
-    for (const [base, candidates] of byLucide) {
-      const pick = candidates.find((b) => b.entry.slug === b.entry.lucide) ?? candidates[0];
-      for (const ident of lucideNamesFor(base, lucide)) {
-        if (seen.has(ident) || lucide.types.has(ident)) continue;
-        seen.add(ident);
-        rows.push({ ident, kind: "tecton", build: pick, files: ["catalogue"] });
-      }
-    }
-  }
-  return rows.sort((a, b) => a.ident.localeCompare(b.ident));
-}
-
-/**
- * lucide's type exports and the Tecton type that replaces each one. Nothing in
- * `src/components` / `src/tecton` imports a lucide type today; the table exists
- * so that one appearing does not reintroduce a `lucide-react` specifier.
- */
-const LUCIDE_TYPE_EQUIVALENTS: Record<string, string> = {
-  LucideIcon: "TectonIconComponent",
-  LucideProps: "TectonIconProps",
-  IconNode: "TectonIconComponent",
-};
-
-function genCompatMap(rows: CompatRow[]): string {
-  const overrides = rows.filter((r) => r.kind === "tecton");
-  const passthrough = rows.filter((r) => r.kind === "lucide");
-  const types = rows.filter((r) => r.kind === "type");
-
-  const lines: string[] = [
-    HEADER.trimEnd(),
-    "//",
-    "// lucide-react identifiers used by src/components and src/tecton,",
-    "// plus every lucide name (and alias) a Tecton icon stands in for. Consumed by",
-    "// ./lucide-compat.ts.",
-    "//",
-    "// The module exports ONLY what is listed here: there is no",
-    "// `export * from \"lucide-react\"` fallback, so a lucide name no Tecton icon",
-    "// covers fails at build time instead of quietly rendering a Lucide drawing.",
-    "",
-  ];
-
-  lines.push(`// ${overrides.length} Tecton override(s)`);
-  for (const r of overrides) {
-    const b = r.build!;
-    lines.push(`export { ${b.ident}${b.ident === r.ident ? "" : ` as ${r.ident}`} } from "./${b.entry.slug}" // ${r.files.join(", ")}`);
-  }
-  if (passthrough.length) {
-    throw new Error(
-      `no Tecton icon covers ${passthrough.length} lucide name(s) imported by src/components / src/tecton — ` +
-        `add a manifest entry (or a "lucideAliases" name) for each:\n  ` +
-        passthrough.map((r) => `${r.ident} (${r.files.join(", ")})`).join("\n  "),
-    );
-  }
-  if (types.length) {
-    lines.push("", `// ${types.length} lucide type name(s), served by the Tecton equivalents`);
-    for (const r of types) {
-      const tecton = LUCIDE_TYPE_EQUIVALENTS[r.ident];
-      if (!tecton) {
-        throw new Error(`lucide type "${r.ident}" (${r.files.join(", ")}) has no Tecton equivalent in LUCIDE_TYPE_EQUIVALENTS`);
-      }
-      lines.push(`export type { ${tecton}${tecton === r.ident ? "" : ` as ${r.ident}`} } from "./types" // ${r.files.join(", ")}`);
-    }
-  }
-
-  lines.push(
-    "",
-    "/** Which identifiers are served by Tecton vs lucide — handy for docs / tests. */",
-    "export const tectonLucideCompat = {",
-    ...rows.filter((r) => r.kind !== "type").map((r) => `  ${r.ident}: ${JSON.stringify(r.kind === "tecton" ? r.build!.entry.slug : "lucide")},`),
-    "} as const",
-    "",
-  );
-  return lines.join("\n");
-}
-
-// ---------------------------------------------------------------------------
 // Main
 // ---------------------------------------------------------------------------
 async function main(): Promise<void> {
   const manifest = loadManifest();
-  const lucide = loadLucideExports();
   const sources = scanIconSources(ICONS_SRC_DIR);
   const definitions = await loadTectonDefinitions();
   const materialCodepoints = loadMaterialCodepoints();
@@ -885,7 +626,6 @@ async function main(): Promise<void> {
   // Per-icon builds.
   const builds: Array<IconBuild> = [];
   const idents = new Set<string>();
-  const badLucide: Array<string> = [];
   const badSymbol: Array<string> = [];
   const noSource: Array<string> = [];
   const symbolOwner = new Map<string, string>();
@@ -909,47 +649,6 @@ async function main(): Promise<void> {
     }
     const hasSvg = Boolean(svgSources.outlined || svgSources.filled);
     const colored = Boolean(definition?.def.colored);
-
-    // `lucide` plus `lucideAliases`, each of which must name one of lucide's
-    // DECLARED ROOTS. Naming an alias instead (`trash-2` for root `Trash`) is
-    // not a typo lucide notices — `lucide.values` holds the alias too — but the
-    // compat map is keyed on roots, so such an entry silently emits nothing.
-    // Three manifest rows were dead that way, hence the stricter check.
-    const lucideExports: string[] = [];
-    const declaredLucide = [
-      ...(entry.lucide ? [entry.lucide] : []),
-      ...(entry.lucideAliases ?? []),
-    ];
-    if (!entry.lucide && entry.lucideAliases?.length) {
-      badLucide.push(`${entry.slug}: "lucideAliases" without a "lucide" — name the primary root in "lucide"`);
-    }
-    const seenLucide = new Set<string>();
-    for (const name of declaredLucide) {
-      const ident = kebabToPascal(name);
-      if (seenLucide.has(ident)) {
-        badLucide.push(`${entry.slug}: lucide "${name}" is listed twice`);
-        continue;
-      }
-      seenLucide.add(ident);
-      if (!lucide) {
-        lucideExports.push(ident);
-        continue;
-      }
-      if (lucide.aliases.has(ident)) {
-        lucideExports.push(ident);
-        continue;
-      }
-      const root = lucide.canonical.get(ident);
-      if (root) {
-        // The value is a real lucide export, but an alias of `root`. Keying the
-        // compat map on it would produce no exports at all.
-        badLucide.push(
-          `${entry.slug}: lucide "${name}" (${ident}) is an ALIAS of lucide's root "${root}" — use "${toSlug(root)}"`,
-        );
-      } else {
-        badLucide.push(`${entry.slug}: lucide "${name}" (${ident}) — try: ${suggestLucide(ident, lucide).join(", ") || "?"}`);
-      }
-    }
 
     let codepoint: number | null = null;
     if (entry.symbol !== null) {
@@ -988,7 +687,7 @@ async function main(): Promise<void> {
       noSource.push(`${entry.slug} (${entry.label})`);
       continue;
     }
-    builds.push({ entry, ident, source, codepoint, domain, lucideExports, code });
+    builds.push({ entry, ident, source, codepoint, domain, code });
   }
   if (noSource.length) {
     throw new Error(
@@ -999,13 +698,6 @@ async function main(): Promise<void> {
   if (badSymbol.length) {
     throw new Error(`icons/icons.json has unusable "symbol" values:\n  ${badSymbol.join("\n  ")}`);
   }
-  if (badLucide.length) {
-    throw new Error(
-      `icons/icons.json has unusable "lucide" / "lucideAliases" values (each must be one of ` +
-        `lucide-react's declared ROOT exports, in kebab case):\n  ${badLucide.join("\n  ")}`,
-    );
-  }
-
   // Files to write.
   const outputs = new Map<string, string>();
   for (const b of builds) outputs.set(path.join(ICONS_OUT_DIR, `${b.entry.slug}.tsx`), b.code);
@@ -1015,11 +707,9 @@ async function main(): Promise<void> {
   outputs.set(path.join(ICONS_OUT_DIR, "material-codepoints.ts"), genMaterialCodepoints(materialCodepoints));
   outputs.set(path.join(ICONS_OUT_DIR, "svg-icons.ts"), genSvgIcons(builds));
   outputs.set(path.join(ICONS_OUT_DIR, "index.ts"), genIndex(builds));
-  const compatRows = resolveCompat(collectLucideIdentifiers(), builds, lucide);
-  outputs.set(path.join(ICONS_OUT_DIR, "lucide-compat.map.ts"), genCompatMap(compatRows));
 
   // Stale generated files (icons removed from the manifest). The hand-written
-  // modules (icon.tsx, material.tsx, lucide-compat.ts) carry no marker.
+  // modules (icon.tsx, material.tsx) carry no marker.
   const stale: Array<string> = [];
   if (existsSync(ICONS_OUT_DIR)) {
     for (const name of readdirSync(ICONS_OUT_DIR)) {
@@ -1050,14 +740,11 @@ async function main(): Promise<void> {
 
   // Summary.
   const count = (source: Source) => builds.filter((b) => b.source === source).length;
-  const passthrough = compatRows.filter((r) => r.kind === "lucide");
   console.log(
     [
       `icons: ${builds.length} component(s) → ${path.relative(pkgRoot, ICONS_OUT_DIR)}/`,
       `  symbol: ${count("symbol")}   domain: ${count("domain")}   svg: ${count("svg")}` +
         `   (${materialCodepoints.size} Material names in material-codepoints.ts)`,
-      `  lucide compat: ${compatRows.filter((r) => r.kind === "tecton").length} Tecton override(s), ${passthrough.length} pass-through(s)` +
-        (passthrough.length ? `: ${passthrough.map((r) => r.ident).join(", ")}` : ""),
       `  ${CHECK_MODE ? "changes pending" : "files changed"}: ${changed}${stale.length ? ` (stale removed: ${stale.length})` : ""}`,
     ].join("\n"),
   );

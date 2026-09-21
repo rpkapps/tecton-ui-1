@@ -11,7 +11,7 @@ import {
   type BreadcrumbsProps,
   type LinkProps,
 } from "react-aria-components"
-import { ChevronRightIcon, MoreHorizontalIcon } from "@tecton/react/icons/lucide-compat"
+import { ChevronRightIcon, MoreHorizIcon } from "@tecton/react/icons"
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
   return (
@@ -62,7 +62,8 @@ function BreadcrumbItem({
               aria-hidden="true"
               className={cn("[&>svg]:size-3.5", separatorClassName)}
             >
-              <ChevronRightIcon />
+              <ChevronRightIcon
+              />
             </span>
           )}
         </>
@@ -113,7 +114,7 @@ function BreadcrumbEllipsis({
       )}
       {...props}
     >
-      <MoreHorizontalIcon
+      <MoreHorizIcon
       />
       <span className="sr-only">More</span>
     </span>

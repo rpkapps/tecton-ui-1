@@ -15,7 +15,7 @@ import {
 } from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
-import { XIcon } from "@tecton/react/icons/lucide-compat"
+import { CloseIcon } from "@tecton/react/icons"
 
 function SheetTrigger({ ...props }: SheetTriggerPrimitiveProps) {
   return <SheetTriggerPrimitive data-slot="sheet-trigger" {...props} />
@@ -98,7 +98,7 @@ function Sheet({
               className="absolute top-4 right-4"
               size="icon-sm"
             >
-              <XIcon
+              <CloseIcon
               />
               <span className="sr-only">Close</span>
             </SheetClose>

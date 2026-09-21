@@ -24,8 +24,7 @@
  *                                     `<link rel="preload">` them needs a
  *                                     specifier of its own)
  *   ./components/<name>             → dist/components/<name>.{d.ts,js}
- *   ./tecton/<name>, ./hooks/<name>, ./lib/<name>, ./icons,
- *   ./icons/lucide-compat, ./icons/<name>
+ *   ./tecton/<name>, ./hooks/<name>, ./lib/<name>, ./icons, ./icons/<name>
  *
  * Two entries do not point into dist/ — ./federation/shared and ./postcss/scope:
  * hand-written ESM a consumer's build config imports (no build step, Node-only),
@@ -46,7 +45,7 @@ const SRC = path.join(pkgRoot, "src");
 const PKG_JSON = path.join(pkgRoot, "package.json");
 
 /** `src/icons/*.ts` that the build emits but the package does not expose. */
-const ICON_INTERNALS = new Set(["_runtime", "types", "lucide-compat.map"]);
+const ICON_INTERNALS = new Set(["_runtime", "types"]);
 
 type ExportEntry =
   | string
@@ -108,7 +107,6 @@ function buildExports() {
   }
 
   map["./icons"] = jsEntry("icons/index");
-  map["./icons/lucide-compat"] = jsEntry("icons/lucide-compat");
   for (const name of moduleNames("icons", ".tsx")) {
     if (ICON_INTERNALS.has(name)) continue;
     map[`./icons/${name}`] = jsEntry(`icons/${name}`);
