@@ -40,7 +40,6 @@
     "cn": "^0.2.6",
     "embla-carousel-react": "^8.6.0",
     "input-otp": "^1.5.0",
-    "lucide-react": "^1.45.0",
     "next-themes": "^0.4.6",
     "react-resizable-panels": "^4.12.4",
     "recharts": "3.8.0",
@@ -65,6 +64,7 @@
     "esbuild": "^0.28.2",
     "eslint": "^9",
     "jsdom": "^30.0.1",
+    "lucide-react": "^1.45.0",
     "material-symbols": "0.47.4",
     "opentype.js": "^2.0.0",
     "postcss": "^8",
@@ -446,6 +446,10 @@
       "types": "./dist/icons/lucide-compat.d.ts",
       "import": "./dist/icons/lucide-compat.js"
     },
+    "./icons/account-tree": {
+      "types": "./dist/icons/account-tree.d.ts",
+      "import": "./dist/icons/account-tree.js"
+    },
     "./icons/add": {
       "types": "./dist/icons/add.d.ts",
       "import": "./dist/icons/add.js"
@@ -458,13 +462,25 @@
       "types": "./dist/icons/add-pin.d.ts",
       "import": "./dist/icons/add-pin.js"
     },
+    "./icons/airwave": {
+      "types": "./dist/icons/airwave.d.ts",
+      "import": "./dist/icons/airwave.js"
+    },
     "./icons/annotate": {
       "types": "./dist/icons/annotate.d.ts",
       "import": "./dist/icons/annotate.js"
     },
+    "./icons/apartment": {
+      "types": "./dist/icons/apartment.d.ts",
+      "import": "./dist/icons/apartment.js"
+    },
     "./icons/apps": {
       "types": "./dist/icons/apps.d.ts",
       "import": "./dist/icons/apps.js"
+    },
+    "./icons/archive": {
+      "types": "./dist/icons/archive.d.ts",
+      "import": "./dist/icons/archive.js"
     },
     "./icons/arrow-down": {
       "types": "./dist/icons/arrow-down.d.ts",
@@ -474,6 +490,10 @@
       "types": "./dist/icons/arrow-left.d.ts",
       "import": "./dist/icons/arrow-left.js"
     },
+    "./icons/arrow-outward": {
+      "types": "./dist/icons/arrow-outward.d.ts",
+      "import": "./dist/icons/arrow-outward.js"
+    },
     "./icons/arrow-right": {
       "types": "./dist/icons/arrow-right.d.ts",
       "import": "./dist/icons/arrow-right.js"
@@ -481,6 +501,42 @@
     "./icons/arrow-up": {
       "types": "./dist/icons/arrow-up.d.ts",
       "import": "./dist/icons/arrow-up.js"
+    },
+    "./icons/attach-file": {
+      "types": "./dist/icons/attach-file.d.ts",
+      "import": "./dist/icons/attach-file.js"
+    },
+    "./icons/auto-awesome": {
+      "types": "./dist/icons/auto-awesome.d.ts",
+      "import": "./dist/icons/auto-awesome.js"
+    },
+    "./icons/bluetooth": {
+      "types": "./dist/icons/bluetooth.d.ts",
+      "import": "./dist/icons/bluetooth.js"
+    },
+    "./icons/bookmark": {
+      "types": "./dist/icons/bookmark.d.ts",
+      "import": "./dist/icons/bookmark.js"
+    },
+    "./icons/bug-report": {
+      "types": "./dist/icons/bug-report.d.ts",
+      "import": "./dist/icons/bug-report.js"
+    },
+    "./icons/build": {
+      "types": "./dist/icons/build.d.ts",
+      "import": "./dist/icons/build.js"
+    },
+    "./icons/calculate": {
+      "types": "./dist/icons/calculate.d.ts",
+      "import": "./dist/icons/calculate.js"
+    },
+    "./icons/calendar-add-on": {
+      "types": "./dist/icons/calendar-add-on.d.ts",
+      "import": "./dist/icons/calendar-add-on.js"
+    },
+    "./icons/calendar-month": {
+      "types": "./dist/icons/calendar-month.d.ts",
+      "import": "./dist/icons/calendar-month.js"
     },
     "./icons/cancel-circle": {
       "types": "./dist/icons/cancel-circle.d.ts",
@@ -493,6 +549,14 @@
     "./icons/caret-up-down": {
       "types": "./dist/icons/caret-up-down.d.ts",
       "import": "./dist/icons/caret-up-down.js"
+    },
+    "./icons/casino": {
+      "types": "./dist/icons/casino.d.ts",
+      "import": "./dist/icons/casino.js"
+    },
+    "./icons/chat": {
+      "types": "./dist/icons/chat.d.ts",
+      "import": "./dist/icons/chat.js"
     },
     "./icons/check": {
       "types": "./dist/icons/check.d.ts",
@@ -558,6 +622,14 @@
       "types": "./dist/icons/close-small.d.ts",
       "import": "./dist/icons/close-small.js"
     },
+    "./icons/cloud": {
+      "types": "./dist/icons/cloud.d.ts",
+      "import": "./dist/icons/cloud.js"
+    },
+    "./icons/cloud-off": {
+      "types": "./dist/icons/cloud-off.d.ts",
+      "import": "./dist/icons/cloud-off.js"
+    },
     "./icons/co-2-leaf": {
       "types": "./dist/icons/co-2-leaf.d.ts",
       "import": "./dist/icons/co-2-leaf.js"
@@ -566,9 +638,25 @@
       "types": "./dist/icons/code.d.ts",
       "import": "./dist/icons/code.js"
     },
+    "./icons/code-blocks": {
+      "types": "./dist/icons/code-blocks.d.ts",
+      "import": "./dist/icons/code-blocks.js"
+    },
     "./icons/collapse-content": {
       "types": "./dist/icons/collapse-content.d.ts",
       "import": "./dist/icons/collapse-content.js"
+    },
+    "./icons/construction": {
+      "types": "./dist/icons/construction.d.ts",
+      "import": "./dist/icons/construction.js"
+    },
+    "./icons/content-cut": {
+      "types": "./dist/icons/content-cut.d.ts",
+      "import": "./dist/icons/content-cut.js"
+    },
+    "./icons/content-paste": {
+      "types": "./dist/icons/content-paste.d.ts",
+      "import": "./dist/icons/content-paste.js"
     },
     "./icons/controls": {
       "types": "./dist/icons/controls.d.ts",
@@ -577,6 +665,18 @@
     "./icons/copy": {
       "types": "./dist/icons/copy.d.ts",
       "import": "./dist/icons/copy.js"
+    },
+    "./icons/corporate-fare": {
+      "types": "./dist/icons/corporate-fare.d.ts",
+      "import": "./dist/icons/corporate-fare.js"
+    },
+    "./icons/credit-card": {
+      "types": "./dist/icons/credit-card.d.ts",
+      "import": "./dist/icons/credit-card.js"
+    },
+    "./icons/crop-free": {
+      "types": "./dist/icons/crop-free.d.ts",
+      "import": "./dist/icons/crop-free.js"
     },
     "./icons/crown": {
       "types": "./dist/icons/crown.d.ts",
@@ -590,6 +690,18 @@
       "types": "./dist/icons/dangerous.d.ts",
       "import": "./dist/icons/dangerous.js"
     },
+    "./icons/dark-mode": {
+      "types": "./dist/icons/dark-mode.d.ts",
+      "import": "./dist/icons/dark-mode.js"
+    },
+    "./icons/dashboard": {
+      "types": "./dist/icons/dashboard.d.ts",
+      "import": "./dist/icons/dashboard.js"
+    },
+    "./icons/data-object": {
+      "types": "./dist/icons/data-object.d.ts",
+      "import": "./dist/icons/data-object.js"
+    },
     "./icons/database": {
       "types": "./dist/icons/database.d.ts",
       "import": "./dist/icons/database.js"
@@ -597,6 +709,10 @@
     "./icons/delete": {
       "types": "./dist/icons/delete.d.ts",
       "import": "./dist/icons/delete.js"
+    },
+    "./icons/description": {
+      "types": "./dist/icons/description.d.ts",
+      "import": "./dist/icons/description.js"
     },
     "./icons/design": {
       "types": "./dist/icons/design.d.ts",
@@ -606,9 +722,21 @@
       "types": "./dist/icons/diamond-mark.d.ts",
       "import": "./dist/icons/diamond-mark.js"
     },
+    "./icons/difference": {
+      "types": "./dist/icons/difference.d.ts",
+      "import": "./dist/icons/difference.js"
+    },
     "./icons/discovery": {
       "types": "./dist/icons/discovery.d.ts",
       "import": "./dist/icons/discovery.js"
+    },
+    "./icons/download": {
+      "types": "./dist/icons/download.d.ts",
+      "import": "./dist/icons/download.js"
+    },
+    "./icons/draft": {
+      "types": "./dist/icons/draft.d.ts",
+      "import": "./dist/icons/draft.js"
     },
     "./icons/drag-indicator": {
       "types": "./dist/icons/drag-indicator.d.ts",
@@ -617,6 +745,14 @@
     "./icons/drill-bit": {
       "types": "./dist/icons/drill-bit.d.ts",
       "import": "./dist/icons/drill-bit.js"
+    },
+    "./icons/drive-file-move": {
+      "types": "./dist/icons/drive-file-move.d.ts",
+      "import": "./dist/icons/drive-file-move.js"
+    },
+    "./icons/eco": {
+      "types": "./dist/icons/eco.d.ts",
+      "import": "./dist/icons/eco.js"
     },
     "./icons/edit-square": {
       "types": "./dist/icons/edit-square.d.ts",
@@ -654,9 +790,29 @@
       "types": "./dist/icons/filter.d.ts",
       "import": "./dist/icons/filter.js"
     },
+    "./icons/filter-list": {
+      "types": "./dist/icons/filter-list.d.ts",
+      "import": "./dist/icons/filter-list.js"
+    },
+    "./icons/find-in-page": {
+      "types": "./dist/icons/find-in-page.d.ts",
+      "import": "./dist/icons/find-in-page.js"
+    },
+    "./icons/flag": {
+      "types": "./dist/icons/flag.d.ts",
+      "import": "./dist/icons/flag.js"
+    },
     "./icons/folder": {
       "types": "./dist/icons/folder.d.ts",
       "import": "./dist/icons/folder.js"
+    },
+    "./icons/folder-code": {
+      "types": "./dist/icons/folder-code.d.ts",
+      "import": "./dist/icons/folder-code.js"
+    },
+    "./icons/folder-match": {
+      "types": "./dist/icons/folder-match.d.ts",
+      "import": "./dist/icons/folder-match.js"
     },
     "./icons/folder-new": {
       "types": "./dist/icons/folder-new.d.ts",
@@ -666,9 +822,33 @@
       "types": "./dist/icons/folder-open.d.ts",
       "import": "./dist/icons/folder-open.js"
     },
+    "./icons/fork-right": {
+      "types": "./dist/icons/fork-right.d.ts",
+      "import": "./dist/icons/fork-right.js"
+    },
+    "./icons/format-bold": {
+      "types": "./dist/icons/format-bold.d.ts",
+      "import": "./dist/icons/format-bold.js"
+    },
+    "./icons/format-italic": {
+      "types": "./dist/icons/format-italic.d.ts",
+      "import": "./dist/icons/format-italic.js"
+    },
+    "./icons/format-underlined": {
+      "types": "./dist/icons/format-underlined.d.ts",
+      "import": "./dist/icons/format-underlined.js"
+    },
+    "./icons/forward": {
+      "types": "./dist/icons/forward.d.ts",
+      "import": "./dist/icons/forward.js"
+    },
     "./icons/frameworks": {
       "types": "./dist/icons/frameworks.d.ts",
       "import": "./dist/icons/frameworks.js"
+    },
+    "./icons/fullscreen": {
+      "types": "./dist/icons/fullscreen.d.ts",
+      "import": "./dist/icons/fullscreen.js"
     },
     "./icons/geobodies": {
       "types": "./dist/icons/geobodies.d.ts",
@@ -678,9 +858,21 @@
       "types": "./dist/icons/geostructure.d.ts",
       "import": "./dist/icons/geostructure.js"
     },
+    "./icons/graphic-eq": {
+      "types": "./dist/icons/graphic-eq.d.ts",
+      "import": "./dist/icons/graphic-eq.js"
+    },
     "./icons/grid-view": {
       "types": "./dist/icons/grid-view.d.ts",
       "import": "./dist/icons/grid-view.js"
+    },
+    "./icons/help": {
+      "types": "./dist/icons/help.d.ts",
+      "import": "./dist/icons/help.js"
+    },
+    "./icons/hexagon": {
+      "types": "./dist/icons/hexagon.d.ts",
+      "import": "./dist/icons/hexagon.js"
     },
     "./icons/history": {
       "types": "./dist/icons/history.d.ts",
@@ -702,6 +894,10 @@
       "types": "./dist/icons/image.d.ts",
       "import": "./dist/icons/image.js"
     },
+    "./icons/inbox": {
+      "types": "./dist/icons/inbox.d.ts",
+      "import": "./dist/icons/inbox.js"
+    },
     "./icons/indeterminate-checkbox": {
       "types": "./dist/icons/indeterminate-checkbox.d.ts",
       "import": "./dist/icons/indeterminate-checkbox.js"
@@ -718,9 +914,41 @@
       "types": "./dist/icons/kanban.d.ts",
       "import": "./dist/icons/kanban.js"
     },
+    "./icons/keyboard": {
+      "types": "./dist/icons/keyboard.d.ts",
+      "import": "./dist/icons/keyboard.js"
+    },
+    "./icons/keyboard-command-key": {
+      "types": "./dist/icons/keyboard-command-key.d.ts",
+      "import": "./dist/icons/keyboard-command-key.js"
+    },
+    "./icons/keyboard-return": {
+      "types": "./dist/icons/keyboard-return.d.ts",
+      "import": "./dist/icons/keyboard-return.js"
+    },
+    "./icons/label": {
+      "types": "./dist/icons/label.d.ts",
+      "import": "./dist/icons/label.js"
+    },
+    "./icons/lasso-select": {
+      "types": "./dist/icons/lasso-select.d.ts",
+      "import": "./dist/icons/lasso-select.js"
+    },
     "./icons/layers": {
       "types": "./dist/icons/layers.d.ts",
       "import": "./dist/icons/layers.js"
+    },
+    "./icons/left-panel-open": {
+      "types": "./dist/icons/left-panel-open.d.ts",
+      "import": "./dist/icons/left-panel-open.js"
+    },
+    "./icons/library-add-check": {
+      "types": "./dist/icons/library-add-check.d.ts",
+      "import": "./dist/icons/library-add-check.js"
+    },
+    "./icons/light-mode": {
+      "types": "./dist/icons/light-mode.d.ts",
+      "import": "./dist/icons/light-mode.js"
     },
     "./icons/line-weight": {
       "types": "./dist/icons/line-weight.d.ts",
@@ -738,6 +966,10 @@
       "types": "./dist/icons/list.d.ts",
       "import": "./dist/icons/list.js"
     },
+    "./icons/location-on": {
+      "types": "./dist/icons/location-on.d.ts",
+      "import": "./dist/icons/location-on.js"
+    },
     "./icons/lock": {
       "types": "./dist/icons/lock.d.ts",
       "import": "./dist/icons/lock.js"
@@ -750,9 +982,25 @@
       "types": "./dist/icons/log-curve.d.ts",
       "import": "./dist/icons/log-curve.js"
     },
+    "./icons/login": {
+      "types": "./dist/icons/login.d.ts",
+      "import": "./dist/icons/login.js"
+    },
+    "./icons/logout": {
+      "types": "./dist/icons/logout.d.ts",
+      "import": "./dist/icons/logout.js"
+    },
+    "./icons/mail": {
+      "types": "./dist/icons/mail.d.ts",
+      "import": "./dist/icons/mail.js"
+    },
     "./icons/map": {
       "types": "./dist/icons/map.d.ts",
       "import": "./dist/icons/map.js"
+    },
+    "./icons/mark-email-read": {
+      "types": "./dist/icons/mark-email-read.d.ts",
+      "import": "./dist/icons/mark-email-read.js"
     },
     "./icons/material": {
       "types": "./dist/icons/material.d.ts",
@@ -762,6 +1010,10 @@
       "types": "./dist/icons/menu.d.ts",
       "import": "./dist/icons/menu.js"
     },
+    "./icons/menu-book": {
+      "types": "./dist/icons/menu-book.d.ts",
+      "import": "./dist/icons/menu-book.js"
+    },
     "./icons/microphone": {
       "types": "./dist/icons/microphone.d.ts",
       "import": "./dist/icons/microphone.js"
@@ -769,6 +1021,10 @@
     "./icons/money": {
       "types": "./dist/icons/money.d.ts",
       "import": "./dist/icons/money.js"
+    },
+    "./icons/monitor": {
+      "types": "./dist/icons/monitor.d.ts",
+      "import": "./dist/icons/monitor.js"
     },
     "./icons/more-horiz": {
       "types": "./dist/icons/more-horiz.d.ts",
@@ -786,6 +1042,10 @@
       "types": "./dist/icons/notifications.d.ts",
       "import": "./dist/icons/notifications.js"
     },
+    "./icons/notifications-active": {
+      "types": "./dist/icons/notifications-active.d.ts",
+      "import": "./dist/icons/notifications-active.js"
+    },
     "./icons/numeric": {
       "types": "./dist/icons/numeric.d.ts",
       "import": "./dist/icons/numeric.js"
@@ -794,9 +1054,17 @@
       "types": "./dist/icons/oil-rig-offshore.d.ts",
       "import": "./dist/icons/oil-rig-offshore.js"
     },
+    "./icons/open-in-full": {
+      "types": "./dist/icons/open-in-full.d.ts",
+      "import": "./dist/icons/open-in-full.js"
+    },
     "./icons/open-in-new": {
       "types": "./dist/icons/open-in-new.d.ts",
       "import": "./dist/icons/open-in-new.js"
+    },
+    "./icons/palette": {
+      "types": "./dist/icons/palette.d.ts",
+      "import": "./dist/icons/palette.js"
     },
     "./icons/pan-tool": {
       "types": "./dist/icons/pan-tool.d.ts",
@@ -814,6 +1082,18 @@
       "types": "./dist/icons/person.d.ts",
       "import": "./dist/icons/person.js"
     },
+    "./icons/person-add": {
+      "types": "./dist/icons/person-add.d.ts",
+      "import": "./dist/icons/person-add.js"
+    },
+    "./icons/person-remove": {
+      "types": "./dist/icons/person-remove.d.ts",
+      "import": "./dist/icons/person-remove.js"
+    },
+    "./icons/pie-chart": {
+      "types": "./dist/icons/pie-chart.d.ts",
+      "import": "./dist/icons/pie-chart.js"
+    },
     "./icons/play": {
       "types": "./dist/icons/play.d.ts",
       "import": "./dist/icons/play.js"
@@ -830,9 +1110,17 @@
       "types": "./dist/icons/project.d.ts",
       "import": "./dist/icons/project.js"
     },
+    "./icons/public": {
+      "types": "./dist/icons/public.d.ts",
+      "import": "./dist/icons/public.js"
+    },
     "./icons/pulse": {
       "types": "./dist/icons/pulse.d.ts",
       "import": "./dist/icons/pulse.js"
+    },
+    "./icons/push-pin": {
+      "types": "./dist/icons/push-pin.d.ts",
+      "import": "./dist/icons/push-pin.js"
     },
     "./icons/radio-button": {
       "types": "./dist/icons/radio-button.d.ts",
@@ -854,6 +1142,14 @@
       "types": "./dist/icons/reports-analytics.d.ts",
       "import": "./dist/icons/reports-analytics.js"
     },
+    "./icons/right-panel-close": {
+      "types": "./dist/icons/right-panel-close.d.ts",
+      "import": "./dist/icons/right-panel-close.js"
+    },
+    "./icons/right-panel-open": {
+      "types": "./dist/icons/right-panel-open.d.ts",
+      "import": "./dist/icons/right-panel-open.js"
+    },
     "./icons/risk-skull": {
       "types": "./dist/icons/risk-skull.d.ts",
       "import": "./dist/icons/risk-skull.js"
@@ -870,9 +1166,25 @@
       "types": "./dist/icons/rotate.d.ts",
       "import": "./dist/icons/rotate.js"
     },
+    "./icons/rotate-left": {
+      "types": "./dist/icons/rotate-left.d.ts",
+      "import": "./dist/icons/rotate-left.js"
+    },
+    "./icons/rotate-right": {
+      "types": "./dist/icons/rotate-right.d.ts",
+      "import": "./dist/icons/rotate-right.js"
+    },
     "./icons/ruler": {
       "types": "./dist/icons/ruler.d.ts",
       "import": "./dist/icons/ruler.js"
+    },
+    "./icons/save": {
+      "types": "./dist/icons/save.d.ts",
+      "import": "./dist/icons/save.js"
+    },
+    "./icons/schedule": {
+      "types": "./dist/icons/schedule.d.ts",
+      "import": "./dist/icons/schedule.js"
     },
     "./icons/search": {
       "types": "./dist/icons/search.d.ts",
@@ -894,25 +1206,73 @@
       "types": "./dist/icons/select-cursor.d.ts",
       "import": "./dist/icons/select-cursor.js"
     },
+    "./icons/send": {
+      "types": "./dist/icons/send.d.ts",
+      "import": "./dist/icons/send.js"
+    },
+    "./icons/sentiment-satisfied": {
+      "types": "./dist/icons/sentiment-satisfied.d.ts",
+      "import": "./dist/icons/sentiment-satisfied.js"
+    },
     "./icons/settings": {
       "types": "./dist/icons/settings.d.ts",
       "import": "./dist/icons/settings.js"
+    },
+    "./icons/shapes": {
+      "types": "./dist/icons/shapes.d.ts",
+      "import": "./dist/icons/shapes.js"
+    },
+    "./icons/share": {
+      "types": "./dist/icons/share.d.ts",
+      "import": "./dist/icons/share.js"
+    },
+    "./icons/share-nodes": {
+      "types": "./dist/icons/share-nodes.d.ts",
+      "import": "./dist/icons/share-nodes.js"
+    },
+    "./icons/shield": {
+      "types": "./dist/icons/shield.d.ts",
+      "import": "./dist/icons/shield.js"
+    },
+    "./icons/shield-alert": {
+      "types": "./dist/icons/shield-alert.d.ts",
+      "import": "./dist/icons/shield-alert.js"
     },
     "./icons/slice": {
       "types": "./dist/icons/slice.d.ts",
       "import": "./dist/icons/slice.js"
     },
+    "./icons/smartphone": {
+      "types": "./dist/icons/smartphone.d.ts",
+      "import": "./dist/icons/smartphone.js"
+    },
     "./icons/sort-enabled": {
       "types": "./dist/icons/sort-enabled.d.ts",
       "import": "./dist/icons/sort-enabled.js"
+    },
+    "./icons/space-dashboard": {
+      "types": "./dist/icons/space-dashboard.d.ts",
+      "import": "./dist/icons/space-dashboard.js"
     },
     "./icons/splitscreen": {
       "types": "./dist/icons/splitscreen.d.ts",
       "import": "./dist/icons/splitscreen.js"
     },
+    "./icons/stacks": {
+      "types": "./dist/icons/stacks.d.ts",
+      "import": "./dist/icons/stacks.js"
+    },
+    "./icons/star": {
+      "types": "./dist/icons/star.d.ts",
+      "import": "./dist/icons/star.js"
+    },
     "./icons/strata": {
       "types": "./dist/icons/strata.d.ts",
       "import": "./dist/icons/strata.js"
+    },
+    "./icons/support": {
+      "types": "./dist/icons/support.d.ts",
+      "import": "./dist/icons/support.js"
     },
     "./icons/surface": {
       "types": "./dist/icons/surface.d.ts",
@@ -922,17 +1282,53 @@
       "types": "./dist/icons/swap.d.ts",
       "import": "./dist/icons/swap.js"
     },
+    "./icons/sync": {
+      "types": "./dist/icons/sync.d.ts",
+      "import": "./dist/icons/sync.js"
+    },
+    "./icons/table": {
+      "types": "./dist/icons/table.d.ts",
+      "import": "./dist/icons/table.js"
+    },
+    "./icons/tablet": {
+      "types": "./dist/icons/tablet.d.ts",
+      "import": "./dist/icons/tablet.js"
+    },
     "./icons/target": {
       "types": "./dist/icons/target.d.ts",
       "import": "./dist/icons/target.js"
+    },
+    "./icons/terminal": {
+      "types": "./dist/icons/terminal.d.ts",
+      "import": "./dist/icons/terminal.js"
+    },
+    "./icons/terrain": {
+      "types": "./dist/icons/terrain.d.ts",
+      "import": "./dist/icons/terrain.js"
+    },
+    "./icons/text": {
+      "types": "./dist/icons/text.d.ts",
+      "import": "./dist/icons/text.js"
     },
     "./icons/three-d": {
       "types": "./dist/icons/three-d.d.ts",
       "import": "./dist/icons/three-d.js"
     },
+    "./icons/thumb-down": {
+      "types": "./dist/icons/thumb-down.d.ts",
+      "import": "./dist/icons/thumb-down.js"
+    },
+    "./icons/thumb-up": {
+      "types": "./dist/icons/thumb-up.d.ts",
+      "import": "./dist/icons/thumb-up.js"
+    },
     "./icons/trajectory": {
       "types": "./dist/icons/trajectory.d.ts",
       "import": "./dist/icons/trajectory.js"
+    },
+    "./icons/translate": {
+      "types": "./dist/icons/translate.d.ts",
+      "import": "./dist/icons/translate.js"
     },
     "./icons/trend": {
       "types": "./dist/icons/trend.d.ts",
@@ -950,6 +1346,10 @@
       "types": "./dist/icons/undo.d.ts",
       "import": "./dist/icons/undo.js"
     },
+    "./icons/upgrade": {
+      "types": "./dist/icons/upgrade.d.ts",
+      "import": "./dist/icons/upgrade.js"
+    },
     "./icons/valve": {
       "types": "./dist/icons/valve.d.ts",
       "import": "./dist/icons/valve.js"
@@ -957,6 +1357,10 @@
     "./icons/velocity-model": {
       "types": "./dist/icons/velocity-model.d.ts",
       "import": "./dist/icons/velocity-model.js"
+    },
+    "./icons/verified": {
+      "types": "./dist/icons/verified.d.ts",
+      "import": "./dist/icons/verified.js"
     },
     "./icons/view-column": {
       "types": "./dist/icons/view-column.d.ts",
@@ -974,6 +1378,14 @@
       "types": "./dist/icons/visibility-off.d.ts",
       "import": "./dist/icons/visibility-off.js"
     },
+    "./icons/volume-off": {
+      "types": "./dist/icons/volume-off.d.ts",
+      "import": "./dist/icons/volume-off.js"
+    },
+    "./icons/wallet": {
+      "types": "./dist/icons/wallet.d.ts",
+      "import": "./dist/icons/wallet.js"
+    },
     "./icons/warning": {
       "types": "./dist/icons/warning.d.ts",
       "import": "./dist/icons/warning.js"
@@ -981,6 +1393,10 @@
     "./icons/water": {
       "types": "./dist/icons/water.d.ts",
       "import": "./dist/icons/water.js"
+    },
+    "./icons/web-asset": {
+      "types": "./dist/icons/web-asset.d.ts",
+      "import": "./dist/icons/web-asset.js"
     },
     "./icons/well": {
       "types": "./dist/icons/well.d.ts",
@@ -993,6 +1409,10 @@
     "./icons/well-plan": {
       "types": "./dist/icons/well-plan.d.ts",
       "import": "./dist/icons/well-plan.js"
+    },
+    "./icons/widgets": {
+      "types": "./dist/icons/widgets.d.ts",
+      "import": "./dist/icons/widgets.js"
     },
     "./icons/window": {
       "types": "./dist/icons/window.d.ts",

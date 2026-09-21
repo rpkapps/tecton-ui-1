@@ -3,18 +3,22 @@
 // lucide-react identifiers used by src/components and src/tecton,
 // plus every lucide name (and alias) a Tecton icon stands in for. Consumed by
 // ./lucide-compat.ts.
-// Everything else lucide exports passes straight through (star re-export;
-// the explicit exports below shadow it).
+//
+// The module exports ONLY what is listed here: there is no
+// `export * from "lucide-react"` fallback, so a lucide name no Tecton icon
+// covers fails at build time instead of quietly rendering a Lucide drawing.
 
-export * from "lucide-react"
-
-// 411 Tecton override(s)
+// 825 Tecton override(s)
 export { PulseIcon as Activity } from "./pulse" // catalogue
 export { PulseIcon as ActivityIcon } from "./pulse" // catalogue
 export { ErrorIcon as AlertCircle } from "./error" // catalogue
 export { ErrorIcon as AlertCircleIcon } from "./error" // catalogue
 export { WarningIcon as AlertTriangle } from "./warning" // catalogue
 export { WarningIcon as AlertTriangleIcon } from "./warning" // catalogue
+export { WebAssetIcon as AppWindow } from "./web-asset" // catalogue
+export { WebAssetIcon as AppWindowIcon } from "./web-asset" // catalogue
+export { ArchiveIcon as Archive } from "./archive" // catalogue
+export { ArchiveIcon } from "./archive" // catalogue
 export { ArrowDownIcon as ArrowDown } from "./arrow-down" // catalogue
 export { ArrowDownIcon } from "./arrow-down" // src/components/message-scroller.tsx
 export { ArrowLeftIcon as ArrowLeft } from "./arrow-left" // catalogue
@@ -25,20 +29,60 @@ export { ArrowUpIcon as ArrowUp } from "./arrow-up" // catalogue
 export { SortEnabledIcon as ArrowUpDown } from "./sort-enabled" // catalogue
 export { SortEnabledIcon as ArrowUpDownIcon } from "./sort-enabled" // catalogue
 export { ArrowUpIcon } from "./arrow-up" // catalogue
+export { ArrowOutwardIcon as ArrowUpRight } from "./arrow-outward" // catalogue
+export { ArrowOutwardIcon as ArrowUpRightIcon } from "./arrow-outward" // catalogue
+export { GraphicEqIcon as AudioLines } from "./graphic-eq" // catalogue
+export { GraphicEqIcon as AudioLinesIcon } from "./graphic-eq" // catalogue
+export { AirwaveIcon as AudioWaveform } from "./airwave" // catalogue
+export { AirwaveIcon as AudioWaveformIcon } from "./airwave" // catalogue
+export { VerifiedIcon as BadgeCheck } from "./verified" // catalogue
+export { VerifiedIcon as BadgeCheckIcon } from "./verified" // catalogue
 export { ReportsAnalyticsIcon as BarChart3 } from "./reports-analytics" // catalogue
 export { ReportsAnalyticsIcon as BarChart3Icon } from "./reports-analytics" // catalogue
 export { NotificationsIcon as Bell } from "./notifications" // catalogue
 export { NotificationsIcon as BellIcon } from "./notifications" // catalogue
+export { NotificationsActiveIcon as BellRing } from "./notifications-active" // catalogue
+export { NotificationsActiveIcon as BellRingIcon } from "./notifications-active" // catalogue
+export { WidgetsIcon as Blocks } from "./widgets" // catalogue
+export { WidgetsIcon as BlocksIcon } from "./widgets" // catalogue
+export { BluetoothIcon as Bluetooth } from "./bluetooth" // catalogue
+export { BluetoothIcon } from "./bluetooth" // catalogue
+export { FormatBoldIcon as Bold } from "./format-bold" // catalogue
+export { FormatBoldIcon as BoldIcon } from "./format-bold" // catalogue
+export { BookmarkIcon as Bookmark } from "./bookmark" // catalogue
+export { BookmarkIcon } from "./bookmark" // catalogue
+export { MenuBookIcon as BookOpen } from "./menu-book" // catalogue
+export { LibraryAddCheckIcon as BookOpenCheck } from "./library-add-check" // catalogue
+export { LibraryAddCheckIcon as BookOpenCheckIcon } from "./library-add-check" // catalogue
+export { MenuBookIcon as BookOpenIcon } from "./menu-book" // catalogue
 export { Robot2Icon as Bot } from "./robot-2" // catalogue
 export { Robot2Icon as BotIcon } from "./robot-2" // catalogue
 export { CubeIcon as Box } from "./cube" // catalogue
 export { CubeIcon as BoxIcon } from "./cube" // catalogue
 export { SelectIcon as BoxSelect } from "./select" // catalogue
 export { SelectIcon as BoxSelectIcon } from "./select" // catalogue
+export { DataObjectIcon as Braces } from "./data-object" // catalogue
+export { DataObjectIcon as BracesIcon } from "./data-object" // catalogue
+export { BugReportIcon as Bug } from "./bug-report" // catalogue
+export { BugReportIcon as BugIcon } from "./bug-report" // catalogue
+export { ApartmentIcon as Building } from "./apartment" // catalogue
+export { CorporateFareIcon as Building2 } from "./corporate-fare" // catalogue
+export { CorporateFareIcon as Building2Icon } from "./corporate-fare" // catalogue
+export { CorporateFareIcon as BuildingComplex } from "./corporate-fare" // catalogue
+export { CorporateFareIcon as BuildingComplexIcon } from "./corporate-fare" // catalogue
+export { ApartmentIcon as BuildingIcon } from "./apartment" // catalogue
+export { CalculateIcon as Calculator } from "./calculate" // catalogue
+export { CalculateIcon as CalculatorIcon } from "./calculate" // catalogue
+export { CalendarMonthIcon as Calendar } from "./calendar-month" // catalogue
+export { CalendarMonthIcon as CalendarIcon } from "./calendar-month" // catalogue
+export { CalendarAddOnIcon as CalendarPlus } from "./calendar-add-on" // catalogue
+export { CalendarAddOnIcon as CalendarPlusIcon } from "./calendar-add-on" // catalogue
 export { ReportsAnalyticsIcon as ChartColumn } from "./reports-analytics" // catalogue
 export { ReportsAnalyticsIcon as ChartColumnIcon } from "./reports-analytics" // catalogue
 export { TrendIcon as ChartNoAxesCombined } from "./trend" // catalogue
 export { TrendIcon as ChartNoAxesCombinedIcon } from "./trend" // catalogue
+export { PieChartIcon as ChartPie } from "./pie-chart" // catalogue
+export { PieChartIcon as ChartPieIcon } from "./pie-chart" // catalogue
 export { CheckIcon as Check } from "./check" // catalogue
 export { CheckCircleIcon as CheckCircle2 } from "./check-circle" // catalogue
 export { CheckCircleIcon as CheckCircle2Icon } from "./check-circle" // catalogue
@@ -64,13 +108,31 @@ export { CheckCircleIcon as CircleCheck } from "./check-circle" // catalogue
 export { CheckCircleIcon as CircleCheckIcon } from "./check-circle" // src/components/sonner.tsx
 export { CheckCircleOpenIcon as CircleDashed } from "./check-circle-open" // catalogue
 export { CheckCircleOpenIcon as CircleDashedIcon } from "./check-circle-open" // catalogue
+export { UpgradeIcon as CircleFadingArrowUp } from "./upgrade" // catalogue
+export { UpgradeIcon as CircleFadingArrowUpIcon } from "./upgrade" // catalogue
+export { AddCircleIcon as CircleFadingPlus } from "./add-circle" // catalogue
+export { AddCircleIcon as CircleFadingPlusIcon } from "./add-circle" // catalogue
+export { HelpIcon as CircleHelp } from "./help" // catalogue
+export { HelpIcon as CircleHelpIcon } from "./help" // catalogue
 export { RadioButtonIcon as CircleIcon } from "./radio-button" // catalogue
 export { RemoveCircleIcon as CircleMinus } from "./remove-circle" // catalogue
 export { RemoveCircleIcon as CircleMinusIcon } from "./remove-circle" // catalogue
 export { AddCircleIcon as CirclePlus } from "./add-circle" // catalogue
 export { AddCircleIcon as CirclePlusIcon } from "./add-circle" // catalogue
+export { HelpIcon as CircleQuestionMark } from "./help" // catalogue
+export { HelpIcon as CircleQuestionMarkIcon } from "./help" // catalogue
 export { CancelCircleIcon as CircleX } from "./cancel-circle" // catalogue
 export { CancelCircleIcon as CircleXIcon } from "./cancel-circle" // catalogue
+export { ContentPasteIcon as ClipboardPaste } from "./content-paste" // catalogue
+export { ContentPasteIcon as ClipboardPasteIcon } from "./content-paste" // catalogue
+export { ScheduleIcon as Clock } from "./schedule" // catalogue
+export { ScheduleIcon as Clock2 } from "./schedule" // catalogue
+export { ScheduleIcon as Clock2Icon } from "./schedule" // catalogue
+export { ScheduleIcon as ClockIcon } from "./schedule" // catalogue
+export { CloudIcon as Cloud } from "./cloud" // catalogue
+export { CloudIcon } from "./cloud" // catalogue
+export { CloudOffIcon as CloudOff } from "./cloud-off" // catalogue
+export { CloudOffIcon } from "./cloud-off" // catalogue
 export { CodeIcon as Code } from "./code" // catalogue
 export { CodeIcon } from "./code" // catalogue
 export { SplitscreenIcon as Columns } from "./splitscreen" // catalogue
@@ -79,20 +141,36 @@ export { SplitscreenIcon as Columns2Icon } from "./splitscreen" // catalogue
 export { ViewColumnIcon as Columns3 } from "./view-column" // catalogue
 export { ViewColumnIcon as Columns3Icon } from "./view-column" // catalogue
 export { SplitscreenIcon as ColumnsIcon } from "./splitscreen" // catalogue
+export { KeyboardCommandKeyIcon as Command } from "./keyboard-command-key" // catalogue
+export { KeyboardCommandKeyIcon as CommandIcon } from "./keyboard-command-key" // catalogue
 export { DiscoveryIcon as Compass } from "./discovery" // catalogue
 export { DiscoveryIcon as CompassIcon } from "./discovery" // catalogue
+export { ConstructionIcon as Construction } from "./construction" // catalogue
+export { ConstructionIcon } from "./construction" // catalogue
 export { CopyIcon as Copy } from "./copy" // catalogue
 export { CopyIcon } from "./copy" // catalogue
+export { KeyboardReturnIcon as CornerDownLeft } from "./keyboard-return" // catalogue
+export { KeyboardReturnIcon as CornerDownLeftIcon } from "./keyboard-return" // catalogue
+export { CreditCardIcon as CreditCard } from "./credit-card" // catalogue
+export { CreditCardIcon } from "./credit-card" // catalogue
 export { CrownIcon as Crown } from "./crown" // catalogue
 export { CrownIcon } from "./crown" // catalogue
+export { DataObjectIcon as CurlyBraces } from "./data-object" // catalogue
+export { DataObjectIcon as CurlyBracesIcon } from "./data-object" // catalogue
 export { DatabaseIcon as Database } from "./database" // catalogue
 export { DatabaseIcon } from "./database" // catalogue
 export { DiamondMarkIcon as Diamond } from "./diamond-mark" // catalogue
 export { DiamondMarkIcon as DiamondIcon } from "./diamond-mark" // catalogue
+export { CasinoIcon as Dices } from "./casino" // catalogue
+export { CasinoIcon as DicesIcon } from "./casino" // catalogue
 export { MoneyIcon as DollarSign } from "./money" // catalogue
 export { MoneyIcon as DollarSignIcon } from "./money" // catalogue
+export { DownloadIcon as Download } from "./download" // catalogue
+export { DownloadIcon } from "./download" // catalogue
 export { EngineeringIcon as DraftingCompass } from "./engineering" // catalogue
 export { EngineeringIcon as DraftingCompassIcon } from "./engineering" // catalogue
+export { DrillBitIcon as Drill } from "./drill-bit" // catalogue
+export { DrillBitIcon as DrillIcon } from "./drill-bit" // catalogue
 export { WaterIcon as Droplet } from "./water" // catalogue
 export { WaterIcon as DropletIcon } from "./water" // catalogue
 export { EditSquareIcon as Edit } from "./edit-square" // catalogue
@@ -109,22 +187,60 @@ export { VisibilityIcon as Eye } from "./visibility" // catalogue
 export { VisibilityIcon as EyeIcon } from "./visibility" // catalogue
 export { VisibilityOffIcon as EyeOff } from "./visibility-off" // catalogue
 export { VisibilityOffIcon as EyeOffIcon } from "./visibility-off" // catalogue
+export { SentimentSatisfiedIcon as FaceSlightlySmiling } from "./sentiment-satisfied" // catalogue
+export { SentimentSatisfiedIcon as FaceSlightlySmilingIcon } from "./sentiment-satisfied" // catalogue
 export { FacilityIcon as Factory } from "./facility" // catalogue
 export { FacilityIcon as FactoryIcon } from "./facility" // catalogue
+export { DraftIcon as File } from "./draft" // catalogue
+export { CodeBlocksIcon as FileCode } from "./code-blocks" // catalogue
+export { CodeBlocksIcon as FileCodeIcon } from "./code-blocks" // catalogue
+export { WarningIcon as FileExclamationPoint } from "./warning" // catalogue
+export { WarningIcon as FileExclamationPointIcon } from "./warning" // catalogue
+export { DraftIcon as FileIcon } from "./draft" // catalogue
+export { FindInPageIcon as FileSearch } from "./find-in-page" // catalogue
+export { FindInPageIcon as FileSearchIcon } from "./find-in-page" // catalogue
+export { DescriptionIcon as FileText } from "./description" // catalogue
+export { DescriptionIcon as FileTextIcon } from "./description" // catalogue
+export { WarningIcon as FileWarning } from "./warning" // catalogue
+export { WarningIcon as FileWarningIcon } from "./warning" // catalogue
 export { FilterIcon as Filter } from "./filter" // catalogue
 export { FilterIcon } from "./filter" // catalogue
+export { FlagIcon as Flag } from "./flag" // catalogue
+export { FlagIcon } from "./flag" // catalogue
 export { TargetIcon as Focus } from "./target" // catalogue
 export { TargetIcon as FocusIcon } from "./target" // catalogue
 export { FolderIcon as Folder } from "./folder" // catalogue
+export { FolderCodeIcon as FolderCode } from "./folder-code" // catalogue
+export { FolderCodeIcon } from "./folder-code" // catalogue
 export { FolderIcon } from "./folder" // catalogue
+export { DriveFileMoveIcon as FolderInput } from "./drive-file-move" // catalogue
+export { DriveFileMoveIcon as FolderInputIcon } from "./drive-file-move" // catalogue
 export { FolderOpenIcon as FolderOpen } from "./folder-open" // catalogue
 export { FolderOpenIcon } from "./folder-open" // catalogue
 export { FolderNewIcon as FolderPlus } from "./folder-new" // catalogue
 export { FolderNewIcon as FolderPlusIcon } from "./folder-new" // catalogue
+export { FolderMatchIcon as FolderSearch } from "./folder-match" // catalogue
+export { FolderMatchIcon as FolderSearchIcon } from "./folder-match" // catalogue
 export { SwapIcon as FoldHorizontal } from "./swap" // catalogue
 export { SwapIcon as FoldHorizontalIcon } from "./swap" // catalogue
+export { ForwardIcon as Forward } from "./forward" // catalogue
+export { ForwardIcon } from "./forward" // catalogue
+export { ProjectIcon as Frame } from "./project" // catalogue
+export { ProjectIcon as FrameIcon } from "./project" // catalogue
+export { FullscreenIcon as Fullscreen } from "./fullscreen" // catalogue
+export { FullscreenIcon } from "./fullscreen" // catalogue
 export { FilterIcon as Funnel } from "./filter" // catalogue
 export { FilterIcon as FunnelIcon } from "./filter" // catalogue
+export { StacksIcon as GalleryVerticalEnd } from "./stacks" // catalogue
+export { StacksIcon as GalleryVerticalEndIcon } from "./stacks" // catalogue
+export { AccountTreeIcon as GitBranch } from "./account-tree" // catalogue
+export { AccountTreeIcon as GitBranchIcon } from "./account-tree" // catalogue
+export { DifferenceIcon as GitCompare } from "./difference" // catalogue
+export { DifferenceIcon as GitCompareIcon } from "./difference" // catalogue
+export { ForkRightIcon as GitFork } from "./fork-right" // catalogue
+export { ForkRightIcon as GitForkIcon } from "./fork-right" // catalogue
+export { PublicIcon as Globe } from "./public" // catalogue
+export { PublicIcon as GlobeIcon } from "./public" // catalogue
 export { ViewModuleIcon as Grid } from "./view-module" // catalogue
 export { WindowIcon as Grid2x2 } from "./window" // catalogue
 export { WindowIcon as Grid2X2 } from "./window" // catalogue
@@ -143,51 +259,105 @@ export { PanToolIcon as Hand } from "./pan-tool" // catalogue
 export { PanToolIcon as HandIcon } from "./pan-tool" // catalogue
 export { NumericIcon as Hash } from "./numeric" // catalogue
 export { NumericIcon as HashIcon } from "./numeric" // catalogue
+export { HelpIcon as HelpCircle } from "./help" // catalogue
+export { HelpIcon as HelpCircleIcon } from "./help" // catalogue
+export { HexagonIcon as Hexagon } from "./hexagon" // catalogue
+export { HexagonIcon } from "./hexagon" // catalogue
 export { AnnotateIcon as Highlighter } from "./annotate" // catalogue
 export { AnnotateIcon as HighlighterIcon } from "./annotate" // catalogue
+export { HistoryIcon as History } from "./history" // catalogue
+export { HistoryIcon } from "./history" // catalogue
 export { HomeIcon as Home } from "./home" // catalogue
 export { HomeIcon } from "./home" // catalogue
 export { HomeIcon as House } from "./home" // catalogue
 export { HomeIcon as HouseIcon } from "./home" // catalogue
 export { ImageIcon as Image } from "./image" // catalogue
 export { ImageIcon } from "./image" // catalogue
+export { InboxIcon as Inbox } from "./inbox" // catalogue
+export { InboxIcon } from "./inbox" // catalogue
 export { InfoIcon as Info } from "./info" // catalogue
 export { InfoIcon } from "./info" // src/components/sonner.tsx
+export { FormatItalicIcon as Italic } from "./format-italic" // catalogue
+export { FormatItalicIcon as ItalicIcon } from "./format-italic" // catalogue
 export { KanbanIcon as KanbanSquare } from "./kanban" // catalogue
 export { KanbanIcon as KanbanSquareIcon } from "./kanban" // catalogue
+export { KeyboardIcon as Keyboard } from "./keyboard" // catalogue
+export { KeyboardIcon } from "./keyboard" // catalogue
+export { TranslateIcon as Languages } from "./translate" // catalogue
+export { TranslateIcon as LanguagesIcon } from "./translate" // catalogue
+export { LassoSelectIcon as Lasso } from "./lasso-select" // catalogue
+export { LassoSelectIcon as LassoIcon } from "./lasso-select" // catalogue
 export { LayersIcon as Layers } from "./layers" // catalogue
 export { LayersIcon as Layers3 } from "./layers" // catalogue
 export { LayersIcon as Layers3Icon } from "./layers" // catalogue
 export { LayersIcon } from "./layers" // catalogue
+export { SpaceDashboardIcon as Layout } from "./space-dashboard" // catalogue
+export { DashboardIcon as LayoutDashboard } from "./dashboard" // catalogue
+export { DashboardIcon as LayoutDashboardIcon } from "./dashboard" // catalogue
 export { GridViewIcon as LayoutGrid } from "./grid-view" // catalogue
 export { GridViewIcon as LayoutGridIcon } from "./grid-view" // catalogue
+export { SpaceDashboardIcon as LayoutIcon } from "./space-dashboard" // catalogue
+export { EcoIcon as Leaf } from "./eco" // catalogue
+export { EcoIcon as LeafIcon } from "./eco" // catalogue
+export { SupportIcon as LifeBuoy } from "./support" // catalogue
+export { SupportIcon as LifeBuoyIcon } from "./support" // catalogue
 export { LinkIcon as Link } from "./link" // catalogue
 export { LinkIcon } from "./link" // catalogue
 export { ListIcon as List } from "./list" // catalogue
+export { FilterListIcon as ListFilter } from "./filter-list" // catalogue
+export { FilterListIcon as ListFilterIcon } from "./filter-list" // catalogue
 export { ListIcon } from "./list" // catalogue
+export { ProgressActivityIcon as Loader } from "./progress-activity" // catalogue
 export { ProgressActivityIcon as Loader2 } from "./progress-activity" // catalogue
 export { ProgressActivityIcon as Loader2Icon } from "./progress-activity" // src/components/spinner.tsx, src/components/sonner.tsx
 export { ProgressActivityIcon as LoaderCircle } from "./progress-activity" // catalogue
 export { ProgressActivityIcon as LoaderCircleIcon } from "./progress-activity" // catalogue
+export { ProgressActivityIcon as LoaderIcon } from "./progress-activity" // catalogue
 export { LockIcon as Lock } from "./lock" // catalogue
 export { LockIcon } from "./lock" // catalogue
 export { LockOpenIcon as LockOpen } from "./lock-open" // catalogue
 export { LockOpenIcon } from "./lock-open" // catalogue
+export { LoginIcon as LogIn } from "./login" // catalogue
+export { LoginIcon as LogInIcon } from "./login" // catalogue
+export { LogoutIcon as LogOut } from "./logout" // catalogue
+export { LogoutIcon as LogOutIcon } from "./logout" // catalogue
 export { PulseIcon as LucideActivity } from "./pulse" // catalogue
 export { ErrorIcon as LucideAlertCircle } from "./error" // catalogue
 export { WarningIcon as LucideAlertTriangle } from "./warning" // catalogue
+export { WebAssetIcon as LucideAppWindow } from "./web-asset" // catalogue
+export { ArchiveIcon as LucideArchive } from "./archive" // catalogue
 export { ArrowDownIcon as LucideArrowDown } from "./arrow-down" // catalogue
 export { ArrowLeftIcon as LucideArrowLeft } from "./arrow-left" // catalogue
 export { ArrowRightIcon as LucideArrowRight } from "./arrow-right" // catalogue
 export { ArrowUpIcon as LucideArrowUp } from "./arrow-up" // catalogue
 export { SortEnabledIcon as LucideArrowUpDown } from "./sort-enabled" // catalogue
+export { ArrowOutwardIcon as LucideArrowUpRight } from "./arrow-outward" // catalogue
+export { GraphicEqIcon as LucideAudioLines } from "./graphic-eq" // catalogue
+export { AirwaveIcon as LucideAudioWaveform } from "./airwave" // catalogue
+export { VerifiedIcon as LucideBadgeCheck } from "./verified" // catalogue
 export { ReportsAnalyticsIcon as LucideBarChart3 } from "./reports-analytics" // catalogue
 export { NotificationsIcon as LucideBell } from "./notifications" // catalogue
+export { NotificationsActiveIcon as LucideBellRing } from "./notifications-active" // catalogue
+export { WidgetsIcon as LucideBlocks } from "./widgets" // catalogue
+export { BluetoothIcon as LucideBluetooth } from "./bluetooth" // catalogue
+export { FormatBoldIcon as LucideBold } from "./format-bold" // catalogue
+export { BookmarkIcon as LucideBookmark } from "./bookmark" // catalogue
+export { MenuBookIcon as LucideBookOpen } from "./menu-book" // catalogue
+export { LibraryAddCheckIcon as LucideBookOpenCheck } from "./library-add-check" // catalogue
 export { Robot2Icon as LucideBot } from "./robot-2" // catalogue
 export { CubeIcon as LucideBox } from "./cube" // catalogue
 export { SelectIcon as LucideBoxSelect } from "./select" // catalogue
+export { DataObjectIcon as LucideBraces } from "./data-object" // catalogue
+export { BugReportIcon as LucideBug } from "./bug-report" // catalogue
+export { ApartmentIcon as LucideBuilding } from "./apartment" // catalogue
+export { CorporateFareIcon as LucideBuilding2 } from "./corporate-fare" // catalogue
+export { CorporateFareIcon as LucideBuildingComplex } from "./corporate-fare" // catalogue
+export { CalculateIcon as LucideCalculator } from "./calculate" // catalogue
+export { CalendarMonthIcon as LucideCalendar } from "./calendar-month" // catalogue
+export { CalendarAddOnIcon as LucideCalendarPlus } from "./calendar-add-on" // catalogue
 export { ReportsAnalyticsIcon as LucideChartColumn } from "./reports-analytics" // catalogue
 export { TrendIcon as LucideChartNoAxesCombined } from "./trend" // catalogue
+export { PieChartIcon as LucideChartPie } from "./pie-chart" // catalogue
 export { CheckIcon as LucideCheck } from "./check" // catalogue
 export { CheckCircleIcon as LucideCheckCircle2 } from "./check-circle" // catalogue
 export { CheckboxIcon as LucideCheckSquare2 } from "./checkbox" // catalogue
@@ -201,20 +371,37 @@ export { RadioButtonIcon as LucideCircle } from "./radio-button" // catalogue
 export { ErrorIcon as LucideCircleAlert } from "./error" // catalogue
 export { CheckCircleIcon as LucideCircleCheck } from "./check-circle" // catalogue
 export { CheckCircleOpenIcon as LucideCircleDashed } from "./check-circle-open" // catalogue
+export { UpgradeIcon as LucideCircleFadingArrowUp } from "./upgrade" // catalogue
+export { AddCircleIcon as LucideCircleFadingPlus } from "./add-circle" // catalogue
+export { HelpIcon as LucideCircleHelp } from "./help" // catalogue
 export { RemoveCircleIcon as LucideCircleMinus } from "./remove-circle" // catalogue
 export { AddCircleIcon as LucideCirclePlus } from "./add-circle" // catalogue
+export { HelpIcon as LucideCircleQuestionMark } from "./help" // catalogue
 export { CancelCircleIcon as LucideCircleX } from "./cancel-circle" // catalogue
+export { ContentPasteIcon as LucideClipboardPaste } from "./content-paste" // catalogue
+export { ScheduleIcon as LucideClock } from "./schedule" // catalogue
+export { ScheduleIcon as LucideClock2 } from "./schedule" // catalogue
+export { CloudIcon as LucideCloud } from "./cloud" // catalogue
+export { CloudOffIcon as LucideCloudOff } from "./cloud-off" // catalogue
 export { CodeIcon as LucideCode } from "./code" // catalogue
 export { SplitscreenIcon as LucideColumns } from "./splitscreen" // catalogue
 export { SplitscreenIcon as LucideColumns2 } from "./splitscreen" // catalogue
 export { ViewColumnIcon as LucideColumns3 } from "./view-column" // catalogue
+export { KeyboardCommandKeyIcon as LucideCommand } from "./keyboard-command-key" // catalogue
 export { DiscoveryIcon as LucideCompass } from "./discovery" // catalogue
+export { ConstructionIcon as LucideConstruction } from "./construction" // catalogue
 export { CopyIcon as LucideCopy } from "./copy" // catalogue
+export { KeyboardReturnIcon as LucideCornerDownLeft } from "./keyboard-return" // catalogue
+export { CreditCardIcon as LucideCreditCard } from "./credit-card" // catalogue
 export { CrownIcon as LucideCrown } from "./crown" // catalogue
+export { DataObjectIcon as LucideCurlyBraces } from "./data-object" // catalogue
 export { DatabaseIcon as LucideDatabase } from "./database" // catalogue
 export { DiamondMarkIcon as LucideDiamond } from "./diamond-mark" // catalogue
+export { CasinoIcon as LucideDices } from "./casino" // catalogue
 export { MoneyIcon as LucideDollarSign } from "./money" // catalogue
+export { DownloadIcon as LucideDownload } from "./download" // catalogue
 export { EngineeringIcon as LucideDraftingCompass } from "./engineering" // catalogue
+export { DrillBitIcon as LucideDrill } from "./drill-bit" // catalogue
 export { WaterIcon as LucideDroplet } from "./water" // catalogue
 export { EditSquareIcon as LucideEdit } from "./edit-square" // catalogue
 export { MoreHorizIcon as LucideEllipsis } from "./more-horiz" // catalogue
@@ -223,14 +410,33 @@ export { ExpandContentIcon as LucideExpand } from "./expand-content" // catalogu
 export { OpenInNewIcon as LucideExternalLink } from "./open-in-new" // catalogue
 export { VisibilityIcon as LucideEye } from "./visibility" // catalogue
 export { VisibilityOffIcon as LucideEyeOff } from "./visibility-off" // catalogue
+export { SentimentSatisfiedIcon as LucideFaceSlightlySmiling } from "./sentiment-satisfied" // catalogue
 export { FacilityIcon as LucideFactory } from "./facility" // catalogue
+export { DraftIcon as LucideFile } from "./draft" // catalogue
+export { CodeBlocksIcon as LucideFileCode } from "./code-blocks" // catalogue
+export { WarningIcon as LucideFileExclamationPoint } from "./warning" // catalogue
+export { FindInPageIcon as LucideFileSearch } from "./find-in-page" // catalogue
+export { DescriptionIcon as LucideFileText } from "./description" // catalogue
+export { WarningIcon as LucideFileWarning } from "./warning" // catalogue
 export { FilterIcon as LucideFilter } from "./filter" // catalogue
+export { FlagIcon as LucideFlag } from "./flag" // catalogue
 export { TargetIcon as LucideFocus } from "./target" // catalogue
 export { FolderIcon as LucideFolder } from "./folder" // catalogue
+export { FolderCodeIcon as LucideFolderCode } from "./folder-code" // catalogue
+export { DriveFileMoveIcon as LucideFolderInput } from "./drive-file-move" // catalogue
 export { FolderOpenIcon as LucideFolderOpen } from "./folder-open" // catalogue
 export { FolderNewIcon as LucideFolderPlus } from "./folder-new" // catalogue
+export { FolderMatchIcon as LucideFolderSearch } from "./folder-match" // catalogue
 export { SwapIcon as LucideFoldHorizontal } from "./swap" // catalogue
+export { ForwardIcon as LucideForward } from "./forward" // catalogue
+export { ProjectIcon as LucideFrame } from "./project" // catalogue
+export { FullscreenIcon as LucideFullscreen } from "./fullscreen" // catalogue
 export { FilterIcon as LucideFunnel } from "./filter" // catalogue
+export { StacksIcon as LucideGalleryVerticalEnd } from "./stacks" // catalogue
+export { AccountTreeIcon as LucideGitBranch } from "./account-tree" // catalogue
+export { DifferenceIcon as LucideGitCompare } from "./difference" // catalogue
+export { ForkRightIcon as LucideGitFork } from "./fork-right" // catalogue
+export { PublicIcon as LucideGlobe } from "./public" // catalogue
 export { ViewModuleIcon as LucideGrid } from "./view-module" // catalogue
 export { WindowIcon as LucideGrid2x2 } from "./window" // catalogue
 export { WindowIcon as LucideGrid2X2 } from "./window" // catalogue
@@ -240,54 +446,108 @@ export { AppsIcon as LucideGrip } from "./apps" // catalogue
 export { DragIndicatorIcon as LucideGripVertical } from "./drag-indicator" // catalogue
 export { PanToolIcon as LucideHand } from "./pan-tool" // catalogue
 export { NumericIcon as LucideHash } from "./numeric" // catalogue
+export { HelpIcon as LucideHelpCircle } from "./help" // catalogue
+export { HexagonIcon as LucideHexagon } from "./hexagon" // catalogue
 export { AnnotateIcon as LucideHighlighter } from "./annotate" // catalogue
+export { HistoryIcon as LucideHistory } from "./history" // catalogue
 export { HomeIcon as LucideHome } from "./home" // catalogue
 export { HomeIcon as LucideHouse } from "./home" // catalogue
 export { ImageIcon as LucideImage } from "./image" // catalogue
+export { InboxIcon as LucideInbox } from "./inbox" // catalogue
 export { InfoIcon as LucideInfo } from "./info" // catalogue
+export { FormatItalicIcon as LucideItalic } from "./format-italic" // catalogue
 export { KanbanIcon as LucideKanbanSquare } from "./kanban" // catalogue
+export { KeyboardIcon as LucideKeyboard } from "./keyboard" // catalogue
+export { TranslateIcon as LucideLanguages } from "./translate" // catalogue
+export { LassoSelectIcon as LucideLasso } from "./lasso-select" // catalogue
 export { LayersIcon as LucideLayers } from "./layers" // catalogue
 export { LayersIcon as LucideLayers3 } from "./layers" // catalogue
+export { SpaceDashboardIcon as LucideLayout } from "./space-dashboard" // catalogue
+export { DashboardIcon as LucideLayoutDashboard } from "./dashboard" // catalogue
 export { GridViewIcon as LucideLayoutGrid } from "./grid-view" // catalogue
+export { EcoIcon as LucideLeaf } from "./eco" // catalogue
+export { SupportIcon as LucideLifeBuoy } from "./support" // catalogue
 export { LinkIcon as LucideLink } from "./link" // catalogue
 export { ListIcon as LucideList } from "./list" // catalogue
+export { FilterListIcon as LucideListFilter } from "./filter-list" // catalogue
+export { ProgressActivityIcon as LucideLoader } from "./progress-activity" // catalogue
 export { ProgressActivityIcon as LucideLoader2 } from "./progress-activity" // catalogue
 export { ProgressActivityIcon as LucideLoaderCircle } from "./progress-activity" // catalogue
 export { LockIcon as LucideLock } from "./lock" // catalogue
 export { LockOpenIcon as LucideLockOpen } from "./lock-open" // catalogue
+export { LoginIcon as LucideLogIn } from "./login" // catalogue
+export { LogoutIcon as LucideLogOut } from "./logout" // catalogue
+export { MailIcon as LucideMail } from "./mail" // catalogue
+export { MarkEmailReadIcon as LucideMailCheck } from "./mark-email-read" // catalogue
 export { MapIcon as LucideMap } from "./map" // catalogue
+export { LocationOnIcon as LucideMapPin } from "./location-on" // catalogue
 export { AddPinIcon as LucideMapPinPlus } from "./add-pin" // catalogue
+export { ExpandContentIcon as LucideMaximize } from "./expand-content" // catalogue
+export { OpenInFullIcon as LucideMaximize2 } from "./open-in-full" // catalogue
 export { MenuIcon as LucideMenu } from "./menu" // catalogue
+export { ChatIcon as LucideMessageSquare } from "./chat" // catalogue
 export { MicrophoneIcon as LucideMic } from "./microphone" // catalogue
 export { CollapseContentIcon as LucideMinimize } from "./collapse-content" // catalogue
 export { RemoveIcon as LucideMinus } from "./remove" // catalogue
 export { RemoveCircleIcon as LucideMinusCircle } from "./remove-circle" // catalogue
 export { IndeterminateCheckboxIcon as LucideMinusSquare } from "./indeterminate-checkbox" // catalogue
+export { MonitorIcon as LucideMonitor } from "./monitor" // catalogue
+export { DarkModeIcon as LucideMoon } from "./dark-mode" // catalogue
 export { MoreHorizIcon as LucideMoreHorizontal } from "./more-horiz" // catalogue
 export { MoreVertIcon as LucideMoreVertical } from "./more-vert" // catalogue
+export { TerrainIcon as LucideMountain } from "./terrain" // catalogue
 export { SelectCursorIcon as LucideMousePointer } from "./select-cursor" // catalogue
+export { SelectCursorIcon as LucideMousePointer2 } from "./select-cursor" // catalogue
 export { DangerousIcon as LucideOctagonX } from "./dangerous" // catalogue
+export { PaletteIcon as LucidePalette } from "./palette" // catalogue
 export { PanelLeftIcon as LucidePanelLeft } from "./panel-left" // catalogue
+export { LeftPanelOpenIcon as LucidePanelLeftOpen } from "./left-panel-open" // catalogue
 export { PanelIcon as LucidePanelRight } from "./panel" // catalogue
+export { RightPanelCloseIcon as LucidePanelRightClose } from "./right-panel-close" // catalogue
+export { RightPanelOpenIcon as LucidePanelRightOpen } from "./right-panel-open" // catalogue
 export { ViewColumnIcon as LucidePanelsLeftRight } from "./view-column" // catalogue
+export { SpaceDashboardIcon as LucidePanelsTopLeft } from "./space-dashboard" // catalogue
+export { AttachFileIcon as LucidePaperclip } from "./attach-file" // catalogue
 export { EditSquareIcon as LucidePenBox } from "./edit-square" // catalogue
+export { EditSquareIcon as LucidePencil } from "./edit-square" // catalogue
 export { DesignIcon as LucidePencilRuler } from "./design" // catalogue
 export { EditSquareIcon as LucidePenSquare } from "./edit-square" // catalogue
+export { PieChartIcon as LucidePieChart } from "./pie-chart" // catalogue
+export { PushPinIcon as LucidePin } from "./push-pin" // catalogue
 export { PlayIcon as LucidePlay } from "./play" // catalogue
 export { AddIcon as LucidePlus } from "./add" // catalogue
 export { AddCircleIcon as LucidePlusCircle } from "./add-circle" // catalogue
 export { RedoIcon as LucideRedo } from "./redo" // catalogue
+export { SyncIcon as LucideRefreshCcw } from "./sync" // catalogue
+export { SyncIcon as LucideRefreshCw } from "./sync" // catalogue
 export { RotateIcon as LucideRotate3d } from "./rotate" // catalogue
 export { RotateIcon as LucideRotate3D } from "./rotate" // catalogue
+export { RotateLeftIcon as LucideRotateCcw } from "./rotate-left" // catalogue
+export { HistoryIcon as LucideRotateCcwClock } from "./history" // catalogue
+export { RotateRightIcon as LucideRotateCw } from "./rotate-right" // catalogue
 export { RulerIcon as LucideRuler } from "./ruler" // catalogue
+export { SaveIcon as LucideSave } from "./save" // catalogue
+export { CropFreeIcon as LucideScan } from "./crop-free" // catalogue
 export { PreviewIcon as LucideScanEye } from "./preview" // catalogue
 export { InspectIcon as LucideScanSearch } from "./inspect" // catalogue
+export { ContentCutIcon as LucideScissors } from "./content-cut" // catalogue
 export { SearchIcon as LucideSearch } from "./search" // catalogue
 export { SearchOffIcon as LucideSearchX } from "./search-off" // catalogue
+export { SendIcon as LucideSend } from "./send" // catalogue
 export { SettingsIcon as LucideSettings } from "./settings" // catalogue
+export { ControlsIcon as LucideSettings2 } from "./controls" // catalogue
+export { ShapesIcon as LucideShapes } from "./shapes" // catalogue
+export { ShareIcon as LucideShare } from "./share" // catalogue
+export { ShareNodesIcon as LucideShare2 } from "./share-nodes" // catalogue
+export { ShieldIcon as LucideShield } from "./shield" // catalogue
+export { ShieldAlertIcon as LucideShieldAlert } from "./shield-alert" // catalogue
 export { PanelLeftIcon as LucideSidebar } from "./panel-left" // catalogue
+export { LeftPanelOpenIcon as LucideSidebarOpen } from "./left-panel-open" // catalogue
 export { RiskSkullIcon as LucideSkull } from "./risk-skull" // catalogue
 export { ControlsIcon as LucideSlidersHorizontal } from "./controls" // catalogue
+export { SmartphoneIcon as LucideSmartphone } from "./smartphone" // catalogue
+export { SentimentSatisfiedIcon as LucideSmile } from "./sentiment-satisfied" // catalogue
+export { AutoAwesomeIcon as LucideSparkles } from "./auto-awesome" // catalogue
 export { Co2LeafIcon as LucideSprout } from "./co-2-leaf" // catalogue
 export { CheckboxOutlineBlankIcon as LucideSquare } from "./checkbox-outline-blank" // catalogue
 export { CheckboxIcon as LucideSquareCheck } from "./checkbox" // catalogue
@@ -295,27 +555,65 @@ export { SelectIcon as LucideSquareDashed } from "./select" // catalogue
 export { KanbanIcon as LucideSquareKanban } from "./kanban" // catalogue
 export { IndeterminateCheckboxIcon as LucideSquareMinus } from "./indeterminate-checkbox" // catalogue
 export { EditSquareIcon as LucideSquarePen } from "./edit-square" // catalogue
+export { TerminalIcon as LucideSquareTerminal } from "./terminal" // catalogue
+export { StarIcon as LucideStar } from "./star" // catalogue
+export { AutoAwesomeIcon as LucideStars } from "./auto-awesome" // catalogue
+export { LightModeIcon as LucideSun } from "./light-mode" // catalogue
+export { TableIcon as LucideTable } from "./table" // catalogue
+export { TabletIcon as LucideTablet } from "./tablet" // catalogue
+export { LabelIcon as LucideTag } from "./label" // catalogue
+export { TerminalIcon as LucideTerminal } from "./terminal" // catalogue
+export { TerminalIcon as LucideTerminalSquare } from "./terminal" // catalogue
+export { ThumbDownIcon as LucideThumbsDown } from "./thumb-down" // catalogue
+export { ThumbUpIcon as LucideThumbsUp } from "./thumb-up" // catalogue
+export { DeleteIcon as LucideTrash } from "./delete" // catalogue
+export { DeleteIcon as LucideTrash2 } from "./delete" // catalogue
 export { TrendingDownIcon as LucideTrendingDown } from "./trending-down" // catalogue
 export { TrendingUpIcon as LucideTrendingUp } from "./trending-up" // catalogue
 export { WarningIcon as LucideTriangleAlert } from "./warning" // catalogue
+export { TextIcon as LucideType } from "./text" // catalogue
+export { FormatUnderlinedIcon as LucideUnderline } from "./format-underlined" // catalogue
 export { UndoIcon as LucideUndo } from "./undo" // catalogue
 export { LinkOffIcon as LucideUnlink } from "./link-off" // catalogue
 export { LockOpenIcon as LucideUnlock } from "./lock-open" // catalogue
 export { ExportUploadIcon as LucideUpload } from "./export-upload" // catalogue
 export { PersonIcon as LucideUser } from "./person" // catalogue
+export { PersonIcon as LucideUser2 } from "./person" // catalogue
+export { PersonAddIcon as LucideUserPlus } from "./person-add" // catalogue
+export { PersonIcon as LucideUserRound } from "./person" // catalogue
+export { PersonRemoveIcon as LucideUserRoundX } from "./person-remove" // catalogue
+export { PersonRemoveIcon as LucideUserX2 } from "./person-remove" // catalogue
+export { VerifiedIcon as LucideVerified } from "./verified" // catalogue
+export { VolumeOffIcon as LucideVolumeOff } from "./volume-off" // catalogue
+export { WalletIcon as LucideWallet } from "./wallet" // catalogue
+export { FrameworksIcon as LucideWaves } from "./frameworks" // catalogue
+export { FrameworksIcon as LucideWavesHorizontal } from "./frameworks" // catalogue
 export { NodeIcon as LucideWaypoints } from "./node" // catalogue
+export { BuildIcon as LucideWrench } from "./build" // catalogue
 export { CloseIcon as LucideX } from "./close" // catalogue
 export { CancelCircleIcon as LucideXCircle } from "./cancel-circle" // catalogue
 export { DangerousIcon as LucideXOctagon } from "./dangerous" // catalogue
 export { ElectricityIcon as LucideZap } from "./electricity" // catalogue
 export { ZoomInIcon as LucideZoomIn } from "./zoom-in" // catalogue
 export { ZoomOutIcon as LucideZoomOut } from "./zoom-out" // catalogue
+export { MailIcon as Mail } from "./mail" // catalogue
+export { MarkEmailReadIcon as MailCheck } from "./mark-email-read" // catalogue
+export { MarkEmailReadIcon as MailCheckIcon } from "./mark-email-read" // catalogue
+export { MailIcon } from "./mail" // catalogue
 export { MapIcon as Map } from "./map" // catalogue
 export { MapIcon } from "./map" // catalogue
+export { LocationOnIcon as MapPin } from "./location-on" // catalogue
+export { LocationOnIcon as MapPinIcon } from "./location-on" // catalogue
 export { AddPinIcon as MapPinPlus } from "./add-pin" // catalogue
 export { AddPinIcon as MapPinPlusIcon } from "./add-pin" // catalogue
+export { ExpandContentIcon as Maximize } from "./expand-content" // catalogue
+export { OpenInFullIcon as Maximize2 } from "./open-in-full" // catalogue
+export { OpenInFullIcon as Maximize2Icon } from "./open-in-full" // catalogue
+export { ExpandContentIcon as MaximizeIcon } from "./expand-content" // catalogue
 export { MenuIcon as Menu } from "./menu" // catalogue
 export { MenuIcon } from "./menu" // catalogue
+export { ChatIcon as MessageSquare } from "./chat" // catalogue
+export { ChatIcon as MessageSquareIcon } from "./chat" // catalogue
 export { MicrophoneIcon as Mic } from "./microphone" // catalogue
 export { MicrophoneIcon as MicIcon } from "./microphone" // catalogue
 export { CollapseContentIcon as Minimize } from "./collapse-content" // catalogue
@@ -326,26 +624,52 @@ export { RemoveCircleIcon as MinusCircleIcon } from "./remove-circle" // catalog
 export { RemoveIcon as MinusIcon } from "./remove" // src/components/input-otp.tsx
 export { IndeterminateCheckboxIcon as MinusSquare } from "./indeterminate-checkbox" // catalogue
 export { IndeterminateCheckboxIcon as MinusSquareIcon } from "./indeterminate-checkbox" // catalogue
+export { MonitorIcon as Monitor } from "./monitor" // catalogue
+export { MonitorIcon } from "./monitor" // catalogue
+export { DarkModeIcon as Moon } from "./dark-mode" // catalogue
+export { DarkModeIcon as MoonIcon } from "./dark-mode" // catalogue
 export { MoreHorizIcon as MoreHorizontal } from "./more-horiz" // catalogue
 export { MoreHorizIcon as MoreHorizontalIcon } from "./more-horiz" // src/components/breadcrumb.tsx, src/components/pagination.tsx
 export { MoreVertIcon as MoreVertical } from "./more-vert" // catalogue
 export { MoreVertIcon as MoreVerticalIcon } from "./more-vert" // catalogue
+export { TerrainIcon as Mountain } from "./terrain" // catalogue
+export { TerrainIcon as MountainIcon } from "./terrain" // catalogue
 export { SelectCursorIcon as MousePointer } from "./select-cursor" // catalogue
+export { SelectCursorIcon as MousePointer2 } from "./select-cursor" // catalogue
+export { SelectCursorIcon as MousePointer2Icon } from "./select-cursor" // catalogue
 export { SelectCursorIcon as MousePointerIcon } from "./select-cursor" // catalogue
 export { DangerousIcon as OctagonX } from "./dangerous" // catalogue
 export { DangerousIcon as OctagonXIcon } from "./dangerous" // src/components/sonner.tsx
+export { PaletteIcon as Palette } from "./palette" // catalogue
+export { PaletteIcon } from "./palette" // catalogue
 export { PanelLeftIcon as PanelLeft } from "./panel-left" // catalogue
 export { PanelLeftIcon } from "./panel-left" // src/components/sidebar.tsx
+export { LeftPanelOpenIcon as PanelLeftOpen } from "./left-panel-open" // catalogue
+export { LeftPanelOpenIcon as PanelLeftOpenIcon } from "./left-panel-open" // catalogue
 export { PanelIcon as PanelRight } from "./panel" // catalogue
+export { RightPanelCloseIcon as PanelRightClose } from "./right-panel-close" // catalogue
+export { RightPanelCloseIcon as PanelRightCloseIcon } from "./right-panel-close" // catalogue
 export { PanelIcon as PanelRightIcon } from "./panel" // catalogue
+export { RightPanelOpenIcon as PanelRightOpen } from "./right-panel-open" // catalogue
+export { RightPanelOpenIcon as PanelRightOpenIcon } from "./right-panel-open" // catalogue
 export { ViewColumnIcon as PanelsLeftRight } from "./view-column" // catalogue
 export { ViewColumnIcon as PanelsLeftRightIcon } from "./view-column" // catalogue
+export { SpaceDashboardIcon as PanelsTopLeft } from "./space-dashboard" // catalogue
+export { SpaceDashboardIcon as PanelsTopLeftIcon } from "./space-dashboard" // catalogue
+export { AttachFileIcon as Paperclip } from "./attach-file" // catalogue
+export { AttachFileIcon as PaperclipIcon } from "./attach-file" // catalogue
 export { EditSquareIcon as PenBox } from "./edit-square" // catalogue
 export { EditSquareIcon as PenBoxIcon } from "./edit-square" // catalogue
+export { EditSquareIcon as Pencil } from "./edit-square" // catalogue
+export { EditSquareIcon as PencilIcon } from "./edit-square" // catalogue
 export { DesignIcon as PencilRuler } from "./design" // catalogue
 export { DesignIcon as PencilRulerIcon } from "./design" // catalogue
 export { EditSquareIcon as PenSquare } from "./edit-square" // catalogue
 export { EditSquareIcon as PenSquareIcon } from "./edit-square" // catalogue
+export { PieChartIcon as PieChart } from "./pie-chart" // catalogue
+export { PieChartIcon } from "./pie-chart" // catalogue
+export { PushPinIcon as Pin } from "./push-pin" // catalogue
+export { PushPinIcon as PinIcon } from "./push-pin" // catalogue
 export { PlayIcon as Play } from "./play" // catalogue
 export { PlayIcon } from "./play" // catalogue
 export { AddIcon as Plus } from "./add" // catalogue
@@ -354,28 +678,66 @@ export { AddCircleIcon as PlusCircleIcon } from "./add-circle" // catalogue
 export { AddIcon as PlusIcon } from "./add" // catalogue
 export { RedoIcon as Redo } from "./redo" // catalogue
 export { RedoIcon } from "./redo" // catalogue
+export { SyncIcon as RefreshCcw } from "./sync" // catalogue
+export { SyncIcon as RefreshCcwIcon } from "./sync" // catalogue
+export { SyncIcon as RefreshCw } from "./sync" // catalogue
+export { SyncIcon as RefreshCwIcon } from "./sync" // catalogue
 export { RotateIcon as Rotate3d } from "./rotate" // catalogue
 export { RotateIcon as Rotate3D } from "./rotate" // catalogue
 export { RotateIcon as Rotate3dIcon } from "./rotate" // catalogue
 export { RotateIcon as Rotate3DIcon } from "./rotate" // catalogue
+export { RotateLeftIcon as RotateCcw } from "./rotate-left" // catalogue
+export { HistoryIcon as RotateCcwClock } from "./history" // catalogue
+export { HistoryIcon as RotateCcwClockIcon } from "./history" // catalogue
+export { RotateLeftIcon as RotateCcwIcon } from "./rotate-left" // catalogue
+export { RotateRightIcon as RotateCw } from "./rotate-right" // catalogue
+export { RotateRightIcon as RotateCwIcon } from "./rotate-right" // catalogue
 export { RulerIcon as Ruler } from "./ruler" // catalogue
 export { RulerIcon } from "./ruler" // catalogue
+export { SaveIcon as Save } from "./save" // catalogue
+export { SaveIcon } from "./save" // catalogue
+export { CropFreeIcon as Scan } from "./crop-free" // catalogue
 export { PreviewIcon as ScanEye } from "./preview" // catalogue
 export { PreviewIcon as ScanEyeIcon } from "./preview" // catalogue
+export { CropFreeIcon as ScanIcon } from "./crop-free" // catalogue
 export { InspectIcon as ScanSearch } from "./inspect" // catalogue
 export { InspectIcon as ScanSearchIcon } from "./inspect" // catalogue
+export { ContentCutIcon as Scissors } from "./content-cut" // catalogue
+export { ContentCutIcon as ScissorsIcon } from "./content-cut" // catalogue
 export { SearchIcon as Search } from "./search" // catalogue
 export { SearchIcon } from "./search" // src/components/command.tsx, src/components/select.tsx
 export { SearchOffIcon as SearchX } from "./search-off" // catalogue
 export { SearchOffIcon as SearchXIcon } from "./search-off" // catalogue
+export { SendIcon as Send } from "./send" // catalogue
+export { SendIcon } from "./send" // catalogue
 export { SettingsIcon as Settings } from "./settings" // catalogue
+export { ControlsIcon as Settings2 } from "./controls" // catalogue
+export { ControlsIcon as Settings2Icon } from "./controls" // catalogue
 export { SettingsIcon } from "./settings" // catalogue
+export { ShapesIcon as Shapes } from "./shapes" // catalogue
+export { ShapesIcon } from "./shapes" // catalogue
+export { ShareIcon as Share } from "./share" // catalogue
+export { ShareNodesIcon as Share2 } from "./share-nodes" // catalogue
+export { ShareNodesIcon as Share2Icon } from "./share-nodes" // catalogue
+export { ShareIcon } from "./share" // catalogue
+export { ShieldIcon as Shield } from "./shield" // catalogue
+export { ShieldAlertIcon as ShieldAlert } from "./shield-alert" // catalogue
+export { ShieldAlertIcon } from "./shield-alert" // catalogue
+export { ShieldIcon } from "./shield" // catalogue
 export { PanelLeftIcon as Sidebar } from "./panel-left" // catalogue
 export { PanelLeftIcon as SidebarIcon } from "./panel-left" // catalogue
+export { LeftPanelOpenIcon as SidebarOpen } from "./left-panel-open" // catalogue
+export { LeftPanelOpenIcon as SidebarOpenIcon } from "./left-panel-open" // catalogue
 export { RiskSkullIcon as Skull } from "./risk-skull" // catalogue
 export { RiskSkullIcon as SkullIcon } from "./risk-skull" // catalogue
 export { ControlsIcon as SlidersHorizontal } from "./controls" // catalogue
 export { ControlsIcon as SlidersHorizontalIcon } from "./controls" // catalogue
+export { SmartphoneIcon as Smartphone } from "./smartphone" // catalogue
+export { SmartphoneIcon } from "./smartphone" // catalogue
+export { SentimentSatisfiedIcon as Smile } from "./sentiment-satisfied" // catalogue
+export { SentimentSatisfiedIcon as SmileIcon } from "./sentiment-satisfied" // catalogue
+export { AutoAwesomeIcon as Sparkles } from "./auto-awesome" // catalogue
+export { AutoAwesomeIcon as SparklesIcon } from "./auto-awesome" // catalogue
 export { Co2LeafIcon as Sprout } from "./co-2-leaf" // catalogue
 export { Co2LeafIcon as SproutIcon } from "./co-2-leaf" // catalogue
 export { CheckboxOutlineBlankIcon as Square } from "./checkbox-outline-blank" // catalogue
@@ -390,12 +752,42 @@ export { IndeterminateCheckboxIcon as SquareMinus } from "./indeterminate-checkb
 export { IndeterminateCheckboxIcon as SquareMinusIcon } from "./indeterminate-checkbox" // catalogue
 export { EditSquareIcon as SquarePen } from "./edit-square" // catalogue
 export { EditSquareIcon as SquarePenIcon } from "./edit-square" // catalogue
+export { TerminalIcon as SquareTerminal } from "./terminal" // catalogue
+export { TerminalIcon as SquareTerminalIcon } from "./terminal" // catalogue
+export { StarIcon as Star } from "./star" // catalogue
+export { StarIcon } from "./star" // catalogue
+export { AutoAwesomeIcon as Stars } from "./auto-awesome" // catalogue
+export { AutoAwesomeIcon as StarsIcon } from "./auto-awesome" // catalogue
+export { LightModeIcon as Sun } from "./light-mode" // catalogue
+export { LightModeIcon as SunIcon } from "./light-mode" // catalogue
+export { TableIcon as Table } from "./table" // catalogue
+export { TableIcon } from "./table" // catalogue
+export { TabletIcon as Tablet } from "./tablet" // catalogue
+export { TabletIcon } from "./tablet" // catalogue
+export { LabelIcon as Tag } from "./label" // catalogue
+export { LabelIcon as TagIcon } from "./label" // catalogue
+export { TerminalIcon as Terminal } from "./terminal" // catalogue
+export { TerminalIcon } from "./terminal" // catalogue
+export { TerminalIcon as TerminalSquare } from "./terminal" // catalogue
+export { TerminalIcon as TerminalSquareIcon } from "./terminal" // catalogue
+export { ThumbDownIcon as ThumbsDown } from "./thumb-down" // catalogue
+export { ThumbDownIcon as ThumbsDownIcon } from "./thumb-down" // catalogue
+export { ThumbUpIcon as ThumbsUp } from "./thumb-up" // catalogue
+export { ThumbUpIcon as ThumbsUpIcon } from "./thumb-up" // catalogue
+export { DeleteIcon as Trash } from "./delete" // catalogue
+export { DeleteIcon as Trash2 } from "./delete" // catalogue
+export { DeleteIcon as Trash2Icon } from "./delete" // catalogue
+export { DeleteIcon as TrashIcon } from "./delete" // catalogue
 export { TrendingDownIcon as TrendingDown } from "./trending-down" // catalogue
 export { TrendingDownIcon } from "./trending-down" // catalogue
 export { TrendingUpIcon as TrendingUp } from "./trending-up" // catalogue
 export { TrendingUpIcon } from "./trending-up" // catalogue
 export { WarningIcon as TriangleAlert } from "./warning" // catalogue
 export { WarningIcon as TriangleAlertIcon } from "./warning" // src/components/sonner.tsx
+export { TextIcon as Type } from "./text" // catalogue
+export { TextIcon as TypeIcon } from "./text" // catalogue
+export { FormatUnderlinedIcon as Underline } from "./format-underlined" // catalogue
+export { FormatUnderlinedIcon as UnderlineIcon } from "./format-underlined" // catalogue
 export { UndoIcon as Undo } from "./undo" // catalogue
 export { UndoIcon } from "./undo" // catalogue
 export { LinkOffIcon as Unlink } from "./link-off" // catalogue
@@ -405,9 +797,31 @@ export { LockOpenIcon as UnlockIcon } from "./lock-open" // catalogue
 export { ExportUploadIcon as Upload } from "./export-upload" // catalogue
 export { ExportUploadIcon as UploadIcon } from "./export-upload" // catalogue
 export { PersonIcon as User } from "./person" // catalogue
+export { PersonIcon as User2 } from "./person" // catalogue
+export { PersonIcon as User2Icon } from "./person" // catalogue
 export { PersonIcon as UserIcon } from "./person" // catalogue
+export { PersonAddIcon as UserPlus } from "./person-add" // catalogue
+export { PersonAddIcon as UserPlusIcon } from "./person-add" // catalogue
+export { PersonIcon as UserRound } from "./person" // catalogue
+export { PersonIcon as UserRoundIcon } from "./person" // catalogue
+export { PersonRemoveIcon as UserRoundX } from "./person-remove" // catalogue
+export { PersonRemoveIcon as UserRoundXIcon } from "./person-remove" // catalogue
+export { PersonRemoveIcon as UserX2 } from "./person-remove" // catalogue
+export { PersonRemoveIcon as UserX2Icon } from "./person-remove" // catalogue
+export { VerifiedIcon as Verified } from "./verified" // catalogue
+export { VerifiedIcon } from "./verified" // catalogue
+export { VolumeOffIcon as VolumeOff } from "./volume-off" // catalogue
+export { VolumeOffIcon } from "./volume-off" // catalogue
+export { WalletIcon as Wallet } from "./wallet" // catalogue
+export { WalletIcon } from "./wallet" // catalogue
+export { FrameworksIcon as Waves } from "./frameworks" // catalogue
+export { FrameworksIcon as WavesHorizontal } from "./frameworks" // catalogue
+export { FrameworksIcon as WavesHorizontalIcon } from "./frameworks" // catalogue
+export { FrameworksIcon as WavesIcon } from "./frameworks" // catalogue
 export { NodeIcon as Waypoints } from "./node" // catalogue
 export { NodeIcon as WaypointsIcon } from "./node" // catalogue
+export { BuildIcon as Wrench } from "./build" // catalogue
+export { BuildIcon as WrenchIcon } from "./build" // catalogue
 export { CloseIcon as X } from "./close" // catalogue
 export { CancelCircleIcon as XCircle } from "./cancel-circle" // catalogue
 export { CancelCircleIcon as XCircleIcon } from "./cancel-circle" // catalogue
@@ -421,8 +835,6 @@ export { ZoomInIcon } from "./zoom-in" // catalogue
 export { ZoomOutIcon as ZoomOut } from "./zoom-out" // catalogue
 export { ZoomOutIcon } from "./zoom-out" // catalogue
 
-// 0 lucide pass-through(s) (no Tecton icon for this name)
-
 /** Which identifiers are served by Tecton vs lucide — handy for docs / tests. */
 export const tectonLucideCompat = {
   Activity: "pulse",
@@ -431,6 +843,10 @@ export const tectonLucideCompat = {
   AlertCircleIcon: "error",
   AlertTriangle: "warning",
   AlertTriangleIcon: "warning",
+  AppWindow: "web-asset",
+  AppWindowIcon: "web-asset",
+  Archive: "archive",
+  ArchiveIcon: "archive",
   ArrowDown: "arrow-down",
   ArrowDownIcon: "arrow-down",
   ArrowLeft: "arrow-left",
@@ -441,20 +857,60 @@ export const tectonLucideCompat = {
   ArrowUpDown: "sort-enabled",
   ArrowUpDownIcon: "sort-enabled",
   ArrowUpIcon: "arrow-up",
+  ArrowUpRight: "arrow-outward",
+  ArrowUpRightIcon: "arrow-outward",
+  AudioLines: "graphic-eq",
+  AudioLinesIcon: "graphic-eq",
+  AudioWaveform: "airwave",
+  AudioWaveformIcon: "airwave",
+  BadgeCheck: "verified",
+  BadgeCheckIcon: "verified",
   BarChart3: "reports-analytics",
   BarChart3Icon: "reports-analytics",
   Bell: "notifications",
   BellIcon: "notifications",
+  BellRing: "notifications-active",
+  BellRingIcon: "notifications-active",
+  Blocks: "widgets",
+  BlocksIcon: "widgets",
+  Bluetooth: "bluetooth",
+  BluetoothIcon: "bluetooth",
+  Bold: "format-bold",
+  BoldIcon: "format-bold",
+  Bookmark: "bookmark",
+  BookmarkIcon: "bookmark",
+  BookOpen: "menu-book",
+  BookOpenCheck: "library-add-check",
+  BookOpenCheckIcon: "library-add-check",
+  BookOpenIcon: "menu-book",
   Bot: "robot-2",
   BotIcon: "robot-2",
   Box: "cube",
   BoxIcon: "cube",
   BoxSelect: "select",
   BoxSelectIcon: "select",
+  Braces: "data-object",
+  BracesIcon: "data-object",
+  Bug: "bug-report",
+  BugIcon: "bug-report",
+  Building: "apartment",
+  Building2: "corporate-fare",
+  Building2Icon: "corporate-fare",
+  BuildingComplex: "corporate-fare",
+  BuildingComplexIcon: "corporate-fare",
+  BuildingIcon: "apartment",
+  Calculator: "calculate",
+  CalculatorIcon: "calculate",
+  Calendar: "calendar-month",
+  CalendarIcon: "calendar-month",
+  CalendarPlus: "calendar-add-on",
+  CalendarPlusIcon: "calendar-add-on",
   ChartColumn: "reports-analytics",
   ChartColumnIcon: "reports-analytics",
   ChartNoAxesCombined: "trend",
   ChartNoAxesCombinedIcon: "trend",
+  ChartPie: "pie-chart",
+  ChartPieIcon: "pie-chart",
   Check: "check",
   CheckCircle2: "check-circle",
   CheckCircle2Icon: "check-circle",
@@ -480,13 +936,31 @@ export const tectonLucideCompat = {
   CircleCheckIcon: "check-circle",
   CircleDashed: "check-circle-open",
   CircleDashedIcon: "check-circle-open",
+  CircleFadingArrowUp: "upgrade",
+  CircleFadingArrowUpIcon: "upgrade",
+  CircleFadingPlus: "add-circle",
+  CircleFadingPlusIcon: "add-circle",
+  CircleHelp: "help",
+  CircleHelpIcon: "help",
   CircleIcon: "radio-button",
   CircleMinus: "remove-circle",
   CircleMinusIcon: "remove-circle",
   CirclePlus: "add-circle",
   CirclePlusIcon: "add-circle",
+  CircleQuestionMark: "help",
+  CircleQuestionMarkIcon: "help",
   CircleX: "cancel-circle",
   CircleXIcon: "cancel-circle",
+  ClipboardPaste: "content-paste",
+  ClipboardPasteIcon: "content-paste",
+  Clock: "schedule",
+  Clock2: "schedule",
+  Clock2Icon: "schedule",
+  ClockIcon: "schedule",
+  Cloud: "cloud",
+  CloudIcon: "cloud",
+  CloudOff: "cloud-off",
+  CloudOffIcon: "cloud-off",
   Code: "code",
   CodeIcon: "code",
   Columns: "splitscreen",
@@ -495,20 +969,36 @@ export const tectonLucideCompat = {
   Columns3: "view-column",
   Columns3Icon: "view-column",
   ColumnsIcon: "splitscreen",
+  Command: "keyboard-command-key",
+  CommandIcon: "keyboard-command-key",
   Compass: "discovery",
   CompassIcon: "discovery",
+  Construction: "construction",
+  ConstructionIcon: "construction",
   Copy: "copy",
   CopyIcon: "copy",
+  CornerDownLeft: "keyboard-return",
+  CornerDownLeftIcon: "keyboard-return",
+  CreditCard: "credit-card",
+  CreditCardIcon: "credit-card",
   Crown: "crown",
   CrownIcon: "crown",
+  CurlyBraces: "data-object",
+  CurlyBracesIcon: "data-object",
   Database: "database",
   DatabaseIcon: "database",
   Diamond: "diamond-mark",
   DiamondIcon: "diamond-mark",
+  Dices: "casino",
+  DicesIcon: "casino",
   DollarSign: "money",
   DollarSignIcon: "money",
+  Download: "download",
+  DownloadIcon: "download",
   DraftingCompass: "engineering",
   DraftingCompassIcon: "engineering",
+  Drill: "drill-bit",
+  DrillIcon: "drill-bit",
   Droplet: "water",
   DropletIcon: "water",
   Edit: "edit-square",
@@ -525,22 +1015,60 @@ export const tectonLucideCompat = {
   EyeIcon: "visibility",
   EyeOff: "visibility-off",
   EyeOffIcon: "visibility-off",
+  FaceSlightlySmiling: "sentiment-satisfied",
+  FaceSlightlySmilingIcon: "sentiment-satisfied",
   Factory: "facility",
   FactoryIcon: "facility",
+  File: "draft",
+  FileCode: "code-blocks",
+  FileCodeIcon: "code-blocks",
+  FileExclamationPoint: "warning",
+  FileExclamationPointIcon: "warning",
+  FileIcon: "draft",
+  FileSearch: "find-in-page",
+  FileSearchIcon: "find-in-page",
+  FileText: "description",
+  FileTextIcon: "description",
+  FileWarning: "warning",
+  FileWarningIcon: "warning",
   Filter: "filter",
   FilterIcon: "filter",
+  Flag: "flag",
+  FlagIcon: "flag",
   Focus: "target",
   FocusIcon: "target",
   Folder: "folder",
+  FolderCode: "folder-code",
+  FolderCodeIcon: "folder-code",
   FolderIcon: "folder",
+  FolderInput: "drive-file-move",
+  FolderInputIcon: "drive-file-move",
   FolderOpen: "folder-open",
   FolderOpenIcon: "folder-open",
   FolderPlus: "folder-new",
   FolderPlusIcon: "folder-new",
+  FolderSearch: "folder-match",
+  FolderSearchIcon: "folder-match",
   FoldHorizontal: "swap",
   FoldHorizontalIcon: "swap",
+  Forward: "forward",
+  ForwardIcon: "forward",
+  Frame: "project",
+  FrameIcon: "project",
+  Fullscreen: "fullscreen",
+  FullscreenIcon: "fullscreen",
   Funnel: "filter",
   FunnelIcon: "filter",
+  GalleryVerticalEnd: "stacks",
+  GalleryVerticalEndIcon: "stacks",
+  GitBranch: "account-tree",
+  GitBranchIcon: "account-tree",
+  GitCompare: "difference",
+  GitCompareIcon: "difference",
+  GitFork: "fork-right",
+  GitForkIcon: "fork-right",
+  Globe: "public",
+  GlobeIcon: "public",
   Grid: "view-module",
   Grid2x2: "window",
   Grid2X2: "window",
@@ -559,51 +1087,105 @@ export const tectonLucideCompat = {
   HandIcon: "pan-tool",
   Hash: "numeric",
   HashIcon: "numeric",
+  HelpCircle: "help",
+  HelpCircleIcon: "help",
+  Hexagon: "hexagon",
+  HexagonIcon: "hexagon",
   Highlighter: "annotate",
   HighlighterIcon: "annotate",
+  History: "history",
+  HistoryIcon: "history",
   Home: "home",
   HomeIcon: "home",
   House: "home",
   HouseIcon: "home",
   Image: "image",
   ImageIcon: "image",
+  Inbox: "inbox",
+  InboxIcon: "inbox",
   Info: "info",
   InfoIcon: "info",
+  Italic: "format-italic",
+  ItalicIcon: "format-italic",
   KanbanSquare: "kanban",
   KanbanSquareIcon: "kanban",
+  Keyboard: "keyboard",
+  KeyboardIcon: "keyboard",
+  Languages: "translate",
+  LanguagesIcon: "translate",
+  Lasso: "lasso-select",
+  LassoIcon: "lasso-select",
   Layers: "layers",
   Layers3: "layers",
   Layers3Icon: "layers",
   LayersIcon: "layers",
+  Layout: "space-dashboard",
+  LayoutDashboard: "dashboard",
+  LayoutDashboardIcon: "dashboard",
   LayoutGrid: "grid-view",
   LayoutGridIcon: "grid-view",
+  LayoutIcon: "space-dashboard",
+  Leaf: "eco",
+  LeafIcon: "eco",
+  LifeBuoy: "support",
+  LifeBuoyIcon: "support",
   Link: "link",
   LinkIcon: "link",
   List: "list",
+  ListFilter: "filter-list",
+  ListFilterIcon: "filter-list",
   ListIcon: "list",
+  Loader: "progress-activity",
   Loader2: "progress-activity",
   Loader2Icon: "progress-activity",
   LoaderCircle: "progress-activity",
   LoaderCircleIcon: "progress-activity",
+  LoaderIcon: "progress-activity",
   Lock: "lock",
   LockIcon: "lock",
   LockOpen: "lock-open",
   LockOpenIcon: "lock-open",
+  LogIn: "login",
+  LogInIcon: "login",
+  LogOut: "logout",
+  LogOutIcon: "logout",
   LucideActivity: "pulse",
   LucideAlertCircle: "error",
   LucideAlertTriangle: "warning",
+  LucideAppWindow: "web-asset",
+  LucideArchive: "archive",
   LucideArrowDown: "arrow-down",
   LucideArrowLeft: "arrow-left",
   LucideArrowRight: "arrow-right",
   LucideArrowUp: "arrow-up",
   LucideArrowUpDown: "sort-enabled",
+  LucideArrowUpRight: "arrow-outward",
+  LucideAudioLines: "graphic-eq",
+  LucideAudioWaveform: "airwave",
+  LucideBadgeCheck: "verified",
   LucideBarChart3: "reports-analytics",
   LucideBell: "notifications",
+  LucideBellRing: "notifications-active",
+  LucideBlocks: "widgets",
+  LucideBluetooth: "bluetooth",
+  LucideBold: "format-bold",
+  LucideBookmark: "bookmark",
+  LucideBookOpen: "menu-book",
+  LucideBookOpenCheck: "library-add-check",
   LucideBot: "robot-2",
   LucideBox: "cube",
   LucideBoxSelect: "select",
+  LucideBraces: "data-object",
+  LucideBug: "bug-report",
+  LucideBuilding: "apartment",
+  LucideBuilding2: "corporate-fare",
+  LucideBuildingComplex: "corporate-fare",
+  LucideCalculator: "calculate",
+  LucideCalendar: "calendar-month",
+  LucideCalendarPlus: "calendar-add-on",
   LucideChartColumn: "reports-analytics",
   LucideChartNoAxesCombined: "trend",
+  LucideChartPie: "pie-chart",
   LucideCheck: "check",
   LucideCheckCircle2: "check-circle",
   LucideCheckSquare2: "checkbox",
@@ -617,20 +1199,37 @@ export const tectonLucideCompat = {
   LucideCircleAlert: "error",
   LucideCircleCheck: "check-circle",
   LucideCircleDashed: "check-circle-open",
+  LucideCircleFadingArrowUp: "upgrade",
+  LucideCircleFadingPlus: "add-circle",
+  LucideCircleHelp: "help",
   LucideCircleMinus: "remove-circle",
   LucideCirclePlus: "add-circle",
+  LucideCircleQuestionMark: "help",
   LucideCircleX: "cancel-circle",
+  LucideClipboardPaste: "content-paste",
+  LucideClock: "schedule",
+  LucideClock2: "schedule",
+  LucideCloud: "cloud",
+  LucideCloudOff: "cloud-off",
   LucideCode: "code",
   LucideColumns: "splitscreen",
   LucideColumns2: "splitscreen",
   LucideColumns3: "view-column",
+  LucideCommand: "keyboard-command-key",
   LucideCompass: "discovery",
+  LucideConstruction: "construction",
   LucideCopy: "copy",
+  LucideCornerDownLeft: "keyboard-return",
+  LucideCreditCard: "credit-card",
   LucideCrown: "crown",
+  LucideCurlyBraces: "data-object",
   LucideDatabase: "database",
   LucideDiamond: "diamond-mark",
+  LucideDices: "casino",
   LucideDollarSign: "money",
+  LucideDownload: "download",
   LucideDraftingCompass: "engineering",
+  LucideDrill: "drill-bit",
   LucideDroplet: "water",
   LucideEdit: "edit-square",
   LucideEllipsis: "more-horiz",
@@ -639,14 +1238,33 @@ export const tectonLucideCompat = {
   LucideExternalLink: "open-in-new",
   LucideEye: "visibility",
   LucideEyeOff: "visibility-off",
+  LucideFaceSlightlySmiling: "sentiment-satisfied",
   LucideFactory: "facility",
+  LucideFile: "draft",
+  LucideFileCode: "code-blocks",
+  LucideFileExclamationPoint: "warning",
+  LucideFileSearch: "find-in-page",
+  LucideFileText: "description",
+  LucideFileWarning: "warning",
   LucideFilter: "filter",
+  LucideFlag: "flag",
   LucideFocus: "target",
   LucideFolder: "folder",
+  LucideFolderCode: "folder-code",
+  LucideFolderInput: "drive-file-move",
   LucideFolderOpen: "folder-open",
   LucideFolderPlus: "folder-new",
+  LucideFolderSearch: "folder-match",
   LucideFoldHorizontal: "swap",
+  LucideForward: "forward",
+  LucideFrame: "project",
+  LucideFullscreen: "fullscreen",
   LucideFunnel: "filter",
+  LucideGalleryVerticalEnd: "stacks",
+  LucideGitBranch: "account-tree",
+  LucideGitCompare: "difference",
+  LucideGitFork: "fork-right",
+  LucideGlobe: "public",
   LucideGrid: "view-module",
   LucideGrid2x2: "window",
   LucideGrid2X2: "window",
@@ -656,54 +1274,108 @@ export const tectonLucideCompat = {
   LucideGripVertical: "drag-indicator",
   LucideHand: "pan-tool",
   LucideHash: "numeric",
+  LucideHelpCircle: "help",
+  LucideHexagon: "hexagon",
   LucideHighlighter: "annotate",
+  LucideHistory: "history",
   LucideHome: "home",
   LucideHouse: "home",
   LucideImage: "image",
+  LucideInbox: "inbox",
   LucideInfo: "info",
+  LucideItalic: "format-italic",
   LucideKanbanSquare: "kanban",
+  LucideKeyboard: "keyboard",
+  LucideLanguages: "translate",
+  LucideLasso: "lasso-select",
   LucideLayers: "layers",
   LucideLayers3: "layers",
+  LucideLayout: "space-dashboard",
+  LucideLayoutDashboard: "dashboard",
   LucideLayoutGrid: "grid-view",
+  LucideLeaf: "eco",
+  LucideLifeBuoy: "support",
   LucideLink: "link",
   LucideList: "list",
+  LucideListFilter: "filter-list",
+  LucideLoader: "progress-activity",
   LucideLoader2: "progress-activity",
   LucideLoaderCircle: "progress-activity",
   LucideLock: "lock",
   LucideLockOpen: "lock-open",
+  LucideLogIn: "login",
+  LucideLogOut: "logout",
+  LucideMail: "mail",
+  LucideMailCheck: "mark-email-read",
   LucideMap: "map",
+  LucideMapPin: "location-on",
   LucideMapPinPlus: "add-pin",
+  LucideMaximize: "expand-content",
+  LucideMaximize2: "open-in-full",
   LucideMenu: "menu",
+  LucideMessageSquare: "chat",
   LucideMic: "microphone",
   LucideMinimize: "collapse-content",
   LucideMinus: "remove",
   LucideMinusCircle: "remove-circle",
   LucideMinusSquare: "indeterminate-checkbox",
+  LucideMonitor: "monitor",
+  LucideMoon: "dark-mode",
   LucideMoreHorizontal: "more-horiz",
   LucideMoreVertical: "more-vert",
+  LucideMountain: "terrain",
   LucideMousePointer: "select-cursor",
+  LucideMousePointer2: "select-cursor",
   LucideOctagonX: "dangerous",
+  LucidePalette: "palette",
   LucidePanelLeft: "panel-left",
+  LucidePanelLeftOpen: "left-panel-open",
   LucidePanelRight: "panel",
+  LucidePanelRightClose: "right-panel-close",
+  LucidePanelRightOpen: "right-panel-open",
   LucidePanelsLeftRight: "view-column",
+  LucidePanelsTopLeft: "space-dashboard",
+  LucidePaperclip: "attach-file",
   LucidePenBox: "edit-square",
+  LucidePencil: "edit-square",
   LucidePencilRuler: "design",
   LucidePenSquare: "edit-square",
+  LucidePieChart: "pie-chart",
+  LucidePin: "push-pin",
   LucidePlay: "play",
   LucidePlus: "add",
   LucidePlusCircle: "add-circle",
   LucideRedo: "redo",
+  LucideRefreshCcw: "sync",
+  LucideRefreshCw: "sync",
   LucideRotate3d: "rotate",
   LucideRotate3D: "rotate",
+  LucideRotateCcw: "rotate-left",
+  LucideRotateCcwClock: "history",
+  LucideRotateCw: "rotate-right",
   LucideRuler: "ruler",
+  LucideSave: "save",
+  LucideScan: "crop-free",
   LucideScanEye: "preview",
   LucideScanSearch: "inspect",
+  LucideScissors: "content-cut",
   LucideSearch: "search",
   LucideSearchX: "search-off",
+  LucideSend: "send",
   LucideSettings: "settings",
+  LucideSettings2: "controls",
+  LucideShapes: "shapes",
+  LucideShare: "share",
+  LucideShare2: "share-nodes",
+  LucideShield: "shield",
+  LucideShieldAlert: "shield-alert",
   LucideSidebar: "panel-left",
+  LucideSidebarOpen: "left-panel-open",
   LucideSkull: "risk-skull",
   LucideSlidersHorizontal: "controls",
+  LucideSmartphone: "smartphone",
+  LucideSmile: "sentiment-satisfied",
+  LucideSparkles: "auto-awesome",
   LucideSprout: "co-2-leaf",
   LucideSquare: "checkbox-outline-blank",
   LucideSquareCheck: "checkbox",
@@ -711,27 +1383,65 @@ export const tectonLucideCompat = {
   LucideSquareKanban: "kanban",
   LucideSquareMinus: "indeterminate-checkbox",
   LucideSquarePen: "edit-square",
+  LucideSquareTerminal: "terminal",
+  LucideStar: "star",
+  LucideStars: "auto-awesome",
+  LucideSun: "light-mode",
+  LucideTable: "table",
+  LucideTablet: "tablet",
+  LucideTag: "label",
+  LucideTerminal: "terminal",
+  LucideTerminalSquare: "terminal",
+  LucideThumbsDown: "thumb-down",
+  LucideThumbsUp: "thumb-up",
+  LucideTrash: "delete",
+  LucideTrash2: "delete",
   LucideTrendingDown: "trending-down",
   LucideTrendingUp: "trending-up",
   LucideTriangleAlert: "warning",
+  LucideType: "text",
+  LucideUnderline: "format-underlined",
   LucideUndo: "undo",
   LucideUnlink: "link-off",
   LucideUnlock: "lock-open",
   LucideUpload: "export-upload",
   LucideUser: "person",
+  LucideUser2: "person",
+  LucideUserPlus: "person-add",
+  LucideUserRound: "person",
+  LucideUserRoundX: "person-remove",
+  LucideUserX2: "person-remove",
+  LucideVerified: "verified",
+  LucideVolumeOff: "volume-off",
+  LucideWallet: "wallet",
+  LucideWaves: "frameworks",
+  LucideWavesHorizontal: "frameworks",
   LucideWaypoints: "node",
+  LucideWrench: "build",
   LucideX: "close",
   LucideXCircle: "cancel-circle",
   LucideXOctagon: "dangerous",
   LucideZap: "electricity",
   LucideZoomIn: "zoom-in",
   LucideZoomOut: "zoom-out",
+  Mail: "mail",
+  MailCheck: "mark-email-read",
+  MailCheckIcon: "mark-email-read",
+  MailIcon: "mail",
   Map: "map",
   MapIcon: "map",
+  MapPin: "location-on",
+  MapPinIcon: "location-on",
   MapPinPlus: "add-pin",
   MapPinPlusIcon: "add-pin",
+  Maximize: "expand-content",
+  Maximize2: "open-in-full",
+  Maximize2Icon: "open-in-full",
+  MaximizeIcon: "expand-content",
   Menu: "menu",
   MenuIcon: "menu",
+  MessageSquare: "chat",
+  MessageSquareIcon: "chat",
   Mic: "microphone",
   MicIcon: "microphone",
   Minimize: "collapse-content",
@@ -742,26 +1452,52 @@ export const tectonLucideCompat = {
   MinusIcon: "remove",
   MinusSquare: "indeterminate-checkbox",
   MinusSquareIcon: "indeterminate-checkbox",
+  Monitor: "monitor",
+  MonitorIcon: "monitor",
+  Moon: "dark-mode",
+  MoonIcon: "dark-mode",
   MoreHorizontal: "more-horiz",
   MoreHorizontalIcon: "more-horiz",
   MoreVertical: "more-vert",
   MoreVerticalIcon: "more-vert",
+  Mountain: "terrain",
+  MountainIcon: "terrain",
   MousePointer: "select-cursor",
+  MousePointer2: "select-cursor",
+  MousePointer2Icon: "select-cursor",
   MousePointerIcon: "select-cursor",
   OctagonX: "dangerous",
   OctagonXIcon: "dangerous",
+  Palette: "palette",
+  PaletteIcon: "palette",
   PanelLeft: "panel-left",
   PanelLeftIcon: "panel-left",
+  PanelLeftOpen: "left-panel-open",
+  PanelLeftOpenIcon: "left-panel-open",
   PanelRight: "panel",
+  PanelRightClose: "right-panel-close",
+  PanelRightCloseIcon: "right-panel-close",
   PanelRightIcon: "panel",
+  PanelRightOpen: "right-panel-open",
+  PanelRightOpenIcon: "right-panel-open",
   PanelsLeftRight: "view-column",
   PanelsLeftRightIcon: "view-column",
+  PanelsTopLeft: "space-dashboard",
+  PanelsTopLeftIcon: "space-dashboard",
+  Paperclip: "attach-file",
+  PaperclipIcon: "attach-file",
   PenBox: "edit-square",
   PenBoxIcon: "edit-square",
+  Pencil: "edit-square",
+  PencilIcon: "edit-square",
   PencilRuler: "design",
   PencilRulerIcon: "design",
   PenSquare: "edit-square",
   PenSquareIcon: "edit-square",
+  PieChart: "pie-chart",
+  PieChartIcon: "pie-chart",
+  Pin: "push-pin",
+  PinIcon: "push-pin",
   Play: "play",
   PlayIcon: "play",
   Plus: "add",
@@ -770,28 +1506,66 @@ export const tectonLucideCompat = {
   PlusIcon: "add",
   Redo: "redo",
   RedoIcon: "redo",
+  RefreshCcw: "sync",
+  RefreshCcwIcon: "sync",
+  RefreshCw: "sync",
+  RefreshCwIcon: "sync",
   Rotate3d: "rotate",
   Rotate3D: "rotate",
   Rotate3dIcon: "rotate",
   Rotate3DIcon: "rotate",
+  RotateCcw: "rotate-left",
+  RotateCcwClock: "history",
+  RotateCcwClockIcon: "history",
+  RotateCcwIcon: "rotate-left",
+  RotateCw: "rotate-right",
+  RotateCwIcon: "rotate-right",
   Ruler: "ruler",
   RulerIcon: "ruler",
+  Save: "save",
+  SaveIcon: "save",
+  Scan: "crop-free",
   ScanEye: "preview",
   ScanEyeIcon: "preview",
+  ScanIcon: "crop-free",
   ScanSearch: "inspect",
   ScanSearchIcon: "inspect",
+  Scissors: "content-cut",
+  ScissorsIcon: "content-cut",
   Search: "search",
   SearchIcon: "search",
   SearchX: "search-off",
   SearchXIcon: "search-off",
+  Send: "send",
+  SendIcon: "send",
   Settings: "settings",
+  Settings2: "controls",
+  Settings2Icon: "controls",
   SettingsIcon: "settings",
+  Shapes: "shapes",
+  ShapesIcon: "shapes",
+  Share: "share",
+  Share2: "share-nodes",
+  Share2Icon: "share-nodes",
+  ShareIcon: "share",
+  Shield: "shield",
+  ShieldAlert: "shield-alert",
+  ShieldAlertIcon: "shield-alert",
+  ShieldIcon: "shield",
   Sidebar: "panel-left",
   SidebarIcon: "panel-left",
+  SidebarOpen: "left-panel-open",
+  SidebarOpenIcon: "left-panel-open",
   Skull: "risk-skull",
   SkullIcon: "risk-skull",
   SlidersHorizontal: "controls",
   SlidersHorizontalIcon: "controls",
+  Smartphone: "smartphone",
+  SmartphoneIcon: "smartphone",
+  Smile: "sentiment-satisfied",
+  SmileIcon: "sentiment-satisfied",
+  Sparkles: "auto-awesome",
+  SparklesIcon: "auto-awesome",
   Sprout: "co-2-leaf",
   SproutIcon: "co-2-leaf",
   Square: "checkbox-outline-blank",
@@ -806,12 +1580,42 @@ export const tectonLucideCompat = {
   SquareMinusIcon: "indeterminate-checkbox",
   SquarePen: "edit-square",
   SquarePenIcon: "edit-square",
+  SquareTerminal: "terminal",
+  SquareTerminalIcon: "terminal",
+  Star: "star",
+  StarIcon: "star",
+  Stars: "auto-awesome",
+  StarsIcon: "auto-awesome",
+  Sun: "light-mode",
+  SunIcon: "light-mode",
+  Table: "table",
+  TableIcon: "table",
+  Tablet: "tablet",
+  TabletIcon: "tablet",
+  Tag: "label",
+  TagIcon: "label",
+  Terminal: "terminal",
+  TerminalIcon: "terminal",
+  TerminalSquare: "terminal",
+  TerminalSquareIcon: "terminal",
+  ThumbsDown: "thumb-down",
+  ThumbsDownIcon: "thumb-down",
+  ThumbsUp: "thumb-up",
+  ThumbsUpIcon: "thumb-up",
+  Trash: "delete",
+  Trash2: "delete",
+  Trash2Icon: "delete",
+  TrashIcon: "delete",
   TrendingDown: "trending-down",
   TrendingDownIcon: "trending-down",
   TrendingUp: "trending-up",
   TrendingUpIcon: "trending-up",
   TriangleAlert: "warning",
   TriangleAlertIcon: "warning",
+  Type: "text",
+  TypeIcon: "text",
+  Underline: "format-underlined",
+  UnderlineIcon: "format-underlined",
   Undo: "undo",
   UndoIcon: "undo",
   Unlink: "link-off",
@@ -821,9 +1625,31 @@ export const tectonLucideCompat = {
   Upload: "export-upload",
   UploadIcon: "export-upload",
   User: "person",
+  User2: "person",
+  User2Icon: "person",
   UserIcon: "person",
+  UserPlus: "person-add",
+  UserPlusIcon: "person-add",
+  UserRound: "person",
+  UserRoundIcon: "person",
+  UserRoundX: "person-remove",
+  UserRoundXIcon: "person-remove",
+  UserX2: "person-remove",
+  UserX2Icon: "person-remove",
+  Verified: "verified",
+  VerifiedIcon: "verified",
+  VolumeOff: "volume-off",
+  VolumeOffIcon: "volume-off",
+  Wallet: "wallet",
+  WalletIcon: "wallet",
+  Waves: "frameworks",
+  WavesHorizontal: "frameworks",
+  WavesHorizontalIcon: "frameworks",
+  WavesIcon: "frameworks",
   Waypoints: "node",
   WaypointsIcon: "node",
+  Wrench: "build",
+  WrenchIcon: "build",
   X: "close",
   XCircle: "cancel-circle",
   XCircleIcon: "cancel-circle",

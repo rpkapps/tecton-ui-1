@@ -1,7 +1,7 @@
 {
   "version": 1,
   "source": "icons-src/tecton/*.ts (Tecton icon export); gallery order from tecton-screenshots/059_components-icon__icon-gallery.png",
-  "notes": "Labels in the gallery carry an 'Icon' suffix (e.g. 'AddCircleIcon'); 'label' preserves the exact text, 'name' strips the suffix. Gallery header: 'Tecton Icons', with Variant toggle (Outlined | Filled), Size toggle (Small (16px) | Medium (20px) | Large (24px)) and a 'Search icons' text field; screenshot shows Outlined + Medium (20px) selected. Icons are listed in alphabetical order, 9 per row. StrataIcon renders in colour (pink/orange gradient top layer); all others are monochrome. `symbol` names the Material Symbols Sharp glyph an icon renders (the ligature name in icons/material-symbols.codepoints); null keeps Tecton's own drawing, which ships in the domain font. Seven entries (DangerousIcon, MoreHorizIcon, PanelLeftIcon, ProgressActivityIcon, SearchOffIcon, TrendingDownIcon, TrendingUpIcon) have no Tecton drawing at all: they exist as Material glyphs only, so every lucide identifier the generated shadcn components import resolves to a Tecton icon.",
+  "notes": "Labels in the gallery carry an 'Icon' suffix (e.g. 'AddCircleIcon'); 'label' preserves the exact text, 'name' strips the suffix. Gallery header: 'Tecton Icons', with Variant toggle (Outlined | Filled), Size toggle (Small (16px) | Medium (20px) | Large (24px)) and a 'Search icons' text field; screenshot shows Outlined + Medium (20px) selected. Icons are listed in alphabetical order, 9 per row. StrataIcon renders in colour (pink/orange gradient top layer); all others are monochrome. `symbol` names the Material Symbols Sharp glyph an icon renders (the ligature name in icons/material-symbols.codepoints); null keeps Tecton's own drawing, which ships in the domain font. 112 entries have no Tecton drawing at all: they exist as Material glyphs only (the seven the generated shadcn components needed — DangerousIcon, MoreHorizIcon, PanelLeftIcon, ProgressActivityIcon, SearchOffIcon, TrendingDownIcon, TrendingUpIcon — plus the 105 added so that every lucide identifier used by the blocks and the docs site resolves to a Tecton icon and nothing falls through to lucide-react). `lucide` names lucide's DECLARED ROOT export in kebab case (Trash, not the Trash2 alias); `lucideAliases` carries further roots one Tecton glyph also stands in for. build-icons.mts fails when either names something that is not a root, which is how three rows used to emit nothing at all.",
   "variants": [
     "outlined",
     "filled"
@@ -11,8 +11,17 @@
     20,
     24
   ],
-  "count": 138,
+  "count": 243,
   "icons": [
+    {
+      "name": "AccountTree",
+      "label": "AccountTreeIcon",
+      "slug": "account-tree",
+      "description": "hierarchy of nodes joined by connectors",
+      "symbol": "account_tree",
+      "lucide": "git-branch",
+      "domain": false
+    },
     {
       "name": "AddCircle",
       "label": "AddCircleIcon",
@@ -20,6 +29,9 @@
       "description": "circle with plus",
       "symbol": "add_circle",
       "lucide": "circle-plus",
+      "lucideAliases": [
+        "circle-fading-plus"
+      ],
       "domain": false
     },
     {
@@ -41,6 +53,15 @@
       "domain": false
     },
     {
+      "name": "Airwave",
+      "label": "AirwaveIcon",
+      "slug": "airwave",
+      "description": "three stacked wavy lines",
+      "symbol": "airwave",
+      "lucide": "audio-waveform",
+      "domain": false
+    },
+    {
       "name": "Annotate",
       "label": "AnnotateIcon",
       "slug": "annotate",
@@ -50,12 +71,30 @@
       "domain": false
     },
     {
+      "name": "Apartment",
+      "label": "ApartmentIcon",
+      "slug": "apartment",
+      "description": "multi-storey building with windows",
+      "symbol": "apartment",
+      "lucide": "building",
+      "domain": false
+    },
+    {
       "name": "Apps",
       "label": "AppsIcon",
       "slug": "apps",
       "description": "3x3 grid of dots",
       "symbol": "apps",
       "lucide": "grip",
+      "domain": false
+    },
+    {
+      "name": "Archive",
+      "label": "ArchiveIcon",
+      "slug": "archive",
+      "description": "box with a lid and a slot",
+      "symbol": "archive",
+      "lucide": "archive",
       "domain": false
     },
     {
@@ -77,6 +116,15 @@
       "domain": false
     },
     {
+      "name": "ArrowOutward",
+      "label": "ArrowOutwardIcon",
+      "slug": "arrow-outward",
+      "description": "arrow pointing up and to the right",
+      "symbol": "arrow_outward",
+      "lucide": "arrow-up-right",
+      "domain": false
+    },
+    {
       "name": "ArrowRight",
       "label": "ArrowRightIcon",
       "slug": "arrow-right",
@@ -92,6 +140,87 @@
       "description": "arrow pointing up",
       "symbol": "arrow_upward",
       "lucide": "arrow-up",
+      "domain": false
+    },
+    {
+      "name": "AttachFile",
+      "label": "AttachFileIcon",
+      "slug": "attach-file",
+      "description": "paperclip",
+      "symbol": "attach_file",
+      "lucide": "paperclip",
+      "domain": false
+    },
+    {
+      "name": "AutoAwesome",
+      "label": "AutoAwesomeIcon",
+      "slug": "auto-awesome",
+      "description": "large four-point star with two small ones",
+      "symbol": "auto_awesome",
+      "lucide": "sparkles",
+      "domain": false
+    },
+    {
+      "name": "Bluetooth",
+      "label": "BluetoothIcon",
+      "slug": "bluetooth",
+      "description": "bluetooth rune",
+      "symbol": "bluetooth",
+      "lucide": "bluetooth",
+      "domain": false
+    },
+    {
+      "name": "Bookmark",
+      "label": "BookmarkIcon",
+      "slug": "bookmark",
+      "description": "ribbon bookmark",
+      "symbol": "bookmark",
+      "lucide": "bookmark",
+      "domain": false
+    },
+    {
+      "name": "BugReport",
+      "label": "BugReportIcon",
+      "slug": "bug-report",
+      "description": "beetle seen from above",
+      "symbol": "bug_report",
+      "lucide": "bug",
+      "domain": false
+    },
+    {
+      "name": "Build",
+      "label": "BuildIcon",
+      "slug": "build",
+      "description": "wrench at an angle",
+      "symbol": "build",
+      "lucide": "wrench",
+      "domain": false
+    },
+    {
+      "name": "Calculate",
+      "label": "CalculateIcon",
+      "slug": "calculate",
+      "description": "calculator keypad with operators",
+      "symbol": "calculate",
+      "lucide": "calculator",
+      "domain": false
+    },
+    {
+      "name": "CalendarAddOn",
+      "label": "CalendarAddOnIcon",
+      "slug": "calendar-add-on",
+      "description": "calendar with a plus",
+      "symbol": "calendar_add_on",
+      "lucide": "calendar-plus",
+      "domain": false
+    },
+    {
+      "name": "CalendarMonth",
+      "label": "CalendarMonthIcon",
+      "slug": "calendar-month",
+      "description": "calendar page with a month grid",
+      "symbol": "calendar_month",
+      "lucide": "calendar",
       "domain": false
     },
     {
@@ -119,6 +248,24 @@
       "description": "two chevrons pointing away from each other vertically (up over down)",
       "symbol": "unfold_more",
       "lucide": "chevrons-up-down",
+      "domain": false
+    },
+    {
+      "name": "Casino",
+      "label": "CasinoIcon",
+      "slug": "casino",
+      "description": "die face with pips",
+      "symbol": "casino",
+      "lucide": "dices",
+      "domain": false
+    },
+    {
+      "name": "Chat",
+      "label": "ChatIcon",
+      "slug": "chat",
+      "description": "rounded speech bubble with lines",
+      "symbol": "chat",
+      "lucide": "message-square",
       "domain": false
     },
     {
@@ -266,12 +413,39 @@
       "domain": false
     },
     {
+      "name": "Cloud",
+      "label": "CloudIcon",
+      "slug": "cloud",
+      "description": "cloud outline",
+      "symbol": "cloud",
+      "lucide": "cloud",
+      "domain": false
+    },
+    {
+      "name": "CloudOff",
+      "label": "CloudOffIcon",
+      "slug": "cloud-off",
+      "description": "cloud with a diagonal strike",
+      "symbol": "cloud_off",
+      "lucide": "cloud-off",
+      "domain": false
+    },
+    {
       "name": "Co2Leaf",
       "label": "Co2LeafIcon",
       "slug": "co-2-leaf",
       "description": "sprout with two leaves",
       "symbol": "psychiatry",
       "lucide": "sprout",
+      "domain": false
+    },
+    {
+      "name": "CodeBlocks",
+      "label": "CodeBlocksIcon",
+      "slug": "code-blocks",
+      "description": "rounded frame containing angle brackets",
+      "symbol": "code_blocks",
+      "lucide": "file-code",
       "domain": false
     },
     {
@@ -293,12 +467,42 @@
       "domain": false
     },
     {
+      "name": "Construction",
+      "label": "ConstructionIcon",
+      "slug": "construction",
+      "description": "crossed hammer and wrench over a barrier",
+      "symbol": "construction",
+      "lucide": "construction",
+      "domain": false
+    },
+    {
+      "name": "ContentCut",
+      "label": "ContentCutIcon",
+      "slug": "content-cut",
+      "description": "open scissors",
+      "symbol": "content_cut",
+      "lucide": "scissors",
+      "domain": false
+    },
+    {
+      "name": "ContentPaste",
+      "label": "ContentPasteIcon",
+      "slug": "content-paste",
+      "description": "clipboard with a page",
+      "symbol": "content_paste",
+      "lucide": "clipboard-paste",
+      "domain": false
+    },
+    {
       "name": "Controls",
       "label": "ControlsIcon",
       "slug": "controls",
       "description": "three horizontal sliders with knobs",
       "symbol": "tune",
       "lucide": "sliders-horizontal",
+      "lucideAliases": [
+        "settings-2"
+      ],
       "domain": false
     },
     {
@@ -308,6 +512,33 @@
       "description": "two overlapping rounded squares",
       "symbol": null,
       "lucide": "copy",
+      "domain": false
+    },
+    {
+      "name": "CorporateFare",
+      "label": "CorporateFareIcon",
+      "slug": "corporate-fare",
+      "description": "two buildings side by side",
+      "symbol": "corporate_fare",
+      "lucide": "building-complex",
+      "domain": false
+    },
+    {
+      "name": "CreditCard",
+      "label": "CreditCardIcon",
+      "slug": "credit-card",
+      "description": "card with a magnetic stripe",
+      "symbol": "credit_card",
+      "lucide": "credit-card",
+      "domain": false
+    },
+    {
+      "name": "CropFree",
+      "label": "CropFreeIcon",
+      "slug": "crop-free",
+      "description": "four corner brackets",
+      "symbol": "crop_free",
+      "lucide": "scan",
       "domain": false
     },
     {
@@ -338,6 +569,33 @@
       "domain": false
     },
     {
+      "name": "DarkMode",
+      "label": "DarkModeIcon",
+      "slug": "dark-mode",
+      "description": "crescent moon",
+      "symbol": "dark_mode",
+      "lucide": "moon",
+      "domain": false
+    },
+    {
+      "name": "Dashboard",
+      "label": "DashboardIcon",
+      "slug": "dashboard",
+      "description": "four unequal panels",
+      "symbol": "dashboard",
+      "lucide": "layout-dashboard",
+      "domain": false
+    },
+    {
+      "name": "DataObject",
+      "label": "DataObjectIcon",
+      "slug": "data-object",
+      "description": "pair of curly braces",
+      "symbol": "data_object",
+      "lucide": "braces",
+      "domain": false
+    },
+    {
       "name": "Database",
       "label": "DatabaseIcon",
       "slug": "database",
@@ -352,7 +610,16 @@
       "slug": "delete",
       "description": "trash can",
       "symbol": "delete",
-      "lucide": "trash-2",
+      "lucide": "trash",
+      "domain": false
+    },
+    {
+      "name": "Description",
+      "label": "DescriptionIcon",
+      "slug": "description",
+      "description": "page with lines of text",
+      "symbol": "description",
+      "lucide": "file-text",
       "domain": false
     },
     {
@@ -374,12 +641,39 @@
       "domain": false
     },
     {
+      "name": "Difference",
+      "label": "DifferenceIcon",
+      "slug": "difference",
+      "description": "two overlapping rounded squares",
+      "symbol": "difference",
+      "lucide": "git-compare",
+      "domain": false
+    },
+    {
       "name": "Discovery",
       "label": "DiscoveryIcon",
       "slug": "discovery",
       "description": "compass with needle",
       "symbol": "explore",
       "lucide": "compass",
+      "domain": false
+    },
+    {
+      "name": "Download",
+      "label": "DownloadIcon",
+      "slug": "download",
+      "description": "arrow down onto a line",
+      "symbol": "download",
+      "lucide": "download",
+      "domain": false
+    },
+    {
+      "name": "Draft",
+      "label": "DraftIcon",
+      "slug": "draft",
+      "description": "blank page with a folded corner",
+      "symbol": "draft",
+      "lucide": "file",
       "domain": false
     },
     {
@@ -397,8 +691,26 @@
       "slug": "drill-bit",
       "description": "drill bit: tapered bit head with shank",
       "symbol": null,
-      "lucide": null,
+      "lucide": "drill",
       "domain": true
+    },
+    {
+      "name": "DriveFileMove",
+      "label": "DriveFileMoveIcon",
+      "slug": "drive-file-move",
+      "description": "folder with an arrow pointing into it",
+      "symbol": "drive_file_move",
+      "lucide": "folder-input",
+      "domain": false
+    },
+    {
+      "name": "Eco",
+      "label": "EcoIcon",
+      "slug": "eco",
+      "description": "single leaf",
+      "symbol": "eco",
+      "lucide": "leaf",
+      "domain": false
     },
     {
       "name": "EditSquare",
@@ -407,6 +719,9 @@
       "description": "square with pencil over top right corner",
       "symbol": "edit_square",
       "lucide": "square-pen",
+      "lucideAliases": [
+        "pencil"
+      ],
       "domain": false
     },
     {
@@ -443,6 +758,9 @@
       "description": "two corner brackets with short arrows pointing outward",
       "symbol": "expand_content",
       "lucide": "expand",
+      "lucideAliases": [
+        "maximize"
+      ],
       "domain": false
     },
     {
@@ -482,12 +800,57 @@
       "domain": false
     },
     {
+      "name": "FilterList",
+      "label": "FilterListIcon",
+      "slug": "filter-list",
+      "description": "three lines of decreasing length",
+      "symbol": "filter_list",
+      "lucide": "list-filter",
+      "domain": false
+    },
+    {
+      "name": "FindInPage",
+      "label": "FindInPageIcon",
+      "slug": "find-in-page",
+      "description": "page with a magnifier",
+      "symbol": "find_in_page",
+      "lucide": "file-search",
+      "domain": false
+    },
+    {
+      "name": "Flag",
+      "label": "FlagIcon",
+      "slug": "flag",
+      "description": "flag on a pole",
+      "symbol": "flag",
+      "lucide": "flag",
+      "domain": false
+    },
+    {
+      "name": "FolderCode",
+      "label": "FolderCodeIcon",
+      "slug": "folder-code",
+      "description": "folder with angle brackets",
+      "symbol": "folder_code",
+      "lucide": "folder-code",
+      "domain": false
+    },
+    {
       "name": "Folder",
       "label": "FolderIcon",
       "slug": "folder",
       "description": "folder outline",
       "symbol": "folder",
       "lucide": "folder",
+      "domain": false
+    },
+    {
+      "name": "FolderMatch",
+      "label": "FolderMatchIcon",
+      "slug": "folder-match",
+      "description": "folder with a magnifier and a document",
+      "symbol": "folder_match",
+      "lucide": "folder-search",
       "domain": false
     },
     {
@@ -509,12 +872,66 @@
       "domain": false
     },
     {
+      "name": "ForkRight",
+      "label": "ForkRightIcon",
+      "slug": "fork-right",
+      "description": "path splitting to the right",
+      "symbol": "fork_right",
+      "lucide": "git-fork",
+      "domain": false
+    },
+    {
+      "name": "FormatBold",
+      "label": "FormatBoldIcon",
+      "slug": "format-bold",
+      "description": "bold letter B",
+      "symbol": "format_bold",
+      "lucide": "bold",
+      "domain": false
+    },
+    {
+      "name": "FormatItalic",
+      "label": "FormatItalicIcon",
+      "slug": "format-italic",
+      "description": "slanted letter I",
+      "symbol": "format_italic",
+      "lucide": "italic",
+      "domain": false
+    },
+    {
+      "name": "FormatUnderlined",
+      "label": "FormatUnderlinedIcon",
+      "slug": "format-underlined",
+      "description": "letter U over a rule",
+      "symbol": "format_underlined",
+      "lucide": "underline",
+      "domain": false
+    },
+    {
+      "name": "Forward",
+      "label": "ForwardIcon",
+      "slug": "forward",
+      "description": "arrow bending to the right (mirrored reply)",
+      "symbol": "forward",
+      "lucide": "forward",
+      "domain": false
+    },
+    {
       "name": "Frameworks",
       "label": "FrameworksIcon",
       "slug": "frameworks",
       "description": "three stacked wavy lines",
       "symbol": null,
-      "lucide": "waves",
+      "lucide": "waves-horizontal",
+      "domain": false
+    },
+    {
+      "name": "Fullscreen",
+      "label": "FullscreenIcon",
+      "slug": "fullscreen",
+      "description": "rectangle with corner brackets",
+      "symbol": "fullscreen",
+      "lucide": "fullscreen",
       "domain": false
     },
     {
@@ -536,6 +953,15 @@
       "domain": true
     },
     {
+      "name": "GraphicEq",
+      "label": "GraphicEqIcon",
+      "slug": "graphic-eq",
+      "description": "five vertical bars of varying height",
+      "symbol": "graphic_eq",
+      "lucide": "audio-lines",
+      "domain": false
+    },
+    {
       "name": "GridView",
       "label": "GridViewIcon",
       "slug": "grid-view",
@@ -545,12 +971,30 @@
       "domain": false
     },
     {
+      "name": "Help",
+      "label": "HelpIcon",
+      "slug": "help",
+      "description": "circle with a question mark",
+      "symbol": "help",
+      "lucide": "circle-question-mark",
+      "domain": false
+    },
+    {
+      "name": "Hexagon",
+      "label": "HexagonIcon",
+      "slug": "hexagon",
+      "description": "regular hexagon outline",
+      "symbol": "hexagon",
+      "lucide": "hexagon",
+      "domain": false
+    },
+    {
       "name": "History",
       "label": "HistoryIcon",
       "slug": "history",
       "description": "clock with counter-clockwise arrow",
       "symbol": "history",
-      "lucide": "history",
+      "lucide": "rotate-ccw-clock",
       "domain": false
     },
     {
@@ -578,6 +1022,15 @@
       "description": "picture frame with mountains",
       "symbol": "image",
       "lucide": "image",
+      "domain": false
+    },
+    {
+      "name": "Inbox",
+      "label": "InboxIcon",
+      "slug": "inbox",
+      "description": "tray with an opening",
+      "symbol": "inbox",
+      "lucide": "inbox",
       "domain": false
     },
     {
@@ -617,12 +1070,84 @@
       "domain": false
     },
     {
+      "name": "KeyboardCommandKey",
+      "label": "KeyboardCommandKeyIcon",
+      "slug": "keyboard-command-key",
+      "description": "looped command key symbol",
+      "symbol": "keyboard_command_key",
+      "lucide": "command",
+      "domain": false
+    },
+    {
+      "name": "Keyboard",
+      "label": "KeyboardIcon",
+      "slug": "keyboard",
+      "description": "keyboard with key rows",
+      "symbol": "keyboard",
+      "lucide": "keyboard",
+      "domain": false
+    },
+    {
+      "name": "KeyboardReturn",
+      "label": "KeyboardReturnIcon",
+      "slug": "keyboard-return",
+      "description": "arrow turning down and left (return key)",
+      "symbol": "keyboard_return",
+      "lucide": "corner-down-left",
+      "domain": false
+    },
+    {
+      "name": "Label",
+      "label": "LabelIcon",
+      "slug": "label",
+      "description": "tag with a notched end and a hole",
+      "symbol": "label",
+      "lucide": "tag",
+      "domain": false
+    },
+    {
+      "name": "LassoSelect",
+      "label": "LassoSelectIcon",
+      "slug": "lasso-select",
+      "description": "lasso loop with a tail",
+      "symbol": "lasso_select",
+      "lucide": "lasso",
+      "domain": false
+    },
+    {
       "name": "Layers",
       "label": "LayersIcon",
       "slug": "layers",
       "description": "two stacked diamonds",
       "symbol": null,
       "lucide": "layers",
+      "domain": false
+    },
+    {
+      "name": "LeftPanelOpen",
+      "label": "LeftPanelOpenIcon",
+      "slug": "left-panel-open",
+      "description": "frame with the left panel opening",
+      "symbol": "left_panel_open",
+      "lucide": "panel-left-open",
+      "domain": false
+    },
+    {
+      "name": "LibraryAddCheck",
+      "label": "LibraryAddCheckIcon",
+      "slug": "library-add-check",
+      "description": "stacked pages with a check mark",
+      "symbol": "library_add_check",
+      "lucide": "book-open-check",
+      "domain": false
+    },
+    {
+      "name": "LightMode",
+      "label": "LightModeIcon",
+      "slug": "light-mode",
+      "description": "sun with rays",
+      "symbol": "light_mode",
+      "lucide": "sun",
       "domain": false
     },
     {
@@ -662,6 +1187,15 @@
       "domain": false
     },
     {
+      "name": "LocationOn",
+      "label": "LocationOnIcon",
+      "slug": "location-on",
+      "description": "map pin with a hole",
+      "symbol": "location_on",
+      "lucide": "map-pin",
+      "domain": false
+    },
+    {
       "name": "Lock",
       "label": "LockIcon",
       "slug": "lock",
@@ -689,12 +1223,57 @@
       "domain": true
     },
     {
+      "name": "Login",
+      "label": "LoginIcon",
+      "slug": "login",
+      "description": "arrow entering a bracket",
+      "symbol": "login",
+      "lucide": "log-in",
+      "domain": false
+    },
+    {
+      "name": "Logout",
+      "label": "LogoutIcon",
+      "slug": "logout",
+      "description": "arrow leaving a bracket",
+      "symbol": "logout",
+      "lucide": "log-out",
+      "domain": false
+    },
+    {
+      "name": "Mail",
+      "label": "MailIcon",
+      "slug": "mail",
+      "description": "envelope",
+      "symbol": "mail",
+      "lucide": "mail",
+      "domain": false
+    },
+    {
       "name": "Map",
       "label": "MapIcon",
       "slug": "map",
       "description": "folded map",
       "symbol": "map",
       "lucide": "map",
+      "domain": false
+    },
+    {
+      "name": "MarkEmailRead",
+      "label": "MarkEmailReadIcon",
+      "slug": "mark-email-read",
+      "description": "envelope with a check mark",
+      "symbol": "mark_email_read",
+      "lucide": "mail-check",
+      "domain": false
+    },
+    {
+      "name": "MenuBook",
+      "label": "MenuBookIcon",
+      "slug": "menu-book",
+      "description": "open book with two pages",
+      "symbol": "menu_book",
+      "lucide": "book-open",
       "domain": false
     },
     {
@@ -725,6 +1304,15 @@
       "domain": false
     },
     {
+      "name": "Monitor",
+      "label": "MonitorIcon",
+      "slug": "monitor",
+      "description": "display on a stand",
+      "symbol": "monitor",
+      "lucide": "monitor",
+      "domain": false
+    },
+    {
       "name": "MoreHoriz",
       "label": "MoreHorizIcon",
       "slug": "more-horiz",
@@ -749,6 +1337,15 @@
       "description": "three circle nodes connected by lines",
       "symbol": null,
       "lucide": "waypoints",
+      "domain": false
+    },
+    {
+      "name": "NotificationsActive",
+      "label": "NotificationsActiveIcon",
+      "slug": "notifications-active",
+      "description": "bell with motion lines",
+      "symbol": "notifications_active",
+      "lucide": "bell-ring",
       "domain": false
     },
     {
@@ -779,12 +1376,30 @@
       "domain": true
     },
     {
+      "name": "OpenInFull",
+      "label": "OpenInFullIcon",
+      "slug": "open-in-full",
+      "description": "two diagonal arrows pointing apart",
+      "symbol": "open_in_full",
+      "lucide": "maximize-2",
+      "domain": false
+    },
+    {
       "name": "OpenInNew",
       "label": "OpenInNewIcon",
       "slug": "open-in-new",
       "description": "square with arrow out of top right corner",
       "symbol": "open_in_new",
       "lucide": "external-link",
+      "domain": false
+    },
+    {
+      "name": "Palette",
+      "label": "PaletteIcon",
+      "slug": "palette",
+      "description": "painter's palette with wells",
+      "symbol": "palette",
+      "lucide": "palette",
       "domain": false
     },
     {
@@ -815,12 +1430,42 @@
       "domain": false
     },
     {
+      "name": "PersonAdd",
+      "label": "PersonAddIcon",
+      "slug": "person-add",
+      "description": "person bust with a plus",
+      "symbol": "person_add",
+      "lucide": "user-plus",
+      "domain": false
+    },
+    {
       "name": "Person",
       "label": "PersonIcon",
       "slug": "person",
       "description": "person bust",
       "symbol": "person",
       "lucide": "user",
+      "lucideAliases": [
+        "user-round"
+      ],
+      "domain": false
+    },
+    {
+      "name": "PersonRemove",
+      "label": "PersonRemoveIcon",
+      "slug": "person-remove",
+      "description": "person bust with a minus",
+      "symbol": "person_remove",
+      "lucide": "user-round-x",
+      "domain": false
+    },
+    {
+      "name": "PieChart",
+      "label": "PieChartIcon",
+      "slug": "pie-chart",
+      "description": "circle divided into sectors",
+      "symbol": "pie_chart",
+      "lucide": "chart-pie",
       "domain": false
     },
     {
@@ -848,6 +1493,9 @@
       "description": "circular spinner arc",
       "symbol": "progress_activity",
       "lucide": "loader-circle",
+      "lucideAliases": [
+        "loader"
+      ],
       "domain": false
     },
     {
@@ -856,7 +1504,16 @@
       "slug": "project",
       "description": "framed rectangle with angled inner panel",
       "symbol": null,
-      "lucide": null,
+      "lucide": "frame",
+      "domain": false
+    },
+    {
+      "name": "Public",
+      "label": "PublicIcon",
+      "slug": "public",
+      "description": "globe with meridians",
+      "symbol": "public",
+      "lucide": "globe",
       "domain": false
     },
     {
@@ -866,6 +1523,15 @@
       "description": "heartbeat / activity line",
       "symbol": null,
       "lucide": "activity",
+      "domain": false
+    },
+    {
+      "name": "PushPin",
+      "label": "PushPinIcon",
+      "slug": "push-pin",
+      "description": "push pin seen from the side",
+      "symbol": "push_pin",
+      "lucide": "pin",
       "domain": false
     },
     {
@@ -914,6 +1580,24 @@
       "domain": false
     },
     {
+      "name": "RightPanelClose",
+      "label": "RightPanelCloseIcon",
+      "slug": "right-panel-close",
+      "description": "frame with the right panel closing",
+      "symbol": "right_panel_close",
+      "lucide": "panel-right-close",
+      "domain": false
+    },
+    {
+      "name": "RightPanelOpen",
+      "label": "RightPanelOpenIcon",
+      "slug": "right-panel-open",
+      "description": "frame with the right panel opening",
+      "symbol": "right_panel_open",
+      "lucide": "panel-right-open",
+      "domain": false
+    },
+    {
       "name": "RiskSkull",
       "label": "RiskSkullIcon",
       "slug": "risk-skull",
@@ -950,12 +1634,51 @@
       "domain": false
     },
     {
+      "name": "RotateLeft",
+      "label": "RotateLeftIcon",
+      "slug": "rotate-left",
+      "description": "circular arrow turning counter-clockwise",
+      "symbol": "rotate_left",
+      "lucide": "rotate-ccw",
+      "domain": false
+    },
+    {
+      "name": "RotateRight",
+      "label": "RotateRightIcon",
+      "slug": "rotate-right",
+      "description": "circular arrow turning clockwise",
+      "symbol": "rotate_right",
+      "lucide": "rotate-cw",
+      "domain": false
+    },
+    {
       "name": "Ruler",
       "label": "RulerIcon",
       "slug": "ruler",
       "description": "right-triangle set square with tick marks",
       "symbol": null,
       "lucide": "ruler",
+      "domain": false
+    },
+    {
+      "name": "Save",
+      "label": "SaveIcon",
+      "slug": "save",
+      "description": "floppy disk",
+      "symbol": "save",
+      "lucide": "save",
+      "domain": false
+    },
+    {
+      "name": "Schedule",
+      "label": "ScheduleIcon",
+      "slug": "schedule",
+      "description": "clock face with hands",
+      "symbol": "schedule",
+      "lucide": "clock",
+      "lucideAliases": [
+        "clock-2"
+      ],
       "domain": false
     },
     {
@@ -992,6 +1715,9 @@
       "description": "mouse pointer arrow",
       "symbol": "arrow_selector_tool",
       "lucide": "mouse-pointer",
+      "lucideAliases": [
+        "mouse-pointer-2"
+      ],
       "domain": false
     },
     {
@@ -1004,12 +1730,75 @@
       "domain": false
     },
     {
+      "name": "Send",
+      "label": "SendIcon",
+      "slug": "send",
+      "description": "paper plane",
+      "symbol": "send",
+      "lucide": "send",
+      "domain": false
+    },
+    {
+      "name": "SentimentSatisfied",
+      "label": "SentimentSatisfiedIcon",
+      "slug": "sentiment-satisfied",
+      "description": "smiling face",
+      "symbol": "sentiment_satisfied",
+      "lucide": "face-slightly-smiling",
+      "domain": false
+    },
+    {
       "name": "Settings",
       "label": "SettingsIcon",
       "slug": "settings",
       "description": "gear",
       "symbol": null,
       "lucide": "settings",
+      "domain": false
+    },
+    {
+      "name": "Shapes",
+      "label": "ShapesIcon",
+      "slug": "shapes",
+      "description": "overlapping circle, square and triangle",
+      "symbol": "shapes",
+      "lucide": "shapes",
+      "domain": false
+    },
+    {
+      "name": "Share",
+      "label": "ShareIcon",
+      "slug": "share",
+      "description": "box with an arrow leaving the top",
+      "symbol": "ios_share",
+      "lucide": "share",
+      "domain": false
+    },
+    {
+      "name": "ShareNodes",
+      "label": "ShareNodesIcon",
+      "slug": "share-nodes",
+      "description": "three nodes joined by two lines",
+      "symbol": "share",
+      "lucide": "share-2",
+      "domain": false
+    },
+    {
+      "name": "ShieldAlert",
+      "label": "ShieldAlertIcon",
+      "slug": "shield-alert",
+      "description": "shield with an exclamation mark",
+      "symbol": "gpp_maybe",
+      "lucide": "shield-alert",
+      "domain": false
+    },
+    {
+      "name": "Shield",
+      "label": "ShieldIcon",
+      "slug": "shield",
+      "description": "shield outline",
+      "symbol": "shield",
+      "lucide": "shield",
       "domain": false
     },
     {
@@ -1022,12 +1811,30 @@
       "domain": false
     },
     {
+      "name": "Smartphone",
+      "label": "SmartphoneIcon",
+      "slug": "smartphone",
+      "description": "phone outline",
+      "symbol": "smartphone",
+      "lucide": "smartphone",
+      "domain": false
+    },
+    {
       "name": "SortEnabled",
       "label": "SortEnabledIcon",
       "slug": "sort-enabled",
       "description": "paired up and down arrows",
       "symbol": null,
       "lucide": "arrow-up-down",
+      "domain": false
+    },
+    {
+      "name": "SpaceDashboard",
+      "label": "SpaceDashboardIcon",
+      "slug": "space-dashboard",
+      "description": "frame split into a wide left panel and two right panels",
+      "symbol": "space_dashboard",
+      "lucide": "panels-top-left",
       "domain": false
     },
     {
@@ -1040,6 +1847,24 @@
       "domain": false
     },
     {
+      "name": "Stacks",
+      "label": "StacksIcon",
+      "slug": "stacks",
+      "description": "stacked rounded cards",
+      "symbol": "stacks",
+      "lucide": "gallery-vertical-end",
+      "domain": false
+    },
+    {
+      "name": "Star",
+      "label": "StarIcon",
+      "slug": "star",
+      "description": "five-point star",
+      "symbol": "star",
+      "lucide": "star",
+      "domain": false
+    },
+    {
       "name": "Strata",
       "label": "StrataIcon",
       "slug": "strata",
@@ -1047,6 +1872,15 @@
       "symbol": null,
       "lucide": "layers",
       "domain": true
+    },
+    {
+      "name": "Support",
+      "label": "SupportIcon",
+      "slug": "support",
+      "description": "life ring",
+      "symbol": "support",
+      "lucide": "life-buoy",
+      "domain": false
     },
     {
       "name": "Surface",
@@ -1067,12 +1901,72 @@
       "domain": false
     },
     {
+      "name": "Sync",
+      "label": "SyncIcon",
+      "slug": "sync",
+      "description": "two arrows in a clockwise circular loop",
+      "symbol": "sync",
+      "lucide": "refresh-cw",
+      "lucideAliases": [
+        "refresh-ccw"
+      ],
+      "domain": false
+    },
+    {
+      "name": "Table",
+      "label": "TableIcon",
+      "slug": "table",
+      "description": "grid with a header row",
+      "symbol": "table",
+      "lucide": "table",
+      "domain": false
+    },
+    {
+      "name": "Tablet",
+      "label": "TabletIcon",
+      "slug": "tablet",
+      "description": "tablet outline",
+      "symbol": "tablet",
+      "lucide": "tablet",
+      "domain": false
+    },
+    {
       "name": "Target",
       "label": "TargetIcon",
       "slug": "target",
       "description": "scan corners with circle in center",
       "symbol": null,
       "lucide": "focus",
+      "domain": false
+    },
+    {
+      "name": "Terminal",
+      "label": "TerminalIcon",
+      "slug": "terminal",
+      "description": "framed prompt chevron and cursor line",
+      "symbol": "terminal",
+      "lucide": "terminal",
+      "lucideAliases": [
+        "square-terminal"
+      ],
+      "domain": false
+    },
+    {
+      "name": "Terrain",
+      "label": "TerrainIcon",
+      "slug": "terrain",
+      "description": "mountain peaks",
+      "symbol": "terrain",
+      "lucide": "mountain",
+      "domain": false
+    },
+    {
+      "name": "Text",
+      "label": "TextIcon",
+      "slug": "text",
+      "description": "capital letter T",
+      "symbol": "title",
+      "lucide": "type",
       "domain": false
     },
     {
@@ -1085,6 +1979,24 @@
       "domain": false
     },
     {
+      "name": "ThumbDown",
+      "label": "ThumbDownIcon",
+      "slug": "thumb-down",
+      "description": "hand with the thumb down",
+      "symbol": "thumb_down",
+      "lucide": "thumbs-down",
+      "domain": false
+    },
+    {
+      "name": "ThumbUp",
+      "label": "ThumbUpIcon",
+      "slug": "thumb-up",
+      "description": "hand with the thumb up",
+      "symbol": "thumb_up",
+      "lucide": "thumbs-up",
+      "domain": false
+    },
+    {
       "name": "Trajectory",
       "label": "TrajectoryIcon",
       "slug": "trajectory",
@@ -1092,6 +2004,15 @@
       "symbol": null,
       "lucide": null,
       "domain": true
+    },
+    {
+      "name": "Translate",
+      "label": "TranslateIcon",
+      "slug": "translate",
+      "description": "letter A beside a CJK glyph",
+      "symbol": "translate",
+      "lucide": "languages",
+      "domain": false
     },
     {
       "name": "Trend",
@@ -1130,6 +2051,15 @@
       "domain": false
     },
     {
+      "name": "Upgrade",
+      "label": "UpgradeIcon",
+      "slug": "upgrade",
+      "description": "up arrow over a horizontal bar",
+      "symbol": "upgrade",
+      "lucide": "circle-fading-arrow-up",
+      "domain": false
+    },
+    {
       "name": "Valve",
       "label": "ValveIcon",
       "slug": "valve",
@@ -1146,6 +2076,15 @@
       "symbol": null,
       "lucide": null,
       "domain": true
+    },
+    {
+      "name": "Verified",
+      "label": "VerifiedIcon",
+      "slug": "verified",
+      "description": "scalloped badge with a check mark",
+      "symbol": "verified",
+      "lucide": "badge-check",
+      "domain": false
     },
     {
       "name": "ViewColumn",
@@ -1184,12 +2123,33 @@
       "domain": false
     },
     {
+      "name": "VolumeOff",
+      "label": "VolumeOffIcon",
+      "slug": "volume-off",
+      "description": "speaker with no waves",
+      "symbol": "volume_off",
+      "lucide": "volume-off",
+      "domain": false
+    },
+    {
+      "name": "Wallet",
+      "label": "WalletIcon",
+      "slug": "wallet",
+      "description": "folded wallet",
+      "symbol": "wallet",
+      "lucide": "wallet",
+      "domain": false
+    },
+    {
       "name": "Warning",
       "label": "WarningIcon",
       "slug": "warning",
       "description": "triangle with exclamation mark",
       "symbol": "warning",
       "lucide": "triangle-alert",
+      "lucideAliases": [
+        "file-exclamation-point"
+      ],
       "domain": false
     },
     {
@@ -1199,6 +2159,15 @@
       "description": "water droplet",
       "symbol": "water_drop",
       "lucide": "droplet",
+      "domain": false
+    },
+    {
+      "name": "WebAsset",
+      "label": "WebAssetIcon",
+      "slug": "web-asset",
+      "description": "browser window with a title bar",
+      "symbol": "web_asset",
+      "lucide": "app-window",
       "domain": false
     },
     {
@@ -1227,6 +2196,15 @@
       "symbol": null,
       "lucide": null,
       "domain": true
+    },
+    {
+      "name": "Widgets",
+      "label": "WidgetsIcon",
+      "slug": "widgets",
+      "description": "four squares, one offset",
+      "symbol": "widgets",
+      "lucide": "blocks",
+      "domain": false
     },
     {
       "name": "Window",

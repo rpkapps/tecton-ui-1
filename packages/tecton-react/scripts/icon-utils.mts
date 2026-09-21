@@ -49,8 +49,21 @@ export interface IconManifestEntry {
    * definition in `icons-src/tecton/`.
    */
   symbol: string | null;
-  /** Closest lucide icon (kebab-case lucide name) or `null` when none fits. */
+  /**
+   * Closest lucide icon, as lucide's own **declared root** export in kebab case
+   * (`trash`, not the `trash-2` alias), or `null` when none fits. Every export
+   * name lucide resolves to that root — `Trash`, `TrashIcon`, `Trash2`,
+   * `Trash2Icon`, `LucideTrash` — is served by this icon.
+   */
   lucide: string | null;
+  /**
+   * Further lucide roots the same glyph stands in for, when one Tecton icon
+   * covers several lucide drawings (`person` serves `user` and `user-round`).
+   * Each behaves exactly like `lucide`: all of the root's alias spellings
+   * resolve to this icon. `build-icons.mts` fails when a value here — or in
+   * `lucide` — is not one of lucide's declared roots.
+   */
+  lucideAliases?: string[];
   /** `true` for oil & gas / subsurface domain glyphs that have no lucide peer. */
   domain: boolean;
 }

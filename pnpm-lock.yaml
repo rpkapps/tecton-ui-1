@@ -226,9 +226,6 @@ importers:
       input-otp:
         specifier: ^1.5.0
         version: 1.5.0(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
-      lucide-react:
-        specifier: ^1.45.0
-        version: 1.45.0(react@19.3.0)
       next-themes:
         specifier: ^0.4.6
         version: 0.4.6(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
@@ -296,6 +293,9 @@ importers:
       jsdom:
         specifier: ^30.0.1
         version: 30.0.1
+      lucide-react:
+        specifier: ^1.45.0
+        version: 1.45.0(react@19.3.0)
       material-symbols:
         specifier: 0.47.4
         version: 0.47.4
