@@ -7,7 +7,7 @@ import {
   Toolbar as ToolbarPrimitive,
   type ToolbarProps as ToolbarPrimitiveProps,
 } from "react-aria-components"
-import { EllipsisIcon } from "lucide-react"
+import { MoreHorizIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -903,7 +903,7 @@ function OverflowMenu({
       >
         {trigger ?? (
           <Button variant="ghost" size="icon" aria-label={label}>
-            <EllipsisIcon />
+            <MoreHorizIcon />
           </Button>
         )}
         <DropdownMenu

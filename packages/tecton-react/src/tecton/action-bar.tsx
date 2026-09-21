@@ -3,7 +3,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
-import { XIcon } from "lucide-react"
+import { CloseIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { Toolbar, type ToolbarProps } from "@tecton/react/tecton/overflow"
@@ -143,7 +143,7 @@ function ActionBarSelection({
             onPress={onClear}
             className="hidden @max-sm/action-bar:inline-flex"
           >
-            <XIcon />
+            <CloseIcon />
           </Button>
         </>
       ) : null}

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { EllipsisVerticalIcon, SearchIcon } from "lucide-react"
+import { MoreVertIcon, SearchIcon } from "@tecton/react/icons"
 
 import {
   Avatar,
@@ -273,7 +273,7 @@ function AppShellOverflow({
         aria-label={label}
         className={cn("text-muted-foreground hover:text-foreground", className)}
       >
-        <EllipsisVerticalIcon />
+        <MoreVertIcon />
       </Button>
       <DropdownMenu placement="bottom end" className="min-w-48 rounded-lg">
         {children}

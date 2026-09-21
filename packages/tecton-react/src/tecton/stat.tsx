@@ -1,7 +1,7 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
-import { MinusIcon, TrendingDownIcon, TrendingUpIcon } from "lucide-react"
+import { RemoveIcon, TrendingDownIcon, TrendingUpIcon } from "@tecton/react/icons"
 
 /**
  * Tecton Stat — a KPI readout: label, value in tabular mono (IBM Plex Mono),
@@ -108,7 +108,7 @@ function StatDelta({
       ? TrendingUpIcon
       : trend === "down"
         ? TrendingDownIcon
-        : MinusIcon
+        : RemoveIcon
   return (
     <span
       data-slot="stat-delta"

@@ -14,12 +14,12 @@ import {
 } from "react-aria-components"
 import {
   ChevronRightIcon,
-  EyeIcon,
-  EyeOffIcon,
   FolderIcon,
   FolderOpenIcon,
-  MoreVerticalIcon,
-} from "lucide-react"
+  MoreVertIcon,
+  VisibilityIcon,
+  VisibilityOffIcon,
+} from "@tecton/react/icons"
 
 /**
  * Tecton TreeView — hierarchical inventory / project / file structures on
@@ -194,7 +194,7 @@ function TreeViewAction({
       )}
       {...props}
     >
-      {children ?? <MoreVerticalIcon />}
+      {children ?? <MoreVertIcon />}
     </ButtonPrimitive>
   )
 }
@@ -216,7 +216,7 @@ function TreeViewVisibilityToggle({
       {...props}
       onPress={() => onChange?.(!isVisible)}
     >
-      {isVisible ? <EyeIcon /> : <EyeOffIcon />}
+      {isVisible ? <VisibilityIcon /> : <VisibilityOffIcon />}
     </TreeViewAction>
   )
 }

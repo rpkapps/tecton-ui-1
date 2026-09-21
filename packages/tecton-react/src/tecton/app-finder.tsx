@@ -9,7 +9,7 @@ import {
   Popover as PopoverPrimitive,
   type Key,
 } from "react-aria-components"
-import { CheckIcon, ChevronDownIcon, SearchXIcon } from "lucide-react"
+import { CheckIcon, ChevronDownIcon, SearchOffIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { usePortalTarget } from "@tecton/react/tecton/portal"
@@ -241,7 +241,7 @@ function AppFinderList({
       className={cn("max-h-[min(24rem,60vh)]", className)}
       renderEmptyState={() => (
         <CommandEmpty className="flex flex-col items-center gap-1 py-8">
-          <SearchXIcon className="mb-1 size-5 text-muted-foreground" />
+          <SearchOffIcon className="mb-1 size-5 text-muted-foreground" />
           <span className="font-medium">{emptyMessage}</span>
           {emptyHint ? (
             <span className="text-xs text-muted-foreground">{emptyHint}</span>

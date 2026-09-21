@@ -5,7 +5,7 @@ description: The Tecton icon set (138 icons, outlined and filled) and how it wor
 
 Tecton UI supports **two icon libraries**:
 
-- **Lucide** (`lucide-react`) — the library the generated shadcn components use internally (chevrons, check marks, close buttons…). It stays the CLI's `iconLibrary`, so generated files never change.
+- **Lucide** (`lucide-react`) — the vocabulary the generated shadcn components are written against (chevrons, check marks, close buttons…). It stays the CLI's `iconLibrary`, so the generated files keep their upstream shape; the registry only points the import at `@tecton/react/icons/lucide-compat`, so what renders is a Tecton glyph.
 - **Tecton icons** (`@tecton/react/icons`) — the 138 icons of the design system, including the domain glyphs (wells, horizons, seismic, drill bits…). Every icon is a React component with the Lucide-compatible signature (`size`, `strokeWidth`, `className`, SVG props) plus `variant="outlined" | "filled"`.
 
 ```tsx
@@ -64,21 +64,41 @@ import { MaterialSymbol } from "@tecton/react/icons/material"
 
 Material Symbols is Google's, under the [Apache License 2.0](https://github.com/google/material-design-icons/blob/master/LICENSE); the subset shipped here keeps that licence.
 
-## Replacing Lucide inside the generated components
+## Replacing Lucide in your own code
 
-If you want the shadcn components to render Tecton glyphs too, alias `lucide-react` to the compatibility module in your bundler. The generated files keep importing `lucide-react`; only the resolution changes:
+Nothing to do for the components you install: the generated files import their glyphs from `@tecton/react/icons/lucide-compat` (the registry writes that import, the shadcn CLI never sees `lucide-react`), and the Tecton layer imports the named Tecton components directly. Every chevron, check mark and close button is already a Tecton glyph.
+
+The compat module is a drop-in replacement for the whole `lucide-react` surface: every name a Tecton icon stands in for resolves to that icon, everything else passes through. So if **your** code imports Lucide names — a synced shadcn example, a block, a screen you wrote before the icon set existed — alias the package in your bundler and they render Tecton glyphs without an edit:
 
 ```ts title="vite.config.ts"
-export default defineConfig({
-  resolve: {
-    alias: {
-      "lucide-react": "@tecton/react/icons/lucide-compat",
+import { defineConfig, type Plugin } from "vite"
+
+// The compat module's own map ends with `export * from "lucide-react"`, so a
+// blanket `resolve.alias` would resolve it to itself. Skip the importers inside
+// the package's icons folder.
+function tectonLucideCompat(): Plugin {
+  return {
+    name: "tecton-lucide-compat",
+    enforce: "pre",
+    async resolveId(source, importer) {
+      if (source !== "lucide-react" || !importer) return null
+      if (/[\\/](?:tecton-react|@tecton[\\/]react)[\\/](?:src|dist)[\\/]icons[\\/]/.test(importer)) {
+        return null
+      }
+      const resolved = await this.resolve(
+        "@tecton/react/icons/lucide-compat",
+        importer,
+        { skipSelf: true }
+      )
+      return resolved?.id ?? null
     },
-  },
-})
+  }
+}
+
+export default defineConfig({ plugins: [tectonLucideCompat()] })
 ```
 
-The compat module re-exports every Lucide name the components use. Every identifier the generated components and the Tecton layer import now resolves to a Tecton icon — no Lucide glyph is left in that set.
+This site does exactly that (`apps/www/vite.config.ts`), which is why the shadcn examples on every component page draw Tecton glyphs.
 
 ## Regenerating
 

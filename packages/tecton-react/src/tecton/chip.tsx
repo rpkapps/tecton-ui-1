@@ -14,7 +14,7 @@ import {
   type TagListProps,
   type TagProps,
 } from "react-aria-components"
-import { XIcon } from "lucide-react"
+import { CloseIcon } from "@tecton/react/icons"
 
 import { badgeVariants } from "@tecton/react/components/badge"
 
@@ -105,7 +105,7 @@ function ChipRemove({
       )}
       {...props}
     >
-      {children ?? <XIcon />}
+      {children ?? <CloseIcon />}
     </ButtonPrimitive>
   )
 }

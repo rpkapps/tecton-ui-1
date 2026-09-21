@@ -8,7 +8,7 @@ import {
   Link as LinkPrimitive,
   type LinkProps as LinkPrimitiveProps,
 } from "react-aria-components"
-import { ExternalLinkIcon } from "lucide-react"
+import { OpenInNewIcon } from "@tecton/react/icons"
 
 /**
  * Tecton Link — inline text link on React Aria `Link`.
@@ -69,7 +69,7 @@ function Link({
       {...props}
     >
       {children}
-      {isExternal && <ExternalLinkIcon aria-hidden />}
+      {isExternal && <OpenInNewIcon aria-hidden />}
     </LinkPrimitive>
   )
 }
