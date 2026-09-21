@@ -19,7 +19,7 @@ import { WellIcon, SeismicIcon } from "@tecton/react/icons"
 ```
 
 <Callout title="Glyph sources">
-  The glyphs come from the Tecton icon export vendored in `packages/tecton-react/icons-src/tecton/` (one `defineTectonSvgIcon` definition per icon with outlined and filled markup). That export also carries general-purpose glyphs (add, chevron, search…); they are deliberately not generated, because Lucide already provides them. `icons:build` generates a React component for every manifest entry marked `domain: true`, and every rendered `<svg>` reports its origin through `data-tecton-source` (`svg` for all 18 today). Drop a newer export into that folder and rebuild to update the set.
+  The glyphs come from the Tecton icon export vendored in `packages/tecton-react/icons-src/tecton/` (one `defineTectonSvgIcon` definition per icon with outlined and filled markup). The Tecton set's general-purpose glyphs (add, chevron, search…) are not vendored at all, because Lucide already provides them. `icons:build` generates a React component for every manifest entry marked `domain: true`, and every rendered `<svg>` reports its origin through `data-tecton-source` (`svg` for all 18 today). Drop a newer export into that folder and rebuild to update the set.
 </Callout>
 
 ## Gallery

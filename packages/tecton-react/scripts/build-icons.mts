@@ -11,9 +11,10 @@
  *
  * Only the SHIPPED icons are generated — the `domain: true` entries, per
  * `isShippedIcon()` in scripts/icon-utils.mts. The manifest and the vendored
- * export stay complete (they describe the whole Tecton export), but the
- * general-purpose glyphs in it duplicate lucide-react and are not published.
- * Components left behind by an entry that no longer ships are swept away.
+ * export are already trimmed to those (the Tecton set's general-purpose glyphs
+ * duplicate lucide-react and are neither vendored nor published), so the filter
+ * matters when a fresh full export is dropped in. Components left behind by an
+ * entry that no longer ships are swept away.
  *
  * Outputs (all GENERATED, all overwritten on every run)
  *   src/icons/<slug>.tsx           one component per shipped manifest icon
@@ -79,8 +80,9 @@ const TECTON_DEFINITIONS_DIR = path.join(pkgRoot, "icons-src/tecton");
  *
  *   - Not 2, even though the modal Tecton glyph sits in a 12x12 live area
  *     (inset exactly 2.0 is the single most common margin in the export and
- *     `checkbox` is exactly `2 2 14 14`): 58 of the 131 glyphs reach past it,
- *     by up to a full 2 units, so `viewBox="2 2 12 12"` would clip them.
+ *     `checkbox` is exactly `2 2 14 14`): 58 of the 131 glyphs in the full
+ *     Tecton export reach past it, by up to a full 2 units, so
+ *     `viewBox="2 2 12 12"` would clip them.
  *     Only 19 glyphs have less than 1 unit to spare, and each of those is
  *     clamped individually rather than clipped.
  *

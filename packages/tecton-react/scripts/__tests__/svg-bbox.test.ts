@@ -320,8 +320,11 @@ const definitions: Measured[] = await Promise.all(
 )
 
 describe("the Tecton icon export", () => {
-  it("has definitions to measure", () => {
-    expect(definitions.length).toBeGreaterThan(100)
+  it("vendors exactly the shipped manifest entries", () => {
+    expect(definitions.map((d) => d.slug).sort()).toEqual(
+      [...shippedSlugs].sort()
+    )
+    expect(definitions).toHaveLength(shippedSlugs.size)
   })
 
   it("keeps ICON_VIEWBOX_INSET in sync with build-icons.mts", () => {
@@ -381,7 +384,7 @@ describe("the Tecton icon export", () => {
       .map((name) => name.replace(/\.tsx?$/, ""))
       .sort()
     expect(generated).toEqual([...shippedSlugs].sort())
-    expect(generated).toHaveLength(18)
+    expect(generated).toHaveLength(shippedSlugs.size)
   })
 
   it("generated components render the cropped viewBox for both variants", () => {
