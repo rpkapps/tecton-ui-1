@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { BookmarkIcon } from "lucide-react"
+import { BookmarkIcon } from "@tecton/react/icons"
 
 import {
   useTranslation,

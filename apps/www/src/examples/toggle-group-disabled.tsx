@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/toggle-group-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Bold, Italic, Underline } from "lucide-react"
+import { FormatBoldIcon, FormatItalicIcon, FormatUnderlinedIcon } from "@tecton/react/icons"
 
 import {
   ToggleGroup,
@@ -10,13 +10,13 @@ export function ToggleGroupDisabled() {
   return (
     <ToggleGroup isDisabled>
       <ToggleGroupItem id="bold" aria-label="Toggle bold">
-        <Bold />
+        <FormatBoldIcon />
       </ToggleGroupItem>
       <ToggleGroupItem id="italic" aria-label="Toggle italic">
-        <Italic />
+        <FormatItalicIcon />
       </ToggleGroupItem>
       <ToggleGroupItem id="strikethrough" aria-label="Toggle strikethrough">
-        <Underline />
+        <FormatUnderlinedIcon />
       </ToggleGroupItem>
     </ToggleGroup>
   )

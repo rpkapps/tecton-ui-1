@@ -2,17 +2,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  ArchiveIcon,
-  ArrowLeftIcon,
-  CalendarPlusIcon,
-  ClockIcon,
-  ListFilterIcon,
-  MailCheckIcon,
-  MoreHorizontalIcon,
-  TagIcon,
-  Trash2Icon,
-} from "lucide-react"
+import { ArchiveIcon, ArrowLeftIcon, CalendarAddOnIcon, DeleteIcon, FilterListIcon, LabelIcon, MarkEmailReadIcon, MoreHorizIcon, ScheduleIcon } from "@tecton/react/icons"
 
 import {
   useTranslation,
@@ -102,7 +92,7 @@ export function ButtonGroupRtl() {
           <Button variant="outline">{t.snooze}</Button>
           <DropdownMenuTrigger>
             <Button variant="outline" size="icon" aria-label="More Options">
-              <MoreHorizontalIcon />
+              <MoreHorizIcon />
             </Button>
             <DropdownMenu
               placement={dir === "rtl" ? "bottom start" : "bottom end"}
@@ -112,7 +102,7 @@ export function ButtonGroupRtl() {
             >
               <DropdownMenuGroup>
                 <DropdownMenuItem>
-                  <MailCheckIcon />
+                  <MarkEmailReadIcon />
                   {t.markAsRead}
                 </DropdownMenuItem>
                 <DropdownMenuItem>
@@ -123,20 +113,20 @@ export function ButtonGroupRtl() {
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem>
-                  <ClockIcon />
+                  <ScheduleIcon />
                   {t.snooze}
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <CalendarPlusIcon />
+                  <CalendarAddOnIcon />
                   {t.addToCalendar}
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <ListFilterIcon />
+                  <FilterListIcon />
                   {t.addToList}
                 </DropdownMenuItem>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
-                    <TagIcon />
+                    <LabelIcon />
                     {t.labelAs}
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent
@@ -159,7 +149,7 @@ export function ButtonGroupRtl() {
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem variant="destructive">
-                  <Trash2Icon />
+                  <DeleteIcon />
                   {t.trash}
                 </DropdownMenuItem>
               </DropdownMenuGroup>

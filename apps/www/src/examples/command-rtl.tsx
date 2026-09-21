@@ -2,14 +2,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  Calculator,
-  Calendar,
-  CreditCard,
-  Settings,
-  Smile,
-  User,
-} from "lucide-react"
+import { CalculateIcon, CalendarMonthIcon, CreditCardIcon, PersonIcon, SentimentSatisfiedIcon, SettingsIcon } from "@tecton/react/icons"
 
 import {
   useTranslation,
@@ -82,32 +75,32 @@ export function CommandRtl() {
       >
         <CommandGroup heading={t.suggestions}>
           <CommandItem textValue={t.calendar}>
-            <Calendar />
+            <CalendarMonthIcon />
             <span>{t.calendar}</span>
           </CommandItem>
           <CommandItem textValue={t.searchEmoji}>
-            <Smile />
+            <SentimentSatisfiedIcon />
             <span>{t.searchEmoji}</span>
           </CommandItem>
           <CommandItem textValue={t.calculator} isDisabled>
-            <Calculator />
+            <CalculateIcon />
             <span>{t.calculator}</span>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading={t.settings}>
           <CommandItem textValue={t.profile}>
-            <User />
+            <PersonIcon />
             <span>{t.profile}</span>
             <CommandShortcut>⌘P</CommandShortcut>
           </CommandItem>
           <CommandItem textValue={t.billing}>
-            <CreditCard />
+            <CreditCardIcon />
             <span>{t.billing}</span>
             <CommandShortcut>⌘B</CommandShortcut>
           </CommandItem>
           <CommandItem textValue={t.settings}>
-            <Settings />
+            <SettingsIcon />
             <span>{t.settings}</span>
             <CommandShortcut>⌘S</CommandShortcut>
           </CommandItem>

@@ -2,21 +2,21 @@
 
 import * as React from "react"
 import {
-  HandIcon,
-  LassoIcon,
+  CropFreeIcon,
+  EditSquareIcon,
+  ExportUploadIcon,
+  LassoSelectIcon,
   LayersIcon,
-  MoreVerticalIcon,
-  MousePointer2Icon,
-  PencilIcon,
+  MoreVertIcon,
+  PanToolIcon,
   RedoIcon,
   RulerIcon,
-  ScanIcon,
-  SquareDashedIcon,
+  SelectCursorIcon,
+  SelectIcon,
   UndoIcon,
-  UploadIcon,
   ZoomInIcon,
   ZoomOutIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -178,7 +178,7 @@ export default function Page() {
           </span>
           <div className="ml-auto flex items-center gap-1">
             <Button variant="ghost" size="sm">
-              <UploadIcon data-icon="inline-start" /> Review and publish
+              <ExportUploadIcon data-icon="inline-start" /> Review and publish
             </Button>
             <Button variant="secondary" size="sm">
               Share
@@ -229,14 +229,14 @@ export default function Page() {
                 isActive={tool === "pan"}
                 onPress={() => setTool("pan")}
               >
-                <HandIcon />
+                <PanToolIcon />
               </Tool>
               <Tool
                 label="Lasso"
                 isActive={tool === "lasso"}
                 onPress={() => setTool("lasso")}
               >
-                <LassoIcon />
+                <LassoSelectIcon />
               </Tool>
             </CanvasToolbar>
             <CanvasToolbar aria-label="Editing tools">
@@ -286,7 +286,7 @@ export default function Page() {
                 isActive={tool === "section"}
                 onPress={() => setTool("section")}
               >
-                <ScanIcon />
+                <CropFreeIcon />
               </Tool>
               <Separator className="mx-1 w-auto" />
               {/* Nothing has been edited yet, so there is nothing to step through. */}
@@ -311,14 +311,14 @@ export default function Page() {
                 isActive={tool === "select"}
                 onPress={() => setTool("select")}
               >
-                <MousePointer2Icon />
+                <SelectCursorIcon />
               </Tool>
               <Tool
                 label="Marquee"
                 isActive={tool === "marquee"}
                 onPress={() => setTool("marquee")}
               >
-                <SquareDashedIcon />
+                <SelectIcon />
               </Tool>
               <Separator className="mx-1 w-auto" />
               <Tool
@@ -326,16 +326,16 @@ export default function Page() {
                 isActive={tool === "polygon"}
                 onPress={() => setTool("polygon")}
               >
-                <PencilIcon />
+                <EditSquareIcon />
               </Tool>
               <Tool label="Export">
-                <UploadIcon />
+                <ExportUploadIcon />
               </Tool>
             </CanvasToolbar>
             <CanvasToolbar aria-label="More">
               <DropdownMenuTrigger>
                 <Tool label="More">
-                  <MoreVerticalIcon />
+                  <MoreVertIcon />
                 </Tool>
                 <DropdownMenu placement="bottom end" className="w-48">
                   <DropdownMenuItem

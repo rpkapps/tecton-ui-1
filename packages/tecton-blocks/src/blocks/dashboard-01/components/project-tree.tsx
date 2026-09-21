@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { PlusIcon } from "lucide-react"
+import { AddIcon } from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -109,7 +109,7 @@ function ProjectTree({
           Project
         </span>
         <Button variant="ghost" size="icon-xs" aria-label="Add to project">
-          <PlusIcon />
+          <AddIcon />
         </Button>
       </div>
       <TreeView

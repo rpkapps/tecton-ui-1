@@ -349,7 +349,7 @@ Update our columns definition to add a new `actions` column. The `actions` cell 
 "use client"
 
 import { createColumnHelper } from "@tanstack/react-table"
-import { MoreHorizontal } from "lucide-react"
+import { MoreHorizIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -371,7 +371,7 @@ export const columns = columnHelper.columns([
         <DropdownMenuTrigger>
           <Button variant="ghost" size="icon-xs">
             <span className="sr-only">Open menu</span>
-            <MoreHorizontal />
+            <MoreHorizIcon />
           </Button>
           <DropdownMenu placement="bottom end" className="w-44">
             <DropdownMenuGroup>
@@ -534,7 +534,7 @@ We can now update the `email` header cell to add sorting controls.
 "use client"
 
 import { createColumnHelper } from "@tanstack/react-table"
-import { ArrowUpDown } from "lucide-react"
+import { SortEnabledIcon } from "@tecton/react/icons"
 
 import { buttonVariants } from "@tecton/react/components/button"
 
@@ -544,7 +544,7 @@ export const columns = columnHelper.columns([
       return (
         <div className={buttonVariants({ variant: "ghost" })}>
           Email
-          <ArrowUpDown className="ml-2 h-4 w-4" />
+          <SortEnabledIcon className="ml-2 h-4 w-4" />
         </div>
       )
     },

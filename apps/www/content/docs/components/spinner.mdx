@@ -24,11 +24,11 @@ You can replace the default spinner icon with any other icon by editing the `Spi
 
 ```tsx showLineNumbers title="@tecton/react/components/spinner.tsx"
 import { cn } from "cn"
-import { LoaderIcon } from "lucide-react"
+import { ProgressActivityIcon } from "@tecton/react/icons"
 
 function Spinner({ className, ...props }: React.ComponentProps<"svg">) {
   return (
-    <LoaderIcon
+    <ProgressActivityIcon
       role="status"
       aria-label="Loading"
       className={cn("size-4 animate-spin", className)}

@@ -3,15 +3,15 @@
 import * as React from "react"
 import { cn } from "cn"
 import {
-  BugIcon,
-  CircleHelpIcon,
+  AutoAwesomeIcon,
+  BugReportIcon,
+  HelpIcon,
   HomeIcon,
   KeyboardIcon,
-  LogOutIcon,
+  LogoutIcon,
+  PersonIcon,
   SettingsIcon,
-  SparklesIcon,
-  UserIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -141,8 +141,8 @@ function ShellHeaderInner({
   if (!current) return null
 
   const secondary = [
-    { id: "whats-new", label: "What's new", icon: SparklesIcon },
-    { id: "bug", label: "Report a bug", icon: BugIcon },
+    { id: "whats-new", label: "What's new", icon: AutoAwesomeIcon },
+    { id: "bug", label: "Report a bug", icon: BugReportIcon },
     { id: "settings", label: "Settings", icon: SettingsIcon },
   ]
 
@@ -218,7 +218,7 @@ function ShellHeaderInner({
           shortcut="?"
           onPress={() => setShortcutsOpen(true)}
         >
-          <CircleHelpIcon />
+          <HelpIcon />
         </AppShellAction>
         {secondary.map((action) => (
           <AppShellAction
@@ -252,7 +252,7 @@ function ShellHeaderInner({
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem textValue="Profile">
-              <UserIcon /> Profile
+              <PersonIcon /> Profile
             </DropdownMenuItem>
             <DropdownMenuItem textValue="Preferences">
               <SettingsIcon /> Preferences
@@ -267,7 +267,7 @@ function ShellHeaderInner({
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem textValue="Sign out">
-              <LogOutIcon /> Sign out
+              <LogoutIcon /> Sign out
             </DropdownMenuItem>
           </DropdownMenuGroup>
         </AppShellUserMenu>

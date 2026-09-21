@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/input-group-block-start.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { CopyIcon, FileCodeIcon } from "lucide-react"
+import { CodeBlocksIcon, CopyIcon } from "@tecton/react/icons"
 
 import {
   Field,
@@ -41,7 +41,7 @@ export function InputGroupBlockStart() {
             className="font-mono text-sm"
           />
           <InputGroupAddon align="block-start">
-            <FileCodeIcon className="text-muted-foreground" />
+            <CodeBlocksIcon className="text-muted-foreground" />
             <InputGroupText className="font-mono">script.js</InputGroupText>
             <InputGroupButton size="icon-xs" className="ml-auto">
               <CopyIcon />

@@ -3,12 +3,12 @@
 import * as React from "react"
 import { cn } from "cn"
 import {
-  BellIcon,
-  CircleCheckIcon,
+  CheckCircleIcon,
+  CloseIcon,
+  NotificationsIcon,
   PaletteIcon,
-  UserIcon,
-  XIcon,
-} from "lucide-react"
+  PersonIcon,
+} from "@tecton/react/icons"
 
 import {
   Alert,
@@ -89,7 +89,7 @@ function SettingsPage({
 
         {toast && (
           <Alert variant="success" appearance="outline">
-            <CircleCheckIcon />
+            <CheckCircleIcon />
             <AlertTitle>Settings saved</AlertTitle>
             <AlertDescription>
               Your preferences are synced across devices.
@@ -101,7 +101,7 @@ function SettingsPage({
                 aria-label="Dismiss"
                 onPress={() => setToast(false)}
               >
-                <XIcon />
+                <CloseIcon />
               </Button>
             </AlertAction>
           </Alert>
@@ -110,10 +110,10 @@ function SettingsPage({
         <Tabs defaultSelectedKey="profile" className="gap-6">
           <TabsList variant="line" aria-label="Settings sections">
             <TabsTrigger id="profile">
-              <UserIcon /> Profile
+              <PersonIcon /> Profile
             </TabsTrigger>
             <TabsTrigger id="notifications">
-              <BellIcon /> Notifications
+              <NotificationsIcon /> Notifications
             </TabsTrigger>
             <TabsTrigger id="appearance">
               <PaletteIcon /> Appearance

@@ -7,7 +7,7 @@ import {
   RulerIcon,
   ZoomInIcon,
   ZoomOutIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { Separator } from "@tecton/react/components/separator"

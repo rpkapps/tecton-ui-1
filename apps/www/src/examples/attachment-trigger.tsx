@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/attachment-trigger.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { CopyIcon, FileSearchIcon, XIcon } from "lucide-react"
+import { CloseIcon, CopyIcon, FindInPageIcon } from "@tecton/react/icons"
 
 import {
   Attachment,
@@ -25,7 +25,7 @@ export function AttachmentTriggerDemo() {
       <DialogTrigger>
         <Attachment className="w-full">
           <AttachmentMedia>
-            <FileSearchIcon />
+            <FindInPageIcon />
           </AttachmentMedia>
           <AttachmentContent>
             <AttachmentTitle>research-summary.pdf</AttachmentTitle>
@@ -36,7 +36,7 @@ export function AttachmentTriggerDemo() {
               <CopyIcon />
             </AttachmentAction>
             <AttachmentAction aria-label="Remove research-summary.pdf">
-              <XIcon />
+              <CloseIcon />
             </AttachmentAction>
           </AttachmentActions>
           <DialogTrigger>

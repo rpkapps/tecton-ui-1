@@ -2,30 +2,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  AudioWaveform,
-  BadgeCheck,
-  Bell,
-  BookOpen,
-  Bot,
-  ChevronRight,
-  ChevronsUpDown,
-  Command,
-  CreditCard,
-  Folder,
-  Forward,
-  Frame,
-  GalleryVerticalEnd,
-  LogOut,
-  Map,
-  MoreHorizontal,
-  PieChart,
-  Plus,
-  Settings2,
-  Sparkles,
-  SquareTerminal,
-  Trash2,
-} from "lucide-react"
+import { AddIcon, AirwaveIcon, AutoAwesomeIcon, CaretUpDownIcon, ChevronRightIcon, ControlsIcon, CreditCardIcon, DeleteIcon, FolderIcon, ForwardIcon, KeyboardCommandKeyIcon, LogoutIcon, MapIcon, MenuBookIcon, MoreHorizIcon, NotificationsIcon, PieChartIcon, ProjectIcon, Robot2Icon, StacksIcon, TerminalIcon, VerifiedIcon } from "@tecton/react/icons"
 
 import {
   Avatar,
@@ -77,17 +54,17 @@ const data = {
   teams: [
     {
       name: "Acme Inc",
-      logo: GalleryVerticalEnd,
+      logo: StacksIcon,
       plan: "Enterprise",
     },
     {
       name: "Acme Corp.",
-      logo: AudioWaveform,
+      logo: AirwaveIcon,
       plan: "Startup",
     },
     {
       name: "Evil Corp.",
-      logo: Command,
+      logo: KeyboardCommandKeyIcon,
       plan: "Free",
     },
   ],
@@ -95,7 +72,7 @@ const data = {
     {
       title: "Playground",
       url: "#",
-      icon: SquareTerminal,
+      icon: TerminalIcon,
       isActive: true,
       items: [
         {
@@ -115,7 +92,7 @@ const data = {
     {
       title: "Models",
       url: "#",
-      icon: Bot,
+      icon: Robot2Icon,
       items: [
         {
           title: "Genesis",
@@ -134,7 +111,7 @@ const data = {
     {
       title: "Documentation",
       url: "#",
-      icon: BookOpen,
+      icon: MenuBookIcon,
       items: [
         {
           title: "Introduction",
@@ -157,7 +134,7 @@ const data = {
     {
       title: "Settings",
       url: "#",
-      icon: Settings2,
+      icon: ControlsIcon,
       items: [
         {
           title: "General",
@@ -182,17 +159,17 @@ const data = {
     {
       name: "Design Engineering",
       url: "#",
-      icon: Frame,
+      icon: ProjectIcon,
     },
     {
       name: "Sales & Marketing",
       url: "#",
-      icon: PieChart,
+      icon: PieChartIcon,
     },
     {
       name: "Travel",
       url: "#",
-      icon: Map,
+      icon: MapIcon,
     },
   ],
 }
@@ -228,7 +205,7 @@ function TeamSwitcher({
               <span className="truncate font-medium">{activeTeam.name}</span>
               <span className="truncate text-xs">{activeTeam.plan}</span>
             </div>
-            <ChevronsUpDown className="ml-auto" />
+            <CaretUpDownIcon className="ml-auto" />
           </SidebarMenuButton>
           <DropdownMenu
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
@@ -257,7 +234,7 @@ function TeamSwitcher({
             <DropdownMenuGroup>
               <DropdownMenuItem className="gap-2 p-2">
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                  <Plus className="size-4" />
+                  <AddIcon className="size-4" />
                 </div>
                 <div className="font-medium text-muted-foreground">
                   Add team
@@ -299,7 +276,7 @@ function NavMain({
               <SidebarMenuButton slot="trigger" tooltip={item.title}>
                 {item.icon && <item.icon />}
                 <span>{item.title}</span>
-                <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                <ChevronRightIcon className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
               </SidebarMenuButton>
               <CollapsibleContent>
                 <SidebarMenuSub>
@@ -343,7 +320,7 @@ function NavProjects({
             </SidebarMenuButton>
             <DropdownMenuTrigger>
               <SidebarMenuAction showOnHover>
-                <MoreHorizontal />
+                <MoreHorizIcon />
                 <span className="sr-only">More</span>
               </SidebarMenuAction>
               <DropdownMenu
@@ -351,16 +328,16 @@ function NavProjects({
                 placement={isMobile ? "bottom end" : "right top"}
               >
                 <DropdownMenuItem>
-                  <Folder className="text-muted-foreground" />
+                  <FolderIcon className="text-muted-foreground" />
                   <span>View Project</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <Forward className="text-muted-foreground" />
+                  <ForwardIcon className="text-muted-foreground" />
                   <span>Share Project</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem>
-                  <Trash2 className="text-muted-foreground" />
+                  <DeleteIcon className="text-muted-foreground" />
                   <span>Delete Project</span>
                 </DropdownMenuItem>
               </DropdownMenu>
@@ -369,7 +346,7 @@ function NavProjects({
         ))}
         <SidebarMenuItem>
           <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontal className="text-sidebar-foreground/70" />
+            <MoreHorizIcon className="text-sidebar-foreground/70" />
             <span>More</span>
           </SidebarMenuButton>
         </SidebarMenuItem>
@@ -405,7 +382,7 @@ function NavUser({
               <span className="truncate font-medium">{user.name}</span>
               <span className="truncate text-xs">{user.email}</span>
             </div>
-            <ChevronsUpDown className="ml-auto size-4" />
+            <CaretUpDownIcon className="ml-auto size-4" />
           </SidebarMenuButton>
           <DropdownMenu
             className="w-(--radix-dropdown-menu-trigger-width) min-w-56 rounded-lg"
@@ -429,29 +406,29 @@ function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <Sparkles />
+                <AutoAwesomeIcon />
                 Upgrade to Pro
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <BadgeCheck />
+                <VerifiedIcon />
                 Account
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <CreditCard />
+                <CreditCardIcon />
                 Billing
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <Bell />
+                <NotificationsIcon />
                 Notifications
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <LogOut />
+                <LogoutIcon />
                 Log out
               </DropdownMenuItem>
             </DropdownMenuGroup>

@@ -6,10 +6,10 @@ import {
   ChevronDownIcon,
   CopyIcon,
   DatabaseIcon,
-  MoreVerticalIcon,
-  PencilIcon,
-  TrashIcon,
-} from "lucide-react"
+  DeleteIcon,
+  EditSquareIcon,
+  MoreVertIcon,
+} from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -227,7 +227,7 @@ function PresetList({
                               className="relative"
                               aria-label={`Actions for ${preset.name}`}
                             >
-                              <MoreVerticalIcon />
+                              <MoreVertIcon />
                             </Button>
                             <DropdownMenu placement="bottom end">
                               <DropdownMenuItem
@@ -236,14 +236,14 @@ function PresetList({
                                 Open view
                               </DropdownMenuItem>
                               <DropdownMenuItem>
-                                <PencilIcon /> Rename
+                                <EditSquareIcon /> Rename
                               </DropdownMenuItem>
                               <DropdownMenuItem>
                                 <CopyIcon /> Duplicate
                               </DropdownMenuItem>
                               <DropdownMenuSeparator />
                               <DropdownMenuItem variant="destructive">
-                                <TrashIcon /> Delete view
+                                <DeleteIcon /> Delete view
                               </DropdownMenuItem>
                             </DropdownMenu>
                           </DropdownMenuTrigger>

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { CrownIcon, PanelRightIcon, PanelRightOpenIcon } from "lucide-react"
+import { CrownIcon, PanelIcon, RightPanelOpenIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -72,7 +72,7 @@ function CostVsRiskPanel({
             aria-label="Collapse panel"
             {...(onCollapse === undefined ? {} : { onPress: onCollapse })}
           >
-            <PanelRightIcon />
+            <PanelIcon />
           </Button>
         </PanelActions>
       </PanelHeader>
@@ -212,7 +212,7 @@ export default function CostVsRiskPanelPage() {
             aria-label="Expand cost vs risk panel"
             onPress={() => setOpen(true)}
           >
-            <PanelRightOpenIcon />
+            <RightPanelOpenIcon />
           </Button>
         </div>
       )}

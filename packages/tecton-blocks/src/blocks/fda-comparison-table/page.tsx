@@ -4,7 +4,7 @@ import * as React from "react"
 import { useTable } from "@tanstack/react-table"
 import type { RowSelectionState, SortingState } from "@tanstack/react-table"
 import { cn } from "cn"
-import { PlusIcon } from "lucide-react"
+import { AddIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -183,7 +183,7 @@ function FdaComparisonTable({
               ? {}
               : { onPress: onAddComparison })}
           >
-            <PlusIcon /> Add comparison
+            <AddIcon /> Add comparison
             {selectedCount > 1 && (
               <span className="text-muted-foreground">({selectedCount})</span>
             )}

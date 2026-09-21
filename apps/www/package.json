@@ -52,6 +52,7 @@
     "@vitejs/plugin-react": "^6",
     "eslint": "^9",
     "playwright-core": "^1.58.2",
+    "ts-morph": "^26.0.0",
     "typescript": "^6",
     "vite": "^8"
   },

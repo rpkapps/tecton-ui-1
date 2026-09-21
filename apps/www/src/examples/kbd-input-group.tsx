@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/kbd-input-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { SearchIcon } from "lucide-react"
+import { SearchIcon } from "@tecton/react/icons"
 
 import {
   InputGroup,

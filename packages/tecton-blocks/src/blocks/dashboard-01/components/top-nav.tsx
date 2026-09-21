@@ -3,13 +3,13 @@
 import * as React from "react"
 import { cn } from "cn"
 import {
-  BellIcon,
   LayersIcon,
-  LogOutIcon,
+  LogoutIcon,
+  NotificationsIcon,
+  PersonIcon,
   SearchIcon,
   SettingsIcon,
-  UserIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import { Avatar, AvatarFallback } from "@tecton/react/components/avatar"
 import { Button } from "@tecton/react/components/button"
@@ -92,7 +92,7 @@ function TopNav({
         <TooltipTrigger>
           <CountBadge count={project.unreadNotifications} color="destructive">
             <Button variant="ghost" size="icon-sm" aria-label="Notifications">
-              <BellIcon />
+              <NotificationsIcon />
             </Button>
           </CountBadge>
           <Tooltip>{project.unreadNotifications} unread</Tooltip>
@@ -121,14 +121,14 @@ function TopNav({
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <UserIcon /> Profile
+              <PersonIcon /> Profile
             </DropdownMenuItem>
             <DropdownMenuItem>
               <SettingsIcon /> Settings
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <LogOutIcon /> Sign out
+              <LogoutIcon /> Sign out
             </DropdownMenuItem>
           </DropdownMenu>
         </DropdownMenuTrigger>

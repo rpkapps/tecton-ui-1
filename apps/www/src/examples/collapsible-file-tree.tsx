@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/collapsible-file-tree.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { ChevronRightIcon, FileIcon, FolderIcon } from "lucide-react"
+import { ChevronRightIcon, DraftIcon, FolderIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { Card, CardContent, CardHeader } from "@tecton/react/components/card"
@@ -94,7 +94,7 @@ export function CollapsibleFileTree() {
         size="sm"
         className="w-full justify-start gap-2 text-foreground"
       >
-        <FileIcon />
+        <DraftIcon />
         <span>{fileItem.name}</span>
       </Button>
     )

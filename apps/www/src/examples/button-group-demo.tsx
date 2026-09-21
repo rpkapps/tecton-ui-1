@@ -2,17 +2,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  ArchiveIcon,
-  ArrowLeftIcon,
-  CalendarPlusIcon,
-  ClockIcon,
-  ListFilterIcon,
-  MailCheckIcon,
-  MoreHorizontalIcon,
-  TagIcon,
-  Trash2Icon,
-} from "lucide-react"
+import { ArchiveIcon, ArrowLeftIcon, CalendarAddOnIcon, DeleteIcon, FilterListIcon, LabelIcon, MarkEmailReadIcon, MoreHorizIcon, ScheduleIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { ButtonGroup } from "@tecton/react/components/button-group"
@@ -45,12 +35,12 @@ export default function ButtonGroupDemo() {
         <Button variant="outline">Snooze</Button>
         <DropdownMenuTrigger>
           <Button variant="outline" size="icon" aria-label="More Options">
-            <MoreHorizontalIcon />
+            <MoreHorizIcon />
           </Button>
           <DropdownMenu placement="bottom end" className="w-40">
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <MailCheckIcon />
+                <MarkEmailReadIcon />
                 Mark as Read
               </DropdownMenuItem>
               <DropdownMenuItem>
@@ -61,20 +51,20 @@ export default function ButtonGroupDemo() {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem>
-                <ClockIcon />
+                <ScheduleIcon />
                 Snooze
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <CalendarPlusIcon />
+                <CalendarAddOnIcon />
                 Add to Calendar
               </DropdownMenuItem>
               <DropdownMenuItem>
-                <ListFilterIcon />
+                <FilterListIcon />
                 Add to List
               </DropdownMenuItem>
               <DropdownMenuSub>
                 <DropdownMenuSubTrigger>
-                  <TagIcon />
+                  <LabelIcon />
                   Label As...
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent
@@ -91,7 +81,7 @@ export default function ButtonGroupDemo() {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem variant="destructive">
-                <Trash2Icon />
+                <DeleteIcon />
                 Trash
               </DropdownMenuItem>
             </DropdownMenuGroup>

@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { CreditCardIcon, SettingsIcon, UserIcon } from "lucide-react"
+import { CreditCardIcon, PersonIcon, SettingsIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -34,7 +34,7 @@ export function CommandWithShortcuts() {
           >
             <CommandGroup heading="Settings">
               <CommandItem textValue="Profile">
-                <UserIcon />
+                <PersonIcon />
                 <span>Profile</span>
                 <CommandShortcut>⌘P</CommandShortcut>
               </CommandItem>

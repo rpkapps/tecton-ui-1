@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { SearchIcon, XIcon } from "lucide-react"
+import { CloseIcon, SearchIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -129,7 +129,7 @@ function WellsFilterBar({
             className="md:ml-auto"
             onPress={() => onChange(emptyFilter)}
           >
-            <XIcon /> Clear filters
+            <CloseIcon /> Clear filters
           </Button>
         )}
       </div>

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { PanelRightOpenIcon } from "lucide-react"
+import { RightPanelOpenIcon } from "@tecton/react/icons"
 
 import {
   Breadcrumb,
@@ -66,7 +66,7 @@ export default function Page() {
             aria-label="Open well properties"
             onPress={() => setPanelOpen(true)}
           >
-            <PanelRightOpenIcon />
+            <RightPanelOpenIcon />
           </Button>
         )}
       </header>

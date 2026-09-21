@@ -1,12 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/context-menu-icons.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import {
-  ClipboardPasteIcon,
-  CopyIcon,
-  ScissorsIcon,
-  TrashIcon,
-} from "lucide-react"
+import { ContentCutIcon, ContentPasteIcon, CopyIcon, DeleteIcon } from "@tecton/react/icons"
 import { Pressable } from "react-aria-components"
 
 import {
@@ -40,18 +35,18 @@ export function ContextMenuIcons() {
             Copy
           </ContextMenuItem>
           <ContextMenuItem>
-            <ScissorsIcon />
+            <ContentCutIcon />
             Cut
           </ContextMenuItem>
           <ContextMenuItem>
-            <ClipboardPasteIcon />
+            <ContentPasteIcon />
             Paste
           </ContextMenuItem>
         </ContextMenuGroup>
         <ContextMenuSeparator />
         <ContextMenuGroup>
           <ContextMenuItem variant="destructive">
-            <TrashIcon />
+            <DeleteIcon />
             Delete
           </ContextMenuItem>
         </ContextMenuGroup>

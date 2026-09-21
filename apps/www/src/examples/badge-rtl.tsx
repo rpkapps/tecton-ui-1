@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { BadgeCheck, BookmarkIcon } from "lucide-react"
+import { BookmarkIcon, VerifiedIcon } from "@tecton/react/icons"
 
 import {
   useTranslation,
@@ -56,7 +56,7 @@ export function BadgeRtl() {
       <Badge variant="destructive">{t.destructive}</Badge>
       <Badge variant="outline">{t.outline}</Badge>
       <Badge variant="secondary">
-        <BadgeCheck data-icon="inline-start" />
+        <VerifiedIcon data-icon="inline-start" />
         {t.verified}
       </Badge>
       <Badge variant="outline">

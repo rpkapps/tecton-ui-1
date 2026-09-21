@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/input-otp-form.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { RefreshCwIcon } from "lucide-react"
+import { SyncIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -39,7 +39,7 @@ export function InputOTPForm() {
               Verification code
             </FieldLabel>
             <Button variant="outline" size="xs">
-              <RefreshCwIcon />
+              <SyncIcon />
               Resend Code
             </Button>
           </div>

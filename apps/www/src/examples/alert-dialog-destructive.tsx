@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/alert-dialog-destructive.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Trash2Icon } from "lucide-react"
+import { DeleteIcon } from "@tecton/react/icons"
 
 import {
   AlertDialog,
@@ -21,7 +21,7 @@ export function AlertDialogDestructive() {
       <AlertDialog size="sm">
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
-            <Trash2Icon />
+            <DeleteIcon />
           </AlertDialogMedia>
           <AlertDialogTitle>Delete chat?</AlertDialogTitle>
           <AlertDialogDescription>

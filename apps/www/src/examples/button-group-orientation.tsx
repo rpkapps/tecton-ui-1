@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/button-group-orientation.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { MinusIcon, PlusIcon } from "lucide-react"
+import { AddIcon, RemoveIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { ButtonGroup } from "@tecton/react/components/button-group"
@@ -12,10 +12,10 @@ export default function ButtonGroupOrientation() {
       className="h-fit"
     >
       <Button variant="outline" size="icon">
-        <PlusIcon />
+        <AddIcon />
       </Button>
       <Button variant="outline" size="icon">
-        <MinusIcon />
+        <RemoveIcon />
       </Button>
     </ButtonGroup>
   )

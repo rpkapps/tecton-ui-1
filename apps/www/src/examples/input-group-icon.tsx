@@ -1,12 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/input-group-icon.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import {
-  CheckIcon,
-  CreditCardIcon,
-  InfoIcon,
-  MailIcon,
-  SearchIcon,
-  StarIcon,
-} from "lucide-react"
+import { CheckIcon, CreditCardIcon, InfoIcon, MailIcon, SearchIcon, StarIcon } from "@tecton/react/icons"
 
 import {
   InputGroup,

@@ -1,18 +1,18 @@
-import type * as React from "react"
 import {
-  BoxIcon,
-  ChartColumnIcon,
-  DrillIcon,
-  GitCompareIcon,
-  LayoutDashboardIcon,
-  MountainIcon,
+  CubeIcon,
+  DashboardIcon,
+  DifferenceIcon,
+  DrillBitIcon,
+  HorizonIcon,
+  ReportsAnalyticsIcon,
   SettingsIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
+import type { TectonIconComponent } from "@tecton/react/icons"
 
 export type RailItem = {
   title: string
   url: string
-  icon: React.ElementType
+  icon: TectonIconComponent
   isActive?: boolean
 }
 
@@ -28,12 +28,12 @@ export type WellProperties = {
 }
 
 export const railMain: RailItem[] = [
-  { title: "Overview", url: "#", icon: LayoutDashboardIcon },
-  { title: "Wells", url: "#", icon: DrillIcon, isActive: true },
-  { title: "Horizons", url: "#", icon: MountainIcon },
-  { title: "Models", url: "#", icon: BoxIcon },
-  { title: "Field development", url: "#", icon: GitCompareIcon },
-  { title: "Analytics", url: "#", icon: ChartColumnIcon },
+  { title: "Overview", url: "#", icon: DashboardIcon },
+  { title: "Wells", url: "#", icon: DrillBitIcon, isActive: true },
+  { title: "Horizons", url: "#", icon: HorizonIcon },
+  { title: "Models", url: "#", icon: CubeIcon },
+  { title: "Field development", url: "#", icon: DifferenceIcon },
+  { title: "Analytics", url: "#", icon: ReportsAnalyticsIcon },
 ]
 
 export const railSecondary: RailItem[] = [

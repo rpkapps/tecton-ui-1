@@ -2,9 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { FolderCodeIcon } from "lucide-react"
-import { ArrowUpRightIcon } from "lucide-react"
-
+import { ArrowOutwardIcon, FolderCodeIcon } from "@tecton/react/icons"
 import {
   useTranslation,
   type Translations,
@@ -77,7 +75,7 @@ export function EmptyRtl() {
         size="sm"
       >
         {t.learnMore}{" "}
-        <ArrowUpRightIcon className="rtl:rotate-270" data-icon="inline-end" />
+        <ArrowOutwardIcon className="rtl:rotate-270" data-icon="inline-end" />
       </LinkButton>
     </Empty>
   )

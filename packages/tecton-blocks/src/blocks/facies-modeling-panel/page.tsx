@@ -3,13 +3,13 @@
 import * as React from "react"
 import { cn } from "cn"
 import {
-  CircleCheckIcon,
-  PanelLeftOpenIcon,
-  PanelRightIcon,
+  CheckCircleIcon,
+  CloseIcon,
+  LeftPanelOpenIcon,
+  PanelIcon,
   PlayIcon,
-  TriangleAlertIcon,
-  XIcon,
-} from "lucide-react"
+  WarningIcon,
+} from "@tecton/react/icons"
 
 import {
   Alert,
@@ -90,14 +90,14 @@ function FaciesModelingPanel({
             aria-label="Collapse panel"
             {...(onCollapse === undefined ? {} : { onPress: onCollapse })}
           >
-            <PanelRightIcon />
+            <PanelIcon />
           </Button>
         </PanelActions>
       </PanelHeader>
       <PanelContent className="flex flex-col gap-4">
         {invalid && (
           <Alert variant="warning" appearance="outline">
-            <TriangleAlertIcon />
+            <WarningIcon />
             <AlertTitle>Proportions must sum to 100%</AlertTitle>
             <AlertDescription>
               Lithotype densities currently total {total}%.
@@ -106,7 +106,7 @@ function FaciesModelingPanel({
         )}
         {lastRun && !invalid && (
           <Alert variant="success" appearance="outline">
-            <CircleCheckIcon />
+            <CheckCircleIcon />
             <AlertTitle>Model generated</AlertTitle>
             <AlertDescription>
               {value.realizations} realizations written at {lastRun}.
@@ -118,7 +118,7 @@ function FaciesModelingPanel({
                 aria-label="Dismiss"
                 onPress={() => setLastRun(null)}
               >
-                <XIcon />
+                <CloseIcon />
               </Button>
             </AlertAction>
           </Alert>
@@ -168,7 +168,7 @@ export default function FaciesModelingPanelPage() {
             aria-label="Expand facies modeling panel"
             onPress={() => setOpen(true)}
           >
-            <PanelLeftOpenIcon />
+            <LeftPanelOpenIcon />
           </Button>
         </div>
       )}

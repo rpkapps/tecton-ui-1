@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/dropdown-menu-destructive.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { PencilIcon, ShareIcon, TrashIcon } from "lucide-react"
+import { DeleteIcon, EditSquareIcon, ShareIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -19,7 +19,7 @@ export function DropdownMenuDestructive() {
       <DropdownMenu>
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <PencilIcon />
+            <EditSquareIcon />
             Edit
           </DropdownMenuItem>
           <DropdownMenuItem>
@@ -30,7 +30,7 @@ export function DropdownMenuDestructive() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem variant="destructive">
-            <TrashIcon />
+            <DeleteIcon />
             Delete
           </DropdownMenuItem>
         </DropdownMenuGroup>

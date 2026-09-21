@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/button-group-popover.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { BotIcon, ChevronDownIcon } from "lucide-react"
+import { ChevronDownIcon, Robot2Icon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { ButtonGroup } from "@tecton/react/components/button-group"
@@ -21,7 +21,7 @@ export default function ButtonGroupPopover() {
   return (
     <ButtonGroup>
       <Button variant="outline">
-        <BotIcon /> Copilot
+        <Robot2Icon /> Copilot
       </Button>
       <PopoverTrigger>
         <Button variant="outline" size="icon" aria-label="Open Popover">

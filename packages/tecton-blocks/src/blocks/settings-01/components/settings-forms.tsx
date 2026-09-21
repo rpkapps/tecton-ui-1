@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { InfoIcon } from "lucide-react"
+import { InfoIcon } from "@tecton/react/icons"
 
 import {
   Alert,

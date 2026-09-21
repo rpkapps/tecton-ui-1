@@ -2,7 +2,11 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { ArrowUpIcon, MicIcon, PaperclipIcon } from "lucide-react"
+import {
+  ArrowUpIcon,
+  AttachFileIcon,
+  MicrophoneIcon,
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -77,7 +81,7 @@ function AgentComposer({
               aria-label="Attach file"
               isDisabled={isDisabled}
             >
-              <PaperclipIcon />
+              <AttachFileIcon />
             </InputGroupButton>
             <Tooltip>Attach</Tooltip>
           </TooltipTrigger>
@@ -89,7 +93,7 @@ function AgentComposer({
               aria-label="Dictate"
               isDisabled={isDisabled}
             >
-              <MicIcon />
+              <MicrophoneIcon />
             </InputGroupButton>
             <Tooltip>Dictate</Tooltip>
           </TooltipTrigger>

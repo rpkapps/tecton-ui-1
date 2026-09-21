@@ -9,7 +9,7 @@ import {
   toCalendarDate,
   type CalendarDate,
 } from "@internationalized/date"
-import { CalendarIcon } from "lucide-react"
+import { CalendarMonthIcon } from "@tecton/react/icons"
 
 import { Calendar } from "@tecton/react/components/calendar"
 import { Field, FieldLabel } from "@tecton/react/components/field"
@@ -81,7 +81,7 @@ export function DatePickerInput() {
               size="icon-xs"
               aria-label="Select date"
             >
-              <CalendarIcon />
+              <CalendarMonthIcon />
               <span className="sr-only">Select date</span>
             </InputGroupButton>
             <Popover

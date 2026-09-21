@@ -155,6 +155,7 @@ apps/www/src/examples/checkbox-group.tsx
 apps/www/src/examples/checkbox-invalid.tsx
 apps/www/src/examples/checkbox-rtl.tsx
 apps/www/src/examples/checkbox-table.tsx
+apps/www/src/examples/collapsible-basic.tsx
 apps/www/src/examples/collapsible-demo.tsx
 apps/www/src/examples/collapsible-file-tree.tsx
 apps/www/src/examples/collapsible-rtl.tsx

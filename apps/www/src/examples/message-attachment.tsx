@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/message-attachment.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { DownloadIcon, FileTextIcon } from "lucide-react"
+import { DescriptionIcon, DownloadIcon } from "@tecton/react/icons"
 
 import {
   Attachment,
@@ -45,7 +45,7 @@ export function MessageAttachmentDemo() {
           </Bubble>
           <Attachment>
             <AttachmentMedia>
-              <FileTextIcon />
+              <DescriptionIcon />
             </AttachmentMedia>
             <AttachmentContent>
               <AttachmentTitle>sales-dashboard.pdf</AttachmentTitle>

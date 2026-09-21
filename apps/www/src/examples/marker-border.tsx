@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/marker-border.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { FileTextIcon, GitBranchIcon, SearchIcon } from "lucide-react"
+import { AccountTreeIcon, DescriptionIcon, SearchIcon } from "@tecton/react/icons"
 
 import { Marker, MarkerContent, MarkerIcon } from "@tecton/react/components/marker"
 
@@ -8,7 +8,7 @@ export function MarkerBorderDemo() {
     <div className="flex w-full max-w-sm flex-col gap-3 py-12">
       <Marker variant="border">
         <MarkerIcon>
-          <GitBranchIcon />
+          <AccountTreeIcon />
         </MarkerIcon>
         <MarkerContent>Switched to release-candidate</MarkerContent>
       </Marker>
@@ -20,7 +20,7 @@ export function MarkerBorderDemo() {
       </Marker>
       <Marker variant="border">
         <MarkerIcon>
-          <FileTextIcon />
+          <DescriptionIcon />
         </MarkerIcon>
         <MarkerContent>Opened implementation notes</MarkerContent>
       </Marker>

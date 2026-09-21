@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/button-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { ArrowRightIcon, PlusIcon } from "lucide-react"
+import { AddIcon, ArrowRightIcon } from "@tecton/react/icons"
 
 import {
   useTranslation,
@@ -52,7 +52,7 @@ export function ButtonRtl() {
         <ArrowRightIcon className="rtl:rotate-180" data-icon="inline-end" />
       </Button>
       <Button variant="outline" size="icon" aria-label="Add">
-        <PlusIcon />
+        <AddIcon />
       </Button>
       <Button variant="secondary" isDisabled>
         <Spinner data-icon="inline-start" /> {t.loading}

@@ -12,8 +12,7 @@
         "application"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -53,8 +52,7 @@
         "layouts"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -120,7 +118,6 @@
       ],
       "dependencies": [
         "cn",
-        "lucide-react",
         "recharts"
       ],
       "registryDependencies": [],
@@ -156,8 +153,7 @@
         "dashboard"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [
         "@tecton/ai-agent-panel",
@@ -197,8 +193,7 @@
         "layouts"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -233,8 +228,7 @@
         "forms"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -269,8 +263,7 @@
         "application"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -301,8 +294,7 @@
       ],
       "dependencies": [
         "@tanstack/react-table",
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -332,8 +324,7 @@
         "states"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [
         "@tecton/page-state"
@@ -365,8 +356,7 @@
         "forms"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -402,8 +392,7 @@
       ],
       "dependencies": [
         "@tanstack/react-table",
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -438,8 +427,7 @@
         "authentication"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -469,8 +457,7 @@
         "states"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [
         "@tecton/page-state"
@@ -502,8 +489,7 @@
         "states"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [
         "@tecton/page-state"
@@ -535,8 +521,7 @@
         "states"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [
         "@tecton/page-state"
@@ -569,8 +554,7 @@
       ],
       "dependencies": [
         "class-variance-authority",
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -605,8 +589,7 @@
         "states"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [
         "@tecton/page-state"
@@ -638,8 +621,7 @@
         "states"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [
         "@tecton/page-state"
@@ -671,8 +653,7 @@
         "forms"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -702,8 +683,7 @@
         "layouts"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -742,9 +722,7 @@
       "categories": [
         "layouts"
       ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": [],
       "registryDependencies": [],
       "files": [
         {
@@ -787,9 +765,7 @@
       "categories": [
         "layouts"
       ],
-      "dependencies": [
-        "lucide-react"
-      ],
+      "dependencies": [],
       "registryDependencies": [],
       "files": [
         {
@@ -838,7 +814,6 @@
         "layouts"
       ],
       "dependencies": [
-        "lucide-react",
         "react-aria-components"
       ],
       "registryDependencies": [],
@@ -869,8 +844,7 @@
         "layouts"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [
@@ -910,8 +884,7 @@
         "application"
       ],
       "dependencies": [
-        "cn",
-        "lucide-react"
+        "cn"
       ],
       "registryDependencies": [],
       "files": [

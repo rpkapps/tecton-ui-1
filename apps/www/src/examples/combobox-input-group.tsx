@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/combobox-input-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { GlobeIcon } from "lucide-react"
+import { PublicIcon } from "@tecton/react/icons"
 
 import {
   Combobox,
@@ -57,7 +57,7 @@ export function ComboxboxInputGroup() {
     <Combobox allowsEmptyCollection aria-label="Timezone">
       <ComboboxInput placeholder="Select a timezone">
         <InputGroupAddon>
-          <GlobeIcon />
+          <PublicIcon />
         </InputGroupAddon>
       </ComboboxInput>
       <ComboboxContent crossOffset={-28} className="w-60">

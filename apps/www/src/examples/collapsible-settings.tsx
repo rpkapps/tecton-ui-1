@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { MaximizeIcon, MinimizeIcon } from "lucide-react"
+import { CollapseContentIcon, ExpandContentIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -66,7 +66,7 @@ export function CollapsibleSettings() {
             </CollapsibleContent>
           </FieldGroup>
           <Button slot="trigger" variant="outline" size="icon">
-            {isOpen ? <MinimizeIcon /> : <MaximizeIcon />}
+            {isOpen ? <CollapseContentIcon /> : <ExpandContentIcon />}
           </Button>
         </Collapsible>
       </CardContent>

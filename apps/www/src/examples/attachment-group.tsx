@@ -1,11 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/attachment-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import {
-  FileCodeIcon,
-  FileTextIcon,
-  TableIcon,
-  XIcon,
-  type LucideIcon,
-} from "lucide-react"
+import { CloseIcon, CodeBlocksIcon, DescriptionIcon, TableIcon, type TectonIconComponent } from "@tecton/react/icons"
 
 import {
   Attachment,
@@ -21,19 +15,19 @@ import {
 type Item = {
   name: string
   meta: string
-  icon?: LucideIcon
+  icon?: TectonIconComponent
   src?: string
 }
 
 const items: Item[] = [
-  { name: "briefing-notes.pdf", meta: "PDF · 1.4 MB", icon: FileTextIcon },
+  { name: "briefing-notes.pdf", meta: "PDF · 1.4 MB", icon: DescriptionIcon },
   {
     name: "workspace.png",
     meta: "PNG · 820 KB",
     src: "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=900&auto=format&fit=crop&q=80",
   },
   { name: "customers.csv", meta: "CSV · 18 KB", icon: TableIcon },
-  { name: "renderer.tsx", meta: "TSX · 12 KB", icon: FileCodeIcon },
+  { name: "renderer.tsx", meta: "TSX · 12 KB", icon: CodeBlocksIcon },
 ]
 
 export function AttachmentGroupDemo() {
@@ -60,7 +54,7 @@ export function AttachmentGroupDemo() {
               </AttachmentContent>
               <AttachmentActions>
                 <AttachmentAction aria-label={`Remove ${item.name}`}>
-                  <XIcon />
+                  <CloseIcon />
                 </AttachmentAction>
               </AttachmentActions>
             </Attachment>

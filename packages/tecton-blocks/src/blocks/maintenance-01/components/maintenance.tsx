@@ -3,14 +3,14 @@
 import * as React from "react"
 import { cn } from "cn"
 import {
-  ActivityIcon,
-  BellIcon,
-  BellRingIcon,
-  CircleCheckIcon,
-  CircleIcon,
-  LoaderCircleIcon,
-  WrenchIcon,
-} from "lucide-react"
+  BuildIcon,
+  CheckCircleIcon,
+  NotificationsActiveIcon,
+  NotificationsIcon,
+  ProgressActivityIcon,
+  PulseIcon,
+  RadioButtonIcon,
+} from "@tecton/react/icons"
 
 import { Button, LinkButton } from "@tecton/react/components/button"
 import {
@@ -46,11 +46,11 @@ import { maintenanceCopy, maintenanceWindow } from "../data"
 import type { MaintenanceStep, MaintenanceStepStatus } from "../data"
 
 const stepIcon: Record<MaintenanceStepStatus, React.ReactNode> = {
-  done: <CircleCheckIcon className="text-success" />,
+  done: <CheckCircleIcon className="text-success" />,
   active: (
-    <LoaderCircleIcon className="animate-spin text-(--page-state-accent)" />
+    <ProgressActivityIcon className="animate-spin text-(--page-state-accent)" />
   ),
-  pending: <CircleIcon className="text-muted-foreground/60" />,
+  pending: <RadioButtonIcon className="text-muted-foreground/60" />,
 }
 
 function MaintenanceSteps({
@@ -151,16 +151,16 @@ function Maintenance({
 
         <PageStateActions>
           <LinkButton href={maintenanceCopy.statusHref}>
-            <ActivityIcon data-icon="inline-start" /> Status page
+            <PulseIcon data-icon="inline-start" /> Status page
           </LinkButton>
           <Button
             variant={subscribed ? "secondary" : "outline"}
             onPress={toggle}
           >
             {subscribed ? (
-              <BellRingIcon data-icon="inline-start" />
+              <NotificationsActiveIcon data-icon="inline-start" />
             ) : (
-              <BellIcon data-icon="inline-start" />
+              <NotificationsIcon data-icon="inline-start" />
             )}
             {subscribed
               ? "We'll email you when it's back"
@@ -179,7 +179,7 @@ function Maintenance({
       <PageStateFigure>
         <LogTrack seed={29}>
           <LogTrackBand from={0.3} to={0.62} label="WORKOVER IN PROGRESS">
-            <WrenchIcon width={28} height={28} strokeWidth={1.5} />
+            <BuildIcon width={28} height={28} strokeWidth={1.5} />
           </LogTrackBand>
         </LogTrack>
       </PageStateFigure>

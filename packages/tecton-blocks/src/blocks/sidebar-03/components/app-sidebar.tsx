@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import type { Key } from "react-aria-components"
-import { HexagonIcon, PlusIcon, SearchIcon } from "lucide-react"
+import { AddIcon, GeobodiesIcon, SearchIcon } from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -140,7 +140,7 @@ function AppSidebar({
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" href="#">
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <HexagonIcon className="size-4" />
+                <GeobodiesIcon className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">{project.name}</span>
@@ -203,7 +203,7 @@ function AppSidebar({
       </SidebarContent>
       <SidebarFooter>
         <Button variant="outline" size="sm" className="w-full">
-          <PlusIcon /> Add data
+          <AddIcon /> Add data
         </Button>
       </SidebarFooter>
     </Sidebar>

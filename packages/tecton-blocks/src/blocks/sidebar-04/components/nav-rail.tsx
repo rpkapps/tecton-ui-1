@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { HexagonIcon } from "lucide-react"
+import { GeobodiesIcon } from "@tecton/react/icons"
 
 import {
   Sidebar,
@@ -31,7 +31,7 @@ function NavRail(props: React.ComponentProps<typeof Sidebar>) {
           <SidebarMenuItem>
             <SidebarMenuButton size="lg" href="#" tooltip="Tecton">
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-                <HexagonIcon className="size-4" />
+                <GeobodiesIcon className="size-4" />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
                 <span className="truncate font-medium">Tecton</span>

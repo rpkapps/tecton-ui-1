@@ -1,12 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/dropdown-menu-icons.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import {
-  CreditCardIcon,
-  LogOutIcon,
-  SettingsIcon,
-  UserIcon,
-} from "lucide-react"
+import { CreditCardIcon, LogoutIcon, PersonIcon, SettingsIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -22,7 +17,7 @@ export function DropdownMenuIcons() {
       <Button variant="outline">Open</Button>
       <DropdownMenu>
         <DropdownMenuItem>
-          <UserIcon />
+          <PersonIcon />
           Profile
         </DropdownMenuItem>
         <DropdownMenuItem>
@@ -35,7 +30,7 @@ export function DropdownMenuIcons() {
         </DropdownMenuItem>
         <DropdownMenuSeparator />
         <DropdownMenuItem variant="destructive">
-          <LogOutIcon />
+          <LogoutIcon />
           Log out
         </DropdownMenuItem>
       </DropdownMenu>

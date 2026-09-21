@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/input-group-dropdown.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { ChevronDownIcon, MoreHorizontal } from "lucide-react"
+import { ChevronDownIcon, MoreHorizIcon } from "@tecton/react/icons"
 
 import {
   DropdownMenu,
@@ -24,7 +24,7 @@ export function InputGroupDropdown() {
         <InputGroupAddon align="inline-end">
           <DropdownMenuTrigger>
             <InputGroupButton variant="ghost" aria-label="More" size="icon-xs">
-              <MoreHorizontal />
+              <MoreHorizIcon />
             </InputGroupButton>
             <DropdownMenu placement="bottom end" offset={8} crossOffset={-4}>
               <DropdownMenuGroup>

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { PanelRightIcon, PanelRightOpenIcon } from "lucide-react"
+import { PanelIcon, RightPanelOpenIcon } from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -64,7 +64,7 @@ function HorizonsPanel({
             aria-label="Collapse panel"
             {...(onCollapse === undefined ? {} : { onPress: onCollapse })}
           >
-            <PanelRightIcon />
+            <PanelIcon />
           </Button>
         </PanelActions>
       </PanelHeader>
@@ -135,7 +135,7 @@ export default function HorizonsPanelPage() {
         />
       ) : (
         <Button variant="outline" size="sm" onPress={() => setOpen(true)}>
-          <PanelRightOpenIcon data-icon="inline-start" /> Show horizons
+          <RightPanelOpenIcon data-icon="inline-start" /> Show horizons
         </Button>
       )}
     </div>

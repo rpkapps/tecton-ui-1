@@ -2,33 +2,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  BellIcon,
-  CreditCardIcon,
-  DownloadIcon,
-  EyeIcon,
-  FileCodeIcon,
-  FileIcon,
-  FileTextIcon,
-  FolderIcon,
-  FolderOpenIcon,
-  FolderSearchIcon,
-  HelpCircleIcon,
-  KeyboardIcon,
-  LanguagesIcon,
-  LayoutIcon,
-  LogOutIcon,
-  MailIcon,
-  MonitorIcon,
-  MoonIcon,
-  MoreHorizontalIcon,
-  PaletteIcon,
-  SaveIcon,
-  SettingsIcon,
-  ShieldIcon,
-  SunIcon,
-  UserIcon,
-} from "lucide-react"
+import { CodeBlocksIcon, CreditCardIcon, DarkModeIcon, DescriptionIcon, DownloadIcon, DraftIcon, FolderIcon, FolderMatchIcon, FolderOpenIcon, HelpIcon, KeyboardIcon, LightModeIcon, LogoutIcon, MailIcon, MonitorIcon, MoreHorizIcon, NotificationsIcon, PaletteIcon, PersonIcon, SaveIcon, SettingsIcon, ShieldIcon, SpaceDashboardIcon, TranslateIcon, VisibilityIcon } from "@tecton/react/icons"
 import type { Selection } from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
@@ -58,7 +32,7 @@ export function DropdownMenuComplex() {
         <DropdownMenuGroup>
           <DropdownMenuLabel>File</DropdownMenuLabel>
           <DropdownMenuItem>
-            <FileIcon />
+            <DraftIcon />
             New File
             <DropdownMenuShortcut>⌘N</DropdownMenuShortcut>
           </DropdownMenuItem>
@@ -76,25 +50,25 @@ export function DropdownMenuComplex() {
               <DropdownMenuGroup>
                 <DropdownMenuLabel>Recent Projects</DropdownMenuLabel>
                 <DropdownMenuItem>
-                  <FileCodeIcon />
+                  <CodeBlocksIcon />
                   Project Alpha
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <FileCodeIcon />
+                  <CodeBlocksIcon />
                   Project Beta
                 </DropdownMenuItem>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
-                    <MoreHorizontalIcon />
+                    <MoreHorizIcon />
                     More Projects
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
                     <DropdownMenuItem>
-                      <FileCodeIcon />
+                      <CodeBlocksIcon />
                       Project Gamma
                     </DropdownMenuItem>
                     <DropdownMenuItem>
-                      <FileCodeIcon />
+                      <CodeBlocksIcon />
                       Project Delta
                     </DropdownMenuItem>
                   </DropdownMenuSubContent>
@@ -103,7 +77,7 @@ export function DropdownMenuComplex() {
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem>
-                  <FolderSearchIcon />
+                  <FolderMatchIcon />
                   Browse...
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -129,11 +103,11 @@ export function DropdownMenuComplex() {
         >
           <DropdownMenuLabel>View</DropdownMenuLabel>
           <DropdownMenuItem id="email">
-            <EyeIcon />
+            <VisibilityIcon />
             Show Sidebar
           </DropdownMenuItem>
           <DropdownMenuItem id="sms">
-            <LayoutIcon />
+            <SpaceDashboardIcon />
             Show Status Bar
           </DropdownMenuItem>
           <DropdownMenuSub>
@@ -149,11 +123,11 @@ export function DropdownMenuComplex() {
               >
                 <DropdownMenuLabel>Appearance</DropdownMenuLabel>
                 <DropdownMenuItem id="light">
-                  <SunIcon />
+                  <LightModeIcon />
                   Light
                 </DropdownMenuItem>
                 <DropdownMenuItem id="dark">
-                  <MoonIcon />
+                  <DarkModeIcon />
                   Dark
                 </DropdownMenuItem>
                 <DropdownMenuItem id="system">
@@ -168,7 +142,7 @@ export function DropdownMenuComplex() {
         <DropdownMenuGroup>
           <DropdownMenuLabel>Account</DropdownMenuLabel>
           <DropdownMenuItem>
-            <UserIcon />
+            <PersonIcon />
             Profile
             <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
           </DropdownMenuItem>
@@ -189,12 +163,12 @@ export function DropdownMenuComplex() {
                   Keyboard Shortcuts
                 </DropdownMenuItem>
                 <DropdownMenuItem>
-                  <LanguagesIcon />
+                  <TranslateIcon />
                   Language
                 </DropdownMenuItem>
                 <DropdownMenuSub>
                   <DropdownMenuSubTrigger>
-                    <BellIcon />
+                    <NotificationsIcon />
                     Notifications
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
@@ -205,7 +179,7 @@ export function DropdownMenuComplex() {
                     >
                       <DropdownMenuLabel>Notification Types</DropdownMenuLabel>
                       <DropdownMenuItem id="push">
-                        <BellIcon />
+                        <NotificationsIcon />
                         Push Notifications
                       </DropdownMenuItem>
                       <DropdownMenuItem id="email">
@@ -229,18 +203,18 @@ export function DropdownMenuComplex() {
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <HelpCircleIcon />
+            <HelpIcon />
             Help & Support
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <FileTextIcon />
+            <DescriptionIcon />
             Documentation
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
           <DropdownMenuItem variant="destructive">
-            <LogOutIcon />
+            <LogoutIcon />
             Sign Out
             <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
           </DropdownMenuItem>

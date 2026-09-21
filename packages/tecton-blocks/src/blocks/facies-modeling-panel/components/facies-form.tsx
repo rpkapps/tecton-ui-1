@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { ChevronDownIcon, DicesIcon, SlidersHorizontalIcon } from "lucide-react"
+import { CasinoIcon, ChevronDownIcon, ControlsIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
@@ -189,7 +189,7 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
               set("seed", String(Math.floor(Math.random() * 90000) + 10000))
             }
           >
-            <DicesIcon />
+            <CasinoIcon />
           </Button>
         </div>
       </FormSection>
@@ -344,7 +344,7 @@ function FormSection({
       <div className="flex items-center justify-between gap-2">
         <h3 className="text-sm font-medium">{title}</h3>
         <span className="flex items-center gap-0.5 text-muted-foreground">
-          <SlidersHorizontalIcon className="size-4" aria-hidden />
+          <ControlsIcon className="size-4" aria-hidden />
           <CollapsibleTrigger
             aria-label={`Toggle ${title}`}
             className="flex size-6 items-center justify-center rounded-sm outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"

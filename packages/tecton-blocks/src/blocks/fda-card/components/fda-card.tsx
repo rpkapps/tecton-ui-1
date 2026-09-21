@@ -5,10 +5,10 @@ import { cn } from "cn"
 import {
   ChevronRightIcon,
   CopyIcon,
-  MoreVerticalIcon,
+  DeleteIcon,
+  MoreVertIcon,
   ShareIcon,
-  TrashIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -91,7 +91,7 @@ function FdaCard({
           </Badge>
           <DropdownMenuTrigger>
             <Button variant="ghost" size="icon-xs" aria-label="More actions">
-              <MoreVerticalIcon />
+              <MoreVertIcon />
             </Button>
             <DropdownMenu placement="bottom end">
               <DropdownMenuItem onAction={() => onOpen?.(fda)}>
@@ -105,7 +105,7 @@ function FdaCard({
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive">
-                <TrashIcon /> Delete
+                <DeleteIcon /> Delete
               </DropdownMenuItem>
             </DropdownMenu>
           </DropdownMenuTrigger>

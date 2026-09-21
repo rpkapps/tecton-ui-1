@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/input-group-spinner.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { LoaderIcon } from "lucide-react"
+import { ProgressActivityIcon } from "@tecton/react/icons"
 
 import {
   InputGroup,
@@ -34,7 +34,7 @@ export default function InputGroupSpinner() {
       <InputGroup>
         <InputGroupInput placeholder="Refreshing data..." />
         <InputGroupAddon>
-          <LoaderIcon className="animate-spin" />
+          <ProgressActivityIcon className="animate-spin" />
         </InputGroupAddon>
         <InputGroupAddon align="inline-end">
           <InputGroupText className="text-muted-foreground">

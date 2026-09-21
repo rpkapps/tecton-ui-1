@@ -1,10 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/message-actions.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import {
-  CopyIcon,
-  RefreshCcwIcon,
-  ThumbsDownIcon,
-  ThumbsUpIcon,
-} from "lucide-react"
+import { CopyIcon, SyncIcon, ThumbDownIcon, ThumbUpIcon } from "@tecton/react/icons"
 
 import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
 import { Button } from "@tecton/react/components/button"
@@ -29,10 +24,10 @@ export function MessageActionsDemo() {
               <CopyIcon />
             </Button>
             <Button variant="ghost" size="icon" aria-label="Like">
-              <ThumbsUpIcon />
+              <ThumbUpIcon />
             </Button>
             <Button variant="ghost" size="icon" aria-label="Dislike">
-              <ThumbsDownIcon />
+              <ThumbDownIcon />
             </Button>
           </MessageFooter>
         </MessageContent>
@@ -45,7 +40,7 @@ export function MessageActionsDemo() {
           <MessageFooter className="gap-2">
             <span className="font-normal text-destructive">Failed to send</span>
             <Button variant="ghost" size="icon-xs" aria-label="Retry">
-              <RefreshCcwIcon />
+              <SyncIcon />
             </Button>
           </MessageFooter>
         </MessageContent>

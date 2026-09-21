@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/avatar-group-count-icon.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { PlusIcon } from "lucide-react"
+import { AddIcon } from "@tecton/react/icons"
 
 import {
   Avatar,
@@ -28,7 +28,7 @@ export function AvatarGroupCountIconExample() {
         <AvatarFallback>ER</AvatarFallback>
       </Avatar>
       <AvatarGroupCount>
-        <PlusIcon />
+        <AddIcon />
       </AvatarGroupCount>
     </AvatarGroup>
   )

@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/attachment-image.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { XIcon } from "lucide-react"
+import { CloseIcon } from "@tecton/react/icons"
 
 import {
   Attachment,
@@ -49,7 +49,7 @@ export function AttachmentImage() {
             </AttachmentContent>
             <AttachmentActions>
               <AttachmentAction aria-label={`Remove ${image.name}`}>
-                <XIcon />
+                <CloseIcon />
               </AttachmentAction>
             </AttachmentActions>
             <AttachmentTrigger

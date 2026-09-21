@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/table-actions.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { MoreHorizontalIcon } from "lucide-react"
+import { MoreHorizIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -32,7 +32,7 @@ export function TableActions() {
           <TableCell className="text-right">
             <DropdownMenuTrigger>
               <Button variant="ghost" size="icon" className="size-8">
-                <MoreHorizontalIcon />
+                <MoreHorizIcon />
                 <span className="sr-only">Open menu</span>
               </Button>
               <DropdownMenu placement="bottom end">
@@ -52,7 +52,7 @@ export function TableActions() {
           <TableCell className="text-right">
             <DropdownMenuTrigger>
               <Button variant="ghost" size="icon" className="size-8">
-                <MoreHorizontalIcon />
+                <MoreHorizIcon />
                 <span className="sr-only">Open menu</span>
               </Button>
               <DropdownMenu placement="bottom end">
@@ -72,7 +72,7 @@ export function TableActions() {
           <TableCell className="text-right">
             <DropdownMenuTrigger>
               <Button variant="ghost" size="icon" className="size-8">
-                <MoreHorizontalIcon />
+                <MoreHorizIcon />
                 <span className="sr-only">Open menu</span>
               </Button>
               <DropdownMenu placement="bottom end">

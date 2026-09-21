@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/context-menu-destructive.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { ArchiveIcon, PencilIcon, ShareIcon, TrashIcon } from "lucide-react"
+import { ArchiveIcon, DeleteIcon, EditSquareIcon, ShareIcon } from "@tecton/react/icons"
 import { Pressable } from "react-aria-components"
 
 import {
@@ -31,7 +31,7 @@ export function ContextMenuDestructive() {
       <ContextMenu>
         <ContextMenuGroup>
           <ContextMenuItem>
-            <PencilIcon />
+            <EditSquareIcon />
             Edit
           </ContextMenuItem>
           <ContextMenuItem>
@@ -42,7 +42,7 @@ export function ContextMenuDestructive() {
         <ContextMenuSeparator />
         <ContextMenuGroup>
           <ContextMenuItem variant="destructive">
-            <TrashIcon />
+            <DeleteIcon />
             Delete
           </ContextMenuItem>
         </ContextMenuGroup>

@@ -3,20 +3,20 @@
 import * as React from "react"
 import { cn } from "cn"
 import {
-  AlertTriangleIcon,
+  AddIcon,
+  CheckCircleIcon,
+  CheckCircleOpenIcon,
   ChevronUpIcon,
-  CircleCheckIcon,
-  CircleDashedIcon,
   CopyIcon,
-  DropletIcon,
-  FactoryIcon,
-  MoreVerticalIcon,
-  PencilIcon,
-  PlusIcon,
+  DeleteIcon,
+  EditSquareIcon,
+  FacilityIcon,
+  FrameworksIcon,
+  MoreVertIcon,
   StarIcon,
-  TrashIcon,
-  WavesIcon,
-} from "lucide-react"
+  WarningIcon,
+  WaterIcon,
+} from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -54,9 +54,9 @@ const disciplineIcon: Record<
   Decision["discipline"],
   React.ComponentType<{ className?: string }>
 > = {
-  Subsurface: WavesIcon,
-  Drilling: DropletIcon,
-  Facilities: FactoryIcon,
+  Subsurface: FrameworksIcon,
+  Drilling: WaterIcon,
+  Facilities: FacilityIcon,
 }
 
 /** One decision of an alternative: label, chosen value and its approval status. */
@@ -127,11 +127,11 @@ function AlternativeRow({
             size="icon-xs"
             aria-label={`Actions for ${alternative.name}`}
           >
-            <MoreVerticalIcon />
+            <MoreVertIcon />
           </Button>
           <DropdownMenu placement="bottom start">
             <DropdownMenuItem>
-              <PencilIcon /> Rename
+              <EditSquareIcon /> Rename
             </DropdownMenuItem>
             <DropdownMenuItem>
               <CopyIcon /> Duplicate
@@ -141,7 +141,7 @@ function AlternativeRow({
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive">
-              <TrashIcon /> Delete alternative
+              <DeleteIcon /> Delete alternative
             </DropdownMenuItem>
           </DropdownMenu>
         </DropdownMenuTrigger>
@@ -151,7 +151,7 @@ function AlternativeRow({
           className="ml-auto"
           aria-label={`Add decision to ${alternative.name}`}
         >
-          <PlusIcon />
+          <AddIcon />
         </Button>
       </div>
       <div className="-mr-4 flex snap-x gap-2 overflow-x-auto pr-4 pb-1">
@@ -200,18 +200,18 @@ function ConceptSection({
             size="icon-xs"
             aria-label={`Actions for ${concept.name}`}
           >
-            <MoreVerticalIcon />
+            <MoreVertIcon />
           </Button>
           <DropdownMenu placement="bottom start">
             <DropdownMenuItem>
-              <PencilIcon /> Rename concept
+              <EditSquareIcon /> Rename concept
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <PlusIcon /> Add alternative
+              <AddIcon /> Add alternative
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem variant="destructive">
-              <TrashIcon /> Delete concept
+              <DeleteIcon /> Delete concept
             </DropdownMenuItem>
           </DropdownMenu>
         </DropdownMenuTrigger>
@@ -253,15 +253,15 @@ function ConceptSection({
           <PanelContent>
             <ul className="divide-y divide-border-subtle font-mono text-xs">
               <li className="flex items-center gap-2 py-2 first:pt-0">
-                <CircleCheckIcon className="size-3.5 text-success" />
+                <CheckCircleIcon className="size-3.5 text-success" />
                 {counts.approved} Approved
               </li>
               <li className="flex items-center gap-2 py-2">
-                <CircleDashedIcon className="size-3.5 text-info" />
+                <CheckCircleOpenIcon className="size-3.5 text-info" />
                 {counts.review} Ready for review
               </li>
               <li className="flex items-center gap-2 py-2 last:pb-0">
-                <AlertTriangleIcon className="size-3.5 text-warning" />
+                <WarningIcon className="size-3.5 text-warning" />
                 {counts.attention} Need attention
               </li>
             </ul>

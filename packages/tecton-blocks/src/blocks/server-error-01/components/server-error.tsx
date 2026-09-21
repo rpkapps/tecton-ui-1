@@ -3,11 +3,11 @@
 import * as React from "react"
 import { cn } from "cn"
 import {
-  ActivityIcon,
   ChevronRightIcon,
   DatabaseIcon,
-  RefreshCwIcon,
-} from "lucide-react"
+  PulseIcon,
+  SyncIcon,
+} from "@tecton/react/icons"
 
 import { Button, LinkButton } from "@tecton/react/components/button"
 import {
@@ -87,11 +87,7 @@ function ServerError({
         </PageStateHeader>
         <PageStateActions>
           <Button onPress={retry} isDisabled={retrying}>
-            {retrying ? (
-              <Spinner />
-            ) : (
-              <RefreshCwIcon data-icon="inline-start" />
-            )}
+            {retrying ? <Spinner /> : <SyncIcon data-icon="inline-start" />}
             Try again
           </Button>
           <LinkButton variant="outline" href={serverErrorCopy.cachedHref}>
@@ -136,7 +132,7 @@ function ServerError({
               href={serverErrorCopy.statusHref}
               className="px-0"
             >
-              <ActivityIcon data-icon="inline-start" /> Service status
+              <PulseIcon data-icon="inline-start" /> Service status
             </LinkButton>
           </div>
         </PageStateMeta>

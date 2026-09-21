@@ -1,14 +1,14 @@
-import type * as React from "react"
 import {
-  BoxIcon,
-  ChartColumnIcon,
-  DrillIcon,
-  FileTextIcon,
-  GitCompareIcon,
-  LayoutDashboardIcon,
-  LeafIcon,
-  MountainIcon,
-} from "lucide-react"
+  CubeIcon,
+  DashboardIcon,
+  DescriptionIcon,
+  DifferenceIcon,
+  DrillBitIcon,
+  EcoIcon,
+  HorizonIcon,
+  ReportsAnalyticsIcon,
+} from "@tecton/react/icons"
+import type { TectonIconComponent } from "@tecton/react/icons"
 
 export type Project = {
   id: string
@@ -20,7 +20,7 @@ export type Project = {
 export type NavItem = {
   title: string
   url: string
-  icon: React.ElementType
+  icon: TectonIconComponent
   isActive?: boolean
   /** Count shown in a menu badge. */
   badge?: string
@@ -60,13 +60,13 @@ export const navGroups: NavGroup[] = [
       {
         title: "Overview",
         url: "#",
-        icon: LayoutDashboardIcon,
+        icon: DashboardIcon,
         isActive: true,
       },
       {
         title: "Wells",
         url: "#",
-        icon: DrillIcon,
+        icon: DrillBitIcon,
         badge: "4",
         items: [
           { title: "34/10-A-12 H", url: "#" },
@@ -75,26 +75,26 @@ export const navGroups: NavGroup[] = [
           { title: "34/10-B-3 AH", url: "#" },
         ],
       },
-      { title: "Horizons", url: "#", icon: MountainIcon, badge: "6" },
+      { title: "Horizons", url: "#", icon: HorizonIcon, badge: "6" },
       {
         title: "Models",
         url: "#",
-        icon: BoxIcon,
+        icon: CubeIcon,
         items: [
           { title: "Facies Model 01", url: "#" },
           { title: "Facies Model 02 (SIS)", url: "#" },
           { title: "Velocity model v3", url: "#" },
         ],
       },
-      { title: "Field development", url: "#", icon: GitCompareIcon },
+      { title: "Field development", url: "#", icon: DifferenceIcon },
     ],
   },
   {
     label: "Analysis",
     items: [
-      { title: "Cost vs risk", url: "#", icon: ChartColumnIcon },
-      { title: "Emissions", url: "#", icon: LeafIcon },
-      { title: "Reports", url: "#", icon: FileTextIcon },
+      { title: "Cost vs risk", url: "#", icon: ReportsAnalyticsIcon },
+      { title: "Emissions", url: "#", icon: EcoIcon },
+      { title: "Reports", url: "#", icon: DescriptionIcon },
     ],
   },
 ]

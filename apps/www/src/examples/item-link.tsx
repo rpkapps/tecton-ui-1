@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/item-link.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { ChevronRightIcon, ExternalLinkIcon } from "lucide-react"
+import { ChevronRightIcon, OpenInNewIcon } from "@tecton/react/icons"
 
 import {
   Item,
@@ -36,7 +36,7 @@ export function ItemLink() {
           </ItemDescription>
         </ItemContent>
         <ItemActions>
-          <ExternalLinkIcon className="size-4" />
+          <OpenInNewIcon className="size-4" />
         </ItemActions>
       </Item>
     </div>

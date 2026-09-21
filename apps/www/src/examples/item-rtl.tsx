@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { BadgeCheckIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronRightIcon, VerifiedIcon } from "@tecton/react/icons"
 
 import {
   useTranslation,
@@ -66,7 +66,7 @@ export function ItemRtl() {
       </Item>
       <Item href="#" variant="outline" size="sm" dir={dir}>
         <ItemMedia>
-          <BadgeCheckIcon className="size-5" />
+          <VerifiedIcon className="size-5" />
         </ItemMedia>
         <ItemContent>
           <ItemTitle>{t.verifiedTitle}</ItemTitle>

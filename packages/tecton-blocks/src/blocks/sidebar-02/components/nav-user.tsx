@@ -1,12 +1,12 @@
 "use client"
 
 import {
-  BellIcon,
-  ChevronsUpDownIcon,
-  LogOutIcon,
+  CaretUpDownIcon,
+  LogoutIcon,
+  NotificationsIcon,
+  PersonIcon,
   SettingsIcon,
-  UserIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import { Avatar, AvatarFallback } from "@tecton/react/components/avatar"
 import {
@@ -52,7 +52,7 @@ function NavUser({ user }: NavUserProps) {
                 {user.role}
               </span>
             </div>
-            <ChevronsUpDownIcon className="ml-auto size-4" />
+            <CaretUpDownIcon className="ml-auto size-4" />
           </SidebarMenuButton>
           <DropdownMenu
             className="w-(--trigger-width) min-w-56 rounded-lg"
@@ -79,10 +79,10 @@ function NavUser({ user }: NavUserProps) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem textValue="Profile">
-                <UserIcon /> Profile
+                <PersonIcon /> Profile
               </DropdownMenuItem>
               <DropdownMenuItem textValue="Notifications">
-                <BellIcon /> Notifications
+                <NotificationsIcon /> Notifications
               </DropdownMenuItem>
               <DropdownMenuItem textValue="Settings">
                 <SettingsIcon /> Settings
@@ -91,7 +91,7 @@ function NavUser({ user }: NavUserProps) {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem textValue="Sign out">
-                <LogOutIcon /> Sign out
+                <LogoutIcon /> Sign out
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </DropdownMenu>

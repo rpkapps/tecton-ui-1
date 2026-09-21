@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Search } from "lucide-react"
+import { SearchIcon } from "@tecton/react/icons"
 
 import {
   useTranslation,
@@ -80,7 +80,7 @@ export function InputGroupRtl() {
       <InputGroup className="max-w-xs">
         <InputGroupInput placeholder={t.placeholder} />
         <InputGroupAddon>
-          <Search />
+          <SearchIcon />
         </InputGroupAddon>
         <InputGroupAddon align="inline-end">{t.results}</InputGroupAddon>
       </InputGroup>

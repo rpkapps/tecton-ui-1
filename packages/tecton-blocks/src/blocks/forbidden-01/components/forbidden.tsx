@@ -3,11 +3,11 @@
 import * as React from "react"
 import { cn } from "cn"
 import {
-  CircleCheckIcon,
+  CheckCircleIcon,
   LockIcon,
+  PersonIcon,
   SendIcon,
-  UserRoundIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import {
   Alert,
@@ -106,7 +106,7 @@ function Forbidden({
 
         {status === "sent" ? (
           <Alert variant="success" appearance="outline">
-            <CircleCheckIcon />
+            <CheckCircleIcon />
             <AlertTitle>Request sent</AlertTitle>
             <AlertDescription>
               You will get an email when access is granted. Requests are usually
@@ -149,7 +149,7 @@ function Forbidden({
                 variant="ghost"
                 href={forbiddenCopy.switchAccountHref}
               >
-                <UserRoundIcon data-icon="inline-start" /> Switch account
+                <PersonIcon data-icon="inline-start" /> Switch account
               </LinkButton>
             </PageStateActions>
           </form>

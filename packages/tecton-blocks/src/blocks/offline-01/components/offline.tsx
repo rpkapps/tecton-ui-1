@@ -3,12 +3,12 @@
 import * as React from "react"
 import { cn } from "cn"
 import {
-  CircleCheckIcon,
-  CircleXIcon,
+  CancelCircleIcon,
+  CheckCircleIcon,
   CloudOffIcon,
-  LoaderCircleIcon,
-  RefreshCwIcon,
-} from "lucide-react"
+  ProgressActivityIcon,
+  SyncIcon,
+} from "@tecton/react/icons"
 
 import { Button, LinkButton } from "@tecton/react/components/button"
 import {
@@ -39,9 +39,11 @@ import { connection, offlineCopy } from "../data"
 import type { ConnectionCheck, ConnectionCheckStatus } from "../data"
 
 const checkIcon: Record<ConnectionCheckStatus, React.ReactNode> = {
-  ok: <CircleCheckIcon className="text-success" />,
-  checking: <LoaderCircleIcon className="animate-spin text-muted-foreground" />,
-  failed: <CircleXIcon className="text-(--page-state-accent)" />,
+  ok: <CheckCircleIcon className="text-success" />,
+  checking: (
+    <ProgressActivityIcon className="animate-spin text-muted-foreground" />
+  ),
+  failed: <CancelCircleIcon className="text-(--page-state-accent)" />,
 }
 
 function ConnectionChecks({
@@ -155,7 +157,7 @@ function Offline({
         <ConnectionChecks checks={checks} />
         <PageStateActions>
           <Button onPress={retry} isDisabled={retrying}>
-            <RefreshCwIcon
+            <SyncIcon
               data-icon="inline-start"
               className={cn(retrying && "animate-spin")}
             />

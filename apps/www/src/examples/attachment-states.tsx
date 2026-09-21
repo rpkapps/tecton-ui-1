@@ -1,12 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/attachment-states.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import {
-  CheckIcon,
-  ClockIcon,
-  FileTextIcon,
-  FileWarningIcon,
-  RefreshCwIcon,
-  XIcon,
-} from "lucide-react"
+import { CheckIcon, CloseIcon, DescriptionIcon, ScheduleIcon, SyncIcon, WarningIcon } from "@tecton/react/icons"
 
 import {
   Attachment,
@@ -24,7 +17,7 @@ export function AttachmentStates() {
     <div className="mx-auto flex w-full max-w-sm flex-col gap-2 py-12">
       <Attachment state="idle" className="w-full">
         <AttachmentMedia>
-          <ClockIcon />
+          <ScheduleIcon />
         </AttachmentMedia>
         <AttachmentContent>
           <AttachmentTitle>selected-file.pdf</AttachmentTitle>
@@ -32,7 +25,7 @@ export function AttachmentStates() {
         </AttachmentContent>
         <AttachmentActions>
           <AttachmentAction aria-label="Remove selected-file.pdf">
-            <XIcon />
+            <CloseIcon />
           </AttachmentAction>
         </AttachmentActions>
       </Attachment>
@@ -46,13 +39,13 @@ export function AttachmentStates() {
         </AttachmentContent>
         <AttachmentActions>
           <AttachmentAction aria-label="Cancel upload">
-            <XIcon />
+            <CloseIcon />
           </AttachmentAction>
         </AttachmentActions>
       </Attachment>
       <Attachment state="processing" className="w-full">
         <AttachmentMedia>
-          <FileTextIcon />
+          <DescriptionIcon />
         </AttachmentMedia>
         <AttachmentContent>
           <AttachmentTitle>market-research.pdf</AttachmentTitle>
@@ -60,13 +53,13 @@ export function AttachmentStates() {
         </AttachmentContent>
         <AttachmentActions>
           <AttachmentAction aria-label="Remove market-research.pdf">
-            <XIcon />
+            <CloseIcon />
           </AttachmentAction>
         </AttachmentActions>
       </Attachment>
       <Attachment state="error" className="w-full">
         <AttachmentMedia>
-          <FileWarningIcon />
+          <WarningIcon />
         </AttachmentMedia>
         <AttachmentContent>
           <AttachmentTitle>financial-model.xlsx</AttachmentTitle>
@@ -76,10 +69,10 @@ export function AttachmentStates() {
         </AttachmentContent>
         <AttachmentActions>
           <AttachmentAction aria-label="Retry upload">
-            <RefreshCwIcon />
+            <SyncIcon />
           </AttachmentAction>
           <AttachmentAction aria-label="Remove financial-model.xlsx">
-            <XIcon />
+            <CloseIcon />
           </AttachmentAction>
         </AttachmentActions>
       </Attachment>
@@ -93,7 +86,7 @@ export function AttachmentStates() {
         </AttachmentContent>
         <AttachmentActions>
           <AttachmentAction aria-label="Remove uploaded-report.pdf">
-            <XIcon />
+            <CloseIcon />
           </AttachmentAction>
         </AttachmentActions>
       </Attachment>

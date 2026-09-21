@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/alert-dialog-small-media.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { BluetoothIcon } from "lucide-react"
+import { BluetoothIcon } from "@tecton/react/icons"
 
 import {
   AlertDialog,

@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { RotateCwIcon } from "lucide-react"
+import { RotateRightIcon } from "@tecton/react/icons"
 
 import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
 import { Button } from "@tecton/react/components/button"
@@ -127,7 +127,7 @@ export function MessageScrollerGroupChat() {
                     setDemoKey((key) => key + 1)
                   }}
                 >
-                  <RotateCwIcon />
+                  <RotateRightIcon />
                 </Button>
                 <Tooltip>
                   <p>Reset</p>

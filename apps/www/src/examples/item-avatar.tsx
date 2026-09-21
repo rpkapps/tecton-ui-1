@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/item-avatar.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Plus } from "lucide-react"
+import { AddIcon } from "@tecton/react/icons"
 
 import {
   Avatar,
@@ -37,7 +37,7 @@ export function ItemAvatar() {
             className="rounded-full"
             aria-label="Invite"
           >
-            <Plus />
+            <AddIcon />
           </Button>
         </ItemActions>
       </Item>

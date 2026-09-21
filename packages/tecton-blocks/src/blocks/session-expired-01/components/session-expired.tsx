@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { BuildingIcon, LogInIcon, SaveIcon } from "lucide-react"
+import { ApartmentIcon, LoginIcon, SaveIcon } from "@tecton/react/icons"
 
 import {
   Alert,
@@ -84,10 +84,10 @@ function SessionExpired({
         )}
         <PageStateActions>
           <LinkButton href={sessionExpiredCopy.signInHref}>
-            <LogInIcon data-icon="inline-start" /> Sign in again
+            <LoginIcon data-icon="inline-start" /> Sign in again
           </LinkButton>
           <LinkButton variant="secondary" href={sessionExpiredCopy.ssoHref}>
-            <BuildingIcon data-icon="inline-start" /> Continue with{" "}
+            <ApartmentIcon data-icon="inline-start" /> Continue with{" "}
             {sessionExpiredCopy.ssoProvider}
           </LinkButton>
         </PageStateActions>

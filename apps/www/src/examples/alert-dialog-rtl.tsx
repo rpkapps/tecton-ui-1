@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/alert-dialog-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { BluetoothIcon } from "lucide-react"
+import { BluetoothIcon } from "@tecton/react/icons"
 
 import {
   useTranslation,

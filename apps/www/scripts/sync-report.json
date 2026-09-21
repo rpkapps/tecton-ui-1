@@ -191,6 +191,7 @@
     "checkbox-invalid",
     "checkbox-rtl",
     "checkbox-table",
+    "collapsible-basic",
     "collapsible-demo",
     "collapsible-file-tree",
     "collapsible-rtl",
@@ -505,7 +506,6 @@
   "skippedExamples": {
     "bubble-variants": "unsupported import: @/components/markdown",
     "calendar-hijri": "unsupported import: next/font/google",
-    "collapsible-basic": "unsupported import: @/registry/icons/__lucide__",
     "date-picker-natural-language": "unsupported import: chrono-node",
     "message-scroller-demo": "unsupported import: @ai-sdk/react",
     "message-scroller-anchoring": "unsupported import: @/components/message-animated",
@@ -523,9 +523,6 @@
     ],
     "calendar": [
       "calendar-hijri"
-    ],
-    "collapsible": [
-      "collapsible-basic"
     ],
     "date-picker": [
       "date-picker-natural-language"

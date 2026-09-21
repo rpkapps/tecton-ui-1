@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/bubble-popover.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { InfoIcon } from "lucide-react"
+import { InfoIcon } from "@tecton/react/icons"
 
 import {
   Bubble,

@@ -2,7 +2,11 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { CheckIcon, ChevronDownIcon, SparklesIcon } from "lucide-react"
+import {
+  AutoAwesomeIcon,
+  CheckIcon,
+  ChevronDownIcon,
+} from "@tecton/react/icons"
 
 import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
 import { Button } from "@tecton/react/components/button"
@@ -117,7 +121,7 @@ function AssistantMessage({
     <MessageGroup data-slot="agent-assistant-message">
       <Message>
         <MessageAvatar className="size-6 min-w-6 self-start bg-primary/20 text-primary-foreground">
-          <SparklesIcon className="size-3.5" aria-hidden />
+          <AutoAwesomeIcon className="size-3.5" aria-hidden />
         </MessageAvatar>
         <MessageContent>
           <Bubble variant="ghost">

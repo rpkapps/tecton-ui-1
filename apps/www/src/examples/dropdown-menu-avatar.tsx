@@ -1,12 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/dropdown-menu-avatar.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import {
-  BadgeCheckIcon,
-  BellIcon,
-  CreditCardIcon,
-  LogOutIcon,
-} from "lucide-react"
+import { CreditCardIcon, LogoutIcon, NotificationsIcon, VerifiedIcon } from "@tecton/react/icons"
 
 import {
   Avatar,
@@ -34,7 +29,7 @@ export function DropdownMenuAvatar() {
       <DropdownMenu placement="bottom end">
         <DropdownMenuGroup>
           <DropdownMenuItem>
-            <BadgeCheckIcon />
+            <VerifiedIcon />
             Account
           </DropdownMenuItem>
           <DropdownMenuItem>
@@ -42,13 +37,13 @@ export function DropdownMenuAvatar() {
             Billing
           </DropdownMenuItem>
           <DropdownMenuItem>
-            <BellIcon />
+            <NotificationsIcon />
             Notifications
           </DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <LogOutIcon />
+          <LogoutIcon />
           Sign Out
         </DropdownMenuItem>
       </DropdownMenu>

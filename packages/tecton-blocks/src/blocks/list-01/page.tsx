@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { DownloadIcon, PlusIcon, UploadIcon } from "lucide-react"
+import { AddIcon, DownloadIcon, ExportUploadIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -88,10 +88,10 @@ function WellsListPage({
             <DownloadIcon /> Export
           </Button>
           <Button variant="outline" size="sm">
-            <UploadIcon /> Import
+            <ExportUploadIcon /> Import
           </Button>
           <Button size="sm">
-            <PlusIcon /> New well
+            <AddIcon /> New well
           </Button>
         </PageHeaderActions>
       </PageHeader>

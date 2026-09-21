@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { ArrowLeftIcon, ArrowRightIcon, RotateCwIcon } from "lucide-react"
+import { ArrowLeftIcon, ArrowRightIcon, RotateRightIcon } from "@tecton/react/icons"
 import { Pressable, type Selection } from "react-aria-components"
 
 import {
@@ -138,7 +138,7 @@ export function ContextMenuRtl() {
                   <ContextMenuShortcut>⌘]</ContextMenuShortcut>
                 </ContextMenuItem>
                 <ContextMenuItem>
-                  <RotateCwIcon />
+                  <RotateRightIcon />
                   {t.reload}
                   <ContextMenuShortcut>⌘R</ContextMenuShortcut>
                 </ContextMenuItem>

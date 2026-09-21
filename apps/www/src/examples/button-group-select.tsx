@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { ArrowRightIcon } from "lucide-react"
+import { ArrowRightIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { ButtonGroup } from "@tecton/react/components/button-group"

@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { BellIcon, MailIcon, MessageSquareIcon } from "lucide-react"
+import { ChatIcon, MailIcon, NotificationsIcon } from "@tecton/react/icons"
 import type { Selection } from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
@@ -34,11 +34,11 @@ export function DropdownMenuCheckboxesIcons() {
             Email notifications
           </DropdownMenuItem>
           <DropdownMenuItem id="sms">
-            <MessageSquareIcon />
+            <ChatIcon />
             SMS notifications
           </DropdownMenuItem>
           <DropdownMenuItem id="push">
-            <BellIcon />
+            <NotificationsIcon />
             Push notifications
           </DropdownMenuItem>
         </DropdownMenuGroup>

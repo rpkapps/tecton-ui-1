@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { AudioLinesIcon, PlusIcon } from "lucide-react"
+import { AddIcon, GraphicEqIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { ButtonGroup } from "@tecton/react/components/button-group"
@@ -21,7 +21,7 @@ export default function ButtonGroupInputGroup() {
     <ButtonGroup className="[--radius:9999rem]">
       <ButtonGroup>
         <Button variant="outline" size="icon">
-          <PlusIcon />
+          <AddIcon />
         </Button>
       </ButtonGroup>
       <ButtonGroup>
@@ -41,7 +41,7 @@ export default function ButtonGroupInputGroup() {
                 className="data-[active=true]:bg-saffron-120 data-[active=true]:text-saffron-830"
                 aria-pressed={voiceEnabled}
               >
-                <AudioLinesIcon />
+                <GraphicEqIcon />
               </InputGroupButton>
               <Tooltip>Voice Mode</Tooltip>
             </TooltipTrigger>

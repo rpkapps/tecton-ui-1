@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { CreditCardIcon, SettingsIcon, UserIcon } from "lucide-react"
+import { CreditCardIcon, PersonIcon, SettingsIcon } from "@tecton/react/icons"
 import type { Selection } from "react-aria-components"
 
 import {
@@ -141,7 +141,7 @@ export function DropdownMenuRtl() {
             >
               <DropdownMenuGroup>
                 <DropdownMenuItem>
-                  <UserIcon />
+                  <PersonIcon />
                   {t.profile}
                 </DropdownMenuItem>
                 <DropdownMenuItem>

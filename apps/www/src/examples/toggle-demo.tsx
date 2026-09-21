@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/toggle-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { BookmarkIcon } from "lucide-react"
+import { BookmarkIcon } from "@tecton/react/icons"
 
 import { Toggle } from "@tecton/react/components/toggle"
 

@@ -1,6 +1,6 @@
 "use client"
 
-import { ChevronRightIcon } from "lucide-react"
+import { ChevronRightIcon } from "@tecton/react/icons"
 
 import {
   Collapsible,

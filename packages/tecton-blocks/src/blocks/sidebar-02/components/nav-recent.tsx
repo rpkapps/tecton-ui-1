@@ -2,11 +2,11 @@
 
 import {
   FolderIcon,
-  HexagonIcon,
-  MoreHorizontalIcon,
-  Share2Icon,
+  GeobodiesIcon,
+  MoreHorizIcon,
+  ShareNodesIcon,
   StarIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import {
   DropdownMenu,
@@ -37,7 +37,7 @@ function NavRecent({ projects }: { projects: RecentProject[] }) {
         {projects.map((project) => (
           <SidebarMenuItem key={project.id}>
             <SidebarMenuButton href={project.url}>
-              <HexagonIcon />
+              <GeobodiesIcon />
               <span>{project.name}</span>
             </SidebarMenuButton>
             <DropdownMenuTrigger>
@@ -45,7 +45,7 @@ function NavRecent({ projects }: { projects: RecentProject[] }) {
                 showOnHover
                 aria-label={`Actions for ${project.name}`}
               >
-                <MoreHorizontalIcon />
+                <MoreHorizIcon />
               </SidebarMenuAction>
               <DropdownMenu
                 className="w-48 rounded-lg"
@@ -56,7 +56,7 @@ function NavRecent({ projects }: { projects: RecentProject[] }) {
                   <span>Open project</span>
                 </DropdownMenuItem>
                 <DropdownMenuItem textValue="Share">
-                  <Share2Icon className="text-muted-foreground" />
+                  <ShareNodesIcon className="text-muted-foreground" />
                   <span>Share</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -70,7 +70,7 @@ function NavRecent({ projects }: { projects: RecentProject[] }) {
         ))}
         <SidebarMenuItem>
           <SidebarMenuButton className="text-sidebar-foreground/70">
-            <MoreHorizontalIcon className="text-sidebar-foreground/70" />
+            <MoreHorizIcon className="text-sidebar-foreground/70" />
             <span>All projects</span>
           </SidebarMenuButton>
         </SidebarMenuItem>

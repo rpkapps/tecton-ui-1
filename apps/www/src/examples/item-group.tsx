@@ -1,6 +1,6 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/item-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import * as React from "react"
-import { PlusIcon } from "lucide-react"
+import { AddIcon } from "@tecton/react/icons"
 
 import {
   Avatar,
@@ -54,7 +54,7 @@ export function ItemGroupExample() {
           </ItemContent>
           <ItemActions>
             <Button variant="ghost" size="icon" className="rounded-full">
-              <PlusIcon />
+              <AddIcon />
             </Button>
           </ItemActions>
         </Item>

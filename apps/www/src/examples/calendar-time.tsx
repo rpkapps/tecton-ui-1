@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { CalendarDate } from "@internationalized/date"
-import { Clock2Icon } from "lucide-react"
+import { ScheduleIcon } from "@tecton/react/icons"
 
 import { Calendar } from "@tecton/react/components/calendar"
 import { Card, CardContent, CardFooter } from "@tecton/react/components/card"
@@ -37,7 +37,7 @@ export function CalendarWithTime() {
                 className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
               />
               <InputGroupAddon>
-                <Clock2Icon className="text-muted-foreground" />
+                <ScheduleIcon className="text-muted-foreground" />
               </InputGroupAddon>
             </InputGroup>
           </Field>
@@ -52,7 +52,7 @@ export function CalendarWithTime() {
                 className="appearance-none [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"
               />
               <InputGroupAddon>
-                <Clock2Icon className="text-muted-foreground" />
+                <ScheduleIcon className="text-muted-foreground" />
               </InputGroupAddon>
             </InputGroup>
           </Field>

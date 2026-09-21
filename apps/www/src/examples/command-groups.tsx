@@ -2,14 +2,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  CalculatorIcon,
-  CalendarIcon,
-  CreditCardIcon,
-  SettingsIcon,
-  SmileIcon,
-  UserIcon,
-} from "lucide-react"
+import { CalculateIcon, CalendarMonthIcon, CreditCardIcon, PersonIcon, SentimentSatisfiedIcon, SettingsIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -42,22 +35,22 @@ export function CommandWithGroups() {
           >
             <CommandGroup heading="Suggestions">
               <CommandItem textValue="Calendar">
-                <CalendarIcon />
+                <CalendarMonthIcon />
                 <span>Calendar</span>
               </CommandItem>
               <CommandItem textValue="Search Emoji">
-                <SmileIcon />
+                <SentimentSatisfiedIcon />
                 <span>Search Emoji</span>
               </CommandItem>
               <CommandItem textValue="Calculator">
-                <CalculatorIcon />
+                <CalculateIcon />
                 <span>Calculator</span>
               </CommandItem>
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading="Settings">
               <CommandItem textValue="Profile">
-                <UserIcon />
+                <PersonIcon />
                 <span>Profile</span>
                 <CommandShortcut>⌘P</CommandShortcut>
               </CommandItem>

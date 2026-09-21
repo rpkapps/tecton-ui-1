@@ -1,16 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/button-group-dropdown.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import {
-  AlertTriangleIcon,
-  CheckIcon,
-  ChevronDownIcon,
-  CopyIcon,
-  ShareIcon,
-  TrashIcon,
-  UserRoundXIcon,
-  VolumeOffIcon,
-} from "lucide-react"
+import { CheckIcon, ChevronDownIcon, CopyIcon, DeleteIcon, PersonRemoveIcon, ShareIcon, VolumeOffIcon, WarningIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { ButtonGroup } from "@tecton/react/components/button-group"
@@ -41,11 +32,11 @@ export default function ButtonGroupDropdown() {
               Mark as Read
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <AlertTriangleIcon />
+              <WarningIcon />
               Report Conversation
             </DropdownMenuItem>
             <DropdownMenuItem>
-              <UserRoundXIcon />
+              <PersonRemoveIcon />
               Block User
             </DropdownMenuItem>
             <DropdownMenuItem>
@@ -60,7 +51,7 @@ export default function ButtonGroupDropdown() {
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem variant="destructive">
-              <TrashIcon />
+              <DeleteIcon />
               Delete Conversation
             </DropdownMenuItem>
           </DropdownMenuGroup>

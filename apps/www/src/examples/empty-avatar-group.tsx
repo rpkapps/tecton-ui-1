@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/empty-avatar-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { PlusIcon } from "lucide-react"
+import { AddIcon } from "@tecton/react/icons"
 
 import {
   Avatar,
@@ -49,7 +49,7 @@ export default function EmptyAvatarGroup() {
       </EmptyHeader>
       <EmptyContent>
         <Button size="sm">
-          <PlusIcon />
+          <AddIcon />
           Invite Members
         </Button>
       </EmptyContent>

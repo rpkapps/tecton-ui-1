@@ -21,7 +21,7 @@ import {
   type ColumnVisibilityState,
   type SortingState,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+import { ChevronDownIcon, MoreHorizIcon, SortEnabledIcon } from "@tecton/react/icons"
 
 import {
   useTranslation,
@@ -224,7 +224,7 @@ export function DataTableRtl() {
             return (
               <div className={buttonVariants({ variant: "ghost" })}>
                 {t.email}
-                <ArrowUpDown />
+                <SortEnabledIcon />
               </div>
             )
           },
@@ -257,7 +257,7 @@ export function DataTableRtl() {
               <DropdownMenuTrigger>
                 <Button variant="ghost" size="icon-xs">
                   <span className="sr-only">{t.openMenu}</span>
-                  <MoreHorizontal />
+                  <MoreHorizIcon />
                 </Button>
                 <DropdownMenu
                   placement={dir === "rtl" ? "bottom start" : "bottom end"}
@@ -315,7 +315,7 @@ export function DataTableRtl() {
         />
         <DropdownMenuTrigger>
           <Button variant="outline" className="ms-auto">
-            {t.columns} <ChevronDown />
+            {t.columns} <ChevronDownIcon />
           </Button>
           <DropdownMenu
             placement={dir === "rtl" ? "bottom start" : "bottom end"}

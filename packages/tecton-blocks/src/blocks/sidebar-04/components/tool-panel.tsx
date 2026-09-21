@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { PanelRightCloseIcon, RotateCcwIcon } from "lucide-react"
+import { RightPanelCloseIcon, RotateLeftIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -85,7 +85,7 @@ function ToolPanel({
           aria-label="Close panel"
           {...(onClose === undefined ? {} : { onPress: onClose })}
         >
-          <PanelRightCloseIcon />
+          <RightPanelCloseIcon />
         </Button>
       </SidebarHeader>
       <SidebarContent className="gap-4 p-3">
@@ -169,7 +169,7 @@ function ToolPanel({
       </SidebarContent>
       <SidebarFooter className="flex-row justify-end gap-2 border-t border-border-subtle p-3">
         <Button variant="ghost" size="sm" onPress={() => update(defaultWell)}>
-          <RotateCcwIcon /> Reset
+          <RotateLeftIcon /> Reset
         </Button>
         <Button size="sm" onPress={() => onApply?.(value)}>
           Apply

@@ -7,7 +7,7 @@ import {
   ChevronRightIcon,
   FlagIcon,
   SearchIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import { Button, LinkButton } from "@tecton/react/components/button"
 import { Kbd, KbdGroup } from "@tecton/react/components/kbd"

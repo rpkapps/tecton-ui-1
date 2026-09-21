@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/button-group-nested.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { AudioLinesIcon, PlusIcon } from "lucide-react"
+import { AddIcon, GraphicEqIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { ButtonGroup } from "@tecton/react/components/button-group"
@@ -16,7 +16,7 @@ export function ButtonGroupNested() {
     <ButtonGroup>
       <ButtonGroup>
         <Button variant="outline" size="icon">
-          <PlusIcon />
+          <AddIcon />
         </Button>
       </ButtonGroup>
       <ButtonGroup>
@@ -24,7 +24,7 @@ export function ButtonGroupNested() {
           <InputGroupInput placeholder="Send a message..." />
           <TooltipTrigger>
             <InputGroupAddon align="inline-end">
-              <AudioLinesIcon />
+              <GraphicEqIcon />
             </InputGroupAddon>
             <Tooltip>Voice Mode</Tooltip>
           </TooltipTrigger>

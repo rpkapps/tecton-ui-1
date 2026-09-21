@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { DownloadIcon, PlusIcon, ShareIcon } from "lucide-react"
+import { AddIcon, DownloadIcon, ShareIcon } from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -87,7 +87,7 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
                     <DownloadIcon /> Export
                   </Button>
                   <Button size="sm">
-                    <PlusIcon /> New alternative
+                    <AddIcon /> New alternative
                   </Button>
                   {!agentOpen && (
                     <Button

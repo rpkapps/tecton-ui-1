@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/toggle-group-vertical.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { BoldIcon, ItalicIcon, UnderlineIcon } from "lucide-react"
+import { FormatBoldIcon, FormatItalicIcon, FormatUnderlinedIcon } from "@tecton/react/icons"
 
 import {
   ToggleGroup,
@@ -15,13 +15,13 @@ export function ToggleGroupVertical() {
       defaultSelectedKeys={["bold", "italic"]}
     >
       <ToggleGroupItem id="bold" aria-label="Toggle bold">
-        <BoldIcon />
+        <FormatBoldIcon />
       </ToggleGroupItem>
       <ToggleGroupItem id="italic" aria-label="Toggle italic">
-        <ItalicIcon />
+        <FormatItalicIcon />
       </ToggleGroupItem>
       <ToggleGroupItem id="underline" aria-label="Toggle underline">
-        <UnderlineIcon />
+        <FormatUnderlinedIcon />
       </ToggleGroupItem>
     </ToggleGroup>
   )

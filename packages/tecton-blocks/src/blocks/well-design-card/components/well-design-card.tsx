@@ -5,10 +5,10 @@ import { cn } from "cn"
 import {
   CopyIcon,
   CrownIcon,
-  MoreVerticalIcon,
-  PencilIcon,
-  TrashIcon,
-} from "lucide-react"
+  DeleteIcon,
+  EditSquareIcon,
+  MoreVertIcon,
+} from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -93,18 +93,18 @@ function WellDesignCard({
         <CardAction>
           <DropdownMenuTrigger>
             <Button variant="ghost" size="icon-xs" aria-label="More actions">
-              <MoreVerticalIcon />
+              <MoreVertIcon />
             </Button>
             <DropdownMenu placement="bottom end">
               <DropdownMenuItem onAction={() => onView?.(design)}>
-                <PencilIcon /> Open design
+                <EditSquareIcon /> Open design
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <CopyIcon /> Duplicate
               </DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive">
-                <TrashIcon /> Delete
+                <DeleteIcon /> Delete
               </DropdownMenuItem>
             </DropdownMenu>
           </DropdownMenuTrigger>

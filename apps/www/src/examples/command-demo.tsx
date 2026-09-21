@@ -1,14 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/command-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import {
-  Calculator,
-  Calendar,
-  CreditCard,
-  Settings,
-  Smile,
-  User,
-} from "lucide-react"
+import { CalculateIcon, CalendarMonthIcon, CreditCardIcon, PersonIcon, SentimentSatisfiedIcon, SettingsIcon } from "@tecton/react/icons"
 
 import {
   Command,
@@ -30,32 +23,32 @@ export function CommandDemo() {
       >
         <CommandGroup heading="Suggestions">
           <CommandItem textValue="Calendar">
-            <Calendar />
+            <CalendarMonthIcon />
             <span>Calendar</span>
           </CommandItem>
           <CommandItem textValue="Search Emoji">
-            <Smile />
+            <SentimentSatisfiedIcon />
             <span>Search Emoji</span>
           </CommandItem>
           <CommandItem textValue="Calculator" isDisabled>
-            <Calculator />
+            <CalculateIcon />
             <span>Calculator</span>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading="Settings">
           <CommandItem textValue="Profile">
-            <User />
+            <PersonIcon />
             <span>Profile</span>
             <CommandShortcut>⌘P</CommandShortcut>
           </CommandItem>
           <CommandItem textValue="Billing">
-            <CreditCard />
+            <CreditCardIcon />
             <span>Billing</span>
             <CommandShortcut>⌘B</CommandShortcut>
           </CommandItem>
           <CommandItem textValue="Settings">
-            <Settings />
+            <SettingsIcon />
             <span>Settings</span>
             <CommandShortcut>⌘S</CommandShortcut>
           </CommandItem>

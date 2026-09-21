@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronsUpDownIcon, HexagonIcon, PlusIcon } from "lucide-react"
+import { AddIcon, CaretUpDownIcon, GeobodiesIcon } from "@tecton/react/icons"
 
 import {
   DropdownMenu,
@@ -55,7 +55,7 @@ function ProjectSwitcher({
             className="aria-expanded:bg-sidebar-accent aria-expanded:text-sidebar-accent-foreground"
           >
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
-              <HexagonIcon className="size-4" />
+              <GeobodiesIcon className="size-4" />
             </div>
             <div className="grid flex-1 text-left text-sm leading-tight">
               <span className="truncate font-medium">{active.name}</span>
@@ -63,7 +63,7 @@ function ProjectSwitcher({
                 {active.phase}
               </span>
             </div>
-            <ChevronsUpDownIcon className="ml-auto" />
+            <CaretUpDownIcon className="ml-auto" />
           </SidebarMenuButton>
           <DropdownMenu
             className="w-(--trigger-width) min-w-56 rounded-lg"
@@ -82,7 +82,7 @@ function ProjectSwitcher({
                   className="gap-2 p-2"
                 >
                   <div className="flex size-6 shrink-0 items-center justify-center rounded-md border">
-                    <HexagonIcon className="size-3.5" />
+                    <GeobodiesIcon className="size-3.5" />
                   </div>
                   <div className="grid min-w-0 flex-1 leading-tight">
                     <span className="truncate">{project.name}</span>
@@ -98,7 +98,7 @@ function ProjectSwitcher({
             <DropdownMenuGroup>
               <DropdownMenuItem textValue="New project" className="gap-2 p-2">
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
-                  <PlusIcon className="size-4" />
+                  <AddIcon className="size-4" />
                 </div>
                 <span className="font-medium text-muted-foreground">
                   New project

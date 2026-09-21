@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/bubble-tooltip.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { CheckIcon } from "lucide-react"
+import { CheckIcon } from "@tecton/react/icons"
 
 import {
   Bubble,

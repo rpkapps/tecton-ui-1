@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { Building2Icon, CreditCardIcon, WalletIcon } from "lucide-react"
+import { CorporateFareIcon, CreditCardIcon, WalletIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -35,7 +35,7 @@ export function DropdownMenuRadioIcons() {
             PayPal
           </DropdownMenuItem>
           <DropdownMenuItem id="bank">
-            <Building2Icon />
+            <CorporateFareIcon />
             Bank Transfer
           </DropdownMenuItem>
         </DropdownMenuGroup>

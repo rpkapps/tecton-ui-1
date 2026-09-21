@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { ChevronRightIcon, PlusIcon } from "lucide-react"
+import { AddIcon, ChevronRightIcon } from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import {
@@ -133,7 +133,7 @@ function ProjectSidebar({
         <SidebarGroup>
           <SidebarGroupLabel>Field development alternatives</SidebarGroupLabel>
           <SidebarGroupAction aria-label="Add concept">
-            <PlusIcon />
+            <AddIcon />
           </SidebarGroupAction>
           <SidebarMenu>
             {project.concepts.map((concept) => (

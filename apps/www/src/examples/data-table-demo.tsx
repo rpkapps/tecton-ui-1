@@ -21,7 +21,7 @@ import {
   type ColumnVisibilityState,
   type SortingState,
 } from "@tanstack/react-table"
-import { ArrowUpDown, ChevronDown, MoreHorizontal } from "lucide-react"
+import { ChevronDownIcon, MoreHorizIcon, SortEnabledIcon } from "@tecton/react/icons"
 
 import { Button, buttonVariants } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
@@ -119,7 +119,7 @@ export const columns = columnHelper.columns([
       return (
         <div className={buttonVariants({ variant: "ghost" })}>
           Email
-          <ArrowUpDown />
+          <SortEnabledIcon />
         </div>
       )
     },
@@ -149,7 +149,7 @@ export const columns = columnHelper.columns([
         <DropdownMenuTrigger>
           <Button variant="ghost" size="icon-xs">
             <span className="sr-only">Open menu</span>
-            <MoreHorizontal />
+            <MoreHorizIcon />
           </Button>
           <DropdownMenu placement="bottom end" className="w-44">
             <DropdownMenuGroup>
@@ -210,7 +210,7 @@ export function DataTableDemo() {
         />
         <DropdownMenuTrigger>
           <Button variant="outline" className="ml-auto">
-            Columns <ChevronDown />
+            Columns <ChevronDownIcon />
           </Button>
           <DropdownMenu placement="bottom end" className="w-44">
             <DropdownMenuGroup

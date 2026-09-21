@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/attachment-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { FileCodeIcon, XIcon } from "lucide-react"
+import { CloseIcon, CodeBlocksIcon } from "@tecton/react/icons"
 
 import {
   Attachment,
@@ -60,13 +60,13 @@ export function AttachmentDemo() {
         </AttachmentContent>
         <AttachmentActions>
           <AttachmentAction aria-label="Cancel upload">
-            <XIcon />
+            <CloseIcon />
           </AttachmentAction>
         </AttachmentActions>
       </Attachment>
       <Attachment className="w-full">
         <AttachmentMedia>
-          <FileCodeIcon />
+          <CodeBlocksIcon />
         </AttachmentMedia>
         <AttachmentContent>
           <AttachmentTitle>message-renderer.tsx</AttachmentTitle>
@@ -74,7 +74,7 @@ export function AttachmentDemo() {
         </AttachmentContent>
         <AttachmentActions>
           <AttachmentAction aria-label="Remove message-renderer.tsx">
-            <XIcon />
+            <CloseIcon />
           </AttachmentAction>
         </AttachmentActions>
       </Attachment>

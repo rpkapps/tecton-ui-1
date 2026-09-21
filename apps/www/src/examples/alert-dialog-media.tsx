@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/alert-dialog-media.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { CircleFadingPlusIcon } from "lucide-react"
+import { AddCircleIcon } from "@tecton/react/icons"
 
 import {
   AlertDialog,
@@ -21,7 +21,7 @@ export function AlertDialogWithMedia() {
       <AlertDialog>
         <AlertDialogHeader>
           <AlertDialogMedia>
-            <CircleFadingPlusIcon />
+            <AddCircleIcon />
           </AlertDialogMedia>
           <AlertDialogTitle>Share this project?</AlertDialogTitle>
           <AlertDialogDescription>

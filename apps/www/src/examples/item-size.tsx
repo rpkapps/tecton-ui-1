@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/item-size.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { InboxIcon } from "lucide-react"
+import { InboxIcon } from "@tecton/react/icons"
 
 import {
   Item,

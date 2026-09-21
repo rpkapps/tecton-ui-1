@@ -11,11 +11,11 @@ import {
 import { cn } from "cn"
 import {
   CopyIcon,
-  MoreVerticalIcon,
-  PencilIcon,
+  DeleteIcon,
+  EditSquareIcon,
+  MoreVertIcon,
   ShareIcon,
-  TrashIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -183,13 +183,13 @@ function createFdaColumns(callbacks: ColumnCallbacks = {}) {
               size="icon-xs"
               aria-label={`Actions for ${row.original.code}`}
             >
-              <MoreVerticalIcon />
+              <MoreVertIcon />
             </Button>
             <DropdownMenu placement="bottom end">
               <DropdownMenuItem
                 onAction={() => callbacks.onOpen?.(row.original)}
               >
-                <PencilIcon /> Open
+                <EditSquareIcon /> Open
               </DropdownMenuItem>
               <DropdownMenuItem
                 onAction={() => callbacks.onDuplicate?.(row.original)}
@@ -204,7 +204,7 @@ function createFdaColumns(callbacks: ColumnCallbacks = {}) {
                 variant="destructive"
                 onAction={() => callbacks.onDelete?.(row.original)}
               >
-                <TrashIcon /> Delete
+                <DeleteIcon /> Delete
               </DropdownMenuItem>
             </DropdownMenu>
           </DropdownMenuTrigger>

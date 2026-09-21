@@ -47,12 +47,18 @@ type RegistryItem = {
   css?: Record<string, unknown>
 }
 
-/** External packages the Tecton sources may import, mapped to registry deps. */
+/**
+ * External packages the Tecton sources may import, mapped to registry deps.
+ *
+ * `@tecton/react` is deliberately absent, and so every `@tecton/react/...`
+ * import — components, Tecton components and `@tecton/react/icons`, which is
+ * where every icon in a block comes from — is left to the package a consuming
+ * application installs once, rather than repeated on each block.
+ */
 const KNOWN_DEPENDENCIES = new Set([
   "react-aria-components",
   "class-variance-authority",
   "cn",
-  "lucide-react",
   "@tanstack/react-table",
   "recharts",
   "sonner",

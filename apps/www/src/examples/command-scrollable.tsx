@@ -2,31 +2,7 @@
 "use client"
 
 import * as React from "react"
-import {
-  BellIcon,
-  CalculatorIcon,
-  CalendarIcon,
-  ClipboardPasteIcon,
-  CodeIcon,
-  CopyIcon,
-  CreditCardIcon,
-  FileTextIcon,
-  FolderIcon,
-  FolderPlusIcon,
-  HelpCircleIcon,
-  HomeIcon,
-  ImageIcon,
-  InboxIcon,
-  LayoutGridIcon,
-  ListIcon,
-  PlusIcon,
-  ScissorsIcon,
-  SettingsIcon,
-  TrashIcon,
-  UserIcon,
-  ZoomInIcon,
-  ZoomOutIcon,
-} from "lucide-react"
+import { AddIcon, CalculateIcon, CalendarMonthIcon, CodeIcon, ContentCutIcon, ContentPasteIcon, CopyIcon, CreditCardIcon, DeleteIcon, DescriptionIcon, FolderIcon, FolderNewIcon, GridViewIcon, HelpIcon, HomeIcon, ImageIcon, InboxIcon, ListIcon, NotificationsIcon, PersonIcon, SettingsIcon, ZoomInIcon, ZoomOutIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -69,7 +45,7 @@ export function CommandManyItems() {
                 <CommandShortcut>⌘I</CommandShortcut>
               </CommandItem>
               <CommandItem textValue="Documents">
-                <FileTextIcon />
+                <DescriptionIcon />
                 <span>Documents</span>
                 <CommandShortcut>⌘D</CommandShortcut>
               </CommandItem>
@@ -82,12 +58,12 @@ export function CommandManyItems() {
             <CommandSeparator />
             <CommandGroup heading="Actions">
               <CommandItem textValue="New File">
-                <PlusIcon />
+                <AddIcon />
                 <span>New File</span>
                 <CommandShortcut>⌘N</CommandShortcut>
               </CommandItem>
               <CommandItem textValue="New Folder">
-                <FolderPlusIcon />
+                <FolderNewIcon />
                 <span>New Folder</span>
                 <CommandShortcut>⇧⌘N</CommandShortcut>
               </CommandItem>
@@ -97,17 +73,17 @@ export function CommandManyItems() {
                 <CommandShortcut>⌘C</CommandShortcut>
               </CommandItem>
               <CommandItem textValue="Cut">
-                <ScissorsIcon />
+                <ContentCutIcon />
                 <span>Cut</span>
                 <CommandShortcut>⌘X</CommandShortcut>
               </CommandItem>
               <CommandItem textValue="Paste">
-                <ClipboardPasteIcon />
+                <ContentPasteIcon />
                 <span>Paste</span>
                 <CommandShortcut>⌘V</CommandShortcut>
               </CommandItem>
               <CommandItem textValue="Delete">
-                <TrashIcon />
+                <DeleteIcon />
                 <span>Delete</span>
                 <CommandShortcut>⌫</CommandShortcut>
               </CommandItem>
@@ -115,7 +91,7 @@ export function CommandManyItems() {
             <CommandSeparator />
             <CommandGroup heading="View">
               <CommandItem textValue="Grid View">
-                <LayoutGridIcon />
+                <GridViewIcon />
                 <span>Grid View</span>
               </CommandItem>
               <CommandItem textValue="List View">
@@ -136,7 +112,7 @@ export function CommandManyItems() {
             <CommandSeparator />
             <CommandGroup heading="Account">
               <CommandItem textValue="Profile">
-                <UserIcon />
+                <PersonIcon />
                 <span>Profile</span>
                 <CommandShortcut>⌘P</CommandShortcut>
               </CommandItem>
@@ -151,22 +127,22 @@ export function CommandManyItems() {
                 <CommandShortcut>⌘S</CommandShortcut>
               </CommandItem>
               <CommandItem textValue="Notifications">
-                <BellIcon />
+                <NotificationsIcon />
                 <span>Notifications</span>
               </CommandItem>
               <CommandItem textValue="Help & Support">
-                <HelpCircleIcon />
+                <HelpIcon />
                 <span>Help & Support</span>
               </CommandItem>
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading="Tools">
               <CommandItem textValue="Calculator">
-                <CalculatorIcon />
+                <CalculateIcon />
                 <span>Calculator</span>
               </CommandItem>
               <CommandItem textValue="Calendar">
-                <CalendarIcon />
+                <CalendarMonthIcon />
                 <span>Calendar</span>
               </CommandItem>
               <CommandItem textValue="Image Editor">

@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { getLocalTimeZone, type CalendarDate } from "@internationalized/date"
-import { ChevronDownIcon } from "lucide-react"
+import { ChevronDownIcon } from "@tecton/react/icons"
 import { I18nProvider } from "react-aria-components"
 
 import {

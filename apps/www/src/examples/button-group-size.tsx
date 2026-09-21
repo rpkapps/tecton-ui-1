@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/button-group-size.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { PlusIcon } from "lucide-react"
+import { AddIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { ButtonGroup } from "@tecton/react/components/button-group"
@@ -18,7 +18,7 @@ export default function ButtonGroupSize() {
           Group
         </Button>
         <Button variant="outline" size="icon-sm">
-          <PlusIcon />
+          <AddIcon />
         </Button>
       </ButtonGroup>
       <ButtonGroup>
@@ -26,7 +26,7 @@ export default function ButtonGroupSize() {
         <Button variant="outline">Button</Button>
         <Button variant="outline">Group</Button>
         <Button variant="outline" size="icon">
-          <PlusIcon />
+          <AddIcon />
         </Button>
       </ButtonGroup>
       <ButtonGroup>
@@ -40,7 +40,7 @@ export default function ButtonGroupSize() {
           Group
         </Button>
         <Button variant="outline" size="icon-lg">
-          <PlusIcon />
+          <AddIcon />
         </Button>
       </ButtonGroup>
     </div>

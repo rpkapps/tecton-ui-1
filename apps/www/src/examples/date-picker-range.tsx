@@ -3,7 +3,7 @@
 
 import * as React from "react"
 import { CalendarDate, getLocalTimeZone } from "@internationalized/date"
-import { CalendarIcon } from "lucide-react"
+import { CalendarMonthIcon } from "@tecton/react/icons"
 import { type DateRange } from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
@@ -26,7 +26,7 @@ export function DatePickerWithRange() {
           id="date-picker-range"
           className="justify-start px-2.5 font-normal"
         >
-          <CalendarIcon data-icon="inline-start" />
+          <CalendarMonthIcon data-icon="inline-start" />
           {date?.start && date.end ? (
             new Intl.DateTimeFormat(undefined, {
               dateStyle: "long",

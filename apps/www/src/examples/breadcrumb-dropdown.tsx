@@ -2,7 +2,7 @@
 "use client"
 
 import Link from "@/components/shims/link"
-import { ChevronDownIcon } from "lucide-react"
+import { ChevronDownIcon } from "@tecton/react/icons"
 import { Button } from "react-aria-components"
 
 import {

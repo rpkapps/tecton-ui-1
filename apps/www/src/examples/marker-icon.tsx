@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/marker-icon.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { BookOpenCheck, GitBranchIcon, SearchIcon } from "lucide-react"
+import { AccountTreeIcon, LibraryAddCheckIcon, SearchIcon } from "@tecton/react/icons"
 
 import { Marker, MarkerContent, MarkerIcon } from "@tecton/react/components/marker"
 
@@ -8,7 +8,7 @@ export function MarkerIconDemo() {
     <div className="flex w-full max-w-sm flex-col gap-12 py-12">
       <Marker>
         <MarkerIcon>
-          <GitBranchIcon />
+          <AccountTreeIcon />
         </MarkerIcon>
         <MarkerContent>Switched to a new branch</MarkerContent>
       </Marker>
@@ -20,7 +20,7 @@ export function MarkerIconDemo() {
       </Marker>
       <Marker className="flex-col">
         <MarkerIcon>
-          <BookOpenCheck />
+          <LibraryAddCheckIcon />
         </MarkerIcon>
         <MarkerContent>Syncing completed</MarkerContent>
       </Marker>

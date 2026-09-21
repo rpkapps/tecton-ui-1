@@ -3,10 +3,10 @@
 import * as React from "react"
 import {
   ArrowLeftIcon,
-  BellIcon,
-  BellRingIcon,
   ConstructionIcon,
-} from "lucide-react"
+  NotificationsActiveIcon,
+  NotificationsIcon,
+} from "@tecton/react/icons"
 
 import { Button, LinkButton } from "@tecton/react/components/button"
 
@@ -50,9 +50,9 @@ export default function ComingSoonPage() {
             onPress={() => setSubscribed((value) => !value)}
           >
             {subscribed ? (
-              <BellRingIcon data-icon="inline-start" />
+              <NotificationsActiveIcon data-icon="inline-start" />
             ) : (
-              <BellIcon data-icon="inline-start" />
+              <NotificationsIcon data-icon="inline-start" />
             )}
             {subscribed ? "We'll let you know" : "Notify me when it's ready"}
           </Button>

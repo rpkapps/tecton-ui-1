@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronDownIcon } from "lucide-react"
+import { ChevronDownIcon } from "@tecton/react/icons"
 
 import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
 import { Button } from "@tecton/react/components/button"

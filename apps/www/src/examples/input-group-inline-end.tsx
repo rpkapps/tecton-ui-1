@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/input-group-inline-end.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { EyeOffIcon } from "lucide-react"
+import { VisibilityOffIcon } from "@tecton/react/icons"
 
 import {
   Field,
@@ -23,7 +23,7 @@ export function InputGroupInlineEnd() {
           placeholder="Enter password"
         />
         <InputGroupAddon align="inline-end">
-          <EyeOffIcon />
+          <VisibilityOffIcon />
         </InputGroupAddon>
       </InputGroup>
       <FieldDescription>Icon positioned at the end.</FieldDescription>

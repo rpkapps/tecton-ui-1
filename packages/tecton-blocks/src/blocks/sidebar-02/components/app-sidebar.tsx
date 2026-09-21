@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { HexagonIcon, SearchIcon } from "lucide-react"
+import { HexagonIcon, SearchIcon } from "@tecton/react/icons"
 
 import {
   InputGroup,

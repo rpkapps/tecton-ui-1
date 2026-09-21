@@ -1,20 +1,20 @@
-import type * as React from "react"
 import {
-  BoxIcon,
-  ChartColumnIcon,
-  DrillIcon,
-  GitCompareIcon,
-  LayoutDashboardIcon,
-  LifeBuoyIcon,
-  MessageSquareIcon,
-  MountainIcon,
+  ChatIcon,
+  CubeIcon,
+  DashboardIcon,
+  DifferenceIcon,
+  DrillBitIcon,
+  HorizonIcon,
+  ReportsAnalyticsIcon,
   SettingsIcon,
-} from "lucide-react"
+  SupportIcon,
+} from "@tecton/react/icons"
+import type { TectonIconComponent } from "@tecton/react/icons"
 
 export type NavLink = {
   title: string
   url: string
-  icon: React.ElementType
+  icon: TectonIconComponent
   isActive?: boolean
 }
 
@@ -26,12 +26,12 @@ export type RecentProject = {
 }
 
 export const navMain: NavLink[] = [
-  { title: "Overview", url: "#", icon: LayoutDashboardIcon, isActive: true },
-  { title: "Wells", url: "#", icon: DrillIcon },
-  { title: "Horizons", url: "#", icon: MountainIcon },
-  { title: "Models", url: "#", icon: BoxIcon },
-  { title: "Field development", url: "#", icon: GitCompareIcon },
-  { title: "Analytics", url: "#", icon: ChartColumnIcon },
+  { title: "Overview", url: "#", icon: DashboardIcon, isActive: true },
+  { title: "Wells", url: "#", icon: DrillBitIcon },
+  { title: "Horizons", url: "#", icon: HorizonIcon },
+  { title: "Models", url: "#", icon: CubeIcon },
+  { title: "Field development", url: "#", icon: DifferenceIcon },
+  { title: "Analytics", url: "#", icon: ReportsAnalyticsIcon },
 ]
 
 export const recentProjects: RecentProject[] = [
@@ -42,8 +42,8 @@ export const recentProjects: RecentProject[] = [
 ]
 
 export const navSecondary: NavLink[] = [
-  { title: "Support", url: "#", icon: LifeBuoyIcon },
-  { title: "Feedback", url: "#", icon: MessageSquareIcon },
+  { title: "Support", url: "#", icon: SupportIcon },
+  { title: "Feedback", url: "#", icon: ChatIcon },
   { title: "Settings", url: "#", icon: SettingsIcon },
 ]
 

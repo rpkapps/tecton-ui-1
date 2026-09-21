@@ -14,12 +14,12 @@ import {
 import type { RowSelectionState, SortingState } from "@tanstack/react-table"
 import { cn } from "cn"
 import {
+  AddIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   DatabaseIcon,
-  MoreVerticalIcon,
-  PlusIcon,
-} from "lucide-react"
+  MoreVertIcon,
+} from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -125,7 +125,7 @@ function createWellColumns(onOpen?: (well: Well) => void) {
               size="icon-xs"
               aria-label={`Actions for ${row.original.name}`}
             >
-              <MoreVerticalIcon />
+              <MoreVertIcon />
             </Button>
             <DropdownMenu placement="bottom end">
               <DropdownMenuItem onAction={() => onOpen?.(row.original)}>
@@ -396,7 +396,7 @@ function WellsEmptyState({
               size="sm"
               {...(onCreate === undefined ? {} : { onPress: onCreate })}
             >
-              <PlusIcon /> New well
+              <AddIcon /> New well
             </Button>
           </>
         )}

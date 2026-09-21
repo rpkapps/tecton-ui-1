@@ -19,6 +19,8 @@
 import { promises as fs } from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
+import { Project, QuoteKind, ScriptKind, SyntaxKind, ts } from "ts-morph"
+import { tectonIconImportFor, verifyAgainstManifest } from "../../../scripts/upstream-icons.mts"
 import { withGuidelines } from "./sync-guidelines.mts"
 
 const HERE = path.dirname(fileURLToPath(import.meta.url))
@@ -63,7 +65,7 @@ const ALLOWED_MODULES = new Set([
   "react",
   "react-dom",
   "cn",
-  "lucide-react",
+  "@tecton/react/icons",
   "react-aria-components",
   "sonner",
   "@internationalized/date",
@@ -164,11 +166,12 @@ function rewriteStockColors(code: string): string {
 }
 
 /**
- * Upstream examples occasionally use `@tabler/icons-react`; Tecton UI ships
- * lucide (and the Tecton icon set) only, so those identifiers are mapped to
- * their lucide equivalents and the import is rewritten.
+ * A few upstream examples reach for `@tabler/icons-react` instead of the icon
+ * library the placeholders name. Tabler's identifiers are a second vocabulary,
+ * so they are translated to the first one here and then travel the same path as
+ * every other icon: through `rewriteUpstreamIcons` to a Tecton name.
  */
-const TABLER_TO_LUCIDE: Record<string, string> = {
+const TABLER_TO_UPSTREAM: Record<string, string> = {
   IconBell: "BellIcon",
   IconBrandJavascript: "BracesIcon",
   IconCheck: "CheckIcon",
@@ -193,23 +196,237 @@ function rewriteTablerIcons(source: string): string {
     .split(",")
     .map((s) => s.trim())
     .filter(Boolean)
-  const unknown = idents.filter((id) => !(id in TABLER_TO_LUCIDE))
+  const unknown = idents.filter((id) => !(id in TABLER_TO_UPSTREAM))
   if (unknown.length) {
     throw new Error(
-      `unmapped @tabler/icons-react identifier(s): ${unknown.join(", ")} — add them to TABLER_TO_LUCIDE`
+      `unmapped @tabler/icons-react identifier(s): ${unknown.join(", ")} — add them to TABLER_TO_UPSTREAM`
     )
   }
-  const lucideImport = `import { ${idents.map((id) => TABLER_TO_LUCIDE[id]).sort().join(", ")} } from "lucide-react"\n`
-  let code = source.replace(match[0], lucideImport)
+  const upstreamImport = `import { ${idents.map((id) => TABLER_TO_UPSTREAM[id]).sort().join(", ")} } from "${UPSTREAM_ICON_MODULES[0]}"\n`
+  let code = source.replace(match[0], upstreamImport)
   for (const id of idents) {
-    code = code.replace(new RegExp(`\\b${id}\\b`, "g"), TABLER_TO_LUCIDE[id])
+    code = code.replace(new RegExp(`\\b${id}\\b`, "g"), TABLER_TO_UPSTREAM[id])
   }
   return code
 }
 
-function rewriteImports(source: string): { code: string; blocked?: string } {
+/**
+ * Upstream names icons after the icon libraries shadcn/ui supports; Tecton ships
+ * its own set and no compatibility layer for anyone else's. Every synced example
+ * and every synced page therefore has its icon imports and its icon identifiers
+ * rewritten to Tecton ones — `XIcon` → `CloseIcon`, `Trash2Icon` → `DeleteIcon`
+ * — through `scripts/upstream-icons.mts`, the same table the registry mirror's
+ * post-build step uses. An identifier the table does not know fails the sync.
+ *
+ * The rewrite is an AST edit (ts-morph): the import declarations are replaced
+ * and each local binding is renamed through the language service, so a local
+ * variable that happens to share the name, a string that happens to contain it
+ * and a property of the same name are all left alone — which a regular
+ * expression over JSX could not promise.
+ */
+/** Modules whose named imports are upstream icon identifiers. */
+const UPSTREAM_ICON_MODULES = [
+  "lucide-react",
+  // Upstream's own icon indirection module, which a few examples import instead.
+  "@/registry/icons/__lucide__",
+]
+/** The module every rewritten import points at. */
+const TECTON_ICONS_MODULE = "@tecton/react/icons"
+/** Upstream icon *types*: not icons, so not in the UPSTREAM_ICONS table. */
+const UPSTREAM_ICON_TYPES: Record<string, string> = {
+  LucideIcon: "TectonIconComponent",
+  LucideProps: "TectonIconProps",
+}
+
+const iconProject = new Project({
+  useInMemoryFileSystem: true,
+  compilerOptions: { jsx: ts.JsxEmit.Preserve, allowJs: true },
+  manipulationSettings: { quoteKind: QuoteKind.Double },
+})
+let iconFileSeq = 0
+
+/**
+ * Rewrite one TypeScript / TSX source so its icons come from Tecton, and report
+ * which local names changed (the MDX pass needs that; see below).
+ *
+ * - `import { XIcon } from "lucide-react"` becomes
+ *   `import { CloseIcon } from "@tecton/react/icons"`, and every `XIcon` in the
+ *   file becomes `CloseIcon`.
+ * - an alias the file already chose is kept: `{ XIcon as Close }` becomes
+ *   `{ CloseIcon as Close }` and nothing else in the file moves.
+ * - two upstream names for one Tecton icon collapse into a single import, with
+ *   both sets of usages renamed.
+ * - a Tecton name already taken by something else in the file is not allowed to
+ *   shadow it: that import keeps the upstream local name as an alias.
+ * - `type LucideIcon` becomes `type TectonIconComponent`.
+ *
+ * `where` names the file (or snippet) in an error. A source that imports no
+ * icons comes back untouched, which is what makes `docs:sync` idempotent.
+ */
+function rewriteIcons(source: string, where: string): { code: string; renames: Map<string, string> } {
+  const renames = new Map<string, string>()
+  if (!UPSTREAM_ICON_MODULES.some((module) => source.includes(module))) {
+    return { code: source, renames }
+  }
+  const file = iconProject.createSourceFile(`icons-${iconFileSeq++}.tsx`, source, {
+    scriptKind: ScriptKind.TSX,
+    overwrite: true,
+  })
+  const upstreamImports = () =>
+    file
+      .getImportDeclarations()
+      .filter((declaration) =>
+        UPSTREAM_ICON_MODULES.includes(declaration.getModuleSpecifier().getLiteralText())
+      )
+  if (!upstreamImports().length) {
+    file.delete()
+    return { code: source, renames }
+  }
+
+  type Binding = {
+    /** The name the source uses today. */
+    local: string
+    /** The `@tecton/react/icons` export it becomes. */
+    tecton: string
+    /** The name the source will use — `tecton`, or the alias it already had. */
+    next: string
+    isType: boolean
+  }
+  const bindings: Binding[] = []
+  const locals = new Set<string>()
+  for (const declaration of upstreamImports()) {
+    if (declaration.getDefaultImport() || declaration.getNamespaceImport()) {
+      throw new Error(`${where}: ${declaration.getText()} — only named icon imports can be rewritten`)
+    }
+    const typeOnly = declaration.isTypeOnly()
+    for (const specifier of declaration.getNamedImports()) {
+      const imported = specifier.getName()
+      const local = specifier.getAliasNode()?.getText() ?? imported
+      const isType = typeOnly || specifier.isTypeOnly()
+      const tecton = isType ? UPSTREAM_ICON_TYPES[imported] : tectonIconImportFor(imported, where)
+      if (!tecton) {
+        throw new Error(
+          `${where}: no Tecton type for the upstream type "${imported}" — ` +
+            "add it to UPSTREAM_ICON_TYPES in scripts/sync-upstream-docs.mts"
+        )
+      }
+      bindings.push({ local, tecton, next: local === imported ? tecton : local, isType })
+      locals.add(local)
+    }
+  }
+
+  // A name the source already uses for something else must not be shadowed:
+  // that import keeps the name it has and carries an alias instead.
+  const taken = new Set(
+    file
+      .getDescendantsOfKind(SyntaxKind.Identifier)
+      .map((identifier) => identifier.getText())
+      .filter((text) => !locals.has(text))
+  )
+  for (const binding of bindings) {
+    if (binding.next === binding.tecton && taken.has(binding.tecton)) binding.next = binding.local
+  }
+
+  // Two locals may legitimately become one name (two upstream spellings of the
+  // same icon); two different icons under one name would be a real clash.
+  const byNext = new Map<string, Binding>()
+  for (const binding of bindings) {
+    const seen = byNext.get(binding.next)
+    if (seen && seen.tecton !== binding.tecton) {
+      throw new Error(
+        `${where}: "${seen.local}" and "${binding.local}" would both be called "${binding.next}" ` +
+          `but are different icons (${seen.tecton} / ${binding.tecton})`
+      )
+    }
+    if (!seen) byNext.set(binding.next, binding)
+  }
+
+  // Rename the bindings whose name changes. `.rename()` goes through the
+  // language service, so only real references move.
+  for (const binding of bindings) {
+    if (binding.next === binding.local) continue
+    renames.set(binding.local, binding.next)
+    const specifier = upstreamImports()
+      .flatMap((declaration) => declaration.getNamedImports())
+      .find((named) => (named.getAliasNode()?.getText() ?? named.getName()) === binding.local)
+    if (!specifier) continue
+    const node = specifier.getAliasNode() ?? specifier.getNameNode()
+    node.rename(binding.next, { usePrefixAndSuffixText: false })
+  }
+
+  // One import declaration in place of the upstream ones. The first is edited in
+  // place rather than removed and re-inserted, so the blank lines around it —
+  // upstream separates its external imports from its local ones — survive.
+  const [first, ...rest] = upstreamImports()
+  for (const declaration of rest) declaration.remove()
+  const semicolon = first.getText().endsWith(";")
+  first.set({
+    isTypeOnly: false,
+    moduleSpecifier: TECTON_ICONS_MODULE,
+    namedImports: [...byNext.values()]
+      .sort((a, b) => a.tecton.localeCompare(b.tecton))
+      .map((binding) => ({
+        name: binding.tecton,
+        alias: binding.next === binding.tecton ? undefined : binding.next,
+        isTypeOnly: binding.isType,
+      })),
+  })
+  if (!semicolon) first.replaceWithText(first.getText().replace(/;$/, ""))
+
+  const code = file.getFullText()
+  file.delete()
+  return { code, renames }
+}
+
+/** The codemod, for a TypeScript / TSX source. */
+export function rewriteUpstreamIcons(source: string, where: string): string {
+  return rewriteIcons(source, where).code
+}
+
+/** ```tsx fences in an MDX page, which is where the prose teaches an import. */
+const CODE_FENCE = /^(```)(tsx|ts|jsx|js)\b([^\n]*\n)([\s\S]*?)^```/gm
+/** A page-level `import { … } from "<an upstream icon module>"` statement. */
+const ICON_IMPORT_STATEMENT = new RegExp(
+  String.raw`^import\s+(?:type\s+)?\{[^}]*\}\s+from\s+["'](?:` +
+    UPSTREAM_ICON_MODULES.map((module) => module.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)).join("|") +
+    String.raw`)["'];?[^\S\n]*\n`,
+  "gm"
+)
+
+/**
+ * The same rewrite for a synced MDX page. MDX is prose, not a program, so there
+ * is no one AST to walk: the fenced code samples are each rewritten as TSX — a
+ * sample that tells the reader to import from an icon package is documentation
+ * that would now be wrong — and a page-level import (the pages that render an
+ * icon in their own prose) has its statement rewritten by the same codemod,
+ * with the renamed identifiers replaced in the body, where they appear as JSX
+ * element names.
+ */
+export function rewriteUpstreamIconsInMdx(mdx: string, where: string): string {
+  let out = mdx.replace(CODE_FENCE, (match, open: string, lang: string, rest: string, body: string) => {
+    if (!UPSTREAM_ICON_MODULES.some((module) => body.includes(module))) return match
+    return open + lang + rest + rewriteUpstreamIcons(body, `${where} (code sample)`) + "```"
+  })
+
+  const statements = out.match(ICON_IMPORT_STATEMENT)
+  if (!statements) return out
+  const { code, renames } = rewriteIcons(statements.join(""), `${where} (page imports)`)
+  let first = true
+  out = out.replace(ICON_IMPORT_STATEMENT, () => {
+    if (!first) return ""
+    first = false
+    return code
+  })
+  for (const [from, to] of renames) {
+    out = out.replace(new RegExp(String.raw`\b${from}\b`, "g"), to)
+  }
+  return out
+}
+
+
+function rewriteImports(source: string, where: string): { code: string; blocked?: string } {
   let blocked: string | undefined
-  const code = rewriteTablerIcons(source).replace(
+  let code = rewriteTablerIcons(source).replace(
     /(from\s+|import\s+|import\()\s*(["'])([^"']+)\2/g,
     (match, prefix: string, quote: string, spec: string) => {
       if (spec.startsWith(".")) return match
@@ -218,11 +435,16 @@ function rewriteImports(source: string): { code: string; blocked?: string } {
           return `${prefix}${quote}${spec.replace(pattern, replacement)}${quote}`
         }
       }
+      // The icon modules are rewritten below, once the example is known to be
+      // syncable — an example that is skipped anyway must not force a new entry
+      // in scripts/upstream-icons.mts.
+      if (UPSTREAM_ICON_MODULES.includes(spec)) return match
       if (ALLOWED_MODULES.has(spec) || spec.startsWith("react/")) return match
       blocked ??= spec
       return match
     }
   )
+  if (!blocked) code = rewriteUpstreamIcons(code, where)
   return { code, blocked }
 }
 
@@ -308,8 +530,9 @@ function transformMdx(
   // drop styleName props (aria-nova / aria-rhea …)
   mdx = mdx.replace(/\s+styleName="[^"]*"/g, "")
 
-  // pages import icons too (a Callout icon, say); map tabler to lucide as in examples
-  mdx = rewriteTablerIcons(mdx)
+  // Pages name icons too — in a Callout, and in the code samples that tell the
+  // reader what to import. Same translation as the examples get.
+  mdx = rewriteUpstreamIconsInMdx(rewriteTablerIcons(mdx), `${upstreamDir}/${name}.mdx`)
 
   // Components are consumed from the @tecton/react package, not installed one
   // by one, so the upstream "Installation" section (CLI command + manual copy)
@@ -416,6 +639,11 @@ async function main() {
   if (!(await exists(V4))) {
     throw new Error(`Upstream checkout not found at ${UPSTREAM} (set SHADCN_UPSTREAM_DIR)`)
   }
+  // The icon translation table names Tecton icons; make sure they all still exist.
+  verifyAgainstManifest(
+    JSON.parse(await fs.readFile(path.join(REPO, "packages/tecton-react/icons/icons.json"), "utf8")),
+    "docs:sync"
+  )
   const sha = (
     await fs.readFile(path.join(UPSTREAM, ".git/HEAD"), "utf8").catch(() => "unknown")
   ).trim()
@@ -476,7 +704,7 @@ async function main() {
       return false
     }
     const source = await fs.readFile(file, "utf8")
-    const { code: rewritten, blocked } = rewriteImports(source)
+    const { code: rewritten, blocked } = rewriteImports(source, `examples/aria/${exampleName}.tsx`)
     const code = EXAMPLE_REWRITES[exampleName]?.(rewritten) ?? rewritten
     if (blocked) {
       report.skippedExamples[exampleName] = `unsupported import: ${blocked}`
@@ -577,7 +805,11 @@ async function main() {
   )
 }
 
-main().catch((error) => {
-  console.error(error)
-  process.exit(1)
-})
+// `rewriteUpstreamIcons` is exported for one-off runs over hand-written files,
+// so importing this module must not start a sync.
+if (import.meta.main) {
+  main().catch((error) => {
+    console.error(error)
+    process.exit(1)
+  })
+}

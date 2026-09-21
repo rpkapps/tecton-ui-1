@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { CheckIcon, CopyIcon, InfoIcon, StarIcon } from "lucide-react"
+import { CheckIcon, CopyIcon, InfoIcon, StarIcon } from "@tecton/react/icons"
 
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import {

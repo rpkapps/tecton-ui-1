@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/alert-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { CheckCircle2Icon, InfoIcon } from "lucide-react"
+import { CheckCircleIcon, InfoIcon } from "@tecton/react/icons"
 
 import {
   Alert,
@@ -11,7 +11,7 @@ export default function AlertDemo() {
   return (
     <div className="grid w-full max-w-md items-start gap-4">
       <Alert>
-        <CheckCircle2Icon />
+        <CheckCircleIcon />
         <AlertTitle>Payment successful</AlertTitle>
         <AlertDescription>
           Your payment of $29.99 has been processed. A receipt has been sent to

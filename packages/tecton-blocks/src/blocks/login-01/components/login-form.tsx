@@ -2,7 +2,12 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { BuildingIcon, CircleAlertIcon, LayersIcon, XIcon } from "lucide-react"
+import {
+  ApartmentIcon,
+  CloseIcon,
+  ErrorIcon,
+  LayersIcon,
+} from "@tecton/react/icons"
 
 import {
   Alert,
@@ -90,7 +95,7 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
         <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
           {status === "error" && (
             <Alert variant="destructive" appearance="outline">
-              <CircleAlertIcon />
+              <ErrorIcon />
               <AlertTitle>Incorrect email or password</AlertTitle>
               <AlertDescription>
                 Try {demoAccount.email} / {demoAccount.password}.
@@ -102,7 +107,7 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
                   aria-label="Dismiss"
                   onPress={() => setStatus("idle")}
                 >
-                  <XIcon />
+                  <CloseIcon />
                 </Button>
               </AlertAction>
             </Alert>
@@ -174,7 +179,7 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
             className="w-full"
             {...(onSso === undefined ? {} : { onPress: onSso })}
           >
-            <BuildingIcon /> Continue with {loginCopy.ssoProvider}
+            <ApartmentIcon /> Continue with {loginCopy.ssoProvider}
           </Button>
         </form>
       </CardContent>

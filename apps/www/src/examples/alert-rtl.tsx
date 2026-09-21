@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { CheckCircle2Icon, InfoIcon } from "lucide-react"
+import { CheckCircleIcon, InfoIcon } from "@tecton/react/icons"
 
 import {
   useTranslation,
@@ -52,7 +52,7 @@ const translations: Translations = {
 
 const alerts = [
   {
-    icon: CheckCircle2Icon,
+    icon: CheckCircleIcon,
     titleKey: "paymentTitle" as const,
     descriptionKey: "paymentDescription" as const,
   },

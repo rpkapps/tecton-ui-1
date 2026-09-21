@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { LayersIcon, MoreVerticalIcon, XIcon } from "lucide-react"
+import { CloseIcon, LayersIcon, MoreVertIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -45,7 +45,7 @@ function AgentPanelHeader({
       <PanelActions>
         <DropdownMenuTrigger>
           <Button variant="ghost" size="icon-sm" aria-label="More options">
-            <MoreVerticalIcon />
+            <MoreVertIcon />
           </Button>
           <DropdownMenu placement="bottom end">
             <DropdownMenuItem
@@ -70,7 +70,7 @@ function AgentPanelHeader({
             aria-label="Close panel"
             {...(onClose === undefined ? {} : { onPress: onClose })}
           >
-            <XIcon />
+            <CloseIcon />
           </Button>
           <Tooltip>Close</Tooltip>
         </TooltipTrigger>

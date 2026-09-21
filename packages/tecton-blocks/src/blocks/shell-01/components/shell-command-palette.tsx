@@ -1,7 +1,11 @@
 "use client"
 
 import * as React from "react"
-import { AppWindowIcon, CommandIcon, KeyboardIcon } from "lucide-react"
+import {
+  KeyboardCommandKeyIcon,
+  KeyboardIcon,
+  WebAssetIcon,
+} from "@tecton/react/icons"
 
 import {
   Command,
@@ -111,7 +115,7 @@ function ShellCommandPalette({
                     close()
                   }}
                 >
-                  <AppWindowIcon />
+                  <WebAssetIcon />
                   <span>{app.name}</span>
                   <span className="font-mono text-xs text-muted-foreground">
                     {app.code}
@@ -158,7 +162,7 @@ function ShellCommandPalette({
                       close()
                     }}
                   >
-                    <CommandIcon />
+                    <KeyboardCommandKeyIcon />
                     <span>{command.label}</span>
                     {command.shortcut ? (
                       <CommandShortcut>{command.shortcut}</CommandShortcut>

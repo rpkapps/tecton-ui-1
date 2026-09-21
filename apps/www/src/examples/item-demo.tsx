@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/item-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { BadgeCheckIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronRightIcon, VerifiedIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -29,7 +29,7 @@ export function ItemDemo() {
       </Item>
       <Item href="#" variant="outline" size="sm">
         <ItemMedia>
-          <BadgeCheckIcon className="size-5" />
+          <VerifiedIcon className="size-5" />
         </ItemMedia>
         <ItemContent>
           <ItemTitle>Your profile has been verified.</ItemTitle>

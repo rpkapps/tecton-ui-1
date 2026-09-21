@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronsUpDown } from "lucide-react"
+import { CaretUpDownIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -23,7 +23,7 @@ export default function CollapsibleDemo() {
       <div className="flex items-center justify-between gap-4 px-4">
         <h4 className="text-sm font-semibold">Order #4189</h4>
         <Button slot="trigger" variant="ghost" size="icon" className="size-8">
-          <ChevronsUpDown />
+          <CaretUpDownIcon />
           <span className="sr-only">Toggle details</span>
         </Button>
       </div>
