@@ -432,10 +432,6 @@
       "types": "./dist/icons/index.d.ts",
       "import": "./dist/icons/index.js"
     },
-    "./icons/lucide-compat": {
-      "types": "./dist/icons/lucide-compat.d.ts",
-      "import": "./dist/icons/lucide-compat.js"
-    },
     "./icons/christmas-tree": {
       "types": "./dist/icons/christmas-tree.d.ts",
       "import": "./dist/icons/christmas-tree.js"

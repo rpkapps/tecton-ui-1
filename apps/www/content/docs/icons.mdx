@@ -26,22 +26,6 @@ import { WellIcon, SeismicIcon } from "@tecton/react/icons"
 
 <IconGallery />
 
-## Replacing Lucide inside the generated components
-
-If you want the shadcn components to render Tecton glyphs too, alias `lucide-react` to the compatibility module in your bundler. The generated files keep importing `lucide-react`; only the resolution changes:
-
-```ts title="vite.config.ts"
-export default defineConfig({
-  resolve: {
-    alias: {
-      "lucide-react": "@tecton/react/icons/lucide-compat",
-    },
-  },
-})
-```
-
-The compat module re-exports every Lucide name the components use, mapped to the matching Tecton icon when one exists and to Lucide otherwise.
-
 ## Optical sizing
 
 The Tecton export draws every glyph on a 16-unit grid with the glyph's own margin

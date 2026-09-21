@@ -27,13 +27,7 @@ const shippedSlugs = new Set(
 )
 
 /** Generated files in `src/icons/` that are not per-icon components. */
-const NON_ICON_OUTPUTS = new Set([
-  "_runtime.ts",
-  "index.ts",
-  "lucide-compat.map.ts",
-  "lucide-compat.ts",
-  "types.ts",
-])
+const NON_ICON_OUTPUTS = new Set(["_runtime.ts", "index.ts", "types.ts"])
 
 /**
  * Must match `ICON_VIEWBOX_INSET` in `scripts/build-icons.mts`; the first test
