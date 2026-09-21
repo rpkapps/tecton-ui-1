@@ -7,7 +7,7 @@ notFor:
   - need: a status or category label
     use: Badge
   - need: a glyph for an action rather than a key
-    use: Lucide
+    use: Tecton icons
 related: [Badge]
 ---
 

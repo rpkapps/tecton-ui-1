@@ -11,9 +11,9 @@ description: >
   bg-warning-surface) and the Tecton palette steps (bg-blue-120, text-blue-830),
   the rule that variants own colour, shape, size and padding while className
   carries layout only, the Tecton variant axes on Alert, Badge, Separator, Input,
-  Textarea and SelectTrigger, data-icon="inline-start" spacing, and Tecton
-  domain glyphs versus Lucide. Load before writing or editing any Tecton
-  markup, className, import or stylesheet.
+  Textarea and SelectTrigger, data-icon="inline-start" spacing, and the one
+  icon set at @tecton/react/icons with its domain glyphs. Load before writing
+  or editing any Tecton markup, className, import or stylesheet.
 metadata:
   type: core
   library: "@tecton/react"
@@ -143,7 +143,7 @@ is the check: re-read it against the file you wrote before you report it done.
 | --- | --- |
 | `@tecton/react/components/<name>` | The shadcn components: `button`, `badge`, `alert`, `select`, `dialog`, `field`, `input`, `tabs`, `table`, … |
 | `@tecton/react/tecton/<name>` | Tecton-only components with no shadcn counterpart: `chip`, `count-badge`, `circular-progress`, `meter`, `color-swatch`, `tree-view`, `stat`, `panel`, `page-header`, `app-shell`, `copy-button`, `link`, `theme-root` |
-| `@tecton/react/icons` | The 131 Tecton glyphs, including the domain set (`WellIcon`, `SeismicIcon`, `HorizonIcon`, `DrillBitIcon`, `FaultIcon`, `LogCurveIcon`, `TrajectoryIcon`, …) |
+| `@tecton/react/icons` | The 243 Tecton icons — the whole set, generic and domain (`SearchIcon`, `CloseIcon`, `WellIcon`, `SeismicIcon`, `HorizonIcon`, `DrillBitIcon`, `FaultIcon`, `LogCurveIcon`, `TrajectoryIcon`, …) |
 
 The `exports` map is enumerated, one entry per module, so a typo fails at resolve
 time. Components are never installed one by one. Only **blocks** are published to
@@ -200,14 +200,23 @@ and `size="default" | "xs" | "sm" | "lg" | "icon" | "icon-xs" | "icon-sm" | "ico
 
 ## Icons
 
-Lucide is what the generated components use internally; Tecton's own 131 glyphs
-share the Lucide signature and add `variant="outlined" | "filled"`. Reach for a
-Tecton domain glyph whenever one exists, Lucide for the generic ones.
+There is **one** icon set and **one** import path: `@tecton/react/icons`, 243
+named components covering both the generic vocabulary (`SearchIcon`,
+`CloseIcon`, `ChevronDownIcon`, `DeleteIcon`, `SettingsIcon`) and the subsurface
+domain (`WellIcon`, `SeismicIcon`, `HorizonIcon`, `DrillBitIcon`, `FaultIcon`,
+`GeobodiesIcon`, `StrataIcon`). No icon package is installed, and there is no
+compatibility layer for another one: an icon imported from anywhere else does
+not resolve.
+
+Each icon takes `size`, `className`, `variant="outlined" | "filled"` and any SVG
+prop. They render as characters from three woff2 symbol fonts, which the
+application shell loads once
+(`@import "@tecton/react/styles/tecton-symbols.css"`); nothing in a component
+file has to know that.
 
 ```tsx
 import { Button } from "@tecton/react/components/button"
-import { SeismicIcon, WellIcon } from "@tecton/react/icons"
-import { SearchIcon } from "lucide-react"
+import { SearchIcon, SeismicIcon, WellIcon } from "@tecton/react/icons"
 
 export function Toolbar() {
   return (
@@ -227,6 +236,14 @@ export function Toolbar() {
 `data-icon="inline-start"` / `data-icon="inline-end"` is what tightens the
 padding on that side. `Button`, `Badge` and `TabsTrigger` all key their padding
 off it.
+
+Reach for the **domain glyph whenever one exists** — `HorizonIcon` for horizons,
+not a mountain; `GeobodiesIcon` for a geobody, not a hexagon; `DrillBitIcon` for
+wells, not a drill. When the name comes from data rather than from source,
+`<Icon name="well" />` resolves it at runtime. A Material Symbols glyph the set
+does not name is an explicit escape hatch on its own subpath —
+`import { MaterialSymbol } from "@tecton/react/icons/material"` — and a Tecton
+name always wins over it.
 
 ## Common Mistakes
 

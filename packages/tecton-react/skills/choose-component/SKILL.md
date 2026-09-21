@@ -109,7 +109,7 @@ a static label, a selectable tag, a count on an icon, or a keyboard key.
 | A number belongs to an icon button, an avatar or a tab: unread messages, queued jobs, open comments | `CountBadge` | `@tecton/react/tecton/count-badge` |
 | A busy indicator on an icon button | `Spinner` | `@tecton/react/components/spinner` |
 | Naming the key that triggers something: a shortcut hint in a menu item, a tooltip, a button or an input group addon | `Kbd` | `@tecton/react/components/kbd` |
-| A glyph for an action rather than a key | `Lucide` | `lucide-react` |
+| A glyph for an action rather than a key | `Tecton icons` | `@tecton/react/icons` |
 
 Load @tecton/react#labels for the boundaries between these and the patterns.
 

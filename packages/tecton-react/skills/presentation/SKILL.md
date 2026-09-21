@@ -101,7 +101,7 @@ import { Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount, Ava
 
 ### Not for
 
-- a glyph that stands for a thing rather than a person: use `Tecton icons` — `import { WellIcon } from "@tecton/react/icons"`
+- a glyph that stands for a thing rather than a person: use `Tecton icons` — `import { SearchIcon, WellIcon } from "@tecton/react/icons"`
 - a colour value shown as a square: use `ColorSwatch` — `import { ColorSwatch } from "@tecton/react/tecton/color-swatch"`
 - a number pinned to the corner of an icon: use `CountBadge` — `import { CountBadge } from "@tecton/react/tecton/count-badge"`
 - a person tag the user can select or remove: use `Chip` — `import { Chip } from "@tecton/react/tecton/chip"`

@@ -4,7 +4,12 @@
     "labels": {
       "title": "Labels",
       "choice": "A static label, a selectable tag, a count on an icon, or a keyboard key",
-      "modules": ["components/badge", "tecton/chip", "tecton/count-badge", "components/kbd"],
+      "modules": [
+        "components/badge",
+        "tecton/chip",
+        "tecton/count-badge",
+        "components/kbd"
+      ],
       "skill": {
         "description": "Choose and use Tecton labels: Badge for static status or category labels with variant and appearance, Chip and ChipGroup for selectable or removable tags, CountBadge for a count or dot anchored to an icon or avatar, Kbd for keyboard keys. Load when rendering a status, tag, pill, chip, label, counter or shortcut hint, or when tempted to colour a label with className.",
         "checklist": [
@@ -22,7 +27,11 @@
     "feedback": {
       "title": "Feedback",
       "choice": "A message that stays on the page, a transient toast, or an empty state",
-      "modules": ["components/alert", "components/sonner", "components/empty"],
+      "modules": [
+        "components/alert",
+        "components/sonner",
+        "components/empty"
+      ],
       "skill": {
         "description": "Choose and use Tecton feedback: Alert with variant (success, warning, info, destructive) and appearance for messages that stay on the page, toast from sonner for transient confirmations, Empty for empty states, FieldError for validation. Load when showing a status message, banner, notification, error, warning, success or empty result.",
         "checklist": [
@@ -353,14 +362,10 @@
       "import": "import { useForm } from \"@tanstack/react-form\"",
       "docs": "/docs/forms/tanstack-form"
     },
-    "Lucide": {
-      "import": "import { SearchIcon } from \"lucide-react\"",
-      "docs": "/docs/icons",
-      "note": "Generic glyphs; Tecton domain glyphs come from @tecton/react/icons."
-    },
     "Tecton icons": {
-      "import": "import { WellIcon } from \"@tecton/react/icons\"",
-      "docs": "/docs/icons"
+      "import": "import { SearchIcon, WellIcon } from \"@tecton/react/icons\"",
+      "docs": "/docs/icons",
+      "note": "The one icon set: 243 named components, generic and domain, rendered from the Tecton symbol fonts. There is no second icon package. A Material glyph the set does not name is the explicit escape hatch MaterialSymbol from @tecton/react/icons/material."
     }
   }
 }

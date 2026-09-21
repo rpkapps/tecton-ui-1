@@ -60,7 +60,8 @@ An application mounted inside another one (a Module Federation remote, an embedd
 | `pnpm docs:sync` | Sync shadcn docs pages + examples for the React Aria base |
 | `pnpm --filter @tecton/react guidelines:check` / `skills:build` | Verify the component usage guidelines / regenerate the Agent Skills in `packages/tecton-react/skills` from them (`skills:check` verifies) |
 | `pnpm --filter www docs:guidelines` | Sync the guideline files into each component's docs page "Usage guidelines" section (`--check` verifies) |
-| `pnpm --filter @tecton/react icons:build` | Regenerate icon components from the Tecton export in `icons-src/tecton/` |
+| `pnpm --filter @tecton/react icons:build` | Regenerate the icon components from `icons/icons.json` (`--check` verifies) |
+| `pnpm --filter @tecton/react icons:fonts` | Rebuild the three symbol fonts from the Tecton export in `icons-src/tecton/` (`icons:fonts:check` verifies) |
 | `pnpm compare` | Playwright captures of the state matrices next to the Storybook screenshots |
 | `scripts/registry-mirror.sh` | Builds and serves the shadcn registry with the Tecton overlay (`aria-tecton`); required for every CLI command |
 
@@ -68,4 +69,4 @@ An application mounted inside another one (a Module Federation remote, an embedd
 
 ## Status / open items
 
-- **Icons:** all 131 glyphs are generated from the Tecton icon export in `packages/tecton-react/icons-src/tecton/`; replace those files with a newer export and run `icons:build`.
+- **Icons:** the set is one manifest, `packages/tecton-react/icons/icons.json` (243 entries: 196 render a Material Symbols Sharp glyph, 46 render Tecton's own drawing, one is an inline colour SVG). Icons render as characters from three woff2 symbol fonts; an application shell loads `@tecton/react/styles/tecton-symbols.css` once. Add an entry and run `icons:build`; replace the Tecton export in `packages/tecton-react/icons-src/tecton/` and run `icons:fonts` first for a new drawing.

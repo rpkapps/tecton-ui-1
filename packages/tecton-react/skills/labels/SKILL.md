@@ -46,7 +46,7 @@ Labels — a static label, a selectable tag, a count on an icon, or a keyboard k
 | A busy indicator on an icon button | `Spinner` | `@tecton/react/components/spinner` |
 | Naming the key that triggers something: a shortcut hint in a menu item, a tooltip, a button or an input group addon | `Kbd` | `@tecton/react/components/kbd` |
 | A status or category label | `Badge` | `@tecton/react/components/badge` |
-| A glyph for an action rather than a key | `Lucide` | `lucide-react` |
+| A glyph for an action rather than a key | `Tecton icons` | `@tecton/react/icons` |
 
 ## Badge
 
@@ -194,7 +194,7 @@ import { Kbd, KbdGroup } from "@tecton/react/components/kbd"
 ### Not for
 
 - a status or category label: use `Badge` — `import { Badge } from "@tecton/react/components/badge"`
-- a glyph for an action rather than a key: use `Lucide` — `import { SearchIcon } from "lucide-react"`
+- a glyph for an action rather than a key: use `Tecton icons` — `import { SearchIcon, WellIcon } from "@tecton/react/icons"`
 
 ### Do
 
