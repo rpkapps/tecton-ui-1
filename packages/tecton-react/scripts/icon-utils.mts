@@ -2,6 +2,7 @@
  * icon-utils — helpers shared by `extract-icons.mts` and `build-icons.mts`.
  *
  *   - manifest loading / types for `icons/icons.json`
+ *   - the Material Symbols codepoint table (`icons/material-symbols.codepoints`)
  *   - naming helpers (kebab ⇄ PascalCase, gallery label → slug)
  *   - `normalizeSvg()` — the single place where a raw SVG (Storybook DOM,
  *     designer export, …) is turned into the canonical form committed under
@@ -25,6 +26,7 @@ export const MANIFEST_PATH = path.join(pkgRoot, "icons/icons.json");
 export const ICONS_SRC_DIR = path.join(pkgRoot, "icons-src");
 export const ICONS_OUT_DIR = path.join(pkgRoot, "src/icons");
 export const TECTON_DEFINITIONS_DIR = path.join(pkgRoot, "icons-src/tecton");
+export const MATERIAL_CODEPOINTS_PATH = path.join(pkgRoot, "icons/material-symbols.codepoints");
 
 // ---------------------------------------------------------------------------
 // Manifest
@@ -40,6 +42,13 @@ export interface IconManifestEntry {
   /** kebab-case id, e.g. `add-circle`. File name of the SVG + generated TSX. */
   slug: string;
   description: string;
+  /**
+   * Material Symbols Sharp glyph this icon renders (a ligature name in
+   * `icons/material-symbols.codepoints`), or `null` when Tecton's own drawing
+   * is the glyph. An entry needs exactly one primary source: a `symbol`, or a
+   * definition in `icons-src/tecton/`.
+   */
+  symbol: string | null;
   /** Closest lucide icon (kebab-case lucide name) or `null` when none fits. */
   lucide: string | null;
   /** `true` for oil & gas / subsurface domain glyphs that have no lucide peer. */
@@ -95,6 +104,30 @@ export async function loadTectonDefinitions(
     out.set(def.slug, { def, file });
   }
   return out;
+}
+
+// ---------------------------------------------------------------------------
+// The Material Symbols codepoint table
+// ---------------------------------------------------------------------------
+
+/**
+ * `icons/material-symbols.codepoints` (Google's own `<name> <hex>` table, one
+ * line per glyph) as a Map. Shared by `build-symbol-fonts.mts`, which checks it
+ * against the font, and `build-icons.mts`, which turns it into the
+ * `materialSymbolCodepoints` module and resolves every manifest `symbol`.
+ */
+export function loadMaterialCodepoints(file: string = MATERIAL_CODEPOINTS_PATH): Map<string, number> {
+  const names = new Map<string, number>();
+  for (const line of readFileSync(file, "utf8").split("\n")) {
+    if (line.trim() === "") continue;
+    const [name, code] = line.trim().split(/\s+/);
+    if (!name || !/^[0-9a-f]{4,6}$/i.test(code ?? "")) {
+      throw new Error(`${path.relative(pkgRoot, file)}: cannot read "${line}"`);
+    }
+    if (names.has(name)) throw new Error(`${path.relative(pkgRoot, file)}: "${name}" is listed twice`);
+    names.set(name, Number.parseInt(code, 16));
+  }
+  return names;
 }
 
 // ---------------------------------------------------------------------------

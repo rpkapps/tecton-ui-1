@@ -13,6 +13,9 @@
  * Set --tecton-symbol-fill: 1 on an element (or a subtree) for the filled
  * variant of a Material glyph; Tecton's own glyphs carry the two variants as
  * two codepoints instead.
+ *
+ * src/icons/icon.tsx puts .tecton-symbols on the <text> inside its <svg> host
+ * and .tecton-symbol-skeleton on the rect it draws while the fonts load.
  */
 
 /* Material Symbols Sharp, wght 300 / GRAD 0 / opsz 24, FILL variable (0..1, default 0) */
@@ -56,4 +59,38 @@
   font-variation-settings: "FILL" var(--tecton-symbol-fill, 0);
   -webkit-font-smoothing: antialiased;
   user-select: none;
+}
+
+/*
+ * The loading skeleton: the rect <Icon> draws in the glyph box until the fonts
+ * are ready. Its own style="opacity:0" is the floor, so an application that
+ * never loads this sheet sees nothing rather than a solid block; a CSS
+ * animation outranks an inline style, so the rule below takes over from it.
+ * The 150ms delay means a warm cache — where the fonts resolve within a frame
+ * or two — never flashes a skeleton at all.
+ */
+.tecton-symbol-skeleton {
+  animation: tecton-symbol-skeleton 1.4s ease-in-out 150ms infinite;
+}
+
+@keyframes tecton-symbol-skeleton {
+  0%,
+  100% {
+    opacity: 0.06;
+  }
+  50% {
+    opacity: 0.22;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tecton-symbol-skeleton {
+    animation: tecton-symbol-skeleton-steady 1ms linear 150ms forwards;
+  }
+
+  @keyframes tecton-symbol-skeleton-steady {
+    to {
+      opacity: 0.14;
+    }
+  }
 }

@@ -103,6 +103,9 @@
     "./styles/tecton-symbols.css": "./dist/styles/tecton-symbols.css",
     "./styles/tecton-theme.css": "./dist/styles/tecton-theme.css",
     "./styles/tecton-tokens.css": "./dist/styles/tecton-tokens.css",
+    "./styles/fonts/tecton-symbols.woff2": "./dist/styles/fonts/tecton-symbols.woff2",
+    "./styles/fonts/tecton-symbols-domain.woff2": "./dist/styles/fonts/tecton-symbols-domain.woff2",
+    "./styles/fonts/tecton-symbols-fallback.woff2": "./dist/styles/fonts/tecton-symbols-fallback.woff2",
     "./federation/shared": {
       "types": "./federation/shared.d.mts",
       "default": "./federation/shared.mjs"
@@ -583,6 +586,10 @@
       "types": "./dist/icons/cube.d.ts",
       "import": "./dist/icons/cube.js"
     },
+    "./icons/dangerous": {
+      "types": "./dist/icons/dangerous.d.ts",
+      "import": "./dist/icons/dangerous.js"
+    },
     "./icons/database": {
       "types": "./dist/icons/database.d.ts",
       "import": "./dist/icons/database.js"
@@ -687,6 +694,10 @@
       "types": "./dist/icons/horizon.d.ts",
       "import": "./dist/icons/horizon.js"
     },
+    "./icons/icon": {
+      "types": "./dist/icons/icon.d.ts",
+      "import": "./dist/icons/icon.js"
+    },
     "./icons/image": {
       "types": "./dist/icons/image.d.ts",
       "import": "./dist/icons/image.js"
@@ -743,6 +754,10 @@
       "types": "./dist/icons/map.d.ts",
       "import": "./dist/icons/map.js"
     },
+    "./icons/material": {
+      "types": "./dist/icons/material.d.ts",
+      "import": "./dist/icons/material.js"
+    },
     "./icons/menu": {
       "types": "./dist/icons/menu.d.ts",
       "import": "./dist/icons/menu.js"
@@ -754,6 +769,10 @@
     "./icons/money": {
       "types": "./dist/icons/money.d.ts",
       "import": "./dist/icons/money.js"
+    },
+    "./icons/more-horiz": {
+      "types": "./dist/icons/more-horiz.d.ts",
+      "import": "./dist/icons/more-horiz.js"
     },
     "./icons/more-vert": {
       "types": "./dist/icons/more-vert.d.ts",
@@ -787,6 +806,10 @@
       "types": "./dist/icons/panel.d.ts",
       "import": "./dist/icons/panel.js"
     },
+    "./icons/panel-left": {
+      "types": "./dist/icons/panel-left.d.ts",
+      "import": "./dist/icons/panel-left.js"
+    },
     "./icons/person": {
       "types": "./dist/icons/person.d.ts",
       "import": "./dist/icons/person.js"
@@ -798,6 +821,10 @@
     "./icons/preview": {
       "types": "./dist/icons/preview.d.ts",
       "import": "./dist/icons/preview.js"
+    },
+    "./icons/progress-activity": {
+      "types": "./dist/icons/progress-activity.d.ts",
+      "import": "./dist/icons/progress-activity.js"
     },
     "./icons/project": {
       "types": "./dist/icons/project.d.ts",
@@ -850,6 +877,10 @@
     "./icons/search": {
       "types": "./dist/icons/search.d.ts",
       "import": "./dist/icons/search.js"
+    },
+    "./icons/search-off": {
+      "types": "./dist/icons/search-off.d.ts",
+      "import": "./dist/icons/search-off.js"
     },
     "./icons/seismic": {
       "types": "./dist/icons/seismic.d.ts",
@@ -906,6 +937,14 @@
     "./icons/trend": {
       "types": "./dist/icons/trend.d.ts",
       "import": "./dist/icons/trend.js"
+    },
+    "./icons/trending-down": {
+      "types": "./dist/icons/trending-down.d.ts",
+      "import": "./dist/icons/trending-down.js"
+    },
+    "./icons/trending-up": {
+      "types": "./dist/icons/trending-up.d.ts",
+      "import": "./dist/icons/trending-up.js"
     },
     "./icons/undo": {
       "types": "./dist/icons/undo.d.ts",

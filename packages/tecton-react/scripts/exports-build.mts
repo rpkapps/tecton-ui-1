@@ -18,6 +18,11 @@
  *                                     Vite's CSS resolver matches `style` /
  *                                     `development` / `production`, none of which a
  *                                     conditions object here would carry)
+ *   ./styles/fonts/<name>.woff2     → dist/styles/fonts/<name>.woff2 (the symbol
+ *                                     fonts: tecton-symbols.css reaches them
+ *                                     relatively, but a shell that wants to
+ *                                     `<link rel="preload">` them needs a
+ *                                     specifier of its own)
  *   ./components/<name>             → dist/components/<name>.{d.ts,js}
  *   ./tecton/<name>, ./hooks/<name>, ./lib/<name>, ./icons,
  *   ./icons/lucide-compat, ./icons/<name>
@@ -73,6 +78,11 @@ function buildExports() {
   map["./globals.css"] = "./dist/styles/globals.css";
   for (const name of sheets) {
     map[`./styles/${name}.css`] = `./dist/styles/${name}.css`;
+  }
+  if (existsSync(path.join(SRC, "styles/fonts"))) {
+    for (const name of moduleNames("styles/fonts", ".woff2")) {
+      map[`./styles/fonts/${name}.woff2`] = `./dist/styles/fonts/${name}.woff2`;
+    }
   }
 
   // Published verbatim from the package root: plain ESM a consumer's build config

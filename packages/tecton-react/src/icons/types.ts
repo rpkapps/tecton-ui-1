@@ -4,12 +4,15 @@ import type { ReactElement, SVGProps } from "react"
 export type TectonIconVariant = "outlined" | "filled"
 
 /**
- * Where a rendered icon's glyph comes from:
- *   - `svg`              the real Tecton glyph from icons-src/
- *   - `lucide-fallback`  the closest lucide-react icon (no Tecton SVG yet)
- *   - `placeholder`      dashed square (no Tecton SVG, no lucide peer)
+ * What draws a glyph:
+ *   - `symbol`  a Material Symbols Sharp codepoint, from "Tecton Symbols"
+ *               (`variant` moves the font's FILL axis)
+ *   - `domain`  one of Tecton's own drawings, from "Tecton Symbols Domain",
+ *               where outlined and filled are two codepoints
+ *   - `svg`     an inline SVG component, for a colour drawing a monochrome
+ *               font glyph cannot carry
  */
-export type TectonIconSource = "svg" | "lucide-fallback" | "placeholder"
+export type TectonIconSource = "symbol" | "domain" | "svg"
 
 /**
  * lucide-compatible icon props. Every Tecton icon is a plain function
@@ -18,9 +21,9 @@ export type TectonIconSource = "svg" | "lucide-fallback" | "placeholder"
 export interface TectonIconProps extends SVGProps<SVGSVGElement> {
   /** Width and height (default 24). */
   size?: number | string
-  /** Stroke width for stroke-based glyphs; defaults to the glyph's own. */
+  /** Accepted for lucide compatibility — a font glyph has no stroke to widen. */
   strokeWidth?: number | string
-  /** Keep the stroke visually constant when `size` changes (lucide semantics). */
+  /** Accepted for lucide compatibility — no effect on a font glyph. */
   absoluteStrokeWidth?: boolean
   /** Glyph style (default `outlined`). */
   variant?: TectonIconVariant
@@ -28,22 +31,30 @@ export interface TectonIconProps extends SVGProps<SVGSVGElement> {
 
 export type TectonIconComponent = ((props: TectonIconProps) => ReactElement) & { displayName?: string }
 
-/** One row of the `tectonIcons` gallery array. */
-export interface TectonIconEntry {
+/** What every icon carries, whatever draws it. */
+export interface TectonIconMeta {
   /** PascalCase name without suffix, e.g. `AddCircle`. */
   name: string
   /** Exported identifier / gallery label, e.g. `AddCircleIcon`. */
   label: string
-  /** kebab-case id; also the `data-tecton-icon` value and the file name. */
-  slug: string
   description: string
-  Icon: TectonIconComponent
-  /** Source of the default (outlined) variant. */
-  source: TectonIconSource
-  /** Source per variant (a missing variant falls back to the other one). */
-  sources: Record<TectonIconVariant, TectonIconSource>
   /** Oil & gas / subsurface domain glyph. */
   domain: boolean
   /** Closest lucide-react icon (kebab-case lucide name) or null. */
   lucide: string | null
+  /** Material Symbols name, when a Material glyph draws it. */
+  symbol: string | null
+}
+
+/** One row of `tectonIconTable` — the glyph, resolved. */
+export type TectonIconRecord =
+  | (TectonIconMeta & { source: "symbol"; symbol: string; codepoint: number })
+  | (TectonIconMeta & { source: "domain"; symbol: null; outlined: number; filled: number })
+  | (TectonIconMeta & { source: "svg"; symbol: null })
+
+/** One row of the `tectonIcons` gallery array. */
+export type TectonIconEntry = TectonIconRecord & {
+  /** kebab-case id; also the `data-tecton-icon` value and the file name. */
+  slug: string
+  Icon: TectonIconComponent
 }

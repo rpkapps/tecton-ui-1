@@ -7,9 +7,8 @@
  * ## Symbol fonts
  *
  * Three woff2 files and one stylesheet let an application render an icon as a
- * character instead of an SVG element. Nothing in `src/` uses them yet — the
- * React components under `src/icons/` are still the only way to draw an icon —
- * so this is the pipeline and its output, not a component change.
+ * character instead of an SVG element. `src/icons/icon.tsx` draws every icon
+ * from them: a `<text>` glyph inside a 24×24 `<svg>` host.
  *
  * Inputs
  *   node_modules/material-symbols/material-symbols-sharp.woff2
@@ -23,7 +22,10 @@
  *                                    cmap and never used to pick glyphs.
  *   icons/icons.json                 manifest order = allocation order
  *   icons-src/tecton/<slug>.ts       the Tecton icon export (outline + filled
- *                                    markup per icon), all 131 icons
+ *                                    markup per icon), all 131 drawings. A
+ *                                    manifest entry with no drawing (it renders
+ *                                    a Material `symbol`) gets no codepoint and
+ *                                    no glyph here.
  *   icons-src/fallback/unknown-icon.ts  the reserved "unknown icon" drawing
  *   icons/tecton-codepoints.json     the append-only codepoint allocation
  *
@@ -62,12 +64,14 @@
  * Tecton's own glyphs live in Supplementary PUA-B, which Google does not use
  * and where a future Material release therefore cannot collide: U+100000 is the
  * "unknown icon", outlined glyphs are allocated from U+100001 upward in
- * `icons/icons.json` order, and the filled variant of an icon sits at its
+ * `icons/icons.json` order (drawings only: a symbol-only entry never enters
+ * the allocation), and the filled variant of an icon sits at its
  * outlined codepoint + 0x800 (so U+100001..U+1007FF outlined,
  * U+100801..U+100FFF filled — room for 2047 icons). The allocation in
  * `icons/tecton-codepoints.json` is append-only: an existing entry is never
  * reassigned, new slugs are appended, and a slug that disappears from the
- * manifest fails the build (removing an icon has to be deliberate).
+ * manifest — or loses its drawing — fails the build (either has to be
+ * deliberate).
  *
  * ### How the fonts are built
  *
@@ -99,7 +103,7 @@ import path from "node:path"
 import opentype from "opentype.js"
 import subsetFont from "subset-font"
 import wawoff2 from "wawoff2"
-import { loadManifest, loadTectonDefinitions, pkgRoot } from "./icon-utils.mjs"
+import { loadManifest, loadMaterialCodepoints, loadTectonDefinitions, pkgRoot } from "./icon-utils.mjs"
 import { tectonUnknownIcon } from "../icons-src/fallback/unknown-icon"
 import type { TectonSvgIcon } from "../icons-src/icon-definition"
 
@@ -1177,6 +1181,11 @@ function parseCodepoint(value: string, where: string): number {
   return Number.parseInt(match[1], 16)
 }
 
+/**
+ * The append-only Supplementary PUA-B allocation, over the slugs that have a
+ * Tecton drawing. A manifest entry that renders a Material `symbol` and has no
+ * drawing never appears here: it has no domain glyph to point at.
+ */
 function allocateCodepoints(slugs: Array<string>): AllocationFile {
   const known = new Set(slugs)
   const entries: Array<AllocationEntry> = []
@@ -1187,8 +1196,9 @@ function allocateCodepoints(slugs: Array<string>): AllocationFile {
     for (const entry of previous.icons) {
       if (!known.has(entry.slug)) {
         throw new Error(
-          `icons/tecton-codepoints.json allocates "${entry.slug}", which icons/icons.json no longer lists. ` +
-            "Removing an icon has to be deliberate: drop the entry by hand (its codepoints stay retired) and re-run."
+          `icons/tecton-codepoints.json allocates "${entry.slug}", which icons/icons.json no longer lists ` +
+            "with a drawing in icons-src/tecton/. Removing an icon (or its drawing) has to be deliberate: " +
+            "drop the entry by hand (its codepoints stay retired) and re-run."
         )
       }
       const outlined = parseCodepoint(entry.outlined, `icons/tecton-codepoints.json (${entry.slug})`)
@@ -1260,15 +1270,7 @@ async function buildMaterialFont(): Promise<MaterialResult> {
     .sort((a, b) => a - b)
 
   // --- the vendored name list, checked against what the font actually has.
-  const names = new Map<string, number>()
-  for (const line of readFileSync(CODEPOINTS_FILE, "utf8").split("\n")) {
-    if (line.trim() === "") continue
-    const [name, code] = line.trim().split(/\s+/)
-    if (!name || !/^[0-9a-f]{4,6}$/i.test(code ?? "")) {
-      throw new Error(`icons/material-symbols.codepoints: cannot read "${line}"`)
-    }
-    names.set(name, Number.parseInt(code, 16))
-  }
+  const names = loadMaterialCodepoints(CODEPOINTS_FILE)
   const namesMissing = [...names].filter(([, code]) => sourceMap[String(code)] === undefined).map(([name]) => name)
   const namedGlyphs = new Set([...names.values()].map((code) => sourceMap[String(code)]))
   const namedCodepoints = new Set(names.values())
@@ -1560,6 +1562,9 @@ function renderCss(): string {
  * Set --tecton-symbol-fill: 1 on an element (or a subtree) for the filled
  * variant of a Material glyph; Tecton's own glyphs carry the two variants as
  * two codepoints instead.
+ *
+ * src/icons/icon.tsx puts .tecton-symbols on the <text> inside its <svg> host
+ * and .tecton-symbol-skeleton on the rect it draws while the fonts load.
  */
 
 ${faces}
@@ -1578,6 +1583,40 @@ ${faces}
   font-variation-settings: "FILL" var(--tecton-symbol-fill, 0);
   -webkit-font-smoothing: antialiased;
   user-select: none;
+}
+
+/*
+ * The loading skeleton: the rect <Icon> draws in the glyph box until the fonts
+ * are ready. Its own style="opacity:0" is the floor, so an application that
+ * never loads this sheet sees nothing rather than a solid block; a CSS
+ * animation outranks an inline style, so the rule below takes over from it.
+ * The 150ms delay means a warm cache — where the fonts resolve within a frame
+ * or two — never flashes a skeleton at all.
+ */
+.tecton-symbol-skeleton {
+  animation: tecton-symbol-skeleton 1.4s ease-in-out 150ms infinite;
+}
+
+@keyframes tecton-symbol-skeleton {
+  0%,
+  100% {
+    opacity: 0.06;
+  }
+  50% {
+    opacity: 0.22;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tecton-symbol-skeleton {
+    animation: tecton-symbol-skeleton-steady 1ms linear 150ms forwards;
+  }
+
+  @keyframes tecton-symbol-skeleton-steady {
+    to {
+      opacity: 0.14;
+    }
+  }
 }
 `
 }
@@ -1700,7 +1739,10 @@ function commit(outputs: Array<Output>): void {
 async function main() {
   const manifest = loadManifest()
   const definitions = await loadTectonDefinitions()
-  const allocation = allocateCodepoints(manifest.icons.map((icon) => icon.slug))
+  // Manifest order, drawings only — the entries that render a Material symbol
+  // carry no glyph of their own and take no codepoint.
+  const drawn = manifest.icons.filter((icon) => definitions.has(icon.slug))
+  const allocation = allocateCodepoints(drawn.map((icon) => icon.slug))
 
   const material = await buildMaterialFont()
   const domain = await buildDomainFont(definitions, allocation)
@@ -1725,7 +1767,8 @@ async function main() {
   )
   console.log(
     `  Tecton Symbols Domain    ${String(domain.glyphs).padStart(5)} glyphs  ${kb(domain.woff2.length).padStart(9)}  ` +
-      `(${allocation.icons.length} icons × 2 variants + the unknown icon, ${domain.shared} shared)`
+      `(${allocation.icons.length} drawing(s) × 2 variants + the unknown icon, ${domain.shared} shared; ` +
+      `${manifest.icons.length - allocation.icons.length} manifest entr(ies) render a Material symbol instead)`
   )
   if (domain.colored.length > 0) {
     console.log(`    note: ${domain.colored.join(", ")} is drawn in colour and becomes a monochrome glyph`)
