@@ -112,6 +112,9 @@ jobs:
       - name: Check theme tokens
         run: pnpm tokens:check
 
+      - name: Check symbol fonts
+        run: pnpm --filter @tecton/react icons:fonts:check
+
       - name: Check component guidelines
         run: pnpm --filter @tecton/react guidelines:check
 

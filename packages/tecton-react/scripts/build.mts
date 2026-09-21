@@ -209,6 +209,23 @@ function rewriteDeclarationSpecifiers() {
   return rewritten;
 }
 
+/**
+ * `src/styles/fonts/` — the woff2 files of the symbol fonts (scripts/build-symbol-fonts.mts),
+ * which the stylesheets next to them reference relatively, so they have to keep
+ * their place beside the copied CSS.
+ */
+function copyFonts() {
+  const from = path.join(SRC, "styles/fonts");
+  if (!existsSync(from)) return 0;
+  const to = path.join(DIST, "styles/fonts");
+  mkdirSync(to, { recursive: true });
+  const fonts = readdirSync(from).filter((name) => name.endsWith(".woff2")).sort();
+  for (const name of fonts) {
+    writeFileSync(path.join(to, name), readFileSync(path.join(from, name)));
+  }
+  return fonts.length;
+}
+
 function copyStyles() {
   const from = path.join(SRC, "styles");
   const to = path.join(DIST, "styles");
@@ -265,13 +282,14 @@ async function main() {
   buildDeclarations();
   const rewritten = rewriteDeclarationSpecifiers();
   const sheets = copyStyles();
+  const fonts = copyFonts();
 
   console.log("build: dist/");
   for (const [dir, { js, dts }] of summarise()) {
     console.log(`  ${dir.padEnd(12)} ${String(js).padStart(3)} js  ${String(dts).padStart(3)} d.ts`);
   }
   console.log(
-    `  styles       ${String(sheets).padStart(3)} css  (${rewritten} d.ts specifiers rewritten)`
+    `  styles       ${String(sheets).padStart(3)} css  ${String(fonts).padStart(3)} woff2  (${rewritten} d.ts specifiers rewritten)`
   );
 }
 

@@ -23,6 +23,8 @@
     "tokens:check": "bun run scripts/tokens-check.mts",
     "icons:build": "bun run scripts/build-icons.mts",
     "icons:extract": "bun run scripts/extract-icons.mts",
+    "icons:fonts": "bun run scripts/build-symbol-fonts.mts",
+    "icons:fonts:check": "bun run scripts/build-symbol-fonts.mts --check",
     "use-client:restore": "bun run scripts/restore-use-client.mts",
     "use-client:check": "bun run scripts/restore-use-client.mts --check",
     "guidelines:check": "bun run scripts/guidelines-check.mts",
@@ -63,14 +65,18 @@
     "esbuild": "^0.28.2",
     "eslint": "^9",
     "jsdom": "^30.0.1",
+    "material-symbols": "0.47.4",
+    "opentype.js": "^2.0.0",
     "postcss": "^8",
     "react": "^19.2.6",
     "react-aria-components": "^1.21.1",
     "react-dom": "^19.2.6",
     "shadcn": "^4.21.0",
+    "subset-font": "^2.9.0",
     "tailwindcss": "^4",
     "typescript": "^6",
-    "vitest": "^5.0.0"
+    "vitest": "^5.0.0",
+    "wawoff2": "^2.0.1"
   },
   "peerDependencies": {
     "@internationalized/date": "^3",
@@ -94,6 +100,7 @@
     "./styles/shadcn.css": "./dist/styles/shadcn.css",
     "./styles/tecton-base.css": "./dist/styles/tecton-base.css",
     "./styles/tecton-palette.css": "./dist/styles/tecton-palette.css",
+    "./styles/tecton-symbols.css": "./dist/styles/tecton-symbols.css",
     "./styles/tecton-theme.css": "./dist/styles/tecton-theme.css",
     "./styles/tecton-tokens.css": "./dist/styles/tecton-tokens.css",
     "./federation/shared": {
