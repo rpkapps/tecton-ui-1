@@ -27,7 +27,8 @@ export default defineConfig({
       {
         // What the package ships for a consumer's build — the PostCSS plugin, the
         // federation contract — is Node-only: no DOM, and none of the jsdom shims
-        // the component setup file installs.
+        // the component setup file installs. So are the build scripts, which read
+        // icons-src/ and src/icons/ off disk.
         extends: true,
         test: {
           name: "node",
@@ -35,6 +36,7 @@ export default defineConfig({
           include: [
             "postcss/__tests__/**/*.test.ts",
             "federation/__tests__/**/*.test.ts",
+            "scripts/__tests__/**/*.test.ts",
           ],
         },
       },

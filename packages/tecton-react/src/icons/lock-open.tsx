@@ -2,6 +2,7 @@
 // Source SVGs:
 //   outlined: icons-src/tecton/lock-open.ts (outline)
 //   filled: icons-src/tecton/lock-open.ts (filled)
+// viewBox: "0 0 16 16" cropped to "0.791 0.791 14.418 14.418" (inset 0.791, 1.11x)
 import type { SVGProps } from "react"
 import type { TectonIconProps, TectonIconVariant } from "./types"
 import { tectonSvgAttrs } from "./_runtime"
@@ -13,8 +14,8 @@ const ROOT: Record<TectonIconVariant, SVGProps<SVGSVGElement>> = {
 }
 
 const VIEW_BOX: Record<TectonIconVariant, string> = {
-  outlined: "0 0 16 16",
-  filled: "0 0 16 16",
+  outlined: "0.791 0.791 14.418 14.418",
+  filled: "0.791 0.791 14.418 14.418",
 }
 
 /** The source's own stroke-width — default for the `strokeWidth` prop. */

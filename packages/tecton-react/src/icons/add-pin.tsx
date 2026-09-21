@@ -2,6 +2,7 @@
 // Source SVGs:
 //   outlined: icons-src/tecton/add-pin.ts (outline)
 //   filled: icons-src/tecton/add-pin.ts (filled)
+// viewBox: "0 0 16 16" kept (glyph reaches the edge)
 import type { SVGProps } from "react"
 import type { TectonIconProps, TectonIconVariant } from "./types"
 import { tectonSvgAttrs } from "./_runtime"
