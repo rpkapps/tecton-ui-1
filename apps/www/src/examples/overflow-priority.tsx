@@ -1,6 +1,11 @@
 "use client"
 
-import { BellIcon, PinIcon, StarIcon, UserPlusIcon } from "lucide-react"
+import {
+  NotificationsIcon,
+  PersonAddIcon,
+  PushPinIcon,
+  StarIcon,
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -18,22 +23,22 @@ export default function OverflowPriority() {
           <OverflowItem
             id="assign"
             label="Assign"
-            icon={<UserPlusIcon />}
+            icon={<PersonAddIcon />}
             priority={3}
           >
             <Button variant="outline">
-              <UserPlusIcon data-icon="inline-start" />
+              <PersonAddIcon data-icon="inline-start" />
               <OverflowLabel>Assign</OverflowLabel>
             </Button>
           </OverflowItem>
           <OverflowItem
             id="watch"
             label="Watch"
-            icon={<BellIcon />}
+            icon={<NotificationsIcon />}
             priority={2}
           >
             <Button variant="outline">
-              <BellIcon data-icon="inline-start" />
+              <NotificationsIcon data-icon="inline-start" />
               <OverflowLabel>Watch</OverflowLabel>
             </Button>
           </OverflowItem>
@@ -43,9 +48,9 @@ export default function OverflowPriority() {
               <OverflowLabel>Star</OverflowLabel>
             </Button>
           </OverflowItem>
-          <OverflowItem id="pin" label="Pin" icon={<PinIcon />}>
+          <OverflowItem id="pin" label="Pin" icon={<PushPinIcon />}>
             <Button variant="outline">
-              <PinIcon data-icon="inline-start" />
+              <PushPinIcon data-icon="inline-start" />
               <OverflowLabel>Pin</OverflowLabel>
             </Button>
           </OverflowItem>

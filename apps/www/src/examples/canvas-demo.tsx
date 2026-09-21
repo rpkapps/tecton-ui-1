@@ -1,4 +1,9 @@
-import { HandIcon, RulerIcon, ZoomInIcon, ZoomOutIcon } from "lucide-react"
+import {
+  PanToolIcon,
+  RulerIcon,
+  ZoomInIcon,
+  ZoomOutIcon,
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -23,7 +28,7 @@ export default function CanvasDemo() {
             <ZoomOutIcon />
           </Button>
           <Button variant="ghost" size="icon-sm" aria-label="Pan">
-            <HandIcon />
+            <PanToolIcon />
           </Button>
         </CanvasToolbar>
       </CanvasOverlay>

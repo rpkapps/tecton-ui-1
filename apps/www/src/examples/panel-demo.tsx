@@ -1,4 +1,4 @@
-import { SettingsIcon } from "lucide-react"
+import { SettingsIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {

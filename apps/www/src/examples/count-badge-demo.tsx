@@ -1,4 +1,4 @@
-import { BellIcon, MailIcon } from "lucide-react"
+import { MailIcon, NotificationsIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { CountBadge } from "@tecton/react/tecton/count-badge"
@@ -8,7 +8,7 @@ export default function CountBadgeDemo() {
     <div className="flex items-center gap-6">
       <CountBadge count={4}>
         <Button variant="outline" size="icon" aria-label="Notifications">
-          <BellIcon />
+          <NotificationsIcon />
         </Button>
       </CountBadge>
       <CountBadge count={128} color="destructive">

@@ -1,60 +1,57 @@
 ---
 title: Icons
-description: The Tecton icon set (138 icons, outlined and filled) and how it works alongside Lucide.
+description: The Tecton icon set — 243 icons in outlined and filled, rendered from three symbol fonts.
 ---
 
-Tecton UI supports **two icon libraries**:
-
-- **Lucide** (`lucide-react`) — the vocabulary the generated shadcn components are written against (chevrons, check marks, close buttons…). It stays the CLI's `iconLibrary`, so the generated files keep their upstream shape; the registry only points the import at `@tecton/react/icons/lucide-compat`, so what renders is a Tecton glyph.
-- **Tecton icons** (`@tecton/react/icons`) — the 138 icons of the design system, including the domain glyphs (wells, horizons, seismic, drill bits…). Every icon is a React component with the Lucide-compatible signature (`size`, `strokeWidth`, `className`, SVG props) plus `variant="outlined" | "filled"`.
+Tecton ships **one** icon set: `@tecton/react/icons`, 243 named components covering the generic vocabulary (chevrons, check marks, close buttons, search) and the subsurface domain (wells, horizons, seismic, drill bits, facies). There is no second icon package to install and no compatibility layer for another one — a Tecton name is the only name.
 
 ```tsx
-import { SearchIcon } from "lucide-react"
-import { WellIcon, SeismicIcon } from "@tecton/react/icons"
+import { Button } from "@tecton/react/components/button"
+import { SearchIcon, SeismicIcon, WellIcon } from "@tecton/react/icons"
 
 <Button>
   <WellIcon data-icon="inline-start" /> New well
 </Button>
+<SearchIcon />
 <SeismicIcon variant="filled" size={20} />
 ```
 
-<Callout title="Glyph sources">
-  91 icons render a Material Symbols Sharp glyph, 46 render Tecton's own drawing (vendored in `packages/tecton-react/icons-src/tecton/`, one `defineTectonSvgIcon` definition per icon), and `StrataIcon` stays an inline SVG because it is drawn in colour. Every rendered `<svg>` says which it is through `data-tecton-source` (`symbol`, `domain` or `svg`).
-</Callout>
+Every icon is a plain function component taking `size`, `className`, `variant="outlined" | "filled"` and any SVG prop, and `strokeWidth` / `absoluteStrokeWidth` are accepted (and ignored) so an icon is a drop-in `<svg>`.
 
 ## Gallery
 
 <IconGallery />
 
-## Rendering
+## Three fonts
 
-An icon is a character, not a path. `packages/tecton-react/scripts/build-symbol-fonts.mts` builds three woff2 families, and `<Icon>` draws the right codepoint from them inside a 24×24 `<svg>` host:
+An icon is a character, not a path. `packages/tecton-react/scripts/build-symbol-fonts.mts` builds three woff2 families, and `<Icon>` draws the right codepoint from them inside a 24×24 `<svg>` host. The browser picks, per character, the first family that has a glyph, so the three are one fallback chain:
 
 | Family | Carries |
 | --- | --- |
-| `Tecton Symbols` | Material Symbols Sharp, wght 300 / GRAD 0 / opsz 24, FILL kept variable — `variant="filled"` moves that axis |
+| `Tecton Symbols` | Material Symbols Sharp, **weight 300, optical size 24, grade 0**, with the FILL axis kept variable |
 | `Tecton Symbols Domain` | Tecton's own drawings, outlined and filled as two codepoints |
 | `Tecton Symbols Fallback` | every codepoint the other two could use, mapped to one "unknown icon" glyph |
 
-```tsx
-import { Icon } from "@tecton/react/icons"
-import { WellIcon } from "@tecton/react/icons/well"
+The axis preset is not a taste call. Tecton's own strokes measure **0.0599** of the icon box; Material Symbols at optical size 24 measures **0.0625** at weight 300 and 0.0833 at weight 400, so weight 300 is the only setting where a Material glyph and a Tecton drawing sit next to each other without one looking heavier. Grade 0 and optical size 24 are pinned for the same reason. FILL stays variable because it is what `variant="filled"` moves; Tecton's own drawings carry the two variants as two codepoints instead.
 
-<Icon name="well" />           {/* by name, for data-driven icons */}
-<WellIcon size={20} />         {/* the named component — the same thing */}
-```
-
-A name the set does not have renders the reserved unknown-icon glyph and warns once in development.
-
-<Callout title="Load the stylesheet in your shell">
-  `@tecton/react/globals.css` does not import the fonts: your application shell loads `@tecton/react/styles/tecton-symbols.css` itself (the woff2 files sit in `./fonts/` next to it). Without it no glyph can resolve, so every icon draws a dashed placeholder instead.
+<Callout title="Glyph sources">
+  196 icons render a Material Symbols Sharp glyph, 46 render Tecton's own drawing (vendored in `packages/tecton-react/icons-src/tecton/`, one `defineTectonSvgIcon` definition per icon), and `StrataIcon` stays an inline SVG because it is drawn in colour. Every rendered `<svg>` says which it is through `data-tecton-source` (`symbol`, `domain` or `svg`), and which icon through `data-tecton-icon`.
 </Callout>
 
-Fonts arrive asynchronously, so the host reports `data-state` and never changes size between states: `loading` draws a skeleton block (invisible for the first 150 ms, so a warm cache never flashes) with the glyph hidden behind it, `ready` draws the glyph, and `unavailable` — no font after 5 s — draws a dashed placeholder that needs no font at all. A font that arrives late still flips the state to `ready`.
+## `Icon`, the named wrappers, `MaterialSymbol`
+
+```tsx
+import { Icon, WellIcon } from "@tecton/react/icons"
+
+<WellIcon size={20} />   {/* the named component */}
+<Icon name="well" />     {/* by name, for data-driven icons */}
+```
+
+`Icon` is the primitive; each named wrapper is a one-line `tectonIcon("<slug>")` around it, so the two render the same thing. `Icon` is what you want when the name comes from data (a nav table, a status map); the named wrapper is what you want everywhere else, because a typo is a build error rather than a runtime placeholder. A name the set does not have renders the reserved unknown-icon glyph and warns once in development.
 
 ### A raw Material glyph
 
-A Tecton name always wins: if the set has the icon, use it, so the drawing and the gallery stay in one place. For the rest of Google's catalogue there is an explicit escape hatch on its own subpath (the 4,284-name table is not loaded by anything else):
+**A Tecton name always wins.** If the set has the icon, import the Tecton component, so the drawing and the gallery stay in one place. For the rest of Google's catalogue there is an explicit escape hatch on its own subpath, deliberately awkward enough that it is a decision (the 4,284-name table is not loaded by anything else):
 
 ```tsx
 import { MaterialSymbol } from "@tecton/react/icons/material"
@@ -62,51 +59,137 @@ import { MaterialSymbol } from "@tecton/react/icons/material"
 <MaterialSymbol name="rocket_launch" variant="filled" />
 ```
 
-Material Symbols is Google's, under the [Apache License 2.0](https://github.com/google/material-design-icons/blob/master/LICENSE); the subset shipped here keeps that licence.
+A raw Material glyph is the exception, not a shortcut: reach for it for a one-off that will never be part of the design system, and open an icon request for anything that will.
 
-## Replacing Lucide in your own code
+## Loading the fonts
 
-Nothing to do for the components you install: the generated files import their glyphs from `@tecton/react/icons/lucide-compat` (the registry writes that import, the shadcn CLI never sees `lucide-react`), and the Tecton layer imports the named Tecton components directly. Every chevron, check mark and close button is already a Tecton glyph.
+`@tecton/react/globals.css` does **not** import the fonts. The application shell loads `@tecton/react/styles/tecton-symbols.css` once — the woff2 files sit in `./fonts/` next to it — and preloads the three files, because they are needed for the first paint of every screen:
 
-The compat module is a drop-in replacement for the whole `lucide-react` surface: every name a Tecton icon stands in for resolves to that icon, everything else passes through. So if **your** code imports Lucide names — a synced shadcn example, a block, a screen you wrote before the icon set existed — alias the package in your bundler and they render Tecton glyphs without an edit:
-
-```ts title="vite.config.ts"
-import { defineConfig, type Plugin } from "vite"
-
-// The compat module's own map ends with `export * from "lucide-react"`, so a
-// blanket `resolve.alias` would resolve it to itself. Skip the importers inside
-// the package's icons folder.
-function tectonLucideCompat(): Plugin {
-  return {
-    name: "tecton-lucide-compat",
-    enforce: "pre",
-    async resolveId(source, importer) {
-      if (source !== "lucide-react" || !importer) return null
-      if (/[\\/](?:tecton-react|@tecton[\\/]react)[\\/](?:src|dist)[\\/]icons[\\/]/.test(importer)) {
-        return null
-      }
-      const resolved = await this.resolve(
-        "@tecton/react/icons/lucide-compat",
-        importer,
-        { skipSelf: true }
-      )
-      return resolved?.id ?? null
-    },
-  }
-}
-
-export default defineConfig({ plugins: [tectonLucideCompat()] })
+```css title="src/styles/app.css"
+@import "@tecton/react/globals.css";
+@import "@tecton/react/styles/tecton-symbols.css";
 ```
 
-This site does exactly that (`apps/www/vite.config.ts`), which is why the shadcn examples on every component page draw Tecton glyphs.
+```tsx title="the document head"
+import domainFont from "@tecton/react/styles/fonts/tecton-symbols-domain.woff2?url"
+import fallbackFont from "@tecton/react/styles/fonts/tecton-symbols-fallback.woff2?url"
+import symbolsFont from "@tecton/react/styles/fonts/tecton-symbols.woff2?url"
 
-## Regenerating
+const links = [symbolsFont, domainFont, fallbackFont].map((href) => ({
+  rel: "preload",
+  as: "font",
+  type: "font/woff2",
+  href,
+  crossOrigin: "anonymous" as const,
+}))
+```
+
+<Callout title="One shell, one stylesheet">
+  A [micro-frontend](/docs/micro-frontends) mounted inside a Tecton shell loads **nothing**: fonts are document-level, the shell already declared the three families, and a remote that imports the sheet again only makes the browser parse a second identical set of `@font-face` rules. Only the application that owns the document loads it.
+</Callout>
+
+Fonts arrive asynchronously, so the host reports `data-state` and never changes size between states:
+
+| `data-state` | What is drawn |
+| --- | --- |
+| `loading` | a skeleton block, invisible for the first 150 ms so a warm cache never flashes, with the glyph hidden behind it |
+| `ready` | the glyph |
+| `unavailable` | no font after 5 s: a dashed placeholder that needs no font at all |
+
+A font that arrives late still flips the state to `ready`. An application that never loads the stylesheet paints nothing at all before the placeholder — no tofu — because the fallback family maps every codepoint either of the other two could use to one blank "unknown icon" glyph.
+
+### Spacing inside a control
+
+An icon or `Spinner` inside a `Button`, `Badge`, `Chip`, `TabsTrigger` or `InputGroupAddon` carries `data-icon="inline-start"` or `data-icon="inline-end"`, which is what gives it the gap the component owns:
+
+```tsx
+<Button>
+  <AddIcon data-icon="inline-start" /> New horizon
+</Button>
+```
+
+## Adding an icon
 
 ```bash
-# replace icons-src/tecton/*.ts with a newer Tecton export, then
-pnpm --filter @tecton/react icons:fonts     # rebuilds the three woff2 families
-pnpm --filter @tecton/react icons:build     # regenerates src/icons/*
-pnpm --filter @tecton/react icons:build -- --check   # CI drift guard
+# 1. add an entry to packages/tecton-react/icons/icons.json:
+#      { "name": "Valve", "label": "ValveIcon", "slug": "valve",
+#        "description": "…", "symbol": "<a Material Symbols name>" | null,
+#        "domain": true | false }
+pnpm --filter @tecton/react icons:build            # regenerates src/icons/*
+pnpm --filter @tecton/react icons:build --check    # CI drift guard
+```
+
+An entry needs exactly one primary source and the build fails without one: a `symbol` from `icons/material-symbols.codepoints` (two entries may not claim the same one), or a drawing. A symbol wins over a drawing of the same icon, which stays in the domain font as a reserve.
+
+For a **drawing**, replace the vendored Tecton export in `icons-src/tecton/*.ts` (never edit it by hand) and rebuild the fonts first, because the drawing needs a codepoint before the component can name it:
+
+```bash
+pnpm --filter @tecton/react icons:fonts            # rebuilds the three woff2 families
+pnpm --filter @tecton/react icons:fonts:check      # CI drift guard
+pnpm --filter @tecton/react icons:build
 ```
 
 Loose SVG files in `icons-src/outlined/` or `icons-src/filled/` override a definition for that variant (`icons:extract` can populate them from a Storybook).
+
+## For design review
+
+Two kinds of entry in the set are a judgement call rather than a measurement, and are listed here so a designer can settle them. Nothing below is broken; each is a choice that can be changed with a one-line manifest edit and a rebuild.
+
+**Icons whose drawing differs between Tecton and Material.** Where Tecton's own drawing was kept, the Material glyph is not used at all; where the Material glyph was taken, Tecton's drawing stays in the domain font as a reserve.
+
+| Icon | Draws | Note |
+| --- | --- | --- |
+| `SettingsIcon` | Tecton drawing | a plain gear; Material's `settings` gear has a different tooth count and centre |
+| `MoreVertIcon` | Tecton drawing | three vertical dots, spaced differently from Material's `more_vert` |
+| `AppsIcon` | Material `apps` | Tecton's 3×3 grid of dots reads lighter than Material's |
+| `FilterIcon` | Tecton drawing | a funnel; Material's `filter_alt` funnel has a different taper |
+| `CopyIcon` | Tecton drawing | two overlapping rounded squares; Material's `content_copy` offsets them differently |
+| `AddPinIcon` | Material `add_location_alt` | Tecton draws the plus at the top right of the pin, Material inside it |
+| `ExportUploadIcon` | Tecton drawing | arrow up out of a tray; Material's `upload` has no tray |
+| `EditSquareIcon` | Material `edit_square` | Tecton puts the pencil over the top-right corner of the square |
+| `ChevronDownSmallIcon`, `ChevronLeftSmallIcon`, `ChevronRightSmallIcon`, `ChevronUpSmallIcon` | Tecton drawings | Material has no second, smaller chevron — these exist only as Tecton drawings |
+| `CloseSmallIcon` | Tecton drawing | same: Material's `close_small` is a different construction |
+| `ValveIcon`, `StrataIcon` | Tecton drawings (domain) | Material happens to ship a close match for both; they are kept as Tecton drawings because they are domain marks |
+
+**Icons picked for a generic meaning where more than one Material glyph fits.** 34 of the entries added for the generic vocabulary are a judgement call; the alternative is named so the swap is one edit.
+
+| Icon | Draws | The alternative |
+| --- | --- | --- |
+| `AccountTreeIcon` | `account_tree` | Material ships no branch-and-commit glyph; `call_split` and `fork_right` are the other candidates |
+| `AirwaveIcon` | `airwave` | three waves where one trace was wanted; `graphic_eq` or reusing `FrameworksIcon` |
+| `ApartmentIcon` | `apartment` | `domain` and `business` are also buildings |
+| `ArrowOutwardIcon` | `arrow_outward` | `north_east` is the same shape under a compass name |
+| `BuildIcon` | `build` | `handyman` is a crossed hammer and wrench |
+| `CalendarMonthIcon` | `calendar_month` | `calendar_today` is the empty calendar frame |
+| `CasinoIcon` | `casino` | one die rather than two; `shuffle` carries the same meaning without dice |
+| `ChatIcon` | `chat` | `chat_bubble` is the empty bubble |
+| `CodeBlocksIcon` | `code_blocks` | Material ships no page-with-code; `CodeIcon` could carry it instead |
+| `CorporateFareIcon` | `corporate_fare` | `domain` is a single wider building |
+| `CropFreeIcon` | `crop_free` | `TargetIcon` and `InspectIcon` are the corner-brackets-with-contents variants |
+| `DifferenceIcon` | `difference` | `compare_arrows` is already `SwapIcon`; `compare` is a third option |
+| `DraftIcon` | `draft` | `insert_drive_file` is the same page without the fold |
+| `DriveFileMoveIcon` | `drive_file_move` | `drive_file_move_rtl` mirrors it |
+| `FolderMatchIcon` | `folder_match` | busier than a plain folder with a magnifier |
+| `ForkRightIcon` | `fork_right` | a road sign, not a repository fork; `call_split` is the alternative |
+| `ForwardIcon` | `forward` | `shortcut` is the thinner curved arrow |
+| `KeyboardReturnIcon` | `keyboard_return` | `subdirectory_arrow_left` is the literal corner-down-left shape |
+| `LabelIcon` | `label` | `sell` is the rotated price tag |
+| `LibraryAddCheckIcon` | `library_add_check` | `fact_check` and `task_alt` are alternatives |
+| `MenuBookIcon` | `menu_book` | `auto_stories` is the same open book with page-turn motion lines |
+| `MonitorIcon` | `monitor` | `desktop_windows` and `computer` are heavier variants |
+| `PersonRemoveIcon` | `person_remove` | `person_off` is the struck-through person |
+| `PublicIcon` | `public` | `language` is the same globe used for locale switching |
+| `SentimentSatisfiedIcon` | `sentiment_satisfied` | `mood` is the same face with a fuller smile |
+| `SpaceDashboardIcon` | `space_dashboard` | `view_quilt` is the mirrored split |
+| `StacksIcon` | `stacks` | `LayersIcon` already takes the layered reading |
+| `TableIcon` | `table` | `table_chart` adds a solid header bar; `grid_on` has none |
+| `TerrainIcon` | `terrain` | `landscape` is the framed-photo variant. (The subsurface "Horizons" nav uses `HorizonIcon`, the domain glyph, not this.) |
+| `TextIcon` | `title` | `text_fields` carries the "text tool" meaning more explicitly |
+| `UpgradeIcon` | `upgrade` | `arrow_circle_up` keeps the circle, `upgrade` keeps the meaning |
+| `WalletIcon` | `wallet` | `account_balance_wallet` adds a coin slot |
+| `AddCircleIcon` | `add_circle` | also stands in for a plus-in-a-fading-ring, which Material does not draw |
+| `WarningIcon` | `warning` | also stands in for a page-with-warning, which Material does not draw |
+
+## Licence
+
+Material Symbols is Google's, under the [Apache License 2.0](https://github.com/google/material-design-icons/blob/master/LICENSE); the subset shipped in `Tecton Symbols` keeps that licence. Tecton's own drawings and the domain font are Tecton's.

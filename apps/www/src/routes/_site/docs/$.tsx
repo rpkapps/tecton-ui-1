@@ -1,6 +1,10 @@
 import * as React from "react"
 import { createFileRoute, notFound } from "@tanstack/react-router"
-import { ArrowLeftIcon, ArrowRightIcon, ExternalLinkIcon } from "lucide-react"
+import {
+  ArrowLeftIcon,
+  ArrowRightIcon,
+  OpenInNewIcon,
+} from "@tecton/react/icons"
 
 import { LinkButton } from "@tecton/react/components/button"
 
@@ -124,7 +128,7 @@ function Content({
                     rel="noreferrer"
                     className="shadow-none"
                   >
-                    Docs <ExternalLinkIcon data-icon="inline-end" />
+                    Docs <OpenInNewIcon data-icon="inline-end" />
                   </LinkButton>
                 )}
                 {links.api && (
@@ -136,7 +140,7 @@ function Content({
                     rel="noreferrer"
                     className="shadow-none"
                   >
-                    API Reference <ExternalLinkIcon data-icon="inline-end" />
+                    API Reference <OpenInNewIcon data-icon="inline-end" />
                   </LinkButton>
                 )}
               </div>

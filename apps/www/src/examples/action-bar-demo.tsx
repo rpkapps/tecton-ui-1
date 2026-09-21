@@ -10,11 +10,11 @@ import {
 import type { RowSelectionState } from "@tanstack/react-table"
 import {
   ArchiveIcon,
+  DeleteIcon,
   DownloadIcon,
-  TagIcon,
-  Trash2Icon,
-  UserPlusIcon,
-} from "lucide-react"
+  LabelIcon,
+  PersonAddIcon,
+} from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -116,22 +116,22 @@ export default function ActionBarDemo() {
               <OverflowItem
                 id="assign"
                 label="Assign"
-                icon={<UserPlusIcon />}
+                icon={<PersonAddIcon />}
                 priority={2}
               >
                 <Button variant="outline" size="sm">
-                  <UserPlusIcon data-icon="inline-start" />
+                  <PersonAddIcon data-icon="inline-start" />
                   <OverflowLabel>Assign</OverflowLabel>
                 </Button>
               </OverflowItem>
               <OverflowItem
                 id="tag"
                 label="Add tag"
-                icon={<TagIcon />}
+                icon={<LabelIcon />}
                 priority={1}
               >
                 <Button variant="outline" size="sm">
-                  <TagIcon data-icon="inline-start" />
+                  <LabelIcon data-icon="inline-start" />
                   <OverflowLabel>Add tag</OverflowLabel>
                 </Button>
               </OverflowItem>
@@ -151,12 +151,12 @@ export default function ActionBarDemo() {
               <OverflowItem
                 id="delete"
                 label="Delete"
-                icon={<Trash2Icon />}
+                icon={<DeleteIcon />}
                 variant="destructive"
                 labelBehavior="keep"
               >
                 <Button variant="destructive" size="sm">
-                  <Trash2Icon data-icon="inline-start" />
+                  <DeleteIcon data-icon="inline-start" />
                   Delete
                 </Button>
               </OverflowItem>

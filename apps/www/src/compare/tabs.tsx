@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cn } from "cn"
-import { SearchIcon } from "lucide-react"
+import { SearchIcon } from "@tecton/react/icons"
 
 import { Tabs, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
 

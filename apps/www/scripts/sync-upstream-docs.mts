@@ -350,7 +350,9 @@ function rewriteIcons(source: string, where: string): { code: string; renames: M
       .flatMap((declaration) => declaration.getNamedImports())
       .find((named) => (named.getAliasNode()?.getText() ?? named.getName()) === binding.local)
     if (!specifier) continue
-    const node = specifier.getAliasNode() ?? specifier.getNameNode()
+    // The binding is the alias when there is one, otherwise the imported name.
+    // (`getNameNode()` is typed as a string literal too, for `{ "a-b" as ab }`.)
+    const node = specifier.getAliasNode() ?? specifier.getNameNode().asKindOrThrow(SyntaxKind.Identifier)
     node.rename(binding.next, { usePrefixAndSuffixText: false })
   }
 

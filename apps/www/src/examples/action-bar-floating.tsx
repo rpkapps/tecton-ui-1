@@ -1,7 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { ArchiveIcon, FolderInputIcon, TagIcon, Trash2Icon } from "lucide-react"
+import {
+  ArchiveIcon,
+  DeleteIcon,
+  DriveFileMoveIcon,
+  LabelIcon,
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
@@ -68,22 +73,22 @@ export default function ActionBarFloating() {
           <OverflowItem
             id="move"
             label="Move to"
-            icon={<FolderInputIcon />}
+            icon={<DriveFileMoveIcon />}
             priority={2}
           >
             <Button variant="outline" size="sm">
-              <FolderInputIcon data-icon="inline-start" />
+              <DriveFileMoveIcon data-icon="inline-start" />
               <OverflowLabel>Move to</OverflowLabel>
             </Button>
           </OverflowItem>
           <OverflowItem
             id="tag"
             label="Add tag"
-            icon={<TagIcon />}
+            icon={<LabelIcon />}
             priority={1}
           >
             <Button variant="outline" size="sm">
-              <TagIcon data-icon="inline-start" />
+              <LabelIcon data-icon="inline-start" />
               <OverflowLabel>Add tag</OverflowLabel>
             </Button>
           </OverflowItem>
@@ -97,12 +102,12 @@ export default function ActionBarFloating() {
           <OverflowItem
             id="delete"
             label="Delete"
-            icon={<Trash2Icon />}
+            icon={<DeleteIcon />}
             variant="destructive"
             labelBehavior="keep"
           >
             <Button variant="destructive" size="sm">
-              <Trash2Icon data-icon="inline-start" />
+              <DeleteIcon data-icon="inline-start" />
               Delete
             </Button>
           </OverflowItem>

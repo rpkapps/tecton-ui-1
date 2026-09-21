@@ -86,6 +86,33 @@ Import the theme once. It contains Tailwind, the shadcn runtime styles, the Tect
 
 The stylesheet already declares an `@source` for the package's own build output, so every class the components use is generated. Tailwind scans your project from its auto-detected root on top of that; if your application's sources sit outside it, add your own `@source` directive after the import.
 
+### Icon fonts
+
+[Icons](/docs/icons) render from three woff2 symbol fonts, and `globals.css` does not import them: the application shell loads that sheet itself, once. Without it every icon draws a dashed placeholder.
+
+```css title="src/styles/app.css"
+@import "@tecton/react/globals.css";
+@import "@tecton/react/styles/tecton-symbols.css";
+```
+
+The woff2 files sit in `./fonts/` next to the sheet and are needed for the first paint of every screen, so preload all three from the document head:
+
+```tsx title="the document head"
+import domainFont from "@tecton/react/styles/fonts/tecton-symbols-domain.woff2?url"
+import fallbackFont from "@tecton/react/styles/fonts/tecton-symbols-fallback.woff2?url"
+import symbolsFont from "@tecton/react/styles/fonts/tecton-symbols.woff2?url"
+
+const links = [symbolsFont, domainFont, fallbackFont].map((href) => ({
+  rel: "preload",
+  as: "font",
+  type: "font/woff2",
+  href,
+  crossOrigin: "anonymous" as const,
+}))
+```
+
+Only the application that owns the document does this. A [micro-frontend](/docs/micro-frontends) mounted inside a Tecton shell loads no font and no font stylesheet — the shell already declared the families, and they are document-level.
+
 ### Dark mode
 
 Tecton is dark-first. Add the `dark` class to `<html>` (for example with `next-themes` and `attribute="class"`). Without the class you get the Tecton light theme.

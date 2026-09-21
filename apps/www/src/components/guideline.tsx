@@ -1,6 +1,6 @@
 import * as React from "react"
 import { cn } from "cn"
-import { CheckIcon, XIcon } from "lucide-react"
+import { CheckIcon, CloseIcon } from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 
@@ -60,7 +60,10 @@ const severityVariant = {
   CRITICAL: "destructive",
   HIGH: "warning",
   MEDIUM: "secondary",
-} as const satisfies Record<DontSeverity, React.ComponentProps<typeof Badge>["variant"]>
+} as const satisfies Record<
+  DontSeverity,
+  React.ComponentProps<typeof Badge>["variant"]
+>
 
 /** One "### Don't" entry: the title, its severity, and the Wrong/Correct pair. */
 export function Dont({
@@ -84,7 +87,10 @@ export function Dont({
         data-not-typeset
         className="flex flex-wrap items-center gap-x-2 gap-y-1"
       >
-        <XIcon aria-hidden="true" className="size-4 shrink-0 text-destructive" />
+        <CloseIcon
+          aria-hidden="true"
+          className="size-4 shrink-0 text-destructive"
+        />
         <span className="font-medium">{title}</span>
         <Badge variant={severityVariant[severity]} appearance="outline">
           {severity}
@@ -113,7 +119,7 @@ function Example({
   ...props
 }: React.ComponentProps<"div"> & { tone: "wrong" | "correct"; label: string }) {
   const wrong = tone === "wrong"
-  const Icon = wrong ? XIcon : CheckIcon
+  const Icon = wrong ? CloseIcon : CheckIcon
   return (
     <div
       data-slot={tone}

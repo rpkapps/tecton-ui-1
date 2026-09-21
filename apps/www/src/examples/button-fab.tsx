@@ -1,4 +1,4 @@
-import { PlusIcon } from "lucide-react"
+import { AddIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 
@@ -14,7 +14,7 @@ export default function ButtonFab() {
             variant={variant}
             className="h-10 rounded-full shadow-md"
           >
-            <PlusIcon data-icon="inline-start" /> New well
+            <AddIcon data-icon="inline-start" /> New well
           </Button>
         ))}
       </div>
@@ -27,7 +27,7 @@ export default function ButtonFab() {
             className="rounded-full shadow-md"
             aria-label="New well"
           >
-            <PlusIcon />
+            <AddIcon />
           </Button>
         ))}
       </div>

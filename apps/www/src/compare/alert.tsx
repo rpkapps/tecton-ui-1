@@ -1,11 +1,11 @@
 import * as React from "react"
 import {
-  CircleAlertIcon,
-  CircleCheckIcon,
+  CheckCircleIcon,
+  CloseIcon,
+  ErrorIcon,
   InfoIcon,
-  TriangleAlertIcon,
-  XIcon,
-} from "lucide-react"
+  WarningIcon,
+} from "@tecton/react/icons"
 
 import {
   Alert,
@@ -24,10 +24,10 @@ import { Matrix, Page } from "./matrix"
  * "{Description}", a "Label" action and a dismiss button.
  */
 const variants = [
-  { label: "error", variant: "destructive", Icon: CircleAlertIcon },
-  { label: "warning", variant: "warning", Icon: TriangleAlertIcon },
+  { label: "error", variant: "destructive", Icon: ErrorIcon },
+  { label: "warning", variant: "warning", Icon: WarningIcon },
   { label: "info", variant: "info", Icon: InfoIcon },
-  { label: "success", variant: "success", Icon: CircleCheckIcon },
+  { label: "success", variant: "success", Icon: CheckCircleIcon },
 ] as const
 
 const appearances = [
@@ -53,7 +53,7 @@ export default function AlertMatrix() {
                   Label
                 </Button>
                 <Button variant="ghost" size="icon-sm" aria-label="Dismiss">
-                  <XIcon />
+                  <CloseIcon />
                 </Button>
               </AlertAction>
             </Alert>

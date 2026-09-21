@@ -1,5 +1,5 @@
 import * as React from "react"
-import { PlusIcon } from "lucide-react"
+import { AddIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 
@@ -44,7 +44,7 @@ export default function FabMatrix() {
                     variant={variant}
                     className={`${extended} rounded-full shadow-md`}
                   >
-                    <PlusIcon data-icon="inline-start" />
+                    <AddIcon data-icon="inline-start" />
                     Fab
                   </Button>
                 )),
@@ -70,7 +70,7 @@ export default function FabMatrix() {
                     className={`${extended} rounded-full shadow-md`}
                     isDisabled
                   >
-                    <PlusIcon data-icon="inline-start" />
+                    <AddIcon data-icon="inline-start" />
                     Fab
                   </Button>
                 )),
@@ -97,7 +97,7 @@ export default function FabMatrix() {
                     className="rounded-full shadow-md"
                     aria-label="Add"
                   >
-                    <PlusIcon />
+                    <AddIcon />
                   </Button>
                 )),
               },
@@ -112,7 +112,7 @@ export default function FabMatrix() {
                     aria-label="Add"
                     isDisabled
                   >
-                    <PlusIcon />
+                    <AddIcon />
                   </Button>
                 )),
               },

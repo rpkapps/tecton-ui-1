@@ -2,13 +2,13 @@
 
 import {
   DownloadIcon,
-  EllipsisIcon,
-  MaximizeIcon,
-  PinIcon,
-  RefreshCwIcon,
+  ExpandContentIcon,
+  MoreHorizIcon,
+  PushPinIcon,
   SettingsIcon,
   ShareIcon,
-} from "lucide-react"
+  SyncIcon,
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -25,11 +25,11 @@ import {
 } from "@tecton/react/tecton/panel"
 
 const actions = [
-  { id: "refresh", label: "Refresh", icon: RefreshCwIcon, priority: 2 },
-  { id: "pin", label: "Pin", icon: PinIcon, priority: 1 },
+  { id: "refresh", label: "Refresh", icon: SyncIcon, priority: 2 },
+  { id: "pin", label: "Pin", icon: PushPinIcon, priority: 1 },
   { id: "share", label: "Share", icon: ShareIcon },
   { id: "export", label: "Export", icon: DownloadIcon },
-  { id: "maximize", label: "Maximize", icon: MaximizeIcon },
+  { id: "maximize", label: "Maximize", icon: ExpandContentIcon },
 ]
 
 export default function PanelActionsExample() {
@@ -73,7 +73,7 @@ export default function PanelActionsExample() {
                       size="icon-sm"
                       aria-label="More actions"
                     >
-                      <EllipsisIcon />
+                      <MoreHorizIcon />
                     </Button>
                   }
                 />

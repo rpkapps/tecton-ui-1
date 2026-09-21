@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
 import {
   ArrowRightIcon,
-  BlocksIcon,
   LayersIcon,
   PaletteIcon,
   ShapesIcon,
   TerminalIcon,
-} from "lucide-react"
+  WidgetsIcon,
+} from "@tecton/react/icons"
 
 import { Badge } from "@tecton/react/components/badge"
 import { LinkButton } from "@tecton/react/components/button"
@@ -49,7 +49,7 @@ const features = [
     href: "/docs/theming",
   },
   {
-    icon: BlocksIcon,
+    icon: WidgetsIcon,
     title: "Blocks",
     description:
       "Reusable application patterns: AI agent panel, modelling panels, comparison tables, KPI cards and full dashboard layouts.",

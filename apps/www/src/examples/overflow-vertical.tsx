@@ -2,15 +2,15 @@
 
 import * as React from "react"
 import {
-  HandIcon,
-  MousePointer2Icon,
-  PencilIcon,
+  EditSquareIcon,
+  PanToolIcon,
   RulerIcon,
+  SelectCursorIcon,
   ShapesIcon,
-  TypeIcon,
+  TextIcon,
   ZoomInIcon,
   ZoomOutIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -27,11 +27,11 @@ import {
 } from "@tecton/react/tecton/overflow"
 
 const tools = [
-  { id: "select", label: "Select", icon: MousePointer2Icon, priority: 3 },
-  { id: "pan", label: "Pan", icon: HandIcon, priority: 2 },
-  { id: "draw", label: "Draw", icon: PencilIcon, priority: 1 },
+  { id: "select", label: "Select", icon: SelectCursorIcon, priority: 3 },
+  { id: "pan", label: "Pan", icon: PanToolIcon, priority: 2 },
+  { id: "draw", label: "Draw", icon: EditSquareIcon, priority: 1 },
   { id: "shape", label: "Shape", icon: ShapesIcon },
-  { id: "text", label: "Text", icon: TypeIcon },
+  { id: "text", label: "Text", icon: TextIcon },
   { id: "measure", label: "Measure", icon: RulerIcon },
 ]
 

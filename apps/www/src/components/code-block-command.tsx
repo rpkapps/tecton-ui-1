@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { CheckIcon, CopyIcon, TerminalIcon } from "lucide-react"
+import { CheckIcon, CopyIcon, TerminalIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {

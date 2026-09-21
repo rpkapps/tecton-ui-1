@@ -102,7 +102,7 @@ A Tecton component exists only when shadcn has no counterpart (Chip groups, Coun
 | `scripts/registry-mirror.sh setup / build / serve / export` | Clone, overlay + build, serve the `aria-tecton` registry, write the overlay patch back |
 | `pnpm --filter @tecton/react tokens:build` | Regenerates `tecton-theme.css`, patches `globals.css`, writes `docs/TOKEN-MAPPING.md` |
 | `pnpm --filter @tecton/react tokens:check` | Completeness, WCAG contrast and sanity checks of the mapping |
-| `pnpm --filter @tecton/react icons:build` | Regenerates the icon components from `icons-src/` (falls back to Lucide) |
+| `pnpm --filter @tecton/react icons:build` | Regenerates the icon components from `icons/icons.json` and `icons-src/` |
 | `pnpm --filter @tecton/blocks registry:build` | Builds the `@tecton` blocks registry into `apps/www/public/r` |
 | `pnpm --filter www docs:sync` | Syncs the shadcn docs pages and examples for the React Aria base |
 | `pnpm generated:check` | Diff every generated component against the registry |

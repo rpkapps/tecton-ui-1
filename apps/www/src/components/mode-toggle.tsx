@@ -1,6 +1,6 @@
 "use client"
 
-import { MonitorIcon, MoonIcon, SunIcon } from "lucide-react"
+import { DarkModeIcon, LightModeIcon, MonitorIcon } from "@tecton/react/icons"
 import { useTheme } from "next-themes"
 
 import { Button } from "@tecton/react/components/button"
@@ -17,8 +17,8 @@ export function ModeToggle() {
   return (
     <DropdownMenuTrigger>
       <Button variant="ghost" size="icon-sm" aria-label="Toggle theme">
-        <SunIcon className="scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
-        <MoonIcon className="absolute scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
+        <LightModeIcon className="scale-100 rotate-0 transition-all dark:scale-0 dark:-rotate-90" />
+        <DarkModeIcon className="absolute scale-0 rotate-90 transition-all dark:scale-100 dark:rotate-0" />
       </Button>
       <DropdownMenu placement="bottom end" className="w-36">
         <DropdownMenuGroup
@@ -30,10 +30,10 @@ export function ModeToggle() {
           }}
         >
           <DropdownMenuItem id="dark">
-            <MoonIcon /> Dark
+            <DarkModeIcon /> Dark
           </DropdownMenuItem>
           <DropdownMenuItem id="light">
-            <SunIcon /> Light
+            <LightModeIcon /> Light
           </DropdownMenuItem>
           <DropdownMenuItem id="system">
             <MonitorIcon /> System

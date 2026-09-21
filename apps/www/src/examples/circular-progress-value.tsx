@@ -1,4 +1,4 @@
-import { CheckIcon } from "lucide-react"
+import { CheckIcon } from "@tecton/react/icons"
 
 import { CircularProgress } from "@tecton/react/tecton/circular-progress"
 

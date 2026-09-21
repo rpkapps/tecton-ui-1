@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { CheckIcon } from "lucide-react"
+import { CheckIcon } from "@tecton/react/icons"
 import { Button as PressableButton } from "react-aria-components"
 import { toast } from "sonner"
 

@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { Maximize2Icon, XIcon } from "lucide-react"
+import { CloseIcon, OpenInFullIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { Dialog, DialogClose } from "@tecton/react/components/dialog"
@@ -41,7 +41,7 @@ export function BackgroundPreview({
           className="absolute top-2 right-2"
           onPress={() => setFullscreen(true)}
         >
-          <Maximize2Icon />
+          <OpenInFullIcon />
         </Button>
         {children}
       </div>
@@ -55,7 +55,7 @@ export function BackgroundPreview({
         <div className="relative isolate flex h-full flex-col justify-end p-10">
           {background}
           <DialogClose size="sm" className="absolute top-4 right-4">
-            <XIcon /> Close
+            <CloseIcon /> Close
           </DialogClose>
           <div className="max-w-3xl">{children}</div>
         </div>

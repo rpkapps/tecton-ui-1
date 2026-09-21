@@ -4,10 +4,10 @@ import * as React from "react"
 import {
   ChevronDownIcon,
   DownloadIcon,
-  EyeIcon,
   FilterIcon,
   SearchIcon,
-} from "lucide-react"
+  VisibilityIcon,
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -140,7 +140,7 @@ export default function OverflowForms() {
                 }
               >
                 <DropdownMenuItem id="preview">
-                  <EyeIcon />
+                  <VisibilityIcon />
                   Preview pane
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -152,7 +152,7 @@ export default function OverflowForms() {
               isSelected={preview}
               onChange={setPreview}
             >
-              <EyeIcon />
+              <VisibilityIcon />
             </Toggle>
           </OverflowItem>
 

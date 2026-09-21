@@ -1,14 +1,14 @@
 "use client"
 
 import {
+  AddIcon,
   ArchiveIcon,
   CopyIcon,
+  DeleteIcon,
   DownloadIcon,
-  PlusIcon,
+  LabelIcon,
   ShareIcon,
-  TagIcon,
-  Trash2Icon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -27,11 +27,11 @@ export default function OverflowDemo() {
           <OverflowItem
             id="tag"
             label="Add tag"
-            icon={<TagIcon />}
+            icon={<LabelIcon />}
             priority={2}
           >
             <Button variant="outline">
-              <TagIcon data-icon="inline-start" />
+              <LabelIcon data-icon="inline-start" />
               <OverflowLabel>Add tag</OverflowLabel>
             </Button>
           </OverflowItem>
@@ -68,18 +68,18 @@ export default function OverflowDemo() {
           <OverflowItem
             id="delete"
             label="Delete"
-            icon={<Trash2Icon />}
+            icon={<DeleteIcon />}
             variant="destructive"
             labelBehavior="keep"
           >
             <Button variant="destructive">
-              <Trash2Icon data-icon="inline-start" />
+              <DeleteIcon data-icon="inline-start" />
               Delete
             </Button>
           </OverflowItem>
           {/* Unwrapped: the primary action never leaves the row. */}
           <Button>
-            <PlusIcon data-icon="inline-start" />
+            <AddIcon data-icon="inline-start" />
             New well
           </Button>
         </Toolbar>

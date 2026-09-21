@@ -1,4 +1,9 @@
-import { DownloadIcon, PlusIcon, SettingsIcon, ShareIcon } from "lucide-react"
+import {
+  AddIcon,
+  DownloadIcon,
+  SettingsIcon,
+  ShareIcon,
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { OverflowItem, OverflowLabel } from "@tecton/react/tecton/overflow"
@@ -52,7 +57,7 @@ export default function PageHeaderActionsExample() {
           </OverflowItem>
           {/* Unwrapped: the primary action never leaves the row. */}
           <Button>
-            <PlusIcon data-icon="inline-start" />
+            <AddIcon data-icon="inline-start" />
             New well
           </Button>
         </PageHeaderActions>

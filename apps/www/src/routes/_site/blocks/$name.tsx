@@ -1,5 +1,5 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router"
-import { ArrowLeftIcon } from "lucide-react"
+import { ArrowLeftIcon } from "@tecton/react/icons"
 
 import { BlockViewer } from "@/components/block-viewer"
 import { getBlock } from "@/lib/blocks"

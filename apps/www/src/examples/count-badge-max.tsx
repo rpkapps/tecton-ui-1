@@ -1,4 +1,4 @@
-import { InboxIcon } from "lucide-react"
+import { InboxIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { CountBadge } from "@tecton/react/tecton/count-badge"

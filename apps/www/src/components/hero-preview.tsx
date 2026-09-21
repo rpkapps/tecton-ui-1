@@ -1,7 +1,12 @@
 "use client"
 
 import * as React from "react"
-import { BellIcon, PlusIcon, SearchIcon, TriangleAlertIcon } from "lucide-react"
+import {
+  AddIcon,
+  NotificationsIcon,
+  SearchIcon,
+  WarningIcon,
+} from "@tecton/react/icons"
 
 import {
   Alert,
@@ -49,7 +54,7 @@ export function HeroPreview() {
         <PanelActions>
           <CountBadge count={3} color="destructive">
             <Button variant="ghost" size="icon-sm" aria-label="Notifications">
-              <BellIcon />
+              <NotificationsIcon />
             </Button>
           </CountBadge>
           <Button
@@ -57,7 +62,7 @@ export function HeroPreview() {
             size="sm"
             className="rounded-full shadow-md"
           >
-            <PlusIcon data-icon="inline-start" /> Add
+            <AddIcon data-icon="inline-start" /> Add
           </Button>
         </PanelActions>
       </PanelHeader>
@@ -145,7 +150,7 @@ export function HeroPreview() {
           </TabsContent>
         </Tabs>
         <Alert variant="warning" appearance="outline">
-          <TriangleAlertIcon />
+          <WarningIcon />
           <AlertTitle>Model out of date</AlertTitle>
           <AlertDescription>
             Horizon K70 changed after the last run.

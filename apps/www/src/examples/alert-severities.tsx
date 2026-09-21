@@ -1,9 +1,9 @@
 import {
-  CircleAlertIcon,
-  CircleCheckIcon,
+  CheckCircleIcon,
+  ErrorIcon,
   InfoIcon,
-  TriangleAlertIcon,
-} from "lucide-react"
+  WarningIcon,
+} from "@tecton/react/icons"
 
 import {
   Alert,
@@ -15,14 +15,14 @@ export default function AlertSeverities() {
   return (
     <div className="flex w-full max-w-md flex-col gap-3">
       <Alert variant="success">
-        <CircleCheckIcon />
+        <CheckCircleIcon />
         <AlertTitle>Three FDA alternatives ranked</AlertTitle>
         <AlertDescription>
           Alternative B has the lowest cost per barrel.
         </AlertDescription>
       </Alert>
       <Alert variant="warning">
-        <TriangleAlertIcon />
+        <WarningIcon />
         <AlertTitle>Unsaved changes</AlertTitle>
         <AlertDescription>
           Three horizons have edits that are not yet committed.
@@ -36,7 +36,7 @@ export default function AlertSeverities() {
         </AlertDescription>
       </Alert>
       <Alert variant="destructive">
-        <CircleAlertIcon />
+        <ErrorIcon />
         <AlertTitle>Simulation failed</AlertTitle>
         <AlertDescription>
           The grid has 12 cells with negative volume.

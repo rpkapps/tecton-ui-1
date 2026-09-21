@@ -1,15 +1,15 @@
 import * as React from "react"
 import {
   ArrowDownIcon,
-  ArrowUpDownIcon,
+  CheckCircleIcon,
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
-  CircleCheckIcon,
-  MoreVerticalIcon,
+  MoreVertIcon,
+  PersonIcon,
   SettingsIcon,
-  UserIcon,
-} from "lucide-react"
+  SortEnabledIcon,
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
@@ -83,7 +83,7 @@ function SortableHead({
         {active ? (
           <ArrowDownIcon className="size-3.5 text-muted-foreground" />
         ) : (
-          <ArrowUpDownIcon className="size-3.5 text-muted-foreground" />
+          <SortEnabledIcon className="size-3.5 text-muted-foreground" />
         )}
       </span>
     </TableHead>
@@ -131,7 +131,7 @@ export default function TableMatrix() {
                 </TableCell>
                 <TableCell>
                   <span className="inline-flex items-center gap-2">
-                    <UserIcon className="size-4 text-muted-foreground" />
+                    <PersonIcon className="size-4 text-muted-foreground" />
                     {user.name}
                   </span>
                 </TableCell>
@@ -139,7 +139,7 @@ export default function TableMatrix() {
                 <TableCell>{user.location}</TableCell>
                 <TableCell>
                   <span className="inline-flex items-center gap-2">
-                    <CircleCheckIcon className="size-4 text-muted-foreground" />
+                    <CheckCircleIcon className="size-4 text-muted-foreground" />
                     {user.status}
                   </span>
                 </TableCell>
@@ -150,7 +150,7 @@ export default function TableMatrix() {
                     size="icon-xs"
                     aria-label="Row actions"
                   >
-                    <MoreVerticalIcon />
+                    <MoreVertIcon />
                   </Button>
                 </TableCell>
               </TableRow>

@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ListIcon, WaypointsIcon } from "lucide-react"
+import { ListIcon, NodeIcon } from "@tecton/react/icons"
 
 import {
   DropdownMenuGroup,
@@ -98,7 +98,7 @@ export default function PageHeaderNavDemo() {
                   List
                 </DropdownMenuItem>
                 <DropdownMenuItem id="graph">
-                  <WaypointsIcon />
+                  <NodeIcon />
                   Graph
                 </DropdownMenuItem>
               </DropdownMenuGroup>
@@ -121,7 +121,7 @@ export default function PageHeaderNavDemo() {
                 <ListIcon /> List
               </ToggleGroupItem>
               <ToggleGroupItem id="graph" aria-label="Graph view">
-                <WaypointsIcon /> Graph
+                <NodeIcon /> Graph
               </ToggleGroupItem>
             </ToggleGroup>
           </OverflowItem>

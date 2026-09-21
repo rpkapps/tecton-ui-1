@@ -1,9 +1,9 @@
 import {
-  CircleAlertIcon,
-  CircleCheckIcon,
+  CheckCircleIcon,
+  ErrorIcon,
   InfoIcon,
-  TriangleAlertIcon,
-} from "lucide-react"
+  WarningIcon,
+} from "@tecton/react/icons"
 
 import {
   Alert,
@@ -12,10 +12,10 @@ import {
 } from "@tecton/react/components/alert"
 
 const severities = [
-  { variant: "success", icon: CircleCheckIcon, title: "Model saved" },
-  { variant: "warning", icon: TriangleAlertIcon, title: "Unsaved changes" },
+  { variant: "success", icon: CheckCircleIcon, title: "Model saved" },
+  { variant: "warning", icon: WarningIcon, title: "Unsaved changes" },
   { variant: "info", icon: InfoIcon, title: "Model out of date" },
-  { variant: "destructive", icon: CircleAlertIcon, title: "Simulation failed" },
+  { variant: "destructive", icon: ErrorIcon, title: "Simulation failed" },
 ] as const
 
 const appearances = ["outline", "filled"] as const

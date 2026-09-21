@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { CircleCheckIcon, XIcon } from "lucide-react"
+import { CheckCircleIcon, CloseIcon } from "@tecton/react/icons"
 
 import {
   Alert,
@@ -24,7 +24,7 @@ export default function AlertDismissible() {
 
   return (
     <Alert variant="success" className="max-w-md">
-      <CircleCheckIcon />
+      <CheckCircleIcon />
       <AlertTitle>Three FDA alternatives ranked</AlertTitle>
       <AlertDescription>
         Alternative B has the lowest cost per barrel.
@@ -39,7 +39,7 @@ export default function AlertDismissible() {
           aria-label="Dismiss"
           onPress={() => setOpen(false)}
         >
-          <XIcon />
+          <CloseIcon />
         </Button>
       </AlertAction>
     </Alert>

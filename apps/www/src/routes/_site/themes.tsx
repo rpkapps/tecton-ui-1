@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { createFileRoute } from "@tanstack/react-router"
-import { InfoIcon } from "lucide-react"
+import { InfoIcon } from "@tecton/react/icons"
 import { useTheme } from "next-themes"
 
 import {

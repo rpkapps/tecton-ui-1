@@ -1,10 +1,10 @@
 import {
-  BracesIcon,
-  FileCodeIcon,
-  FileTextIcon,
+  CodeBlocksIcon,
+  DataObjectIcon,
+  DescriptionIcon,
   PaletteIcon,
   TerminalIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 /** Small icon for a code block title, keyed by file extension / language. */
 export function getIconForLanguageExtension(language: string) {
@@ -14,16 +14,16 @@ export function getIconForLanguageExtension(language: string) {
     case "jsx":
     case "js":
     case "mts":
-      return <FileCodeIcon />
+      return <CodeBlocksIcon />
     case "css":
       return <PaletteIcon />
     case "json":
-      return <BracesIcon />
+      return <DataObjectIcon />
     case "bash":
     case "sh":
     case "shell":
       return <TerminalIcon />
     default:
-      return <FileTextIcon />
+      return <DescriptionIcon />
   }
 }

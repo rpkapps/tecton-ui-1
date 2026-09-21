@@ -7,7 +7,7 @@ import {
   MonitorIcon,
   SmartphoneIcon,
   TabletIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 import { LinkButton } from "@tecton/react/components/button"
 import {
   ResizableHandle,

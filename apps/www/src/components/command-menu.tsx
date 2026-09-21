@@ -6,9 +6,9 @@ import { cn } from "cn"
 import type * as PageTree from "fumadocs-core/page-tree"
 import {
   ArrowRightIcon,
-  CornerDownLeftIcon,
-  SquareDashedIcon,
-} from "lucide-react"
+  KeyboardReturnIcon,
+  SelectIcon,
+} from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -165,7 +165,7 @@ export function CommandMenu({ tree }: { tree: PageTree.Root }) {
                     ) : group.heading === "Pages" ? (
                       <ArrowRightIcon />
                     ) : (
-                      <SquareDashedIcon />
+                      <SelectIcon />
                     )}
                     {item.name}
                   </CommandItem>
@@ -177,7 +177,7 @@ export function CommandMenu({ tree }: { tree: PageTree.Root }) {
         <div className="absolute inset-x-0 bottom-0 z-20 flex h-10 items-center gap-2 rounded-b-xl border-t bg-muted/60 px-4 text-xs font-medium text-muted-foreground">
           <div className="flex items-center gap-2">
             <CommandMenuKbd>
-              <CornerDownLeftIcon />
+              <KeyboardReturnIcon />
             </CommandMenuKbd>{" "}
             Go to Page
           </div>

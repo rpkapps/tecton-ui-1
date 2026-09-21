@@ -1,5 +1,5 @@
 import * as React from "react"
-import { BoxIcon } from "lucide-react"
+import { CubeIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 
@@ -42,7 +42,7 @@ export default function IconButtonMatrix() {
                   size={size}
                   aria-label="Box"
                 >
-                  <BoxIcon />
+                  <CubeIcon />
                 </Button>,
                 <Button
                   key="disabled"
@@ -51,7 +51,7 @@ export default function IconButtonMatrix() {
                   aria-label="Box"
                   isDisabled
                 >
-                  <BoxIcon />
+                  <CubeIcon />
                 </Button>,
                 <Button
                   key="activated"
@@ -60,7 +60,7 @@ export default function IconButtonMatrix() {
                   aria-label="Box"
                   aria-pressed
                 >
-                  <BoxIcon />
+                  <CubeIcon />
                 </Button>,
               ],
             }))}

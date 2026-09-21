@@ -1,7 +1,7 @@
 "use client"
 
 import { useForm } from "@tanstack/react-form"
-import { XIcon } from "lucide-react"
+import { CloseIcon } from "@tecton/react/icons"
 import * as z from "zod"
 
 import { Button } from "@tecton/react/components/button"
@@ -117,7 +117,7 @@ export default function FormTanstackArray() {
                                         onPress={() => field.removeValue(index)}
                                         aria-label={`Remove email ${index + 1}`}
                                       >
-                                        <XIcon />
+                                        <CloseIcon />
                                       </InputGroupButton>
                                     </InputGroupAddon>
                                   )}

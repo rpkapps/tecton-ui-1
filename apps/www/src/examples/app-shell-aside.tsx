@@ -1,4 +1,4 @@
-import { HexagonIcon } from "lucide-react"
+import { HexagonIcon } from "@tecton/react/icons"
 
 import {
   AppShell,

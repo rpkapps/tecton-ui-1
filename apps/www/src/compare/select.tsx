@@ -1,5 +1,5 @@
 import * as React from "react"
-import { SearchIcon } from "lucide-react"
+import { SearchIcon } from "@tecton/react/icons"
 
 import {
   Field,

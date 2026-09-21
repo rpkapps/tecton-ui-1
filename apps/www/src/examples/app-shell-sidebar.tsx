@@ -1,4 +1,4 @@
-import { HexagonIcon, SettingsIcon } from "lucide-react"
+import { HexagonIcon, SettingsIcon } from "@tecton/react/icons"
 
 import { Button } from "@tecton/react/components/button"
 import {

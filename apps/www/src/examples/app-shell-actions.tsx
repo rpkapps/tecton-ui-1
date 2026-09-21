@@ -1,11 +1,11 @@
 import {
-  BugIcon,
-  CircleHelpIcon,
-  LogOutIcon,
+  AutoAwesomeIcon,
+  BugReportIcon,
+  HelpIcon,
+  LogoutIcon,
+  PersonIcon,
   SettingsIcon,
-  SparklesIcon,
-  UserIcon,
-} from "lucide-react"
+} from "@tecton/react/icons"
 
 import {
   DropdownMenuGroup,
@@ -31,13 +31,13 @@ export default function AppShellActionsExample() {
         <AppShellActions>
           <AppShellCommandTrigger>Search or jump to…</AppShellCommandTrigger>
           <AppShellAction label="Help" shortcut="?">
-            <CircleHelpIcon />
+            <HelpIcon />
           </AppShellAction>
           <AppShellAction label="What's new">
-            <SparklesIcon />
+            <AutoAwesomeIcon />
           </AppShellAction>
           <AppShellAction label="Report a bug">
-            <BugIcon />
+            <BugReportIcon />
           </AppShellAction>
           <AppShellAction label="Settings">
             <SettingsIcon />
@@ -49,10 +49,10 @@ export default function AppShellActionsExample() {
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem textValue="Profile">
-                <UserIcon /> Profile
+                <PersonIcon /> Profile
               </DropdownMenuItem>
               <DropdownMenuItem textValue="Sign out">
-                <LogOutIcon /> Sign out
+                <LogoutIcon /> Sign out
               </DropdownMenuItem>
             </DropdownMenuGroup>
           </AppShellUserMenu>

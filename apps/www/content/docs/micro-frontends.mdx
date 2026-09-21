@@ -106,11 +106,12 @@ A remote declares no theme variables of its own. The shell's `--primary`, its pa
 
 For an inverted remote, pass `theme` to `ThemeRoot`: `theme="dark"` pins the subtree to dark — a map or a log viewer in a light shell — and `theme="light"` the other way round. The whole subtree follows, overlays included: the `dark:` utilities, the palette ramps and the shadcn variables. See [Theming](/docs/theming) for the tokens themselves and for [inverted sections](/docs/theming#inverted-sections).
 
-A remote with no Tecton shell to inherit from — a demo, a test harness, an embed in someone else's page — or one that must deliberately run its own token set, adds the theme sheet after `scoped.css` and loads the two font families itself:
+A remote with no Tecton shell to inherit from — a demo, a test harness, an embed in someone else's page — or one that must deliberately run its own token set, adds the theme sheet after `scoped.css` and loads the font families itself:
 
 ```css title="src/styles/remote.css"
 @import "@tecton/react/styles/scoped.css";
 @import "@tecton/react/styles/scoped-theme.css";
+@import "@tecton/react/styles/tecton-symbols.css";
 @import "@fontsource/figtree/400.css";
 @import "@fontsource/figtree/500.css";
 @import "@fontsource/ibm-plex-mono/400.css";
@@ -118,6 +119,14 @@ A remote with no Tecton shell to inherit from — a demo, a test harness, an emb
 ```
 
 `scoped-theme.css` declares the full variable set on the remote's root, which stops it following its host — leave it out whenever there is a shell.
+
+## Fonts and icons
+
+Fonts are the one thing a remote never brings. [`tecton-symbols.css`](/docs/icons#loading-the-fonts) is loaded **once, by the shell**, which owns the document: `@font-face` cannot be scoped or renamed, the three symbol families are document-level whoever declared them, and a remote that imports the sheet again only makes the browser parse a second identical set of rules. The shell also carries the `<link rel="preload">` for the three woff2 files, and the text fonts the same way.
+
+So a remote's stylesheet is `scoped.css` and nothing else, and its icons — plain `@tecton/react/icons` components — resolve against the shell's families. Two Tecton versions in one document share them: the family names are stable, and a codepoint an older shell's font does not carry falls through to the fallback family and draws the unknown-icon glyph rather than tofu.
+
+The exception is the remote with no Tecton shell above it, which is the block just above: it is then the application that owns the document, so it loads the sheet and preloads the files itself.
 
 ## Sidebars and shortcuts
 
