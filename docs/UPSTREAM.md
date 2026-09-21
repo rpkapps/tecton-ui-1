@@ -22,6 +22,7 @@ built the same way, from the overlay in `scripts/registry-mirror/overlay/`:
 | --- | --- |
 | `style-tecton.css` | Copy of `style-vega.css` with the Tecton deviations: solid 2px focus ring (`ring-2 ring-ring`), flat controls (no `shadow-xs`), buttons that lighten on hover / press, and the class lists of the extra variants below |
 | `tecton.patch` | Registers the style in `registry/styles.tsx`, forwards the Tecton portal target on the ten overlay aria base sources, and adds variant axes to six aria base sources: `alert` (`variant` success/warning/info + `appearance` default/outline/filled), `badge` (`variant` success/warning/info + `appearance` solid/outline + `size` default/md/lg), `separator` (`emphasis` subtle/default/strong), `input` / `textarea` / `select` trigger (`variant` outline/filled/text); strips the hard-coded selected colours from `tabs` and the hover colour from `toggle` so the style file can set the Tecton ones; makes `button-group` corners logical for RTL and gives `sonner` outlined status colours (the popover surface with a status border and text, matching `alert` with `appearance="outline"`) |
+| `../icon-imports.mts` | Not a patch: a rewrite of the **built** registry that points the twenty items with icons at `@tecton/react/icons/lucide-compat` (below) |
 
 `scripts/registry-mirror.sh build` re-applies the overlay (`git apply --3way`) and builds only
 `aria-tecton`. The patch is piped through `tr -d '\r'` first: `--3way` matches it against the
@@ -29,6 +30,40 @@ clone's index blobs, which are always LF, so a CRLF working copy of `tecton.patc
 (`core.autocrlf` on Windows) would otherwise fail to apply on every file. Because the style exists nowhere else, **every CLI command that touches
 `packages/tecton-react` runs against the mirror** (`REGISTRY_URL=http://127.0.0.1:4000/r`), and
 `pnpm generated:check` diffs the installed files against what the mirror serves.
+
+## Where the icon imports come from
+
+Upstream's aria base sources import **no** icon library. They render
+`<IconPlaceholder lucide="CheckIcon" tabler="IconCheck" hugeicons="…" …/>`, the registry ships
+that placeholder verbatim, and the *CLI* turns it into
+`import { CheckIcon } from "lucide-react"` while it writes the file — from its own hard-coded
+`iconLibraries` table and `components.json`'s `"iconLibrary": "lucide"`. There is no
+registry-side knob for the module name and no import line to patch in the sources.
+
+So `scripts/registry-mirror/icon-imports.mts` does it one step later, on the built registry, as
+the last thing `scripts/registry-mirror.sh build` runs. For every `registry:ui` file that still
+holds a placeholder it applies the CLI's own `transformIcons` (same transform, same ts-morph
+settings as `applyIconTransform` in `build-registry.mts`) and then renames the module of the
+import it just added to `@tecton/react/icons/lucide-compat`. The CLI's own pass then finds no
+placeholder left and writes the file through unchanged, so the installed component is what it
+always was apart from that one specifier. The script fails if the count is not the expected 20
+items, so a silent no-op cannot pass.
+
+It is deliberately **not** part of `overlay()`:
+
+- there is no `from "lucide-react"` line in `apps/v4/registry/bases/aria/ui/*.tsx` to sed, and
+  rewriting the placeholders there would put twenty icon hunks in the way of every upstream bump;
+- eight of the twenty files (`combobox`, `context-menu`, `dialog`, `dropdown-menu`, `select`,
+  `sheet`, `sidebar`, `sonner`) are also in `OVERLAY_FILES`, so
+  `scripts/registry-mirror.sh export` — `git diff HEAD -- $OVERLAY_FILES` — would bake the icon
+  rewrite into `tecton.patch` for those eight and not for the other twelve.
+
+`@tecton/react/icons/lucide-compat` inside a generated component is the same convention as the
+`@tecton/react/tecton/portal` import the patch already writes: it is not a registry `dependency`
+(those are the hand-declared list in `registry/bases/aria/ui/_registry.ts` plus `cn`), the CLI
+leaves the specifier alone, and `checkbox`'s `dependencies` stay `["cn"]` — `lucide-react` was
+never listed there either, it only ever reached the project through the `style` item at
+`init` time.
 
 ## How the files were generated
 

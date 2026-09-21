@@ -11,7 +11,7 @@ import {
   type BreadcrumbsProps,
   type LinkProps,
 } from "react-aria-components"
-import { ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
+import { ChevronRightIcon, MoreHorizontalIcon } from "@tecton/react/icons/lucide-compat"
 
 function Breadcrumb({ className, ...props }: React.ComponentProps<"nav">) {
   return (

@@ -13,7 +13,7 @@ import {
   type DisclosurePanelProps,
   type DisclosureProps,
 } from "react-aria-components"
-import { ChevronDownIcon, ChevronUpIcon } from "lucide-react"
+import { ChevronDownIcon, ChevronUpIcon } from "@tecton/react/icons/lucide-compat"
 
 function Accordion({ className, ...props }: DisclosureGroupProps) {
   return (

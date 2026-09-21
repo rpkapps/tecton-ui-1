@@ -5,6 +5,15 @@
 # a few aria base sources), builds the `aria-tecton` registry with the upstream
 # build script and serves it on http://127.0.0.1:4000.
 #
+# `build` finishes with scripts/registry-mirror/icon-imports.mts, which points the
+# generated components' glyph imports at @tecton/react/icons/lucide-compat. It is
+# a post-build step on the built registry rather than part of the overlay because
+# upstream's aria sources import no icon library at all — they render
+# <IconPlaceholder lucide="CheckIcon" …/> and the CLI writes the `lucide-react`
+# import itself — so there is no import line to patch in the sources, and eight of
+# the twenty affected files are in OVERLAY_FILES, where `export` would bake the
+# rewrite into tecton.patch for those eight only.
+#
 # The `aria-tecton` style exists only here, so every shadcn CLI command that
 # touches packages/tecton-react must run against this mirror:
 #   REGISTRY_URL=http://127.0.0.1:4000/r pnpm dlx shadcn@4.21.0 add <item> -c packages/tecton-react
@@ -60,7 +69,11 @@ export_overlay() {
 build() {
   overlay
   cp "$ROOT/scripts/registry-mirror/local-init.mts" "$MIRROR_DIR/apps/v4/scripts/local-init.mts"
+  cp "$ROOT/scripts/registry-mirror/icon-imports.mts" "$MIRROR_DIR/apps/v4/scripts/icon-imports.mts"
   (cd "$MIRROR_DIR/apps/v4" && "$BUN" run ./scripts/build-registry.mts --indexes --registry "$STYLE")
+  # Post-build, not part of the overlay: upstream's aria sources carry no icon
+  # import at all (see icon-imports.mts), so there is nothing to patch there.
+  (cd "$MIRROR_DIR/apps/v4" && SHADCN_STYLE="$STYLE" "$BUN" run ./scripts/icon-imports.mts)
 }
 
 serve() {
@@ -73,5 +86,5 @@ case "${1:-}" in
   build) build ;;
   export) export_overlay ;;
   serve) serve ;;
-  *) sed -n '2,20p' "$0"; exit 1 ;;
+  *) sed -n '2,29p' "$0"; exit 1 ;;
 esac

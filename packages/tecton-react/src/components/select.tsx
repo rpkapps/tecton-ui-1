@@ -27,7 +27,7 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@tecton/react/components/input-group"
-import { ChevronDownIcon, SearchIcon, CheckIcon } from "lucide-react"
+import { ChevronDownIcon, SearchIcon, CheckIcon } from "@tecton/react/icons/lucide-compat"
 
 function Select<T extends object, M extends "single" | "multiple" = "single">({
   className,

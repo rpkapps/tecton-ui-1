@@ -5,7 +5,7 @@ import { Questionnaire as QuestionnairePrimitive } from "@shadcn/react/questionn
 import { cn } from "cn"
 
 import { buttonVariants, type Button } from "@tecton/react/components/button"
-import { CheckIcon } from "lucide-react"
+import { CheckIcon } from "@tecton/react/icons/lucide-compat"
 
 function Questionnaire({
   className,

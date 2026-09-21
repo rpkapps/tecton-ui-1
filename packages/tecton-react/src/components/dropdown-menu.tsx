@@ -19,7 +19,7 @@ import {
   type MenuItemProps as MenuItemPrimitiveProps,
   type MenuSectionProps as MenuSectionPrimitiveProps,
 } from "react-aria-components"
-import { CheckIcon, ChevronRightIcon } from "lucide-react"
+import { CheckIcon, ChevronRightIcon } from "@tecton/react/icons/lucide-compat"
 
 function DropdownMenuTrigger({
   ...props

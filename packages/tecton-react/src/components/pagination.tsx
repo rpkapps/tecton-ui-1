@@ -2,7 +2,7 @@ import * as React from "react"
 import { cn } from "cn"
 
 import { LinkButton } from "@tecton/react/components/button"
-import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon, MoreHorizontalIcon } from "@tecton/react/icons/lucide-compat"
 
 function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
   return (

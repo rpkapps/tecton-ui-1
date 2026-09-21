@@ -32,7 +32,7 @@ import {
   InputGroup,
   InputGroupAddon,
 } from "@tecton/react/components/input-group"
-import { SearchIcon, CheckIcon } from "lucide-react"
+import { SearchIcon, CheckIcon } from "@tecton/react/icons/lucide-compat"
 
 function Command({
   className,

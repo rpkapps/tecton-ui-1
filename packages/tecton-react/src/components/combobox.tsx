@@ -41,7 +41,7 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@tecton/react/components/input-group"
-import { ChevronDownIcon, XIcon, CheckIcon } from "lucide-react"
+import { ChevronDownIcon, XIcon, CheckIcon } from "@tecton/react/icons/lucide-compat"
 
 function ComboboxValue<T>({ ...props }: ComboBoxValueProps<T>) {
   return <ComboBoxValuePrimitive data-slot="combobox-value" {...props} />

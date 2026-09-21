@@ -15,7 +15,7 @@ import {
 } from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
-import { XIcon } from "lucide-react"
+import { XIcon } from "@tecton/react/icons/lucide-compat"
 
 function SheetTrigger({ ...props }: SheetTriggerPrimitiveProps) {
   return <SheetTriggerPrimitive data-slot="sheet-trigger" {...props} />

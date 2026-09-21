@@ -13,7 +13,8 @@
  *   icons-src/tecton/<slug>.ts     the Tecton icon export (defineTectonSvgIcon
  *                                  definitions with outline + filled markup)
  *   icons-src/<variant>/<slug>.svg loose SVG overrides (see scripts/extract-icons.mts)
- *   src/components/*.tsx           scanned for `from "lucide-react"` identifiers
+ *   src/components/*.tsx           scanned for the identifiers imported from
+ *                                  lucide-react or from the compat module
  *   src/tecton/*.tsx               (same — used to build the lucide compat map)
  *
  * Outputs (all GENERATED, all overwritten on every run)
@@ -83,6 +84,28 @@ const LUCIDE_DTS = path.join(pkgRoot, "node_modules/lucide-react/dist/lucide-rea
 const ALLOCATION_PATH = path.join(pkgRoot, "icons/tecton-codepoints.json");
 /** Folders scanned (recursively) for lucide-react imports when building the compat map. */
 const COMPAT_SCAN_DIRS = ["src/components", "src/tecton"];
+/**
+ * Specifiers a scanned file can import the compat surface from. The generated
+ * components no longer name `lucide-react`: the registry mirror rewrites their
+ * import to the compat module before the CLI writes them
+ * (scripts/registry-mirror/icon-imports.mts), so the scan has to recognise it
+ * too or the component-usage entries silently empty out — and with them the
+ * pass-through count that says which names still fall through to lucide.
+ */
+const COMPAT_MODULES = [
+  "lucide-react",
+  "@tecton/react/icons/lucide-compat",
+  // The same module named from inside the package (a generated component that
+  // was installed relative, or a src/tecton file that reaches for it).
+  "../icons/lucide-compat",
+  "./lucide-compat",
+];
+const COMPAT_IMPORT_RE = new RegExp(
+  String.raw`import\s+(type\s+)?\{([^}]*)\}\s*from\s*["'](?:${COMPAT_MODULES.map((m) =>
+    m.replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`)
+  ).join("|")})["']`,
+  "g"
+);
 
 type Source = "symbol" | "domain" | "svg";
 
@@ -674,7 +697,7 @@ export const tectonIconsBySlug: Readonly<Record<string, TectonIconEntry>> = Obje
 // lucide compat map
 // ---------------------------------------------------------------------------
 
-/** Collect `{ A, B as C }` identifiers imported from "lucide-react" in the scanned dirs. */
+/** Collect `{ A, B as C }` identifiers imported from a COMPAT_MODULES specifier. */
 function collectLucideIdentifiers(): Map<string, string[]> {
   const uses = new Map<string, string[]>(); // identifier → files
   const visit = (dir: string, rel: string) => {
@@ -685,7 +708,7 @@ function collectLucideIdentifiers(): Map<string, string[]> {
       }
       if (!/\.tsx?$/.test(entry.name)) continue;
       const src = readFileSync(path.join(dir, entry.name), "utf8");
-      for (const m of src.matchAll(/import\s+(type\s+)?\{([^}]*)\}\s*from\s*["']lucide-react["']/g)) {
+      for (const m of src.matchAll(COMPAT_IMPORT_RE)) {
         for (const spec of m[2].split(",")) {
           const cleaned = spec.replace(/\btype\s+/, "").trim();
           if (!cleaned) continue;

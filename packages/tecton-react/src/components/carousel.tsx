@@ -7,7 +7,7 @@ import useEmblaCarousel, {
 } from "embla-carousel-react"
 
 import { Button } from "@tecton/react/components/button"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon } from "@tecton/react/icons/lucide-compat"
 
 type CarouselApi = UseEmblaCarouselType[1]
 type UseCarouselParameters = Parameters<typeof useEmblaCarousel>

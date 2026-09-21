@@ -6,7 +6,7 @@ import {
   composeRenderProps,
   type CheckboxProps,
 } from "react-aria-components"
-import { CheckIcon } from "lucide-react"
+import { CheckIcon } from "@tecton/react/icons/lucide-compat"
 
 function Checkbox({ className, children, ...props }: CheckboxProps) {
   return (

@@ -29,7 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@tecton/react/components/select"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon } from "@tecton/react/icons/lucide-compat"
 
 const cellVariants = cva(
   "group/day relative mt-2 aspect-square h-full w-full cursor-default rounded-(--cell-radius) p-0 text-center select-none [&:is(:last-child>[data-selected=true])>div]:rounded-r-(--cell-radius)",

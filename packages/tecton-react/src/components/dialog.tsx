@@ -15,7 +15,7 @@ import {
 } from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
-import { XIcon } from "lucide-react"
+import { XIcon } from "@tecton/react/icons/lucide-compat"
 
 function DialogTrigger({ ...props }: DialogTriggerPrimitiveProps) {
   return <DialogTriggerPrimitive data-slot="dialog-trigger" {...props} />
