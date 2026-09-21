@@ -1,12 +1,12 @@
 ---
 title: Icons
-description: The Tecton icon set (131 icons, outlined and filled) and how it works alongside Lucide.
+description: The Tecton icon set (138 icons, outlined and filled) and how it works alongside Lucide.
 ---
 
 Tecton UI supports **two icon libraries**:
 
 - **Lucide** (`lucide-react`) — the library the generated shadcn components use internally (chevrons, check marks, close buttons…). It stays the CLI's `iconLibrary`, so generated files never change.
-- **Tecton icons** (`@tecton/react/icons`) — the 131 custom icons of the design system, including the domain glyphs (wells, horizons, seismic, drill bits…). Every icon is a React component with the Lucide-compatible signature (`size`, `strokeWidth`, `className`, SVG props) plus `variant="outlined" | "filled"`.
+- **Tecton icons** (`@tecton/react/icons`) — the 138 icons of the design system, including the domain glyphs (wells, horizons, seismic, drill bits…). Every icon is a React component with the Lucide-compatible signature (`size`, `strokeWidth`, `className`, SVG props) plus `variant="outlined" | "filled"`.
 
 ```tsx
 import { SearchIcon } from "lucide-react"
@@ -19,12 +19,50 @@ import { WellIcon, SeismicIcon } from "@tecton/react/icons"
 ```
 
 <Callout title="Glyph sources">
-  The glyphs come from the Tecton icon export vendored in `packages/tecton-react/icons-src/tecton/` (one `defineTectonSvgIcon` definition per icon with outlined and filled markup). `icons:build` generates a React component per definition; every rendered `<svg>` reports its origin through `data-tecton-source` (`svg` for all 131 today). Drop a newer export into that folder and rebuild to update the set.
+  91 icons render a Material Symbols Sharp glyph, 46 render Tecton's own drawing (vendored in `packages/tecton-react/icons-src/tecton/`, one `defineTectonSvgIcon` definition per icon), and `StrataIcon` stays an inline SVG because it is drawn in colour. Every rendered `<svg>` says which it is through `data-tecton-source` (`symbol`, `domain` or `svg`).
 </Callout>
 
 ## Gallery
 
 <IconGallery />
+
+## Rendering
+
+An icon is a character, not a path. `packages/tecton-react/scripts/build-symbol-fonts.mts` builds three woff2 families, and `<Icon>` draws the right codepoint from them inside a 24×24 `<svg>` host:
+
+| Family | Carries |
+| --- | --- |
+| `Tecton Symbols` | Material Symbols Sharp, wght 300 / GRAD 0 / opsz 24, FILL kept variable — `variant="filled"` moves that axis |
+| `Tecton Symbols Domain` | Tecton's own drawings, outlined and filled as two codepoints |
+| `Tecton Symbols Fallback` | every codepoint the other two could use, mapped to one "unknown icon" glyph |
+
+```tsx
+import { Icon } from "@tecton/react/icons"
+import { WellIcon } from "@tecton/react/icons/well"
+
+<Icon name="well" />           {/* by name, for data-driven icons */}
+<WellIcon size={20} />         {/* the named component — the same thing */}
+```
+
+A name the set does not have renders the reserved unknown-icon glyph and warns once in development.
+
+<Callout title="Load the stylesheet in your shell">
+  `@tecton/react/globals.css` does not import the fonts: your application shell loads `@tecton/react/styles/tecton-symbols.css` itself (the woff2 files sit in `./fonts/` next to it). Without it no glyph can resolve, so every icon draws a dashed placeholder instead.
+</Callout>
+
+Fonts arrive asynchronously, so the host reports `data-state` and never changes size between states: `loading` draws a skeleton block (invisible for the first 150 ms, so a warm cache never flashes) with the glyph hidden behind it, `ready` draws the glyph, and `unavailable` — no font after 5 s — draws a dashed placeholder that needs no font at all. A font that arrives late still flips the state to `ready`.
+
+### A raw Material glyph
+
+A Tecton name always wins: if the set has the icon, use it, so the drawing and the gallery stay in one place. For the rest of Google's catalogue there is an explicit escape hatch on its own subpath (the 4,284-name table is not loaded by anything else):
+
+```tsx
+import { MaterialSymbol } from "@tecton/react/icons/material"
+
+<MaterialSymbol name="rocket_launch" variant="filled" />
+```
+
+Material Symbols is Google's, under the [Apache License 2.0](https://github.com/google/material-design-icons/blob/master/LICENSE); the subset shipped here keeps that licence.
 
 ## Replacing Lucide inside the generated components
 
@@ -40,12 +78,13 @@ export default defineConfig({
 })
 ```
 
-The compat module re-exports every Lucide name the components use, mapped to the matching Tecton icon when one exists and to Lucide otherwise.
+The compat module re-exports every Lucide name the components use. Every identifier the generated components and the Tecton layer import now resolves to a Tecton icon — no Lucide glyph is left in that set.
 
 ## Regenerating
 
 ```bash
 # replace icons-src/tecton/*.ts with a newer Tecton export, then
+pnpm --filter @tecton/react icons:fonts     # rebuilds the three woff2 families
 pnpm --filter @tecton/react icons:build     # regenerates src/icons/*
 pnpm --filter @tecton/react icons:build -- --check   # CI drift guard
 ```

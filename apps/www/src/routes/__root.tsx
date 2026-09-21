@@ -14,6 +14,12 @@ import { Toaster } from "@tecton/react/components/sonner"
 
 import { siteConfig } from "@/lib/site"
 import appCss from "@/styles/app.css?url"
+// The three symbol families app.css loads: every icon on the page is a
+// character in one of them, so they are worth a preload rather than waiting
+// for the stylesheet to be parsed first.
+import domainFont from "@tecton/react/styles/fonts/tecton-symbols-domain.woff2?url"
+import fallbackFont from "@tecton/react/styles/fonts/tecton-symbols-fallback.woff2?url"
+import symbolsFont from "@tecton/react/styles/fonts/tecton-symbols.woff2?url"
 
 export const Route = createRootRoute({
   head: () => ({
@@ -26,6 +32,13 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      ...[symbolsFont, domainFont, fallbackFont].map((href) => ({
+        rel: "preload",
+        as: "font",
+        type: "font/woff2",
+        href,
+        crossOrigin: "anonymous" as const,
+      })),
       { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
       { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
       {

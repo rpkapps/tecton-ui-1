@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import { cn } from "cn"
 import { toast } from "sonner"
 
 import { Badge } from "@tecton/react/components/badge"
@@ -29,12 +28,13 @@ export function IconGallery() {
       (icon) =>
         icon.name.toLowerCase().includes(q) ||
         icon.slug.includes(q) ||
-        icon.description.toLowerCase().includes(q)
+        icon.description.toLowerCase().includes(q) ||
+        (icon.symbol?.includes(q) ?? false)
     )
   }, [query])
 
   const counts = React.useMemo(() => {
-    const c = { svg: 0, "lucide-fallback": 0, placeholder: 0 }
+    const c = { symbol: 0, domain: 0, svg: 0 }
     for (const icon of tectonIcons) c[icon.source] += 1
     return c
   }, [])
@@ -81,13 +81,13 @@ export function IconGallery() {
         </ToggleGroup>
         <div className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground">
           <Badge variant="success" appearance="outline">
-            {counts.svg} svg
+            {counts.symbol} symbol
           </Badge>
           <Badge variant="info" appearance="outline">
-            {counts["lucide-fallback"]} lucide
+            {counts.domain} domain
           </Badge>
           <Badge variant="secondary" appearance="outline">
-            {counts.placeholder} placeholder
+            {counts.svg} svg
           </Badge>
         </div>
       </div>
@@ -96,10 +96,7 @@ export function IconGallery() {
           <TooltipTrigger key={icon.slug}>
             <button
               type="button"
-              className={cn(
-                "flex flex-col items-center gap-2 rounded-md border bg-card p-3 text-xs outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60",
-                icon.source === "placeholder" && "border-dashed"
-              )}
+              className="flex flex-col items-center gap-2 rounded-md border bg-card p-3 text-xs outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60"
               onClick={() => {
                 const snippet = `import { ${icon.name}Icon } from "@tecton/react/icons"`
                 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- undefined in insecure contexts
@@ -114,8 +111,11 @@ export function IconGallery() {
             </button>
             <Tooltip>
               {icon.description}
-              {icon.source !== "svg" &&
-                ` · ${icon.source === "placeholder" ? "placeholder" : `lucide ${icon.lucide}`}`}
+              {icon.source === "symbol"
+                ? ` · Material ${icon.symbol}`
+                : icon.source === "domain"
+                  ? " · Tecton drawing"
+                  : " · Tecton drawing, in colour"}
             </Tooltip>
           </TooltipTrigger>
         ))}

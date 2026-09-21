@@ -13,6 +13,11 @@
      attribute.
    - No rule targets bare element selectors outside `.typeset`. */
 @import "@tecton/react/globals.css";
+/* The symbol fonts every Tecton icon renders from. globals.css does not import
+   this sheet — an application shell loads it, and the docs site is its own
+   shell (the woff2 files sit in ./fonts/ next to it and are preloaded in
+   src/routes/__root.tsx). */
+@import "@tecton/react/styles/tecton-symbols.css";
 @import "./typeset.css";
 
 @source "../../content/**/*.mdx";
