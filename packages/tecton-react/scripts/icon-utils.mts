@@ -14,6 +14,7 @@
 import { existsSync, readFileSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import type { TectonSvgIcon } from "../icons-src/icon-definition";
 
 // ---------------------------------------------------------------------------
 // Paths
@@ -23,6 +24,7 @@ export const pkgRoot = path.resolve(here, "..");
 export const MANIFEST_PATH = path.join(pkgRoot, "icons/icons.json");
 export const ICONS_SRC_DIR = path.join(pkgRoot, "icons-src");
 export const ICONS_OUT_DIR = path.join(pkgRoot, "src/icons");
+export const TECTON_DEFINITIONS_DIR = path.join(pkgRoot, "icons-src/tecton");
 
 // ---------------------------------------------------------------------------
 // Manifest
@@ -65,6 +67,34 @@ export function loadManifest(file: string = MANIFEST_PATH): IconManifest {
     );
   }
   return manifest;
+}
+
+// ---------------------------------------------------------------------------
+// The Tecton icon export
+// ---------------------------------------------------------------------------
+
+/**
+ * Load every `icons-src/tecton/<slug>.ts` definition (bun/tsx import TS
+ * directly). Shared by `build-icons.mts`, which turns them into React
+ * components, and `build-symbol-fonts.mts`, which turns them into glyphs.
+ */
+export async function loadTectonDefinitions(
+  dir: string = TECTON_DEFINITIONS_DIR,
+): Promise<Map<string, { def: TectonSvgIcon; file: string }>> {
+  const out = new Map<string, { def: TectonSvgIcon; file: string }>();
+  if (!existsSync(dir)) return out;
+  for (const name of readdirSync(dir).sort()) {
+    if (!/\.ts$/.test(name) || name === "index.ts") continue;
+    const file = path.join(dir, name);
+    const mod = (await import(file)) as Record<string, unknown>;
+    const def = Object.values(mod).find(
+      (v): v is TectonSvgIcon => typeof v === "object" && v !== null && "slug" in v && "viewBox" in v,
+    );
+    if (!def) throw new Error(`${path.relative(pkgRoot, file)}: no defineTectonSvgIcon() export found`);
+    if (out.has(def.slug)) throw new Error(`duplicate Tecton icon definition for "${def.slug}"`);
+    out.set(def.slug, { def, file });
+  }
+  return out;
 }
 
 // ---------------------------------------------------------------------------
