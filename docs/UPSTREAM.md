@@ -220,7 +220,7 @@ about 800 tracked files. `scripts/rename-package.mts` rewrites all of it in one 
 and occurrence counts, then drop `--dry-run` against a clean working tree (it refuses a dirty one)
 to write the changes. It skips generated output that must be rebuilt instead of edited
 (`pnpm-lock.yaml`, `apps/www/public/r/**`, `packages/tecton-blocks/registry.json`,
-`packages/tecton-react/src/icons/lucide-compat.map.ts`, `docs/TOKEN-MAPPING.md`) and prints the
+`docs/TOKEN-MAPPING.md`) and prints the
 follow-up checklist afterwards: `pnpm install`; rebuild and re-serve the registry mirror, then
 re-add every item under `packages/tecton-react/src/components` with `--overwrite` and run
 `scripts/generated-check.sh`; `icons:build`, `tokens:build` and (if present) `exports:build` for

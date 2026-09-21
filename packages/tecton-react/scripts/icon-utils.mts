@@ -67,6 +67,23 @@ export function loadManifest(file: string = MANIFEST_PATH): IconManifest {
   return manifest;
 }
 
+/**
+ * Whether a manifest entry is generated into `src/icons/` and published.
+ *
+ * Only the oil & gas / subsurface domain glyphs are Tecton's own. The set's
+ * general-purpose glyphs (add, chevron, search, …) duplicate lucide-react,
+ * which every shadcn component already depends on, so they are neither
+ * vendored nor generated.
+ *
+ * The vendored export and the manifest are already trimmed to those glyphs, so
+ * this predicate is normally a no-op. It is the safety net for re-vendoring: a
+ * fresh full Tecton export dropped into `icons-src/tecton/` still ships only
+ * the domain set.
+ */
+export function isShippedIcon(entry: IconManifestEntry): boolean {
+  return entry.domain;
+}
+
 // ---------------------------------------------------------------------------
 // Naming
 // ---------------------------------------------------------------------------

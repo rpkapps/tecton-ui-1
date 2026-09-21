@@ -119,7 +119,6 @@ const trackedFiles = lsFiles.split("\0").filter(Boolean);
 const SKIP_EXACT = new Set([
   "pnpm-lock.yaml",
   "packages/tecton-blocks/registry.json",
-  "packages/tecton-react/src/icons/lucide-compat.map.ts",
   "docs/TOKEN-MAPPING.md",
 ]);
 const SKIP_PREFIXES = ["apps/www/public/r/"];

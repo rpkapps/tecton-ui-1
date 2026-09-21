@@ -68,4 +68,4 @@ An application mounted inside another one (a Module Federation remote, an embedd
 
 ## Status / open items
 
-- **Icons:** all 131 glyphs are generated from the Tecton icon export in `packages/tecton-react/icons-src/tecton/`; replace those files with a newer export and run `icons:build`.
+- **Icons:** the 18 domain glyphs are generated from the Tecton icon export vendored in `packages/tecton-react/icons-src/tecton/`; the set's general-purpose glyphs are not vendored at all, because lucide-react already covers them. Replace those files with a newer export and run `icons:build`.

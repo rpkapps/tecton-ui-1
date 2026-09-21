@@ -7,7 +7,11 @@
  * markup and generates the React components in `src/icons/`.
  */
 export interface TectonSvgIconDefinition {
-  /** SVG viewBox of both variants, e.g. `0 0 16 16`. */
+  /**
+   * SVG viewBox of both variants, e.g. `0 0 16 16`. The build may crop it
+   * (never the path data) so the glyph fills more of the rendered box — see
+   * `ICON_VIEWBOX_INSET` in `scripts/build-icons.mts`.
+   */
   viewBox: string
   /** Inner SVG markup of the outlined variant. */
   outline: string

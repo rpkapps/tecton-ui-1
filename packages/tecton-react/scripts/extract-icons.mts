@@ -55,6 +55,7 @@ import {
   type IconManifest,
   type IconVariant,
   findIconBy,
+  isShippedIcon,
   loadManifest,
   normalizeSvg,
   pkgRoot,
@@ -195,7 +196,8 @@ function writeExtracted(items: ExtractedSvg[], manifest: IconManifest, opts: Cli
 
   for (const variant of ICON_VARIANTS) {
     if (opts.variant && variant !== opts.variant) continue;
-    for (const icon of manifest.icons) {
+    // Only shipped icons need a source; the rest of the export is not generated.
+    for (const icon of manifest.icons.filter(isShippedIcon)) {
       if (opts.only && !opts.only.has(icon.slug)) continue;
       const file = path.join(ICONS_SRC_DIR, variant, `${icon.slug}.svg`);
       if (!seen[variant].has(icon.slug) && !existsSync(file)) stats.missing[variant].push(icon.slug);
