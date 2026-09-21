@@ -11,8 +11,14 @@
  *   src/components/*.tsx           scanned for `from "lucide-react"` identifiers
  *   src/tecton/*.tsx               (same — used to build the lucide compat map)
  *
+ * Only the SHIPPED icons are generated — the `domain: true` entries, per
+ * `isShippedIcon()` in scripts/icon-utils.mts. The manifest and the vendored
+ * export stay complete (they describe the whole Tecton export), but the
+ * general-purpose glyphs in it duplicate lucide-react and are not published.
+ * Components left behind by an entry that no longer ships are swept away.
+ *
  * Outputs (all GENERATED, all overwritten on every run)
- *   src/icons/<slug>.tsx           one component per manifest icon
+ *   src/icons/<slug>.tsx           one component per shipped manifest icon
  *   src/icons/types.ts             TectonIconProps & friends
  *   src/icons/_runtime.ts          tiny shared helper (size / stroke-width maths)
  *   src/icons/index.ts             named exports + `tectonIcons` gallery array
@@ -48,6 +54,7 @@ import {
   ICON_VARIANTS,
   type IconManifestEntry,
   type IconVariant,
+  isShippedIcon,
   kebabToPascal,
   loadManifest,
   normalizeSvg,
@@ -825,7 +832,7 @@ async function main(): Promise<void> {
   const builds: IconBuild[] = [];
   const idents = new Set<string>();
   const badLucide: string[] = [];
-  for (const entry of manifest.icons) {
+  for (const entry of manifest.icons.filter(isShippedIcon)) {
     const ident = entry.label;
     if (!/^[A-Z][A-Za-z0-9]*Icon$/.test(ident)) throw new Error(`manifest label "${ident}" is not a valid PascalCase identifier ending in "Icon"`);
     if (idents.has(ident)) throw new Error(`duplicate manifest label "${ident}"`);

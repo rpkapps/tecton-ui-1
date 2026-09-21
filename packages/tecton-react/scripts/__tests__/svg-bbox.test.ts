@@ -3,6 +3,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, it } from "vitest"
 
+import { isShippedIcon, loadManifest } from "../icon-utils.mjs"
 import type { Bounds } from "../svg-bbox.mjs"
 import {
   cropViewBox,
@@ -17,6 +18,22 @@ const scriptsDir = path.dirname(path.dirname(fileURLToPath(import.meta.url)))
 const pkgRoot = path.dirname(scriptsDir)
 const DEFINITIONS_DIR = path.join(pkgRoot, "icons-src/tecton")
 const ICONS_OUT_DIR = path.join(pkgRoot, "src/icons")
+
+/** Slugs that are generated into `src/icons/` — the domain glyphs only. */
+const shippedSlugs = new Set(
+  loadManifest()
+    .icons.filter(isShippedIcon)
+    .map((entry) => entry.slug)
+)
+
+/** Generated files in `src/icons/` that are not per-icon components. */
+const NON_ICON_OUTPUTS = new Set([
+  "_runtime.ts",
+  "index.ts",
+  "lucide-compat.map.ts",
+  "lucide-compat.ts",
+  "types.ts",
+])
 
 /**
  * Must match `ICON_VIEWBOX_INSET` in `scripts/build-icons.mts`; the first test
@@ -364,9 +381,20 @@ describe("the Tecton icon export", () => {
     expect(full.length).toBeGreaterThan(definitions.length * 0.75)
   })
 
+  it("generates exactly the shipped manifest slugs", () => {
+    const generated = readdirSync(ICONS_OUT_DIR)
+      .filter((name) => /\.tsx?$/.test(name) && !NON_ICON_OUTPUTS.has(name))
+      .map((name) => name.replace(/\.tsx?$/, ""))
+      .sort()
+    expect(generated).toEqual([...shippedSlugs].sort())
+    expect(generated).toHaveLength(18)
+  })
+
   it("generated components render the cropped viewBox for both variants", () => {
     const wrong: string[] = []
-    for (const icon of definitions) {
+    // Only the shipped icons have a generated component to compare against;
+    // the crop itself is checked above for the whole vendored export.
+    for (const icon of definitions.filter((d) => shippedSlugs.has(d.slug))) {
       const generated = readFileSync(
         path.join(ICONS_OUT_DIR, `${icon.slug}.tsx`),
         "utf8"

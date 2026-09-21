@@ -67,6 +67,22 @@ export function loadManifest(file: string = MANIFEST_PATH): IconManifest {
   return manifest;
 }
 
+/**
+ * Whether a manifest entry is generated into `src/icons/` and published.
+ *
+ * The vendored Tecton export also carries general-purpose glyphs (add,
+ * chevron, search, …) that duplicate lucide-react, which every shadcn
+ * component already depends on. Only the oil & gas / subsurface domain glyphs
+ * are Tecton's own, so only those are generated and published; everything else
+ * comes from lucide-react.
+ *
+ * The manifest and `icons-src/tecton/*.ts` stay complete — this predicate is
+ * the single rule that decides what ships.
+ */
+export function isShippedIcon(entry: IconManifestEntry): boolean {
+  return entry.domain;
+}
+
 // ---------------------------------------------------------------------------
 // Naming
 // ---------------------------------------------------------------------------

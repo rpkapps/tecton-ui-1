@@ -1,7 +1,7 @@
 {
   "version": 1,
   "source": "icons-src/tecton/*.ts (Tecton icon export); gallery order from tecton-screenshots/059_components-icon__icon-gallery.png",
-  "notes": "Labels in the gallery carry an 'Icon' suffix (e.g. 'AddCircleIcon'); 'label' preserves the exact text, 'name' strips the suffix. Gallery header: 'Tecton Icons', with Variant toggle (Outlined | Filled), Size toggle (Small (16px) | Medium (20px) | Large (24px)) and a 'Search icons' text field; screenshot shows Outlined + Medium (20px) selected. Icons are listed in alphabetical order, 9 per row. StrataIcon renders in colour (pink/orange gradient top layer); all others are monochrome.",
+  "notes": "Labels in the gallery carry an 'Icon' suffix (e.g. 'AddCircleIcon'); 'label' preserves the exact text, 'name' strips the suffix. Gallery header: 'Tecton Icons', with Variant toggle (Outlined | Filled), Size toggle (Small (16px) | Medium (20px) | Large (24px)) and a 'Search icons' text field; screenshot shows Outlined + Medium (20px) selected. Icons are listed in alphabetical order, 9 per row. StrataIcon renders in colour (pink/orange gradient top layer); all others are monochrome. Only the `domain: true` entries are generated into `src/icons/` and published; the general-purpose glyphs are covered by lucide-react, and `count` is the size of the full Tecton export, not of what ships.",
   "variants": [
     "outlined",
     "filled"

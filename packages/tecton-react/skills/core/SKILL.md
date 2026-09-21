@@ -143,7 +143,7 @@ is the check: re-read it against the file you wrote before you report it done.
 | --- | --- |
 | `@tecton/react/components/<name>` | The shadcn components: `button`, `badge`, `alert`, `select`, `dialog`, `field`, `input`, `tabs`, `table`, … |
 | `@tecton/react/tecton/<name>` | Tecton-only components with no shadcn counterpart: `chip`, `count-badge`, `circular-progress`, `meter`, `color-swatch`, `tree-view`, `stat`, `panel`, `page-header`, `app-shell`, `copy-button`, `link`, `theme-root` |
-| `@tecton/react/icons` | The 131 Tecton glyphs, including the domain set (`WellIcon`, `SeismicIcon`, `HorizonIcon`, `DrillBitIcon`, `FaultIcon`, `LogCurveIcon`, `TrajectoryIcon`, …) |
+| `@tecton/react/icons` | The 18 Tecton domain glyphs (`WellIcon`, `SeismicIcon`, `HorizonIcon`, `DrillBitIcon`, `FaultIcon`, `LogCurveIcon`, `TrajectoryIcon`, …); everything generic comes from `lucide-react` |
 
 The `exports` map is enumerated, one entry per module, so a typo fails at resolve
 time. Components are never installed one by one. Only **blocks** are published to
@@ -200,9 +200,10 @@ and `size="default" | "xs" | "sm" | "lg" | "icon" | "icon-xs" | "icon-sm" | "ico
 
 ## Icons
 
-Lucide is what the generated components use internally; Tecton's own 131 glyphs
-share the Lucide signature and add `variant="outlined" | "filled"`. Reach for a
-Tecton domain glyph whenever one exists, Lucide for the generic ones.
+Lucide is what the generated components use internally; Tecton's own 18 domain
+glyphs share the Lucide signature and add `variant="outlined" | "filled"`. Reach
+for a Tecton domain glyph whenever one exists, Lucide for everything else — the
+generic glyphs are not published, because Lucide already has them.
 
 ```tsx
 import { Button } from "@tecton/react/components/button"
