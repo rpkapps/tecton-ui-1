@@ -112,7 +112,7 @@
         "components/skeleton"
       ],
       "checklist": [
-        "Every `Spinner` inside a `Button`, `Badge` or `InputGroupAddon` carries `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"`, and the control is `isDisabled` while it spins.",
+        "Every `Spinner` inside a `Button`, `Badge` or `InputGroupAddon` carries `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"`, and the control that is working is `isPending`, not `isDisabled`, while it spins.",
         "Every `Progress`, `CircularProgress` and `Meter` has a name: a `ProgressLabel` child, `label` on the meter, or `aria-label` when the name is already beside it.",
         "A value that is not on a 0–100 scale states its scale with `minValue` and `maxValue` (`value={loaded} maxValue={total}`, a 4-out-of-5 score with `maxValue={5}`).",
         "An unknown total is `isIndeterminate`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.",
