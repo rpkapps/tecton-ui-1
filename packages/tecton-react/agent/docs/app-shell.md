@@ -29,6 +29,7 @@ import { AppShell, AppShellHeader, AppShellBrand, AppShellNav, AppShellActions, 
 - Give every `AppShellAction` a `label` — both the accessible name and the tooltip — separate groups with `AppShellDivider`, and on a narrow header hide the low-priority ones (`hidden lg:inline-flex`) in favour of `AppShellOverflow` (`lg:hidden`).
 - For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them, and gate a full-height aside on `useMinWidth(1280)`.
 - Inside an `AppShellSplitPanel` give the `AppShellAside` `className="h-full w-full border-l-0"`; otherwise `className` overrides the height alone (`h-full` in an embedded context) and the shell keeps its surfaces and borders.
+- Keep `AppShellNav` one level deep: a destination may open one `DropdownMenu`; anything deeper belongs in `AppShellSidebar`.
 
 ## Don't
 
@@ -96,5 +97,6 @@ function ShellSearch({ open }: { open: () => void }) {
 - The application frame is `AppShell` > `AppShellHeader` plus `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`, with the page content in `AppShellMain` and never straight into `AppShellBody`.
 - The shell's header actions are `AppShellAction`s with a `label` — both the accessible name and the tooltip — inside `AppShellActions`, not icon `Button`s with a `title`.
 - A key hint rendered by `shortcut` on `AppShellAction` or `AppShellCommandTrigger` is also registered with `useShortcut`, or nothing is bound and the key is missing from `useShortcuts()`.
+- Every navigation area on a page has its own screen-reader name (`aria-label`): app nav, page-header nav, rails and any second breadcrumb.
 
 Related: panel, page-header, sheet, app-finder, overflow

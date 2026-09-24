@@ -8,6 +8,13 @@ One file per exported module of `@tecton/react`, written once and rendered twice
   from `families.json`), and `tecton search` ranks the files by their "Use it when", "Do" and the
   `notFor` needs that point at them.
 
+`adopted/` holds rules taken from another design system, one JSON file per source (today
+`astryx.json`: usage rules adapted from Meta's Astryx and accepted by the Tecton design team). Each
+rule names a guideline id and where it goes — `do` (a Do bullet), `checklist` (the component's
+*Before you finish* list) or `rules` (every file) — and the build merges it into the agent page and
+the docs site; the guideline files themselves are untouched. Deleting a source's file and running
+`agent:build` and `docs:guidelines` removes all of its rules.
+
 `topics/` holds the three hand-written pages that are not about one component — `rules.md`,
 `react-aria.md`, `theming.md` — served as `tecton rules`, `tecton docs react-aria` and
 `tecton docs theming`. The only Agent Skill the package ships is `skills/tecton/SKILL.md`, which

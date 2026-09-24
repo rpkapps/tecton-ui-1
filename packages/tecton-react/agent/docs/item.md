@@ -25,6 +25,11 @@ import { Item, ItemGroup, ItemSeparator, ItemHeader, ItemMedia, ItemContent, Ite
 - Choose the look with `variant="default" | "outline" | "muted"` and the density with `size="default" | "sm" | "xs"`.
 - Use `ItemMedia variant="icon"` for a glyph and `variant="image"` for a thumbnail; an `Avatar` goes in the plain `ItemMedia`.
 - Separate rows inside an `ItemGroup` with `ItemSeparator`, never with a border class on the row.
+- Use compact `Item` rows in dense panels and inspectors (`size="sm"` or `size="xs"`), the default size for standalone lists with media.
+- A linked `Item` (`href`) holds no buttons or links; a row with its own actions stays static, links its title and puts buttons in `ItemActions`.
+- Every `ItemGroup` is named for screen readers by its visible heading, or by an `aria-label` when none is on screen.
+- Use `ItemGroup` only for a collection of like records; a single `Item` stands alone, and unrelated content is spaced, not listed.
+- Rows in one `ItemGroup` are all linked or all static; when they must mix, each linked row shows a chevron in `ItemActions`.
 
 ## Don't
 

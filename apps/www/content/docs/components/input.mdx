@@ -199,6 +199,42 @@ Mirror the state on the `Field` — `data-disabled` beside `disabled`, `data-inv
 
 </Do>
 
+<Do>
+
+Numeric inputs reject values outside what the quantity allows, such as porosity 0–1 or depth ≥ 0 (`min`, `max`, `step`, not `minValue`/`maxValue`).
+
+</Do>
+
+<Do>
+
+Identifiers such as API numbers, UWIs and licence codes are text fields, not number fields (`type="text"` with `inputMode="numeric"`).
+
+</Do>
+
+<Do>
+
+Search and filter fields show a clear button at the end while they hold a value (`InputGroupButton size="icon-xs"`, `aria-label="Clear search"`).
+
+</Do>
+
+<Do>
+
+Every numeric value shows its unit (ft, psi, bbl/d): an `InputGroupText` end addon on an `Input`, after the live value on a `Slider`.
+
+</Do>
+
+<Do>
+
+Never let a placeholder stand in for the label; keep it to an example value such as `34/10-A-12`.
+
+</Do>
+
+<Do>
+
+Mark as required only the fields a record cannot be saved without, and show that mark visibly in their label.
+
+</Do>
+
 </DoList>
 
 ### Don't

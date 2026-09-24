@@ -25,6 +25,7 @@ import { Command, CommandDialog, CommandInput, CommandList, CommandEmpty, Comman
 - Pass `textValue` to any item whose children are JSX rather than a plain string.
 - Group with `CommandGroup heading="…"`, divide with `CommandSeparator`, hint keys with `CommandShortcut`.
 - Open the palette with `CommandDialog` and its `open` / `onOpenChange` props, wrapping a `Command`.
+- Keep the `Command` palette short: a few groups, with record results capped (the first ten wells) rather than every match.
 
 ## Don't
 
@@ -93,5 +94,6 @@ Correct:
 ## Before you finish
 
 - `CommandItem` acts through `onAction` and carries `textValue` when its children are JSX, and an empty filter renders through `renderEmptyState` returning `CommandEmpty` / `ComboboxEmpty` (with `allowsEmptyCollection` on a `Combobox`).
+- When a filter narrows a table or list, show the matching count beside it ("42 of 318 wells").
 
 Related: combobox, dropdown-menu

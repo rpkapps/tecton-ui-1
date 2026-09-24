@@ -26,6 +26,9 @@ import { Progress, ProgressLabel, ProgressValue, ProgressTrack, ProgressIndicato
 - State the scale when it is not 0–100: `value={loaded} maxValue={total}`.
 - Use `isIndeterminate` while the total is unknown.
 - `className` sets the width (`w-full max-w-sm`), never the height or the colour.
+- Show how a task ended beside the progress bar, with a success `Badge` or destructive `Alert`; never recolour the bar.
+- Show `Progress` only for work that takes several seconds; quicker actions get no indicator or a `Spinner` in their button.
+- Track one operation with one progress bar and name the current stage in its label ("Importing LAS 3 of 7"), not a bar per stage.
 
 ## Don't
 

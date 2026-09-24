@@ -431,7 +431,7 @@
     "AlertAction"
    ],
    "aliases": [],
-   "tokens": 1074
+   "tokens": 1190
   },
   {
    "id": "alert-dialog",
@@ -478,7 +478,7 @@
     "AlertDialogOverlay"
    ],
    "aliases": [],
-   "tokens": 949
+   "tokens": 1007
   },
   {
    "id": "app-finder",
@@ -592,7 +592,7 @@
     "useMinWidth"
    ],
    "aliases": [],
-   "tokens": 1225
+   "tokens": 1292
   },
   {
    "id": "aspect-ratio",
@@ -630,7 +630,7 @@
     "AspectRatio"
    ],
    "aliases": [],
-   "tokens": 883
+   "tokens": 901
   },
   {
    "id": "attachment",
@@ -676,7 +676,7 @@
     "AttachmentTrigger"
    ],
    "aliases": [],
-   "tokens": 942
+   "tokens": 991
   },
   {
    "id": "avatar",
@@ -723,7 +723,7 @@
     "AvatarBadge"
    ],
    "aliases": [],
-   "tokens": 924
+   "tokens": 989
   },
   {
    "id": "background",
@@ -823,7 +823,7 @@
     "Badge"
    ],
    "aliases": [],
-   "tokens": 877
+   "tokens": 1054
   },
   {
    "id": "breadcrumb",
@@ -866,7 +866,7 @@
     "BreadcrumbEllipsis"
    ],
    "aliases": [],
-   "tokens": 893
+   "tokens": 970
   },
   {
    "id": "bubble",
@@ -920,7 +920,7 @@
     "names": "button button link button button variants",
     "useWhen": "Something happens in place: submit, open a dialog, run an action, trigger a menu. A real `button` element is the right semantics, and one of the action weights fits: `default`, `secondary`, `outline`, `ghost`, `destructive`, `link`.",
     "routed": "any action on a value other than copying it a navigation target that should look like a button something that happens in place instead of navigation a control that performs an action rather than holding state",
-    "do": "Handle presses with `onPress` and disable with `isDisabled`; React Aria has no `disabled` contract. Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`). Mark icons with `data-icon=\"inline-start\" | \"inline-end\"` so the padding adjusts, and give icon-only buttons an `aria-label`. Navigate with `LinkButton` from this module, or with `buttonVariants()` on a plain `a`. Show work with a `Spinner` child plus `isDisabled`; a FAB is the documented `rounded-full shadow-md` recipe."
+    "do": "Handle presses with `onPress` and disable with `isDisabled`; React Aria has no `disabled` contract. Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`). Mark icons with `data-icon=\"inline-start\" | \"inline-end\"` so the padding adjusts, and give icon-only buttons an `aria-label`. Navigate with `LinkButton` from this module, or with `buttonVariants()` on a plain `a`. Show work with a `Spinner` child plus `isPending`, which keeps focus and blocks repeat presses (`isDisabled` drops focus); a FAB is the documented `rounded-full shadow-md` recipe."
    },
    "notFor": [
     {
@@ -947,7 +947,7 @@
     "buttonVariants"
    ],
    "aliases": [],
-   "tokens": 923
+   "tokens": 1102
   },
   {
    "id": "button-group",
@@ -988,7 +988,7 @@
     "buttonGroupVariants"
    ],
    "aliases": [],
-   "tokens": 944
+   "tokens": 1154
   },
   {
    "id": "calendar",
@@ -1027,7 +1027,7 @@
     "RangeCalendar"
    ],
    "aliases": [],
-   "tokens": 868
+   "tokens": 963
   },
   {
    "id": "canvas",
@@ -1124,7 +1124,7 @@
     "CardFooter"
    ],
    "aliases": [],
-   "tokens": 849
+   "tokens": 912
   },
   {
    "id": "carousel",
@@ -1163,7 +1163,7 @@
     "useCarousel"
    ],
    "aliases": [],
-   "tokens": 896
+   "tokens": 951
   },
   {
    "id": "chart",
@@ -1239,7 +1239,7 @@
     "Checkbox"
    ],
    "aliases": [],
-   "tokens": 747
+   "tokens": 814
   },
   {
    "id": "chip",
@@ -1279,7 +1279,7 @@
     "ChipRemove"
    ],
    "aliases": [],
-   "tokens": 971
+   "tokens": 1087
   },
   {
    "id": "circular-progress",
@@ -1357,7 +1357,7 @@
     "CollapsibleContent"
    ],
    "aliases": [],
-   "tokens": 1036
+   "tokens": 1154
   },
   {
    "id": "color-swatch",
@@ -1445,7 +1445,7 @@
     "useComboboxAnchor"
    ],
    "aliases": [],
-   "tokens": 1012
+   "tokens": 1141
   },
   {
    "id": "command",
@@ -1490,7 +1490,7 @@
     "CommandShortcut"
    ],
    "aliases": [],
-   "tokens": 778
+   "tokens": 833
   },
   {
    "id": "context-menu",
@@ -1654,7 +1654,7 @@
     "DialogOverlay"
    ],
    "aliases": [],
-   "tokens": 822
+   "tokens": 902
   },
   {
    "id": "direction",
@@ -1788,7 +1788,7 @@
     "DropdownMenuSubContent"
    ],
    "aliases": [],
-   "tokens": 942
+   "tokens": 972
   },
   {
    "id": "empty",
@@ -1830,7 +1830,7 @@
     "EmptyContent"
    ],
    "aliases": [],
-   "tokens": 886
+   "tokens": 907
   },
   {
    "id": "field",
@@ -1877,7 +1877,7 @@
     "FieldTitle"
    ],
    "aliases": [],
-   "tokens": 996
+   "tokens": 1066
   },
   {
    "id": "hover-card",
@@ -1953,7 +1953,7 @@
     "Input"
    ],
    "aliases": [],
-   "tokens": 857
+   "tokens": 1052
   },
   {
    "id": "input-group",
@@ -2083,7 +2083,7 @@
     "ItemFooter"
    ],
    "aliases": [],
-   "tokens": 761
+   "tokens": 926
   },
   {
    "id": "kbd",
@@ -2116,7 +2116,7 @@
     "KbdGroup"
    ],
    "aliases": [],
-   "tokens": 646
+   "tokens": 701
   },
   {
    "id": "label",
@@ -2185,7 +2185,7 @@
     "linkVariants"
    ],
    "aliases": [],
-   "tokens": 682
+   "tokens": 735
   },
   {
    "id": "marker",
@@ -2277,7 +2277,7 @@
     "MessageFooter"
    ],
    "aliases": [],
-   "tokens": 834
+   "tokens": 859
   },
   {
    "id": "message-scroller",
@@ -2319,7 +2319,7 @@
     "useMessageScrollerVisibility"
    ],
    "aliases": [],
-   "tokens": 983
+   "tokens": 1009
   },
   {
    "id": "meter",
@@ -2528,7 +2528,7 @@
     "PaginationEllipsis"
    ],
    "aliases": [],
-   "tokens": 875
+   "tokens": 936
   },
   {
    "id": "panel",
@@ -2622,7 +2622,7 @@
     "PopoverDescription"
    ],
    "aliases": [],
-   "tokens": 729
+   "tokens": 756
   },
   {
    "id": "portal",
@@ -2707,7 +2707,7 @@
     "ProgressIndicator"
    ],
    "aliases": [],
-   "tokens": 861
+   "tokens": 955
   },
   {
    "id": "questionnaire",
@@ -2793,7 +2793,7 @@
     "RadioGroupItem"
    ],
    "aliases": [],
-   "tokens": 837
+   "tokens": 923
   },
   {
    "id": "resizable",
@@ -2833,7 +2833,7 @@
     "ResizableHandle"
    ],
    "aliases": [],
-   "tokens": 1082
+   "tokens": 1106
   },
   {
    "id": "scroll-area",
@@ -2871,7 +2871,7 @@
     "ScrollArea"
    ],
    "aliases": [],
-   "tokens": 829
+   "tokens": 883
   },
   {
    "id": "select",
@@ -2924,7 +2924,7 @@
     "SelectEmpty"
    ],
    "aliases": [],
-   "tokens": 982
+   "tokens": 1073
   },
   {
    "id": "separator",
@@ -3111,7 +3111,7 @@
     "useSidebar"
    ],
    "aliases": [],
-   "tokens": 1016
+   "tokens": 1083
   },
   {
    "id": "skeleton",
@@ -3149,7 +3149,7 @@
     "Skeleton"
    ],
    "aliases": [],
-   "tokens": 673
+   "tokens": 724
   },
   {
    "id": "slider",
@@ -3225,7 +3225,7 @@
    "aliases": [
     "toast"
    ],
-   "tokens": 842
+   "tokens": 898
   },
   {
    "id": "spinner",
@@ -3238,7 +3238,7 @@
     "names": "spinner spinner",
     "useWhen": "A control is busy: a `Button` that is saving, an `InputGroup` that is validating, a `Badge` that says \"Generating\". A small region is waiting, and the wait is short and cannot be measured. An `Empty` state stands in for a running operation, with the spinner inside `EmptyMedia`.",
     "routed": "a small busy glyph inside a button or an input a busy indicator on an icon button an indeterminate wait a busy indicator inside a button a busy indicator inside a button or an input",
-    "do": "Inside a `Button`, a `Badge` or an `InputGroupAddon`, give it `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"` so the control trims its padding on that side. Disable the control while it spins with `isDisabled`, and make the label a verb: \"Saving…\". Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so set the colour on the parent with a semantic token. `Spinner` already carries `role=\"status\"` and `aria-label=\"Loading\"`; do not wrap it in a second live region."
+    "do": "Inside a `Button`, a `Badge` or an `InputGroupAddon`, give it `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"` so the control trims its padding on that side. Mark the control that is working with `isPending`, not `isDisabled`, so it keeps focus and cannot be pressed twice; make the label a verb: \"Saving…\". Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so set the colour on the parent with a semantic token. `Spinner` already carries `role=\"status\"` and `aria-label=\"Loading\"`; do not wrap it in a second live region."
    },
    "notFor": [
     {
@@ -3263,7 +3263,7 @@
     "Spinner"
    ],
    "aliases": [],
-   "tokens": 762
+   "tokens": 851
   },
   {
    "id": "stat",
@@ -3384,7 +3384,7 @@
     "TableCaption"
    ],
    "aliases": [],
-   "tokens": 1090
+   "tokens": 1121
   },
   {
    "id": "tabs",
@@ -3421,7 +3421,7 @@
     "tabsListVariants"
    ],
    "aliases": [],
-   "tokens": 875
+   "tokens": 903
   },
   {
    "id": "textarea",
@@ -3459,7 +3459,7 @@
     "Textarea"
    ],
    "aliases": [],
-   "tokens": 805
+   "tokens": 844
   },
   {
    "id": "theme-root",
@@ -3531,7 +3531,7 @@
     "toggleVariants"
    ],
    "aliases": [],
-   "tokens": 735
+   "tokens": 845
   },
   {
    "id": "toggle-group",
@@ -3647,7 +3647,7 @@
     "TreeViewCollection"
    ],
    "aliases": [],
-   "tokens": 989
+   "tokens": 1026
   },
   {
    "id": "tanstack-table",
@@ -3780,7 +3780,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 3517
+   "tokens": 3581
   },
   {
    "id": "theming",

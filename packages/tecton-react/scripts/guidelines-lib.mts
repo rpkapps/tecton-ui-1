@@ -22,6 +22,12 @@ const here = path.dirname(fileURLToPath(import.meta.url))
 export const PKG_ROOT = path.resolve(here, "..")
 export const GUIDELINES_DIR = path.join(PKG_ROOT, "guidelines")
 export const FAMILIES_FILE = "families.json"
+/**
+ * Rules adopted from outside sources (another design system's usage rules), one
+ * JSON file per source. Deleting a file and rebuilding removes that source's
+ * rules from the agent pages and the docs site.
+ */
+export const ADOPTED_DIR = "adopted"
 export const PKG_JSON = path.join(PKG_ROOT, "package.json")
 export const SRC_DIR = path.join(PKG_ROOT, "src")
 
@@ -98,6 +104,24 @@ export type Guideline = ParsedGuideline & {
   /** `components/badge` — the module key used everywhere else. */
   module: string
   sections: BodySections
+  /**
+   * Rules from `adopted/*.json` for this component: `do` items are already
+   * appended to `sections.do` / `sections.doBullets`; `checklist` items end
+   * the component's agent page.
+   */
+  adopted: { do: string[]; checklist: string[] }
+}
+
+/** One rule in `adopted/<source>.json`. */
+export type AdoptedRule = {
+  /** Stable id, unique across all adopted files (`badge.Badge.4`). */
+  id: string
+  /** The guideline id it belongs to (`badge`), or `rules` for every file. */
+  component: string
+  where: "do" | "checklist" | "rules"
+  text: string
+  /** Where it came from, for the record (`Astryx Badge #4`). */
+  origin?: string
 }
 
 export type Family = {
@@ -150,6 +174,8 @@ export type Catalog = {
   version: string
   /** `components/badge` -> its validated guideline. Filled by `loadGuidelines`. */
   guidelines: Map<string, Guideline>
+  /** Adopted rules that apply to every file (`where: "rules"`). Filled by `loadGuidelines`. */
+  adoptedRules: string[]
 }
 
 // ---------------------------------------------------------------------------
@@ -295,6 +321,7 @@ export function loadCatalog(dir: string = GUIDELINES_DIR): Catalog {
     packageExports: keys,
     version,
     guidelines: new Map(),
+    adoptedRules: [],
   }
 }
 
@@ -789,7 +816,10 @@ export function validateGuideline(
   errors.push(...lengthErrors)
 
   if (errors.length || !moduleKey) return { guideline: null, errors }
-  return { guideline: { ...parsed, meta, module: moduleKey, sections }, errors }
+  return {
+    guideline: { ...parsed, meta, module: moduleKey, sections, adopted: { do: [], checklist: [] } },
+    errors,
+  }
 }
 
 /**
@@ -810,6 +840,7 @@ export function loadGuidelines(dir: string = GUIDELINES_DIR, catalog = loadCatal
       meta,
       module: moduleKey,
       sections: splitBody(parsed.body),
+      adopted: { do: [], checklist: [] },
     })
   }
   const valid = new Map<string, Guideline>()
@@ -820,7 +851,68 @@ export function loadGuidelines(dir: string = GUIDELINES_DIR, catalog = loadCatal
     else invalid.set(parsed.file, errors)
   }
   catalog.guidelines = valid
+  applyAdopted(dir, catalog, valid, invalid)
   return { catalog, valid, invalid, parsedFiles }
+}
+
+/**
+ * Merges `<dir>/adopted/*.json` into the validated guidelines. Runs after
+ * validation, so adopted rules never count against a file's 2–5 Do bullets.
+ * Problems are reported under the adopted file's path in `invalid`.
+ */
+function applyAdopted(
+  dir: string,
+  catalog: Catalog,
+  valid: Map<string, Guideline>,
+  invalid: Map<string, string[]>
+) {
+  const adoptedDir = path.join(dir, ADOPTED_DIR)
+  if (!existsSync(adoptedDir)) return
+  const byId = new Map([...valid.values()].map((guideline) => [guideline.name, guideline]))
+  const seen = new Set<string>()
+  for (const name of readdirSync(adoptedDir).filter((entry) => entry.endsWith(".json")).sort()) {
+    const file = path.join(adoptedDir, name)
+    const errors: string[] = []
+    let rules: AdoptedRule[] = []
+    try {
+      const parsed = JSON.parse(readFileSync(file, "utf8")) as { rules?: AdoptedRule[] }
+      if (!Array.isArray(parsed.rules)) errors.push(`"rules" must be a list`)
+      else rules = parsed.rules
+    } catch (error) {
+      errors.push(`not valid JSON: ${(error as Error).message}`)
+    }
+    for (const rule of rules) {
+      const where = `rule "${rule.id}"`
+      if (!rule.id || seen.has(rule.id)) errors.push(`${where}: missing or duplicate id`)
+      seen.add(rule.id)
+      if (typeof rule.text !== "string" || !rule.text.trim()) {
+        errors.push(`${where}: "text" is empty`)
+        continue
+      }
+      const text = rule.text.trim()
+      if (rule.where === "rules") {
+        catalog.adoptedRules.push(text)
+        continue
+      }
+      if (rule.where !== "do" && rule.where !== "checklist") {
+        errors.push(`${where}: "where" must be "do", "checklist" or "rules"`)
+        continue
+      }
+      const guideline = byId.get(rule.component)
+      if (!guideline) {
+        errors.push(`${where}: "${rule.component}" is not a guideline id`)
+        continue
+      }
+      if (rule.where === "do") {
+        guideline.adopted.do.push(text)
+        guideline.sections.doBullets.push(text)
+        guideline.sections.do = `${guideline.sections.do}\n- ${text}`
+      } else {
+        guideline.adopted.checklist.push(text)
+      }
+    }
+    if (errors.length) invalid.set(file, errors)
+  }
 }
 
 // ---------------------------------------------------------------------------

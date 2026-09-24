@@ -62,6 +62,8 @@ looked up. Every line is a condition that has to hold in that file.
 - **The `AlertDialog` confirm is `AlertDialogAction`** — it is the `Button` that
   carries `slot="close"`, so the action closes the prompt; a plain `Button`
   belongs there only when the dialog must stay open while async work runs.
+- Every image has alt text describing what it shows ("Seismic section, inline 1204"), or empty alt when decorative; never a file name.
+- Every icon-only `Button`, `Toggle` or `ToggleGroupItem` shows a `Tooltip` with the same words as its accessible label.
 
 ## Setup
 

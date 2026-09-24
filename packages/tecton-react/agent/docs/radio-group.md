@@ -25,6 +25,8 @@ import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group
 - Name the group with `aria-label`, or wrap it in `FieldSet` and `FieldLegend`.
 - Disable everything with `isDisabled` on the group, one option with `isDisabled` on the item.
 - Mark errors with `isInvalid` on the group and `data-invalid` on each `Field` row.
+- Preselect the sensible default option; leave the group empty only when the answer is optional or a default would bias it.
+- Lay radio options side by side only for up to four short labels; otherwise keep them stacked.
 
 ## Don't
 
@@ -97,5 +99,6 @@ Correct:
 
 - `RadioGroup` is the exception: each `RadioGroupItem` identifies itself by `value` and the group reports through `onChange`, with `id` used only so a `FieldLabel htmlFor` can reach it.
 - Every group carries a name: `aria-label` on `Combobox`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
+- Label each radio option, toggle-group item and tab in one to three words that set it apart; detail goes in a description.
 
 Related: select, toggle-group

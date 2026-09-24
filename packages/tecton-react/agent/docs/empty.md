@@ -25,6 +25,7 @@ import { Empty, EmptyHeader, EmptyMedia, EmptyTitle, EmptyDescription, EmptyCont
 - Add the dashed outline with the `border` utility — the component already carries `border-dashed`.
 - Name the next step: one primary `Button` in `EmptyContent`, at most one secondary beside it.
 - `className` is for the box (`w-full`, `min-h-64`, `border`), not for the type or the colours.
+- Say what is empty and why ("No wells match these filters"), never a bare "No data".
 
 ## Don't
 

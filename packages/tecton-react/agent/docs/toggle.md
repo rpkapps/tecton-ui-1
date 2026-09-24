@@ -24,6 +24,10 @@ import { Toggle, toggleVariants } from "@tecton/react/components/toggle"
 - Give an icon-only `Toggle` an `aria-label`, and mark a paired icon with `data-icon="inline-start"`.
 - Disable with `isDisabled`; React Aria ignores `disabled`.
 - Style the pressed look through the variant's `data-selected` rules, never with your own colour classes.
+- A selected toggle shows a filled icon as well as its selected background (Tecton glyph `variant={isSelected ? "filled" : "outlined"}`).
+- Keep a toggle's label the same in both states ("Show labels", not "Show"/"Hide").
+- Put related toggles in one `ToggleGroup` labelled for the set ("Log tracks"), not a row of separate `Toggle`s.
+- A `ToggleGroup` holds only toggles; an action such as Reset is a separate `Button` outside the group.
 
 ## Don't
 

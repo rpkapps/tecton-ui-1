@@ -24,6 +24,8 @@ import { ScrollArea } from "@tecton/react/components/scroll-area"
 - Scroll sideways by making the content wider than the box (`whitespace-nowrap`, or an inner `flex w-max` row); there is no `orientation` prop and no separate scrollbar part.
 - Put the padding on a wrapper inside the area, so the border and the scrollbar stay outside it.
 - Add `tabIndex={0}` with `role="region"` and an `aria-label` when the content holds nothing focusable.
+- Always keep the `ScrollArea` scrollbar visible as the sign that more rows exist.
+- One element owns each scroll: never put a `ScrollArea` inside a box that already scrolls, such as `PanelContent` or `AppShellMain`.
 
 ## Don't
 

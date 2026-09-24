@@ -84,5 +84,7 @@ Correct:
 - Every `Dialog`, `AlertDialog`, `Sheet` and `Popover` sits inside its own trigger component (`DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `PopoverTrigger`) together with its trigger `Button`; a sibling never receives the open state.
 - Controlled overlays use React Aria's `isOpen` and `onOpenChange`, and the footer closes with `DialogClose` or `SheetClose` rather than your own state.
 - Every `Dialog` and `AlertDialog` has a `DialogTitle` / `AlertDialogTitle`, because React Aria takes the accessible name from it.
+- A dialog, sheet or drawer with unsaved input ignores backdrop presses, but Escape and Cancel still close it (`isDismissable={false}`; `Drawer`: `disablePointerDismissal`).
+- Never open a `Dialog` from inside another; use steps within one, except an `AlertDialog` confirming a destructive action like discarding edits.
 
 Related: alert-dialog, sheet, popover

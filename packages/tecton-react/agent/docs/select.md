@@ -26,6 +26,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectPopover, Selec
 - Choose the surface with `SelectTrigger`'s `variant`, the height with its `size="sm" | "default"`.
 - Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`.
 - To make it searchable, wrap `SelectPopover` in React Aria's `Autocomplete` with `SelectInput` and `SelectList`.
+- Navigate with a `Link` or `Tabs`, never from a `Select`; a `Select` sets a value and leaves the user in place.
+- Use a `Switch` (applies at once) or a `Checkbox` (submitted with the form) for yes/no choices, not a two-option `Select`.
 
 ## Don't
 
@@ -101,5 +103,6 @@ React Aria reads `isDisabled` on both `Select` and `SelectItem`; `disabled` is n
 - `Select`'s `onSelectionChange` is handed `Key | null`, so the handler narrows the `null` that means nothing is selected instead of casting it away with `as`.
 - Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value`, `defaultValue` and `onValueChange` are Radix names React Aria drops.
 - `placeholder` sits on `Select` (`SelectValue` takes none), while `NativeSelect` is a real `select` driven by `value` / `onChange(event)` / `disabled` with an empty-valued first `NativeSelectOption` as its placeholder.
+- Word the placeholder as the choice it asks for ("Choose a datum", "Search wells by name or UWI"), never a bare "Select…".
 
 Related: combobox, native-select, radio-group

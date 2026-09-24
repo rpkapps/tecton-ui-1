@@ -157,7 +157,37 @@ Navigate with `LinkButton` from this module, or with `buttonVariants()` on a pla
 
 <Do>
 
-Show work with a `Spinner` child plus `isDisabled`; a FAB is the documented `rounded-full shadow-md` recipe.
+Show work with a `Spinner` child plus `isPending`, which keeps focus and blocks repeat presses (`isDisabled` drops focus); a FAB is the documented `rounded-full shadow-md` recipe.
+
+</Do>
+
+<Do>
+
+Each view or panel has one primary button for its main action (`variant="default"`); every other action is secondary, outline or ghost by weight.
+
+</Do>
+
+<Do>
+
+Label a button with a verb and its object ("Shut in well", "Export LAS"), never "OK", "Submit" or "Click here".
+
+</Do>
+
+<Do>
+
+When an icon repeats across rows, its accessible name includes the object ("Delete well 34/10-A-12", not "Delete").
+
+</Do>
+
+<Do>
+
+Icon-only buttons in toolbars, table rows and panel headers stay quiet (`variant="ghost"`, `size="icon-sm"` or `"icon"`).
+
+</Do>
+
+<Do>
+
+Give a button visible text when its icon alone is ambiguous; go icon-only just for universal glyphs like close, search, refresh or more.
 
 </Do>
 

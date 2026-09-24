@@ -24,6 +24,8 @@ import { Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem, C
 - Pass `allowsEmptyCollection` and a `renderEmptyState` that returns `ComboboxEmpty`.
 - Add `textValue` to any item whose children are JSX, so filtering and typeahead have a string.
 - For multi-select pass `selectionMode="multiple"` and swap `ComboboxInput` for `ComboboxChips`, `ComboboxChipList`, `ComboboxChip` and `ComboboxChipsInput`.
+- Open a `Combobox`'s suggestions on focus when recent picks (the last wells opened) help before typing (`menuTrigger="focus"`).
+- Query a server-backed `Combobox` after the user pauses typing, not on every keystroke (debounce `onInputChange`).
 
 ## Don't
 
@@ -102,5 +104,7 @@ Without `allowsEmptyCollection` React Aria closes the popover as soon as the fil
 - Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value`, `defaultValue` and `onValueChange` are Radix names React Aria drops.
 - Every group carries a name: `aria-label` on `Combobox`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
 - `CommandItem` acts through `onAction` and carries `textValue` when its children are JSX, and an empty filter renders through `renderEmptyState` returning `CommandEmpty` / `ComboboxEmpty` (with `allowsEmptyCollection` on a `Combobox`).
+- A `Popover` editing in stages (date range, filter set) commits only on Apply; Cancel or dismiss discards the draft.
+- When users usually want nearly all options, add a select-all `Checkbox` showing partial selection (`isIndeterminate`, not `checked="indeterminate"`).
 
 Related: select, command, native-select

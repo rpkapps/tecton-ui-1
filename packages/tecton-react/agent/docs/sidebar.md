@@ -24,6 +24,8 @@ import { Sidebar, SidebarProvider, SidebarTrigger, SidebarRail, SidebarInset, Si
 - Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `href` for a destination and `isActive` for the current one.
 - Pick the behaviour with `collapsible="offcanvas" | "icon" | "none"` and the surface with `variant="sidebar" | "floating" | "inset"`.
 - Pass `tooltip="Wells"` on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone.
+- Mark the current sidebar destination with a filled icon, not by background alone (`variant="filled"` on the active row, `"outlined"` elsewhere).
+- Announce the current sidebar page to screen readers, not only by colour (`aria-current="page"` alongside `isActive`).
 
 ## Don't
 

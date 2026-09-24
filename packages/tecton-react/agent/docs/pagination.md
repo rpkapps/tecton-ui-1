@@ -25,6 +25,9 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 - Give every control an `href`; `PaginationLink` is a `LinkButton`, so a press is a navigation, not a state change.
 - Elide the middle with `PaginationEllipsis`, and relabel the ends with `text` on `PaginationPrevious` and `PaginationNext`.
 - Keep `className` to placement (`mx-0 w-auto`); the controls own their size, shape and colour.
+- Place pagination directly below the table or list it pages, never above the rows.
+- Show the known total next to `Pagination` ("51–100 of 1,284 wells"); it displays no count on its own.
+- Show no pagination when every row fits on one page.
 
 ## Don't
 

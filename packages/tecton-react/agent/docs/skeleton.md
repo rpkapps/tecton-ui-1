@@ -24,6 +24,8 @@ import { Skeleton } from "@tecton/react/components/skeleton"
 - Mirror the real layout — the same wrappers, the same gaps, one `Skeleton` per box the content will occupy.
 - Vary the widths with fractions (`w-2/3`, `w-3/4`) so a block reads as text.
 - `className` is for the box; the pulse and the muted surface belong to the component.
+- Show either `Skeleton`s or a `Spinner` in a loading region, never both at once.
+- Skeletons never pulse forever: when loading fails or times out, show an `Empty` state or an error `Alert` with retry.
 
 ## Don't
 

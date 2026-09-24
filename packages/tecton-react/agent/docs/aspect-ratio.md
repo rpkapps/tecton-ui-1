@@ -24,6 +24,7 @@ import { AspectRatio } from "@tecton/react/components/aspect-ratio"
 - Make the child fill the box, with `absolute inset-0 size-full object-cover` on an `img`, or `fill` on a framework `Image`; the component only sets `relative`.
 - Control the width from outside (`className="w-full max-w-sm"`) and let the height follow.
 - Put the radius and the placeholder tone on the `AspectRatio` itself (`rounded-lg bg-muted`) so they show while the media is still loading.
+- Put media directly inside one `AspectRatio`; never nest a second one.
 
 ## Don't
 

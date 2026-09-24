@@ -25,6 +25,10 @@ import { Alert, AlertTitle, AlertDescription, AlertAction } from "@tecton/react/
 - Compose `Alert > icon, AlertTitle, AlertDescription, AlertAction`, with the icon as a direct child of `Alert`.
 - Put every button, including the dismiss control, inside `AlertAction` and wire it with `onPress`; a decision that blocks the user is an `AlertDialog`, not an alert.
 - `className` is for width and placement (`max-w-md`, `mb-4`), never for the status colours.
+- Info and success alerts can be dismissed; warning and destructive alerts stay until the problem is resolved.
+- Keep an alert title to a few words naming what happened ("Simulation failed"); cause and fix go in the description.
+- Show one `Alert` per severity in a region, folding related messages of the same severity into a list inside it.
+- Say the severity in the alert title's words ("Pressure warning", "Export failed"), not only through its icon or colour.
 
 ## Don't
 

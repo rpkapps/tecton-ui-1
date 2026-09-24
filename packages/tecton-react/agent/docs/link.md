@@ -24,6 +24,8 @@ import { Link, linkVariants } from "@tecton/react/tecton/link"
 - Leave `size="inherit"` inside prose; set `sm`, `md` or `lg` only when the link stands on its own.
 - Reach outside the app with `isExternal` instead of writing `target` and `rel` by hand.
 - Disable with `isDisabled`, and pass router behaviour through `routerOptions`.
+- Link text names the destination ("34/10-A-12 daily report"), never "click here", "read more" or a bare URL.
+- Add an accessible label only to an icon-only link; a text link is already named by its visible text.
 
 ## Don't
 

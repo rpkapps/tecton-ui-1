@@ -94,5 +94,6 @@ Correct:
 ## Before you finish
 
 - A turn is a `Message` with `MessageAvatar` and `MessageContent` holding `MessageHeader`, a `Bubble` and `MessageFooter`, and its side comes from `align="start" | "end"` — there is no `role` axis and no hand-written `justify-end`.
+- Show how long each finished tool call took on its `Marker` ("Queried production history · 4.2 s").
 
 Related: bubble, message-scroller, marker

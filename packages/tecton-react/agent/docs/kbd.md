@@ -23,6 +23,8 @@ import { Kbd, KbdGroup } from "@tecton/react/components/kbd"
 - Inside a `Button` or an `InputGroupAddon`, add `data-icon="inline-end"` (or `inline-start`) so the control trims its padding on that side.
 - Inside a `TooltipContent` leave it alone: `Kbd` already inverts to the tooltip surface through its `in-data-[slot=tooltip-content]` rules.
 - `className` is for nudging placement; the muted surface and the 20 px box belong to the component.
+- Show shortcuts in the user's platform keys, ⌘ on macOS and Ctrl elsewhere (`ShortcutKeys keys="mod+k"`, not a hard-coded `Kbd`).
+- Every shortcut shown in a `Kbd` also has a visible control that runs the same action.
 
 ## Don't
 

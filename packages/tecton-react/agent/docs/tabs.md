@@ -23,6 +23,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from "@tec
 - Select with `defaultSelectedKey` / `selectedKey` and `onSelectionChange`, which receives the key.
 - Choose the strip with `TabsList` `variant="default" | "line"`, and a side strip with `orientation="vertical"` on `Tabs`.
 - Give `TabsList` an `aria-label` when no nearby heading names the set; disable one tab with `isDisabled`.
+- Use `Tabs` only for sections the user can visit in any order, never for steps that must be done in sequence.
 
 ## Don't
 

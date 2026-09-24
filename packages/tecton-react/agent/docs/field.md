@@ -103,5 +103,7 @@ Correct:
 - For a `Select` the `id` goes on `SelectTrigger`; a `Slider` has no `htmlFor` target at all and takes `aria-label` with `FieldTitle` and `FieldDescription`; a group of controls — a `RadioGroup`, a `ChipGroup`, a set of checkboxes — is named by `FieldSet` + `FieldLegend`, never by a stray `FieldLabel`.
 - An invalid value sets `aria-invalid` (or `isInvalid`) on the control **and** `data-invalid` on the `Field`, with the message rendered in `FieldError` rather than a red paragraph.
 - `Slider` is bounded with `minValue`, `maxValue` and `step`, holds an array `value` and narrows the `number | number[]` it reports; `FieldTitle` renders a `div` and never names a control.
+- Helper text and errors are announced with their control (`aria-describedby` listing the `FieldDescription` and `FieldError` ids; `Field` wires nothing).
+- Hide a field's label only when its purpose shows nearby, like a search icon or a column header; otherwise keep it visible.
 
 Related: input, textarea, label

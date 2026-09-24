@@ -23,7 +23,12 @@ import { Button, LinkButton, buttonVariants } from "@tecton/react/components/but
 - Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`).
 - Mark icons with `data-icon="inline-start" | "inline-end"` so the padding adjusts, and give icon-only buttons an `aria-label`.
 - Navigate with `LinkButton` from this module, or with `buttonVariants()` on a plain `a`.
-- Show work with a `Spinner` child plus `isDisabled`; a FAB is the documented `rounded-full shadow-md` recipe.
+- Show work with a `Spinner` child plus `isPending`, which keeps focus and blocks repeat presses (`isDisabled` drops focus); a FAB is the documented `rounded-full shadow-md` recipe.
+- Each view or panel has one primary button for its main action (`variant="default"`); every other action is secondary, outline or ghost by weight.
+- Label a button with a verb and its object ("Shut in well", "Export LAS"), never "OK", "Submit" or "Click here".
+- When an icon repeats across rows, its accessible name includes the object ("Delete well 34/10-A-12", not "Delete").
+- Icon-only buttons in toolbars, table rows and panel headers stay quiet (`variant="ghost"`, `size="icon-sm"` or `"icon"`).
+- Give a button visible text when its icon alone is ambiguous; go icon-only just for universal glyphs like close, search, refresh or more.
 
 ## Don't
 

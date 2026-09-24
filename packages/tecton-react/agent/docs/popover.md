@@ -25,6 +25,7 @@ import { Popover, PopoverTrigger, PopoverHeader, PopoverTitle, PopoverDescriptio
 - Position with `placement` (`"bottom start"`, `"top"`, `"right end"`) and nudge with `offset` / `crossOffset`.
 - Structure the top with `PopoverHeader`, `PopoverTitle` and `PopoverDescription`; the popover is already a `flex flex-col gap-4`.
 - Use `className` for width only (`w-80`): the popover owns its padding, radius, shadow and surface.
+- Never open a `Popover` from inside another; a `Select`, `Combobox` or `DropdownMenu` inside one is fine.
 
 ## Don't
 

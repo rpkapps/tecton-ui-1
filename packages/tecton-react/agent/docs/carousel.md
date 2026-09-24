@@ -23,6 +23,9 @@ import { Carousel, CarouselContent, CarouselItem, CarouselPrevious, CarouselNext
 - Pass Embla options on `Carousel` through `opts` (`{ align: "start", loop: true }`) and plugins through `plugins`.
 - Switch the axis with `orientation="vertical"`, never with an Embla `axis` option, and set how many slides show with `basis-*` on `CarouselItem`; the `-ml-4` / `pl-4` gutter is already on the parts.
 - Read position and react to moves through `setApi` and the Embla instance; there is no selected-index prop.
+- Give every `Carousel` an accessible name for what it holds ("Featured wells").
+- Never auto-advance a `Carousel`; the reader moves between slides at their own pace.
+- Never put a `Carousel` inside another `Carousel`.
 
 ## Don't
 

@@ -25,6 +25,8 @@ import { toast } from "sonner"
 - Use the typed helpers — `toast.success`, `toast.info`, `toast.warning`, `toast.error`, `toast.promise` — so the Toaster's icons and the Tecton outlined status colours apply.
 - Put the detail in `description` and a single undo in `action`; a toast is one sentence and at most one action.
 - Set the placement once on the Toaster (`position="top-center"`), not per call, and let `toast.promise` own a pending toast so it resolves itself.
+- Repeating an action replaces its toast instead of stacking another (a stable `id: "save-model"`).
+- Use an error toast only for background failures the page also shows; failures needing action are a destructive `Alert`.
 
 ## Don't
 

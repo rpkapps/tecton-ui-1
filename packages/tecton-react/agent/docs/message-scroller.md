@@ -22,6 +22,7 @@ import { MessageScrollerProvider, MessageScroller, MessageScrollerViewport, Mess
 - Put the behaviour on the provider: `autoScroll` (off by default), `defaultScrollPosition="last-anchor"`, `scrollPreviousItemPeek`.
 - Give every row a stable `messageId`, `scrollAnchor` to the row that starts a turn, and the scroller its height from outside (`className="flex-1"` in a constrained parent).
 - Drive it from anywhere inside the provider with `useMessageScroller`, `useMessageScrollerScrollable` and `useMessageScrollerVisibility`.
+- Never nest a `Message` in another; show a quoted or forwarded turn as content inside the outer `Bubble`.
 
 ## Don't
 

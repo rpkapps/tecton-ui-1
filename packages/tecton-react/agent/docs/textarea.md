@@ -25,6 +25,7 @@ import { Textarea } from "@tecton/react/components/textarea"
 - `Textarea` renders React Aria's `TextArea`, a real `<textarea>`: use `value`, `onChange(event)`, `disabled`, `required` and `aria-invalid`.
 - Mirror the state on the `Field`: `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid`.
 - Keep `className` to layout only — `w-full`, `col-span-2`.
+- A text area with a hard limit shows a live character count as the user types (`InputGroupTextarea`, `maxLength`, count in an `align="block-end"` addon).
 
 ## Don't
 

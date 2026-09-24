@@ -100,7 +100,7 @@ Inside a `Button`, a `Badge` or an `InputGroupAddon`, give it `data-icon="inline
 
 <Do>
 
-Disable the control while it spins with `isDisabled`, and make the label a verb: "Saving…".
+Mark the control that is working with `isPending`, not `isDisabled`, so it keeps focus and cannot be pressed twice; make the label a verb: "Saving…".
 
 </Do>
 
@@ -116,6 +116,18 @@ Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so
 
 </Do>
 
+<Do>
+
+A standalone `Spinner` says what is loading ("Loading well logs"); inside a labelled button it keeps the default label.
+
+</Do>
+
+<Do>
+
+A view that loads as one unit shows one loading state; panels that load independently each show their own `Skeleton`, not a spinner per card.
+
+</Do>
+
 </DoList>
 
 ### Don't
@@ -125,7 +137,7 @@ Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so
 <Wrong>
 
 ```tsx
-<Button isDisabled size="sm">
+<Button isPending size="sm">
   <Spinner />
   Saving…
 </Button>
@@ -136,7 +148,7 @@ Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so
 <Correct>
 
 ```tsx
-<Button isDisabled size="sm">
+<Button isPending size="sm">
   <Spinner data-icon="inline-start" />
   Saving…
 </Button>

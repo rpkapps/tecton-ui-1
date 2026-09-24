@@ -25,6 +25,10 @@ import { Chip, ChipGroup, ChipList, ChipRemove } from "@tecton/react/tecton/chip
 - Turn on selection with `selectionMode="single" | "multiple"` plus `selectedKeys` and `onSelectionChange` on the group; `isDisabled` disables one chip.
 - Give every `Chip` an `id` — it is the key in `onSelectionChange` and `onRemove` — and a `textValue` when the children are not plain text.
 - Take the look from the Badge axes: `variant`, `appearance="outline"`, `size`. `className` is for layout only.
+- Use a `Chip` only to select or remove a value; actions are a `Button`, destinations a `Link`, even when small.
+- Use at most two or three chip colours in one `ChipGroup`, each with one fixed meaning; beyond that, distinguish with text.
+- Give the `ComboboxChipsInput` a placeholder naming what can be added ("Add wells…").
+- Selected values in `ComboboxChips` keep the default chip look; colour a chip only when its category carries meaning, never as decoration.
 
 ## Don't
 

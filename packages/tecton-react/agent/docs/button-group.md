@@ -25,6 +25,10 @@ import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText, buttonGroupVariants
 - Put a `ButtonGroupSeparator` between filled buttons; `variant="outline"` buttons already carry a border.
 - Use `ButtonGroupText` for static text, with its `render` prop when the text must be a `Label`.
 - Nest `ButtonGroup`s to separate clusters; the outer group adds the gap itself.
+- Every button in a `ButtonGroup` shares the same variant and size.
+- Keep a destructive button out of a `ButtonGroup`, set apart from neighbouring actions by a gap.
+- When a row of buttons must be one Tab stop with arrow-key movement, use a labelled `Toolbar`, not a `ButtonGroup`.
+- While an action runs, the button that started it keeps focus and shows it is working (`isPending` with a `Spinner`, not `isDisabled`); only conflicting actions become unavailable.
 
 ## Don't
 
@@ -98,5 +102,8 @@ The corner and negative-margin rules stay active whatever the gap is, so a bare 
 
 - Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
 - A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `isOpen`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.
+- In a `Toolbar` or action bar, back and secondary actions come first and the primary button comes last, at the inline end.
+- Separate a `Toolbar` from the content below with a `Separator` or the card header edge, never a hand-coloured border.
+- Put a card header's filter and add actions in `CardAction`; use a `Toolbar` there only when they must collapse into a More menu.
 
 Related: button, toggle-group, dropdown-menu

@@ -25,6 +25,7 @@ import { Checkbox } from "@tecton/react/components/checkbox"
 - Disable with `isDisabled` and put `data-disabled` on the `Field` so the label dims with it.
 - Mark errors with `isInvalid` on the checkbox and `data-invalid` on the `Field`, then render the message in `FieldError`.
 - Inside a `Table` with `selectionMode`, use `slot="selection"` instead of wiring state yourself.
+- Keep checkbox lists to about seven options; longer ones (wells, formations) use a type-to-filter `Combobox` with chips (`selectionMode="multiple"`).
 
 ## Don't
 
@@ -91,5 +92,6 @@ The checked fill is already `bg-ghost-active-foreground` from the component, and
 ## Before you finish
 
 - `Checkbox` and `Switch` are driven by `isSelected` / `defaultSelected` and `onChange(isSelected: boolean)`: no `checked`, no `onCheckedChange`, and no reading `e.target` off the callback.
+- A choice card, a `FieldLabel` wrapping a whole `Field`, holds no `Button` or `Link`; the whole card is the toggle.
 
 Related: switch, field

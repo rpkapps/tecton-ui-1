@@ -23,6 +23,7 @@ import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from "@tecton/re
 - Size panels with unit strings on `defaultSize`, `minSize` and `maxSize` — `"25%"`, `"320px"`, `"20rem"` — and show a grip with `withHandle` when the divider should be obvious.
 - Give the group a height from outside (`className="h-96"`, or a flex parent): it is `flex h-full w-full` and brings none of its own.
 - Remember this module wraps react-resizable-panels, not React Aria: the props are that library's own (`disabled`, `collapsible`, `onLayoutChanged`, `panelRef`), and a `ResizableHandle` must be a direct child of its group.
+- When a group has several resize handles, label each with what it resizes ("Resize well list").
 
 ## Don't
 

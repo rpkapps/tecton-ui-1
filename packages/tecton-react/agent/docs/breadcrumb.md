@@ -24,6 +24,9 @@ import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbP
 - Let `BreadcrumbItem` draw the separator: it renders the chevron itself for every item React Aria does not mark `isCurrent`, and `separatorClassName` is how you size it.
 - Give `BreadcrumbLink` an `href`, and a routing library's link through `render={(props) => <Link {...props} />}`.
 - Collapse the middle with `BreadcrumbEllipsis`, or put it in a `DropdownMenuTrigger` when those levels must stay reachable.
+- Label each breadcrumb with the title of the page it opens ("Gullfaks", not "Gullfaks field overview").
+- Breadcrumbs supplement the sidebar or top navigation; never make them the only way to reach other sections.
+- Leave breadcrumbs off top-level pages; a trail with no parent only repeats the page title.
 
 ## Don't
 

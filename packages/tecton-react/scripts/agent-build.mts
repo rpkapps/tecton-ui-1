@@ -110,6 +110,16 @@ function targetId(name: string, catalog: Catalog, externalIds: Map<string, strin
   return null
 }
 
+/** Appends lines at the end of a `## <heading>` section (before the next `## `). */
+function appendToSection(doc: string, heading: string, lines: string[]): string {
+  const start = doc.indexOf(`\n## ${heading}\n`)
+  if (start === -1) throw new Error(`agent-build: no "## ${heading}" section to extend`)
+  const next = doc.indexOf("\n## ", start + 1)
+  const end = next === -1 ? doc.length : next
+  const section = doc.slice(0, end).replace(/\s+$/, "")
+  return `${section}\n${lines.join("\n")}\n${doc.slice(end)}`
+}
+
 /** The component names an item mentions: every identifier inside its backticks. */
 function namesIn(item: string): Set<string> {
   const names = new Set<string>()
@@ -140,7 +150,8 @@ function renderDoc(
   catalog: Catalog,
   externalIds: Map<string, string>
 ): string {
-  const checklist = checklistFor(guideline, catalog)
+  // Adopted checklist items (guidelines/adopted/*.json) follow the family's own.
+  const checklist = [...checklistFor(guideline, catalog), ...guideline.adopted.checklist]
   const notFor = guideline.meta.notFor.map((entry) => {
     const id = targetId(entry.use, catalog, externalIds)
     return `- ${entry.need} → \`${entry.use}\`${id ? ` (tecton docs ${id})` : ""}`
@@ -225,7 +236,9 @@ function main() {
         names: [id.replace(/-/g, " "), ...guideline.meta.exports.map(splitCamel)].join(" "),
         useWhen: guideline.sections.useWhenBullets.join(" "),
         routed: (routed.get(id) ?? []).join(" "),
-        do: guideline.sections.doBullets.join(" "),
+        // Adopted rules shape how a component is used, not what it is for: keep
+        // them out of the ranking so adding or removing a source leaves search alone.
+        do: guideline.sections.doBullets.filter((bullet) => !guideline.adopted.do.includes(bullet)).join(" "),
       },
       notFor: guideline.meta.notFor
         .map((entry) => ({ need: entry.need, id: targetId(entry.use, catalog, externalIds) ?? "" }))
@@ -313,7 +326,11 @@ function main() {
     const title = /^title: "(.*)"$/m.exec(raw)?.[1] ?? id
     const description = /^description: >\n((?:  .*\n)+)/m.exec(raw)?.[1].replace(/\s+/g, " ").trim() ?? ""
     const headings = [...stripFrontmatter(raw).matchAll(/^#{2,3} (.*)$/gm)].map((m) => m[1]).join(" ")
-    const doc = stripFrontmatter(raw).trim() + "\n"
+    let doc = stripFrontmatter(raw).trim() + "\n"
+    // Adopted rules for every file extend the rules page's own "Before you finish".
+    if (id === "rules" && catalog.adoptedRules.length) {
+      doc = appendToSection(doc, "Before you finish", catalog.adoptedRules.map((rule) => `- ${rule}`))
+    }
     docs.set(id, doc)
     entries.push({
       id,

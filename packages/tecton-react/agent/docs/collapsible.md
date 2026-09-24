@@ -23,6 +23,8 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@tecton/rea
 - Control it with `isExpanded` and `onExpandedChange` on `Collapsible`, or leave it uncontrolled with `defaultExpanded`.
 - Style the trigger by giving a Tecton `Button` `slot="trigger"`; `CollapsibleTrigger` is a bare React Aria `Button` with no Tecton classes.
 - Keep the revealed markup inside `CollapsibleContent`: it is the panel the trigger's `aria-expanded` and `aria-controls` refer to. `Collapsible` itself is one unstyled `div`, so its `className` is yours for the layout.
+- When users compare sections (two casing strings, successive well tests), opening one `Accordion` item leaves the others open (`allowsMultipleExpanded`, not `type="multiple"`).
+- Show a short paragraph or a few fields directly; use `Collapsible` only when hidden content would push the main content out of view.
 
 ## Don't
 
@@ -100,5 +102,6 @@ Correct:
 
 - `Collapsible` is a React Aria `Disclosure` controlled with `isExpanded` / `defaultExpanded` / `onExpandedChange`, never with `open` and `onOpenChange`.
 - The revealed markup is inside `CollapsibleContent` — the panel the trigger's `aria-expanded` and `aria-controls` refer to — not a hand-rolled conditional.
+- Start sections open when their content is needed on first view; collapse only secondary detail (`defaultExpanded` / `defaultExpandedKeys`, not `defaultOpen`).
 
 Related: accordion, sheet, popover

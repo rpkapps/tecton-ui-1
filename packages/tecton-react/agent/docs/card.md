@@ -26,6 +26,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent, 
 - Divide sections with a bare `border-b` on `CardHeader` or `border-t` on `CardFooter`; the card adds the matching padding itself.
 - Bleed content to the edges with `-mx-(--card-spacing)`, so it still lines up with the card inset.
 - Keep `className` to placement and width (`w-full max-w-sm`): the card owns the surface, ring, radius and padding.
+- Never nest a `Card` in a `Card`; divide its content with a header border, a `Separator` or an `ItemGroup` of rows.
 
 ## Don't
 
@@ -82,5 +83,6 @@ Correct:
 - A self-contained block of content is a `Card` composed of `CardHeader` (`CardTitle`, `CardDescription`, `CardAction`), `CardContent` and `CardFooter`; a hand-drawn `rounded-lg border bg-card p-4` on some other component is that `Card` written out by hand.
 - `className` on `Card` and `Panel` is placement, width and height only (`w-full max-w-sm`, `h-72`); their padding comes from `--card-spacing` or the `size` scale, so a `p-6` double-pads.
 - Rows inside an `ItemGroup` are divided with `ItemSeparator` and card sections with a bare `border-b` on `CardHeader`, never with a hand-written border colour.
+- Group content with headings and spacing first; add a `Card`, `Panel` or `Separator` only when whitespace leaves the grouping unclear.
 
 Related: panel, item, page-header

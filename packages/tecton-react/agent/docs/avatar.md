@@ -25,6 +25,8 @@ import { Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount, Ava
 - Pick the box with `size="sm" | "default" | "lg"` (24 / 32 / 40 px); it writes the `data-size` the other parts read.
 - Overlap a row with `AvatarGroup` and close it with `AvatarGroupCount`, which sizes itself from the avatars around it; give `AvatarImage` an `alt` only when the picture carries the identity.
 - Recolour `AvatarBadge` only, and only with a Tecton step: `className="bg-green-560"`.
+- Size avatars by context: small inline and in dense tables, default in lists and comments, large in profile headers (`size="sm" | "default" | "lg"`).
+- Show at most three to five avatars in an `AvatarGroup` and fold the rest into `AvatarGroupCount` ("+4").
 
 ## Don't
 

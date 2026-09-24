@@ -25,6 +25,9 @@ import { Calendar, RangeCalendar } from "@tecton/react/components/calendar"
 - Block days with `isDateUnavailable`, `minValue` and `maxValue`; they carry the struck-through and dimmed cell styling.
 - Resize the grid through its variable, `className="[--cell-size:--spacing(11)]"`, and add per-day content with `renderCell`, never by restyling the cells.
 - For a date field, put the `Calendar` in a `Popover` behind a `Button` inside a `Field`; there is no `DatePicker` component.
+- When days are unavailable (rig move, shutdown), say why beside the calendar or in the day; never block days unexplained (`isDateUnavailable`, not `disabled`).
+- Let users type a date they already know or one far from today (`Input type="date"`) instead of paging a `Calendar` month by month.
+- An optional or filtering date gets a clear button that empties it (value `null`).
 
 ## Don't
 

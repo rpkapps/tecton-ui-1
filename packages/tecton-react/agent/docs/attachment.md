@@ -24,6 +24,8 @@ import { Attachment, AttachmentGroup, AttachmentMedia, AttachmentContent, Attach
 - Drive the look with `state="idle" | "uploading" | "processing" | "error" | "done"`, `size` and `orientation`.
 - Use `AttachmentMedia variant="image"` around an `<img>` and `orientation="vertical"` for a thumbnail; lay several cards out in an `AttachmentGroup`.
 - Give every `AttachmentAction` an `aria-label` naming the action and the file; it is a `Button`, so press it with `onPress`.
+- Limit the file picker to the formats the import can read (LAS, DLIS, SEG-Y).
+- State the accepted formats and size limit in a `FieldDescription` under the file input ("LAS or DLIS, up to 200 MB").
 
 ## Don't
 

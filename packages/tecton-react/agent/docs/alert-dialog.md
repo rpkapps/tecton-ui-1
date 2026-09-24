@@ -24,6 +24,8 @@ import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
 - End the title with a question and state the consequence in `AlertDialogDescription`.
 - Use `AlertDialogCancel` and `AlertDialogAction` in the footer; both carry `slot="close"`, so the dialog closes either way.
 - Colour the confirm with `variant="destructive"` on `AlertDialogAction` — never with `className` — and use `size="sm"` with `AlertDialogMedia` for a short, centred prompt.
+- Name the confirm button for its action and object ("Delete well"), never "OK", "Yes" or "Confirm".
+- Keyboard users reach Cancel first in a confirmation dialog: put `AlertDialogCancel` before `AlertDialogAction` in the footer.
 
 ## Don't
 
