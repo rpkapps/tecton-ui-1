@@ -24,3 +24,6 @@ packages/tecton-blocks/registry/src/
 
 # shadcn registry mirror clone (scripts/registry-mirror.sh)
 .cache/
+
+# copies of agent-written files graded by packages/tecton-react/agent-eval/grade.mjs
+packages/tecton-react/agent-eval/.runs/
