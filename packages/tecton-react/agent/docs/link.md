@@ -77,4 +77,9 @@ Correct:
 
 The variant owns the colour and when the underline appears, and Tailwind's stock palette is reset here, so `text-blue-600` emits no CSS and the link renders in the inherited text colour.
 
+## Before you finish
+
+- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
+- Navigation is a `LinkButton` or a `Link` with an `href` (and `isExternal` instead of hand-written `target` and `rel`), never an anchor nested inside a `Button` and never a `Link` that only runs a handler.
+
 Related: button

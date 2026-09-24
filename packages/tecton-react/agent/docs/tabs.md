@@ -94,4 +94,9 @@ Correct:
 
 React Aria marks the selected tab with `data-selected`, not `data-state="active"`, and the stock palette is reset so `bg-blue-600` emits no CSS; the selected colours belong to the `TabsList` variant.
 
+## Before you finish
+
+- Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value`, `defaultValue` and `onValueChange` are Radix names React Aria drops.
+- Every group carries a name: `aria-label` on `Combobox`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
+
 Related: toggle-group, select

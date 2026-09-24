@@ -96,4 +96,9 @@ Correct:
 
 `onAction` is both the handler of the generated `DropdownMenuItem` and the `onPress` injected into the React Aria `Button` child through `ButtonContext`, so it fires in both places; left on the button alone, the More-menu entry is built with no handler and does nothing once the item is hidden.
 
+## Before you finish
+
+- Every control that may leave a collapsing row is wrapped in an `OverflowItem` with a stable `id`, its text in an `OverflowLabel` and its handler on the item's `onAction` rather than on the button; the primary action is left unwrapped.
+- A collapsing row of controls uses `Toolbar` with an `aria-label` when it is a toolbar (one tab stop, arrow keys) and `Overflow` when it is not.
+
 Related: button-group, action-bar, dropdown-menu

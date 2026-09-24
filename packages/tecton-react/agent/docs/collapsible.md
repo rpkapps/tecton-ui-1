@@ -96,4 +96,9 @@ Correct:
 
 `Disclosure` publishes the toggle, `aria-expanded` and `aria-controls` through `ButtonContext` under the `trigger` slot only, so a button without it gets an empty default slot: the region still opens, but the control announces no expanded state and drops out of the keyboard contract the panel is built on.
 
+## Before you finish
+
+- `Collapsible` is a React Aria `Disclosure` controlled with `isExpanded` / `defaultExpanded` / `onExpandedChange`, never with `open` and `onOpenChange`.
+- The revealed markup is inside `CollapsibleContent` — the panel the trigger's `aria-expanded` and `aria-controls` refer to — not a hand-rolled conditional.
+
 Related: accordion, sheet, popover

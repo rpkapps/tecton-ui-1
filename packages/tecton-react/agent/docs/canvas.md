@@ -85,4 +85,9 @@ Correct:
 
 `Canvas` is `min-h-0 flex-1` and takes its height from a flex column; in a block wrapper `flex-1` does nothing, and because `CanvasSurface` is `absolute inset-0` there is no in-flow content left to give the canvas a height, so it collapses to zero and nothing renders.
 
+## Before you finish
+
+- Floating canvas chrome is a `CanvasOverlay` with a `position`, holding `CanvasToolbar`s and a `CanvasLegend`, never a hand-placed absolute box that swallows the drags passing over it.
+- A `Canvas` takes its height from a flex column or an explicit `h-*`, because `CanvasSurface` is `absolute inset-0` and leaves nothing in flow to size it.
+
 Related: panel, app-shell, background

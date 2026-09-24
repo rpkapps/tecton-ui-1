@@ -94,4 +94,8 @@ Correct:
 
 Only `GridBackground`, `HexagonsBackground` and `TerrainGridBackground` take `interactive`; on any other effect it is a type error that esbuild strips, the boolean is spread onto the layer `div` as a stray attribute, and the pointer reveal silently never happens.
 
+## Before you finish
+
+- A decorative background is a named effect (`ContourBackground`, `SeismicBackground`, …) rendered as the first child of a `relative isolate overflow-hidden` container and tuned with `tone`, `intensity` and `speed`, never a gradient in `className`.
+
 Related: canvas, empty, aspect-ratio

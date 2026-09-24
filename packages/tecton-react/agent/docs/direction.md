@@ -87,4 +87,11 @@ Correct:
 
 `ml-*` and `text-left` compile to physical `margin-left` and `text-align: left`, which ignore `direction`, so the actions stay pinned to the left of a right-to-left header while the components around them flip.
 
+## Before you finish
+
+- A right-to-left application is wrapped once in a `DirectionProvider` (with a real `locale` where there is one) and also sets `dir` on `<html>`; React Aria reads `useLocale()`, not the DOM, so `dir` on a wrapper changes nothing.
+- Inside a flipped tree every spacing and alignment class is logical (`ms-*`, `pe-*`, `text-start`, `border-s`), and the direction is read with `useDirection()` rather than from `document.dir`.
+- No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal context themselves.
+- A mounted application reuses the host's registry object from `createShortcutRegistry()` instead of creating a second one, and its shortcuts are written in the registry syntax (`mod+k`, `?`, `g w`) with a stable `id`, `label` and `group`.
+
 Related: theme-root, portal

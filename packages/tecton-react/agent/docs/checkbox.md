@@ -88,4 +88,8 @@ Correct:
 
 The checked fill is already `bg-ghost-active-foreground` from the component, and `bg-emerald-600` is outside the Tecton palette, so the class generates no CSS.
 
+## Before you finish
+
+- `Checkbox` and `Switch` are driven by `isSelected` / `defaultSelected` and `onChange(isSelected: boolean)`: no `checked`, no `onCheckedChange`, and no reading `e.target` off the callback.
+
 Related: switch, field

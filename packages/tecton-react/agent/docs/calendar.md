@@ -94,4 +94,8 @@ Correct:
 
 `RangeCalendar` is React Aria's range widget: it owns the `data-range-start`, `data-range-middle` and `data-range-end` cell states that draw the span, and it keeps the end on or after the start — neither of which two independent single calendars can produce.
 
+## Before you finish
+
+- `Calendar` and `RangeCalendar` are React Aria: `value` / `onChange` hold `@internationalized/date` values and days are blocked with `isDateUnavailable`, `minValue` and `maxValue`, while react-day-picker's `mode`, `selected`, `onSelect` and `disabled` are filtered out.
+
 Related: popover, field, native-select

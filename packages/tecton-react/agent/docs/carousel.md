@@ -98,4 +98,8 @@ Correct:
 
 `CarouselItem` is `min-w-0 shrink-0 grow-0 basis-full`, and in a flex row `flex-basis` sets the main size, so `w-1/3` survives the `cn` merge, changes nothing, and every slide still fills the viewport.
 
+## Before you finish
+
+- Embla options go in `opts` on `Carousel` and never on `CarouselContent`, the axis comes from `orientation` rather than an Embla `axis`, and slide width is `basis-*` on `CarouselItem`, never `w-*`.
+
 Related: tabs, scroll-area, aspect-ratio

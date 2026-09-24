@@ -75,4 +75,8 @@ Correct:
 
 React Aria's `PreviewTrigger` names the open delay `delay`; `openDelay` is dropped and the card keeps waiting the default 600 ms, which reads as the hover card being broken.
 
+## Before you finish
+
+- Placement is one React Aria `placement` string (`"bottom start"`, `"top"`) on `Popover`, `HoverCard` or `SelectContent`, never Radix's `side`, `align` and `sideOffset`.
+
 Related: tooltip, popover

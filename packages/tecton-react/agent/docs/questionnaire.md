@@ -98,4 +98,8 @@ Correct:
 
 These parts come from `@shadcn/react/questionnaire`, not React Aria, so `isDisabled` is a type error the dev server strips instead of checking, then forwards to the `label` as an unknown attribute: no `data-disabled`, and the choice stays selectable.
 
+## Before you finish
+
+- A structured set of questions is a `Questionnaire` with `items`, a `name` per `QuestionnaireItem`, answers read from `new FormData(event.currentTarget)` in `onSubmit`, and navigation only through `QuestionnairePrevious`, `QuestionnaireSkip`, `QuestionnaireNext` and `QuestionnaireSubmit` — these parts take `disabled` and `onChange`, not React Aria props.
+
 Related: field, radio-group, dialog

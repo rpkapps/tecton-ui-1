@@ -91,4 +91,8 @@ Correct:
 
 `MessageAvatar` lifts itself with `group-has-data-[slot=message-footer]/message:-translate-y-8` and only `MessageFooter` follows the row to `justify-end`, so a plain `div` leaves the avatar and the actions misaligned, and `text-gray-500` emits no CSS in the reset palette.
 
+## Before you finish
+
+- A turn is a `Message` with `MessageAvatar` and `MessageContent` holding `MessageHeader`, a `Bubble` and `MessageFooter`, and its side comes from `align="start" | "end"` — there is no `role` axis and no hand-written `justify-end`.
+
 Related: bubble, message-scroller, marker

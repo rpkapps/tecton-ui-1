@@ -99,4 +99,8 @@ Correct:
 
 `textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included.
 
+## Before you finish
+
+- A hierarchy is a `TreeView` with an `aria-label` and an `id` plus `textValue` on every `TreeViewItem`, not a pile of nested `Collapsible`s, and rows are never indented with `pl-*`.
+
 Related: accordion, item, color-swatch

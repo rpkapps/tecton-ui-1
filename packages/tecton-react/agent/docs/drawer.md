@@ -95,4 +95,9 @@ Correct:
 
 Base UI has no `asChild`: the trigger renders its own `button` and nests the `Button` inside it, giving two stacked buttons and an invalid interactive element.
 
+## Before you finish
+
+- There is no `asChild` on any overlay: React Aria composes through `render`, and `Drawer` (Base UI) takes `render` on its trigger and close elements too.
+- `Drawer` is Base UI, not React Aria: its state props are `open`, `defaultOpen` and `onOpenChange`, and its edge is `swipeDirection="up" | "down" | "left" | "right"`.
+
 Related: sheet, dialog

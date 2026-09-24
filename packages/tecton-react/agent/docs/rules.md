@@ -5,13 +5,13 @@
 `@tecton/react` is shadcn/ui on the React Aria base, themed for Tecton and
 shipped as one package. Every component the application uses is already in it.
 
-Load `@tecton/react#react-aria` before writing props — the controls are React
+Read `tecton docs react-aria` before writing props — the controls are React
 Aria, not Radix, and `onClick` / `checked` / `value` silently do the wrong thing.
 
 ## Before you finish
 
-Run this list against the file you just wrote, whatever family skills you
-loaded. Every line is a condition that has to hold in that file.
+Run this list against the file you just wrote, whatever else you
+looked up. Every line is a condition that has to hold in that file.
 
 - **Imports** — every component comes from `@tecton/react/components/<name>`,
   `@tecton/react/tecton/<name>` or `@tecton/react/icons`. Nothing is imported
@@ -109,7 +109,7 @@ export function WellHeader() {
 Nothing at build time checks the rules below. A stock colour class like
 `bg-red-500` type-checks, builds and renders unstyled, and a `className` that
 overrides what a variant owns compiles clean and just looks wrong — nothing
-fails and nothing warns. The *Before you finish* list at the top of this skill
+fails and nothing warns. The *Before you finish* list at the top of this page
 is the check: re-read it against the file you wrote before you report it done.
 
 ## Three import namespaces, no root export
@@ -351,26 +351,14 @@ the full text padding and the control is visibly wider than every other one.
 
 Source: apps/www/content/docs/components/button.mdx (With Icon); packages/tecton-react/src/components/button.tsx:32
 
-## Other skills
+## Looking further
 
-| Load | When |
+| Run | When |
 | --- | --- |
-| `@tecton/react#react-aria` | Before writing any prop or handler — the Radix-to-React-Aria map. |
-| `@tecton/react#theming` | Colours, modes, an inverted section, `ThemeRoot`, micro-frontends. |
-| `@tecton/react#choose-component` | Deciding which component a need maps to, across all families. |
-| `@tecton/react#labels` | Badge, Chip, CountBadge, Kbd — status, tags, counters, shortcut hints. |
-| `@tecton/react#feedback` | Alert, toast, Empty — messages, banners, empty states. |
-| `@tecton/react#overlays` | Dialog, AlertDialog, Sheet, Drawer, Popover, HoverCard, Tooltip. |
-| `@tecton/react#selection` | Select, Combobox, RadioGroup, ToggleGroup, Tabs, Command. |
-| `@tecton/react#actions` | Button, LinkButton, Link, ButtonGroup, Toggle, menus, ActionBar. |
-| `@tecton/react#progress` | Progress, CircularProgress, Meter, Spinner, Skeleton. |
-| `@tecton/react#surfaces` | Card, Panel, Item, PageHeader, AppShell and its header actions, Separator. |
-| `@tecton/react#forms` | Field, Input, Textarea, Checkbox, Switch, Slider, InputGroup, InputOTP. |
-| `@tecton/react#navigation` | Breadcrumb, Sidebar, Pagination, AppFinder. |
-| `@tecton/react#data` | Table and the TanStack Table recipe, TreeView, Chart, Stat, ColorSwatch, Calendar. |
-| `@tecton/react#layout` | Accordion, Collapsible, Resizable, ScrollArea, AspectRatio. |
-| `@tecton/react#presentation` | Carousel, Avatar, Overflow, Canvas, Background. |
-| `@tecton/react#conversation` | Message, MessageScroller, Bubble, Attachment, Questionnaire, Marker. |
-| `@tecton/react#infrastructure` | DirectionProvider, PortalProvider, ThemeRoot, Shortcuts — providers and roots. |
+| `tecton search "<what the UI must do>"` | Deciding which component a need maps to. |
+| `tecton docs <id>[,<id>]` | Before using a component: Use it when, Not for, Do, Don't and its family checklist. |
+| `tecton docs react-aria` | Before writing any prop or handler — the Radix-to-React-Aria map. |
+| `tecton docs theming` | Colours, modes, an inverted section, `ThemeRoot`, micro-frontends. |
+| `tecton docs icons` | The Tecton domain glyphs by name. |
 
 Re-read *Before you finish* against the file you wrote before you report it done.

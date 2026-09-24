@@ -121,7 +121,7 @@ export function renderSection(guideline: Guideline, catalog: Catalog): string {
     "",
     "### Not for",
     "",
-    renderNotFor(guideline.meta, catalog, "docs").join("\n"),
+    renderNotFor(guideline.meta, catalog).join("\n"),
     "",
     "### Do",
     "",

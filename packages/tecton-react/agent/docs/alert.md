@@ -95,4 +95,12 @@ Correct:
 
 The alert clears its corner with `has-data-[slot=alert-action]:pr-18`, so a bare button joins the grid flow under the title instead of sitting in the reserved top-right corner.
 
+## Before you finish
+
+- A message that stays on the page until it is read or resolved is an `Alert` with `variant` for the severity and `appearance` for the surface; a transient confirmation of something just done is `toast` from `sonner`.
+- Toast severity comes from the typed helpers (`toast.success`, `toast.info`, `toast.warning`, `toast.error`, `toast.promise`), never from a colour class, and any `toast.loading` id is reused by the toast that resolves it.
+- The `Alert` icon is a direct child of `Alert` (the two-column grid is a `has-[>svg]` rule), and every button in it, including the dismiss control, is inside `AlertAction` and wired with `onPress`.
+- A validation message belongs to its field as `FieldError` inside the `Field`, not as an `Alert` and not as a red paragraph.
+- `className` on `Alert` and `Empty` sets width, placement and the dashed `border` only; the status colours and the type belong to the component.
+
 Related: sonner, empty

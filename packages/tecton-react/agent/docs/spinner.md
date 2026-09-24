@@ -81,4 +81,11 @@ Correct:
 
 `gray-500` is not a Tecton step, so the class emits no CSS and the spinner keeps whatever colour it inherits — it looks right only where the parent already happens to be muted.
 
+## Before you finish
+
+- Every `Spinner` inside a `Button`, `Badge` or `InputGroupAddon` carries `data-icon="inline-start"` or `data-icon="inline-end"`, and the control is `isDisabled` while it spins.
+- A value that is not on a 0–100 scale states its scale with `minValue` and `maxValue` (`value={loaded} maxValue={total}`, a 4-out-of-5 score with `maxValue={5}`).
+- An unknown total is `isIndeterminate`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.
+- A `Spinner` is never wrapped in a second live region: it already carries `role="status"` and `aria-label="Loading"`.
+
 Related: skeleton, circular-progress, progress

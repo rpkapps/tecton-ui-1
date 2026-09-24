@@ -77,4 +77,10 @@ Correct:
 
 `CardHeader` already carries `[.border-b]:pb-(--card-spacing)`, so the bare `border-b` picks up the themed border colour and the right padding, while `border-gray-200` emits no CSS and `pb-4` fights the spacing variable.
 
+## Before you finish
+
+- A self-contained block of content is a `Card` composed of `CardHeader` (`CardTitle`, `CardDescription`, `CardAction`), `CardContent` and `CardFooter`; a hand-drawn `rounded-lg border bg-card p-4` on some other component is that `Card` written out by hand.
+- `className` on `Card` and `Panel` is placement, width and height only (`w-full max-w-sm`, `h-72`); their padding comes from `--card-spacing` or the `size` scale, so a `p-6` double-pads.
+- Rows inside an `ItemGroup` are divided with `ItemSeparator` and card sections with a bare `border-b` on `CardHeader`, never with a hand-written border colour.
+
 Related: panel, item, page-header

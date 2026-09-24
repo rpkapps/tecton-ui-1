@@ -74,4 +74,9 @@ Correct:
 
 Tecton resets Tailwind's stock palette, so `border-gray-200` emits no CSS at all, and the padding and radius duplicate what the component already owns.
 
+## Before you finish
+
+- Every `Dialog`, `AlertDialog`, `Sheet` and `Popover` sits inside its own trigger component (`DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `PopoverTrigger`) together with its trigger `Button`; a sibling never receives the open state.
+- Placement is one React Aria `placement` string (`"bottom start"`, `"top"`) on `Popover`, `HoverCard` or `SelectContent`, never Radix's `side`, `align` and `sideOffset`.
+
 Related: hover-card, tooltip, dialog

@@ -95,4 +95,11 @@ Correct:
 
 React Aria reads `isDisabled` on both `Select` and `SelectItem`; `disabled` is not in either props type, so it is dropped and the option stays selectable.
 
+## Before you finish
+
+- A `Select` inside a `Field` puts the `id` on `SelectTrigger` and points `FieldLabel htmlFor` at that id — `Select` renders a `div` and `SelectTrigger` renders the `button`.
+- `Select`'s `onSelectionChange` is handed `Key | null`, so the handler narrows the `null` that means nothing is selected instead of casting it away with `as`.
+- Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value`, `defaultValue` and `onValueChange` are Radix names React Aria drops.
+- `placeholder` sits on `Select` (`SelectValue` takes none), while `NativeSelect` is a real `select` driven by `value` / `onChange(event)` / `disabled` with an empty-valued first `NativeSelectOption` as its placeholder.
+
 Related: combobox, native-select, radio-group

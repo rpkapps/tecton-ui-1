@@ -2,7 +2,7 @@
  * guidelines-lib — the one reader of `guidelines/*.md`.
  *
  * A guideline file is written once (see guidelines/README.md for the contract)
- * and rendered twice: into the Agent Skills under `skills/` (skills-build.mts)
+ * and rendered twice: into the pages behind `tecton docs` (agent-build.mts)
  * and into the component's docs page (apps/www/scripts/sync-guidelines.mts).
  * Both renderers, and the validator behind `guidelines:check`, share this file so
  * the contract is enforced in exactly one place.
@@ -104,8 +104,8 @@ export type Family = {
   title: string
   choice: string
   modules: string[]
-  /** `checklist` is the family's rules in one list; the skill opens with it. */
-  skill?: { description: string; checklist?: string[] }
+  /** The family's rules in one list; `tecton docs` prints them under each member's guideline. */
+  checklist?: string[]
 }
 
 export type External = { import: string; docs: string; note?: string }
@@ -305,7 +305,7 @@ export function loadCatalog(dir: string = GUIDELINES_DIR): Catalog {
  * guideline file, or a key of `externals`". Guideline files land one at a time,
  * so a name that is a real export of a module without a guideline file yet
  * resolves to that module too — the renderers only need the module and its
- * docs URL, and `hasGuideline` says whether the skill can link deeper.
+ * docs URL, and `hasGuideline` says whether there is a guideline to link to.
  */
 export function resolveReference(name: string, catalog: Catalog): Reference | null {
   for (const guideline of catalog.guidelines.values()) {
@@ -824,44 +824,24 @@ export function loadGuidelines(dir: string = GUIDELINES_DIR, catalog = loadCatal
 }
 
 // ---------------------------------------------------------------------------
-// render helpers shared by the skills build and the docs render
+// render helpers shared by the agent build and the docs render
 // ---------------------------------------------------------------------------
 
-export type NotForStyle = "skill" | "docs"
-
 /**
- * The "Not for" list, rendered from the frontmatter (never from the body).
- *
- *   skill: `- <need>: use \`Chip\` — \`import { Chip } from "@tecton/react/tecton/chip"\``
- *   docs:  `- <need>: use [Chip](/docs/tecton/chip)`
+ * The "Not for" list for a docs page, rendered from the frontmatter (never from
+ * the body): `- <need>: use [Chip](/docs/tecton/chip)`.
  */
-export function renderNotFor(
-  meta: Frontmatter,
-  catalog: Catalog,
-  style: NotForStyle = "skill"
-): string[] {
+export function renderNotFor(meta: Frontmatter, catalog: Catalog): string[] {
   return meta.notFor.map((entry) => {
     const reference = resolveReference(entry.use, catalog)
     if (!reference) return `- ${entry.need}: use ${entry.use}`
-    if (style === "docs") {
-      return reference.docs
-        ? `- ${entry.need}: use [${reference.name}](${reference.docs})`
-        : `- ${entry.need}: use ${reference.name}`
-    }
-    const importLine =
-      reference.kind === "module"
-        ? `import { ${reference.name} } from "${reference.modulePath}"`
-        : reference.import
-    return `- ${entry.need}: use \`${reference.name}\` — \`${importLine}\``
+    return reference.docs
+      ? `- ${entry.need}: use [${reference.name}](${reference.docs})`
+      : `- ${entry.need}: use ${reference.name}`
   })
 }
 
 /** `import { Badge, badgeVariants } from "@tecton/react/components/badge"` */
 export function renderImportLine(meta: Frontmatter): string {
   return `import { ${meta.exports.join(", ")} } from "${meta.module}"`
-}
-
-/** Re-emits a Don't entry at the requested heading level, body verbatim. */
-export function renderDontEntry(entry: DontEntry, level: number): string {
-  return `${"#".repeat(level)} ${entry.heading}\n\n${entry.body}`
 }

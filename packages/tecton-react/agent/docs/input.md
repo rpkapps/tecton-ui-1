@@ -95,4 +95,10 @@ Correct:
 
 `pl-8` overrides the padding `inputVariants` owns, the icon is not clickable into the field, and the overlay is outside the focus ring instead of inside it.
 
+## Before you finish
+
+- `Input`, `Textarea` and `NativeSelect` are real DOM elements, so they take `value`, `onChange(event)` read through `event.target.value`, `disabled`, `required` and `aria-invalid`.
+- `Input`, `Textarea` and `SelectTrigger` take their surface from `variant="outline" | "filled" | "text"`, and `className` on them carries layout only (`w-full`, `col-span-2`).
+- An icon, unit, hint or in-field button lives in an `InputGroup` with `InputGroupInput` (never a plain `Input`) and an `InputGroupAddon` placed after the control in the DOM and positioned with `align`.
+
 Related: field, input-group, textarea

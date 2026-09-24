@@ -92,4 +92,8 @@ Correct:
 
 `PaginationPrevious` ends up on a React Aria `Link`, whose prop is `isDisabled`; `disabled` is not in `LinkProps`, so it is filtered out of the DOM and the control stays a live link to a page that does not exist.
 
+## Before you finish
+
+- Paging controls are `Pagination > PaginationContent > PaginationItem`, every control carries an `href`, the current page is marked with `isActive` on `PaginationLink` (which sets both the outline variant and `aria-current="page"`), and a dead end is `isDisabled`, never `disabled` or a colour class.
+
 Related: table, tabs

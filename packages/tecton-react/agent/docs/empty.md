@@ -80,4 +80,11 @@ Correct:
 
 The rounded muted tile and the 24 px icon size live in the `icon` variant only; the default variant is a transparent box, so the icon renders at its own size with no surface behind it.
 
+## Before you finish
+
+- Toast severity comes from the typed helpers (`toast.success`, `toast.info`, `toast.warning`, `toast.error`, `toast.promise`), never from a colour class, and any `toast.loading` id is reused by the toast that resolves it.
+- An empty list, table, panel or search result renders `Empty` with `EmptyHeader`, `EmptyMedia`, `EmptyTitle` and `EmptyDescription` — not a stack of divs and not a `TableRow` with a `colSpan` cell.
+- The icon in an empty state is inside `EmptyMedia variant="icon"`, and the next step is one primary `Button` in `EmptyContent` with at most one secondary beside it.
+- `className` on `Alert` and `Empty` sets width, placement and the dashed `border` only; the status colours and the type belong to the component.
+
 Related: alert, skeleton

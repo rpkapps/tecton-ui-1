@@ -93,4 +93,12 @@ Correct:
 
 The chip's `className` is merged over `badgeVariants` by `cn`, so `bg-orange-500` replaces `bg-secondary`, and `orange` is not a Tecton family — the reset palette emits nothing and the chip loses its surface.
 
+## Before you finish
+
+- Any label the user can select or remove is a `Chip`, not a `Badge` with a handler — `Badge` renders a `span` with no role, no `tabIndex` and no key handling.
+- Every `Chip` sits inside `ChipGroup > ChipList` and carries an `id`, with removal turned on by `onRemove` on the `ChipGroup` rather than a hand-built button.
+- A `ChipGroup` is named by `aria-label` on the group, or by `FieldSet` + `FieldLegend` when it sits in a form; it renders a `div`, so a bare `FieldLabel htmlFor` has nothing to point at.
+- Every icon or `Spinner` child of a `Badge` or a `Chip` carries `data-icon="inline-start"` or `data-icon="inline-end"` so the label trims its padding on that side.
+- A category colour that no `variant` carries is a Tecton palette pair in `className` (`bg-blue-120 text-blue-830`), never a stock Tailwind colour.
+
 Related: badge, count-badge

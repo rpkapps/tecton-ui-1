@@ -99,4 +99,8 @@ const chartConfig = { desktop: { label: "Desktop", color: "var(--chart-1)" } }
 
 `ChartStyle` emits one `--color-<key>` per config key, so the `<Bar dataKey="desktop" fill="var(--color-desktop)" />` above it resolves to nothing and takes Recharts' default fill, while `ChartTooltipContent` looks each item up by its `dataKey` and shows the raw key instead of the label.
 
+## Before you finish
+
+- A chart is a Recharts chart inside a `ChartContainer` with a `ChartConfig` keyed by `dataKey`, painted with `fill="var(--color-<key>)"` from that config and given a size in `className`, never a Tailwind colour class or a hard-coded hex.
+
 Related: stat, meter, progress

@@ -85,4 +85,9 @@ Correct:
 
 `BreadcrumbLink` is a React Aria `Link`, which has `render` and no `asChild`, so the prop is dropped and the routing link is left nested inside it — and React Aria renders its own element as a `span[role="link"]` whenever it has no `href`, so the element it focuses, styles and marks current leads nowhere and the trail gains a second tab stop per level.
 
+## Before you finish
+
+- A breadcrumb is `Breadcrumb > BreadcrumbList > BreadcrumbItem` ending in `BreadcrumbPage` (the element marked `aria-current="page"`), never a row of anchors and slashes.
+- A routing library's link is mounted through `render={(props) => <Link {...props} />}` on `BreadcrumbLink` or `SidebarMenuButton`; there is no `asChild`, and React Aria renders a `span[role="link"]` whenever it has no `href`.
+
 Related: page-header, tabs, pagination

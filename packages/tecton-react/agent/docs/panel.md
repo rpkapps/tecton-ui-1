@@ -83,4 +83,9 @@ Correct:
 
 The shadow is the `elevated` variant and the padding is the `size` scale, which the parts read through `--panel-px` / `--panel-py`; `border-gray-200` is stock Tailwind and emits no CSS, while `rounded-lg`, `px-6 py-4` and `shadow-md` override the radius, padding and shadow the variant already owns.
 
+## Before you finish
+
+- A titled application surface whose body has to scroll is a `Panel`, and the body is inside `PanelContent` — only that part carries `min-h-0 flex-1 overflow-auto`.
+- `className` on `Card` and `Panel` is placement, width and height only (`w-full max-w-sm`, `h-72`); their padding comes from `--card-spacing` or the `size` scale, so a `p-6` double-pads.
+
 Related: card, app-shell, sheet

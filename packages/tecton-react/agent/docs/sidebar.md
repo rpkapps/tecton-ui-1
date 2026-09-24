@@ -96,4 +96,10 @@ Correct:
 
 `Sidebar` already swaps itself for a `Sheet` bound to the provider's `openMobile` state below the mobile breakpoint, so the hand-built branch is a second one and `SidebarTrigger`, which toggles that state, now opens nothing.
 
+## Before you finish
+
+- A routing library's link is mounted through `render={(props) => <Link {...props} />}` on `BreadcrumbLink` or `SidebarMenuButton`; there is no `asChild`, and React Aria renders a `span[role="link"]` whenever it has no `href`.
+- Every `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` is inside one `SidebarProvider` — `useSidebar` throws outside it, and a second provider fights the first over the `sidebar_state` cookie and ⌘B.
+- A navigation row is `SidebarMenuItem > SidebarMenuButton href="…"` with `isActive` on the current one, not a button with a handler.
+
 Related: app-shell, sheet, tree-view

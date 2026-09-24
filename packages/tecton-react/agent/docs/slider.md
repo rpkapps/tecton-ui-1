@@ -88,4 +88,9 @@ Correct:
 
 `disabled` is not a valid attribute on the wrapper `div`, so it is dropped: the thumbs stay draggable and the `data-disabled` dimming never applies.
 
+## Before you finish
+
+- For a `Select` the `id` goes on `SelectTrigger`; a `Slider` has no `htmlFor` target at all and takes `aria-label` with `FieldTitle` and `FieldDescription`; a group of controls — a `RadioGroup`, a `ChipGroup`, a set of checkboxes — is named by `FieldSet` + `FieldLegend`, never by a stray `FieldLabel`.
+- `Slider` is bounded with `minValue`, `maxValue` and `step`, holds an array `value` and narrows the `number | number[]` it reports; `FieldTitle` renders a `div` and never names a control.
+
 Related: field, input

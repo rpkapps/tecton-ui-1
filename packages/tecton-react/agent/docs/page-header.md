@@ -83,4 +83,8 @@ Correct:
 
 `text-zinc-900` is stock Tailwind and emits no CSS under Tecton's reset palette, and a hand-built row has neither the title truncation nor the collapsing action row, so it overflows as soon as the window narrows.
 
+## Before you finish
+
+- A page title block is a `PageHeader` with the eyebrow, title and description inside `PageHeaderContent` and the actions in `PageHeaderActions`, and `PageHeaderTitle` is the page's single `h1`.
+
 Related: panel, app-shell, card

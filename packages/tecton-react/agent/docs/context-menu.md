@@ -91,4 +91,10 @@ Correct:
 
 `ContextMenuTrigger` adds what the raw event does not: long press for touch, positioning the popover at the pointer, and closing the menu when the next right click lands outside it.
 
+## Before you finish
+
+- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
+- Every `DropdownMenuItem` and `ContextMenuItem` acts through `onAction` (or `onAction(key)` on the menu with an `id` per item), and a dangerous entry is marked `variant="destructive"` rather than `text-red-*`.
+- `DropdownMenuTrigger` and `ContextMenuTrigger` take exactly two children — the trigger and the menu — with no `DropdownMenuContent` and no `asChild`, and check marks come from `selectionMode` plus `selectedKeys` on the `Group`, never `checked` / `onCheckedChange`.
+
 Related: dropdown-menu, action-bar

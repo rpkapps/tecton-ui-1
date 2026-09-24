@@ -90,4 +90,8 @@ Correct:
 
 `CommandList` is a React Aria `Menu`, and a collection with no matching items renders nothing unless `renderEmptyState` is given; `CommandEmpty` is what that function returns, not a child of the list.
 
+## Before you finish
+
+- `CommandItem` acts through `onAction` and carries `textValue` when its children are JSX, and an empty filter renders through `renderEmptyState` returning `CommandEmpty` / `ComboboxEmpty` (with `allowsEmptyCollection` on a `Combobox`).
+
 Related: combobox, dropdown-menu

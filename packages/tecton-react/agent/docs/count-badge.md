@@ -96,4 +96,9 @@ Correct:
 
 The dot variant is an 8 px circle that renders no children by design, so the number is dropped and only the dot appears.
 
+## Before you finish
+
+- A count or dot on an icon button, avatar or tab is a `CountBadge` wrapping that control, with `count`, `max` and `color`, and the number repeated in the control's `aria-label` because the badge is decorative.
+- A category colour that no `variant` carries is a Tecton palette pair in `className` (`bg-blue-120 text-blue-830`), never a stock Tailwind colour.
+
 Related: badge, chip

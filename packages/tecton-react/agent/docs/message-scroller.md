@@ -98,4 +98,8 @@ Correct:
 
 Registration happens on the item, which writes `data-message-id` and `data-scroll-anchor`, so unwrapped rows never anchor a new turn, are skipped by visibility tracking, and make `scrollToMessage` return `false`.
 
+## Before you finish
+
+- A transcript is `MessageScrollerProvider > MessageScroller > MessageScrollerViewport > MessageScrollerContent` with every row wrapped in a `MessageScrollerItem` carrying a stable `messageId`, not a plain `overflow-auto` div.
+
 Related: message, marker, scroll-area

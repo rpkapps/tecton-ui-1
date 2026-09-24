@@ -88,4 +88,10 @@ Correct:
 
 Without `render` the content stays a `div`, so the handler answers a mouse only — no tab stop, no Enter, no role — and the hover and `focus-visible:ring-2` treatments are `[button,a]:` selectors that never match it.
 
+## Before you finish
+
+- A turn is a `Message` with `MessageAvatar` and `MessageContent` holding `MessageHeader`, a `Bubble` and `MessageFooter`, and its side comes from `align="start" | "end"` — there is no `role` axis and no hand-written `justify-end`.
+- Message text always goes inside `BubbleContent`, because every `Bubble` variant styles `*:data-[slot=bubble-content]` and a bare child renders unpadded and unframed.
+- A `Bubble`'s fill comes from `variant` and its side from `align`, never from a colour class or a margin, and a pressable bubble is built with `render` rather than `onClick`.
+
 Related: message, attachment, marker

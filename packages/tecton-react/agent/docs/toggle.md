@@ -84,4 +84,9 @@ Correct:
 
 The button's only child is an SVG with no text, so its accessible name is empty and it is announced as an unlabelled toggle button.
 
+## Before you finish
+
+- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
+- Every icon-only `Button`, `Toggle`, `ToggleGroupItem` and `InputGroupButton` has an `aria-label`, and every icon or `Spinner` inside a control carries `data-icon="inline-start"` or `data-icon="inline-end"`.
+
 Related: toggle-group, button

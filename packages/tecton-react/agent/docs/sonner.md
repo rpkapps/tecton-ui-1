@@ -98,6 +98,11 @@ toast.error("Simulation failed", {
 
 The Toaster maps sonner's types onto `--error-text`, `--error-border` and the popover surface, and `red-600` is not a Tecton step, so the class emits no CSS and the toast shows no severity at all.
 
+## Before you finish
+
+- Every `toast()` call has exactly one `<Toaster />` mounted at the application root — with nothing subscribed the toast renders nothing and throws nothing.
+- Toast severity comes from the typed helpers (`toast.success`, `toast.info`, `toast.warning`, `toast.error`, `toast.promise`), never from a colour class, and any `toast.loading` id is reused by the toast that resolves it.
+
 Related: alert, empty
 
 The Toaster component is @tecton/react/components/sonner; toast() itself comes from the sonner package.

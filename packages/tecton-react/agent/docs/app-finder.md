@@ -86,4 +86,8 @@ Correct:
 
 The filter runs across every group at once, so without `hideWhileSearching` a query lists the same application twice — once from "Recent", once from its category — under two different ids, and `onAction` reports whichever row the user happened to press.
 
+## Before you finish
+
+- The app switcher is an `AppFinder` whose search is `AppFinderInput` inside `AppFinderMenu` (never an `Input` of your own) and whose tile is tinted with `tone`, never with `className`.
+
 Related: command, app-shell

@@ -96,4 +96,8 @@ Correct:
 
 Only `block-start` and `block-end` switch the group to a column, so an inline addon holds the single row and squeezes the textarea beside the button.
 
+## Before you finish
+
+- An icon, unit, hint or in-field button lives in an `InputGroup` with `InputGroupInput` (never a plain `Input`) and an `InputGroupAddon` placed after the control in the DOM and positioned with `align`.
+
 Related: input, textarea, field

@@ -2,7 +2,7 @@
 
 # Theming
 
-This skill builds on `@tecton/react#core`. Read it first for the import paths
+This builds on `tecton rules`. Read it first for the import paths
 and the rule that variants own colour.
 
 Only the **shadcn CSS variables** carry the Tecton visual language. No CSS

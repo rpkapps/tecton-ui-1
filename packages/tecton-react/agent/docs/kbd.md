@@ -87,4 +87,9 @@ Correct:
 
 The button trims its trailing padding only through `has-data-[icon=inline-end]:pr-1.5`, so without the attribute the key sits in full text padding and the button grows.
 
+## Before you finish
+
+- Keyboard keys are `Kbd` (inside a `KbdGroup` for a combination), never hand-built markup, and no handler is attached because `Kbd` is `pointer-events-none`.
+- A category colour that no `variant` carries is a Tecton palette pair in `className` (`bg-blue-120 text-blue-830`), never a stock Tailwind colour.
+
 Related: badge

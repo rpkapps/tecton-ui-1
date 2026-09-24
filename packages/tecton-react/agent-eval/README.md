@@ -22,6 +22,11 @@ node agent-eval/grade.mjs <out-dir>/runs [--json]
 `scripts/__tests__/agent-search.test.ts` holds the top-3 accuracy on both query sets above a floor,
 so CI fails if a ranking or index change makes search worse.
 
+> Since these results, the package ships only the `tecton` skill: the 15 generated family skills and
+> `choose-component` are gone, and `core`, `react-aria` and `theming` moved to `guidelines/topics/`,
+> which only the command serves. The family checklists now end each `tecton docs` page. To rerun the
+> `intent` condition, check out commit `a3668c2`, the last one that has the 18 skills.
+
 ## Results, 2026-09-24
 
 ### Search accuracy (`tecton search`, top results)

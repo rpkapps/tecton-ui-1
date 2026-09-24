@@ -1,5 +1,5 @@
 ---
-name: react-aria
+title: "React Aria props instead of Radix props"
 description: >
   The Radix-to-React-Aria prop map for @tecton/react, because an agent's prior is
   shadcn on Radix and most of these substitutions render a dead control rather
@@ -14,12 +14,6 @@ description: >
   Aria controls versus aria-invalid on Input and Textarea plus data-invalid on
   Field, and why Link and LinkButton exist. Load before writing any prop, handler
   or controlled state on a Tecton component.
-metadata:
-  type: sub-skill
-  library: "@tecton/react"
-  library_version: "0.1.0"
-requires:
-  - core
 sources:
   - "src/components/button.tsx"
   - "src/components/select.tsx"
@@ -41,7 +35,7 @@ sources:
 
 # React Aria props, not Radix props
 
-This skill builds on `@tecton/react#core`. Read it first for imports, the
+This builds on `tecton rules`. Read it first for imports, the
 palette and the variant rules.
 
 The components under `@tecton/react/components/` are shadcn/ui built on

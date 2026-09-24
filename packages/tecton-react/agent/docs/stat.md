@@ -98,4 +98,8 @@ Correct:
 
 The `unit` slot renders `font-sans text-[0.6em] text-muted-foreground` beside the number; inside the children the unit is set in IBM Plex Mono at the full value size and counted by `tabular-nums`, so it reads as part of the figure and the columns of a `StatGroup` stop lining up.
 
+## Before you finish
+
+- A KPI is a `Stat` with `StatLabel`, `StatValue` (its unit in the `unit` prop) and `StatDelta` with `trend="up" | "down" | "flat"`, never a heading and a coloured span, and `className` on `StatGroup` carries width and placement only.
+
 Related: meter, badge, chart

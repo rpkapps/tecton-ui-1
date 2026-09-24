@@ -76,4 +76,10 @@ Correct:
 
 `size="sm"` already is `gap-2.5 px-3 py-2.5` and `variant="outline"` already is the themed border; the hand-written version desynchronises from the other rows, and `border-gray-200` emits no CSS because Tecton resets the stock palette.
 
+## Before you finish
+
+- A list row is an `Item` with `ItemMedia`, `ItemContent` (`ItemTitle`, `ItemDescription`) and `ItemActions`, and a clickable row is given an `href` rather than an `onClick` on a `div`.
+- Rows inside an `ItemGroup` are divided with `ItemSeparator` and card sections with a bare `border-b` on `CardHeader`, never with a hand-written border colour.
+- A divider is a `Separator` with `emphasis="subtle" | "default" | "strong"` (or the surface's own `ItemSeparator` / `border-b`), never a bare `div` with a border colour.
+
 Related: card, panel, separator

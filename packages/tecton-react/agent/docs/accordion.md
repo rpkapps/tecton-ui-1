@@ -97,4 +97,9 @@ Correct:
 
 `AccordionTrigger` already appends a `ChevronDownIcon`/`ChevronUpIcon` pair tagged `data-slot="accordion-trigger-icon"`, which is what the `ml-auto`, `size-5` and `group-aria-expanded` swap rules target, so a hand-added icon becomes a second, static chevron in the middle of the row.
 
+## Before you finish
+
+- `Accordion` is a React Aria `DisclosureGroup`: every `AccordionItem` has an `id`, state is `expandedKeys` / `defaultExpandedKeys` / `onExpandedChange` (a `Set`), and `type`, `collapsible`, `value` and `defaultValue` are dropped.
+- The collapsible trigger is a Tecton `Button` carrying `slot="trigger"` and no `onPress` of its own, and `AccordionTrigger` is left to render its own heading, button and chevron.
+
 Related: collapsible, tabs, tree-view

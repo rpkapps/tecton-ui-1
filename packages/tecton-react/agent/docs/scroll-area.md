@@ -87,4 +87,8 @@ Correct:
 
 `ScrollArea` ships `outline-none focus-visible:ring-[3px]` but sets no `tabIndex`, so a region whose content has no focusable children can never take focus: the ring is unreachable and the text can only be read with a pointer.
 
+## Before you finish
+
+- A `ScrollArea` has a height (`h-*`, `max-h-*`, or `min-h-0 flex-1`) because it only sets `overflow-auto`, and it takes `tabIndex={0}` with `role="region"` and an `aria-label` when nothing inside it is focusable.
+
 Related: panel, message-scroller, resizable

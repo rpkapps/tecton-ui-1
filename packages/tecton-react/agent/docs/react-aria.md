@@ -2,7 +2,7 @@
 
 # React Aria props, not Radix props
 
-This skill builds on `@tecton/react#core`. Read it first for imports, the
+This builds on `tecton rules`. Read it first for imports, the
 palette and the variant rules.
 
 The components under `@tecton/react/components/` are shadcn/ui built on

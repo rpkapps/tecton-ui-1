@@ -92,4 +92,11 @@ Correct:
 
 `ShortcutKeys` resolves `mod` to ⌘ or Ctrl for the reader's platform, splits a chord or a sequence into caps and gives the group one accessible name ("G, then W"), where hand-typed caps freeze the author's platform and are read out letter by letter.
 
+## Before you finish
+
+- Inside a flipped tree every spacing and alignment class is logical (`ms-*`, `pe-*`, `text-start`, `border-s`), and the direction is read with `useDirection()` rather than from `document.dir`.
+- No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal context themselves.
+- Every keyboard shortcut is registered with `useShortcut` inside one `ShortcutsProvider` rather than a `window` keydown listener, so it is suppressed while an input has focus and is listed by `useShortcuts()`.
+- A mounted application reuses the host's registry object from `createShortcutRegistry()` instead of creating a second one, and its shortcuts are written in the registry syntax (`mod+k`, `?`, `g w`) with a stable `id`, `label` and `group`.
+
 Related: kbd, app-shell, command

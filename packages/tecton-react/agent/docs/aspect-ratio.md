@@ -91,4 +91,8 @@ Correct:
 
 Unlike the Radix component this one has no default: `ratio` is required, React drops the `undefined` custom property, and `aspect-ratio: var(--ratio)` then resolves to nothing, so the box collapses around an absolutely positioned child and disappears.
 
+## Before you finish
+
+- `AspectRatio` is given its required numeric `ratio`, a child that fills it (`absolute inset-0 size-full object-cover`) and its width from outside, with no fixed height competing with the ratio.
+
 Related: avatar, skeleton, carousel

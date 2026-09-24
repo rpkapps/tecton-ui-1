@@ -97,4 +97,9 @@ Correct:
 
 `AvatarBadge` is the one part whose colour the application picks, but the Tecton palette is declared after `--color-*: initial`, so `green-500` is not a step, the class emits no CSS and the dot silently falls back to `bg-primary`.
 
+## Before you finish
+
+- Every `Avatar` has an `AvatarFallback` behind its `AvatarImage`, and its box comes from `size="sm" | "default" | "lg"` — a `size-*` class leaves `AvatarBadge` and `AvatarGroupCount` at the default size.
+- `AvatarBadge` is the one part the application recolours, and only with a Tecton step (`className="bg-green-560"`).
+
 Related: count-badge, color-swatch, chip

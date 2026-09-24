@@ -72,6 +72,15 @@ describe("tecton docs", () => {
     expect(miss.out).toMatch(/No entry "dropdwn"/)
   })
 
+  it("ends a page with the family checklist items that concern it", () => {
+    const chip = run(["docs", "chip"], index).out
+    expect(chip).toContain("## Before you finish")
+    expect(chip).toContain("`ChipGroup > ChipList`")
+    // labels checklist items about Kbd name no Chip export, so they stay on kbd's page
+    expect(chip).not.toContain("KbdGroup")
+    expect(run(["docs", "kbd"], index).out).toContain("KbdGroup")
+  })
+
   it("serves the rules topic", () => {
     expect(run(["rules"], index).out).toContain("Before you finish")
   })

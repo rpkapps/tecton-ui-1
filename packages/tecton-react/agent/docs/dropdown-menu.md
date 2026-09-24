@@ -80,4 +80,10 @@ Correct:
 
 Tailwind's stock palette is reset, so `text-red-600` emits no CSS, while `variant="destructive"` is what sets the label, the icon and the focus background for the whole row.
 
+## Before you finish
+
+- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
+- Every `DropdownMenuItem` and `ContextMenuItem` acts through `onAction` (or `onAction(key)` on the menu with an `id` per item), and a dangerous entry is marked `variant="destructive"` rather than `text-red-*`.
+- `DropdownMenuTrigger` and `ContextMenuTrigger` take exactly two children — the trigger and the menu — with no `DropdownMenuContent` and no `asChild`, and check marks come from `selectionMode` plus `selectedKeys` on the `Group`, never `checked` / `onCheckedChange`.
+
 Related: context-menu, button, select

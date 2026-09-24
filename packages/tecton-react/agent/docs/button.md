@@ -93,4 +93,11 @@ Correct:
 
 `onClick` survives only as React Aria's deprecated compatibility alias: it is handed a synthetic mouse event with no `pointerType`, so keyboard and touch activations are indistinguishable from a click.
 
+## Before you finish
+
+- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
+- A `Button`'s box comes from `size` (`icon`, `icon-xs`, `icon-sm`, `icon-lg` for icon-only) and its weight from `variant`; `size-8`, `h-*`, `p-*`, `rounded-*` and `bg-*` in `className` replace what the variant owns.
+- Every icon-only `Button`, `Toggle`, `ToggleGroupItem` and `InputGroupButton` has an `aria-label`, and every icon or `Spinner` inside a control carries `data-icon="inline-start"` or `data-icon="inline-end"`.
+- Navigation is a `LinkButton` or a `Link` with an `href` (and `isExternal` instead of hand-written `target` and `rel`), never an anchor nested inside a `Button` and never a `Link` that only runs a handler.
+
 Related: button, button-group, link

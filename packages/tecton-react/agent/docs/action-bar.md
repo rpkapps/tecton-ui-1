@@ -93,4 +93,9 @@ Correct:
 
 The bar is its own `@container`, so a fit-content inline size resolves from its padding alone: the toolbar measures no room and collapses every action into the More menu.
 
+## Before you finish
+
+- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
+- A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `isOpen`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.
+
 Related: button-group, dropdown-menu

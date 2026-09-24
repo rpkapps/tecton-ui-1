@@ -94,4 +94,11 @@ Correct:
 
 The padding compensation is `has-data-[icon=inline-start]:pl-1.5`, so without the attribute the icon sits in full text padding and the badge is wider than every other badge in the row.
 
+## Before you finish
+
+- Every status, category or state label is a `Badge` carrying its meaning in `variant` (`success`, `warning`, `info`, `destructive`) and its weight in `appearance`, never a `bg-*` or `text-*` colour class.
+- Any label the user can select or remove is a `Chip`, not a `Badge` with a handler — `Badge` renders a `span` with no role, no `tabIndex` and no key handling.
+- Every icon or `Spinner` child of a `Badge` or a `Chip` carries `data-icon="inline-start"` or `data-icon="inline-end"` so the label trims its padding on that side.
+- A category colour that no `variant` carries is a Tecton palette pair in `className` (`bg-blue-120 text-blue-830`), never a stock Tailwind colour.
+
 Related: chip, count-badge

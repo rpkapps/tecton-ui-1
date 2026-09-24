@@ -97,4 +97,11 @@ Correct:
 
 `FieldTitle` renders a `div`, so the switch is left unnamed; it is only for the heading inside a `FieldContent` whose whole `Field` is already wrapped in a `FieldLabel`.
 
+## Before you finish
+
+- Every control in a `Field` has an `id` and a `FieldLabel htmlFor` pointing at it — `Field` renders `role="group"` and associates nothing by itself.
+- For a `Select` the `id` goes on `SelectTrigger`; a `Slider` has no `htmlFor` target at all and takes `aria-label` with `FieldTitle` and `FieldDescription`; a group of controls — a `RadioGroup`, a `ChipGroup`, a set of checkboxes — is named by `FieldSet` + `FieldLegend`, never by a stray `FieldLabel`.
+- An invalid value sets `aria-invalid` (or `isInvalid`) on the control **and** `data-invalid` on the `Field`, with the message rendered in `FieldError` rather than a red paragraph.
+- `Slider` is bounded with `minValue`, `maxValue` and `step`, holds an array `value` and narrows the `number | number[]` it reports; `FieldTitle` renders a `div` and never names a control.
+
 Related: input, textarea, label

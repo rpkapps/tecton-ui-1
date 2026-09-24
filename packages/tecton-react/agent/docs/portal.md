@@ -96,4 +96,11 @@ function Inspector(props: React.ComponentProps<typeof PopoverPrimitive>) {
 
 React Aria reads any set `UNSTABLE_portalContainer` as "the caller has decided" and stops resolving the target itself, so pinning `document.body` throws away its own defaults — the root popover's container for submenus, and `document.body` only once hydration is over — which is why `usePortalTarget` returns `undefined` rather than a fallback.
 
+## Before you finish
+
+- Inside a flipped tree every spacing and alignment class is logical (`ms-*`, `pe-*`, `text-start`, `border-s`), and the direction is read with `useDirection()` rather than from `document.dir`.
+- A page holding several React roots wraps each root in a `PortalProvider` with its own body-level `container`, because `document.body` falls outside that root's `@scope` rule.
+- No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal context themselves.
+- A mounted application reuses the host's registry object from `createShortcutRegistry()` instead of creating a second one, and its shortcuts are written in the registry syntax (`mod+k`, `?`, `g w`) with a stable `id`, `label` and `group`.
+
 Related: theme-root, dialog

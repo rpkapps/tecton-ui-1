@@ -86,4 +86,8 @@ Correct:
 
 The track is sized by `data-[size=…]` and the thumb's `translate-x` is matched to each size, so a `className` size widens the track while the thumb still stops where the old one ended.
 
+## Before you finish
+
+- `Checkbox` and `Switch` are driven by `isSelected` / `defaultSelected` and `onChange(isSelected: boolean)`: no `checked`, no `onCheckedChange`, and no reading `e.target` off the callback.
+
 Related: checkbox, field

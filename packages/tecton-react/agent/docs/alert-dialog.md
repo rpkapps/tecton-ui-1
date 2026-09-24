@@ -97,4 +97,10 @@ Correct:
 
 `AlertDialogOverlay` leaves React Aria's `isDismissable` off on purpose, which is the only thing separating this from `Dialog`; turning it on lets a stray backdrop click answer the question.
 
+## Before you finish
+
+- The confirm inside an `AlertDialog` is `AlertDialogAction` (with `variant="destructive"`) and the escape is `AlertDialogCancel` — both carry `slot="close"`, so a plain `Button` runs the action and leaves the prompt on screen over the deleted record.
+- Every `Dialog`, `AlertDialog`, `Sheet` and `Popover` sits inside its own trigger component (`DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `PopoverTrigger`) together with its trigger `Button`; a sibling never receives the open state.
+- Every `Dialog` and `AlertDialog` has a `DialogTitle` / `AlertDialogTitle`, because React Aria takes the accessible name from it.
+
 Related: dialog, sheet

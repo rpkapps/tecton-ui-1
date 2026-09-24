@@ -94,4 +94,12 @@ Correct:
 
 The mode class has to sit on the overlay container as well, or the subtree's portalled overlays render in the shell's mode; `themeRootVariants` and the sync effect are what put it on both and swap it when `mode` flips.
 
+## Before you finish
+
+- Inside a flipped tree every spacing and alignment class is logical (`ms-*`, `pe-*`, `text-start`, `border-s`), and the direction is read with `useDirection()` rather than from `document.dir`.
+- No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal context themselves.
+- An independently mounted application is wrapped in a `ThemeRoot` carrying its scope class with `theme="inherit"`, and it imports `@tecton/react/styles/scoped.css`, never `globals.css`.
+- A theme override for one root goes in `ThemeRoot`'s `className` (`[--primary:var(--tecton-palette-green-560)]`), which is mirrored onto the overlay container; inline CSS variables never reach a portalled overlay.
+- A mounted application reuses the host's registry object from `createShortcutRegistry()` instead of creating a second one, and its shortcuts are written in the registry syntax (`mod+k`, `?`, `g w`) with a stable `id`, `label` and `group`.
+
 Related: portal, app-shell

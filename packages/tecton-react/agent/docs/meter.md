@@ -96,4 +96,12 @@ Correct:
 
 `className` lands on the meter's outer flex column, not on the segment fills, which take their class from `color` — and `green-600` is not a Tecton step, so nothing is emitted for it either.
 
+## Before you finish
+
+- Every `Progress`, `CircularProgress` and `Meter` has a name: a `ProgressLabel` child, `label` on the meter, or `aria-label` when the name is already beside it.
+- A value that is not on a 0–100 scale states its scale with `minValue` and `maxValue` (`value={loaded} maxValue={total}`, a 4-out-of-5 score with `maxValue={5}`).
+- An unknown total is `isIndeterminate`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.
+- A measured task is `Progress` or `CircularProgress`; a score or level that is read rather than completed is a `Meter`, with `color="auto"` choosing the band instead of a hand-written ternary.
+- `className` on `Progress`, `CircularProgress` and `Meter` sets width and placement only — the height, the stroke width and the fill come from `size` and `color`.
+
 Related: progress, circular-progress

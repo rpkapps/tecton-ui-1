@@ -346,7 +346,7 @@
     "AccordionContent"
    ],
    "aliases": [],
-   "tokens": 915
+   "tokens": 1024
   },
   {
    "id": "action-bar",
@@ -387,7 +387,7 @@
     "actionBarVariants"
    ],
    "aliases": [],
-   "tokens": 864
+   "tokens": 976
   },
   {
    "id": "alert",
@@ -431,7 +431,7 @@
     "AlertAction"
    ],
    "aliases": [],
-   "tokens": 840
+   "tokens": 1074
   },
   {
    "id": "alert-dialog",
@@ -478,7 +478,7 @@
     "AlertDialogOverlay"
    ],
    "aliases": [],
-   "tokens": 787
+   "tokens": 949
   },
   {
    "id": "app-finder",
@@ -523,7 +523,7 @@
     "appFinderIconVariants"
    ],
    "aliases": [],
-   "tokens": 835
+   "tokens": 887
   },
   {
    "id": "app-shell",
@@ -592,7 +592,7 @@
     "useMinWidth"
    ],
    "aliases": [],
-   "tokens": 1074
+   "tokens": 1225
   },
   {
    "id": "aspect-ratio",
@@ -630,7 +630,7 @@
     "AspectRatio"
    ],
    "aliases": [],
-   "tokens": 828
+   "tokens": 883
   },
   {
    "id": "attachment",
@@ -676,7 +676,7 @@
     "AttachmentTrigger"
    ],
    "aliases": [],
-   "tokens": 829
+   "tokens": 942
   },
   {
    "id": "avatar",
@@ -723,7 +723,7 @@
     "AvatarBadge"
    ],
    "aliases": [],
-   "tokens": 838
+   "tokens": 924
   },
   {
    "id": "background",
@@ -782,7 +782,7 @@
     "backgroundSpeeds"
    ],
    "aliases": [],
-   "tokens": 1019
+   "tokens": 1087
   },
   {
    "id": "badge",
@@ -823,7 +823,7 @@
     "Badge"
    ],
    "aliases": [],
-   "tokens": 701
+   "tokens": 877
   },
   {
    "id": "breadcrumb",
@@ -866,7 +866,7 @@
     "BreadcrumbEllipsis"
    ],
    "aliases": [],
-   "tokens": 787
+   "tokens": 893
   },
   {
    "id": "bubble",
@@ -907,7 +907,7 @@
     "BubbleReactions"
    ],
    "aliases": [],
-   "tokens": 744
+   "tokens": 893
   },
   {
    "id": "button",
@@ -947,7 +947,7 @@
     "buttonVariants"
    ],
    "aliases": [],
-   "tokens": 716
+   "tokens": 923
   },
   {
    "id": "button-group",
@@ -988,7 +988,7 @@
     "buttonGroupVariants"
    ],
    "aliases": [],
-   "tokens": 833
+   "tokens": 944
   },
   {
    "id": "calendar",
@@ -1027,7 +1027,7 @@
     "RangeCalendar"
    ],
    "aliases": [],
-   "tokens": 795
+   "tokens": 868
   },
   {
    "id": "canvas",
@@ -1076,7 +1076,7 @@
     "canvasToolbarVariants"
    ],
    "aliases": [],
-   "tokens": 920
+   "tokens": 1011
   },
   {
    "id": "card",
@@ -1124,7 +1124,7 @@
     "CardFooter"
    ],
    "aliases": [],
-   "tokens": 692
+   "tokens": 849
   },
   {
    "id": "carousel",
@@ -1163,7 +1163,7 @@
     "useCarousel"
    ],
    "aliases": [],
-   "tokens": 841
+   "tokens": 896
   },
   {
    "id": "chart",
@@ -1202,7 +1202,7 @@
     "ChartStyle"
    ],
    "aliases": [],
-   "tokens": 1004
+   "tokens": 1070
   },
   {
    "id": "checkbox",
@@ -1239,7 +1239,7 @@
     "Checkbox"
    ],
    "aliases": [],
-   "tokens": 694
+   "tokens": 747
   },
   {
    "id": "chip",
@@ -1279,7 +1279,7 @@
     "ChipRemove"
    ],
    "aliases": [],
-   "tokens": 760
+   "tokens": 971
   },
   {
    "id": "circular-progress",
@@ -1317,7 +1317,7 @@
     "CircularProgress"
    ],
    "aliases": [],
-   "tokens": 682
+   "tokens": 887
   },
   {
    "id": "collapsible",
@@ -1357,7 +1357,7 @@
     "CollapsibleContent"
    ],
    "aliases": [],
-   "tokens": 952
+   "tokens": 1036
   },
   {
    "id": "color-swatch",
@@ -1445,7 +1445,7 @@
     "useComboboxAnchor"
    ],
    "aliases": [],
-   "tokens": 848
+   "tokens": 1012
   },
   {
    "id": "command",
@@ -1490,7 +1490,7 @@
     "CommandShortcut"
    ],
    "aliases": [],
-   "tokens": 713
+   "tokens": 778
   },
   {
    "id": "context-menu",
@@ -1536,7 +1536,7 @@
     "ContextMenuSubContent"
    ],
    "aliases": [],
-   "tokens": 810
+   "tokens": 978
   },
   {
    "id": "copy-button",
@@ -1568,7 +1568,7 @@
     "CopyButton"
    ],
    "aliases": [],
-   "tokens": 574
+   "tokens": 660
   },
   {
    "id": "count-badge",
@@ -1605,7 +1605,7 @@
     "CountBadge"
    ],
    "aliases": [],
-   "tokens": 742
+   "tokens": 837
   },
   {
    "id": "dialog",
@@ -1654,7 +1654,7 @@
     "DialogOverlay"
    ],
    "aliases": [],
-   "tokens": 684
+   "tokens": 822
   },
   {
    "id": "direction",
@@ -1694,7 +1694,7 @@
     "useLocale"
    ],
    "aliases": [],
-   "tokens": 682
+   "tokens": 904
   },
   {
    "id": "drawer",
@@ -1741,7 +1741,7 @@
     "DrawerSwipeHandle"
    ],
    "aliases": [],
-   "tokens": 799
+   "tokens": 885
   },
   {
    "id": "dropdown-menu",
@@ -1788,7 +1788,7 @@
     "DropdownMenuSubContent"
    ],
    "aliases": [],
-   "tokens": 774
+   "tokens": 942
   },
   {
    "id": "empty",
@@ -1830,7 +1830,7 @@
     "EmptyContent"
    ],
    "aliases": [],
-   "tokens": 697
+   "tokens": 886
   },
   {
    "id": "field",
@@ -1877,7 +1877,7 @@
     "FieldTitle"
    ],
    "aliases": [],
-   "tokens": 784
+   "tokens": 996
   },
   {
    "id": "hover-card",
@@ -1915,7 +1915,7 @@
     "HoverCardTrigger"
    ],
    "aliases": [],
-   "tokens": 606
+   "tokens": 655
   },
   {
    "id": "input",
@@ -1953,7 +1953,7 @@
     "Input"
    ],
    "aliases": [],
-   "tokens": 710
+   "tokens": 857
   },
   {
    "id": "input-group",
@@ -1996,7 +1996,7 @@
     "InputGroupTextarea"
    ],
    "aliases": [],
-   "tokens": 763
+   "tokens": 819
   },
   {
    "id": "input-otp",
@@ -2083,7 +2083,7 @@
     "ItemFooter"
    ],
    "aliases": [],
-   "tokens": 626
+   "tokens": 761
   },
   {
    "id": "kbd",
@@ -2116,7 +2116,7 @@
     "KbdGroup"
    ],
    "aliases": [],
-   "tokens": 564
+   "tokens": 646
   },
   {
    "id": "label",
@@ -2185,7 +2185,7 @@
     "linkVariants"
    ],
    "aliases": [],
-   "tokens": 581
+   "tokens": 682
   },
   {
    "id": "marker",
@@ -2230,7 +2230,7 @@
     "markerVariants"
    ],
    "aliases": [],
-   "tokens": 725
+   "tokens": 792
   },
   {
    "id": "message",
@@ -2277,7 +2277,7 @@
     "MessageFooter"
    ],
    "aliases": [],
-   "tokens": 770
+   "tokens": 834
   },
   {
    "id": "message-scroller",
@@ -2319,7 +2319,7 @@
     "useMessageScrollerVisibility"
    ],
    "aliases": [],
-   "tokens": 920
+   "tokens": 983
   },
   {
    "id": "meter",
@@ -2356,7 +2356,7 @@
     "Meter"
    ],
    "aliases": [],
-   "tokens": 713
+   "tokens": 918
   },
   {
    "id": "native-select",
@@ -2395,7 +2395,7 @@
     "NativeSelectOptGroup"
    ],
    "aliases": [],
-   "tokens": 713
+   "tokens": 774
   },
   {
    "id": "overflow",
@@ -2441,7 +2441,7 @@
     "useIsOverflowItemVisible"
    ],
    "aliases": [],
-   "tokens": 1088
+   "tokens": 1190
   },
   {
    "id": "page-header",
@@ -2485,7 +2485,7 @@
     "PageHeaderActions"
    ],
    "aliases": [],
-   "tokens": 689
+   "tokens": 744
   },
   {
    "id": "pagination",
@@ -2528,7 +2528,7 @@
     "PaginationEllipsis"
    ],
    "aliases": [],
-   "tokens": 794
+   "tokens": 875
   },
   {
    "id": "panel",
@@ -2576,7 +2576,7 @@
     "PanelFooter"
    ],
    "aliases": [],
-   "tokens": 713
+   "tokens": 807
   },
   {
    "id": "popover",
@@ -2622,7 +2622,7 @@
     "PopoverDescription"
    ],
    "aliases": [],
-   "tokens": 620
+   "tokens": 729
   },
   {
    "id": "portal",
@@ -2661,7 +2661,7 @@
     "usePortalTarget"
    ],
    "aliases": [],
-   "tokens": 938
+   "tokens": 1147
   },
   {
    "id": "progress",
@@ -2707,7 +2707,7 @@
     "ProgressIndicator"
    ],
    "aliases": [],
-   "tokens": 656
+   "tokens": 861
   },
   {
    "id": "questionnaire",
@@ -2755,7 +2755,7 @@
     "QuestionnaireSubmit"
    ],
    "aliases": [],
-   "tokens": 932
+   "tokens": 1027
   },
   {
    "id": "radio-group",
@@ -2793,7 +2793,7 @@
     "RadioGroupItem"
    ],
    "aliases": [],
-   "tokens": 733
+   "tokens": 837
   },
   {
    "id": "resizable",
@@ -2833,7 +2833,7 @@
     "ResizableHandle"
    ],
    "aliases": [],
-   "tokens": 987
+   "tokens": 1082
   },
   {
    "id": "scroll-area",
@@ -2871,7 +2871,7 @@
     "ScrollArea"
    ],
    "aliases": [],
-   "tokens": 770
+   "tokens": 829
   },
   {
    "id": "select",
@@ -2924,7 +2924,7 @@
     "SelectEmpty"
    ],
    "aliases": [],
-   "tokens": 791
+   "tokens": 982
   },
   {
    "id": "separator",
@@ -2962,7 +2962,7 @@
     "Separator"
    ],
    "aliases": [],
-   "tokens": 686
+   "tokens": 735
   },
   {
    "id": "sheet",
@@ -3011,7 +3011,7 @@
     "SheetFooter"
    ],
    "aliases": [],
-   "tokens": 658
+   "tokens": 763
   },
   {
    "id": "shortcuts",
@@ -3055,7 +3055,7 @@
     "ShortcutKeys"
    ],
    "aliases": [],
-   "tokens": 821
+   "tokens": 1039
   },
   {
    "id": "sidebar",
@@ -3111,7 +3111,7 @@
     "useSidebar"
    ],
    "aliases": [],
-   "tokens": 865
+   "tokens": 1016
   },
   {
    "id": "skeleton",
@@ -3149,7 +3149,7 @@
     "Skeleton"
    ],
    "aliases": [],
-   "tokens": 554
+   "tokens": 673
   },
   {
    "id": "slider",
@@ -3186,7 +3186,7 @@
     "Slider"
    ],
    "aliases": [],
-   "tokens": 642
+   "tokens": 771
   },
   {
    "id": "sonner",
@@ -3225,7 +3225,7 @@
    "aliases": [
     "toast"
    ],
-   "tokens": 741
+   "tokens": 842
   },
   {
    "id": "spinner",
@@ -3263,7 +3263,7 @@
     "Spinner"
    ],
    "aliases": [],
-   "tokens": 613
+   "tokens": 762
   },
   {
    "id": "stat",
@@ -3306,7 +3306,7 @@
     "StatGroup"
    ],
    "aliases": [],
-   "tokens": 828
+   "tokens": 892
   },
   {
    "id": "switch",
@@ -3343,7 +3343,7 @@
     "Switch"
    ],
    "aliases": [],
-   "tokens": 653
+   "tokens": 706
   },
   {
    "id": "table",
@@ -3384,7 +3384,7 @@
     "TableCaption"
    ],
    "aliases": [],
-   "tokens": 885
+   "tokens": 1090
   },
   {
    "id": "tabs",
@@ -3421,7 +3421,7 @@
     "tabsListVariants"
    ],
    "aliases": [],
-   "tokens": 770
+   "tokens": 875
   },
   {
    "id": "textarea",
@@ -3459,7 +3459,7 @@
     "Textarea"
    ],
    "aliases": [],
-   "tokens": 710
+   "tokens": 805
   },
   {
    "id": "theme-root",
@@ -3497,7 +3497,7 @@
     "themeRootVariants"
    ],
    "aliases": [],
-   "tokens": 828
+   "tokens": 1094
   },
   {
    "id": "toggle",
@@ -3531,7 +3531,7 @@
     "toggleVariants"
    ],
    "aliases": [],
-   "tokens": 633
+   "tokens": 735
   },
   {
    "id": "toggle-group",
@@ -3570,7 +3570,7 @@
     "ToggleGroupItem"
    ],
    "aliases": [],
-   "tokens": 744
+   "tokens": 882
   },
   {
    "id": "tooltip",
@@ -3608,7 +3608,7 @@
     "TooltipTrigger"
    ],
    "aliases": [],
-   "tokens": 736
+   "tokens": 791
   },
   {
    "id": "tree-view",
@@ -3647,7 +3647,7 @@
     "TreeViewCollection"
    ],
    "aliases": [],
-   "tokens": 937
+   "tokens": 989
   },
   {
    "id": "tanstack-table",
@@ -3749,29 +3749,12 @@
    "tokens": 371
   },
   {
-   "id": "rules",
-   "kind": "topic",
-   "name": "Rules for every file: imports, setup, palette, className, variants, icons",
-   "summary": "Rules for every file: imports, setup, palette, className, variants, icons",
-   "fields": {
-    "names": "rules core",
-    "useWhen": "Foundation for writing any UI with @tecton/react. Covers the import paths (@tecton/react/components/<name>, @tecton/react/tecton/<name>, @tecton/react/icons — there is no root export), the @tecton/react/globals.css stylesheet and the dark-first `dark` class, why components are never installed with `shadcn add` and why files under components/ui are the wrong base, the reset Tailwind palette where bg-red-500 and text-zinc-400 emit no CSS at all, the semantic tokens (bg-primary, text-muted-foreground, text-destructive, bg-warning-surface) and the Tecton palette steps (bg-blue-120, text-blue-830), the rule that variants own colour, shape, size and padding while className carries layout only, the Tecton variant axes on Alert, Badge, Separator, Input, Textarea and SelectTrigger, data-icon=\"inline-start\" spacing, and Tecton domain glyphs versus Lucide. Load before writing or editing any Tecton markup, className, import or stylesheet.",
-    "routed": "",
-    "do": "Before you finish Setup Three import namespaces, no root export Colour comes from tokens, never from Tailwind's stock palette Variants own the look, className carries layout Icons Common Mistakes [CRITICAL] Stock Tailwind colour renders nothing [CRITICAL] Installing a component with the shadcn CLI [HIGH] Importing from the package root [HIGH] className overriding what a variant owns [HIGH] Hand-built status colours where a variant exists [MEDIUM] Icon inside a control without data-icon Other skills"
-   },
-   "notFor": [],
-   "related": [],
-   "exports": [],
-   "aliases": [],
-   "tokens": 3813
-  },
-  {
    "id": "react-aria",
    "kind": "topic",
    "name": "React Aria props instead of Radix props",
    "summary": "React Aria props instead of Radix props",
    "fields": {
-    "names": "react aria react-aria",
+    "names": "react aria",
     "useWhen": "The Radix-to-React-Aria prop map for @tecton/react, because an agent's prior is shadcn on Radix and most of these substitutions render a dead control rather than an error. Covers onPress instead of onClick, isDisabled instead of disabled, isSelected and onChange instead of checked and onCheckedChange, selectedKey / defaultSelectedKey / onSelectionChange instead of value and onValueChange on Select and Tabs, isOpen and onOpenChange with DialogTrigger wrapping both the Button and the Dialog (there is no DialogContent), the absence of asChild and what replaces it (LinkButton, buttonVariants, the render prop on Badge and ButtonGroupText, the element-valued render on DrawerTrigger), id instead of value on SelectItem, TabsTrigger and TabsContent, isInvalid on React Aria controls versus aria-invalid on Input and Textarea plus data-invalid on Field, and why Link and LinkButton exist. Load before writing any prop, handler or controlled state on a Tecton component.",
     "routed": "",
     "do": "The map Common Mistakes [CRITICAL] onClick instead of onPress [CRITICAL] disabled instead of isDisabled [CRITICAL] checked and onCheckedChange on Checkbox or Switch [CRITICAL] value and onValueChange on Select or Tabs [HIGH] Select controlled with the empty string [HIGH] DialogContent, and open on the Dialog [HIGH] asChild to compose a trigger or a link [HIGH] aria-invalid on a React Aria control [MEDIUM] Button used for navigation"
@@ -3780,7 +3763,24 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2632
+   "tokens": 2629
+  },
+  {
+   "id": "rules",
+   "kind": "topic",
+   "name": "Rules for every file: imports, setup, palette, className, variants, icons",
+   "summary": "Rules for every file: imports, setup, palette, className, variants, icons",
+   "fields": {
+    "names": "rules",
+    "useWhen": "Foundation for writing any UI with @tecton/react. Covers the import paths (@tecton/react/components/<name>, @tecton/react/tecton/<name>, @tecton/react/icons — there is no root export), the @tecton/react/globals.css stylesheet and the dark-first `dark` class, why components are never installed with `shadcn add` and why files under components/ui are the wrong base, the reset Tailwind palette where bg-red-500 and text-zinc-400 emit no CSS at all, the semantic tokens (bg-primary, text-muted-foreground, text-destructive, bg-warning-surface) and the Tecton palette steps (bg-blue-120, text-blue-830), the rule that variants own colour, shape, size and padding while className carries layout only, the Tecton variant axes on Alert, Badge, Separator, Input, Textarea and SelectTrigger, data-icon=\"inline-start\" spacing, and Tecton domain glyphs versus Lucide. Load before writing or editing any Tecton markup, className, import or stylesheet.",
+    "routed": "",
+    "do": "Before you finish Setup Three import namespaces, no root export Colour comes from tokens, never from Tailwind's stock palette Variants own the look, className carries layout Icons Common Mistakes [CRITICAL] Stock Tailwind colour renders nothing [CRITICAL] Installing a component with the shadcn CLI [HIGH] Importing from the package root [HIGH] className overriding what a variant owns [HIGH] Hand-built status colours where a variant exists [MEDIUM] Icon inside a control without data-icon Looking further"
+   },
+   "notFor": [],
+   "related": [],
+   "exports": [],
+   "aliases": [],
+   "tokens": 3517
   },
   {
    "id": "theming",
@@ -3788,7 +3788,7 @@
    "name": "Colour, tokens, dark and light mode, ThemeRoot, micro-frontends",
    "summary": "Colour, tokens, dark and light mode, ThemeRoot, micro-frontends",
    "fields": {
-    "names": "theming theming",
+    "names": "theming",
     "useWhen": "How colour reaches the screen in @tecton/react and what an application may and may not change. Covers the shadcn CSS variables (--background, --primary, --ring, --success-surface, --border-strong) as the only carrier of the theme and their generation from tokens/tecton.map.json, why an application never declares a --color-* and a missing colour is a token request, the fifteen contrast ramps and how to read a step (bg-blue-120 text-blue-830, steps 50 to 1570, no dark: pair), dark-first with the dark class on html, inverting a section with the light or dark class, ThemeRoot with theme=\"inherit\" | \"dark\" | \"light\" for an independently deployed application, and micro-frontends with @tecton/react/styles/scoped.css, the @tecton/react/postcss/scope plugin and @tecton/react/federation/shared. Load when picking a colour, adding a token, toggling or inverting the mode, retinting a subtree, or mounting one Tecton application inside another.",
     "routed": "",
     "do": "Setup Reading the palette Inverting a section ThemeRoot: an independently deployed application Micro-frontends: scoped utilities Common Mistakes [CRITICAL] Declaring a --color-* in the application stylesheet [HIGH] A dark: pair on a palette step [HIGH] Overriding a shadcn variable with an inline style [HIGH] globals.css inside an embedded remote [MEDIUM] ThemeRoot as the root of a standalone application"
@@ -3797,7 +3797,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2750
+   "tokens": 2747
   }
  ]
 }

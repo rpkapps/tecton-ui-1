@@ -97,4 +97,10 @@ Correct:
 
 Without `allowsEmptyCollection` React Aria closes the popover as soon as the filtered collection is empty, so the typist sees the list vanish instead of a "no results" message.
 
+## Before you finish
+
+- Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value`, `defaultValue` and `onValueChange` are Radix names React Aria drops.
+- Every group carries a name: `aria-label` on `Combobox`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
+- `CommandItem` acts through `onAction` and carries `textValue` when its children are JSX, and an empty filter renders through `renderEmptyState` returning `CommandEmpty` / `ComboboxEmpty` (with `allowsEmptyCollection` on a `Combobox`).
+
 Related: select, command, native-select

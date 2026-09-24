@@ -89,4 +89,8 @@ Correct:
 
 `select` elements have no `placeholder` attribute, so the prop is dropped and the field silently shows the first real option as if it had been chosen.
 
+## Before you finish
+
+- `placeholder` sits on `Select` (`SelectValue` takes none), while `NativeSelect` is a real `select` driven by `value` / `onChange(event)` / `disabled` with an empty-valued first `NativeSelectOption` as its placeholder.
+
 Related: select, combobox

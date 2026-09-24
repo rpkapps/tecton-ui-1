@@ -98,4 +98,9 @@ Correct:
 
 Resizable is the one layout module not built on React Aria: `Separator` destructures `disabled` and spreads everything else onto the `div`, so `isDisabled` becomes a stray attribute and the divider stays draggable while the interface says it is locked.
 
+## Before you finish
+
+- `ResizablePanelGroup` wraps react-resizable-panels, not React Aria: the axis prop is `orientation`, `defaultSize` / `minSize` / `maxSize` take unit strings (`"25%"`, `"320px"`), and disabling is `disabled`.
+- A `ResizablePanelGroup` is given its height from outside (`h-96` or a flex parent) and every `ResizableHandle` is a direct child of its group.
+
 Related: app-shell, panel, scroll-area

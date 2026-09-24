@@ -93,4 +93,9 @@ Correct:
 
 `RadioGroup` renders a bare `div` with `role="radiogroup"` and no label of its own, so the group is announced without a name and the options lose the question they answer.
 
+## Before you finish
+
+- `RadioGroup` is the exception: each `RadioGroupItem` identifies itself by `value` and the group reports through `onChange`, with `id` used only so a `FieldLabel htmlFor` can reach it.
+- Every group carries a name: `aria-label` on `Combobox`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
+
 Related: select, toggle-group

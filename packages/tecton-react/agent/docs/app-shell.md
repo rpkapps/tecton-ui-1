@@ -91,4 +91,10 @@ function ShellSearch({ open }: { open: () => void }) {
 
 `shortcut` on `AppShellCommandTrigger` only renders a `Kbd` and binds nothing, so ⌘K never opens the palette and the key is missing from `useShortcuts()` — the list the shell's help dialog and command palette are built from.
 
+## Before you finish
+
+- The application frame is `AppShell` > `AppShellHeader` plus `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`, with the page content in `AppShellMain` and never straight into `AppShellBody`.
+- The shell's header actions are `AppShellAction`s with a `label` — both the accessible name and the tooltip — inside `AppShellActions`, not icon `Button`s with a `title`.
+- A key hint rendered by `shortcut` on `AppShellAction` or `AppShellCommandTrigger` is also registered with `useShortcut`, or nothing is bound and the key is missing from `useShortcuts()`.
+
 Related: panel, page-header, sheet, app-finder, overflow

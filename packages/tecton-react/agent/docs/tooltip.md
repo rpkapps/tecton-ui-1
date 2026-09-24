@@ -97,4 +97,8 @@ Correct:
 
 Tecton's `TooltipTrigger` destructures its children into `[trigger, tooltip]`, so the second button is rendered where the tooltip belongs and the real `Tooltip` is thrown away.
 
+## Before you finish
+
+- An icon-only trigger has its own `aria-label`; a `Tooltip` is `aria-describedby` and never the name, a `TooltipTrigger` has exactly two children, and nothing interactive goes inside a tooltip.
+
 Related: hover-card, popover

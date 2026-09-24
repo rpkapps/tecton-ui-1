@@ -94,4 +94,9 @@ Correct:
 
 The corner and negative-margin rules stay active whatever the gap is, so a bare `gap-2` yields separated buttons with flattened inner edges; a nested group is what the variant spaces apart.
 
+## Before you finish
+
+- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
+- A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `isOpen`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.
+
 Related: button, toggle-group, dropdown-menu

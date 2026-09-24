@@ -97,4 +97,9 @@ Correct:
 
 A sibling button sits outside the control's border and its focus ring; `align="block-end"` switches the group to a column and keeps the button inside the field.
 
+## Before you finish
+
+- `Input`, `Textarea` and `NativeSelect` are real DOM elements, so they take `value`, `onChange(event)` read through `event.target.value`, `disabled`, `required` and `aria-invalid`.
+- `Input`, `Textarea` and `SelectTrigger` take their surface from `variant="outline" | "filled" | "text"`, and `className` on them carries layout only (`w-full`, `col-span-2`).
+
 Related: field, input, input-group

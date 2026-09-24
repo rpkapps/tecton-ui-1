@@ -77,4 +77,9 @@ Correct:
 
 The component already renders `CopyIcon` or `CheckIcon` itself, so a child icon is drawn twice, switches the size default from `icon-sm` to `sm`, and suppresses the automatic accessible name because children are now present.
 
+## Before you finish
+
+- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
+- Copy-to-clipboard is `CopyButton value={…}` with `onCopied`, with no `onPress` passed to it, no icon child and no hand-written clipboard handler.
+
 Related: button

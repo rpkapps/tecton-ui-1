@@ -91,4 +91,8 @@ Correct:
 
 A vertical `Separator` is `w-px self-stretch`, so it takes its height from the flex row; `h-4` freezes it at one size instead, and `bg-border` overrides the colour the `emphasis` variant already owns.
 
+## Before you finish
+
+- A divider is a `Separator` with `emphasis="subtle" | "default" | "strong"` (or the surface's own `ItemSeparator` / `border-b`), never a bare `div` with a border colour.
+
 Related: item, panel, card

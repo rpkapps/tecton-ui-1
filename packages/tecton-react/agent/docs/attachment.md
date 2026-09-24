@@ -97,4 +97,9 @@ Correct:
 
 The root is a `div`, so the handler is mouse-only; `AttachmentTrigger` is a real `button` whose `absolute inset-0 z-10` covers the card but stays under `AttachmentActions` at `z-20`, so remove and retry keep working.
 
+## Before you finish
+
+- An attached file is an `Attachment` (`AttachmentMedia`, `AttachmentContent`, `AttachmentActions`) driven through `state="idle" | "uploading" | "processing" | "error" | "done"`, not a `Badge` and not a hand-painted error border.
+- Every `AttachmentAction` has an `aria-label` naming the action and the file and fires through `onPress`, and the card opens through `AttachmentTrigger` rather than an `onClick` on the root `div`.
+
 Related: message, badge, item

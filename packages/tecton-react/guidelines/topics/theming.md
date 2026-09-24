@@ -1,5 +1,5 @@
 ---
-name: theming
+title: "Colour, tokens, dark and light mode, ThemeRoot, micro-frontends"
 description: >
   How colour reaches the screen in @tecton/react and what an application may and
   may not change. Covers the shadcn CSS variables (--background, --primary,
@@ -14,12 +14,6 @@ description: >
   @tecton/react/federation/shared. Load when picking a colour, adding a token,
   toggling or inverting the mode, retinting a subtree, or mounting one Tecton
   application inside another.
-metadata:
-  type: sub-skill
-  library: "@tecton/react"
-  library_version: "0.1.0"
-requires:
-  - core
 sources:
   - "../../apps/www/content/docs/theming.mdx"
   - "../../apps/www/content/docs/micro-frontends.mdx"
@@ -32,7 +26,7 @@ sources:
 
 # Theming
 
-This skill builds on `@tecton/react#core`. Read it first for the import paths
+This builds on `tecton rules`. Read it first for the import paths
 and the rule that variants own colour.
 
 Only the **shadcn CSS variables** carry the Tecton visual language. No CSS

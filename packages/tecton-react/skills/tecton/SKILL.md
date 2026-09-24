@@ -11,9 +11,9 @@ metadata:
   library: "@tecton/react"
   library_version: "0.1.0"
 sources:
-  - "skills/core/SKILL.md"
-  - "skills/react-aria/SKILL.md"
-  - "guidelines/README.md"
+  - "guidelines/topics/rules.md"
+  - "guidelines/topics/react-aria.md"
+  - "guidelines/families.json"
 ---
 
 # @tecton/react
@@ -32,8 +32,8 @@ The `tecton` command ships with the package (`npx tecton …` or
    Search with the need, not the name you expect: "pick a date range",
    "keyboard shortcut hint", "section the user can expand".
 2. `tecton docs <id>[,<id>]` — for **every** component you use: Use it when,
-   Not for, Do, and the Don't entries with Wrong/Correct code (≈600–1,000
-   tokens each). Accepts an id (`alert-dialog`) or any export
+   Not for, Do, the Don't entries with Wrong/Correct code and the checks to
+   run before you finish (≈650–1,200 tokens each). Accepts an id (`alert-dialog`) or any export
    (`AlertDialogAction`).
 3. Topics when the task needs them: `tecton docs theming` (colours, tokens,
    modes, `ThemeRoot`, micro-frontends), `tecton docs react-aria` (every

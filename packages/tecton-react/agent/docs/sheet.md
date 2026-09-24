@@ -87,4 +87,9 @@ Correct:
 
 The padding lives on `SheetHeader` and `SheetFooter`, not on the sheet, so anything in between runs edge to edge against the panel border.
 
+## Before you finish
+
+- Every `Dialog`, `AlertDialog`, `Sheet` and `Popover` sits inside its own trigger component (`DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `PopoverTrigger`) together with its trigger `Button`; a sibling never receives the open state.
+- Controlled overlays use React Aria's `isOpen` and `onOpenChange`, and the footer closes with `DialogClose` or `SheetClose` rather than your own state.
+
 Related: dialog, drawer, panel

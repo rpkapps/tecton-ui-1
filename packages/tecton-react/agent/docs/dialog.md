@@ -79,4 +79,10 @@ Correct:
 
 `Dialog` forwards its props to React Aria's `ModalOverlay`, which reads `isOpen`; without it, and with no `DialogTrigger` above, the overlay keeps its own uncontrolled state and returns `null`.
 
+## Before you finish
+
+- Every `Dialog`, `AlertDialog`, `Sheet` and `Popover` sits inside its own trigger component (`DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `PopoverTrigger`) together with its trigger `Button`; a sibling never receives the open state.
+- Controlled overlays use React Aria's `isOpen` and `onOpenChange`, and the footer closes with `DialogClose` or `SheetClose` rather than your own state.
+- Every `Dialog` and `AlertDialog` has a `DialogTitle` / `AlertDialogTitle`, because React Aria takes the accessible name from it.
+
 Related: alert-dialog, sheet, popover

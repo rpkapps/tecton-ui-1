@@ -98,4 +98,11 @@ Correct:
 
 `allowsSorting` is what makes the column a sort control — it sets `aria-sort`, sorts on Enter and Space, draws the direction indicator and routes the change through the table's `onSortChange`; a bare `onClick` on the `th` answers a mouse and nothing else.
 
+## Before you finish
+
+- A table is `Table > TableHeader / TableBody / TableFooter` with the `TableHead` children straight inside `TableHeader` (React Aria renders the header row itself), an `aria-label` on `Table`, `isRowHeader` on the identifying column and an `id` on every `TableRow`.
+- An empty table renders through `TableBody`'s `renderEmptyState`, returning `Empty` or a string — never a `TableRow` with a `colSpan` cell.
+- Row activation is `onAction` on `TableRow` and sorting is `allowsSorting` on `TableHead` with the table's `onSortChange`; React Aria deletes `onClick` before the `<tr>` is rendered.
+- `className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-right`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.
+
 Related: item, tree-view, tanstack-table

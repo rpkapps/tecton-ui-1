@@ -95,4 +95,8 @@ Correct:
 
 The underline and `hover:text-foreground` treatments are `[a]:` descendant rules inside `markerVariants`, so an outer anchor matches none of them and nests a `w-full` flex row inside an inline element.
 
+## Before you finish
+
+- A full-width status row or labelled divider in a transcript is a `Marker` with `MarkerIcon` and `MarkerContent` (`variant="separator"` for a divider, `role="status"` for work in progress), never a coloured span and never `role="separator"`.
+
 Related: message, badge, separator
