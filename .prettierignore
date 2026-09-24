@@ -466,5 +466,3 @@ apps/www/src/examples/tooltip-keyboard.tsx
 apps/www/src/examples/tooltip-rtl.tsx
 apps/www/src/examples/tooltip-sides.tsx
 # synced-examples:end
-packages/tecton-react/agent-eval/.runs/
-packages/tecton-react/agent-eval/results/

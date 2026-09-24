@@ -1,1 +1,0 @@
-This project uses TanStack Intent for library guidance. Before writing, run `{{bin}}/intent list` to see the available skills, load the ones relevant to the task with `{{bin}}/intent load <package>#<skill>`, and follow the loaded guidance. These commands are your only source of information about @tecton/react.
