@@ -136,7 +136,7 @@ function expand(query, index, useSynonyms) {
 
 /**
  * BM25F over the entry fields. `weights` and `synonyms` exist for the eval's
- * ablations (scripts/agent-eval.mts); the CLI always uses the defaults.
+ * ablations (agent-eval/search-eval.mjs); the CLI always uses the defaults.
  */
 export function search(
   index,
