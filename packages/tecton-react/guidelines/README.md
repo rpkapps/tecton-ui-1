@@ -113,5 +113,9 @@ explanations of React or Tailwind, no repetition of the API reference.
   reports the modules that have no file yet.
 - `pnpm --filter @tecton/react skills:build` assembles `skills/<family>/SKILL.md` and
   `skills/choose-component/SKILL.md` from these files; `skills:check` fails on drift.
+- `pnpm --filter @tecton/react agent:build` writes `agent/index.json` and `agent/docs/<id>.md`, the
+  search index and pages behind the `tecton search` / `tecton docs` command (`bin/tecton.mjs`), from
+  these files and `synonyms.json` (query words mapped to the words the guidelines use);
+  `agent:check` fails on drift.
 - `pnpm --filter www docs:guidelines` renders the section into the component pages;
   `docs:sync` runs it too.

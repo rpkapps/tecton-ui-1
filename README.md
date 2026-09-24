@@ -59,6 +59,7 @@ An application mounted inside another one (a Module Federation remote, an embedd
 | `pnpm registry:build` / `pnpm registry:validate` | Build / validate the `@tecton` blocks registry (`packages/tecton-blocks`) into `apps/www/public/r` |
 | `pnpm docs:sync` | Sync shadcn docs pages + examples for the React Aria base |
 | `pnpm --filter @tecton/react guidelines:check` / `skills:build` | Verify the component usage guidelines / regenerate the Agent Skills in `packages/tecton-react/skills` from them (`skills:check` verifies) |
+| `pnpm --filter @tecton/react agent:build` | Regenerate the `tecton search` / `tecton docs` index in `packages/tecton-react/agent` from the guidelines (`agent:check` verifies) |
 | `pnpm --filter www docs:guidelines` | Sync the guideline files into each component's docs page "Usage guidelines" section (`--check` verifies) |
 | `pnpm --filter @tecton/react icons:build` | Regenerate icon components from the Tecton export in `icons-src/tecton/` |
 | `pnpm compare` | Playwright captures of the state matrices next to the Storybook screenshots |

@@ -7,10 +7,11 @@ description: How @tecton/react ships Agent Skills so a coding agent gets the des
 
 ## What ships
 
-Eighteen skills live at `packages/tecton-react/skills/<name>/SKILL.md` in the package source. Three are hand-written (`core`, `react-aria`, `theming`); the rest are generated per component family from the guideline files described below, one per family, so every one of the package's eighty modules is covered.
+Nineteen skills live at `packages/tecton-react/skills/<name>/SKILL.md` in the package source. Four are hand-written (`tecton`, `core`, `react-aria`, `theming`); the rest are generated per component family from the guideline files described below, one per family, so every one of the package's eighty modules is covered.
 
 | Skill | Covers |
 | --- | --- |
+| `tecton` | The lean entry point: the React Aria prop map, the finish checklist, and how to look components up with the `tecton` command (below) instead of loading family skills. |
 | `core` | Import paths, the reset Tailwind palette, semantic tokens versus Tecton steps, and variants own styling. Load before writing any Tecton markup. |
 | `react-aria` | The Radix-to-React-Aria prop map: `onPress`, `isDisabled`, `isSelected`, `selectedKey`, `isOpen`, and what replaces `asChild`. |
 | `theming` | How colour reaches the screen: the shadcn CSS variables, palette steps, dark-first, `ThemeRoot`, and micro-frontend scoping. |
@@ -31,6 +32,22 @@ Eighteen skills live at `packages/tecton-react/skills/<name>/SKILL.md` in the pa
 | `infrastructure` | DirectionProvider, PortalProvider, ThemeRoot, Shortcuts. |
 
 Every generated skill is distilled from the same **guideline files** — one Markdown file per component in `packages/tecton-react/guidelines/`, each with a "Use it when", "Do" and "Don't" section. Those files are rendered twice: as the **"Usage guidelines"** section you see on every component's docs page, and, grouped by family, into the skill table above. Change a guideline once and both the docs page and the shipped skill pick it up.
+
+## Looking components up with `tecton`
+
+The package also ships a `tecton` command that answers one question at a time, so an agent reads the guideline of the component it is about to use rather than a whole family skill:
+
+```bash title="Terminal"
+npx tecton search "confirm before deleting a well"   # ranked components, import path, what each is not for
+npx tecton docs alert-dialog,sonner                  # the usage guideline: Use it when, Not for, Do, Don't
+npx tecton docs AlertDialogAction                    # any export resolves to its module
+npx tecton docs icons                                # the oil & gas glyphs by name
+npx tecton rules                                     # the rules every file follows (the core skill)
+```
+
+It runs on plain Node from `node_modules` — no network, no API key — and always matches the installed version. A search prints about 450 tokens and a guideline 550 to 1,100, against 3,000 to 7,000 for a family skill. Pair it with the `tecton` skill (`intent load @tecton/react#tecton`, or copy `node_modules/@tecton/react/skills/tecton/SKILL.md` into your agent's skills folder), which carries the prop map and the checklist and tells the agent when to search.
+
+The index behind `search` is generated from the guideline files by `pnpm --filter @tecton/react agent:build`. A `notFor` entry is indexed under the component it points at, so "a transient confirmation" finds `toast` even though that phrase lives in `badge.md`. Retrieval and end-to-end agent results are in `packages/tecton-react/agent-eval/README.md`.
 
 ## Setting up a consuming app
 
