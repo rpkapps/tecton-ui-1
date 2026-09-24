@@ -4,8 +4,21 @@ One file per exported module of `@tecton/react`, written once and rendered twice
 
 - the **docs site** shows it as the "Usage guidelines" section of the component page
   (`apps/www` inserts it between generated markers; never edit that section in the page);
-- the **Agent Skills** shipped in `skills/` (TanStack Intent) are assembled from these files
-  per family and cite them as `sources`, so a changed guideline flags the skill as stale.
+- the **`tecton docs <id>`** command prints it to coding agents (with the family's `checklist`
+  from `families.json`), and `tecton search` ranks the files by their "Use it when", "Do" and the
+  `notFor` needs that point at them.
+
+`adopted/` holds rules taken from another design system, one JSON file per source (today
+`astryx.json`: usage rules adapted from Meta's Astryx and accepted by the Tecton design team). Each
+rule names a guideline id and where it goes — `do` (a Do bullet), `checklist` (the component's
+*Before you finish* list) or `rules` (every file) — and the build merges it into the agent page and
+the docs site; the guideline files themselves are untouched. Deleting a source's file and running
+`agent:build` and `docs:guidelines` removes all of its rules.
+
+`topics/` holds the three hand-written pages that are not about one component — `rules.md`,
+`react-aria.md`, `theming.md` — served as `tecton rules`, `tecton docs react-aria` and
+`tecton docs theming`. The only Agent Skill the package ships is `skills/tecton/SKILL.md`, which
+points agents at the command.
 
 The generated component sources under `src/components/**` are never hand-edited, which is why
 this guidance lives in a sidecar file instead of JSDoc. The folder ships in the package tarball.
@@ -111,7 +124,9 @@ explanations of React or Tailwind, no repetition of the API reference.
 
 - `pnpm --filter @tecton/react guidelines:check` validates every file against the rules above and
   reports the modules that have no file yet.
-- `pnpm --filter @tecton/react skills:build` assembles `skills/<family>/SKILL.md` and
-  `skills/choose-component/SKILL.md` from these files; `skills:check` fails on drift.
+- `pnpm --filter @tecton/react agent:build` writes `agent/index.json` and `agent/docs/<id>.md`, the
+  search index and pages behind the `tecton search` / `tecton docs` command (`bin/tecton.mjs`), from
+  these files, `topics/`, `families.json` and `synonyms.json` (query words mapped to the words the guidelines use);
+  `agent:check` fails on drift.
 - `pnpm --filter www docs:guidelines` renders the section into the component pages;
   `docs:sync` runs it too.

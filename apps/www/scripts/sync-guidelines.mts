@@ -90,7 +90,9 @@ export function renderSection(guideline: Guideline, catalog: Catalog): string {
   const doList = jsxBlock(
     "<DoList>",
     "</DoList>",
-    guideline.sections.doBullets.flatMap((bullet, index) => [
+    // Adopted checklist items (guidelines/adopted/*.json) read as Do bullets here;
+    // adopted Do items are already in doBullets.
+    [...guideline.sections.doBullets, ...guideline.adopted.checklist].flatMap((bullet, index) => [
       ...(index ? [""] : []),
       ...jsxBlock("<Do>", "</Do>", [bullet]),
     ])
@@ -121,7 +123,7 @@ export function renderSection(guideline: Guideline, catalog: Catalog): string {
     "",
     "### Not for",
     "",
-    renderNotFor(guideline.meta, catalog, "docs").join("\n"),
+    renderNotFor(guideline.meta, catalog).join("\n"),
     "",
     "### Do",
     "",

@@ -109,6 +109,42 @@ A category colour that no `variant` carries is the one documented exception: a T
 
 </Do>
 
+<Do>
+
+Keep a `Badge` label to one or two words ("Shut in"); put longer detail in the adjacent cell or a `Tooltip`.
+
+</Do>
+
+<Do>
+
+A `Badge` icon always sits beside a text label; never show an icon-only badge.
+
+</Do>
+
+<Do>
+
+Show metadata (spud date, measured depth) as muted text (`text-muted-foreground`), not a `Badge`; badges name statuses, categories or states.
+
+</Do>
+
+<Do>
+
+Use a dot (`CountBadge variant="dot"`) only for on/off signals like unread; a multi-state status is a text `Badge`.
+
+</Do>
+
+<Do>
+
+A status shown without text (dense grid cell, map marker) uses a distinct icon shape per state with an `aria-label`, not a coloured dot.
+
+</Do>
+
+<Do>
+
+Never show status by colour alone: every `Badge` has text, and a dot repeats its meaning nearby or in `aria-label`.
+
+</Do>
+
 </DoList>
 
 ### Don't

@@ -115,8 +115,8 @@ jobs:
       - name: Check component guidelines
         run: pnpm --filter @tecton/react guidelines:check
 
-      - name: Check generated skills
-        run: pnpm --filter @tecton/react skills:check
+      - name: Check the agent search index
+        run: pnpm --filter @tecton/react agent:check
 
       - name: Check docs guideline sections
         run: pnpm --filter www docs:guidelines --check

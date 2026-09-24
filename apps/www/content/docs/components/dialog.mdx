@@ -135,6 +135,18 @@ Keep `className` to width and layout (`sm:max-w-lg`): `Dialog` owns the surface,
 
 </Do>
 
+<Do>
+
+A dialog, sheet or drawer with unsaved input ignores backdrop presses, but Escape and Cancel still close it (`isDismissable={false}`; `Drawer`: `disablePointerDismissal`).
+
+</Do>
+
+<Do>
+
+Never open a `Dialog` from inside another; use steps within one, except an `AlertDialog` confirming a destructive action like discarding edits.
+
+</Do>
+
 </DoList>
 
 ### Don't

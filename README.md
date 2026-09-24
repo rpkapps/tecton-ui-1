@@ -46,7 +46,7 @@ An application mounted inside another one (a Module Federation remote, an embedd
 5. **A Tecton component exists only when shadcn has no counterpart.** Chip (selectable / removable tags), CountBadge, CircularProgress, Meter, ColorSwatch, TreeView, Stat, Panel, PageHeader, AppShell, CopyButton and Link live in `src/tecton/` and compose the generated components. Alerts with a severity, dividers with an emphasis, filled inputs, status badges and floating action buttons are variants of the shadcn components; data tables are built with TanStack Table on the shadcn `Table` (the docs carry the recipes).
 6. **Only blocks are published to the registry.** They are copy-paste snippets and live in their own package, `packages/tecton-blocks`; components ship in `@tecton/react` so every application runs the same themed build and upgrades with it. `registry:build` fails if a non-block item ever reaches `registry.json`.
 7. **Dark first.** Both modes come from the Tecton token export; applications default to dark.
-8. **Every component has a usage guideline.** `packages/tecton-react/guidelines/<component>.md` is written once and rendered twice: as the "Usage guidelines" section on the component's docs page, and, grouped by family, into the Agent Skills shipped in `packages/tecton-react/skills/`. Docs: `/docs/agents`.
+8. **Every component has a usage guideline.** `packages/tecton-react/guidelines/<component>.md` is written once and rendered twice: as the "Usage guidelines" section on the component's docs page, and as what the `tecton docs <id>` command prints to coding agents (`tecton search` finds it). The package ships one Agent Skill, `skills/tecton`, that points agents at the command. Docs: `/docs/agents`.
 
 ## Maintenance scripts
 
@@ -58,7 +58,8 @@ An application mounted inside another one (a Module Federation remote, an embedd
 | `pnpm generated:check` | Verify no generated component was hand-edited |
 | `pnpm registry:build` / `pnpm registry:validate` | Build / validate the `@tecton` blocks registry (`packages/tecton-blocks`) into `apps/www/public/r` |
 | `pnpm docs:sync` | Sync shadcn docs pages + examples for the React Aria base |
-| `pnpm --filter @tecton/react guidelines:check` / `skills:build` | Verify the component usage guidelines / regenerate the Agent Skills in `packages/tecton-react/skills` from them (`skills:check` verifies) |
+| `pnpm --filter @tecton/react guidelines:check` | Verify the component usage guidelines |
+| `pnpm --filter @tecton/react agent:build` | Regenerate the `tecton search` / `tecton docs` index in `packages/tecton-react/agent` from the guidelines and `guidelines/topics` (`agent:check` verifies) |
 | `pnpm --filter www docs:guidelines` | Sync the guideline files into each component's docs page "Usage guidelines" section (`--check` verifies) |
 | `pnpm --filter @tecton/react icons:build` | Regenerate icon components from the Tecton export in `icons-src/tecton/` |
 | `pnpm compare` | Playwright captures of the state matrices next to the Storybook screenshots |

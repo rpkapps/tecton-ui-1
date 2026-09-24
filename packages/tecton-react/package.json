@@ -26,8 +26,11 @@
     "use-client:restore": "bun run scripts/restore-use-client.mts",
     "use-client:check": "bun run scripts/restore-use-client.mts --check",
     "guidelines:check": "bun run scripts/guidelines-check.mts",
-    "skills:build": "bun run scripts/skills-build.mts",
-    "skills:check": "bun run scripts/skills-build.mts --check"
+    "agent:build": "bun run scripts/agent-build.mts",
+    "agent:check": "bun run scripts/agent-build.mts --check"
+  },
+  "bin": {
+    "tecton": "./bin/tecton.mjs"
   },
   "dependencies": {
     "@base-ui/react": "^1.8.0",
@@ -527,6 +530,8 @@
     "components.json",
     "guidelines",
     "skills",
+    "agent",
+    "bin",
     "!skills/_artifacts"
   ]
 }

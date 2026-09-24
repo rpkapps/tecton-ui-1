@@ -1,36 +1,36 @@
 ---
 title: AI agents
-description: How @tecton/react ships Agent Skills so a coding agent gets the design system's usage rules instead of guessing from a stock shadcn prior.
+description: How @tecton/react gives a coding agent the design system's usage rules — one Agent Skill and a lookup command — instead of leaving it to guess from a stock shadcn prior.
 ---
 
-`@tecton/react` ships [Agent Skills](https://agentskills.io) alongside its components, using [TanStack Intent](https://github.com/TanStack/intent). A skill is a short, versioned document that tells an agent how to use one part of the library — the props, the variants, the mistakes an agent's shadcn-on-Radix prior would otherwise lead it into. Skills travel with the package: update `@tecton/react`, and the guidance updates with it.
+`@tecton/react` ships two things for coding agents: one [Agent Skill](https://agentskills.io), distributed with [TanStack Intent](https://github.com/TanStack/intent), and a `tecton` command that looks components up. The skill is short and always relevant: the Radix-to-React-Aria prop map, the checks every file has to pass, and when to run the command. The command answers one question at a time, so an agent reads the guideline of the component it is about to use and nothing else. Both travel with the package: update `@tecton/react`, and the guidance updates with it.
 
 ## What ships
 
-Eighteen skills live at `packages/tecton-react/skills/<name>/SKILL.md` in the package source. Three are hand-written (`core`, `react-aria`, `theming`); the rest are generated per component family from the guideline files described below, one per family, so every one of the package's eighty modules is covered.
-
-| Skill | Covers |
+| | |
 | --- | --- |
-| `core` | Import paths, the reset Tailwind palette, semantic tokens versus Tecton steps, and variants own styling. Load before writing any Tecton markup. |
-| `react-aria` | The Radix-to-React-Aria prop map: `onPress`, `isDisabled`, `isSelected`, `selectedKey`, `isOpen`, and what replaces `asChild`. |
-| `theming` | How colour reaches the screen: the shadcn CSS variables, palette steps, dark-first, `ThemeRoot`, and micro-frontend scoping. |
-| `choose-component` | The decision table across every family; maps a need to one component, its import path, and the family skill to load next. |
-| `labels` | Badge, Chip and ChipGroup, CountBadge, Kbd. |
-| `feedback` | Alert, toast, Empty, and FieldError. |
-| `overlays` | Dialog, AlertDialog, Sheet, Drawer, Popover, HoverCard, Tooltip. |
-| `selection` | Select, Combobox, NativeSelect, RadioGroup, ToggleGroup, Tabs, Command. |
-| `actions` | Button, LinkButton, Link, ButtonGroup, Toggle, DropdownMenu, ContextMenu, CopyButton, ActionBar. |
-| `progress` | Progress, CircularProgress, Meter, Spinner, Skeleton. |
-| `surfaces` | Card, Panel, Item, PageHeader, AppShell, Separator. |
-| `forms` | Field, Input, Textarea, Select, Checkbox, Switch, Slider, InputGroup, InputOTP, Label, and TanStack Form wiring. |
-| `navigation` | Breadcrumb, Sidebar, Pagination, AppFinder. |
-| `data` | Table and the TanStack Table recipe, TreeView, Chart, Stat, ColorSwatch, Calendar and the date picker recipe. |
-| `layout` | Accordion, Collapsible, Resizable, ScrollArea, AspectRatio. |
-| `presentation` | Carousel, Avatar, Overflow, Canvas, Background. |
-| `conversation` | Message, MessageScroller, Bubble, Attachment, Questionnaire, Marker. |
-| `infrastructure` | DirectionProvider, PortalProvider, ThemeRoot, Shortcuts. |
+| `skills/tecton/SKILL.md` | The only skill (about 1,300 tokens): imports, the React Aria prop map, the *Before you finish* checklist, and how to use `tecton`. |
+| `bin/tecton.mjs` | The `tecton` command. |
+| `agent/` | The search index and one page per component, generated from the guideline files. |
+| `guidelines/` | The sources: one guideline per component, `families.json` (families and their checklists) and `topics/` (the rules, React Aria and theming pages). |
 
-Every generated skill is distilled from the same **guideline files** — one Markdown file per component in `packages/tecton-react/guidelines/`, each with a "Use it when", "Do" and "Don't" section. Those files are rendered twice: as the **"Usage guidelines"** section you see on every component's docs page, and, grouped by family, into the skill table above. Change a guideline once and both the docs page and the shipped skill pick it up.
+Every page `tecton docs` prints is built from the same **guideline files** — one Markdown file per component in `packages/tecton-react/guidelines/`, each with a "Use it when", "Do" and "Don't" section. Those files are rendered twice: as the **"Usage guidelines"** section you see on every component's docs page, and as the page an agent reads. Change a guideline once and both pick it up.
+
+## Looking components up with `tecton`
+
+```bash title="Terminal"
+npx tecton search "confirm before deleting a well"   # ranked components, import path, what each is not for
+npx tecton docs alert-dialog,sonner                  # the usage guideline: Use it when, Not for, Do, Don't, checklist
+npx tecton docs AlertDialogAction                    # any export resolves to its module
+npx tecton docs icons                                # the oil & gas glyphs by name
+npx tecton docs react-aria                           # every Radix-to-React-Aria substitution, with code
+npx tecton docs theming                              # colour, tokens, modes, ThemeRoot, micro-frontends
+npx tecton rules                                     # the rules every file follows, in full
+```
+
+It runs on plain Node from `node_modules` — no network, no API key — and always matches the installed version. A search prints about 450 tokens and a component page 650 to 1,200.
+
+The index behind `search` is generated by `pnpm --filter @tecton/react agent:build`. A `notFor` entry is indexed under the component it points at, so "a transient confirmation" finds `toast` even though that phrase lives in `badge.md`. Retrieval accuracy and end-to-end agent results — including the comparison with the per-family skills this replaced — are in `packages/tecton-react/agent-eval/README.md`.
 
 ## Setting up a consuming app
 
@@ -59,17 +59,18 @@ It scans your `node_modules` for packages that ship Intent skills, then writes (
 
   A workspace consuming `@tecton/react` as `workspace:*` lists it as `"workspace:@tecton/react"`
   instead. The `@tanstack/*` entry picks up TanStack's own published skills (Router, Query,
-  Table, …) the same way.
+  Table, …) the same way. Every listed skill is printed by `intent list` in every session that
+  runs it, so list only the packages you want guidance for.
 </Callout>
 
 Once installed, discover and load skills directly:
 
 ```bash title="Terminal"
 npx @tanstack/intent@latest list
-npx @tanstack/intent@latest load @tecton/react#core
+npx @tanstack/intent@latest load @tecton/react#tecton
 ```
 
-`list` prints every skill available locally with its description and load command; `load` prints one skill's full `SKILL.md` body to stdout for the agent to read.
+`list` prints every skill available locally with its description and load command — for `@tecton/react`, the one `tecton` skill; `load` prints its full `SKILL.md` body to stdout for the agent to read.
 
 ## Optional: Claude Code hooks
 
@@ -86,4 +87,4 @@ Skills are versioned with the package: each `SKILL.md` records the `@tecton/reac
 
 ## Restyling and imports
 
-Skills describe intended usage rather than enforcing it: the `core` skill's "Before you finish" list is the self-check an agent runs against the file it just wrote.
+Skills describe intended usage rather than enforcing it: the `tecton` skill's "Before you finish" list (and the one at the end of each `tecton docs` page) is the self-check an agent runs against the file it just wrote.

@@ -173,6 +173,48 @@ Nest `ButtonGroup`s to separate clusters; the outer group adds the gap itself.
 
 </Do>
 
+<Do>
+
+Every button in a `ButtonGroup` shares the same variant and size.
+
+</Do>
+
+<Do>
+
+Keep a destructive button out of a `ButtonGroup`, set apart from neighbouring actions by a gap.
+
+</Do>
+
+<Do>
+
+When a row of buttons must be one Tab stop with arrow-key movement, use a labelled `Toolbar`, not a `ButtonGroup`.
+
+</Do>
+
+<Do>
+
+While an action runs, the button that started it keeps focus and shows it is working (`isPending` with a `Spinner`, not `isDisabled`); only conflicting actions become unavailable.
+
+</Do>
+
+<Do>
+
+In a `Toolbar` or action bar, back and secondary actions come first and the primary button comes last, at the inline end.
+
+</Do>
+
+<Do>
+
+Separate a `Toolbar` from the content below with a `Separator` or the card header edge, never a hand-coloured border.
+
+</Do>
+
+<Do>
+
+Put a card header's filter and add actions in `CardAction`; use a `Toolbar` there only when they must collapse into a More menu.
+
+</Do>
+
 </DoList>
 
 ### Don't

@@ -59,12 +59,12 @@ function checkFamilies(dir: string): string[] {
       errors.push(`families.json: "${family}" has no "modules"`)
       continue
     }
-    if (entry.skill && typeof entry.skill.description !== "string") {
-      errors.push(`families.json: "${family}".skill has no "description"`)
-    } else if (entry.skill && entry.skill.description.length > 1024) {
-      errors.push(
-        `families.json: "${family}".skill.description is ${entry.skill.description.length} characters (Intent allows 1024)`
-      )
+    if (
+      entry.checklist !== undefined &&
+      (!Array.isArray(entry.checklist) ||
+        entry.checklist.some((item) => typeof item !== "string" || !item.trim()))
+    ) {
+      errors.push(`families.json: "${family}".checklist must be a list of non-empty strings`)
     }
     for (const moduleKey of entry.modules) {
       seen.set(moduleKey, [...(seen.get(moduleKey) ?? []), family])
@@ -116,7 +116,7 @@ function main() {
     const have = entry.modules.filter((moduleKey) => valid.has(moduleKey)).length
     covered += have
     total += entry.modules.length
-    lines.push(`${family} ${have}/${entry.modules.length}${entry.skill ? "" : " (no skill)"}`)
+    lines.push(`${family} ${have}/${entry.modules.length}`)
   }
   console.log(
     `guidelines: ${valid.size} valid file(s) covering ${covered}/${total} modules — ${lines.join(", ")}`

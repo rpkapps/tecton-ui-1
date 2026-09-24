@@ -24,7 +24,7 @@ related: [LinkButton, ButtonGroup, Link]
 - Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`).
 - Mark icons with `data-icon="inline-start" | "inline-end"` so the padding adjusts, and give icon-only buttons an `aria-label`.
 - Navigate with `LinkButton` from this module, or with `buttonVariants()` on a plain `a`.
-- Show work with a `Spinner` child plus `isDisabled`; a FAB is the documented `rounded-full shadow-md` recipe.
+- Show work with a `Spinner` child plus `isPending`, which keeps focus and blocks repeat presses (`isDisabled` drops focus); a FAB is the documented `rounded-full shadow-md` recipe.
 
 ## Don't
 

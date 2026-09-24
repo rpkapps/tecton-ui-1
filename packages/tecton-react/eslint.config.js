@@ -31,6 +31,8 @@ export default [
       "src/lib/**",
       "registry/**",
       "dist/**",
+      "agent-eval/.runs/**",
+      "agent-eval/results/**",
     ],
   },
 ]

@@ -1,0 +1,810 @@
+{
+  "$comment": "Usage rules adapted from Astryx and adopted by the Tecton design team (review of 2026-09-24). They are merged into the `tecton docs` pages and the docs site's Do lists at build time; the guideline files are untouched. To remove them all: delete this file, then run `pnpm --filter @tecton/react agent:build` and `pnpm --filter www docs:guidelines`. `where`: do = a Do bullet of the component, checklist = its Before you finish list, rules = the rules for every file.",
+  "source": {
+    "name": "Astryx",
+    "url": "https://github.com/facebook/astryx",
+    "license": "MIT",
+    "copyright": "Copyright (c) 2026 Meta Platforms, Inc.",
+    "note": "Rules are rewritten in Tecton's words and API, not copied."
+  },
+  "rules": [
+    {
+      "id": "badge.Badge.4",
+      "component": "badge",
+      "where": "do",
+      "text": "Keep a `Badge` label to one or two words (\"Shut in\"); put longer detail in the adjacent cell or a `Tooltip`.",
+      "origin": "Astryx Badge #4"
+    },
+    {
+      "id": "badge.Badge.5",
+      "component": "badge",
+      "where": "do",
+      "text": "A `Badge` icon always sits beside a text label; never show an icon-only badge.",
+      "origin": "Astryx Badge #5"
+    },
+    {
+      "id": "badge.Badge.7",
+      "component": "badge",
+      "where": "do",
+      "text": "Show metadata (spud date, measured depth) as muted text (`text-muted-foreground`), not a `Badge`; badges name statuses, categories or states.",
+      "origin": "Astryx Badge #7"
+    },
+    {
+      "id": "badge.StatusDot.1",
+      "component": "badge",
+      "where": "do",
+      "text": "Use a dot (`CountBadge variant=\"dot\"`) only for on/off signals like unread; a multi-state status is a text `Badge`.",
+      "origin": "Astryx StatusDot #1"
+    },
+    {
+      "id": "badge.StatusDot.2",
+      "component": "badge",
+      "where": "checklist",
+      "text": "Never show status by colour alone: every `Badge` has text, and a dot repeats its meaning nearby or in `aria-label`.",
+      "origin": "Astryx StatusDot #2"
+    },
+    {
+      "id": "badge.StatusDot.4",
+      "component": "badge",
+      "where": "do",
+      "text": "A status shown without text (dense grid cell, map marker) uses a distinct icon shape per state with an `aria-label`, not a coloured dot.",
+      "origin": "Astryx StatusDot #4"
+    },
+    {
+      "id": "chip.Token.5",
+      "component": "chip",
+      "where": "do",
+      "text": "Use a `Chip` only to select or remove a value; actions are a `Button`, destinations a `Link`, even when small.",
+      "origin": "Astryx Token #5"
+    },
+    {
+      "id": "chip.Token.7",
+      "component": "chip",
+      "where": "do",
+      "text": "Use at most two or three chip colours in one `ChipGroup`, each with one fixed meaning; beyond that, distinguish with text.",
+      "origin": "Astryx Token #7"
+    },
+    {
+      "id": "chip.Tokenizer.1",
+      "component": "chip",
+      "where": "do",
+      "text": "Give the `ComboboxChipsInput` a placeholder naming what can be added (\"Add wells…\").",
+      "origin": "Astryx Tokenizer #1"
+    },
+    {
+      "id": "chip.Tokenizer.6",
+      "component": "chip",
+      "where": "do",
+      "text": "Selected values in `ComboboxChips` keep the default chip look; colour a chip only when its category carries meaning, never as decoration.",
+      "origin": "Astryx Tokenizer #6"
+    },
+    {
+      "id": "kbd.Kbd.2",
+      "component": "kbd",
+      "where": "do",
+      "text": "Show shortcuts in the user's platform keys, ⌘ on macOS and Ctrl elsewhere (`ShortcutKeys keys=\"mod+k\"`, not a hard-coded `Kbd`).",
+      "origin": "Astryx Kbd #2"
+    },
+    {
+      "id": "kbd.Kbd.3",
+      "component": "kbd",
+      "where": "do",
+      "text": "Every shortcut shown in a `Kbd` also has a visible control that runs the same action.",
+      "origin": "Astryx Kbd #3"
+    },
+    {
+      "id": "alert.Banner.3",
+      "component": "alert",
+      "where": "do",
+      "text": "Info and success alerts can be dismissed; warning and destructive alerts stay until the problem is resolved.",
+      "origin": "Astryx Banner #3"
+    },
+    {
+      "id": "alert.Banner.4",
+      "component": "alert",
+      "where": "do",
+      "text": "Keep an alert title to a few words naming what happened (\"Simulation failed\"); cause and fix go in the description.",
+      "origin": "Astryx Banner #4"
+    },
+    {
+      "id": "alert.Banner.6",
+      "component": "alert",
+      "where": "do",
+      "text": "Show one `Alert` per severity in a region, folding related messages of the same severity into a list inside it.",
+      "origin": "Astryx Banner #6"
+    },
+    {
+      "id": "alert.Banner.9",
+      "component": "alert",
+      "where": "do",
+      "text": "Say the severity in the alert title's words (\"Pressure warning\", \"Export failed\"), not only through its icon or colour.",
+      "origin": "Astryx Banner #9"
+    },
+    {
+      "id": "empty.EmptyState.5",
+      "component": "empty",
+      "where": "do",
+      "text": "Say what is empty and why (\"No wells match these filters\"), never a bare \"No data\".",
+      "origin": "Astryx EmptyState #5"
+    },
+    {
+      "id": "sonner.Toast.3",
+      "component": "sonner",
+      "where": "do",
+      "text": "Repeating an action replaces its toast instead of stacking another (a stable `id: \"save-model\"`).",
+      "origin": "Astryx Toast #3"
+    },
+    {
+      "id": "sonner.Toast.4",
+      "component": "sonner",
+      "where": "do",
+      "text": "Use an error toast only for background failures the page also shows; failures needing action are a destructive `Alert`.",
+      "origin": "Astryx Toast #4"
+    },
+    {
+      "id": "alert-dialog.AlertDialog.1",
+      "component": "alert-dialog",
+      "where": "do",
+      "text": "Name the confirm button for its action and object (\"Delete well\"), never \"OK\", \"Yes\" or \"Confirm\".",
+      "origin": "Astryx AlertDialog #1"
+    },
+    {
+      "id": "alert-dialog.AlertDialog.3",
+      "component": "alert-dialog",
+      "where": "do",
+      "text": "Keyboard users reach Cancel first in a confirmation dialog: put `AlertDialogCancel` before `AlertDialogAction` in the footer.",
+      "origin": "Astryx AlertDialog #3"
+    },
+    {
+      "id": "dialog.Dialog.3",
+      "component": "dialog",
+      "where": "checklist",
+      "text": "A dialog, sheet or drawer with unsaved input ignores backdrop presses, but Escape and Cancel still close it (`isDismissable={false}`; `Drawer`: `disablePointerDismissal`).",
+      "origin": "Astryx Dialog #3"
+    },
+    {
+      "id": "dialog.Dialog.6",
+      "component": "dialog",
+      "where": "checklist",
+      "text": "Never open a `Dialog` from inside another; use steps within one, except an `AlertDialog` confirming a destructive action like discarding edits.",
+      "origin": "Astryx Dialog #6"
+    },
+    {
+      "id": "dialog.Lightbox.1",
+      "component": "rules",
+      "where": "rules",
+      "text": "Every image has alt text describing what it shows (\"Seismic section, inline 1204\"), or empty alt when decorative; never a file name.",
+      "origin": "Astryx Lightbox #1"
+    },
+    {
+      "id": "popover.Popover.4",
+      "component": "popover",
+      "where": "do",
+      "text": "Never open a `Popover` from inside another; a `Select`, `Combobox` or `DropdownMenu` inside one is fine.",
+      "origin": "Astryx Popover #4"
+    },
+    {
+      "id": "tooltip.Tooltip.2",
+      "component": "rules",
+      "where": "rules",
+      "text": "Every icon-only `Button`, `Toggle` or `ToggleGroupItem` shows a `Tooltip` with the same words as its accessible label.",
+      "origin": "Astryx Tooltip #2"
+    },
+    {
+      "id": "combobox.ComplexSelector.2",
+      "component": "combobox",
+      "where": "checklist",
+      "text": "A `Popover` editing in stages (date range, filter set) commits only on Apply; Cancel or dismiss discards the draft.",
+      "origin": "Astryx ComplexSelector #2"
+    },
+    {
+      "id": "combobox.MultiSelector.4",
+      "component": "combobox",
+      "where": "checklist",
+      "text": "When users usually want nearly all options, add a select-all `Checkbox` showing partial selection (`isIndeterminate`, not `checked=\"indeterminate\"`).",
+      "origin": "Astryx MultiSelector #4"
+    },
+    {
+      "id": "combobox.Typeahead.2",
+      "component": "combobox",
+      "where": "do",
+      "text": "Open a `Combobox`'s suggestions on focus when recent picks (the last wells opened) help before typing (`menuTrigger=\"focus\"`).",
+      "origin": "Astryx Typeahead #2"
+    },
+    {
+      "id": "combobox.Typeahead.3",
+      "component": "combobox",
+      "where": "do",
+      "text": "Query a server-backed `Combobox` after the user pauses typing, not on every keystroke (debounce `onInputChange`).",
+      "origin": "Astryx Typeahead #3"
+    },
+    {
+      "id": "command.CommandPalette.4",
+      "component": "command",
+      "where": "do",
+      "text": "Keep the `Command` palette short: a few groups, with record results capped (the first ten wells) rather than every match.",
+      "origin": "Astryx CommandPalette #4"
+    },
+    {
+      "id": "command.PowerSearch.2",
+      "component": "command",
+      "where": "checklist",
+      "text": "When a filter narrows a table or list, show the matching count beside it (\"42 of 318 wells\").",
+      "origin": "Astryx PowerSearch #2"
+    },
+    {
+      "id": "radio-group.RadioList.2",
+      "component": "radio-group",
+      "where": "checklist",
+      "text": "Label each radio option, toggle-group item and tab in one to three words that set it apart; detail goes in a description.",
+      "origin": "Astryx RadioList #2"
+    },
+    {
+      "id": "radio-group.RadioList.3",
+      "component": "radio-group",
+      "where": "do",
+      "text": "Preselect the sensible default option; leave the group empty only when the answer is optional or a default would bias it.",
+      "origin": "Astryx RadioList #3"
+    },
+    {
+      "id": "radio-group.RadioList.6",
+      "component": "radio-group",
+      "where": "do",
+      "text": "Lay radio options side by side only for up to four short labels; otherwise keep them stacked.",
+      "origin": "Astryx RadioList #6"
+    },
+    {
+      "id": "select.Selector.4",
+      "component": "select",
+      "where": "checklist",
+      "text": "Word the placeholder as the choice it asks for (\"Choose a datum\", \"Search wells by name or UWI\"), never a bare \"Select…\".",
+      "origin": "Astryx Selector #4"
+    },
+    {
+      "id": "select.Selector.10",
+      "component": "select",
+      "where": "do",
+      "text": "Navigate with a `Link` or `Tabs`, never from a `Select`; a `Select` sets a value and leaves the user in place.",
+      "origin": "Astryx Selector #10"
+    },
+    {
+      "id": "select.Selector.11",
+      "component": "select",
+      "where": "do",
+      "text": "Use a `Switch` (applies at once) or a `Checkbox` (submitted with the form) for yes/no choices, not a two-option `Select`.",
+      "origin": "Astryx Selector #11"
+    },
+    {
+      "id": "tabs.TabList.6",
+      "component": "tabs",
+      "where": "do",
+      "text": "Use `Tabs` only for sections the user can visit in any order, never for steps that must be done in sequence.",
+      "origin": "Astryx TabList #6"
+    },
+    {
+      "id": "button.Button.1",
+      "component": "button",
+      "where": "do",
+      "text": "Each view or panel has one primary button for its main action (`variant=\"default\"`); every other action is secondary, outline or ghost by weight.",
+      "origin": "Astryx Button #1"
+    },
+    {
+      "id": "button.Button.2",
+      "component": "button",
+      "where": "do",
+      "text": "Label a button with a verb and its object (\"Shut in well\", \"Export LAS\"), never \"OK\", \"Submit\" or \"Click here\".",
+      "origin": "Astryx Button #2"
+    },
+    {
+      "id": "button.IconButton.1",
+      "component": "button",
+      "where": "do",
+      "text": "When an icon repeats across rows, its accessible name includes the object (\"Delete well 34/10-A-12\", not \"Delete\").",
+      "origin": "Astryx IconButton #1"
+    },
+    {
+      "id": "button.IconButton.3",
+      "component": "button",
+      "where": "do",
+      "text": "Icon-only buttons in toolbars, table rows and panel headers stay quiet (`variant=\"ghost\"`, `size=\"icon-sm\"` or `\"icon\"`).",
+      "origin": "Astryx IconButton #3"
+    },
+    {
+      "id": "button.IconButton.4",
+      "component": "button",
+      "where": "do",
+      "text": "Give a button visible text when its icon alone is ambiguous; go icon-only just for universal glyphs like close, search, refresh or more.",
+      "origin": "Astryx IconButton #4"
+    },
+    {
+      "id": "button-group.ButtonGroup.2",
+      "component": "button-group",
+      "where": "do",
+      "text": "Every button in a `ButtonGroup` shares the same variant and size.",
+      "origin": "Astryx ButtonGroup #2"
+    },
+    {
+      "id": "button-group.ButtonGroup.4",
+      "component": "button-group",
+      "where": "do",
+      "text": "Keep a destructive button out of a `ButtonGroup`, set apart from neighbouring actions by a gap.",
+      "origin": "Astryx ButtonGroup #4"
+    },
+    {
+      "id": "button-group.ButtonGroup.8",
+      "component": "button-group",
+      "where": "do",
+      "text": "When a row of buttons must be one Tab stop with arrow-key movement, use a labelled `Toolbar`, not a `ButtonGroup`.",
+      "origin": "Astryx ButtonGroup #8"
+    },
+    {
+      "id": "button-group.ButtonGroup.9",
+      "component": "button-group",
+      "where": "do",
+      "text": "While an action runs, the button that started it keeps focus and shows it is working (`isPending` with a `Spinner`, not `isDisabled`); only conflicting actions become unavailable.",
+      "origin": "Astryx ButtonGroup #9"
+    },
+    {
+      "id": "button-group.Toolbar.1",
+      "component": "button-group",
+      "where": "checklist",
+      "text": "In a `Toolbar` or action bar, back and secondary actions come first and the primary button comes last, at the inline end.",
+      "origin": "Astryx Toolbar #1"
+    },
+    {
+      "id": "button-group.Toolbar.3",
+      "component": "button-group",
+      "where": "checklist",
+      "text": "Separate a `Toolbar` from the content below with a `Separator` or the card header edge, never a hand-coloured border.",
+      "origin": "Astryx Toolbar #3"
+    },
+    {
+      "id": "button-group.Toolbar.4",
+      "component": "button-group",
+      "where": "checklist",
+      "text": "Put a card header's filter and add actions in `CardAction`; use a `Toolbar` there only when they must collapse into a More menu.",
+      "origin": "Astryx Toolbar #4"
+    },
+    {
+      "id": "dropdown-menu.DropdownMenu.1",
+      "component": "dropdown-menu",
+      "where": "checklist",
+      "text": "Label menu items with a short verb phrase (\"Rename\", \"Export LAS\"); the object comes from what the menu opened on.",
+      "origin": "Astryx DropdownMenu #1"
+    },
+    {
+      "id": "link.Link.1",
+      "component": "link",
+      "where": "do",
+      "text": "Link text names the destination (\"34/10-A-12 daily report\"), never \"click here\", \"read more\" or a bare URL.",
+      "origin": "Astryx Link #1"
+    },
+    {
+      "id": "link.Link.3",
+      "component": "link",
+      "where": "do",
+      "text": "Add an accessible label only to an icon-only link; a text link is already named by its visible text.",
+      "origin": "Astryx Link #3"
+    },
+    {
+      "id": "toggle.ToggleButton.1",
+      "component": "toggle",
+      "where": "do",
+      "text": "A selected toggle shows a filled icon as well as its selected background (Tecton glyph `variant={isSelected ? \"filled\" : \"outlined\"}`).",
+      "origin": "Astryx ToggleButton #1"
+    },
+    {
+      "id": "toggle.ToggleButton.2",
+      "component": "toggle",
+      "where": "do",
+      "text": "Keep a toggle's label the same in both states (\"Show labels\", not \"Show\"/\"Hide\").",
+      "origin": "Astryx ToggleButton #2"
+    },
+    {
+      "id": "toggle.ToggleButton.3",
+      "component": "toggle",
+      "where": "do",
+      "text": "Put related toggles in one `ToggleGroup` labelled for the set (\"Log tracks\"), not a row of separate `Toggle`s.",
+      "origin": "Astryx ToggleButton #3"
+    },
+    {
+      "id": "toggle.ToggleButton.5",
+      "component": "toggle",
+      "where": "do",
+      "text": "A `ToggleGroup` holds only toggles; an action such as Reset is a separate `Button` outside the group.",
+      "origin": "Astryx ToggleButton #5"
+    },
+    {
+      "id": "progress.ProgressBar.2",
+      "component": "progress",
+      "where": "do",
+      "text": "Show how a task ended beside the progress bar, with a success `Badge` or destructive `Alert`; never recolour the bar.",
+      "origin": "Astryx ProgressBar #2"
+    },
+    {
+      "id": "progress.ProgressBar.5",
+      "component": "progress",
+      "where": "do",
+      "text": "Show `Progress` only for work that takes several seconds; quicker actions get no indicator or a `Spinner` in their button.",
+      "origin": "Astryx ProgressBar #5"
+    },
+    {
+      "id": "progress.ProgressBar.6",
+      "component": "progress",
+      "where": "do",
+      "text": "Track one operation with one progress bar and name the current stage in its label (\"Importing LAS 3 of 7\"), not a bar per stage.",
+      "origin": "Astryx ProgressBar #6"
+    },
+    {
+      "id": "skeleton.Skeleton.4",
+      "component": "skeleton",
+      "where": "do",
+      "text": "Show either `Skeleton`s or a `Spinner` in a loading region, never both at once.",
+      "origin": "Astryx Skeleton #4"
+    },
+    {
+      "id": "skeleton.Skeleton.5",
+      "component": "skeleton",
+      "where": "do",
+      "text": "Skeletons never pulse forever: when loading fails or times out, show an `Empty` state or an error `Alert` with retry.",
+      "origin": "Astryx Skeleton #5"
+    },
+    {
+      "id": "spinner.Spinner.1",
+      "component": "spinner",
+      "where": "do",
+      "text": "A standalone `Spinner` says what is loading (\"Loading well logs\"); inside a labelled button it keeps the default label.",
+      "origin": "Astryx Spinner #1"
+    },
+    {
+      "id": "spinner.Spinner.4",
+      "component": "spinner",
+      "where": "do",
+      "text": "A view that loads as one unit shows one loading state; panels that load independently each show their own `Skeleton`, not a spinner per card.",
+      "origin": "Astryx Spinner #4"
+    },
+    {
+      "id": "app-shell.AppShell.3",
+      "component": "app-shell",
+      "where": "checklist",
+      "text": "Every navigation area on a page has its own screen-reader name (`aria-label`): app nav, page-header nav, rails and any second breadcrumb.",
+      "origin": "Astryx AppShell #3"
+    },
+    {
+      "id": "app-shell.TopNav.4",
+      "component": "app-shell",
+      "where": "do",
+      "text": "Keep `AppShellNav` one level deep: a destination may open one `DropdownMenu`; anything deeper belongs in `AppShellSidebar`.",
+      "origin": "Astryx TopNav #4"
+    },
+    {
+      "id": "card.Card.3",
+      "component": "card",
+      "where": "checklist",
+      "text": "Group content with headings and spacing first; add a `Card`, `Panel` or `Separator` only when whitespace leaves the grouping unclear.",
+      "origin": "Astryx Card #3"
+    },
+    {
+      "id": "card.Card.9",
+      "component": "card",
+      "where": "do",
+      "text": "Never nest a `Card` in a `Card`; divide its content with a header border, a `Separator` or an `ItemGroup` of rows.",
+      "origin": "Astryx Card #9"
+    },
+    {
+      "id": "item.Item.2",
+      "component": "item",
+      "where": "do",
+      "text": "Use compact `Item` rows in dense panels and inspectors (`size=\"sm\"` or `size=\"xs\"`), the default size for standalone lists with media.",
+      "origin": "Astryx Item #2"
+    },
+    {
+      "id": "item.Item.5",
+      "component": "item",
+      "where": "do",
+      "text": "A linked `Item` (`href`) holds no buttons or links; a row with its own actions stays static, links its title and puts buttons in `ItemActions`.",
+      "origin": "Astryx Item #5"
+    },
+    {
+      "id": "item.List.1",
+      "component": "item",
+      "where": "do",
+      "text": "Every `ItemGroup` is named for screen readers by its visible heading, or by an `aria-label` when none is on screen.",
+      "origin": "Astryx List #1"
+    },
+    {
+      "id": "item.List.4",
+      "component": "item",
+      "where": "do",
+      "text": "Use `ItemGroup` only for a collection of like records; a single `Item` stands alone, and unrelated content is spaced, not listed.",
+      "origin": "Astryx List #4"
+    },
+    {
+      "id": "item.List.5",
+      "component": "item",
+      "where": "do",
+      "text": "Rows in one `ItemGroup` are all linked or all static; when they must mix, each linked row shows a chevron in `ItemActions`.",
+      "origin": "Astryx List #5"
+    },
+    {
+      "id": "checkbox.CheckboxList.1",
+      "component": "checkbox",
+      "where": "do",
+      "text": "Keep checkbox lists to about seven options; longer ones (wells, formations) use a type-to-filter `Combobox` with chips (`selectionMode=\"multiple\"`).",
+      "origin": "Astryx CheckboxList #1"
+    },
+    {
+      "id": "checkbox.CheckboxList.5",
+      "component": "checkbox",
+      "where": "checklist",
+      "text": "A choice card, a `FieldLabel` wrapping a whole `Field`, holds no `Button` or `Link`; the whole card is the toggle.",
+      "origin": "Astryx CheckboxList #5"
+    },
+    {
+      "id": "field.Field.3",
+      "component": "field",
+      "where": "checklist",
+      "text": "Helper text and errors are announced with their control (`aria-describedby` listing the `FieldDescription` and `FieldError` ids; `Field` wires nothing).",
+      "origin": "Astryx Field #3"
+    },
+    {
+      "id": "field.Field.7",
+      "component": "field",
+      "where": "checklist",
+      "text": "Hide a field's label only when its purpose shows nearby, like a search icon or a column header; otherwise keep it visible.",
+      "origin": "Astryx Field #7"
+    },
+    {
+      "id": "input.NumberInput.2",
+      "component": "input",
+      "where": "do",
+      "text": "Numeric inputs reject values outside what the quantity allows, such as porosity 0–1 or depth ≥ 0 (`min`, `max`, `step`, not `minValue`/`maxValue`).",
+      "origin": "Astryx NumberInput #2"
+    },
+    {
+      "id": "input.NumberInput.3",
+      "component": "input",
+      "where": "checklist",
+      "text": "Every numeric value shows its unit (ft, psi, bbl/d): an `InputGroupText` end addon on an `Input`, after the live value on a `Slider`.",
+      "origin": "Astryx NumberInput #3"
+    },
+    {
+      "id": "input.NumberInput.5",
+      "component": "input",
+      "where": "do",
+      "text": "Identifiers such as API numbers, UWIs and licence codes are text fields, not number fields (`type=\"text\"` with `inputMode=\"numeric\"`).",
+      "origin": "Astryx NumberInput #5"
+    },
+    {
+      "id": "input.TextInput.4",
+      "component": "input",
+      "where": "do",
+      "text": "Search and filter fields show a clear button at the end while they hold a value (`InputGroupButton size=\"icon-xs\"`, `aria-label=\"Clear search\"`).",
+      "origin": "Astryx TextInput #4"
+    },
+    {
+      "id": "input.TextInput.5",
+      "component": "input",
+      "where": "checklist",
+      "text": "Never let a placeholder stand in for the label; keep it to an example value such as `34/10-A-12`.",
+      "origin": "Astryx TextInput #5"
+    },
+    {
+      "id": "input.TextInput.7",
+      "component": "input",
+      "where": "checklist",
+      "text": "Mark as required only the fields a record cannot be saved without, and show that mark visibly in their label.",
+      "origin": "Astryx TextInput #7"
+    },
+    {
+      "id": "textarea.TextArea.2",
+      "component": "textarea",
+      "where": "do",
+      "text": "A text area with a hard limit shows a live character count as the user types (`InputGroupTextarea`, `maxLength`, count in an `align=\"block-end\"` addon).",
+      "origin": "Astryx TextArea #2"
+    },
+    {
+      "id": "breadcrumb.Breadcrumbs.2",
+      "component": "breadcrumb",
+      "where": "do",
+      "text": "Label each breadcrumb with the title of the page it opens (\"Gullfaks\", not \"Gullfaks field overview\").",
+      "origin": "Astryx Breadcrumbs #2"
+    },
+    {
+      "id": "breadcrumb.Breadcrumbs.7",
+      "component": "breadcrumb",
+      "where": "do",
+      "text": "Breadcrumbs supplement the sidebar or top navigation; never make them the only way to reach other sections.",
+      "origin": "Astryx Breadcrumbs #7"
+    },
+    {
+      "id": "breadcrumb.Breadcrumbs.8",
+      "component": "breadcrumb",
+      "where": "do",
+      "text": "Leave breadcrumbs off top-level pages; a trail with no parent only repeats the page title.",
+      "origin": "Astryx Breadcrumbs #8"
+    },
+    {
+      "id": "pagination.Pagination.1",
+      "component": "pagination",
+      "where": "do",
+      "text": "Place pagination directly below the table or list it pages, never above the rows.",
+      "origin": "Astryx Pagination #1"
+    },
+    {
+      "id": "pagination.Pagination.5",
+      "component": "pagination",
+      "where": "do",
+      "text": "Show the known total next to `Pagination` (\"51–100 of 1,284 wells\"); it displays no count on its own.",
+      "origin": "Astryx Pagination #5"
+    },
+    {
+      "id": "pagination.Pagination.6",
+      "component": "pagination",
+      "where": "do",
+      "text": "Show no pagination when every row fits on one page.",
+      "origin": "Astryx Pagination #6"
+    },
+    {
+      "id": "sidebar.SideNav.2",
+      "component": "sidebar",
+      "where": "do",
+      "text": "Mark the current sidebar destination with a filled icon, not by background alone (`variant=\"filled\"` on the active row, `\"outlined\"` elsewhere).",
+      "origin": "Astryx SideNav #2"
+    },
+    {
+      "id": "sidebar.SideNav.3",
+      "component": "sidebar",
+      "where": "do",
+      "text": "Announce the current sidebar page to screen readers, not only by colour (`aria-current=\"page\"` alongside `isActive`).",
+      "origin": "Astryx SideNav #3"
+    },
+    {
+      "id": "calendar.Calendar.3",
+      "component": "calendar",
+      "where": "do",
+      "text": "When days are unavailable (rig move, shutdown), say why beside the calendar or in the day; never block days unexplained (`isDateUnavailable`, not `disabled`).",
+      "origin": "Astryx Calendar #3"
+    },
+    {
+      "id": "calendar.Calendar.5",
+      "component": "calendar",
+      "where": "do",
+      "text": "Let users type a date they already know or one far from today (`Input type=\"date\"`) instead of paging a `Calendar` month by month.",
+      "origin": "Astryx Calendar #5"
+    },
+    {
+      "id": "calendar.DateInput.3",
+      "component": "calendar",
+      "where": "do",
+      "text": "An optional or filtering date gets a clear button that empties it (value `null`).",
+      "origin": "Astryx DateInput #3"
+    },
+    {
+      "id": "table.Table.8",
+      "component": "table",
+      "where": "do",
+      "text": "Give text-heavy columns (well name, remarks) a minimum width on `TableHead`; they never collapse when the panel narrows.",
+      "origin": "Astryx Table #8"
+    },
+    {
+      "id": "tree-view.TreeList.2",
+      "component": "tree-view",
+      "where": "do",
+      "text": "The tree opens on the branches the user came for (active field, selected well's parents), not a column of closed folders (`defaultExpandedKeys`).",
+      "origin": "Astryx TreeList #2"
+    },
+    {
+      "id": "aspect-ratio.AspectRatio.8",
+      "component": "aspect-ratio",
+      "where": "do",
+      "text": "Put media directly inside one `AspectRatio`; never nest a second one.",
+      "origin": "Astryx AspectRatio #8"
+    },
+    {
+      "id": "collapsible.Collapsible.4",
+      "component": "collapsible",
+      "where": "do",
+      "text": "When users compare sections (two casing strings, successive well tests), opening one `Accordion` item leaves the others open (`allowsMultipleExpanded`, not `type=\"multiple\"`).",
+      "origin": "Astryx Collapsible #4"
+    },
+    {
+      "id": "collapsible.Collapsible.5",
+      "component": "collapsible",
+      "where": "checklist",
+      "text": "Start sections open when their content is needed on first view; collapse only secondary detail (`defaultExpanded` / `defaultExpandedKeys`, not `defaultOpen`).",
+      "origin": "Astryx Collapsible #5"
+    },
+    {
+      "id": "collapsible.Collapsible.8",
+      "component": "collapsible",
+      "where": "do",
+      "text": "Show a short paragraph or a few fields directly; use `Collapsible` only when hidden content would push the main content out of view.",
+      "origin": "Astryx Collapsible #8"
+    },
+    {
+      "id": "resizable.Resizable.3",
+      "component": "resizable",
+      "where": "do",
+      "text": "When a group has several resize handles, label each with what it resizes (\"Resize well list\").",
+      "origin": "Astryx Resizable #3"
+    },
+    {
+      "id": "scroll-area.ScrollableArea.9",
+      "component": "scroll-area",
+      "where": "do",
+      "text": "Always keep the `ScrollArea` scrollbar visible as the sign that more rows exist.",
+      "origin": "Astryx ScrollableArea #9"
+    },
+    {
+      "id": "scroll-area.ScrollableArea.10",
+      "component": "scroll-area",
+      "where": "do",
+      "text": "One element owns each scroll: never put a `ScrollArea` inside a box that already scrolls, such as `PanelContent` or `AppShellMain`.",
+      "origin": "Astryx ScrollableArea #10"
+    },
+    {
+      "id": "avatar.Avatar.2",
+      "component": "avatar",
+      "where": "do",
+      "text": "Size avatars by context: small inline and in dense tables, default in lists and comments, large in profile headers (`size=\"sm\" | \"default\" | \"lg\"`).",
+      "origin": "Astryx Avatar #2"
+    },
+    {
+      "id": "avatar.AvatarGroup.1",
+      "component": "avatar",
+      "where": "do",
+      "text": "Show at most three to five avatars in an `AvatarGroup` and fold the rest into `AvatarGroupCount` (\"+4\").",
+      "origin": "Astryx AvatarGroup #1"
+    },
+    {
+      "id": "carousel.Carousel.3",
+      "component": "carousel",
+      "where": "do",
+      "text": "Give every `Carousel` an accessible name for what it holds (\"Featured wells\").",
+      "origin": "Astryx Carousel #3"
+    },
+    {
+      "id": "carousel.Carousel.8",
+      "component": "carousel",
+      "where": "do",
+      "text": "Never auto-advance a `Carousel`; the reader moves between slides at their own pace.",
+      "origin": "Astryx Carousel #8"
+    },
+    {
+      "id": "carousel.Carousel.9",
+      "component": "carousel",
+      "where": "do",
+      "text": "Never put a `Carousel` inside another `Carousel`.",
+      "origin": "Astryx Carousel #9"
+    },
+    {
+      "id": "attachment.FileInput.1",
+      "component": "attachment",
+      "where": "do",
+      "text": "Limit the file picker to the formats the import can read (LAS, DLIS, SEG-Y).",
+      "origin": "Astryx FileInput #1"
+    },
+    {
+      "id": "attachment.FileInput.3",
+      "component": "attachment",
+      "where": "do",
+      "text": "State the accepted formats and size limit in a `FieldDescription` under the file input (\"LAS or DLIS, up to 200 MB\").",
+      "origin": "Astryx FileInput #3"
+    },
+    {
+      "id": "message.ChatToolCalls.2",
+      "component": "message",
+      "where": "checklist",
+      "text": "Show how long each finished tool call took on its `Marker` (\"Queried production history · 4.2 s\").",
+      "origin": "Astryx ChatToolCalls #2"
+    },
+    {
+      "id": "message-scroller.Chat.12",
+      "component": "message-scroller",
+      "where": "do",
+      "text": "Never nest a `Message` in another; show a quoted or forwarded turn as content inside the outer `Bubble`.",
+      "origin": "Astryx Chat #12"
+    }
+  ]
+}
