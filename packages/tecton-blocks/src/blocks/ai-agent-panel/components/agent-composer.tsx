@@ -33,48 +33,52 @@ function AgentComposer({
   onSubmit,
   ...props
 }: AgentComposerProps) {
+  // The block's slot goes on a wrapper that takes no box of its own: set on
+  // the form, it would replace the Composer's own `data-slot="composer"`.
   return (
-    <Composer
-      isDisabled={isDisabled}
-      onSubmit={({ text }) => onSubmit?.(text)}
-      {...props}
-    >
-      {suggestions.length > 0 && (
-        <ComposerSuggestions>
-          {suggestions.map((suggestion) => (
-            <ComposerSuggestion key={suggestion} value={suggestion} submit />
-          ))}
-        </ComposerSuggestions>
-      )}
-      <ComposerField>
-        <ComposerInput placeholder={placeholder} />
-        <ComposerToolbar>
-          <TooltipTrigger>
-            <InputGroupButton
-              size="icon-xs"
-              aria-label="Attach file"
-              isDisabled={isDisabled}
-            >
-              <PaperclipIcon />
-            </InputGroupButton>
-            <Tooltip>Attach</Tooltip>
-          </TooltipTrigger>
-          <TooltipTrigger>
-            <InputGroupButton
-              size="icon-xs"
-              aria-label="Dictate"
-              isDisabled={isDisabled}
-            >
-              <MicIcon />
-            </InputGroupButton>
-            <Tooltip>Dictate</Tooltip>
-          </TooltipTrigger>
-          <ComposerSubmit />
-        </ComposerToolbar>
-      </ComposerField>
-      <ComposerHint isVisible={false} />
-      <ComposerStatusMessage />
-    </Composer>
+    <div data-slot="agent-composer" className="contents">
+      <Composer
+        isDisabled={isDisabled}
+        onSubmit={({ text }) => onSubmit?.(text)}
+        {...props}
+      >
+        {suggestions.length > 0 && (
+          <ComposerSuggestions>
+            {suggestions.map((suggestion) => (
+              <ComposerSuggestion key={suggestion} value={suggestion} submit />
+            ))}
+          </ComposerSuggestions>
+        )}
+        <ComposerField>
+          <ComposerInput placeholder={placeholder} />
+          <ComposerToolbar>
+            <TooltipTrigger>
+              <InputGroupButton
+                size="icon-xs"
+                aria-label="Attach file"
+                isDisabled={isDisabled}
+              >
+                <PaperclipIcon />
+              </InputGroupButton>
+              <Tooltip>Attach</Tooltip>
+            </TooltipTrigger>
+            <TooltipTrigger>
+              <InputGroupButton
+                size="icon-xs"
+                aria-label="Dictate"
+                isDisabled={isDisabled}
+              >
+                <MicIcon />
+              </InputGroupButton>
+              <Tooltip>Dictate</Tooltip>
+            </TooltipTrigger>
+            <ComposerSubmit />
+          </ComposerToolbar>
+        </ComposerField>
+        <ComposerHint isVisible={false} />
+        <ComposerStatusMessage />
+      </Composer>
+    </div>
   )
 }
 
