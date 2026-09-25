@@ -283,6 +283,6 @@ Registers one shortcut for the lifetime of the component.
 | `subscribe(listener)` | Called when the set changes; returns the unsubscribe function. |
 | `handleKeyDown(event)` | Dispatches a key event; `true` when a shortcut handled it. |
 
-### useShortcuts, formatShortcut, ShortcutKeys
+### useShortcuts, formatShortcut, ShortcutKeys, useIsMacPlatform
 
-`useShortcuts()` returns the live `Shortcut[]`. `formatShortcut(keys)` returns the key caps per chord (`[["⌘", "K"]]`) for custom rendering; `ShortcutKeys` renders them with `Kbd`.
+`useShortcuts()` returns the live `Shortcut[]`. `formatShortcut(keys)` returns the key caps per chord (`[["⌘", "K"]]`) for custom rendering; `ShortcutKeys` renders them with `Kbd`. `useIsMacPlatform()` says whether the reader's keyboard is an Apple one, for a hand-written hint that shows ⌘ instead of Ctrl; it is `false` on the server and in the first render, so hydration matches.

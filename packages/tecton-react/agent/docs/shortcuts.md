@@ -3,7 +3,7 @@
 # ShortcutsProvider — @tecton/react/tecton/shortcuts
 
 ```tsx
-import { ShortcutsProvider, createShortcutRegistry, useShortcut, useShortcuts, useShortcutRegistry, formatShortcut, ShortcutKeys } from "@tecton/react/tecton/shortcuts"
+import { ShortcutsProvider, createShortcutRegistry, useShortcut, useShortcuts, useShortcutRegistry, formatShortcut, ShortcutKeys, useIsMacPlatform } from "@tecton/react/tecton/shortcuts"
 ```
 
 ## Use it when

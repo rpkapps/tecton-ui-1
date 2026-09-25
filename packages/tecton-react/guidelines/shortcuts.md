@@ -2,7 +2,7 @@
 component: ShortcutsProvider
 module: "@tecton/react/tecton/shortcuts"
 family: infrastructure
-exports: [ShortcutsProvider, createShortcutRegistry, useShortcut, useShortcuts, useShortcutRegistry, formatShortcut, ShortcutKeys]
+exports: [ShortcutsProvider, createShortcutRegistry, useShortcut, useShortcuts, useShortcutRegistry, formatShortcut, ShortcutKeys, useIsMacPlatform]
 notFor:
   - need: one key cap rendered inside a label or a menu row
     use: Kbd

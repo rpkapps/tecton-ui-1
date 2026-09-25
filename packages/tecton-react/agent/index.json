@@ -3067,11 +3067,11 @@
    "id": "shortcuts",
    "kind": "component",
    "name": "ShortcutsProvider",
-   "import": "import { ShortcutsProvider, createShortcutRegistry, useShortcut, useShortcuts, useShortcutRegistry, formatShortcut, ShortcutKeys } from \"@tecton/react/tecton/shortcuts\"",
+   "import": "import { ShortcutsProvider, createShortcutRegistry, useShortcut, useShortcuts, useShortcutRegistry, formatShortcut, ShortcutKeys, useIsMacPlatform } from \"@tecton/react/tecton/shortcuts\"",
    "family": "infrastructure",
    "summary": "The host listens for keys once and every mounted application registers against the same registry.",
    "fields": {
-    "names": "shortcuts shortcuts provider create shortcut registry use shortcut use shortcuts use shortcut registry format shortcut shortcut keys",
+    "names": "shortcuts shortcuts provider create shortcut registry use shortcut use shortcuts use shortcut registry format shortcut shortcut keys use is mac platform",
     "useWhen": "The host listens for keys once and every mounted application registers against the same registry. A shortcut must be listed as well as bound: the help dialog and the command palette read `useShortcuts()`. A region owns keys only while focus is inside it — `target` scopes the listener to one element.",
     "routed": "",
     "do": "Wrap the shell in one `ShortcutsProvider`; a nested provider with no `registry` of its own reuses the parent's. Register from React with `useShortcut`, which removes the shortcut on unmount and always calls the latest render's handler. Create the registry with `createShortcutRegistry()` in the host and hand the object to each mounted application; that shape is versioned public API, so the two sides may be on different package versions. Write keys in the registry syntax: `mod+k` for ⌘ / Ctrl, `?` for a symbol, `g w` for a sequence. Give every shortcut a stable `id`, a `label` and a `group`, and render its caps with `ShortcutKeys`."
@@ -3102,10 +3102,11 @@
     "useShortcuts",
     "useShortcutRegistry",
     "formatShortcut",
-    "ShortcutKeys"
+    "ShortcutKeys",
+    "useIsMacPlatform"
    ],
    "aliases": [],
-   "tokens": 1039
+   "tokens": 1043
   },
   {
    "id": "sidebar",
