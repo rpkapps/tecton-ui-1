@@ -270,9 +270,8 @@ class OverflowStore {
   }
 
   /**
-   * Running total of the space the row needs. `hide` removes an item, and a
-   * divider goes with it once nothing visible remains on one of its sides,
-   * so the overflow loop stays linear in the number of items.
+   * Running total of the space the row needs. `hide` removes an item and
+   * places the dividers again around what is left.
    */
   private tally(entries: Entry[], compact: boolean) {
     const size = (entry: Entry) =>
@@ -281,35 +280,51 @@ class OverflowStore {
         : entry.kind === "spacer"
           ? 0
           : (this.sizes.get(entry.element) ?? 0)
-    const visible = entries.map(() => true)
-    const solid = (index: number) =>
-      visible[index] &&
-      entries[index].kind !== "divider" &&
-      entries[index].kind !== "spacer"
-    const dividers: number[] = []
-    entries.forEach((entry, index) => {
-      if (entry.kind === "divider" || entry.kind === "spacer")
-        dividers.push(index)
-    })
-    // A divider or spacer shows only with something visible on both sides
-    // of it; the More trigger at the end counts for the trailing side.
-    const dividerShown = (index: number) =>
-      entries.some((_, i) => i < index && solid(i)) &&
-      (hiddenCount > 0 || entries.some((_, i) => i > index && solid(i)))
+    const between = (entry: Entry) =>
+      entry.kind === "divider" || entry.kind === "spacer"
+    // Dividers and spacers start hidden; `place` shows the ones that fit.
+    const visible = entries.map((entry) => !between(entry))
+    const solid = (index: number) => visible[index] && !between(entries[index])
     let total = 0
     let count = 0
     let hiddenCount = 0
-    const drop = (index: number) => {
-      visible[index] = false
-      total -= size(entries[index])
-      count -= 1
+    const set = (index: number, shown: boolean) => {
+      if (visible[index] === shown) return
+      visible[index] = shown
+      total += shown ? size(entries[index]) : -size(entries[index])
+      count += shown ? 1 : -1
     }
-    for (const index of dividers) visible[index] = dividerShown(index)
     entries.forEach((entry, index) => {
       if (!visible[index]) return
       total += size(entry)
       count += 1
     })
+    // A divider or spacer shows only with something visible on both sides
+    // of it; the More trigger at the end counts for the trailing side. A
+    // divider also needs something visible since the last divider shown, so
+    // two never sit next to each other (a spacer between them does not count).
+    const place = () => {
+      const after: boolean[] = []
+      let seen = hiddenCount > 0
+      for (let index = entries.length - 1; index >= 0; index--) {
+        after[index] = seen
+        if (solid(index)) seen = true
+      }
+      let before = false
+      let sinceDivider = false
+      entries.forEach((entry, index) => {
+        if (solid(index)) {
+          before = sinceDivider = true
+        } else if (entry.kind === "spacer") {
+          set(index, before && after[index])
+        } else if (entry.kind === "divider") {
+          const shown = sinceDivider && after[index]
+          set(index, shown)
+          if (shown) sinceDivider = false
+        }
+      })
+    }
+    place()
     return {
       visible,
       need: () => {
@@ -318,11 +333,9 @@ class OverflowStore {
         return total + trigger + Math.max(0, slots - 1) * this.gap
       },
       hide: (index: number) => {
-        drop(index)
+        set(index, false)
         hiddenCount += 1
-        for (const divider of dividers) {
-          if (visible[divider] && !dividerShown(divider)) drop(divider)
-        }
+        place()
       },
     }
   }

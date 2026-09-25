@@ -281,6 +281,44 @@ describe("Overflow", () => {
     ).not.toHaveAttribute("data-overflowing")
   })
 
+  it("never shows two dividers next to each other", () => {
+    // The items between the dividers leave, then the ones after them: one
+    // divider stays before the trigger, never both.
+    const dividers = () =>
+      [...document.querySelectorAll('[data-slot="overflow-divider"]')].map(
+        (d) => !d.hasAttribute("data-overflowing")
+      )
+    const row = (width: number) => (
+      <Row width={width} labels="always">
+        <Item id="a" priority={5} />
+        <OverflowDivider data-w={1} />
+        <Item id="b" priority={1} />
+        <OverflowDivider data-w={1} />
+        <Item id="c" priority={2} />
+        <OverflowSpacer />
+        <OverflowDivider data-w={1} />
+        <Item id="d" priority={0} />
+      </Row>
+    )
+    const at = (width: number, gone: string[], shown: boolean[]) => {
+      const { unmount } = render(row(width))
+      for (const id of ["a", "b", "c", "d"]) {
+        if (gone.includes(id))
+          expect(itemEl(id)).toHaveAttribute("data-overflowing")
+        else expect(itemEl(id)).not.toHaveAttribute("data-overflowing")
+      }
+      expect(dividers()).toEqual(shown)
+      unmount()
+    }
+    at(1000, [], [true, true, true])
+    // d leaves: the trigger takes its place after the last divider.
+    at(340, ["d"], [true, true, true])
+    // b leaves too: the dividers around it would meet, so the second goes.
+    at(250, ["b", "d"], [true, false, true])
+    // c leaves: only the first divider, before the trigger, remains.
+    at(140, ["b", "c", "d"], [true, false, false])
+  })
+
   it("renders a divider as a vertical separator and a spacer as hidden filler", () => {
     render(
       <Row width={1000}>
