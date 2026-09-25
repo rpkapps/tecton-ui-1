@@ -483,7 +483,7 @@ class OverflowStore {
     this.menuSubscribers.forEach((cb) => cb())
   }
 
-  /** Menu contents in source order: hidden items, grouped, with the dividers between them. */
+  /** Menu contents in source order: hidden items, grouped, with a separator wherever a divider stands between two of them. */
   menuSections() {
     const sections: Array<
       | { key: string; groupId: string | null; group?: Group; items: Item[] }
@@ -497,10 +497,9 @@ class OverflowStore {
       }
       if (entry.kind !== "item") continue
       const item = entry.item
-      if (!this.hidden.has(item.id)) {
-        pendingSeparator = false
-        continue
-      }
+      // A visible item between two dividers does not merge the hidden
+      // items on either side: they still belong to different groups.
+      if (!this.hidden.has(item.id)) continue
       if (pendingSeparator) {
         sections.push({ key: `separator-${item.id}`, separator: true })
         pendingSeparator = false

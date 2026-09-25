@@ -78,7 +78,7 @@ An input is usually `elastic`: it shrinks between `min` and `max` before any lab
 
 <ComponentPreview name="overflow-forms" align="start" />
 
-A divider stays as long as something is visible on both sides of it and leaves once one side is empty; in the menu it becomes a separator between two hidden neighbours. `OverflowGroup` renders its hidden members as a labelled menu section; `collapse="together"` moves the whole group at once.
+A divider stays as long as something is visible on both sides of it and leaves once one side is empty; two dividers never show side by side. In the menu it becomes a separator between the hidden items on either side of it. `OverflowGroup` renders its hidden members as a labelled menu section; `collapse="together"` moves the whole group at once.
 
 ## Vertical
 
@@ -271,7 +271,7 @@ A `span` for the label text of an item; visually hidden while the row is icon-on
 
 ### OverflowDivider
 
-A `Separator` across the row, hidden once nothing visible remains on one side of it.
+A `Separator` across the row, hidden once nothing visible remains on one side of it or when it would sit next to another divider.
 
 ### OverflowSpacer
 

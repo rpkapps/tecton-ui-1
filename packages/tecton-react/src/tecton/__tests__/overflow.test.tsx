@@ -319,6 +319,26 @@ describe("Overflow", () => {
     at(140, ["b", "c", "d"], [true, false, false])
   })
 
+  it("keeps a separator between hidden groups when a visible item stands between them", async () => {
+    render(
+      <Row width={150} labels="always">
+        <Item id="a" priority={0} />
+        <OverflowDivider data-w={1} />
+        <Item id="b" priority={5} />
+        <Item id="c" priority={0} />
+      </Row>
+    )
+    expect(itemEl("b")).not.toHaveAttribute("data-overflowing")
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }))
+    const menu = await screen.findByRole("menu")
+    expect(
+      [...menu.querySelectorAll('[role="menuitem"], [role="separator"]')].map(
+        (el) =>
+          el.getAttribute("role") === "separator" ? "---" : el.textContent
+      )
+    ).toEqual(["a", "---", "c"])
+  })
+
   it("renders a divider as a vertical separator and a spacer as hidden filler", () => {
     render(
       <Row width={1000}>

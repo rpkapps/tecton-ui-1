@@ -166,7 +166,7 @@ the menu; the menu never sorts by priority.
 | Select | `Select` | `DropdownMenuSub` with a `DropdownMenuRadioGroup` | Value maps to the checked radio item. |
 | Text input, combobox, date picker | The control, elastic | `DropdownMenuItem` that opens a `Dialog` holding the same control | The control keeps its value and validation. React Aria 1.21 has no sub-dialog inside a menu, so the dialog is modal. |
 | Link | `Link` | `DropdownMenuItem` rendering an anchor | |
-| Divider | `Separator orientation="vertical"` | `DropdownMenuSeparator` | Only between two hidden neighbours. |
+| Divider | `Separator orientation="vertical"` | `DropdownMenuSeparator` | Between the hidden items on either side of the divider, even when visible items also stand between them. |
 | Group | `OverflowGroup` | `DropdownMenuGroup` with a label | |
 | Custom | Anything | Provided by `overflow={(item) => …}` | Required for a control not listed here. |
 
