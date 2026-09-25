@@ -223,18 +223,32 @@ Slack, Claude and assistant-ui, so a slash mid-sentence stays text; Up/Down move
 or Tab picks, Escape closes it until the text changes and does not stop a reply or close a sheet.
 With no match the list stays closed and Enter sends the text as typed. Picking empties the box and
 hands the command to the app, which may fill the box, send, or do something else entirely. It is
-built by hand rather than on RAC `Autocomplete`, which would need the textarea to be RAC's own
-`TextArea` inside its `TextField`, and the composer's keys (IME, recall, stop) would then be split
-across two owners.
+built by hand rather than on RAC `Autocomplete`. The textarea is not the obstacle: it already is
+RAC's `TextArea` (`InputGroupTextarea` renders the generated `Textarea`), and `Autocomplete` takes
+one. Key ownership is: while its collection is mounted, `useAutocomplete`'s `onKeyDown` takes the
+field's Arrow, Home/End, PageUp/PageDown and Enter keys, stops their propagation and replays them
+into the collection, and it filters by the field's whole value. The composer needs those same keys
+for itself whenever the list is not showing (Enter sends, ArrowUp/ArrowDown walk `history`,
+Escape stops a reply, IME guards on all of them), and the list only for a `/word` at the very
+start. Mounting and unmounting the `Autocomplete` around the textarea as the text changes would
+remount the textarea and lose focus, and keeping it mounted would split each key between two
+owners. A hand-built listbox behind one `onKeyDown` that asks the list first keeps one owner; the
+options take React Aria's press (`Pressable` with `preventFocusOnPress`), so focus never leaves the
+textarea.
 
 ### History (added after v1)
 
 `onRecallLast` (ArrowUp in an empty box) gave way to `history`, the prompts sent, oldest first:
-ArrowUp on the first line steps back through them and ArrowDown on the last line forward, as in a
-terminal, VS Code chat and Claude Code. Row 5's objection, VS Code replacing unsent text, is met by
-saving the draft when browsing begins and restoring it past the newest entry. Typing in a loaded
-entry makes it the draft, sending resets the position, runs of the same prompt show once, and the
-guards of row 5 still hold (no modifiers, not composing, the `/` list first).
+ArrowUp steps back through them and ArrowDown forward, as in a terminal, VS Code chat and Claude
+Code. Row 5's objection, VS Code replacing unsent text, is met by saving the draft when browsing
+begins and restoring it past the newest entry, and by keeping it when a loaded entry is edited:
+only sending, or a change from outside the textarea, resets the position. "First line" is not
+judged by line breaks, which miss a long paragraph wrapping onto lines of its own; row 5's rule
+holds instead: ArrowUp recalls only with the selection collapsed and the caret at position 0 (a
+browser's own ArrowUp on the first line takes it there), or while the box holds a loaded entry
+unedited, so repeated presses keep stepping; ArrowDown steps forward only with the caret at the
+end. Runs of the same prompt show once, and the other guards of row 5 still hold (no modifiers,
+not composing, the `/` list first).
 
 ### Leave out of v1
 - @ mentions (the same pattern as the `/` menu, with a trigger anywhere in the text). For them

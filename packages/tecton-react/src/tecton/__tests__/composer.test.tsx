@@ -191,11 +191,15 @@ describe("Composer", () => {
     render(<Chat history={["First question", "Second question"]} />)
 
     await userEvent.type(textbox(), "draft")
+    // A browser puts the caret at the start with the first ArrowUp on the
+    // first line; jsdom does not move it.
+    textbox().setSelectionRange(0, 0)
     await userEvent.keyboard("{ArrowUp}")
     expect(textbox()).toHaveValue("Second question")
     expect(textbox()).toHaveProperty("selectionStart", 15)
     expect(textbox()).toHaveProperty("selectionEnd", 15)
 
+    // A prompt just loaded keeps stepping, the caret at its end.
     await userEvent.keyboard("{ArrowUp}")
     expect(textbox()).toHaveValue("First question")
 
@@ -218,9 +222,11 @@ describe("Composer", () => {
 
     await userEvent.type(textbox(), "line one{Shift>}{Enter}{/Shift}line two")
     expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+    textbox().setSelectionRange(3, 3)
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
     expect(textbox()).toHaveValue("line one\nline two")
 
-    textbox().setSelectionRange(3, 3)
+    textbox().setSelectionRange(0, 0)
     expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(false)
     expect(textbox()).toHaveValue("Earlier question")
 
@@ -230,52 +236,54 @@ describe("Composer", () => {
     expect(fireEvent.keyDown(textbox(), { key: "ArrowDown" })).toBe(true)
   })
 
-  it("leaves the arrows to the caret inside a line that wraps", () => {
-    // jsdom lays nothing out: put the character after the caret on the
-    // second line, as a wrapped line would.
-    const offsetTop = vi
-      .spyOn(HTMLElement.prototype, "offsetTop", "get")
-      .mockImplementation(function (this: HTMLElement) {
-        return this.tagName === "SPAN" && this.textContent !== "" ? 20 : 0
-      })
-    try {
-      render(
-        <Chat
-          history={["Earlier question"]}
-          defaultValue="a long line that wraps"
-        />
-      )
-      textbox().focus()
-      textbox().setSelectionRange(12, 12)
+  it("leaves ArrowUp to the caret in one long paragraph that wraps, with no line break to go by", async () => {
+    render(<Chat history={["Earlier question"]} />)
+    const paragraph =
+      "A single paragraph long enough to wrap onto three lines of the box, " +
+      "with the caret somewhere on the last of them and no line break before it"
 
-      expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
-      expect(textbox()).toHaveValue("a long line that wraps")
+    await userEvent.type(textbox(), paragraph)
+    textbox().setSelectionRange(120, 120)
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+    expect(textbox()).toHaveValue(paragraph)
 
-      // At the very start there is nothing left to wrap.
-      textbox().setSelectionRange(0, 0)
-      expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(false)
-      expect(textbox()).toHaveValue("Earlier question")
-    } finally {
-      offsetTop.mockRestore()
-    }
+    // A selection is left alone too, even from the start.
+    textbox().setSelectionRange(0, 5)
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+    expect(textbox()).toHaveValue(paragraph)
   })
 
-  it("ends browsing when the user types: the edited entry is the new draft", async () => {
+  it("keeps the draft when the user edits a loaded prompt", async () => {
+    render(<Chat history={["old"]} />)
+
+    await userEvent.type(textbox(), "long draft")
+    textbox().setSelectionRange(0, 0)
+    await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("old")
+
+    await userEvent.keyboard("x")
+    expect(textbox()).toHaveValue("oldx")
+    // Edited, the prompt no longer steps up from the end: the caret moves.
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+    expect(textbox()).toHaveValue("oldx")
+
+    await userEvent.keyboard("{ArrowDown}")
+    expect(textbox()).toHaveValue("long draft")
+  })
+
+  it("starts over when the box is changed from outside while browsing", async () => {
     render(<Chat history={["One", "Two"]} />)
     textbox().focus()
 
     await userEvent.keyboard("{ArrowUp}")
     expect(textbox()).toHaveValue("Two")
-    await userEvent.keyboard("!")
-    expect(textbox()).toHaveValue("Two!")
+    await userEvent.click(
+      screen.getByRole("button", { name: "Summarise the shift" })
+    )
+    expect(textbox()).toHaveValue("Summarise the shift")
 
-    await userEvent.keyboard("{ArrowDown}")
-    expect(textbox()).toHaveValue("Two!")
-
-    await userEvent.keyboard("{ArrowUp}")
-    expect(textbox()).toHaveValue("Two")
-    await userEvent.keyboard("{ArrowDown}")
-    expect(textbox()).toHaveValue("Two!")
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowDown" })).toBe(true)
+    expect(textbox()).toHaveValue("Summarise the shift")
   })
 
   it("shows a run of the same prompt once, and skips blank entries", async () => {
@@ -327,6 +335,47 @@ describe("Composer", () => {
     expect(textbox()).toHaveAccessibleDescription(
       "Enter to send, Shift+Enter for a new line, ↑ for earlier messages"
     )
+  })
+
+  it("names Ctrl in the mod-enter hint, and ⌘ on an Apple keyboard", () => {
+    const { unmount } = render(<Chat submitMode="mod-enter" />)
+    expect(textbox()).toHaveAccessibleDescription(
+      "Ctrl+Enter to send, Enter for a new line"
+    )
+    unmount()
+
+    const platform = vi
+      .spyOn(navigator, "platform", "get")
+      .mockReturnValue("MacIntel")
+    render(<Chat submitMode="mod-enter" />)
+    expect(textbox()).toHaveAccessibleDescription(
+      "⌘+Enter to send, Enter for a new line"
+    )
+    platform.mockRestore()
+  })
+
+  it("sets the height from the text where CSS has no field-sizing", async () => {
+    vi.stubGlobal("CSS", { supports: () => false })
+    const scrollHeight = vi
+      .spyOn(HTMLTextAreaElement.prototype, "scrollHeight", "get")
+      .mockReturnValue(72)
+    render(<Chat />)
+
+    await userEvent.type(textbox(), "one{Shift>}{Enter}{/Shift}two")
+    expect(textbox().style.height).toBe("72px")
+
+    scrollHeight.mockRestore()
+    vi.unstubAllGlobals()
+  })
+
+  it("leaves the height to field-sizing where CSS has it", async () => {
+    vi.stubGlobal("CSS", { supports: () => true })
+    render(<Chat />)
+
+    await userEvent.type(textbox(), "one")
+    expect(textbox().style.height).toBe("")
+
+    vi.unstubAllGlobals()
   })
 
   it("hands the textarea to a ref of the caller's without losing its own", async () => {
@@ -521,14 +570,24 @@ const COMMANDS: ComposerCommandItem[] = [
 
 function WithCommands({
   onCommand = () => {},
+  items = COMMANDS,
+  countMessage,
   ...props
-}: Partial<ComposerProps> & {
-  onCommand?: React.ComponentProps<typeof ComposerCommands>["onCommand"]
-}) {
+}: Partial<ComposerProps> &
+  Partial<
+    Pick<
+      React.ComponentProps<typeof ComposerCommands>,
+      "onCommand" | "items" | "countMessage"
+    >
+  >) {
   return (
     <Composer onSubmit={() => {}} {...props}>
       <ComposerField>
-        <ComposerCommands items={COMMANDS} onCommand={onCommand} />
+        <ComposerCommands
+          items={items}
+          onCommand={onCommand}
+          countMessage={countMessage}
+        />
         <ComposerInput />
         <ComposerToolbar>
           <ComposerSubmit />
@@ -682,7 +741,9 @@ describe("ComposerCommands", () => {
       screen.getAllByRole("option")[2]?.id
     )
 
-    await userEvent.keyboard("{Escape}{ArrowUp}")
+    await userEvent.keyboard("{Escape}")
+    textbox().setSelectionRange(0, 0)
+    await userEvent.keyboard("{ArrowUp}")
     expect(textbox()).toHaveValue("Earlier question")
   })
 
@@ -700,7 +761,7 @@ describe("ComposerCommands", () => {
     expect(textbox()).toHaveValue("")
   })
 
-  it("lists each group once, where its best match ranks, and moves in that order", async () => {
+  it("lists each group once, and moves in the order listed", async () => {
     const items: ComposerCommandItem[] = [
       { id: "apple", command: "apple", label: "Pick", group: "On this page" },
       { id: "bar", command: "bar", label: "A drink", group: "Chat" },
@@ -742,6 +803,97 @@ describe("ComposerCommands", () => {
     await userEvent.type(textbox(), "/a")
     expect(
       screen.getByText("3 commands, arrow keys to choose.")
+    ).toBeInTheDocument()
+  })
+
+  it("keeps each group in one piece, in the order the groups come in, best match first inside", async () => {
+    // A better match from another group sits between two of "On this page".
+    const items: ComposerCommandItem[] = [
+      {
+        id: "new",
+        command: "new",
+        label: "Start a new conversation",
+        group: "Chat",
+      },
+      {
+        id: "ack",
+        command: "acknowledge",
+        label: "Acknowledge alert A-7",
+        group: "On this page",
+      },
+      {
+        id: "note",
+        command: "note",
+        label: "Add a note to the well",
+        group: "On this page",
+      },
+      { id: "help", command: "about", label: "About the assistant" },
+      { id: "archive", command: "archive", label: "Archive this chat" },
+    ]
+    render(<WithCommands items={items} />)
+
+    await userEvent.type(textbox(), "/a")
+
+    const groups = within(
+      screen.getByRole("listbox", { name: "Commands" })
+    ).getAllByRole("group")
+    expect(
+      groups.map((group) => group.getAttribute("aria-labelledby"))
+    ).toEqual([
+      expect.stringMatching(/-group-0$/),
+      expect.stringMatching(/-group-1$/),
+    ])
+    // A name with spaces still names its group: the id is the group's place.
+    expect(screen.getByRole("group", { name: "On this page" })).toBe(groups[1])
+    expect(screen.getByRole("group", { name: "Chat" })).toBe(groups[0])
+    const options = screen.getAllByRole("option")
+    expect(
+      options.map((option) => option.textContent.split(/(?=[A-Z])/)[0])
+    ).toEqual(["/new", "/acknowledge", "/note", "/about", "/archive"])
+    expect(new Set(options.map((option) => option.id)).size).toBe(5)
+    expect(textbox()).toHaveAttribute("aria-activedescendant", options[0]?.id)
+
+    // The arrows follow the listed order across the groups.
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}")
+    expect(textbox()).toHaveAttribute("aria-activedescendant", options[3]?.id)
+  })
+
+  it("opens again for the same text typed after Escape and a send", async () => {
+    const onSubmit = vi.fn()
+    render(<WithCommands onSubmit={onSubmit} />)
+
+    await userEvent.type(textbox(), "/n")
+    await userEvent.keyboard("{Escape}{Enter}")
+    expect(onSubmit).toHaveBeenCalledWith({ text: "/n" })
+    expect(textbox()).toHaveValue("")
+
+    await userEvent.type(textbox(), "/n")
+    expect(
+      screen.getByRole("listbox", { name: "Commands" })
+    ).toBeInTheDocument()
+  })
+
+  it("opens again once the text changes after Escape", async () => {
+    render(<WithCommands />)
+
+    await userEvent.type(textbox(), "/ne")
+    await userEvent.keyboard("{Escape}")
+    expect(screen.queryByRole("listbox")).toBeNull()
+
+    await userEvent.keyboard("{Backspace}")
+    expect(screen.getByRole("listbox")).toBeInTheDocument()
+  })
+
+  it("announces the count in the app's own words", async () => {
+    render(
+      <WithCommands
+        countMessage={(count) => `${count} Befehle, Pfeiltasten zum Wählen.`}
+      />
+    )
+
+    await userEvent.type(textbox(), "/a")
+    expect(
+      screen.getByText("3 Befehle, Pfeiltasten zum Wählen.")
     ).toBeInTheDocument()
   })
 })

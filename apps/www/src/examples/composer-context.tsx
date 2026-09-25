@@ -23,7 +23,7 @@ export default function ComposerContext() {
       id: "selection",
       label: "Selected text",
       description: "“Flaring at A-7 exceeded the permit for 14 minutes.”",
-      icon: <TextQuoteIcon />,
+      icon: <TextQuoteIcon data-icon="inline-start" />,
     },
   ])
   const [sent, setSent] = React.useState<string | null>(null)

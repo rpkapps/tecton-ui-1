@@ -46,8 +46,8 @@ import {
 | Textarea | <Kbd>⌘</Kbd>/<Kbd>Ctrl</Kbd> + <Kbd>Enter</Kbd> | Sends, in either mode |
 | Textarea, while an IME composes | any | Nothing: the Enter that confirms a conversion never sends |
 | Textarea, while a reply arrives | <Kbd>Esc</Kbd> | Stops the reply, and announces it |
-| Textarea, caret on the first line | <Kbd>↑</Kbd> | Loads the previous message from `history`, caret at its end |
-| Textarea, browsing `history`, caret on the last line | <Kbd>↓</Kbd> | Loads the next message; past the newest, the draft comes back |
+| Textarea, caret at the very start (or a loaded message, unedited) | <Kbd>↑</Kbd> | Loads the previous message from `history`, caret at its end |
+| Textarea, browsing `history`, caret at the very end | <Kbd>↓</Kbd> | Loads the next message; past the newest, the draft comes back |
 | Textarea, `/` at the start | <Kbd>↑</Kbd> <Kbd>↓</Kbd> | Moves through the commands, with `ComposerCommands` |
 | Textarea, commands listed | <Kbd>Enter</Kbd> / <Kbd>Tab</Kbd> | Picks the command instead of sending |
 | Textarea, commands listed | <Kbd>Esc</Kbd> | Closes the list until the text changes; the reply and a sheet around it are left alone |
@@ -63,13 +63,19 @@ moves to it if it was on Send.
 ## History
 
 Pass the prompts the user has sent as `history`, oldest first, and the arrows walk through them
-as in a terminal. <Kbd>↑</Kbd> with the caret on the first line loads the previous prompt, the
-newest first, with the caret at its end; <Kbd>↓</Kbd> on the last line goes forward again, and
-past the newest brings back what was in the box before, so a draft is never lost. Inside a
-message of several lines the arrows move the caret as usual. A run of the same prompt is shown
-once. Typing in a loaded prompt makes it the draft, and sending ends browsing; `history` itself is
-never changed. With commands listed, the arrows move through the list instead. `ComposerHint`
-adds <Kbd>↑</Kbd> for earlier messages once `history` has an entry.
+as in a terminal. <Kbd>↑</Kbd> with the caret at the very start of the box (in an empty box, or
+after the <Kbd>↑</Kbd> that takes the caret there from the first line) loads the previous prompt,
+the newest first, with the caret at its end; while that prompt is in the box as it was loaded,
+<Kbd>↑</Kbd> keeps stepping back. <Kbd>↓</Kbd> with the caret at the very end goes forward again,
+and past the newest brings back what was in the box when browsing began. Anywhere else in the
+text the arrows move the caret as usual, including in one long paragraph that wraps, where a line
+break could not tell the first line from the third. A run of the same prompt is shown once.
+
+The draft survives edits: typing in a loaded prompt keeps browsing, and stepping away from it
+drops that edit but not the draft. Sending ends browsing, and so does a change from outside the
+textarea (a suggestion, a command, the app's `value`); `history` itself is never changed. With
+commands listed, the arrows move through the list instead. `ComposerHint` adds <Kbd>↑</Kbd> for
+earlier messages once `history` has an entry.
 
 ```tsx
 <Composer
@@ -91,7 +97,8 @@ rather than every token.
 ## Context and suggestions
 
 `ComposerAttachments` shows what goes with the message besides its text, such as a selection from
-the page, as chips the user can remove. `ComposerSuggestions` holds prompts to start from: a
+the page, as Tecton [Chips](/docs/tecton/chip) the user can remove. Mark an item's `icon`
+`data-icon="inline-start"`, as in any chip, so it takes the chip's size. `ComposerSuggestions` holds prompts to start from: a
 `ComposerSuggestion` fills the box to edit, sends at once with `submit`, or hands the press to
 `onSelect`, for a suggestion that carries more than its text.
 
@@ -101,8 +108,11 @@ the page, as chips the user can remove. `ComposerSuggestions` holds prompts to s
 
 `ComposerCommands` lists commands when the box starts with a `/`, above the field: render it
 inside `ComposerField`. Typing narrows the list, by the start of the command, then a word of its
-label. A slash later in the text is only text, and with no match the list stays closed, so Enter
-sends what was typed. Picking empties the box and calls `onCommand` with the command and the
+label. The commands stay in their groups, the groups in the order they first appear in `items` and
+the best match first inside each; commands without a `group` are listed together, without a
+heading. A slash later in the text is only text, and with no match the list stays closed, so Enter
+sends what was typed. Escape closes the list until the text changes, and a `/word` recalled from
+`history` is browsed, not typed, so it opens no list until it is edited. Picking empties the box and calls `onCommand` with the command and the
 composer's `setValue`, `send` and `focus`: fill the box for the user to finish, attach something
 with `ComposerAttachments`, or do the whole thing at once, like starting a new conversation.
 
@@ -117,8 +127,9 @@ with `ComposerAttachments`, or do the whole thing at once, like starting a new c
 ```
 
 Focus stays in the textarea. It points at the active command with `aria-activedescendant` and at
-the list with `aria-controls`, and a polite status says how many commands match. `ComposerHint`
-adds <Kbd>/</Kbd> for commands to the keys it describes.
+the list with `aria-controls`, and a polite status says how many commands match ("3 commands,
+arrow keys to choose."; `countMessage` gives it in the app's language). `ComposerHint` adds
+<Kbd>/</Kbd> for commands to the keys it describes.
 
 <ComponentPreview name="composer-commands" />
 
@@ -163,13 +174,13 @@ Pair it with a transcript whose `MessageScrollerContent` has `aria-busy` while a
 
 <Do>
 
-Use `submitMode="mod-enter"` for long-form input, and pass the prompts already sent as `history` (oldest first) so ArrowUp and ArrowDown step through them, as in a terminal.
+Use `submitMode="mod-enter"` for long-form input, and pass the prompts already sent as `history` (oldest first): ArrowUp with the caret at the start of the box steps back through them, ArrowDown at the end forward to the draft, which is kept even when a loaded prompt is edited.
 
 </Do>
 
 <Do>
 
-Put extra context in `ComposerAttachments` as items with a `label`, prompts to start from in `ComposerSuggestions`, and slash commands in `ComposerCommands` inside `ComposerField`, whose `onCommand` decides what a pick does.
+Put extra context in `ComposerAttachments` (Tecton chips) as items with a `label`, prompts to start from in `ComposerSuggestions`, and slash commands in `ComposerCommands` inside `ComposerField`, whose `onCommand` decides what a pick does and `countMessage` translates its announcement.
 
 </Do>
 
@@ -281,11 +292,35 @@ A `form` that holds the value and the chat's state for its parts.
 | Part | Is |
 | --- | --- |
 | `ComposerField` | The bordered `InputGroup` that holds the textarea and the toolbar. |
-| `ComposerInput` | The textarea, named "Message" and described by the hint. |
+| `ComposerInput` | The textarea, named "Message" and described by the hint. It grows with its text up to `max-h-48` (`field-sizing: content`, or its scroll height where a browser has no `field-sizing`), then scrolls. |
 | `ComposerToolbar` | A React Aria `Toolbar` under the textarea; `ComposerSubmit` goes last. |
 | `ComposerSubmit` | Send, or Stop while busy. `sendLabel`, `stopLabel`. |
-| `ComposerHint` | The keys that send; `isVisible={false}` keeps it for screen readers only. |
+| `ComposerHint` | The keys that send, with ⌘ for Ctrl on an Apple keyboard; `isVisible={false}` keeps it for screen readers only. |
 | `ComposerStatusMessage` | The polite status region; `messages` overrides its three texts. |
-| `ComposerAttachments` | Removable chips: `items` (`id`, `label`, `description`, `icon`) and `onRemove`. |
+| `ComposerAttachments` | Removable Tecton chips: `items` (`id`, `label`, `description`, `icon`), `onRemove` and `aria-label` (default "Attachments"). |
 | `ComposerSuggestions`, `ComposerSuggestion` | A toolbar of prompts; `value`, `submit` to send it at once, or `onSelect` to handle the press yourself. |
+| `ComposerCommands` | The `/` list; see below. |
 | `useComposer()` | `value`, `setValue`, `status`, `isBusy`, `canSubmit`, `submit`, `stop`, `focus`. |
+
+### ComposerCommands
+
+Rendered inside `ComposerField`, above which it opens.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `items` | `readonly ComposerCommandItem[]` | - | The commands, in the order to list them; a group goes where its first command is. |
+| `onCommand` | `(item, { setValue, send, focus }) => void` | - | Called with the picked command once the box is emptied: fill the box, send, or act. |
+| `countMessage` | `(count: number) => string` | `"N commands, arrow keys to choose."` | What the polite status says while the list is open. |
+| `aria-label` | `string` | `"Commands"` | The listbox's name. |
+| `className` | `string` | - | On the listbox. |
+
+A `ComposerCommandItem`:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Unique among the items. |
+| `command` | `string` | What is typed after the slash, such as `new`: one word, no spaces. |
+| `label` | `string` | What the command does, in words; its words are matched too. |
+| `description` | `string` | Optional, shown at the end of the row. |
+| `group` | `string` | Optional: commands with the same group are listed together under it. |
+| `icon` | `ReactNode` | Optional, before the command. |
