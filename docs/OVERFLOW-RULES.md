@@ -108,7 +108,8 @@ actions apply to, and it is better to hide a third-tier action than to turn
 7. Hidden items are `display: none`. They are not measured while hidden;
    their cached width is used to decide whether they can come back.
 8. Gaps count. The row's `gap` is read once from computed style and added
-   per visible item.
+   per visible item. So do margins: a child's inline margins (a divider's
+   spacing) are read once and added to its measured width.
 9. The overflow trigger's width is reserved as soon as one item is hidden
    and released only when the last hidden item returns.
 10. Dividers are measured like items but never counted as candidates.
@@ -133,7 +134,9 @@ actions apply to, and it is better to hide a third-tier action than to turn
     leaves with them. The row sets `data-overflowing` on it exactly as on an
     item. A spacer follows the same rule; it costs no size, but it does
     occupy a gap slot like any other child.
-15. Two dividers never render adjacent to each other.
+15. Two dividers never render adjacent to each other. When the items between
+    dividers have all left, only the last of them stays, beside the items
+    after it (a spacer between them does not count as an item).
 16. A group keeps its `aria-label` when its members are visible and passes it
     to the menu section that holds them when they are hidden.
 
@@ -166,7 +169,7 @@ the menu; the menu never sorts by priority.
 | Select | `Select` | `DropdownMenuSub` with a `DropdownMenuRadioGroup` | Value maps to the checked radio item. |
 | Text input, combobox, date picker | The control, elastic | `DropdownMenuItem` that opens a `Dialog` holding the same control | The control keeps its value and validation. React Aria 1.21 has no sub-dialog inside a menu, so the dialog is modal. |
 | Link | `Link` | `DropdownMenuItem` rendering an anchor | |
-| Divider | `Separator orientation="vertical"` | `DropdownMenuSeparator` | Only between two hidden neighbours. |
+| Divider | `Separator orientation="vertical"` | `DropdownMenuSeparator` | Between the hidden items on either side of the divider, even when visible items also stand between them. |
 | Group | `OverflowGroup` | `DropdownMenuGroup` with a label | |
 | Custom | Anything | Provided by `overflow={(item) => …}` | Required for a control not listed here. |
 

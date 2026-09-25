@@ -82,6 +82,7 @@ class OverflowStore {
   private byElement = new WeakMap<Element, Item>()
   private dividers = new WeakSet<Element>()
   private sizes = new WeakMap<Element, number>()
+  private margins = new WeakMap<Element, number>()
   private observed = new WeakSet<Element>()
   private observer: ResizeObserver | null = null
 
@@ -109,7 +110,11 @@ class OverflowStore {
         const size = this.horizontal ? box.inlineSize : box.blockSize
         if (entry.target === root) this.available = size
         // Hidden children report 0; their cached size is kept.
-        else if (size > 0) this.setSize(entry.target as HTMLElement, size)
+        else if (size > 0)
+          this.setSize(
+            entry.target as HTMLElement,
+            size + this.margin(entry.target)
+          )
       }
       this.compute()
     })
@@ -134,6 +139,7 @@ class OverflowStore {
     this.observer?.disconnect()
     this.observer = null
     this.observed = new WeakSet()
+    this.margins = new WeakMap()
     this.root = null
   }
 
@@ -145,7 +151,11 @@ class OverflowStore {
       if (this.observed.has(child)) continue
       this.observed.add(child)
       this.observer.observe(child)
-      this.setSize(child as HTMLElement, this.rectSize(child))
+      const size = this.rectSize(child)
+      this.setSize(
+        child as HTMLElement,
+        size > 0 ? size + this.margin(child) : 0
+      )
       changed = true
     }
     if (changed) this.compute()
@@ -227,7 +237,24 @@ class OverflowStore {
     return this.horizontal ? rect.width : rect.height
   }
 
-  /** Cache a child's size; for an item, bucket it by how it is rendered now. */
+  /**
+   * A child's margins along the row (a divider's spacing, say): the space it
+   * takes is its box plus these. Read once per child while attached.
+   */
+  private margin(element: Element) {
+    let margin = this.margins.get(element)
+    if (margin === undefined) {
+      const style = getComputedStyle(element)
+      const [start, end] = this.horizontal
+        ? [style.marginLeft, style.marginRight]
+        : [style.marginTop, style.marginBottom]
+      margin = (Number.parseFloat(start) || 0) + (Number.parseFloat(end) || 0)
+      this.margins.set(element, margin)
+    }
+    return margin
+  }
+
+  /** Cache a child's size, margins included; for an item, bucket it by how it is rendered now. */
   private setSize(element: HTMLElement, size: number) {
     if (size <= 0) return
     this.sizes.set(element, size)
@@ -270,9 +297,8 @@ class OverflowStore {
   }
 
   /**
-   * Running total of the space the row needs. `hide` removes an item, and a
-   * divider goes with it once nothing visible remains on one of its sides,
-   * so the overflow loop stays linear in the number of items.
+   * Running total of the space the row needs. `hide` removes an item and
+   * places the dividers again around what is left.
    */
   private tally(entries: Entry[], compact: boolean) {
     const size = (entry: Entry) =>
@@ -281,35 +307,53 @@ class OverflowStore {
         : entry.kind === "spacer"
           ? 0
           : (this.sizes.get(entry.element) ?? 0)
-    const visible = entries.map(() => true)
-    const solid = (index: number) =>
-      visible[index] &&
-      entries[index].kind !== "divider" &&
-      entries[index].kind !== "spacer"
-    const dividers: number[] = []
-    entries.forEach((entry, index) => {
-      if (entry.kind === "divider" || entry.kind === "spacer")
-        dividers.push(index)
-    })
-    // A divider or spacer shows only with something visible on both sides
-    // of it; the More trigger at the end counts for the trailing side.
-    const dividerShown = (index: number) =>
-      entries.some((_, i) => i < index && solid(i)) &&
-      (hiddenCount > 0 || entries.some((_, i) => i > index && solid(i)))
+    const between = (entry: Entry) =>
+      entry.kind === "divider" || entry.kind === "spacer"
+    // Dividers and spacers start hidden; `place` shows the ones that fit.
+    const visible = entries.map((entry) => !between(entry))
+    const solid = (index: number) => visible[index] && !between(entries[index])
     let total = 0
     let count = 0
     let hiddenCount = 0
-    const drop = (index: number) => {
-      visible[index] = false
-      total -= size(entries[index])
-      count -= 1
+    const set = (index: number, shown: boolean) => {
+      if (visible[index] === shown) return
+      visible[index] = shown
+      total += shown ? size(entries[index]) : -size(entries[index])
+      count += shown ? 1 : -1
     }
-    for (const index of dividers) visible[index] = dividerShown(index)
     entries.forEach((entry, index) => {
       if (!visible[index]) return
       total += size(entry)
       count += 1
     })
+    // A divider or spacer shows only with something visible on both sides
+    // of it; the More trigger at the end counts for the trailing side. Of
+    // dividers with nothing visible between them (a spacer does not count)
+    // only the last shows, so it stays beside the items that follow instead
+    // of before a gap.
+    const place = () => {
+      const before: boolean[] = []
+      let seen = false
+      entries.forEach((_, index) => {
+        before[index] = seen
+        if (solid(index)) seen = true
+      })
+      let after = hiddenCount > 0
+      let untilDivider = after
+      for (let index = entries.length - 1; index >= 0; index--) {
+        const entry = entries[index]
+        if (solid(index)) {
+          after = untilDivider = true
+        } else if (entry.kind === "spacer") {
+          set(index, before[index] && after)
+        } else if (entry.kind === "divider") {
+          const shown = before[index] && untilDivider
+          set(index, shown)
+          if (shown) untilDivider = false
+        }
+      }
+    }
+    place()
     return {
       visible,
       need: () => {
@@ -318,11 +362,9 @@ class OverflowStore {
         return total + trigger + Math.max(0, slots - 1) * this.gap
       },
       hide: (index: number) => {
-        drop(index)
+        set(index, false)
         hiddenCount += 1
-        for (const divider of dividers) {
-          if (visible[divider] && !dividerShown(divider)) drop(divider)
-        }
+        place()
       },
     }
   }
@@ -470,7 +512,7 @@ class OverflowStore {
     this.menuSubscribers.forEach((cb) => cb())
   }
 
-  /** Menu contents in source order: hidden items, grouped, with the dividers between them. */
+  /** Menu contents in source order: hidden items, grouped, with a separator wherever a divider stands between two of them. */
   menuSections() {
     const sections: Array<
       | { key: string; groupId: string | null; group?: Group; items: Item[] }
@@ -484,10 +526,9 @@ class OverflowStore {
       }
       if (entry.kind !== "item") continue
       const item = entry.item
-      if (!this.hidden.has(item.id)) {
-        pendingSeparator = false
-        continue
-      }
+      // A visible item between two dividers does not merge the hidden
+      // items on either side: they still belong to different groups.
+      if (!this.hidden.has(item.id)) continue
       if (pendingSeparator) {
         sections.push({ key: `separator-${item.id}`, separator: true })
         pendingSeparator = false
