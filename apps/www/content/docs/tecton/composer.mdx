@@ -70,7 +70,8 @@ rather than every token.
 
 `ComposerAttachments` shows what goes with the message besides its text, such as a selection from
 the page, as chips the user can remove. `ComposerSuggestions` holds prompts to start from: a
-`ComposerSuggestion` fills the box to edit, or sends at once with `submit`.
+`ComposerSuggestion` fills the box to edit, sends at once with `submit`, or hands the press to
+`onSelect`, for a suggestion that carries more than its text.
 
 <ComponentPreview name="composer-context" />
 
@@ -238,5 +239,5 @@ A `form` that holds the value and the chat's state for its parts.
 | `ComposerHint` | The keys that send; `isVisible={false}` keeps it for screen readers only. |
 | `ComposerStatusMessage` | The polite status region; `messages` overrides its three texts. |
 | `ComposerAttachments` | Removable chips: `items` (`id`, `label`, `description`, `icon`) and `onRemove`. |
-| `ComposerSuggestions`, `ComposerSuggestion` | A toolbar of prompts; `value`, `submit`, `onSelect`. |
+| `ComposerSuggestions`, `ComposerSuggestion` | A toolbar of prompts; `value`, `submit` to send it at once, or `onSelect` to handle the press yourself. |
 | `useComposer()` | `value`, `setValue`, `status`, `isBusy`, `canSubmit`, `submit`, `stop`, `focus`. |

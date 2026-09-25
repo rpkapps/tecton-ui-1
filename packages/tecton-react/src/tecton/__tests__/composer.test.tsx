@@ -125,15 +125,40 @@ describe("Composer", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Stopped.")
   })
 
-  it("moves focus to Stop when the Send it was on is replaced", () => {
+  it("moves focus to Stop, a button of its own, when the Send it was on is replaced", () => {
     const { rerender } = render(<Chat defaultValue="Hi" onStop={() => {}} />)
-    screen.getByRole("button", { name: "Send message" }).focus()
+    const send = screen.getByRole("button", { name: "Send message" })
+    send.focus()
 
     rerender(<Chat defaultValue="Hi" status="submitted" onStop={() => {}} />)
 
-    expect(
-      screen.getByRole("button", { name: "Stop generating" })
-    ).toHaveFocus()
+    const stop = screen.getByRole("button", { name: "Stop generating" })
+    expect(stop).not.toBe(send)
+    expect(stop).toHaveFocus()
+  })
+
+  it("returns focus to the textarea when the Stop it was on goes", () => {
+    const { rerender } = render(<Chat status="streaming" onStop={() => {}} />)
+    screen.getByRole("button", { name: "Stop generating" }).focus()
+
+    rerender(<Chat status="ready" onStop={() => {}} />)
+
+    expect(textbox()).toHaveFocus()
+  })
+
+  it("lets Escape through when no reply is arriving", () => {
+    const onStop = vi.fn()
+    const onKeyDown = vi.fn()
+    render(
+      <div onKeyDown={onKeyDown}>
+        <Chat onStop={onStop} />
+      </div>
+    )
+
+    fireEvent.keyDown(textbox(), { key: "Escape" })
+
+    expect(onStop).not.toHaveBeenCalled()
+    expect(onKeyDown).toHaveBeenCalled()
   })
 
   it("recalls the last message with ArrowUp only when the box is empty", async () => {
@@ -166,11 +191,42 @@ describe("Composer", () => {
     expect(textbox()).toHaveFocus()
   })
 
+  it("hands a function ref the textarea once, not on every keystroke", async () => {
+    const ref = vi.fn()
+    render(
+      <Composer onSubmit={() => {}}>
+        <ComposerField>
+          <ComposerInput ref={ref} />
+        </ComposerField>
+      </Composer>
+    )
+
+    await userEvent.type(textbox(), "abc")
+    expect(ref).toHaveBeenCalledTimes(1)
+    expect(ref).toHaveBeenCalledWith(textbox())
+  })
+
+  it("keeps the textarea in the field's control slot, which draws the focus ring", () => {
+    render(<Chat />)
+    expect(textbox()).toHaveAttribute("data-slot", "input-group-control")
+  })
+
   it("describes the textarea with the keyboard hint", () => {
     render(<Chat />)
     expect(textbox()).toHaveAccessibleDescription(
       "Enter to send, Shift+Enter for a new line"
     )
+  })
+
+  it("points aria-describedby at nothing when there is no hint", () => {
+    render(
+      <Composer onSubmit={() => {}}>
+        <ComposerField>
+          <ComposerInput aria-describedby="own" />
+        </ComposerField>
+      </Composer>
+    )
+    expect(textbox()).toHaveAttribute("aria-describedby", "own")
   })
 
   it("announces a sent message and a failure in its status region", () => {
@@ -179,6 +235,32 @@ describe("Composer", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Message sent.")
     rerender(<Chat status="error" />)
     expect(screen.getByRole("status")).toHaveTextContent("The reply failed.")
+  })
+
+  it("announces every send and stop, not only the first, with a new node each time", async () => {
+    const onStop = vi.fn()
+    const { rerender } = render(<Chat onStop={onStop} />)
+    const region = screen.getByRole("status")
+
+    rerender(<Chat status="submitted" onStop={onStop} />)
+    const firstSend = region.firstChild
+    rerender(<Chat status="ready" onStop={onStop} />)
+    rerender(<Chat status="submitted" onStop={onStop} />)
+    expect(region).toHaveTextContent("Message sent.")
+    expect(region.firstChild).not.toBe(firstSend)
+
+    textbox().focus()
+    await userEvent.keyboard("{Escape}")
+    const firstStop = region.firstChild
+    expect(region).toHaveTextContent("Stopped.")
+    await userEvent.keyboard("{Escape}")
+    expect(onStop).toHaveBeenCalledTimes(2)
+    expect(region.firstChild).not.toBe(firstStop)
+  })
+
+  it("keeps the Stop spinner out of the accessibility tree: one status region", () => {
+    render(<Chat status="submitted" onStop={() => {}} />)
+    expect(screen.getAllByRole("status")).toHaveLength(1)
   })
 
   it("fills the box from a suggestion, or sends it straight away", async () => {
@@ -193,6 +275,27 @@ describe("Composer", () => {
 
     await userEvent.click(screen.getByRole("button", { name: "Open alerts" }))
     expect(onSubmit).toHaveBeenCalledWith({ text: "Open alerts" })
+  })
+
+  it("hands a suggestion to onSelect instead, leaving the box alone", async () => {
+    const onSubmit = vi.fn()
+    const onSelect = vi.fn()
+    render(
+      <Composer onSubmit={onSubmit}>
+        <ComposerSuggestions>
+          <ComposerSuggestion value="Open alerts" submit onSelect={onSelect} />
+        </ComposerSuggestions>
+        <ComposerField>
+          <ComposerInput />
+        </ComposerField>
+      </Composer>
+    )
+
+    await userEvent.click(screen.getByRole("button", { name: "Open alerts" }))
+
+    expect(onSelect).toHaveBeenCalledWith("Open alerts")
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect(textbox()).toHaveValue("")
   })
 
   it("puts the suggestions in one toolbar, moved through with the arrow keys", async () => {

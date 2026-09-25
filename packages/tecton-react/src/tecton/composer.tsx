@@ -4,7 +4,6 @@ import * as React from "react"
 import { cn } from "cn"
 import { ArrowUpIcon, SquareIcon, XIcon } from "lucide-react"
 import {
-  Button as AriaButton,
   Tag,
   TagGroup,
   TagList,
@@ -64,8 +63,11 @@ type ComposerContextValue = {
   recallLast: (() => string | undefined) | undefined
   inputRef: React.RefObject<HTMLTextAreaElement | null>
   hintId: string
-  /** Set when the user stopped a reply, so the status says so once. */
-  stoppedAt: number
+  /** Whether a `ComposerHint` is rendered, for the textarea's `aria-describedby`. */
+  hasHint: boolean
+  setHasHint: (hasHint: boolean) => void
+  /** Counts the replies the user stopped, so the status says so each time. */
+  stopCount: number
 }
 
 const ComposerContext = React.createContext<ComposerContextValue | null>(null)
@@ -122,7 +124,8 @@ function Composer({
   const value = valueProp ?? uncontrolled
   const inputRef = React.useRef<HTMLTextAreaElement | null>(null)
   const hintId = React.useId()
-  const [stoppedAt, setStoppedAt] = React.useState(0)
+  const [hasHint, setHasHint] = React.useState(false)
+  const [stopCount, setStopCount] = React.useState(0)
 
   const setValue = React.useCallback(
     (next: string) => {
@@ -162,7 +165,7 @@ function Composer({
         : () => {
             if (!isBusy) return
             onStop()
-            setStoppedAt(Date.now())
+            setStopCount((count) => count + 1)
           },
     [onStop, isBusy]
   )
@@ -183,7 +186,9 @@ function Composer({
       recallLast: onRecallLast,
       inputRef,
       hintId,
-      stoppedAt,
+      hasHint,
+      setHasHint,
+      stopCount,
     }),
     [
       value,
@@ -199,7 +204,8 @@ function Composer({
       focus,
       onRecallLast,
       hintId,
-      stoppedAt,
+      hasHint,
+      stopCount,
     ]
   )
 
@@ -225,7 +231,9 @@ function Composer({
 function ComposerField({
   className,
   ...props
-}: React.ComponentProps<typeof InputGroup>) {
+}: Omit<React.ComponentProps<typeof InputGroup>, "className"> & {
+  className?: string
+}) {
   const { isDisabled } = useComposerContext("ComposerField")
   return (
     <InputGroup
@@ -267,18 +275,28 @@ function ComposerInput({
     recallLast,
     inputRef,
     hintId,
+    hasHint,
   } = useComposerContext("ComposerInput")
 
+  const setRef = React.useCallback(
+    (node: HTMLTextAreaElement | null) => {
+      inputRef.current = node
+      if (typeof ref === "function") ref(node)
+      else if (ref) ref.current = node
+    },
+    [inputRef, ref]
+  )
+  const describedBy = [hasHint ? hintId : undefined, ariaDescribedBy]
+    .filter(Boolean)
+    .join(" ")
+
+  // No `data-slot` of its own: the field draws its focus ring from the
+  // textarea's `input-group-control` slot.
   return (
     <InputGroupTextarea
-      ref={(node: HTMLTextAreaElement | null) => {
-        inputRef.current = node
-        if (typeof ref === "function") ref(node)
-        else if (ref) ref.current = node
-      }}
-      data-slot="composer-input"
+      ref={setRef}
       aria-label={ariaLabel}
-      aria-describedby={cn(hintId, ariaDescribedBy) || undefined}
+      aria-describedby={describedBy || undefined}
       value={value}
       disabled={isDisabled}
       rows={1}
@@ -329,11 +347,15 @@ function ComposerInput({
 }
 
 /** The row under the textarea: an arrow-key toolbar, the send button at its end. */
+type ComposerToolbarProps = Omit<ToolbarProps, "className"> & {
+  className?: string
+}
+
 function ComposerToolbar({
   className,
   "aria-label": ariaLabel = "Message actions",
   ...props
-}: ToolbarProps) {
+}: ComposerToolbarProps) {
   return (
     <InputGroupAddon
       align="block-end"
@@ -345,7 +367,7 @@ function ComposerToolbar({
         aria-label={ariaLabel}
         className={cn(
           "flex w-full min-w-0 items-center gap-1 *:data-[slot=composer-submit]:ms-auto",
-          typeof className === "string" ? className : undefined
+          className
         )}
         {...props}
       />
@@ -373,10 +395,11 @@ function ComposerSubmit({
   const { status, isBusy, canSubmit, isDisabled, stop, inputRef } =
     useComposerContext("ComposerSubmit")
   const showStop = isBusy && stop !== undefined
-  const sendRef = React.useRef<HTMLButtonElement>(null)
   const stopRef = React.useRef<HTMLButtonElement>(null)
   const focused = React.useRef<"send" | "stop" | null>(null)
 
+  // A button that unmounts while focused leaves focus on the body, and
+  // fires no blur React sees: hand it to the button or textarea that follows.
   React.useLayoutEffect(() => {
     const active = document.activeElement
     const lost = active === null || active === document.body
@@ -388,6 +411,9 @@ function ComposerSubmit({
   if (showStop) {
     return (
       <InputGroupButton
+        // Keys make these two elements: without them React reuses one
+        // button and only renames it.
+        key="stop"
         ref={stopRef}
         data-slot="composer-submit"
         data-action="stop"
@@ -400,7 +426,7 @@ function ComposerSubmit({
         onPress={stop}
       >
         {status === "submitted" ? (
-          <Spinner />
+          <Spinner aria-hidden />
         ) : (
           <SquareIcon className="fill-current" />
         )}
@@ -411,7 +437,7 @@ function ComposerSubmit({
   const unavailable = !canSubmit
   return (
     <InputGroupButton
-      ref={sendRef}
+      key="send"
       type={unavailable ? "button" : "submit"}
       data-slot="composer-submit"
       data-action="send"
@@ -439,7 +465,11 @@ function ComposerHint({
   children,
   ...props
 }: React.ComponentProps<"p"> & { isVisible?: boolean }) {
-  const { hintId, submitMode } = useComposerContext("ComposerHint")
+  const { hintId, setHasHint, submitMode } = useComposerContext("ComposerHint")
+  React.useLayoutEffect(() => {
+    setHasHint(true)
+    return () => setHasHint(false)
+  }, [setHasHint])
   const sendKeys =
     submitMode === "enter" ? (
       <>
@@ -482,29 +512,31 @@ const DEFAULT_STATUS_MESSAGES: Required<ComposerStatusMessages> = {
 
 /**
  * A polite status region for the composer's own changes. The reply itself
- * is the transcript's to announce, once it is complete.
+ * is the transcript's to announce, once it is complete. Each change renders
+ * a new node, so the same message sent twice is announced twice.
  */
 function ComposerStatusMessage({
   messages,
   className,
   ...props
 }: React.ComponentProps<"div"> & { messages?: ComposerStatusMessages }) {
-  const { status, stoppedAt } = useComposerContext("ComposerStatusMessage")
+  const { status, stopCount } = useComposerContext("ComposerStatusMessage")
   const text = { ...DEFAULT_STATUS_MESSAGES, ...messages }
-  const [announcement, setAnnouncement] = React.useState("")
-  const previous = React.useRef<{ status: ComposerStatus; stoppedAt: number }>({
-    status,
-    stoppedAt,
-  })
+  const [announcement, setAnnouncement] = React.useState({ text: "", key: 0 })
+  const previous = React.useRef({ status, stopCount })
 
   React.useEffect(() => {
     const before = previous.current
-    previous.current = { status, stoppedAt }
-    if (stoppedAt !== before.stoppedAt) setAnnouncement(text.stopped)
-    else if (status === before.status) return
-    else if (status === "submitted") setAnnouncement(text.submitted)
-    else if (status === "error") setAnnouncement(text.error)
-  }, [status, stoppedAt, text.stopped, text.submitted, text.error])
+    previous.current = { status, stopCount }
+    let next: string | undefined
+    if (stopCount !== before.stopCount) next = text.stopped
+    else if (status !== before.status && status === "submitted")
+      next = text.submitted
+    else if (status !== before.status && status === "error") next = text.error
+    if (next !== undefined) {
+      setAnnouncement((current) => ({ text: next, key: current.key + 1 }))
+    }
+  }, [status, stopCount, text.stopped, text.submitted, text.error])
 
   return (
     <div
@@ -513,7 +545,7 @@ function ComposerStatusMessage({
       className={cn("sr-only", className)}
       {...props}
     >
-      {announcement}
+      <span key={announcement.key}>{announcement.text}</span>
     </div>
   )
 }
@@ -571,13 +603,8 @@ function ComposerAttachments({
                 </span>
               )}
             </span>
-            <Button
-              slot="remove"
-              variant="ghost"
-              size="icon-xs"
-              // The tag adds its own name: "Remove <label>".
-              aria-label="Remove"
-            >
+            {/* React Aria names it "Remove <label>", localized. */}
+            <Button slot="remove" variant="ghost" size="icon-xs">
               <XIcon />
             </Button>
           </Tag>
@@ -592,15 +619,12 @@ function ComposerSuggestions({
   className,
   "aria-label": ariaLabel = "Suggestions",
   ...props
-}: ToolbarProps) {
+}: ComposerToolbarProps) {
   return (
     <Toolbar
       data-slot="composer-suggestions"
       aria-label={ariaLabel}
-      className={cn(
-        "flex flex-wrap gap-1.5",
-        typeof className === "string" ? className : undefined
-      )}
+      className={cn("flex flex-wrap gap-1.5", className)}
       {...props}
     />
   )
@@ -608,7 +632,8 @@ function ComposerSuggestions({
 
 /**
  * One suggestion. It fills the box for the user to edit and send, or sends
- * straight away with `submit`.
+ * straight away with `submit`; `onSelect` hands the press to the app
+ * instead, for a suggestion that carries more than its text.
  */
 function ComposerSuggestion({
   value,
@@ -628,13 +653,12 @@ function ComposerSuggestion({
     useComposerContext("ComposerSuggestion")
 
   return (
-    <AriaButton
+    <Button
       data-slot="composer-suggestion"
+      variant="outline"
+      size="xs"
       isDisabled={isDisabled || (sendNow && isBusy)}
-      className={cn(
-        "inline-flex h-7 max-w-full items-center truncate rounded-full border border-border bg-background px-3 text-xs text-foreground transition-colors outline-none hover:bg-muted data-focus-visible:ring-2 data-focus-visible:ring-ring data-disabled:opacity-50",
-        className
-      )}
+      className={cn("max-w-full rounded-full", className)}
       onPress={() => {
         if (onSelect) {
           onSelect(value)
@@ -648,8 +672,8 @@ function ComposerSuggestion({
         focus()
       }}
     >
-      {children ?? value}
-    </AriaButton>
+      <span className="min-w-0 truncate">{children ?? value}</span>
+    </Button>
   )
 }
 

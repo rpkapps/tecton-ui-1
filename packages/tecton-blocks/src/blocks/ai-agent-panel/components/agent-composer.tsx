@@ -15,7 +15,6 @@ import {
   ComposerSuggestion,
   ComposerSuggestions,
   ComposerToolbar,
-  type ComposerStatus,
 } from "@tecton/react/tecton/composer"
 
 type AgentComposerProps = Omit<
@@ -24,21 +23,20 @@ type AgentComposerProps = Omit<
 > & {
   placeholder?: string
   suggestions?: string[]
-  status?: ComposerStatus
   onSubmit?: (value: string) => void
 }
 
 function AgentComposer({
   placeholder = "What should we do next?",
   suggestions = [],
-  status = "ready",
+  isDisabled = false,
   onSubmit,
   ...props
 }: AgentComposerProps) {
   return (
     <Composer
       data-slot="agent-composer"
-      status={status}
+      isDisabled={isDisabled}
       onSubmit={({ text }) => onSubmit?.(text)}
       {...props}
     >
@@ -53,13 +51,21 @@ function AgentComposer({
         <ComposerInput placeholder={placeholder} />
         <ComposerToolbar>
           <TooltipTrigger>
-            <InputGroupButton size="icon-xs" aria-label="Attach file">
+            <InputGroupButton
+              size="icon-xs"
+              aria-label="Attach file"
+              isDisabled={isDisabled}
+            >
               <PaperclipIcon />
             </InputGroupButton>
             <Tooltip>Attach</Tooltip>
           </TooltipTrigger>
           <TooltipTrigger>
-            <InputGroupButton size="icon-xs" aria-label="Dictate">
+            <InputGroupButton
+              size="icon-xs"
+              aria-label="Dictate"
+              isDisabled={isDisabled}
+            >
               <MicIcon />
             </InputGroupButton>
             <Tooltip>Dictate</Tooltip>
