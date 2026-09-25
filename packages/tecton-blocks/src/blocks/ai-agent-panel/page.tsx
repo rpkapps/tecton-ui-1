@@ -91,7 +91,7 @@ function AiAgentPanel({
         <AgentComposer
           className="w-full"
           suggestions={messages.length === 0 ? suggestions : []}
-          isDisabled={busy}
+          status={busy ? "submitted" : "ready"}
           onSubmit={send}
         />
       </PanelFooter>

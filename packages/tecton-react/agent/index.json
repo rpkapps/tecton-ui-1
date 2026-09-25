@@ -1493,6 +1493,55 @@
    "tokens": 833
   },
   {
+   "id": "composer",
+   "kind": "component",
+   "name": "Composer",
+   "import": "import { Composer, ComposerField, ComposerInput, ComposerToolbar, ComposerSubmit, ComposerHint, ComposerStatusMessage, ComposerAttachments, ComposerSuggestions, ComposerSuggestion, useComposer } from \"@tecton/react/tecton/composer\"",
+   "family": "conversation",
+   "summary": "The user writes to an assistant or agent: the message box under a transcript.",
+   "fields": {
+    "names": "composer composer composer field composer input composer toolbar composer submit composer hint composer status message composer attachments composer suggestions composer suggestion use composer",
+    "useWhen": "The user writes to an assistant or agent: the message box under a transcript. A reply streams back and the user must be able to stop it, and keep typing the next message meanwhile. The message carries something besides its text (a selection, a file) that the user can see and remove before sending.",
+    "routed": "",
+    "do": "Pass the chat's `status` (`\"ready\" | \"submitted\" | \"streaming\" | \"error\"`) and `onStop`; `ComposerSubmit` swaps Send for Stop and Escape stops the reply. Keep `ComposerHint` (visible, or `isVisible={false}`) so the textarea is described by its keys, and `ComposerStatusMessage` for sent, stopped and failed. Pair it with a transcript whose `MessageScrollerContent` has `aria-busy` while a reply streams, so the reply is announced once, complete. Use `submitMode=\"mod-enter\"` for long-form input, and `onRecallLast` for ArrowUp-to-edit in an empty box. Put extra context in `ComposerAttachments` as items with a `label`, and prompts to start from in `ComposerSuggestions`."
+   },
+   "notFor": [
+    {
+     "need": "a one-line search or filter box",
+     "id": "input-group"
+    },
+    {
+     "need": "a form field for a long description",
+     "id": "textarea"
+    },
+    {
+     "need": "a structured question with choices for the user to answer",
+     "id": "questionnaire"
+    }
+   ],
+   "related": [
+    "message-scroller",
+    "message",
+    "attachment",
+    "questionnaire"
+   ],
+   "exports": [
+    "Composer",
+    "ComposerField",
+    "ComposerInput",
+    "ComposerToolbar",
+    "ComposerSubmit",
+    "ComposerHint",
+    "ComposerStatusMessage",
+    "ComposerAttachments",
+    "ComposerSuggestions",
+    "ComposerSuggestion",
+    "useComposer"
+   ],
+   "aliases": [],
+   "tokens": 901
+  },
+  {
    "id": "context-menu",
    "kind": "component",
    "name": "ContextMenu",
@@ -1965,7 +2014,7 @@
    "fields": {
     "names": "input group input group input group addon input group button input group input input group text input group textarea",
     "useWhen": "An icon, unit, hint or status belongs inside the field's border: search, currency, `https://`. A button acts on the value in place: clear, copy, reveal, remove, send. A textarea needs a toolbar or a footer row that shares its border and focus ring.",
-    "routed": "a field with an icon or a button attached an icon, a prefix or a button inside the field a toolbar, a counter or a send button attached to the box",
+    "routed": "a one-line search or filter box a field with an icon or a button attached an icon, a prefix or a button inside the field a toolbar, a counter or a send button attached to the box",
     "do": "Compose `InputGroup` > `InputGroupInput` or `InputGroupTextarea`, then the addons; the group owns the border, ring and height. Always place `InputGroupAddon` **after** the control in the DOM and position it with `align`: `inline-start` / `inline-end` beside an input, `block-start` / `block-end` above or below a textarea. Put buttons in `InputGroupButton` (`size=\"xs\" | \"icon-xs\" | \"sm\" | \"icon-sm\"`, `onPress`, `aria-label` when icon-only), static copy in `InputGroupText`, and mark errors with `aria-invalid` on the control."
    },
    "notFor": [
@@ -2719,7 +2768,7 @@
    "fields": {
     "names": "questionnaire questionnaire questionnaire progress questionnaire item questionnaire title questionnaire description questionnaire choices questionnaire choice questionnaire choice description questionnaire input questionnaire error questionnaire actions questionnaire previous questionnaire skip questionnaire next questionnaire submit",
     "useWhen": "The assistant asks a short, ordered set of questions before it acts: scope, constraints, review. One question is on screen at a time, with progress, back, skip and submit around it, and the answers are gathered once, on submit.",
-    "routed": "",
+    "routed": "a structured question with choices for the user to answer",
     "do": "Declare the questions once as `items` on `Questionnaire`, so progress, actions and shortcuts render before hydration. Give every `QuestionnaireItem` a `name`, mark it `required` or `multiple`, and put its options in `QuestionnaireChoices`. Read the answers in `onSubmit` from `new FormData(event.currentTarget)`; the root is the `form`. Navigate only with `QuestionnairePrevious`, `QuestionnaireSkip`, `QuestionnaireNext` and `QuestionnaireSubmit`, inside `QuestionnaireActions`. These parts are plain form elements, not React Aria: they take `disabled` and `onChange`, and `QuestionnaireInput` needs an `aria-label`."
    },
    "notFor": [
@@ -3433,7 +3482,7 @@
    "fields": {
     "names": "textarea textarea",
     "useWhen": "Several lines of free text: a description, a note, a comment, a message. The content grows while the user types and the box should follow it. Inside a `Field`, so the control arrives with a label and room for an error.",
-    "routed": "more than one line of free text",
+    "routed": "a form field for a long description more than one line of free text",
     "do": "Pick the surface with `variant=\"outline\" | \"filled\" | \"text\"` — the same three axes as `Input`. Set the starting height with `rows`; the box already carries `field-sizing-content` and `min-h-16` and grows from there. `Textarea` renders React Aria's `TextArea`, a real `<textarea>`: use `value`, `onChange(event)`, `disabled`, `required` and `aria-invalid`. Mirror the state on the `Field`: `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid`. Keep `className` to layout only — `w-full`, `col-span-2`."
    },
    "notFor": [
