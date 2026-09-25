@@ -232,9 +232,12 @@ for itself whenever the list is not showing (Enter sends, ArrowUp/ArrowDown walk
 Escape stops a reply, IME guards on all of them), and the list only for a `/word` at the very
 start. Mounting and unmounting the `Autocomplete` around the textarea as the text changes would
 remount the textarea and lose focus, and keeping it mounted would split each key between two
-owners. A hand-built listbox behind one `onKeyDown` that asks the list first keeps one owner; the
-options take React Aria's press (`Pressable` with `preventFocusOnPress`), so focus never leaves the
-textarea.
+owners. So the list is React Aria's `ListBox` under virtual focus
+(`SelectableCollectionContext` with `shouldUseVirtualFocus`) and the textarea's one `onKeyDown`
+asks it first: one owner for the keys, React Aria's sections, labels and press for the options, and
+focus never leaves the textarea. The textarea names the active option by React Aria's option id
+(the list's id, then the key without spaces), which is not public API: a test checks that the id it
+names is a rendered option, so an upgrade that changes the scheme fails there.
 
 ### History (added after v1)
 
@@ -243,11 +246,12 @@ ArrowUp steps back through them and ArrowDown forward, as in a terminal, VS Code
 Code. Row 5's objection, VS Code replacing unsent text, is met by saving the draft when browsing
 begins and restoring it past the newest entry, and by keeping it when a loaded entry is edited:
 only sending, or a change from outside the textarea, resets the position. "First line" is not
-judged by line breaks, which miss a long paragraph wrapping onto lines of its own; row 5's rule
-holds instead: ArrowUp recalls only with the selection collapsed and the caret at position 0 (a
-browser's own ArrowUp on the first line takes it there), or while the box holds a loaded entry
-unedited, so repeated presses keep stepping; ArrowDown steps forward only with the caret at the
-end. Runs of the same prompt show once, and the other guards of row 5 still hold (no modifiers,
+judged by line breaks, which miss a long paragraph wrapping onto lines of its own: where the text
+wraps is measured in a hidden copy of the textarea laid out as it is, so ArrowUp recalls only with
+the selection collapsed on the first line the box shows, and ArrowDown steps forward only from the
+last. While the box holds a loaded entry unedited, ArrowUp keeps stepping from anywhere, so a
+recalled prompt of several lines does not stop the walk. `historyLimit` caps how many of the newest
+entries the arrows reach. Runs of the same prompt show once, and the other guards of row 5 still hold (no modifiers,
 not composing, the `/` list first).
 
 ### Leave out of v1

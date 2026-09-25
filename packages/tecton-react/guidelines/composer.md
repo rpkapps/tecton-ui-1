@@ -25,7 +25,7 @@ related: [MessageScroller, Message, Attachment, Questionnaire]
 - Pass the chat's `status` (`"ready" | "submitted" | "streaming" | "error"`) and `onStop`; `ComposerSubmit` swaps Send for Stop and Escape stops the reply.
 - Keep `ComposerHint` (visible, or `isVisible={false}`) so the textarea is described by its keys, and `ComposerStatusMessage` for sent, stopped and failed.
 - Pair it with a transcript whose `MessageScrollerContent` has `aria-busy` while a reply streams, so the reply is announced once, complete.
-- Use `submitMode="mod-enter"` for long-form input, and pass the prompts already sent as `history` (oldest first): ArrowUp with the caret at the start of the box steps back through them, ArrowDown at the end forward to the draft, which is kept even when a loaded prompt is edited.
+- Use `submitMode="mod-enter"` for long-form input, and pass the prompts already sent as `history` (oldest first): ArrowUp on the first line steps back through them (`historyLimit` caps how many), ArrowDown on the last line forward to the draft, which is kept even when a loaded prompt is edited.
 - Put extra context in `ComposerAttachments` (Tecton chips) as items with a `label`, prompts to start from in `ComposerSuggestions`, and slash commands in `ComposerCommands` inside `ComposerField`, whose `onCommand` decides what a pick does and `countMessage` translates its announcement.
 
 ## Don't

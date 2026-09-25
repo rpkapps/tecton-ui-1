@@ -46,8 +46,8 @@ import {
 | Textarea | <Kbd>⌘</Kbd>/<Kbd>Ctrl</Kbd> + <Kbd>Enter</Kbd> | Sends, in either mode |
 | Textarea, while an IME composes | any | Nothing: the Enter that confirms a conversion never sends |
 | Textarea, while a reply arrives | <Kbd>Esc</Kbd> | Stops the reply, and announces it |
-| Textarea, caret at the very start (or a loaded message, unedited) | <Kbd>↑</Kbd> | Loads the previous message from `history`, caret at its end |
-| Textarea, browsing `history`, caret at the very end | <Kbd>↓</Kbd> | Loads the next message; past the newest, the draft comes back |
+| Textarea, caret on the first line (or a loaded message, unedited) | <Kbd>↑</Kbd> | Loads the previous message from `history`, caret at its end |
+| Textarea, browsing `history`, caret on the last line | <Kbd>↓</Kbd> | Loads the next message; past the newest, the draft comes back |
 | Textarea, `/` at the start | <Kbd>↑</Kbd> <Kbd>↓</Kbd> | Moves through the commands, with `ComposerCommands` |
 | Textarea, commands listed | <Kbd>Enter</Kbd> / <Kbd>Tab</Kbd> | Picks the command instead of sending |
 | Textarea, commands listed | <Kbd>Esc</Kbd> | Closes the list until the text changes; the reply and a sheet around it are left alone |
@@ -63,13 +63,13 @@ moves to it if it was on Send.
 ## History
 
 Pass the prompts the user has sent as `history`, oldest first, and the arrows walk through them
-as in a terminal. <Kbd>↑</Kbd> with the caret at the very start of the box (in an empty box, or
-after the <Kbd>↑</Kbd> that takes the caret there from the first line) loads the previous prompt,
-the newest first, with the caret at its end; while that prompt is in the box as it was loaded,
-<Kbd>↑</Kbd> keeps stepping back. <Kbd>↓</Kbd> with the caret at the very end goes forward again,
-and past the newest brings back what was in the box when browsing began. Anywhere else in the
-text the arrows move the caret as usual, including in one long paragraph that wraps, where a line
-break could not tell the first line from the third. A run of the same prompt is shown once.
+as in a terminal. <Kbd>↑</Kbd> with the caret on the first line the box shows loads the previous
+prompt, the newest first, with the caret at its end; while that prompt is in the box as it was
+loaded, <Kbd>↑</Kbd> keeps stepping back. <Kbd>↓</Kbd> on the last line goes forward again, and
+past the newest brings back what was in the box when browsing began. Anywhere else in the text the
+arrows move the caret as usual; the first and last lines are the ones shown, so a long paragraph
+that wraps counts each of its lines. A run of the same prompt is shown once, and `historyLimit`
+caps how many of the newest prompts <Kbd>↑</Kbd> reaches.
 
 The draft survives edits: typing in a loaded prompt keeps browsing, and stepping away from it
 drops that edit but not the draft. Sending ends browsing, and so does a change from outside the
@@ -108,9 +108,9 @@ the page, as Tecton [Chips](/docs/tecton/chip) the user can remove. Mark an item
 
 `ComposerCommands` lists commands when the box starts with a `/`, above the field: render it
 inside `ComposerField`. Typing narrows the list, by the start of the command, then a word of its
-label. The commands stay in their groups, the groups in the order they first appear in `items` and
-the best match first inside each; commands without a `group` are listed together, without a
-heading. A slash later in the text is only text, and with no match the list stays closed, so Enter
+label. The commands stay in their groups, each group where its best match ranks and the best
+match first inside it, so Enter on a fresh list picks the best match; commands without a `group`
+are listed together, without a heading. A slash later in the text is only text, and with no match the list stays closed, so Enter
 sends what was typed. Escape closes the list until the text changes, and a `/word` recalled from
 `history` is browsed, not typed, so it opens no list until it is edited. Picking empties the box and calls `onCommand` with the command and the
 composer's `setValue`, `send` and `focus`: fill the box for the user to finish, attach something
@@ -174,7 +174,7 @@ Pair it with a transcript whose `MessageScrollerContent` has `aria-busy` while a
 
 <Do>
 
-Use `submitMode="mod-enter"` for long-form input, and pass the prompts already sent as `history` (oldest first): ArrowUp with the caret at the start of the box steps back through them, ArrowDown at the end forward to the draft, which is kept even when a loaded prompt is edited.
+Use `submitMode="mod-enter"` for long-form input, and pass the prompts already sent as `history` (oldest first): ArrowUp on the first line steps back through them (`historyLimit` caps how many), ArrowDown on the last line forward to the draft, which is kept even when a loaded prompt is edited.
 
 </Do>
 
@@ -284,6 +284,7 @@ A `form` that holds the value and the chat's state for its parts.
 | `status` | `"ready" \| "submitted" \| "streaming" \| "error"` | `"ready"` | The chat's state. Nothing sends while `submitted` or `streaming`. |
 | `submitMode` | `"enter" \| "mod-enter"` | `"enter"` | Which key sends. |
 | `history` | `readonly string[]` | - | The prompts already sent, oldest first, for ArrowUp and ArrowDown. |
+| `historyLimit` | `number` | all | How many of the newest entries of `history` ArrowUp reaches. |
 | `value`, `defaultValue`, `onValueChange` | `string` | - | The text, controlled or not. |
 | `isDisabled` | `boolean` | `false` | Disables the whole composer. |
 
@@ -308,7 +309,7 @@ Rendered inside `ComposerField`, above which it opens.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `items` | `readonly ComposerCommandItem[]` | - | The commands, in the order to list them; a group goes where its first command is. |
+| `items` | `readonly ComposerCommandItem[]` | - | The commands; ties in a match keep this order, and a group goes where its best match ranks. |
 | `onCommand` | `(item, { setValue, send, focus }) => void` | - | Called with the picked command once the box is emptied: fill the box, send, or act. |
 | `countMessage` | `(count: number) => string` | `"N commands, arrow keys to choose."` | What the polite status says while the list is open. |
 | `aria-label` | `string` | `"Commands"` | The listbox's name. |

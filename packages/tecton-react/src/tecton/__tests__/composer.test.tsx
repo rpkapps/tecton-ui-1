@@ -222,11 +222,9 @@ describe("Composer", () => {
 
     await userEvent.type(textbox(), "line one{Shift>}{Enter}{/Shift}line two")
     expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
-    textbox().setSelectionRange(3, 3)
-    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
     expect(textbox()).toHaveValue("line one\nline two")
 
-    textbox().setSelectionRange(0, 0)
+    textbox().setSelectionRange(3, 3)
     expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(false)
     expect(textbox()).toHaveValue("Earlier question")
 
@@ -236,21 +234,39 @@ describe("Composer", () => {
     expect(fireEvent.keyDown(textbox(), { key: "ArrowDown" })).toBe(true)
   })
 
-  it("leaves ArrowUp to the caret in one long paragraph that wraps, with no line break to go by", async () => {
-    render(<Chat history={["Earlier question"]} />)
-    const paragraph =
-      "A single paragraph long enough to wrap onto three lines of the box, " +
-      "with the caret somewhere on the last of them and no line break before it"
+  it("leaves the arrows to the caret inside a line that wraps", () => {
+    // jsdom lays nothing out: put the character after the caret on the
+    // second line, as a wrapped line would.
+    const offsetTop = vi
+      .spyOn(HTMLElement.prototype, "offsetTop", "get")
+      .mockImplementation(function (this: HTMLElement) {
+        return this.tagName === "SPAN" && this.textContent !== "" ? 20 : 0
+      })
+    try {
+      render(
+        <Chat
+          history={["Earlier question"]}
+          defaultValue="a long line that wraps"
+        />
+      )
+      textbox().focus()
+      textbox().setSelectionRange(12, 12)
 
-    await userEvent.type(textbox(), paragraph)
-    textbox().setSelectionRange(120, 120)
-    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
-    expect(textbox()).toHaveValue(paragraph)
+      expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+      expect(textbox()).toHaveValue("a long line that wraps")
 
-    // A selection is left alone too, even from the start.
-    textbox().setSelectionRange(0, 5)
-    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
-    expect(textbox()).toHaveValue(paragraph)
+      // A selection is left alone, even one from the start.
+      textbox().setSelectionRange(0, 5)
+      expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+      expect(textbox()).toHaveValue("a long line that wraps")
+
+      // At the very start there is nothing left to wrap.
+      textbox().setSelectionRange(0, 0)
+      expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(false)
+      expect(textbox()).toHaveValue("Earlier question")
+    } finally {
+      offsetTop.mockRestore()
+    }
   })
 
   it("keeps the draft when the user edits a loaded prompt", async () => {
@@ -284,6 +300,26 @@ describe("Composer", () => {
 
     expect(fireEvent.keyDown(textbox(), { key: "ArrowDown" })).toBe(true)
     expect(textbox()).toHaveValue("Summarise the shift")
+  })
+
+  it("reaches only the newest historyLimit entries", async () => {
+    render(<Chat history={["first", "second", "third"]} historyLimit={2} />)
+
+    await userEvent.click(textbox())
+    await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("third")
+    await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("second")
+    // "first" is past the limit: the box stays on the oldest it reaches.
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+    expect(textbox()).toHaveValue("second")
+  })
+
+  it("has no history to step through with a historyLimit of 0", () => {
+    render(<Chat history={["first"]} historyLimit={0} />)
+    expect(screen.queryByText(/earlier messages/)).not.toBeInTheDocument()
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+    expect(textbox()).toHaveValue("")
   })
 
   it("shows a run of the same prompt once, and skips blank entries", async () => {
@@ -761,7 +797,7 @@ describe("ComposerCommands", () => {
     expect(textbox()).toHaveValue("")
   })
 
-  it("lists each group once, and moves in the order listed", async () => {
+  it("lists each group once, where its best match ranks, and moves in that order", async () => {
     const items: ComposerCommandItem[] = [
       { id: "apple", command: "apple", label: "Pick", group: "On this page" },
       { id: "bar", command: "bar", label: "A drink", group: "Chat" },
@@ -806,7 +842,7 @@ describe("ComposerCommands", () => {
     ).toBeInTheDocument()
   })
 
-  it("keeps each group in one piece, in the order the groups come in, best match first inside", async () => {
+  it("keeps each group in one piece, where its best match ranks, and names groups with spaces", async () => {
     // A better match from another group sits between two of "On this page".
     const items: ComposerCommandItem[] = [
       {
@@ -834,28 +870,31 @@ describe("ComposerCommands", () => {
 
     await userEvent.type(textbox(), "/a")
 
-    const groups = within(
-      screen.getByRole("listbox", { name: "Commands" })
-    ).getAllByRole("group")
-    expect(
-      groups.map((group) => group.getAttribute("aria-labelledby"))
-    ).toEqual([
-      expect.stringMatching(/-group-0$/),
-      expect.stringMatching(/-group-1$/),
-    ])
-    // A name with spaces still names its group: the id is the group's place.
-    expect(screen.getByRole("group", { name: "On this page" })).toBe(groups[1])
-    expect(screen.getByRole("group", { name: "Chat" })).toBe(groups[0])
+    const listbox = screen.getByRole("listbox", { name: "Commands" })
+    const groups = within(listbox).getAllByRole("group")
+    expect(groups).toHaveLength(2)
+    // A name with spaces still names its group.
+    expect(screen.getByRole("group", { name: "On this page" })).toBe(groups[0])
+    expect(screen.getByRole("group", { name: "Chat" })).toBe(groups[1])
     const options = screen.getAllByRole("option")
     expect(
       options.map((option) => option.textContent.split(/(?=[A-Z])/)[0])
-    ).toEqual(["/new", "/acknowledge", "/note", "/about", "/archive"])
+    ).toEqual(["/acknowledge", "/note", "/about", "/archive", "/new"])
     expect(new Set(options.map((option) => option.id)).size).toBe(5)
-    expect(textbox()).toHaveAttribute("aria-activedescendant", options[0]?.id)
+
+    // The textarea names React Aria's own option ids, which the composer
+    // builds from the list's id and the key: a React Aria that changes the
+    // scheme fails here.
+    const active = () =>
+      document.getElementById(
+        textbox().getAttribute("aria-activedescendant") ?? ""
+      )
+    expect(active()).toBe(options[0])
 
     // The arrows follow the listed order across the groups.
     await userEvent.keyboard("{ArrowDown}{ArrowDown}{ArrowDown}")
-    expect(textbox()).toHaveAttribute("aria-activedescendant", options[3]?.id)
+    expect(active()).toBe(options[3])
+    expect(options[3]).toHaveAttribute("aria-selected", "true")
   })
 
   it("opens again for the same text typed after Escape and a send", async () => {
