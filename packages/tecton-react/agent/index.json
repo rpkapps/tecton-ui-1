@@ -1496,14 +1496,14 @@
    "id": "composer",
    "kind": "component",
    "name": "Composer",
-   "import": "import { Composer, ComposerField, ComposerInput, ComposerToolbar, ComposerSubmit, ComposerHint, ComposerStatusMessage, ComposerAttachments, ComposerSuggestions, ComposerSuggestion, useComposer } from \"@tecton/react/tecton/composer\"",
+   "import": "import { Composer, ComposerField, ComposerInput, ComposerToolbar, ComposerSubmit, ComposerHint, ComposerStatusMessage, ComposerAttachments, ComposerSuggestions, ComposerSuggestion, ComposerCommands, useComposer } from \"@tecton/react/tecton/composer\"",
    "family": "conversation",
    "summary": "The user writes to an assistant or agent: the message box under a transcript.",
    "fields": {
-    "names": "composer composer composer field composer input composer toolbar composer submit composer hint composer status message composer attachments composer suggestions composer suggestion use composer",
-    "useWhen": "The user writes to an assistant or agent: the message box under a transcript. A reply streams back and the user must be able to stop it, and keep typing the next message meanwhile. The message carries something besides its text (a selection, a file) that the user can see and remove before sending.",
+    "names": "composer composer composer field composer input composer toolbar composer submit composer hint composer status message composer attachments composer suggestions composer suggestion composer commands use composer",
+    "useWhen": "The user writes to an assistant or agent: the message box under a transcript. A reply streams back and the user must be able to stop it, and keep typing the next message meanwhile. The message carries something besides its text (a selection, a file) that the user can see and remove before sending. The user types slash commands (`/new`, `/summarise`) in the message box and picks one from a list.",
     "routed": "",
-    "do": "Pass the chat's `status` (`\"ready\" | \"submitted\" | \"streaming\" | \"error\"`) and `onStop`; `ComposerSubmit` swaps Send for Stop and Escape stops the reply. Keep `ComposerHint` (visible, or `isVisible={false}`) so the textarea is described by its keys, and `ComposerStatusMessage` for sent, stopped and failed. Pair it with a transcript whose `MessageScrollerContent` has `aria-busy` while a reply streams, so the reply is announced once, complete. Use `submitMode=\"mod-enter\"` for long-form input, and `onRecallLast` for ArrowUp-to-edit in an empty box. Put extra context in `ComposerAttachments` as items with a `label`, and prompts to start from in `ComposerSuggestions`."
+    "do": "Pass the chat's `status` (`\"ready\" | \"submitted\" | \"streaming\" | \"error\"`) and `onStop`; `ComposerSubmit` swaps Send for Stop and Escape stops the reply. Keep `ComposerHint` (visible, or `isVisible={false}`) so the textarea is described by its keys, and `ComposerStatusMessage` for sent, stopped and failed. Pair it with a transcript whose `MessageScrollerContent` has `aria-busy` while a reply streams, so the reply is announced once, complete. Use `submitMode=\"mod-enter\"` for long-form input, and `onRecallLast` for ArrowUp-to-edit in an empty box. Put extra context in `ComposerAttachments` as items with a `label`, prompts to start from in `ComposerSuggestions`, and slash commands in `ComposerCommands` inside `ComposerField`, whose `onCommand` decides what a pick does."
    },
    "notFor": [
     {
@@ -1536,10 +1536,11 @@
     "ComposerAttachments",
     "ComposerSuggestions",
     "ComposerSuggestion",
+    "ComposerCommands",
     "useComposer"
    ],
    "aliases": [],
-   "tokens": 901
+   "tokens": 957
   },
   {
    "id": "context-menu",

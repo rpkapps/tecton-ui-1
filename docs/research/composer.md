@@ -212,11 +212,26 @@ Behaviour contract:
 | Anywhere in host | Shift+Esc (configurable) | Focus composer textarea |
 | Everywhere | Tab / Shift+Tab | Leaves composer normally (no trap) |
 
+### Slash commands (added after v1)
+
+`ComposerCommands` is the `/` menu of row 15, with one change: HTML allows no role on a
+`textarea`, so the textarea stays a textbox rather than becoming a `combobox`. It keeps focus and
+carries `aria-autocomplete="list"`, `aria-controls` and `aria-activedescendant` (all allowed on a
+textbox); `aria-expanded` and `aria-haspopup` are left out, and a polite status says how many
+commands match instead. The list opens only for a `/word` at the very start of the box, as in
+Slack, Claude and assistant-ui, so a slash mid-sentence stays text; Up/Down move (wrapping), Enter
+or Tab picks, Escape closes it until the text changes and does not stop a reply or close a sheet.
+With no match the list stays closed and Enter sends the text as typed. Picking empties the box and
+hands the command to the app, which may fill the box, send, or do something else entirely. It is
+built by hand rather than on RAC `Autocomplete`, which would need the textarea to be RAC's own
+`TextArea` inside its `TextField`, and the composer's keys (IME, recall, stop) would then be split
+across two owners.
+
 ### Leave out of v1
-- Slash commands and @ mentions (combobox, `aria-activedescendant`). For v2 evaluate RAC 1.21
-  `TokenField` (Tecton already has `react-aria-components@1.21.1`; its doc comment: "Use it to
-  build AI prompt fields, tag inputs, … mention inputs"; `onSubmit` fires on `insertParagraph`,
-  Shift+Enter is `insertLineBreak`, composition-aware), or RAC `Autocomplete` + `ListBox`.
+- @ mentions (the same pattern as the `/` menu, with a trigger anywhere in the text). For them
+  evaluate RAC 1.21 `TokenField` (Tecton already has `react-aria-components@1.21.1`; its doc
+  comment: "Use it to build AI prompt fields, tag inputs, … mention inputs"; `onSubmit` fires on
+  `insertParagraph`, Shift+Enter is `insertLineBreak`, composition-aware).
 - Queue / steer while running (VS Code, Cursor, assistant-ui `Queue`) — needs transport support.
 - Voice dictation, screenshots, drag-overlay `globalDrop`, rich text / markdown formatting toolbar.
 - Model/mode picker as a built-in part (just a toolbar slot with `Select`/`ToggleButton`).

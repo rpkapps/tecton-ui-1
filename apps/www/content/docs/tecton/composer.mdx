@@ -47,6 +47,9 @@ import {
 | Textarea, while an IME composes | any | Nothing: the Enter that confirms a conversion never sends |
 | Textarea, while a reply arrives | <Kbd>Esc</Kbd> | Stops the reply, and announces it |
 | Textarea, empty | <Kbd>↑</Kbd> | Loads the last message, with `onRecallLast` |
+| Textarea, `/` at the start | <Kbd>↑</Kbd> <Kbd>↓</Kbd> | Moves through the commands, with `ComposerCommands` |
+| Textarea, commands listed | <Kbd>Enter</Kbd> / <Kbd>Tab</Kbd> | Picks the command instead of sending |
+| Textarea, commands listed | <Kbd>Esc</Kbd> | Closes the list until the text changes; the reply and a sheet around it are left alone |
 | Suggestions, toolbar | <Kbd>←</Kbd> <Kbd>→</Kbd> | Moves between buttons: each group is one tab stop |
 | Attachment chip | <Kbd>Delete</Kbd> / <Kbd>Backspace</Kbd> | Removes it; after the last, focus returns to the textarea |
 
@@ -75,6 +78,31 @@ the page, as chips the user can remove. `ComposerSuggestions` holds prompts to s
 
 <ComponentPreview name="composer-context" />
 
+## Commands
+
+`ComposerCommands` lists commands when the box starts with a `/`, above the field: render it
+inside `ComposerField`. Typing narrows the list, by the start of the command, then a word of its
+label. A slash later in the text is only text, and with no match the list stays closed, so Enter
+sends what was typed. Picking empties the box and calls `onCommand` with the command and the
+composer's `setValue`, `send` and `focus`: fill the box for the user to finish, attach something
+with `ComposerAttachments`, or do the whole thing at once, like starting a new conversation.
+
+```tsx
+<ComposerField>
+  <ComposerCommands
+    items={[{ id: "new", command: "new", label: "Start a new conversation" }]}
+    onCommand={(item) => startOver()}
+  />
+  <ComposerInput />
+</ComposerField>
+```
+
+Focus stays in the textarea. It points at the active command with `aria-activedescendant` and at
+the list with `aria-controls`, and a polite status says how many commands match. `ComposerHint`
+adds <Kbd>/</Kbd> for commands to the keys it describes.
+
+<ComponentPreview name="composer-commands" />
+
 {/* guidelines:start */}
 
 ## Usage guidelines
@@ -84,6 +112,7 @@ the page, as chips the user can remove. `ComposerSuggestions` holds prompts to s
 - The user writes to an assistant or agent: the message box under a transcript.
 - A reply streams back and the user must be able to stop it, and keep typing the next message meanwhile.
 - The message carries something besides its text (a selection, a file) that the user can see and remove before sending.
+- The user types slash commands (`/new`, `/summarise`) in the message box and picks one from a list.
 
 ### Not for
 
@@ -121,7 +150,7 @@ Use `submitMode="mod-enter"` for long-form input, and `onRecallLast` for ArrowUp
 
 <Do>
 
-Put extra context in `ComposerAttachments` as items with a `label`, and prompts to start from in `ComposerSuggestions`.
+Put extra context in `ComposerAttachments` as items with a `label`, prompts to start from in `ComposerSuggestions`, and slash commands in `ComposerCommands` inside `ComposerField`, whose `onCommand` decides what a pick does.
 
 </Do>
 

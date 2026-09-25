@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vitest"
 import {
   Composer,
   ComposerAttachments,
+  ComposerCommands,
   ComposerField,
   ComposerHint,
   ComposerInput,
@@ -15,6 +16,7 @@ import {
   ComposerSuggestions,
   ComposerToolbar,
   type ComposerAttachmentItem,
+  type ComposerCommandItem,
   type ComposerProps,
 } from "@tecton/react/tecton/composer"
 
@@ -332,5 +334,163 @@ describe("Composer", () => {
 
     expect(screen.queryByRole("row", { name: "Selected text" })).toBeNull()
     expect(textbox()).toHaveFocus()
+  })
+})
+
+const COMMANDS: ComposerCommandItem[] = [
+  {
+    id: "new",
+    command: "new",
+    label: "Start a new conversation",
+    group: "Chat",
+  },
+  {
+    id: "ack",
+    command: "acknowledge",
+    label: "Acknowledge alert",
+    group: "Actions",
+  },
+  {
+    id: "note",
+    command: "add-note",
+    label: "Add a note to the well",
+    group: "Actions",
+  },
+]
+
+function WithCommands({
+  onCommand = () => {},
+  ...props
+}: Partial<ComposerProps> & {
+  onCommand?: React.ComponentProps<typeof ComposerCommands>["onCommand"]
+}) {
+  return (
+    <Composer onSubmit={() => {}} {...props}>
+      <ComposerField>
+        <ComposerCommands items={COMMANDS} onCommand={onCommand} />
+        <ComposerInput />
+        <ComposerToolbar>
+          <ComposerSubmit />
+        </ComposerToolbar>
+      </ComposerField>
+      <ComposerHint />
+    </Composer>
+  )
+}
+
+describe("ComposerCommands", () => {
+  it("lists the commands for a slash at the start, the textarea pointing at the active one", async () => {
+    render(<WithCommands />)
+
+    expect(screen.queryByRole("listbox")).toBeNull()
+    await userEvent.type(textbox(), "/")
+
+    const list = screen.getByRole("listbox", { name: "Commands" })
+    expect(screen.getAllByRole("option")).toHaveLength(3)
+    expect(textbox()).toHaveAttribute("aria-controls", list.id)
+    expect(textbox()).toHaveAttribute(
+      "aria-activedescendant",
+      screen.getAllByRole("option")[0]?.id
+    )
+    expect(screen.getByRole("group", { name: "Actions" })).toBeInTheDocument()
+    expect(textbox()).toHaveFocus()
+  })
+
+  it("narrows by the command, then by a word of the label", async () => {
+    render(<WithCommands />)
+
+    await userEvent.type(textbox(), "/add")
+    expect(
+      screen.getAllByRole("option").map((option) => option.textContent)
+    ).toEqual(["/add-noteAdd a note to the well"])
+
+    await userEvent.clear(textbox())
+    await userEvent.type(textbox(), "/alert")
+    expect(
+      screen.getAllByRole("option").map((option) => option.textContent)
+    ).toEqual(["/acknowledgeAcknowledge alert"])
+  })
+
+  it("moves with the arrow keys and picks with Enter, emptying the box instead of sending", async () => {
+    const onCommand = vi.fn()
+    const onSubmit = vi.fn()
+    render(<WithCommands onCommand={onCommand} onSubmit={onSubmit} />)
+
+    await userEvent.type(textbox(), "/")
+    await userEvent.keyboard(
+      "{ArrowDown}{ArrowDown}{ArrowDown}{ArrowUp}{Enter}"
+    )
+
+    expect(onCommand).toHaveBeenCalledWith(
+      COMMANDS[2],
+      expect.objectContaining({ setValue: expect.any(Function) })
+    )
+    expect(onSubmit).not.toHaveBeenCalled()
+    expect(textbox()).toHaveValue("")
+    expect(screen.queryByRole("listbox")).toBeNull()
+    expect(textbox()).toHaveFocus()
+  })
+
+  it("picks with Tab and with a click, and lets the command fill the box", async () => {
+    render(
+      <WithCommands
+        onCommand={(item, composer) => composer.setValue(`${item.label}: `)}
+      />
+    )
+
+    await userEvent.type(textbox(), "/ack{Tab}")
+    expect(textbox()).toHaveValue("Acknowledge alert: ")
+
+    await userEvent.clear(textbox())
+    await userEvent.type(textbox(), "/")
+    await userEvent.click(screen.getByRole("option", { name: /new/ }))
+    expect(textbox()).toHaveValue("Start a new conversation: ")
+    expect(textbox()).toHaveFocus()
+  })
+
+  it("closes with Escape until the text changes, and then Enter sends as usual", async () => {
+    const onSubmit = vi.fn()
+    const onKeyDown = vi.fn()
+    render(
+      <div onKeyDown={onKeyDown}>
+        <WithCommands onSubmit={onSubmit} />
+      </div>
+    )
+
+    await userEvent.type(textbox(), "/new")
+    await userEvent.keyboard("{Escape}")
+    expect(screen.queryByRole("listbox")).toBeNull()
+    expect(onKeyDown).not.toHaveBeenCalledWith(
+      expect.objectContaining({ key: "Escape" })
+    )
+
+    await userEvent.keyboard("{Enter}")
+    expect(onSubmit).toHaveBeenCalledWith({ text: "/new" })
+  })
+
+  it("stays closed with no match, or once the slash is not at the start", async () => {
+    const onSubmit = vi.fn()
+    render(<WithCommands onSubmit={onSubmit} />)
+
+    await userEvent.type(textbox(), "/zzz")
+    expect(screen.queryByRole("listbox")).toBeNull()
+
+    await userEvent.clear(textbox())
+    await userEvent.type(textbox(), "see /new")
+    expect(screen.queryByRole("listbox")).toBeNull()
+
+    await userEvent.clear(textbox())
+    await userEvent.type(textbox(), "/new now")
+    expect(screen.queryByRole("listbox")).toBeNull()
+  })
+
+  it("mentions the slash in the hint, and announces how many commands match", async () => {
+    render(<WithCommands />)
+    expect(screen.getByText(/for commands/)).toBeInTheDocument()
+
+    await userEvent.type(textbox(), "/a")
+    expect(
+      screen.getByText("3 commands, arrow keys to choose.")
+    ).toBeInTheDocument()
   })
 })

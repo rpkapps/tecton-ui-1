@@ -33,8 +33,10 @@ import { Spinner } from "@tecton/react/components/spinner"
  * sends (and is the only way to send with `submitMode="mod-enter"`);
  * nothing sends while an IME is composing; Escape stops a reply that is
  * arriving; ArrowUp in an empty box recalls the last message when
- * `onRecallLast` is given. The textarea stays enabled while a reply
- * streams, and focus stays in it after sending.
+ * `onRecallLast` is given. With `ComposerCommands`, a `/` at the start of
+ * the box opens a list of commands: ArrowUp and ArrowDown move through it,
+ * Enter or Tab picks, Escape closes it. The textarea stays enabled while a
+ * reply streams, and focus stays in it after sending.
  *
  * Announcements: the composer announces its own state changes (sent,
  * stopped, failed) in a polite status region; the transcript, a
@@ -68,6 +70,19 @@ type ComposerContextValue = {
   setHasHint: (hasHint: boolean) => void
   /** Counts the replies the user stopped, so the status says so each time. */
   stopCount: number
+  /** The open command list's keys, asked before the textarea's own; true when it took the key. */
+  commandKeys: React.RefObject<
+    ((event: React.KeyboardEvent<HTMLTextAreaElement>) => boolean) | null
+  >
+  /** What the textarea says about the command list, for `aria-controls` and `aria-activedescendant`. */
+  commandList: ComposerCommandListState | undefined
+  setCommandList: (state: ComposerCommandListState | undefined) => void
+}
+
+type ComposerCommandListState = {
+  listId: string
+  open: boolean
+  activeId: string | undefined
 }
 
 const ComposerContext = React.createContext<ComposerContextValue | null>(null)
@@ -126,6 +141,11 @@ function Composer({
   const hintId = React.useId()
   const [hasHint, setHasHint] = React.useState(false)
   const [stopCount, setStopCount] = React.useState(0)
+  const commandKeys = React.useRef<
+    ((event: React.KeyboardEvent<HTMLTextAreaElement>) => boolean) | null
+  >(null)
+  const [commandList, setCommandList] =
+    React.useState<ComposerCommandListState>()
 
   const setValue = React.useCallback(
     (next: string) => {
@@ -189,6 +209,9 @@ function Composer({
       hasHint,
       setHasHint,
       stopCount,
+      commandKeys,
+      commandList,
+      setCommandList,
     }),
     [
       value,
@@ -206,6 +229,7 @@ function Composer({
       hintId,
       hasHint,
       stopCount,
+      commandList,
     ]
   )
 
@@ -276,6 +300,8 @@ function ComposerInput({
     inputRef,
     hintId,
     hasHint,
+    commandKeys,
+    commandList,
   } = useComposerContext("ComposerInput")
 
   const setRef = React.useCallback(
@@ -297,6 +323,11 @@ function ComposerInput({
       ref={setRef}
       aria-label={ariaLabel}
       aria-describedby={describedBy || undefined}
+      aria-autocomplete={commandList === undefined ? undefined : "list"}
+      aria-controls={commandList?.open ? commandList.listId : undefined}
+      aria-activedescendant={
+        commandList?.open ? commandList.activeId : undefined
+      }
       value={value}
       disabled={isDisabled}
       rows={1}
@@ -307,6 +338,7 @@ function ComposerInput({
       onKeyDown={(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
         onKeyDown?.(event)
         if (event.defaultPrevented || isComposing(event)) return
+        if (commandKeys.current?.(event)) return
 
         const mod = event.metaKey || event.ctrlKey
         if (event.key === "Enter") {
@@ -465,7 +497,8 @@ function ComposerHint({
   children,
   ...props
 }: React.ComponentProps<"p"> & { isVisible?: boolean }) {
-  const { hintId, setHasHint, submitMode } = useComposerContext("ComposerHint")
+  const { hintId, setHasHint, submitMode, commandList } =
+    useComposerContext("ComposerHint")
   React.useLayoutEffect(() => {
     setHasHint(true)
     return () => setHasHint(false)
@@ -482,6 +515,12 @@ function ComposerHint({
         line
       </>
     )
+  const commandKeysHint =
+    commandList === undefined ? null : (
+      <>
+        , <Kbd>/</Kbd> for commands
+      </>
+    )
 
   return (
     <p
@@ -493,7 +532,12 @@ function ComposerHint({
       )}
       {...props}
     >
-      {children ?? sendKeys}
+      {children ?? (
+        <>
+          {sendKeys}
+          {commandKeysHint}
+        </>
+      )}
     </p>
   )
 }
@@ -677,9 +721,263 @@ function ComposerSuggestion({
   )
 }
 
+type ComposerCommandItem = {
+  id: string
+  /** What is typed after the slash, such as `new`: one word, no spaces. */
+  command: string
+  /** What the command does, in words; matched too. */
+  label: string
+  description?: string
+  /** Commands with the same group are listed together under it, in order. */
+  group?: string
+  icon?: React.ReactNode
+}
+
+/** What a picked command can do to the composer. */
+type ComposerCommandControls = Pick<
+  ComposerContextValue,
+  "setValue" | "send" | "focus"
+>
+
+/** The typed `/word` at the start of the box, or undefined when there is none. */
+function commandQuery(value: string): string | undefined {
+  const match = /^\/(\S*)$/.exec(value)
+  return match === null ? undefined : match[1].toLowerCase()
+}
+
+/**
+ * The commands that match `query`, best first: the command starts with it,
+ * then a word of the label does, then the command contains it.
+ */
+function matchCommands(
+  items: readonly ComposerCommandItem[],
+  query: string
+): ComposerCommandItem[] {
+  const rank = (item: ComposerCommandItem): number => {
+    const command = item.command.toLowerCase()
+    if (command.startsWith(query)) return 0
+    if (
+      item.label
+        .toLowerCase()
+        .split(/[^\p{L}\p{N}]+/u)
+        .some((word) => word.startsWith(query))
+    )
+      return 1
+    if (command.includes(query)) return 2
+    return -1
+  }
+  return items
+    .map((item, index) => ({ item, index, rank: rank(item) }))
+    .filter((entry) => entry.rank >= 0)
+    .sort((a, b) => a.rank - b.rank || a.index - b.index)
+    .map((entry) => entry.item)
+}
+
+/**
+ * Commands behind a `/` at the start of the box, listed above the field: the
+ * textarea keeps focus and points at the active one with
+ * `aria-activedescendant`, as a combobox does. ArrowUp and ArrowDown move,
+ * Enter or Tab picks, Escape closes the list until the text changes; with no
+ * match the list stays closed and Enter sends as usual. Picking empties the
+ * box and hands the command to `onCommand`. Render it inside
+ * `ComposerField`, which it is positioned against.
+ */
+function ComposerCommands({
+  items,
+  onCommand,
+  className,
+  "aria-label": ariaLabel = "Commands",
+}: {
+  items: readonly ComposerCommandItem[]
+  onCommand: (
+    item: ComposerCommandItem,
+    composer: ComposerCommandControls
+  ) => void
+  className?: string
+  "aria-label"?: string
+}) {
+  const {
+    value,
+    setValue,
+    send,
+    focus,
+    isDisabled,
+    commandKeys,
+    setCommandList,
+  } = useComposerContext("ComposerCommands")
+  const listId = React.useId()
+  const [active, setActive] = React.useState(0)
+  const [dismissed, setDismissed] = React.useState<string>()
+  const listRef = React.useRef<HTMLDivElement>(null)
+
+  const query = commandQuery(value)
+  const matches = React.useMemo(
+    () => (query === undefined ? [] : matchCommands(items, query)),
+    [items, query]
+  )
+  const open =
+    !isDisabled &&
+    query !== undefined &&
+    matches.length > 0 &&
+    dismissed !== value
+  const activeIndex = Math.min(active, Math.max(0, matches.length - 1))
+  const optionId = React.useCallback(
+    (index: number) => `${listId}-${index}`,
+    [listId]
+  )
+
+  // A new query starts at the best match.
+  React.useEffect(() => {
+    setActive(0)
+  }, [query])
+
+  React.useLayoutEffect(() => {
+    setCommandList({
+      listId,
+      open,
+      activeId: open ? optionId(activeIndex) : undefined,
+    })
+  }, [listId, open, activeIndex, optionId, setCommandList])
+  React.useLayoutEffect(() => () => setCommandList(undefined), [setCommandList])
+
+  React.useEffect(() => {
+    if (!open) return
+    listRef.current
+      ?.querySelector(`[id="${optionId(activeIndex)}"]`)
+      ?.scrollIntoView({ block: "nearest" })
+  }, [open, activeIndex, optionId])
+
+  const pick = React.useCallback(
+    (item: ComposerCommandItem) => {
+      setValue("")
+      onCommand(item, { setValue, send, focus })
+      focus()
+    },
+    [setValue, onCommand, send, focus]
+  )
+
+  React.useLayoutEffect(() => {
+    commandKeys.current = (event) => {
+      if (!open) return false
+      const mod = event.metaKey || event.ctrlKey || event.altKey
+      switch (event.key) {
+        case "ArrowDown":
+        case "ArrowUp": {
+          if (mod || event.shiftKey) return false
+          event.preventDefault()
+          const step = event.key === "ArrowDown" ? 1 : -1
+          setActive((activeIndex + step + matches.length) % matches.length)
+          return true
+        }
+        case "Enter":
+        case "Tab": {
+          if (mod || event.shiftKey) return false
+          event.preventDefault()
+          pick(matches[activeIndex])
+          return true
+        }
+        case "Escape":
+          // Handled here, so a sheet around the chat stays open.
+          event.preventDefault()
+          event.stopPropagation()
+          setDismissed(value)
+          return true
+        default:
+          return false
+      }
+    }
+    return () => {
+      commandKeys.current = null
+    }
+  }, [commandKeys, open, matches, activeIndex, pick, value])
+
+  const groups: { name: string | undefined; items: ComposerCommandItem[] }[] =
+    []
+  for (const item of matches) {
+    const last = groups.at(-1)
+    if (last !== undefined && last.name === item.group) last.items.push(item)
+    else groups.push({ name: item.group, items: [item] })
+  }
+
+  let index = -1
+  return (
+    <>
+      {open && (
+        <div
+          ref={listRef}
+          id={listId}
+          role="listbox"
+          aria-label={ariaLabel}
+          data-slot="composer-commands"
+          className={cn(
+            "absolute inset-x-0 bottom-full z-10 mb-2 max-h-64 overflow-y-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-md",
+            className
+          )}
+          // The textarea keeps focus: a press on an option must not take it.
+          onMouseDown={(event) => event.preventDefault()}
+        >
+          {groups.map((group) => {
+            const headingId = `${listId}-group-${group.name ?? ""}`
+            const options = group.items.map((item) => {
+              index += 1
+              const at = index
+              return (
+                <div
+                  key={item.id}
+                  id={optionId(at)}
+                  role="option"
+                  aria-selected={at === activeIndex}
+                  data-slot="composer-command"
+                  className="flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&_svg:not([class*='size-'])]:size-4"
+                  onPointerMove={() => setActive(at)}
+                  onClick={() => pick(item)}
+                >
+                  {item.icon}
+                  <span className="shrink-0 font-mono text-xs">
+                    /{item.command}
+                  </span>
+                  <span className="min-w-0 truncate">{item.label}</span>
+                  {item.description !== undefined && (
+                    <span className="ms-auto min-w-0 truncate text-xs text-muted-foreground">
+                      {item.description}
+                    </span>
+                  )}
+                </div>
+              )
+            })
+            return group.name === undefined ? (
+              <React.Fragment key="">{options}</React.Fragment>
+            ) : (
+              <div key={group.name} role="group" aria-labelledby={headingId}>
+                <div
+                  id={headingId}
+                  className="px-2 pt-1.5 pb-1 text-xs font-medium text-muted-foreground"
+                >
+                  {group.name}
+                </div>
+                {options}
+              </div>
+            )
+          })}
+        </div>
+      )}
+      <span
+        role="status"
+        data-slot="composer-commands-status"
+        className="sr-only"
+      >
+        {open
+          ? `${matches.length} ${matches.length === 1 ? "command" : "commands"}, arrow keys to choose.`
+          : ""}
+      </span>
+    </>
+  )
+}
+
 export {
   Composer,
   ComposerAttachments,
+  ComposerCommands,
   ComposerField,
   ComposerHint,
   ComposerInput,
@@ -692,6 +990,8 @@ export {
 }
 export type {
   ComposerAttachmentItem,
+  ComposerCommandControls,
+  ComposerCommandItem,
   ComposerProps,
   ComposerStatus,
   ComposerStatusMessages,

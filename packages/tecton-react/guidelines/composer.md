@@ -2,7 +2,7 @@
 component: Composer
 module: "@tecton/react/tecton/composer"
 family: conversation
-exports: [Composer, ComposerField, ComposerInput, ComposerToolbar, ComposerSubmit, ComposerHint, ComposerStatusMessage, ComposerAttachments, ComposerSuggestions, ComposerSuggestion, useComposer]
+exports: [Composer, ComposerField, ComposerInput, ComposerToolbar, ComposerSubmit, ComposerHint, ComposerStatusMessage, ComposerAttachments, ComposerSuggestions, ComposerSuggestion, ComposerCommands, useComposer]
 notFor:
   - need: a one-line search or filter box
     use: InputGroup
@@ -18,6 +18,7 @@ related: [MessageScroller, Message, Attachment, Questionnaire]
 - The user writes to an assistant or agent: the message box under a transcript.
 - A reply streams back and the user must be able to stop it, and keep typing the next message meanwhile.
 - The message carries something besides its text (a selection, a file) that the user can see and remove before sending.
+- The user types slash commands (`/new`, `/summarise`) in the message box and picks one from a list.
 
 ## Do
 
@@ -25,7 +26,7 @@ related: [MessageScroller, Message, Attachment, Questionnaire]
 - Keep `ComposerHint` (visible, or `isVisible={false}`) so the textarea is described by its keys, and `ComposerStatusMessage` for sent, stopped and failed.
 - Pair it with a transcript whose `MessageScrollerContent` has `aria-busy` while a reply streams, so the reply is announced once, complete.
 - Use `submitMode="mod-enter"` for long-form input, and `onRecallLast` for ArrowUp-to-edit in an empty box.
-- Put extra context in `ComposerAttachments` as items with a `label`, and prompts to start from in `ComposerSuggestions`.
+- Put extra context in `ComposerAttachments` as items with a `label`, prompts to start from in `ComposerSuggestions`, and slash commands in `ComposerCommands` inside `ComposerField`, whose `onCommand` decides what a pick does.
 
 ## Don't
 
