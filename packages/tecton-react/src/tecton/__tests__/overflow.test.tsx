@@ -283,7 +283,7 @@ describe("Overflow", () => {
 
   it("never shows two dividers next to each other", () => {
     // The items between the dividers leave, then the ones after them: one
-    // divider stays before the trigger, never both.
+    // divider stays, the last, beside what follows it; never two.
     const dividers = () =>
       [...document.querySelectorAll('[data-slot="overflow-divider"]')].map(
         (d) => !d.hasAttribute("data-overflowing")
@@ -313,10 +313,26 @@ describe("Overflow", () => {
     at(1000, [], [true, true, true])
     // d leaves: the trigger takes its place after the last divider.
     at(340, ["d"], [true, true, true])
-    // b leaves too: the dividers around it would meet, so the second goes.
-    at(250, ["b", "d"], [true, false, true])
-    // c leaves: only the first divider, before the trigger, remains.
-    at(140, ["b", "c", "d"], [true, false, false])
+    // b leaves too: the dividers around it would meet, so the first goes.
+    at(250, ["b", "d"], [false, true, true])
+    // c leaves: only the last divider, before the trigger, remains.
+    at(140, ["b", "c", "d"], [false, false, true])
+  })
+
+  it("counts a divider's margins as space it takes", () => {
+    // 100 + 1 + 100 fits in 205, but not with 10px margins on the divider.
+    render(
+      <Row width={205} labels="always">
+        <Item id="a" priority={1} />
+        <OverflowDivider
+          data-w={1}
+          style={{ marginLeft: 10, marginRight: 10 }}
+        />
+        <Item id="b" priority={0} />
+      </Row>
+    )
+    expect(itemEl("b")).toHaveAttribute("data-overflowing")
+    expect(itemEl("a")).not.toHaveAttribute("data-overflowing")
   })
 
   it("keeps a separator between hidden groups when a visible item stands between them", async () => {

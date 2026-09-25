@@ -82,6 +82,7 @@ class OverflowStore {
   private byElement = new WeakMap<Element, Item>()
   private dividers = new WeakSet<Element>()
   private sizes = new WeakMap<Element, number>()
+  private margins = new WeakMap<Element, number>()
   private observed = new WeakSet<Element>()
   private observer: ResizeObserver | null = null
 
@@ -109,7 +110,11 @@ class OverflowStore {
         const size = this.horizontal ? box.inlineSize : box.blockSize
         if (entry.target === root) this.available = size
         // Hidden children report 0; their cached size is kept.
-        else if (size > 0) this.setSize(entry.target as HTMLElement, size)
+        else if (size > 0)
+          this.setSize(
+            entry.target as HTMLElement,
+            size + this.margin(entry.target)
+          )
       }
       this.compute()
     })
@@ -134,6 +139,7 @@ class OverflowStore {
     this.observer?.disconnect()
     this.observer = null
     this.observed = new WeakSet()
+    this.margins = new WeakMap()
     this.root = null
   }
 
@@ -145,7 +151,11 @@ class OverflowStore {
       if (this.observed.has(child)) continue
       this.observed.add(child)
       this.observer.observe(child)
-      this.setSize(child as HTMLElement, this.rectSize(child))
+      const size = this.rectSize(child)
+      this.setSize(
+        child as HTMLElement,
+        size > 0 ? size + this.margin(child) : 0
+      )
       changed = true
     }
     if (changed) this.compute()
@@ -227,7 +237,24 @@ class OverflowStore {
     return this.horizontal ? rect.width : rect.height
   }
 
-  /** Cache a child's size; for an item, bucket it by how it is rendered now. */
+  /**
+   * A child's margins along the row (a divider's spacing, say): the space it
+   * takes is its box plus these. Read once per child while attached.
+   */
+  private margin(element: Element) {
+    let margin = this.margins.get(element)
+    if (margin === undefined) {
+      const style = getComputedStyle(element)
+      const [start, end] = this.horizontal
+        ? [style.marginLeft, style.marginRight]
+        : [style.marginTop, style.marginBottom]
+      margin = (Number.parseFloat(start) || 0) + (Number.parseFloat(end) || 0)
+      this.margins.set(element, margin)
+    }
+    return margin
+  }
+
+  /** Cache a child's size, margins included; for an item, bucket it by how it is rendered now. */
   private setSize(element: HTMLElement, size: number) {
     if (size <= 0) return
     this.sizes.set(element, size)
@@ -300,29 +327,31 @@ class OverflowStore {
       count += 1
     })
     // A divider or spacer shows only with something visible on both sides
-    // of it; the More trigger at the end counts for the trailing side. A
-    // divider also needs something visible since the last divider shown, so
-    // two never sit next to each other (a spacer between them does not count).
+    // of it; the More trigger at the end counts for the trailing side. Of
+    // dividers with nothing visible between them (a spacer does not count)
+    // only the last shows, so it stays beside the items that follow instead
+    // of before a gap.
     const place = () => {
-      const after: boolean[] = []
-      let seen = hiddenCount > 0
-      for (let index = entries.length - 1; index >= 0; index--) {
-        after[index] = seen
+      const before: boolean[] = []
+      let seen = false
+      entries.forEach((_, index) => {
+        before[index] = seen
         if (solid(index)) seen = true
-      }
-      let before = false
-      let sinceDivider = false
-      entries.forEach((entry, index) => {
-        if (solid(index)) {
-          before = sinceDivider = true
-        } else if (entry.kind === "spacer") {
-          set(index, before && after[index])
-        } else if (entry.kind === "divider") {
-          const shown = sinceDivider && after[index]
-          set(index, shown)
-          if (shown) sinceDivider = false
-        }
       })
+      let after = hiddenCount > 0
+      let untilDivider = after
+      for (let index = entries.length - 1; index >= 0; index--) {
+        const entry = entries[index]
+        if (solid(index)) {
+          after = untilDivider = true
+        } else if (entry.kind === "spacer") {
+          set(index, before[index] && after)
+        } else if (entry.kind === "divider") {
+          const shown = before[index] && untilDivider
+          set(index, shown)
+          if (shown) untilDivider = false
+        }
+      }
     }
     place()
     return {
