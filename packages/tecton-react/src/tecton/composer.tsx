@@ -4,6 +4,11 @@ import * as React from "react"
 import { cn } from "cn"
 import { ArrowUpIcon, SquareIcon, XIcon } from "lucide-react"
 import {
+  Header,
+  ListBox,
+  ListBoxItem,
+  ListBoxSection,
+  SelectableCollectionContext,
   Tag,
   TagGroup,
   TagList,
@@ -76,6 +81,8 @@ type ComposerContextValue = {
   focus: () => void
   /** Whether `history` has an entry to load, for the hint. */
   hasHistory: boolean
+  /** The history entry in the box, untouched, while the user browses; the command list stays shut on it. */
+  historyEntry: string | undefined
   /**
    * Loads the next older or newer entry of `history` into the box, with
    * `current` the box's text; the text loaded, or undefined when there is
@@ -173,6 +180,14 @@ function Composer({
   const [commandList, setCommandList] =
     React.useState<ComposerCommandListState>()
   const historyPosition = React.useRef<ComposerHistoryPosition | null>(null)
+  const [historyEntry, setHistoryEntry] = React.useState<string>()
+  const setPosition = React.useCallback(
+    (position: ComposerHistoryPosition | null) => {
+      historyPosition.current = position
+      setHistoryEntry(position?.loaded)
+    },
+    []
+  )
 
   const commitValue = React.useCallback(
     (next: string) => {
@@ -185,10 +200,10 @@ function Composer({
   // Any change but the history's own ends browsing: the new text is the draft.
   const setValue = React.useCallback(
     (next: string) => {
-      historyPosition.current = null
+      setPosition(null)
       commitValue(next)
     },
-    [commitValue]
+    [setPosition, commitValue]
   )
 
   const hasHistory =
@@ -204,7 +219,7 @@ function Composer({
         (current !== position.loaded || position.index >= entries.length)
       ) {
         position = null
-        historyPosition.current = null
+        setPosition(null)
       }
       const shown = position === null ? undefined : entries[position.index]
       // Blank entries, and a run of the same prompt, are stepped over.
@@ -214,11 +229,11 @@ function Composer({
         let index = (position?.index ?? entries.length) - 1
         while (index >= 0 && skip(entries[index])) index -= 1
         if (index < 0) return undefined
-        historyPosition.current = {
+        setPosition({
           index,
           loaded: entries[index],
           draft: position?.draft ?? current,
-        }
+        })
         commitValue(entries[index])
         return entries[index]
       }
@@ -227,15 +242,15 @@ function Composer({
       let index = position.index + 1
       while (index < entries.length && skip(entries[index])) index += 1
       if (index >= entries.length) {
-        historyPosition.current = null
+        setPosition(null)
         commitValue(position.draft)
         return position.draft
       }
-      historyPosition.current = { ...position, index, loaded: entries[index] }
+      setPosition({ ...position, index, loaded: entries[index] })
       commitValue(entries[index])
       return entries[index]
     },
-    [history, commitValue]
+    [history, setPosition, commitValue]
   )
 
   const isBusy = status === "submitted" || status === "streaming"
@@ -255,11 +270,11 @@ function Composer({
   const send = React.useCallback(
     (text: string) => {
       if (isDisabled || isBusy || text.trim() === "") return
-      historyPosition.current = null
+      setPosition(null)
       onSubmit({ text: text.trim() })
       focus()
     },
-    [isDisabled, isBusy, onSubmit, focus]
+    [isDisabled, isBusy, setPosition, onSubmit, focus]
   )
 
   const stop = React.useMemo(
@@ -288,6 +303,7 @@ function Composer({
       stop,
       focus,
       hasHistory,
+      historyEntry,
       stepHistory,
       inputRef,
       hintId,
@@ -311,6 +327,7 @@ function Composer({
       stop,
       focus,
       hasHistory,
+      historyEntry,
       stepHistory,
       hintId,
       hasHint,
@@ -364,6 +381,83 @@ function isComposing(event: React.KeyboardEvent) {
   // Safari ends the composition before the Enter that confirms it arrives,
   // so `isComposing` alone lets that Enter send; 229 is the IME's key code.
   return event.nativeEvent.isComposing || event.keyCode === 229
+}
+
+/** The styles that decide where the textarea's text wraps, copied to the copy that measures it. */
+const WRAP_STYLES = [
+  "direction",
+  "font-family",
+  "font-feature-settings",
+  "font-size",
+  "font-stretch",
+  "font-style",
+  "font-variant",
+  "font-weight",
+  "letter-spacing",
+  "line-height",
+  "overflow-wrap",
+  "padding-bottom",
+  "padding-left",
+  "padding-right",
+  "padding-top",
+  "tab-size",
+  "text-indent",
+  "text-transform",
+  "white-space",
+  "word-break",
+  "word-spacing",
+]
+
+/**
+ * Whether the caret is on the first (or last) line the textarea shows: no
+ * newline between it and that edge, and no wrap either. Where it wraps is
+ * measured in a hidden copy laid out as the textarea is, with a mark at the
+ * start, one around the character after the caret (a caret at a wrap is
+ * drawn on the line below) and one at the end.
+ */
+function caretOnEdgeLine(
+  node: HTMLTextAreaElement,
+  edge: "first" | "last"
+): boolean {
+  const { selectionStart, selectionEnd, value } = node
+  if (selectionStart !== selectionEnd) return false
+  const between =
+    edge === "first"
+      ? value.slice(0, selectionStart)
+      : value.slice(selectionEnd)
+  if (between.includes("\n")) return false
+  if (between === "") return true
+
+  const style = window.getComputedStyle(node)
+  const copy = document.createElement("div")
+  for (const property of WRAP_STYLES) {
+    copy.style.setProperty(property, style.getPropertyValue(property))
+  }
+  Object.assign(copy.style, {
+    position: "absolute",
+    top: "0",
+    left: "-9999px",
+    visibility: "hidden",
+    boxSizing: "border-box",
+    width: `${node.clientWidth}px`,
+    border: "0",
+  })
+  const mark = (text = "") => {
+    const span = copy.appendChild(document.createElement("span"))
+    span.textContent = text
+    return span
+  }
+  const next =
+    selectionStart + ((value.codePointAt(selectionStart) ?? 0) > 0xffff ? 2 : 1)
+  const start = mark()
+  copy.append(value.slice(0, selectionStart))
+  const caret = mark(value.slice(selectionStart, next))
+  copy.append(value.slice(next))
+  const end = mark()
+  document.body.appendChild(copy)
+  const onEdge = caret.offsetTop === (edge === "first" ? start : end).offsetTop
+  copy.remove()
+  return onEdge
 }
 
 function ComposerInput({
@@ -462,18 +556,11 @@ function ComposerInput({
           !event.altKey
         ) {
           // Only from the first line up, or the last line down, so the
-          // arrows still move the caret inside a message of several lines.
+          // arrows still move the caret inside a message of several lines,
+          // whether they are split by newlines or wrapped.
           const node = event.currentTarget
-          const { selectionStart, selectionEnd } = node
           const older = event.key === "ArrowUp"
-          const atEdge =
-            selectionStart === selectionEnd &&
-            !(
-              older
-                ? node.value.slice(0, selectionStart)
-                : node.value.slice(selectionEnd)
-            ).includes("\n")
-          if (!atEdge) return
+          if (!caretOnEdgeLine(node, older ? "first" : "last")) return
           const loaded = stepHistory(older ? "older" : "newer", value)
           if (loaded === undefined) return
           event.preventDefault()
@@ -499,11 +586,17 @@ function ComposerToolbar({
   "aria-label": ariaLabel = "Message actions",
   ...props
 }: ComposerToolbarProps) {
+  const { focus } = useComposerContext("ComposerToolbar")
   return (
     <InputGroupAddon
       align="block-end"
       data-slot="composer-toolbar-addon"
       className="px-2 pb-2"
+      // The addon focuses the group's `input`; the composer's is a textarea.
+      onClick={(event) => {
+        if ((event.target as HTMLElement).closest("button")) return
+        focus()
+      }}
     >
       <Toolbar
         data-slot="composer-toolbar"
@@ -542,13 +635,16 @@ function ComposerSubmit({
   const focused = React.useRef<"send" | "stop" | null>(null)
 
   // A button that unmounts while focused leaves focus on the body, and
-  // fires no blur React sees: hand it to the button or textarea that follows.
+  // fires no blur React sees: hand it to the button or textarea that follows,
+  // and forget the button, so a later swap does not pull focus back.
   React.useLayoutEffect(() => {
+    const gone = showStop ? "send" : "stop"
+    if (focused.current !== gone) return
+    focused.current = null
     const active = document.activeElement
-    const lost = active === null || active === document.body
-    if (showStop && focused.current === "send" && lost) stopRef.current?.focus()
-    if (!showStop && focused.current === "stop" && lost)
-      inputRef.current?.focus()
+    if (active !== null && active !== document.body) return
+    if (showStop) stopRef.current?.focus()
+    else inputRef.current?.focus()
   }, [showStop, inputRef])
 
   if (showStop) {
@@ -690,9 +786,12 @@ function ComposerStatusMessage({
     const before = previous.current
     previous.current = { status, stopCount }
     let next: string | undefined
+    const wasBusy =
+      before.status === "submitted" || before.status === "streaming"
+    const isBusy = status === "submitted" || status === "streaming"
     if (stopCount !== before.stopCount) next = text.stopped
-    else if (status !== before.status && status === "submitted")
-      next = text.submitted
+    // From ready or error to busy, whichever busy state a chat goes to first.
+    else if (isBusy && !wasBusy) next = text.submitted
     else if (status !== before.status && status === "error") next = text.error
     if (next !== undefined) {
       setAnnouncement((current) => ({ text: next, key: current.key + 1 }))
@@ -845,7 +944,10 @@ type ComposerCommandItem = {
   /** What the command does, in words; matched too. */
   label: string
   description?: string
-  /** Commands with the same group are listed together under it, in order. */
+  /**
+   * Commands with the same group are listed together under it; the groups
+   * come in the order of their best match.
+   */
   group?: string
   icon?: React.ReactNode
 }
@@ -890,6 +992,17 @@ function matchCommands(
     .map((entry) => entry.item)
 }
 
+/** The matches grouped: each group where its best match ranks, its commands in rank order. */
+function groupCommands(matches: readonly ComposerCommandItem[]) {
+  const groups = new Map<string | undefined, ComposerCommandItem[]>()
+  for (const item of matches) {
+    const group = groups.get(item.group)
+    if (group === undefined) groups.set(item.group, [item])
+    else group.push(item)
+  }
+  return [...groups].map(([name, items]) => ({ name, items }))
+}
+
 /**
  * Commands behind a `/` at the start of the box, listed above the field: the
  * textarea keeps focus and points at the active one with
@@ -919,6 +1032,7 @@ function ComposerCommands({
     send,
     focus,
     isDisabled,
+    historyEntry,
     commandKeys,
     setCommandList,
   } = useComposerContext("ComposerCommands")
@@ -927,21 +1041,28 @@ function ComposerCommands({
   const [dismissed, setDismissed] = React.useState<string>()
   const listRef = React.useRef<HTMLDivElement>(null)
 
+  // Escape closes the list for the text it was pressed on; any change reopens it.
+  if (dismissed !== undefined && dismissed !== value) setDismissed(undefined)
+
   const query = commandQuery(value)
-  const matches = React.useMemo(
-    () => (query === undefined ? [] : matchCommands(items, query)),
+  const groups = React.useMemo(
+    () => groupCommands(query === undefined ? [] : matchCommands(items, query)),
     [items, query]
+  )
+  // In the order they are listed, which the arrow keys follow.
+  const matches = React.useMemo(
+    () => groups.flatMap((group) => group.items),
+    [groups]
   )
   const open =
     !isDisabled &&
     query !== undefined &&
     matches.length > 0 &&
-    dismissed !== value
+    dismissed !== value &&
+    // A prompt loaded from the history is browsed, not a command typed.
+    historyEntry !== value
   const activeIndex = Math.min(active, Math.max(0, matches.length - 1))
-  const optionId = React.useCallback(
-    (index: number) => `${listId}-${index}`,
-    [listId]
-  )
+  const activeKey = open ? matches[activeIndex]?.id : undefined
 
   // A new query starts at the best match.
   React.useEffect(() => {
@@ -952,17 +1073,21 @@ function ComposerCommands({
     setCommandList({
       listId,
       open,
-      activeId: open ? optionId(activeIndex) : undefined,
+      // React Aria's id for the option: the list's id, then the key without spaces.
+      activeId:
+        activeKey === undefined
+          ? undefined
+          : `${listId}-option-${activeKey.replace(/\s*/g, "")}`,
     })
-  }, [listId, open, activeIndex, optionId, setCommandList])
+  }, [listId, open, activeKey, setCommandList])
   React.useLayoutEffect(() => () => setCommandList(undefined), [setCommandList])
 
   React.useEffect(() => {
     if (!open) return
     listRef.current
-      ?.querySelector(`[id="${optionId(activeIndex)}"]`)
-      ?.scrollIntoView({ block: "nearest" })
-  }, [open, activeIndex, optionId])
+      ?.querySelectorAll('[role="option"]')
+      [activeIndex]?.scrollIntoView({ block: "nearest" })
+  }, [open, activeIndex])
 
   const pick = React.useCallback(
     (item: ComposerCommandItem) => {
@@ -1008,75 +1133,79 @@ function ComposerCommands({
     }
   }, [commandKeys, open, matches, activeIndex, pick, value])
 
-  const groups: { name: string | undefined; items: ComposerCommandItem[] }[] =
-    []
-  for (const item of matches) {
-    const last = groups.at(-1)
-    if (last !== undefined && last.name === item.group) last.items.push(item)
-    else groups.push({ name: item.group, items: [item] })
+  const option = (item: ComposerCommandItem) => {
+    const at = matches.indexOf(item)
+    return (
+      <ListBoxItem
+        key={item.id}
+        id={item.id}
+        textValue={`/${item.command} ${item.label}`}
+        data-slot="composer-command"
+        className="flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&_svg:not([class*='size-'])]:size-4"
+        onHoverStart={() => setActive(at)}
+      >
+        {item.icon}
+        <span className="shrink-0 font-mono text-xs">/{item.command}</span>
+        <span className="min-w-0 truncate">{item.label}</span>
+        {item.description !== undefined && (
+          <span className="ms-auto min-w-0 truncate text-xs text-muted-foreground">
+            {item.description}
+          </span>
+        )}
+      </ListBoxItem>
+    )
   }
 
-  let index = -1
   return (
     <>
       {open && (
-        <div
-          ref={listRef}
-          id={listId}
-          role="listbox"
-          aria-label={ariaLabel}
-          data-slot="composer-commands"
-          className={cn(
-            "absolute inset-x-0 bottom-full z-10 mb-2 max-h-64 overflow-y-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-md",
-            className
-          )}
-          // The textarea keeps focus: a press on an option must not take it.
-          onMouseDown={(event) => event.preventDefault()}
+        // Virtual focus: the options never take focus from the textarea,
+        // which moves through them with its own arrow keys.
+        <SelectableCollectionContext.Provider
+          value={{ shouldUseVirtualFocus: true }}
         >
-          {groups.map((group) => {
-            const headingId = `${listId}-group-${group.name ?? ""}`
-            const options = group.items.map((item) => {
-              index += 1
-              const at = index
-              return (
-                <div
-                  key={item.id}
-                  id={optionId(at)}
-                  role="option"
-                  aria-selected={at === activeIndex}
-                  data-slot="composer-command"
-                  className="flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm aria-selected:bg-accent aria-selected:text-accent-foreground [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&_svg:not([class*='size-'])]:size-4"
-                  onPointerMove={() => setActive(at)}
-                  onClick={() => pick(item)}
-                >
-                  {item.icon}
-                  <span className="shrink-0 font-mono text-xs">
-                    /{item.command}
-                  </span>
-                  <span className="min-w-0 truncate">{item.label}</span>
-                  {item.description !== undefined && (
-                    <span className="ms-auto min-w-0 truncate text-xs text-muted-foreground">
-                      {item.description}
-                    </span>
-                  )}
-                </div>
+          <ListBox
+            ref={listRef}
+            id={listId}
+            aria-label={ariaLabel}
+            data-slot="composer-commands"
+            className={cn(
+              "absolute inset-x-0 bottom-full z-10 mb-2 max-h-64 overflow-y-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-md outline-none",
+              className
+            )}
+            // The active command is the selected one, for `aria-selected`,
+            // so a press changes the selection: to the command pressed, or
+            // to none when it was the active one already.
+            selectionMode="single"
+            selectedKeys={activeKey === undefined ? [] : [activeKey]}
+            shouldSelectOnPressUp
+            onSelectionChange={(keys) => {
+              const key = keys === "all" ? undefined : [...keys][0]
+              const item = matches.find(
+                (match) => match.id === (key ?? activeKey)
               )
-            })
-            return group.name === undefined ? (
-              <React.Fragment key="">{options}</React.Fragment>
-            ) : (
-              <div key={group.name} role="group" aria-labelledby={headingId}>
-                <div
-                  id={headingId}
-                  className="px-2 pt-1.5 pb-1 text-xs font-medium text-muted-foreground"
+              if (item !== undefined) pick(item)
+            }}
+            // A press on a heading or the padding must not take focus either.
+            onMouseDown={(event) => event.preventDefault()}
+          >
+            {groups.map((group, index) =>
+              group.name === undefined ? (
+                group.items.map(option)
+              ) : (
+                <ListBoxSection
+                  key={`${listId}-group-${index}`}
+                  id={`${listId}-group-${index}`}
                 >
-                  {group.name}
-                </div>
-                {options}
-              </div>
-            )
-          })}
-        </div>
+                  <Header className="px-2 pt-1.5 pb-1 text-xs font-medium text-muted-foreground">
+                    {group.name}
+                  </Header>
+                  {group.items.map(option)}
+                </ListBoxSection>
+              )
+            )}
+          </ListBox>
+        </SelectableCollectionContext.Provider>
       )}
       <span
         role="status"

@@ -35,7 +35,6 @@ function AgentComposer({
 }: AgentComposerProps) {
   return (
     <Composer
-      data-slot="agent-composer"
       isDisabled={isDisabled}
       onSubmit={({ text }) => onSubmit?.(text)}
       {...props}

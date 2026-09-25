@@ -1,5 +1,5 @@
 import * as React from "react"
-import { fireEvent, render, screen } from "@testing-library/react"
+import { fireEvent, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
@@ -149,6 +149,29 @@ describe("Composer", () => {
     expect(textbox()).toHaveFocus()
   })
 
+  it("forgets the Stop it handed focus from, so a later reply leaves focus alone", () => {
+    const { rerender } = render(<Chat status="streaming" onStop={() => {}} />)
+    screen.getByRole("button", { name: "Stop generating" }).focus()
+    rerender(<Chat status="ready" onStop={() => {}} />)
+    expect(textbox()).toHaveFocus()
+
+    rerender(<Chat status="streaming" onStop={() => {}} />)
+    textbox().blur()
+    rerender(<Chat status="ready" onStop={() => {}} />)
+
+    expect(document.body).toHaveFocus()
+  })
+
+  it("focuses the textarea on a press of the toolbar's empty space", async () => {
+    render(<Chat />)
+
+    await userEvent.click(
+      screen.getByRole("toolbar", { name: "Message actions" })
+    )
+
+    expect(textbox()).toHaveFocus()
+  })
+
   it("lets Escape through when no reply is arriving", () => {
     const onStop = vi.fn()
     const onKeyDown = vi.fn()
@@ -205,6 +228,36 @@ describe("Composer", () => {
     expect(textbox()).toHaveValue("line one\nline two")
     textbox().setSelectionRange(3, 3)
     expect(fireEvent.keyDown(textbox(), { key: "ArrowDown" })).toBe(true)
+  })
+
+  it("leaves the arrows to the caret inside a line that wraps", () => {
+    // jsdom lays nothing out: put the character after the caret on the
+    // second line, as a wrapped line would.
+    const offsetTop = vi
+      .spyOn(HTMLElement.prototype, "offsetTop", "get")
+      .mockImplementation(function (this: HTMLElement) {
+        return this.tagName === "SPAN" && this.textContent !== "" ? 20 : 0
+      })
+    try {
+      render(
+        <Chat
+          history={["Earlier question"]}
+          defaultValue="a long line that wraps"
+        />
+      )
+      textbox().focus()
+      textbox().setSelectionRange(12, 12)
+
+      expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+      expect(textbox()).toHaveValue("a long line that wraps")
+
+      // At the very start there is nothing left to wrap.
+      textbox().setSelectionRange(0, 0)
+      expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(false)
+      expect(textbox()).toHaveValue("Earlier question")
+    } finally {
+      offsetTop.mockRestore()
+    }
   })
 
   it("ends browsing when the user types: the edited entry is the new draft", async () => {
@@ -339,6 +392,12 @@ describe("Composer", () => {
     expect(screen.getByRole("status")).toHaveTextContent("Message sent.")
     rerender(<Chat status="error" />)
     expect(screen.getByRole("status")).toHaveTextContent("The reply failed.")
+  })
+
+  it("announces the send when the chat goes straight to streaming", () => {
+    const { rerender } = render(<Chat />)
+    rerender(<Chat status="streaming" />)
+    expect(screen.getByRole("status")).toHaveTextContent("Message sent.")
   })
 
   it("announces every send and stop, not only the first, with a new node each time", async () => {
@@ -550,6 +609,18 @@ describe("ComposerCommands", () => {
     expect(textbox()).toHaveFocus()
   })
 
+  it("picks the command tapped, which a touch has not made the active one", async () => {
+    const onCommand = vi.fn()
+    render(<WithCommands onCommand={onCommand} />)
+
+    await userEvent.type(textbox(), "/")
+    const note = screen.getByRole("option", { name: /add-note/ })
+    expect(note).toHaveAttribute("aria-selected", "false")
+    await userEvent.pointer({ keys: "[TouchA]", target: note })
+
+    expect(onCommand).toHaveBeenCalledWith(COMMANDS[2], expect.anything())
+  })
+
   it("closes with Escape until the text changes, and then Enter sends as usual", async () => {
     const onSubmit = vi.fn()
     const onKeyDown = vi.fn()
@@ -568,6 +639,19 @@ describe("ComposerCommands", () => {
 
     await userEvent.keyboard("{Enter}")
     expect(onSubmit).toHaveBeenCalledWith({ text: "/new" })
+  })
+
+  it("opens again once the text has changed and come back", async () => {
+    render(<WithCommands />)
+
+    await userEvent.type(textbox(), "/")
+    await userEvent.keyboard("{Escape}")
+    expect(screen.queryByRole("listbox")).toBeNull()
+
+    await userEvent.keyboard("{Backspace}/")
+    expect(
+      screen.getByRole("listbox", { name: "Commands" })
+    ).toBeInTheDocument()
   })
 
   it("stays closed with no match, or once the slash is not at the start", async () => {
@@ -600,6 +684,55 @@ describe("ComposerCommands", () => {
 
     await userEvent.keyboard("{Escape}{ArrowUp}")
     expect(textbox()).toHaveValue("Earlier question")
+  })
+
+  it("keeps the list shut on a command recalled from the history", async () => {
+    render(<WithCommands history={["Earlier question", "/new"]} />)
+    textbox().focus()
+
+    await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("/new")
+    expect(screen.queryByRole("listbox")).toBeNull()
+
+    await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("Earlier question")
+    await userEvent.keyboard("{ArrowDown}{ArrowDown}")
+    expect(textbox()).toHaveValue("")
+  })
+
+  it("lists each group once, where its best match ranks, and moves in that order", async () => {
+    const items: ComposerCommandItem[] = [
+      { id: "apple", command: "apple", label: "Pick", group: "On this page" },
+      { id: "bar", command: "bar", label: "A drink", group: "Chat" },
+      { id: "cat", command: "cat", label: "Pet", group: "On this page" },
+    ]
+    render(
+      <Composer onSubmit={() => {}}>
+        <ComposerField>
+          <ComposerCommands items={items} onCommand={() => {}} />
+          <ComposerInput />
+        </ComposerField>
+      </Composer>
+    )
+
+    await userEvent.type(textbox(), "/a")
+    const groups = within(screen.getByRole("listbox")).getAllByRole("group")
+    expect(groups).toHaveLength(2)
+    expect(screen.getByRole("group", { name: "On this page" })).toBe(groups[0])
+    expect(screen.getByRole("group", { name: "Chat" })).toBe(groups[1])
+    expect(
+      screen.getAllByRole("option").map((option) => option.textContent)
+    ).toEqual(["/applePick", "/catPet", "/barA drink"])
+
+    await userEvent.keyboard("{ArrowDown}")
+    expect(textbox()).toHaveAttribute(
+      "aria-activedescendant",
+      screen.getAllByRole("option")[1]?.id
+    )
+    expect(screen.getAllByRole("option")[1]).toHaveAttribute(
+      "aria-selected",
+      "true"
+    )
   })
 
   it("mentions the slash in the hint, and announces how many commands match", async () => {
