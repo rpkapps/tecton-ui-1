@@ -46,7 +46,8 @@ import {
 | Textarea | <Kbd>⌘</Kbd>/<Kbd>Ctrl</Kbd> + <Kbd>Enter</Kbd> | Sends, in either mode |
 | Textarea, while an IME composes | any | Nothing: the Enter that confirms a conversion never sends |
 | Textarea, while a reply arrives | <Kbd>Esc</Kbd> | Stops the reply, and announces it |
-| Textarea, empty | <Kbd>↑</Kbd> | Loads the last message, with `onRecallLast` |
+| Textarea, caret on the first line | <Kbd>↑</Kbd> | Loads the previous message from `history`, caret at its end |
+| Textarea, browsing `history`, caret on the last line | <Kbd>↓</Kbd> | Loads the next message; past the newest, the draft comes back |
 | Textarea, `/` at the start | <Kbd>↑</Kbd> <Kbd>↓</Kbd> | Moves through the commands, with `ComposerCommands` |
 | Textarea, commands listed | <Kbd>Enter</Kbd> / <Kbd>Tab</Kbd> | Picks the command instead of sending |
 | Textarea, commands listed | <Kbd>Esc</Kbd> | Closes the list until the text changes; the reply and a sheet around it are left alone |
@@ -58,6 +59,24 @@ not send until the chat is `ready` again. Focus stays in the textarea after send
 `aria-disabled`, not disabled, while the box is empty, so it keeps its place in the tab order.
 While a reply arrives, Stop takes its place, a second button with a name of its own, and focus
 moves to it if it was on Send.
+
+## History
+
+Pass the prompts the user has sent as `history`, oldest first, and the arrows walk through them
+as in a terminal. <Kbd>↑</Kbd> with the caret on the first line loads the previous prompt, the
+newest first, with the caret at its end; <Kbd>↓</Kbd> on the last line goes forward again, and
+past the newest brings back what was in the box before, so a draft is never lost. Inside a
+message of several lines the arrows move the caret as usual. A run of the same prompt is shown
+once. Typing in a loaded prompt makes it the draft, and sending ends browsing; `history` itself is
+never changed. With commands listed, the arrows move through the list instead. `ComposerHint`
+adds <Kbd>↑</Kbd> for earlier messages once `history` has an entry.
+
+```tsx
+<Composer
+  history={turns.filter((turn) => turn.role === "user").map((turn) => turn.text)}
+  onSubmit={({ text }) => send(text)}
+>
+```
 
 A global shortcut that focuses the composer is the application's: give it a modifier (ChatGPT uses
 <Kbd>Shift</Kbd> + <Kbd>Esc</Kbd>) and call `focus` from `useComposer`, or the textarea itself.
@@ -144,7 +163,7 @@ Pair it with a transcript whose `MessageScrollerContent` has `aria-busy` while a
 
 <Do>
 
-Use `submitMode="mod-enter"` for long-form input, and `onRecallLast` for ArrowUp-to-edit in an empty box.
+Use `submitMode="mod-enter"` for long-form input, and pass the prompts already sent as `history` (oldest first) so ArrowUp and ArrowDown step through them, as in a terminal.
 
 </Do>
 
@@ -253,7 +272,7 @@ A `form` that holds the value and the chat's state for its parts.
 | `onStop` | `() => void` | - | Stops the reply; Escape and the stop button call it. |
 | `status` | `"ready" \| "submitted" \| "streaming" \| "error"` | `"ready"` | The chat's state. Nothing sends while `submitted` or `streaming`. |
 | `submitMode` | `"enter" \| "mod-enter"` | `"enter"` | Which key sends. |
-| `onRecallLast` | `() => string \| undefined` | - | The last message, loaded by ArrowUp in an empty box. |
+| `history` | `readonly string[]` | - | The prompts already sent, oldest first, for ArrowUp and ArrowDown. |
 | `value`, `defaultValue`, `onValueChange` | `string` | - | The text, controlled or not. |
 | `isDisabled` | `boolean` | `false` | Disables the whole composer. |
 

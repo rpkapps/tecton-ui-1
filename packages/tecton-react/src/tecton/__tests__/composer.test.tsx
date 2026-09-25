@@ -49,7 +49,8 @@ function Chat(
   )
 }
 
-const textbox = () => screen.getByRole("textbox", { name: "Message" })
+const textbox = () =>
+  screen.getByRole<HTMLTextAreaElement>("textbox", { name: "Message" })
 
 describe("Composer", () => {
   it("sends the trimmed text on Enter, clears the box and keeps focus in it", async () => {
@@ -163,15 +164,116 @@ describe("Composer", () => {
     expect(onKeyDown).toHaveBeenCalled()
   })
 
-  it("recalls the last message with ArrowUp only when the box is empty", async () => {
-    render(<Chat onRecallLast={() => "Earlier question"} />)
+  it("steps back through the history with ArrowUp and forward to the draft with ArrowDown", async () => {
+    render(<Chat history={["First question", "Second question"]} />)
 
-    await userEvent.type(textbox(), "draft{ArrowUp}")
-    expect(textbox()).toHaveValue("draft")
-
-    await userEvent.clear(textbox())
+    await userEvent.type(textbox(), "draft")
     await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("Second question")
+    expect(textbox()).toHaveProperty("selectionStart", 15)
+    expect(textbox()).toHaveProperty("selectionEnd", 15)
+
+    await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("First question")
+
+    // At the oldest the key is let through, to move the caret to the start.
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+    expect(textbox()).toHaveValue("First question")
+
+    await userEvent.keyboard("{ArrowDown}")
+    expect(textbox()).toHaveValue("Second question")
+    await userEvent.keyboard("{ArrowDown}")
+    expect(textbox()).toHaveValue("draft")
+    expect(textbox()).toHaveProperty("selectionStart", 5)
+
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowDown" })).toBe(true)
+    expect(textbox()).toHaveValue("draft")
+  })
+
+  it("leaves the arrows to the caret inside a message of several lines", async () => {
+    render(<Chat history={["Earlier question"]} />)
+
+    await userEvent.type(textbox(), "line one{Shift>}{Enter}{/Shift}line two")
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+    expect(textbox()).toHaveValue("line one\nline two")
+
+    textbox().setSelectionRange(3, 3)
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(false)
     expect(textbox()).toHaveValue("Earlier question")
+
+    await userEvent.keyboard("{ArrowDown}")
+    expect(textbox()).toHaveValue("line one\nline two")
+    textbox().setSelectionRange(3, 3)
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowDown" })).toBe(true)
+  })
+
+  it("ends browsing when the user types: the edited entry is the new draft", async () => {
+    render(<Chat history={["One", "Two"]} />)
+    textbox().focus()
+
+    await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("Two")
+    await userEvent.keyboard("!")
+    expect(textbox()).toHaveValue("Two!")
+
+    await userEvent.keyboard("{ArrowDown}")
+    expect(textbox()).toHaveValue("Two!")
+
+    await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("Two")
+    await userEvent.keyboard("{ArrowDown}")
+    expect(textbox()).toHaveValue("Two!")
+  })
+
+  it("shows a run of the same prompt once, and skips blank entries", async () => {
+    render(<Chat history={["Alpha", "", "Beta", "Beta", "Beta"]} />)
+    textbox().focus()
+
+    await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("Beta")
+    await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("Alpha")
+    await userEvent.keyboard("{ArrowDown}")
+    expect(textbox()).toHaveValue("Beta")
+    await userEvent.keyboard("{ArrowDown}")
+    expect(textbox()).toHaveValue("")
+  })
+
+  it("ends browsing on send, and starts again from the newest", async () => {
+    const onSubmit = vi.fn()
+    render(<Chat onSubmit={onSubmit} history={["One", "Two"]} />)
+    textbox().focus()
+
+    await userEvent.keyboard("{ArrowUp}{ArrowUp}{Enter}")
+    expect(onSubmit).toHaveBeenCalledWith({ text: "One" })
+    expect(textbox()).toHaveValue("")
+
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowDown" })).toBe(true)
+    await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("Two")
+  })
+
+  it("leaves ArrowUp to an IME that is composing, and to modified arrows", () => {
+    render(<Chat history={["Earlier question"]} />)
+
+    fireEvent.keyDown(textbox(), { key: "ArrowUp", keyCode: 229 })
+    fireEvent.keyDown(textbox(), { key: "ArrowUp", isComposing: true })
+    fireEvent.keyDown(textbox(), { key: "ArrowUp", shiftKey: true })
+    fireEvent.keyDown(textbox(), { key: "ArrowUp", altKey: true })
+
+    expect(textbox()).toHaveValue("")
+  })
+
+  it("mentions the history in the hint only when there is one", () => {
+    const { rerender } = render(<Chat history={[]} />)
+    expect(textbox()).toHaveAccessibleDescription(
+      "Enter to send, Shift+Enter for a new line"
+    )
+
+    rerender(<Chat history={["Earlier question"]} />)
+    expect(textbox()).toHaveAccessibleDescription(
+      "Enter to send, Shift+Enter for a new line, ↑ for earlier messages"
+    )
   })
 
   it("hands the textarea to a ref of the caller's without losing its own", async () => {
@@ -482,6 +584,22 @@ describe("ComposerCommands", () => {
     await userEvent.clear(textbox())
     await userEvent.type(textbox(), "/new now")
     expect(screen.queryByRole("listbox")).toBeNull()
+  })
+
+  it("keeps the arrows for the open list, before the history", async () => {
+    render(<WithCommands history={["Earlier question"]} />)
+
+    await userEvent.type(textbox(), "/")
+    await userEvent.keyboard("{ArrowUp}")
+
+    expect(textbox()).toHaveValue("/")
+    expect(textbox()).toHaveAttribute(
+      "aria-activedescendant",
+      screen.getAllByRole("option")[2]?.id
+    )
+
+    await userEvent.keyboard("{Escape}{ArrowUp}")
+    expect(textbox()).toHaveValue("Earlier question")
   })
 
   it("mentions the slash in the hint, and announces how many commands match", async () => {

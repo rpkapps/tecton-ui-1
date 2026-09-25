@@ -100,9 +100,9 @@ export default function ComposerDemo() {
         status={status}
         onStop={stop}
         onSubmit={({ text }) => send(text)}
-        onRecallLast={() =>
-          [...turns].reverse().find((turn) => turn.role === "user")?.text
-        }
+        history={turns
+          .filter((turn) => turn.role === "user")
+          .map((turn) => turn.text)}
       >
         <ComposerField>
           <ComposerInput placeholder="Ask about separator 2…" />

@@ -131,7 +131,7 @@ WCAG 2.2 refs: 2.1.1 Keyboard https://www.w3.org/WAI/WCAG22/Understanding/keyboa
 | 2 | **Never send during IME composition**: bail on `e.nativeEvent.isComposing || e.keyCode === 229`; same guard for Escape/ArrowUp. | Safari fires `compositionend` before the confirming keydown: assistant-ui #8199/#8319; MDN keydown https://developer.mozilla.org/en-US/docs/Web/API/Element/keydown_event; https://azukiazusa.dev/blog/ime-enter-submit/. CopilotKit already checks 229. |
 | 3 | Plain Enter on **touch-primary** devices inserts a newline (send via button). | Soft keyboards lack Shift+Enter ergonomics; assistant-ui `unstable_insertNewlineOnTouchEnter`. Optional. |
 | 4 | **Escape while generating = Stop**; otherwise Escape does nothing to the draft (no clear). A popover open → Escape closes the popover first. | assistant-ui `cancelOnEscape`, Cursor. Clearing a draft on Esc is destructive and unexpected. Never trap focus (2.1.2): Tab always leaves the textarea. |
-| 5 | **ArrowUp recalls/edits the last user message only when the composer is empty** (and caret at 0, no modifiers, not composing, no popover). | Slack, Claude.ai. VS Code's first-line variant destroyed drafts (#276373, #282902). Make it opt-in (`onRecallLast`). |
+| 5 | **ArrowUp recalls/edits the last user message only when the composer is empty** (and caret at 0, no modifiers, not composing, no popover). | Slack, Claude.ai. VS Code's first-line variant destroyed drafts (#276373, #282902). Make it opt-in (`onRecallLast`). *Superseded by `history`, see "History (added after v1)".* |
 | 6 | A **global "focus composer" shortcut** must use a modifier (Shift+Esc like ChatGPT, or `mod+/`), be registered in the host shortcut registry, and be listed in help. No single-character shortcut like "/" unless it can be turned off or only works when nothing editable is focused. | 2.1.4; Tecton already has `src/tecton/shortcuts.tsx` (`useShortcut`). |
 | 7 | **Submit becomes Stop while streaming.** Prefer **two buttons that swap** (Send hidden, Stop shown) with stable names "Send message" / "Stop generating"; keep focus: if the focused Send is replaced, move focus to Stop (and back to the textarea when it ends). Do not flip a single button's `aria-label` in place. Announce "Generating…" / "Stopped" / "Response complete" in a polite status. | Roselli, *Be careful with dynamic accessible names* https://adrianroselli.com/2020/12/be-careful-with-dynamic-accessible-names.html and *Multi-function button* http://adrianroselli.com/2021/01/multi-function-button.html; 4.1.3. (AI Elements flips `aria-label` on one button, which works but is announced unreliably.) |
 | 8 | **Don't use native `disabled` on Send**; use `aria-disabled` (still focusable, still named) when empty/busy, and make activation a no-op. Keep the **textarea enabled while streaming** so the user can draft the next message; Enter while busy does nothing (or queues if the app supports it). | MDN aria-disabled https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Attributes/aria-disabled; https://kittygiraudel.com/2024/03/29/on-disabled-and-aria-disabled-attributes/. Disabling the textarea drops focus to `<body>` (2.4.3). Upstream examples use `disabled`/`isDisabled`. |
@@ -165,7 +165,7 @@ type ComposerStatus = "ready" | "submitted" | "streaming" | "error"   // AI SDK 
   onStop={() => void}
   status={ComposerStatus}
   submitMode="enter" | "mod-enter"     // default "enter"; Shift+Enter always newline
-  onRecallLast?={() => string | void}  // enables ArrowUp-in-empty; returns text to load
+  history?={readonly string[]}         // prompts sent, oldest first; Up/Down walk them (v1: onRecallLast)
   isDisabled?                          // whole composer (e.g. no permission); rare
   accept? maxFiles? maxFileSize? onFileError?
 >
@@ -205,7 +205,7 @@ Behaviour contract:
 | Textarea | any key with `isComposing` or `keyCode 229` | Ignored by composer (IME owns it) |
 | Textarea, streaming | Escape | Stop generation, announce "Stopped" |
 | Textarea, idle | Escape | Nothing (propagates, e.g. to close a Sheet/panel) |
-| Textarea, empty, caret 0 | ArrowUp | `onRecallLast()` loads last user message (only if provided) |
+| Textarea, empty, caret 0 | ArrowUp | `onRecallLast()` loads last user message (only if provided); now `history`, see below |
 | Textarea, empty, attachments | Backspace | Nothing in v1 (avoid silent removal); use the chip |
 | Toolbar / Suggestions | ←/→, Home/End | Move between buttons (one Tab stop each) |
 | Attachment chip | Delete / Backspace | Remove, announce, focus next chip or textarea |
@@ -227,6 +227,15 @@ built by hand rather than on RAC `Autocomplete`, which would need the textarea t
 `TextArea` inside its `TextField`, and the composer's keys (IME, recall, stop) would then be split
 across two owners.
 
+### History (added after v1)
+
+`onRecallLast` (ArrowUp in an empty box) gave way to `history`, the prompts sent, oldest first:
+ArrowUp on the first line steps back through them and ArrowDown on the last line forward, as in a
+terminal, VS Code chat and Claude Code. Row 5's objection, VS Code replacing unsent text, is met by
+saving the draft when browsing begins and restoring it past the newest entry. Typing in a loaded
+entry makes it the draft, sending resets the position, runs of the same prompt show once, and the
+guards of row 5 still hold (no modifiers, not composing, the `/` list first).
+
 ### Leave out of v1
 - @ mentions (the same pattern as the `/` menu, with a trigger anywhere in the text). For them
   evaluate RAC 1.21 `TokenField` (Tecton already has `react-aria-components@1.21.1`; its doc
@@ -236,7 +245,6 @@ across two owners.
 - Voice dictation, screenshots, drag-overlay `globalDrop`, rich text / markdown formatting toolbar.
 - Model/mode picker as a built-in part (just a toolbar slot with `Select`/`ToggleButton`).
 - Backspace-in-empty removes last attachment; touch-Enter-newline heuristic.
-- History beyond the last message (Up/Down cycling).
 
 ### Things to test
 IME (Japanese/Chinese) in Safari + Chrome; VoiceOver/NVDA: send → one announcement of the finished

@@ -32,8 +32,10 @@ import { Spinner } from "@tecton/react/components/spinner"
  * Keyboard: Enter sends, Shift+Enter is a new line, ⌘/Ctrl+Enter always
  * sends (and is the only way to send with `submitMode="mod-enter"`);
  * nothing sends while an IME is composing; Escape stops a reply that is
- * arriving; ArrowUp in an empty box recalls the last message when
- * `onRecallLast` is given. With `ComposerCommands`, a `/` at the start of
+ * arriving. With `history`, ArrowUp on the first line of the box steps back
+ * through the prompts sent before and ArrowDown on the last line forward,
+ * back to the draft the box held when browsing began (a terminal's history;
+ * typing or sending ends browsing). With `ComposerCommands`, a `/` at the start of
  * the box opens a list of commands: ArrowUp and ArrowDown move through it,
  * Enter or Tab picks, Escape closes it. The textarea stays enabled while a
  * reply streams, and focus stays in it after sending.
@@ -49,6 +51,16 @@ type ComposerStatus = "ready" | "submitted" | "streaming" | "error"
 
 type ComposerSubmitMode = "enter" | "mod-enter"
 
+/** Where ArrowUp and ArrowDown have taken the box in `history`, and what it held before. */
+type ComposerHistoryPosition = {
+  /** The index in `history` of the entry in the box. */
+  index: number
+  /** The entry as it was loaded: any other text in the box means the user has moved on. */
+  loaded: string
+  /** What the box held when browsing began, restored past the newest entry. */
+  draft: string
+}
+
 type ComposerContextValue = {
   value: string
   setValue: (value: string) => void
@@ -62,7 +74,17 @@ type ComposerContextValue = {
   send: (text: string) => void
   stop: (() => void) | undefined
   focus: () => void
-  recallLast: (() => string | undefined) | undefined
+  /** Whether `history` has an entry to load, for the hint. */
+  hasHistory: boolean
+  /**
+   * Loads the next older or newer entry of `history` into the box, with
+   * `current` the box's text; the text loaded, or undefined when there is
+   * none that way.
+   */
+  stepHistory: (
+    direction: "older" | "newer",
+    current: string
+  ) => string | undefined
   inputRef: React.RefObject<HTMLTextAreaElement | null>
   hintId: string
   /** Whether a `ComposerHint` is rendered, for the textarea's `aria-describedby`. */
@@ -116,8 +138,12 @@ type ComposerProps = Omit<
   status?: ComposerStatus
   /** `"mod-enter"` makes Enter a new line, for long-form input. */
   submitMode?: ComposerSubmitMode
-  /** The last message the user sent, loaded by ArrowUp in an empty box. */
-  onRecallLast?: () => string | undefined
+  /**
+   * The prompts the user has sent, oldest first: ArrowUp on the first line
+   * of the box steps back through them, ArrowDown on the last line forward.
+   * Never changed by the composer.
+   */
+  history?: readonly string[]
   isDisabled?: boolean
 }
 
@@ -129,7 +155,7 @@ function Composer({
   onStop,
   status = "ready",
   submitMode = "enter",
-  onRecallLast,
+  history,
   isDisabled = false,
   className,
   children,
@@ -146,13 +172,70 @@ function Composer({
   >(null)
   const [commandList, setCommandList] =
     React.useState<ComposerCommandListState>()
+  const historyPosition = React.useRef<ComposerHistoryPosition | null>(null)
 
-  const setValue = React.useCallback(
+  const commitValue = React.useCallback(
     (next: string) => {
       if (valueProp === undefined) setUncontrolled(next)
       onValueChange?.(next)
     },
     [valueProp, onValueChange]
+  )
+
+  // Any change but the history's own ends browsing: the new text is the draft.
+  const setValue = React.useCallback(
+    (next: string) => {
+      historyPosition.current = null
+      commitValue(next)
+    },
+    [commitValue]
+  )
+
+  const hasHistory =
+    history !== undefined && history.some((entry) => entry.trim() !== "")
+
+  const stepHistory = React.useCallback(
+    (direction: "older" | "newer", current: string): string | undefined => {
+      const entries = history ?? []
+      let position = historyPosition.current
+      // The box was changed from outside, or the history shrank: start over.
+      if (
+        position !== null &&
+        (current !== position.loaded || position.index >= entries.length)
+      ) {
+        position = null
+        historyPosition.current = null
+      }
+      const shown = position === null ? undefined : entries[position.index]
+      // Blank entries, and a run of the same prompt, are stepped over.
+      const skip = (entry: string) => entry === shown || entry.trim() === ""
+
+      if (direction === "older") {
+        let index = (position?.index ?? entries.length) - 1
+        while (index >= 0 && skip(entries[index])) index -= 1
+        if (index < 0) return undefined
+        historyPosition.current = {
+          index,
+          loaded: entries[index],
+          draft: position?.draft ?? current,
+        }
+        commitValue(entries[index])
+        return entries[index]
+      }
+
+      if (position === null) return undefined
+      let index = position.index + 1
+      while (index < entries.length && skip(entries[index])) index += 1
+      if (index >= entries.length) {
+        historyPosition.current = null
+        commitValue(position.draft)
+        return position.draft
+      }
+      historyPosition.current = { ...position, index, loaded: entries[index] }
+      commitValue(entries[index])
+      return entries[index]
+    },
+    [history, commitValue]
   )
 
   const isBusy = status === "submitted" || status === "streaming"
@@ -172,6 +255,7 @@ function Composer({
   const send = React.useCallback(
     (text: string) => {
       if (isDisabled || isBusy || text.trim() === "") return
+      historyPosition.current = null
       onSubmit({ text: text.trim() })
       focus()
     },
@@ -203,7 +287,8 @@ function Composer({
       send,
       stop,
       focus,
-      recallLast: onRecallLast,
+      hasHistory,
+      stepHistory,
       inputRef,
       hintId,
       hasHint,
@@ -225,7 +310,8 @@ function Composer({
       send,
       stop,
       focus,
-      onRecallLast,
+      hasHistory,
+      stepHistory,
       hintId,
       hasHint,
       stopCount,
@@ -296,13 +382,24 @@ function ComposerInput({
     submitMode,
     submit,
     stop,
-    recallLast,
+    stepHistory,
     inputRef,
     hintId,
     hasHint,
     commandKeys,
     commandList,
   } = useComposerContext("ComposerInput")
+
+  // A history entry goes in with the caret at its end, once React has put
+  // it in the textarea.
+  const caretAtEnd = React.useRef<string | null>(null)
+  React.useLayoutEffect(() => {
+    const node = inputRef.current
+    if (caretAtEnd.current === null || node === null) return
+    if (node.value !== caretAtEnd.current) return
+    node.setSelectionRange(node.value.length, node.value.length)
+    caretAtEnd.current = null
+  })
 
   const setRef = React.useCallback(
     (node: HTMLTextAreaElement | null) => {
@@ -359,17 +456,31 @@ function ComposerInput({
         }
 
         if (
-          event.key === "ArrowUp" &&
-          value === "" &&
-          recallLast !== undefined &&
+          (event.key === "ArrowUp" || event.key === "ArrowDown") &&
           !mod &&
           !event.shiftKey &&
           !event.altKey
         ) {
-          const last = recallLast()
-          if (last !== undefined && last !== "") {
-            event.preventDefault()
-            setValue(last)
+          // Only from the first line up, or the last line down, so the
+          // arrows still move the caret inside a message of several lines.
+          const node = event.currentTarget
+          const { selectionStart, selectionEnd } = node
+          const older = event.key === "ArrowUp"
+          const atEdge =
+            selectionStart === selectionEnd &&
+            !(
+              older
+                ? node.value.slice(0, selectionStart)
+                : node.value.slice(selectionEnd)
+            ).includes("\n")
+          if (!atEdge) return
+          const loaded = stepHistory(older ? "older" : "newer", value)
+          if (loaded === undefined) return
+          event.preventDefault()
+          if (node.value === loaded) {
+            node.setSelectionRange(loaded.length, loaded.length)
+          } else {
+            caretAtEnd.current = loaded
           }
         }
       }}
@@ -497,7 +608,7 @@ function ComposerHint({
   children,
   ...props
 }: React.ComponentProps<"p"> & { isVisible?: boolean }) {
-  const { hintId, setHasHint, submitMode, commandList } =
+  const { hintId, setHasHint, submitMode, commandList, hasHistory } =
     useComposerContext("ComposerHint")
   React.useLayoutEffect(() => {
     setHasHint(true)
@@ -521,6 +632,11 @@ function ComposerHint({
         , <Kbd>/</Kbd> for commands
       </>
     )
+  const historyKeysHint = hasHistory ? (
+    <>
+      , <Kbd>↑</Kbd> for earlier messages
+    </>
+  ) : null
 
   return (
     <p
@@ -536,6 +652,7 @@ function ComposerHint({
         <>
           {sendKeys}
           {commandKeysHint}
+          {historyKeysHint}
         </>
       )}
     </p>
