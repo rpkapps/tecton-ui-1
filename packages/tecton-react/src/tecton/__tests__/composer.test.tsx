@@ -147,6 +147,25 @@ describe("Composer", () => {
     expect(textbox()).toHaveValue("Earlier question")
   })
 
+  it("hands the textarea to a ref of the caller's without losing its own", async () => {
+    const ref = React.createRef<HTMLTextAreaElement>()
+    const onSubmit = vi.fn()
+    render(
+      <Composer onSubmit={onSubmit}>
+        <ComposerField>
+          <ComposerInput ref={ref} />
+        </ComposerField>
+        <ComposerSuggestions>
+          <ComposerSuggestion value="Hello" />
+        </ComposerSuggestions>
+      </Composer>
+    )
+
+    expect(ref.current).toBe(textbox())
+    await userEvent.click(screen.getByRole("button", { name: "Hello" }))
+    expect(textbox()).toHaveFocus()
+  })
+
   it("describes the textarea with the keyboard hint", () => {
     render(<Chat />)
     expect(textbox()).toHaveAccessibleDescription(

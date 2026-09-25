@@ -251,6 +251,7 @@ function isComposing(event: React.KeyboardEvent) {
 function ComposerInput({
   className,
   onKeyDown,
+  ref,
   "aria-label": ariaLabel = "Message",
   "aria-describedby": ariaDescribedBy,
   ...props
@@ -270,7 +271,11 @@ function ComposerInput({
 
   return (
     <InputGroupTextarea
-      ref={inputRef}
+      ref={(node: HTMLTextAreaElement | null) => {
+        inputRef.current = node
+        if (typeof ref === "function") ref(node)
+        else if (ref) ref.current = node
+      }}
       data-slot="composer-input"
       aria-label={ariaLabel}
       aria-describedby={cn(hintId, ariaDescribedBy) || undefined}
