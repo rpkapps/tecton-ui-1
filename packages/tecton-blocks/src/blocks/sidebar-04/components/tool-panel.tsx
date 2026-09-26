@@ -100,8 +100,8 @@ function ToolPanel({
         <Field>
           <Select
             className="flex w-full flex-col gap-3"
-            selectedKey={value.type}
-            onSelectionChange={(key) => update({ type: key as WellType })}
+            value={value.type}
+            onChange={(key) => update({ type: key as WellType })}
           >
             <FieldLabel>Type</FieldLabel>
             <SelectTrigger>

@@ -84,8 +84,8 @@ function WellsFilterBar({
         <Select
           aria-label="Field"
           className="md:w-48"
-          selectedKey={value.field}
-          onSelectionChange={(key) => set("field", String(key))}
+          value={value.field}
+          onChange={(key) => set("field", String(key))}
         >
           <SelectTrigger>
             <SelectValue />
@@ -104,10 +104,8 @@ function WellsFilterBar({
         <Select
           aria-label="Well type"
           className="md:w-44"
-          selectedKey={value.type}
-          onSelectionChange={(key) =>
-            set("type", String(key) as WellsFilter["type"])
-          }
+          value={value.type}
+          onChange={(key) => set("type", String(key) as WellsFilter["type"])}
         >
           <SelectTrigger>
             <SelectValue />

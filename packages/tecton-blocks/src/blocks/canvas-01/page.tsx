@@ -106,11 +106,7 @@ function ViewSelect({
   defaultKey: string
 }) {
   return (
-    <Select
-      aria-label={label}
-      defaultSelectedKey={defaultKey}
-      className="w-auto"
-    >
+    <Select aria-label={label} defaultValue={defaultKey} className="w-auto">
       <SelectTrigger
         size="sm"
         className="min-w-28 border-border-subtle bg-card/90 shadow-md backdrop-blur-sm"

@@ -119,8 +119,8 @@ function WellHeaderForm({
         <Field>
           <Select
             className="flex w-full flex-col gap-3"
-            selectedKey={value.operator}
-            onSelectionChange={(key) => set("operator", String(key))}
+            value={value.operator}
+            onChange={(key) => set("operator", String(key))}
           >
             <FieldLabel>Operator</FieldLabel>
             <SelectTrigger>
@@ -149,8 +149,8 @@ function WellHeaderForm({
           <Field>
             <Select
               className="flex w-full flex-col gap-3"
-              selectedKey={value.rig}
-              onSelectionChange={(key) => set("rig", String(key))}
+              value={value.rig}
+              onChange={(key) => set("rig", String(key))}
             >
               <FieldLabel>Rig</FieldLabel>
               <SelectTrigger>

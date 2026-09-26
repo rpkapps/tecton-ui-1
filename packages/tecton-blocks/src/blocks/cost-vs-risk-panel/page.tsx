@@ -77,8 +77,8 @@ function CostVsRiskPanel({
           <Select
             aria-label="X axis"
             className="w-28"
-            selectedKey={xAxis}
-            onSelectionChange={(key) => setXAxis(String(key))}
+            value={xAxis}
+            onChange={(key) => setXAxis(String(key))}
             disabledKeys={[yAxis]}
           >
             <SelectTrigger variant="filled" size="sm">
@@ -100,8 +100,8 @@ function CostVsRiskPanel({
           <Select
             aria-label="Y axis"
             className="w-28"
-            selectedKey={yAxis}
-            onSelectionChange={(key) => setYAxis(String(key))}
+            value={yAxis}
+            onChange={(key) => setYAxis(String(key))}
             disabledKeys={[xAxis]}
           >
             <SelectTrigger variant="filled" size="sm">

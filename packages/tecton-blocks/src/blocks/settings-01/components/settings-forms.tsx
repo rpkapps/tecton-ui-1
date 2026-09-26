@@ -179,8 +179,8 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
         </Field>
         <SelectRow
           label="Role"
-          selectedKey={value.role}
-          onSelectionChange={(key) => set("role", String(key))}
+          value={value.role}
+          onChange={(key) => set("role", String(key))}
         >
           {roles.map((role) => (
             <SelectItem key={role.id} id={role.id} textValue={role.label}>
@@ -215,8 +215,8 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
       >
         <SelectRow
           label="Time zone"
-          selectedKey={value.timezone}
-          onSelectionChange={(key) => set("timezone", String(key))}
+          value={value.timezone}
+          onChange={(key) => set("timezone", String(key))}
         >
           {timezones.map((zone) => (
             <SelectItem key={zone.id} id={zone.id} textValue={zone.label}>
@@ -226,8 +226,8 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
         </SelectRow>
         <SelectRow
           label="Unit system"
-          selectedKey={value.units}
-          onSelectionChange={(key) =>
+          value={value.units}
+          onChange={(key) =>
             set("units", String(key) as Settings["profile"]["units"])
           }
           description="Changing units re-formats depths, pressures and volumes; stored values are unaffected."
@@ -272,8 +272,8 @@ function NotificationsForm({
       >
         <SelectRow
           label="Channel"
-          selectedKey={value.channel}
-          onSelectionChange={(key) =>
+          value={value.channel}
+          onChange={(key) =>
             set("channel", String(key) as Settings["notifications"]["channel"])
           }
         >
@@ -289,8 +289,8 @@ function NotificationsForm({
         </SelectRow>
         <SelectRow
           label="Frequency"
-          selectedKey={value.digest}
-          onSelectionChange={(key) =>
+          value={value.digest}
+          onChange={(key) =>
             set("digest", String(key) as Settings["notifications"]["digest"])
           }
         >
@@ -371,8 +371,8 @@ function AppearanceForm({
       >
         <SelectRow
           label="Colour scheme"
-          selectedKey={value.theme}
-          onSelectionChange={(key) =>
+          value={value.theme}
+          onChange={(key) =>
             set("theme", String(key) as Settings["appearance"]["theme"])
           }
         >
@@ -384,8 +384,8 @@ function AppearanceForm({
         </SelectRow>
         <SelectRow
           label="Accent"
-          selectedKey={value.accent}
-          onSelectionChange={(key) => set("accent", String(key))}
+          value={value.accent}
+          onChange={(key) => set("accent", String(key))}
         >
           {accents.map((accent) => (
             <SelectItem key={accent.id} id={accent.id} textValue={accent.label}>
@@ -396,8 +396,8 @@ function AppearanceForm({
         </SelectRow>
         <SelectRow
           label="Density"
-          selectedKey={value.density}
-          onSelectionChange={(key) =>
+          value={value.density}
+          onChange={(key) =>
             set("density", String(key) as Settings["appearance"]["density"])
           }
         >

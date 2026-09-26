@@ -85,8 +85,8 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
       <FormSection title="Parameters" defaultExpanded>
         <SelectField
           label="Facies template"
-          selectedKey={value.templateId}
-          onSelectionChange={(key) => set("templateId", String(key))}
+          value={value.templateId}
+          onChange={(key) => set("templateId", String(key))}
         >
           {faciesTemplates.map((template) => (
             <SelectItem
@@ -101,8 +101,8 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
         </SelectField>
         <SelectField
           label="Input data"
-          selectedKey={value.inputDataId}
-          onSelectionChange={(key) => set("inputDataId", String(key))}
+          value={value.inputDataId}
+          onChange={(key) => set("inputDataId", String(key))}
         >
           {inputData.map((item) => (
             <SelectItem key={item.id} id={item.id} textValue={item.label}>
@@ -112,8 +112,8 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
         </SelectField>
         <SelectField
           label="Target surface"
-          selectedKey={value.targetSurfaceId}
-          onSelectionChange={(key) => set("targetSurfaceId", String(key))}
+          value={value.targetSurfaceId}
+          onChange={(key) => set("targetSurfaceId", String(key))}
         >
           {targetSurfaces.map((item) => (
             <SelectItem key={item.id} id={item.id} textValue={item.label}>
@@ -123,8 +123,8 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
         </SelectField>
         <SelectField
           label="Volume"
-          selectedKey={value.volumeId}
-          onSelectionChange={(key) => set("volumeId", String(key))}
+          value={value.volumeId}
+          onChange={(key) => set("volumeId", String(key))}
         >
           {volumes.map((item) => (
             <SelectItem key={item.id} id={item.id} textValue={item.label}>
@@ -135,8 +135,8 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
         <div className="grid grid-cols-[1fr_auto] items-end gap-3">
           <SelectField
             label="Method"
-            selectedKey={value.methodId}
-            onSelectionChange={(key) => set("methodId", String(key))}
+            value={value.methodId}
+            onChange={(key) => set("methodId", String(key))}
           >
             {methods.map((item) => (
               <SelectItem key={item.id} id={item.id} textValue={item.label}>

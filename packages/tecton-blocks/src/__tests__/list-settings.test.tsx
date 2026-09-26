@@ -39,6 +39,20 @@ describe("list-01", () => {
     expect(screen.getByText(`${wells.length} wells`)).toBeInTheDocument()
   })
 
+  it("filters by the well type picked in its select", async () => {
+    const user = userEvent.setup()
+    render(<WellsListPage />)
+    const count = wells.filter((well) => well.type === "injector").length
+    await user.click(screen.getByRole("button", { name: /Well type/ }))
+    await user.click(screen.getByRole("option", { name: "Injector" }))
+    expect(
+      screen.getByText(`${count} ${count === 1 ? "well" : "wells"}`)
+    ).toBeInTheDocument()
+    expect(screen.getByRole("button", { name: /Well type/ })).toHaveTextContent(
+      "Injector"
+    )
+  })
+
   it("shows the empty state without data", () => {
     render(<WellsListPage empty />)
     expect(screen.getByText("No wells yet")).toBeInTheDocument()
@@ -70,6 +84,23 @@ describe("settings-01", () => {
     expect(save).toBeEnabled()
     await user.click(save)
     expect(onSave).toHaveBeenCalledTimes(1)
+  })
+
+  it("saves the role picked in its select", async () => {
+    const user = userEvent.setup()
+    const onSave = vi.fn()
+    render(<SettingsPage onSave={onSave} />)
+    const role = screen.getByRole("button", { name: /Role/ })
+    expect(role).toHaveTextContent("Subsurface lead")
+    await user.click(role)
+    await user.click(screen.getByRole("option", { name: "Drilling engineer" }))
+    expect(role).toHaveTextContent("Drilling engineer")
+    await user.click(screen.getByRole("button", { name: "Save changes" }))
+    expect(onSave).toHaveBeenCalledWith(
+      expect.objectContaining({
+        profile: expect.objectContaining({ role: "drilling-engineer" }),
+      })
+    )
   })
 
   it("uses h2 for the section titles under the page's h1", () => {
