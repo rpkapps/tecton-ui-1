@@ -116,6 +116,7 @@ function Forbidden({
         ) : (
           <form
             data-slot="forbidden-request"
+            method="post"
             className="flex flex-col gap-4 rounded-lg border border-border-subtle bg-card p-4"
             onSubmit={submit}
             noValidate
@@ -130,11 +131,16 @@ function Forbidden({
                 value={reason}
                 onChange={(event) => setReason(event.target.value)}
                 aria-invalid={!!error}
+                aria-describedby={
+                  error
+                    ? `${reasonId}-description ${reasonId}-error`
+                    : `${reasonId}-description`
+                }
               />
-              <FieldDescription>
+              <FieldDescription id={`${reasonId}-description`}>
                 Your request goes to the person who manages access.
               </FieldDescription>
-              <FieldError>{error}</FieldError>
+              <FieldError id={`${reasonId}-error`}>{error}</FieldError>
             </Field>
             <PageStateActions>
               <Button type="submit" isDisabled={status === "sending"}>

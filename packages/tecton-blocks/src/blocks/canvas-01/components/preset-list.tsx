@@ -10,6 +10,7 @@ import {
   PencilIcon,
   TrashIcon,
 } from "lucide-react"
+import { Button as ButtonPrimitive } from "react-aria-components"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -178,7 +179,7 @@ function PresetList({
     <Sidebar
       data-slot="preset-list"
       collapsible="offcanvas"
-      className={cn("border-r border-border-subtle", className)}
+      className={cn("border-e border-border-subtle", className)}
       {...props}
     >
       <SidebarContent className="gap-0">
@@ -202,12 +203,11 @@ function PresetList({
                           "group/card relative flex flex-col gap-2 rounded-lg border bg-card p-2 text-card-foreground transition-colors hover:bg-accent/40 data-selected:border-primary"
                         )}
                       >
-                        <button
-                          type="button"
-                          className="absolute inset-0 rounded-lg outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
+                        <ButtonPrimitive
+                          className="absolute inset-0 rounded-lg outline-hidden data-focus-visible:ring-2 data-focus-visible:ring-ring"
                           aria-label={`Open ${preset.name}`}
                           aria-pressed={isSelected}
-                          onClick={() => onSelect?.(preset.id)}
+                          onPress={() => onSelect?.(preset.id)}
                         />
                         <div className="relative aspect-[2.2] overflow-hidden rounded-md">
                           <PresetSketch kind={preset.kind} />

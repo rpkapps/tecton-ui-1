@@ -19,26 +19,35 @@ import {
   type ChartConfig,
 } from "@tecton/react/components/chart"
 
-import { riskLabel, type DesignPoint } from "../data"
+import { getAxis, riskLabel } from "../data"
+import type { AxisOption, DesignPoint } from "../data"
 
 type QuadrantChartProps = React.ComponentProps<"div"> & {
   designs: DesignPoint[]
   /** Ids of the highlighted designs; others are dimmed. */
   selected?: string[]
+  /** Metric on the horizontal axis (cost by default). */
+  xAxis?: AxisOption
+  /** Metric on the vertical axis (risk by default). */
+  yAxis?: AxisOption
+  /** Axis titles; default to the axes' labels. */
   xLabel?: string
   yLabel?: string
 }
 
 /**
- * Cost (x) vs risk (y) bubble chart split into four quadrants by
- * reference lines at the mid-point of each axis. Bubble area = plan days.
+ * Bubble chart of two design metrics (cost vs risk by default) split into
+ * four quadrants by reference lines at the mid-point of each axis. Bubble
+ * area = plan days.
  */
 function QuadrantChart({
   className,
   designs,
   selected,
-  xLabel = "Cost",
-  yLabel = "Risk",
+  xAxis = getAxis("cost"),
+  yAxis = getAxis("risk"),
+  xLabel = xAxis.label,
+  yLabel = yAxis.label,
   ...props
 }: QuadrantChartProps) {
   const config = React.useMemo<ChartConfig>(
@@ -52,10 +61,14 @@ function QuadrantChart({
     [designs]
   )
 
-  const costs = designs.map((design) => design.cost)
-  const xMin = Math.floor((Math.min(...costs) - 15) / 10) * 10
-  const xMax = Math.ceil((Math.max(...costs) + 15) / 10) * 10
+  const [xMin, xMax] = xAxis.domain(
+    designs.map((design) => design[xAxis.dataKey])
+  )
+  const [yMin, yMax] = yAxis.domain(
+    designs.map((design) => design[yAxis.dataKey])
+  )
   const xMid = (xMin + xMax) / 2
+  const yMid = (yMin + yMax) / 2
 
   return (
     <ChartContainer
@@ -71,23 +84,23 @@ function QuadrantChart({
         <CartesianGrid strokeDasharray="2 4" />
         <XAxis
           type="number"
-          dataKey="cost"
+          dataKey={xAxis.dataKey}
           name={xLabel}
           domain={[xMin, xMax]}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value: number) => `$${value}M`}
+          tickFormatter={xAxis.format}
           fontSize={10}
         />
         <YAxis
           type="number"
-          dataKey="risk"
+          dataKey={yAxis.dataKey}
           name={yLabel}
-          domain={[0, 100]}
+          domain={[yMin, yMax]}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value: number) => `${value}%`}
-          width={36}
+          tickFormatter={yAxis.format}
+          width={40}
           fontSize={10}
         />
         <ZAxis type="number" dataKey="planDays" range={[240, 900]} />
@@ -114,7 +127,7 @@ function QuadrantChart({
           }}
         />
         <ReferenceLine
-          y={50}
+          y={yMid}
           stroke="var(--border-strong)"
           label={{
             value: `Low ${xLabel.toLowerCase()}`,
@@ -124,7 +137,7 @@ function QuadrantChart({
           }}
         />
         <ReferenceLine
-          y={50}
+          y={yMid}
           stroke="transparent"
           label={{
             value: `High ${xLabel.toLowerCase()}`,
@@ -171,22 +184,22 @@ function QuadrantTooltip({ point }: { point: DesignPoint }) {
         />
         {point.name}
         {point.isRecommended && (
-          <span className="ml-auto text-[0.625rem] text-muted-foreground">
+          <span className="ms-auto text-[0.625rem] text-muted-foreground">
             Recommended
           </span>
         )}
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-muted-foreground">
         <dt>Cost</dt>
-        <dd className="text-right font-mono text-foreground tabular-nums">
+        <dd className="text-end font-mono text-foreground tabular-nums">
           ${point.costRange[0]}–{point.costRange[1]}M
         </dd>
         <dt>Risk</dt>
-        <dd className="text-right font-mono text-foreground tabular-nums">
+        <dd className="text-end font-mono text-foreground tabular-nums">
           {point.risk}% · {riskLabel(point.risk)}
         </dd>
         <dt>Plan days</dt>
-        <dd className="text-right font-mono text-foreground tabular-nums">
+        <dd className="text-end font-mono text-foreground tabular-nums">
           {point.planDays}d
         </dd>
       </dl>

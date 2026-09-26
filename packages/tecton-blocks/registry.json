@@ -12,6 +12,7 @@
         "application"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -53,8 +54,10 @@
         "layouts"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
-        "lucide-react"
+        "lucide-react",
+        "react-aria-components"
       ],
       "registryDependencies": [],
       "files": [
@@ -89,6 +92,7 @@
         "layouts"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn"
       ],
       "registryDependencies": [],
@@ -119,6 +123,7 @@
         "application"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react",
         "recharts"
@@ -156,6 +161,7 @@
         "dashboard"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -197,6 +203,7 @@
         "layouts"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -233,8 +240,10 @@
         "forms"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
-        "lucide-react"
+        "lucide-react",
+        "react-aria-components"
       ],
       "registryDependencies": [],
       "files": [
@@ -269,6 +278,7 @@
         "application"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -301,8 +311,10 @@
       ],
       "dependencies": [
         "@tanstack/react-table",
+        "@tecton/react",
         "cn",
-        "lucide-react"
+        "lucide-react",
+        "react-aria-components"
       ],
       "registryDependencies": [],
       "files": [
@@ -332,6 +344,7 @@
         "states"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -365,8 +378,10 @@
         "forms"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
-        "lucide-react"
+        "lucide-react",
+        "react-aria-components"
       ],
       "registryDependencies": [],
       "files": [
@@ -402,8 +417,10 @@
       ],
       "dependencies": [
         "@tanstack/react-table",
+        "@tecton/react",
         "cn",
-        "lucide-react"
+        "lucide-react",
+        "react-aria-components"
       ],
       "registryDependencies": [],
       "files": [
@@ -438,6 +455,7 @@
         "authentication"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -469,6 +487,7 @@
         "states"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -502,6 +521,7 @@
         "states"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -535,6 +555,7 @@
         "states"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -568,6 +589,7 @@
         "states"
       ],
       "dependencies": [
+        "@tecton/react",
         "class-variance-authority",
         "cn",
         "lucide-react"
@@ -605,6 +627,7 @@
         "states"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -638,6 +661,7 @@
         "states"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -671,6 +695,7 @@
         "forms"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -702,6 +727,7 @@
         "layouts"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -743,6 +769,7 @@
         "layouts"
       ],
       "dependencies": [
+        "@tecton/react",
         "lucide-react"
       ],
       "registryDependencies": [],
@@ -788,6 +815,7 @@
         "layouts"
       ],
       "dependencies": [
+        "@tecton/react",
         "lucide-react"
       ],
       "registryDependencies": [],
@@ -838,6 +866,7 @@
         "layouts"
       ],
       "dependencies": [
+        "@tecton/react",
         "lucide-react",
         "react-aria-components"
       ],
@@ -869,6 +898,7 @@
         "layouts"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
         "lucide-react"
       ],
@@ -910,8 +940,10 @@
         "application"
       ],
       "dependencies": [
+        "@tecton/react",
         "cn",
-        "lucide-react"
+        "lucide-react",
+        "react-aria-components"
       ],
       "registryDependencies": [],
       "files": [

@@ -12,6 +12,7 @@ import {
 } from "@tecton/react/components/breadcrumb"
 import { Button } from "@tecton/react/components/button"
 import { Separator } from "@tecton/react/components/separator"
+import { Sheet, SheetTitle } from "@tecton/react/components/sheet"
 import {
   SidebarInset,
   SidebarProvider,
@@ -32,9 +33,12 @@ import type { WellProperties } from "./data"
 /**
  * Page layout with a navigation rail on the left (collapsed to icons by
  * default) and a resizable tool panel on the right, around the work area.
+ * Below 1024px the tool panel opens in a sheet instead.
  */
 export default function Page() {
   const [panelOpen, setPanelOpen] = React.useState(true)
+  // Narrow screens open the panel in a sheet, on request only.
+  const [sheetOpen, setSheetOpen] = React.useState(false)
   const [well, setWell] = React.useState<WellProperties>(defaultWell)
   // The tool panel is a resizable split on `lg` and up only.
   const isWide = useMinWidth(1024)
@@ -43,10 +47,10 @@ export default function Page() {
   const inset = (
     <SidebarInset className="min-h-0">
       <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle px-3">
-        <SidebarTrigger className="-ml-1" />
+        <SidebarTrigger className="-ms-1" />
         <Separator
           orientation="vertical"
-          className="mr-1 h-4 aria-[orientation=vertical]:self-center"
+          className="me-1 h-4 aria-[orientation=vertical]:self-center"
         />
         <Breadcrumb>
           <BreadcrumbList>
@@ -58,13 +62,13 @@ export default function Page() {
             </BreadcrumbItem>
           </BreadcrumbList>
         </Breadcrumb>
-        {!panelOpen && (
+        {!showPanel && (
           <Button
             variant="ghost"
             size="icon-sm"
-            className="ml-auto"
+            className="ms-auto"
             aria-label="Open well properties"
-            onPress={() => setPanelOpen(true)}
+            onPress={() => (isWide ? setPanelOpen(true) : setSheetOpen(true))}
           >
             <PanelRightOpenIcon />
           </Button>
@@ -101,6 +105,19 @@ export default function Page() {
       ) : (
         inset
       )}
+      <Sheet
+        isOpen={sheetOpen && !isWide}
+        onOpenChange={setSheetOpen}
+        showCloseButton={false}
+        className="gap-0"
+      >
+        <SheetTitle className="sr-only">Well properties</SheetTitle>
+        <ToolPanel
+          value={well}
+          onChange={setWell}
+          onClose={() => setSheetOpen(false)}
+        />
+      </Sheet>
     </SidebarProvider>
   )
 }

@@ -20,6 +20,7 @@ import {
   MoreVerticalIcon,
   PlusIcon,
 } from "lucide-react"
+import { useLocale } from "react-aria-components"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -68,6 +69,24 @@ const features = tableFeatures({
 
 const columns = createColumnHelper<typeof features, Well>()
 
+/** A number in the reader's locale (React Aria `I18nProvider`, else the browser). */
+function LocaleNumber({
+  value,
+  ...props
+}: React.ComponentProps<"span"> & { value: number }) {
+  const { locale } = useLocale()
+  return <span {...props}>{value.toLocaleString(locale)}</span>
+}
+
+/** An ISO date in the reader's locale. */
+function LocaleDate({
+  value,
+  ...props
+}: React.ComponentProps<"span"> & { value: string }) {
+  const { locale } = useLocale()
+  return <span {...props}>{formatDate(value, locale)}</span>
+}
+
 function createWellColumns(onOpen?: (well: Well) => void) {
   return columns.columns([
     columns.display({
@@ -101,15 +120,16 @@ function createWellColumns(onOpen?: (well: Well) => void) {
     columns.accessor("td", {
       header: "TD (m MD)",
       cell: ({ getValue }) => (
-        <span className="block text-right font-mono tabular-nums">
-          {getValue().toLocaleString()}
-        </span>
+        <LocaleNumber
+          value={getValue()}
+          className="block text-end font-mono tabular-nums"
+        />
       ),
     }),
     columns.accessor("spud", {
       header: "Spud",
       cell: ({ getValue }) => (
-        <span className="font-mono tabular-nums">{formatDate(getValue())}</span>
+        <LocaleDate value={getValue()} className="font-mono tabular-nums" />
       ),
     }),
     columns.accessor("rig", { header: "Rig" }),
@@ -290,7 +310,7 @@ function WellsTable({
           {table.getSelectedRowModel().rows.length} of{" "}
           {table.getPrePaginatedRowModel().rows.length} selected
         </span>
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ms-auto flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span>Rows per page</span>
             <Select
@@ -326,7 +346,7 @@ function WellsTable({
               onPress={() => table.previousPage()}
               isDisabled={!table.getCanPreviousPage()}
             >
-              <ChevronLeftIcon />
+              <ChevronLeftIcon className="rtl:rotate-180" />
             </Button>
             <Button
               variant="ghost"
@@ -335,7 +355,7 @@ function WellsTable({
               onPress={() => table.nextPage()}
               isDisabled={!table.getCanNextPage()}
             >
-              <ChevronRightIcon />
+              <ChevronRightIcon className="rtl:rotate-180" />
             </Button>
           </div>
         </div>

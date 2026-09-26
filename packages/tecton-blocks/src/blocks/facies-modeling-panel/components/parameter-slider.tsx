@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
+import { useLocale } from "react-aria-components"
 
 import { Slider } from "@tecton/react/components/slider"
 
@@ -35,6 +36,7 @@ function ParameterSlider({
   isDisabled = false,
   onChange,
 }: ParameterSliderProps) {
+  const { locale } = useLocale()
   const ariaLabel = typeof label === "string" ? label : undefined
   return (
     <div
@@ -49,9 +51,9 @@ function ParameterSlider({
         <span className="shrink-0 font-mono font-medium tabular-nums">
           {valueLabel ?? (
             <>
-              {value.toLocaleString()}
+              {value.toLocaleString(locale)}
               {unit && (
-                <span className="ml-0.5 font-normal text-muted-foreground">
+                <span className="ms-0.5 font-normal text-muted-foreground">
                   {unit}
                 </span>
               )}

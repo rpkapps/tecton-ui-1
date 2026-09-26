@@ -92,7 +92,7 @@ function ProjectTree({
       >
         {node.label}
       </TreeViewItemContent>
-      <TreeViewCollection items={node.children ?? []}>
+      <TreeViewCollection items={node.children ?? []} dependencies={[hidden]}>
         {renderNode}
       </TreeViewCollection>
     </TreeViewItem>
@@ -115,6 +115,9 @@ function ProjectTree({
       <TreeView
         aria-label="Project inventory"
         className="min-h-0 flex-1 px-2 pb-2"
+        // The rows render from `hidden`, which React Aria's cached
+        // collection does not see unless it is listed as a dependency.
+        dependencies={[hidden]}
         items={nodes}
         selectionMode="single"
         defaultExpandedKeys={defaultExpanded}

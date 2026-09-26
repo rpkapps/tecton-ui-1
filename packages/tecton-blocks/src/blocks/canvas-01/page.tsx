@@ -17,6 +17,7 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
 } from "lucide-react"
+import { useLocale } from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -148,6 +149,7 @@ const scaleBar = { metres: 750, feet: 2500 }
  * rail on each side, the legend and the scale bar.
  */
 export default function Page() {
+  const { locale } = useLocale()
   const [preset, setPreset] = React.useState(presets[0]?.id ?? "")
   const [tool, setTool] = React.useState("pan")
   const [selected, setSelected] = React.useState<string | null>(null)
@@ -168,15 +170,15 @@ export default function Page() {
       <PresetList selected={preset} onSelect={setPreset} />
       <SidebarInset className="min-w-0">
         <header className="flex h-10 shrink-0 items-center gap-2 border-b border-border-subtle px-2">
-          <SidebarTrigger className="-ml-1" />
+          <SidebarTrigger className="-ms-1" />
           <Separator
             orientation="vertical"
-            className="mr-1 h-4 aria-[orientation=vertical]:self-center"
+            className="me-1 h-4 aria-[orientation=vertical]:self-center"
           />
           <span className="text-sm">
             {presets.find((item) => item.id === preset)?.name}
           </span>
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ms-auto flex items-center gap-1">
             <Button variant="ghost" size="sm">
               <UploadIcon data-icon="inline-start" /> Review and publish
             </Button>
@@ -387,11 +389,11 @@ export default function Page() {
             >
               <span className="flex items-center gap-2">
                 <span className="h-1.5 w-20 border-x border-b border-foreground" />
-                {Math.round(scaleBar.metres / zoom).toLocaleString()} m
+                {Math.round(scaleBar.metres / zoom).toLocaleString(locale)} m
               </span>
               <span className="flex items-center gap-2">
                 <span className="h-1.5 w-24 border-x border-t border-foreground" />
-                {Math.round(scaleBar.feet / zoom).toLocaleString()} ft
+                {Math.round(scaleBar.feet / zoom).toLocaleString(locale)} ft
               </span>
             </div>
           </CanvasOverlay>
