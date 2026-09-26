@@ -23,6 +23,7 @@ related: [ToggleGroup, Select]
 - Select with `defaultValue` / `value` and `onValueChange`, which receives the tab's value.
 - Choose the strip with `TabsList` `variant="default" | "line"`, and a side strip with `orientation="vertical"` on `Tabs`.
 - Give `TabsList` an `aria-label` when no nearby heading names the set; disable one tab with `disabled`.
+- Let the arrow keys select: moving focus to a tab shows its panel. Pass `activateOnFocus={false}` to `TabsList` when a panel is costly to render, so the arrow keys only move focus and Enter or Space selects.
 
 ## Don't
 

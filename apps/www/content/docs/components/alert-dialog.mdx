@@ -154,7 +154,13 @@ End the title with a question and state the consequence in `AlertDialogDescripti
 
 <Do>
 
-`AlertDialogCancel` closes the prompt; `AlertDialogAction` is a plain `Button`, so control the dialog with `open` / `onOpenChange` and close it in the action's `onClick` once the work is done.
+Put the work in `onClick` on `AlertDialogAction`: the action and `AlertDialogCancel` both close the prompt on click, so an uncontrolled `AlertDialog` needs no state.
+
+</Do>
+
+<Do>
+
+Keep the prompt open while async work runs (a pending state, an error to show) by controlling it with `open` / `onOpenChange`, calling `event.preventBaseUIHandler()` in the action's `onClick` and closing it with `setOpen(false)` once the work is done.
 
 </Do>
 
@@ -180,14 +186,14 @@ Keyboard users reach Cancel first in a confirmation dialog: put `AlertDialogCanc
 
 ### Don't
 
-<Dont severity="HIGH" title="Expecting AlertDialogAction to close the prompt">
+<Dont severity="HIGH" title="A plain Button as the confirm">
 
 <Wrong>
 
 ```tsx
 <AlertDialogFooter>
   <AlertDialogCancel>Cancel</AlertDialogCancel>
-  <AlertDialogAction variant="destructive" onClick={deleteWell}>Delete</AlertDialogAction>
+  <Button variant="destructive" onClick={deleteWell}>Delete</Button>
 </AlertDialogFooter>
 ```
 
@@ -198,15 +204,13 @@ Keyboard users reach Cancel first in a confirmation dialog: put `AlertDialogCanc
 ```tsx
 <AlertDialogFooter>
   <AlertDialogCancel>Cancel</AlertDialogCancel>
-  <AlertDialogAction variant="destructive" onClick={() => deleteWell().then(() => setOpen(false))}>
-    Delete
-  </AlertDialogAction>
+  <AlertDialogAction variant="destructive" onClick={deleteWell}>Delete</AlertDialogAction>
 </AlertDialogFooter>
 ```
 
 </Correct>
 
-`AlertDialogAction` is a `Button` with no link to the dialog state, so on an uncontrolled `AlertDialog` the action runs and the prompt stays on screen over the deleted record.
+A `Button` has no link to the dialog state, so on an uncontrolled `AlertDialog` the work runs and the prompt stays on screen over the deleted record; `AlertDialogAction` closes the prompt after its `onClick`, like `AlertDialogCancel`.
 
 </Dont>
 

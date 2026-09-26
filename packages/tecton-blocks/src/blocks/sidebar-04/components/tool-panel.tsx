@@ -125,9 +125,9 @@ function ToolPanel({
           <FieldLabel>Colour</FieldLabel>
           <ColorSwatch
             color={value.color}
-            onChange={(color) => update({ color })}
+            onColorChange={(color) => update({ color })}
             label="Trajectory colour"
-            value={value.color}
+            detail={value.color}
             aria-label="Edit trajectory colour"
           />
         </Field>

@@ -151,7 +151,7 @@ describe("ColorSwatch", () => {
   })
 
   it("uses a string label as the caller's name", () => {
-    render(<ColorSwatch color="#f59e0b" label="Sandstone" value="#f59e0b" />)
+    render(<ColorSwatch color="#f59e0b" label="Sandstone" detail="#f59e0b" />)
     expect(
       screen.getByRole("img", { name: "Sandstone, vibrant orange" })
     ).toBeInTheDocument()
@@ -239,7 +239,7 @@ describe("ColorSwatch", () => {
       <ColorSwatch
         color="#123456"
         label="Primary"
-        value="#123456"
+        detail="#123456"
         className="row"
       />
     )
@@ -276,7 +276,7 @@ describe("ColorSwatch editable", () => {
       <ColorSwatch
         color={color}
         presets={presets}
-        onChange={(next) => {
+        onColorChange={(next) => {
           onChange?.(next)
           setColor(next)
         }}
@@ -293,7 +293,7 @@ describe("ColorSwatch editable", () => {
     render(
       <ColorSwatch
         color="#ff0000"
-        onChange={() => {}}
+        onColorChange={() => {}}
         presets={["#00ff00", "#0000ff"]}
       />
     )
@@ -320,7 +320,7 @@ describe("ColorSwatch editable", () => {
     render(
       <ColorSwatch
         color="#ff0000"
-        onChange={() => {}}
+        onColorChange={() => {}}
         aria-label="Edit series colour"
         label="Series"
       />
@@ -334,7 +334,7 @@ describe("ColorSwatch editable", () => {
     render(
       <ColorSwatch
         color="#ff0000"
-        onChange={() => {}}
+        onColorChange={() => {}}
         presets={["#00ff00", "#0000ff"]}
       />
     )
@@ -353,7 +353,7 @@ describe("ColorSwatch editable", () => {
     render(
       <ColorSwatch
         color="#ff0000"
-        onChange={onChange}
+        onColorChange={onChange}
         presets={["#00ff00", "#0000ff"]}
       />
     )
@@ -368,7 +368,7 @@ describe("ColorSwatch editable", () => {
     render(
       <ColorSwatch
         color="rgb(0 255 0)"
-        onChange={() => {}}
+        onColorChange={() => {}}
         presets={["#00ff00", "#0000ff"]}
       />
     )
@@ -410,7 +410,7 @@ describe("ColorSwatch editable", () => {
       <PortalProvider container={host}>
         <ColorSwatch
           color="#0000ff"
-          onChange={() => {}}
+          onColorChange={() => {}}
           presets={[
             "not-a-colour",
             "currentColor",
@@ -433,7 +433,7 @@ describe("ColorSwatch editable", () => {
     render(
       <ColorSwatch
         color="#ff0000"
-        onChange={onChange}
+        onColorChange={onChange}
         presets={["rebeccapurple"]}
       />
     )
@@ -448,7 +448,7 @@ describe("ColorSwatch editable", () => {
     render(
       <ColorSwatch
         color="#ff0000"
-        onChange={onChange}
+        onColorChange={onChange}
         presets={["var(--brand)"]}
       />
     )
@@ -460,7 +460,9 @@ describe("ColorSwatch editable", () => {
 
   it("emits from the native colour input", async () => {
     const onChange = vi.fn()
-    render(<ColorSwatch color="#ff0000" onChange={onChange} presets={[]} />)
+    render(
+      <ColorSwatch color="#ff0000" onColorChange={onChange} presets={[]} />
+    )
     await open()
     const input = screen.getByLabelText("Pick a custom colour")
     // No presets: only the custom section renders.

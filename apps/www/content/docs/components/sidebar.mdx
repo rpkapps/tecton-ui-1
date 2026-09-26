@@ -581,6 +581,12 @@ Pick the behaviour with `collapsible="offcanvas" | "icon" | "none"` and the surf
 
 <Do>
 
+Treat `side="left" | "right"` as the physical edge: in a right-to-left layout pass `side="right"` (from `useDirection()`) to keep the sidebar at the start; the border, the rail and the collapsed tooltips follow the side.
+
+</Do>
+
+<Do>
+
 Pass `tooltip="Wells"` (or `TooltipContent` props) on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone.
 
 </Do>

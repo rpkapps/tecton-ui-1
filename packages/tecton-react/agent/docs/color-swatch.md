@@ -9,8 +9,8 @@ import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 ## Use it when
 
 - The colour *is* the data: a horizon colour, a facies legend, a theme token, a series fill.
-- The colour needs its name or its value beside it: `label` and `value`.
-- The user has to change it: `onChange` turns the swatch into a button with a preset and hex picker.
+- The colour needs its name or its value beside it: `label` and `detail`.
+- The user has to change it: `onColorChange` turns the swatch into a button with a preset and hex picker.
 
 ## Not for
 
@@ -23,7 +23,7 @@ import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 - Pass any CSS colour to `color` — a hex, `rgb()`, `hsl()`, `oklch()`, a keyword or `var(--tecton-color-accent-lime-fill)`; a translucent colour shows over a checkerboard.
 - Size with `size="xs" | "sm" | "md" | "lg" | "xl"` (12 to 48 px) and pick the corner with `shape="square" | "rounded" | "circle"`.
 - Name what the colour stands for with `aria-label` (or a string `label`); the swatch appends the colour's English name itself ("Sandstone, vibrant orange"), and `colorName` replaces that name.
-- Make it editable with `onChange`, which receives `#RRGGBB`, and replace the Tecton accent presets with `presets` when the palette is domain-specific; the presets are a radio group, so an arrow key selects as it moves.
+- Make it editable with `onColorChange`, which receives `#RRGGBB`, and replace the Tecton accent presets with `presets` when the palette is domain-specific; the presets are a radio group, so an arrow key selects as it moves.
 
 ## Don't
 
@@ -61,12 +61,12 @@ Wrong:
 Correct:
 
 ```tsx
-<ColorSwatch color={color} onChange={setColor} aria-label="Series colour" />
+<ColorSwatch color={color} onColorChange={setColor} aria-label="Series colour" />
 ```
 
-Without `onChange` the swatch is a non-focusable `role="img"` `span`, so an `onClick` on it is out of reach of the keyboard and of assistive technology; `onChange` wraps it in the `color-swatch-trigger` button that opens the preset radio group and the hex field.
+Without `onColorChange` the swatch is a non-focusable `role="img"` `span`, so an `onClick` on it is out of reach of the keyboard and of assistive technology; `onColorChange` wraps it in the `color-swatch-trigger` button that opens the preset radio group and the hex field.
 
-### MEDIUM Label and value written as sibling spans
+### MEDIUM Label and detail written as sibling spans
 
 Wrong:
 
@@ -81,10 +81,10 @@ Wrong:
 Correct:
 
 ```tsx
-<ColorSwatch color="#f59e0b" label="Sandstone" value="#f59e0b" />
+<ColorSwatch color="#f59e0b" label="Sandstone" detail="#f59e0b" />
 ```
 
-With `label` and `value` the component renders the `color-swatch-item` row itself — name over value, the value in the mono face and `muted-foreground`, `className` moved from the swatch to the row — while `text-zinc-500` is stock Tailwind that emits no CSS at all.
+With `label` and `detail` the component renders the `color-swatch-item` row itself — name over detail, the detail in the mono face and `muted-foreground`, `className` moved from the swatch to the row — while `text-zinc-500` is stock Tailwind that emits no CSS at all.
 
 ## Before you finish
 

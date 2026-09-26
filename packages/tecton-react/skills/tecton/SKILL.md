@@ -108,8 +108,8 @@ in full; `agent:check` keeps this list in step with it.)
 - **Icon-only controls are named** with an `aria-label`; a `Tooltip` describes,
   it does not name.
 - **Menu items act through `onClick`** (`CommandItem` through `onSelect`).
-- **The `AlertDialog` confirm closes the prompt**: `AlertDialogAction` is a
-  plain `Button`, so control the dialog and close it in the action's `onClick`.
+- **The `AlertDialog` confirm is `AlertDialogAction`**: it runs its `onClick`
+  and closes the prompt; a plain `Button` in the footer leaves it open.
 - **Shortcuts are the application's**: a `Kbd` or `shortcut` only shows a key.
 - **You ran `tecton docs`** for each component in the file and checked its
   Don't entries against your code.

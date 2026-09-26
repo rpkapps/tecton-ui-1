@@ -19,9 +19,9 @@ import {
 import { Separator } from "@tecton/react/components/separator"
 
 /**
- * Tecton ColorSwatch — a colour preview chip with optional label / value
- * text. Used for colour tags, legends and the theme documentation. Pass
- * `onChange` to make it editable: the swatch becomes a button that opens a
+ * Tecton ColorSwatch — a colour preview chip with an optional label and
+ * detail text. Used for colour tags, legends and the theme documentation. Pass
+ * `onColorChange` to make it editable: the swatch becomes a button that opens a
  * picker with preset colours and a hex field.
  */
 const colorSwatchVariants = cva(
@@ -190,9 +190,9 @@ type ColorSwatchProps = Omit<
     /** Text rendered next to the swatch. */
     label?: React.ReactNode
     /** Secondary text (e.g. the hex value), rendered in mono. */
-    value?: React.ReactNode
+    detail?: React.ReactNode
     /** Makes the swatch editable: called with the new colour as `#RRGGBB`. */
-    onChange?: (color: string) => void
+    onColorChange?: (color: string) => void
     /** Preset colours offered by the editable picker (defaults to the Tecton accents). */
     presets?: string[]
   }
@@ -223,8 +223,8 @@ function ColorSwatch({
   color = "transparent",
   colorName,
   label,
-  value,
-  onChange,
+  detail,
+  onColorChange,
   presets = colorSwatchPresets,
   style,
   ref,
@@ -249,7 +249,7 @@ function ColorSwatch({
   const name = colorName ?? generatedName
   // Editable, the caller's `aria-label` names the button; the swatch then
   // only describes it with the colour.
-  const callerName = onChange
+  const callerName = onColorChange
     ? undefined
     : (ariaLabel ?? (typeof label === "string" ? label : undefined))
   // The caller's name first, then the colour; the raw value only when the
@@ -273,17 +273,17 @@ function ColorSwatch({
       }
       className={cn(
         colorSwatchVariants({ size, shape }),
-        label || value ? "" : className
+        label || detail ? "" : className
       )}
       style={{ ...swatchStyle(color, parsed), ...style }}
     />
   )
 
-  if (onChange) {
+  if (onColorChange) {
     swatch = (
       <ColorSwatchEditor
         color={color}
-        onChange={onChange}
+        onColorChange={onColorChange}
         presets={presets}
         shape={shape}
         swatchId={swatchId}
@@ -294,7 +294,7 @@ function ColorSwatch({
     )
   }
 
-  if (!label && !value) {
+  if (!label && !detail) {
     return swatch
   }
 
@@ -306,9 +306,9 @@ function ColorSwatch({
       {swatch}
       <span className="flex min-w-0 flex-col leading-tight">
         {label && <span className="truncate font-medium">{label}</span>}
-        {value && (
+        {detail && (
           <span className="truncate font-mono text-xs text-muted-foreground">
-            {value}
+            {detail}
           </span>
         )}
       </span>
@@ -414,7 +414,7 @@ function HexField({
 
 function ColorSwatchEditor({
   color,
-  onChange,
+  onColorChange,
   presets,
   shape,
   swatchId,
@@ -422,7 +422,7 @@ function ColorSwatchEditor({
   "aria-label": ariaLabel,
 }: {
   color: string
-  onChange: (color: string) => void
+  onColorChange: (color: string) => void
   presets: string[]
   shape: VariantProps<typeof colorSwatchVariants>["shape"]
   swatchId: string
@@ -476,7 +476,7 @@ function ColorSwatchEditor({
                 value={selected}
                 onValueChange={(preset: string | null) => {
                   const hit = presetValues.find((p) => p.preset === preset)
-                  if (hit && hit.hex !== current) onChange(hit.hex)
+                  if (hit && hit.hex !== current) onColorChange(hit.hex)
                 }}
                 className="flex flex-wrap gap-2"
               >
@@ -525,12 +525,12 @@ function ColorSwatchEditor({
                   aria-label="Pick a custom colour"
                   value={(current ?? "#000000").toLowerCase()}
                   onChange={(event) =>
-                    onChange(event.target.value.toUpperCase())
+                    onColorChange(event.target.value.toUpperCase())
                   }
                   className="absolute inset-0 size-full cursor-pointer opacity-0"
                 />
               </label>
-              <HexField value={current} onCommit={onChange} />
+              <HexField value={current} onCommit={onColorChange} />
             </div>
           </div>
         </div>

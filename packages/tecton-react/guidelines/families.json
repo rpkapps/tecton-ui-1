@@ -44,7 +44,7 @@
         "components/tooltip"
       ],
       "checklist": [
-        "The confirm inside an `AlertDialog` is `AlertDialogAction` (with `variant=\"destructive\"`) and the escape is `AlertDialogCancel`; `AlertDialogAction` is a plain `Button` that closes nothing, so the prompt is controlled with `open` / `onOpenChange` and the action's `onClick` closes it once the work is done.",
+        "The confirm inside an `AlertDialog` is `AlertDialogAction` (with `variant=\"destructive\"`) and the escape is `AlertDialogCancel`; both close the prompt on click, so an uncontrolled `AlertDialog` needs no state; to keep it open while async work runs, control it with `open` / `onOpenChange` and call `event.preventBaseUIHandler()` in the action's `onClick`.",
         "Every `Dialog`, `AlertDialog`, `Sheet`, `Drawer`, `Popover`, `HoverCard` and `Tooltip` is a root that renders nothing, holding its trigger and its content part (`DialogContent`, `AlertDialogContent`, `SheetContent`, `DrawerContent`, `PopoverContent`, `HoverCardContent`, `TooltipContent`); a trigger or content outside its root never opens.",
         "Controlled overlays use `open`, `defaultOpen` and `onOpenChange` on the root, `disablePointerDismissal` keeps unsaved input from being dismissed by a backdrop press, and the footer closes with `DialogClose` or `SheetClose` rather than your own state.",
         "Every `Dialog` and `AlertDialog` has a `DialogTitle` / `AlertDialogTitle`, because it is the dialog's accessible name.",

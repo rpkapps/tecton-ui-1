@@ -183,9 +183,18 @@ All on `apps/v4/registry/bases/base/ui/*`:
   toggle's `hover:bg-muted`, are removed so `style-tecton.css` sets the Tecton ones; the default tab
   list sits on `bg-card`. `Tabs` passes its `orientation` to the Base UI root (upstream only sets
   `data-orientation`, so vertical tabs kept horizontal arrow keys and `aria-orientation`).
+  `TabsList` defaults `activateOnFocus` to `true`: an arrow key selects the tab it moves to, as the
+  React Aria-based Tecton did (Base UI defaults to manual activation; `false` restores it).
+- **`alert-dialog`** — `AlertDialogAction` renders the Base UI `Close` part with `Button` styling
+  (`variant` / `size`, like `AlertDialogCancel`), so a click runs `onClick` and closes the prompt;
+  `event.preventBaseUIHandler()` in `onClick` keeps it open.
 - **`button-group`** — logical corners (`rounded-e-none` / `rounded-s-none`); members overlap by a
   pixel (`-ms-px` / `-mt-px`) so each draws a complete ring.
-- **`sidebar`** — `SidebarProvider` gains `cookieName?: string | false` (default `"sidebar_state"`)
+- **`sidebar`** — `side` is physical, so the container border (`ltr:` / `rtl:` pairs of logical
+  borders), the rail's offcanvas position and resize cursors (`group-data-[side=…]` variants and
+  arbitrary cursor values, which the CLI's RTL transform leaves alone) stay on the same physical
+  edge in both directions; `SidebarMenuButton` opens its collapsed tooltip away from the sidebar's
+  side (a `SidebarSideContext` set by `Sidebar`) instead of a hard-coded `right`. `SidebarProvider` gains `cookieName?: string | false` (default `"sidebar_state"`)
   and `keyboardShortcut?: string | false` (default `"b"`), so several micro frontends on one page
   do not share a cookie or all toggle on one Ctrl/Cmd+B. Tested in
   `src/tecton/__tests__/sidebar-provider.test.tsx`.
@@ -204,7 +213,8 @@ All on `apps/v4/registry/bases/base/ui/*`:
   differed between server and browser, a hydration mismatch).
 - **`pagination`** — `PaginationLink` is a plain `a` with `buttonVariants`: a Base UI `Button`
   rendering an `a` keeps `role="button"`, so the page links were announced as buttons. This and
-  the `calendar` and `tabs` behaviour are tested in `src/tecton/__tests__/overlay-behaviour.test.tsx`.
+  the `calendar`, `tabs`, `alert-dialog` and `sidebar` behaviour are tested in
+  `src/tecton/__tests__/overlay-behaviour.test.tsx`.
 - **`sonner`** — `richColors` and outlined status colours (`--success-*`, `--info-*`,
   `--warning-*`, `--error-*`), matching `alert` with `appearance="outline"`.
 

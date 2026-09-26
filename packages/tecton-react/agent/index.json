@@ -426,7 +426,7 @@
     "names": "alert dialog alert dialog alert dialog trigger alert dialog content alert dialog header alert dialog media alert dialog title alert dialog description alert dialog footer alert dialog cancel alert dialog action alert dialog overlay alert dialog portal",
     "useWhen": "An action destroys or overwrites something: delete, discard, overwrite, revoke. The consequence cannot be undone once the user continues. The user must answer: there is no outside-press dismissal and no close button.",
     "routed": "a confirmation before a destructive action a confirmation of a destructive action a confirmation the user has to answer",
-    "do": "Compose `AlertDialog` > `AlertDialogTrigger render={<Button variant=\"destructive\" />}` + `AlertDialogContent`, as for `Dialog`. End the title with a question and state the consequence in `AlertDialogDescription`. `AlertDialogCancel` closes the prompt; `AlertDialogAction` is a plain `Button`, so control the dialog with `open` / `onOpenChange` and close it in the action's `onClick` once the work is done. Colour the confirm with `variant=\"destructive\"` on `AlertDialogAction` — never with `className` — and use `size=\"sm\"` on `AlertDialogContent` with `AlertDialogMedia` for a short, centred prompt."
+    "do": "Compose `AlertDialog` > `AlertDialogTrigger render={<Button variant=\"destructive\" />}` + `AlertDialogContent`, as for `Dialog`. End the title with a question and state the consequence in `AlertDialogDescription`. Put the work in `onClick` on `AlertDialogAction`: the action and `AlertDialogCancel` both close the prompt on click, so an uncontrolled `AlertDialog` needs no state. Keep the prompt open while async work runs (a pending state, an error to show) by controlling it with `open` / `onOpenChange`, calling `event.preventBaseUIHandler()` in the action's `onClick` and closing it with `setOpen(false)` once the work is done. Colour the confirm with `variant=\"destructive\"` on `AlertDialogAction` — never with `className` — and use `size=\"sm\"` on `AlertDialogContent` with `AlertDialogMedia` for a short, centred prompt."
    },
    "notFor": [
     {
@@ -456,7 +456,7 @@
     "AlertDialogPortal"
    ],
    "aliases": [],
-   "tokens": 1101
+   "tokens": 1164
   },
   {
    "id": "app-finder",
@@ -1342,9 +1342,9 @@
    "summary": "The colour *is* the data: a horizon colour, a facies legend, a theme token, a series fill.",
    "fields": {
     "names": "color swatch color swatch",
-    "useWhen": "The colour *is* the data: a horizon colour, a facies legend, a theme token, a series fill. The colour needs its name or its value beside it: `label` and `value`. The user has to change it: `onChange` turns the swatch into a button with a preset and hex picker.",
+    "useWhen": "The colour *is* the data: a horizon colour, a facies legend, a theme token, a series fill. The colour needs its name or its value beside it: `label` and `detail`. The user has to change it: `onColorChange` turns the swatch into a button with a preset and hex picker.",
     "routed": "a colour value shown as a square",
-    "do": "Pass any CSS colour to `color` — a hex, `rgb()`, `hsl()`, `oklch()`, a keyword or `var(--tecton-color-accent-lime-fill)`; a translucent colour shows over a checkerboard. Size with `size=\"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\"` (12 to 48 px) and pick the corner with `shape=\"square\" | \"rounded\" | \"circle\"`. Name what the colour stands for with `aria-label` (or a string `label`); the swatch appends the colour's English name itself (\"Sandstone, vibrant orange\"), and `colorName` replaces that name. Make it editable with `onChange`, which receives `#RRGGBB`, and replace the Tecton accent presets with `presets` when the palette is domain-specific; the presets are a radio group, so an arrow key selects as it moves."
+    "do": "Pass any CSS colour to `color` — a hex, `rgb()`, `hsl()`, `oklch()`, a keyword or `var(--tecton-color-accent-lime-fill)`; a translucent colour shows over a checkerboard. Size with `size=\"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\"` (12 to 48 px) and pick the corner with `shape=\"square\" | \"rounded\" | \"circle\"`. Name what the colour stands for with `aria-label` (or a string `label`); the swatch appends the colour's English name itself (\"Sandstone, vibrant orange\"), and `colorName` replaces that name. Make it editable with `onColorChange`, which receives `#RRGGBB`, and replace the Tecton accent presets with `presets` when the palette is domain-specific; the presets are a radio group, so an arrow key selects as it moves."
    },
    "notFor": [
     {
@@ -1369,7 +1369,7 @@
     "ColorSwatch"
    ],
    "aliases": [],
-   "tokens": 841
+   "tokens": 849
   },
   {
    "id": "combobox",
@@ -3016,7 +3016,7 @@
     "names": "sidebar sidebar sidebar provider sidebar trigger sidebar rail sidebar inset sidebar header sidebar content sidebar footer sidebar group sidebar group label sidebar menu sidebar menu item sidebar menu button sidebar menu action sidebar menu badge sidebar menu sub sidebar menu sub item sidebar menu sub button use sidebar",
     "useWhen": "The application's navigation rail: groups of destinations, an active row, a collapse control. The rail has to survive a phone — below the mobile breakpoint `Sidebar` renders itself as a `Sheet`. Rows carry a count, a per-row action or a second level of destinations.",
     "routed": "a navigation rail the user collapses and expands",
-    "do": "Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it. Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `render={<a href=\"/wells\" />}` (or the router's `Link`) for a destination and `isActive` for the current one. Pick the behaviour with `collapsible=\"offcanvas\" | \"icon\" | \"none\"` and the surface with `variant=\"sidebar\" | \"floating\" | \"inset\"`. Pass `tooltip=\"Wells\"` (or `TooltipContent` props) on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone."
+    "do": "Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it. Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `render={<a href=\"/wells\" />}` (or the router's `Link`) for a destination and `isActive` for the current one. Pick the behaviour with `collapsible=\"offcanvas\" | \"icon\" | \"none\"` and the surface with `variant=\"sidebar\" | \"floating\" | \"inset\"`. Treat `side=\"left\" | \"right\"` as the physical edge: in a right-to-left layout pass `side=\"right\"` (from `useDirection()`) to keep the sidebar at the start; the border, the rail and the collapsed tooltips follow the side. Pass `tooltip=\"Wells\"` (or `TooltipContent` props) on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone."
    },
    "notFor": [
     {
@@ -3059,7 +3059,7 @@
     "useSidebar"
    ],
    "aliases": [],
-   "tokens": 1138
+   "tokens": 1194
   },
   {
    "id": "skeleton",
@@ -3345,7 +3345,7 @@
     "names": "tabs tabs tabs list tabs trigger tabs content tabs list variants",
     "useWhen": "A page or panel has two to about six sections the user moves between without navigating away. Exactly one section is visible at a time and each one is a real chunk of content. The strip belongs to the surface it sits on: a page header, a panel, a card.",
     "routed": "sections that replace each other in the same space switching between sibling views of the same page sections of content the user moves between sections the reader chooses by name switching between sibling sections of one page switching between panels of content switching between panels of content",
-    "do": "Match every `TabsTrigger` to its `TabsContent` by `value`, the same string on both. Select with `defaultValue` / `value` and `onValueChange`, which receives the tab's value. Choose the strip with `TabsList` `variant=\"default\" | \"line\"`, and a side strip with `orientation=\"vertical\"` on `Tabs`. Give `TabsList` an `aria-label` when no nearby heading names the set; disable one tab with `disabled`."
+    "do": "Match every `TabsTrigger` to its `TabsContent` by `value`, the same string on both. Select with `defaultValue` / `value` and `onValueChange`, which receives the tab's value. Choose the strip with `TabsList` `variant=\"default\" | \"line\"`, and a side strip with `orientation=\"vertical\"` on `Tabs`. Give `TabsList` an `aria-label` when no nearby heading names the set; disable one tab with `disabled`. Let the arrow keys select: moving focus to a tab shows its panel. Pass `activateOnFocus={false}` to `TabsList` when a panel is costly to render, so the arrow keys only move focus and Enter or Space selects."
    },
    "notFor": [
     {
@@ -3369,7 +3369,7 @@
     "tabsListVariants"
    ],
    "aliases": [],
-   "tokens": 939
+   "tokens": 991
   },
   {
    "id": "textarea",
@@ -3726,7 +3726,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2937
+   "tokens": 2929
   },
   {
    "id": "theming",

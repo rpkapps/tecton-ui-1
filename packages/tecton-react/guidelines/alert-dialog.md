@@ -21,19 +21,20 @@ related: [Dialog]
 
 - Compose `AlertDialog` > `AlertDialogTrigger render={<Button variant="destructive" />}` + `AlertDialogContent`, as for `Dialog`.
 - End the title with a question and state the consequence in `AlertDialogDescription`.
-- `AlertDialogCancel` closes the prompt; `AlertDialogAction` is a plain `Button`, so control the dialog with `open` / `onOpenChange` and close it in the action's `onClick` once the work is done.
+- Put the work in `onClick` on `AlertDialogAction`: the action and `AlertDialogCancel` both close the prompt on click, so an uncontrolled `AlertDialog` needs no state.
+- Keep the prompt open while async work runs (a pending state, an error to show) by controlling it with `open` / `onOpenChange`, calling `event.preventBaseUIHandler()` in the action's `onClick` and closing it with `setOpen(false)` once the work is done.
 - Colour the confirm with `variant="destructive"` on `AlertDialogAction` — never with `className` — and use `size="sm"` on `AlertDialogContent` with `AlertDialogMedia` for a short, centred prompt.
 
 ## Don't
 
-### HIGH Expecting AlertDialogAction to close the prompt
+### HIGH A plain Button as the confirm
 
 Wrong:
 
 ```tsx
 <AlertDialogFooter>
   <AlertDialogCancel>Cancel</AlertDialogCancel>
-  <AlertDialogAction variant="destructive" onClick={deleteWell}>Delete</AlertDialogAction>
+  <Button variant="destructive" onClick={deleteWell}>Delete</Button>
 </AlertDialogFooter>
 ```
 
@@ -42,13 +43,11 @@ Correct:
 ```tsx
 <AlertDialogFooter>
   <AlertDialogCancel>Cancel</AlertDialogCancel>
-  <AlertDialogAction variant="destructive" onClick={() => deleteWell().then(() => setOpen(false))}>
-    Delete
-  </AlertDialogAction>
+  <AlertDialogAction variant="destructive" onClick={deleteWell}>Delete</AlertDialogAction>
 </AlertDialogFooter>
 ```
 
-`AlertDialogAction` is a `Button` with no link to the dialog state, so on an uncontrolled `AlertDialog` the action runs and the prompt stays on screen over the deleted record.
+A `Button` has no link to the dialog state, so on an uncontrolled `AlertDialog` the work runs and the prompt stays on screen over the deleted record; `AlertDialogAction` closes the prompt after its `onClick`, like `AlertDialogCancel`.
 
 ### HIGH The React Aria trigger wrapping the prompt
 

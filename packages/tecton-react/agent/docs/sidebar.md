@@ -23,6 +23,7 @@ import { Sidebar, SidebarProvider, SidebarTrigger, SidebarRail, SidebarInset, Si
 - Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it.
 - Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `render={<a href="/wells" />}` (or the router's `Link`) for a destination and `isActive` for the current one.
 - Pick the behaviour with `collapsible="offcanvas" | "icon" | "none"` and the surface with `variant="sidebar" | "floating" | "inset"`.
+- Treat `side="left" | "right"` as the physical edge: in a right-to-left layout pass `side="right"` (from `useDirection()`) to keep the sidebar at the start; the border, the rail and the collapsed tooltips follow the side.
 - Pass `tooltip="Wells"` (or `TooltipContent` props) on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone.
 - Mark the current sidebar destination with a filled icon, not by background alone: the active row's `SidebarMenuButton` has `isActive` and its Tecton glyph (`@tecton/react/icons`) takes `variant="filled"`; the other rows' glyphs stay `variant="outlined"`. `SidebarMenuButton`'s own `variant` is only `default` | `outline`.
 - Announce the current sidebar page to screen readers, not only by colour (`aria-current="page"` alongside `isActive`).

@@ -93,7 +93,7 @@ export default function TokensMatrix() {
                   size="lg"
                   shape="square"
                   label={token.name.slice(group.length + 1) || token.name}
-                  value={
+                  detail={
                     <>
                       <span>{token.value}</span>
                       <span className="ml-2 opacity-60">

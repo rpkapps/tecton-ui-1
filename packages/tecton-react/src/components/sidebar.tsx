@@ -44,6 +44,10 @@ type SidebarContextProps = {
 
 const SidebarContext = React.createContext<SidebarContextProps | null>(null)
 
+// The physical side of the enclosing desktop `Sidebar`, so a collapsed menu
+// button opens its tooltip away from the edge the sidebar sits on.
+const SidebarSideContext = React.createContext<"left" | "right">("left")
+
 function useSidebar() {
   const context = React.useContext(SidebarContext)
   if (!context) {
@@ -254,10 +258,12 @@ function Sidebar({
         data-side={side}
         className={cn(
           "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
-          // Adjust the padding for floating and inset variants.
+          // Adjust the padding for floating and inset variants. `side` is
+          // physical, so the border stays on the inner edge in both directions
+          // (the RTL transform would turn a border-r / border-l into logical).
           variant === "floating" || variant === "inset"
             ? "p-2 group-data-[collapsible=icon]:w-[calc(var(--sidebar-width-icon)+(--spacing(4))+2px)]"
-            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:border-e group-data-[side=right]:border-s",
+            : "group-data-[collapsible=icon]:w-(--sidebar-width-icon) group-data-[side=left]:ltr:border-e group-data-[side=right]:ltr:border-s group-data-[side=left]:rtl:border-s group-data-[side=right]:rtl:border-e",
           className
         )}
         {...props}
@@ -267,7 +273,9 @@ function Sidebar({
           data-slot="sidebar-inner"
           className="flex size-full flex-col bg-sidebar group-data-[variant=floating]:rounded-lg group-data-[variant=floating]:shadow-sm group-data-[variant=floating]:ring-1 group-data-[variant=floating]:ring-sidebar-border"
         >
-          {children}
+          <SidebarSideContext.Provider value={side}>
+            {children}
+          </SidebarSideContext.Provider>
         </div>
       </div>
     </div>
@@ -313,11 +321,15 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
       title="Toggle Sidebar"
       className={cn(
         "absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:start-1/2 after:w-[2px] hover:after:bg-sidebar-border sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
-        "in-data-[side=left]:cursor-w-resize rtl:in-data-[side=left]:cursor-e-resize in-data-[side=right]:cursor-e-resize rtl:in-data-[side=right]:cursor-w-resize",
-        "[[data-side=left][data-state=collapsed]_&]:cursor-e-resize rtl:[[data-side=left][data-state=collapsed]_&]:cursor-w-resize [[data-side=right][data-state=collapsed]_&]:cursor-w-resize rtl:[[data-side=right][data-state=collapsed]_&]:cursor-e-resize",
-        "group-data-[collapsible=offcanvas]:translate-x-0 rtl:group-data-[collapsible=offcanvas]:-translate-x-0 group-data-[collapsible=offcanvas]:after:start-full hover:group-data-[collapsible=offcanvas]:bg-sidebar",
-        "[[data-side=left][data-collapsible=offcanvas]_&]:-end-2",
-        "[[data-side=right][data-collapsible=offcanvas]_&]:-start-2",
+        // `side` is physical, so are the resize cursors and the offcanvas
+        // positions: written so that the RTL transform keeps them physical
+        // (it swaps `cursor-w-resize` and mirrors `left-*` / `right-*` unless
+        // the variant names `data-[side=…]`).
+        "in-data-[side=left]:cursor-[w-resize] in-data-[side=right]:cursor-[e-resize]",
+        "[[data-side=left][data-state=collapsed]_&]:cursor-[e-resize] [[data-side=right][data-state=collapsed]_&]:cursor-[w-resize]",
+        "group-data-[collapsible=offcanvas]:translate-x-0 rtl:group-data-[collapsible=offcanvas]:-translate-x-0 hover:group-data-[collapsible=offcanvas]:bg-sidebar",
+        "group-data-[side=left]:group-data-[collapsible=offcanvas]:-right-2 group-data-[side=left]:group-data-[collapsible=offcanvas]:after:left-full",
+        "group-data-[side=right]:group-data-[collapsible=offcanvas]:-left-2 group-data-[side=right]:group-data-[collapsible=offcanvas]:after:right-full",
         className
       )}
       {...props}
@@ -533,6 +545,7 @@ function SidebarMenuButton({
     tooltip?: string | React.ComponentProps<typeof TooltipContent>
   } & VariantProps<typeof sidebarMenuButtonVariants>) {
   const { isMobile, state } = useSidebar()
+  const sidebarSide = React.useContext(SidebarSideContext)
   const comp = useRender({
     defaultTagName: "button",
     props: mergeProps<"button">(
@@ -564,7 +577,7 @@ function SidebarMenuButton({
     <Tooltip>
       {comp}
       <TooltipContent
-        side="right"
+        side={sidebarSide === "right" ? "left" : "right"}
         align="center"
         hidden={state !== "collapsed" || isMobile}
         {...tooltip}

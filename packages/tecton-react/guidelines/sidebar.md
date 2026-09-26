@@ -24,6 +24,7 @@ related: [AppShell, Sheet, TreeView]
 - Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it.
 - Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `render={<a href="/wells" />}` (or the router's `Link`) for a destination and `isActive` for the current one.
 - Pick the behaviour with `collapsible="offcanvas" | "icon" | "none"` and the surface with `variant="sidebar" | "floating" | "inset"`.
+- Treat `side="left" | "right"` as the physical edge: in a right-to-left layout pass `side="right"` (from `useDirection()`) to keep the sidebar at the start; the border, the rail and the collapsed tooltips follow the side.
 - Pass `tooltip="Wells"` (or `TooltipContent` props) on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone.
 
 ## Don't

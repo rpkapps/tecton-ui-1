@@ -63,9 +63,9 @@ looked up. Every line is a condition that has to hold in that file.
 - **Menu items act through `onClick`** — on the `DropdownMenuItem` or
   `ContextMenuItem` itself (never `onAction` or `onSelect`); a `CommandItem`
   acts through `onSelect`.
-- **The `AlertDialog` confirm closes the prompt** — `AlertDialogAction` is a
-  plain `Button`, so the dialog is controlled with `open` / `onOpenChange` and
-  the action's `onClick` closes it; `AlertDialogCancel` closes by itself.
+- **The `AlertDialog` confirm is `AlertDialogAction`** — it runs its `onClick`
+  and closes the prompt, like `AlertDialogCancel`; a plain `Button` in the
+  footer leaves an uncontrolled prompt open.
 - **Shortcuts are the application's** — Tecton binds no keys; a `Kbd`, a
   `DropdownMenuShortcut` or a `shortcut` prop only shows a key the application
   handles itself.

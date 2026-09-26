@@ -113,6 +113,12 @@ Give `TabsList` an `aria-label` when no nearby heading names the set; disable on
 
 <Do>
 
+Let the arrow keys select: moving focus to a tab shows its panel. Pass `activateOnFocus={false}` to `TabsList` when a panel is costly to render, so the arrow keys only move focus and Enter or Space selects.
+
+</Do>
+
+<Do>
+
 Use `Tabs` only for sections the user can visit in any order, never for steps that must be done in sequence.
 
 </Do>
