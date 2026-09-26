@@ -180,7 +180,7 @@ index 9bdfea8e..1d998339 100644
      },
      defaultVariants: {
 diff --git a/apps/v4/registry/bases/base/ui/calendar.tsx b/apps/v4/registry/bases/base/ui/calendar.tsx
-index 568ab9fd..a0eb65b5 100644
+index 568ab9fd..a6a95715 100644
 --- a/apps/v4/registry/bases/base/ui/calendar.tsx
 +++ b/apps/v4/registry/bases/base/ui/calendar.tsx
 @@ -1,6 +1,7 @@
@@ -215,7 +215,102 @@ index 568ab9fd..a0eb65b5 100644
  function Calendar({
    className,
    classNames,
-@@ -73,7 +91,7 @@ function Calendar({
+@@ -27,6 +45,80 @@ function Calendar({
+ }) {
+   const defaultClassNames = getDefaultClassNames()
+ 
++  // DayPicker renders each part as <components.X />, so a part whose
++  // function changes identity remounts: inline parts would rebuild the
++  // whole grid on every render (a click, an arrow key) and drop the
++  // focused day. Keep them stable across renders.
++  const calendarComponents = React.useMemo(
++    (): React.ComponentProps<typeof DayPicker>["components"] => ({
++      Root: ({ className, rootRef, ...props }) => {
++        return (
++          <div
++            data-slot="calendar"
++            ref={rootRef}
++            className={cn(className)}
++            {...props}
++          />
++        )
++      },
++      Chevron: ({ className, orientation, ...props }) => {
++        if (orientation === "left") {
++          return (
++            <IconPlaceholder
++              lucide="ChevronLeftIcon"
++              tabler="IconChevronLeft"
++              hugeicons="ArrowLeftIcon"
++              phosphor="CaretLeftIcon"
++              remixicon="RiArrowLeftSLine"
++              className={cn("cn-rtl-flip size-4", className)}
++              {...props}
++            />
++          )
++        }
++
++        if (orientation === "right") {
++          return (
++            <IconPlaceholder
++              lucide="ChevronRightIcon"
++              tabler="IconChevronRight"
++              hugeicons="ArrowRightIcon"
++              phosphor="CaretRightIcon"
++              remixicon="RiArrowRightSLine"
++              className={cn("cn-rtl-flip size-4", className)}
++              {...props}
++            />
++          )
++        }
++
++        return (
++          <IconPlaceholder
++            lucide="ChevronDownIcon"
++            tabler="IconChevronDown"
++            hugeicons="ArrowDownIcon"
++            phosphor="CaretDownIcon"
++            remixicon="RiArrowDownSLine"
++            className={cn("size-4", className)}
++            {...props}
++          />
++        )
++      },
++      DayButton: ({ ...props }) => (
++        <CalendarDayButton locale={locale} {...props} />
++      ),
++      WeekNumber: ({ children, ...props }) => {
++        return (
++          <td {...props}>
++            <div className="flex size-(--cell-size) items-center justify-center text-center">
++              {children}
++            </div>
++          </td>
++        )
++      },
++      ...components,
++    }),
++    [locale, components]
++  )
++
+   return (
+     <DayPicker
+       showOutsideDays={showOutsideDays}
+@@ -40,7 +132,12 @@ function Calendar({
+       locale={locale}
+       formatters={{
+         formatMonthDropdown: (date) =>
+-          date.toLocaleString(locale?.code, { month: "short" }),
++          // The grid is Gregorian; some locales (ar-SA) default to another
++          // calendar in Intl and would name the wrong months.
++          date.toLocaleString(locale?.code, {
++            month: "short",
++            calendar: "gregory",
++          }),
+         ...formatters,
+       }}
+       classNames={{
+@@ -73,7 +170,7 @@ function Calendar({
            defaultClassNames.dropdowns
          ),
          dropdown_root: cn(
@@ -224,7 +319,7 @@ index 568ab9fd..a0eb65b5 100644
            defaultClassNames.dropdown_root
          ),
          dropdown: cn(
-@@ -81,10 +99,9 @@ function Calendar({
+@@ -81,10 +178,9 @@ function Calendar({
            defaultClassNames.dropdown
          ),
          caption_label: cn(
@@ -238,6 +333,94 @@ index 568ab9fd..a0eb65b5 100644
            defaultClassNames.caption_label
          ),
          month_grid: cn("w-full border-collapse", defaultClassNames.month_grid),
+@@ -133,72 +229,7 @@ function Calendar({
+         hidden: cn("invisible", defaultClassNames.hidden),
+         ...classNames,
+       }}
+-      components={{
+-        Root: ({ className, rootRef, ...props }) => {
+-          return (
+-            <div
+-              data-slot="calendar"
+-              ref={rootRef}
+-              className={cn(className)}
+-              {...props}
+-            />
+-          )
+-        },
+-        Chevron: ({ className, orientation, ...props }) => {
+-          if (orientation === "left") {
+-            return (
+-              <IconPlaceholder
+-                lucide="ChevronLeftIcon"
+-                tabler="IconChevronLeft"
+-                hugeicons="ArrowLeftIcon"
+-                phosphor="CaretLeftIcon"
+-                remixicon="RiArrowLeftSLine"
+-                className={cn("cn-rtl-flip size-4", className)}
+-                {...props}
+-              />
+-            )
+-          }
+-
+-          if (orientation === "right") {
+-            return (
+-              <IconPlaceholder
+-                lucide="ChevronRightIcon"
+-                tabler="IconChevronRight"
+-                hugeicons="ArrowRightIcon"
+-                phosphor="CaretRightIcon"
+-                remixicon="RiArrowRightSLine"
+-                className={cn("cn-rtl-flip size-4", className)}
+-                {...props}
+-              />
+-            )
+-          }
+-
+-          return (
+-            <IconPlaceholder
+-              lucide="ChevronDownIcon"
+-              tabler="IconChevronDown"
+-              hugeicons="ArrowDownIcon"
+-              phosphor="CaretDownIcon"
+-              remixicon="RiArrowDownSLine"
+-              className={cn("size-4", className)}
+-              {...props}
+-            />
+-          )
+-        },
+-        DayButton: ({ ...props }) => (
+-          <CalendarDayButton locale={locale} {...props} />
+-        ),
+-        WeekNumber: ({ children, ...props }) => {
+-          return (
+-            <td {...props}>
+-              <div className="flex size-(--cell-size) items-center justify-center text-center">
+-                {children}
+-              </div>
+-            </td>
+-          )
+-        },
+-        ...components,
+-      }}
++      components={calendarComponents}
+       {...props}
+     />
+   )
+@@ -220,9 +251,12 @@ function CalendarDayButton({
+ 
+   return (
+     <Button
++      ref={ref}
+       variant="ghost"
+       size="icon"
+-      data-day={day.date.toLocaleDateString(locale?.code)}
++      data-day={day.date.toLocaleDateString(locale?.code, {
++        calendar: "gregory",
++      })}
+       data-selected-single={
+         modifiers.selected &&
+         !modifiers.range_start &&
 diff --git a/apps/v4/registry/bases/base/ui/combobox.tsx b/apps/v4/registry/bases/base/ui/combobox.tsx
 index 8fc7ae79..feec2362 100644
 --- a/apps/v4/registry/bases/base/ui/combobox.tsx
@@ -597,6 +780,52 @@ index 06c96abf..04b3865d 100644
  
 -export { Input }
 +export { Input, inputVariants }
+diff --git a/apps/v4/registry/bases/base/ui/pagination.tsx b/apps/v4/registry/bases/base/ui/pagination.tsx
+index b1f8b1df..4880c73b 100644
+--- a/apps/v4/registry/bases/base/ui/pagination.tsx
++++ b/apps/v4/registry/bases/base/ui/pagination.tsx
+@@ -1,7 +1,7 @@
+ import * as React from "react"
+ import { cn } from "cn"
+ 
+-import { Button } from "@/registry/bases/base/ui/button"
++import { Button, buttonVariants } from "@/registry/bases/base/ui/button"
+ import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
+ 
+ function Pagination({ className, ...props }: React.ComponentProps<"nav">) {
+@@ -47,20 +47,19 @@ function PaginationLink({
+   size = "icon",
+   ...props
+ }: PaginationLinkProps) {
++  // A plain anchor with the button look: a Base UI Button rendering an `a`
++  // keeps role="button", so the page links would be announced as buttons.
+   return (
+-    <Button
+-      variant={isActive ? "outline" : "ghost"}
+-      size={size}
+-      className={cn("cn-pagination-link", className)}
+-      nativeButton={false}
+-      render={
+-        <a
+-          aria-current={isActive ? "page" : undefined}
+-          data-slot="pagination-link"
+-          data-active={isActive}
+-          {...props}
+-        />
+-      }
++    <a
++      aria-current={isActive ? "page" : undefined}
++      data-slot="pagination-link"
++      data-active={isActive}
++      className={cn(
++        buttonVariants({ variant: isActive ? "outline" : "ghost", size }),
++        "cn-pagination-link",
++        className
++      )}
++      {...props}
+     />
+   )
+ }
 diff --git a/apps/v4/registry/bases/base/ui/popover.tsx b/apps/v4/registry/bases/base/ui/popover.tsx
 index 808aa62d..bf903bda 100644
 --- a/apps/v4/registry/bases/base/ui/popover.tsx
@@ -940,10 +1169,18 @@ index 0c2e93ea..1071e005 100644
      />
    )
 diff --git a/apps/v4/registry/bases/base/ui/tabs.tsx b/apps/v4/registry/bases/base/ui/tabs.tsx
-index 2b39bbfe..5f2edb6e 100644
+index 2b39bbfe..6c21f600 100644
 --- a/apps/v4/registry/bases/base/ui/tabs.tsx
 +++ b/apps/v4/registry/bases/base/ui/tabs.tsx
-@@ -27,7 +27,7 @@ const tabsListVariants = cva(
+@@ -13,6 +13,7 @@ function Tabs({
+     <TabsPrimitive.Root
+       data-slot="tabs"
+       data-orientation={orientation}
++      orientation={orientation}
+       className={cn(
+         "cn-tabs group/tabs flex data-horizontal:flex-col",
+         className
+@@ -27,7 +28,7 @@ const tabsListVariants = cva(
    {
      variants: {
        variant: {
@@ -952,7 +1189,7 @@ index 2b39bbfe..5f2edb6e 100644
          line: "cn-tabs-list-variant-line gap-1 bg-transparent",
        },
      },
-@@ -57,10 +57,9 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
+@@ -57,10 +58,9 @@ function TabsTrigger({ className, ...props }: TabsPrimitive.Tab.Props) {
      <TabsPrimitive.Tab
        data-slot="tabs-trigger"
        className={cn(

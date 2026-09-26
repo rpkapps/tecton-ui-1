@@ -169,7 +169,7 @@ function FdaComparisonTable({
                   onOpen(row.original)
                 }}
                 className={cn(
-                  "hover:bg-accent/60 data-selected:bg-accent",
+                  "hover:bg-accent/60 data-[selected]:bg-accent",
                   onOpen && "cursor-pointer"
                 )}
               >

@@ -95,7 +95,7 @@
         "Every icon-only `Button`, `Toggle`, `ToggleGroupItem` and `InputGroupButton` has an `aria-label`, and every icon or `Spinner` inside a control carries `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"`.",
         "Every `DropdownMenuItem` and `ContextMenuItem` acts through `onClick` (never `onAction` or Radix's `onSelect`), and a dangerous entry is marked `variant=\"destructive\"` rather than `text-red-*`.",
         "`DropdownMenu` and `ContextMenu` are roots holding a trigger (`DropdownMenuTrigger render={<Button />}`, `ContextMenuTrigger`) and a `DropdownMenuContent` / `ContextMenuContent`; check marks come from `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) or a `DropdownMenuRadioGroup` (`value` / `onValueChange`).",
-        "Navigation is a `Link` with an `href` (and `external` instead of hand-written `target` and `rel`) or a `Button` with `render={<a href=\"…\" />}` and `nativeButton={false}`, never an anchor nested inside a `Button` and never a `Link` that only runs a handler.",
+        "Navigation is a `Link` with an `href` (and `external` instead of hand-written `target` and `rel`) or a `LinkButton` when it should look like a button, never an anchor nested inside a `Button` or a `Button` with `render={<a />}` (it keeps `role=\"button\"`) and never a `Link` that only runs a handler.",
         "A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `open`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.",
         "Copy-to-clipboard is `CopyButton value={…}` with `onCopied`, with no `onClick` passed to it, no icon child and no hand-written clipboard handler."
       ]

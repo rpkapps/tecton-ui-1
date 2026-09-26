@@ -9,7 +9,7 @@ import {
 } from "lucide-react"
 
 import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { buttonVariants } from "@tecton/react/components/button"
 import {
   Card,
   CardContent,
@@ -78,21 +78,16 @@ function Home() {
               CLI.
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <Button
-                size="lg"
-                nativeButton={false}
-                render={<Link to="/docs" />}
-              >
+              <Link to="/docs" className={buttonVariants({ size: "lg" })}>
                 Get started <ArrowRightIcon data-icon="inline-end" />
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                nativeButton={false}
-                render={<Link to="/docs/$" params={{ _splat: "components" }} />}
+              </Link>
+              <Link
+                to="/docs/$"
+                params={{ _splat: "components" }}
+                className={buttonVariants({ variant: "outline", size: "lg" })}
               >
                 Browse components
-              </Button>
+              </Link>
             </div>
             <div className="flex w-fit items-center gap-2 rounded-md border bg-card px-3 py-1.5 font-mono text-xs text-muted-foreground">
               <TerminalIcon className="size-3.5" />
@@ -138,14 +133,12 @@ function Home() {
               verified by <code>pnpm tokens:check</code>.
             </p>
           </div>
-          <Button
-            variant="secondary"
-            size="sm"
-            nativeButton={false}
-            render={<Link to="/themes" />}
+          <Link
+            to="/themes"
+            className={buttonVariants({ variant: "secondary", size: "sm" })}
           >
             Open the theme page
-          </Button>
+          </Link>
         </section>
       </div>
     </div>

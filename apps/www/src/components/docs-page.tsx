@@ -1,9 +1,10 @@
 import * as React from "react"
+import { cn } from "cn"
 import { Link, notFound } from "@tanstack/react-router"
 import browserCollections from "fumadocs-mdx:collections/browser"
 import { ArrowLeftIcon, ArrowRightIcon, ExternalLinkIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { buttonVariants } from "@tecton/react/components/button"
 
 import { DocsTableOfContents } from "@/components/docs-toc"
 import { getMDXComponents } from "@/components/mdx"
@@ -91,28 +92,34 @@ function Content({
               <div className="docs-nav flex items-center gap-2">
                 <div className="ml-auto flex gap-2">
                   {previous && (
-                    <Button
-                      variant="secondary"
-                      size="icon-sm"
-                      className="extend-touch-target size-8 shadow-none md:size-7"
+                    <Link
+                      to={previous.url}
                       aria-label="Previous"
-                      nativeButton={false}
-                      render={<Link to={previous.url} />}
+                      className={cn(
+                        buttonVariants({
+                          variant: "secondary",
+                          size: "icon-sm",
+                        }),
+                        "extend-touch-target size-8 shadow-none md:size-7"
+                      )}
                     >
                       <ArrowLeftIcon />
-                    </Button>
+                    </Link>
                   )}
                   {next && (
-                    <Button
-                      variant="secondary"
-                      size="icon-sm"
-                      className="extend-touch-target size-8 shadow-none md:size-7"
+                    <Link
+                      to={next.url}
                       aria-label="Next"
-                      nativeButton={false}
-                      render={<Link to={next.url} />}
+                      className={cn(
+                        buttonVariants({
+                          variant: "secondary",
+                          size: "icon-sm",
+                        }),
+                        "extend-touch-target size-8 shadow-none md:size-7"
+                      )}
                     >
                       <ArrowRightIcon />
-                    </Button>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -125,30 +132,30 @@ function Content({
             {(links?.doc || links?.api) && (
               <div className="flex items-center gap-2 pt-2">
                 {links.doc && (
-                  <Button
-                    variant="secondary"
-                    size="xs"
-                    className="shadow-none"
-                    nativeButton={false}
-                    render={
-                      <a href={links.doc} target="_blank" rel="noreferrer" />
-                    }
+                  <a
+                    href={links.doc}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cn(
+                      buttonVariants({ variant: "secondary", size: "xs" }),
+                      "shadow-none"
+                    )}
                   >
                     Docs <ExternalLinkIcon data-icon="inline-end" />
-                  </Button>
+                  </a>
                 )}
                 {links.api && (
-                  <Button
-                    variant="secondary"
-                    size="xs"
-                    className="shadow-none"
-                    nativeButton={false}
-                    render={
-                      <a href={links.api} target="_blank" rel="noreferrer" />
-                    }
+                  <a
+                    href={links.api}
+                    target="_blank"
+                    rel="noreferrer"
+                    className={cn(
+                      buttonVariants({ variant: "secondary", size: "xs" }),
+                      "shadow-none"
+                    )}
                   >
                     API Reference <ExternalLinkIcon data-icon="inline-end" />
-                  </Button>
+                  </a>
                 )}
               </div>
             )}
@@ -158,26 +165,26 @@ function Content({
           </div>
           <div className="hidden h-16 w-full items-center gap-2 px-4 sm:flex sm:px-0">
             {previous && (
-              <Button
-                variant="secondary"
-                size="sm"
-                className="shadow-none"
-                nativeButton={false}
-                render={<Link to={previous.url} />}
+              <Link
+                to={previous.url}
+                className={cn(
+                  buttonVariants({ variant: "secondary", size: "sm" }),
+                  "shadow-none"
+                )}
               >
                 <ArrowLeftIcon data-icon="inline-start" /> {previous.title}
-              </Button>
+              </Link>
             )}
             {next && (
-              <Button
-                variant="secondary"
-                size="sm"
-                className="ml-auto shadow-none"
-                nativeButton={false}
-                render={<Link to={next.url} />}
+              <Link
+                to={next.url}
+                className={cn(
+                  buttonVariants({ variant: "secondary", size: "sm" }),
+                  "ml-auto shadow-none"
+                )}
               >
                 {next.title} <ArrowRightIcon data-icon="inline-end" />
-              </Button>
+              </Link>
             )}
           </div>
         </div>

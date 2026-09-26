@@ -50,12 +50,12 @@ Nest `TreeViewItem`s for a fixed tree. For data, pass `items` and a render funct
 
 ## Styling
 
-Rows carry `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and `data-level` (depth from 1), and are a `group/tree-item`. Hover and focus are `:hover` and `:focus-visible`, so a control revealed on hover reads:
+Rows carry `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and `data-level` (depth from 1), and are a `group/tree-item`. They are presence attributes; write the selected state as `data-[selected]:…`, since shadcn's `data-selected:` variant matches only `"true"`. Hover and focus are `:hover` and `:focus-visible`, so a control revealed on hover reads:
 
 ```tsx
 <TreeViewAction
   aria-label="Actions"
-  className="opacity-0 group-hover/tree-item:opacity-100 group-focus-within/tree-item:opacity-100 group-data-selected/tree-item:opacity-100"
+  className="opacity-0 group-hover/tree-item:opacity-100 group-focus-within/tree-item:opacity-100 group-data-[selected]/tree-item:opacity-100"
 />
 ```
 
@@ -104,7 +104,7 @@ Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (
 
 <Do>
 
-Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`).
+Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `"true"`.
 
 </Do>
 
@@ -268,5 +268,5 @@ A 24 px icon button; a vertical ellipsis unless you pass children.
 | --- | --- | --- | --- |
 | `visible` | `boolean` | `true` | Current visibility; pressed while `false`. |
 | `onVisibleChange` | `(visible: boolean) => void` | - | Called with the next value. |
-| `name` | `string` | row label | What the toggle hides, for the name "Hide {name}". |
+| `name` | `string` | row label | What the toggle hides, for the name `Hide {name}`. |
 | `disabled` | `boolean` | `false` | Disables the toggle. |

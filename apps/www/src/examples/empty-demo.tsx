@@ -1,7 +1,8 @@
 // Synced from shadcn/ui (apps/v4/examples/base/empty-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+import { cn } from "cn"
 import { ArrowUpRightIcon, FolderCodeIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button, buttonVariants } from "@tecton/react/components/button"
 import {
   Empty,
   EmptyContent,
@@ -28,15 +29,15 @@ export default function EmptyDemo() {
         <Button>Create Project</Button>
         <Button variant="outline">Import Project</Button>
       </EmptyContent>
-      <Button
-        variant="link"
-        render={<a href="#" />}
-        className="text-muted-foreground"
-        size="sm"
-        nativeButton={false}
+      <a
+        href="#"
+        className={cn(
+          buttonVariants({ variant: "link", size: "sm" }),
+          "text-muted-foreground"
+        )}
       >
         Learn More <ArrowUpRightIcon />
-      </Button>
+      </a>
     </Empty>
   )
 }

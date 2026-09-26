@@ -181,7 +181,8 @@ All on `apps/v4/registry/bases/base/ui/*`:
   outline / filled / text; `inputVariants`, `textareaVariants`, `selectTriggerVariants`).
 - **`tabs`, `toggle`** — the hard-coded active-tab colours, indicator colour and ring, and the
   toggle's `hover:bg-muted`, are removed so `style-tecton.css` sets the Tecton ones; the default tab
-  list sits on `bg-card`.
+  list sits on `bg-card`. `Tabs` passes its `orientation` to the Base UI root (upstream only sets
+  `data-orientation`, so vertical tabs kept horizontal arrow keys and `aria-orientation`).
 - **`button-group`** — logical corners (`rounded-e-none` / `rounded-s-none`); members overlap by a
   pixel (`-ms-px` / `-mt-px`) so each draws a complete ring.
 - **`sidebar`** — `SidebarProvider` gains `cookieName?: string | false` (default `"sidebar_state"`)
@@ -193,6 +194,17 @@ All on `apps/v4/registry/bases/base/ui/*`:
 - **`input-otp`, `calendar`** — classes upstream passes outside a `className` (`containerClassName`,
   DayPicker `classNames`) move into a `cva` (`inputOTPContainerVariants`,
   `calendarDropdownRootVariants`, `calendarCaptionLabelVariants`) so the build inlines them.
+- **`calendar`** — the DayPicker `components` (`Root`, `Chevron`, `DayButton`, `WeekNumber`) are
+  memoised on `locale` and `components`: upstream builds them inline, so every render gave DayPicker
+  new component types and it remounted the grid, which dropped focus on each click and arrow key.
+  `CalendarDayButton` passes its `ref` to the `Button` (upstream's `base` version drops it, so the
+  day DayPicker marks focused never got DOM focus and the arrow keys did nothing).
+  The month dropdown and the day buttons' `data-day` format with `calendar: "gregory"`, since some
+  locales (`ar-SA`) default to a non-Gregorian calendar in `Intl` and named the wrong months (and
+  differed between server and browser, a hydration mismatch).
+- **`pagination`** — `PaginationLink` is a plain `a` with `buttonVariants`: a Base UI `Button`
+  rendering an `a` keeps `role="button"`, so the page links were announced as buttons. This and
+  the `calendar` and `tabs` behaviour are tested in `src/tecton/__tests__/overlay-behaviour.test.tsx`.
 - **`sonner`** — `richColors` and outlined status colours (`--success-*`, `--info-*`,
   `--warning-*`, `--error-*`), matching `alert` with `appearance="outline"`.
 

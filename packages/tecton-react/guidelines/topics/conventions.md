@@ -82,9 +82,10 @@ part, never on the root.
 ## render
 
 `render` swaps the element a part renders while keeping its behaviour and
-styles: `render={<a href="/wells" />}` on a `Button` (add `nativeButton={false}`),
-`Badge`, `Item` or `BreadcrumbLink`; `render={<Link to="/wells" />}` for a
-router link. It also accepts a function `(props) => <a {...props} />`. There is
+styles: `render={<a href="/wells" />}` on a `Badge`, `Item` or
+`BreadcrumbLink`; `render={<Link to="/wells" />}` for a router link. A link
+that looks like a button is a `LinkButton` (`@tecton/react/tecton/link`), not a
+`Button` with `render={<a />}`, which keeps `role="button"`. It also accepts a function `(props) => <a {...props} />`. There is
 no `asChild`.
 
 ## State attributes
@@ -96,7 +97,10 @@ focused menu or list item), `data-disabled`, `data-side`, and
 `data-starting-style` / `data-ending-style` for transitions. In Tailwind that
 is `data-open:…`, `data-checked:…`; hover and focus are `:hover` and
 `:focus-visible`. Radix's `data-[state=open]` and React Aria's
-`data-[selected=true]` match nothing.
+`data-[selected=true]` match nothing. One exception: shadcn's `data-selected:`
+variant matches only `data-selected="true"` (the command palette), so style the
+`data-selected` presence attribute of `TreeView` rows and `Chip`s with
+`data-[selected]:…` (`group-data-[selected]/tree-item:…`).
 
 ## Providers, portals, shortcuts
 

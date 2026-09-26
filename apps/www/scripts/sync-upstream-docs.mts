@@ -201,6 +201,33 @@ function replaceEachOrThrow(
   return parts.reduce((out, part, index) => out + to[index - 1] + part)
 }
 
+/**
+ * `<Button variant="link" render={<a href="#" />} … nativeButton={false}>`
+ * → `<a href="#" className={cn(buttonVariants(…), …)}>`, with the imports.
+ */
+function linkWithButtonLook(code: string, label: string): string {
+  const pattern =
+    /<Button\n(\s*)variant="link"\n\s*render=\{<a href="#" \/>\}\n\s*className="text-muted-foreground"\n\s*size="sm"\n\s*nativeButton=\{false\}\n(\s*)>([\s\S]*?)\n(\s*)<\/Button>/
+  if (!pattern.test(code)) {
+    throw new Error(`${label}: no link-styled Button to rewrite; update the rewrite`)
+  }
+  code = code.replace(
+    pattern,
+    (_match, attrIndent: string, _close: string, children: string, end: string) =>
+      `<a\n${attrIndent}href="#"\n${attrIndent}className={cn(\n${attrIndent}  buttonVariants({ variant: "link", size: "sm" }),\n${attrIndent}  "text-muted-foreground"\n${attrIndent})}\n${end}>${children}\n${end}</a>`
+  )
+  code = replaceOrThrow(
+    code,
+    'import { Button } from "@tecton/react/components/button"',
+    'import { Button, buttonVariants } from "@tecton/react/components/button"',
+    label
+  )
+  return code.replace(
+    /^((?:"use client"\n\n)?(?:import \* as React from "react"\n)?)/,
+    '$1import { cn } from "cn"\n'
+  )
+}
+
 // Per-example source fixes for upstream demos that assume the vega look.
 const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
   // Upstream's docs site serves its components at /components; ours at /docs/components.
@@ -246,6 +273,32 @@ const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
       '<CardFooter className="justify-end gap-2 border-t">',
       "card-edge-to-edge"
     ),
+  // Upstream renders the popover trigger as the addon `div` with a button
+  // inside it: two nested controls, and Base UI reports the non-button
+  // trigger. The addon stays a wrapper and the button is the trigger.
+  "input-group-button": (code) =>
+    replaceOrThrow(
+      code,
+      `          <PopoverTrigger render={<InputGroupAddon />}>
+            <InputGroupButton variant="secondary" size="icon-xs">
+              <InfoIcon />
+            </InputGroupButton>
+          </PopoverTrigger>`,
+      `          <InputGroupAddon>
+            <PopoverTrigger
+              render={<InputGroupButton variant="secondary" size="icon-xs" />}
+              aria-label="Connection details"
+            >
+              <InfoIcon />
+            </PopoverTrigger>
+          </InputGroupAddon>`,
+      "input-group-button"
+    ),
+  // A `Button` rendering an `a` keeps `role="button"` (upstream's own button
+  // page says so): the "Learn More" link takes the button look from
+  // `buttonVariants` on a plain anchor instead.
+  "empty-demo": (code) => linkWithButtonLook(code, "empty-demo"),
+  "empty-rtl": (code) => linkWithButtonLook(code, "empty-rtl"),
   // Upstream gives all four inputs `id="radius"` while the labels point at
   // `radius-x` / `radius-y`: the labels name nothing and the id repeats.
   "collapsible-settings": (code) => {

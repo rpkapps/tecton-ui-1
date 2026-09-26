@@ -40,11 +40,14 @@ export default function InputGroupButtonExample() {
       </InputGroup>
       <InputGroup className="[--radius:9999px]">
         <Popover>
-          <PopoverTrigger render={<InputGroupAddon />}>
-            <InputGroupButton variant="secondary" size="icon-xs">
+          <InputGroupAddon>
+            <PopoverTrigger
+              render={<InputGroupButton variant="secondary" size="icon-xs" />}
+              aria-label="Connection details"
+            >
               <InfoIcon />
-            </InputGroupButton>
-          </PopoverTrigger>
+            </PopoverTrigger>
+          </InputGroupAddon>
           <PopoverContent
             align="start"
             className="flex flex-col gap-1 rounded-xl text-sm"

@@ -2,13 +2,14 @@
 "use client"
 
 import * as React from "react"
+import { cn } from "cn"
 import { ArrowUpRightIcon, FolderCodeIcon } from "lucide-react"
 
 import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Button } from "@tecton/react/components/button"
+import { Button, buttonVariants } from "@tecton/react/components/button"
 import {
   Empty,
   EmptyContent,
@@ -69,16 +70,16 @@ export function EmptyRtl() {
         <Button>{t.createProject}</Button>
         <Button variant="outline">{t.importProject}</Button>
       </EmptyContent>
-      <Button
-        variant="link"
-        render={<a href="#" />}
-        className="text-muted-foreground"
-        size="sm"
-        nativeButton={false}
+      <a
+        href="#"
+        className={cn(
+          buttonVariants({ variant: "link", size: "sm" }),
+          "text-muted-foreground"
+        )}
       >
         {t.learnMore}{" "}
         <ArrowUpRightIcon className="rtl:rotate-270" data-icon="inline-end" />
-      </Button>
+      </a>
     </Empty>
   )
 }

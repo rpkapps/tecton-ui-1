@@ -8,7 +8,7 @@ import {
   SmartphoneIcon,
   TabletIcon,
 } from "lucide-react"
-import { Button } from "@tecton/react/components/button"
+import { Button, buttonVariants } from "@tecton/react/components/button"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -220,39 +220,31 @@ export function BlockViewer({
               </ToggleGroupItem>
             </ToggleGroup>
             <Separator orientation="vertical" className="mx-0.5" />
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              className="size-[22px] rounded-sm"
-              nativeButton={false}
-              render={
-                <a
-                  href={`/view/${block.name}`}
-                  target="_blank"
-                  rel="noreferrer"
-                />
-              }
+            <a
+              href={`/view/${block.name}`}
+              target="_blank"
+              rel="noreferrer"
               aria-label="Open in a new tab"
+              className={cn(
+                buttonVariants({ variant: "ghost", size: "icon-xs" }),
+                "size-[22px] rounded-sm"
+              )}
             >
               <FullscreenIcon className="size-3.5" />
-            </Button>
+            </a>
           </div>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            className="lg:hidden"
-            nativeButton={false}
-            render={
-              <a
-                href={`/view/${block.name}`}
-                target="_blank"
-                rel="noreferrer"
-              />
-            }
+          <a
+            href={`/view/${block.name}`}
+            target="_blank"
+            rel="noreferrer"
             aria-label="Open in a new tab"
+            className={cn(
+              buttonVariants({ variant: "outline", size: "icon-sm" }),
+              "lg:hidden"
+            )}
           >
             <FullscreenIcon />
-          </Button>
+          </a>
           <Separator orientation="vertical" className="mx-1 hidden lg:block" />
           <CopyButton
             value={command}

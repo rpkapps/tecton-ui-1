@@ -1,7 +1,7 @@
 import * as React from "react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 
-import { Button } from "@tecton/react/components/button"
+import { buttonVariants } from "@tecton/react/components/button"
 import {
   PageHeader,
   PageHeaderActions,
@@ -70,17 +70,16 @@ function BlocksIndex() {
           </PageHeaderDescription>
         </PageHeaderContent>
         <PageHeaderActions>
-          <Button size="sm" nativeButton={false} render={<a href="#blocks" />}>
+          <a href="#blocks" className={buttonVariants({ size: "sm" })}>
             Browse blocks
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            nativeButton={false}
-            render={<Link to="/docs/$" params={{ _splat: "cli" }} />}
+          </a>
+          <Link
+            to="/docs/$"
+            params={{ _splat: "cli" }}
+            className={buttonVariants({ variant: "ghost", size: "sm" })}
           >
             Using the CLI
-          </Button>
+          </Link>
         </PageHeaderActions>
       </PageHeader>
 

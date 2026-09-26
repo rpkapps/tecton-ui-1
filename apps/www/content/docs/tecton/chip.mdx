@@ -82,7 +82,7 @@ Turn on removal with `onRemove` on the group: every chip gets its remove button,
 
 <Do>
 
-Take the look from the Badge axes: `variant`, `appearance="outline"`, `size`. `className` is for layout only; style state with `data-selected`, `data-disabled`, `:hover` and `:focus-visible`.
+Take the look from the Badge axes: `variant`, `appearance="outline"`, `size`. `className` is for layout only; style state with `data-[selected]:` (shadcn's `data-selected:` matches only `"true"`), `data-disabled`, `:hover` and `:focus-visible`.
 
 </Do>
 
@@ -233,7 +233,7 @@ The chip's `className` is merged over `badgeVariants`, so `bg-orange-500` replac
 | `size` | `"default" \| "md" \| "lg"` | `"default"` | Height 20 / 24 / 28 px. |
 | `disabled` | `boolean` | `false` | Disables the chip. |
 
-Style states with `data-selected` and `data-disabled` on a chip and `data-empty` on the list.
+Style states with `data-selected` and `data-disabled` on a chip and `data-empty` on the list. They are presence attributes; write the selected state as `data-[selected]:…`, since shadcn's `data-selected:` variant matches only `"true"`.
 
 ### ChipRemove
 
