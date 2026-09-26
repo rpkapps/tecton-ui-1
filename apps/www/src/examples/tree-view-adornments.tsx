@@ -23,9 +23,9 @@ export default function TreeViewAdornments() {
     <TreeView
       aria-label="Horizons"
       className="max-w-sm"
-      defaultExpandedKeys={["horizons"]}
+      defaultExpanded={["horizons"]}
     >
-      <TreeViewItem id="horizons" textValue="Horizons">
+      <TreeViewItem value="horizons">
         <TreeViewItemContent
           kind="folder"
           endAdornment={<TreeViewAction aria-label="More" />}
@@ -35,9 +35,8 @@ export default function TreeViewAdornments() {
         {horizons.map((horizon) => (
           <TreeViewItem
             key={horizon.id}
-            id={horizon.id}
-            textValue={horizon.name}
-            isHidden={hidden.has(horizon.id)}
+            value={horizon.id}
+            hidden={hidden.has(horizon.id)}
           >
             <TreeViewItemContent
               colorTag={
@@ -54,8 +53,8 @@ export default function TreeViewAdornments() {
               endAdornment={
                 <>
                   <TreeViewVisibilityToggle
-                    isVisible={!hidden.has(horizon.id)}
-                    onChange={(visible) =>
+                    visible={!hidden.has(horizon.id)}
+                    onVisibleChange={(visible) =>
                       setHidden((prev) => {
                         const next = new Set(prev)
                         if (visible) next.delete(horizon.id)
@@ -64,7 +63,11 @@ export default function TreeViewAdornments() {
                       })
                     }
                   />
-                  <TreeViewAction aria-label={`${horizon.name} actions`} />
+                  <TreeViewAction
+                    aria-label={`${horizon.name} actions`}
+                    // Revealed while the row is hovered or holds focus.
+                    className="opacity-0 group-focus-within/tree-item:opacity-100 group-hover/tree-item:opacity-100"
+                  />
                 </>
               }
             >

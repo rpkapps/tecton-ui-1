@@ -10,20 +10,20 @@ export default function TreeViewDemo() {
       aria-label="Project"
       className="max-w-sm"
       selectionMode="single"
-      defaultExpandedKeys={["wells"]}
+      defaultExpanded={["wells"]}
     >
-      <TreeViewItem id="wells" textValue="Wells">
+      <TreeViewItem value="wells">
         <TreeViewItemContent kind="folder">Wells</TreeViewItemContent>
-        <TreeViewItem id="a12" textValue="34/10-A-12">
+        <TreeViewItem value="a12">
           <TreeViewItemContent>34/10-A-12</TreeViewItemContent>
         </TreeViewItem>
-        <TreeViewItem id="b3" textValue="34/10-B-3">
+        <TreeViewItem value="b3">
           <TreeViewItemContent>34/10-B-3</TreeViewItemContent>
         </TreeViewItem>
       </TreeViewItem>
-      <TreeViewItem id="horizons" textValue="Horizons">
+      <TreeViewItem value="horizons">
         <TreeViewItemContent kind="folder">Horizons</TreeViewItemContent>
-        <TreeViewItem id="balder" textValue="Top Balder">
+        <TreeViewItem value="balder">
           <TreeViewItemContent>Top Balder</TreeViewItemContent>
         </TreeViewItem>
       </TreeViewItem>
