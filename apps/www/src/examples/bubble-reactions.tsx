@@ -60,7 +60,7 @@ export function BubbleReactionsDemo() {
           <Button
             variant="ghost"
             size="xs"
-            onClick={() => toast.success("You clicked yes, running command...")}
+            onPress={() => toast.success("You clicked yes, running command...")}
           >
             Yes, run it
           </Button>

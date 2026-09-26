@@ -2,8 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { FolderCodeIcon } from "lucide-react"
-import { ArrowUpRightIcon } from "lucide-react"
+import { ArrowUpRightIcon, FolderCodeIcon } from "lucide-react"
 
 import {
   useTranslation,

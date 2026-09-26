@@ -15,11 +15,11 @@ For full-featured chat interfaces, use the [`Message`](/docs/components/message)
 
 ## Usage
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import { Bubble, BubbleContent, BubbleReactions } from "@tecton/react/components/bubble"
 ```
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Bubble>
   <BubbleContent>
     I checked the registry output and removed the stale route.
@@ -58,6 +58,10 @@ BubbleGroup
 - Bubbles size to their content, up to 80% of the container width
 - Polymorphic content via `render` for link and button bubbles
 - Customizable styling through the `className` prop on every part
+
+## Variants
+
+Use `variant` to change the visual treatment of the bubble.
 
 | Variant       | Description                                            |
 | ------------- | ------------------------------------------------------ |
@@ -113,7 +117,7 @@ You can turn a bubble into a link or button by using the `render` prop on `Bubbl
   previewClassName="h-auto theme-blue"
 />
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
 
 export function BubbleLinkDemo() {
@@ -171,7 +175,7 @@ Pair a bubble with a [`Popover`](/docs/components/popover) to surface more infor
 
 Reactions render as a row of emoji. A screen reader reads each glyph with no context, and counters like `+8` are announced as "plus eight". Group the row as a single image with a descriptive `aria-label` so it announces once. `role="img"` also hides the individual emoji from assistive tech, so no `aria-hidden` is needed.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <BubbleReactions role="img" aria-label="Reactions: thumbs up, fire, and 8 more">
   <span>👍</span>
   <span>🔥</span>
@@ -181,7 +185,7 @@ Reactions render as a row of emoji. A screen reader reads each glyph with no con
 
 When reactions are interactive, render buttons instead and give icon-only buttons an `aria-label`.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <BubbleReactions>
   <Button aria-label="Thumbs up" variant="secondary" size="icon-xs">
     <ThumbsUpIcon />
@@ -193,7 +197,7 @@ When reactions are interactive, render buttons instead and give icon-only button
 
 When a bubble is clickable, render it as a real `<button>` or `<a>` with the `render` prop so it is focusable and exposes the correct role. `BubbleContent` ships a visible focus ring for interactive elements, and the accessible name comes from the bubble text. No extra label is needed.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Bubble variant="muted" align="end">
   <BubbleContent
     render={(props) => <button {...props} type="button" onClick={onReply} />}

@@ -120,7 +120,7 @@ export function DrawerDemo() {
           </RadioGroup>
         </div>
         <DrawerFooter>
-          <Button onClick={handleConfirm} className="h-[34px]">
+          <Button onPress={handleConfirm} className="h-[34px]">
             Confirm Delivery Time
           </Button>
           <DrawerClose render={<Button variant="outline" />}>

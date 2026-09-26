@@ -40,27 +40,27 @@ export function CollapsibleSettings() {
               <FieldLabel htmlFor="radius-x" className="sr-only">
                 Radius X
               </FieldLabel>
-              <Input id="radius" placeholder="0" defaultValue={0} />
+              <Input id="radius-x" placeholder="0" defaultValue={0} />
             </Field>
             <Field>
               <FieldLabel htmlFor="radius-y" className="sr-only">
                 Radius Y
               </FieldLabel>
-              <Input id="radius" placeholder="0" defaultValue={0} />
+              <Input id="radius-y" placeholder="0" defaultValue={0} />
             </Field>
             <CollapsibleContent>
               <div className="col-span-full grid grid-cols-subgrid gap-2">
                 <Field>
-                  <FieldLabel htmlFor="radius-x" className="sr-only">
+                  <FieldLabel htmlFor="radius-x-2" className="sr-only">
                     Radius X
                   </FieldLabel>
-                  <Input id="radius" placeholder="0" defaultValue={0} />
+                  <Input id="radius-x-2" placeholder="0" defaultValue={0} />
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="radius-y" className="sr-only">
+                  <FieldLabel htmlFor="radius-y-2" className="sr-only">
                     Radius Y
                   </FieldLabel>
-                  <Input id="radius" placeholder="0" defaultValue={0} />
+                  <Input id="radius-y-2" placeholder="0" defaultValue={0} />
                 </Field>
               </div>
             </CollapsibleContent>

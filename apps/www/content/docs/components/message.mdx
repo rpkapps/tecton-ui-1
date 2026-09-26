@@ -15,13 +15,13 @@ For AI apps, you can render reasoning steps, tool calls and assistant messages u
 
 ## Usage
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import { Avatar, AvatarFallback, AvatarImage } from "@tecton/react/components/avatar"
 import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
 import { Message, MessageAvatar, MessageContent } from "@tecton/react/components/message"
 ```
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Message>
   <MessageAvatar>
     <Avatar>
@@ -128,7 +128,7 @@ Place message-level actions in `MessageFooter`, such as copy, retry, or feedback
 
 Action buttons in `MessageFooter` are usually icon-only, so give each one an `aria-label`.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <MessageFooter>
   <Button variant="ghost" size="icon" aria-label="Copy">
     <CopyIcon />
@@ -140,7 +140,7 @@ Action buttons in `MessageFooter` are usually icon-only, so give each one an `ar
 
 For in-progress messages, use a [`Marker`](/docs/components/marker) with `role="status"` so assistive tech announces the update as it appears.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Message>
   <Marker role="status">
     <MarkerIcon>

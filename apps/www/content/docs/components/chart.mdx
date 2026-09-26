@@ -28,7 +28,7 @@ We use [Recharts](https://recharts.org/) under the hood.
 
 We designed the `chart` component with composition in mind. **You build your charts using Recharts components and only bring in custom components, such as `ChartTooltip`, when and where you need it**.
 
-```tsx showLineNumbers /ChartContainer/ /ChartTooltipContent/
+```tsx lineNumbers /ChartContainer/ /ChartTooltipContent/
 import { Bar, BarChart } from "recharts"
 
 import { ChartContainer, ChartTooltipContent } from "@tecton/react/components/chart"
@@ -65,7 +65,7 @@ The following data represents the number of desktop and mobile users for each mo
 
 </Callout>
 
-```tsx title="components/example-chart.tsx" showLineNumbers
+```tsx title="components/example-chart.tsx" lineNumbers
 const chartData = [
   { month: "January", desktop: 186, mobile: 80 },
   { month: "February", desktop: 305, mobile: 200 },
@@ -80,17 +80,17 @@ const chartData = [
 
 The chart config holds configuration for the chart. This is where you place human-readable strings, such as labels, icons and color tokens for theming.
 
-```tsx title="components/example-chart.tsx" showLineNumbers
+```tsx title="components/example-chart.tsx" lineNumbers
 import { type ChartConfig } from "@tecton/react/components/chart"
 
 const chartConfig = {
   desktop: {
     label: "Desktop",
-    color: "#2563eb",
+    color: "var(--chart-1)",
   },
   mobile: {
     label: "Mobile",
-    color: "#60a5fa",
+    color: "var(--chart-2)",
   },
 } satisfies ChartConfig
 ```
@@ -126,7 +126,7 @@ import { Bar, BarChart, CartesianGrid } from "recharts"
 
 <Step>Add the `CartesianGrid` component to your chart.</Step>
 
-```tsx showLineNumbers {3}
+```tsx lineNumbers {3}
 <ChartContainer config={chartConfig} className="min-h-[200px] w-full">
   <BarChart accessibilityLayer data={chartData}>
     <CartesianGrid vertical={false} />
@@ -157,7 +157,7 @@ import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 
 <Step>Add the `XAxis` component to your chart.</Step>
 
-```tsx showLineNumbers {4-10}
+```tsx lineNumbers {4-10}
 <ChartContainer config={chartConfig} className="h-[200px] w-full">
   <BarChart accessibilityLayer data={chartData}>
     <CartesianGrid vertical={false} />
@@ -197,7 +197,7 @@ import { ChartTooltip, ChartTooltipContent } from "@tecton/react/components/char
 
 <Step>Add the components to your chart.</Step>
 
-```tsx showLineNumbers {11}
+```tsx lineNumbers {11}
 <ChartContainer config={chartConfig} className="h-[200px] w-full">
   <BarChart accessibilityLayer data={chartData}>
     <CartesianGrid vertical={false} />
@@ -238,7 +238,7 @@ import { ChartLegend, ChartLegendContent } from "@tecton/react/components/chart"
 
 <Step>Add the components to your chart.</Step>
 
-```tsx showLineNumbers {12}
+```tsx lineNumbers {12}
 <ChartContainer config={chartConfig} className="h-[200px] w-full">
   <BarChart accessibilityLayer data={chartData}>
     <CartesianGrid vertical={false} />
@@ -278,7 +278,7 @@ It is intentionally decoupled from chart data.
 
 This allows you to share config and color tokens between charts. It can also work independently for cases where your data or color tokens live remotely or in a different format.
 
-```tsx showLineNumbers /ChartConfig/
+```tsx lineNumbers /ChartConfig/
 import { Monitor } from "lucide-react"
 
 import { type ChartConfig } from "@tecton/react/components/chart"
@@ -288,7 +288,7 @@ const chartConfig = {
     label: "Desktop",
     icon: Monitor,
     // A color like 'hsl(220, 98%, 61%)' or 'var(--color-name)'
-    color: "#2563eb",
+    color: "var(--chart-1)",
     // OR a theme object with 'light' and 'dark' keys
     theme: {
       light: "#2563eb",
@@ -308,7 +308,7 @@ Charts have built-in support for theming. You can use css variables (recommended
 
 <Step>Define your colors in your css file</Step>
 
-```css title="app/globals.css" showLineNumbers
+```css title="app/globals.css" lineNumbers
 @layer base {
   :root {
     --chart-1: oklch(0.646 0.222 41.116);
@@ -324,7 +324,7 @@ Charts have built-in support for theming. You can use css variables (recommended
 
 <Step>Add the color to your `chartConfig`</Step>
 
-```tsx title="components/example-chart.tsx" showLineNumbers
+```tsx title="components/example-chart.tsx" lineNumbers
 const chartConfig = {
   desktop: {
     label: "Desktop",
@@ -343,11 +343,11 @@ const chartConfig = {
 
 You can also define your colors directly in the chart config. Use the color format you prefer.
 
-```tsx title="components/example-chart.tsx" showLineNumbers
+```tsx title="components/example-chart.tsx" lineNumbers
 const chartConfig = {
   desktop: {
     label: "Desktop",
-    color: "#2563eb",
+    color: "var(--chart-1)",
   },
   mobile: {
     label: "Mobile",
@@ -376,7 +376,7 @@ To use the theme colors in your chart, reference the colors using the format `va
 
 #### Chart Data
 
-```tsx title="components/example-chart.tsx" showLineNumbers
+```tsx title="components/example-chart.tsx" lineNumbers
 const chartData = [
   { browser: "chrome", visitors: 275, fill: "var(--color-chrome)" },
   { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
@@ -429,7 +429,7 @@ Colors are automatically referenced from the chart config.
 
 To use a custom key for tooltip label and names, use the `labelKey` and `nameKey` props.
 
-```tsx showLineNumbers /browser/
+```tsx lineNumbers /browser/
 const chartData = [
   { browser: "chrome", visitors: 187, fill: "var(--color-chrome)" },
   { browser: "safari", visitors: 200, fill: "var(--color-safari)" },
@@ -478,7 +478,7 @@ Colors are automatically referenced from the chart config.
 
 To use a custom key for legend names, use the `nameKey` prop.
 
-```tsx showLineNumbers /browser/
+```tsx lineNumbers /browser/
 const chartData = [
   { browser: "chrome", visitors: 187, fill: "var(--color-chrome)" },
   { browser: "safari", visitors: 200, fill: "var(--color-safari)" },

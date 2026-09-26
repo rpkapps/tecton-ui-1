@@ -8,18 +8,18 @@ import { Button } from "@tecton/react/components/button"
 export function SonnerTypes() {
   return (
     <div className="flex flex-wrap gap-2">
-      <Button variant="outline" onClick={() => toast("Event has been created")}>
+      <Button variant="outline" onPress={() => toast("Event has been created")}>
         Default
       </Button>
       <Button
         variant="outline"
-        onClick={() => toast.success("Event has been created")}
+        onPress={() => toast.success("Event has been created")}
       >
         Success
       </Button>
       <Button
         variant="outline"
-        onClick={() =>
+        onPress={() =>
           toast.info("Be at the area 10 minutes before the event time")
         }
       >
@@ -27,7 +27,7 @@ export function SonnerTypes() {
       </Button>
       <Button
         variant="outline"
-        onClick={() =>
+        onPress={() =>
           toast.warning("Event start time cannot be earlier than 8am")
         }
       >
@@ -35,13 +35,13 @@ export function SonnerTypes() {
       </Button>
       <Button
         variant="outline"
-        onClick={() => toast.error("Event has not been created")}
+        onPress={() => toast.error("Event has not been created")}
       >
         Error
       </Button>
       <Button
         variant="outline"
-        onClick={() => {
+        onPress={() => {
           toast.promise<{ name: string }>(
             () =>
               new Promise((resolve) =>

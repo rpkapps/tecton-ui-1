@@ -18,7 +18,7 @@ The carousel component is built using the [Embla Carousel](https://www.embla-car
 
 ## Usage
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import {
   Carousel,
   CarouselContent,
@@ -28,7 +28,7 @@ import {
 } from "@tecton/react/components/carousel"
 ```
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Carousel>
   <CarouselContent>
     <CarouselItem>...</CarouselItem>
@@ -59,7 +59,7 @@ To set the size of the items, you can use the `basis` utility class on the `<Car
 
 <ComponentPreview name="carousel-size" />
 
-```tsx showLineNumbers {4-6}
+```tsx lineNumbers {4-6}
 // 33% of the carousel width.
 <Carousel>
   <CarouselContent>
@@ -70,7 +70,7 @@ To set the size of the items, you can use the `basis` utility class on the `<Car
 </Carousel>
 ```
 
-```tsx showLineNumbers {4-6}
+```tsx lineNumbers {4-6}
 // 50% on small screens and 33% on larger screens.
 <Carousel>
   <CarouselContent>
@@ -87,7 +87,7 @@ To set the spacing between the items, we use a `pl-[VALUE]` utility on the `<Car
 
 <ComponentPreview name="carousel-spacing" />
 
-```tsx showLineNumbers /-ml-4/ /pl-4/
+```tsx lineNumbers /-ml-4/ /pl-4/
 <Carousel>
   <CarouselContent className="-ml-4">
     <CarouselItem className="pl-4">...</CarouselItem>
@@ -97,7 +97,7 @@ To set the spacing between the items, we use a `pl-[VALUE]` utility on the `<Car
 </Carousel>
 ```
 
-```tsx showLineNumbers /-ml-2/ /pl-2/ /md:-ml-4/ /md:pl-4/
+```tsx lineNumbers /-ml-2/ /pl-2/ /md:-ml-4/ /md:pl-4/
 <Carousel>
   <CarouselContent className="-ml-2 md:-ml-4">
     <CarouselItem className="pl-2 md:pl-4">...</CarouselItem>
@@ -116,7 +116,7 @@ Use the `orientation` prop to set the orientation of the carousel.
   previewClassName="h-[32rem]"
 />
 
-```tsx showLineNumbers /vertical | horizontal/
+```tsx lineNumbers /vertical | horizontal/
 <Carousel orientation="vertical | horizontal">
   <CarouselContent>
     <CarouselItem>...</CarouselItem>
@@ -130,7 +130,7 @@ Use the `orientation` prop to set the orientation of the carousel.
 
 You can pass options to the carousel using the `opts` prop. See the [Embla Carousel docs](https://www.embla-carousel.com/docs/api/options) for more information.
 
-```tsx showLineNumbers {2-5}
+```tsx lineNumbers {2-5}
 <Carousel
   opts={{
     align: "start",
@@ -154,7 +154,7 @@ Use a state and the `setApi` props to get an instance of the carousel API.
   previewClassName="sm:h-[32rem]"
 />
 
-```tsx showLineNumbers {1,4,22}
+```tsx lineNumbers {1,4,22}
 import { type CarouselApi } from "@tecton/react/components/carousel"
 
 export function Example() {
@@ -191,7 +191,7 @@ export function Example() {
 
 You can listen to events using the api instance from `setApi`.
 
-```tsx showLineNumbers {1,4-14,16}
+```tsx lineNumbers {1,4-14,16}
 import { type CarouselApi } from "@tecton/react/components/carousel"
 
 export function Example() {
@@ -225,7 +225,7 @@ See the [Embla Carousel docs](https://www.embla-carousel.com/docs/api/events) fo
 
 You can use the `plugins` prop to add plugins to the carousel.
 
-```ts showLineNumbers {1,6-10}
+```ts lineNumbers {1,6-10}
 import Autoplay from "embla-carousel-autoplay"
 
 export function Example() {
@@ -260,7 +260,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 When localizing the carousel for RTL languages, you need to set the `direction` option in the `opts` prop to match the text direction. This ensures the carousel scrolls in the correct direction.
 
-```tsx showLineNumbers {2-5}
+```tsx lineNumbers {2-5}
 <Carousel
   dir={dir}
   opts={{

@@ -10,7 +10,7 @@ export function SonnerPosition() {
     <div className="flex flex-wrap justify-center gap-2">
       <Button
         variant="outline"
-        onClick={() =>
+        onPress={() =>
           toast("Event has been created", { position: "top-left" })
         }
       >
@@ -18,7 +18,7 @@ export function SonnerPosition() {
       </Button>
       <Button
         variant="outline"
-        onClick={() =>
+        onPress={() =>
           toast("Event has been created", { position: "top-center" })
         }
       >
@@ -26,7 +26,7 @@ export function SonnerPosition() {
       </Button>
       <Button
         variant="outline"
-        onClick={() =>
+        onPress={() =>
           toast("Event has been created", { position: "top-right" })
         }
       >
@@ -34,7 +34,7 @@ export function SonnerPosition() {
       </Button>
       <Button
         variant="outline"
-        onClick={() =>
+        onPress={() =>
           toast("Event has been created", { position: "bottom-left" })
         }
       >
@@ -42,7 +42,7 @@ export function SonnerPosition() {
       </Button>
       <Button
         variant="outline"
-        onClick={() =>
+        onPress={() =>
           toast("Event has been created", { position: "bottom-center" })
         }
       >
@@ -50,7 +50,7 @@ export function SonnerPosition() {
       </Button>
       <Button
         variant="outline"
-        onClick={() =>
+        onPress={() =>
           toast("Event has been created", { position: "bottom-right" })
         }
       >

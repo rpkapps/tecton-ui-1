@@ -119,7 +119,7 @@ Add an `AttachmentTrigger` to make the whole card open a link or dialog. It fill
   previewClassName="h-auto theme-blue bg-surface dark:bg-background"
 />
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Dialog>
   <Attachment>
     {/* media, content, actions */}
@@ -139,7 +139,7 @@ Add an `AttachmentTrigger` to make the whole card open a link or dialog. It fill
 
 `AttachmentAction` is usually icon-only, so give each one an `aria-label` describing the action and its target.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <AttachmentAction aria-label="Remove sales-dashboard.pdf">
   <XIcon />
 </AttachmentAction>
@@ -149,7 +149,7 @@ Add an `AttachmentTrigger` to make the whole card open a link or dialog. It fill
 
 `AttachmentTrigger` covers the card with no text of its own, so give it an `aria-label` for what activating it does.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <AttachmentTrigger
   render={(props) => (
     <a
