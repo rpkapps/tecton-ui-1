@@ -134,6 +134,9 @@ async function buildJs(entryPoints: Array<string>) {
     sourcesContent: true,
     tsconfig: path.join(pkgRoot, "tsconfig.json"),
     jsx: "automatic",
+    // esbuild inlines NODE_ENV as "development" when it bundles for the browser;
+    // keep the expression so the consumer's bundler decides.
+    define: { "process.env.NODE_ENV": "process.env.NODE_ENV" },
     plugins: [markExternal],
     logLevel: "warning",
   });
