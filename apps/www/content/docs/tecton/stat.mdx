@@ -23,7 +23,7 @@ import {
 <Stat>
   <StatLabel>Cost per barrel</StatLabel>
   <StatValue unit="USD">16.9</StatValue>
-  <StatDelta trend="down">-8% vs. Alternative A</StatDelta>
+  <StatDelta trend="down" tone="positive">-8% vs. Alternative A</StatDelta>
   <StatHelp>Base case, P50 volumes</StatHelp>
 </Stat>
 ```
@@ -52,7 +52,11 @@ Use the `size` prop on `Stat` to scale the value.
 
 ## Delta
 
-Use `StatDelta` with `trend` for an up, down or flat indicator with the matching colour.
+Use `StatDelta` with `trend` for an up, down or flat indicator. The colour follows `tone`, which says whether the change is good news rather than which way it went: it defaults to the trend's (up is `positive`, down `negative`, flat `neutral`), so set it where down is good news — cost, CAPEX, downtime, risk.
+
+```tsx
+<StatDelta trend="down" tone="positive">-8% vs. Alternative A</StatDelta>
+```
 
 <ComponentPreview name="stat-delta" />
 
@@ -227,11 +231,12 @@ The value in the mono font with tabular numbers.
 
 ### StatDelta
 
-Trend indicator with icon.
+Trend indicator with icon. It sets `data-trend` and `data-tone`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `trend` | `"up" \| "down" \| "flat"` | "flat" | Direction and colour. |
+| `trend` | `"up" \| "down" \| "flat"` | "flat" | Which way the number moved; picks the icon. |
+| `tone` | `"positive" \| "negative" \| "neutral"` | from `trend` | Whether the move is good or bad; picks the colour. Defaults to the trend's (up `positive`, down `negative`, flat `neutral`). |
 
 ### StatLabel, StatHelp, StatGroup
 

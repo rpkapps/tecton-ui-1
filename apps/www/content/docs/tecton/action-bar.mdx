@@ -69,7 +69,7 @@ The actions overflow by the [Overflow](/docs/tecton/overflow) rules first, then 
 | Below `lg` (32rem) | 12 selected · Clear |
 | Below `sm` (24rem) | count badge and an X |
 
-A visually hidden `aria-live` region always announces the full text.
+A visually hidden `aria-live` region always announces the full text. It is filled a moment after the bar mounts and after each change, so the first selection is announced too (a screen reader ignores a live region that appears with its content already in it) and a burst of selection changes is announced once.
 
 {/* guidelines:start */}
 

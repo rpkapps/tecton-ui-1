@@ -14,7 +14,7 @@ import { CountBadge } from "@tecton/react/tecton/count-badge"
 
 ```tsx
 <CountBadge count={4} color="destructive">
-  <Button variant="outline" size="icon" aria-label="Notifications">
+  <Button variant="outline" size="icon" aria-label="Notifications, 4 unread">
     <BellIcon />
   </Button>
 </CountBadge>
@@ -189,7 +189,7 @@ The dot variant is an 8 px circle that renders no children by design, so the num
 
 ### CountBadge
 
-Wraps its child in a relatively positioned `span` and renders the badge absolutely.
+Wraps its child in a relatively positioned `span` and renders the badge absolutely. The badge is `aria-hidden`: put the count in the child's accessible name (`aria-label="Notifications, 4 unread"`).
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
