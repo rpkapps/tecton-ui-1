@@ -1,5 +1,5 @@
 import * as React from "react"
-import { fireEvent, render, screen, within } from "@testing-library/react"
+import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
@@ -882,9 +882,8 @@ describe("ComposerCommands", () => {
     ).toEqual(["/acknowledge", "/note", "/about", "/archive", "/new"])
     expect(new Set(options.map((option) => option.id)).size).toBe(5)
 
-    // The textarea names React Aria's own option ids, which the composer
-    // builds from the list's id and the key: a React Aria that changes the
-    // scheme fails here.
+    // The textarea names React Aria's own option ids, read from the
+    // rendered options.
     const active = () =>
       document.getElementById(
         textbox().getAttribute("aria-activedescendant") ?? ""
@@ -934,5 +933,254 @@ describe("ComposerCommands", () => {
     expect(
       screen.getByText("3 Befehle, Pfeiltasten zum Wählen.")
     ).toBeInTheDocument()
+  })
+})
+
+describe("Composer history edges", () => {
+  it("has no history to step through with a historyLimit between 0 and 1", () => {
+    render(<Chat history={["first", "second"]} historyLimit={0.5} />)
+    expect(screen.queryByText(/earlier messages/)).not.toBeInTheDocument()
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+    expect(textbox()).toHaveValue("")
+  })
+
+  it("floors a fractional historyLimit", async () => {
+    render(<Chat history={["first", "second", "third"]} historyLimit={1.9} />)
+    textbox().focus()
+    await userEvent.keyboard("{ArrowUp}")
+    expect(textbox()).toHaveValue("third")
+    expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+    expect(textbox()).toHaveValue("third")
+  })
+
+  it("does not measure the caret when there is nothing to step to", () => {
+    render(<Chat history={["Earlier question"]} defaultValue="abc" />)
+    textbox().focus()
+    textbox().setSelectionRange(1, 1)
+    // The caret is measured in a copy of the text appended to the body.
+    const measure = vi.spyOn(document.body, "appendChild")
+    try {
+      // Not browsing the history yet: ArrowDown has nowhere to go.
+      expect(fireEvent.keyDown(textbox(), { key: "ArrowDown" })).toBe(true)
+      expect(measure).not.toHaveBeenCalled()
+    } finally {
+      measure.mockRestore()
+    }
+  })
+
+  it("does not measure the caret for ArrowUp without a history", () => {
+    render(<Chat defaultValue="abc" />)
+    textbox().focus()
+    textbox().setSelectionRange(1, 1)
+    // The caret is measured in a copy of the text appended to the body.
+    const measure = vi.spyOn(document.body, "appendChild")
+    try {
+      expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(true)
+      expect(measure).not.toHaveBeenCalled()
+    } finally {
+      measure.mockRestore()
+    }
+  })
+
+  it("takes a caret a pixel or two off the line, as a fallback font sets it, as on the line", () => {
+    // The mark around the character after the caret sits 3px lower than the
+    // start mark: less than half the 20px line, so the same line.
+    const offsetTop = vi
+      .spyOn(HTMLElement.prototype, "offsetTop", "get")
+      .mockImplementation(function (this: HTMLElement) {
+        return this.tagName === "SPAN" && this.textContent !== "" ? 3 : 0
+      })
+    try {
+      render(
+        <Composer
+          onSubmit={() => {}}
+          history={["Earlier question"]}
+          defaultValue="漢字 text"
+        >
+          <ComposerField>
+            <ComposerInput style={{ lineHeight: "20px" }} />
+          </ComposerField>
+        </Composer>
+      )
+      textbox().focus()
+      textbox().setSelectionRange(3, 3)
+      expect(fireEvent.keyDown(textbox(), { key: "ArrowUp" })).toBe(false)
+      expect(textbox()).toHaveValue("Earlier question")
+    } finally {
+      offsetTop.mockRestore()
+    }
+  })
+})
+
+describe("Composer height without field-sizing", () => {
+  it("fits the height again when the box changes width", async () => {
+    vi.stubGlobal("CSS", { supports: () => false })
+    const observers: Array<{
+      callback: ResizeObserverCallback
+      targets: Set<Element>
+    }> = []
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        targets = new Set<Element>()
+        constructor(callback: ResizeObserverCallback) {
+          observers.push({ callback, targets: this.targets })
+        }
+        observe(target: Element) {
+          this.targets.add(target)
+        }
+        unobserve() {}
+        disconnect() {
+          this.targets.clear()
+        }
+      }
+    )
+    let scrollHeight = 72
+    let clientWidth = 300
+    const height = vi
+      .spyOn(HTMLTextAreaElement.prototype, "scrollHeight", "get")
+      .mockImplementation(() => scrollHeight)
+    const width = vi
+      .spyOn(HTMLElement.prototype, "clientWidth", "get")
+      .mockImplementation(() => clientWidth)
+    try {
+      render(<Chat />)
+      await userEvent.type(textbox(), "a long line")
+      expect(textbox().style.height).toBe("72px")
+
+      // Wider, the text takes one line fewer.
+      scrollHeight = 40
+      clientWidth = 600
+      act(() => {
+        for (const { callback, targets } of observers) {
+          if (targets.has(textbox())) callback([], {} as ResizeObserver)
+        }
+      })
+      expect(textbox().style.height).toBe("40px")
+    } finally {
+      height.mockRestore()
+      width.mockRestore()
+      vi.unstubAllGlobals()
+    }
+  })
+})
+
+describe("ComposerHint ids", () => {
+  it("keeps the textarea described when one of two hints unmounts", () => {
+    function Hints({ both }: { both: boolean }) {
+      return (
+        <Composer onSubmit={() => {}}>
+          <ComposerField>
+            <ComposerInput />
+          </ComposerField>
+          <ComposerHint>First hint</ComposerHint>
+          {both ? <ComposerHint>Second hint</ComposerHint> : null}
+        </Composer>
+      )
+    }
+    const { rerender } = render(<Hints both />)
+    expect(textbox()).toHaveAccessibleDescription("First hint Second hint")
+    rerender(<Hints both={false} />)
+    expect(textbox()).toHaveAccessibleDescription("First hint")
+  })
+
+  it("points aria-describedby at a hint's own id", () => {
+    render(
+      <Composer onSubmit={() => {}}>
+        <ComposerField>
+          <ComposerInput />
+        </ComposerField>
+        <ComposerHint id="my-hint">Custom hint</ComposerHint>
+      </Composer>
+    )
+    expect(textbox()).toHaveAttribute("aria-describedby", "my-hint")
+    expect(textbox()).toHaveAccessibleDescription("Custom hint")
+  })
+})
+
+describe("ComposerCommands options", () => {
+  it("gives commands whose ids differ only by spaces ids of their own", async () => {
+    const items: ComposerCommandItem[] = [
+      { id: "a b", command: "alpha", label: "First" },
+      { id: "ab", command: "another", label: "Second" },
+    ]
+    render(<WithCommands items={items} />)
+
+    await userEvent.type(textbox(), "/a")
+    const options = screen.getAllByRole("option")
+    expect(new Set(options.map((option) => option.id)).size).toBe(2)
+    await userEvent.keyboard("{ArrowDown}")
+    expect(textbox()).toHaveAttribute("aria-activedescendant", options[1]?.id)
+  })
+
+  it("points the textarea at the list under StrictMode too", async () => {
+    render(
+      <React.StrictMode>
+        <WithCommands />
+      </React.StrictMode>
+    )
+
+    await userEvent.type(textbox(), "/")
+    expect(textbox()).toHaveAttribute(
+      "aria-controls",
+      screen.getByRole("listbox").id
+    )
+    expect(textbox()).toHaveAttribute(
+      "aria-activedescendant",
+      screen.getAllByRole("option")[0]?.id
+    )
+  })
+
+  it("picks the command whose id has spaces", async () => {
+    const onCommand = vi.fn()
+    const items: ComposerCommandItem[] = [
+      { id: "a b", command: "alpha", label: "First" },
+      { id: "ab", command: "another", label: "Second" },
+    ]
+    render(<WithCommands items={items} onCommand={onCommand} />)
+
+    await userEvent.type(textbox(), "/a")
+    await userEvent.click(screen.getByRole("option", { name: /alpha/ }))
+    expect(onCommand).toHaveBeenCalledWith(items[0], expect.anything())
+  })
+
+  it("scrolls the active command into the list's view, not the page's", async () => {
+    const scrollIntoView = vi.spyOn(Element.prototype, "scrollIntoView")
+    // Options 30px tall, the list shows two at a time.
+    const rect = vi
+      .spyOn(Element.prototype, "getBoundingClientRect")
+      .mockImplementation(function (this: Element) {
+        const list = this.closest('[role="listbox"]')
+        const options = [...(list?.querySelectorAll('[role="option"]') ?? [])]
+        const index = options.indexOf(this)
+        // An option moves up as the list scrolls; the list stays put.
+        const top = index === -1 ? 0 : index * 30 - (list?.scrollTop ?? 0)
+        return DOMRect.fromRect({ x: 0, y: top, width: 100, height: 30 })
+      })
+    const clientHeight = vi
+      .spyOn(HTMLElement.prototype, "clientHeight", "get")
+      .mockReturnValue(60)
+    const offsetHeight = vi
+      .spyOn(HTMLElement.prototype, "offsetHeight", "get")
+      .mockReturnValue(30)
+    try {
+      render(<WithCommands />)
+      await userEvent.type(textbox(), "/")
+      const list = screen.getByRole("listbox")
+      await userEvent.keyboard("{ArrowDown}")
+      expect(list.scrollTop).toBe(0)
+      await userEvent.keyboard("{ArrowDown}")
+      // The third option, 60 to 90, is scrolled up by 30.
+      expect(list.scrollTop).toBe(30)
+      await userEvent.keyboard("{ArrowDown}")
+      // Round to the first again.
+      expect(list.scrollTop).toBe(0)
+      expect(scrollIntoView).not.toHaveBeenCalled()
+    } finally {
+      scrollIntoView.mockRestore()
+      rect.mockRestore()
+      clientHeight.mockRestore()
+      offsetHeight.mockRestore()
+    }
   })
 })

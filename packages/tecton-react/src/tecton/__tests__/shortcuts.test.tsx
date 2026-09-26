@@ -191,6 +191,90 @@ describe("createShortcutRegistry", () => {
     expect(second.onAction).not.toHaveBeenCalled()
   })
 
+  it("ignores a keydown with no key, as Chrome's autofill sends", () => {
+    registry.register(shortcut({ id: "a", keys: "a" }))
+    expect(() =>
+      registry.handleKeyDown(new Event("keydown") as KeyboardEvent)
+    ).not.toThrow()
+    expect(registry.handleKeyDown(new Event("keydown") as KeyboardEvent)).toBe(
+      false
+    )
+    expect(registry.handleKeyDown(key({ key: "" }))).toBe(false)
+  })
+
+  it("matches an Option chord on a Mac by the physical key", () => {
+    const s = shortcut({ id: "k", keys: "alt+k" })
+    registry.register(s)
+    // Option+K types "˚" on a Mac.
+    expect(
+      registry.handleKeyDown(key({ key: "˚", code: "KeyK", altKey: true }))
+    ).toBe(true)
+    expect(s.onAction).toHaveBeenCalledTimes(1)
+    // Elsewhere Alt+K is still "k".
+    expect(
+      registry.handleKeyDown(key({ key: "k", code: "KeyK", altKey: true }))
+    ).toBe(true)
+    expect(s.onAction).toHaveBeenCalledTimes(2)
+  })
+
+  it("matches shift with a digit by the physical key", () => {
+    const s = shortcut({ id: "one", keys: "shift+1" })
+    const bang = shortcut({ id: "bang", keys: "!" })
+    registry.register(s)
+    expect(
+      registry.handleKeyDown(key({ key: "!", code: "Digit1", shiftKey: true }))
+    ).toBe(true)
+    expect(s.onAction).toHaveBeenCalledTimes(1)
+    // A symbol shortcut still matches by the character typed.
+    registry.register(bang)
+    registry.handleKeyDown(key({ key: "!", code: "Digit1", shiftKey: true }))
+    expect(bang.onAction).toHaveBeenCalledTimes(1)
+  })
+
+  it("matches by the character typed on another Latin layout", () => {
+    const z = shortcut({ id: "z", keys: "ctrl+z" })
+    registry.register(z)
+    // German QWERTZ: the key in QWERTY's Y place types "z".
+    expect(
+      registry.handleKeyDown(key({ key: "z", code: "KeyY", ctrlKey: true }))
+    ).toBe(true)
+    expect(
+      registry.handleKeyDown(key({ key: "y", code: "KeyZ", ctrlKey: true }))
+    ).toBe(false)
+  })
+
+  it("fires once for a held key and swallows the repeats, unless allowRepeat", () => {
+    const toggle = shortcut({ id: "t", keys: "t" })
+    const zoom = shortcut({ id: "z", keys: "z", allowRepeat: true })
+    registry.register([toggle, zoom])
+    expect(registry.handleKeyDown(key({ key: "t" }))).toBe(true)
+    const repeat = key({ key: "t", repeat: true })
+    expect(registry.handleKeyDown(repeat)).toBe(true)
+    expect(repeat.defaultPrevented).toBe(true)
+    expect(toggle.onAction).toHaveBeenCalledTimes(1)
+
+    registry.handleKeyDown(key({ key: "z" }))
+    registry.handleKeyDown(key({ key: "z", repeat: true }))
+    expect(zoom.onAction).toHaveBeenCalledTimes(2)
+  })
+
+  it("parses the keys once, when the shortcut is registered", () => {
+    let reads = 0
+    const s = shortcut({ id: "a", keys: "a" })
+    Object.defineProperty(s, "keys", {
+      get: () => {
+        reads += 1
+        return "a"
+      },
+    })
+    registry.register(s)
+    const afterRegister = reads
+    registry.handleKeyDown(key({ key: "a" }))
+    registry.handleKeyDown(key({ key: "b" }))
+    expect(reads).toBe(afterRegister)
+    expect(s.onAction).toHaveBeenCalledTimes(1)
+  })
+
   describe("in editable targets", () => {
     const input = document.createElement("input")
     const textarea = document.createElement("textarea")
@@ -222,6 +306,30 @@ describe("createShortcutRegistry", () => {
       expect(
         registry.handleKeyDown(key({ key: "K", shiftKey: true }, input))
       ).toBe(false)
+    })
+
+    it("sees an input inside a shadow root through the event's path", () => {
+      const host = document.createElement("div")
+      document.body.append(host)
+      const field = host
+        .attachShadow({ mode: "open" })
+        .appendChild(document.createElement("input"))
+      const s = shortcut({ id: "a", keys: "a" })
+      registry.register(s)
+      document.addEventListener(
+        "keydown",
+        (event) => registry.handleKeyDown(event),
+        { once: true }
+      )
+      field.dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: "a",
+          bubbles: true,
+          composed: true,
+        })
+      )
+      expect(s.onAction).not.toHaveBeenCalled()
+      host.remove()
     })
 
     it("honours allowInInput either way", () => {
@@ -313,7 +421,8 @@ describe("registry contract", () => {
       (event: KeyboardEvent) => boolean
     >()
     expectTypeOf(createShortcutRegistry).toEqualTypeOf<() => ShortcutRegistry>()
-    // `register` is only as stable as the shortcut it takes.
+    // `register` is only as stable as the shortcut it takes. A field is
+    // only ever added, optional: an older registry ignores it.
     expectTypeOf<keyof Shortcut>().toEqualTypeOf<
       | "id"
       | "keys"
@@ -323,6 +432,7 @@ describe("registry contract", () => {
       | "allowInInput"
       | "isEnabled"
       | "hidden"
+      | "allowRepeat"
     >()
   })
 
@@ -397,25 +507,43 @@ describe("ShortcutKeys", () => {
     vi.spyOn(navigator, "platform", "get").mockReturnValue("Win32")
   })
 
-  it("renders key caps joined with plus and a spoken label", () => {
+  it("renders key caps joined with plus, and the keys as text for screen readers", () => {
     const { container } = render(<ShortcutKeys keys="mod+k" className="x" />)
     const root = container.querySelector('[data-slot="shortcut-keys"]')
-    expect(root).toHaveAttribute("aria-label", "Ctrl + K")
     expect(root).toHaveClass("x", "inline-flex")
     const kbds = root!.querySelectorAll("kbd[data-slot='kbd']")
     expect(Array.from(kbds).map((k) => k.textContent)).toEqual(["Ctrl", "K"])
-    expect(root!.querySelector('[data-slot="kbd-group"]')).toHaveAttribute(
-      "aria-hidden",
-      "true"
-    )
-    expect(root).toHaveTextContent("Ctrl+K")
+    const group = root!.querySelector('[data-slot="kbd-group"]')
+    expect(group).toHaveAttribute("aria-hidden", "true")
+    expect(group).toHaveTextContent("Ctrl+K")
+    // Browse mode reads text, not the aria-label of a generic span.
+    expect(root).not.toHaveAttribute("aria-label")
+    expect(root!.querySelector(".sr-only")).toHaveTextContent("Ctrl + K")
+    expect(screen.getByText("Ctrl + K")).toBeInTheDocument()
   })
 
-  it("spells a sequence out", () => {
+  it("spells a sequence out, and shows its steps apart from a chord", () => {
     const { container } = render(<ShortcutKeys keys="g w" />)
+    const root = container.querySelector('[data-slot="shortcut-keys"]')
+    expect(root!.querySelector(".sr-only")).toHaveTextContent("G, then W")
+    // "then" between steps, where a chord has "+".
+    expect(root!.querySelector('[data-slot="kbd-group"]')).toHaveTextContent(
+      "GthenW"
+    )
     expect(
-      container.querySelector('[data-slot="shortcut-keys"]')
-    ).toHaveAttribute("aria-label", "G, then W")
+      root!.querySelectorAll('[data-slot="shortcut-keys-then"]')
+    ).toHaveLength(1)
+  })
+
+  it("joins the keys of each chord in a sequence with plus", () => {
+    const { container } = render(<ShortcutKeys keys="mod+k mod+s" />)
+    const root = container.querySelector('[data-slot="shortcut-keys"]')
+    expect(root!.querySelector('[data-slot="kbd-group"]')).toHaveTextContent(
+      "Ctrl+KthenCtrl+S"
+    )
+    expect(root!.querySelector(".sr-only")).toHaveTextContent(
+      "Ctrl + K, then Ctrl + S"
+    )
   })
 })
 
@@ -510,6 +638,33 @@ describe("ShortcutsProvider and hooks", () => {
     expect(onAction).toHaveBeenCalledTimes(1)
   })
 
+  it("a nested provider with a target of its own listens there, with a registry of its own", () => {
+    const outer = createShortcutRegistry()
+    const onAction = vi.fn()
+    const target = document.createElement("div")
+    document.body.append(target)
+    let inner: ShortcutRegistry | null = null
+    function Scoped() {
+      inner = useShortcutRegistry()
+      useShortcut({ id: "a", keys: "a", label: "A", onAction })
+      return null
+    }
+    render(
+      <ShortcutsProvider registry={outer}>
+        <ShortcutsProvider target={target}>
+          <Scoped />
+        </ShortcutsProvider>
+      </ShortcutsProvider>
+    )
+    expect(inner).not.toBe(outer)
+    expect(outer.getAll()).toEqual([])
+    fireEvent.keyDown(document.body, { key: "a" })
+    expect(onAction).not.toHaveBeenCalled()
+    fireEvent.keyDown(target, { key: "a" })
+    expect(onAction).toHaveBeenCalledTimes(1)
+    target.remove()
+  })
+
   it("useShortcuts re-renders as shortcuts register and unregister", () => {
     const registry = createShortcutRegistry()
     const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -529,6 +684,42 @@ describe("ShortcutsProvider and hooks", () => {
     expect(result.current.map((s) => s.id)).toEqual(["a"])
     act(() => remove())
     expect(result.current).toEqual([])
+  })
+
+  it("useShortcut keeps the committed handler when a render is thrown away", () => {
+    const registry = createShortcutRegistry()
+    const committed = vi.fn()
+    const discarded = vi.fn()
+    const never = new Promise<void>(() => {})
+    function Suspend({ when }: { when: boolean }) {
+      if (when) React.use(never)
+      return null
+    }
+    function App({
+      onAction,
+      suspend,
+    }: {
+      onAction: () => void
+      suspend: boolean
+    }) {
+      useShortcut({ id: "go", keys: "g", label: "Go", onAction })
+      return <Suspend when={suspend} />
+    }
+    const tree = (onAction: () => void, suspend: boolean) => (
+      <ShortcutsProvider registry={registry}>
+        <React.Suspense fallback={null}>
+          <App onAction={onAction} suspend={suspend} />
+        </React.Suspense>
+      </ShortcutsProvider>
+    )
+    const { rerender } = render(tree(committed, false))
+    // A transition that suspends is never committed: the old UI stays.
+    act(() => {
+      React.startTransition(() => rerender(tree(discarded, true)))
+    })
+    registry.handleKeyDown(key({ key: "g" }))
+    expect(committed).toHaveBeenCalledTimes(1)
+    expect(discarded).not.toHaveBeenCalled()
   })
 
   it("useShortcut registers for the component's lifetime with the latest handler", () => {

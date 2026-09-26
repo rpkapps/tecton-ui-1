@@ -152,7 +152,7 @@ describe("AppShellActions", () => {
     expect(tooltip).toHaveTextContent("Help")
     expect(
       tooltip.querySelector('[data-slot="shortcut-keys"]')
-    ).toHaveAttribute("aria-label", "?")
+    ).toHaveTextContent("?")
 
     await userEvent.click(button)
     expect(onPress).toHaveBeenCalled()
