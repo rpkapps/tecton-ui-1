@@ -24,8 +24,7 @@ related: [Kbd, AppShellActions, Command]
 - Wrap the shell in one `ShortcutsProvider`; a nested provider with no `registry` of its own reuses the parent's.
 - Register from React with `useShortcut`, which removes the shortcut on unmount and always calls the latest render's handler.
 - Create the registry with `createShortcutRegistry()` in the host and hand the object to each mounted application; that shape is versioned public API, so the two sides may be on different package versions.
-- Write keys in the registry syntax: `mod+k` for ⌘ / Ctrl, `?` for a symbol, `g w` for a sequence.
-- Let a shortcut fire while its key is held only when repeating is the point (zoom, nudge): `allowRepeat: true`. By default a held key fires once, so a toggle does not flicker.
+- Write keys in the registry syntax: `mod+k` for ⌘ / Ctrl, `?` for a symbol, `g w` for a sequence; a held key fires once, so set `allowRepeat: true` only where holding it should repeat (zoom, nudge).
 - Give every shortcut a stable `id`, a `label` and a `group`, and render its caps with `ShortcutKeys`.
 
 ## Don't
