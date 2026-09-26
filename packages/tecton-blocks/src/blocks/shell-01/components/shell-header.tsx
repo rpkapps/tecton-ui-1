@@ -6,7 +6,6 @@ import {
   BugIcon,
   CircleHelpIcon,
   HomeIcon,
-  KeyboardIcon,
   LogOutIcon,
   SettingsIcon,
   SparklesIcon,
@@ -39,14 +38,8 @@ import {
   AppShellOverflow,
   AppShellUserMenu,
 } from "@tecton/react/tecton/app-shell"
-import {
-  ShortcutsProvider,
-  useShortcut,
-  useShortcuts,
-} from "@tecton/react/tecton/shortcuts"
 
 import { ShellCommandPalette } from "./shell-command-palette"
-import { ShellShortcutsDialog } from "./shell-shortcuts-dialog"
 import {
   apps as defaultApps,
   appTones,
@@ -78,22 +71,10 @@ type ShellHeaderProps = Omit<
  *
  * Responsive: the command trigger shrinks to an icon below `md`, and the
  * secondary actions (what's new, bug report, settings) fold into an
- * overflow menu below `lg`.
- *
- * Shortcuts: the header registers ⌘K / Ctrl+K (command palette) and `?`
- * (shortcut list) with the nearest `ShortcutsProvider`, creating one when
- * the host has none. Applications register theirs with `useShortcut` or
- * `registry.register`; both the palette and the `?` dialog list them.
+ * overflow menu below `lg`. The command palette opens from the search
+ * trigger.
  */
-function ShellHeader(props: ShellHeaderProps) {
-  return (
-    <ShortcutsProvider>
-      <ShellHeaderInner {...props} />
-    </ShortcutsProvider>
-  )
-}
-
-function ShellHeaderInner({
+function ShellHeader({
   className,
   apps = defaultApps,
   appId,
@@ -107,34 +88,17 @@ function ShellHeaderInner({
   const currentId = appId ?? internalAppId
   const current = apps.find((app) => app.id === currentId) ?? apps[0]
   const [paletteOpen, setPaletteOpen] = React.useState(false)
-  const [shortcutsOpen, setShortcutsOpen] = React.useState(false)
   const recent = recentAppIds
     .map((id) => apps.find((item) => item.id === id))
     .filter(
       (item): item is ShellApp => item !== undefined && item.id !== current?.id
     )
   const groups = groupApps(apps)
-  const shortcuts = useShortcuts()
 
   const selectApp = (app: ShellApp) => {
     setInternalAppId(app.id)
     onAppChange?.(app)
   }
-
-  useShortcut({
-    id: "shell.palette",
-    keys: "mod+k",
-    label: "Search or jump to…",
-    group: "Shell",
-    onAction: () => setPaletteOpen((open) => !open),
-  })
-  useShortcut({
-    id: "shell.shortcuts",
-    keys: "?",
-    label: "Keyboard shortcuts",
-    group: "Shell",
-    onAction: () => setShortcutsOpen((open) => !open),
-  })
 
   // The shell always mounts an application; with an empty app list there is
   // nothing for the header to name.
@@ -213,11 +177,7 @@ function ShellHeaderInner({
         <AppShellCommandTrigger onPress={() => setPaletteOpen(true)}>
           Search or jump to…
         </AppShellCommandTrigger>
-        <AppShellAction
-          label="Keyboard shortcuts"
-          shortcut="?"
-          onPress={() => setShortcutsOpen(true)}
-        >
+        <AppShellAction label="Help">
           <CircleHelpIcon />
         </AppShellAction>
         {secondary.map((action) => (
@@ -257,12 +217,6 @@ function ShellHeaderInner({
             <DropdownMenuItem textValue="Preferences">
               <SettingsIcon /> Preferences
             </DropdownMenuItem>
-            <DropdownMenuItem
-              textValue="Keyboard shortcuts"
-              onAction={() => setShortcutsOpen(true)}
-            >
-              <KeyboardIcon /> Keyboard shortcuts
-            </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
@@ -276,13 +230,7 @@ function ShellHeaderInner({
         open={paletteOpen}
         onOpenChange={setPaletteOpen}
         apps={apps}
-        shortcuts={shortcuts}
         onSelectApp={selectApp}
-      />
-      <ShellShortcutsDialog
-        open={shortcutsOpen}
-        onOpenChange={setShortcutsOpen}
-        shortcuts={shortcuts}
       />
     </AppShellHeader>
   )

@@ -30,7 +30,7 @@ export default function AppShellActionsExample() {
         <AppShellBrand>Tecton</AppShellBrand>
         <AppShellActions>
           <AppShellCommandTrigger>Search or jump to…</AppShellCommandTrigger>
-          <AppShellAction label="Help" shortcut="?">
+          <AppShellAction label="Help">
             <CircleHelpIcon />
           </AppShellAction>
           <AppShellAction label="What's new">

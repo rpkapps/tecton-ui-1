@@ -4,13 +4,11 @@ module: "@tecton/react/tecton/theme-root"
 family: infrastructure
 exports: [ThemeRoot, themeRootVariants]
 notFor:
-  - need: an overlay container without the root marker or a scoped stylesheet
-    use: PortalProvider
+  - need: the locale, direction or router of an application that owns the document
+    use: TectonProvider
   - need: the header, rail and work area of an application that owns the document
     use: AppShell
-  - need: a right-to-left subtree
-    use: DirectionProvider
-related: [PortalProvider, AppShell]
+related: [TectonProvider, AppShell]
 ---
 
 ## Use it when
@@ -24,8 +22,8 @@ related: [PortalProvider, AppShell]
 - Render it around the whole mounted tree with the deployable's scope class, and keep layout on an inner element: `<ThemeRoot className="mfe-a"><div className="flex h-full flex-col">…</div></ThemeRoot>`. The overlay container that mirrors `className` is `display: contents`, so layout utilities do nothing there while typography and colour classes reach every overlay.
 - Keep `theme="inherit"` inside a Tecton shell — the shell's variables, palette and mode inherit — and pin `dark` or `light` only for an inverted island.
 - Retint one root with an arbitrary property in `className`: `[--primary:var(--tecton-palette-green-560)]`, which is mirrored onto the overlay container; pass `overlayClassName` instead when only some of the root's classes belong on the overlays (the theme class is always added to it).
+- Pass `dir` and `locale` when the remote reads differently from its shell: `dir` lands on the root and on the overlay container, and both feed the `TectonProvider` it renders.
 - Pass `overlayContainer` to reuse an element the shell owns, or `null` to opt out; omit it and the root creates, syncs and removes its own.
-- Pair it with `@tecton/react/styles/scoped.css` and the PostCSS scope plugin, never with `globals.css`.
 
 ## Don't
 

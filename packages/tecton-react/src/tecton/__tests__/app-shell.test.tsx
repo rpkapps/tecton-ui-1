@@ -150,9 +150,7 @@ describe("AppShellActions", () => {
     expect(button).toHaveFocus()
     const tooltip = await screen.findByRole("tooltip")
     expect(tooltip).toHaveTextContent("Help")
-    expect(
-      tooltip.querySelector('[data-slot="shortcut-keys"]')
-    ).toHaveTextContent("?")
+    expect(tooltip.querySelector('[data-slot="kbd"]')).toHaveTextContent("?")
 
     await userEvent.click(button)
     expect(onPress).toHaveBeenCalled()
@@ -162,36 +160,16 @@ describe("AppShellActions", () => {
     render(<AppShellAction label="Settings" />)
     await userEvent.tab()
     const tooltip = await screen.findByRole("tooltip")
-    expect(tooltip.querySelector('[data-slot="shortcut-keys"]')).toBeNull()
+    expect(tooltip.querySelector('[data-slot="kbd"]')).toBeNull()
   })
 
-  it("AppShellCommandTrigger defaults to Search with a ⌘K hint on a Mac", () => {
-    const platform = vi
-      .spyOn(navigator, "platform", "get")
-      .mockReturnValue("MacIntel")
+  // Tecton binds no keys, so the trigger advertises none unless told to.
+  it("AppShellCommandTrigger defaults to Search with no key hint", () => {
     render(<AppShellCommandTrigger />)
     const button = screen.getByRole("button", { name: "Search" })
     expect(button).toHaveAttribute("data-slot", "app-shell-command-trigger")
     expect(button).toHaveTextContent("Search")
-    const hint = button.querySelector('[data-slot="shortcut-keys"]')
-    expect(hint).toHaveClass("hidden", "lg:inline-flex")
-    const caps = hint!.querySelectorAll('[data-slot="kbd"]')
-    expect(Array.from(caps, (cap) => cap.textContent)).toEqual(["⌘", "K"])
-    platform.mockRestore()
-  })
-
-  it("AppShellCommandTrigger shows Ctrl K off Apple platforms", () => {
-    const platform = vi
-      .spyOn(navigator, "platform", "get")
-      .mockReturnValue("Win32")
-    render(<AppShellCommandTrigger />)
-    const hint = screen
-      .getByRole("button", { name: "Search" })
-      .querySelector('[data-slot="shortcut-keys"]')!
-    const caps = hint.querySelectorAll('[data-slot="kbd"]')
-    expect(Array.from(caps, (cap) => cap.textContent)).toEqual(["Ctrl", "K"])
-    expect(hint).not.toHaveTextContent("⌘")
-    platform.mockRestore()
+    expect(button.querySelector('[data-slot="kbd"]')).toBeNull()
   })
 
   it("AppShellCommandTrigger accepts a label, a shortcut and no shortcut", () => {

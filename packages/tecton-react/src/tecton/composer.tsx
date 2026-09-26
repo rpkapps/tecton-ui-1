@@ -24,7 +24,6 @@ import {
 import { Kbd } from "@tecton/react/components/kbd"
 import { Spinner } from "@tecton/react/components/spinner"
 import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
-import { useIsMacPlatform } from "@tecton/react/tecton/shortcuts"
 
 /**
  * Tecton Composer — the message box of a chat: a textarea that grows with
@@ -815,6 +814,22 @@ function ComposerSubmit({
       <ArrowUpIcon />
     </InputGroupButton>
   )
+}
+
+function isMacPlatform() {
+  if (typeof navigator === "undefined") return false
+  return /mac|iphone|ipad|ipod/i.test(navigator.platform || navigator.userAgent)
+}
+
+const subscribeNoop = () => () => {}
+
+/**
+ * Whether the keyboard is an Apple one, so ⌘ is shown where others see
+ * Ctrl. False on the server and in the first client render, so hydration
+ * matches, then the real answer.
+ */
+function useIsMacPlatform(): boolean {
+  return React.useSyncExternalStore(subscribeNoop, isMacPlatform, () => false)
 }
 
 /** How to send, tied to the textarea by `aria-describedby`; visible or for screen readers only. */

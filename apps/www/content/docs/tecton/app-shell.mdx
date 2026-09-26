@@ -86,7 +86,7 @@ AppShell
   <AppShellBrand>Tecton</AppShellBrand>
   <AppShellActions>
     <AppShellCommandTrigger onPress={openPalette}>Search or jump to…</AppShellCommandTrigger>
-    <AppShellAction label="Help" shortcut="?"><CircleHelpIcon /></AppShellAction>
+    <AppShellAction label="Help"><CircleHelpIcon /></AppShellAction>
     <AppShellAction label="Settings" className="hidden lg:inline-flex"><SettingsIcon /></AppShellAction>
     <AppShellOverflow className="lg:hidden">
       <DropdownMenuItem textValue="Settings"><SettingsIcon /> Settings</DropdownMenuItem>
@@ -99,7 +99,7 @@ AppShell
 </AppShellHeader>
 ```
 
-`AppShellAction` is a ghost icon button whose `label` is both the accessible name and the tooltip; `shortcut` adds the key hint in [Shortcuts](/docs/tecton/shortcuts) key syntax. `AppShellCommandTrigger` looks like a search field from `md` up and collapses to an icon button below it; its key hint defaults to `mod+k` drawn for the platform (⌘ K on Apple keyboards, Ctrl + K elsewhere). `AppShellOverflow` is the "More" menu for the actions a narrow header cannot show, and `AppShellDivider` is the hairline between groups.
+`AppShellAction` is a ghost icon button whose `label` is both the accessible name and the tooltip; `shortcut` adds a key hint to the tooltip. A hint is only a label: Tecton binds no keys, so show one only for a key the application handles itself. `AppShellCommandTrigger` looks like a search field from `md` up and collapses to an icon button below it. `AppShellOverflow` is the "More" menu for the actions a narrow header cannot show, and `AppShellDivider` is the hairline between groups.
 
 ## Sidebar
 
@@ -259,33 +259,6 @@ Every navigation area on a page has its own screen-reader name (`aria-label`): a
 
 </Dont>
 
-<Dont severity="HIGH" title="The key hint mistaken for a registration">
-
-<Wrong>
-
-```tsx
-function ShellSearch({ open }: { open: () => void }) {
-  return <AppShellCommandTrigger shortcut="⌘K" onPress={open}>Search</AppShellCommandTrigger>
-}
-```
-
-</Wrong>
-
-<Correct>
-
-```tsx
-function ShellSearch({ open }: { open: () => void }) {
-  useShortcut({ id: "shell.palette", keys: "mod+k", label: "Command palette", onAction: open })
-  return <AppShellCommandTrigger onPress={open}>Search</AppShellCommandTrigger>
-}
-```
-
-</Correct>
-
-The trigger's hint (by default `mod+k` drawn for the platform, ⌘ K on a Mac and Ctrl + K elsewhere, or the `Kbd` you pass as `shortcut`) binds nothing, so the key never opens the palette and is missing from `useShortcuts()`, the list the shell's help dialog and command palette are built from.
-
-</Dont>
-
 {/* guidelines:end */}
 
 ## API Reference
@@ -321,7 +294,7 @@ Ghost icon `Button` wrapped in a `TooltipTrigger`.
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `label` | `string` | - | Accessible name and tooltip text. |
-| `shortcut` | `string` | - | Key hint rendered in the tooltip, in [Shortcuts](/docs/tecton/shortcuts) key syntax (`"mod+k"`, `"?"`, `"g w"`). |
+| `shortcut` | `ReactNode` | - | Key hint rendered as a `Kbd` in the tooltip (`"?"`). A label only: it binds no key. |
 | `onPress` | `(e: PressEvent) => void` | - | Press handler. |
 
 ### AppShellCommandTrigger
@@ -331,7 +304,7 @@ Outline `Button` that looks like a search field and opens the command palette. B
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | "Search" | Placeholder text; a string is also the accessible name (otherwise "Search"). |
-| `shortcut` | `ReactNode` | `<ShortcutKeys keys="mod+k" />` | Key hint at the end. The default is platform-aware (⌘ K on Apple keyboards, Ctrl + K elsewhere); anything else you pass is rendered in a `Kbd` as is; `null` hides it. The hint only displays the key: register the binding with [`useShortcut`](/docs/tecton/shortcuts). |
+| `shortcut` | `ReactNode` | - | Key hint rendered as a `Kbd` at the end (`"⌘K"`). A label only: it binds no key. |
 
 ### AppShellUserMenu
 

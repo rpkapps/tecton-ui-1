@@ -142,7 +142,7 @@
         "A page title block is a `PageHeader` with the eyebrow, title and description inside `PageHeaderContent` and the actions in `PageHeaderActions`, and `PageHeaderTitle` is the page's single `h1`.",
         "The application frame is `AppShell` > `AppShellHeader` plus `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`, with the page content in `AppShellMain` and never straight into `AppShellBody`.",
         "The shell's header actions are `AppShellAction`s with a `label` — both the accessible name and the tooltip — inside `AppShellActions`, not icon `Button`s with a `title`.",
-        "A key hint rendered by `shortcut` on `AppShellAction` or `AppShellCommandTrigger` is also registered with `useShortcut`, or nothing is bound and the key is missing from `useShortcuts()`.",
+        "A key hint passed as `shortcut` to `AppShellAction` or `AppShellCommandTrigger` is only a label — Tecton binds no keys — so it is shown only for a key the application handles itself.",
         "A divider is a `Separator` with `emphasis=\"subtle\" | \"default\" | \"strong\"` (or the surface's own `ItemSeparator` / `border-b`), never a bare `div` with a border colour."
       ]
     },
@@ -283,18 +283,17 @@
       "modules": [
         "components/direction",
         "tecton/portal",
-        "tecton/theme-root",
-        "tecton/shortcuts"
+        "tecton/provider",
+        "tecton/theme-root"
       ],
       "checklist": [
-        "A right-to-left application is wrapped once in a `DirectionProvider` (with a real `locale` where there is one) and also sets `dir` on `<html>`; React Aria reads `useLocale()`, not the DOM, so `dir` on a wrapper changes nothing.",
+        "The application is wrapped once in a `TectonProvider` (with its `locale`, and `navigate` / `useHref` when it has a router) and sets the matching `dir` and `lang` on `<html>`; Tecton components read the direction from the provider, not from the DOM, so `dir` on a wrapper alone changes nothing.",
+        "No provider is imported from `react-aria-components` or `@base-ui/react`: `TectonProvider` is the only one Tecton components read.",
         "Inside a flipped tree every spacing and alignment class is logical (`ms-*`, `pe-*`, `text-start`, `border-s`), and the direction is read with `useDirection()` rather than from `document.dir`.",
-        "A page holding several React roots wraps each root in a `PortalProvider` with its own body-level `container`, because `document.body` falls outside that root's `@scope` rule.",
-        "No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal context themselves.",
+        "A page holding several React roots wraps each root in a `ThemeRoot` (or a `TectonProvider` with its own body-level `portalContainer`), because `document.body` falls outside that root's `@scope` rule.",
+        "No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal container themselves.",
         "An independently mounted application is wrapped in a `ThemeRoot` carrying its scope class with `theme=\"inherit\"`, and it imports `@tecton/react/styles/scoped.css`, never `globals.css`.",
-        "A theme override for one root goes in `ThemeRoot`'s `className` (`[--primary:var(--tecton-palette-green-560)]`), which is mirrored onto the overlay container; inline CSS variables never reach a portalled overlay.",
-        "Every keyboard shortcut is registered with `useShortcut` inside one `ShortcutsProvider` rather than a `window` keydown listener, so it is suppressed while an input has focus and is listed by `useShortcuts()`.",
-        "A mounted application reuses the host's registry object from `createShortcutRegistry()` instead of creating a second one, and its shortcuts are written in the registry syntax (`mod+k`, `?`, `g w`) with a stable `id`, `label` and `group`."
+        "A theme override for one root goes in `ThemeRoot`'s `className` (`[--primary:var(--tecton-palette-green-560)]`), which is mirrored onto the overlay container; inline CSS variables never reach a portalled overlay."
       ]
     }
   },

@@ -21,7 +21,6 @@ import {
   ResizablePanelGroup,
 } from "@tecton/react/components/resizable"
 import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
-import { ShortcutKeys } from "@tecton/react/tecton/shortcuts"
 
 /**
  * Tecton AppShell — the application frame: a solid top navigation bar,
@@ -150,10 +149,10 @@ type AppShellActionProps = React.ComponentProps<typeof Button> & {
   /** Accessible name, also shown as the tooltip. */
   label: string
   /**
-   * Optional shortcut hint rendered in the tooltip, in `shortcuts` key
-   * syntax (`"mod+k"`, `"?"`, `"g w"`).
+   * Optional key hint shown in the tooltip as a `Kbd` (`"?"`, `"⌘K"`). It is
+   * only a label: the application binds the key itself.
    */
-  shortcut?: string
+  shortcut?: React.ReactNode
 }
 
 function AppShellAction({
@@ -177,7 +176,7 @@ function AppShellAction({
       </Button>
       <Tooltip placement="bottom">
         {label}
-        {shortcut ? <ShortcutKeys keys={shortcut} className="ms-1" /> : null}
+        {shortcut ? <Kbd className="ms-1">{shortcut}</Kbd> : null}
       </Tooltip>
     </TooltipTrigger>
   )
@@ -189,9 +188,8 @@ type AppShellCommandTriggerProps = Omit<
 > & {
   children?: React.ReactNode
   /**
-   * Shortcut hint shown at the end of the trigger. Defaults to `mod+k`
-   * drawn for the platform (⌘ K on Apple keyboards, Ctrl + K elsewhere);
-   * `null` hides it.
+   * Optional key hint shown at the end of the trigger as a `Kbd` (`"⌘K"`).
+   * It is only a label: the application binds the key itself.
    */
   shortcut?: React.ReactNode
 }
@@ -223,12 +221,7 @@ function AppShellCommandTrigger({
       <span className="hidden flex-1 truncate text-start md:inline">
         {children}
       </span>
-      {shortcut === undefined ? (
-        <ShortcutKeys
-          keys="mod+k"
-          className="pointer-events-none hidden lg:inline-flex"
-        />
-      ) : shortcut ? (
+      {shortcut ? (
         <Kbd className="pointer-events-none hidden lg:inline-flex">
           {shortcut}
         </Kbd>

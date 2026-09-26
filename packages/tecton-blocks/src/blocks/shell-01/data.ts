@@ -28,7 +28,6 @@ export type ShellCommand = {
   id: string
   label: string
   group: "Navigate" | "Actions" | "Help"
-  shortcut?: string
 }
 
 /** Tile colour of each category in the app finder and command palette. */
@@ -226,24 +225,13 @@ export const currentUser: ShellUser = {
 }
 
 export const commands: ShellCommand[] = [
-  { id: "go-wells", label: "Go to wells", group: "Navigate", shortcut: "G W" },
-  {
-    id: "go-projects",
-    label: "Go to projects",
-    group: "Navigate",
-    shortcut: "G P",
-  },
+  { id: "go-wells", label: "Go to wells", group: "Navigate" },
+  { id: "go-projects", label: "Go to projects", group: "Navigate" },
   { id: "go-map", label: "Open fairway map", group: "Navigate" },
-  { id: "new-well", label: "Create well", group: "Actions", shortcut: "N" },
+  { id: "new-well", label: "Create well", group: "Actions" },
   { id: "new-design", label: "New design", group: "Actions" },
   { id: "publish", label: "Review and publish", group: "Actions" },
   { id: "release-notes", label: "What's new", group: "Help" },
-  {
-    id: "shortcuts",
-    label: "Keyboard shortcuts",
-    group: "Help",
-    shortcut: "?",
-  },
   { id: "bug", label: "Report a bug", group: "Help" },
 ]
 

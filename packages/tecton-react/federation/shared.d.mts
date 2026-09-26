@@ -14,6 +14,7 @@ export declare const shared: {
   readonly "react-dom": SharedPolicy<false>
   readonly sonner: SharedPolicy<false>
   readonly "@tecton/react/": SharedPolicy<false>
+  readonly "@base-ui/react/": SharedPolicy<false>
   readonly "react-aria-components": SharedPolicy<false>
   readonly recharts: SharedPolicy<false> & { readonly eager: false }
 }

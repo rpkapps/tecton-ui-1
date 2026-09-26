@@ -722,7 +722,7 @@
       "name": "shell-01",
       "type": "registry:block",
       "title": "Application shell",
-      "description": "The micro-frontend host: responsive top bar with app finder, context, command palette, shortcuts help, overflow and user menu; the mounted application registers its keyboard shortcuts with the shell. Requires the @tecton/react package.",
+      "description": "The micro-frontend host: responsive top bar with app finder, context, command palette, help, overflow and user menu; the mounted application fills the region below. Requires the @tecton/react package.",
       "categories": [
         "layouts"
       ],
@@ -742,11 +742,6 @@
           "path": "registry/src/blocks/shell-01/components/shell-header.tsx",
           "type": "registry:component",
           "target": "components/blocks/shell-01/components/shell-header.tsx"
-        },
-        {
-          "path": "registry/src/blocks/shell-01/components/shell-shortcuts-dialog.tsx",
-          "type": "registry:component",
-          "target": "components/blocks/shell-01/components/shell-shortcuts-dialog.tsx"
         },
         {
           "path": "registry/src/blocks/shell-01/data.ts",

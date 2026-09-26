@@ -187,9 +187,9 @@ candidate and must fit in the reserve (rule 7).
 reason if one was given.
 
 6.3. A shortcut shown on the row button is shown as `DropdownMenuShortcut`
-in the menu. The shortcut keeps working while the item is hidden, because
-shortcuts are registered with the `Shortcuts` registry and not with the
-button.
+in the menu. The hint is only a label: Tecton binds no keys, so a key the
+application binds keeps working while the item is hidden, because the
+application binds it and not the button.
 
 6.4. A hidden item's `onAction`, `onPress` and `onChange` handlers are the
 same functions in both forms. The overflow form must never introduce a
@@ -299,8 +299,8 @@ focus returns to that item. This holds whether the focus was on the
 trigger or in the open menu; when several items return in one pass, focus
 goes to the first of them in source order.
 
-12.5. Menu items keep their row shortcuts, and pressing a shortcut acts
-without opening the menu.
+12.5. Menu items keep their row shortcut hints, and a key the application
+binds acts without opening the menu.
 
 ## 13. State preservation
 

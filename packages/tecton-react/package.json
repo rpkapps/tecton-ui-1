@@ -45,6 +45,7 @@
     "input-otp": "^1.5.0",
     "lucide-react": "^1.45.0",
     "next-themes": "^0.4.6",
+    "react-aria-components": "~1.21.1",
     "react-day-picker": "^10.0.1",
     "react-resizable-panels": "^4.12.4",
     "recharts": "3.8.0",
@@ -71,7 +72,6 @@
     "jsdom": "^30.0.1",
     "postcss": "^8",
     "react": "^19.2.6",
-    "react-aria-components": "^1.21.1",
     "react-dom": "^19.2.6",
     "shadcn": "4.21.0",
     "tailwindcss": "^4",
@@ -79,10 +79,8 @@
     "vitest": "^5.0.0"
   },
   "peerDependencies": {
-    "@internationalized/date": "^3",
     "postcss": "^8",
     "react": "^19",
-    "react-aria-components": "~1.21",
     "react-dom": "^19",
     "tailwindcss": "^4"
   },
@@ -490,10 +488,10 @@
       "import": "./dist/tecton/portal.js",
       "default": "./dist/tecton/portal.js"
     },
-    "./tecton/shortcuts": {
-      "types": "./dist/tecton/shortcuts.d.ts",
-      "import": "./dist/tecton/shortcuts.js",
-      "default": "./dist/tecton/shortcuts.js"
+    "./tecton/provider": {
+      "types": "./dist/tecton/provider.d.ts",
+      "import": "./dist/tecton/provider.js",
+      "default": "./dist/tecton/provider.js"
     },
     "./tecton/stat": {
       "types": "./dist/tecton/stat.d.ts",

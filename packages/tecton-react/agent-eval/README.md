@@ -5,7 +5,7 @@ for a need. Nothing here ships in the package.
 
 | File                                             | What it is                                                                                                                                                                                                                                      |
 | ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `queries.heldout.json`, `queries.heldout-2.json` | 90 and 80 search queries with accepted answers. Each set was written by a separate agent that saw only the module names and exports, never the guideline text. Despite the file names they are **no longer held out**: see [Leakage](#leakage). |
+| `queries.heldout.json`, `queries.heldout-2.json` | 89 and 80 search queries with accepted answers. Each set was written by a separate agent that saw only the module names and exports, never the guideline text. Despite the file names they are **no longer held out**: see [Leakage](#leakage). |
 | `sets.json`                                      | Every query set and its use: `floor` (tuned against, held above a CI floor) or `report` (frozen, reported, never tuned against).                                                                                                                |
 | `search-eval.mjs`                                | Retrieval accuracy of `tecton search` on each set, next to four ablations                                                                                                                                                                       |
 
@@ -28,6 +28,11 @@ makes search worse. It also fails if a `report` set is given a floor.
 
 Before this round (2026-09-24 ranking, measured again on 2026-09-26): set 1 72 / 92 / 93 % (MRR 0.81),
 set 2 69 / 86 / 90 % (MRR 0.77).
+
+The table was measured on 90 queries in set 1. When `TectonProvider` replaced the public portal
+provider and the shortcuts module and the direction guideline were removed, set 1 dropped its
+shortcuts query (90 → 89), and both sets accept `provider` for the portal and right-to-left
+queries: 78 / 92 / 96 % (MRR 0.85) on set 1 and 69 / 89 / 95 % (MRR 0.79) on set 2.
 
 - _names only_ matches the query against ids and export names; it is roughly what grepping the
   export list gives you.

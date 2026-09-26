@@ -33,7 +33,6 @@ import {
   AppShellNav,
 } from "@tecton/react/tecton/app-shell"
 import { CountBadge } from "@tecton/react/tecton/count-badge"
-import { ShortcutKeys } from "@tecton/react/tecton/shortcuts"
 
 import { currentUser, navLinks, project } from "../data"
 
@@ -82,10 +81,6 @@ function TopNav({
           />
           <InputGroupAddon align="inline-start">
             <SearchIcon />
-          </InputGroupAddon>
-          <InputGroupAddon align="inline-end">
-            {/* ⌘ K on Apple keyboards, Ctrl + K elsewhere. */}
-            <ShortcutKeys keys="mod+k" />
           </InputGroupAddon>
         </InputGroup>
         <TooltipTrigger>

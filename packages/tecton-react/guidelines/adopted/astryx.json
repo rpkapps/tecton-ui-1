@@ -82,7 +82,7 @@
       "id": "kbd.Kbd.2",
       "component": "kbd",
       "where": "do",
-      "text": "Show shortcuts in the user's platform keys, ⌘ on macOS and Ctrl elsewhere (`ShortcutKeys keys=\"mod+k\"`, not a hard-coded `Kbd`).",
+      "text": "Show shortcuts in the user's platform keys, ⌘ on macOS and Ctrl elsewhere, not a `Kbd` hard-coded to one platform.",
       "origin": "Astryx Kbd #2"
     },
     {
