@@ -109,407 +109,508 @@
     },
     "./components/accordion": {
       "types": "./dist/components/accordion.d.ts",
-      "import": "./dist/components/accordion.js"
+      "import": "./dist/components/accordion.js",
+      "default": "./dist/components/accordion.js"
     },
     "./components/alert": {
       "types": "./dist/components/alert.d.ts",
-      "import": "./dist/components/alert.js"
+      "import": "./dist/components/alert.js",
+      "default": "./dist/components/alert.js"
     },
     "./components/alert-dialog": {
       "types": "./dist/components/alert-dialog.d.ts",
-      "import": "./dist/components/alert-dialog.js"
+      "import": "./dist/components/alert-dialog.js",
+      "default": "./dist/components/alert-dialog.js"
     },
     "./components/aspect-ratio": {
       "types": "./dist/components/aspect-ratio.d.ts",
-      "import": "./dist/components/aspect-ratio.js"
+      "import": "./dist/components/aspect-ratio.js",
+      "default": "./dist/components/aspect-ratio.js"
     },
     "./components/attachment": {
       "types": "./dist/components/attachment.d.ts",
-      "import": "./dist/components/attachment.js"
+      "import": "./dist/components/attachment.js",
+      "default": "./dist/components/attachment.js"
     },
     "./components/avatar": {
       "types": "./dist/components/avatar.d.ts",
-      "import": "./dist/components/avatar.js"
+      "import": "./dist/components/avatar.js",
+      "default": "./dist/components/avatar.js"
     },
     "./components/badge": {
       "types": "./dist/components/badge.d.ts",
-      "import": "./dist/components/badge.js"
+      "import": "./dist/components/badge.js",
+      "default": "./dist/components/badge.js"
     },
     "./components/breadcrumb": {
       "types": "./dist/components/breadcrumb.d.ts",
-      "import": "./dist/components/breadcrumb.js"
+      "import": "./dist/components/breadcrumb.js",
+      "default": "./dist/components/breadcrumb.js"
     },
     "./components/bubble": {
       "types": "./dist/components/bubble.d.ts",
-      "import": "./dist/components/bubble.js"
+      "import": "./dist/components/bubble.js",
+      "default": "./dist/components/bubble.js"
     },
     "./components/button": {
       "types": "./dist/components/button.d.ts",
-      "import": "./dist/components/button.js"
+      "import": "./dist/components/button.js",
+      "default": "./dist/components/button.js"
     },
     "./components/button-group": {
       "types": "./dist/components/button-group.d.ts",
-      "import": "./dist/components/button-group.js"
+      "import": "./dist/components/button-group.js",
+      "default": "./dist/components/button-group.js"
     },
     "./components/calendar": {
       "types": "./dist/components/calendar.d.ts",
-      "import": "./dist/components/calendar.js"
+      "import": "./dist/components/calendar.js",
+      "default": "./dist/components/calendar.js"
     },
     "./components/card": {
       "types": "./dist/components/card.d.ts",
-      "import": "./dist/components/card.js"
+      "import": "./dist/components/card.js",
+      "default": "./dist/components/card.js"
     },
     "./components/carousel": {
       "types": "./dist/components/carousel.d.ts",
-      "import": "./dist/components/carousel.js"
+      "import": "./dist/components/carousel.js",
+      "default": "./dist/components/carousel.js"
     },
     "./components/chart": {
       "types": "./dist/components/chart.d.ts",
-      "import": "./dist/components/chart.js"
+      "import": "./dist/components/chart.js",
+      "default": "./dist/components/chart.js"
     },
     "./components/checkbox": {
       "types": "./dist/components/checkbox.d.ts",
-      "import": "./dist/components/checkbox.js"
+      "import": "./dist/components/checkbox.js",
+      "default": "./dist/components/checkbox.js"
     },
     "./components/collapsible": {
       "types": "./dist/components/collapsible.d.ts",
-      "import": "./dist/components/collapsible.js"
+      "import": "./dist/components/collapsible.js",
+      "default": "./dist/components/collapsible.js"
     },
     "./components/combobox": {
       "types": "./dist/components/combobox.d.ts",
-      "import": "./dist/components/combobox.js"
+      "import": "./dist/components/combobox.js",
+      "default": "./dist/components/combobox.js"
     },
     "./components/command": {
       "types": "./dist/components/command.d.ts",
-      "import": "./dist/components/command.js"
+      "import": "./dist/components/command.js",
+      "default": "./dist/components/command.js"
     },
     "./components/context-menu": {
       "types": "./dist/components/context-menu.d.ts",
-      "import": "./dist/components/context-menu.js"
+      "import": "./dist/components/context-menu.js",
+      "default": "./dist/components/context-menu.js"
     },
     "./components/dialog": {
       "types": "./dist/components/dialog.d.ts",
-      "import": "./dist/components/dialog.js"
+      "import": "./dist/components/dialog.js",
+      "default": "./dist/components/dialog.js"
     },
     "./components/direction": {
       "types": "./dist/components/direction.d.ts",
-      "import": "./dist/components/direction.js"
+      "import": "./dist/components/direction.js",
+      "default": "./dist/components/direction.js"
     },
     "./components/drawer": {
       "types": "./dist/components/drawer.d.ts",
-      "import": "./dist/components/drawer.js"
+      "import": "./dist/components/drawer.js",
+      "default": "./dist/components/drawer.js"
     },
     "./components/dropdown-menu": {
       "types": "./dist/components/dropdown-menu.d.ts",
-      "import": "./dist/components/dropdown-menu.js"
+      "import": "./dist/components/dropdown-menu.js",
+      "default": "./dist/components/dropdown-menu.js"
     },
     "./components/empty": {
       "types": "./dist/components/empty.d.ts",
-      "import": "./dist/components/empty.js"
+      "import": "./dist/components/empty.js",
+      "default": "./dist/components/empty.js"
     },
     "./components/field": {
       "types": "./dist/components/field.d.ts",
-      "import": "./dist/components/field.js"
+      "import": "./dist/components/field.js",
+      "default": "./dist/components/field.js"
     },
     "./components/hover-card": {
       "types": "./dist/components/hover-card.d.ts",
-      "import": "./dist/components/hover-card.js"
+      "import": "./dist/components/hover-card.js",
+      "default": "./dist/components/hover-card.js"
     },
     "./components/input": {
       "types": "./dist/components/input.d.ts",
-      "import": "./dist/components/input.js"
+      "import": "./dist/components/input.js",
+      "default": "./dist/components/input.js"
     },
     "./components/input-group": {
       "types": "./dist/components/input-group.d.ts",
-      "import": "./dist/components/input-group.js"
+      "import": "./dist/components/input-group.js",
+      "default": "./dist/components/input-group.js"
     },
     "./components/input-otp": {
       "types": "./dist/components/input-otp.d.ts",
-      "import": "./dist/components/input-otp.js"
+      "import": "./dist/components/input-otp.js",
+      "default": "./dist/components/input-otp.js"
     },
     "./components/item": {
       "types": "./dist/components/item.d.ts",
-      "import": "./dist/components/item.js"
+      "import": "./dist/components/item.js",
+      "default": "./dist/components/item.js"
     },
     "./components/kbd": {
       "types": "./dist/components/kbd.d.ts",
-      "import": "./dist/components/kbd.js"
+      "import": "./dist/components/kbd.js",
+      "default": "./dist/components/kbd.js"
     },
     "./components/label": {
       "types": "./dist/components/label.d.ts",
-      "import": "./dist/components/label.js"
+      "import": "./dist/components/label.js",
+      "default": "./dist/components/label.js"
     },
     "./components/marker": {
       "types": "./dist/components/marker.d.ts",
-      "import": "./dist/components/marker.js"
+      "import": "./dist/components/marker.js",
+      "default": "./dist/components/marker.js"
     },
     "./components/message": {
       "types": "./dist/components/message.d.ts",
-      "import": "./dist/components/message.js"
+      "import": "./dist/components/message.js",
+      "default": "./dist/components/message.js"
     },
     "./components/message-scroller": {
       "types": "./dist/components/message-scroller.d.ts",
-      "import": "./dist/components/message-scroller.js"
+      "import": "./dist/components/message-scroller.js",
+      "default": "./dist/components/message-scroller.js"
     },
     "./components/native-select": {
       "types": "./dist/components/native-select.d.ts",
-      "import": "./dist/components/native-select.js"
+      "import": "./dist/components/native-select.js",
+      "default": "./dist/components/native-select.js"
     },
     "./components/pagination": {
       "types": "./dist/components/pagination.d.ts",
-      "import": "./dist/components/pagination.js"
+      "import": "./dist/components/pagination.js",
+      "default": "./dist/components/pagination.js"
     },
     "./components/popover": {
       "types": "./dist/components/popover.d.ts",
-      "import": "./dist/components/popover.js"
+      "import": "./dist/components/popover.js",
+      "default": "./dist/components/popover.js"
     },
     "./components/progress": {
       "types": "./dist/components/progress.d.ts",
-      "import": "./dist/components/progress.js"
+      "import": "./dist/components/progress.js",
+      "default": "./dist/components/progress.js"
     },
     "./components/questionnaire": {
       "types": "./dist/components/questionnaire.d.ts",
-      "import": "./dist/components/questionnaire.js"
+      "import": "./dist/components/questionnaire.js",
+      "default": "./dist/components/questionnaire.js"
     },
     "./components/radio-group": {
       "types": "./dist/components/radio-group.d.ts",
-      "import": "./dist/components/radio-group.js"
+      "import": "./dist/components/radio-group.js",
+      "default": "./dist/components/radio-group.js"
     },
     "./components/resizable": {
       "types": "./dist/components/resizable.d.ts",
-      "import": "./dist/components/resizable.js"
+      "import": "./dist/components/resizable.js",
+      "default": "./dist/components/resizable.js"
     },
     "./components/scroll-area": {
       "types": "./dist/components/scroll-area.d.ts",
-      "import": "./dist/components/scroll-area.js"
+      "import": "./dist/components/scroll-area.js",
+      "default": "./dist/components/scroll-area.js"
     },
     "./components/select": {
       "types": "./dist/components/select.d.ts",
-      "import": "./dist/components/select.js"
+      "import": "./dist/components/select.js",
+      "default": "./dist/components/select.js"
     },
     "./components/separator": {
       "types": "./dist/components/separator.d.ts",
-      "import": "./dist/components/separator.js"
+      "import": "./dist/components/separator.js",
+      "default": "./dist/components/separator.js"
     },
     "./components/sheet": {
       "types": "./dist/components/sheet.d.ts",
-      "import": "./dist/components/sheet.js"
+      "import": "./dist/components/sheet.js",
+      "default": "./dist/components/sheet.js"
     },
     "./components/sidebar": {
       "types": "./dist/components/sidebar.d.ts",
-      "import": "./dist/components/sidebar.js"
+      "import": "./dist/components/sidebar.js",
+      "default": "./dist/components/sidebar.js"
     },
     "./components/skeleton": {
       "types": "./dist/components/skeleton.d.ts",
-      "import": "./dist/components/skeleton.js"
+      "import": "./dist/components/skeleton.js",
+      "default": "./dist/components/skeleton.js"
     },
     "./components/slider": {
       "types": "./dist/components/slider.d.ts",
-      "import": "./dist/components/slider.js"
+      "import": "./dist/components/slider.js",
+      "default": "./dist/components/slider.js"
     },
     "./components/sonner": {
       "types": "./dist/components/sonner.d.ts",
-      "import": "./dist/components/sonner.js"
+      "import": "./dist/components/sonner.js",
+      "default": "./dist/components/sonner.js"
     },
     "./components/spinner": {
       "types": "./dist/components/spinner.d.ts",
-      "import": "./dist/components/spinner.js"
+      "import": "./dist/components/spinner.js",
+      "default": "./dist/components/spinner.js"
     },
     "./components/switch": {
       "types": "./dist/components/switch.d.ts",
-      "import": "./dist/components/switch.js"
+      "import": "./dist/components/switch.js",
+      "default": "./dist/components/switch.js"
     },
     "./components/table": {
       "types": "./dist/components/table.d.ts",
-      "import": "./dist/components/table.js"
+      "import": "./dist/components/table.js",
+      "default": "./dist/components/table.js"
     },
     "./components/tabs": {
       "types": "./dist/components/tabs.d.ts",
-      "import": "./dist/components/tabs.js"
+      "import": "./dist/components/tabs.js",
+      "default": "./dist/components/tabs.js"
     },
     "./components/textarea": {
       "types": "./dist/components/textarea.d.ts",
-      "import": "./dist/components/textarea.js"
+      "import": "./dist/components/textarea.js",
+      "default": "./dist/components/textarea.js"
     },
     "./components/toggle": {
       "types": "./dist/components/toggle.d.ts",
-      "import": "./dist/components/toggle.js"
+      "import": "./dist/components/toggle.js",
+      "default": "./dist/components/toggle.js"
     },
     "./components/toggle-group": {
       "types": "./dist/components/toggle-group.d.ts",
-      "import": "./dist/components/toggle-group.js"
+      "import": "./dist/components/toggle-group.js",
+      "default": "./dist/components/toggle-group.js"
     },
     "./components/tooltip": {
       "types": "./dist/components/tooltip.d.ts",
-      "import": "./dist/components/tooltip.js"
+      "import": "./dist/components/tooltip.js",
+      "default": "./dist/components/tooltip.js"
     },
     "./tecton/action-bar": {
       "types": "./dist/tecton/action-bar.d.ts",
-      "import": "./dist/tecton/action-bar.js"
+      "import": "./dist/tecton/action-bar.js",
+      "default": "./dist/tecton/action-bar.js"
     },
     "./tecton/app-finder": {
       "types": "./dist/tecton/app-finder.d.ts",
-      "import": "./dist/tecton/app-finder.js"
+      "import": "./dist/tecton/app-finder.js",
+      "default": "./dist/tecton/app-finder.js"
     },
     "./tecton/app-shell": {
       "types": "./dist/tecton/app-shell.d.ts",
-      "import": "./dist/tecton/app-shell.js"
+      "import": "./dist/tecton/app-shell.js",
+      "default": "./dist/tecton/app-shell.js"
     },
     "./tecton/background": {
       "types": "./dist/tecton/background.d.ts",
-      "import": "./dist/tecton/background.js"
+      "import": "./dist/tecton/background.js",
+      "default": "./dist/tecton/background.js"
     },
     "./tecton/canvas": {
       "types": "./dist/tecton/canvas.d.ts",
-      "import": "./dist/tecton/canvas.js"
+      "import": "./dist/tecton/canvas.js",
+      "default": "./dist/tecton/canvas.js"
     },
     "./tecton/chip": {
       "types": "./dist/tecton/chip.d.ts",
-      "import": "./dist/tecton/chip.js"
+      "import": "./dist/tecton/chip.js",
+      "default": "./dist/tecton/chip.js"
     },
     "./tecton/circular-progress": {
       "types": "./dist/tecton/circular-progress.d.ts",
-      "import": "./dist/tecton/circular-progress.js"
+      "import": "./dist/tecton/circular-progress.js",
+      "default": "./dist/tecton/circular-progress.js"
     },
     "./tecton/color-swatch": {
       "types": "./dist/tecton/color-swatch.d.ts",
-      "import": "./dist/tecton/color-swatch.js"
+      "import": "./dist/tecton/color-swatch.js",
+      "default": "./dist/tecton/color-swatch.js"
     },
     "./tecton/composer": {
       "types": "./dist/tecton/composer.d.ts",
-      "import": "./dist/tecton/composer.js"
+      "import": "./dist/tecton/composer.js",
+      "default": "./dist/tecton/composer.js"
     },
     "./tecton/copy-button": {
       "types": "./dist/tecton/copy-button.d.ts",
-      "import": "./dist/tecton/copy-button.js"
+      "import": "./dist/tecton/copy-button.js",
+      "default": "./dist/tecton/copy-button.js"
     },
     "./tecton/count-badge": {
       "types": "./dist/tecton/count-badge.d.ts",
-      "import": "./dist/tecton/count-badge.js"
+      "import": "./dist/tecton/count-badge.js",
+      "default": "./dist/tecton/count-badge.js"
     },
     "./tecton/link": {
       "types": "./dist/tecton/link.d.ts",
-      "import": "./dist/tecton/link.js"
+      "import": "./dist/tecton/link.js",
+      "default": "./dist/tecton/link.js"
     },
     "./tecton/meter": {
       "types": "./dist/tecton/meter.d.ts",
-      "import": "./dist/tecton/meter.js"
+      "import": "./dist/tecton/meter.js",
+      "default": "./dist/tecton/meter.js"
     },
     "./tecton/overflow": {
       "types": "./dist/tecton/overflow.d.ts",
-      "import": "./dist/tecton/overflow.js"
+      "import": "./dist/tecton/overflow.js",
+      "default": "./dist/tecton/overflow.js"
     },
     "./tecton/page-header": {
       "types": "./dist/tecton/page-header.d.ts",
-      "import": "./dist/tecton/page-header.js"
+      "import": "./dist/tecton/page-header.js",
+      "default": "./dist/tecton/page-header.js"
     },
     "./tecton/panel": {
       "types": "./dist/tecton/panel.d.ts",
-      "import": "./dist/tecton/panel.js"
+      "import": "./dist/tecton/panel.js",
+      "default": "./dist/tecton/panel.js"
     },
     "./tecton/portal": {
       "types": "./dist/tecton/portal.d.ts",
-      "import": "./dist/tecton/portal.js"
+      "import": "./dist/tecton/portal.js",
+      "default": "./dist/tecton/portal.js"
     },
     "./tecton/shortcuts": {
       "types": "./dist/tecton/shortcuts.d.ts",
-      "import": "./dist/tecton/shortcuts.js"
+      "import": "./dist/tecton/shortcuts.js",
+      "default": "./dist/tecton/shortcuts.js"
     },
     "./tecton/stat": {
       "types": "./dist/tecton/stat.d.ts",
-      "import": "./dist/tecton/stat.js"
+      "import": "./dist/tecton/stat.js",
+      "default": "./dist/tecton/stat.js"
     },
     "./tecton/theme-root": {
       "types": "./dist/tecton/theme-root.d.ts",
-      "import": "./dist/tecton/theme-root.js"
+      "import": "./dist/tecton/theme-root.js",
+      "default": "./dist/tecton/theme-root.js"
     },
     "./tecton/tree-view": {
       "types": "./dist/tecton/tree-view.d.ts",
-      "import": "./dist/tecton/tree-view.js"
+      "import": "./dist/tecton/tree-view.js",
+      "default": "./dist/tecton/tree-view.js"
     },
     "./hooks/use-mobile": {
       "types": "./dist/hooks/use-mobile.d.ts",
-      "import": "./dist/hooks/use-mobile.js"
+      "import": "./dist/hooks/use-mobile.js",
+      "default": "./dist/hooks/use-mobile.js"
     },
     "./lib/utils": {
       "types": "./dist/lib/utils.d.ts",
-      "import": "./dist/lib/utils.js"
+      "import": "./dist/lib/utils.js",
+      "default": "./dist/lib/utils.js"
     },
     "./icons": {
       "types": "./dist/icons/index.d.ts",
-      "import": "./dist/icons/index.js"
+      "import": "./dist/icons/index.js",
+      "default": "./dist/icons/index.js"
     },
     "./icons/christmas-tree": {
       "types": "./dist/icons/christmas-tree.d.ts",
-      "import": "./dist/icons/christmas-tree.js"
+      "import": "./dist/icons/christmas-tree.js",
+      "default": "./dist/icons/christmas-tree.js"
     },
     "./icons/drill-bit": {
       "types": "./dist/icons/drill-bit.d.ts",
-      "import": "./dist/icons/drill-bit.js"
+      "import": "./dist/icons/drill-bit.js",
+      "default": "./dist/icons/drill-bit.js"
     },
     "./icons/fault": {
       "types": "./dist/icons/fault.d.ts",
-      "import": "./dist/icons/fault.js"
+      "import": "./dist/icons/fault.js",
+      "default": "./dist/icons/fault.js"
     },
     "./icons/geobodies": {
       "types": "./dist/icons/geobodies.d.ts",
-      "import": "./dist/icons/geobodies.js"
+      "import": "./dist/icons/geobodies.js",
+      "default": "./dist/icons/geobodies.js"
     },
     "./icons/geostructure": {
       "types": "./dist/icons/geostructure.d.ts",
-      "import": "./dist/icons/geostructure.js"
+      "import": "./dist/icons/geostructure.js",
+      "default": "./dist/icons/geostructure.js"
     },
     "./icons/horizon": {
       "types": "./dist/icons/horizon.d.ts",
-      "import": "./dist/icons/horizon.js"
+      "import": "./dist/icons/horizon.js",
+      "default": "./dist/icons/horizon.js"
     },
     "./icons/log-curve": {
       "types": "./dist/icons/log-curve.d.ts",
-      "import": "./dist/icons/log-curve.js"
+      "import": "./dist/icons/log-curve.js",
+      "default": "./dist/icons/log-curve.js"
     },
     "./icons/oil-rig-offshore": {
       "types": "./dist/icons/oil-rig-offshore.d.ts",
-      "import": "./dist/icons/oil-rig-offshore.js"
+      "import": "./dist/icons/oil-rig-offshore.js",
+      "default": "./dist/icons/oil-rig-offshore.js"
     },
     "./icons/rock-formations": {
       "types": "./dist/icons/rock-formations.d.ts",
-      "import": "./dist/icons/rock-formations.js"
+      "import": "./dist/icons/rock-formations.js",
+      "default": "./dist/icons/rock-formations.js"
     },
     "./icons/seismic": {
       "types": "./dist/icons/seismic.d.ts",
-      "import": "./dist/icons/seismic.js"
+      "import": "./dist/icons/seismic.js",
+      "default": "./dist/icons/seismic.js"
     },
     "./icons/strata": {
       "types": "./dist/icons/strata.d.ts",
-      "import": "./dist/icons/strata.js"
+      "import": "./dist/icons/strata.js",
+      "default": "./dist/icons/strata.js"
     },
     "./icons/surface": {
       "types": "./dist/icons/surface.d.ts",
-      "import": "./dist/icons/surface.js"
+      "import": "./dist/icons/surface.js",
+      "default": "./dist/icons/surface.js"
     },
     "./icons/trajectory": {
       "types": "./dist/icons/trajectory.d.ts",
-      "import": "./dist/icons/trajectory.js"
+      "import": "./dist/icons/trajectory.js",
+      "default": "./dist/icons/trajectory.js"
     },
     "./icons/valve": {
       "types": "./dist/icons/valve.d.ts",
-      "import": "./dist/icons/valve.js"
+      "import": "./dist/icons/valve.js",
+      "default": "./dist/icons/valve.js"
     },
     "./icons/velocity-model": {
       "types": "./dist/icons/velocity-model.d.ts",
-      "import": "./dist/icons/velocity-model.js"
+      "import": "./dist/icons/velocity-model.js",
+      "default": "./dist/icons/velocity-model.js"
     },
     "./icons/well": {
       "types": "./dist/icons/well.d.ts",
-      "import": "./dist/icons/well.js"
+      "import": "./dist/icons/well.js",
+      "default": "./dist/icons/well.js"
     },
     "./icons/well-pick": {
       "types": "./dist/icons/well-pick.d.ts",
-      "import": "./dist/icons/well-pick.js"
+      "import": "./dist/icons/well-pick.js",
+      "default": "./dist/icons/well-pick.js"
     },
     "./icons/well-plan": {
       "types": "./dist/icons/well-plan.d.ts",
-      "import": "./dist/icons/well-plan.js"
+      "import": "./dist/icons/well-plan.js",
+      "default": "./dist/icons/well-plan.js"
     }
   },
   "description": "Tecton design system for React — shadcn/ui (React Aria base) components themed through Tecton tokens, plus Tecton-specific components and icons.",
