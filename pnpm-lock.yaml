@@ -223,6 +223,9 @@ importers:
       cn:
         specifier: ^0.2.6
         version: 0.2.6
+      culori:
+        specifier: ^4.0.2
+        version: 4.0.2
       date-fns:
         specifier: ^4.4.0
         version: 4.4.0
@@ -293,9 +296,6 @@ importers:
       '@vitest/coverage-v8':
         specifier: ^5.0.0
         version: 5.0.0(vitest@5.0.0)
-      culori:
-        specifier: ^4.0.2
-        version: 4.0.2
       esbuild:
         specifier: ^0.28.2
         version: 0.28.2

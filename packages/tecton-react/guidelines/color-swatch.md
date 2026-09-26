@@ -21,10 +21,10 @@ related: [Badge, ChartLegendContent, TreeViewItemContent]
 
 ## Do
 
-- Pass any CSS colour to `color` — a hex, an `oklch()` value or `var(--tecton-color-accent-lime-fill)`; values React Aria cannot parse render as a plain swatch with the value as background.
+- Pass any CSS colour to `color` — a hex, `rgb()`, `hsl()`, `oklch()`, a keyword or `var(--tecton-color-accent-lime-fill)`; a translucent colour shows over a checkerboard.
 - Size with `size="xs" | "sm" | "md" | "lg" | "xl"` (12 to 48 px) and pick the corner with `shape="square" | "rounded" | "circle"`.
-- Give it an `aria-label` whenever there is no `label`; the swatch is a `role="img"` element with no text of its own.
-- Make it editable with `onChange`, which receives a hex string, and replace the Tecton accent presets with `presets` when the palette is domain-specific.
+- Name what the colour stands for with `aria-label` (or a string `label`); the swatch appends the colour's English name itself ("Sandstone, vibrant orange"), and `colorName` replaces that name.
+- Make it editable with `onChange`, which receives `#RRGGBB`, and replace the Tecton accent presets with `presets` when the palette is domain-specific; the presets are a radio group, so an arrow key selects as it moves.
 
 ## Don't
 
@@ -51,12 +51,12 @@ Correct:
 
 The swatch is `role="img"` with an accessible name and carries `border border-border-subtle shadow-xs`, which is what keeps a white, pale or transparent colour visible against the surface; a bare div is silent to assistive technology and its inline `style` is what `no-inline-styles` reports.
 
-### HIGH Opening the picker with a press handler
+### HIGH Opening the picker with a click handler
 
 Wrong:
 
 ```tsx
-<ColorSwatch color={color} onPress={() => setPickerOpen(true)} />
+<ColorSwatch color={color} onClick={() => setPickerOpen(true)} />
 ```
 
 Correct:
@@ -65,7 +65,7 @@ Correct:
 <ColorSwatch color={color} onChange={setColor} aria-label="Series colour" />
 ```
 
-`ColorSwatch` renders React Aria's non-interactive swatch unless `onChange` is given; only `onChange` wraps it in the `color-swatch-trigger` button with the preset row and the hex field, so `onPress` is not in the props type and lands on a `span` that never fires it.
+Without `onChange` the swatch is a non-focusable `role="img"` `span`, so an `onClick` on it is out of reach of the keyboard and of assistive technology; `onChange` wraps it in the `color-swatch-trigger` button that opens the preset radio group and the hex field.
 
 ### MEDIUM Label and value written as sibling spans
 
