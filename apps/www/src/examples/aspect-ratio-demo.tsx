@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/aspect-ratio-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/aspect-ratio-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import Image from "@/components/shims/image"
 
 import { AspectRatio } from "@tecton/react/components/aspect-ratio"

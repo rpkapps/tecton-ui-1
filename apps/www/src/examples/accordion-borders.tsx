@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/accordion-borders.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/accordion-borders.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Accordion,
   AccordionContent,
@@ -31,12 +31,12 @@ export default function AccordionBorders() {
   return (
     <Accordion
       className="max-w-lg rounded-lg border"
-      defaultExpandedKeys={["billing"]}
+      defaultValue={["billing"]}
     >
       {items.map((item) => (
         <AccordionItem
           key={item.value}
-          id={item.value}
+          value={item.value}
           className="border-b last:border-b-0"
         >
           <AccordionTrigger className="px-4">{item.trigger}</AccordionTrigger>

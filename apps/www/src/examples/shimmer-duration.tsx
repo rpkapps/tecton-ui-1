@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/shimmer-duration.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/shimmer-duration.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 export function ShimmerDuration() {
   return (
     <div className="mx-auto grid w-full max-w-lg gap-6 text-center text-sm text-muted-foreground sm:grid-cols-2">

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/combobox-invalid.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/combobox-invalid.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import {
@@ -20,19 +20,16 @@ const frameworks = [
 
 export function ComboboxInvalid() {
   return (
-    <Combobox allowsEmptyCollection isInvalid aria-label="Framework">
-      <ComboboxInput placeholder="Select a framework" />
+    <Combobox items={frameworks}>
+      <ComboboxInput placeholder="Select a framework" aria-invalid="true" />
       <ComboboxContent>
-        <ComboboxList
-          renderEmptyState={() => (
-            <ComboboxEmpty>No items found.</ComboboxEmpty>
-          )}
-        >
-          {frameworks.map((item) => (
-            <ComboboxItem key={item} id={item}>
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxList>
+          {(item) => (
+            <ComboboxItem key={item} value={item}>
               {item}
             </ComboboxItem>
-          ))}
+          )}
         </ComboboxList>
       </ComboboxContent>
     </Combobox>

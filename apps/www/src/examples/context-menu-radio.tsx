@@ -1,14 +1,15 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/context-menu-radio.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/context-menu-radio.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
-import { Pressable } from "react-aria-components"
 
 import {
   ContextMenu,
+  ContextMenuContent,
   ContextMenuGroup,
-  ContextMenuItem,
   ContextMenuLabel,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
   ContextMenuSeparator,
   ContextMenuTrigger,
 } from "@tecton/react/components/context-menu"
@@ -18,50 +19,35 @@ export function ContextMenuRadio() {
   const [theme, setTheme] = React.useState("light")
 
   return (
-    <ContextMenuTrigger>
-      <Pressable>
-        <div
-          role="button"
-          className="flex aspect-video w-full max-w-xs items-center justify-center rounded-xl border border-dashed text-sm"
-        >
-          <span className="hidden pointer-fine:inline-block">
-            Right click here
-          </span>
-          <span className="hidden pointer-coarse:inline-block">
-            Long press here
-          </span>
-        </div>
-      </Pressable>
-      <ContextMenu>
-        <ContextMenuGroup
-          selectionMode="single"
-          selectedKeys={[user]}
-          onSelectionChange={(keys) =>
-            setUser(
-              keys === "all" ? "pedro" : (keys.values().next().value as string)
-            )
-          }
-        >
+    <ContextMenu>
+      <ContextMenuTrigger className="flex aspect-video w-full max-w-xs items-center justify-center rounded-xl border border-dashed text-sm">
+        <span className="hidden pointer-fine:inline-block">
+          Right click here
+        </span>
+        <span className="hidden pointer-coarse:inline-block">
+          Long press here
+        </span>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
+        <ContextMenuGroup>
           <ContextMenuLabel>People</ContextMenuLabel>
-          <ContextMenuItem id="pedro">Pedro Duarte</ContextMenuItem>
-          <ContextMenuItem id="colm">Colm Tuite</ContextMenuItem>
+          <ContextMenuRadioGroup value={user} onValueChange={setUser}>
+            <ContextMenuRadioItem value="pedro">
+              Pedro Duarte
+            </ContextMenuRadioItem>
+            <ContextMenuRadioItem value="colm">Colm Tuite</ContextMenuRadioItem>
+          </ContextMenuRadioGroup>
         </ContextMenuGroup>
         <ContextMenuSeparator />
-        <ContextMenuGroup
-          selectionMode="single"
-          selectedKeys={[theme]}
-          onSelectionChange={(keys) =>
-            setTheme(
-              keys === "all" ? "system" : (keys.values().next().value as string)
-            )
-          }
-        >
+        <ContextMenuGroup>
           <ContextMenuLabel>Theme</ContextMenuLabel>
-          <ContextMenuItem id="light">Light</ContextMenuItem>
-          <ContextMenuItem id="dark">Dark</ContextMenuItem>
-          <ContextMenuItem id="system">System</ContextMenuItem>
+          <ContextMenuRadioGroup value={theme} onValueChange={setTheme}>
+            <ContextMenuRadioItem value="light">Light</ContextMenuRadioItem>
+            <ContextMenuRadioItem value="dark">Dark</ContextMenuRadioItem>
+            <ContextMenuRadioItem value="system">System</ContextMenuRadioItem>
+          </ContextMenuRadioGroup>
         </ContextMenuGroup>
-      </ContextMenu>
-    </ContextMenuTrigger>
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }

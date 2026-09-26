@@ -23,8 +23,8 @@ import { Caption, Matrix, Page, Section } from "./matrix"
  */
 const checkboxStates = [
   { label: "Unchecked", props: {} },
-  { label: "Indeterminate", props: { isIndeterminate: true } },
-  { label: "Checked", props: { defaultSelected: true } },
+  { label: "Indeterminate", props: { indeterminate: true } },
+  { label: "Checked", props: { defaultChecked: true } },
 ] as const
 
 const checkboxSizes = [
@@ -46,7 +46,7 @@ function Radio({
       aria-label="Radio"
       className="w-auto"
       defaultValue={checked ? "on" : undefined}
-      isDisabled={disabled}
+      disabled={disabled}
     >
       <RadioGroupItem
         value="on"
@@ -85,7 +85,7 @@ export default function SelectionControlsMatrix() {
                     key="disabled"
                     aria-label={`${label} ${sizeLabel} disabled`}
                     className={className}
-                    isDisabled
+                    disabled
                     {...props}
                   />,
                 ],
@@ -139,20 +139,20 @@ export default function SelectionControlsMatrix() {
                     key="on"
                     size={size}
                     aria-label="On"
-                    defaultSelected
+                    defaultChecked
                   />,
                   <Switch
                     key="disabled-off"
                     size={size}
                     aria-label="Disabled off"
-                    isDisabled
+                    disabled
                   />,
                   <Switch
                     key="disabled-on"
                     size={size}
                     aria-label="Disabled on"
-                    defaultSelected
-                    isDisabled
+                    defaultChecked
+                    disabled
                   />,
                 ],
               },

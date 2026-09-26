@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/bubble-link-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/bubble-link-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { toast } from "sonner"
@@ -18,38 +18,33 @@ export function BubbleLinkButtonDemo() {
       <BubbleGroup>
         <Bubble variant="tinted" align="end">
           <BubbleContent
-            render={(props) => (
-              <button
-                onClick={() => toast("You clicked forgot password")}
-                {...props}
-              />
-            )}
+            render={
+              <button onClick={() => toast("You clicked forgot password")} />
+            }
           >
             I forgot my password
           </BubbleContent>
         </Bubble>
         <Bubble variant="tinted" align="end">
           <BubbleContent
-            render={(props) => (
+            render={
               <button
                 onClick={() => toast("You clicked help with subscription")}
-                {...props}
               />
-            )}
+            }
           >
             I need help with my subscription
           </BubbleContent>
         </Bubble>
         <Bubble variant="tinted" align="end">
           <BubbleContent
-            render={(props) => (
+            render={
               <button
                 onClick={() =>
                   toast("You clicked something else. Talk to a human.")
                 }
-                {...props}
               />
-            )}
+            }
           >
             Something else. Talk to a human.
           </BubbleContent>

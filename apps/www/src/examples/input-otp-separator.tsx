@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/input-otp-separator.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/input-otp-separator.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   InputOTP,
   InputOTPGroup,

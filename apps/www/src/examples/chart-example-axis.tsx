@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/chart-example-axis.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/chart-example-axis.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"

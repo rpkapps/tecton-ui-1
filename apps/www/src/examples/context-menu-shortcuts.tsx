@@ -1,10 +1,7 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/context-menu-shortcuts.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-"use client"
-
-import { Pressable } from "react-aria-components"
-
+// Synced from shadcn/ui (apps/v4/examples/base/context-menu-shortcuts.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   ContextMenu,
+  ContextMenuContent,
   ContextMenuGroup,
   ContextMenuItem,
   ContextMenuSeparator,
@@ -14,24 +11,22 @@ import {
 
 export function ContextMenuShortcuts() {
   return (
-    <ContextMenuTrigger>
-      <Pressable>
-        <div className="flex aspect-video w-full max-w-xs items-center justify-center rounded-xl border border-dashed text-sm">
-          <span className="hidden pointer-fine:inline-block">
-            Right click here
-          </span>
-          <span className="hidden pointer-coarse:inline-block">
-            Long press here
-          </span>
-        </div>
-      </Pressable>
-      <ContextMenu>
+    <ContextMenu>
+      <ContextMenuTrigger className="flex aspect-video w-full max-w-xs items-center justify-center rounded-xl border border-dashed text-sm">
+        <span className="hidden pointer-fine:inline-block">
+          Right click here
+        </span>
+        <span className="hidden pointer-coarse:inline-block">
+          Long press here
+        </span>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
         <ContextMenuGroup>
           <ContextMenuItem>
             Back
             <ContextMenuShortcut>⌘[</ContextMenuShortcut>
           </ContextMenuItem>
-          <ContextMenuItem isDisabled>
+          <ContextMenuItem disabled>
             Forward
             <ContextMenuShortcut>⌘]</ContextMenuShortcut>
           </ContextMenuItem>
@@ -51,7 +46,7 @@ export function ContextMenuShortcuts() {
             <ContextMenuShortcut>⇧⌘S</ContextMenuShortcut>
           </ContextMenuItem>
         </ContextMenuGroup>
-      </ContextMenu>
-    </ContextMenuTrigger>
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }

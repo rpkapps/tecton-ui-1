@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/radio-group-description.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/radio-group-description.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Field,
   FieldContent,
@@ -9,11 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group
 
 export function RadioGroupDescription() {
   return (
-    <RadioGroup
-      aria-label="Density"
-      defaultValue="comfortable"
-      className="w-fit"
-    >
+    <RadioGroup defaultValue="comfortable" className="w-fit">
       <Field orientation="horizontal">
         <RadioGroupItem value="default" id="desc-r1" />
         <FieldContent>

@@ -1,9 +1,8 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/breadcrumb-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/breadcrumb-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import Link from "@/components/shims/link"
-import { ChevronDownIcon } from "lucide-react"
-import { Button } from "react-aria-components"
+import { ChevronDownIcon, DotIcon } from "lucide-react"
 
 import {
   useTranslation,
@@ -15,9 +14,11 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@tecton/react/components/breadcrumb"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
@@ -66,24 +67,21 @@ export function BreadcrumbRtl() {
     <Breadcrumb dir={dir}>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink
-            href="/"
-            render={(props) =>
-              "href" in props ? <Link {...props} /> : <span {...props} />
-            }
-          >
-            {t.home}
-          </BreadcrumbLink>
+          <BreadcrumbLink render={<Link href="/" />}>{t.home}</BreadcrumbLink>
         </BreadcrumbItem>
-
+        <BreadcrumbSeparator>
+          <DotIcon />
+        </BreadcrumbSeparator>
         <BreadcrumbItem>
-          <DropdownMenuTrigger>
-            <Button className="flex items-center gap-1">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<button className="flex items-center gap-1" />}
+            >
               {t.components}
               <ChevronDownIcon data-icon="inline-end" className="size-3.5" />
-            </Button>
-            <DropdownMenu
-              placement={dir === "rtl" ? "bottom end" : "bottom start"}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align={dir === "rtl" ? "end" : "start"}
               data-lang={dir === "rtl" ? language : undefined}
               dir={dir}
             >
@@ -92,10 +90,12 @@ export function BreadcrumbRtl() {
                 <DropdownMenuItem>{t.themes}</DropdownMenuItem>
                 <DropdownMenuItem>{t.github}</DropdownMenuItem>
               </DropdownMenuGroup>
-            </DropdownMenu>
-          </DropdownMenuTrigger>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </BreadcrumbItem>
-
+        <BreadcrumbSeparator>
+          <DotIcon />
+        </BreadcrumbSeparator>
         <BreadcrumbItem>
           <BreadcrumbPage>{t.breadcrumb}</BreadcrumbPage>
         </BreadcrumbItem>

@@ -1,10 +1,11 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/alert-dialog-small-media.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/alert-dialog-small-media.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { BluetoothIcon } from "lucide-react"
 
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
@@ -16,9 +17,12 @@ import { Button } from "@tecton/react/components/button"
 
 export function AlertDialogSmallWithMedia() {
   return (
-    <AlertDialogTrigger>
-      <Button variant="outline">Show Dialog</Button>
-      <AlertDialog size="sm">
+    <AlertDialog>
+      <AlertDialogTrigger
+        render={<Button variant="outline">Show Dialog</Button>}
+      />
+
+      <AlertDialogContent size="sm">
         <AlertDialogHeader>
           <AlertDialogMedia>
             <BluetoothIcon />
@@ -32,7 +36,7 @@ export function AlertDialogSmallWithMedia() {
           <AlertDialogCancel>Don&apos;t allow</AlertDialogCancel>
           <AlertDialogAction>Allow</AlertDialogAction>
         </AlertDialogFooter>
-      </AlertDialog>
-    </AlertDialogTrigger>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/avatar-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/avatar-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Avatar,
   AvatarBadge,

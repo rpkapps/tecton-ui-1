@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/pagination-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/pagination-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Pagination,
   PaginationContent,

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/slider-controlled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/slider-controlled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -18,12 +18,11 @@ export function SliderControlled() {
         </span>
       </div>
       <Slider
-        aria-label="Temperature"
         id="slider-demo-temperature"
         value={value}
-        onChange={(value) => setValue(value as number[])}
-        minValue={0}
-        maxValue={1}
+        onValueChange={(value) => setValue(value as number[])}
+        min={0}
+        max={1}
         step={0.1}
       />
     </div>

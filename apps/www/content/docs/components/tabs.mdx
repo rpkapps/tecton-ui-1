@@ -2,9 +2,9 @@
 title: Tabs
 description: A set of layered sections of content—known as tab panels—that are displayed one at a time.
 links:
-  doc: https://react-aria.adobe.com/Tabs
-  api: https://react-aria.adobe.com/Tabs#api
-upstream: apps/v4/content/docs/components/aria/tabs.mdx
+  doc: https://base-ui.com/react/components/tabs
+  api: https://base-ui.com/react/components/tabs#api-reference
+upstream: apps/v4/content/docs/components/base/tabs.mdx
 ---
 
 <ComponentPreview
@@ -19,13 +19,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/componen
 ```
 
 ```tsx lineNumbers
-<Tabs defaultSelectedKey="account" className="w-[400px]">
+<Tabs defaultValue="account" className="w-[400px]">
   <TabsList>
-    <TabsTrigger id="account">Account</TabsTrigger>
-    <TabsTrigger id="password">Password</TabsTrigger>
+    <TabsTrigger value="account">Account</TabsTrigger>
+    <TabsTrigger value="password">Password</TabsTrigger>
   </TabsList>
-  <TabsContent id="account">Make changes to your account here.</TabsContent>
-  <TabsContent id="password">Change your password here.</TabsContent>
+  <TabsContent value="account">Make changes to your account here.</TabsContent>
+  <TabsContent value="password">Change your password here.</TabsContent>
 </Tabs>
 ```
 
@@ -211,4 +211,4 @@ React Aria marks the selected tab with `data-selected`, not `data-state="active"
 
 ## API Reference
 
-See the [React Aria Tabs](https://react-aria.adobe.com/Tabs#api) documentation.
+See the [Base UI Tabs](https://base-ui.com/react/components/tabs#api-reference) documentation.

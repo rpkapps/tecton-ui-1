@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/input-group-inline-end.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/input-group-inline-end.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { EyeOffIcon } from "lucide-react"
 
 import {

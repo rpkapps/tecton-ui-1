@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/toggle-group-font-weight-selector.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/toggle-group-font-weight-selector.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -19,14 +19,14 @@ export function ToggleGroupFontWeightSelector() {
     <Field>
       <FieldLabel>Font Weight</FieldLabel>
       <ToggleGroup
-        selectedKeys={[fontWeight]}
-        onSelectionChange={(value) => setFontWeight([...value][0] as string)}
+        value={[fontWeight]}
+        onValueChange={(value) => setFontWeight(value[0])}
         variant="outline"
         spacing={2}
         size="lg"
       >
         <ToggleGroupItem
-          id="light"
+          value="light"
           aria-label="Light"
           className="flex size-16 flex-col items-center justify-center rounded-xl"
         >
@@ -34,7 +34,7 @@ export function ToggleGroupFontWeightSelector() {
           <span className="text-xs text-muted-foreground">Light</span>
         </ToggleGroupItem>
         <ToggleGroupItem
-          id="normal"
+          value="normal"
           aria-label="Normal"
           className="flex size-16 flex-col items-center justify-center rounded-xl"
         >
@@ -42,7 +42,7 @@ export function ToggleGroupFontWeightSelector() {
           <span className="text-xs text-muted-foreground">Normal</span>
         </ToggleGroupItem>
         <ToggleGroupItem
-          id="medium"
+          value="medium"
           aria-label="Medium"
           className="flex size-16 flex-col items-center justify-center rounded-xl"
         >
@@ -50,7 +50,7 @@ export function ToggleGroupFontWeightSelector() {
           <span className="text-xs text-muted-foreground">Medium</span>
         </ToggleGroupItem>
         <ToggleGroupItem
-          id="bold"
+          value="bold"
           aria-label="Bold"
           className="flex size-16 flex-col items-center justify-center rounded-xl"
         >

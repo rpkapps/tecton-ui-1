@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/select-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/select-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Select,
   SelectContent,
@@ -10,6 +10,7 @@ import {
 
 export function SelectDisabled() {
   const items = [
+    { label: "Select a fruit", value: null },
     { label: "Apple", value: "apple" },
     { label: "Banana", value: "banana" },
     { label: "Blueberry", value: "blueberry" },
@@ -17,8 +18,8 @@ export function SelectDisabled() {
     { label: "Pineapple", value: "pineapple" },
   ]
   return (
-    <Select isDisabled placeholder="Select a fruit" className="w-full max-w-48">
-      <SelectTrigger>
+    <Select items={items} disabled>
+      <SelectTrigger className="w-full max-w-48">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
@@ -26,8 +27,8 @@ export function SelectDisabled() {
           {items.map((item) => (
             <SelectItem
               key={item.value}
-              id={item.value}
-              isDisabled={item.disabled}
+              value={item.value}
+              disabled={item.disabled}
             >
               {item.label}
             </SelectItem>

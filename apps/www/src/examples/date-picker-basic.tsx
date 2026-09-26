@@ -1,38 +1,45 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/date-picker-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/date-picker-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
-import { getLocalTimeZone, type CalendarDate } from "@internationalized/date"
+import { format } from "date-fns"
 
 import { Button } from "@tecton/react/components/button"
 import { Calendar } from "@tecton/react/components/calendar"
 import { Field, FieldLabel } from "@tecton/react/components/field"
-import { Popover, PopoverTrigger } from "@tecton/react/components/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@tecton/react/components/popover"
 
 export function DatePickerSimple() {
-  const [date, setDate] = React.useState<CalendarDate | null>(null)
+  const [date, setDate] = React.useState<Date>()
 
   return (
     <Field className="mx-auto w-44">
       <FieldLabel htmlFor="date-picker-simple">Date</FieldLabel>
-      <PopoverTrigger>
-        <Button
-          variant="outline"
-          id="date-picker-simple"
-          className="justify-start font-normal"
+      <Popover>
+        <PopoverTrigger
+          render={
+            <Button
+              variant="outline"
+              id="date-picker-simple"
+              className="justify-start font-normal"
+            />
+          }
         >
-          {date ? (
-            date
-              .toDate(getLocalTimeZone())
-              .toLocaleDateString(undefined, { dateStyle: "long" })
-          ) : (
-            <span>Pick a date</span>
-          )}
-        </Button>
-        <Popover className="w-auto p-0" placement="bottom start">
-          <Calendar value={date} onChange={setDate} />
-        </Popover>
-      </PopoverTrigger>
+          {date ? format(date, "PPP") : <span>Pick a date</span>}
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={setDate}
+            defaultMonth={date}
+          />
+        </PopoverContent>
+      </Popover>
     </Field>
   )
 }

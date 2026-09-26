@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/switch-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/switch-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"

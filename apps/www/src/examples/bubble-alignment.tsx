@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/bubble-alignment.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/bubble-alignment.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
 
 export function BubbleAlignmentDemo() {

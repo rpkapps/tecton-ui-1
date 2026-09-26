@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/resizable-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/resizable-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/scroll-fade-overflow.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/scroll-fade-overflow.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 export function ScrollFadeOverflow() {
   return (
     <div className="mx-auto w-full max-w-xs overflow-hidden rounded-2xl border">

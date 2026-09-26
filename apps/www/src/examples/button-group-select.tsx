@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/button-group-select.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/button-group-select.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -28,14 +28,15 @@ export default function ButtonGroupSelect() {
     <ButtonGroup>
       <ButtonGroup>
         <Select
+          items={CURRENCIES}
           value={currency}
-          onChange={(value) => setCurrency(value as string)}
+          onValueChange={(value) => setCurrency(value as string)}
         >
           <SelectTrigger className="font-mono">{currency}</SelectTrigger>
-          <SelectContent placement="bottom start">
+          <SelectContent alignItemWithTrigger={false} align="start">
             <SelectGroup>
               {CURRENCIES.map((item) => (
-                <SelectItem key={item.value} id={item.value}>
+                <SelectItem key={item.value} value={item.value}>
                   {item.value}{" "}
                   <span className="text-muted-foreground">{item.label}</span>
                 </SelectItem>

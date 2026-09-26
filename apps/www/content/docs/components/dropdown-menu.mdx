@@ -2,9 +2,9 @@
 title: Dropdown Menu
 description: Displays a menu to the user — such as a set of actions or functions — triggered by a button.
 links:
-  doc: https://react-aria.adobe.com/Menu
-  api: https://react-aria.adobe.com/Menu#api
-upstream: apps/v4/content/docs/components/aria/dropdown-menu.mdx
+  doc: https://base-ui.com/react/components/menu
+  api: https://base-ui.com/react/components/menu#api-reference
+upstream: apps/v4/content/docs/components/base/dropdown-menu.mdx
 ---
 
 <ComponentPreview
@@ -18,6 +18,7 @@ upstream: apps/v4/content/docs/components/aria/dropdown-menu.mdx
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -27,9 +28,11 @@ import {
 ```
 
 ```tsx lineNumbers
-<DropdownMenuTrigger>
-  <Button variant="outline">Open</Button>
-  <DropdownMenu>
+<DropdownMenu>
+  <DropdownMenuTrigger render={<Button variant="outline" />}>
+    Open
+  </DropdownMenuTrigger>
+  <DropdownMenuContent>
     <DropdownMenuGroup>
       <DropdownMenuLabel>My Account</DropdownMenuLabel>
       <DropdownMenuItem>Profile</DropdownMenuItem>
@@ -40,8 +43,8 @@ import {
       <DropdownMenuItem>Team</DropdownMenuItem>
       <DropdownMenuItem>Subscription</DropdownMenuItem>
     </DropdownMenuGroup>
-  </DropdownMenu>
-</DropdownMenuTrigger>
+  </DropdownMenuContent>
+</DropdownMenu>
 ```
 
 ## Composition
@@ -49,9 +52,9 @@ import {
 Use the following composition to build a `DropdownMenu`:
 
 ```text
-DropdownMenuTrigger
-├── Button
-└── DropdownMenu
+DropdownMenu
+├── DropdownMenuTrigger
+└── DropdownMenuContent
     ├── DropdownMenuGroup
     │   ├── DropdownMenuLabel
     │   ├── DropdownMenuItem
@@ -59,8 +62,14 @@ DropdownMenuTrigger
     ├── DropdownMenuSeparator
     ├── DropdownMenuGroup
     │   ├── DropdownMenuLabel
-    │   ├── DropdownMenuItem
-    │   └── DropdownMenuItem
+    │   ├── DropdownMenuCheckboxItem
+    │   └── DropdownMenuCheckboxItem
+    ├── DropdownMenuSeparator
+    ├── DropdownMenuGroup
+    │   ├── DropdownMenuLabel
+    │   └── DropdownMenuRadioGroup
+    │       ├── DropdownMenuRadioItem
+    │       └── DropdownMenuRadioItem
     └── DropdownMenuSub
         ├── DropdownMenuSubTrigger
         └── DropdownMenuSubContent
@@ -96,7 +105,7 @@ Combine icons with labels for quick scanning.
 
 ## Checkboxes
 
-Use `selectionMode="multiple"` for toggles.
+Use `DropdownMenuCheckboxItem` for toggles.
 
 <ComponentPreview name="dropdown-menu-checkboxes" />
 
@@ -108,7 +117,7 @@ Add icons to checkbox items.
 
 ## Radio Group
 
-Use `selectionMode="single"` for exclusive choices.
+Use `DropdownMenuRadioGroup` for exclusive choices.
 
 <ComponentPreview name="dropdown-menu-radio-group" />
 
@@ -279,4 +288,4 @@ Tailwind's stock palette is reset, so `text-red-600` emits no CSS, while `varian
 
 ## API Reference
 
-See the [React Aria documentation](https://react-aria.adobe.com/Menu) for the full API reference.
+See the [Base UI documentation](https://base-ui.com/react/components/menu) for the full API reference.

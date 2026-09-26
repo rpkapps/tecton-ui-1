@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/item-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/item-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { BadgeCheckIcon, ChevronRightIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
@@ -27,7 +27,7 @@ export function ItemDemo() {
           </Button>
         </ItemActions>
       </Item>
-      <Item href="#" variant="outline" size="sm">
+      <Item variant="outline" size="sm" render={<a href="#" />}>
         <ItemMedia>
           <BadgeCheckIcon className="size-5" />
         </ItemMedia>

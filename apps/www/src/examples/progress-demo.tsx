@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/progress-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/progress-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -13,5 +13,5 @@ export default function ProgressDemo() {
     return () => clearTimeout(timer)
   }, [])
 
-  return <Progress aria-label="Loading" value={progress} className="w-[60%]" />
+  return <Progress value={progress} className="w-[60%]" />
 }

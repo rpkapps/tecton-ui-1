@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/scroll-area-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/scroll-area-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import * as React from "react"
 
 import { ScrollArea } from "@tecton/react/components/scroll-area"

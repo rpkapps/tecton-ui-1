@@ -1,14 +1,14 @@
 /// <reference types="node" />
 /**
- * Ports the upstream shadcn/ui docs for the React Aria base into this site.
+ * Ports the upstream shadcn/ui docs for the Base UI base into this site.
  *
- *   content/docs/components/aria/<name>.mdx  ->  content/docs/components/<name>.mdx
- *   examples/aria/<example>.tsx              ->  src/examples/<example>.tsx
+ *   content/docs/components/base/<name>.mdx  ->  content/docs/components/<name>.mdx
+ *   examples/base/<example>.tsx              ->  src/examples/<example>.tsx
  *
  * Only the pages of components that exist in packages/tecton-react/src/components
  * (plus a few upstream guide pages) are synced. Import paths are rewritten to
  * `@tecton/react/...`; examples that depend on upstream-only infrastructure
- * (AI SDK, next/font, react-day-picker…) are skipped and the previews that
+ * (AI SDK, next/font, chrono-node…) are skipped and the previews that
  * reference them are removed from the page. A report is written next to this
  * script so the skips are visible.
  *
@@ -20,8 +20,8 @@
  * Usage:  bun run scripts/sync-upstream-docs.mts
  * Env:    SHADCN_UPSTREAM_DIR  path to a shadcn-ui/ui git checkout at the commit
  *         pinned in docs/UPSTREAM.md (default: <repo>/.cache/shadcn-ui). Only
- *         apps/v4/content/docs, apps/v4/examples/aria and apps/v4/public/images
- *         are read.
+ *         apps/v4/content/docs, apps/v4/examples/{base,radix} and
+ *         apps/v4/public/{images,avatars} are read.
  */
 import { execFileSync } from "node:child_process"
 import { promises as fs } from "node:fs"
@@ -47,11 +47,31 @@ const IMAGES_OUT = path.join(WWW, "public/images")
 const SYNCED_EXAMPLE_HEADER = "// Synced from shadcn/ui"
 const SYNCED_PAGE_MARKER = /^upstream: apps\/v4\//m
 
-/** Upstream examples that do not type-check against the pinned dependencies. */
-const BROKEN_EXAMPLES: Record<string, string> = {
-  "select-field-dynamic":
-    "uses SelectValue render props (id/name) that react-aria-components 1.21 does not expose",
+/** The upstream base the generated components come from (docs/UPSTREAM.md). */
+const BASE = "base"
+
+/**
+ * Components Tecton ships that the Base UI docs do not document (upstream's
+ * `base` pages cover its own `toast` instead of `sonner`). Their page and
+ * examples come from the base named here; the sonner examples only call
+ * `toast()` from a Button's `onClick`, which is the same on every base.
+ */
+const PAGE_BASES: Record<string, string> = {
+  sonner: "radix",
 }
+
+/**
+ * Upstream pages of generated components that are not documented here, and
+ * why.
+ */
+const SKIPPED_PAGES: Record<string, string> = {
+  // components/direction re-exports Base UI's provider; applications set the
+  // direction with TectonProvider (/docs/tecton/provider).
+  direction: "TectonProvider sets the direction",
+}
+
+/** Upstream examples that do not type-check against the pinned dependencies. */
+const BROKEN_EXAMPLES: Record<string, string> = {}
 
 /**
  * Upstream `type="block"` previews render a full-page demo in an iframe, which
@@ -69,7 +89,7 @@ const EXTRA_PAGES = ["data-table", "date-picker"]
 
 /**
  * Other upstream docs folders that are synced page by page. The pages reference
- * `examples/aria/*` like the component pages do.
+ * `examples/base/*` like the component pages do.
  */
 const EXTRA_FOLDERS: Record<string, { title: string; pages: string[] }> = {
   utils: { title: "Utilities", pages: ["scroll-fade", "shimmer"] },
@@ -78,9 +98,11 @@ const EXTRA_FOLDERS: Record<string, { title: string; pages: string[] }> = {
 /** Module specifiers examples may import, and how to rewrite them. */
 const IMPORT_REWRITES: [RegExp, string][] = [
   [
-    /^@\/styles\/aria-[a-z]+\/ui(?:-rtl)?\/(.+)$/,
+    /^@\/styles\/(?:base|radix)-[a-z]+\/ui(?:-rtl)?\/(.+)$/,
     "@tecton/react/components/$1",
   ],
+  // a few upstream examples still import the pre-bases registry
+  [/^@\/registry\/new-york-v4\/ui\/(.+)$/, "@tecton/react/components/$1"],
   [/^@\/hooks\/use-mobile$/, "@tecton/react/hooks/use-mobile"],
   [/^next\/image$/, "@/components/shims/image"],
   [/^next\/link$/, "@/components/shims/link"],
@@ -94,9 +116,11 @@ const ALLOWED_MODULES = new Set([
   "react-dom",
   "cn",
   "lucide-react",
-  "react-aria-components",
   "sonner",
-  "@internationalized/date",
+  "date-fns",
+  "date-fns/locale",
+  "react-day-picker",
+  "react-day-picker/locale",
   "recharts",
   "input-otp",
   "@tanstack/react-table",
@@ -418,134 +442,6 @@ function rewriteImports(source: string): { code: string; blocked?: string } {
   return { code, blocked }
 }
 
-/**
- * The React Aria handler that replaces `onClick` on a component. Upstream
- * examples written for the Radix base use `onClick`, which React Aria only
- * keeps for compatibility; `onPress` also covers keyboard and touch, and a
- * menu item reports `onAction`. A DOM element (lower-case tag) keeps `onClick`.
- */
-const PRESS_HANDLERS: Record<string, string> = {
-  Button: "onPress",
-  InputGroupButton: "onPress",
-  DropdownMenuItem: "onAction",
-  ContextMenuItem: "onAction",
-  MenubarItem: "onAction",
-}
-
-function rewritePressHandlers(code: string, exampleName: string): string {
-  const file = ts.createSourceFile(
-    `${exampleName}.tsx`,
-    code,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TSX
-  )
-  const edits: { start: number; end: number; text: string }[] = []
-  const visit = (node: ts.Node) => {
-    if (ts.isJsxAttribute(node) && node.name.getText(file) === "onClick") {
-      const tag = node.parent.parent.tagName.getText(file)
-      if (!/^[a-z]/.test(tag)) {
-        const handler = PRESS_HANDLERS[tag.split(".").pop() ?? tag]
-        if (!handler) {
-          throw new Error(
-            `${exampleName}: onClick on <${tag}>; add its React Aria handler to PRESS_HANDLERS`
-          )
-        }
-        edits.push({
-          start: node.name.getStart(file),
-          end: node.name.getEnd(),
-          text: handler,
-        })
-      }
-    }
-    ts.forEachChild(node, visit)
-  }
-  visit(file)
-  for (const edit of edits.sort((a, b) => b.start - a.start)) {
-    code = code.slice(0, edit.start) + edit.text + code.slice(edit.end)
-  }
-  return code
-}
-
-/**
- * Upstream labels a Select with `<FieldLabel htmlFor={id}>` next to
- * `<SelectTrigger id={id}>`. React Aria always sets the trigger's
- * `aria-labelledby` (to the selected value), which overrides `<label for>`, so
- * the Select is announced by its value alone. This gives that label an id and
- * points the Select's `aria-labelledby` at it; the layout stays as upstream's.
- */
-function rewriteSelectLabels(code: string, exampleName: string): string {
-  const file = ts.createSourceFile(
-    `${exampleName}.tsx`,
-    code,
-    ts.ScriptTarget.Latest,
-    true,
-    ts.ScriptKind.TSX
-  )
-  type Opening = ts.JsxOpeningElement | ts.JsxSelfClosingElement
-  const tagOf = (el: Opening) => el.tagName.getText(file)
-  const attrOf = (el: Opening, name: string) =>
-    el.attributes.properties.find(
-      (p): p is ts.JsxAttribute =>
-        ts.isJsxAttribute(p) && p.name.getText(file) === name
-    )
-  const valueText = (a: ts.JsxAttribute | undefined) =>
-    a?.initializer?.getText(file)
-  const openings: Opening[] = []
-  const selects: { opening: Opening; triggerId?: string }[] = []
-  const visit = (node: ts.Node) => {
-    if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
-      openings.push(node)
-    }
-    if (ts.isJsxElement(node) && tagOf(node.openingElement) === "Select") {
-      let triggerId: string | undefined
-      const findTrigger = (child: ts.Node) => {
-        if (
-          (ts.isJsxOpeningElement(child) ||
-            ts.isJsxSelfClosingElement(child)) &&
-          tagOf(child) === "SelectTrigger"
-        ) {
-          triggerId ??= valueText(attrOf(child, "id"))
-        }
-        ts.forEachChild(child, findTrigger)
-      }
-      node.children.forEach(findTrigger)
-      selects.push({ opening: node.openingElement, triggerId })
-    }
-    ts.forEachChild(node, visit)
-  }
-  visit(file)
-
-  const labelIdFor = (id: string) =>
-    id.startsWith('"')
-      ? `"${id.slice(1, -1)}-label"`
-      : `{\`\${${id.slice(1, -1)}}-label\`}`
-  const edits: { at: number; text: string }[] = []
-  for (const { opening, triggerId } of selects) {
-    if (!triggerId) continue
-    if (attrOf(opening, "aria-labelledby") || attrOf(opening, "aria-label"))
-      continue
-    const label = openings.find(
-      (el) =>
-        /(^|\.)(Field)?Label$/.test(tagOf(el)) &&
-        valueText(attrOf(el, "htmlFor")) === triggerId
-    )
-    if (!label) continue
-    const labelId = valueText(attrOf(label, "id")) ?? labelIdFor(triggerId)
-    if (!attrOf(label, "id")) {
-      edits.push({ at: label.tagName.getEnd(), text: ` id=${labelId}` })
-    }
-    edits.push({
-      at: opening.tagName.getEnd(),
-      text: ` aria-labelledby=${labelId}`,
-    })
-  }
-  for (const edit of edits.sort((a, b) => b.at - a.at)) {
-    code = code.slice(0, edit.at) + edit.text + code.slice(edit.at)
-  }
-  return code
-}
-
 // ---------------------------------------------------------------------------
 // DOM ids
 // ---------------------------------------------------------------------------
@@ -566,31 +462,10 @@ const ID_OR_REF_ATTR = new RegExp(
 )
 
 /**
- * Components whose `id` is the key of a React Aria collection item (a tab, a
- * toggle, a menu or list item, a table row…), not a DOM id.
+ * The static DOM ids of an example (`id="…"` on any element or component: the
+ * Base UI components pass `id` through to their element; an item's identity is
+ * its `value`).
  */
-const COLLECTION_KEY_TAGS = new Set([
-  "AccordionItem",
-  "ComboboxChip",
-  "ComboboxGroup",
-  "ComboboxItem",
-  "CommandItem",
-  "ContextMenuCheckboxItem",
-  "ContextMenuItem",
-  "ContextMenuRadioItem",
-  "DropdownMenuCheckboxItem",
-  "DropdownMenuItem",
-  "DropdownMenuRadioItem",
-  "MenubarItem",
-  "SelectItem",
-  "TableHead",
-  "TableRow",
-  "TabsContent",
-  "TabsTrigger",
-  "ToggleGroupItem",
-])
-
-/** The static DOM ids of an example (`id="…"` on anything but a collection item). */
 function domIds(code: string): string[] {
   const file = ts.createSourceFile(
     "example.tsx",
@@ -605,8 +480,7 @@ function domIds(code: string): string[] {
       ts.isJsxAttribute(node) &&
       node.name.getText(file) === "id" &&
       node.initializer &&
-      ts.isStringLiteral(node.initializer) &&
-      !COLLECTION_KEY_TAGS.has(node.parent.parent.tagName.getText(file))
+      ts.isStringLiteral(node.initializer)
     ) {
       ids.push(node.initializer.text)
     }
@@ -680,7 +554,7 @@ function dedupeDomIds(
 // ---------------------------------------------------------------------------
 
 // Tecton additions to a synced component page: the extra variants that the
-// `aria-tecton` overlay adds to the upstream component (alert severity,
+// `base-tecton` overlay adds to the upstream component (alert severity,
 // separator emphasis, badge colours, input variants…). The content of
 // `scripts/docs-extras/<name>.mdx` is inserted before the upstream
 // "API Reference" section, or appended when the page has none.
@@ -798,26 +672,32 @@ const PAGE_REWRITES: Record<
       "sidebar page (SIDEBAR_WIDTH)"
     )
     // The upstream RTL section links to shadcn's own configuration guide and a
-    // hosted preview (`<Button asChild>` has no React Aria equivalent either);
-    // the package supports RTL through its Direction provider.
+    // hosted preview of upstream's block; the package reads the direction
+    // from TectonProvider.
     return replaceOrThrow(
       mdx,
       /\n## RTL\n\nTo enable RTL support in shadcn\/ui, see the \[RTL configuration guide\]\([^)]*\)\.\n\n\{\/\* prettier-ignore \*\/\}\n<Button asChild[^\n]*\n[^\n]*\n<\/Button>\n/,
-      "\n## RTL\n\nThe sidebar follows the reading direction set with the [Direction](/docs/components/direction) provider; no extra configuration is needed.\n",
+      "\n## RTL\n\nThe sidebar follows the reading direction set with [`TectonProvider`](/docs/tecton/provider); no extra configuration is needed.\n",
       "sidebar page (RTL)"
     )
   },
-  // The International Calendars section goes with its (skipped) preview; the
-  // RTL section's pointer to it would be a dead anchor.
-  calendar: (mdx, removed) =>
-    removed.has("calendar-hijri")
-      ? replaceOrThrow(
-          mdx,
-          "\nSee also the [International Calendars Guide](#international-calendars) for enabling the international calendars such as Persian / Hijri / Jalali.\n",
-          "\n",
-          "calendar page"
-        )
-      : mdx,
+  // The Persian / Hijri / Jalali section asks the reader to edit the
+  // generated calendar.tsx (the package files are read-only for applications)
+  // and its preview is skipped; the RTL section's pointer to it goes too.
+  calendar: (mdx) => {
+    mdx = replaceOrThrow(
+      mdx,
+      /\n## Persian \/ Hijri \/ Jalali Calendar\n[\s\S]*?(?=\n## )/,
+      "\n",
+      "calendar page (Persian calendar)"
+    )
+    return replaceOrThrow(
+      mdx,
+      "\nSee also the [Hijri Guide](#persian--hijri--jalali-calendar) for enabling the Persian / Hijri / Jalali calendar.\n",
+      "\n",
+      "calendar page (RTL)"
+    )
+  },
 }
 
 const PREVIEW_TAG =
@@ -921,7 +801,7 @@ function transformMdx(
   removed: Set<string>,
   localPages: Set<string>,
   sha: string,
-  upstreamDir = "content/docs/components/aria"
+  upstreamDir = `content/docs/components/${BASE}`
 ) {
   // frontmatter
   mdx = mdx.replace(/^---\n([\s\S]*?)\n---/, (_m, fm: string) => {
@@ -932,7 +812,7 @@ function transformMdx(
     return `---\n${lines.join("\n")}\n---`
   })
 
-  // drop styleName props (aria-nova / aria-rhea …)
+  // drop styleName props (base-nova / base-rhea …)
   mdx = mdx.replace(/\s+styleName="[^"]*"/g, "")
 
   // pages import icons too (a Callout icon, say); map tabler to lucide as in examples
@@ -1106,18 +986,27 @@ async function main() {
     key: string
     src: string
     name: string
+    base: string
     folder?: string
   }[] = []
   for (const name of names) {
-    const src = path.join(V4, "content/docs/components/aria", `${name}.mdx`)
+    if (SKIPPED_PAGES[name]) continue
+    const base = PAGE_BASES[name] ?? BASE
+    const src = path.join(V4, "content/docs/components", base, `${name}.mdx`)
     if (await exists(src))
-      plannedPages.push({ key: `components/${name}`, src, name })
+      plannedPages.push({ key: `components/${name}`, src, name, base })
   }
   for (const [folder, { pages }] of Object.entries(EXTRA_FOLDERS)) {
     for (const name of pages) {
       const src = path.join(V4, "content/docs", folder, `${name}.mdx`)
       if (await exists(src))
-        plannedPages.push({ key: `${folder}/${name}`, src, name, folder })
+        plannedPages.push({
+          key: `${folder}/${name}`,
+          src,
+          name,
+          base: BASE,
+          folder,
+        })
     }
   }
   const localPages = new Set(plannedPages.map((page) => page.key))
@@ -1139,11 +1028,16 @@ async function main() {
   const outputs = new Map<string, string>()
   const imageCopies = new Map<string, string>()
   const examples = new Map<string, string>()
+  /** The upstream base each synced example comes from. */
+  const exampleBases = new Map<string, string>()
   const skipped = new Set<string>()
   /** Examples shown on each page, in page order. */
   const pageExamples = new Map<string, string[]>()
 
-  async function syncExample(exampleName: string): Promise<boolean> {
+  async function syncExample(
+    exampleName: string,
+    base: string
+  ): Promise<boolean> {
     if (examples.has(exampleName)) return true
     if (skipped.has(exampleName)) return false
     const skip = (reason: string) => {
@@ -1152,7 +1046,7 @@ async function main() {
       return false
     }
     if (BROKEN_EXAMPLES[exampleName]) return skip(BROKEN_EXAMPLES[exampleName])
-    const file = path.join(V4, "examples/aria", `${exampleName}.tsx`)
+    const file = path.join(V4, "examples", base, `${exampleName}.tsx`)
     if (!(await exists(file))) return skip("no upstream example file")
     if (authored.has(exampleName)) {
       throw new Error(
@@ -1163,15 +1057,16 @@ async function main() {
       await fs.readFile(file, "utf8")
     )
     if (blocked) return skip(`unsupported import: ${blocked}`)
-    let code = EXAMPLE_REWRITES[exampleName]?.(rewritten) ?? rewritten
-    code = rewritePressHandlers(rewriteStockColors(code), exampleName)
-    code = rewriteSelectLabels(code, exampleName)
+    const code = rewriteStockColors(
+      EXAMPLE_REWRITES[exampleName]?.(rewritten) ?? rewritten
+    )
     examples.set(exampleName, code)
+    exampleBases.set(exampleName, base)
     return true
   }
 
   /** Syncs what a page previews and returns the skipped previews. */
-  async function syncPageExamples(mdx: string) {
+  async function syncPageExamples(mdx: string, base: string) {
     const removed = new Set<string>()
     for (const [tag] of mdx.matchAll(PREVIEW_TAG)) {
       const previewName = attr(tag, "name")
@@ -1180,20 +1075,20 @@ async function main() {
         if (!BLOCK_PREVIEWS[previewName]) removed.add(previewName)
         continue
       }
-      if (!(await syncExample(previewName))) removed.add(previewName)
+      if (!(await syncExample(previewName, base))) removed.add(previewName)
     }
     // ComponentSource may also point at an example file
     for (const [tag] of mdx.matchAll(SOURCE_TAG)) {
       const sourceName = attr(tag, "name")
       if (sourceName && !componentFiles.includes(`${sourceName}.tsx`))
-        await syncExample(sourceName)
+        await syncExample(sourceName, base)
     }
     return removed
   }
 
   for (const page of plannedPages) {
     const mdx = await fs.readFile(page.src, "utf8")
-    const removed = await syncPageExamples(mdx)
+    const removed = await syncPageExamples(mdx, page.base)
     if (removed.size)
       report.removedPreviews[page.folder ? page.key : page.name] = [...removed]
     // copy referenced upstream images (sidebar structure diagrams etc.)
@@ -1202,7 +1097,9 @@ async function main() {
       if (await exists(from))
         imageCopies.set(path.join(IMAGES_OUT, image), from)
     }
-    const upstreamDir = page.folder ? `content/docs/${page.folder}` : undefined
+    const upstreamDir = page.folder
+      ? `content/docs/${page.folder}`
+      : `content/docs/components/${page.base}`
     let out = transformMdx(
       mdx,
       page.name,
@@ -1271,7 +1168,7 @@ async function main() {
     checkExample(name, code)
     // Synced examples are upstream code: eslint.config.js ignores them (it
     // reads the list from sync-report.json) and .prettierignore lists them.
-    const header = `${SYNCED_EXAMPLE_HEADER} (apps/v4/examples/aria/${name}.tsx) by scripts/sync-upstream-docs.mts — do not edit.\n`
+    const header = `${SYNCED_EXAMPLE_HEADER} (apps/v4/examples/${exampleBases.get(name)}/${name}.tsx) by scripts/sync-upstream-docs.mts — do not edit.\n`
     outputs.set(path.join(OUT_EXAMPLES, `${name}.tsx`), header + code)
   }
   for (const [page, names] of pageExamples)

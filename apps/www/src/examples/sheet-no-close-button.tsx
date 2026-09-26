@@ -1,7 +1,8 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/sheet-no-close-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/sheet-no-close-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
 import {
   Sheet,
+  SheetContent,
   SheetDescription,
   SheetHeader,
   SheetTitle,
@@ -10,9 +11,11 @@ import {
 
 export default function SheetNoCloseButton() {
   return (
-    <SheetTrigger>
-      <Button variant="outline">Open Sheet</Button>
-      <Sheet showCloseButton={false}>
+    <Sheet>
+      <SheetTrigger render={<Button variant="outline" />}>
+        Open Sheet
+      </SheetTrigger>
+      <SheetContent showCloseButton={false}>
         <SheetHeader>
           <SheetTitle>No Close Button</SheetTitle>
           <SheetDescription>
@@ -20,7 +23,7 @@ export default function SheetNoCloseButton() {
             Click outside to close.
           </SheetDescription>
         </SheetHeader>
-      </Sheet>
-    </SheetTrigger>
+      </SheetContent>
+    </Sheet>
   )
 }

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/skeleton-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/skeleton-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Skeleton } from "@tecton/react/components/skeleton"
 
 export function SkeletonDemo() {

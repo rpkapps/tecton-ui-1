@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/message-scroller-group-chat.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/message-scroller-group-chat.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -29,7 +29,11 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
 } from "@tecton/react/components/message-scroller"
-import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
 
 const currentUser = "Grace"
 
@@ -115,24 +119,28 @@ export function MessageScrollerGroupChat() {
               Marker is marked as a turn.
             </CardDescription>
             <CardAction>
-              <TooltipTrigger>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="icon"
-                  aria-label="Reset conversation"
-                  isDisabled={rockyTurn === "idle"}
-                  onPress={() => {
-                    setRockyTurn("idle")
-                    setDemoKey((key) => key + 1)
-                  }}
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      aria-label="Reset conversation"
+                      disabled={rockyTurn === "idle"}
+                      onClick={() => {
+                        setRockyTurn("idle")
+                        setDemoKey((key) => key + 1)
+                      }}
+                    />
+                  }
                 >
                   <RotateCwIcon />
-                </Button>
-                <Tooltip>
+                </TooltipTrigger>
+                <TooltipContent>
                   <p>Reset</p>
-                </Tooltip>
-              </TooltipTrigger>
+                </TooltipContent>
+              </Tooltip>
             </CardAction>
           </CardHeader>
           <CardContent className="min-h-0 flex-1 p-0">
@@ -160,8 +168,8 @@ export function MessageScrollerGroupChat() {
           <CardFooter className="flex flex-col items-center gap-2 border-t">
             <Button
               type="button"
-              isDisabled={isComplete}
-              onPress={() =>
+              disabled={isComplete}
+              onClick={() =>
                 setRockyTurn((turn) => (turn === "idle" ? "marker" : "message"))
               }
               className="w-full"

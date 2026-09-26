@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/command-shortcuts.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/command-shortcuts.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -21,29 +21,26 @@ export function CommandWithShortcuts() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Button onPress={() => setOpen(true)} variant="outline" className="w-fit">
+      <Button onClick={() => setOpen(true)} variant="outline" className="w-fit">
         Open Menu
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <Command>
           <CommandInput placeholder="Type a command or search..." />
-          <CommandList
-            renderEmptyState={() => (
-              <CommandEmpty>No results found.</CommandEmpty>
-            )}
-          >
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading="Settings">
-              <CommandItem textValue="Profile">
+              <CommandItem>
                 <UserIcon />
                 <span>Profile</span>
                 <CommandShortcut>⌘P</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Billing">
+              <CommandItem>
                 <CreditCardIcon />
                 <span>Billing</span>
                 <CommandShortcut>⌘B</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Settings">
+              <CommandItem>
                 <SettingsIcon />
                 <span>Settings</span>
                 <CommandShortcut>⌘S</CommandShortcut>

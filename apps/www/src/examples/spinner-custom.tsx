@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/spinner-custom.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/spinner-custom.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { cn } from "cn"
 import { LoaderIcon } from "lucide-react"
 

@@ -8,7 +8,7 @@ import { Caption, Matrix, Page } from "./matrix"
  * Mirrors 037_components-button__variant-matrix.png.
  * Storybook columns: Enabled · Hover · Pressed · Focus · Disabled · Activated.
  * Hover / Pressed / Focus are forced visual states there and cannot be forced
- * through React Aria props, so only Enabled, Disabled and Activated are rendered.
+ * through props, so only Enabled, Disabled and Activated are rendered.
  */
 const variants = [
   { label: "primary", variant: "default" },
@@ -33,7 +33,7 @@ export default function ButtonMatrix() {
         <Button key="enabled" variant={variant} size={size}>
           Label
         </Button>,
-        <Button key="disabled" variant={variant} size={size} isDisabled>
+        <Button key="disabled" variant={variant} size={size} disabled>
           Label
         </Button>,
         <Button key="activated" variant={variant} size={size} aria-pressed>

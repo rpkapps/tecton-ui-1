@@ -2,11 +2,10 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { I18nProvider } from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
-import { DirectionProvider } from "@tecton/react/components/direction"
 import { Spinner } from "@tecton/react/components/spinner"
+import { TectonProvider } from "@tecton/react/tecton/provider"
 
 import { CodeBlock } from "@/components/code-block"
 import {
@@ -220,7 +219,7 @@ function ComponentPreviewTabs({
           <RtlPreview>{preview}</RtlPreview>
         </LanguageProvider>
       ) : (
-        <DirectionProvider direction="ltr">{preview}</DirectionProvider>
+        <TectonProvider direction="ltr">{preview}</TectonProvider>
       )}
       {!hideCode && (
         <div
@@ -246,7 +245,7 @@ function ComponentPreviewTabs({
                   size="sm"
                   variant="outline"
                   className="relative z-10 rounded-lg bg-background text-foreground shadow-none hover:bg-muted"
-                  onPress={() => setIsMobileCodeVisible(true)}
+                  onClick={() => setIsMobileCodeVisible(true)}
                 >
                   View Code
                 </Button>
@@ -266,13 +265,11 @@ function RtlPreview({ children }: { children: React.ReactNode }) {
   const locale =
     language === "ar" ? "ar-EG" : language === "he" ? "he-IL" : "en-US"
   return (
-    <I18nProvider locale={locale}>
-      <DirectionProvider direction={dir}>
-        <div dir={dir} data-lang={language}>
-          {children}
-        </div>
-      </DirectionProvider>
-    </I18nProvider>
+    <TectonProvider locale={locale} direction={dir}>
+      <div dir={dir} data-lang={language}>
+        {children}
+      </div>
+    </TectonProvider>
   )
 }
 

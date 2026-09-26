@@ -2,9 +2,9 @@
 title: Dialog
 description: A window overlaid on either the primary window or another dialog window, rendering the content underneath inert.
 links:
-  doc: https://react-aria.adobe.com/Modal
-  api: https://react-aria.adobe.com/Modal#api
-upstream: apps/v4/content/docs/components/aria/dialog.mdx
+  doc: https://base-ui.com/react/components/dialog
+  api: https://base-ui.com/react/components/dialog#api-reference
+upstream: apps/v4/content/docs/components/base/dialog.mdx
 ---
 
 <ComponentPreview
@@ -15,9 +15,9 @@ upstream: apps/v4/content/docs/components/aria/dialog.mdx
 ## Usage
 
 ```tsx lineNumbers
-import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
+  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -26,9 +26,9 @@ import {
 ```
 
 ```tsx lineNumbers
-<DialogTrigger>
-  <Button>Open</Button>
-  <Dialog>
+<Dialog>
+  <DialogTrigger>Open</DialogTrigger>
+  <DialogContent>
     <DialogHeader>
       <DialogTitle>Are you absolutely sure?</DialogTitle>
       <DialogDescription>
@@ -36,8 +36,8 @@ import {
         and remove your data from our servers.
       </DialogDescription>
     </DialogHeader>
-  </Dialog>
-</DialogTrigger>
+  </DialogContent>
+</Dialog>
 ```
 
 ## Composition
@@ -45,9 +45,9 @@ import {
 Use the following composition to build a `Dialog`:
 
 ```text
-DialogTrigger
-├── Button
-└── Dialog
+Dialog
+├── DialogTrigger
+└── DialogContent
     ├── DialogHeader
     │   ├── DialogTitle
     │   └── DialogDescription
@@ -217,4 +217,4 @@ Never open a `Dialog` from inside another; use steps within one, except an `Aler
 
 ## API Reference
 
-See the [React Aria](https://react-aria.adobe.com/Modal#api) documentation for more information.
+See the [Base UI](https://base-ui.com/react/components/dialog#api-reference) documentation for more information.

@@ -2,9 +2,9 @@
 title: Popover
 description: Displays rich content in a portal, triggered by a button.
 links:
-  doc: https://react-aria.adobe.com/Popover
-  api: https://react-aria.adobe.com/Popover#api
-upstream: apps/v4/content/docs/components/aria/popover.mdx
+  doc: https://base-ui.com/react/components/popover
+  api: https://base-ui.com/react/components/popover#api-reference
+upstream: apps/v4/content/docs/components/base/popover.mdx
 ---
 
 <ComponentPreview name="popover-demo" />
@@ -14,6 +14,7 @@ upstream: apps/v4/content/docs/components/aria/popover.mdx
 ```tsx lineNumbers
 import {
   Popover,
+  PopoverContent,
   PopoverDescription,
   PopoverHeader,
   PopoverTitle,
@@ -22,15 +23,17 @@ import {
 ```
 
 ```tsx lineNumbers
-<PopoverTrigger>
-  <Button variant="outline">Open Popover</Button>
-  <Popover>
+<Popover>
+  <PopoverTrigger render={<Button variant="outline" />}>
+    Open Popover
+  </PopoverTrigger>
+  <PopoverContent>
     <PopoverHeader>
       <PopoverTitle>Title</PopoverTitle>
       <PopoverDescription>Description text here.</PopoverDescription>
     </PopoverHeader>
-  </Popover>
-</PopoverTrigger>
+  </PopoverContent>
+</Popover>
 ```
 
 ## Composition
@@ -38,9 +41,9 @@ import {
 Use the following composition to build a `Popover`:
 
 ```text
-PopoverTrigger
-├── Button
-└── Popover
+Popover
+├── PopoverTrigger
+└── PopoverContent
 ```
 
 ## Basic
@@ -51,7 +54,7 @@ A simple popover with a header, title, and description.
 
 ## Align
 
-Use the `placement` prop on `Popover` to control the horizontal alignment.
+Use the `align` prop on `PopoverContent` to control the horizontal alignment.
 
 <ComponentPreview name="popover-alignments" />
 
@@ -184,4 +187,4 @@ Tecton resets Tailwind's stock palette, so `border-gray-200` emits no CSS at all
 
 ## API Reference
 
-See the [React Aria Popover](https://react-aria.adobe.com/Popover#api) documentation.
+See the [Base UI Popover](https://base-ui.com/react/components/popover#api-reference) documentation.

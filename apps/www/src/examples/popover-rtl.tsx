@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/popover-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/popover-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import {
@@ -8,6 +8,7 @@ import {
 import { Button } from "@tecton/react/components/button"
 import {
   Popover,
+  PopoverContent,
   PopoverDescription,
   PopoverHeader,
   PopoverTitle,
@@ -20,12 +21,12 @@ const translations: Translations = {
     values: {
       title: "Dimensions",
       description: "Set the dimensions for the layer.",
-      start: "Start",
+      "inline-start": "Inline Start",
       left: "Left",
       top: "Top",
       bottom: "Bottom",
       right: "Right",
-      end: "End",
+      "inline-end": "Inline End",
     },
   },
   ar: {
@@ -33,12 +34,12 @@ const translations: Translations = {
     values: {
       title: "الأبعاد",
       description: "تعيين الأبعاد للطبقة.",
-      start: "بداية السطر",
+      "inline-start": "بداية السطر",
       left: "يسار",
       top: "أعلى",
       bottom: "أسفل",
       right: "يمين",
-      end: "نهاية السطر",
+      "inline-end": "نهاية السطر",
     },
   },
   he: {
@@ -46,18 +47,18 @@ const translations: Translations = {
     values: {
       title: "מימדים",
       description: "הגדר את המימדים לשכבה.",
-      start: "תחילת השורה",
+      "inline-start": "תחילת השורה",
       left: "שמאל",
       top: "למעלה",
       bottom: "למטה",
       right: "ימין",
-      end: "סוף השורה",
+      "inline-end": "סוף השורה",
     },
   },
 }
 
 const physicalSides = ["left", "top", "bottom", "right"] as const
-const logicalPlacements = ["start", "end"] as const
+const logicalSides = ["inline-start", "inline-end"] as const
 
 export function PopoverRtl() {
   const { dir, t } = useTranslation(translations, "ar")
@@ -66,28 +67,32 @@ export function PopoverRtl() {
     <div className="grid gap-4">
       <div className="flex flex-wrap justify-center gap-2">
         {physicalSides.map((side) => (
-          <PopoverTrigger key={side}>
-            <Button variant="outline">{t[side]}</Button>
-            <Popover placement={side} dir={dir}>
+          <Popover key={side}>
+            <PopoverTrigger render={<Button variant="outline" />}>
+              {t[side]}
+            </PopoverTrigger>
+            <PopoverContent side={side} dir={dir}>
               <PopoverHeader>
                 <PopoverTitle>{t.title}</PopoverTitle>
                 <PopoverDescription>{t.description}</PopoverDescription>
               </PopoverHeader>
-            </Popover>
-          </PopoverTrigger>
+            </PopoverContent>
+          </Popover>
         ))}
       </div>
       <div className="flex flex-wrap justify-center gap-2">
-        {logicalPlacements.map((placement) => (
-          <PopoverTrigger key={placement}>
-            <Button variant="outline">{t[placement]}</Button>
-            <Popover placement={placement} dir={dir}>
+        {logicalSides.map((side) => (
+          <Popover key={side}>
+            <PopoverTrigger render={<Button variant="outline" />}>
+              {t[side]}
+            </PopoverTrigger>
+            <PopoverContent side={side} dir={dir}>
               <PopoverHeader>
                 <PopoverTitle>{t.title}</PopoverTitle>
                 <PopoverDescription>{t.description}</PopoverDescription>
               </PopoverHeader>
-            </Popover>
-          </PopoverTrigger>
+            </PopoverContent>
+          </Popover>
         ))}
       </div>
     </div>

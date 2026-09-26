@@ -1,6 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/breadcrumb-ellipsis.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-"use client"
-
+// Synced from shadcn/ui (apps/v4/examples/base/breadcrumb-ellipsis.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import Link from "@/components/shims/link"
 
 import {
@@ -10,6 +8,7 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@tecton/react/components/breadcrumb"
 
 export function BreadcrumbEllipsisDemo() {
@@ -17,31 +16,19 @@ export function BreadcrumbEllipsisDemo() {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink
-            href="/"
-            render={(props) =>
-              "href" in props ? <Link {...props} /> : <span {...props} />
-            }
-          >
-            Home
-          </BreadcrumbLink>
+          <BreadcrumbLink render={<Link href="/" />}>Home</BreadcrumbLink>
         </BreadcrumbItem>
-
+        <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbEllipsis />
         </BreadcrumbItem>
-
+        <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink
-            href="/docs/components"
-            render={(props) =>
-              "href" in props ? <Link {...props} /> : <span {...props} />
-            }
-          >
+          <BreadcrumbLink render={<Link href="/docs/components" />}>
             Components
           </BreadcrumbLink>
         </BreadcrumbItem>
-
+        <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
         </BreadcrumbItem>

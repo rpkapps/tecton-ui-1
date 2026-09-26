@@ -1,10 +1,10 @@
 ---
 title: Hover Card
-description: A popover that appears on hover, focus, or long press to preview content available behind a link.
+description: For sighted users to preview content available behind a link.
 links:
-  doc: https://react-aria.adobe.com/PreviewTrigger
-  api: https://react-aria.adobe.com/PreviewTrigger#api
-upstream: apps/v4/content/docs/components/aria/hover-card.mdx
+  doc: https://base-ui.com/react/components/hover-card
+  api: https://base-ui.com/react/components/hover-card#api-reference
+upstream: apps/v4/content/docs/components/base/hover-card.mdx
 ---
 
 <ComponentPreview
@@ -15,16 +15,20 @@ upstream: apps/v4/content/docs/components/aria/hover-card.mdx
 ## Usage
 
 ```tsx lineNumbers
-import { HoverCard, HoverCardTrigger } from "@tecton/react/components/hover-card"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@tecton/react/components/hover-card"
 ```
 
 ```tsx lineNumbers
-<HoverCardTrigger>
-  <Button variant="link">Hover</Button>
-  <HoverCard>
+<HoverCard>
+  <HoverCardTrigger>Hover</HoverCardTrigger>
+  <HoverCardContent>
     The React Framework – created and maintained by @vercel.
-  </HoverCard>
-</HoverCardTrigger>
+  </HoverCardContent>
+</HoverCard>
 ```
 
 ## Composition
@@ -32,32 +36,36 @@ import { HoverCard, HoverCardTrigger } from "@tecton/react/components/hover-card
 Use the following composition to build a `HoverCard`:
 
 ```text
-HoverCardTrigger
-├── Button
-└── HoverCard
+HoverCard
+├── HoverCardTrigger
+└── HoverCardContent
 ```
 
 ## Trigger Delays
 
-Use `delay` and `closeDelay` on the `HoverCardTrigger` to control when the card
-opens and closes.
+Use `delay` and `closeDelay` on the trigger to control when the card opens and
+closes.
 
 ```tsx lineNumbers
-<HoverCardTrigger delay={100} closeDelay={200}>
-  <Button variant="link">Hover</Button>
-  <HoverCard>Content</HoverCard>
-</HoverCardTrigger>
+<HoverCard>
+  <HoverCardTrigger delay={100} closeDelay={200}>
+    Hover
+  </HoverCardTrigger>
+  <HoverCardContent>Content</HoverCardContent>
+</HoverCard>
 ```
 
 ## Positioning
 
-Use the `placement` prop on `HoverCard` to control placement.
+Use the `side` and `align` props on `HoverCardContent` to control placement.
 
 ```tsx lineNumbers
-<HoverCardTrigger>
-  <Button variant="link">Hover</Button>
-  <HoverCard placement="top">Content</HoverCard>
-</HoverCardTrigger>
+<HoverCard>
+  <HoverCardTrigger>Hover</HoverCardTrigger>
+  <HoverCardContent side="top" align="start">
+    Content
+  </HoverCardContent>
+</HoverCard>
 ```
 
 ## Basic
@@ -196,4 +204,4 @@ React Aria's `PreviewTrigger` names the open delay `delay`; `openDelay` is dropp
 
 ## API Reference
 
-See the [React Aria](https://react-aria.adobe.com/PreviewTrigger#api) documentation for more information.
+See the [Base UI](https://base-ui.com/react/components/hover-card#api-reference) documentation for more information.

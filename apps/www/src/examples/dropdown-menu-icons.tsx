@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dropdown-menu-icons.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dropdown-menu-icons.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import {
@@ -11,6 +11,7 @@ import {
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -18,9 +19,11 @@ import {
 
 export function DropdownMenuIcons() {
   return (
-    <DropdownMenuTrigger>
-      <Button variant="outline">Open</Button>
-      <DropdownMenu>
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>
+        Open
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
         <DropdownMenuItem>
           <UserIcon />
           Profile
@@ -38,7 +41,7 @@ export function DropdownMenuIcons() {
           <LogOutIcon />
           Log out
         </DropdownMenuItem>
-      </DropdownMenu>
-    </DropdownMenuTrigger>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

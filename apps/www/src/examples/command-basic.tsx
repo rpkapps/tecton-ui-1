@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/command-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/command-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -19,17 +19,14 @@ export function CommandBasic() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Button onPress={() => setOpen(true)} variant="outline" className="w-fit">
+      <Button onClick={() => setOpen(true)} variant="outline" className="w-fit">
         Open Menu
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <Command>
           <CommandInput placeholder="Type a command or search..." />
-          <CommandList
-            renderEmptyState={() => (
-              <CommandEmpty>No results found.</CommandEmpty>
-            )}
-          >
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading="Suggestions">
               <CommandItem>Calendar</CommandItem>
               <CommandItem>Search Emoji</CommandItem>

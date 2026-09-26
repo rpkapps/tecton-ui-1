@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/select-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/select-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Select,
   SelectContent,
@@ -10,6 +10,7 @@ import {
 } from "@tecton/react/components/select"
 
 const items = [
+  { label: "Select a fruit", value: null },
   { label: "Apple", value: "apple" },
   { label: "Banana", value: "banana" },
   { label: "Blueberry", value: "blueberry" },
@@ -19,15 +20,15 @@ const items = [
 
 export function SelectDemo() {
   return (
-    <Select placeholder="Select a fruit" className="w-full max-w-48">
-      <SelectTrigger>
+    <Select items={items}>
+      <SelectTrigger className="w-full max-w-48">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Fruits</SelectLabel>
           {items.map((item) => (
-            <SelectItem key={item.value} id={item.value}>
+            <SelectItem key={item.value} value={item.value}>
               {item.label}
             </SelectItem>
           ))}

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/checkbox-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/checkbox-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Checkbox } from "@tecton/react/components/checkbox"
 import {
   Field,
@@ -23,7 +23,7 @@ export function CheckboxGroup() {
           <Checkbox
             id="finder-pref-9k2-hard-disks-ljj-checkbox"
             name="finder-pref-9k2-hard-disks-ljj-checkbox"
-            defaultSelected
+            defaultChecked
           />
           <FieldLabel
             htmlFor="finder-pref-9k2-hard-disks-ljj-checkbox"
@@ -36,7 +36,7 @@ export function CheckboxGroup() {
           <Checkbox
             id="finder-pref-9k2-external-disks-1yg-checkbox"
             name="finder-pref-9k2-external-disks-1yg-checkbox"
-            defaultSelected
+            defaultChecked
           />
           <FieldLabel
             htmlFor="finder-pref-9k2-external-disks-1yg-checkbox"

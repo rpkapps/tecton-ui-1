@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/collapsible-settings.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/collapsible-settings.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -31,8 +31,8 @@ export function CollapsibleSettings() {
       </CardHeader>
       <CardContent>
         <Collapsible
-          isExpanded={isOpen}
-          onExpandedChange={setIsOpen}
+          open={isOpen}
+          onOpenChange={setIsOpen}
           className="flex items-start gap-2"
         >
           <FieldGroup className="grid w-full grid-cols-2 gap-2">
@@ -48,26 +48,24 @@ export function CollapsibleSettings() {
               </FieldLabel>
               <Input id="radius-y" placeholder="0" defaultValue={0} />
             </Field>
-            <CollapsibleContent>
-              <div className="col-span-full grid grid-cols-subgrid gap-2">
-                <Field>
-                  <FieldLabel htmlFor="radius-x-2" className="sr-only">
-                    Radius X
-                  </FieldLabel>
-                  <Input id="radius-x-2" placeholder="0" defaultValue={0} />
-                </Field>
-                <Field>
-                  <FieldLabel htmlFor="radius-y-2" className="sr-only">
-                    Radius Y
-                  </FieldLabel>
-                  <Input id="radius-y-2" placeholder="0" defaultValue={0} />
-                </Field>
-              </div>
+            <CollapsibleContent className="col-span-full grid grid-cols-subgrid gap-2">
+              <Field>
+                <FieldLabel htmlFor="radius-x-2" className="sr-only">
+                  Radius X
+                </FieldLabel>
+                <Input id="radius-x-2" placeholder="0" defaultValue={0} />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="radius-y-2" className="sr-only">
+                  Radius Y
+                </FieldLabel>
+                <Input id="radius-y-2" placeholder="0" defaultValue={0} />
+              </Field>
             </CollapsibleContent>
           </FieldGroup>
-          <Button slot="trigger" variant="outline" size="icon">
+          <CollapsibleTrigger render={<Button variant="outline" size="icon" />}>
             {isOpen ? <MinimizeIcon /> : <MaximizeIcon />}
-          </Button>
+          </CollapsibleTrigger>
         </Collapsible>
       </CardContent>
     </Card>

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/accordion-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/accordion-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -80,9 +80,9 @@ export function AccordionRtl() {
   const { t } = useTranslation(translations, "ar")
 
   return (
-    <Accordion defaultExpandedKeys={["item-1"]} className="max-w-md">
+    <Accordion defaultValue={["item-1"]} className="max-w-md">
       {items.map((item) => (
-        <AccordionItem key={item.value} id={item.value}>
+        <AccordionItem key={item.value} value={item.value}>
           <AccordionTrigger>{t[item.questionKey]}</AccordionTrigger>
           <AccordionContent>{t[item.answerKey]}</AccordionContent>
         </AccordionItem>

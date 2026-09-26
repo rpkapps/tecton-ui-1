@@ -1,7 +1,6 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/breadcrumb-separator.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-"use client"
-
+// Synced from shadcn/ui (apps/v4/examples/base/breadcrumb-separator.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import Link from "@/components/shims/link"
+import { DotIcon } from "lucide-react"
 
 import {
   Breadcrumb,
@@ -9,6 +8,7 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@tecton/react/components/breadcrumb"
 
 export function BreadcrumbSeparatorDemo() {
@@ -16,27 +16,19 @@ export function BreadcrumbSeparatorDemo() {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink
-            href="/"
-            render={(props) =>
-              "href" in props ? <Link {...props} /> : <span {...props} />
-            }
-          >
-            Home
-          </BreadcrumbLink>
+          <BreadcrumbLink render={<Link href="/" />}>Home</BreadcrumbLink>
         </BreadcrumbItem>
-
+        <BreadcrumbSeparator>
+          <DotIcon />
+        </BreadcrumbSeparator>
         <BreadcrumbItem>
-          <BreadcrumbLink
-            href="/docs/components"
-            render={(props) =>
-              "href" in props ? <Link {...props} /> : <span {...props} />
-            }
-          >
+          <BreadcrumbLink render={<Link href="/docs/components" />}>
             Components
           </BreadcrumbLink>
         </BreadcrumbItem>
-
+        <BreadcrumbSeparator>
+          <DotIcon />
+        </BreadcrumbSeparator>
         <BreadcrumbItem>
           <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
         </BreadcrumbItem>

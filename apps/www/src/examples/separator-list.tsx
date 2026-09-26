@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/separator-list.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/separator-list.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Separator } from "@tecton/react/components/separator"
 
 export function SeparatorList() {

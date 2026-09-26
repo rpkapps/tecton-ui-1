@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/alert-colors.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/alert-colors.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { AlertTriangleIcon } from "lucide-react"
 
 import {

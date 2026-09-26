@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/item-icon.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/item-icon.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { ShieldAlertIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"

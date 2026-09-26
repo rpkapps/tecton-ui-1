@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/switch-invalid.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/switch-invalid.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Field,
   FieldContent,
@@ -18,7 +18,7 @@ export function SwitchInvalid() {
           You must accept the terms and conditions to continue.
         </FieldDescription>
       </FieldContent>
-      <Switch id="switch-terms" data-invalid />
+      <Switch id="switch-terms" aria-invalid />
     </Field>
   )
 }

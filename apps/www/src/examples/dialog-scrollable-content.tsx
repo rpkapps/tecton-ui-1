@@ -1,7 +1,8 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dialog-scrollable-content.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dialog-scrollable-content.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
+  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -10,9 +11,11 @@ import {
 
 export function DialogScrollableContent() {
   return (
-    <DialogTrigger>
-      <Button variant="outline">Scrollable Content</Button>
-      <Dialog>
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>
+        Scrollable Content
+      </DialogTrigger>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Scrollable Content</DialogTitle>
           <DialogDescription>
@@ -32,7 +35,7 @@ export function DialogScrollableContent() {
             </p>
           ))}
         </div>
-      </Dialog>
-    </DialogTrigger>
+      </DialogContent>
+    </Dialog>
   )
 }

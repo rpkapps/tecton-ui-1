@@ -49,7 +49,7 @@ export default function IconButtonMatrix() {
                   variant={variant}
                   size={size}
                   aria-label="Box"
-                  isDisabled
+                  disabled
                 >
                   <BoxIcon />
                 </Button>,

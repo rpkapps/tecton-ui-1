@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/button-group-input-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/button-group-input-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -12,7 +12,11 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@tecton/react/components/input-group"
-import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
 
 export default function ButtonGroupInputGroup() {
   const [voiceEnabled, setVoiceEnabled] = React.useState(false)
@@ -33,18 +37,22 @@ export default function ButtonGroupInputGroup() {
             disabled={voiceEnabled}
           />
           <InputGroupAddon align="inline-end">
-            <TooltipTrigger>
-              <InputGroupButton
-                onPress={() => setVoiceEnabled(!voiceEnabled)}
-                size="icon-xs"
-                data-active={voiceEnabled}
-                className="data-[active=true]:bg-saffron-120 data-[active=true]:text-saffron-830"
-                aria-pressed={voiceEnabled}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <InputGroupButton
+                    onClick={() => setVoiceEnabled(!voiceEnabled)}
+                    size="icon-xs"
+                    data-active={voiceEnabled}
+                    className="data-[active=true]:bg-saffron-120 data-[active=true]:text-saffron-830"
+                    aria-pressed={voiceEnabled}
+                  />
+                }
               >
                 <AudioLinesIcon />
-              </InputGroupButton>
-              <Tooltip>Voice Mode</Tooltip>
-            </TooltipTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Voice Mode</TooltipContent>
+            </Tooltip>
           </InputGroupAddon>
         </InputGroup>
       </ButtonGroup>

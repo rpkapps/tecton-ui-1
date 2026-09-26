@@ -2,9 +2,9 @@
 title: Context Menu
 description: Displays a menu of actions triggered by a right click.
 links:
-  doc: https://react-aria.adobe.com/Menu
-  api: https://react-aria.adobe.com/Menu#api
-upstream: apps/v4/content/docs/components/aria/context-menu.mdx
+  doc: https://base-ui.com/react/components/context-menu
+  api: https://base-ui.com/react/components/context-menu#api-reference
+upstream: apps/v4/content/docs/components/base/context-menu.mdx
 ---
 
 <ComponentPreview
@@ -15,27 +15,24 @@ upstream: apps/v4/content/docs/components/aria/context-menu.mdx
 ## Usage
 
 ```tsx lineNumbers
-import { Pressable } from "react-aria-components"
-
 import {
   ContextMenu,
+  ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@tecton/react/components/context-menu"
 ```
 
 ```tsx lineNumbers
-<ContextMenuTrigger>
-  <Pressable>
-    <div role="button">Right click here</div>
-  </Pressable>
-  <ContextMenu>
+<ContextMenu>
+  <ContextMenuTrigger>Right click here</ContextMenuTrigger>
+  <ContextMenuContent>
     <ContextMenuItem>Profile</ContextMenuItem>
     <ContextMenuItem>Billing</ContextMenuItem>
     <ContextMenuItem>Team</ContextMenuItem>
     <ContextMenuItem>Subscription</ContextMenuItem>
-  </ContextMenu>
-</ContextMenuTrigger>
+  </ContextMenuContent>
+</ContextMenu>
 ```
 
 ## Composition
@@ -43,8 +40,8 @@ import {
 Use the following composition to build a `ContextMenu`:
 
 ```text
-ContextMenuTrigger
-├── Pressable
+ContextMenu
+├── ContextMenuTrigger
 └── ContextMenuContent
     ├── ContextMenuGroup
     │   ├── ContextMenuLabel
@@ -53,8 +50,14 @@ ContextMenuTrigger
     ├── ContextMenuSeparator
     ├── ContextMenuGroup
     │   ├── ContextMenuLabel
-    │   ├── ContextMenuItem
-    │   └── ContextMenuItem
+    │   ├── ContextMenuCheckboxItem
+    │   └── ContextMenuCheckboxItem
+    ├── ContextMenuSeparator
+    ├── ContextMenuGroup
+    │   ├── ContextMenuLabel
+    │   └── ContextMenuRadioGroup
+    │       ├── ContextMenuRadioItem
+    │       └── ContextMenuRadioItem
     └── ContextMenuSub
         ├── ContextMenuSubTrigger
         └── ContextMenuSubContent
@@ -95,13 +98,13 @@ Combine icons with labels for quick scanning.
 
 ## Checkboxes
 
-Use `selectionMode="multiple"` for toggles.
+Use `ContextMenuCheckboxItem` for toggles.
 
 <ComponentPreview name="context-menu-checkboxes" />
 
 ## Radio
 
-Use `selectionMode="single"` for exclusive choices.
+Use `ContextMenuRadioItem` for exclusive choices.
 
 <ComponentPreview name="context-menu-radio" />
 
@@ -111,9 +114,9 @@ Use `variant="destructive"` to style the menu item as destructive.
 
 <ComponentPreview name="context-menu-destructive" />
 
-## Placement
+## Sides
 
-Control submenu placement with the `placement` prop.
+Control submenu placement with side and align props.
 
 <ComponentPreview name="context-menu-sides" />
 
@@ -126,20 +129,18 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
   direction="rtl"
 />
 
-Use `placement="end"` to place the menu on the logical end side of the trigger.
+Use `side="inline-end"` to place the menu on the logical right side of the trigger.
 
 ```tsx lineNumbers
-<ContextMenuTrigger>
-  <Pressable>
-    <div role="button">Right click here</div>
-  </Pressable>
-  <ContextMenu placement="end">
+<ContextMenu>
+  <ContextMenuTrigger>Right click here</ContextMenuTrigger>
+  <ContextMenuContent side="inline-end">
     <ContextMenuItem>Profile</ContextMenuItem>
     <ContextMenuItem>Billing</ContextMenuItem>
     <ContextMenuItem>Team</ContextMenuItem>
     <ContextMenuItem>Subscription</ContextMenuItem>
-  </ContextMenu>
-</ContextMenuTrigger>
+  </ContextMenuContent>
+</ContextMenu>
 ```
 
 {/* guidelines:start */}
@@ -281,4 +282,4 @@ React Aria hands the trigger's interaction props down through a press responder 
 
 ## API Reference
 
-See the [React Aria](https://react-aria.adobe.com/Menu#api) documentation for more information.
+See the [Base UI](https://base-ui.com/react/components/context-menu#api-reference) documentation for more information.

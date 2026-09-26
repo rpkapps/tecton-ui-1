@@ -1,12 +1,12 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/radio-group-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/radio-group-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Field, FieldLabel } from "@tecton/react/components/field"
 import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group"
 
 export function RadioGroupDisabled() {
   return (
-    <RadioGroup aria-label="Radios" defaultValue="option2" className="w-fit">
+    <RadioGroup defaultValue="option2" className="w-fit">
       <Field orientation="horizontal" data-disabled>
-        <RadioGroupItem value="option1" id="disabled-1" isDisabled />
+        <RadioGroupItem value="option1" id="disabled-1" disabled />
         <FieldLabel htmlFor="disabled-1" className="font-normal">
           Disabled
         </FieldLabel>

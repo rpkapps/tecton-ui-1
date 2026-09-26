@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/checkbox-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/checkbox-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -66,7 +66,7 @@ export function CheckboxRtl() {
         <Checkbox
           id="terms-checkbox-2-rtl"
           name="terms-checkbox-2"
-          defaultSelected
+          defaultChecked
         />
         <FieldContent>
           <FieldLabel htmlFor="terms-checkbox-2-rtl">
@@ -76,7 +76,7 @@ export function CheckboxRtl() {
         </FieldContent>
       </Field>
       <Field orientation="horizontal" data-disabled>
-        <Checkbox id="toggle-checkbox-rtl" name="toggle-checkbox" isDisabled />
+        <Checkbox id="toggle-checkbox-rtl" name="toggle-checkbox" disabled />
         <FieldLabel htmlFor="toggle-checkbox-rtl">
           {t.enableNotifications}
         </FieldLabel>

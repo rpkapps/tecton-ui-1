@@ -94,9 +94,11 @@ export default function FormTanstackCheckbox() {
                           <Checkbox
                             id="form-tanstack-checkbox-responses"
                             name={field.name}
-                            isSelected={field.state.value}
-                            onChange={(checked) => field.handleChange(checked)}
-                            isDisabled
+                            checked={field.state.value}
+                            onCheckedChange={(checked) =>
+                              field.handleChange(checked)
+                            }
+                            disabled
                           />
                           <FieldLabel
                             htmlFor="form-tanstack-checkbox-responses"
@@ -139,9 +141,9 @@ export default function FormTanstackCheckbox() {
                             <Checkbox
                               id={`form-tanstack-checkbox-${task.id}`}
                               name={field.name}
-                              isInvalid={isInvalid}
-                              isSelected={field.state.value.includes(task.id)}
-                              onChange={(checked) => {
+                              aria-invalid={isInvalid}
+                              checked={field.state.value.includes(task.id)}
+                              onCheckedChange={(checked) => {
                                 if (checked) {
                                   field.pushValue(task.id)
                                 } else {
@@ -174,7 +176,7 @@ export default function FormTanstackCheckbox() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="button" variant="outline" onPress={() => form.reset()}>
+          <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>
           <Button type="submit" form="form-tanstack-checkbox">

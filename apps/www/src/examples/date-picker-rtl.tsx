@@ -1,10 +1,14 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/date-picker-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/date-picker-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
-import { getLocalTimeZone, type CalendarDate } from "@internationalized/date"
+import { format } from "date-fns"
+import { arSA, he } from "date-fns/locale"
 import { ChevronDownIcon } from "lucide-react"
-import { I18nProvider } from "react-aria-components"
+import {
+  arSA as arSADayPicker,
+  he as heDayPicker,
+} from "react-day-picker/locale"
 
 import {
   useTranslation,
@@ -12,7 +16,11 @@ import {
 } from "@/components/language-selector"
 import { Button } from "@tecton/react/components/button"
 import { Calendar } from "@tecton/react/components/calendar"
-import { Popover, PopoverTrigger } from "@tecton/react/components/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@tecton/react/components/popover"
 
 const translations: Translations = {
   en: {
@@ -35,32 +43,58 @@ const translations: Translations = {
   },
 }
 
+const dayPickerLocales = {
+  ar: arSADayPicker,
+  he: heDayPicker,
+} as const
+
+const dateFnsLocales = {
+  ar: arSA,
+  he: he,
+} as const
+
 export function DatePickerRtl() {
   const { dir, t, language } = useTranslation(translations, "ar")
-  const [date, setDate] = React.useState<CalendarDate | null>(null)
+  const [date, setDate] = React.useState<Date>()
+
+  const dateFnsLocale =
+    dir === "rtl"
+      ? dateFnsLocales[language as keyof typeof dateFnsLocales]
+      : undefined
+  const dayPickerLocale =
+    dir === "rtl"
+      ? dayPickerLocales[language as keyof typeof dayPickerLocales]
+      : undefined
 
   return (
-    <PopoverTrigger>
-      <Button
-        variant={"outline"}
-        data-empty={!date}
-        className="w-[212px] justify-between text-left font-normal data-[empty=true]:text-muted-foreground"
-        dir={dir}
+    <Popover>
+      <PopoverTrigger
+        render={
+          <Button
+            variant={"outline"}
+            data-empty={!date}
+            className="w-[212px] justify-between text-left font-normal data-[empty=true]:text-muted-foreground"
+            dir={dir}
+          />
+        }
       >
         {date ? (
-          date
-            .toDate(getLocalTimeZone())
-            .toLocaleDateString(language, { dateStyle: "long" })
+          format(date, "PPP", { locale: dateFnsLocale })
         ) : (
           <span>{t.placeholder}</span>
         )}
         <ChevronDownIcon data-icon="inline-end" />
-      </Button>
-      <Popover className="w-auto p-0" placement="bottom start" dir={dir}>
-        <I18nProvider locale={language}>
-          <Calendar value={date} onChange={setDate} />
-        </I18nProvider>
-      </Popover>
-    </PopoverTrigger>
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0" align="start" dir={dir}>
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          defaultMonth={date}
+          dir={dir}
+          locale={dayPickerLocale}
+        />
+      </PopoverContent>
+    </Popover>
   )
 }

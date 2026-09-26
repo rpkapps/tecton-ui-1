@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/avatar-badge-icon.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/avatar-badge-icon.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { PlusIcon } from "lucide-react"
 
 import {

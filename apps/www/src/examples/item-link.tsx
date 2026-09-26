@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/item-link.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/item-link.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { ChevronRightIcon, ExternalLinkIcon } from "lucide-react"
 
 import {
@@ -12,7 +12,7 @@ import {
 export function ItemLink() {
   return (
     <div className="flex w-full max-w-md flex-col gap-4">
-      <Item href="#">
+      <Item render={<a href="#" />}>
         <ItemContent>
           <ItemTitle>Visit our documentation</ItemTitle>
           <ItemDescription>
@@ -24,10 +24,8 @@ export function ItemLink() {
         </ItemActions>
       </Item>
       <Item
-        href="#"
-        target="_blank"
-        rel="noopener noreferrer"
         variant="outline"
+        render={<a href="#" target="_blank" rel="noopener noreferrer" />}
       >
         <ItemContent>
           <ItemTitle>External resource</ItemTitle>

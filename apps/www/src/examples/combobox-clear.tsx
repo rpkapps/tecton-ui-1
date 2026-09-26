@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/combobox-clear.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/combobox-clear.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import {
@@ -20,23 +20,16 @@ const frameworks = [
 
 export function ComboboxWithClear() {
   return (
-    <Combobox
-      defaultValue={frameworks[0]}
-      allowsEmptyCollection
-      aria-label="Framework"
-    >
+    <Combobox items={frameworks} defaultValue={frameworks[0]}>
       <ComboboxInput placeholder="Select a framework" showClear />
       <ComboboxContent>
-        <ComboboxList
-          renderEmptyState={() => (
-            <ComboboxEmpty>No items found.</ComboboxEmpty>
-          )}
-        >
-          {frameworks.map((item) => (
-            <ComboboxItem key={item} id={item}>
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxList>
+          {(item) => (
+            <ComboboxItem key={item} value={item}>
               {item}
             </ComboboxItem>
-          ))}
+          )}
         </ComboboxList>
       </ComboboxContent>
     </Combobox>

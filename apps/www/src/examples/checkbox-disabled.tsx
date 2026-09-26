@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/checkbox-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/checkbox-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Checkbox } from "@tecton/react/components/checkbox"
 import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
 
@@ -9,7 +9,7 @@ export function CheckboxDisabled() {
         <Checkbox
           id="toggle-checkbox-disabled"
           name="toggle-checkbox-disabled"
-          isDisabled
+          disabled
         />
         <FieldLabel htmlFor="toggle-checkbox-disabled">
           Enable notifications

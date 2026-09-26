@@ -3,16 +3,16 @@ title: AI agents
 description: How @tecton/react gives a coding agent the design system's usage rules — one Agent Skill and a lookup command — instead of leaving it to guess from a stock shadcn prior.
 ---
 
-`@tecton/react` ships two things for coding agents: one [Agent Skill](https://agentskills.io), distributed with [TanStack Intent](https://github.com/TanStack/intent), and a `tecton` command that looks components up. The skill is short and always relevant: the Radix-to-React-Aria prop map, the checks every file has to pass, and when to run the command. The command answers one question at a time, so an agent reads the guideline of the component it is about to use and nothing else. Both travel with the package: update `@tecton/react`, and the guidance updates with it.
+`@tecton/react` ships two things for coding agents: one [Agent Skill](https://agentskills.io), distributed with [TanStack Intent](https://github.com/TanStack/intent), and a `tecton` command that looks components up. The skill is short and always relevant: the import and prop conventions, the checks every file has to pass, and when to run the command. The command answers one question at a time, so an agent reads the guideline of the component it is about to use and nothing else. Both travel with the package: update `@tecton/react`, and the guidance updates with it.
 
 ## What ships
 
 | | |
 | --- | --- |
-| `skills/tecton/SKILL.md` | The only skill (about 1,300 tokens): imports, the React Aria prop map, the *Before you finish* checklist, and how to use `tecton`. |
+| `skills/tecton/SKILL.md` | The only skill (about 1,300 tokens): imports, the prop conventions, the *Before you finish* checklist, and how to use `tecton`. |
 | `bin/tecton.mjs` | The `tecton` command. |
 | `agent/` | The search index and one page per component, generated from the guideline files. |
-| `guidelines/` | The sources: one guideline per component, `families.json` (families and their checklists) and `topics/` (the rules, React Aria and theming pages). |
+| `guidelines/` | The sources: one guideline per component, `families.json` (families and their checklists) and `topics/` (the rules and theming pages). |
 
 Every page `tecton docs` prints is built from the same **guideline files** — one Markdown file per component in `packages/tecton-react/guidelines/`, each with a "Use it when", "Do" and "Don't" section. Those files are rendered twice: as the **"Usage guidelines"** section you see on every component's docs page, and as the page an agent reads. Change a guideline once and both pick it up.
 
@@ -23,7 +23,6 @@ npx tecton search "confirm before deleting a well"   # ranked components, import
 npx tecton docs alert-dialog,sonner                  # the usage guideline: Use it when, Not for, Do, Don't, checklist
 npx tecton docs AlertDialogAction                    # any export resolves to its module
 npx tecton docs icons                                # the oil & gas glyphs by name
-npx tecton docs react-aria                           # every Radix-to-React-Aria substitution, with code
 npx tecton docs theming                              # colour, tokens, modes, ThemeRoot, micro-frontends
 npx tecton rules                                     # the rules every file follows, in full
 ```

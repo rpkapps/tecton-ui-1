@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/button-group-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/button-group-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -22,8 +22,11 @@ import { Button } from "@tecton/react/components/button"
 import { ButtonGroup } from "@tecton/react/components/button-group"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
@@ -100,12 +103,20 @@ export function ButtonGroupRtl() {
         </ButtonGroup>
         <ButtonGroup>
           <Button variant="outline">{t.snooze}</Button>
-          <DropdownMenuTrigger>
-            <Button variant="outline" size="icon" aria-label="More Options">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="outline"
+                  size="icon"
+                  aria-label="More Options"
+                />
+              }
+            >
               <MoreHorizontalIcon />
-            </Button>
-            <DropdownMenu
-              placement={dir === "rtl" ? "bottom start" : "bottom end"}
+            </DropdownMenuTrigger>
+            <DropdownMenuContent
+              align={dir === "rtl" ? "start" : "end"}
               data-lang={dir === "rtl" ? language : undefined}
               dir={dir}
               className="w-40"
@@ -142,17 +153,21 @@ export function ButtonGroupRtl() {
                   <DropdownMenuSubContent
                     dir={dir}
                     data-lang={dir === "rtl" ? language : undefined}
-                    selectionMode="single"
-                    selectedKeys={[label]}
-                    onSelectionChange={(keys) =>
-                      setLabel([...keys][0] as string)
-                    }
                   >
-                    <DropdownMenuItem id="personal">
-                      {t.personal}
-                    </DropdownMenuItem>
-                    <DropdownMenuItem id="work">{t.work}</DropdownMenuItem>
-                    <DropdownMenuItem id="other">{t.other}</DropdownMenuItem>
+                    <DropdownMenuRadioGroup
+                      value={label}
+                      onValueChange={setLabel}
+                    >
+                      <DropdownMenuRadioItem value="personal">
+                        {t.personal}
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="work">
+                        {t.work}
+                      </DropdownMenuRadioItem>
+                      <DropdownMenuRadioItem value="other">
+                        {t.other}
+                      </DropdownMenuRadioItem>
+                    </DropdownMenuRadioGroup>
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
               </DropdownMenuGroup>
@@ -163,8 +178,8 @@ export function ButtonGroupRtl() {
                   {t.trash}
                 </DropdownMenuItem>
               </DropdownMenuGroup>
-            </DropdownMenu>
-          </DropdownMenuTrigger>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </ButtonGroup>
       </ButtonGroup>
     </div>

@@ -2,9 +2,9 @@
 title: Collapsible
 description: An interactive component which expands/collapses a panel.
 links:
-  doc: https://react-aria.adobe.com/Disclosure
-  api: https://react-aria.adobe.com/Disclosure#api
-upstream: apps/v4/content/docs/components/aria/collapsible.mdx
+  doc: https://base-ui.com/react/components/collapsible
+  api: https://base-ui.com/react/components/collapsible#api-reference
+upstream: apps/v4/content/docs/components/base/collapsible.mdx
 ---
 
 <ComponentPreview name="collapsible-demo" align="start" />
@@ -41,7 +41,7 @@ Collapsible
 
 ## Controlled State
 
-Use the `isExpanded` and `onExpandedChange` props to control the state.
+Use the `open` and `onOpenChange` props to control the state.
 
 ```tsx lineNumbers
 import * as React from "react"
@@ -50,7 +50,7 @@ export function Example() {
   const [open, setOpen] = React.useState(false)
 
   return (
-    <Collapsible isExpanded={open} onExpandedChange={setOpen}>
+    <Collapsible open={open} onOpenChange={setOpen}>
       <CollapsibleTrigger>Toggle</CollapsibleTrigger>
       <CollapsibleContent>Content</CollapsibleContent>
     </Collapsible>
@@ -235,4 +235,4 @@ Start sections open when their content is needed on first view; collapse only se
 
 ## API Reference
 
-See the [React Aria](https://react-aria.adobe.com/Disclosure#api) documentation for more information.
+See the [Base UI](https://base-ui.com/react/components/collapsible#api-reference) documentation for more information.

@@ -97,18 +97,18 @@ export function HeroPreview() {
             </div>
           </Stat>
         </StatGroup>
-        <Tabs defaultSelectedKey="design">
+        <Tabs defaultValue="design">
           <TabsList>
-            <TabsTrigger id="design">Design</TabsTrigger>
-            <TabsTrigger id="risk">Risk</TabsTrigger>
+            <TabsTrigger value="design">Design</TabsTrigger>
+            <TabsTrigger value="risk">Risk</TabsTrigger>
           </TabsList>
-          <TabsContent id="design" className="flex flex-col gap-4 pt-3">
+          <TabsContent value="design" className="flex flex-col gap-4 pt-3">
             <Slider
               aria-label="Variogram range"
-              value={value}
-              onChange={(v) => setValue(Array.isArray(v) ? v[0] : v)}
-              minValue={0}
-              maxValue={100}
+              value={[value]}
+              onValueChange={(v) => setValue(Array.isArray(v) ? v[0] : v)}
+              min={0}
+              max={100}
             />
             <div className="flex items-center gap-3">
               <Input placeholder="Search horizons…" aria-label="Search" />
@@ -122,12 +122,12 @@ export function HeroPreview() {
                 <Label htmlFor="hero-hidden">Show hidden items</Label>
               </div>
               <div className="flex items-center gap-2">
-                <Switch id="hero-auto" defaultSelected />
+                <Switch id="hero-auto" defaultChecked />
                 <Label htmlFor="hero-auto">Auto-update</Label>
               </div>
             </div>
           </TabsContent>
-          <TabsContent id="risk" className="flex flex-col gap-3 pt-3">
+          <TabsContent value="risk" className="flex flex-col gap-3 pt-3">
             <Meter
               aria-label="Risk"
               label="Risk"

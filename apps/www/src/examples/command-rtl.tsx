@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/command-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/command-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -77,36 +77,35 @@ export function CommandRtl() {
   return (
     <Command className="max-w-sm rounded-lg border" dir={dir}>
       <CommandInput placeholder={t.placeholder} dir={dir} />
-      <CommandList
-        renderEmptyState={() => <CommandEmpty>{t.empty}</CommandEmpty>}
-      >
+      <CommandList>
+        <CommandEmpty>{t.empty}</CommandEmpty>
         <CommandGroup heading={t.suggestions}>
-          <CommandItem textValue={t.calendar}>
+          <CommandItem>
             <Calendar />
             <span>{t.calendar}</span>
           </CommandItem>
-          <CommandItem textValue={t.searchEmoji}>
+          <CommandItem>
             <Smile />
             <span>{t.searchEmoji}</span>
           </CommandItem>
-          <CommandItem textValue={t.calculator} isDisabled>
+          <CommandItem disabled>
             <Calculator />
             <span>{t.calculator}</span>
           </CommandItem>
         </CommandGroup>
         <CommandSeparator />
         <CommandGroup heading={t.settings}>
-          <CommandItem textValue={t.profile}>
+          <CommandItem>
             <User />
             <span>{t.profile}</span>
             <CommandShortcut>⌘P</CommandShortcut>
           </CommandItem>
-          <CommandItem textValue={t.billing}>
+          <CommandItem>
             <CreditCard />
             <span>{t.billing}</span>
             <CommandShortcut>⌘B</CommandShortcut>
           </CommandItem>
-          <CommandItem textValue={t.settings}>
+          <CommandItem>
             <Settings />
             <span>{t.settings}</span>
             <CommandShortcut>⌘S</CommandShortcut>

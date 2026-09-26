@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/input-group-custom.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/input-group-custom.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import TextareaAutosize from "react-textarea-autosize"

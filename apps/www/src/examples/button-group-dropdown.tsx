@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/button-group-dropdown.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/button-group-dropdown.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import {
@@ -16,6 +16,7 @@ import { Button } from "@tecton/react/components/button"
 import { ButtonGroup } from "@tecton/react/components/button-group"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -26,11 +27,13 @@ export default function ButtonGroupDropdown() {
   return (
     <ButtonGroup>
       <Button variant="outline">Follow</Button>
-      <DropdownMenuTrigger>
-        <Button variant="outline" className="pl-2!">
+      <DropdownMenu>
+        <DropdownMenuTrigger
+          render={<Button variant="outline" className="pl-2!" />}
+        >
           <ChevronDownIcon />
-        </Button>
-        <DropdownMenu placement="bottom end" className="w-44">
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-44">
           <DropdownMenuGroup>
             <DropdownMenuItem>
               <VolumeOffIcon />
@@ -64,8 +67,8 @@ export default function ButtonGroupDropdown() {
               Delete Conversation
             </DropdownMenuItem>
           </DropdownMenuGroup>
-        </DropdownMenu>
-      </DropdownMenuTrigger>
+        </DropdownMenuContent>
+      </DropdownMenu>
     </ButtonGroup>
   )
 }

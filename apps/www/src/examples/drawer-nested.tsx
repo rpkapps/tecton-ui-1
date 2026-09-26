@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/drawer-nested.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/drawer-nested.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { useIsMobile } from "@tecton/react/hooks/use-mobile"

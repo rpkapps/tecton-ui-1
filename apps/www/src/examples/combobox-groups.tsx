@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/combobox-groups.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/combobox-groups.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import {
@@ -52,25 +52,24 @@ const timezones = [
 
 export function ComboboxWithGroupsAndSeparator() {
   return (
-    <Combobox allowsEmptyCollection aria-label="Timezone">
+    <Combobox items={timezones}>
       <ComboboxInput placeholder="Select a timezone" />
       <ComboboxContent>
-        <ComboboxList
-          renderEmptyState={() => (
-            <ComboboxEmpty>No timezones found.</ComboboxEmpty>
-          )}
-        >
-          {timezones.map((group, index) => (
-            <ComboboxGroup key={group.value} id={group.value}>
+        <ComboboxEmpty>No timezones found.</ComboboxEmpty>
+        <ComboboxList>
+          {(group, index) => (
+            <ComboboxGroup key={group.value} items={group.items}>
               <ComboboxLabel>{group.value}</ComboboxLabel>
-              {group.items.map((item) => (
-                <ComboboxItem key={item} id={item}>
-                  {item}
-                </ComboboxItem>
-              ))}
+              <ComboboxCollection>
+                {(item) => (
+                  <ComboboxItem key={item} value={item}>
+                    {item}
+                  </ComboboxItem>
+                )}
+              </ComboboxCollection>
               {index < timezones.length - 1 && <ComboboxSeparator />}
             </ComboboxGroup>
-          ))}
+          )}
         </ComboboxList>
       </ComboboxContent>
     </Combobox>

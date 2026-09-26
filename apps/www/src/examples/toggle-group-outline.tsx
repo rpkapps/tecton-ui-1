@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/toggle-group-outline.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/toggle-group-outline.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -6,11 +6,11 @@ import {
 
 export function ToggleGroupOutline() {
   return (
-    <ToggleGroup variant="outline" defaultSelectedKeys={["all"]}>
-      <ToggleGroupItem id="all" aria-label="Toggle all">
+    <ToggleGroup variant="outline" defaultValue={["all"]}>
+      <ToggleGroupItem value="all" aria-label="Toggle all">
         All
       </ToggleGroupItem>
-      <ToggleGroupItem id="missed" aria-label="Toggle missed">
+      <ToggleGroupItem value="missed" aria-label="Toggle missed">
         Missed
       </ToggleGroupItem>
     </ToggleGroup>

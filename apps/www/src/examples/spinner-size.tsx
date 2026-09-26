@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/spinner-size.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/spinner-size.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Spinner } from "@tecton/react/components/spinner"
 
 export function SpinnerSize() {

@@ -20,9 +20,6 @@ importers:
 
   apps/www:
     dependencies:
-      '@internationalized/date':
-        specifier: ^3.12.3
-        version: 3.12.4
       '@shadcn/react':
         specifier: ^0.3.1
         version: 0.3.1(@types/react@19.3.0)(react@19.3.0)
@@ -53,6 +50,9 @@ importers:
       cn:
         specifier: ^0.2.6
         version: 0.2.6
+      date-fns:
+        specifier: ^4.4.0
+        version: 4.4.0
       embla-carousel-autoplay:
         specifier: ^8.6.0
         version: 8.6.0(embla-carousel@8.6.0)
@@ -74,9 +74,9 @@ importers:
       react:
         specifier: ^19.2.6
         version: 19.3.0
-      react-aria-components:
-        specifier: ^1.21.1
-        version: 1.21.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      react-day-picker:
+        specifier: ^10.0.1
+        version: 10.0.1(@types/react@19.3.0)(react@19.3.0)
       react-dom:
         specifier: ^19.2.6
         version: 19.3.0(react@19.3.0)

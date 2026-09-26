@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/kbd-input-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/kbd-input-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { SearchIcon } from "lucide-react"
 
 import {

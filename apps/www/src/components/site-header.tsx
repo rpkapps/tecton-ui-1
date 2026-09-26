@@ -9,6 +9,7 @@ import { Button } from "@tecton/react/components/button"
 import { Separator } from "@tecton/react/components/separator"
 import {
   Sheet,
+  SheetContent,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -121,14 +122,18 @@ function MobileNav({
   const close = () => setOpen(false)
 
   return (
-    <SheetTrigger isOpen={open} onOpenChange={setOpen}>
-      <Button
-        variant="ghost"
-        className={cn(
-          "extend-touch-target h-8 touch-manipulation items-center justify-start gap-2.5 p-0! hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 active:bg-transparent",
-          className
-        )}
-        aria-label="Toggle menu"
+    <Sheet open={open} onOpenChange={setOpen}>
+      <SheetTrigger
+        render={
+          <Button
+            variant="ghost"
+            className={cn(
+              "extend-touch-target h-8 touch-manipulation items-center justify-start gap-2.5 p-0! hover:bg-transparent focus-visible:bg-transparent focus-visible:ring-0 active:bg-transparent",
+              className
+            )}
+            aria-label="Toggle menu"
+          />
+        }
       >
         <div className="relative flex h-8 w-4 items-center justify-center">
           <div className="relative size-4">
@@ -149,8 +154,8 @@ function MobileNav({
         <span className="flex h-8 items-center text-lg leading-none font-medium">
           Menu
         </span>
-      </Button>
-      <Sheet side="left" className="w-80 overflow-y-auto">
+      </SheetTrigger>
+      <SheetContent side="left" className="w-80 overflow-y-auto">
         <SheetHeader>
           <SheetTitle className="flex items-center gap-2">
             <TectonLogo className="size-5" />
@@ -218,7 +223,7 @@ function MobileNav({
             </div>
           ))}
         </div>
-      </Sheet>
-    </SheetTrigger>
+      </SheetContent>
+    </Sheet>
   )
 }

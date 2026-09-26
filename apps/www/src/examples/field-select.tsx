@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/field-select.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/field-select.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Field,
   FieldDescription,
@@ -14,6 +14,7 @@ import {
 } from "@tecton/react/components/select"
 
 const items = [
+  { label: "Choose department", value: null },
   { label: "Engineering", value: "engineering" },
   { label: "Design", value: "design" },
   { label: "Marketing", value: "marketing" },
@@ -28,14 +29,14 @@ export default function FieldSelect() {
   return (
     <Field className="w-full max-w-xs">
       <FieldLabel>Department</FieldLabel>
-      <Select placeholder="Choose department">
+      <Select items={items}>
         <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
             {items.map((item) => (
-              <SelectItem key={item.value} id={item.value}>
+              <SelectItem key={item.value} value={item.value}>
                 {item.label}
               </SelectItem>
             ))}

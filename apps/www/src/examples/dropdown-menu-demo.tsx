@@ -1,12 +1,14 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dropdown-menu-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dropdown-menu-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuPortal,
   DropdownMenuSeparator,
   DropdownMenuShortcut,
   DropdownMenuSub,
@@ -17,9 +19,11 @@ import {
 
 export function DropdownMenuDemo() {
   return (
-    <DropdownMenuTrigger>
-      <Button variant="outline">Open</Button>
-      <DropdownMenu className="w-40" placement="bottom start">
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>
+        Open
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-40" align="start">
         <DropdownMenuGroup>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuItem>
@@ -40,13 +44,14 @@ export function DropdownMenuDemo() {
           <DropdownMenuItem>Team</DropdownMenuItem>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>Invite users</DropdownMenuSubTrigger>
-
-            <DropdownMenuSubContent>
-              <DropdownMenuItem>Email</DropdownMenuItem>
-              <DropdownMenuItem>Message</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem>More...</DropdownMenuItem>
-            </DropdownMenuSubContent>
+            <DropdownMenuPortal>
+              <DropdownMenuSubContent>
+                <DropdownMenuItem>Email</DropdownMenuItem>
+                <DropdownMenuItem>Message</DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem>More...</DropdownMenuItem>
+              </DropdownMenuSubContent>
+            </DropdownMenuPortal>
           </DropdownMenuSub>
           <DropdownMenuItem>
             New Team
@@ -57,7 +62,7 @@ export function DropdownMenuDemo() {
         <DropdownMenuGroup>
           <DropdownMenuItem>GitHub</DropdownMenuItem>
           <DropdownMenuItem>Support</DropdownMenuItem>
-          <DropdownMenuItem isDisabled>API</DropdownMenuItem>
+          <DropdownMenuItem disabled>API</DropdownMenuItem>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
@@ -66,7 +71,7 @@ export function DropdownMenuDemo() {
             <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuGroup>
-      </DropdownMenu>
-    </DropdownMenuTrigger>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
