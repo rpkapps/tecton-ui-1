@@ -21,20 +21,32 @@ built the same way, from the overlay in `scripts/registry-mirror/overlay/`:
 | File | What it is |
 | --- | --- |
 | `style-tecton.css` | Copy of `style-vega.css` with the Tecton deviations: solid 2px focus ring (`ring-2 ring-ring`), flat controls (no `shadow-xs`), buttons that lighten on hover / press, and the class lists of the extra variants below |
-| `tecton.patch` | Registers the style in `registry/styles.tsx`, forwards the Tecton portal target on the eleven overlay aria base sources (ten React Aria overlays through `UNSTABLE_portalContainer`, plus the Base UI `drawer` through `container`), and adds variant axes to six aria base sources: `alert` (`variant` success/warning/info + `appearance` default/outline/filled), `badge` (`variant` success/warning/info + `appearance` solid/outline + `size` default/md/lg), `separator` (`emphasis` subtle/default/strong), `input` / `textarea` / `select` trigger (`variant` outline/filled/text); strips the hard-coded selected colours from `tabs` and the hover colour from `toggle` so the style file can set the Tecton ones; makes `button-group` corners logical for RTL and gives `sonner` outlined status colours (the popover surface with a status border and text, matching `alert` with `appearance="outline"`) |
+| `tecton.patch` | Registers the style in `registry/styles.tsx`, forwards the Tecton portal target on the eleven overlay aria base sources (ten React Aria overlays through `UNSTABLE_portalContainer`, plus the Base UI `drawer` through `container`; a container the caller passes wins, and `DropdownMenu` and `ContextMenu` gain the `UNSTABLE_portalContainer` prop to take one), and adds variant axes to six aria base sources: `alert` (`variant` success/warning/info + `appearance` default/outline/filled), `badge` (`variant` success/warning/info + `appearance` solid/outline + `size` default/md/lg), `separator` (`emphasis` subtle/default/strong), `input` / `textarea` / `select` trigger (`variant` outline/filled/text; the Select trigger's are a `cva`, `selectTriggerVariants`, exported like `inputVariants`); strips the hard-coded selected colours from `tabs` and the hover colour from `toggle` so the style file can set the Tecton ones; makes `button-group` corners logical for RTL and gives `sonner` outlined status colours (the popover surface with a status border and text, matching `alert` with `appearance="outline"`), dropping upstream's `cn-toast` `toastOptions`; keys the `slider` thumb's disabled state on `data-disabled` and routes the `input-otp` container classes through a `cva` (see "Overlay hunks on this branch") |
 
 `scripts/registry-mirror.sh build` re-applies the overlay (`git apply --3way`) and builds only
-`aria-tecton`. The patch is piped through `tr -d '\r'` first: `--3way` matches it against the
+`aria-tecton`. The files the overlay touches are derived, not listed in the script: before
+applying, `build` resets every file under `OVERLAY_PATHSPEC` (`registry/bases`, `registry/styles.tsx`)
+that differs from the pinned commit, plus every file `tecton.patch` names, and `export` writes back
+whatever differs there, so patching a new base source needs no edit to the script. The patch is piped through `tr -d '\r'` first: `--3way` matches it against the
 clone's index blobs, which are always LF, so a CRLF working copy of `tecton.patch`
 (`core.autocrlf` on Windows) would otherwise fail to apply on every file. Because the style exists nowhere else, **every CLI command that touches
 `packages/tecton-react` runs against the mirror** (`REGISTRY_URL=http://127.0.0.1:4000/r`), and
 `pnpm generated:check` diffs the installed files against what the mirror serves.
 
+After the registry build, `build` fails if any `cn-*` class survived into the built
+`public/r/styles/aria-tecton/*.json`. The registry build inlines a style's classes only into a
+`className` or a `cva()`, so a survivor is a class that reaches the generated component raw and has
+no CSS (a variant map that is not a `cva`, a class in `containerClassName` or `toastOptions`). The
+exceptions are upstream's `ALLOWLIST` in `packages/shadcn/src/styles/transform-style-map.ts`
+(`cn-menu-target`, `cn-rtl-flip`, …), which the build keeps on purpose and the CLI resolves at
+install time; the script reads that list from the pinned source, so an upstream bump keeps it in
+step (if it cannot be found, every survivor is reported).
+
 ## How the files were generated
 
 ```bash
 # 1. Registry mirror with the Tecton overlay
-scripts/registry-mirror.sh setup        # clone at the pinned commit, install, overlay, build
+scripts/registry-mirror.sh setup        # clone (or reset the clone) at the pinned commit, install, overlay, build
 scripts/registry-mirror.sh serve &      # http://127.0.0.1:4000
 export REGISTRY_URL=http://127.0.0.1:4000/r
 
@@ -82,7 +94,10 @@ clone, then `scripts/registry-mirror.sh export` to refresh `tecton.patch`), run
 
 ### Bumping upstream
 
-1. Update the commit above and run `scripts/registry-mirror.sh setup`. (CI caches the mirror clone
+1. Update the commit above and run `scripts/registry-mirror.sh setup`. `setup` resets an existing
+   clone (`reset --hard`, `clean -fd`, then a forced checkout of the pin), so uncommitted edits in
+   it are discarded: run `export` first to keep them. Ignored files (`node_modules`, builds)
+   survive. (CI caches the mirror clone
    in `.cache/shadcn-ui` keyed on this commit, so the bump also starts a fresh clone there.) The overlay is applied with
    a 3-way merge: if upstream changed `style-vega.css`, port the change into `style-tecton.css`
    (`git diff <old>..<new> -- apps/v4/registry/styles/style-vega.css` in the mirror clone); if
@@ -201,7 +216,7 @@ differences (above).
 
 ## Overlay hunks on this branch
 
-Three Tecton hunks in `tecton.patch` go beyond the variant axes and the portal target listed in the
+These Tecton hunks in `tecton.patch` go beyond the variant axes and the portal target listed in the
 overlay table:
 
 - **`drawer.tsx`** — the Drawer is the one overlay built on Base UI rather than React Aria, so
@@ -218,6 +233,17 @@ overlay table:
   Aria's `Direction`, which lives in `@react-types/shared` and is not re-exported by
   `react-aria-components`, so declaration emit failed with TS2883 and the file shipped without a
   `.d.ts`.
+- **`slider.tsx`** — the thumb's `disabled:pointer-events-none disabled:opacity-50` becomes
+  `data-disabled:pointer-events-none`: the thumb is a `div`, so `disabled:` never matched, and React
+  Aria marks it with `data-disabled`. Its own opacity is dropped because the slider root already fades
+  (`data-disabled:opacity-50`). The thumb's focus ring (`data-focus-visible:`) is in `style-tecton.css`.
+- **`input-otp.tsx`** — the container classes move into a `cva` (`inputOTPContainerVariants`). The
+  registry build inlines a style's classes only into a `className` or a `cva()`, so in
+  `containerClassName` they stayed raw `cn-input-otp` and the style's `gap-2` never arrived.
+- **`sonner.tsx`** — upstream's `toastOptions={{ classNames: { toast: "cn-toast" } }}` is removed:
+  the build never inlines a class in `toastOptions`, so `cn-toast` reached the component with no CSS
+  (the `cn-*` check in `build` now catches that). The Tecton toast is styled by the CSS variables
+  the Toaster sets, with `richColors` for the status colours.
 
 ## Renaming the package
 
@@ -245,8 +271,10 @@ registry key) is a distinct literal, left untouched on purpose.
 
 `pnpm --filter @tecton/react build` (`scripts/build.mts`, also run by `prepack` and by the root
 `build:lib` / `typecheck`) writes `packages/tecton-react/dist/`, which is what the package
-publishes — `src/` is not shipped. The output is **unbundled**: one `.js` + `.js.map` + `.d.ts` +
-`.d.ts.map` per source module, mirroring `src/`.
+publishes — `src/` is not shipped. The output is **unbundled**: one `.js` + `.js.map` + `.d.ts` per
+source module, mirroring `src/`. The `.js.map` embeds its sources; there is no `.d.ts.map`
+(`declarationMap: false` in `tsconfig.build.json`), since it could only point into `src/`, which is
+not published.
 
 - **JS** — esbuild with every specifier marked external, so each file keeps its own
   `"use client"` directive and its imports: the `@tecton/react/...` self-imports of the generated

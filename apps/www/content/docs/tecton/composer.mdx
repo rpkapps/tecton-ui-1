@@ -293,10 +293,10 @@ A `form` that holds the value and the chat's state for its parts.
 | Part | Is |
 | --- | --- |
 | `ComposerField` | The bordered `InputGroup` that holds the textarea and the toolbar. |
-| `ComposerInput` | The textarea, named "Message" and described by the hint. It grows with its text up to `max-h-48` (`field-sizing: content`, or its scroll height where a browser has no `field-sizing`), then scrolls. |
+| `ComposerInput` | The textarea, named "Message" and described by every rendered `ComposerHint` (and its own `aria-describedby`). It grows with its text up to `max-h-48` (`field-sizing: content`, or its scroll height where a browser has no `field-sizing`, measured again when the box changes width), then scrolls. |
 | `ComposerToolbar` | A React Aria `Toolbar` under the textarea; `ComposerSubmit` goes last. |
 | `ComposerSubmit` | Send, or Stop while busy. `sendLabel`, `stopLabel`. |
-| `ComposerHint` | The keys that send, with ⌘ for Ctrl on an Apple keyboard; `isVisible={false}` keeps it for screen readers only. |
+| `ComposerHint` | The keys that send, with ⌘ for Ctrl on an Apple keyboard; `isVisible={false}` keeps it for screen readers only. Pass `children` for your own text; an `id` you pass is the one the textarea points at. |
 | `ComposerStatusMessage` | The polite status region; `messages` overrides its three texts. |
 | `ComposerAttachments` | Removable Tecton chips: `items` (`id`, `label`, `description`, `icon`), `onRemove` and `aria-label` (default "Attachments"). |
 | `ComposerSuggestions`, `ComposerSuggestion` | A toolbar of prompts; `value`, `submit` to send it at once, or `onSelect` to handle the press yourself. |

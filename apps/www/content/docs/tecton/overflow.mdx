@@ -36,7 +36,7 @@ import {
 </Toolbar>
 ```
 
-Wrap every control that may leave the row in an `OverflowItem`. Unwrapped children are fixed: they never leave, so the primary action goes in bare. Put the label text in an `OverflowLabel` so it can drop to icon-only. The `More` menu is rendered at the end automatically.
+Wrap every control that may leave the row in an `OverflowItem`. Unwrapped children are fixed: they never leave, so the primary action goes in bare. Put the label text in an `OverflowLabel` so it can drop to icon-only; only an item whose control has an icon (an `svg`, `img` or `[data-icon]`) collapses. The `More` menu is rendered at the end automatically; `overflowBadge` on the row shows how many items it holds.
 
 <Callout>
   `Toolbar` is a React Aria toolbar: one tab stop, arrow keys move between the visible controls. Use `Overflow` when the row is not a toolbar semantically (a breadcrumb, a chip row). Both need their items and dividers as direct children.
@@ -245,6 +245,7 @@ The icon-only stage works by putting `sr-only` on `OverflowLabel` alone, so plai
 | `minimumVisible` | `number` | 0 | Items kept in the row regardless of width. |
 | `lastResort` | `"wrap" \| "scroll"` | "wrap" | What happens when fixed items alone do not fit. A vertical row always scrolls. |
 | `menu` | `boolean` | true | Render the trailing `OverflowMenu`; pass `false` to place one yourself. |
+| `overflowBadge` | `boolean` | false | Show how many items are in the More menu as a count badge on the trigger of the automatic menu (`badge` on `OverflowMenu`). |
 
 ### OverflowItem
 
@@ -260,8 +261,8 @@ A `div` wrapper around one control. Must be a direct child of the row.
 | `onAction` | `() => void` | - | Handler of the default menu item; also injected into a React Aria `Button` child. |
 | `isDisabled` | `boolean` | - | Disables the child button and the menu item. |
 | `variant` | `"default" \| "destructive"` | "default" | Menu item variant. |
-| `labelBehavior` | `"collapse" \| "keep"` | "collapse" when `label` is set | Whether the label drops to icon-only. |
-| `tooltip` | `boolean` | `labelBehavior === "collapse"` | Show `label` as a tooltip while icon-only. |
+| `labelBehavior` | `"collapse" \| "keep"` | "collapse" when `label` is set and the control has an icon (`svg`, `img` or `[data-icon]`), else "keep" | Whether the label drops to icon-only. A text-only item cannot go icon-only; `"collapse"` without an icon warns in development. |
+| `tooltip` | `boolean` | `labelBehavior !== "keep"` | Show `label` as a tooltip while icon-only. |
 | `elastic` | `boolean \| { min?: string; max?: string }` | - | Shrink between these inline sizes before anything collapses (`12rem` to `100%` by default). |
 | `overflow` | `ReactNode \| "never"` | - | Menu form; `"never"` makes the item fixed. Omit for a button. |
 
@@ -289,6 +290,8 @@ The trailing More button and its menu. Rendered automatically unless the row has
 | --- | --- | --- | --- |
 | `label` | `string` | "More actions" | Accessible name of the default trigger. |
 | `trigger` | `ReactNode` | - | A custom trigger button instead of the ellipsis. |
+| `badge` | `boolean` | false | Show how many items are in the menu as a count badge on the trigger ("99+" above 99). The badge is visual only: the menu lists the items it counts. |
+| `className` | `string` | - | Classes for the wrapper around the trigger. |
 
 ### useIsOverflowItemVisible(id)
 
