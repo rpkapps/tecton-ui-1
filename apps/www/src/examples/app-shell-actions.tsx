@@ -29,8 +29,10 @@ export default function AppShellActionsExample() {
       <AppShellHeader className="rounded-lg border-b-0">
         <AppShellBrand>Tecton</AppShellBrand>
         <AppShellActions>
-          <AppShellCommandTrigger>Search or jump to…</AppShellCommandTrigger>
-          <AppShellAction label="Help">
+          <AppShellCommandTrigger shortcut="⌘K">
+            Search or jump to…
+          </AppShellCommandTrigger>
+          <AppShellAction label="Help" shortcut="?">
             <CircleHelpIcon />
           </AppShellAction>
           <AppShellAction label="What's new">
@@ -48,10 +50,10 @@ export default function AppShellActionsExample() {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem textValue="Profile">
+              <DropdownMenuItem>
                 <UserIcon /> Profile
               </DropdownMenuItem>
-              <DropdownMenuItem textValue="Sign out">
+              <DropdownMenuItem>
                 <LogOutIcon /> Sign out
               </DropdownMenuItem>
             </DropdownMenuGroup>

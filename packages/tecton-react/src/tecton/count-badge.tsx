@@ -5,7 +5,7 @@ import { cn } from "cn"
 /**
  * Tecton Badge — a count or dot anchored to the corner of its child
  * (avatar, icon button, tab). Not to be confused with the shadcn `Badge`,
- * which is the static label; the interactive React Aria tag is `Chip`.
+ * which is the static label; the interactive tag is `Chip`.
  */
 const countBadgeVariants = cva(
   "pointer-events-none absolute z-10 flex items-center justify-center rounded-full font-medium whitespace-nowrap tabular-nums ring-2 ring-background",

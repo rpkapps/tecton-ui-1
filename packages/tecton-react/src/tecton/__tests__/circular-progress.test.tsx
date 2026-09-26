@@ -42,7 +42,7 @@ describe("CircularProgress", () => {
 
   it("spins with a quarter arc when indeterminate", () => {
     const { container } = render(
-      <CircularProgress aria-label="p" isIndeterminate />
+      <CircularProgress aria-label="p" value={null} />
     )
     expect(container.querySelector("svg")).toHaveClass("animate-spin")
     expect(
@@ -53,7 +53,7 @@ describe("CircularProgress", () => {
 
   it("slows the spin instead of running it at full speed under reduced motion", () => {
     const { container } = render(
-      <CircularProgress aria-label="p" isIndeterminate />
+      <CircularProgress aria-label="p" value={null} />
     )
     expect(container.querySelector("svg")).toHaveClass(
       "motion-reduce:animate-[spin_3s_linear_infinite]"
@@ -100,7 +100,7 @@ describe("CircularProgress", () => {
 
   it("hides showValue while indeterminate", () => {
     const { container } = render(
-      <CircularProgress aria-label="p" isIndeterminate showValue />
+      <CircularProgress aria-label="p" value={null} showValue />
     )
     expect(
       container.querySelector('[data-slot="circular-progress-value"]')

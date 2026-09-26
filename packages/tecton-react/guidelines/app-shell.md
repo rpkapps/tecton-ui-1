@@ -41,7 +41,7 @@ related: [Panel, PageHeader, Sheet, AppFinder, Overflow]
 Wrong:
 
 ```tsx
-<Button variant="ghost" size="icon-sm" title="Settings" onPress={openSettings}>
+<Button variant="ghost" size="icon-sm" title="Settings" onClick={openSettings}>
   <SettingsIcon />
 </Button>
 ```
@@ -49,12 +49,12 @@ Wrong:
 Correct:
 
 ```tsx
-<AppShellAction label="Settings" onPress={openSettings}>
+<AppShellAction label="Settings" onClick={openSettings}>
   <SettingsIcon />
 </AppShellAction>
 ```
 
-`title` is not a `Button` prop, and React Aria's `filterDOMProps` keeps only `id`, `data-*`, labelling and global DOM attributes, so it never reaches the `button`: an icon-only button with no text node is left with no accessible name and no tooltip either, while `AppShellAction` sets `aria-label` from `label` and wraps the button in the `TooltipTrigger` that also opens on keyboard focus.
+A `title` is a mouse-only hint that screen readers announce inconsistently and keyboard focus never shows, so an icon-only button with no text node is left without a reliable name; `AppShellAction` sets `aria-label` from `label` and wraps the button in a tooltip that also opens on keyboard focus.
 
 ### HIGH Page content placed straight into AppShellBody
 
@@ -73,3 +73,24 @@ Correct:
 ```
 
 `AppShellBody` is the `flex min-h-0 overflow-hidden` row that holds the regions side by side, so content dropped into it is clipped at the fold and the sidebar and aside have nothing to sit beside.
+
+### HIGH The key hint mistaken for a binding
+
+Wrong:
+
+```tsx
+<AppShellCommandTrigger shortcut="⌘K" onClick={open}>Search</AppShellCommandTrigger>
+```
+
+Correct:
+
+```tsx
+useEffect(() => {
+  const onKey = (e: KeyboardEvent) => e.key === "k" && (e.metaKey || e.ctrlKey) && open()
+  window.addEventListener("keydown", onKey)
+  return () => window.removeEventListener("keydown", onKey)
+}, [open])
+return <AppShellCommandTrigger shortcut="⌘K" onClick={open}>Search</AppShellCommandTrigger>
+```
+
+`shortcut` (on `AppShellCommandTrigger` and `AppShellAction`) only draws a key cap; Tecton binds no keys, so the application registers the key itself or the hint promises a shortcut that does nothing.

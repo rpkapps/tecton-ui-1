@@ -85,21 +85,21 @@ AppShell
 <AppShellHeader>
   <AppShellBrand>Tecton</AppShellBrand>
   <AppShellActions>
-    <AppShellCommandTrigger onPress={openPalette}>Search or jump to…</AppShellCommandTrigger>
-    <AppShellAction label="Help"><CircleHelpIcon /></AppShellAction>
+    <AppShellCommandTrigger shortcut="⌘K" onClick={openPalette}>Search or jump to…</AppShellCommandTrigger>
+    <AppShellAction label="Help" shortcut="?"><CircleHelpIcon /></AppShellAction>
     <AppShellAction label="Settings" className="hidden lg:inline-flex"><SettingsIcon /></AppShellAction>
     <AppShellOverflow className="lg:hidden">
-      <DropdownMenuItem textValue="Settings"><SettingsIcon /> Settings</DropdownMenuItem>
+      <DropdownMenuItem onClick={openSettings}><SettingsIcon /> Settings</DropdownMenuItem>
     </AppShellOverflow>
     <AppShellDivider />
     <AppShellUserMenu user={{ name: "Sarah Elliott", initials: "SE" }}>
-      <DropdownMenuItem textValue="Sign out">Sign out</DropdownMenuItem>
+      <DropdownMenuItem onClick={signOut}>Sign out</DropdownMenuItem>
     </AppShellUserMenu>
   </AppShellActions>
 </AppShellHeader>
 ```
 
-`AppShellAction` is a ghost icon button whose `label` is both the accessible name and the tooltip; `shortcut` adds a key hint to the tooltip. A hint is only a label: Tecton binds no keys, so show one only for a key the application handles itself. `AppShellCommandTrigger` looks like a search field from `md` up and collapses to an icon button below it. `AppShellOverflow` is the "More" menu for the actions a narrow header cannot show, and `AppShellDivider` is the hairline between groups.
+`AppShellAction` is a ghost icon button whose `label` is both the accessible name and the tooltip; `shortcut` adds a key cap to the tooltip. `AppShellCommandTrigger` looks like a search field from `md` up and collapses to an icon button below it; `shortcut` shows a key hint from `lg` up. Both hints only draw the key: binding it is up to the application. `AppShellOverflow` is the "More" menu for the actions a narrow header cannot show, and `AppShellDivider` is the hairline between groups.
 
 ## Sidebar
 
@@ -214,7 +214,7 @@ Every navigation area on a page has its own screen-reader name (`aria-label`): a
 <Wrong>
 
 ```tsx
-<Button variant="ghost" size="icon-sm" title="Settings" onPress={openSettings}>
+<Button variant="ghost" size="icon-sm" title="Settings" onClick={openSettings}>
   <SettingsIcon />
 </Button>
 ```
@@ -224,14 +224,14 @@ Every navigation area on a page has its own screen-reader name (`aria-label`): a
 <Correct>
 
 ```tsx
-<AppShellAction label="Settings" onPress={openSettings}>
+<AppShellAction label="Settings" onClick={openSettings}>
   <SettingsIcon />
 </AppShellAction>
 ```
 
 </Correct>
 
-`title` is not a `Button` prop, and React Aria's `filterDOMProps` keeps only `id`, `data-*`, labelling and global DOM attributes, so it never reaches the `button`: an icon-only button with no text node is left with no accessible name and no tooltip either, while `AppShellAction` sets `aria-label` from `label` and wraps the button in the `TooltipTrigger` that also opens on keyboard focus.
+A `title` is a mouse-only hint that screen readers announce inconsistently and keyboard focus never shows, so an icon-only button with no text node is left without a reliable name; `AppShellAction` sets `aria-label` from `label` and wraps the button in a tooltip that also opens on keyboard focus.
 
 </Dont>
 
@@ -256,6 +256,33 @@ Every navigation area on a page has its own screen-reader name (`aria-label`): a
 </Correct>
 
 `AppShellBody` is the `flex min-h-0 overflow-hidden` row that holds the regions side by side, so content dropped into it is clipped at the fold and the sidebar and aside have nothing to sit beside.
+
+</Dont>
+
+<Dont severity="HIGH" title="The key hint mistaken for a binding">
+
+<Wrong>
+
+```tsx
+<AppShellCommandTrigger shortcut="⌘K" onClick={open}>Search</AppShellCommandTrigger>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+useEffect(() => {
+  const onKey = (e: KeyboardEvent) => e.key === "k" && (e.metaKey || e.ctrlKey) && open()
+  window.addEventListener("keydown", onKey)
+  return () => window.removeEventListener("keydown", onKey)
+}, [open])
+return <AppShellCommandTrigger shortcut="⌘K" onClick={open}>Search</AppShellCommandTrigger>
+```
+
+</Correct>
+
+`shortcut` (on `AppShellCommandTrigger` and `AppShellAction`) only draws a key cap; Tecton binds no keys, so the application registers the key itself or the hint promises a shortcut that does nothing.
 
 </Dont>
 
@@ -289,13 +316,12 @@ Plain styled layout elements.
 
 ### AppShellAction
 
-Ghost icon `Button` wrapped in a `TooltipTrigger`.
+Ghost icon `Button` with a tooltip below it that also opens on keyboard focus. Accepts `Button` props (`onClick`, `disabled`, …).
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `label` | `string` | - | Accessible name and tooltip text. |
-| `shortcut` | `ReactNode` | - | Key hint rendered as a `Kbd` in the tooltip (`"?"`). A label only: it binds no key. |
-| `onPress` | `(e: PressEvent) => void` | - | Press handler. |
+| `shortcut` | `ReactNode` | - | Key hint in the tooltip: a string is one key cap (`"?"`), a node is drawn as is (`<KbdGroup>…</KbdGroup>`). |
 
 ### AppShellCommandTrigger
 
@@ -304,7 +330,7 @@ Outline `Button` that looks like a search field and opens the command palette. B
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `children` | `ReactNode` | "Search" | Placeholder text; a string is also the accessible name (otherwise "Search"). |
-| `shortcut` | `ReactNode` | - | Key hint rendered as a `Kbd` at the end (`"⌘K"`). A label only: it binds no key. |
+| `shortcut` | `ReactNode` | - | Key hint at the end, from `lg` up: a string is one key cap (`"⌘K"`), a node is drawn as is. It only displays the key; bind it in the application. |
 
 ### AppShellUserMenu
 
@@ -312,6 +338,8 @@ Avatar button opening a `DropdownMenu` anchored bottom-end.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
+| `open` / `defaultOpen` / `onOpenChange` | `boolean` / `boolean` / `(open: boolean) => void` | - | Open state of the menu. |
+| `className` | `string` | - | Classes of the trigger button. |
 | `user` | `{ name; initials; image? }` | - | Shown in the avatar and used for the accessible name. |
 | `children` | `ReactNode` | - | Menu contents: `DropdownMenuGroup`, `DropdownMenuItem`, … |
 
@@ -322,7 +350,7 @@ Ellipsis button opening a `DropdownMenu` for actions that do not fit a narrow he
 ```tsx
 <AppShellAction label="Settings" className="hidden lg:inline-flex"><SettingsIcon /></AppShellAction>
 <AppShellOverflow className="lg:hidden">
-  <DropdownMenuItem textValue="Settings"><SettingsIcon /> Settings</DropdownMenuItem>
+  <DropdownMenuItem onClick={openSettings}><SettingsIcon /> Settings</DropdownMenuItem>
 </AppShellOverflow>
 ```
 
@@ -330,6 +358,8 @@ Ellipsis button opening a `DropdownMenu` for actions that do not fit a narrow he
 | --- | --- | --- | --- |
 | `label` | `string` | "More" | Accessible name of the trigger. |
 | `children` | `ReactNode` | - | Menu contents. |
+| `open` / `defaultOpen` / `onOpenChange` | `boolean` / `boolean` / `(open: boolean) => void` | - | Open state of the menu. |
+| `className` | `string` | - | Classes of the trigger button. |
 
 ### AppShellDivider
 

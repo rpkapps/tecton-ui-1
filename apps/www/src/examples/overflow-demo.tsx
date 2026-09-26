@@ -25,7 +25,7 @@ export default function OverflowDemo() {
       <div className="min-w-40 resize-x overflow-hidden rounded-md border p-2">
         <Toolbar aria-label="Well actions">
           <OverflowItem
-            id="tag"
+            value="tag"
             label="Add tag"
             icon={<TagIcon />}
             priority={2}
@@ -36,7 +36,7 @@ export default function OverflowDemo() {
             </Button>
           </OverflowItem>
           <OverflowItem
-            id="share"
+            value="share"
             label="Share"
             icon={<ShareIcon />}
             priority={1}
@@ -46,19 +46,19 @@ export default function OverflowDemo() {
               <OverflowLabel>Share</OverflowLabel>
             </Button>
           </OverflowItem>
-          <OverflowItem id="copy" label="Duplicate" icon={<CopyIcon />}>
+          <OverflowItem value="copy" label="Duplicate" icon={<CopyIcon />}>
             <Button variant="outline">
               <CopyIcon data-icon="inline-start" />
               <OverflowLabel>Duplicate</OverflowLabel>
             </Button>
           </OverflowItem>
-          <OverflowItem id="export" label="Export" icon={<DownloadIcon />}>
+          <OverflowItem value="export" label="Export" icon={<DownloadIcon />}>
             <Button variant="outline">
               <DownloadIcon data-icon="inline-start" />
               <OverflowLabel>Export</OverflowLabel>
             </Button>
           </OverflowItem>
-          <OverflowItem id="archive" label="Archive" icon={<ArchiveIcon />}>
+          <OverflowItem value="archive" label="Archive" icon={<ArchiveIcon />}>
             <Button variant="outline">
               <ArchiveIcon data-icon="inline-start" />
               <OverflowLabel>Archive</OverflowLabel>
@@ -66,7 +66,7 @@ export default function OverflowDemo() {
           </OverflowItem>
           <OverflowDivider />
           <OverflowItem
-            id="delete"
+            value="delete"
             label="Delete"
             icon={<Trash2Icon />}
             variant="destructive"

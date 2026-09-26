@@ -12,26 +12,26 @@ import {
   AppFinderTrigger,
 } from "@tecton/react/tecton/app-finder"
 
-function Finder({ onAction }: { onAction?: (key: React.Key) => void }) {
+function Finder({ onSelect }: { onSelect?: (value: string) => void }) {
   return (
     <AppFinder>
       <AppFinderTrigger>DSG</AppFinderTrigger>
       <AppFinderMenu>
         <AppFinderInput />
-        <AppFinderList onAction={onAction}>
+        <AppFinderList onSelect={onSelect}>
           <AppFinderGroup heading="Subsurface">
             <AppFinderItem
-              id="dsg"
+              value="dsg"
               icon="DSG"
               name="Discovery"
               description="Regional geology"
               keywords={["geo"]}
-              isCurrent
+              current
             />
-            <AppFinderItem id="fwm" name="Framework Modeling" />
+            <AppFinderItem value="fwm" name="Framework Modeling" />
           </AppFinderGroup>
           <AppFinderGroup heading="Wells">
-            <AppFinderItem id="dwp" name="Well Planning" />
+            <AppFinderItem value="dwp" name="Well Planning" />
           </AppFinderGroup>
         </AppFinderList>
       </AppFinderMenu>
@@ -61,19 +61,18 @@ describe("AppFinder", () => {
     await userEvent.click(screen.getByRole("button", { name: "DSG" }))
     const dialog = await screen.findByRole("dialog", { name: "Applications" })
     expect(dialog.closest('[data-slot="app-finder-menu"]')).toBeInTheDocument()
-    // Command sets its own data-slot after the props, so the input is a command-input.
-    expect(screen.getByPlaceholderText("Search applications…")).toHaveAttribute(
-      "data-slot",
-      "command-input"
-    )
+    const input = screen.getByRole("combobox")
+    expect(input).toHaveAttribute("placeholder", "Search applications…")
+    expect(input).toHaveAttribute("data-slot", "app-finder-input")
+    expect(input).toHaveFocus()
     expect(
       document.querySelector('[data-slot="app-finder-group"]')
     ).toBeInTheDocument()
     expect(screen.getByText("Subsurface")).toBeInTheDocument()
     expect(screen.getByText("Wells")).toBeInTheDocument()
-    const items = screen.getAllByRole("menuitem")
+    const items = screen.getAllByRole("option")
     expect(items).toHaveLength(3)
-    expect(items[0]).toHaveAttribute("data-current", "true")
+    expect(items[0]).toHaveAttribute("data-current", "")
     expect(items[0]).toHaveTextContent("Current")
     expect(items[0]).toHaveTextContent("Regional geology")
     expect(
@@ -92,17 +91,17 @@ describe("AppFinder", () => {
 
     await userEvent.type(input, "well")
     await waitFor(() => {
-      expect(screen.getAllByRole("menuitem")).toHaveLength(1)
+      expect(screen.getAllByRole("option")).toHaveLength(1)
     })
-    expect(screen.getByRole("menuitem")).toHaveTextContent("Well Planning")
-    expect(screen.queryByText("Subsurface")).toBeNull()
+    expect(screen.getByRole("option")).toHaveTextContent("Well Planning")
+    expect(screen.getByText("Subsurface")).not.toBeVisible()
 
     await userEvent.clear(input)
     await userEvent.type(input, "geo")
     await waitFor(() => {
-      expect(screen.getAllByRole("menuitem")).toHaveLength(1)
+      expect(screen.getAllByRole("option")).toHaveLength(1)
     })
-    expect(screen.getByRole("menuitem")).toHaveTextContent("Discovery")
+    expect(screen.getByRole("option")).toHaveTextContent("Discovery")
   })
 
   it("shows the empty message when nothing matches", async () => {
@@ -116,18 +115,71 @@ describe("AppFinder", () => {
     ).toHaveLength(0)
   })
 
-  it("calls onAction with the app id and closes", async () => {
-    const onAction = vi.fn()
-    render(<Finder onAction={onAction} />)
+  it("calls onSelect with the app value and closes", async () => {
+    const onSelect = vi.fn()
+    render(<Finder onSelect={onSelect} />)
     await userEvent.click(screen.getByRole("button", { name: "DSG" }))
     await screen.findByRole("dialog")
-    await userEvent.click(
-      screen.getByRole("menuitem", { name: /Well Planning/ })
-    )
-    expect(onAction).toHaveBeenCalledWith("dwp")
+    await userEvent.click(screen.getByRole("option", { name: /Well Planning/ }))
+    expect(onSelect).toHaveBeenCalledWith("dwp")
     await waitFor(() => {
       expect(screen.queryByRole("dialog")).toBeNull()
     })
+  })
+
+  it("chooses an app with the keyboard", async () => {
+    const user = userEvent.setup()
+    const onSelect = vi.fn()
+    render(<Finder onSelect={onSelect} />)
+    await user.click(screen.getByRole("button", { name: "DSG" }))
+    const input = await screen.findByRole("combobox")
+    await waitFor(() => expect(input).toHaveFocus())
+    // The first item is highlighted; arrows move the highlight.
+    expect(screen.getAllByRole("option")[0]).toHaveAttribute(
+      "aria-selected",
+      "true"
+    )
+    await user.keyboard("{ArrowDown}{Enter}")
+    expect(onSelect).toHaveBeenCalledWith("fwm")
+    await waitFor(() => {
+      expect(screen.queryByRole("dialog")).toBeNull()
+    })
+  })
+
+  it("does not match the value, only the name and keywords", async () => {
+    render(<Finder />)
+    await userEvent.click(screen.getByRole("button", { name: "DSG" }))
+    const input = await screen.findByPlaceholderText("Search applications…")
+    await userEvent.type(input, "fwm")
+    expect(await screen.findByText("No applications match")).toBeInTheDocument()
+  })
+
+  it("can be controlled", async () => {
+    const onOpenChange = vi.fn()
+    const { rerender } = render(
+      <AppFinder open={false} onOpenChange={onOpenChange}>
+        <AppFinderTrigger>X</AppFinderTrigger>
+        <AppFinderMenu>
+          <AppFinderList>
+            <AppFinderItem value="a" name="Alpha" />
+          </AppFinderList>
+        </AppFinderMenu>
+      </AppFinder>
+    )
+    await userEvent.click(screen.getByRole("button", { name: "X" }))
+    await waitFor(() => expect(onOpenChange).toHaveBeenCalledWith(true))
+    expect(screen.queryByRole("dialog")).toBeNull()
+    rerender(
+      <AppFinder open onOpenChange={onOpenChange}>
+        <AppFinderTrigger>X</AppFinderTrigger>
+        <AppFinderMenu>
+          <AppFinderList>
+            <AppFinderItem value="a" name="Alpha" />
+          </AppFinderList>
+        </AppFinderMenu>
+      </AppFinder>
+    )
+    expect(await screen.findByRole("dialog")).toBeInTheDocument()
   })
 
   it("accepts a custom empty message and palette label", async () => {
@@ -137,7 +189,7 @@ describe("AppFinder", () => {
         <AppFinderMenu aria-label="Apps">
           <AppFinderInput placeholder="Find…" />
           <AppFinderList emptyMessage="Nothing here">
-            <AppFinderItem id="a" name="Alpha" />
+            <AppFinderItem value="a" name="Alpha" />
           </AppFinderList>
         </AppFinderMenu>
       </AppFinder>

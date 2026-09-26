@@ -14,10 +14,9 @@ export default function CircularProgressValue() {
       <CircularProgress
         size="lg"
         value={7}
-        minValue={0}
-        maxValue={12}
+        max={12}
         aria-label="Templates"
-        formatOptions={{ style: "decimal" }}
+        format={{ style: "decimal" }}
       >
         7/12
       </CircularProgress>

@@ -43,16 +43,16 @@ export default function ActionBarMessageExample() {
       </Field>
       <ActionBar
         placement="toolbar"
-        isOpen={dirty}
+        open={dirty}
         onDismiss={discard}
         aria-label="Unsaved changes"
       >
         <ActionBarMessage>You have unsaved changes</ActionBarMessage>
         <ActionBarActions aria-label="Save or discard">
           <OverflowItem
-            id="discard"
+            value="discard"
             label="Discard"
-            onAction={discard}
+            onClick={discard}
             labelBehavior="keep"
           >
             <Button variant="ghost" size="sm">
@@ -60,7 +60,7 @@ export default function ActionBarMessageExample() {
             </Button>
           </OverflowItem>
           {/* Unwrapped: the primary action is fixed. */}
-          <Button size="sm" onPress={save}>
+          <Button size="sm" onClick={save}>
             Save
           </Button>
         </ActionBarActions>

@@ -25,10 +25,10 @@ export default function ActionBarFloating() {
   const [selected, setSelected] = React.useState<Set<string>>(
     () => new Set(["doc-2", "doc-5"])
   )
-  const toggle = (id: string, isSelected: boolean) =>
+  const toggle = (id: string, checked: boolean) =>
     setSelected((current) => {
       const next = new Set(current)
-      if (isSelected) next.add(id)
+      if (checked) next.add(id)
       else next.delete(id)
       return next
     })
@@ -45,8 +45,8 @@ export default function ActionBarFloating() {
           >
             <Checkbox
               aria-label={`Select ${document.name}`}
-              isSelected={selected.has(document.id)}
-              onChange={(isSelected) => toggle(document.id, isSelected)}
+              checked={selected.has(document.id)}
+              onCheckedChange={(checked) => toggle(document.id, checked)}
             />
             {document.name}
           </li>
@@ -54,7 +54,7 @@ export default function ActionBarFloating() {
       </ul>
       <ActionBar
         placement="floating"
-        isOpen={selected.size > 0}
+        open={selected.size > 0}
         onDismiss={clear}
         aria-label="Selected documents"
         className="mb-4"
@@ -66,7 +66,7 @@ export default function ActionBarFloating() {
         />
         <ActionBarActions aria-label="Document actions">
           <OverflowItem
-            id="move"
+            value="move"
             label="Move to"
             icon={<FolderInputIcon />}
             priority={2}
@@ -77,7 +77,7 @@ export default function ActionBarFloating() {
             </Button>
           </OverflowItem>
           <OverflowItem
-            id="tag"
+            value="tag"
             label="Add tag"
             icon={<TagIcon />}
             priority={1}
@@ -87,7 +87,7 @@ export default function ActionBarFloating() {
               <OverflowLabel>Add tag</OverflowLabel>
             </Button>
           </OverflowItem>
-          <OverflowItem id="archive" label="Archive" icon={<ArchiveIcon />}>
+          <OverflowItem value="archive" label="Archive" icon={<ArchiveIcon />}>
             <Button variant="outline" size="sm">
               <ArchiveIcon data-icon="inline-start" />
               <OverflowLabel>Archive</OverflowLabel>
@@ -95,7 +95,7 @@ export default function ActionBarFloating() {
           </OverflowItem>
           <OverflowDivider />
           <OverflowItem
-            id="delete"
+            value="delete"
             label="Delete"
             icon={<Trash2Icon />}
             variant="destructive"

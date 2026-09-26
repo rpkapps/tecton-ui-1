@@ -29,15 +29,15 @@ import {
   </AppFinderTrigger>
   <AppFinderMenu>
     <AppFinderInput />
-    <AppFinderList onAction={(key) => navigateTo(String(key))}>
+    <AppFinderList onSelect={(value) => navigateTo(value)}>
       <AppFinderGroup heading="Recent" hideWhileSearching>
-        <AppFinderItem id="recent-dsg" icon="DSG" tone="blue" name="Discovery" />
+        <AppFinderItem value="recent-dsg" icon="DSG" tone="blue" name="Discovery" />
       </AppFinderGroup>
       <AppFinderGroup heading="Subsurface">
-        <AppFinderItem id="dsg" icon="DSG" tone="blue" name="Discovery" description="Regional geology" keywords={["DSG"]} />
+        <AppFinderItem value="dsg" icon="DSG" tone="blue" name="Discovery" description="Regional geology" keywords={["DSG"]} />
       </AppFinderGroup>
       <AppFinderGroup heading="Wells">
-        <AppFinderItem id="dwp" icon="DWP" tone="green" name="Well Planning" keywords={["DWP"]} isCurrent />
+        <AppFinderItem value="dwp" icon="DWP" tone="green" name="Well Planning" keywords={["DWP"]} current />
       </AppFinderGroup>
     </AppFinderList>
   </AppFinderMenu>
@@ -102,13 +102,13 @@ Describe the current app on the trigger: the short code as children, `name` for 
 
 <Do>
 
-Navigate from `onAction` on `AppFinderList`; it receives the item's `id` and closes the popover afterwards.
+Navigate from `onSelect` on `AppFinderList`; it receives the item's `value` and closes the popover afterwards. Control the popover with `open` / `onOpenChange` on `AppFinder` when you need to.
 
 </Do>
 
 <Do>
 
-Give every item a unique `id` across groups, `keywords` for its short code and category, and `isCurrent` on the mounted one.
+Give every item a unique `value` across groups, `keywords` for its short code and category, and `current` on the mounted one; the filter matches `name` and `keywords`, never `value`.
 
 </Do>
 
@@ -127,7 +127,7 @@ Reuse `AppFinderIcon` wherever else the tile is needed — a launcher grid, a co
 <Wrong>
 
 ```tsx
-<AppFinderItem id="dwp" icon="DWP" name="Well Planning" className="bg-emerald-100 text-emerald-800" />
+<AppFinderItem value="dwp" icon="DWP" name="Well Planning" className="bg-emerald-100 text-emerald-800" />
 ```
 
 </Wrong>
@@ -135,7 +135,7 @@ Reuse `AppFinderIcon` wherever else the tile is needed — a launcher grid, a co
 <Correct>
 
 ```tsx
-<AppFinderItem id="dwp" icon="DWP" tone="green" name="Well Planning" />
+<AppFinderItem value="dwp" icon="DWP" tone="green" name="Well Planning" />
 ```
 
 </Correct>
@@ -151,7 +151,7 @@ Reuse `AppFinderIcon` wherever else the tile is needed — a launcher grid, a co
 ```tsx
 <AppFinderMenu>
   <Input value={query} onChange={(event) => setQuery(event.target.value)} />
-  <AppFinderList onAction={switchTo}>{appsMatching(query)}</AppFinderList>
+  <AppFinderList onSelect={switchTo}>{appsMatching(query)}</AppFinderList>
 </AppFinderMenu>
 ```
 
@@ -162,13 +162,13 @@ Reuse `AppFinderIcon` wherever else the tile is needed — a launcher grid, a co
 ```tsx
 <AppFinderMenu>
   <AppFinderInput />
-  <AppFinderList onAction={switchTo}>{everyApp}</AppFinderList>
+  <AppFinderList onSelect={switchTo}>{everyApp}</AppFinderList>
 </AppFinderMenu>
 ```
 
 </Correct>
 
-`AppFinderMenu` mounts a `Command` that owns `inputValue`, and `AppFinderInput` is the `CommandInput` bound to it: a separate `Input` leaves that value empty, so the filter over each item's `name` and `keywords` never runs, the match is never highlighted, and the arrow keys no longer move from the field into the list.
+`AppFinderMenu` mounts a `Command` that owns the query, and `AppFinderInput` is the `CommandInput` bound to it: a separate `Input` leaves that value empty, so the filter over each item's `name` and `keywords` never runs, the match is never highlighted, and the arrow keys no longer move from the field into the list.
 
 </Dont>
 
@@ -178,7 +178,7 @@ Reuse `AppFinderIcon` wherever else the tile is needed — a launcher grid, a co
 
 ```tsx
 <AppFinderGroup heading="Recent">
-  <AppFinderItem id="recent-dwp" icon="DWP" tone="green" name="Well Planning" />
+  <AppFinderItem value="recent-dwp" icon="DWP" tone="green" name="Well Planning" />
 </AppFinderGroup>
 ```
 
@@ -188,13 +188,13 @@ Reuse `AppFinderIcon` wherever else the tile is needed — a launcher grid, a co
 
 ```tsx
 <AppFinderGroup heading="Recent" hideWhileSearching>
-  <AppFinderItem id="recent-dwp" icon="DWP" tone="green" name="Well Planning" />
+  <AppFinderItem value="recent-dwp" icon="DWP" tone="green" name="Well Planning" />
 </AppFinderGroup>
 ```
 
 </Correct>
 
-The filter runs across every group at once, so without `hideWhileSearching` a query lists the same application twice — once from "Recent", once from its category — under two different ids, and `onAction` reports whichever row the user happened to press.
+The filter runs across every group at once, so without `hideWhileSearching` a query lists the same application twice — once from "Recent", once from its category — under two different values, and `onSelect` reports whichever row the user happened to press.
 
 </Dont>
 
@@ -204,15 +204,16 @@ The filter runs across every group at once, so without `hideWhileSearching` a qu
 
 ### AppFinder
 
-React Aria `DialogTrigger`.
+The popover root; renders no element.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `isOpen` / `onOpenChange` | `boolean` / `(open: boolean) => void` | - | Controlled open state. |
+| `open` / `onOpenChange` | `boolean` / `(open: boolean) => void` | - | Controlled open state. |
+| `defaultOpen` | `boolean` | false | Initial open state when uncontrolled. |
 
 ### AppFinderTrigger
 
-Ghost `Button` showing the current app's tile, its name from `sm` up, and a chevron.
+Ghost `Button` that opens the menu, showing the current app's tile, its name from `sm` up, and a chevron. Accepts `Button` props.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -223,16 +224,18 @@ Ghost `Button` showing the current app's tile, its name from `sm` up, and a chev
 
 ### AppFinderMenu
 
-Popover anchored bottom-start, 26 rem wide, wrapping a `Command`. The query resets every time the menu opens.
+Popover (`role="dialog"`) anchored bottom-start, 26 rem wide, wrapping a `Command`. The query resets every time the menu opens; Escape or a click outside closes it.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `aria-label` | `string` | "Applications" | Accessible name of the palette. |
-| `placement` | `Placement` | "bottom start" | Popover placement. |
+| `side` | `"top" \| "bottom" \| "left" \| "right" \| "inline-start" \| "inline-end"` | "bottom" | Side of the trigger the menu opens on. |
+| `align` | `"start" \| "center" \| "end"` | "start" | Alignment along that side. |
+| `sideOffset` / `alignOffset` | `number` | 6 / 0 | Distance from the trigger, and shift along the side, in px. |
 
 ### AppFinderInput
 
-`CommandInput`; autofocuses when the menu opens.
+`CommandInput` (`role="combobox"`) bound to the menu's query; autofocuses when the menu opens. The arrow keys move the highlight in the list and Enter chooses.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -240,11 +243,11 @@ Popover anchored bottom-start, 26 rem wide, wrapping a `Command`. The query rese
 
 ### AppFinderList
 
-`CommandList` that closes the menu after a choice.
+`CommandList` (`role="listbox"`) that closes the menu after a choice.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `onAction` | `(key: Key) => void` | - | Called with the `id` of the chosen app. |
+| `onSelect` | `(value: string) => void` | - | Called with the `value` of the chosen app. |
 | `emptyMessage` | `ReactNode` | "No applications match" | Shown when the filter matches nothing. |
 | `emptyHint` | `ReactNode` | "Try the app's short code or its category" | Second line of the empty state; pass `null` to drop it. |
 
@@ -261,13 +264,13 @@ Popover anchored bottom-start, 26 rem wide, wrapping a `Command`. The query rese
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `id` | `Key` | - | Unique key passed to `onAction`. |
-| `name` | `string` | - | Display name; part of the filter text. |
+| `value` | `string` | - | Unique identity passed to `onSelect`; not matched by the filter. |
+| `name` | `string` | - | Display name; matched by the filter (case-insensitive substring). |
 | `description` | `ReactNode` | - | Secondary line. |
 | `icon` | `ReactNode` | - | Glyph or short code in the leading tile. |
 | `tone` | `AppFinderTone` | "neutral" | Colour of the tile. |
 | `keywords` | `string[]` | - | Extra words the filter matches (short code, category, aliases). |
-| `isCurrent` | `boolean` | false | Marks the mounted app with a "Current" check and `data-current`. |
+| `current` | `boolean` | false | Marks the mounted app with a "Current" check and `data-current`. |
 
 ### AppFinderIcon
 

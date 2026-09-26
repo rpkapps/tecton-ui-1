@@ -1,20 +1,15 @@
 "use client"
 
 import * as React from "react"
+import { Meter as MeterPrimitive } from "@base-ui/react/meter"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
-import {
-  composeRenderProps,
-  Label as LabelPrimitive,
-  Meter as MeterPrimitive,
-  type MeterProps as MeterPrimitiveProps,
-} from "react-aria-components"
 
 /**
  * Tecton Meter — a segmented gauge for risk, complexity or confidence
- * readouts (as used on the FDA and Well Design cards). Built on React Aria
- * `Meter`; `segments` controls the number of blocks, `color` the fill
- * (or `"auto"` to pick success / warning / error from the value).
+ * readouts (as used on the FDA and Well Design cards). `segments` controls
+ * the number of blocks, `color` the fill (or `"auto"` to pick success /
+ * warning / error from the value).
  */
 const meterVariants = cva("flex w-full flex-col gap-1", {
   variants: {
@@ -54,9 +49,23 @@ function autoColor(percentage: number): Exclude<MeterColor, "auto" | "custom"> {
   return "success"
 }
 
-type MeterProps = Omit<MeterPrimitiveProps, "className" | "children"> &
+function toPercentage(value: number, min: number, max: number) {
+  const pct = ((value - min) / (max - min)) * 100
+  return Number.isFinite(pct) ? Math.min(100, Math.max(0, pct)) : 0
+}
+
+type MeterProps = Omit<React.ComponentProps<"div">, "children" | "color"> &
   VariantProps<typeof meterVariants> & {
-    className?: string
+    /** The current value. */
+    value: number
+    /** @default 0 */
+    min?: number
+    /** @default 100 */
+    max?: number
+    /** Number format of the shown value (a percentage of the range by default). */
+    format?: Intl.NumberFormatOptions
+    /** Locale of the formatted value (the runtime locale by default). */
+    locale?: Intl.LocalesArgument
     label?: React.ReactNode
     /** Number of segments; `1` renders a continuous bar. */
     segments?: number
@@ -73,6 +82,9 @@ type MeterProps = Omit<MeterPrimitiveProps, "className" | "children"> &
 function Meter({
   className,
   size = "md",
+  value,
+  min = 0,
+  max = 100,
   label,
   segments = 5,
   color = "default",
@@ -80,76 +92,81 @@ function Meter({
   valueLabel,
   ...props
 }: MeterProps) {
-  // React Aria turns a text `valueLabel` into `aria-valuetext`, so the
-  // announced value matches the one on screen. A node cannot be text.
+  // A text `valueLabel` becomes `aria-valuetext`, so the announced value
+  // matches the one on screen. A node cannot be text: the formatted value is
+  // announced instead.
   const ariaValueText =
     typeof valueLabel === "string" || typeof valueLabel === "number"
       ? String(valueLabel)
       : undefined
+  const percentage = toPercentage(value, min, max)
+  const resolved = color === "auto" ? autoColor(percentage) : color
+  const count = Math.max(1, Math.floor(segments))
+  const filled = (percentage / 100) * count
+
   return (
-    <MeterPrimitive
+    <MeterPrimitive.Root
       data-slot="meter"
       data-size={size}
-      className={composeRenderProps(className, (className) =>
-        cn(meterVariants({ size }), className)
-      )}
+      className={cn(meterVariants({ size }), className)}
+      value={value}
+      min={min}
+      max={max}
+      getAriaValueText={
+        ariaValueText === undefined ? undefined : () => ariaValueText
+      }
       {...props}
-      valueLabel={ariaValueText}
     >
-      {({ percentage, valueText }) => {
-        const resolved = color === "auto" ? autoColor(percentage) : color
-        const count = Math.max(1, Math.floor(segments))
-        const filled = (percentage / 100) * count
-        return (
-          <>
-            {(label || showValue || valueLabel) && (
-              <div className="flex items-center justify-between gap-2">
-                {label && (
-                  <LabelPrimitive
-                    data-slot="meter-label"
-                    className="text-muted-foreground"
-                  >
-                    {label}
-                  </LabelPrimitive>
-                )}
-                {(valueLabel || showValue) && (
-                  <span
-                    data-slot="meter-value"
-                    className="ms-auto font-medium tabular-nums"
-                  >
-                    {valueLabel ?? valueText}
-                  </span>
-                )}
-              </div>
-            )}
-            <div
-              data-slot="meter-track"
-              data-color={resolved}
-              className="flex h-(--meter-h) w-full gap-0.5"
+      {(label || showValue || valueLabel) && (
+        <div className="flex items-center justify-between gap-2">
+          {label && (
+            <MeterPrimitive.Label
+              data-slot="meter-label"
+              className="text-muted-foreground"
             >
-              {Array.from({ length: count }, (_, i) => {
-                const fill = Math.min(1, Math.max(0, filled - i))
-                return (
-                  <span
-                    key={i}
-                    data-slot="meter-segment"
-                    className="relative flex-1 overflow-hidden rounded-full bg-muted"
-                  >
-                    <span
-                      className={cn(
-                        "absolute inset-y-0 start-0 rounded-full transition-[width]",
-                        fillClass[resolved]
-                      )}
-                      style={{ width: `${fill * 100}%` }}
-                    />
-                  </span>
-                )
-              })}
-            </div>
-          </>
-        )
-      }}
-    </MeterPrimitive>
+              {label}
+            </MeterPrimitive.Label>
+          )}
+          {valueLabel ? (
+            <span
+              data-slot="meter-value"
+              className="ms-auto font-medium tabular-nums"
+            >
+              {valueLabel}
+            </span>
+          ) : showValue ? (
+            <MeterPrimitive.Value
+              data-slot="meter-value"
+              className="ms-auto font-medium tabular-nums"
+            />
+          ) : null}
+        </div>
+      )}
+      <div
+        data-slot="meter-track"
+        data-color={resolved}
+        className="flex h-(--meter-h) w-full gap-0.5"
+      >
+        {Array.from({ length: count }, (_, i) => {
+          const fill = Math.min(1, Math.max(0, filled - i))
+          return (
+            <span
+              key={i}
+              data-slot="meter-segment"
+              className="relative flex-1 overflow-hidden rounded-full bg-muted"
+            >
+              <span
+                className={cn(
+                  "absolute inset-y-0 start-0 rounded-full transition-[width]",
+                  fillClass[resolved]
+                )}
+                style={{ width: `${fill * 100}%` }}
+              />
+            </span>
+          )
+        })}
+      </div>
+    </MeterPrimitive.Root>
   )
 }
 

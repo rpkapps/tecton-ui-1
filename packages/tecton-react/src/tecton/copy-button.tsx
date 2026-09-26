@@ -14,7 +14,7 @@ import { Button } from "@tecton/react/components/button"
  */
 type CopyButtonProps = Omit<
   React.ComponentProps<typeof Button>,
-  "onPress" | "children"
+  "onClick" | "children"
 > & {
   children?: React.ReactNode
   value: string
@@ -105,18 +105,18 @@ function CopyButton({
   return (
     <Button
       data-slot="copy-button"
-      data-copied={status === "copied" ? "true" : undefined}
-      data-error={status === "error" ? "true" : undefined}
+      data-copied={status === "copied" ? "" : undefined}
+      data-error={status === "error" ? "" : undefined}
       variant={variant}
       size={resolvedSize}
       aria-label={
         children ? undefined : status === "idle" ? "Copy" : STATUS_TEXT[status]
       }
       className={cn(
-        "data-[copied=true]:text-success data-[error=true]:text-destructive",
+        "data-copied:text-success data-error:text-destructive",
         className
       )}
-      onPress={async () => {
+      onClick={async () => {
         try {
           // Throws, rather than rejects, where the Clipboard API is missing.
           await navigator.clipboard.writeText(value)

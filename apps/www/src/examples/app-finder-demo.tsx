@@ -93,8 +93,8 @@ export default function AppFinderDemo() {
       <AppFinderMenu>
         <AppFinderInput />
         <AppFinderList
-          onAction={(key) => {
-            const app = allApps.find((item) => item.id === key)
+          onSelect={(value) => {
+            const app = allApps.find((item) => item.id === value)
             if (app) setCurrent(app)
           }}
         >
@@ -103,13 +103,13 @@ export default function AppFinderDemo() {
               {group.apps.map((app) => (
                 <AppFinderItem
                   key={app.id}
-                  id={app.id}
+                  value={app.id}
                   icon={app.code}
                   tone={group.tone}
                   name={app.name}
                   description={app.description}
                   keywords={[app.code, group.category]}
-                  isCurrent={app.id === current.id}
+                  current={app.id === current.id}
                 />
               ))}
             </AppFinderGroup>
