@@ -173,6 +173,35 @@ type ColorSwatchProps = Omit<ColorSwatchPrimitiveProps, "className"> &
     presets?: string[]
   }
 
+/**
+ * The swatch for a value React Aria cannot parse: the value is the CSS
+ * background, and every DOM prop (`id`, `data-*`, `aria-*`, handlers) reaches
+ * the element as it would on React Aria's swatch. A render-function `style`
+ * needs a parsed `Color`, so only an object style applies here.
+ */
+function PlainSwatch({
+  color,
+  colorName,
+  style,
+  slot,
+  "aria-label": ariaLabel,
+  ...props
+}: Omit<ColorSwatchPrimitiveProps, "className"> & { className: string }) {
+  return (
+    <span
+      data-slot="color-swatch"
+      role="img"
+      aria-label={ariaLabel ?? colorName ?? String(color)}
+      slot={slot || undefined}
+      {...props}
+      style={{
+        background: String(color),
+        ...(typeof style === "function" ? undefined : style),
+      }}
+    />
+  )
+}
+
 function ColorSwatch({
   className,
   size = "md",
@@ -194,13 +223,7 @@ function ColorSwatch({
       {...props}
     />
   ) : (
-    <span
-      data-slot="color-swatch"
-      role="img"
-      aria-label={props["aria-label"] ?? String(props.color)}
-      className={swatchClass}
-      style={{ background: String(props.color) }}
-    />
+    <PlainSwatch className={swatchClass} {...props} />
   )
 
   if (onChange) {
