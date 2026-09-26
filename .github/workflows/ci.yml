@@ -4,7 +4,7 @@ on:
   pull_request:
   push:
     branches:
-      - fix/tecton-portal-context-upstream
+      - main
   workflow_dispatch:
 
 permissions:
@@ -12,8 +12,10 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Superseded PR runs are cancelled; every push to main gets its own full run.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
+# Third-party actions are pinned to the commit their tag resolved to (tag in the comment).
 jobs:
   # Verifies the shadcn-generated components still match the aria-tecton registry mirror.
   generated-check:
@@ -21,26 +23,46 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
         with:
           version: 10.33.4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24.19.0
           cache: pnpm
 
       - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.4.2
 
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Read the pinned upstream commit
+        id: upstream
+        shell: bash
+        run: |
+          set -euo pipefail
+          sha="$(sed -n 's/^- Commit: `\([0-9a-f]*\)`.*/\1/p' docs/UPSTREAM.md)"
+          if [ -z "$sha" ]; then
+            echo "::error file=docs/UPSTREAM.md::no '- Commit: \`<sha>\`' line found"
+            exit 1
+          fi
+          echo "sha=$sha" >> "$GITHUB_OUTPUT"
+
+      # The clone, its install and its built CLI packages depend only on the pinned commit;
+      # `setup` below re-applies the overlay and rebuilds the registry on every run.
+      - name: Cache the registry mirror clone
+        uses: actions/cache@0057852bfaa89a56745cba8c7296529d2fc39830 # v4.3.0
+        with:
+          path: .cache/shadcn-ui
+          key: shadcn-mirror-${{ runner.os }}-${{ steps.upstream.outputs.sha }}
 
       - name: Build the Tecton registry mirror
         run: scripts/registry-mirror.sh setup
@@ -64,35 +86,64 @@ jobs:
           REGISTRY_URL: http://127.0.0.1:4000/r
         run: pnpm generated:check
 
-  # Builds @tecton/react, typechecks, lints, tests and verifies the blocks registry output is committed.
+      # Plants a one-class edit and expects generated:check to fail on it, with colour forced on
+      # (FORCE_COLOR once hid every diff line from the script). The edit is reverted afterwards.
+      - name: generated:check catches a planted edit
+        shell: bash
+        env:
+          REGISTRY_URL: http://127.0.0.1:4000/r
+          FORCE_COLOR: "1"
+        run: |
+          set -euo pipefail
+          file=packages/tecton-react/src/components/button.tsx
+          trap 'git checkout -- "$file"' EXIT
+          grep -q ' rounded-md ' "$file" || { echo "::error::no 'rounded-md' left in $file to plant an edit on; pick another class"; exit 1; }
+          sed -i '0,/ rounded-md /s// rounded-lg /' "$file"
+          if GENERATED_CHECK_FILES=components/button.tsx pnpm generated:check; then
+            echo "::error::generated:check passed although $file was edited"
+            exit 1
+          fi
+          echo "generated:check failed on the planted edit, as expected"
+
+      # generated:check tolerates "use client" differences, so check the directive separately.
+      - name: Verify "use client" directives
+        if: ${{ !cancelled() }}
+        run: pnpm --filter @tecton/react use-client:check
+
+      - name: Print the registry mirror log
+        if: failure()
+        shell: bash
+        run: cat "${RUNNER_TEMP}/registry-mirror.log" || true
+
+  # Builds @tecton/react, typechecks, lints, tests and verifies that generated output is committed.
   checks:
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
         with:
           version: 10.33.4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24.19.0
           cache: pnpm
 
       - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.4.2
 
       - name: Install workspace dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Ensure esbuild binary
-        run: pnpm --filter @tecton/react exec node -e "require('esbuild')" || pnpm --filter @tecton/react rebuild esbuild
+      - name: Check formatting
+        run: pnpm format:check
 
       - name: Build @tecton/react
         run: pnpm --filter @tecton/react build
@@ -109,6 +160,22 @@ jobs:
       - name: Test
         run: pnpm test
 
+      - name: Rebuild theme tokens and check icons
+        run: pnpm tokens:build && pnpm --filter @tecton/react icons:build --check
+
+      - name: Token output is committed
+        shell: bash
+        run: |
+          set -euo pipefail
+          paths=(packages/tecton-react/src/styles packages/tecton-react/registry docs/TOKEN-MAPPING.md)
+          changes="$(git status --porcelain -- "${paths[@]}")"
+          if [ -n "$changes" ]; then
+            echo "::error::tokens:build changed committed output; run 'pnpm tokens:build' and commit the result"
+            echo "$changes"
+            git diff -- "${paths[@]}" | head -200
+            exit 1
+          fi
+
       - name: Check theme tokens
         run: pnpm tokens:check
 
@@ -122,13 +189,26 @@ jobs:
         run: pnpm --filter www docs:guidelines --check
 
       - name: Validate Intent skills
-        run: pnpm dlx @tanstack/intent@0.4.0 validate packages/tecton-react/skills
+        run: pnpm --filter @tecton/react exec intent validate skills
 
       - name: Build blocks registry
         run: pnpm --filter @tecton/blocks registry:build
 
+      - name: Validate blocks registry
+        run: pnpm registry:validate
+
       - name: Registry output is committed
-        run: git diff --exit-code -- apps/www/public/r packages/tecton-blocks/registry.json
+        shell: bash
+        run: |
+          set -euo pipefail
+          paths=(apps/www/public/r packages/tecton-blocks/registry.json)
+          changes="$(git status --porcelain -- "${paths[@]}")"
+          if [ -n "$changes" ]; then
+            echo "::error::registry:build changed or added files; run 'pnpm registry:build' and commit the result"
+            echo "$changes"
+            git diff -- "${paths[@]}" | head -200
+            exit 1
+          fi
 
   # Builds @tecton/react and prerenders the docs site on every PR (slower crawl, kept out of `checks`).
   docs-build:
@@ -136,21 +216,21 @@ jobs:
     timeout-minutes: 20
     steps:
       - name: Check out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
 
       - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@b906affcce14559ad1aafd4ab0e942779e9f58b1 # v4.3.0
         with:
           version: 10.33.4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 24.19.0
           cache: pnpm
 
       - name: Set up Bun
-        uses: oven-sh/setup-bun@v2
+        uses: oven-sh/setup-bun@0c5077e51419868618aeaa5fe8019c62421857d6 # v2.2.0
         with:
           bun-version: 1.4.2
 
@@ -162,3 +242,6 @@ jobs:
 
       - name: Build www
         run: pnpm --filter www build
+
+      - name: Check internal links
+        run: pnpm --filter www links:check
