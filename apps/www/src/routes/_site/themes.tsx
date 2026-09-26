@@ -95,12 +95,17 @@ function ThemesPage() {
     }
   }, [radius])
 
+  // The server renders the default (dark) theme and cannot know the visitor's:
+  // show the dark values until mounted so hydration matches, then the
+  // resolved mode's.
   const values = (
-    resolvedTheme === "light" ? theme.cssVars.light : theme.cssVars.dark
+    mounted && resolvedTheme === "light"
+      ? theme.cssVars.light
+      : theme.cssVars.dark
   ) as Record<string, string>
 
   return (
-    <main className="container-wrapper flex flex-1 flex-col gap-10 px-6 py-8 md:py-10">
+    <div className="container-wrapper flex flex-1 flex-col gap-10 px-6 py-8 md:py-10">
       <PageHeader>
         <PageHeaderContent>
           <PageHeaderTitle>Themes</PageHeaderTitle>
@@ -256,6 +261,6 @@ function ThemesPage() {
           </TabsContent>
         </Tabs>
       </section>
-    </main>
+    </div>
   )
 }

@@ -4,3 +4,5 @@ node_modules
 .tanstack
 .source
 dist
+# screenshots and contact sheet written by `pnpm compare`
+e2e/compare/

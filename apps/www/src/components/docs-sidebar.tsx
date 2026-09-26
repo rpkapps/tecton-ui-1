@@ -55,10 +55,13 @@ const itemClassName =
 function SidebarLink({
   href,
   active,
+  pathname,
   children,
 }: {
   href: string
+  /** Highlighted: the current page, or the section it belongs to. */
   active: boolean
+  pathname: string
   children: React.ReactNode
 }) {
   return (
@@ -66,6 +69,7 @@ function SidebarLink({
       <SidebarMenuButton
         href={href}
         isActive={active}
+        aria-current={pathname === href ? "page" : undefined}
         className={itemClassName}
       >
         <span className="absolute inset-0 flex w-(--sidebar-menu-width) bg-transparent" />
@@ -143,6 +147,7 @@ export function DocsSidebar({
                 <SidebarLink
                   key={page.url}
                   href={page.url}
+                  pathname={pathname}
                   active={
                     page.url === "/docs"
                       ? pathname === page.url
@@ -158,6 +163,7 @@ export function DocsSidebar({
                   <SidebarLink
                     key={folder.index!.url}
                     href={folder.index!.url}
+                    pathname={pathname}
                     active={pathname === folder.index!.url}
                   >
                     {nodeName(folder)}
@@ -180,6 +186,7 @@ export function DocsSidebar({
                     <SidebarLink
                       key={page.url}
                       href={page.url}
+                      pathname={pathname}
                       active={page.url === pathname}
                     >
                       {nodeName(page)}

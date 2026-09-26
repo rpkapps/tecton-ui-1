@@ -10,10 +10,13 @@
  * swatch colours and compares them with the values in tecton-tokens.css
  * (they must match exactly: the dark theme is a 1:1 token mapping).
  *
- * Usage: pnpm --filter www compare   (starts `vite preview`, needs a prior build)
+ * Usage: pnpm --filter www compare   (starts `vite preview` on 4173 or
+ *        COMPARE_PORT, needs a prior build)
  *        BASE_URL=http://localhost:3000 bun run e2e/compare.spec.ts  (against a dev server)
  */
 import { spawn } from "node:child_process"
+import type { ChildProcess } from "node:child_process"
+import { createRequire } from "node:module"
 import { promises as fs } from "node:fs"
 import path from "node:path"
 import { fileURLToPath } from "node:url"
@@ -71,25 +74,95 @@ async function findChromium() {
   return undefined
 }
 
+const DETACHED = process.platform !== "win32"
+const PORT = process.env.COMPARE_PORT ?? "4173"
+
+/**
+ * `vite preview` on port 4173 (COMPARE_PORT), started with node directly (no
+ * npx wrapper, whose `kill()` would leave vite running) in its own process
+ * group.
+ */
+function startPreview() {
+  // `vite/bin/vite.js` is not in vite's exports map; resolve the package.
+  const vitePackage = createRequire(path.join(WWW, "package.json")).resolve(
+    "vite/package.json"
+  )
+  const vite = path.join(path.dirname(vitePackage), "bin", "vite.js")
+  const server = spawn(
+    process.env.NODE_BINARY ?? "node",
+    [vite, "preview", "--port", PORT, "--strictPort"],
+    { cwd: WWW, stdio: ["ignore", "pipe", "pipe"], detached: DETACHED }
+  )
+  // Resolves once this vite prints its URL. With --strictPort it exits when
+  // the port is taken: fail then, instead of capturing whatever else answers.
+  const ready = new Promise<void>((resolve, reject) => {
+    let output = ""
+    const onData = (chunk: Buffer) => {
+      output += chunk.toString()
+      // eslint-disable-next-line no-control-regex -- strip ANSI colours
+      if (output.replace(/\x1b\[[0-9;]*m/g, "").includes(`:${PORT}/`)) resolve()
+    }
+    server.stdout.on("data", onData)
+    server.stderr.on("data", onData)
+    server.on("error", reject)
+    setTimeout(
+      () => reject(new Error(`vite preview did not start:\n${output}`)),
+      60_000
+    ).unref()
+    server.on("exit", (code) =>
+      reject(
+        new Error(
+          `vite preview exited (code ${code}) on port ${PORT}:\n${output}`
+        )
+      )
+    )
+  })
+  return { server, ready }
+}
+
+function stopPreview(server: ChildProcess) {
+  if (server.exitCode !== null || server.pid === undefined) return
+  try {
+    // The whole group: vite and anything it spawned.
+    if (DETACHED) process.kill(-server.pid, "SIGTERM")
+    else server.kill()
+  } catch {
+    // already gone
+  }
+}
+
 async function main() {
   let baseUrl = process.env.BASE_URL
-  let server: ReturnType<typeof spawn> | undefined
+  let server: ChildProcess | undefined
+  let ready: Promise<void> | undefined
   if (!baseUrl) {
-    server = spawn(
-      "npx",
-      ["vite", "preview", "--port", "4173", "--strictPort"],
-      {
-        cwd: WWW,
-        stdio: "ignore",
-      }
-    )
-    baseUrl = "http://127.0.0.1:4173"
+    ;({ server, ready } = startPreview())
+    baseUrl = `http://127.0.0.1:${PORT}`
   }
-  await waitFor(`${baseUrl}/`)
+  try {
+    await ready
+    await waitFor(`${baseUrl}/`)
+    await capture(baseUrl)
+  } finally {
+    if (server) stopPreview(server)
+  }
+}
 
-  const { compareMatrices } = await import("../src/compare/matrices")
+async function capture(baseUrl: string) {
   const executablePath = await findChromium()
   const browser = await chromium.launch({ executablePath })
+  try {
+    return await captureAll(browser, baseUrl)
+  } finally {
+    await browser.close()
+  }
+}
+
+async function captureAll(
+  browser: Awaited<ReturnType<typeof chromium.launch>>,
+  baseUrl: string
+) {
+  const { compareMatrices } = await import("../src/compare/matrices")
   const context = await browser.newContext({
     viewport: { width: 1600, height: 1000 },
     deviceScaleFactor: 2,
@@ -109,7 +182,8 @@ async function main() {
 
   for (const [key, matrix] of Object.entries(compareMatrices)) {
     await page.goto(`${baseUrl}/compare/${key}`, { waitUntil: "networkidle" })
-    await page.waitForTimeout(300)
+    // The matrix is lazy-loaded behind a Suspense spinner.
+    await page.waitForSelector("[data-slot=matrix-page]")
     await page.screenshot({
       path: path.join(OUT, `${key}.png`),
       fullPage: true,
@@ -127,11 +201,16 @@ async function main() {
 
     if (key === "tokens") {
       const measured = await page.$$eval("[data-token]", (nodes) =>
-        nodes.map((node) => ({
-          name: node.getAttribute("data-token") ?? "",
-          expected: (node.getAttribute("data-value") ?? "").toLowerCase(),
-          actual: getComputedStyle(node).backgroundColor,
-        }))
+        nodes.map((node) => {
+          const swatch = node.querySelector("[data-slot=color-swatch]")
+          return {
+            name: node.getAttribute("data-token") ?? "",
+            expected: (node.getAttribute("data-value") ?? "").toLowerCase(),
+            actual: swatch
+              ? getComputedStyle(swatch).backgroundColor
+              : "(no swatch)",
+          }
+        })
       )
       console.log(`[compare] measured ${measured.length} token swatches`)
       if (measured.length === 0) {
@@ -143,7 +222,14 @@ async function main() {
       }
       for (const m of measured) {
         const hex = m.expected.match(/^#([0-9a-f]{6})([0-9a-f]{2})?$/)
-        if (!hex) continue
+        if (!hex) {
+          tokenMismatches.push({
+            name: m.name,
+            expected: m.expected,
+            actual: "not a #rrggbb[aa] value, cannot compare",
+          })
+          continue
+        }
         const [r, g, b] = [0, 2, 4].map((i) =>
           parseInt(hex[1].slice(i, i + 2), 16)
         )
@@ -166,9 +252,6 @@ async function main() {
       }
     }
   }
-
-  await browser.close()
-  server?.kill()
 
   const html = `<!doctype html><meta charset="utf-8"><title>Tecton UI — screenshot comparison</title>
 <style>
@@ -218,7 +301,8 @@ ${
     console.error(
       `[compare] ${tokenMismatches.length} token swatches differ from tecton-tokens.css`
     )
-    process.exit(1)
+    // Not process.exit(): the browser and the preview server are closed first.
+    process.exitCode = 1
   }
 }
 

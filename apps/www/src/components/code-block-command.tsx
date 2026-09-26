@@ -107,7 +107,7 @@ export function CodeBlockCommand({
 
   return (
     <figure
-      data-rehype-pretty-code-figure=""
+      data-code-block=""
       data-not-typeset
       className={cn("overflow-x-auto", className)}
     >

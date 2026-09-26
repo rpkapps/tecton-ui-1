@@ -100,7 +100,7 @@ importers:
         version: 4.6.2
     devDependencies:
       '@tanstack/eslint-config':
-        specifier: latest
+        specifier: 0.4.0
         version: 0.4.0(@typescript-eslint/utils@8.70.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3)
       '@types/mdx':
         specifier: ^2.0.14

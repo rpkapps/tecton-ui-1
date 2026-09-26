@@ -4,12 +4,14 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "vite dev --port 3000",
+    "dev": "vite dev",
     "build": "vite build",
     "preview": "vite preview",
+    "postinstall": "fumadocs-mdx",
+    "links:check": "bun run scripts/check-links.mts",
     "lint": "eslint",
     "format": "prettier --write --ignore-path ../../.prettierignore --ignore-path .gitignore \"**/*.{ts,tsx}\"",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "fumadocs-mdx && tsc --noEmit",
     "docs:sync": "bun run scripts/sync-upstream-docs.mts",
     "docs:guidelines": "bun run scripts/sync-guidelines.mts",
     "registry:build": "pnpm --filter @tecton/blocks registry:build",
@@ -44,7 +46,7 @@
     "zod": "^4.4.3"
   },
   "devDependencies": {
-    "@tanstack/eslint-config": "latest",
+    "@tanstack/eslint-config": "0.4.0",
     "@types/mdx": "^2.0.14",
     "@types/node": "^22",
     "@types/react": "^19",
