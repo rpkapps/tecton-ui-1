@@ -5,7 +5,11 @@ import { cn } from "cn"
 import { Maximize2Icon, XIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
-import { Dialog, DialogClose } from "@tecton/react/components/dialog"
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+} from "@tecton/react/components/dialog"
 
 /**
  * A preview tile for a background effect in the docs: the effect behind
@@ -39,26 +43,34 @@ export function BackgroundPreview({
           size="icon-sm"
           aria-label="View fullscreen"
           className="absolute top-2 right-2"
-          onPress={() => setFullscreen(true)}
+          onClick={() => setFullscreen(true)}
         >
           <Maximize2Icon />
         </Button>
         {children}
       </div>
-      <Dialog
-        isOpen={fullscreen}
-        onOpenChange={setFullscreen}
-        showCloseButton={false}
-        aria-label="Background preview"
-        className="top-0 left-0 h-full max-w-none translate-x-0 translate-y-0 rounded-none bg-background p-0 text-base text-foreground ring-0 sm:max-w-none"
-      >
-        <div className="relative isolate flex h-full flex-col justify-end p-10">
-          {background}
-          <DialogClose size="sm" className="absolute top-4 right-4">
-            <XIcon /> Close
-          </DialogClose>
-          <div className="max-w-3xl">{children}</div>
-        </div>
+      <Dialog open={fullscreen} onOpenChange={setFullscreen}>
+        <DialogContent
+          showCloseButton={false}
+          aria-label="Background preview"
+          className="start-0 top-0 h-full max-w-none translate-x-0 translate-y-0 rounded-none bg-background p-0 text-base text-foreground ring-0 sm:max-w-none rtl:translate-x-0"
+        >
+          <div className="relative isolate flex h-full flex-col justify-end p-10">
+            {background}
+            <DialogClose
+              render={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="absolute top-4 right-4"
+                />
+              }
+            >
+              <XIcon /> Close
+            </DialogClose>
+            <div className="max-w-3xl">{children}</div>
+          </div>
+        </DialogContent>
       </Dialog>
     </>
   )

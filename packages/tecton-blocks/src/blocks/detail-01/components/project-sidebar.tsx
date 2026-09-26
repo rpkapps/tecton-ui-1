@@ -8,6 +8,7 @@ import { Badge } from "@tecton/react/components/badge"
 import {
   Collapsible,
   CollapsibleContent,
+  CollapsibleTrigger,
 } from "@tecton/react/components/collapsible"
 import {
   Sidebar,
@@ -24,6 +25,7 @@ import {
   SidebarMenuSubItem,
   SidebarTrigger,
 } from "@tecton/react/components/sidebar"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { project as defaultProject } from "../data"
 import type { Project } from "../data"
@@ -103,10 +105,13 @@ function ProjectSidebar({
   onSelectAlternative,
   ...props
 }: ProjectSidebarProps) {
+  // `side` is physical: the start edge is the right one in right-to-left.
+  const side = useDirection() === "rtl" ? "right" : "left"
   return (
     <Sidebar
       data-slot="project-sidebar"
       collapsible="offcanvas"
+      side={side}
       className={cn("border-e border-border-subtle", className)}
       {...props}
     >
@@ -139,40 +144,40 @@ function ProjectSidebar({
             {project.concepts.map((concept) => (
               <Collapsible
                 key={concept.id}
-                defaultExpanded={concept.index === 1}
+                defaultOpen={concept.index === 1}
                 className="group/collapsible"
+                render={<SidebarMenuItem />}
               >
-                <SidebarMenuItem>
-                  <SidebarMenuButton slot="trigger" tooltip={concept.name}>
-                    <span className="flex size-4 shrink-0 items-center justify-center rounded-[3px] bg-muted font-mono text-[10px] text-muted-foreground">
-                      {concept.index}
-                    </span>
-                    <span className="truncate">{concept.name}</span>
-                    <span className="ms-auto font-mono text-[10px] text-muted-foreground">
-                      {concept.alternatives.length} FDAs
-                    </span>
-                    <ChevronRightIcon className="transition-transform duration-200 group-data-expanded/collapsible:rotate-90" />
-                  </SidebarMenuButton>
-                  <CollapsibleContent>
-                    <SidebarMenuSub>
-                      {concept.alternatives.map((alternative) => (
-                        <SidebarMenuSubItem key={alternative.id}>
-                          <SidebarMenuSubButton
-                            isActive={selectedAlternative === alternative.id}
-                            onPress={() =>
-                              onSelectAlternative?.(alternative.id)
-                            }
-                          >
-                            <span className="truncate">{alternative.name}</span>
-                            <span className="ms-auto font-mono text-[10px] text-muted-foreground">
-                              {alternative.id}
-                            </span>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      ))}
-                    </SidebarMenuSub>
-                  </CollapsibleContent>
-                </SidebarMenuItem>
+                <CollapsibleTrigger
+                  render={<SidebarMenuButton tooltip={concept.name} />}
+                >
+                  <span className="flex size-4 shrink-0 items-center justify-center rounded-[3px] bg-muted font-mono text-[10px] text-muted-foreground">
+                    {concept.index}
+                  </span>
+                  <span className="truncate">{concept.name}</span>
+                  <span className="ms-auto font-mono text-[10px] text-muted-foreground">
+                    {concept.alternatives.length} FDAs
+                  </span>
+                  <ChevronRightIcon className="transition-transform duration-200 group-data-open/collapsible:rotate-90 rtl:rotate-180 rtl:group-data-open/collapsible:rotate-90" />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenuSub>
+                    {concept.alternatives.map((alternative) => (
+                      <SidebarMenuSubItem key={alternative.id}>
+                        <SidebarMenuSubButton
+                          render={<button type="button" />}
+                          isActive={selectedAlternative === alternative.id}
+                          onClick={() => onSelectAlternative?.(alternative.id)}
+                        >
+                          <span className="truncate">{alternative.name}</span>
+                          <span className="ms-auto font-mono text-[10px] text-muted-foreground">
+                            {alternative.id}
+                          </span>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    ))}
+                  </SidebarMenuSub>
+                </CollapsibleContent>
               </Collapsible>
             ))}
           </SidebarMenu>

@@ -1,9 +1,10 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/table-actions.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/table-actions.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { MoreHorizontalIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -19,71 +20,85 @@ import {
 
 export function TableActions() {
   return (
-    <Table aria-label="Products">
+    <Table>
       <TableHeader>
-        <TableHead isRowHeader>Product</TableHead>
-        <TableHead>Price</TableHead>
-        <TableHead className="text-right">Actions</TableHead>
+        <TableRow>
+          <TableHead>Product</TableHead>
+          <TableHead>Price</TableHead>
+          <TableHead className="text-right">Actions</TableHead>
+        </TableRow>
       </TableHeader>
       <TableBody>
         <TableRow>
           <TableCell className="font-medium">Wireless Mouse</TableCell>
           <TableCell>$29.99</TableCell>
           <TableCell className="text-right">
-            <DropdownMenuTrigger>
-              <Button variant="ghost" size="icon" className="size-8">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="ghost" size="icon" className="size-8" />
+                }
+              >
                 <MoreHorizontalIcon />
                 <span className="sr-only">Open menu</span>
-              </Button>
-              <DropdownMenu placement="bottom end">
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
                 <DropdownMenuItem>Edit</DropdownMenuItem>
                 <DropdownMenuItem>Duplicate</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem variant="destructive">
                   Delete
                 </DropdownMenuItem>
-              </DropdownMenu>
-            </DropdownMenuTrigger>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </TableCell>
         </TableRow>
         <TableRow>
           <TableCell className="font-medium">Mechanical Keyboard</TableCell>
           <TableCell>$129.99</TableCell>
           <TableCell className="text-right">
-            <DropdownMenuTrigger>
-              <Button variant="ghost" size="icon" className="size-8">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="ghost" size="icon" className="size-8" />
+                }
+              >
                 <MoreHorizontalIcon />
                 <span className="sr-only">Open menu</span>
-              </Button>
-              <DropdownMenu placement="bottom end">
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
                 <DropdownMenuItem>Edit</DropdownMenuItem>
                 <DropdownMenuItem>Duplicate</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem variant="destructive">
                   Delete
                 </DropdownMenuItem>
-              </DropdownMenu>
-            </DropdownMenuTrigger>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </TableCell>
         </TableRow>
         <TableRow>
           <TableCell className="font-medium">USB-C Hub</TableCell>
           <TableCell>$49.99</TableCell>
           <TableCell className="text-right">
-            <DropdownMenuTrigger>
-              <Button variant="ghost" size="icon" className="size-8">
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <Button variant="ghost" size="icon" className="size-8" />
+                }
+              >
                 <MoreHorizontalIcon />
                 <span className="sr-only">Open menu</span>
-              </Button>
-              <DropdownMenu placement="bottom end">
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
                 <DropdownMenuItem>Edit</DropdownMenuItem>
                 <DropdownMenuItem>Duplicate</DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem variant="destructive">
                   Delete
                 </DropdownMenuItem>
-              </DropdownMenu>
-            </DropdownMenuTrigger>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </TableCell>
         </TableRow>
       </TableBody>

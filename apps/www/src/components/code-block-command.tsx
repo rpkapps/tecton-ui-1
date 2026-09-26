@@ -112,10 +112,10 @@ export function CodeBlockCommand({
       className={cn("overflow-x-auto", className)}
     >
       <Tabs
-        selectedKey={packageManager}
+        value={packageManager}
         className="gap-0"
-        onSelectionChange={(key) => {
-          const next = String(key) as PackageManager
+        onValueChange={(value) => {
+          const next = value as PackageManager
           setPackageManager(next)
           try {
             window.localStorage.setItem(PM_KEY, next)
@@ -132,8 +132,8 @@ export function CodeBlockCommand({
             {order.map((key) => (
               <TabsTrigger
                 key={key}
-                id={key}
-                className="h-7 border border-transparent pt-0.5 shadow-none! data-selected:border-input data-selected:bg-background!"
+                value={key}
+                className="h-7 border border-transparent pt-0.5 shadow-none! data-active:border-input data-active:bg-background!"
               >
                 {key}
               </TabsTrigger>
@@ -142,7 +142,7 @@ export function CodeBlockCommand({
         </div>
         <div className="no-scrollbar overflow-x-auto">
           {order.map((key) => (
-            <TabsContent key={key} id={key} className="mt-0 px-4 py-3.5">
+            <TabsContent key={key} value={key} className="mt-0 px-4 py-3.5">
               <pre className="p-0!">
                 <code
                   className="relative font-mono text-sm leading-none"
@@ -160,7 +160,7 @@ export function CodeBlockCommand({
         size="icon-sm"
         variant="ghost"
         className="absolute top-2 right-2 z-10 size-7 opacity-70 hover:opacity-100 focus-visible:opacity-100"
-        onPress={async () => {
+        onClick={async () => {
           try {
             await navigator.clipboard.writeText(commands[packageManager])
             setHasCopied(true)

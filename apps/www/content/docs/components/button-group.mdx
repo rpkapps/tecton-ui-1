@@ -1,7 +1,7 @@
 ---
 title: Button Group
 description: A container that groups related buttons together with consistent styling.
-upstream: apps/v4/content/docs/components/aria/button-group.mdx
+upstream: apps/v4/content/docs/components/base/button-group.mdx
 ---
 
 <ComponentPreview name="button-group-demo" />
@@ -193,7 +193,7 @@ When a row of buttons must be one Tab stop with arrow-key movement, use a labell
 
 <Do>
 
-While an action runs, the button that started it keeps focus and shows it is working (`isPending` with a `Spinner`, not `isDisabled`); only conflicting actions become unavailable.
+While an action runs, the button that started it keeps focus and shows it is working (`disabled` with `focusableWhenDisabled` and a `Spinner`); only conflicting actions become unavailable.
 
 </Do>
 
@@ -253,8 +253,8 @@ Put a card header's filter and add actions in `CardAction`; use a `Toolbar` ther
 
 ```tsx
 <ButtonGroup aria-label="View">
-  <Button variant={view === "list" ? "secondary" : "ghost"} onPress={() => setView("list")}>List</Button>
-  <Button variant={view === "map" ? "secondary" : "ghost"} onPress={() => setView("map")}>Map</Button>
+  <Button variant={view === "list" ? "secondary" : "ghost"} onClick={() => setView("list")}>List</Button>
+  <Button variant={view === "map" ? "secondary" : "ghost"} onClick={() => setView("map")}>Map</Button>
 </ButtonGroup>
 ```
 
@@ -263,9 +263,9 @@ Put a card header's filter and add actions in `CardAction`; use a `Toolbar` ther
 <Correct>
 
 ```tsx
-<ToggleGroup aria-label="View" selectionMode="single" selectedKeys={[view]} onSelectionChange={(keys) => setView([...keys][0] as string)}>
-  <ToggleGroupItem id="list">List</ToggleGroupItem>
-  <ToggleGroupItem id="map">Map</ToggleGroupItem>
+<ToggleGroup aria-label="View" value={[view]} onValueChange={([next]) => next && setView(next)}>
+  <ToggleGroupItem value="list">List</ToggleGroupItem>
+  <ToggleGroupItem value="map">Map</ToggleGroupItem>
 </ToggleGroup>
 ```
 
@@ -351,9 +351,9 @@ The `ButtonGroupSeparator` component visually divides buttons within a group.
 
 Use this component to display text within a button group.
 
-| Prop     | Type      | Default |
-| -------- | --------- | ------- |
-| `render` | `boolean` | `false` |
+| Prop     | Type                 | Default |
+| -------- | -------------------- | ------- |
+| `render` | `React.ReactElement` |         |
 
 ```tsx
 <ButtonGroup>
@@ -371,13 +371,7 @@ import { Label } from "@tecton/react/components/label"
 export function ButtonGroupTextDemo() {
   return (
     <ButtonGroup>
-      <ButtonGroupText
-        render={(props) => (
-          <Label {...props} htmlFor="name">
-            Text
-          </Label>
-        )}
-      />
+      <ButtonGroupText render={<Label htmlFor="name" />}>Text</ButtonGroupText>
       <Input placeholder="Type something here..." id="name" />
     </ButtonGroup>
   )

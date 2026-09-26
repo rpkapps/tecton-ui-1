@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/bubble-popover.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/bubble-popover.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { InfoIcon } from "lucide-react"
 
 import {
@@ -9,6 +9,7 @@ import {
 import { Button } from "@tecton/react/components/button"
 import {
   Popover,
+  PopoverContent,
   PopoverDescription,
   PopoverHeader,
   PopoverTitle,
@@ -24,16 +25,20 @@ export function BubblePopoverDemo() {
       <Bubble variant="destructive">
         <BubbleContent>Failed to run the command.</BubbleContent>
         <BubbleReactions>
-          <PopoverTrigger>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              aria-label="Show error details"
-              className="aria-expanded:text-destructive"
+          <Popover>
+            <PopoverTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="Show error details"
+                  className="aria-expanded:text-destructive"
+                />
+              }
             >
               <InfoIcon />
-            </Button>
-            <Popover>
+            </PopoverTrigger>
+            <PopoverContent>
               <PopoverHeader>
                 <PopoverTitle className="text-sm">
                   Command failed with exit code 1
@@ -42,8 +47,8 @@ export function BubblePopoverDemo() {
                   ENOENT: no such file or directory, open pnpm-lock.yaml
                 </PopoverDescription>
               </PopoverHeader>
-            </Popover>
-          </PopoverTrigger>
+            </PopoverContent>
+          </Popover>
         </BubbleReactions>
       </Bubble>
     </div>

@@ -1,8 +1,14 @@
 import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it } from "vitest"
+import { describe, expect, it, vi } from "vitest"
 
 import { Button } from "@tecton/react/components/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@tecton/react/components/dropdown-menu"
 
 import {
   Canvas,
@@ -11,6 +17,7 @@ import {
   CanvasOverlay,
   CanvasSurface,
   CanvasToolbar,
+  CanvasToolbarButton,
 } from "@tecton/react/tecton/canvas"
 
 describe("Canvas", () => {
@@ -30,14 +37,14 @@ describe("Canvas", () => {
   })
 
   it.each([
-    ["top-left", ["top-3", "left-3", "flex-col"]],
+    ["top-start", ["top-3", "start-3", "flex-col"]],
     ["top", ["top-3", "left-1/2", "flex-row"]],
-    ["top-right", ["top-3", "right-3", "items-end"]],
-    ["left", ["top-1/2", "left-3"]],
-    ["right", ["top-1/2", "right-3"]],
-    ["bottom-left", ["bottom-3", "left-3"]],
+    ["top-end", ["top-3", "end-3", "items-end"]],
+    ["start", ["top-1/2", "start-3"]],
+    ["end", ["top-1/2", "end-3"]],
+    ["bottom-start", ["bottom-3", "start-3"]],
     ["bottom", ["bottom-3", "left-1/2", "flex-row"]],
-    ["bottom-right", ["right-3", "bottom-3", "items-end"]],
+    ["bottom-end", ["end-3", "bottom-3", "items-end"]],
   ] as const)("CanvasOverlay position=%s", (position, classes) => {
     const { container } = render(<CanvasOverlay position={position} />)
     const overlay = container.querySelector('[data-slot="canvas-overlay"]')
@@ -45,12 +52,38 @@ describe("Canvas", () => {
     expect(overlay).toHaveClass(...classes)
   })
 
-  it("CanvasOverlay defaults to top-left", () => {
+  it("CanvasOverlay defaults to top-start", () => {
     const { container } = render(<CanvasOverlay />)
     expect(
       container.querySelector('[data-slot="canvas-overlay"]')
-    ).toHaveAttribute("data-position", "top-left")
+    ).toHaveAttribute("data-position", "top-start")
   })
+
+  it.each([
+    ["top-start", "start-3"],
+    ["top-end", "end-3"],
+    ["start", "start-3"],
+    ["end", "end-3"],
+    ["bottom-start", "start-3"],
+    ["bottom-end", "end-3"],
+  ] as const)(
+    "CanvasOverlay position=%s is pinned with a logical inset in RTL",
+    (position, inset) => {
+      const { container } = render(
+        <div dir="rtl">
+          <CanvasOverlay position={position} />
+        </div>
+      )
+      const overlay = container.querySelector('[data-slot="canvas-overlay"]')
+      expect(overlay).toHaveClass(inset)
+      // No physical left/right inset: the side flips with the direction.
+      expect(
+        [...(overlay?.classList ?? [])].filter((c) =>
+          /^-?(left|right)-/.test(c)
+        )
+      ).toEqual([])
+    }
+  )
 
   it("CanvasToolbar is a vertical toolbar by default", () => {
     render(<CanvasToolbar aria-label="Tools" />)
@@ -72,9 +105,9 @@ describe("Canvas", () => {
     render(
       <>
         <CanvasToolbar aria-label="Tools">
-          <Button aria-label="Zoom in">+</Button>
-          <Button aria-label="Zoom out">-</Button>
-          <Button aria-label="Pan">P</Button>
+          <CanvasToolbarButton aria-label="Zoom in">+</CanvasToolbarButton>
+          <CanvasToolbarButton aria-label="Zoom out">-</CanvasToolbarButton>
+          <CanvasToolbarButton aria-label="Pan">P</CanvasToolbarButton>
         </CanvasToolbar>
         <Button>After</Button>
       </>
@@ -83,6 +116,9 @@ describe("Canvas", () => {
     expect(screen.getByRole("button", { name: "Zoom in" })).toHaveFocus()
     await user.keyboard("{ArrowDown}")
     expect(screen.getByRole("button", { name: "Zoom out" })).toHaveFocus()
+    await user.keyboard("{ArrowDown}")
+    expect(screen.getByRole("button", { name: "Pan" })).toHaveFocus()
+    // The rail stops at its ends instead of wrapping.
     await user.keyboard("{ArrowDown}")
     expect(screen.getByRole("button", { name: "Pan" })).toHaveFocus()
     await user.keyboard("{ArrowUp}")
@@ -99,8 +135,8 @@ describe("Canvas", () => {
     const user = userEvent.setup()
     render(
       <CanvasToolbar aria-label="Measure" orientation="horizontal">
-        <Button aria-label="Ruler">R</Button>
-        <Button aria-label="Area">A</Button>
+        <CanvasToolbarButton aria-label="Ruler">R</CanvasToolbarButton>
+        <CanvasToolbarButton aria-label="Area">A</CanvasToolbarButton>
       </CanvasToolbar>
     )
     await user.tab()
@@ -108,6 +144,61 @@ describe("Canvas", () => {
     expect(screen.getByRole("button", { name: "Area" })).toHaveFocus()
     await user.keyboard("{ArrowLeft}")
     expect(screen.getByRole("button", { name: "Ruler" })).toHaveFocus()
+  })
+
+  it("CanvasToolbarButton is a ghost icon button that stays focusable when disabled", async () => {
+    const user = userEvent.setup()
+    const onClick = vi.fn()
+    render(
+      <CanvasToolbar aria-label="Tools">
+        <CanvasToolbarButton aria-label="Zoom in" onClick={onClick}>
+          +
+        </CanvasToolbarButton>
+        <CanvasToolbarButton aria-label="Zoom out" disabled onClick={onClick}>
+          -
+        </CanvasToolbarButton>
+      </CanvasToolbar>
+    )
+    const zoomIn = screen.getByRole("button", { name: "Zoom in" })
+    expect(zoomIn).toHaveAttribute("data-slot", "canvas-toolbar-button")
+    expect(zoomIn).toHaveClass("size-7")
+    await user.click(zoomIn)
+    expect(onClick).toHaveBeenCalledTimes(1)
+    await user.keyboard("{ArrowDown}")
+    const zoomOut = screen.getByRole("button", { name: "Zoom out" })
+    expect(zoomOut).toHaveFocus()
+    expect(zoomOut).toHaveAttribute("aria-disabled", "true")
+    await user.keyboard("{Enter}")
+    expect(onClick).toHaveBeenCalledTimes(1)
+  })
+
+  it("CanvasToolbarButton composes with a trigger through render", async () => {
+    const user = userEvent.setup()
+    render(
+      <CanvasToolbar aria-label="Tools">
+        <CanvasToolbarButton aria-label="Zoom in">+</CanvasToolbarButton>
+        <DropdownMenu>
+          <CanvasToolbarButton
+            aria-label="Layers"
+            render={<DropdownMenuTrigger />}
+          >
+            L
+          </CanvasToolbarButton>
+          <DropdownMenuContent>
+            <DropdownMenuItem>Faults</DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </CanvasToolbar>
+    )
+    await user.tab()
+    await user.keyboard("{ArrowDown}")
+    const layers = screen.getByRole("button", { name: "Layers" })
+    expect(layers).toHaveFocus()
+    expect(layers).toHaveAttribute("aria-haspopup", "menu")
+    await user.keyboard("{Enter}")
+    expect(
+      await screen.findByRole("menuitem", { name: "Faults" })
+    ).toBeInTheDocument()
   })
 
   it("CanvasLegend renders a list of swatch and name items", () => {

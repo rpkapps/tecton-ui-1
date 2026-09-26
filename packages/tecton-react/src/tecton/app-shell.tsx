@@ -12,6 +12,7 @@ import {
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
 import { Kbd } from "@tecton/react/components/kbd"
@@ -20,8 +21,11 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@tecton/react/components/resizable"
-import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
-import { ShortcutKeys } from "@tecton/react/tecton/shortcuts"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
 
 /**
  * Tecton AppShell — the application frame: a solid top navigation bar,
@@ -150,10 +154,26 @@ type AppShellActionProps = React.ComponentProps<typeof Button> & {
   /** Accessible name, also shown as the tooltip. */
   label: string
   /**
-   * Optional shortcut hint rendered in the tooltip, in `shortcuts` key
-   * syntax (`"mod+k"`, `"?"`, `"g w"`).
+   * Optional shortcut hint in the tooltip: a string is drawn as one key cap
+   * (`"?"`), a node as is (`<KbdGroup>…</KbdGroup>`). Binding the key is
+   * up to the application.
    */
-  shortcut?: string
+  shortcut?: React.ReactNode
+}
+
+/** A string hint is one key cap; a node is drawn as is. */
+function ShortcutHint({
+  shortcut,
+  className,
+}: {
+  shortcut: React.ReactNode
+  className?: string
+}) {
+  return typeof shortcut === "string" || typeof shortcut === "number" ? (
+    <Kbd className={className}>{shortcut}</Kbd>
+  ) : (
+    <span className={cn("inline-flex", className)}>{shortcut}</span>
+  )
 }
 
 function AppShellAction({
@@ -164,22 +184,31 @@ function AppShellAction({
   ...props
 }: AppShellActionProps) {
   return (
-    <TooltipTrigger>
-      <Button
-        data-slot="app-shell-action"
-        variant="ghost"
-        size="icon-sm"
-        aria-label={label}
-        className={cn("text-muted-foreground hover:text-foreground", className)}
-        {...props}
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            data-slot="app-shell-action"
+            variant="ghost"
+            size="icon-sm"
+            aria-label={label}
+            className={cn(
+              "text-muted-foreground hover:text-foreground",
+              className
+            )}
+            {...props}
+          />
+        }
       >
         {children}
-      </Button>
-      <Tooltip placement="bottom">
+      </TooltipTrigger>
+      <TooltipContent side="bottom">
         {label}
-        {shortcut ? <ShortcutKeys keys={shortcut} className="ms-1" /> : null}
-      </Tooltip>
-    </TooltipTrigger>
+        {shortcut ? (
+          <ShortcutHint shortcut={shortcut} className="ms-1" />
+        ) : null}
+      </TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -189,9 +218,10 @@ type AppShellCommandTriggerProps = Omit<
 > & {
   children?: React.ReactNode
   /**
-   * Shortcut hint shown at the end of the trigger. Defaults to `mod+k`
-   * drawn for the platform (⌘ K on Apple keyboards, Ctrl + K elsewhere);
-   * `null` hides it.
+   * Shortcut hint shown at the end of the trigger on `lg` and up: a string
+   * is one key cap (`"/"`), a node is drawn as is
+   * (`<KbdGroup><Kbd>⌘</Kbd><Kbd>K</Kbd></KbdGroup>`). Binding the key is up
+   * to the application.
    */
   shortcut?: React.ReactNode
 }
@@ -223,15 +253,11 @@ function AppShellCommandTrigger({
       <span className="hidden flex-1 truncate text-start md:inline">
         {children}
       </span>
-      {shortcut === undefined ? (
-        <ShortcutKeys
-          keys="mod+k"
+      {shortcut ? (
+        <ShortcutHint
+          shortcut={shortcut}
           className="pointer-events-none hidden lg:inline-flex"
         />
-      ) : shortcut ? (
-        <Kbd className="pointer-events-none hidden lg:inline-flex">
-          {shortcut}
-        </Kbd>
       ) : null}
     </Button>
   )
@@ -252,15 +278,21 @@ function AppShellDivider({
   )
 }
 
-type AppShellOverflowProps = Omit<
-  React.ComponentProps<typeof DropdownMenuTrigger>,
-  "children"
-> & {
-  /** Accessible name of the trigger (default "More"). */
-  label?: string
+type AppShellMenuProps = {
+  /** Whether the menu is open (controlled). */
+  open?: boolean
+  /** Whether the menu is initially open (uncontrolled). */
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
   /** Menu contents (`DropdownMenuGroup`, `DropdownMenuItem`, …). */
   children: React.ReactNode
+  /** Class of the trigger button. */
   className?: string
+}
+
+type AppShellOverflowProps = AppShellMenuProps & {
+  /** Accessible name of the trigger (default "More"). */
+  label?: string
 }
 
 /**
@@ -275,30 +307,32 @@ function AppShellOverflow({
   ...props
 }: AppShellOverflowProps) {
   return (
-    <DropdownMenuTrigger data-slot="app-shell-overflow" {...props}>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label={label}
-        className={cn("text-muted-foreground hover:text-foreground", className)}
+    <DropdownMenu {...props}>
+      <DropdownMenuTrigger
+        data-slot="app-shell-overflow"
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={label}
+            className={cn(
+              "text-muted-foreground hover:text-foreground",
+              className
+            )}
+          />
+        }
       >
         <EllipsisVerticalIcon />
-      </Button>
-      <DropdownMenu placement="bottom end" className="min-w-48 rounded-lg">
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-auto min-w-48 rounded-lg">
         {children}
-      </DropdownMenu>
-    </DropdownMenuTrigger>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 
-type AppShellUserMenuProps = Omit<
-  React.ComponentProps<typeof DropdownMenuTrigger>,
-  "children"
-> & {
+type AppShellUserMenuProps = AppShellMenuProps & {
   user: { name: string; initials: string; image?: string }
-  /** Menu contents (`DropdownMenuGroup`, `DropdownMenuItem`, …). */
-  children: React.ReactNode
-  className?: string
 }
 
 function AppShellUserMenu({
@@ -308,22 +342,27 @@ function AppShellUserMenu({
   ...props
 }: AppShellUserMenuProps) {
   return (
-    <DropdownMenuTrigger data-slot="app-shell-user-menu" {...props}>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label={`Account: ${user.name}`}
-        className={cn("ms-1 rounded-full", className)}
+    <DropdownMenu {...props}>
+      <DropdownMenuTrigger
+        data-slot="app-shell-user-menu"
+        render={
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            aria-label={`Account: ${user.name}`}
+            className={cn("ms-1 rounded-full", className)}
+          />
+        }
       >
         <Avatar size="sm">
           {user.image ? <AvatarImage src={user.image} alt="" /> : null}
           <AvatarFallback>{user.initials}</AvatarFallback>
         </Avatar>
-      </Button>
-      <DropdownMenu placement="bottom end" className="min-w-56 rounded-lg">
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end" className="w-auto min-w-56 rounded-lg">
         {children}
-      </DropdownMenu>
-    </DropdownMenuTrigger>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

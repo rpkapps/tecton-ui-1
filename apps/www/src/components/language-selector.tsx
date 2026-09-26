@@ -94,11 +94,12 @@ export function LanguageSelector({
 }) {
   return (
     <Select
-      aria-label="Language"
+      items={languageOptions}
       value={value}
-      onChange={(key) => onValueChange(String(key) as Language)}
+      onValueChange={(next) => onValueChange(next as Language)}
     >
       <SelectTrigger
+        aria-label="Language"
         size="sm"
         className={cn("w-36", className)}
         dir="ltr"
@@ -114,11 +115,7 @@ export function LanguageSelector({
           {languageOptions
             .filter((option) => languages.includes(option.value))
             .map((option) => (
-              <SelectItem
-                key={option.value}
-                id={option.value}
-                textValue={option.label}
-              >
+              <SelectItem key={option.value} value={option.value}>
                 {option.label}
               </SelectItem>
             ))}

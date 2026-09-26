@@ -1,7 +1,7 @@
 ---
 title: Alert
 description: Displays a callout for user attention.
-upstream: apps/v4/content/docs/components/aria/alert.mdx
+upstream: apps/v4/content/docs/components/base/alert.mdx
 ---
 
 <ComponentPreview
@@ -93,7 +93,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ## Tecton variants
 
-The Tecton style overlay adds the status colours and surface styles of the design system's *StatusAlert* to the shadcn `Alert`. `variant` is the severity (the former `severity` prop) and `appearance` is the surface (the former `variant="filled" | "outlined"`); the icon, title, description and toolbar are composed as in the examples above.
+The Tecton style adds the design system's status colours and surfaces to `Alert`: `variant` is the severity and `appearance` the surface. Icon, title, description and actions compose as in the examples above.
 
 ### Severity
 
@@ -103,7 +103,7 @@ Use `variant="success" | "warning" | "info" | "destructive"` and pass a lucide i
 
 ### Appearance
 
-Use `appearance="outline"` for a transparent alert with a coloured border and text, or `appearance="filled"` for Tecton's filled status surface (`--success-surface`, `--warning-surface`, … with their `-foreground` text colours; note the pale yellow warning surface in light mode). The default appearance keeps the card background and colours the text with the status colour (`--success`, `--warning`, …), which is readable on the page and card surfaces in both modes.
+The default appearance keeps the card background and colours the text with the status colour (`--success`, `--warning`, …). `appearance="outline"` is transparent with a coloured border and text; `appearance="filled"` uses the filled status surface (`--success-surface`, … with its `-foreground` text).
 
 <ComponentPreview name="alert-appearance" />
 
@@ -148,7 +148,7 @@ Compose `Alert > icon, AlertTitle, AlertDescription, AlertAction`, with the icon
 
 <Do>
 
-Put every button, including the dismiss control, inside `AlertAction` and wire it with `onPress`; a decision that blocks the user is an `AlertDialog`, not an alert.
+Put every button, including the dismiss control, inside `AlertAction` and wire it with `onClick`; a decision that blocks the user is an `AlertDialog`, not an alert.
 
 </Do>
 
@@ -237,7 +237,7 @@ Say the severity in the alert title's words ("Pressure warning", "Export failed"
 
 </Correct>
 
-The two-column grid and the icon's `row-span-2` come from `has-[>svg]`, a direct-child selector, so an icon nested in the title leaves the alert in one column and the description no longer aligns under the title.
+The two-column grid and the icon column come from `has-[>svg]`, a direct-child selector, so an icon nested in the title leaves the alert in one column and the description no longer aligns under the title.
 
 </Dont>
 
@@ -248,7 +248,7 @@ The two-column grid and the icon's `row-span-2` come from `has-[>svg]`, a direct
 ```tsx
 <Alert variant="success">
   <AlertTitle>Three FDA alternatives ranked</AlertTitle>
-  <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onPress={dismiss}><XIcon /></Button>
+  <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onClick={dismiss}><XIcon /></Button>
 </Alert>
 ```
 
@@ -260,14 +260,14 @@ The two-column grid and the icon's `row-span-2` come from `has-[>svg]`, a direct
 <Alert variant="success">
   <AlertTitle>Three FDA alternatives ranked</AlertTitle>
   <AlertAction>
-    <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onPress={dismiss}><XIcon /></Button>
+    <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onClick={dismiss}><XIcon /></Button>
   </AlertAction>
 </Alert>
 ```
 
 </Correct>
 
-The alert clears its corner with `has-data-[slot=alert-action]:pr-18`, so a bare button joins the grid flow under the title instead of sitting in the reserved top-right corner.
+The alert clears its corner with `has-data-[slot=alert-action]:pe-18`, so a bare button joins the grid flow under the title instead of sitting in the reserved inline-end corner.
 
 </Dont>
 
@@ -279,9 +279,10 @@ The alert clears its corner with `has-data-[slot=alert-action]:pr-18`, so a bare
 
 The `Alert` component displays a callout for user attention.
 
-| Prop      | Type                         | Default     |
-| --------- | ---------------------------- | ----------- |
-| `variant` | `"default" \| "destructive"` | `"default"` |
+| Prop         | Type                                                             | Default     |
+| ------------ | ---------------------------------------------------------------- | ----------- |
+| `variant`    | `"default" \| "destructive" \| "success" \| "warning" \| "info"` | `"default"` |
+| `appearance` | `"default" \| "outline" \| "filled"`                             | `"default"` |
 
 ### AlertTitle
 

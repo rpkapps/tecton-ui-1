@@ -1,10 +1,7 @@
 ---
 title: Context Menu
 description: Displays a menu of actions triggered by a right click.
-links:
-  doc: https://react-aria.adobe.com/Menu
-  api: https://react-aria.adobe.com/Menu#api
-upstream: apps/v4/content/docs/components/aria/context-menu.mdx
+upstream: apps/v4/content/docs/components/base/context-menu.mdx
 ---
 
 <ComponentPreview
@@ -15,27 +12,24 @@ upstream: apps/v4/content/docs/components/aria/context-menu.mdx
 ## Usage
 
 ```tsx lineNumbers
-import { Pressable } from "react-aria-components"
-
 import {
   ContextMenu,
+  ContextMenuContent,
   ContextMenuItem,
   ContextMenuTrigger,
 } from "@tecton/react/components/context-menu"
 ```
 
 ```tsx lineNumbers
-<ContextMenuTrigger>
-  <Pressable>
-    <div role="button">Right click here</div>
-  </Pressable>
-  <ContextMenu>
+<ContextMenu>
+  <ContextMenuTrigger>Right click here</ContextMenuTrigger>
+  <ContextMenuContent>
     <ContextMenuItem>Profile</ContextMenuItem>
     <ContextMenuItem>Billing</ContextMenuItem>
     <ContextMenuItem>Team</ContextMenuItem>
     <ContextMenuItem>Subscription</ContextMenuItem>
-  </ContextMenu>
-</ContextMenuTrigger>
+  </ContextMenuContent>
+</ContextMenu>
 ```
 
 ## Composition
@@ -43,8 +37,8 @@ import {
 Use the following composition to build a `ContextMenu`:
 
 ```text
-ContextMenuTrigger
-├── Pressable
+ContextMenu
+├── ContextMenuTrigger
 └── ContextMenuContent
     ├── ContextMenuGroup
     │   ├── ContextMenuLabel
@@ -53,8 +47,14 @@ ContextMenuTrigger
     ├── ContextMenuSeparator
     ├── ContextMenuGroup
     │   ├── ContextMenuLabel
-    │   ├── ContextMenuItem
-    │   └── ContextMenuItem
+    │   ├── ContextMenuCheckboxItem
+    │   └── ContextMenuCheckboxItem
+    ├── ContextMenuSeparator
+    ├── ContextMenuGroup
+    │   ├── ContextMenuLabel
+    │   └── ContextMenuRadioGroup
+    │       ├── ContextMenuRadioItem
+    │       └── ContextMenuRadioItem
     └── ContextMenuSub
         ├── ContextMenuSubTrigger
         └── ContextMenuSubContent
@@ -95,13 +95,13 @@ Combine icons with labels for quick scanning.
 
 ## Checkboxes
 
-Use `selectionMode="multiple"` for toggles.
+Use `ContextMenuCheckboxItem` for toggles.
 
 <ComponentPreview name="context-menu-checkboxes" />
 
 ## Radio
 
-Use `selectionMode="single"` for exclusive choices.
+Use `ContextMenuRadioItem` for exclusive choices.
 
 <ComponentPreview name="context-menu-radio" />
 
@@ -111,9 +111,9 @@ Use `variant="destructive"` to style the menu item as destructive.
 
 <ComponentPreview name="context-menu-destructive" />
 
-## Placement
+## Sides
 
-Control submenu placement with the `placement` prop.
+Control submenu placement with side and align props.
 
 <ComponentPreview name="context-menu-sides" />
 
@@ -126,20 +126,18 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
   direction="rtl"
 />
 
-Use `placement="end"` to place the menu on the logical end side of the trigger.
+Use `side="inline-end"` to place the menu on the logical right side of the trigger.
 
 ```tsx lineNumbers
-<ContextMenuTrigger>
-  <Pressable>
-    <div role="button">Right click here</div>
-  </Pressable>
-  <ContextMenu placement="end">
+<ContextMenu>
+  <ContextMenuTrigger>Right click here</ContextMenuTrigger>
+  <ContextMenuContent side="inline-end">
     <ContextMenuItem>Profile</ContextMenuItem>
     <ContextMenuItem>Billing</ContextMenuItem>
     <ContextMenuItem>Team</ContextMenuItem>
     <ContextMenuItem>Subscription</ContextMenuItem>
-  </ContextMenu>
-</ContextMenuTrigger>
+  </ContextMenuContent>
+</ContextMenu>
 ```
 
 {/* guidelines:start */}
@@ -150,7 +148,7 @@ Use `placement="end"` to place the menu on the logical end side of the trigger.
 
 - A row, card or canvas object has secondary actions that would clutter the surface.
 - Those actions are reachable another way too; the context menu is an accelerator, not the only route.
-- The gesture should be the platform's own: right click, Control-click, long press, Shift+F10.
+- The gesture should be the platform's own: right click, Control-click, long press.
 
 ### Not for
 
@@ -164,25 +162,19 @@ Use `placement="end"` to place the menu on the logical end side of the trigger.
 
 <Do>
 
-Wrap the target in React Aria's `Pressable` and give the wrapped element `role="button"`.
+Compose `ContextMenu` (the root) > `ContextMenuTrigger` + `ContextMenuContent`; the trigger is the `div` area that listens for the gesture, so put the target's content (or `render` its element) there.
 
 </Do>
 
 <Do>
 
-Give `ContextMenuTrigger` exactly two children: the `Pressable` target and the `ContextMenu`.
+Run actions from `onClick` on `ContextMenuItem`.
 
 </Do>
 
 <Do>
 
-Run actions from `onAction` on `ContextMenuItem`, or `onAction(key)` on `ContextMenu` with an `id` per item.
-
-</Do>
-
-<Do>
-
-Build toggles and exclusive choices with `selectionMode` and `selectedKeys` on `ContextMenuGroup`.
+Build toggles with `ContextMenuCheckboxItem` (`checked` / `onCheckedChange`) and exclusive choices with `ContextMenuRadioGroup` (`value` / `onValueChange`) + `ContextMenuRadioItem`.
 
 </Do>
 
@@ -196,7 +188,7 @@ Mark the dangerous entry with `variant="destructive"`; nest with `ContextMenuSub
 
 ### Don't
 
-<Dont severity="CRITICAL" title="A bare element as the context menu target">
+<Dont severity="HIGH" title="A trigger wrapping the area and the menu">
 
 <Wrong>
 
@@ -212,21 +204,21 @@ Mark the dangerous entry with `variant="destructive"`; nest with `ContextMenuSub
 <Correct>
 
 ```tsx
-<ContextMenuTrigger>
-  <Pressable>
-    <div role="button" className="rounded-xl border border-dashed p-6">Right click here</div>
-  </Pressable>
-  <ContextMenu><ContextMenuItem onAction={reload}>Reload</ContextMenuItem></ContextMenu>
-</ContextMenuTrigger>
+<ContextMenu>
+  <ContextMenuTrigger className="rounded-xl border border-dashed p-6">Right click here</ContextMenuTrigger>
+  <ContextMenuContent>
+    <ContextMenuItem onClick={reload}>Reload</ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>
 ```
 
 </Correct>
 
-React Aria hands the trigger's interaction props down through a press responder that only `Pressable` consumes, so a plain element receives nothing and right click falls through to the browser's own menu.
+`ContextMenu` is the state root and draws nothing: a trigger outside it has no menu to open, the items render without a `ContextMenuContent` popup, and `onAction` is not an item prop.
 
 </Dont>
 
-<Dont severity="HIGH" title="The Radix onSelect prop instead of onAction">
+<Dont severity="HIGH" title="The onSelect prop instead of onClick">
 
 <Wrong>
 
@@ -239,12 +231,12 @@ React Aria hands the trigger's interaction props down through a press responder 
 <Correct>
 
 ```tsx
-<ContextMenuItem onAction={() => reload()}>Reload</ContextMenuItem>
+<ContextMenuItem onClick={() => reload()}>Reload</ContextMenuItem>
 ```
 
 </Correct>
 
-`onSelect` is not part of React Aria's `MenuItemProps`, so it is dropped and the entry renders, highlights and closes the menu while running nothing.
+`onSelect` is the DOM text-selection event, not the item's activation, so the entry renders, highlights and closes the menu while running nothing.
 
 </Dont>
 
@@ -253,7 +245,7 @@ React Aria hands the trigger's interaction props down through a press responder 
 <Wrong>
 
 ```tsx
-<div role="button" onContextMenu={(event) => { event.preventDefault(); setOpen(true) }}>
+<div onContextMenu={(event) => { event.preventDefault(); setOpen(true) }}>
   Right click here
 </div>
 ```
@@ -263,22 +255,16 @@ React Aria hands the trigger's interaction props down through a press responder 
 <Correct>
 
 ```tsx
-<ContextMenuTrigger>
-  <Pressable>
-    <div role="button">Right click here</div>
-  </Pressable>
-  <ContextMenu><ContextMenuItem onAction={reload}>Reload</ContextMenuItem></ContextMenu>
-</ContextMenuTrigger>
+<ContextMenu>
+  <ContextMenuTrigger>Right click here</ContextMenuTrigger>
+  <ContextMenuContent><ContextMenuItem onClick={reload}>Reload</ContextMenuItem></ContextMenuContent>
+</ContextMenu>
 ```
 
 </Correct>
 
-`ContextMenuTrigger` adds what the raw event does not: long press for touch, positioning the popover at the pointer, and closing the menu when the next right click lands outside it.
+`ContextMenuTrigger` adds what the raw event does not: long press for touch, positioning the menu at the pointer, and closing it when the next right click lands outside.
 
 </Dont>
 
 {/* guidelines:end */}
-
-## API Reference
-
-See the [React Aria](https://react-aria.adobe.com/Menu#api) documentation for more information.

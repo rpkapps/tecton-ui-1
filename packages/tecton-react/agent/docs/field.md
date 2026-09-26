@@ -20,7 +20,7 @@ import { Field, FieldContent, FieldDescription, FieldError, FieldGroup, FieldLab
 
 ## Do
 
-- Give the control an `id` and point `FieldLabel htmlFor` at it; `Field` renders `role="group"` and associates nothing. A `Select` is the exception: its trigger's `aria-labelledby` overrides `htmlFor`, so put `FieldLabel` inside `Select`, or give the label an `id` and pass it as `Select`'s `aria-labelledby`.
+- Give the control an `id` and point `FieldLabel htmlFor` at it; `Field` renders `role="group"` and associates nothing. For a `Select` the `id` goes on `SelectTrigger`, which renders the button; for a `Combobox`, on `ComboboxInput`.
 - Choose the layout with `orientation="vertical" | "horizontal" | "responsive"`, and add `FieldContent` when the label and description sit beside the control.
 - Put state on `Field` as data attributes: `data-invalid` when the value is rejected, `data-disabled` next to a disabled control.
 - Write helper text as `FieldDescription` and the message as `FieldError` — children, or `errors={field.state.meta.errors}` for a validator's issue list.
@@ -100,9 +100,9 @@ Correct:
 ## Before you finish
 
 - Every control in a `Field` has an `id` and a `FieldLabel htmlFor` pointing at it — `Field` renders `role="group"` and associates nothing by itself.
-- For a `Select` the `id` goes on `SelectTrigger`; a `Slider` has no `htmlFor` target at all and takes `aria-label` with `FieldTitle` and `FieldDescription`; a group of controls — a `RadioGroup`, a `ChipGroup`, a set of checkboxes — is named by `FieldSet` + `FieldLegend`, never by a stray `FieldLabel`.
-- An invalid value sets `aria-invalid` (or `isInvalid`) on the control **and** `data-invalid` on the `Field`, with the message rendered in `FieldError` rather than a red paragraph.
-- `Slider` is bounded with `minValue`, `maxValue` and `step`, holds an array `value` and narrows the `number | number[]` it reports; `FieldTitle` renders a `div` and never names a control.
+- For a `Select` the `id` goes on `SelectTrigger`; a `Slider` has no `htmlFor` target and is named by `aria-labelledby` pointing at its `FieldTitle`'s `id`; a group of controls — a `RadioGroup`, a `ChipGroup`, a set of checkboxes — is named by `FieldSet` + `FieldLegend`, never by a stray `FieldLabel`.
+- An invalid value sets `aria-invalid` on the control **and** `data-invalid` on the `Field`, with the message rendered in `FieldError` rather than a red paragraph.
+- `Slider` is bounded with `min`, `max` and `step`, holds an array `value` and narrows the `number | number[]` that `onValueChange` reports; `FieldTitle` renders a `div` and names a control only through `aria-labelledby`.
 - Helper text and errors are announced with their control (`aria-describedby` listing the `FieldDescription` and `FieldError` ids; `Field` wires nothing).
 - Hide a field's label only when its purpose shows nearby, like a search icon or a column header; otherwise keep it visible.
 

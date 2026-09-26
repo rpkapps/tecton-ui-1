@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/field-checkbox.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/field-checkbox.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Checkbox } from "@tecton/react/components/checkbox"
 import {
   Field,
@@ -63,7 +63,7 @@ export function FieldCheckbox() {
       </FieldSet>
       <FieldSeparator />
       <Field orientation="horizontal">
-        <Checkbox id="finder-pref-9k2-sync-folders-nep" defaultSelected />
+        <Checkbox id="finder-pref-9k2-sync-folders-nep" defaultChecked />
         <FieldContent>
           <FieldLabel htmlFor="finder-pref-9k2-sync-folders-nep">
             Sync Desktop & Documents folders

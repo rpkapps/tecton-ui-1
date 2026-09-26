@@ -7,9 +7,9 @@ export default function ColorSwatchEditable() {
   return (
     <ColorSwatch
       color={color}
-      onChange={setColor}
+      onColorChange={setColor}
       label="Series colour"
-      value={color}
+      detail={color}
       aria-label="Edit series colour"
     />
   )

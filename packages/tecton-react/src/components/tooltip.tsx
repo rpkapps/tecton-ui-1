@@ -1,83 +1,70 @@
 "use client"
 
-import * as React from "react"
+import { Tooltip as TooltipPrimitive } from "@base-ui/react/tooltip"
 import { usePortalTarget } from "@tecton/react/tecton/portal"
 import { cn } from "cn"
-import {
-  Focusable,
-  OverlayArrow,
-  Tooltip as TooltipPrimitive,
-  TooltipTrigger as TooltipTriggerPrimitive,
-} from "react-aria-components"
 
-function TooltipTrigger({
+function TooltipProvider({
   delay = 0,
-  children,
   ...props
-}: React.ComponentProps<typeof TooltipTriggerPrimitive>) {
-  const [trigger, tooltip] = React.Children.toArray(children)
-
+}: TooltipPrimitive.Provider.Props) {
   return (
-    <TooltipTriggerPrimitive
-      data-slot="tooltip-trigger"
+    <TooltipPrimitive.Provider
+      data-slot="tooltip-provider"
       delay={delay}
       {...props}
-    >
-      <Focusable>
-        {trigger as React.ComponentProps<typeof Focusable>["children"]}
-      </Focusable>
-      {tooltip}
-    </TooltipTriggerPrimitive>
+    />
   )
 }
 
-function Tooltip({
+function Tooltip({ ...props }: TooltipPrimitive.Root.Props) {
+  return <TooltipPrimitive.Root data-slot="tooltip" {...props} />
+}
+
+function TooltipTrigger({ ...props }: TooltipPrimitive.Trigger.Props) {
+  return <TooltipPrimitive.Trigger data-slot="tooltip-trigger" {...props} />
+}
+
+function TooltipContent({
   className,
-  placement = "top",
-  offset = 4,
-  crossOffset = 0,
+  side = "top",
+  sideOffset = 4,
+  align = "center",
+  alignOffset = 0,
   children,
+  container,
   ...props
-}: Omit<
-  React.ComponentProps<typeof TooltipPrimitive>,
-  "children" | "className"
-> & {
-  className?: string
-  children?: React.ReactNode
-}) {
+}: TooltipPrimitive.Popup.Props &
+  Pick<TooltipPrimitive.Portal.Props, "container"> &
+  Pick<
+    TooltipPrimitive.Positioner.Props,
+    "align" | "alignOffset" | "side" | "sideOffset"
+  >) {
   const portalTarget = usePortalTarget()
+
   return (
-    <TooltipPrimitive
-      data-slot="tooltip-content"
-      placement={placement}
-      offset={offset}
-      crossOffset={crossOffset}
-      className={cn(
-        "z-50 inline-flex w-fit max-w-xs origin-(--trigger-anchor-point) items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs text-background has-data-[slot=kbd]:pr-1.5 data-entering:animate-in data-entering:fade-in-0 data-entering:zoom-in-95 data-exiting:animate-out data-exiting:fade-out-0 data-exiting:zoom-out-95 data-[placement=bottom]:slide-in-from-top-2 data-[placement=left]:slide-in-from-right-2 data-[placement=right]:slide-in-from-left-2 data-[placement=top]:slide-in-from-bottom-2 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-sm",
-        className
-      )}
-      {...props}
-      UNSTABLE_portalContainer={props.UNSTABLE_portalContainer ?? portalTarget}
-    >
-      {children}
-      <OverlayArrow
-        className="z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] bg-foreground fill-foreground"
-        style={({ placement, defaultStyle }) => ({
-          ...defaultStyle,
-          rotate: "0deg",
-          translate: "0 0",
-          transform:
-            placement === "bottom"
-              ? "translate(-50%, calc(50% + 2px)) rotate(45deg)"
-              : placement === "top"
-                ? "translate(-50%, calc(-50% - 2px)) rotate(45deg)"
-                : placement === "left"
-                  ? "translate(calc(-50% - 2px), -50%) rotate(45deg)"
-                  : "translate(calc(50% + 2px), -50%) rotate(45deg)",
-        })}
-      />
-    </TooltipPrimitive>
+    <TooltipPrimitive.Portal container={container ?? portalTarget}>
+      <TooltipPrimitive.Positioner
+        align={align}
+        alignOffset={alignOffset}
+        side={side}
+        sideOffset={sideOffset}
+        className="isolate z-50"
+      >
+        <TooltipPrimitive.Popup
+          data-slot="tooltip-content"
+          className={cn(
+            "z-50 inline-flex w-fit max-w-xs origin-(--transform-origin) items-center gap-1.5 rounded-md bg-foreground px-3 py-1.5 text-xs text-background has-data-[slot=kbd]:pe-1.5 data-[side=bottom]:slide-in-from-top-2 data-[side=inline-end]:slide-in-from-start-2 data-[side=inline-start]:slide-in-from-end-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 **:data-[slot=kbd]:relative **:data-[slot=kbd]:isolate **:data-[slot=kbd]:z-50 **:data-[slot=kbd]:rounded-sm data-[state=delayed-open]:animate-in data-[state=delayed-open]:fade-in-0 data-[state=delayed-open]:zoom-in-95 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+            className
+          )}
+          {...props}
+        >
+          {children}
+          <TooltipPrimitive.Arrow className="z-50 size-2.5 translate-y-[calc(-50%-2px)] rotate-45 rounded-[2px] bg-foreground fill-foreground data-[side=bottom]:top-1 data-[side=inline-end]:top-1/2! data-[side=inline-end]:-start-1 data-[side=inline-end]:-translate-y-1/2 data-[side=inline-start]:top-1/2! data-[side=inline-start]:-end-1 data-[side=inline-start]:-translate-y-1/2 data-[side=left]:top-1/2! data-[side=left]:-right-1 data-[side=left]:-translate-y-1/2 data-[side=right]:top-1/2! data-[side=right]:-left-1 data-[side=right]:-translate-y-1/2 data-[side=top]:-bottom-2.5" />
+        </TooltipPrimitive.Popup>
+      </TooltipPrimitive.Positioner>
+    </TooltipPrimitive.Portal>
   )
 }
 
-export { Tooltip, TooltipTrigger }
+export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }

@@ -1,7 +1,7 @@
 ---
 title: Questionnaire
 description: A multi-step questionnaire with single-choice, multiple-choice, freeform, and skippable questions.
-upstream: apps/v4/content/docs/components/aria/questionnaire.mdx
+upstream: apps/v4/content/docs/components/base/questionnaire.mdx
 ---
 
 <ComponentPreview
@@ -345,7 +345,7 @@ Navigate only with `QuestionnairePrevious`, `QuestionnaireSkip`, `QuestionnaireN
 
 <Do>
 
-These parts are plain form elements, not React Aria: they take `disabled` and `onChange`, and `QuestionnaireInput` needs an `aria-label`.
+These parts are plain form elements: they take `disabled` and `onChange`, and `QuestionnaireInput` needs an `aria-label`.
 
 </Do>
 
@@ -363,7 +363,7 @@ These parts are plain form elements, not React Aria: they take `disabled` and `o
   <RadioGroup value={value} onChange={setValue}>
     <RadioGroupItem value="feature">New feature</RadioGroupItem>
   </RadioGroup>
-  <Button onPress={() => send(value)}>Submit</Button>
+  <Button onClick={() => send(value)}>Submit</Button>
 </div>
 ```
 
@@ -421,7 +421,7 @@ These parts are plain form elements, not React Aria: they take `disabled` and `o
 
 </Dont>
 
-<Dont severity="MEDIUM" title="React Aria props on a choice">
+<Dont severity="MEDIUM" title="isDisabled instead of disabled on a choice">
 
 <Wrong>
 
@@ -439,7 +439,7 @@ These parts are plain form elements, not React Aria: they take `disabled` and `o
 
 </Correct>
 
-These parts come from `@shadcn/react/questionnaire`, not React Aria, so `isDisabled` is a type error the dev server strips instead of checking, then forwards to the `label` as an unknown attribute: no `data-disabled`, and the choice stays selectable.
+These parts are plain form elements, so `isDisabled` is a type error the dev server strips instead of checking, then forwards to the `label` as an unknown attribute: no `data-disabled`, and the choice stays selectable.
 
 </Dont>
 

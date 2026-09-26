@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest"
 import ContentPage from "../blocks/content-01/page"
 import { TopNav } from "../blocks/dashboard-01/page"
 import FaciesPage from "../blocks/facies-modeling-panel/page"
+import FdaComparisonTablePage from "../blocks/fda-comparison-table/page"
 import HorizonsPage from "../blocks/horizons-panel/page"
 import WellsListRoute from "../blocks/list-01/page"
 import SettingsRoute from "../blocks/settings-01/page"
@@ -13,14 +14,11 @@ import Sidebar03Page from "../blocks/sidebar-03/page"
 import Sidebar04Page from "../blocks/sidebar-04/page"
 
 /**
- * A Select's trigger is named by its label (React Aria `aria-labelledby`
- * lists the label and the selected value), so the label text must be part
- * of the trigger's accessible name.
+ * A Select's trigger (a `combobox` that opens a listbox) is named by its
+ * label, so the label text must be the trigger's accessible name.
  */
 function expectSelect(label: string) {
-  const trigger = screen.getByRole("button", {
-    name: new RegExp(`\\b${label}$|^${label}\\b|\\s${label}\\s`),
-  })
+  const trigger = screen.getByRole("combobox", { name: label })
   expect(trigger).toHaveAttribute("aria-haspopup", "listbox")
   return trigger
 }
@@ -76,7 +74,10 @@ describe("Select fields have an accessible name", () => {
     const user = userEvent.setup()
     render(<SettingsRoute />)
     await user.click(screen.getByText("Role"))
-    expect(expectSelect("Role")).toHaveFocus()
+    expect(expectSelect("Role")).toHaveAttribute("aria-expanded", "true")
+    expect(
+      await screen.findByRole("option", { name: "Subsurface lead" })
+    ).toHaveAttribute("aria-selected", "true")
   })
 })
 
@@ -107,5 +108,21 @@ describe("search inputs have an accessible name", () => {
     expect(
       screen.getByRole("textbox", { name: "Search project" })
     ).toBeInTheDocument()
+  })
+})
+
+describe("table rows are named by a row header", () => {
+  it("fda-comparison-table: the FDA column", () => {
+    render(<FdaComparisonTablePage />)
+    const header = screen.getByRole("rowheader", { name: /FDA 2\.3/ })
+    expect(header).toHaveAttribute("scope", "row")
+    expect(header.closest("tr")).not.toBeNull()
+  })
+
+  it("list-01: the well name", () => {
+    render(<WellsListRoute />)
+    const header = screen.getByRole("rowheader", { name: "16/2-D-12 H" })
+    expect(header.tagName).toBe("TH")
+    expect(header).toHaveAttribute("data-label", "Well")
   })
 })

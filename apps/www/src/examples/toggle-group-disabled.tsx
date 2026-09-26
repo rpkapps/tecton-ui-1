@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/toggle-group-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/toggle-group-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Bold, Italic, Underline } from "lucide-react"
 
 import {
@@ -8,14 +8,14 @@ import {
 
 export function ToggleGroupDisabled() {
   return (
-    <ToggleGroup isDisabled>
-      <ToggleGroupItem id="bold" aria-label="Toggle bold">
+    <ToggleGroup disabled>
+      <ToggleGroupItem value="bold" aria-label="Toggle bold">
         <Bold />
       </ToggleGroupItem>
-      <ToggleGroupItem id="italic" aria-label="Toggle italic">
+      <ToggleGroupItem value="italic" aria-label="Toggle italic">
         <Italic />
       </ToggleGroupItem>
-      <ToggleGroupItem id="strikethrough" aria-label="Toggle strikethrough">
+      <ToggleGroupItem value="strikethrough" aria-label="Toggle strikethrough">
         <Underline />
       </ToggleGroupItem>
     </ToggleGroup>

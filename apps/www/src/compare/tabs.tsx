@@ -11,7 +11,7 @@ import { Caption, ColumnHeader, Page, Section } from "./matrix"
  * Blocks Underline / Filled × Horizontal / Vertical × Medium / Small.
  * Storybook columns: enabled · hovered · focused · pressed · activated ·
  * disabled. The three prop-driven states are rendered as three tabs of one
- * `TabsList` (selectedKey = activated, disabled = isDisabled) so the tabs
+ * `TabsList` (value = activated, disabled = disabled) so the tabs
  * keep their real spacing.
  *
  * Mapping: Underline → `variant="line"`, Filled → `variant="default"`.
@@ -60,7 +60,7 @@ function TabRow({
   )
 
   const tabs = (
-    <Tabs orientation={orientation} selectedKey="activated">
+    <Tabs orientation={orientation} value="activated">
       <TabsList
         variant={variant}
         aria-label={`${variant} ${orientation} ${size}`}
@@ -71,8 +71,8 @@ function TabRow({
         {states.map((state) => (
           <TabsTrigger
             key={state.id}
-            id={state.id}
-            isDisabled={state.id === "disabled"}
+            value={state.id}
+            disabled={state.id === "disabled"}
             className={cn(
               "flex-none justify-center",
               slot,

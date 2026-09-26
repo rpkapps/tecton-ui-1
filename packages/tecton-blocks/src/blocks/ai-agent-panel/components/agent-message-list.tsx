@@ -43,7 +43,7 @@ type AgentMessageListProps = React.ComponentProps<"div"> & {
   /** Ids of actions already taken (rendered as done). */
   completedActions?: string[]
   /** Renders a "thinking" indicator after the last message. */
-  isBusy?: boolean
+  busy?: boolean
 }
 
 function AgentMessageList({
@@ -51,7 +51,7 @@ function AgentMessageList({
   messages,
   onAction,
   completedActions = [],
-  isBusy = false,
+  busy = false,
   ...props
 }: AgentMessageListProps) {
   return (
@@ -62,7 +62,7 @@ function AgentMessageList({
         {...props}
       >
         <MessageScrollerViewport className="px-4 py-3">
-          <MessageScrollerContent className="gap-4" aria-busy={isBusy}>
+          <MessageScrollerContent className="gap-4" aria-busy={busy}>
             {messages.map((message) => (
               <MessageScrollerItem
                 key={message.id}
@@ -82,13 +82,13 @@ function AgentMessageList({
                     content={message.content}
                     actions={message.actions}
                     completedActions={completedActions}
-                    isDisabled={isBusy}
+                    disabled={busy}
                     onAction={(action) => onAction?.(action, message)}
                   />
                 )}
               </MessageScrollerItem>
             ))}
-            {isBusy && (
+            {busy && (
               <MessageScrollerItem messageId="agent-busy">
                 <div
                   data-slot="agent-busy"
@@ -111,14 +111,14 @@ function AssistantMessage({
   content,
   actions,
   completedActions,
-  isDisabled = false,
+  disabled = false,
   onAction,
 }: {
   content: string[]
   actions?: AgentAction[] | undefined
   completedActions: string[]
   /** Disables the chips, e.g. while a reply is pending. */
-  isDisabled?: boolean
+  disabled?: boolean
   onAction?: (action: AgentAction) => void
 }) {
   return (
@@ -158,8 +158,8 @@ function AssistantMessage({
                     action.color === "success" &&
                     "bg-success text-success-foreground"
                 )}
-                isDisabled={done || isDisabled}
-                onPress={() => onAction?.(action)}
+                disabled={done || disabled}
+                onClick={() => onAction?.(action)}
               >
                 {done && <CheckIcon />}
                 {action.label}
@@ -198,7 +198,7 @@ function ToolActivity({
       <CollapsibleTrigger className="inline-flex items-center gap-1 rounded-sm text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60">
         {summary} · {duration}
         <ChevronDownIcon
-          className="size-3.5 transition-transform group-data-expanded/tool:rotate-180"
+          className="size-3.5 transition-transform group-data-open/tool:rotate-180"
           aria-hidden
         />
       </CollapsibleTrigger>

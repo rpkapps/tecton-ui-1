@@ -101,6 +101,7 @@ const chartConfig = { desktop: { label: "Desktop", color: "var(--chart-1)" } }
 
 ## Before you finish
 
+- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
 - A chart is a Recharts chart inside a `ChartContainer` with a `ChartConfig` keyed by `dataKey`, painted with `fill="var(--color-<key>)"` from that config and given a size in `className`, never a Tailwind colour class or a hard-coded hex.
 
 Related: stat, meter, progress

@@ -16,7 +16,7 @@ related: [Progress, Spinner, Meter]
 ## Use it when
 
 - The progress belongs in a compact space: a card corner, a table cell, a tile, a KPI.
-- The number matters as much as the arc: `showValue`, or children such as `7/12`.
+- The number matters as much as the arc: `showValue`, or `valueLabel="7 of 12"` (also announced) for a count.
 - A ring, not an icon, is the right weight for an indeterminate wait inside a panel or a dialog.
 
 ## Do
@@ -24,8 +24,8 @@ related: [Progress, Spinner, Meter]
 - Always pass `aria-label`; there is no visible label slot.
 - Size with `size="xs" | "sm" | "md" | "lg" | "xl"` (16 / 24 / 40 / 64 / 96 px): one prop drives the diameter, the stroke width and the centre type together.
 - Colour with `color="default" | "foreground" | "success" | "warning" | "error" | "info"`; `default` is the shared `progress` fill.
-- Give the scale with `minValue` and `maxValue`, shape the text with `formatOptions`, or pass children for custom centre content.
-- Use `isIndeterminate`, not `value={0}`, while the total is unknown.
+- Give the scale with `min` and `max`, shape the text with `format` (`Intl.NumberFormatOptions`), or pass children for custom centre content.
+- Pass `value={null}`, not `value={0}`, while the total is unknown: the ring spins.
 
 ## Don't
 
@@ -70,16 +70,16 @@ Correct:
 Wrong:
 
 ```tsx
-<CircularProgress size="sm" isIndeterminate showValue aria-label="Loading well logs" />
+<CircularProgress size="sm" value={null} showValue aria-label="Loading well logs" />
 ```
 
 Correct:
 
 ```tsx
 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-  <CircularProgress size="sm" isIndeterminate aria-label="Loading well logs" />
+  <CircularProgress size="sm" value={null} aria-label="Loading well logs" />
   Loading well logs…
 </div>
 ```
 
-The centre label renders only when `showValue && !isIndeterminate`, so the prop is ignored and the ring spins with an empty middle where the caption was expected.
+The centre label renders only for a determinate value, so the prop is ignored and the ring spins with an empty middle where the caption was expected.

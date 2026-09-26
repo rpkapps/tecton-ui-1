@@ -22,7 +22,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 
 - Compose `Pagination` > `PaginationContent` > one `PaginationItem` per control.
 - Mark the page with `isActive` on `PaginationLink`: it swaps `ghost` for `outline` and sets `aria-current="page"`.
-- Give every control an `href`; `PaginationLink` is a `LinkButton`, so a press is a navigation, not a state change.
+- Give every control an `href`; `PaginationLink` is a plain `a` with the button look, so a press is a navigation, not a state change. At the first or last page leave `PaginationPrevious` / `PaginationNext` out: a link has no disabled state.
 - Elide the middle with `PaginationEllipsis`, and relabel the ends with `text` on `PaginationPrevious` and `PaginationNext`.
 - Keep `className` to placement (`mx-0 w-auto`); the controls own their size, shape and colour.
 - Place pagination directly below the table or list it pages, never above the rows.
@@ -38,7 +38,7 @@ Wrong:
 ```tsx
 <div className="flex justify-center gap-1">
   {pages.map((number) => (
-    <Button key={number} size="icon" variant={number === page ? "outline" : "ghost"} onPress={() => setPage(number)}>
+    <Button key={number} size="icon" variant={number === page ? "outline" : "ghost"} onClick={() => setPage(number)}>
       {number}
     </Button>
   ))}
@@ -79,24 +79,24 @@ Correct:
 
 `PaginationLink` omits `variant` from its props on purpose — `isActive` is the one switch, and it sets both the `outline` variant and `aria-current="page"` — while `blue-600` is not a Tecton step, so the reset palette emits no rule and the marker is invisible as well as unannounced.
 
-### MEDIUM disabled on the control at either end
+### MEDIUM A disabled prop on the control at either end
 
 Wrong:
 
 ```tsx
-<PaginationPrevious href="?page=0" disabled={page === 1} />
+<PaginationPrevious href="?page=0" isDisabled={page === 1} />
 ```
 
 Correct:
 
 ```tsx
-<PaginationPrevious href={`?page=${page - 1}`} isDisabled={page === 1} />
+{page > 1 ? <PaginationPrevious href={`?page=${page - 1}`} /> : null}
 ```
 
-`PaginationPrevious` ends up on a React Aria `Link`, whose prop is `isDisabled`; `disabled` is not in `LinkProps`, so it is filtered out of the DOM and the control stays a live link to a page that does not exist.
+`PaginationPrevious` renders an `a`, which has no disabled state: the prop lands on the DOM as an unknown attribute and the control stays a live link to a page that does not exist.
 
 ## Before you finish
 
-- Paging controls are `Pagination > PaginationContent > PaginationItem`, every control carries an `href`, the current page is marked with `isActive` on `PaginationLink` (which sets both the outline variant and `aria-current="page"`), and a dead end is `isDisabled`, never `disabled` or a colour class.
+- Paging controls are `Pagination > PaginationContent > PaginationItem`, every control carries an `href`, the current page is marked with `isActive` on `PaginationLink` (which sets both the outline variant and `aria-current="page"`), and the first and last page omit `PaginationPrevious` / `PaginationNext` — a link has no disabled state.
 
 Related: table, tabs

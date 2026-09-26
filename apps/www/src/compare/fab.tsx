@@ -68,7 +68,7 @@ export default function FabMatrix() {
                     key={variant}
                     variant={variant}
                     className={`${extended} rounded-full shadow-md`}
-                    isDisabled
+                    disabled
                   >
                     <PlusIcon data-icon="inline-start" />
                     Fab
@@ -110,7 +110,7 @@ export default function FabMatrix() {
                     size={icon}
                     className="rounded-full shadow-md"
                     aria-label="Add"
-                    isDisabled
+                    disabled
                   >
                     <PlusIcon />
                   </Button>

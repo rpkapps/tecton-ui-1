@@ -1,8 +1,9 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dialog-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dialog-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
   DialogClose,
+  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -15,10 +16,12 @@ import { Label } from "@tecton/react/components/label"
 
 export function DialogDemo() {
   return (
-    <DialogTrigger>
+    <Dialog>
       <form>
-        <Button variant="outline">Open Dialog</Button>
-        <Dialog className="sm:max-w-sm">
+        <DialogTrigger render={<Button variant="outline" />}>
+          Open Dialog
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-sm">
           <DialogHeader>
             <DialogTitle>Edit profile</DialogTitle>
             <DialogDescription>
@@ -37,11 +40,13 @@ export function DialogDemo() {
             </Field>
           </FieldGroup>
           <DialogFooter>
-            <DialogClose variant="outline">Cancel</DialogClose>
+            <DialogClose render={<Button variant="outline" />}>
+              Cancel
+            </DialogClose>
             <Button type="submit">Save changes</Button>
           </DialogFooter>
-        </Dialog>
+        </DialogContent>
       </form>
-    </DialogTrigger>
+    </Dialog>
   )
 }

@@ -20,13 +20,13 @@ import {
   MoreVerticalIcon,
   PlusIcon,
 } from "lucide-react"
-import { useLocale } from "react-aria-components"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -54,6 +54,7 @@ import {
   TableHeader,
   TableRow,
 } from "@tecton/react/components/table"
+import { useLocale } from "@tecton/react/tecton/provider"
 
 import { formatDate, statusMeta, typeMeta } from "../data"
 import type { Well } from "../data"
@@ -69,7 +70,7 @@ const features = tableFeatures({
 
 const columns = createColumnHelper<typeof features, Well>()
 
-/** A number in the reader's locale (React Aria `I18nProvider`, else the browser). */
+/** A number in the reader's locale (`TectonProvider`, else the browser). */
 function LocaleNumber({
   value,
   ...props
@@ -91,8 +92,32 @@ function createWellColumns(onOpen?: (well: Well) => void) {
   return columns.columns([
     columns.display({
       id: "select",
-      header: () => <Checkbox slot="selection" aria-label="Select all rows" />,
-      cell: () => <Checkbox slot="selection" aria-label="Select row" />,
+      header: ({ table }) => {
+        // Checked when every row of the page is selected; mixed when some
+        // row (on any page) is. Checking selects every row, unchecking
+        // clears the selection.
+        const page = table.getRowModel().rows
+        const all = page.length > 0 && page.every((row) => row.getIsSelected())
+        const some = table.getSelectedRowModel().rows.length > 0
+        return (
+          <Checkbox
+            aria-label="Select all rows"
+            checked={all}
+            indeterminate={some && !all}
+            onCheckedChange={(checked) => {
+              if (checked) table.toggleAllRowsSelected(true)
+              else table.setRowSelection({})
+            }}
+          />
+        )
+      },
+      cell: ({ row }) => (
+        <Checkbox
+          aria-label={`Select row ${row.original.name}`}
+          checked={row.getIsSelected()}
+          onCheckedChange={(checked) => row.toggleSelected(checked)}
+        />
+      ),
       enableSorting: false,
     }),
     columns.accessor("name", {
@@ -139,24 +164,28 @@ function createWellColumns(onOpen?: (well: Well) => void) {
       enableSorting: false,
       cell: ({ row }) => (
         <span className="flex justify-end">
-          <DropdownMenuTrigger>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              aria-label={`Actions for ${row.original.name}`}
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label={`Actions for ${row.original.name}`}
+                />
+              }
             >
               <MoreVerticalIcon />
-            </Button>
-            <DropdownMenu placement="bottom end">
-              <DropdownMenuItem onAction={() => onOpen?.(row.original)}>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="bottom" align="end">
+              <DropdownMenuItem onClick={() => onOpen?.(row.original)}>
                 Open
               </DropdownMenuItem>
               <DropdownMenuItem>Add to project</DropdownMenuItem>
               <DropdownMenuItem>Export logs</DropdownMenuItem>
               <DropdownMenuSeparator />
               <DropdownMenuItem variant="destructive">Archive</DropdownMenuItem>
-            </DropdownMenu>
-          </DropdownMenuTrigger>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </span>
       ),
     }),
@@ -174,8 +203,10 @@ type WellsTableProps = React.ComponentProps<"div"> & {
 }
 
 /**
- * Paginated, sortable, selectable wells grid: TanStack Table state rendered
- * with the React Aria `Table` primitives. Cells stack into labelled rows on
+ * Paginated, sortable, selectable wells table: TanStack Table state rendered
+ * with the `Table` parts. A header sorts its column, a row's checkbox selects
+ * it, and a click on a row (outside its controls) opens the well — the row's
+ * actions menu opens it from the keyboard. Cells stack into labelled rows on
  * narrow viewports.
  */
 function WellsTable({
@@ -207,13 +238,6 @@ function WellsTable({
   })
 
   const rows = table.getRowModel().rows
-  const [primarySort] = sorting
-  const sortDirection: "ascending" | "descending" = primarySort?.desc
-    ? "descending"
-    : "ascending"
-  const sortDescriptor = primarySort
-    ? { column: primarySort.id, direction: sortDirection }
-    : undefined
 
   return (
     <div
@@ -224,82 +248,116 @@ function WellsTable({
       )}
       {...props}
     >
-      <Table
-        aria-label="Wells"
-        selectionMode="multiple"
-        selectedKeys={table.getSelectedRowModel().rows.map((row) => row.id)}
-        onSelectionChange={(selection) => {
-          if (selection === "all") {
-            table.toggleAllRowsSelected(true)
-          } else {
-            table.setRowSelection(
-              Object.fromEntries(
-                [...selection].map((key) => [String(key), true])
-              )
-            )
-          }
-        }}
-        {...(sortDescriptor === undefined ? {} : { sortDescriptor })}
-        onSortChange={(descriptor) =>
-          table.setSorting([
-            {
-              id: String(descriptor.column),
-              desc: descriptor.direction === "descending",
-            },
-          ])
-        }
-      >
+      <Table aria-label="Wells">
         <TableHeader className="bg-muted max-md:sr-only [&_tr]:border-border-subtle">
-          {table.getFlatHeaders().map((header) => (
-            <TableHead
-              key={header.id}
-              id={header.id}
-              isRowHeader={header.index === 1}
-              allowsSorting={header.column.getCanSort()}
-              className={cn(
-                "h-11 px-3 text-xs",
-                header.column.id === "select" && "w-10"
-              )}
-            >
-              {header.isPlaceholder ? null : (
+          <tr>
+            {table.getFlatHeaders().map((header) => {
+              const sortable = header.column.getCanSort()
+              const sorted = header.column.getIsSorted()
+              const content = header.isPlaceholder ? null : (
                 <table.FlexRender header={header} />
-              )}
-            </TableHead>
-          ))}
+              )
+              return (
+                <TableHead
+                  key={header.id}
+                  aria-sort={
+                    !sortable
+                      ? undefined
+                      : sorted === "asc"
+                        ? "ascending"
+                        : sorted === "desc"
+                          ? "descending"
+                          : "none"
+                  }
+                  className={cn(
+                    "h-11 px-3 text-xs",
+                    header.column.id === "select" && "w-10"
+                  )}
+                >
+                  {sortable ? (
+                    // Ascending first, then toggles; one sorted column.
+                    <button
+                      type="button"
+                      className="-mx-1 rounded-sm px-1 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
+                      onClick={() =>
+                        header.column.toggleSorting(sorted === "asc", false)
+                      }
+                    >
+                      {content}
+                    </button>
+                  ) : (
+                    content
+                  )}
+                </TableHead>
+              )
+            })}
+          </tr>
         </TableHeader>
-        <TableBody
-          renderEmptyState={() => (
-            <div className="py-8 text-center text-muted-foreground">
-              No results.
-            </div>
-          )}
-          className="max-md:[&_td]:flex max-md:[&_td]:h-auto max-md:[&_td]:justify-between max-md:[&_td]:py-1.5 max-md:[&_td]:before:text-muted-foreground max-md:[&_td]:before:content-[attr(data-label)] [&_tr]:border-border-subtle max-md:[&_tr]:flex max-md:[&_tr]:flex-col max-md:[&_tr]:py-2 [&_tr:nth-child(even)]:bg-surface-alt/60"
-        >
-          {rows.map((row) => (
-            <TableRow
-              key={row.id}
-              id={row.id}
-              onAction={() => onOpen?.(row.original)}
-              className="hover:bg-accent/60 data-selected:bg-accent"
-            >
-              {row.getAllCells().map((cell) => (
-                <TableCell
-                  key={cell.id}
-                  data-label={
+        <TableBody className="max-md:[&_:is(td,th)]:flex max-md:[&_:is(td,th)]:h-auto max-md:[&_:is(td,th)]:justify-between max-md:[&_:is(td,th)]:py-1.5 max-md:[&_:is(td,th)]:before:text-muted-foreground max-md:[&_:is(td,th)]:before:content-[attr(data-label)] [&_tr]:border-border-subtle max-md:[&_tr]:flex max-md:[&_tr]:flex-col max-md:[&_tr]:py-2 [&_tr:nth-child(even)]:bg-surface-alt/60">
+          {rows.length === 0 ? (
+            <TableRow>
+              <TableCell
+                colSpan={table.getFlatHeaders().length}
+                className="py-8 text-center text-muted-foreground"
+              >
+                No results.
+              </TableCell>
+            </TableRow>
+          ) : (
+            rows.map((row) => (
+              <TableRow
+                key={row.id}
+                data-selected={row.getIsSelected() ? "" : undefined}
+                onClick={(event) => {
+                  // Not a click on the row's checkbox or menu, nor one that
+                  // reached it through a portal (the menu's popup).
+                  const target = event.target as Element
+                  if (
+                    !onOpen ||
+                    !event.currentTarget.contains(target) ||
+                    target.closest("button, a, input, [role=checkbox]")
+                  )
+                    return
+                  onOpen(row.original)
+                }}
+                className={cn(
+                  "hover:bg-accent/60 data-[selected]:bg-accent",
+                  onOpen && "cursor-pointer"
+                )}
+              >
+                {row.getAllCells().map((cell) => {
+                  const label =
                     typeof cell.column.columnDef.header === "string"
                       ? cell.column.columnDef.header
                       : undefined
-                  }
-                  className={cn(
-                    "h-11 px-3",
-                    cell.column.id === "select" && "w-10"
-                  )}
-                >
-                  <table.FlexRender cell={cell} />
-                </TableCell>
-              ))}
-            </TableRow>
-          ))}
+                  // The well name names the row: a row header, so a screen
+                  // reader reads it with every cell of the row.
+                  return cell.column.id === "name" ? (
+                    <th
+                      key={cell.id}
+                      scope="row"
+                      data-slot="table-cell"
+                      data-label={label}
+                      className="h-11 px-3 py-3 text-start align-middle font-normal whitespace-nowrap"
+                    >
+                      <table.FlexRender cell={cell} />
+                    </th>
+                  ) : (
+                    <TableCell
+                      key={cell.id}
+                      data-label={label}
+                      className={cn(
+                        "h-11 px-3",
+                        cell.column.id === "select" && "w-10"
+                      )}
+                    >
+                      <table.FlexRender cell={cell} />
+                    </TableCell>
+                  )
+                })}
+              </TableRow>
+            ))
+          )}
         </TableBody>
       </Table>
       <div
@@ -314,20 +372,23 @@ function WellsTable({
           <div className="flex items-center gap-1.5">
             <span>Rows per page</span>
             <Select
-              aria-label="Rows per page"
               value={String(pagination.pageSize)}
-              onChange={(key) => table.setPageSize(Number(key))}
+              onValueChange={(value) => table.setPageSize(Number(value))}
+              items={pageSizeOptions.map((size) => ({
+                value: String(size),
+                label: String(size),
+              }))}
             >
-              <SelectTrigger size="sm" className="h-7 w-18 text-xs">
+              <SelectTrigger
+                aria-label="Rows per page"
+                size="sm"
+                className="h-7 w-18 text-xs"
+              >
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {pageSizeOptions.map((size) => (
-                  <SelectItem
-                    key={size}
-                    id={String(size)}
-                    textValue={String(size)}
-                  >
+                  <SelectItem key={size} value={String(size)}>
                     {size}
                   </SelectItem>
                 ))}
@@ -343,8 +404,8 @@ function WellsTable({
               variant="ghost"
               size="icon-xs"
               aria-label="Previous page"
-              onPress={() => table.previousPage()}
-              isDisabled={!table.getCanPreviousPage()}
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
             >
               <ChevronLeftIcon className="rtl:rotate-180" />
             </Button>
@@ -352,8 +413,8 @@ function WellsTable({
               variant="ghost"
               size="icon-xs"
               aria-label="Next page"
-              onPress={() => table.nextPage()}
-              isDisabled={!table.getCanNextPage()}
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
             >
               <ChevronRightIcon className="rtl:rotate-180" />
             </Button>
@@ -403,7 +464,7 @@ function WellsEmptyState({
           <Button
             variant="outline"
             size="sm"
-            {...(onClear === undefined ? {} : { onPress: onClear })}
+            {...(onClear === undefined ? {} : { onClick: onClear })}
           >
             Clear filters
           </Button>
@@ -414,7 +475,7 @@ function WellsEmptyState({
             </Button>
             <Button
               size="sm"
-              {...(onCreate === undefined ? {} : { onPress: onCreate })}
+              {...(onCreate === undefined ? {} : { onClick: onCreate })}
             >
               <PlusIcon /> New well
             </Button>

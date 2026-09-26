@@ -23,7 +23,7 @@ describe("Background", () => {
     expect(bg).toHaveAttribute("data-tone", "neutral")
     expect(bg).toHaveAttribute("data-intensity", "medium")
     expect(bg).toHaveAttribute("data-speed", "normal")
-    expect(bg).toHaveAttribute("data-animate", "true")
+    expect(bg).not.toHaveAttribute("data-static")
     expect(bg).not.toHaveAttribute("data-paused")
     expect(bg).toHaveClass(
       "pointer-events-none",
@@ -63,7 +63,7 @@ describe("Background", () => {
 
   it("can be frozen with animate={false}", () => {
     const { container } = render(<Background animate={false} />)
-    expect(layer(container)).toHaveAttribute("data-animate", "false")
+    expect(layer(container)).toHaveAttribute("data-static", "")
   })
 
   // The suite's setup stubs IntersectionObserver; a consumer's jsdom (and
@@ -134,7 +134,37 @@ describe("Background effects", () => {
     expect(bg).toHaveAttribute("data-tone", "lime")
     expect(bg).toHaveAttribute("data-intensity", "high")
     expect(bg).toHaveAttribute("data-speed", "slow")
-    expect(bg).toHaveAttribute("data-animate", "false")
+    expect(bg).toHaveAttribute("data-static", "")
+  })
+
+  // The server and the browser may disagree in the last digit of a
+  // Math.sin / Math.cos result, and React reports an unrounded coordinate as
+  // a hydration mismatch, so the SVG geometry is rounded.
+  // (Plain arithmetic such as a dash length is the same everywhere.)
+  const GEOMETRY = new Set([
+    "x",
+    "y",
+    "x1",
+    "y1",
+    "x2",
+    "y2",
+    "cx",
+    "cy",
+    "d",
+    "points",
+    "transform",
+  ])
+  it.each(names)("%s writes rounded SVG coordinates", (name) => {
+    const Effect = backgroundEffects[name]
+    const { container } = render(<Effect />)
+    const unrounded = Array.from(container.querySelectorAll("svg *")).flatMap(
+      (node) =>
+        Array.from(node.attributes)
+          .filter((attr) => GEOMETRY.has(attr.name))
+          .filter((attr) => /\d\.\d{5,}/.test(attr.value))
+          .map((attr) => `<${node.tagName} ${attr.name}="${attr.value}">`)
+    )
+    expect(unrounded).toEqual([])
   })
 
   // The pulse animates `opacity`, so a dimmed opacity on the same node

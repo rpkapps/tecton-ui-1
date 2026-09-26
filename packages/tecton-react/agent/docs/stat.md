@@ -100,6 +100,7 @@ The `unit` slot renders `font-sans text-[0.6em] text-muted-foreground` beside th
 
 ## Before you finish
 
+- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
 - A KPI is a `Stat` with `StatLabel`, `StatValue` (its unit in the `unit` prop) and `StatDelta` with `trend="up" | "down" | "flat"`, never a heading and a coloured span, and `className` on `StatGroup` carries width and placement only.
 
 Related: meter, badge, chart

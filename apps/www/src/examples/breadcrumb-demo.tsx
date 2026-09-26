@@ -1,5 +1,5 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/breadcrumb-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-"use client"
+// Synced from shadcn/ui (apps/v4/examples/base/breadcrumb-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+import Link from "@/components/shims/link"
 
 import {
   Breadcrumb,
@@ -8,10 +8,12 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@tecton/react/components/breadcrumb"
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
@@ -22,29 +24,31 @@ export function BreadcrumbDemo() {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink href="#">Home</BreadcrumbLink>
+          <BreadcrumbLink render={<a href="#" />}>Home</BreadcrumbLink>
         </BreadcrumbItem>
-
+        <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <DropdownMenuTrigger>
-            <Button size="icon-sm" variant="ghost">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={<Button size="icon-sm" variant="ghost" />}
+            >
               <BreadcrumbEllipsis />
               <span className="sr-only">Toggle menu</span>
-            </Button>
-            <DropdownMenu placement="bottom start">
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
               <DropdownMenuGroup>
                 <DropdownMenuItem>Documentation</DropdownMenuItem>
                 <DropdownMenuItem>Themes</DropdownMenuItem>
                 <DropdownMenuItem>GitHub</DropdownMenuItem>
               </DropdownMenuGroup>
-            </DropdownMenu>
-          </DropdownMenuTrigger>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </BreadcrumbItem>
-
+        <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink href="#">Components</BreadcrumbLink>
+          <BreadcrumbLink render={<a href="#" />}>Components</BreadcrumbLink>
         </BreadcrumbItem>
-
+        <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
         </BreadcrumbItem>

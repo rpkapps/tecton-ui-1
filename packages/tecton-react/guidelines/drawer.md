@@ -21,14 +21,14 @@ related: [Sheet, Dialog]
 
 ## Do
 
-- Remember this one is **Base UI**, not React Aria: the state props are `open`, `defaultOpen` and `onOpenChange`.
+- Control it like every Tecton overlay, with `open`, `defaultOpen` and `onOpenChange` on `Drawer`; `disablePointerDismissal` keeps unsaved input from being flicked away by a backdrop press.
 - Pass the trigger and close elements through `render`, not as children: `<DrawerTrigger render={<Button variant="outline" />}>Open</DrawerTrigger>`.
 - Pick the edge with `swipeDirection="down" | "up" | "left" | "right"` and add the grab handle with `showSwipeHandle`, both on `Drawer`.
 - Make the scrolling region a flex item — `<div className="flex-1 overflow-y-auto p-4">` — because `h-full` does not resolve inside a content-sized drawer.
 
 ## Don't
 
-### HIGH React Aria state props on this drawer
+### HIGH isOpen instead of open on the drawer
 
 Wrong:
 
@@ -50,7 +50,7 @@ Correct:
 </Drawer>
 ```
 
-Every other Tecton overlay is React Aria, but `Drawer` wraps Base UI's `Drawer.Root`, which reads `open` and renders no element of its own; `isOpen` is not among its props, so TypeScript rejects it and, forced past that, it reaches nothing and the drawer stays uncontrolled.
+`Drawer` is the state root and renders no element of its own; `isOpen` is not among its props, so it reaches nothing and the drawer stays uncontrolled.
 
 ### HIGH Vaul's direction values on swipeDirection
 
@@ -76,7 +76,7 @@ Correct:
 </Drawer>
 ```
 
-Base UI types `swipeDirection` as `"up" | "down" | "left" | "right"`, so TypeScript rejects `"bottom"`; forced past that, the axis falls back to `x` and none of the `data-[swipe-direction=*]` rules match: the panel gets no edge, no radius and no closed transform.
+`swipeDirection` is typed `"up" | "down" | "left" | "right"`, so TypeScript rejects `"bottom"`; forced past that, the axis falls back to `x` and none of the `data-[swipe-direction=*]` rules match: the panel gets no edge, no radius and no closed transform.
 
 ### MEDIUM asChild on the trigger instead of render
 
@@ -94,4 +94,4 @@ Correct:
 <DrawerTrigger render={<Button variant="outline" />}>Open</DrawerTrigger>
 ```
 
-Base UI has no `asChild`: the trigger renders its own `button` and nests the `Button` inside it, giving two stacked buttons and an invalid interactive element.
+There is no `asChild`: the trigger renders its own `button` and nests the `Button` inside it, giving two stacked buttons and an invalid interactive element.

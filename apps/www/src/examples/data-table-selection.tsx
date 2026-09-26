@@ -74,12 +74,27 @@ const features = tableFeatures({ rowSelectionFeature })
 const columnHelper = createColumnHelper<typeof features, Well>()
 
 const columns = columnHelper.columns([
-  // `slot="selection"` wires the checkbox to the React Aria table selection:
-  // the header checkbox selects all rows, the cell checkbox its own row.
+  // The selection column: the header checkbox selects every row (and shows
+  // a dash while only some are), each cell checkbox its own row.
   columnHelper.display({
     id: "select",
-    header: () => <Checkbox slot="selection" aria-label="Select all wells" />,
-    cell: () => <Checkbox slot="selection" aria-label="Select well" />,
+    header: ({ table }) => (
+      <Checkbox
+        aria-label="Select all wells"
+        checked={table.getIsAllRowsSelected()}
+        indeterminate={
+          table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
+        }
+        onCheckedChange={(checked) => table.toggleAllRowsSelected(checked)}
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label={`Select ${row.original.name}`}
+        checked={row.getIsSelected()}
+        onCheckedChange={(checked) => row.toggleSelected(checked)}
+      />
+    ),
   }),
   columnHelper.accessor("name", { header: "Well" }),
   columnHelper.accessor("field", { header: "Field" }),
@@ -92,9 +107,9 @@ const columns = columnHelper.columns([
     ),
   }),
   columnHelper.accessor("depth", {
-    header: () => <div className="text-right">TD (m)</div>,
+    header: () => <div className="text-end">TD (m)</div>,
     cell: ({ getValue }) => (
-      <div className="text-right font-mono tabular-nums">
+      <div className="text-end font-mono tabular-nums">
         {getValue().toLocaleString("en-US")}
       </div>
     ),
@@ -116,37 +131,31 @@ export default function DataTableSelection() {
   return (
     <div className="flex w-full max-w-3xl flex-col gap-3">
       <div className="overflow-hidden rounded-md border">
-        <Table
-          aria-label="Wells"
-          selectionMode="multiple"
-          selectedKeys={table.getSelectedRowModel().rows.map((row) => row.id)}
-          onSelectionChange={(selection) => {
-            if (selection === "all") {
-              table.toggleAllRowsSelected(true)
-            } else {
-              table.setRowSelection(
-                Object.fromEntries([...selection].map((key) => [key, true]))
-              )
-            }
-          }}
-        >
+        <Table aria-label="Wells">
           <TableHeader>
-            {table.getFlatHeaders().map((header) => (
-              <TableHead
-                key={header.id}
-                id={header.id}
-                isRowHeader={header.index === 1}
-                className={header.column.id === "select" ? "w-10" : undefined}
-              >
-                {header.isPlaceholder ? null : (
-                  <table.FlexRender header={header} />
-                )}
-              </TableHead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className={
+                      header.column.id === "select" ? "w-10" : undefined
+                    }
+                  >
+                    {header.isPlaceholder ? null : (
+                      <table.FlexRender header={header} />
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
             ))}
           </TableHeader>
-          <TableBody renderEmptyState={() => "No wells."}>
+          <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} id={row.id}>
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() ? "selected" : undefined}
+              >
                 {row.getAllCells().map((cell) => (
                   <TableCell key={cell.id}>
                     <table.FlexRender cell={cell} />

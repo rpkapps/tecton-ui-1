@@ -27,7 +27,7 @@ related: [Message, Badge, Separator]
 - Pick the layout with `variant="default" | "border" | "separator"`; `separator` draws its own rules to each side.
 - Announce work in progress with `role="status"` and a `Spinner` inside `MarkerIcon`.
 - Shimmer streaming text with `className="shimmer"` on `MarkerContent`.
-- Make it interactive with `render={(props) => <a {...props} href={url} />}`, and wrap it in a `MessageScrollerItem` to anchor it.
+- Make it interactive with `render={<a href={url} />}`, and wrap it in a `MessageScrollerItem` to anchor it.
 
 ## Don't
 
@@ -90,7 +90,7 @@ Wrong:
 Correct:
 
 ```tsx
-<Marker render={(props) => <a {...props} href="/pull/482" />}>
+<Marker render={<a href="/pull/482" />}>
   <MarkerContent>View the pull request</MarkerContent>
 </Marker>
 ```

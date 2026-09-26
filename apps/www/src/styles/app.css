@@ -16,6 +16,9 @@
 @import "./typeset.css";
 
 @source "../../content/**/*.mdx";
+/* The blocks render from their sources (vite.config.ts); without this their
+   classes only reached the CSS through the built registry in public/r. */
+@source "../../../../packages/tecton-blocks/src/blocks";
 
 /* Docs-only tokens (the shadcn site defines the same set): surfaces for
    callouts and code blocks, and text selection. They derive from the Tecton
@@ -56,7 +59,7 @@
   html {
     @apply overscroll-y-none;
   }
-  /* No position on body: React Aria places an overlay above its trigger with
+  /* No position on body: an overlay placed above its trigger gets
      \`bottom\` measured from the viewport, and a positioned body would measure
      it from the bottom of the whole page instead. */
   body {

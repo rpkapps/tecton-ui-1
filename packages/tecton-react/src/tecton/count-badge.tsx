@@ -4,8 +4,9 @@ import { cn } from "cn"
 
 /**
  * Tecton Badge — a count or dot anchored to the corner of its child
- * (avatar, icon button, tab). Not to be confused with the shadcn `Badge`,
- * which is the static label; the interactive React Aria tag is `Chip`.
+ * (avatar, icon button, tab). The `anchor` corners are logical: `start`/`end`
+ * follow the reading direction and mirror in RTL. Not to be confused with the shadcn `Badge`,
+ * which is the static label; the interactive tag is `Chip`.
  */
 const countBadgeVariants = cva(
   "pointer-events-none absolute z-10 flex items-center justify-center rounded-full font-medium whitespace-nowrap tabular-nums ring-2 ring-background",
@@ -25,16 +26,16 @@ const countBadgeVariants = cva(
         dot: "size-2",
       },
       anchor: {
-        "top-right": "-top-1 -right-1",
-        "top-left": "-top-1 -left-1",
-        "bottom-right": "-right-1 -bottom-1",
-        "bottom-left": "-bottom-1 -left-1",
+        "top-end": "-end-1 -top-1",
+        "top-start": "-start-1 -top-1",
+        "bottom-end": "-end-1 -bottom-1",
+        "bottom-start": "-start-1 -bottom-1",
       },
     },
     defaultVariants: {
       color: "default",
       variant: "standard",
-      anchor: "top-right",
+      anchor: "top-end",
     },
   }
 )
@@ -56,7 +57,7 @@ function CountBadge({
   className,
   color = "default",
   variant = "standard",
-  anchor = "top-right",
+  anchor = "top-end",
   count,
   max = 99,
   showZero = false,

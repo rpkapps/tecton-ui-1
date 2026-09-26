@@ -19,25 +19,27 @@ export default function ChipDemo() {
     <div className="flex flex-col items-center gap-3">
       <ChipGroup
         aria-label="Horizons"
-        onRemove={(keys) =>
-          setHorizons((prev) => prev.filter((horizon) => !keys.has(horizon.id)))
+        onRemove={(values) =>
+          setHorizons((prev) =>
+            prev.filter((horizon) => !values.includes(horizon.id))
+          )
         }
       >
         <ChipList
           items={horizons}
-          renderEmptyState={() => (
+          empty={
             <span className="text-xs text-muted-foreground">No horizons.</span>
-          )}
+          }
         >
           {(horizon) => (
-            <Chip id={horizon.id} textValue={horizon.name} variant="info">
+            <Chip value={horizon.id} variant="info">
               {horizon.name}
             </Chip>
           )}
         </ChipList>
       </ChipGroup>
       {horizons.length < initial.length && (
-        <Button variant="ghost" size="xs" onPress={() => setHorizons(initial)}>
+        <Button variant="ghost" size="xs" onClick={() => setHorizons(initial)}>
           Reset
         </Button>
       )}

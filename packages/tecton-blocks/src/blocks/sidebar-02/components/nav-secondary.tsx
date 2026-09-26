@@ -9,6 +9,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@tecton/react/components/sidebar"
+import { Link } from "@tecton/react/tecton/link"
 
 import type { NavLink } from "../data"
 
@@ -23,7 +24,10 @@ function NavSecondary({
         <SidebarMenu>
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton href={item.url} size="sm">
+              <SidebarMenuButton
+                render={<Link href={item.url} className="hover:no-underline" />}
+                size="sm"
+              >
                 <item.icon />
                 <span>{item.title}</span>
               </SidebarMenuButton>

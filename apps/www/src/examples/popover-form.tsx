@@ -1,9 +1,10 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/popover-form.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/popover-form.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
 import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
 import { Input } from "@tecton/react/components/input"
 import {
   Popover,
+  PopoverContent,
   PopoverDescription,
   PopoverHeader,
   PopoverTitle,
@@ -13,9 +14,11 @@ import {
 export function PopoverForm() {
   return (
     <>
-      <PopoverTrigger>
-        <Button variant="outline">Open Popover</Button>
-        <Popover className="w-64" placement="bottom start">
+      <Popover>
+        <PopoverTrigger render={<Button variant="outline" />}>
+          Open Popover
+        </PopoverTrigger>
+        <PopoverContent className="w-64" align="start">
           <PopoverHeader>
             <PopoverTitle>Dimensions</PopoverTitle>
             <PopoverDescription>
@@ -36,8 +39,8 @@ export function PopoverForm() {
               <Input id="height-form" defaultValue="25px" />
             </Field>
           </FieldGroup>
-        </Popover>
-      </PopoverTrigger>
+        </PopoverContent>
+      </Popover>
     </>
   )
 }

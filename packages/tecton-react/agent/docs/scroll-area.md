@@ -3,7 +3,7 @@
 # ScrollArea — @tecton/react/components/scroll-area
 
 ```tsx
-import { ScrollArea } from "@tecton/react/components/scroll-area"
+import { ScrollArea, ScrollBar } from "@tecton/react/components/scroll-area"
 ```
 
 ## Use it when
@@ -20,10 +20,10 @@ import { ScrollArea } from "@tecton/react/components/scroll-area"
 
 ## Do
 
-- Give it a size: `h-*` or `max-h-*`, or `min-h-0 flex-1` when it is the growing child of a flex column. It only sets `overflow-auto`.
-- Scroll sideways by making the content wider than the box (`whitespace-nowrap`, or an inner `flex w-max` row); there is no `orientation` prop and no separate scrollbar part.
+- Give it a size: `h-*` or `max-h-*`, or `min-h-0 flex-1` when it is the growing child of a flex column; the viewport inside is `size-full` of it.
+- Scroll sideways by making the content wider than the box (`whitespace-nowrap`, or an inner `flex w-max` row) and adding `<ScrollBar orientation="horizontal" />` as a child.
 - Put the padding on a wrapper inside the area, so the border and the scrollbar stay outside it.
-- Add `tabIndex={0}` with `role="region"` and an `aria-label` when the content holds nothing focusable.
+- Leave focus to the component: the viewport becomes a tab stop by itself whenever it overflows.
 - Always keep the `ScrollArea` scrollbar visible as the sign that more rows exist.
 - One element owns each scroll: never put a `ScrollArea` inside a box that already scrolls, such as `PanelContent` or `AppShellMain`.
 
@@ -34,7 +34,7 @@ import { ScrollArea } from "@tecton/react/components/scroll-area"
 Wrong:
 
 ```tsx
-<div className="h-72 w-48 overflow-auto rounded-md border [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-300">
+<div className="h-72 w-48 overflow-auto rounded-md border [&::-webkit-scrollbar]:w-2 [&::-webkit-scrollbar-thumb]:bg-gray-300">
   <div className="p-4">{versions}</div>
 </div>
 ```
@@ -47,7 +47,7 @@ Correct:
 </ScrollArea>
 ```
 
-`ScrollArea` styles the real scrollbar with the standard `scrollbar-width: thin` and `scrollbar-color: var(--color-border) transparent`, so it follows the theme in every engine; the `::-webkit-scrollbar` pseudo-elements do nothing in Firefox, and `bg-gray-300` is stock Tailwind, which the reset palette turns into no CSS at all.
+`ScrollArea` hides the native bar and draws its own themed thumb (`bg-border`) in every engine; the `::-webkit-scrollbar` pseudo-elements do nothing in Firefox, and `bg-gray-300` is stock Tailwind, which the reset palette turns into no CSS at all.
 
 ### HIGH A scroll area with no height
 
@@ -67,30 +67,31 @@ Correct:
 </ScrollArea>
 ```
 
-The component is one `div` carrying `overflow-auto` and nothing else, so with no height it grows to its content, never overflows, and the whole page scrolls instead of the region.
+The viewport is `size-full` of the root, so with no height the root grows to its content, never overflows, and the whole page scrolls instead of the region.
 
-### MEDIUM A scroll region the keyboard cannot reach
+### MEDIUM Horizontal overflow with no horizontal ScrollBar
 
 Wrong:
 
 ```tsx
-<ScrollArea className="h-72 w-full rounded-md border">
-  <pre className="p-4 text-xs">{jobLog}</pre>
+<ScrollArea className="w-96 rounded-md border whitespace-nowrap">
+  <div className="flex w-max gap-4 p-4">{thumbnails}</div>
 </ScrollArea>
 ```
 
 Correct:
 
 ```tsx
-<ScrollArea tabIndex={0} role="region" aria-label="Job log" className="h-72 w-full rounded-md border">
-  <pre className="p-4 text-xs">{jobLog}</pre>
+<ScrollArea className="w-96 rounded-md border whitespace-nowrap">
+  <div className="flex w-max gap-4 p-4">{thumbnails}</div>
+  <ScrollBar orientation="horizontal" />
 </ScrollArea>
 ```
 
-`ScrollArea` ships `outline-none focus-visible:ring-[3px]` but sets no `tabIndex`, so a region whose content has no focusable children can never take focus: the ring is unreachable and the text can only be read with a pointer.
+`ScrollArea` renders only the vertical `ScrollBar` and hides the native ones, so the row still scrolls with a trackpad but shows no bar: a mouse user never learns there is more.
 
 ## Before you finish
 
-- A `ScrollArea` has a height (`h-*`, `max-h-*`, or `min-h-0 flex-1`) because it only sets `overflow-auto`, and it takes `tabIndex={0}` with `role="region"` and an `aria-label` when nothing inside it is focusable.
+- A `ScrollArea` has a height (`h-*`, `max-h-*`, or `min-h-0 flex-1`) because its viewport fills the root, and horizontal overflow adds `<ScrollBar orientation="horizontal" />`; the viewport takes focus by itself when it overflows.
 
 Related: panel, message-scroller, resizable

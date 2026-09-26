@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/bubble-reactions.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/bubble-reactions.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { toast } from "sonner"
@@ -60,7 +60,7 @@ export function BubbleReactionsDemo() {
           <Button
             variant="ghost"
             size="xs"
-            onPress={() => toast.success("You clicked yes, running command...")}
+            onClick={() => toast.success("You clicked yes, running command...")}
           >
             Yes, run it
           </Button>

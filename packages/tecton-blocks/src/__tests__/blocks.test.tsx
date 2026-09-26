@@ -57,13 +57,16 @@ describe("block chrome", () => {
     expect(map).toHaveAttribute("viewBox", "0 0 1000 600")
     expect(screen.getByText("750 m")).toBeInTheDocument()
 
+    // A disabled tool stays focusable in its toolbar: aria-disabled.
     const zoomOut = screen.getByRole("button", { name: "Zoom out" })
-    expect(zoomOut).toBeDisabled()
+    expect(zoomOut).toHaveAttribute("aria-disabled", "true")
 
     await user.click(screen.getByRole("button", { name: "Zoom in" }))
     expect(map.getAttribute("viewBox")).not.toBe("0 0 1000 600")
     expect(screen.getByText("500 m")).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: "Zoom out" })).toBeEnabled()
+    expect(
+      screen.getByRole("button", { name: "Zoom out" })
+    ).not.toHaveAttribute("aria-disabled", "true")
   })
 
   it("hides map layers from the layers menu", async () => {
@@ -92,8 +95,11 @@ describe("block chrome", () => {
 
   it("disables undo and redo on the canvas", () => {
     render(<CanvasPage />)
-    expect(screen.getByRole("button", { name: "Undo" })).toBeDisabled()
-    expect(screen.getByRole("button", { name: "Redo" })).toBeDisabled()
+    for (const name of ["Undo", "Redo"])
+      expect(screen.getByRole("button", { name })).toHaveAttribute(
+        "aria-disabled",
+        "true"
+      )
   })
 
   it("selects the section tool", async () => {

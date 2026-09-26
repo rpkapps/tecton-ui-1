@@ -1,7 +1,7 @@
 ---
 title: Kbd
 description: Used to display textual user input from keyboard.
-upstream: apps/v4/content/docs/components/aria/kbd.mdx
+upstream: apps/v4/content/docs/components/base/kbd.mdx
 ---
 
 <ComponentPreview name="kbd-demo" />
@@ -102,7 +102,13 @@ Inside a `TooltipContent` leave it alone: `Kbd` already inverts to the tooltip s
 
 <Do>
 
-Show shortcuts in the user's platform keys, ⌘ on macOS and Ctrl elsewhere (`ShortcutKeys keys="mod+k"`, not a hard-coded `Kbd`).
+A `Kbd` only shows a key: Tecton binds no shortcuts, so show one only for a key the application handles itself.
+
+</Do>
+
+<Do>
+
+Show shortcuts in the user's platform keys, ⌘ on macOS and Ctrl elsewhere, not a `Kbd` hard-coded to one platform.
 
 </Do>
 
@@ -129,7 +135,7 @@ Every shortcut shown in a `Kbd` also has a visible control that runs the same ac
 <Correct>
 
 ```tsx
-<Button variant="outline" onPress={() => setPaletteOpen(true)}>
+<Button variant="outline" onClick={() => setPaletteOpen(true)}>
   Search
   <Kbd data-icon="inline-end">⌘K</Kbd>
 </Button>
@@ -191,7 +197,7 @@ Every shortcut shown in a `Kbd` also has a visible control that runs the same ac
 
 </Correct>
 
-The button trims its trailing padding only through `has-data-[icon=inline-end]:pr-1.5`, so without the attribute the key sits in full text padding and the button grows.
+The button trims its trailing padding only through `has-data-[icon=inline-end]:pe-1.5`, so without the attribute the key sits in full text padding and the button grows.
 
 </Dont>
 

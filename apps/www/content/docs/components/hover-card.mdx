@@ -1,10 +1,7 @@
 ---
 title: Hover Card
-description: A popover that appears on hover, focus, or long press to preview content available behind a link.
-links:
-  doc: https://react-aria.adobe.com/PreviewTrigger
-  api: https://react-aria.adobe.com/PreviewTrigger#api
-upstream: apps/v4/content/docs/components/aria/hover-card.mdx
+description: For sighted users to preview content available behind a link.
+upstream: apps/v4/content/docs/components/base/hover-card.mdx
 ---
 
 <ComponentPreview
@@ -15,16 +12,20 @@ upstream: apps/v4/content/docs/components/aria/hover-card.mdx
 ## Usage
 
 ```tsx lineNumbers
-import { HoverCard, HoverCardTrigger } from "@tecton/react/components/hover-card"
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@tecton/react/components/hover-card"
 ```
 
 ```tsx lineNumbers
-<HoverCardTrigger>
-  <Button variant="link">Hover</Button>
-  <HoverCard>
+<HoverCard>
+  <HoverCardTrigger>Hover</HoverCardTrigger>
+  <HoverCardContent>
     The React Framework – created and maintained by @vercel.
-  </HoverCard>
-</HoverCardTrigger>
+  </HoverCardContent>
+</HoverCard>
 ```
 
 ## Composition
@@ -32,32 +33,36 @@ import { HoverCard, HoverCardTrigger } from "@tecton/react/components/hover-card
 Use the following composition to build a `HoverCard`:
 
 ```text
-HoverCardTrigger
-├── Button
-└── HoverCard
+HoverCard
+├── HoverCardTrigger
+└── HoverCardContent
 ```
 
 ## Trigger Delays
 
-Use `delay` and `closeDelay` on the `HoverCardTrigger` to control when the card
-opens and closes.
+Use `delay` and `closeDelay` on the trigger to control when the card opens and
+closes.
 
 ```tsx lineNumbers
-<HoverCardTrigger delay={100} closeDelay={200}>
-  <Button variant="link">Hover</Button>
-  <HoverCard>Content</HoverCard>
-</HoverCardTrigger>
+<HoverCard>
+  <HoverCardTrigger delay={100} closeDelay={200}>
+    Hover
+  </HoverCardTrigger>
+  <HoverCardContent>Content</HoverCardContent>
+</HoverCard>
 ```
 
 ## Positioning
 
-Use the `placement` prop on `HoverCard` to control placement.
+Use the `side` and `align` props on `HoverCardContent` to control placement.
 
 ```tsx lineNumbers
-<HoverCardTrigger>
-  <Button variant="link">Hover</Button>
-  <HoverCard placement="top">Content</HoverCard>
-</HoverCardTrigger>
+<HoverCard>
+  <HoverCardTrigger>Hover</HoverCardTrigger>
+  <HoverCardContent side="top" align="start">
+    Content
+  </HoverCardContent>
+</HoverCard>
 ```
 
 ## Basic
@@ -106,25 +111,25 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Wrap the trigger and the `HoverCard` in one `HoverCardTrigger` (React Aria's `PreviewTrigger`), which opens on hover, focus and long press.
+Compose `HoverCard` (the root) > `HoverCardTrigger` + `HoverCardContent`; the trigger renders an `a`, so give it the `href` it previews.
 
 </Do>
 
 <Do>
 
-Tune the timing with `delay` and `closeDelay` on `HoverCardTrigger` — the defaults are 600 ms and 200 ms.
+Tune the timing with `delay` and `closeDelay` on `HoverCardTrigger` — the defaults are 600 ms and 300 ms.
 
 </Do>
 
 <Do>
 
-Position with `placement` on `HoverCard`, and set width with `className` (`w-72`) only.
+Position with `side` / `align` on `HoverCardContent`, and set width with `className` (`w-72`) only.
 
 </Do>
 
 <Do>
 
-Make the trigger something the keyboard can reach — a `Button variant="link"` or a `Link` — so focus can open the card.
+Keep the trigger reachable by keyboard — a real link — so focus can open the card.
 
 </Do>
 
@@ -137,12 +142,10 @@ Make the trigger something the keyboard can reach — a `Button variant="link"` 
 <Wrong>
 
 ```tsx
-<HoverCardTrigger>
-  <Button variant="ghost" size="icon-sm">
-    <InfoIcon />
-  </Button>
-  <HoverCard>Reservoir pressure, measured 2025-03-14.</HoverCard>
-</HoverCardTrigger>
+<HoverCard>
+  <HoverCardTrigger render={<Button variant="ghost" size="icon-sm" />}><InfoIcon /></HoverCardTrigger>
+  <HoverCardContent>Reservoir pressure, measured 2025-03-14.</HoverCardContent>
+</HoverCard>
 ```
 
 </Wrong>
@@ -150,29 +153,29 @@ Make the trigger something the keyboard can reach — a `Button variant="link"` 
 <Correct>
 
 ```tsx
-<TooltipTrigger>
-  <Button variant="ghost" size="icon-sm" aria-label="About this reading">
+<Tooltip>
+  <TooltipTrigger render={<Button variant="ghost" size="icon-sm" aria-label="About this reading" />}>
     <InfoIcon />
-  </Button>
-  <Tooltip>Reservoir pressure, measured 2025-03-14.</Tooltip>
-</TooltipTrigger>
+  </TooltipTrigger>
+  <TooltipContent>Reservoir pressure, measured 2025-03-14.</TooltipContent>
+</Tooltip>
 ```
 
 </Correct>
 
-`PreviewTrigger` marks the button `aria-haspopup="dialog"` and only points `aria-describedby` at the card while it is open, so the icon button still reaches a screen reader with no accessible name.
+A hover card is a preview of a link's destination, not a name: the icon button still reaches a screen reader with no accessible name, and touch users never see the card.
 
 </Dont>
 
-<Dont severity="MEDIUM" title="Radix openDelay on the card">
+<Dont severity="MEDIUM" title="openDelay instead of delay on the trigger">
 
 <Wrong>
 
 ```tsx
-<HoverCardTrigger openDelay={100} closeDelay={200}>
-  <Button variant="link">@peduarte</Button>
-  <HoverCard>Joined December 2021.</HoverCard>
-</HoverCardTrigger>
+<HoverCard>
+  <HoverCardTrigger href="/people/peduarte" openDelay={100}>@peduarte</HoverCardTrigger>
+  <HoverCardContent>Joined December 2021.</HoverCardContent>
+</HoverCard>
 ```
 
 </Wrong>
@@ -180,20 +183,16 @@ Make the trigger something the keyboard can reach — a `Button variant="link"` 
 <Correct>
 
 ```tsx
-<HoverCardTrigger delay={100} closeDelay={200}>
-  <Button variant="link">@peduarte</Button>
-  <HoverCard>Joined December 2021.</HoverCard>
-</HoverCardTrigger>
+<HoverCard>
+  <HoverCardTrigger href="/people/peduarte" delay={100}>@peduarte</HoverCardTrigger>
+  <HoverCardContent>Joined December 2021.</HoverCardContent>
+</HoverCard>
 ```
 
 </Correct>
 
-React Aria's `PreviewTrigger` names the open delay `delay`; `openDelay` is dropped and the card keeps waiting the default 600 ms, which reads as the hover card being broken.
+The open delay is `delay`; `openDelay` is not a prop, so the card keeps waiting the default 600 ms, which reads as the hover card being broken.
 
 </Dont>
 
 {/* guidelines:end */}
-
-## API Reference
-
-See the [React Aria](https://react-aria.adobe.com/PreviewTrigger#api) documentation for more information.

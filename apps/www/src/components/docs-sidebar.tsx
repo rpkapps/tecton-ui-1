@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { useRouterState } from "@tanstack/react-router"
+import { Link, useRouterState } from "@tanstack/react-router"
 import type * as PageTree from "fumadocs-core/page-tree"
 
 import {
@@ -50,7 +50,7 @@ function saveScrollState(container: HTMLElement) {
 }
 
 const itemClassName =
-  "relative h-[30px] w-fit overflow-visible border border-transparent text-[0.8rem] font-medium after:absolute after:inset-x-0 after:-inset-y-1 after:z-0 after:rounded-md data-[active=true]:border-accent data-[active=true]:bg-accent"
+  "relative h-[30px] w-fit overflow-visible border border-transparent text-[0.8rem] font-medium after:absolute after:inset-x-0 after:-inset-y-1 after:z-0 after:rounded-md data-active:border-accent data-active:bg-accent"
 
 function SidebarLink({
   href,
@@ -67,7 +67,7 @@ function SidebarLink({
   return (
     <SidebarMenuItem>
       <SidebarMenuButton
-        href={href}
+        render={<Link to={href} />}
         isActive={active}
         aria-current={pathname === href ? "page" : undefined}
         className={itemClassName}
@@ -94,9 +94,7 @@ export function DocsSidebar({
     if (scrollState?.pathname === pathname) {
       container.scrollTop = scrollState.scrollTop
     } else {
-      const active = container.querySelector<HTMLElement>(
-        '[data-active="true"]'
-      )
+      const active = container.querySelector<HTMLElement>("[data-active]")
       if (active) {
         const containerRect = container.getBoundingClientRect()
         const activeRect = active.getBoundingClientRect()

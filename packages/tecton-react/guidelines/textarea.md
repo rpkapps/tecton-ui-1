@@ -23,7 +23,7 @@ related: [Field, Input, InputGroup]
 
 - Pick the surface with `variant="outline" | "filled" | "text"` — the same three axes as `Input`.
 - Set the starting height with `rows`; the box already carries `field-sizing-content` and `min-h-16` and grows from there.
-- `Textarea` renders React Aria's `TextArea`, a real `<textarea>`: use `value`, `onChange(event)`, `disabled`, `required` and `aria-invalid`.
+- `Textarea` is a real `<textarea>`: use `value`, `onChange(event)`, `disabled`, `required` and `aria-invalid`.
 - Mirror the state on the `Field`: `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid`.
 - Keep `className` to layout only — `w-full`, `col-span-2`.
 

@@ -20,10 +20,11 @@ import { Sidebar, SidebarProvider, SidebarTrigger, SidebarRail, SidebarInset, Si
 
 ## Do
 
-- Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it.
-- Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `href` for a destination and `isActive` for the current one.
+- Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it. The sidebar registers no keyboard shortcut: an application that wants one calls `toggleSidebar()` from `useSidebar()` in its own key handler.
+- Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `render={<a href="/wells" />}` (or the router's `Link`) for a destination and `isActive` for the current one.
 - Pick the behaviour with `collapsible="offcanvas" | "icon" | "none"` and the surface with `variant="sidebar" | "floating" | "inset"`.
-- Pass `tooltip="Wells"` on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone.
+- Treat `side="left" | "right"` as the physical edge: in a right-to-left layout pass `side="right"` (from `useDirection()`) to keep the sidebar at the start; the border, the rail and the collapsed tooltips follow the side.
+- Pass `tooltip="Wells"` (or `TooltipContent` props) on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone.
 - Mark the current sidebar destination with a filled icon, not by background alone: the active row's `SidebarMenuButton` has `isActive` and its Tecton glyph (`@tecton/react/icons`) takes `variant="filled"`; the other rows' glyphs stay `variant="outlined"`. `SidebarMenuButton`'s own `variant` is only `default` | `outline`.
 - Announce the current sidebar page to screen readers, not only by colour (`aria-current="page"` alongside `isActive`).
 
@@ -43,13 +44,13 @@ Correct:
 
 ```tsx
 <SidebarMenuItem>
-  <SidebarMenuButton href="/wells" isActive={pathname === "/wells"}>Wells</SidebarMenuButton>
+  <SidebarMenuButton render={<a href="/wells" />} isActive={pathname === "/wells"}>Wells</SidebarMenuButton>
 </SidebarMenuItem>
 ```
 
-`SidebarMenuButton` renders a React Aria `Link` only when it is given an `href`; without one it is a `button`, so the row is no destination for middle-click, Cmd-click or "copy link address", and `onClick` survives only as React Aria's deprecated press alias.
+`SidebarMenuButton` renders a `button` unless `render` makes it an anchor, so the row is no destination for middle-click, Cmd-click or "copy link address", and screen readers announce a button rather than a link.
 
-### HIGH Two providers sharing one cookie and one ⌘B
+### HIGH Two providers sharing one cookie
 
 Wrong:
 
@@ -62,12 +63,12 @@ Wrong:
 Correct:
 
 ```tsx
-<SidebarProvider cookieName="asset_tracker_sidebar" keyboardShortcut={false}>
+<SidebarProvider cookieName="asset_tracker_sidebar">
   <AssetTrackerSidebar />
 </SidebarProvider>
 ```
 
-Every `SidebarProvider` writes the `sidebar_state` cookie and adds a `window` keydown listener for ⌘B / Ctrl+B by default, so a rail mounted beside the shell's own overwrites the state both of them restore from and one key press toggles the pair.
+Every `SidebarProvider` writes the `sidebar_state` cookie by default, so a rail mounted beside the shell's own overwrites the state both of them restore from.
 
 ### MEDIUM A hand-built Sheet for the mobile rail
 
@@ -76,8 +77,8 @@ Wrong:
 ```tsx
 const isMobile = useIsMobile()
 return isMobile ? (
-  <Sheet isOpen={isOpen} onOpenChange={setIsOpen} side="left">
-    <SidebarMenu>{rows}</SidebarMenu>
+  <Sheet open={open} onOpenChange={setOpen}>
+    <SheetContent side="left"><SidebarMenu>{rows}</SidebarMenu></SheetContent>
   </Sheet>
 ) : (
   <Sidebar>
@@ -100,8 +101,8 @@ Correct:
 
 ## Before you finish
 
-- A routing library's link is mounted through `render={(props) => <Link {...props} />}` on `BreadcrumbLink` or `SidebarMenuButton`; there is no `asChild`, and React Aria renders a `span[role="link"]` whenever it has no `href`.
-- Every `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` is inside one `SidebarProvider` — `useSidebar` throws outside it, and a second provider fights the first over the `sidebar_state` cookie and ⌘B.
-- A navigation row is `SidebarMenuItem > SidebarMenuButton href="…"` with `isActive` on the current one, not a button with a handler.
+- A routing library's link is mounted through `render={<Link to="…" />}` on `BreadcrumbLink` or `SidebarMenuButton`; there is no `asChild`, and a `BreadcrumbSeparator` goes between items.
+- Every `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` is inside one `SidebarProvider` — `useSidebar` throws outside it, and a second provider fights the first over the `sidebar_state` cookie.
+- A navigation row is `SidebarMenuItem > SidebarMenuButton render={<a href="…" />}` with `isActive` on the current one, not a button with a handler.
 
 Related: app-shell, sheet, tree-view

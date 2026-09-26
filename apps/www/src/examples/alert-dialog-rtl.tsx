@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/alert-dialog-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/alert-dialog-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { BluetoothIcon } from "lucide-react"
@@ -11,6 +11,7 @@ import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
@@ -77,9 +78,14 @@ export function AlertDialogRtl() {
 
   return (
     <div className="flex gap-4" dir={dir}>
-      <AlertDialogTrigger>
-        <Button variant="outline">{t.showDialog}</Button>
-        <AlertDialog dir={dir} data-lang={dir === "rtl" ? language : undefined}>
+      <AlertDialog>
+        <AlertDialogTrigger render={<Button variant="outline" />}>
+          {t.showDialog}
+        </AlertDialogTrigger>
+        <AlertDialogContent
+          dir={dir}
+          data-lang={dir === "rtl" ? language : undefined}
+        >
           <AlertDialogHeader>
             <AlertDialogTitle>{t.title}</AlertDialogTitle>
             <AlertDialogDescription>{t.description}</AlertDialogDescription>
@@ -88,11 +94,13 @@ export function AlertDialogRtl() {
             <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
             <AlertDialogAction>{t.continue}</AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialog>
-      </AlertDialogTrigger>
-      <AlertDialogTrigger>
-        <Button variant="outline">{t.showDialogSm}</Button>
-        <AlertDialog
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog>
+        <AlertDialogTrigger render={<Button variant="outline" />}>
+          {t.showDialogSm}
+        </AlertDialogTrigger>
+        <AlertDialogContent
           size="sm"
           dir={dir}
           data-lang={dir === "rtl" ? language : undefined}
@@ -110,8 +118,8 @@ export function AlertDialogRtl() {
             <AlertDialogCancel>{t.dontAllow}</AlertDialogCancel>
             <AlertDialogAction>{t.allow}</AlertDialogAction>
           </AlertDialogFooter>
-        </AlertDialog>
-      </AlertDialogTrigger>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -10,6 +10,7 @@ import {
 
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -23,6 +24,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@tecton/react/components/sidebar"
+import { Link } from "@tecton/react/tecton/link"
 
 import type { RecentProject } from "../data"
 
@@ -36,36 +38,45 @@ function NavRecent({ projects }: { projects: RecentProject[] }) {
       <SidebarMenu>
         {projects.map((project) => (
           <SidebarMenuItem key={project.id}>
-            <SidebarMenuButton href={project.url}>
+            <SidebarMenuButton
+              render={
+                <Link href={project.url} className="hover:no-underline" />
+              }
+            >
               <HexagonIcon />
               <span>{project.name}</span>
             </SidebarMenuButton>
-            <DropdownMenuTrigger>
-              <SidebarMenuAction
-                showOnHover
-                aria-label={`Actions for ${project.name}`}
+            <DropdownMenu>
+              <DropdownMenuTrigger
+                render={
+                  <SidebarMenuAction
+                    showOnHover
+                    aria-label={`Actions for ${project.name}`}
+                  />
+                }
               >
                 <MoreHorizontalIcon />
-              </SidebarMenuAction>
-              <DropdownMenu
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
                 className="w-48 rounded-lg"
-                placement={isMobile ? "bottom end" : "right top"}
+                side={isMobile ? "bottom" : "inline-end"}
+                align={isMobile ? "end" : "start"}
               >
-                <DropdownMenuItem textValue="Open project">
+                <DropdownMenuItem>
                   <FolderIcon className="text-muted-foreground" />
                   <span>Open project</span>
                 </DropdownMenuItem>
-                <DropdownMenuItem textValue="Share">
+                <DropdownMenuItem>
                   <Share2Icon className="text-muted-foreground" />
                   <span>Share</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem textValue="Add to favourites">
+                <DropdownMenuItem>
                   <StarIcon className="text-muted-foreground" />
                   <span>Add to favourites</span>
                 </DropdownMenuItem>
-              </DropdownMenu>
-            </DropdownMenuTrigger>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </SidebarMenuItem>
         ))}
         <SidebarMenuItem>

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/badge-colors.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/badge-colors.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Badge } from "@tecton/react/components/badge"
 
 export function BadgeCustomColors() {

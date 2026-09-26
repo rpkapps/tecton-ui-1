@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
 # Local build of the shadcn registry with the Tecton overlay. It clones
 # shadcn-ui/ui at the commit pinned in docs/UPSTREAM.md, applies the overlay in
-# scripts/registry-mirror/overlay (the `tecton` style and the variant patches to
-# a few aria base sources), builds the `aria-tecton` registry with the upstream
-# build script and serves it on http://127.0.0.1:4000.
+# scripts/registry-mirror/overlay (the `tecton` style and the Tecton patches to
+# a few Base UI base sources), builds the `base-tecton` registry with the
+# upstream build script and serves it on http://127.0.0.1:4000.
 #
-# The `aria-tecton` style exists only here, so every shadcn CLI command that
+# The `base-tecton` style exists only here, so every shadcn CLI command that
 # touches packages/tecton-react must run against this mirror:
 #   REGISTRY_URL=http://127.0.0.1:4000/r pnpm dlx shadcn@4.21.0 add <item> -c packages/tecton-react
 #
@@ -23,7 +23,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 MIRROR_DIR="${SHADCN_MIRROR_DIR:-$ROOT/.cache/shadcn-ui}"
 UPSTREAM_SHA="$(sed -n 's/^- Commit: `\([0-9a-f]*\)`.*/\1/p' "$ROOT/docs/UPSTREAM.md")"
-STYLE="${SHADCN_STYLE:-aria-tecton}"
+STYLE="${SHADCN_STYLE:-base-tecton}"
 OVERLAY="$ROOT/scripts/registry-mirror/overlay"
 # Where the overlay may patch upstream sources. The files it actually touches
 # are derived, never listed: `overlay` resets whatever differs from the pinned
@@ -107,8 +107,8 @@ check_cn_classes() {
   local allowlist leftovers
   allowlist="$(sed -n '/^const ALLOWLIST = new Set(\[/,/^\])/p' "$transform" | grep -o '"cn-[A-Za-z0-9_-]*"' | tr -d '"' || true)"
   leftovers="$(grep -o '\bcn-[A-Za-z0-9_-]*' "$out"/*.json | sort -u |
-    awk -F: -v allowlist="$allowlist" '
-      BEGIN { n = split(allowlist, a, "\n"); for (i = 1; i <= n; i++) allowed[a[i]] = 1 }
+    ALLOWLIST="$allowlist" awk -F: '
+      BEGIN { n = split(ENVIRON["ALLOWLIST"], a, "\n"); for (i = 1; i <= n; i++) allowed[a[i]] = 1 }
       !($2 in allowed)' || true)"
   if [ -n "$leftovers" ]; then
     echo "error: cn-* classes survived the $STYLE registry build (never inlined, no CSS):" >&2

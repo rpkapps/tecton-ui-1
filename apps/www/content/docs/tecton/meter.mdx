@@ -1,12 +1,9 @@
 ---
 title: Meter
 description: "Segmented gauge for risk, complexity and confidence readouts, with automatic colour by value."
-links:
-  doc: https://react-aria.adobe.com/Meter
 ---
 
 <ComponentPreview name="meter-demo" />
-
 
 ## Usage
 
@@ -18,37 +15,25 @@ import { Meter } from "@tecton/react/tecton/meter"
 <Meter label="Drilling complexity" value={60} valueLabel="Medium" color="auto" />
 ```
 
-<Callout>
-  The segmented gauge from the FDA and Well Design cards has no shadcn equivalent; [Progress](/docs/components/progress) is kept for task progress.
-</Callout>
+A meter shows a level; for task progress use [Progress](/docs/components/progress). `showValue` prints the formatted value at the end of the label row, and `valueLabel` replaces it with your own text ("Medium"). A string `valueLabel` is also what screen readers announce, instead of a percentage.
 
 ## Segments
 
-Use `segments` to control the number of blocks; `segments={1}` renders a continuous bar. Partially filled segments show the exact value.
+`segments` sets the number of blocks; `segments={1}` is a continuous bar. A partly filled segment shows the exact value.
 
 <ComponentPreview name="meter-segments" />
 
 ## Auto color
 
-Use `color="auto"` to pick `success`, `warning` or `error` from the value (below 34 %, below 67 %, otherwise).
+`color="auto"` picks `success` below 34 %, `warning` below 67 % and `error` above.
 
 <ComponentPreview name="meter-auto-color" />
 
 ## Colors
 
-Or use a fixed `color`.
+A fixed `color`; `custom` fills from the `--meter-fill` CSS variable.
 
 <ComponentPreview name="meter-colors" />
-
-## Sizes
-
-Use the `size` prop for the track height.
-
-<ComponentPreview name="meter-sizes" />
-
-## Value label
-
-`showValue` prints the formatted value at the end of the label row; `valueLabel` replaces it with your own text ("Medium", "High"). A string or number `valueLabel` is also what assistive technology announces (`aria-valuetext`), so the spoken value matches the one on screen instead of a percentage. A `valueLabel` that is a React node is shown but not announced; the percentage is announced then.
 
 {/* guidelines:start */}
 
@@ -72,13 +57,13 @@ Use the `size` prop for the track height.
 
 <Do>
 
-Name it: `label` renders the React Aria `Label`; use `aria-label` when the name is already beside it.
+Name it: `label` renders the visible label that names the meter; use `aria-label` when the name is already beside it.
 
 </Do>
 
 <Do>
 
-State the scale with `minValue` and `maxValue` whenever it is not 0–100; the segments fill from the percentage.
+State the scale with `min` and `max` whenever it is not 0–100; the segments fill from the percentage.
 
 </Do>
 
@@ -139,12 +124,12 @@ The segments are plain `span`s and `role="meter"` takes no name from them, so wi
 <Correct>
 
 ```tsx
-<Meter label="Confidence" value={4} maxValue={5} showValue />
+<Meter label="Confidence" value={4} max={5} showValue />
 ```
 
 </Correct>
 
-React Aria's `Meter` defaults to `maxValue={100}`, so a 4-out-of-5 score fills 4 % of the track and is announced as 4 %.
+`max` defaults to `100`, so a 4-out-of-5 score fills 4 % of the track and is announced as 4 %.
 
 </Dont>
 
@@ -170,7 +155,7 @@ React Aria's `Meter` defaults to `maxValue={100}`, so a 4-out-of-5 score fills 4
 
 </Correct>
 
-`color="auto"` already applies the 34 / 67 thresholds to the percentage, so the hand-written ternary duplicates a design-system decision and disagrees with it as soon as `minValue` or `maxValue` is not 0–100.
+`color="auto"` already applies the 34 / 67 thresholds to the percentage, so the hand-written ternary duplicates a design-system decision and disagrees with it as soon as `min` or `max` is not 0–100.
 
 </Dont>
 
@@ -202,13 +187,17 @@ React Aria's `Meter` defaults to `maxValue={100}`, so a 4-out-of-5 score fills 4
 
 ### Meter
 
-React Aria [`Meter`](https://react-aria.adobe.com/Meter); accepts all its props (`value`, `minValue`, `maxValue`, `formatOptions`…).
+A `div` with `role="meter"`; accepts `div` props.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
+| `value` | `number` | - | Current value. |
+| `min` / `max` | `number` | `0` / `100` | Scale of `value`. |
+| `format` | `Intl.NumberFormatOptions` | percent | Format of the shown and announced value. |
+| `locale` | `Intl.LocalesArgument` | runtime locale | Locale of the formatted value. |
 | `label` | `ReactNode` | - | Visible label; use `aria-label` otherwise. |
-| `segments` | `number` | 5 | Number of blocks; `1` for a continuous bar. |
-| `color` | `"default" \| "success" \| "warning" \| "error" \| "info" \| "auto" \| "custom"` | "default" | Fill colour. `custom` fills from the `--meter-fill` CSS variable. |
-| `size` | `"sm" \| "md" \| "lg"` | "md" | Track height 4 / 6 / 10 px. |
-| `showValue` | `boolean` | false | Show the formatted value at the end of the label row. |
-| `valueLabel` | `ReactNode` | - | Custom value text (e.g. "High"), shown at the end of the label row. A string or number also becomes `aria-valuetext`. |
+| `segments` | `number` | `5` | Number of blocks. |
+| `color` | `"default" \| "success" \| "warning" \| "error" \| "info" \| "auto" \| "custom"` | `"default"` | Fill colour. |
+| `size` | `"sm" \| "md" \| "lg"` | `"md"` | Track height 4 / 6 / 10 px. |
+| `showValue` | `boolean` | `false` | Show the formatted value. |
+| `valueLabel` | `ReactNode` | - | Custom value text; a string or number is also announced. |

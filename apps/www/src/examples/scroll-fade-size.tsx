@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/scroll-fade-size.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/scroll-fade-size.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 export function ScrollFadeSize() {
   return (
     <div className="mx-auto flex w-full max-w-xs flex-col gap-6">

@@ -12,7 +12,7 @@ import {
 } from "@tecton/react/components/breadcrumb"
 import { Button } from "@tecton/react/components/button"
 import { Separator } from "@tecton/react/components/separator"
-import { Sheet, SheetTitle } from "@tecton/react/components/sheet"
+import { Sheet, SheetContent, SheetTitle } from "@tecton/react/components/sheet"
 import {
   SidebarInset,
   SidebarProvider,
@@ -24,6 +24,8 @@ import {
   AppShellSplitPanel,
   useMinWidth,
 } from "@tecton/react/tecton/app-shell"
+import { Link } from "@tecton/react/tecton/link"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { NavRail } from "./components/nav-rail"
 import { ToolPanel } from "./components/tool-panel"
@@ -39,6 +41,8 @@ export default function Page() {
   const [panelOpen, setPanelOpen] = React.useState(true)
   // Narrow screens open the panel in a sheet, on request only.
   const [sheetOpen, setSheetOpen] = React.useState(false)
+  // The panel sits on the end edge; `side` is physical.
+  const sheetSide = useDirection() === "rtl" ? "left" : "right"
   const [well, setWell] = React.useState<WellProperties>(defaultWell)
   // The tool panel is a resizable split on `lg` and up only.
   const isWide = useMinWidth(1024)
@@ -55,7 +59,7 @@ export default function Page() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:inline-flex">
-              <BreadcrumbLink href="#">Wells</BreadcrumbLink>
+              <BreadcrumbLink render={<Link href="#" />}>Wells</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbItem>
               <BreadcrumbPage>{well.name}</BreadcrumbPage>
@@ -68,9 +72,9 @@ export default function Page() {
             size="icon-sm"
             className="ms-auto"
             aria-label="Open well properties"
-            onPress={() => (isWide ? setPanelOpen(true) : setSheetOpen(true))}
+            onClick={() => (isWide ? setPanelOpen(true) : setSheetOpen(true))}
           >
-            <PanelRightOpenIcon />
+            <PanelRightOpenIcon className="rtl:rotate-180" />
           </Button>
         )}
       </header>
@@ -105,18 +109,19 @@ export default function Page() {
       ) : (
         inset
       )}
-      <Sheet
-        isOpen={sheetOpen && !isWide}
-        onOpenChange={setSheetOpen}
-        showCloseButton={false}
-        className="gap-0"
-      >
-        <SheetTitle className="sr-only">Well properties</SheetTitle>
-        <ToolPanel
-          value={well}
-          onChange={setWell}
-          onClose={() => setSheetOpen(false)}
-        />
+      <Sheet open={sheetOpen && !isWide} onOpenChange={setSheetOpen}>
+        <SheetContent
+          side={sheetSide}
+          showCloseButton={false}
+          className="gap-0"
+        >
+          <SheetTitle className="sr-only">Well properties</SheetTitle>
+          <ToolPanel
+            value={well}
+            onChange={setWell}
+            onClose={() => setSheetOpen(false)}
+          />
+        </SheetContent>
       </Sheet>
     </SidebarProvider>
   )

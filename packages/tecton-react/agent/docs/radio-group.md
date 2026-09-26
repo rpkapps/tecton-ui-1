@@ -20,27 +20,19 @@ import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group
 
 ## Do
 
-- Drive it with `value` / `defaultValue` / `onChange` on `RadioGroup`; React Aria hands you the string, not an event.
+- Drive it with `value` / `defaultValue` / `onValueChange` on `RadioGroup`; the handler receives the value, not an event.
 - Give each `RadioGroupItem` a `value`; add `id` only so a `FieldLabel htmlFor` can point at it.
 - Name the group with `aria-label`, or wrap it in `FieldSet` and `FieldLegend`.
-- Disable everything with `isDisabled` on the group, one option with `isDisabled` on the item.
-- Mark errors with `isInvalid` on the group and `data-invalid` on each `Field` row.
+- Disable everything with `disabled` on the group, one option with `disabled` on the item.
+- Mark errors with `aria-invalid` on the group and `data-invalid` on each `Field` row.
 - Preselect the sensible default option; leave the group empty only when the answer is optional or a default would bias it.
 - Lay radio options side by side only for up to four short labels; otherwise keep them stacked.
 
 ## Don't
 
-### CRITICAL Radix onValueChange instead of onChange
+### CRITICAL onChange instead of onValueChange on the group
 
 Wrong:
-
-```tsx
-<RadioGroup aria-label="Density" value={density} onValueChange={setDensity}>
-  <RadioGroupItem value="compact" id="density-compact" />
-</RadioGroup>
-```
-
-Correct:
 
 ```tsx
 <RadioGroup aria-label="Density" value={density} onChange={setDensity}>
@@ -48,7 +40,15 @@ Correct:
 </RadioGroup>
 ```
 
-React Aria's `RadioGroup` reports the new value through `onChange`; `onValueChange` is not part of its props, so it is dropped and a controlled group can never leave its initial value.
+Correct:
+
+```tsx
+<RadioGroup aria-label="Density" value={density} onValueChange={setDensity}>
+  <RadioGroupItem value="compact" id="density-compact" />
+</RadioGroup>
+```
+
+`RadioGroup` reports the new value through `onValueChange`; `onChange` is the DOM change event bubbling from the hidden input, so `setDensity` receives an event object and a controlled group never shows the new value.
 
 ### HIGH Keying radio items with id instead of value
 
@@ -70,7 +70,7 @@ Correct:
 </RadioGroup>
 ```
 
-Unlike the collection components, a `Radio` identifies itself to its group by `value` and `id` is only the DOM id used by `htmlFor`, so nothing matches `defaultValue` and no option renders as selected.
+An item identifies itself to its group by `value` and `id` is only the DOM id used by `htmlFor`, so nothing matches `defaultValue` and no option renders as selected.
 
 ### MEDIUM A radio group with no accessible name
 
@@ -97,8 +97,9 @@ Correct:
 
 ## Before you finish
 
-- `RadioGroup` is the exception: each `RadioGroupItem` identifies itself by `value` and the group reports through `onChange`, with `id` used only so a `FieldLabel htmlFor` can reach it.
-- Every group carries a name: `aria-label` on `Combobox`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
+- `Select`, `Combobox`, `RadioGroup`, `Tabs` and `ToggleGroup` are driven by `value` / `defaultValue` / `onValueChange`, and `Select`'s handler is handed `null` when nothing is selected, so it narrows that instead of casting it away with `as`.
+- Items identify themselves by `value` on `SelectItem`, `ComboboxItem`, `RadioGroupItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `id`, `selectedKey` and `onSelectionChange` are not props of any of them.
+- Every group carries a name: `aria-label` on `ComboboxInput`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
 - Label each radio option, toggle-group item and tab in one to three words that set it apart; detail goes in a description.
 
 Related: select, toggle-group

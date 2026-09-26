@@ -1,0 +1,225 @@
+---
+title: Tecton Provider
+description: "The one provider a Tecton application mounts: locale, reading direction, client-side router and the element overlays portal into."
+---
+
+## Usage
+
+```tsx
+import { TectonProvider } from "@tecton/react/tecton/provider"
+```
+
+```tsx
+<html lang="ar-EG" dir="rtl">
+  <body>
+    <TectonProvider locale="ar-EG">
+      <App />
+    </TectonProvider>
+  </body>
+</html>
+```
+
+Mount it once at the root. It renders no element, so set the same `dir` and `lang` on `<html>` for the document's own text flow. Without a provider, components read left to right in the browser's locale, links do full page loads and overlays portal into `document.body`.
+
+## Direction and locale
+
+`locale` also sets the direction: `ar`, `he`, `fa`, `ur` and the other right-to-left languages give `rtl`. `direction` overrides it. In your own components read them with `useDirection()` or `useLocale()`, not from `document.dir`.
+
+A nested provider inherits every value it does not set, so a subtree changes only what differs:
+
+```tsx
+<TectonProvider locale="en-US" navigate={navigate}>
+  <App>
+    <TectonProvider locale="he-IL">
+      <TranslationPane /> {/* he-IL, rtl, same router */}
+    </TectonProvider>
+  </App>
+</TectonProvider>
+```
+
+## Router
+
+Pass your router's `navigate` and `useHref` and Tecton links navigate client-side; modified clicks, `target="_blank"`, downloads and other origins are left to the browser. `navigate` receives the link's `href`; `useHref` turns it into the rendered URL, adding a base path. With TanStack Router:
+
+```tsx title="src/routes/__root.tsx"
+import { Outlet, useRouter } from "@tanstack/react-router"
+import { TectonProvider } from "@tecton/react/tecton/provider"
+
+function Root() {
+  const router = useRouter()
+  return (
+    <TectonProvider
+      navigate={(href, options) =>
+        router.navigate({ to: href, ...(options as object) })
+      }
+      useHref={(href) => router.buildLocation({ to: href }).href}
+    >
+      <Outlet />
+    </TectonProvider>
+  )
+}
+```
+
+## Overlay container
+
+Overlays (dialogs, sheets, popovers, menus, tooltips, selects) portal into `document.body`. `portalContainer` changes that for the subtree: an element, or a function returning one when it only exists after the first render (`() => hostRef.current`); `null` restores `document.body`. A single-root application does not need it: an independently mounted application uses [Theme Root](/docs/tecton/theme-root), which manages the container for you (see [Micro-frontends](/docs/micro-frontends)).
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- Any Tecton application: mounted once at the root, it carries the locale, the reading direction and the client-side router every component reads.
+- The application, or one subtree, reads right to left or in another language than the browser's.
+- Overlays have to portal into a particular element instead of `document.body`.
+
+### Not for
+
+- the root of an independently deployed application, overlay container included: use [ThemeRoot](/docs/tecton/theme-root)
+- a dark or light island inside the application: use [ThemeRoot](/docs/tecton/theme-root)
+- a link that navigates with the router: use [Link](/docs/tecton/link)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Mount one `TectonProvider` above the router outlet and set the same `dir` and `lang` on `<html>`, so the document's own text flow and scrollbars match.
+
+</Do>
+
+<Do>
+
+Pass `locale` when you have one — it sets the direction too — and `direction` only to override it.
+
+</Do>
+
+<Do>
+
+Hand the router over once with `navigate` and `useHref`; Tecton links then navigate without a page load and still open in a new tab on ⌘/Ctrl-click.
+
+</Do>
+
+<Do>
+
+Nest a second provider for a subtree that differs: it inherits every value it does not set.
+
+</Do>
+
+<Do>
+
+Read the direction with `useDirection()` (`"ltr" | "rtl"`) in components of your own, never from `document.dir`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="A dir attribute instead of TectonProvider">
+
+<Wrong>
+
+```tsx
+<div dir="rtl">
+  <App />
+</div>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+import { TectonProvider } from "@tecton/react/tecton/provider"
+
+<TectonProvider locale="ar-EG">
+  <App />
+</TectonProvider>
+```
+
+</Correct>
+
+`dir` flips the text flow, but Tecton components read the direction from the provider: without it, arrow keys in menus, sliders, tabs and the tree view, overlay placement and `useDirection()` all stay left to right.
+
+</Dont>
+
+<Dont severity="HIGH" title="The router's navigate passed through unchanged">
+
+<Wrong>
+
+```tsx
+<TectonProvider navigate={router.navigate}>
+  <App />
+</TectonProvider>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<TectonProvider
+  navigate={(href, options) => router.navigate({ to: href, ...(options as object) })}
+  useHref={(href) => router.buildLocation({ to: href }).href}
+>
+  <App />
+</TectonProvider>
+```
+
+</Correct>
+
+`navigate` is called with the link's `href` string, while TanStack Router's `navigate` takes an options object, so the string is read as options without a `to` and every link click lands on the current page.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="document.body as the portal container of a mounted remote">
+
+<Wrong>
+
+```tsx
+<TectonProvider portalContainer={document.body}>
+  <AssetTracker />
+</TectonProvider>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<ThemeRoot className="mfe-a">
+  <AssetTracker />
+</ThemeRoot>
+```
+
+</Correct>
+
+A remote's utilities are wrapped in `@scope (.mfe-a) to ([data-tecton-root])`, so its overlays have to land in a container carrying that class and marker; `ThemeRoot` creates, syncs and removes one and passes it to its own `TectonProvider`.
+
+</Dont>
+
+{/* guidelines:end */}
+
+## API Reference
+
+### TectonProvider
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `locale` | `string` | inherited, else the browser's | BCP 47 language tag; also sets the direction. |
+| `direction` | `"ltr" \| "rtl"` | from `locale`, else inherited, else `"ltr"` | Reading direction. |
+| `navigate` | `(href: string, options?: unknown) => void` | inherited | Client-side navigation for Tecton links. |
+| `useHref` | `(href: string) => string` | inherited | Turns a router path into the rendered `href`. |
+| `portalContainer` | `HTMLElement \| null \| (() => HTMLElement \| null)` | inherited, else `document.body` | Element overlays portal into. |
+| `children` | `ReactNode` | - | The application. |
+
+### useDirection
+
+`useDirection(): "ltr" | "rtl"` — the direction in scope.
+
+### useLocale
+
+`useLocale(): { locale: string; direction: "ltr" | "rtl" }` — the locale and direction in scope.

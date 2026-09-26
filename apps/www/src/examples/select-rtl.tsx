@@ -1,8 +1,7 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/select-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/select-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
-import { type Key } from "react-aria-components"
 
 import {
   useTranslation,
@@ -73,7 +72,7 @@ const translations: Translations = {
 
 export function SelectRtl() {
   const { dir, t, language } = useTranslation(translations, "ar")
-  const [selectedFruit, setSelectedFruit] = React.useState<Key | null>(null)
+  const [selectedFruit, setSelectedFruit] = React.useState<string | null>(null)
 
   const fruits = [
     { label: t.apple, value: "apple" },
@@ -89,23 +88,26 @@ export function SelectRtl() {
     { label: t.spinach, value: "spinach" },
   ]
 
-  const allItems = [...fruits, ...vegetables]
+  const allItems = [
+    { label: t.selectFruit, value: null },
+    ...fruits,
+    ...vegetables,
+  ]
 
   return (
     <Select
+      items={allItems}
       value={selectedFruit}
-      onChange={setSelectedFruit}
-      placeholder={t.selectFruit}
-      className="w-32"
+      onValueChange={setSelectedFruit}
     >
-      <SelectTrigger dir={dir}>
+      <SelectTrigger className="w-32" dir={dir}>
         <SelectValue />
       </SelectTrigger>
       <SelectContent dir={dir} data-lang={dir === "rtl" ? language : undefined}>
         <SelectGroup>
           <SelectLabel>{t.fruits}</SelectLabel>
           {fruits.map((item) => (
-            <SelectItem key={item.value} id={item.value}>
+            <SelectItem key={item.value} value={item.value}>
               {item.label}
             </SelectItem>
           ))}
@@ -114,7 +116,7 @@ export function SelectRtl() {
         <SelectGroup>
           <SelectLabel>{t.vegetables}</SelectLabel>
           {vegetables.map((item) => (
-            <SelectItem key={item.value} id={item.value}>
+            <SelectItem key={item.value} value={item.value}>
               {item.label}
             </SelectItem>
           ))}

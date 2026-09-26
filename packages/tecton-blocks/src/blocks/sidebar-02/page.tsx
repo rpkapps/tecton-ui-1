@@ -13,6 +13,7 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@tecton/react/components/sidebar"
+import { Link } from "@tecton/react/tecton/link"
 
 import { AppSidebar } from "./components/app-sidebar"
 import { breadcrumbs } from "./data"
@@ -40,7 +41,7 @@ export default function Page() {
                     key={crumb.title}
                     className="hidden md:inline-flex"
                   >
-                    <BreadcrumbLink href={crumb.url}>
+                    <BreadcrumbLink render={<Link href={crumb.url} />}>
                       {crumb.title}
                     </BreadcrumbLink>
                   </BreadcrumbItem>

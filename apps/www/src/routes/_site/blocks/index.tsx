@@ -1,7 +1,7 @@
 import * as React from "react"
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 
-import { LinkButton } from "@tecton/react/components/button"
+import { buttonVariants } from "@tecton/react/components/button"
 import {
   PageHeader,
   PageHeaderActions,
@@ -62,7 +62,9 @@ function BlocksIndex() {
     <div className="flex flex-col">
       <PageHeader className="py-8 md:py-10">
         <PageHeaderContent>
-          <PageHeaderTitle>Building blocks for Tecton apps</PageHeaderTitle>
+          <PageHeaderTitle className="whitespace-normal">
+            Building blocks for Tecton apps
+          </PageHeaderTitle>
           <PageHeaderDescription>
             Reusable application patterns built from Tecton components: panels,
             comparison tables, KPI cards and full page layouts. Preview a block
@@ -70,12 +72,16 @@ function BlocksIndex() {
           </PageHeaderDescription>
         </PageHeaderContent>
         <PageHeaderActions>
-          <LinkButton href="#blocks" size="sm">
+          <a href="#blocks" className={buttonVariants({ size: "sm" })}>
             Browse blocks
-          </LinkButton>
-          <LinkButton href="/docs/cli" variant="ghost" size="sm">
+          </a>
+          <Link
+            to="/docs/$"
+            params={{ _splat: "cli" }}
+            className={buttonVariants({ variant: "ghost", size: "sm" })}
+          >
             Using the CLI
-          </LinkButton>
+          </Link>
         </PageHeaderActions>
       </PageHeader>
 

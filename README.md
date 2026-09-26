@@ -1,13 +1,14 @@
 # Tecton UI
 
-Enterprise React component library for **Tecton**, built on [shadcn/ui](https://ui.shadcn.com) with the **React Aria** base. Consumers see Tecton branding and `@tecton/react` imports; underneath, every standard component is the shadcn/ui implementation, installed and updated with the shadcn CLI from a Tecton **style** (`aria-tecton`) that is built exactly like upstream's own presets. Colours, radii and fonts come from the shadcn CSS variables; everything else Tecton-specific (focus ring, hover colours, the extra variants) is Tailwind class lists in that style.
+React component library for the **Tecton** design system, built on [shadcn/ui](https://ui.shadcn.com). Applications import everything from `@tecton/react`. Underneath, every standard component is the shadcn/ui implementation, installed and updated with the shadcn CLI from a Tecton **style** (`base-tecton`) built exactly like upstream's own presets.
 
 ```
-apps/www                 TanStack Start documentation site (docs, blocks, themes, registry host)
-packages/tecton-react    @tecton/react (private) — components, Tecton components, icons, theme
-packages/tecton-blocks   @tecton/blocks (private) — the blocks and the @tecton registry build
-docs/                    UPSTREAM.md (pinned shadcn commit), TOKEN-MAPPING.md (generated)
-scripts/                 registry mirror, generated-file integrity check
+apps/www                 Documentation site (TanStack Start): docs, blocks, themes, registry host
+packages/tecton-react    @tecton/react (private): components, Tecton components, icons, theme
+packages/tecton-blocks   @tecton/blocks (private): the blocks and the @tecton registry build
+docs/                    UPSTREAM.md (pinned shadcn commit), TOKEN-MAPPING.md (generated),
+                         OVERFLOW-RULES.md (the Overflow contract)
+scripts/                 Registry mirror, generated-file check, package rename
 tecton-screenshots/      Tecton Storybook captures used as the visual reference
 ```
 
@@ -15,58 +16,52 @@ tecton-screenshots/      Tecton Storybook captures used as the visual reference
 
 ```bash
 pnpm install
-pnpm dev                       # docs site on http://localhost:3000
-pnpm build                     # typecheck + build (site prerendered to apps/www/dist)
+pnpm dev      # docs site on http://localhost:3000
+pnpm build    # builds every workspace package
 ```
 
-Requirements: Node ≥ 20, pnpm 10, [bun](https://bun.sh) for the maintenance scripts.
+Requirements: Node 22.22+ / 24.15+ / 26+, pnpm 10, [bun](https://bun.sh) for the maintenance scripts.
 
 ## Using the library
 
-`@tecton/react` is private. Consume it as a workspace package, a packed tarball (`pnpm --filter @tecton/react pack`) or through a private registry — see the [Installation](apps/www/content/docs/installation.mdx) page. Components are not installed one by one. The docs site serves a shadcn registry (`/r/{name}.json`, namespace `@tecton`) for the **blocks** only; they live in `packages/tecton-blocks` and the copies import the components from the package.
+`@tecton/react` is private: consume it as a workspace package, a packed tarball or through a private registry (see [Installation](apps/www/content/docs/installation.mdx)).
 
 ```tsx
 import "@tecton/react/globals.css"
 
-import { Button } from "@tecton/react/components/button" // shadcn/ui (React Aria base)
-import { Chip } from "@tecton/react/tecton/chip"         // Tecton-specific component
+import { Button } from "@tecton/react/components/button" // shadcn/ui component
+import { Chip } from "@tecton/react/tecton/chip"         // Tecton component
 import { WellIcon } from "@tecton/react/icons"            // Tecton icon set
 ```
 
-Building with a coding agent? Run `npx @tanstack/intent@latest install` once in the consuming app so it loads the [shipped Agent Skills](apps/www/content/docs/agents.mdx) instead of guessing from a stock shadcn/Radix prior.
-
-An application mounted inside another one (a Module Federation remote, an embedded widget) imports `@tecton/react/styles/scoped.css` instead of `globals.css` — utilities only, the shell keeps the variables — and runs `@tecton/react/postcss/scope` after `@tailwindcss/postcss`, which wraps its output in `@scope (.mfe-a) to ([data-tecton-root])` so two copies of the library in one document stop repainting each other. The Module Federation entries the host and the remote have to agree on ship as data too, `@tecton/react/federation/shared`. See [Micro-frontends](apps/www/content/docs/micro-frontends.mdx); the two modules themselves are `packages/tecton-react/postcss/scope.mjs` and `packages/tecton-react/federation/shared.mjs`.
+Blocks are the only items published to a shadcn registry (`/r/{name}.json`, namespace `@tecton`); the copies import the components from the package. An application mounted inside another one uses `@tecton/react/styles/scoped.css` and the `@tecton/react/postcss/scope` plugin instead of `globals.css` (see [Micro-frontends](apps/www/content/docs/micro-frontends.mdx)). Coding agents get one Agent Skill and the `tecton` lookup command (see [AI agents](apps/www/content/docs/agents.mdx)).
 
 ## Design rules
 
-1. **Generated files are never edited.** `packages/tecton-react/src/{components,hooks,lib}/**` and the scaffold of `src/styles/globals.css` come from `shadcn add`. `pnpm generated:check` diffs every item against the registry.
-2. **The Tecton style is a shadcn preset.** Upstream authors each preset as a CSS file of Tailwind `@apply` lists that its build inlines into the component sources. `scripts/registry-mirror/overlay/` holds `style-tecton.css` (Vega plus the Tecton deviations) and a small patch adding variant axes to `alert`, `badge`, `separator`, `input`, `textarea` and `select`. The mirror builds `aria-tecton` from it and the CLI installs the result. No `.style-*`, `[data-slot]` or `@layer` overrides exist.
-3. **Only the shadcn CSS variables carry colours.** `tokens/tecton.map.json` maps Tecton tokens to `--background`, `--primary`, … with a confidence per value. `pnpm tokens:build` patches the variable values in `globals.css` (and nothing else); `pnpm tokens:check` verifies completeness and WCAG contrast.
-4. **The Tecton colour ramps are the Tailwind palette.** `tokens/tecton.tokens.json` (Figma variables export) provides fifteen 23-step contrast ramps; `tokens:build` writes them to `src/styles/tecton-palette.css` as `--color-<family>-<step>` after resetting Tailwind's stock palette (`--color-*: initial`), so `bg-blue-560` is a Tecton colour and `bg-red-500` produces nothing. A step is a contrast level that switches value with the mode, so no `dark:` pairs are needed. Docs: `/docs/theming#palette`.
-5. **A Tecton component exists only when shadcn has no counterpart.** Chip (selectable / removable tags), CountBadge, CircularProgress, Meter, ColorSwatch, TreeView, Stat, Panel, PageHeader, AppShell, CopyButton and Link live in `src/tecton/` and compose the generated components. Alerts with a severity, dividers with an emphasis, filled inputs, status badges and floating action buttons are variants of the shadcn components; data tables are built with TanStack Table on the shadcn `Table` (the docs carry the recipes).
-6. **Only blocks are published to the registry.** They are copy-paste snippets and live in their own package, `packages/tecton-blocks`; components ship in `@tecton/react` so every application runs the same themed build and upgrades with it. `registry:build` fails if a non-block item ever reaches `registry.json`.
+1. **Generated files are never edited.** `packages/tecton-react/src/{components,hooks,lib}/**` and the scaffold of `src/styles/globals.css` come from `shadcn add`; `pnpm generated:check` diffs every item against the registry.
+2. **The Tecton style is a shadcn preset.** `scripts/registry-mirror/overlay/` holds `style-tecton.css` (Vega plus the Tecton deviations) and `tecton.patch` (the extra variant axes). The mirror builds `base-tecton` from it and the CLI installs the result. No `.style-*`, `[data-slot]` or `@layer` overrides exist.
+3. **Only the shadcn CSS variables carry the theme.** `tokens/tecton.map.json` maps Tecton tokens to `--background`, `--primary`, …; `pnpm tokens:build` patches the values in `globals.css`, `pnpm tokens:check` verifies completeness and WCAG contrast.
+4. **The Tailwind palette is Tecton's.** The Figma export `tokens/tecton.tokens.json` becomes `--color-<family>-<step>` after `--color-*: initial`, so `bg-blue-560` is a Tecton colour and `bg-red-500` produces nothing. Steps are contrast levels that switch with the mode: no `dark:` pairs.
+5. **A Tecton component exists only when shadcn has no counterpart.** Chip, TreeView, Meter, Stat, Panel, AppShell… live in `src/tecton/`. A Tecton look for a shadcn component is a variant in the overlay, never a second component.
+6. **Only blocks are published to the registry.** Components ship in `@tecton/react` so every application runs the same themed build; `registry:build` fails if a non-block item reaches `registry.json`.
 7. **Dark first.** Both modes come from the Tecton token export; applications default to dark.
-8. **Every component has a usage guideline.** `packages/tecton-react/guidelines/<component>.md` is written once and rendered twice: as the "Usage guidelines" section on the component's docs page, and as what the `tecton docs <id>` command prints to coding agents (`tecton search` finds it). The package ships one Agent Skill, `skills/tecton`, that points agents at the command. Docs: `/docs/agents`.
+8. **Every component has a usage guideline** in `packages/tecton-react/guidelines/`, rendered on its docs page and printed by `tecton docs <id>`.
 
 ## Maintenance scripts
 
 | Command | Purpose |
 | --- | --- |
-| `pnpm --filter @tecton/react build` | Compile the publishable output to `dist/{components,tecton,hooks,lib,icons,styles}` (unbundled ESM + `.d.ts`); `pnpm build:lib` from the root |
-| `pnpm --filter @tecton/react exports:build` / `exports:check` | Regenerate / verify the enumerated `exports` map in the package manifest |
+| `pnpm build:lib` | Compile `@tecton/react` to `dist/` (unbundled ESM + `.d.ts`) |
+| `pnpm --filter @tecton/react exports:build` / `exports:check` | Regenerate / verify the `exports` map |
 | `pnpm tokens:build` / `pnpm tokens:check` | Regenerate / verify the theme from the token map |
-| `pnpm generated:check` | Verify no generated component was hand-edited |
-| `pnpm registry:build` / `pnpm registry:validate` | Build / validate the `@tecton` blocks registry (`packages/tecton-blocks`) into `apps/www/public/r` |
-| `pnpm docs:sync` | Sync shadcn docs pages + examples for the React Aria base |
-| `pnpm --filter @tecton/react guidelines:check` | Verify the component usage guidelines |
-| `pnpm --filter @tecton/react agent:build` | Regenerate the `tecton search` / `tecton docs` index in `packages/tecton-react/agent` from the guidelines and `guidelines/topics` (`agent:check` verifies) |
-| `pnpm --filter www docs:guidelines` | Sync the guideline files into each component's docs page "Usage guidelines" section (`--check` verifies) |
-| `pnpm --filter @tecton/react icons:build` | Regenerate icon components from the Tecton export in `icons-src/tecton/` |
-| `pnpm compare` | Playwright captures of the state matrices next to the Storybook screenshots |
-| `scripts/registry-mirror.sh` | Builds and serves the shadcn registry with the Tecton overlay (`aria-tecton`); required for every CLI command |
+| `pnpm generated:check` | Verify no generated component was hand-edited (needs the mirror) |
+| `pnpm registry:build` / `pnpm registry:validate` | Build / validate the `@tecton` blocks registry into `apps/www/public/r` |
+| `pnpm docs:sync` | Sync the shadcn docs pages and examples of the `base` base |
+| `pnpm --filter @tecton/react guidelines:check` | Verify the usage guidelines |
+| `pnpm --filter @tecton/react agent:build` / `agent:check` | Regenerate / verify the `tecton search` / `tecton docs` index |
+| `pnpm --filter www docs:guidelines` | Sync the guidelines into the docs pages (`--check` verifies) |
+| `pnpm --filter @tecton/react icons:build` | Regenerate the icon components from `icons-src/tecton/` |
+| `pnpm compare` | Playwright captures next to the Storybook screenshots |
+| `scripts/registry-mirror.sh` | Build and serve the `base-tecton` registry; required for every shadcn CLI command |
 
 `docs/UPSTREAM.md` records the pinned shadcn/ui commit and the exact generation commands.
-
-## Status / open items
-
-- **Icons:** the 18 domain glyphs are generated from the Tecton icon export vendored in `packages/tecton-react/icons-src/tecton/`; the set's general-purpose glyphs are not vendored at all, because lucide-react already covers them. Replace those files with a newer export and run `icons:build`.

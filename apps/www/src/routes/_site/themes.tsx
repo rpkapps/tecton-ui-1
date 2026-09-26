@@ -125,14 +125,14 @@ function ThemesPage() {
             </span>
             <ToggleGroup
               aria-label="Mode"
-              selectionMode="single"
-              selectedKeys={mounted && mode ? [mode] : []}
-              disallowEmptySelection
-              onSelectionChange={(keys) => setTheme(String([...keys][0]))}
+              value={mounted && mode ? [mode] : []}
+              onValueChange={(value) => {
+                if (value[0]) setTheme(value[0])
+              }}
             >
-              <ToggleGroupItem id="dark">Dark</ToggleGroupItem>
-              <ToggleGroupItem id="light">Light</ToggleGroupItem>
-              <ToggleGroupItem id="system">System</ToggleGroupItem>
+              <ToggleGroupItem value="dark">Dark</ToggleGroupItem>
+              <ToggleGroupItem value="light">Light</ToggleGroupItem>
+              <ToggleGroupItem value="system">System</ToggleGroupItem>
             </ToggleGroup>
           </div>
           <div className="flex flex-col gap-2">
@@ -141,13 +141,14 @@ function ThemesPage() {
             </span>
             <ToggleGroup
               aria-label="Radius"
-              selectionMode="single"
-              selectedKeys={[radius]}
-              disallowEmptySelection
-              onSelectionChange={(keys) => setRadius(String([...keys][0]))}
+              className="flex-wrap"
+              value={[radius]}
+              onValueChange={(value) => {
+                if (value[0]) setRadius(value[0])
+              }}
             >
               {radii.map((r) => (
-                <ToggleGroupItem key={r.value} id={r.value}>
+                <ToggleGroupItem key={r.value} value={r.value}>
                   {r.label}
                 </ToggleGroupItem>
               ))}
@@ -201,11 +202,11 @@ function ThemesPage() {
             </Badge>
             <Input placeholder="Input" aria-label="Input" className="w-40" />
             <div className="flex items-center gap-2">
-              <Checkbox id="themes-checkbox" defaultSelected />
+              <Checkbox id="themes-checkbox" defaultChecked />
               <Label htmlFor="themes-checkbox">Checkbox</Label>
             </div>
             <div className="flex items-center gap-2">
-              <Switch id="themes-switch" defaultSelected />
+              <Switch id="themes-switch" defaultChecked />
               <Label htmlFor="themes-switch">Switch</Label>
             </div>
           </div>
@@ -234,13 +235,13 @@ function ThemesPage() {
             Copy CSS
           </CopyButton>
         </div>
-        <Tabs defaultSelectedKey="css" className="gap-3">
+        <Tabs defaultValue="css" className="gap-3">
           <TabsList variant="line" className="h-8">
-            <TabsTrigger id="css">tecton-theme.css</TabsTrigger>
-            <TabsTrigger id="json">registry item</TabsTrigger>
-            <TabsTrigger id="table">mapping</TabsTrigger>
+            <TabsTrigger value="css">tecton-theme.css</TabsTrigger>
+            <TabsTrigger value="json">registry item</TabsTrigger>
+            <TabsTrigger value="table">mapping</TabsTrigger>
           </TabsList>
-          <TabsContent id="css">
+          <TabsContent value="css">
             <CodeBlock
               code={themeCss}
               lang="css"
@@ -248,7 +249,7 @@ function ThemesPage() {
               className="[&_pre]:max-h-[32rem]"
             />
           </TabsContent>
-          <TabsContent id="json">
+          <TabsContent value="json">
             <CodeBlock
               code={JSON.stringify(theme, null, 2)}
               lang="json"
@@ -256,7 +257,7 @@ function ThemesPage() {
               className="[&_pre]:max-h-[32rem]"
             />
           </TabsContent>
-          <TabsContent id="table">
+          <TabsContent value="table">
             <TokenTable compact />
           </TabsContent>
         </Tabs>

@@ -15,7 +15,7 @@ export default function ColorSwatchLabels() {
           key={item.name}
           color={item.color}
           label={item.name}
-          value={item.color}
+          detail={item.color}
         />
       ))}
     </div>

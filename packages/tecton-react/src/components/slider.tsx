@@ -1,59 +1,54 @@
-"use client"
-
+import { Slider as SliderPrimitive } from "@base-ui/react/slider"
 import { cn } from "cn"
-import {
-  SliderFill,
-  Slider as SliderPrimitive,
-  SliderThumb,
-  SliderTrack,
-  type SliderProps as SliderPrimitiveProps,
-} from "react-aria-components"
 
-type SliderValue = number | number[]
-type SliderProps<T extends SliderValue = SliderValue> = Omit<
-  SliderPrimitiveProps<T>,
-  "className"
-> & {
-  className?: string
-}
-
-function Slider<T extends SliderValue = SliderValue>({
+function Slider({
   className,
+  defaultValue,
+  value,
+  min = 0,
+  max = 100,
+  "aria-label": ariaLabel,
   ...props
-}: SliderProps<T>) {
+}: SliderPrimitive.Root.Props) {
+  const _values = Array.isArray(value)
+    ? value
+    : Array.isArray(defaultValue)
+      ? defaultValue
+      : [min, max]
+
   return (
-    <SliderPrimitive
-      className={cn(
-        "group relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col",
-        className
-      )}
+    <SliderPrimitive.Root
+      className={cn("data-horizontal:w-full data-vertical:h-full", className)}
       data-slot="slider"
+      defaultValue={defaultValue}
+      value={value}
+      min={min}
+      max={max}
+      thumbAlignment="edge"
       {...props}
     >
-      {({ state }) => {
-        return (
-          <>
-            <SliderTrack
-              data-slot="slider-track"
-              className="bg-slider/60 relative grow overflow-hidden rounded-full select-none data-horizontal:h-1 data-horizontal:w-full data-vertical:h-full data-vertical:w-1"
-            >
-              <SliderFill
-                data-slot="slider-range"
-                className="bg-slider absolute select-none data-horizontal:h-full data-vertical:w-full"
-              />
-            </SliderTrack>
-            {state.values.map((_, index) => (
-              <SliderThumb
-                data-slot="slider-thumb"
-                key={index}
-                index={index}
-                className="bg-slider ring-slider/30 block size-5 shrink-0 rounded-full transition-[color,box-shadow] select-none group-data-horizontal:top-[50%] group-data-vertical:left-[50%] hover:ring-4 data-focus-visible:ring-2 data-focus-visible:ring-ring data-disabled:pointer-events-none"
-              />
-            ))}
-          </>
-        )
-      }}
-    </SliderPrimitive>
+      <SliderPrimitive.Control className="relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col">
+        <SliderPrimitive.Track
+          data-slot="slider-track"
+          className="bg-slider/60 relative grow overflow-hidden rounded-full select-none data-horizontal:h-1 data-horizontal:w-full data-vertical:h-full data-vertical:w-1"
+        >
+          <SliderPrimitive.Indicator
+            data-slot="slider-range"
+            className="bg-slider select-none data-horizontal:h-full data-vertical:w-full"
+          />
+        </SliderPrimitive.Track>
+        {Array.from({ length: _values.length }, (_, index) => (
+          <SliderPrimitive.Thumb
+            data-slot="slider-thumb"
+            key={index}
+            // The root passes its `aria-labelledby` to the thumbs' range
+            // inputs but not its `aria-label`, so name each thumb here.
+            aria-label={ariaLabel}
+            className="bg-slider ring-slider/30 block size-5 shrink-0 rounded-full transition-[color,box-shadow] select-none hover:ring-4 has-focus-visible:ring-2 has-focus-visible:ring-ring data-disabled:pointer-events-none"
+          />
+        ))}
+      </SliderPrimitive.Control>
+    </SliderPrimitive.Root>
   )
 }
 

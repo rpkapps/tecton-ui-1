@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/spinner-input-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/spinner-input-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { ArrowUpIcon } from "lucide-react"
 
 import {

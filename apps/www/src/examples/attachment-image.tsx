@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/attachment-image.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/attachment-image.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { XIcon } from "lucide-react"
 
 import {
@@ -53,15 +53,14 @@ export function AttachmentImage() {
               </AttachmentAction>
             </AttachmentActions>
             <AttachmentTrigger
-              render={(props) => (
+              render={
                 <a
-                  {...props}
                   href={image.src}
                   target="_blank"
                   rel="noreferrer"
                   aria-label={`Open ${image.name}`}
                 />
-              )}
+              }
             />
           </Attachment>
         ))}

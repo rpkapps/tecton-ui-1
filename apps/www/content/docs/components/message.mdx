@@ -1,7 +1,7 @@
 ---
 title: Message
 description: Displays a message in a conversation, with optional avatar, header, footer, and alignment.
-upstream: apps/v4/content/docs/components/aria/message.mdx
+upstream: apps/v4/content/docs/components/base/message.mdx
 ---
 
 <ComponentPreview
@@ -273,7 +273,7 @@ Show how long each finished tool call took on its `Marker` ("Queried production 
     <BubbleContent>{answer}</BubbleContent>
   </Bubble>
   <MessageFooter>
-    <Button variant="ghost" size="icon-sm" aria-label="Copy" onPress={copy}>
+    <Button variant="ghost" size="icon-sm" aria-label="Copy" onClick={copy}>
       <CopyIcon />
     </Button>
   </MessageFooter>

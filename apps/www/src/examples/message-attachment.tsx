@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/message-attachment.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/message-attachment.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { DownloadIcon, FileTextIcon } from "lucide-react"
@@ -54,6 +54,7 @@ export function MessageAttachmentDemo() {
             <AttachmentActions>
               <AttachmentAction
                 type="button"
+                title="Download"
                 aria-label="Download"
                 size="icon-sm"
                 variant="secondary"

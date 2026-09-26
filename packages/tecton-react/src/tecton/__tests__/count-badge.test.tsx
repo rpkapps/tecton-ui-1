@@ -112,10 +112,10 @@ describe("CountBadge", () => {
   })
 
   it.each([
-    ["top-right", "-top-1 -right-1"],
-    ["top-left", "-top-1 -left-1"],
-    ["bottom-right", "-right-1 -bottom-1"],
-    ["bottom-left", "-bottom-1 -left-1"],
+    ["top-end", "-top-1 -end-1"],
+    ["top-start", "-top-1 -start-1"],
+    ["bottom-end", "-end-1 -bottom-1"],
+    ["bottom-start", "-bottom-1 -start-1"],
   ] as const)("anchor=%s positions the badge", (anchor, classes) => {
     const { container } = render(
       <CountBadge count={1} anchor={anchor}>
@@ -124,6 +124,35 @@ describe("CountBadge", () => {
     )
     expect(badge(container)).toHaveClass(...classes.split(" "))
   })
+
+  it("defaults to the top-end corner", () => {
+    const { container } = render(<CountBadge count={1}>x</CountBadge>)
+    expect(badge(container)).toHaveClass("-top-1", "-end-1")
+  })
+
+  it.each([
+    ["top-end", "-end-1"],
+    ["top-start", "-start-1"],
+    ["bottom-end", "-end-1"],
+    ["bottom-start", "-start-1"],
+  ] as const)(
+    "anchor=%s uses a logical inset that mirrors in RTL",
+    (anchor, inset) => {
+      const { container } = render(
+        <div dir="rtl">
+          <CountBadge count={1} anchor={anchor}>
+            x
+          </CountBadge>
+        </div>
+      )
+      const el = badge(container)
+      expect(el).toHaveClass(inset)
+      // No physical left/right inset: the corner flips with the direction.
+      expect(
+        [...(el?.classList ?? [])].filter((c) => /^-?(left|right)-/.test(c))
+      ).toEqual([])
+    }
+  )
 
   it("applies the colour variant", () => {
     const { container } = render(

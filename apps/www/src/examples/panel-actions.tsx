@@ -52,7 +52,7 @@ export default function PanelActionsExample() {
                 {actions.map(({ id, label, icon: Icon, priority }) => (
                   <OverflowItem
                     key={id}
-                    id={id}
+                    value={id}
                     label={label}
                     icon={<Icon />}
                     priority={priority}

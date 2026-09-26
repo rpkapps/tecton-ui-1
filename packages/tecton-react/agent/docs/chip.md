@@ -20,11 +20,11 @@ import { Chip, ChipGroup, ChipList, ChipRemove } from "@tecton/react/tecton/chip
 
 ## Do
 
-- Compose `ChipGroup > ChipList > Chip` and give the group an `aria-label`: React Aria puts that name on the `ChipList`, which is the `role="grid"`.
-- Turn on removal with `onRemove` on the `ChipGroup`; the `ChipRemove` button and the Backspace and Delete keys come with it.
-- Turn on selection with `selectionMode="single" | "multiple"` plus `selectedKeys` and `onSelectionChange` on the group; `isDisabled` disables one chip.
-- Give every `Chip` an `id` — it is the key in `onSelectionChange` and `onRemove` — and a `textValue` when the children are not plain text.
-- Take the look from the Badge axes: `variant`, `appearance="outline"`, `size`. `className` is for layout only.
+- Compose `ChipGroup > ChipList > Chip` and name the group with `aria-label`; the list is the `role="grid"` it names.
+- Give every `Chip` a `value`: it is what `value`, `onValueChange` and `onRemove` hold. Add a `label` when the children are not plain text.
+- Turn on selection with `selectionMode="single" | "multiple"` and `value` / `onValueChange` (or `defaultValue`) on the group; `disabled` on a chip or on the whole group.
+- Turn on removal with `onRemove` on the group: every chip gets its remove button, and Delete or Backspace removes the focused one.
+- Take the look from the Badge axes: `variant`, `appearance="outline"`, `size`. `className` is for layout only; style state with `data-[selected]:` (shadcn's `data-selected:` matches only `"true"`), `data-disabled`, `:hover` and `:focus-visible`.
 - Use a `Chip` only to select or remove a value; actions are a `Button`, destinations a `Link`, even when small.
 - Use at most two or three chip colours in one `ChipGroup`, each with one fixed meaning; beyond that, distinguish with text.
 - Give the `ComboboxChipsInput` a placeholder naming what can be added ("Add wells…").
@@ -38,7 +38,7 @@ Wrong:
 
 ```tsx
 <div className="flex flex-wrap gap-1.5">
-  <Chip id="sandstone" variant="info">Sandstone</Chip>
+  <Chip value="sandstone" variant="info">Sandstone</Chip>
 </div>
 ```
 
@@ -47,12 +47,12 @@ Correct:
 ```tsx
 <ChipGroup aria-label="Facies" selectionMode="multiple">
   <ChipList>
-    <Chip id="sandstone" variant="info">Sandstone</Chip>
+    <Chip value="sandstone" variant="info">Sandstone</Chip>
   </ChipList>
 </ChipGroup>
 ```
 
-`Chip` is a React Aria `Tag`, a collection item that only the owning `TagList` builds and renders, so outside a `ChipList` it throws "cannot be rendered outside a collection" and takes the surrounding tree down with it.
+A `Chip` is a row of the group's grid: outside a `ChipList` there is no grid to build it into, so it throws and takes the surrounding tree down with it.
 
 ### HIGH Building the remove button by hand
 
@@ -61,9 +61,9 @@ Wrong:
 ```tsx
 <ChipGroup aria-label="Horizons">
   <ChipList>
-    <Chip id="balder">
+    <Chip value="balder">
       Top Balder
-      <Button variant="ghost" size="icon-xs" onPress={() => remove("balder")}><XIcon /></Button>
+      <Button variant="ghost" size="icon-xs" onClick={() => remove("balder")}><XIcon /></Button>
     </Chip>
   </ChipList>
 </ChipGroup>
@@ -72,35 +72,35 @@ Wrong:
 Correct:
 
 ```tsx
-<ChipGroup aria-label="Horizons" onRemove={(keys) => remove([...keys])}>
+<ChipGroup aria-label="Horizons" onRemove={(values) => remove(values)}>
   <ChipList>
-    <Chip id="balder">Top Balder</Chip>
+    <Chip value="balder">Top Balder</Chip>
   </ChipList>
 </ChipGroup>
 ```
 
-`onRemove` on the group is what makes a chip removable — it renders `ChipRemove` and binds Backspace and Delete — so a nested button removes the chip by mouse only and adds a focus stop the tag's own key handling does not expect.
+`onRemove` on the group renders a named remove button in every chip and binds Delete and Backspace; a nested button removes by mouse only and adds a focus stop the grid's arrow keys do not expect.
 
 ### HIGH Colouring a chip with className
 
 Wrong:
 
 ```tsx
-<Chip id="fault" className="bg-orange-500 text-white">Fault seal</Chip>
+<Chip value="fault" className="bg-orange-500 text-white">Fault seal</Chip>
 ```
 
 Correct:
 
 ```tsx
-<Chip id="fault" variant="warning">Fault seal</Chip>
+<Chip value="fault" variant="warning">Fault seal</Chip>
 ```
 
-The chip's `className` is merged over `badgeVariants` by `cn`, so `bg-orange-500` replaces `bg-secondary`, and `orange` is not a Tecton family — the reset palette emits nothing and the chip loses its surface.
+The chip's `className` is merged over `badgeVariants`, so `bg-orange-500` replaces `bg-secondary`, and `orange` is not a Tecton family: the palette emits nothing and the chip loses its surface.
 
 ## Before you finish
 
 - Any label the user can select or remove is a `Chip`, not a `Badge` with a handler — `Badge` renders a `span` with no role, no `tabIndex` and no key handling.
-- Every `Chip` sits inside `ChipGroup > ChipList` and carries an `id`, with removal turned on by `onRemove` on the `ChipGroup` rather than a hand-built button.
+- Every `Chip` sits inside `ChipGroup > ChipList` and carries a `value`, with removal turned on by `onRemove` on the `ChipGroup` rather than a hand-built button.
 - A `ChipGroup` is named by `aria-label` on the group, or by `FieldSet` + `FieldLegend` when it sits in a form; it renders a `div`, so a bare `FieldLabel htmlFor` has nothing to point at.
 - Every icon or `Spinner` child of a `Badge` or a `Chip` carries `data-icon="inline-start"` or `data-icon="inline-end"` so the label trims its padding on that side.
 - A category colour that no `variant` carries is a Tecton palette pair in `className` (`bg-blue-120 text-blue-830`), never a stock Tailwind colour.

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/button-group-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/button-group-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -18,8 +18,11 @@ import { Button } from "@tecton/react/components/button"
 import { ButtonGroup } from "@tecton/react/components/button-group"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuSub,
   DropdownMenuSubContent,
@@ -43,11 +46,15 @@ export default function ButtonGroupDemo() {
       </ButtonGroup>
       <ButtonGroup>
         <Button variant="outline">Snooze</Button>
-        <DropdownMenuTrigger>
-          <Button variant="outline" size="icon" aria-label="More Options">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button variant="outline" size="icon" aria-label="More Options" />
+            }
+          >
             <MoreHorizontalIcon />
-          </Button>
-          <DropdownMenu placement="bottom end" className="w-40">
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-40">
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <MailCheckIcon />
@@ -77,14 +84,21 @@ export default function ButtonGroupDemo() {
                   <TagIcon />
                   Label As...
                 </DropdownMenuSubTrigger>
-                <DropdownMenuSubContent
-                  selectionMode="single"
-                  selectedKeys={[label]}
-                  onSelectionChange={(keys) => setLabel([...keys][0] as string)}
-                >
-                  <DropdownMenuItem id="personal">Personal</DropdownMenuItem>
-                  <DropdownMenuItem id="work">Work</DropdownMenuItem>
-                  <DropdownMenuItem id="other">Other</DropdownMenuItem>
+                <DropdownMenuSubContent>
+                  <DropdownMenuRadioGroup
+                    value={label}
+                    onValueChange={setLabel}
+                  >
+                    <DropdownMenuRadioItem value="personal">
+                      Personal
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="work">
+                      Work
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="other">
+                      Other
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
             </DropdownMenuGroup>
@@ -95,8 +109,8 @@ export default function ButtonGroupDemo() {
                 Trash
               </DropdownMenuItem>
             </DropdownMenuGroup>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </ButtonGroup>
     </ButtonGroup>
   )

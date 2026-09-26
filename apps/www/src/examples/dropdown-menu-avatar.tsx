@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dropdown-menu-avatar.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dropdown-menu-avatar.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import {
@@ -16,6 +16,7 @@ import {
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -24,14 +25,16 @@ import {
 
 export function DropdownMenuAvatar() {
   return (
-    <DropdownMenuTrigger>
-      <Button variant="ghost" size="icon" className="rounded-full">
+    <DropdownMenu>
+      <DropdownMenuTrigger
+        render={<Button variant="ghost" size="icon" className="rounded-full" />}
+      >
         <Avatar>
           <AvatarImage src="https://github.com/shadcn.png" alt="shadcn" />
           <AvatarFallback>LR</AvatarFallback>
         </Avatar>
-      </Button>
-      <DropdownMenu placement="bottom end">
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
         <DropdownMenuGroup>
           <DropdownMenuItem>
             <BadgeCheckIcon />
@@ -51,7 +54,7 @@ export function DropdownMenuAvatar() {
           <LogOutIcon />
           Sign Out
         </DropdownMenuItem>
-      </DropdownMenu>
-    </DropdownMenuTrigger>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

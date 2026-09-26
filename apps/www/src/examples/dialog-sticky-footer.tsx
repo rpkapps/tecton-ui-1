@@ -1,8 +1,9 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dialog-sticky-footer.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dialog-sticky-footer.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
   DialogClose,
+  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -12,9 +13,11 @@ import {
 
 export function DialogStickyFooter() {
   return (
-    <DialogTrigger>
-      <Button variant="outline">Sticky Footer</Button>
-      <Dialog>
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>
+        Sticky Footer
+      </DialogTrigger>
+      <DialogContent>
         <DialogHeader>
           <DialogTitle>Sticky Footer</DialogTitle>
           <DialogDescription>
@@ -36,9 +39,9 @@ export function DialogStickyFooter() {
           ))}
         </div>
         <DialogFooter>
-          <DialogClose variant="outline">Close</DialogClose>
+          <DialogClose render={<Button variant="outline" />}>Close</DialogClose>
         </DialogFooter>
-      </Dialog>
-    </DialogTrigger>
+      </DialogContent>
+    </Dialog>
   )
 }

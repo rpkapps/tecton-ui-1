@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/radio-group-fieldset.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/radio-group-fieldset.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Field,
   FieldDescription,
@@ -15,7 +15,7 @@ export function RadioGroupFieldset() {
       <FieldDescription>
         Yearly and lifetime plans offer significant savings.
       </FieldDescription>
-      <RadioGroup aria-label="Subscription Plan" defaultValue="monthly">
+      <RadioGroup defaultValue="monthly">
         <Field orientation="horizontal">
           <RadioGroupItem value="monthly" id="plan-monthly" />
           <FieldLabel htmlFor="plan-monthly" className="font-normal">

@@ -21,7 +21,7 @@ related: [ButtonGroup, DropdownMenu]
 
 ## Do
 
-- Control it with `isOpen` and dismiss with `onDismiss`; the bar owns Escape and the enter transition.
+- Control it with `open` / `onOpenChange` (called with `false` when the user dismisses it); the bar owns Escape and the enter transition.
 - Give it an `aria-label`; it renders a `div` with `role="region"`.
 - Summarise with `ActionBarSelection` (`count`, `total`, `label`, `onClear`) or with `ActionBarMessage`.
 - Put the actions in `ActionBarActions`, wrapping collapsible ones in `OverflowItem` and leaving the primary action bare.
@@ -34,16 +34,16 @@ related: [ButtonGroup, DropdownMenu]
 Wrong:
 
 ```tsx
-<ActionBar isOpen={selected.size > 0} aria-label="Selected wells">
+<ActionBar open={selected.size > 0} aria-label="Selected wells">
   <span>{selected.size} of {wells.length} selected</span>
-  <Button variant="ghost" size="sm" onPress={clear}>Clear</Button>
+  <Button variant="ghost" size="sm" onClick={clear}>Clear</Button>
 </ActionBar>
 ```
 
 Correct:
 
 ```tsx
-<ActionBar isOpen={selected.size > 0} onDismiss={clear} aria-label="Selected wells">
+<ActionBar open={selected.size > 0} onOpenChange={(open) => !open && clear()} aria-label="Selected wells">
   <ActionBarSelection count={selected.size} total={wells.length} label="wells" onClear={clear} />
 </ActionBar>
 ```
@@ -57,7 +57,7 @@ Wrong:
 ```tsx
 <ActionBarActions aria-label="Selection actions">
   <Button variant="outline" size="sm"><TagIcon data-icon="inline-start" />Add tag</Button>
-  <Button size="sm" onPress={assign}>Assign</Button>
+  <Button size="sm" onClick={assign}>Assign</Button>
 </ActionBarActions>
 ```
 
@@ -65,10 +65,10 @@ Correct:
 
 ```tsx
 <ActionBarActions aria-label="Selection actions">
-  <OverflowItem id="tag" label="Add tag" icon={<TagIcon />} onAction={addTag}>
+  <OverflowItem value="tag" label="Add tag" icon={<TagIcon />} onClick={addTag}>
     <Button variant="outline" size="sm"><TagIcon data-icon="inline-start" /><OverflowLabel>Add tag</OverflowLabel></Button>
   </OverflowItem>
-  <Button size="sm" onPress={assign}>Assign</Button>
+  <Button size="sm" onClick={assign}>Assign</Button>
 </ActionBarActions>
 ```
 

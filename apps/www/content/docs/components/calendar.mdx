@@ -2,9 +2,8 @@
 title: Calendar
 description: A calendar component that allows users to select a date or a range of dates.
 links:
-  doc: https://react-aria.adobe.com/Calendar
-  api: https://react-aria.adobe.com/Calendar#api
-upstream: apps/v4/content/docs/components/aria/calendar.mdx
+  doc: https://react-day-picker.js.org
+upstream: apps/v4/content/docs/components/base/calendar.mdx
 ---
 
 <ComponentPreview
@@ -15,30 +14,59 @@ upstream: apps/v4/content/docs/components/aria/calendar.mdx
 ## Usage
 
 ```tsx lineNumbers
-import {
-  getLocalTimeZone,
-  today,
-  type CalendarDate,
-} from "@internationalized/date"
-
 import { Calendar } from "@tecton/react/components/calendar"
 ```
 
 ```tsx lineNumbers
-const [date, setDate] = React.useState<CalendarDate | null>(
-  today(getLocalTimeZone())
-)
+const [date, setDate] = React.useState<Date | undefined>(new Date())
 
 return (
-  <Calendar value={date} onChange={setDate} className="rounded-lg border" />
+  <Calendar
+    mode="single"
+    selected={date}
+    onSelect={setDate}
+    className="rounded-lg border"
+  />
 )
 ```
 
-See the [React Aria](https://react-aria.adobe.com/Calendar) documentation for more information.
+See the [React DayPicker](https://react-day-picker.js.org) documentation for more information.
+
+## About
+
+The `Calendar` component is built on top of [React DayPicker](https://react-day-picker.js.org).
 
 ## Date Picker
 
 You can use the `<Calendar>` component to build a date picker. See the [Date Picker](/docs/components/date-picker) page for more information.
+
+## Selected Date (With TimeZone)
+
+The Calendar component accepts a `timeZone` prop to ensure dates are displayed and selected in the user's local timezone.
+
+```tsx lineNumbers
+export function CalendarWithTimezone() {
+  const [date, setDate] = React.useState<Date | undefined>(undefined)
+  const [timeZone, setTimeZone] = React.useState<string | undefined>(undefined)
+
+  React.useEffect(() => {
+    setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone)
+  }, [])
+
+  return (
+    <Calendar
+      mode="single"
+      selected={date}
+      onSelect={setDate}
+      timeZone={timeZone}
+    />
+  )
+}
+```
+
+**Note:** If you notice a selected date offset (for example, selecting the 20th highlights the 19th), make sure the `timeZone` prop is set to the user's local timezone.
+
+**Why client-side?** The timezone is detected using `Intl.DateTimeFormat().resolvedOptions().timeZone` inside a `useEffect` to ensure compatibility with server-side rendering. Detecting the timezone during render would cause hydration mismatches, as the server and client may be in different timezones.
 
 ## Basic
 
@@ -51,7 +79,7 @@ A basic calendar component. We used `className="rounded-lg border"` to style the
 
 ## Range Calendar
 
-Use the `RangeCalendar` component to enable range selection.
+Use the `mode="range"` prop to enable range selection.
 
 <ComponentPreview
   name="calendar-range"
@@ -101,8 +129,9 @@ You can customize the size of calendar cells using the `--cell-size` CSS variabl
 
 ```tsx lineNumbers
 <Calendar
-  value={date}
-  onChange={setDate}
+  mode="single"
+  selected={date}
+  onSelect={setDate}
   className="rounded-lg border [--cell-size:--spacing(11)] md:[--cell-size:--spacing(12)]"
 />
 ```
@@ -111,11 +140,21 @@ Or use fixed values:
 
 ```tsx lineNumbers
 <Calendar
-  value={date}
-  onChange={setDate}
+  mode="single"
+  selected={date}
+  onSelect={setDate}
   className="rounded-lg border [--cell-size:2.75rem] md:[--cell-size:3rem]"
 />
 ```
+
+## Week Numbers
+
+Use `showWeekNumber` to show week numbers.
+
+<ComponentPreview
+  name="calendar-week-numbers"
+  previewClassName="h-96"
+/>
 
 ## RTL
 
@@ -127,6 +166,20 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
   previewClassName="h-96"
 />
 
+When using RTL, import the locale from `react-day-picker/locale` and pass both the `locale` and `dir` props to the Calendar component:
+
+```tsx lineNumbers
+import { arSA } from "react-day-picker/locale"
+
+;<Calendar
+  mode="single"
+  selected={date}
+  onSelect={setDate}
+  locale={arSA}
+  dir="rtl"
+/>
+```
+
 {/* guidelines:start */}
 
 ## Usage guidelines
@@ -135,13 +188,12 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 - A month grid is the point: choosing a spud date, reading which days are booked, stepping through a schedule.
 - The calendar stays on the page — in a `Card`, a panel or a wizard step — rather than hiding behind a trigger.
-- Days need state the value alone cannot carry: unavailable dates, a highlighted span, two months side by side.
+- A period is chosen as two dates: `mode="range"` draws the span between them.
 
 ### Not for
 
 - a compact date field that opens a calendar on demand: use [Popover](/docs/components/popover)
 - a year or a month picked in a dense form row: use [NativeSelect](/docs/components/native-select)
-- two dates bounding a period: use [RangeCalendar](/docs/components/calendar)
 
 ### Do
 
@@ -149,7 +201,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Hold the value as an `@internationalized/date` value (a `CalendarDate`, or a `DateRange` of them) and drive it with `value` / `onChange`.
+Pick the selection with `mode="single" | "multiple" | "range"` and drive it with `selected` / `onSelect`, holding plain `Date` values (a `DateRange` `{ from, to }` for a range).
 
 </Do>
 
@@ -161,25 +213,25 @@ Show more months with `numberOfMonths`, month and year dropdowns with `captionLa
 
 <Do>
 
-Block days with `isDateUnavailable`, `minValue` and `maxValue`; they carry the struck-through and dimmed cell styling.
+Block days with `disabled` — a matcher such as `{ before: new Date() }`, `{ dayOfWeek: [0, 6] }` or a function — so they get the dimmed cell styling.
 
 </Do>
 
 <Do>
 
-Resize the grid through its variable, `className="[--cell-size:--spacing(11)]"`, and add per-day content with `renderCell`, never by restyling the cells.
+Resize the grid through its variable, `className="[--cell-size:--spacing(11)]"`; never restyle the cells.
 
 </Do>
 
 <Do>
 
-For a date field, put the `Calendar` in a `Popover` behind a `Button` inside a `Field`; there is no `DatePicker` component.
+For a date field, put the `Calendar` in a `PopoverContent` behind a `PopoverTrigger render={<Button variant="outline" />}` inside a `Field`; there is no `DatePicker` component.
 
 </Do>
 
 <Do>
 
-When days are unavailable (rig move, shutdown), say why beside the calendar or in the day; never block days unexplained (`isDateUnavailable`, not `disabled`).
+When days are unavailable (rig move, shutdown), say why beside the calendar or in the day; never block days unexplained (a `disabled` matcher, with the reason in the `footer`).
 
 </Do>
 
@@ -191,7 +243,7 @@ Let users type a date they already know or one far from today (`Input type="date
 
 <Do>
 
-An optional or filtering date gets a clear button that empties it (value `null`).
+An optional or filtering date gets a clear button that empties it (`selected` back to `undefined`).
 
 </Do>
 
@@ -199,73 +251,45 @@ An optional or filtering date gets a clear button that empties it (value `null`)
 
 ### Don't
 
-<Dont severity="CRITICAL" title="react-day-picker props on a React Aria calendar">
+<Dont severity="CRITICAL" title="value, onChange and minValue on the Calendar">
 
 <Wrong>
+
+```tsx
+<Calendar
+  value={today(getLocalTimeZone())}
+  onChange={setDate}
+  minValue={today(getLocalTimeZone())}
+/>
+```
+
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Calendar
   mode="single"
   selected={date}
   onSelect={setDate}
-  disabled={(day) => day < new Date()}
-/>
-```
-
-</Wrong>
-
-<Correct>
-
-```tsx
-<Calendar
-  value={date}
-  onChange={setDate}
-  minValue={today(getLocalTimeZone())}
+  disabled={{ before: new Date() }}
 />
 ```
 
 </Correct>
 
-This `Calendar` wraps React Aria, not react-day-picker: `mode`, `selected`, `onSelect` and `disabled` are not in `CalendarProps`, so they are filtered out before the grid renders and the calendar comes up uncontrolled with every day still selectable.
+`Calendar` takes plain `Date` values through `mode`, `selected` and `onSelect`: `value`, `onChange` and `minValue` are not its props and a `CalendarDate` from `today()` means nothing to it, so the grid renders with nothing selected, every day pickable and no callback firing.
 
 </Dont>
 
-<Dont severity="HIGH" title="A JavaScript Date as the value">
-
-<Wrong>
-
-```tsx
-const [date, setDate] = React.useState<Date>(new Date())
-
-return <Calendar value={date} onChange={setDate} />
-```
-
-</Wrong>
-
-<Correct>
-
-```tsx
-const [date, setDate] = React.useState<CalendarDate | null>(
-  today(getLocalTimeZone())
-)
-
-return <Calendar value={date} onChange={setDate} />
-```
-
-</Correct>
-
-React Aria reads `calendar`, `era`, `year`, `month` and `day` off the value and hands a `CalendarDate` back from `onChange`, so a `Date` leaves the grid with nothing selected and formatting the value again needs `date.toDate(getLocalTimeZone())`.
-
-</Dont>
-
-<Dont severity="MEDIUM" title="Two Calendars for a start and an end">
+<Dont severity="HIGH" title="Two Calendars for a start and an end">
 
 <Wrong>
 
 ```tsx
 <div className="flex gap-4">
-  <Calendar value={start} onChange={setStart} />
-  <Calendar value={end} onChange={setEnd} />
+  <Calendar mode="single" selected={start} onSelect={setStart} />
+  <Calendar mode="single" selected={end} onSelect={setEnd} />
 </div>
 ```
 
@@ -274,12 +298,34 @@ React Aria reads `calendar`, `era`, `year`, `month` and `day` off the value and 
 <Correct>
 
 ```tsx
-<RangeCalendar value={range} onChange={setRange} numberOfMonths={2} />
+<Calendar mode="range" selected={range} onSelect={setRange} numberOfMonths={2} />
 ```
 
 </Correct>
 
-`RangeCalendar` is React Aria's range widget: it owns the `data-range-start`, `data-range-middle` and `data-range-end` cell states that draw the span, and it keeps the end on or after the start — neither of which two independent single calendars can produce.
+Only `mode="range"` draws the start, middle and end cell states and keeps the end on or after the start; two single calendars let the user pick an end before the start.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Resizing the day cells with className">
+
+<Wrong>
+
+```tsx
+<Calendar mode="single" selected={date} onSelect={setDate} className="[&_button]:size-11" />
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Calendar mode="single" selected={date} onSelect={setDate} className="[--cell-size:--spacing(11)]" />
+```
+
+</Correct>
+
+The grid, the navigation buttons and the dropdowns all read `--cell-size`, so resizing only the buttons leaves the header and weekday row at the old width and misaligns the columns.
 
 </Dont>
 
@@ -287,4 +333,4 @@ React Aria reads `calendar`, `era`, `year`, `month` and `day` off the value and 
 
 ## API Reference
 
-See the [React Aria](https://react-aria.adobe.com/Calendar) documentation for more information on the `Calendar` component.
+See the [React DayPicker](https://react-day-picker.js.org) documentation for more information on the `Calendar` component.

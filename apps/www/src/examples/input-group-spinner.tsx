@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/input-group-spinner.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/input-group-spinner.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { LoaderIcon } from "lucide-react"
 
 import {

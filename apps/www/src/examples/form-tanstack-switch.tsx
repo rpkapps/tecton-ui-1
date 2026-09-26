@@ -82,9 +82,9 @@ export default function FormTanstackSwitch() {
                     <Switch
                       id="form-tanstack-switch-twoFactor"
                       name={field.name}
-                      isSelected={field.state.value}
-                      onChange={field.handleChange}
-                      onBlur={field.handleBlur}
+                      checked={field.state.value}
+                      onCheckedChange={(checked) => field.handleChange(checked)}
+                      aria-invalid={isInvalid}
                     />
                   </Field>
                 )
@@ -95,7 +95,7 @@ export default function FormTanstackSwitch() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="button" variant="outline" onPress={() => form.reset()}>
+          <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>
           <Button type="submit" form="form-tanstack-switch">

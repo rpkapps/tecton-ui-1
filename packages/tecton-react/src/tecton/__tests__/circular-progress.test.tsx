@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { CircularProgress } from "@tecton/react/tecton/circular-progress"
+import { TectonProvider } from "@tecton/react/tecton/provider"
 
 const CIRCUMFERENCE = 2 * Math.PI * 20
 
@@ -42,7 +43,7 @@ describe("CircularProgress", () => {
 
   it("spins with a quarter arc when indeterminate", () => {
     const { container } = render(
-      <CircularProgress aria-label="p" isIndeterminate />
+      <CircularProgress aria-label="p" value={null} />
     )
     expect(container.querySelector("svg")).toHaveClass("animate-spin")
     expect(
@@ -53,7 +54,7 @@ describe("CircularProgress", () => {
 
   it("slows the spin instead of running it at full speed under reduced motion", () => {
     const { container } = render(
-      <CircularProgress aria-label="p" isIndeterminate />
+      <CircularProgress aria-label="p" value={null} />
     )
     expect(container.querySelector("svg")).toHaveClass(
       "motion-reduce:animate-[spin_3s_linear_infinite]"
@@ -100,7 +101,7 @@ describe("CircularProgress", () => {
 
   it("hides showValue while indeterminate", () => {
     const { container } = render(
-      <CircularProgress aria-label="p" isIndeterminate showValue />
+      <CircularProgress aria-label="p" value={null} showValue />
     )
     expect(
       container.querySelector('[data-slot="circular-progress-value"]')
@@ -116,6 +117,48 @@ describe("CircularProgress", () => {
     expect(
       container.querySelector('[data-slot="circular-progress-value"]')
     ).toHaveTextContent("3/6")
+  })
+
+  it("shows and announces a text valueLabel instead of the percentage", () => {
+    const { container } = render(
+      <CircularProgress
+        aria-label="Wells logged"
+        value={3}
+        max={8}
+        showValue
+        valueLabel="3 of 8"
+      />
+    )
+    const bar = screen.getByRole("progressbar", { name: "Wells logged" })
+    expect(bar).toHaveAttribute("aria-valuetext", "3 of 8")
+    const centre = container.querySelector(
+      '[data-slot="circular-progress-value"]'
+    )
+    expect(centre).toHaveTextContent("3 of 8")
+    expect(centre).toHaveAttribute("aria-hidden", "true")
+  })
+
+  it("announces a valueLabel while indeterminate", () => {
+    render(
+      <CircularProgress aria-label="Sync" value={null} valueLabel="Waiting" />
+    )
+    expect(screen.getByRole("progressbar", { name: "Sync" })).toHaveAttribute(
+      "aria-valuetext",
+      "Waiting"
+    )
+  })
+
+  it("shows a node valueLabel but announces the formatted value", () => {
+    render(
+      <CircularProgress
+        aria-label="p"
+        value={50}
+        valueLabel={<strong>Half</strong>}
+      />
+    )
+    const bar = screen.getByRole("progressbar", { name: "p" })
+    expect(bar).toHaveTextContent("Half")
+    expect(bar.getAttribute("aria-valuetext")).not.toBe("Half")
   })
 
   it.each([
@@ -146,5 +189,17 @@ describe("CircularProgress", () => {
   it("merges className", () => {
     render(<CircularProgress aria-label="p" value={1} className="m-2" />)
     expect(screen.getByRole("progressbar")).toHaveClass("m-2", "relative")
+  })
+
+  it("formats the value in the provider's locale", () => {
+    render(
+      <TectonProvider locale="de-DE">
+        <CircularProgress aria-label="m" value={50} />
+      </TectonProvider>
+    )
+    expect(screen.getByRole("progressbar")).toHaveAttribute(
+      "aria-valuetext",
+      (0.5).toLocaleString("de-DE", { style: "percent" })
+    )
   })
 })

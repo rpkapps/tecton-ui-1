@@ -10,7 +10,6 @@ import {
   PencilIcon,
   TrashIcon,
 } from "lucide-react"
-import { Button as ButtonPrimitive } from "react-aria-components"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -21,6 +20,7 @@ import {
 } from "@tecton/react/components/collapsible"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -30,6 +30,7 @@ import {
   SidebarContent,
   SidebarGroup,
 } from "@tecton/react/components/sidebar"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { presets as defaultPresets } from "../data"
 import type { PresetStatus, ViewPreset } from "../data"
@@ -175,19 +176,22 @@ function PresetList({
   onSelect,
   ...props
 }: PresetListProps) {
+  // `side` is physical: the start edge is the right one in right-to-left.
+  const side = useDirection() === "rtl" ? "right" : "left"
   return (
     <Sidebar
       data-slot="preset-list"
       collapsible="offcanvas"
+      side={side}
       className={cn("border-e border-border-subtle", className)}
       {...props}
     >
       <SidebarContent className="gap-0">
-        <Collapsible defaultExpanded className="group/presets">
+        <Collapsible defaultOpen className="group/presets">
           <SidebarGroup className="py-0">
             <CollapsibleTrigger className="flex h-10 w-full items-center justify-between text-sm font-medium outline-hidden">
               Pre-sets
-              <ChevronDownIcon className="size-4 -rotate-90 text-muted-foreground transition-transform group-data-expanded/presets:rotate-0" />
+              <ChevronDownIcon className="size-4 -rotate-90 text-muted-foreground transition-transform group-data-open/presets:rotate-0" />
             </CollapsibleTrigger>
             <CollapsibleContent>
               <ul className="flex flex-col gap-2 pb-3">
@@ -203,13 +207,14 @@ function PresetList({
                           "group/card relative flex flex-col gap-2 rounded-lg border bg-card p-2 text-card-foreground transition-colors hover:bg-accent/40 data-selected:border-primary"
                         )}
                       >
-                        <ButtonPrimitive
-                          className="absolute inset-0 rounded-lg outline-hidden data-focus-visible:ring-2 data-focus-visible:ring-ring"
+                        <button
+                          type="button"
+                          className="absolute inset-0 rounded-lg outline-hidden focus-visible:ring-2 focus-visible:ring-ring"
                           aria-label={`Open ${preset.name}`}
                           aria-pressed={isSelected}
-                          onPress={() => onSelect?.(preset.id)}
+                          onClick={() => onSelect?.(preset.id)}
                         />
-                        <div className="relative aspect-[2.2] overflow-hidden rounded-md">
+                        <div className="pointer-events-none relative aspect-[2.2] overflow-hidden rounded-md">
                           <PresetSketch kind={preset.kind} />
                           <span className="absolute top-1/2 left-1/2 flex size-6 -translate-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground shadow">
                             <DatabaseIcon className="size-3" />
@@ -220,18 +225,22 @@ function PresetList({
                           <Badge variant={status.variant} size="default">
                             {status.label}
                           </Badge>
-                          <DropdownMenuTrigger>
-                            <Button
-                              variant="ghost"
-                              size="icon-xs"
-                              className="relative"
-                              aria-label={`Actions for ${preset.name}`}
+                          <DropdownMenu>
+                            <DropdownMenuTrigger
+                              render={
+                                <Button
+                                  variant="ghost"
+                                  size="icon-xs"
+                                  className="relative"
+                                  aria-label={`Actions for ${preset.name}`}
+                                />
+                              }
                             >
                               <MoreVerticalIcon />
-                            </Button>
-                            <DropdownMenu placement="bottom end">
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent side="bottom" align="end">
                               <DropdownMenuItem
-                                onAction={() => onSelect?.(preset.id)}
+                                onClick={() => onSelect?.(preset.id)}
                               >
                                 Open view
                               </DropdownMenuItem>
@@ -245,8 +254,8 @@ function PresetList({
                               <DropdownMenuItem variant="destructive">
                                 <TrashIcon /> Delete view
                               </DropdownMenuItem>
-                            </DropdownMenu>
-                          </DropdownMenuTrigger>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
                         </div>
                       </div>
                     </li>
@@ -260,7 +269,7 @@ function PresetList({
           <SidebarGroup className="py-0">
             <CollapsibleTrigger className="flex h-10 w-full items-center justify-between text-sm font-medium outline-hidden">
               Custom saved views
-              <ChevronDownIcon className="size-4 -rotate-90 text-muted-foreground transition-transform group-data-expanded/custom:rotate-0" />
+              <ChevronDownIcon className="size-4 -rotate-90 text-muted-foreground transition-transform group-data-open/custom:rotate-0" />
             </CollapsibleTrigger>
             <CollapsibleContent>
               <p className="pb-3 text-xs text-muted-foreground">

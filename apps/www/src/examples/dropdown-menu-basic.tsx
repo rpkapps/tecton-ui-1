@@ -1,9 +1,10 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dropdown-menu-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dropdown-menu-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -13,9 +14,11 @@ import {
 
 export function DropdownMenuBasic() {
   return (
-    <DropdownMenuTrigger>
-      <Button variant="outline">Open</Button>
-      <DropdownMenu>
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>
+        Open
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
         <DropdownMenuGroup>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuItem>Profile</DropdownMenuItem>
@@ -25,8 +28,8 @@ export function DropdownMenuBasic() {
         <DropdownMenuSeparator />
         <DropdownMenuItem>GitHub</DropdownMenuItem>
         <DropdownMenuItem>Support</DropdownMenuItem>
-        <DropdownMenuItem isDisabled>API</DropdownMenuItem>
-      </DropdownMenu>
-    </DropdownMenuTrigger>
+        <DropdownMenuItem disabled>API</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

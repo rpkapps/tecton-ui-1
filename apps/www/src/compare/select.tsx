@@ -39,6 +39,10 @@ const states: { label: string; state: State }[] = [
 ]
 
 const options = ["Option 1", "Option 2", "Option 3"]
+const items = options.map((label, index) => ({
+  value: String(index + 1),
+  label,
+}))
 
 function SelectCell({
   variant,
@@ -53,18 +57,18 @@ function SelectCell({
   return (
     <Field data-disabled={isDisabled} data-invalid={isInvalid}>
       <FieldLabel htmlFor={id}>Field label</FieldLabel>
-      <Select
-        defaultValue="1"
-        isDisabled={isDisabled}
-        isInvalid={isInvalid}
-        className="w-full"
-      >
-        <SelectTrigger id={id} variant={variant}>
+      <Select defaultValue="1" items={items} disabled={isDisabled}>
+        <SelectTrigger
+          id={id}
+          variant={variant}
+          aria-invalid={isInvalid || undefined}
+          className="w-full"
+        >
           <SelectValue />
         </SelectTrigger>
         <SelectContent>
           {options.map((option, index) => (
-            <SelectItem key={index} id={String(index + 1)} textValue={option}>
+            <SelectItem key={index} value={String(index + 1)}>
               <SearchIcon className="text-muted-foreground" />
               {option}
             </SelectItem>

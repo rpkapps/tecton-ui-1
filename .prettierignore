@@ -127,6 +127,7 @@ apps/www/src/examples/calendar-presets.tsx
 apps/www/src/examples/calendar-range.tsx
 apps/www/src/examples/calendar-rtl.tsx
 apps/www/src/examples/calendar-time.tsx
+apps/www/src/examples/calendar-week-numbers.tsx
 apps/www/src/examples/card-demo.tsx
 apps/www/src/examples/card-edge-to-edge.tsx
 apps/www/src/examples/card-image.tsx
@@ -160,6 +161,7 @@ apps/www/src/examples/collapsible-demo.tsx
 apps/www/src/examples/collapsible-file-tree.tsx
 apps/www/src/examples/collapsible-rtl.tsx
 apps/www/src/examples/collapsible-settings.tsx
+apps/www/src/examples/combobox-auto-highlight.tsx
 apps/www/src/examples/combobox-basic.tsx
 apps/www/src/examples/combobox-clear.tsx
 apps/www/src/examples/combobox-custom.tsx
@@ -169,6 +171,7 @@ apps/www/src/examples/combobox-groups.tsx
 apps/www/src/examples/combobox-input-group.tsx
 apps/www/src/examples/combobox-invalid.tsx
 apps/www/src/examples/combobox-multiple.tsx
+apps/www/src/examples/combobox-popup.tsx
 apps/www/src/examples/combobox-rtl.tsx
 apps/www/src/examples/command-basic.tsx
 apps/www/src/examples/command-demo.tsx
@@ -372,7 +375,7 @@ apps/www/src/examples/scroll-fade-none.tsx
 apps/www/src/examples/scroll-fade-overflow.tsx
 apps/www/src/examples/scroll-fade-rtl.tsx
 apps/www/src/examples/scroll-fade-size.tsx
-apps/www/src/examples/select-autocomplete.tsx
+apps/www/src/examples/select-align-item.tsx
 apps/www/src/examples/select-demo.tsx
 apps/www/src/examples/select-disabled.tsx
 apps/www/src/examples/select-groups.tsx

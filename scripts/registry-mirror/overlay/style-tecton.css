@@ -9,7 +9,7 @@
   }
 
   .cn-accordion-trigger {
-    @apply text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground data-pressed:bg-ghost-pressed data-pressed:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground focus-visible:ring-ring focus-visible:border-ring focus-visible:after:border-ring **:data-[slot=accordion-trigger-icon]:text-link-foreground rounded-none in-[[data-slot=accordion-item]:first-child]:rounded-t-[inherit] in-[[data-slot=accordion-item]:last-child]:not-aria-expanded:rounded-b-[inherit] px-2 py-1.5 text-left text-sm font-normal focus-visible:ring-2 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-5;
+    @apply text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground active:bg-ghost-pressed active:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground focus-visible:ring-ring focus-visible:border-ring focus-visible:after:border-ring **:data-[slot=accordion-trigger-icon]:text-link-foreground rounded-none in-[[data-slot=accordion-item]:first-child]:rounded-t-[inherit] in-[[data-slot=accordion-item]:last-child]:not-aria-expanded:rounded-b-[inherit] px-2 py-1.5 text-left text-sm font-normal focus-visible:ring-2 **:data-[slot=accordion-trigger-icon]:ml-auto **:data-[slot=accordion-trigger-icon]:size-5;
   }
 
   .cn-accordion-content {
@@ -187,19 +187,19 @@
   }
 
   .cn-button-variant-default {
-    @apply bg-primary text-primary-foreground hover:bg-primary-hover hover:text-primary-hover-foreground focus-visible:bg-primary-hover focus-visible:text-primary-hover-foreground data-pressed:bg-primary-pressed data-pressed:text-primary-pressed-foreground aria-expanded:bg-primary-active aria-expanded:text-primary-active-foreground;
+    @apply bg-primary text-primary-foreground hover:bg-primary-hover hover:text-primary-hover-foreground focus-visible:bg-primary-hover focus-visible:text-primary-hover-foreground active:bg-primary-pressed active:text-primary-pressed-foreground aria-expanded:bg-primary-active aria-expanded:text-primary-active-foreground;
   }
 
   .cn-button-variant-outline {
-    @apply border-outline-border bg-transparent text-outline-foreground hover:border-outline-hover-border hover:bg-outline-hover hover:text-outline-hover-foreground focus-visible:bg-outline-hover focus-visible:text-outline-hover-foreground data-pressed:border-outline-pressed-border data-pressed:bg-outline-pressed data-pressed:text-outline-pressed-foreground aria-expanded:border-outline-active-border aria-expanded:bg-outline-active aria-expanded:text-outline-active-foreground;
+    @apply border-outline-border bg-transparent text-outline-foreground hover:border-outline-hover-border hover:bg-outline-hover hover:text-outline-hover-foreground focus-visible:bg-outline-hover focus-visible:text-outline-hover-foreground active:border-outline-pressed-border active:bg-outline-pressed active:text-outline-pressed-foreground aria-expanded:border-outline-active-border aria-expanded:bg-outline-active aria-expanded:text-outline-active-foreground;
   }
 
   .cn-button-variant-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary-hover hover:text-secondary-hover-foreground focus-visible:bg-secondary-hover focus-visible:text-secondary-hover-foreground data-pressed:bg-secondary-pressed data-pressed:text-secondary-pressed-foreground aria-expanded:bg-secondary-active aria-expanded:text-secondary-active-foreground;
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary-hover hover:text-secondary-hover-foreground focus-visible:bg-secondary-hover focus-visible:text-secondary-hover-foreground active:bg-secondary-pressed active:text-secondary-pressed-foreground aria-expanded:bg-secondary-active aria-expanded:text-secondary-active-foreground;
   }
 
   .cn-button-variant-ghost {
-    @apply text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground data-pressed:bg-ghost-pressed data-pressed:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground;
+    @apply text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground active:bg-ghost-pressed active:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground;
   }
 
   .cn-button-variant-destructive {
@@ -207,7 +207,7 @@
   }
 
   .cn-button-variant-link {
-    @apply text-link-foreground underline-offset-4 hover:text-link-hover-foreground hover:underline data-pressed:text-link-pressed-foreground aria-expanded:text-link-active-foreground;
+    @apply text-link-foreground underline-offset-4 hover:text-link-hover-foreground hover:underline active:text-link-pressed-foreground aria-expanded:text-link-active-foreground;
   }
 
   .cn-button-size-xs {
@@ -258,7 +258,7 @@
      the member that is in a state above it. position:relative with no offsets
      moves nothing, so this costs no layout. */
   .cn-button-group {
-    @apply has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md [&:has(>[data-variant=outline],>[data-slot=input],>[data-slot=textarea],>[data-slot=select-trigger],>[data-slot=input-group],>[data-slot=button-group-text])>[data-slot=button]:not([data-variant=outline])]:border-outline-border [&_[data-slot]:is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:relative [&_[data-slot]:is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:z-10;
+    @apply has-[>[data-slot=button-group]]:gap-2 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md [&:has(>[data-variant=outline],>[data-slot=input],>[data-slot=textarea],>[data-slot=select-trigger],>[data-slot=input-group],>[data-slot=button-group-text])>[data-slot=button]:not([data-variant=outline])]:border-outline-border [&_[data-slot]:is(:hover,:focus-within,:active,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:relative [&_[data-slot]:is(:hover,:focus-within,:active,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:z-10;
   }
 
   .cn-button-group-orientation-horizontal {
@@ -552,7 +552,7 @@
   }
 
   .cn-drawer-popup {
-    @apply bg-popover text-popover-foreground text-sm data-[swipe-direction=down]:rounded-t-xl data-[swipe-direction=down]:border-t data-[swipe-direction=left]:rounded-r-xl data-[swipe-direction=left]:border-r data-[swipe-direction=right]:rounded-l-xl data-[swipe-direction=right]:border-l data-[swipe-direction=up]:rounded-b-xl data-[swipe-direction=up]:border-b;
+    @apply bg-popover text-popover-foreground text-sm data-[swipe-direction=down]:rounded-t-xl data-[swipe-direction=down]:border-t ltr:data-[swipe-direction=left]:rounded-r-xl rtl:data-[swipe-direction=left]:rounded-r-xl ltr:data-[swipe-direction=left]:border-r rtl:data-[swipe-direction=left]:border-r ltr:data-[swipe-direction=right]:rounded-l-xl rtl:data-[swipe-direction=right]:rounded-l-xl ltr:data-[swipe-direction=right]:border-l rtl:data-[swipe-direction=right]:border-l data-[swipe-direction=up]:rounded-b-xl data-[swipe-direction=up]:border-b;
   }
 
   .cn-drawer-handle {
@@ -1173,7 +1173,7 @@
   }
 
   .cn-sheet-content {
-    @apply bg-popover text-popover-foreground fixed z-50 flex flex-col gap-4 bg-clip-padding text-sm shadow-lg transition duration-200 ease-in-out data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 data-[side=left]:border-r data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 data-[side=right]:border-l data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm;
+    @apply bg-popover text-popover-foreground fixed z-50 flex flex-col gap-4 bg-clip-padding text-sm shadow-lg transition duration-200 ease-in-out data-[side=bottom]:inset-x-0 data-[side=bottom]:bottom-0 data-[side=bottom]:h-auto data-[side=bottom]:border-t data-[side=left]:inset-y-0 data-[side=left]:left-0 data-[side=left]:h-full data-[side=left]:w-3/4 ltr:data-[side=left]:border-r rtl:data-[side=left]:border-r data-[side=right]:inset-y-0 data-[side=right]:right-0 data-[side=right]:h-full data-[side=right]:w-3/4 ltr:data-[side=right]:border-l rtl:data-[side=right]:border-l data-[side=top]:inset-x-0 data-[side=top]:top-0 data-[side=top]:h-auto data-[side=top]:border-b data-[side=left]:sm:max-w-sm data-[side=right]:sm:max-w-sm;
   }
 
   .cn-sheet-close {
@@ -1328,7 +1328,7 @@
   }
 
   .cn-slider-thumb {
-    @apply bg-slider ring-slider/30 data-focus-visible:ring-ring size-5 rounded-full transition-[color,box-shadow] hover:ring-4 data-focus-visible:ring-2;
+    @apply bg-slider ring-slider/30 has-focus-visible:ring-ring size-5 rounded-full transition-[color,box-shadow] hover:ring-4 has-focus-visible:ring-2;
   }
 
   /* MARK: Toast */
@@ -1412,7 +1412,7 @@
   }
 
   .cn-tabs-trigger {
-    @apply text-link-foreground hover:text-link-hover-foreground data-selected:text-link-active-foreground after:bg-outline-active-border group-data-[variant=default]/tabs-list:data-selected:bg-secondary-active group-data-[variant=default]/tabs-list:data-selected:text-secondary-active-foreground gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium data-active:shadow-none [&_svg:not([class*='size-'])]:size-4 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5;
+    @apply text-link-foreground hover:text-link-hover-foreground data-active:text-link-active-foreground after:bg-outline-active-border group-data-[variant=default]/tabs-list:data-active:bg-secondary-active group-data-[variant=default]/tabs-list:data-active:text-secondary-active-foreground gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium data-active:shadow-none [&_svg:not([class*='size-'])]:size-4 has-data-[icon=inline-end]:pr-1.5 has-data-[icon=inline-start]:pl-1.5;
   }
 
   .cn-tabs-trigger-aria {

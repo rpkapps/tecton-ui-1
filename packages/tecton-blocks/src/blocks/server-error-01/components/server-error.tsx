@@ -9,7 +9,7 @@ import {
   RefreshCwIcon,
 } from "lucide-react"
 
-import { Button, LinkButton } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/components/button"
 import {
   Collapsible,
   CollapsibleContent,
@@ -17,6 +17,7 @@ import {
 } from "@tecton/react/components/collapsible"
 import { Spinner } from "@tecton/react/components/spinner"
 import { CopyButton } from "@tecton/react/tecton/copy-button"
+import { LinkButton } from "@tecton/react/tecton/link"
 
 import { LogTrack, LogTrackMarker } from "../../page-state/components/log-track"
 import {
@@ -88,7 +89,7 @@ function ServerError({
           </PageStateDescription>
         </PageStateHeader>
         <PageStateActions>
-          <Button onPress={retry} isDisabled={retrying}>
+          <Button onClick={retry} disabled={retrying}>
             {retrying ? (
               <Spinner />
             ) : (
@@ -110,7 +111,7 @@ function ServerError({
 
         <Collapsible className="group/details flex flex-col gap-2">
           <CollapsibleTrigger className="inline-flex w-fit cursor-pointer items-center gap-1 rounded-sm text-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring">
-            <ChevronRightIcon className="size-4 transition-transform group-data-expanded/details:rotate-90" />
+            <ChevronRightIcon className="size-4 transition-transform group-data-open/details:rotate-90 rtl:rotate-180 rtl:group-data-open/details:rotate-90" />
             Technical details
           </CollapsibleTrigger>
           <CollapsibleContent>

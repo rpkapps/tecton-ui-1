@@ -15,7 +15,7 @@ export default function LinkVariants() {
       <Link href="#" variant="subtle">
         Subtle
       </Link>
-      <Link href="#" isDisabled>
+      <Link href="#" disabled>
         Disabled
       </Link>
     </div>

@@ -73,9 +73,9 @@ const columns = columnHelper.columns([
     ),
   }),
   columnHelper.accessor("depth", {
-    header: () => <div className="text-right">TD (m)</div>,
+    header: () => <div className="text-end">TD (m)</div>,
     cell: ({ getValue }) => (
-      <div className="text-right font-mono tabular-nums">
+      <div className="text-end font-mono tabular-nums">
         {getValue().toLocaleString("en-US")}
       </div>
     ),
@@ -104,21 +104,21 @@ export default function DataTablePagination() {
       <div className="overflow-hidden rounded-md border">
         <Table aria-label="Wells">
           <TableHeader>
-            {table.getFlatHeaders().map((header) => (
-              <TableHead
-                key={header.id}
-                id={header.id}
-                isRowHeader={header.index === 0}
-              >
-                {header.isPlaceholder ? null : (
-                  <table.FlexRender header={header} />
-                )}
-              </TableHead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : (
+                      <table.FlexRender header={header} />
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
             ))}
           </TableHeader>
-          <TableBody renderEmptyState={() => "No wells."}>
+          <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} id={row.id}>
+              <TableRow key={row.id}>
                 {row.getAllCells().map((cell) => (
                   <TableCell key={cell.id}>
                     <table.FlexRender cell={cell} />
@@ -130,27 +130,25 @@ export default function DataTablePagination() {
         </Table>
       </div>
       <div className="flex flex-wrap items-center justify-end gap-4 text-sm text-muted-foreground">
-        <span className="mr-auto tabular-nums">{wells.length} wells</span>
+        <span className="me-auto tabular-nums">{wells.length} wells</span>
         <div className="flex items-center gap-2">
           <span>Rows per page</span>
           <Select
-            aria-label="Rows per page"
             value={String(pagination.pageSize)}
-            onChange={(key) => {
-              if (key == null) return
-              table.setPageSize(Number(key))
+            onValueChange={(value) => {
+              if (value) table.setPageSize(Number(value))
             }}
           >
-            <SelectTrigger size="sm" className="w-18">
+            <SelectTrigger
+              size="sm"
+              className="w-18"
+              aria-label="Rows per page"
+            >
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {pageSizes.map((size) => (
-                <SelectItem
-                  key={size}
-                  id={String(size)}
-                  textValue={String(size)}
-                >
+                <SelectItem key={size} value={String(size)}>
                   {size}
                 </SelectItem>
               ))}
@@ -165,8 +163,8 @@ export default function DataTablePagination() {
             variant="outline"
             size="icon-sm"
             aria-label="Previous page"
-            onPress={() => table.previousPage()}
-            isDisabled={!table.getCanPreviousPage()}
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
           >
             <ChevronLeftIcon />
           </Button>
@@ -174,8 +172,8 @@ export default function DataTablePagination() {
             variant="outline"
             size="icon-sm"
             aria-label="Next page"
-            onPress={() => table.nextPage()}
-            isDisabled={!table.getCanNextPage()}
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
           >
             <ChevronRightIcon />
           </Button>

@@ -13,8 +13,8 @@ export const docs = defineDocs({
   docs: {
     // Only frontmatter is loaded eagerly on the server; bodies stay lazy.
     async: true,
-    // `links` feeds the Docs / API Reference buttons of a page (React Aria,
-    // TanStack…). The default schema strips unknown keys, so it is declared.
+    // `links` feeds the Docs / API Reference buttons of a page (TanStack,
+    // Embla…). The default schema strips unknown keys, so it is declared.
     schema: pageSchema.extend({
       links: z
         .object({

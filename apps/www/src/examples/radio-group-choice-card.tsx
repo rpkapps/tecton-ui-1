@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/radio-group-choice-card.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/radio-group-choice-card.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Field,
   FieldContent,
@@ -10,7 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group
 
 export function RadioGroupChoiceCard() {
   return (
-    <RadioGroup aria-label="Plans" defaultValue="plus" className="max-w-sm">
+    <RadioGroup defaultValue="plus" className="max-w-sm">
       <FieldLabel htmlFor="plus-plan">
         <Field orientation="horizontal">
           <FieldContent>

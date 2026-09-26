@@ -18,7 +18,9 @@ import {
   type ComposerAttachmentItem,
   type ComposerCommandItem,
   type ComposerProps,
+  useComposer,
 } from "@tecton/react/tecton/composer"
+import { TectonProvider } from "@tecton/react/tecton/provider"
 
 function Chat(
   props: Partial<ComposerProps> & { attachments?: ComposerAttachmentItem[] }
@@ -34,8 +36,10 @@ function Chat(
       <ComposerField>
         <ComposerAttachments
           items={items}
-          onRemove={(id) =>
-            setItems((current) => current.filter((item) => item.id !== id))
+          onRemove={(value) =>
+            setItems((current) =>
+              current.filter((item) => item.value !== value)
+            )
           }
         />
         <ComposerInput placeholder="Ask anything" />
@@ -563,7 +567,7 @@ describe("Composer", () => {
       <Chat
         attachments={[
           {
-            id: "selection",
+            value: "selection",
             label: "Selected text",
             description: "“A-7 is flaring”",
           },
@@ -581,23 +585,165 @@ describe("Composer", () => {
     expect(screen.queryByRole("row", { name: "Selected text" })).toBeNull()
     expect(textbox()).toHaveFocus()
   })
+
+  it("moves focus to the next attachment when one of several is removed", async () => {
+    render(
+      <Chat
+        attachments={[
+          { value: "selection", label: "Selected text" },
+          { value: "well", label: "Well A-7" },
+        ]}
+      />
+    )
+    screen.getByRole("row", { name: "Selected text" }).focus()
+    await userEvent.keyboard("{Backspace}")
+
+    expect(screen.queryByRole("row", { name: "Selected text" })).toBeNull()
+    expect(screen.getByRole("row", { name: "Well A-7" })).toHaveFocus()
+  })
+
+  it("disables the textarea, the suggestions and Send with disabled", () => {
+    render(<Chat disabled defaultValue="Hi" />)
+    expect(textbox()).toBeDisabled()
+    expect(
+      screen.getByRole("button", { name: "Summarise the shift" })
+    ).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Send message" })).toBeDisabled()
+  })
+})
+
+function ToolbarChat({
+  status = "ready",
+}: {
+  status?: ComposerProps["status"]
+}) {
+  return (
+    <>
+      <button type="button">Before</button>
+      <Composer onSubmit={() => {}} status={status} onStop={() => {}}>
+        <ComposerField>
+          <ComposerInput />
+          <ComposerToolbar>
+            <button type="button">Attach</button>
+            <span>
+              <button type="button">Dictate</button>
+            </span>
+            <button type="button" disabled>
+              Unavailable
+            </button>
+            <ComposerSubmit />
+          </ComposerToolbar>
+        </ComposerField>
+      </Composer>
+      <button type="button">After</button>
+    </>
+  )
+}
+
+describe("ComposerToolbar", () => {
+  const button = (name: string) => screen.getByRole("button", { name })
+
+  it("moves between its controls, wrapped or not, with the arrow keys, Home and End", async () => {
+    render(<ToolbarChat />)
+    button("Attach").focus()
+
+    await userEvent.keyboard("{ArrowRight}")
+    expect(button("Dictate")).toHaveFocus()
+    // A disabled control is skipped.
+    await userEvent.keyboard("{ArrowRight}")
+    expect(button("Send message")).toHaveFocus()
+    // No wrapping at the ends.
+    await userEvent.keyboard("{ArrowRight}")
+    expect(button("Send message")).toHaveFocus()
+    await userEvent.keyboard("{Home}")
+    expect(button("Attach")).toHaveFocus()
+    await userEvent.keyboard("{ArrowLeft}")
+    expect(button("Attach")).toHaveFocus()
+    await userEvent.keyboard("{End}")
+    expect(button("Send message")).toHaveFocus()
+    await userEvent.keyboard("{ArrowLeft}")
+    expect(button("Dictate")).toHaveFocus()
+  })
+
+  it("reverses the arrow keys right to left", async () => {
+    render(
+      <TectonProvider direction="rtl">
+        <ToolbarChat />
+      </TectonProvider>
+    )
+    button("Attach").focus()
+    await userEvent.keyboard("{ArrowLeft}")
+    expect(button("Dictate")).toHaveFocus()
+    await userEvent.keyboard("{ArrowRight}")
+    expect(button("Attach")).toHaveFocus()
+  })
+
+  it("is one tab stop: Tab leaves from its last control, and coming back returns to the one last used", () => {
+    render(<ToolbarChat />)
+    button("Dictate").focus()
+
+    // The browser's Tab carries on from the control the toolbar moves to.
+    fireEvent.keyDown(button("Dictate"), { key: "Tab" })
+    expect(button("Send message")).toHaveFocus()
+    button("After").focus()
+    // Shift+Tab back in lands on the last control, and is sent to Dictate.
+    button("Send message").focus()
+    expect(button("Dictate")).toHaveFocus()
+
+    fireEvent.keyDown(button("Dictate"), { key: "Tab", shiftKey: true })
+    expect(button("Attach")).toHaveFocus()
+  })
+
+  it("leaves focus where a press puts it", () => {
+    render(<ToolbarChat />)
+    button("Dictate").focus()
+    button("After").focus()
+
+    fireEvent.pointerDown(button("Attach"))
+    button("Attach").focus()
+    expect(button("Attach")).toHaveFocus()
+  })
+
+  it("keeps a tab stop when Send and Stop swap", () => {
+    const { rerender } = render(<ToolbarChat />)
+    button("Send message").focus()
+    button("After").focus()
+
+    rerender(<ToolbarChat status="streaming" />)
+    // The Send it would return to is gone: focus stays where it lands.
+    button("Stop generating").focus()
+    expect(button("Stop generating")).toHaveFocus()
+    fireEvent.keyDown(button("Stop generating"), { key: "ArrowLeft" })
+    expect(button("Dictate")).toHaveFocus()
+  })
+
+  it("leaves a key from outside the toolbar's controls alone", () => {
+    render(<ToolbarChat />)
+    button("Attach").focus()
+    const toolbar = screen.getByRole("toolbar", { name: "Message actions" })
+    expect(toolbar).toHaveAttribute("aria-orientation", "horizontal")
+    expect(
+      fireEvent.keyDown(button("Attach"), { key: "ArrowRight", ctrlKey: true })
+    ).toBe(true)
+    expect(button("Attach")).toHaveFocus()
+  })
 })
 
 const COMMANDS: ComposerCommandItem[] = [
   {
-    id: "new",
+    value: "new",
     command: "new",
     label: "Start a new conversation",
     group: "Chat",
   },
   {
-    id: "ack",
+    value: "ack",
     command: "acknowledge",
     label: "Acknowledge alert",
     group: "Actions",
   },
   {
-    id: "note",
+    value: "note",
     command: "add-note",
     label: "Add a note to the well",
     group: "Actions",
@@ -716,6 +862,37 @@ describe("ComposerCommands", () => {
     expect(onCommand).toHaveBeenCalledWith(COMMANDS[2], expect.anything())
   })
 
+  it("makes the command under a mouse the active one, but not one under a touch", async () => {
+    render(<WithCommands />)
+
+    await userEvent.type(textbox(), "/")
+    const [, ack, note] = screen.getAllByRole("option")
+    fireEvent.pointerOver(note, { pointerType: "touch" })
+    expect(note).toHaveAttribute("aria-selected", "false")
+    expect(textbox()).not.toHaveAttribute("aria-activedescendant", note.id)
+
+    fireEvent.pointerOver(ack, { pointerType: "mouse" })
+    expect(ack).toHaveAttribute("aria-selected", "true")
+    expect(ack).toHaveAttribute("data-highlighted", "")
+    expect(textbox()).toHaveAttribute("aria-activedescendant", ack.id)
+  })
+
+  it("keeps focus in the textarea through a press on the list", async () => {
+    const onCommand = vi.fn()
+    render(<WithCommands onCommand={onCommand} />)
+
+    await userEvent.type(textbox(), "/")
+    const note = screen.getByRole("option", { name: /add-note/ })
+    // The press's default, which would move focus, is prevented.
+    expect(fireEvent.mouseDown(note)).toBe(false)
+    expect(fireEvent.mouseDown(screen.getByText("Actions"))).toBe(false)
+    expect(textbox()).toHaveFocus()
+
+    await userEvent.click(note)
+    expect(onCommand).toHaveBeenCalledWith(COMMANDS[2], expect.anything())
+    expect(textbox()).toHaveFocus()
+  })
+
   it("closes with Escape until the text changes, and then Enter sends as usual", async () => {
     const onSubmit = vi.fn()
     const onKeyDown = vi.fn()
@@ -799,9 +976,14 @@ describe("ComposerCommands", () => {
 
   it("lists each group once, where its best match ranks, and moves in that order", async () => {
     const items: ComposerCommandItem[] = [
-      { id: "apple", command: "apple", label: "Pick", group: "On this page" },
-      { id: "bar", command: "bar", label: "A drink", group: "Chat" },
-      { id: "cat", command: "cat", label: "Pet", group: "On this page" },
+      {
+        value: "apple",
+        command: "apple",
+        label: "Pick",
+        group: "On this page",
+      },
+      { value: "bar", command: "bar", label: "A drink", group: "Chat" },
+      { value: "cat", command: "cat", label: "Pet", group: "On this page" },
     ]
     render(
       <Composer onSubmit={() => {}}>
@@ -846,25 +1028,25 @@ describe("ComposerCommands", () => {
     // A better match from another group sits between two of "On this page".
     const items: ComposerCommandItem[] = [
       {
-        id: "new",
+        value: "new",
         command: "new",
         label: "Start a new conversation",
         group: "Chat",
       },
       {
-        id: "ack",
+        value: "ack",
         command: "acknowledge",
         label: "Acknowledge alert A-7",
         group: "On this page",
       },
       {
-        id: "note",
+        value: "note",
         command: "note",
         label: "Add a note to the well",
         group: "On this page",
       },
-      { id: "help", command: "about", label: "About the assistant" },
-      { id: "archive", command: "archive", label: "Archive this chat" },
+      { value: "help", command: "about", label: "About the assistant" },
+      { value: "archive", command: "archive", label: "Archive this chat" },
     ]
     render(<WithCommands items={items} />)
 
@@ -882,8 +1064,7 @@ describe("ComposerCommands", () => {
     ).toEqual(["/acknowledge", "/note", "/about", "/archive", "/new"])
     expect(new Set(options.map((option) => option.id)).size).toBe(5)
 
-    // The textarea names React Aria's own option ids, read from the
-    // rendered options.
+    // The textarea names the rendered options' own ids.
     const active = () =>
       document.getElementById(
         textbox().getAttribute("aria-activedescendant") ?? ""
@@ -1101,8 +1282,8 @@ describe("ComposerHint ids", () => {
 describe("ComposerCommands options", () => {
   it("gives commands whose ids differ only by spaces ids of their own", async () => {
     const items: ComposerCommandItem[] = [
-      { id: "a b", command: "alpha", label: "First" },
-      { id: "ab", command: "another", label: "Second" },
+      { value: "a b", command: "alpha", label: "First" },
+      { value: "ab", command: "another", label: "Second" },
     ]
     render(<WithCommands items={items} />)
 
@@ -1131,11 +1312,11 @@ describe("ComposerCommands options", () => {
     )
   })
 
-  it("picks the command whose id has spaces", async () => {
+  it("picks the command whose value has spaces", async () => {
     const onCommand = vi.fn()
     const items: ComposerCommandItem[] = [
-      { id: "a b", command: "alpha", label: "First" },
-      { id: "ab", command: "another", label: "Second" },
+      { value: "a b", command: "alpha", label: "First" },
+      { value: "ab", command: "another", label: "Second" },
     ]
     render(<WithCommands items={items} onCommand={onCommand} />)
 
@@ -1182,5 +1363,52 @@ describe("ComposerCommands options", () => {
       clientHeight.mockRestore()
       offsetHeight.mockRestore()
     }
+  })
+})
+
+describe("useComposer", () => {
+  function Probe() {
+    const composer = useComposer()
+    return (
+      <output data-testid="probe">
+        {JSON.stringify({
+          busy: composer.busy,
+          canSubmit: composer.canSubmit,
+          status: composer.status,
+          keys: Object.keys(composer).sort(),
+        })}
+      </output>
+    )
+  }
+
+  it("reports busy while a reply is on its way", () => {
+    const { rerender } = render(
+      <Composer onSubmit={() => {}} status="ready">
+        <Probe />
+      </Composer>
+    )
+    const read = () =>
+      JSON.parse(screen.getByTestId("probe").textContent) as {
+        busy: boolean
+        status: string
+        keys: string[]
+      }
+    expect(read().busy).toBe(false)
+    expect(read().keys).toEqual([
+      "busy",
+      "canSubmit",
+      "focus",
+      "setValue",
+      "status",
+      "stop",
+      "submit",
+      "value",
+    ])
+    rerender(
+      <Composer onSubmit={() => {}} status="streaming">
+        <Probe />
+      </Composer>
+    )
+    expect(read()).toMatchObject({ busy: true, status: "streaming" })
   })
 })

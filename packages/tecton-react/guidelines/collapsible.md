@@ -21,21 +21,19 @@ related: [Accordion, Sheet, Popover]
 
 ## Do
 
-- Control it with `isExpanded` and `onExpandedChange` on `Collapsible`, or leave it uncontrolled with `defaultExpanded`.
-- Style the trigger by giving a Tecton `Button` `slot="trigger"`; `CollapsibleTrigger` is a bare React Aria `Button` with no Tecton classes.
+- Control it with `open` and `onOpenChange` on `Collapsible`, or leave it uncontrolled with `defaultOpen`.
+- Style the trigger with `CollapsibleTrigger render={<Button variant="ghost" />}`; on its own it is an unstyled `button`.
 - Keep the revealed markup inside `CollapsibleContent`: it is the panel the trigger's `aria-expanded` and `aria-controls` refer to. `Collapsible` itself is one unstyled `div`, so its `className` is yours for the layout.
 
 ## Don't
 
-### CRITICAL Radix open and onOpenChange
+### CRITICAL isExpanded and onExpandedChange instead of open
 
 Wrong:
 
 ```tsx
-<Collapsible open={showDetail} onOpenChange={setShowDetail}>
-  <Button slot="trigger" variant="ghost" size="icon">
-    <ChevronsUpDownIcon />
-  </Button>
+<Collapsible isExpanded={showDetail} onExpandedChange={setShowDetail}>
+  <CollapsibleTrigger render={<Button variant="ghost" />}>Details</CollapsibleTrigger>
   <CollapsibleContent>{detail}</CollapsibleContent>
 </Collapsible>
 ```
@@ -43,23 +41,21 @@ Wrong:
 Correct:
 
 ```tsx
-<Collapsible isExpanded={showDetail} onExpandedChange={setShowDetail}>
-  <Button slot="trigger" variant="ghost" size="icon">
-    <ChevronsUpDownIcon />
-  </Button>
+<Collapsible open={showDetail} onOpenChange={setShowDetail}>
+  <CollapsibleTrigger render={<Button variant="ghost" />}>Details</CollapsibleTrigger>
   <CollapsibleContent>{detail}</CollapsibleContent>
 </Collapsible>
 ```
 
-`Collapsible` is a React Aria `Disclosure` and runs its props through `filterDOMProps`, which keeps only `id`, `data-*`, labelling and global DOM events: `open` and `onOpenChange` are dropped outright, so the region stays uncontrolled, `showDetail` never changes and anything else keyed off it — a chevron, a count, a Save button — never updates.
+`isExpanded` and `onExpandedChange` are not props of `Collapsible`, so the region stays uncontrolled, `showDetail` never changes and anything keyed off it — a chevron, a count, a Save button — never updates.
 
 ### HIGH Rendering the region conditionally instead of in CollapsibleContent
 
 Wrong:
 
 ```tsx
-<Collapsible isExpanded={showDetail} onExpandedChange={setShowDetail}>
-  <Button slot="trigger" variant="outline">Details</Button>
+<Collapsible open={showDetail} onOpenChange={setShowDetail}>
+  <CollapsibleTrigger render={<Button variant="outline" />}>Details</CollapsibleTrigger>
   {showDetail ? <div className="rounded-md border p-4">{detail}</div> : null}
 </Collapsible>
 ```
@@ -67,21 +63,21 @@ Wrong:
 Correct:
 
 ```tsx
-<Collapsible isExpanded={showDetail} onExpandedChange={setShowDetail}>
-  <Button slot="trigger" variant="outline">Details</Button>
+<Collapsible open={showDetail} onOpenChange={setShowDetail}>
+  <CollapsibleTrigger render={<Button variant="outline" />}>Details</CollapsibleTrigger>
   <CollapsibleContent><div className="rounded-md border p-4">{detail}</div></CollapsibleContent>
 </Collapsible>
 ```
 
-`Disclosure` hands the panel id to `CollapsibleContent` and the matching `aria-controls` to the `slot="trigger"` button, so a hand-rolled conditional leaves the trigger pointing at an element that is not in the document and the panel with no `role="group"`.
+The trigger's `aria-controls` points at `CollapsibleContent`, so a hand-rolled conditional leaves it pointing at an element that is not in the document.
 
-### MEDIUM A trigger with its own onPress
+### MEDIUM A plain Button toggling the state
 
 Wrong:
 
 ```tsx
-<Collapsible isExpanded={showDetail} onExpandedChange={setShowDetail}>
-  <Button variant="ghost" onPress={() => setShowDetail(!showDetail)}>Details</Button>
+<Collapsible open={showDetail} onOpenChange={setShowDetail}>
+  <Button variant="ghost" onClick={() => setShowDetail(!showDetail)}>Details</Button>
   <CollapsibleContent>{detail}</CollapsibleContent>
 </Collapsible>
 ```
@@ -89,10 +85,10 @@ Wrong:
 Correct:
 
 ```tsx
-<Collapsible isExpanded={showDetail} onExpandedChange={setShowDetail}>
-  <Button slot="trigger" variant="ghost">Details</Button>
+<Collapsible open={showDetail} onOpenChange={setShowDetail}>
+  <CollapsibleTrigger render={<Button variant="ghost" />}>Details</CollapsibleTrigger>
   <CollapsibleContent>{detail}</CollapsibleContent>
 </Collapsible>
 ```
 
-`Disclosure` publishes the toggle, `aria-expanded` and `aria-controls` through `ButtonContext` under the `trigger` slot only, so a button without it gets an empty default slot: the region still opens, but the control announces no expanded state and drops out of the keyboard contract the panel is built on.
+Only `CollapsibleTrigger` carries `aria-expanded` and `aria-controls`, so a plain `Button` opens the region but announces no expanded state.

@@ -3,16 +3,9 @@
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
-import {
-  Dialog as DialogPrimitive,
-  DialogTrigger as DialogTriggerPrimitive,
-  Popover as PopoverPrimitive,
-  type Key,
-} from "react-aria-components"
 import { CheckIcon, ChevronDownIcon, SearchXIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
-import { usePortalTarget } from "@tecton/react/tecton/portal"
 import {
   Command,
   CommandEmpty,
@@ -21,6 +14,11 @@ import {
   CommandItem,
   CommandList,
 } from "@tecton/react/components/command"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@tecton/react/components/popover"
 
 /**
  * Tecton AppFinder — the shell's application switcher. The trigger shows
@@ -28,14 +26,25 @@ import {
  * the top bar; the menu is a searchable, category-grouped list built on
  * `Command`, so it stays usable with a hundred registered
  * micro-frontends. Typing filters across every group and highlights the
- * match; `onAction` on `AppFinderList` receives the chosen app id and the
- * popover closes.
+ * match; `onSelect` on `AppFinderList` receives the chosen app's `value`
+ * and the popover closes.
  */
 
-const AppFinderContext = React.createContext<{
-  close: () => void
+/** Closes the menu; provided by `AppFinder`. */
+const AppFinderRootContext = React.createContext<{ close: () => void }>({
+  close: () => {},
+})
+
+/** The query, owned by the palette so it resets whenever the menu opens. */
+const AppFinderSearchContext = React.createContext<{
   query: string
-}>({ close: () => {}, query: "" })
+  setQuery: (query: string) => void
+}>({ query: "", setQuery: () => {} })
+
+/** The list's `onSelect`, called by the item that is chosen. */
+const AppFinderListContext = React.createContext<
+  ((value: string) => void) | undefined
+>(undefined)
 
 const appFinderIconVariants = cva(
   "inline-flex shrink-0 items-center justify-center rounded-md font-mono font-medium tracking-wide uppercase select-none [&_svg:not([class*='size-'])]:size-4",
@@ -85,10 +94,42 @@ function AppFinderIcon({
   )
 }
 
+type AppFinderProps = {
+  /** Whether the menu is open (controlled). */
+  open?: boolean
+  /** Whether the menu is initially open (uncontrolled). */
+  defaultOpen?: boolean
+  onOpenChange?: (open: boolean) => void
+  /** `AppFinderTrigger` and `AppFinderMenu`. */
+  children?: React.ReactNode
+}
+
 function AppFinder({
-  ...props
-}: React.ComponentProps<typeof DialogTriggerPrimitive>) {
-  return <DialogTriggerPrimitive data-slot="app-finder" {...props} />
+  open: openProp,
+  defaultOpen = false,
+  onOpenChange,
+  children,
+}: AppFinderProps) {
+  const [uncontrolledOpen, setUncontrolledOpen] = React.useState(defaultOpen)
+  const open = openProp ?? uncontrolledOpen
+  const setOpen = React.useCallback(
+    (next: boolean) => {
+      if (openProp === undefined) setUncontrolledOpen(next)
+      onOpenChange?.(next)
+    },
+    [openProp, onOpenChange]
+  )
+  const context = React.useMemo(
+    () => ({ close: () => setOpen(false) }),
+    [setOpen]
+  )
+  return (
+    <AppFinderRootContext.Provider value={context}>
+      <Popover open={open} onOpenChange={(next) => setOpen(next)}>
+        {children}
+      </Popover>
+    </AppFinderRootContext.Provider>
+  )
 }
 
 type AppFinderTriggerProps = Omit<
@@ -112,18 +153,23 @@ function AppFinderTrigger({
   ...props
 }: AppFinderTriggerProps) {
   return (
-    <Button
+    <PopoverTrigger
       data-slot="app-finder-trigger"
-      variant="ghost"
-      size="sm"
-      aria-label={
-        ariaLabel ?? (name ? `Switch application, current: ${name}` : undefined)
+      render={
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label={
+            ariaLabel ??
+            (name ? `Switch application, current: ${name}` : undefined)
+          }
+          className={cn(
+            "h-8 gap-1.5 rounded-lg ps-1 pe-1.5 font-medium",
+            className
+          )}
+          {...props}
+        />
       }
-      className={cn(
-        "h-8 gap-1.5 rounded-lg ps-1 pe-1.5 font-medium",
-        className
-      )}
-      {...props}
     >
       <AppFinderIcon tone={tone} size="sm">
         {children}
@@ -135,81 +181,86 @@ function AppFinderTrigger({
         data-icon="inline-end"
         className="size-3.5 text-muted-foreground"
       />
-    </Button>
+    </PopoverTrigger>
   )
 }
 
-type AppFinderMenuProps = Omit<
-  React.ComponentProps<typeof PopoverPrimitive>,
-  "children" | "className"
+type AppFinderMenuProps = Pick<
+  React.ComponentProps<typeof PopoverContent>,
+  "side" | "align" | "sideOffset" | "alignOffset" | "container"
 > & {
   className?: string
   /** `AppFinderInput`, `AppFinderList`, … */
   children: React.ReactNode
-  /** Accessible name of the palette. */
+  /** Accessible name of the palette. Default "Applications". */
   "aria-label"?: string
 }
 
 function AppFinderMenu({
   className,
   children,
-  placement = "bottom start",
-  offset = 6,
+  side = "bottom",
+  align = "start",
+  sideOffset = 6,
   "aria-label": ariaLabel = "Applications",
   ...props
 }: AppFinderMenuProps) {
-  const portalTarget = usePortalTarget()
   return (
-    <PopoverPrimitive
+    <PopoverContent
       data-slot="app-finder-menu"
-      placement={placement}
-      offset={offset}
+      aria-label={ariaLabel}
+      side={side}
+      align={align}
+      sideOffset={sideOffset}
       className={cn(
-        "z-50 w-[26rem] max-w-[calc(100vw-1rem)] origin-(--trigger-anchor-point) overflow-hidden rounded-lg bg-popover text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 outline-none data-entering:animate-in data-entering:fade-in-0 data-entering:zoom-in-95 data-exiting:animate-out data-exiting:fade-out-0 data-exiting:zoom-out-95 data-[placement=bottom]:slide-in-from-top-2",
+        "w-[26rem] max-w-[calc(100vw-1rem)] gap-0 overflow-hidden rounded-lg p-0",
         className
       )}
       {...props}
-      UNSTABLE_portalContainer={portalTarget}
     >
-      <DialogPrimitive aria-label={ariaLabel} className="outline-none">
-        {({ close }) => (
-          <AppFinderPalette close={close}>{children}</AppFinderPalette>
-        )}
-      </DialogPrimitive>
-    </PopoverPrimitive>
+      <AppFinderPalette>{children}</AppFinderPalette>
+    </PopoverContent>
   )
 }
 
-/** Mounted with the dialog, so the query resets every time the menu opens. */
-function AppFinderPalette({
-  close,
-  children,
-}: {
-  close: () => void
-  children: React.ReactNode
-}) {
+/**
+ * Items match when their name or a keyword contains the query, ignoring
+ * case, and keep their order; the `value` (an id) is not matched.
+ */
+function filterByKeywords(_value: string, search: string, keywords?: string[]) {
+  const needle = search.trim().toLocaleLowerCase()
+  if (!needle) return 1
+  return keywords?.some((word) => word.toLocaleLowerCase().includes(needle))
+    ? 1
+    : 0
+}
+
+/** Mounted with the popup, so the query resets every time the menu opens. */
+function AppFinderPalette({ children }: { children: React.ReactNode }) {
   const [query, setQuery] = React.useState("")
+  const context = React.useMemo(() => ({ query, setQuery }), [query])
   return (
-    <AppFinderContext.Provider value={{ close, query }}>
-      <Command
-        className="rounded-lg!"
-        inputValue={query}
-        onInputChange={setQuery}
-      >
+    <AppFinderSearchContext.Provider value={context}>
+      <Command className="rounded-lg!" filter={filterByKeywords}>
         {children}
       </Command>
-    </AppFinderContext.Provider>
+    </AppFinderSearchContext.Provider>
   )
 }
 
 function AppFinderInput({
   placeholder = "Search applications…",
+  autoFocus = true,
   ...props
-}: React.ComponentProps<typeof CommandInput>) {
+}: Omit<React.ComponentProps<typeof CommandInput>, "value" | "onValueChange">) {
+  const { query, setQuery } = React.useContext(AppFinderSearchContext)
   return (
     <CommandInput
       data-slot="app-finder-input"
       placeholder={placeholder}
+      autoFocus={autoFocus}
+      value={query}
+      onValueChange={setQuery}
       {...props}
     />
   )
@@ -217,10 +268,10 @@ function AppFinderInput({
 
 type AppFinderListProps = Omit<
   React.ComponentProps<typeof CommandList>,
-  "onAction" | "renderEmptyState"
+  "onSelect"
 > & {
-  /** Called with the `id` of the chosen app; the menu closes afterwards. */
-  onAction?: (key: Key) => void
+  /** Called with the `value` of the chosen app; the menu closes afterwards. */
+  onSelect?: (value: string) => void
   /** Shown when the search matches nothing. */
   emptyMessage?: React.ReactNode
   /** Second line of the empty state. */
@@ -229,17 +280,19 @@ type AppFinderListProps = Omit<
 
 function AppFinderList({
   className,
-  onAction,
+  onSelect,
   emptyMessage = "No applications match",
   emptyHint = "Try the app's short code or its category",
+  children,
   ...props
 }: AppFinderListProps) {
-  const { close } = React.useContext(AppFinderContext)
   return (
-    <CommandList
-      data-slot="app-finder-list"
-      className={cn("max-h-[min(24rem,60vh)]", className)}
-      renderEmptyState={() => (
+    <AppFinderListContext.Provider value={onSelect}>
+      <CommandList
+        data-slot="app-finder-list"
+        className={cn("max-h-[min(24rem,60vh)]", className)}
+        {...props}
+      >
         <CommandEmpty className="flex flex-col items-center gap-1 py-8">
           <SearchXIcon className="mb-1 size-5 text-muted-foreground" />
           <span className="font-medium">{emptyMessage}</span>
@@ -247,13 +300,9 @@ function AppFinderList({
             <span className="text-xs text-muted-foreground">{emptyHint}</span>
           ) : null}
         </CommandEmpty>
-      )}
-      onAction={(key) => {
-        onAction?.(key)
-        close()
-      }}
-      {...props}
-    />
+        {children}
+      </CommandList>
+    </AppFinderListContext.Provider>
   )
 }
 
@@ -270,7 +319,7 @@ function AppFinderGroup({
   hideWhileSearching,
   ...props
 }: AppFinderGroupProps) {
-  const { query } = React.useContext(AppFinderContext)
+  const { query } = React.useContext(AppFinderSearchContext)
   if (hideWhileSearching && query.trim()) return null
   return (
     <CommandGroup
@@ -286,19 +335,21 @@ function AppFinderGroup({
 
 type AppFinderItemProps = Omit<
   React.ComponentProps<typeof CommandItem>,
-  "children" | "textValue"
+  "children" | "value" | "keywords"
 > & {
+  /** Identity of the app, passed to `onSelect`. */
+  value: string
   /** Leading glyph or short code of the app. */
   icon?: React.ReactNode
   /** Colour of the tile; use the app's category tone. */
   tone?: AppFinderTone
-  /** Display name; also the `textValue` used by the filter. */
+  /** Display name; the filter matches it. */
   name: string
   description?: React.ReactNode
   /** Extra words the filter should match (short code, aliases). */
   keywords?: string[]
   /** Marks the app the shell is currently showing. */
-  isCurrent?: boolean
+  current?: boolean
 }
 
 /** Wraps the first occurrence of `query` in `text` so it stands out. */
@@ -325,15 +376,25 @@ function AppFinderItem({
   name,
   description,
   keywords,
-  isCurrent,
+  current,
+  value,
+  onSelect,
   ...props
 }: AppFinderItemProps) {
-  const { query } = React.useContext(AppFinderContext)
+  const { query } = React.useContext(AppFinderSearchContext)
+  const { close } = React.useContext(AppFinderRootContext)
+  const onListSelect = React.useContext(AppFinderListContext)
   return (
     <CommandItem
       data-slot="app-finder-item"
-      data-current={isCurrent || undefined}
-      textValue={[name, ...(keywords ?? [])].join(" ")}
+      data-current={current ? "" : undefined}
+      value={value}
+      keywords={[name, ...(keywords ?? [])]}
+      onSelect={() => {
+        onSelect?.(value)
+        onListSelect?.(value)
+        close()
+      }}
       className={cn(
         "items-center gap-2.5 rounded-md px-2 py-1.5 [&>svg:last-child]:hidden",
         className
@@ -359,7 +420,7 @@ function AppFinderItem({
           </span>
         ) : null}
       </span>
-      {isCurrent ? (
+      {current ? (
         <span
           data-slot="app-finder-item-current"
           className="ms-auto inline-flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground"
@@ -384,6 +445,7 @@ export {
   appFinderIconVariants,
 }
 export type {
+  AppFinderProps,
   AppFinderGroupProps,
   AppFinderItemProps,
   AppFinderListProps,

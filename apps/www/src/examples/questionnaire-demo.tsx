@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/questionnaire-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/questionnaire-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -21,29 +21,57 @@ import {
   QuestionnaireTitle,
 } from "@tecton/react/components/questionnaire"
 
-const items = [
+const questionnaireItems = [
   {
     choices: [
-      { value: "tool-calls" },
-      { value: "approvals" },
-      { value: "handoffs" },
+      {
+        description: "Show what the agent ran and what came back.",
+        label: "Tool call timeline",
+        value: "tool-calls",
+      },
+      {
+        description: "Ask before sensitive or destructive actions.",
+        label: "Approval checkpoints",
+        value: "approvals",
+      },
+      {
+        description: "Make delegated work and results easier to follow.",
+        label: "Sub-agent handoffs",
+        value: "handoffs",
+      },
     ],
+    description: "Choose a direction or describe another task.",
+    input: {
+      label: "Another agent feature",
+      placeholder: "Describe another feature…",
+    },
     name: "direction",
     required: true,
+    title: "What should the agent build next?",
   },
   {
     choices: [
-      { value: "progress" },
-      { value: "decisions" },
-      { value: "risks" },
-      { value: "next-step" },
+      { label: "Progress", value: "progress" },
+      { label: "Decisions", value: "decisions" },
+      { label: "Risks", value: "risks" },
+      { label: "Next step", value: "next-step" },
     ],
+    description: "Select all that apply, or skip this question.",
+    multiple: true,
     name: "signals",
+    required: false,
+    title: "What should every progress update include?",
   },
   {
-    choices: [{ value: "now" }, { value: "next-cycle" }, { value: "backlog" }],
+    choices: [
+      { label: "Start now", value: "now" },
+      { label: "Next development cycle", value: "next-cycle" },
+      { label: "Add it to the backlog", value: "backlog" },
+    ],
+    description: "Choose when the agent should begin the work.",
     name: "timing",
     required: true,
+    title: "When should work begin?",
   },
 ] as const
 
@@ -67,79 +95,43 @@ export function QuestionnaireDemo() {
     <Questionnaire
       className="mx-auto max-w-md"
       defaultItem="direction"
-      items={items}
+      items={questionnaireItems}
       shortcuts="letters"
       onSubmit={handleSubmit}
     >
       <QuestionnaireProgress />
-
-      <QuestionnaireItem name="direction" required>
-        <QuestionnaireTitle>
-          What should the agent build next?
-        </QuestionnaireTitle>
-        <QuestionnaireDescription>
-          Choose a direction or describe another task.
-        </QuestionnaireDescription>
-        <QuestionnaireChoices>
-          <QuestionnaireChoice value="tool-calls">
-            <span className="font-medium">Tool call timeline</span>
-            <span className="text-muted-foreground">
-              Show what the agent ran and what came back.
-            </span>
-          </QuestionnaireChoice>
-          <QuestionnaireChoice value="approvals">
-            <span className="font-medium">Approval checkpoints</span>
-            <span className="text-muted-foreground">
-              Ask before sensitive or destructive actions.
-            </span>
-          </QuestionnaireChoice>
-          <QuestionnaireChoice value="handoffs">
-            <span className="font-medium">Sub-agent handoffs</span>
-            <span className="text-muted-foreground">
-              Make delegated work and results easier to follow.
-            </span>
-          </QuestionnaireChoice>
-          <QuestionnaireInput
-            aria-label="Another agent feature"
-            placeholder="Describe another feature…"
-          />
-        </QuestionnaireChoices>
-        <QuestionnaireError />
-      </QuestionnaireItem>
-
-      <QuestionnaireItem name="signals" multiple>
-        <QuestionnaireTitle>
-          What should every progress update include?
-        </QuestionnaireTitle>
-        <QuestionnaireDescription>
-          Select all that apply, or skip this question.
-        </QuestionnaireDescription>
-        <QuestionnaireChoices>
-          <QuestionnaireChoice value="progress">Progress</QuestionnaireChoice>
-          <QuestionnaireChoice value="decisions">Decisions</QuestionnaireChoice>
-          <QuestionnaireChoice value="risks">Risks</QuestionnaireChoice>
-          <QuestionnaireChoice value="next-step">Next step</QuestionnaireChoice>
-        </QuestionnaireChoices>
-        <QuestionnaireError />
-      </QuestionnaireItem>
-
-      <QuestionnaireItem name="timing" required>
-        <QuestionnaireTitle>When should work begin?</QuestionnaireTitle>
-        <QuestionnaireDescription>
-          Choose when the agent should begin the work.
-        </QuestionnaireDescription>
-        <QuestionnaireChoices>
-          <QuestionnaireChoice value="now">Start now</QuestionnaireChoice>
-          <QuestionnaireChoice value="next-cycle">
-            Next development cycle
-          </QuestionnaireChoice>
-          <QuestionnaireChoice value="backlog">
-            Add it to the backlog
-          </QuestionnaireChoice>
-        </QuestionnaireChoices>
-        <QuestionnaireError />
-      </QuestionnaireItem>
-
+      {questionnaireItems.map((question) => (
+        <QuestionnaireItem
+          key={question.name}
+          multiple={"multiple" in question && question.multiple}
+          name={question.name}
+          required={question.required}
+        >
+          <QuestionnaireTitle>{question.title}</QuestionnaireTitle>
+          <QuestionnaireDescription>
+            {question.description}
+          </QuestionnaireDescription>
+          <QuestionnaireChoices>
+            {question.choices.map((choice) => (
+              <QuestionnaireChoice key={choice.value} value={choice.value}>
+                <span className="font-medium">{choice.label}</span>
+                {"description" in choice ? (
+                  <span className="text-muted-foreground">
+                    {choice.description}
+                  </span>
+                ) : null}
+              </QuestionnaireChoice>
+            ))}
+            {"input" in question ? (
+              <QuestionnaireInput
+                aria-label={question.input.label}
+                placeholder={question.input.placeholder}
+              />
+            ) : null}
+          </QuestionnaireChoices>
+          <QuestionnaireError />
+        </QuestionnaireItem>
+      ))}
       <QuestionnaireActions>
         <QuestionnairePrevious />
         <QuestionnaireSkip />

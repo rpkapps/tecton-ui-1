@@ -1,4 +1,6 @@
-import { LinkButton } from "@tecton/react/components/button"
+import { Link } from "@tanstack/react-router"
+
+import { buttonVariants } from "@tecton/react/components/button"
 
 /** The 404 page inside the site chrome (header, sidebar, footer). */
 export function NotFound() {
@@ -8,9 +10,12 @@ export function NotFound() {
       <p className="text-muted-foreground">
         The requested page could not be found.
       </p>
-      <LinkButton href="/docs" variant="secondary" size="sm">
+      <Link
+        to="/docs"
+        className={buttonVariants({ variant: "secondary", size: "sm" })}
+      >
         Go to the documentation
-      </LinkButton>
+      </Link>
     </div>
   )
 }

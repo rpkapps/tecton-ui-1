@@ -65,15 +65,15 @@ function ChipRow({
       <ChipGroup
         aria-label={`${variant} ${appearance} ${kind}`}
         selectionMode={kind === "removable" ? "none" : "multiple"}
-        defaultSelectedKeys={kind === "selectable" ? ["md"] : undefined}
-        disabledKeys={kind === "disabled" ? sizes : undefined}
+        defaultValue={kind === "selectable" ? ["md"] : undefined}
+        disabled={kind === "disabled"}
         onRemove={kind === "removable" ? noop : undefined}
       >
         <ChipList className="items-center gap-3">
           {sizes.map((size) => (
             <Chip
               key={size}
-              id={size}
+              value={size}
               variant={variant}
               appearance={appearance}
               size={size}

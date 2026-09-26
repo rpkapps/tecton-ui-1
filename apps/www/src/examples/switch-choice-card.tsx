@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/switch-choice-card.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/switch-choice-card.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Field,
   FieldContent,
@@ -32,7 +32,7 @@ export function SwitchChoiceCard() {
               Receive notifications when focus mode is enabled or disabled.
             </FieldDescription>
           </FieldContent>
-          <Switch id="switch-notifications" defaultSelected />
+          <Switch id="switch-notifications" defaultChecked />
         </Field>
       </FieldLabel>
     </FieldGroup>

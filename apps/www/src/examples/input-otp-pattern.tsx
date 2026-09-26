@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/input-otp-pattern.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/input-otp-pattern.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { REGEXP_ONLY_DIGITS } from "input-otp"

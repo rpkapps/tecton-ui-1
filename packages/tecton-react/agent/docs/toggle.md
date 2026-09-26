@@ -19,29 +19,21 @@ import { Toggle, toggleVariants } from "@tecton/react/components/toggle"
 
 ## Do
 
-- Hold state with `isSelected` / `defaultSelected` and read changes from `onChange`, which receives a boolean.
+- Hold state with `pressed` / `defaultPressed` and read changes from `onPressedChange`, which receives a boolean.
 - Pick `variant="default" | "outline"` and `size="default" | "sm" | "lg"`; they own colour, height and padding.
 - Give an icon-only `Toggle` an `aria-label`, and mark a paired icon with `data-icon="inline-start"`.
-- Disable with `isDisabled`; React Aria ignores `disabled`.
-- Style the pressed look through the variant's `data-selected` rules, never with your own colour classes.
-- A selected toggle shows a filled icon as well as its selected background (Tecton glyph `variant={isSelected ? "filled" : "outlined"}`).
+- Disable with `disabled`.
+- Style the pressed look through the variant's `aria-pressed` rules, never with your own colour classes.
+- A selected toggle shows a filled icon as well as its selected background (Tecton glyph `variant={pressed ? "filled" : "outlined"}`).
 - Keep a toggle's label the same in both states ("Show labels", not "Show"/"Hide").
 - Put related toggles in one `ToggleGroup` labelled for the set ("Log tracks"), not a row of separate `Toggle`s.
 - A `ToggleGroup` holds only toggles; an action such as Reset is a separate `Button` outside the group.
 
 ## Don't
 
-### CRITICAL Radix pressed and onPressedChange props
+### CRITICAL isSelected and onChange instead of pressed
 
 Wrong:
-
-```tsx
-<Toggle aria-label="Toggle bold" pressed={bold} onPressedChange={setBold}>
-  <BoldIcon />
-</Toggle>
-```
-
-Correct:
 
 ```tsx
 <Toggle aria-label="Toggle bold" isSelected={bold} onChange={setBold}>
@@ -49,7 +41,15 @@ Correct:
 </Toggle>
 ```
 
-React Aria's `ToggleButton` reads `isSelected` and reports through `onChange(isSelected)`; `pressed` and `onPressedChange` are not in its props, so they are dropped and the button never leaves its initial state.
+Correct:
+
+```tsx
+<Toggle aria-label="Toggle bold" pressed={bold} onPressedChange={setBold}>
+  <BoldIcon />
+</Toggle>
+```
+
+`Toggle` reads `pressed` and reports through `onPressedChange(pressed)`; `isSelected` is not a prop and `onChange` is not a boolean callback, so the button never leaves its initial state.
 
 ### HIGH A Toggle used as a labelled form setting
 
@@ -57,7 +57,7 @@ Wrong:
 
 ```tsx
 <Field orientation="horizontal">
-  <Toggle isSelected={notify} onChange={setNotify}>Email notifications</Toggle>
+  <Toggle pressed={notify} onPressedChange={setNotify}>Email notifications</Toggle>
 </Field>
 ```
 
@@ -65,7 +65,7 @@ Correct:
 
 ```tsx
 <Field orientation="horizontal">
-  <Switch id="notify" isSelected={notify} onChange={setNotify} />
+  <Switch id="notify" checked={notify} onCheckedChange={setNotify} />
   <FieldLabel htmlFor="notify">Email notifications</FieldLabel>
 </Field>
 ```
@@ -90,7 +90,7 @@ The button's only child is an SVG with no text, so its accessible name is empty 
 
 ## Before you finish
 
-- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
+- Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
 - Every icon-only `Button`, `Toggle`, `ToggleGroupItem` and `InputGroupButton` has an `aria-label`, and every icon or `Spinner` inside a control carries `data-icon="inline-start"` or `data-icon="inline-end"`.
 
 Related: toggle-group, button

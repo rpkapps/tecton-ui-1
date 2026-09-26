@@ -23,7 +23,7 @@
  * @tecton/react is a client component library: every file that upstream marks
  * `"use client"` must keep the directive, or a React Server Components
  * consumer breaks at build time. So after every `shadcn add`, this script
- * copies the directive back from the aria base sources in the registry mirror
+ * copies the directive back from the Base UI base sources in the registry mirror
  * clone, which are the ground truth (`scripts/registry-mirror.sh`).
  *
  * It only ever adds the directive — a component whose upstream source has none
@@ -43,7 +43,7 @@ const repoRoot = path.resolve(pkgRoot, "../..");
 const COMPONENTS_DIR = path.join(pkgRoot, "src/components");
 const MIRROR_DIR =
   process.env.SHADCN_MIRROR_DIR ?? path.join(repoRoot, ".cache/shadcn-ui");
-const BASES_DIR = path.join(MIRROR_DIR, "apps/v4/registry/bases/aria/ui");
+const BASES_DIR = path.join(MIRROR_DIR, "apps/v4/registry/bases/base/ui");
 
 const DIRECTIVE = '"use client"';
 const check = process.argv.includes("--check");
@@ -51,7 +51,7 @@ const check = process.argv.includes("--check");
 if (!existsSync(BASES_DIR)) {
   console.error(
     `restore-use-client: the registry mirror clone is missing.\n` +
-      `  expected the aria base sources at ${BASES_DIR}\n` +
+      `  expected the Base UI base sources at ${BASES_DIR}\n` +
       `  run \`scripts/registry-mirror.sh setup\` (see docs/UPSTREAM.md), or set\n` +
       `  SHADCN_MIRROR_DIR to an existing clone.`
   );
@@ -112,7 +112,7 @@ for (const file of readdirSync(COMPONENTS_DIR).sort()) {
 
 if (missingBase.length > 0) {
   console.warn(
-    `restore-use-client: no aria base source for ${missingBase.join(", ")} — skipped.`
+    `restore-use-client: no Base UI base source for ${missingBase.join(", ")} — skipped.`
   );
 }
 

@@ -14,7 +14,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@tecton/react/components/alert"
-import { Button, LinkButton } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/components/button"
 import {
   Field,
   FieldDescription,
@@ -23,6 +23,7 @@ import {
 } from "@tecton/react/components/field"
 import { Spinner } from "@tecton/react/components/spinner"
 import { Textarea } from "@tecton/react/components/textarea"
+import { LinkButton } from "@tecton/react/tecton/link"
 
 import {
   LogTrack,
@@ -143,7 +144,7 @@ function Forbidden({
               <FieldError id={`${reasonId}-error`}>{error}</FieldError>
             </Field>
             <PageStateActions>
-              <Button type="submit" isDisabled={status === "sending"}>
+              <Button type="submit" disabled={status === "sending"}>
                 {status === "sending" ? (
                   <Spinner />
                 ) : (

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/slider-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/slider-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -29,9 +29,8 @@ export function SliderRtl() {
 
   return (
     <Slider
-      aria-label="RTL slider"
       defaultValue={[75]}
-      maxValue={100}
+      max={100}
       step={1}
       className="mx-auto w-full max-w-xs"
       dir={dir}

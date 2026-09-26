@@ -12,14 +12,19 @@ import {
 import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
+  DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@tecton/react/components/dialog"
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -57,14 +62,11 @@ export default function OverflowForms() {
         <Toolbar aria-label="List tools">
           {/* Elastic: shrinks before anything collapses; its menu form opens a dialog with the same input. */}
           <OverflowItem
-            id="search"
+            value="search"
             priority={3}
             elastic={{ min: "8rem", max: "20rem" }}
             overflow={
-              <DropdownMenuItem
-                id="search"
-                onAction={() => setSearchOpen(true)}
-              >
+              <DropdownMenuItem onClick={() => setSearchOpen(true)}>
                 <SearchIcon />
                 Search…
               </DropdownMenuItem>
@@ -80,47 +82,41 @@ export default function OverflowForms() {
 
           {/* A select overflows into a submenu with radio items. */}
           <OverflowItem
-            id="field"
+            value="field"
             priority={2}
             overflow={
               <DropdownMenuSub>
-                <DropdownMenuSubTrigger id="field">
+                <DropdownMenuSubTrigger>
                   <FilterIcon />
                   Field
                 </DropdownMenuSubTrigger>
                 <DropdownMenuSubContent>
-                  <DropdownMenuGroup
-                    selectionMode="single"
-                    selectedKeys={[field]}
-                    onSelectionChange={(keys) =>
-                      setField(String([...keys][0] ?? "All fields"))
-                    }
+                  <DropdownMenuRadioGroup
+                    value={field}
+                    onValueChange={setField}
                   >
                     {fields.map((item) => (
-                      <DropdownMenuItem key={item} id={item}>
+                      <DropdownMenuRadioItem key={item} value={item}>
                         {item}
-                      </DropdownMenuItem>
+                      </DropdownMenuRadioItem>
                     ))}
-                  </DropdownMenuGroup>
+                  </DropdownMenuRadioGroup>
                 </DropdownMenuSubContent>
               </DropdownMenuSub>
             }
           >
             <Select
-              aria-label="Field"
               value={field}
-              onChange={(key) => {
-                if (key == null) return
-                setField(String(key))
+              onValueChange={(value) => {
+                if (value) setField(value)
               }}
-              className="w-36"
             >
-              <SelectTrigger>
+              <SelectTrigger aria-label="Field" className="w-36">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {fields.map((item) => (
-                  <SelectItem key={item} id={item}>
+                  <SelectItem key={item} value={item}>
                     {item}
                   </SelectItem>
                 ))}
@@ -132,88 +128,79 @@ export default function OverflowForms() {
 
           {/* A toggle overflows into a checkbox item. */}
           <OverflowItem
-            id="preview"
+            value="preview"
             priority={1}
             overflow={
-              <DropdownMenuGroup
-                selectionMode="multiple"
-                selectedKeys={preview ? ["preview"] : []}
-                onSelectionChange={(keys) =>
-                  setPreview(keys === "all" || keys.has("preview"))
-                }
+              <DropdownMenuCheckboxItem
+                checked={preview}
+                onCheckedChange={setPreview}
               >
-                <DropdownMenuItem id="preview">
-                  <EyeIcon />
-                  Preview pane
-                </DropdownMenuItem>
-              </DropdownMenuGroup>
+                <EyeIcon />
+                Preview pane
+              </DropdownMenuCheckboxItem>
             }
           >
             <Toggle
               variant="outline"
               aria-label="Preview pane"
-              isSelected={preview}
-              onChange={setPreview}
+              pressed={preview}
+              onPressedChange={setPreview}
             >
               <EyeIcon />
             </Toggle>
           </OverflowItem>
 
           {/* A dropdown keeps its label and chevron; it overflows into a submenu. */}
-          <OverflowGroup id="export" label="Export">
+          <OverflowGroup value="export" label="Export">
             <OverflowItem
-              id="export"
+              value="export"
               labelBehavior="keep"
               overflow={
                 <DropdownMenuSub>
-                  <DropdownMenuSubTrigger id="export">
+                  <DropdownMenuSubTrigger>
                     <DownloadIcon />
                     Export
                   </DropdownMenuSubTrigger>
                   <DropdownMenuSubContent>
                     {formats.map((format) => (
-                      <DropdownMenuItem key={format} id={format}>
-                        {format}
-                      </DropdownMenuItem>
+                      <DropdownMenuItem key={format}>{format}</DropdownMenuItem>
                     ))}
                   </DropdownMenuSubContent>
                 </DropdownMenuSub>
               }
             >
-              <DropdownMenuTrigger>
-                <Button variant="outline">
+              <DropdownMenu>
+                <DropdownMenuTrigger render={<Button variant="outline" />}>
                   <DownloadIcon data-icon="inline-start" />
                   <OverflowLabel>Export</OverflowLabel>
                   <ChevronDownIcon data-icon="inline-end" />
-                </Button>
-                <DropdownMenu>
-                  <DropdownMenuLabel>Format</DropdownMenuLabel>
-                  {formats.map((format) => (
-                    <DropdownMenuItem key={format} id={format}>
-                      {format}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenu>
-              </DropdownMenuTrigger>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-auto">
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>Format</DropdownMenuLabel>
+                    {formats.map((format) => (
+                      <DropdownMenuItem key={format}>{format}</DropdownMenuItem>
+                    ))}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </OverflowItem>
           </OverflowGroup>
         </Toolbar>
       </div>
-      <Dialog
-        isOpen={searchOpen}
-        onOpenChange={setSearchOpen}
-        className="sm:max-w-sm"
-      >
-        <DialogHeader>
-          <DialogTitle>Search wells</DialogTitle>
-        </DialogHeader>
-        <Input
-          autoFocus
-          aria-label="Search wells"
-          placeholder="Search wells"
-          value={query}
-          onChange={(event) => setQuery(event.target.value)}
-        />
+      <Dialog open={searchOpen} onOpenChange={setSearchOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Search wells</DialogTitle>
+          </DialogHeader>
+          <Input
+            autoFocus
+            aria-label="Search wells"
+            placeholder="Search wells"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+          />
+        </DialogContent>
       </Dialog>
       <p className="text-xs text-muted-foreground">
         Drag the corner to resize. {field}

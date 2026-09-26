@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/input-group-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/input-group-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -11,7 +11,11 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@tecton/react/components/input-group"
-import { Popover, PopoverTrigger } from "@tecton/react/components/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@tecton/react/components/popover"
 
 export default function InputGroupButtonExample() {
   const { copyToClipboard, isCopied } = useCopyToClipboard()
@@ -24,8 +28,9 @@ export default function InputGroupButtonExample() {
         <InputGroupAddon align="inline-end">
           <InputGroupButton
             aria-label="Copy"
+            title="Copy"
             size="icon-xs"
-            onPress={() => {
+            onClick={() => {
               copyToClipboard("https://x.com/shadcn")
             }}
           >
@@ -34,27 +39,30 @@ export default function InputGroupButtonExample() {
         </InputGroupAddon>
       </InputGroup>
       <InputGroup className="[--radius:9999px]">
-        <PopoverTrigger>
+        <Popover>
           <InputGroupAddon>
-            <InputGroupButton variant="secondary" size="icon-xs">
+            <PopoverTrigger
+              render={<InputGroupButton variant="secondary" size="icon-xs" />}
+              aria-label="Connection details"
+            >
               <InfoIcon />
-            </InputGroupButton>
+            </PopoverTrigger>
           </InputGroupAddon>
-          <Popover
-            placement="bottom start"
+          <PopoverContent
+            align="start"
             className="flex flex-col gap-1 rounded-xl text-sm"
           >
             <p className="font-medium">Your connection is not secure.</p>
             <p>You should not enter any sensitive information on this site.</p>
-          </Popover>
-        </PopoverTrigger>
+          </PopoverContent>
+        </Popover>
         <InputGroupAddon className="pl-1.5 text-muted-foreground">
           https://
         </InputGroupAddon>
         <InputGroupInput id="input-secure-19" />
         <InputGroupAddon align="inline-end">
           <InputGroupButton
-            onPress={() => setIsFavorite(!isFavorite)}
+            onClick={() => setIsFavorite(!isFavorite)}
             size="icon-xs"
           >
             <StarIcon

@@ -1,10 +1,7 @@
 ---
 title: Toggle Group
 description: A set of two-state buttons that can be toggled on or off.
-links:
-  doc: https://react-aria.adobe.com/ToggleButtonGroup
-  api: https://react-aria.adobe.com/ToggleButtonGroup#api
-upstream: apps/v4/content/docs/components/aria/toggle-group.mdx
+upstream: apps/v4/content/docs/components/base/toggle-group.mdx
 ---
 
 <ComponentPreview name="toggle-group-demo" />
@@ -16,7 +13,7 @@ import { ToggleGroup, ToggleGroupItem } from "@tecton/react/components/toggle-gr
 ```
 
 ```tsx
-<ToggleGroup selectionMode="single">
+<ToggleGroup defaultValue={["a"]}>
   <ToggleGroupItem value="a">A</ToggleGroupItem>
   <ToggleGroupItem value="b">B</ToggleGroupItem>
   <ToggleGroupItem value="c">C</ToggleGroupItem>
@@ -86,7 +83,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 ### Use it when
 
 - A small fixed set of options works as a filter or a formatting control in a toolbar.
-- Several of those options may be on at the same time (`selectionMode="multiple"`).
+- Several of those options may be on at the same time (`multiple`).
 - The options are icons or one-word labels that fit in a segmented row.
 
 ### Not for
@@ -101,13 +98,13 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Key each item with `id`; read `selectedKeys` / `defaultSelectedKeys` and `onSelectionChange`, which hands you a `Set`.
+Identify each item by `value`; read `value` / `defaultValue` and `onValueChange`, which always hand you an **array** of values.
 
 </Do>
 
 <Do>
 
-Choose `selectionMode="single"` for an exclusive choice, `"multiple"` for independent toggles.
+Leave it single-select for an exclusive choice, add `multiple` for independent toggles.
 
 </Do>
 
@@ -127,13 +124,13 @@ Give every icon-only `ToggleGroupItem` an `aria-label`, and stack with `orientat
 
 ### Don't
 
-<Dont severity="CRITICAL" title="Radix value props instead of selectedKeys and id">
+<Dont severity="CRITICAL" title="type and selectedKeys instead of a value array">
 
 <Wrong>
 
 ```tsx
-<ToggleGroup type="single" value={weight} onValueChange={setWeight}>
-  <ToggleGroupItem value="bold">Bold</ToggleGroupItem>
+<ToggleGroup type="single" selectedKeys={[weight]} onSelectionChange={setWeight}>
+  <ToggleGroupItem id="bold">Bold</ToggleGroupItem>
 </ToggleGroup>
 ```
 
@@ -142,18 +139,14 @@ Give every icon-only `ToggleGroupItem` an `aria-label`, and stack with `orientat
 <Correct>
 
 ```tsx
-<ToggleGroup
-  selectionMode="single"
-  selectedKeys={[weight]}
-  onSelectionChange={(keys) => setWeight([...keys][0] as string)}
->
-  <ToggleGroupItem id="bold">Bold</ToggleGroupItem>
+<ToggleGroup value={[weight]} onValueChange={([next]) => next && setWeight(next)}>
+  <ToggleGroupItem value="bold">Bold</ToggleGroupItem>
 </ToggleGroup>
 ```
 
 </Correct>
 
-React Aria keys toggle items by `id` and reports a `Set` through `onSelectionChange`; `type`, `value` and `onValueChange` are not props here, so the group renders but never records a selection.
+Items are identified by `value` and the group reports an array through `onValueChange`; `type`, `selectedKeys`, `onSelectionChange` and `id` are not props here, so the group renders but never records a selection.
 
 </Dont>
 
@@ -162,9 +155,9 @@ React Aria keys toggle items by `id` and reports a `Set` through `onSelectionCha
 <Wrong>
 
 ```tsx
-<ToggleGroup selectionMode="single" defaultSelectedKeys={["overview"]}>
-  <ToggleGroupItem id="overview">Overview</ToggleGroupItem>
-  <ToggleGroupItem id="reports">Reports</ToggleGroupItem>
+<ToggleGroup defaultValue={["overview"]}>
+  <ToggleGroupItem value="overview">Overview</ToggleGroupItem>
+  <ToggleGroupItem value="reports">Reports</ToggleGroupItem>
 </ToggleGroup>
 {view === "overview" ? <Overview /> : <Reports />}
 ```
@@ -174,13 +167,13 @@ React Aria keys toggle items by `id` and reports a `Set` through `onSelectionCha
 <Correct>
 
 ```tsx
-<Tabs defaultSelectedKey="overview">
+<Tabs defaultValue="overview">
   <TabsList>
-    <TabsTrigger id="overview">Overview</TabsTrigger>
-    <TabsTrigger id="reports">Reports</TabsTrigger>
+    <TabsTrigger value="overview">Overview</TabsTrigger>
+    <TabsTrigger value="reports">Reports</TabsTrigger>
   </TabsList>
-  <TabsContent id="overview"><Overview /></TabsContent>
-  <TabsContent id="reports"><Reports /></TabsContent>
+  <TabsContent value="overview"><Overview /></TabsContent>
+  <TabsContent value="reports"><Reports /></TabsContent>
 </Tabs>
 ```
 
@@ -195,7 +188,7 @@ Toggle buttons carry `aria-pressed`, not the `tab` and `tabpanel` roles, so the 
 <Wrong>
 
 ```tsx
-<ToggleGroupItem id="bold"><BoldIcon /></ToggleGroupItem>
+<ToggleGroupItem value="bold"><BoldIcon /></ToggleGroupItem>
 ```
 
 </Wrong>
@@ -203,7 +196,7 @@ Toggle buttons carry `aria-pressed`, not the `tab` and `tabpanel` roles, so the 
 <Correct>
 
 ```tsx
-<ToggleGroupItem id="bold" aria-label="Toggle bold"><BoldIcon /></ToggleGroupItem>
+<ToggleGroupItem value="bold" aria-label="Toggle bold"><BoldIcon /></ToggleGroupItem>
 ```
 
 </Correct>
@@ -213,7 +206,3 @@ The item's only child is an SVG with no text, so its accessible name is empty an
 </Dont>
 
 {/* guidelines:end */}
-
-## API Reference
-
-See the [React Aria ToggleButtonGroup](https://react-aria.adobe.com/ToggleButtonGroup#api) documentation.

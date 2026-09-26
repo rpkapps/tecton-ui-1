@@ -1,6 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/breadcrumb-link.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-"use client"
-
+// Synced from shadcn/ui (apps/v4/examples/base/breadcrumb-link.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import Link from "@/components/shims/link"
 
 import {
@@ -9,6 +7,7 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@tecton/react/components/breadcrumb"
 
 export function BreadcrumbLinkDemo() {
@@ -16,27 +15,17 @@ export function BreadcrumbLinkDemo() {
     <Breadcrumb>
       <BreadcrumbList>
         <BreadcrumbItem>
-          <BreadcrumbLink
-            href="#link-component"
-            render={(props) =>
-              "href" in props ? <Link {...props} /> : <span {...props} />
-            }
-          >
+          <BreadcrumbLink render={<Link href="#link-component" />}>
             Home
           </BreadcrumbLink>
         </BreadcrumbItem>
-
+        <BreadcrumbSeparator />
         <BreadcrumbItem>
-          <BreadcrumbLink
-            href="#link-component"
-            render={(props) =>
-              "href" in props ? <Link {...props} /> : <span {...props} />
-            }
-          >
+          <BreadcrumbLink render={<Link href="#link-component" />}>
             Components
           </BreadcrumbLink>
         </BreadcrumbItem>
-
+        <BreadcrumbSeparator />
         <BreadcrumbItem>
           <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
         </BreadcrumbItem>

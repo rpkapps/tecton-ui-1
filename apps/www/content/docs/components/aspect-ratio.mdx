@@ -1,7 +1,7 @@
 ---
 title: Aspect Ratio
 description: Displays content within a desired ratio.
-upstream: apps/v4/content/docs/components/aria/aspect-ratio.mdx
+upstream: apps/v4/content/docs/components/base/aspect-ratio.mdx
 ---
 
 <ComponentPreview name="aspect-ratio-demo" />
@@ -175,7 +175,7 @@ Put media directly inside one `AspectRatio`; never nest a second one.
 
 </Correct>
 
-Unlike the Radix component this one has no default: `ratio` is required, React drops the `undefined` custom property, and `aspect-ratio: var(--ratio)` then resolves to nothing, so the box collapses around an absolutely positioned child and disappears.
+Unlike stock shadcn this one has no default: `ratio` is required, React drops the `undefined` custom property, and `aspect-ratio: var(--ratio)` then resolves to nothing, so the box collapses around an absolutely positioned child and disappears.
 
 </Dont>
 

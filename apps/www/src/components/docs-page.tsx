@@ -1,9 +1,10 @@
 import * as React from "react"
-import { notFound } from "@tanstack/react-router"
+import { cn } from "cn"
+import { Link, notFound } from "@tanstack/react-router"
 import browserCollections from "fumadocs-mdx:collections/browser"
 import { ArrowLeftIcon, ArrowRightIcon, ExternalLinkIcon } from "lucide-react"
 
-import { LinkButton } from "@tecton/react/components/button"
+import { buttonVariants } from "@tecton/react/components/button"
 
 import { DocsTableOfContents } from "@/components/docs-toc"
 import { getMDXComponents } from "@/components/mdx"
@@ -91,26 +92,34 @@ function Content({
               <div className="docs-nav flex items-center gap-2">
                 <div className="ml-auto flex gap-2">
                   {previous && (
-                    <LinkButton
-                      variant="secondary"
-                      size="icon-sm"
-                      className="extend-touch-target size-8 shadow-none md:size-7"
-                      href={previous.url}
+                    <Link
+                      to={previous.url}
                       aria-label="Previous"
+                      className={cn(
+                        buttonVariants({
+                          variant: "secondary",
+                          size: "icon-sm",
+                        }),
+                        "extend-touch-target size-8 shadow-none md:size-7"
+                      )}
                     >
                       <ArrowLeftIcon />
-                    </LinkButton>
+                    </Link>
                   )}
                   {next && (
-                    <LinkButton
-                      variant="secondary"
-                      size="icon-sm"
-                      className="extend-touch-target size-8 shadow-none md:size-7"
-                      href={next.url}
+                    <Link
+                      to={next.url}
                       aria-label="Next"
+                      className={cn(
+                        buttonVariants({
+                          variant: "secondary",
+                          size: "icon-sm",
+                        }),
+                        "extend-touch-target size-8 shadow-none md:size-7"
+                      )}
                     >
                       <ArrowRightIcon />
-                    </LinkButton>
+                    </Link>
                   )}
                 </div>
               </div>
@@ -123,28 +132,30 @@ function Content({
             {(links?.doc || links?.api) && (
               <div className="flex items-center gap-2 pt-2">
                 {links.doc && (
-                  <LinkButton
-                    variant="secondary"
-                    size="xs"
+                  <a
                     href={links.doc}
                     target="_blank"
                     rel="noreferrer"
-                    className="shadow-none"
+                    className={cn(
+                      buttonVariants({ variant: "secondary", size: "xs" }),
+                      "shadow-none"
+                    )}
                   >
                     Docs <ExternalLinkIcon data-icon="inline-end" />
-                  </LinkButton>
+                  </a>
                 )}
                 {links.api && (
-                  <LinkButton
-                    variant="secondary"
-                    size="xs"
+                  <a
                     href={links.api}
                     target="_blank"
                     rel="noreferrer"
-                    className="shadow-none"
+                    className={cn(
+                      buttonVariants({ variant: "secondary", size: "xs" }),
+                      "shadow-none"
+                    )}
                   >
                     API Reference <ExternalLinkIcon data-icon="inline-end" />
-                  </LinkButton>
+                  </a>
                 )}
               </div>
             )}
@@ -154,24 +165,26 @@ function Content({
           </div>
           <div className="hidden h-16 w-full items-center gap-2 px-4 sm:flex sm:px-0">
             {previous && (
-              <LinkButton
-                variant="secondary"
-                size="sm"
-                className="shadow-none"
-                href={previous.url}
+              <Link
+                to={previous.url}
+                className={cn(
+                  buttonVariants({ variant: "secondary", size: "sm" }),
+                  "shadow-none"
+                )}
               >
                 <ArrowLeftIcon data-icon="inline-start" /> {previous.title}
-              </LinkButton>
+              </Link>
             )}
             {next && (
-              <LinkButton
-                variant="secondary"
-                size="sm"
-                className="ml-auto shadow-none"
-                href={next.url}
+              <Link
+                to={next.url}
+                className={cn(
+                  buttonVariants({ variant: "secondary", size: "sm" }),
+                  "ml-auto shadow-none"
+                )}
               >
                 {next.title} <ArrowRightIcon data-icon="inline-end" />
-              </LinkButton>
+              </Link>
             )}
           </div>
         </div>

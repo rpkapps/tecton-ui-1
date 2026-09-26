@@ -1,10 +1,11 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/sheet-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/sheet-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
 import { Input } from "@tecton/react/components/input"
 import { Label } from "@tecton/react/components/label"
 import {
   Sheet,
   SheetClose,
+  SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
@@ -14,9 +15,9 @@ import {
 
 export default function SheetDemo() {
   return (
-    <SheetTrigger>
-      <Button variant="outline">Open</Button>
-      <Sheet>
+    <Sheet>
+      <SheetTrigger render={<Button variant="outline" />}>Open</SheetTrigger>
+      <SheetContent>
         <SheetHeader>
           <SheetTitle>Edit profile</SheetTitle>
           <SheetDescription>
@@ -35,9 +36,9 @@ export default function SheetDemo() {
         </div>
         <SheetFooter>
           <Button type="submit">Save changes</Button>
-          <SheetClose variant="outline">Close</SheetClose>
+          <SheetClose render={<Button variant="outline" />}>Close</SheetClose>
         </SheetFooter>
-      </Sheet>
-    </SheetTrigger>
+      </SheetContent>
+    </Sheet>
   )
 }

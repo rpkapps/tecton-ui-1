@@ -1,7 +1,7 @@
 ---
 title: Attachment
 description: Displays a file or image attachment with media, metadata, upload state, and actions.
-upstream: apps/v4/content/docs/components/aria/attachment.mdx
+upstream: apps/v4/content/docs/components/base/attachment.mdx
 ---
 
 <ComponentPreview
@@ -123,9 +123,9 @@ Add an `AttachmentTrigger` to make the whole card open a link or dialog. It fill
 <Dialog>
   <Attachment>
     {/* media, content, actions */}
-    <DialogTrigger>
-      <AttachmentTrigger aria-label="Preview research-summary.pdf" />
-    </DialogTrigger>
+    <DialogTrigger
+      render={<AttachmentTrigger aria-label="Preview research-summary.pdf" />}
+    />
   </Attachment>
   <DialogContent>{/* ... */}</DialogContent>
 </Dialog>
@@ -151,15 +151,14 @@ Add an `AttachmentTrigger` to make the whole card open a link or dialog. It fill
 
 ```tsx lineNumbers
 <AttachmentTrigger
-  render={(props) => (
+  render={
     <a
-      {...props}
       href={url}
       target="_blank"
       rel="noreferrer"
       aria-label="Open workspace.png"
     />
-  )}
+  }
 />
 ```
 
@@ -213,7 +212,7 @@ Use `AttachmentMedia variant="image"` around an `<img>` and `orientation="vertic
 
 <Do>
 
-Give every `AttachmentAction` an `aria-label` naming the action and the file; it is a `Button`, so press it with `onPress`.
+Give every `AttachmentAction` an `aria-label` naming the action and the file; it is a `Button`, so press it with `onClick`.
 
 </Do>
 

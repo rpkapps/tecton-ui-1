@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/field-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/field-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Checkbox } from "@tecton/react/components/checkbox"
 import {
   Field,
@@ -20,7 +20,7 @@ export default function FieldGroupExample() {
         </FieldDescription>
         <FieldGroup data-slot="checkbox-group">
           <Field orientation="horizontal">
-            <Checkbox id="push" defaultSelected isDisabled />
+            <Checkbox id="push" defaultChecked disabled />
             <FieldLabel htmlFor="push" className="font-normal">
               Push notifications
             </FieldLabel>

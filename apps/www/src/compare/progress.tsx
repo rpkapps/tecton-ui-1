@@ -31,7 +31,7 @@ export default function ProgressMatrix() {
               <Progress
                 key="indeterminate"
                 aria-label="Linear progress"
-                isIndeterminate
+                value={null}
                 className="w-72"
               />,
             ],
@@ -50,7 +50,7 @@ export default function ProgressMatrix() {
                 key="indeterminate"
                 aria-label="Circular progress"
                 size="md"
-                isIndeterminate
+                value={null}
               />,
             ],
           },

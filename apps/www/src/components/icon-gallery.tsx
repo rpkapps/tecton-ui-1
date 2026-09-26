@@ -10,7 +10,11 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@tecton/react/components/toggle-group"
-import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
 import { tectonIcons } from "@tecton/react/icons"
 
 const sizes = [16, 20, 24] as const
@@ -51,30 +55,26 @@ export function IconGallery() {
         />
         <ToggleGroup
           aria-label="Variant"
-          selectionMode="single"
-          selectedKeys={[variant]}
-          disallowEmptySelection
-          onSelectionChange={(keys) => {
-            const next = [...keys][0]
+          value={[variant]}
+          onValueChange={(value) => {
+            const next = value[0]
             if (next === "outlined" || next === "filled") setVariant(next)
           }}
         >
-          <ToggleGroupItem id="outlined">Outlined</ToggleGroupItem>
-          <ToggleGroupItem id="filled">Filled</ToggleGroupItem>
+          <ToggleGroupItem value="outlined">Outlined</ToggleGroupItem>
+          <ToggleGroupItem value="filled">Filled</ToggleGroupItem>
         </ToggleGroup>
         <ToggleGroup
           aria-label="Size"
-          selectionMode="single"
-          selectedKeys={[String(size)]}
-          disallowEmptySelection
-          onSelectionChange={(keys) => {
-            const next = Number([...keys][0])
+          value={[String(size)]}
+          onValueChange={(value) => {
+            const next = Number(value[0])
             if (sizes.includes(next as (typeof sizes)[number]))
               setSize(next as (typeof sizes)[number])
           }}
         >
           {sizes.map((s) => (
-            <ToggleGroupItem key={s} id={String(s)}>
+            <ToggleGroupItem key={s} value={String(s)}>
               {s}px
             </ToggleGroupItem>
           ))}
@@ -93,9 +93,8 @@ export function IconGallery() {
       </div>
       <div className="grid grid-cols-[repeat(auto-fill,minmax(7.5rem,1fr))] gap-2">
         {items.map((icon) => (
-          <TooltipTrigger key={icon.slug}>
-            <button
-              type="button"
+          <Tooltip key={icon.slug}>
+            <TooltipTrigger
               className={cn(
                 "flex flex-col items-center gap-2 rounded-md border bg-card p-3 text-xs outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60",
                 icon.source === "placeholder" && "border-dashed"
@@ -116,13 +115,13 @@ export function IconGallery() {
               <span className="w-full truncate text-center text-muted-foreground">
                 {icon.name}
               </span>
-            </button>
-            <Tooltip>
+            </TooltipTrigger>
+            <TooltipContent>
               {icon.description}
               {icon.source !== "svg" &&
                 ` · ${icon.source === "placeholder" ? "placeholder" : `lucide ${icon.lucide}`}`}
-            </Tooltip>
-          </TooltipTrigger>
+            </TooltipContent>
+          </Tooltip>
         ))}
       </div>
       {!items.length && (

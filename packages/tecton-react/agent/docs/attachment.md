@@ -23,7 +23,7 @@ import { Attachment, AttachmentGroup, AttachmentMedia, AttachmentContent, Attach
 - Compose it: `AttachmentMedia`, then `AttachmentContent` with `AttachmentTitle` and `AttachmentDescription`, then `AttachmentActions`.
 - Drive the look with `state="idle" | "uploading" | "processing" | "error" | "done"`, `size` and `orientation`.
 - Use `AttachmentMedia variant="image"` around an `<img>` and `orientation="vertical"` for a thumbnail; lay several cards out in an `AttachmentGroup`.
-- Give every `AttachmentAction` an `aria-label` naming the action and the file; it is a `Button`, so press it with `onPress`.
+- Give every `AttachmentAction` an `aria-label` naming the action and the file; it is a `Button`, so press it with `onClick`.
 - Limit the file picker to the formats the import can read (LAS, DLIS, SEG-Y).
 - State the accepted formats and size limit in a `FieldDescription` under the file input ("LAS or DLIS, up to 200 MB").
 
@@ -102,6 +102,6 @@ The root is a `div`, so the handler is mouse-only; `AttachmentTrigger` is a real
 ## Before you finish
 
 - An attached file is an `Attachment` (`AttachmentMedia`, `AttachmentContent`, `AttachmentActions`) driven through `state="idle" | "uploading" | "processing" | "error" | "done"`, not a `Badge` and not a hand-painted error border.
-- Every `AttachmentAction` has an `aria-label` naming the action and the file and fires through `onPress`, and the card opens through `AttachmentTrigger` rather than an `onClick` on the root `div`.
+- Every `AttachmentAction` has an `aria-label` naming the action and the file and fires through `onClick`, and the card opens through `AttachmentTrigger` rather than an `onClick` on the root `div`.
 
 Related: message, badge, item

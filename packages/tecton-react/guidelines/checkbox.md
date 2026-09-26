@@ -17,30 +17,21 @@ related: [Switch, Field]
 
 - An independent yes/no value the user confirms by submitting the form.
 - Several options from a list may be picked at once.
-- A parent row summarising children that are partly selected (`isIndeterminate`).
+- A parent row summarising children that are partly selected (`indeterminate`).
 
 ## Do
 
-- Control it with `isSelected` and `onChange(isSelected: boolean)`, or leave it uncontrolled with `defaultSelected`.
+- Control it with `checked` and `onCheckedChange(checked: boolean)`, or leave it uncontrolled with `defaultChecked`.
 - Give it an `id` and point a `FieldLabel htmlFor` at it inside a `Field orientation="horizontal"`; add `FieldContent` when there is a description.
-- Disable with `isDisabled` and put `data-disabled` on the `Field` so the label dims with it.
-- Mark errors with `isInvalid` on the checkbox and `data-invalid` on the `Field`, then render the message in `FieldError`.
-- Inside a `Table` with `selectionMode`, use `slot="selection"` instead of wiring state yourself.
+- Disable with `disabled` and put `data-disabled` on the `Field` so the label dims with it.
+- Mark errors with `aria-invalid` on the checkbox and `data-invalid` on the `Field`, then render the message in `FieldError`.
+- Submit it with a form through `name` (and `value`); a row-selection column in a `Table` is a `Checkbox` per row driven by your own selection state.
 
 ## Don't
 
-### CRITICAL Using checked and onCheckedChange from Radix
+### CRITICAL isSelected and onChange instead of checked
 
 Wrong:
-
-```tsx
-<Field orientation="horizontal">
-  <Checkbox id="terms" checked={agreed} onCheckedChange={setAgreed} />
-  <FieldLabel htmlFor="terms">Accept the terms</FieldLabel>
-</Field>
-```
-
-Correct:
 
 ```tsx
 <Field orientation="horizontal">
@@ -49,7 +40,16 @@ Correct:
 </Field>
 ```
 
-React Aria reads `isSelected` and `onChange`; the Radix names are unknown props that never reach the hidden input, so the box toggles its own uncontrolled state and `agreed` never changes.
+Correct:
+
+```tsx
+<Field orientation="horizontal">
+  <Checkbox id="terms" checked={agreed} onCheckedChange={setAgreed} />
+  <FieldLabel htmlFor="terms">Accept the terms</FieldLabel>
+</Field>
+```
+
+`isSelected` is not a prop, and `onChange` is the DOM change event of the root element, not a boolean callback, so the box toggles its own uncontrolled state and `agreed` never changes.
 
 ### HIGH Labelling the checkbox with a plain span
 
@@ -71,14 +71,14 @@ Correct:
 </Field>
 ```
 
-A `span` is not a label, so the hidden input has no accessible name and the text does not toggle it; `Field` also supplies the alignment and the disabled state the checkbox styles read.
+A `span` is not a label, so the checkbox has no accessible name and the text does not toggle it; `Field` also supplies the alignment and the disabled state the checkbox styles read.
 
 ### MEDIUM Colouring the checked box with a class
 
 Wrong:
 
 ```tsx
-<Checkbox id="ready" className="data-[selected=true]:bg-emerald-600" />
+<Checkbox id="ready" className="data-checked:bg-emerald-600" />
 ```
 
 Correct:

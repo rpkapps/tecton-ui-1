@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/input-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/input-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Field,
   FieldDescription,

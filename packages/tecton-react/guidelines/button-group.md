@@ -57,17 +57,17 @@ Wrong:
 
 ```tsx
 <ButtonGroup aria-label="View">
-  <Button variant={view === "list" ? "secondary" : "ghost"} onPress={() => setView("list")}>List</Button>
-  <Button variant={view === "map" ? "secondary" : "ghost"} onPress={() => setView("map")}>Map</Button>
+  <Button variant={view === "list" ? "secondary" : "ghost"} onClick={() => setView("list")}>List</Button>
+  <Button variant={view === "map" ? "secondary" : "ghost"} onClick={() => setView("map")}>Map</Button>
 </ButtonGroup>
 ```
 
 Correct:
 
 ```tsx
-<ToggleGroup aria-label="View" selectionMode="single" selectedKeys={[view]} onSelectionChange={(keys) => setView([...keys][0] as string)}>
-  <ToggleGroupItem id="list">List</ToggleGroupItem>
-  <ToggleGroupItem id="map">Map</ToggleGroupItem>
+<ToggleGroup aria-label="View" value={[view]} onValueChange={([next]) => next && setView(next)}>
+  <ToggleGroupItem value="list">List</ToggleGroupItem>
+  <ToggleGroupItem value="map">Map</ToggleGroupItem>
 </ToggleGroup>
 ```
 

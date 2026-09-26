@@ -1,12 +1,9 @@
 ---
 title: Color Swatch
-description: "A colour preview chip with optional label and value, for colour tags, legends and theme documentation."
-links:
-  doc: https://react-aria.adobe.com/ColorSwatch
+description: "A colour preview with optional label and detail text, for colour tags, legends and theme documentation; editable with a preset picker."
 ---
 
 <ComponentPreview name="color-swatch-demo" />
-
 
 ## Usage
 
@@ -15,30 +12,28 @@ import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 ```
 
 ```tsx
-<ColorSwatch color="#f59e0b" label="Sandstone" value="#f59e0b" />
+<ColorSwatch color="#f59e0b" label="Sandstone" detail="#f59e0b" />
 ```
 
-## Sizes
+The swatch is announced as an image named by your `aria-label` (or a string `label`) followed by a generated English colour name, such as "Sandstone, vibrant orange"; `colorName` replaces the generated name.
 
-Use the `size` prop, from 12 px (`xs`) to 48 px (`xl`).
+## Sizes
 
 <ComponentPreview name="color-swatch-sizes" />
 
 ## Shapes
 
-Use the `shape` prop for square, rounded or circular swatches.
-
 <ComponentPreview name="color-swatch-shapes" />
 
 ## Labels
 
-Pass `label` and/or `value` to render text next to the swatch; the value is set in the mono font.
+`label` and `detail` render text next to the swatch; the detail is set in the mono font.
 
 <ComponentPreview name="color-swatch-labels" />
 
 ## Editable
 
-Pass `onChange` to make the swatch a button that opens a picker: a row of preset colours (the Tecton accent fills by default; override with `presets`) and a hex field for a custom colour. `onChange` receives the new colour as a hex string.
+`onColorChange` turns the swatch into a button that opens a picker: preset colours (the Tecton accents, `colorSwatchPresets`, unless you pass `presets`), the platform colour picker and a hex field. It receives the new colour as `#RRGGBB`. Arrow keys in the presets select as they move, so each press calls `onColorChange`; the hex field commits on Enter or blur and accepts any CSS colour.
 
 <ComponentPreview name="color-swatch-editable" />
 
@@ -49,8 +44,8 @@ Pass `onChange` to make the swatch a button that opens a picker: a row of preset
 ### Use it when
 
 - The colour *is* the data: a horizon colour, a facies legend, a theme token, a series fill.
-- The colour needs its name or its value beside it: `label` and `value`.
-- The user has to change it: `onChange` turns the swatch into a button with a preset and hex picker.
+- The colour needs its name or its value beside it: `label` and `detail`.
+- The user has to change it: `onColorChange` turns the swatch into a button with a preset and hex picker.
 
 ### Not for
 
@@ -64,7 +59,7 @@ Pass `onChange` to make the swatch a button that opens a picker: a row of preset
 
 <Do>
 
-Pass any CSS colour to `color` — a hex, an `oklch()` value or `var(--tecton-color-accent-lime-fill)`; values React Aria cannot parse render as a plain swatch with the value as background.
+Pass any CSS colour to `color` — a hex, `rgb()`, `hsl()`, `oklch()`, a keyword or `var(--tecton-color-accent-lime-fill)`; a translucent colour shows over a checkerboard.
 
 </Do>
 
@@ -76,13 +71,13 @@ Size with `size="xs" | "sm" | "md" | "lg" | "xl"` (12 to 48 px) and pick the cor
 
 <Do>
 
-Give it an `aria-label` whenever there is no `label`; the swatch is a `role="img"` element with no text of its own.
+Name what the colour stands for with `aria-label` (or a string `label`); the swatch appends the colour's English name itself ("Sandstone, vibrant orange"), and `colorName` replaces that name.
 
 </Do>
 
 <Do>
 
-Make it editable with `onChange`, which receives a hex string, and replace the Tecton accent presets with `presets` when the palette is domain-specific.
+Make it editable with `onColorChange`, which receives `#RRGGBB`, and replace the Tecton accent presets with `presets` when the palette is domain-specific; the presets are a radio group, so an arrow key selects as it moves.
 
 </Do>
 
@@ -119,12 +114,12 @@ The swatch is `role="img"` with an accessible name and carries `border border-bo
 
 </Dont>
 
-<Dont severity="HIGH" title="Opening the picker with a press handler">
+<Dont severity="HIGH" title="Opening the picker with a click handler">
 
 <Wrong>
 
 ```tsx
-<ColorSwatch color={color} onPress={() => setPickerOpen(true)} />
+<ColorSwatch color={color} onClick={() => setPickerOpen(true)} />
 ```
 
 </Wrong>
@@ -132,16 +127,16 @@ The swatch is `role="img"` with an accessible name and carries `border border-bo
 <Correct>
 
 ```tsx
-<ColorSwatch color={color} onChange={setColor} aria-label="Series colour" />
+<ColorSwatch color={color} onColorChange={setColor} aria-label="Series colour" />
 ```
 
 </Correct>
 
-`ColorSwatch` renders React Aria's non-interactive swatch unless `onChange` is given; only `onChange` wraps it in the `color-swatch-trigger` button with the preset row and the hex field, so `onPress` is not in the props type and lands on a `span` that never fires it.
+Without `onColorChange` the swatch is a non-focusable `role="img"` `span`, so an `onClick` on it is out of reach of the keyboard and of assistive technology; `onColorChange` wraps it in the `color-swatch-trigger` button that opens the preset radio group and the hex field.
 
 </Dont>
 
-<Dont severity="MEDIUM" title="Label and value written as sibling spans">
+<Dont severity="MEDIUM" title="Label and detail written as sibling spans">
 
 <Wrong>
 
@@ -158,12 +153,12 @@ The swatch is `role="img"` with an accessible name and carries `border border-bo
 <Correct>
 
 ```tsx
-<ColorSwatch color="#f59e0b" label="Sandstone" value="#f59e0b" />
+<ColorSwatch color="#f59e0b" label="Sandstone" detail="#f59e0b" />
 ```
 
 </Correct>
 
-With `label` and `value` the component renders the `color-swatch-item` row itself — name over value, the value in the mono face and `muted-foreground`, `className` moved from the swatch to the row — while `text-zinc-500` is stock Tailwind that emits no CSS at all.
+With `label` and `detail` the component renders the `color-swatch-item` row itself — name over detail, the detail in the mono face and `muted-foreground`, `className` moved from the swatch to the row — while `text-zinc-500` is stock Tailwind that emits no CSS at all.
 
 </Dont>
 
@@ -173,15 +168,16 @@ With `label` and `value` the component renders the `color-swatch-item` row itsel
 
 ### ColorSwatch
 
-React Aria [`ColorSwatch`](https://react-aria.adobe.com/ColorSwatch); accepts all its props.
+Other props go to the swatch `span`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `color` | `string \| Color` | - | Any CSS colour string or React Aria `Color`. |
-| `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | "md" | Swatch size. |
-| `shape` | `"square" \| "rounded" \| "circle"` | "rounded" | Corner radius. |
+| `color` | `string` | `"transparent"` | Any CSS colour, including `var(--token)`. |
+| `colorName` | `string` | generated | Replaces the colour name in the accessible name. |
+| `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | `"md"` | 12 / 16 / 24 / 32 / 48 px. |
+| `shape` | `"square" \| "rounded" \| "circle"` | `"rounded"` | Corner radius. |
 | `label` | `ReactNode` | - | Text next to the swatch. |
-| `value` | `ReactNode` | - | Secondary mono text (e.g. the hex value). |
-| `onChange` | `(color: string) => void` | - | Makes the swatch editable; called with the picked colour as hex. |
-| `presets` | `string[]` | Tecton accents | Preset colours shown by the editable picker; any CSS colour or `var(--token)`. A value that does not resolve to a colour is left out. |
-| `aria-label` | `string` | - | Accessible name when no label is rendered. |
+| `detail` | `ReactNode` | - | Secondary mono text, e.g. the hex value. |
+| `onColorChange` | `(color: string) => void` | - | Makes the swatch editable; called with the new colour as `#RRGGBB`. |
+| `presets` | `string[]` | `colorSwatchPresets` | Preset colours of the picker; values that resolve to no colour are left out. |
+| `aria-label` | `string` | - | What the colour stands for; names the button when editable (default "Edit colour"). |

@@ -1,10 +1,7 @@
 ---
 title: Checkbox
 description: A control that allows the user to toggle between checked and not checked.
-links:
-  doc: https://react-aria.adobe.com/Checkbox
-  api: https://react-aria.adobe.com/Checkbox#api
-upstream: apps/v4/content/docs/components/aria/checkbox.mdx
+upstream: apps/v4/content/docs/components/base/checkbox.mdx
 ---
 
 <ComponentPreview
@@ -24,8 +21,8 @@ import { Checkbox } from "@tecton/react/components/checkbox"
 
 ## Checked State
 
-Use `defaultSelected` for uncontrolled checkboxes, or `isSelected` and
-`onChange` to control the state.
+Use `defaultChecked` for uncontrolled checkboxes, or `checked` and
+`onCheckedChange` to control the state.
 
 ```tsx lineNumbers
 import * as React from "react"
@@ -33,13 +30,13 @@ import * as React from "react"
 export function Example() {
   const [checked, setChecked] = React.useState(false)
 
-  return <Checkbox isSelected={checked} onChange={setChecked} />
+  return <Checkbox checked={checked} onCheckedChange={setChecked} />
 }
 ```
 
 ## Invalid State
 
-Set `isInvalid` on the checkbox and `data-invalid` on the field wrapper to
+Set `aria-invalid` on the checkbox and `data-invalid` on the field wrapper to
 show the invalid styles.
 
 <ComponentPreview name="checkbox-invalid" />
@@ -58,7 +55,7 @@ Use `FieldContent` and `FieldDescription` for helper text.
 
 ## Disabled
 
-Use the `isDisabled` prop to prevent interaction and add the `data-disabled` attribute to the `<Field>` component for disabled styles.
+Use the `disabled` prop to prevent interaction and add the `data-disabled` attribute to the `<Field>` component for disabled styles.
 
 <ComponentPreview name="checkbox-disabled" />
 
@@ -93,7 +90,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 - An independent yes/no value the user confirms by submitting the form.
 - Several options from a list may be picked at once.
-- A parent row summarising children that are partly selected (`isIndeterminate`).
+- A parent row summarising children that are partly selected (`indeterminate`).
 
 ### Not for
 
@@ -107,7 +104,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Control it with `isSelected` and `onChange(isSelected: boolean)`, or leave it uncontrolled with `defaultSelected`.
+Control it with `checked` and `onCheckedChange(checked: boolean)`, or leave it uncontrolled with `defaultChecked`.
 
 </Do>
 
@@ -119,25 +116,25 @@ Give it an `id` and point a `FieldLabel htmlFor` at it inside a `Field orientati
 
 <Do>
 
-Disable with `isDisabled` and put `data-disabled` on the `Field` so the label dims with it.
+Disable with `disabled` and put `data-disabled` on the `Field` so the label dims with it.
 
 </Do>
 
 <Do>
 
-Mark errors with `isInvalid` on the checkbox and `data-invalid` on the `Field`, then render the message in `FieldError`.
+Mark errors with `aria-invalid` on the checkbox and `data-invalid` on the `Field`, then render the message in `FieldError`.
 
 </Do>
 
 <Do>
 
-Inside a `Table` with `selectionMode`, use `slot="selection"` instead of wiring state yourself.
+Submit it with a form through `name` (and `value`); a row-selection column in a `Table` is a `Checkbox` per row driven by your own selection state.
 
 </Do>
 
 <Do>
 
-Keep checkbox lists to about seven options; longer ones (wells, formations) use a type-to-filter `Combobox` with chips (`selectionMode="multiple"`).
+Keep checkbox lists to about seven options; longer ones (wells, formations) use a type-to-filter `Combobox` with chips (`multiple`).
 
 </Do>
 
@@ -151,13 +148,13 @@ A choice card, a `FieldLabel` wrapping a whole `Field`, holds no `Button` or `Li
 
 ### Don't
 
-<Dont severity="CRITICAL" title="Using checked and onCheckedChange from Radix">
+<Dont severity="CRITICAL" title="isSelected and onChange instead of checked">
 
 <Wrong>
 
 ```tsx
 <Field orientation="horizontal">
-  <Checkbox id="terms" checked={agreed} onCheckedChange={setAgreed} />
+  <Checkbox id="terms" isSelected={agreed} onChange={setAgreed} />
   <FieldLabel htmlFor="terms">Accept the terms</FieldLabel>
 </Field>
 ```
@@ -168,14 +165,14 @@ A choice card, a `FieldLabel` wrapping a whole `Field`, holds no `Button` or `Li
 
 ```tsx
 <Field orientation="horizontal">
-  <Checkbox id="terms" isSelected={agreed} onChange={setAgreed} />
+  <Checkbox id="terms" checked={agreed} onCheckedChange={setAgreed} />
   <FieldLabel htmlFor="terms">Accept the terms</FieldLabel>
 </Field>
 ```
 
 </Correct>
 
-React Aria reads `isSelected` and `onChange`; the Radix names are unknown props that never reach the hidden input, so the box toggles its own uncontrolled state and `agreed` never changes.
+`isSelected` is not a prop, and `onChange` is the DOM change event of the root element, not a boolean callback, so the box toggles its own uncontrolled state and `agreed` never changes.
 
 </Dont>
 
@@ -203,7 +200,7 @@ React Aria reads `isSelected` and `onChange`; the Radix names are unknown props 
 
 </Correct>
 
-A `span` is not a label, so the hidden input has no accessible name and the text does not toggle it; `Field` also supplies the alignment and the disabled state the checkbox styles read.
+A `span` is not a label, so the checkbox has no accessible name and the text does not toggle it; `Field` also supplies the alignment and the disabled state the checkbox styles read.
 
 </Dont>
 
@@ -212,7 +209,7 @@ A `span` is not a label, so the hidden input has no accessible name and the text
 <Wrong>
 
 ```tsx
-<Checkbox id="ready" className="data-[selected=true]:bg-emerald-600" />
+<Checkbox id="ready" className="data-checked:bg-emerald-600" />
 ```
 
 </Wrong>
@@ -230,7 +227,3 @@ The checked fill is already `bg-ghost-active-foreground` from the component, and
 </Dont>
 
 {/* guidelines:end */}
-
-## API Reference
-
-See the [React Aria](https://react-aria.adobe.com/Checkbox#api) documentation for more information.

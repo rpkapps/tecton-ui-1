@@ -36,11 +36,14 @@ describe("generated components", () => {
 describe("SelectTrigger variant", () => {
   function renderTrigger(variant?: "outline" | "filled" | "text") {
     render(
-      <Select aria-label="Well">
-        <SelectTrigger variant={variant}>Pick</SelectTrigger>
+      <Select>
+        <SelectTrigger aria-label="Well" variant={variant}>
+          Pick
+        </SelectTrigger>
       </Select>
     )
-    return screen.getByRole("button")
+    // Base UI's Select trigger is a combobox (it owns the listbox popup).
+    return screen.getByRole("combobox")
   }
 
   it("renders the outline border by default", () => {
@@ -56,20 +59,23 @@ describe("SelectTrigger variant", () => {
     expect(trigger).not.toHaveClass("bg-transparent")
   })
 
-  it("renders text as an underline without side padding", () => {
+  it("renders text as an underline without inline-start padding", () => {
     const trigger = renderTrigger("text")
-    expect(trigger).toHaveClass("rounded-none", "border-x-0", "pl-0")
-    expect(trigger).not.toHaveClass("pl-2")
+    // Logical padding: components.json has "rtl": true.
+    expect(trigger).toHaveClass("rounded-none", "border-x-0", "ps-0")
+    expect(trigger).not.toHaveClass("ps-2")
   })
 
   it("keeps a visible focus ring on every variant", () => {
     for (const variant of ["outline", "filled", "text"] as const) {
       const { unmount } = render(
-        <Select aria-label={variant}>
-          <SelectTrigger variant={variant}>Pick</SelectTrigger>
+        <Select>
+          <SelectTrigger aria-label={variant} variant={variant}>
+            Pick
+          </SelectTrigger>
         </Select>
       )
-      expect(screen.getByRole("button")).toHaveClass(
+      expect(screen.getByRole("combobox")).toHaveClass(
         "focus-visible:ring-2",
         "focus-visible:ring-ring"
       )

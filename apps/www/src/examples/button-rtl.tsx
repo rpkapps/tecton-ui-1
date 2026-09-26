@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/button-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/button-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { ArrowRightIcon, PlusIcon } from "lucide-react"
@@ -54,7 +54,7 @@ export function ButtonRtl() {
       <Button variant="outline" size="icon" aria-label="Add">
         <PlusIcon />
       </Button>
-      <Button variant="secondary" isDisabled>
+      <Button variant="secondary" disabled>
         <Spinner data-icon="inline-start" /> {t.loading}
       </Button>
     </div>

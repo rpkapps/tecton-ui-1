@@ -7,12 +7,16 @@ export default function CountBadgeDemo() {
   return (
     <div className="flex items-center gap-6">
       <CountBadge count={4}>
-        <Button variant="outline" size="icon" aria-label="Notifications">
+        <Button
+          variant="outline"
+          size="icon"
+          aria-label="Notifications, 4 unread"
+        >
           <BellIcon />
         </Button>
       </CountBadge>
       <CountBadge count={128} color="destructive">
-        <Button variant="outline" size="icon" aria-label="Messages">
+        <Button variant="outline" size="icon" aria-label="Messages, 128 unread">
           <MailIcon />
         </Button>
       </CountBadge>

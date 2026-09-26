@@ -6,6 +6,7 @@ import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
   DialogClose,
+  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -24,15 +25,13 @@ export default function ThemeRootDemo() {
   const [open, setOpen] = React.useState(false)
   const [slot, setSlot] = React.useState<string | null>(null)
 
-  React.useEffect(() => {
-    if (!open) {
-      setSlot(null)
-      return
-    }
-    const dialog = document.querySelector('[role="dialog"]')
-    const root = dialog?.closest("[data-tecton-root]")
+  // The popup mounts after `open` flips, so an effect on `open` would look
+  // before it exists; a ref callback runs once it is in the document.
+  const locate = React.useCallback((popup: HTMLDivElement | null) => {
+    if (!popup) return
+    const root = popup.closest("[data-tecton-root]")
     setSlot(root?.getAttribute("data-slot") ?? null)
-  }, [open])
+  }, [])
 
   return (
     <ThemeRoot className="rounded-lg border p-6 [--primary:var(--tecton-palette-green-560)]">
@@ -40,9 +39,9 @@ export default function ThemeRootDemo() {
         <p className="text-muted-foreground">
           Everything inside this root uses its own <code>--primary</code>.
         </p>
-        <DialogTrigger isOpen={open} onOpenChange={setOpen}>
-          <Button>Open dialog</Button>
-          <Dialog className="sm:max-w-sm">
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger render={<Button />}>Open dialog</DialogTrigger>
+          <DialogContent ref={locate} className="sm:max-w-sm">
             <DialogHeader>
               <DialogTitle>Inside the overlay container</DialogTitle>
               <DialogDescription>
@@ -51,11 +50,13 @@ export default function ThemeRootDemo() {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <DialogClose variant="outline">Close</DialogClose>
+              <DialogClose render={<Button variant="outline" />}>
+                Close
+              </DialogClose>
               <Button>Primary action</Button>
             </DialogFooter>
-          </Dialog>
-        </DialogTrigger>
+          </DialogContent>
+        </Dialog>
         <p aria-live="polite" className="text-muted-foreground">
           {open ? (
             slot === "theme-root-overlay" ? (

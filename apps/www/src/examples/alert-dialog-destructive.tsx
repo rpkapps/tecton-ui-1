@@ -1,10 +1,11 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/alert-dialog-destructive.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/alert-dialog-destructive.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Trash2Icon } from "lucide-react"
 
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
@@ -16,9 +17,11 @@ import { Button } from "@tecton/react/components/button"
 
 export function AlertDialogDestructive() {
   return (
-    <AlertDialogTrigger>
-      <Button variant="destructive">Delete Chat</Button>
-      <AlertDialog size="sm">
+    <AlertDialog>
+      <AlertDialogTrigger
+        render={<Button variant="destructive">Delete Chat</Button>}
+      />
+      <AlertDialogContent size="sm">
         <AlertDialogHeader>
           <AlertDialogMedia className="bg-destructive/10 text-destructive dark:bg-destructive/20 dark:text-destructive">
             <Trash2Icon />
@@ -33,7 +36,7 @@ export function AlertDialogDestructive() {
           <AlertDialogCancel variant="outline">Cancel</AlertDialogCancel>
           <AlertDialogAction variant="destructive">Delete</AlertDialogAction>
         </AlertDialogFooter>
-      </AlertDialog>
-    </AlertDialogTrigger>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

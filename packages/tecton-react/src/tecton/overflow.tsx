@@ -2,17 +2,13 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import {
-  ButtonContext,
-  Toolbar as ToolbarPrimitive,
-  type ToolbarProps as ToolbarPrimitiveProps,
-} from "react-aria-components"
 import { EllipsisIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import { countBadgeVariants } from "@tecton/react/tecton/count-badge"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -21,14 +17,19 @@ import {
   DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
 import { Separator } from "@tecton/react/components/separator"
-import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 /**
  * Tecton Overflow — a flex row that gives up space in stages when its
  * container gets narrower: elastic items shrink, labels collapse to icons,
  * then items move into a trailing "More" menu, lowest priority first
- * (`docs/OVERFLOW-RULES.md`). `Toolbar` is the same row on a React Aria
- * `Toolbar`; `Overflow` is the plain `div`.
+ * (`docs/OVERFLOW-RULES.md`). `Toolbar` is the same row as a toolbar (one
+ * tab stop, arrow keys between its controls); `Overflow` is the plain `div`.
  *
  * Only `OverflowItem`s leave the row; unwrapped children are fixed. Items,
  * dividers and spacers must be direct children of the row.
@@ -87,10 +88,9 @@ function hasIcon(element: HTMLElement) {
 }
 
 /**
- * A real element in a live document: the only kind the row measures. React
- * Aria collections (Tabs, ListBox, Menu…) render their children a second time
- * into a hidden tree to build the collection, of fake nodes or inside an inert
- * `<template>`; `getComputedStyle` and the observers throw on those.
+ * A real element in a live document: the only kind the row measures.
+ * `getComputedStyle` and the observers throw on a detached node or on one
+ * rendered into another document's inert `<template>`.
  */
 function isMeasurable(node: Node | null | undefined): node is HTMLElement {
   const view = node?.ownerDocument?.defaultView
@@ -157,8 +157,8 @@ class OverflowStore {
   // ---- lifecycle -----------------------------------------------------------
 
   attach(root: HTMLElement) {
-    // A copy in a collection's hidden tree: nothing to measure, and the
-    // store stays detached, so every pass is a no-op.
+    // Not in a live document: nothing to measure, and the store stays
+    // detached, so every pass is a no-op.
     if (!isMeasurable(root)) return
     this.root = root
     this.observer = new ResizeObserver((entries) => {
@@ -732,18 +732,174 @@ type OverflowOptions = {
 }
 
 type OverflowProps = React.ComponentProps<"div"> & OverflowOptions
-type ToolbarProps = Omit<
-  ToolbarPrimitiveProps,
-  "className" | "children" | "orientation"
-> &
-  OverflowOptions & {
-    className?: string
-    children?: React.ReactNode
-    ref?: React.Ref<HTMLDivElement>
+type ToolbarProps = OverflowProps
+
+// ---- toolbar keyboard ----------------------------------------------------------
+
+const FOCUSABLE =
+  'a[href], area[href], button, input:not([type="hidden"]), select, textarea, iframe, summary, [contenteditable]:not([contenteditable="false"]), [tabindex]'
+
+function isVisible(element: HTMLElement, root: HTMLElement) {
+  // An item in the More menu is `display: none` in the row.
+  if (element.closest("[data-overflowing], [inert], [hidden]")) return false
+  if (typeof element.checkVisibility === "function") {
+    return element.checkVisibility({ visibilityProperty: true })
+  }
+  for (
+    let node: HTMLElement | null = element;
+    node;
+    node = node.parentElement
+  ) {
+    const style = getComputedStyle(node)
+    if (style.display === "none" || style.visibility === "hidden") return false
+    if (node === root) break
+  }
+  return true
+}
+
+/** The controls a Tab or an arrow key can land on, in document order. */
+function tabbables(root: HTMLElement) {
+  return Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+    (element) =>
+      element.tabIndex >= 0 &&
+      !element.matches(":disabled") &&
+      isVisible(element, root)
+  )
+}
+
+/**
+ * A text field keeps the arrow keys along its text until the caret reaches
+ * the edge; a multi-line one keeps Up/Down.
+ */
+function keepsArrow(target: HTMLElement, forward: boolean, inline: boolean) {
+  if (target.isContentEditable) return true
+  const multiline = target instanceof HTMLTextAreaElement
+  if (!inline) return multiline
+  if (!multiline && !(target instanceof HTMLInputElement)) return false
+  let start: number | null = null
+  try {
+    start = target.selectionStart
+  } catch {
+    // Inputs without a caret (checkbox, range…) throw or return null.
+  }
+  if (start === null) return false
+  if (start !== target.selectionEnd) return true
+  return forward ? start < target.value.length : start > 0
+}
+
+/**
+ * Toolbar keyboard interaction (WAI-ARIA toolbar pattern) over every control
+ * in the row, whatever renders it: the arrow keys of the row's axis move
+ * between the visible controls without wrapping (mirrored when the
+ * `TectonProvider` direction is right to left), Tab and
+ * Shift+Tab leave the toolbar, and coming back with the keyboard returns to
+ * the control that last had focus. A control that uses the arrow keys itself
+ * (a text field before its edge, a tab list, a toggle group) keeps them.
+ */
+function useToolbarKeyboard(
+  ref: React.RefObject<HTMLDivElement | null>,
+  orientation: Orientation
+) {
+  const lastFocused = React.useRef<HTMLElement | null>(null)
+  const pointer = React.useRef(false)
+  const direction = useDirection()
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const root = ref.current
+    const target = event.target as HTMLElement
+    // React bubbles events out of portals: a menu opened from the row is not
+    // part of it.
+    if (!root || !root.contains(target) || event.defaultPrevented) return
+    if (event.altKey || event.ctrlKey || event.metaKey) return
+
+    if (event.key === "Tab") {
+      // Move to the first or last control and let the browser step past
+      // it, out of the toolbar.
+      const list = tabbables(root)
+      const edge = event.shiftKey ? list[0] : list.at(-1)
+      lastFocused.current = document.activeElement as HTMLElement | null
+      if (edge && edge !== target) edge.focus()
+      return
+    }
+
+    let forward: boolean
+    if (orientation === "horizontal") {
+      if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return
+      forward = (event.key === "ArrowRight") !== (direction === "rtl")
+    } else {
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return
+      forward = event.key === "ArrowDown"
+    }
+    if (
+      event.shiftKey ||
+      keepsArrow(target, forward, orientation === "horizontal")
+    )
+      return
+
+    const list = tabbables(root)
+    const others = list.filter(
+      (element) => element !== target && !element.contains(target)
+    )
+    const next = forward
+      ? others.find(
+          (element) =>
+            target.compareDocumentPosition(element) &
+            Node.DOCUMENT_POSITION_FOLLOWING
+        )
+      : others
+          .filter(
+            (element) =>
+              target.compareDocumentPosition(element) &
+              Node.DOCUMENT_POSITION_PRECEDING
+          )
+          .at(-1)
+    if (!next) return
+    event.preventDefault()
+    next.focus()
   }
 
+  // Focus events also bubble out of portals (an open menu): only the row's
+  // own controls count.
+  const onBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+    const root = ref.current
+    if (!root || !root.contains(event.target)) return
+    if (root.contains(event.relatedTarget)) return
+    if (!lastFocused.current) lastFocused.current = event.target
+  }
+
+  const onFocus = (event: React.FocusEvent<HTMLDivElement>) => {
+    const root = ref.current
+    const last = lastFocused.current
+    if (!root || !root.contains(event.target)) return
+    if (root.contains(event.relatedTarget)) return
+    lastFocused.current = null
+    // A click chose its own control.
+    if (pointer.current || !last || last === event.target) return
+    if (tabbables(root).includes(last)) last.focus()
+  }
+
+  const onPointerDownCapture = () => {
+    pointer.current = true
+    requestAnimationFrame(() => {
+      pointer.current = false
+    })
+  }
+
+  return { onKeyDown, onBlur, onFocus, onPointerDownCapture }
+}
+
+function callBoth<TEvent>(
+  theirs: ((event: TEvent) => void) | undefined,
+  own: (event: TEvent) => void
+) {
+  return (event: TEvent) => {
+    theirs?.(event)
+    own(event)
+  }
+}
+
 function OverflowRoot({
-  as: Component,
+  toolbar,
   className,
   orientation = "horizontal",
   labels = "auto",
@@ -753,8 +909,12 @@ function OverflowRoot({
   overflowBadge = false,
   ref: refProp,
   children,
+  onKeyDown,
+  onFocus,
+  onBlur,
+  onPointerDownCapture,
   ...props
-}: (OverflowProps | ToolbarProps) & { as: "div" | typeof ToolbarPrimitive }) {
+}: OverflowProps & { toolbar: boolean }) {
   // One store per row. Recreated if hot reload replaced the class, so an old
   // instance is never driven by new code.
   const storeRef = React.useRef<OverflowStore>(null)
@@ -764,6 +924,7 @@ function OverflowRoot({
   const store = storeRef.current
   const ref = React.useRef<HTMLDivElement>(null)
   const mergedRef = useMergedRef(ref, refProp)
+  const keyboard = useToolbarKeyboard(ref, orientation)
 
   React.useLayoutEffect(() => {
     store.configure(orientation, labels, minimumVisible)
@@ -782,14 +943,26 @@ function OverflowRoot({
     [store, orientation]
   )
   const vertical = orientation === "vertical"
+  const handlers = toolbar
+    ? {
+        onKeyDown: callBoth(onKeyDown, keyboard.onKeyDown),
+        onFocus: callBoth(onFocus, keyboard.onFocus),
+        onBlur: callBoth(onBlur, keyboard.onBlur),
+        onPointerDownCapture: callBoth(
+          onPointerDownCapture,
+          keyboard.onPointerDownCapture
+        ),
+      }
+    : { onKeyDown, onFocus, onBlur, onPointerDownCapture }
   return (
     <OverflowContext.Provider value={context}>
-      <Component
+      <div
         ref={mergedRef}
-        data-slot={Component === "div" ? "overflow" : "toolbar"}
+        role={toolbar ? "toolbar" : undefined}
+        aria-orientation={toolbar ? orientation : undefined}
+        data-slot={toolbar ? "toolbar" : "overflow"}
         data-overflow-root=""
         data-orientation={orientation}
-        orientation={Component === "div" ? undefined : orientation}
         className={cn(
           "flex min-w-0 items-center gap-2",
           vertical && "min-h-0 flex-col items-stretch",
@@ -801,33 +974,38 @@ function OverflowRoot({
               : "overflow-x-auto",
           className
         )}
-        {...(props as object)}
+        {...props}
+        {...handlers}
       >
         {children}
         {menu ? <OverflowMenu badge={overflowBadge} /> : null}
-      </Component>
+      </div>
     </OverflowContext.Provider>
   )
 }
 
 /** The plain `div` row. */
 function Overflow(props: OverflowProps) {
-  return <OverflowRoot as="div" {...props} />
+  return <OverflowRoot toolbar={false} {...props} />
 }
 
 /**
- * Tecton Toolbar — the row on a React Aria `Toolbar`: one tab stop, arrow
- * keys move between the visible controls. Give it an `aria-label`.
+ * Tecton Toolbar — the row as a toolbar: one tab stop, arrow keys move
+ * between the visible controls, whatever renders them. Give it an
+ * `aria-label`.
  */
 function Toolbar(props: ToolbarProps) {
-  return <OverflowRoot as={ToolbarPrimitive} {...props} />
+  return <OverflowRoot toolbar {...props} />
 }
 
 // ---- item ----------------------------------------------------------------------
 
-type OverflowItemProps = Omit<React.ComponentProps<"div">, "children"> & {
-  /** Stable id, also the key of the menu item. */
-  id: string
+type OverflowItemProps = Omit<
+  React.ComponentProps<"div">,
+  "children" | "onClick"
+> & {
+  /** Stable identity of the item, also the key of its menu item. */
+  value: string
   /** Higher stays in the row longer. Default `0`. */
   priority?: number
   /** Text of the action: menu item label, tooltip, and accessible name when icon-only. */
@@ -836,9 +1014,10 @@ type OverflowItemProps = Omit<React.ComponentProps<"div">, "children"> & {
   icon?: React.ReactNode
   /** Shortcut hint of the menu item. */
   shortcut?: React.ReactNode
-  /** Press handler; also injected into a React Aria `Button` child through `ButtonContext`. */
-  onAction?: () => void
-  isDisabled?: boolean
+  /** Called by the menu item, and by the row control when the child is a single element. */
+  onClick?: () => void
+  /** Disables the menu item, and the row control when the child is a single element. */
+  disabled?: boolean
   variant?: "default" | "destructive"
   /**
    * `collapse` drops the label to icon-only; `keep` never does. Default:
@@ -856,14 +1035,19 @@ type OverflowItemProps = Omit<React.ComponentProps<"div">, "children"> & {
   children: React.ReactNode
 }
 
+type ControlProps = {
+  onClick?: (event: React.MouseEvent<HTMLElement>) => void
+  disabled?: boolean
+}
+
 function OverflowItem({
-  id,
+  value,
   priority = 0,
   label,
   icon,
   shortcut,
-  onAction,
-  isDisabled,
+  onClick,
+  disabled,
   variant = "default",
   labelBehavior: labelBehaviorProp,
   // Enabled only while icon-only, which a `keep` item never is.
@@ -893,11 +1077,10 @@ function OverflowItem({
     ? null
     : (overflow ?? (
         <DropdownMenuItem
-          id={id}
-          onAction={onAction}
-          isDisabled={isDisabled}
+          onClick={onClick}
+          disabled={disabled}
           variant={variant}
-          textValue={label}
+          label={label}
         >
           {icon}
           {label}
@@ -910,7 +1093,7 @@ function OverflowItem({
   React.useLayoutEffect(() => {
     if (fixed || !isMeasurable(ref.current)) return
     return store.registerItem({
-      id,
+      id: value,
       element: ref.current,
       priority,
       groupId,
@@ -918,12 +1101,12 @@ function OverflowItem({
       menu,
     })
     // `resolveLabelBehavior` is read again on every render just below.
-  }, [store, id, priority, groupId, labelBehaviorProp, fixed])
+  }, [store, value, priority, groupId, labelBehaviorProp, fixed])
 
   const state = React.useSyncExternalStore(
-    React.useCallback((cb) => store.subscribeItem(id, cb), [store, id]),
-    () => store.itemState(id),
-    () => store.itemState(id)
+    React.useCallback((cb) => store.subscribeItem(value, cb), [store, value]),
+    () => store.itemState(value),
+    () => store.itemState(value)
   )
   const visible = fixed || state.visible
   const compact = !fixed && state.compact
@@ -932,7 +1115,7 @@ function OverflowItem({
     if (fixed || !isMeasurable(ref.current)) return
     // A hidden item re-rendered: the menu re-reads its overflow form.
     if (!visible) store.bumpMenu()
-    store.setLabelBehavior(id, resolveLabelBehavior(ref.current))
+    store.setLabelBehavior(value, resolveLabelBehavior(ref.current))
   })
 
   // `collapse` without an icon would leave an empty button (rule 4.3).
@@ -949,45 +1132,51 @@ function OverflowItem({
       return
     warnedNoIcon.current = true
     console.warn(
-      `OverflowItem "${id}": labelBehavior="collapse" needs an icon in the control to collapse to (an svg, img or [data-icon]); without one the item turns into an empty button. Add an icon, or leave labelBehavior unset.`
+      `OverflowItem "${value}": labelBehavior="collapse" needs an icon in the control to collapse to (an svg, img or [data-icon]); without one the item turns into an empty button. Add an icon, or leave labelBehavior unset.`
     )
-  }, [id, labelBehaviorProp, fixed])
+  }, [value, labelBehaviorProp, fixed])
 
   // The last hidden item came back while the More trigger or its menu had
   // focus: they are gone now, so the focus comes here (rule 12.4).
   React.useLayoutEffect(() => {
-    if (!visible || store.focusItem !== id || !ref.current) return
+    if (!visible || store.focusItem !== value || !ref.current) return
     store.focusItem = null
     ref.current
       .querySelector<HTMLElement>(
         'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
       )
       ?.focus()
-  }, [store, id, visible])
+  }, [store, value, visible])
 
-  const buttonContext = React.useMemo(
-    () =>
-      onAction || isDisabled !== undefined
-        ? { onPress: onAction, isDisabled }
-        : null,
-    [onAction, isDisabled]
-  )
-
+  // A single element child is the row control: it gets the item's `onClick`
+  // and `disabled`, and the tooltip anchors to it.
   let content = children
-  if (tooltip && label) {
-    content = (
-      <TooltipTrigger isDisabled={!compact}>
-        {content}
-        <Tooltip>{label}</Tooltip>
-      </TooltipTrigger>
-    )
-  }
-  if (buttonContext) {
-    content = (
-      <ButtonContext.Provider value={buttonContext}>
-        {content}
-      </ButtonContext.Provider>
-    )
+  if (
+    React.isValidElement<ControlProps>(children) &&
+    children.type !== React.Fragment
+  ) {
+    let control = children
+    if (onClick || disabled !== undefined) {
+      const own = control.props
+      control = React.cloneElement(control, {
+        onClick: onClick
+          ? (event: React.MouseEvent<HTMLElement>) => {
+              own.onClick?.(event)
+              onClick()
+            }
+          : own.onClick,
+        disabled: own.disabled ?? disabled,
+      })
+    }
+    content =
+      tooltip && label ? (
+        <Tooltip disabled={!compact}>
+          <TooltipTrigger render={control} />
+          <TooltipContent>{label}</TooltipContent>
+        </Tooltip>
+      ) : (
+        control
+      )
   }
 
   return (
@@ -1036,7 +1225,8 @@ function OverflowLabel({ className, ...props }: React.ComponentProps<"span">) {
 // ---- group, divider, spacer ------------------------------------------------------
 
 type OverflowGroupProps = {
-  id: string
+  /** Stable identity of the group. */
+  value: string
   /** Section label in the menu. */
   label?: string
   /** `together` moves the whole group when its lowest item would leave. */
@@ -1045,18 +1235,23 @@ type OverflowGroupProps = {
 }
 
 function OverflowGroup({
-  id,
+  value,
   label,
   collapse = "individually",
   children,
 }: OverflowGroupProps) {
   const { store } = useOverflow("OverflowGroup")
   React.useLayoutEffect(
-    () => store.registerGroup({ id, label, together: collapse === "together" }),
-    [store, id, label, collapse]
+    () =>
+      store.registerGroup({
+        id: value,
+        label,
+        together: collapse === "together",
+      }),
+    [store, value, label, collapse]
   )
   return (
-    <OverflowGroupContext.Provider value={id}>
+    <OverflowGroupContext.Provider value={value}>
       {children}
     </OverflowGroupContext.Provider>
   )
@@ -1086,7 +1281,7 @@ function OverflowDivider({
       className={cn(
         orientation === "vertical"
           ? "w-4 self-center"
-          : "h-4 aria-[orientation=vertical]:self-center",
+          : "h-4 data-vertical:self-center",
         "data-overflowing:hidden",
         className
       )}
@@ -1115,8 +1310,8 @@ function OverflowSpacer({ className, ...props }: React.ComponentProps<"div">) {
 type OverflowMenuProps = {
   /** Accessible name of the default trigger. Default "More actions". */
   label?: string
-  /** A custom trigger button instead of the ellipsis. */
-  trigger?: React.ReactNode
+  /** A custom trigger button (an element, e.g. `<Button variant="outline" />`) instead of the ellipsis. */
+  trigger?: React.ReactElement
   /** Show how many items are in the menu as a badge on the trigger. Default `false`. */
   badge?: boolean
   className?: string
@@ -1162,30 +1357,35 @@ function OverflowMenu({
       data-slot="overflow-menu"
       className={cn("relative flex shrink-0 items-center", className)}
     >
-      <DropdownMenuTrigger
-        onOpenChange={(isOpen) => {
-          store.menuOpen = isOpen
+      <DropdownMenu
+        onOpenChange={(next) => {
+          store.menuOpen = next
         }}
       >
-        {trigger ?? (
-          <Button variant="ghost" size="icon" aria-label={label}>
+        {trigger ? (
+          <DropdownMenuTrigger render={trigger} />
+        ) : (
+          <DropdownMenuTrigger
+            render={<Button variant="ghost" size="icon" aria-label={label} />}
+          >
             <EllipsisIcon />
-          </Button>
+          </DropdownMenuTrigger>
         )}
-        <DropdownMenu
-          placement={orientation === "vertical" ? "end top" : "bottom end"}
+        <DropdownMenuContent
+          side={orientation === "vertical" ? "inline-end" : "bottom"}
+          align={orientation === "vertical" ? "start" : "end"}
           className="w-auto min-w-40"
         >
           {/* Mounted only while open, so the forms are read fresh each time. */}
           <OverflowMenuContents store={store} />
-        </DropdownMenu>
-      </DropdownMenuTrigger>
+        </DropdownMenuContent>
+      </DropdownMenu>
       {badge ? (
         // Visual only: the menu lists the items it counts.
         <span
           aria-hidden
           data-slot="overflow-menu-badge"
-          className={countBadgeVariants({ anchor: "top-right" })}
+          className={countBadgeVariants({ anchor: "top-end" })}
         >
           {state.hidden.length > 99 ? "99+" : state.hidden.length}
         </span>
@@ -1215,12 +1415,12 @@ function OverflowMenuContents({ store }: { store: OverflowStore }) {
   )
 }
 
-/** Whether the item with `id` is currently in the row. */
-function useIsOverflowItemVisible(id: string) {
+/** Whether the item with this `value` is currently in the row. */
+function useIsOverflowItemVisible(value: string) {
   const { store } = useOverflow("useIsOverflowItemVisible")
   return React.useSyncExternalStore(
-    React.useCallback((cb) => store.subscribeItem(id, cb), [store, id]),
-    () => store.itemState(id).visible,
+    React.useCallback((cb) => store.subscribeItem(value, cb), [store, value]),
+    () => store.itemState(value).visible,
     () => true
   )
 }

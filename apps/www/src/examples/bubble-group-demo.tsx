@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/bubble-group-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/bubble-group-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Bubble,
   BubbleContent,

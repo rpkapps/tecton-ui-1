@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/shimmer-once.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/shimmer-once.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -19,7 +19,7 @@ export function ShimmerOnce() {
       <Button
         variant="outline"
         size="sm"
-        onPress={() => setKey((value) => value + 1)}
+        onClick={() => setKey((value) => value + 1)}
       >
         Replay
       </Button>

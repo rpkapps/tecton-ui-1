@@ -7,11 +7,16 @@ import { LayersIcon, MoreVerticalIcon, XIcon } from "lucide-react"
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
-import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
 import {
   PanelActions,
   PanelHeader,
@@ -43,37 +48,44 @@ function AgentPanelHeader({
       />
       <PanelTitle>{title}</PanelTitle>
       <PanelActions>
-        <DropdownMenuTrigger>
-          <Button variant="ghost" size="icon-sm" aria-label="More options">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="More options"
+              />
+            }
+          >
             <MoreVerticalIcon />
-          </Button>
-          <DropdownMenu placement="bottom end">
-            <DropdownMenuItem
-              {...(onClear === undefined ? {} : { onAction: onClear })}
-            >
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="end" className="w-48">
+            <DropdownMenuItem onClick={onClear}>
               New conversation
             </DropdownMenuItem>
             <DropdownMenuItem>Export transcript</DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              variant="destructive"
-              {...(onClear === undefined ? {} : { onAction: onClear })}
-            >
+            <DropdownMenuItem variant="destructive" onClick={onClear}>
               Clear history
             </DropdownMenuItem>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
-        <TooltipTrigger>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            aria-label="Close panel"
-            {...(onClose === undefined ? {} : { onPress: onClose })}
+          </DropdownMenuContent>
+        </DropdownMenu>
+        <Tooltip>
+          <TooltipTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                aria-label="Close panel"
+                onClick={onClose}
+              />
+            }
           >
             <XIcon />
-          </Button>
-          <Tooltip>Close</Tooltip>
-        </TooltipTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Close</TooltipContent>
+        </Tooltip>
       </PanelActions>
     </PanelHeader>
   )

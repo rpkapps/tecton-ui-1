@@ -3,9 +3,9 @@
 import * as React from "react"
 import { cn } from "cn"
 import { CheckIcon } from "lucide-react"
-import { Button as PressableButton } from "react-aria-components"
 import { toast } from "sonner"
 
+import { Button } from "@tecton/react/components/button"
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -62,29 +62,27 @@ function Swatch({
   const key = `${prefix}${name}`
   const modeLabel = copyModes.find((m) => m.id === mode)?.label.toLowerCase()
   return (
-    // React Aria's Button drops `title`; the tooltip lives on the wrapper
-    <div
+    <Button
+      variant="ghost"
+      size="icon-xs"
       title={`bg-${name}\nvar(--${key})\nlight ${light[key]}\ndark ${dark[key]}\n\nclick to copy the ${modeLabel}`}
-      className={cn("size-5", className)}
+      aria-label={`Copy ${copyText(name, mode, false)} (${name}: ${light[key]} light, ${dark[key]} dark)`}
+      onClick={() => onCopy(name)}
+      className={cn(
+        "size-5 cursor-pointer rounded-xs border-0 active:not-aria-[haspopup]:translate-y-0",
+        "transition-transform hover:relative hover:z-10 hover:scale-150 hover:shadow-md",
+        "focus-visible:relative focus-visible:z-10",
+        className
+      )}
+      style={{ background: `var(--${key})` }}
     >
-      <PressableButton
-        aria-label={`Copy ${copyText(name, mode, false)} (${name}: ${light[key]} light, ${dark[key]} dark)`}
-        onPress={() => onCopy(name)}
-        className={cn(
-          "flex size-5 cursor-pointer items-center justify-center rounded-xs outline-none",
-          "transition-transform hover:relative hover:z-10 hover:scale-150 hover:shadow-md",
-          "focus-visible:relative focus-visible:z-10 focus-visible:ring-2 focus-visible:ring-ring"
-        )}
-        style={{ background: `var(--${key})` }}
-      >
-        {copied && (
-          <CheckIcon
-            className="size-3 text-white mix-blend-difference"
-            aria-hidden
-          />
-        )}
-      </PressableButton>
-    </div>
+      {copied && (
+        <CheckIcon
+          className="size-3 text-white mix-blend-difference"
+          aria-hidden
+        />
+      )}
+    </Button>
   )
 }
 
@@ -136,16 +134,15 @@ export function PaletteTable({
         </span>
         <ToggleGroup
           aria-label="What to copy"
-          selectionMode="single"
           size="sm"
-          selectedKeys={[mode]}
-          disallowEmptySelection
-          onSelectionChange={(keys) =>
-            setMode(String([...keys][0]) as CopyMode)
-          }
+          value={[mode]}
+          onValueChange={(value) => {
+            // one mode is always selected: pressing the current one is a no-op
+            if (value[0]) setMode(value[0] as CopyMode)
+          }}
         >
           {copyModes.map((m) => (
-            <ToggleGroupItem key={m.id} id={m.id}>
+            <ToggleGroupItem key={m.id} value={m.id}>
               {m.label}
             </ToggleGroupItem>
           ))}

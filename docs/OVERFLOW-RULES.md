@@ -174,7 +174,7 @@ the menu; the menu never sorts by priority.
 | Toggle group (multiple) | `ToggleGroup` | One `DropdownMenuCheckboxItem` per option, in a section | |
 | Dropdown trigger | `DropdownMenuTrigger` | `DropdownMenuSub` | Same items rendered in the submenu. |
 | Select | `Select` | `DropdownMenuSub` with a `DropdownMenuRadioGroup` | Value maps to the checked radio item. |
-| Text input, combobox, date picker | The control, elastic | `DropdownMenuItem` that opens a `Dialog` holding the same control | The control keeps its value and validation. React Aria 1.21 has no sub-dialog inside a menu, so the dialog is modal. |
+| Text input, combobox, date picker | The control, elastic | `DropdownMenuItem` that opens a `Dialog` holding the same control | The control keeps its value and validation. The dialog is modal. |
 | Link | `Link` | `DropdownMenuItem` rendering an anchor | |
 | Divider | `Separator orientation="vertical"` | `DropdownMenuSeparator` | Between the hidden items on either side of the divider, even when visible items also stand between them. |
 | Group | `OverflowGroup` | `DropdownMenuGroup` with a label | |
@@ -187,12 +187,12 @@ candidate and must fit in the reserve (rule 7).
 reason if one was given.
 
 6.3. A shortcut shown on the row button is shown as `DropdownMenuShortcut`
-in the menu. The shortcut keeps working while the item is hidden, because
-shortcuts are registered with the `Shortcuts` registry and not with the
-button.
+in the menu. The hint is only a label: Tecton binds no keys, so a key the
+application binds keeps working while the item is hidden, because the
+application binds it and not the button.
 
-6.4. A hidden item's `onAction`, `onPress` and `onChange` handlers are the
-same functions in both forms. The overflow form must never introduce a
+6.4. A hidden item's `onClick` and `onChange` handlers are the same
+functions in both forms. The overflow form must never introduce a
 second code path.
 
 6.5. A submenu (rules for dropdown and select) is one level deep. If the
@@ -299,8 +299,8 @@ focus returns to that item. This holds whether the focus was on the
 trigger or in the open menu; when several items return in one pass, focus
 goes to the first of them in source order.
 
-12.5. Menu items keep their row shortcuts, and pressing a shortcut acts
-without opening the menu.
+12.5. Menu items keep their row shortcut hints, and a key the application
+binds acts without opening the menu.
 
 ## 13. State preservation
 

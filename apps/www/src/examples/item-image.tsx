@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/item-image.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/item-image.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import Image from "@/components/shims/image"
 
 import {
@@ -36,7 +36,12 @@ export function ItemImage() {
     <div className="flex w-full max-w-md flex-col gap-6">
       <ItemGroup className="gap-4">
         {music.map((song) => (
-          <Item href="#" key={song.title} variant="outline" role="listitem">
+          <Item
+            key={song.title}
+            variant="outline"
+            render={<a href="#" />}
+            role="listitem"
+          >
             <ItemMedia variant="image">
               <Image
                 src={`https://avatar.vercel.sh/${song.title}`}

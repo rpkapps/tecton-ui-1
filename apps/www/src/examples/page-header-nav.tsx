@@ -5,8 +5,9 @@ import { ListIcon, WaypointsIcon } from "lucide-react"
 
 import {
   DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "@tecton/react/components/dropdown-menu"
 import { Tabs, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
 import {
@@ -44,34 +45,29 @@ export default function PageHeaderNavDemo() {
             second, all at once as a section list. */}
         <PageHeaderActions>
           <OverflowItem
-            id="sections"
+            value="sections"
             priority={2}
             overflow={
-              <DropdownMenuGroup
-                selectionMode="single"
-                selectedKeys={[section]}
-                onSelectionChange={(keys) => {
-                  const next = [...keys][0]
-                  if (next) setSection(String(next))
-                }}
-              >
+              <DropdownMenuGroup>
                 <DropdownMenuLabel>Section</DropdownMenuLabel>
-                {sections.map((item) => (
-                  <DropdownMenuItem key={item.id} id={item.id}>
-                    {item.label}
-                  </DropdownMenuItem>
-                ))}
+                <DropdownMenuRadioGroup
+                  value={section}
+                  onValueChange={setSection}
+                >
+                  {sections.map((item) => (
+                    <DropdownMenuRadioItem key={item.id} value={item.id}>
+                      {item.label}
+                    </DropdownMenuRadioItem>
+                  ))}
+                </DropdownMenuRadioGroup>
               </DropdownMenuGroup>
             }
           >
             <PageHeaderNav aria-label="Project sections">
-              <Tabs
-                selectedKey={section}
-                onSelectionChange={(key) => setSection(String(key))}
-              >
+              <Tabs value={section} onValueChange={setSection}>
                 <TabsList className="h-9 p-1">
                   {sections.map((item) => (
-                    <TabsTrigger key={item.id} id={item.id}>
+                    <TabsTrigger key={item.id} value={item.id}>
                       {item.label}
                     </TabsTrigger>
                   ))}
@@ -81,46 +77,39 @@ export default function PageHeaderNavDemo() {
           </OverflowItem>
           <OverflowSpacer />
           <OverflowItem
-            id="view"
+            value="view"
             priority={1}
             overflow={
-              <DropdownMenuGroup
-                selectionMode="single"
-                selectedKeys={[view]}
-                onSelectionChange={(keys) => {
-                  const next = [...keys][0]
-                  if (next) setView(String(next))
-                }}
-              >
+              <DropdownMenuGroup>
                 <DropdownMenuLabel>View</DropdownMenuLabel>
-                <DropdownMenuItem id="list">
-                  <ListIcon />
-                  List
-                </DropdownMenuItem>
-                <DropdownMenuItem id="graph">
-                  <WaypointsIcon />
-                  Graph
-                </DropdownMenuItem>
+                <DropdownMenuRadioGroup value={view} onValueChange={setView}>
+                  <DropdownMenuRadioItem value="list">
+                    <ListIcon />
+                    List
+                  </DropdownMenuRadioItem>
+                  <DropdownMenuRadioItem value="graph">
+                    <WaypointsIcon />
+                    Graph
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
               </DropdownMenuGroup>
             }
           >
             <ToggleGroup
               aria-label="View"
-              selectionMode="single"
-              selectedKeys={[view]}
-              onSelectionChange={(keys) => {
-                const next = [...keys][0]
-                if (next) setView(String(next))
+              value={[view]}
+              onValueChange={(next) => {
+                // A single-selection group that always keeps one view.
+                if (next[0]) setView(next[0])
               }}
-              disallowEmptySelection
               variant="outline"
               size="sm"
               spacing={0}
             >
-              <ToggleGroupItem id="list" aria-label="List view">
+              <ToggleGroupItem value="list" aria-label="List view">
                 <ListIcon /> List
               </ToggleGroupItem>
-              <ToggleGroupItem id="graph" aria-label="Graph view">
+              <ToggleGroupItem value="graph" aria-label="Graph view">
                 <WaypointsIcon /> Graph
               </ToggleGroupItem>
             </ToggleGroup>

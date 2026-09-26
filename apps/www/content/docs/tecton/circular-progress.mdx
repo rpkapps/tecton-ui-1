@@ -1,12 +1,9 @@
 ---
 title: Circular Progress
 description: "Determinate progress ring with an optional centred value, or an indeterminate spinner."
-links:
-  doc: https://react-aria.adobe.com/ProgressBar
 ---
 
 <ComponentPreview name="circular-progress-demo" />
-
 
 ## Usage
 
@@ -18,31 +15,29 @@ import { CircularProgress } from "@tecton/react/tecton/circular-progress"
 <CircularProgress aria-label="Resampling" value={64} showValue />
 ```
 
-<Callout>
-  The shadcn [Progress](/docs/components/progress) is a linear bar and [Spinner](/docs/components/spinner) is an icon. Tecton's circular progress with a value label is a separate component.
-</Callout>
+For a linear bar use [Progress](/docs/components/progress); for a plain loading icon use [Spinner](/docs/components/spinner).
 
 ## Sizes
 
-Use the `size` prop from 16 px (`xs`) to 96 px (`xl`). Stroke width and label size scale with it.
+`size` runs from `xs` (16 px) to `xl` (96 px); stroke and label scale with it.
 
 <ComponentPreview name="circular-progress-sizes" />
 
 ## Colors
 
-Use the `color` prop for the ring colour. `default` paints the ring with the shared `progress` token, the same fill as the linear [Progress](/docs/components/progress); the track is that colour at 38 %.
+`default` uses the `progress` token, the fill of the linear Progress.
 
 <ComponentPreview name="circular-progress-colors" />
 
 ## Value label
 
-Set `showValue` to render the formatted value in the centre, or pass children for custom content. `minValue`, `maxValue` and `formatOptions` come from React Aria.
+`showValue` renders the formatted value in the centre; children replace it with custom content. `valueLabel` shows custom text such as `7 of 12` and, when it is a string or number, is also what screen readers announce instead of the percentage. `min`, `max` and `format` set the scale and the text.
 
 <ComponentPreview name="circular-progress-value" />
 
 ## Indeterminate
 
-Set `isIndeterminate` for a spinning ring while the amount of work is unknown. With reduced motion requested the ring keeps turning slowly rather than stopping: a still arc would read as a stuck value.
+`value={null}` spins the ring while the amount of work is unknown.
 
 <ComponentPreview name="circular-progress-indeterminate" />
 
@@ -53,7 +48,7 @@ Set `isIndeterminate` for a spinning ring while the amount of work is unknown. W
 ### Use it when
 
 - The progress belongs in a compact space: a card corner, a table cell, a tile, a KPI.
-- The number matters as much as the arc: `showValue`, or children such as `7/12`.
+- The number matters as much as the arc: `showValue`, or `valueLabel="7 of 12"` (also announced) for a count.
 - A ring, not an icon, is the right weight for an indeterminate wait inside a panel or a dialog.
 
 ### Not for
@@ -86,13 +81,13 @@ Colour with `color="default" | "foreground" | "success" | "warning" | "error" | 
 
 <Do>
 
-Give the scale with `minValue` and `maxValue`, shape the text with `formatOptions`, or pass children for custom centre content.
+Give the scale with `min` and `max`, shape the text with `format` (`Intl.NumberFormatOptions`), or pass children for custom centre content.
 
 </Do>
 
 <Do>
 
-Use `isIndeterminate`, not `value={0}`, while the total is unknown.
+Pass `value={null}`, not `value={0}`, while the total is unknown: the ring spins.
 
 </Do>
 
@@ -153,7 +148,7 @@ The `svg` is `aria-hidden` and `role="progressbar"` takes no name from its conte
 <Wrong>
 
 ```tsx
-<CircularProgress size="sm" isIndeterminate showValue aria-label="Loading well logs" />
+<CircularProgress size="sm" value={null} showValue aria-label="Loading well logs" />
 ```
 
 </Wrong>
@@ -162,14 +157,14 @@ The `svg` is `aria-hidden` and `role="progressbar"` takes no name from its conte
 
 ```tsx
 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-  <CircularProgress size="sm" isIndeterminate aria-label="Loading well logs" />
+  <CircularProgress size="sm" value={null} aria-label="Loading well logs" />
   Loading well logs…
 </div>
 ```
 
 </Correct>
 
-The centre label renders only when `showValue && !isIndeterminate`, so the prop is ignored and the ring spins with an empty middle where the caption was expected.
+The centre label renders only for a determinate value, so the prop is ignored and the ring spins with an empty middle where the caption was expected.
 
 </Dont>
 
@@ -179,12 +174,17 @@ The centre label renders only when `showValue && !isIndeterminate`, so the prop 
 
 ### CircularProgress
 
-React Aria [`ProgressBar`](https://react-aria.adobe.com/ProgressBar); accepts all its props (`value`, `minValue`, `maxValue`, `isIndeterminate`, `formatOptions`, `valueLabel`…).
+A `div` with `role="progressbar"`; accepts `div` props.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | "md" | Diameter 16 / 24 / 40 / 64 / 96 px. |
-| `color` | `"default" \| "foreground" \| "success" \| "warning" \| "error" \| "info"` | "default" | Ring colour; `default` is the `progress` token. |
-| `showValue` | `boolean` | false | Show the formatted value in the centre. |
-| `children` | `ReactNode` | - | Custom centre content (overrides `showValue`). |
-| `aria-label` | `string` | - | Accessible name (required without a visible label). |
+| `value` | `number \| null` | - | Required. `null` is indeterminate. |
+| `min` / `max` | `number` | `0` / `100` | Scale of `value`. |
+| `format` | `Intl.NumberFormatOptions` | percent | Format of the shown and announced value. |
+| `locale` | `Intl.LocalesArgument` | runtime locale | Locale of the formatted value. |
+| `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | `"md"` | Diameter 16 / 24 / 40 / 64 / 96 px. |
+| `color` | `"default" \| "foreground" \| "success" \| "warning" \| "error" \| "info"` | `"default"` | Ring colour. |
+| `showValue` | `boolean` | `false` | Show the formatted value in the centre. |
+| `valueLabel` | `ReactNode` | - | Custom value text in the centre; a string or number is also announced (`aria-valuetext`). |
+| `children` | `ReactNode` | - | Custom centre content; overrides `valueLabel` and `showValue`. |
+| `aria-label` | `string` | - | Required without a visible label. |

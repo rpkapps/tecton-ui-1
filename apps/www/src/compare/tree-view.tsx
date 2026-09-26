@@ -43,10 +43,11 @@ function Tree({
   kind: "folder" | "collapsed" | "item"
 }) {
   const hidden = state === "hidden"
+  const disabled = state === "disabled"
   const suffix =
     state === "suffix" ? <Badge variant="info">Badge</Badge> : undefined
   const endAdornment = hidden ? (
-    <TreeViewVisibilityToggle isVisible={false} />
+    <TreeViewVisibilityToggle visible={false} />
   ) : (
     <TreeViewAction aria-label="Actions" />
   )
@@ -55,13 +56,17 @@ function Tree({
     <TreeView
       aria-label={`${kind} ${state}`}
       selectionMode="single"
-      defaultSelectedKeys={state === "selected" ? ["root"] : []}
-      disabledKeys={state === "disabled" ? ["root", "child"] : []}
-      defaultExpandedKeys={kind === "folder" ? ["root"] : []}
+      defaultValue={state === "selected" ? ["root"] : []}
+      defaultExpanded={kind === "folder" ? ["root"] : []}
       className="w-80 rounded-md bg-card p-1"
     >
       {kind === "item" ? (
-        <TreeViewItem id="root" textValue={CHILD} isHidden={hidden}>
+        <TreeViewItem
+          value="root"
+          label={CHILD}
+          hidden={hidden}
+          disabled={disabled}
+        >
           <TreeViewItemContent
             kind="item"
             colorTag={<ColorTag round />}
@@ -72,7 +77,12 @@ function Tree({
           </TreeViewItemContent>
         </TreeViewItem>
       ) : (
-        <TreeViewItem id="root" textValue={FOLDER} isHidden={hidden}>
+        <TreeViewItem
+          value="root"
+          label={FOLDER}
+          hidden={hidden}
+          disabled={disabled}
+        >
           <TreeViewItemContent
             kind="folder"
             colorTag={<ColorTag />}
@@ -81,7 +91,12 @@ function Tree({
           >
             {FOLDER}
           </TreeViewItemContent>
-          <TreeViewItem id="child" textValue={CHILD} isHidden={hidden}>
+          <TreeViewItem
+            value="child"
+            label={CHILD}
+            hidden={hidden}
+            disabled={disabled}
+          >
             <TreeViewItemContent kind="item" colorTag={<ColorTag round />}>
               {CHILD}
             </TreeViewItemContent>

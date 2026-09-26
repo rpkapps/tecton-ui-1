@@ -1,10 +1,7 @@
 ---
 title: Button
 description: Displays a button or a component that looks like a button.
-links:
-  doc: https://react-aria.adobe.com/Button
-  api: https://react-aria.adobe.com/Button#api
-upstream: apps/v4/content/docs/components/aria/button.mdx
+upstream: apps/v4/content/docs/components/base/button.mdx
 ---
 
 <ComponentPreview name="button-demo" />
@@ -96,7 +93,7 @@ To create a button group, use the `ButtonGroup` component. See the [Button Group
 
 You can use the `buttonVariants` helper to make a link look like a button.
 
-**Do not use `<Button>` for links.** The React Aria `Button` component always applies `role="button"`, which overrides the semantic link role on `<a>` elements. Use `buttonVariants` with a plain `<a>` tag instead.
+**Do not use `<Button render={<a />} nativeButton={false} />` for links.** `Button` always applies `role="button"`, which overrides the semantic link role on `<a>` elements. Use `buttonVariants` with a plain `<a>` tag instead.
 
 <ComponentPreview name="button-render" />
 
@@ -118,7 +115,7 @@ A Tecton FAB is a `Button` recipe: `className="h-10 rounded-full shadow-md"` for
 
 ### Use it when
 
-- Something happens in place: submit, open a dialog, run an action, trigger a menu.
+- Something happens in place: submit, save, run an action, open a dialog.
 - A real `button` element is the right semantics, and one of the action weights fits: `default`, `secondary`, `outline`, `ghost`, `destructive`, `link`.
 
 ### Not for
@@ -133,7 +130,7 @@ A Tecton FAB is a `Button` recipe: `className="h-10 rounded-full shadow-md"` for
 
 <Do>
 
-Handle presses with `onPress` and disable with `isDisabled`; React Aria has no `disabled` contract.
+Handle presses with `onClick` and disable with `disabled`; add `focusableWhenDisabled` when a disabled button must stay in the tab order (a pending submit).
 
 </Do>
 
@@ -151,13 +148,13 @@ Mark icons with `data-icon="inline-start" | "inline-end"` so the padding adjusts
 
 <Do>
 
-Navigate with `LinkButton` from this module, or with `buttonVariants()` on a plain `a`.
+Navigate with `LinkButton` (`@tecton/react/tecton/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: with `render={<a />}` it keeps `role="button"`, so the link is announced as a button.
 
 </Do>
 
 <Do>
 
-Show work with a `Spinner` child plus `isPending`, which keeps focus and blocks repeat presses (`isDisabled` drops focus); a FAB is the documented `rounded-full shadow-md` recipe.
+A trigger (`DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`) takes the button as `render={<Button variant="outline" />}`; never nest a `Button` inside a trigger.
 
 </Do>
 
@@ -195,7 +192,7 @@ Give a button visible text when its icon alone is ambiguous; go icon-only just f
 
 ### Don't
 
-<Dont severity="CRITICAL" title="An anchor nested inside a React Aria Button">
+<Dont severity="CRITICAL" title="An anchor nested inside a Button">
 
 <Wrong>
 
@@ -210,21 +207,23 @@ Give a button visible text when its icon alone is ambiguous; go icon-only just f
 <Correct>
 
 ```tsx
-<LinkButton variant="secondary" size="sm" href="/wells/34-10-A-12">Open well</LinkButton>
+<LinkButton variant="secondary" size="sm" href="/wells/34-10-A-12">
+  Open well
+</LinkButton>
 ```
 
 </Correct>
 
-React Aria's `Button` has no `asChild`, so the prop is dropped and the anchor is nested inside a `button` that forces `role="button"`: invalid markup, and the link is announced and activated as a button.
+There is no `asChild`, so the prop is dropped and the anchor is nested inside a `button`: invalid markup, and the link is announced and activated as a button. `render={<a />}` on the `Button` is no fix either: it keeps `role="button"`.
 
 </Dont>
 
-<Dont severity="HIGH" title="The disabled prop instead of isDisabled">
+<Dont severity="HIGH" title="onPress and isDisabled on a Button">
 
 <Wrong>
 
 ```tsx
-<Button disabled onPress={submit}>Save</Button>
+<Button isDisabled onPress={submit}>Save</Button>
 ```
 
 </Wrong>
@@ -232,12 +231,12 @@ React Aria's `Button` has no `asChild`, so the prop is dropped and the anchor is
 <Correct>
 
 ```tsx
-<Button isDisabled onPress={submit}>Save</Button>
+<Button disabled onClick={submit}>Save</Button>
 ```
 
 </Correct>
 
-`disabled` is not part of React Aria's button props, so it never reaches the DOM element and the button stays focusable, hoverable and pressable.
+`isDisabled` and `onPress` are not props of this button: they are spread onto the DOM element as unknown attributes, so the button stays enabled and pressing it does nothing.
 
 </Dont>
 
@@ -263,12 +262,14 @@ The variant owns colour, shape, size and padding, and Tailwind's stock palette i
 
 </Dont>
 
-<Dont severity="MEDIUM" title="onClick instead of the onPress handler">
+<Dont severity="MEDIUM" title="A Button nested inside a trigger">
 
 <Wrong>
 
 ```tsx
-<Button onClick={() => setOpen(true)}>Open</Button>
+<DialogTrigger>
+  <Button variant="outline">Edit well</Button>
+</DialogTrigger>
 ```
 
 </Wrong>
@@ -276,12 +277,12 @@ The variant owns colour, shape, size and padding, and Tailwind's stock palette i
 <Correct>
 
 ```tsx
-<Button onPress={() => setOpen(true)}>Open</Button>
+<DialogTrigger render={<Button variant="outline" />}>Edit well</DialogTrigger>
 ```
 
 </Correct>
 
-`onClick` survives only as React Aria's deprecated compatibility alias: it is handed a synthetic mouse event with no `pointerType`, so keyboard and touch activations are indistinguishable from a click.
+The trigger already renders a `button`, so a nested `Button` produces a button inside a button: invalid markup with two tab stops for one control.
 
 </Dont>
 
@@ -297,5 +298,3 @@ The `Button` component is a wrapper around the `button` element that adds a vari
 | --------- | ------------------------------------------------------------------------------------ | ----------- |
 | `variant` | `"default" \| "outline" \| "ghost" \| "destructive" \| "secondary" \| "link"`        | `"default"` |
 | `size`    | `"default" \| "xs" \| "sm" \| "lg" \| "icon" \| "icon-xs" \| "icon-sm" \| "icon-lg"` | `"default"` |
-
-See the [React Aria](https://react-aria.adobe.com/Button#api) documentation for more information.

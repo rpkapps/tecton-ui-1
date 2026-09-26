@@ -5,11 +5,11 @@ import { ChevronsUpDownIcon, HexagonIcon, PlusIcon } from "lucide-react"
 
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
 import {
@@ -18,7 +18,6 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@tecton/react/components/sidebar"
-import { useIsMacPlatform } from "@tecton/react/tecton/shortcuts"
 
 import type { Project } from "../data"
 
@@ -34,7 +33,6 @@ function ProjectSwitcher({
   defaultProjectId,
   onProjectChange,
 }: ProjectSwitcherProps) {
-  const isMac = useIsMacPlatform()
   const { isMobile } = useSidebar()
   const [active, setActive] = React.useState<Project | undefined>(
     () => projects.find((p) => p.id === defaultProjectId) ?? projects[0]
@@ -50,11 +48,15 @@ function ProjectSwitcher({
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenuTrigger>
-          <SidebarMenuButton
-            size="lg"
-            aria-label={`Project: ${active.name}`}
-            className="aria-expanded:bg-sidebar-accent aria-expanded:text-sidebar-accent-foreground"
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                aria-label={`Project: ${active.name}`}
+                className="aria-expanded:bg-sidebar-accent aria-expanded:text-sidebar-accent-foreground"
+              />
+            }
           >
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
               <HexagonIcon className="size-4" />
@@ -66,21 +68,21 @@ function ProjectSwitcher({
               </span>
             </div>
             <ChevronsUpDownIcon className="ms-auto" />
-          </SidebarMenuButton>
-          <DropdownMenu
-            className="w-(--trigger-width) min-w-56 rounded-lg"
-            placement={isMobile ? "bottom start" : "right top"}
-            offset={4}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="min-w-56 rounded-lg"
+            side={isMobile ? "bottom" : "inline-end"}
+            align="start"
+            sideOffset={4}
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="text-xs text-muted-foreground">
                 Projects
               </DropdownMenuLabel>
-              {projects.map((project, index) => (
+              {projects.map((project) => (
                 <DropdownMenuItem
                   key={project.id}
-                  textValue={project.name}
-                  onAction={() => select(project)}
+                  onClick={() => select(project)}
                   className="gap-2 p-2"
                 >
                   <div className="flex size-6 shrink-0 items-center justify-center rounded-md border">
@@ -92,16 +94,12 @@ function ProjectSwitcher({
                       {project.asset}
                     </span>
                   </div>
-                  <DropdownMenuShortcut>
-                    {isMac ? "⌘" : "Ctrl+"}
-                    {index + 1}
-                  </DropdownMenuShortcut>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem textValue="New project" className="gap-2 p-2">
+              <DropdownMenuItem className="gap-2 p-2">
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                   <PlusIcon className="size-4" />
                 </div>
@@ -110,8 +108,8 @@ function ProjectSwitcher({
                 </span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
   )

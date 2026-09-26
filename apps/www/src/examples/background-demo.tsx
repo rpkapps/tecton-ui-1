@@ -67,17 +67,15 @@ export default function BackgroundDemo() {
           aria-label="Effect"
           size="sm"
           variant="outline"
-          selectionMode="single"
-          disallowEmptySelection
-          selectedKeys={[effect]}
-          onSelectionChange={(keys) => {
-            const [next] = keys
+          value={[effect]}
+          onValueChange={(values) => {
+            const [next] = values
             if (next) setEffect(next as BackgroundEffectName)
           }}
           className="flex-wrap"
         >
           {effects.map((name) => (
-            <ToggleGroupItem key={name} id={name}>
+            <ToggleGroupItem key={name} value={name}>
               {name}
             </ToggleGroupItem>
           ))}
@@ -86,16 +84,14 @@ export default function BackgroundDemo() {
           aria-label="Tone"
           size="sm"
           variant="outline"
-          selectionMode="single"
-          disallowEmptySelection
-          selectedKeys={[tone]}
-          onSelectionChange={(keys) => {
-            const [next] = keys
+          value={[tone]}
+          onValueChange={(values) => {
+            const [next] = values
             if (next) setTone(next as (typeof tones)[number])
           }}
         >
           {tones.map((name) => (
-            <ToggleGroupItem key={name} id={name}>
+            <ToggleGroupItem key={name} value={name}>
               {name}
             </ToggleGroupItem>
           ))}
@@ -104,16 +100,14 @@ export default function BackgroundDemo() {
           aria-label="Intensity"
           size="sm"
           variant="outline"
-          selectionMode="single"
-          disallowEmptySelection
-          selectedKeys={[intensity]}
-          onSelectionChange={(keys) => {
-            const [next] = keys
+          value={[intensity]}
+          onValueChange={(values) => {
+            const [next] = values
             if (next) setIntensity(next as (typeof intensities)[number])
           }}
         >
           {intensities.map((name) => (
-            <ToggleGroupItem key={name} id={name}>
+            <ToggleGroupItem key={name} value={name}>
               {name}
             </ToggleGroupItem>
           ))}

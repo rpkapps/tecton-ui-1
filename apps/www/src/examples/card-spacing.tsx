@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/card-spacing.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/card-spacing.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -52,11 +52,10 @@ export function CardSpacing() {
   return (
     <div className="mx-auto grid w-full max-w-sm gap-4">
       <ToggleGroup
-        selectedKeys={[spacing]}
-        onSelectionChange={(keys) => {
-          const key = Array.from(keys)[0]
-          if (key) {
-            setSpacing(String(key))
+        value={[spacing]}
+        onValueChange={(value) => {
+          if (value[0]) {
+            setSpacing(value[0])
           }
         }}
         variant="outline"
@@ -64,7 +63,7 @@ export function CardSpacing() {
         className="justify-center"
       >
         {spacingOptions.map((option) => (
-          <ToggleGroupItem key={option.value} id={option.value}>
+          <ToggleGroupItem key={option.value} value={option.value}>
             {option.label}
           </ToggleGroupItem>
         ))}

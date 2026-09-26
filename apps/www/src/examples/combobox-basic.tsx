@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/combobox-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/combobox-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import {
@@ -20,19 +20,16 @@ const frameworks = [
 
 export default function ComboboxBasic() {
   return (
-    <Combobox allowsEmptyCollection aria-label="Framework">
+    <Combobox items={frameworks}>
       <ComboboxInput placeholder="Select a framework" />
       <ComboboxContent>
-        <ComboboxList
-          renderEmptyState={() => (
-            <ComboboxEmpty>No items found.</ComboboxEmpty>
-          )}
-        >
-          {frameworks.map((item) => (
-            <ComboboxItem key={item} id={item}>
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxList>
+          {(item) => (
+            <ComboboxItem key={item} value={item}>
               {item}
             </ComboboxItem>
-          ))}
+          )}
         </ComboboxList>
       </ComboboxContent>
     </Combobox>

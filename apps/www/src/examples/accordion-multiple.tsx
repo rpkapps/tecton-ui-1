@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/accordion-multiple.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/accordion-multiple.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Accordion,
   AccordionContent,
@@ -29,13 +29,9 @@ const items = [
 
 export function AccordionMultiple() {
   return (
-    <Accordion
-      allowsMultipleExpanded
-      className="max-w-lg"
-      defaultExpandedKeys={["notifications"]}
-    >
+    <Accordion multiple className="max-w-lg" defaultValue={["notifications"]}>
       {items.map((item) => (
-        <AccordionItem key={item.value} id={item.value}>
+        <AccordionItem key={item.value} value={item.value}>
           <AccordionTrigger>{item.trigger}</AccordionTrigger>
           <AccordionContent>{item.content}</AccordionContent>
         </AccordionItem>

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/scroll-fade-none.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/scroll-fade-none.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 export function ScrollFadeNone() {
   return (
     <div className="mx-auto flex max-w-xs min-w-0 flex-col gap-6">

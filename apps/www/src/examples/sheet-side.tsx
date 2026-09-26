@@ -1,8 +1,9 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/sheet-side.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/sheet-side.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
 import {
   Sheet,
   SheetClose,
+  SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
@@ -16,11 +17,13 @@ export default function SheetSide() {
   return (
     <div className="flex flex-wrap gap-2">
       {SHEET_SIDES.map((side) => (
-        <SheetTrigger key={side}>
-          <Button variant="outline" className="capitalize">
+        <Sheet key={side}>
+          <SheetTrigger
+            render={<Button variant="outline" className="capitalize" />}
+          >
             {side}
-          </Button>
-          <Sheet
+          </SheetTrigger>
+          <SheetContent
             side={side}
             className="data-[side=bottom]:max-h-[50vh] data-[side=top]:max-h-[50vh]"
           >
@@ -47,10 +50,12 @@ export default function SheetSide() {
             </div>
             <SheetFooter>
               <Button type="submit">Save changes</Button>
-              <SheetClose variant="outline">Cancel</SheetClose>
+              <SheetClose render={<Button variant="outline" />}>
+                Cancel
+              </SheetClose>
             </SheetFooter>
-          </Sheet>
-        </SheetTrigger>
+          </SheetContent>
+        </Sheet>
       ))}
     </div>
   )

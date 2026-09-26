@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/combobox-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/combobox-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -10,13 +10,14 @@ import {
 import {
   Combobox,
   ComboboxChip,
-  ComboboxChipList,
   ComboboxChips,
   ComboboxChipsInput,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxItem,
   ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
 } from "@tecton/react/components/combobox"
 import { Field, FieldLabel } from "@tecton/react/components/field"
 
@@ -76,6 +77,7 @@ const translations: Translations = {
 
 export function ComboboxRtl() {
   const { dir, t, language } = useTranslation(translations, "ar")
+  const anchor = useComboboxAnchor()
 
   const categoryLabels: Record<string, string> = {
     technology: t.technology,
@@ -90,33 +92,40 @@ export function ComboboxRtl() {
     <Field className="mx-auto w-full max-w-xs">
       <FieldLabel>{t.label}</FieldLabel>
       <Combobox
-        aria-label={t.label}
-        selectionMode="multiple"
+        multiple
+        autoHighlight
+        items={categories}
         defaultValue={[categories[0]]}
-        allowsEmptyCollection
+        itemToStringValue={(item: (typeof categories)[number]) =>
+          categoryLabels[item] || item
+        }
       >
-        <ComboboxChips>
-          <ComboboxChipList<{ name: string }>>
-            {(value) => (
-              <ComboboxChip id={value.name}>
-                {categoryLabels[value.name] || value.name}
-              </ComboboxChip>
+        <ComboboxChips ref={anchor}>
+          <ComboboxValue>
+            {(values) => (
+              <React.Fragment>
+                {values.map((value: string) => (
+                  <ComboboxChip key={value}>
+                    {categoryLabels[value] || value}
+                  </ComboboxChip>
+                ))}
+                <ComboboxChipsInput placeholder={t.placeholder} />
+              </React.Fragment>
             )}
-          </ComboboxChipList>
-          <ComboboxChipsInput placeholder={t.placeholder} />
+          </ComboboxValue>
         </ComboboxChips>
         <ComboboxContent
+          anchor={anchor}
           dir={dir}
           data-lang={dir === "rtl" ? language : undefined}
         >
-          <ComboboxList
-            renderEmptyState={() => <ComboboxEmpty>{t.empty}</ComboboxEmpty>}
-          >
-            {categories.map((item) => (
-              <ComboboxItem key={item} id={item} value={{ name: item }}>
+          <ComboboxEmpty>{t.empty}</ComboboxEmpty>
+          <ComboboxList>
+            {(item) => (
+              <ComboboxItem key={item} value={item}>
                 {categoryLabels[item] || item}
               </ComboboxItem>
-            ))}
+            )}
           </ComboboxList>
         </ComboboxContent>
       </Combobox>

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/drawer-dialog.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/drawer-dialog.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -8,6 +8,7 @@ import { useMediaQuery } from "@/hooks/use-media-query"
 import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
+  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -32,9 +33,11 @@ export function DrawerDialogDemo() {
 
   if (isDesktop) {
     return (
-      <DialogTrigger isOpen={open} onOpenChange={setOpen}>
-        <Button variant="outline">Edit Profile</Button>
-        <Dialog className="sm:max-w-[425px]">
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogTrigger render={<Button variant="outline" />}>
+          Edit Profile
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
             <DialogTitle>Edit profile</DialogTitle>
             <DialogDescription>
@@ -43,8 +46,8 @@ export function DrawerDialogDemo() {
             </DialogDescription>
           </DialogHeader>
           <ProfileForm />
-        </Dialog>
-      </DialogTrigger>
+        </DialogContent>
+      </Dialog>
     )
   }
 
@@ -60,12 +63,7 @@ export function DrawerDialogDemo() {
             Make changes to your profile here. Click save when you&apos;re done.
           </DrawerDescription>
         </DrawerHeader>
-        <ProfileForm className="px-4" />
-        <DrawerFooter className="pt-2">
-          <DrawerClose render={<Button variant="outline" />}>
-            Cancel
-          </DrawerClose>
-        </DrawerFooter>
+        <ProfileForm className="p-4" />
       </DrawerContent>
     </Drawer>
   )

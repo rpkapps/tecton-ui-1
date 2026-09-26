@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/checkbox-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/checkbox-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { Checkbox } from "@tecton/react/components/checkbox"
@@ -23,7 +23,7 @@ export default function CheckboxDemo() {
         <Checkbox
           id="terms-checkbox-2"
           name="terms-checkbox-2"
-          defaultSelected
+          defaultChecked
         />
         <FieldContent>
           <FieldLabel htmlFor="terms-checkbox-2">
@@ -35,7 +35,7 @@ export default function CheckboxDemo() {
         </FieldContent>
       </Field>
       <Field orientation="horizontal" data-disabled>
-        <Checkbox id="toggle-checkbox" name="toggle-checkbox" isDisabled />
+        <Checkbox id="toggle-checkbox" name="toggle-checkbox" disabled />
         <FieldLabel htmlFor="toggle-checkbox">Enable notifications</FieldLabel>
       </Field>
       <FieldLabel>

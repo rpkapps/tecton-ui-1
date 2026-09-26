@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/attachment-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/attachment-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { FileCodeIcon, XIcon } from "lucide-react"
 
 import {

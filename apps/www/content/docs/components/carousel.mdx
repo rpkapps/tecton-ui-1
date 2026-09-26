@@ -2,9 +2,9 @@
 title: Carousel
 description: A carousel with motion and swipe built using Embla.
 links:
-  doc: https://www.embla-carousel.com/docs/get-started/react
-  api: https://www.embla-carousel.com/docs/api
-upstream: apps/v4/content/docs/components/aria/carousel.mdx
+  doc: https://www.embla-carousel.com/get-started/react
+  api: https://www.embla-carousel.com/api
+upstream: apps/v4/content/docs/components/base/carousel.mdx
 ---
 
 <ComponentPreview
@@ -128,7 +128,7 @@ Use the `orientation` prop to set the orientation of the carousel.
 
 ## Options
 
-You can pass options to the carousel using the `opts` prop. See the [Embla Carousel docs](https://www.embla-carousel.com/docs/api/options) for more information.
+You can pass options to the carousel using the `opts` prop. See the [Embla Carousel docs](https://www.embla-carousel.com/api/options/) for more information.
 
 ```tsx lineNumbers {2-5}
 <Carousel
@@ -147,7 +147,7 @@ You can pass options to the carousel using the `opts` prop. See the [Embla Carou
 
 ## API
 
-Use a state and the `setApi` props to get an instance of the carousel API.
+Use a state and the `setApi` prop to get an instance of the carousel API.
 
 <ComponentPreview
   name="carousel-api"
@@ -219,7 +219,7 @@ export function Example() {
 }
 ```
 
-See the [Embla Carousel docs](https://www.embla-carousel.com/docs/api/events) for more information on using events.
+See the [Embla Carousel docs](https://www.embla-carousel.com/api/events/) for more information on using events.
 
 ## Plugins
 
@@ -312,7 +312,7 @@ Pass Embla options on `Carousel` through `opts` (`{ align: "start", loop: true }
 
 <Do>
 
-Switch the axis with `orientation="vertical"`, never with an Embla `axis` option, and set how many slides show with `basis-*` on `CarouselItem`; the `-ml-4` / `pl-4` gutter is already on the parts.
+Switch the axis with `orientation="vertical"`, never with an Embla `axis` option, and set how many slides show with `basis-*` on `CarouselItem`; the `-ms-4` / `ps-4` gutter is already on the parts.
 
 </Do>
 
@@ -438,4 +438,4 @@ Never put a `Carousel` inside another `Carousel`.
 
 ## API Reference
 
-See the [Embla Carousel docs](https://www.embla-carousel.com/docs/api/plugins) for more information on props and plugins.
+See the [Embla Carousel docs](https://www.embla-carousel.com/api/) for more information on props and plugins.

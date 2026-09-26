@@ -1,8 +1,10 @@
+import { mergeProps } from "@base-ui/react/merge-props"
+import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 const badgeVariants = cva(
-  "group/badge inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[size=default]:h-5 data-[size=default]:px-2 data-[size=default]:py-0.5 data-[size=default]:text-xs data-[size=default]:has-data-[icon=inline-end]:pr-1.5 data-[size=default]:has-data-[icon=inline-start]:pl-1.5 data-[size=lg]:h-7 data-[size=lg]:px-2.5 data-[size=lg]:text-sm data-[size=lg]:has-data-[icon=inline-end]:pr-2 data-[size=lg]:has-data-[icon=inline-start]:pl-2 data-[size=md]:h-6 data-[size=md]:px-2 data-[size=md]:text-xs data-[size=md]:has-data-[icon=inline-end]:pr-1.5 data-[size=md]:has-data-[icon=inline-start]:pl-1.5 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none data-[size=default]:[&>svg]:size-3! data-[size=lg]:[&>svg]:size-4! data-[size=md]:[&>svg]:size-3.5!",
+  "group/badge inline-flex w-fit shrink-0 items-center justify-center gap-1 overflow-hidden rounded-4xl border border-transparent font-medium whitespace-nowrap transition-all focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring aria-invalid:border-destructive aria-invalid:ring-destructive/20 data-[size=default]:h-5 data-[size=default]:px-2 data-[size=default]:py-0.5 data-[size=default]:text-xs data-[size=default]:has-data-[icon=inline-end]:pe-1.5 data-[size=default]:has-data-[icon=inline-start]:ps-1.5 data-[size=lg]:h-7 data-[size=lg]:px-2.5 data-[size=lg]:text-sm data-[size=lg]:has-data-[icon=inline-end]:pe-2 data-[size=lg]:has-data-[icon=inline-start]:ps-2 data-[size=md]:h-6 data-[size=md]:px-2 data-[size=md]:text-xs data-[size=md]:has-data-[icon=inline-end]:pe-1.5 data-[size=md]:has-data-[icon=inline-start]:ps-1.5 dark:aria-invalid:ring-destructive/40 [&>svg]:pointer-events-none data-[size=default]:[&>svg]:size-3! data-[size=lg]:[&>svg]:size-4! data-[size=md]:[&>svg]:size-3.5!",
   {
     variants: {
       variant: {
@@ -47,33 +49,23 @@ function Badge({
   size = "default",
   render,
   ...props
-}: React.ComponentProps<"span"> &
-  VariantProps<typeof badgeVariants> & {
-    render?: (props: React.HTMLAttributes<HTMLElement>) => React.ReactNode
-  }) {
-  if (render) {
-    const renderProps = {
-      "data-slot": "badge",
-      "data-variant": variant,
-      "data-appearance": appearance,
-      "data-size": size,
-      className: cn(badgeVariants({ variant, appearance, size }), className),
-      ...props,
-    }
-
-    return render(renderProps)
-  }
-
-  return (
-    <span
-      data-slot="badge"
-      data-variant={variant}
-      data-appearance={appearance}
-      data-size={size}
-      className={cn(badgeVariants({ variant, appearance, size }), className)}
-      {...props}
-    />
-  )
+}: useRender.ComponentProps<"span"> & VariantProps<typeof badgeVariants>) {
+  return useRender({
+    defaultTagName: "span",
+    props: mergeProps<"span">(
+      {
+        className: cn(badgeVariants({ variant, appearance, size }), className),
+      },
+      props
+    ),
+    render,
+    state: {
+      slot: "badge",
+      variant,
+      appearance,
+      size,
+    },
+  })
 }
 
 export { Badge, badgeVariants }

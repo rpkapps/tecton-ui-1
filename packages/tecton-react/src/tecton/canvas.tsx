@@ -2,18 +2,18 @@
 
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
+import { Toolbar as ToolbarPrimitive } from "@base-ui/react/toolbar"
 import { cn } from "cn"
-import {
-  composeRenderProps,
-  Toolbar as ToolbarPrimitive,
-  type ToolbarProps as ToolbarPrimitiveProps,
-} from "react-aria-components"
+
+import { Button } from "@tecton/react/components/button"
 
 /**
  * Tecton Canvas — a full-bleed work surface (map, schematic, 3D view) with
  * floating chrome. `CanvasSurface` fills the area; `CanvasOverlay` pins
- * controls to an edge or corner; `CanvasToolbar` is the floating tool rail
- * used inside an overlay; `CanvasLegend` lists the symbology.
+ * controls to an edge or corner (logical positions: `start`/`end` follow the
+ * reading direction and mirror in RTL); `CanvasToolbar` is the floating tool rail
+ * used inside an overlay, `CanvasToolbarButton` a tool in it; `CanvasLegend`
+ * lists the symbology.
  */
 function Canvas({ className, ...props }: React.ComponentProps<"div">) {
   return (
@@ -43,25 +43,25 @@ const canvasOverlayVariants = cva(
   {
     variants: {
       position: {
-        "top-left": "top-3 left-3 flex-col items-start",
+        "top-start": "start-3 top-3 flex-col items-start",
         top: "top-3 left-1/2 -translate-x-1/2 flex-row items-center",
-        "top-right": "top-3 right-3 flex-col items-end",
-        left: "top-1/2 left-3 -translate-y-1/2 flex-col items-start",
-        right: "top-1/2 right-3 -translate-y-1/2 flex-col items-end",
-        "bottom-left": "bottom-3 left-3 flex-col items-start",
+        "top-end": "end-3 top-3 flex-col items-end",
+        start: "start-3 top-1/2 -translate-y-1/2 flex-col items-start",
+        end: "end-3 top-1/2 -translate-y-1/2 flex-col items-end",
+        "bottom-start": "start-3 bottom-3 flex-col items-start",
         bottom: "bottom-3 left-1/2 -translate-x-1/2 flex-row items-center",
-        "bottom-right": "right-3 bottom-3 flex-col items-end",
+        "bottom-end": "end-3 bottom-3 flex-col items-end",
       },
     },
     defaultVariants: {
-      position: "top-left",
+      position: "top-start",
     },
   }
 )
 
 function CanvasOverlay({
   className,
-  position = "top-left",
+  position = "top-start",
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof canvasOverlayVariants>) {
   return (
@@ -89,13 +89,19 @@ const canvasToolbarVariants = cva(
   }
 )
 
-type CanvasToolbarProps = Omit<ToolbarPrimitiveProps, "orientation"> &
-  VariantProps<typeof canvasToolbarVariants>
+type CanvasToolbarProps = Omit<React.ComponentProps<"div">, "children"> &
+  VariantProps<typeof canvasToolbarVariants> & {
+    /** `CanvasToolbarButton`s, separators and groups. */
+    children?: React.ReactNode
+    /** Disables every tool in the rail. */
+    disabled?: boolean
+  }
 
 /**
- * A React Aria `Toolbar`: arrow keys move along the rail (Up/Down when
- * vertical, Left/Right when horizontal, mirrored in RTL) and Tab leaves it.
- * Give it an `aria-label`.
+ * The tool rail: one tab stop, arrow keys move between its
+ * `CanvasToolbarButton`s (Up/Down when vertical, Left/Right when horizontal,
+ * mirrored in RTL) and stop at the ends; Tab leaves it. Give it an
+ * `aria-label`.
  */
 function CanvasToolbar({
   className,
@@ -104,12 +110,57 @@ function CanvasToolbar({
 }: CanvasToolbarProps) {
   const resolved = orientation ?? "vertical"
   return (
-    <ToolbarPrimitive
+    <ToolbarPrimitive.Root
       data-slot="canvas-toolbar"
       orientation={resolved}
-      className={composeRenderProps(className, (className) =>
-        cn(canvasToolbarVariants({ orientation: resolved }), className)
+      loopFocus={false}
+      className={cn(
+        canvasToolbarVariants({ orientation: resolved }),
+        className
       )}
+      {...props}
+    />
+  )
+}
+
+type CanvasToolbarButtonProps = React.ComponentProps<typeof Button> & {
+  /**
+   * Stays focusable while disabled, so arrow keys do not skip it. Default
+   * `true`.
+   */
+  focusableWhenDisabled?: boolean
+}
+
+/**
+ * A tool in the rail: a ghost icon `Button` by default. Compose it with a
+ * trigger through `render`, e.g.
+ * `<CanvasToolbarButton render={<DropdownMenuTrigger />} />`.
+ */
+function CanvasToolbarButton({
+  variant = "ghost",
+  size = "icon-sm",
+  className,
+  render,
+  nativeButton,
+  ...props
+}: CanvasToolbarButtonProps) {
+  return (
+    <ToolbarPrimitive.Button
+      data-slot="canvas-toolbar-button"
+      render={
+        <Button
+          variant={variant}
+          size={size}
+          // Stays focusable when disabled (roving toolbar), so the Button's
+          // `disabled:` styles never apply: dim on aria-disabled instead.
+          className={cn(
+            "aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
+            className
+          )}
+          render={render}
+          nativeButton={nativeButton}
+        />
+      }
       {...props}
     />
   )
@@ -170,9 +221,10 @@ export {
   CanvasSurface,
   CanvasOverlay,
   CanvasToolbar,
+  CanvasToolbarButton,
   CanvasLegend,
   CanvasLegendItem,
   canvasOverlayVariants,
   canvasToolbarVariants,
 }
-export type { CanvasToolbarProps }
+export type { CanvasToolbarProps, CanvasToolbarButtonProps }

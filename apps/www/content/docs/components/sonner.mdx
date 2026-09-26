@@ -3,7 +3,7 @@ title: Sonner
 description: An opinionated toast component for React.
 links:
   doc: https://sonner.emilkowal.ski
-upstream: apps/v4/content/docs/components/aria/sonner.mdx
+upstream: apps/v4/content/docs/components/radix/sonner.mdx
 ---
 
 <ComponentPreview name="sonner-demo" />
@@ -104,7 +104,7 @@ Use an error toast only for background failures the page also shows; failures ne
 import { toast } from "sonner"
 
 export function SaveButton() {
-  return <Button onPress={() => toast.success("Model saved")}>Save</Button>
+  return <Button onClick={() => toast.success("Model saved")}>Save</Button>
 }
 ```
 
@@ -119,7 +119,7 @@ import { Toaster } from "@tecton/react/components/sonner"
 export function App() {
   return (
     <>
-      <Button onPress={() => toast.success("Model saved")}>Save</Button>
+      <Button onClick={() => toast.success("Model saved")}>Save</Button>
       <Toaster position="top-center" />
     </>
   )

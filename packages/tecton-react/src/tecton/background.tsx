@@ -29,7 +29,7 @@ import { cn } from "cn"
 
 const backgroundStyles = `
 [data-slot="background"]{--bg-ink:color-mix(in oklab,var(--bg-tone) calc(var(--bg-alpha) * 100%),transparent);--bg-ink-soft:color-mix(in oklab,var(--bg-tone) calc(var(--bg-alpha) * 45%),transparent);--bg-ink-strong:color-mix(in oklab,var(--bg-tone) calc(var(--bg-alpha) * 180%),transparent)}
-[data-slot="background"][data-paused] *,[data-slot="background"][data-animate="false"] *{animation-play-state:paused!important}
+[data-slot="background"][data-paused] *,[data-slot="background"][data-static] *{animation-play-state:paused!important}
 @media (prefers-reduced-motion:reduce){[data-slot="background"] *{animation-play-state:paused!important}}
 @media print,(forced-colors:active){[data-slot="background"]{display:none!important}}
 @keyframes tecton-bg-drift-x{from{transform:translateX(0)}to{transform:translateX(calc(-1 * var(--bg-tile-w)))}}
@@ -152,7 +152,7 @@ function Background({
         data-tone={tone}
         data-intensity={intensity}
         data-speed={speed}
-        data-animate={animate}
+        data-static={animate ? undefined : ""}
         data-paused={paused ? "" : undefined}
         className={cn(
           backgroundVariants({ tone, intensity, speed }),
@@ -1562,13 +1562,17 @@ function DrillBackground({ className, ...props }: BackgroundProps) {
           {Array.from({ length: spokes }, (_, i) => {
             const a = (i / spokes) * Math.PI * 2
             const inner = i % 3 === 0 ? 40 : 150
+            // Rounded: the server's and the browser's Math.sin can differ in
+            // the last digit, which React reports as a hydration mismatch.
+            const at = (radius: number, f: (a: number) => number) =>
+              (f(a) * radius).toFixed(2)
             return (
               <line
                 key={i}
-                x1={Math.cos(a) * inner}
-                y1={Math.sin(a) * inner}
-                x2={Math.cos(a) * reach}
-                y2={Math.sin(a) * reach}
+                x1={at(inner, Math.cos)}
+                y1={at(inner, Math.sin)}
+                x2={at(reach, Math.cos)}
+                y2={at(reach, Math.sin)}
                 strokeOpacity={i % 3 === 0 ? 0.9 : 0.35}
               />
             )

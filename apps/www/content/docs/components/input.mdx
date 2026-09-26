@@ -1,10 +1,7 @@
 ---
 title: Input
 description: A text input component for forms and user data entry with built-in styling and accessibility features.
-links:
-  doc: https://react-aria.adobe.com/TextField
-  api: https://react-aria.adobe.com/TextField#api
-upstream: apps/v4/content/docs/components/aria/input.mdx
+upstream: apps/v4/content/docs/components/base/input.mdx
 ---
 
 <ComponentPreview
@@ -189,7 +186,7 @@ Wire the label by hand: `<FieldLabel htmlFor="x">` plus `<Input id="x">`. Nothin
 
 <Do>
 
-`Input` renders React Aria's `Input`, a real `<input>`: use the DOM props `value`, `onChange(event)`, `disabled`, `required`, `type` and `aria-invalid`.
+`Input` is a real `<input>`: use the DOM props `value`, `onChange(event)`, `disabled`, `required`, `type` and `aria-invalid`.
 
 </Do>
 
@@ -291,7 +288,7 @@ The Tecton palette resets Tailwind's (`--color-*: initial`), so `bg-zinc-100` an
 
 </Correct>
 
-Unlike `Checkbox` and `Switch`, which hand `onChange` a boolean, `Input` is a DOM `<input>`, so `setTitle` stores the `ChangeEvent` and the field renders `[object Object]`.
+`Input` is a DOM `<input>` and `onChange` receives the change event, not the value, so `setTitle` stores the `ChangeEvent` and the field renders `[object Object]`.
 
 </Dont>
 

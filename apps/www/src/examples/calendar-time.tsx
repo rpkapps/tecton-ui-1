@@ -1,8 +1,7 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/calendar-time.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/calendar-time.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
-import { CalendarDate } from "@internationalized/date"
 import { Clock2Icon } from "lucide-react"
 
 import { Calendar } from "@tecton/react/components/calendar"
@@ -15,14 +14,19 @@ import {
 } from "@tecton/react/components/input-group"
 
 export function CalendarWithTime() {
-  const [date, setDate] = React.useState<CalendarDate | undefined>(
-    new CalendarDate(new Date().getFullYear(), new Date().getMonth() + 1, 12)
+  const [date, setDate] = React.useState<Date | undefined>(
+    new Date(new Date().getFullYear(), new Date().getMonth(), 12)
   )
 
   return (
     <Card size="sm" className="mx-auto w-fit">
       <CardContent>
-        <Calendar value={date} onChange={setDate} className="p-0" />
+        <Calendar
+          mode="single"
+          selected={date}
+          onSelect={setDate}
+          className="p-0"
+        />
       </CardContent>
       <CardFooter className="border-t bg-card">
         <FieldGroup>

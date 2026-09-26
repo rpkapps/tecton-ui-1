@@ -47,6 +47,11 @@ const addons = [
   },
 ] as const
 
+const billingPeriods = [
+  { label: "Monthly", value: "monthly" },
+  { label: "Yearly", value: "yearly" },
+]
+
 const formSchema = z.object({
   plan: z
     .string()
@@ -107,11 +112,12 @@ export default function FormTanstackComplex() {
                       Choose your subscription plan.
                     </FieldDescription>
                     <RadioGroup
+                      aria-label="Subscription plan"
                       name={field.name}
                       value={field.state.value}
-                      onChange={field.handleChange}
-                      isInvalid={isInvalid}
-                      aria-label="Subscription plan"
+                      onValueChange={(value) =>
+                        field.handleChange(value as string)
+                      }
                     >
                       <FieldLabel htmlFor="basic">
                         <Field
@@ -124,7 +130,11 @@ export default function FormTanstackComplex() {
                               For individuals and small teams
                             </FieldDescription>
                           </FieldContent>
-                          <RadioGroupItem value="basic" id="basic" />
+                          <RadioGroupItem
+                            value="basic"
+                            id="basic"
+                            aria-invalid={isInvalid}
+                          />
                         </Field>
                       </FieldLabel>
                       <FieldLabel htmlFor="pro">
@@ -138,7 +148,11 @@ export default function FormTanstackComplex() {
                               For businesses with higher demands
                             </FieldDescription>
                           </FieldContent>
-                          <RadioGroupItem value="pro" id="pro" />
+                          <RadioGroupItem
+                            value="pro"
+                            id="pro"
+                            aria-invalid={isInvalid}
+                          />
                         </Field>
                       </FieldLabel>
                     </RadioGroup>
@@ -157,26 +171,23 @@ export default function FormTanstackComplex() {
                   field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel id={`${field.name}-label`} htmlFor={field.name}>
-                      Billing Period
-                    </FieldLabel>
+                    <FieldLabel htmlFor={field.name}>Billing Period</FieldLabel>
                     <Select
-                      aria-labelledby={`${field.name}-label`}
                       name={field.name}
-                      placeholder="Select"
+                      items={billingPeriods}
                       value={field.state.value || null}
-                      onChange={(key) =>
-                        field.handleChange(key ? String(key) : "")
-                      }
-                      isInvalid={isInvalid}
-                      className="w-full"
+                      onValueChange={(value) => field.handleChange(value ?? "")}
                     >
-                      <SelectTrigger id={field.name}>
-                        <SelectValue />
+                      <SelectTrigger
+                        id={field.name}
+                        aria-invalid={isInvalid}
+                        className="w-full"
+                      >
+                        <SelectValue placeholder="Select" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem id="monthly">Monthly</SelectItem>
-                        <SelectItem id="yearly">Yearly</SelectItem>
+                        <SelectItem value="monthly">Monthly</SelectItem>
+                        <SelectItem value="yearly">Yearly</SelectItem>
                       </SelectContent>
                     </Select>
                     <FieldDescription>
@@ -212,9 +223,9 @@ export default function FormTanstackComplex() {
                           <Checkbox
                             id={addon.id}
                             name={field.name}
-                            isInvalid={isInvalid}
-                            isSelected={field.state.value.includes(addon.id)}
-                            onChange={(checked) => {
+                            aria-invalid={isInvalid}
+                            checked={field.state.value.includes(addon.id)}
+                            onCheckedChange={(checked) => {
                               if (checked) {
                                 field.pushValue(addon.id)
                               } else {
@@ -262,8 +273,9 @@ export default function FormTanstackComplex() {
                     <Switch
                       id={field.name}
                       name={field.name}
-                      isSelected={field.state.value}
-                      onChange={field.handleChange}
+                      checked={field.state.value}
+                      onCheckedChange={(checked) => field.handleChange(checked)}
+                      aria-invalid={isInvalid}
                     />
                     {isInvalid && (
                       <FieldError errors={field.state.meta.errors} />

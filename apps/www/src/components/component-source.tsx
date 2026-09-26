@@ -149,7 +149,7 @@ export function CodeCollapsibleWrapper({
           variant="ghost"
           size="sm"
           className="h-7 rounded-md px-2 text-muted-foreground"
-          onPress={() => setIsOpened((v) => !v)}
+          onClick={() => setIsOpened((v) => !v)}
         >
           {isOpened ? "Collapse" : "Expand"}
         </Button>

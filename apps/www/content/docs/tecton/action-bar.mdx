@@ -10,66 +10,41 @@ description: "A transient bar for acting on a selection or on unsaved changes: a
 ```tsx
 import {
   ActionBar,
-  ActionBarSelection,
-  ActionBarMessage,
   ActionBarActions,
+  ActionBarMessage,
+  ActionBarSelection,
 } from "@tecton/react/tecton/action-bar"
 import { OverflowItem, OverflowLabel } from "@tecton/react/tecton/overflow"
 ```
 
 ```tsx
-<ActionBar isOpen={selected > 0} onDismiss={clear} aria-label="Selected wells">
+<ActionBar open={selected > 0} onOpenChange={(open) => !open && clear()} aria-label="Selected wells">
   <ActionBarSelection count={selected} total={wells.length} onClear={clear} />
   <ActionBarActions aria-label="Selection actions">
-    <OverflowItem id="tag" label="Add tag" icon={<TagIcon />} onAction={addTag}>
+    <OverflowItem value="tag" label="Add tag" icon={<TagIcon />} onClick={addTag}>
       <Button variant="outline" size="sm">
         <TagIcon data-icon="inline-start" />
         <OverflowLabel>Add tag</OverflowLabel>
       </Button>
     </OverflowItem>
-    <Button size="sm" onPress={assign}>Assign</Button>
+    <Button size="sm" onClick={assign}>Assign</Button>
   </ActionBarActions>
 </ActionBar>
 ```
 
-The bar owns placement, the enter transition and Escape to dismiss (while focus is inside it). Everything in `ActionBarActions` is an [Overflow](/docs/tecton/overflow) toolbar: wrap the actions that may leave in `OverflowItem` and leave the primary action bare so it never does.
+`ActionBarActions` is an [Overflow](/docs/tecton/overflow) toolbar: actions wrapped in `OverflowItem` move into a More menu as the bar narrows, a bare action stays. After that, the selection summary compacts from "12 of 340 selected" to "12 selected" and then to a count badge; a live region always announces the full text.
 
-## Composition
+## Floating
 
-```text
-ActionBar
-├── ActionBarSelection | ActionBarMessage
-└── ActionBarActions (Toolbar)
-    ├── OverflowItem …
-    ├── OverflowDivider
-    └── Button (fixed)
-```
-
-## Placement
-
-`placement="toolbar"` fills the row a table toolbar normally occupies: render it in place of the search and filter controls while something is selected, as the first example does.
-
-`placement="floating"` is a sticky card at the bottom of its scroll container. It stays inside the panel, not the viewport, so the bar keeps its width and its container queries.
+`placement="floating"` is a sticky card at the bottom of its scroll container, not the viewport. The default, `placement="toolbar"`, fills the row a table toolbar occupies, as in the first example.
 
 <ComponentPreview name="action-bar-floating" align="start" />
 
 ## Unsaved changes
 
-The same bar with a message instead of a selection.
+Summarise with `ActionBarMessage` instead of a selection.
 
 <ComponentPreview name="action-bar-message" align="start" />
-
-## Collapse order
-
-The actions overflow by the [Overflow](/docs/tecton/overflow) rules first, then the summary compacts with container queries on the bar:
-
-| Width | Selection summary |
-| --- | --- |
-| Wide | 12 of 340 selected · Clear |
-| Below `lg` (32rem) | 12 selected · Clear |
-| Below `sm` (24rem) | count badge and an X |
-
-A visually hidden `aria-live` region always announces the full text. It is filled a moment after the bar mounts and after each change, so the first selection is announced too (a screen reader ignores a live region that appears with its content already in it) and a burst of selection changes is announced once.
 
 {/* guidelines:start */}
 
@@ -93,7 +68,7 @@ A visually hidden `aria-live` region always announces the full text. It is fille
 
 <Do>
 
-Control it with `isOpen` and dismiss with `onDismiss`; the bar owns Escape and the enter transition.
+Control it with `open` / `onOpenChange` (called with `false` when the user dismisses it); the bar owns Escape and the enter transition.
 
 </Do>
 
@@ -130,9 +105,9 @@ Choose `placement="toolbar"` to fill a table's toolbar row, `"floating"` for a s
 <Wrong>
 
 ```tsx
-<ActionBar isOpen={selected.size > 0} aria-label="Selected wells">
+<ActionBar open={selected.size > 0} aria-label="Selected wells">
   <span>{selected.size} of {wells.length} selected</span>
-  <Button variant="ghost" size="sm" onPress={clear}>Clear</Button>
+  <Button variant="ghost" size="sm" onClick={clear}>Clear</Button>
 </ActionBar>
 ```
 
@@ -141,7 +116,7 @@ Choose `placement="toolbar"` to fill a table's toolbar row, `"floating"` for a s
 <Correct>
 
 ```tsx
-<ActionBar isOpen={selected.size > 0} onDismiss={clear} aria-label="Selected wells">
+<ActionBar open={selected.size > 0} onOpenChange={(open) => !open && clear()} aria-label="Selected wells">
   <ActionBarSelection count={selected.size} total={wells.length} label="wells" onClear={clear} />
 </ActionBar>
 ```
@@ -159,7 +134,7 @@ Choose `placement="toolbar"` to fill a table's toolbar row, `"floating"` for a s
 ```tsx
 <ActionBarActions aria-label="Selection actions">
   <Button variant="outline" size="sm"><TagIcon data-icon="inline-start" />Add tag</Button>
-  <Button size="sm" onPress={assign}>Assign</Button>
+  <Button size="sm" onClick={assign}>Assign</Button>
 </ActionBarActions>
 ```
 
@@ -169,10 +144,10 @@ Choose `placement="toolbar"` to fill a table's toolbar row, `"floating"` for a s
 
 ```tsx
 <ActionBarActions aria-label="Selection actions">
-  <OverflowItem id="tag" label="Add tag" icon={<TagIcon />} onAction={addTag}>
+  <OverflowItem value="tag" label="Add tag" icon={<TagIcon />} onClick={addTag}>
     <Button variant="outline" size="sm"><TagIcon data-icon="inline-start" /><OverflowLabel>Add tag</OverflowLabel></Button>
   </OverflowItem>
-  <Button size="sm" onPress={assign}>Assign</Button>
+  <Button size="sm" onClick={assign}>Assign</Button>
 </ActionBarActions>
 ```
 
@@ -218,9 +193,9 @@ A `div` with `role="region"`; give it an `aria-label`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `placement` | `"toolbar" \| "floating"` | "toolbar" | Row fill, or sticky card at the bottom of the scroll container. |
-| `isOpen` | `boolean` | true | Render the bar. |
-| `onDismiss` | `() => void` | - | Called on Escape while focus is inside the bar and no overlay is open. |
+| `placement` | `"toolbar" \| "floating"` | `"toolbar"` | Fill the toolbar row, or float as a sticky card. |
+| `open` | `boolean` | `true` | Render the bar. |
+| `onOpenChange` | `(open: boolean) => void` | - | Called with `false` on Escape while focus is inside the bar. |
 
 ### ActionBarSelection
 
@@ -228,9 +203,9 @@ A `div` with `role="region"`; give it an `aria-label`.
 | --- | --- | --- | --- |
 | `count` | `number` | - | Selected items. |
 | `total` | `number` | - | Total items; adds "of N". |
-| `label` | `string` | - | Noun after the count, e.g. "wells". |
-| `onClear` | `() => void` | - | Renders the Clear control. |
-| `clearLabel` | `string` | "Clear selection" | Accessible name of the compact Clear button. |
+| `label` | `string` | - | Noun after the count, e.g. `"wells"`. |
+| `onClear` | `() => void` | - | Renders the Clear button. |
+| `clearLabel` | `string` | `"Clear selection"` | Accessible name of the compact Clear button. |
 
 ### ActionBarMessage
 
@@ -238,4 +213,4 @@ A `p` for a text summary.
 
 ### ActionBarActions
 
-An [Overflow](/docs/tecton/overflow) `Toolbar` with `aria-label` defaulting to "Actions". Accepts every `Toolbar` prop.
+An [Overflow](/docs/tecton/overflow) `Toolbar`; `aria-label` defaults to `"Actions"`.

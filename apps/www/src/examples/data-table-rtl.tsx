@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/data-table-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/data-table-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -31,6 +31,8 @@ import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -46,7 +48,6 @@ import {
   TableHeader,
   TableRow,
 } from "@tecton/react/components/table"
-import { buttonVariants } from "@tecton/react/components/button"
 
 const translations: Translations = {
   en: {
@@ -201,8 +202,26 @@ export function DataTableRtl() {
       columnHelper.columns([
         columnHelper.display({
           id: "select",
-          header: ({ table }) => <Checkbox slot="selection" />,
-          cell: ({ row }) => <Checkbox slot="selection" />,
+          header: ({ table }) => (
+            <Checkbox
+              checked={table.getIsAllPageRowsSelected()}
+              indeterminate={
+                table.getIsSomePageRowsSelected() &&
+                !table.getIsAllPageRowsSelected()
+              }
+              onCheckedChange={(value) =>
+                table.toggleAllPageRowsSelected(!!value)
+              }
+              aria-label={t.selectAll}
+            />
+          ),
+          cell: ({ row }) => (
+            <Checkbox
+              checked={row.getIsSelected()}
+              onCheckedChange={(value) => row.toggleSelected(!!value)}
+              aria-label={t.selectRow}
+            />
+          ),
           enableSorting: false,
           enableHiding: false,
         }),
@@ -220,12 +239,17 @@ export function DataTableRtl() {
           },
         }),
         columnHelper.accessor("email", {
-          header: () => {
+          header: ({ column }) => {
             return (
-              <div className={buttonVariants({ variant: "ghost" })}>
+              <Button
+                variant="ghost"
+                onClick={() =>
+                  column.toggleSorting(column.getIsSorted() === "asc")
+                }
+              >
                 {t.email}
                 <ArrowUpDown />
-              </div>
+              </Button>
             )
           },
           cell: ({ row }) => (
@@ -254,20 +278,22 @@ export function DataTableRtl() {
             const payment = row.original
 
             return (
-              <DropdownMenuTrigger>
-                <Button variant="ghost" size="icon-xs">
+              <DropdownMenu>
+                <DropdownMenuTrigger
+                  render={<Button variant="ghost" size="icon-xs" />}
+                >
                   <span className="sr-only">{t.openMenu}</span>
                   <MoreHorizontal />
-                </Button>
-                <DropdownMenu
-                  placement={dir === "rtl" ? "bottom start" : "bottom end"}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent
+                  align={dir === "rtl" ? "start" : "end"}
                   data-lang={dir === "rtl" ? language : undefined}
                   className="w-40"
                 >
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>{t.actions}</DropdownMenuLabel>
                     <DropdownMenuItem
-                      onAction={() => navigator.clipboard.writeText(payment.id)}
+                      onClick={() => navigator.clipboard.writeText(payment.id)}
                     >
                       {t.copyPaymentId}
                     </DropdownMenuItem>
@@ -277,8 +303,8 @@ export function DataTableRtl() {
                     <DropdownMenuItem>{t.viewCustomer}</DropdownMenuItem>
                     <DropdownMenuItem>{t.viewPaymentDetails}</DropdownMenuItem>
                   </DropdownMenuGroup>
-                </DropdownMenu>
-              </DropdownMenuTrigger>
+                </DropdownMenuContent>
+              </DropdownMenu>
             )
           },
         }),
@@ -313,105 +339,79 @@ export function DataTableRtl() {
           }
           className="max-w-sm"
         />
-        <DropdownMenuTrigger>
-          <Button variant="outline" className="ms-auto">
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={<Button variant="outline" className="ms-auto" />}
+          >
             {t.columns} <ChevronDown />
-          </Button>
-          <DropdownMenu
-            placement={dir === "rtl" ? "bottom start" : "bottom end"}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            align={dir === "rtl" ? "start" : "end"}
             data-lang={dir === "rtl" ? language : undefined}
           >
-            <DropdownMenuGroup
-              selectionMode="multiple"
-              selectedKeys={table
-                .getVisibleFlatColumns()
-                .filter((column) => column.getCanHide())
-                .map((column) => column.id)}
-              onSelectionChange={(keys) => {
-                table.setColumnVisibility(
-                  Object.fromEntries(
-                    table
-                      .getAllFlatColumns()
-                      .map((c) => [
-                        c.id,
-                        !c.getCanHide() || keys === "all" || keys.has(c.id),
-                      ])
-                  )
-                )
-              }}
-            >
+            <DropdownMenuGroup>
               {table
                 .getAllColumns()
                 .filter((column) => column.getCanHide())
                 .map((column) => {
                   return (
-                    <DropdownMenuItem
+                    <DropdownMenuCheckboxItem
                       key={column.id}
-                      id={column.id}
                       className="capitalize"
+                      checked={column.getIsVisible()}
+                      onCheckedChange={(value) =>
+                        column.toggleVisibility(!!value)
+                      }
                     >
                       {column.id}
-                    </DropdownMenuItem>
+                    </DropdownMenuCheckboxItem>
                   )
                 })}
             </DropdownMenuGroup>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
       <div className="overflow-hidden rounded-md border">
-        <Table
-          aria-label="Tasks"
-          selectionMode="multiple"
-          onSelectionChange={(selection) => {
-            if (selection === "all") {
-              table.toggleAllRowsSelected()
-            } else {
-              table.setRowSelection(
-                Object.fromEntries([...selection].map((key) => [key, true]))
-              )
-            }
-          }}
-          sortDescriptor={
-            sorting.length
-              ? {
-                  column: sorting[0].id,
-                  direction: sorting[0].desc ? "descending" : "ascending",
-                }
-              : undefined
-          }
-          onSortChange={(sortDescriptor) => {
-            table.setSorting([
-              {
-                id: "" + sortDescriptor.column,
-                desc: sortDescriptor.direction === "descending",
-              },
-            ])
-          }}
-        >
+        <Table>
           <TableHeader>
-            {table.getFlatHeaders().map((header) => (
-              <TableHead
-                key={header.id}
-                id={header.id}
-                isRowHeader={header.index === 1}
-                allowsSorting={header.column.getCanSort()}
-              >
-                {header.isPlaceholder ? null : (
-                  <table.FlexRender header={header} />
-                )}
-              </TableHead>
-            ))}
-          </TableHeader>
-          <TableBody renderEmptyState={() => t.noResults}>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} id={row.id}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    <table.FlexRender cell={cell} />
-                  </TableCell>
-                ))}
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => {
+                  return (
+                    <TableHead key={header.id}>
+                      {header.isPlaceholder ? null : (
+                        <table.FlexRender header={header} />
+                      )}
+                    </TableHead>
+                  )
+                })}
               </TableRow>
             ))}
+          </TableHeader>
+          <TableBody>
+            {table.getRowModel().rows?.length ? (
+              table.getRowModel().rows.map((row) => (
+                <TableRow
+                  key={row.id}
+                  data-state={row.getIsSelected() && "selected"}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell key={cell.id}>
+                      <table.FlexRender cell={cell} />
+                    </TableCell>
+                  ))}
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell
+                  colSpan={columns.length}
+                  className="h-24 text-center"
+                >
+                  {t.noResults}
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
@@ -424,16 +424,16 @@ export function DataTableRtl() {
           <Button
             variant="outline"
             size="sm"
-            onPress={() => table.previousPage()}
-            isDisabled={!table.getCanPreviousPage()}
+            onClick={() => table.previousPage()}
+            disabled={!table.getCanPreviousPage()}
           >
             {t.previous}
           </Button>
           <Button
             variant="outline"
             size="sm"
-            onPress={() => table.nextPage()}
-            isDisabled={!table.getCanNextPage()}
+            onClick={() => table.nextPage()}
+            disabled={!table.getCanNextPage()}
           >
             {t.next}
           </Button>

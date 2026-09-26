@@ -1,10 +1,7 @@
 ---
 title: Breadcrumb
 description: Displays the path to the current resource using a hierarchy of links.
-links:
-  doc: https://react-aria.adobe.com/Breadcrumbs
-  api: https://react-aria.adobe.com/Breadcrumbs#api
-upstream: apps/v4/content/docs/components/aria/breadcrumb.mdx
+upstream: apps/v4/content/docs/components/base/breadcrumb.mdx
 ---
 
 <ComponentPreview
@@ -21,6 +18,7 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@tecton/react/components/breadcrumb"
 ```
 
@@ -28,11 +26,15 @@ import {
 <Breadcrumb>
   <BreadcrumbList>
     <BreadcrumbItem>
-      <BreadcrumbLink href="/">Home</BreadcrumbLink>
+      <BreadcrumbLink render={<a href="/" />}>Home</BreadcrumbLink>
     </BreadcrumbItem>
+    <BreadcrumbSeparator />
     <BreadcrumbItem>
-      <BreadcrumbLink href="/components">Components</BreadcrumbLink>
+      <BreadcrumbLink render={<a href="/components" />}>
+        Components
+      </BreadcrumbLink>
     </BreadcrumbItem>
+    <BreadcrumbSeparator />
     <BreadcrumbItem>
       <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
     </BreadcrumbItem>
@@ -49,8 +51,10 @@ Breadcrumb
 └── BreadcrumbList
     ├── BreadcrumbItem
     │   └── BreadcrumbLink
+    ├── BreadcrumbSeparator
     ├── BreadcrumbItem
     │   └── BreadcrumbLink
+    ├── BreadcrumbSeparator
     └── BreadcrumbItem
         └── BreadcrumbPage
 ```
@@ -126,13 +130,13 @@ Compose `Breadcrumb` > `BreadcrumbList` > `BreadcrumbItem`, and end the trail wi
 
 <Do>
 
-Let `BreadcrumbItem` draw the separator: it renders the chevron itself for every item React Aria does not mark `isCurrent`, and `separatorClassName` is how you size it.
+Put a `BreadcrumbSeparator` between items: it is the presentational `li` holding the chevron (flipped in right-to-left); pass a child to change the glyph.
 
 </Do>
 
 <Do>
 
-Give `BreadcrumbLink` an `href`, and a routing library's link through `render={(props) => <Link {...props} />}`.
+Give `BreadcrumbLink` an `href`, and mount a routing library's link with `render={<Link to="/fields" />}`.
 
 </Do>
 
@@ -172,9 +176,7 @@ Leave breadcrumbs off top-level pages; a trail with no parent only repeats the p
 <nav className="flex items-center gap-2 text-sm text-zinc-500">
   <a href="/fields">Fields</a>
   <span>/</span>
-  <a href="/fields/gullfaks">Gullfaks</a>
-  <span>/</span>
-  <span className="text-zinc-900">34/10-A-12</span>
+  <span className="text-zinc-900">Gullfaks</span>
 </nav>
 ```
 
@@ -185,22 +187,16 @@ Leave breadcrumbs off top-level pages; a trail with no parent only repeats the p
 ```tsx
 <Breadcrumb>
   <BreadcrumbList>
-    <BreadcrumbItem>
-      <BreadcrumbLink href="/fields">Fields</BreadcrumbLink>
-    </BreadcrumbItem>
-    <BreadcrumbItem>
-      <BreadcrumbLink href="/fields/gullfaks">Gullfaks</BreadcrumbLink>
-    </BreadcrumbItem>
-    <BreadcrumbItem>
-      <BreadcrumbPage>34/10-A-12</BreadcrumbPage>
-    </BreadcrumbItem>
+    <BreadcrumbItem><BreadcrumbLink href="/fields">Fields</BreadcrumbLink></BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem><BreadcrumbPage>Gullfaks</BreadcrumbPage></BreadcrumbItem>
   </BreadcrumbList>
 </Breadcrumb>
 ```
 
 </Correct>
 
-`zinc` is not a Tecton palette family, so both colour classes emit no CSS under the reset palette, and the row has none of the structure a breadcrumb is read by: `Breadcrumb` is the `nav[aria-label="breadcrumb"]`, `BreadcrumbList` the `ol`, `BreadcrumbItem` the `li`, and `BreadcrumbPage` the element marked `aria-current="page"`.
+`zinc` is not a Tecton palette family, so both colour classes emit no CSS, and the row has none of the structure a breadcrumb is read by: `Breadcrumb` is the `nav[aria-label="breadcrumb"]`, `BreadcrumbList` the `ol`, `BreadcrumbItem` the `li`, and `BreadcrumbPage` the element marked `aria-current="page"`.
 
 </Dont>
 
@@ -209,11 +205,9 @@ Leave breadcrumbs off top-level pages; a trail with no parent only repeats the p
 <Wrong>
 
 ```tsx
-<BreadcrumbItem>
-  <BreadcrumbLink asChild>
-    <Link to="/fields/gullfaks">Gullfaks</Link>
-  </BreadcrumbLink>
-</BreadcrumbItem>
+<BreadcrumbLink asChild>
+  <Link to="/fields/gullfaks">Gullfaks</Link>
+</BreadcrumbLink>
 ```
 
 </Wrong>
@@ -221,16 +215,42 @@ Leave breadcrumbs off top-level pages; a trail with no parent only repeats the p
 <Correct>
 
 ```tsx
-<BreadcrumbItem>
-  <BreadcrumbLink href="/fields/gullfaks" render={(props) => <Link {...props} />}>
-    Gullfaks
-  </BreadcrumbLink>
-</BreadcrumbItem>
+<BreadcrumbLink render={<Link to="/fields/gullfaks" />}>Gullfaks</BreadcrumbLink>
 ```
 
 </Correct>
 
-`BreadcrumbLink` is a React Aria `Link`, which has `render` and no `asChild`, so the prop is dropped and the routing link is left nested inside it — and React Aria renders its own element as a `span[role="link"]` whenever it has no `href`, so the element it focuses, styles and marks current leads nowhere and the trail gains a second tab stop per level.
+There is no `asChild`: `BreadcrumbLink` renders its own `a` and the routing link is nested inside it, a link inside a link with two tab stops per level.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Separators typed between the items">
+
+<Wrong>
+
+```tsx
+<BreadcrumbList>
+  <BreadcrumbItem><BreadcrumbLink href="/fields">Fields</BreadcrumbLink></BreadcrumbItem>
+  <span>/</span>
+  <BreadcrumbItem><BreadcrumbPage>Gullfaks</BreadcrumbPage></BreadcrumbItem>
+</BreadcrumbList>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<BreadcrumbList>
+  <BreadcrumbItem><BreadcrumbLink href="/fields">Fields</BreadcrumbLink></BreadcrumbItem>
+  <BreadcrumbSeparator />
+  <BreadcrumbItem><BreadcrumbPage>Gullfaks</BreadcrumbPage></BreadcrumbItem>
+</BreadcrumbList>
+```
+
+</Correct>
+
+A bare `span` inside the `ol` is invalid list content and is read aloud as "slash"; `BreadcrumbSeparator` is an `li` with `role="presentation"` and `aria-hidden`, sized and flipped for right-to-left.
 
 </Dont>
 
@@ -278,6 +298,15 @@ The `BreadcrumbPage` component displays the current page in the breadcrumb (non-
 | ----------- | -------- | ------- |
 | `className` | `string` | -       |
 
+### BreadcrumbSeparator
+
+The `BreadcrumbSeparator` component displays a separator between breadcrumb items. You can pass custom children to override the default separator icon.
+
+| Prop        | Type              | Default |
+| ----------- | ----------------- | ------- |
+| `children`  | `React.ReactNode` | -       |
+| `className` | `string`          | -       |
+
 ### BreadcrumbEllipsis
 
 The `BreadcrumbEllipsis` component displays an ellipsis indicator for collapsed breadcrumb items.
@@ -285,5 +314,3 @@ The `BreadcrumbEllipsis` component displays an ellipsis indicator for collapsed 
 | Prop        | Type     | Default |
 | ----------- | -------- | ------- |
 | `className` | `string` | -       |
-
-For more information, see the [React Aria documentation](https://react-aria.adobe.com/Breadcrumbs#api).

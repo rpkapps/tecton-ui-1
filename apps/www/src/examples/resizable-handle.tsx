@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/resizable-handle.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/resizable-handle.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   ResizableHandle,
   ResizablePanel,

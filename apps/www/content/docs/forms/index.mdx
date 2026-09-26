@@ -1,6 +1,6 @@
 ---
 title: Forms
-description: Build forms with React Aria components and a headless form library.
+description: Build forms with the Field components and a headless form library.
 ---
 
 The `<Field />` component family is the building block for forms: it gives you labels, descriptions, error messages and layout without owning the form state. Pair it with the form library of your choice.
@@ -20,12 +20,12 @@ The `<Field />` component family is the building block for forms: it gives you l
   </LinkedCard>
   <LinkedCard href="https://ui.shadcn.com/docs/forms/react-hook-form" target="_blank" rel="noreferrer" className="border border-dashed bg-transparent">
     <p className="mt-2 font-medium">React Hook Form</p>
-    <p className="mt-1 text-xs text-muted-foreground">Upstream guide (Radix examples)</p>
+    <p className="mt-1 text-xs text-muted-foreground">Upstream guide</p>
   </LinkedCard>
 </div>
 
 ## Which one?
 
-Tecton applications use **TanStack Form**: it is headless, framework-agnostic and shares the TanStack conventions of the router and table already in use. The guide covers every React Aria form control (input, textarea, select, checkbox, radio group, switch) and array fields.
+Tecton applications use **TanStack Form**: it is headless, framework-agnostic and shares the TanStack conventions of the router and table already in use. The guide covers every form control (input, textarea, select, checkbox, radio group, switch) and array fields.
 
-The upstream React Hook Form guide applies as well; only the control props differ (see the [TanStack Form guide](/docs/forms/tanstack-form#working-with-different-field-types) for the React Aria equivalents of `onValueChange` / `onCheckedChange`).
+The upstream React Hook Form guide applies as well, with the components imported from `@tecton/react`.

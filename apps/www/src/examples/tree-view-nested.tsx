@@ -34,7 +34,7 @@ const project: Node[] = [
 
 function renderNode(node: Node) {
   return (
-    <TreeViewItem id={node.id} textValue={node.name}>
+    <TreeViewItem value={node.id} label={node.name}>
       <TreeViewItemContent kind={node.children ? "folder" : "item"}>
         {node.name}
       </TreeViewItemContent>
@@ -51,7 +51,7 @@ export default function TreeViewNested() {
       aria-label="Fields"
       className="max-w-sm"
       items={project}
-      defaultExpandedKeys={["fields", "gullfaks", "gullfaks-wells"]}
+      defaultExpanded={["fields", "gullfaks", "gullfaks-wells"]}
     >
       {renderNode}
     </TreeView>

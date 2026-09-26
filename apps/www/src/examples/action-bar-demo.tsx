@@ -66,8 +66,21 @@ const columnHelper = createColumnHelper<typeof features, Well>()
 const columns = columnHelper.columns([
   columnHelper.display({
     id: "select",
-    header: () => <Checkbox slot="selection" aria-label="Select all wells" />,
-    cell: () => <Checkbox slot="selection" aria-label="Select well" />,
+    header: ({ table }) => (
+      <Checkbox
+        aria-label="Select all wells"
+        checked={table.getIsAllRowsSelected()}
+        indeterminate={table.getIsSomeRowsSelected()}
+        onCheckedChange={(checked) => table.toggleAllRowsSelected(checked)}
+      />
+    ),
+    cell: ({ row }) => (
+      <Checkbox
+        aria-label={`Select ${row.original.name}`}
+        checked={row.getIsSelected()}
+        onCheckedChange={(checked) => row.toggleSelected(checked)}
+      />
+    ),
   }),
   columnHelper.accessor("name", { header: "Well" }),
   columnHelper.accessor("field", { header: "Field" }),
@@ -105,7 +118,9 @@ export default function ActionBarDemo() {
           <ActionBar
             placement="toolbar"
             aria-label="Selected wells"
-            onDismiss={clear}
+            onOpenChange={(open) => {
+              if (!open) clear()
+            }}
           >
             <ActionBarSelection
               count={selected}
@@ -114,7 +129,7 @@ export default function ActionBarDemo() {
             />
             <ActionBarActions aria-label="Selection actions">
               <OverflowItem
-                id="assign"
+                value="assign"
                 label="Assign"
                 icon={<UserPlusIcon />}
                 priority={2}
@@ -125,7 +140,7 @@ export default function ActionBarDemo() {
                 </Button>
               </OverflowItem>
               <OverflowItem
-                id="tag"
+                value="tag"
                 label="Add tag"
                 icon={<TagIcon />}
                 priority={1}
@@ -135,13 +150,21 @@ export default function ActionBarDemo() {
                   <OverflowLabel>Add tag</OverflowLabel>
                 </Button>
               </OverflowItem>
-              <OverflowItem id="export" label="Export" icon={<DownloadIcon />}>
+              <OverflowItem
+                value="export"
+                label="Export"
+                icon={<DownloadIcon />}
+              >
                 <Button variant="outline" size="sm">
                   <DownloadIcon data-icon="inline-start" />
                   <OverflowLabel>Export</OverflowLabel>
                 </Button>
               </OverflowItem>
-              <OverflowItem id="archive" label="Archive" icon={<ArchiveIcon />}>
+              <OverflowItem
+                value="archive"
+                label="Archive"
+                icon={<ArchiveIcon />}
+              >
                 <Button variant="outline" size="sm">
                   <ArchiveIcon data-icon="inline-start" />
                   <OverflowLabel>Archive</OverflowLabel>
@@ -149,7 +172,7 @@ export default function ActionBarDemo() {
               </OverflowItem>
               <OverflowDivider />
               <OverflowItem
-                id="delete"
+                value="delete"
                 label="Delete"
                 icon={<Trash2Icon />}
                 variant="destructive"
@@ -176,37 +199,27 @@ export default function ActionBarDemo() {
         )}
       </div>
       <div className="overflow-hidden rounded-md border">
-        <Table
-          aria-label="Wells"
-          selectionMode="multiple"
-          selectedKeys={table.getSelectedRowModel().rows.map((row) => row.id)}
-          onSelectionChange={(selection) => {
-            if (selection === "all") {
-              table.toggleAllRowsSelected(true)
-            } else {
-              table.setRowSelection(
-                Object.fromEntries([...selection].map((key) => [key, true]))
-              )
-            }
-          }}
-        >
+        <Table aria-label="Wells">
           <TableHeader>
-            {table.getFlatHeaders().map((header) => (
-              <TableHead
-                key={header.id}
-                id={header.id}
-                isRowHeader={header.index === 1}
-                className={header.column.id === "select" ? "w-10" : undefined}
-              >
-                {header.isPlaceholder ? null : (
-                  <table.FlexRender header={header} />
-                )}
-              </TableHead>
-            ))}
+            <TableRow>
+              {table.getFlatHeaders().map((header) => (
+                <TableHead
+                  key={header.id}
+                  className={header.column.id === "select" ? "w-10" : undefined}
+                >
+                  {header.isPlaceholder ? null : (
+                    <table.FlexRender header={header} />
+                  )}
+                </TableHead>
+              ))}
+            </TableRow>
           </TableHeader>
-          <TableBody renderEmptyState={() => "No wells."}>
+          <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} id={row.id}>
+              <TableRow
+                key={row.id}
+                data-state={row.getIsSelected() ? "selected" : undefined}
+              >
                 {row.getAllCells().map((cell) => (
                   <TableCell key={cell.id}>
                     <table.FlexRender cell={cell} />

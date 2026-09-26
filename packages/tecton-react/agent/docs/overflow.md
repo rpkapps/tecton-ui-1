@@ -20,10 +20,10 @@ import { Overflow, Toolbar, OverflowItem, OverflowLabel, OverflowGroup, Overflow
 
 ## Do
 
-- Wrap every control that may leave the row in an `OverflowItem` with a stable `id`; leave the primary action unwrapped so it is fixed and never collapses.
-- Put the text in an `OverflowLabel` beside an icon and describe the menu entry with `label`, `icon`, `shortcut` and `onAction`; only an item with a `label` and an icon in its control goes icon-only, a text-only item keeps its label.
+- Wrap every control that may leave the row in an `OverflowItem` with a stable `value`; leave the primary action unwrapped so it is fixed and never collapses.
+- Put the text in an `OverflowLabel` beside an icon and describe the menu entry with `label`, `icon`, `shortcut` and `onClick`; only an item with a `label` and an icon in its control goes icon-only, a text-only item keeps its label.
 - Decide who leaves first with `priority` (higher stays longer); the menu always keeps source order.
-- Use `Toolbar` with an `aria-label` when the row is a toolbar (one tab stop, arrow keys) and `Overflow` when it is not, such as a chip row.
+- Use `Toolbar` with an `aria-label` when the row is a toolbar (arrow keys move between every visible control, Tab leaves it) and `Overflow` when it is not, such as a chip row or a header with a tab list.
 - Give a non-button its menu form through `overflow`: a `DropdownMenuSub` for a select or submenu, a `DropdownMenuItem` opening a `Dialog` for a text input, or `"never"` to pin the item in the row.
 
 ## Don't
@@ -36,7 +36,7 @@ Wrong:
 <Toolbar aria-label="Well actions">
   <Button variant="outline"><TagIcon data-icon="inline-start" />Add tag</Button>
   <Button variant="outline"><ShareIcon data-icon="inline-start" />Share</Button>
-  <Button onPress={create}>New well</Button>
+  <Button onClick={create}>New well</Button>
 </Toolbar>
 ```
 
@@ -44,13 +44,13 @@ Correct:
 
 ```tsx
 <Toolbar aria-label="Well actions">
-  <OverflowItem id="tag" label="Add tag" icon={<TagIcon />} onAction={addTag}>
+  <OverflowItem value="tag" label="Add tag" icon={<TagIcon />} onClick={addTag}>
     <Button variant="outline"><TagIcon data-icon="inline-start" /><OverflowLabel>Add tag</OverflowLabel></Button>
   </OverflowItem>
-  <OverflowItem id="share" label="Share" icon={<ShareIcon />} onAction={share}>
+  <OverflowItem value="share" label="Share" icon={<ShareIcon />} onClick={share}>
     <Button variant="outline"><ShareIcon data-icon="inline-start" /><OverflowLabel>Share</OverflowLabel></Button>
   </OverflowItem>
-  <Button onPress={create}>New well</Button>
+  <Button onClick={create}>New well</Button>
 </Toolbar>
 ```
 
@@ -61,7 +61,7 @@ Only an `OverflowItem` registers itself with the row's store, so only it can be 
 Wrong:
 
 ```tsx
-<OverflowItem id="export" label="Export" icon={<DownloadIcon />} onAction={exportRows}>
+<OverflowItem value="export" label="Export" icon={<DownloadIcon />} onClick={exportRows}>
   <Button variant="outline"><DownloadIcon data-icon="inline-start" />Export</Button>
 </OverflowItem>
 ```
@@ -69,7 +69,7 @@ Wrong:
 Correct:
 
 ```tsx
-<OverflowItem id="export" label="Export" icon={<DownloadIcon />} onAction={exportRows}>
+<OverflowItem value="export" label="Export" icon={<DownloadIcon />} onClick={exportRows}>
   <Button variant="outline"><DownloadIcon data-icon="inline-start" /><OverflowLabel>Export</OverflowLabel></Button>
 </OverflowItem>
 ```
@@ -81,24 +81,24 @@ The icon-only stage works by putting `sr-only` on `OverflowLabel` alone, so plai
 Wrong:
 
 ```tsx
-<OverflowItem id="delete" label="Delete" icon={<Trash2Icon />} variant="destructive">
-  <Button variant="destructive" onPress={remove}><Trash2Icon data-icon="inline-start" /><OverflowLabel>Delete</OverflowLabel></Button>
+<OverflowItem value="delete" label="Delete" icon={<Trash2Icon />} variant="destructive">
+  <Button variant="destructive" onClick={remove}><Trash2Icon data-icon="inline-start" /><OverflowLabel>Delete</OverflowLabel></Button>
 </OverflowItem>
 ```
 
 Correct:
 
 ```tsx
-<OverflowItem id="delete" label="Delete" icon={<Trash2Icon />} variant="destructive" onAction={remove}>
+<OverflowItem value="delete" label="Delete" icon={<Trash2Icon />} variant="destructive" onClick={remove}>
   <Button variant="destructive"><Trash2Icon data-icon="inline-start" /><OverflowLabel>Delete</OverflowLabel></Button>
 </OverflowItem>
 ```
 
-`onAction` is both the handler of the generated `DropdownMenuItem` and the `onPress` injected into the React Aria `Button` child through `ButtonContext`, so it fires in both places; left on the button alone, the More-menu entry is built with no handler and does nothing once the item is hidden.
+The item's `onClick` (and `disabled`) is both the handler of the generated `DropdownMenuItem` and passed on to the single control element inside the item, so it fires in both places; left on the button alone, the More-menu entry is built with no handler and does nothing once the item is hidden.
 
 ## Before you finish
 
-- Every control that may leave a collapsing row is wrapped in an `OverflowItem` with a stable `id`, its text in an `OverflowLabel` and its handler on the item's `onAction` rather than on the button; the primary action is left unwrapped.
+- Every control that may leave a collapsing row is wrapped in an `OverflowItem` with a stable `value`, its text in an `OverflowLabel` and its handler on the item's `onClick` rather than on the button; the primary action is left unwrapped.
 - A collapsing row of controls uses `Toolbar` with an `aria-label` when it is a toolbar (one tab stop, arrow keys) and `Overflow` when it is not.
 
 Related: button-group, action-bar, dropdown-menu

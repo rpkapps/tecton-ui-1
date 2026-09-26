@@ -1,10 +1,7 @@
 ---
 title: Dialog
 description: A window overlaid on either the primary window or another dialog window, rendering the content underneath inert.
-links:
-  doc: https://react-aria.adobe.com/Modal
-  api: https://react-aria.adobe.com/Modal#api
-upstream: apps/v4/content/docs/components/aria/dialog.mdx
+upstream: apps/v4/content/docs/components/base/dialog.mdx
 ---
 
 <ComponentPreview
@@ -15,9 +12,9 @@ upstream: apps/v4/content/docs/components/aria/dialog.mdx
 ## Usage
 
 ```tsx lineNumbers
-import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
+  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -26,9 +23,9 @@ import {
 ```
 
 ```tsx lineNumbers
-<DialogTrigger>
-  <Button>Open</Button>
-  <Dialog>
+<Dialog>
+  <DialogTrigger>Open</DialogTrigger>
+  <DialogContent>
     <DialogHeader>
       <DialogTitle>Are you absolutely sure?</DialogTitle>
       <DialogDescription>
@@ -36,8 +33,8 @@ import {
         and remove your data from our servers.
       </DialogDescription>
     </DialogHeader>
-  </Dialog>
-</DialogTrigger>
+  </DialogContent>
+</Dialog>
 ```
 
 ## Composition
@@ -45,9 +42,9 @@ import {
 Use the following composition to build a `Dialog`:
 
 ```text
-DialogTrigger
-├── Button
-└── Dialog
+Dialog
+├── DialogTrigger
+└── DialogContent
     ├── DialogHeader
     │   ├── DialogTitle
     │   └── DialogDescription
@@ -90,7 +87,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Use it when
 
-- A decision or a short form must be finished before the page continues.
+- A decision or a short form — editing a record's fields, renaming it — must be finished before the page continues.
 - The task deserves the whole screen: everything behind it goes inert.
 - The user may abandon it — Escape and the backdrop both cancel.
 
@@ -99,7 +96,6 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 - a confirmation before a destructive action: use [AlertDialog](/docs/components/alert-dialog)
 - a side panel that keeps the page visible behind it: use [Sheet](/docs/components/sheet)
 - a bottom sheet the user drags with a thumb: use [Drawer](/docs/components/drawer)
-- content anchored to the control that opened it: use [Popover](/docs/components/popover)
 
 ### Do
 
@@ -107,37 +103,37 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Put the trigger `Button` and the `Dialog` inside one `DialogTrigger`; it hands press behaviour and open state to its whole subtree.
+Compose `Dialog` (the root, no element) > `DialogTrigger render={<Button />}` + `DialogContent`; the content portals itself and draws the overlay.
 
 </Do>
 
 <Do>
 
-Control it with `isOpen` and `onOpenChange` on `DialogTrigger`, or on `Dialog` itself when nothing on the page triggers it.
+Control it with `open` / `onOpenChange` on `Dialog`; `defaultOpen` for an uncontrolled start.
 
 </Do>
 
 <Do>
 
-Give every dialog a `DialogTitle`: React Aria takes the accessible name from it.
+Give every dialog a `DialogTitle` inside `DialogHeader`: it is the dialog's accessible name.
 
 </Do>
 
 <Do>
 
-Close from the footer with `DialogClose` — a plain `Button` setting your own state closes nothing, because the state lives in `DialogTrigger` — and pass `isDismissable={false}` with `showCloseButton={false}` when the user must pick a footer action.
+Close from the footer with `DialogClose render={<Button variant="outline" />}`, and pass `disablePointerDismissal` on `Dialog` with `showCloseButton={false}` on `DialogContent` when the user must pick a footer action.
 
 </Do>
 
 <Do>
 
-Keep `className` to width and layout (`sm:max-w-lg`): `Dialog` owns the surface, radius and padding.
+Keep `className` on `DialogContent` to width and layout (`sm:max-w-lg`): it owns the surface, radius and padding.
 
 </Do>
 
 <Do>
 
-A dialog, sheet or drawer with unsaved input ignores backdrop presses, but Escape and Cancel still close it (`isDismissable={false}`; `Drawer`: `disablePointerDismissal`).
+A dialog, sheet or drawer with unsaved input ignores backdrop presses, but Escape and Cancel still close it (`disablePointerDismissal` on the `Dialog`, `Sheet` or `Drawer`).
 
 </Do>
 
@@ -151,24 +147,9 @@ Never open a `Dialog` from inside another; use steps within one, except an `Aler
 
 ### Don't
 
-<Dont severity="HIGH" title="Radix trigger shape with asChild">
+<Dont severity="HIGH" title="A trigger wrapping the button and the dialog">
 
 <Wrong>
-
-```tsx
-<>
-  <DialogTrigger asChild>
-    <Button variant="outline">Edit well</Button>
-  </DialogTrigger>
-  <Dialog>
-    <DialogTitle>Edit well</DialogTitle>
-  </Dialog>
-</>
-```
-
-</Wrong>
-
-<Correct>
 
 ```tsx
 <DialogTrigger>
@@ -179,20 +160,34 @@ Never open a `Dialog` from inside another; use steps within one, except an `Aler
 </DialogTrigger>
 ```
 
+</Wrong>
+
+<Correct>
+
+```tsx
+<Dialog>
+  <DialogTrigger render={<Button variant="outline" />}>Edit well</DialogTrigger>
+  <DialogContent>
+    <DialogHeader><DialogTitle>Edit well</DialogTitle></DialogHeader>
+  </DialogContent>
+</Dialog>
+```
+
 </Correct>
 
-`DialogTrigger` publishes the open state to its subtree only, so a sibling `Dialog` never receives it and renders nothing; `asChild` is not a React Aria prop and is dropped.
+`DialogTrigger` must sit inside `Dialog`, which holds the state, and only `DialogContent` renders the popup: outside a root the trigger throws, and without `DialogContent` nothing is shown.
 
 </Dont>
 
-<Dont severity="HIGH" title="Controlling the dialog with open">
+<Dont severity="HIGH" title="Controlling the dialog with isOpen">
 
 <Wrong>
 
 ```tsx
-<Dialog open={isOpen} onOpenChange={setIsOpen}>
-  <DialogTitle>Rename well</DialogTitle>
-  <DialogDescription>Pick a new name for 34/10-A-12.</DialogDescription>
+<Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
+  <DialogContent>
+    <DialogTitle>Rename well</DialogTitle>
+  </DialogContent>
 </Dialog>
 ```
 
@@ -201,20 +196,43 @@ Never open a `Dialog` from inside another; use steps within one, except an `Aler
 <Correct>
 
 ```tsx
-<Dialog isOpen={isOpen} onOpenChange={setIsOpen}>
-  <DialogTitle>Rename well</DialogTitle>
-  <DialogDescription>Pick a new name for 34/10-A-12.</DialogDescription>
+<Dialog open={isOpen} onOpenChange={setIsOpen}>
+  <DialogContent>
+    <DialogTitle>Rename well</DialogTitle>
+  </DialogContent>
 </Dialog>
 ```
 
 </Correct>
 
-`Dialog` forwards its props to React Aria's `ModalOverlay`, which reads `isOpen`; without it, and with no `DialogTrigger` above, the overlay keeps its own uncontrolled state and returns `null`.
+`isOpen` is not a prop of the root, so the dialog keeps its own uncontrolled state and never opens when the page sets it.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Closing from the footer with your own state">
+
+<Wrong>
+
+```tsx
+<DialogFooter>
+  <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+</DialogFooter>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<DialogFooter>
+  <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+</DialogFooter>
+```
+
+</Correct>
+
+In an uncontrolled `Dialog` the state lives in the root, so a `Button` setting page state closes nothing; `DialogClose` closes whichever way the dialog is driven.
 
 </Dont>
 
 {/* guidelines:end */}
-
-## API Reference
-
-See the [React Aria](https://react-aria.adobe.com/Modal#api) documentation for more information.

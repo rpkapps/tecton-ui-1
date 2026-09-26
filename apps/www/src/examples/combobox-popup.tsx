@@ -1,22 +1,20 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/select-autocomplete.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/combobox-popup.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
-
-import { Autocomplete, useFilter } from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
 import {
-  Select,
-  SelectEmpty,
-  SelectGroup,
-  SelectInput,
-  SelectItem,
-  SelectList,
-  SelectPopover,
-  SelectTrigger,
-  SelectValue,
-} from "@tecton/react/components/select"
+  Combobox,
+  ComboboxContent,
+  ComboboxEmpty,
+  ComboboxInput,
+  ComboboxItem,
+  ComboboxList,
+  ComboboxTrigger,
+  ComboboxValue,
+} from "@tecton/react/components/combobox"
 
 const countries = [
+  { code: "", value: "", continent: "", label: "Select country" },
   {
     code: "ar",
     value: "argentina",
@@ -68,25 +66,32 @@ const countries = [
   },
 ]
 
-export function SelectAutocomplete() {
-  const { contains } = useFilter({ sensitivity: "base" })
+export function ComboboxPopup() {
   return (
-    <Select placeholder="Select country" className="w-full max-w-48">
-      <SelectTrigger>
-        <SelectValue />
-      </SelectTrigger>
-      <Autocomplete filter={contains}>
-        <SelectPopover>
-          <SelectInput />
-          <SelectList
-            renderEmptyState={() => <SelectEmpty>No items found.</SelectEmpty>}
-          >
-            <SelectGroup items={countries}>
-              {(item) => <SelectItem id={item.value}>{item.label}</SelectItem>}
-            </SelectGroup>
-          </SelectList>
-        </SelectPopover>
-      </Autocomplete>
-    </Select>
+    <>
+      <Combobox items={countries} defaultValue={countries[0]}>
+        <ComboboxTrigger
+          render={
+            <Button
+              variant="outline"
+              className="w-64 justify-between font-normal"
+            />
+          }
+        >
+          <ComboboxValue />
+        </ComboboxTrigger>
+        <ComboboxContent>
+          <ComboboxInput showTrigger={false} placeholder="Search" />
+          <ComboboxEmpty>No items found.</ComboboxEmpty>
+          <ComboboxList>
+            {(item) => (
+              <ComboboxItem key={item.code} value={item}>
+                {item.label}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>
+    </>
   )
 }

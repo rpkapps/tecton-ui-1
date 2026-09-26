@@ -1,6 +1,6 @@
 {
   "$schema": "https://ui.shadcn.com/schema.json",
-  "style": "aria-tecton",
+  "style": "base-tecton",
   "rsc": false,
   "tsx": true,
   "tailwind": {
@@ -17,7 +17,7 @@
     "utils": "@tecton/react/lib/utils",
     "ui": "@tecton/react/components"
   },
-  "rtl": false,
+  "rtl": true,
   "menuColor": "default",
   "menuAccent": "subtle"
 }

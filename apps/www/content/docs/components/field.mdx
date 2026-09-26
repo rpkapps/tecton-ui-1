@@ -1,7 +1,7 @@
 ---
 title: Field
 description: Combine labels, controls, and help text to compose accessible form fields and grouped inputs.
-upstream: apps/v4/content/docs/components/aria/field.mdx
+upstream: apps/v4/content/docs/components/base/field.mdx
 ---
 
 <ComponentPreview
@@ -118,7 +118,7 @@ The `Field` family is designed for composing accessible forms. A typical field i
 
 ## Form
 
-See the [Form](/docs/forms) documentation for building forms with the `Field` component and [React Hook Form](https://ui.shadcn.com/docs/forms/react-hook-form) or [Tanstack Form](/docs/forms/tanstack-form), or [Formisch](https://ui.shadcn.com/docs/forms/formisch).
+See the [Form](/docs/forms) documentation for building forms with the `Field` component and [React Hook Form](https://ui.shadcn.com/docs/forms/react-hook-form), [Tanstack Form](/docs/forms/tanstack-form), or [Formisch](https://ui.shadcn.com/docs/forms/formisch).
 
 ## Input
 
@@ -233,7 +233,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Give the control an `id` and point `FieldLabel htmlFor` at it; `Field` renders `role="group"` and associates nothing. A `Select` is the exception: its trigger's `aria-labelledby` overrides `htmlFor`, so put `FieldLabel` inside `Select`, or give the label an `id` and pass it as `Select`'s `aria-labelledby`.
+Give the control an `id` and point `FieldLabel htmlFor` at it; `Field` renders `role="group"` and associates nothing. For a `Select` the `id` goes on `SelectTrigger`, which renders the button; for a `Combobox`, on `ComboboxInput`.
 
 </Do>
 

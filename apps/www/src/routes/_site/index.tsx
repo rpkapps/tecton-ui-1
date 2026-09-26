@@ -9,7 +9,7 @@ import {
 } from "lucide-react"
 
 import { Badge } from "@tecton/react/components/badge"
-import { LinkButton } from "@tecton/react/components/button"
+import { buttonVariants } from "@tecton/react/components/button"
 import {
   Card,
   CardContent,
@@ -31,7 +31,7 @@ const features = [
     icon: ShapesIcon,
     title: "60 shadcn components",
     description:
-      "Every component of the shadcn/ui React Aria base, installed and updated with the shadcn CLI. Same names, props, variants and composition.",
+      "Every shadcn/ui component, generated with the shadcn CLI and shipped in one package. Same names, props, variants and composition.",
     href: "/docs/components",
   },
   {
@@ -64,7 +64,7 @@ function Home() {
         <section className="grid items-center gap-10 lg:grid-cols-[1.1fr_1fr]">
           <div className="flex flex-col gap-6">
             <div className="flex flex-wrap items-center gap-2">
-              <Badge size="md">shadcn/ui · React Aria</Badge>
+              <Badge size="md">shadcn/ui · Tecton</Badge>
               <Badge size="md" variant="secondary" appearance="outline">
                 Tecton design system
               </Badge>
@@ -78,12 +78,16 @@ function Home() {
               CLI.
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <LinkButton href="/docs" size="lg">
+              <Link to="/docs" className={buttonVariants({ size: "lg" })}>
                 Get started <ArrowRightIcon data-icon="inline-end" />
-              </LinkButton>
-              <LinkButton href="/docs/components" size="lg" variant="outline">
+              </Link>
+              <Link
+                to="/docs/$"
+                params={{ _splat: "components" }}
+                className={buttonVariants({ variant: "outline", size: "lg" })}
+              >
                 Browse components
-              </LinkButton>
+              </Link>
             </div>
             <div className="flex w-fit items-center gap-2 rounded-md border bg-card px-3 py-1.5 font-mono text-xs text-muted-foreground">
               <TerminalIcon className="size-3.5" />
@@ -129,9 +133,12 @@ function Home() {
               verified by <code>pnpm tokens:check</code>.
             </p>
           </div>
-          <LinkButton href="/themes" variant="secondary" size="sm">
+          <Link
+            to="/themes"
+            className={buttonVariants({ variant: "secondary", size: "sm" })}
+          >
             Open the theme page
-          </LinkButton>
+          </Link>
         </section>
       </div>
     </div>

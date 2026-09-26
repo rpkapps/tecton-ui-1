@@ -16,7 +16,9 @@
  *      self-imports stay verbatim; relative ones gain the `.js` extension).
  *   3. .d.ts — `tsconfig.build.json` through the TypeScript API. `paths` is kept on
  *      purpose: the emitted declarations then name `@tecton/react/...` verbatim,
- *      exactly like the sources.
+ *      exactly like the sources. `stripInternal` drops every declaration tagged
+ *      `@internal` (a context another Tecton module reads, the portal plumbing),
+ *      so it never reaches a consumer's types.
  *   4. the relative specifiers inside the emitted `.d.ts` gain `.js` too.
  *   5. CSS — `src/styles/*.css` copied to `dist/styles/`, with every plain
  *      `@source "<path>";` directive collapsed into a single one pointing at `../`
@@ -72,6 +74,8 @@ const KNOWN_DTS_FAILURES: Array<string> = [];
 const ENTRY_DIRS: Array<{ dir: string; exts: Array<string> }> = [
   { dir: "src/components", exts: [".tsx"] },
   { dir: "src/tecton", exts: [".tsx"] },
+  // Built (the Tecton modules import it by relative path) but not exported.
+  { dir: "src/tecton/internal", exts: [".ts", ".tsx"] },
   { dir: "src/hooks", exts: [".ts"] },
   { dir: "src/lib", exts: [".ts"] },
   { dir: "src/icons", exts: [".ts", ".tsx"] },

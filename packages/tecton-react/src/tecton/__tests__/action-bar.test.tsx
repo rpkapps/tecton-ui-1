@@ -26,39 +26,40 @@ describe("ActionBar", () => {
   })
 
   it("renders nothing when closed", () => {
-    const { container } = render(<ActionBar isOpen={false}>x</ActionBar>)
+    const { container } = render(<ActionBar open={false}>x</ActionBar>)
     expect(container).toBeEmptyDOMElement()
   })
 
   it("dismisses on Escape from inside the bar", () => {
-    const onDismiss = vi.fn()
+    const onOpenChange = vi.fn()
     render(
-      <ActionBar onDismiss={onDismiss}>
+      <ActionBar onOpenChange={onOpenChange}>
         <button>Delete</button>
       </ActionBar>
     )
     const button = screen.getByRole("button")
     button.focus()
     fireEvent.keyDown(button, { key: "Escape" })
-    expect(onDismiss).toHaveBeenCalledTimes(1)
+    expect(onOpenChange).toHaveBeenCalledTimes(1)
+    expect(onOpenChange).toHaveBeenCalledWith(false)
   })
 
   it("ignores other keys and Escape that was already handled", () => {
-    const onDismiss = vi.fn()
+    const onOpenChange = vi.fn()
     const onKeyDown = vi.fn((e: React.KeyboardEvent) => {
       if (e.key === "Escape") e.preventDefault()
     })
     render(
-      <ActionBar onDismiss={onDismiss} onKeyDown={onKeyDown}>
+      <ActionBar onOpenChange={onOpenChange} onKeyDown={onKeyDown}>
         <button>Delete</button>
       </ActionBar>
     )
     const button = screen.getByRole("button")
     fireEvent.keyDown(button, { key: "Enter" })
-    expect(onDismiss).not.toHaveBeenCalled()
+    expect(onOpenChange).not.toHaveBeenCalled()
     fireEvent.keyDown(button, { key: "Escape" })
     expect(onKeyDown).toHaveBeenCalledTimes(2)
-    expect(onDismiss).not.toHaveBeenCalled()
+    expect(onOpenChange).not.toHaveBeenCalled()
   })
 
   it("merges className", () => {

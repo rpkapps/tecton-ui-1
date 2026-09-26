@@ -23,17 +23,23 @@ export const getDocsPage = createServerFn({ method: "GET" })
     if (!page) {
       return null
     }
-    const neighbours = source.getPages()
-    const index = neighbours.findIndex((p) => p.url === page.url)
-    const pick = (p: (typeof neighbours)[number] | undefined) =>
-      p ? { title: p.data.title, url: p.url } : null
+    // Neighbours in sidebar order (meta.json), not in file-system order.
+    const { findNeighbour } = await import("fumadocs-core/page-tree")
+    const neighbours = findNeighbour(source.getPageTree(), page.url)
+    const pick = (item: { url: string } | undefined) => {
+      const neighbour =
+        item && source.getPages().find((p) => p.url === item.url)
+      return neighbour
+        ? { title: neighbour.data.title, url: neighbour.url }
+        : null
+    }
     return {
       path: page.path,
       url: page.url,
       title: page.data.title,
       description: page.data.description,
       links: page.data.links,
-      previous: pick(neighbours[index - 1]),
-      next: pick(neighbours[index + 1]),
+      previous: pick(neighbours.previous),
+      next: pick(neighbours.next),
     }
   })

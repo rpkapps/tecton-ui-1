@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/shimmer-none.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/shimmer-none.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 export function ShimmerNone() {
   return (
     <div className="flex flex-col items-center gap-3 text-sm text-muted-foreground">

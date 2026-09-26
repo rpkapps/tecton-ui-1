@@ -5,10 +5,10 @@ import { beforeEach, describe, expect, it } from "vitest"
 import { SidebarProvider, useSidebar } from "@tecton/react/components/sidebar"
 
 /**
- * `cookieName` and `keyboardShortcut` are Tecton additions to the generated
- * `SidebarProvider` (see docs/UPSTREAM.md): several micro frontends can render
- * a sidebar on one page, and upstream hard-codes one cookie name and one
- * shortcut for all of them.
+ * `cookieName` is a Tecton addition to the generated `SidebarProvider` (see
+ * docs/UPSTREAM.md): several micro frontends can render a sidebar on one page,
+ * and upstream hard-codes one cookie name for all of them. Upstream's ⌘B /
+ * Ctrl+B listener is removed (tested in overlay-behaviour.test.tsx).
  */
 function SidebarProbe() {
   const { state, toggleSidebar } = useSidebar()
@@ -51,29 +51,6 @@ describe("SidebarProvider defaults", () => {
     expect(state()).toBe("collapsed")
     expect(cookies()).toContain("sidebar_state=false")
   })
-
-  it("toggles on Ctrl+B and on Meta+B", async () => {
-    render(
-      <SidebarProvider>
-        <SidebarProbe />
-      </SidebarProvider>
-    )
-    await userEvent.keyboard("{Control>}b{/Control}")
-    expect(state()).toBe("collapsed")
-
-    await userEvent.keyboard("{Meta>}b{/Meta}")
-    expect(state()).toBe("expanded")
-  })
-
-  it("ignores B without a modifier", async () => {
-    render(
-      <SidebarProvider>
-        <SidebarProbe />
-      </SidebarProvider>
-    )
-    await userEvent.keyboard("b")
-    expect(state()).toBe("expanded")
-  })
 })
 
 describe("SidebarProvider cookieName", () => {
@@ -98,34 +75,5 @@ describe("SidebarProvider cookieName", () => {
     await userEvent.click(screen.getByRole("button", { name: "Toggle" }))
     expect(cookies()).toContain("assets_sidebar=false")
     expect(cookies()).not.toContain("sidebar_state")
-  })
-})
-
-describe("SidebarProvider keyboardShortcut", () => {
-  it("registers no listener when false", async () => {
-    render(
-      <SidebarProvider keyboardShortcut={false}>
-        <SidebarProbe />
-      </SidebarProvider>
-    )
-    await userEvent.keyboard("{Control>}b{/Control}")
-    expect(state()).toBe("expanded")
-
-    // The sidebar is still togglable, just not by the shortcut.
-    await userEvent.click(screen.getByRole("button", { name: "Toggle" }))
-    expect(state()).toBe("collapsed")
-  })
-
-  it("listens for the given key instead of b", async () => {
-    render(
-      <SidebarProvider keyboardShortcut="k">
-        <SidebarProbe />
-      </SidebarProvider>
-    )
-    await userEvent.keyboard("{Control>}b{/Control}")
-    expect(state()).toBe("expanded")
-
-    await userEvent.keyboard("{Control>}k{/Control}")
-    expect(state()).toBe("collapsed")
   })
 })

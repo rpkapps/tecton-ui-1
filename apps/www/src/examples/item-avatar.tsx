@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/item-avatar.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/item-avatar.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Plus } from "lucide-react"
 
 import {

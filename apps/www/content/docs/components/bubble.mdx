@@ -1,7 +1,7 @@
 ---
 title: Bubble
 description: Displays conversational content in a message bubble. Supports variants, alignment, grouping, reactions, and collapsible content.
-upstream: apps/v4/content/docs/components/aria/bubble.mdx
+upstream: apps/v4/content/docs/components/base/bubble.mdx
 ---
 
 <ComponentPreview
@@ -123,9 +123,7 @@ import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
 export function BubbleLinkDemo() {
   return (
     <Bubble variant="muted">
-      <BubbleContent render={(props) => <button {...props} type="button" />}>
-        Click here
-      </BubbleContent>
+      <BubbleContent render={<button />}>Click here</BubbleContent>
     </Bubble>
   )
 }
@@ -199,9 +197,7 @@ When a bubble is clickable, render it as a real `<button>` or `<a>` with the `re
 
 ```tsx lineNumbers
 <Bubble variant="muted" align="end">
-  <BubbleContent
-    render={(props) => <button {...props} type="button" onClick={onReply} />}
-  >
+  <BubbleContent render={<button type="button" onClick={onReply} />}>
     I forgot my password
   </BubbleContent>
 </Bubble>
@@ -331,7 +327,7 @@ Every variant is a `*:data-[slot=bubble-content]` rule and the padding, radius a
 
 ```tsx
 <Bubble variant="muted">
-  <BubbleContent render={(props) => <button {...props} type="button" onClick={() => reply(suggestion)} />}>
+  <BubbleContent render={<button type="button" onClick={() => reply(suggestion)} />}>
     {suggestion}
   </BubbleContent>
 </Bubble>

@@ -5,7 +5,6 @@ description: "Copies a value to the clipboard and shows a check mark for a momen
 
 <ComponentPreview name="copy-button-demo" />
 
-
 ## Usage
 
 ```tsx
@@ -16,27 +15,23 @@ import { CopyButton } from "@tecton/react/tecton/copy-button"
 <CopyButton value="34/10-A-12" />
 ```
 
+The outcome is announced to screen readers ("Copied" or "Copy failed"), and an icon-only button takes that text as its name while the state lasts.
+
 ## Labelled
 
-Pass children for a labelled button; the size then defaults to `sm` instead of `icon-sm`. All `Button` variants are available.
+With children the button is labelled and its size defaults to `sm` instead of `icon-sm`. Every `Button` variant works.
 
 <ComponentPreview name="copy-button-labelled" />
 
 ## Feedback
 
-Use `onCopied` to react to a successful copy and `timeout` to control how long the check is shown.
+`onCopied` runs after a successful copy and `timeout` sets how long the check shows. When the clipboard refuses the write (insecure context, denied permission) the button shows a cross instead and `onError` receives the error.
 
 <ComponentPreview name="copy-button-feedback" />
-
-## Errors
-
-When the clipboard refuses the write (an insecure context, a denied permission, a browser without the Clipboard API) the button shows a cross in the destructive colour for `timeout` ms instead of the check, and `onError` receives the clipboard's error. Both outcomes are announced politely through one shared live region: "Copied" or "Copy failed". An icon-only button also takes that text as its accessible name for as long as the state lasts ("Copy" otherwise).
 
 ```tsx
 <CopyButton value={wellId} onError={() => toast.error("Could not copy the well ID")} />
 ```
-
-The button sets `data-copied="true"` or `data-error="true"` while the state is shown.
 
 {/* guidelines:start */}
 
@@ -59,7 +54,7 @@ The button sets `data-copied="true"` or `data-error="true"` while the state is s
 
 <Do>
 
-Pass the text as `value` and let the component own the press handler.
+Pass the text as `value` and let the component own the click handler.
 
 </Do>
 
@@ -96,7 +91,7 @@ Let the component name itself: with no children it sets `aria-label` to "Copy", 
 <Wrong>
 
 ```tsx
-<Button variant="ghost" size="icon-sm" onPress={() => navigator.clipboard.writeText(well.id)}>
+<Button variant="ghost" size="icon-sm" onClick={() => navigator.clipboard.writeText(well.id)}>
   <CopyIcon />
 </Button>
 ```
@@ -115,12 +110,12 @@ The hand-rolled version drops everything the component adds: the copied state an
 
 </Dont>
 
-<Dont severity="HIGH" title="An onPress handler passed to CopyButton">
+<Dont severity="HIGH" title="An onClick handler passed to CopyButton">
 
 <Wrong>
 
 ```tsx
-<CopyButton value={well.id} onPress={() => track("copy")} />
+<CopyButton value={well.id} onClick={() => track("copy")} />
 ```
 
 </Wrong>
@@ -133,7 +128,7 @@ The hand-rolled version drops everything the component adds: the copied state an
 
 </Correct>
 
-`CopyButton` omits `onPress` from its props and spreads the remaining props after its own, so an `onPress` you pass replaces the clipboard handler and the button quietly stops copying.
+`CopyButton` omits `onClick` from its props and spreads the remaining props after its own, so an `onClick` forced through replaces the clipboard handler and the button quietly stops copying.
 
 </Dont>
 
@@ -165,14 +160,14 @@ The component already renders `CopyIcon` or `CheckIcon` itself, so a child icon 
 
 ### CopyButton
 
-The shadcn `Button` with clipboard behaviour; accepts all `Button` props except `onPress`.
+A `Button` with clipboard behaviour; accepts all `Button` props except `onClick`. It carries `data-copied` or `data-error` while that state shows.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `value` | `string` | - | Text written to the clipboard. |
-| `timeout` | `number` | 2000 | Milliseconds the check (or the failure cross) is shown. |
+| `timeout` | `number` | `2000` | Milliseconds the check or cross is shown. |
 | `onCopied` | `(value: string) => void` | - | Called after a successful copy. |
-| `onError` | `(error: unknown) => void` | - | Called with the clipboard's error when the copy fails; the button then shows "Copy failed". |
-| `variant` | `ButtonProps["variant"]` | "ghost" | Button variant. |
-| `size` | `ButtonProps["size"]` | "icon-sm" \| "sm" | Defaults by presence of children. |
+| `onError` | `(error: unknown) => void` | - | Called with the clipboard's error when the copy fails. |
+| `variant` | `"default" \| "outline" \| "secondary" \| "ghost" \| "destructive" \| "link"` | `"ghost"` | Button variant. |
+| `size` | `"default" \| "xs" \| "sm" \| "lg" \| "icon" \| "icon-xs" \| "icon-sm" \| "icon-lg"` | `"icon-sm"`, or `"sm"` with children | Button size. |
 | `children` | `ReactNode` | - | Label. |

@@ -18,30 +18,34 @@ const variants = [
   { variant: "text", label: "Text" },
 ] as const
 
+const datums = [
+  { value: "msl", label: "Mean sea level" },
+  { value: "kb", label: "Kelly bushing" },
+  { value: "gl", label: "Ground level" },
+]
+
 export default function SelectVariants() {
   return (
     <FieldGroup className="grid w-full max-w-2xl gap-6 md:grid-cols-3">
       {variants.map(({ variant, label }) => (
         <Field key={variant}>
-          <FieldLabel
-            id={`select-variants-${variant}-label`}
-            htmlFor={`select-variants-${variant}`}
-          >
+          <FieldLabel htmlFor={`select-variants-${variant}`}>
             {label}
           </FieldLabel>
-          <Select
-            aria-labelledby={`select-variants-${variant}-label`}
-            placeholder="Datum"
-            defaultValue="msl"
-            className="w-full"
-          >
-            <SelectTrigger id={`select-variants-${variant}`} variant={variant}>
-              <SelectValue />
+          <Select items={datums} defaultValue="msl">
+            <SelectTrigger
+              id={`select-variants-${variant}`}
+              variant={variant}
+              className="w-full"
+            >
+              <SelectValue placeholder="Datum" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem id="msl">Mean sea level</SelectItem>
-              <SelectItem id="kb">Kelly bushing</SelectItem>
-              <SelectItem id="gl">Ground level</SelectItem>
+              {datums.map((datum) => (
+                <SelectItem key={datum.value} value={datum.value}>
+                  {datum.label}
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
           <FieldDescription>variant="{variant}"</FieldDescription>

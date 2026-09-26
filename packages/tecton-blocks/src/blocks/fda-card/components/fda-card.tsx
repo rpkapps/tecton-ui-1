@@ -23,6 +23,7 @@ import {
 import { Checkbox } from "@tecton/react/components/checkbox"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -41,7 +42,7 @@ import type { FdaSummary } from "../data"
 
 type FdaCardProps = Omit<React.ComponentProps<typeof Card>, "children"> & {
   fda: FdaSummary
-  isSelected?: boolean
+  selected?: boolean
   onSelectedChange?: (selected: boolean) => void
   onOpen?: (fda: FdaSummary) => void
   onCompare?: (fda: FdaSummary) => void
@@ -59,7 +60,7 @@ type FdaCardProps = Omit<React.ComponentProps<typeof Card>, "children"> & {
 function FdaCard({
   className,
   fda,
-  isSelected,
+  selected,
   onSelectedChange,
   onOpen,
   onCompare,
@@ -76,17 +77,20 @@ function FdaCard({
       data-slot="fda-card"
       data-status={fda.status}
       size={size}
-      className={cn("gap-3", isSelected && "ring-primary/60", className)}
+      className={cn("gap-3", selected && "ring-primary/60", className)}
       {...props}
     >
       <CardHeader className="items-center">
         <CardTitle className="flex items-center gap-2">
           <Checkbox
             aria-label={`Select ${fda.code}`}
-            {...(isSelected === undefined ? {} : { isSelected })}
+            {...(selected === undefined ? {} : { checked: selected })}
             {...(onSelectedChange === undefined
               ? {}
-              : { onChange: onSelectedChange })}
+              : {
+                  onCheckedChange: (checked: boolean) =>
+                    onSelectedChange(checked),
+                })}
           />
           <span className="font-mono text-sm font-normal tracking-wide text-muted-foreground">
             {fda.code}
@@ -96,12 +100,20 @@ function FdaCard({
           <Badge variant={status.color} appearance="outline">
             {status.label}
           </Badge>
-          <DropdownMenuTrigger>
-            <Button variant="ghost" size="icon-xs" aria-label="More actions">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="More actions"
+                />
+              }
+            >
               <MoreVerticalIcon />
-            </Button>
-            <DropdownMenu placement="bottom end">
-              <DropdownMenuItem onAction={() => onOpen?.(fda)}>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="bottom" align="end">
+              <DropdownMenuItem onClick={() => onOpen?.(fda)}>
                 Open
               </DropdownMenuItem>
               <DropdownMenuItem>
@@ -114,8 +126,8 @@ function FdaCard({
               <DropdownMenuItem variant="destructive">
                 <TrashIcon /> Delete
               </DropdownMenuItem>
-            </DropdownMenu>
-          </DropdownMenuTrigger>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </CardAction>
       </CardHeader>
 
@@ -141,7 +153,7 @@ function FdaCard({
               {rating.label}
             </Badge>
           }
-          onPress={() => onOpen?.(fda)}
+          onClick={() => onOpen?.(fda)}
         />
         <StatGroup className="grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4 sm:divide-x sm:divide-border-subtle sm:[&>*:not(:first-child)]:ps-4">
           <Stat size="sm">
@@ -167,27 +179,27 @@ function FdaCard({
         <LevelMeter
           label="Complexity"
           value={fda.complexity}
-          onPress={() => onOpen?.(fda)}
+          onClick={() => onOpen?.(fda)}
         />
         <Separator emphasis="subtle" />
         <LevelMeter
           label="Risk"
           value={fda.risk}
-          onPress={() => onOpen?.(fda)}
+          onClick={() => onOpen?.(fda)}
         />
         <Separator emphasis="subtle" />
         <LevelMeter
           label="Emissions"
           value={fda.emissions}
-          onPress={() => onOpen?.(fda)}
+          onClick={() => onOpen?.(fda)}
         />
       </CardContent>
 
       <CardFooter className="justify-end gap-2">
-        <Button variant="ghost" size="sm" onPress={() => onCompare?.(fda)}>
+        <Button variant="ghost" size="sm" onClick={() => onCompare?.(fda)}>
           Compare
         </Button>
-        <Button variant="secondary" size="sm" onPress={() => onOpen?.(fda)}>
+        <Button variant="secondary" size="sm" onClick={() => onOpen?.(fda)}>
           Open
         </Button>
       </CardFooter>
@@ -198,11 +210,11 @@ function FdaCard({
 function SectionHeading({
   title,
   trailing,
-  onPress,
+  onClick,
 }: {
   title: string
   trailing?: React.ReactNode
-  onPress?: (() => void) | undefined
+  onClick?: (() => void) | undefined
 }) {
   return (
     <div className="flex items-center justify-between gap-2">
@@ -213,7 +225,7 @@ function SectionHeading({
           variant="ghost"
           size="icon-xs"
           aria-label={`Open ${title.toLowerCase()} details`}
-          {...(onPress === undefined ? {} : { onPress })}
+          {...(onClick === undefined ? {} : { onClick })}
         >
           <ChevronRightIcon className="rtl:rotate-180" />
         </Button>
@@ -225,18 +237,18 @@ function SectionHeading({
 function LevelMeter({
   label,
   value,
-  onPress,
+  onClick,
 }: {
   label: string
   value: number
-  onPress?: () => void
+  onClick?: () => void
 }) {
   const level = levelLabel(value)
   return (
     <div data-slot="fda-card-level" className="flex flex-col gap-1.5">
       <SectionHeading
         title={label}
-        onPress={onPress}
+        onClick={onClick}
         trailing={
           <span
             className={cn(

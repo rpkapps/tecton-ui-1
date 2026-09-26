@@ -1,7 +1,7 @@
 ---
 title: Badge
 description: Displays a badge or a component that looks like a badge.
-upstream: apps/v4/content/docs/components/aria/badge.mdx
+upstream: apps/v4/content/docs/components/base/badge.mdx
 ---
 
 <ComponentPreview name="badge-demo" />
@@ -13,7 +13,7 @@ import { Badge } from "@tecton/react/components/badge"
 ```
 
 ```tsx
-<Badge variant="default | outline | secondary | destructive">Badge</Badge>
+<Badge variant="default | outline | secondary | destructive | success | warning | info">Badge</Badge>
 ```
 
 ## Variants
@@ -54,7 +54,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ## Status colours
 
-The Tecton style overlay adds `variant="success" | "warning" | "info"` next to `destructive`, and an `appearance="outline"` for a transparent badge with a coloured border and text. The interactive, selectable and removable variant of the badge is the Tecton [Chip](/docs/tecton/chip), which reuses the same `variant`, `appearance` and `size` props.
+The Tecton style adds `variant="success" | "warning" | "info"` next to `destructive`, and `appearance="outline"` for a transparent badge with a coloured border and text. For a selectable or removable tag use the Tecton [Chip](/docs/tecton/chip), which takes the same `variant`, `appearance` and `size`.
 
 <ComponentPreview name="badge-status" />
 
@@ -99,7 +99,7 @@ Give an icon or a `Spinner` child `data-icon="inline-start"` or `data-icon="inli
 
 <Do>
 
-Make it a link with `render={(props) => <a {...props} href="/wells/12" />}`; there is no `asChild`, and an outer `<a>` gets none of the badge's `[a]:hover:` rules.
+Make it a link with `render={<a href="/wells/12" />}`; there is no `asChild`, and an outer `<a>` gets none of the badge's `[a]:hover:` rules.
 
 </Do>
 
@@ -189,10 +189,11 @@ Never show status by colour alone: every `Badge` has text, and a dot repeats its
 <ChipGroup
   aria-label="Filters"
   selectionMode="single"
-  onSelectionChange={(keys) => setFilter([...keys][0])}
+  value={filters}
+  onValueChange={setFilters}
 >
   <ChipList>
-    <Chip id="fault-seal" variant="info">
+    <Chip value="fault-seal" variant="info">
       Fault seal
     </Chip>
   </ChipList>
@@ -229,7 +230,7 @@ Badge renders a `span` with no `role`, no `tabIndex` and no key handling, so the
 
 </Correct>
 
-The padding compensation is `has-data-[icon=inline-start]:pl-1.5`, so without the attribute the icon sits in full text padding and the badge is wider than every other badge in the row.
+The padding compensation is `has-data-[icon=inline-start]:ps-1.5`, so without the attribute the icon sits in full text padding and the badge is wider than every other badge in the row.
 
 </Dont>
 
@@ -241,7 +242,9 @@ The padding compensation is `has-data-[icon=inline-start]:pl-1.5`, so without th
 
 The `Badge` component displays a badge or a component that looks like a badge.
 
-| Prop        | Type                                                                          | Default     |
-| ----------- | ----------------------------------------------------------------------------- | ----------- |
-| `variant`   | `"default" \| "secondary" \| "destructive" \| "outline" \| "ghost" \| "link"` | `"default"` |
-| `className` | `string`                                                                      | -           |
+| Prop         | Type                                                                                                              | Default     |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- | ----------- |
+| `variant`    | `"default" \| "secondary" \| "destructive" \| "outline" \| "ghost" \| "link" \| "success" \| "warning" \| "info"` | `"default"` |
+| `appearance` | `"solid" \| "outline"`                                                                                            | `"solid"`   |
+| `size`       | `"default" \| "md" \| "lg"`                                                                                       | `"default"` |
+| `className`  | `string`                                                                                                          | -           |

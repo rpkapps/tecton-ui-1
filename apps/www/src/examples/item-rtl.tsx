@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/item-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/item-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -64,7 +64,7 @@ export function ItemRtl() {
           </Button>
         </ItemActions>
       </Item>
-      <Item href="#" variant="outline" size="sm" dir={dir}>
+      <Item variant="outline" size="sm" render={<a href="#" />} dir={dir}>
         <ItemMedia>
           <BadgeCheckIcon className="size-5" />
         </ItemMedia>

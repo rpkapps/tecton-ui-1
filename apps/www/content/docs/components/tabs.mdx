@@ -1,10 +1,7 @@
 ---
 title: Tabs
 description: A set of layered sections of content—known as tab panels—that are displayed one at a time.
-links:
-  doc: https://react-aria.adobe.com/Tabs
-  api: https://react-aria.adobe.com/Tabs#api
-upstream: apps/v4/content/docs/components/aria/tabs.mdx
+upstream: apps/v4/content/docs/components/base/tabs.mdx
 ---
 
 <ComponentPreview
@@ -19,13 +16,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/componen
 ```
 
 ```tsx lineNumbers
-<Tabs defaultSelectedKey="account" className="w-[400px]">
+<Tabs defaultValue="account" className="w-[400px]">
   <TabsList>
-    <TabsTrigger id="account">Account</TabsTrigger>
-    <TabsTrigger id="password">Password</TabsTrigger>
+    <TabsTrigger value="account">Account</TabsTrigger>
+    <TabsTrigger value="password">Password</TabsTrigger>
   </TabsList>
-  <TabsContent id="account">Make changes to your account here.</TabsContent>
-  <TabsContent id="password">Change your password here.</TabsContent>
+  <TabsContent value="account">Make changes to your account here.</TabsContent>
+  <TabsContent value="password">Change your password here.</TabsContent>
 </Tabs>
 ```
 
@@ -89,13 +86,13 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Match every `TabsTrigger` to its `TabsContent` by `id`, the same string on both.
+Match every `TabsTrigger` to its `TabsContent` by `value`, the same string on both.
 
 </Do>
 
 <Do>
 
-Select with `defaultSelectedKey` / `selectedKey` and `onSelectionChange`, which receives the key.
+Select with `defaultValue` / `value` and `onValueChange`, which receives the tab's value.
 
 </Do>
 
@@ -107,7 +104,13 @@ Choose the strip with `TabsList` `variant="default" | "line"`, and a side strip 
 
 <Do>
 
-Give `TabsList` an `aria-label` when no nearby heading names the set; disable one tab with `isDisabled`.
+Give `TabsList` an `aria-label` when no nearby heading names the set; disable one tab with `disabled`.
+
+</Do>
+
+<Do>
+
+Let the arrow keys select: moving focus to a tab shows its panel. Pass `activateOnFocus={false}` to `TabsList` when a panel is costly to render, so the arrow keys only move focus and Enter or Space selects.
 
 </Do>
 
@@ -121,9 +124,22 @@ Use `Tabs` only for sections the user can visit in any order, never for steps th
 
 ### Don't
 
-<Dont severity="CRITICAL" title="Radix value props instead of selectedKey and id">
+<Dont severity="CRITICAL" title="selectedKey and id instead of value">
 
 <Wrong>
+
+```tsx
+<Tabs defaultSelectedKey="overview" onSelectionChange={setView}>
+  <TabsList>
+    <TabsTrigger id="overview">Overview</TabsTrigger>
+  </TabsList>
+  <TabsContent id="overview"><Overview /></TabsContent>
+</Tabs>
+```
+
+</Wrong>
+
+<Correct>
 
 ```tsx
 <Tabs defaultValue="overview" onValueChange={setView}>
@@ -134,22 +150,9 @@ Use `Tabs` only for sections the user can visit in any order, never for steps th
 </Tabs>
 ```
 
-</Wrong>
-
-<Correct>
-
-```tsx
-<Tabs defaultSelectedKey="overview" onSelectionChange={(key) => setView(String(key))}>
-  <TabsList>
-    <TabsTrigger id="overview">Overview</TabsTrigger>
-  </TabsList>
-  <TabsContent id="overview"><Overview /></TabsContent>
-</Tabs>
-```
-
 </Correct>
 
-React Aria pairs a panel with its tab by `id` and reports the key through `onSelectionChange`; `defaultValue`, `value` and `onValueChange` are not Tabs props, so the handler never fires and the pairing falls back to generated keys.
+A panel is paired with its tab by `value` and the change is reported through `onValueChange`; `selectedKey`, `onSelectionChange` and `id` are not Tabs props, so the handler never fires and no panel matches its tab.
 
 </Dont>
 
@@ -158,8 +161,8 @@ React Aria pairs a panel with its tab by `id` and reports the key through `onSel
 <Wrong>
 
 ```tsx
-<Tabs selectedKey={view} onSelectionChange={(key) => setView(String(key))}>
-  <TabsList><TabsTrigger id="overview">Overview</TabsTrigger></TabsList>
+<Tabs value={view} onValueChange={setView}>
+  <TabsList><TabsTrigger value="overview">Overview</TabsTrigger></TabsList>
 </Tabs>
 {view === "overview" ? <Overview /> : <Reports />}
 ```
@@ -169,9 +172,9 @@ React Aria pairs a panel with its tab by `id` and reports the key through `onSel
 <Correct>
 
 ```tsx
-<Tabs selectedKey={view} onSelectionChange={(key) => setView(String(key))}>
-  <TabsList><TabsTrigger id="overview">Overview</TabsTrigger></TabsList>
-  <TabsContent id="overview"><Overview /></TabsContent>
+<Tabs value={view} onValueChange={setView}>
+  <TabsList><TabsTrigger value="overview">Overview</TabsTrigger></TabsList>
+  <TabsContent value="overview"><Overview /></TabsContent>
 </Tabs>
 ```
 
@@ -186,7 +189,7 @@ Only `TabsContent` gets the `tabpanel` role, the `aria-labelledby` back to its t
 <Wrong>
 
 ```tsx
-<TabsTrigger id="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+<TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
   Overview
 </TabsTrigger>
 ```
@@ -197,18 +200,14 @@ Only `TabsContent` gets the `tabpanel` role, the `aria-labelledby` back to its t
 
 ```tsx
 <TabsList variant="line">
-  <TabsTrigger id="overview">Overview</TabsTrigger>
+  <TabsTrigger value="overview">Overview</TabsTrigger>
 </TabsList>
 ```
 
 </Correct>
 
-React Aria marks the selected tab with `data-selected`, not `data-state="active"`, and the stock palette is reset so `bg-blue-600` emits no CSS; the selected colours belong to the `TabsList` variant.
+The selected tab carries `data-active`, not `data-state="active"`, and the stock palette is reset so `bg-blue-600` emits no CSS; the selected colours belong to the `TabsList` variant.
 
 </Dont>
 
 {/* guidelines:end */}
-
-## API Reference
-
-See the [React Aria Tabs](https://react-aria.adobe.com/Tabs#api) documentation.

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/shimmer-marker.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/shimmer-marker.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Marker, MarkerContent, MarkerIcon } from "@tecton/react/components/marker"
 import { Spinner } from "@tecton/react/components/spinner"
 

@@ -8,9 +8,9 @@ import {
 } from "@tanstack/react-router"
 import { TanstackProvider } from "fumadocs-core/framework/tanstack"
 import { ThemeProvider } from "next-themes"
-import { RouterProvider as AriaRouterProvider } from "react-aria-components"
 
 import { Toaster } from "@tecton/react/components/sonner"
+import { TectonProvider } from "@tecton/react/tecton/provider"
 
 import { siteConfig } from "@/lib/site"
 import appCss from "@/styles/app.css?url"
@@ -57,15 +57,14 @@ function isExternalHref(href: string) {
 }
 
 /**
- * Client-side routing for every React Aria `Link` (sidebar items, breadcrumbs,
- * `Button` links…): an internal `href` navigates through the TanStack router
- * instead of a full page load. External hrefs and same-page `#anchors` are
- * rendered unchanged (React Aria navigates to other origins natively).
+ * Client-side routing for every Tecton link: an internal `href` navigates
+ * through the TanStack router instead of a full page load, and a same-page
+ * `#anchor` keeps the current path. External hrefs are rendered unchanged.
  */
-function AriaRouter({ children }: { children: React.ReactNode }) {
+function SiteProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   return (
-    <AriaRouterProvider
+    <TectonProvider
       navigate={(href) => {
         if (isExternalHref(href)) {
           window.location.assign(href)
@@ -89,7 +88,7 @@ function AriaRouter({ children }: { children: React.ReactNode }) {
       }
     >
       {children}
-    </AriaRouterProvider>
+    </TectonProvider>
   )
 }
 
@@ -111,7 +110,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           disableTransitionOnChange
         >
           <TanstackProvider>
-            <AriaRouter>{children}</AriaRouter>
+            <SiteProvider>{children}</SiteProvider>
           </TanstackProvider>
           <Toaster position="top-center" />
         </ThemeProvider>

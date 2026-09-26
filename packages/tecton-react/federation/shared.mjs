@@ -24,8 +24,17 @@
  * })
  * ```
  *
- * Embla, `input-otp`, `react-resizable-panels` and Base UI are deliberately absent
- * too: they hold no cross-copy state, and a second instance is only bytes.
+ * The primitive libraries `@tecton/react` is built on are internal
+ * dependencies: the application neither imports nor installs them, so it has
+ * no version to give — leave `requiredVersion` unset for them and the bundler
+ * reads it from `@tecton/react`'s own package.json. They are shared, never as
+ * singletons, for the same reason `@tecton/react/` is: the Tecton modules a
+ * host and a remote share should run on one copy of the library they are built
+ * on, so a provider from one bundle and a component from the other meet on the
+ * same contexts.
+ *
+ * Embla, `input-otp` and `react-resizable-panels` are deliberately absent: they
+ * hold no cross-copy state, and a second instance is only bytes.
  *
  * Plain ESM with no build step and no dependency — a build config imports it from
  * Node before anything is bundled.
@@ -51,7 +60,13 @@ export const shared = deepFreeze({
   // Prefix share (trailing slash): the package has no root export, so each
   // subpath is shared on its own. Not a singleton — versions may differ.
   "@tecton/react/": { singleton: false },
-  // React Aria may differ between host and remote; its contexts are not shared.
+  // Internal to @tecton/react (see above): shared so the Tecton modules of host
+  // and remote run on one copy when their versions match, never singletons.
+  // Base UI is imported both by subpath (`@base-ui/react/dialog`, the prefix
+  // share) and from the package root (`@base-ui/react`, which a prefix share
+  // does not match), so both are listed.
+  "@base-ui/react": { singleton: false },
+  "@base-ui/react/": { singleton: false },
   "react-aria-components": { singleton: false },
   // The chart component pulls all of recharts (~145 KB gzipped). Share it,
   // but never eagerly: only the applications that chart should pay for it.

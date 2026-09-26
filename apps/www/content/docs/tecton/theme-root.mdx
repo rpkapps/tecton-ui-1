@@ -12,71 +12,43 @@ import { ThemeRoot } from "@tecton/react/tecton/theme-root"
 ```
 
 ```tsx
-<ThemeRoot className="mfe-a" theme="inherit">
+<ThemeRoot className="mfe-a">
   <App />
 </ThemeRoot>
 ```
 
-## When to use it
+An application that owns the document needs only [Tecton Provider](/docs/tecton/provider). `ThemeRoot` is for an application mounted into a page that already runs Tecton, such as a Module Federation remote or an embedded widget; [Micro-frontends](/docs/micro-frontends) covers the scoped stylesheet and build step that go with it.
 
-An application that owns the document imports `@tecton/react/globals.css` and needs nothing here: its variables live on `:root` and its overlays can portal into `document.body`.
-
-`ThemeRoot` is for an application mounted into a page that already has its own copy of Tecton — a Module Federation remote, an embedded widget. It marks that application's subtree with `data-tecton-root`, which is what `@tecton/react/styles/scoped.css` keys on, and it owns the container the application's overlays portal into. It declares no theme variables: the shell's `--primary`, palette, radii and current mode inherit into the subtree. See [Micro-frontends](/docs/micro-frontends) for the stylesheet and the build step that go with it.
-
-## What it renders
-
-```html
-<div data-slot="theme-root" data-tecton-root class="dark mfe-a">…</div>
-```
-
-and, appended to `document.body`, one container with the same classes:
-
-```html
-<div data-slot="theme-root-overlay" data-tecton-root class="dark mfe-a" style="display: contents"></div>
-```
-
-Every Tecton overlay in the subtree — `Dialog`, `Sheet`, `AlertDialog`, `Popover`, `HoverCard`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `ContextMenu`, `Drawer` — portals into that container. It keeps them out of any `overflow: hidden` ancestor while they stay inside the application's own `@scope` rule, so the utilities that style them still apply, and the container mirrors the root's `className`: the scope class, a pinned theme and inline `[--token:…]` overrides all reach the overlays too. The container is `display: contents` (set inline, so it wins over any `display` utility among the copied classes): it renders no box of its own, so a layout class on the root (`flex h-full p-4`) takes up no space at the end of the body and is no containing block for the overlays.
+It renders a `div` marked `data-tecton-root`, which the scoped stylesheet keys on, and a `TectonProvider` for the application. It also appends one overlay container to `document.body` with the same classes and `dir`, so the application's dialogs, popovers, menus and tooltips escape any `overflow: hidden` ancestor yet stay inside its scope and theme. It declares no theme variables: the shell's tokens and mode inherit into the subtree, and a class such as `[--primary:var(--tecton-palette-green-560)]` retints the application and its overlays, as in the demo. The root has no layout of its own; give it the classes the mount point needs.
 
 ## Theme
 
-`theme` puts the mode class on both elements:
+`theme="inherit"` (the default) follows the shell's mode. `"dark"` or `"light"` pins the subtree and its overlays to one mode, for a dark island such as a map in a light shell; see [Inverted sections](/docs/theming#inverted-sections).
 
-| Value | Effect |
-| --- | --- |
-| `inherit` (default) | No class: the subtree follows the shell's `dark` class (or `data-theme`), which is what a remote mounted in a Tecton shell wants. |
-| `dark` | Pins the subtree to dark — a dark island such as a map or a log viewer in a light shell. |
-| `light` | Pins it to light, the same way round. |
+## Direction and locale
 
-A pinned mode inverts everything the subtree renders with: the `dark:` utilities, the palette ramps (`bg-blue-560`) and the shadcn variables (`--background`, `--primary`, …). The overlay container carries the same class, so the subtree's overlays are in that mode as well. See [Inverted sections](/docs/theming#inverted-sections).
+`dir` and `locale` set the reading direction and language of the application, with the same rules as `TectonProvider`. Without them the root's `dir` attribute is inherited from the page, so text and logical classes follow the shell, but its components resolve to left to right for keyboard navigation and popup placement: a remote is its own React root and cannot read the shell's provider. A remote therefore always passes the shell's `dir` (and `locale`), typically through its mount props.
+
+```tsx
+<ThemeRoot className="mfe-a" dir="rtl" locale="ar-EG">
+  <App />
+</ThemeRoot>
+```
 
 ## Overlay container
 
-Pass `overlayContainer` to take over the placement:
-
-- **omitted** — `ThemeRoot` creates, styles and removes its own container.
-- **an element** — used as is. It is neither restyled nor removed on unmount; give it `data-tecton-root` and the scope class yourself.
-- **`null`** — no container. Overlays pass none and React Aria falls back to `document.body`.
-
-When only some of the root's classes should reach the overlays, pass `overlayClassName`: it replaces the mirrored `className` on the container `ThemeRoot` creates (the theme class is always added). List the scope class and the `[--token:…]` overrides the overlays need:
+The container mirrors the root's `className`; pass `overlayClassName` when only some classes should reach the overlays. Pass `overlayContainer` to use an element the shell owns (it is used as is: give it `data-tecton-root`, the scope class and `dir` yourself), or `null` to portal into `document.body`.
 
 ```tsx
-<ThemeRoot className="mfe-a flex h-full [--primary:var(--tecton-palette-green-560)]" overlayClassName="mfe-a [--primary:var(--tecton-palette-green-560)]">
+<ThemeRoot
+  className="mfe-a flex h-full [--primary:var(--tecton-palette-green-560)]"
+  overlayClassName="mfe-a [--primary:var(--tecton-palette-green-560)]"
+>
   <App />
 </ThemeRoot>
 ```
 
-```tsx
-<ThemeRoot className="mfe-a" overlayContainer={shell.overlayLayer}>
-  <App />
-</ThemeRoot>
-```
-
-## Notes
-
-- The container is created in an effect, so the **first paint has no container** and React Aria resolves its own default. Everything opened by an interaction — every overlay in practice — sees the container. Rendering is SSR-safe.
-- Each `ThemeRoot` owns exactly one container, and two roots on a page get one each.
-- Variables can be overridden per root with an arbitrary property in `className`: `className="mfe-a [--primary:var(--tecton-palette-green-560)]"` retints that application, overlays included. The demo above is exactly that.
-- `ThemeRoot` renders a plain `div`. It sets no layout of its own — give it the classes the mount point needs.
+The container is created after mount, so an overlay rendered open on the very first paint portals into `document.body`.
 
 {/* guidelines:start */}
 
@@ -90,9 +62,8 @@ When only some of the root's classes should reach the overlays, pass `overlayCla
 
 ### Not for
 
-- an overlay container without the root marker or a scoped stylesheet: use [PortalProvider](/docs/tecton/portal)
+- the locale, direction or router of an application that owns the document: use [TectonProvider](/docs/tecton/provider)
 - the header, rail and work area of an application that owns the document: use [AppShell](/docs/tecton/app-shell)
-- a right-to-left subtree: use [DirectionProvider](/docs/components/direction)
 
 ### Do
 
@@ -118,13 +89,13 @@ Retint one root with an arbitrary property in `className`: `[--primary:var(--tec
 
 <Do>
 
-Pass `overlayContainer` to reuse an element the shell owns, or `null` to opt out; omit it and the root creates, syncs and removes its own.
+Pass `dir` and `locale` when the remote reads differently from its shell: `dir` lands on the root and on the overlay container, and both feed the `TectonProvider` it renders.
 
 </Do>
 
 <Do>
 
-Pair it with `@tecton/react/styles/scoped.css` and the PostCSS scope plugin, never with `globals.css`.
+Pass `overlayContainer` to reuse an element the shell owns, or `null` to opt out; omit it and the root creates, syncs and removes its own.
 
 </Do>
 
@@ -222,16 +193,17 @@ The mode class has to sit on the overlay container as well, or the subtree's por
 
 ### ThemeRoot
 
-A `div` element; every `div` prop is forwarded.
+A `div`; other `div` props are forwarded.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `theme` | `"dark" \| "light" \| "inherit"` | "inherit" | Mode class on the root and the overlay container. |
-| `overlayContainer` | `HTMLElement \| null` | created | Element the overlays portal into. An element is used as is; `null` disables the container. |
-| `className` | `string` | - | Scope class, theme overrides and layout; mirrored onto the overlay container unless `overlayClassName` is set. |
-| `overlayClassName` | `string` | - | Classes for the created overlay container instead of a copy of `className` (the theme class is always added). Ignored when `overlayContainer` is passed. |
-| `children` | `ReactNode` | - | The application. |
+| `theme` | `"dark" \| "light" \| "inherit"` | `"inherit"` | Mode class on the root and the overlay container. |
+| `className` | `string` | - | Scope class, token overrides and layout; mirrored onto the overlay container. |
+| `overlayClassName` | `string` | - | Classes for the created container instead of `className` (the theme class is always added). |
+| `overlayContainer` | `HTMLElement \| null` | created | Element overlays portal into; `null` for `document.body`. |
+| `dir` | `"ltr" \| "rtl"` | from `locale`, else inherited | Reading direction of the subtree. |
+| `locale` | `string` | inherited | BCP 47 locale of the subtree. |
 
 ### themeRootVariants
 
-The `cva` function behind the `theme` prop, for composing the same class on another element (a supplied overlay container, for example).
+The class behind `theme`, for putting the same mode class on another element, such as a supplied overlay container.

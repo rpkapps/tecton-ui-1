@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/spinner-badge.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/spinner-badge.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Badge } from "@tecton/react/components/badge"
 import { Spinner } from "@tecton/react/components/spinner"
 

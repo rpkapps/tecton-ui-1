@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/button-group-popover.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/button-group-popover.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { BotIcon, ChevronDownIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
@@ -10,6 +10,7 @@ import {
 } from "@tecton/react/components/field"
 import {
   Popover,
+  PopoverContent,
   PopoverDescription,
   PopoverHeader,
   PopoverTitle,
@@ -23,11 +24,15 @@ export default function ButtonGroupPopover() {
       <Button variant="outline">
         <BotIcon /> Copilot
       </Button>
-      <PopoverTrigger>
-        <Button variant="outline" size="icon" aria-label="Open Popover">
+      <Popover>
+        <PopoverTrigger
+          render={
+            <Button variant="outline" size="icon" aria-label="Open Popover" />
+          }
+        >
           <ChevronDownIcon />
-        </Button>
-        <Popover placement="bottom end" className="rounded-xl text-sm">
+        </PopoverTrigger>
+        <PopoverContent align="end" className="rounded-xl text-sm">
           <PopoverHeader>
             <PopoverTitle>Start a new task with Copilot</PopoverTitle>
             <PopoverDescription>
@@ -47,8 +52,8 @@ export default function ButtonGroupPopover() {
               Copilot will open a pull request for review.
             </FieldDescription>
           </Field>
-        </Popover>
-      </PopoverTrigger>
+        </PopoverContent>
+      </Popover>
     </ButtonGroup>
   )
 }

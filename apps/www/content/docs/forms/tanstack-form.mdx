@@ -1,6 +1,6 @@
 ---
 title: TanStack Form
-description: Build forms in React using TanStack Form, Zod and the React Aria components.
+description: Build forms in React using TanStack Form and Zod.
 links:
   doc: https://tanstack.com/form
 ---
@@ -9,7 +9,7 @@ import { InfoIcon } from "lucide-react"
 
 This guide explores how to build forms using TanStack Form. You'll learn to create forms with the `<Field />` component, implement schema validation with Zod, handle errors, and ensure accessibility.
 
-It follows the [upstream shadcn/ui guide](https://ui.shadcn.com/docs/forms/tanstack-form); the examples are rewritten for the React Aria components, whose controls use `isSelected` / `onChange`, a Select's `value` / `onChange` and `isInvalid` instead of the Radix `checked` / `onCheckedChange`, `value` / `onValueChange` and `aria-invalid` props.
+It follows the [upstream shadcn/ui guide](https://ui.shadcn.com/docs/forms/tanstack-form), with the components imported from `@tecton/react`.
 
 ## Demo
 
@@ -222,7 +222,7 @@ const form = useForm({
 Display errors next to the field using `<FieldError />`. For styling and accessibility:
 
 - Add the `data-invalid` prop to the `<Field />` component.
-- Add `aria-invalid` to native controls such as `<Input />` and `<Textarea />`, and `isInvalid` to the React Aria controls (`<Select />`, `<Checkbox />`, `<RadioGroup />`).
+- Add the `aria-invalid` prop to the form control such as `<Input />`, `<SelectTrigger />`, `<Checkbox />`, etc.
 
 ```tsx lineNumbers title="form.tsx" {4,18}
 <form.Field
@@ -335,8 +335,8 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
 
 ### Select
 
-- For select components, use `value` and `onChange` on the `<Select />` component, and label it with `aria-labelledby` pointing at the `FieldLabel`'s `id` (the trigger's own labelling overrides `htmlFor`). React Aria selects use `null` for "nothing selected", so map the empty string to `null` and back.
-- To show errors, add the `isInvalid` prop to the `<Select />` component and the `data-invalid` prop to the `<Field />` component.
+- For select components, use `field.state.value` and `field.handleChange` on the `<Select />` component, and pass the options as `items` so the trigger shows the selected label. `null` is "nothing selected": map the empty string to `null` and back.
+- To show errors, add the `aria-invalid` prop to the `<SelectTrigger />` component and the `data-invalid` prop to the `<Field />` component.
 
 <ComponentPreview
   name="form-tanstack-select"
@@ -344,7 +344,7 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
   chromeLessOnMobile
 />
 
-```tsx lineNumbers title="form.tsx" {6,18-22}
+```tsx lineNumbers title="form.tsx" {6,18-20,24}
 <form.Field
   name="language"
   children={(field) => {
@@ -352,10 +352,7 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
     return (
       <Field orientation="responsive" data-invalid={isInvalid}>
         <FieldContent>
-          <FieldLabel
-            id="form-tanstack-select-language-label"
-            htmlFor="form-tanstack-select-language"
-          >
+          <FieldLabel htmlFor="form-tanstack-select-language">
             Spoken Language
           </FieldLabel>
           <FieldDescription>
@@ -364,22 +361,21 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
           {isInvalid && <FieldError errors={field.state.meta.errors} />}
         </FieldContent>
         <Select
-          aria-labelledby="form-tanstack-select-language-label"
           name={field.name}
-          placeholder="Select"
+          items={languages}
           value={field.state.value || null}
-          onChange={(key) =>
-            field.handleChange(key ? String(key) : "")
-          }
-          onBlur={field.handleBlur}
-          isInvalid={isInvalid}
+          onValueChange={(value) => field.handleChange(value ?? "")}
         >
-          <SelectTrigger id="form-tanstack-select-language">
-            <SelectValue />
+          <SelectTrigger
+            id="form-tanstack-select-language"
+            aria-invalid={isInvalid}
+            className="min-w-[120px]"
+          >
+            <SelectValue placeholder="Select" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem id="auto">Auto</SelectItem>
-            <SelectItem id="en">English</SelectItem>
+            <SelectItem value="auto">Auto</SelectItem>
+            <SelectItem value="en">English</SelectItem>
           </SelectContent>
         </Select>
       </Field>
@@ -390,8 +386,8 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
 
 ### Checkbox
 
-- For checkboxes, use `isSelected` and `onChange` on the `<Checkbox />` component.
-- To show errors, add the `isInvalid` prop to the `<Checkbox />` component and the `data-invalid` prop to the `<Field />` component.
+- For checkbox, use `field.state.value` and `field.handleChange` on the `<Checkbox />` component.
+- To show errors, add the `aria-invalid` prop to the `<Checkbox />` component and the `data-invalid` prop to the `<Field />` component.
 - For checkbox arrays, use `mode="array"` on the `<form.Field />` component and TanStack Form's array helpers.
 - Remember to add `data-slot="checkbox-group"` to the `<FieldGroup />` component for proper styling and spacing.
 
@@ -401,7 +397,7 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
   chromeLessOnMobile
 />
 
-```tsx lineNumbers title="form.tsx" {12,17,22-23,44}
+```tsx lineNumbers title="form.tsx" {12,17,22-24,44}
 <form.Field
   name="tasks"
   mode="array"
@@ -423,9 +419,9 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
               <Checkbox
                 id={`form-tanstack-checkbox-${task.id}`}
                 name={field.name}
-                isInvalid={isInvalid}
-                isSelected={field.state.value.includes(task.id)}
-                onChange={(checked) => {
+                aria-invalid={isInvalid}
+                checked={field.state.value.includes(task.id)}
+                onCheckedChange={(checked) => {
                   if (checked) {
                     field.pushValue(task.id)
                   } else {
@@ -454,8 +450,8 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
 
 ### Radio Group
 
-- For radio groups, use `value` and `onChange` on the `<RadioGroup />` component.
-- To show errors, add the `isInvalid` prop to the `<RadioGroup />` component and the `data-invalid` prop to the `<Field />` component.
+- For radio groups, use `field.state.value` and `field.handleChange` on the `<RadioGroup />` component.
+- To show errors, add the `aria-invalid` prop to the `<RadioGroupItem />` component and the `data-invalid` prop to the `<Field />` component.
 
 <ComponentPreview
   name="form-tanstack-radiogroup"
@@ -463,7 +459,7 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
   chromeLessOnMobile
 />
 
-```tsx lineNumbers title="form.tsx" {14-15,21}
+```tsx lineNumbers title="form.tsx" {21,29,35}
 <form.Field
   name="plan"
   children={(field) => {
@@ -477,9 +473,7 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
         <RadioGroup
           name={field.name}
           value={field.state.value}
-          onChange={field.handleChange}
-          isInvalid={isInvalid}
-          aria-label="Plan"
+          onValueChange={(value) => field.handleChange(value as string)}
         >
           {plans.map((plan) => (
             <FieldLabel
@@ -494,6 +488,7 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
                 <RadioGroupItem
                   value={plan.id}
                   id={`form-tanstack-radiogroup-${plan.id}`}
+                  aria-invalid={isInvalid}
                 />
               </Field>
             </FieldLabel>
@@ -508,8 +503,8 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
 
 ### Switch
 
-- For switches, use `isSelected` and `onChange` on the `<Switch />` component.
-- To show errors, add the `data-invalid` prop to the `<Field />` component (React Aria switches have no invalid state of their own).
+- For switches, use `field.state.value` and `field.handleChange` on the `<Switch />` component.
+- To show errors, add the `aria-invalid` prop to the `<Switch />` component and the `data-invalid` prop to the `<Field />` component.
 
 <ComponentPreview
   name="form-tanstack-switch"
@@ -517,7 +512,7 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
   chromeLessOnMobile
 />
 
-```tsx lineNumbers title="form.tsx" {6,14,19-20}
+```tsx lineNumbers title="form.tsx" {6,14,19-21}
 <form.Field
   name="twoFactor"
   children={(field) => {
@@ -536,8 +531,9 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
         <Switch
           id="form-tanstack-switch-twoFactor"
           name={field.name}
-          isSelected={field.state.value}
-          onChange={field.handleChange}
+          checked={field.state.value}
+          onCheckedChange={(checked) => field.handleChange(checked)}
+          aria-invalid={isInvalid}
         />
       </Field>
     )
@@ -560,7 +556,7 @@ Here is an example of a more complex form with multiple fields and validation.
 Use `form.reset()` to reset the form to its default values.
 
 ```tsx lineNumbers
-<Button type="button" variant="outline" onPress={() => form.reset()}>
+<Button type="button" variant="outline" onClick={() => form.reset()}>
   Reset
 </Button>
 ```
@@ -633,7 +629,7 @@ Access individual array items using bracket notation: `fieldName[index].property
                   type="button"
                   variant="ghost"
                   size="icon-xs"
-                  onPress={() => field.removeValue(index)}
+                  onClick={() => field.removeValue(index)}
                   aria-label={`Remove email ${index + 1}`}
                 >
                   <XIcon />
@@ -660,8 +656,8 @@ Use `field.pushValue(item)` to add items to an array field. You can disable the 
   type="button"
   variant="outline"
   size="sm"
-  onPress={() => field.pushValue({ address: "" })}
-  isDisabled={field.state.value.length >= 5}
+  onClick={() => field.pushValue({ address: "" })}
+  disabled={field.state.value.length >= 5}
 >
   Add Email Address
 </Button>
@@ -675,7 +671,7 @@ Use `field.removeValue(index)` to remove items from an array field. You can cond
 {
   field.state.value.length > 1 && (
     <InputGroupButton
-      onPress={() => field.removeValue(index)}
+      onClick={() => field.removeValue(index)}
       aria-label={`Remove email ${index + 1}`}
     >
       <XIcon />

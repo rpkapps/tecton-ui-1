@@ -3,23 +3,23 @@ title: Installation
 description: Add @tecton/react to your application. Blocks can be added with the shadcn CLI.
 ---
 
-Tecton UI is consumed as the **package** `@tecton/react`: components, Tecton components, icons and the theme are all imported from it and are not installed one by one. **Blocks** are the exception: they are starting points meant to be copied into your application, so they are published in a shadcn registry.
+Components, Tecton components, icons and the theme are all imported from the package `@tecton/react`; nothing is installed per component. **Blocks** are the exception: they are starting points you copy into your application, so they come from a shadcn registry.
 
-## Package
+<Steps>
 
-`@tecton/react` is a private workspace package. It is not published to the public npm registry; consume it from the monorepo (`workspace:*`), from a packed tarball, or from a private registry.
+<Step>Install the package</Step>
+
+`@tecton/react` is private: it is not on the public npm registry.
 
 <Tabs defaultValue="workspace">
 
 <TabsList>
   <TabsTrigger value="workspace">pnpm workspace</TabsTrigger>
   <TabsTrigger value="tarball">Tarball</TabsTrigger>
-  <TabsTrigger value="verdaccio">Private registry</TabsTrigger>
+  <TabsTrigger value="registry">Private registry</TabsTrigger>
 </TabsList>
 
 <TabsContent value="workspace">
-
-Add the app to the workspace and reference the package:
 
 ```json title="apps/my-app/package.json"
 {
@@ -33,30 +33,22 @@ Add the app to the workspace and reference the package:
 
 <TabsContent value="tarball">
 
-Pack the library and install the tarball in any project (handy for quick local testing). `prepack` runs `pnpm --filter @tecton/react build` for you, so the tarball always carries a fresh `dist/`:
-
 ```bash
-pnpm --filter @tecton/react pack --pack-destination ./dist
+pnpm --filter @tecton/react pack --pack-destination ./dist   # prepack builds dist/ first
 # in the consuming project
 pnpm add ./path/to/tecton-react-0.1.0.tgz
 ```
 
 </TabsContent>
 
-<TabsContent value="verdaccio">
-
-Run a private registry locally and publish there (`prepack` builds `dist/` first):
+<TabsContent value="registry">
 
 ```bash
-npx verdaccio
-npm adduser --registry http://localhost:4873
-pnpm --filter @tecton/react publish --registry http://localhost:4873
+pnpm --filter @tecton/react publish --registry https://npm.example.com
 ```
 
-Point the consuming project's `.npmrc` at it for the `@tecton` scope, then install:
-
-```ini title=".npmrc"
-@tecton:registry=http://localhost:4873
+```ini title=".npmrc (consuming project)"
+@tecton:registry=https://npm.example.com
 ```
 
 ```bash
@@ -67,46 +59,33 @@ pnpm add @tecton/react
 
 </Tabs>
 
-### Peer requirements
+Requirements: React 19, Tailwind CSS v4 (the package ships Tailwind sources, not compiled CSS), a bundler that resolves `package.json` `exports`, and TypeScript `"moduleResolution": "bundler"` (or `"node16"` / `"nodenext"`). The package is unbundled ESM with a `.d.ts` per module and keeps each file's `"use client"`, so it needs no transpiling.
 
-- React 19
-- Tailwind CSS v4 (the package ships Tailwind sources, not compiled CSS)
-- A bundler that resolves `package.json` `exports` (Vite, Next.js, TanStack Start all do). The map is enumerated — one entry per module — so `@tecton/react/components/button` resolves and a typo fails immediately.
-- TypeScript with `"moduleResolution": "bundler"` (or `"node16"` / `"nodenext"`); the older `"node"` algorithm ignores `exports` and finds nothing
+<Step>Import the stylesheet</Step>
 
-The package ships unbundled ESM with a `.d.ts` next to every module, and each file keeps its own `"use client"` directive, so there is no need to transpile it from `node_modules`.
-
-### Stylesheet
-
-Import the theme once. It contains Tailwind, the shadcn runtime styles, the Tecton tokens and the theme variables:
+Import it once. It contains Tailwind, the shadcn runtime styles, the Tecton tokens and palette, and declares an `@source` for the package's own output:
 
 ```css title="src/styles/app.css"
 @import "@tecton/react/globals.css";
 ```
 
-The stylesheet already declares an `@source` for the package's own build output, so every class the components use is generated. Tailwind scans your project from its auto-detected root on top of that; if your application's sources sit outside it, add your own `@source` directive after the import.
+Tailwind scans your project from its auto-detected root; add an `@source` after the import for sources outside it.
 
-### Dark mode
+<Step>Set the mode</Step>
 
-Tecton is dark-first. Add the `dark` class to `<html>` (for example with `next-themes` and `attribute="class"`). Without the class you get the Tecton light theme.
+Tecton is dark-first: put the `dark` class on `<html>` (for example with `next-themes`, `attribute="class"`, `defaultTheme="dark"`). Without it you get the light theme. See [Theming](/docs/theming).
 
-```tsx title="app.tsx"
-import { ThemeProvider } from "next-themes"
+<Step>Mount `TectonProvider` when you need it</Step>
 
-export function App({ children }) {
-  return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      {children}
-    </ThemeProvider>
-  )
-}
-```
+Mount [`TectonProvider`](/docs/tecton/provider) once at the root for a locale or right-to-left direction, client-side navigation of Tecton links (`navigate`, `useHref`), or a custom overlay container. Without it, components read left to right in the browser's locale, links do full page loads and overlays portal into `document.body`.
 
-### Usage
+An application mounted inside another one (a Module Federation remote, an embedded widget) renders [`ThemeRoot`](/docs/tecton/theme-root) instead, which includes the provider; see [Micro-frontends](/docs/micro-frontends).
+
+<Step>Use the components</Step>
 
 ```tsx
-import { Button } from "@tecton/react/components/button"
 import { Badge } from "@tecton/react/components/badge"
+import { Button } from "@tecton/react/components/button"
 import { WellIcon } from "@tecton/react/icons"
 
 export function Example() {
@@ -121,6 +100,8 @@ export function Example() {
 }
 ```
 
+</Steps>
+
 ## Frameworks
 
 <Tabs defaultValue="vite">
@@ -134,27 +115,21 @@ export function Example() {
 <TabsContent value="vite">
 
 ```ts title="vite.config.ts"
-import { defineConfig } from "vite"
-import react from "@vitejs/plugin-react"
 import tailwindcss from "@tailwindcss/vite"
+import react from "@vitejs/plugin-react"
+import { defineConfig } from "vite"
 
-export default defineConfig({
-  plugins: [react(), tailwindcss()],
-})
+export default defineConfig({ plugins: [react(), tailwindcss()] })
 ```
 
-```tsx title="src/main.tsx"
-import "./styles/app.css"
-```
+Import `./styles/app.css` in `src/main.tsx`.
 
 </TabsContent>
 
 <TabsContent value="start">
 
-This documentation site is a TanStack Start app. Import the stylesheet with `?url` in the root route:
-
 ```tsx title="src/routes/__root.tsx"
-import appCss from "@tecton/react/globals.css?url"
+import appCss from "../styles/app.css?url"
 
 export const Route = createRootRoute({
   head: () => ({ links: [{ rel: "stylesheet", href: appCss }] }),
@@ -165,19 +140,15 @@ export const Route = createRootRoute({
 
 <TabsContent value="next">
 
-```tsx title="app/layout.tsx"
-import "@tecton/react/globals.css"
-```
-
-Components that use hooks carry a `"use client"` directive already.
+Import `./styles/app.css` in `app/layout.tsx`. Components that use hooks already carry `"use client"`.
 
 </TabsContent>
 
 </Tabs>
 
-## Blocks (shadcn registry)
+## Blocks
 
-Blocks are full compositions (panels, dashboards, forms, tables) that you copy into your application and adapt. The docs site serves them as a shadcn registry named `@tecton`. Point your `components.json` at it and add a block with the CLI; the copied files import the components from `@tecton/react`, so the package must already be installed.
+Blocks (dashboards, panels, forms, page states) are served as a shadcn registry named `@tecton`. The copied files import the components from `@tecton/react`, so install the package first.
 
 ```json title="components.json"
 {
@@ -191,4 +162,4 @@ Blocks are full compositions (panels, dashboards, forms, tables) that you copy i
 npx shadcn@latest add @tecton/dashboard-01
 ```
 
-Every block on the [Blocks](/blocks) page shows its command. For a private host add `headers` to the registry entry (`"@tecton": { "url": "…", "headers": { "Authorization": "Bearer ${TECTON_TOKEN}" } }`).
+Every block on the [Blocks](/blocks) page shows its command. For a private host use `"@tecton": { "url": "…", "headers": { "Authorization": "Bearer ${TECTON_TOKEN}" } }`.

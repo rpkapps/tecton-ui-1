@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/field-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/field-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -30,6 +30,7 @@ import {
 import { Textarea } from "@tecton/react/components/textarea"
 
 const months = [
+  { label: "MM", value: null },
   { label: "01", value: "01" },
   { label: "02", value: "02" },
   { label: "03", value: "03" },
@@ -45,6 +46,7 @@ const months = [
 ]
 
 const years = [
+  { label: "YYYY", value: null },
   { label: "2024", value: "2024" },
   { label: "2025", value: "2025" },
   { label: "2026", value: "2026" },
@@ -196,17 +198,17 @@ export function FieldRtl() {
               </Field>
               <div className="grid grid-cols-3 gap-4">
                 <Field>
-                  <FieldLabel id="checkout-exp-month-ts6-rtl-label" htmlFor="checkout-exp-month-ts6-rtl">
+                  <FieldLabel htmlFor="checkout-exp-month-ts6-rtl">
                     {t.month}
                   </FieldLabel>
-                  <Select aria-labelledby="checkout-exp-month-ts6-rtl-label" placeholder="MM">
+                  <Select items={months}>
                     <SelectTrigger id="checkout-exp-month-ts6-rtl">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent dir={dir}>
                       <SelectGroup>
                         {months.map((item) => (
-                          <SelectItem key={item.value} id={item.value}>
+                          <SelectItem key={item.value} value={item.value}>
                             {getMonthLabel(item.value)}
                           </SelectItem>
                         ))}
@@ -215,17 +217,17 @@ export function FieldRtl() {
                   </Select>
                 </Field>
                 <Field>
-                  <FieldLabel id="checkout-7j9-exp-year-f59-rtl-label" htmlFor="checkout-7j9-exp-year-f59-rtl">
+                  <FieldLabel htmlFor="checkout-7j9-exp-year-f59-rtl">
                     {t.year}
                   </FieldLabel>
-                  <Select aria-labelledby="checkout-7j9-exp-year-f59-rtl-label" placeholder="YYYY">
+                  <Select items={years}>
                     <SelectTrigger id="checkout-7j9-exp-year-f59-rtl">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent dir={dir}>
                       <SelectGroup>
                         {years.map((item) => (
-                          <SelectItem key={item.value} id={item.value}>
+                          <SelectItem key={item.value} value={item.value}>
                             {item.label}
                           </SelectItem>
                         ))}
@@ -250,7 +252,7 @@ export function FieldRtl() {
               <Field orientation="horizontal">
                 <Checkbox
                   id="checkout-7j9-same-as-shipping-wgm-rtl"
-                  defaultSelected
+                  defaultChecked
                 />
                 <FieldLabel
                   htmlFor="checkout-7j9-same-as-shipping-wgm-rtl"

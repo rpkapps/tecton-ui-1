@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/field-slider.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/field-slider.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -23,9 +23,9 @@ export default function FieldSlider() {
       </FieldDescription>
       <Slider
         value={value}
-        onChange={(value) => setValue(value as [number, number])}
-        maxValue={1000}
-        minValue={0}
+        onValueChange={(value) => setValue(value as [number, number])}
+        max={1000}
+        min={0}
         step={10}
         className="mt-2 w-full"
         aria-label="Price Range"

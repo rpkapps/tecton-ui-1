@@ -1,11 +1,11 @@
 "use client"
 
+import { Separator as SeparatorPrimitive } from "@base-ui/react/separator"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
-import { Separator as SeparatorPrimitive } from "react-aria-components"
 
 const separatorVariants = cva(
-  "block shrink-0 border-0 aria-[orientation=horizontal]:h-px aria-[orientation=horizontal]:w-full aria-[orientation=vertical]:w-px aria-[orientation=vertical]:self-stretch [:is(hr)]:h-px [:is(hr)]:w-full",
+  "shrink-0 data-horizontal:h-px data-horizontal:w-full data-vertical:w-px data-vertical:self-stretch",
   {
     variants: {
       emphasis: {
@@ -25,8 +25,7 @@ function Separator({
   orientation = "horizontal",
   emphasis = "default",
   ...props
-}: React.ComponentProps<typeof SeparatorPrimitive> &
-  VariantProps<typeof separatorVariants>) {
+}: SeparatorPrimitive.Props & VariantProps<typeof separatorVariants>) {
   return (
     <SeparatorPrimitive
       data-slot="separator"

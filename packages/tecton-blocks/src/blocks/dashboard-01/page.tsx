@@ -6,7 +6,7 @@ import { DownloadIcon, PlusIcon, ShareIcon } from "lucide-react"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
-import { Sheet, SheetTitle } from "@tecton/react/components/sheet"
+import { Sheet, SheetContent, SheetTitle } from "@tecton/react/components/sheet"
 import {
   AppShell,
   AppShellAside,
@@ -26,6 +26,7 @@ import {
   PageHeaderEyebrow,
   PageHeaderTitle,
 } from "@tecton/react/tecton/page-header"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { AiAgentPanel, useAgentConversation } from "../ai-agent-panel/page"
 import { CostVsRiskPanel } from "../cost-vs-risk-panel/page"
@@ -52,6 +53,8 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
   // separately, so a narrow page does not load with a modal over it.
   const [agentOpen, setAgentOpen] = React.useState(!hideAgent)
   const [sheetOpen, setSheetOpen] = React.useState(false)
+  // The panel sits on the end edge; `side` is physical.
+  const sheetSide = useDirection() === "rtl" ? "left" : "right"
   const [selectedFda, setSelectedFda] = React.useState<string[]>([])
   const [selectedWell, setSelectedWell] = React.useState<string[]>([])
   const conversation = useAgentConversation()
@@ -100,7 +103,7 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onPress={() =>
+                      onClick={() =>
                         isWide ? setAgentOpen(true) : setSheetOpen(true)
                       }
                     >
@@ -118,7 +121,7 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
                   <FdaCard
                     key={fda.id}
                     fda={fda}
-                    isSelected={selectedFda.includes(fda.id)}
+                    selected={selectedFda.includes(fda.id)}
                     onSelectedChange={(next) =>
                       setSelectedFda((current) =>
                         next
@@ -131,7 +134,7 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
                 {primaryWell && (
                   <WellDesignCard
                     design={primaryWell}
-                    isSelected={selectedWell.includes(primaryWell.id)}
+                    selected={selectedWell.includes(primaryWell.id)}
                     onSelectedChange={(next) =>
                       setSelectedWell(next ? [primaryWell.id] : [])
                     }
@@ -162,17 +165,18 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
         </AppShellSplit>
       </AppShellBody>
 
-      <Sheet
-        isOpen={sheetOpen && !isWide}
-        onOpenChange={setSheetOpen}
-        showCloseButton={false}
-        className="gap-0"
-      >
-        <SheetTitle className="sr-only">AI Agent</SheetTitle>
-        <AiAgentPanel
-          conversation={conversation}
-          onClose={() => setSheetOpen(false)}
-        />
+      <Sheet open={sheetOpen && !isWide} onOpenChange={setSheetOpen}>
+        <SheetContent
+          side={sheetSide}
+          showCloseButton={false}
+          className="gap-0"
+        >
+          <SheetTitle className="sr-only">AI Agent</SheetTitle>
+          <AiAgentPanel
+            conversation={conversation}
+            onClose={() => setSheetOpen(false)}
+          />
+        </SheetContent>
       </Sheet>
     </AppShell>
   )

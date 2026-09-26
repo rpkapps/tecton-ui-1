@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/alert-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/alert-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { CheckCircle2Icon } from "lucide-react"
 
 import {

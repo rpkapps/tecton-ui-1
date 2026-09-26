@@ -20,8 +20,8 @@ import { Meter } from "@tecton/react/tecton/meter"
 
 ## Do
 
-- Name it: `label` renders the React Aria `Label`; use `aria-label` when the name is already beside it.
-- State the scale with `minValue` and `maxValue` whenever it is not 0–100; the segments fill from the percentage.
+- Name it: `label` renders the visible label that names the meter; use `aria-label` when the name is already beside it.
+- State the scale with `min` and `max` whenever it is not 0–100; the segments fill from the percentage.
 - Choose `segments` (5 by default, `1` for a continuous bar) and `size="sm" | "md" | "lg"`.
 - Let `color="auto"` pick success / warning / error from the value, or fix it with `color`; `color="custom"` reads `--meter-fill`.
 - Show the band with `valueLabel="Medium"` and the raw number with `showValue`.
@@ -55,10 +55,10 @@ Wrong:
 Correct:
 
 ```tsx
-<Meter label="Confidence" value={4} maxValue={5} showValue />
+<Meter label="Confidence" value={4} max={5} showValue />
 ```
 
-React Aria's `Meter` defaults to `maxValue={100}`, so a 4-out-of-5 score fills 4 % of the track and is announced as 4 %.
+`max` defaults to `100`, so a 4-out-of-5 score fills 4 % of the track and is announced as 4 %.
 
 ### MEDIUM Re-deriving the colour bands by hand
 
@@ -78,7 +78,7 @@ Correct:
 <Meter label="Geological risk" value={risk} color="auto" />
 ```
 
-`color="auto"` already applies the 34 / 67 thresholds to the percentage, so the hand-written ternary duplicates a design-system decision and disagrees with it as soon as `minValue` or `maxValue` is not 0–100.
+`color="auto"` already applies the 34 / 67 thresholds to the percentage, so the hand-written ternary duplicates a design-system decision and disagrees with it as soon as `min` or `max` is not 0–100.
 
 ### MEDIUM Colouring the segments with className
 
@@ -99,8 +99,8 @@ Correct:
 ## Before you finish
 
 - Every `Progress`, `CircularProgress` and `Meter` has a name: a `ProgressLabel` child, `label` on the meter, or `aria-label` when the name is already beside it.
-- A value that is not on a 0–100 scale states its scale with `minValue` and `maxValue` (`value={loaded} maxValue={total}`, a 4-out-of-5 score with `maxValue={5}`).
-- An unknown total is `isIndeterminate`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.
+- A value that is not on a 0–100 scale states its scale with `min` and `max` (`value={loaded} max={total}`, a 4-out-of-5 score with `max={5}`).
+- An unknown total is `value={null}`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.
 - A measured task is `Progress` or `CircularProgress`; a score or level that is read rather than completed is a `Meter`, with `color="auto"` choosing the band instead of a hand-written ternary.
 - `className` on `Progress`, `CircularProgress` and `Meter` sets width and placement only — the height, the stroke width and the fill come from `size` and `color`.
 

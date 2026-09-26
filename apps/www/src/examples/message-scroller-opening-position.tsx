@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/message-scroller-opening-position.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/message-scroller-opening-position.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -86,8 +86,8 @@ export function MessageScrollerOpeningPosition() {
         </CardContent>
         <CardFooter className="flex items-center justify-center border-t">
           <Tabs
-            selectedKey={position}
-            onSelectionChange={(value) => {
+            value={position}
+            onValueChange={(value) => {
               if (
                 value === "start" ||
                 value === "end" ||
@@ -101,7 +101,7 @@ export function MessageScrollerOpeningPosition() {
           >
             <TabsList className="w-full">
               {positions.map((option) => (
-                <TabsTrigger key={option.value} id={option.value}>
+                <TabsTrigger key={option.value} value={option.value}>
                   {option.label}
                 </TabsTrigger>
               ))}

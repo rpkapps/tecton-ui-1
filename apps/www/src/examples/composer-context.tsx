@@ -20,7 +20,7 @@ import {
 export default function ComposerContext() {
   const [items, setItems] = React.useState<ComposerAttachmentItem[]>([
     {
-      id: "selection",
+      value: "selection",
       label: "Selected text",
       description: "“Flaring at A-7 exceeded the permit for 14 minutes.”",
       icon: <TextQuoteIcon data-icon="inline-start" />,
@@ -44,8 +44,10 @@ export default function ComposerContext() {
         <ComposerField>
           <ComposerAttachments
             items={items}
-            onRemove={(id) =>
-              setItems((current) => current.filter((item) => item.id !== id))
+            onRemove={(value) =>
+              setItems((current) =>
+                current.filter((item) => item.value !== value)
+              )
             }
           />
           <ComposerInput placeholder="Ask about the selection…" />
@@ -53,7 +55,7 @@ export default function ComposerContext() {
             <ComposerSubmit />
           </ComposerToolbar>
         </ComposerField>
-        <ComposerHint isVisible={false} />
+        <ComposerHint visible={false} />
         <ComposerStatusMessage />
       </Composer>
       {sent !== null && (
