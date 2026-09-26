@@ -109,7 +109,10 @@ export default function OverflowForms() {
             <Select
               aria-label="Field"
               selectedKey={field}
-              onSelectionChange={(key) => setField(String(key))}
+              onSelectionChange={(key) => {
+                if (key == null) return
+                setField(String(key))
+              }}
               className="w-36"
             >
               <SelectTrigger>

@@ -6,6 +6,6 @@ Use the `emphasis` prop for the three Tecton divider levels: `subtle`, `default`
 
 ## With label
 
-A labelled divider is a `role="separator"` flex row with a `Separator` on each side of the text.
+A labelled divider is a flex row with a `Separator` on each side of the text. The row itself gets no `role="separator"`: a separator's content is presentational, so assistive technology would drop the label. Wrap the two rules in `aria-hidden` elements instead; they are decorative, and the label is read as ordinary text.
 
 <ComponentPreview name="separator-label" />

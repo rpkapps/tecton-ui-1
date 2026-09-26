@@ -12,12 +12,14 @@ import {
 } from "@tecton/react/tecton/action-bar"
 import { OverflowItem } from "@tecton/react/tecton/overflow"
 
-const saved = { name: "34/10-A-12", operator: "Equinor" }
+const initial = { name: "34/10-A-12", operator: "Equinor" }
 
 export default function ActionBarMessageExample() {
-  const [draft, setDraft] = React.useState(saved)
+  const [saved, setSaved] = React.useState(initial)
+  const [draft, setDraft] = React.useState(initial)
   const dirty = draft.name !== saved.name || draft.operator !== saved.operator
   const discard = () => setDraft(saved)
+  const save = () => setSaved(draft)
 
   return (
     <div className="flex w-full max-w-md flex-col gap-4">
@@ -58,7 +60,7 @@ export default function ActionBarMessageExample() {
             </Button>
           </OverflowItem>
           {/* Unwrapped: the primary action is fixed. */}
-          <Button size="sm" onPress={discard}>
+          <Button size="sm" onPress={save}>
             Save
           </Button>
         </ActionBarActions>
