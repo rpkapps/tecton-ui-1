@@ -367,6 +367,15 @@ function formatShortcut(keys: string, isMac = isMacPlatform()): string[][] {
 const subscribeNoop = () => () => {}
 
 /**
+ * Whether the keyboard is an Apple one, so ⌘ is shown where others see
+ * Ctrl. False on the server and in the first client render, so hydration
+ * matches, then the real answer.
+ */
+function useIsMacPlatform(): boolean {
+  return React.useSyncExternalStore(subscribeNoop, isMacPlatform, () => false)
+}
+
+/**
  * Renders a shortcut as key caps (`Kbd`) joined with "+" (`Ctrl + K`,
  * `G + W`); the accessible name spells a sequence out ("G, then W").
  */
@@ -375,11 +384,7 @@ function ShortcutKeys({
   className,
   ...props
 }: React.ComponentProps<"span"> & { keys: string }) {
-  const isMac = React.useSyncExternalStore(
-    subscribeNoop,
-    isMacPlatform,
-    () => false
-  )
+  const isMac = useIsMacPlatform()
   const chords = formatShortcut(keys, isMac)
   const caps = chords.flat()
   const spoken = chords.map((chord) => chord.join(" + ")).join(", then ")
@@ -412,5 +417,6 @@ export {
   useShortcut,
   formatShortcut,
   ShortcutKeys,
+  useIsMacPlatform,
 }
 export type { Shortcut, ShortcutRegistry, ShortcutsProviderProps }

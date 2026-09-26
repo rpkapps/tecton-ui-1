@@ -375,6 +375,10 @@
       "types": "./dist/tecton/color-swatch.d.ts",
       "import": "./dist/tecton/color-swatch.js"
     },
+    "./tecton/composer": {
+      "types": "./dist/tecton/composer.d.ts",
+      "import": "./dist/tecton/composer.js"
+    },
     "./tecton/copy-button": {
       "types": "./dist/tecton/copy-button.d.ts",
       "import": "./dist/tecton/copy-button.js"

@@ -1766,8 +1766,21 @@
   }
 
   /* MARK: Message Scroller */
+  /* The viewport takes focus to scroll by keyboard; the root's overflow-hidden would clip an
+     outer ring, so it is drawn inside. */
+  .cn-message-scroller-viewport {
+    @apply focus-visible:ring-ring outline-none focus-visible:ring-2 focus-visible:ring-inset;
+  }
+
+  /* content-visibility: auto contains an item's paint, which clips a focus ring at its edge:
+     the padding leaves the ring room, and the content's gap is smaller by as much, so items
+     stay 2rem apart. */
   .cn-message-scroller-content {
-    @apply gap-8;
+    @apply gap-6;
+  }
+
+  .cn-message-scroller-item {
+    @apply p-1;
   }
 
   .cn-message-scroller-button {

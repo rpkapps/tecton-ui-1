@@ -40,6 +40,14 @@ function AiAgentPanel({
     React.useState<AgentMessage[]>(initialMessages)
   const [completed, setCompleted] = React.useState<string[]>([])
   const [busy, setBusy] = React.useState(false)
+  const reply = React.useRef<number | undefined>(undefined)
+
+  const stop = () => {
+    window.clearTimeout(reply.current)
+    setBusy(false)
+  }
+
+  React.useEffect(() => () => window.clearTimeout(reply.current), [])
 
   const send = (text: string) => {
     setMessages((current) => [
@@ -47,7 +55,7 @@ function AiAgentPanel({
       { id: `u-${Date.now()}`, role: "user", content: text },
     ])
     setBusy(true)
-    window.setTimeout(() => {
+    reply.current = window.setTimeout(() => {
       setMessages((current) => [
         ...current,
         {
@@ -91,7 +99,8 @@ function AiAgentPanel({
         <AgentComposer
           className="w-full"
           suggestions={messages.length === 0 ? suggestions : []}
-          isDisabled={busy}
+          status={busy ? "submitted" : "ready"}
+          onStop={stop}
           onSubmit={send}
         />
       </PanelFooter>

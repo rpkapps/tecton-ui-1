@@ -62,7 +62,7 @@ function AgentMessageList({
         {...props}
       >
         <MessageScrollerViewport className="px-4 py-3">
-          <MessageScrollerContent className="gap-4">
+          <MessageScrollerContent className="gap-4" aria-busy={isBusy}>
             {messages.map((message) => (
               <MessageScrollerItem key={message.id} messageId={message.id}>
                 {message.role === "user" ? (

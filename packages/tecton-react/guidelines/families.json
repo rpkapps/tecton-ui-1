@@ -262,7 +262,8 @@
         "components/bubble",
         "components/attachment",
         "components/questionnaire",
-        "components/marker"
+        "components/marker",
+        "tecton/composer"
       ],
       "checklist": [
         "A turn is a `Message` with `MessageAvatar` and `MessageContent` holding `MessageHeader`, a `Bubble` and `MessageFooter`, and its side comes from `align=\"start\" | \"end\"` — there is no `role` axis and no hand-written `justify-end`.",
@@ -272,7 +273,8 @@
         "An attached file is an `Attachment` (`AttachmentMedia`, `AttachmentContent`, `AttachmentActions`) driven through `state=\"idle\" | \"uploading\" | \"processing\" | \"error\" | \"done\"`, not a `Badge` and not a hand-painted error border.",
         "Every `AttachmentAction` has an `aria-label` naming the action and the file and fires through `onPress`, and the card opens through `AttachmentTrigger` rather than an `onClick` on the root `div`.",
         "A structured set of questions is a `Questionnaire` with `items`, a `name` per `QuestionnaireItem`, answers read from `new FormData(event.currentTarget)` in `onSubmit`, and navigation only through `QuestionnairePrevious`, `QuestionnaireSkip`, `QuestionnaireNext` and `QuestionnaireSubmit` — these parts take `disabled` and `onChange`, not React Aria props.",
-        "A full-width status row or labelled divider in a transcript is a `Marker` with `MarkerIcon` and `MarkerContent` (`variant=\"separator\"` for a divider, `role=\"status\"` for work in progress), never a coloured span and never `role=\"separator\"`."
+        "A full-width status row or labelled divider in a transcript is a `Marker` with `MarkerIcon` and `MarkerContent` (`variant=\"separator\"` for a divider, `role=\"status\"` for work in progress), never a coloured span and never `role=\"separator\"`.",
+        "The message box is a `Composer` (`ComposerField` holding `ComposerInput` and a `ComposerToolbar` ending in `ComposerSubmit`, with `ComposerHint` and `ComposerStatusMessage`), fed the chat's `status` and `onStop`, not an `InputGroupInput` with a hand-written Enter handler."
       ]
     },
     "infrastructure": {

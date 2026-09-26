@@ -1,0 +1,327 @@
+---
+title: Composer
+description: "The message box of a chat: send and stop, keyboard first, with suggestions and removable context."
+---
+
+<ComponentPreview name="composer-demo" />
+
+Upstream shadcn has the conversation layer (`Message`, `Bubble`, `MessageScroller`, `Attachment`,
+`Marker`, `Questionnaire`) but no composer, so this one is Tecton's. It follows the survey of chat
+composers in `docs/research/composer.md`: Vercel AI Elements, assistant-ui, CopilotKit, ChatGPT,
+Claude, Slack, VS Code and Cursor, and the WCAG and ARIA patterns behind them.
+
+## Usage
+
+```tsx
+import {
+  Composer,
+  ComposerField,
+  ComposerHint,
+  ComposerInput,
+  ComposerStatusMessage,
+  ComposerSubmit,
+  ComposerToolbar,
+} from "@tecton/react/tecton/composer"
+```
+
+```tsx
+<Composer status={status} onStop={stop} onSubmit={({ text }) => send(text)}>
+  <ComposerField>
+    <ComposerInput />
+    <ComposerToolbar>
+      <ComposerSubmit />
+    </ComposerToolbar>
+  </ComposerField>
+  <ComposerHint />
+  <ComposerStatusMessage />
+</Composer>
+```
+
+## Keyboard
+
+| Where | Key | Does |
+| --- | --- | --- |
+| Textarea | <Kbd>Enter</Kbd> | Sends (a new line with `submitMode="mod-enter"`) |
+| Textarea | <Kbd>Shift</Kbd> + <Kbd>Enter</Kbd> | A new line |
+| Textarea | <Kbd>⌘</Kbd>/<Kbd>Ctrl</Kbd> + <Kbd>Enter</Kbd> | Sends, in either mode |
+| Textarea, while an IME composes | any | Nothing: the Enter that confirms a conversion never sends |
+| Textarea, while a reply arrives | <Kbd>Esc</Kbd> | Stops the reply, and announces it |
+| Textarea, caret on the first line (or a loaded message, unedited) | <Kbd>↑</Kbd> | Loads the previous message from `history`, caret at its end |
+| Textarea, browsing `history`, caret on the last line | <Kbd>↓</Kbd> | Loads the next message; past the newest, the draft comes back |
+| Textarea, `/` at the start | <Kbd>↑</Kbd> <Kbd>↓</Kbd> | Moves through the commands, with `ComposerCommands` |
+| Textarea, commands listed | <Kbd>Enter</Kbd> / <Kbd>Tab</Kbd> | Picks the command instead of sending |
+| Textarea, commands listed | <Kbd>Esc</Kbd> | Closes the list until the text changes; the reply and a sheet around it are left alone |
+| Suggestions, toolbar | <Kbd>←</Kbd> <Kbd>→</Kbd> | Moves between buttons: each group is one tab stop |
+| Attachment chip | <Kbd>Delete</Kbd> / <Kbd>Backspace</Kbd> | Removes it; after the last, focus returns to the textarea |
+
+The textarea stays enabled while a reply streams, so the next message can be drafted; it just does
+not send until the chat is `ready` again. Focus stays in the textarea after sending. Send is
+`aria-disabled`, not disabled, while the box is empty, so it keeps its place in the tab order.
+While a reply arrives, Stop takes its place, a second button with a name of its own, and focus
+moves to it if it was on Send.
+
+## History
+
+Pass the prompts the user has sent as `history`, oldest first, and the arrows walk through them
+as in a terminal. <Kbd>↑</Kbd> with the caret on the first line the box shows loads the previous
+prompt, the newest first, with the caret at its end; while that prompt is in the box as it was
+loaded, <Kbd>↑</Kbd> keeps stepping back. <Kbd>↓</Kbd> on the last line goes forward again, and
+past the newest brings back what was in the box when browsing began. Anywhere else in the text the
+arrows move the caret as usual; the first and last lines are the ones shown, so a long paragraph
+that wraps counts each of its lines. A run of the same prompt is shown once, and `historyLimit`
+caps how many of the newest prompts <Kbd>↑</Kbd> reaches.
+
+The draft survives edits: typing in a loaded prompt keeps browsing, and stepping away from it
+drops that edit but not the draft. Sending ends browsing, and so does a change from outside the
+textarea (a suggestion, a command, the app's `value`); `history` itself is never changed. With
+commands listed, the arrows move through the list instead. `ComposerHint` adds <Kbd>↑</Kbd> for
+earlier messages once `history` has an entry.
+
+```tsx
+<Composer
+  history={turns.filter((turn) => turn.role === "user").map((turn) => turn.text)}
+  onSubmit={({ text }) => send(text)}
+>
+```
+
+A global shortcut that focuses the composer is the application's: give it a modifier (ChatGPT uses
+<Kbd>Shift</Kbd> + <Kbd>Esc</Kbd>) and call `focus` from `useComposer`, or the textarea itself.
+
+## Announcements
+
+`ComposerStatusMessage` is a polite status region for the composer's own changes: sent, stopped,
+failed. The reply is the transcript's to announce. `MessageScrollerContent` is a `role="log"`;
+set `aria-busy` on it while a reply streams, so screen readers read the reply once it is complete
+rather than every token.
+
+## Context and suggestions
+
+`ComposerAttachments` shows what goes with the message besides its text, such as a selection from
+the page, as Tecton [Chips](/docs/tecton/chip) the user can remove. Mark an item's `icon`
+`data-icon="inline-start"`, as in any chip, so it takes the chip's size. `ComposerSuggestions` holds prompts to start from: a
+`ComposerSuggestion` fills the box to edit, sends at once with `submit`, or hands the press to
+`onSelect`, for a suggestion that carries more than its text.
+
+<ComponentPreview name="composer-context" />
+
+## Commands
+
+`ComposerCommands` lists commands when the box starts with a `/`, above the field: render it
+inside `ComposerField`. Typing narrows the list, by the start of the command, then a word of its
+label. The commands stay in their groups, each group where its best match ranks and the best
+match first inside it, so Enter on a fresh list picks the best match; commands without a `group`
+are listed together, without a heading. A slash later in the text is only text, and with no match the list stays closed, so Enter
+sends what was typed. Escape closes the list until the text changes, and a `/word` recalled from
+`history` is browsed, not typed, so it opens no list until it is edited. Picking empties the box and calls `onCommand` with the command and the
+composer's `setValue`, `send` and `focus`: fill the box for the user to finish, attach something
+with `ComposerAttachments`, or do the whole thing at once, like starting a new conversation.
+
+```tsx
+<ComposerField>
+  <ComposerCommands
+    items={[{ id: "new", command: "new", label: "Start a new conversation" }]}
+    onCommand={(item) => startOver()}
+  />
+  <ComposerInput />
+</ComposerField>
+```
+
+Focus stays in the textarea. It points at the active command with `aria-activedescendant` and at
+the list with `aria-controls`, and a polite status says how many commands match ("3 commands,
+arrow keys to choose."; `countMessage` gives it in the app's language). `ComposerHint` adds
+<Kbd>/</Kbd> for commands to the keys it describes.
+
+<ComponentPreview name="composer-commands" />
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The user writes to an assistant or agent: the message box under a transcript.
+- A reply streams back and the user must be able to stop it, and keep typing the next message meanwhile.
+- The message carries something besides its text (a selection, a file) that the user can see and remove before sending.
+- The user types slash commands (`/new`, `/summarise`) in the message box and picks one from a list.
+
+### Not for
+
+- a one-line search or filter box: use [InputGroup](/docs/components/input-group)
+- a form field for a long description: use [Textarea](/docs/components/textarea)
+- a structured question with choices for the user to answer: use [Questionnaire](/docs/components/questionnaire)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Pass the chat's `status` (`"ready" | "submitted" | "streaming" | "error"`) and `onStop`; `ComposerSubmit` swaps Send for Stop and Escape stops the reply.
+
+</Do>
+
+<Do>
+
+Keep `ComposerHint` (visible, or `isVisible={false}`) so the textarea is described by its keys, and `ComposerStatusMessage` for sent, stopped and failed.
+
+</Do>
+
+<Do>
+
+Pair it with a transcript whose `MessageScrollerContent` has `aria-busy` while a reply streams, so the reply is announced once, complete.
+
+</Do>
+
+<Do>
+
+Use `submitMode="mod-enter"` for long-form input, and pass the prompts already sent as `history` (oldest first): ArrowUp on the first line steps back through them (`historyLimit` caps how many), ArrowDown on the last line forward to the draft, which is kept even when a loaded prompt is edited.
+
+</Do>
+
+<Do>
+
+Put extra context in `ComposerAttachments` (Tecton chips) as items with a `label`, prompts to start from in `ComposerSuggestions`, and slash commands in `ComposerCommands` inside `ComposerField`, whose `onCommand` decides what a pick does and `countMessage` translates its announcement.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="Disabling the textarea while a reply streams">
+
+<Wrong>
+
+```tsx
+<InputGroupTextarea disabled={status === "streaming"} value={text} onChange={(event) => setText(event.target.value)} />
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Composer status={status} onStop={stop} onSubmit={({ text }) => send(text)}>
+  <ComposerField>
+    <ComposerInput />
+    <ComposerToolbar>
+      <ComposerSubmit />
+    </ComposerToolbar>
+  </ComposerField>
+</Composer>
+```
+
+</Correct>
+
+A disabled textarea drops focus to the page body mid-reply and stops the user drafting; `Composer` keeps it enabled and simply does not send until the chat is ready.
+
+</Dont>
+
+<Dont severity="HIGH" title="An Enter handler that ignores IME composition">
+
+<Wrong>
+
+```tsx
+<InputGroupTextarea onKeyDown={(event) => { if (event.key === "Enter" && !event.shiftKey) send() }} />
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Composer onSubmit={({ text }) => send(text)}>
+  <ComposerField>
+    <ComposerInput />
+  </ComposerField>
+</Composer>
+```
+
+</Correct>
+
+The Enter that confirms a Japanese or Chinese conversion arrives as a keydown too, and in Safari after `compositionend`, so the half-typed message is sent; `ComposerInput` ignores `isComposing` and key code 229.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="One send button whose label flips to Stop">
+
+<Wrong>
+
+```tsx
+<InputGroupButton aria-label={busy ? "Stop" : "Send"} onPress={busy ? stop : send}>
+  {busy ? <SquareIcon /> : <ArrowUpIcon />}
+</InputGroupButton>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<ComposerToolbar>
+  <ComposerSubmit />
+</ComposerToolbar>
+```
+
+</Correct>
+
+Screen readers do not reliably announce a name that changes under focus, and a click landing as the state flips stops a reply the user meant to send after; `ComposerSubmit` renders two named buttons and moves focus between them.
+
+</Dont>
+
+{/* guidelines:end */}
+
+## API Reference
+
+### Composer
+
+A `form` that holds the value and the chat's state for its parts.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `onSubmit` | `({ text }) => void` | - | The trimmed text; the box is cleared after. |
+| `onStop` | `() => void` | - | Stops the reply; Escape and the stop button call it. |
+| `status` | `"ready" \| "submitted" \| "streaming" \| "error"` | `"ready"` | The chat's state. Nothing sends while `submitted` or `streaming`. |
+| `submitMode` | `"enter" \| "mod-enter"` | `"enter"` | Which key sends. |
+| `history` | `readonly string[]` | - | The prompts already sent, oldest first, for ArrowUp and ArrowDown. |
+| `historyLimit` | `number` | all | How many of the newest entries of `history` ArrowUp reaches. |
+| `value`, `defaultValue`, `onValueChange` | `string` | - | The text, controlled or not. |
+| `isDisabled` | `boolean` | `false` | Disables the whole composer. |
+
+### Parts
+
+| Part | Is |
+| --- | --- |
+| `ComposerField` | The bordered `InputGroup` that holds the textarea and the toolbar. |
+| `ComposerInput` | The textarea, named "Message" and described by the hint. It grows with its text up to `max-h-48` (`field-sizing: content`, or its scroll height where a browser has no `field-sizing`), then scrolls. |
+| `ComposerToolbar` | A React Aria `Toolbar` under the textarea; `ComposerSubmit` goes last. |
+| `ComposerSubmit` | Send, or Stop while busy. `sendLabel`, `stopLabel`. |
+| `ComposerHint` | The keys that send, with ⌘ for Ctrl on an Apple keyboard; `isVisible={false}` keeps it for screen readers only. |
+| `ComposerStatusMessage` | The polite status region; `messages` overrides its three texts. |
+| `ComposerAttachments` | Removable Tecton chips: `items` (`id`, `label`, `description`, `icon`), `onRemove` and `aria-label` (default "Attachments"). |
+| `ComposerSuggestions`, `ComposerSuggestion` | A toolbar of prompts; `value`, `submit` to send it at once, or `onSelect` to handle the press yourself. |
+| `ComposerCommands` | The `/` list; see below. |
+| `useComposer()` | `value`, `setValue`, `status`, `isBusy`, `canSubmit`, `submit`, `stop`, `focus`. |
+
+### ComposerCommands
+
+Rendered inside `ComposerField`, above which it opens.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `items` | `readonly ComposerCommandItem[]` | - | The commands; ties in a match keep this order, and a group goes where its best match ranks. |
+| `onCommand` | `(item, { setValue, send, focus }) => void` | - | Called with the picked command once the box is emptied: fill the box, send, or act. |
+| `countMessage` | `(count: number) => string` | `"N commands, arrow keys to choose."` | What the polite status says while the list is open. |
+| `aria-label` | `string` | `"Commands"` | The listbox's name. |
+| `className` | `string` | - | On the listbox. |
+
+A `ComposerCommandItem`:
+
+| Field | Type | Description |
+| --- | --- | --- |
+| `id` | `string` | Unique among the items. |
+| `command` | `string` | What is typed after the slash, such as `new`: one word, no spaces. |
+| `label` | `string` | What the command does, in words; its words are matched too. |
+| `description` | `string` | Optional, shown at the end of the row. |
+| `group` | `string` | Optional: commands with the same group are listed together under it. |
+| `icon` | `ReactNode` | Optional, before the command. |

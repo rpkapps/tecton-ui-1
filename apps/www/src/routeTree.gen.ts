@@ -18,6 +18,7 @@ import { Route as CompareComponentRouteImport } from './routes/compare/$componen
 import { Route as ViewNameRouteImport } from './routes/view/$name'
 import { Route as SiteBlocksIndexRouteImport } from './routes/_site/blocks/index'
 import { Route as SiteBlocksNameRouteImport } from './routes/_site/blocks/$name'
+import { Route as SiteDocsIndexRouteImport } from './routes/_site/docs/index'
 import { Route as SiteDocsSplatRouteImport } from './routes/_site/docs/$'
 
 const SiteRoute = SiteRouteImport.update({
@@ -64,6 +65,11 @@ const SiteBlocksNameRoute = SiteBlocksNameRouteImport.update({
   path: '/$name',
   getParentRoute: () => SiteBlocksRoute,
 } as any)
+const SiteDocsIndexRoute = SiteDocsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => SiteDocsRoute,
+} as any)
 const SiteDocsSplatRoute = SiteDocsSplatRouteImport.update({
   id: '/$',
   path: '/$',
@@ -80,9 +86,9 @@ export interface FileRoutesByFullPath {
   '/blocks/$name': typeof SiteBlocksNameRoute
   '/docs/$': typeof SiteDocsSplatRoute
   '/blocks/': typeof SiteBlocksIndexRoute
+  '/docs/': typeof SiteDocsIndexRoute
 }
 export interface FileRoutesByTo {
-  '/docs': typeof SiteDocsRouteWithChildren
   '/themes': typeof SiteThemesRoute
   '/compare/$component': typeof CompareComponentRoute
   '/view/$name': typeof ViewNameRoute
@@ -90,6 +96,7 @@ export interface FileRoutesByTo {
   '/blocks/$name': typeof SiteBlocksNameRoute
   '/docs/$': typeof SiteDocsSplatRoute
   '/blocks': typeof SiteBlocksIndexRoute
+  '/docs': typeof SiteDocsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -103,6 +110,7 @@ export interface FileRoutesById {
   '/_site/blocks/$name': typeof SiteBlocksNameRoute
   '/_site/docs/$': typeof SiteDocsSplatRoute
   '/_site/blocks/': typeof SiteBlocksIndexRoute
+  '/_site/docs/': typeof SiteDocsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -116,9 +124,9 @@ export interface FileRouteTypes {
     | '/blocks/$name'
     | '/docs/$'
     | '/blocks/'
+    | '/docs/'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/docs'
     | '/themes'
     | '/compare/$component'
     | '/view/$name'
@@ -126,6 +134,7 @@ export interface FileRouteTypes {
     | '/blocks/$name'
     | '/docs/$'
     | '/blocks'
+    | '/docs'
   id:
     | '__root__'
     | '/_site'
@@ -138,6 +147,7 @@ export interface FileRouteTypes {
     | '/_site/blocks/$name'
     | '/_site/docs/$'
     | '/_site/blocks/'
+    | '/_site/docs/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -211,6 +221,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteBlocksNameRouteImport
       parentRoute: typeof SiteBlocksRoute
     }
+    '/_site/docs/': {
+      id: '/_site/docs/'
+      path: '/'
+      fullPath: '/docs/'
+      preLoaderRoute: typeof SiteDocsIndexRouteImport
+      parentRoute: typeof SiteDocsRoute
+    }
     '/_site/docs/$': {
       id: '/_site/docs/$'
       path: '/$'
@@ -237,10 +254,12 @@ const SiteBlocksRouteWithChildren = SiteBlocksRoute._addFileChildren(
 
 interface SiteDocsRouteChildren {
   SiteDocsSplatRoute: typeof SiteDocsSplatRoute
+  SiteDocsIndexRoute: typeof SiteDocsIndexRoute
 }
 
 const SiteDocsRouteChildren: SiteDocsRouteChildren = {
   SiteDocsSplatRoute: SiteDocsSplatRoute,
+  SiteDocsIndexRoute: SiteDocsIndexRoute,
 }
 
 const SiteDocsRouteWithChildren = SiteDocsRoute._addFileChildren(
