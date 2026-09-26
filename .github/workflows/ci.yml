@@ -17,7 +17,7 @@ concurrency:
 
 # Third-party actions are pinned to the commit their tag resolved to (tag in the comment).
 jobs:
-  # Verifies the shadcn-generated components still match the aria-tecton registry mirror.
+  # Verifies the shadcn-generated components still match the base-tecton registry mirror.
   generated-check:
     runs-on: ubuntu-latest
     timeout-minutes: 30

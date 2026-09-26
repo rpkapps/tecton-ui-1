@@ -1,17 +1,19 @@
+import { mergeProps } from "@base-ui/react/merge-props"
+import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 import { Separator } from "@tecton/react/components/separator"
 
 const buttonGroupVariants = cva(
-  "[&:has(>[data-variant=outline],>[data-slot=input],>[data-slot=textarea],>[data-slot=select-trigger],>[data-slot=input-group],>[data-slot=button-group-text])>[data-slot=button]:not([data-variant=outline])]:border-outline-border flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 has-[>[data-slot=button-group]]:gap-2 [&_[data-slot]:is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:relative [&_[data-slot]:is(:hover,:focus-within,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:z-10 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
+  "[&:has(>[data-variant=outline],>[data-slot=input],>[data-slot=textarea],>[data-slot=select-trigger],>[data-slot=input-group],>[data-slot=button-group-text])>[data-slot=button]:not([data-variant=outline])]:border-outline-border flex w-fit items-stretch *:focus-visible:relative *:focus-visible:z-10 has-[>[data-slot=button-group]]:gap-2 [&_[data-slot]:is(:hover,:focus-within,:active,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:relative [&_[data-slot]:is(:hover,:focus-within,:active,[data-pressed],[aria-expanded=true],[aria-invalid=true])]:z-10 has-[select[aria-hidden=true]:last-child]:[&>[data-slot=select-trigger]:last-of-type]:rounded-e-md [&>[data-slot=select-trigger]:not([class*='w-'])]:w-fit [&>input]:flex-1",
   {
     variants: {
       orientation: {
         horizontal:
-          "**:data-slot:rounded-e-none [&_[data-slot]~[data-slot]]:rounded-s-none [&_[data-slot]~[data-slot]:not([data-slot=button-group])]:-ms-px [&>[data-slot]:not(:has(~[data-slot]))]:rounded-e-md!",
+          "*:data-slot:rounded-e-none [&>[data-slot]:not(:has(~[data-slot]))]:rounded-e-md! [&>[data-slot]~[data-slot]]:rounded-s-none [&>[data-slot]~[data-slot]:not([data-slot=button-group])]:-ms-px",
         vertical:
-          "flex-col **:data-slot:rounded-b-none [&_[data-slot]~[data-slot]]:rounded-t-none [&_[data-slot]~[data-slot]:not([data-slot=button-group])]:-mt-px [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md!",
+          "flex-col *:data-slot:rounded-b-none [&>[data-slot]:not(:has(~[data-slot]))]:rounded-b-md! [&>[data-slot]~[data-slot]]:rounded-t-none [&>[data-slot]~[data-slot]:not([data-slot=button-group])]:-mt-px",
       },
     },
     defaultVariants: {
@@ -40,32 +42,23 @@ function ButtonGroupText({
   className,
   render,
   ...props
-}: React.ComponentProps<"div"> & {
-  render?: (props: React.HTMLAttributes<HTMLElement>) => React.ReactNode
-}) {
-  if (render) {
-    const renderProps = {
-      "data-slot": "button-group-text",
-      className: cn(
-        "flex items-center gap-2 rounded-md border bg-muted px-2.5 text-sm font-medium [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
-        className
-      ),
-      ...props,
-    }
-
-    return render(renderProps)
-  }
-
-  return (
-    <div
-      data-slot="button-group-text"
-      className={cn(
-        "flex items-center gap-2 rounded-md border bg-muted px-2.5 text-sm font-medium [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
-        className
-      )}
-      {...props}
-    />
-  )
+}: useRender.ComponentProps<"div">) {
+  return useRender({
+    defaultTagName: "div",
+    props: mergeProps<"div">(
+      {
+        className: cn(
+          "flex items-center gap-2 rounded-md border bg-muted px-2.5 text-sm font-medium [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4",
+          className
+        ),
+      },
+      props
+    ),
+    render,
+    state: {
+      slot: "button-group-text",
+    },
+  })
 }
 
 function ButtonGroupSeparator({
@@ -78,7 +71,7 @@ function ButtonGroupSeparator({
       data-slot="button-group-separator"
       orientation={orientation}
       className={cn(
-        "relative self-stretch bg-input not-aria-[orientation=vertical]:mx-px not-aria-[orientation=vertical]:w-auto aria-[orientation=vertical]:my-px aria-[orientation=vertical]:h-auto",
+        "relative self-stretch bg-input data-horizontal:mx-px data-horizontal:w-auto data-vertical:my-px data-vertical:h-auto",
         className
       )}
       {...props}

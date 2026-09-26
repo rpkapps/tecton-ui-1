@@ -1,4 +1,6 @@
 import * as React from "react"
+import { mergeProps } from "@base-ui/react/merge-props"
+import { useRender } from "@base-ui/react/use-render"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
@@ -32,14 +34,12 @@ function Attachment({
   VariantProps<typeof attachmentVariants> & {
     state?: "idle" | "uploading" | "processing" | "error" | "done"
   }) {
-  const resolvedOrientation = orientation ?? "horizontal"
-
   return (
     <div
       data-slot="attachment"
       data-state={state}
       data-size={size}
-      data-orientation={resolvedOrientation}
+      data-orientation={orientation}
       className={cn(attachmentVariants({ size, orientation }), className)}
       {...props}
     />
@@ -134,7 +134,7 @@ function AttachmentActions({
     <div
       data-slot="attachment-actions"
       className={cn(
-        "relative z-20 flex shrink-0 items-center group-data-[orientation=vertical]/attachment:absolute group-data-[orientation=vertical]/attachment:top-3 group-data-[orientation=vertical]/attachment:right-3 group-data-[orientation=vertical]/attachment:gap-1",
+        "relative z-20 flex shrink-0 items-center group-data-[orientation=vertical]/attachment:absolute group-data-[orientation=vertical]/attachment:top-3 group-data-[orientation=vertical]/attachment:end-3 group-data-[orientation=vertical]/attachment:gap-1",
         className
       )}
       {...props}
@@ -163,32 +163,22 @@ function AttachmentTrigger({
   className,
   render,
   type,
-  children,
   ...props
-}: React.ComponentProps<"button"> & {
-  render?: (props: React.HTMLAttributes<HTMLElement>) => React.ReactNode
-}) {
-  if (render) {
-    const renderProps = {
-      ...props,
-      "data-slot": "attachment-trigger",
-      className: cn("absolute inset-0 z-10 outline-none", className),
-      children,
-    }
-
-    return render(renderProps)
-  }
-
-  return (
-    <button
-      {...props}
-      type={type ?? "button"}
-      data-slot="attachment-trigger"
-      className={cn("absolute inset-0 z-10 outline-none", className)}
-    >
-      {children}
-    </button>
-  )
+}: useRender.ComponentProps<"button">) {
+  return useRender({
+    defaultTagName: "button",
+    props: mergeProps<"button">(
+      {
+        type: render ? type : (type ?? "button"),
+        className: cn("absolute inset-0 z-10 outline-none", className),
+      },
+      props
+    ),
+    render,
+    state: {
+      slot: "attachment-trigger",
+    },
+  })
 }
 
 function AttachmentGroup({ className, ...props }: React.ComponentProps<"div">) {

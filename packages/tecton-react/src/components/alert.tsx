@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 const alertVariants = cva(
-  "group/alert relative grid w-full gap-0.5 rounded-md border px-4 py-3 text-left text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pr-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2.5 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4",
+  "group/alert relative grid w-full gap-0.5 rounded-md border px-4 py-3 text-start text-sm has-data-[slot=alert-action]:relative has-data-[slot=alert-action]:pe-18 has-[>svg]:grid-cols-[auto_1fr] has-[>svg]:gap-x-2.5 *:[svg]:row-span-2 *:[svg]:translate-y-0.5 *:[svg]:text-current *:[svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -83,7 +83,7 @@ function AlertAction({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="alert-action"
       className={cn(
-        "absolute top-2.5 right-3 flex items-center gap-1 *:data-[slot=button]:h-7 *:data-[slot=button]:data-[variant=ghost]:text-current *:data-[slot=button]:data-[variant=ghost]:hover:bg-current/10 *:data-[slot=button]:data-[variant=link]:text-current",
+        "absolute top-2.5 end-3 flex items-center gap-1 *:data-[slot=button]:h-7 *:data-[slot=button]:data-[variant=ghost]:text-current *:data-[slot=button]:data-[variant=ghost]:hover:bg-current/10 *:data-[slot=button]:data-[variant=link]:text-current",
         className
       )}
       {...props}
