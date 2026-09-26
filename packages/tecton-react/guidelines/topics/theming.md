@@ -195,13 +195,15 @@ new ModuleFederationPlugin({
 })
 ```
 
-`sonner` is a singleton; `@tecton/react/` is a prefix share, and `react`,
-`react-dom`, `react-aria-components` and `recharts` are shared but not
-singletons, so applications on different React versions can share a page (pin
-`react` and `react-dom` to the same exact version in each).
+None of the entries is a singleton, so applications on different React or
+Tecton versions can share a page: `@tecton/react/` is a prefix share, and
+`react`, `react-dom`, `sonner`, `react-aria-components` and `recharts` are
+shared without being singletons (pin `react` and `react-dom` to the same exact
+version in each application).
 The list carries no versions — those come from the application's own install.
-The host mounts exactly one `Toaster`; a remote mounts none and calls `toast`
-from the shared copy.
+The host mounts exactly one `Toaster` and passes its `toast` to each remote
+through the mount props; a remote mounts no `Toaster` and never imports `toast`
+from `sonner`.
 
 A remote with **no** Tecton shell to inherit from adds
 `@tecton/react/styles/scoped-theme.css` after `scoped.css` and loads Figtree and

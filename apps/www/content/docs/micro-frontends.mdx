@@ -58,9 +58,9 @@ export default { plugins: [tailwindcss(), scopeTecton({ scope: ".mfe-a" })] }
 
 <Step>Share the modules the applications have to agree on</Step>
 
-`@tecton/react/federation/shared` is that list as data — `sonner` as a singleton, `@tecton/react/` as a prefix share, and `react`, `react-dom`, `react-aria-components` and `recharts` shared but not singletons. It carries no versions: those come from the application's own install.
+`@tecton/react/federation/shared` is that list as data — `@tecton/react/` as a prefix share, and `react`, `react-dom`, `sonner`, `react-aria-components` and `recharts` shared. None of them is a singleton: the applications are released on their own schedules, so none may force its copy on the others. It carries no versions: those come from the application's own install.
 
-React is not a singleton, so applications on different React versions can share a page: each renders in its own root with its own `react-dom`, and a version both sides accept is still loaded once. React needs `react` and `react-dom` at the same version, so pin the two to the same exact version in every application. The shared `sonner` renders every toast with the host's React, so a remote on another React version passes `toast` text, not elements of its own.
+Applications on different React versions can share a page: each renders in its own root with its own `react-dom`, and a version both sides accept is still loaded once. React needs `react` and `react-dom` at the same version, so pin the two to the same exact version in every application.
 
 ```js title="rspack.config.mjs"
 import { dependencies } from "./package.json" with { type: "json" }
@@ -80,13 +80,16 @@ new ModuleFederationPlugin({
 
 <Step>Leave the toasts to the host</Step>
 
-Sonner's queue is module state, so the host mounts exactly one `Toaster` and a remote none. Remotes call `toast` from the shared copy, and it lands in the host's stack.
+Sonner's queue is module state, and a remote may load its own copy of `sonner`, so a `toast` it imports can land in a queue no `Toaster` renders. The host mounts exactly one `Toaster` and hands its `toast` to each application through the mount props, as it does the [shortcut registry](#sidebars-and-shortcuts); a remote mounts no `Toaster` and calls what it was given. Pass text, not React elements: the host renders them with its own React.
 
 ```tsx
-// remote
+// host
 import { toast } from "sonner"
 
-toast.success("Simulation finished")
+mount(element, { toast })
+
+// remote
+props.toast.success("Simulation finished")
 ```
 
 </Steps>

@@ -43,10 +43,11 @@ export const shared = deepFreeze({
   // exact version, so each application pins the two together.
   react: { singleton: false },
   "react-dom": { singleton: false },
-  // Sonner's queue is module state: two copies mean two toast stacks. The
-  // host's Toaster renders every toast, so a remote on another React version
-  // passes text, not its own elements.
-  sonner: { singleton: true },
+  // Not a singleton either: applications release on their own schedules, so no
+  // copy may be forced on the others. Sonner's queue is module state, so a
+  // remote does not import `toast`: the host passes its own through the mount
+  // props and keeps the one Toaster.
+  sonner: { singleton: false },
   // Prefix share (trailing slash): the package has no root export, so each
   // subpath is shared on its own. Not a singleton — versions may differ.
   "@tecton/react/": { singleton: false },
