@@ -89,8 +89,8 @@ Correct:
 ```tsx
 function ShellSearch({ open }: { open: () => void }) {
   useShortcut({ id: "shell.palette", keys: "mod+k", label: "Command palette", onAction: open })
-  return <AppShellCommandTrigger shortcut="⌘K" onPress={open}>Search</AppShellCommandTrigger>
+  return <AppShellCommandTrigger onPress={open}>Search</AppShellCommandTrigger>
 }
 ```
 
-`shortcut` on `AppShellCommandTrigger` only renders a `Kbd` and binds nothing, so ⌘K never opens the palette and the key is missing from `useShortcuts()` — the list the shell's help dialog and command palette are built from.
+The trigger's hint (by default `mod+k` drawn for the platform, ⌘ K on a Mac and Ctrl + K elsewhere, or the `Kbd` you pass as `shortcut`) binds nothing, so the key never opens the palette and is missing from `useShortcuts()`, the list the shell's help dialog and command palette are built from.

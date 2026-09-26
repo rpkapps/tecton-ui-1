@@ -1,5 +1,5 @@
-import { render } from "@testing-library/react"
-import { describe, expect, it } from "vitest"
+import { act, render } from "@testing-library/react"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
   Background,
@@ -66,6 +66,43 @@ describe("Background", () => {
     expect(layer(container)).toHaveAttribute("data-animate", "false")
   })
 
+  // The suite's setup stubs IntersectionObserver; a consumer's jsdom (and
+  // an old browser) has none, which used to throw on mount.
+  describe("without IntersectionObserver", () => {
+    const original = globalThis.IntersectionObserver
+    afterEach(() => {
+      globalThis.IntersectionObserver = original
+    })
+
+    it("mounts and still pauses on a hidden tab", () => {
+      // @ts-expect-error: removed for this test only
+      delete globalThis.IntersectionObserver
+      expect(typeof IntersectionObserver).toBe("undefined")
+      const visibility = vi
+        .spyOn(document, "visibilityState", "get")
+        .mockReturnValue("visible")
+      const { container, unmount } = render(<Background />)
+      expect(layer(container)).not.toHaveAttribute("data-paused")
+
+      visibility.mockReturnValue("hidden")
+      act(() => {
+        document.dispatchEvent(new Event("visibilitychange"))
+      })
+      expect(layer(container)).toHaveAttribute("data-paused", "")
+      unmount()
+      visibility.mockRestore()
+    })
+  })
+
+  it("ships no unused keyframes", () => {
+    render(<Background />)
+    const css = Array.from(document.head.querySelectorAll("style"))
+      .map((s) => s.textContent)
+      .join("")
+    expect(css).not.toContain("tecton-bg-drift-y")
+    expect(css).toContain("tecton-bg-drift-x")
+  })
+
   it("merges className and passes through props", () => {
     const { container } = render(
       <Background className="opacity-50" data-testid="bg" />
@@ -98,6 +135,40 @@ describe("Background effects", () => {
     expect(bg).toHaveAttribute("data-intensity", "high")
     expect(bg).toHaveAttribute("data-speed", "slow")
     expect(bg).toHaveAttribute("data-animate", "false")
+  })
+
+  // The pulse animates `opacity`, so a dimmed opacity on the same node
+  // would never show: the far nodes are dimmed through fill-opacity.
+  it("terrain-grid dims the far nodes without fighting the pulse", () => {
+    const Effect = backgroundEffects["terrain-grid"]
+    const { container } = render(<Effect />)
+    const nodes = Array.from(container.querySelectorAll("circle"))
+    expect(nodes.length).toBeGreaterThan(0)
+    const dimmed = nodes.filter((n) => n.getAttribute("fill-opacity") === "0.5")
+    expect(dimmed.length).toBeGreaterThan(0)
+    expect(dimmed.length).toBeLessThan(nodes.length)
+    for (const node of nodes) {
+      expect(node.style.animation).toContain("tecton-bg-pulse")
+      expect(node.style.opacity).toBe("")
+    }
+  })
+
+  it("contour shares its geometry across palettes and recolours it", () => {
+    const Effect = backgroundEffects.contour
+    const { container, rerender } = render(<Effect palette="map" />)
+    const strokes = () =>
+      Array.from(container.querySelectorAll("path[stroke]")).map((path) => [
+        path.getAttribute("d"),
+        path.getAttribute("stroke"),
+      ])
+    const map = strokes()
+    rerender(<Effect palette="tone" />)
+    const tone = strokes()
+    expect(tone.map(([d]) => d)).toEqual(map.map(([d]) => d))
+    expect(new Set(tone.map(([, stroke]) => stroke))).toEqual(
+      new Set(["var(--bg-tone)"])
+    )
+    expect(map.some(([, stroke]) => stroke !== "var(--bg-tone)")).toBe(true)
   })
 
   it("BackgroundEffect picks the effect by name", () => {

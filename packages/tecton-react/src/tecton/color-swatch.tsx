@@ -74,23 +74,90 @@ function isParseable(color: ColorSwatchPrimitiveProps["color"]) {
   }
 }
 
-/** Resolves `var(--token)` / other CSS colours to a hex string the picker can compare. */
+/** An unlikely colour the probe inherits when the value does not resolve. */
+const PROBE_SENTINEL = "rgba(1, 2, 3, 0.004)"
+
+/**
+ * Resolves `var(--token)` / other CSS colours to a hex string the picker can
+ * compare, or `null`. The probe sits inside a parent painted with a sentinel:
+ * an invalid colour, or a `var()` that resolves to nothing, falls back to the
+ * inherited colour, and that must read as "unresolved", not as the colour of
+ * whatever text surrounds the picker.
+ */
 function toHex(color: string, el: Element | null): string | null {
   try {
     return parseColor(color).toString("hex")
   } catch {
     if (typeof window === "undefined" || !el) return null
+    const parent = document.createElement("span")
+    parent.style.color = PROBE_SENTINEL
     const probe = document.createElement("span")
     probe.style.color = color
-    el.appendChild(probe)
+    parent.appendChild(probe)
+    el.appendChild(parent)
+    const sentinel = getComputedStyle(parent).color
     const rgb = getComputedStyle(probe).color
-    probe.remove()
+    parent.remove()
+    if (rgb === sentinel) return null
     try {
       return parseColor(rgb).toString("hex")
     } catch {
       return null
     }
   }
+}
+
+type ResolvedColors = {
+  current: string | null
+  presets: { preset: string; hex: string }[]
+}
+
+function resolveColors(
+  color: ColorSwatchPrimitiveProps["color"],
+  presets: string[],
+  root: Element | null
+): ResolvedColors {
+  return {
+    current: !color
+      ? null
+      : typeof color === "string"
+        ? toHex(color, root)
+        : color.toString("hex"),
+    presets: presets.flatMap((preset) => {
+      const hex = toHex(preset, root)
+      return hex ? [{ preset, hex }] : []
+    }),
+  }
+}
+
+function sameColors(a: ResolvedColors, b: ResolvedColors) {
+  return (
+    a.current === b.current &&
+    a.presets.length === b.presets.length &&
+    a.presets.every(
+      (p, i) => p.preset === b.presets[i].preset && p.hex === b.presets[i].hex
+    )
+  )
+}
+
+/**
+ * The picker's colours as hex. Parseable values resolve during render; a
+ * token (`var(--…)`) needs the DOM, so it is probed in a layout effect once
+ * the picker has mounted — never during render — and kept in state.
+ */
+function useResolvedColors(
+  color: ColorSwatchPrimitiveProps["color"],
+  presets: string[],
+  root: Element | null
+) {
+  const [resolved, setResolved] = React.useState(() =>
+    resolveColors(color, presets, null)
+  )
+  React.useLayoutEffect(() => {
+    const next = resolveColors(color, presets, root)
+    setResolved((prev) => (sameColors(prev, next) ? prev : next))
+  }, [color, presets, root])
+  return resolved
 }
 
 type ColorSwatchProps = Omit<ColorSwatchPrimitiveProps, "className"> &
@@ -188,18 +255,10 @@ function ColorSwatchEditor({
   "aria-label": string
 }) {
   const [root, setRoot] = React.useState<HTMLElement | null>(null)
-  const current = React.useMemo(() => {
-    if (!color) return null
-    return typeof color === "string"
-      ? toHex(color, root)
-      : color.toString("hex")
-  }, [color, root])
-  const presetValues = React.useMemo(
-    () =>
-      presets
-        .map((p) => ({ preset: p, hex: toHex(p, root) }))
-        .filter((p) => p.hex),
-    [presets, root]
+  const { current, presets: presetValues } = useResolvedColors(
+    color,
+    presets,
+    root
   )
   const emit = React.useCallback(
     (next: Color | null) => {
@@ -235,7 +294,7 @@ function ColorSwatchEditor({
                 {presetValues.map(({ preset, hex }) => (
                   <ColorSwatchPickerItemPrimitive
                     key={preset}
-                    color={hex!}
+                    color={hex}
                     className={cn(
                       "cursor-pointer rounded-md outline-none data-focus-visible:ring-2 data-focus-visible:ring-ring data-selected:ring-2 data-selected:ring-ring data-selected:ring-offset-1 data-selected:ring-offset-popover",
                       shape === "circle" && "rounded-full",

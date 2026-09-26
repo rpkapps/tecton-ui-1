@@ -43,11 +43,7 @@ describe("Stat", () => {
     const { container } = render(<Stat size="lg" align="end" />)
     const stat = container.querySelector('[data-slot="stat"]')
     expect(stat).toHaveAttribute("data-size", "lg")
-    expect(stat).toHaveClass(
-      "[--stat-value:1.75rem]",
-      "items-end",
-      "text-right"
-    )
+    expect(stat).toHaveClass("[--stat-value:1.75rem]", "items-end", "text-end")
   })
 
   it("omits the unit element when no unit is given", () => {
@@ -69,10 +65,38 @@ describe("Stat", () => {
 
   it("defaults StatDelta to flat", () => {
     const { container } = render(<StatDelta>0</StatDelta>)
-    expect(container.querySelector('[data-slot="stat-delta"]')).toHaveAttribute(
-      "data-trend",
-      "flat"
+    const delta = container.querySelector('[data-slot="stat-delta"]')
+    expect(delta).toHaveAttribute("data-trend", "flat")
+    expect(delta).toHaveAttribute("data-tone", "neutral")
+  })
+
+  // CAPEX going down is good news: the arrow points down, the colour is green.
+  it("colours StatDelta by tone independently of the direction", () => {
+    const { container } = render(
+      <>
+        <StatDelta trend="down" tone="positive">
+          -4%
+        </StatDelta>
+        <StatDelta trend="up" tone="negative">
+          +2 d
+        </StatDelta>
+        <StatDelta trend="up" tone="neutral">
+          +1
+        </StatDelta>
+      </>
     )
+    const [capex, downtime, neutral] = container.querySelectorAll(
+      '[data-slot="stat-delta"]'
+    )
+    expect(capex).toHaveAttribute("data-trend", "down")
+    expect(capex).toHaveAttribute("data-tone", "positive")
+    expect(capex).toHaveClass("text-success")
+    expect(capex).not.toHaveClass("text-destructive")
+    expect(capex.querySelector("svg")).toHaveClass("lucide-trending-down")
+
+    expect(downtime).toHaveClass("text-destructive")
+    expect(downtime.querySelector("svg")).toHaveClass("lucide-trending-up")
+    expect(neutral).toHaveClass("text-muted-foreground")
   })
 
   it("merges className on every part", () => {

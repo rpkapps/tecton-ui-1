@@ -78,15 +78,62 @@ describe("CopyButton", () => {
     })
   })
 
-  it("stays in the plain state when the clipboard is unavailable", async () => {
-    writeText.mockRejectedValue(new Error("denied"))
+  it("shows and reports a failure when the clipboard refuses", async () => {
+    const error = new Error("denied")
+    writeText.mockRejectedValue(error)
     const onCopied = vi.fn()
-    render(<CopyButton value="v" onCopied={onCopied} />)
+    const onError = vi.fn()
+    render(
+      <CopyButton
+        value="v"
+        timeout={60}
+        onCopied={onCopied}
+        onError={onError}
+      />
+    )
     await userEvent.click(screen.getByRole("button", { name: "Copy" }))
     expect(onCopied).not.toHaveBeenCalled()
-    expect(screen.getByRole("button", { name: "Copy" })).not.toHaveAttribute(
-      "data-copied"
+    expect(onError).toHaveBeenCalledWith(error)
+    const button = screen.getByRole("button", { name: "Copy failed" })
+    expect(button).toHaveAttribute("data-error", "true")
+    expect(button).not.toHaveAttribute("data-copied")
+    expect(button).toHaveClass("data-[error=true]:text-destructive")
+    await waitFor(() =>
+      expect(screen.getByRole("button", { name: "Copy" })).not.toHaveAttribute(
+        "data-error"
+      )
     )
+  })
+
+  it("fails the same way without a Clipboard API", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: undefined,
+      configurable: true,
+    })
+    const onError = vi.fn()
+    render(<CopyButton value="v" onError={onError} />)
+    await userEvent.click(screen.getByRole("button", { name: "Copy" }))
+    expect(onError).toHaveBeenCalledTimes(1)
+    expect(
+      screen.getByRole("button", { name: "Copy failed" })
+    ).toBeInTheDocument()
+  })
+
+  it("announces the outcome in a polite live region", async () => {
+    const announcer = () =>
+      document.querySelector('[data-slot="copy-button-announcer"]')
+    render(<CopyButton value="v">Copy link</CopyButton>)
+    await userEvent.click(screen.getByRole("button", { name: "Copy link" }))
+    expect(announcer()).toHaveAttribute("aria-live", "polite")
+    expect(announcer()?.parentElement).toBe(document.body)
+    await waitFor(() => expect(announcer()).toHaveTextContent("Copied"))
+
+    writeText.mockRejectedValue(new Error("denied"))
+    await userEvent.click(screen.getByRole("button", { name: "Copy link" }))
+    await waitFor(() => expect(announcer()).toHaveTextContent("Copy failed"))
+    expect(
+      document.querySelectorAll('[data-slot="copy-button-announcer"]')
+    ).toHaveLength(1)
   })
 
   it("clears the pending timer on unmount", async () => {

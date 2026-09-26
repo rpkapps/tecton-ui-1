@@ -17,24 +17,43 @@ import * as React from "react"
  */
 type PortalProviderProps = {
   /**
-   * Element the overlays portal into, or a function returning it. `null`
-   * clears an outer provider and restores the `document.body` default.
+   * Element the overlays portal into, or a function returning it (called
+   * after the provider mounts, and again whenever a new function is passed,
+   * so `() => ref.current` sees the committed element). `null` clears an
+   * outer provider and restores the `document.body` default.
    */
   container: HTMLElement | null | (() => HTMLElement | null)
   children: React.ReactNode
 }
 
-type PortalContainer = HTMLElement | null | (() => HTMLElement | null)
+const PortalContainerContext = React.createContext<HTMLElement | null>(null)
 
-const PortalContainerContext = React.createContext<PortalContainer | undefined>(
-  undefined
-)
+/**
+ * A function `container` is resolved after the commit, not while the
+ * overlays render: the usual `() => ref.current` reads a ref that is only set
+ * once the host element has committed, and an overlay wrapper that rendered
+ * before that would keep portalling to `document.body` for good. A passive
+ * effect, not a layout one: layout effects run in tree order while refs are
+ * still being attached, so a host rendered after the provider (a sibling, an
+ * ancestor) would not be set yet. The resolved element lives in state, so the
+ * overlays re-render with it; a new function identity (an inline arrow gives
+ * one every render) resolves again.
+ */
+function useResolvedContainer(
+  container: PortalProviderProps["container"]
+): HTMLElement | null {
+  const isFunction = typeof container === "function"
+  const [resolved, setResolved] = React.useState<HTMLElement | null>(null)
+  React.useEffect(() => {
+    if (typeof container === "function") setResolved(container())
+  }, [container])
+  return isFunction ? resolved : container
+}
 
 function PortalProvider({ container, children }: PortalProviderProps) {
+  const resolved = useResolvedContainer(container)
   return (
-    <PortalContainerContext value={container}>
-      {children}
-    </PortalContainerContext>
+    <PortalContainerContext value={resolved}>{children}</PortalContainerContext>
   )
 }
 
@@ -43,8 +62,7 @@ function PortalProvider({ container, children }: PortalProviderProps) {
  * `PortalProvider` is in scope (React Aria then uses `document.body`).
  */
 function usePortalContainer(): HTMLElement | null {
-  const container = React.useContext(PortalContainerContext)
-  return typeof container === "function" ? container() : (container ?? null)
+  return React.useContext(PortalContainerContext)
 }
 
 /**

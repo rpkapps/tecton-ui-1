@@ -52,7 +52,9 @@ export default function BackgroundDemo() {
           <Stat size="sm">
             <StatLabel>Cost per barrel</StatLabel>
             <StatValue unit="USD">16.9</StatValue>
-            <StatDelta trend="down">-8%</StatDelta>
+            <StatDelta trend="down" tone="positive">
+              -8%
+            </StatDelta>
           </Stat>
           <Stat size="sm">
             <StatLabel>First oil</StatLabel>

@@ -1,6 +1,6 @@
-import { fireEvent, render, screen } from "@testing-library/react"
+import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
   ActionBar,
@@ -68,29 +68,67 @@ describe("ActionBar", () => {
 })
 
 describe("ActionBarSelection", () => {
-  it("announces the count of the total", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  // A live region that mounts together with its text is not announced: the
+  // first selection, which is what mounts the bar, would be silent.
+  it("mounts the live region empty and fills it after it is tracked", () => {
+    vi.useFakeTimers()
+    const { container, rerender } = render(
+      <ActionBar>
+        <ActionBarSelection count={1} total={40} />
+      </ActionBar>
+    )
+    const region = container.querySelector('[aria-live="polite"]')!
+    expect(region).toBeEmptyDOMElement()
+    act(() => {
+      vi.advanceTimersByTime(100)
+    })
+    expect(region).toHaveTextContent("1 of 40 selected")
+
+    rerender(
+      <ActionBar>
+        <ActionBarSelection count={2} total={40} />
+      </ActionBar>
+    )
+    act(() => {
+      vi.advanceTimersByTime(100)
+    })
+    expect(container.querySelector('[aria-live="polite"]')).toBe(region)
+    expect(region).toHaveTextContent("2 of 40 selected")
+  })
+
+  it("announces the count of the total", async () => {
     const { container } = render(<ActionBarSelection count={12} total={340} />)
-    expect(container.querySelector('[aria-live="polite"]')).toHaveTextContent(
-      "12 of 340 selected"
+    await waitFor(() =>
+      expect(container.querySelector('[aria-live="polite"]')).toHaveTextContent(
+        "12 of 340 selected"
+      )
     )
     expect(
       container.querySelector('[data-slot="action-bar-selection"]')
     ).toBeInTheDocument()
   })
 
-  it("announces the bare count without a total", () => {
+  it("announces the bare count without a total", async () => {
     const { container } = render(<ActionBarSelection count={3} />)
-    expect(container.querySelector('[aria-live="polite"]')).toHaveTextContent(
-      "3 selected"
+    await waitFor(() =>
+      expect(container.querySelector('[aria-live="polite"]')).toHaveTextContent(
+        "3 selected"
+      )
     )
   })
 
-  it("includes the noun label", () => {
+  it("includes the noun label", async () => {
     const { container } = render(
       <ActionBarSelection count={2} total={9} label="wells" />
     )
-    expect(container.querySelector('[aria-live="polite"]')).toHaveTextContent(
-      "2 of 9 wells selected"
+    await waitFor(() =>
+      expect(container.querySelector('[aria-live="polite"]')).toHaveTextContent(
+        "2 of 9 wells selected"
+      )
     )
   })
 

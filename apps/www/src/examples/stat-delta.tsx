@@ -16,7 +16,9 @@ export default function StatDeltaExample() {
       <Stat>
         <StatLabel>Drilling days</StatLabel>
         <StatValue unit="d">58</StatValue>
-        <StatDelta trend="down">-6 d</StatDelta>
+        <StatDelta trend="down" tone="positive">
+          -6 d
+        </StatDelta>
       </Stat>
       <Stat>
         <StatLabel>Templates</StatLabel>

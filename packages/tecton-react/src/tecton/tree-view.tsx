@@ -76,6 +76,14 @@ function TreeViewItem<T extends object>({
   )
 }
 
+/**
+ * The id of the row's label, for controls in `endAdornment` that name
+ * themselves after the row ("Hide Faults").
+ */
+const TreeViewItemLabelContext = React.createContext<string | undefined>(
+  undefined
+)
+
 type TreeViewItemContentProps = {
   className?: string
   children?: React.ReactNode
@@ -100,6 +108,7 @@ function TreeViewItemContent({
   suffix,
   endAdornment,
 }: TreeViewItemContentProps) {
+  const labelId = React.useId()
   return (
     <TreeItemContentPrimitive>
       {({ hasChildItems, isExpanded, level }) => (
@@ -107,7 +116,7 @@ function TreeViewItemContent({
           data-slot="tree-view-item-content"
           data-kind={kind}
           className={cn(
-            "flex h-8 min-w-0 flex-1 items-center gap-1.5 pr-1",
+            "flex h-8 min-w-0 flex-1 items-center gap-1.5 pe-1",
             className
           )}
           style={{ paddingInlineStart: `${(level - 1) * 1.25 + 0.25}rem` }}
@@ -151,7 +160,11 @@ function TreeViewItemContent({
               {colorTag}
             </span>
           )}
-          <span data-slot="tree-view-label" className="min-w-0 flex-1 truncate">
+          <span
+            id={labelId}
+            data-slot="tree-view-label"
+            className="min-w-0 flex-1 truncate"
+          >
             {children}
           </span>
           {suffix && (
@@ -167,7 +180,9 @@ function TreeViewItemContent({
               data-slot="tree-view-end"
               className="flex shrink-0 items-center gap-0.5 text-muted-foreground"
             >
-              {endAdornment}
+              <TreeViewItemLabelContext value={labelId}>
+                {endAdornment}
+              </TreeViewItemLabelContext>
             </span>
           )}
         </div>
@@ -199,18 +214,38 @@ function TreeViewAction({
   )
 }
 
+/**
+ * Show / hide a row. The name stays the same and `aria-pressed` carries the
+ * state ("Hide Faults, toggle button, pressed" while hidden), as a toggle
+ * button should; inside `TreeViewItemContent` the name includes the row's
+ * label, so a list of toggles does not read as a list of bare "Hide"s. Pass
+ * `name` when the row label is not plain text.
+ */
 function TreeViewVisibilityToggle({
   isVisible = true,
   onChange,
+  name,
   className,
   ...props
 }: Omit<React.ComponentProps<typeof TreeViewAction>, "onPress" | "children"> & {
   isVisible?: boolean
   onChange?: (visible: boolean) => void
+  /** What the toggle hides, for its accessible name ("Hide {name}"). */
+  name?: string
 }) {
+  const generatedId = React.useId()
+  const id = props.id ?? generatedId
+  const labelId = React.useContext(TreeViewItemLabelContext)
+  const named =
+    name !== undefined ||
+    props["aria-label"] !== undefined ||
+    props["aria-labelledby"] !== undefined
   return (
     <TreeViewAction
-      aria-label={isVisible ? "Hide" : "Show"}
+      id={id}
+      aria-label={name ? `Hide ${name}` : "Hide"}
+      // "Hide" followed by the row's own label.
+      aria-labelledby={!named && labelId ? `${id} ${labelId}` : undefined}
       aria-pressed={!isVisible}
       className={className}
       {...props}

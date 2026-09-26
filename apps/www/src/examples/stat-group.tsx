@@ -20,7 +20,9 @@ export default function StatGroupExample() {
       <Stat align="center">
         <StatLabel>CAPEX</StatLabel>
         <StatValue unit="MUSD">312</StatValue>
-        <StatDelta trend="down">-4%</StatDelta>
+        <StatDelta trend="down" tone="positive">
+          -4%
+        </StatDelta>
       </Stat>
       <Stat align="center">
         <StatLabel>NPV</StatLabel>

@@ -130,7 +130,7 @@ describe("AppShellActions", () => {
     )
     expect(
       container.querySelector('[data-slot="app-shell-actions"]')
-    ).toHaveClass("x", "ml-auto")
+    ).toHaveClass("x", "ms-auto")
   })
 
   it("AppShellAction is an icon button named by its label with a tooltip", async () => {
@@ -165,12 +165,33 @@ describe("AppShellActions", () => {
     expect(tooltip.querySelector('[data-slot="shortcut-keys"]')).toBeNull()
   })
 
-  it("AppShellCommandTrigger defaults to Search with a ⌘K hint", () => {
+  it("AppShellCommandTrigger defaults to Search with a ⌘K hint on a Mac", () => {
+    const platform = vi
+      .spyOn(navigator, "platform", "get")
+      .mockReturnValue("MacIntel")
     render(<AppShellCommandTrigger />)
     const button = screen.getByRole("button", { name: "Search" })
     expect(button).toHaveAttribute("data-slot", "app-shell-command-trigger")
     expect(button).toHaveTextContent("Search")
-    expect(button.querySelector('[data-slot="kbd"]')).toHaveTextContent("⌘K")
+    const hint = button.querySelector('[data-slot="shortcut-keys"]')
+    expect(hint).toHaveClass("hidden", "lg:inline-flex")
+    const caps = hint!.querySelectorAll('[data-slot="kbd"]')
+    expect(Array.from(caps, (cap) => cap.textContent)).toEqual(["⌘", "K"])
+    platform.mockRestore()
+  })
+
+  it("AppShellCommandTrigger shows Ctrl K off Apple platforms", () => {
+    const platform = vi
+      .spyOn(navigator, "platform", "get")
+      .mockReturnValue("Win32")
+    render(<AppShellCommandTrigger />)
+    const hint = screen
+      .getByRole("button", { name: "Search" })
+      .querySelector('[data-slot="shortcut-keys"]')!
+    const caps = hint.querySelectorAll('[data-slot="kbd"]')
+    expect(Array.from(caps, (cap) => cap.textContent)).toEqual(["Ctrl", "K"])
+    expect(hint).not.toHaveTextContent("⌘")
+    platform.mockRestore()
   })
 
   it("AppShellCommandTrigger accepts a label, a shortcut and no shortcut", () => {

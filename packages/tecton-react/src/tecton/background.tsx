@@ -32,7 +32,6 @@ const backgroundStyles = `
 [data-slot="background"][data-paused] *,[data-slot="background"][data-animate="false"] *{animation-play-state:paused!important}
 @media (prefers-reduced-motion:reduce){[data-slot="background"] *{animation-play-state:paused!important}}
 @media print,(forced-colors:active){[data-slot="background"]{display:none!important}}
-@keyframes tecton-bg-drift-y{from{transform:translateY(0)}to{transform:translateY(var(--bg-tile-h))}}
 @keyframes tecton-bg-drift-x{from{transform:translateX(0)}to{transform:translateX(calc(-1 * var(--bg-tile-w)))}}
 @keyframes tecton-bg-wander{0%{transform:translate(0,0)}50%{transform:translate(-40px,-24px)}100%{transform:translate(0,0)}}
 @keyframes tecton-bg-breathe{0%,100%{opacity:.7}50%{opacity:1}}
@@ -107,18 +106,23 @@ function useVisibilityPause(ref: React.RefObject<HTMLDivElement | null>) {
     let visible = true
     let tabVisible = document.visibilityState !== "hidden"
     const update = () => setPaused(!(visible && tabVisible))
-    const observer = new IntersectionObserver(([entry]) => {
-      visible = entry.isIntersecting
-      update()
-    })
-    observer.observe(node)
+    // Without IntersectionObserver the effect counts as always on screen and
+    // only the hidden-tab pause applies.
+    const observer =
+      typeof IntersectionObserver === "undefined"
+        ? null
+        : new IntersectionObserver(([entry]) => {
+            visible = entry.isIntersecting
+            update()
+          })
+    observer?.observe(node)
     const onVisibility = () => {
       tabVisible = document.visibilityState !== "hidden"
       update()
     }
     document.addEventListener("visibilitychange", onVisibility)
     return () => {
-      observer.disconnect()
+      observer?.disconnect()
       document.removeEventListener("visibilitychange", onVisibility)
     }
   }, [ref])
@@ -158,6 +162,17 @@ function Background({
       />
     </>
   )
+}
+
+/**
+ * The effects' geometry depends only on a fixed seed and fixed sizes, so it
+ * is built once per page, the first time an effect renders, and shared by
+ * every instance after that instead of being recomputed per mount. Anything
+ * that depends on props (colours, the palette) is derived from it at render.
+ */
+function once<T>(build: () => T): () => T {
+  let cached: { value: T } | undefined
+  return () => (cached ??= { value: build() }).value
 }
 
 /* Deterministic pseudo-random so the server and the client draw the same
@@ -204,7 +219,6 @@ function PatternSvg({
       style={
         {
           "--bg-tile-w": `${width}px`,
-          "--bg-tile-h": `${height}px`,
         } as React.CSSProperties
       }
     >
@@ -460,29 +474,31 @@ function seismogram(random: () => number) {
   return points.join("")
 }
 
+const seismicGeometry = once(() => {
+  const random = seeded(7)
+  const trace = seismogram(random)
+  // Bedding planes below the surface, dropped on the far side of the fault.
+  const planes: (Plane & { drop: number })[] = []
+  let y = SEIS_SURFACE + 70
+  while (y < SECTION_H + 80) {
+    planes.push({
+      y,
+      wave: beddingPlane(random, 12 + random() * 26),
+      drop: 50 + random() * 50,
+    })
+    y += 70 + random() * 80
+  }
+  const { lines, layers } = sectionPaths(planes, 16, (plane, x) => {
+    const t = Math.min(1, Math.max(0, (x - SEIS_FAULT_X + 30) / 60))
+    return plane.y + plane.wave(x) + plane.drop * t * t * (3 - 2 * t)
+  })
+  return { trace, lines, layers }
+})
+
 function SeismicBackground({ className, ...props }: BackgroundProps) {
   const id = React.useId()
   const [sx, sy] = SEIS_SOURCE
-  const { trace, lines, layers } = React.useMemo(() => {
-    const random = seeded(7)
-    const trace = seismogram(random)
-    // Bedding planes below the surface, dropped on the far side of the fault.
-    const planes: (Plane & { drop: number })[] = []
-    let y = SEIS_SURFACE + 70
-    while (y < SECTION_H + 80) {
-      planes.push({
-        y,
-        wave: beddingPlane(random, 12 + random() * 26),
-        drop: 50 + random() * 50,
-      })
-      y += 70 + random() * 80
-    }
-    const { lines, layers } = sectionPaths(planes, 16, (plane, x) => {
-      const t = Math.min(1, Math.max(0, (x - SEIS_FAULT_X + 30) / 60))
-      return plane.y + plane.wave(x) + plane.drop * t * t * (3 - 2 * t)
-    })
-    return { trace, lines, layers }
-  }, [])
+  const { trace, lines, layers } = seismicGeometry()
   const rings = Array.from({ length: 8 })
   return (
     <Background data-effect="seismic" className={className} {...props}>
@@ -916,6 +932,26 @@ function filledAbove(field: Field, level: number) {
   return out.join("")
 }
 
+/** The isolines and filled bands; the colours follow `palette` at render. */
+const contourLevels = once(() => {
+  const field = contourField(seeded(11))
+  return Array.from({ length: CONTOUR_LEVELS }, (_, i) => {
+    const t = (i + 0.5) / CONTOUR_LEVELS
+    const level = field.min + (field.max - field.min) * t
+    const clean = withoutSpecks(field, level)
+    return {
+      d: isolines(clean, level),
+      fill: i < CONTOUR_FILL_FROM ? "" : filledAbove(clean, level),
+      // The ramp runs over the filled levels; the lower lines stay blue.
+      ramp: Math.max(
+        0,
+        (i - CONTOUR_FILL_FROM) / (CONTOUR_LEVELS - 1 - CONTOUR_FILL_FROM)
+      ),
+      index: i % 4 === 1,
+    }
+  })
+})
+
 function ContourBackground({
   className,
   palette = "map",
@@ -927,27 +963,10 @@ function ContourBackground({
   /** Draw a survey grid under the isolines. */
   grid?: boolean
 }) {
-  const field = React.useMemo(() => contourField(seeded(11)), [])
-  const levels = React.useMemo(
-    () =>
-      Array.from({ length: CONTOUR_LEVELS }, (_, i) => {
-        const t = (i + 0.5) / CONTOUR_LEVELS
-        const level = field.min + (field.max - field.min) * t
-        const clean = withoutSpecks(field, level)
-        // The ramp runs over the filled levels; the lower lines stay blue.
-        const ramp = Math.max(
-          0,
-          (i - CONTOUR_FILL_FROM) / (CONTOUR_LEVELS - 1 - CONTOUR_FILL_FROM)
-        )
-        return {
-          d: isolines(clean, level),
-          fill: i < CONTOUR_FILL_FROM ? "" : filledAbove(clean, level),
-          color: palette === "map" ? rampColor(ramp) : "var(--bg-tone)",
-          index: i % 4 === 1,
-        }
-      }),
-    [field, palette]
-  )
+  const levels = contourLevels().map((level) => ({
+    ...level,
+    color: palette === "map" ? rampColor(level.ramp) : "var(--bg-tone)",
+  }))
   return (
     <Background
       data-effect="contour"
@@ -1018,22 +1037,24 @@ const STRATA_TINTS = [
   { fill: "none", opacity: 1 },
 ]
 
+const strataGeometry = once(() => {
+  const random = seeded(3)
+  // Layer boundaries from the top of the tile to the bottom; the last plane
+  // reuses the first one's wave so the tile also repeats vertically.
+  const first = beddingPlane(random, 14)
+  const planes: Plane[] = [{ y: 0, wave: first }]
+  let y = 0
+  while (y < SECTION_H - 70) {
+    y += 26 + random() * 44
+    planes.push({ y, wave: beddingPlane(random, 8 + random() * 12) })
+  }
+  planes.push({ y: SECTION_H, wave: first })
+  return sectionPaths(planes, 12)
+})
+
 function StrataBackground({ className, ...props }: BackgroundProps) {
   const id = React.useId()
-  const { lines, layers } = React.useMemo(() => {
-    const random = seeded(3)
-    // Layer boundaries from the top of the tile to the bottom; the last plane
-    // reuses the first one's wave so the tile also repeats vertically.
-    const first = beddingPlane(random, 14)
-    const planes: Plane[] = [{ y: 0, wave: first }]
-    let y = 0
-    while (y < SECTION_H - 70) {
-      y += 26 + random() * 44
-      planes.push({ y, wave: beddingPlane(random, 8 + random() * 12) })
-    }
-    planes.push({ y: SECTION_H, wave: first })
-    return sectionPaths(planes, 12)
-  }, [])
+  const { lines, layers } = strataGeometry()
   return (
     <Background data-effect="strata" className={className} {...props}>
       <PatternSvg
@@ -1068,6 +1089,16 @@ function StrataBackground({ className, ...props }: BackgroundProps) {
 
 const GRID = 48
 
+const gridNodes = once(() => {
+  const random = seeded(19)
+  return Array.from({ length: 40 }, () => ({
+    x: Math.round(random() * 40) * GRID,
+    y: Math.round(random() * 22) * GRID,
+    delay: -random() * 30,
+    duration: 4 + random() * 6,
+  }))
+})
+
 function GridBackground({
   className,
   interactive = false,
@@ -1076,15 +1107,7 @@ function GridBackground({
   /** Reveal the grid around the pointer as it moves over the parent. */
   interactive?: boolean
 }) {
-  const nodes = React.useMemo(() => {
-    const random = seeded(19)
-    return Array.from({ length: 40 }, () => ({
-      x: Math.round(random() * 40) * GRID,
-      y: Math.round(random() * 22) * GRID,
-      delay: -random() * 30,
-      duration: 4 + random() * 6,
-    }))
-  }, [])
+  const nodes = gridNodes()
   const ref = usePointerReveal(interactive)
   const lines = (ink: string) =>
     `linear-gradient(to right, ${ink} 1px, transparent 1px), linear-gradient(to bottom, ${ink} 1px, transparent 1px)`
@@ -1139,23 +1162,26 @@ function GridBackground({
 const FLOW_HUB = [SECTION_W / 2, SECTION_H / 2] as const
 const FLOW_PULSE = 220
 
+const flowStreams = once(() => {
+  const [hx, hy] = FLOW_HUB
+  const random = seeded(23)
+  return Array.from({ length: 26 }, (_, i) => {
+    const y = hy - 520 + (i / 25) * 1040 + (random() - 0.5) * 30
+    const c1 = 380 + random() * 220
+    return {
+      d: `M-20 ${y.toFixed(0)} C ${c1.toFixed(0)} ${y.toFixed(0)}, ${(hx - 420).toFixed(0)} ${hy}, ${hx} ${hy}`,
+      pulse: i % 2 === 0,
+      speed: 0.7 + random() * 0.8,
+      delay: -random() * 30,
+      strong: i % 4 === 0,
+    }
+  })
+})
+
 function FlowBackground({ className, ...props }: BackgroundProps) {
   const [hx, hy] = FLOW_HUB
   // Inbound streams: spread across the left edge, bending into the hub.
-  const streams = React.useMemo(() => {
-    const random = seeded(23)
-    return Array.from({ length: 26 }, (_, i) => {
-      const y = hy - 520 + (i / 25) * 1040 + (random() - 0.5) * 30
-      const c1 = 380 + random() * 220
-      return {
-        d: `M-20 ${y.toFixed(0)} C ${c1.toFixed(0)} ${y.toFixed(0)}, ${(hx - 420).toFixed(0)} ${hy}, ${hx} ${hy}`,
-        pulse: i % 2 === 0,
-        speed: 0.7 + random() * 0.8,
-        delay: -random() * 30,
-        strong: i % 4 === 0,
-      }
-    })
-  }, [hx, hy])
+  const streams = flowStreams()
   // Outbound tree: trunk, three branches, each splitting in two.
   const trunkEnd = hx + 300
   const branchX = hx + 620
@@ -1342,24 +1368,27 @@ function wellLogTrace(
   return points.join(" ")
 }
 
+const wellLogGeometry = once(() => {
+  const cx = SECTION_W / 2
+  const random = seeded(31)
+  // Bedding planes from just below the surface to the bottom of the section.
+  const planes: Plane[] = []
+  let y = WELL_SURFACE + 50
+  while (y < SECTION_H + 60) {
+    planes.push({ y, wave: beddingPlane(random, 10 + random() * 22) })
+    y += 56 + random() * 90
+  }
+  const tracks = WELL_TRACKS.map((offset) => ({
+    x: cx + offset,
+    d: wellLogTrace(random, cx + offset, WELL_SURFACE, SECTION_H, 15),
+  }))
+  return { ...sectionPaths(planes, 16), tracks }
+})
+
 function WellLogBackground({ className, ...props }: BackgroundProps) {
   const id = React.useId()
   const cx = SECTION_W / 2
-  const { lines, layers, tracks } = React.useMemo(() => {
-    const random = seeded(31)
-    // Bedding planes from just below the surface to the bottom of the section.
-    const planes: Plane[] = []
-    let y = WELL_SURFACE + 50
-    while (y < SECTION_H + 60) {
-      planes.push({ y, wave: beddingPlane(random, 10 + random() * 22) })
-      y += 56 + random() * 90
-    }
-    const tracks = WELL_TRACKS.map((offset) => ({
-      x: cx + offset,
-      d: wellLogTrace(random, cx + offset, WELL_SURFACE, SECTION_H, 15),
-    }))
-    return { ...sectionPaths(planes, 16), tracks }
-  }, [cx])
+  const { lines, layers, tracks } = wellLogGeometry()
   // Fill of every fourth layer: plain, soft, plain, dotted.
   const fills = ["none", "var(--bg-ink-soft)", "none", `url(#${id}-dots)`]
   return (
@@ -1627,6 +1656,20 @@ function HexTile({
   )
 }
 
+const hexagonsLit = once(() => {
+  const random = seeded(41)
+  return Array.from({ length: 36 }, () => {
+    const row = Math.floor(random() * 24)
+    const col = Math.floor(random() * 44)
+    return {
+      x: col * HEX_W + (row % 2 ? HEX_W / 2 : 0),
+      y: row * HEX_H,
+      duration: 5 + random() * 7,
+      delay: -random() * 30,
+    }
+  })
+})
+
 function HexagonsBackground({
   className,
   interactive = false,
@@ -1640,19 +1683,7 @@ function HexagonsBackground({
   // One tile holds two rows (the second offset by half a cell), so it repeats.
   const tileW = HEX_W
   const tileH = HEX_H * 2
-  const lit = React.useMemo(() => {
-    const random = seeded(41)
-    return Array.from({ length: 36 }, () => {
-      const row = Math.floor(random() * 24)
-      const col = Math.floor(random() * 44)
-      return {
-        x: col * HEX_W + (row % 2 ? HEX_W / 2 : 0),
-        y: row * HEX_H,
-        duration: 5 + random() * 7,
-        delay: -random() * 30,
-      }
-    })
-  }, [])
+  const lit = hexagonsLit()
   return (
     <Background data-effect="hexagons" className={className} {...props}>
       <div ref={ref} className="absolute inset-0">
@@ -1765,6 +1796,11 @@ const TERRAIN_H = 900
 const TERRAIN_HORIZON = 300
 const TERRAIN_FOCAL = 720
 const TERRAIN_EYE = 2
+/**
+ * Depth past which a surface node is dimmed. The nodes sit on the 18 nearest
+ * depth rows, d = 2 to about 5.2, so this dims the back half of them.
+ */
+const TERRAIN_FAR_NODE = 3.5
 
 function terrainHeight(x: number, d: number) {
   return (
@@ -1808,6 +1844,34 @@ function TerrainLines({
   )
 }
 
+const terrainGeometry = once(() => {
+  const columns = Array.from({ length: 67 }, (_, i) => -9.9 + i * 0.3)
+  // Depth rows spaced geometrically so they look evenly spaced on screen.
+  const depths = Array.from(
+    { length: 44 },
+    (_, i) => 2 * Math.pow(22 / 2, i / 43)
+  )
+  const line = (points: (readonly [number, number])[]) =>
+    points
+      .map(
+        ([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(0)} ${y.toFixed(0)}`
+      )
+      .join("")
+  const rows = depths.map((d) => line(columns.map((x) => terrainProject(x, d))))
+  const cols = columns.map((x) => line(depths.map((d) => terrainProject(x, d))))
+  const nodes = depths
+    .slice(0, 18)
+    .flatMap((d, j) =>
+      columns
+        .filter((_, i) => (i + j) % 4 === 0)
+        .map((x) => ({ p: terrainProject(x, d), r: 0.8 + 3.2 / d, d }))
+    )
+    .filter(
+      ({ p }) => p[0] > -40 && p[0] < TERRAIN_W + 40 && p[1] < TERRAIN_H + 40
+    )
+  return { rows, cols, nodes }
+})
+
 function TerrainGridBackground({
   className,
   interactive = false,
@@ -1818,37 +1882,7 @@ function TerrainGridBackground({
 }) {
   const id = React.useId()
   const ref = usePointerReveal(interactive)
-  const { rows, cols, nodes } = React.useMemo(() => {
-    const columns = Array.from({ length: 67 }, (_, i) => -9.9 + i * 0.3)
-    // Depth rows spaced geometrically so they look evenly spaced on screen.
-    const depths = Array.from(
-      { length: 44 },
-      (_, i) => 2 * Math.pow(22 / 2, i / 43)
-    )
-    const line = (points: (readonly [number, number])[]) =>
-      points
-        .map(
-          ([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(0)} ${y.toFixed(0)}`
-        )
-        .join("")
-    const rows = depths.map((d) =>
-      line(columns.map((x) => terrainProject(x, d)))
-    )
-    const cols = columns.map((x) =>
-      line(depths.map((d) => terrainProject(x, d)))
-    )
-    const nodes = depths
-      .slice(0, 18)
-      .flatMap((d, j) =>
-        columns
-          .filter((_, i) => (i + j) % 4 === 0)
-          .map((x) => ({ p: terrainProject(x, d), r: 0.8 + 3.2 / d, d }))
-      )
-      .filter(
-        ({ p }) => p[0] > -40 && p[0] < TERRAIN_W + 40 && p[1] < TERRAIN_H + 40
-      )
-    return { rows, cols, nodes }
-  }, [])
+  const { rows, cols, nodes } = terrainGeometry()
   return (
     <Background data-effect="terrain-grid" className={className} {...props}>
       <div ref={ref} className="absolute inset-0">
@@ -1904,10 +1938,12 @@ function TerrainGridBackground({
                 cx={p[0].toFixed(0)}
                 cy={p[1].toFixed(0)}
                 r={r.toFixed(1)}
+                // Far nodes are dimmed through fill-opacity: the pulse
+                // animates `opacity` and would override a dimmed opacity.
+                fillOpacity={d > TERRAIN_FAR_NODE ? 0.5 : undefined}
                 style={{
                   animation: `tecton-bg-pulse ${(4 + (i % 5)).toFixed(0)}s ease-in-out infinite`,
                   animationDelay: `${(-(i * 0.7) % 9).toFixed(1)}s`,
-                  opacity: d > 6 ? 0.5 : 1,
                 }}
               />
             ))}

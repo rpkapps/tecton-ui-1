@@ -120,7 +120,7 @@ function AppFinderTrigger({
         ariaLabel ?? (name ? `Switch application, current: ${name}` : undefined)
       }
       className={cn(
-        "h-8 gap-1.5 rounded-lg pr-1.5 pl-1 font-medium",
+        "h-8 gap-1.5 rounded-lg ps-1 pe-1.5 font-medium",
         className
       )}
       {...props}
@@ -362,7 +362,7 @@ function AppFinderItem({
       {isCurrent ? (
         <span
           data-slot="app-finder-item-current"
-          className="ml-auto inline-flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground"
+          className="ms-auto inline-flex shrink-0 items-center gap-1 text-[11px] text-muted-foreground"
         >
           Current
           <CheckIcon className="size-4 text-primary" aria-hidden />
