@@ -20,8 +20,8 @@ export function PaginationIconsOnly() {
   return (
     <div className="flex items-center justify-between gap-4">
       <Field orientation="horizontal" className="w-fit">
-        <FieldLabel htmlFor="select-rows-per-page">Rows per page</FieldLabel>
-        <Select defaultValue="25">
+        <FieldLabel id="select-rows-per-page-label" htmlFor="select-rows-per-page">Rows per page</FieldLabel>
+        <Select aria-labelledby="select-rows-per-page-label" defaultValue="25">
           <SelectTrigger className="w-20" id="select-rows-per-page">
             <SelectValue />
           </SelectTrigger>

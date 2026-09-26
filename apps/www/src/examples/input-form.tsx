@@ -47,8 +47,8 @@ export function InputForm() {
             <Input id="form-phone" type="tel" placeholder="+1 (555) 123-4567" />
           </Field>
           <Field>
-            <FieldLabel htmlFor="form-country">Country</FieldLabel>
-            <Select defaultValue="us">
+            <FieldLabel id="form-country-label" htmlFor="form-country">Country</FieldLabel>
+            <Select aria-labelledby="form-country-label" defaultValue="us">
               <SelectTrigger id="form-country">
                 <SelectValue />
               </SelectTrigger>

@@ -196,10 +196,10 @@ export function FieldRtl() {
               </Field>
               <div className="grid grid-cols-3 gap-4">
                 <Field>
-                  <FieldLabel htmlFor="checkout-exp-month-ts6-rtl">
+                  <FieldLabel id="checkout-exp-month-ts6-rtl-label" htmlFor="checkout-exp-month-ts6-rtl">
                     {t.month}
                   </FieldLabel>
-                  <Select placeholder="MM">
+                  <Select aria-labelledby="checkout-exp-month-ts6-rtl-label" placeholder="MM">
                     <SelectTrigger id="checkout-exp-month-ts6-rtl">
                       <SelectValue />
                     </SelectTrigger>
@@ -215,10 +215,10 @@ export function FieldRtl() {
                   </Select>
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="checkout-7j9-exp-year-f59-rtl">
+                  <FieldLabel id="checkout-7j9-exp-year-f59-rtl-label" htmlFor="checkout-7j9-exp-year-f59-rtl">
                     {t.year}
                   </FieldLabel>
-                  <Select placeholder="YYYY">
+                  <Select aria-labelledby="checkout-7j9-exp-year-f59-rtl-label" placeholder="YYYY">
                     <SelectTrigger id="checkout-7j9-exp-year-f59-rtl">
                       <SelectValue />
                     </SelectTrigger>

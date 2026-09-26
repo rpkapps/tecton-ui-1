@@ -99,6 +99,12 @@ To explain a disabled control, wrap it: `<span className="inline-block w-fit"><B
 
 </Do>
 
+<Do>
+
+A trigger that is not a control (a `Badge`, a term) needs focus and a role, or React Aria's `Focusable` warns and keyboard users never open it: `<Badge render={(props) => <span {...props} tabIndex={0} role="img" aria-label="TVD" />}>TVD</Badge>`.
+
+</Do>
+
 </DoList>
 
 ### Don't

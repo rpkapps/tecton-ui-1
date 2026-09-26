@@ -81,10 +81,10 @@ export default function FieldDemo() {
               </Field>
               <div className="grid grid-cols-3 gap-4">
                 <Field>
-                  <FieldLabel htmlFor="checkout-exp-month-ts6">
+                  <FieldLabel id="checkout-exp-month-ts6-label" htmlFor="checkout-exp-month-ts6">
                     Month
                   </FieldLabel>
-                  <Select placeholder="MM">
+                  <Select aria-labelledby="checkout-exp-month-ts6-label" placeholder="MM">
                     <SelectTrigger id="checkout-exp-month-ts6">
                       <SelectValue />
                     </SelectTrigger>
@@ -100,10 +100,10 @@ export default function FieldDemo() {
                   </Select>
                 </Field>
                 <Field>
-                  <FieldLabel htmlFor="checkout-7j9-exp-year-f59">
+                  <FieldLabel id="checkout-7j9-exp-year-f59-label" htmlFor="checkout-7j9-exp-year-f59">
                     Year
                   </FieldLabel>
-                  <Select placeholder="YYYY">
+                  <Select aria-labelledby="checkout-7j9-exp-year-f59-label" placeholder="YYYY">
                     <SelectTrigger id="checkout-7j9-exp-year-f59">
                       <SelectValue />
                     </SelectTrigger>

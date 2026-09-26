@@ -28,7 +28,7 @@ export function BreadcrumbSeparatorDemo() {
 
         <BreadcrumbItem>
           <BreadcrumbLink
-            href="/components"
+            href="/docs/components"
             render={(props) =>
               "href" in props ? <Link {...props} /> : <span {...props} />
             }

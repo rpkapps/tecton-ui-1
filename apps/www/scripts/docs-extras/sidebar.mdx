@@ -9,7 +9,7 @@ Two props on `SidebarProvider` make a provider self-contained:
 | `cookieName` | `string \| false` | `"sidebar_state"` | Cookie the open state is persisted in. `false` writes no cookie at all. |
 | `keyboardShortcut` | `string \| false` | `"b"` | Key used with ⌘ / Ctrl to toggle the sidebar. `false` registers no `keydown` listener. |
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <SidebarProvider cookieName="mfe_a_sidebar" keyboardShortcut={false}>
   <Sidebar />
 </SidebarProvider>

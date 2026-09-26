@@ -179,6 +179,14 @@ function replaceEachOrThrow(
 
 // Per-example source fixes for upstream demos that assume the vega look.
 const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
+  // Upstream's docs site serves its components at /components; ours at /docs/components.
+  "breadcrumb-separator": (code) =>
+    replaceOrThrow(
+      code,
+      'href="/components"',
+      'href="/docs/components"',
+      "breadcrumb-separator"
+    ),
   // The Tecton trigger paints a hover / expanded surface. Upstream pads the
   // item, which insets that surface while the item dividers still run to the
   // border; padding the trigger and content instead keeps the surface as wide
@@ -509,7 +517,9 @@ function rewriteSelectLabels(code: string, exampleName: string): string {
   visit(file)
 
   const labelIdFor = (id: string) =>
-    id.startsWith('"') ? `"${id.slice(1, -1)}-label"` : `{\`\${${id.slice(1, -1)}}-label\`}`
+    id.startsWith('"')
+      ? `"${id.slice(1, -1)}-label"`
+      : `{\`\${${id.slice(1, -1)}}-label\`}`
   const edits: { at: number; text: string }[] = []
   for (const { opening, triggerId } of selects) {
     if (!triggerId) continue
@@ -1229,6 +1239,17 @@ async function main() {
       2
     ) + "\n"
   )
+  // copy the upstream avatars the synced examples point at
+  for (const code of examples.values()) {
+    for (const [, avatar] of code.matchAll(/["'`]\/avatars\/([^"'`]+)["'`]/g)) {
+      const from = path.join(V4, "public/avatars", avatar)
+      if (!(await exists(from)))
+        throw new Error(
+          `an example points at /avatars/${avatar}, which upstream does not ship`
+        )
+      imageCopies.set(path.join(WWW, "public/avatars", avatar), from)
+    }
+  }
   for (const [folder, { title }] of Object.entries(EXTRA_FOLDERS)) {
     outputs.set(
       path.join(DOCS, folder, "meta.json"),
