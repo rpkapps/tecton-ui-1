@@ -4,18 +4,42 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it } from "vitest"
 
 import { Button } from "@tecton/react/components/button"
-import { Dialog, DialogTrigger } from "@tecton/react/components/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@tecton/react/components/dialog"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
-import { Popover, PopoverTrigger } from "@tecton/react/components/popover"
-import { PortalProvider } from "@tecton/react/tecton/portal"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@tecton/react/components/popover"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@tecton/react/components/select"
+import {
+  Sheet,
+  SheetContent,
+  SheetTitle,
+  SheetTrigger,
+} from "@tecton/react/components/sheet"
+import { TectonProvider } from "@tecton/react/tecton/provider"
 
-// A caller's own `UNSTABLE_portalContainer` must win over the Tecton portal
-// target on every React Aria overlay, with or without a PortalProvider: the
-// overlay patch forwards `UNSTABLE_portalContainer ?? portalTarget`.
+// Every overlay takes a caller's `container` on its content part and forwards
+// `container ?? portalTarget` to its Base UI Portal (the overlay patch): the
+// caller's container wins, with or without a provider, and the provider's
+// `portalContainer` is used when the caller passes none.
 
 const containers: HTMLElement[] = []
 
@@ -33,91 +57,139 @@ afterEach(() => {
 
 function withProvider(provider: HTMLElement | undefined, ui: React.ReactNode) {
   return provider ? (
-    <PortalProvider container={provider}>{ui}</PortalProvider>
+    <TectonProvider portalContainer={provider}>{ui}</TectonProvider>
   ) : (
     ui
   )
 }
 
+type OverlayCase = {
+  name: string
+  ui: (container: HTMLElement | undefined) => React.ReactNode
+  /** Opens the overlay and resolves with its popup element. */
+  open: () => Promise<HTMLElement>
+}
+
+async function clickOpen() {
+  await userEvent.click(screen.getByRole("button", { name: "Open" }))
+}
+
+const overlays: OverlayCase[] = [
+  {
+    name: "Popover",
+    ui: (container) => (
+      <Popover>
+        <PopoverTrigger render={<Button />}>Open</PopoverTrigger>
+        <PopoverContent container={container}>
+          <p>Popover body</p>
+        </PopoverContent>
+      </Popover>
+    ),
+    open: async () => {
+      await clickOpen()
+      return screen.findByText("Popover body")
+    },
+  },
+  {
+    name: "Dialog",
+    ui: (container) => (
+      <Dialog>
+        <DialogTrigger render={<Button />}>Open</DialogTrigger>
+        <DialogContent container={container}>
+          <DialogTitle>Dialog title</DialogTitle>
+        </DialogContent>
+      </Dialog>
+    ),
+    open: async () => {
+      await clickOpen()
+      return screen.findByRole("dialog")
+    },
+  },
+  {
+    name: "Sheet",
+    ui: (container) => (
+      <Sheet>
+        <SheetTrigger render={<Button />}>Open</SheetTrigger>
+        <SheetContent container={container}>
+          <SheetTitle>Sheet title</SheetTitle>
+        </SheetContent>
+      </Sheet>
+    ),
+    open: async () => {
+      await clickOpen()
+      return screen.findByRole("dialog")
+    },
+  },
+  {
+    name: "DropdownMenu",
+    ui: (container) => (
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<Button />}>Open</DropdownMenuTrigger>
+        <DropdownMenuContent container={container}>
+          <DropdownMenuItem>Item</DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    ),
+    open: async () => {
+      await clickOpen()
+      return screen.findByRole("menu")
+    },
+  },
+  {
+    name: "Select",
+    ui: (container) => (
+      <Select>
+        <SelectTrigger aria-label="Well">
+          <SelectValue placeholder="Pick a well" />
+        </SelectTrigger>
+        <SelectContent container={container}>
+          <SelectItem value="a">Alpha</SelectItem>
+          <SelectItem value="b">Bravo</SelectItem>
+        </SelectContent>
+      </Select>
+    ),
+    open: async () => {
+      await userEvent.click(screen.getByRole("combobox", { name: "Well" }))
+      return screen.findByRole("listbox")
+    },
+  },
+]
+
 describe.each([
-  { name: "without a PortalProvider", hasProvider: false },
-  { name: "inside a PortalProvider", hasProvider: true },
-])("a caller's UNSTABLE_portalContainer $name", ({ hasProvider }) => {
-  it("portals a Popover into the caller's container", async () => {
-    const provider = hasProvider ? makeContainer("provider") : undefined
-    const own = makeContainer("own")
-    render(
-      withProvider(
-        provider,
-        <PopoverTrigger>
-          <Button>Open</Button>
-          <Popover UNSTABLE_portalContainer={own}>
-            <p>Popover body</p>
-          </Popover>
-        </PopoverTrigger>
-      )
-    )
-    await userEvent.click(screen.getByRole("button", { name: "Open" }))
-    const body = await screen.findByText("Popover body")
-    expect(own).toContainElement(body)
-    if (provider) expect(provider).not.toContainElement(body)
-  })
-
-  it("portals a Dialog into the caller's container", async () => {
-    const provider = hasProvider ? makeContainer("provider") : undefined
-    const own = makeContainer("own")
-    render(
-      withProvider(
-        provider,
-        <DialogTrigger>
-          <Button>Open</Button>
-          <Dialog UNSTABLE_portalContainer={own}>
-            <p>Dialog body</p>
-          </Dialog>
-        </DialogTrigger>
-      )
-    )
-    await userEvent.click(screen.getByRole("button", { name: "Open" }))
-    const dialog = await screen.findByRole("dialog")
-    expect(own).toContainElement(dialog)
-    if (provider) expect(provider).not.toContainElement(dialog)
-  })
-
-  it("portals a DropdownMenu into the caller's container", async () => {
-    const provider = hasProvider ? makeContainer("provider") : undefined
-    const own = makeContainer("own")
-    render(
-      withProvider(
-        provider,
-        <DropdownMenuTrigger>
-          <Button>Open</Button>
-          <DropdownMenu UNSTABLE_portalContainer={own}>
-            <DropdownMenuItem>Item</DropdownMenuItem>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
-      )
-    )
-    await userEvent.click(screen.getByRole("button", { name: "Open" }))
-    const menu = await screen.findByRole("menu")
-    expect(own).toContainElement(menu)
-    if (provider) expect(provider).not.toContainElement(menu)
-  })
+  { name: "without a provider", hasProvider: false },
+  { name: "inside a TectonProvider portalContainer", hasProvider: true },
+])("a caller's container $name", ({ hasProvider }) => {
+  it.each(overlays)(
+    "portals a $name into the caller's container",
+    async (overlay) => {
+      const provider = hasProvider ? makeContainer("provider") : undefined
+      const own = makeContainer("own")
+      render(withProvider(provider, overlay.ui(own)))
+      const popup = await overlay.open()
+      expect(own).toContainElement(popup)
+      if (provider) expect(provider).not.toContainElement(popup)
+    }
+  )
 })
 
 describe("without a caller container", () => {
-  it("still portals a Popover into the PortalProvider's container", async () => {
-    const provider = makeContainer("provider")
-    render(
-      <PortalProvider container={provider}>
-        <PopoverTrigger>
-          <Button>Open</Button>
-          <Popover>
-            <p>Popover body</p>
-          </Popover>
-        </PopoverTrigger>
-      </PortalProvider>
-    )
-    await userEvent.click(screen.getByRole("button", { name: "Open" }))
-    expect(provider).toContainElement(await screen.findByText("Popover body"))
-  })
+  it.each(overlays)(
+    "portals a $name into the TectonProvider's portalContainer",
+    async (overlay) => {
+      const provider = makeContainer("provider")
+      render(withProvider(provider, overlay.ui(undefined)))
+      expect(provider).toContainElement(await overlay.open())
+    }
+  )
+
+  it.each(overlays)(
+    "portals a $name into document.body with no provider",
+    async (overlay) => {
+      const unrelated = makeContainer("unrelated")
+      render(overlay.ui(undefined))
+      const popup = await overlay.open()
+      expect(document.body).toContainElement(popup)
+      expect(unrelated).not.toContainElement(popup)
+    }
+  )
 })

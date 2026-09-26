@@ -24,7 +24,7 @@ overlay in `scripts/registry-mirror/overlay/`, and is built for the `base` base 
 | File | What it is |
 | --- | --- |
 | `style-tecton.css` | Copy of `style-vega.css` with the Tecton deviations: solid 2px focus ring (`ring-2 ring-ring`), flat controls (no `shadow-xs`), buttons that lighten on hover / press, and the class lists of the extra variants below. The shared `cn-*` classes key on Base UI state (`:active` for a press — Base UI's Button sets no press attribute —, `data-active` on a tab, `has-focus-visible` on the slider thumb, whose focus is on the hidden input); the `cn-*-aria` classes stay as in vega and are unused |
-| `tecton.patch` | Registers the style in `registry/styles.tsx` and patches `registry/bases/base/ui/*` (see "Overlay hunks" below): the Tecton portal target on every overlay; variant axes on `alert` (`variant` success/warning/info + `appearance` default/outline/filled), `badge` (`variant` success/warning/info + `appearance` solid/outline + `size` default/md/lg), `separator` (`emphasis` subtle/default/strong), `input` / `textarea` / `select` trigger (`variant` outline/filled/text, `cva`s exported as `inputVariants`, `textareaVariants`, `selectTriggerVariants`); hard-coded colours stripped from `tabs` and `toggle` so the style file sets the Tecton ones; logical corners on `button-group`; outlined status colours on `sonner`; and `cva`s where the build would otherwise leave a `cn-*` class raw (`input-otp`, `calendar`) |
+| `tecton.patch` | Registers the style in `registry/styles.tsx` and patches `registry/bases/base/ui/*` (see "Overlay hunks" below): the Tecton portal target on every overlay, with a caller's `container` on every content part (`DialogContent`, `AlertDialogContent`, `SheetContent`, `DrawerContent`, `PopoverContent`, …) winning; variant axes on `alert` (`variant` success/warning/info + `appearance` default/outline/filled), `badge` (`variant` success/warning/info + `appearance` solid/outline + `size` default/md/lg), `separator` (`emphasis` subtle/default/strong), `input` / `textarea` / `select` trigger (`variant` outline/filled/text, `cva`s exported as `inputVariants`, `textareaVariants`, `selectTriggerVariants`); hard-coded colours stripped from `tabs` and `toggle` so the style file sets the Tecton ones; logical corners on `button-group`; outlined status colours on `sonner`; and `cva`s where the build would otherwise leave a `cn-*` class raw (`input-otp`, `calendar`) |
 
 `scripts/registry-mirror.sh build` re-applies the overlay (`git apply --3way`) and builds only
 `base-tecton` (`SHADCN_STYLE` overrides it). The files the overlay touches are derived, not listed in the script: before
@@ -234,10 +234,12 @@ The hunks in `tecton.patch`, all on `apps/v4/registry/bases/base/ui/*`:
   `usePortalTarget()` (`@tecton/react/tecton/portal`, `HTMLElement | undefined`), passed to Base
   UI's `container` as `container ?? portalTarget`, so a container the caller passes wins. The
   `*Portal` wrappers take it (`DialogPortal`, `AlertDialogPortal`, `SheetPortal`, `DrawerPortal`,
-  `DropdownMenuPortal`, `ContextMenuPortal`), and the content parts that render their own Portal gain
-  an optional `container` prop (`PopoverContent`, `TooltipContent`, `HoverCardContent`,
-  `SelectContent`, `ComboboxContent`, `DropdownMenuContent`, `ContextMenuContent`, and through them
-  the `*SubContent` parts). `usePortalTarget()` is never `null`, which Base UI reads as "wait, render
+  `DropdownMenuPortal`, `ContextMenuPortal`), and every content part gains an optional `container`
+  prop: `DialogContent`, `AlertDialogContent`, `SheetContent` and `DrawerContent` forward it to their
+  `*Portal` wrapper; `PopoverContent`, `TooltipContent`, `HoverCardContent`, `SelectContent`,
+  `ComboboxContent`, `DropdownMenuContent` and `ContextMenuContent` (and through them the
+  `*SubContent` parts) to the Portal they render. Covered by
+  `packages/tecton-react/src/tecton/__tests__/overlay-portal-container.test.tsx`. `usePortalTarget()` is never `null`, which Base UI reads as "wait, render
   nothing". Submenus need no special case: a submenu with the target set portals into the target
   next to its parent, and Base UI's floating tree keeps the pair one menu.
 - **Variant axes** — `alert`, `badge` (`appearance` and `size` go into `useRender`'s `state`, so they

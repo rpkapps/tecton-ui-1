@@ -1,5 +1,5 @@
 diff --git a/apps/v4/registry/bases/base/ui/alert-dialog.tsx b/apps/v4/registry/bases/base/ui/alert-dialog.tsx
-index ab1dc757..336f9b1e 100644
+index ab1dc757..7c0026f7 100644
 --- a/apps/v4/registry/bases/base/ui/alert-dialog.tsx
 +++ b/apps/v4/registry/bases/base/ui/alert-dialog.tsx
 @@ -2,6 +2,7 @@
@@ -31,6 +31,25 @@ index ab1dc757..336f9b1e 100644
    )
  }
  
+@@ -41,12 +51,14 @@ function AlertDialogOverlay({
+ function AlertDialogContent({
+   className,
+   size = "default",
++  container,
+   ...props
+-}: AlertDialogPrimitive.Popup.Props & {
+-  size?: "default" | "sm"
+-}) {
++}: AlertDialogPrimitive.Popup.Props &
++  Pick<AlertDialogPrimitive.Portal.Props, "container"> & {
++    size?: "default" | "sm"
++  }) {
+   return (
+-    <AlertDialogPortal>
++    <AlertDialogPortal container={container}>
+       <AlertDialogOverlay />
+       <AlertDialogPrimitive.Popup
+         data-slot="alert-dialog-content"
 diff --git a/apps/v4/registry/bases/base/ui/alert.tsx b/apps/v4/registry/bases/base/ui/alert.tsx
 index e9aa02f3..62d20980 100644
 --- a/apps/v4/registry/bases/base/ui/alert.tsx
@@ -305,7 +324,7 @@ index 3fc2b82c..e65dbf36 100644
          className="isolate z-50 outline-none"
          align={align}
 diff --git a/apps/v4/registry/bases/base/ui/dialog.tsx b/apps/v4/registry/bases/base/ui/dialog.tsx
-index 8c68524a..e4285238 100644
+index 8c68524a..e9b34576 100644
 --- a/apps/v4/registry/bases/base/ui/dialog.tsx
 +++ b/apps/v4/registry/bases/base/ui/dialog.tsx
 @@ -2,6 +2,7 @@
@@ -335,8 +354,27 @@ index 8c68524a..e4285238 100644
  }
  
  function DialogClose({ ...props }: DialogPrimitive.Close.Props) {
+@@ -40,12 +49,14 @@ function DialogContent({
+   className,
+   children,
+   showCloseButton = true,
++  container,
+   ...props
+-}: DialogPrimitive.Popup.Props & {
+-  showCloseButton?: boolean
+-}) {
++}: DialogPrimitive.Popup.Props &
++  Pick<DialogPrimitive.Portal.Props, "container"> & {
++    showCloseButton?: boolean
++  }) {
+   return (
+-    <DialogPortal>
++    <DialogPortal container={container}>
+       <DialogOverlay />
+       <DialogPrimitive.Popup
+         data-slot="dialog-content"
 diff --git a/apps/v4/registry/bases/base/ui/drawer.tsx b/apps/v4/registry/bases/base/ui/drawer.tsx
-index bebe3a91..285d07e8 100644
+index bebe3a91..48858143 100644
 --- a/apps/v4/registry/bases/base/ui/drawer.tsx
 +++ b/apps/v4/registry/bases/base/ui/drawer.tsx
 @@ -2,6 +2,7 @@
@@ -366,6 +404,25 @@ index bebe3a91..285d07e8 100644
  }
  
  function DrawerClose({ ...props }: DrawerPrimitive.Close.Props) {
+@@ -99,14 +108,16 @@ function DrawerSwipeHandle({
+ function DrawerContent({
+   className,
+   children,
++  container,
+   ...props
+-}: DrawerPrimitive.Popup.Props) {
++}: DrawerPrimitive.Popup.Props &
++  Pick<DrawerPrimitive.Portal.Props, "container">) {
+   const { hasSnapPoints, modal, showSwipeHandle, swipeDirection } = useDrawer()
+   const swipeAxis =
+     swipeDirection === "down" || swipeDirection === "up" ? "y" : "x"
+ 
+   return (
+-    <DrawerPortal data-slot="drawer-portal">
++    <DrawerPortal data-slot="drawer-portal" container={container}>
+       {modal === true && (
+         <DrawerOverlay data-snap-points={hasSnapPoints ? "" : undefined} />
+       )}
 diff --git a/apps/v4/registry/bases/base/ui/dropdown-menu.tsx b/apps/v4/registry/bases/base/ui/dropdown-menu.tsx
 index 4c4543e2..74e2002d 100644
 --- a/apps/v4/registry/bases/base/ui/dropdown-menu.tsx
@@ -709,7 +766,7 @@ index d69c1342..33479f81 100644
 -export { Separator }
 +export { Separator, separatorVariants }
 diff --git a/apps/v4/registry/bases/base/ui/sheet.tsx b/apps/v4/registry/bases/base/ui/sheet.tsx
-index 72669ad9..015bd2cb 100644
+index 72669ad9..80cacd1d 100644
 --- a/apps/v4/registry/bases/base/ui/sheet.tsx
 +++ b/apps/v4/registry/bases/base/ui/sheet.tsx
 @@ -2,6 +2,7 @@
@@ -739,6 +796,27 @@ index 72669ad9..015bd2cb 100644
  }
  
  function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
+@@ -41,13 +50,15 @@ function SheetContent({
+   children,
+   side = "right",
+   showCloseButton = true,
++  container,
+   ...props
+-}: SheetPrimitive.Popup.Props & {
+-  side?: "top" | "right" | "bottom" | "left"
+-  showCloseButton?: boolean
+-}) {
++}: SheetPrimitive.Popup.Props &
++  Pick<SheetPrimitive.Portal.Props, "container"> & {
++    side?: "top" | "right" | "bottom" | "left"
++    showCloseButton?: boolean
++  }) {
+   return (
+-    <SheetPortal>
++    <SheetPortal container={container}>
+       <SheetOverlay />
+       <SheetPrimitive.Popup
+         data-slot="sheet-content"
 diff --git a/apps/v4/registry/bases/base/ui/sidebar.tsx b/apps/v4/registry/bases/base/ui/sidebar.tsx
 index 1ca33564..bdf5ceaf 100644
 --- a/apps/v4/registry/bases/base/ui/sidebar.tsx
