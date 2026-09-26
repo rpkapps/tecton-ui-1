@@ -87,6 +87,8 @@ type ComposerContextValue = {
   focus: () => void
   /** Whether `history` has an entry to load, for the hint. */
   hasHistory: boolean
+  /** Whether ArrowUp has taken the box into `history`, so ArrowDown can step forward. */
+  isBrowsingHistory: () => boolean
   /**
    * Loads the next older or newer entry of `history` into the box, with
    * `current` the box's text; the text loaded, or undefined when there is
@@ -103,10 +105,10 @@ type ComposerContextValue = {
    */
   historyEntry: string | undefined
   inputRef: React.RefObject<HTMLTextAreaElement | null>
-  hintId: string
-  /** Whether a `ComposerHint` is rendered, for the textarea's `aria-describedby`. */
-  hasHint: boolean
-  setHasHint: (hasHint: boolean) => void
+  /** The ids of the rendered `ComposerHint`s, for the textarea's `aria-describedby`. */
+  hintIds: readonly string[]
+  /** A `ComposerHint` mounts with `id`; returns the function that removes it. */
+  registerHint: (id: string) => () => void
   /** Counts the replies the user stopped, so the status says so each time. */
   stopCount: number
   /** The open command list's keys, asked before the textarea's own; true when it took the key. */
@@ -187,8 +189,16 @@ function Composer({
   const [uncontrolled, setUncontrolled] = React.useState(defaultValue)
   const value = valueProp ?? uncontrolled
   const inputRef = React.useRef<HTMLTextAreaElement | null>(null)
-  const hintId = React.useId()
-  const [hasHint, setHasHint] = React.useState(false)
+  const [hintIds, setHintIds] = React.useState<readonly string[]>([])
+  // Counted, not a flag: with two hints, one unmounting leaves the other.
+  const registerHint = React.useCallback((id: string) => {
+    setHintIds((ids) => [...ids, id])
+    return () =>
+      setHintIds((ids) => {
+        const index = ids.indexOf(id)
+        return index === -1 ? ids : ids.filter((_, at) => at !== index)
+      })
+  }, [])
   const [stopCount, setStopCount] = React.useState(0)
   const commandKeys = React.useRef<
     ((event: React.KeyboardEvent<HTMLTextAreaElement>) => boolean) | null
@@ -199,7 +209,9 @@ function Composer({
   const recent = React.useMemo(() => {
     const entries = history ?? []
     if (historyLimit === undefined) return entries
-    return historyLimit > 0 ? entries.slice(-Math.floor(historyLimit)) : []
+    // Floored first: `slice(-0)` would be the whole history.
+    const limit = Math.floor(historyLimit)
+    return limit > 0 ? entries.slice(-limit) : []
   }, [history, historyLimit])
   const historyPosition = React.useRef<ComposerHistoryPosition | null>(null)
   const [historyEntry, setHistoryEntry] = React.useState<string>()
@@ -245,6 +257,10 @@ function Composer({
   )
 
   const hasHistory = recent.some((entry) => entry.trim() !== "")
+  const isBrowsingHistory = React.useCallback(
+    () => historyPosition.current !== null,
+    []
+  )
 
   const stepHistory = React.useCallback(
     (direction: "older" | "newer", current: string): string | undefined => {
@@ -341,12 +357,12 @@ function Composer({
       stop,
       focus,
       hasHistory,
+      isBrowsingHistory,
       historyEntry,
       stepHistory,
       inputRef,
-      hintId,
-      hasHint,
-      setHasHint,
+      hintIds,
+      registerHint,
       stopCount,
       commandKeys,
       commandList,
@@ -366,10 +382,11 @@ function Composer({
       stop,
       focus,
       hasHistory,
+      isBrowsingHistory,
       historyEntry,
       stepHistory,
-      hintId,
-      hasHint,
+      hintIds,
+      registerHint,
       stopCount,
       commandList,
     ]
@@ -494,7 +511,13 @@ function caretOnEdgeLine(
   copy.append(value.slice(next))
   const end = mark()
   document.body.appendChild(copy)
-  const onEdge = caret.offsetTop === (edge === "first" ? start : end).offsetTop
+  // Same line within half a line: a glyph from a fallback font can sit a
+  // pixel or two off the line's other marks.
+  const lineHeight =
+    parseFloat(style.lineHeight) || parseFloat(style.fontSize) * 1.2 || 16
+  const onEdge =
+    Math.abs(caret.offsetTop - (edge === "first" ? start : end).offsetTop) <
+    lineHeight / 2
   copy.remove()
   return onEdge
 }
@@ -524,10 +547,11 @@ function ComposerInput({
     submit,
     stop,
     stepHistory,
+    hasHistory,
+    isBrowsingHistory,
     historyEntry,
     inputRef,
-    hintId,
-    hasHint,
+    hintIds,
     commandKeys,
     commandList,
   } = useComposerContext("ComposerInput")
@@ -547,7 +571,7 @@ function ComposerInput({
   // browser without it (Firefox) would keep one line, so there the height
   // follows the text's scroll height instead; `max-h-48` still caps it and
   // the rest scrolls.
-  React.useLayoutEffect(() => {
+  const fitHeight = React.useCallback(() => {
     const node = inputRef.current
     if (node === null || supportsFieldSizing()) return
     node.style.height = "auto"
@@ -559,7 +583,28 @@ function ComposerInput({
         ? px(style.borderTopWidth) + px(style.borderBottomWidth)
         : -(px(style.paddingTop) + px(style.paddingBottom))
     node.style.height = `${node.scrollHeight + extra}px`
-  }, [value, inputRef])
+  }, [inputRef])
+  React.useLayoutEffect(fitHeight, [value, fitHeight])
+  // The text wraps again when the box gets narrower or wider (a resized
+  // panel, a sidebar that opens), with no change to the value.
+  React.useEffect(() => {
+    const node = inputRef.current
+    if (
+      node === null ||
+      supportsFieldSizing() ||
+      typeof ResizeObserver === "undefined"
+    )
+      return
+    let width = node.clientWidth
+    const observer = new ResizeObserver(() => {
+      // Only a new width: the height is ours, and setting it resizes too.
+      if (node.clientWidth === width) return
+      width = node.clientWidth
+      fitHeight()
+    })
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [inputRef, fitHeight])
 
   const setRef = React.useCallback(
     (node: HTMLTextAreaElement | null) => {
@@ -569,9 +614,7 @@ function ComposerInput({
     },
     [inputRef, ref]
   )
-  const describedBy = [hasHint ? hintId : undefined, ariaDescribedBy]
-    .filter(Boolean)
-    .join(" ")
+  const describedBy = [...hintIds, ariaDescribedBy].filter(Boolean).join(" ")
 
   // No `data-slot` of its own: the field draws its focus ring from the
   // textarea's `input-group-control` slot.
@@ -628,6 +671,9 @@ function ComposerInput({
           // as a terminal's history does.
           const node = event.currentTarget
           const older = event.key === "ArrowUp"
+          // Nothing to step to: leave the key to the caret without
+          // measuring where it is.
+          if (older ? !hasHistory : !isBrowsingHistory()) return
           const unedited =
             node.selectionStart === node.selectionEnd &&
             historyEntry === node.value
@@ -775,15 +821,16 @@ function ComposerSubmit({
 function ComposerHint({
   className,
   isVisible = true,
+  id: idProp,
   children,
   ...props
 }: React.ComponentProps<"p"> & { isVisible?: boolean }) {
-  const { hintId, setHasHint, submitMode, commandList, hasHistory } =
+  const { registerHint, submitMode, commandList, hasHistory } =
     useComposerContext("ComposerHint")
-  React.useLayoutEffect(() => {
-    setHasHint(true)
-    return () => setHasHint(false)
-  }, [setHasHint])
+  const generatedId = React.useId()
+  // A caller's id is the one the textarea points at.
+  const id = idProp ?? generatedId
+  React.useLayoutEffect(() => registerHint(id), [registerHint, id])
   // Either modifier sends; the hint names the one on the reader's keyboard.
   const isMac = useIsMacPlatform()
   const sendKeys =
@@ -812,13 +859,13 @@ function ComposerHint({
 
   return (
     <p
-      id={hintId}
       data-slot="composer-hint"
       className={cn(
         isVisible ? "px-1 text-xs text-muted-foreground" : "sr-only",
         className
       )}
       {...props}
+      id={id}
     >
       {children ?? (
         <>
@@ -1075,6 +1122,24 @@ function groupCommands(matches: readonly ComposerCommandItem[]) {
   return [...groups].map(([name, items]) => ({ name, items }))
 }
 
+/**
+ * The key a command has in the list. React Aria builds each option's DOM id
+ * from the key with its whitespace dropped, so `"a b"` and `"ab"` would
+ * share one; encoded, no two ids meet.
+ */
+function optionKey(item: ComposerCommandItem) {
+  return encodeURIComponent(item.id)
+}
+
+/** Development builds only; a consumer's bundler replaces `process.env.NODE_ENV`. */
+function isDevelopment() {
+  try {
+    return process.env.NODE_ENV !== "production"
+  } catch {
+    return false
+  }
+}
+
 function defaultCountMessage(count: number) {
   return `${count} ${count === 1 ? "command" : "commands"}, arrow keys to choose.`
 }
@@ -1119,6 +1184,9 @@ function ComposerCommands({
   const [active, setActive] = React.useState(0)
   const [dismissed, setDismissed] = React.useState<string>()
   const listRef = React.useRef<HTMLDivElement>(null)
+  // The rendered options by key: the textarea names the active one by the
+  // id React Aria gave it, read from the element rather than rebuilt.
+  const optionElements = React.useRef(new Map<string, HTMLElement>())
 
   // Escape closes the list for the text it was pressed on; any other text,
   // even the same `/word` typed again after a send, opens it again.
@@ -1142,34 +1210,69 @@ function ComposerCommands({
     // A prompt loaded from the history is browsed, not a command typed.
     historyEntry !== value
   const activeIndex = Math.min(active, Math.max(0, matches.length - 1))
-  const activeKey = open ? matches[activeIndex]?.id : undefined
+  const activeItem = open ? matches.at(activeIndex) : undefined
+  const activeKey = activeItem === undefined ? undefined : optionKey(activeItem)
 
   // A new query starts at the best match.
   React.useEffect(() => {
     setActive(0)
   }, [query])
 
+  // Once the options are rendered, the active one's id is on its element.
+  // Checked after every commit, but passed on only when it changed.
+  const sent = React.useRef<ComposerCommandListState>(undefined)
   React.useLayoutEffect(() => {
-    setCommandList({
-      listId,
-      open,
-      // React Aria's id for the option: the list's id, then the key without
-      // spaces. A test checks it names a rendered option, so a React Aria
-      // that changes the scheme fails there rather than in a screen reader.
-      activeId:
-        activeKey === undefined
-          ? undefined
-          : `${listId}-option-${activeKey.replace(/\s*/g, "")}`,
-    })
-  }, [listId, open, activeKey, setCommandList])
-  React.useLayoutEffect(() => () => setCommandList(undefined), [setCommandList])
+    const element =
+      activeKey === undefined
+        ? undefined
+        : optionElements.current.get(activeKey)
+    const next = { listId, open, activeId: element?.id || undefined }
+    const last = sent.current
+    if (
+      last?.listId === next.listId &&
+      last.open === next.open &&
+      last.activeId === next.activeId
+    )
+      return
+    sent.current = next
+    setCommandList(next)
+    if (activeKey !== undefined && next.activeId === undefined) {
+      if (isDevelopment()) {
+        console.warn(
+          `ComposerCommands: no rendered option with an id for "${activeKey}", so the textarea cannot point at it.`
+        )
+      }
+    }
+  })
+  React.useLayoutEffect(
+    () => () => {
+      // Sent again if the effects run again (StrictMode, a remount).
+      sent.current = undefined
+      setCommandList(undefined)
+    },
+    [setCommandList]
+  )
 
+  // The active option is scrolled into the list's view, and only the list's:
+  // `scrollIntoView` would scroll the transcript and the page with it.
   React.useEffect(() => {
-    if (!open) return
-    listRef.current
-      ?.querySelectorAll('[role="option"]')
-      [activeIndex]?.scrollIntoView({ block: "nearest" })
-  }, [open, activeIndex])
+    const list = listRef.current
+    const option =
+      activeKey === undefined
+        ? undefined
+        : optionElements.current.get(activeKey)
+    if (!open || list === null || option === undefined) return
+    const top =
+      option.getBoundingClientRect().top -
+      list.getBoundingClientRect().top -
+      list.clientTop +
+      list.scrollTop
+    const bottom = top + option.offsetHeight
+    if (top < list.scrollTop) list.scrollTop = top
+    else if (bottom > list.scrollTop + list.clientHeight) {
+      list.scrollTop = bottom - list.clientHeight
+    }
+  }, [open, activeKey])
 
   const pick = React.useCallback(
     (item: ComposerCommandItem) => {
@@ -1217,10 +1320,15 @@ function ComposerCommands({
 
   const option = (item: ComposerCommandItem) => {
     const at = matches.indexOf(item)
+    const key = optionKey(item)
     return (
       <ListBoxItem
-        key={item.id}
-        id={item.id}
+        key={key}
+        id={key}
+        ref={(element: HTMLDivElement | null) => {
+          if (element === null) optionElements.current.delete(key)
+          else optionElements.current.set(key, element)
+        }}
         textValue={`/${item.command} ${item.label}`}
         data-slot="composer-command"
         className="flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&_svg:not([class*='size-'])]:size-4"
@@ -1264,7 +1372,7 @@ function ComposerCommands({
             onSelectionChange={(keys) => {
               const key = keys === "all" ? undefined : [...keys][0]
               const item = matches.find(
-                (match) => match.id === (key ?? activeKey)
+                (match) => optionKey(match) === (key ?? activeKey)
               )
               if (item !== undefined) pick(item)
             }}
