@@ -97,6 +97,4 @@ Correct:
 </TreeViewItem>
 ```
 
-`textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included.
-
-With dynamic `items`, React Aria caches each rendered row, so a row that also reads state kept outside `items` (the hidden set behind `isHidden` and `TreeViewVisibilityToggle`, a selection map) does not update until that state is listed in `dependencies` on `TreeView` and on every `TreeViewCollection`: `dependencies={[hidden]}`.
+`textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included. With dynamic `items`, React Aria caches each rendered row, so a row that also reads state kept outside `items` (the hidden set behind `isHidden` and `TreeViewVisibilityToggle`, a selection map) does not update until that state is listed in `dependencies` on `TreeView` and on every `TreeViewCollection`: `dependencies={[hidden]}`.
