@@ -2,6 +2,7 @@ import { createFileRoute, Link, notFound } from "@tanstack/react-router"
 import { ArrowLeftIcon } from "lucide-react"
 
 import { BlockViewer } from "@/components/block-viewer"
+import { NotFound } from "@/components/not-found"
 import { getBlock } from "@/lib/blocks"
 import { siteConfig } from "@/lib/site"
 
@@ -17,6 +18,7 @@ export const Route = createFileRoute("/_site/blocks/$name")({
       ? [{ title: `${loaderData.title} – Blocks – ${siteConfig.name}` }]
       : [],
   }),
+  notFoundComponent: NotFound,
   component: BlockPage,
 })
 

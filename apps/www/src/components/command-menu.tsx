@@ -7,6 +7,7 @@ import type * as PageTree from "fumadocs-core/page-tree"
 import {
   ArrowRightIcon,
   CornerDownLeftIcon,
+  SearchIcon,
   SquareDashedIcon,
 } from "lucide-react"
 
@@ -119,12 +120,13 @@ export function CommandMenu({ tree }: { tree: PageTree.Root }) {
     <>
       <Button
         variant="outline"
-        className="relative h-8 w-full justify-start rounded-lg border-none bg-muted pl-3 font-normal text-foreground shadow-none transition-colors hover:bg-muted/50 md:w-48 lg:w-40 xl:w-64 dark:bg-card"
+        className="relative size-8 justify-center rounded-lg border-none bg-muted p-0 font-normal text-foreground shadow-none transition-colors hover:bg-muted/50 md:h-8 md:w-48 md:justify-start md:pl-3 lg:w-40 xl:w-64 dark:bg-card"
         onPress={() => setOpen(true)}
         aria-label="Search documentation"
       >
+        <SearchIcon className="md:hidden" />
         <span className="hidden xl:inline-flex">Search documentation...</span>
-        <span className="inline-flex xl:hidden">Search...</span>
+        <span className="hidden md:inline-flex xl:hidden">Search...</span>
       </Button>
       <CommandDialog
         open={open}

@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as SiteRouteImport } from './routes/_site'
 import { Route as SiteIndexRouteImport } from './routes/_site/index'
+import { Route as SiteSplatRouteImport } from './routes/_site/$'
 import { Route as SiteBlocksRouteImport } from './routes/_site/blocks'
 import { Route as SiteDocsRouteImport } from './routes/_site/docs'
 import { Route as SiteThemesRouteImport } from './routes/_site/themes'
@@ -28,6 +29,11 @@ const SiteRoute = SiteRouteImport.update({
 const SiteIndexRoute = SiteIndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteSplatRoute = SiteSplatRouteImport.update({
+  id: '/$',
+  path: '/$',
   getParentRoute: () => SiteRoute,
 } as any)
 const SiteBlocksRoute = SiteBlocksRouteImport.update({
@@ -78,6 +84,7 @@ const SiteDocsSplatRoute = SiteDocsSplatRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
+  '/$': typeof SiteSplatRoute
   '/blocks': typeof SiteBlocksRouteWithChildren
   '/docs': typeof SiteDocsRouteWithChildren
   '/themes': typeof SiteThemesRoute
@@ -89,6 +96,7 @@ export interface FileRoutesByFullPath {
   '/docs/': typeof SiteDocsIndexRoute
 }
 export interface FileRoutesByTo {
+  '/$': typeof SiteSplatRoute
   '/themes': typeof SiteThemesRoute
   '/compare/$component': typeof CompareComponentRoute
   '/view/$name': typeof ViewNameRoute
@@ -101,6 +109,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_site': typeof SiteRouteWithChildren
+  '/_site/$': typeof SiteSplatRoute
   '/_site/blocks': typeof SiteBlocksRouteWithChildren
   '/_site/docs': typeof SiteDocsRouteWithChildren
   '/_site/themes': typeof SiteThemesRoute
@@ -116,6 +125,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$'
     | '/blocks'
     | '/docs'
     | '/themes'
@@ -127,6 +137,7 @@ export interface FileRouteTypes {
     | '/docs/'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/$'
     | '/themes'
     | '/compare/$component'
     | '/view/$name'
@@ -138,6 +149,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_site'
+    | '/_site/$'
     | '/_site/blocks'
     | '/_site/docs'
     | '/_site/themes'
@@ -170,6 +182,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof SiteIndexRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/$': {
+      id: '/_site/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SiteSplatRouteImport
       parentRoute: typeof SiteRoute
     }
     '/_site/blocks': {
@@ -267,6 +286,7 @@ const SiteDocsRouteWithChildren = SiteDocsRoute._addFileChildren(
 )
 
 interface SiteRouteChildren {
+  SiteSplatRoute: typeof SiteSplatRoute
   SiteBlocksRoute: typeof SiteBlocksRouteWithChildren
   SiteDocsRoute: typeof SiteDocsRouteWithChildren
   SiteThemesRoute: typeof SiteThemesRoute
@@ -274,6 +294,7 @@ interface SiteRouteChildren {
 }
 
 const SiteRouteChildren: SiteRouteChildren = {
+  SiteSplatRoute: SiteSplatRoute,
   SiteBlocksRoute: SiteBlocksRouteWithChildren,
   SiteDocsRoute: SiteDocsRouteWithChildren,
   SiteThemesRoute: SiteThemesRoute,

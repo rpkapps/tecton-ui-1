@@ -39,7 +39,7 @@ export function SiteHeader({ tree }: { tree: PageTree.Root }) {
           />
           <MainNav pathname={pathname} className="hidden lg:flex" />
           <div className="ml-auto flex items-center gap-2 md:flex-1 md:justify-end">
-            <div className="hidden w-full flex-1 md:flex md:w-auto md:flex-none">
+            <div className="flex md:w-auto md:flex-none">
               <CommandMenu tree={tree} />
             </div>
             <Separator
@@ -86,6 +86,9 @@ function MainNav({
         <Link
           key={item.href}
           to={item.href}
+          // `aria-current="page"` only on the page itself; `data-active`
+          // also marks the section the current page belongs to.
+          activeOptions={{ exact: true }}
           data-active={isActive(pathname, item.href)}
           className="relative inline-flex h-8 items-center rounded-md px-2.5 text-sm font-medium text-foreground/70 transition-colors outline-none hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 data-[active=true]:text-foreground"
         >
@@ -113,6 +116,9 @@ function MobileNav({
 
   const sections = getRootPages(tree)
   const folders = getRootFolders(tree)
+  // Close on every press, also when the link is the current page (the
+  // pathname effect above does not fire then).
+  const close = () => setOpen(false)
 
   return (
     <SheetTrigger isOpen={open} onOpenChange={setOpen}>
@@ -161,6 +167,8 @@ function MobileNav({
                 <Link
                   key={item.href}
                   to={item.href}
+                  activeOptions={{ exact: true }}
+                  onClick={close}
                   className="text-2xl font-medium"
                 >
                   {item.title}
@@ -177,6 +185,8 @@ function MobileNav({
                 <Link
                   key={page.url}
                   to={page.url}
+                  activeOptions={{ exact: true }}
+                  onClick={close}
                   className="text-2xl font-medium"
                 >
                   {nodeName(page)}
@@ -197,6 +207,8 @@ function MobileNav({
                   <Link
                     key={page.url}
                     to={page.url}
+                    activeOptions={{ exact: true }}
+                    onClick={close}
                     className="text-2xl font-medium"
                   >
                     {nodeName(page)}

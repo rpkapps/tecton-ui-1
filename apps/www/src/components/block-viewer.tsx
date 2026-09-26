@@ -8,7 +8,7 @@ import {
   SmartphoneIcon,
   TabletIcon,
 } from "lucide-react"
-import { LinkButton } from "@tecton/react/components/button"
+import { Button, LinkButton } from "@tecton/react/components/button"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -42,18 +42,26 @@ function BlockCode({ name }: { name: string }) {
   const files = React.useMemo(() => listSources(`blocks/${name}/`), [name])
   const [selected, setSelected] = React.useState(files[0])
   const [code, setCode] = React.useState<string | null>(null)
+  const [failed, setFailed] = React.useState(false)
+  const [attempt, setAttempt] = React.useState(0)
 
   React.useEffect(() => {
     let cancelled = false
     if (!selected) return
     setCode(null)
-    loadSource(selected).then((source) => {
-      if (!cancelled) setCode(source)
-    })
+    setFailed(false)
+    loadSource(selected).then(
+      (source) => {
+        if (!cancelled) setCode(source)
+      },
+      () => {
+        if (!cancelled) setFailed(true)
+      }
+    )
     return () => {
       cancelled = true
     }
-  }, [selected])
+  }, [selected, attempt])
 
   if (!files.length) {
     return (
@@ -64,14 +72,20 @@ function BlockCode({ name }: { name: string }) {
   }
 
   return (
-    <div className="flex h-full min-h-96 divide-x">
-      <ul className="hidden w-60 shrink-0 overflow-auto p-2 text-xs md:block">
-        <li className="px-2 py-1.5 font-medium text-muted-foreground">Files</li>
+    <div className="flex h-full min-h-96 flex-col divide-y md:flex-row md:divide-x md:divide-y-0">
+      <ul
+        aria-label="Files"
+        className="flex shrink-0 gap-1 overflow-x-auto p-2 text-xs md:block md:w-60 md:overflow-auto"
+      >
+        <li className="hidden px-2 py-1.5 font-medium text-muted-foreground md:block">
+          Files
+        </li>
         {files.map((file) => (
-          <li key={file}>
+          <li key={file} className="shrink-0">
             <button
               type="button"
               onClick={() => setSelected(file)}
+              aria-current={file === selected ? "true" : undefined}
               className={cn(
                 "w-full truncate rounded-md px-2 py-1.5 text-left font-mono text-muted-foreground hover:text-foreground",
                 file === selected && "bg-accent text-foreground"
@@ -83,8 +97,24 @@ function BlockCode({ name }: { name: string }) {
           </li>
         ))}
       </ul>
-      <div className="min-w-0 flex-1 overflow-auto [&_[data-rehype-pretty-code-figure]]:m-0! [&_[data-rehype-pretty-code-figure]]:rounded-none [&_[data-rehype-pretty-code-figure]]:border-0">
-        {code === null ? (
+      <div className="min-w-0 flex-1 overflow-auto [&_[data-code-block]]:m-0! [&_[data-code-block]]:rounded-none [&_[data-code-block]]:border-0">
+        {failed ? (
+          <div
+            role="alert"
+            className="flex h-48 flex-col items-center justify-center gap-3 p-4 text-sm text-muted-foreground"
+          >
+            <p>
+              Could not load <code>{selected}</code>.
+            </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onPress={() => setAttempt((n) => n + 1)}
+            >
+              Retry
+            </Button>
+          </div>
+        ) : code === null ? (
           <div className="h-48 animate-pulse" />
         ) : (
           <CodeBlock
