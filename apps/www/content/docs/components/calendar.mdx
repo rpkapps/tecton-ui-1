@@ -2,9 +2,8 @@
 title: Calendar
 description: A calendar component that allows users to select a date or a range of dates.
 links:
-  doc: https://react-aria.adobe.com/Calendar
-  api: https://react-aria.adobe.com/Calendar#api
-upstream: apps/v4/content/docs/components/aria/calendar.mdx
+  doc: https://react-day-picker.js.org
+upstream: apps/v4/content/docs/components/base/calendar.mdx
 ---
 
 <ComponentPreview
@@ -15,30 +14,59 @@ upstream: apps/v4/content/docs/components/aria/calendar.mdx
 ## Usage
 
 ```tsx lineNumbers
-import {
-  getLocalTimeZone,
-  today,
-  type CalendarDate,
-} from "@internationalized/date"
-
 import { Calendar } from "@tecton/react/components/calendar"
 ```
 
 ```tsx lineNumbers
-const [date, setDate] = React.useState<CalendarDate | null>(
-  today(getLocalTimeZone())
-)
+const [date, setDate] = React.useState<Date | undefined>(new Date())
 
 return (
-  <Calendar value={date} onChange={setDate} className="rounded-lg border" />
+  <Calendar
+    mode="single"
+    selected={date}
+    onSelect={setDate}
+    className="rounded-lg border"
+  />
 )
 ```
 
-See the [React Aria](https://react-aria.adobe.com/Calendar) documentation for more information.
+See the [React DayPicker](https://react-day-picker.js.org) documentation for more information.
+
+## About
+
+The `Calendar` component is built on top of [React DayPicker](https://react-day-picker.js.org).
 
 ## Date Picker
 
 You can use the `<Calendar>` component to build a date picker. See the [Date Picker](/docs/components/date-picker) page for more information.
+
+## Selected Date (With TimeZone)
+
+The Calendar component accepts a `timeZone` prop to ensure dates are displayed and selected in the user's local timezone.
+
+```tsx lineNumbers
+export function CalendarWithTimezone() {
+  const [date, setDate] = React.useState<Date | undefined>(undefined)
+  const [timeZone, setTimeZone] = React.useState<string | undefined>(undefined)
+
+  React.useEffect(() => {
+    setTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone)
+  }, [])
+
+  return (
+    <Calendar
+      mode="single"
+      selected={date}
+      onSelect={setDate}
+      timeZone={timeZone}
+    />
+  )
+}
+```
+
+**Note:** If you notice a selected date offset (for example, selecting the 20th highlights the 19th), make sure the `timeZone` prop is set to the user's local timezone.
+
+**Why client-side?** The timezone is detected using `Intl.DateTimeFormat().resolvedOptions().timeZone` inside a `useEffect` to ensure compatibility with server-side rendering. Detecting the timezone during render would cause hydration mismatches, as the server and client may be in different timezones.
 
 ## Basic
 
@@ -51,7 +79,7 @@ A basic calendar component. We used `className="rounded-lg border"` to style the
 
 ## Range Calendar
 
-Use the `RangeCalendar` component to enable range selection.
+Use the `mode="range"` prop to enable range selection.
 
 <ComponentPreview
   name="calendar-range"
@@ -101,8 +129,9 @@ You can customize the size of calendar cells using the `--cell-size` CSS variabl
 
 ```tsx lineNumbers
 <Calendar
-  value={date}
-  onChange={setDate}
+  mode="single"
+  selected={date}
+  onSelect={setDate}
   className="rounded-lg border [--cell-size:--spacing(11)] md:[--cell-size:--spacing(12)]"
 />
 ```
@@ -111,11 +140,21 @@ Or use fixed values:
 
 ```tsx lineNumbers
 <Calendar
-  value={date}
-  onChange={setDate}
+  mode="single"
+  selected={date}
+  onSelect={setDate}
   className="rounded-lg border [--cell-size:2.75rem] md:[--cell-size:3rem]"
 />
 ```
+
+## Week Numbers
+
+Use `showWeekNumber` to show week numbers.
+
+<ComponentPreview
+  name="calendar-week-numbers"
+  previewClassName="h-96"
+/>
 
 ## RTL
 
@@ -126,6 +165,20 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
   direction="rtl"
   previewClassName="h-96"
 />
+
+When using RTL, import the locale from `react-day-picker/locale` and pass both the `locale` and `dir` props to the Calendar component:
+
+```tsx lineNumbers
+import { arSA } from "react-day-picker/locale"
+
+;<Calendar
+  mode="single"
+  selected={date}
+  onSelect={setDate}
+  locale={arSA}
+  dir="rtl"
+/>
+```
 
 {/* guidelines:start */}
 
@@ -280,4 +333,4 @@ The grid, the navigation buttons and the dropdowns all read `--cell-size`, so re
 
 ## API Reference
 
-See the [React Aria](https://react-aria.adobe.com/Calendar) documentation for more information on the `Calendar` component.
+See the [React DayPicker](https://react-day-picker.js.org) documentation for more information on the `Calendar` component.

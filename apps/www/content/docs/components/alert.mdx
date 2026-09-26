@@ -93,7 +93,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ## Tecton variants
 
-The Tecton style overlay adds the status colours and surface styles of the design system's *StatusAlert* to the shadcn `Alert`. `variant` is the severity (the former `severity` prop) and `appearance` is the surface (the former `variant="filled" | "outlined"`); the icon, title, description and toolbar are composed as in the examples above.
+The Tecton style adds the design system's status colours and surfaces to `Alert`: `variant` is the severity and `appearance` the surface. Icon, title, description and actions compose as in the examples above.
 
 ### Severity
 
@@ -103,7 +103,7 @@ Use `variant="success" | "warning" | "info" | "destructive"` and pass a lucide i
 
 ### Appearance
 
-Use `appearance="outline"` for a transparent alert with a coloured border and text, or `appearance="filled"` for Tecton's filled status surface (`--success-surface`, `--warning-surface`, … with their `-foreground` text colours; note the pale yellow warning surface in light mode). The default appearance keeps the card background and colours the text with the status colour (`--success`, `--warning`, …), which is readable on the page and card surfaces in both modes.
+The default appearance keeps the card background and colours the text with the status colour (`--success`, `--warning`, …). `appearance="outline"` is transparent with a coloured border and text; `appearance="filled"` uses the filled status surface (`--success-surface`, … with its `-foreground` text).
 
 <ComponentPreview name="alert-appearance" />
 
