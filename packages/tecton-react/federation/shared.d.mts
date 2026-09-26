@@ -9,12 +9,21 @@
  * @see the header comment of `federation/shared.mjs` for the reason per entry.
  */
 export declare const shared: {
-  readonly react: { readonly singleton: true }
-  readonly "react-dom": { readonly singleton: true }
-  readonly sonner: { readonly singleton: true }
-  readonly "@tecton/react/": { readonly singleton: false }
-  readonly "react-aria-components": { readonly singleton: false }
-  readonly recharts: { readonly singleton: false; readonly eager: false }
+  readonly react: SharedPolicy<true>
+  readonly "react-dom": SharedPolicy<true>
+  readonly sonner: SharedPolicy<true>
+  readonly "@tecton/react/": SharedPolicy<false>
+  readonly "react-aria-components": SharedPolicy<false>
+  readonly recharts: SharedPolicy<false> & { readonly eager: false }
+}
+
+/**
+ * One entry. `eager` is optional on every entry, so code that reads it off any
+ * policy (`Object.values(shared)`, `Object.entries(shared)`) type-checks.
+ */
+export type SharedPolicy<Singleton extends boolean = boolean> = {
+  readonly singleton: Singleton
+  readonly eager?: boolean
 }
 
 export default shared
