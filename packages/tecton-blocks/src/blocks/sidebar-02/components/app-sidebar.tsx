@@ -17,6 +17,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@tecton/react/components/sidebar"
+import { Link } from "@tecton/react/tecton/link"
 
 import { currentUser, navMain, navSecondary, recentProjects } from "../data"
 import { NavMain } from "./nav-main"
@@ -35,7 +36,10 @@ function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" href="#">
+            <SidebarMenuButton
+              size="lg"
+              render={<Link href="#" className="hover:no-underline" />}
+            >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <HexagonIcon className="size-4" />
               </div>

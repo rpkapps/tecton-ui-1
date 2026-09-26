@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import type { Key } from "react-aria-components"
 import { HexagonIcon, PlusIcon, SearchIcon } from "lucide-react"
 
 import { Badge } from "@tecton/react/components/badge"
@@ -37,6 +36,7 @@ import {
   TreeViewItemContent,
   TreeViewVisibilityToggle,
 } from "@tecton/react/tecton/tree-view"
+import { Link } from "@tecton/react/tecton/link"
 
 import { filterTree, flattenTree, project, projectTree } from "../data"
 import type { ProjectNode } from "../data"
@@ -62,8 +62,8 @@ function AppSidebar({
 }: AppSidebarProps) {
   const [query, setQuery] = React.useState("")
   const [hidden, setHidden] = React.useState<Set<string>>(() => new Set())
-  const [expanded, setExpanded] = React.useState<Set<Key>>(
-    () => new Set(nodes.map((node) => node.id))
+  const [expanded, setExpanded] = React.useState<string[]>(() =>
+    nodes.map((node) => node.id)
   )
 
   const visibleNodes = React.useMemo(
@@ -87,11 +87,7 @@ function AppSidebar({
     })
 
   const renderNode = (node: ProjectNode): React.ReactElement => (
-    <TreeViewItem
-      id={node.id}
-      textValue={node.label}
-      isHidden={hidden.has(node.id)}
-    >
+    <TreeViewItem value={node.id} hidden={hidden.has(node.id)}>
       <TreeViewItemContent
         kind={node.kind}
         colorTag={
@@ -118,16 +114,16 @@ function AppSidebar({
         endAdornment={
           node.kind === "item" ? (
             <TreeViewVisibilityToggle
-              className="opacity-0 group-data-hovered/tree-item:opacity-100 group-data-selected/tree-item:opacity-100 focus-visible:opacity-100 aria-pressed:opacity-100"
-              isVisible={!hidden.has(node.id)}
-              onChange={(visible) => setVisible(node.id, visible)}
+              className="opacity-0 group-focus-within/tree-item:opacity-100 group-hover/tree-item:opacity-100 group-data-selected/tree-item:opacity-100 focus-visible:opacity-100 aria-pressed:opacity-100"
+              visible={!hidden.has(node.id)}
+              onVisibleChange={(visible) => setVisible(node.id, visible)}
             />
           ) : undefined
         }
       >
         {node.label}
       </TreeViewItemContent>
-      <TreeViewCollection items={node.children ?? []} dependencies={[hidden]}>
+      <TreeViewCollection items={node.children ?? []}>
         {renderNode}
       </TreeViewCollection>
     </TreeViewItem>
@@ -138,7 +134,10 @@ function AppSidebar({
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" href="#">
+            <SidebarMenuButton
+              size="lg"
+              render={<Link href="#" className="hover:no-underline" />}
+            >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <HexagonIcon className="size-4" />
               </div>
@@ -180,20 +179,14 @@ function AppSidebar({
             ) : (
               <TreeView
                 aria-label="Project inventory"
-                // The rows render from `hidden`, which React Aria's cached
-                // collection does not see unless it is listed as a dependency.
-                dependencies={[hidden]}
                 items={visibleNodes}
                 selectionMode="single"
-                expandedKeys={query ? new Set(folderIds) : expanded}
-                onExpandedChange={(keys) => {
-                  if (!query) setExpanded(new Set(keys))
+                expanded={query ? folderIds : expanded}
+                onExpandedChange={(values) => {
+                  if (!query) setExpanded(values)
                 }}
-                onSelectionChange={(keys) => {
-                  for (const first of keys) {
-                    onSelect?.(String(first))
-                    break
-                  }
+                onValueChange={([first]) => {
+                  if (first !== undefined) onSelect?.(first)
                 }}
               >
                 {renderNode}

@@ -6,7 +6,7 @@ import { DownloadIcon, PlusIcon, ShareIcon } from "lucide-react"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
-import { Sheet, SheetTitle } from "@tecton/react/components/sheet"
+import { Sheet, SheetContent, SheetTitle } from "@tecton/react/components/sheet"
 import {
   AppShell,
   AppShellAside,
@@ -100,7 +100,7 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
                     <Button
                       variant="secondary"
                       size="sm"
-                      onPress={() =>
+                      onClick={() =>
                         isWide ? setAgentOpen(true) : setSheetOpen(true)
                       }
                     >
@@ -162,17 +162,14 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
         </AppShellSplit>
       </AppShellBody>
 
-      <Sheet
-        isOpen={sheetOpen && !isWide}
-        onOpenChange={setSheetOpen}
-        showCloseButton={false}
-        className="gap-0"
-      >
-        <SheetTitle className="sr-only">AI Agent</SheetTitle>
-        <AiAgentPanel
-          conversation={conversation}
-          onClose={() => setSheetOpen(false)}
-        />
+      <Sheet open={sheetOpen && !isWide} onOpenChange={setSheetOpen}>
+        <SheetContent showCloseButton={false} className="gap-0">
+          <SheetTitle className="sr-only">AI Agent</SheetTitle>
+          <AiAgentPanel
+            conversation={conversation}
+            onClose={() => setSheetOpen(false)}
+          />
+        </SheetContent>
       </Sheet>
     </AppShell>
   )

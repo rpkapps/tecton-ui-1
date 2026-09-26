@@ -7,6 +7,7 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@tecton/react/components/sidebar"
+import { Link } from "@tecton/react/tecton/link"
 
 import type { NavLink } from "../data"
 
@@ -19,7 +20,7 @@ function NavMain({ items }: { items: NavLink[] }) {
           {items.map((item) => (
             <SidebarMenuItem key={item.title}>
               <SidebarMenuButton
-                href={item.url}
+                render={<Link href={item.url} className="hover:no-underline" />}
                 isActive={item.isActive ?? false}
               >
                 <item.icon />

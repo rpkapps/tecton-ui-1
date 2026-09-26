@@ -79,13 +79,13 @@ function SettingsSection({
 function SwitchRow({
   label,
   description,
-  isSelected,
-  onChange,
+  checked,
+  onCheckedChange,
 }: {
   label: string
   description?: string
-  isSelected: boolean
-  onChange: (next: boolean) => void
+  checked: boolean
+  onCheckedChange: (next: boolean) => void
 }) {
   const id = React.useId()
   return (
@@ -102,36 +102,67 @@ function SwitchRow({
           <FieldDescription className="text-xs">{description}</FieldDescription>
         )}
       </FieldContent>
-      <Switch id={id} isSelected={isSelected} onChange={onChange} />
+      <Switch
+        id={id}
+        checked={checked}
+        onCheckedChange={(next) => onCheckedChange(next)}
+      />
     </Field>
   )
 }
 
+type SelectRowOption<TValue extends string> = {
+  value: TValue
+  /** What the option and, once picked, the trigger show. */
+  label: React.ReactNode
+}
+
 /** Labelled single `Select` with optional helper text inside a `Field`. */
-function SelectRow({
+function SelectRow<TValue extends string>({
   label,
   description,
-  children,
-  ...props
-}: Omit<React.ComponentProps<typeof Select<object, "single">>, "children"> & {
+  options,
+  value,
+  onValueChange,
+}: {
   label: string
   description?: string
-  children: React.ReactNode
+  options: SelectRowOption<TValue>[]
+  value: TValue
+  onValueChange: (value: TValue) => void
 }) {
-  // The label goes inside the Select: React Aria labels the trigger from it
-  // (a `htmlFor` label outside would be overridden by `aria-labelledby`).
+  const id = React.useId()
   return (
     <Field>
-      <Select className="flex w-full flex-col gap-3" {...props}>
-        <FieldLabel>{label}</FieldLabel>
-        <SelectTrigger>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Select
+        items={options}
+        value={value}
+        onValueChange={(next: TValue | null) => {
+          if (next !== null) onValueChange(next)
+        }}
+      >
+        <SelectTrigger id={id} className="w-full">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>{children}</SelectContent>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.value} value={option.value}>
+              {option.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
       </Select>
       {description && <FieldDescription>{description}</FieldDescription>}
     </Field>
   )
+}
+
+/** Options for `SelectRow` from `{ id, label }` data. */
+function optionsOf<TValue extends string>(
+  items: readonly { id: TValue; label: string }[]
+): SelectRowOption<TValue>[] {
+  return items.map((item) => ({ value: item.id, label: item.label }))
 }
 
 function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
@@ -179,15 +210,10 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
         </Field>
         <SelectRow
           label="Role"
+          options={optionsOf(roles)}
           value={value.role}
-          onChange={(key) => set("role", String(key))}
-        >
-          {roles.map((role) => (
-            <SelectItem key={role.id} id={role.id} textValue={role.label}>
-              {role.label}
-            </SelectItem>
-          ))}
-        </SelectRow>
+          onValueChange={(role) => set("role", role)}
+        />
         <Field data-invalid={!!bioError}>
           <FieldLabel htmlFor={`${id}-bio`}>Bio</FieldLabel>
           <Textarea
@@ -215,29 +241,17 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
       >
         <SelectRow
           label="Time zone"
+          options={optionsOf(timezones)}
           value={value.timezone}
-          onChange={(key) => set("timezone", String(key))}
-        >
-          {timezones.map((zone) => (
-            <SelectItem key={zone.id} id={zone.id} textValue={zone.label}>
-              {zone.label}
-            </SelectItem>
-          ))}
-        </SelectRow>
+          onValueChange={(timezone) => set("timezone", timezone)}
+        />
         <SelectRow
           label="Unit system"
+          options={optionsOf(unitSystems)}
           value={value.units}
-          onChange={(key) =>
-            set("units", String(key) as Settings["profile"]["units"])
-          }
+          onValueChange={(units) => set("units", units)}
           description="Changing units re-formats depths, pressures and volumes; stored values are unaffected."
-        >
-          {unitSystems.map((system) => (
-            <SelectItem key={system.id} id={system.id} textValue={system.label}>
-              {system.label}
-            </SelectItem>
-          ))}
-        </SelectRow>
+        />
       </SettingsSection>
     </div>
   )
@@ -272,34 +286,16 @@ function NotificationsForm({
       >
         <SelectRow
           label="Channel"
+          options={optionsOf(channels)}
           value={value.channel}
-          onChange={(key) =>
-            set("channel", String(key) as Settings["notifications"]["channel"])
-          }
-        >
-          {channels.map((channel) => (
-            <SelectItem
-              key={channel.id}
-              id={channel.id}
-              textValue={channel.label}
-            >
-              {channel.label}
-            </SelectItem>
-          ))}
-        </SelectRow>
+          onValueChange={(channel) => set("channel", channel)}
+        />
         <SelectRow
           label="Frequency"
+          options={optionsOf(digests)}
           value={value.digest}
-          onChange={(key) =>
-            set("digest", String(key) as Settings["notifications"]["digest"])
-          }
-        >
-          {digests.map((digest) => (
-            <SelectItem key={digest.id} id={digest.id} textValue={digest.label}>
-              {digest.label}
-            </SelectItem>
-          ))}
-        </SelectRow>
+          onValueChange={(digest) => set("digest", digest)}
+        />
       </SettingsSection>
 
       <Separator emphasis="subtle" />
@@ -311,26 +307,26 @@ function NotificationsForm({
         <SwitchRow
           label="Model runs"
           description="When a facies or velocity model you started finishes or fails."
-          isSelected={value.modelRuns}
-          onChange={(next) => set("modelRuns", next)}
+          checked={value.modelRuns}
+          onCheckedChange={(next) => set("modelRuns", next)}
         />
         <SwitchRow
           label="FDA changes"
           description="When an alternative is nominated, archived or its economics change."
-          isSelected={value.fdaChanges}
-          onChange={(next) => set("fdaChanges", next)}
+          checked={value.fdaChanges}
+          onCheckedChange={(next) => set("fdaChanges", next)}
         />
         <SwitchRow
           label="Mentions"
           description="When someone @mentions you in a comment or the AI agent hands off to you."
-          isSelected={value.mentions}
-          onChange={(next) => set("mentions", next)}
+          checked={value.mentions}
+          onCheckedChange={(next) => set("mentions", next)}
         />
         <SwitchRow
           label="Rig schedule"
           description="When a spud date or rig assignment moves."
-          isSelected={value.rigSchedule}
-          onChange={(next) => set("rigSchedule", next)}
+          checked={value.rigSchedule}
+          onCheckedChange={(next) => set("rigSchedule", next)}
         />
       </SettingsSection>
 
@@ -342,8 +338,8 @@ function NotificationsForm({
       >
         <SwitchRow
           label="Release notes and tips"
-          isSelected={value.marketing}
-          onChange={(next) => set("marketing", next)}
+          checked={value.marketing}
+          onCheckedChange={(next) => set("marketing", next)}
         />
       </SettingsSection>
     </div>
@@ -371,46 +367,30 @@ function AppearanceForm({
       >
         <SelectRow
           label="Colour scheme"
+          options={optionsOf(themes)}
           value={value.theme}
-          onChange={(key) =>
-            set("theme", String(key) as Settings["appearance"]["theme"])
-          }
-        >
-          {themes.map((theme) => (
-            <SelectItem key={theme.id} id={theme.id} textValue={theme.label}>
-              {theme.label}
-            </SelectItem>
-          ))}
-        </SelectRow>
+          onValueChange={(theme) => set("theme", theme)}
+        />
         <SelectRow
           label="Accent"
+          options={accents.map((accent) => ({
+            value: accent.id,
+            label: (
+              <>
+                <ColorSwatch color={accent.color} size="xs" shape="circle" />
+                {accent.label}
+              </>
+            ),
+          }))}
           value={value.accent}
-          onChange={(key) => set("accent", String(key))}
-        >
-          {accents.map((accent) => (
-            <SelectItem key={accent.id} id={accent.id} textValue={accent.label}>
-              <ColorSwatch color={accent.color} size="xs" shape="circle" />
-              {accent.label}
-            </SelectItem>
-          ))}
-        </SelectRow>
+          onValueChange={(accent) => set("accent", accent)}
+        />
         <SelectRow
           label="Density"
+          options={optionsOf(densities)}
           value={value.density}
-          onChange={(key) =>
-            set("density", String(key) as Settings["appearance"]["density"])
-          }
-        >
-          {densities.map((density) => (
-            <SelectItem
-              key={density.id}
-              id={density.id}
-              textValue={density.label}
-            >
-              {density.label}
-            </SelectItem>
-          ))}
-        </SelectRow>
+          onValueChange={(density) => set("density", density)}
+        />
       </SettingsSection>
 
       <Separator emphasis="subtle" />
@@ -419,14 +399,14 @@ function AppearanceForm({
         <SwitchRow
           label="Reduce motion"
           description="Disable panel and chart transitions."
-          isSelected={value.reduceMotion}
-          onChange={(next) => set("reduceMotion", next)}
+          checked={value.reduceMotion}
+          onCheckedChange={(next) => set("reduceMotion", next)}
         />
         <SwitchRow
           label="Monospace readouts"
           description="Use IBM Plex Mono with tabular figures for depths, costs and percentages."
-          isSelected={value.monoReadouts}
-          onChange={(next) => set("monoReadouts", next)}
+          checked={value.monoReadouts}
+          onCheckedChange={(next) => set("monoReadouts", next)}
         />
       </SettingsSection>
     </div>

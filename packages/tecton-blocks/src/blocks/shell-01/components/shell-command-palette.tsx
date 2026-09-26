@@ -63,20 +63,15 @@ function ShellCommandPalette({
     <CommandDialog open={open} onOpenChange={onOpenChange}>
       <Command className="rounded-none bg-transparent">
         <CommandInput placeholder="Search apps and commands…" />
-        <CommandList
-          className="max-h-[60svh]"
-          renderEmptyState={() => (
-            <CommandEmpty>No results found.</CommandEmpty>
-          )}
-        >
+        <CommandList className="max-h-[60svh]">
+          <CommandEmpty>No results found.</CommandEmpty>
           {groupApps(apps).map((group) => (
             <CommandGroup key={group.category} heading={group.category}>
               {group.apps.map((app) => (
                 <CommandItem
                   key={app.id}
-                  id={`app-${app.id}`}
-                  textValue={`${app.code} ${app.name} ${app.category}`}
-                  onAction={() => {
+                  value={`${app.code} ${app.name} ${app.category}`}
+                  onSelect={() => {
                     onSelectApp?.(app)
                     close()
                   }}
@@ -97,9 +92,8 @@ function ShellCommandPalette({
                 {items.map((command) => (
                   <CommandItem
                     key={command.id}
-                    id={command.id}
-                    textValue={command.label}
-                    onAction={() => {
+                    value={command.label}
+                    onSelect={() => {
                       onRunCommand?.(command)
                       close()
                     }}

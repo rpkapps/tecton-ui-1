@@ -12,7 +12,7 @@ import {
 } from "@tecton/react/components/breadcrumb"
 import { Button } from "@tecton/react/components/button"
 import { Separator } from "@tecton/react/components/separator"
-import { Sheet, SheetTitle } from "@tecton/react/components/sheet"
+import { Sheet, SheetContent, SheetTitle } from "@tecton/react/components/sheet"
 import {
   SidebarInset,
   SidebarProvider,
@@ -24,6 +24,7 @@ import {
   AppShellSplitPanel,
   useMinWidth,
 } from "@tecton/react/tecton/app-shell"
+import { Link } from "@tecton/react/tecton/link"
 
 import { NavRail } from "./components/nav-rail"
 import { ToolPanel } from "./components/tool-panel"
@@ -55,7 +56,7 @@ export default function Page() {
         <Breadcrumb>
           <BreadcrumbList>
             <BreadcrumbItem className="hidden md:inline-flex">
-              <BreadcrumbLink href="#">Wells</BreadcrumbLink>
+              <BreadcrumbLink render={<Link href="#" />}>Wells</BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbItem>
               <BreadcrumbPage>{well.name}</BreadcrumbPage>
@@ -68,7 +69,7 @@ export default function Page() {
             size="icon-sm"
             className="ms-auto"
             aria-label="Open well properties"
-            onPress={() => (isWide ? setPanelOpen(true) : setSheetOpen(true))}
+            onClick={() => (isWide ? setPanelOpen(true) : setSheetOpen(true))}
           >
             <PanelRightOpenIcon />
           </Button>
@@ -105,18 +106,15 @@ export default function Page() {
       ) : (
         inset
       )}
-      <Sheet
-        isOpen={sheetOpen && !isWide}
-        onOpenChange={setSheetOpen}
-        showCloseButton={false}
-        className="gap-0"
-      >
-        <SheetTitle className="sr-only">Well properties</SheetTitle>
-        <ToolPanel
-          value={well}
-          onChange={setWell}
-          onClose={() => setSheetOpen(false)}
-        />
+      <Sheet open={sheetOpen && !isWide} onOpenChange={setSheetOpen}>
+        <SheetContent showCloseButton={false} className="gap-0">
+          <SheetTitle className="sr-only">Well properties</SheetTitle>
+          <ToolPanel
+            value={well}
+            onChange={setWell}
+            onClose={() => setSheetOpen(false)}
+          />
+        </SheetContent>
       </Sheet>
     </SidebarProvider>
   )

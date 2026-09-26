@@ -83,7 +83,7 @@ function ToolPanel({
           variant="ghost"
           size="icon-sm"
           aria-label="Close panel"
-          {...(onClose === undefined ? {} : { onPress: onClose })}
+          onClick={onClose}
         >
           <PanelRightCloseIcon />
         </Button>
@@ -98,18 +98,23 @@ function ToolPanel({
           />
         </Field>
         <Field>
+          <FieldLabel htmlFor={`${id}-type`}>Type</FieldLabel>
           <Select
-            className="flex w-full flex-col gap-3"
+            items={wellTypes.map((type) => ({
+              value: type.id,
+              label: type.label,
+            }))}
             value={value.type}
-            onChange={(key) => update({ type: key as WellType })}
+            onValueChange={(type: WellType | null) => {
+              if (type) update({ type })
+            }}
           >
-            <FieldLabel>Type</FieldLabel>
-            <SelectTrigger>
+            <SelectTrigger id={`${id}-type`} className="w-full">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {wellTypes.map((type) => (
-                <SelectItem key={type.id} id={type.id} textValue={type.label}>
+                <SelectItem key={type.id} value={type.id}>
                   {type.label}
                 </SelectItem>
               ))}
@@ -129,21 +134,22 @@ function ToolPanel({
         <Separator emphasis="subtle" />
         <Field>
           <div className="flex items-center justify-between">
-            <FieldLabel>Kick-off depth</FieldLabel>
+            <FieldLabel id={`${id}-kick-off`}>Kick-off depth</FieldLabel>
             <span className="font-mono text-sm tabular-nums">
               {value.kickOffDepth}
               <span className="text-muted-foreground"> m</span>
             </span>
           </div>
           <Slider
-            aria-label="Kick-off depth"
-            value={value.kickOffDepth}
-            minValue={500}
-            maxValue={4000}
+            aria-labelledby={`${id}-kick-off`}
+            value={[value.kickOffDepth]}
+            min={500}
+            max={4000}
             step={10}
-            onChange={(next) =>
-              update({ kickOffDepth: Array.isArray(next) ? next[0] : next })
-            }
+            onValueChange={(next) => {
+              const kickOffDepth = Array.isArray(next) ? next[0] : next
+              if (kickOffDepth !== undefined) update({ kickOffDepth })
+            }}
           />
           <FieldDescription>
             Measured depth where the well leaves vertical.
@@ -154,24 +160,24 @@ function ToolPanel({
           <FieldLabel htmlFor={`${id}-fda`}>Include in FDA</FieldLabel>
           <Switch
             id={`${id}-fda`}
-            isSelected={value.includeInFda}
-            onChange={(includeInFda) => update({ includeInFda })}
+            checked={value.includeInFda}
+            onCheckedChange={(includeInFda) => update({ includeInFda })}
           />
         </div>
         <div className="flex items-center justify-between gap-3">
           <FieldLabel htmlFor={`${id}-trajectory`}>Show trajectory</FieldLabel>
           <Switch
             id={`${id}-trajectory`}
-            isSelected={value.showTrajectory}
-            onChange={(showTrajectory) => update({ showTrajectory })}
+            checked={value.showTrajectory}
+            onCheckedChange={(showTrajectory) => update({ showTrajectory })}
           />
         </div>
       </SidebarContent>
       <SidebarFooter className="flex-row justify-end gap-2 border-t border-border-subtle p-3">
-        <Button variant="ghost" size="sm" onPress={() => update(defaultWell)}>
+        <Button variant="ghost" size="sm" onClick={() => update(defaultWell)}>
           <RotateCcwIcon /> Reset
         </Button>
-        <Button size="sm" onPress={() => onApply?.(value)}>
+        <Button size="sm" onClick={() => onApply?.(value)}>
           Apply
         </Button>
       </SidebarFooter>

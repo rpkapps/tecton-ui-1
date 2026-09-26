@@ -90,7 +90,7 @@ describe("settings-01", () => {
     const user = userEvent.setup()
     const onSave = vi.fn()
     render(<SettingsPage onSave={onSave} />)
-    const role = screen.getByRole("button", { name: /Role/ })
+    const role = screen.getByRole("combobox", { name: "Role" })
     expect(role).toHaveTextContent("Subsurface lead")
     await user.click(role)
     await user.click(screen.getByRole("option", { name: "Drilling engineer" }))

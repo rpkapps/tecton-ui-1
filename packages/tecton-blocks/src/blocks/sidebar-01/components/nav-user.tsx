@@ -11,6 +11,7 @@ import {
 import { Avatar, AvatarFallback } from "@tecton/react/components/avatar"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -35,11 +36,15 @@ function NavUser({ user }: NavUserProps) {
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenuTrigger>
-          <SidebarMenuButton
-            size="lg"
-            aria-label={`Account: ${user.name}`}
-            className="aria-expanded:bg-sidebar-accent aria-expanded:text-sidebar-accent-foreground"
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                aria-label={`Account: ${user.name}`}
+                className="aria-expanded:bg-sidebar-accent aria-expanded:text-sidebar-accent-foreground"
+              />
+            }
           >
             <Avatar size="sm" className="rounded-lg">
               <AvatarFallback className="rounded-lg">
@@ -53,11 +58,12 @@ function NavUser({ user }: NavUserProps) {
               </span>
             </div>
             <ChevronsUpDownIcon className="ms-auto size-4" />
-          </SidebarMenuButton>
-          <DropdownMenu
-            className="w-(--trigger-width) min-w-56 rounded-lg"
-            placement={isMobile ? "bottom end" : "right bottom"}
-            offset={4}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="min-w-56 rounded-lg"
+            side={isMobile ? "bottom" : "right"}
+            align="end"
+            sideOffset={4}
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="p-0 font-normal">
@@ -78,24 +84,24 @@ function NavUser({ user }: NavUserProps) {
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem textValue="Profile">
+              <DropdownMenuItem>
                 <UserIcon /> Profile
               </DropdownMenuItem>
-              <DropdownMenuItem textValue="Notifications">
+              <DropdownMenuItem>
                 <BellIcon /> Notifications
               </DropdownMenuItem>
-              <DropdownMenuItem textValue="Settings">
+              <DropdownMenuItem>
                 <SettingsIcon /> Settings
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem textValue="Sign out">
+              <DropdownMenuItem>
                 <LogOutIcon /> Sign out
               </DropdownMenuItem>
             </DropdownMenuGroup>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
   )

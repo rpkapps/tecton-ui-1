@@ -9,8 +9,8 @@ import {
   SearchIcon,
 } from "lucide-react"
 
-import { Button, LinkButton } from "@tecton/react/components/button"
-import { Link } from "@tecton/react/tecton/link"
+import { Button } from "@tecton/react/components/button"
+import { Link, LinkButton } from "@tecton/react/tecton/link"
 
 import {
   LogTrack,
@@ -82,10 +82,7 @@ function NotFound({
             />{" "}
             Back to dashboard
           </LinkButton>
-          <Button
-            variant="outline"
-            {...(onSearch === undefined ? {} : { onPress: onSearch })}
-          >
+          <Button variant="outline" onClick={onSearch}>
             <SearchIcon data-icon="inline-start" />
             Search
           </Button>

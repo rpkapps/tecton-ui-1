@@ -12,7 +12,7 @@ import {
   WrenchIcon,
 } from "lucide-react"
 
-import { Button, LinkButton } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/components/button"
 import {
   Item,
   ItemContent,
@@ -26,6 +26,7 @@ import {
   ProgressLabel,
   ProgressValue,
 } from "@tecton/react/components/progress"
+import { LinkButton } from "@tecton/react/tecton/link"
 
 import { LogTrack, LogTrackBand } from "../../page-state/components/log-track"
 import {
@@ -155,7 +156,7 @@ function Maintenance({
           </LinkButton>
           <Button
             variant={subscribed ? "secondary" : "outline"}
-            onPress={toggle}
+            onClick={toggle}
           >
             {subscribed ? (
               <BellRingIcon data-icon="inline-start" />

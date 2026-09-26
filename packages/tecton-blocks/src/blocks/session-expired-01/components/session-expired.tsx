@@ -9,7 +9,7 @@ import {
   AlertDescription,
   AlertTitle,
 } from "@tecton/react/components/alert"
-import { LinkButton } from "@tecton/react/components/button"
+import { LinkButton } from "@tecton/react/tecton/link"
 
 import { LogTrack, LogTrackMarker } from "../../page-state/components/log-track"
 import {

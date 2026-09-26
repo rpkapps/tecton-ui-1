@@ -67,19 +67,17 @@ export default function Page() {
           />
           <ToggleGroup
             aria-label="View"
-            selectionMode="single"
-            selectedKeys={[view]}
-            onSelectionChange={(keys) => {
-              const next = [...keys][0]
+            value={[view]}
+            onValueChange={([next]) => {
+              // Pressing the active view leaves it on: one view is always shown.
               if (next) setView(next as "map" | "section")
             }}
-            disallowEmptySelection
             size="sm"
           >
-            <ToggleGroupItem id="map" aria-label="Map view">
+            <ToggleGroupItem value="map" aria-label="Map view">
               <MapIcon /> Map
             </ToggleGroupItem>
-            <ToggleGroupItem id="section" aria-label="Section view">
+            <ToggleGroupItem value="section" aria-label="Section view">
               <LayersIcon /> Section
             </ToggleGroupItem>
           </ToggleGroup>
@@ -90,7 +88,7 @@ export default function Page() {
               aria-label="Measure"
               aria-pressed={measuring}
               className="aria-pressed:bg-ghost-active aria-pressed:text-ghost-active-foreground"
-              onPress={() => setMeasuring((value) => !value)}
+              onClick={() => setMeasuring((value) => !value)}
             >
               <RulerIcon />
             </Button>
@@ -101,8 +99,8 @@ export default function Page() {
               variant="ghost"
               size="icon-sm"
               aria-label="Zoom in"
-              isDisabled={zoom >= maxZoom}
-              onPress={zoomIn}
+              disabled={zoom >= maxZoom}
+              onClick={zoomIn}
             >
               <ZoomInIcon />
             </Button>
@@ -110,8 +108,8 @@ export default function Page() {
               variant="ghost"
               size="icon-sm"
               aria-label="Zoom out"
-              isDisabled={zoom <= minZoom}
-              onPress={zoomOut}
+              disabled={zoom <= minZoom}
+              onClick={zoomOut}
             >
               <ZoomOutIcon />
             </Button>

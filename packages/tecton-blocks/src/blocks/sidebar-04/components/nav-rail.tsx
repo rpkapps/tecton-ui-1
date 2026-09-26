@@ -15,6 +15,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@tecton/react/components/sidebar"
+import { Link } from "@tecton/react/tecton/link"
 
 import { currentUser, railMain, railSecondary } from "../data"
 import { NavUser } from "./nav-user"
@@ -29,7 +30,11 @@ function NavRail(props: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton size="lg" href="#" tooltip="Tecton">
+            <SidebarMenuButton
+              size="lg"
+              render={<Link href="#" className="hover:no-underline" />}
+              tooltip="Tecton"
+            >
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <HexagonIcon className="size-4" />
               </div>
@@ -50,7 +55,9 @@ function NavRail(props: React.ComponentProps<typeof Sidebar>) {
               {railMain.map((item) => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    href={item.url}
+                    render={
+                      <Link href={item.url} className="hover:no-underline" />
+                    }
                     isActive={item.isActive ?? false}
                     tooltip={item.title}
                   >
@@ -67,7 +74,12 @@ function NavRail(props: React.ComponentProps<typeof Sidebar>) {
             <SidebarMenu>
               {railSecondary.map((item) => (
                 <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton href={item.url} tooltip={item.title}>
+                  <SidebarMenuButton
+                    render={
+                      <Link href={item.url} className="hover:no-underline" />
+                    }
+                    tooltip={item.title}
+                  >
                     <item.icon />
                     <span>{item.title}</span>
                   </SidebarMenuButton>

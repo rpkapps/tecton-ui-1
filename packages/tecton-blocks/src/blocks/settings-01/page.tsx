@@ -106,7 +106,7 @@ function SettingsPage({
                 variant="ghost"
                 size="icon-sm"
                 aria-label="Dismiss"
-                onPress={() => setToast(false)}
+                onClick={() => setToast(false)}
               >
                 <XIcon />
               </Button>
@@ -114,25 +114,25 @@ function SettingsPage({
           </Alert>
         )}
 
-        <Tabs defaultSelectedKey="profile" className="gap-6">
+        <Tabs defaultValue="profile" className="gap-6">
           <TabsList variant="line" aria-label="Settings sections">
-            <TabsTrigger id="profile">
+            <TabsTrigger value="profile">
               <UserIcon /> Profile
             </TabsTrigger>
-            <TabsTrigger id="notifications">
+            <TabsTrigger value="notifications">
               <BellIcon /> Notifications
             </TabsTrigger>
-            <TabsTrigger id="appearance">
+            <TabsTrigger value="appearance">
               <PaletteIcon /> Appearance
             </TabsTrigger>
           </TabsList>
-          <TabsContent id="profile">
+          <TabsContent value="profile">
             <ProfileForm
               value={draft.profile}
               onChange={(profile) => setDraft({ ...draft, profile })}
             />
           </TabsContent>
-          <TabsContent id="notifications">
+          <TabsContent value="notifications">
             <NotificationsForm
               value={draft.notifications}
               onChange={(notifications) =>
@@ -140,7 +140,7 @@ function SettingsPage({
               }
             />
           </TabsContent>
-          <TabsContent id="appearance">
+          <TabsContent value="appearance">
             <AppearanceForm
               value={draft.appearance}
               onChange={(appearance) => setDraft({ ...draft, appearance })}
@@ -165,12 +165,12 @@ function SettingsPage({
             <Button
               variant="ghost"
               size="sm"
-              isDisabled={!dirty}
-              onPress={() => setDraft(saved)}
+              disabled={!dirty}
+              onClick={() => setDraft(saved)}
             >
               Discard
             </Button>
-            <Button size="sm" isDisabled={!dirty || !valid} onPress={save}>
+            <Button size="sm" disabled={!dirty || !valid} onClick={save}>
               Save changes
             </Button>
           </div>
