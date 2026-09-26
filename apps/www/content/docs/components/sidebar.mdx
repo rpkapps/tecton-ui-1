@@ -159,11 +159,7 @@ To change the width, set the `--sidebar-width` and `--sidebar-width-mobile` CSS 
 
 ### Keyboard Shortcut
 
-To trigger the sidebar, you use the `cmd+b` keyboard shortcut on Mac and `ctrl+b` on Windows.
-
-```tsx lineNumbers title="@tecton/react/components/sidebar.tsx"
-const SIDEBAR_KEYBOARD_SHORTCUT = "b"
-```
+The sidebar registers no keyboard shortcut. To toggle it from the keyboard, call `toggleSidebar()` from [`useSidebar`](#usesidebar) in your application's own key handler.
 
 ## Sidebar
 
@@ -524,22 +520,21 @@ const direction = useDirection() // @tecton/react/tecton/provider
 
 ## Several sidebars in one document
 
-A page that mounts independently deployed applications ([Micro-frontends](/docs/micro-frontends)) can end up with more than one `SidebarProvider`. Two defaults get in the way: both providers write the same `sidebar_state` cookie, so the last one to toggle decides what every sidebar restores, and both listen on `window` for `⌘B` / `Ctrl+B`, so one key press toggles all of them.
+A page that mounts independently deployed applications ([Micro-frontends](/docs/micro-frontends)) can end up with more than one `SidebarProvider`. By default every provider writes the same `sidebar_state` cookie, so the last one to toggle decides what every sidebar restores.
 
-Two props on `SidebarProvider` make a provider self-contained:
+`cookieName` on `SidebarProvider` makes a provider self-contained:
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | `cookieName` | `string \| false` | `"sidebar_state"` | Cookie the open state is persisted in. `false` writes no cookie at all. |
-| `keyboardShortcut` | `string \| false` | `"b"` | Key used with ⌘ / Ctrl to toggle the sidebar. `false` registers no `keydown` listener. |
 
 ```tsx lineNumbers
-<SidebarProvider cookieName="mfe_a_sidebar" keyboardShortcut={false}>
+<SidebarProvider cookieName="mfe_a_sidebar">
   <Sidebar />
 </SidebarProvider>
 ```
 
-Give the shell the defaults and each mounted application a name of its own, then either another letter or `false` for the shortcut.
+Give the shell the default and each mounted application a name of its own, or `false`.
 
 {/* guidelines:start */}
 
@@ -563,7 +558,7 @@ Give the shell the defaults and each mounted application a name of its own, then
 
 <Do>
 
-Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it.
+Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it. The sidebar registers no keyboard shortcut: an application that wants one calls `toggleSidebar()` from `useSidebar()` in its own key handler.
 
 </Do>
 
@@ -633,7 +628,7 @@ Announce the current sidebar page to screen readers, not only by colour (`aria-c
 
 </Dont>
 
-<Dont severity="HIGH" title="Two providers sharing one cookie and one ⌘B">
+<Dont severity="HIGH" title="Two providers sharing one cookie">
 
 <Wrong>
 
@@ -648,14 +643,14 @@ Announce the current sidebar page to screen readers, not only by colour (`aria-c
 <Correct>
 
 ```tsx
-<SidebarProvider cookieName="asset_tracker_sidebar" keyboardShortcut={false}>
+<SidebarProvider cookieName="asset_tracker_sidebar">
   <AssetTrackerSidebar />
 </SidebarProvider>
 ```
 
 </Correct>
 
-Every `SidebarProvider` writes the `sidebar_state` cookie and adds a `window` keydown listener for ⌘B / Ctrl+B by default, so a rail mounted beside the shell's own overwrites the state both of them restore from and one key press toggles the pair.
+Every `SidebarProvider` writes the `sidebar_state` cookie by default, so a rail mounted beside the shell's own overwrites the state both of them restore from.
 
 </Dont>
 

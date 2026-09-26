@@ -23,7 +23,7 @@ related: [Field, Input]
 
 - Bound the range with `min`, `max` and `step` (0–100 by default).
 - Pass `value` / `defaultValue` as an array — one entry per thumb — and read it back in `onValueChange`, whose type is `number | number[]`, so narrow it; `onValueCommitted` fires once on release.
-- Name it with `aria-labelledby` pointing at the visible title's `id`: the slider forwards it to every thumb's range input, which `aria-label` on the root does not reach.
+- Name it with `aria-labelledby` pointing at the visible title's `id`, or with `aria-label` when there is no visible title: the slider forwards either to every thumb's range input.
 - Inside a `Field`, use `FieldTitle` (with that `id`) and `FieldDescription`, and show the live value in the description.
 - Disable with `disabled`; switch axis with `orientation="vertical"` plus a height class such as `h-40`.
 

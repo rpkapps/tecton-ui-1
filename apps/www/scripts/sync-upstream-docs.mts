@@ -704,19 +704,51 @@ const PAGE_REWRITES: Record<
 > = {
   // Tailwind's stock palette is removed by the Tecton theme; prose and inline
   // snippets name Tecton palette steps instead (see TECTON_PALETTE_REWRITES).
-  alert: (mdx) =>
-    replaceOrThrow(
+  alert: (mdx) => {
+    mdx = replaceOrThrow(
       mdx,
       "adding custom classes such as `bg-amber-50 dark:bg-amber-950` to the `Alert` component.",
       "adding [palette](/docs/theming#palette) classes such as `bg-yellow-120 text-yellow-1000` to the `Alert` component (a step is a contrast level, so no `dark:` variant is needed).",
       "alert page"
-    ),
-  badge: (mdx) =>
-    replaceOrThrow(
+    )
+    // The API table lists the Tecton variant axes too (overlay, docs/UPSTREAM.md).
+    return replaceOrThrow(
+      mdx,
+      '| Prop      | Type                         | Default     |\n| --------- | ---------------------------- | ----------- |\n| `variant` | `"default" \\| "destructive"` | `"default"` |\n',
+      '| Prop         | Type                                                             | Default     |\n| ------------ | ---------------------------------------------------------------- | ----------- |\n| `variant`    | `"default" \\| "destructive" \\| "success" \\| "warning" \\| "info"` | `"default"` |\n| `appearance` | `"default" \\| "outline" \\| "filled"`                             | `"default"` |\n',
+      "alert page (API table)"
+    )
+  },
+  badge: (mdx) => {
+    mdx = replaceOrThrow(
       mdx,
       "adding custom classes such as `bg-green-50 dark:bg-green-800` to the `Badge` component.",
       "adding [palette](/docs/theming#palette) classes such as `bg-green-120 text-green-830` to the `Badge` component (a step is a contrast level, so no `dark:` variant is needed).",
       "badge page"
+    )
+    // The usage line and the API table list the Tecton variant axes too
+    // (overlay, docs/UPSTREAM.md).
+    mdx = replaceOrThrow(
+      mdx,
+      '<Badge variant="default | outline | secondary | destructive">Badge</Badge>',
+      '<Badge variant="default | outline | secondary | destructive | success | warning | info">Badge</Badge>',
+      "badge page (usage)"
+    )
+    return replaceOrThrow(
+      mdx,
+      '| Prop        | Type                                                                          | Default     |\n| ----------- | ----------------------------------------------------------------------------- | ----------- |\n| `variant`   | `"default" \\| "secondary" \\| "destructive" \\| "outline" \\| "ghost" \\| "link"` | `"default"` |\n| `className` | `string`                                                                      | -           |\n',
+      '| Prop         | Type                                                                                                              | Default     |\n| ------------ | ----------------------------------------------------------------------------------------------------------------- | ----------- |\n| `variant`    | `"default" \\| "secondary" \\| "destructive" \\| "outline" \\| "ghost" \\| "link" \\| "success" \\| "warning" \\| "info"` | `"default"` |\n| `appearance` | `"solid" \\| "outline"`                                                                                            | `"solid"`   |\n| `size`       | `"default" \\| "md" \\| "lg"`                                                                                       | `"default"` |\n| `className`  | `string`                                                                                                          | -           |\n',
+      "badge page (API table)"
+    )
+  },
+  // Upstream's base usage snippet carries the Radix `type` prop; the group is
+  // single-select unless `multiple` is set.
+  "toggle-group": (mdx) =>
+    replaceOrThrow(
+      mdx,
+      '```tsx\n<ToggleGroup type="single">\n',
+      '```tsx\n<ToggleGroup defaultValue={["a"]}>\n',
+      "toggle-group page (usage)"
     ),
   chart: (mdx) =>
     replaceOrThrow(
@@ -741,6 +773,14 @@ const PAGE_REWRITES: Record<
       /\nIf you have a single sidebar in your application, you can use the `SIDEBAR_WIDTH`[^\n]*\n\n```tsx[^\n]*\nconst SIDEBAR_WIDTH[\s\S]*?```\n\nFor multiple sidebars in your application, you can use/,
       "\nTo change the width, set",
       "sidebar page (SIDEBAR_WIDTH)"
+    )
+    // Tecton registers no keyboard shortcuts: the overlay removes upstream's
+    // window-wide ⌘B / Ctrl+B listener (docs/UPSTREAM.md).
+    mdx = replaceOrThrow(
+      mdx,
+      /\nTo trigger the sidebar, you use the `cmd\+b` keyboard shortcut on Mac and `ctrl\+b` on Windows\.\n\n```tsx[^\n]*\nconst SIDEBAR_KEYBOARD_SHORTCUT = "b"\n```\n/,
+      "\nThe sidebar registers no keyboard shortcut. To toggle it from the keyboard, call `toggleSidebar()` from [`useSidebar`](#usesidebar) in your application's own key handler.\n",
+      "sidebar page (keyboard shortcut)"
     )
     // The upstream RTL section links to shadcn's own configuration guide and a
     // hosted preview of upstream's block; the package reads the direction

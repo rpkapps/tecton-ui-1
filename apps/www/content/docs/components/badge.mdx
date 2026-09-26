@@ -13,7 +13,7 @@ import { Badge } from "@tecton/react/components/badge"
 ```
 
 ```tsx
-<Badge variant="default | outline | secondary | destructive">Badge</Badge>
+<Badge variant="default | outline | secondary | destructive | success | warning | info">Badge</Badge>
 ```
 
 ## Variants
@@ -242,7 +242,9 @@ The padding compensation is `has-data-[icon=inline-start]:ps-1.5`, so without th
 
 The `Badge` component displays a badge or a component that looks like a badge.
 
-| Prop        | Type                                                                          | Default     |
-| ----------- | ----------------------------------------------------------------------------- | ----------- |
-| `variant`   | `"default" \| "secondary" \| "destructive" \| "outline" \| "ghost" \| "link"` | `"default"` |
-| `className` | `string`                                                                      | -           |
+| Prop         | Type                                                                                                              | Default     |
+| ------------ | ----------------------------------------------------------------------------------------------------------------- | ----------- |
+| `variant`    | `"default" \| "secondary" \| "destructive" \| "outline" \| "ghost" \| "link" \| "success" \| "warning" \| "info"` | `"default"` |
+| `appearance` | `"solid" \| "outline"`                                                                                            | `"solid"`   |
+| `size`       | `"default" \| "md" \| "lg"`                                                                                       | `"default"` |
+| `className`  | `string`                                                                                                          | -           |

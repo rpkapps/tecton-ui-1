@@ -12,6 +12,8 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@tecton/react/components/alert-dialog"
+import { Button } from "@tecton/react/components/button"
+import { ButtonGroup } from "@tecton/react/components/button-group"
 import { Calendar } from "@tecton/react/components/calendar"
 import {
   Pagination,
@@ -26,7 +28,9 @@ import {
   SidebarMenuItem,
   SidebarProvider,
   SidebarRail,
+  useSidebar,
 } from "@tecton/react/components/sidebar"
+import { Slider } from "@tecton/react/components/slider"
 import {
   Tabs,
   TabsContent,
@@ -243,6 +247,34 @@ describe("sidebar", () => {
     expect(classes).not.toContain("group-data-[side=right]:border-s")
   })
 
+  // Tecton provides no keyboard shortcuts: upstream's window-wide ⌘B / Ctrl+B
+  // listener is removed, and an application binds its own key to
+  // `toggleSidebar()`.
+  it("registers no ⌘B / Ctrl+B shortcut, and toggleSidebar still works", async () => {
+    function Probe() {
+      const { state, toggleSidebar } = useSidebar()
+      return (
+        <button type="button" data-state={state} onClick={toggleSidebar}>
+          Toggle
+        </button>
+      )
+    }
+    render(
+      <SidebarProvider>
+        <Probe />
+      </SidebarProvider>
+    )
+    const toggle = screen.getByRole("button", { name: "Toggle" })
+    await userEvent.keyboard("{Meta>}b{/Meta}")
+    await userEvent.keyboard("{Control>}b{/Control}")
+    fireEvent.keyDown(window, { key: "b", metaKey: true })
+    fireEvent.keyDown(window, { key: "b", ctrlKey: true })
+    expect(toggle).toHaveAttribute("data-state", "expanded")
+
+    await userEvent.click(toggle)
+    expect(toggle).toHaveAttribute("data-state", "collapsed")
+  })
+
   it("positions the offcanvas rail physically", () => {
     const { container } = render(<Rail side="left" />)
     const classes = container
@@ -259,5 +291,105 @@ describe("sidebar", () => {
     expect(
       classes.filter((c) => c.startsWith("rtl:") && c.includes("cursor"))
     ).toEqual([])
+  })
+})
+
+describe("button", () => {
+  it("exposes its variant and size as data attributes", () => {
+    render(
+      <>
+        <Button>Save</Button>
+        <Button variant="outline" size="sm">
+          Cancel
+        </Button>
+      </>
+    )
+    expect(screen.getByRole("button", { name: "Save" })).toHaveAttribute(
+      "data-variant",
+      "default"
+    )
+    expect(screen.getByRole("button", { name: "Save" })).toHaveAttribute(
+      "data-size",
+      "default"
+    )
+    const cancel = screen.getByRole("button", { name: "Cancel" })
+    expect(cancel).toHaveAttribute("data-variant", "outline")
+    expect(cancel).toHaveAttribute("data-size", "sm")
+  })
+})
+
+describe("button-group", () => {
+  // The group gives its filled buttons the outline stroke whenever an outlined
+  // member is present (style-tecton.css, `.cn-button-group`). The rule keys on
+  // the buttons' `data-variant`, so run the selector the class compiles to.
+  function strokeSelector(group: HTMLElement) {
+    const rule = group.className
+      .split(" ")
+      .find(
+        (c) => c.startsWith("[&:has(") && c.endsWith("]:border-outline-border")
+      )
+    expect(rule).toBeDefined()
+    return rule!
+      .slice(1, -"]:border-outline-border".length)
+      .replace("&", "[data-slot=button-group]")
+  }
+
+  it("strokes the filled members of a group that has an outlined one", () => {
+    render(
+      <ButtonGroup>
+        <Button variant="outline">Day</Button>
+        <Button>Week</Button>
+        <Button variant="secondary">Month</Button>
+      </ButtonGroup>
+    )
+    const group = screen.getByRole("group")
+    const stroked = Array.from(
+      group.ownerDocument.querySelectorAll(strokeSelector(group))
+    ).map((el) => el.textContent)
+    expect(stroked).toEqual(["Week", "Month"])
+  })
+
+  it("leaves a group of only filled buttons borderless", () => {
+    render(
+      <ButtonGroup>
+        <Button>Week</Button>
+        <Button variant="secondary">Month</Button>
+      </ButtonGroup>
+    )
+    const group = screen.getByRole("group")
+    expect(
+      group.ownerDocument.querySelectorAll(strokeSelector(group))
+    ).toHaveLength(0)
+  })
+})
+
+describe("slider", () => {
+  // Base UI keeps the thumbs `visibility: hidden` until it has measured them,
+  // which never happens in jsdom, so read the range inputs' attributes rather
+  // than query them by accessible name.
+  const rangeInputs = () =>
+    Array.from(document.querySelectorAll<HTMLInputElement>("input[type=range]"))
+
+  it("names every thumb's range input from aria-label", () => {
+    render(<Slider aria-label="Depth" defaultValue={[20, 80]} />)
+    const inputs = rangeInputs()
+    expect(inputs).toHaveLength(2)
+    for (const input of inputs) {
+      expect(input).toHaveAttribute("aria-label", "Depth")
+    }
+    // The name is not duplicated on the group root.
+    expect(document.querySelector("[data-slot=slider]")).not.toHaveAttribute(
+      "aria-label"
+    )
+  })
+
+  it("names the thumb from aria-labelledby", () => {
+    render(
+      <>
+        <span id="zoom-label">Zoom</span>
+        <Slider aria-labelledby="zoom-label" defaultValue={[2]} max={5} />
+      </>
+    )
+    expect(rangeInputs()[0]).toHaveAttribute("aria-labelledby", "zoom-label")
   })
 })

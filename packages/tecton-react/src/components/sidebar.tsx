@@ -30,7 +30,6 @@ const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 const SIDEBAR_WIDTH = "16rem"
 const SIDEBAR_WIDTH_MOBILE = "18rem"
 const SIDEBAR_WIDTH_ICON = "3rem"
-const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 
 type SidebarContextProps = {
   state: "expanded" | "collapsed"
@@ -62,7 +61,6 @@ function SidebarProvider({
   open: openProp,
   onOpenChange: setOpenProp,
   cookieName = SIDEBAR_COOKIE_NAME,
-  keyboardShortcut = SIDEBAR_KEYBOARD_SHORTCUT,
   className,
   style,
   children,
@@ -80,15 +78,6 @@ function SidebarProvider({
    * @default "sidebar_state"
    */
   cookieName?: string | false
-  /**
-   * Key that toggles the sidebar together with Meta/Ctrl, or `false` to not
-   * register the `window` keydown listener at all. Several micro frontends can
-   * each render a sidebar on one page: give them different keys, or `false`,
-   * so one shortcut does not toggle every sidebar.
-   *
-   * @default "b"
-   */
-  keyboardShortcut?: string | false
 }) {
   const isMobile = useIsMobile()
   const [openMobile, setOpenMobile] = React.useState(false)
@@ -119,22 +108,8 @@ function SidebarProvider({
     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
   }, [isMobile, setOpen, setOpenMobile])
 
-  // Adds a keyboard shortcut to toggle the sidebar.
-  React.useEffect(() => {
-    if (keyboardShortcut === false) {
-      return
-    }
-
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === keyboardShortcut && (event.metaKey || event.ctrlKey)) {
-        event.preventDefault()
-        toggleSidebar()
-      }
-    }
-
-    window.addEventListener("keydown", handleKeyDown)
-    return () => window.removeEventListener("keydown", handleKeyDown)
-  }, [keyboardShortcut, toggleSidebar])
+  // Tecton registers no keyboard shortcut: an application that wants one
+  // binds its own key and calls `toggleSidebar()` from `useSidebar()`.
 
   // We add a state so that we can do data-state="expanded" or "collapsed".
   // This makes it easier to style the sidebar with Tailwind classes.

@@ -1,18 +1,17 @@
 ## Several sidebars in one document
 
-A page that mounts independently deployed applications ([Micro-frontends](/docs/micro-frontends)) can end up with more than one `SidebarProvider`. Two defaults get in the way: both providers write the same `sidebar_state` cookie, so the last one to toggle decides what every sidebar restores, and both listen on `window` for `⌘B` / `Ctrl+B`, so one key press toggles all of them.
+A page that mounts independently deployed applications ([Micro-frontends](/docs/micro-frontends)) can end up with more than one `SidebarProvider`. By default every provider writes the same `sidebar_state` cookie, so the last one to toggle decides what every sidebar restores.
 
-Two props on `SidebarProvider` make a provider self-contained:
+`cookieName` on `SidebarProvider` makes a provider self-contained:
 
 | Name | Type | Default | Description |
 | --- | --- | --- | --- |
 | `cookieName` | `string \| false` | `"sidebar_state"` | Cookie the open state is persisted in. `false` writes no cookie at all. |
-| `keyboardShortcut` | `string \| false` | `"b"` | Key used with ⌘ / Ctrl to toggle the sidebar. `false` registers no `keydown` listener. |
 
 ```tsx lineNumbers
-<SidebarProvider cookieName="mfe_a_sidebar" keyboardShortcut={false}>
+<SidebarProvider cookieName="mfe_a_sidebar">
   <Sidebar />
 </SidebarProvider>
 ```
 
-Give the shell the defaults and each mounted application a name of its own, then either another letter or `false` for the shortcut.
+Give the shell the default and each mounted application a name of its own, or `false`.
