@@ -37,14 +37,14 @@ describe("Canvas", () => {
   })
 
   it.each([
-    ["top-left", ["top-3", "left-3", "flex-col"]],
+    ["top-left", ["top-3", "start-3", "flex-col"]],
     ["top", ["top-3", "left-1/2", "flex-row"]],
-    ["top-right", ["top-3", "right-3", "items-end"]],
-    ["left", ["top-1/2", "left-3"]],
-    ["right", ["top-1/2", "right-3"]],
-    ["bottom-left", ["bottom-3", "left-3"]],
+    ["top-right", ["top-3", "end-3", "items-end"]],
+    ["left", ["top-1/2", "start-3"]],
+    ["right", ["top-1/2", "end-3"]],
+    ["bottom-left", ["bottom-3", "start-3"]],
     ["bottom", ["bottom-3", "left-1/2", "flex-row"]],
-    ["bottom-right", ["right-3", "bottom-3", "items-end"]],
+    ["bottom-right", ["end-3", "bottom-3", "items-end"]],
   ] as const)("CanvasOverlay position=%s", (position, classes) => {
     const { container } = render(<CanvasOverlay position={position} />)
     const overlay = container.querySelector('[data-slot="canvas-overlay"]')

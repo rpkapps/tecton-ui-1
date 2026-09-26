@@ -42,14 +42,14 @@ const canvasOverlayVariants = cva(
   {
     variants: {
       position: {
-        "top-left": "top-3 left-3 flex-col items-start",
+        "top-left": "start-3 top-3 flex-col items-start",
         top: "top-3 left-1/2 -translate-x-1/2 flex-row items-center",
-        "top-right": "top-3 right-3 flex-col items-end",
-        left: "top-1/2 left-3 -translate-y-1/2 flex-col items-start",
-        right: "top-1/2 right-3 -translate-y-1/2 flex-col items-end",
-        "bottom-left": "bottom-3 left-3 flex-col items-start",
+        "top-right": "end-3 top-3 flex-col items-end",
+        left: "start-3 top-1/2 -translate-y-1/2 flex-col items-start",
+        right: "end-3 top-1/2 -translate-y-1/2 flex-col items-end",
+        "bottom-left": "start-3 bottom-3 flex-col items-start",
         bottom: "bottom-3 left-1/2 -translate-x-1/2 flex-row items-center",
-        "bottom-right": "right-3 bottom-3 flex-col items-end",
+        "bottom-right": "end-3 bottom-3 flex-col items-end",
       },
     },
     defaultVariants: {

@@ -21,7 +21,7 @@ import { useDirection } from "@tecton/react/tecton/provider"
  * its text, a toolbar with the send button, and optional suggestions and
  * attachment chips. Upstream shadcn has the conversation components
  * (`message`, `bubble`, `message-scroller`) but no composer, so this is
- * Tecton's (docs/research/composer.md has the survey it follows).
+ * Tecton's.
  *
  * Keyboard: Enter sends, Shift+Enter is a new line, ⌘/Ctrl+Enter always
  * sends (and is the only way to send with `submitMode="mod-enter"`);

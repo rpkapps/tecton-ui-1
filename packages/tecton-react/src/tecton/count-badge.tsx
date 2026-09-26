@@ -25,10 +25,10 @@ const countBadgeVariants = cva(
         dot: "size-2",
       },
       anchor: {
-        "top-right": "-top-1 -right-1",
-        "top-left": "-top-1 -left-1",
-        "bottom-right": "-right-1 -bottom-1",
-        "bottom-left": "-bottom-1 -left-1",
+        "top-right": "-end-1 -top-1",
+        "top-left": "-start-1 -top-1",
+        "bottom-right": "-end-1 -bottom-1",
+        "bottom-left": "-start-1 -bottom-1",
       },
     },
     defaultVariants: {

@@ -112,10 +112,10 @@ describe("CountBadge", () => {
   })
 
   it.each([
-    ["top-right", "-top-1 -right-1"],
-    ["top-left", "-top-1 -left-1"],
-    ["bottom-right", "-right-1 -bottom-1"],
-    ["bottom-left", "-bottom-1 -left-1"],
+    ["top-right", "-top-1 -end-1"],
+    ["top-left", "-top-1 -start-1"],
+    ["bottom-right", "-end-1 -bottom-1"],
+    ["bottom-left", "-bottom-1 -start-1"],
   ] as const)("anchor=%s positions the badge", (anchor, classes) => {
     const { container } = render(
       <CountBadge count={1} anchor={anchor}>
