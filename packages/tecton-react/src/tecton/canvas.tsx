@@ -150,7 +150,12 @@ function CanvasToolbarButton({
         <Button
           variant={variant}
           size={size}
-          className={className}
+          // Stays focusable when disabled (roving toolbar), so the Button's
+          // `disabled:` styles never apply: dim on aria-disabled instead.
+          className={cn(
+            "aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
+            className
+          )}
           render={render}
           nativeButton={nativeButton}
         />

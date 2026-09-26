@@ -97,7 +97,7 @@ function Tool({
             aria-label={label}
             disabled={disabled}
             // A disabled tool stays focusable (aria-disabled), so dim it here.
-            className="aria-disabled:opacity-50 aria-pressed:bg-ghost-active aria-pressed:text-ghost-active-foreground"
+            className="aria-pressed:bg-ghost-active aria-pressed:text-ghost-active-foreground"
             {...(active === undefined ? {} : { "aria-pressed": active })}
             {...(onClick === undefined ? {} : { onClick })}
             {...(render === undefined ? {} : { render })}
