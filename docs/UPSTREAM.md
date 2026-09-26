@@ -70,8 +70,10 @@ does not ship.
 
 `"rtl": true` makes the CLI rewrite physical classes to logical ones at install time (`ml-` →
 `ms-`, `left-` → `start-`, `rounded-l-` → `rounded-s-`, `side="right"` → `side="inline-end"`, …);
-only classes keyed on an explicit side (`data-[side=left|right]` on sidebar and sheet) stay
-physical. `pnpm generated:check` uses the same setting.
+only positioning classes keyed on an explicit side (`data-[side=left|right]:left-0`) stay
+physical, and a class that starts with `ltr:` / `rtl:` is left as written (the overlay relies on
+this for the physical `side` of sidebar and sheet and `swipeDirection` of drawer).
+`pnpm generated:check` uses the same setting.
 
 ## Updating
 
@@ -216,6 +218,13 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   `src/tecton/__tests__/sidebar-provider.test.tsx`). Upstream's `window` keydown listener for
   ⌘B / Ctrl+B (`SIDEBAR_KEYBOARD_SHORTCUT`) is removed: Tecton registers no keyboard shortcuts, and
   an application that wants one calls `toggleSidebar()` from `useSidebar()` in its own handler.
+- **`sheet`, `drawer`** — `side` / `swipeDirection` are physical, so a left or right panel's
+  border and corners (`style-tecton.css`), its slide (`translate-x`), and the drawer's edge,
+  `transform-origin` and bleed are written as `ltr:` / `rtl:` pairs of the same physical class,
+  which the CLI's RTL transform leaves alone (it would otherwise make them logical or add a
+  mirrored `rtl:` translate, while Base UI's swipe and `--closed-transform` stay physical). In RTL
+  a horizontal drawer's row is reversed (popup and swipe handle), so the handle stays on the inner
+  edge.
 - **`slider`** — the thumb (a `div`) uses `data-disabled:pointer-events-none` instead of
   `disabled:`, which never matched. `aria-label` on `Slider` is passed to every thumb's range input
   instead of the group root (Base UI forwards only `aria-labelledby`), so `<Slider aria-label="…">`

@@ -107,8 +107,8 @@ check_cn_classes() {
   local allowlist leftovers
   allowlist="$(sed -n '/^const ALLOWLIST = new Set(\[/,/^\])/p' "$transform" | grep -o '"cn-[A-Za-z0-9_-]*"' | tr -d '"' || true)"
   leftovers="$(grep -o '\bcn-[A-Za-z0-9_-]*' "$out"/*.json | sort -u |
-    awk -F: -v allowlist="$allowlist" '
-      BEGIN { n = split(allowlist, a, "\n"); for (i = 1; i <= n; i++) allowed[a[i]] = 1 }
+    ALLOWLIST="$allowlist" awk -F: '
+      BEGIN { n = split(ENVIRON["ALLOWLIST"], a, "\n"); for (i = 1; i <= n; i++) allowed[a[i]] = 1 }
       !($2 in allowed)' || true)"
   if [ -n "$leftovers" ]; then
     echo "error: cn-* classes survived the $STYLE registry build (never inlined, no CSS):" >&2

@@ -589,7 +589,7 @@ index 8c68524a..e9b34576 100644
        <DialogPrimitive.Popup
          data-slot="dialog-content"
 diff --git a/apps/v4/registry/bases/base/ui/drawer.tsx b/apps/v4/registry/bases/base/ui/drawer.tsx
-index bebe3a91..48858143 100644
+index bebe3a91..1a632390 100644
 --- a/apps/v4/registry/bases/base/ui/drawer.tsx
 +++ b/apps/v4/registry/bases/base/ui/drawer.tsx
 @@ -2,6 +2,7 @@
@@ -619,6 +619,15 @@ index bebe3a91..48858143 100644
  }
  
  function DrawerClose({ ...props }: DrawerPrimitive.Close.Props) {
+@@ -88,7 +97,7 @@ function DrawerSwipeHandle({
+       data-slot="drawer-swipe-handle"
+       aria-hidden="true"
+       className={cn(
+-        "cn-drawer-swipe-handle relative z-10 flex shrink-0 cursor-grab transition-opacity duration-200 group-data-nested-drawer-open/drawer-popup:opacity-0 group-data-nested-drawer-swiping/drawer-popup:opacity-100 group-data-[swipe-direction=left]/drawer-popup:order-last group-data-[swipe-direction=up]/drawer-popup:order-last active:cursor-grabbing",
++        "cn-drawer-swipe-handle relative z-10 flex shrink-0 cursor-grab transition-opacity duration-200 group-data-nested-drawer-open/drawer-popup:opacity-0 group-data-nested-drawer-swiping/drawer-popup:opacity-100 group-data-[swipe-direction=left]/drawer-popup:order-last group-data-[swipe-direction=up]/drawer-popup:order-last rtl:group-data-[swipe-axis=x]/drawer-popup:flex-row-reverse active:cursor-grabbing",
+         className
+       )}
+       {...props}
 @@ -99,14 +108,16 @@ function DrawerSwipeHandle({
  function DrawerContent({
    className,
@@ -638,6 +647,34 @@ index bebe3a91..48858143 100644
        {modal === true && (
          <DrawerOverlay data-snap-points={hasSnapPoints ? "" : undefined} />
        )}
+@@ -125,7 +136,7 @@ function DrawerContent({
+             // Nested.
+             "data-nested-drawer-open:overflow-hidden data-nested-drawer-open:brightness-95",
+             // Bleed.
+-            "after:pointer-events-none after:absolute after:bg-(--drawer-bleed-background,var(--color-popover)) data-[swipe-axis=x]:after:inset-y-0 data-[swipe-axis=x]:after:w-(--bleed) data-[swipe-axis=y]:after:inset-x-0 data-[swipe-axis=y]:after:h-(--bleed) data-[swipe-direction=down]:after:top-full data-[swipe-direction=left]:after:right-full data-[swipe-direction=right]:after:left-full data-[swipe-direction=up]:after:bottom-full",
++            "after:pointer-events-none after:absolute after:bg-(--drawer-bleed-background,var(--color-popover)) data-[swipe-axis=x]:after:inset-y-0 data-[swipe-axis=x]:after:w-(--bleed) data-[swipe-axis=y]:after:inset-x-0 data-[swipe-axis=y]:after:h-(--bleed) data-[swipe-direction=down]:after:top-full ltr:data-[swipe-direction=left]:after:right-full rtl:data-[swipe-direction=left]:after:right-full ltr:data-[swipe-direction=right]:after:left-full rtl:data-[swipe-direction=right]:after:left-full data-[swipe-direction=up]:after:bottom-full",
+             // Sizing.
+             "[--drawer-content-height:var(--drawer-height,auto)] data-[swipe-axis=x]:[--drawer-content-width:75%] data-[swipe-axis=y]:[--drawer-content-max-height:calc(100dvh-6rem)] data-[swipe-axis=y]:data-snap-points:[--drawer-content-height:100dvh] data-[swipe-axis=x]:sm:[--drawer-content-width:24rem]",
+             // Stack.
+@@ -135,15 +146,15 @@ function DrawerContent({
+             // Axis: y.
+             "data-[swipe-axis=y]:inset-x-0 data-[swipe-axis=y]:data-nested-drawer-open:h-(--stack-height)",
+             // Axis: x.
+-            "data-[swipe-axis=x]:inset-y-0 data-[swipe-axis=x]:flex-row",
++            "data-[swipe-axis=x]:inset-y-0 data-[swipe-axis=x]:flex-row rtl:data-[swipe-axis=x]:flex-row-reverse",
+             // Direction: down.
+             "data-[swipe-direction=down]:bottom-0 data-[swipe-direction=down]:origin-bottom data-[swipe-direction=down]:[--closed-transform:translate3d(0,calc(100%+var(--drawer-inset,0px)+2px),0)] data-[swipe-direction=down]:[--translate-y:calc(var(--drawer-snap-point-offset,0px)+var(--drawer-swipe-movement-y)-var(--stack-peek-offset)-(var(--stack-shrink)*var(--stack-height)))]",
+             // Direction: up.
+             "data-[swipe-direction=up]:top-0 data-[swipe-direction=up]:origin-top data-[swipe-direction=up]:[--closed-transform:translate3d(0,calc(-100%-var(--drawer-inset,0px)-2px),0)] data-[swipe-direction=up]:[--translate-y:calc(var(--drawer-snap-point-offset,0px)+var(--drawer-swipe-movement-y)+var(--stack-peek-offset)+(var(--stack-shrink)*var(--stack-height)))]",
+             // Direction: left.
+-            "data-[swipe-direction=left]:left-0 data-[swipe-direction=left]:origin-left data-[swipe-direction=left]:[--closed-transform:translate3d(calc(-100%-var(--drawer-inset,0px)-2px),0,0)] data-[swipe-direction=left]:[--translate-x:calc(var(--drawer-swipe-movement-x)+var(--stack-peek-offset)+(var(--stack-shrink)*100%))]",
++            "ltr:data-[swipe-direction=left]:left-0 rtl:data-[swipe-direction=left]:left-0 ltr:data-[swipe-direction=left]:origin-left rtl:data-[swipe-direction=left]:origin-left data-[swipe-direction=left]:[--closed-transform:translate3d(calc(-100%-var(--drawer-inset,0px)-2px),0,0)] data-[swipe-direction=left]:[--translate-x:calc(var(--drawer-swipe-movement-x)+var(--stack-peek-offset)+(var(--stack-shrink)*100%))]",
+             // Direction: right.
+-            "data-[swipe-direction=right]:right-0 data-[swipe-direction=right]:origin-right data-[swipe-direction=right]:[--closed-transform:translate3d(calc(100%+var(--drawer-inset,0px)+2px),0,0)] data-[swipe-direction=right]:[--translate-x:calc(var(--drawer-swipe-movement-x)-var(--stack-peek-offset)-(var(--stack-shrink)*100%))]",
++            "ltr:data-[swipe-direction=right]:right-0 rtl:data-[swipe-direction=right]:right-0 ltr:data-[swipe-direction=right]:origin-right rtl:data-[swipe-direction=right]:origin-right data-[swipe-direction=right]:[--closed-transform:translate3d(calc(100%+var(--drawer-inset,0px)+2px),0,0)] data-[swipe-direction=right]:[--translate-x:calc(var(--drawer-swipe-movement-x)-var(--stack-peek-offset)-(var(--stack-shrink)*100%))]",
+             className
+           )}
+           {...props}
 diff --git a/apps/v4/registry/bases/base/ui/dropdown-menu.tsx b/apps/v4/registry/bases/base/ui/dropdown-menu.tsx
 index 4c4543e2..74e2002d 100644
 --- a/apps/v4/registry/bases/base/ui/dropdown-menu.tsx
@@ -1027,7 +1064,7 @@ index d69c1342..33479f81 100644
 -export { Separator }
 +export { Separator, separatorVariants }
 diff --git a/apps/v4/registry/bases/base/ui/sheet.tsx b/apps/v4/registry/bases/base/ui/sheet.tsx
-index 72669ad9..80cacd1d 100644
+index 72669ad9..3e83f20b 100644
 --- a/apps/v4/registry/bases/base/ui/sheet.tsx
 +++ b/apps/v4/registry/bases/base/ui/sheet.tsx
 @@ -2,6 +2,7 @@
@@ -1057,7 +1094,7 @@ index 72669ad9..80cacd1d 100644
  }
  
  function SheetOverlay({ className, ...props }: SheetPrimitive.Backdrop.Props) {
-@@ -41,13 +50,15 @@ function SheetContent({
+@@ -41,19 +50,21 @@ function SheetContent({
    children,
    side = "right",
    showCloseButton = true,
@@ -1078,6 +1115,13 @@ index 72669ad9..80cacd1d 100644
        <SheetOverlay />
        <SheetPrimitive.Popup
          data-slot="sheet-content"
+         data-side={side}
+         className={cn(
+-          "cn-sheet-content data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem]",
++          "cn-sheet-content data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] ltr:data-[side=left]:data-ending-style:translate-x-[-2.5rem] rtl:data-[side=left]:data-ending-style:translate-x-[-2.5rem] ltr:data-[side=left]:data-starting-style:translate-x-[-2.5rem] rtl:data-[side=left]:data-starting-style:translate-x-[-2.5rem] ltr:data-[side=right]:data-ending-style:translate-x-[2.5rem] rtl:data-[side=right]:data-ending-style:translate-x-[2.5rem] ltr:data-[side=right]:data-starting-style:translate-x-[2.5rem] rtl:data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem]",
+           className
+         )}
+         {...props}
 diff --git a/apps/v4/registry/bases/base/ui/sidebar.tsx b/apps/v4/registry/bases/base/ui/sidebar.tsx
 index 1ca33564..70aef2a3 100644
 --- a/apps/v4/registry/bases/base/ui/sidebar.tsx

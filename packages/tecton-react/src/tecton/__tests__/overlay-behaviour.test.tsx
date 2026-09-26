@@ -16,6 +16,11 @@ import { Button } from "@tecton/react/components/button"
 import { ButtonGroup } from "@tecton/react/components/button-group"
 import { Calendar } from "@tecton/react/components/calendar"
 import {
+  Drawer,
+  DrawerContent,
+  DrawerTitle,
+} from "@tecton/react/components/drawer"
+import {
   Pagination,
   PaginationContent,
   PaginationItem,
@@ -30,6 +35,7 @@ import {
   SidebarRail,
   useSidebar,
 } from "@tecton/react/components/sidebar"
+import { Sheet, SheetContent, SheetTitle } from "@tecton/react/components/sheet"
 import { Slider } from "@tecton/react/components/slider"
 import {
   Tabs,
@@ -291,6 +297,80 @@ describe("sidebar", () => {
     expect(
       classes.filter((c) => c.startsWith("rtl:") && c.includes("cursor"))
     ).toEqual([])
+  })
+})
+
+// `side` / `swipeDirection` are physical: the edge, border, corners and slide
+// of Sheet and Drawer stay on that physical edge in both directions. Written
+// with a leading `ltr:` / `rtl:` pair, which the CLI's right-to-left transform
+// leaves as written (docs/UPSTREAM.md).
+function classesOf(slot: string) {
+  return document
+    .querySelector(`[data-slot=${slot}]`)!
+    .className.split(" ")
+    .filter(Boolean)
+}
+
+// A class the transform made logical (`border-e`, `start-0`, `origin-end`,
+// `rounded-s-xl`, `after:end-full`) or mirrored (`rtl:…-translate-x-…`).
+const MIRRORED =
+  /(?:^|:)(?:border-[se]|rounded-[se]-|-?(?:start|end)-|origin-(?:start|end))|^rtl:.*:-translate-x-/
+
+describe("sheet", () => {
+  it("keeps a left sheet on the left edge in both directions", () => {
+    render(
+      <Sheet open>
+        <SheetContent side="left">
+          <SheetTitle>Filters</SheetTitle>
+        </SheetContent>
+      </Sheet>
+    )
+    const classes = classesOf("sheet-content")
+    expect(classes).toEqual(
+      expect.arrayContaining([
+        "data-[side=left]:left-0",
+        "ltr:data-[side=left]:border-r",
+        "rtl:data-[side=left]:border-r",
+        "ltr:data-[side=left]:data-starting-style:translate-x-[-2.5rem]",
+        "rtl:data-[side=left]:data-starting-style:translate-x-[-2.5rem]",
+        "ltr:data-[side=left]:data-ending-style:translate-x-[-2.5rem]",
+        "rtl:data-[side=left]:data-ending-style:translate-x-[-2.5rem]",
+      ])
+    )
+    expect(classes.filter((c) => MIRRORED.test(c))).toEqual([])
+  })
+})
+
+describe("drawer", () => {
+  it("keeps a left drawer on the left edge in both directions", () => {
+    render(
+      <Drawer open swipeDirection="left" showSwipeHandle>
+        <DrawerContent>
+          <DrawerTitle>Filters</DrawerTitle>
+        </DrawerContent>
+      </Drawer>
+    )
+    const classes = classesOf("drawer-popup")
+    expect(classes).toEqual(
+      expect.arrayContaining([
+        "ltr:data-[swipe-direction=left]:left-0",
+        "rtl:data-[swipe-direction=left]:left-0",
+        "ltr:data-[swipe-direction=left]:origin-left",
+        "rtl:data-[swipe-direction=left]:origin-left",
+        "ltr:data-[swipe-direction=left]:rounded-r-xl",
+        "rtl:data-[swipe-direction=left]:rounded-r-xl",
+        "ltr:data-[swipe-direction=left]:border-r",
+        "rtl:data-[swipe-direction=left]:border-r",
+        "ltr:data-[swipe-direction=left]:after:right-full",
+        "rtl:data-[swipe-direction=left]:after:right-full",
+        // The swipe handle sits on the inner edge: the row runs left to right.
+        "rtl:data-[swipe-axis=x]:flex-row-reverse",
+      ])
+    )
+    expect(classes.filter((c) => MIRRORED.test(c))).toEqual([])
+    expect(classesOf("drawer-swipe-handle")).toContain(
+      "rtl:group-data-[swipe-axis=x]/drawer-popup:flex-row-reverse"
+    )
   })
 })
 
