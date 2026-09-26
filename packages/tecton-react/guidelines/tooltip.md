@@ -24,6 +24,7 @@ related: [HoverCard, Popover]
 - Give an icon-only trigger its own `aria-label`; the tooltip is `aria-describedby`, not the name.
 - Set `delay` and `closeDelay` on `TooltipTrigger` (Tecton opens at `delay={0}`) and `placement` on `Tooltip`; a `Kbd` inside gets its own spacing, as in `Save changes <Kbd>S</Kbd>`.
 - To explain a disabled control, wrap it: `<span className="inline-block w-fit"><Button isDisabled>Export</Button></span>`.
+- A trigger that is not a control (a `Badge`, a term) needs focus and a role, or React Aria's `Focusable` warns and keyboard users never open it: `<Badge render={(props) => <span {...props} tabIndex={0} role="img" aria-label="TVD" />}>TVD</Badge>`.
 
 ## Don't
 
