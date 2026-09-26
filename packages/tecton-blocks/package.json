@@ -7,7 +7,7 @@
   "scripts": {
     "lint": "eslint",
     "format": "prettier --write --ignore-path ../../.prettierignore \"**/*.{ts,tsx}\"",
-    "typecheck": "pnpm --filter @tecton/react build && tsc --noEmit",
+    "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
     "registry:build": "bun run scripts/registry-build.mts",

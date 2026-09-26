@@ -2,6 +2,9 @@ packages:
   - "apps/*"
   - "packages/*"
 
+# The one list of dependencies whose install scripts may run. pnpm 10.33 ignores
+# `allowBuilds` as soon as package.json has a `pnpm.onlyBuiltDependencies` list,
+# so builds are configured here and nowhere else.
 allowBuilds:
   esbuild: true
   lightningcss: true
