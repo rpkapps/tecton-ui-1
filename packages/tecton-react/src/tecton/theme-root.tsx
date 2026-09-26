@@ -4,7 +4,9 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
-import { localeDirection, TectonProvider } from "@tecton/react/tecton/provider"
+import { TectonProvider } from "@tecton/react/tecton/provider"
+
+import { localeDirection } from "./internal/locale"
 
 /**
  * Tecton ThemeRoot — the root element of an independently deployed

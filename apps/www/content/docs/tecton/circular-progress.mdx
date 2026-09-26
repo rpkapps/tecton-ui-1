@@ -31,7 +31,7 @@ For a linear bar use [Progress](/docs/components/progress); for a plain loading 
 
 ## Value label
 
-`showValue` renders the formatted value in the centre; children replace it with custom content. `min`, `max` and `format` set the scale and the text.
+`showValue` renders the formatted value in the centre; children replace it with custom content. `valueLabel` shows custom text such as `7 of 12` and, when it is a string or number, is also what screen readers announce instead of the percentage. `min`, `max` and `format` set the scale and the text.
 
 <ComponentPreview name="circular-progress-value" />
 
@@ -48,7 +48,7 @@ For a linear bar use [Progress](/docs/components/progress); for a plain loading 
 ### Use it when
 
 - The progress belongs in a compact space: a card corner, a table cell, a tile, a KPI.
-- The number matters as much as the arc: `showValue`, or children such as `7/12`.
+- The number matters as much as the arc: `showValue`, or `valueLabel="7 of 12"` (also announced) for a count.
 - A ring, not an icon, is the right weight for an indeterminate wait inside a panel or a dialog.
 
 ### Not for
@@ -185,5 +185,6 @@ A `div` with `role="progressbar"`; accepts `div` props.
 | `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | `"md"` | Diameter 16 / 24 / 40 / 64 / 96 px. |
 | `color` | `"default" \| "foreground" \| "success" \| "warning" \| "error" \| "info"` | `"default"` | Ring colour. |
 | `showValue` | `boolean` | `false` | Show the formatted value in the centre. |
-| `children` | `ReactNode` | - | Custom centre content; overrides `showValue`. |
+| `valueLabel` | `ReactNode` | - | Custom value text in the centre; a string or number is also announced (`aria-valuetext`). |
+| `children` | `ReactNode` | - | Custom centre content; overrides `valueLabel` and `showValue`. |
 | `aria-label` | `string` | - | Required without a visible label. |

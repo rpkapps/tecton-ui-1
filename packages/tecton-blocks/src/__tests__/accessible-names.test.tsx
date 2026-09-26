@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest"
 import ContentPage from "../blocks/content-01/page"
 import { TopNav } from "../blocks/dashboard-01/page"
 import FaciesPage from "../blocks/facies-modeling-panel/page"
+import FdaComparisonTablePage from "../blocks/fda-comparison-table/page"
 import HorizonsPage from "../blocks/horizons-panel/page"
 import WellsListRoute from "../blocks/list-01/page"
 import SettingsRoute from "../blocks/settings-01/page"
@@ -107,5 +108,21 @@ describe("search inputs have an accessible name", () => {
     expect(
       screen.getByRole("textbox", { name: "Search project" })
     ).toBeInTheDocument()
+  })
+})
+
+describe("table rows are named by a row header", () => {
+  it("fda-comparison-table: the FDA column", () => {
+    render(<FdaComparisonTablePage />)
+    const header = screen.getByRole("rowheader", { name: /FDA 2\.3/ })
+    expect(header).toHaveAttribute("scope", "row")
+    expect(header.closest("tr")).not.toBeNull()
+  })
+
+  it("list-01: the well name", () => {
+    render(<WellsListRoute />)
+    const header = screen.getByRole("rowheader", { name: "16/2-D-12 H" })
+    expect(header.tagName).toBe("TH")
+    expect(header).toHaveAttribute("data-label", "Well")
   })
 })

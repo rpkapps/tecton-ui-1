@@ -42,7 +42,7 @@ import type { FdaSummary } from "../data"
 
 type FdaCardProps = Omit<React.ComponentProps<typeof Card>, "children"> & {
   fda: FdaSummary
-  isSelected?: boolean
+  selected?: boolean
   onSelectedChange?: (selected: boolean) => void
   onOpen?: (fda: FdaSummary) => void
   onCompare?: (fda: FdaSummary) => void
@@ -60,7 +60,7 @@ type FdaCardProps = Omit<React.ComponentProps<typeof Card>, "children"> & {
 function FdaCard({
   className,
   fda,
-  isSelected,
+  selected,
   onSelectedChange,
   onOpen,
   onCompare,
@@ -77,14 +77,14 @@ function FdaCard({
       data-slot="fda-card"
       data-status={fda.status}
       size={size}
-      className={cn("gap-3", isSelected && "ring-primary/60", className)}
+      className={cn("gap-3", selected && "ring-primary/60", className)}
       {...props}
     >
       <CardHeader className="items-center">
         <CardTitle className="flex items-center gap-2">
           <Checkbox
             aria-label={`Select ${fda.code}`}
-            {...(isSelected === undefined ? {} : { checked: isSelected })}
+            {...(selected === undefined ? {} : { checked: selected })}
             {...(onSelectedChange === undefined
               ? {}
               : {

@@ -22,6 +22,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@tecton/react/components/tooltip"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 /**
  * Tecton Overflow — a flex row that gives up space in stages when its
@@ -786,16 +787,11 @@ function keepsArrow(target: HTMLElement, forward: boolean, inline: boolean) {
   return forward ? start < target.value.length : start > 0
 }
 
-function isRtl(element: HTMLElement) {
-  const owner = element.closest<HTMLElement>("[dir]")
-  if (owner && owner.dir !== "auto") return owner.dir === "rtl"
-  return getComputedStyle(element).direction === "rtl"
-}
-
 /**
  * Toolbar keyboard interaction (WAI-ARIA toolbar pattern) over every control
  * in the row, whatever renders it: the arrow keys of the row's axis move
- * between the visible controls without wrapping (mirrored in RTL), Tab and
+ * between the visible controls without wrapping (mirrored when the
+ * `TectonProvider` direction is right to left), Tab and
  * Shift+Tab leave the toolbar, and coming back with the keyboard returns to
  * the control that last had focus. A control that uses the arrow keys itself
  * (a text field before its edge, a tab list, a toggle group) keeps them.
@@ -806,6 +802,7 @@ function useToolbarKeyboard(
 ) {
   const lastFocused = React.useRef<HTMLElement | null>(null)
   const pointer = React.useRef(false)
+  const direction = useDirection()
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     const root = ref.current
@@ -828,7 +825,7 @@ function useToolbarKeyboard(
     let forward: boolean
     if (orientation === "horizontal") {
       if (event.key !== "ArrowRight" && event.key !== "ArrowLeft") return
-      forward = (event.key === "ArrowRight") !== isRtl(root)
+      forward = (event.key === "ArrowRight") !== (direction === "rtl")
     } else {
       if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return
       forward = event.key === "ArrowDown"

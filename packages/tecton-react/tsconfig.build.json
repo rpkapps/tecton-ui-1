@@ -4,6 +4,7 @@
     "noEmit": false,
     "declaration": true,
     "declarationMap": false,
+    "stripInternal": true,
     "emitDeclarationOnly": true,
     "outDir": "dist",
     "rootDir": "src"

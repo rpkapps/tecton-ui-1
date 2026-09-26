@@ -71,7 +71,7 @@ function ProjectSwitcher({
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="min-w-56 rounded-lg"
-            side={isMobile ? "bottom" : "right"}
+            side={isMobile ? "bottom" : "inline-end"}
             align="start"
             sideOffset={4}
           >

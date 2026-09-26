@@ -18,6 +18,7 @@ import {
   type ComposerAttachmentItem,
   type ComposerCommandItem,
   type ComposerProps,
+  useComposer,
 } from "@tecton/react/tecton/composer"
 import { TectonProvider } from "@tecton/react/tecton/provider"
 
@@ -35,8 +36,10 @@ function Chat(
       <ComposerField>
         <ComposerAttachments
           items={items}
-          onRemove={(id) =>
-            setItems((current) => current.filter((item) => item.id !== id))
+          onRemove={(value) =>
+            setItems((current) =>
+              current.filter((item) => item.value !== value)
+            )
           }
         />
         <ComposerInput placeholder="Ask anything" />
@@ -564,7 +567,7 @@ describe("Composer", () => {
       <Chat
         attachments={[
           {
-            id: "selection",
+            value: "selection",
             label: "Selected text",
             description: "“A-7 is flaring”",
           },
@@ -587,8 +590,8 @@ describe("Composer", () => {
     render(
       <Chat
         attachments={[
-          { id: "selection", label: "Selected text" },
-          { id: "well", label: "Well A-7" },
+          { value: "selection", label: "Selected text" },
+          { value: "well", label: "Well A-7" },
         ]}
       />
     )
@@ -728,19 +731,19 @@ describe("ComposerToolbar", () => {
 
 const COMMANDS: ComposerCommandItem[] = [
   {
-    id: "new",
+    value: "new",
     command: "new",
     label: "Start a new conversation",
     group: "Chat",
   },
   {
-    id: "ack",
+    value: "ack",
     command: "acknowledge",
     label: "Acknowledge alert",
     group: "Actions",
   },
   {
-    id: "note",
+    value: "note",
     command: "add-note",
     label: "Add a note to the well",
     group: "Actions",
@@ -973,9 +976,14 @@ describe("ComposerCommands", () => {
 
   it("lists each group once, where its best match ranks, and moves in that order", async () => {
     const items: ComposerCommandItem[] = [
-      { id: "apple", command: "apple", label: "Pick", group: "On this page" },
-      { id: "bar", command: "bar", label: "A drink", group: "Chat" },
-      { id: "cat", command: "cat", label: "Pet", group: "On this page" },
+      {
+        value: "apple",
+        command: "apple",
+        label: "Pick",
+        group: "On this page",
+      },
+      { value: "bar", command: "bar", label: "A drink", group: "Chat" },
+      { value: "cat", command: "cat", label: "Pet", group: "On this page" },
     ]
     render(
       <Composer onSubmit={() => {}}>
@@ -1020,25 +1028,25 @@ describe("ComposerCommands", () => {
     // A better match from another group sits between two of "On this page".
     const items: ComposerCommandItem[] = [
       {
-        id: "new",
+        value: "new",
         command: "new",
         label: "Start a new conversation",
         group: "Chat",
       },
       {
-        id: "ack",
+        value: "ack",
         command: "acknowledge",
         label: "Acknowledge alert A-7",
         group: "On this page",
       },
       {
-        id: "note",
+        value: "note",
         command: "note",
         label: "Add a note to the well",
         group: "On this page",
       },
-      { id: "help", command: "about", label: "About the assistant" },
-      { id: "archive", command: "archive", label: "Archive this chat" },
+      { value: "help", command: "about", label: "About the assistant" },
+      { value: "archive", command: "archive", label: "Archive this chat" },
     ]
     render(<WithCommands items={items} />)
 
@@ -1274,8 +1282,8 @@ describe("ComposerHint ids", () => {
 describe("ComposerCommands options", () => {
   it("gives commands whose ids differ only by spaces ids of their own", async () => {
     const items: ComposerCommandItem[] = [
-      { id: "a b", command: "alpha", label: "First" },
-      { id: "ab", command: "another", label: "Second" },
+      { value: "a b", command: "alpha", label: "First" },
+      { value: "ab", command: "another", label: "Second" },
     ]
     render(<WithCommands items={items} />)
 
@@ -1304,11 +1312,11 @@ describe("ComposerCommands options", () => {
     )
   })
 
-  it("picks the command whose id has spaces", async () => {
+  it("picks the command whose value has spaces", async () => {
     const onCommand = vi.fn()
     const items: ComposerCommandItem[] = [
-      { id: "a b", command: "alpha", label: "First" },
-      { id: "ab", command: "another", label: "Second" },
+      { value: "a b", command: "alpha", label: "First" },
+      { value: "ab", command: "another", label: "Second" },
     ]
     render(<WithCommands items={items} onCommand={onCommand} />)
 
@@ -1355,5 +1363,52 @@ describe("ComposerCommands options", () => {
       clientHeight.mockRestore()
       offsetHeight.mockRestore()
     }
+  })
+})
+
+describe("useComposer", () => {
+  function Probe() {
+    const composer = useComposer()
+    return (
+      <output data-testid="probe">
+        {JSON.stringify({
+          busy: composer.busy,
+          canSubmit: composer.canSubmit,
+          status: composer.status,
+          keys: Object.keys(composer).sort(),
+        })}
+      </output>
+    )
+  }
+
+  it("reports busy while a reply is on its way", () => {
+    const { rerender } = render(
+      <Composer onSubmit={() => {}} status="ready">
+        <Probe />
+      </Composer>
+    )
+    const read = () =>
+      JSON.parse(screen.getByTestId("probe").textContent) as {
+        busy: boolean
+        status: string
+        keys: string[]
+      }
+    expect(read().busy).toBe(false)
+    expect(read().keys).toEqual([
+      "busy",
+      "canSubmit",
+      "focus",
+      "setValue",
+      "status",
+      "stop",
+      "submit",
+      "value",
+    ])
+    rerender(
+      <Composer onSubmit={() => {}} status="streaming">
+        <Probe />
+      </Composer>
+    )
+    expect(read()).toMatchObject({ busy: true, status: "streaming" })
   })
 })

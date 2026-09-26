@@ -8,10 +8,8 @@ import { cn } from "cn"
 import { ExternalLinkIcon } from "lucide-react"
 
 import { buttonVariants } from "@tecton/react/components/button"
-import {
-  shouldClientNavigate,
-  useTectonRouter,
-} from "@tecton/react/tecton/provider"
+
+import { shouldClientNavigate, useTectonRouter } from "./internal/router"
 
 /**
  * Tecton Link — an inline text link rendered as an `<a>`.
@@ -97,10 +95,22 @@ function useAnchorProps({
   }
 }
 
-type LinkProps = Omit<useRender.ComponentProps<"a">, "href"> &
+/** Props of the `<a>` that `render` replaces, after Tecton has merged its own. */
+type LinkRenderProps = React.ComponentProps<"a">
+
+/**
+ * The attributes of an `<a>`, plus `render` to draw the link with another
+ * element or component (a router's `Link`): an element, which receives the
+ * merged props, or a function returning one.
+ */
+type LinkElementProps = Omit<React.ComponentProps<"a">, "href"> & {
+  href?: string
+  render?: React.ReactElement | ((props: LinkRenderProps) => React.ReactElement)
+}
+
+type LinkProps = LinkElementProps &
   VariantProps<typeof linkVariants> &
   AnchorProps & {
-    href?: string
     /** Opens in a new tab with a safe `rel` and appends an external icon. */
     external?: boolean
   }
@@ -153,11 +163,9 @@ function Link({
   })
 }
 
-type LinkButtonProps = Omit<useRender.ComponentProps<"a">, "href"> &
+type LinkButtonProps = LinkElementProps &
   VariantProps<typeof buttonVariants> &
-  AnchorProps & {
-    href?: string
-  }
+  AnchorProps
 
 /**
  * Tecton LinkButton — navigation that looks like a `Button`: the button

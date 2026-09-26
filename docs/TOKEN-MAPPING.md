@@ -238,7 +238,7 @@ Expected failures (Tecton's own values fail these pairs): `palette:--tecton-colo
 Colours, radii and fonts come from the shadcn CSS variables above. Everything else Tecton-specific
 about the generated components (focus ring, hover / pressed colours, flat controls, the extra
 `alert`, `badge`, `separator`, `input`, `textarea` and `select` variants) lives in the
-`aria-tecton` style overlay applied to the registry mirror (`scripts/registry-mirror/overlay`), so
+`base-tecton` style overlay applied to the registry mirror (`scripts/registry-mirror/overlay`), so
 the generated files still come unmodified from the CLI. What remains different from Tecton:
 
 - **Focus ring inside a few base sources** — `calendar`, `item`, `scroll-area` and `tabs` hard-code

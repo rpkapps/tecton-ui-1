@@ -96,17 +96,17 @@ function DecisionCard({
 /** Alternative row: name, code, reference tag and the horizontal decision cards. */
 function AlternativeRow({
   alternative,
-  isSelected,
+  selected,
   className,
 }: {
   alternative: Alternative
-  isSelected?: boolean
+  selected?: boolean
   className?: string
 }) {
   return (
     <div
       data-slot="alternative-row"
-      data-selected={isSelected || undefined}
+      data-selected={selected || undefined}
       className={cn(
         "relative flex flex-col gap-3 border-s border-border ps-4 before:absolute before:-start-px before:top-3 before:h-px before:w-3 before:bg-border data-selected:border-primary",
         className
@@ -311,7 +311,7 @@ function ConceptSection({
                 <AlternativeRow
                   key={alternative.id}
                   alternative={alternative}
-                  isSelected={selectedAlternative === alternative.id}
+                  selected={selectedAlternative === alternative.id}
                 />
               ))}
             </div>

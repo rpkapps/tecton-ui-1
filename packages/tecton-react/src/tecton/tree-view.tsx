@@ -20,7 +20,7 @@ import {
   MoreVerticalIcon,
 } from "lucide-react"
 
-import { AriaBridge } from "@tecton/react/tecton/provider"
+import { AriaBridge } from "./internal/aria-bridge"
 
 // ---------------------------------------------------------------------------
 // DOM state attributes
@@ -39,7 +39,6 @@ const DROPPED_ATTRIBUTES = new Set([
   "data-focus-visible",
   "data-pending",
   "data-current",
-  "data-empty",
   "data-drop-target",
   "data-allows-dragging",
   "data-dragging",
@@ -52,6 +51,7 @@ const PRESENCE_ATTRIBUTES = new Set([
   "data-selected",
   "data-expanded",
   "data-disabled",
+  "data-empty",
 ])
 
 function stateAttributes<TProps extends object>(props: TProps): TProps {
@@ -105,11 +105,24 @@ function renderItems<T>(
   })
 }
 
-type TreeViewProps<T extends object = object> = Omit<
-  React.HTMLAttributes<HTMLDivElement>,
-  "children" | "defaultValue" | "onChange"
-> & {
+/**
+ * The attributes every TreeView part forwards to its element (`data-*`
+ * attributes are forwarded too). Event handlers are not: the tree owns
+ * pointer and keyboard interaction.
+ */
+type TreeViewElementProps = {
+  id?: string
+  className?: string
+  style?: React.CSSProperties
+}
+
+type TreeViewProps<T extends object = object> = TreeViewElementProps & {
   ref?: React.Ref<HTMLDivElement>
+  /** The tree's accessible name. */
+  "aria-label"?: string
+  /** The id of the element naming the tree. */
+  "aria-labelledby"?: string
+  "aria-describedby"?: string
   /** Whether rows can be selected, one or several at a time. */
   selectionMode?: "none" | "single" | "multiple"
   /** The selected rows' values (controlled). */
@@ -118,6 +131,17 @@ type TreeViewProps<T extends object = object> = Omit<
   defaultValue?: string[]
   /** Called with every selected row's value when the selection changes. */
   onValueChange?: (value: string[]) => void
+  /** Keeps at least one row selected: the last one cannot be deselected. */
+  disallowEmptySelection?: boolean
+  /**
+   * Called with a row's value when the row is activated (opened): Enter on
+   * the focused row, or a click. When rows are also selectable, a click
+   * selects and a double click activates; Ctrl/Cmd- or Shift-click then
+   * extends a multiple selection.
+   */
+  onActivate?: (value: string) => void
+  /** Shown in place of the rows when the tree has none. */
+  empty?: React.ReactNode
   /** The expanded rows' values (controlled). */
   expanded?: string[]
   /** The rows expanded initially (uncontrolled). */
@@ -162,6 +186,9 @@ function TreeView<T extends object = object>({
   value,
   defaultValue,
   onValueChange,
+  disallowEmptySelection,
+  onActivate,
+  empty,
   expanded,
   defaultExpanded,
   onExpandedChange,
@@ -190,6 +217,13 @@ function TreeView<T extends object = object>({
           return renderDiv(domProps)
         }}
         selectionMode={selectionMode}
+        disallowEmptySelection={disallowEmptySelection}
+        onAction={onActivate && ((key: Key) => onActivate(String(key)))}
+        // With both, a click selects and a double click activates (the file
+        // browser convention); otherwise a click on a row would only ever
+        // activate it, since rows have no checkbox to select with.
+        selectionBehavior={onActivate ? "replace" : "toggle"}
+        renderEmptyState={empty === undefined ? undefined : () => empty}
         selectedKeys={value}
         defaultSelectedKeys={defaultValue}
         onSelectionChange={
@@ -233,10 +267,7 @@ function TreeViewCollection<T>({
   return <>{renderItems(items, children)}</>
 }
 
-type TreeViewItemProps = Omit<
-  React.HTMLAttributes<HTMLDivElement>,
-  "children" | "hidden" | "defaultValue"
-> & {
+type TreeViewItemProps = Omit<TreeViewElementProps, "id"> & {
   ref?: React.Ref<HTMLDivElement>
   /** The row's identity, unique in the tree (selection and expansion). */
   value: string
@@ -244,7 +275,7 @@ type TreeViewItemProps = Omit<
    * The row's plain-text name, for type-ahead and announcements. Defaults to
    * the `TreeViewItemContent` children when they are plain text.
    */
-  textValue?: string
+  label?: string
   /** Disables the row: not selectable, not expandable, skipped by arrows. */
   disabled?: boolean
   /** Dimmed "hidden" state (the layer is hidden in the view; the row stays). */
@@ -272,7 +303,7 @@ function textOf(children: React.ReactNode): string | undefined {
 function TreeViewItem({
   className,
   value,
-  textValue,
+  label,
   disabled,
   hidden,
   children,
@@ -284,7 +315,7 @@ function TreeViewItem({
       data-hidden={hidden ? "" : undefined}
       {...(props as unknown as React.ComponentProps<typeof TreeItemPrimitive>)}
       id={value}
-      textValue={textValue ?? textOf(children) ?? ""}
+      textValue={label ?? textOf(children) ?? ""}
       isDisabled={disabled}
       render={renderDiv}
       className={({ selectionMode }) =>
@@ -419,11 +450,18 @@ function TreeViewItemContent({
   )
 }
 
-type TreeViewActionProps = Omit<
-  React.ButtonHTMLAttributes<HTMLButtonElement>,
-  "onClick" | "disabled" | "type"
-> & {
+type TreeViewActionProps = TreeViewElementProps & {
   ref?: React.Ref<HTMLButtonElement>
+  /** The button's accessible name, e.g. "Actions for Faults". */
+  "aria-label"?: string
+  "aria-labelledby"?: string
+  "aria-describedby"?: string
+  "aria-pressed"?: boolean
+  "aria-expanded"?: boolean
+  "aria-haspopup"?: boolean | "menu" | "listbox" | "tree" | "grid" | "dialog"
+  "aria-controls"?: string
+  /** The icon; a vertical ellipsis by default. */
+  children?: React.ReactNode
   /**
    * Called when the button is activated (pointer, Enter or Space). The row
    * itself is not selected or toggled by it.
@@ -443,7 +481,7 @@ function TreeViewAction({
   return (
     <ButtonPrimitive
       data-slot="tree-view-action"
-      {...(props as unknown as React.ComponentProps<typeof ButtonPrimitive>)}
+      {...props}
       isDisabled={disabled}
       onPress={onClick && (() => onClick())}
       render={renderButton}

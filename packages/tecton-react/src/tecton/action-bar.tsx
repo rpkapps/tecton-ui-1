@@ -42,15 +42,18 @@ type ActionBarProps = React.ComponentProps<"div"> &
   VariantProps<typeof actionBarVariants> & {
     /** Render the bar. Default `true`. */
     open?: boolean
-    /** Called on Escape while focus is inside the bar. */
-    onDismiss?: () => void
+    /**
+     * Called with `false` when the user dismisses the bar: Escape while focus
+     * is inside it. The owner closes it by clearing what it acts on.
+     */
+    onOpenChange?: (open: boolean) => void
   }
 
 function ActionBar({
   className,
   placement = "toolbar",
   open = true,
-  onDismiss,
+  onOpenChange,
   children,
   ...props
 }: ActionBarProps) {
@@ -67,9 +70,9 @@ function ActionBar({
         props.onKeyDown?.(event)
         // Escape while focus is in the bar dismisses it; an open overlay
         // (menu, popover) consumes its own Escape first.
-        if (event.key === "Escape" && onDismiss && !event.defaultPrevented) {
+        if (event.key === "Escape" && onOpenChange && !event.defaultPrevented) {
           event.preventDefault()
-          onDismiss()
+          onOpenChange(false)
         }
       }}
     >

@@ -16,13 +16,13 @@ import {
 function Project(props: Partial<React.ComponentProps<typeof TreeView>>) {
   return (
     <TreeView aria-label="Project" {...props}>
-      <TreeViewItem value="wells" textValue="Wells">
+      <TreeViewItem value="wells" label="Wells">
         <TreeViewItemContent kind="folder">Wells</TreeViewItemContent>
-        <TreeViewItem value="a12" textValue="A-12">
+        <TreeViewItem value="a12" label="A-12">
           <TreeViewItemContent>A-12</TreeViewItemContent>
         </TreeViewItem>
       </TreeViewItem>
-      <TreeViewItem value="notes" textValue="Notes" hidden>
+      <TreeViewItem value="notes" label="Notes" hidden>
         <TreeViewItemContent
           colorTag={<span data-testid="tag" />}
           suffix={<span data-testid="suffix">3</span>}
@@ -120,7 +120,7 @@ describe("TreeView", () => {
   it("uses a custom icon over the kind icon", () => {
     render(
       <TreeView aria-label="t">
-        <TreeViewItem value="x" textValue="x">
+        <TreeViewItem value="x" label="x">
           <TreeViewItemContent kind="folder" icon={<i data-testid="custom" />}>
             x
           </TreeViewItemContent>
@@ -418,10 +418,10 @@ describe("TreeView keyboard", () => {
   it("moves to a row by typing its name", async () => {
     render(
       <TreeView aria-label="Horizons">
-        <TreeViewItem value="balder" textValue="Top Balder">
+        <TreeViewItem value="balder" label="Top Balder">
           <TreeViewItemContent>Top Balder</TreeViewItemContent>
         </TreeViewItem>
-        <TreeViewItem value="bcu" textValue="Base Cretaceous">
+        <TreeViewItem value="bcu" label="Base Cretaceous">
           <TreeViewItemContent>Base Cretaceous</TreeViewItemContent>
         </TreeViewItem>
       </TreeView>
@@ -468,7 +468,7 @@ describe("TreeView dynamic items", () => {
     const renderNode = (node: Node) => (
       <TreeViewItem
         value={node.id}
-        textValue={node.name}
+        label={node.name}
         hidden={hidden.has(node.id)}
       >
         <TreeViewItemContent
@@ -637,14 +637,14 @@ describe("TreeViewVisibilityToggle", () => {
   it("names itself after the row it sits in", () => {
     render(
       <TreeView aria-label="Layers">
-        <TreeViewItem value="faults" textValue="Faults">
+        <TreeViewItem value="faults" label="Faults">
           <TreeViewItemContent
             endAdornment={<TreeViewVisibilityToggle visible={false} />}
           >
             Faults
           </TreeViewItemContent>
         </TreeViewItem>
-        <TreeViewItem value="wells" textValue="Wells">
+        <TreeViewItem value="wells" label="Wells">
           <TreeViewItemContent endAdornment={<TreeViewVisibilityToggle />}>
             Wells
           </TreeViewItemContent>
@@ -664,14 +664,14 @@ describe("TreeViewVisibilityToggle", () => {
   it("takes an explicit name or aria-label over the row label", () => {
     render(
       <TreeView aria-label="Layers">
-        <TreeViewItem value="faults" textValue="Faults">
+        <TreeViewItem value="faults" label="Faults">
           <TreeViewItemContent
             endAdornment={<TreeViewVisibilityToggle name="fault sticks" />}
           >
             <b>Faults</b>
           </TreeViewItemContent>
         </TreeViewItem>
-        <TreeViewItem value="wells" textValue="Wells">
+        <TreeViewItem value="wells" label="Wells">
           <TreeViewItemContent
             endAdornment={<TreeViewVisibilityToggle aria-label="Wells layer" />}
           >
@@ -686,5 +686,127 @@ describe("TreeViewVisibilityToggle", () => {
     expect(
       screen.getByRole("button", { name: "Wells layer" })
     ).toBeInTheDocument()
+  })
+})
+
+describe("TreeView activation, empty state and forwarded attributes", () => {
+  it("activates a row with Enter and a click when rows are not selectable", async () => {
+    const onActivate = vi.fn()
+    render(<Project onActivate={onActivate} />)
+    await userEvent.tab()
+    expect(row("Wells")).toHaveFocus()
+    await userEvent.keyboard("{Enter}")
+    expect(onActivate).toHaveBeenLastCalledWith("wells")
+    await userEvent.click(row(/Notes/))
+    expect(onActivate).toHaveBeenLastCalledWith("notes")
+  })
+
+  it("activates a selectable row with Enter and a double click", async () => {
+    const onActivate = vi.fn()
+    const onValueChange = vi.fn()
+    render(
+      <Project
+        selectionMode="single"
+        onActivate={onActivate}
+        onValueChange={onValueChange}
+      />
+    )
+    await userEvent.click(row("Wells"))
+    expect(onValueChange).toHaveBeenLastCalledWith(["wells"])
+    expect(onActivate).not.toHaveBeenCalled()
+    await userEvent.dblClick(row(/Notes/))
+    expect(onActivate).toHaveBeenLastCalledWith("notes")
+    await userEvent.keyboard("{Enter}")
+    expect(onActivate).toHaveBeenCalledTimes(2)
+  })
+
+  it("adds to a multiple selection with a modifier click when rows activate", async () => {
+    const onValueChange = vi.fn()
+    render(
+      <Project
+        selectionMode="multiple"
+        onActivate={() => {}}
+        onValueChange={onValueChange}
+      />
+    )
+    const user = userEvent.setup()
+    await user.click(row("Wells"))
+    await user.keyboard("{Control>}")
+    await user.click(row(/Notes/))
+    await user.keyboard("{/Control}")
+    expect([...onValueChange.mock.lastCall![0]].sort()).toEqual([
+      "notes",
+      "wells",
+    ])
+  })
+
+  it("renders empty in place of the rows", () => {
+    render(<TreeView aria-label="Layers" empty="No layers" />)
+    const tree = screen.getByRole("treegrid", { name: "Layers" })
+    expect(tree).toHaveTextContent("No layers")
+    expect(tree).toHaveAttribute("data-empty", "")
+  })
+
+  it("keeps the last selected row with disallowEmptySelection", async () => {
+    const onValueChange = vi.fn()
+    render(
+      <Project
+        selectionMode="multiple"
+        defaultValue={["wells"]}
+        disallowEmptySelection
+        onValueChange={onValueChange}
+      />
+    )
+    await userEvent.click(row("Wells"))
+    expect(row("Wells")).toHaveAttribute("data-selected", "")
+    expect(onValueChange).not.toHaveBeenCalled()
+  })
+
+  it("forwards id, className, style, aria and data attributes", () => {
+    render(
+      <TreeView
+        aria-label="Project"
+        aria-describedby="hint"
+        id="project-tree"
+        className="max-h-40"
+        style={{ maxWidth: 200 }}
+        data-testid="tree"
+      >
+        <TreeViewItem
+          value="wells"
+          className="font-medium"
+          style={{ color: "red" }}
+          data-testid="wells-row"
+        >
+          <TreeViewItemContent
+            endAdornment={
+              <TreeViewAction
+                id="wells-actions"
+                aria-label="Actions for Wells"
+                aria-describedby="hint"
+                aria-haspopup="menu"
+                aria-expanded={false}
+                data-testid="action"
+              />
+            }
+          >
+            Wells
+          </TreeViewItemContent>
+        </TreeViewItem>
+      </TreeView>
+    )
+    const tree = screen.getByTestId("tree")
+    expect(tree).toHaveAttribute("id", "project-tree")
+    expect(tree).toHaveAttribute("aria-describedby", "hint")
+    expect(tree).toHaveClass("max-h-40")
+    expect(tree).toHaveStyle({ maxWidth: "200px" })
+    const wells = screen.getByTestId("wells-row")
+    expect(wells).toHaveClass("font-medium")
+    expect(wells).toHaveStyle({ color: "rgb(255, 0, 0)" })
+    const action = screen.getByTestId("action")
+    expect(action).toHaveAttribute("id", "wells-actions")
+    expect(action).toHaveAttribute("aria-describedby", "hint")
+    expect(action).toHaveAttribute("aria-haspopup", "menu")
+    expect(action).toHaveAttribute("aria-expanded", "false")
   })
 })

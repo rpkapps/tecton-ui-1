@@ -44,7 +44,9 @@ export default function ActionBarMessageExample() {
       <ActionBar
         placement="toolbar"
         open={dirty}
-        onDismiss={discard}
+        onOpenChange={(open) => {
+          if (!open) discard()
+        }}
         aria-label="Unsaved changes"
       >
         <ActionBarMessage>You have unsaved changes</ActionBarMessage>

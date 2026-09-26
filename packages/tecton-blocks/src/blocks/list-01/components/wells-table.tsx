@@ -293,7 +293,7 @@ function WellsTable({
             })}
           </tr>
         </TableHeader>
-        <TableBody className="max-md:[&_td]:flex max-md:[&_td]:h-auto max-md:[&_td]:justify-between max-md:[&_td]:py-1.5 max-md:[&_td]:before:text-muted-foreground max-md:[&_td]:before:content-[attr(data-label)] [&_tr]:border-border-subtle max-md:[&_tr]:flex max-md:[&_tr]:flex-col max-md:[&_tr]:py-2 [&_tr:nth-child(even)]:bg-surface-alt/60">
+        <TableBody className="max-md:[&_:is(td,th)]:flex max-md:[&_:is(td,th)]:h-auto max-md:[&_:is(td,th)]:justify-between max-md:[&_:is(td,th)]:py-1.5 max-md:[&_:is(td,th)]:before:text-muted-foreground max-md:[&_:is(td,th)]:before:content-[attr(data-label)] [&_tr]:border-border-subtle max-md:[&_tr]:flex max-md:[&_tr]:flex-col max-md:[&_tr]:py-2 [&_tr:nth-child(even)]:bg-surface-alt/60">
           {rows.length === 0 ? (
             <TableRow>
               <TableCell
@@ -325,22 +325,36 @@ function WellsTable({
                   onOpen && "cursor-pointer"
                 )}
               >
-                {row.getAllCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    data-label={
-                      typeof cell.column.columnDef.header === "string"
-                        ? cell.column.columnDef.header
-                        : undefined
-                    }
-                    className={cn(
-                      "h-11 px-3",
-                      cell.column.id === "select" && "w-10"
-                    )}
-                  >
-                    <table.FlexRender cell={cell} />
-                  </TableCell>
-                ))}
+                {row.getAllCells().map((cell) => {
+                  const label =
+                    typeof cell.column.columnDef.header === "string"
+                      ? cell.column.columnDef.header
+                      : undefined
+                  // The well name names the row: a row header, so a screen
+                  // reader reads it with every cell of the row.
+                  return cell.column.id === "name" ? (
+                    <th
+                      key={cell.id}
+                      scope="row"
+                      data-slot="table-cell"
+                      data-label={label}
+                      className="h-11 px-3 py-3 text-start align-middle font-normal whitespace-nowrap"
+                    >
+                      <table.FlexRender cell={cell} />
+                    </th>
+                  ) : (
+                    <TableCell
+                      key={cell.id}
+                      data-label={label}
+                      className={cn(
+                        "h-11 px-3",
+                        cell.column.id === "select" && "w-10"
+                      )}
+                    >
+                      <table.FlexRender cell={cell} />
+                    </TableCell>
+                  )
+                })}
               </TableRow>
             ))
           )}

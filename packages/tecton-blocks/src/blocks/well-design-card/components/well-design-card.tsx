@@ -48,7 +48,7 @@ type WellDesignCardProps = Omit<
   "children"
 > & {
   design: WellDesign
-  isSelected?: boolean
+  selected?: boolean
   onSelectedChange?: (selected: boolean) => void
   onView?: (design: WellDesign) => void
 }
@@ -61,7 +61,7 @@ type WellDesignCardProps = Omit<
 function WellDesignCard({
   className,
   design,
-  isSelected,
+  selected,
   onSelectedChange,
   onView,
   size = "sm",
@@ -76,14 +76,14 @@ function WellDesignCard({
       data-slot="well-design-card"
       data-trajectory={design.trajectory}
       size={size}
-      className={cn("gap-3", isSelected && "ring-primary/60", className)}
+      className={cn("gap-3", selected && "ring-primary/60", className)}
       {...props}
     >
       <CardHeader className="items-center">
         <CardTitle className="flex min-w-0 items-center gap-2">
           <Checkbox
             aria-label={`Select ${design.name}`}
-            {...(isSelected === undefined ? {} : { checked: isSelected })}
+            {...(selected === undefined ? {} : { checked: selected })}
             {...(onSelectedChange === undefined
               ? {}
               : {

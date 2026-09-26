@@ -118,6 +118,48 @@ describe("CircularProgress", () => {
     ).toHaveTextContent("3/6")
   })
 
+  it("shows and announces a text valueLabel instead of the percentage", () => {
+    const { container } = render(
+      <CircularProgress
+        aria-label="Wells logged"
+        value={3}
+        max={8}
+        showValue
+        valueLabel="3 of 8"
+      />
+    )
+    const bar = screen.getByRole("progressbar", { name: "Wells logged" })
+    expect(bar).toHaveAttribute("aria-valuetext", "3 of 8")
+    const centre = container.querySelector(
+      '[data-slot="circular-progress-value"]'
+    )
+    expect(centre).toHaveTextContent("3 of 8")
+    expect(centre).toHaveAttribute("aria-hidden", "true")
+  })
+
+  it("announces a valueLabel while indeterminate", () => {
+    render(
+      <CircularProgress aria-label="Sync" value={null} valueLabel="Waiting" />
+    )
+    expect(screen.getByRole("progressbar", { name: "Sync" })).toHaveAttribute(
+      "aria-valuetext",
+      "Waiting"
+    )
+  })
+
+  it("shows a node valueLabel but announces the formatted value", () => {
+    render(
+      <CircularProgress
+        aria-label="p"
+        value={50}
+        valueLabel={<strong>Half</strong>}
+      />
+    )
+    const bar = screen.getByRole("progressbar", { name: "p" })
+    expect(bar).toHaveTextContent("Half")
+    expect(bar.getAttribute("aria-valuetext")).not.toBe("Half")
+  })
+
   it.each([
     ["xs", "size-4"],
     ["sm", "size-6"],

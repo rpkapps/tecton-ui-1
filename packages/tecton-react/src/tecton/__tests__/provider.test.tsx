@@ -9,20 +9,17 @@ import {
 } from "react-aria-components"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import { usePortalTarget } from "@tecton/react/tecton/portal"
 import {
-  usePortalContainer,
-  usePortalTarget,
-} from "@tecton/react/tecton/portal"
-import {
-  AriaBridge,
-  localeDirection,
-  shouldClientNavigate,
   TectonProvider,
   useDirection,
   useLocale,
-  useTectonRouter,
   type TectonProviderProps,
 } from "@tecton/react/tecton/provider"
+
+import { AriaBridge } from "../internal/aria-bridge"
+import { localeDirection } from "../internal/locale"
+import { shouldClientNavigate, useTectonRouter } from "../internal/router"
 
 type Props = Omit<TectonProviderProps, "children">
 
@@ -41,7 +38,7 @@ function useEverything() {
     tectonDirection: useDirection(),
     baseUiDirection: useBaseUiDirection(),
     router: useTectonRouter(),
-    container: usePortalContainer(),
+    container: usePortalTarget(),
   }
 }
 
@@ -71,7 +68,7 @@ describe("TectonProvider defaults", () => {
       navigate: undefined,
       useHref: undefined,
     })
-    expect(result.current.container).toBeNull()
+    expect(result.current.container).toBeUndefined()
   })
 
   it("keeps ltr for an rtl browser locale when nothing is set", () => {
@@ -193,17 +190,15 @@ describe("TectonProvider nesting", () => {
 describe("TectonProvider portalContainer", () => {
   it("passes an element through to the portal context", () => {
     const container = makeContainer("element")
-    const { result } = renderHook(
-      () => ({ container: usePortalContainer(), target: usePortalTarget() }),
-      { wrapper: wrapper({ portalContainer: container }) }
-    )
-    expect(result.current.container).toBe(container)
+    const { result } = renderHook(() => ({ target: usePortalTarget() }), {
+      wrapper: wrapper({ portalContainer: container }),
+    })
     expect(result.current.target).toBe(container)
   })
 
   it("resolves a function container", () => {
     const container = makeContainer("function")
-    const { result } = renderHook(usePortalContainer, {
+    const { result } = renderHook(usePortalTarget, {
       wrapper: wrapper({ portalContainer: () => container }),
     })
     expect(result.current).toBe(container)

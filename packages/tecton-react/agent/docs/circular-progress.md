@@ -9,7 +9,7 @@ import { CircularProgress } from "@tecton/react/tecton/circular-progress"
 ## Use it when
 
 - The progress belongs in a compact space: a card corner, a table cell, a tile, a KPI.
-- The number matters as much as the arc: `showValue`, or children such as `7/12`.
+- The number matters as much as the arc: `showValue`, or `valueLabel="7 of 12"` (also announced) for a count.
 - A ring, not an icon, is the right weight for an indeterminate wait inside a panel or a dialog.
 
 ## Not for

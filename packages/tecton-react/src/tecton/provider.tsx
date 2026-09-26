@@ -2,9 +2,10 @@
 
 import * as React from "react"
 import { DirectionProvider } from "@base-ui/react/direction-provider"
-import { I18nProvider, RouterProvider } from "react-aria-components"
 
 import { PortalProvider } from "@tecton/react/tecton/portal"
+
+import { localeDirection } from "./internal/locale"
 
 type Direction = "ltr" | "rtl"
 
@@ -37,67 +38,14 @@ type TectonContextValue = {
   useHref?: (href: string) => string
 }
 
-/** `null` = no provider in scope: fall back to the defaults. */
-const TectonContext = React.createContext<TectonContextValue | null>(null)
-
-// Scripts and languages written right to left, for engines without
-// `Intl.Locale#getTextInfo` (the same lists the Unicode CLDR data implies).
-const RTL_SCRIPTS = new Set([
-  "Adlm",
-  "Arab",
-  "Hebr",
-  "Mand",
-  "Mend",
-  "Nkoo",
-  "Rohg",
-  "Samr",
-  "Syrc",
-  "Thaa",
-])
-const RTL_LANGUAGES = new Set([
-  "ae",
-  "ar",
-  "arc",
-  "bcc",
-  "bqi",
-  "ckb",
-  "dv",
-  "fa",
-  "glk",
-  "he",
-  "iw",
-  "ku",
-  "mzn",
-  "nqo",
-  "pnb",
-  "ps",
-  "sd",
-  "ug",
-  "ur",
-  "yi",
-])
-
-type LocaleWithTextInfo = Intl.Locale & {
-  getTextInfo?: () => { direction?: string }
-  textInfo?: { direction?: string }
-}
-
-/** @internal The direction a BCP 47 locale is written in. */
-function localeDirection(locale: string): Direction {
-  try {
-    const parsed = new Intl.Locale(locale) as LocaleWithTextInfo
-    const info = parsed.getTextInfo?.() ?? parsed.textInfo
-    if (info?.direction === "rtl" || info?.direction === "ltr") {
-      return info.direction
-    }
-    const script = parsed.maximize().script
-    if (script) return RTL_SCRIPTS.has(script) ? "rtl" : "ltr"
-    return RTL_LANGUAGES.has(parsed.language) ? "rtl" : "ltr"
-  } catch {
-    const language = locale.split(/[-_]/)[0]?.toLowerCase() ?? ""
-    return RTL_LANGUAGES.has(language) ? "rtl" : "ltr"
-  }
-}
+/**
+ * @internal `null` = no provider in scope: fall back to the defaults. Read
+ * through `useDirection` / `useLocale`, or the internal router hook
+ * (`internal/router`); stripped from the published declarations.
+ */
+export const TectonContext = React.createContext<TectonContextValue | null>(
+  null
+)
 
 const SERVER_LOCALE = "en-US"
 
@@ -196,88 +144,5 @@ function useLocale(): { locale: string; direction: Direction } {
   }
 }
 
-/**
- * @internal The router adapter in scope, for Tecton's own links. `useHref`
- * is a hook: call it unconditionally when it is set.
- */
-function useTectonRouter(): {
-  navigate?: (href: string, options?: unknown) => void
-  useHref?: (href: string) => string
-} {
-  const context = React.useContext(TectonContext)
-  return { navigate: context?.navigate, useHref: context?.useHref }
-}
-
-type ClickLike = {
-  button: number
-  metaKey: boolean
-  ctrlKey: boolean
-  altKey: boolean
-  shiftKey: boolean
-  defaultPrevented?: boolean
-}
-
-/**
- * @internal Whether a click on `anchor` should be handed to the router
- * instead of the browser: a plain primary click (no modifier keys, which
- * mean "new tab / window / download"), not already handled, on a same-origin
- * link that opens in the same browsing context and is not a download.
- */
-function shouldClientNavigate(
-  event: ClickLike,
-  anchor: HTMLAnchorElement
-): boolean {
-  if (event.defaultPrevented) return false
-  if (event.button !== 0) return false
-  if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) {
-    return false
-  }
-  if (!anchor.hasAttribute("href") || anchor.hasAttribute("download")) {
-    return false
-  }
-  const target = anchor.getAttribute("target")
-  if (target && target !== "_self") return false
-  if (typeof window === "undefined") return false
-  return anchor.origin === window.location.origin
-}
-
-/**
- * @internal For the Tecton components still built on React Aria (tree view,
- * chip): feeds React Aria the Tecton locale, direction and router, so they
- * behave like everything else under the same `TectonProvider`. React Aria
- * derives the direction from the locale, so when the two disagree the locale
- * gets the script of the Tecton direction (`ar` + `ltr` → `ar-Latn`).
- */
-function AriaBridge({ children }: { children: React.ReactNode }) {
-  const { locale, direction } = useLocale()
-  const { navigate, useHref } = useTectonRouter()
-  const ariaLocale = React.useMemo(() => {
-    if (localeDirection(locale) === direction) return locale
-    try {
-      return new Intl.Locale(locale, {
-        script: direction === "rtl" ? "Arab" : "Latn",
-      }).toString()
-    } catch {
-      return direction === "rtl" ? "ar" : SERVER_LOCALE
-    }
-  }, [locale, direction])
-
-  const content = <I18nProvider locale={ariaLocale}>{children}</I18nProvider>
-  if (!navigate) return content
-  return (
-    <RouterProvider navigate={navigate} useHref={useHref}>
-      {content}
-    </RouterProvider>
-  )
-}
-
-export {
-  TectonProvider,
-  useDirection,
-  useLocale,
-  useTectonRouter,
-  shouldClientNavigate,
-  AriaBridge,
-  localeDirection,
-}
+export { TectonProvider, useDirection, useLocale }
 export type { TectonProviderProps }

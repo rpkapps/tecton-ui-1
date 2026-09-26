@@ -19,7 +19,7 @@ import {
 type AgentConversation = {
   messages: AgentMessage[]
   completedActions: string[]
-  isBusy: boolean
+  busy: boolean
   send: (text: string) => void
   act: (action: AgentAction) => void
   stop: () => void
@@ -38,8 +38,8 @@ function useAgentConversation(
   const [messages, setMessages] =
     React.useState<AgentMessage[]>(initialMessages)
   const [completedActions, setCompleted] = React.useState<string[]>([])
-  const [isBusy, setBusy] = React.useState(false)
-  const busy = React.useRef(false)
+  const [busy, setBusy] = React.useState(false)
+  const busyRef = React.useRef(false)
   const replies = React.useRef(new Set<number>())
 
   const cancelReplies = React.useCallback(() => {
@@ -51,15 +51,15 @@ function useAgentConversation(
 
   const stop = React.useCallback(() => {
     cancelReplies()
-    busy.current = false
+    busyRef.current = false
     setBusy(false)
   }, [cancelReplies])
 
   const send = React.useCallback((text: string) => {
     // One reply at a time: the composer and the chips are disabled while
     // busy, and this guards against a press that lands in between.
-    if (busy.current) return
-    busy.current = true
+    if (busyRef.current) return
+    busyRef.current = true
     setBusy(true)
     setMessages((current) => [
       ...current,
@@ -67,7 +67,7 @@ function useAgentConversation(
     ])
     const timer = window.setTimeout(() => {
       replies.current.delete(timer)
-      busy.current = false
+      busyRef.current = false
       setBusy(false)
       setMessages((current) => [
         ...current,
@@ -85,7 +85,7 @@ function useAgentConversation(
 
   const act = React.useCallback(
     (action: AgentAction) => {
-      if (busy.current) return
+      if (busyRef.current) return
       setCompleted((current) => [...current, action.id])
       send(action.label)
     },
@@ -98,7 +98,7 @@ function useAgentConversation(
     setCompleted([])
   }, [stop])
 
-  return { messages, completedActions, isBusy, send, act, stop, clear }
+  return { messages, completedActions, busy, send, act, stop, clear }
 }
 
 type AiAgentPanelProps = Omit<
@@ -129,7 +129,7 @@ function AiAgentPanel({
   ...props
 }: AiAgentPanelProps) {
   const own = useAgentConversation(initialMessages)
-  const { messages, completedActions, isBusy, send, act, stop, clear } =
+  const { messages, completedActions, busy, send, act, stop, clear } =
     hosted ?? own
 
   return (
@@ -144,13 +144,13 @@ function AiAgentPanel({
         messages={messages}
         completedActions={completedActions}
         onAction={act}
-        isBusy={isBusy}
+        busy={busy}
       />
       <PanelFooter className="border-t-0 pt-0">
         <AgentComposer
           className="w-full"
           suggestions={messages.length === 0 ? suggestions : []}
-          status={isBusy ? "submitted" : "ready"}
+          status={busy ? "submitted" : "ready"}
           onStop={stop}
           onSubmit={send}
         />

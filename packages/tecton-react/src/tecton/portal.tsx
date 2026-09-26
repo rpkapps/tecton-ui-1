@@ -3,23 +3,26 @@
 import * as React from "react"
 
 /**
- * The portal context behind `TectonProvider`'s `portalContainer`: the element
- * every Tecton overlay rendered below it portals into (Dialog, Sheet,
- * Popover, Tooltip, Select, Combobox, Dropdown Menu, Drawer, Command
- * dialog…). By default overlays portal into `document.body`.
+ * INTERNAL — not public API. Applications set the overlay container with
+ * `TectonProvider`'s `portalContainer` (or `ThemeRoot`); nothing here is
+ * documented, and every export is tagged `@internal`, so the published
+ * declarations of this module are empty.
  *
- * Applications that render several isolated React roots on one page (micro
- * frontends, embedded widgets) give each root a body-level container of its
- * own — `ThemeRoot` creates one — so the overlays keep escaping
- * `overflow: hidden` ancestors while the container carries that root's scoped
- * styles, theme tokens and ownership attributes. Tecton owns this context,
- * and each overlay wrapper passes the resolved container straight to its
- * primitive's portal, so isolated roots never depend on sharing a component
- * library's private context.
+ * The module stays in the package `exports` map only because the built
+ * overlay components import it by package name
+ * (`@tecton/react/tecton/portal`): a host and a remote sharing the
+ * `@tecton/react/` prefix then read one portal context.
  *
- * Applications set the container with `TectonProvider` (or `ThemeRoot`);
- * `PortalProvider` is the internal building block and not public API.
+ * Every overlay passes the resolved container straight to its primitive's
+ * portal (Dialog, Sheet, Popover, Tooltip, Select, Combobox, Dropdown Menu,
+ * Drawer, Command dialog…); by default overlays portal into `document.body`.
+ * Applications that render several isolated React roots on one page give each
+ * root a body-level container of its own — `ThemeRoot` creates one — so the
+ * overlays keep escaping `overflow: hidden` ancestors while the container
+ * carries that root's scoped styles and theme tokens.
  */
+
+/** @internal */
 type PortalProviderProps = {
   /**
    * Element the overlays portal into, or a function returning it (called
@@ -56,7 +59,7 @@ function useResolvedContainer(
 }
 
 /** @internal Use `TectonProvider`'s `portalContainer`. */
-function PortalProvider({ container, children }: PortalProviderProps) {
+export function PortalProvider({ container, children }: PortalProviderProps) {
   const resolved = useResolvedContainer(container)
   return (
     <PortalContainerContext value={resolved}>{children}</PortalContainerContext>
@@ -64,23 +67,13 @@ function PortalProvider({ container, children }: PortalProviderProps) {
 }
 
 /**
- * The element overlays currently portal into, or `null` when no container is
- * set (overlays then use `document.body`).
+ * @internal The `container` an overlay passes to its primitive's portal, or
+ * `undefined` when none is set. Never `null`: the primitives read
+ * `container={null}` as "render nothing" rather than "use the default", so
+ * the no-container case has to be `undefined`, which leaves the primitive to
+ * its own default (`document.body`, or the parent popup's container for a
+ * nested menu).
  */
-function usePortalContainer(): HTMLElement | null {
-  return React.useContext(PortalContainerContext)
+export function usePortalTarget(): HTMLElement | undefined {
+  return React.useContext(PortalContainerContext) ?? undefined
 }
-
-/**
- * The `container` an overlay passes to its primitive's portal, or `undefined`
- * when none is set. Never `null`: Base UI reads `container={null}` as "render
- * nothing" rather than "use the default", so the no-container case has to be
- * `undefined`, which leaves the primitive to its own default (`document.body`,
- * or the parent popup's container for a nested menu).
- */
-function usePortalTarget(): HTMLElement | undefined {
-  return usePortalContainer() ?? undefined
-}
-
-export { PortalProvider, usePortalContainer, usePortalTarget }
-export type { PortalProviderProps }

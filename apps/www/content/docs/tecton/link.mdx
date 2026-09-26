@@ -216,7 +216,7 @@ Renders an `a` and accepts its attributes.
 | `disabled` | `boolean` | `false` | Drops `href` (no navigation, not focusable) and sets `aria-disabled`. |
 | `navigateOptions` | `unknown` | - | Second argument of the provider's `navigate`. |
 | `onClick` | `(event: MouseEvent) => void` | - | Runs before navigation; `event.preventDefault()` cancels it. |
-| `render` | `ReactElement \| (props, state) => ReactElement` | - | Render another anchor element, such as a router's link, with the link props merged in. |
+| `render` | `ReactElement \| (props) => ReactElement` | - | Render another anchor element, such as a router's link, with the link props merged in. |
 
 A disabled link carries `data-disabled`.
 

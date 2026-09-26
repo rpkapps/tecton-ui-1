@@ -21,7 +21,7 @@ related: [ButtonGroup, DropdownMenu]
 
 ## Do
 
-- Control it with `open` and dismiss with `onDismiss`; the bar owns Escape and the enter transition.
+- Control it with `open` / `onOpenChange` (called with `false` when the user dismisses it); the bar owns Escape and the enter transition.
 - Give it an `aria-label`; it renders a `div` with `role="region"`.
 - Summarise with `ActionBarSelection` (`count`, `total`, `label`, `onClear`) or with `ActionBarMessage`.
 - Put the actions in `ActionBarActions`, wrapping collapsible ones in `OverflowItem` and leaving the primary action bare.
@@ -43,7 +43,7 @@ Wrong:
 Correct:
 
 ```tsx
-<ActionBar open={selected.size > 0} onDismiss={clear} aria-label="Selected wells">
+<ActionBar open={selected.size > 0} onOpenChange={(open) => !open && clear()} aria-label="Selected wells">
   <ActionBarSelection count={selected.size} total={wells.length} label="wells" onClear={clear} />
 </ActionBar>
 ```
