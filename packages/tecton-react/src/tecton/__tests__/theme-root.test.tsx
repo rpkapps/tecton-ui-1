@@ -91,6 +91,45 @@ describe("ThemeRoot", () => {
     expect(container()).not.toHaveClass("mfe-a")
   })
 
+  it("gives the container no box, so copied layout classes take no space", () => {
+    render(
+      <ThemeRoot className="mfe-a flex h-full flex-col p-4">content</ThemeRoot>
+    )
+    expect(container()).toHaveClass("flex", "p-4")
+    expect(container().style.display).toBe("contents")
+  })
+
+  it("copies only overlayClassName and the theme class when given", () => {
+    const { rerender } = render(
+      <ThemeRoot
+        className="mfe-a flex h-full p-4"
+        overlayClassName="mfe-a [--primary:red]"
+        theme="dark"
+      >
+        x
+      </ThemeRoot>
+    )
+    expect(root()).toHaveClass("mfe-a", "flex", "h-full", "p-4", "dark")
+    expect(container().className).toBe("dark mfe-a [--primary:red]")
+
+    rerender(
+      <ThemeRoot
+        className="mfe-a flex h-full p-4"
+        overlayClassName="mfe-a"
+        theme="light"
+      >
+        x
+      </ThemeRoot>
+    )
+    expect(container().className).toBe("light mfe-a")
+  })
+
+  it("forwards a ref to the root element", () => {
+    const ref = { current: null as HTMLDivElement | null }
+    render(<ThemeRoot ref={ref}>x</ThemeRoot>)
+    expect(ref.current).toBe(root())
+  })
+
   it("removes the container on unmount", () => {
     const { unmount } = render(<ThemeRoot>x</ThemeRoot>)
     expect(containers()).toHaveLength(1)

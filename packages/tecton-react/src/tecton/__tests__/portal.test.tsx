@@ -1,3 +1,4 @@
+import * as React from "react"
 import { render, renderHook, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
@@ -126,6 +127,68 @@ describe("PortalProvider", () => {
     const body = await screen.findByText("Popover body")
     expect(container.contains(body)).toBe(true)
     container.remove()
+  })
+
+  // The guideline's ref pattern: the host is a sibling that only exists once
+  // the tree has committed, so reading the function during render sees null.
+  it("resolves a function reading a ref after mount", async () => {
+    function App() {
+      const host = React.useRef<HTMLDivElement>(null)
+      return (
+        <>
+          <PortalProvider container={() => host.current}>
+            <PopoverTrigger>
+              <Button>Ref details</Button>
+              <Popover>
+                <p>Ref popover body</p>
+              </Popover>
+            </PopoverTrigger>
+          </PortalProvider>
+          <div ref={host} data-testid="ref-host" />
+        </>
+      )
+    }
+    render(<App />)
+    await userEvent.click(screen.getByRole("button", { name: "Ref details" }))
+    const body = await screen.findByText("Ref popover body")
+    expect(screen.getByTestId("ref-host")).toContainElement(body)
+  })
+
+  it("exposes a function container as the element it returns", () => {
+    const container = makeContainer("fn")
+    const { result } = renderHook(() => usePortalTarget(), {
+      wrapper: ({ children }) => (
+        <PortalProvider container={() => container}>{children}</PortalProvider>
+      ),
+    })
+    expect(result.current).toBe(container)
+    container.remove()
+  })
+
+  it("re-resolves when a new function is passed", () => {
+    const first = makeContainer("first")
+    const second = makeContainer("second")
+    let target: HTMLElement | null = first
+    function Probe() {
+      return (
+        <span data-testid="probe">{usePortalContainer()?.dataset.mfe}</span>
+      )
+    }
+    const { rerender } = render(
+      <PortalProvider container={() => target}>
+        <Probe />
+      </PortalProvider>
+    )
+    expect(screen.getByTestId("probe")).toHaveTextContent("first")
+    target = second
+    rerender(
+      <PortalProvider container={() => target}>
+        <Probe />
+      </PortalProvider>
+    )
+    expect(screen.getByTestId("probe")).toHaveTextContent("second")
+    first.remove()
+    second.remove()
   })
 
   it("falls back to document.body without a provider", async () => {

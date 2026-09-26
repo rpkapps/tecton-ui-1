@@ -25,9 +25,11 @@ import { PortalProvider } from "@tecton/react/tecton/portal"
  * overrides. So `ThemeRoot` also owns one body-level overlay container
  * that carries the same `data-tecton-root` marker and the same classes as the
  * root (theme class, scope class, inline `[--token:…]` overrides), and hands
- * it to `PortalProvider` for the Tecton overlays to portal into. Pass
- * `overlayContainer` to reuse an element the shell already owns, or `null` to
- * opt out entirely.
+ * it to `PortalProvider` for the Tecton overlays to portal into. The container
+ * is `display: contents`, so a layout class on the root (`flex h-full p-4`)
+ * has no effect there; `overlayClassName` replaces the mirrored `className`
+ * when only some classes should reach the overlays. Pass `overlayContainer`
+ * to reuse an element the shell already owns, or `null` to opt out entirely.
  *
  * The container is created in an effect, so overlays cannot be open before
  * mount: on the first paint there is no container yet, `usePortalTarget()`
@@ -55,18 +57,29 @@ type ThemeRootProps = React.ComponentProps<"div"> &
      * overlay container (overlays fall back to React Aria's default).
      */
     overlayContainer?: HTMLElement | null
+    /**
+     * Classes for the overlay container this root creates, instead of a copy
+     * of `className`: the scope class and any `[--token:…]` overrides the
+     * overlays need. The theme class is always added. Omit it to mirror
+     * `className`; the container renders no box either way, so layout classes
+     * never take up space at the end of the body.
+     */
+    overlayClassName?: string
   }
 
 function ThemeRoot({
   className,
   theme = "inherit",
   overlayContainer,
+  overlayClassName,
   children,
   ...props
 }: ThemeRootProps) {
-  const ref = React.useRef<HTMLDivElement>(null)
   const [container, setContainer] = React.useState<HTMLElement | null>(null)
-  const classes = cn(themeRootVariants({ theme }), className)
+  const themeClass = themeRootVariants({ theme })
+  const classes = cn(themeClass, className)
+  const overlayClasses =
+    overlayClassName === undefined ? classes : cn(themeClass, overlayClassName)
 
   React.useEffect(() => {
     // A caller-supplied container (or `null`) is used as is and never owned.
@@ -78,7 +91,12 @@ function ThemeRoot({
     const element = document.createElement("div")
     element.setAttribute("data-tecton-root", "")
     element.setAttribute("data-slot", "theme-root-overlay")
-    element.className = ref.current?.className ?? ""
+    // The container is only a carrier for classes and inherited variables:
+    // `display: contents` gives it no box, so a layout class copied from the
+    // root (`flex h-full p-4`) cannot add a padded, full-height block to the
+    // body, and it is no containing block for the overlays it holds. Inline,
+    // so it wins over any `display` utility in the copied classes.
+    element.style.display = "contents"
     document.body.append(element)
     setContainer(element)
     return () => {
@@ -92,12 +110,11 @@ function ThemeRoot({
     // an inline `[--primary:…]` override has to reach the overlays too. Only
     // the container this component created is ours to restyle.
     if (overlayContainer !== undefined || !container) return
-    container.className = classes
-  }, [container, classes, overlayContainer])
+    container.className = overlayClasses
+  }, [container, overlayClasses, overlayContainer])
 
   return (
     <div
-      ref={ref}
       data-slot="theme-root"
       data-tecton-root=""
       className={classes}
