@@ -3,16 +3,6 @@
 import * as React from "react"
 import { cn } from "cn"
 import { ArrowUpIcon, SquareIcon } from "lucide-react"
-import {
-  Header,
-  ListBox,
-  ListBoxItem,
-  ListBoxSection,
-  SelectableCollectionContext,
-  Toolbar,
-  type Key,
-  type ToolbarProps,
-} from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -24,6 +14,7 @@ import {
 import { Kbd } from "@tecton/react/components/kbd"
 import { Spinner } from "@tecton/react/components/spinner"
 import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 /**
  * Tecton Composer — the message box of a chat: a textarea that grows with
@@ -76,7 +67,7 @@ type ComposerContextValue = {
   typeValue: (value: string) => void
   status: ComposerStatus
   isBusy: boolean
-  isDisabled: boolean
+  disabled: boolean
   canSubmit: boolean
   submitMode: ComposerSubmitMode
   submit: () => void
@@ -167,7 +158,8 @@ type ComposerProps = Omit<
    * ones are left out. Unset, all of them.
    */
   historyLimit?: number
-  isDisabled?: boolean
+  /** Disables the whole composer. */
+  disabled?: boolean
 }
 
 function Composer({
@@ -180,7 +172,7 @@ function Composer({
   submitMode = "enter",
   history,
   historyLimit,
-  isDisabled = false,
+  disabled = false,
   className,
   children,
   ...props
@@ -306,7 +298,7 @@ function Composer({
   )
 
   const isBusy = status === "submitted" || status === "streaming"
-  const canSubmit = !isDisabled && !isBusy && value.trim() !== ""
+  const canSubmit = !disabled && !isBusy && value.trim() !== ""
 
   const focus = React.useCallback(() => {
     inputRef.current?.focus()
@@ -321,12 +313,12 @@ function Composer({
 
   const send = React.useCallback(
     (text: string) => {
-      if (isDisabled || isBusy || text.trim() === "") return
+      if (disabled || isBusy || text.trim() === "") return
       setPosition(null)
       onSubmit({ text: text.trim() })
       focus()
     },
-    [isDisabled, isBusy, setPosition, onSubmit, focus]
+    [disabled, isBusy, setPosition, onSubmit, focus]
   )
 
   const stop = React.useMemo(
@@ -348,7 +340,7 @@ function Composer({
       typeValue,
       status,
       isBusy,
-      isDisabled,
+      disabled,
       canSubmit,
       submitMode,
       submit,
@@ -373,7 +365,7 @@ function Composer({
       typeValue,
       status,
       isBusy,
-      isDisabled,
+      disabled,
       canSubmit,
       submitMode,
       submit,
@@ -413,14 +405,13 @@ function Composer({
 function ComposerField({
   className,
   ...props
-}: Omit<React.ComponentProps<typeof InputGroup>, "className"> & {
-  className?: string
-}) {
-  const { isDisabled } = useComposerContext("ComposerField")
+}: React.ComponentProps<typeof InputGroup>) {
+  const { disabled } = useComposerContext("ComposerField")
   return (
     <InputGroup
       data-slot="composer-field"
-      isDisabled={isDisabled}
+      // The value the input group's own styles dim its addons for.
+      data-disabled={disabled ? "true" : undefined}
       className={cn("h-auto flex-col", className)}
       {...props}
     />
@@ -541,7 +532,7 @@ function ComposerInput({
     value,
     typeValue,
     isBusy,
-    isDisabled,
+    disabled,
     submitMode,
     submit,
     stop,
@@ -628,7 +619,7 @@ function ComposerInput({
         commandList?.open ? commandList.activeId : undefined
       }
       value={value}
-      disabled={isDisabled}
+      disabled={disabled}
       rows={1}
       className={cn("max-h-48 min-h-10 overflow-y-auto px-3", className)}
       onChange={(event: React.ChangeEvent<HTMLTextAreaElement>) =>
@@ -695,17 +686,118 @@ function ComposerInput({
   )
 }
 
-/** The row under the textarea: an arrow-key toolbar, the send button at its end. */
-type ComposerToolbarProps = Omit<ToolbarProps, "className"> & {
-  className?: string
+type ComposerToolbarProps = Omit<React.ComponentProps<"div">, "role">
+
+const TOOLBAR_ITEMS =
+  'button, a[href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
+
+/** What the arrow keys move between in a toolbar: its enabled, shown controls. */
+function toolbarItems(toolbar: HTMLElement): HTMLElement[] {
+  return [...toolbar.querySelectorAll<HTMLElement>(TOOLBAR_ITEMS)].filter(
+    (item) =>
+      !item.matches(":disabled") &&
+      item.tabIndex !== -1 &&
+      item.closest("[hidden], [inert]") === null
+  )
 }
 
+/**
+ * A toolbar that is one tab stop, over whatever controls it holds (Tecton
+ * Buttons, tooltip triggers…), with no wrapper of their own: the arrow keys
+ * (reversed right to left), Home and End move focus between them, and Tab
+ * leaves from the last one (Shift+Tab from the first), so the browser's own
+ * Tab carries on past the toolbar. Tabbing back in returns to the control
+ * last used.
+ */
+function useToolbar() {
+  const direction = useDirection()
+  const lastFocused = React.useRef<HTMLElement | null>(null)
+  // Focus a press brings in stays where the press put it.
+  const pressed = React.useRef(false)
+
+  const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    const toolbar = event.currentTarget
+    const target = event.target as HTMLElement
+    // A key from a popup portalled out of the toolbar is not the toolbar's.
+    if (event.defaultPrevented || !toolbar.contains(target)) return
+    if (event.altKey || event.ctrlKey || event.metaKey) return
+    const items = toolbarItems(toolbar)
+    if (event.key === "Tab") {
+      lastFocused.current = target
+      const edge = event.shiftKey ? items[0] : items.at(-1)
+      edge?.focus()
+      return
+    }
+    const index = items.findIndex((item) => item.contains(target))
+    const next = direction === "rtl" ? "ArrowLeft" : "ArrowRight"
+    const previous = direction === "rtl" ? "ArrowRight" : "ArrowLeft"
+    let item: HTMLElement | undefined
+    switch (event.key) {
+      case next:
+        item = items[index + 1]
+        break
+      case previous:
+        item = index > 0 ? items[index - 1] : undefined
+        break
+      case "Home":
+        item = items[0]
+        break
+      case "End":
+        item = items.at(-1)
+        break
+      default:
+        return
+    }
+    event.preventDefault()
+    item?.focus()
+  }
+
+  const onPointerDown = () => {
+    pressed.current = true
+  }
+
+  const onFocus = (event: React.FocusEvent<HTMLDivElement>) => {
+    const toolbar = event.currentTarget
+    const last = lastFocused.current
+    const byPress = pressed.current
+    pressed.current = false
+    if (toolbar.contains(event.relatedTarget)) return
+    lastFocused.current = null
+    if (byPress || last === null || last === event.target) return
+    if (toolbar.contains(last) && toolbarItems(toolbar).includes(last)) {
+      last.focus()
+    }
+  }
+
+  const onBlur = (event: React.FocusEvent<HTMLDivElement>) => {
+    const toolbar = event.currentTarget
+    if (toolbar.contains(event.relatedTarget)) return
+    lastFocused.current ??= event.target as HTMLElement
+  }
+
+  return {
+    role: "toolbar",
+    "aria-orientation": "horizontal" as const,
+    onKeyDown,
+    onPointerDownCapture: onPointerDown,
+    onFocusCapture: onFocus,
+    onBlurCapture: onBlur,
+  }
+}
+
+/**
+ * The row under the textarea: one tab stop, the arrow keys between its
+ * controls, the send button at its end. Put any Tecton button in it as it
+ * is, `InputGroupButton` for the field's look.
+ */
 function ComposerToolbar({
   className,
   "aria-label": ariaLabel = "Message actions",
+  onKeyDown,
   ...props
 }: ComposerToolbarProps) {
   const { focus } = useComposerContext("ComposerToolbar")
+  const toolbar = useToolbar()
   return (
     <InputGroupAddon
       align="block-end"
@@ -717,13 +809,18 @@ function ComposerToolbar({
         focus()
       }}
     >
-      <Toolbar
+      <div
+        {...toolbar}
         data-slot="composer-toolbar"
         aria-label={ariaLabel}
         className={cn(
           "flex w-full min-w-0 items-center gap-1 *:data-[slot=composer-submit]:ms-auto",
           className
         )}
+        onKeyDown={(event) => {
+          onKeyDown?.(event)
+          toolbar.onKeyDown(event)
+        }}
         {...props}
       />
     </InputGroupAddon>
@@ -747,7 +844,7 @@ function ComposerSubmit({
   stopLabel = "Stop generating",
   className,
 }: ComposerSubmitProps) {
-  const { status, isBusy, canSubmit, isDisabled, stop, inputRef } =
+  const { status, isBusy, canSubmit, disabled, stop, inputRef } =
     useComposerContext("ComposerSubmit")
   const showStop = isBusy && stop !== undefined
   const stopRef = React.useRef<HTMLButtonElement>(null)
@@ -781,7 +878,7 @@ function ComposerSubmit({
         className={cn("rounded-full", className)}
         onFocus={() => (focused.current = "stop")}
         onBlur={() => (focused.current = null)}
-        onPress={stop}
+        onClick={() => stop()}
       >
         {status === "submitted" ? (
           <Spinner aria-hidden />
@@ -803,7 +900,7 @@ function ComposerSubmit({
       variant="default"
       aria-label={sendLabel}
       aria-disabled={unavailable || undefined}
-      isDisabled={isDisabled}
+      disabled={disabled}
       className={cn(
         "rounded-full aria-disabled:cursor-not-allowed aria-disabled:opacity-50",
         className
@@ -835,11 +932,14 @@ function useIsMacPlatform(): boolean {
 /** How to send, tied to the textarea by `aria-describedby`; visible or for screen readers only. */
 function ComposerHint({
   className,
-  isVisible = true,
+  visible = true,
   id: idProp,
   children,
   ...props
-}: React.ComponentProps<"p"> & { isVisible?: boolean }) {
+}: React.ComponentProps<"p"> & {
+  /** False keeps the hint for screen readers only. */
+  visible?: boolean
+}) {
   const { registerHint, submitMode, commandList, hasHistory } =
     useComposerContext("ComposerHint")
   const generatedId = React.useId()
@@ -876,7 +976,7 @@ function ComposerHint({
     <p
       data-slot="composer-hint"
       className={cn(
-        isVisible ? "px-1 text-xs text-muted-foreground" : "sr-only",
+        visible ? "px-1 text-xs text-muted-foreground" : "sr-only",
         className
       )}
       {...props}
@@ -949,11 +1049,18 @@ function ComposerStatusMessage({
 }
 
 type ComposerAttachmentItem = {
-  id: Key
+  id: string
   label: string
   description?: string
   /** Marked `data-icon="inline-start"`, as in any `Chip`, so it takes the chip's size. */
   icon?: React.ReactNode
+}
+
+type ComposerAttachmentsProps = {
+  items: readonly ComposerAttachmentItem[]
+  onRemove: (id: string) => void
+  className?: string
+  "aria-label"?: string
 }
 
 /**
@@ -966,12 +1073,7 @@ function ComposerAttachments({
   onRemove,
   className,
   "aria-label": ariaLabel = "Attachments",
-}: {
-  items: readonly ComposerAttachmentItem[]
-  onRemove: (id: Key) => void
-  className?: string
-  "aria-label"?: string
-}) {
+}: ComposerAttachmentsProps) {
   const { focus } = useComposerContext("ComposerAttachments")
   if (items.length === 0) return null
 
@@ -980,16 +1082,16 @@ function ComposerAttachments({
       data-slot="composer-attachments"
       aria-label={ariaLabel}
       className={cn("w-full px-2 pt-2", className)}
-      onRemove={(keys) => {
-        for (const key of keys) onRemove(key)
-        if (keys.size >= items.length) focus()
+      onRemove={(ids) => {
+        for (const id of ids) onRemove(id)
+        if (ids.length >= items.length) focus()
       }}
     >
       <ChipList items={items}>
         {(item) => (
           <Chip
-            id={item.id}
-            textValue={item.label}
+            value={item.id}
+            label={item.label}
             appearance="outline"
             size="md"
             className="max-w-full"
@@ -1012,21 +1114,38 @@ function ComposerAttachments({
 function ComposerSuggestions({
   className,
   "aria-label": ariaLabel = "Suggestions",
+  onKeyDown,
   ...props
 }: ComposerToolbarProps) {
+  const toolbar = useToolbar()
   return (
-    <Toolbar
+    <div
+      {...toolbar}
       data-slot="composer-suggestions"
       aria-label={ariaLabel}
       className={cn("flex flex-wrap gap-1.5", className)}
+      onKeyDown={(event) => {
+        onKeyDown?.(event)
+        toolbar.onKeyDown(event)
+      }}
       {...props}
     />
   )
 }
 
+type ComposerSuggestionProps = {
+  value: string
+  /** Sends the suggestion at once, instead of filling the box. */
+  submit?: boolean
+  /** Replaces the default: the composer does nothing else with the click. */
+  onSelect?: (value: string) => void
+  className?: string
+  children?: React.ReactNode
+}
+
 /**
  * One suggestion. It fills the box for the user to edit and send, or sends
- * straight away with `submit`; `onSelect` hands the press to the app
+ * straight away with `submit`; `onSelect` hands the click to the app
  * instead, for a suggestion that carries more than its text.
  */
 function ComposerSuggestion({
@@ -1035,15 +1154,8 @@ function ComposerSuggestion({
   onSelect,
   className,
   children,
-}: {
-  value: string
-  submit?: boolean
-  /** Replaces the default: the composer does nothing else with the press. */
-  onSelect?: (value: string) => void
-  className?: string
-  children?: React.ReactNode
-}) {
-  const { setValue, send, focus, isBusy, isDisabled } =
+}: ComposerSuggestionProps) {
+  const { setValue, send, focus, isBusy, disabled } =
     useComposerContext("ComposerSuggestion")
 
   return (
@@ -1051,9 +1163,9 @@ function ComposerSuggestion({
       data-slot="composer-suggestion"
       variant="outline"
       size="xs"
-      isDisabled={isDisabled || (sendNow && isBusy)}
+      disabled={disabled || (sendNow && isBusy)}
       className={cn("max-w-full rounded-full", className)}
-      onPress={() => {
+      onClick={() => {
         if (onSelect) {
           onSelect(value)
           return
@@ -1137,29 +1249,20 @@ function groupCommands(matches: readonly ComposerCommandItem[]) {
   return [...groups].map(([name, items]) => ({ name, items }))
 }
 
-/**
- * The key a command has in the list. React Aria builds each option's DOM id
- * from the key with its whitespace dropped, so `"a b"` and `"ab"` would
- * share one; encoded, no two ids meet.
- */
-function optionKey(item: ComposerCommandItem) {
-  return encodeURIComponent(item.id)
-}
-
-// Declared here: the package's declaration build has no Node types.
-declare const process: { env: { NODE_ENV?: string } }
-
-/** Development builds only; a consumer's bundler replaces `process.env.NODE_ENV`. */
-function isDevelopment() {
-  try {
-    return process.env.NODE_ENV !== "production"
-  } catch {
-    return false
-  }
-}
-
 function defaultCountMessage(count: number) {
   return `${count} ${count === 1 ? "command" : "commands"}, arrow keys to choose.`
+}
+
+type ComposerCommandsProps = {
+  items: readonly ComposerCommandItem[]
+  onCommand: (
+    item: ComposerCommandItem,
+    composer: ComposerCommandControls
+  ) => void
+  /** What the polite status says while the list is open, for `count` matches. */
+  countMessage?: (count: number) => string
+  className?: string
+  "aria-label"?: string
 }
 
 /**
@@ -1177,23 +1280,13 @@ function ComposerCommands({
   countMessage = defaultCountMessage,
   className,
   "aria-label": ariaLabel = "Commands",
-}: {
-  items: readonly ComposerCommandItem[]
-  onCommand: (
-    item: ComposerCommandItem,
-    composer: ComposerCommandControls
-  ) => void
-  /** What the polite status says while the list is open, for `count` matches. */
-  countMessage?: (count: number) => string
-  className?: string
-  "aria-label"?: string
-}) {
+}: ComposerCommandsProps) {
   const {
     value,
     setValue,
     send,
     focus,
-    isDisabled,
+    disabled,
     historyEntry,
     commandKeys,
     setCommandList,
@@ -1202,9 +1295,6 @@ function ComposerCommands({
   const [active, setActive] = React.useState(0)
   const [dismissed, setDismissed] = React.useState<string>()
   const listRef = React.useRef<HTMLDivElement>(null)
-  // The rendered options by key: the textarea names the active one by the
-  // id React Aria gave it, read from the element rather than rebuilt.
-  const optionElements = React.useRef(new Map<string, HTMLElement>())
 
   // Escape closes the list for the text it was pressed on; any other text,
   // even the same `/word` typed again after a send, opens it again.
@@ -1221,7 +1311,7 @@ function ComposerCommands({
     [groups]
   )
   const open =
-    !isDisabled &&
+    !disabled &&
     query !== undefined &&
     matches.length > 0 &&
     dismissed !== value &&
@@ -1229,57 +1319,33 @@ function ComposerCommands({
     historyEntry !== value
   const activeIndex = Math.min(active, Math.max(0, matches.length - 1))
   const activeItem = open ? matches.at(activeIndex) : undefined
-  const activeKey = activeItem === undefined ? undefined : optionKey(activeItem)
+  // An option's id is its place in `items`: the same while the list narrows,
+  // whatever the item's own id holds.
+  const optionId = (item: ComposerCommandItem) =>
+    `${listId}-option-${items.indexOf(item)}`
+  const activeId = activeItem === undefined ? undefined : optionId(activeItem)
 
   // A new query starts at the best match.
   React.useEffect(() => {
     setActive(0)
   }, [query])
 
-  // Once the options are rendered, the active one's id is on its element.
-  // Checked after every commit, but passed on only when it changed.
-  const sent = React.useRef<ComposerCommandListState>(undefined)
+  // The textarea points at the list and its active option once they are in
+  // the DOM: the list renders with them, and the textarea follows.
   React.useLayoutEffect(() => {
-    const element =
-      activeKey === undefined
-        ? undefined
-        : optionElements.current.get(activeKey)
-    const next = { listId, open, activeId: element?.id || undefined }
-    const last = sent.current
-    if (
-      last?.listId === next.listId &&
-      last.open === next.open &&
-      last.activeId === next.activeId
-    )
-      return
-    sent.current = next
-    setCommandList(next)
-    if (activeKey !== undefined && next.activeId === undefined) {
-      if (isDevelopment()) {
-        console.warn(
-          `ComposerCommands: no rendered option with an id for "${activeKey}", so the textarea cannot point at it.`
-        )
-      }
-    }
-  })
-  React.useLayoutEffect(
-    () => () => {
-      // Sent again if the effects run again (StrictMode, a remount).
-      sent.current = undefined
-      setCommandList(undefined)
-    },
-    [setCommandList]
-  )
+    setCommandList({ listId, open, activeId })
+  }, [setCommandList, listId, open, activeId])
+  React.useLayoutEffect(() => () => setCommandList(undefined), [setCommandList])
 
   // The active option is scrolled into the list's view, and only the list's:
   // `scrollIntoView` would scroll the transcript and the page with it.
   React.useEffect(() => {
     const list = listRef.current
-    const option =
-      activeKey === undefined
-        ? undefined
-        : optionElements.current.get(activeKey)
-    if (!open || list === null || option === undefined) return
+    if (!open || list === null || activeId === undefined) return
+    const option = [
+      ...list.querySelectorAll<HTMLElement>('[role="option"]'),
+    ].find((element) => element.id === activeId)
+    if (option === undefined) return
     const top =
       option.getBoundingClientRect().top -
       list.getBoundingClientRect().top -
@@ -1290,7 +1356,7 @@ function ComposerCommands({
     else if (bottom > list.scrollTop + list.clientHeight) {
       list.scrollTop = bottom - list.clientHeight
     }
-  }, [open, activeKey])
+  }, [open, activeId])
 
   const pick = React.useCallback(
     (item: ComposerCommandItem) => {
@@ -1338,19 +1404,23 @@ function ComposerCommands({
 
   const option = (item: ComposerCommandItem) => {
     const at = matches.indexOf(item)
-    const key = optionKey(item)
+    const id = optionId(item)
+    const selected = at === activeIndex
     return (
-      <ListBoxItem
-        key={key}
-        id={key}
-        ref={(element: HTMLDivElement | null) => {
-          if (element === null) optionElements.current.delete(key)
-          else optionElements.current.set(key, element)
-        }}
-        textValue={`/${item.command} ${item.label}`}
+      <div
+        key={id}
+        id={id}
+        role="option"
+        aria-selected={selected}
+        data-highlighted={selected ? "" : undefined}
         data-slot="composer-command"
-        className="flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none aria-selected:bg-accent aria-selected:text-accent-foreground [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&_svg:not([class*='size-'])]:size-4"
-        onHoverStart={() => setActive(at)}
+        className="flex cursor-default items-center gap-2 rounded-md px-2 py-1.5 text-sm outline-none data-highlighted:bg-accent data-highlighted:text-accent-foreground [&_svg]:shrink-0 [&_svg]:text-muted-foreground [&_svg:not([class*='size-'])]:size-4"
+        // A mouse or pen over a command makes it the active one; a touch
+        // only picks it.
+        onPointerEnter={(event) => {
+          if (event.pointerType !== "touch") setActive(at)
+        }}
+        onClick={() => pick(item)}
       >
         {item.icon}
         <span className="shrink-0 font-mono text-xs">/{item.command}</span>
@@ -1360,60 +1430,51 @@ function ComposerCommands({
             {item.description}
           </span>
         )}
-      </ListBoxItem>
+      </div>
     )
   }
 
   return (
     <>
       {open && (
-        // Virtual focus: the options never take focus from the textarea,
-        // which moves through them with its own arrow keys.
-        <SelectableCollectionContext.Provider
-          value={{ shouldUseVirtualFocus: true }}
+        // The options never take focus: the textarea keeps it and moves
+        // through them with its own arrow keys.
+        <div
+          ref={listRef}
+          id={listId}
+          role="listbox"
+          aria-label={ariaLabel}
+          data-slot="composer-commands"
+          className={cn(
+            "absolute inset-x-0 bottom-full z-10 mb-2 max-h-64 overflow-y-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-md outline-none",
+            className
+          )}
+          // A press, by mouse or touch, anywhere in the list leaves focus
+          // in the textarea.
+          onMouseDown={(event) => event.preventDefault()}
         >
-          <ListBox
-            ref={listRef}
-            id={listId}
-            aria-label={ariaLabel}
-            data-slot="composer-commands"
-            className={cn(
-              "absolute inset-x-0 bottom-full z-10 mb-2 max-h-64 overflow-y-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-md outline-none",
-              className
-            )}
-            // The active command is the selected one, for `aria-selected`,
-            // so a press changes the selection: to the command pressed, or
-            // to none when it was the active one already.
-            selectionMode="single"
-            selectedKeys={activeKey === undefined ? [] : [activeKey]}
-            shouldSelectOnPressUp
-            onSelectionChange={(keys) => {
-              const key = keys === "all" ? undefined : [...keys][0]
-              const item = matches.find(
-                (match) => optionKey(match) === (key ?? activeKey)
-              )
-              if (item !== undefined) pick(item)
-            }}
-            // A press on a heading or the padding must not take focus either.
-            onMouseDown={(event) => event.preventDefault()}
-          >
-            {groups.map((group, index) =>
-              group.name === undefined ? (
-                group.items.map(option)
-              ) : (
-                <ListBoxSection
-                  key={`${listId}-group-${index}`}
-                  id={`${listId}-group-${index}`}
+          {groups.map((group, index) => {
+            if (group.name === undefined) return group.items.map(option)
+            const headingId = `${listId}-group-${index}`
+            return (
+              <div
+                key={headingId}
+                role="group"
+                aria-labelledby={headingId}
+                data-slot="composer-command-group"
+              >
+                <div
+                  id={headingId}
+                  role="presentation"
+                  className="px-2 pt-1.5 pb-1 text-xs font-medium text-muted-foreground"
                 >
-                  <Header className="px-2 pt-1.5 pb-1 text-xs font-medium text-muted-foreground">
-                    {group.name}
-                  </Header>
-                  {group.items.map(option)}
-                </ListBoxSection>
-              )
-            )}
-          </ListBox>
-        </SelectableCollectionContext.Provider>
+                  {group.name}
+                </div>
+                {group.items.map(option)}
+              </div>
+            )
+          })}
+        </div>
       )}
       <span
         role="status"
@@ -1442,10 +1503,14 @@ export {
 }
 export type {
   ComposerAttachmentItem,
+  ComposerAttachmentsProps,
   ComposerCommandControls,
   ComposerCommandItem,
+  ComposerCommandsProps,
   ComposerProps,
   ComposerStatus,
   ComposerStatusMessages,
   ComposerSubmitMode,
+  ComposerSuggestionProps,
+  ComposerToolbarProps,
 }

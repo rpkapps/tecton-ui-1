@@ -15,7 +15,7 @@ export default function ChipVariants() {
       <ChipGroup aria-label="Solid chips" selectionMode="multiple">
         <ChipList>
           {variants.map((variant) => (
-            <Chip key={variant} id={variant} variant={variant}>
+            <Chip key={variant} value={variant} variant={variant}>
               {variant}
             </Chip>
           ))}
@@ -26,7 +26,7 @@ export default function ChipVariants() {
           {variants.map((variant) => (
             <Chip
               key={variant}
-              id={variant}
+              value={variant}
               variant={variant}
               appearance="outline"
             >

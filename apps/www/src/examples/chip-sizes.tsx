@@ -6,15 +6,15 @@ export default function ChipSizes() {
   return (
     <ChipGroup aria-label="Locations" selectionMode="single">
       <ChipList className="items-center">
-        <Chip id="lg" size="lg" variant="default">
+        <Chip value="lg" size="lg" variant="default">
           <MapPinIcon data-icon="inline-start" />
           Large
         </Chip>
-        <Chip id="md" size="md" variant="default">
+        <Chip value="md" size="md" variant="default">
           <MapPinIcon data-icon="inline-start" />
           Medium
         </Chip>
-        <Chip id="default" variant="default">
+        <Chip value="default" variant="default">
           <MapPinIcon data-icon="inline-start" />
           Default
         </Chip>
