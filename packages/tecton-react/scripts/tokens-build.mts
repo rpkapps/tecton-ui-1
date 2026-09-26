@@ -22,13 +22,39 @@
  *   registry/theme.json            shadcn `registry:theme` item with literal values
  *   ../../docs/TOKEN-MAPPING.md    mapping table + known deviations
  *
+ * The map is validated against tokens/tecton.map.schema.json first. Parsing,
+ * resolution and the globals.css block helpers live in scripts/tokens-lib.mts,
+ * which tokens-check.mts shares.
+ *
  * Env: GLOBALS_CSS=<path> overrides the globals.css location (used by tests).
  */
 /// <reference types="node" />
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { clampChroma, converter, parse } from "culori";
+import {
+  DARK_MARK,
+  LIGHT_BLOCK,
+  LIGHT_MARK,
+  SCOPED_DARK,
+  SCOPED_LIGHT,
+  SCOPED_ROOT,
+  type Block,
+  type JsonSchema,
+  type PaletteConfig,
+  type Resolved,
+  findBlock,
+  isColorValue,
+  isStaleThemeEntry,
+  parseCustomProperties,
+  parseThemedTokens,
+  parseTokenMap,
+  patchBlock,
+  readsTectonToken,
+  resolveTokenMap,
+  resolveValue,
+  rootOnly,
+} from "./tokens-lib.mjs";
 import { VENDORED_CSS as SHADCN_CSS, vendorShadcnCss } from "./vendor-shadcn-css.mjs";
 
 // ---------------------------------------------------------------------------
@@ -40,6 +66,7 @@ const repoRoot = path.resolve(pkgRoot, "..", "..");
 
 const TOKENS_CSS = path.join(pkgRoot, "src/styles/tecton-tokens.css");
 const MAP_JSON = path.join(pkgRoot, "tokens/tecton.map.json");
+const MAP_SCHEMA = path.join(pkgRoot, "tokens/tecton.map.schema.json");
 const THEME_CSS = path.join(pkgRoot, "src/styles/tecton-theme.css");
 const SCOPED_CSS = path.join(pkgRoot, "src/styles/scoped.css");
 const SCOPED_THEME_CSS = path.join(pkgRoot, "src/styles/scoped-theme.css");
@@ -58,31 +85,6 @@ console.log(
 // ---------------------------------------------------------------------------
 // Types
 // ---------------------------------------------------------------------------
-type Confidence = "exact" | "approximated" | "derived";
-interface Mapping {
-  dark: string;
-  /** Tecton token, literal value or "derived"; defaults to `dark`. */
-  light?: string;
-  confidence: Confidence;
-  note?: string;
-}
-interface TokenMap {
-  version: number;
-  shadcn: Record<string, Mapping>;
-  extra: Record<string, Mapping>;
-  theme: Record<string, string>;
-  light: { strategy: string; note?: string; overrides?: Record<string, string>; overrideNotes?: Record<string, string> };
-  checks?: { allow?: string[] };
-  palette?: PaletteConfig;
-}
-interface PaletteConfig {
-  source: string;
-  note?: string;
-  prefix?: string;
-  resetTailwind?: boolean;
-  shades?: string[];
-  families: string[];
-}
 /** One palette colour: a shade (`white`) or a ramp step (`red-140`), with its value per mode. */
 interface PaletteEntry {
   name: string; // CSS suffix: white | red-140
@@ -90,106 +92,6 @@ interface PaletteEntry {
   step?: string; // 140
   light: string;
   dark: string;
-}
-
-interface Resolved {
-  name: string; // shadcn variable name without --
-  token: string; // --tecton-* name (dark)
-  lightToken: string; // --tecton-* name (light) or literal
-  dark: string; // var(--tecton-…) reference
-  darkLiteral: string; // resolved literal (hex etc.)
-  light: string; // var(--tecton-…) reference or literal
-  lightLiteral: string;
-  isColor: boolean;
-  confidence: Confidence;
-  note: string;
-  extra: boolean;
-}
-
-// ---------------------------------------------------------------------------
-// Helpers
-// ---------------------------------------------------------------------------
-const toOklch = converter("oklch");
-
-/** Parse `--name: value;` declarations from a CSS string into a map. */
-export function parseCustomProperties(css: string): Map<string, string> {
-  const out = new Map<string, string>();
-  const noComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
-  const re = /(--[\w-]+)\s*:\s*([^;]+);/g;
-  let m: RegExpExecArray | null;
-  while ((m = re.exec(noComments))) out.set(m[1], m[2].trim());
-  return out;
-}
-
-/**
- * Split a themed token file into light and dark maps. Top-level blocks whose
- * selector mentions "dark" override the base (light) declarations.
- */
-export function parseThemedTokens(css: string): { light: Map<string, string>; dark: Map<string, string> } {
-  const noComments = css.replace(/\/\*[\s\S]*?\*\//g, "");
-  const light = new Map<string, string>();
-  const dark = new Map<string, string>();
-  let i = 0;
-  while (i < noComments.length) {
-    const open = noComments.indexOf("{", i);
-    if (open === -1) break;
-    const selector = noComments.slice(i, open).trim();
-    let depth = 1;
-    let j = open + 1;
-    while (j < noComments.length && depth > 0) {
-      if (noComments[j] === "{") depth++;
-      else if (noComments[j] === "}") depth--;
-      j++;
-    }
-    const body = parseCustomProperties(noComments.slice(open + 1, j - 1));
-    const isDark = /dark/.test(selector);
-    for (const [k, v] of body) {
-      if (isDark) dark.set(k, v);
-      else light.set(k, v);
-    }
-    i = j;
-  }
-  for (const [k, v] of light) if (!dark.has(k)) dark.set(k, v);
-  return { light, dark };
-}
-
-/** Resolve nested var() references against a token map. */
-function resolveValue(value: string, tokens: Map<string, string>, depth = 0): string {
-  if (depth > 16) throw new Error(`var() reference too deep: ${value}`);
-  return value.replace(/var\((--[\w-]+)(?:\s*,\s*([^)]*))?\)/g, (_, name: string, fallback?: string) => {
-    const v = tokens.get(name);
-    if (v === undefined) {
-      if (fallback !== undefined) return resolveValue(fallback.trim(), tokens, depth + 1);
-      throw new Error(`Dangling var(${name})`);
-    }
-    return resolveValue(v, tokens, depth + 1);
-  });
-}
-
-function round3(n: number): number {
-  return Math.round(n * 1000) / 1000;
-}
-
-function formatOklch(c: { l: number; c: number; h?: number; alpha?: number }): string {
-  const l = round3(Math.min(1, Math.max(0, c.l)));
-  const ch = round3(Math.max(0, c.c));
-  const h = round3(c.h ?? 0);
-  const alpha = c.alpha ?? 1;
-  return alpha < 1 ? `oklch(${l} ${ch} ${h} / ${round3(alpha)})` : `oklch(${l} ${ch} ${h})`;
-}
-
-/** Light-mode derivation: invert OKLCH lightness, keep hue/chroma/alpha, clamp to sRGB. */
-export function deriveLight(darkLiteral: string): string {
-  const parsed = parse(darkLiteral);
-  if (!parsed) throw new Error(`Not a colour: ${darkLiteral}`);
-  const ok = toOklch(parsed);
-  const inverted = { mode: "oklch" as const, l: 1 - ok.l, c: ok.c, h: ok.h, alpha: ok.alpha };
-  const clamped = clampChroma(inverted, "oklch");
-  return formatOklch({ l: clamped.l, c: clamped.c, h: clamped.h ?? inverted.h, alpha: ok.alpha });
-}
-
-function isColorValue(v: string): boolean {
-  return parse(v) !== undefined;
 }
 
 /** Fontsource stylesheets registering the families named by the Tecton font tokens. */
@@ -219,49 +121,14 @@ const BASE_CSS: Record<string, Record<string, Record<string, string>>> = {
 const themed = parseThemedTokens(readFileSync(TOKENS_CSS, "utf8"));
 const tokens = themed.dark; // dark = canonical Tecton values
 const lightTokens = themed.light;
-const map = JSON.parse(readFileSync(MAP_JSON, "utf8")) as TokenMap;
+const map = parseTokenMap(
+  readFileSync(MAP_JSON, "utf8"),
+  JSON.parse(readFileSync(MAP_SCHEMA, "utf8")) as JsonSchema,
+  path.relative(repoRoot, MAP_JSON),
+);
 const overrides = map.light.overrides ?? {};
 
-function resolveMapping(name: string, m: Mapping, extra: boolean): Resolved {
-  if (!tokens.has(m.dark)) throw new Error(`${name}: unknown Tecton token ${m.dark}`);
-  const darkLiteral = resolveValue(`var(${m.dark})`, tokens);
-  const isColor = isColorValue(darkLiteral);
-  const lightSpec = overrides[name] ?? m.light ?? m.dark;
-  let light: string;
-  if (lightSpec === "derived") light = isColor ? deriveLight(darkLiteral) : `var(${m.dark})`;
-  else if (lightSpec.startsWith("--")) {
-    if (!lightTokens.has(lightSpec)) throw new Error(`${name}: unknown Tecton token ${lightSpec}`);
-    light = `var(${lightSpec})`;
-  } else light = lightSpec;
-  const lightLiteral = resolveValue(light, lightTokens);
-  return {
-    name,
-    token: m.dark,
-    lightToken: lightSpec,
-    dark: `var(${m.dark})`,
-    darkLiteral,
-    light,
-    lightLiteral,
-    isColor,
-    confidence: m.confidence,
-    note: m.note ?? "",
-    extra,
-  };
-}
-
-const resolved: Resolved[] = [
-  ...Object.entries(map.shadcn).map(([n, m]) => resolveMapping(n, m, false)),
-  ...Object.entries(map.extra).map(([n, m]) => resolveMapping(n, m, true)),
-];
-const byName = new Map(resolved.map((r) => [r.name, r]));
-const extraNames = Object.keys(map.extra);
-const themeEntries: [string, string][] = [
-  ...Object.entries(map.theme),
-  ...extraNames.map((n): [string, string] => [`--color-${n}`, `var(--${n})`]),
-];
-
-/** Vars that live only in :root (non-colour values such as --radius). */
-const rootOnly = (r: Resolved) => !r.isColor;
+const { resolved, byName, extraNames, themeEntries } = resolveTokenMap(map, themed);
 
 // ---------------------------------------------------------------------------
 // Palette (foundational colour ramps from the Figma variables export)
@@ -395,11 +262,9 @@ function buildPaletteCss(): string {
 // ---------------------------------------------------------------------------
 // The theme markers
 // ---------------------------------------------------------------------------
-/** `.dark` / `[data-theme="dark"]`, and the same for light — the theme markers. */
-const DARK_MARK = '.dark, [data-theme="dark"]';
-const LIGHT_MARK = '.light, [data-theme="light"]';
 /**
- * The selector of the light block, repeated after `.dark` in every file that
+ * DARK_MARK / LIGHT_MARK (tokens-lib.mts) are the theme markers, and LIGHT_BLOCK
+ * the selector of the light block, repeated after `.dark` in every file that
  * declares the shadcn variables.
  *
  * A custom property's computed value is its specified value **with `var()` already
@@ -415,7 +280,6 @@ const LIGHT_MARK = '.light, [data-theme="light"]';
  * one is emitted **last**, so an element that somehow carries both markers reads
  * light, exactly as `scoped-theme.css` orders its blocks.
  */
-const LIGHT_BLOCK = LIGHT_MARK;
 
 // ---------------------------------------------------------------------------
 // 1. tecton-theme.css
@@ -449,12 +313,8 @@ function buildThemeCss(): string {
 // ---------------------------------------------------------------------------
 // 2. scoped.css (utilities-only remote entry) + scoped-theme.css (opt-in theme)
 // ---------------------------------------------------------------------------
-/** The remote's root marker, set by `<ThemeRoot>` (src/tecton/theme-root.tsx). */
-const SCOPED_ROOT = "[data-tecton-root]";
-/** Dark when the marker itself or any ancestor carries the dark class/attribute. */
-const SCOPED_DARK = `${SCOPED_ROOT}:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *)`;
-/** Light again, last, so an explicitly light root inside a dark host wins. */
-const SCOPED_LIGHT = `${SCOPED_ROOT}:where(.light, [data-theme="light"])`;
+// SCOPED_ROOT, SCOPED_DARK and SCOPED_LIGHT (the root marker `<ThemeRoot>` sets,
+// and when it reads dark or light again) are shared with tokens-check.mts.
 
 /**
  * The `dark:` utility variant, written into globals.css and scoped.css alike (the
@@ -514,7 +374,17 @@ function scopedThemeEntries(): [string, string][] {
     const css = readFileSync(GLOBALS_CSS, "utf8");
     const block = findBlock(css, "@theme inline");
     if (block) {
+      // what :root declares once patchGlobals has run: the map's variables and
+      // the CLI's own, not a leftover the prune there is about to remove
+      const rootNames = new Set(resolved.map((r) => `--${r.name}`));
+      const root = findBlock(css, ":root");
+      if (root) {
+        for (const [k, v] of parseCustomProperties(css.slice(root.start + 1, root.end))) {
+          if (!readsTectonToken(v)) rootNames.add(k);
+        }
+      }
       for (const [k, v] of parseCustomProperties(css.slice(block.start + 1, block.end))) {
+        if (!owned.has(k) && isStaleThemeEntry(k, v, rootNames)) continue; // pruned from globals.css
         entries.push([k, owned.get(k) ?? v]);
         seen.add(k);
       }
@@ -712,66 +582,6 @@ function buildScopedThemeCss(): string {
 // ---------------------------------------------------------------------------
 // 3. globals.css (surgical patch)
 // ---------------------------------------------------------------------------
-interface Block {
-  start: number; // index of the opening brace
-  end: number; // index of the closing brace
-}
-
-/** Find the top-level block whose selector text (trimmed) equals `selector`. */
-function findBlock(css: string, selector: string): Block | undefined {
-  let i = 0;
-  while (i < css.length) {
-    const open = css.indexOf("{", i);
-    if (open === -1) return undefined;
-    const selStart = Math.max(css.lastIndexOf("}", open), css.lastIndexOf(";", open)) + 1;
-    const sel = css.slice(selStart, open).replace(/\/\*[\s\S]*?\*\//g, "").trim();
-    // brace matching
-    let depth = 1;
-    let j = open + 1;
-    while (j < css.length && depth > 0) {
-      if (css[j] === "{") depth++;
-      else if (css[j] === "}") depth--;
-      j++;
-    }
-    const close = j - 1;
-    if (sel === selector) return { start: open, end: close };
-    i = close + 1;
-  }
-  return undefined;
-}
-
-/**
- * Replace declaration values inside a block. Keeps order and indentation; appends
- * `append` entries (in order) before the closing brace if they are missing.
- */
-function patchBlock(css: string, block: Block, values: Map<string, string>, append: string[]): string {
-  const body = css.slice(block.start + 1, block.end);
-  const lines = body.split("\n");
-  const declRe = /^(\s*)(--[\w-]+)\s*:\s*(.*?);(\s*(?:\/\*.*\*\/)?\s*)$/;
-  let indent: string | undefined;
-  const seen = new Set<string>();
-  const out = lines.map((line) => {
-    const m = declRe.exec(line);
-    if (!m) return line;
-    indent ??= m[1];
-    const name = m[2];
-    seen.add(name);
-    const next = values.get(name);
-    if (next === undefined || next === m[3]) return line;
-    return `${m[1]}${name}: ${next};${m[4]}`;
-  });
-  indent ??= "    ";
-  const missing = append.filter((n) => !seen.has(n));
-  if (missing.length) {
-    // insert before the trailing whitespace line that precedes "}"
-    let insertAt = out.length;
-    while (insertAt > 0 && out[insertAt - 1].trim() === "") insertAt--;
-    const extraLines = missing.map((n) => `${indent}${n}: ${values.get(n)};`);
-    out.splice(insertAt, 0, ...extraLines);
-  }
-  return css.slice(0, block.start + 1) + out.join("\n") + css.slice(block.end);
-}
-
 function patchGlobals(): boolean {
   if (!existsSync(GLOBALS_CSS)) {
     console.warn(`[tokens-build] warning: ${path.relative(repoRoot, GLOBALS_CSS)} not found — skipping globals.css patch`);
@@ -827,17 +637,33 @@ function patchGlobals(): boolean {
   if (!variantLine.test(css)) throw new Error("globals.css: no @custom-variant dark line");
   css = css.replace(variantLine, DARK_VARIANT);
 
+  // A variable the map no longer has is pruned: a declaration that reads a raw
+  // Tecton token can only have come from the map (the CLI writes none), and a
+  // mapped variable that is not a colour has no place in `.dark`.
+  const pruned: string[] = [];
+  const patch = (block: Block, values: Map<string, string>, append: string[], prune: (name: string, value: string) => boolean) => {
+    const result = patchBlock(css, block, values, append, prune);
+    pruned.push(...result.pruned);
+    css = result.css;
+  };
+
   // -- :root ----------------------------------------------------------------
   const rootValues = new Map(resolved.map((r) => [`--${r.name}`, r.light]));
   const rootBlock = findBlock(css, ":root");
   if (!rootBlock) throw new Error("globals.css: no :root block");
-  css = patchBlock(css, rootBlock, rootValues, extraNames.map((n) => `--${n}`));
+  patch(rootBlock, rootValues, extraNames.map((n) => `--${n}`), (_, value) => readsTectonToken(value));
 
   // -- .dark ----------------------------------------------------------------
+  // only the colours: a non-colour variable (--radius) is declared in :root alone
   const darkValues = new Map(resolved.filter((r) => !rootOnly(r)).map((r) => [`--${r.name}`, r.dark]));
   const darkBlock = findBlock(css, ".dark");
   if (!darkBlock) throw new Error("globals.css: no .dark block");
-  css = patchBlock(css, darkBlock, darkValues, extraNames.map((n) => `--${n}`));
+  patch(
+    darkBlock,
+    darkValues,
+    extraNames.filter((n) => darkValues.has(`--${n}`)).map((n) => `--${n}`),
+    (name, value) => readsTectonToken(value) || rootValues.has(name) || value === "undefined",
+  );
 
   // -- .light, [data-theme="light"] -------------------------------------------
   // A structural block the CLI does not write: shadcn's variables stop at `:root`
@@ -863,9 +689,17 @@ function patchGlobals(): boolean {
   const themeValues = new Map(themeEntries);
   const themeBlock = findBlock(css, "@theme inline");
   if (!themeBlock) throw new Error("globals.css: no @theme inline block");
-  css = patchBlock(css, themeBlock, themeValues, themeEntries.map(([k]) => k));
+  // an entry that reads a raw token, or `--color-<x>: var(--<x>)` for an <x> that
+  // :root no longer declares, is one the map dropped (see isStaleThemeEntry)
+  const rootNow = findBlock(css, ":root");
+  if (!rootNow) throw new Error("globals.css: no :root block");
+  const declared = parseCustomProperties(css.slice(rootNow.start + 1, rootNow.end));
+  patch(themeBlock, themeValues, themeEntries.map(([k]) => k), (name, value) => isStaleThemeEntry(name, value, declared));
 
   writeFileSync(GLOBALS_CSS, css);
+  if (pruned.length) {
+    console.log(`[tokens-build] pruned from ${path.basename(GLOBALS_CSS)} (no longer in the map): ${[...new Set(pruned)].join(", ")}`);
+  }
   return true;
 }
 
@@ -1010,8 +844,10 @@ ${theme.join("\n")}
 ${paletteSection()}
 ## Contrast checks
 
-\`pnpm --filter @tecton/react tokens:check\` verifies completeness, dangling \`var()\` references,
-WCAG contrast for every surface/foreground pair and sanity rules for both modes.
+\`pnpm --filter @tecton/react tokens:check\` verifies the map against its schema, that the
+\`:root\`, \`.dark\` and \`@theme inline\` blocks of \`globals.css\` and \`tecton-theme.css\` hold exactly
+what the map resolves to, completeness, dangling \`var()\` references, WCAG contrast for every
+surface/foreground pair and sanity rules for both modes.
 ${allow.length ? `Expected failures (Tecton's own values fail these pairs): ${allow.map((a) => `\`${a}\``).join(", ")}.` : "No expected failures are allow-listed."}
 
 ## Known deviations

@@ -1824,7 +1824,7 @@
   --progress: var(--tecton-color-accent-graphite-fill);
 }
 
-[data-tecton-root]:where(.light, [data-theme="light"]) {
+[data-tecton-root]:where(.light, [data-theme="light"], :is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) :not(.dark, [data-theme="dark"]):not(:is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) :is(.dark, [data-theme="dark"]) *)) {
   color-scheme: light;
   --tecton-font-family-sans: Figtree;
   --tecton-font-family-mono: IBM Plex Mono;
