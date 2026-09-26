@@ -37,10 +37,15 @@ const deepFreeze = (table) => {
 }
 
 export const shared = deepFreeze({
-  // One renderer and one DOM binding per document, always.
-  react: { singleton: true },
-  "react-dom": { singleton: true },
-  // Sonner's queue is module state: two copies mean two toast stacks.
+  // Not singletons: applications on different React versions may share a page,
+  // each rendering in its own root with its own react-dom. A version both sides
+  // accept is still loaded once. React needs react and react-dom at the same
+  // exact version, so each application pins the two together.
+  react: { singleton: false },
+  "react-dom": { singleton: false },
+  // Sonner's queue is module state: two copies mean two toast stacks. The
+  // host's Toaster renders every toast, so a remote on another React version
+  // passes text, not its own elements.
   sonner: { singleton: true },
   // Prefix share (trailing slash): the package has no root export, so each
   // subpath is shared on its own. Not a singleton — versions may differ.

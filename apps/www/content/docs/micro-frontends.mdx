@@ -56,9 +56,11 @@ import scopeTecton from "@tecton/react/postcss/scope"
 export default { plugins: [tailwindcss(), scopeTecton({ scope: ".mfe-a" })] }
 ```
 
-<Step>Share the modules that may exist only once</Step>
+<Step>Share the modules the applications have to agree on</Step>
 
-`@tecton/react/federation/shared` is that list as data — `react`, `react-dom` and `sonner` as singletons, `@tecton/react/` as a prefix share, `react-aria-components` and `recharts` shared but not singletons. It carries no versions: those come from the application's own install.
+`@tecton/react/federation/shared` is that list as data — `sonner` as a singleton, `@tecton/react/` as a prefix share, and `react`, `react-dom`, `react-aria-components` and `recharts` shared but not singletons. It carries no versions: those come from the application's own install.
+
+React is not a singleton, so applications on different React versions can share a page: each renders in its own root with its own `react-dom`, and a version both sides accept is still loaded once. React needs `react` and `react-dom` at the same version, so pin the two to the same exact version in every application. The shared `sonner` renders every toast with the host's React, so a remote on another React version passes `toast` text, not elements of its own.
 
 ```js title="rspack.config.mjs"
 import { dependencies } from "./package.json" with { type: "json" }

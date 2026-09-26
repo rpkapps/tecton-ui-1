@@ -14,15 +14,22 @@ describe("shared", () => {
     }
     expect(() => {
       // @ts-expect-error — the declaration types the flag as the literal `true`
-      shared.react.singleton = false
+      shared.sonner.singleton = false
     }).toThrow(TypeError)
-    expect(shared.react.singleton).toBe(true)
+    expect(shared.sonner.singleton).toBe(true)
   })
 
   it("types the keys and the flags as literals", () => {
-    const singleton: true = shared.react.singleton
+    const singleton: true = shared.sonner.singleton
     const eager: false = shared.recharts.eager
     expect([singleton, eager]).toEqual([true, false])
+  })
+
+  it("lets applications on different React versions share a page", () => {
+    expect(shared.react).toEqual({ singleton: false })
+    expect(shared["react-dom"]).toEqual({ singleton: false })
+    const notSingleton: false = shared.react.singleton
+    expect(notSingleton).toBe(false)
   })
 
   it("lists exactly the dependencies a host and a remote have to agree on", () => {

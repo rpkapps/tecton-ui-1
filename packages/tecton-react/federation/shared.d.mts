@@ -1,6 +1,7 @@
 /**
  * The Module Federation `shared` entries for Tecton's dependencies: which of them
- * exist once per document (`singleton: true`) and which may be loaded twice, plus
+ * exist once per document (`singleton: true`) and which may be loaded more than
+ * once, React included (one copy per React version on the page), plus
  * the one that must never be loaded eagerly. Versions are not part of it — the
  * consumer adds `requiredVersion` / `version` from its own install. The table
  * and every entry in it are frozen, and the keys and flags are typed as the
@@ -9,8 +10,8 @@
  * @see the header comment of `federation/shared.mjs` for the reason per entry.
  */
 export declare const shared: {
-  readonly react: SharedPolicy<true>
-  readonly "react-dom": SharedPolicy<true>
+  readonly react: SharedPolicy<false>
+  readonly "react-dom": SharedPolicy<false>
   readonly sonner: SharedPolicy<true>
   readonly "@tecton/react/": SharedPolicy<false>
   readonly "react-aria-components": SharedPolicy<false>
