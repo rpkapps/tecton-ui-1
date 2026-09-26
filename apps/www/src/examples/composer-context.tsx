@@ -53,7 +53,7 @@ export default function ComposerContext() {
             <ComposerSubmit />
           </ComposerToolbar>
         </ComposerField>
-        <ComposerHint isVisible={false} />
+        <ComposerHint visible={false} />
         <ComposerStatusMessage />
       </Composer>
       {sent !== null && (

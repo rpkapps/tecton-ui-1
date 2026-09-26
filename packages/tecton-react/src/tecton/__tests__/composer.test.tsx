@@ -19,6 +19,7 @@ import {
   type ComposerCommandItem,
   type ComposerProps,
 } from "@tecton/react/tecton/composer"
+import { TectonProvider } from "@tecton/react/tecton/provider"
 
 function Chat(
   props: Partial<ComposerProps> & { attachments?: ComposerAttachmentItem[] }
@@ -581,6 +582,148 @@ describe("Composer", () => {
     expect(screen.queryByRole("row", { name: "Selected text" })).toBeNull()
     expect(textbox()).toHaveFocus()
   })
+
+  it("moves focus to the next attachment when one of several is removed", async () => {
+    render(
+      <Chat
+        attachments={[
+          { id: "selection", label: "Selected text" },
+          { id: "well", label: "Well A-7" },
+        ]}
+      />
+    )
+    screen.getByRole("row", { name: "Selected text" }).focus()
+    await userEvent.keyboard("{Backspace}")
+
+    expect(screen.queryByRole("row", { name: "Selected text" })).toBeNull()
+    expect(screen.getByRole("row", { name: "Well A-7" })).toHaveFocus()
+  })
+
+  it("disables the textarea, the suggestions and Send with disabled", () => {
+    render(<Chat disabled defaultValue="Hi" />)
+    expect(textbox()).toBeDisabled()
+    expect(
+      screen.getByRole("button", { name: "Summarise the shift" })
+    ).toBeDisabled()
+    expect(screen.getByRole("button", { name: "Send message" })).toBeDisabled()
+  })
+})
+
+function ToolbarChat({
+  status = "ready",
+}: {
+  status?: ComposerProps["status"]
+}) {
+  return (
+    <>
+      <button type="button">Before</button>
+      <Composer onSubmit={() => {}} status={status} onStop={() => {}}>
+        <ComposerField>
+          <ComposerInput />
+          <ComposerToolbar>
+            <button type="button">Attach</button>
+            <span>
+              <button type="button">Dictate</button>
+            </span>
+            <button type="button" disabled>
+              Unavailable
+            </button>
+            <ComposerSubmit />
+          </ComposerToolbar>
+        </ComposerField>
+      </Composer>
+      <button type="button">After</button>
+    </>
+  )
+}
+
+describe("ComposerToolbar", () => {
+  const button = (name: string) => screen.getByRole("button", { name })
+
+  it("moves between its controls, wrapped or not, with the arrow keys, Home and End", async () => {
+    render(<ToolbarChat />)
+    button("Attach").focus()
+
+    await userEvent.keyboard("{ArrowRight}")
+    expect(button("Dictate")).toHaveFocus()
+    // A disabled control is skipped.
+    await userEvent.keyboard("{ArrowRight}")
+    expect(button("Send message")).toHaveFocus()
+    // No wrapping at the ends.
+    await userEvent.keyboard("{ArrowRight}")
+    expect(button("Send message")).toHaveFocus()
+    await userEvent.keyboard("{Home}")
+    expect(button("Attach")).toHaveFocus()
+    await userEvent.keyboard("{ArrowLeft}")
+    expect(button("Attach")).toHaveFocus()
+    await userEvent.keyboard("{End}")
+    expect(button("Send message")).toHaveFocus()
+    await userEvent.keyboard("{ArrowLeft}")
+    expect(button("Dictate")).toHaveFocus()
+  })
+
+  it("reverses the arrow keys right to left", async () => {
+    render(
+      <TectonProvider direction="rtl">
+        <ToolbarChat />
+      </TectonProvider>
+    )
+    button("Attach").focus()
+    await userEvent.keyboard("{ArrowLeft}")
+    expect(button("Dictate")).toHaveFocus()
+    await userEvent.keyboard("{ArrowRight}")
+    expect(button("Attach")).toHaveFocus()
+  })
+
+  it("is one tab stop: Tab leaves from its last control, and coming back returns to the one last used", () => {
+    render(<ToolbarChat />)
+    button("Dictate").focus()
+
+    // The browser's Tab carries on from the control the toolbar moves to.
+    fireEvent.keyDown(button("Dictate"), { key: "Tab" })
+    expect(button("Send message")).toHaveFocus()
+    button("After").focus()
+    // Shift+Tab back in lands on the last control, and is sent to Dictate.
+    button("Send message").focus()
+    expect(button("Dictate")).toHaveFocus()
+
+    fireEvent.keyDown(button("Dictate"), { key: "Tab", shiftKey: true })
+    expect(button("Attach")).toHaveFocus()
+  })
+
+  it("leaves focus where a press puts it", () => {
+    render(<ToolbarChat />)
+    button("Dictate").focus()
+    button("After").focus()
+
+    fireEvent.pointerDown(button("Attach"))
+    button("Attach").focus()
+    expect(button("Attach")).toHaveFocus()
+  })
+
+  it("keeps a tab stop when Send and Stop swap", () => {
+    const { rerender } = render(<ToolbarChat />)
+    button("Send message").focus()
+    button("After").focus()
+
+    rerender(<ToolbarChat status="streaming" />)
+    // The Send it would return to is gone: focus stays where it lands.
+    button("Stop generating").focus()
+    expect(button("Stop generating")).toHaveFocus()
+    fireEvent.keyDown(button("Stop generating"), { key: "ArrowLeft" })
+    expect(button("Dictate")).toHaveFocus()
+  })
+
+  it("leaves a key from outside the toolbar's controls alone", () => {
+    render(<ToolbarChat />)
+    button("Attach").focus()
+    const toolbar = screen.getByRole("toolbar", { name: "Message actions" })
+    expect(toolbar).toHaveAttribute("aria-orientation", "horizontal")
+    expect(
+      fireEvent.keyDown(button("Attach"), { key: "ArrowRight", ctrlKey: true })
+    ).toBe(true)
+    expect(button("Attach")).toHaveFocus()
+  })
 })
 
 const COMMANDS: ComposerCommandItem[] = [
@@ -714,6 +857,37 @@ describe("ComposerCommands", () => {
     await userEvent.pointer({ keys: "[TouchA]", target: note })
 
     expect(onCommand).toHaveBeenCalledWith(COMMANDS[2], expect.anything())
+  })
+
+  it("makes the command under a mouse the active one, but not one under a touch", async () => {
+    render(<WithCommands />)
+
+    await userEvent.type(textbox(), "/")
+    const [, ack, note] = screen.getAllByRole("option")
+    fireEvent.pointerOver(note, { pointerType: "touch" })
+    expect(note).toHaveAttribute("aria-selected", "false")
+    expect(textbox()).not.toHaveAttribute("aria-activedescendant", note.id)
+
+    fireEvent.pointerOver(ack, { pointerType: "mouse" })
+    expect(ack).toHaveAttribute("aria-selected", "true")
+    expect(ack).toHaveAttribute("data-highlighted", "")
+    expect(textbox()).toHaveAttribute("aria-activedescendant", ack.id)
+  })
+
+  it("keeps focus in the textarea through a press on the list", async () => {
+    const onCommand = vi.fn()
+    render(<WithCommands onCommand={onCommand} />)
+
+    await userEvent.type(textbox(), "/")
+    const note = screen.getByRole("option", { name: /add-note/ })
+    // The press's default, which would move focus, is prevented.
+    expect(fireEvent.mouseDown(note)).toBe(false)
+    expect(fireEvent.mouseDown(screen.getByText("Actions"))).toBe(false)
+    expect(textbox()).toHaveFocus()
+
+    await userEvent.click(note)
+    expect(onCommand).toHaveBeenCalledWith(COMMANDS[2], expect.anything())
+    expect(textbox()).toHaveFocus()
   })
 
   it("closes with Escape until the text changes, and then Enter sends as usual", async () => {
@@ -882,8 +1056,7 @@ describe("ComposerCommands", () => {
     ).toEqual(["/acknowledge", "/note", "/about", "/archive", "/new"])
     expect(new Set(options.map((option) => option.id)).size).toBe(5)
 
-    // The textarea names React Aria's own option ids, read from the
-    // rendered options.
+    // The textarea names the rendered options' own ids.
     const active = () =>
       document.getElementById(
         textbox().getAttribute("aria-activedescendant") ?? ""
