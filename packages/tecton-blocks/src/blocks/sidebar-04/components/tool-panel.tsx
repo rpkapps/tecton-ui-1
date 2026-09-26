@@ -85,7 +85,7 @@ function ToolPanel({
           aria-label="Close panel"
           onClick={onClose}
         >
-          <PanelRightCloseIcon />
+          <PanelRightCloseIcon className="rtl:rotate-180" />
         </Button>
       </SidebarHeader>
       <SidebarContent className="gap-4 p-3">

@@ -37,6 +37,7 @@ import {
   TreeViewVisibilityToggle,
 } from "@tecton/react/tecton/tree-view"
 import { Link } from "@tecton/react/tecton/link"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { filterTree, flattenTree, project, projectTree } from "../data"
 import type { ProjectNode } from "../data"
@@ -60,6 +61,8 @@ function AppSidebar({
   onSelect,
   ...props
 }: AppSidebarProps) {
+  // `side` is physical: the start edge is the right one in right-to-left.
+  const side = useDirection() === "rtl" ? "right" : "left"
   const [query, setQuery] = React.useState("")
   const [hidden, setHidden] = React.useState<Set<string>>(() => new Set())
   const [expanded, setExpanded] = React.useState<string[]>(() =>
@@ -130,7 +133,7 @@ function AppSidebar({
   )
 
   return (
-    <Sidebar collapsible="offcanvas" {...props}>
+    <Sidebar collapsible="offcanvas" side={side} {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

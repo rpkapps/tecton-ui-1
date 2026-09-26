@@ -25,6 +25,7 @@ import {
   SidebarMenuSubItem,
   SidebarTrigger,
 } from "@tecton/react/components/sidebar"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { project as defaultProject } from "../data"
 import type { Project } from "../data"
@@ -104,10 +105,13 @@ function ProjectSidebar({
   onSelectAlternative,
   ...props
 }: ProjectSidebarProps) {
+  // `side` is physical: the start edge is the right one in right-to-left.
+  const side = useDirection() === "rtl" ? "right" : "left"
   return (
     <Sidebar
       data-slot="project-sidebar"
       collapsible="offcanvas"
+      side={side}
       className={cn("border-e border-border-subtle", className)}
       {...props}
     >
@@ -154,7 +158,7 @@ function ProjectSidebar({
                   <span className="ms-auto font-mono text-[10px] text-muted-foreground">
                     {concept.alternatives.length} FDAs
                   </span>
-                  <ChevronRightIcon className="transition-transform duration-200 group-data-open/collapsible:rotate-90" />
+                  <ChevronRightIcon className="transition-transform duration-200 group-data-open/collapsible:rotate-90 rtl:rotate-180 rtl:group-data-open/collapsible:rotate-90" />
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenuSub>

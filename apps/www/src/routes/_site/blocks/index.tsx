@@ -62,7 +62,9 @@ function BlocksIndex() {
     <div className="flex flex-col">
       <PageHeader className="py-8 md:py-10">
         <PageHeaderContent>
-          <PageHeaderTitle>Building blocks for Tecton apps</PageHeaderTitle>
+          <PageHeaderTitle className="whitespace-normal">
+            Building blocks for Tecton apps
+          </PageHeaderTitle>
           <PageHeaderDescription>
             Reusable application patterns built from Tecton components: panels,
             comparison tables, KPI cards and full page layouts. Preview a block

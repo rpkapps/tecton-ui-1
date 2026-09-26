@@ -92,7 +92,7 @@ function FaciesModelingPanel({
             aria-label="Collapse panel"
             {...(onCollapse === undefined ? {} : { onClick: onCollapse })}
           >
-            <PanelRightIcon />
+            <PanelRightIcon className="rtl:rotate-180" />
           </Button>
         </PanelActions>
       </PanelHeader>
@@ -170,7 +170,7 @@ export default function FaciesModelingPanelPage() {
             aria-label="Expand facies modeling panel"
             onClick={() => setOpen(true)}
           >
-            <PanelLeftOpenIcon />
+            <PanelLeftOpenIcon className="rtl:rotate-180" />
           </Button>
         </div>
       )}

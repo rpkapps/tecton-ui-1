@@ -134,7 +134,7 @@ function AlternativeRow({
           >
             <MoreVerticalIcon />
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="bottom" align="start">
+          <DropdownMenuContent side="bottom" align="start" className="w-48">
             <DropdownMenuItem>
               <PencilIcon /> Rename
             </DropdownMenuItem>
@@ -211,7 +211,7 @@ function ConceptSection({
           >
             <MoreVerticalIcon />
           </DropdownMenuTrigger>
-          <DropdownMenuContent side="bottom" align="start">
+          <DropdownMenuContent side="bottom" align="start" className="w-48">
             <DropdownMenuItem>
               <PencilIcon /> Rename concept
             </DropdownMenuItem>

@@ -60,7 +60,7 @@ function AgentPanelHeader({
           >
             <MoreVerticalIcon />
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
+          <DropdownMenuContent align="end" className="w-48">
             <DropdownMenuItem onClick={onClear}>
               New conversation
             </DropdownMenuItem>

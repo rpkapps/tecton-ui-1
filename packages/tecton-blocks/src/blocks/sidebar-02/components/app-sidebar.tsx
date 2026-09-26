@@ -18,6 +18,7 @@ import {
   SidebarMenuItem,
 } from "@tecton/react/components/sidebar"
 import { Link } from "@tecton/react/tecton/link"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { currentUser, navMain, navSecondary, recentProjects } from "../data"
 import { NavMain } from "./nav-main"
@@ -31,8 +32,10 @@ import { NavUser } from "./nav-user"
  * the user menu in the footer.
  */
 function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+  // `side` is physical: the start edge is the right one in right-to-left.
+  const side = useDirection() === "rtl" ? "right" : "left"
   return (
-    <Sidebar variant="inset" {...props}>
+    <Sidebar variant="inset" side={side} {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

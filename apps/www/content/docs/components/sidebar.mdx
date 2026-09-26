@@ -514,7 +514,13 @@ Here are some tips for styling the sidebar based on different states.
 
 ## RTL
 
-The sidebar follows the reading direction set with [`TectonProvider`](/docs/tecton/provider); no extra configuration is needed.
+The sidebar's contents follow the reading direction set with [`TectonProvider`](/docs/tecton/provider). `side` is a physical edge, so put a start-edge sidebar on the right in right-to-left layouts:
+
+```tsx lineNumbers
+const direction = useDirection() // @tecton/react/tecton/provider
+
+<Sidebar side={direction === "rtl" ? "right" : "left"} />
+```
 
 ## Several sidebars in one document
 

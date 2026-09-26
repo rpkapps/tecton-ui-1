@@ -201,8 +201,26 @@ function replaceEachOrThrow(
   return parts.reduce((out, part, index) => out + to[index - 1] + part)
 }
 
+/**
+ * Upstream's Arabic demos use the `ar-SA` locale, whose default calendar is
+ * Islamic (Umm al-Qura): the month dropdown then lists Hijri month names over a
+ * Gregorian grid, and the prerendered names (Node's ICU) differ from the
+ * browser's, which breaks hydration. `ar-EG` is the Arabic locale the RTL
+ * previews use and is Gregorian.
+ */
+function toGregorianArabic(label: string) {
+  return (code: string) => {
+    if (!/\barSA\b/.test(code)) {
+      throw new Error(`${label}: expected arSA; update the rewrite`)
+    }
+    return code.replace(/\barSA/g, "arEG")
+  }
+}
+
 // Per-example source fixes for upstream demos that assume the vega look.
 const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
+  "calendar-rtl": toGregorianArabic("calendar-rtl"),
+  "date-picker-rtl": toGregorianArabic("date-picker-rtl"),
   // Upstream's docs site serves its components at /components; ours at /docs/components.
   "breadcrumb-separator": (code) =>
     replaceOrThrow(
@@ -673,11 +691,11 @@ const PAGE_REWRITES: Record<
     )
     // The upstream RTL section links to shadcn's own configuration guide and a
     // hosted preview of upstream's block; the package reads the direction
-    // from TectonProvider.
+    // from TectonProvider, but `side` stays physical as upstream's.
     return replaceOrThrow(
       mdx,
       /\n## RTL\n\nTo enable RTL support in shadcn\/ui, see the \[RTL configuration guide\]\([^)]*\)\.\n\n\{\/\* prettier-ignore \*\/\}\n<Button asChild[^\n]*\n[^\n]*\n<\/Button>\n/,
-      "\n## RTL\n\nThe sidebar follows the reading direction set with [`TectonProvider`](/docs/tecton/provider); no extra configuration is needed.\n",
+      '\n## RTL\n\nThe sidebar\'s contents follow the reading direction set with [`TectonProvider`](/docs/tecton/provider). `side` is a physical edge, so put a start-edge sidebar on the right in right-to-left layouts:\n\n```tsx lineNumbers\nconst direction = useDirection() // @tecton/react/tecton/provider\n\n<Sidebar side={direction === "rtl" ? "right" : "left"} />\n```\n',
       "sidebar page (RTL)"
     )
   },

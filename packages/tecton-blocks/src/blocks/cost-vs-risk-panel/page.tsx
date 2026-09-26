@@ -73,7 +73,7 @@ function CostVsRiskPanel({
             aria-label="Collapse panel"
             onClick={onCollapse}
           >
-            <PanelRightIcon />
+            <PanelRightIcon className="rtl:rotate-180" />
           </Button>
         </PanelActions>
       </PanelHeader>
@@ -224,7 +224,7 @@ export default function CostVsRiskPanelPage() {
             aria-label="Expand cost vs risk panel"
             onClick={() => setOpen(true)}
           >
-            <PanelRightOpenIcon />
+            <PanelRightOpenIcon className="rtl:rotate-180" />
           </Button>
         </div>
       )}

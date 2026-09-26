@@ -141,6 +141,7 @@ function ThemesPage() {
             </span>
             <ToggleGroup
               aria-label="Radius"
+              className="flex-wrap"
               value={[radius]}
               onValueChange={(value) => {
                 if (value[0]) setRadius(value[0])

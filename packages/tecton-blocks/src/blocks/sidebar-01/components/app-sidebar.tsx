@@ -9,6 +9,7 @@ import {
   SidebarHeader,
   SidebarRail,
 } from "@tecton/react/components/sidebar"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { currentUser, navGroups, projects } from "../data"
 import { NavMain } from "./nav-main"
@@ -20,8 +21,10 @@ import { ProjectSwitcher } from "./project-switcher"
  * switcher, grouped navigation with collapsible sections and the user menu.
  */
 function AppSidebar(props: React.ComponentProps<typeof Sidebar>) {
+  // `side` is physical: the start edge is the right one in right-to-left.
+  const side = useDirection() === "rtl" ? "right" : "left"
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" side={side} {...props}>
       <SidebarHeader>
         <ProjectSwitcher projects={projects} />
       </SidebarHeader>

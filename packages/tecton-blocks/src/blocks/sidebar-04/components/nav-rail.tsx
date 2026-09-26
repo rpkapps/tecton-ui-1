@@ -16,6 +16,7 @@ import {
   SidebarRail,
 } from "@tecton/react/components/sidebar"
 import { Link } from "@tecton/react/tecton/link"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { currentUser, railMain, railSecondary } from "../data"
 import { NavUser } from "./nav-user"
@@ -25,8 +26,10 @@ import { NavUser } from "./nav-user"
  * with tooltips on every item, and expands from the trigger or the rail.
  */
 function NavRail(props: React.ComponentProps<typeof Sidebar>) {
+  // `side` is physical: the start edge is the right one in right-to-left.
+  const side = useDirection() === "rtl" ? "right" : "left"
   return (
-    <Sidebar collapsible="icon" {...props}>
+    <Sidebar collapsible="icon" side={side} {...props}>
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>

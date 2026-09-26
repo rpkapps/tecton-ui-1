@@ -30,6 +30,7 @@ import {
   SidebarContent,
   SidebarGroup,
 } from "@tecton/react/components/sidebar"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { presets as defaultPresets } from "../data"
 import type { PresetStatus, ViewPreset } from "../data"
@@ -175,10 +176,13 @@ function PresetList({
   onSelect,
   ...props
 }: PresetListProps) {
+  // `side` is physical: the start edge is the right one in right-to-left.
+  const side = useDirection() === "rtl" ? "right" : "left"
   return (
     <Sidebar
       data-slot="preset-list"
       collapsible="offcanvas"
+      side={side}
       className={cn("border-e border-border-subtle", className)}
       {...props}
     >
@@ -210,7 +214,7 @@ function PresetList({
                           aria-pressed={isSelected}
                           onClick={() => onSelect?.(preset.id)}
                         />
-                        <div className="relative aspect-[2.2] overflow-hidden rounded-md">
+                        <div className="pointer-events-none relative aspect-[2.2] overflow-hidden rounded-md">
                           <PresetSketch kind={preset.kind} />
                           <span className="absolute top-1/2 left-1/2 flex size-6 -translate-1/2 items-center justify-center rounded-full bg-primary text-primary-foreground shadow">
                             <DatabaseIcon className="size-3" />
