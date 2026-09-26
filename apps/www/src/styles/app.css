@@ -56,8 +56,10 @@
   html {
     @apply overscroll-y-none;
   }
+  /* No position on body: React Aria places an overlay above its trigger with
+     \`bottom\` measured from the viewport, and a positioned body would measure
+     it from the bottom of the whole page instead. */
   body {
-    position: relative;
     font-synthesis-weight: none;
     text-rendering: optimizeLegibility;
   }
