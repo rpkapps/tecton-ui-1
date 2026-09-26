@@ -17,8 +17,10 @@
  *   3. Walks `git ls-files -z` (tracked files only), skipping generated
  *      output that must be rebuilt instead of edited, and binary files.
  *   4. Replaces every exact literal OLD that ends at a word boundary (the
- *      next character is not a letter, digit, `-`, `.` or `_`) with NEW,
- *      preserving line endings and everything else in the file byte-for-byte.
+ *      next character is not a letter, digit, `-` or `_`, nor a `.` followed
+ *      by one of those, so the name at the end of a sentence is renamed but
+ *      `@tecton/react.d` is not) with NEW, preserving line endings and
+ *      everything else in the file byte-for-byte.
  *   5. Prints a per-category summary, the follow-up checklist, and the list
  *      of things this script intentionally does not handle.
  *
@@ -26,7 +28,8 @@
  * are only written once every file has been read and rewritten successfully.
  *
  * Does NOT touch: pnpm-lock.yaml, apps/www/public/r/**, the blocks registry
- * output, the lucide compat map, docs/TOKEN-MAPPING.md, or the shadcn
+ * output, the lucide compat map, docs/TOKEN-MAPPING.md, the agent index
+ * (packages/tecton-react/agent/**, rebuilt by `agent:build`), or the shadcn
  * registry namespace `@tecton` (a different literal from the package name).
  */
 /// <reference types="node" />
@@ -121,7 +124,7 @@ const SKIP_EXACT = new Set([
   "packages/tecton-blocks/registry.json",
   "docs/TOKEN-MAPPING.md",
 ]);
-const SKIP_PREFIXES = ["apps/www/public/r/"];
+const SKIP_PREFIXES = ["apps/www/public/r/", "packages/tecton-react/agent/"];
 
 function isSkippedGenerated(file: string): boolean {
   return SKIP_EXACT.has(file) || SKIP_PREFIXES.some((p) => file.startsWith(p));
@@ -136,7 +139,9 @@ const TEXT_EXTENSIONS = new Set([
 // ---------------------------------------------------------------------------
 // 4. Match OLD ending at a word boundary; collect every edit before writing
 // ---------------------------------------------------------------------------
-const MATCH_RE = new RegExp(`${escapeRegExp(OLD_NAME)}(?![A-Za-z0-9_.-])`, "g");
+// A `.` ends the name only when no name character follows it: `@tecton/react.`
+// at the end of a sentence is renamed, `@tecton/react.d` (a longer name) is not.
+const MATCH_RE = new RegExp(`${escapeRegExp(OLD_NAME)}(?![A-Za-z0-9_-]|\\.[A-Za-z0-9_])`, "g");
 
 interface FileEdit {
   file: string;
@@ -269,7 +274,14 @@ console.log(`${totalFiles} files, ${totalOccurrences} occurrences of "${OLD_NAME
 
 if (skippedGenerated.length) {
   console.log("");
-  console.log(`Skipped (generated — rebuild instead of editing): ${skippedGenerated.join(", ")}`);
+  // Directories are summarised as `<prefix>** (N files)` to keep the list readable.
+  const skippedSummary = [
+    ...SKIP_PREFIXES.map((p) => [p, skippedGenerated.filter((f) => f.startsWith(p)).length] as const)
+      .filter(([, n]) => n > 0)
+      .map(([p, n]) => `${p}** (${n} files)`),
+    ...skippedGenerated.filter((f) => SKIP_EXACT.has(f)),
+  ];
+  console.log(`Skipped (generated — rebuild instead of editing): ${skippedSummary.join(", ")}`);
 }
 if (skippedUnknownExtensionWithHit.length) {
   console.log("");
@@ -311,11 +323,13 @@ console.log(
   `  REGISTRY_URL=http://127.0.0.1:4000/r pnpm dlx shadcn@4.21.0 add ${componentItems.join(" ")} \\`
 );
 console.log("    --overwrite -c packages/tecton-react");
+console.log(`  pnpm --filter ${NEW} use-client:restore   # the CLI drops some "use client" directives`);
 console.log("  bash scripts/generated-check.sh");
 console.log("");
 console.log(`  pnpm --filter ${NEW} icons:build`);
 console.log(`  pnpm --filter ${NEW} tokens:build`);
 console.log(`  pnpm --filter ${NEW} exports:build   # if present`);
+console.log(`  pnpm --filter ${NEW} agent:build     # the agent index is skipped above`);
 console.log("");
 console.log("  pnpm --filter @tecton/blocks registry:build");
 console.log("");
