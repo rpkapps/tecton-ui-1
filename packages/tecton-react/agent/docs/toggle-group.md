@@ -96,7 +96,7 @@ The item's only child is an SVG with no text, so its accessible name is empty an
 
 ## Before you finish
 
-- Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value`, `defaultValue` and `onValueChange` are Radix names React Aria drops.
+- Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value` on an item and `onValueChange` anywhere are Radix names React Aria drops, and `Tabs` takes `selectedKey` / `defaultSelectedKey` / `onSelectionChange`, not `value`.
 - `ToggleGroup` reads `selectedKeys` / `defaultSelectedKeys` and its `onSelectionChange` hands back a `Set`, not a single value.
 - Every group carries a name: `aria-label` on `Combobox`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
 
