@@ -8,7 +8,7 @@ import { Button, buttonVariants } from "@tecton/react/components/button"
 
 ## Use it when
 
-- Something happens in place: submit, open a dialog, run an action, trigger a menu.
+- Something happens in place: submit, save, run an action, open a dialog.
 - A real `button` element is the right semantics, and one of the action weights fits: `default`, `secondary`, `outline`, `ghost`, `destructive`, `link`.
 
 ## Not for
@@ -52,7 +52,7 @@ Correct:
 
 There is no `asChild`, so the prop is dropped and the anchor is nested inside a `button`: invalid markup, and the link is announced and activated as a button. `render={<a />}` on the `Button` is no fix either: it keeps `role="button"`.
 
-### HIGH React Aria props on a Button
+### HIGH onPress and isDisabled on a Button
 
 Wrong:
 

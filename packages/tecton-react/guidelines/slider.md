@@ -29,7 +29,7 @@ related: [Field, Input]
 
 ## Don't
 
-### HIGH React Aria range props
+### HIGH minValue and maxValue instead of min and max
 
 Wrong:
 

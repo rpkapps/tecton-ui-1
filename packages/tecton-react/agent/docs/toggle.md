@@ -31,7 +31,7 @@ import { Toggle, toggleVariants } from "@tecton/react/components/toggle"
 
 ## Don't
 
-### CRITICAL React Aria selection props
+### CRITICAL isSelected and onChange instead of pressed
 
 Wrong:
 

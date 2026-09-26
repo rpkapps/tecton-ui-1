@@ -29,7 +29,7 @@ import { Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem, C
 
 ## Don't
 
-### CRITICAL React Aria props on the combobox
+### CRITICAL selectedKey and onSelectionChange instead of value
 
 Wrong:
 

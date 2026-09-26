@@ -27,7 +27,7 @@ import { ToggleGroup, ToggleGroupItem } from "@tecton/react/components/toggle-gr
 
 ## Don't
 
-### CRITICAL Radix or React Aria selection props
+### CRITICAL type and selectedKeys instead of a value array
 
 Wrong:
 

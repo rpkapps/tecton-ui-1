@@ -18,17 +18,27 @@
  *     severity, a `Wrong:` tsx block, a `Correct:` tsx block and a closing
  *     sentence, and no "Not for" heading (that list is rendered from the
  *     frontmatter);
- *   - the file is 40 to 100 lines.
+ *   - the file is 40 to 100 lines;
+ *   - no text names a library underneath Tecton (by name, package or escape
+ *     hatch) except a package name in an import prohibition —
+ *     `libraryNameErrors` in guidelines-lib.mts.
+ *
+ * The same library-name lint runs over topics/*.md, the Markdown under skills/,
+ * every string in families.json and every adopted rule.
  *
  * families.json itself is checked too: every module it lists exists as a source
- * file, and every source module is listed in exactly one family — an unlisted
- * module is an error, so the manifest stays the complete map of the package.
+ * file, and every public source module (`INTERNAL_MODULES` aside) is listed in
+ * exactly one family — an unlisted module is an error, so the manifest stays the
+ * complete map of the package.
  */
 /// <reference types="node" />
-import { existsSync } from "node:fs"
+import { existsSync, readFileSync, readdirSync } from "node:fs"
 import path from "node:path"
 import {
   GUIDELINES_DIR,
+  INTERNAL_MODULES,
+  PKG_ROOT,
+  libraryNameErrors,
   loadCatalog,
   loadGuidelines,
   sourceFileOf,
@@ -68,7 +78,9 @@ function checkFamilies(dir: string): string[] {
     }
     for (const moduleKey of entry.modules) {
       seen.set(moduleKey, [...(seen.get(moduleKey) ?? []), family])
-      if (!existsSync(sourceFileOf(moduleKey))) {
+      if (INTERNAL_MODULES.has(moduleKey)) {
+        errors.push(`families.json: "${family}" lists "${moduleKey}", which is internal (INTERNAL_MODULES)`)
+      } else if (!existsSync(sourceFileOf(moduleKey))) {
         errors.push(
           `families.json: "${family}" lists "${moduleKey}", which has no source file at src/${moduleKey}.tsx`
         )
@@ -93,12 +105,45 @@ function checkFamilies(dir: string): string[] {
       errors.push(`families.json: external "${name}" has no "docs"`)
     }
   }
+  const strings = (value: unknown): string[] =>
+    typeof value === "string"
+      ? [value]
+      : value && typeof value === "object"
+        ? Object.values(value).flatMap(strings)
+        : []
+  for (const text of strings(catalog.families)) {
+    errors.push(...libraryNameErrors(text, "families.json").map((error) => error.replace(/:\d+:/, ":")))
+  }
   return errors
+}
+
+/** The library-name lint over the pages that are not guideline files. */
+function checkPages(dir: string): string[] {
+  const files: string[] = []
+  const topics = path.join(dir, "topics")
+  if (existsSync(topics)) {
+    for (const name of readdirSync(topics).filter((entry) => entry.endsWith(".md")).sort()) {
+      files.push(path.join(topics, name))
+    }
+  }
+  // The skill ships with the package, not with a fixture folder.
+  if (path.resolve(dir) === path.resolve(GUIDELINES_DIR)) {
+    const skills = path.join(PKG_ROOT, "skills")
+    for (const entry of readdirSync(skills, { recursive: true, encoding: "utf8" })) {
+      if (entry.endsWith(".md")) files.push(path.join(skills, entry))
+    }
+  }
+  return files.flatMap((file) =>
+    libraryNameErrors(
+      readFileSync(file, "utf8"),
+      path.relative(PKG_ROOT, file).split(path.sep).join("/")
+    )
+  )
 }
 
 function main() {
   const dir = path.resolve(argValue("--dir") ?? GUIDELINES_DIR)
-  const familyErrors = checkFamilies(dir)
+  const familyErrors = [...checkFamilies(dir), ...checkPages(dir)]
   const { catalog, valid, invalid, parsedFiles } = loadGuidelines(dir)
 
   for (const error of familyErrors) console.error(`✗ ${error}`)
@@ -125,7 +170,7 @@ function main() {
   const failures = familyErrors.length + invalid.size
   if (failures) {
     console.error(
-      `guidelines:check failed — ${invalid.size} of ${parsedFiles.length} file(s) invalid, ${familyErrors.length} families.json problem(s).`
+      `guidelines:check failed — ${invalid.size} of ${parsedFiles.length} file(s) invalid, ${familyErrors.length} problem(s) in families.json, topics or skills.`
     )
     console.error("  the contract is packages/tecton-react/guidelines/README.md")
     process.exit(1)

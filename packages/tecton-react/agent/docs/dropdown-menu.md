@@ -8,7 +8,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuPor
 
 ## Use it when
 
-- A button opens a short list of actions: row actions, an account menu, a "more" overflow.
+- A button opens a menu of actions: row actions, an account menu, a "more" overflow menu.
 - Some of those entries are toggles or one exclusive choice, shown with check marks.
 - The list wants submenus, shortcut hints, or a destructive entry at the end.
 
@@ -28,7 +28,7 @@ import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuPor
 
 ## Don't
 
-### HIGH React Aria or Radix item handlers
+### HIGH onAction or onSelect instead of onClick on items
 
 Wrong:
 
@@ -85,7 +85,7 @@ Tailwind's stock palette is reset, so `text-red-600` emits no CSS, while `varian
 ## Before you finish
 
 - Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
-- Every `DropdownMenuItem` and `ContextMenuItem` acts through `onClick` (never `onAction` or Radix's `onSelect`), and a dangerous entry is marked `variant="destructive"` rather than `text-red-*`.
+- Every `DropdownMenuItem` and `ContextMenuItem` acts through `onClick` (never `onAction` or `onSelect`), and a dangerous entry is marked `variant="destructive"` rather than `text-red-*`.
 - `DropdownMenu` and `ContextMenu` are roots holding a trigger (`DropdownMenuTrigger render={<Button />}`, `ContextMenuTrigger`) and a `DropdownMenuContent` / `ContextMenuContent`; check marks come from `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) or a `DropdownMenuRadioGroup` (`value` / `onValueChange`).
 - Label menu items with a short verb phrase ("Rename", "Export LAS"); the object comes from what the menu opened on.
 

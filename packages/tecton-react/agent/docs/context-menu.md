@@ -27,7 +27,7 @@ import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuPortal,
 
 ## Don't
 
-### HIGH The React Aria trigger shape
+### HIGH A trigger wrapping the area and the menu
 
 Wrong:
 
@@ -51,7 +51,7 @@ Correct:
 
 `ContextMenu` is the state root and draws nothing: a trigger outside it has no menu to open, the items render without a `ContextMenuContent` popup, and `onAction` is not an item prop.
 
-### HIGH The Radix onSelect prop instead of onClick
+### HIGH The onSelect prop instead of onClick
 
 Wrong:
 
@@ -91,7 +91,7 @@ Correct:
 ## Before you finish
 
 - Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
-- Every `DropdownMenuItem` and `ContextMenuItem` acts through `onClick` (never `onAction` or Radix's `onSelect`), and a dangerous entry is marked `variant="destructive"` rather than `text-red-*`.
+- Every `DropdownMenuItem` and `ContextMenuItem` acts through `onClick` (never `onAction` or `onSelect`), and a dangerous entry is marked `variant="destructive"` rather than `text-red-*`.
 - `DropdownMenu` and `ContextMenu` are roots holding a trigger (`DropdownMenuTrigger render={<Button />}`, `ContextMenuTrigger`) and a `DropdownMenuContent` / `ContextMenuContent`; check marks come from `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) or a `DropdownMenuRadioGroup` (`value` / `onValueChange`).
 
 Related: dropdown-menu, action-bar

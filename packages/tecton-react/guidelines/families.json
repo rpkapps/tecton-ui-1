@@ -44,7 +44,7 @@
         "components/tooltip"
       ],
       "checklist": [
-        "The confirm inside an `AlertDialog` is `AlertDialogAction` (with `variant=\"destructive\"`) and the escape is `AlertDialogCancel`; both close the prompt on click, so an uncontrolled `AlertDialog` needs no state; to keep it open while async work runs, control it with `open` / `onOpenChange` and call `event.preventBaseUIHandler()` in the action's `onClick`.",
+        "The confirm inside an `AlertDialog` is `AlertDialogAction` (with `variant=\"destructive\"`) and the escape is `AlertDialogCancel`; both always close the prompt on click, so an uncontrolled `AlertDialog` needs no state; to keep it open while async work runs, control it with `open` / `onOpenChange`, confirm with a `Button` (`variant=\"destructive\" disabled={pending}`) and call `setOpen(false)` when the work is done.",
         "Every `Dialog`, `AlertDialog`, `Sheet`, `Drawer`, `Popover`, `HoverCard` and `Tooltip` is a root that renders nothing, holding its trigger and its content part (`DialogContent`, `AlertDialogContent`, `SheetContent`, `DrawerContent`, `PopoverContent`, `HoverCardContent`, `TooltipContent`); a trigger or content outside its root never opens.",
         "Controlled overlays use `open`, `defaultOpen` and `onOpenChange` on the root, `disablePointerDismissal` keeps unsaved input from being dismissed by a backdrop press, and the footer closes with `DialogClose` or `SheetClose` rather than your own state.",
         "Every `Dialog` and `AlertDialog` has a `DialogTitle` / `AlertDialogTitle`, because it is the dialog's accessible name.",
@@ -93,7 +93,7 @@
         "Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.",
         "A `Button`'s box comes from `size` (`icon`, `icon-xs`, `icon-sm`, `icon-lg` for icon-only) and its weight from `variant`; `size-8`, `h-*`, `p-*`, `rounded-*` and `bg-*` in `className` replace what the variant owns.",
         "Every icon-only `Button`, `Toggle`, `ToggleGroupItem` and `InputGroupButton` has an `aria-label`, and every icon or `Spinner` inside a control carries `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"`.",
-        "Every `DropdownMenuItem` and `ContextMenuItem` acts through `onClick` (never `onAction` or Radix's `onSelect`), and a dangerous entry is marked `variant=\"destructive\"` rather than `text-red-*`.",
+        "Every `DropdownMenuItem` and `ContextMenuItem` acts through `onClick` (never `onAction` or `onSelect`), and a dangerous entry is marked `variant=\"destructive\"` rather than `text-red-*`.",
         "`DropdownMenu` and `ContextMenu` are roots holding a trigger (`DropdownMenuTrigger render={<Button />}`, `ContextMenuTrigger`) and a `DropdownMenuContent` / `ContextMenuContent`; check marks come from `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) or a `DropdownMenuRadioGroup` (`value` / `onValueChange`).",
         "Navigation is a `Link` with an `href` (and `external` instead of hand-written `target` and `rel`) or a `LinkButton` when it should look like a button, never an anchor nested inside a `Button` or a `Button` with `render={<a />}` (it keeps `role=\"button\"`) and never a `Link` that only runs a handler.",
         "A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `open`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.",
@@ -221,7 +221,7 @@
         "components/aspect-ratio"
       ],
       "checklist": [
-        "`Accordion` state is an array: `value` / `defaultValue` / `onValueChange` hold the `value` of each open `AccordionItem`, `multiple` allows several, and Radix's `type` and `collapsible` do not exist.",
+        "`Accordion` state is an array: `value` / `defaultValue` / `onValueChange` hold the `value` of each open `AccordionItem`, `multiple` allows several, and `type` and `collapsible` do not exist.",
         "`Collapsible` is controlled with `open` / `defaultOpen` / `onOpenChange` on the root.",
         "The revealed markup is inside `CollapsibleContent` — the panel the trigger's `aria-expanded` and `aria-controls` refer to — not a hand-rolled conditional.",
         "The collapsible trigger is `CollapsibleTrigger render={<Button variant=\"ghost\" />}`, and `AccordionTrigger` is left to render its own heading, button and chevron.",
@@ -280,14 +280,12 @@
       "title": "Infrastructure",
       "choice": "Providers and roots, not visible components",
       "modules": [
-        "components/direction",
-        "tecton/portal",
         "tecton/provider",
         "tecton/theme-root"
       ],
       "checklist": [
         "The application is wrapped once in a `TectonProvider` (with its `locale`, and `navigate` / `useHref` when it has a router) and sets the matching `dir` and `lang` on `<html>`; Tecton components read the direction from the provider, not from the DOM, so `dir` on a wrapper alone changes nothing.",
-        "No provider is imported from `react-aria-components` or `@base-ui/react`: `TectonProvider` is the only one Tecton components read.",
+        "No other library's provider is mounted (and nothing is imported from `react-aria-components` or `@base-ui/react`): `TectonProvider` is the only one Tecton components read.",
         "Inside a flipped tree every spacing and alignment class is logical (`ms-*`, `pe-*`, `text-start`, `border-s`), and the direction is read with `useDirection()` rather than from `document.dir`.",
         "A page holding several React roots wraps each root in a `ThemeRoot` (or a `TectonProvider` with its own body-level `portalContainer`), because `document.body` falls outside that root's `@scope` rule.",
         "No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal container themselves.",

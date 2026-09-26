@@ -71,8 +71,8 @@ Parts expose their state as presence attributes (`""`, never `"true"`):
 focused menu or list item), `data-disabled`, `data-side`, and
 `data-starting-style` / `data-ending-style` for transitions. In Tailwind that
 is `data-open:…`, `data-checked:…`; hover and focus are `:hover` and
-`:focus-visible`. Radix's `data-[state=open]` and React Aria's
-`data-[selected=true]` match nothing. One exception: shadcn's `data-selected:`
+`:focus-visible`. `data-[state=open]` and `data-[selected=true]` match
+nothing. One exception: shadcn's `data-selected:`
 variant matches only `data-selected="true"` (the command palette), so style the
 `data-selected` presence attribute of `TreeView` rows and `Chip`s with
 `data-[selected]:…` (`group-data-[selected]/tree-item:…`).
@@ -88,7 +88,7 @@ application handles itself.
 
 ## Common Mistakes
 
-### [CRITICAL] React Aria handler and state names
+### [CRITICAL] onPress, isDisabled and isSelected props
 
 Wrong:
 
@@ -104,9 +104,9 @@ Correct:
 <Switch checked={sync} onCheckedChange={setSync} />
 ```
 
-The React Aria names are not props: they reach the DOM as stray attributes, so
-the button stays enabled, the press never runs and the switch keeps its own
-state while `sync` never changes.
+`onPress`, `isDisabled` and `isSelected` are not Tecton props: they reach the
+DOM as stray attributes, so the button stays enabled, the press never runs and
+the switch keeps its own state while `sync` never changes.
 
 ### [HIGH] A trigger wrapping the overlay
 

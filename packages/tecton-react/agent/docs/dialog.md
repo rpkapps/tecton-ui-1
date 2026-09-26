@@ -28,7 +28,7 @@ import { Dialog, DialogTrigger, DialogContent, DialogClose, DialogHeader, Dialog
 
 ## Don't
 
-### HIGH The React Aria trigger wrapping the dialog
+### HIGH A trigger wrapping the button and the dialog
 
 Wrong:
 

@@ -82,7 +82,7 @@ Correct:
 
 `QuestionnaireSubmit` is `hidden`, `inert` and `tabIndex={-1}` until the last item is the active one, so a plain button is reachable from the first question and submits the form with every later item still unanswered.
 
-### MEDIUM React Aria props on a choice
+### MEDIUM isDisabled instead of disabled on a choice
 
 Wrong:
 

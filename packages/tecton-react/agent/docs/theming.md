@@ -175,9 +175,10 @@ new ModuleFederationPlugin({
 
 None of the entries is a singleton, so applications on different React or
 Tecton versions can share a page: `@tecton/react/` is a prefix share, and
-`react`, `react-dom`, `sonner`, `@base-ui/react/`, `react-aria-components` and `recharts` are
+`react`, `react-dom`, `sonner`, `recharts` and Tecton's internal libraries are
 shared without being singletons (pin `react` and `react-dom` to the same exact
-version in each application).
+version in each application; the internal libraries take their version from
+`@tecton/react` itself).
 The list carries no versions — those come from the application's own install.
 The host mounts exactly one `Toaster` and passes its `toast` to each remote
 through the mount props; a remote mounts no `Toaster` and never imports `toast`

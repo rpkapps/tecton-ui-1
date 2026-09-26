@@ -27,7 +27,7 @@ It renders a `div` marked `data-tecton-root`, which the scoped stylesheet keys o
 
 ## Direction and locale
 
-`dir` and `locale` set the reading direction and language of an application that differs from its shell, with the same rules as `TectonProvider`. Without them the root inherits the page's direction.
+`dir` and `locale` set the reading direction and language of the application, with the same rules as `TectonProvider`. Without them the root's `dir` attribute is inherited from the page, so text and logical classes follow the shell, but its components resolve to left to right for keyboard navigation and popup placement: a remote is its own React root and cannot read the shell's provider. A remote therefore always passes the shell's `dir` (and `locale`), typically through its mount props.
 
 ```tsx
 <ThemeRoot className="mfe-a" dir="rtl" locale="ar-EG">

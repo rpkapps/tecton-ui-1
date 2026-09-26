@@ -28,7 +28,7 @@ related: [DropdownMenu, ActionBar]
 
 ## Don't
 
-### HIGH The React Aria trigger shape
+### HIGH A trigger wrapping the area and the menu
 
 Wrong:
 
@@ -52,7 +52,7 @@ Correct:
 
 `ContextMenu` is the state root and draws nothing: a trigger outside it has no menu to open, the items render without a `ContextMenuContent` popup, and `onAction` is not an item prop.
 
-### HIGH The Radix onSelect prop instead of onClick
+### HIGH The onSelect prop instead of onClick
 
 Wrong:
 

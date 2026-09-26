@@ -30,7 +30,7 @@ import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group
 
 ## Don't
 
-### CRITICAL The React Aria onChange handler
+### CRITICAL onChange instead of onValueChange on the group
 
 Wrong:
 

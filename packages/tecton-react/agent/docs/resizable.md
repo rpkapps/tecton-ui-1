@@ -75,7 +75,7 @@ Correct:
 
 In v4 a number means **pixels** and only a string is read as a percentage, so this type-checks and renders a 25 px tree with a 20 px minimum next to a 75 px editor — the split looks collapsed on first paint.
 
-### MEDIUM React Aria prop names on a panel or handle
+### MEDIUM isDisabled instead of disabled on a handle
 
 Wrong:
 
@@ -97,7 +97,7 @@ Correct:
 </ResizablePanelGroup>
 ```
 
-The library's `Separator` destructures `disabled` and spreads everything else onto the `div`, so `isDisabled` becomes a stray attribute and the divider stays draggable while the interface says it is locked.
+`ResizableHandle` reads `disabled` and spreads everything else onto the `div`, so `isDisabled` becomes a stray attribute and the divider stays draggable while the interface says it is locked.
 
 ## Before you finish
 

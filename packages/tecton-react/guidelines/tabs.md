@@ -27,7 +27,7 @@ related: [ToggleGroup, Select]
 
 ## Don't
 
-### CRITICAL React Aria selection props
+### CRITICAL selectedKey and id instead of value
 
 Wrong:
 

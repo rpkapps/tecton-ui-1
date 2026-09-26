@@ -96,7 +96,7 @@ A remote's utilities are wrapped in `@scope (.mfe-a) to ([data-tecton-root])`, s
 ## Before you finish
 
 - The application is wrapped once in a `TectonProvider` (with its `locale`, and `navigate` / `useHref` when it has a router) and sets the matching `dir` and `lang` on `<html>`; Tecton components read the direction from the provider, not from the DOM, so `dir` on a wrapper alone changes nothing.
-- No provider is imported from `react-aria-components` or `@base-ui/react`: `TectonProvider` is the only one Tecton components read.
+- No other library's provider is mounted (and nothing is imported from `react-aria-components` or `@base-ui/react`): `TectonProvider` is the only one Tecton components read.
 - Inside a flipped tree every spacing and alignment class is logical (`ms-*`, `pe-*`, `text-start`, `border-s`), and the direction is read with `useDirection()` rather than from `document.dir`.
 - A page holding several React roots wraps each root in a `ThemeRoot` (or a `TectonProvider` with its own body-level `portalContainer`), because `document.body` falls outside that root's `@scope` rule.
 - No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal container themselves.

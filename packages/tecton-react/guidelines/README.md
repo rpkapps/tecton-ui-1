@@ -122,10 +122,25 @@ Rules for the sections:
 Keep a file between 40 and 100 lines. Prose is for the agent and the reviewer: no marketing, no
 explanations of React or Tailwind, no repetition of the API reference.
 
+## No library names
+
+Consumers only ever learn Tecton. No guideline, topic, `families.json` string, adopted rule or
+skill names a library Tecton is built on — not by name ("React Aria", "Radix", "Base UI" in any
+spelling), not by package, and not through an escape hatch such as `preventBaseUIHandler`. A Don't
+names the wrong **props** instead: "onPress and isDisabled on a Button", "selectedKey and id
+instead of value", "A trigger wrapping the button and the overlay", "Unlike stock shadcn".
+
+The one exception is an import prohibition, which may spell the package: an `import` line inside a
+`Wrong:` block, or a sentence that forbids it ("nothing is imported from `react-aria-components`
+or `@base-ui/react`"). `guidelines:check` enforces this (`libraryNameErrors` in
+`scripts/guidelines-lib.mts`).
+
 ## Tooling
 
-- `pnpm --filter @tecton/react guidelines:check` validates every file against the rules above and
-  reports the modules that have no file yet.
+- `pnpm --filter @tecton/react guidelines:check` validates every file against the rules above
+  (the library-name lint included, over `topics/`, `families.json`, `adopted/` and `skills/` too)
+  and reports the modules that have no file yet. Internal modules an application never imports
+  (`INTERNAL_MODULES` in `scripts/guidelines-lib.mts`) have no file and no family.
 - `pnpm --filter @tecton/react agent:build` writes `agent/index.json` and `agent/docs/<id>.md`, the
   search index and pages behind the `tecton search` / `tecton docs` command, from these files,
   `topics/`, `adopted/`, `families.json` and `synonyms.json` (query words mapped to the words the

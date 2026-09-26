@@ -28,7 +28,7 @@ import { Collapsible, CollapsibleTrigger, CollapsibleContent } from "@tecton/rea
 
 ## Don't
 
-### CRITICAL React Aria disclosure props
+### CRITICAL isExpanded and onExpandedChange instead of open
 
 Wrong:
 

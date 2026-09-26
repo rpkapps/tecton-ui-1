@@ -54,7 +54,7 @@ Correct:
 
 The grid emits no table semantics, so assistive technology reads a stream of unassociated cells with no row or column count, and `bg-zinc-100` is stock Tailwind the reset palette emits no CSS for — the header band is `bg-table-header` on `TableHead`.
 
-### HIGH React Aria collection props on the table
+### HIGH selectionMode and selectedKeys on the table
 
 Wrong:
 

@@ -72,7 +72,7 @@ Correct:
 
 The tooltip closes as soon as the pointer or focus leaves the trigger and its contents sit inside `role="tooltip"`, so the link can never be tabbed to and is never announced as a link.
 
-### HIGH The React Aria two-child trigger
+### HIGH A trigger wrapping the button and the overlay
 
 Wrong:
 

@@ -160,7 +160,7 @@ Put the work in `onClick` on `AlertDialogAction`: the action and `AlertDialogCan
 
 <Do>
 
-Keep the prompt open while async work runs (a pending state, an error to show) by controlling it with `open` / `onOpenChange`, calling `event.preventBaseUIHandler()` in the action's `onClick` and closing it with `setOpen(false)` once the work is done.
+`AlertDialogAction` always closes. To keep the prompt open while async work runs (a pending state, an error to show), control it with `open` / `onOpenChange`, confirm with a `Button variant="destructive" disabled={pending}` and call `setOpen(false)` once the work is done.
 
 </Do>
 
@@ -186,7 +186,7 @@ Keyboard users reach Cancel first in a confirmation dialog: put `AlertDialogCanc
 
 ### Don't
 
-<Dont severity="HIGH" title="A plain Button as the confirm">
+<Dont severity="HIGH" title="A plain Button confirming an uncontrolled prompt">
 
 <Wrong>
 
@@ -210,11 +210,11 @@ Keyboard users reach Cancel first in a confirmation dialog: put `AlertDialogCanc
 
 </Correct>
 
-A `Button` has no link to the dialog state, so on an uncontrolled `AlertDialog` the work runs and the prompt stays on screen over the deleted record; `AlertDialogAction` closes the prompt after its `onClick`, like `AlertDialogCancel`.
+A `Button` has no link to the dialog state, so on an uncontrolled `AlertDialog` the work runs and the prompt stays on screen over the deleted record; `AlertDialogAction` closes the prompt after its `onClick`, like `AlertDialogCancel` (a controlled prompt kept open during async work is the exception: there the `Button` confirms and `setOpen(false)` closes it).
 
 </Dont>
 
-<Dont severity="HIGH" title="The React Aria trigger wrapping the prompt">
+<Dont severity="HIGH" title="A trigger wrapping the button and the prompt">
 
 <Wrong>
 

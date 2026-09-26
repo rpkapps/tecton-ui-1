@@ -29,7 +29,7 @@ related: [Combobox, DropdownMenu]
 
 ## Don't
 
-### CRITICAL The React Aria onAction prop instead of onSelect
+### CRITICAL The onAction prop instead of onSelect
 
 Wrong:
 
@@ -45,7 +45,7 @@ Correct:
 
 `CommandItem` is a cmdk item whose activation handler is `onSelect`; `onAction` is not in its props, so pressing Enter or clicking the row does nothing at all.
 
-### HIGH A React Aria textValue on a JSX item
+### HIGH A textValue instead of value and keywords
 
 Wrong:
 

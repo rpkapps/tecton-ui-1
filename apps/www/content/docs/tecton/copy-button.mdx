@@ -168,6 +168,6 @@ A `Button` with clipboard behaviour; accepts all `Button` props except `onClick`
 | `timeout` | `number` | `2000` | Milliseconds the check or cross is shown. |
 | `onCopied` | `(value: string) => void` | - | Called after a successful copy. |
 | `onError` | `(error: unknown) => void` | - | Called with the clipboard's error when the copy fails. |
-| `variant` | `ButtonProps["variant"]` | `"ghost"` | Button variant. |
-| `size` | `ButtonProps["size"]` | `"icon-sm"`, or `"sm"` with children | Button size. |
+| `variant` | `"default" \| "outline" \| "secondary" \| "ghost" \| "destructive" \| "link"` | `"ghost"` | Button variant. |
+| `size` | `"default" \| "xs" \| "sm" \| "lg" \| "icon" \| "icon-xs" \| "icon-sm" \| "icon-lg"` | `"icon-sm"`, or `"sm"` with children | Button size. |
 | `children` | `ReactNode` | - | Label. |

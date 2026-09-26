@@ -31,7 +31,7 @@ related: [Combobox, NativeSelect, RadioGroup]
 
 ## Don't
 
-### CRITICAL React Aria props on the select
+### CRITICAL selectedKey and onSelectionChange instead of value
 
 Wrong:
 

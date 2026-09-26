@@ -8,7 +8,7 @@ description: Tecton UI is the Tecton design system for React, built on shadcn/ui
 ## What you get
 
 - **`@tecton/react`** — a private package with the shadcn/ui components (`@tecton/react/components/*`), the Tecton-specific components (`@tecton/react/tecton/*`), the icon set (`@tecton/react/icons`) and the theme stylesheet. Blocks are copy-paste snippets installed from the `@tecton` registry instead.
-- **shadcn parity** — the public API, names, variants and composition patterns are exactly shadcn's. Snippets from the shadcn docs work after changing the import path.
+- **shadcn parity** — the names, variants and composition patterns are shadcn's. The shadcn docs show more than one set of prop names, so a snippet copied from them may use props Tecton does not take (`asChild`, `onSelect` on a menu item, `type="single"`): start from the component pages on this site, which show the Tecton props, and change only the import path.
 - **Tecton tokens** — colours, radii and typography come from the Tecton design tokens, mapped to the shadcn CSS variables with a documented confidence for every value. See [Theming](/docs/theming).
 - **Upgradeable** — no generated file is edited by hand, so the library maintainers update a component with a single shadcn CLI command. See [CLI & updates](/docs/cli).
 

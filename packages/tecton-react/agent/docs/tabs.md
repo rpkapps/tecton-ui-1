@@ -28,7 +28,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from "@tec
 
 ## Don't
 
-### CRITICAL React Aria selection props
+### CRITICAL selectedKey and id instead of value
 
 Wrong:
 

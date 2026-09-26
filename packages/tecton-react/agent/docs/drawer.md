@@ -27,7 +27,7 @@ import { Drawer, DrawerTrigger, DrawerContent, DrawerHeader, DrawerTitle, Drawer
 
 ## Don't
 
-### HIGH React Aria state props on the drawer
+### HIGH isOpen instead of open on the drawer
 
 Wrong:
 

@@ -90,7 +90,7 @@ Correct:
 </AspectRatio>
 ```
 
-Unlike the Radix component this one has no default: `ratio` is required, React drops the `undefined` custom property, and `aspect-ratio: var(--ratio)` then resolves to nothing, so the box collapses around an absolutely positioned child and disappears.
+Unlike stock shadcn this one has no default: `ratio` is required, React drops the `undefined` custom property, and `aspect-ratio: var(--ratio)` then resolves to nothing, so the box collapses around an absolutely positioned child and disappears.
 
 ## Before you finish
 

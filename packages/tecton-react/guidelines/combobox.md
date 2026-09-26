@@ -27,7 +27,7 @@ related: [Select, Command, NativeSelect]
 
 ## Don't
 
-### CRITICAL React Aria props on the combobox
+### CRITICAL selectedKey and onSelectionChange instead of value
 
 Wrong:
 

@@ -22,14 +22,14 @@ import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
 - Compose `AlertDialog` > `AlertDialogTrigger render={<Button variant="destructive" />}` + `AlertDialogContent`, as for `Dialog`.
 - End the title with a question and state the consequence in `AlertDialogDescription`.
 - Put the work in `onClick` on `AlertDialogAction`: the action and `AlertDialogCancel` both close the prompt on click, so an uncontrolled `AlertDialog` needs no state.
-- Keep the prompt open while async work runs (a pending state, an error to show) by controlling it with `open` / `onOpenChange`, calling `event.preventBaseUIHandler()` in the action's `onClick` and closing it with `setOpen(false)` once the work is done.
+- `AlertDialogAction` always closes. To keep the prompt open while async work runs (a pending state, an error to show), control it with `open` / `onOpenChange`, confirm with a `Button variant="destructive" disabled={pending}` and call `setOpen(false)` once the work is done.
 - Colour the confirm with `variant="destructive"` on `AlertDialogAction` — never with `className` — and use `size="sm"` on `AlertDialogContent` with `AlertDialogMedia` for a short, centred prompt.
 - Name the confirm button for its action and object ("Delete well"), never "OK", "Yes" or "Confirm".
 - Keyboard users reach Cancel first in a confirmation dialog: put `AlertDialogCancel` before `AlertDialogAction` in the footer.
 
 ## Don't
 
-### HIGH A plain Button as the confirm
+### HIGH A plain Button confirming an uncontrolled prompt
 
 Wrong:
 
@@ -49,9 +49,9 @@ Correct:
 </AlertDialogFooter>
 ```
 
-A `Button` has no link to the dialog state, so on an uncontrolled `AlertDialog` the work runs and the prompt stays on screen over the deleted record; `AlertDialogAction` closes the prompt after its `onClick`, like `AlertDialogCancel`.
+A `Button` has no link to the dialog state, so on an uncontrolled `AlertDialog` the work runs and the prompt stays on screen over the deleted record; `AlertDialogAction` closes the prompt after its `onClick`, like `AlertDialogCancel` (a controlled prompt kept open during async work is the exception: there the `Button` confirms and `setOpen(false)` closes it).
 
-### HIGH The React Aria trigger wrapping the prompt
+### HIGH A trigger wrapping the button and the prompt
 
 Wrong:
 
@@ -99,7 +99,7 @@ A `Dialog` closes on a backdrop press and announces itself as `role="dialog"`, s
 
 ## Before you finish
 
-- The confirm inside an `AlertDialog` is `AlertDialogAction` (with `variant="destructive"`) and the escape is `AlertDialogCancel`; both close the prompt on click, so an uncontrolled `AlertDialog` needs no state; to keep it open while async work runs, control it with `open` / `onOpenChange` and call `event.preventBaseUIHandler()` in the action's `onClick`.
+- The confirm inside an `AlertDialog` is `AlertDialogAction` (with `variant="destructive"`) and the escape is `AlertDialogCancel`; both always close the prompt on click, so an uncontrolled `AlertDialog` needs no state; to keep it open while async work runs, control it with `open` / `onOpenChange`, confirm with a `Button` (`variant="destructive" disabled={pending}`) and call `setOpen(false)` when the work is done.
 - Every `Dialog`, `AlertDialog`, `Sheet`, `Drawer`, `Popover`, `HoverCard` and `Tooltip` is a root that renders nothing, holding its trigger and its content part (`DialogContent`, `AlertDialogContent`, `SheetContent`, `DrawerContent`, `PopoverContent`, `HoverCardContent`, `TooltipContent`); a trigger or content outside its root never opens.
 - Every `Dialog` and `AlertDialog` has a `DialogTitle` / `AlertDialogTitle`, because it is the dialog's accessible name.
 

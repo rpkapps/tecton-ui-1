@@ -30,7 +30,7 @@ import { Calendar, CalendarDayButton } from "@tecton/react/components/calendar"
 
 ## Don't
 
-### CRITICAL React Aria calendar props
+### CRITICAL value, onChange and minValue on the Calendar
 
 Wrong:
 
@@ -53,7 +53,7 @@ Correct:
 />
 ```
 
-`Calendar` is react-day-picker: `value`, `onChange` and `minValue` are not its props and `@internationalized/date` values mean nothing to it, so the grid renders with nothing selected, every day pickable and no callback firing.
+`Calendar` takes plain `Date` values through `mode`, `selected` and `onSelect`: `value`, `onChange` and `minValue` are not its props and a `CalendarDate` from `today()` means nothing to it, so the grid renders with nothing selected, every day pickable and no callback firing.
 
 ### HIGH Two Calendars for a start and an end
 

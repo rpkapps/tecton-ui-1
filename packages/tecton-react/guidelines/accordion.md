@@ -27,7 +27,7 @@ related: [Collapsible, Tabs, TreeView]
 
 ## Don't
 
-### CRITICAL Radix or React Aria accordion props
+### CRITICAL type, collapsible and defaultExpandedKeys on the accordion
 
 Wrong:
 

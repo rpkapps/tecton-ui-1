@@ -15,7 +15,7 @@ related: [ContextMenu, Button, Select]
 
 ## Use it when
 
-- A button opens a short list of actions: row actions, an account menu, a "more" overflow.
+- A button opens a menu of actions: row actions, an account menu, a "more" overflow menu.
 - Some of those entries are toggles or one exclusive choice, shown with check marks.
 - The list wants submenus, shortcut hints, or a destructive entry at the end.
 
@@ -29,7 +29,7 @@ related: [ContextMenu, Button, Select]
 
 ## Don't
 
-### HIGH React Aria or Radix item handlers
+### HIGH onAction or onSelect instead of onClick on items
 
 Wrong:
 

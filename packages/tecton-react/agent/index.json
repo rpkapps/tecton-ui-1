@@ -175,6 +175,15 @@
    "message",
    "conversation"
   ],
+  "chat input": [
+   "composer"
+  ],
+  "chat box": [
+   "composer"
+  ],
+  "prompt box": [
+   "composer"
+  ],
   "assistant": [
    "message",
    "conversation"
@@ -327,7 +336,7 @@
     "AccordionContent"
    ],
    "aliases": [],
-   "tokens": 950
+   "tokens": 954
   },
   {
    "id": "action-bar",
@@ -426,7 +435,7 @@
     "names": "alert dialog alert dialog alert dialog trigger alert dialog content alert dialog header alert dialog media alert dialog title alert dialog description alert dialog footer alert dialog cancel alert dialog action alert dialog overlay alert dialog portal",
     "useWhen": "An action destroys or overwrites something: delete, discard, overwrite, revoke. The consequence cannot be undone once the user continues. The user must answer: there is no outside-press dismissal and no close button.",
     "routed": "a confirmation before a destructive action a confirmation of a destructive action a confirmation the user has to answer",
-    "do": "Compose `AlertDialog` > `AlertDialogTrigger render={<Button variant=\"destructive\" />}` + `AlertDialogContent`, as for `Dialog`. End the title with a question and state the consequence in `AlertDialogDescription`. Put the work in `onClick` on `AlertDialogAction`: the action and `AlertDialogCancel` both close the prompt on click, so an uncontrolled `AlertDialog` needs no state. Keep the prompt open while async work runs (a pending state, an error to show) by controlling it with `open` / `onOpenChange`, calling `event.preventBaseUIHandler()` in the action's `onClick` and closing it with `setOpen(false)` once the work is done. Colour the confirm with `variant=\"destructive\"` on `AlertDialogAction` — never with `className` — and use `size=\"sm\"` on `AlertDialogContent` with `AlertDialogMedia` for a short, centred prompt."
+    "do": "Compose `AlertDialog` > `AlertDialogTrigger render={<Button variant=\"destructive\" />}` + `AlertDialogContent`, as for `Dialog`. End the title with a question and state the consequence in `AlertDialogDescription`. Put the work in `onClick` on `AlertDialogAction`: the action and `AlertDialogCancel` both close the prompt on click, so an uncontrolled `AlertDialog` needs no state. `AlertDialogAction` always closes. To keep the prompt open while async work runs (a pending state, an error to show), control it with `open` / `onOpenChange`, confirm with a `Button variant=\"destructive\" disabled={pending}` and call `setOpen(false)` once the work is done. Colour the confirm with `variant=\"destructive\"` on `AlertDialogAction` — never with `className` — and use `size=\"sm\"` on `AlertDialogContent` with `AlertDialogMedia` for a short, centred prompt."
    },
    "notFor": [
     {
@@ -456,7 +465,7 @@
     "AlertDialogPortal"
    ],
    "aliases": [],
-   "tokens": 1164
+   "tokens": 1221
   },
   {
    "id": "app-finder",
@@ -608,7 +617,7 @@
     "AspectRatio"
    ],
    "aliases": [],
-   "tokens": 901
+   "tokens": 899
   },
   {
    "id": "attachment",
@@ -894,10 +903,10 @@
    "name": "Button",
    "import": "import { Button, buttonVariants } from \"@tecton/react/components/button\"",
    "family": "actions",
-   "summary": "Something happens in place: submit, open a dialog, run an action, trigger a menu.",
+   "summary": "Something happens in place: submit, save, run an action, open a dialog.",
    "fields": {
     "names": "button button button variants",
-    "useWhen": "Something happens in place: submit, open a dialog, run an action, trigger a menu. A real `button` element is the right semantics, and one of the action weights fits: `default`, `secondary`, `outline`, `ghost`, `destructive`, `link`.",
+    "useWhen": "Something happens in place: submit, save, run an action, open a dialog. A real `button` element is the right semantics, and one of the action weights fits: `default`, `secondary`, `outline`, `ghost`, `destructive`, `link`.",
     "routed": "any action on a value other than copying it something that happens in place instead of navigation a control that performs an action rather than holding state",
     "do": "Handle presses with `onClick` and disable with `disabled`; add `focusableWhenDisabled` when a disabled button must stay in the tab order (a pending submit). Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`). Mark icons with `data-icon=\"inline-start\" | \"inline-end\"` so the padding adjusts, and give icon-only buttons an `aria-label`. Navigate with `LinkButton` (`@tecton/react/tecton/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: with `render={<a />}` it keeps `role=\"button\"`, so the link is announced as a button. A trigger (`DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`) takes the button as `render={<Button variant=\"outline\" />}`; never nest a `Button` inside a trigger."
    },
@@ -924,7 +933,7 @@
     "buttonVariants"
    ],
    "aliases": [],
-   "tokens": 1286
+   "tokens": 1285
   },
   {
    "id": "button-group",
@@ -1000,7 +1009,7 @@
     "CalendarDayButton"
    ],
    "aliases": [],
-   "tokens": 960
+   "tokens": 976
   },
   {
    "id": "canvas",
@@ -1213,7 +1222,7 @@
     "Checkbox"
    ],
    "aliases": [],
-   "tokens": 810
+   "tokens": 814
   },
   {
    "id": "chip",
@@ -1331,7 +1340,7 @@
     "CollapsibleContent"
    ],
    "aliases": [],
-   "tokens": 1076
+   "tokens": 1081
   },
   {
    "id": "color-swatch",
@@ -1418,7 +1427,7 @@
     "useComboboxAnchor"
    ],
    "aliases": [],
-   "tokens": 1345
+   "tokens": 1350
   },
   {
    "id": "command",
@@ -1463,7 +1472,7 @@
     "CommandShortcut"
    ],
    "aliases": [],
-   "tokens": 830
+   "tokens": 828
   },
   {
    "id": "composer",
@@ -1680,7 +1689,7 @@
     "DialogPortal"
    ],
    "aliases": [],
-   "tokens": 1086
+   "tokens": 1087
   },
   {
    "id": "drawer",
@@ -1735,10 +1744,10 @@
    "name": "DropdownMenu",
    "import": "import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuPortal, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from \"@tecton/react/components/dropdown-menu\"",
    "family": "actions",
-   "summary": "A button opens a short list of actions: row actions, an account menu, a \"more\" overflow.",
+   "summary": "A button opens a menu of actions: row actions, an account menu, a \"more\" overflow menu.",
    "fields": {
     "names": "dropdown menu dropdown menu dropdown menu trigger dropdown menu content dropdown menu portal dropdown menu group dropdown menu label dropdown menu item dropdown menu checkbox item dropdown menu radio group dropdown menu radio item dropdown menu separator dropdown menu shortcut dropdown menu sub dropdown menu sub trigger dropdown menu sub content",
-    "useWhen": "A button opens a short list of actions: row actions, an account menu, a \"more\" overflow. Some of those entries are toggles or one exclusive choice, shown with check marks. The list wants submenus, shortcut hints, or a destructive entry at the end.",
+    "useWhen": "A button opens a menu of actions: row actions, an account menu, a \"more\" overflow menu. Some of those entries are toggles or one exclusive choice, shown with check marks. The list wants submenus, shortcut hints, or a destructive entry at the end.",
     "routed": "a list of actions behind a single button a short list of actions opened from a header button a long list of actions behind one trigger several related actions behind one control a menu of actions opened from a button a menu opened from a visible button every action behind one button from the start a menu of actions rather than a value",
     "do": "Compose `DropdownMenu` (the root) > `DropdownMenuTrigger render={<Button variant=\"ghost\" size=\"icon\" />}` + `DropdownMenuContent`. Run actions from `onClick` on `DropdownMenuItem`; the menu closes after it. Show toggles with `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) and one exclusive choice with `DropdownMenuRadioGroup` (`value` / `onValueChange`) holding `DropdownMenuRadioItem value=\"…\"`. Title groups with `DropdownMenuLabel` inside a `DropdownMenuGroup`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut` (a label only — Tecton binds no keys). Place with `side` / `align` on `DropdownMenuContent` and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`."
    },
@@ -1779,7 +1788,7 @@
     "DropdownMenuSubContent"
    ],
    "aliases": [],
-   "tokens": 1042
+   "tokens": 1044
   },
   {
    "id": "empty",
@@ -1907,7 +1916,7 @@
     "HoverCardContent"
    ],
    "aliases": [],
-   "tokens": 781
+   "tokens": 784
   },
   {
    "id": "input",
@@ -2614,7 +2623,7 @@
     "PopoverDescription"
    ],
    "aliases": [],
-   "tokens": 985
+   "tokens": 991
   },
   {
    "id": "progress",
@@ -2699,7 +2708,7 @@
     "useLocale"
    ],
    "aliases": [],
-   "tokens": 1009
+   "tokens": 1019
   },
   {
    "id": "questionnaire",
@@ -2747,7 +2756,7 @@
     "QuestionnaireSubmit"
    ],
    "aliases": [],
-   "tokens": 1017
+   "tokens": 1020
   },
   {
    "id": "radio-group",
@@ -2785,7 +2794,7 @@
     "RadioGroupItem"
    ],
    "aliases": [],
-   "tokens": 991
+   "tokens": 995
   },
   {
    "id": "resizable",
@@ -2825,7 +2834,7 @@
     "ResizableHandle"
    ],
    "aliases": [],
-   "tokens": 1084
+   "tokens": 1080
   },
   {
    "id": "scroll-area",
@@ -2916,7 +2925,7 @@
     "selectTriggerVariants"
    ],
    "aliases": [],
-   "tokens": 1214
+   "tokens": 1219
   },
   {
    "id": "separator",
@@ -3134,7 +3143,7 @@
     "Slider"
    ],
    "aliases": [],
-   "tokens": 814
+   "tokens": 819
   },
   {
    "id": "sonner",
@@ -3291,7 +3300,7 @@
     "Switch"
    ],
    "aliases": [],
-   "tokens": 677
+   "tokens": 681
   },
   {
    "id": "table",
@@ -3332,7 +3341,7 @@
     "TableCaption"
    ],
    "aliases": [],
-   "tokens": 1091
+   "tokens": 1092
   },
   {
    "id": "tabs",
@@ -3369,7 +3378,7 @@
     "tabsListVariants"
    ],
    "aliases": [],
-   "tokens": 991
+   "tokens": 994
   },
   {
    "id": "textarea",
@@ -3475,7 +3484,7 @@
     "toggleVariants"
    ],
    "aliases": [],
-   "tokens": 834
+   "tokens": 838
   },
   {
    "id": "toggle-group",
@@ -3514,7 +3523,7 @@
     "ToggleGroupItem"
    ],
    "aliases": [],
-   "tokens": 960
+   "tokens": 963
   },
   {
    "id": "tooltip",
@@ -3554,7 +3563,7 @@
     "TooltipProvider"
    ],
    "aliases": [],
-   "tokens": 1018
+   "tokens": 1021
   },
   {
    "id": "tree-view",
@@ -3701,15 +3710,15 @@
    "summary": "Prop conventions: handlers, state, Root/Trigger/Content, render, state attributes",
    "fields": {
     "names": "conventions",
-    "useWhen": "The prop conventions every @tecton/react component follows, for agents whose prior is Radix shadcn or an older React Aria Tecton. Covers onClick (not onPress), disabled (not isDisabled), checked / onCheckedChange (not isSelected / onChange), pressed / onPressedChange, the controlled selected state, value / defaultValue / onValueChange with arrays for multi-value and value as an item's identity (not id, selectedKey or onSelectionChange), open / defaultOpen / onOpenChange on the root, the Root + Trigger + Content structure of Dialog, AlertDialog, Sheet, Drawer, Popover, HoverCard, Tooltip, DropdownMenu and ContextMenu (no DialogTrigger wrapper, no asChild), render={<Button />} for element polymorphism, side / align / sideOffset placement, the presence state attributes to style on (data-open, data-checked, data-active, data-pressed, data-highlighted, data-disabled), TectonProvider for direction, locale, router and portals, and the absence of any keyboard shortcut API. Load before writing any prop, handler, controlled state or state selector on a Tecton component.",
+    "useWhen": "The prop conventions every @tecton/react component follows, for agents whose habits come from another component library or stock shadcn. Covers onClick (not onPress), disabled (not isDisabled), checked / onCheckedChange (not isSelected / onChange), pressed / onPressedChange, the controlled selected state, value / defaultValue / onValueChange with arrays for multi-value and value as an item's identity (not id, selectedKey or onSelectionChange), open / defaultOpen / onOpenChange on the root, the Root + Trigger + Content structure of Dialog, AlertDialog, Sheet, Drawer, Popover, HoverCard, Tooltip, DropdownMenu and ContextMenu (no DialogTrigger wrapper, no asChild), render={<Button />} for element polymorphism, side / align / sideOffset placement, the presence state attributes to style on (data-open, data-checked, data-active, data-pressed, data-highlighted, data-disabled), TectonProvider for direction, locale, router and portals, and the absence of any keyboard shortcut API. Load before writing any prop, handler, controlled state or state selector on a Tecton component.",
     "routed": "",
-    "do": "The map Root, Trigger, Content render State attributes Providers, portals, shortcuts Common Mistakes [CRITICAL] React Aria handler and state names [HIGH] A trigger wrapping the overlay [HIGH] Items identified by id [HIGH] Importing the library underneath"
+    "do": "The map Root, Trigger, Content render State attributes Providers, portals, shortcuts Common Mistakes [CRITICAL] onPress, isDisabled and isSelected props [HIGH] A trigger wrapping the overlay [HIGH] Items identified by id [HIGH] Importing the library underneath"
    },
    "notFor": [],
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 1673
+   "tokens": 1676
   },
   {
    "id": "rules",
@@ -3743,7 +3752,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2851
+   "tokens": 2865
   }
  ]
 }

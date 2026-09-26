@@ -52,7 +52,7 @@ Correct:
 
 A hover card is a preview of a link's destination, not a name: the icon button still reaches a screen reader with no accessible name, and touch users never see the card.
 
-### MEDIUM Radix openDelay on the trigger
+### MEDIUM openDelay instead of delay on the trigger
 
 Wrong:
 

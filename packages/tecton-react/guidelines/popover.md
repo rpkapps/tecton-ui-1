@@ -28,7 +28,7 @@ related: [HoverCard, Tooltip, Dialog]
 
 ## Don't
 
-### HIGH React Aria placement props
+### HIGH placement and offset instead of side and sideOffset
 
 Wrong:
 

@@ -26,7 +26,7 @@ import { Accordion, AccordionItem, AccordionTrigger, AccordionContent } from "@t
 
 ## Don't
 
-### CRITICAL Radix or React Aria accordion props
+### CRITICAL type, collapsible and defaultExpandedKeys on the accordion
 
 Wrong:
 
@@ -99,7 +99,7 @@ Correct:
 
 ## Before you finish
 
-- `Accordion` state is an array: `value` / `defaultValue` / `onValueChange` hold the `value` of each open `AccordionItem`, `multiple` allows several, and Radix's `type` and `collapsible` do not exist.
+- `Accordion` state is an array: `value` / `defaultValue` / `onValueChange` hold the `value` of each open `AccordionItem`, `multiple` allows several, and `type` and `collapsible` do not exist.
 - The collapsible trigger is `CollapsibleTrigger render={<Button variant="ghost" />}`, and `AccordionTrigger` is left to render its own heading, button and chevron.
 
 Related: collapsible, tabs, tree-view

@@ -251,7 +251,7 @@ An optional or filtering date gets a clear button that empties it (`selected` ba
 
 ### Don't
 
-<Dont severity="CRITICAL" title="React Aria calendar props">
+<Dont severity="CRITICAL" title="value, onChange and minValue on the Calendar">
 
 <Wrong>
 
@@ -278,7 +278,7 @@ An optional or filtering date gets a clear button that empties it (`selected` ba
 
 </Correct>
 
-`Calendar` is react-day-picker: `value`, `onChange` and `minValue` are not its props and `@internationalized/date` values mean nothing to it, so the grid renders with nothing selected, every day pickable and no callback firing.
+`Calendar` takes plain `Date` values through `mode`, `selected` and `onSelect`: `value`, `onChange` and `minValue` are not its props and a `CalendarDate` from `today()` means nothing to it, so the grid renders with nothing selected, every day pickable and no callback firing.
 
 </Dont>
 

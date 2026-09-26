@@ -27,7 +27,7 @@ related: [Accordion, Sheet, Popover]
 
 ## Don't
 
-### CRITICAL React Aria disclosure props
+### CRITICAL isExpanded and onExpandedChange instead of open
 
 Wrong:
 

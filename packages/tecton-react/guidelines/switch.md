@@ -29,7 +29,7 @@ related: [Checkbox, Field]
 
 ## Don't
 
-### CRITICAL React Aria selection props
+### CRITICAL isSelected and onChange instead of checked
 
 Wrong:
 

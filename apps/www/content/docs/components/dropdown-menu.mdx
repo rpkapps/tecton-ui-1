@@ -160,7 +160,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 ### Use it when
 
-- A button opens a short list of actions: row actions, an account menu, a "more" overflow.
+- A button opens a menu of actions: row actions, an account menu, a "more" overflow menu.
 - Some of those entries are toggles or one exclusive choice, shown with check marks.
 - The list wants submenus, shortcut hints, or a destructive entry at the end.
 
@@ -214,7 +214,7 @@ Label menu items with a short verb phrase ("Rename", "Export LAS"); the object c
 
 ### Don't
 
-<Dont severity="HIGH" title="React Aria or Radix item handlers">
+<Dont severity="HIGH" title="onAction or onSelect instead of onClick on items">
 
 <Wrong>
 

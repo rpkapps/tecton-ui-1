@@ -244,7 +244,17 @@ export function loadFamilies(dir: string = GUIDELINES_DIR): FamiliesFile {
   return { families: parsed.families, externals: parsed.externals ?? {} }
 }
 
-/** Every `.tsx` module under src/components and src/tecton, as module keys. */
+/**
+ * Modules other Tecton modules build on that an application never imports: the
+ * direction and portal plumbing behind `TectonProvider`. They have no guideline,
+ * no family and no docs page, and nothing resolves to their exports.
+ */
+export const INTERNAL_MODULES: ReadonlySet<string> = new Set(["components/direction", "tecton/portal"])
+
+/**
+ * Every public `.tsx` module under src/components and src/tecton, as module keys
+ * (`INTERNAL_MODULES` left out).
+ */
 export function sourceModules(): string[] {
   const modules: string[] = []
   for (const dir of MODULE_DIRS) {
@@ -253,7 +263,8 @@ export function sourceModules(): string[] {
     for (const entry of readdirSync(full, { withFileTypes: true })) {
       if (!entry.isFile()) continue
       if (!entry.name.endsWith(".tsx") || entry.name.endsWith(".d.tsx")) continue
-      modules.push(`${dir}/${entry.name.slice(0, -".tsx".length)}`)
+      const moduleKey = `${dir}/${entry.name.slice(0, -".tsx".length)}`
+      if (!INTERNAL_MODULES.has(moduleKey)) modules.push(moduleKey)
     }
   }
   return modules.sort()
@@ -419,6 +430,102 @@ export function guidelineFiles(dir: string = GUIDELINES_DIR): string[] {
     .filter((entry) => entry.endsWith(".md") && entry !== "README.md")
     .sort()
     .map((entry) => path.join(dir, entry))
+}
+
+// ---------------------------------------------------------------------------
+// the library-name lint
+// ---------------------------------------------------------------------------
+
+/**
+ * The libraries Tecton is built on, in every spelling guidance might use. A
+ * consumer only ever learns Tecton: a Don't names the wrong *props*
+ * (`onPress`, `selectedKey`), never the library they come from, and no text
+ * tells an application to reach past a Tecton part into the one underneath.
+ */
+const LIBRARY_NAMES: { pattern: RegExp; name: string }[] = [
+  { pattern: /\breact[\s-]?aria/gi, name: "React Aria" },
+  { pattern: /react-stately|@react-(?:stately|types)\//gi, name: "React Stately" },
+  { pattern: /\bradix\b/gi, name: "Radix" },
+  { pattern: /preventBaseUIHandler/g, name: "preventBaseUIHandler" },
+  { pattern: /\bbase[\s-]?ui\b/gi, name: "Base UI" },
+]
+
+/** A package specifier — the only spelling an import prohibition may use. */
+const PACKAGE_SPECIFIER =
+  /@?react-aria(?:-components)?(?:\/[\w-]+)?|react-stately|@react-(?:aria|stately|types)\/[\w-]+|@base-ui\/react(?:\/[\w-]+)?|@radix-ui\/[\w-]+/g
+
+/** A sentence that forbids something ("never import …", "nothing is imported from …"). */
+const PROHIBITION = /\b(?:never|not|no|nothing|none|don't|do not|forbid(?:s|den)?)\b/i
+
+/** An import statement in a code block. */
+const IMPORT_LINE = /^\s*import\b[^"']*from\s+["'][^"']+["']/
+
+type LintUnit = { text: string; line: number; allowPackages: boolean }
+
+/** Splits markdown into prose sentences and code lines, keeping line numbers. */
+function lintUnits(text: string): LintUnit[] {
+  const lines = text.replace(/\r\n/g, "\n").split("\n")
+  const units: LintUnit[] = []
+  let inFence = false
+  let wrongFence = false
+  let lastProse = ""
+  let paragraph: { text: string; line: number } | null = null
+  const flush = () => {
+    if (!paragraph) return
+    for (const sentence of paragraph.text.split(/(?<=[.!?])\s+/)) {
+      units.push({ text: sentence, line: paragraph.line, allowPackages: PROHIBITION.test(sentence) })
+    }
+    paragraph = null
+  }
+  lines.forEach((line, index) => {
+    if (isFence(line)) {
+      flush()
+      if (!inFence) wrongFence = /^\s*(\*\*)?Wrong:(\*\*)?\s*$/.test(lastProse)
+      inFence = !inFence
+      return
+    }
+    if (inFence) {
+      // Inside a `Wrong:` block an import statement is the prohibition itself.
+      units.push({ text: line, line: index + 1, allowPackages: wrongFence && IMPORT_LINE.test(line) })
+      return
+    }
+    if (!line.trim()) {
+      flush()
+      return
+    }
+    lastProse = line
+    // A list item, heading or table row starts a new paragraph.
+    if (!paragraph || /^\s*(?:[-*+] |\d+\. |#|\|)/.test(line)) {
+      flush()
+      paragraph = { text: line.trim(), line: index + 1 }
+    } else {
+      paragraph.text += ` ${line.trim()}`
+    }
+  })
+  flush()
+  return units
+}
+
+/**
+ * Rejects the name of a library underneath Tecton in guidance text (a guideline,
+ * a topic, the skill, a families.json or adopted rule string). The one exception
+ * is a package name (`react-aria-components`, `@base-ui/react`) in an import
+ * prohibition: an `import` line in a `Wrong:` block, or a sentence that forbids
+ * it ("nothing is imported from …").
+ */
+export function libraryNameErrors(text: string, where: string): string[] {
+  const errors: string[] = []
+  for (const unit of lintUnits(text)) {
+    const allowed = unit.allowPackages ? unit.text.replace(PACKAGE_SPECIFIER, "") : unit.text
+    for (const { pattern, name } of LIBRARY_NAMES) {
+      pattern.lastIndex = 0
+      if (!pattern.test(allowed)) continue
+      errors.push(
+        `${where}:${unit.line}: names ${name} — guidance names the Tecton props and parts, never the library underneath (a package name only in an import prohibition)`
+      )
+    }
+  }
+  return errors
 }
 
 // ---------------------------------------------------------------------------
@@ -813,6 +920,7 @@ export function validateGuideline(
     }
   }
 
+  errors.push(...libraryNameErrors(parsed.raw, "text"))
   errors.push(...lengthErrors)
 
   if (errors.length || !moduleKey) return { guideline: null, errors }
@@ -890,6 +998,7 @@ function applyAdopted(
         continue
       }
       const text = rule.text.trim()
+      errors.push(...libraryNameErrors(text, where))
       if (rule.where === "rules") {
         catalog.adoptedRules.push(text)
         continue

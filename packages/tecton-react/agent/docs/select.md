@@ -31,7 +31,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectL
 
 ## Don't
 
-### CRITICAL React Aria props on the select
+### CRITICAL selectedKey and onSelectionChange instead of value
 
 Wrong:
 

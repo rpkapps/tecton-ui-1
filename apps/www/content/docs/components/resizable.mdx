@@ -171,7 +171,7 @@ In v4 a number means **pixels** and only a string is read as a percentage, so th
 
 </Dont>
 
-<Dont severity="MEDIUM" title="React Aria prop names on a panel or handle">
+<Dont severity="MEDIUM" title="isDisabled instead of disabled on a handle">
 
 <Wrong>
 
@@ -197,7 +197,7 @@ In v4 a number means **pixels** and only a string is read as a percentage, so th
 
 </Correct>
 
-The library's `Separator` destructures `disabled` and spreads everything else onto the `div`, so `isDisabled` becomes a stray attribute and the divider stays draggable while the interface says it is locked.
+`ResizableHandle` reads `disabled` and spreads everything else onto the `div`, so `isDisabled` becomes a stray attribute and the divider stays draggable while the interface says it is locked.
 
 </Dont>
 
