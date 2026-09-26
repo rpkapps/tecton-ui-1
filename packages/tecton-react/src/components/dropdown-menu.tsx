@@ -32,6 +32,7 @@ function DropdownMenu({
   placement = "bottom start",
   offset = 4,
   crossOffset = 0,
+  UNSTABLE_portalContainer: portalContainer,
   className,
   children,
   ...props
@@ -41,7 +42,7 @@ function DropdownMenu({
 > &
   Pick<
     React.ComponentProps<typeof PopoverPrimitive>,
-    "placement" | "offset" | "crossOffset"
+    "placement" | "offset" | "crossOffset" | "UNSTABLE_portalContainer"
   > & {
     "data-slot"?: string
     className?: string
@@ -51,7 +52,8 @@ function DropdownMenu({
   // `SubmenuTrigger` popover into the root popover's own container, which is
   // already inside the target, and a set container would break that nesting.
   // `trigger` is what React Aria itself branches on, and reaches the popover
-  // through the same context that renders it as `data-trigger`.
+  // through the same context that renders it as `data-trigger`. A container
+  // the caller passes explicitly always wins.
   const portalTarget = usePortalTarget()
   const isSubmenu =
     useSlottedContext(PopoverContext)?.trigger === "SubmenuTrigger"
@@ -62,7 +64,9 @@ function DropdownMenu({
       offset={offset}
       crossOffset={crossOffset}
       className={cn("z-50 w-(--trigger-width) min-w-32 origin-(--trigger-anchor-point) overflow-x-hidden overflow-y-auto rounded-md bg-popover p-1 text-popover-foreground shadow-md ring-1 ring-foreground/10 duration-100 outline-none data-entering:animate-in data-entering:fade-in-0 data-entering:zoom-in-95 data-exiting:animate-out data-exiting:overflow-hidden data-exiting:fade-out-0 data-exiting:zoom-out-95 data-[placement=bottom]:slide-in-from-top-2 data-[placement=left]:slide-in-from-right-2 data-[placement=right]:slide-in-from-left-2 data-[placement=top]:slide-in-from-bottom-2 **:data-[slot$=-item]:not-data-[variant=destructive]:data-focused:bg-accent", className )}
-      UNSTABLE_portalContainer={isSubmenu ? undefined : portalTarget}
+      UNSTABLE_portalContainer={
+        portalContainer ?? (isSubmenu ? undefined : portalTarget)
+      }
     >
       <MenuPrimitive
         className="max-h-[inherit] overflow-x-hidden overflow-y-auto outline-hidden"

@@ -49,11 +49,6 @@ const Toaster = ({ ...props }: ToasterProps) => {
         } as React.CSSProperties
       }
       richColors
-      toastOptions={{
-        classNames: {
-          toast: "cn-toast",
-        },
-      }}
       {...props}
     />
   )
