@@ -1,5 +1,8 @@
+"use client"
+
 import * as React from "react"
 import { cn } from "cn"
+import { useLocale } from "react-aria-components"
 
 import type { WellDesign } from "../data"
 
@@ -23,6 +26,7 @@ function TrajectorySketch({
   showLabels = true,
   ...props
 }: TrajectorySketchProps) {
+  const { locale } = useLocale()
   const innerW = W - PAD.left - PAD.right
   const innerH = H - PAD.top - PAD.bottom
   const toX = (x: number) => PAD.left + x * innerW
@@ -116,7 +120,7 @@ function TrajectorySketch({
                   className="fill-current font-mono"
                   fontSize={8}
                 >
-                  {depthFt(casing.depth).toLocaleString()} ft
+                  {depthFt(casing.depth).toLocaleString(locale)} ft
                 </text>
                 <text
                   x={W - PAD.right + 6}

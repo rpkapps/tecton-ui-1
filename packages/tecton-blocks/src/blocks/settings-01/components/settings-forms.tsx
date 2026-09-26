@@ -31,6 +31,7 @@ import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 
 import {
   accents,
+  bioMaxLength,
   channels,
   densities,
   digests,
@@ -38,6 +39,7 @@ import {
   themes,
   timezones,
   unitSystems,
+  validateBio,
 } from "../data"
 import type { Settings } from "../data"
 
@@ -64,7 +66,7 @@ function SettingsSection({
       className={cn("grid gap-4 md:grid-cols-[14rem_1fr] md:gap-8", className)}
     >
       <div className="flex flex-col gap-1">
-        <h3 className="text-sm font-medium">{title}</h3>
+        <h2 className="text-sm font-medium">{title}</h2>
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
         )}
@@ -116,12 +118,13 @@ function SelectRow({
   description?: string
   children: React.ReactNode
 }) {
-  const id = React.useId()
+  // The label goes inside the Select: React Aria labels the trigger from it
+  // (a `htmlFor` label outside would be overridden by `aria-labelledby`).
   return (
     <Field>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Select className="w-full" {...props}>
-        <SelectTrigger id={id}>
+      <Select className="flex w-full flex-col gap-3" {...props}>
+        <FieldLabel>{label}</FieldLabel>
+        <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>{children}</SelectContent>
@@ -133,8 +136,7 @@ function SelectRow({
 
 function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
   const id = React.useId()
-  const bioError =
-    value.bio.length > 160 ? "Keep it under 160 characters." : undefined
+  const bioError = validateBio(value.bio)
 
   const set = <TKey extends keyof Settings["profile"]>(
     key: TKey,
@@ -194,9 +196,14 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
             value={value.bio}
             onChange={(event) => set("bio", event.target.value)}
             aria-invalid={!!bioError}
+            aria-describedby={
+              bioError ? `${id}-bio-count ${id}-bio-error` : `${id}-bio-count`
+            }
           />
-          <FieldDescription>{`${value.bio.length}/160`}</FieldDescription>
-          <FieldError>{bioError}</FieldError>
+          <FieldDescription id={`${id}-bio-count`}>
+            {`${value.bio.length}/${bioMaxLength}`}
+          </FieldDescription>
+          <FieldError id={`${id}-bio-error`}>{bioError}</FieldError>
         </Field>
       </SettingsSection>
 

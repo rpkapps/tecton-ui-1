@@ -64,7 +64,11 @@ function AgentMessageList({
         <MessageScrollerViewport className="px-4 py-3">
           <MessageScrollerContent className="gap-4" aria-busy={isBusy}>
             {messages.map((message) => (
-              <MessageScrollerItem key={message.id} messageId={message.id}>
+              <MessageScrollerItem
+                key={message.id}
+                messageId={message.id}
+                scrollAnchor={message.role === "user"}
+              >
                 {message.role === "user" ? (
                   <UserMessage content={message.content} />
                 ) : message.role === "tool" ? (
@@ -78,13 +82,14 @@ function AgentMessageList({
                     content={message.content}
                     actions={message.actions}
                     completedActions={completedActions}
+                    isDisabled={isBusy}
                     onAction={(action) => onAction?.(action, message)}
                   />
                 )}
               </MessageScrollerItem>
             ))}
             {isBusy && (
-              <MessageScrollerItem scrollAnchor>
+              <MessageScrollerItem messageId="agent-busy">
                 <div
                   data-slot="agent-busy"
                   className="flex items-center gap-2 text-xs text-muted-foreground"
@@ -106,11 +111,14 @@ function AssistantMessage({
   content,
   actions,
   completedActions,
+  isDisabled = false,
   onAction,
 }: {
   content: string[]
   actions?: AgentAction[] | undefined
   completedActions: string[]
+  /** Disables the chips, e.g. while a reply is pending. */
+  isDisabled?: boolean
   onAction?: (action: AgentAction) => void
 }) {
   return (
@@ -150,7 +158,7 @@ function AssistantMessage({
                     action.color === "success" &&
                     "bg-success text-success-foreground"
                 )}
-                isDisabled={done}
+                isDisabled={done || isDisabled}
                 onPress={() => onAction?.(action)}
               >
                 {done && <CheckIcon />}

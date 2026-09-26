@@ -17,6 +17,7 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
 } from "lucide-react"
+import { useLocale } from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -148,6 +149,7 @@ const scaleBar = { metres: 750, feet: 2500 }
  * rail on each side, the legend and the scale bar.
  */
 export default function Page() {
+  const { locale } = useLocale()
   const [preset, setPreset] = React.useState(presets[0]?.id ?? "")
   const [tool, setTool] = React.useState("pan")
   const [selected, setSelected] = React.useState<string | null>(null)
@@ -387,11 +389,11 @@ export default function Page() {
             >
               <span className="flex items-center gap-2">
                 <span className="h-1.5 w-20 border-x border-b border-foreground" />
-                {Math.round(scaleBar.metres / zoom).toLocaleString()} m
+                {Math.round(scaleBar.metres / zoom).toLocaleString(locale)} m
               </span>
               <span className="flex items-center gap-2">
                 <span className="h-1.5 w-24 border-x border-t border-foreground" />
-                {Math.round(scaleBar.feet / zoom).toLocaleString()} ft
+                {Math.round(scaleBar.feet / zoom).toLocaleString(locale)} ft
               </span>
             </div>
           </CanvasOverlay>

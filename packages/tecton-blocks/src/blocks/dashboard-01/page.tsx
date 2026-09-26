@@ -6,6 +6,7 @@ import { DownloadIcon, PlusIcon, ShareIcon } from "lucide-react"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
+import { Sheet, SheetTitle } from "@tecton/react/components/sheet"
 import {
   AppShell,
   AppShellAside,
@@ -26,7 +27,7 @@ import {
   PageHeaderTitle,
 } from "@tecton/react/tecton/page-header"
 
-import { AiAgentPanel } from "../ai-agent-panel/page"
+import { AiAgentPanel, useAgentConversation } from "../ai-agent-panel/page"
 import { CostVsRiskPanel } from "../cost-vs-risk-panel/page"
 import { FdaCard, fdaSummaries } from "../fda-card/page"
 import { WellDesignCard, wellDesigns } from "../well-design-card/page"
@@ -35,22 +36,28 @@ import { TopNav } from "./components/top-nav"
 import { project } from "./data"
 
 type DashboardProps = React.ComponentProps<typeof AppShell> & {
-  /** Hide the right-hand agent panel. */
+  /** Start with the agent panel closed (it opens from "Open agent"). */
   hideAgent?: boolean
 }
 
 /**
  * Full application dashboard: top navigation, project tree sidebar,
  * work area with FDA and well design cards plus the cost vs risk panel,
- * and the AI agent docked in the right aside.
+ * and the AI agent docked in the right aside. Below 1280px the agent opens
+ * in a sheet instead; the conversation lives here, so it survives the move.
  */
 function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
   const [section, setSection] = React.useState("overview")
+  // The docked aside (wide screens) and the sheet (narrow screens) open
+  // separately, so a narrow page does not load with a modal over it.
   const [agentOpen, setAgentOpen] = React.useState(!hideAgent)
+  const [sheetOpen, setSheetOpen] = React.useState(false)
   const [selectedFda, setSelectedFda] = React.useState<string[]>([])
   const [selectedWell, setSelectedWell] = React.useState<string[]>([])
+  const conversation = useAgentConversation()
   // The agent aside is a resizable panel on wide screens only.
-  const showAgent = useMinWidth(1280)
+  const isWide = useMinWidth(1280)
+  const docked = agentOpen && isWide
 
   const cards = fdaSummaries.slice(0, 2)
   const primaryWell = wellDesigns[0]
@@ -89,11 +96,13 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
                   <Button size="sm">
                     <PlusIcon /> New alternative
                   </Button>
-                  {!agentOpen && (
+                  {!docked && (
                     <Button
                       variant="secondary"
                       size="sm"
-                      onPress={() => setAgentOpen(true)}
+                      onPress={() =>
+                        isWide ? setAgentOpen(true) : setSheetOpen(true)
+                      }
                     >
                       Open agent
                     </Button>
@@ -133,7 +142,7 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
             </AppShellMain>
           </AppShellSplitPanel>
 
-          {agentOpen && showAgent && (
+          {docked && (
             <>
               <AppShellSplitHandle />
               <AppShellSplitPanel
@@ -142,13 +151,29 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
                 maxSize="50%"
               >
                 <AppShellAside className="h-full w-full border-s-0">
-                  <AiAgentPanel onClose={() => setAgentOpen(false)} />
+                  <AiAgentPanel
+                    conversation={conversation}
+                    onClose={() => setAgentOpen(false)}
+                  />
                 </AppShellAside>
               </AppShellSplitPanel>
             </>
           )}
         </AppShellSplit>
       </AppShellBody>
+
+      <Sheet
+        isOpen={sheetOpen && !isWide}
+        onOpenChange={setSheetOpen}
+        showCloseButton={false}
+        className="gap-0"
+      >
+        <SheetTitle className="sr-only">AI Agent</SheetTitle>
+        <AiAgentPanel
+          conversation={conversation}
+          onClose={() => setSheetOpen(false)}
+        />
+      </Sheet>
     </AppShell>
   )
 }

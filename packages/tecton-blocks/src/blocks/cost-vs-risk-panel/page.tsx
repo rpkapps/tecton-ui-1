@@ -23,7 +23,7 @@ import {
 
 import { ComparisonList } from "./components/comparison-list"
 import { QuadrantChart } from "./components/quadrant-chart"
-import { axisOptions, designs as allDesigns, metrics } from "./data"
+import { axisOptions, designs as allDesigns, getAxis, metrics } from "./data"
 import type { DesignPoint } from "./data"
 
 type CostVsRiskPanelProps = Omit<
@@ -49,11 +49,6 @@ function CostVsRiskPanel({
   const [selected, setSelected] = React.useState<string[]>(defaultSelected)
   const [xAxis, setXAxis] = React.useState("cost")
   const [yAxis, setYAxis] = React.useState("risk")
-
-  const xLabel =
-    axisOptions.find((option) => option.id === xAxis)?.label ?? "Cost"
-  const yLabel =
-    axisOptions.find((option) => option.id === yAxis)?.label ?? "Risk"
 
   return (
     <Panel
@@ -84,6 +79,7 @@ function CostVsRiskPanel({
             className="w-28"
             selectedKey={xAxis}
             onSelectionChange={(key) => setXAxis(String(key))}
+            disabledKeys={[yAxis]}
           >
             <SelectTrigger variant="filled" size="sm">
               <SelectValue />
@@ -106,6 +102,7 @@ function CostVsRiskPanel({
             className="w-28"
             selectedKey={yAxis}
             onSelectionChange={(key) => setYAxis(String(key))}
+            disabledKeys={[xAxis]}
           >
             <SelectTrigger variant="filled" size="sm">
               <SelectValue />
@@ -127,8 +124,8 @@ function CostVsRiskPanel({
         <QuadrantChart
           designs={designs}
           selected={selected}
-          xLabel={xLabel}
-          yLabel={yLabel}
+          xAxis={getAxis(xAxis)}
+          yAxis={getAxis(yAxis)}
         />
 
         <ChipGroup
@@ -221,6 +218,13 @@ export default function CostVsRiskPanelPage() {
 }
 
 export { CostVsRiskPanel, QuadrantChart, ComparisonList }
-export { designs, metrics, axisOptions, riskLabel } from "./data"
+export { designs, metrics, axisOptions, getAxis, riskLabel } from "./data"
 export type { CostVsRiskPanelProps }
-export type { DesignPoint, Metric, MetricCategory, MetricValue } from "./data"
+export type {
+  AxisId,
+  AxisOption,
+  DesignPoint,
+  Metric,
+  MetricCategory,
+  MetricValue,
+} from "./data"

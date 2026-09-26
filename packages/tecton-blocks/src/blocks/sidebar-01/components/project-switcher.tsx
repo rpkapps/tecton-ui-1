@@ -18,6 +18,7 @@ import {
   SidebarMenuItem,
   useSidebar,
 } from "@tecton/react/components/sidebar"
+import { useIsMacPlatform } from "@tecton/react/tecton/shortcuts"
 
 import type { Project } from "../data"
 
@@ -33,6 +34,7 @@ function ProjectSwitcher({
   defaultProjectId,
   onProjectChange,
 }: ProjectSwitcherProps) {
+  const isMac = useIsMacPlatform()
   const { isMobile } = useSidebar()
   const [active, setActive] = React.useState<Project | undefined>(
     () => projects.find((p) => p.id === defaultProjectId) ?? projects[0]
@@ -90,7 +92,10 @@ function ProjectSwitcher({
                       {project.asset}
                     </span>
                   </div>
-                  <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut>
+                  <DropdownMenuShortcut>
+                    {isMac ? "⌘" : "Ctrl+"}
+                    {index + 1}
+                  </DropdownMenuShortcut>
                 </DropdownMenuItem>
               ))}
             </DropdownMenuGroup>

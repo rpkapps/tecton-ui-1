@@ -10,8 +10,8 @@ import {
 } from "lucide-react"
 
 import { Button, LinkButton } from "@tecton/react/components/button"
-import { Kbd, KbdGroup } from "@tecton/react/components/kbd"
 import { Link } from "@tecton/react/tecton/link"
+import { ShortcutKeys } from "@tecton/react/tecton/shortcuts"
 
 import {
   LogTrack,
@@ -77,7 +77,11 @@ function NotFound({
         </PageStateHeader>
         <PageStateActions>
           <LinkButton href={notFoundCopy.homeHref}>
-            <ArrowLeftIcon data-icon="inline-start" className="rtl:rotate-180" /> Back to dashboard
+            <ArrowLeftIcon
+              data-icon="inline-start"
+              className="rtl:rotate-180"
+            />{" "}
+            Back to dashboard
           </LinkButton>
           <Button
             variant="outline"
@@ -85,10 +89,7 @@ function NotFound({
           >
             <SearchIcon data-icon="inline-start" />
             Search
-            <KbdGroup className="ms-1">
-              <Kbd>⌘</Kbd>
-              <Kbd>K</Kbd>
-            </KbdGroup>
+            <ShortcutKeys keys="mod+k" className="ms-1" />
           </Button>
           <LinkButton variant="ghost" href={notFoundCopy.reportHref}>
             <FlagIcon data-icon="inline-start" /> Report broken link

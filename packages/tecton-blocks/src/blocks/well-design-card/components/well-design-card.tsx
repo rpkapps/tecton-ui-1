@@ -9,6 +9,7 @@ import {
   PencilIcon,
   TrashIcon,
 } from "lucide-react"
+import { useLocale } from "react-aria-components"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -65,6 +66,7 @@ function WellDesignCard({
   size = "sm",
   ...props
 }: WellDesignCardProps) {
+  const { locale } = useLocale()
   const phase = phaseMeta[design.phase]
   const risk = riskLabel(design.risk)
 
@@ -132,11 +134,11 @@ function WellDesignCard({
         <StatGroup className="grid-cols-3 gap-x-3 gap-y-2">
           <Stat size="sm">
             <StatLabel>TD</StatLabel>
-            <StatValue unit="ft">{design.td.toLocaleString()}</StatValue>
+            <StatValue unit="ft">{design.td.toLocaleString(locale)}</StatValue>
           </Stat>
           <Stat size="sm">
             <StatLabel>MD</StatLabel>
-            <StatValue unit="ft">{design.md.toLocaleString()}</StatValue>
+            <StatValue unit="ft">{design.md.toLocaleString(locale)}</StatValue>
           </Stat>
           <Stat size="sm">
             <StatLabel>Max inc.</StatLabel>
@@ -158,7 +160,7 @@ function WellDesignCard({
           <ReadoutRow label="DDI" value={design.ddi.toFixed(1)} />
           <ReadoutRow
             label="Kick-off"
-            value={`${design.kickOff.toLocaleString()} ft`}
+            value={`${design.kickOff.toLocaleString(locale)} ft`}
           />
         </dl>
 

@@ -26,6 +26,20 @@ export type Settings = {
   }
 }
 
+/** Longest bio the profile accepts. */
+export const bioMaxLength = 160
+
+export function validateBio(value: string): string | undefined {
+  if (value.length > bioMaxLength)
+    return `Keep it under ${bioMaxLength} characters.`
+  return undefined
+}
+
+/** Whether the settings can be saved (no field has a validation error). */
+export function isValidSettings(settings: Settings): boolean {
+  return validateBio(settings.profile.bio) === undefined
+}
+
 export const timezones = [
   { id: "Europe/Oslo", label: "Oslo (CET)" },
   { id: "Europe/London", label: "London (GMT)" },

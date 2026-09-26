@@ -117,7 +117,6 @@ function ComparisonBar({
     <div
       data-slot="comparison-bar"
       className="grid grid-cols-[1fr_auto] items-center gap-3"
-      style={{ "--series": design.color } as React.CSSProperties}
     >
       <Meter
         aria-label={`${design.name}: ${format(value)}`}
@@ -126,7 +125,8 @@ function ComparisonBar({
         maxValue={max}
         segments={1}
         size="sm"
-        className="[&_[data-slot=meter-segment]>span]:bg-(--series)"
+        color="custom"
+        style={{ "--meter-fill": design.color } as React.CSSProperties}
       />
       <span className="min-w-20 text-end font-mono text-xs tabular-nums">
         {format(value)}

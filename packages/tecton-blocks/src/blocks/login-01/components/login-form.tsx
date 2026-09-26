@@ -26,51 +26,89 @@ import { Separator } from "@tecton/react/components/separator"
 import { Spinner } from "@tecton/react/components/spinner"
 import { Link } from "@tecton/react/tecton/link"
 
-import {
-  demoAccount,
-  loginCopy,
-  validateEmail,
-  validatePassword,
-} from "../data"
+import { loginCopy, validateEmail, validatePassword } from "../data"
+
+type LoginValues = {
+  email: string
+  password: string
+  remember: boolean
+}
 
 type LoginFormProps = Omit<
   React.ComponentProps<typeof Card>,
   "children" | "onSubmit"
 > & {
-  onSubmit?: (values: {
-    email: string
-    password: string
-    remember: boolean
-  }) => void
+  /**
+   * Called with the credentials once they pass validation. Return a promise
+   * to show the pending state while it runs; a rejection is shown as the
+   * sign-in error (its `message`, or a generic one).
+   */
+  onSubmit?: (values: LoginValues) => Promise<void> | void
   onSso?: () => void
+  /** A sign-in error from the caller (e.g. rejected credentials). */
+  error?: string | undefined
+  /** Shows the pending state, for a caller that tracks the request itself. */
+  pending?: boolean
+  /** Where the form posts when it is submitted before hydration. */
+  action?: string
 }
 
-function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
+const genericError = "Check your email and password and try again."
+
+function LoginForm({
+  className,
+  onSubmit,
+  onSso,
+  error,
+  pending = false,
+  action,
+  ...props
+}: LoginFormProps) {
   const [email, setEmail] = React.useState("")
   const [password, setPassword] = React.useState("")
   const [remember, setRemember] = React.useState(true)
   const [submitted, setSubmitted] = React.useState(false)
-  const [status, setStatus] = React.useState<"idle" | "loading" | "error">(
-    "idle"
-  )
+  const [submitting, setSubmitting] = React.useState(false)
+  const [submitError, setSubmitError] = React.useState<string>()
+  const [dismissed, setDismissed] = React.useState<string>()
+  const mounted = React.useRef(true)
   const emailId = React.useId()
   const passwordId = React.useId()
   const rememberId = React.useId()
 
+  React.useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
+
   const emailError = submitted ? validateEmail(email) : undefined
   const passwordError = submitted ? validatePassword(password) : undefined
+  const loading = pending || submitting
+  const shownError = error ?? submitError
+  const visibleError = shownError === dismissed ? undefined : shownError
 
-  const submit = (event: React.FormEvent<HTMLFormElement>) => {
+  const submit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault()
     setSubmitted(true)
+    setSubmitError(undefined)
+    setDismissed(undefined)
     if (validateEmail(email) || validatePassword(password)) return
-    setStatus("loading")
-    window.setTimeout(() => {
-      const ok =
-        email === demoAccount.email && password === demoAccount.password
-      setStatus(ok ? "idle" : "error")
-      if (ok) onSubmit?.({ email, password, remember })
-    }, 800)
+    if (!onSubmit) return
+    setSubmitting(true)
+    try {
+      await onSubmit({ email, password, remember })
+    } catch (reason) {
+      if (mounted.current)
+        setSubmitError(
+          reason instanceof Error && reason.message
+            ? reason.message
+            : genericError
+        )
+    } finally {
+      if (mounted.current) setSubmitting(false)
+    }
   }
 
   return (
@@ -83,24 +121,30 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
         <span className="mb-2 flex size-10 items-center justify-center rounded-lg bg-primary text-primary-foreground">
           <LayersIcon className="size-5" aria-hidden />
         </span>
-        <CardTitle>{loginCopy.title}</CardTitle>
+        <CardTitle role="heading" aria-level={1}>
+          {loginCopy.title}
+        </CardTitle>
         <CardDescription>{loginCopy.description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <form className="flex flex-col gap-4" onSubmit={submit} noValidate>
-          {status === "error" && (
+        <form
+          className="flex flex-col gap-4"
+          method="post"
+          {...(action === undefined ? {} : { action })}
+          onSubmit={submit}
+          noValidate
+        >
+          {visibleError && (
             <Alert variant="destructive" appearance="outline">
               <CircleAlertIcon />
-              <AlertTitle>Incorrect email or password</AlertTitle>
-              <AlertDescription>
-                Try {demoAccount.email} / {demoAccount.password}.
-              </AlertDescription>
+              <AlertTitle>Couldn’t sign you in</AlertTitle>
+              <AlertDescription>{visibleError}</AlertDescription>
               <AlertAction>
                 <Button
                   variant="ghost"
                   size="icon-sm"
                   aria-label="Dismiss"
-                  onPress={() => setStatus("idle")}
+                  onPress={() => setDismissed(visibleError)}
                 >
                   <XIcon />
                 </Button>
@@ -118,9 +162,10 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
               value={email}
               onChange={(event) => setEmail(event.target.value)}
               aria-invalid={!!emailError}
+              aria-describedby={emailError ? `${emailId}-error` : undefined}
               required
             />
-            <FieldError>{emailError}</FieldError>
+            <FieldError id={`${emailId}-error`}>{emailError}</FieldError>
           </Field>
           <Field data-invalid={!!passwordError}>
             <FieldLabel htmlFor={passwordId}>Password</FieldLabel>
@@ -133,14 +178,18 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               aria-invalid={!!passwordError}
+              aria-describedby={
+                passwordError ? `${passwordId}-error` : undefined
+              }
               required
             />
-            <FieldError>{passwordError}</FieldError>
+            <FieldError id={`${passwordId}-error`}>{passwordError}</FieldError>
           </Field>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <Field orientation="horizontal" className="w-auto">
               <Checkbox
                 id={rememberId}
+                name="remember"
                 isSelected={remember}
                 onChange={setRemember}
               />
@@ -152,12 +201,8 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
               Forgot password?
             </Link>
           </div>
-          <Button
-            type="submit"
-            className="w-full"
-            isDisabled={status === "loading"}
-          >
-            {status === "loading" && <Spinner />}
+          <Button type="submit" className="w-full" isDisabled={loading}>
+            {loading && <Spinner />}
             Sign in
           </Button>
           <div
@@ -189,4 +234,4 @@ function LoginForm({ className, onSubmit, onSso, ...props }: LoginFormProps) {
 }
 
 export { LoginForm }
-export type { LoginFormProps }
+export type { LoginFormProps, LoginValues }

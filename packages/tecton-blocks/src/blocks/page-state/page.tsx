@@ -43,7 +43,11 @@ export default function ComingSoonPage() {
         </PageStateHeader>
         <PageStateActions>
           <LinkButton href="/">
-            <ArrowLeftIcon data-icon="inline-start" className="rtl:rotate-180" /> Back to home
+            <ArrowLeftIcon
+              data-icon="inline-start"
+              className="rtl:rotate-180"
+            />{" "}
+            Back to home
           </LinkButton>
           <Button
             variant={subscribed ? "secondary" : "outline"}

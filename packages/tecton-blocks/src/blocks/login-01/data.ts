@@ -2,11 +2,11 @@ export const loginCopy = {
   brand: "Tecton",
   title: "Sign in to your workspace",
   description: "Use your company account to access projects and models.",
-  ssoProvider: "Equinor SSO",
+  ssoProvider: "SSO",
   helpUrl: "#request-access",
 }
 
-/** Demo credentials accepted by the mock sign-in. */
+/** Demo credentials accepted by the mock sign-in of the route-ready page. */
 export const demoAccount = {
   email: "lena.haugen@example.com",
   password: "tecton-demo",

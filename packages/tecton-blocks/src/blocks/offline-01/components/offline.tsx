@@ -5,6 +5,7 @@ import { cn } from "cn"
 import {
   CircleCheckIcon,
   CircleXIcon,
+  CloudIcon,
   CloudOffIcon,
   LoaderCircleIcon,
   RefreshCwIcon,
@@ -77,14 +78,31 @@ type OfflineProps = Omit<React.ComponentProps<typeof PageState>, "children"> & {
   lastSampleAt?: string
   retryEvery?: number
   queuedEdits?: number
-  /** Runs each retry; resolve `true` when the connection is back. */
+  /**
+   * Runs each retry; resolve `true` when the connection is back. A rejection
+   * counts as still offline.
+   */
   onRetry?: () => Promise<boolean> | boolean
+  /** Called once a retry finds the connection back. */
+  onReconnect?: () => void
+}
+
+type Phase = "offline" | "checking" | "online"
+
+/** What the polite status region says; the countdown itself stays silent. */
+function announcement(phase: Phase, attempts: number, retryEvery: number) {
+  if (phase === "checking") return "Checking the connection…"
+  if (phase === "online") return offlineCopy.onlineTitle
+  if (attempts === 0) return ""
+  return `Still offline. Retrying automatically every ${retryEvery} seconds.`
 }
 
 /**
  * Offline page: the client lost the network or the server. Counts down to
  * the next automatic retry, shows which hop failed and lets the user keep
- * working from cache. The log flat-lines after the last sample received.
+ * working from cache. The browser's `online` event triggers a retry at once;
+ * once a retry succeeds the countdown stops and the page says so. The log
+ * flat-lines after the last sample received.
  */
 function Offline({
   className,
@@ -92,85 +110,138 @@ function Offline({
   retryEvery = connection.retryEvery,
   queuedEdits = connection.queuedEdits,
   onRetry,
+  onReconnect,
   ...props
 }: OfflineProps) {
   const [checks, setChecks] = React.useState<ConnectionCheck[]>(
     connection.checks
   )
   const [seconds, setSeconds] = React.useState(retryEvery)
-  const [retrying, setRetrying] = React.useState(false)
+  const [phase, setPhase] = React.useState<Phase>("offline")
+  const [attempts, setAttempts] = React.useState(0)
+  const running = React.useRef(false)
+  const mounted = React.useRef(true)
+
+  React.useEffect(() => {
+    mounted.current = true
+    return () => {
+      mounted.current = false
+    }
+  }, [])
 
   const retry = React.useCallback(async () => {
-    setRetrying(true)
+    if (running.current) return
+    running.current = true
+    setPhase("checking")
     setChecks((current) =>
       current.map((check) => ({ ...check, status: "checking" }))
     )
-    const online = await (onRetry?.() ??
-      new Promise<boolean>((resolve) =>
-        window.setTimeout(() => resolve(false), 1200)
-      ))
+    let online = false
+    try {
+      online = await (onRetry?.() ??
+        new Promise<boolean>((resolve) =>
+          window.setTimeout(() => resolve(false), 1200)
+        ))
+    } catch {
+      online = false
+    } finally {
+      running.current = false
+    }
+    if (!mounted.current) return
     setChecks((current) =>
       current.map((check) => ({ ...check, status: online ? "ok" : "failed" }))
     )
-    setRetrying(false)
+    setAttempts((count) => count + 1)
     setSeconds(retryEvery)
-  }, [onRetry, retryEvery])
+    setPhase(online ? "online" : "offline")
+    if (online) onReconnect?.()
+  }, [onRetry, onReconnect, retryEvery])
 
+  // Count down while offline; stop while checking and once back online.
   React.useEffect(() => {
-    if (retrying) return
+    if (phase !== "offline") return
     const timer = window.setInterval(() => {
       setSeconds((value) => (value > 1 ? value - 1 : 0))
     }, 1000)
     return () => window.clearInterval(timer)
-  }, [retrying])
+  }, [phase])
 
   React.useEffect(() => {
-    if (seconds === 0 && !retrying) void retry()
-  }, [seconds, retrying, retry])
+    if (seconds === 0 && phase === "offline") void retry()
+  }, [seconds, phase, retry])
+
+  // The browser noticed the network is back: check at once.
+  React.useEffect(() => {
+    if (phase === "online") return
+    const onOnline = () => void retry()
+    window.addEventListener("online", onOnline)
+    return () => window.removeEventListener("online", onOnline)
+  }, [phase, retry])
 
   const time = formatTimestamp(lastSampleAt)
+  const isOnline = phase === "online"
+  const isChecking = phase === "checking"
 
   return (
     <PageState
       data-slot="offline"
-      tone="warning"
+      data-phase={phase}
+      tone={isOnline ? "success" : "warning"}
       className={cn(className)}
       {...props}
     >
       <PageStateContent>
-        <PageStateStatus label={offlineCopy.status}>
-          {offlineCopy.protocol}
+        <PageStateStatus label={isOnline ? "Connected" : offlineCopy.status}>
+          {isOnline ? "Online" : offlineCopy.protocol}
         </PageStateStatus>
         <PageStateCode>
-          <CloudOffIcon
-            className="size-16 md:size-20"
-            strokeWidth={1.25}
-            aria-hidden
-          />
+          {isOnline ? (
+            <CloudIcon
+              className="size-16 md:size-20"
+              strokeWidth={1.25}
+              aria-hidden
+            />
+          ) : (
+            <CloudOffIcon
+              className="size-16 md:size-20"
+              strokeWidth={1.25}
+              aria-hidden
+            />
+          )}
         </PageStateCode>
         <PageStateHeader>
-          <PageStateTitle>{offlineCopy.title}</PageStateTitle>
-          <PageStateDescription>{offlineCopy.description}</PageStateDescription>
+          <PageStateTitle>
+            {isOnline ? offlineCopy.onlineTitle : offlineCopy.title}
+          </PageStateTitle>
+          <PageStateDescription>
+            {isOnline ? offlineCopy.onlineDescription : offlineCopy.description}
+          </PageStateDescription>
         </PageStateHeader>
         <ConnectionChecks checks={checks} />
-        <PageStateActions>
-          <Button onPress={retry} isDisabled={retrying}>
-            <RefreshCwIcon
-              data-icon="inline-start"
-              className={cn(retrying && "animate-spin")}
-            />
-            {retrying ? "Checking…" : "Retry now"}
-          </Button>
-          <LinkButton variant="outline" href={offlineCopy.workOfflineHref}>
-            Work offline
-          </LinkButton>
-          <span
-            className="text-sm text-muted-foreground tabular-nums"
-            aria-live="polite"
-          >
-            {retrying ? "Reconnecting…" : `Retrying in ${seconds} s`}
-          </span>
-        </PageStateActions>
+        {!isOnline && (
+          <PageStateActions>
+            <Button onPress={() => void retry()} isDisabled={isChecking}>
+              <RefreshCwIcon
+                data-icon="inline-start"
+                className={cn(isChecking && "animate-spin")}
+              />
+              {isChecking ? "Checking…" : "Retry now"}
+            </Button>
+            <LinkButton variant="outline" href={offlineCopy.workOfflineHref}>
+              Work offline
+            </LinkButton>
+            <span
+              data-slot="offline-countdown"
+              className="text-sm text-muted-foreground tabular-nums"
+              aria-live="off"
+            >
+              {isChecking ? "Reconnecting…" : `Retrying in ${seconds} s`}
+            </span>
+          </PageStateActions>
+        )}
+        <span role="status" className="sr-only">
+          {announcement(phase, attempts, retryEvery)}
+        </span>
         <PageStateMeta>
           <PageStateMetaItem label="Last sample" value={time} />
           <PageStateMetaItem label="Queued edits" value={String(queuedEdits)} />

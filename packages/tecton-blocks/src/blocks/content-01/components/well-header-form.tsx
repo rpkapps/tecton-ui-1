@@ -117,13 +117,13 @@ function WellHeaderForm({
           </Field>
         </div>
         <Field>
-          <FieldLabel htmlFor={`${id}-operator`}>Operator</FieldLabel>
           <Select
-            className="w-full"
+            className="flex w-full flex-col gap-3"
             selectedKey={value.operator}
             onSelectionChange={(key) => set("operator", String(key))}
           >
-            <SelectTrigger id={`${id}-operator`}>
+            <FieldLabel>Operator</FieldLabel>
+            <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -147,13 +147,13 @@ function WellHeaderForm({
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <Field>
-            <FieldLabel htmlFor={`${id}-rig`}>Rig</FieldLabel>
             <Select
-              className="w-full"
+              className="flex w-full flex-col gap-3"
               selectedKey={value.rig}
               onSelectionChange={(key) => set("rig", String(key))}
             >
-              <SelectTrigger id={`${id}-rig`}>
+              <FieldLabel>Rig</FieldLabel>
+              <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

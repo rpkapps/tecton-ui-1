@@ -25,7 +25,6 @@ import {
   InputGroupAddon,
   InputGroupInput,
 } from "@tecton/react/components/input-group"
-import { Kbd, KbdGroup } from "@tecton/react/components/kbd"
 import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
 import {
   AppShellActions,
@@ -34,6 +33,7 @@ import {
   AppShellNav,
 } from "@tecton/react/tecton/app-shell"
 import { CountBadge } from "@tecton/react/tecton/count-badge"
+import { ShortcutKeys } from "@tecton/react/tecton/shortcuts"
 
 import { currentUser, navLinks, project } from "../data"
 
@@ -74,19 +74,18 @@ function TopNav({
         ))}
       </AppShellNav>
       <AppShellActions className="gap-2">
-        <InputGroup
-          className="hidden h-8 w-56 lg:flex"
-          aria-label="Search project"
-        >
-          <InputGroupInput placeholder="Search…" className="h-8 text-sm" />
+        <InputGroup className="hidden h-8 w-56 lg:flex">
+          <InputGroupInput
+            aria-label="Search project"
+            placeholder="Search…"
+            className="h-8 text-sm"
+          />
           <InputGroupAddon align="inline-start">
             <SearchIcon />
           </InputGroupAddon>
           <InputGroupAddon align="inline-end">
-            <KbdGroup>
-              <Kbd>⌘</Kbd>
-              <Kbd>K</Kbd>
-            </KbdGroup>
+            {/* ⌘ K on Apple keyboards, Ctrl + K elsewhere. */}
+            <ShortcutKeys keys="mod+k" />
           </InputGroupAddon>
         </InputGroup>
         <TooltipTrigger>

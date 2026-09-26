@@ -10,6 +10,7 @@ import {
   TriangleAlertIcon,
   XIcon,
 } from "lucide-react"
+import { useLocale } from "react-aria-components"
 
 import {
   Alert,
@@ -57,6 +58,7 @@ function FaciesModelingPanel({
   const [value, setValue] = React.useState<FaciesSettings>(initialSettings)
   const [running, setRunning] = React.useState(false)
   const [lastRun, setLastRun] = React.useState<string | null>(null)
+  const { locale } = useLocale()
 
   const total = value.lithotypes.reduce((sum, item) => sum + item.density, 0)
   const invalid = total !== 100
@@ -67,7 +69,7 @@ function FaciesModelingPanel({
     window.setTimeout(() => {
       setRunning(false)
       setLastRun(
-        new Date().toLocaleTimeString([], {
+        new Date().toLocaleTimeString(locale, {
           hour: "2-digit",
           minute: "2-digit",
         })

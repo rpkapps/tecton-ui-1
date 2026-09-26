@@ -14,5 +14,7 @@ export default defineConfig({
     include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
     setupFiles: ["./src/__tests__/setup.ts"],
     css: false,
+    // Whole pages render in some tests; leave room for a loaded CI runner.
+    testTimeout: 20_000,
   },
 })

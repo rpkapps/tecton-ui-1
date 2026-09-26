@@ -127,7 +127,7 @@ function AppSidebar({
       >
         {node.label}
       </TreeViewItemContent>
-      <TreeViewCollection items={node.children ?? []}>
+      <TreeViewCollection items={node.children ?? []} dependencies={[hidden]}>
         {renderNode}
       </TreeViewCollection>
     </TreeViewItem>
@@ -142,7 +142,7 @@ function AppSidebar({
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
                 <HexagonIcon className="size-4" />
               </div>
-              <div className="grid flex-1 text-left text-sm leading-tight">
+              <div className="grid flex-1 text-start text-sm leading-tight">
                 <span className="truncate font-medium">{project.name}</span>
                 <span className="truncate text-xs text-sidebar-foreground/70">
                   {project.asset}
@@ -151,11 +151,9 @@ function AppSidebar({
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
-        <InputGroup
-          className="h-8 bg-background"
-          aria-label="Search project data"
-        >
+        <InputGroup className="h-8 bg-background">
           <InputGroupInput
+            aria-label="Search project data"
             placeholder="Search wells, horizons…"
             className="h-8 text-sm"
             value={query}
@@ -182,6 +180,9 @@ function AppSidebar({
             ) : (
               <TreeView
                 aria-label="Project inventory"
+                // The rows render from `hidden`, which React Aria's cached
+                // collection does not see unless it is listed as a dependency.
+                dependencies={[hidden]}
                 items={visibleNodes}
                 selectionMode="single"
                 expandedKeys={query ? new Set(folderIds) : expanded}
