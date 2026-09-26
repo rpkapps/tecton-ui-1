@@ -35,6 +35,13 @@
  *   - vendored shadcn stylesheet (src/styles/shadcn.css): present, its header names the
  *     installed shadcn version, its body is byte-identical to `shadcn/tailwind.css`,
  *     and globals.css imports the copy instead of the package
+ *   - the map itself: tokens/tecton.map.json matches tokens/tecton.map.schema.json, and
+ *     the `:root`, `.dark` and `@theme inline` blocks of globals.css and tecton-theme.css
+ *     hold exactly what the map resolves to (scripts/tokens-lib.mts, the resolution
+ *     tokens-build uses): every mapped variable present with its generated value, no
+ *     non-colour variable in `.dark`, and nothing left over that reads a `--tecton-*`
+ *     token the map no longer names — so a hand edit of globals.css (`--primary:
+ *     #ff00ff`) or a stale build fails here instead of passing every contrast check
  * Pairs listed in tecton.map.json `checks.allow` are reported as expected failures and
  * do not fail the run.
  */
@@ -43,6 +50,26 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { converter, parse, wcagContrast } from "culori";
+import {
+  LIGHT_BLOCK,
+  SCOPED_DARK,
+  SCOPED_LIGHT,
+  SCOPED_ROOT,
+  type JsonSchema,
+  type ResolvedMap,
+  type Rgb,
+  type TokenMap,
+  blockDecls,
+  blockDrift,
+  compositeOver,
+  describeDrift,
+  expectedBlocks,
+  isStaleThemeEntry,
+  readsTectonToken,
+  resolveTokenMap,
+  resolveValue,
+  validateAgainstSchema,
+} from "./tokens-lib.mjs";
 import { VENDORED_CSS, normalizeNewlines, parseVendored, readUpstream } from "./vendor-shadcn-css.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -54,6 +81,7 @@ const SCOPED_THEME_CSS = path.join(pkgRoot, "src/styles/scoped-theme.css");
 const PALETTE_CSS = path.join(pkgRoot, "src/styles/tecton-palette.css");
 const GLOBALS_CSS = process.env.GLOBALS_CSS ?? path.join(pkgRoot, "src/styles/globals.css");
 const MAP_JSON = path.join(pkgRoot, "tokens/tecton.map.json");
+const MAP_SCHEMA = path.join(pkgRoot, "tokens/tecton.map.schema.json");
 const asJson = process.argv.includes("--json");
 
 // ---------------------------------------------------------------------------
@@ -114,15 +142,10 @@ const themedTokens = parseThemedTokens(stripComments(readFileSync(TOKENS_CSS, "u
 const themeCss = stripComments(readFileSync(THEME_CSS, "utf8"));
 const light = parseDecls(blockBody(themeCss, ":root"));
 const dark = parseDecls(blockBody(themeCss, ".dark"));
-/** The light block repeated after `.dark`, so an inverted section re-substitutes. */
-const LIGHT_BLOCK = '.light, [data-theme="light"]';
 
 // The opt-in scoped theme declares the same variables on the remote's root marker
 // instead of :root, so the checks below can run against it as two more modes. The
 // scoped entry itself (scoped.css) declares none and is checked separately.
-const SCOPED_ROOT = "[data-tecton-root]";
-const SCOPED_DARK = `${SCOPED_ROOT}:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *)`;
-const SCOPED_LIGHT = `${SCOPED_ROOT}:where(.light, [data-theme="light"])`;
 const scopedCss = stripComments(readFileSync(SCOPED_CSS, "utf8"));
 const scopedThemeCss = stripComments(readFileSync(SCOPED_THEME_CSS, "utf8"));
 const scopedLight = parseDecls(blockBody(scopedThemeCss, SCOPED_ROOT));
@@ -132,12 +155,19 @@ const scopedLightAgain = parseDecls(blockBody(scopedThemeCss, SCOPED_LIGHT));
 const variantOf = (css: string) => /^@custom-variant\s+dark\b[^\r\n]*/m.exec(css)?.[0].trim();
 const scopedVariant = variantOf(scopedCss);
 const paletteCss = existsSync(PALETTE_CSS) ? stripComments(readFileSync(PALETTE_CSS, "utf8")) : "";
-const map = JSON.parse(readFileSync(MAP_JSON, "utf8")) as {
-  shadcn: Record<string, unknown>;
-  extra: Record<string, unknown>;
-  checks?: { allow?: string[] };
-  palette?: { prefix?: string; resetTailwind?: boolean; families: string[]; shades?: string[] };
-};
+const map = JSON.parse(readFileSync(MAP_JSON, "utf8")) as TokenMap;
+/** Schema violations of the map; reported below, and the map is not resolved when there are any. */
+const schemaErrors = validateAgainstSchema(map, JSON.parse(readFileSync(MAP_SCHEMA, "utf8")) as JsonSchema);
+/** What the map resolves to, exactly as tokens-build resolves it (undefined when it cannot be resolved). */
+let resolvedMap: ResolvedMap | undefined;
+let resolveError: string | undefined;
+if (!schemaErrors.length) {
+  try {
+    resolvedMap = resolveTokenMap(map, themedTokens);
+  } catch (e) {
+    resolveError = (e as Error).message;
+  }
+}
 const allow = new Set(map.checks?.allow ?? []);
 
 // ---------------------------------------------------------------------------
@@ -157,41 +187,22 @@ const scopeTokens = new Map<Map<string, string>, Map<string, string>>([
   [scopedDark, themedTokens.dark],
 ]);
 
-function resolve(value: string, scope: Map<string, string>, depth = 0): string {
-  if (depth > 16) throw new Error(`var() too deep: ${value}`);
+/** Resolve `value` in a scope: its own declarations first, then the Tecton export. */
+function resolve(value: string, scope: Map<string, string>): string {
   const tokens = scopeTokens.get(scope) ?? themedTokens.dark;
-  return value.replace(/var\((--[\w-]+)(?:\s*,\s*([^)]*))?\)/g, (_, name: string, fallback?: string) => {
-    const v = scope.get(name) ?? tokens.get(name);
-    if (v === undefined) {
-      if (fallback !== undefined) return resolve(fallback.trim(), scope, depth + 1);
-      throw new Error(`dangling var(${name})`);
-    }
-    return resolve(v, scope, depth + 1);
-  });
+  return resolveValue(value, (name) => scope.get(name) ?? tokens.get(name));
 }
 
 const toOklch = converter("oklch");
-const toRgb = converter("rgb");
 
-/** Resolved colour for a variable in a mode, composited over `over` if it has alpha. */
-function color(mode: Mode, name: string, over?: string) {
+/**
+ * Resolved colour for a variable in a mode, as an opaque colour: a translucent
+ * one is composited over `under`, which the caller has already made opaque.
+ */
+function color(mode: Mode, name: string, under?: Rgb) {
   const raw = modes[mode].get(`--${name}`);
   if (raw === undefined) return undefined;
-  const lit = resolve(raw, modes[mode]);
-  const parsed = parse(lit);
-  if (!parsed) return undefined;
-  const rgb = toRgb(parsed);
-  const alpha = rgb.alpha ?? 1;
-  if (alpha < 1 && over) {
-    const bg = toRgb(parse(over)!);
-    return {
-      mode: "rgb" as const,
-      r: rgb.r * alpha + bg.r * (1 - alpha),
-      g: rgb.g * alpha + bg.g * (1 - alpha),
-      b: rgb.b * alpha + bg.b * (1 - alpha),
-    };
-  }
-  return { mode: "rgb" as const, r: rgb.r, g: rgb.g, b: rgb.b };
+  return compositeOver(resolve(raw, modes[mode]), under);
 }
 
 function literal(mode: Mode, name: string): string {
@@ -212,11 +223,33 @@ interface Check {
 }
 const results: Check[] = [];
 
+// the map: schema, then resolution
+results.push({
+  mode: "both",
+  check: "tecton.map.json matches tecton.map.schema.json",
+  value: schemaErrors.length ? `${schemaErrors.length} violation(s)` : "valid",
+  threshold: "valid",
+  status: schemaErrors.length ? "fail" : "pass",
+  detail: schemaErrors.length ? schemaErrors.slice(0, 5).join("; ") : undefined,
+});
+results.push({
+  mode: "both",
+  check: "tecton.map.json resolves against the Tecton export",
+  value: resolvedMap ? `${resolvedMap.resolved.length} variables` : "unresolved",
+  threshold: "every token known",
+  status: resolvedMap ? "pass" : "fail",
+  detail: resolveError ?? (schemaErrors.length ? "fix the schema violations first" : undefined),
+});
+
+/** Non-colour variables (--radius) are declared in :root only. */
+const isRootOnly = (name: string) =>
+  resolvedMap ? resolvedMap.byName.get(name)?.isColor === false : name === "radius";
+
 // completeness + dangling var()
 const expected = [...Object.keys(map.shadcn), ...Object.keys(map.extra)];
 for (const mode of CHECK_MODES) {
   for (const name of expected) {
-    if (name === "radius" && baseMode(mode) === "dark") continue; // non-colour, :root only
+    if (isRootOnly(name) && baseMode(mode) === "dark") continue; // non-colour, :root only
     const raw = modes[mode].get(`--${name}`);
     if (raw === undefined) {
       results.push({ mode, check: `defined --${name}`, value: "missing", threshold: "present", status: "fail" });
@@ -272,10 +305,12 @@ const NON_TEXT: [string, string, number, "warn" | "fail"][] = [
 const fmt = (n: number) => n.toFixed(2);
 
 for (const mode of CHECK_MODES) {
-  const bgLit = literal(mode, "background");
+  // the page, then each surface over the page, then its foreground over that
+  // surface: a translucent pair composites in the order it is painted
+  const page = color(mode, "background");
   for (const [bg, fg, min] of CONTRAST_PAIRS) {
-    const b = color(mode, bg, bgLit);
-    const f = color(mode, fg, literal(mode, bg));
+    const b = color(mode, bg, page);
+    const f = b && color(mode, fg, b);
     if (!b || !f) {
       results.push({ mode, check: `contrast ${bg}/${fg}`, value: "n/a", threshold: `≥ ${min}:1`, status: "fail", detail: "unresolvable colour" });
       continue;
@@ -287,8 +322,8 @@ for (const mode of CHECK_MODES) {
     results.push({ mode, check: `contrast ${key}`, value: `${fmt(ratio)}:1`, threshold: `≥ ${min}:1`, status, detail: `${literal(mode, bg)} / ${literal(mode, fg)}` });
   }
   for (const [bg, fg, min, severity] of NON_TEXT) {
-    const b = color(mode, bg, bgLit);
-    const f = color(mode, fg, literal(mode, bg));
+    const b = color(mode, bg, page);
+    const f = b && color(mode, fg, b);
     if (!b || !f) {
       results.push({ mode, check: `contrast ${bg}/${fg}`, value: "n/a", threshold: `≥ ${min}:1`, status: "fail", detail: "unresolvable colour" });
       continue;
@@ -302,7 +337,7 @@ for (const mode of CHECK_MODES) {
 
   // sanity: lightness ordering
   const L = (name: string) => {
-    const c = color(mode, name, bgLit);
+    const c = color(mode, name, page);
     return c ? toOklch(c).l : NaN;
   };
   const lBg = L("background");
@@ -597,6 +632,52 @@ if (map.palette && paletteCss) {
     status: unexpectedBare.length ? "fail" : "pass",
     detail: unexpectedBare.length ? unexpectedBare.join("; ") : bare.map((b) => b.split(":")[0]).join(", "),
   });
+}
+
+// ---------------------------------------------------------------------------
+// The map, as written: globals.css and tecton-theme.css hold what it resolves to
+// ---------------------------------------------------------------------------
+if (resolvedMap) {
+  // tokens-build writes these values and nothing else may: a hand edit of
+  // globals.css (the file consumers import) would otherwise pass every check
+  // above, which read tecton-theme.css
+  const want = expectedBlocks(resolvedMap);
+  const globalsForDrift = existsSync(GLOBALS_CSS) ? stripComments(readFileSync(GLOBALS_CSS, "utf8")) : "";
+  for (const [label, css] of [
+    ["tecton-theme.css", themeCss],
+    ["globals.css", globalsForDrift],
+  ] as [string, string][]) {
+    if (!css) continue;
+    const rootDecls = blockDecls(css, ":root") ?? new Map<string, string>();
+    const blocks: [string, Map<string, string>, (name: string, value: string) => boolean][] = [
+      [":root", want.root, (_, value) => readsTectonToken(value)],
+      // only colours: a non-colour variable is declared in :root alone
+      [".dark", want.dark, (name, value) => readsTectonToken(value) || want.root.has(name) || value === "undefined"],
+      [
+        "@theme inline",
+        want.theme,
+        (name, value) => isStaleThemeEntry(name, value, rootDecls),
+      ],
+    ];
+    for (const [selector, expectedDecls, isStale] of blocks) {
+      const actual = blockDecls(css, selector);
+      const drift = actual ? blockDrift(actual, expectedDecls, isStale) : [];
+      const shown = drift.slice(0, 5).map(describeDrift).join("; ");
+      results.push({
+        mode: "both",
+        check: `${label}: ${selector} holds what tecton.map.json resolves to`,
+        value: actual === undefined ? "missing" : drift.length ? `${drift.length} different` : `${expectedDecls.size} identical`,
+        threshold: "0 different",
+        status: actual !== undefined && !drift.length ? "pass" : "fail",
+        detail:
+          actual === undefined
+            ? "run tokens:build"
+            : drift.length
+              ? `${shown}${drift.length > 5 ? `; … ${drift.length - 5} more` : ""} — edit tecton.map.json and run tokens:build`
+              : undefined,
+      });
+    }
+  }
 }
 
 // ---------------------------------------------------------------------------

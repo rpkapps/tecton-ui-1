@@ -1,13 +1,15 @@
 import { readFileSync, readdirSync } from "node:fs"
 import path from "node:path"
-import { fileURLToPath } from "node:url"
+import { fileURLToPath, pathToFileURL } from "node:url"
 import { describe, expect, it } from "vitest"
 
 import { isShippedIcon, loadManifest } from "../icon-utils.mjs"
 import type { Bounds } from "../svg-bbox.mjs"
 import {
   cropViewBox,
+  measureSvg,
   opticalCrop,
+  parsePathData,
   parseViewBox,
   svgGeometryBounds,
   unionBounds,
@@ -151,6 +153,41 @@ describe("svgGeometryBounds", () => {
       box(svgGeometryBounds(`<svg viewBox="0 0 16 16">${inner}</svg>`))
     )
   })
+
+  it("reads compact arc flags as single characters", () => {
+    // `0 011 1` is large-arc 0, sweep 1, then the end point (1, 1) — what a
+    // minifier writes — not the number 11.
+    expect(parsePathData("M0 0a1 1 0 011 1")).toEqual([
+      { command: "M", args: [0, 0] },
+      { command: "a", args: [1, 1, 0, 0, 1, 1, 1] },
+    ])
+    const compact = "M2 12A10 10 0 10 22 12A10 10 0 102 12z"
+    expect(parsePathData(compact)[1].args).toEqual([10, 10, 0, 1, 0, 22, 12])
+    expect(box(svgGeometryBounds(`<path d="${compact}"/>`))).toEqual([
+      2, 2, 22, 22,
+    ])
+  })
+
+  it("splits numbers the way the SVG grammar does", () => {
+    expect(parsePathData("M1.5.5L-2-3l+1e1,2")).toEqual([
+      { command: "M", args: [1.5, 0.5] },
+      { command: "L", args: [-2, -3] },
+      { command: "l", args: [10, 2] },
+    ])
+    expect(() => parsePathData("M0 0A1 1 0 2 0 1 1")).toThrow(/arc flag/)
+    expect(() => parsePathData("M0 0L1")).toThrow(/wants 2 numbers/)
+    expect(() => parsePathData("M0 0X1")).toThrow(/unknown path command/)
+  })
+
+  it("reports the painting elements it cannot measure", () => {
+    const markup =
+      '<path d="M4 4L12 12"/><text x="0" y="16">A</text><defs><use href="#a"/></defs><use href="#b"/>'
+    const measured = measureSvg(markup)
+    expect(box(measured.bounds)).toEqual([4, 4, 12, 12])
+    // the <use> inside <defs> paints nothing; the other one does
+    expect(measured.unmeasured).toEqual(["text", "use"])
+    expect(box(svgGeometryBounds(markup))).toEqual([4, 4, 12, 12])
+  })
 })
 
 describe("cropViewBox", () => {
@@ -250,6 +287,17 @@ describe("opticalCrop", () => {
       "0.5 0.5 15 15"
     )
   })
+
+  it("keeps the viewBox of a glyph that paints something it cannot measure", () => {
+    const roomy = '<path d="M4 4L12 12"/>'
+    const label = '<text x="0" y="16">A</text>'
+    const crop = opticalCrop("0 0 16 16", [roomy, `${roomy}${label}`], 1)
+    expect(crop).toMatchObject({
+      viewBox: "0 0 16 16",
+      cropped: false,
+      unmeasured: ["text"],
+    })
+  })
 })
 
 describe("unionBounds", () => {
@@ -288,10 +336,9 @@ const definitions: Measured[] = await Promise.all(
     .filter((name) => name.endsWith(".ts") && name !== "index.ts")
     .sort()
     .map(async (name) => {
-      const mod = (await import(path.join(DEFINITIONS_DIR, name))) as Record<
-        string,
-        unknown
-      >
+      const mod = (await import(
+        pathToFileURL(path.join(DEFINITIONS_DIR, name)).href
+      )) as Record<string, unknown>
       const def = Object.values(mod).find(
         (v): v is TectonSvgIcon =>
           typeof v === "object" && v !== null && "slug" in v && "viewBox" in v

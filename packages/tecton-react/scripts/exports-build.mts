@@ -19,6 +19,9 @@
  *                                     `development` / `production`, none of which a
  *                                     conditions object here would carry)
  *   ./components/<name>             → dist/components/<name>.{d.ts,js}
+ *                                     (`types`, `import`, then `default` naming
+ *                                     the same file, for a resolver that does not
+ *                                     match `import` — Jest, older tooling)
  *   ./tecton/<name>, ./hooks/<name>, ./lib/<name>, ./icons, ./icons/<name>
  *
  * Two entries do not point into dist/ — ./federation/shared and ./postcss/scope:
@@ -44,7 +47,7 @@ const ICON_INTERNALS = new Set(["_runtime", "types"]);
 
 type ExportEntry =
   | string
-  | { types: string; import: string }
+  | { types: string; import: string; default: string }
   | { types: string; default: string };
 
 function moduleNames(dir: string, ext: string) {
@@ -61,7 +64,8 @@ function moduleNames(dir: string, ext: string) {
 }
 
 function jsEntry(distPath: string) {
-  return { types: `./dist/${distPath}.d.ts`, import: `./dist/${distPath}.js` };
+  const js = `./dist/${distPath}.js`;
+  return { types: `./dist/${distPath}.d.ts`, import: js, default: js };
 }
 
 function buildExports() {

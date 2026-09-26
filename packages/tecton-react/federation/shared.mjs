@@ -30,7 +30,13 @@
  * Plain ESM with no build step and no dependency — a build config imports it from
  * Node before anything is bundled.
  */
-export const shared = Object.freeze({
+/** Freezes a policy table and every policy in it, so no consumer can mutate either. */
+const deepFreeze = (table) => {
+  for (const policy of Object.values(table)) Object.freeze(policy)
+  return Object.freeze(table)
+}
+
+export const shared = deepFreeze({
   // One renderer and one DOM binding per document, always.
   react: { singleton: true },
   "react-dom": { singleton: true },

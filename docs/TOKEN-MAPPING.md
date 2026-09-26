@@ -227,8 +227,10 @@ Values are light<br>dark.
 
 ## Contrast checks
 
-`pnpm --filter @tecton/react tokens:check` verifies completeness, dangling `var()` references,
-WCAG contrast for every surface/foreground pair and sanity rules for both modes.
+`pnpm --filter @tecton/react tokens:check` verifies the map against its schema, that the
+`:root`, `.dark` and `@theme inline` blocks of `globals.css` and `tecton-theme.css` hold exactly
+what the map resolves to, completeness, dangling `var()` references, WCAG contrast for every
+surface/foreground pair and sanity rules for both modes.
 Expected failures (Tecton's own values fail these pairs): `palette:--tecton-color-focus-ring`.
 
 ## Known deviations

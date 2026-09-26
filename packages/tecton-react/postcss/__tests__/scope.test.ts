@@ -246,6 +246,107 @@ describe("scopeTecton", () => {
     ])
   })
 
+  it("does not mistake a Tailwind named group or peer for the document root", () => {
+    const css = run(
+      `.group\\/body:hover .x { color: red }
+       .peer\\/html:checked~.y { color: red }
+       .in-\\[body\\]\\:flex { display: flex }
+       #body\\.html .z { color: red }`,
+      { scope: ".mfe-a" }
+    )
+
+    expect(selectorsIn(parse(css))).toEqual([
+      ".group\\/body:hover .x",
+      ".peer\\/html:checked~.y",
+      ".in-\\[body\\]\\:flex",
+      "#body\\.html .z",
+    ])
+    // …while a real element after the escaped name is still refused
+    expect(() =>
+      run(`.group\\/body body .x { color: red }`, { scope: ".mfe-a" })
+    ).toThrow(/matches nothing inside `@scope`/)
+  })
+
+  it("is idempotent: a second run over its own output changes nothing", () => {
+    const once = run(TAILWIND, { scope: ".mfe-a" })
+    const twice = run(once, { scope: ".mfe-a" })
+
+    expect(twice).toBe(once)
+    expect(twice).not.toContain("--mfe-a--mfe-a")
+    const root = parse(twice)
+    let nested = 0
+    root.walkAtRules("scope", (scope) => {
+      scope.walkAtRules("scope", () => {
+        nested++
+      })
+    })
+    expect(nested).toBe(0)
+  })
+
+  it("scopes a sheet that concatenates an already scoped chunk", () => {
+    const scoped = run(TAILWIND, { scope: ".mfe-a" })
+    const css = run(`${scoped}\n.extra { animation: shimmer 1s }\n`, {
+      scope: ".mfe-a",
+    })
+
+    expect(css).not.toContain("--mfe-a--mfe-a")
+    expect(css).toContain("animation: shimmer--mfe-a 1s")
+    const top = children(parse(css)).filter(
+      (node): node is AtRule => node.type === "atrule" && node.name === "scope"
+    )
+    expect(selectorsIn(top[top.length - 1])).toEqual([".extra"])
+  })
+
+  it("keeps the conditions of a hoisted at-rule, and drops the conditions it emptied", () => {
+    const css = run(
+      `@supports (font-variation-settings: normal) {
+  @font-face { font-family: A; src: url(a.woff2); }
+  @font-face { font-family: B; src: url(b.woff2); }
+  .a { font-family: A; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    @keyframes fade { to { opacity: 0; } }
+  }
+}
+@layer utilities {
+  @media (min-width: 48rem) {
+    @keyframes grow { to { scale: 2; } }
+    .md\\:grow { animation: grow 1s; }
+  }
+}
+`,
+      { scope: ".mfe-a", keyframes: false }
+    )
+    const root = parse(css)
+    const hoisted = children(root).slice(0, 3) as Array<AtRule>
+
+    // both faces share one copy of their `@supports`
+    expect(hoisted.map(describeNode)).toEqual([
+      "@supports (font-variation-settings: normal)",
+      "@media (prefers-reduced-motion: no-preference)",
+      "@media (min-width: 48rem)",
+    ])
+    expect(children(hoisted[0]).map(describeNode)).toEqual([
+      "@font-face",
+      "@font-face",
+    ])
+    const inner = children(hoisted[1])[0] as AtRule
+    expect(describeNode(inner)).toBe("@supports (animation-timeline: view())")
+    expect(children(inner).map(describeNode)).toEqual(["@keyframes fade"])
+    // a `@layer` is not copied: the frames leave it, keeping only the `@media`
+    expect(children(hoisted[2]).map(describeNode)).toEqual(["@keyframes grow"])
+
+    // the emptied `@media` of the reduced-motion block is gone, the rest stays scoped
+    const topScope = scopeIn(root)
+    expect(children(topScope).map(describeNode)).toEqual([
+      "@supports (font-variation-settings: normal)",
+    ])
+    expect(selectorsIn(topScope)).toEqual([".a"])
+    const utilities = layer(root, "utilities")
+    expect(selectorsIn(scopeIn(utilities))).toEqual([".md\\:grow"])
+  })
+
   it("never rewrites the steps of a `@keyframes`", () => {
     const root = parse(run(TAILWIND, { scope: ".mfe-a" }))
     const frames = children(root).filter(

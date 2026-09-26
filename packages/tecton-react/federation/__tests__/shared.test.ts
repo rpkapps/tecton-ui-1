@@ -8,6 +8,23 @@ describe("shared", () => {
     expect(defaultShared).toBe(shared)
   })
 
+  it("freezes every policy too, so a consumer cannot flip a singleton", () => {
+    for (const policy of Object.values(shared)) {
+      expect(Object.isFrozen(policy)).toBe(true)
+    }
+    expect(() => {
+      // @ts-expect-error — the declaration types the flag as the literal `true`
+      shared.react.singleton = false
+    }).toThrow(TypeError)
+    expect(shared.react.singleton).toBe(true)
+  })
+
+  it("types the keys and the flags as literals", () => {
+    const singleton: true = shared.react.singleton
+    const eager: false = shared.recharts.eager
+    expect([singleton, eager]).toEqual([true, false])
+  })
+
   it("lists exactly the dependencies a host and a remote have to agree on", () => {
     expect(Object.keys(shared)).toEqual([
       "react",

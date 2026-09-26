@@ -21,6 +21,9 @@
  *     `mask`, `foreignObject`, gradients, `pattern`, `symbol`, `marker`,
  *     `filter`, `style`, `script` and anything marked
  *     `data-figma-skip-parse="true"`.
+ *   - `text`, `tspan`, `textPath`, `use` and `image` paint but cannot be
+ *     measured here (fonts, references). `measureSvg()` reports them, and
+ *     `opticalCrop()` keeps the original viewBox for a glyph that has one.
  *
  * Deliberate limitations (safe for the icon sources, worth knowing)
  *   - This is the FILL box. A `stroke` widens the painted area by half the
@@ -322,40 +325,66 @@ interface PathSegment {
   args: number[];
 }
 
-/** Split a `d` attribute into segments, expanding implicit repeats. */
+/** A path number: optional sign, digits with at most one point, optional exponent. */
+const PATH_NUMBER = /[+-]?(?:\d+\.?\d*|\.\d+)(?:[eE][+-]?\d+)?/y;
+/** Whitespace and the optional comma between two path arguments. */
+const PATH_SEPARATOR = /[\s,]*/y;
+const PATH_COMMAND = /[MmLlHhVvCcSsQqTtAaZz]/;
+
+/**
+ * Split a `d` attribute into segments, expanding implicit repeats.
+ *
+ * A cursor, not a tokenising regex, because the grammar is context-dependent:
+ * the two arc flags are single `0`/`1` characters that need no separator, so
+ * the compact `a1 1 0 011 1` a minifier writes is `large-arc 0, sweep 1, x 1`,
+ * not the number `11`. Numbers follow the SVG grammar too: `1.5.5` is `1.5`
+ * then `.5`, and `1-2` is `1` then `-2`.
+ */
 export function parsePathData(d: string): PathSegment[] {
-  const tokens: Array<string | number> = [];
-  for (const t of d.matchAll(/([MmLlHhVvCcSsQqTtAaZz])|(-?(?:\d*\.\d+|\d+\.?)(?:[eE][+-]?\d+)?)/g)) {
-    tokens.push(t[1] ? t[1] : Number.parseFloat(t[2]));
-  }
+  let pos = 0;
+  const skipSeparators = () => {
+    PATH_SEPARATOR.lastIndex = pos;
+    PATH_SEPARATOR.exec(d);
+    pos = PATH_SEPARATOR.lastIndex;
+  };
+  const readNumber = (command: string, arity: number, flag: boolean): number => {
+    skipSeparators();
+    if (flag) {
+      const c = d[pos];
+      if (c !== "0" && c !== "1") {
+        throw new Error(`svg-bbox: "${command}" wants a 0/1 arc flag in ${d.slice(0, 60)}`);
+      }
+      pos++;
+      return c === "1" ? 1 : 0;
+    }
+    PATH_NUMBER.lastIndex = pos;
+    const m = PATH_NUMBER.exec(d);
+    if (!m) throw new Error(`svg-bbox: "${command}" wants ${arity} numbers in ${d.slice(0, 60)}`);
+    pos = PATH_NUMBER.lastIndex;
+    return Number.parseFloat(m[0]);
+  };
 
   const segments: PathSegment[] = [];
-  let index = 0;
   let command = "";
-  while (index < tokens.length) {
-    const token = tokens[index];
-    if (typeof token === "string") {
-      command = token;
-      index++;
+  for (skipSeparators(); pos < d.length; skipSeparators()) {
+    const c = d[pos];
+    if (PATH_COMMAND.test(c)) {
+      command = c;
+      pos++;
+    } else if (/[a-zA-Z]/.test(c)) {
+      throw new Error(`svg-bbox: unknown path command "${c}"`);
     } else if (!command) {
       throw new Error(`svg-bbox: path data starts with a number: ${d.slice(0, 40)}`);
     }
     const arity = PATH_ARITY[command.toLowerCase()];
-    if (arity === undefined) throw new Error(`svg-bbox: unknown path command "${command}"`);
     if (arity === 0) {
       segments.push({ command, args: [] });
       command = "";
       continue;
     }
+    const isArc = command === "A" || command === "a";
     const args: number[] = [];
-    for (let i = 0; i < arity; i++) {
-      const value = tokens[index];
-      if (typeof value !== "number") {
-        throw new Error(`svg-bbox: "${command}" wants ${arity} numbers in ${d.slice(0, 60)}`);
-      }
-      args.push(value);
-      index++;
-    }
+    for (let i = 0; i < arity; i++) args.push(readNumber(command, arity, isArc && (i === 3 || i === 4)));
     segments.push({ command, args });
     // An implicit repeat after a moveto is a lineto (SVG 8.3.2).
     if (command === "M") command = "L";
@@ -553,13 +582,39 @@ function readAttributes(source: string): Map<string, string> {
 }
 
 /**
+ * Elements that paint but that this module cannot measure: the extent of
+ * `<text>` depends on the font, `<use>` and `<image>` on what they reference.
+ * A glyph that paints one of them has no trustworthy box, so it is not cropped.
+ */
+const UNMEASURED_TAGS = new Set(["image", "text", "textpath", "tspan", "use"]);
+
+/** What `measureSvg()` found in one fragment. */
+export interface Measurement {
+  /** The box of the measured geometry, or `null` when none was found. */
+  bounds: Bounds | null;
+  /**
+   * Painting elements that were NOT measured (`text`, `use`, `image`…), in
+   * document order, each listed once. When this is not empty, `bounds` may
+   * be smaller than what the fragment paints.
+   */
+  unmeasured: string[];
+}
+
+/**
  * The bounding box of everything an SVG fragment actually paints.
  *
  * @param markup Either a whole `<svg>…</svg>` document or a bare inner fragment.
  * @returns The box in the fragment's own user-unit coordinate system, or `null`
- *   when nothing is painted (no shapes, or only definitions).
+ *   when nothing is painted (no shapes, or only definitions). Elements it cannot
+ *   measure are left out: use `measureSvg()` to learn about them.
  */
 export function svgGeometryBounds(markup: string): Bounds | null {
+  return measureSvg(markup).bounds;
+}
+
+/** `svgGeometryBounds()`, plus the painting elements it could not measure. */
+export function measureSvg(markup: string): Measurement {
+  const unmeasured = new Set<string>();
   const builder = new BoundsBuilder();
   // Open elements, innermost last: the transform in force and whether we are
   // inside a subtree that paints nothing.
@@ -591,10 +646,13 @@ export function svgGeometryBounds(markup: string): Bounds | null {
     const transform = attrs.get("transform");
     const matrix = transform ? multiply(parent.matrix, parseTransform(transform)) : parent.matrix;
 
-    if (!skipped) addShape(builder, tag, attrs, matrix);
+    if (!skipped) {
+      if (UNMEASURED_TAGS.has(tag)) unmeasured.add(tag);
+      else addShape(builder, tag, attrs, matrix);
+    }
     if (selfClosing !== "/") stack.push({ tag, matrix, skipped });
   }
-  return builder.result();
+  return { bounds: builder.result(), unmeasured: [...unmeasured] };
 }
 
 function addShape(into: BoundsBuilder, tag: string, attrs: Map<string, string>, m: Matrix): void {
@@ -716,6 +774,12 @@ export interface CropResult {
   scale: number;
   /** False when the original viewBox was kept verbatim. */
   cropped: boolean;
+  /**
+   * `opticalCrop()` only: the painting elements that could not be measured
+   * (`text`, `use`…). When present, the viewBox was kept verbatim, since the
+   * glyph's real extent is unknown.
+   */
+  unmeasured?: string[];
 }
 
 /**
@@ -782,6 +846,15 @@ export function unionBounds(a: Bounds | null, b: Bounds | null): Bounds | null {
  */
 export function opticalCrop(viewBox: string, markups: readonly string[], maxInset: number): CropResult {
   let bounds: Bounds | null = null;
-  for (const markup of markups) bounds = unionBounds(bounds, svgGeometryBounds(markup));
+  const unmeasured = new Set<string>();
+  for (const markup of markups) {
+    const measured = measureSvg(markup);
+    bounds = unionBounds(bounds, measured.bounds);
+    for (const tag of measured.unmeasured) unmeasured.add(tag);
+  }
+  // Something paints outside what was measured: a crop could clip it.
+  if (unmeasured.size) {
+    return { viewBox, available: 0, padding: 0, scale: 1, cropped: false, unmeasured: [...unmeasured] };
+  }
   return cropViewBox(viewBox, bounds, maxInset);
 }
