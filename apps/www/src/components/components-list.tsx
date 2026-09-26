@@ -1,6 +1,9 @@
-import { Link } from "@tanstack/react-router"
+import { getRouteApi, Link } from "@tanstack/react-router"
+import { useFumadocsLoader } from "fumadocs-core/source/client"
 
-import { docs } from "@/lib/docs"
+import { getPagesFromFolder, getRootFolders, nodeName } from "@/lib/tree"
+
+const siteRoute = getRouteApi("/_site")
 
 /** Text-link grid of all component pages of a section (like the shadcn docs). */
 export function ComponentsList({
@@ -8,12 +11,12 @@ export function ComponentsList({
 }: {
   section?: "components" | "tecton"
 }) {
-  const pages = docs.docs
-    .filter(
-      (page) =>
-        page.info.path.startsWith(`${section}/`) &&
-        !page.info.path.endsWith("index.mdx")
-    )
+  const { pageTree } = useFumadocsLoader(siteRoute.useLoaderData())
+  const prefix = `/docs/${section}/`
+  const pages = getRootFolders(pageTree)
+    .flatMap(getPagesFromFolder)
+    .filter((page) => page.url.startsWith(prefix))
+    .map((page) => ({ url: page.url, title: nodeName(page) }))
     .sort((a, b) => a.title.localeCompare(b.title))
 
   return (
@@ -23,9 +26,9 @@ export function ComponentsList({
     >
       {pages.map((page) => (
         <Link
-          key={page.info.path}
+          key={page.url}
           to="/docs/$"
-          params={{ _splat: page.info.path.replace(/\.mdx$/, "") }}
+          params={{ _splat: page.url.slice("/docs/".length) }}
           className="inline-flex items-center gap-2 text-lg font-medium underline-offset-4 hover:underline md:text-base"
         >
           {page.title}

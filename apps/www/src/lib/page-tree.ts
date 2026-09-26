@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start"
+import { z } from "zod"
 
 // Serialized page tree for the docs sidebar (deserialized on the client with
 // `useFumadocsLoader`).
@@ -11,8 +12,11 @@ export const getPageTree = createServerFn({ method: "GET" }).handler(
   }
 )
 
+/** The slugs of a docs URL (`/docs/components/button` → `["components", "button"]`). */
+const docsPageInput = z.array(z.string().max(128)).max(16)
+
 export const getDocsPage = createServerFn({ method: "GET" })
-  .validator((slugs: string[]) => slugs)
+  .validator(docsPageInput)
   .handler(async ({ data: slugs }) => {
     const { source } = await import("./source")
     const page = source.getPage(slugs)
@@ -28,7 +32,7 @@ export const getDocsPage = createServerFn({ method: "GET" })
       url: page.url,
       title: page.data.title,
       description: page.data.description,
-      links: (page.data as { links?: { doc?: string; api?: string } }).links,
+      links: page.data.links,
       previous: pick(neighbours[index - 1]),
       next: pick(neighbours[index + 1]),
     }
