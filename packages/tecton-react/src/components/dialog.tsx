@@ -56,7 +56,7 @@ function DialogOverlay({
         className
       )}
       {...props}
-      UNSTABLE_portalContainer={portalTarget}
+      UNSTABLE_portalContainer={props.UNSTABLE_portalContainer ?? portalTarget}
     >
       {children}
     </ModalOverlayPrimitive>

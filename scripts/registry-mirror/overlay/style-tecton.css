@@ -737,11 +737,11 @@
   }
 
   .cn-input-variant-filled {
-    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-0 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive autofill:[-webkit-background-clip:border-box] autofill:shadow-[inset_0_0_0_1000px_var(--muted)];
+    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-2 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive autofill:[-webkit-background-clip:border-box] autofill:shadow-[inset_0_0_0_1000px_var(--muted)];
   }
 
   .cn-input-variant-text {
-    @apply rounded-none border-x-0 border-t-0 border-b-border bg-transparent px-0 hover:border-b-foreground/60 focus-visible:border-ring focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent;
+    @apply rounded-none border-x-0 border-t-0 border-b-border bg-transparent px-0 hover:border-b-foreground/60 focus-visible:border-ring focus-visible:ring-2 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent;
   }
 
   /* MARK: Input OTP */
@@ -1075,11 +1075,11 @@
   }
 
   .cn-select-trigger-variant-filled {
-    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-0 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive;
+    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-2 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive;
   }
 
   .cn-select-trigger-variant-text {
-    @apply rounded-none border-x-0 border-t-0 border-b-border bg-transparent pl-0 hover:border-b-foreground/60 focus-visible:border-ring focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent;
+    @apply rounded-none border-x-0 border-t-0 border-b-border bg-transparent pl-0 hover:border-b-foreground/60 focus-visible:border-ring focus-visible:ring-2 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent;
   }
 
   .cn-select-value {
@@ -1328,13 +1328,13 @@
   }
 
   .cn-slider-thumb {
-    @apply bg-slider ring-slider/30 focus-visible:ring-ring size-5 rounded-full transition-[color,box-shadow] hover:ring-4 focus-visible:ring-4 focus-visible:outline-hidden;
+    @apply bg-slider ring-slider/30 data-focus-visible:ring-ring size-5 rounded-full transition-[color,box-shadow] hover:ring-4 data-focus-visible:ring-2;
   }
 
   /* MARK: Toast */
-  .cn-toast {
-    @apply rounded-2xl;
-  }
+  /* No .cn-toast: sonner takes a class only through toastOptions, which the
+     registry build never inlines. The Tecton toast is styled by the CSS
+     variables the Toaster sets (tecton.patch, sonner.tsx). */
 
   /* MARK: Switch */
   .cn-switch {
@@ -1433,11 +1433,11 @@
   }
 
   .cn-textarea-variant-filled {
-    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-0 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive autofill:[-webkit-background-clip:border-box] autofill:shadow-[inset_0_0_0_1000px_var(--muted)];
+    @apply rounded-b-none border-x-0 border-t-0 border-b-border bg-muted hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-2 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive autofill:[-webkit-background-clip:border-box] autofill:shadow-[inset_0_0_0_1000px_var(--muted)];
   }
 
   .cn-textarea-variant-text {
-    @apply rounded-none border-x-0 border-t-0 border-b-border bg-transparent px-0 hover:border-b-foreground/60 focus-visible:border-ring focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent;
+    @apply rounded-none border-x-0 border-t-0 border-b-border bg-transparent px-0 hover:border-b-foreground/60 focus-visible:border-ring focus-visible:ring-2 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent;
   }
 
   /* MARK: Toggle */
@@ -1471,7 +1471,7 @@
 
   /* MARK: Toggle Group */
   .cn-toggle-group {
-    @apply rounded-md data-[spacing=0]:data-[variant=outline]:;
+    @apply rounded-md;
   }
 
   .cn-toggle-group-item {
