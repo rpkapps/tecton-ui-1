@@ -6,6 +6,7 @@ import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
   DialogClose,
+  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -40,9 +41,9 @@ export default function ThemeRootDemo() {
         <p className="text-muted-foreground">
           Everything inside this root uses its own <code>--primary</code>.
         </p>
-        <DialogTrigger isOpen={open} onOpenChange={setOpen}>
-          <Button>Open dialog</Button>
-          <Dialog className="sm:max-w-sm">
+        <Dialog open={open} onOpenChange={setOpen}>
+          <DialogTrigger render={<Button />}>Open dialog</DialogTrigger>
+          <DialogContent className="sm:max-w-sm">
             <DialogHeader>
               <DialogTitle>Inside the overlay container</DialogTitle>
               <DialogDescription>
@@ -51,11 +52,13 @@ export default function ThemeRootDemo() {
               </DialogDescription>
             </DialogHeader>
             <DialogFooter>
-              <DialogClose variant="outline">Close</DialogClose>
+              <DialogClose render={<Button variant="outline" />}>
+                Close
+              </DialogClose>
               <Button>Primary action</Button>
             </DialogFooter>
-          </Dialog>
-        </DialogTrigger>
+          </DialogContent>
+        </Dialog>
         <p aria-live="polite" className="text-muted-foreground">
           {open ? (
             slot === "theme-root-overlay" ? (

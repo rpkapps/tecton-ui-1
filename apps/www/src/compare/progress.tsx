@@ -50,7 +50,7 @@ export default function ProgressMatrix() {
                 key="indeterminate"
                 aria-label="Circular progress"
                 size="md"
-                isIndeterminate
+                value={null}
               />,
             ],
           },

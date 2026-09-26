@@ -41,14 +41,14 @@ export default function AppShellSidebarExample() {
       </AppShellHeader>
       <AppShellBody>
         <AppShellSidebar className="w-48 p-2">
-          <TreeView aria-label="Project" defaultExpandedKeys={["wells"]}>
-            <TreeViewItem id="wells" textValue="Wells">
+          <TreeView aria-label="Project" defaultExpanded={["wells"]}>
+            <TreeViewItem value="wells" textValue="Wells">
               <TreeViewItemContent kind="folder">Wells</TreeViewItemContent>
-              <TreeViewItem id="a12" textValue="34/10-A-12">
+              <TreeViewItem value="a12" textValue="34/10-A-12">
                 <TreeViewItemContent>34/10-A-12</TreeViewItemContent>
               </TreeViewItem>
             </TreeViewItem>
-            <TreeViewItem id="horizons" textValue="Horizons">
+            <TreeViewItem value="horizons" textValue="Horizons">
               <TreeViewItemContent kind="folder">Horizons</TreeViewItemContent>
             </TreeViewItem>
           </TreeView>
