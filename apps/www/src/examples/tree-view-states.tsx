@@ -1,3 +1,5 @@
+import * as React from "react"
+
 import {
   TreeView,
   TreeViewItem,
@@ -5,30 +7,36 @@ import {
 } from "@tecton/react/tecton/tree-view"
 
 export default function TreeViewStates() {
+  const [value, setValue] = React.useState<string[]>(["sele"])
+
   return (
-    <TreeView
-      aria-label="Horizons"
-      className="max-w-sm"
-      selectionMode="multiple"
-      defaultSelectedKeys={["sele"]}
-      disabledKeys={["brent"]}
-      defaultExpandedKeys={["horizons"]}
-    >
-      <TreeViewItem id="horizons" textValue="Horizons">
-        <TreeViewItemContent kind="folder">Horizons</TreeViewItemContent>
-        <TreeViewItem id="balder" textValue="Top Balder">
-          <TreeViewItemContent>Top Balder</TreeViewItemContent>
+    <div className="flex max-w-sm flex-col gap-2">
+      <TreeView
+        aria-label="Horizons"
+        selectionMode="multiple"
+        value={value}
+        onValueChange={setValue}
+        defaultExpanded={["horizons"]}
+      >
+        <TreeViewItem value="horizons">
+          <TreeViewItemContent kind="folder">Horizons</TreeViewItemContent>
+          <TreeViewItem value="balder">
+            <TreeViewItemContent>Top Balder</TreeViewItemContent>
+          </TreeViewItem>
+          <TreeViewItem value="sele">
+            <TreeViewItemContent>Top Sele</TreeViewItemContent>
+          </TreeViewItem>
+          <TreeViewItem value="bcu" hidden>
+            <TreeViewItemContent>Base Cretaceous (hidden)</TreeViewItemContent>
+          </TreeViewItem>
+          <TreeViewItem value="brent" disabled>
+            <TreeViewItemContent>Top Brent (disabled)</TreeViewItemContent>
+          </TreeViewItem>
         </TreeViewItem>
-        <TreeViewItem id="sele" textValue="Top Sele (selected)">
-          <TreeViewItemContent>Top Sele (selected)</TreeViewItemContent>
-        </TreeViewItem>
-        <TreeViewItem id="bcu" textValue="Base Cretaceous (hidden)" isHidden>
-          <TreeViewItemContent>Base Cretaceous (hidden)</TreeViewItemContent>
-        </TreeViewItem>
-        <TreeViewItem id="brent" textValue="Top Brent (disabled)">
-          <TreeViewItemContent>Top Brent (disabled)</TreeViewItemContent>
-        </TreeViewItem>
-      </TreeViewItem>
-    </TreeView>
+      </TreeView>
+      <p className="text-xs text-muted-foreground">
+        Selected: {value.length ? value.join(", ") : "none"}
+      </p>
+    </div>
   )
 }

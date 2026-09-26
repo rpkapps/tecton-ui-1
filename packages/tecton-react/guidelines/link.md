@@ -2,46 +2,61 @@
 component: Link
 module: "@tecton/react/tecton/link"
 family: actions
-exports: [Link, linkVariants]
+exports: [Link, LinkButton, linkVariants]
 notFor:
-  - need: a navigation target that should look like a button
-    use: LinkButton
   - need: something that happens in place instead of navigation
     use: Button
-related: [Button, LinkButton]
+  - need: the trail of parent pages above a page title
+    use: Breadcrumb
+related: [Button, LinkButton, TectonProvider]
 ---
 
 ## Use it when
 
-- A word or phrase inside running text navigates somewhere: a well, a report, an external register.
-- The link sits in a sentence and should inherit the surrounding font size.
+- A word or phrase inside running text navigates somewhere: a well, a report, an external register (`Link`).
+- A navigation target should look like a button: "Open well", "Back to wells" (`LinkButton`).
 - The destination leaves the application and needs the external marker.
 
 ## Do
 
-- Always pass `href`; React Aria renders a real anchor only when there is one.
-- Choose colour and underline behaviour with `variant="default" | "primary" | "muted" | "subtle"`.
-- Leave `size="inherit"` inside prose; set `sm`, `md` or `lg` only when the link stands on its own.
-- Reach outside the app with `isExternal` instead of writing `target` and `rel` by hand.
-- Disable with `isDisabled`, and pass router behaviour through `routerOptions`.
+- Always pass `href`: both render a real `<a>`, so new-tab, copy-address and the status bar work.
+- Choose colour with `variant="default" | "primary" | "muted" | "subtle"`; leave `size="inherit"` inside prose. `LinkButton` takes the `Button` `variant` and `size`.
+- Mount `TectonProvider` with the router's `navigate` and `useHref`: plain clicks then navigate without a page load, ⌘/Ctrl/Shift-clicks and `target="_blank"` still go to the browser. Router options go in `navigateOptions`.
+- Reach outside the app with `external`, and disable with `disabled` (no `href`, not focusable, `aria-disabled`).
 
 ## Don't
 
-### HIGH A Link used to run an action
+### HIGH A Link or LinkButton used to run an action
 
 Wrong:
 
 ```tsx
-<Link onPress={() => archive(well.id)}>Archive</Link>
+<Link onClick={() => archive(well.id)}>Archive</Link>
 ```
 
 Correct:
 
 ```tsx
-<Button variant="link" onPress={() => archive(well.id)}>Archive</Button>
+<Button variant="link" onClick={() => archive(well.id)}>Archive</Button>
 ```
 
-With no `href` React Aria renders a `span` with `role="link"`, so the control promises navigation it cannot do: no new-tab, no copy-address, no status-bar target.
+Without `href` the anchor is not a link at all: it is not focusable, has no role and promises navigation it cannot do.
+
+### HIGH An anchor nested inside a Button
+
+Wrong:
+
+```tsx
+<Button variant="secondary"><a href="/wells/34-10-A-12">Open well</a></Button>
+```
+
+Correct:
+
+```tsx
+<LinkButton variant="secondary" href="/wells/34-10-A-12">Open well</LinkButton>
+```
+
+A link inside a `button` is invalid markup and is announced and activated as a button; `LinkButton` is the anchor with the button styles.
 
 ### HIGH Hand-built target, rel and external icon
 
@@ -56,10 +71,10 @@ Wrong:
 Correct:
 
 ```tsx
-<Link href="https://factpages.sodir.no" isExternal>Sodir FactPages</Link>
+<Link href="https://factpages.sodir.no" external>Sodir FactPages</Link>
 ```
 
-`isExternal` sets `target` and `rel="noreferrer noopener"` together and appends the icon at the variant's `0.85em` size; a `rel` you pass as well (`nofollow`) is added to those two, never swapped for them. `target="_blank"` alone leaves the opened page with a handle on `window.opener`.
+`external` sets `target="_blank"` and `rel="noreferrer noopener"` together and appends the icon at the variant's `0.85em` size; a `rel` you pass as well (`nofollow`) is added to those two. `target="_blank"` alone leaves the opened page a handle on `window.opener`.
 
 ### MEDIUM Colouring the link with className
 
@@ -75,4 +90,4 @@ Correct:
 <Link href="/wells/34-10-A-12" variant="primary">34/10-A-12</Link>
 ```
 
-The variant owns the colour and when the underline appears, and Tailwind's stock palette is reset here, so `text-blue-600` emits no CSS and the link renders in the inherited text colour.
+The variant owns the colour and when the underline appears, and Tailwind's stock palette is reset here, so `text-blue-600` emits no CSS.
