@@ -80,14 +80,12 @@ const TECTON_PACKAGE = "@tecton/react"
 
 /** External packages the block sources may import, mapped to registry deps. */
 const KNOWN_DEPENDENCIES = new Set([
-  "react-aria-components",
   "class-variance-authority",
   "cn",
   "lucide-react",
   "@tanstack/react-table",
   "recharts",
   "sonner",
-  "@internationalized/date",
 ])
 
 /** Imports every React application already has; not listed as dependencies. */

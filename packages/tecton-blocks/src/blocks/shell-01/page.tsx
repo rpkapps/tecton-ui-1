@@ -20,6 +20,7 @@ import {
   AppShellBody,
   AppShellMain,
 } from "@tecton/react/tecton/app-shell"
+import { Link } from "@tecton/react/tecton/link"
 
 import { ShellHeader } from "./components/shell-header"
 import { apps } from "./data"
@@ -40,7 +41,9 @@ export default function Page() {
         <Breadcrumb>
           <BreadcrumbList className="flex-nowrap">
             <BreadcrumbItem className="hidden md:inline-flex">
-              <BreadcrumbLink href="#">{app.name}</BreadcrumbLink>
+              <BreadcrumbLink render={<Link href="#" />}>
+                {app.name}
+              </BreadcrumbLink>
             </BreadcrumbItem>
             <BreadcrumbItem className="min-w-0">
               <BreadcrumbPage className="truncate">

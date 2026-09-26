@@ -123,8 +123,8 @@ function ShellHeader({
         <AppFinderMenu>
           <AppFinderInput />
           <AppFinderList
-            onAction={(key) => {
-              const id = String(key).replace(/^recent-/, "")
+            onSelect={(value) => {
+              const id = value.replace(/^recent-/, "")
               const app = apps.find((item) => item.id === id)
               if (app) selectApp(app)
             }}
@@ -134,7 +134,7 @@ function ShellHeader({
                 {recent.map((app) => (
                   <AppFinderItem
                     key={`recent-${app.id}`}
-                    id={`recent-${app.id}`}
+                    value={`recent-${app.id}`}
                     icon={app.code}
                     tone={appTones[app.category]}
                     name={app.name}
@@ -149,13 +149,13 @@ function ShellHeader({
                 {group.apps.map((app) => (
                   <AppFinderItem
                     key={app.id}
-                    id={app.id}
+                    value={app.id}
                     icon={app.code}
                     tone={appTones[app.category]}
                     name={app.name}
                     description={app.description}
                     keywords={[app.code, app.category]}
-                    isCurrent={app.id === current.id}
+                    current={app.id === current.id}
                   />
                 ))}
               </AppFinderGroup>
@@ -174,7 +174,7 @@ function ShellHeader({
       </Button>
       <AppShellNav className="overflow-hidden">{children}</AppShellNav>
       <AppShellActions>
-        <AppShellCommandTrigger onPress={() => setPaletteOpen(true)}>
+        <AppShellCommandTrigger onClick={() => setPaletteOpen(true)}>
           Search or jump to…
         </AppShellCommandTrigger>
         <AppShellAction label="Help">
@@ -192,7 +192,7 @@ function ShellHeader({
         <AppShellOverflow className="lg:hidden">
           <DropdownMenuGroup>
             {secondary.map((action) => (
-              <DropdownMenuItem key={action.id} textValue={action.label}>
+              <DropdownMenuItem key={action.id}>
                 <action.icon /> {action.label}
               </DropdownMenuItem>
             ))}
@@ -211,16 +211,16 @@ function ShellHeader({
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem textValue="Profile">
+            <DropdownMenuItem>
               <UserIcon /> Profile
             </DropdownMenuItem>
-            <DropdownMenuItem textValue="Preferences">
+            <DropdownMenuItem>
               <SettingsIcon /> Preferences
             </DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
-            <DropdownMenuItem textValue="Sign out">
+            <DropdownMenuItem>
               <LogOutIcon /> Sign out
             </DropdownMenuItem>
           </DropdownMenuGroup>

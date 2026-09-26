@@ -5,6 +5,7 @@ import { ChevronsUpDownIcon, HexagonIcon, PlusIcon } from "lucide-react"
 
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -47,11 +48,15 @@ function ProjectSwitcher({
   return (
     <SidebarMenu>
       <SidebarMenuItem>
-        <DropdownMenuTrigger>
-          <SidebarMenuButton
-            size="lg"
-            aria-label={`Project: ${active.name}`}
-            className="aria-expanded:bg-sidebar-accent aria-expanded:text-sidebar-accent-foreground"
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <SidebarMenuButton
+                size="lg"
+                aria-label={`Project: ${active.name}`}
+                className="aria-expanded:bg-sidebar-accent aria-expanded:text-sidebar-accent-foreground"
+              />
+            }
           >
             <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-sidebar-primary text-sidebar-primary-foreground">
               <HexagonIcon className="size-4" />
@@ -63,11 +68,12 @@ function ProjectSwitcher({
               </span>
             </div>
             <ChevronsUpDownIcon className="ms-auto" />
-          </SidebarMenuButton>
-          <DropdownMenu
-            className="w-(--trigger-width) min-w-56 rounded-lg"
-            placement={isMobile ? "bottom start" : "right top"}
-            offset={4}
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            className="min-w-56 rounded-lg"
+            side={isMobile ? "bottom" : "right"}
+            align="start"
+            sideOffset={4}
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="text-xs text-muted-foreground">
@@ -76,8 +82,7 @@ function ProjectSwitcher({
               {projects.map((project) => (
                 <DropdownMenuItem
                   key={project.id}
-                  textValue={project.name}
-                  onAction={() => select(project)}
+                  onClick={() => select(project)}
                   className="gap-2 p-2"
                 >
                   <div className="flex size-6 shrink-0 items-center justify-center rounded-md border">
@@ -94,7 +99,7 @@ function ProjectSwitcher({
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
-              <DropdownMenuItem textValue="New project" className="gap-2 p-2">
+              <DropdownMenuItem className="gap-2 p-2">
                 <div className="flex size-6 items-center justify-center rounded-md border bg-transparent">
                   <PlusIcon className="size-4" />
                 </div>
@@ -103,8 +108,8 @@ function ProjectSwitcher({
                 </span>
               </DropdownMenuItem>
             </DropdownMenuGroup>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </SidebarMenuItem>
     </SidebarMenu>
   )

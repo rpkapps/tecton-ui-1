@@ -5,6 +5,7 @@ import { ChevronRightIcon } from "lucide-react"
 import {
   Collapsible,
   CollapsibleContent,
+  CollapsibleTrigger,
 } from "@tecton/react/components/collapsible"
 import {
   SidebarGroup,
@@ -17,6 +18,7 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
 } from "@tecton/react/components/sidebar"
+import { Link } from "@tecton/react/tecton/link"
 
 import type { NavGroup } from "../data"
 
@@ -35,37 +37,45 @@ function NavMain({ groups }: { groups: NavGroup[] }) {
               item.items?.length ? (
                 <Collapsible
                   key={item.title}
-                  defaultExpanded={item.isActive ?? false}
+                  defaultOpen={item.isActive ?? false}
                   className="group/collapsible"
+                  render={<SidebarMenuItem />}
                 >
-                  <SidebarMenuItem>
-                    <SidebarMenuButton slot="trigger" tooltip={item.title}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                      <ChevronRightIcon className="ms-auto transition-transform duration-200 group-data-expanded/collapsible:rotate-90" />
-                    </SidebarMenuButton>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        {item.items.map((subItem) => (
-                          <SidebarMenuSubItem key={subItem.title}>
-                            <SidebarMenuSubButton
-                              href={subItem.url}
-                              isActive={subItem.isActive ?? false}
-                            >
-                              <span>{subItem.title}</span>
-                            </SidebarMenuSubButton>
-                          </SidebarMenuSubItem>
-                        ))}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
+                  <CollapsibleTrigger
+                    render={<SidebarMenuButton tooltip={item.title} />}
+                  >
+                    <item.icon />
+                    <span>{item.title}</span>
+                    <ChevronRightIcon className="ms-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub>
+                      {item.items.map((subItem) => (
+                        <SidebarMenuSubItem key={subItem.title}>
+                          <SidebarMenuSubButton
+                            isActive={subItem.isActive ?? false}
+                            render={
+                              <Link
+                                href={subItem.url}
+                                className="hover:no-underline"
+                              />
+                            }
+                          >
+                            <span>{subItem.title}</span>
+                          </SidebarMenuSubButton>
+                        </SidebarMenuSubItem>
+                      ))}
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
                 </Collapsible>
               ) : (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
-                    href={item.url}
                     isActive={item.isActive ?? false}
                     tooltip={item.title}
+                    render={
+                      <Link href={item.url} className="hover:no-underline" />
+                    }
                   >
                     <item.icon />
                     <span>{item.title}</span>

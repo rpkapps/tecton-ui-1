@@ -121,8 +121,8 @@ function ComparisonBar({
       <Meter
         aria-label={`${design.name}: ${format(value)}`}
         value={value}
-        minValue={0}
-        maxValue={max}
+        min={0}
+        max={max}
         segments={1}
         size="sm"
         color="custom"

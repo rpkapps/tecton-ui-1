@@ -82,7 +82,7 @@ function AgentMessageList({
                     content={message.content}
                     actions={message.actions}
                     completedActions={completedActions}
-                    isDisabled={isBusy}
+                    disabled={isBusy}
                     onAction={(action) => onAction?.(action, message)}
                   />
                 )}
@@ -111,14 +111,14 @@ function AssistantMessage({
   content,
   actions,
   completedActions,
-  isDisabled = false,
+  disabled = false,
   onAction,
 }: {
   content: string[]
   actions?: AgentAction[] | undefined
   completedActions: string[]
   /** Disables the chips, e.g. while a reply is pending. */
-  isDisabled?: boolean
+  disabled?: boolean
   onAction?: (action: AgentAction) => void
 }) {
   return (
@@ -158,8 +158,8 @@ function AssistantMessage({
                     action.color === "success" &&
                     "bg-success text-success-foreground"
                 )}
-                isDisabled={done || isDisabled}
-                onPress={() => onAction?.(action)}
+                disabled={done || disabled}
+                onClick={() => onAction?.(action)}
               >
                 {done && <CheckIcon />}
                 {action.label}
@@ -198,7 +198,7 @@ function ToolActivity({
       <CollapsibleTrigger className="inline-flex items-center gap-1 rounded-sm text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60">
         {summary} · {duration}
         <ChevronDownIcon
-          className="size-3.5 transition-transform group-data-expanded/tool:rotate-180"
+          className="size-3.5 transition-transform group-data-open/tool:rotate-180"
           aria-hidden
         />
       </CollapsibleTrigger>

@@ -97,7 +97,7 @@ describe("tree visibility toggles", () => {
     const after = toggleIn("34/10-A-12 H")
     expect(after.toggle).toHaveAccessibleName("Hide 34/10-A-12 H")
     expect(after.toggle).toHaveAttribute("aria-pressed", "true")
-    expect(after.row).toHaveAttribute("data-hidden", "true")
+    expect(after.row).toHaveAttribute("data-hidden")
     expect(row).toBe(after.row)
     await user.click(after.toggle)
     expect(toggleIn("34/10-A-12 H").toggle).toHaveAttribute(

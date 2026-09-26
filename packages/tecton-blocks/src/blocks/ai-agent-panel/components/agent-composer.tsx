@@ -4,7 +4,11 @@ import * as React from "react"
 import { MicIcon, PaperclipIcon } from "lucide-react"
 
 import { InputGroupButton } from "@tecton/react/components/input-group"
-import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
 import {
   Composer,
   ComposerField,
@@ -29,7 +33,7 @@ type AgentComposerProps = Omit<
 function AgentComposer({
   placeholder = "What should we do next?",
   suggestions = [],
-  isDisabled = false,
+  disabled = false,
   onSubmit,
   ...props
 }: AgentComposerProps) {
@@ -38,7 +42,7 @@ function AgentComposer({
   return (
     <div data-slot="agent-composer" className="contents">
       <Composer
-        isDisabled={isDisabled}
+        disabled={disabled}
         onSubmit={({ text }) => onSubmit?.(text)}
         {...props}
       >
@@ -52,30 +56,38 @@ function AgentComposer({
         <ComposerField>
           <ComposerInput placeholder={placeholder} />
           <ComposerToolbar>
-            <TooltipTrigger>
-              <InputGroupButton
-                size="icon-xs"
-                aria-label="Attach file"
-                isDisabled={isDisabled}
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <InputGroupButton
+                    size="icon-xs"
+                    aria-label="Attach file"
+                    disabled={disabled}
+                  />
+                }
               >
                 <PaperclipIcon />
-              </InputGroupButton>
-              <Tooltip>Attach</Tooltip>
-            </TooltipTrigger>
-            <TooltipTrigger>
-              <InputGroupButton
-                size="icon-xs"
-                aria-label="Dictate"
-                isDisabled={isDisabled}
+              </TooltipTrigger>
+              <TooltipContent>Attach</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger
+                render={
+                  <InputGroupButton
+                    size="icon-xs"
+                    aria-label="Dictate"
+                    disabled={disabled}
+                  />
+                }
               >
                 <MicIcon />
-              </InputGroupButton>
-              <Tooltip>Dictate</Tooltip>
-            </TooltipTrigger>
+              </TooltipTrigger>
+              <TooltipContent>Dictate</TooltipContent>
+            </Tooltip>
             <ComposerSubmit />
           </ComposerToolbar>
         </ComposerField>
-        <ComposerHint isVisible={false} />
+        <ComposerHint visible={false} />
         <ComposerStatusMessage />
       </Composer>
     </div>

@@ -13,13 +13,11 @@ import Sidebar03Page from "../blocks/sidebar-03/page"
 import Sidebar04Page from "../blocks/sidebar-04/page"
 
 /**
- * A Select's trigger (a combobox) is named by its label, so the label text
- * must be part of the trigger's accessible name.
+ * A Select's trigger (a `combobox` that opens a listbox) is named by its
+ * label, so the label text must be the trigger's accessible name.
  */
 function expectSelect(label: string) {
-  const trigger = screen.getByRole("combobox", {
-    name: new RegExp(`\\b${label}$|^${label}\\b|\\s${label}\\s`),
-  })
+  const trigger = screen.getByRole("combobox", { name: label })
   expect(trigger).toHaveAttribute("aria-haspopup", "listbox")
   return trigger
 }
@@ -75,7 +73,10 @@ describe("Select fields have an accessible name", () => {
     const user = userEvent.setup()
     render(<SettingsRoute />)
     await user.click(screen.getByText("Role"))
-    expect(expectSelect("Role")).toHaveFocus()
+    expect(expectSelect("Role")).toHaveAttribute("aria-expanded", "true")
+    expect(
+      await screen.findByRole("option", { name: "Subsurface lead" })
+    ).toHaveAttribute("aria-selected", "true")
   })
 })
 

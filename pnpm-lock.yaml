@@ -150,9 +150,6 @@ importers:
       react:
         specifier: ^19.2.6
         version: 19.3.0
-      react-aria-components:
-        specifier: ^1.21.1
-        version: 1.21.1(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
       recharts:
         specifier: 3.8.0
         version: 3.8.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.0)(react@19.3.0)(redux@5.0.1)

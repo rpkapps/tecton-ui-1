@@ -144,7 +144,7 @@ function LoginForm({
                   variant="ghost"
                   size="icon-sm"
                   aria-label="Dismiss"
-                  onPress={() => setDismissed(visibleError)}
+                  onClick={() => setDismissed(visibleError)}
                 >
                   <XIcon />
                 </Button>
@@ -190,8 +190,8 @@ function LoginForm({
               <Checkbox
                 id={rememberId}
                 name="remember"
-                isSelected={remember}
-                onChange={setRemember}
+                checked={remember}
+                onCheckedChange={setRemember}
               />
               <FieldLabel htmlFor={rememberId} className="text-sm font-normal">
                 Keep me signed in
@@ -201,7 +201,7 @@ function LoginForm({
               Forgot password?
             </Link>
           </div>
-          <Button type="submit" className="w-full" isDisabled={loading}>
+          <Button type="submit" className="w-full" disabled={loading}>
             {loading && <Spinner />}
             Sign in
           </Button>
@@ -217,7 +217,7 @@ function LoginForm({
             type="button"
             variant="secondary"
             className="w-full"
-            {...(onSso === undefined ? {} : { onPress: onSso })}
+            onClick={onSso}
           >
             <BuildingIcon /> Continue with {loginCopy.ssoProvider}
           </Button>
