@@ -56,8 +56,7 @@
       "dependencies": [
         "@tecton/react",
         "cn",
-        "lucide-react",
-        "react-aria-components"
+        "lucide-react"
       ],
       "registryDependencies": [],
       "files": [
@@ -242,8 +241,7 @@
       "dependencies": [
         "@tecton/react",
         "cn",
-        "lucide-react",
-        "react-aria-components"
+        "lucide-react"
       ],
       "registryDependencies": [],
       "files": [
@@ -313,8 +311,7 @@
         "@tanstack/react-table",
         "@tecton/react",
         "cn",
-        "lucide-react",
-        "react-aria-components"
+        "lucide-react"
       ],
       "registryDependencies": [],
       "files": [
@@ -380,8 +377,7 @@
       "dependencies": [
         "@tecton/react",
         "cn",
-        "lucide-react",
-        "react-aria-components"
+        "lucide-react"
       ],
       "registryDependencies": [],
       "files": [
@@ -419,8 +415,7 @@
         "@tanstack/react-table",
         "@tecton/react",
         "cn",
-        "lucide-react",
-        "react-aria-components"
+        "lucide-react"
       ],
       "registryDependencies": [],
       "files": [
@@ -862,8 +857,7 @@
       ],
       "dependencies": [
         "@tecton/react",
-        "lucide-react",
-        "react-aria-components"
+        "lucide-react"
       ],
       "registryDependencies": [],
       "files": [
@@ -937,8 +931,7 @@
       "dependencies": [
         "@tecton/react",
         "cn",
-        "lucide-react",
-        "react-aria-components"
+        "lucide-react"
       ],
       "registryDependencies": [],
       "files": [

@@ -103,7 +103,7 @@ const SERVER_LOCALE = "en-US"
 
 function browserLocale() {
   if (typeof navigator === "undefined") return SERVER_LOCALE
-  return navigator.language || navigator.languages?.[0] || SERVER_LOCALE
+  return navigator.language || navigator.languages[0] || SERVER_LOCALE
 }
 
 function subscribeLocale(onChange: () => void) {
