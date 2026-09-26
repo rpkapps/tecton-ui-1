@@ -93,10 +93,37 @@ export_overlay() {
   overlaid_files | sed 's/^/  /'
 }
 
+# Every `cn-*` class has to be inlined into Tailwind classes by the registry
+# build. One that survives into the built JSON reaches the generated component
+# raw and has no CSS: a variant map that is not a `cva`, or a class in a prop
+# other than `className` (`containerClassName`, `toastOptions`). The exception
+# is upstream's ALLOWLIST in transform-style-map.ts (cn-menu-target,
+# cn-rtl-flip, ...): the build keeps those on purpose and the CLI resolves them
+# at install time. The list is read from the pinned source so that an upstream
+# bump keeps it in step; if it cannot be found, every survivor is reported.
+check_cn_classes() {
+  local out="$MIRROR_DIR/apps/v4/public/r/styles/$STYLE"
+  local transform="$MIRROR_DIR/packages/shadcn/src/styles/transform-style-map.ts"
+  local allowlist leftovers
+  allowlist="$(sed -n '/^const ALLOWLIST = new Set(\[/,/^\])/p' "$transform" | grep -o '"cn-[A-Za-z0-9_-]*"' | tr -d '"' || true)"
+  leftovers="$(grep -o '\bcn-[A-Za-z0-9_-]*' "$out"/*.json | sort -u |
+    awk -F: -v allowlist="$allowlist" '
+      BEGIN { n = split(allowlist, a, "\n"); for (i = 1; i <= n; i++) allowed[a[i]] = 1 }
+      !($2 in allowed)' || true)"
+  if [ -n "$leftovers" ]; then
+    echo "error: cn-* classes survived the $STYLE registry build (never inlined, no CSS):" >&2
+    printf '%s\n' "$leftovers" | sed "s|^$out/|  |" >&2
+    echo "Put them in a className or a cva() that the registry build inlines." >&2
+    exit 1
+  fi
+  echo "cn-* check: every class is inlined in $STYLE"
+}
+
 build() {
   overlay
   cp "$ROOT/scripts/registry-mirror/local-init.mts" "$MIRROR_DIR/apps/v4/scripts/local-init.mts"
   (cd "$MIRROR_DIR/apps/v4" && "$BUN" run ./scripts/build-registry.mts --indexes --registry "$STYLE")
+  check_cn_classes
 }
 
 serve() {
