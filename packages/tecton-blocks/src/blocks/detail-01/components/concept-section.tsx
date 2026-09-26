@@ -107,7 +107,7 @@ function AlternativeRow({
       data-slot="alternative-row"
       data-selected={isSelected || undefined}
       className={cn(
-        "relative flex flex-col gap-3 border-l border-border pl-4 before:absolute before:top-3 before:-left-px before:h-px before:w-3 before:bg-border data-selected:border-primary",
+        "relative flex flex-col gap-3 border-s border-border ps-4 before:absolute before:-start-px before:top-3 before:h-px before:w-3 before:bg-border data-selected:border-primary",
         className
       )}
     >
@@ -148,13 +148,13 @@ function AlternativeRow({
         <Button
           variant="ghost"
           size="icon-xs"
-          className="ml-auto"
+          className="ms-auto"
           aria-label={`Add decision to ${alternative.name}`}
         >
           <PlusIcon />
         </Button>
       </div>
-      <div className="-mr-4 flex snap-x gap-2 overflow-x-auto pr-4 pb-1">
+      <div className="-me-4 flex snap-x gap-2 overflow-x-auto pe-4 pb-1">
         {alternative.decisions.map((decision) => (
           <DecisionCard key={decision.label} decision={decision} />
         ))}
@@ -286,7 +286,7 @@ function ConceptSection({
         >
           <div className="flex items-center gap-2 px-4 py-3">
             <span className="text-sm font-medium">{concept.name}</span>
-            <span className="ml-auto text-xs text-muted-foreground">
+            <span className="ms-auto text-xs text-muted-foreground">
               {concept.alternatives.length} FDAs
             </span>
             <CollapsibleTrigger

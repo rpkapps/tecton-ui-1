@@ -134,7 +134,7 @@ function FdaCard({
           }
           onPress={() => onOpen?.(fda)}
         />
-        <StatGroup className="grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4 sm:divide-x sm:divide-border-subtle sm:[&>*:not(:first-child)]:pl-4">
+        <StatGroup className="grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4 sm:divide-x sm:divide-border-subtle sm:[&>*:not(:first-child)]:ps-4">
           <Stat size="sm">
             <StatLabel>NPV</StatLabel>
             <StatValue unit="mmusd">{fda.economics.npv.toFixed(1)}</StatValue>
@@ -206,7 +206,7 @@ function SectionHeading({
           aria-label={`Open ${title.toLowerCase()} details`}
           {...(onPress === undefined ? {} : { onPress })}
         >
-          <ChevronRightIcon />
+          <ChevronRightIcon className="rtl:rotate-180" />
         </Button>
       </span>
     </div>

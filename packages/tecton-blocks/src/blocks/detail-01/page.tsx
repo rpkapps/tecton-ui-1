@@ -51,7 +51,7 @@ export default function Page() {
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-4 md:px-6">
           <PageHeader className="items-center">
             <PageHeaderContent className="flex-none flex-row items-center gap-2">
-              <SidebarTrigger className="-ml-1 md:hidden" />
+              <SidebarTrigger className="-ms-1 md:hidden" />
               <PageHeaderTitle className="text-xl">
                 {project.name}
               </PageHeaderTitle>

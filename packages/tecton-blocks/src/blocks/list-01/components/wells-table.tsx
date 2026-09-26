@@ -101,7 +101,7 @@ function createWellColumns(onOpen?: (well: Well) => void) {
     columns.accessor("td", {
       header: "TD (m MD)",
       cell: ({ getValue }) => (
-        <span className="block text-right font-mono tabular-nums">
+        <span className="block text-end font-mono tabular-nums">
           {getValue().toLocaleString()}
         </span>
       ),
@@ -290,7 +290,7 @@ function WellsTable({
           {table.getSelectedRowModel().rows.length} of{" "}
           {table.getPrePaginatedRowModel().rows.length} selected
         </span>
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ms-auto flex items-center gap-3">
           <div className="flex items-center gap-1.5">
             <span>Rows per page</span>
             <Select
@@ -326,7 +326,7 @@ function WellsTable({
               onPress={() => table.previousPage()}
               isDisabled={!table.getCanPreviousPage()}
             >
-              <ChevronLeftIcon />
+              <ChevronLeftIcon className="rtl:rotate-180" />
             </Button>
             <Button
               variant="ghost"
@@ -335,7 +335,7 @@ function WellsTable({
               onPress={() => table.nextPage()}
               isDisabled={!table.getCanNextPage()}
             >
-              <ChevronRightIcon />
+              <ChevronRightIcon className="rtl:rotate-180" />
             </Button>
           </div>
         </div>

@@ -60,10 +60,10 @@ export default function Page() {
       <AppSidebar onSelect={setSelected} />
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle px-3">
-          <SidebarTrigger className="-ml-1" />
+          <SidebarTrigger className="-ms-1" />
           <Separator
             orientation="vertical"
-            className="mr-1 h-4 aria-[orientation=vertical]:self-center"
+            className="me-1 h-4 aria-[orientation=vertical]:self-center"
           />
           <ToggleGroup
             aria-label="View"
@@ -83,7 +83,7 @@ export default function Page() {
               <LayersIcon /> Section
             </ToggleGroupItem>
           </ToggleGroup>
-          <div className="ml-auto flex items-center gap-1">
+          <div className="ms-auto flex items-center gap-1">
             <Button
               variant="ghost"
               size="icon-sm"

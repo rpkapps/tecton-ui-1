@@ -43,10 +43,10 @@ export default function Page() {
   const inset = (
     <SidebarInset className="min-h-0">
       <header className="flex h-12 shrink-0 items-center gap-2 border-b border-border-subtle px-3">
-        <SidebarTrigger className="-ml-1" />
+        <SidebarTrigger className="-ms-1" />
         <Separator
           orientation="vertical"
-          className="mr-1 h-4 aria-[orientation=vertical]:self-center"
+          className="me-1 h-4 aria-[orientation=vertical]:self-center"
         />
         <Breadcrumb>
           <BreadcrumbList>
@@ -62,7 +62,7 @@ export default function Page() {
           <Button
             variant="ghost"
             size="icon-sm"
-            className="ml-auto"
+            className="ms-auto"
             aria-label="Open well properties"
             onPress={() => setPanelOpen(true)}
           >

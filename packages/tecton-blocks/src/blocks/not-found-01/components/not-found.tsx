@@ -77,7 +77,7 @@ function NotFound({
         </PageStateHeader>
         <PageStateActions>
           <LinkButton href={notFoundCopy.homeHref}>
-            <ArrowLeftIcon data-icon="inline-start" /> Back to dashboard
+            <ArrowLeftIcon data-icon="inline-start" className="rtl:rotate-180" /> Back to dashboard
           </LinkButton>
           <Button
             variant="outline"
@@ -108,7 +108,7 @@ function NotFound({
                     variant="muted"
                     className="gap-1.5"
                   >
-                    <ChevronRightIcon className="text-muted-foreground" />
+                    <ChevronRightIcon className="text-muted-foreground rtl:rotate-180" />
                     {suggestion.label}
                   </Link>
                 </li>

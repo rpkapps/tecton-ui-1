@@ -132,7 +132,7 @@ function AssistantMessage({
       {actions && actions.length > 0 && (
         <div
           data-slot="agent-actions"
-          className="flex flex-wrap justify-end gap-1.5 pl-8"
+          className="flex flex-wrap justify-end gap-1.5 ps-8"
         >
           {actions.map((action) => {
             const done = completedActions.includes(action.id)
@@ -186,7 +186,7 @@ function ToolActivity({
   steps: { id: string; label: string; detail?: string; duration: string }[]
 }) {
   return (
-    <Collapsible data-slot="agent-tool-activity" className="group/tool pl-8">
+    <Collapsible data-slot="agent-tool-activity" className="group/tool ps-8">
       <CollapsibleTrigger className="inline-flex items-center gap-1 rounded-sm text-xs text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60">
         {summary} · {duration}
         <ChevronDownIcon
@@ -195,12 +195,12 @@ function ToolActivity({
         />
       </CollapsibleTrigger>
       <CollapsibleContent>
-        <ol className="mt-2 flex flex-col gap-1.5 border-l border-border-subtle pl-3 text-xs">
+        <ol className="mt-2 flex flex-col gap-1.5 border-s border-border-subtle ps-3 text-xs">
           {steps.map((step) => (
             <li key={step.id} className="flex flex-col gap-0.5">
               <span className="flex items-center gap-2">
                 <span className="text-foreground">{step.label}</span>
-                <span className="ml-auto font-mono text-muted-foreground tabular-nums">
+                <span className="ms-auto font-mono text-muted-foreground tabular-nums">
                   {step.duration}
                 </span>
               </span>

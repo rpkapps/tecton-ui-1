@@ -64,7 +64,7 @@ function MonoValue({
         maximumFractionDigits: digits,
       })}
       {unit && (
-        <span className="ml-1 text-[0.85em] text-muted-foreground">{unit}</span>
+        <span className="ms-1 text-[0.85em] text-muted-foreground">{unit}</span>
       )}
     </span>
   )

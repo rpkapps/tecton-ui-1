@@ -141,7 +141,7 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
                 minSize="280px"
                 maxSize="50%"
               >
-                <AppShellAside className="h-full w-full border-l-0">
+                <AppShellAside className="h-full w-full border-s-0">
                   <AiAgentPanel onClose={() => setAgentOpen(false)} />
                 </AppShellAside>
               </AppShellSplitPanel>

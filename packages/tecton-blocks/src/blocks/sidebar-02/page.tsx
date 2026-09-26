@@ -27,10 +27,10 @@ export default function Page() {
       <AppSidebar />
       <SidebarInset>
         <header className="flex h-12 shrink-0 items-center gap-2 px-3">
-          <SidebarTrigger className="-ml-1" />
+          <SidebarTrigger className="-ms-1" />
           <Separator
             orientation="vertical"
-            className="mr-1 h-4 aria-[orientation=vertical]:self-center"
+            className="me-1 h-4 aria-[orientation=vertical]:self-center"
           />
           <Breadcrumb>
             <BreadcrumbList>

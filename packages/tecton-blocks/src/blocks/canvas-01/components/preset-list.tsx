@@ -178,7 +178,7 @@ function PresetList({
     <Sidebar
       data-slot="preset-list"
       collapsible="offcanvas"
-      className={cn("border-r border-border-subtle", className)}
+      className={cn("border-e border-border-subtle", className)}
       {...props}
     >
       <SidebarContent className="gap-0">

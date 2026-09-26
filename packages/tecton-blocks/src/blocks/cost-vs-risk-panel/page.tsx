@@ -197,7 +197,7 @@ export default function CostVsRiskPanelPage() {
         Well design comparison
       </div>
       {open ? (
-        <div className="flex h-full w-full max-w-md shrink-0 flex-col border-l border-border-subtle">
+        <div className="flex h-full w-full max-w-md shrink-0 flex-col border-s border-border-subtle">
           <CostVsRiskPanel
             variant="flat"
             className="rounded-none border-0"
@@ -205,7 +205,7 @@ export default function CostVsRiskPanelPage() {
           />
         </div>
       ) : (
-        <div className="flex h-full shrink-0 flex-col border-l border-border-subtle p-2">
+        <div className="flex h-full shrink-0 flex-col border-s border-border-subtle p-2">
           <Button
             variant="ghost"
             size="icon-sm"

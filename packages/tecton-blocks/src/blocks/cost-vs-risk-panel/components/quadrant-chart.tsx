@@ -171,22 +171,22 @@ function QuadrantTooltip({ point }: { point: DesignPoint }) {
         />
         {point.name}
         {point.isRecommended && (
-          <span className="ml-auto text-[0.625rem] text-muted-foreground">
+          <span className="ms-auto text-[0.625rem] text-muted-foreground">
             Recommended
           </span>
         )}
       </div>
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5 text-muted-foreground">
         <dt>Cost</dt>
-        <dd className="text-right font-mono text-foreground tabular-nums">
+        <dd className="text-end font-mono text-foreground tabular-nums">
           ${point.costRange[0]}–{point.costRange[1]}M
         </dd>
         <dt>Risk</dt>
-        <dd className="text-right font-mono text-foreground tabular-nums">
+        <dd className="text-end font-mono text-foreground tabular-nums">
           {point.risk}% · {riskLabel(point.risk)}
         </dd>
         <dt>Plan days</dt>
-        <dd className="text-right font-mono text-foreground tabular-nums">
+        <dd className="text-end font-mono text-foreground tabular-nums">
           {point.planDays}d
         </dd>
       </dl>

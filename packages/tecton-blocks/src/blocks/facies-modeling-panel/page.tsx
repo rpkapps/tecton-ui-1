@@ -153,7 +153,7 @@ export default function FaciesModelingPanelPage() {
       className="flex h-svh w-full bg-background text-foreground"
     >
       {open ? (
-        <div className="flex h-full w-full max-w-sm shrink-0 flex-col border-r border-border-subtle">
+        <div className="flex h-full w-full max-w-sm shrink-0 flex-col border-e border-border-subtle">
           <FaciesModelingPanel
             variant="flat"
             className="rounded-none border-0"
@@ -161,7 +161,7 @@ export default function FaciesModelingPanelPage() {
           />
         </div>
       ) : (
-        <div className="flex h-full shrink-0 flex-col border-r border-border-subtle p-2">
+        <div className="flex h-full shrink-0 flex-col border-e border-border-subtle p-2">
           <Button
             variant="ghost"
             size="icon-sm"

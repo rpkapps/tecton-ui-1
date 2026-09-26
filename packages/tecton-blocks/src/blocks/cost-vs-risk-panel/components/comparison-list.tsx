@@ -128,7 +128,7 @@ function ComparisonBar({
         size="sm"
         className="[&_[data-slot=meter-segment]>span]:bg-(--series)"
       />
-      <span className="min-w-20 text-right font-mono text-xs tabular-nums">
+      <span className="min-w-20 text-end font-mono text-xs tabular-nums">
         {format(value)}
         {range && (
           <span className="text-muted-foreground"> –{format(range[1])}</span>

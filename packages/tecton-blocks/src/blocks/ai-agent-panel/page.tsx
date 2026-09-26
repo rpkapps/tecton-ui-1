@@ -118,7 +118,7 @@ export default function AiAgentPanelPage() {
       <div className="hidden min-w-0 flex-1 items-center justify-center p-6 text-sm text-muted-foreground md:flex">
         Well design canvas
       </div>
-      <aside className="flex h-full w-full max-w-md shrink-0 flex-col border-l border-border-subtle bg-card">
+      <aside className="flex h-full w-full max-w-md shrink-0 flex-col border-s border-border-subtle bg-card">
         <AiAgentPanel />
       </aside>
     </div>
