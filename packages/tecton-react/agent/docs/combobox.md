@@ -101,7 +101,8 @@ Without `allowsEmptyCollection` React Aria closes the popover as soon as the fil
 
 ## Before you finish
 
-- Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value`, `defaultValue` and `onValueChange` are Radix names React Aria drops.
+- `Select` and `Combobox` are driven by `value` / `defaultValue` / `onChange` (their `selectedKey` / `onSelectionChange` are deprecated), and `Select`'s `onChange` is handed `Key | null`, so the handler narrows the `null` that means nothing is selected instead of casting it away with `as`.
+- Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value` on an item and `onValueChange` anywhere are Radix names React Aria drops, and `Tabs` takes `selectedKey` / `defaultSelectedKey` / `onSelectionChange`, not `value`.
 - Every group carries a name: `aria-label` on `Combobox`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
 - `CommandItem` acts through `onAction` and carries `textValue` when its children are JSX, and an empty filter renders through `renderEmptyState` returning `CommandEmpty` / `ComboboxEmpty` (with `allowsEmptyCollection` on a `Combobox`).
 - A `Popover` editing in stages (date range, filter set) commits only on Apply; Cancel or dismiss discards the draft.

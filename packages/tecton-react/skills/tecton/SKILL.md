@@ -61,21 +61,24 @@ The `tecton` command ships with the package (`npx tecton …` or
 | `onClick` | `onPress` | `Button`, `LinkButton`, `Link`, `Toggle`, `DialogClose` |
 | `disabled` | `isDisabled` | every React Aria control (`Input`/`Textarea` keep `disabled`) |
 | `checked` / `onCheckedChange` | `isSelected` / `onChange(isSelected)` | `Checkbox`, `Switch`, `Toggle` |
-| `value` / `onValueChange` | `selectedKey` / `onSelectionChange(key)` | `Select`, `Tabs` |
-| `value` on an item | `id` | `SelectItem`, `TabsTrigger`, `TabsContent` |
+| `value` / `onValueChange` | `value` / `defaultValue` / `onChange(key)` | `Select`, `Combobox` |
+| `value` / `onValueChange` | `selectedKey` / `defaultSelectedKey` / `onSelectionChange(key)` | `Tabs` |
+| `value` on an item | `id` | `SelectItem`, `ComboboxItem`, `TabsTrigger`, `TabsContent` |
 | `open` on the dialog | `isOpen` / `onOpenChange` on `DialogTrigger`, which wraps the trigger `Button` **and** the `Dialog` (no `DialogContent`) | `Dialog`, `AlertDialog`, `Sheet`, `Popover` |
 | `asChild` | `LinkButton` for navigation, `render` where offered | `Button`, `Badge`, `DrawerTrigger` |
 | `aria-invalid` | `isInvalid` (+ `data-invalid` on `Field`) | `Select`, `Checkbox`, `RadioGroup` |
 
 `RadioGroup` keeps `value` / `onChange`; `Input` and `Textarea` are real DOM
 elements with `value`, `onChange(event)`, `disabled`, `aria-invalid`. `Drawer`
-is Base UI: `open` / `onOpenChange`. `onSelectionChange` hands you
-`Key | null` — narrow it, don't cast it.
+is Base UI: `open` / `onOpenChange`. `Select`'s `onChange` hands you
+`Key | null` — narrow it, don't cast it. `selectedKey` / `onSelectionChange`
+still type-check on `Select` but are deprecated there.
 
 ## Before you finish
 
 Every line has to hold in the file you wrote. Nothing at build time checks
-them: a wrong one type-checks and renders wrong.
+them: a wrong one type-checks and renders wrong. (`tecton rules` has each one
+in full; `agent:check` keeps this list in step with it.)
 
 - **Imports** come from the three namespaces above, never the root.
 - **No stock Tailwind colour** (`bg-red-500`, `text-zinc-400`,
@@ -86,16 +89,24 @@ them: a wrong one type-checks and renders wrong.
 - **`className` carries layout only** (`w-full`, `mt-4`, `flex-1`, `gap-2`,
   `col-span-2`). Size, padding, radius, colour and type belong to the
   component's `variant` / `size` / `appearance` props.
-- **Status has a variant**: `Badge variant="success"`, `Alert variant="warning"`
-  — never a coloured `div`. A KPI is `Stat`, a removable or selectable tag is
-  `Chip` in a `ChipGroup`, an empty list is `Empty`.
 - **Every control in a `Field` is labelled**: `FieldLabel htmlFor` → the
   control's `id` (on `SelectTrigger` for a `Select`); a group of controls is
   named by `FieldSet` + `FieldLegend`.
-- **Icons inside `Button`, `Badge`, `Chip`, `TabsTrigger`** carry
-  `data-icon="inline-start"` or `"inline-end"`; an icon-only control has an
-  `aria-label`.
-- **Menus act through `onAction`**; the `AlertDialog` confirm is
-  `AlertDialogAction`; a `toast()` needs one `<Toaster />` at the app root.
+- **React Aria prop names**, per the table above — never `onClick`,
+  `disabled`, `checked` or `onValueChange` on a React Aria control.
+- **Empty results are `Empty`** (`EmptyTitle`, `EmptyDescription`); in a
+  `Table` it is what `TableBody`'s `renderEmptyState` returns.
+- **Confirmations**: a transient one is `toast()` with one `<Toaster />` at the
+  app root; one that stays until resolved is an `Alert` with a `variant`.
+- **The component that already exists**: a KPI is `Stat`, a status label is a
+  `Badge` with a `variant`, a removable or selectable tag is a `Chip` in a
+  `ChipGroup` — never a coloured `div`.
+- **Icons and spinners inside controls** (`Button`, `Badge`, `Chip`,
+  `TabsTrigger`, `InputGroupAddon`) carry `data-icon="inline-start"` or
+  `"inline-end"`.
+- **Icon-only controls are named** with an `aria-label`; a `Tooltip` describes,
+  it does not name.
+- **Menu items act through `onAction`**, never `onClick` / `onSelect`.
+- **The `AlertDialog` confirm is `AlertDialogAction`**, which closes the prompt.
 - **You ran `tecton docs`** for each component in the file and checked its
   Don't entries against your code.

@@ -5,8 +5,9 @@ description: >
   shadcn on Radix and most of these substitutions render a dead control rather
   than an error. Covers onPress instead of onClick, isDisabled instead of
   disabled, isSelected and onChange instead of checked and onCheckedChange,
-  selectedKey / defaultSelectedKey / onSelectionChange instead of value and
-  onValueChange on Select and Tabs, isOpen and onOpenChange with DialogTrigger
+  value / defaultValue / onChange on Select and Combobox and selectedKey /
+  defaultSelectedKey / onSelectionChange on Tabs instead of Radix's
+  onValueChange, isOpen and onOpenChange with DialogTrigger
   wrapping both the Button and the Dialog (there is no DialogContent), the
   absence of asChild and what replaces it (LinkButton, buttonVariants, the render
   prop on Badge and ButtonGroupText, the element-valued render on DrawerTrigger), id
@@ -54,8 +55,10 @@ uses `open` / `onOpenChange` and an element-valued `render`.
 | `disabled` | `isDisabled` | every React Aria control: `Button`, `Select`, `SelectItem`, `Checkbox`, `Switch`, `RadioGroup`, `Tabs`, `TabsTrigger`, `Slider`, `Link` |
 | `checked` / `onCheckedChange` | `isSelected` / `onChange(isSelected: boolean)` | `Checkbox`, `Switch`, `Toggle` |
 | `defaultChecked` | `defaultSelected` | `Checkbox`, `Switch`, `Toggle` |
-| `value` / `onValueChange` | `selectedKey` / `onSelectionChange(key)` | `Select`, `Tabs` |
-| `defaultValue` | `defaultSelectedKey` | `Select`, `Tabs` |
+| `value` / `onValueChange` | `value` / `onChange(key)` | `Select`, `Combobox` |
+| `defaultValue` | `defaultValue` (unchanged) | `Select`, `Combobox` |
+| `value` / `onValueChange` | `selectedKey` / `onSelectionChange(key)` | `Tabs` |
+| `defaultValue` | `defaultSelectedKey` | `Tabs` |
 | `value` on an item | `id` | `SelectItem`, `TabsTrigger`, `TabsContent` |
 | `open` / `onOpenChange` | `isOpen` / `onOpenChange(isOpen: boolean)` on `DialogTrigger` | `Dialog`, `AlertDialog`, `Sheet`, `Popover`, `Tooltip` |
 | `defaultOpen` | `defaultOpen` (unchanged) | `DialogTrigger` |
@@ -63,8 +66,11 @@ uses `open` / `onOpenChange` and an element-valued `render`.
 | `asChild` | `LinkButton`, `buttonVariants`, or a `render` prop where the component offers one | `Button`, `Badge`, `ButtonGroupText`, `DrawerTrigger` |
 | `aria-invalid` | `isInvalid` on React Aria controls; `aria-invalid` stays on `Input` and `Textarea` | `Select`, `Checkbox`, `RadioGroup` |
 
-`RadioGroup` keeps `value` / `onChange` — it is a value group, not a key
-collection. `Input` and `Textarea` render a real `<input>` / `<textarea>`, so
+`Select` also accepts `selectedKey` / `defaultSelectedKey` /
+`onSelectionChange`, but react-aria-components marks them `@deprecated` there
+(and on `ComboBox`); write `value` / `defaultValue` / `onChange`. `Tabs` has no
+`value` and keeps `selectedKey`. `RadioGroup` keeps `value` / `onChange` — it
+is a value group, not a key collection. `Input` and `Textarea` render a real `<input>` / `<textarea>`, so
 they keep `value`, `onChange(event)`, `disabled` and `aria-invalid`.
 
 ## Common Mistakes
@@ -100,7 +106,7 @@ Wrong:
 
 ```tsx
 <Checkbox disabled />
-<Select disabled selectedKey={horizon} onSelectionChange={setHorizon}>
+<Select disabled value={horizon} onChange={setHorizon}>
   <SelectTrigger>
     <SelectValue />
   </SelectTrigger>
@@ -111,7 +117,7 @@ Correct:
 
 ```tsx
 <Checkbox isDisabled />
-<Select isDisabled selectedKey={horizon} onSelectionChange={setHorizon}>
+<Select isDisabled value={horizon} onChange={setHorizon}>
   <SelectTrigger>
     <SelectValue />
   </SelectTrigger>
@@ -145,7 +151,43 @@ it flips on click and keeps its own state while `twoFactor` never changes.
 
 Source: react-stately useToggleState.d.ts:3 (`ToggleStateOptions`); apps/www/content/docs/forms/tanstack-form.mdx (Switch)
 
-### [CRITICAL] value and onValueChange on Select or Tabs
+### [CRITICAL] onValueChange on Select, value on SelectItem
+
+Wrong:
+
+```tsx
+<Select value={datum} onValueChange={setDatum}>
+  <SelectTrigger>
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem value="msl">Mean sea level</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+Correct:
+
+```tsx
+<Select value={datum} onChange={setDatum}>
+  <SelectTrigger>
+    <SelectValue />
+  </SelectTrigger>
+  <SelectContent>
+    <SelectItem id="msl">Mean sea level</SelectItem>
+  </SelectContent>
+</Select>
+```
+
+`value` / `defaultValue` on `Select` are right — they are React Aria's own
+names — but the handler is `onChange(key: Key | null)`, and an item is keyed by
+`id`. `onValueChange` is not a prop, so it never fires, and `value` on a
+`SelectItem` is its data object, so no item matches the selection. Do not fall
+back to `selectedKey` / `onSelectionChange`: they are deprecated on `Select`.
+
+Source: react-stately useSelectState.d.ts (`SelectProps`: `ValueBase`, `@deprecated selectedKey`); packages/tecton-react/src/components/select.tsx (`SelectProps<T, M>`)
+
+### [CRITICAL] value and onValueChange on Tabs
 
 Wrong:
 
@@ -169,10 +211,10 @@ Correct:
 </Tabs>
 ```
 
-React Aria collections key on `id`, and the selected item is `selectedKey` /
-`defaultSelectedKey` with `onSelectionChange(key)`; `value` on a `Tab` or a
-`ListBoxItem` is the item's data object for dynamic collections, not its key, so
-the controlled key matches nothing and no panel is ever selected.
+React Aria collections key on `id`, and the selected tab is `selectedKey` /
+`defaultSelectedKey` with `onSelectionChange(key)` — `Tabs` has no `value`;
+`value` on a `Tab` is the item's data object for dynamic collections, not its
+key, so the controlled key matches nothing and no panel is ever selected.
 
 Source: react-aria-components Tabs.d.ts:55 (`id?: Key`), ListBox.d.ts:122; apps/www/content/docs/components/tabs.mdx (Usage)
 
@@ -183,8 +225,8 @@ Wrong:
 ```tsx
 <Select
   placeholder="Select"
-  selectedKey={field.state.value}
-  onSelectionChange={(key) => field.handleChange(String(key))}
+  value={field.state.value}
+  onChange={(key) => field.handleChange(String(key))}
 >
   <SelectTrigger>
     <SelectValue />
@@ -200,8 +242,8 @@ Correct:
 ```tsx
 <Select
   placeholder="Select"
-  selectedKey={field.state.value || null}
-  onSelectionChange={(key) => field.handleChange(key ? String(key) : "")}
+  value={field.state.value || null}
+  onChange={(key) => field.handleChange(key ? String(key) : "")}
 >
   <SelectTrigger>
     <SelectValue />
@@ -212,7 +254,7 @@ Correct:
 </Select>
 ```
 
-React Aria uses `null` for "nothing selected", so an empty-string `selectedKey`
+React Aria uses `null` for "nothing selected", so an empty-string `value`
 is a key that no `SelectItem` owns: the trigger renders blank instead of the
 placeholder, and `String(null)` writes the literal `"null"` back into the form
 state.

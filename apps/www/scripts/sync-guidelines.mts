@@ -137,12 +137,35 @@ export function renderSection(guideline: Guideline, catalog: Catalog): string {
   ].join("\n")
 }
 
-/** Replaces the marked section, or inserts it before "## API Reference". */
-export function insertSection(mdx: string, section: string): string {
+/**
+ * Where the marked section is: both markers once and in order, or neither.
+ * Anything else — a START without its END, a second START, END first — is a
+ * hand edit gone wrong, and inserting a fresh section would duplicate it, so
+ * it throws instead.
+ */
+function markers(mdx: string): { start: number; end: number } | null {
   const start = mdx.indexOf(START)
   const end = mdx.indexOf(END)
-  if (start !== -1 && end !== -1 && end > start) {
-    return mdx.slice(0, start) + section + mdx.slice(end + END.length)
+  if (start === -1 && end === -1) return null
+  const problem =
+    start === -1
+      ? `${END} without ${START}`
+      : end === -1
+        ? `${START} without ${END}`
+        : end < start
+          ? `${END} before ${START}`
+          : mdx.indexOf(START, start + 1) !== -1 || mdx.indexOf(END, end + 1) !== -1
+            ? "more than one guidelines section"
+            : null
+  if (problem) throw new Error(`sync-guidelines: ${problem} — fix the markers by hand`)
+  return { start, end }
+}
+
+/** Replaces the marked section, or inserts it before "## API Reference". */
+export function insertSection(mdx: string, section: string): string {
+  const found = markers(mdx)
+  if (found) {
+    return mdx.slice(0, found.start) + section + mdx.slice(found.end + END.length)
   }
   const at = mdx.indexOf(API_REFERENCE)
   if (at === -1) return `${mdx.trimEnd()}\n\n${section}\n`
@@ -150,19 +173,26 @@ export function insertSection(mdx: string, section: string): string {
 }
 
 export function removeSection(mdx: string): string {
-  const start = mdx.indexOf(START)
-  const end = mdx.indexOf(END)
-  if (start === -1 || end === -1 || end < start) return mdx
-  return `${mdx.slice(0, start).trimEnd()}\n\n${mdx.slice(end + END.length).trimStart()}`
+  const found = markers(mdx)
+  if (!found) return mdx
+  return `${mdx.slice(0, found.start).trimEnd()}\n\n${mdx.slice(found.end + END.length).trimStart()}`
 }
 
 /**
  * The page content with its guidelines section up to date. Exported for
  * sync-upstream-docs.mts, which calls it on the page it just generated.
  * `moduleKey` is `components/<name>` or `tecton/<name>`.
+ *
+ * Throws while any guideline file (or adopted rules file) fails
+ * guidelines:check: dropping the section of an invalid file would publish the
+ * page without its guidelines and nothing would say so.
  */
 export function withGuidelines(mdx: string, moduleKey: string): string {
-  const { catalog, valid } = guidelines()
+  const { catalog, valid, invalid } = guidelines()
+  if (invalid.size) {
+    const files = [...invalid.keys()].map((file) => path.basename(file)).join(", ")
+    throw new Error(`sync-guidelines: ${files} fail guidelines:check — fix them before syncing ${moduleKey}`)
+  }
   const guideline = valid.get(moduleKey)
   if (!guideline) return removeSection(mdx)
   return insertSection(mdx, renderSection(guideline, catalog))
@@ -193,10 +223,17 @@ function main() {
   const changed: string[] = []
   const missing: string[] = []
 
-  for (const [file, errors] of invalid) {
-    console.error(`✗ ${path.basename(file)}: ${errors.length} problem(s) — run guidelines:check`)
+  // An invalid file is not "no guideline": rendering now would strip its
+  // section from the page, so nothing is written until every file passes.
+  if (invalid.size) {
+    for (const [file, errors] of invalid) {
+      console.error(`✗ ${path.basename(file)}: ${errors.length} problem(s) — run guidelines:check`)
+    }
+    console.error(`docs:guidelines failed — ${invalid.size} invalid file(s); no page was written.`)
+    process.exit(1)
   }
 
+  const broken: string[] = []
   const targets = new Set([...valid.keys(), ...pages.keys()])
   for (const moduleKey of [...targets].sort()) {
     const page = pages.get(moduleKey)
@@ -208,10 +245,14 @@ function main() {
     const current = readFileSync(page, "utf8")
     const eol = current.includes("\r\n") ? "\r\n" : "\n"
     const lf = current.replace(/\r\n/g, "\n")
-    if (!guideline && !lf.includes(START)) continue
-    const next = guideline
-      ? insertSection(lf, renderSection(guideline, catalog))
-      : removeSection(lf)
+    if (!guideline && !lf.includes(START) && !lf.includes(END)) continue
+    let next: string
+    try {
+      next = guideline ? insertSection(lf, renderSection(guideline, catalog)) : removeSection(lf)
+    } catch (error) {
+      broken.push(`content/docs/${moduleKey}.mdx: ${(error as Error).message}`)
+      continue
+    }
     if (next === lf) continue
     changed.push(`content/docs/${moduleKey}.mdx${guideline ? "" : " (section removed)"}`)
     if (!check) writeFileSync(page, next.split("\n").join(eol))
@@ -220,10 +261,11 @@ function main() {
   for (const moduleKey of missing) {
     console.error(`✗ ${moduleKey}: no page at content/docs/${moduleKey}.mdx to render into`)
   }
+  for (const problem of broken) console.error(`✗ ${problem}`)
 
   const summary = `${valid.size} guideline file(s), ${pages.size} page(s)`
-  if (invalid.size || missing.length) {
-    console.error(`docs:guidelines failed — ${invalid.size} invalid file(s), ${missing.length} page(s) missing.`)
+  if (missing.length || broken.length) {
+    console.error(`docs:guidelines failed — ${missing.length} page(s) missing, ${broken.length} page(s) with broken markers.`)
     process.exit(1)
   }
   if (check) {

@@ -57,9 +57,6 @@
   "callout": [
    "alert"
   ],
-  "spinner": [
-   "spinner"
-  ],
   "loader": [
    "spinner",
    "skeleton"
@@ -73,12 +70,6 @@
    "chip"
   ],
   "tag": [
-   "chip"
-  ],
-  "tags": [
-   "chip"
-  ],
-  "token": [
    "chip"
   ],
   "kpi": [
@@ -105,9 +96,6 @@
   "hierarchy": [
    "tree"
   ],
-  "breadcrumbs": [
-   "breadcrumb"
-  ],
   "sidenav": [
    "sidebar"
   ],
@@ -119,9 +107,6 @@
    "switch",
    "toggle"
   ],
-  "radio": [
-   "radio"
-  ],
   "textbox": [
    "input"
   ],
@@ -130,12 +115,6 @@
   ],
   "multiline": [
    "textarea"
-  ],
-  "otp": [
-   "otp"
-  ],
-  "pin": [
-   "otp"
   ],
   "hotkey": [
    "shortcut",
@@ -155,10 +134,6 @@
   "slideshow": [
    "carousel"
   ],
-  "expandable": [
-   "accordion",
-   "collapsible"
-  ],
   "expand": [
    "accordion",
    "collapsible"
@@ -167,15 +142,9 @@
    "collapsible",
    "accordion"
   ],
-  "split": [
-   "resizable"
-  ],
   "pane": [
    "resizable",
    "panel"
-  ],
-  "scrollable": [
-   "scroll"
   ],
   "datepicker": [
    "calendar",
@@ -219,9 +188,6 @@
   "divider": [
    "separator"
   ],
-  "rule": [
-   "separator"
-  ],
   "placeholder": [
    "skeleton"
   ],
@@ -233,12 +199,6 @@
   ],
   "donut": [
    "circular"
-  ],
-  "ring": [
-   "circular"
-  ],
-  "palette": [
-   "command"
   ],
   "cmdk": [
    "command"
@@ -259,20 +219,11 @@
   "paging": [
    "pagination"
   ],
-  "pages": [
-   "pagination"
-  ],
   "launcher": [
    "finder"
   ],
   "switcher": [
    "finder"
-  ],
-  "shell": [
-   "shell"
-  ],
-  "header": [
-   "header"
   ],
   "truncate": [
    "overflow"
@@ -282,9 +233,6 @@
   ],
   "rtl": [
    "direction"
-  ],
-  "survey": [
-   "questionnaire"
   ],
   "form": [
    "field"
@@ -302,8 +250,41 @@
   "colour": [
    "color"
   ],
-  "swatch": [
-   "swatch"
+  "pin code": [
+   "otp"
+  ],
+  "verification code": [
+   "otp"
+  ],
+  "progress ring": [
+   "circular"
+  ],
+  "split view": [
+   "resizable"
+  ],
+  "split pane": [
+   "resizable"
+  ],
+  "horizontal rule": [
+   "separator"
+  ],
+  "page numbers": [
+   "pagination"
+  ],
+  "next page": [
+   "pagination"
+  ],
+  "percent": [
+   "progress"
+  ],
+  "percentage": [
+   "progress"
+  ],
+  "per page": [
+   "pagination"
+  ],
+  "design token": [
+   "theme"
   ]
  },
  "entries": [
@@ -1445,7 +1426,7 @@
     "useComboboxAnchor"
    ],
    "aliases": [],
-   "tokens": 1141
+   "tokens": 1237
   },
   {
    "id": "command",
@@ -2934,7 +2915,7 @@
     "names": "select select select trigger select value select content select popover select list select group select label select item select separator select input select empty",
     "useWhen": "A field picks one value out of a known, closed list: a datum, a unit, a status. The list is short enough to scan and needs no typing to get through. The trigger must match the other controls in a field row: `variant=\"outline\" | \"filled\" | \"text\"`.",
     "routed": "a short fixed list that needs no typing choosing a value for a form field a themed popover with icons, rich items or a searchable list the rows-per-page picker beside the controls more than a handful of options picking a value for a form field",
-    "do": "Put `placeholder` on `Select`; `SelectValue` renders it and takes no placeholder of its own. Key every item with `id`, drive selection with `selectedKey` / `defaultSelectedKey` / `onSelectionChange`. Choose the surface with `SelectTrigger`'s `variant`, the height with its `size=\"sm\" | \"default\"`. Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`. To make it searchable, wrap `SelectPopover` in React Aria's `Autocomplete` with `SelectInput` and `SelectList`."
+    "do": "Put `placeholder` on `Select`; `SelectValue` renders it and takes no placeholder of its own. Key every item with `id`, drive selection with `value` / `defaultValue` / `onChange(key)`; `selectedKey` and `onSelectionChange` are deprecated. Choose the surface with `SelectTrigger`'s `variant`, the height with its `size=\"sm\" | \"default\"`. Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`. To make it searchable, wrap `SelectPopover` in React Aria's `Autocomplete` with `SelectInput` and `SelectList`."
    },
    "notFor": [
     {
@@ -2974,7 +2955,7 @@
     "SelectEmpty"
    ],
    "aliases": [],
-   "tokens": 1073
+   "tokens": 1167
   },
   {
    "id": "separator",
@@ -3162,7 +3143,7 @@
     "useSidebar"
    ],
    "aliases": [],
-   "tokens": 1083
+   "tokens": 1127
   },
   {
    "id": "skeleton",
@@ -3472,7 +3453,7 @@
     "tabsListVariants"
    ],
    "aliases": [],
-   "tokens": 903
+   "tokens": 927
   },
   {
    "id": "textarea",
@@ -3621,7 +3602,7 @@
     "ToggleGroupItem"
    ],
    "aliases": [],
-   "tokens": 882
+   "tokens": 905
   },
   {
    "id": "tooltip",
@@ -3806,15 +3787,15 @@
    "summary": "React Aria props instead of Radix props",
    "fields": {
     "names": "react aria",
-    "useWhen": "The Radix-to-React-Aria prop map for @tecton/react, because an agent's prior is shadcn on Radix and most of these substitutions render a dead control rather than an error. Covers onPress instead of onClick, isDisabled instead of disabled, isSelected and onChange instead of checked and onCheckedChange, selectedKey / defaultSelectedKey / onSelectionChange instead of value and onValueChange on Select and Tabs, isOpen and onOpenChange with DialogTrigger wrapping both the Button and the Dialog (there is no DialogContent), the absence of asChild and what replaces it (LinkButton, buttonVariants, the render prop on Badge and ButtonGroupText, the element-valued render on DrawerTrigger), id instead of value on SelectItem, TabsTrigger and TabsContent, isInvalid on React Aria controls versus aria-invalid on Input and Textarea plus data-invalid on Field, and why Link and LinkButton exist. Load before writing any prop, handler or controlled state on a Tecton component.",
+    "useWhen": "The Radix-to-React-Aria prop map for @tecton/react, because an agent's prior is shadcn on Radix and most of these substitutions render a dead control rather than an error. Covers onPress instead of onClick, isDisabled instead of disabled, isSelected and onChange instead of checked and onCheckedChange, value / defaultValue / onChange on Select and Combobox and selectedKey / defaultSelectedKey / onSelectionChange on Tabs instead of Radix's onValueChange, isOpen and onOpenChange with DialogTrigger wrapping both the Button and the Dialog (there is no DialogContent), the absence of asChild and what replaces it (LinkButton, buttonVariants, the render prop on Badge and ButtonGroupText, the element-valued render on DrawerTrigger), id instead of value on SelectItem, TabsTrigger and TabsContent, isInvalid on React Aria controls versus aria-invalid on Input and Textarea plus data-invalid on Field, and why Link and LinkButton exist. Load before writing any prop, handler or controlled state on a Tecton component.",
     "routed": "",
-    "do": "The map Common Mistakes [CRITICAL] onClick instead of onPress [CRITICAL] disabled instead of isDisabled [CRITICAL] checked and onCheckedChange on Checkbox or Switch [CRITICAL] value and onValueChange on Select or Tabs [HIGH] Select controlled with the empty string [HIGH] DialogContent, and open on the Dialog [HIGH] asChild to compose a trigger or a link [HIGH] aria-invalid on a React Aria control [MEDIUM] Button used for navigation"
+    "do": "The map Common Mistakes [CRITICAL] onClick instead of onPress [CRITICAL] disabled instead of isDisabled [CRITICAL] checked and onCheckedChange on Checkbox or Switch [CRITICAL] onValueChange on Select, value on SelectItem [CRITICAL] value and onValueChange on Tabs [HIGH] Select controlled with the empty string [HIGH] DialogContent, and open on the Dialog [HIGH] asChild to compose a trigger or a link [HIGH] aria-invalid on a React Aria control [MEDIUM] Button used for navigation"
    },
    "notFor": [],
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2629
+   "tokens": 2973
   },
   {
    "id": "rules",
@@ -3831,7 +3812,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 3581
+   "tokens": 3612
   },
   {
    "id": "theming",
