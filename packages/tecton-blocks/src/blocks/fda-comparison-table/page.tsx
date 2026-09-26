@@ -173,17 +173,30 @@ function FdaComparisonTable({
                   onOpen && "cursor-pointer"
                 )}
               >
-                {row.getAllCells().map((cell) => (
-                  <TableCell
-                    key={cell.id}
-                    className={cn(
-                      "h-9 px-2",
-                      cell.column.id === "select" && "w-10"
-                    )}
-                  >
-                    <table.FlexRender cell={cell} />
-                  </TableCell>
-                ))}
+                {row.getAllCells().map((cell) =>
+                  // The FDA column names the row: a row header, so a
+                  // screen reader reads it with every cell of the row.
+                  cell.column.id === "code" ? (
+                    <th
+                      key={cell.id}
+                      scope="row"
+                      data-slot="table-cell"
+                      className="h-9 px-2 py-3 text-start align-middle font-normal whitespace-nowrap"
+                    >
+                      <table.FlexRender cell={cell} />
+                    </th>
+                  ) : (
+                    <TableCell
+                      key={cell.id}
+                      className={cn(
+                        "h-9 px-2",
+                        cell.column.id === "select" && "w-10"
+                      )}
+                    >
+                      <table.FlexRender cell={cell} />
+                    </TableCell>
+                  )
+                )}
               </TableRow>
             ))
           )}

@@ -106,7 +106,7 @@ function Tool({
       >
         {children}
       </TooltipTrigger>
-      <TooltipContent side="right">{label}</TooltipContent>
+      <TooltipContent side="inline-end">{label}</TooltipContent>
     </Tooltip>
   )
 }
@@ -266,7 +266,7 @@ export default function Page() {
                   <LayersIcon />
                 </Tool>
                 <DropdownMenuContent
-                  side="right"
+                  side="inline-end"
                   align="start"
                   className="w-48"
                 >

@@ -63,7 +63,7 @@ function Tree({
       {kind === "item" ? (
         <TreeViewItem
           value="root"
-          textValue={CHILD}
+          label={CHILD}
           hidden={hidden}
           disabled={disabled}
         >
@@ -79,7 +79,7 @@ function Tree({
       ) : (
         <TreeViewItem
           value="root"
-          textValue={FOLDER}
+          label={FOLDER}
           hidden={hidden}
           disabled={disabled}
         >
@@ -93,7 +93,7 @@ function Tree({
           </TreeViewItemContent>
           <TreeViewItem
             value="child"
-            textValue={CHILD}
+            label={CHILD}
             hidden={hidden}
             disabled={disabled}
           >

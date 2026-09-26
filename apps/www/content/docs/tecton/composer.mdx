@@ -86,7 +86,7 @@ Pass the prompts the user has sent as `history`, oldest first: <Kbd>↑</Kbd> on
 ```tsx
 <ComposerField>
   <ComposerCommands
-    items={[{ id: "new", command: "new", label: "Start a new conversation" }]}
+    items={[{ value: "new", command: "new", label: "Start a new conversation" }]}
     onCommand={(item) => startOver()}
   />
   <ComposerInput />
@@ -264,11 +264,11 @@ A `form` that holds the value and the chat's state for its parts.
 | `ComposerSubmit` | Send, or Stop while busy: `sendLabel` ("Send message"), `stopLabel` ("Stop generating"). |
 | `ComposerHint` | The keys that send, linked to the textarea: `visible={false}` keeps it for screen readers only, `children` replaces the text. |
 | `ComposerStatusMessage` | `messages`: `{ submitted?, stopped?, error? }` overrides the three texts. |
-| `ComposerAttachments` | `items` (`{ id, label, description?, icon? }[]`), `onRemove(id)`, `aria-label` ("Attachments"). |
+| `ComposerAttachments` | `items` (`{ value, label, description?, icon? }[]`), `onRemove(value)`, `aria-label` ("Attachments"). |
 | `ComposerSuggestions` | A toolbar of suggestions; `aria-label` defaults to "Suggestions". |
 | `ComposerSuggestion` | `value`, `submit` (send at once), `onSelect(value)`. |
-| `ComposerCommands` | `items` (`{ id, command, label, description?, group?, icon? }[]`), `onCommand(item, { setValue, send, focus })`, `countMessage(count)`, `aria-label` ("Commands"). |
+| `ComposerCommands` | `items` (`{ value, command, label, description?, group?, icon? }[]`), `onCommand(item, { setValue, send, focus })`, `countMessage(count)`, `aria-label` ("Commands"). |
 
 ### useComposer
 
-`useComposer()` returns `value`, `setValue`, `status`, `isBusy`, `canSubmit`, `submit`, `stop` and `focus`, for a component inside `Composer` — for example an application key binding that focuses the box.
+`useComposer()` returns `value`, `setValue`, `status`, `busy` (a reply is submitted or streaming), `canSubmit`, `submit`, `stop` and `focus`, for a component inside `Composer` — for example an application key binding that focuses the box.

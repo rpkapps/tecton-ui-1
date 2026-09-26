@@ -48,7 +48,7 @@ Give the container `relative isolate`: the effect is `absolute inset-0 -z-10`, a
 
 ## Motion
 
-`animate={false}` freezes an effect on its static frame; it also freezes under reduced motion, while scrolled out of view and while the tab is hidden, and is hidden in print and forced-colours mode.
+`animate={false}` freezes an effect on its static frame; it also freezes under reduced motion, while scrolled out of view and while the tab is hidden, and is hidden in print and forced-colours mode. The layer carries `data-static` when `animate` is off and `data-paused` while it is out of view or the tab is hidden.
 
 <ComponentPreview name="background-static" />
 

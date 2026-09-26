@@ -56,6 +56,12 @@ type CircularProgressProps = Omit<
     locale?: Intl.LocalesArgument
     /** Show the formatted value in the centre (determinate only). */
     showValue?: boolean
+    /**
+     * Custom value text (e.g. "3 of 8 wells"), shown in the centre in place
+     * of the formatted value. A string or number is also what assistive tech
+     * announces (`aria-valuetext`) instead of the percentage.
+     */
+    valueLabel?: React.ReactNode
     /** Custom centre content (overrides `showValue`). */
     children?: React.ReactNode
   }
@@ -76,9 +82,19 @@ function CircularProgress({
   min = 0,
   max = 100,
   showValue,
+  valueLabel,
   children,
   ...props
 }: CircularProgressProps) {
+  // A text `valueLabel` becomes `aria-valuetext`, so the announced value
+  // matches the one on screen. A node cannot be text: the formatted value is
+  // announced instead.
+  const ariaValueText =
+    typeof valueLabel === "string" || typeof valueLabel === "number"
+      ? String(valueLabel)
+      : undefined
+  const hasValueLabel =
+    valueLabel !== undefined && valueLabel !== null && valueLabel !== false
   const indeterminate = value == null || !Number.isFinite(value)
   const pct = indeterminate ? 25 : toPercentage(value, min, max)
   const offset = CIRCUMFERENCE - (pct / 100) * CIRCUMFERENCE
@@ -90,6 +106,9 @@ function CircularProgress({
       value={value}
       min={min}
       max={max}
+      getAriaValueText={
+        ariaValueText === undefined ? undefined : () => ariaValueText
+      }
       {...props}
     >
       <svg
@@ -123,12 +142,14 @@ function CircularProgress({
           className="stroke-current transition-[stroke-dashoffset] duration-300"
         />
       </svg>
-      {children ? (
+      {children || hasValueLabel ? (
         <span
           data-slot="circular-progress-value"
+          // The root already announces the value (`aria-valuetext`).
+          aria-hidden={children ? undefined : true}
           className="absolute inset-0 flex items-center justify-center font-medium text-foreground tabular-nums"
         >
-          {children}
+          {children ?? valueLabel}
         </span>
       ) : showValue && !indeterminate ? (
         <ProgressPrimitive.Value

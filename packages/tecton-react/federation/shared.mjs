@@ -61,8 +61,10 @@ export const shared = deepFreeze({
   "@tecton/react/": { singleton: false },
   // Internal to @tecton/react (see above): shared so the Tecton modules of host
   // and remote run on one copy when their versions match, never singletons.
-  // Base UI is imported by subpath only (`@base-ui/react/dialog`), hence the
-  // prefix share.
+  // Base UI is imported both by subpath (`@base-ui/react/dialog`, the prefix
+  // share) and from the package root (`@base-ui/react`, which a prefix share
+  // does not match), so both are listed.
+  "@base-ui/react": { singleton: false },
   "@base-ui/react/": { singleton: false },
   "react-aria-components": { singleton: false },
   // The chart component pulls all of recharts (~145 KB gzipped). Share it,

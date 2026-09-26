@@ -30,11 +30,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@tecton/react/components/popover"
-import {
-  PortalProvider,
-  usePortalContainer,
-  usePortalTarget,
-} from "@tecton/react/tecton/portal"
+import { PortalProvider, usePortalTarget } from "@tecton/react/tecton/portal"
 import { TectonProvider } from "@tecton/react/tecton/provider"
 
 function makeContainer(name: string) {
@@ -201,9 +197,7 @@ describe("PortalProvider", () => {
     const second = makeContainer("second")
     let target: HTMLElement | null = first
     function Probe() {
-      return (
-        <span data-testid="probe">{usePortalContainer()?.dataset.mfe}</span>
-      )
+      return <span data-testid="probe">{usePortalTarget()?.dataset.mfe}</span>
     }
     const { rerender } = render(
       <PortalProvider container={() => target}>
@@ -237,9 +231,9 @@ describe("PortalProvider", () => {
     expect(body.closest("[data-mfe]")).toBeNull()
   })
 
-  it("exposes the container through usePortalContainer", () => {
+  it("exposes the container through usePortalTarget", () => {
     const container = makeContainer("widget")
-    const { result } = renderHook(() => usePortalContainer(), {
+    const { result } = renderHook(() => usePortalTarget(), {
       wrapper: ({ children }) => (
         <PortalProvider container={container}>{children}</PortalProvider>
       ),
@@ -248,17 +242,17 @@ describe("PortalProvider", () => {
     container.remove()
   })
 
-  it("returns null outside a provider and after `container={null}`", () => {
+  it("returns undefined outside a provider and after `container={null}`", () => {
     const outer = makeContainer("outer")
-    expect(renderHook(() => usePortalContainer()).result.current).toBeNull()
-    const { result } = renderHook(() => usePortalContainer(), {
+    expect(renderHook(() => usePortalTarget()).result.current).toBeUndefined()
+    const { result } = renderHook(() => usePortalTarget(), {
       wrapper: ({ children }) => (
         <PortalProvider container={outer}>
           <PortalProvider container={null}>{children}</PortalProvider>
         </PortalProvider>
       ),
     })
-    expect(result.current).toBeNull()
+    expect(result.current).toBeUndefined()
     outer.remove()
   })
 

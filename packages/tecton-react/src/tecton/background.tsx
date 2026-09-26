@@ -29,7 +29,7 @@ import { cn } from "cn"
 
 const backgroundStyles = `
 [data-slot="background"]{--bg-ink:color-mix(in oklab,var(--bg-tone) calc(var(--bg-alpha) * 100%),transparent);--bg-ink-soft:color-mix(in oklab,var(--bg-tone) calc(var(--bg-alpha) * 45%),transparent);--bg-ink-strong:color-mix(in oklab,var(--bg-tone) calc(var(--bg-alpha) * 180%),transparent)}
-[data-slot="background"][data-paused] *,[data-slot="background"][data-animate="false"] *{animation-play-state:paused!important}
+[data-slot="background"][data-paused] *,[data-slot="background"][data-static] *{animation-play-state:paused!important}
 @media (prefers-reduced-motion:reduce){[data-slot="background"] *{animation-play-state:paused!important}}
 @media print,(forced-colors:active){[data-slot="background"]{display:none!important}}
 @keyframes tecton-bg-drift-x{from{transform:translateX(0)}to{transform:translateX(calc(-1 * var(--bg-tile-w)))}}
@@ -152,7 +152,7 @@ function Background({
         data-tone={tone}
         data-intensity={intensity}
         data-speed={speed}
-        data-animate={animate}
+        data-static={animate ? undefined : ""}
         data-paused={paused ? "" : undefined}
         className={cn(
           backgroundVariants({ tone, intensity, speed }),

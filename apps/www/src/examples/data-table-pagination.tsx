@@ -73,9 +73,9 @@ const columns = columnHelper.columns([
     ),
   }),
   columnHelper.accessor("depth", {
-    header: () => <div className="text-right">TD (m)</div>,
+    header: () => <div className="text-end">TD (m)</div>,
     cell: ({ getValue }) => (
-      <div className="text-right font-mono tabular-nums">
+      <div className="text-end font-mono tabular-nums">
         {getValue().toLocaleString("en-US")}
       </div>
     ),
@@ -130,7 +130,7 @@ export default function DataTablePagination() {
         </Table>
       </div>
       <div className="flex flex-wrap items-center justify-end gap-4 text-sm text-muted-foreground">
-        <span className="mr-auto tabular-nums">{wells.length} wells</span>
+        <span className="me-auto tabular-nums">{wells.length} wells</span>
         <div className="flex items-center gap-2">
           <span>Rows per page</span>
           <Select

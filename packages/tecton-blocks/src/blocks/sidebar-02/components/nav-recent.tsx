@@ -59,7 +59,7 @@ function NavRecent({ projects }: { projects: RecentProject[] }) {
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className="w-48 rounded-lg"
-                side={isMobile ? "bottom" : "right"}
+                side={isMobile ? "bottom" : "inline-end"}
                 align={isMobile ? "end" : "start"}
               >
                 <DropdownMenuItem>

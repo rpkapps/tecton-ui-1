@@ -40,6 +40,23 @@ Nest `TreeViewItem`s for a fixed tree. For data, pass `items` and a render funct
 
 <ComponentPreview name="tree-view-states" />
 
+`disallowEmptySelection` keeps at least one row selected. `empty` is shown in place of the rows when the tree has none.
+
+## Opening rows
+
+`onActivate` is called with a row's `value` when the user opens it: Enter on the focused row, or a click. When rows are also selectable, a click selects and a double click opens, as in a file browser; Ctrl/Cmd- or Shift-click then extends a multiple selection.
+
+```tsx
+<TreeView
+  aria-label="Project"
+  selectionMode="single"
+  onActivate={(value) => openWell(value)}
+  empty="No wells in this project"
+>
+  …
+</TreeView>
+```
+
 ## Adornments
 
 `TreeViewItemContent` takes a `colorTag` (a [Color Swatch](/docs/tecton/color-swatch)), a `suffix` (a [Badge](/docs/components/badge)) and an `endAdornment` such as `TreeViewVisibilityToggle` or `TreeViewAction`. Arrow keys move from a row into its controls, and clicking a control neither selects nor expands the row.
@@ -80,7 +97,7 @@ Rows carry `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and 
 
 <Do>
 
-Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value`; add `textValue` when the row label is not plain text.
+Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value`; add `label` when the row content is not plain text.
 
 </Do>
 
@@ -92,7 +109,7 @@ Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `Tree
 
 <Do>
 
-Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`.
+Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`, and open a row through `onActivate` (Enter, double click on a selectable row), never an `onClick` on its content.
 
 </Do>
 
@@ -210,7 +227,7 @@ Rows expose no hover, press or focus attributes: use `:hover`, `:active`, `:focu
 
 ### TreeView
 
-Accepts `div` attributes.
+Forwards `id`, `className`, `style`, `aria-labelledby`, `aria-describedby` and `data-*` attributes; the tree handles pointer and keyboard events itself.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -219,6 +236,9 @@ Accepts `div` attributes.
 | `value` | `string[]` | - | Selected rows (controlled). |
 | `defaultValue` | `string[]` | - | Initially selected rows. |
 | `onValueChange` | `(value: string[]) => void` | - | Called with the selected rows. |
+| `disallowEmptySelection` | `boolean` | `false` | Keeps at least one row selected. |
+| `onActivate` | `(value: string) => void` | - | Called when a row is opened (Enter, click; double click when rows are selectable). |
+| `empty` | `ReactNode` | - | Shown in place of the rows when there are none. |
 | `expanded` | `string[]` | - | Expanded rows (controlled). |
 | `defaultExpanded` | `string[]` | - | Initially expanded rows. |
 | `onExpandedChange` | `(expanded: string[]) => void` | - | Called with the expanded rows. |
@@ -226,12 +246,12 @@ Accepts `div` attributes.
 
 ### TreeViewItem
 
-One row: a `TreeViewItemContent` first, then child `TreeViewItem`s or a `TreeViewCollection`.
+One row: a `TreeViewItemContent` first, then child `TreeViewItem`s or a `TreeViewCollection`. Forwards `className`, `style` and `data-*` attributes.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `value` | `string` | - | The row's identity, unique in the tree. |
-| `textValue` | `string` | content text | Plain-text name for type-ahead; needed when the content is not plain text. |
+| `label` | `string` | content text | Plain-text name for type-ahead and announcements; needed when the content is not plain text. |
 | `disabled` | `boolean` | `false` | Not selectable, not expandable, skipped by the arrow keys. |
 | `hidden` | `boolean` | `false` | Dimmed hidden state; the row stays in the tree. |
 
@@ -254,7 +274,7 @@ One row: a `TreeViewItemContent` first, then child `TreeViewItem`s or a `TreeVie
 
 ### TreeViewAction
 
-A 24 px icon button; a vertical ellipsis unless you pass children.
+A 24 px icon button; a vertical ellipsis unless you pass children. Forwards `id`, `className`, `style`, `aria-labelledby`, `aria-describedby`, `aria-pressed`, `aria-expanded`, `aria-haspopup`, `aria-controls` and `data-*` attributes.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |

@@ -66,7 +66,7 @@ type ComposerContextValue = {
   /** The textarea's own change: typing in a loaded prompt keeps browsing, and the draft. */
   typeValue: (value: string) => void
   status: ComposerStatus
-  isBusy: boolean
+  busy: boolean
   disabled: boolean
   canSubmit: boolean
   submitMode: ComposerSubmitMode
@@ -128,9 +128,9 @@ function useComposerContext(part: string): ComposerContextValue {
 
 /** What a component outside the parts reads and does: the value, send, stop and focus. */
 function useComposer() {
-  const { value, setValue, status, isBusy, canSubmit, submit, stop, focus } =
+  const { value, setValue, status, busy, canSubmit, submit, stop, focus } =
     useComposerContext("useComposer")
-  return { value, setValue, status, isBusy, canSubmit, submit, stop, focus }
+  return { value, setValue, status, busy, canSubmit, submit, stop, focus }
 }
 
 type ComposerProps = Omit<
@@ -297,8 +297,8 @@ function Composer({
     [recent, setPosition, commitValue]
   )
 
-  const isBusy = status === "submitted" || status === "streaming"
-  const canSubmit = !disabled && !isBusy && value.trim() !== ""
+  const busy = status === "submitted" || status === "streaming"
+  const canSubmit = !disabled && !busy && value.trim() !== ""
 
   const focus = React.useCallback(() => {
     inputRef.current?.focus()
@@ -313,12 +313,12 @@ function Composer({
 
   const send = React.useCallback(
     (text: string) => {
-      if (disabled || isBusy || text.trim() === "") return
+      if (disabled || busy || text.trim() === "") return
       setPosition(null)
       onSubmit({ text: text.trim() })
       focus()
     },
-    [disabled, isBusy, setPosition, onSubmit, focus]
+    [disabled, busy, setPosition, onSubmit, focus]
   )
 
   const stop = React.useMemo(
@@ -326,11 +326,11 @@ function Composer({
       onStop === undefined
         ? undefined
         : () => {
-            if (!isBusy) return
+            if (!busy) return
             onStop()
             setStopCount((count) => count + 1)
           },
-    [onStop, isBusy]
+    [onStop, busy]
   )
 
   const context = React.useMemo<ComposerContextValue>(
@@ -339,7 +339,7 @@ function Composer({
       setValue,
       typeValue,
       status,
-      isBusy,
+      busy,
       disabled,
       canSubmit,
       submitMode,
@@ -364,7 +364,7 @@ function Composer({
       setValue,
       typeValue,
       status,
-      isBusy,
+      busy,
       disabled,
       canSubmit,
       submitMode,
@@ -531,7 +531,7 @@ function ComposerInput({
   const {
     value,
     typeValue,
-    isBusy,
+    busy,
     disabled,
     submitMode,
     submit,
@@ -640,7 +640,7 @@ function ComposerInput({
           return
         }
 
-        if (event.key === "Escape" && isBusy && stop !== undefined) {
+        if (event.key === "Escape" && busy && stop !== undefined) {
           // Handled here, so a sheet around the chat stays open.
           event.preventDefault()
           event.stopPropagation()
@@ -844,9 +844,9 @@ function ComposerSubmit({
   stopLabel = "Stop generating",
   className,
 }: ComposerSubmitProps) {
-  const { status, isBusy, canSubmit, disabled, stop, inputRef } =
+  const { status, busy, canSubmit, disabled, stop, inputRef } =
     useComposerContext("ComposerSubmit")
-  const showStop = isBusy && stop !== undefined
+  const showStop = busy && stop !== undefined
   const stopRef = React.useRef<HTMLButtonElement>(null)
   const focused = React.useRef<"send" | "stop" | null>(null)
 
@@ -1026,10 +1026,10 @@ function ComposerStatusMessage({
     let next: string | undefined
     const wasBusy =
       before.status === "submitted" || before.status === "streaming"
-    const isBusy = status === "submitted" || status === "streaming"
+    const busy = status === "submitted" || status === "streaming"
     if (stopCount !== before.stopCount) next = text.stopped
     // From ready or error to busy, whichever busy state a chat goes to first.
-    else if (isBusy && !wasBusy) next = text.submitted
+    else if (busy && !wasBusy) next = text.submitted
     else if (status !== before.status && status === "error") next = text.error
     if (next !== undefined) {
       setAnnouncement((current) => ({ text: next, key: current.key + 1 }))
@@ -1049,7 +1049,8 @@ function ComposerStatusMessage({
 }
 
 type ComposerAttachmentItem = {
-  id: string
+  /** The attachment's identity, unique in `items`: what `onRemove` receives. */
+  value: string
   label: string
   description?: string
   /** Marked `data-icon="inline-start"`, as in any `Chip`, so it takes the chip's size. */
@@ -1058,7 +1059,8 @@ type ComposerAttachmentItem = {
 
 type ComposerAttachmentsProps = {
   items: readonly ComposerAttachmentItem[]
-  onRemove: (id: string) => void
+  /** Called with the `value` of the attachment the user removed. */
+  onRemove: (value: string) => void
   className?: string
   "aria-label"?: string
 }
@@ -1082,15 +1084,15 @@ function ComposerAttachments({
       data-slot="composer-attachments"
       aria-label={ariaLabel}
       className={cn("w-full px-2 pt-2", className)}
-      onRemove={(ids) => {
-        for (const id of ids) onRemove(id)
-        if (ids.length >= items.length) focus()
+      onRemove={(values) => {
+        for (const value of values) onRemove(value)
+        if (values.length >= items.length) focus()
       }}
     >
       <ChipList items={items}>
         {(item) => (
           <Chip
-            value={item.id}
+            value={item.value}
             label={item.label}
             appearance="outline"
             size="md"
@@ -1155,7 +1157,7 @@ function ComposerSuggestion({
   className,
   children,
 }: ComposerSuggestionProps) {
-  const { setValue, send, focus, isBusy, disabled } =
+  const { setValue, send, focus, busy, disabled } =
     useComposerContext("ComposerSuggestion")
 
   return (
@@ -1163,7 +1165,7 @@ function ComposerSuggestion({
       data-slot="composer-suggestion"
       variant="outline"
       size="xs"
-      disabled={disabled || (sendNow && isBusy)}
+      disabled={disabled || (sendNow && busy)}
       className={cn("max-w-full rounded-full", className)}
       onClick={() => {
         if (onSelect) {
@@ -1184,7 +1186,8 @@ function ComposerSuggestion({
 }
 
 type ComposerCommandItem = {
-  id: string
+  /** The command's identity, unique in `items`. */
+  value: string
   /** What is typed after the slash, such as `new`: one word, no spaces. */
   command: string
   /** What the command does, in words; matched too. */
@@ -1319,8 +1322,8 @@ function ComposerCommands({
     historyEntry !== value
   const activeIndex = Math.min(active, Math.max(0, matches.length - 1))
   const activeItem = open ? matches.at(activeIndex) : undefined
-  // An option's id is its place in `items`: the same while the list narrows,
-  // whatever the item's own id holds.
+  // An option's DOM id is its place in `items`: the same while the list
+  // narrows, whatever the item's `value` holds.
   const optionId = (item: ComposerCommandItem) =>
     `${listId}-option-${items.indexOf(item)}`
   const activeId = activeItem === undefined ? undefined : optionId(activeItem)

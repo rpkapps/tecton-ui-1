@@ -48,7 +48,7 @@
   {"q": "pin a labeled marker on a schematic diagram", "answers": ["marker"], "kind": "paraphrase"},
   {"q": "render a menu's content outside a clipped parent", "answers": ["provider", "theme-root"], "kind": "paraphrase"},
   {"q": "switch the entire app between light and dark themes", "answers": ["theme-root"], "kind": "paraphrase"},
-  {"q": "support right-to-left text direction for Arabic locales", "answers": ["direction", "provider"], "kind": "paraphrase"},
+  {"q": "support right-to-left text direction for Arabic locales", "answers": ["provider"], "kind": "paraphrase"},
   {"q": "compact row with an icon, title and a trailing action", "answers": ["item"], "kind": "paraphrase"},
   {"q": "free text field for a single line value", "answers": ["input"], "kind": "paraphrase"},
   {"q": "multi-line box for entering notes", "answers": ["textarea"], "kind": "paraphrase"},

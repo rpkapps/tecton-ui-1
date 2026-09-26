@@ -34,7 +34,7 @@ import {
 
 Wrap every control that may leave the row in an `OverflowItem`, as a direct child of the row; unwrapped children never leave, so the primary action goes in bare. Put the label text in an `OverflowLabel` so an item whose control has an icon can drop to icon-only. The More menu is added at the end automatically.
 
-`Toolbar` is one tab stop: the arrow keys move between its visible controls and Tab leaves the row. Use `Overflow` for a row that is not a toolbar, such as a header with a tab list.
+`Toolbar` is one tab stop: the arrow keys move between its visible controls (Left and Right swap under a right-to-left `TectonProvider`) and Tab leaves the row. Use `Overflow` for a row that is not a toolbar, such as a header with a tab list.
 
 ## How it collapses
 

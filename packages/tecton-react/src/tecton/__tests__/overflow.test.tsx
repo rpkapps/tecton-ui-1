@@ -25,6 +25,7 @@ import {
   TabsTrigger,
 } from "@tecton/react/components/tabs"
 import { DropdownMenuItem } from "@tecton/react/components/dropdown-menu"
+import { TectonProvider } from "@tecton/react/tecton/provider"
 import {
   Overflow,
   OverflowDivider,
@@ -1077,15 +1078,16 @@ describe("Toolbar keyboard", () => {
     expect(button("a")).toHaveFocus()
   })
 
-  it("mirrors Left/Right in a right-to-left layout", async () => {
+  it("mirrors Left/Right under a right-to-left TectonProvider", async () => {
     const user = userEvent.setup()
+    // No `dir` attribute: the direction comes from the provider alone.
     render(
-      <div dir="rtl">
+      <TectonProvider direction="rtl">
         <Toolbar aria-label="Tools" data-w={1000} labels="always">
           <Item id="a" />
           <Item id="b" />
         </Toolbar>
-      </div>
+      </TectonProvider>
     )
     act(() => button("a").focus())
     await user.keyboard("{ArrowLeft}")

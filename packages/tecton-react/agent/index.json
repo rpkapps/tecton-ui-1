@@ -349,7 +349,7 @@
     "names": "action bar action bar action bar selection action bar message action bar actions action bar variants",
     "useWhen": "Rows are selected in a table or list and the actions apply to that selection. A form has unsaved changes and needs Save or Discard without moving the page. The bar should exist only while there is something to act on, then disappear.",
     "routed": "a bar of actions for the current selection actions that appear only while rows are selected",
-    "do": "Control it with `open` and dismiss with `onDismiss`; the bar owns Escape and the enter transition. Give it an `aria-label`; it renders a `div` with `role=\"region\"`. Summarise with `ActionBarSelection` (`count`, `total`, `label`, `onClear`) or with `ActionBarMessage`. Put the actions in `ActionBarActions`, wrapping collapsible ones in `OverflowItem` and leaving the primary action bare. Choose `placement=\"toolbar\"` to fill a table's toolbar row, `\"floating\"` for a sticky card inside the scroll container."
+    "do": "Control it with `open` / `onOpenChange` (called with `false` when the user dismisses it); the bar owns Escape and the enter transition. Give it an `aria-label`; it renders a `div` with `role=\"region\"`. Summarise with `ActionBarSelection` (`count`, `total`, `label`, `onClear`) or with `ActionBarMessage`. Put the actions in `ActionBarActions`, wrapping collapsible ones in `OverflowItem` and leaving the primary action bare. Choose `placement=\"toolbar\"` to fill a table's toolbar row, `\"floating\"` for a sticky card inside the scroll container."
    },
    "notFor": [
     {
@@ -377,7 +377,7 @@
     "actionBarVariants"
    ],
    "aliases": [],
-   "tokens": 979
+   "tokens": 995
   },
   {
    "id": "alert",
@@ -1273,7 +1273,7 @@
    "summary": "The progress belongs in a compact space: a card corner, a table cell, a tile, a KPI.",
    "fields": {
     "names": "circular progress circular progress",
-    "useWhen": "The progress belongs in a compact space: a card corner, a table cell, a tile, a KPI. The number matters as much as the arc: `showValue`, or children such as `7/12`. A ring, not an icon, is the right weight for an indeterminate wait inside a panel or a dialog.",
+    "useWhen": "The progress belongs in a compact space: a card corner, a table cell, a tile, a KPI. The number matters as much as the arc: `showValue`, or `valueLabel=\"7 of 12\"` (also announced) for a count. A ring, not an icon, is the right weight for an indeterminate wait inside a panel or a dialog.",
     "routed": "a ring with the value in the middle a ring with the value in the middle",
     "do": "Always pass `aria-label`; there is no visible label slot. Size with `size=\"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\"` (16 / 24 / 40 / 64 / 96 px): one prop drives the diameter, the stroke width and the centre type together. Colour with `color=\"default\" | \"foreground\" | \"success\" | \"warning\" | \"error\" | \"info\"`; `default` is the shared `progress` fill. Give the scale with `min` and `max`, shape the text with `format` (`Intl.NumberFormatOptions`), or pass children for custom centre content. Pass `value={null}`, not `value={0}`, while the total is unknown: the ring spins."
    },
@@ -1300,7 +1300,7 @@
     "CircularProgress"
    ],
    "aliases": [],
-   "tokens": 919
+   "tokens": 926
   },
   {
    "id": "collapsible",
@@ -3576,7 +3576,7 @@
     "names": "tree view tree view tree view item tree view item content tree view action tree view visibility toggle tree view collection",
     "useWhen": "A hierarchy is browsed rather than read: a project tree, a field and well inventory, a layer list. Rows carry more than a label: selection, disabled, hidden, a colour, a count, a per-row menu. Arrow-key navigation, expansion and type-ahead have to work across the whole structure.",
     "routed": "an expandable hierarchy of folders and records a hierarchy of folders and records expanded in place",
-    "do": "Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value`; add `textValue` when the row label is not plain text. Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data. Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`. Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`). Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `\"true\"`."
+    "do": "Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value`; add `label` when the row content is not plain text. Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data. Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`, and open a row through `onActivate` (Enter, double click on a selectable row), never an `onClick` on its content. Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`). Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `\"true\"`."
    },
    "notFor": [
     {
@@ -3602,7 +3602,7 @@
     "TreeViewCollection"
    ],
    "aliases": [],
-   "tokens": 1060
+   "tokens": 1096
   },
   {
    "id": "tanstack-table",

@@ -107,9 +107,9 @@ const columns = columnHelper.columns([
     ),
   }),
   columnHelper.accessor("depth", {
-    header: () => <div className="text-right">TD (m)</div>,
+    header: () => <div className="text-end">TD (m)</div>,
     cell: ({ getValue }) => (
-      <div className="text-right font-mono tabular-nums">
+      <div className="text-end font-mono tabular-nums">
         {getValue().toLocaleString("en-US")}
       </div>
     ),

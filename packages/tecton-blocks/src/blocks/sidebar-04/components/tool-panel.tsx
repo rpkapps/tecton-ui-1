@@ -28,6 +28,7 @@ import {
 import { Slider } from "@tecton/react/components/slider"
 import { Switch } from "@tecton/react/components/switch"
 import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { defaultWell, wellTypes } from "../data"
 import type { WellProperties, WellType } from "../data"
@@ -56,6 +57,8 @@ function ToolPanel({
   ...props
 }: ToolPanelProps) {
   const id = React.useId()
+  // `side` is physical: the end edge is the left one in right-to-left.
+  const side = useDirection() === "rtl" ? "left" : "right"
   const [internal, setInternal] = React.useState<WellProperties>(defaultWell)
   const value = controlled ?? internal
   const update = (patch: Partial<WellProperties>) => {
@@ -66,7 +69,7 @@ function ToolPanel({
 
   return (
     <Sidebar
-      side="right"
+      side={side}
       collapsible="none"
       data-slot="tool-panel"
       className={cn("h-full w-full min-w-0", className)}

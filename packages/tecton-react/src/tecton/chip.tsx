@@ -14,7 +14,8 @@ import {
 import { XIcon } from "lucide-react"
 
 import { badgeVariants } from "@tecton/react/components/badge"
-import { AriaBridge } from "@tecton/react/tecton/provider"
+
+import { AriaBridge } from "./internal/aria-bridge"
 
 /**
  * Tecton Chip — the *interactive* label: a selectable / removable chip in a

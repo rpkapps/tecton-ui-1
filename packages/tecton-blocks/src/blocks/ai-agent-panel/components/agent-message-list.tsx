@@ -43,7 +43,7 @@ type AgentMessageListProps = React.ComponentProps<"div"> & {
   /** Ids of actions already taken (rendered as done). */
   completedActions?: string[]
   /** Renders a "thinking" indicator after the last message. */
-  isBusy?: boolean
+  busy?: boolean
 }
 
 function AgentMessageList({
@@ -51,7 +51,7 @@ function AgentMessageList({
   messages,
   onAction,
   completedActions = [],
-  isBusy = false,
+  busy = false,
   ...props
 }: AgentMessageListProps) {
   return (
@@ -62,7 +62,7 @@ function AgentMessageList({
         {...props}
       >
         <MessageScrollerViewport className="px-4 py-3">
-          <MessageScrollerContent className="gap-4" aria-busy={isBusy}>
+          <MessageScrollerContent className="gap-4" aria-busy={busy}>
             {messages.map((message) => (
               <MessageScrollerItem
                 key={message.id}
@@ -82,13 +82,13 @@ function AgentMessageList({
                     content={message.content}
                     actions={message.actions}
                     completedActions={completedActions}
-                    disabled={isBusy}
+                    disabled={busy}
                     onAction={(action) => onAction?.(action, message)}
                   />
                 )}
               </MessageScrollerItem>
             ))}
-            {isBusy && (
+            {busy && (
               <MessageScrollerItem messageId="agent-busy">
                 <div
                   data-slot="agent-busy"

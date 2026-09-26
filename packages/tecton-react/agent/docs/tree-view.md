@@ -19,9 +19,9 @@ import { TreeView, TreeViewItem, TreeViewItemContent, TreeViewAction, TreeViewVi
 
 ## Do
 
-- Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value`; add `textValue` when the row label is not plain text.
+- Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value`; add `label` when the row content is not plain text.
 - Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data.
-- Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`.
+- Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`, and open a row through `onActivate` (Enter, double click on a selectable row), never an `onClick` on its content.
 - Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`).
 - Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `"true"`.
 - The tree opens on the branches the user came for (active field, selected well's parents), not a column of closed folders (`defaultExpanded`).
@@ -99,6 +99,6 @@ Rows expose no hover, press or focus attributes: use `:hover`, `:active`, `:focu
 ## Before you finish
 
 - Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
-- A hierarchy is a `TreeView` with an `aria-label` and a `value` plus `textValue` on every `TreeViewItem`, not a pile of nested `Collapsible`s, and rows are never indented with `ps-*`.
+- A hierarchy is a `TreeView` with an `aria-label` and a `value` (plus `label` when the content is not plain text) on every `TreeViewItem`, not a pile of nested `Collapsible`s, and rows are never indented with `ps-*`.
 
 Related: accordion, item, color-swatch

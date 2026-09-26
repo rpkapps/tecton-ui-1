@@ -118,7 +118,9 @@ export default function ActionBarDemo() {
           <ActionBar
             placement="toolbar"
             aria-label="Selected wells"
-            onDismiss={clear}
+            onOpenChange={(open) => {
+              if (!open) clear()
+            }}
           >
             <ActionBarSelection
               count={selected}

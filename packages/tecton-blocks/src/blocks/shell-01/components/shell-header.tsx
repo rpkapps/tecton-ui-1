@@ -4,7 +4,6 @@ import * as React from "react"
 import { cn } from "cn"
 import {
   BugIcon,
-  CircleHelpIcon,
   HomeIcon,
   LogOutIcon,
   SettingsIcon,
@@ -177,9 +176,6 @@ function ShellHeader({
         <AppShellCommandTrigger onClick={() => setPaletteOpen(true)}>
           Search or jump to…
         </AppShellCommandTrigger>
-        <AppShellAction label="Help">
-          <CircleHelpIcon />
-        </AppShellAction>
         {secondary.map((action) => (
           <AppShellAction
             key={action.id}

@@ -55,7 +55,9 @@ export default function ActionBarFloating() {
       <ActionBar
         placement="floating"
         open={selected.size > 0}
-        onDismiss={clear}
+        onOpenChange={(open) => {
+          if (!open) clear()
+        }}
         aria-label="Selected documents"
         className="mb-4"
       >

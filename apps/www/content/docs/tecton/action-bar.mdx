@@ -18,7 +18,7 @@ import { OverflowItem, OverflowLabel } from "@tecton/react/tecton/overflow"
 ```
 
 ```tsx
-<ActionBar open={selected > 0} onDismiss={clear} aria-label="Selected wells">
+<ActionBar open={selected > 0} onOpenChange={(open) => !open && clear()} aria-label="Selected wells">
   <ActionBarSelection count={selected} total={wells.length} onClear={clear} />
   <ActionBarActions aria-label="Selection actions">
     <OverflowItem value="tag" label="Add tag" icon={<TagIcon />} onClick={addTag}>
@@ -68,7 +68,7 @@ Summarise with `ActionBarMessage` instead of a selection.
 
 <Do>
 
-Control it with `open` and dismiss with `onDismiss`; the bar owns Escape and the enter transition.
+Control it with `open` / `onOpenChange` (called with `false` when the user dismisses it); the bar owns Escape and the enter transition.
 
 </Do>
 
@@ -116,7 +116,7 @@ Choose `placement="toolbar"` to fill a table's toolbar row, `"floating"` for a s
 <Correct>
 
 ```tsx
-<ActionBar open={selected.size > 0} onDismiss={clear} aria-label="Selected wells">
+<ActionBar open={selected.size > 0} onOpenChange={(open) => !open && clear()} aria-label="Selected wells">
   <ActionBarSelection count={selected.size} total={wells.length} label="wells" onClear={clear} />
 </ActionBar>
 ```
@@ -195,7 +195,7 @@ A `div` with `role="region"`; give it an `aria-label`.
 | --- | --- | --- | --- |
 | `placement` | `"toolbar" \| "floating"` | `"toolbar"` | Fill the toolbar row, or float as a sticky card. |
 | `open` | `boolean` | `true` | Render the bar. |
-| `onDismiss` | `() => void` | - | Called on Escape while focus is inside the bar. |
+| `onOpenChange` | `(open: boolean) => void` | - | Called with `false` on Escape while focus is inside the bar. |
 
 ### ActionBarSelection
 

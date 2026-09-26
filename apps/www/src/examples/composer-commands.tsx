@@ -17,21 +17,21 @@ import {
 
 const COMMANDS: ComposerCommandItem[] = [
   {
-    id: "new",
+    value: "new",
     command: "new",
     label: "Start a new conversation",
     group: "Chat",
     icon: <SquarePenIcon />,
   },
   {
-    id: "acknowledge",
+    value: "acknowledge",
     command: "acknowledge",
     label: "Acknowledge alert A-7",
     group: "On this page",
     icon: <CheckCheckIcon />,
   },
   {
-    id: "note",
+    value: "note",
     command: "note",
     label: "Add a note to well 34/10-A-12",
     group: "On this page",
@@ -53,7 +53,7 @@ export default function ComposerCommandsDemo() {
           <ComposerCommands
             items={COMMANDS}
             onCommand={(item, composer) => {
-              if (item.id === "new") {
+              if (item.value === "new") {
                 setLog([])
                 return
               }
