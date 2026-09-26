@@ -1,5 +1,8 @@
 import { render, screen } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
+
+import { Button } from "@tecton/react/components/button"
 
 import {
   Canvas,
@@ -64,30 +67,77 @@ describe("Canvas", () => {
     expect(toolbar).toHaveClass("flex-row")
   })
 
-  it("CanvasLegend renders a definition list of items", () => {
+  it("CanvasToolbar moves focus with the arrow keys along its orientation", async () => {
+    const user = userEvent.setup()
+    render(
+      <>
+        <CanvasToolbar aria-label="Tools">
+          <Button aria-label="Zoom in">+</Button>
+          <Button aria-label="Zoom out">-</Button>
+          <Button aria-label="Pan">P</Button>
+        </CanvasToolbar>
+        <Button>After</Button>
+      </>
+    )
+    await user.tab()
+    expect(screen.getByRole("button", { name: "Zoom in" })).toHaveFocus()
+    await user.keyboard("{ArrowDown}")
+    expect(screen.getByRole("button", { name: "Zoom out" })).toHaveFocus()
+    await user.keyboard("{ArrowDown}")
+    expect(screen.getByRole("button", { name: "Pan" })).toHaveFocus()
+    await user.keyboard("{ArrowUp}")
+    expect(screen.getByRole("button", { name: "Zoom out" })).toHaveFocus()
+    // Left/Right belong to the other axis on a vertical rail.
+    await user.keyboard("{ArrowRight}")
+    expect(screen.getByRole("button", { name: "Zoom out" })).toHaveFocus()
+    // Tab leaves the rail instead of stepping through every tool.
+    await user.tab()
+    expect(screen.getByRole("button", { name: "After" })).toHaveFocus()
+  })
+
+  it("CanvasToolbar uses Left/Right when horizontal", async () => {
+    const user = userEvent.setup()
+    render(
+      <CanvasToolbar aria-label="Measure" orientation="horizontal">
+        <Button aria-label="Ruler">R</Button>
+        <Button aria-label="Area">A</Button>
+      </CanvasToolbar>
+    )
+    await user.tab()
+    await user.keyboard("{ArrowRight}")
+    expect(screen.getByRole("button", { name: "Area" })).toHaveFocus()
+    await user.keyboard("{ArrowLeft}")
+    expect(screen.getByRole("button", { name: "Ruler" })).toHaveFocus()
+  })
+
+  it("CanvasLegend renders a list of swatch and name items", () => {
     const { container } = render(
-      <CanvasLegend>
+      <CanvasLegend aria-label="Legend">
         <CanvasLegendItem swatch="#ff0000">Faults</CanvasLegendItem>
         <CanvasLegendItem swatch={<span data-testid="custom" />}>
           Wells
         </CanvasLegendItem>
       </CanvasLegend>
     )
-    const legend = container.querySelector('[data-slot="canvas-legend"]')
-    expect(legend?.tagName).toBe("DL")
-    const items = container.querySelectorAll('[data-slot="canvas-legend-item"]')
+    const legend = screen.getByRole("list", { name: "Legend" })
+    expect(legend).toHaveAttribute("data-slot", "canvas-legend")
+    const items = screen.getAllByRole("listitem")
     expect(items).toHaveLength(2)
+    expect(items.map((item) => item.textContent)).toEqual(["Faults", "Wells"])
 
-    // A string swatch becomes a coloured block.
-    const colourBlock = items[0].querySelector("dt > span") as HTMLElement
-    expect(colourBlock).toHaveAttribute("aria-hidden", "true")
+    // A string swatch becomes a coloured block, hidden from assistive tech.
+    const swatch = items[0].querySelector(
+      '[data-slot="canvas-legend-swatch"]'
+    ) as HTMLElement
+    expect(swatch).toHaveAttribute("aria-hidden", "true")
+    const colourBlock = swatch.firstElementChild as HTMLElement
     expect(colourBlock.style.background).toMatch(/rgb\(255, 0, 0\)|#ff0000/)
-    expect(items[0].querySelector("dd")).toHaveTextContent("Faults")
+    // The swatch comes before its name.
+    expect(swatch.nextElementSibling).toHaveTextContent("Faults")
 
     // A node swatch is rendered as is.
-    expect(items[1].querySelector("dt")).toContainElement(
-      screen.getByTestId("custom")
-    )
-    expect(items[1].querySelector("dd")).toHaveTextContent("Wells")
+    expect(
+      container.querySelectorAll('[data-slot="canvas-legend-swatch"]')[1]
+    ).toContainElement(screen.getByTestId("custom"))
   })
 })

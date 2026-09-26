@@ -24,9 +24,9 @@ related: [Panel, AppShell, Background]
 ## Do
 
 - Compose it: `CanvasSurface` for the engine, then one `CanvasOverlay` per edge or corner holding `CanvasToolbar`s and a `CanvasLegend`.
-- Write the symbology as `CanvasLegendItem`s inside a `CanvasLegend`: it is a `dl` of `dt`/`dd` pairs, and `swatch` takes a CSS colour string (`"var(--chart-1)"`) or a node for a pattern.
+- Write the symbology as `CanvasLegendItem`s inside a `CanvasLegend`: it is a list of items, each a decorative swatch followed by its name, and `swatch` takes a CSS colour string (`"var(--chart-1)"`) or a node for a pattern.
 - Pin chrome with `position` on `CanvasOverlay` (the eight edges and corners); side and corner overlays stack their children down the column, `top` and `bottom` across.
-- Set a rail's direction with `orientation` on `CanvasToolbar` and give it an `aria-label`; it renders `role="toolbar"` and already carries the floating surface, blur and shadow.
+- Set a rail's direction with `orientation` on `CanvasToolbar` and give it an `aria-label`; it is a React Aria `Toolbar` (`role="toolbar"`, arrow keys along the rail, Tab out of it) and already carries the floating surface, blur and shadow.
 - Fill a rail with `Button variant="ghost" size="icon-sm"`, and give the canvas its height from the column it sits in: a flex-column parent, or `className="h-72"` when it is embedded.
 
 ## Don't

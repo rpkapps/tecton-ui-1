@@ -99,7 +99,7 @@ function AppShellSidebar({
     <aside
       data-slot="app-shell-sidebar"
       className={cn(
-        "flex w-64 shrink-0 flex-col overflow-auto border-r border-border-subtle bg-sidebar text-sidebar-foreground",
+        "flex w-64 shrink-0 flex-col overflow-auto border-e border-border-subtle bg-sidebar text-sidebar-foreground",
         className
       )}
       {...props}
@@ -122,7 +122,7 @@ function AppShellAside({ className, ...props }: React.ComponentProps<"aside">) {
     <aside
       data-slot="app-shell-aside"
       className={cn(
-        "flex w-80 shrink-0 flex-col overflow-auto border-l border-border-subtle bg-card",
+        "flex w-80 shrink-0 flex-col overflow-auto border-s border-border-subtle bg-card",
         className
       )}
       {...props}
@@ -140,7 +140,7 @@ function AppShellActions({ className, ...props }: React.ComponentProps<"div">) {
   return (
     <div
       data-slot="app-shell-actions"
-      className={cn("ml-auto flex shrink-0 items-center gap-1", className)}
+      className={cn("ms-auto flex shrink-0 items-center gap-1", className)}
       {...props}
     />
   )
@@ -188,7 +188,11 @@ type AppShellCommandTriggerProps = Omit<
   "children"
 > & {
   children?: React.ReactNode
-  /** Shortcut hint shown at the end of the trigger. */
+  /**
+   * Shortcut hint shown at the end of the trigger. Defaults to `mod+k`
+   * drawn for the platform (⌘ K on Apple keyboards, Ctrl + K elsewhere);
+   * `null` hides it.
+   */
   shortcut?: React.ReactNode
 }
 
@@ -199,7 +203,7 @@ type AppShellCommandTriggerProps = Omit<
 function AppShellCommandTrigger({
   className,
   children = "Search",
-  shortcut = "⌘K",
+  shortcut,
   ...props
 }: AppShellCommandTriggerProps) {
   const label = typeof children === "string" ? children : "Search"
@@ -210,16 +214,21 @@ function AppShellCommandTrigger({
       size="sm"
       aria-label={label}
       className={cn(
-        "h-7 w-7 justify-center gap-2 border-transparent bg-transparent px-0 font-normal text-muted-foreground hover:text-foreground md:mr-1 md:w-40 md:justify-start md:border-border md:bg-muted/40 md:px-2 lg:w-56",
+        "h-7 w-7 justify-center gap-2 border-transparent bg-transparent px-0 font-normal text-muted-foreground hover:text-foreground md:me-1 md:w-40 md:justify-start md:border-border md:bg-muted/40 md:px-2 lg:w-56",
         className
       )}
       {...props}
     >
       <SearchIcon className="size-4 md:size-3.5" />
-      <span className="hidden flex-1 truncate text-left md:inline">
+      <span className="hidden flex-1 truncate text-start md:inline">
         {children}
       </span>
-      {shortcut ? (
+      {shortcut === undefined ? (
+        <ShortcutKeys
+          keys="mod+k"
+          className="pointer-events-none hidden lg:inline-flex"
+        />
+      ) : shortcut ? (
         <Kbd className="pointer-events-none hidden lg:inline-flex">
           {shortcut}
         </Kbd>
@@ -304,7 +313,7 @@ function AppShellUserMenu({
         variant="ghost"
         size="icon-sm"
         aria-label={`Account: ${user.name}`}
-        className={cn("ml-1 rounded-full", className)}
+        className={cn("ms-1 rounded-full", className)}
       >
         <Avatar size="sm">
           {user.image ? <AvatarImage src={user.image} alt="" /> : null}

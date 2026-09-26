@@ -89,7 +89,10 @@ function CountBadge({
     >
       {children}
       {!hidden && (
+        // Decorative: the count belongs in the control's accessible name
+        // (`aria-label="Messages, 4 unread"`), so it is not read twice.
         <span
+          aria-hidden
           data-slot="count-badge"
           data-variant={variant}
           data-color={color}

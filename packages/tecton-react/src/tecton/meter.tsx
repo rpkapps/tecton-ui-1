@@ -63,7 +63,10 @@ type MeterProps = Omit<MeterPrimitiveProps, "className" | "children"> &
     color?: MeterColor
     /** Show the formatted value at the end of the label row. */
     showValue?: boolean
-    /** Custom value text (e.g. "High"). */
+    /**
+     * Custom value text (e.g. "High"). A string or number is also what
+     * assistive tech announces (`aria-valuetext`) instead of the percentage.
+     */
     valueLabel?: React.ReactNode
   }
 
@@ -77,6 +80,12 @@ function Meter({
   valueLabel,
   ...props
 }: MeterProps) {
+  // React Aria turns a text `valueLabel` into `aria-valuetext`, so the
+  // announced value matches the one on screen. A node cannot be text.
+  const ariaValueText =
+    typeof valueLabel === "string" || typeof valueLabel === "number"
+      ? String(valueLabel)
+      : undefined
   return (
     <MeterPrimitive
       data-slot="meter"
@@ -85,6 +94,7 @@ function Meter({
         cn(meterVariants({ size }), className)
       )}
       {...props}
+      valueLabel={ariaValueText}
     >
       {({ percentage, valueText }) => {
         const resolved = color === "auto" ? autoColor(percentage) : color
@@ -105,7 +115,7 @@ function Meter({
                 {(valueLabel || showValue) && (
                   <span
                     data-slot="meter-value"
-                    className="ml-auto font-medium tabular-nums"
+                    className="ms-auto font-medium tabular-nums"
                   >
                     {valueLabel ?? valueText}
                   </span>
@@ -123,11 +133,11 @@ function Meter({
                   <span
                     key={i}
                     data-slot="meter-segment"
-                    className="relative flex-1 overflow-hidden rounded-full bg-muted first:rounded-l-full last:rounded-r-full"
+                    className="relative flex-1 overflow-hidden rounded-full bg-muted"
                   >
                     <span
                       className={cn(
-                        "absolute inset-y-0 left-0 rounded-full transition-[width]",
+                        "absolute inset-y-0 start-0 rounded-full transition-[width]",
                         fillClass[resolved]
                       )}
                       style={{ width: `${fill * 100}%` }}

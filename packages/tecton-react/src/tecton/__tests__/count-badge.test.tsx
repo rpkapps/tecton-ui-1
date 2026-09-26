@@ -23,6 +23,19 @@ describe("CountBadge", () => {
     expect(badge(container)).toHaveClass("bg-primary")
   })
 
+  it("keeps the count out of the accessible name, which carries it once", () => {
+    const { container } = render(
+      <CountBadge count={4}>
+        <button aria-label="Messages, 4 unread">M</button>
+      </CountBadge>
+    )
+    expect(badge(container)).toHaveAttribute("aria-hidden", "true")
+    expect(badge(container)).toHaveTextContent("4")
+    expect(
+      screen.getByRole("button", { name: "Messages, 4 unread" })
+    ).toBeInTheDocument()
+  })
+
   it("hides when there is no count", () => {
     const { container } = render(<CountBadge>x</CountBadge>)
     expect(badge(container)).toBeNull()

@@ -22,7 +22,7 @@ related: [Accordion, Item, ColorSwatch]
 - Give `TreeView` an `aria-label`, and every `TreeViewItem` an `id` and a `textValue`.
 - Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or a `TreeViewCollection` with `items` for dynamic data.
 - Pick the leading glyph with `kind="folder" | "item"` or replace it with `icon`; the chevron and the indent are handled for you.
-- Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, `TreeViewAction`).
+- Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, which names itself "Hide" plus the row's label with `aria-pressed` for the hidden state, and `TreeViewAction`).
 - Drive state from `TreeView` — `selectionMode` with `selectedKeys`, `disabledKeys`, `expandedKeys` — and dim a row with `isHidden` on `TreeViewItem`.
 
 ## Don't

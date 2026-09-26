@@ -24,7 +24,7 @@ related: [Badge, Chip]
 - Wrap the control — `CountBadge` renders the positioned anchor and the badge, and the control stays its child.
 - Let the badge hide itself: `count={0}` renders nothing unless `showZero`, and `invisible` hides it while keeping the anchor.
 - Pick `color` — `default`, `secondary`, `destructive`, `success`, `warning`, `info`, the same names as Badge's `variant` — `anchor` (`top-right` … `bottom-left`) and `max` (counts above it render as `99+`).
-- Put the number in the control's accessible name — `aria-label="Messages, 4 unread"` — because the badge is decorative.
+- Put the number in the control's accessible name — `aria-label="Messages, 4 unread"` — because the badge is decorative: it renders `aria-hidden`, so assistive tech never hears the number anywhere else.
 
 ## Don't
 

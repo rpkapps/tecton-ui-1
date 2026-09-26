@@ -101,6 +101,31 @@ describe("Meter", () => {
     ).toHaveTextContent("High")
   })
 
+  it("announces the valueLabel as aria-valuetext", () => {
+    render(<Meter label="Geological risk" value={50} valueLabel="Medium" />)
+    const meter = screen.getByRole("meter", { name: "Geological risk" })
+    expect(meter).toHaveAttribute("aria-valuetext", "Medium")
+    expect(meter.querySelector('[data-slot="meter-value"]')).toHaveTextContent(
+      "Medium"
+    )
+  })
+
+  it("keeps the formatted aria-valuetext for a non-text valueLabel", () => {
+    render(
+      <Meter aria-label="m" value={60} valueLabel={<strong>High</strong>} />
+    )
+    const meter = screen.getByRole("meter")
+    expect(meter).toHaveAttribute("aria-valuetext", "60%")
+    expect(meter.querySelector("strong")).toHaveTextContent("High")
+  })
+
+  it("fills segments from the inline start", () => {
+    const { container } = render(<Meter aria-label="m" value={50} />)
+    const fill = container.querySelector('[data-slot="meter-segment"] > span')
+    expect(fill).toHaveClass("start-0")
+    expect(fill).not.toHaveClass("left-0")
+  })
+
   it.each([
     ["default", "bg-primary"],
     ["success", "bg-success"],
