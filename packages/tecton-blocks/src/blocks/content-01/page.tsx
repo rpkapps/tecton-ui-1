@@ -45,12 +45,12 @@ export default function Page() {
           <PageHeaderActions>
             <Button
               variant="outline"
-              isDisabled={!dirty}
-              onPress={() => setDraft(saved)}
+              disabled={!dirty}
+              onClick={() => setDraft(saved)}
             >
               Discard
             </Button>
-            <Button isDisabled={!dirty} onPress={() => setSaved(draft)}>
+            <Button disabled={!dirty} onClick={() => setSaved(draft)}>
               Save well
             </Button>
           </PageHeaderActions>

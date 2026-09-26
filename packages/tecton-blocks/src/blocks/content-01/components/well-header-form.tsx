@@ -117,22 +117,24 @@ function WellHeaderForm({
           </Field>
         </div>
         <Field>
+          <FieldLabel htmlFor={`${id}-operator`}>Operator</FieldLabel>
           <Select
-            className="flex w-full flex-col gap-3"
+            id={`${id}-operator`}
             value={value.operator}
-            onChange={(key) => set("operator", String(key))}
+            onValueChange={(next) => {
+              if (next !== null) set("operator", next)
+            }}
+            items={operators.map((operator) => ({
+              value: operator.id,
+              label: operator.label,
+            }))}
           >
-            <FieldLabel>Operator</FieldLabel>
             <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {operators.map((operator) => (
-                <SelectItem
-                  key={operator.id}
-                  id={operator.id}
-                  textValue={operator.label}
-                >
+                <SelectItem key={operator.id} value={operator.id}>
                   {operator.label}
                 </SelectItem>
               ))}
@@ -147,18 +149,21 @@ function WellHeaderForm({
       >
         <div className="grid gap-4 sm:grid-cols-2">
           <Field>
+            <FieldLabel htmlFor={`${id}-rig`}>Rig</FieldLabel>
             <Select
-              className="flex w-full flex-col gap-3"
+              id={`${id}-rig`}
               value={value.rig}
-              onChange={(key) => set("rig", String(key))}
+              onValueChange={(next) => {
+                if (next !== null) set("rig", next)
+              }}
+              items={rigs.map((rig) => ({ value: rig.id, label: rig.label }))}
             >
-              <FieldLabel>Rig</FieldLabel>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 {rigs.map((rig) => (
-                  <SelectItem key={rig.id} id={rig.id} textValue={rig.label}>
+                  <SelectItem key={rig.id} value={rig.id}>
                     {rig.label}
                   </SelectItem>
                 ))}
@@ -208,7 +213,7 @@ function WellHeaderForm({
         <RadioGroup
           aria-label="Well type"
           value={value.type}
-          onChange={(next) => set("type", next as WellType)}
+          onValueChange={(next) => set("type", next as WellType)}
           className="gap-3"
         >
           {wellTypes.map((type) => (

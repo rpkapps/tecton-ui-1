@@ -1,4 +1,4 @@
-import { act, render, screen } from "@testing-library/react"
+import { act, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
@@ -43,14 +43,51 @@ describe("list-01", () => {
     const user = userEvent.setup()
     render(<WellsListPage />)
     const count = wells.filter((well) => well.type === "injector").length
-    await user.click(screen.getByRole("button", { name: /Well type/ }))
-    await user.click(screen.getByRole("option", { name: "Injector" }))
+    const type = screen.getByRole("combobox", { name: "Well type" })
+    await user.click(type)
+    await user.click(await screen.findByRole("option", { name: "Injector" }))
     expect(
       screen.getByText(`${count} ${count === 1 ? "well" : "wells"}`)
     ).toBeInTheDocument()
-    expect(screen.getByRole("button", { name: /Well type/ })).toHaveTextContent(
-      "Injector"
-    )
+    expect(type).toHaveTextContent("Injector")
+  })
+
+  it("selects rows, selects all, sorts and opens a row", async () => {
+    const user = userEvent.setup()
+    const onOpen = vi.fn()
+    render(<WellsListPage onOpen={onOpen} />)
+    const table = screen.getByRole("table", { name: "Wells" })
+    const [first] = wells
+    if (!first) throw new Error("no wells")
+
+    const row = screen.getByRole("checkbox", {
+      name: `Select row ${first.name}`,
+    })
+    await user.click(row)
+    expect(row).toHaveAttribute("aria-checked", "true")
+    expect(
+      screen.getByText(`1 of ${wells.length} selected`)
+    ).toBeInTheDocument()
+    const all = screen.getByRole("checkbox", { name: "Select all rows" })
+    expect(all).toHaveAttribute("aria-checked", "mixed")
+    await user.click(all)
+    expect(
+      screen.getByText(`${wells.length} of ${wells.length} selected`)
+    ).toBeInTheDocument()
+    await user.click(all)
+    expect(
+      screen.getByText(`0 of ${wells.length} selected`)
+    ).toBeInTheDocument()
+
+    const header = within(table).getByRole("columnheader", { name: "Well" })
+    expect(header).toHaveAttribute("aria-sort", "none")
+    await user.click(within(header).getByRole("button"))
+    expect(header).toHaveAttribute("aria-sort", "ascending")
+    await user.click(within(header).getByRole("button"))
+    expect(header).toHaveAttribute("aria-sort", "descending")
+
+    await user.click(within(table).getAllByRole("row")[1]!)
+    expect(onOpen).toHaveBeenCalledTimes(1)
   })
 
   it("shows the empty state without data", () => {

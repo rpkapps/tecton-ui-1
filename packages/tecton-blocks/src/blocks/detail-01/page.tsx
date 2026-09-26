@@ -4,9 +4,9 @@ import * as React from "react"
 import { ListIcon, WaypointsIcon } from "lucide-react"
 
 import {
-  DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "@tecton/react/components/dropdown-menu"
 import {
   SidebarInset,
@@ -36,6 +36,8 @@ import { ConceptSection } from "./components/concept-section"
 import { ProjectSidebar } from "./components/project-sidebar"
 import { project, sectionTabs } from "./data"
 
+type View = "list" | "graph"
+
 /**
  * Detail page with section tabs: a project details sidebar on the left,
  * a page header carrying the section tabs and a list / graph view toggle,
@@ -44,7 +46,7 @@ import { project, sectionTabs } from "./data"
  */
 export default function Page() {
   const [section, setSection] = React.useState("overview")
-  const [view, setView] = React.useState<"list" | "graph">("list")
+  const [view, setView] = React.useState<View>("list")
   const [selected, setSelected] = React.useState<string | null>("1.01")
 
   return (
@@ -56,8 +58,8 @@ export default function Page() {
       <SidebarInset className="min-w-0">
         {/* Tabs wraps the header, which holds the tab list, and the body, which holds a panel per section. */}
         <Tabs
-          selectedKey={section}
-          onSelectionChange={(key) => setSection(String(key))}
+          value={section}
+          onValueChange={(value) => setSection(String(value))}
           className="mx-auto w-full max-w-7xl gap-6 px-4 py-4 md:px-6"
         >
           <PageHeader className="items-center">
@@ -70,30 +72,30 @@ export default function Page() {
             <PageHeaderActions>
               {/* The tabs are one item: they collapse together into a section list in the More menu. */}
               <OverflowItem
-                id="sections"
+                value="sections"
                 priority={2}
                 overflow={
-                  <DropdownMenuGroup
-                    selectionMode="single"
-                    selectedKeys={[section]}
-                    onSelectionChange={(keys) => {
-                      const next = [...keys][0]
-                      if (next) setSection(String(next))
-                    }}
+                  <DropdownMenuRadioGroup
+                    value={section}
+                    onValueChange={(value) => setSection(String(value))}
                   >
                     <DropdownMenuLabel>Section</DropdownMenuLabel>
                     {sectionTabs.map((tab) => (
-                      <DropdownMenuItem key={tab.id} id={tab.id}>
+                      <DropdownMenuRadioItem
+                        key={tab.id}
+                        value={tab.id}
+                        closeOnClick
+                      >
                         {tab.label}
-                      </DropdownMenuItem>
+                      </DropdownMenuRadioItem>
                     ))}
-                  </DropdownMenuGroup>
+                  </DropdownMenuRadioGroup>
                 }
               >
                 <PageHeaderNav aria-label="Project sections">
                   <TabsList aria-label="Sections" className="h-9 p-1">
                     {sectionTabs.map((tab) => (
-                      <TabsTrigger key={tab.id} id={tab.id}>
+                      <TabsTrigger key={tab.id} value={tab.id}>
                         {tab.label}
                       </TabsTrigger>
                     ))}
@@ -102,46 +104,41 @@ export default function Page() {
               </OverflowItem>
               <OverflowSpacer />
               <OverflowItem
-                id="view"
+                value="view"
                 priority={1}
                 overflow={
-                  <DropdownMenuGroup
-                    selectionMode="single"
-                    selectedKeys={[view]}
-                    onSelectionChange={(keys) => {
-                      const next = [...keys][0]
-                      if (next) setView(next as "list" | "graph")
-                    }}
+                  <DropdownMenuRadioGroup
+                    value={view}
+                    onValueChange={(value) => setView(value as View)}
                   >
                     <DropdownMenuLabel>View</DropdownMenuLabel>
-                    <DropdownMenuItem id="list">
+                    <DropdownMenuRadioItem value="list" closeOnClick>
                       <ListIcon />
                       List
-                    </DropdownMenuItem>
-                    <DropdownMenuItem id="graph">
+                    </DropdownMenuRadioItem>
+                    <DropdownMenuRadioItem value="graph" closeOnClick>
                       <WaypointsIcon />
                       Graph
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
+                    </DropdownMenuRadioItem>
+                  </DropdownMenuRadioGroup>
                 }
               >
                 <ToggleGroup
                   aria-label="View"
-                  selectionMode="single"
-                  selectedKeys={[view]}
-                  onSelectionChange={(keys) => {
-                    const next = [...keys][0]
-                    if (next) setView(next as "list" | "graph")
+                  value={[view]}
+                  onValueChange={(value) => {
+                    // Pressing the pressed item keeps it: one view is always on.
+                    const [next] = value
+                    if (next) setView(next as View)
                   }}
-                  disallowEmptySelection
                   variant="outline"
                   size="sm"
                   spacing={0}
                 >
-                  <ToggleGroupItem id="list" aria-label="List view">
+                  <ToggleGroupItem value="list" aria-label="List view">
                     <ListIcon /> List
                   </ToggleGroupItem>
-                  <ToggleGroupItem id="graph" aria-label="Graph view">
+                  <ToggleGroupItem value="graph" aria-label="Graph view">
                     <WaypointsIcon /> Graph
                   </ToggleGroupItem>
                 </ToggleGroup>
@@ -149,7 +146,7 @@ export default function Page() {
             </PageHeaderActions>
           </PageHeader>
 
-          <TabsContent id="overview">
+          <TabsContent value="overview">
             {view === "list" ? (
               <div className="flex flex-col gap-10">
                 {project.concepts.map((concept) => (
@@ -169,7 +166,7 @@ export default function Page() {
           {sectionTabs
             .filter((tab) => tab.id !== "overview")
             .map((tab) => (
-              <TabsContent key={tab.id} id={tab.id}>
+              <TabsContent key={tab.id} value={tab.id}>
                 <div className="flex min-h-96 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
                   {tab.label} for {project.name} goes here.
                 </div>

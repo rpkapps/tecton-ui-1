@@ -2,7 +2,6 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { Pressable } from "react-aria-components"
 
 import { features as defaultFeatures, surveys as defaultSurveys } from "../data"
 import type { MapFeature } from "../data"
@@ -143,8 +142,9 @@ function FairwayMap({
       {features.map((feature) => {
         const isSelected = selected === feature.id
         const isProspect = feature.kind === "prospect"
-        const shape = (
+        return (
           <g
+            key={feature.id}
             data-kind={feature.kind}
             data-selected={isSelected || undefined}
             className={cn(
@@ -158,6 +158,13 @@ function FairwayMap({
                   tabIndex: 0,
                   "aria-label": feature.name,
                   "aria-pressed": isSelected,
+                  onClick: () => onSelect(isSelected ? null : feature.id),
+                  onKeyDown: (event: React.KeyboardEvent) => {
+                    if (event.key === "Enter" || event.key === " ") {
+                      event.preventDefault()
+                      onSelect(isSelected ? null : feature.id)
+                    }
+                  },
                 })}
           >
             <polygon
@@ -186,16 +193,6 @@ function FairwayMap({
               {feature.name}
             </text>
           </g>
-        )
-        return onSelect === undefined ? (
-          <React.Fragment key={feature.id}>{shape}</React.Fragment>
-        ) : (
-          <Pressable
-            key={feature.id}
-            onPress={() => onSelect(isSelected ? null : feature.id)}
-          >
-            {shape}
-          </Pressable>
         )
       })}
     </svg>
