@@ -7,6 +7,7 @@ import {
   colorSwatchPresets,
   colorSwatchVariants,
 } from "@tecton/react/tecton/color-swatch"
+import { PortalProvider } from "@tecton/react/tecton/portal"
 
 const swatch = (container: HTMLElement) =>
   container.querySelector<HTMLElement>('[data-slot="color-swatch"]')
@@ -152,6 +153,45 @@ describe("ColorSwatch", () => {
     const options = await screen.findAllByRole("option")
     expect(options[0]).toHaveAttribute("aria-selected", "true")
     expect(options[1]).toHaveAttribute("aria-selected", "false")
+  })
+
+  // A value the browser cannot resolve falls back to the inherited colour; the
+  // probe must report it as unresolved, not as the surrounding text colour.
+  it("drops a preset that does not resolve instead of offering the text colour", async () => {
+    // The picker portals here, so its text colour is a known one.
+    const host = document.createElement("div")
+    host.style.color = "rgb(9, 9, 9)"
+    document.body.append(host)
+    render(
+      <PortalProvider container={host}>
+        <ColorSwatch
+          color="#0000ff"
+          onChange={() => {}}
+          presets={["not-a-colour", "var(--no-such-token)", "#0000ff"]}
+        />
+      </PortalProvider>
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Edit colour" }))
+    const options = await screen.findAllByRole("option")
+    expect(host).toContainElement(options[0])
+    expect(options).toHaveLength(1)
+    expect(options[0]).toHaveAttribute("aria-selected", "true")
+    host.remove()
+  })
+
+  it("resolves a colour keyword through the DOM", async () => {
+    const onChange = vi.fn()
+    render(
+      <ColorSwatch
+        color="#ff0000"
+        onChange={onChange}
+        presets={["rebeccapurple"]}
+      />
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Edit colour" }))
+    const [option] = await screen.findAllByRole("option")
+    await userEvent.click(option)
+    expect(onChange).toHaveBeenCalledWith("#663399")
   })
 
   it("emits from the native colour input", async () => {

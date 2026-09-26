@@ -16,9 +16,9 @@ const statVariants = cva("flex min-w-0 flex-col gap-0.5", {
       lg: "[--stat-value:1.75rem]",
     },
     align: {
-      start: "items-start text-left",
+      start: "items-start text-start",
       center: "items-center text-center",
-      end: "items-end text-right",
+      end: "items-end text-end",
     },
   },
   defaultVariants: {
@@ -81,39 +81,64 @@ function StatValue({
   )
 }
 
+/** The colour says whether the change is good news, not which way it went. */
 const statDeltaVariants = cva(
   "inline-flex items-center gap-0.5 text-xs font-medium tabular-nums [&_svg]:size-3",
   {
     variants: {
-      trend: {
-        up: "text-success",
-        down: "text-destructive",
-        flat: "text-muted-foreground",
+      tone: {
+        positive: "text-success",
+        negative: "text-destructive",
+        neutral: "text-muted-foreground",
       },
     },
     defaultVariants: {
-      trend: "flat",
+      tone: "neutral",
     },
   }
 )
 
+type StatTrend = "up" | "down" | "flat"
+type StatTone = "positive" | "negative" | "neutral"
+
+const toneOfTrend: Record<StatTrend, StatTone> = {
+  up: "positive",
+  down: "negative",
+  flat: "neutral",
+}
+
+type StatDeltaProps = React.ComponentProps<"span"> & {
+  /** Which way the number moved: picks the icon. Default `flat`. */
+  trend?: StatTrend | null
+  /**
+   * Whether the move is good or bad: picks the colour. Defaults to the
+   * trend's (up is positive, down negative); set it where down is good
+   * news — CAPEX, cost, downtime, risk.
+   */
+  tone?: StatTone | null
+}
+
 function StatDelta({
   className,
-  trend = "flat",
+  trend,
+  tone,
   children,
   ...props
-}: React.ComponentProps<"span"> & VariantProps<typeof statDeltaVariants>) {
+}: StatDeltaProps) {
+  const direction = trend ?? "flat"
+  const sentiment = tone ?? toneOfTrend[direction]
   const Icon =
-    trend === "up"
+    direction === "up"
       ? TrendingUpIcon
-      : trend === "down"
+      : direction === "down"
         ? TrendingDownIcon
         : MinusIcon
   return (
     <span
       data-slot="stat-delta"
-      data-trend={trend}
-      className={cn(statDeltaVariants({ trend }), className)}
+      data-trend={direction}
+      data-tone={sentiment}
+      className={cn(statDeltaVariants({ tone: sentiment }), className)}
       {...props}
     >
       <Icon aria-hidden />
@@ -154,3 +179,4 @@ export {
   StatGroup,
   statVariants,
 }
+export type { StatDeltaProps, StatTone, StatTrend }
