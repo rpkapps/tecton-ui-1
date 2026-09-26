@@ -86,64 +86,42 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
         <SelectField
           label="Facies template"
           value={value.templateId}
-          onChange={(key) => set("templateId", String(key))}
-        >
-          {faciesTemplates.map((template) => (
-            <SelectItem
-              key={template.id}
-              id={template.id}
-              textValue={template.name}
-            >
-              <ColorSwatch color={template.color} size="xs" shape="square" />
-              {template.name}
-            </SelectItem>
-          ))}
-        </SelectField>
+          onValueChange={(next) => set("templateId", next)}
+          items={faciesTemplates.map((template) => ({
+            value: template.id,
+            label: (
+              <>
+                <ColorSwatch color={template.color} size="xs" shape="square" />
+                {template.name}
+              </>
+            ),
+          }))}
+        />
         <SelectField
           label="Input data"
           value={value.inputDataId}
-          onChange={(key) => set("inputDataId", String(key))}
-        >
-          {inputData.map((item) => (
-            <SelectItem key={item.id} id={item.id} textValue={item.label}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectField>
+          onValueChange={(next) => set("inputDataId", next)}
+          items={toItems(inputData)}
+        />
         <SelectField
           label="Target surface"
           value={value.targetSurfaceId}
-          onChange={(key) => set("targetSurfaceId", String(key))}
-        >
-          {targetSurfaces.map((item) => (
-            <SelectItem key={item.id} id={item.id} textValue={item.label}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectField>
+          onValueChange={(next) => set("targetSurfaceId", next)}
+          items={toItems(targetSurfaces)}
+        />
         <SelectField
           label="Volume"
           value={value.volumeId}
-          onChange={(key) => set("volumeId", String(key))}
-        >
-          {volumes.map((item) => (
-            <SelectItem key={item.id} id={item.id} textValue={item.label}>
-              {item.label}
-            </SelectItem>
-          ))}
-        </SelectField>
+          onValueChange={(next) => set("volumeId", next)}
+          items={toItems(volumes)}
+        />
         <div className="grid grid-cols-[1fr_auto] items-end gap-3">
           <SelectField
             label="Method"
             value={value.methodId}
-            onChange={(key) => set("methodId", String(key))}
-          >
-            {methods.map((item) => (
-              <SelectItem key={item.id} id={item.id} textValue={item.label}>
-                {item.label}
-              </SelectItem>
-            ))}
-          </SelectField>
+            onValueChange={(next) => set("methodId", next)}
+            items={toItems(methods)}
+          />
           <Field className="w-24">
             <FieldLabel htmlFor={`${id}-realizations`}>Realizations</FieldLabel>
             <Input
@@ -179,8 +157,8 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
             variant="outline"
             size="icon"
             aria-label="Randomise seed"
-            isDisabled={value.options.lockSeed}
-            onPress={() =>
+            disabled={value.options.lockSeed}
+            onClick={() =>
               set("seed", String(Math.floor(Math.random() * 90000) + 10000))
             }
           >
@@ -193,48 +171,48 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
         <ParameterSlider
           label="Major range"
           value={value.variogram.major}
-          minValue={100}
-          maxValue={5000}
+          min={100}
+          max={5000}
           step={50}
           unit="m"
-          onChange={(next) => setVariogram("major", next)}
+          onValueChange={(next) => setVariogram("major", next)}
         />
         <ParameterSlider
           label="Minor range"
           value={value.variogram.minor}
-          minValue={50}
-          maxValue={2500}
+          min={50}
+          max={2500}
           step={25}
           unit="m"
-          onChange={(next) => setVariogram("minor", next)}
+          onValueChange={(next) => setVariogram("minor", next)}
         />
         <ParameterSlider
           label="Vertical range"
           value={value.variogram.vertical}
-          minValue={1}
-          maxValue={60}
+          min={1}
+          max={60}
           step={1}
           unit="m"
-          onChange={(next) => setVariogram("vertical", next)}
+          onValueChange={(next) => setVariogram("vertical", next)}
         />
         <div className="grid grid-cols-2 gap-4">
           <ParameterSlider
             label="Nugget"
             value={value.variogram.nugget}
-            minValue={0}
-            maxValue={1}
+            min={0}
+            max={1}
             step={0.05}
             valueLabel={value.variogram.nugget.toFixed(2)}
-            onChange={(next) => setVariogram("nugget", next)}
+            onValueChange={(next) => setVariogram("nugget", next)}
           />
           <ParameterSlider
             label="Sill"
             value={value.variogram.sill}
-            minValue={0}
-            maxValue={2}
+            min={0}
+            max={2}
             step={0.05}
             valueLabel={value.variogram.sill.toFixed(2)}
-            onChange={(next) => setVariogram("sill", next)}
+            onValueChange={(next) => setVariogram("sill", next)}
           />
         </div>
       </FormSection>
@@ -253,11 +231,11 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
               />
             }
             value={lithotype.density}
-            minValue={0}
-            maxValue={100}
+            min={0}
+            max={100}
             step={5}
             valueLabel={densityLabel(lithotype.density)}
-            onChange={(next) => setDensity(lithotype.id, next)}
+            onValueChange={(next) => setDensity(lithotype.id, next)}
           />
         ))}
         <p className="text-xs text-muted-foreground">
@@ -272,49 +250,71 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
         <OptionCheckbox
           title="Condition to wells"
           description="Honour facies logs at 12 wells."
-          isSelected={value.options.conditionToWells}
-          onChange={(next) => setOption("conditionToWells", next)}
+          checked={value.options.conditionToWells}
+          onCheckedChange={(next) => setOption("conditionToWells", next)}
         />
         <OptionCheckbox
           title="Honour vertical proportion trends"
           description="Use the input data as a soft probability trend."
-          isSelected={value.options.honourTrends}
-          onChange={(next) => setOption("honourTrends", next)}
+          checked={value.options.honourTrends}
+          onCheckedChange={(next) => setOption("honourTrends", next)}
         />
         <OptionCheckbox
           title="Lock seed"
-          isSelected={value.options.lockSeed}
-          onChange={(next) => setOption("lockSeed", next)}
+          checked={value.options.lockSeed}
+          onCheckedChange={(next) => setOption("lockSeed", next)}
         />
         <OptionCheckbox
           title="Export all realizations to the project"
-          isSelected={value.options.exportRealizations}
-          onChange={(next) => setOption("exportRealizations", next)}
+          checked={value.options.exportRealizations}
+          onCheckedChange={(next) => setOption("exportRealizations", next)}
         />
       </FormSection>
     </div>
   )
 }
 
+type SelectFieldItem = { value: string; label: React.ReactNode }
+
+/** Options of a `SelectField` from records with an `id` and a `label`. */
+function toItems(records: { id: string; label: string }[]): SelectFieldItem[] {
+  return records.map((record) => ({ value: record.id, label: record.label }))
+}
+
 /** Labelled, filled single `Select` inside a `Field`. */
 function SelectField({
   label,
-  children,
-  ...props
-}: Omit<React.ComponentProps<typeof Select<object, "single">>, "children"> & {
+  value,
+  onValueChange,
+  items,
+}: {
   label: string
-  children: React.ReactNode
+  value: string
+  onValueChange: (value: string) => void
+  items: SelectFieldItem[]
 }) {
-  // The label goes inside the Select: React Aria labels the trigger from it
-  // (a `htmlFor` label outside would be overridden by `aria-labelledby`).
+  const id = React.useId()
   return (
     <Field>
-      <Select className="flex w-full flex-col gap-3" {...props}>
-        <FieldLabel>{label}</FieldLabel>
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Select
+        id={id}
+        value={value}
+        onValueChange={(next) => {
+          if (next !== null) onValueChange(next)
+        }}
+        items={items}
+      >
         <SelectTrigger variant="filled">
           <SelectValue />
         </SelectTrigger>
-        <SelectContent>{children}</SelectContent>
+        <SelectContent>
+          {items.map((item) => (
+            <SelectItem key={item.value} value={item.value}>
+              {item.label}
+            </SelectItem>
+          ))}
+        </SelectContent>
       </Select>
     </Field>
   )
@@ -333,7 +333,7 @@ function FormSection({
     <Collapsible
       data-slot="facies-form-section"
       className="group/section flex flex-col gap-3"
-      defaultExpanded={defaultExpanded}
+      defaultOpen={defaultExpanded}
     >
       <Separator emphasis="subtle" />
       <div className="flex items-center justify-between gap-2">
@@ -345,7 +345,7 @@ function FormSection({
             className="flex size-6 items-center justify-center rounded-sm outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
           >
             <ChevronDownIcon
-              className="size-4 transition-transform group-data-expanded/section:rotate-180"
+              className="size-4 transition-transform group-data-open/section:rotate-180"
               aria-hidden
             />
           </CollapsibleTrigger>
@@ -361,18 +361,22 @@ function FormSection({
 function OptionCheckbox({
   title,
   description,
-  isSelected,
-  onChange,
+  checked,
+  onCheckedChange,
 }: {
   title: string
   description?: string
-  isSelected: boolean
-  onChange: (next: boolean) => void
+  checked: boolean
+  onCheckedChange: (next: boolean) => void
 }) {
   const id = React.useId()
   return (
     <Field orientation="horizontal" data-slot="option-checkbox">
-      <Checkbox id={id} isSelected={isSelected} onChange={onChange} />
+      <Checkbox
+        id={id}
+        checked={checked}
+        onCheckedChange={(next) => onCheckedChange(next)}
+      />
       <FieldContent>
         <FieldLabel htmlFor={id} className="text-sm font-normal">
           {title}

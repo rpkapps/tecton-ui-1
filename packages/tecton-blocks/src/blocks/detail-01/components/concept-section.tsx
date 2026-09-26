@@ -27,6 +27,7 @@ import {
 } from "@tecton/react/components/collapsible"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -121,15 +122,19 @@ function AlternativeRow({
             Reference case
           </Badge>
         ) : null}
-        <DropdownMenuTrigger>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            aria-label={`Actions for ${alternative.name}`}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                aria-label={`Actions for ${alternative.name}`}
+              />
+            }
           >
             <MoreVerticalIcon />
-          </Button>
-          <DropdownMenu placement="bottom start">
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="bottom" align="start">
             <DropdownMenuItem>
               <PencilIcon /> Rename
             </DropdownMenuItem>
@@ -143,8 +148,8 @@ function AlternativeRow({
             <DropdownMenuItem variant="destructive">
               <TrashIcon /> Delete alternative
             </DropdownMenuItem>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
+          </DropdownMenuContent>
+        </DropdownMenu>
         <Button
           variant="ghost"
           size="icon-xs"
@@ -194,15 +199,19 @@ function ConceptSection({
         <Badge variant="outline" size="default" className="capitalize">
           {concept.status}
         </Badge>
-        <DropdownMenuTrigger>
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            aria-label={`Actions for ${concept.name}`}
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            render={
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                aria-label={`Actions for ${concept.name}`}
+              />
+            }
           >
             <MoreVerticalIcon />
-          </Button>
-          <DropdownMenu placement="bottom start">
+          </DropdownMenuTrigger>
+          <DropdownMenuContent side="bottom" align="start">
             <DropdownMenuItem>
               <PencilIcon /> Rename concept
             </DropdownMenuItem>
@@ -213,8 +222,8 @@ function ConceptSection({
             <DropdownMenuItem variant="destructive">
               <TrashIcon /> Delete concept
             </DropdownMenuItem>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </header>
 
       <div className="grid gap-4 lg:grid-cols-3">
@@ -281,7 +290,7 @@ function ConceptSection({
 
       {concept.alternatives.length ? (
         <Collapsible
-          defaultExpanded
+          defaultOpen
           className="group/alternatives rounded-lg border bg-card"
         >
           <div className="flex items-center gap-2 px-4 py-3">
@@ -291,7 +300,7 @@ function ConceptSection({
             </span>
             <CollapsibleTrigger
               aria-label="Toggle alternatives"
-              className="flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground [&_svg]:size-4 [&_svg]:rotate-180 [&_svg]:transition-transform group-data-expanded/alternatives:[&_svg]:rotate-0"
+              className="flex size-6 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground [&_svg]:size-4 [&_svg]:rotate-180 [&_svg]:transition-transform group-data-open/alternatives:[&_svg]:rotate-0"
             >
               <ChevronUpIcon />
             </CollapsibleTrigger>

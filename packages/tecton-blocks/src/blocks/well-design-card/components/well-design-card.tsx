@@ -9,7 +9,6 @@ import {
   PencilIcon,
   TrashIcon,
 } from "lucide-react"
-import { useLocale } from "react-aria-components"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -24,6 +23,7 @@ import {
 import { Checkbox } from "@tecton/react/components/checkbox"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -31,6 +31,7 @@ import {
 import { Separator } from "@tecton/react/components/separator"
 import { CircularProgress } from "@tecton/react/tecton/circular-progress"
 import { Meter } from "@tecton/react/tecton/meter"
+import { useLocale } from "@tecton/react/tecton/provider"
 import {
   Stat,
   StatGroup,
@@ -82,10 +83,13 @@ function WellDesignCard({
         <CardTitle className="flex min-w-0 items-center gap-2">
           <Checkbox
             aria-label={`Select ${design.name}`}
-            {...(isSelected === undefined ? {} : { isSelected })}
+            {...(isSelected === undefined ? {} : { checked: isSelected })}
             {...(onSelectedChange === undefined
               ? {}
-              : { onChange: onSelectedChange })}
+              : {
+                  onCheckedChange: (checked: boolean) =>
+                    onSelectedChange(checked),
+                })}
           />
           <span className="truncate text-base">{design.name}</span>
           <Badge variant="secondary" appearance="outline">
@@ -93,12 +97,20 @@ function WellDesignCard({
           </Badge>
         </CardTitle>
         <CardAction>
-          <DropdownMenuTrigger>
-            <Button variant="ghost" size="icon-xs" aria-label="More actions">
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              render={
+                <Button
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="More actions"
+                />
+              }
+            >
               <MoreVerticalIcon />
-            </Button>
-            <DropdownMenu placement="bottom end">
-              <DropdownMenuItem onAction={() => onView?.(design)}>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent side="bottom" align="end">
+              <DropdownMenuItem onClick={() => onView?.(design)}>
                 <PencilIcon /> Open design
               </DropdownMenuItem>
               <DropdownMenuItem>
@@ -108,8 +120,8 @@ function WellDesignCard({
               <DropdownMenuItem variant="destructive">
                 <TrashIcon /> Delete
               </DropdownMenuItem>
-            </DropdownMenu>
-          </DropdownMenuTrigger>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </CardAction>
       </CardHeader>
 
@@ -210,7 +222,7 @@ function WellDesignCard({
         <Button
           className="w-full"
           variant="secondary"
-          onPress={() => onView?.(design)}
+          onClick={() => onView?.(design)}
         >
           View design
         </Button>

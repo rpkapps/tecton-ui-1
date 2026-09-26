@@ -3,8 +3,6 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { NumberField } from "react-aria-components"
-
 import { Field, FieldError, FieldLabel } from "@tecton/react/components/field"
 import { Input } from "@tecton/react/components/input"
 import {
@@ -17,6 +15,7 @@ import {
 import { Separator } from "@tecton/react/components/separator"
 import { Slider } from "@tecton/react/components/slider"
 import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+import { useLocale } from "@tecton/react/tecton/provider"
 
 import {
   getPair,
@@ -27,6 +26,16 @@ import {
   volumes,
 } from "../data"
 import type { HorizonSettings } from "../data"
+
+const lineWidthItems = lineWidths.map((width) => ({
+  value: String(width),
+  label: (
+    <>
+      <span className="font-mono tabular-nums">{width}</span>
+      <span className="text-muted-foreground">px</span>
+    </>
+  ),
+}))
 
 type HorizonFormProps = Omit<React.ComponentProps<"div">, "onChange"> & {
   value: HorizonSettings
@@ -42,7 +51,8 @@ function HorizonForm({
   const pair = getPair(value.pairId)
   const top = getSurface(pair.top)
   const base = getSurface(pair.base)
-  const errorId = `${React.useId()}-depth-error`
+  const id = React.useId()
+  const errorId = `${id}-depth-error`
   const depthError = validateDepths(value)
 
   const set = <TKey extends keyof HorizonSettings>(
@@ -57,11 +67,13 @@ function HorizonForm({
       {...props}
     >
       <Field>
+        <FieldLabel htmlFor={`${id}-pair`}>Surface pair</FieldLabel>
         <Select
-          className="flex w-full flex-col gap-3"
+          id={`${id}-pair`}
           value={value.pairId}
-          onChange={(key) => {
-            const next = getPair(String(key))
+          onValueChange={(pairId) => {
+            if (pairId === null) return
+            const next = getPair(pairId)
             onChange({
               ...value,
               pairId: next.id,
@@ -69,14 +81,17 @@ function HorizonForm({
               bottomDepth: getSurface(next.base).depth,
             })
           }}
+          items={surfacePairs.map((item) => ({
+            value: item.id,
+            label: item.label,
+          }))}
         >
-          <FieldLabel>Surface pair</FieldLabel>
           <SelectTrigger variant="filled">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
             {surfacePairs.map((item) => (
-              <SelectItem key={item.id} id={item.id} textValue={item.label}>
+              <SelectItem key={item.id} value={item.id}>
                 {item.label}
               </SelectItem>
             ))}
@@ -86,18 +101,24 @@ function HorizonForm({
 
       <div className="grid grid-cols-2 gap-3">
         <Field>
+          <FieldLabel htmlFor={`${id}-volume`}>Volume</FieldLabel>
           <Select
-            className="flex w-full flex-col gap-3"
+            id={`${id}-volume`}
             value={value.volumeId}
-            onChange={(key) => set("volumeId", String(key))}
+            onValueChange={(volumeId) => {
+              if (volumeId !== null) set("volumeId", volumeId)
+            }}
+            items={volumes.map((item) => ({
+              value: item.id,
+              label: item.label,
+            }))}
           >
-            <FieldLabel>Volume</FieldLabel>
             <SelectTrigger variant="filled">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
               {volumes.map((item) => (
-                <SelectItem key={item.id} id={item.id} textValue={item.label}>
+                <SelectItem key={item.id} value={item.id}>
                   {item.label}
                 </SelectItem>
               ))}
@@ -105,24 +126,22 @@ function HorizonForm({
           </Select>
         </Field>
         <Field>
+          <FieldLabel htmlFor={`${id}-line`}>Line</FieldLabel>
           <Select
-            className="flex w-full flex-col gap-3"
+            id={`${id}-line`}
             value={String(value.lineWidth)}
-            onChange={(key) => set("lineWidth", Number(key))}
+            onValueChange={(width) => {
+              if (width !== null) set("lineWidth", Number(width))
+            }}
+            items={lineWidthItems}
           >
-            <FieldLabel>Line</FieldLabel>
             <SelectTrigger variant="filled">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {lineWidths.map((width) => (
-                <SelectItem
-                  key={width}
-                  id={String(width)}
-                  textValue={`${width} px`}
-                >
-                  <span className="font-mono tabular-nums">{width}</span>
-                  <span className="text-muted-foreground">px</span>
+              {lineWidthItems.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -139,13 +158,13 @@ function HorizonForm({
         <DepthField
           label="Top depth (TVDSS)"
           value={value.topDepth}
-          onChange={(next) => set("topDepth", next)}
+          onValueChange={(next) => set("topDepth", next)}
           errorId={depthError ? errorId : undefined}
         />
         <DepthField
           label="Bottom depth (TVDSS)"
           value={value.bottomDepth}
-          onChange={(next) => set("bottomDepth", next)}
+          onValueChange={(next) => set("bottomDepth", next)}
           errorId={depthError ? errorId : undefined}
         />
         <FieldError id={errorId} className="col-span-2 text-xs">
@@ -157,58 +176,109 @@ function HorizonForm({
         label="Opacity"
         value={value.opacity}
         unit="%"
-        minValue={0}
-        maxValue={100}
+        min={0}
+        max={100}
         step={5}
-        onChange={(next) => set("opacity", next)}
+        onValueChange={(next) => set("opacity", next)}
       />
       <LabelledSlider
         label="Smoothing"
         value={value.smoothing}
         unit="m"
-        minValue={0}
-        maxValue={100}
+        min={0}
+        max={100}
         step={5}
-        onChange={(next) => set("smoothing", next)}
+        onValueChange={(next) => set("smoothing", next)}
       />
     </div>
   )
 }
 
+/** The group and decimal separators of a locale. */
+function separators(locale: string) {
+  const parts = new Intl.NumberFormat(locale).formatToParts(12345.6)
+  return {
+    group: parts.find((part) => part.type === "group")?.value ?? ",",
+    decimal: parts.find((part) => part.type === "decimal")?.value ?? ".",
+  }
+}
+
+/** A number typed in a locale's format; `NaN` for an empty or partial entry. */
+function parseNumber(text: string, locale: string) {
+  const { group, decimal } = separators(locale)
+  const normalized = text
+    .trim()
+    .split(group)
+    .join("")
+    .replace(/[\s\u00a0\u202f]/g, "")
+    .replace(decimal, ".")
+  return /^[+-]?(\d+\.?\d*|\.\d+)$/.test(normalized)
+    ? Number(normalized)
+    : Number.NaN
+}
+
 /**
- * A depth in metres on React Aria `NumberField`, which accepts a partial
- * entry such as "-" while typing and formats the value for the locale. An
+ * A depth in metres: a text field that accepts a partial entry such as "-"
+ * while typing and shows the value in the locale's format. The entry is
+ * committed on blur or Enter, the arrow keys step it by one metre, and an
  * empty or unparsable entry leaves the previous value in place.
  */
 function DepthField({
   label,
   value,
-  onChange,
+  onValueChange,
   errorId,
 }: {
   label: string
   value: number
-  onChange: (next: number) => void
+  onValueChange: (next: number) => void
   /** Id of the error that describes the pair; set while it is invalid. */
   errorId?: string | undefined
 }) {
+  const id = React.useId()
+  const { locale } = useLocale()
+  // The text being typed; `null` shows the formatted value.
+  const [draft, setDraft] = React.useState<string | null>(null)
+
+  const commit = () => {
+    if (draft === null) return
+    const next = parseNumber(draft, locale)
+    if (!Number.isNaN(next)) onValueChange(next)
+    setDraft(null)
+  }
+
+  const step = (delta: number) => {
+    const current = draft === null ? value : parseNumber(draft, locale)
+    onValueChange((Number.isNaN(current) ? value : current) + delta)
+    setDraft(null)
+  }
+
   return (
     <Field data-invalid={errorId !== undefined}>
-      <NumberField
-        className="flex flex-col gap-3"
-        value={value}
-        onChange={(next) => {
-          if (!Number.isNaN(next)) onChange(next)
+      <FieldLabel htmlFor={id}>{label}</FieldLabel>
+      <Input
+        id={id}
+        variant="filled"
+        inputMode="decimal"
+        autoComplete="off"
+        className="h-8 font-mono text-sm tabular-nums md:text-xs"
+        value={draft ?? value.toLocaleString(locale)}
+        onChange={(event) => {
+          // Only what can become a number: sign, digits and separators.
+          if (/^[+-]?[\d\s.,'\u00a0\u202f]*$/.test(event.target.value))
+            setDraft(event.target.value)
         }}
-        isInvalid={errorId !== undefined}
-        {...(errorId === undefined ? {} : { "aria-describedby": errorId })}
-      >
-        <FieldLabel>{label}</FieldLabel>
-        <Input
-          variant="filled"
-          className="h-8 font-mono text-sm tabular-nums md:text-xs"
-        />
-      </NumberField>
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === "Enter") commit()
+          else if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+            event.preventDefault()
+            step(event.key === "ArrowUp" ? 1 : -1)
+          }
+        }}
+        aria-invalid={errorId !== undefined || undefined}
+        aria-describedby={errorId}
+      />
     </Field>
   )
 }
@@ -246,35 +316,41 @@ function LabelledSlider({
   label,
   value,
   unit,
-  minValue,
-  maxValue,
+  min,
+  max,
   step = 1,
-  onChange,
+  onValueChange,
 }: {
   label: string
   value: number
   unit?: string
-  minValue: number
-  maxValue: number
+  min: number
+  max: number
   step?: number
-  onChange: (value: number) => void
+  onValueChange: (value: number) => void
 }) {
+  const labelId = React.useId()
   return (
     <div data-slot="labelled-slider" className="flex flex-col gap-2">
       <div className="flex items-center justify-between text-xs">
-        <span className="text-muted-foreground">{label}</span>
+        <span id={labelId} className="text-muted-foreground">
+          {label}
+        </span>
         <span className="font-mono tabular-nums">
           {value}
           {unit && <span className="text-muted-foreground">{unit}</span>}
         </span>
       </div>
       <Slider
-        aria-label={label}
-        value={value}
-        minValue={minValue}
-        maxValue={maxValue}
+        aria-labelledby={labelId}
+        value={[value]}
+        min={min}
+        max={max}
         step={step}
-        onChange={(next) => onChange(Array.isArray(next) ? next[0] : next)}
+        onValueChange={(next) => {
+          const [first] = Array.isArray(next) ? next : [next]
+          if (first !== undefined) onValueChange(first)
+        }}
       />
     </div>
   )

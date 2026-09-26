@@ -2,7 +2,8 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { useLocale } from "react-aria-components"
+
+import { useLocale } from "@tecton/react/tecton/provider"
 
 import type { WellDesign } from "../data"
 

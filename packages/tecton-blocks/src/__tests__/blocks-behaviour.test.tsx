@@ -30,7 +30,7 @@ describe("fda-comparison-table", () => {
       await rowAction("FDA 2.3", "Duplicate")
       await rowAction("FDA 1.2", "Delete")
       // With ids built from the row count, this copy would reuse the first
-      // copy's id and React Aria would drop one of the two rows.
+      // copy's id and the two rows would share a key.
       await rowAction("FDA 2.3", "Duplicate")
       expect(screen.getAllByText("FDA 2.3 (copy)")).toHaveLength(2)
     }

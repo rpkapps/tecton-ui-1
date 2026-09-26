@@ -8,7 +8,8 @@ import {
   ConstructionIcon,
 } from "lucide-react"
 
-import { Button, LinkButton } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/components/button"
+import { LinkButton } from "@tecton/react/tecton/link"
 
 import { LogTrack, LogTrackBand, LogTrackMarker } from "./components/log-track"
 import {
@@ -51,7 +52,7 @@ export default function ComingSoonPage() {
           </LinkButton>
           <Button
             variant={subscribed ? "secondary" : "outline"}
-            onPress={() => setSubscribed((value) => !value)}
+            onClick={() => setSubscribed((value) => !value)}
           >
             {subscribed ? (
               <BellRingIcon data-icon="inline-start" />

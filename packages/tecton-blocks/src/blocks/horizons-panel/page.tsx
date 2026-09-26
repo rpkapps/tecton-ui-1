@@ -3,7 +3,6 @@
 import * as React from "react"
 import { cn } from "cn"
 import { PanelRightIcon, PanelRightOpenIcon } from "lucide-react"
-import { useLocale } from "react-aria-components"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -15,6 +14,7 @@ import {
   PanelHeader,
   PanelTitle,
 } from "@tecton/react/tecton/panel"
+import { useLocale } from "@tecton/react/tecton/provider"
 
 import { HorizonForm } from "./components/horizon-form"
 import { HorizonReadout } from "./components/horizon-readout"
@@ -71,7 +71,7 @@ function HorizonsPanel({
             variant="ghost"
             size="icon-sm"
             aria-label="Collapse panel"
-            {...(onCollapse === undefined ? {} : { onPress: onCollapse })}
+            {...(onCollapse === undefined ? {} : { onClick: onCollapse })}
           >
             <PanelRightIcon />
           </Button>
@@ -105,15 +105,15 @@ function HorizonsPanel({
         <Button
           variant="ghost"
           size="sm"
-          isDisabled={!dirty}
-          onPress={() => setValue(applied)}
+          disabled={!dirty}
+          onClick={() => setValue(applied)}
         >
           Reset
         </Button>
         <Button
           size="sm"
-          isDisabled={!dirty || invalid}
-          onPress={() => {
+          disabled={!dirty || invalid}
+          onClick={() => {
             setApplied(value)
             onApply?.(value)
           }}
@@ -140,7 +140,7 @@ export default function HorizonsPanelPage() {
           onCollapse={() => setOpen(false)}
         />
       ) : (
-        <Button variant="outline" size="sm" onPress={() => setOpen(true)}>
+        <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
           <PanelRightOpenIcon data-icon="inline-start" /> Show horizons
         </Button>
       )}

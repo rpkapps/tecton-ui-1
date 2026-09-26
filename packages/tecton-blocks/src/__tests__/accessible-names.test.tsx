@@ -13,12 +13,11 @@ import Sidebar03Page from "../blocks/sidebar-03/page"
 import Sidebar04Page from "../blocks/sidebar-04/page"
 
 /**
- * A Select's trigger is named by its label (React Aria `aria-labelledby`
- * lists the label and the selected value), so the label text must be part
- * of the trigger's accessible name.
+ * A Select's trigger (a combobox) is named by its label, so the label text
+ * must be part of the trigger's accessible name.
  */
 function expectSelect(label: string) {
-  const trigger = screen.getByRole("button", {
+  const trigger = screen.getByRole("combobox", {
     name: new RegExp(`\\b${label}$|^${label}\\b|\\s${label}\\s`),
   })
   expect(trigger).toHaveAttribute("aria-haspopup", "listbox")

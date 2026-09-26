@@ -10,7 +10,6 @@ import {
   TriangleAlertIcon,
   XIcon,
 } from "lucide-react"
-import { useLocale } from "react-aria-components"
 
 import {
   Alert,
@@ -28,6 +27,7 @@ import {
   PanelHeader,
   PanelTitle,
 } from "@tecton/react/tecton/panel"
+import { useLocale } from "@tecton/react/tecton/provider"
 
 import { FaciesForm } from "./components/facies-form"
 import { ParameterSlider } from "./components/parameter-slider"
@@ -90,7 +90,7 @@ function FaciesModelingPanel({
             variant="ghost"
             size="icon-sm"
             aria-label="Collapse panel"
-            {...(onCollapse === undefined ? {} : { onPress: onCollapse })}
+            {...(onCollapse === undefined ? {} : { onClick: onCollapse })}
           >
             <PanelRightIcon />
           </Button>
@@ -118,7 +118,7 @@ function FaciesModelingPanel({
                 variant="ghost"
                 size="icon-sm"
                 aria-label="Dismiss"
-                onPress={() => setLastRun(null)}
+                onClick={() => setLastRun(null)}
               >
                 <XIcon />
               </Button>
@@ -131,12 +131,12 @@ function FaciesModelingPanel({
         <Button
           variant="secondary"
           size="sm"
-          isDisabled={running}
-          onPress={() => setValue(initialSettings)}
+          disabled={running}
+          onClick={() => setValue(initialSettings)}
         >
           Reset
         </Button>
-        <Button size="sm" isDisabled={running || invalid} onPress={run}>
+        <Button size="sm" disabled={running || invalid} onClick={run}>
           {running ? <Spinner /> : <PlayIcon />}
           {running ? "Running…" : "Run model"}
         </Button>
@@ -168,7 +168,7 @@ export default function FaciesModelingPanelPage() {
             variant="ghost"
             size="icon-sm"
             aria-label="Expand facies modeling panel"
-            onPress={() => setOpen(true)}
+            onClick={() => setOpen(true)}
           >
             <PanelLeftOpenIcon />
           </Button>

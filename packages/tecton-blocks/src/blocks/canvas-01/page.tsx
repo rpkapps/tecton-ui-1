@@ -17,11 +17,12 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
 } from "lucide-react"
-import { useLocale } from "react-aria-components"
 
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -41,7 +42,11 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@tecton/react/components/sidebar"
-import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
 import {
   Canvas,
   CanvasLegend,
@@ -49,7 +54,9 @@ import {
   CanvasOverlay,
   CanvasSurface,
   CanvasToolbar,
+  CanvasToolbarButton,
 } from "@tecton/react/tecton/canvas"
+import { useLocale } from "@tecton/react/tecton/provider"
 
 import { FairwayMap } from "./components/fairway-map"
 import { PresetList } from "./components/preset-list"
@@ -63,35 +70,44 @@ import {
   surveys,
 } from "./data"
 
-/** Icon button used in the floating rails, with a tooltip as its name. */
+/**
+ * Tool of a floating rail, with a tooltip as its name. `render` composes
+ * it with another trigger (a menu), which then owns the press.
+ */
 function Tool({
   label,
-  isActive,
-  isDisabled = false,
+  active,
+  disabled = false,
   children,
-  onPress,
+  onClick,
+  render,
 }: {
   label: string
-  isActive?: boolean
-  isDisabled?: boolean
+  active?: boolean
+  disabled?: boolean
   children: React.ReactNode
-  onPress?: () => void
+  onClick?: () => void
+  render?: React.ReactElement
 }) {
   return (
-    <TooltipTrigger>
-      <Button
-        variant="ghost"
-        size="icon-sm"
-        aria-label={label}
-        isDisabled={isDisabled}
-        className="aria-pressed:bg-ghost-active aria-pressed:text-ghost-active-foreground"
-        {...(isActive === undefined ? {} : { "aria-pressed": isActive })}
-        {...(onPress === undefined ? {} : { onPress })}
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <CanvasToolbarButton
+            aria-label={label}
+            disabled={disabled}
+            // A disabled tool stays focusable (aria-disabled), so dim it here.
+            className="aria-disabled:opacity-50 aria-pressed:bg-ghost-active aria-pressed:text-ghost-active-foreground"
+            {...(active === undefined ? {} : { "aria-pressed": active })}
+            {...(onClick === undefined ? {} : { onClick })}
+            {...(render === undefined ? {} : { render })}
+          />
+        }
       >
         {children}
-      </Button>
-      <Tooltip placement="right">{label}</Tooltip>
-    </TooltipTrigger>
+      </TooltipTrigger>
+      <TooltipContent side="right">{label}</TooltipContent>
+    </Tooltip>
   )
 }
 
@@ -106,8 +122,15 @@ function ViewSelect({
   defaultKey: string
 }) {
   return (
-    <Select aria-label={label} defaultValue={defaultKey} className="w-auto">
+    <Select
+      defaultValue={defaultKey}
+      items={options.map((option) => ({
+        value: option.id,
+        label: option.label,
+      }))}
+    >
       <SelectTrigger
+        aria-label={label}
         size="sm"
         className="min-w-28 border-border-subtle bg-card/90 shadow-md backdrop-blur-sm"
       >
@@ -115,7 +138,7 @@ function ViewSelect({
       </SelectTrigger>
       <SelectContent>
         {options.map((option) => (
-          <SelectItem key={option.id} id={option.id} textValue={option.label}>
+          <SelectItem key={option.id} value={option.id}>
             {option.label}
           </SelectItem>
         ))}
@@ -208,90 +231,87 @@ export default function Page() {
               defaultKey="depth"
             />
             <CanvasToolbar aria-label="Navigation tools">
-              <Tool
-                label="Zoom in"
-                isDisabled={zoom >= maxZoom}
-                onPress={zoomIn}
-              >
+              <Tool label="Zoom in" disabled={zoom >= maxZoom} onClick={zoomIn}>
                 <ZoomInIcon />
               </Tool>
               <Tool
                 label="Zoom out"
-                isDisabled={zoom <= minZoom}
-                onPress={zoomOut}
+                disabled={zoom <= minZoom}
+                onClick={zoomOut}
               >
                 <ZoomOutIcon />
               </Tool>
               <Tool
                 label="Pan"
-                isActive={tool === "pan"}
-                onPress={() => setTool("pan")}
+                active={tool === "pan"}
+                onClick={() => setTool("pan")}
               >
                 <HandIcon />
               </Tool>
               <Tool
                 label="Lasso"
-                isActive={tool === "lasso"}
-                onPress={() => setTool("lasso")}
+                active={tool === "lasso"}
+                onClick={() => setTool("lasso")}
               >
                 <LassoIcon />
               </Tool>
             </CanvasToolbar>
             <CanvasToolbar aria-label="Editing tools">
-              <DropdownMenuTrigger>
+              <DropdownMenu>
                 <Tool
                   label="Layers"
-                  isActive={layers.length < mapLayers.length}
+                  active={layers.length < mapLayers.length}
+                  render={<DropdownMenuTrigger />}
                 >
                   <LayersIcon />
                 </Tool>
-                <DropdownMenu placement="right top" className="w-48">
-                  <DropdownMenuLabel>Layers</DropdownMenuLabel>
-                  <DropdownMenuGroup
-                    selectionMode="multiple"
-                    selectedKeys={layers}
-                    onSelectionChange={(keys) =>
-                      setLayers(
-                        keys === "all"
-                          ? mapLayers.map((layer) => layer.id)
-                          : mapLayers
-                              .filter((layer) => keys.has(layer.id))
-                              .map((layer) => layer.id)
-                      )
-                    }
-                  >
+                <DropdownMenuContent
+                  side="right"
+                  align="start"
+                  className="w-48"
+                >
+                  <DropdownMenuGroup>
+                    <DropdownMenuLabel>Layers</DropdownMenuLabel>
                     {mapLayers.map((layer) => (
-                      <DropdownMenuItem
+                      <DropdownMenuCheckboxItem
                         key={layer.id}
-                        id={layer.id}
-                        textValue={layer.label}
+                        checked={layers.includes(layer.id)}
+                        onCheckedChange={(checked) =>
+                          setLayers((current) =>
+                            mapLayers
+                              .map((item) => item.id)
+                              .filter((id) =>
+                                id === layer.id ? checked : current.includes(id)
+                              )
+                          )
+                        }
                       >
                         {layer.label}
-                      </DropdownMenuItem>
+                      </DropdownMenuCheckboxItem>
                     ))}
                   </DropdownMenuGroup>
-                </DropdownMenu>
-              </DropdownMenuTrigger>
+                </DropdownMenuContent>
+              </DropdownMenu>
               <Tool
                 label="Measure"
-                isActive={tool === "measure"}
-                onPress={() => setTool("measure")}
+                active={tool === "measure"}
+                onClick={() => setTool("measure")}
               >
                 <RulerIcon />
               </Tool>
               <Tool
                 label="Section"
-                isActive={tool === "section"}
-                onPress={() => setTool("section")}
+                active={tool === "section"}
+                onClick={() => setTool("section")}
               >
                 <ScanIcon />
               </Tool>
               <Separator className="mx-1 w-auto" />
               {/* Nothing has been edited yet, so there is nothing to step through. */}
-              <Tool label="Undo" isDisabled>
+              <Tool label="Undo" disabled>
                 <UndoIcon />
               </Tool>
-              <Tool label="Redo" isDisabled>
+              <Tool label="Redo" disabled>
                 <RedoIcon />
               </Tool>
             </CanvasToolbar>
@@ -306,23 +326,23 @@ export default function Page() {
             <CanvasToolbar aria-label="Selection tools">
               <Tool
                 label="Select"
-                isActive={tool === "select"}
-                onPress={() => setTool("select")}
+                active={tool === "select"}
+                onClick={() => setTool("select")}
               >
                 <MousePointer2Icon />
               </Tool>
               <Tool
                 label="Marquee"
-                isActive={tool === "marquee"}
-                onPress={() => setTool("marquee")}
+                active={tool === "marquee"}
+                onClick={() => setTool("marquee")}
               >
                 <SquareDashedIcon />
               </Tool>
               <Separator className="mx-1 w-auto" />
               <Tool
                 label="Edit polygon"
-                isActive={tool === "polygon"}
-                onPress={() => setTool("polygon")}
+                active={tool === "polygon"}
+                onClick={() => setTool("polygon")}
               >
                 <PencilIcon />
               </Tool>
@@ -331,28 +351,28 @@ export default function Page() {
               </Tool>
             </CanvasToolbar>
             <CanvasToolbar aria-label="More">
-              <DropdownMenuTrigger>
-                <Tool label="More">
+              <DropdownMenu>
+                <Tool label="More" render={<DropdownMenuTrigger />}>
                   <MoreVerticalIcon />
                 </Tool>
-                <DropdownMenu placement="bottom end" className="w-48">
+                <DropdownMenuContent side="bottom" align="end" className="w-48">
                   <DropdownMenuItem
-                    onAction={() => setSelected(null)}
-                    isDisabled={!selected}
+                    onClick={() => setSelected(null)}
+                    disabled={!selected}
                   >
                     Clear selection
                   </DropdownMenuItem>
                   <DropdownMenuItem
-                    onAction={() => setZoom(1)}
-                    isDisabled={zoom === 1}
+                    onClick={() => setZoom(1)}
+                    disabled={zoom === 1}
                   >
                     Reset zoom
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem>Copy map image</DropdownMenuItem>
                   <DropdownMenuItem>Map settings</DropdownMenuItem>
-                </DropdownMenu>
-              </DropdownMenuTrigger>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </CanvasToolbar>
           </CanvasOverlay>
 
