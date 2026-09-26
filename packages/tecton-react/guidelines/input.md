@@ -23,7 +23,7 @@ related: [Field, InputGroup, Textarea]
 
 - Pick the surface with `variant="outline" | "filled" | "text"` — outline in forms, filled in dense panels, text for inline editing.
 - Wire the label by hand: `<FieldLabel htmlFor="x">` plus `<Input id="x">`. Nothing associates them implicitly.
-- `Input` renders React Aria's `Input`, a real `<input>`: use the DOM props `value`, `onChange(event)`, `disabled`, `required`, `type` and `aria-invalid`.
+- `Input` is a real `<input>`: use the DOM props `value`, `onChange(event)`, `disabled`, `required`, `type` and `aria-invalid`.
 - Mirror the state on the `Field` — `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid` — and keep `className` to layout (`w-full`, `col-span-2`).
 
 ## Don't
@@ -70,7 +70,7 @@ Correct:
 </Field>
 ```
 
-Unlike `Checkbox` and `Switch`, which hand `onChange` a boolean, `Input` is a DOM `<input>`, so `setTitle` stores the `ChangeEvent` and the field renders `[object Object]`.
+`Input` is a DOM `<input>` and `onChange` receives the change event, not the value, so `setTitle` stores the `ChangeEvent` and the field renders `[object Object]`.
 
 ### HIGH Positioning an icon on top of the input
 

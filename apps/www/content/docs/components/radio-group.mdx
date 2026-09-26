@@ -100,7 +100,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Drive it with `value` / `defaultValue` / `onChange` on `RadioGroup`; React Aria hands you the string, not an event.
+Drive it with `value` / `defaultValue` / `onValueChange` on `RadioGroup`; the handler receives the value, not an event.
 
 </Do>
 
@@ -118,13 +118,13 @@ Name the group with `aria-label`, or wrap it in `FieldSet` and `FieldLegend`.
 
 <Do>
 
-Disable everything with `isDisabled` on the group, one option with `isDisabled` on the item.
+Disable everything with `disabled` on the group, one option with `disabled` on the item.
 
 </Do>
 
 <Do>
 
-Mark errors with `isInvalid` on the group and `data-invalid` on each `Field` row.
+Mark errors with `aria-invalid` on the group and `data-invalid` on each `Field` row.
 
 </Do>
 
@@ -150,12 +150,12 @@ Label each radio option, toggle-group item and tab in one to three words that se
 
 ### Don't
 
-<Dont severity="CRITICAL" title="Radix onValueChange instead of onChange">
+<Dont severity="CRITICAL" title="The React Aria onChange handler">
 
 <Wrong>
 
 ```tsx
-<RadioGroup aria-label="Density" value={density} onValueChange={setDensity}>
+<RadioGroup aria-label="Density" value={density} onChange={setDensity}>
   <RadioGroupItem value="compact" id="density-compact" />
 </RadioGroup>
 ```
@@ -165,14 +165,14 @@ Label each radio option, toggle-group item and tab in one to three words that se
 <Correct>
 
 ```tsx
-<RadioGroup aria-label="Density" value={density} onChange={setDensity}>
+<RadioGroup aria-label="Density" value={density} onValueChange={setDensity}>
   <RadioGroupItem value="compact" id="density-compact" />
 </RadioGroup>
 ```
 
 </Correct>
 
-React Aria's `RadioGroup` reports the new value through `onChange`; `onValueChange` is not part of its props, so it is dropped and a controlled group can never leave its initial value.
+`RadioGroup` reports the new value through `onValueChange`; `onChange` is the DOM change event bubbling from the hidden input, so `setDensity` receives an event object and a controlled group never shows the new value.
 
 </Dont>
 
@@ -200,7 +200,7 @@ React Aria's `RadioGroup` reports the new value through `onChange`; `onValueChan
 
 </Correct>
 
-Unlike the collection components, a `Radio` identifies itself to its group by `value` and `id` is only the DOM id used by `htmlFor`, so nothing matches `defaultValue` and no option renders as selected.
+An item identifies itself to its group by `value` and `id` is only the DOM id used by `htmlFor`, so nothing matches `defaultValue` and no option renders as selected.
 
 </Dont>
 

@@ -110,7 +110,9 @@ portals into. It declares no theme variables: `theme="inherit"` (the default)
 lets the shell's `--primary`, palette, radii and current mode inherit, so a
 tenant switch or a mode toggle in the shell repaints the remote with it.
 `theme="dark"` or `theme="light"` pins the subtree instead — a map or a log
-viewer in a light shell — overlays included.
+viewer in a light shell — overlays included. `ThemeRoot` wraps its subtree in
+a `TectonProvider`, so its `dir` and `locale` set the direction and locale
+every Tecton component in the remote reads.
 
 Per-root retinting is an arbitrary property in `className`, which reaches the
 overlay container too:
@@ -173,7 +175,7 @@ new ModuleFederationPlugin({
 
 None of the entries is a singleton, so applications on different React or
 Tecton versions can share a page: `@tecton/react/` is a prefix share, and
-`react`, `react-dom`, `sonner`, `react-aria-components` and `recharts` are
+`react`, `react-dom`, `sonner`, `@base-ui/react/`, `react-aria-components` and `recharts` are
 shared without being singletons (pin `react` and `react-dom` to the same exact
 version in each application).
 The list carries no versions — those come from the application's own install.

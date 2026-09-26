@@ -299,7 +299,7 @@
     "names": "accordion accordion accordion item accordion trigger accordion content",
     "useWhen": "Several independent sections stack vertically and the reader opens the ones they need: an FAQ, grouped settings, a long form in parts. Every section stays on the page; opening one does not replace another. The set is small and known, so rendering every panel up front costs nothing.",
     "routed": "several stacked sections with one open at a time stacked sections that expand, with no parent and child structure",
-    "do": "Give every `AccordionItem` an `id`: that string is the key in `defaultExpandedKeys`, `expandedKeys` and the `Set` passed to `onExpandedChange`. Allow several sections at once with `allowsMultipleExpanded` (the default is one), and disable one with `isDisabled` on its `AccordionItem`, which disables its trigger too. Put the heading text straight into `AccordionTrigger`: it renders the React Aria `Heading`, the button and the chevron pair itself, so `className` on `Accordion` is for width and frame only (`max-w-lg`, `border`)."
+    "do": "Give every `AccordionItem` a `value`: that string is what `defaultValue`, `value` and `onValueChange` hold — always an **array**, even when one section opens at a time. Allow several sections at once with `multiple` (the default is one), and disable one with `disabled` on its `AccordionItem`. Put the heading text straight into `AccordionTrigger`: it renders the heading, the button and the chevron pair itself, so `className` on `Accordion` is for width and frame only (`max-w-lg`, `border`)."
    },
    "notFor": [
     {
@@ -327,7 +327,7 @@
     "AccordionContent"
    ],
    "aliases": [],
-   "tokens": 1024
+   "tokens": 950
   },
   {
    "id": "action-bar",
@@ -368,20 +368,20 @@
     "actionBarVariants"
    ],
    "aliases": [],
-   "tokens": 976
+   "tokens": 980
   },
   {
    "id": "alert",
    "kind": "component",
    "name": "Alert",
-   "import": "import { Alert, AlertTitle, AlertDescription, AlertAction } from \"@tecton/react/components/alert\"",
+   "import": "import { Alert, AlertTitle, AlertDescription, AlertAction, alertVariants } from \"@tecton/react/components/alert\"",
    "family": "feedback",
    "summary": "A message must stay on the page until the user reads or resolves it: a failed run, unsaved changes, a stale model.",
    "fields": {
-    "names": "alert alert alert title alert description alert action",
+    "names": "alert alert alert title alert description alert action alert variants",
     "useWhen": "A message must stay on the page until the user reads or resolves it: a failed run, unsaved changes, a stale model. The message belongs to a region — above a form, inside a panel, at the top of a page — not to a single field. The message needs a severity colour, and sometimes an action beside it.",
     "routed": "a message about something that failed on a page that does have content a message that must stay until the user resolves it",
-    "do": "`variant` is the severity (`default`, `info`, `success`, `warning`, `destructive`); `appearance` is the surface (`default` keeps the card background, `outline` is a coloured border, `filled` is the Tecton status surface). Compose `Alert > icon, AlertTitle, AlertDescription, AlertAction`, with the icon as a direct child of `Alert`. Put every button, including the dismiss control, inside `AlertAction` and wire it with `onPress`; a decision that blocks the user is an `AlertDialog`, not an alert. `className` is for width and placement (`max-w-md`, `mb-4`), never for the status colours."
+    "do": "`variant` is the severity (`default`, `info`, `success`, `warning`, `destructive`); `appearance` is the surface (`default` keeps the card background, `outline` is a coloured border, `filled` is the Tecton status surface). Compose `Alert > icon, AlertTitle, AlertDescription, AlertAction`, with the icon as a direct child of `Alert`. Put every button, including the dismiss control, inside `AlertAction` and wire it with `onClick`; a decision that blocks the user is an `AlertDialog`, not an alert. `className` is for width and placement (`max-w-md`, `mb-4`), never for the status colours."
    },
    "notFor": [
     {
@@ -409,23 +409,24 @@
     "Alert",
     "AlertTitle",
     "AlertDescription",
-    "AlertAction"
+    "AlertAction",
+    "alertVariants"
    ],
    "aliases": [],
-   "tokens": 1190
+   "tokens": 1192
   },
   {
    "id": "alert-dialog",
    "kind": "component",
    "name": "AlertDialog",
-   "import": "import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogOverlay } from \"@tecton/react/components/alert-dialog\"",
+   "import": "import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogOverlay, AlertDialogPortal } from \"@tecton/react/components/alert-dialog\"",
    "family": "overlays",
    "summary": "An action destroys or overwrites something: delete, discard, overwrite, revoke.",
    "fields": {
-    "names": "alert dialog alert dialog alert dialog trigger alert dialog content alert dialog header alert dialog media alert dialog title alert dialog description alert dialog footer alert dialog cancel alert dialog action alert dialog overlay",
+    "names": "alert dialog alert dialog alert dialog trigger alert dialog content alert dialog header alert dialog media alert dialog title alert dialog description alert dialog footer alert dialog cancel alert dialog action alert dialog overlay alert dialog portal",
     "useWhen": "An action destroys or overwrites something: delete, discard, overwrite, revoke. The consequence cannot be undone once the user continues. The user must answer: there is no outside-press dismissal and no close button.",
     "routed": "a confirmation before a destructive action a confirmation of a destructive action a confirmation the user has to answer",
-    "do": "Wrap the trigger `Button` and the `AlertDialog` in one `AlertDialogTrigger`, as for `Dialog`. End the title with a question and state the consequence in `AlertDialogDescription`. Use `AlertDialogCancel` and `AlertDialogAction` in the footer; both carry `slot=\"close\"`, so the dialog closes either way. Colour the confirm with `variant=\"destructive\"` on `AlertDialogAction` — never with `className` — and use `size=\"sm\"` with `AlertDialogMedia` for a short, centred prompt."
+    "do": "Compose `AlertDialog` > `AlertDialogTrigger render={<Button variant=\"destructive\" />}` + `AlertDialogContent`, as for `Dialog`. End the title with a question and state the consequence in `AlertDialogDescription`. `AlertDialogCancel` closes the prompt; `AlertDialogAction` is a plain `Button`, so control the dialog with `open` / `onOpenChange` and close it in the action's `onClick` once the work is done. Colour the confirm with `variant=\"destructive\"` on `AlertDialogAction` — never with `className` — and use `size=\"sm\"` on `AlertDialogContent` with `AlertDialogMedia` for a short, centred prompt."
    },
    "notFor": [
     {
@@ -435,15 +436,10 @@
     {
      "need": "a confirmation of something the user can undo afterwards",
      "id": "sonner"
-    },
-    {
-     "need": "a side panel listing what is about to change",
-     "id": "sheet"
     }
    ],
    "related": [
-    "dialog",
-    "sheet"
+    "dialog"
    ],
    "exports": [
     "AlertDialog",
@@ -456,10 +452,11 @@
     "AlertDialogFooter",
     "AlertDialogCancel",
     "AlertDialogAction",
-    "AlertDialogOverlay"
+    "AlertDialogOverlay",
+    "AlertDialogPortal"
    ],
    "aliases": [],
-   "tokens": 1007
+   "tokens": 1101
   },
   {
    "id": "app-finder",
@@ -516,7 +513,7 @@
    "fields": {
     "names": "app shell app shell app shell header app shell brand app shell nav app shell actions app shell action app shell command trigger app shell divider app shell overflow app shell user menu app shell body app shell sidebar app shell main app shell aside app shell split app shell split panel app shell split handle use min width",
     "useWhen": "The outermost frame of an application: a top bar, an optional left rail, a work area, an optional right aside. The frame fills the viewport (`h-svh`) and clips its own overflow, so each region scrolls on its own. The header carries the host's own cluster — search, help, settings, the account menu — so every mounted application shows the same set. A tool panel lives beside the content and the user may drag the divider between them.",
-    "routed": "the global action cluster at the end of the shell header the application frame around the work area the top bar of the application frame the application frame around the work area a draggable divider between the regions of the application frame the scrolling work area of the application frame the borders between the regions of the application frame the header button whose tooltip shows a shortcut a fixed navigation column inside the application frame the header, rail and work area of an application that owns the document",
+    "routed": "the global action cluster at the end of the shell header the application frame around the work area the top bar of the application frame the application frame around the work area a draggable divider between the regions of the application frame the scrolling work area of the application frame the borders between the regions of the application frame a fixed navigation column inside the application frame the header, rail and work area of an application that owns the document",
     "do": "Compose it: `AppShellHeader` (with `AppShellBrand`, `AppShellNav`, `AppShellActions`), then `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`. Put the page content in `AppShellMain`; it is the scrolling region of the work area. Give every `AppShellAction` a `label` — both the accessible name and the tooltip — separate groups with `AppShellDivider`, and on a narrow header hide the low-priority ones (`hidden lg:inline-flex`) in favour of `AppShellOverflow` (`lg:hidden`). For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them, and gate a full-height aside on `useMinWidth(1280)`. Inside an `AppShellSplitPanel` give the `AppShellAside` `className=\"h-full w-full border-s-0\"`; otherwise `className` overrides the height alone (`h-full` in an embedded context) and the shell keeps its surfaces and borders."
    },
    "notFor": [
@@ -573,7 +570,7 @@
     "useMinWidth"
    ],
    "aliases": [],
-   "tokens": 1306
+   "tokens": 1112
   },
   {
    "id": "aspect-ratio",
@@ -624,7 +621,7 @@
     "names": "attachment attachment attachment group attachment media attachment content attachment title attachment description attachment actions attachment action attachment trigger",
     "useWhen": "A file or an image the user attached: in the composer before sending, or inside a message. The upload lifecycle has to be visible: selected, uploading, processing, failed, done. The card opens something — a preview dialog, a download — while remove or retry stays separate.",
     "routed": "a file or an image card inside a message or a composer",
-    "do": "Compose it: `AttachmentMedia`, then `AttachmentContent` with `AttachmentTitle` and `AttachmentDescription`, then `AttachmentActions`. Drive the look with `state=\"idle\" | \"uploading\" | \"processing\" | \"error\" | \"done\"`, `size` and `orientation`. Use `AttachmentMedia variant=\"image\"` around an `<img>` and `orientation=\"vertical\"` for a thumbnail; lay several cards out in an `AttachmentGroup`. Give every `AttachmentAction` an `aria-label` naming the action and the file; it is a `Button`, so press it with `onPress`."
+    "do": "Compose it: `AttachmentMedia`, then `AttachmentContent` with `AttachmentTitle` and `AttachmentDescription`, then `AttachmentActions`. Drive the look with `state=\"idle\" | \"uploading\" | \"processing\" | \"error\" | \"done\"`, `size` and `orientation`. Use `AttachmentMedia variant=\"image\"` around an `<img>` and `orientation=\"vertical\"` for a thumbnail; lay several cards out in an `AttachmentGroup`. Give every `AttachmentAction` an `aria-label` naming the action and the file; it is a `Button`, so press it with `onClick`."
    },
    "notFor": [
     {
@@ -776,7 +773,7 @@
     "names": "badge badge",
     "useWhen": "A static label names a status, a category or a state: \"Draft\", \"Producing\", \"12 errors\". The label carries a severity: `variant=\"success\" | \"warning\" | \"info\" | \"destructive\"`. The label links to the thing it names, inside a table cell, a list row or a card header.",
     "routed": "a one-word status label inside a row or a header a short static label such as a file type or a count a label that is never selected or removed a label that names a status or a category in words a label with words in it, in the flow of the page a status or category label a status or category label that sits inside a line of text a one-word risk label in a row or a header a word that names a status or a category",
-    "do": "Pick meaning with `variant`, weight with `appearance=\"solid\" | \"outline\"`, height with `size=\"default\" | \"md\" | \"lg\"` (20 / 24 / 28 px). Give an icon or a `Spinner` child `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"` so the badge trims its padding on that side. Make it a link with `render={(props) => <a {...props} href=\"/wells/12\" />}`; there is no `asChild`, and an outer `<a>` gets none of the badge's `[a]:hover:` rules. A category colour that no `variant` carries is the one documented exception: a Tecton palette pair, `className=\"bg-blue-120 text-blue-830\"`, never a stock Tailwind colour. Otherwise `className` is for placement."
+    "do": "Pick meaning with `variant`, weight with `appearance=\"solid\" | \"outline\"`, height with `size=\"default\" | \"md\" | \"lg\"` (20 / 24 / 28 px). Give an icon or a `Spinner` child `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"` so the badge trims its padding on that side. Make it a link with `render={<a href=\"/wells/12\" />}`; there is no `asChild`, and an outer `<a>` gets none of the badge's `[a]:hover:` rules. A category colour that no `variant` carries is the one documented exception: a Tecton palette pair, `className=\"bg-blue-120 text-blue-830\"`, never a stock Tailwind colour. Otherwise `className` is for placement."
    },
    "notFor": [
     {
@@ -804,20 +801,20 @@
     "Badge"
    ],
    "aliases": [],
-   "tokens": 1054
+   "tokens": 1047
   },
   {
    "id": "breadcrumb",
    "kind": "component",
    "name": "Breadcrumb",
-   "import": "import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbEllipsis } from \"@tecton/react/components/breadcrumb\"",
+   "import": "import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator, BreadcrumbEllipsis } from \"@tecton/react/components/breadcrumb\"",
    "family": "navigation",
    "summary": "The path from the application root down to the record on screen, one link per level.",
    "fields": {
-    "names": "breadcrumb breadcrumb breadcrumb list breadcrumb item breadcrumb link breadcrumb page breadcrumb ellipsis",
+    "names": "breadcrumb breadcrumb breadcrumb list breadcrumb item breadcrumb link breadcrumb page breadcrumb separator breadcrumb ellipsis",
     "useWhen": "The path from the application root down to the record on screen, one link per level. The trail is the eyebrow of a page title block, above the `PageHeaderTitle`. A deep path has to collapse in the middle, behind an ellipsis or a menu.",
     "routed": "",
-    "do": "Compose `Breadcrumb` > `BreadcrumbList` > `BreadcrumbItem`, and end the trail with `BreadcrumbPage` — the `span` carrying `aria-current=\"page\"`, never a link restyled to look current. Let `BreadcrumbItem` draw the separator: it renders the chevron itself for every item React Aria does not mark `isCurrent`, and `separatorClassName` is how you size it. Give `BreadcrumbLink` an `href`, and a routing library's link through `render={(props) => <Link {...props} />}`. Collapse the middle with `BreadcrumbEllipsis`, or put it in a `DropdownMenuTrigger` when those levels must stay reachable."
+    "do": "Compose `Breadcrumb` > `BreadcrumbList` > `BreadcrumbItem`, and end the trail with `BreadcrumbPage` — the `span` carrying `aria-current=\"page\"`, never a link restyled to look current. Put a `BreadcrumbSeparator` between items: it is the presentational `li` holding the chevron (flipped in right-to-left); pass a child to change the glyph. Give `BreadcrumbLink` an `href`, and mount a routing library's link with `render={<Link to=\"/fields\" />}`. Collapse the middle with `BreadcrumbEllipsis`, or put it in a `DropdownMenuTrigger` when those levels must stay reachable."
    },
    "notFor": [
     {
@@ -844,10 +841,11 @@
     "BreadcrumbItem",
     "BreadcrumbLink",
     "BreadcrumbPage",
+    "BreadcrumbSeparator",
     "BreadcrumbEllipsis"
    ],
    "aliases": [],
-   "tokens": 970
+   "tokens": 1017
   },
   {
    "id": "bubble",
@@ -888,20 +886,20 @@
     "BubbleReactions"
    ],
    "aliases": [],
-   "tokens": 893
+   "tokens": 901
   },
   {
    "id": "button",
    "kind": "component",
    "name": "Button",
-   "import": "import { Button, LinkButton, buttonVariants } from \"@tecton/react/components/button\"",
+   "import": "import { Button, buttonVariants } from \"@tecton/react/components/button\"",
    "family": "actions",
    "summary": "Something happens in place: submit, open a dialog, run an action, trigger a menu.",
    "fields": {
-    "names": "button button link button button variants",
+    "names": "button button button variants",
     "useWhen": "Something happens in place: submit, open a dialog, run an action, trigger a menu. A real `button` element is the right semantics, and one of the action weights fits: `default`, `secondary`, `outline`, `ghost`, `destructive`, `link`.",
     "routed": "any action on a value other than copying it a navigation target that should look like a button something that happens in place instead of navigation a control that performs an action rather than holding state",
-    "do": "Handle presses with `onPress` and disable with `isDisabled`; React Aria has no `disabled` contract. Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`). Mark icons with `data-icon=\"inline-start\" | \"inline-end\"` so the padding adjusts, and give icon-only buttons an `aria-label`. Navigate with `LinkButton` from this module, or with `buttonVariants()` on a plain `a`. Show work with a `Spinner` child plus `isPending`, which keeps focus and blocks repeat presses (`isDisabled` drops focus); a FAB is the documented `rounded-full shadow-md` recipe."
+    "do": "Handle presses with `onClick` and disable with `disabled`; add `focusableWhenDisabled` when a disabled button must stay in the tab order (a pending submit). Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`). Mark icons with `data-icon=\"inline-start\" | \"inline-end\"` so the padding adjusts, and give icon-only buttons an `aria-label`. Navigate with `render={<a href=\"…\" />}` plus `nativeButton={false}`, or with `buttonVariants()` on a plain `a`. A trigger (`DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`) takes the button as `render={<Button variant=\"outline\" />}`; never nest a `Button` inside a trigger."
    },
    "notFor": [
     {
@@ -918,17 +916,15 @@
     }
    ],
    "related": [
-    "button",
     "button-group",
     "link"
    ],
    "exports": [
     "Button",
-    "LinkButton",
     "buttonVariants"
    ],
    "aliases": [],
-   "tokens": 1102
+   "tokens": 1210
   },
   {
    "id": "button-group",
@@ -969,20 +965,20 @@
     "buttonGroupVariants"
    ],
    "aliases": [],
-   "tokens": 1154
+   "tokens": 1152
   },
   {
    "id": "calendar",
    "kind": "component",
    "name": "Calendar",
-   "import": "import { Calendar, RangeCalendar } from \"@tecton/react/components/calendar\"",
+   "import": "import { Calendar, CalendarDayButton } from \"@tecton/react/components/calendar\"",
    "family": "data",
    "summary": "A month grid is the point: choosing a spud date, reading which days are booked, stepping through a schedule.",
    "fields": {
-    "names": "calendar calendar range calendar",
-    "useWhen": "A month grid is the point: choosing a spud date, reading which days are booked, stepping through a schedule. The calendar stays on the page — in a `Card`, a panel or a wizard step — rather than hiding behind a trigger. Days need state the value alone cannot carry: unavailable dates, a highlighted span, two months side by side.",
-    "routed": "two dates bounding a period",
-    "do": "Hold the value as an `@internationalized/date` value (a `CalendarDate`, or a `DateRange` of them) and drive it with `value` / `onChange`. Show more months with `numberOfMonths`, month and year dropdowns with `captionLayout=\"dropdown\"`, week numbers with `showWeekNumber`. Block days with `isDateUnavailable`, `minValue` and `maxValue`; they carry the struck-through and dimmed cell styling. Resize the grid through its variable, `className=\"[--cell-size:--spacing(11)]\"`, and add per-day content with `renderCell`, never by restyling the cells. For a date field, put the `Calendar` in a `Popover` behind a `Button` inside a `Field`; there is no `DatePicker` component."
+    "names": "calendar calendar calendar day button",
+    "useWhen": "A month grid is the point: choosing a spud date, reading which days are booked, stepping through a schedule. The calendar stays on the page — in a `Card`, a panel or a wizard step — rather than hiding behind a trigger. A period is chosen as two dates: `mode=\"range\"` draws the span between them.",
+    "routed": "",
+    "do": "Pick the selection with `mode=\"single\" | \"multiple\" | \"range\"` and drive it with `selected` / `onSelect`, holding plain `Date` values (a `DateRange` `{ from, to }` for a range). Show more months with `numberOfMonths`, month and year dropdowns with `captionLayout=\"dropdown\"`, week numbers with `showWeekNumber`. Block days with `disabled` — a matcher such as `{ before: new Date() }`, `{ dayOfWeek: [0, 6] }` or a function — so they get the dimmed cell styling. Resize the grid through its variable, `className=\"[--cell-size:--spacing(11)]\"`; never restyle the cells. For a date field, put the `Calendar` in a `PopoverContent` behind a `PopoverTrigger render={<Button variant=\"outline\" />}` inside a `Field`; there is no `DatePicker` component."
    },
    "notFor": [
     {
@@ -992,10 +988,6 @@
     {
      "need": "a year or a month picked in a dense form row",
      "id": "native-select"
-    },
-    {
-     "need": "two dates bounding a period",
-     "id": "calendar"
     }
    ],
    "related": [
@@ -1005,10 +997,10 @@
    ],
    "exports": [
     "Calendar",
-    "RangeCalendar"
+    "CalendarDayButton"
    ],
    "aliases": [],
-   "tokens": 963
+   "tokens": 960
   },
   {
    "id": "canvas",
@@ -1118,7 +1110,7 @@
     "names": "carousel carousel carousel content carousel item carousel previous carousel next use carousel",
     "useWhen": "A short, ordered set of equal tiles does not fit and stepping through them is the point: onboarding slides, a gallery, featured records. Nothing is lost if the reader never reaches the last slide. The set is small enough that every slide can be in the DOM at once.",
     "routed": "",
-    "do": "Compose it: `Carousel`, then `CarouselContent` holding `CarouselItem`s, then `CarouselPrevious` and `CarouselNext` as siblings of the content. Pass Embla options on `Carousel` through `opts` (`{ align: \"start\", loop: true }`) and plugins through `plugins`. Switch the axis with `orientation=\"vertical\"`, never with an Embla `axis` option, and set how many slides show with `basis-*` on `CarouselItem`; the `-ml-4` / `pl-4` gutter is already on the parts. Read position and react to moves through `setApi` and the Embla instance; there is no selected-index prop."
+    "do": "Compose it: `Carousel`, then `CarouselContent` holding `CarouselItem`s, then `CarouselPrevious` and `CarouselNext` as siblings of the content. Pass Embla options on `Carousel` through `opts` (`{ align: \"start\", loop: true }`) and plugins through `plugins`. Switch the axis with `orientation=\"vertical\"`, never with an Embla `axis` option, and set how many slides show with `basis-*` on `CarouselItem`; the `-ms-4` / `ps-4` gutter is already on the parts. Read position and react to moves through `setApi` and the Embla instance; there is no selected-index prop."
    },
    "notFor": [
     {
@@ -1183,7 +1175,7 @@
     "ChartStyle"
    ],
    "aliases": [],
-   "tokens": 1070
+   "tokens": 1119
   },
   {
    "id": "checkbox",
@@ -1194,9 +1186,9 @@
    "summary": "An independent yes/no value the user confirms by submitting the form.",
    "fields": {
     "names": "checkbox checkbox",
-    "useWhen": "An independent yes/no value the user confirms by submitting the form. Several options from a list may be picked at once. A parent row summarising children that are partly selected (`isIndeterminate`).",
+    "useWhen": "An independent yes/no value the user confirms by submitting the form. Several options from a list may be picked at once. A parent row summarising children that are partly selected (`indeterminate`).",
     "routed": "a term the user ticks as part of submitting a form",
-    "do": "Control it with `isSelected` and `onChange(isSelected: boolean)`, or leave it uncontrolled with `defaultSelected`. Give it an `id` and point a `FieldLabel htmlFor` at it inside a `Field orientation=\"horizontal\"`; add `FieldContent` when there is a description. Disable with `isDisabled` and put `data-disabled` on the `Field` so the label dims with it. Mark errors with `isInvalid` on the checkbox and `data-invalid` on the `Field`, then render the message in `FieldError`. Inside a `Table` with `selectionMode`, use `slot=\"selection\"` instead of wiring state yourself."
+    "do": "Control it with `checked` and `onCheckedChange(checked: boolean)`, or leave it uncontrolled with `defaultChecked`. Give it an `id` and point a `FieldLabel htmlFor` at it inside a `Field orientation=\"horizontal\"`; add `FieldContent` when there is a description. Disable with `disabled` and put `data-disabled` on the `Field` so the label dims with it. Mark errors with `aria-invalid` on the checkbox and `data-invalid` on the `Field`, then render the message in `FieldError`. Submit it with a form through `name` (and `value`); a row-selection column in a `Table` is a `Checkbox` per row driven by your own selection state."
    },
    "notFor": [
     {
@@ -1220,7 +1212,7 @@
     "Checkbox"
    ],
    "aliases": [],
-   "tokens": 814
+   "tokens": 810
   },
   {
    "id": "chip",
@@ -1260,7 +1252,7 @@
     "ChipRemove"
    ],
    "aliases": [],
-   "tokens": 1087
+   "tokens": 1088
   },
   {
    "id": "circular-progress",
@@ -1298,7 +1290,7 @@
     "CircularProgress"
    ],
    "aliases": [],
-   "tokens": 923
+   "tokens": 918
   },
   {
    "id": "collapsible",
@@ -1311,7 +1303,7 @@
     "names": "collapsible collapsible collapsible trigger collapsible content",
     "useWhen": "One region shows more detail on demand: advanced settings, a row's sub-fields, a long log. The control that toggles it is already on the page and stays where it is. Nothing else collapses with it — a second collapsible next to the first is an `Accordion`.",
     "routed": "one region that opens and closes on its own",
-    "do": "Control it with `isExpanded` and `onExpandedChange` on `Collapsible`, or leave it uncontrolled with `defaultExpanded`. Style the trigger by giving a Tecton `Button` `slot=\"trigger\"`; `CollapsibleTrigger` is a bare React Aria `Button` with no Tecton classes. Keep the revealed markup inside `CollapsibleContent`: it is the panel the trigger's `aria-expanded` and `aria-controls` refer to. `Collapsible` itself is one unstyled `div`, so its `className` is yours for the layout."
+    "do": "Control it with `open` and `onOpenChange` on `Collapsible`, or leave it uncontrolled with `defaultOpen`. Style the trigger with `CollapsibleTrigger render={<Button variant=\"ghost\" />}`; on its own it is an unstyled `button`. Keep the revealed markup inside `CollapsibleContent`: it is the panel the trigger's `aria-expanded` and `aria-controls` refer to. `Collapsible` itself is one unstyled `div`, so its `className` is yours for the layout."
    },
    "notFor": [
     {
@@ -1338,7 +1330,7 @@
     "CollapsibleContent"
    ],
    "aliases": [],
-   "tokens": 1154
+   "tokens": 1076
   },
   {
    "id": "color-swatch",
@@ -1351,7 +1343,7 @@
     "names": "color swatch color swatch",
     "useWhen": "The colour *is* the data: a horizon colour, a facies legend, a theme token, a series fill. The colour needs its name or its value beside it: `label` and `value`. The user has to change it: `onChange` turns the swatch into a button with a preset and hex picker.",
     "routed": "a colour value shown as a square",
-    "do": "Pass any CSS colour to `color` — a hex, an `oklch()` value or `var(--tecton-color-accent-lime-fill)`; values React Aria cannot parse render as a plain swatch with the value as background. Size with `size=\"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\"` (12 to 48 px) and pick the corner with `shape=\"square\" | \"rounded\" | \"circle\"`. Give it an `aria-label` whenever there is no `label`; the swatch is a `role=\"img\"` element with no text of its own. Make it editable with `onChange`, which receives a hex string, and replace the Tecton accent presets with `presets` when the palette is domain-specific."
+    "do": "Pass any CSS colour to `color` — a hex, `rgb()`, `hsl()`, `oklch()`, a keyword or `var(--tecton-color-accent-lime-fill)`; a translucent colour shows over a checkerboard. Size with `size=\"xs\" | \"sm\" | \"md\" | \"lg\" | \"xl\"` (12 to 48 px) and pick the corner with `shape=\"square\" | \"rounded\" | \"circle\"`. Name what the colour stands for with `aria-label` (or a string `label`); the swatch appends the colour's English name itself (\"Sandstone, vibrant orange\"), and `colorName` replaces that name. Make it editable with `onChange`, which receives `#RRGGBB`, and replace the Tecton accent presets with `presets` when the palette is domain-specific; the presets are a radio group, so an arrow key selects as it moves."
    },
    "notFor": [
     {
@@ -1376,20 +1368,20 @@
     "ColorSwatch"
    ],
    "aliases": [],
-   "tokens": 757
+   "tokens": 841
   },
   {
    "id": "combobox",
    "kind": "component",
    "name": "Combobox",
-   "import": "import { Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem, ComboboxGroup, ComboboxLabel, ComboboxEmpty, ComboboxSeparator, ComboboxChips, ComboboxChip, ComboboxChipList, ComboboxChipsInput, ComboboxCollection, ComboboxTrigger, ComboboxValue, useComboboxAnchor } from \"@tecton/react/components/combobox\"",
+   "import": "import { Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem, ComboboxGroup, ComboboxLabel, ComboboxEmpty, ComboboxSeparator, ComboboxChips, ComboboxChip, ComboboxChipsInput, ComboboxCollection, ComboboxTrigger, ComboboxValue, useComboboxAnchor } from \"@tecton/react/components/combobox\"",
    "family": "selection",
    "summary": "The list is long enough that typing to narrow it beats scrolling a popover.",
    "fields": {
-    "names": "combobox combobox combobox input combobox content combobox list combobox item combobox group combobox label combobox empty combobox separator combobox chips combobox chip combobox chip list combobox chips input combobox collection combobox trigger combobox value use combobox anchor",
-    "useWhen": "The list is long enough that typing to narrow it beats scrolling a popover. The user picks several values and should see them as removable chips. The field still resolves to keys from a known collection, not to free text.",
+    "names": "combobox combobox combobox input combobox content combobox list combobox item combobox group combobox label combobox empty combobox separator combobox chips combobox chip combobox chips input combobox collection combobox trigger combobox value use combobox anchor",
+    "useWhen": "The list is long enough that typing to narrow it beats scrolling a popover. The user picks several values and should see them as removable chips. The field still resolves to values from a known list, not to free text.",
     "routed": "picking a value for a form field typing to narrow a long list a list the user narrows by typing",
-    "do": "Give every `ComboboxItem` an `id`; read the selection from `value` / `defaultValue` / `onChange`. Name the field: `aria-label` on `Combobox`, or a `FieldLabel` when it sits inside a `Field`. Pass `allowsEmptyCollection` and a `renderEmptyState` that returns `ComboboxEmpty`. Add `textValue` to any item whose children are JSX, so filtering and typeahead have a string. For multi-select pass `selectionMode=\"multiple\"` and swap `ComboboxInput` for `ComboboxChips`, `ComboboxChipList`, `ComboboxChip` and `ComboboxChipsInput`."
+    "do": "Pass the options as `items` on `Combobox` and render them with the `ComboboxList` function child: `{(item) => <ComboboxItem key={item} value={item}>{item}</ComboboxItem>}`. Drive the selection with `value` / `defaultValue` / `onValueChange`; for object items add `itemToStringLabel` so filtering and the input text have a string. Put `ComboboxEmpty` inside `ComboboxContent`; it shows only when the filter matches nothing. Name the input: `aria-label` on `ComboboxInput`, or an `id` on it with a `FieldLabel htmlFor` inside a `Field`. For multi-select pass `multiple`, render `ComboboxChips ref={anchor}` holding `ComboboxValue` → `ComboboxChip`s + `ComboboxChipsInput`, and give `ComboboxContent` the same `anchor` from `useComboboxAnchor()`."
    },
    "notFor": [
     {
@@ -1418,7 +1410,6 @@
     "ComboboxSeparator",
     "ComboboxChips",
     "ComboboxChip",
-    "ComboboxChipList",
     "ComboboxChipsInput",
     "ComboboxCollection",
     "ComboboxTrigger",
@@ -1426,7 +1417,7 @@
     "useComboboxAnchor"
    ],
    "aliases": [],
-   "tokens": 1237
+   "tokens": 1345
   },
   {
    "id": "command",
@@ -1438,8 +1429,8 @@
    "fields": {
     "names": "command command command dialog command input command list command empty command group command item command separator command shortcut",
     "useWhen": "The user should reach commands and records by typing, from anywhere in the application. The surface is a palette, usually inside `CommandDialog`, rather than a field in a form. The list mixes groups of actions and wants keyboard-shortcut hints beside them.",
-    "routed": "a palette of commands and records inside one application a palette that runs commands instead of setting a value a searchable palette of commands a searchable palette of the commands themselves",
-    "do": "Run the action from `onAction` on `CommandItem`, or from `onAction(key)` on `CommandList` with an `id` per item. Give `CommandList` a `renderEmptyState` that returns `CommandEmpty`. Pass `textValue` to any item whose children are JSX rather than a plain string. Group with `CommandGroup heading=\"…\"`, divide with `CommandSeparator`, hint keys with `CommandShortcut`. Open the palette with `CommandDialog` and its `open` / `onOpenChange` props, wrapping a `Command`."
+    "routed": "a palette of commands and records inside one application a palette that runs commands instead of setting a value a searchable palette of commands",
+    "do": "Run the action from `onSelect` on `CommandItem`; it fires on click and on Enter. Put `CommandEmpty` inside `CommandList`: it shows only when the filter matches nothing. Give an item whose children are JSX a `value` (and `keywords` for synonyms), so the filter matches the words, not the markup. Group with `CommandGroup heading=\"…\"`, divide with `CommandSeparator`, hint keys with `CommandShortcut` — a label only, since Tecton binds no keys. Open the palette with `CommandDialog` and its `open` / `onOpenChange` props, wrapping a `Command`."
    },
    "notFor": [
     {
@@ -1471,7 +1462,7 @@
     "CommandShortcut"
    ],
    "aliases": [],
-   "tokens": 833
+   "tokens": 830
   },
   {
    "id": "composer",
@@ -1527,14 +1518,14 @@
    "id": "context-menu",
    "kind": "component",
    "name": "ContextMenu",
-   "import": "import { ContextMenu, ContextMenuTrigger, ContextMenuItem, ContextMenuLabel, ContextMenuGroup, ContextMenuSeparator, ContextMenuShortcut, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent } from \"@tecton/react/components/context-menu\"",
+   "import": "import { ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuPortal, ContextMenuItem, ContextMenuCheckboxItem, ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuLabel, ContextMenuGroup, ContextMenuSeparator, ContextMenuShortcut, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent } from \"@tecton/react/components/context-menu\"",
    "family": "actions",
    "summary": "A row, card or canvas object has secondary actions that would clutter the surface.",
    "fields": {
-    "names": "context menu context menu context menu trigger context menu item context menu label context menu group context menu separator context menu shortcut context menu sub context menu sub trigger context menu sub content",
-    "useWhen": "A row, card or canvas object has secondary actions that would clutter the surface. Those actions are reachable another way too; the context menu is an accelerator, not the only route. The gesture should be the platform's own: right click, Control-click, long press, Shift+F10.",
+    "names": "context menu context menu context menu trigger context menu content context menu portal context menu item context menu checkbox item context menu radio group context menu radio item context menu label context menu group context menu separator context menu shortcut context menu sub context menu sub trigger context menu sub content",
+    "useWhen": "A row, card or canvas object has secondary actions that would clutter the surface. Those actions are reachable another way too; the context menu is an accelerator, not the only route. The gesture should be the platform's own: right click, Control-click, long press.",
     "routed": "a menu opened by right click a menu opened by right click on the content",
-    "do": "Wrap the target in React Aria's `Pressable` and give the wrapped element `role=\"button\"`. Give `ContextMenuTrigger` exactly two children: the `Pressable` target and the `ContextMenu`. Run actions from `onAction` on `ContextMenuItem`, or `onAction(key)` on `ContextMenu` with an `id` per item. Build toggles and exclusive choices with `selectionMode` and `selectedKeys` on `ContextMenuGroup`. Mark the dangerous entry with `variant=\"destructive\"`; nest with `ContextMenuSub`, `ContextMenuSubTrigger` and `ContextMenuSubContent`."
+    "do": "Compose `ContextMenu` (the root) > `ContextMenuTrigger` + `ContextMenuContent`; the trigger is the `div` area that listens for the gesture, so put the target's content (or `render` its element) there. Run actions from `onClick` on `ContextMenuItem`. Build toggles with `ContextMenuCheckboxItem` (`checked` / `onCheckedChange`) and exclusive choices with `ContextMenuRadioGroup` (`value` / `onValueChange`) + `ContextMenuRadioItem`. Mark the dangerous entry with `variant=\"destructive\"`; nest with `ContextMenuSub`, `ContextMenuSubTrigger` and `ContextMenuSubContent`."
    },
    "notFor": [
     {
@@ -1557,7 +1548,12 @@
    "exports": [
     "ContextMenu",
     "ContextMenuTrigger",
+    "ContextMenuContent",
+    "ContextMenuPortal",
     "ContextMenuItem",
+    "ContextMenuCheckboxItem",
+    "ContextMenuRadioGroup",
+    "ContextMenuRadioItem",
     "ContextMenuLabel",
     "ContextMenuGroup",
     "ContextMenuSeparator",
@@ -1567,7 +1563,7 @@
     "ContextMenuSubContent"
    ],
    "aliases": [],
-   "tokens": 978
+   "tokens": 1004
   },
   {
    "id": "copy-button",
@@ -1599,7 +1595,7 @@
     "CopyButton"
    ],
    "aliases": [],
-   "tokens": 707
+   "tokens": 712
   },
   {
    "id": "count-badge",
@@ -1642,14 +1638,14 @@
    "id": "dialog",
    "kind": "component",
    "name": "Dialog",
-   "import": "import { Dialog, DialogTrigger, DialogClose, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogOverlay } from \"@tecton/react/components/dialog\"",
+   "import": "import { Dialog, DialogTrigger, DialogContent, DialogClose, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogOverlay, DialogPortal } from \"@tecton/react/components/dialog\"",
    "family": "overlays",
-   "summary": "A decision or a short form must be finished before the page continues.",
+   "summary": "A decision or a short form — editing a record's fields, renaming it — must be finished before the page continues.",
    "fields": {
-    "names": "dialog dialog dialog trigger dialog close dialog header dialog title dialog description dialog footer dialog overlay",
-    "useWhen": "A decision or a short form must be finished before the page continues. The task deserves the whole screen: everything behind it goes inert. The user may abandon it — Escape and the backdrop both cancel.",
+    "names": "dialog dialog dialog trigger dialog content dialog close dialog header dialog title dialog description dialog footer dialog overlay dialog portal",
+    "useWhen": "A decision or a short form — editing a record's fields, renaming it — must be finished before the page continues. The task deserves the whole screen: everything behind it goes inert. The user may abandon it — Escape and the backdrop both cancel.",
     "routed": "a form, or a decision the user may walk away from a modal decision or a short form on the desktop a decision that must block the rest of the page a decision that must be finished before anything else",
-    "do": "Put the trigger `Button` and the `Dialog` inside one `DialogTrigger`; it hands press behaviour and open state to its whole subtree. Control it with `isOpen` and `onOpenChange` on `DialogTrigger`, or on `Dialog` itself when nothing on the page triggers it. Give every dialog a `DialogTitle`: React Aria takes the accessible name from it. Close from the footer with `DialogClose` — a plain `Button` setting your own state closes nothing, because the state lives in `DialogTrigger` — and pass `isDismissable={false}` with `showCloseButton={false}` when the user must pick a footer action. Keep `className` to width and layout (`sm:max-w-lg`): `Dialog` owns the surface, radius and padding."
+    "do": "Compose `Dialog` (the root, no element) > `DialogTrigger render={<Button />}` + `DialogContent`; the content portals itself and draws the overlay. Control it with `open` / `onOpenChange` on `Dialog`; `defaultOpen` for an uncontrolled start. Give every dialog a `DialogTitle` inside `DialogHeader`: it is the dialog's accessible name. Close from the footer with `DialogClose render={<Button variant=\"outline\" />}`, and pass `disablePointerDismissal` on `Dialog` with `showCloseButton={false}` on `DialogContent` when the user must pick a footer action. Keep `className` on `DialogContent` to width and layout (`sm:max-w-lg`): it owns the surface, radius and padding."
    },
    "notFor": [
     {
@@ -1663,10 +1659,6 @@
     {
      "need": "a bottom sheet the user drags with a thumb",
      "id": "drawer"
-    },
-    {
-     "need": "content anchored to the control that opened it",
-     "id": "popover"
     }
    ],
    "related": [
@@ -1677,55 +1669,17 @@
    "exports": [
     "Dialog",
     "DialogTrigger",
+    "DialogContent",
     "DialogClose",
     "DialogHeader",
     "DialogTitle",
     "DialogDescription",
     "DialogFooter",
-    "DialogOverlay"
+    "DialogOverlay",
+    "DialogPortal"
    ],
    "aliases": [],
-   "tokens": 902
-  },
-  {
-   "id": "direction",
-   "kind": "component",
-   "name": "DirectionProvider",
-   "import": "import { DirectionProvider, I18nProvider, useDirection, useLocale } from \"@tecton/react/components/direction\"",
-   "family": "infrastructure",
-   "summary": "The application runs in a right-to-left locale and every Tecton component has to follow it.",
-   "fields": {
-    "names": "direction direction provider i18n provider use direction use locale",
-    "useWhen": "The application runs in a right-to-left locale and every Tecton component has to follow it. One subtree reads in the other direction from the document: a translation pane, an embedded preview. A component of your own needs the resolved direction at runtime, through `useDirection()`.",
-    "routed": "a locale for date, number and collation formatting, direction aside a right-to-left subtree a right-to-left subtree",
-    "do": "Wrap the application once, as high as it goes, and set `dir` on `<html>` as well so the document's own text flow and scrollbars match. Pass a real `locale` when you have one; `direction` alone is a compatibility shim that synthesises a locale by forcing the `Arab` or `Latn` script. Read the direction with `useDirection()` (`\"ltr\" | \"rtl\"`), never from `document.dir` or a prop threaded down. Write logical utilities in your own markup — `ms-*`, `pe-*`, `text-start`, `border-s` — the way the Tecton components do."
-   },
-   "notFor": [
-    {
-     "need": "a locale for date, number and collation formatting, direction aside",
-     "id": "direction"
-    },
-    {
-     "need": "the root element of an independently deployed application",
-     "id": "theme-root"
-    },
-    {
-     "need": "the element overlays portal into",
-     "id": "portal"
-    }
-   ],
-   "related": [
-    "theme-root",
-    "portal"
-   ],
-   "exports": [
-    "DirectionProvider",
-    "I18nProvider",
-    "useDirection",
-    "useLocale"
-   ],
-   "aliases": [],
-   "tokens": 904
+   "tokens": 1086
   },
   {
    "id": "drawer",
@@ -1738,7 +1692,7 @@
     "names": "drawer drawer drawer trigger drawer content drawer header drawer title drawer description drawer footer drawer close drawer portal drawer overlay drawer swipe handle",
     "useWhen": "A touch screen: the panel is dragged in and flicked away with a thumb. The content should be able to rest at a partial height (`snapPoints`) before it is opened fully. A responsive pair, where the same content is a `Dialog` on the desktop and a drawer on a phone.",
     "routed": "a bottom sheet the user drags with a thumb a bottom sheet the user drags with a thumb on touch",
-    "do": "Remember this one is **Base UI**, not React Aria: the state props are `open`, `defaultOpen` and `onOpenChange`. Pass the trigger and close elements through `render`, not as children: `<DrawerTrigger render={<Button variant=\"outline\" />}>Open</DrawerTrigger>`. Pick the edge with `swipeDirection=\"down\" | \"up\" | \"left\" | \"right\"` and add the grab handle with `showSwipeHandle`, both on `Drawer`. Make the scrolling region a flex item — `<div className=\"flex-1 overflow-y-auto p-4\">` — because `h-full` does not resolve inside a content-sized drawer."
+    "do": "Control it like every Tecton overlay, with `open`, `defaultOpen` and `onOpenChange` on `Drawer`; `disablePointerDismissal` keeps unsaved input from being flicked away by a backdrop press. Pass the trigger and close elements through `render`, not as children: `<DrawerTrigger render={<Button variant=\"outline\" />}>Open</DrawerTrigger>`. Pick the edge with `swipeDirection=\"down\" | \"up\" | \"left\" | \"right\"` and add the grab handle with `showSwipeHandle`, both on `Drawer`. Make the scrolling region a flex item — `<div className=\"flex-1 overflow-y-auto p-4\">` — because `h-full` does not resolve inside a content-sized drawer."
    },
    "notFor": [
     {
@@ -1772,20 +1726,20 @@
     "DrawerSwipeHandle"
    ],
    "aliases": [],
-   "tokens": 885
+   "tokens": 911
   },
   {
    "id": "dropdown-menu",
    "kind": "component",
    "name": "DropdownMenu",
-   "import": "import { DropdownMenu, DropdownMenuTrigger, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from \"@tecton/react/components/dropdown-menu\"",
+   "import": "import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuPortal, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent } from \"@tecton/react/components/dropdown-menu\"",
    "family": "actions",
    "summary": "A button opens a short list of actions: row actions, an account menu, a \"more\" overflow.",
    "fields": {
-    "names": "dropdown menu dropdown menu dropdown menu trigger dropdown menu group dropdown menu label dropdown menu item dropdown menu separator dropdown menu shortcut dropdown menu sub dropdown menu sub trigger dropdown menu sub content",
+    "names": "dropdown menu dropdown menu dropdown menu trigger dropdown menu content dropdown menu portal dropdown menu group dropdown menu label dropdown menu item dropdown menu checkbox item dropdown menu radio group dropdown menu radio item dropdown menu separator dropdown menu shortcut dropdown menu sub dropdown menu sub trigger dropdown menu sub content",
     "useWhen": "A button opens a short list of actions: row actions, an account menu, a \"more\" overflow. Some of those entries are toggles or one exclusive choice, shown with check marks. The list wants submenus, shortcut hints, or a destructive entry at the end.",
     "routed": "a list of actions behind a single button a short list of actions opened from a header button a long list of actions behind one trigger several related actions behind one control a menu of actions opened from a button a menu opened from a visible button every action behind one button from the start a menu of actions rather than a value",
-    "do": "Give `DropdownMenuTrigger` exactly two children, the trigger `Button` and the `DropdownMenu`; there is no `DropdownMenuContent` and no `asChild`. Run actions from `onAction` on `DropdownMenuItem`, or from `onAction(key)` on `DropdownMenu` with an `id` per item. Make a group behave as checkboxes or radios with `selectionMode` plus `selectedKeys` / `defaultSelectedKeys` on `DropdownMenuGroup`. Title groups with `DropdownMenuLabel`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut`. Anchor with `placement` (for example `\"bottom end\"`) and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`."
+    "do": "Compose `DropdownMenu` (the root) > `DropdownMenuTrigger render={<Button variant=\"ghost\" size=\"icon\" />}` + `DropdownMenuContent`. Run actions from `onClick` on `DropdownMenuItem`; the menu closes after it. Show toggles with `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) and one exclusive choice with `DropdownMenuRadioGroup` (`value` / `onValueChange`) holding `DropdownMenuRadioItem value=\"…\"`. Title groups with `DropdownMenuLabel` inside a `DropdownMenuGroup`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut` (a label only — Tecton binds no keys). Place with `side` / `align` on `DropdownMenuContent` and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`."
    },
    "notFor": [
     {
@@ -1809,9 +1763,14 @@
    "exports": [
     "DropdownMenu",
     "DropdownMenuTrigger",
+    "DropdownMenuContent",
+    "DropdownMenuPortal",
     "DropdownMenuGroup",
     "DropdownMenuLabel",
     "DropdownMenuItem",
+    "DropdownMenuCheckboxItem",
+    "DropdownMenuRadioGroup",
+    "DropdownMenuRadioItem",
     "DropdownMenuSeparator",
     "DropdownMenuShortcut",
     "DropdownMenuSub",
@@ -1819,7 +1778,7 @@
     "DropdownMenuSubContent"
    ],
    "aliases": [],
-   "tokens": 972
+   "tokens": 1042
   },
   {
    "id": "empty",
@@ -1861,7 +1820,7 @@
     "EmptyContent"
    ],
    "aliases": [],
-   "tokens": 907
+   "tokens": 904
   },
   {
    "id": "field",
@@ -1874,7 +1833,7 @@
     "names": "field field field content field description field error field group field label field legend field separator field set field title",
     "useWhen": "Any control needs a label: `Input`, `Textarea`, `Select`, `Checkbox`, `Switch`, `Slider`. The control needs helper text, a validation message, or both. Related controls need one legend (`FieldSet` + `FieldLegend`) or even spacing (`FieldGroup`).",
     "routed": "a message about a single form field a legend and shared description over a list of checkboxes the label, description and error message around the group the label, description and error message around the code the label, description and error message around the control the label of a control that has a description or an error the caption over a group of related controls a heading beside a control that is already inside a label one labelled control with a description and an error, inside a form the title, description and layout around the control the label, description and layout around the control the label, description and error message around the control",
-    "do": "Give the control an `id` and point `FieldLabel htmlFor` at it; `Field` renders `role=\"group\"` and associates nothing. A `Select` is the exception: its trigger's `aria-labelledby` overrides `htmlFor`, so put `FieldLabel` inside `Select`, or give the label an `id` and pass it as `Select`'s `aria-labelledby`. Choose the layout with `orientation=\"vertical\" | \"horizontal\" | \"responsive\"`, and add `FieldContent` when the label and description sit beside the control. Put state on `Field` as data attributes: `data-invalid` when the value is rejected, `data-disabled` next to a disabled control. Write helper text as `FieldDescription` and the message as `FieldError` — children, or `errors={field.state.meta.errors}` for a validator's issue list."
+    "do": "Give the control an `id` and point `FieldLabel htmlFor` at it; `Field` renders `role=\"group\"` and associates nothing. For a `Select` the `id` goes on `SelectTrigger`, which renders the button; for a `Combobox`, on `ComboboxInput`. Choose the layout with `orientation=\"vertical\" | \"horizontal\" | \"responsive\"`, and add `FieldContent` when the label and description sit beside the control. Put state on `Field` as data attributes: `data-invalid` when the value is rejected, `data-disabled` next to a disabled control. Write helper text as `FieldDescription` and the message as `FieldError` — children, or `errors={field.state.meta.errors}` for a validator's issue list."
    },
    "notFor": [
     {
@@ -1908,20 +1867,20 @@
     "FieldTitle"
    ],
    "aliases": [],
-   "tokens": 1111
+   "tokens": 1095
   },
   {
    "id": "hover-card",
    "kind": "component",
    "name": "HoverCard",
-   "import": "import { HoverCard, HoverCardTrigger } from \"@tecton/react/components/hover-card\"",
+   "import": "import { HoverCard, HoverCardTrigger, HoverCardContent } from \"@tecton/react/components/hover-card\"",
    "family": "overlays",
    "summary": "A link or a name in running text has more behind it: a person, a well, a document.",
    "fields": {
-    "names": "hover card hover card hover card trigger",
+    "names": "hover card hover card hover card trigger hover card content",
     "useWhen": "A link or a name in running text has more behind it: a person, a well, a document. The extra detail is a courtesy — the user can reach the same content by following the link. It is a preview, not a control panel: nothing inside it is the only way to do something.",
     "routed": "a preview that appears when the pointer rests on a link a preview of what is behind a link",
-    "do": "Wrap the trigger and the `HoverCard` in one `HoverCardTrigger` (React Aria's `PreviewTrigger`), which opens on hover, focus and long press. Tune the timing with `delay` and `closeDelay` on `HoverCardTrigger` — the defaults are 600 ms and 200 ms. Position with `placement` on `HoverCard`, and set width with `className` (`w-72`) only. Make the trigger something the keyboard can reach — a `Button variant=\"link\"` or a `Link` — so focus can open the card."
+    "do": "Compose `HoverCard` (the root) > `HoverCardTrigger` + `HoverCardContent`; the trigger renders an `a`, so give it the `href` it previews. Tune the timing with `delay` and `closeDelay` on `HoverCardTrigger` — the defaults are 600 ms and 300 ms. Position with `side` / `align` on `HoverCardContent`, and set width with `className` (`w-72`) only. Keep the trigger reachable by keyboard — a real link — so focus can open the card."
    },
    "notFor": [
     {
@@ -1943,10 +1902,11 @@
    ],
    "exports": [
     "HoverCard",
-    "HoverCardTrigger"
+    "HoverCardTrigger",
+    "HoverCardContent"
    ],
    "aliases": [],
-   "tokens": 655
+   "tokens": 781
   },
   {
    "id": "input",
@@ -1959,7 +1919,7 @@
     "names": "input input",
     "useWhen": "A single line of text: name, email, password, number, date, file. The value is free-form; a fixed set of options belongs in a picker instead. Inside a `Field`, so the control arrives with a label and room for an error.",
     "routed": "the single-line text control itself a plain field with nothing attached to it a password, a token or any other free-form value an exact number the user types, with units or validation a single line of text",
-    "do": "Pick the surface with `variant=\"outline\" | \"filled\" | \"text\"` — outline in forms, filled in dense panels, text for inline editing. Wire the label by hand: `<FieldLabel htmlFor=\"x\">` plus `<Input id=\"x\">`. Nothing associates them implicitly. `Input` renders React Aria's `Input`, a real `<input>`: use the DOM props `value`, `onChange(event)`, `disabled`, `required`, `type` and `aria-invalid`. Mirror the state on the `Field` — `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid` — and keep `className` to layout (`w-full`, `col-span-2`)."
+    "do": "Pick the surface with `variant=\"outline\" | \"filled\" | \"text\"` — outline in forms, filled in dense panels, text for inline editing. Wire the label by hand: `<FieldLabel htmlFor=\"x\">` plus `<Input id=\"x\">`. Nothing associates them implicitly. `Input` is a real `<input>`: use the DOM props `value`, `onChange(event)`, `disabled`, `required`, `type` and `aria-invalid`. Mirror the state on the `Field` — `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid` — and keep `className` to layout (`w-full`, `col-span-2`)."
    },
    "notFor": [
     {
@@ -1984,7 +1944,7 @@
     "Input"
    ],
    "aliases": [],
-   "tokens": 1052
+   "tokens": 1043
   },
   {
    "id": "input-group",
@@ -1997,7 +1957,7 @@
     "names": "input group input group input group addon input group button input group input input group text input group textarea",
     "useWhen": "An icon, unit, hint or status belongs inside the field's border: search, currency, `https://`. A button acts on the value in place: clear, copy, reveal, remove, send. A textarea needs a toolbar or a footer row that shares its border and focus ring.",
     "routed": "a one-line search or filter box a field with an icon or a button attached an icon, a prefix or a button inside the field a toolbar, a counter or a send button attached to the box",
-    "do": "Compose `InputGroup` > `InputGroupInput` or `InputGroupTextarea`, then the addons; the group owns the border, ring and height. Always place `InputGroupAddon` **after** the control in the DOM and position it with `align`: `inline-start` / `inline-end` beside an input, `block-start` / `block-end` above or below a textarea. Put buttons in `InputGroupButton` (`size=\"xs\" | \"icon-xs\" | \"sm\" | \"icon-sm\"`, `onPress`, `aria-label` when icon-only), static copy in `InputGroupText`, and mark errors with `aria-invalid` on the control."
+    "do": "Compose `InputGroup` > `InputGroupInput` or `InputGroupTextarea`, then the addons; the group owns the border, ring and height. Always place `InputGroupAddon` **after** the control in the DOM and position it with `align`: `inline-start` / `inline-end` beside an input, `block-start` / `block-end` above or below a textarea. Put buttons in `InputGroupButton` (`size=\"xs\" | \"icon-xs\" | \"sm\" | \"icon-sm\"`, `onClick`, `aria-label` when icon-only), static copy in `InputGroupText`, and mark errors with `aria-invalid` on the control."
    },
    "notFor": [
     {
@@ -2080,7 +2040,7 @@
     "names": "item item item group item separator item header item media item content item title item description item actions item footer",
     "useWhen": "One row of a list: a file, a person, a well, a setting with a switch beside it. The row has a shape — media, then title and description, then actions. A stack of rows should look and space consistently: wrap them in `ItemGroup`.",
     "routed": "a row of a file browser or a settings list a row of an application list, with media, title and actions one row in a list of records a row of a list with media, title and actions a row of an application list, with media, title and actions a divider between the rows of a list a list of rows with media, a title and actions rather than columns a flat list of rows with media, a title and actions",
-    "do": "Compose it: `ItemMedia`, then `ItemContent` with `ItemTitle` and `ItemDescription`, then `ItemActions`. Make the whole row a link by giving `Item` an `href`; it then renders React Aria's `Link` with focus and hover states. Choose the look with `variant=\"default\" | \"outline\" | \"muted\"` and the density with `size=\"default\" | \"sm\" | \"xs\"`. Use `ItemMedia variant=\"icon\"` for a glyph and `variant=\"image\"` for a thumbnail; an `Avatar` goes in the plain `ItemMedia`. Separate rows inside an `ItemGroup` with `ItemSeparator`, never with a border class on the row."
+    "do": "Compose it: `ItemMedia`, then `ItemContent` with `ItemTitle` and `ItemDescription`, then `ItemActions`. Make the whole row a link with `render={<a href=\"/wells/34-10-a-12\" />}` (or the router's `Link`); the `[a]:` rules give it the hover and focus states. Choose the look with `variant=\"default\" | \"outline\" | \"muted\"` and the density with `size=\"default\" | \"sm\" | \"xs\"`. Use `ItemMedia variant=\"icon\"` for a glyph and `variant=\"image\"` for a thumbnail; an `Avatar` goes in the plain `ItemMedia`. Separate rows inside an `ItemGroup` with `ItemSeparator`, never with a border class on the row."
    },
    "notFor": [
     {
@@ -2114,7 +2074,7 @@
     "ItemFooter"
    ],
    "aliases": [],
-   "tokens": 926
+   "tokens": 956
   },
   {
    "id": "kbd",
@@ -2126,8 +2086,8 @@
    "fields": {
     "names": "kbd kbd kbd group",
     "useWhen": "Naming the key that triggers something: a shortcut hint in a menu item, a tooltip, a button or an input group addon. Showing a combination or a sequence: `KbdGroup` around several `Kbd`. Documenting a shortcut inline in a sentence.",
-    "routed": "a keyboard key or a shortcut hint a keyboard key or a shortcut hint one key cap rendered inside a label or a menu row",
-    "do": "One key per `Kbd`, wrapped in a `KbdGroup` when there is more than one; a combination that reads as a single token (`Ctrl + B`) may stay in one `Kbd`. Inside a `Button` or an `InputGroupAddon`, add `data-icon=\"inline-end\"` (or `inline-start`) so the control trims its padding on that side. Inside a `TooltipContent` leave it alone: `Kbd` already inverts to the tooltip surface through its `in-data-[slot=tooltip-content]` rules. `className` is for nudging placement; the muted surface and the 20 px box belong to the component."
+    "routed": "a keyboard key or a shortcut hint a keyboard key or a shortcut hint",
+    "do": "One key per `Kbd`, wrapped in a `KbdGroup` when there is more than one; a combination that reads as a single token (`Ctrl + B`) may stay in one `Kbd`. Inside a `Button` or an `InputGroupAddon`, add `data-icon=\"inline-end\"` (or `inline-start`) so the control trims its padding on that side. Inside a `TooltipContent` leave it alone: `Kbd` already inverts to the tooltip surface through its `in-data-[slot=tooltip-content]` rules. `className` is for nudging placement; the muted surface and the 20 px box belong to the component. A `Kbd` only shows a key: Tecton binds no shortcuts, so show one only for a key the application handles itself."
    },
    "notFor": [
     {
@@ -2147,7 +2107,7 @@
     "KbdGroup"
    ],
    "aliases": [],
-   "tokens": 701
+   "tokens": 748
   },
   {
    "id": "label",
@@ -2160,7 +2120,7 @@
     "names": "label label",
     "useWhen": "A control sits on its own — a toolbar filter, a preview switch — with no `Field` around it. A caption sits beside a value in a header row and still has to point at a control. Something that is not a Tecton form control needs the same label type and disabled behaviour.",
     "routed": "a label for a control that stands on its own, outside a field",
-    "do": "Pair `htmlFor` with the control's `id`; `Label` renders React Aria's `Label`, which is a plain `<label>`. Leave `htmlFor` off only inside a React Aria control that supplies a `LabelContext` — setting it there opts the label out of that context. Reach for `FieldLabel` the moment the control gains a description, an error or a `Field` wrapper. Keep `className` to layout; the size, weight and the disabled dimming belong to the component."
+    "do": "Pair `htmlFor` with the control's `id`; `Label` is a plain `<label>` and associates nothing by itself. For a `Select` the `id` goes on `SelectTrigger`; a `Slider` has no labelable element, so give the `Label` an `id` and pass it as the slider's `aria-labelledby`. Reach for `FieldLabel` the moment the control gains a description, an error or a `Field` wrapper. Keep `className` to layout; the size, weight and the disabled dimming belong to the component."
    },
    "notFor": [
     {
@@ -2183,7 +2143,7 @@
     "Label"
    ],
    "aliases": [],
-   "tokens": 669
+   "tokens": 660
   },
   {
    "id": "link",
@@ -2195,7 +2155,7 @@
    "fields": {
     "names": "link link link variants",
     "useWhen": "A word or phrase inside running text navigates somewhere: a well, a report, an external register. The link sits in a sentence and should inherit the surrounding font size. The destination leaves the application and needs the external marker.",
-    "routed": "a link inside a sentence or a paragraph a link inside a sentence",
+    "routed": "a link inside a sentence or a paragraph a link inside a sentence a link that navigates with the router",
     "do": "Always pass `href`; React Aria renders a real anchor only when there is one. Choose colour and underline behaviour with `variant=\"default\" | \"primary\" | \"muted\" | \"subtle\"`. Leave `size=\"inherit\"` inside prose; set `sm`, `md` or `lg` only when the link stands on its own. Reach outside the app with `isExternal` instead of writing `target` and `rel` by hand. Disable with `isDisabled`, and pass router behaviour through `routerOptions`."
    },
    "notFor": [
@@ -2216,7 +2176,7 @@
     "linkVariants"
    ],
    "aliases": [],
-   "tokens": 756
+   "tokens": 773
   },
   {
    "id": "marker",
@@ -2229,7 +2189,7 @@
     "names": "marker marker marker icon marker content marker variants",
     "useWhen": "A full-width row between turns: \"Thinking...\", \"Explored 4 files\", \"Marcus joined the chat\". A labelled divider inside a transcript: a date, a section break, an unread line. The row leads back to what the agent touched: a file, a diff, a pull request.",
     "routed": "a status or system line between turns",
-    "do": "Compose it: `MarkerIcon` for the glyph, `MarkerContent` for the text, which carries the meaning on its own. Pick the layout with `variant=\"default\" | \"border\" | \"separator\"`; `separator` draws its own rules to each side. Announce work in progress with `role=\"status\"` and a `Spinner` inside `MarkerIcon`. Shimmer streaming text with `className=\"shimmer\"` on `MarkerContent`. Make it interactive with `render={(props) => <a {...props} href={url} />}`, and wrap it in a `MessageScrollerItem` to anchor it."
+    "do": "Compose it: `MarkerIcon` for the glyph, `MarkerContent` for the text, which carries the meaning on its own. Pick the layout with `variant=\"default\" | \"border\" | \"separator\"`; `separator` draws its own rules to each side. Announce work in progress with `role=\"status\"` and a `Spinner` inside `MarkerIcon`. Shimmer streaming text with `className=\"shimmer\"` on `MarkerContent`. Make it interactive with `render={<a href={url} />}`, and wrap it in a `MessageScrollerItem` to anchor it."
    },
    "notFor": [
     {
@@ -2261,7 +2221,7 @@
     "markerVariants"
    ],
    "aliases": [],
-   "tokens": 792
+   "tokens": 781
   },
   {
    "id": "message",
@@ -2387,7 +2347,7 @@
     "Meter"
    ],
    "aliases": [],
-   "tokens": 918
+   "tokens": 913
   },
   {
    "id": "native-select",
@@ -2426,7 +2386,7 @@
     "NativeSelectOptGroup"
    ],
    "aliases": [],
-   "tokens": 774
+   "tokens": 782
   },
   {
    "id": "overflow",
@@ -2529,7 +2489,7 @@
     "names": "pagination pagination pagination content pagination item pagination link pagination previous pagination next pagination ellipsis",
     "useWhen": "A list is served one page at a time and the user chooses which page. The page has to be a URL: bookmarked, shared, opened in a new tab, restored on reload. Only \"previous\" and \"next\" are wanted, next to a rows-per-page `Select`.",
     "routed": "moving through the pages of one list",
-    "do": "Compose `Pagination` > `PaginationContent` > one `PaginationItem` per control. Mark the page with `isActive` on `PaginationLink`: it swaps `ghost` for `outline` and sets `aria-current=\"page\"`. Give every control an `href`; `PaginationLink` is a `LinkButton`, so a press is a navigation, not a state change. Elide the middle with `PaginationEllipsis`, and relabel the ends with `text` on `PaginationPrevious` and `PaginationNext`. Keep `className` to placement (`mx-0 w-auto`); the controls own their size, shape and colour."
+    "do": "Compose `Pagination` > `PaginationContent` > one `PaginationItem` per control. Mark the page with `isActive` on `PaginationLink`: it swaps `ghost` for `outline` and sets `aria-current=\"page\"`. Give every control an `href`; `PaginationLink` is a `Button` rendered as an `a`, so a press is a navigation, not a state change. At the first or last page leave `PaginationPrevious` / `PaginationNext` out: a link has no disabled state. Elide the middle with `PaginationEllipsis`, and relabel the ends with `text` on `PaginationPrevious` and `PaginationNext`. Keep `className` to placement (`mx-0 w-auto`); the controls own their size, shape and colour."
    },
    "notFor": [
     {
@@ -2559,7 +2519,7 @@
     "PaginationEllipsis"
    ],
    "aliases": [],
-   "tokens": 936
+   "tokens": 969
   },
   {
    "id": "panel",
@@ -2613,14 +2573,14 @@
    "id": "popover",
    "kind": "component",
    "name": "Popover",
-   "import": "import { Popover, PopoverTrigger, PopoverHeader, PopoverTitle, PopoverDescription } from \"@tecton/react/components/popover\"",
+   "import": "import { Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverTitle, PopoverDescription } from \"@tecton/react/components/popover\"",
    "family": "overlays",
    "summary": "A few controls belong to one trigger and should appear next to it: dimensions, a colour, a filter.",
    "fields": {
-    "names": "popover popover popover trigger popover header popover title popover description",
+    "names": "popover popover popover trigger popover content popover header popover title popover description",
     "useWhen": "A few controls belong to one trigger and should appear next to it: dimensions, a colour, a filter. The user opens it deliberately by pressing, and the page behind it stays live. The content is interactive — inputs, buttons, a small form — so a `Tooltip` is out.",
-    "routed": "a compact date field that opens a calendar on demand short content anchored to the control that opened it content anchored to the control that opened it content the user opens deliberately and works in content anchored to the control that opened it content with a link, a button or a field inside it",
-    "do": "Wrap the trigger `Button` and the `Popover` in one `PopoverTrigger` (it is React Aria's `DialogTrigger`), and control it with `isOpen` / `onOpenChange` there. Position with `placement` (`\"bottom start\"`, `\"top\"`, `\"right end\"`) and nudge with `offset` / `crossOffset`. Structure the top with `PopoverHeader`, `PopoverTitle` and `PopoverDescription`; the popover is already a `flex flex-col gap-4`. Use `className` for width only (`w-80`): the popover owns its padding, radius, shadow and surface."
+    "routed": "a compact date field that opens a calendar on demand short content anchored to the control that opened it content the user opens deliberately and works in content anchored to the control that opened it content with a link, a button or a field inside it",
+    "do": "Compose `Popover` (the root) > `PopoverTrigger render={<Button variant=\"outline\" />}` + `PopoverContent`; control it with `open` / `onOpenChange` on `Popover`. Position with `side` (`\"top\" | \"bottom\" | \"left\" | \"right\" | \"inline-start\" | \"inline-end\"`) and `align` (`\"start\" | \"center\" | \"end\"`) on `PopoverContent`, nudged with `sideOffset` / `alignOffset`. Structure the top with `PopoverHeader`, `PopoverTitle` and `PopoverDescription`; the content is already a `flex flex-col gap-4`. Use `className` on `PopoverContent` for width only (`w-80`): it owns its padding, radius, shadow and surface."
    },
    "notFor": [
     {
@@ -2634,10 +2594,6 @@
     {
      "need": "a decision that must block the rest of the page",
      "id": "dialog"
-    },
-    {
-     "need": "a form long enough to need its own header and footer",
-     "id": "sheet"
     }
    ],
    "related": [
@@ -2648,51 +2604,13 @@
    "exports": [
     "Popover",
     "PopoverTrigger",
+    "PopoverContent",
     "PopoverHeader",
     "PopoverTitle",
     "PopoverDescription"
    ],
    "aliases": [],
-   "tokens": 756
-  },
-  {
-   "id": "portal",
-   "kind": "component",
-   "name": "PortalProvider",
-   "import": "import { PortalProvider, usePortalContainer, usePortalTarget } from \"@tecton/react/tecton/portal\"",
-   "family": "infrastructure",
-   "summary": "One page holds several isolated React roots — micro frontends, embedded widgets — and each needs a body-level overlay container of its own.",
-   "fields": {
-    "names": "portal portal provider use portal container use portal target",
-    "useWhen": "One page holds several isolated React roots — micro frontends, embedded widgets — and each needs a body-level overlay container of its own. That container has to carry a root's scope class, mode class and ownership attributes, so the styles compiled for the root still reach its portalled overlays. An overlay must escape an `overflow: hidden` ancestor and still land somewhere marked, not in a bare `document.body`.",
-    "routed": "the element overlays portal into the resolved container inside an overlay you are writing yourself an overlay container without the root marker or a scoped stylesheet",
-    "do": "Wrap the root of the subtree, not individual overlays: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the context. Create the container once at body level and pass it as `container`; pass a function instead when the element only exists after the first render (`container={() => hostRef.current}`) — the provider calls it once it has mounted, and again when you pass a new function. Clear an outer provider with `container={null}` — overlays then pass no container and React Aria applies its own default. Reach for `ThemeRoot` first: it creates, classes, syncs and removes that container and wires this provider for you."
-   },
-   "notFor": [
-    {
-     "need": "the root of an independently deployed application, container included",
-     "id": "theme-root"
-    },
-    {
-     "need": "the resolved container inside an overlay you are writing yourself",
-     "id": "portal"
-    },
-    {
-     "need": "a right-to-left subtree",
-     "id": "direction"
-    }
-   ],
-   "related": [
-    "theme-root",
-    "dialog"
-   ],
-   "exports": [
-    "PortalProvider",
-    "usePortalContainer",
-    "usePortalTarget"
-   ],
-   "aliases": [],
-   "tokens": 1178
+   "tokens": 985
   },
   {
    "id": "progress",
@@ -2705,7 +2623,7 @@
     "names": "progress progress progress label progress value progress track progress indicator",
     "useWhen": "A task has a start, an end and a measurable fraction between them: an upload, an import, a batch run. The bar belongs in the flow of a panel, a row or a dialog, across the available width. The number matters as much as the bar: `ProgressLabel` plus `ProgressValue`.",
     "routed": "a full-width determinate bar in the flow of a panel the completion of a task that will finish a measurable percentage the progress of a task the user is watching a measurable percentage",
-    "do": "Name it: a `ProgressLabel` child, or `aria-label` when the label is already on screen. Let `ProgressValue` print the number; it reads React Aria's formatted `valueText` and follows `formatOptions`, `minValue` and `maxValue`. State the scale when it is not 0–100: `value={loaded} maxValue={total}`. Use `isIndeterminate` while the total is unknown. `className` sets the width (`w-full max-w-sm`), never the height or the colour."
+    "do": "Name it: a `ProgressLabel` child, or `aria-label` when the label is already on screen. Let `ProgressValue` print the number; it is formatted from `value`, `min`, `max` and `format` (`Intl.NumberFormat` options). State the scale when it is not 0–100: `value={loaded} max={total}`. Pass `value={null}` while the total is unknown; the bar turns indeterminate. `className` sets the width (`w-full max-w-sm`), never the height or the colour."
    },
    "notFor": [
     {
@@ -2738,7 +2656,46 @@
     "ProgressIndicator"
    ],
    "aliases": [],
-   "tokens": 955
+   "tokens": 946
+  },
+  {
+   "id": "provider",
+   "kind": "component",
+   "name": "TectonProvider",
+   "import": "import { TectonProvider, useDirection, useLocale } from \"@tecton/react/tecton/provider\"",
+   "family": "infrastructure",
+   "summary": "Any Tecton application: mounted once at the root, it carries the locale, the reading direction and the client-side router every component reads.",
+   "fields": {
+    "names": "provider tecton provider use direction use locale",
+    "useWhen": "Any Tecton application: mounted once at the root, it carries the locale, the reading direction and the client-side router every component reads. The application, or one subtree, reads right to left or in another language than the browser's. Overlays have to portal into a particular element instead of `document.body`.",
+    "routed": "the locale, direction or router of an application that owns the document",
+    "do": "Mount one `TectonProvider` above the router outlet and set the same `dir` and `lang` on `<html>`, so the document's own text flow and scrollbars match. Pass `locale` when you have one — it sets the direction too — and `direction` only to override it. Hand the router over once with `navigate` and `useHref`; Tecton links then navigate without a page load and still open in a new tab on ⌘/Ctrl-click. Nest a second provider for a subtree that differs: it inherits every value it does not set. Read the direction with `useDirection()` (`\"ltr\" | \"rtl\"`) in components of your own, never from `document.dir`."
+   },
+   "notFor": [
+    {
+     "need": "the root of an independently deployed application, overlay container included",
+     "id": "theme-root"
+    },
+    {
+     "need": "a dark or light island inside the application",
+     "id": "theme-root"
+    },
+    {
+     "need": "a link that navigates with the router",
+     "id": "link"
+    }
+   ],
+   "related": [
+    "theme-root",
+    "link"
+   ],
+   "exports": [
+    "TectonProvider",
+    "useDirection",
+    "useLocale"
+   ],
+   "aliases": [],
+   "tokens": 1042
   },
   {
    "id": "questionnaire",
@@ -2751,7 +2708,7 @@
     "names": "questionnaire questionnaire questionnaire progress questionnaire item questionnaire title questionnaire description questionnaire choices questionnaire choice questionnaire choice description questionnaire input questionnaire error questionnaire actions questionnaire previous questionnaire skip questionnaire next questionnaire submit",
     "useWhen": "The assistant asks a short, ordered set of questions before it acts: scope, constraints, review. One question is on screen at a time, with progress, back, skip and submit around it, and the answers are gathered once, on submit.",
     "routed": "a structured question with choices for the user to answer",
-    "do": "Declare the questions once as `items` on `Questionnaire`, so progress, actions and shortcuts render before hydration. Give every `QuestionnaireItem` a `name`, mark it `required` or `multiple`, and put its options in `QuestionnaireChoices`. Read the answers in `onSubmit` from `new FormData(event.currentTarget)`; the root is the `form`. Navigate only with `QuestionnairePrevious`, `QuestionnaireSkip`, `QuestionnaireNext` and `QuestionnaireSubmit`, inside `QuestionnaireActions`. These parts are plain form elements, not React Aria: they take `disabled` and `onChange`, and `QuestionnaireInput` needs an `aria-label`."
+    "do": "Declare the questions once as `items` on `Questionnaire`, so progress, actions and shortcuts render before hydration. Give every `QuestionnaireItem` a `name`, mark it `required` or `multiple`, and put its options in `QuestionnaireChoices`. Read the answers in `onSubmit` from `new FormData(event.currentTarget)`; the root is the `form`. Navigate only with `QuestionnairePrevious`, `QuestionnaireSkip`, `QuestionnaireNext` and `QuestionnaireSubmit`, inside `QuestionnaireActions`. These parts are plain form elements: they take `disabled` and `onChange`, and `QuestionnaireInput` needs an `aria-label`."
    },
    "notFor": [
     {
@@ -2786,7 +2743,7 @@
     "QuestionnaireSubmit"
    ],
    "aliases": [],
-   "tokens": 1027
+   "tokens": 1017
   },
   {
    "id": "radio-group",
@@ -2799,7 +2756,7 @@
     "names": "radio group radio group radio group item",
     "useWhen": "Two to about six mutually exclusive options are all worth showing at once. Each option earns a description or a whole choice card, not just a word. The set is fixed and belongs in a form, next to the other fields.",
     "routed": "one choice out of several mutually exclusive options two to five options that all stay visible a single group of radio options that is part of a larger form two to five options that all stay visible",
-    "do": "Drive it with `value` / `defaultValue` / `onChange` on `RadioGroup`; React Aria hands you the string, not an event. Give each `RadioGroupItem` a `value`; add `id` only so a `FieldLabel htmlFor` can point at it. Name the group with `aria-label`, or wrap it in `FieldSet` and `FieldLegend`. Disable everything with `isDisabled` on the group, one option with `isDisabled` on the item. Mark errors with `isInvalid` on the group and `data-invalid` on each `Field` row."
+    "do": "Drive it with `value` / `defaultValue` / `onValueChange` on `RadioGroup`; the handler receives the value, not an event. Give each `RadioGroupItem` a `value`; add `id` only so a `FieldLabel htmlFor` can point at it. Name the group with `aria-label`, or wrap it in `FieldSet` and `FieldLegend`. Disable everything with `disabled` on the group, one option with `disabled` on the item. Mark errors with `aria-invalid` on the group and `data-invalid` on each `Field` row."
    },
    "notFor": [
     {
@@ -2824,7 +2781,7 @@
     "RadioGroupItem"
    ],
    "aliases": [],
-   "tokens": 923
+   "tokens": 991
   },
   {
    "id": "resizable",
@@ -2837,7 +2794,7 @@
     "names": "resizable resizable panel group resizable panel resizable handle",
     "useWhen": "Two or three regions share one axis and the user decides how the space is split: a tree beside an editor, a list above a detail. The split is a working preference worth remembering (`defaultLayout` in, `onLayoutChanged` out), not a fixed design. The regions are peers; neither is chrome wrapped around the other.",
     "routed": "",
-    "do": "Size panels with unit strings on `defaultSize`, `minSize` and `maxSize` — `\"25%\"`, `\"320px\"`, `\"20rem\"` — and show a grip with `withHandle` when the divider should be obvious. Give the group a height from outside (`className=\"h-96\"`, or a flex parent): it is `flex h-full w-full` and brings none of its own. Remember this module wraps react-resizable-panels, not React Aria: the props are that library's own (`disabled`, `collapsible`, `onLayoutChanged`, `panelRef`), and a `ResizableHandle` must be a direct child of its group."
+    "do": "Size panels with unit strings on `defaultSize`, `minSize` and `maxSize` — `\"25%\"`, `\"320px\"`, `\"20rem\"` — and show a grip with `withHandle` when the divider should be obvious. Give the group a height from outside (`className=\"h-96\"`, or a flex parent): it is `flex h-full w-full` and brings none of its own. This module wraps react-resizable-panels: the props are that library's own (`disabled`, `collapsible`, `onLayoutChanged`, `panelRef`), and a `ResizableHandle` must be a direct child of its group."
    },
    "notFor": [
     {
@@ -2864,20 +2821,20 @@
     "ResizableHandle"
    ],
    "aliases": [],
-   "tokens": 1106
+   "tokens": 1084
   },
   {
    "id": "scroll-area",
    "kind": "component",
    "name": "ScrollArea",
-   "import": "import { ScrollArea } from \"@tecton/react/components/scroll-area\"",
+   "import": "import { ScrollArea, ScrollBar } from \"@tecton/react/components/scroll-area\"",
    "family": "layout",
    "summary": "A bounded region has more content than height: a tag list, a log, a long option list inside a card.",
    "fields": {
-    "names": "scroll area scroll area",
+    "names": "scroll area scroll area scroll bar",
     "useWhen": "A bounded region has more content than height: a tag list, a log, a long option list inside a card. The scrollbar is going to be seen often enough that the browser default looks out of place. The region scrolls on its own while the page around it stays still.",
     "routed": "a row of cards the reader scrolls freely a styled scroll region for content that does not grow at its end",
-    "do": "Give it a size: `h-*` or `max-h-*`, or `min-h-0 flex-1` when it is the growing child of a flex column. It only sets `overflow-auto`. Scroll sideways by making the content wider than the box (`whitespace-nowrap`, or an inner `flex w-max` row); there is no `orientation` prop and no separate scrollbar part. Put the padding on a wrapper inside the area, so the border and the scrollbar stay outside it. Add `tabIndex={0}` with `role=\"region\"` and an `aria-label` when the content holds nothing focusable."
+    "do": "Give it a size: `h-*` or `max-h-*`, or `min-h-0 flex-1` when it is the growing child of a flex column; the viewport inside is `size-full` of it. Scroll sideways by making the content wider than the box (`whitespace-nowrap`, or an inner `flex w-max` row) and adding `<ScrollBar orientation=\"horizontal\" />` as a child. Put the padding on a wrapper inside the area, so the border and the scrollbar stay outside it. Leave focus to the component: the viewport becomes a tab stop by itself whenever it overflows."
    },
    "notFor": [
     {
@@ -2899,23 +2856,24 @@
     "resizable"
    ],
    "exports": [
-    "ScrollArea"
+    "ScrollArea",
+    "ScrollBar"
    ],
    "aliases": [],
-   "tokens": 883
+   "tokens": 855
   },
   {
    "id": "select",
    "kind": "component",
    "name": "Select",
-   "import": "import { Select, SelectTrigger, SelectValue, SelectContent, SelectPopover, SelectList, SelectGroup, SelectLabel, SelectItem, SelectSeparator, SelectInput, SelectEmpty } from \"@tecton/react/components/select\"",
+   "import": "import { Select, SelectTrigger, SelectValue, SelectContent, SelectGroup, SelectLabel, SelectItem, SelectSeparator, SelectScrollUpButton, SelectScrollDownButton, selectTriggerVariants } from \"@tecton/react/components/select\"",
    "family": "selection",
    "summary": "A field picks one value out of a known, closed list: a datum, a unit, a status.",
    "fields": {
-    "names": "select select select trigger select value select content select popover select list select group select label select item select separator select input select empty",
+    "names": "select select select trigger select value select content select group select label select item select separator select scroll up button select scroll down button select trigger variants",
     "useWhen": "A field picks one value out of a known, closed list: a datum, a unit, a status. The list is short enough to scan and needs no typing to get through. The trigger must match the other controls in a field row: `variant=\"outline\" | \"filled\" | \"text\"`.",
     "routed": "a short fixed list that needs no typing choosing a value for a form field a themed popover with icons, rich items or a searchable list the rows-per-page picker beside the controls more than a handful of options picking a value for a form field",
-    "do": "Label it with `FieldLabel` inside `Select` (or `aria-labelledby` on `Select`), never `htmlFor` on the trigger, which the trigger's own `aria-labelledby` overrides; put `placeholder` on `Select`, as `SelectValue` takes none. Key every item with `id`, drive selection with `value` / `defaultValue` / `onChange(key)`; `selectedKey` and `onSelectionChange` are deprecated. Choose the surface with `SelectTrigger`'s `variant`, the height with its `size=\"sm\" | \"default\"`. Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`. To make it searchable, wrap `SelectPopover` in React Aria's `Autocomplete` with `SelectInput` and `SelectList`."
+    "do": "Drive it with `value` / `defaultValue` / `onValueChange` on `Select`, identify each `SelectItem` by `value`, and narrow the `null` that `onValueChange` hands over when nothing is selected. Pass `items` (`{ msl: \"Mean sea level\" }` or `[{ value, label }]`) so `SelectValue` shows the label, not the raw value; its `placeholder` shows while nothing is selected. In a `Field`, put the `id` on `SelectTrigger` and point `FieldLabel htmlFor` at it. Choose the surface with `SelectTrigger`'s `variant`, the height with its `size=\"sm\" | \"default\"`; place the list with `side` / `align` on `SelectContent`. Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`."
    },
    "notFor": [
     {
@@ -2945,17 +2903,16 @@
     "SelectTrigger",
     "SelectValue",
     "SelectContent",
-    "SelectPopover",
-    "SelectList",
     "SelectGroup",
     "SelectLabel",
     "SelectItem",
     "SelectSeparator",
-    "SelectInput",
-    "SelectEmpty"
+    "SelectScrollUpButton",
+    "SelectScrollDownButton",
+    "selectTriggerVariants"
    ],
    "aliases": [],
-   "tokens": 1199
+   "tokens": 1214
   },
   {
    "id": "separator",
@@ -3005,8 +2962,8 @@
    "fields": {
     "names": "sheet sheet sheet trigger sheet content sheet close sheet header sheet title sheet description sheet footer",
     "useWhen": "Details, filters or settings that belong to what is on screen: the page stays behind the overlay. The content is taller than it is wide — a form, a property list, a history. The user should be able to leave by clicking the page behind it.",
-    "routed": "a side panel listing what is about to change a panel that floats over the page and is dismissed a panel that slides in over the page and is dismissed a side panel that keeps the page visible behind it a side panel on a pointer-driven screen a panel that floats over the page and is dismissed a form long enough to need its own header and footer a panel that floats over the content and is dismissed",
-    "do": "Wrap the trigger `Button` and the `Sheet` in one `SheetTrigger`, exactly as for `Dialog`. Pick the edge with `side=\"right\" | \"left\" | \"top\" | \"bottom\"` on `Sheet` (`SheetContent` is an alias of it). Let `SheetHeader` and `SheetFooter` carry their own `p-4`; the sheet body is yours, so give it `px-4` and `flex-1`. Drop the corner control with `showCloseButton={false}` and close from the footer with `SheetClose`. Set width with `className` (`sm:max-w-lg`) only; `Sheet` owns the surface, the edge and the animation."
+    "routed": "a panel that floats over the page and is dismissed a panel that slides in over the page and is dismissed a side panel that keeps the page visible behind it a side panel on a pointer-driven screen a panel that floats over the page and is dismissed a panel that floats over the content and is dismissed",
+    "do": "Compose `Sheet` (the root) > `SheetTrigger render={<Button />}` + `SheetContent`, exactly as for `Dialog`; state is `open` / `onOpenChange` on `Sheet`. Pick the edge with `side=\"right\" | \"left\" | \"top\" | \"bottom\"` on `SheetContent`. Let `SheetHeader` and `SheetFooter` carry their own `p-4`; the sheet body is yours, so give it `px-4` and `flex-1`. Drop the corner control with `showCloseButton={false}` on `SheetContent` and close from the footer with `SheetClose render={<Button variant=\"outline\" />}`. Set width with `className` on `SheetContent` (`sm:max-w-lg`) only; it owns the surface, the edge and the animation."
    },
    "notFor": [
     {
@@ -3042,52 +2999,7 @@
     "SheetFooter"
    ],
    "aliases": [],
-   "tokens": 763
-  },
-  {
-   "id": "shortcuts",
-   "kind": "component",
-   "name": "ShortcutsProvider",
-   "import": "import { ShortcutsProvider, createShortcutRegistry, useShortcut, useShortcuts, useShortcutRegistry, formatShortcut, ShortcutKeys, useIsMacPlatform } from \"@tecton/react/tecton/shortcuts\"",
-   "family": "infrastructure",
-   "summary": "The host listens for keys once and every mounted application registers against the same registry.",
-   "fields": {
-    "names": "shortcuts shortcuts provider create shortcut registry use shortcut use shortcuts use shortcut registry format shortcut shortcut keys use is mac platform",
-    "useWhen": "The host listens for keys once and every mounted application registers against the same registry. A shortcut must be listed as well as bound: the help dialog and the command palette read `useShortcuts()`. A region owns keys only while focus is inside it — `target` scopes the listener to one element; a nested provider with a `target` and no `registry` gets a registry of its own, so its shortcuts are not listed with the host's.",
-    "routed": "",
-    "do": "Wrap the shell in one `ShortcutsProvider`; a nested provider with no `registry` of its own reuses the parent's. Register from React with `useShortcut`, which removes the shortcut on unmount and always calls the latest render's handler. Create the registry with `createShortcutRegistry()` in the host and hand the object to each mounted application; that shape is versioned public API, so the two sides may be on different package versions. Write keys in the registry syntax: `mod+k` for ⌘ / Ctrl, `?` for a symbol, `g w` for a sequence; a held key fires once, so set `allowRepeat: true` only where holding it should repeat (zoom, nudge). Give every shortcut a stable `id`, a `label` and a `group`, and render its caps with `ShortcutKeys`."
-   },
-   "notFor": [
-    {
-     "need": "one key cap rendered inside a label or a menu row",
-     "id": "kbd"
-    },
-    {
-     "need": "the header button whose tooltip shows a shortcut",
-     "id": "app-shell"
-    },
-    {
-     "need": "a searchable palette of the commands themselves",
-     "id": "command"
-    }
-   ],
-   "related": [
-    "kbd",
-    "app-shell",
-    "command"
-   ],
-   "exports": [
-    "ShortcutsProvider",
-    "createShortcutRegistry",
-    "useShortcut",
-    "useShortcuts",
-    "useShortcutRegistry",
-    "formatShortcut",
-    "ShortcutKeys",
-    "useIsMacPlatform"
-   ],
-   "aliases": [],
-   "tokens": 1116
+   "tokens": 948
   },
   {
    "id": "sidebar",
@@ -3100,7 +3012,7 @@
     "names": "sidebar sidebar sidebar provider sidebar trigger sidebar rail sidebar inset sidebar header sidebar content sidebar footer sidebar group sidebar group label sidebar menu sidebar menu item sidebar menu button sidebar menu action sidebar menu badge sidebar menu sub sidebar menu sub item sidebar menu sub button use sidebar",
     "useWhen": "The application's navigation rail: groups of destinations, an active row, a collapse control. The rail has to survive a phone — below the mobile breakpoint `Sidebar` renders itself as a `Sheet`. Rows carry a count, a per-row action or a second level of destinations.",
     "routed": "a navigation rail the user collapses and expands",
-    "do": "Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it. Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `href` for a destination and `isActive` for the current one. Pick the behaviour with `collapsible=\"offcanvas\" | \"icon\" | \"none\"` and the surface with `variant=\"sidebar\" | \"floating\" | \"inset\"`. Pass `tooltip=\"Wells\"` on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone."
+    "do": "Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it. Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `render={<a href=\"/wells\" />}` (or the router's `Link`) for a destination and `isActive` for the current one. Pick the behaviour with `collapsible=\"offcanvas\" | \"icon\" | \"none\"` and the surface with `variant=\"sidebar\" | \"floating\" | \"inset\"`. Pass `tooltip=\"Wells\"` (or `TooltipContent` props) on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone."
    },
    "notFor": [
     {
@@ -3143,7 +3055,7 @@
     "useSidebar"
    ],
    "aliases": [],
-   "tokens": 1127
+   "tokens": 1138
   },
   {
    "id": "skeleton",
@@ -3181,7 +3093,7 @@
     "Skeleton"
    ],
    "aliases": [],
-   "tokens": 724
+   "tokens": 718
   },
   {
    "id": "slider",
@@ -3194,7 +3106,7 @@
     "names": "slider slider",
     "useWhen": "An approximate value inside a known range: opacity, threshold, zoom, temperature. A range with two or more thumbs, such as a price or depth filter. The exact number matters less than the gesture of moving through the range.",
     "routed": "a value picked from a continuous range",
-    "do": "Bound the range with `minValue`, `maxValue` and `step` — React Aria's names, not `min` and `max`. Pass `value` / `defaultValue` as an array and read the array back in `onChange`; the callback type is `number | number[]`, so narrow it. Name it with `aria-label` (or `aria-labelledby`). The component renders a track and thumbs only, with no label slot. Inside a `Field`, use `FieldTitle` and `FieldDescription` and show the live value in the description. Disable with `isDisabled`; switch axis with `orientation=\"vertical\"` plus a height class such as `h-40`."
+    "do": "Bound the range with `min`, `max` and `step` (0–100 by default). Pass `value` / `defaultValue` as an array — one entry per thumb — and read it back in `onValueChange`, whose type is `number | number[]`, so narrow it; `onValueCommitted` fires once on release. Name it with `aria-labelledby` pointing at the visible title's `id`: the slider forwards it to every thumb's range input, which `aria-label` on the root does not reach. Inside a `Field`, use `FieldTitle` (with that `id`) and `FieldDescription`, and show the live value in the description. Disable with `disabled`; switch axis with `orientation=\"vertical\"` plus a height class such as `h-40`."
    },
    "notFor": [
     {
@@ -3218,7 +3130,7 @@
     "Slider"
    ],
    "aliases": [],
-   "tokens": 771
+   "tokens": 814
   },
   {
    "id": "sonner",
@@ -3270,7 +3182,7 @@
     "names": "spinner spinner",
     "useWhen": "A control is busy: a `Button` that is saving, an `InputGroup` that is validating, a `Badge` that says \"Generating\". A small region is waiting, and the wait is short and cannot be measured. An `Empty` state stands in for a running operation, with the spinner inside `EmptyMedia`.",
     "routed": "a small busy glyph inside a button or an input a busy indicator on an icon button an indeterminate wait a busy indicator inside a button a busy indicator inside a button or an input",
-    "do": "Inside a `Button`, a `Badge` or an `InputGroupAddon`, give it `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"` so the control trims its padding on that side. Mark the control that is working with `isPending`, not `isDisabled`, so it keeps focus and cannot be pressed twice; make the label a verb: \"Saving…\". Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so set the colour on the parent with a semantic token. `Spinner` already carries `role=\"status\"` and `aria-label=\"Loading\"`; do not wrap it in a second live region."
+    "do": "Inside a `Button`, a `Badge` or an `InputGroupAddon`, give it `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"` so the control trims its padding on that side. Mark the button that is working `disabled` with `focusableWhenDisabled`, so it keeps focus and cannot be pressed twice; make the label a verb: \"Saving…\". Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so set the colour on the parent with a semantic token. `Spinner` already carries `role=\"status\"` and `aria-label=\"Loading\"`; do not wrap it in a second live region."
    },
    "notFor": [
     {
@@ -3295,7 +3207,7 @@
     "Spinner"
    ],
    "aliases": [],
-   "tokens": 851
+   "tokens": 859
   },
   {
    "id": "stat",
@@ -3338,7 +3250,7 @@
     "StatGroup"
    ],
    "aliases": [],
-   "tokens": 942
+   "tokens": 990
   },
   {
    "id": "switch",
@@ -3351,7 +3263,7 @@
     "names": "switch switch",
     "useWhen": "A setting that takes effect the moment it is flipped, with no submit step. An on/off preference in a settings panel or a choice card. The two states are opposites of one thing, not two options to choose between.",
     "routed": "a setting that takes effect the moment it is flipped an on/off setting rather than a value",
-    "do": "Control it with `isSelected` and `onChange(isSelected: boolean)`, or leave it uncontrolled with `defaultSelected`. Pick the scale with `size=\"sm\" | \"default\"`; the thumb travel is matched to each. Give it an `id` and point a `FieldLabel htmlFor` at it inside a `Field orientation=\"horizontal\"`, with `FieldContent` for the description. Disable with `isDisabled` and put `data-disabled` on the `Field`; for an invalid value put `data-invalid` on both the `Switch` and the `Field` — React Aria's Switch has no validation state of its own. For a choice card, wrap the whole `Field` in a `FieldLabel` so the card surface is the hit target."
+    "do": "Control it with `checked` and `onCheckedChange(checked: boolean)`, or leave it uncontrolled with `defaultChecked`. Pick the scale with `size=\"sm\" | \"default\"`; the thumb travel is matched to each. Give it an `id` and point a `FieldLabel htmlFor` at it inside a `Field orientation=\"horizontal\"`, with `FieldContent` for the description. Disable with `disabled` and put `data-disabled` on the `Field`; for an invalid value set `aria-invalid` on the `Switch` and `data-invalid` on the `Field`. For a choice card, wrap the whole `Field` in a `FieldLabel` so the card surface is the hit target."
    },
    "notFor": [
     {
@@ -3375,7 +3287,7 @@
     "Switch"
    ],
    "aliases": [],
-   "tokens": 706
+   "tokens": 677
   },
   {
    "id": "table",
@@ -3386,9 +3298,9 @@
    "summary": "Records of the same shape have to line up in columns: invoices, wells, run results.",
    "fields": {
     "names": "table table table header table body table footer table head table row table cell table caption",
-    "useWhen": "Records of the same shape have to line up in columns: invoices, wells, run results. Rows are selectable, activatable, sortable or sometimes absent — React Aria gives all four on these parts. A footer totals the columns, or a caption names the table.",
+    "useWhen": "Records of the same shape have to line up in columns: invoices, wells, run results. A footer totals the columns, or a caption names the table. The rows are read, compared or opened; interaction beyond that (sorting, paging) comes from TanStack Table on these parts.",
     "routed": "",
-    "do": "Put `TableHead` children straight inside `TableHeader`; React Aria renders the header row itself, while `TableFooter` does take a `TableRow`. Name the grid with `aria-label` on `Table`, mark the identifying column `isRowHeader`, and give every `TableRow` an `id`: `selectionMode`, `selectedKeys` and `onSelectionChange` work off those keys, and a `Checkbox slot=\"selection\"` fills itself in. Render the empty case with `TableBody`'s `renderEmptyState`, which is what the `data-empty:h-24 data-empty:text-center` rules are waiting for, and keep `className` on the parts to alignment and width (`text-right`, `w-24`)."
+    "do": "Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`. Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state=\"selected\"` for the `bg-table-active` fill. Open a record from a link in its identifying cell, not from a handler on the row. Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-right`, `w-24`)."
    },
    "notFor": [
     {
@@ -3416,7 +3328,7 @@
     "TableCaption"
    ],
    "aliases": [],
-   "tokens": 1121
+   "tokens": 1091
   },
   {
    "id": "tabs",
@@ -3429,7 +3341,7 @@
     "names": "tabs tabs tabs list tabs trigger tabs content tabs list variants",
     "useWhen": "A page or panel has two to about six sections the user moves between without navigating away. Exactly one section is visible at a time and each one is a real chunk of content. The strip belongs to the surface it sits on: a page header, a panel, a card.",
     "routed": "sections that replace each other in the same space switching between sibling views of the same page sections of content the user moves between sections the reader chooses by name switching between sibling sections of one page switching between panels of content switching between panels of content",
-    "do": "Match every `TabsTrigger` to its `TabsContent` by `id`, the same string on both. Select with `defaultSelectedKey` / `selectedKey` and `onSelectionChange`, which receives the key. Choose the strip with `TabsList` `variant=\"default\" | \"line\"`, and a side strip with `orientation=\"vertical\"` on `Tabs`. Give `TabsList` an `aria-label` when no nearby heading names the set; disable one tab with `isDisabled`."
+    "do": "Match every `TabsTrigger` to its `TabsContent` by `value`, the same string on both. Select with `defaultValue` / `value` and `onValueChange`, which receives the tab's value. Choose the strip with `TabsList` `variant=\"default\" | \"line\"`, and a side strip with `orientation=\"vertical\"` on `Tabs`. Give `TabsList` an `aria-label` when no nearby heading names the set; disable one tab with `disabled`."
    },
    "notFor": [
     {
@@ -3453,7 +3365,7 @@
     "tabsListVariants"
    ],
    "aliases": [],
-   "tokens": 927
+   "tokens": 939
   },
   {
    "id": "textarea",
@@ -3466,7 +3378,7 @@
     "names": "textarea textarea",
     "useWhen": "Several lines of free text: a description, a note, a comment, a message. The content grows while the user types and the box should follow it. Inside a `Field`, so the control arrives with a label and room for an error.",
     "routed": "a form field for a long description more than one line of free text",
-    "do": "Pick the surface with `variant=\"outline\" | \"filled\" | \"text\"` — the same three axes as `Input`. Set the starting height with `rows`; the box already carries `field-sizing-content` and `min-h-16` and grows from there. `Textarea` renders React Aria's `TextArea`, a real `<textarea>`: use `value`, `onChange(event)`, `disabled`, `required` and `aria-invalid`. Mirror the state on the `Field`: `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid`. Keep `className` to layout only — `w-full`, `col-span-2`."
+    "do": "Pick the surface with `variant=\"outline\" | \"filled\" | \"text\"` — the same three axes as `Input`. Set the starting height with `rows`; the box already carries `field-sizing-content` and `min-h-16` and grows from there. `Textarea` is a real `<textarea>`: use `value`, `onChange(event)`, `disabled`, `required` and `aria-invalid`. Mirror the state on the `Field`: `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid`. Keep `className` to layout only — `w-full`, `col-span-2`."
    },
    "notFor": [
     {
@@ -3491,7 +3403,7 @@
     "Textarea"
    ],
    "aliases": [],
-   "tokens": 844
+   "tokens": 836
   },
   {
    "id": "theme-root",
@@ -3503,25 +3415,21 @@
    "fields": {
     "names": "theme root theme root theme root variants",
     "useWhen": "An application is mounted into a page that already carries its own copy of Tecton: a Module Federation remote, an embedded widget. A subtree must be pinned against the shell's mode — a dark map or log viewer in a light application. That subtree's overlays have to stay inside its own `@scope` rule instead of landing in a bare `document.body`.",
-    "routed": "the root element of an independently deployed application the root of an independently deployed application, container included",
-    "do": "Render it around the whole mounted tree with the deployable's scope class, and keep layout on an inner element: `<ThemeRoot className=\"mfe-a\"><div className=\"flex h-full flex-col\">…</div></ThemeRoot>`. The overlay container that mirrors `className` is `display: contents`, so layout utilities do nothing there while typography and colour classes reach every overlay. Keep `theme=\"inherit\"` inside a Tecton shell — the shell's variables, palette and mode inherit — and pin `dark` or `light` only for an inverted island. Retint one root with an arbitrary property in `className`: `[--primary:var(--tecton-palette-green-560)]`, which is mirrored onto the overlay container; pass `overlayClassName` instead when only some of the root's classes belong on the overlays (the theme class is always added to it). Pass `overlayContainer` to reuse an element the shell owns, or `null` to opt out; omit it and the root creates, syncs and removes its own. Pair it with `@tecton/react/styles/scoped.css` and the PostCSS scope plugin, never with `globals.css`."
+    "routed": "the root of an independently deployed application, overlay container included a dark or light island inside the application",
+    "do": "Render it around the whole mounted tree with the deployable's scope class, and keep layout on an inner element: `<ThemeRoot className=\"mfe-a\"><div className=\"flex h-full flex-col\">…</div></ThemeRoot>`. The overlay container that mirrors `className` is `display: contents`, so layout utilities do nothing there while typography and colour classes reach every overlay. Keep `theme=\"inherit\"` inside a Tecton shell — the shell's variables, palette and mode inherit — and pin `dark` or `light` only for an inverted island. Retint one root with an arbitrary property in `className`: `[--primary:var(--tecton-palette-green-560)]`, which is mirrored onto the overlay container; pass `overlayClassName` instead when only some of the root's classes belong on the overlays (the theme class is always added to it). Pass `dir` and `locale` when the remote reads differently from its shell: `dir` lands on the root and on the overlay container, and both feed the `TectonProvider` it renders. Pass `overlayContainer` to reuse an element the shell owns, or `null` to opt out; omit it and the root creates, syncs and removes its own."
    },
    "notFor": [
     {
-     "need": "an overlay container without the root marker or a scoped stylesheet",
-     "id": "portal"
+     "need": "the locale, direction or router of an application that owns the document",
+     "id": "provider"
     },
     {
      "need": "the header, rail and work area of an application that owns the document",
      "id": "app-shell"
-    },
-    {
-     "need": "a right-to-left subtree",
-     "id": "direction"
     }
    ],
    "related": [
-    "portal",
+    "provider",
     "app-shell"
    ],
    "exports": [
@@ -3529,7 +3437,7 @@
     "themeRootVariants"
    ],
    "aliases": [],
-   "tokens": 1188
+   "tokens": 1181
   },
   {
    "id": "toggle",
@@ -3542,7 +3450,7 @@
     "names": "toggle toggle toggle variants",
     "useWhen": "One independent formatting or view option is on or off: bold, bookmark, show labels. The control lives in a toolbar or beside content, not in a labelled form row. Pressing it changes the surrounding view immediately, with no save step.",
     "routed": "a single independent on/off control",
-    "do": "Hold state with `isSelected` / `defaultSelected` and read changes from `onChange`, which receives a boolean. Pick `variant=\"default\" | \"outline\"` and `size=\"default\" | \"sm\" | \"lg\"`; they own colour, height and padding. Give an icon-only `Toggle` an `aria-label`, and mark a paired icon with `data-icon=\"inline-start\"`. Disable with `isDisabled`; React Aria ignores `disabled`. Style the pressed look through the variant's `data-selected` rules, never with your own colour classes."
+    "do": "Hold state with `pressed` / `defaultPressed` and read changes from `onPressedChange`, which receives a boolean. Pick `variant=\"default\" | \"outline\"` and `size=\"default\" | \"sm\" | \"lg\"`; they own colour, height and padding. Give an icon-only `Toggle` an `aria-label`, and mark a paired icon with `data-icon=\"inline-start\"`. Disable with `disabled`. Style the pressed look through the variant's `aria-pressed` rules, never with your own colour classes."
    },
    "notFor": [
     {
@@ -3563,7 +3471,7 @@
     "toggleVariants"
    ],
    "aliases": [],
-   "tokens": 845
+   "tokens": 834
   },
   {
    "id": "toggle-group",
@@ -3574,9 +3482,9 @@
    "summary": "A small fixed set of options works as a filter or a formatting control in a toolbar.",
    "fields": {
     "names": "toggle group toggle group toggle group item",
-    "useWhen": "A small fixed set of options works as a filter or a formatting control in a toolbar. Several of those options may be on at the same time (`selectionMode=\"multiple\"`). The options are icons or one-word labels that fit in a segmented row.",
+    "useWhen": "A small fixed set of options works as a filter or a formatting control in a toolbar. Several of those options may be on at the same time (`multiple`). The options are icons or one-word labels that fit in a segmented row.",
     "routed": "options that hold an on or off state a compact segmented control in a toolbar a filter that narrows a list in place several related toggles in one segmented control",
-    "do": "Key each item with `id`; read `selectedKeys` / `defaultSelectedKeys` and `onSelectionChange`, which hands you a `Set`. Choose `selectionMode=\"single\"` for an exclusive choice, `\"multiple\"` for independent toggles. Shape the bar with `variant=\"outline\"`, `size` and `spacing={0}`; the joined corners and shared borders come from the variant. Give every icon-only `ToggleGroupItem` an `aria-label`, and stack with `orientation=\"vertical\"`."
+    "do": "Identify each item by `value`; read `value` / `defaultValue` and `onValueChange`, which always hand you an **array** of values. Leave it single-select for an exclusive choice, add `multiple` for independent toggles. Shape the bar with `variant=\"outline\"`, `size` and `spacing={0}`; the joined corners and shared borders come from the variant. Give every icon-only `ToggleGroupItem` an `aria-label`, and stack with `orientation=\"vertical\"`."
    },
    "notFor": [
     {
@@ -3602,20 +3510,20 @@
     "ToggleGroupItem"
    ],
    "aliases": [],
-   "tokens": 905
+   "tokens": 960
   },
   {
    "id": "tooltip",
    "kind": "component",
    "name": "Tooltip",
-   "import": "import { Tooltip, TooltipTrigger } from \"@tecton/react/components/tooltip\"",
+   "import": "import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from \"@tecton/react/components/tooltip\"",
    "family": "overlays",
    "summary": "A control needs a few words of explanation: what an icon button does, why one is disabled.",
    "fields": {
-    "names": "tooltip tooltip tooltip trigger",
+    "names": "tooltip tooltip tooltip trigger tooltip content tooltip provider",
     "useWhen": "A control needs a few words of explanation: what an icon button does, why one is disabled. The text is a description, never the only place a fact appears.",
     "routed": "a short label on a control a short label on a control",
-    "do": "Give `TooltipTrigger` exactly two children, in this order: the trigger element, then the `Tooltip`. Give an icon-only trigger its own `aria-label`; the tooltip is `aria-describedby`, not the name. Set `delay` and `closeDelay` on `TooltipTrigger` (Tecton opens at `delay={0}`) and `placement` on `Tooltip`; a `Kbd` inside gets its own spacing, as in `Save changes <Kbd>S</Kbd>`. To explain a disabled control, wrap it: `<span className=\"inline-block w-fit\"><Button isDisabled>Export</Button></span>`. A trigger that is not a control (a `Badge`, a term) needs focus and a role, or React Aria's `Focusable` warns and keyboard users never open it: `<Badge render={(props) => <span {...props} tabIndex={0} role=\"img\" aria-label=\"TVD\" />}>TVD</Badge>`."
+    "do": "Compose `Tooltip` (the root) > `TooltipTrigger render={<Button />}` + `TooltipContent`; position with `side` / `align` / `sideOffset` on `TooltipContent`. Wrap the app or the toolbar once in `TooltipProvider`: it sets the open delay (Tecton's is `0`) and lets adjacent tooltips open instantly; `delay` / `closeDelay` on one `TooltipTrigger` override it. Give an icon-only trigger its own `aria-label`; the tooltip describes, it does not name. To explain a disabled control, pass `focusableWhenDisabled` to the `Button` so hover and focus still reach the trigger; a `Kbd` inside gets its own spacing (`Save changes <Kbd>S</Kbd>`)."
    },
    "notFor": [
     {
@@ -3637,10 +3545,12 @@
    ],
    "exports": [
     "Tooltip",
-    "TooltipTrigger"
+    "TooltipTrigger",
+    "TooltipContent",
+    "TooltipProvider"
    ],
    "aliases": [],
-   "tokens": 853
+   "tokens": 1018
   },
   {
    "id": "tree-view",
@@ -3679,7 +3589,7 @@
     "TreeViewCollection"
    ],
    "aliases": [],
-   "tokens": 1132
+   "tokens": 1180
   },
   {
    "id": "tanstack-table",
@@ -3781,21 +3691,21 @@
    "tokens": 371
   },
   {
-   "id": "react-aria",
+   "id": "conventions",
    "kind": "topic",
-   "name": "React Aria props instead of Radix props",
-   "summary": "React Aria props instead of Radix props",
+   "name": "Prop conventions: handlers, state, Root/Trigger/Content, render, state attributes",
+   "summary": "Prop conventions: handlers, state, Root/Trigger/Content, render, state attributes",
    "fields": {
-    "names": "react aria",
-    "useWhen": "The Radix-to-React-Aria prop map for @tecton/react, because an agent's prior is shadcn on Radix and most of these substitutions render a dead control rather than an error. Covers onPress instead of onClick, isDisabled instead of disabled, isSelected and onChange instead of checked and onCheckedChange, value / defaultValue / onChange on Select and Combobox and selectedKey / defaultSelectedKey / onSelectionChange on Tabs instead of Radix's onValueChange, isOpen and onOpenChange with DialogTrigger wrapping both the Button and the Dialog (there is no DialogContent), the absence of asChild and what replaces it (LinkButton, buttonVariants, the render prop on Badge and ButtonGroupText, the element-valued render on DrawerTrigger), id instead of value on SelectItem, TabsTrigger and TabsContent, isInvalid on React Aria controls versus aria-invalid on Input and Textarea plus data-invalid on Field, and why Link and LinkButton exist. Load before writing any prop, handler or controlled state on a Tecton component.",
+    "names": "conventions",
+    "useWhen": "The prop conventions every @tecton/react component follows, for agents whose prior is Radix shadcn or an older React Aria Tecton. Covers onClick (not onPress), disabled (not isDisabled), checked / onCheckedChange (not isSelected / onChange), pressed / onPressedChange, the controlled selected state, value / defaultValue / onValueChange with arrays for multi-value and value as an item's identity (not id, selectedKey or onSelectionChange), open / defaultOpen / onOpenChange on the root, the Root + Trigger + Content structure of Dialog, AlertDialog, Sheet, Drawer, Popover, HoverCard, Tooltip, DropdownMenu and ContextMenu (no DialogTrigger wrapper, no asChild), render={<Button />} for element polymorphism, side / align / sideOffset placement, the presence state attributes to style on (data-open, data-checked, data-active, data-pressed, data-highlighted, data-disabled), TectonProvider for direction, locale, router and portals, and the absence of any keyboard shortcut API. Load before writing any prop, handler, controlled state or state selector on a Tecton component.",
     "routed": "",
-    "do": "The map Common Mistakes [CRITICAL] onClick instead of onPress [CRITICAL] disabled instead of isDisabled [CRITICAL] checked and onCheckedChange on Checkbox or Switch [CRITICAL] onValueChange on Select, value on SelectItem [CRITICAL] value and onValueChange on Tabs [HIGH] Select controlled with the empty string [HIGH] DialogContent, and open on the Dialog [HIGH] asChild to compose a trigger or a link [HIGH] aria-invalid on a React Aria control [MEDIUM] Button used for navigation"
+    "do": "The map Root, Trigger, Content render State attributes Providers, portals, shortcuts Common Mistakes [CRITICAL] React Aria handler and state names [HIGH] A trigger wrapping the overlay [HIGH] Items identified by id [HIGH] Importing the library underneath"
    },
    "notFor": [],
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2973
+   "tokens": 1583
   },
   {
    "id": "rules",
@@ -3804,15 +3714,15 @@
    "summary": "Rules for every file: imports, setup, palette, className, variants, icons",
    "fields": {
     "names": "rules",
-    "useWhen": "Foundation for writing any UI with @tecton/react. Covers the import paths (@tecton/react/components/<name>, @tecton/react/tecton/<name>, @tecton/react/icons — there is no root export), the @tecton/react/globals.css stylesheet and the dark-first `dark` class, why components are never installed with `shadcn add` and why files under components/ui are the wrong base, the reset Tailwind palette where bg-red-500 and text-zinc-400 emit no CSS at all, the semantic tokens (bg-primary, text-muted-foreground, text-destructive, bg-warning-surface) and the Tecton palette steps (bg-blue-120, text-blue-830), the rule that variants own colour, shape, size and padding while className carries layout only, the Tecton variant axes on Alert, Badge, Separator, Input, Textarea and SelectTrigger, data-icon=\"inline-start\" spacing, and Tecton domain glyphs versus Lucide. Load before writing or editing any Tecton markup, className, import or stylesheet.",
+    "useWhen": "Foundation for writing any UI with @tecton/react. Covers the import paths (@tecton/react/components/<name>, @tecton/react/tecton/<name>, @tecton/react/icons — there is no root export, and nothing is imported from the libraries underneath), the @tecton/react/globals.css stylesheet and the dark-first `dark` class, why components are never installed with `shadcn add`, the reset Tailwind palette where bg-red-500 and text-zinc-400 emit no CSS at all, the semantic tokens (bg-primary, text-muted-foreground, text-destructive, bg-warning-surface) and the Tecton palette steps (bg-blue-120, text-blue-830), the rule that variants own colour, shape, size and padding while className carries layout only and no stylesheet targets a generated component's data-slot, the Tecton variant axes on Alert, Badge, Separator, Input, Textarea and SelectTrigger, data-icon=\"inline-start\" spacing, and Tecton domain glyphs versus Lucide. Load before writing or editing any Tecton markup, className, import or stylesheet.",
     "routed": "",
-    "do": "Before you finish Setup Three import namespaces, no root export Colour comes from tokens, never from Tailwind's stock palette Variants own the look, className carries layout Icons Common Mistakes [CRITICAL] Stock Tailwind colour renders nothing [CRITICAL] Installing a component with the shadcn CLI [HIGH] Importing from the package root [HIGH] className overriding what a variant owns [HIGH] Hand-built status colours where a variant exists [MEDIUM] Icon inside a control without data-icon Looking further"
+    "do": "Before you finish Setup Three import namespaces, no root export Colour comes from tokens, never from Tailwind's stock palette Variants own the look, className carries layout Icons Common Mistakes [CRITICAL] Stock Tailwind colour renders nothing [CRITICAL] Installing a component with the shadcn CLI [HIGH] Importing from the package root [HIGH] className overriding what a variant owns [HIGH] Hand-built status colours where a variant exists Looking further"
    },
    "notFor": [],
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 3612
+   "tokens": 2937
   },
   {
    "id": "theming",
@@ -3829,7 +3739,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2808
+   "tokens": 2851
   }
  ]
 }

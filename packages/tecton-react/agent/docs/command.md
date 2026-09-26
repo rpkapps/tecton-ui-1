@@ -20,37 +20,37 @@ import { Command, CommandDialog, CommandInput, CommandList, CommandEmpty, Comman
 
 ## Do
 
-- Run the action from `onAction` on `CommandItem`, or from `onAction(key)` on `CommandList` with an `id` per item.
-- Give `CommandList` a `renderEmptyState` that returns `CommandEmpty`.
-- Pass `textValue` to any item whose children are JSX rather than a plain string.
-- Group with `CommandGroup heading="…"`, divide with `CommandSeparator`, hint keys with `CommandShortcut`.
+- Run the action from `onSelect` on `CommandItem`; it fires on click and on Enter.
+- Put `CommandEmpty` inside `CommandList`: it shows only when the filter matches nothing.
+- Give an item whose children are JSX a `value` (and `keywords` for synonyms), so the filter matches the words, not the markup.
+- Group with `CommandGroup heading="…"`, divide with `CommandSeparator`, hint keys with `CommandShortcut` — a label only, since Tecton binds no keys.
 - Open the palette with `CommandDialog` and its `open` / `onOpenChange` props, wrapping a `Command`.
 - Keep the `Command` palette short: a few groups, with record results capped (the first ten wells) rather than every match.
 
 ## Don't
 
-### CRITICAL The cmdk onSelect prop instead of onAction
+### CRITICAL The React Aria onAction prop instead of onSelect
 
 Wrong:
-
-```tsx
-<CommandItem onSelect={() => router.navigate({ to: "/wells" })}>Go to wells</CommandItem>
-```
-
-Correct:
 
 ```tsx
 <CommandItem onAction={() => router.navigate({ to: "/wells" })}>Go to wells</CommandItem>
 ```
 
-`CommandItem` is a React Aria `MenuItem`, whose activation handler is `onAction`; `onSelect` is not in its props, so it is dropped and pressing Enter or clicking the row does nothing at all.
+Correct:
 
-### HIGH JSX item children with no textValue
+```tsx
+<CommandItem onSelect={() => router.navigate({ to: "/wells" })}>Go to wells</CommandItem>
+```
+
+`CommandItem` is a cmdk item whose activation handler is `onSelect`; `onAction` is not in its props, so pressing Enter or clicking the row does nothing at all.
+
+### HIGH A React Aria textValue on a JSX item
 
 Wrong:
 
 ```tsx
-<CommandItem onAction={openBilling}>
+<CommandItem textValue="Billing" onSelect={openBilling}>
   <CreditCardIcon />
   <span>Billing</span>
 </CommandItem>
@@ -59,13 +59,13 @@ Wrong:
 Correct:
 
 ```tsx
-<CommandItem textValue="Billing" onAction={openBilling}>
+<CommandItem value="billing" keywords={["invoice", "payment"]} onSelect={openBilling}>
   <CreditCardIcon />
   <span>Billing</span>
 </CommandItem>
 ```
 
-`CommandItem` derives `textValue` only when its children are a plain string, so an item built from an icon and a `span` has none and the palette's filter and typeahead cannot match it.
+The filter matches an item's `value` and `keywords`; `textValue` is not a prop, so the item is matched on whatever text cmdk reads from its markup and a search for "invoice" finds nothing.
 
 ### MEDIUM An empty search that renders nothing
 
@@ -83,17 +83,18 @@ Correct:
 ```tsx
 <Command>
   <CommandInput placeholder="Type a command or search…" />
-  <CommandList renderEmptyState={() => <CommandEmpty>No results found.</CommandEmpty>}>
+  <CommandList>
+    <CommandEmpty>No results found.</CommandEmpty>
     {items}
   </CommandList>
 </Command>
 ```
 
-`CommandList` is a React Aria `Menu`, and a collection with no matching items renders nothing unless `renderEmptyState` is given; `CommandEmpty` is what that function returns, not a child of the list.
+With no `CommandEmpty` a search that matches nothing leaves a blank panel under the input, which reads as the palette having broken.
 
 ## Before you finish
 
-- `CommandItem` acts through `onAction` and carries `textValue` when its children are JSX, and an empty filter renders through `renderEmptyState` returning `CommandEmpty` / `ComboboxEmpty` (with `allowsEmptyCollection` on a `Combobox`).
+- `CommandItem` acts through `onSelect` and gets a `value` (plus `keywords`) when its children are JSX; an empty filter shows `CommandEmpty` inside `CommandList` and `ComboboxEmpty` inside `ComboboxContent`.
 - When a filter narrows a table or list, show the matching count beside it ("42 of 318 wells").
 
 Related: combobox, dropdown-menu

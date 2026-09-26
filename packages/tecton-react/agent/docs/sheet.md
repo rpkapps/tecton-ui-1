@@ -21,11 +21,11 @@ import { Sheet, SheetTrigger, SheetContent, SheetClose, SheetHeader, SheetTitle,
 
 ## Do
 
-- Wrap the trigger `Button` and the `Sheet` in one `SheetTrigger`, exactly as for `Dialog`.
-- Pick the edge with `side="right" | "left" | "top" | "bottom"` on `Sheet` (`SheetContent` is an alias of it).
+- Compose `Sheet` (the root) > `SheetTrigger render={<Button />}` + `SheetContent`, exactly as for `Dialog`; state is `open` / `onOpenChange` on `Sheet`.
+- Pick the edge with `side="right" | "left" | "top" | "bottom"` on `SheetContent`.
 - Let `SheetHeader` and `SheetFooter` carry their own `p-4`; the sheet body is yours, so give it `px-4` and `flex-1`.
-- Drop the corner control with `showCloseButton={false}` and close from the footer with `SheetClose`.
-- Set width with `className` (`sm:max-w-lg`) only; `Sheet` owns the surface, the edge and the animation.
+- Drop the corner control with `showCloseButton={false}` on `SheetContent` and close from the footer with `SheetClose render={<Button variant="outline" />}`.
+- Set width with `className` on `SheetContent` (`sm:max-w-lg`) only; it owns the surface, the edge and the animation.
 
 ## Don't
 
@@ -34,38 +34,55 @@ import { Sheet, SheetTrigger, SheetContent, SheetClose, SheetHeader, SheetTitle,
 Wrong:
 
 ```tsx
-<Sheet className="fixed top-0 left-0 h-full w-96 bg-white p-6">
+<SheetContent className="fixed top-0 left-0 h-full w-96 bg-white p-6">
   <SheetTitle>Well properties</SheetTitle>
-</Sheet>
+</SheetContent>
 ```
 
 Correct:
 
 ```tsx
-<Sheet side="left" className="sm:max-w-md">
-  <SheetHeader>
-    <SheetTitle>Well properties</SheetTitle>
-  </SheetHeader>
-</Sheet>
+<SheetContent side="left" className="sm:max-w-md">
+  <SheetHeader><SheetTitle>Well properties</SheetTitle></SheetHeader>
+</SheetContent>
 ```
 
-`Sheet` sets its edge, size and enter/exit transforms from `data-side`, so hand-placed `fixed`/`inset` classes fight the variant and the animation slides the panel from the wrong edge.
+`SheetContent` sets its edge, size and enter/exit transforms from `data-side`, so hand-placed `fixed`/`inset` classes fight the variant and the animation slides the panel from the wrong edge.
 
 ### HIGH Body content with no padding of its own
 
 Wrong:
 
 ```tsx
-<Sheet>
-  <SheetHeader>
-    <SheetTitle>Filters</SheetTitle>
-  </SheetHeader>
+<SheetContent>
+  <SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader>
   <FieldGroup>
-    <Field>
-      <FieldLabel htmlFor="field">Field</FieldLabel>
-      <Input id="field" />
-    </Field>
+    <Input aria-label="Field" />
   </FieldGroup>
+</SheetContent>
+```
+
+Correct:
+
+```tsx
+<SheetContent>
+  <SheetHeader><SheetTitle>Filters</SheetTitle></SheetHeader>
+  <FieldGroup className="flex-1 px-4">
+    <Input aria-label="Field" />
+  </FieldGroup>
+</SheetContent>
+```
+
+The padding lives on `SheetHeader` and `SheetFooter`, not on the sheet, so anything in between runs edge to edge against the panel border.
+
+### MEDIUM The side on the root
+
+Wrong:
+
+```tsx
+<Sheet side="left">
+  <SheetTrigger render={<Button variant="outline" />}>Filters</SheetTrigger>
+  <SheetContent><SheetTitle>Filters</SheetTitle></SheetContent>
 </Sheet>
 ```
 
@@ -73,23 +90,16 @@ Correct:
 
 ```tsx
 <Sheet>
-  <SheetHeader>
-    <SheetTitle>Filters</SheetTitle>
-  </SheetHeader>
-  <FieldGroup className="flex-1 px-4">
-    <Field>
-      <FieldLabel htmlFor="field">Field</FieldLabel>
-      <Input id="field" />
-    </Field>
-  </FieldGroup>
+  <SheetTrigger render={<Button variant="outline" />}>Filters</SheetTrigger>
+  <SheetContent side="left"><SheetTitle>Filters</SheetTitle></SheetContent>
 </Sheet>
 ```
 
-The padding lives on `SheetHeader` and `SheetFooter`, not on the sheet, so anything in between runs edge to edge against the panel border.
+`Sheet` is the state root and renders no element, so `side` there is ignored and the panel opens from the default right edge.
 
 ## Before you finish
 
-- Every `Dialog`, `AlertDialog`, `Sheet` and `Popover` sits inside its own trigger component (`DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `PopoverTrigger`) together with its trigger `Button`; a sibling never receives the open state.
-- Controlled overlays use React Aria's `isOpen` and `onOpenChange`, and the footer closes with `DialogClose` or `SheetClose` rather than your own state.
+- Every `Dialog`, `AlertDialog`, `Sheet`, `Drawer`, `Popover`, `HoverCard` and `Tooltip` is a root that renders nothing, holding its trigger and its content part (`DialogContent`, `AlertDialogContent`, `SheetContent`, `DrawerContent`, `PopoverContent`, `HoverCardContent`, `TooltipContent`); a trigger or content outside its root never opens.
+- Controlled overlays use `open`, `defaultOpen` and `onOpenChange` on the root, `disablePointerDismissal` keeps unsaved input from being dismissed by a backdrop press, and the footer closes with `DialogClose` or `SheetClose` rather than your own state.
 
 Related: dialog, drawer, panel

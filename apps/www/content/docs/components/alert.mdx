@@ -148,7 +148,7 @@ Compose `Alert > icon, AlertTitle, AlertDescription, AlertAction`, with the icon
 
 <Do>
 
-Put every button, including the dismiss control, inside `AlertAction` and wire it with `onPress`; a decision that blocks the user is an `AlertDialog`, not an alert.
+Put every button, including the dismiss control, inside `AlertAction` and wire it with `onClick`; a decision that blocks the user is an `AlertDialog`, not an alert.
 
 </Do>
 
@@ -237,7 +237,7 @@ Say the severity in the alert title's words ("Pressure warning", "Export failed"
 
 </Correct>
 
-The two-column grid and the icon's `row-span-2` come from `has-[>svg]`, a direct-child selector, so an icon nested in the title leaves the alert in one column and the description no longer aligns under the title.
+The two-column grid and the icon column come from `has-[>svg]`, a direct-child selector, so an icon nested in the title leaves the alert in one column and the description no longer aligns under the title.
 
 </Dont>
 
@@ -248,7 +248,7 @@ The two-column grid and the icon's `row-span-2` come from `has-[>svg]`, a direct
 ```tsx
 <Alert variant="success">
   <AlertTitle>Three FDA alternatives ranked</AlertTitle>
-  <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onPress={dismiss}><XIcon /></Button>
+  <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onClick={dismiss}><XIcon /></Button>
 </Alert>
 ```
 
@@ -260,14 +260,14 @@ The two-column grid and the icon's `row-span-2` come from `has-[>svg]`, a direct
 <Alert variant="success">
   <AlertTitle>Three FDA alternatives ranked</AlertTitle>
   <AlertAction>
-    <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onPress={dismiss}><XIcon /></Button>
+    <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onClick={dismiss}><XIcon /></Button>
   </AlertAction>
 </Alert>
 ```
 
 </Correct>
 
-The alert clears its corner with `has-data-[slot=alert-action]:pr-18`, so a bare button joins the grid flow under the title instead of sitting in the reserved top-right corner.
+The alert clears its corner with `has-data-[slot=alert-action]:pe-18`, so a bare button joins the grid flow under the title instead of sitting in the reserved inline-end corner.
 
 </Dont>
 

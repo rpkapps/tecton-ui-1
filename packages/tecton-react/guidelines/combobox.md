@@ -2,7 +2,7 @@
 component: Combobox
 module: "@tecton/react/components/combobox"
 family: selection
-exports: [Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem, ComboboxGroup, ComboboxLabel, ComboboxEmpty, ComboboxSeparator, ComboboxChips, ComboboxChip, ComboboxChipList, ComboboxChipsInput, ComboboxCollection, ComboboxTrigger, ComboboxValue, useComboboxAnchor]
+exports: [Combobox, ComboboxInput, ComboboxContent, ComboboxList, ComboboxItem, ComboboxGroup, ComboboxLabel, ComboboxEmpty, ComboboxSeparator, ComboboxChips, ComboboxChip, ComboboxChipsInput, ComboboxCollection, ComboboxTrigger, ComboboxValue, useComboboxAnchor]
 notFor:
   - need: a short fixed list that needs no typing
     use: Select
@@ -15,27 +15,27 @@ related: [Select, Command, NativeSelect]
 
 - The list is long enough that typing to narrow it beats scrolling a popover.
 - The user picks several values and should see them as removable chips.
-- The field still resolves to keys from a known collection, not to free text.
+- The field still resolves to values from a known list, not to free text.
 
 ## Do
 
-- Give every `ComboboxItem` an `id`; read the selection from `value` / `defaultValue` / `onChange`.
-- Name the field: `aria-label` on `Combobox`, or a `FieldLabel` when it sits inside a `Field`.
-- Pass `allowsEmptyCollection` and a `renderEmptyState` that returns `ComboboxEmpty`.
-- Add `textValue` to any item whose children are JSX, so filtering and typeahead have a string.
-- For multi-select pass `selectionMode="multiple"` and swap `ComboboxInput` for `ComboboxChips`, `ComboboxChipList`, `ComboboxChip` and `ComboboxChipsInput`.
+- Pass the options as `items` on `Combobox` and render them with the `ComboboxList` function child: `{(item) => <ComboboxItem key={item} value={item}>{item}</ComboboxItem>}`.
+- Drive the selection with `value` / `defaultValue` / `onValueChange`; for object items add `itemToStringLabel` so filtering and the input text have a string.
+- Put `ComboboxEmpty` inside `ComboboxContent`; it shows only when the filter matches nothing.
+- Name the input: `aria-label` on `ComboboxInput`, or an `id` on it with a `FieldLabel htmlFor` inside a `Field`.
+- For multi-select pass `multiple`, render `ComboboxChips ref={anchor}` holding `ComboboxValue` → `ComboboxChip`s + `ComboboxChipsInput`, and give `ComboboxContent` the same `anchor` from `useComboboxAnchor()`.
 
 ## Don't
 
-### CRITICAL Radix value props instead of onChange and id
+### CRITICAL React Aria props on the combobox
 
 Wrong:
 
 ```tsx
-<Combobox value={framework} onValueChange={setFramework} allowsEmptyCollection>
-  <ComboboxInput placeholder="Select a framework" />
+<Combobox aria-label="Well" selectedKey={well} onSelectionChange={setWell}>
+  <ComboboxInput placeholder="Search wells" />
   <ComboboxContent>
-    <ComboboxList><ComboboxItem value="remix">Remix</ComboboxItem></ComboboxList>
+    <ComboboxList>{wells.map((w) => <ComboboxItem id={w}>{w}</ComboboxItem>)}</ComboboxList>
   </ComboboxContent>
 </Combobox>
 ```
@@ -43,43 +43,42 @@ Wrong:
 Correct:
 
 ```tsx
-<Combobox aria-label="Framework" value={framework} onChange={setFramework} allowsEmptyCollection>
-  <ComboboxInput placeholder="Select a framework" />
+<Combobox items={wells} value={well} onValueChange={setWell}>
+  <ComboboxInput aria-label="Well" placeholder="Search wells" />
   <ComboboxContent>
-    <ComboboxList><ComboboxItem id="remix">Remix</ComboboxItem></ComboboxList>
+    <ComboboxEmpty>No wells found.</ComboboxEmpty>
+    <ComboboxList>{(w) => <ComboboxItem key={w} value={w}>{w}</ComboboxItem>}</ComboboxList>
   </ComboboxContent>
 </Combobox>
 ```
 
-React Aria reports the selected key through `onChange`; `onValueChange` is not a prop and `value` on `ComboboxItem` is the item's object value, so the handler never fires and nothing matches.
+`selectedKey`, `onSelectionChange` and `id` are not props here: the item identity is `value`, so nothing is ever selected and the handler never fires.
 
-### CRITICAL A combobox rendered with no accessible name
+### CRITICAL The accessible name on the root
 
 Wrong:
 
 ```tsx
-<Combobox allowsEmptyCollection><ComboboxInput placeholder="Framework" /></Combobox>
+<Combobox aria-label="Well" items={wells}><ComboboxInput placeholder="Well" /></Combobox>
 ```
 
 Correct:
 
 ```tsx
-<Combobox aria-label="Framework" allowsEmptyCollection>
-  <ComboboxInput placeholder="Framework" />
-</Combobox>
+<Combobox items={wells}><ComboboxInput aria-label="Well" placeholder="Well" /></Combobox>
 ```
 
-`ComboboxInput` renders a bare `input` inside an `InputGroup` with no label element, so without `aria-label` (or a `Field` label) the control is announced as an unnamed combobox.
+`Combobox` renders no element of its own, so an `aria-label` on it goes nowhere and the input is announced as an unnamed combobox.
 
-### MEDIUM No empty state when the filter matches nothing
+### MEDIUM Filtering the items by hand
 
 Wrong:
 
 ```tsx
-<Combobox aria-label="Framework">
-  <ComboboxInput />
+<Combobox value={well} onValueChange={setWell}>
+  <ComboboxInput onChange={(e) => setQuery(e.target.value)} />
   <ComboboxContent>
-    <ComboboxList>{items}</ComboboxList>
+    <ComboboxList>{wells.filter((w) => w.includes(query)).map((w) => <ComboboxItem key={w} value={w}>{w}</ComboboxItem>)}</ComboboxList>
   </ComboboxContent>
 </Combobox>
 ```
@@ -87,12 +86,13 @@ Wrong:
 Correct:
 
 ```tsx
-<Combobox aria-label="Framework" allowsEmptyCollection>
-  <ComboboxInput />
+<Combobox items={wells} value={well} onValueChange={setWell}>
+  <ComboboxInput aria-label="Well" />
   <ComboboxContent>
-    <ComboboxList renderEmptyState={() => <ComboboxEmpty>No items found.</ComboboxEmpty>}>{items}</ComboboxList>
+    <ComboboxEmpty>No wells found.</ComboboxEmpty>
+    <ComboboxList>{(w) => <ComboboxItem key={w} value={w}>{w}</ComboboxItem>}</ComboboxList>
   </ComboboxContent>
 </Combobox>
 ```
 
-Without `allowsEmptyCollection` React Aria closes the popover as soon as the filtered collection is empty, so the typist sees the list vanish instead of a "no results" message.
+Without `items` the combobox has nothing to filter or count, so `ComboboxEmpty` never shows and the hand-written filter drifts from the input's own query (clearing, selecting, reopening).

@@ -14,17 +14,16 @@ import { ThemeRoot, themeRootVariants } from "@tecton/react/tecton/theme-root"
 
 ## Not for
 
-- an overlay container without the root marker or a scoped stylesheet → `PortalProvider` (tecton docs portal)
+- the locale, direction or router of an application that owns the document → `TectonProvider` (tecton docs provider)
 - the header, rail and work area of an application that owns the document → `AppShell` (tecton docs app-shell)
-- a right-to-left subtree → `DirectionProvider` (tecton docs direction)
 
 ## Do
 
 - Render it around the whole mounted tree with the deployable's scope class, and keep layout on an inner element: `<ThemeRoot className="mfe-a"><div className="flex h-full flex-col">…</div></ThemeRoot>`. The overlay container that mirrors `className` is `display: contents`, so layout utilities do nothing there while typography and colour classes reach every overlay.
 - Keep `theme="inherit"` inside a Tecton shell — the shell's variables, palette and mode inherit — and pin `dark` or `light` only for an inverted island.
 - Retint one root with an arbitrary property in `className`: `[--primary:var(--tecton-palette-green-560)]`, which is mirrored onto the overlay container; pass `overlayClassName` instead when only some of the root's classes belong on the overlays (the theme class is always added to it).
+- Pass `dir` and `locale` when the remote reads differently from its shell: `dir` lands on the root and on the overlay container, and both feed the `TectonProvider` it renders.
 - Pass `overlayContainer` to reuse an element the shell owns, or `null` to opt out; omit it and the root creates, syncs and removes its own.
-- Pair it with `@tecton/react/styles/scoped.css` and the PostCSS scope plugin, never with `globals.css`.
 
 ## Don't
 
@@ -97,9 +96,9 @@ The mode class has to sit on the overlay container as well, or the subtree's por
 ## Before you finish
 
 - Inside a flipped tree every spacing and alignment class is logical (`ms-*`, `pe-*`, `text-start`, `border-s`), and the direction is read with `useDirection()` rather than from `document.dir`.
-- No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal context themselves.
+- A page holding several React roots wraps each root in a `ThemeRoot` (or a `TectonProvider` with its own body-level `portalContainer`), because `document.body` falls outside that root's `@scope` rule.
+- No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal container themselves.
 - An independently mounted application is wrapped in a `ThemeRoot` carrying its scope class with `theme="inherit"`, and it imports `@tecton/react/styles/scoped.css`, never `globals.css`.
 - A theme override for one root goes in `ThemeRoot`'s `className` (`[--primary:var(--tecton-palette-green-560)]`), which is mirrored onto the overlay container; inline CSS variables never reach a portalled overlay.
-- A mounted application reuses the host's registry object from `createShortcutRegistry()` instead of creating a second one, and its shortcuts are written in the registry syntax (`mod+k`, `?`, `g w`) with a stable `id`, `label` and `group`.
 
-Related: portal, app-shell
+Related: provider, app-shell

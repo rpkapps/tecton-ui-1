@@ -9,8 +9,8 @@ import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableC
 ## Use it when
 
 - Records of the same shape have to line up in columns: invoices, wells, run results.
-- Rows are selectable, activatable, sortable or sometimes absent — React Aria gives all four on these parts.
 - A footer totals the columns, or a caption names the table.
+- The rows are read, compared or opened; interaction beyond that (sorting, paging) comes from TanStack Table on these parts.
 
 ## Not for
 
@@ -19,9 +19,10 @@ import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableC
 
 ## Do
 
-- Put `TableHead` children straight inside `TableHeader`; React Aria renders the header row itself, while `TableFooter` does take a `TableRow`.
-- Name the grid with `aria-label` on `Table`, mark the identifying column `isRowHeader`, and give every `TableRow` an `id`: `selectionMode`, `selectedKeys` and `onSelectionChange` work off those keys, and a `Checkbox slot="selection"` fills itself in.
-- Render the empty case with `TableBody`'s `renderEmptyState`, which is what the `data-empty:h-24 data-empty:text-center` rules are waiting for, and keep `className` on the parts to alignment and width (`text-right`, `w-24`).
+- Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`.
+- Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state="selected"` for the `bg-table-active` fill.
+- Open a record from a link in its identifying cell, not from a handler on the row.
+- Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-right`, `w-24`).
 - Give text-heavy columns (well name, remarks) a minimum width on `TableHead`; they never collapse when the panel narrows.
 
 ## Don't
@@ -32,78 +33,75 @@ Wrong:
 
 ```tsx
 <div className="grid grid-cols-2 text-sm">
-  <div className="bg-zinc-100 px-4 py-3 font-medium">Invoice</div>
+  <div className="bg-zinc-100 px-4 py-3 font-medium">Well</div>
   <div className="bg-zinc-100 px-4 py-3 font-medium">Status</div>
-  <div className="px-4 py-3">INV001</div>
-  <div className="px-4 py-3">Paid</div>
+  <div className="px-4 py-3">34/10-A-12</div>
+  <div className="px-4 py-3">Producing</div>
 </div>
 ```
 
 Correct:
 
 ```tsx
-<Table aria-label="Invoices">
+<Table>
   <TableHeader>
-    <TableHead id="invoice" isRowHeader>Invoice</TableHead>
-    <TableHead id="status">Status</TableHead>
+    <TableRow><TableHead>Well</TableHead><TableHead>Status</TableHead></TableRow>
   </TableHeader>
   <TableBody>
-    <TableRow id="INV001">
-      <TableCell className="font-medium">INV001</TableCell>
-      <TableCell>Paid</TableCell>
-    </TableRow>
+    <TableRow><TableCell>34/10-A-12</TableCell><TableCell>Producing</TableCell></TableRow>
   </TableBody>
 </Table>
 ```
 
-The grid emits no `role="grid"`, `columnheader` or `rowheader`, so assistive technology reads a stream of unassociated cells with no row or column count, and `bg-zinc-100` is stock Tailwind the reset palette emits no CSS for — the header band is `bg-table-header` on `TableHead`.
+The grid emits no table semantics, so assistive technology reads a stream of unassociated cells with no row or column count, and `bg-zinc-100` is stock Tailwind the reset palette emits no CSS for — the header band is `bg-table-header` on `TableHead`.
 
-### CRITICAL Activating a row with onClick
-
-Wrong:
-
-```tsx
-<TableRow key={well.id} id={well.id} onClick={() => openWell(well.id)}>
-  <TableCell>{well.name}</TableCell>
-</TableRow>
-```
-
-Correct:
-
-```tsx
-<TableRow key={well.id} id={well.id} onAction={() => openWell(well.id)}>
-  <TableCell>{well.name}</TableCell>
-</TableRow>
-```
-
-React Aria's `Row` runs `delete DOMProps.onClick` before it renders the `<tr>`, so the handler never reaches the DOM; `onAction` is the row's activation hook and fires on Enter and Space as well as on a click.
-
-### HIGH Sorting from a click handler on the header
+### HIGH React Aria collection props on the table
 
 Wrong:
 
 ```tsx
-<TableHead id="email" onClick={() => setSort("email")}>Email</TableHead>
-```
-
-Correct:
-
-```tsx
-<Table aria-label="Payments" sortDescriptor={sort} onSortChange={setSort}>
-  <TableHeader>
-    <TableHead id="email" isRowHeader allowsSorting>Email</TableHead>
-  </TableHeader>
-  <TableBody>{rows}</TableBody>
+<Table aria-label="Wells" selectionMode="multiple" selectedKeys={selected} onSelectionChange={setSelected}>
+  <TableHeader><TableHead isRowHeader>Well</TableHead></TableHeader>
+  <TableBody renderEmptyState={() => "No wells"}>{rows}</TableBody>
 </Table>
 ```
 
-`allowsSorting` is what makes the column a sort control — it sets `aria-sort`, sorts on Enter and Space, draws the direction indicator and routes the change through the table's `onSortChange`; a bare `onClick` on the `th` answers a mouse and nothing else.
+Correct:
+
+```tsx
+<Table>
+  <TableHeader><TableRow><TableHead>Well</TableHead></TableRow></TableHeader>
+  <TableBody>{rows.length ? rows : <TableRow><TableCell><Empty>No wells</Empty></TableCell></TableRow>}</TableBody>
+</Table>
+```
+
+`Table` is a plain `table`: `selectionMode`, `selectedKeys`, `isRowHeader` and `renderEmptyState` land on the DOM as unknown attributes, so nothing is selectable and an empty body renders nothing.
+
+### HIGH Activating a row with onClick
+
+Wrong:
+
+```tsx
+<TableRow onClick={() => openWell(well.id)}>
+  <TableCell>{well.name}</TableCell>
+</TableRow>
+```
+
+Correct:
+
+```tsx
+<TableRow>
+  <TableCell><Link href={`/wells/${well.id}`}>{well.name}</Link></TableCell>
+</TableRow>
+```
+
+A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse only; a link in the identifying cell is reachable, announced and middle-clickable.
 
 ## Before you finish
 
-- A table is `Table > TableHeader / TableBody / TableFooter` with the `TableHead` children straight inside `TableHeader` (React Aria renders the header row itself), an `aria-label` on `Table`, `isRowHeader` on the identifying column and an `id` on every `TableRow`.
-- An empty table renders through `TableBody`'s `renderEmptyState`, returning `Empty` or a string — never a `TableRow` with a `colSpan` cell.
-- Row activation is `onAction` on `TableRow` and sorting is `allowsSorting` on `TableHead` with the table's `onSortChange`; React Aria deletes `onClick` before the `<tr>` is rendered.
+- A table is plain HTML — `Table > TableHeader > TableRow > TableHead` and `TableBody > TableRow > TableCell`, with `TableFooter` and `TableCaption` as needed; sorting, filtering and paging come from TanStack Table on these parts.
+- An empty table renders `Empty` in place of the table, or inside one `TableCell` spanning every column when the header has to stay.
+- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
 - `className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-right`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.
 
 Related: item, tree-view, tanstack-table

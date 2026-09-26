@@ -24,7 +24,7 @@ import { TreeView, TreeViewItem, TreeViewItemContent, TreeViewAction, TreeViewVi
 - Pick the leading glyph with `kind="folder" | "item"` or replace it with `icon`; the chevron and the indent are handled for you.
 - Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, which names itself "Hide" plus the row's label with `aria-pressed` for the hidden state, and `TreeViewAction`).
 - Drive state from `TreeView` — `selectionMode` with `selectedKeys`, `disabledKeys`, `expandedKeys` — and dim a row with `isHidden` on `TreeViewItem`.
-- The tree opens on the branches the user came for (active field, selected well's parents), not a column of closed folders (`defaultExpandedKeys`).
+- The tree opens on the branches the user came for (active field, selected well's parents), not a column of closed folders (`defaultExpanded`).
 
 ## Don't
 
@@ -102,6 +102,7 @@ Correct:
 
 ## Before you finish
 
-- A hierarchy is a `TreeView` with an `aria-label` and an `id` plus `textValue` on every `TreeViewItem`, not a pile of nested `Collapsible`s, and rows are never indented with `pl-*`.
+- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
+- A hierarchy is a `TreeView` with an `aria-label` and a `value` plus `textValue` on every `TreeViewItem`, not a pile of nested `Collapsible`s, and rows are never indented with `ps-*`.
 
 Related: accordion, item, color-swatch

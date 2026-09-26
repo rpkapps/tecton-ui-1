@@ -21,7 +21,7 @@ import { Spinner } from "@tecton/react/components/spinner"
 ## Do
 
 - Inside a `Button`, a `Badge` or an `InputGroupAddon`, give it `data-icon="inline-start"` or `data-icon="inline-end"` so the control trims its padding on that side.
-- Mark the control that is working with `isPending`, not `isDisabled`, so it keeps focus and cannot be pressed twice; make the label a verb: "Saving…".
+- Mark the button that is working `disabled` with `focusableWhenDisabled`, so it keeps focus and cannot be pressed twice; make the label a verb: "Saving…".
 - Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so set the colour on the parent with a semantic token.
 - `Spinner` already carries `role="status"` and `aria-label="Loading"`; do not wrap it in a second live region.
 - A standalone `Spinner` says what is loading ("Loading well logs"); inside a labelled button it keeps the default label.
@@ -34,7 +34,7 @@ import { Spinner } from "@tecton/react/components/spinner"
 Wrong:
 
 ```tsx
-<Button isPending size="sm">
+<Button disabled focusableWhenDisabled size="sm">
   <Spinner />
   Saving…
 </Button>
@@ -43,13 +43,13 @@ Wrong:
 Correct:
 
 ```tsx
-<Button isPending size="sm">
+<Button disabled focusableWhenDisabled size="sm">
   <Spinner data-icon="inline-start" />
   Saving…
 </Button>
 ```
 
-The button trims its leading padding only through `has-data-[icon=inline-start]:pl-1.5`, so without the attribute the spinner sits in full text padding and the button jumps in width the moment it appears.
+The button trims its leading padding only through `has-data-[icon=inline-start]:ps-1.5`, so without the attribute the spinner sits in full text padding and the button jumps in width the moment it appears.
 
 ### HIGH A hand-rolled spinner div with borders
 
@@ -85,9 +85,9 @@ Correct:
 
 ## Before you finish
 
-- Every `Spinner` inside a `Button`, `Badge` or `InputGroupAddon` carries `data-icon="inline-start"` or `data-icon="inline-end"`, and the control that is working is `isPending`, not `isDisabled`, while it spins.
-- A value that is not on a 0–100 scale states its scale with `minValue` and `maxValue` (`value={loaded} maxValue={total}`, a 4-out-of-5 score with `maxValue={5}`).
-- An unknown total is `isIndeterminate`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.
+- Every `Spinner` inside a `Button`, `Badge` or `InputGroupAddon` carries `data-icon="inline-start"` or `data-icon="inline-end"`, and the button that is working is `disabled` with `focusableWhenDisabled` while it spins.
+- A value that is not on a 0–100 scale states its scale with `min` and `max` (`value={loaded} max={total}`, a 4-out-of-5 score with `max={5}`).
+- An unknown total is `value={null}`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.
 - A `Spinner` is never wrapped in a second live region: it already carries `role="status"` and `aria-label="Loading"`.
 
 Related: skeleton, circular-progress, progress

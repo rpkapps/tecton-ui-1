@@ -159,7 +159,7 @@
       "id": "dialog.Dialog.3",
       "component": "dialog",
       "where": "checklist",
-      "text": "A dialog, sheet or drawer with unsaved input ignores backdrop presses, but Escape and Cancel still close it (`isDismissable={false}`; `Drawer`: `disablePointerDismissal`).",
+      "text": "A dialog, sheet or drawer with unsaved input ignores backdrop presses, but Escape and Cancel still close it (`disablePointerDismissal` on the `Dialog`, `Sheet` or `Drawer`).",
       "origin": "Astryx Dialog #3"
     },
     {
@@ -201,21 +201,21 @@
       "id": "combobox.MultiSelector.4",
       "component": "combobox",
       "where": "checklist",
-      "text": "When users usually want nearly all options, add a select-all `Checkbox` showing partial selection (`isIndeterminate`, not `checked=\"indeterminate\"`).",
+      "text": "When users usually want nearly all options, add a select-all `Checkbox` showing partial selection (`indeterminate`, not `checked=\"indeterminate\"`).",
       "origin": "Astryx MultiSelector #4"
     },
     {
       "id": "combobox.Typeahead.2",
       "component": "combobox",
       "where": "do",
-      "text": "Open a `Combobox`'s suggestions on focus when recent picks (the last wells opened) help before typing (`menuTrigger=\"focus\"`).",
+      "text": "Show a `Combobox`'s suggestions as soon as the input is clicked when recent picks (the last wells opened) help before typing (`openOnInputClick`, on by default).",
       "origin": "Astryx Typeahead #2"
     },
     {
       "id": "combobox.Typeahead.3",
       "component": "combobox",
       "where": "do",
-      "text": "Query a server-backed `Combobox` after the user pauses typing, not on every keystroke (debounce `onInputChange`).",
+      "text": "Query a server-backed `Combobox` after the user pauses typing, not on every keystroke (debounce `onInputValueChange`).",
       "origin": "Astryx Typeahead #3"
     },
     {
@@ -341,7 +341,7 @@
       "id": "button-group.ButtonGroup.9",
       "component": "button-group",
       "where": "do",
-      "text": "While an action runs, the button that started it keeps focus and shows it is working (`isPending` with a `Spinner`, not `isDisabled`); only conflicting actions become unavailable.",
+      "text": "While an action runs, the button that started it keeps focus and shows it is working (`disabled` with `focusableWhenDisabled` and a `Spinner`); only conflicting actions become unavailable.",
       "origin": "Astryx ButtonGroup #9"
     },
     {
@@ -390,7 +390,7 @@
       "id": "toggle.ToggleButton.1",
       "component": "toggle",
       "where": "do",
-      "text": "A selected toggle shows a filled icon as well as its selected background (Tecton glyph `variant={isSelected ? \"filled\" : \"outlined\"}`).",
+      "text": "A selected toggle shows a filled icon as well as its selected background (Tecton glyph `variant={pressed ? \"filled\" : \"outlined\"}`).",
       "origin": "Astryx ToggleButton #1"
     },
     {
@@ -502,7 +502,7 @@
       "id": "item.Item.5",
       "component": "item",
       "where": "do",
-      "text": "A linked `Item` (`href`) holds no buttons or links; a row with its own actions stays static, links its title and puts buttons in `ItemActions`.",
+      "text": "A linked `Item` (`render={<a href=\"…\" />}`) holds no buttons or links; a row with its own actions stays static, links its title and puts buttons in `ItemActions`.",
       "origin": "Astryx Item #5"
     },
     {
@@ -530,7 +530,7 @@
       "id": "checkbox.CheckboxList.1",
       "component": "checkbox",
       "where": "do",
-      "text": "Keep checkbox lists to about seven options; longer ones (wells, formations) use a type-to-filter `Combobox` with chips (`selectionMode=\"multiple\"`).",
+      "text": "Keep checkbox lists to about seven options; longer ones (wells, formations) use a type-to-filter `Combobox` with chips (`multiple`).",
       "origin": "Astryx CheckboxList #1"
     },
     {
@@ -663,7 +663,7 @@
       "id": "calendar.Calendar.3",
       "component": "calendar",
       "where": "do",
-      "text": "When days are unavailable (rig move, shutdown), say why beside the calendar or in the day; never block days unexplained (`isDateUnavailable`, not `disabled`).",
+      "text": "When days are unavailable (rig move, shutdown), say why beside the calendar or in the day; never block days unexplained (a `disabled` matcher, with the reason in the `footer`).",
       "origin": "Astryx Calendar #3"
     },
     {
@@ -677,7 +677,7 @@
       "id": "calendar.DateInput.3",
       "component": "calendar",
       "where": "do",
-      "text": "An optional or filtering date gets a clear button that empties it (value `null`).",
+      "text": "An optional or filtering date gets a clear button that empties it (`selected` back to `undefined`).",
       "origin": "Astryx DateInput #3"
     },
     {
@@ -691,7 +691,7 @@
       "id": "tree-view.TreeList.2",
       "component": "tree-view",
       "where": "do",
-      "text": "The tree opens on the branches the user came for (active field, selected well's parents), not a column of closed folders (`defaultExpandedKeys`).",
+      "text": "The tree opens on the branches the user came for (active field, selected well's parents), not a column of closed folders (`defaultExpanded`).",
       "origin": "Astryx TreeList #2"
     },
     {
@@ -705,14 +705,14 @@
       "id": "collapsible.Collapsible.4",
       "component": "collapsible",
       "where": "do",
-      "text": "When users compare sections (two casing strings, successive well tests), opening one `Accordion` item leaves the others open (`allowsMultipleExpanded`, not `type=\"multiple\"`).",
+      "text": "When users compare sections (two casing strings, successive well tests), opening one `Accordion` item leaves the others open (`multiple`, not `type=\"multiple\"`).",
       "origin": "Astryx Collapsible #4"
     },
     {
       "id": "collapsible.Collapsible.5",
       "component": "collapsible",
       "where": "checklist",
-      "text": "Start sections open when their content is needed on first view; collapse only secondary detail (`defaultExpanded` / `defaultExpandedKeys`, not `defaultOpen`).",
+      "text": "Start sections open when their content is needed on first view; collapse only secondary detail (`defaultOpen` on a `Collapsible`, `defaultValue` on an `Accordion`).",
       "origin": "Astryx Collapsible #5"
     },
     {

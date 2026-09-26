@@ -3,7 +3,7 @@
 # Popover — @tecton/react/components/popover
 
 ```tsx
-import { Popover, PopoverTrigger, PopoverHeader, PopoverTitle, PopoverDescription } from "@tecton/react/components/popover"
+import { Popover, PopoverTrigger, PopoverContent, PopoverHeader, PopoverTitle, PopoverDescription } from "@tecton/react/components/popover"
 ```
 
 ## Use it when
@@ -17,27 +17,52 @@ import { Popover, PopoverTrigger, PopoverHeader, PopoverTitle, PopoverDescriptio
 - a short label on a control → `Tooltip` (tecton docs tooltip)
 - a preview that appears when the pointer rests on a link → `HoverCard` (tecton docs hover-card)
 - a decision that must block the rest of the page → `Dialog` (tecton docs dialog)
-- a form long enough to need its own header and footer → `Sheet` (tecton docs sheet)
 
 ## Do
 
-- Wrap the trigger `Button` and the `Popover` in one `PopoverTrigger` (it is React Aria's `DialogTrigger`), and control it with `isOpen` / `onOpenChange` there.
-- Position with `placement` (`"bottom start"`, `"top"`, `"right end"`) and nudge with `offset` / `crossOffset`.
-- Structure the top with `PopoverHeader`, `PopoverTitle` and `PopoverDescription`; the popover is already a `flex flex-col gap-4`.
-- Use `className` for width only (`w-80`): the popover owns its padding, radius, shadow and surface.
+- Compose `Popover` (the root) > `PopoverTrigger render={<Button variant="outline" />}` + `PopoverContent`; control it with `open` / `onOpenChange` on `Popover`.
+- Position with `side` (`"top" | "bottom" | "left" | "right" | "inline-start" | "inline-end"`) and `align` (`"start" | "center" | "end"`) on `PopoverContent`, nudged with `sideOffset` / `alignOffset`.
+- Structure the top with `PopoverHeader`, `PopoverTitle` and `PopoverDescription`; the content is already a `flex flex-col gap-4`.
+- Use `className` on `PopoverContent` for width only (`w-80`): it owns its padding, radius, shadow and surface.
 - Never open a `Popover` from inside another; a `Select`, `Combobox` or `DropdownMenu` inside one is fine.
 
 ## Don't
 
-### HIGH Radix side and align props
+### HIGH React Aria placement props
+
+Wrong:
+
+```tsx
+<Popover>
+  <PopoverTrigger render={<Button variant="outline" />}>Dimensions</PopoverTrigger>
+  <PopoverContent placement="top start" offset={8}>
+    <PopoverTitle>Dimensions</PopoverTitle>
+  </PopoverContent>
+</Popover>
+```
+
+Correct:
+
+```tsx
+<Popover>
+  <PopoverTrigger render={<Button variant="outline" />}>Dimensions</PopoverTrigger>
+  <PopoverContent side="top" align="start" sideOffset={8}>
+    <PopoverTitle>Dimensions</PopoverTitle>
+  </PopoverContent>
+</Popover>
+```
+
+`placement` and `offset` are not positioning props here: they land on the popup element as stray attributes and the popover keeps the default `side="bottom"`.
+
+### HIGH Content outside the Popover root
 
 Wrong:
 
 ```tsx
 <PopoverTrigger>
-  <Button variant="outline">Dimensions</Button>
-  <Popover side="top" align="start" sideOffset={8}>
-    <PopoverTitle>Dimensions</PopoverTitle>
+  <Button variant="outline">Filter</Button>
+  <Popover>
+    <PopoverTitle>Filter wells</PopoverTitle>
   </Popover>
 </PopoverTrigger>
 ```
@@ -45,39 +70,37 @@ Wrong:
 Correct:
 
 ```tsx
-<PopoverTrigger>
-  <Button variant="outline">Dimensions</Button>
-  <Popover placement="top start" offset={8}>
-    <PopoverTitle>Dimensions</PopoverTitle>
-  </Popover>
-</PopoverTrigger>
+<Popover>
+  <PopoverTrigger render={<Button variant="outline" />}>Filter</PopoverTrigger>
+  <PopoverContent>
+    <PopoverTitle>Filter wells</PopoverTitle>
+  </PopoverContent>
+</Popover>
 ```
 
-React Aria takes one `placement` string; `side`, `align` and `sideOffset` are not part of its positioning contract, so the popover silently keeps the default `placement="bottom"`.
+`Popover` is the state root and draws nothing; only `PopoverContent` renders the floating panel, and a trigger outside the root has no state to open.
 
 ### MEDIUM Repainting the popover surface with className
 
 Wrong:
 
 ```tsx
-<Popover className="w-80 rounded-lg border border-gray-200 bg-white p-6 shadow-xl">
+<PopoverContent className="w-80 rounded-lg border border-gray-200 bg-white p-6 shadow-xl">
   <PopoverTitle>Filter wells</PopoverTitle>
-</Popover>
+</PopoverContent>
 ```
 
 Correct:
 
 ```tsx
-<Popover className="w-80">
-  <PopoverTitle>Filter wells</PopoverTitle>
-</Popover>
+<PopoverContent className="w-80"><PopoverTitle>Filter wells</PopoverTitle></PopoverContent>
 ```
 
 Tecton resets Tailwind's stock palette, so `border-gray-200` emits no CSS at all, and the padding and radius duplicate what the component already owns.
 
 ## Before you finish
 
-- Every `Dialog`, `AlertDialog`, `Sheet` and `Popover` sits inside its own trigger component (`DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `PopoverTrigger`) together with its trigger `Button`; a sibling never receives the open state.
-- Placement is one React Aria `placement` string (`"bottom start"`, `"top"`) on `Popover`, `HoverCard` or `SelectContent`, never Radix's `side`, `align` and `sideOffset`.
+- Every `Dialog`, `AlertDialog`, `Sheet`, `Drawer`, `Popover`, `HoverCard` and `Tooltip` is a root that renders nothing, holding its trigger and its content part (`DialogContent`, `AlertDialogContent`, `SheetContent`, `DrawerContent`, `PopoverContent`, `HoverCardContent`, `TooltipContent`); a trigger or content outside its root never opens.
+- Placement is `side` (`top`, `bottom`, `left`, `right`, `inline-start`, `inline-end`) and `align` (`start`, `center`, `end`) with `sideOffset` / `alignOffset` on the content part — `PopoverContent`, `HoverCardContent`, `TooltipContent`, `SelectContent`, `DropdownMenuContent` — never a `placement` string.
 
 Related: hover-card, tooltip, dialog

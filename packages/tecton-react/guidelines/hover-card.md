@@ -2,7 +2,7 @@
 component: HoverCard
 module: "@tecton/react/components/hover-card"
 family: overlays
-exports: [HoverCard, HoverCardTrigger]
+exports: [HoverCard, HoverCardTrigger, HoverCardContent]
 notFor:
   - need: a short label on a control
     use: Tooltip
@@ -21,10 +21,10 @@ related: [Tooltip, Popover]
 
 ## Do
 
-- Wrap the trigger and the `HoverCard` in one `HoverCardTrigger` (React Aria's `PreviewTrigger`), which opens on hover, focus and long press.
-- Tune the timing with `delay` and `closeDelay` on `HoverCardTrigger` — the defaults are 600 ms and 200 ms.
-- Position with `placement` on `HoverCard`, and set width with `className` (`w-72`) only.
-- Make the trigger something the keyboard can reach — a `Button variant="link"` or a `Link` — so focus can open the card.
+- Compose `HoverCard` (the root) > `HoverCardTrigger` + `HoverCardContent`; the trigger renders an `a`, so give it the `href` it previews.
+- Tune the timing with `delay` and `closeDelay` on `HoverCardTrigger` — the defaults are 600 ms and 300 ms.
+- Position with `side` / `align` on `HoverCardContent`, and set width with `className` (`w-72`) only.
+- Keep the trigger reachable by keyboard — a real link — so focus can open the card.
 
 ## Don't
 
@@ -33,45 +33,43 @@ related: [Tooltip, Popover]
 Wrong:
 
 ```tsx
-<HoverCardTrigger>
-  <Button variant="ghost" size="icon-sm">
-    <InfoIcon />
-  </Button>
-  <HoverCard>Reservoir pressure, measured 2025-03-14.</HoverCard>
-</HoverCardTrigger>
+<HoverCard>
+  <HoverCardTrigger render={<Button variant="ghost" size="icon-sm" />}><InfoIcon /></HoverCardTrigger>
+  <HoverCardContent>Reservoir pressure, measured 2025-03-14.</HoverCardContent>
+</HoverCard>
 ```
 
 Correct:
 
 ```tsx
-<TooltipTrigger>
-  <Button variant="ghost" size="icon-sm" aria-label="About this reading">
+<Tooltip>
+  <TooltipTrigger render={<Button variant="ghost" size="icon-sm" aria-label="About this reading" />}>
     <InfoIcon />
-  </Button>
-  <Tooltip>Reservoir pressure, measured 2025-03-14.</Tooltip>
-</TooltipTrigger>
+  </TooltipTrigger>
+  <TooltipContent>Reservoir pressure, measured 2025-03-14.</TooltipContent>
+</Tooltip>
 ```
 
-`PreviewTrigger` marks the button `aria-haspopup="dialog"` and only points `aria-describedby` at the card while it is open, so the icon button still reaches a screen reader with no accessible name.
+A hover card is a preview of a link's destination, not a name: the icon button still reaches a screen reader with no accessible name, and touch users never see the card.
 
-### MEDIUM Radix openDelay on the card
+### MEDIUM Radix openDelay on the trigger
 
 Wrong:
 
 ```tsx
-<HoverCardTrigger openDelay={100} closeDelay={200}>
-  <Button variant="link">@peduarte</Button>
-  <HoverCard>Joined December 2021.</HoverCard>
-</HoverCardTrigger>
+<HoverCard>
+  <HoverCardTrigger href="/people/peduarte" openDelay={100}>@peduarte</HoverCardTrigger>
+  <HoverCardContent>Joined December 2021.</HoverCardContent>
+</HoverCard>
 ```
 
 Correct:
 
 ```tsx
-<HoverCardTrigger delay={100} closeDelay={200}>
-  <Button variant="link">@peduarte</Button>
-  <HoverCard>Joined December 2021.</HoverCard>
-</HoverCardTrigger>
+<HoverCard>
+  <HoverCardTrigger href="/people/peduarte" delay={100}>@peduarte</HoverCardTrigger>
+  <HoverCardContent>Joined December 2021.</HoverCardContent>
+</HoverCard>
 ```
 
-React Aria's `PreviewTrigger` names the open delay `delay`; `openDelay` is dropped and the card keeps waiting the default 600 ms, which reads as the hover card being broken.
+The open delay is `delay`; `openDelay` is not a prop, so the card keeps waiting the default 600 ms, which reads as the hover card being broken.

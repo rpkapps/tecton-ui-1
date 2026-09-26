@@ -82,7 +82,6 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 - a short label on a control: use [Tooltip](/docs/components/tooltip)
 - a preview that appears when the pointer rests on a link: use [HoverCard](/docs/components/hover-card)
 - a decision that must block the rest of the page: use [Dialog](/docs/components/dialog)
-- a form long enough to need its own header and footer: use [Sheet](/docs/components/sheet)
 
 ### Do
 
@@ -90,25 +89,25 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Wrap the trigger `Button` and the `Popover` in one `PopoverTrigger` (it is React Aria's `DialogTrigger`), and control it with `isOpen` / `onOpenChange` there.
+Compose `Popover` (the root) > `PopoverTrigger render={<Button variant="outline" />}` + `PopoverContent`; control it with `open` / `onOpenChange` on `Popover`.
 
 </Do>
 
 <Do>
 
-Position with `placement` (`"bottom start"`, `"top"`, `"right end"`) and nudge with `offset` / `crossOffset`.
+Position with `side` (`"top" | "bottom" | "left" | "right" | "inline-start" | "inline-end"`) and `align` (`"start" | "center" | "end"`) on `PopoverContent`, nudged with `sideOffset` / `alignOffset`.
 
 </Do>
 
 <Do>
 
-Structure the top with `PopoverHeader`, `PopoverTitle` and `PopoverDescription`; the popover is already a `flex flex-col gap-4`.
+Structure the top with `PopoverHeader`, `PopoverTitle` and `PopoverDescription`; the content is already a `flex flex-col gap-4`.
 
 </Do>
 
 <Do>
 
-Use `className` for width only (`w-80`): the popover owns its padding, radius, shadow and surface.
+Use `className` on `PopoverContent` for width only (`w-80`): it owns its padding, radius, shadow and surface.
 
 </Do>
 
@@ -122,15 +121,47 @@ Never open a `Popover` from inside another; a `Select`, `Combobox` or `DropdownM
 
 ### Don't
 
-<Dont severity="HIGH" title="Radix side and align props">
+<Dont severity="HIGH" title="React Aria placement props">
+
+<Wrong>
+
+```tsx
+<Popover>
+  <PopoverTrigger render={<Button variant="outline" />}>Dimensions</PopoverTrigger>
+  <PopoverContent placement="top start" offset={8}>
+    <PopoverTitle>Dimensions</PopoverTitle>
+  </PopoverContent>
+</Popover>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Popover>
+  <PopoverTrigger render={<Button variant="outline" />}>Dimensions</PopoverTrigger>
+  <PopoverContent side="top" align="start" sideOffset={8}>
+    <PopoverTitle>Dimensions</PopoverTitle>
+  </PopoverContent>
+</Popover>
+```
+
+</Correct>
+
+`placement` and `offset` are not positioning props here: they land on the popup element as stray attributes and the popover keeps the default `side="bottom"`.
+
+</Dont>
+
+<Dont severity="HIGH" title="Content outside the Popover root">
 
 <Wrong>
 
 ```tsx
 <PopoverTrigger>
-  <Button variant="outline">Dimensions</Button>
-  <Popover side="top" align="start" sideOffset={8}>
-    <PopoverTitle>Dimensions</PopoverTitle>
+  <Button variant="outline">Filter</Button>
+  <Popover>
+    <PopoverTitle>Filter wells</PopoverTitle>
   </Popover>
 </PopoverTrigger>
 ```
@@ -140,17 +171,17 @@ Never open a `Popover` from inside another; a `Select`, `Combobox` or `DropdownM
 <Correct>
 
 ```tsx
-<PopoverTrigger>
-  <Button variant="outline">Dimensions</Button>
-  <Popover placement="top start" offset={8}>
-    <PopoverTitle>Dimensions</PopoverTitle>
-  </Popover>
-</PopoverTrigger>
+<Popover>
+  <PopoverTrigger render={<Button variant="outline" />}>Filter</PopoverTrigger>
+  <PopoverContent>
+    <PopoverTitle>Filter wells</PopoverTitle>
+  </PopoverContent>
+</Popover>
 ```
 
 </Correct>
 
-React Aria takes one `placement` string; `side`, `align` and `sideOffset` are not part of its positioning contract, so the popover silently keeps the default `placement="bottom"`.
+`Popover` is the state root and draws nothing; only `PopoverContent` renders the floating panel, and a trigger outside the root has no state to open.
 
 </Dont>
 
@@ -159,9 +190,9 @@ React Aria takes one `placement` string; `side`, `align` and `sideOffset` are no
 <Wrong>
 
 ```tsx
-<Popover className="w-80 rounded-lg border border-gray-200 bg-white p-6 shadow-xl">
+<PopoverContent className="w-80 rounded-lg border border-gray-200 bg-white p-6 shadow-xl">
   <PopoverTitle>Filter wells</PopoverTitle>
-</Popover>
+</PopoverContent>
 ```
 
 </Wrong>
@@ -169,9 +200,7 @@ React Aria takes one `placement` string; `side`, `align` and `sideOffset` are no
 <Correct>
 
 ```tsx
-<Popover className="w-80">
-  <PopoverTitle>Filter wells</PopoverTitle>
-</Popover>
+<PopoverContent className="w-80"><PopoverTitle>Filter wells</PopoverTitle></PopoverContent>
 ```
 
 </Correct>

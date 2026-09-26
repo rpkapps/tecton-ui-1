@@ -21,21 +21,21 @@ related: [Collapsible, Tabs, TreeView]
 
 ## Do
 
-- Give every `AccordionItem` an `id`: that string is the key in `defaultExpandedKeys`, `expandedKeys` and the `Set` passed to `onExpandedChange`.
-- Allow several sections at once with `allowsMultipleExpanded` (the default is one), and disable one with `isDisabled` on its `AccordionItem`, which disables its trigger too.
-- Put the heading text straight into `AccordionTrigger`: it renders the React Aria `Heading`, the button and the chevron pair itself, so `className` on `Accordion` is for width and frame only (`max-w-lg`, `border`).
+- Give every `AccordionItem` a `value`: that string is what `defaultValue`, `value` and `onValueChange` hold — always an **array**, even when one section opens at a time.
+- Allow several sections at once with `multiple` (the default is one), and disable one with `disabled` on its `AccordionItem`.
+- Put the heading text straight into `AccordionTrigger`: it renders the heading, the button and the chevron pair itself, so `className` on `Accordion` is for width and frame only (`max-w-lg`, `border`).
 
 ## Don't
 
-### CRITICAL Radix accordion props instead of React Aria keys
+### CRITICAL Radix or React Aria accordion props
 
 Wrong:
 
 ```tsx
-<Accordion type="single" collapsible defaultValue="shipping">
-  <AccordionItem value="shipping">
-    <AccordionTrigger>Shipping options</AccordionTrigger>
-    <AccordionContent>Standard, express and overnight.</AccordionContent>
+<Accordion type="single" collapsible defaultExpandedKeys={["casing"]}>
+  <AccordionItem id="casing">
+    <AccordionTrigger>Casing program</AccordionTrigger>
+    <AccordionContent>Conductor, surface and production strings.</AccordionContent>
   </AccordionItem>
 </Accordion>
 ```
@@ -43,15 +43,15 @@ Wrong:
 Correct:
 
 ```tsx
-<Accordion defaultExpandedKeys={["shipping"]}>
-  <AccordionItem id="shipping">
-    <AccordionTrigger>Shipping options</AccordionTrigger>
-    <AccordionContent>Standard, express and overnight.</AccordionContent>
+<Accordion defaultValue={["casing"]}>
+  <AccordionItem value="casing">
+    <AccordionTrigger>Casing program</AccordionTrigger>
+    <AccordionContent>Conductor, surface and production strings.</AccordionContent>
   </AccordionItem>
 </Accordion>
 ```
 
-`Accordion` is a React Aria `DisclosureGroup`, which passes its props through `filterDOMProps`: `type`, `collapsible`, `defaultValue` and `value` are dropped before they reach the DOM or the state, and an item with no `id` falls back to a generated `useId` key, so nothing opens and no key you write ever matches.
+`type`, `collapsible`, `defaultExpandedKeys` and `id` are not accordion props, and an item with no `value` gets a generated one, so no value you write ever matches and the section starts closed.
 
 ### HIGH Tracking the open section with onClick on the trigger
 
@@ -59,7 +59,7 @@ Wrong:
 
 ```tsx
 <Accordion>
-  <AccordionItem id="privacy">
+  <AccordionItem value="privacy">
     <AccordionTrigger onClick={() => setSection("privacy")}>Privacy</AccordionTrigger>
     <AccordionContent>Two-factor authentication and active sessions.</AccordionContent>
   </AccordionItem>
@@ -69,15 +69,15 @@ Wrong:
 Correct:
 
 ```tsx
-<Accordion expandedKeys={sections} onExpandedChange={setSections}>
-  <AccordionItem id="privacy">
+<Accordion value={sections} onValueChange={setSections}>
+  <AccordionItem value="privacy">
     <AccordionTrigger>Privacy</AccordionTrigger>
     <AccordionContent>Two-factor authentication and active sessions.</AccordionContent>
   </AccordionItem>
 </Accordion>
 ```
 
-`onClick` is only React Aria's press alias on the trigger button, so it fires on the collapse as well as the expand and never sees the group closing a different section under `allowsMultipleExpanded={false}`; `onExpandedChange` reports the whole key set.
+`onClick` fires on the collapse as well as the expand and never sees the group closing another section when a new one opens; `onValueChange` reports the whole array of open values.
 
 ### MEDIUM A chevron added to the trigger
 
@@ -86,7 +86,7 @@ Wrong:
 ```tsx
 <AccordionTrigger>
   Billing
-  <ChevronDownIcon className="ml-auto size-4" />
+  <ChevronDownIcon className="ms-auto size-4" />
 </AccordionTrigger>
 ```
 
@@ -96,4 +96,4 @@ Correct:
 <AccordionTrigger>Billing</AccordionTrigger>
 ```
 
-`AccordionTrigger` already appends a `ChevronDownIcon`/`ChevronUpIcon` pair tagged `data-slot="accordion-trigger-icon"`, which is what the `ml-auto`, `size-5` and `group-aria-expanded` swap rules target, so a hand-added icon becomes a second, static chevron in the middle of the row.
+`AccordionTrigger` already appends a `ChevronDownIcon`/`ChevronUpIcon` pair tagged `data-slot="accordion-trigger-icon"`, which the `ms-auto`, `size-5` and `aria-expanded` swap rules target, so a hand-added icon becomes a second, static chevron in the middle of the row.

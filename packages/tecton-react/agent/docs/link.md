@@ -14,7 +14,7 @@ import { Link, linkVariants } from "@tecton/react/tecton/link"
 
 ## Not for
 
-- a navigation target that should look like a button → `LinkButton` (tecton docs button)
+- a navigation target that should look like a button → `Button` (tecton docs button)
 - something that happens in place instead of navigation → `Button` (tecton docs button)
 
 ## Do
@@ -81,7 +81,7 @@ The variant owns the colour and when the underline appears, and Tailwind's stock
 
 ## Before you finish
 
-- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
-- Navigation is a `LinkButton` or a `Link` with an `href` (and `isExternal` instead of hand-written `target` and `rel`), never an anchor nested inside a `Button` and never a `Link` that only runs a handler.
+- Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
+- Navigation is a `Link` with an `href` (and `external` instead of hand-written `target` and `rel`) or a `Button` with `render={<a href="…" />}` and `nativeButton={false}`, never an anchor nested inside a `Button` and never a `Link` that only runs a handler.
 
 Related: button

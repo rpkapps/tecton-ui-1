@@ -260,15 +260,15 @@ describe("tecton docs", () => {
     expect(run(["rules"], index).out).toContain("Before you finish")
   })
 
-  it("teaches Select's value / onChange, not the deprecated selectedKey", () => {
-    for (const id of ["select", "react-aria", "rules"]) {
+  it("teaches Select's value / onValueChange, not React Aria's selectedKey", () => {
+    for (const id of ["conventions", "rules"]) {
       const doc = run(["docs", id], index).out
       expect(doc).not.toMatch(
-        /<Select\b[^>]*\b(selectedKey|onSelectionChange)=/
+        /<Select\b[^>]*\b(selectedKey|onSelectionChange|onChange)=/
       )
     }
     expect(run(["docs", "select"], index).out).toMatch(
-      /<Select placeholder="Datum" value=\{datum\} onChange=\{setDatum\}>/
+      /<Select items=\{datums\} value=\{datum\} onValueChange=\{setDatum\}>/
     )
   })
 })

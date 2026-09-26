@@ -22,9 +22,9 @@ related: [AppShell, Sheet, TreeView]
 ## Do
 
 - Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it.
-- Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `href` for a destination and `isActive` for the current one.
+- Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `render={<a href="/wells" />}` (or the router's `Link`) for a destination and `isActive` for the current one.
 - Pick the behaviour with `collapsible="offcanvas" | "icon" | "none"` and the surface with `variant="sidebar" | "floating" | "inset"`.
-- Pass `tooltip="Wells"` on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone.
+- Pass `tooltip="Wells"` (or `TooltipContent` props) on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone.
 
 ## Don't
 
@@ -42,11 +42,11 @@ Correct:
 
 ```tsx
 <SidebarMenuItem>
-  <SidebarMenuButton href="/wells" isActive={pathname === "/wells"}>Wells</SidebarMenuButton>
+  <SidebarMenuButton render={<a href="/wells" />} isActive={pathname === "/wells"}>Wells</SidebarMenuButton>
 </SidebarMenuItem>
 ```
 
-`SidebarMenuButton` renders a React Aria `Link` only when it is given an `href`; without one it is a `button`, so the row is no destination for middle-click, Cmd-click or "copy link address", and `onClick` survives only as React Aria's deprecated press alias.
+`SidebarMenuButton` renders a `button` unless `render` makes it an anchor, so the row is no destination for middle-click, Cmd-click or "copy link address", and screen readers announce a button rather than a link.
 
 ### HIGH Two providers sharing one cookie and one ⌘B
 
@@ -75,8 +75,8 @@ Wrong:
 ```tsx
 const isMobile = useIsMobile()
 return isMobile ? (
-  <Sheet isOpen={isOpen} onOpenChange={setIsOpen} side="left">
-    <SidebarMenu>{rows}</SidebarMenu>
+  <Sheet open={open} onOpenChange={setOpen}>
+    <SheetContent side="left"><SidebarMenu>{rows}</SidebarMenu></SheetContent>
   </Sheet>
 ) : (
   <Sidebar>

@@ -21,7 +21,7 @@ related: [Tabs, ScrollArea, AspectRatio]
 
 - Compose it: `Carousel`, then `CarouselContent` holding `CarouselItem`s, then `CarouselPrevious` and `CarouselNext` as siblings of the content.
 - Pass Embla options on `Carousel` through `opts` (`{ align: "start", loop: true }`) and plugins through `plugins`.
-- Switch the axis with `orientation="vertical"`, never with an Embla `axis` option, and set how many slides show with `basis-*` on `CarouselItem`; the `-ml-4` / `pl-4` gutter is already on the parts.
+- Switch the axis with `orientation="vertical"`, never with an Embla `axis` option, and set how many slides show with `basis-*` on `CarouselItem`; the `-ms-4` / `ps-4` gutter is already on the parts.
 - Read position and react to moves through `setApi` and the Embla instance; there is no selected-index prop.
 
 ## Don't

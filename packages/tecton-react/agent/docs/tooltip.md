@@ -3,7 +3,7 @@
 # Tooltip — @tecton/react/components/tooltip
 
 ```tsx
-import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
+import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@tecton/react/components/tooltip"
 ```
 
 ## Use it when
@@ -19,11 +19,10 @@ import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
 
 ## Do
 
-- Give `TooltipTrigger` exactly two children, in this order: the trigger element, then the `Tooltip`.
-- Give an icon-only trigger its own `aria-label`; the tooltip is `aria-describedby`, not the name.
-- Set `delay` and `closeDelay` on `TooltipTrigger` (Tecton opens at `delay={0}`) and `placement` on `Tooltip`; a `Kbd` inside gets its own spacing, as in `Save changes <Kbd>S</Kbd>`.
-- To explain a disabled control, wrap it: `<span className="inline-block w-fit"><Button isDisabled>Export</Button></span>`.
-- A trigger that is not a control (a `Badge`, a term) needs focus and a role, or React Aria's `Focusable` warns and keyboard users never open it: `<Badge render={(props) => <span {...props} tabIndex={0} role="img" aria-label="TVD" />}>TVD</Badge>`.
+- Compose `Tooltip` (the root) > `TooltipTrigger render={<Button />}` + `TooltipContent`; position with `side` / `align` / `sideOffset` on `TooltipContent`.
+- Wrap the app or the toolbar once in `TooltipProvider`: it sets the open delay (Tecton's is `0`) and lets adjacent tooltips open instantly; `delay` / `closeDelay` on one `TooltipTrigger` override it.
+- Give an icon-only trigger its own `aria-label`; the tooltip describes, it does not name.
+- To explain a disabled control, pass `focusableWhenDisabled` to the `Button` so hover and focus still reach the trigger; a `Kbd` inside gets its own spacing (`Save changes <Kbd>S</Kbd>`).
 
 ## Don't
 
@@ -32,74 +31,75 @@ import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
 Wrong:
 
 ```tsx
-<TooltipTrigger>
-  <Button variant="ghost" size="icon-sm"><SaveIcon /></Button>
-  <Tooltip>Save changes</Tooltip>
-</TooltipTrigger>
+<Tooltip>
+  <TooltipTrigger render={<Button variant="ghost" size="icon-sm" />}><SaveIcon /></TooltipTrigger>
+  <TooltipContent>Save changes</TooltipContent>
+</Tooltip>
 ```
 
 Correct:
 
 ```tsx
-<TooltipTrigger>
-  <Button variant="ghost" size="icon-sm" aria-label="Save changes"><SaveIcon /></Button>
-  <Tooltip>Save changes</Tooltip>
-</TooltipTrigger>
+<Tooltip>
+  <TooltipTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Save changes" />}>
+    <SaveIcon />
+  </TooltipTrigger>
+  <TooltipContent>Save changes</TooltipContent>
+</Tooltip>
 ```
 
-React Aria points `aria-describedby` at the tooltip and only while it is open, so the button's accessible name stays empty and the control is unusable with a screen reader.
+The tooltip text exists only while it is open, so the button's accessible name stays empty and the control is unusable with a screen reader.
 
 ### CRITICAL Interactive content inside a tooltip
 
 Wrong:
 
 ```tsx
-<TooltipTrigger>
-  <Button variant="outline">Licence</Button>
-  <Tooltip>
-    <Link href="/licences/pl-045">Open licence PL-045</Link>
-  </Tooltip>
-</TooltipTrigger>
+<Tooltip>
+  <TooltipTrigger render={<Button variant="outline" />}>Licence</TooltipTrigger>
+  <TooltipContent><Link href="/licences/pl-045">Open licence PL-045</Link></TooltipContent>
+</Tooltip>
 ```
 
 Correct:
 
 ```tsx
-<PopoverTrigger>
-  <Button variant="outline">Licence</Button>
-  <Popover>
-    <Link href="/licences/pl-045">Open licence PL-045</Link>
-  </Popover>
-</PopoverTrigger>
+<Popover>
+  <PopoverTrigger render={<Button variant="outline" />}>Licence</PopoverTrigger>
+  <PopoverContent><Link href="/licences/pl-045">Open licence PL-045</Link></PopoverContent>
+</Popover>
 ```
 
-React Aria closes the tooltip as soon as focus leaves the trigger, and its contents sit inside `role="tooltip"`, so the link can never be tabbed to and is never announced as a link.
+The tooltip closes as soon as the pointer or focus leaves the trigger and its contents sit inside `role="tooltip"`, so the link can never be tabbed to and is never announced as a link.
 
-### HIGH More than two children in a TooltipTrigger
+### HIGH The React Aria two-child trigger
 
 Wrong:
 
 ```tsx
 <TooltipTrigger>
   <Button variant="ghost" size="icon-sm" aria-label="Zoom in"><PlusIcon /></Button>
-  <Button variant="ghost" size="icon-sm" aria-label="Zoom out"><MinusIcon /></Button>
-  <Tooltip>Zoom</Tooltip>
+  <Tooltip placement="bottom">Zoom in</Tooltip>
 </TooltipTrigger>
 ```
 
 Correct:
 
 ```tsx
-<TooltipTrigger>
-  <Button variant="ghost" size="icon-sm" aria-label="Zoom in"><PlusIcon /></Button>
-  <Tooltip>Zoom in</Tooltip>
-</TooltipTrigger>
+<Tooltip>
+  <TooltipTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Zoom in" />}>
+    <PlusIcon />
+  </TooltipTrigger>
+  <TooltipContent side="bottom">Zoom in</TooltipContent>
+</Tooltip>
 ```
 
-Tecton's `TooltipTrigger` destructures its children into `[trigger, tooltip]`, so the second button is rendered where the tooltip belongs and the real `Tooltip` is thrown away.
+`TooltipTrigger` renders its own `button`, so the `Button` child is a button inside a button, and `Tooltip` is the state root: outside it the trigger throws and nothing renders the popup.
 
 ## Before you finish
 
-- An icon-only trigger has its own `aria-label`; a `Tooltip` is `aria-describedby` and never the name, a `TooltipTrigger` has exactly two children, and nothing interactive goes inside a tooltip.
+- Every `Dialog`, `AlertDialog`, `Sheet`, `Drawer`, `Popover`, `HoverCard` and `Tooltip` is a root that renders nothing, holding its trigger and its content part (`DialogContent`, `AlertDialogContent`, `SheetContent`, `DrawerContent`, `PopoverContent`, `HoverCardContent`, `TooltipContent`); a trigger or content outside its root never opens.
+- Placement is `side` (`top`, `bottom`, `left`, `right`, `inline-start`, `inline-end`) and `align` (`start`, `center`, `end`) with `sideOffset` / `alignOffset` on the content part — `PopoverContent`, `HoverCardContent`, `TooltipContent`, `SelectContent`, `DropdownMenuContent` — never a `placement` string.
+- An icon-only trigger has its own `aria-label`; a `Tooltip` describes and never names, one `TooltipProvider` sets the shared delay, and nothing interactive goes inside a `TooltipContent`.
 
 Related: hover-card, popover

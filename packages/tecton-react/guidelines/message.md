@@ -84,7 +84,7 @@ Correct:
     <BubbleContent>{answer}</BubbleContent>
   </Bubble>
   <MessageFooter>
-    <Button variant="ghost" size="icon-sm" aria-label="Copy" onPress={copy}>
+    <Button variant="ghost" size="icon-sm" aria-label="Copy" onClick={copy}>
       <CopyIcon />
     </Button>
   </MessageFooter>

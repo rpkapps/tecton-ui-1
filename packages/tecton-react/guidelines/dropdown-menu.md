@@ -2,7 +2,7 @@
 component: DropdownMenu
 module: "@tecton/react/components/dropdown-menu"
 family: actions
-exports: [DropdownMenu, DropdownMenuTrigger, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent]
+exports: [DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuPortal, DropdownMenuGroup, DropdownMenuLabel, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuRadioGroup, DropdownMenuRadioItem, DropdownMenuSeparator, DropdownMenuShortcut, DropdownMenuSub, DropdownMenuSubTrigger, DropdownMenuSubContent]
 notFor:
   - need: a menu opened by right click on the content
     use: ContextMenu
@@ -21,62 +21,64 @@ related: [ContextMenu, Button, Select]
 
 ## Do
 
-- Give `DropdownMenuTrigger` exactly two children, the trigger `Button` and the `DropdownMenu`; there is no `DropdownMenuContent` and no `asChild`.
-- Run actions from `onAction` on `DropdownMenuItem`, or from `onAction(key)` on `DropdownMenu` with an `id` per item.
-- Make a group behave as checkboxes or radios with `selectionMode` plus `selectedKeys` / `defaultSelectedKeys` on `DropdownMenuGroup`.
-- Title groups with `DropdownMenuLabel`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut`.
-- Anchor with `placement` (for example `"bottom end"`) and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`.
+- Compose `DropdownMenu` (the root) > `DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}` + `DropdownMenuContent`.
+- Run actions from `onClick` on `DropdownMenuItem`; the menu closes after it.
+- Show toggles with `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) and one exclusive choice with `DropdownMenuRadioGroup` (`value` / `onValueChange`) holding `DropdownMenuRadioItem value="…"`.
+- Title groups with `DropdownMenuLabel` inside a `DropdownMenuGroup`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut` (a label only — Tecton binds no keys).
+- Place with `side` / `align` on `DropdownMenuContent` and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`.
 
 ## Don't
 
-### MEDIUM onClick on a menu item instead of onAction
+### HIGH React Aria or Radix item handlers
 
 Wrong:
-
-```tsx
-<DropdownMenuItem onClick={() => archive(well.id)}>Archive</DropdownMenuItem>
-```
-
-Correct:
 
 ```tsx
 <DropdownMenuItem onAction={() => archive(well.id)}>Archive</DropdownMenuItem>
-```
-
-`onClick` survives only as React Aria's deprecated press alias: it still fires, but on a bare mouse event with no `pointerType`, while `onAction` is the item's own activation hook and the one `onAction(key)` on the menu reports through.
-
-### HIGH Radix checked props instead of group selection
-
-Wrong:
-
-```tsx
-<DropdownMenuGroup>
-  <DropdownMenuItem checked={showPanel} onCheckedChange={setShowPanel}>Panel</DropdownMenuItem>
-</DropdownMenuGroup>
+<DropdownMenuItem onSelect={() => exportLas(well.id)}>Export LAS</DropdownMenuItem>
 ```
 
 Correct:
 
 ```tsx
-<DropdownMenuGroup selectionMode="multiple" selectedKeys={visible} onSelectionChange={setVisible}>
-  <DropdownMenuItem id="panel">Panel</DropdownMenuItem>
-</DropdownMenuGroup>
+<DropdownMenuItem onClick={() => archive(well.id)}>Archive</DropdownMenuItem>
+<DropdownMenuItem onClick={() => exportLas(well.id)}>Export LAS</DropdownMenuItem>
 ```
 
-There is no checkbox or radio item component here: selection lives on `DropdownMenuGroup` as a set of keys, so `checked` and `onCheckedChange` are dropped and no check mark is ever rendered.
+`onAction` is not an item prop and `onSelect` is the DOM text-selection event, so neither runs when the item is chosen: the menu closes and nothing happens.
+
+### HIGH Check marks by hand on a plain item
+
+Wrong:
+
+```tsx
+<DropdownMenuItem onClick={() => setShowPanel(!showPanel)}>
+  {showPanel ? <CheckIcon /> : null} Panel
+</DropdownMenuItem>
+```
+
+Correct:
+
+```tsx
+<DropdownMenuCheckboxItem checked={showPanel} onCheckedChange={setShowPanel}>
+  Panel
+</DropdownMenuCheckboxItem>
+```
+
+A plain item is `role="menuitem"` with no checked state, so the mark is decoration a screen reader never announces; `DropdownMenuCheckboxItem` is `menuitemcheckbox` with `aria-checked` and draws the indicator in its reserved slot.
 
 ### MEDIUM Colouring a destructive item with className
 
 Wrong:
 
 ```tsx
-<DropdownMenuItem className="text-red-600" onAction={remove}>Delete</DropdownMenuItem>
+<DropdownMenuItem className="text-red-600" onClick={remove}>Delete</DropdownMenuItem>
 ```
 
 Correct:
 
 ```tsx
-<DropdownMenuItem variant="destructive" onAction={remove}>Delete</DropdownMenuItem>
+<DropdownMenuItem variant="destructive" onClick={remove}>Delete</DropdownMenuItem>
 ```
 
 Tailwind's stock palette is reset, so `text-red-600` emits no CSS, while `variant="destructive"` is what sets the label, the icon and the focus background for the whole row.

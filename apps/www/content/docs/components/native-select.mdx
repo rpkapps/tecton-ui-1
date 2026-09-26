@@ -147,12 +147,12 @@ Signal errors with `aria-invalid` on the select and `data-invalid` on the surrou
 
 ### Don't
 
-<Dont severity="HIGH" title="React Aria props on a native select element">
+<Dont severity="HIGH" title="Select props on a native select element">
 
 <Wrong>
 
 ```tsx
-<NativeSelect isDisabled onSelectionChange={setStatus}>
+<NativeSelect value={status} onValueChange={setStatus}>
   <NativeSelectOption value="todo">Todo</NativeSelectOption>
 </NativeSelect>
 ```
@@ -162,14 +162,14 @@ Signal errors with `aria-invalid` on the select and `data-invalid` on the surrou
 <Correct>
 
 ```tsx
-<NativeSelect disabled value={status} onChange={(event) => setStatus(event.target.value)}>
+<NativeSelect value={status} onChange={(event) => setStatus(event.target.value)}>
   <NativeSelectOption value="todo">Todo</NativeSelectOption>
 </NativeSelect>
 ```
 
 </Correct>
 
-`NativeSelect` renders a real `select` and spreads its props onto it, so React Aria names like `isDisabled` and `onSelectionChange` reach the DOM as unknown attributes and the control stays enabled and unwired.
+`NativeSelect` renders a real `select` and spreads its props onto it, so `Select`'s `onValueChange` reaches the DOM as an unknown attribute: the handler never fires and the controlled value never changes.
 
 </Dont>
 

@@ -167,31 +167,31 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Give `DropdownMenuTrigger` exactly two children, the trigger `Button` and the `DropdownMenu`; there is no `DropdownMenuContent` and no `asChild`.
+Compose `DropdownMenu` (the root) > `DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}` + `DropdownMenuContent`.
 
 </Do>
 
 <Do>
 
-Run actions from `onAction` on `DropdownMenuItem`, or from `onAction(key)` on `DropdownMenu` with an `id` per item.
+Run actions from `onClick` on `DropdownMenuItem`; the menu closes after it.
 
 </Do>
 
 <Do>
 
-Make a group behave as checkboxes or radios with `selectionMode` plus `selectedKeys` / `defaultSelectedKeys` on `DropdownMenuGroup`.
+Show toggles with `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) and one exclusive choice with `DropdownMenuRadioGroup` (`value` / `onValueChange`) holding `DropdownMenuRadioItem value="…"`.
 
 </Do>
 
 <Do>
 
-Title groups with `DropdownMenuLabel`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut`.
+Title groups with `DropdownMenuLabel` inside a `DropdownMenuGroup`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut` (a label only — Tecton binds no keys).
 
 </Do>
 
 <Do>
 
-Anchor with `placement` (for example `"bottom end"`) and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`.
+Place with `side` / `align` on `DropdownMenuContent` and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`.
 
 </Do>
 
@@ -205,36 +205,13 @@ Label menu items with a short verb phrase ("Rename", "Export LAS"); the object c
 
 ### Don't
 
-<Dont severity="MEDIUM" title="onClick on a menu item instead of onAction">
+<Dont severity="HIGH" title="React Aria or Radix item handlers">
 
 <Wrong>
-
-```tsx
-<DropdownMenuItem onClick={() => archive(well.id)}>Archive</DropdownMenuItem>
-```
-
-</Wrong>
-
-<Correct>
 
 ```tsx
 <DropdownMenuItem onAction={() => archive(well.id)}>Archive</DropdownMenuItem>
-```
-
-</Correct>
-
-`onClick` survives only as React Aria's deprecated press alias: it still fires, but on a bare mouse event with no `pointerType`, while `onAction` is the item's own activation hook and the one `onAction(key)` on the menu reports through.
-
-</Dont>
-
-<Dont severity="HIGH" title="Radix checked props instead of group selection">
-
-<Wrong>
-
-```tsx
-<DropdownMenuGroup>
-  <DropdownMenuItem checked={showPanel} onCheckedChange={setShowPanel}>Panel</DropdownMenuItem>
-</DropdownMenuGroup>
+<DropdownMenuItem onSelect={() => exportLas(well.id)}>Export LAS</DropdownMenuItem>
 ```
 
 </Wrong>
@@ -242,14 +219,39 @@ Label menu items with a short verb phrase ("Rename", "Export LAS"); the object c
 <Correct>
 
 ```tsx
-<DropdownMenuGroup selectionMode="multiple" selectedKeys={visible} onSelectionChange={setVisible}>
-  <DropdownMenuItem id="panel">Panel</DropdownMenuItem>
-</DropdownMenuGroup>
+<DropdownMenuItem onClick={() => archive(well.id)}>Archive</DropdownMenuItem>
+<DropdownMenuItem onClick={() => exportLas(well.id)}>Export LAS</DropdownMenuItem>
 ```
 
 </Correct>
 
-There is no checkbox or radio item component here: selection lives on `DropdownMenuGroup` as a set of keys, so `checked` and `onCheckedChange` are dropped and no check mark is ever rendered.
+`onAction` is not an item prop and `onSelect` is the DOM text-selection event, so neither runs when the item is chosen: the menu closes and nothing happens.
+
+</Dont>
+
+<Dont severity="HIGH" title="Check marks by hand on a plain item">
+
+<Wrong>
+
+```tsx
+<DropdownMenuItem onClick={() => setShowPanel(!showPanel)}>
+  {showPanel ? <CheckIcon /> : null} Panel
+</DropdownMenuItem>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<DropdownMenuCheckboxItem checked={showPanel} onCheckedChange={setShowPanel}>
+  Panel
+</DropdownMenuCheckboxItem>
+```
+
+</Correct>
+
+A plain item is `role="menuitem"` with no checked state, so the mark is decoration a screen reader never announces; `DropdownMenuCheckboxItem` is `menuitemcheckbox` with `aria-checked` and draws the indicator in its reserved slot.
 
 </Dont>
 
@@ -258,7 +260,7 @@ There is no checkbox or radio item component here: selection lives on `DropdownM
 <Wrong>
 
 ```tsx
-<DropdownMenuItem className="text-red-600" onAction={remove}>Delete</DropdownMenuItem>
+<DropdownMenuItem className="text-red-600" onClick={remove}>Delete</DropdownMenuItem>
 ```
 
 </Wrong>
@@ -266,7 +268,7 @@ There is no checkbox or radio item component here: selection lives on `DropdownM
 <Correct>
 
 ```tsx
-<DropdownMenuItem variant="destructive" onAction={remove}>Delete</DropdownMenuItem>
+<DropdownMenuItem variant="destructive" onClick={remove}>Delete</DropdownMenuItem>
 ```
 
 </Correct>

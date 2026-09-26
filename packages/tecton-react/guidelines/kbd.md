@@ -23,6 +23,7 @@ related: [Badge]
 - Inside a `Button` or an `InputGroupAddon`, add `data-icon="inline-end"` (or `inline-start`) so the control trims its padding on that side.
 - Inside a `TooltipContent` leave it alone: `Kbd` already inverts to the tooltip surface through its `in-data-[slot=tooltip-content]` rules.
 - `className` is for nudging placement; the muted surface and the 20 px box belong to the component.
+- A `Kbd` only shows a key: Tecton binds no shortcuts, so show one only for a key the application handles itself.
 
 ## Don't
 
@@ -37,7 +38,7 @@ Wrong:
 Correct:
 
 ```tsx
-<Button variant="outline" onPress={() => setPaletteOpen(true)}>
+<Button variant="outline" onClick={() => setPaletteOpen(true)}>
   Search
   <Kbd data-icon="inline-end">⌘K</Kbd>
 </Button>
@@ -85,4 +86,4 @@ Correct:
 </Button>
 ```
 
-The button trims its trailing padding only through `has-data-[icon=inline-end]:pr-1.5`, so without the attribute the key sits in full text padding and the button grows.
+The button trims its trailing padding only through `has-data-[icon=inline-end]:pe-1.5`, so without the attribute the key sits in full text padding and the button grows.

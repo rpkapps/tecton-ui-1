@@ -80,7 +80,7 @@ Correct:
 
 ```tsx
 <Bubble variant="muted">
-  <BubbleContent render={(props) => <button {...props} type="button" onClick={() => reply(suggestion)} />}>
+  <BubbleContent render={<button type="button" onClick={() => reply(suggestion)} />}>
     {suggestion}
   </BubbleContent>
 </Bubble>
@@ -92,6 +92,6 @@ Without `render` the content stays a `div`, so the handler answers a mouse only 
 
 - A turn is a `Message` with `MessageAvatar` and `MessageContent` holding `MessageHeader`, a `Bubble` and `MessageFooter`, and its side comes from `align="start" | "end"` — there is no `role` axis and no hand-written `justify-end`.
 - Message text always goes inside `BubbleContent`, because every `Bubble` variant styles `*:data-[slot=bubble-content]` and a bare child renders unpadded and unframed.
-- A `Bubble`'s fill comes from `variant` and its side from `align`, never from a colour class or a margin, and a pressable bubble is built with `render` rather than `onClick`.
+- A `Bubble`'s fill comes from `variant` and its side from `align`, never from a colour class or a margin, and a pressable bubble is a `BubbleContent` with `render={<button type="button" />}` rather than an `onClick` on a `div`.
 
 Related: message, attachment, marker

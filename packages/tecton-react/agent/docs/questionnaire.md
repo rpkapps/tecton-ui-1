@@ -22,7 +22,7 @@ import { Questionnaire, QuestionnaireProgress, QuestionnaireItem, QuestionnaireT
 - Give every `QuestionnaireItem` a `name`, mark it `required` or `multiple`, and put its options in `QuestionnaireChoices`.
 - Read the answers in `onSubmit` from `new FormData(event.currentTarget)`; the root is the `form`.
 - Navigate only with `QuestionnairePrevious`, `QuestionnaireSkip`, `QuestionnaireNext` and `QuestionnaireSubmit`, inside `QuestionnaireActions`.
-- These parts are plain form elements, not React Aria: they take `disabled` and `onChange`, and `QuestionnaireInput` needs an `aria-label`.
+- These parts are plain form elements: they take `disabled` and `onChange`, and `QuestionnaireInput` needs an `aria-label`.
 
 ## Don't
 
@@ -36,7 +36,7 @@ Wrong:
   <RadioGroup value={value} onChange={setValue}>
     <RadioGroupItem value="feature">New feature</RadioGroupItem>
   </RadioGroup>
-  <Button onPress={() => send(value)}>Submit</Button>
+  <Button onClick={() => send(value)}>Submit</Button>
 </div>
 ```
 
@@ -96,10 +96,10 @@ Correct:
 <QuestionnaireChoice value="refactor" disabled>Refactor</QuestionnaireChoice>
 ```
 
-These parts come from `@shadcn/react/questionnaire`, not React Aria, so `isDisabled` is a type error the dev server strips instead of checking, then forwards to the `label` as an unknown attribute: no `data-disabled`, and the choice stays selectable.
+These parts are plain form elements, so `isDisabled` is a type error the dev server strips instead of checking, then forwards to the `label` as an unknown attribute: no `data-disabled`, and the choice stays selectable.
 
 ## Before you finish
 
-- A structured set of questions is a `Questionnaire` with `items`, a `name` per `QuestionnaireItem`, answers read from `new FormData(event.currentTarget)` in `onSubmit`, and navigation only through `QuestionnairePrevious`, `QuestionnaireSkip`, `QuestionnaireNext` and `QuestionnaireSubmit` — these parts take `disabled` and `onChange`, not React Aria props.
+- A structured set of questions is a `Questionnaire` with `items`, a `name` per `QuestionnaireItem`, answers read from `new FormData(event.currentTarget)` in `onSubmit`, and navigation only through `QuestionnairePrevious`, `QuestionnaireSkip`, `QuestionnaireNext` and `QuestionnaireSubmit` — these parts are plain form elements and take `disabled` and `onChange`.
 
 Related: field, radio-group, dialog

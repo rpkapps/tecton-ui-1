@@ -71,32 +71,11 @@ Correct:
 
 `AppShellBody` is the `flex min-h-0 overflow-hidden` row that holds the regions side by side, so content dropped into it is clipped at the fold and the sidebar and aside have nothing to sit beside.
 
-### HIGH The key hint mistaken for a registration
-
-Wrong:
-
-```tsx
-function ShellSearch({ open }: { open: () => void }) {
-  return <AppShellCommandTrigger shortcut="⌘K" onPress={open}>Search</AppShellCommandTrigger>
-}
-```
-
-Correct:
-
-```tsx
-function ShellSearch({ open }: { open: () => void }) {
-  useShortcut({ id: "shell.palette", keys: "mod+k", label: "Command palette", onAction: open })
-  return <AppShellCommandTrigger onPress={open}>Search</AppShellCommandTrigger>
-}
-```
-
-The trigger's hint (by default `mod+k` drawn for the platform, ⌘ K on a Mac and Ctrl + K elsewhere, or the `Kbd` you pass as `shortcut`) binds nothing, so the key never opens the palette and is missing from `useShortcuts()`, the list the shell's help dialog and command palette are built from.
-
 ## Before you finish
 
 - The application frame is `AppShell` > `AppShellHeader` plus `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`, with the page content in `AppShellMain` and never straight into `AppShellBody`.
 - The shell's header actions are `AppShellAction`s with a `label` — both the accessible name and the tooltip — inside `AppShellActions`, not icon `Button`s with a `title`.
-- A key hint rendered by `shortcut` on `AppShellAction` or `AppShellCommandTrigger` is also registered with `useShortcut`, or nothing is bound and the key is missing from `useShortcuts()`.
+- A key hint passed as `shortcut` to `AppShellAction` or `AppShellCommandTrigger` is only a label — Tecton binds no keys — so it is shown only for a key the application handles itself.
 - Every navigation area on a page has its own screen-reader name (`aria-label`): app nav, page-header nav, rails and any second breadcrumb.
 
 Related: panel, page-header, sheet, app-finder, overflow

@@ -5,10 +5,10 @@ family: actions
 exports: [Link, linkVariants]
 notFor:
   - need: a navigation target that should look like a button
-    use: LinkButton
+    use: Button
   - need: something that happens in place instead of navigation
     use: Button
-related: [Button, LinkButton]
+related: [Button]
 ---
 
 ## Use it when

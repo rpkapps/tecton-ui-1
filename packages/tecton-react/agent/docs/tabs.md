@@ -19,17 +19,28 @@ import { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from "@tec
 
 ## Do
 
-- Match every `TabsTrigger` to its `TabsContent` by `id`, the same string on both.
-- Select with `defaultSelectedKey` / `selectedKey` and `onSelectionChange`, which receives the key.
+- Match every `TabsTrigger` to its `TabsContent` by `value`, the same string on both.
+- Select with `defaultValue` / `value` and `onValueChange`, which receives the tab's value.
 - Choose the strip with `TabsList` `variant="default" | "line"`, and a side strip with `orientation="vertical"` on `Tabs`.
-- Give `TabsList` an `aria-label` when no nearby heading names the set; disable one tab with `isDisabled`.
+- Give `TabsList` an `aria-label` when no nearby heading names the set; disable one tab with `disabled`.
 - Use `Tabs` only for sections the user can visit in any order, never for steps that must be done in sequence.
 
 ## Don't
 
-### CRITICAL Radix value props instead of selectedKey and id
+### CRITICAL React Aria selection props
 
 Wrong:
+
+```tsx
+<Tabs defaultSelectedKey="overview" onSelectionChange={setView}>
+  <TabsList>
+    <TabsTrigger id="overview">Overview</TabsTrigger>
+  </TabsList>
+  <TabsContent id="overview"><Overview /></TabsContent>
+</Tabs>
+```
+
+Correct:
 
 ```tsx
 <Tabs defaultValue="overview" onValueChange={setView}>
@@ -40,26 +51,15 @@ Wrong:
 </Tabs>
 ```
 
-Correct:
-
-```tsx
-<Tabs defaultSelectedKey="overview" onSelectionChange={(key) => setView(String(key))}>
-  <TabsList>
-    <TabsTrigger id="overview">Overview</TabsTrigger>
-  </TabsList>
-  <TabsContent id="overview"><Overview /></TabsContent>
-</Tabs>
-```
-
-React Aria pairs a panel with its tab by `id` and reports the key through `onSelectionChange`; `defaultValue`, `value` and `onValueChange` are not Tabs props, so the handler never fires and the pairing falls back to generated keys.
+A panel is paired with its tab by `value` and the change is reported through `onValueChange`; `selectedKey`, `onSelectionChange` and `id` are not Tabs props, so the handler never fires and no panel matches its tab.
 
 ### HIGH Rendering the panel yourself instead of TabsContent
 
 Wrong:
 
 ```tsx
-<Tabs selectedKey={view} onSelectionChange={(key) => setView(String(key))}>
-  <TabsList><TabsTrigger id="overview">Overview</TabsTrigger></TabsList>
+<Tabs value={view} onValueChange={setView}>
+  <TabsList><TabsTrigger value="overview">Overview</TabsTrigger></TabsList>
 </Tabs>
 {view === "overview" ? <Overview /> : <Reports />}
 ```
@@ -67,9 +67,9 @@ Wrong:
 Correct:
 
 ```tsx
-<Tabs selectedKey={view} onSelectionChange={(key) => setView(String(key))}>
-  <TabsList><TabsTrigger id="overview">Overview</TabsTrigger></TabsList>
-  <TabsContent id="overview"><Overview /></TabsContent>
+<Tabs value={view} onValueChange={setView}>
+  <TabsList><TabsTrigger value="overview">Overview</TabsTrigger></TabsList>
+  <TabsContent value="overview"><Overview /></TabsContent>
 </Tabs>
 ```
 
@@ -80,7 +80,7 @@ Only `TabsContent` gets the `tabpanel` role, the `aria-labelledby` back to its t
 Wrong:
 
 ```tsx
-<TabsTrigger id="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
+<TabsTrigger value="overview" className="data-[state=active]:bg-blue-600 data-[state=active]:text-white">
   Overview
 </TabsTrigger>
 ```
@@ -89,15 +89,16 @@ Correct:
 
 ```tsx
 <TabsList variant="line">
-  <TabsTrigger id="overview">Overview</TabsTrigger>
+  <TabsTrigger value="overview">Overview</TabsTrigger>
 </TabsList>
 ```
 
-React Aria marks the selected tab with `data-selected`, not `data-state="active"`, and the stock palette is reset so `bg-blue-600` emits no CSS; the selected colours belong to the `TabsList` variant.
+The selected tab carries `data-active`, not `data-state="active"`, and the stock palette is reset so `bg-blue-600` emits no CSS; the selected colours belong to the `TabsList` variant.
 
 ## Before you finish
 
-- Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value` on an item and `onValueChange` anywhere are Radix names React Aria drops, and `Tabs` takes `selectedKey` / `defaultSelectedKey` / `onSelectionChange`, not `value`.
-- Every group carries a name: `aria-label` on `Combobox`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
+- `Select`, `Combobox`, `RadioGroup`, `Tabs` and `ToggleGroup` are driven by `value` / `defaultValue` / `onValueChange`, and `Select`'s handler is handed `null` when nothing is selected, so it narrows that instead of casting it away with `as`.
+- Items identify themselves by `value` on `SelectItem`, `ComboboxItem`, `RadioGroupItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `id`, `selectedKey` and `onSelectionChange` are not props of any of them.
+- Every group carries a name: `aria-label` on `ComboboxInput`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
 
 Related: toggle-group, select

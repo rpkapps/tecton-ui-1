@@ -98,7 +98,7 @@ Correct:
 
 ## Before you finish
 
-- Every control that may leave a collapsing row is wrapped in an `OverflowItem` with a stable `id`, its text in an `OverflowLabel` and its handler on the item's `onAction` rather than on the button; the primary action is left unwrapped.
+- Every control that may leave a collapsing row is wrapped in an `OverflowItem` with a stable `value`, its text in an `OverflowLabel` and its handler on the item's `onClick` rather than on the button; the primary action is left unwrapped.
 - A collapsing row of controls uses `Toolbar` with an `aria-label` when it is a toolbar (one tab stop, arrow keys) and `Overflow` when it is not.
 
 Related: button-group, action-bar, dropdown-menu

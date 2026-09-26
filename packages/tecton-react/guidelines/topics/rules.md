@@ -3,16 +3,17 @@ title: "Rules for every file: imports, setup, palette, className, variants, icon
 description: >
   Foundation for writing any UI with @tecton/react. Covers the import paths
   (@tecton/react/components/<name>, @tecton/react/tecton/<name>,
-  @tecton/react/icons — there is no root export), the @tecton/react/globals.css
-  stylesheet and the dark-first `dark` class, why components are never installed
-  with `shadcn add` and why files under components/ui are the wrong base, the
-  reset Tailwind palette where bg-red-500 and text-zinc-400 emit no CSS at all,
-  the semantic tokens (bg-primary, text-muted-foreground, text-destructive,
+  @tecton/react/icons — there is no root export, and nothing is imported from
+  the libraries underneath), the @tecton/react/globals.css stylesheet and the
+  dark-first `dark` class, why components are never installed with `shadcn add`,
+  the reset Tailwind palette where bg-red-500 and text-zinc-400 emit no CSS at
+  all, the semantic tokens (bg-primary, text-muted-foreground, text-destructive,
   bg-warning-surface) and the Tecton palette steps (bg-blue-120, text-blue-830),
   the rule that variants own colour, shape, size and padding while className
-  carries layout only, the Tecton variant axes on Alert, Badge, Separator, Input,
-  Textarea and SelectTrigger, data-icon="inline-start" spacing, and Tecton
-  domain glyphs versus Lucide. Load before writing or editing any Tecton
+  carries layout only and no stylesheet targets a generated component's
+  data-slot, the Tecton variant axes on Alert, Badge, Separator,
+  Input, Textarea and SelectTrigger, data-icon="inline-start" spacing, and
+  Tecton domain glyphs versus Lucide. Load before writing or editing any Tecton
   markup, className, import or stylesheet.
 sources:
   - "../../README.md"
@@ -23,12 +24,10 @@ sources:
 
 # Building with @tecton/react
 
-`@tecton/react` is shadcn/ui on the React Aria base, themed for Tecton and
-shipped as one package. Every component the application uses is already in it.
-
-Read `tecton docs react-aria` before writing props — the controls are React
-Aria, not Radix, and `onClick` / `checked` / `onValueChange` silently do the
-wrong thing.
+`@tecton/react` is shadcn/ui themed for Tecton and shipped as one package.
+Every component the application uses is already in it. Its props follow one
+convention — `onClick`, `disabled`, `checked`, `value` / `onValueChange`,
+`open` / `onOpenChange`, `render` — described in `tecton docs conventions`.
 
 ## Before you finish
 
@@ -37,8 +36,9 @@ looked up. Every line is a condition that has to hold in that file.
 
 - **Imports** — every component comes from `@tecton/react/components/<name>`,
   `@tecton/react/tecton/<name>` or `@tecton/react/icons`. Nothing is imported
-  from the `@tecton/react` root (there is no `.` export) or from a
-  `components/ui/` directory.
+  from the `@tecton/react` root (there is no `.` export), from a
+  `components/ui/` directory, or from `react-aria-components` or
+  `@base-ui/react`.
 - **No stock Tailwind colour** — no `bg-red-500`, `text-zinc-400`,
   `border-slate-300`, `bg-emerald-600`; the palette is reset, so they emit no
   CSS. A Tecton colour is a semantic token (`bg-primary`,
@@ -48,24 +48,27 @@ looked up. Every line is a condition that has to hold in that file.
 - **`className` carries layout only** — `w-full`, `mt-4`, `flex-1`,
   `col-span-2`, `gap-2`. Not `h-*`, `p-*`, `size-*`, `rounded-*`, `bg-*`, and
   not a colour or typography `text-*` / `font-*` on a component that owns it:
-  `size-8` on an icon `Button` is `size="icon-sm"`, and `text-muted-foreground`
-  or `font-medium` on a `TableCell` replaces styling the part already has.
+  `size-8` on an icon `Button` is `size="icon-sm"`. No stylesheet or
+  `[data-slot=…]` selector restyles a component from outside.
 - **Every control in a `Field` is labelled** — the control has an `id` and a
   `FieldLabel htmlFor` points at it; for a `Select` that `id` goes on
-  `SelectTrigger`, which renders the button, because `Select` renders a `div`.
-  A group of controls — a `RadioGroup`, a `ChipGroup`, a set of checkboxes — is
-  named by `FieldSet` + `FieldLegend`, never by a stray `FieldLabel`.
-- **React Aria prop names** — `onPress` not `onClick`, `isDisabled` not
-  `disabled`, `isSelected` with `onChange(isSelected: boolean)` not `checked` /
-  `onCheckedChange`, `isOpen` / `onOpenChange` not `open`, items keyed by `id`
-  not `value`, `value` / `onChange` on `Select` and `Combobox` and
-  `selectedKey` / `onSelectionChange` on `Tabs` — never `onValueChange` — with
-  the `Key | null` a `Select` hands its `onChange` narrowed rather than cast
-  away with `as`.
+  `SelectTrigger`, which renders the button. A group of controls — a
+  `RadioGroup`, a `ChipGroup`, a set of checkboxes — is named by `FieldSet` +
+  `FieldLegend`, never by a stray `FieldLabel`.
+- **Tecton prop names** — `onClick` not `onPress`, `disabled` not
+  `isDisabled`, `checked` / `onCheckedChange` not `isSelected`, `value` /
+  `defaultValue` / `onValueChange` (an array for multi-value) not `selectedKey`
+  / `onSelectionChange`, `value` as an item's identity not `id`, and `open` /
+  `onOpenChange` on the root not `isOpen`.
+- **Overlays are Root + Trigger + Content** — `Dialog`, `AlertDialog`,
+  `Sheet`, `Drawer`, `Popover`, `HoverCard`, `Tooltip`, `DropdownMenu` and
+  `ContextMenu` hold a trigger that takes its button as
+  `render={<Button />}` (never a nested `Button`, never `asChild`) and a
+  `*Content` part that carries `side` / `align` and the width.
 - **Empty results are `Empty`** — a list, table, panel or search result with
   nothing to show renders `Empty` with `EmptyTitle` and `EmptyDescription`, not
-  a stack of divs and not a `TableRow` with a `colSpan` cell; inside a `Table`
-  it is what `TableBody`'s `renderEmptyState` returns.
+  a stack of divs; an empty `Table` shows it in place of the table or in one
+  cell spanning every column.
 - **Confirmations** — a transient one is `toast` from `sonner` with exactly one
   `<Toaster />` mounted at the application root; one that stays on the page
   until the user reads or resolves it is an `Alert` with a `variant`.
@@ -78,14 +81,16 @@ looked up. Every line is a condition that has to hold in that file.
   `data-icon="inline-start"` or `data-icon="inline-end"`.
 - **Icon-only controls are named** — every `Button`, `Toggle`,
   `ToggleGroupItem`, `InputGroupButton` and `AppShellAction` with no text child
-  has
-  an `aria-label`; a `Tooltip` describes, it does not name.
-- **Menu items act through `onAction`** — on the `DropdownMenuItem`,
-  `ContextMenuItem` or `CommandItem` itself, or `onAction(key)` on the menu with
-  an `id` per item.
-- **The `AlertDialog` confirm is `AlertDialogAction`** — it is the `Button` that
-  carries `slot="close"`, so the action closes the prompt; a plain `Button`
-  belongs there only when the dialog must stay open while async work runs.
+  has an `aria-label`; a `Tooltip` describes, it does not name.
+- **Menu items act through `onClick`** — on the `DropdownMenuItem` or
+  `ContextMenuItem` itself (never `onAction` or `onSelect`); a `CommandItem`
+  acts through `onSelect`.
+- **The `AlertDialog` confirm closes the prompt** — `AlertDialogAction` is a
+  plain `Button`, so the dialog is controlled with `open` / `onOpenChange` and
+  the action's `onClick` closes it; `AlertDialogCancel` closes by itself.
+- **Shortcuts are the application's** — Tecton binds no keys; a `Kbd`, a
+  `DropdownMenuShortcut` or a `shortcut` prop only shows a key the application
+  handles itself.
 
 ## Setup
 
@@ -96,22 +101,11 @@ Tecton tokens and the theme variables.
 @import "@tecton/react/globals.css";
 ```
 
-Tecton is dark-first: put the `dark` class on `<html>`. Without it you get the
-Tecton light theme, which is equally complete.
-
-```tsx title="src/app.tsx"
-import { ThemeProvider } from "next-themes"
-
-export function App({ children }: { children: React.ReactNode }) {
-  return (
-    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
-      {children}
-    </ThemeProvider>
-  )
-}
-```
-
-Then import each component from its own module:
+Tecton is dark-first: put the `dark` class on `<html>` (for example with
+`next-themes`, `attribute="class" defaultTheme="dark"`). Without it you get the
+Tecton light theme, which is equally complete. Mount one `TectonProvider`
+(`@tecton/react/tecton/provider`) at the root for the locale, the direction and
+the router. Then import each component from its own module:
 
 ```tsx
 import { Badge } from "@tecton/react/components/badge"
@@ -121,7 +115,7 @@ import { WellIcon } from "@tecton/react/icons"
 export function WellHeader() {
   return (
     <div className="flex items-center gap-2">
-      <Button onPress={() => createWell()}>
+      <Button onClick={() => createWell()}>
         <WellIcon data-icon="inline-start" /> New well
       </Button>
       <Badge variant="success">Active</Badge>
@@ -130,30 +124,27 @@ export function WellHeader() {
 }
 ```
 
-Nothing at build time checks the rules below. A stock colour class like
-`bg-red-500` type-checks, builds and renders unstyled, and a `className` that
-overrides what a variant owns compiles clean and just looks wrong — nothing
-fails and nothing warns. The *Before you finish* list at the top of this page
-is the check: re-read it against the file you wrote before you report it done.
+Nothing at build time checks the rules above: a stock colour class type-checks,
+builds and renders unstyled. The *Before you finish* list is the check.
 
 ## Three import namespaces, no root export
 
 | Path | Holds |
 | --- | --- |
 | `@tecton/react/components/<name>` | The shadcn components: `button`, `badge`, `alert`, `select`, `dialog`, `field`, `input`, `tabs`, `table`, … |
-| `@tecton/react/tecton/<name>` | Tecton-only components with no shadcn counterpart: `chip`, `count-badge`, `circular-progress`, `meter`, `color-swatch`, `tree-view`, `stat`, `panel`, `page-header`, `app-shell`, `copy-button`, `link`, `theme-root` |
-| `@tecton/react/icons` | The 18 Tecton domain glyphs (`WellIcon`, `SeismicIcon`, `HorizonIcon`, `DrillBitIcon`, `FaultIcon`, `LogCurveIcon`, `TrajectoryIcon`, …); everything generic comes from `lucide-react` |
+| `@tecton/react/tecton/<name>` | Tecton-only components: `chip`, `count-badge`, `circular-progress`, `meter`, `tree-view`, `stat`, `panel`, `page-header`, `app-shell`, `copy-button`, `link`, `provider`, `theme-root`, … |
+| `@tecton/react/icons` | The Tecton domain glyphs (`WellIcon`, `SeismicIcon`, `HorizonIcon`, `DrillBitIcon`, …); everything generic comes from `lucide-react` |
 
-The `exports` map is enumerated, one entry per module, so a typo fails at resolve
-time. Components are never installed one by one. Only **blocks** are published to
-the `@tecton` registry (`npx shadcn@latest add @tecton/dashboard-01`); the copied
-block files import their components from `@tecton/react`.
+The `exports` map is enumerated, one entry per module, so a typo fails at
+resolve time. Only **blocks** are published to the `@tecton` registry
+(`npx shadcn@latest add @tecton/dashboard-01`); the copied block files import
+their components from `@tecton/react`.
 
 ## Colour comes from tokens, never from Tailwind's stock palette
 
 `globals.css` resets Tailwind's palette (`--color-*: initial`) and replaces it
 with Tecton's fifteen contrast ramps, so `bg-red-500` and `text-zinc-400`
-generate **no CSS at all** — they type-check and they render unstyled.
+generate **no CSS at all**.
 
 1. **A semantic token first**: `bg-primary`, `text-primary-foreground`,
    `bg-card`, `text-muted-foreground`, `border-border`, `text-destructive`,
@@ -161,21 +152,15 @@ generate **no CSS at all** — they type-check and they render unstyled.
    `bg-surface-alt`, `border-border-subtle`, `border-border-strong`.
 2. **A Tecton palette step** for a chart series or a custom tag:
    `bg-blue-120 text-blue-830` (tinted surface), `bg-green-560 text-green-50`
-   (solid fill), `text-red-560` (coloured text), `border-yellow-160`.
-   Families: `azure blue graphite gray green lemon lilac lime mauve orchid pink
-   red saffron violet yellow`. Steps run `50 … 1570`, not `50 … 950`.
+   (solid fill), `text-red-560`, `border-yellow-160`. Families: `azure blue
+   graphite gray green lemon lilac lime mauve orchid pink red saffron violet
+   yellow`. Steps run `50 … 1570`, not `50 … 950`.
 
 A step is a **contrast level**, not a lightness: `blue-120` is pale on light and
-deep on dark. One class serves both modes, so a palette step never takes a
-`dark:` pair. An application does not declare its own `--color-*`; a colour the
-palette does not cover is a change to the Tecton token export.
+deep on dark, so it never takes a `dark:` pair. A colour the palette does not
+cover is a change to the Tecton token export (`tecton docs theming`).
 
 ## Variants own the look, className carries layout
-
-| | Examples |
-| --- | --- |
-| **Allowed in `className`** | `w-full`, `mt-4`, `flex-1`, `col-span-2`, `absolute top-0`, `gap-2` |
-| **Denied — a variant owns it** | `bg-blue-600`, `h-12`, `p-6`, `rounded-full`, `text-[13px]`, `border-slate-200` |
 
 The Tecton variant axes that replace hand-styling:
 
@@ -199,34 +184,11 @@ and `size="default" | "xs" | "sm" | "lg" | "icon" | "icon-xs" | "icon-sm" | "ico
 
 ## Icons
 
-Lucide is what the generated components use internally; Tecton's own 18 domain
-glyphs share the Lucide signature and add `variant="outlined" | "filled"`. Reach
-for a Tecton domain glyph whenever one exists, Lucide for everything else — the
-generic glyphs are not published, because Lucide already has them.
-
-```tsx
-import { Button } from "@tecton/react/components/button"
-import { SeismicIcon, WellIcon } from "@tecton/react/icons"
-import { SearchIcon } from "lucide-react"
-
-export function Toolbar() {
-  return (
-    <div className="flex items-center gap-2">
-      <Button variant="outline">
-        <WellIcon data-icon="inline-start" /> Wells
-      </Button>
-      <Button size="icon" aria-label="Search">
-        <SearchIcon />
-      </Button>
-      <SeismicIcon variant="filled" size={20} />
-    </div>
-  )
-}
-```
-
-`data-icon="inline-start"` / `data-icon="inline-end"` is what tightens the
-padding on that side. `Button`, `Badge` and `TabsTrigger` all key their padding
-off it.
+Tecton's domain glyphs share the Lucide signature and add
+`variant="outlined" | "filled"`. Use a Tecton glyph whenever one exists,
+Lucide for everything else. Inside a control an icon carries
+`data-icon="inline-start"` / `"inline-end"`, which tightens the padding on that
+side of a `Button`, `Badge` or `TabsTrigger`.
 
 ## Common Mistakes
 
@@ -241,44 +203,32 @@ Wrong:
 Correct:
 
 ```tsx
-<div className="rounded-md bg-destructive-surface p-4 text-destructive-surface-foreground">
-  Rig offline
-</div>
+<Alert variant="destructive" appearance="filled">
+  <AlertTitle>Rig offline</AlertTitle>
+</Alert>
 ```
 
 `globals.css` sets `--color-*: initial` before declaring the Tecton ramps, so
 Tailwind has no `red-500` or `zinc-50` to generate and both utilities compile to
 nothing at all.
 
-Source: apps/www/content/docs/theming.mdx (Palette); packages/tecton-react/src/styles/tecton-palette.css
-
 ### [CRITICAL] Installing a component with the shadcn CLI
 
 Wrong:
 
-```bash
-npx shadcn@latest add button
-```
-
 ```tsx
-import { Button } from "@/components/ui/button"
+import { Button } from "@/components/ui/button" // after `npx shadcn@latest add button`
 ```
 
 Correct:
-
-```bash
-npx shadcn@latest add @tecton/dashboard-01   # blocks only
-```
 
 ```tsx
 import { Button } from "@tecton/react/components/button"
 ```
 
 Without the `@tecton` namespace the CLI installs from the public shadcn
-registry: a Radix component with the stock palette, the wrong base and the wrong
-theme, which renders next to the real ones and drifts on every upgrade.
-
-Source: apps/www/content/docs/installation.mdx (Package)
+registry: the stock component with the stock palette and the wrong theme, which
+renders next to the real ones and drifts on every upgrade.
 
 ### [HIGH] Importing from the package root
 
@@ -295,34 +245,25 @@ import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
 ```
 
-The `exports` map is enumerated with one entry per module and has no `.` entry,
-so the root specifier resolves to nothing at build time.
-
-Source: apps/www/content/docs/installation.mdx (Peer requirements)
+The `exports` map has no `.` entry, so the root specifier resolves to nothing.
 
 ### [HIGH] className overriding what a variant owns
 
 Wrong:
 
 ```tsx
-<Button className="h-12 rounded-full bg-blue-600 px-6">
-  Run simulation
-</Button>
+<Button className="h-12 rounded-full bg-blue-600 px-6">Run simulation</Button>
 ```
 
 Correct:
 
 ```tsx
-<Button size="lg" variant="default" className="w-full">
-  Run simulation
-</Button>
+<Button size="lg" className="w-full">Run simulation</Button>
 ```
 
 `cn` merges the call-site classes last, so the height, radius and padding of the
 `size` variant are replaced silently, while `bg-blue-600` is not a Tecton step
-and emits no CSS — the button ends up the wrong size with the default fill.
-
-Source: packages/tecton-react/guidelines/button.md (Do)
+and emits no CSS.
 
 ### [HIGH] Hand-built status colours where a variant exists
 
@@ -330,50 +271,17 @@ Wrong:
 
 ```tsx
 <Badge className="bg-green-600">Producing</Badge>
-<div className="rounded border border-amber-400 bg-amber-50 p-3 text-amber-800">
-  Pressure trending high
-</div>
 ```
 
 Correct:
 
 ```tsx
 <Badge variant="success">Producing</Badge>
-<Alert variant="warning" appearance="filled">
-  <AlertTitle>Pressure trending high</AlertTitle>
-</Alert>
 ```
 
-Tecton has no `amber` family at all, and its ramps step `50, 100, 105, 110, 115,
-120, 130, 140, 160, 190, 220, 260, 310, 370, 460, 560, 680, 830, 1000, 1170,
-1300, 1440, 1570`, so `green-600` is not one either: the badge falls back to the
-default primary fill and the banner loses its border and surface entirely.
-
-Source: apps/www/content/docs/components/badge.mdx (Status colours); apps/www/content/docs/components/alert.mdx (Tecton variants)
-
-### [MEDIUM] Icon inside a control without data-icon
-
-Wrong:
-
-```tsx
-<Button variant="outline">
-  <WellIcon /> Wells
-</Button>
-```
-
-Correct:
-
-```tsx
-<Button variant="outline">
-  <WellIcon data-icon="inline-start" /> Wells
-</Button>
-```
-
-The size variants tighten the leading or trailing padding with
-`has-data-[icon=inline-start]:pl-1.5`, so without the attribute the icon keeps
-the full text padding and the control is visibly wider than every other one.
-
-Source: apps/www/content/docs/components/button.mdx (With Icon); packages/tecton-react/src/components/button.tsx:32
+Tecton's ramps step `50, 100, 105, 110, 115, 120, 130, 140, 160, 190, 220, 260,
+310, 370, 460, 560, 680, 830, 1000, 1170, 1300, 1440, 1570`, so `green-600` is
+not one: the badge falls back to the default fill.
 
 ## Looking further
 
@@ -381,7 +289,7 @@ Source: apps/www/content/docs/components/button.mdx (With Icon); packages/tecton
 | --- | --- |
 | `tecton search "<what the UI must do>"` | Deciding which component a need maps to. |
 | `tecton docs <id>[,<id>]` | Before using a component: Use it when, Not for, Do, Don't and its family checklist. |
-| `tecton docs react-aria` | Before writing any prop or handler — the Radix-to-React-Aria map. |
+| `tecton docs conventions` | Before writing any prop, handler, controlled state or state selector. |
 | `tecton docs theming` | Colours, modes, an inverted section, `ThemeRoot`, micro-frontends. |
 | `tecton docs icons` | The Tecton domain glyphs by name. |
 

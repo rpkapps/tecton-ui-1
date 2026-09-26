@@ -171,7 +171,7 @@ Compose it: `ItemMedia`, then `ItemContent` with `ItemTitle` and `ItemDescriptio
 
 <Do>
 
-Make the whole row a link by giving `Item` an `href`; it then renders React Aria's `Link` with focus and hover states.
+Make the whole row a link with `render={<a href="/wells/34-10-a-12" />}` (or the router's `Link`); the `[a]:` rules give it the hover and focus states.
 
 </Do>
 
@@ -201,7 +201,7 @@ Use compact `Item` rows in dense panels and inspectors (`size="sm"` or `size="xs
 
 <Do>
 
-A linked `Item` (`href`) holds no buttons or links; a row with its own actions stays static, links its title and puts buttons in `ItemActions`.
+A linked `Item` (`render={<a href="…" />}`) holds no buttons or links; a row with its own actions stays static, links its title and puts buttons in `ItemActions`.
 
 </Do>
 
@@ -244,7 +244,7 @@ Rows in one `ItemGroup` are all linked or all static; when they must mix, each l
 <Correct>
 
 ```tsx
-<Item variant="outline" href="/wells/34-10-a-12">
+<Item variant="outline" render={<a href="/wells/34-10-a-12" />}>
   <ItemContent>
     <ItemTitle>34/10-A-12</ItemTitle>
   </ItemContent>
@@ -253,7 +253,7 @@ Rows in one `ItemGroup` are all linked or all static; when they must mix, each l
 
 </Correct>
 
-Without an `href`, `Item` renders a plain `div`, so `onClick` gives the row no role, no tab stop and no Enter key: it is reachable with a mouse only.
+`Item` renders a plain `div` unless `render` makes it an anchor, so `onClick` gives the row no role, no tab stop and no Enter key: it is reachable with a mouse only.
 
 </Dont>
 
