@@ -24,7 +24,7 @@ related: [Message, Badge, Item]
 - Compose it: `AttachmentMedia`, then `AttachmentContent` with `AttachmentTitle` and `AttachmentDescription`, then `AttachmentActions`.
 - Drive the look with `state="idle" | "uploading" | "processing" | "error" | "done"`, `size` and `orientation`.
 - Use `AttachmentMedia variant="image"` around an `<img>` and `orientation="vertical"` for a thumbnail; lay several cards out in an `AttachmentGroup`.
-- Give every `AttachmentAction` an `aria-label` naming the action and the file; it is a `Button`, so press it with `onPress`.
+- Give every `AttachmentAction` an `aria-label` naming the action and the file; it is a `Button`, so press it with `onClick`.
 
 ## Don't
 

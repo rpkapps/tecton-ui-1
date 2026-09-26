@@ -2,7 +2,7 @@
 component: Alert
 module: "@tecton/react/components/alert"
 family: feedback
-exports: [Alert, AlertTitle, AlertDescription, AlertAction]
+exports: [Alert, AlertTitle, AlertDescription, AlertAction, alertVariants]
 notFor:
   - need: a confirmation that should disappear on its own
     use: toast
@@ -25,7 +25,7 @@ related: [Toaster, Empty]
 
 - `variant` is the severity (`default`, `info`, `success`, `warning`, `destructive`); `appearance` is the surface (`default` keeps the card background, `outline` is a coloured border, `filled` is the Tecton status surface).
 - Compose `Alert > icon, AlertTitle, AlertDescription, AlertAction`, with the icon as a direct child of `Alert`.
-- Put every button, including the dismiss control, inside `AlertAction` and wire it with `onPress`; a decision that blocks the user is an `AlertDialog`, not an alert.
+- Put every button, including the dismiss control, inside `AlertAction` and wire it with `onClick`; a decision that blocks the user is an `AlertDialog`, not an alert.
 - `className` is for width and placement (`max-w-md`, `mb-4`), never for the status colours.
 
 ## Don't
@@ -71,7 +71,7 @@ Correct:
 </Alert>
 ```
 
-The two-column grid and the icon's `row-span-2` come from `has-[>svg]`, a direct-child selector, so an icon nested in the title leaves the alert in one column and the description no longer aligns under the title.
+The two-column grid and the icon column come from `has-[>svg]`, a direct-child selector, so an icon nested in the title leaves the alert in one column and the description no longer aligns under the title.
 
 ### MEDIUM An action that is not in AlertAction
 
@@ -80,7 +80,7 @@ Wrong:
 ```tsx
 <Alert variant="success">
   <AlertTitle>Three FDA alternatives ranked</AlertTitle>
-  <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onPress={dismiss}><XIcon /></Button>
+  <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onClick={dismiss}><XIcon /></Button>
 </Alert>
 ```
 
@@ -90,9 +90,9 @@ Correct:
 <Alert variant="success">
   <AlertTitle>Three FDA alternatives ranked</AlertTitle>
   <AlertAction>
-    <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onPress={dismiss}><XIcon /></Button>
+    <Button variant="ghost" size="icon-sm" aria-label="Dismiss" onClick={dismiss}><XIcon /></Button>
   </AlertAction>
 </Alert>
 ```
 
-The alert clears its corner with `has-data-[slot=alert-action]:pr-18`, so a bare button joins the grid flow under the title instead of sitting in the reserved top-right corner.
+The alert clears its corner with `has-data-[slot=alert-action]:pe-18`, so a bare button joins the grid flow under the title instead of sitting in the reserved inline-end corner.

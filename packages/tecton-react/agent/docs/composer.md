@@ -22,10 +22,10 @@ import { Composer, ComposerField, ComposerInput, ComposerToolbar, ComposerSubmit
 ## Do
 
 - Pass the chat's `status` (`"ready" | "submitted" | "streaming" | "error"`) and `onStop`; `ComposerSubmit` swaps Send for Stop and Escape stops the reply.
-- Keep `ComposerHint` (visible, or `isVisible={false}`) so the textarea is described by its keys, and `ComposerStatusMessage` for sent, stopped and failed.
+- Keep `ComposerHint` (visible, or `visible={false}`) so the textarea is described by its keys, and `ComposerStatusMessage` for sent, stopped and failed.
 - Pair it with a transcript whose `MessageScrollerContent` has `aria-busy` while a reply streams, so the reply is announced once, complete.
-- Use `submitMode="mod-enter"` for long-form input, and pass the prompts already sent as `history` (oldest first): ArrowUp on the first line steps back through them (`historyLimit` caps how many), ArrowDown on the last line forward to the draft, which is kept even when a loaded prompt is edited.
-- Put extra context in `ComposerAttachments` (Tecton chips) as items with a `label`, prompts to start from in `ComposerSuggestions`, and slash commands in `ComposerCommands` inside `ComposerField`, whose `onCommand` decides what a pick does and `countMessage` translates its announcement.
+- Pass the prompts already sent as `history` (oldest first) for ArrowUp and ArrowDown, and use `submitMode="mod-enter"` for long-form input.
+- Put extra context in `ComposerAttachments`, prompts to start from in `ComposerSuggestions`, slash commands in `ComposerCommands` inside `ComposerField`, and your own buttons (`InputGroupButton`, with or without a tooltip) straight into `ComposerToolbar` before `ComposerSubmit`.
 
 ## Don't
 
@@ -77,7 +77,7 @@ The Enter that confirms a Japanese or Chinese conversion arrives as a keydown to
 Wrong:
 
 ```tsx
-<InputGroupButton aria-label={busy ? "Stop" : "Send"} onPress={busy ? stop : send}>
+<InputGroupButton aria-label={busy ? "Stop" : "Send"} onClick={busy ? stop : send}>
   {busy ? <SquareIcon /> : <ArrowUpIcon />}
 </InputGroupButton>
 ```

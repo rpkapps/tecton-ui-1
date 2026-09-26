@@ -3,7 +3,7 @@
 # AlertDialog — @tecton/react/components/alert-dialog
 
 ```tsx
-import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogOverlay } from "@tecton/react/components/alert-dialog"
+import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader, AlertDialogMedia, AlertDialogTitle, AlertDialogDescription, AlertDialogFooter, AlertDialogCancel, AlertDialogAction, AlertDialogOverlay, AlertDialogPortal } from "@tecton/react/components/alert-dialog"
 ```
 
 ## Use it when
@@ -16,27 +16,26 @@ import { AlertDialog, AlertDialogTrigger, AlertDialogContent, AlertDialogHeader,
 
 - a form, or a decision the user may walk away from → `Dialog` (tecton docs dialog)
 - a confirmation of something the user can undo afterwards → `toast` (tecton docs toast)
-- a side panel listing what is about to change → `Sheet` (tecton docs sheet)
 
 ## Do
 
-- Wrap the trigger `Button` and the `AlertDialog` in one `AlertDialogTrigger`, as for `Dialog`.
+- Compose `AlertDialog` > `AlertDialogTrigger render={<Button variant="destructive" />}` + `AlertDialogContent`, as for `Dialog`.
 - End the title with a question and state the consequence in `AlertDialogDescription`.
-- Use `AlertDialogCancel` and `AlertDialogAction` in the footer; both carry `slot="close"`, so the dialog closes either way.
-- Colour the confirm with `variant="destructive"` on `AlertDialogAction` — never with `className` — and use `size="sm"` with `AlertDialogMedia` for a short, centred prompt.
+- `AlertDialogCancel` closes the prompt; `AlertDialogAction` is a plain `Button`, so control the dialog with `open` / `onOpenChange` and close it in the action's `onClick` once the work is done.
+- Colour the confirm with `variant="destructive"` on `AlertDialogAction` — never with `className` — and use `size="sm"` on `AlertDialogContent` with `AlertDialogMedia` for a short, centred prompt.
 - Name the confirm button for its action and object ("Delete well"), never "OK", "Yes" or "Confirm".
 - Keyboard users reach Cancel first in a confirmation dialog: put `AlertDialogCancel` before `AlertDialogAction` in the footer.
 
 ## Don't
 
-### HIGH Confirming with a plain Button
+### HIGH Expecting AlertDialogAction to close the prompt
 
 Wrong:
 
 ```tsx
 <AlertDialogFooter>
   <AlertDialogCancel>Cancel</AlertDialogCancel>
-  <Button variant="destructive" onPress={deleteWell}>Delete</Button>
+  <AlertDialogAction variant="destructive" onClick={deleteWell}>Delete</AlertDialogAction>
 </AlertDialogFooter>
 ```
 
@@ -45,28 +44,17 @@ Correct:
 ```tsx
 <AlertDialogFooter>
   <AlertDialogCancel>Cancel</AlertDialogCancel>
-  <AlertDialogAction variant="destructive" onPress={deleteWell}>Delete</AlertDialogAction>
+  <AlertDialogAction variant="destructive" onClick={() => deleteWell().then(() => setOpen(false))}>
+    Delete
+  </AlertDialogAction>
 </AlertDialogFooter>
 ```
 
-`AlertDialogAction` is a `Button` with `slot="close"`, which React Aria binds to the overlay state; a plain `Button` runs the action and leaves the prompt on screen over the deleted record.
+`AlertDialogAction` is a `Button` with no link to the dialog state, so on an uncontrolled `AlertDialog` the action runs and the prompt stays on screen over the deleted record.
 
-### HIGH Content rendered as a sibling of the trigger
+### HIGH The React Aria trigger wrapping the prompt
 
 Wrong:
-
-```tsx
-<>
-  <AlertDialogTrigger>
-    <Button variant="destructive">Delete well</Button>
-  </AlertDialogTrigger>
-  <AlertDialogContent>
-    <AlertDialogTitle>Delete 34/10-A-12?</AlertDialogTitle>
-  </AlertDialogContent>
-</>
-```
-
-Correct:
 
 ```tsx
 <AlertDialogTrigger>
@@ -77,32 +65,43 @@ Correct:
 </AlertDialogTrigger>
 ```
 
-`AlertDialogContent` is an alias of `AlertDialog`, so both names compile; outside the trigger's subtree neither reads its overlay state, and pressing the button does nothing at all.
+Correct:
 
-### MEDIUM Letting a backdrop click answer the question
+```tsx
+<AlertDialog open={open} onOpenChange={setOpen}>
+  <AlertDialogTrigger render={<Button variant="destructive" />}>Delete well</AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogHeader><AlertDialogTitle>Delete 34/10-A-12?</AlertDialogTitle></AlertDialogHeader>
+  </AlertDialogContent>
+</AlertDialog>
+```
+
+`AlertDialog` is the root that holds the state and renders nothing itself; the trigger outside it throws, and without `AlertDialogContent` no prompt is drawn.
+
+### MEDIUM A Dialog for a destructive confirmation
 
 Wrong:
 
 ```tsx
-<AlertDialog isDismissable>
-  <AlertDialogTitle>Discard 12 unsaved edits?</AlertDialogTitle>
-</AlertDialog>
+<Dialog>
+  <DialogContent><DialogTitle>Discard 12 unsaved edits?</DialogTitle></DialogContent>
+</Dialog>
 ```
 
 Correct:
 
 ```tsx
 <AlertDialog>
-  <AlertDialogTitle>Discard 12 unsaved edits?</AlertDialogTitle>
+  <AlertDialogContent><AlertDialogTitle>Discard 12 unsaved edits?</AlertDialogTitle></AlertDialogContent>
 </AlertDialog>
 ```
 
-`AlertDialogOverlay` leaves React Aria's `isDismissable` off on purpose, which is the only thing separating this from `Dialog`; turning it on lets a stray backdrop click answer the question.
+A `Dialog` closes on a backdrop press and announces itself as `role="dialog"`, so a stray click answers the question; `AlertDialog` is `role="alertdialog"` and has no outside-press dismissal.
 
 ## Before you finish
 
-- The confirm inside an `AlertDialog` is `AlertDialogAction` (with `variant="destructive"`) and the escape is `AlertDialogCancel` — both carry `slot="close"`, so a plain `Button` runs the action and leaves the prompt on screen over the deleted record.
-- Every `Dialog`, `AlertDialog`, `Sheet` and `Popover` sits inside its own trigger component (`DialogTrigger`, `AlertDialogTrigger`, `SheetTrigger`, `PopoverTrigger`) together with its trigger `Button`; a sibling never receives the open state.
-- Every `Dialog` and `AlertDialog` has a `DialogTitle` / `AlertDialogTitle`, because React Aria takes the accessible name from it.
+- The confirm inside an `AlertDialog` is `AlertDialogAction` (with `variant="destructive"`) and the escape is `AlertDialogCancel`; `AlertDialogAction` is a plain `Button` that closes nothing, so the prompt is controlled with `open` / `onOpenChange` and the action's `onClick` closes it once the work is done.
+- Every `Dialog`, `AlertDialog`, `Sheet`, `Drawer`, `Popover`, `HoverCard` and `Tooltip` is a root that renders nothing, holding its trigger and its content part (`DialogContent`, `AlertDialogContent`, `SheetContent`, `DrawerContent`, `PopoverContent`, `HoverCardContent`, `TooltipContent`); a trigger or content outside its root never opens.
+- Every `Dialog` and `AlertDialog` has a `DialogTitle` / `AlertDialogTitle`, because it is the dialog's accessible name.
 
-Related: dialog, sheet
+Related: dialog

@@ -85,8 +85,8 @@ An off-scale pixel size stops matching the line height of the text it stands in 
 
 ## Before you finish
 
-- A value that is not on a 0–100 scale states its scale with `minValue` and `maxValue` (`value={loaded} maxValue={total}`, a 4-out-of-5 score with `maxValue={5}`).
-- An unknown total is `isIndeterminate`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.
+- A value that is not on a 0–100 scale states its scale with `min` and `max` (`value={loaded} max={total}`, a 4-out-of-5 score with `max={5}`).
+- An unknown total is `value={null}`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.
 - Every `Skeleton` has a height or an aspect ratio (`h-4 w-full`, `size-12 rounded-full`, `aspect-video w-full`), because an empty `div` with no intrinsic size renders nothing.
 
 Related: spinner, empty, progress

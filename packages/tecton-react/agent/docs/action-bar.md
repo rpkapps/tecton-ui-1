@@ -20,7 +20,7 @@ import { ActionBar, ActionBarSelection, ActionBarMessage, ActionBarActions, acti
 
 ## Do
 
-- Control it with `isOpen` and dismiss with `onDismiss`; the bar owns Escape and the enter transition.
+- Control it with `open` and dismiss with `onDismiss`; the bar owns Escape and the enter transition.
 - Give it an `aria-label`; it renders a `div` with `role="region"`.
 - Summarise with `ActionBarSelection` (`count`, `total`, `label`, `onClear`) or with `ActionBarMessage`.
 - Put the actions in `ActionBarActions`, wrapping collapsible ones in `OverflowItem` and leaving the primary action bare.
@@ -33,16 +33,16 @@ import { ActionBar, ActionBarSelection, ActionBarMessage, ActionBarActions, acti
 Wrong:
 
 ```tsx
-<ActionBar isOpen={selected.size > 0} aria-label="Selected wells">
+<ActionBar open={selected.size > 0} aria-label="Selected wells">
   <span>{selected.size} of {wells.length} selected</span>
-  <Button variant="ghost" size="sm" onPress={clear}>Clear</Button>
+  <Button variant="ghost" size="sm" onClick={clear}>Clear</Button>
 </ActionBar>
 ```
 
 Correct:
 
 ```tsx
-<ActionBar isOpen={selected.size > 0} onDismiss={clear} aria-label="Selected wells">
+<ActionBar open={selected.size > 0} onDismiss={clear} aria-label="Selected wells">
   <ActionBarSelection count={selected.size} total={wells.length} label="wells" onClear={clear} />
 </ActionBar>
 ```
@@ -56,7 +56,7 @@ Wrong:
 ```tsx
 <ActionBarActions aria-label="Selection actions">
   <Button variant="outline" size="sm"><TagIcon data-icon="inline-start" />Add tag</Button>
-  <Button size="sm" onPress={assign}>Assign</Button>
+  <Button size="sm" onClick={assign}>Assign</Button>
 </ActionBarActions>
 ```
 
@@ -64,10 +64,10 @@ Correct:
 
 ```tsx
 <ActionBarActions aria-label="Selection actions">
-  <OverflowItem id="tag" label="Add tag" icon={<TagIcon />} onAction={addTag}>
+  <OverflowItem value="tag" label="Add tag" icon={<TagIcon />} onClick={addTag}>
     <Button variant="outline" size="sm"><TagIcon data-icon="inline-start" /><OverflowLabel>Add tag</OverflowLabel></Button>
   </OverflowItem>
-  <Button size="sm" onPress={assign}>Assign</Button>
+  <Button size="sm" onClick={assign}>Assign</Button>
 </ActionBarActions>
 ```
 
@@ -95,7 +95,7 @@ The bar is its own `@container`, so a fit-content inline size resolves from its 
 
 ## Before you finish
 
-- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
-- A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `isOpen`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.
+- Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
+- A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `open`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.
 
 Related: button-group, dropdown-menu

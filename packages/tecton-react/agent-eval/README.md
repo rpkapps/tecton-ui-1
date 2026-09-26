@@ -34,6 +34,23 @@ provider and the shortcuts module and the direction guideline were removed, set 
 shortcuts query (90 → 89), and both sets accept `provider` for the portal and right-to-left
 queries: 78 / 92 / 96 % (MRR 0.85) on set 1 and 69 / 89 / 95 % (MRR 0.79) on set 2.
 
+### Base UI migration, 2026-09-26
+
+The guidelines were rewritten for the Base UI prop conventions (`onClick`, `disabled`, `checked`,
+`value` / `onValueChange`, Root + Trigger + Content, `render`), and the `react-aria` topic was
+replaced by `conventions` (`tecton docs conventions`); the four topic queries that expected
+`topic:react-aria` now expect `topic:conventions`. No ranking or synonym change.
+
+| Query set, hit@1 / hit@3 / hit@5 | before (index at `a662421`) | after                         |
+| -------------------------------- | --------------------------- | ----------------------------- |
+| set 1 (89)                       | 76 / 92 / 96 % (MRR 0.84)   | **76 / 92 / 96 %** (MRR 0.85) |
+| set 2 (80)                       | 69 / 90 / 94 % (MRR 0.79)   | **71 / 89 / 93 %** (MRR 0.81) |
+
+The "before" index was stale (it still held the removed `direction`, `portal` and `shortcuts`
+pages), so part of the difference is those pages leaving. Set 2 loses the right-to-left ticket
+query ("Mirror the entire dashboard layout …", `provider` now rank 5), which the removed
+`direction` page used to answer.
+
 - _names only_ matches the query against ids and export names; it is roughly what grepping the
   export list gives you.
 - The ablations turn off one part each:
@@ -52,7 +69,7 @@ queries: 78 / 92 / 96 % (MRR 0.85) on set 1 and 69 / 89 / 95 % (MRR 0.79) on set
 
 | Change                                                                                                            | Why                                                                                                                                                                                                                                                                        |
 | ----------------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| camelCase is split in the query, and the identifier is kept whole as well                                         | `ScrollArea`, `PageHeader`, `AppShell` returned nothing; `InputGroup` returned Spinner. The index keeps identifiers in its prose whole, so `SelectItem` in a Do bullet is not one more "select" and `isSelected` still finds the React Aria topic.                         |
+| camelCase is split in the query, and the identifier is kept whole as well                                         | `ScrollArea`, `PageHeader`, `AppShell` returned nothing; `InputGroup` returned Spinner. The index keeps identifiers in its prose whole, so `SelectItem` in a Do bullet is not one more "select" and `isSelected` still finds the props topic.                              |
 | An exact id or export ranks first; a spelled-out name is boosted                                                  | `tecton search ScrollArea` must return ScrollArea first.                                                                                                                                                                                                                   |
 | Plurals are stripped before `-ing` / `-ed` (Porter 1a, then 1b)                                                   | `menus`, `warnings`, `headings` returned nothing.                                                                                                                                                                                                                          |
 | `page`, `show`, `display`, `user` are no longer stopwords; `'s` and `n't` scraps and 1-letter words are dropped   | "page header" searched for "header"; "engineer's" indexed an `s`.                                                                                                                                                                                                          |

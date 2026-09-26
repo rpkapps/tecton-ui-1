@@ -19,12 +19,12 @@ import { TreeView, TreeViewItem, TreeViewItemContent, TreeViewAction, TreeViewVi
 
 ## Do
 
-- Give `TreeView` an `aria-label`, and every `TreeViewItem` an `id` and a `textValue`.
-- Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or a `TreeViewCollection` with `items` for dynamic data.
-- Pick the leading glyph with `kind="folder" | "item"` or replace it with `icon`; the chevron and the indent are handled for you.
-- Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, which names itself "Hide" plus the row's label with `aria-pressed` for the hidden state, and `TreeViewAction`).
-- Drive state from `TreeView` — `selectionMode` with `selectedKeys`, `disabledKeys`, `expandedKeys` — and dim a row with `isHidden` on `TreeViewItem`.
-- The tree opens on the branches the user came for (active field, selected well's parents), not a column of closed folders (`defaultExpandedKeys`).
+- Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value`; add `textValue` when the row label is not plain text.
+- Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data.
+- Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`.
+- Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`).
+- Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`).
+- The tree opens on the branches the user came for (active field, selected well's parents), not a column of closed folders (`defaultExpanded`).
 
 ## Don't
 
@@ -35,10 +35,10 @@ Wrong:
 ```tsx
 <Collapsible>
   <CollapsibleTrigger>Wells</CollapsibleTrigger>
-  <CollapsibleContent className="pl-4">
+  <CollapsibleContent className="ps-4">
     <Collapsible>
       <CollapsibleTrigger>34/10-A-12</CollapsibleTrigger>
-      <CollapsibleContent className="pl-4">Completions</CollapsibleContent>
+      <CollapsibleContent className="ps-4">Completions</CollapsibleContent>
     </Collapsible>
   </CollapsibleContent>
 </Collapsible>
@@ -47,61 +47,58 @@ Wrong:
 Correct:
 
 ```tsx
-<TreeView aria-label="Project" selectionMode="single" defaultExpandedKeys={["wells"]}>
-  <TreeViewItem id="wells" textValue="Wells">
+<TreeView aria-label="Project" selectionMode="single" defaultExpanded={["wells"]}>
+  <TreeViewItem value="wells">
     <TreeViewItemContent kind="folder">Wells</TreeViewItemContent>
-    <TreeViewItem id="a12" textValue="34/10-A-12">
+    <TreeViewItem value="a12">
       <TreeViewItemContent>34/10-A-12</TreeViewItemContent>
     </TreeViewItem>
   </TreeViewItem>
 </TreeView>
 ```
 
-Each `Collapsible` is its own widget, so the result is a pile of buttons with no `role="treegrid"`, no arrow-key or type-ahead movement between rows and no selection; `TreeView` is React Aria's `Tree` and gets all of it from `id`, `textValue` and the nesting.
+Each `Collapsible` is its own widget, so the result is a pile of buttons with no `role="treegrid"`, no arrow-key or type-ahead movement between rows and no selection.
 
 ### HIGH Indenting rows with padding classes
 
 Wrong:
 
 ```tsx
-<TreeViewItemContent className="pl-8">34/10-A-12</TreeViewItemContent>
+<TreeViewItemContent className="ps-8">34/10-A-12</TreeViewItemContent>
 ```
 
 Correct:
 
 ```tsx
-<TreeViewItem id="wells" textValue="Wells">
+<TreeViewItem value="wells">
   <TreeViewItemContent kind="folder">Wells</TreeViewItemContent>
-  <TreeViewItem id="a12" textValue="34/10-A-12">
+  <TreeViewItem value="a12">
     <TreeViewItemContent>34/10-A-12</TreeViewItemContent>
   </TreeViewItem>
 </TreeViewItem>
 ```
 
-`TreeViewItemContent` writes `paddingInlineStart` as an inline style computed from React Aria's `level`, which no `className` can outrank, so the row keeps the depth it really has in the collection and `pl-8` is dead weight.
+`TreeViewItemContent` writes `paddingInlineStart` as an inline style from the row's depth, which no `className` can outrank, so the nesting sets the indent and `ps-8` is dead weight.
 
-### MEDIUM A row without textValue
+### MEDIUM Styling rows on hover or focus attributes
 
 Wrong:
 
 ```tsx
-<TreeViewItem id="balder">
-  <TreeViewItemContent suffix={<Badge variant="info">12</Badge>}>Top Balder</TreeViewItemContent>
-</TreeViewItem>
+<TreeViewAction className="opacity-0 group-data-hovered/tree-item:opacity-100" aria-label="Actions" />
 ```
 
 Correct:
 
 ```tsx
-<TreeViewItem id="balder" textValue="Top Balder">
-  <TreeViewItemContent suffix={<Badge variant="info">12</Badge>}>Top Balder</TreeViewItemContent>
-</TreeViewItem>
+<TreeViewAction className="opacity-0 group-hover/tree-item:opacity-100 group-focus-within/tree-item:opacity-100" aria-label="Actions" />
 ```
 
-`textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included. With dynamic `items`, React Aria caches each rendered row, so a row that also reads state kept outside `items` (the hidden set behind `isHidden` and `TreeViewVisibilityToggle`, a selection map) does not update until that state is listed in `dependencies` on `TreeView` and on every `TreeViewCollection`: `dependencies={[hidden]}`.
+Rows expose no hover, press or focus attributes: use `:hover`, `:active`, `:focus-visible` and `:focus-within`, and the presence attributes for state.
 
 ## Before you finish
 
-- A hierarchy is a `TreeView` with an `aria-label` and an `id` plus `textValue` on every `TreeViewItem`, not a pile of nested `Collapsible`s, and rows are never indented with `pl-*`.
+- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
+- A hierarchy is a `TreeView` with an `aria-label` and a `value` plus `textValue` on every `TreeViewItem`, not a pile of nested `Collapsible`s, and rows are never indented with `ps-*`.
 
 Related: accordion, item, color-swatch

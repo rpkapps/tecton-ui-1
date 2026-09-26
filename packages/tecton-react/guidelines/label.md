@@ -21,8 +21,8 @@ related: [Field, FieldLabel]
 
 ## Do
 
-- Pair `htmlFor` with the control's `id`; `Label` renders React Aria's `Label`, which is a plain `<label>`.
-- Leave `htmlFor` off only inside a React Aria control that supplies a `LabelContext` — setting it there opts the label out of that context.
+- Pair `htmlFor` with the control's `id`; `Label` is a plain `<label>` and associates nothing by itself.
+- For a `Select` the `id` goes on `SelectTrigger`; a `Slider` has no labelable element, so give the `Label` an `id` and pass it as the slider's `aria-labelledby`.
 - Reach for `FieldLabel` the moment the control gains a description, an error or a `Field` wrapper.
 - Keep `className` to layout; the size, weight and the disabled dimming belong to the component.
 
@@ -48,7 +48,7 @@ Correct:
 </div>
 ```
 
-Outside a React Aria field there is no `LabelContext` to fill in the association, so the label renders as a bare `<label>`: the input has no accessible name and clicking the text does not focus it.
+`Label` is a bare `<label>` with nothing to fill in the association, so the input has no accessible name and clicking the text does not focus it.
 
 ### HIGH Styling a bare label element by hand
 

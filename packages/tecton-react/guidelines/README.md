@@ -16,7 +16,7 @@ the docs site; the guideline files themselves are untouched. Deleting a source's
 `agent:build` and `docs:guidelines` removes all of its rules.
 
 `topics/` holds the three hand-written pages that are not about one component — `rules.md`,
-`react-aria.md`, `theming.md` — served as `tecton rules`, `tecton docs react-aria` and
+`conventions.md`, `theming.md` — served as `tecton rules`, `tecton docs conventions` and
 `tecton docs theming`. The only Agent Skill the package ships is `skills/tecton/SKILL.md`, which
 points agents at the command.
 
@@ -80,15 +80,15 @@ Exactly these three headings, in this order, each non-empty:
 Wrong:
 
 ```tsx
-<Badge onPress={() => select("balder")}>Top Balder</Badge>
+<Badge onClick={() => select("balder")}>Top Balder</Badge>
 ```
 
 Correct:
 
 ```tsx
-<ChipGroup aria-label="Horizons" selectionMode="single" onSelectionChange={setSelected}>
+<ChipGroup aria-label="Horizons" selectionMode="single" value={selected} onValueChange={setSelected}>
   <ChipList>
-    <Chip id="balder">Top Balder</Chip>
+    <Chip value="balder">Top Balder</Chip>
   </ChipList>
 </ChipGroup>
 ```
@@ -109,13 +109,15 @@ Rules for the sections:
   - A Don't must be **plausible** (an agent would write it), **shippable** (it renders without a
     runtime error, or it is a type error that a Vite dev server still runs because esbuild strips
     types; a loud runtime failure earns an entry only when the error does not name the fix),
-    **specific** to this library (React Aria props, the Tecton palette, the variants), and
+    **specific** to this library (its prop conventions, the Tecton palette, the variants), and
     **grounded** (traceable to the component source or its docs page).
-  - Code blocks are `tsx`, complete enough to paste, with real export names and React Aria prop
-    names (`onPress`, `isDisabled`, `isSelected`, `selectedKey`, `isOpen`). No `// ...`.
-  - The wrong version must be something that looks right from a Radix or stock-Tailwind prior:
-    `onClick`, `disabled`, `asChild`, `bg-green-600`, `<a>` inside a `Button`, hand-built
-    status colours where a `variant` exists.
+  - Code blocks are `tsx`, complete enough to paste, with real export names and the Tecton prop
+    names (`onClick`, `disabled`, `checked`, `value` / `onValueChange`, `open`, `render`). No
+    `// ...`.
+  - The wrong version must be something that looks right from a Radix, React Aria or
+    stock-Tailwind prior: `asChild`, `onPress`, `isDisabled`, `selectedKey`, a trigger wrapping
+    its overlay, `bg-green-600`, `<a>` inside a `Button`, hand-built status colours where a
+    `variant` exists.
 
 Keep a file between 40 and 100 lines. Prose is for the agent and the reviewer: no marketing, no
 explanations of React or Tailwind, no repetition of the API reference.

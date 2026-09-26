@@ -81,7 +81,7 @@ Correct:
 
 ```tsx
 <Bubble variant="muted">
-  <BubbleContent render={(props) => <button {...props} type="button" onClick={() => reply(suggestion)} />}>
+  <BubbleContent render={<button type="button" onClick={() => reply(suggestion)} />}>
     {suggestion}
   </BubbleContent>
 </Bubble>

@@ -1,0 +1,203 @@
+---
+title: "Prop conventions: handlers, state, Root/Trigger/Content, render, state attributes"
+description: >
+  The prop conventions every @tecton/react component follows, for agents whose
+  prior is Radix shadcn or an older React Aria Tecton. Covers onClick (not
+  onPress), disabled (not isDisabled), checked / onCheckedChange (not
+  isSelected / onChange), pressed / onPressedChange, the controlled selected
+  state, value / defaultValue / onValueChange with arrays for
+  multi-value and value as an item's identity (not id, selectedKey or
+  onSelectionChange), open / defaultOpen / onOpenChange on the root, the
+  Root + Trigger + Content structure of Dialog, AlertDialog, Sheet, Drawer,
+  Popover, HoverCard, Tooltip, DropdownMenu and ContextMenu (no DialogTrigger
+  wrapper, no asChild), render={<Button />} for element polymorphism, side /
+  align / sideOffset placement, the presence state attributes to style on
+  (data-open, data-checked, data-active, data-pressed, data-highlighted,
+  data-disabled), TectonProvider for direction, locale, router and portals,
+  and the absence of any keyboard shortcut API. Load before writing any prop,
+  handler, controlled state or state selector on a Tecton component.
+sources:
+  - "src/components/button.tsx"
+  - "src/components/dialog.tsx"
+  - "src/components/select.tsx"
+  - "src/components/checkbox.tsx"
+  - "src/components/tabs.tsx"
+  - "src/tecton/provider.tsx"
+---
+
+# Prop conventions
+
+This builds on `tecton rules`. Every Tecton component — generated or Tecton's
+own — takes the same prop names, whatever it is built on. Import only from
+`@tecton/react/...`; the libraries underneath are an implementation detail.
+
+## The map
+
+| Habit | Tecton | On |
+| --- | --- | --- |
+| `onPress` | `onClick` | `Button`, `Toggle`, menu items, `InputGroupButton`, `AttachmentAction` |
+| `isDisabled` | `disabled` (`focusableWhenDisabled` to keep focus) | every control and item |
+| `isSelected` / `onChange(boolean)` | `checked` / `defaultChecked` / `onCheckedChange` | `Checkbox`, `Switch`, `DropdownMenuCheckboxItem` |
+| `isSelected` on a toggle | `pressed` / `defaultPressed` / `onPressedChange` | `Toggle` |
+| `selectedKey` / `onSelectionChange` / `onChange(key)` | `value` / `defaultValue` / `onValueChange` | `Select`, `Combobox`, `RadioGroup`, `Tabs` |
+| a `Set` of keys | an **array** of values | `ToggleGroup`, `Accordion`, `Slider`, multi `Combobox` |
+| `id` on an item | `value` | `SelectItem`, `ComboboxItem`, `RadioGroupItem`, `TabsTrigger`, `TabsContent`, `ToggleGroupItem`, `AccordionItem` |
+| `isOpen` / `onOpenChange` on `DialogTrigger` | `open` / `defaultOpen` / `onOpenChange` on the root | every overlay and menu |
+| `asChild` | `render={<Button variant="outline" />}` | triggers, closes, `Badge`, `Item`, `BreadcrumbLink`, `SidebarMenuButton` |
+| `placement="bottom start"`, `offset` | `side="bottom" align="start"`, `sideOffset`, `alignOffset` | every `*Content` popup |
+| `minValue` / `maxValue` | `min` / `max` | `Slider`, `Progress` |
+| `isInvalid` | `aria-invalid` on the control + `data-invalid` on the `Field` | form controls |
+
+`Input`, `Textarea` and `NativeSelect` are real DOM elements: `value`,
+`onChange(event)`, `disabled`, `aria-invalid`. `Command` items act through
+`onSelect`; `Calendar` takes `mode`, `selected` and `onSelect` with `Date`
+values. Values are strings.
+
+## Root, Trigger, Content
+
+An overlay or menu is a **root** that holds state and renders nothing, a
+**trigger** that renders the button, and a **content** part that portals the
+popup: `Dialog` > `DialogTrigger` + `DialogContent`, and likewise `AlertDialog`,
+`Sheet`, `Drawer`, `Popover`, `HoverCard`, `Tooltip`, `DropdownMenu`,
+`ContextMenu`. The trigger takes the styled element through `render`:
+
+```tsx
+<Dialog open={open} onOpenChange={setOpen}>
+  <DialogTrigger render={<Button variant="outline" />}>Edit well</DialogTrigger>
+  <DialogContent>
+    <DialogHeader>
+      <DialogTitle>Edit well</DialogTitle>
+    </DialogHeader>
+    <DialogFooter>
+      <DialogClose render={<Button variant="outline" />}>Cancel</DialogClose>
+      <Button onClick={save}>Save</Button>
+    </DialogFooter>
+  </DialogContent>
+</Dialog>
+```
+
+Placement, `className` for width and the portal `container` go on the content
+part, never on the root.
+
+## render
+
+`render` swaps the element a part renders while keeping its behaviour and
+styles: `render={<a href="/wells" />}` on a `Button` (add `nativeButton={false}`),
+`Badge`, `Item` or `BreadcrumbLink`; `render={<Link to="/wells" />}` for a
+router link. It also accepts a function `(props) => <a {...props} />`. There is
+no `asChild`.
+
+## State attributes
+
+Parts expose their state as presence attributes (`""`, never `"true"`):
+`data-open` / `data-closed`, `data-checked` / `data-unchecked`, `data-active`
+(the selected tab), `data-pressed` (a pressed toggle), `data-highlighted` (the
+focused menu or list item), `data-disabled`, `data-side`, and
+`data-starting-style` / `data-ending-style` for transitions. In Tailwind that
+is `data-open:…`, `data-checked:…`; hover and focus are `:hover` and
+`:focus-visible`. Radix's `data-[state=open]` and React Aria's
+`data-[selected=true]` match nothing.
+
+## Providers, portals, shortcuts
+
+One `TectonProvider` (`@tecton/react/tecton/provider`) at the root carries the
+direction, the locale, the router (`navigate`, `useHref`) and the portal
+container; `ThemeRoot` wraps one. No other provider is public — never mount
+one from the libraries underneath. Tecton binds no keyboard shortcuts: `Kbd`,
+`DropdownMenuShortcut` and a `shortcut` prop only display a key the
+application handles itself.
+
+## Common Mistakes
+
+### [CRITICAL] React Aria handler and state names
+
+Wrong:
+
+```tsx
+<Button isDisabled={saving} onPress={save}>Save</Button>
+<Switch isSelected={sync} onChange={setSync} />
+```
+
+Correct:
+
+```tsx
+<Button disabled={saving} onClick={save}>Save</Button>
+<Switch checked={sync} onCheckedChange={setSync} />
+```
+
+The React Aria names are not props: they reach the DOM as stray attributes, so
+the button stays enabled, the press never runs and the switch keeps its own
+state while `sync` never changes.
+
+### [HIGH] A trigger wrapping the overlay
+
+Wrong:
+
+```tsx
+<PopoverTrigger>
+  <Button variant="outline">Filter</Button>
+  <Popover placement="bottom start">
+    <PopoverTitle>Filter wells</PopoverTitle>
+  </Popover>
+</PopoverTrigger>
+```
+
+Correct:
+
+```tsx
+<Popover>
+  <PopoverTrigger render={<Button variant="outline" />}>Filter</PopoverTrigger>
+  <PopoverContent side="bottom" align="start">
+    <PopoverTitle>Filter wells</PopoverTitle>
+  </PopoverContent>
+</Popover>
+```
+
+The root holds the state and only the content part draws the popup; a trigger
+outside its root has nothing to open, and a nested `Button` becomes a button
+inside the trigger's own button.
+
+### [HIGH] Items identified by id
+
+Wrong:
+
+```tsx
+<Tabs selectedKey={tab} onSelectionChange={setTab}>
+  <TabsList>
+    <TabsTrigger id="logs">Logs</TabsTrigger>
+  </TabsList>
+</Tabs>
+```
+
+Correct:
+
+```tsx
+<Tabs value={tab} onValueChange={setTab}>
+  <TabsList>
+    <TabsTrigger value="logs">Logs</TabsTrigger>
+  </TabsList>
+</Tabs>
+```
+
+An item's identity is `value`; `id` is only the DOM id, so no tab matches the
+controlled value and the handler never fires.
+
+### [HIGH] Importing the library underneath
+
+Wrong:
+
+```tsx
+import { Dialog } from "@base-ui/react/dialog"
+import { Button } from "react-aria-components"
+```
+
+Correct:
+
+```tsx
+import { Dialog, DialogContent } from "@tecton/react/components/dialog"
+import { Button } from "@tecton/react/components/button"
+```
+
+The raw primitives carry none of the Tecton styles, portal container or
+provider context, and which library backs a component is not part of the API:
+the import breaks the day it changes.

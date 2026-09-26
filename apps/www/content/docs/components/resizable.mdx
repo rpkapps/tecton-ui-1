@@ -97,7 +97,7 @@ Give the group a height from outside (`className="h-96"`, or a flex parent): it 
 
 <Do>
 
-Remember this module wraps react-resizable-panels, not React Aria: the props are that library's own (`disabled`, `collapsible`, `onLayoutChanged`, `panelRef`), and a `ResizableHandle` must be a direct child of its group.
+This module wraps react-resizable-panels: the props are that library's own (`disabled`, `collapsible`, `onLayoutChanged`, `panelRef`), and a `ResizableHandle` must be a direct child of its group.
 
 </Do>
 
@@ -197,7 +197,7 @@ In v4 a number means **pixels** and only a string is read as a percentage, so th
 
 </Correct>
 
-Resizable is the one layout module not built on React Aria: `Separator` destructures `disabled` and spreads everything else onto the `div`, so `isDisabled` becomes a stray attribute and the divider stays draggable while the interface says it is locked.
+The library's `Separator` destructures `disabled` and spreads everything else onto the `div`, so `isDisabled` becomes a stray attribute and the divider stays draggable while the interface says it is locked.
 
 </Dont>
 

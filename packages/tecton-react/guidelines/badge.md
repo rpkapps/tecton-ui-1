@@ -25,7 +25,7 @@ related: [Chip, CountBadge]
 
 - Pick meaning with `variant`, weight with `appearance="solid" | "outline"`, height with `size="default" | "md" | "lg"` (20 / 24 / 28 px).
 - Give an icon or a `Spinner` child `data-icon="inline-start"` or `data-icon="inline-end"` so the badge trims its padding on that side.
-- Make it a link with `render={(props) => <a {...props} href="/wells/12" />}`; there is no `asChild`, and an outer `<a>` gets none of the badge's `[a]:hover:` rules.
+- Make it a link with `render={<a href="/wells/12" />}`; there is no `asChild`, and an outer `<a>` gets none of the badge's `[a]:hover:` rules.
 - A category colour that no `variant` carries is the one documented exception: a Tecton palette pair, `className="bg-blue-120 text-blue-830"`, never a stock Tailwind colour. Otherwise `className` is for placement.
 
 ## Don't
@@ -62,10 +62,11 @@ Correct:
 <ChipGroup
   aria-label="Filters"
   selectionMode="single"
-  onSelectionChange={(keys) => setFilter([...keys][0])}
+  value={filters}
+  onValueChange={setFilters}
 >
   <ChipList>
-    <Chip id="fault-seal" variant="info">
+    <Chip value="fault-seal" variant="info">
       Fault seal
     </Chip>
   </ChipList>
@@ -94,4 +95,4 @@ Correct:
 </Badge>
 ```
 
-The padding compensation is `has-data-[icon=inline-start]:pl-1.5`, so without the attribute the icon sits in full text padding and the badge is wider than every other badge in the row.
+The padding compensation is `has-data-[icon=inline-start]:ps-1.5`, so without the attribute the icon sits in full text padding and the badge is wider than every other badge in the row.

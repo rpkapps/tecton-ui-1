@@ -21,41 +21,37 @@ related: [Checkbox, Field]
 
 ## Do
 
-- Control it with `isSelected` and `onChange(isSelected: boolean)`, or leave it uncontrolled with `defaultSelected`.
+- Control it with `checked` and `onCheckedChange(checked: boolean)`, or leave it uncontrolled with `defaultChecked`.
 - Pick the scale with `size="sm" | "default"`; the thumb travel is matched to each.
 - Give it an `id` and point a `FieldLabel htmlFor` at it inside a `Field orientation="horizontal"`, with `FieldContent` for the description.
-- Disable with `isDisabled` and put `data-disabled` on the `Field`; for an invalid value put `data-invalid` on both the `Switch` and the `Field` — React Aria's Switch has no validation state of its own.
+- Disable with `disabled` and put `data-disabled` on the `Field`; for an invalid value set `aria-invalid` on the `Switch` and `data-invalid` on the `Field`.
 - For a choice card, wrap the whole `Field` in a `FieldLabel` so the card surface is the hit target.
 
 ## Don't
 
-### CRITICAL Reading the toggled value off an event
+### CRITICAL React Aria selection props
 
 Wrong:
-
-```tsx
-<Switch
-  id="two-factor"
-  isSelected={enabled}
-  onChange={(e) => setEnabled(e.target.checked)}
-/>
-```
-
-Correct:
 
 ```tsx
 <Switch id="two-factor" isSelected={enabled} onChange={setEnabled} />
 ```
 
-React Aria calls `onChange` with the new boolean rather than a DOM event, so `e.target` is undefined and the handler throws the first time the user flips the switch.
+Correct:
 
-### HIGH Disabling the switch with the disabled prop
+```tsx
+<Switch id="two-factor" checked={enabled} onCheckedChange={setEnabled} />
+```
+
+`isSelected` is not a prop and `onChange` receives a DOM event, not the boolean, so the switch runs uncontrolled and `setEnabled` is handed an event object.
+
+### HIGH Disabling the switch with isDisabled
 
 Wrong:
 
 ```tsx
 <Field orientation="horizontal">
-  <Switch id="sync" disabled />
+  <Switch id="sync" isDisabled />
   <FieldLabel htmlFor="sync">Sync across devices</FieldLabel>
 </Field>
 ```
@@ -64,12 +60,12 @@ Correct:
 
 ```tsx
 <Field orientation="horizontal" data-disabled>
-  <Switch id="sync" isDisabled />
+  <Switch id="sync" disabled />
   <FieldLabel htmlFor="sync">Sync across devices</FieldLabel>
 </Field>
 ```
 
-React Aria reads `isDisabled`; `disabled` is dropped, so the switch stays focusable and operable and neither it nor the label dims.
+The switch reads `disabled`; `isDisabled` is not a prop, so the switch stays focusable and operable and neither it nor the label dims.
 
 ### MEDIUM Sizing the switch with height and width
 

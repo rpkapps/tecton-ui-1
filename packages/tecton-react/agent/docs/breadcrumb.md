@@ -3,7 +3,7 @@
 # Breadcrumb — @tecton/react/components/breadcrumb
 
 ```tsx
-import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbEllipsis } from "@tecton/react/components/breadcrumb"
+import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbPage, BreadcrumbSeparator, BreadcrumbEllipsis } from "@tecton/react/components/breadcrumb"
 ```
 
 ## Use it when
@@ -21,8 +21,8 @@ import { Breadcrumb, BreadcrumbList, BreadcrumbItem, BreadcrumbLink, BreadcrumbP
 ## Do
 
 - Compose `Breadcrumb` > `BreadcrumbList` > `BreadcrumbItem`, and end the trail with `BreadcrumbPage` — the `span` carrying `aria-current="page"`, never a link restyled to look current.
-- Let `BreadcrumbItem` draw the separator: it renders the chevron itself for every item React Aria does not mark `isCurrent`, and `separatorClassName` is how you size it.
-- Give `BreadcrumbLink` an `href`, and a routing library's link through `render={(props) => <Link {...props} />}`.
+- Put a `BreadcrumbSeparator` between items: it is the presentational `li` holding the chevron (flipped in right-to-left); pass a child to change the glyph.
+- Give `BreadcrumbLink` an `href`, and mount a routing library's link with `render={<Link to="/fields" />}`.
 - Collapse the middle with `BreadcrumbEllipsis`, or put it in a `DropdownMenuTrigger` when those levels must stay reachable.
 - Label each breadcrumb with the title of the page it opens ("Gullfaks", not "Gullfaks field overview").
 - Breadcrumbs supplement the sidebar or top navigation; never make them the only way to reach other sections.
@@ -38,9 +38,7 @@ Wrong:
 <nav className="flex items-center gap-2 text-sm text-zinc-500">
   <a href="/fields">Fields</a>
   <span>/</span>
-  <a href="/fields/gullfaks">Gullfaks</a>
-  <span>/</span>
-  <span className="text-zinc-900">34/10-A-12</span>
+  <span className="text-zinc-900">Gullfaks</span>
 </nav>
 ```
 
@@ -49,48 +47,60 @@ Correct:
 ```tsx
 <Breadcrumb>
   <BreadcrumbList>
-    <BreadcrumbItem>
-      <BreadcrumbLink href="/fields">Fields</BreadcrumbLink>
-    </BreadcrumbItem>
-    <BreadcrumbItem>
-      <BreadcrumbLink href="/fields/gullfaks">Gullfaks</BreadcrumbLink>
-    </BreadcrumbItem>
-    <BreadcrumbItem>
-      <BreadcrumbPage>34/10-A-12</BreadcrumbPage>
-    </BreadcrumbItem>
+    <BreadcrumbItem><BreadcrumbLink href="/fields">Fields</BreadcrumbLink></BreadcrumbItem>
+    <BreadcrumbSeparator />
+    <BreadcrumbItem><BreadcrumbPage>Gullfaks</BreadcrumbPage></BreadcrumbItem>
   </BreadcrumbList>
 </Breadcrumb>
 ```
 
-`zinc` is not a Tecton palette family, so both colour classes emit no CSS under the reset palette, and the row has none of the structure a breadcrumb is read by: `Breadcrumb` is the `nav[aria-label="breadcrumb"]`, `BreadcrumbList` the `ol`, `BreadcrumbItem` the `li`, and `BreadcrumbPage` the element marked `aria-current="page"`.
+`zinc` is not a Tecton palette family, so both colour classes emit no CSS, and the row has none of the structure a breadcrumb is read by: `Breadcrumb` is the `nav[aria-label="breadcrumb"]`, `BreadcrumbList` the `ol`, `BreadcrumbItem` the `li`, and `BreadcrumbPage` the element marked `aria-current="page"`.
 
 ### HIGH asChild to mount the routing library's link
 
 Wrong:
 
 ```tsx
-<BreadcrumbItem>
-  <BreadcrumbLink asChild>
-    <Link to="/fields/gullfaks">Gullfaks</Link>
-  </BreadcrumbLink>
-</BreadcrumbItem>
+<BreadcrumbLink asChild>
+  <Link to="/fields/gullfaks">Gullfaks</Link>
+</BreadcrumbLink>
 ```
 
 Correct:
 
 ```tsx
-<BreadcrumbItem>
-  <BreadcrumbLink href="/fields/gullfaks" render={(props) => <Link {...props} />}>
-    Gullfaks
-  </BreadcrumbLink>
-</BreadcrumbItem>
+<BreadcrumbLink render={<Link to="/fields/gullfaks" />}>Gullfaks</BreadcrumbLink>
 ```
 
-`BreadcrumbLink` is a React Aria `Link`, which has `render` and no `asChild`, so the prop is dropped and the routing link is left nested inside it — and React Aria renders its own element as a `span[role="link"]` whenever it has no `href`, so the element it focuses, styles and marks current leads nowhere and the trail gains a second tab stop per level.
+There is no `asChild`: `BreadcrumbLink` renders its own `a` and the routing link is nested inside it, a link inside a link with two tab stops per level.
+
+### MEDIUM Separators typed between the items
+
+Wrong:
+
+```tsx
+<BreadcrumbList>
+  <BreadcrumbItem><BreadcrumbLink href="/fields">Fields</BreadcrumbLink></BreadcrumbItem>
+  <span>/</span>
+  <BreadcrumbItem><BreadcrumbPage>Gullfaks</BreadcrumbPage></BreadcrumbItem>
+</BreadcrumbList>
+```
+
+Correct:
+
+```tsx
+<BreadcrumbList>
+  <BreadcrumbItem><BreadcrumbLink href="/fields">Fields</BreadcrumbLink></BreadcrumbItem>
+  <BreadcrumbSeparator />
+  <BreadcrumbItem><BreadcrumbPage>Gullfaks</BreadcrumbPage></BreadcrumbItem>
+</BreadcrumbList>
+```
+
+A bare `span` inside the `ol` is invalid list content and is read aloud as "slash"; `BreadcrumbSeparator` is an `li` with `role="presentation"` and `aria-hidden`, sized and flipped for right-to-left.
 
 ## Before you finish
 
 - A breadcrumb is `Breadcrumb > BreadcrumbList > BreadcrumbItem` ending in `BreadcrumbPage` (the element marked `aria-current="page"`), never a row of anchors and slashes.
-- A routing library's link is mounted through `render={(props) => <Link {...props} />}` on `BreadcrumbLink` or `SidebarMenuButton`; there is no `asChild`, and React Aria renders a `span[role="link"]` whenever it has no `href`.
+- A routing library's link is mounted through `render={<Link to="…" />}` on `BreadcrumbLink` or `SidebarMenuButton`; there is no `asChild`, and a `BreadcrumbSeparator` goes between items.
 
 Related: page-header, tabs, pagination

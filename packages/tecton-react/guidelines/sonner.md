@@ -36,7 +36,7 @@ Wrong:
 import { toast } from "sonner"
 
 export function SaveButton() {
-  return <Button onPress={() => toast.success("Model saved")}>Save</Button>
+  return <Button onClick={() => toast.success("Model saved")}>Save</Button>
 }
 ```
 
@@ -49,7 +49,7 @@ import { Toaster } from "@tecton/react/components/sonner"
 export function App() {
   return (
     <>
-      <Button onPress={() => toast.success("Model saved")}>Save</Button>
+      <Button onClick={() => toast.success("Model saved")}>Save</Button>
       <Toaster position="top-center" />
     </>
   )

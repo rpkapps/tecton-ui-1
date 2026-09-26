@@ -28,7 +28,7 @@ import { ButtonGroup, ButtonGroupSeparator, ButtonGroupText, buttonGroupVariants
 - Every button in a `ButtonGroup` shares the same variant and size.
 - Keep a destructive button out of a `ButtonGroup`, set apart from neighbouring actions by a gap.
 - When a row of buttons must be one Tab stop with arrow-key movement, use a labelled `Toolbar`, not a `ButtonGroup`.
-- While an action runs, the button that started it keeps focus and shows it is working (`isPending` with a `Spinner`, not `isDisabled`); only conflicting actions become unavailable.
+- While an action runs, the button that started it keeps focus and shows it is working (`disabled` with `focusableWhenDisabled` and a `Spinner`); only conflicting actions become unavailable.
 
 ## Don't
 
@@ -60,17 +60,17 @@ Wrong:
 
 ```tsx
 <ButtonGroup aria-label="View">
-  <Button variant={view === "list" ? "secondary" : "ghost"} onPress={() => setView("list")}>List</Button>
-  <Button variant={view === "map" ? "secondary" : "ghost"} onPress={() => setView("map")}>Map</Button>
+  <Button variant={view === "list" ? "secondary" : "ghost"} onClick={() => setView("list")}>List</Button>
+  <Button variant={view === "map" ? "secondary" : "ghost"} onClick={() => setView("map")}>Map</Button>
 </ButtonGroup>
 ```
 
 Correct:
 
 ```tsx
-<ToggleGroup aria-label="View" selectionMode="single" selectedKeys={[view]} onSelectionChange={(keys) => setView([...keys][0] as string)}>
-  <ToggleGroupItem id="list">List</ToggleGroupItem>
-  <ToggleGroupItem id="map">Map</ToggleGroupItem>
+<ToggleGroup aria-label="View" value={[view]} onValueChange={([next]) => next && setView(next)}>
+  <ToggleGroupItem value="list">List</ToggleGroupItem>
+  <ToggleGroupItem value="map">Map</ToggleGroupItem>
 </ToggleGroup>
 ```
 
@@ -100,8 +100,8 @@ The corner and negative-margin rules stay active whatever the gap is, so a bare 
 
 ## Before you finish
 
-- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
-- A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `isOpen`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.
+- Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
+- A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `open`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.
 - In a `Toolbar` or action bar, back and secondary actions come first and the primary button comes last, at the inline end.
 - Separate a `Toolbar` from the content below with a `Separator` or the card header edge, never a hand-coloured border.
 - Put a card header's filter and add actions in `CardAction`; use a `Toolbar` there only when they must collapse into a More menu.

@@ -99,7 +99,7 @@ Give an icon or a `Spinner` child `data-icon="inline-start"` or `data-icon="inli
 
 <Do>
 
-Make it a link with `render={(props) => <a {...props} href="/wells/12" />}`; there is no `asChild`, and an outer `<a>` gets none of the badge's `[a]:hover:` rules.
+Make it a link with `render={<a href="/wells/12" />}`; there is no `asChild`, and an outer `<a>` gets none of the badge's `[a]:hover:` rules.
 
 </Do>
 
@@ -189,10 +189,11 @@ Never show status by colour alone: every `Badge` has text, and a dot repeats its
 <ChipGroup
   aria-label="Filters"
   selectionMode="single"
-  onSelectionChange={(keys) => setFilter([...keys][0])}
+  value={filters}
+  onValueChange={setFilters}
 >
   <ChipList>
-    <Chip id="fault-seal" variant="info">
+    <Chip value="fault-seal" variant="info">
       Fault seal
     </Chip>
   </ChipList>
@@ -229,7 +230,7 @@ Badge renders a `span` with no `role`, no `tabIndex` and no key handling, so the
 
 </Correct>
 
-The padding compensation is `has-data-[icon=inline-start]:pl-1.5`, so without the attribute the icon sits in full text padding and the badge is wider than every other badge in the row.
+The padding compensation is `has-data-[icon=inline-start]:ps-1.5`, so without the attribute the icon sits in full text padding and the badge is wider than every other badge in the row.
 
 </Dont>
 

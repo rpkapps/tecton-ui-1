@@ -132,7 +132,6 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 - a form, or a decision the user may walk away from: use [Dialog](/docs/components/dialog)
 - a confirmation of something the user can undo afterwards: use [toast](/docs/components/sonner)
-- a side panel listing what is about to change: use [Sheet](/docs/components/sheet)
 
 ### Do
 
@@ -140,7 +139,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Wrap the trigger `Button` and the `AlertDialog` in one `AlertDialogTrigger`, as for `Dialog`.
+Compose `AlertDialog` > `AlertDialogTrigger render={<Button variant="destructive" />}` + `AlertDialogContent`, as for `Dialog`.
 
 </Do>
 
@@ -152,13 +151,13 @@ End the title with a question and state the consequence in `AlertDialogDescripti
 
 <Do>
 
-Use `AlertDialogCancel` and `AlertDialogAction` in the footer; both carry `slot="close"`, so the dialog closes either way.
+`AlertDialogCancel` closes the prompt; `AlertDialogAction` is a plain `Button`, so control the dialog with `open` / `onOpenChange` and close it in the action's `onClick` once the work is done.
 
 </Do>
 
 <Do>
 
-Colour the confirm with `variant="destructive"` on `AlertDialogAction` — never with `className` — and use `size="sm"` with `AlertDialogMedia` for a short, centred prompt.
+Colour the confirm with `variant="destructive"` on `AlertDialogAction` — never with `className` — and use `size="sm"` on `AlertDialogContent` with `AlertDialogMedia` for a short, centred prompt.
 
 </Do>
 
@@ -178,14 +177,14 @@ Keyboard users reach Cancel first in a confirmation dialog: put `AlertDialogCanc
 
 ### Don't
 
-<Dont severity="HIGH" title="Confirming with a plain Button">
+<Dont severity="HIGH" title="Expecting AlertDialogAction to close the prompt">
 
 <Wrong>
 
 ```tsx
 <AlertDialogFooter>
   <AlertDialogCancel>Cancel</AlertDialogCancel>
-  <Button variant="destructive" onPress={deleteWell}>Delete</Button>
+  <AlertDialogAction variant="destructive" onClick={deleteWell}>Delete</AlertDialogAction>
 </AlertDialogFooter>
 ```
 
@@ -196,34 +195,21 @@ Keyboard users reach Cancel first in a confirmation dialog: put `AlertDialogCanc
 ```tsx
 <AlertDialogFooter>
   <AlertDialogCancel>Cancel</AlertDialogCancel>
-  <AlertDialogAction variant="destructive" onPress={deleteWell}>Delete</AlertDialogAction>
+  <AlertDialogAction variant="destructive" onClick={() => deleteWell().then(() => setOpen(false))}>
+    Delete
+  </AlertDialogAction>
 </AlertDialogFooter>
 ```
 
 </Correct>
 
-`AlertDialogAction` is a `Button` with `slot="close"`, which React Aria binds to the overlay state; a plain `Button` runs the action and leaves the prompt on screen over the deleted record.
+`AlertDialogAction` is a `Button` with no link to the dialog state, so on an uncontrolled `AlertDialog` the action runs and the prompt stays on screen over the deleted record.
 
 </Dont>
 
-<Dont severity="HIGH" title="Content rendered as a sibling of the trigger">
+<Dont severity="HIGH" title="The React Aria trigger wrapping the prompt">
 
 <Wrong>
-
-```tsx
-<>
-  <AlertDialogTrigger>
-    <Button variant="destructive">Delete well</Button>
-  </AlertDialogTrigger>
-  <AlertDialogContent>
-    <AlertDialogTitle>Delete 34/10-A-12?</AlertDialogTitle>
-  </AlertDialogContent>
-</>
-```
-
-</Wrong>
-
-<Correct>
 
 ```tsx
 <AlertDialogTrigger>
@@ -234,20 +220,33 @@ Keyboard users reach Cancel first in a confirmation dialog: put `AlertDialogCanc
 </AlertDialogTrigger>
 ```
 
+</Wrong>
+
+<Correct>
+
+```tsx
+<AlertDialog open={open} onOpenChange={setOpen}>
+  <AlertDialogTrigger render={<Button variant="destructive" />}>Delete well</AlertDialogTrigger>
+  <AlertDialogContent>
+    <AlertDialogHeader><AlertDialogTitle>Delete 34/10-A-12?</AlertDialogTitle></AlertDialogHeader>
+  </AlertDialogContent>
+</AlertDialog>
+```
+
 </Correct>
 
-`AlertDialogContent` is an alias of `AlertDialog`, so both names compile; outside the trigger's subtree neither reads its overlay state, and pressing the button does nothing at all.
+`AlertDialog` is the root that holds the state and renders nothing itself; the trigger outside it throws, and without `AlertDialogContent` no prompt is drawn.
 
 </Dont>
 
-<Dont severity="MEDIUM" title="Letting a backdrop click answer the question">
+<Dont severity="MEDIUM" title="A Dialog for a destructive confirmation">
 
 <Wrong>
 
 ```tsx
-<AlertDialog isDismissable>
-  <AlertDialogTitle>Discard 12 unsaved edits?</AlertDialogTitle>
-</AlertDialog>
+<Dialog>
+  <DialogContent><DialogTitle>Discard 12 unsaved edits?</DialogTitle></DialogContent>
+</Dialog>
 ```
 
 </Wrong>
@@ -256,13 +255,13 @@ Keyboard users reach Cancel first in a confirmation dialog: put `AlertDialogCanc
 
 ```tsx
 <AlertDialog>
-  <AlertDialogTitle>Discard 12 unsaved edits?</AlertDialogTitle>
+  <AlertDialogContent><AlertDialogTitle>Discard 12 unsaved edits?</AlertDialogTitle></AlertDialogContent>
 </AlertDialog>
 ```
 
 </Correct>
 
-`AlertDialogOverlay` leaves React Aria's `isDismissable` off on purpose, which is the only thing separating this from `Dialog`; turning it on lets a stray backdrop click answer the question.
+A `Dialog` closes on a backdrop press and announces itself as `role="dialog"`, so a stray click answers the question; `AlertDialog` is `role="alertdialog"` and has no outside-press dismissal.
 
 </Dont>
 

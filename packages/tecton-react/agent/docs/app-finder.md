@@ -22,8 +22,8 @@ import { AppFinder, AppFinderTrigger, AppFinderMenu, AppFinderInput, AppFinderLi
 
 - Compose `AppFinder` > (`AppFinderTrigger`, `AppFinderMenu` > `AppFinderInput` + `AppFinderList` > `AppFinderGroup` > `AppFinderItem`).
 - Describe the current app on the trigger: the short code as children, `name` for the label beside the tile, the category's `tone`.
-- Navigate from `onAction` on `AppFinderList`; it receives the item's `id` and closes the popover afterwards.
-- Give every item a unique `id` across groups, `keywords` for its short code and category, and `isCurrent` on the mounted one.
+- Navigate from `onSelect` on `AppFinderList`; it receives the item's `value` and closes the popover afterwards. Control the popover with `open` / `onOpenChange` on `AppFinder` when you need to.
+- Give every item a unique `value` across groups, `keywords` for its short code and category, and `current` on the mounted one; the filter matches `name` and `keywords`, never `value`.
 - Reuse `AppFinderIcon` wherever else the tile is needed — a launcher grid, a command palette row.
 
 ## Don't
@@ -33,13 +33,13 @@ import { AppFinder, AppFinderTrigger, AppFinderMenu, AppFinderInput, AppFinderLi
 Wrong:
 
 ```tsx
-<AppFinderItem id="dwp" icon="DWP" name="Well Planning" className="bg-emerald-100 text-emerald-800" />
+<AppFinderItem value="dwp" icon="DWP" name="Well Planning" className="bg-emerald-100 text-emerald-800" />
 ```
 
 Correct:
 
 ```tsx
-<AppFinderItem id="dwp" icon="DWP" tone="green" name="Well Planning" />
+<AppFinderItem value="dwp" icon="DWP" tone="green" name="Well Planning" />
 ```
 
 `className` lands on the row and never on the tile, and `emerald` is not a Tecton palette family, so both classes emit no CSS under the reset palette — `tone` is the `cva` axis that paints the tile `bg-green-120 text-green-830`.
@@ -51,7 +51,7 @@ Wrong:
 ```tsx
 <AppFinderMenu>
   <Input value={query} onChange={(event) => setQuery(event.target.value)} />
-  <AppFinderList onAction={switchTo}>{appsMatching(query)}</AppFinderList>
+  <AppFinderList onSelect={switchTo}>{appsMatching(query)}</AppFinderList>
 </AppFinderMenu>
 ```
 
@@ -60,11 +60,11 @@ Correct:
 ```tsx
 <AppFinderMenu>
   <AppFinderInput />
-  <AppFinderList onAction={switchTo}>{everyApp}</AppFinderList>
+  <AppFinderList onSelect={switchTo}>{everyApp}</AppFinderList>
 </AppFinderMenu>
 ```
 
-`AppFinderMenu` mounts a `Command` that owns `inputValue`, and `AppFinderInput` is the `CommandInput` bound to it: a separate `Input` leaves that value empty, so the filter over each item's `name` and `keywords` never runs, the match is never highlighted, and the arrow keys no longer move from the field into the list.
+`AppFinderMenu` mounts a `Command` that owns the query, and `AppFinderInput` is the `CommandInput` bound to it: a separate `Input` leaves that value empty, so the filter over each item's `name` and `keywords` never runs, the match is never highlighted, and the arrow keys no longer move from the field into the list.
 
 ### MEDIUM A Recent group left visible while searching
 
@@ -72,7 +72,7 @@ Wrong:
 
 ```tsx
 <AppFinderGroup heading="Recent">
-  <AppFinderItem id="recent-dwp" icon="DWP" tone="green" name="Well Planning" />
+  <AppFinderItem value="recent-dwp" icon="DWP" tone="green" name="Well Planning" />
 </AppFinderGroup>
 ```
 
@@ -80,11 +80,11 @@ Correct:
 
 ```tsx
 <AppFinderGroup heading="Recent" hideWhileSearching>
-  <AppFinderItem id="recent-dwp" icon="DWP" tone="green" name="Well Planning" />
+  <AppFinderItem value="recent-dwp" icon="DWP" tone="green" name="Well Planning" />
 </AppFinderGroup>
 ```
 
-The filter runs across every group at once, so without `hideWhileSearching` a query lists the same application twice — once from "Recent", once from its category — under two different ids, and `onAction` reports whichever row the user happened to press.
+The filter runs across every group at once, so without `hideWhileSearching` a query lists the same application twice — once from "Recent", once from its category — under two different values, and `onSelect` reports whichever row the user happened to press.
 
 ## Before you finish
 

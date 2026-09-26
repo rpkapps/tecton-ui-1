@@ -22,7 +22,7 @@ related: [Card, Panel, Separator]
 ## Do
 
 - Compose it: `ItemMedia`, then `ItemContent` with `ItemTitle` and `ItemDescription`, then `ItemActions`.
-- Make the whole row a link by giving `Item` an `href`; it then renders React Aria's `Link` with focus and hover states.
+- Make the whole row a link with `render={<a href="/wells/34-10-a-12" />}` (or the router's `Link`); the `[a]:` rules give it the hover and focus states.
 - Choose the look with `variant="default" | "outline" | "muted"` and the density with `size="default" | "sm" | "xs"`.
 - Use `ItemMedia variant="icon"` for a glyph and `variant="image"` for a thumbnail; an `Avatar` goes in the plain `ItemMedia`.
 - Separate rows inside an `ItemGroup` with `ItemSeparator`, never with a border class on the row.
@@ -44,14 +44,14 @@ Wrong:
 Correct:
 
 ```tsx
-<Item variant="outline" href="/wells/34-10-a-12">
+<Item variant="outline" render={<a href="/wells/34-10-a-12" />}>
   <ItemContent>
     <ItemTitle>34/10-A-12</ItemTitle>
   </ItemContent>
 </Item>
 ```
 
-Without an `href`, `Item` renders a plain `div`, so `onClick` gives the row no role, no tab stop and no Enter key: it is reachable with a mouse only.
+`Item` renders a plain `div` unless `render` makes it an anchor, so `onClick` gives the row no role, no tab stop and no Enter key: it is reachable with a mouse only.
 
 ### MEDIUM Sizing and colouring the row by hand
 

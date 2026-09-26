@@ -72,11 +72,11 @@
 {"q": "Well list screen: let the crew attach a core sample photo directly to a well's record", "answers": ["attachment"], "kind": "domain"},
 {"q": "Seismic viewer: show a ring next to each survey line indicating its processing completion percentage", "answers": ["circular-progress"], "kind": "domain"},
 {"q": "How do I change the primary brand colour used across a micro-frontend embed?", "answers": ["topic:theming"], "kind": "topic"},
-{"q": "What prop replaces onClick on a React Aria button in this library?", "answers": ["topic:react-aria"], "kind": "topic"},
+{"q": "What prop replaces onClick on a React Aria button in this library?", "answers": ["topic:conventions"], "kind": "topic"},
 {"q": "Where do I import the Tecton stylesheet from when wiring up a brand-new app?", "answers": ["topic:rules"], "kind": "topic"},
 {"q": "Is there a way to override dark-mode tokens on a per-brand basis?", "answers": ["topic:theming"], "kind": "topic"},
 {"q": "How do I fire a one-off success notification from an async server action without mounting a component?", "answers": ["toast"], "kind": "topic"},
-{"q": "What's the controlled prop for a selected list item — value or selectedKey?", "answers": ["topic:react-aria"], "kind": "topic"},
+{"q": "What's the controlled prop for a selected list item — value or selectedKey?", "answers": ["topic:conventions"], "kind": "topic"},
 {"q": "Which className and data-slot conventions does the design system enforce for generated components?", "answers": ["topic:rules"], "kind": "topic"},
 {"q": "How do I trigger a toast after a form submission resolves?", "answers": ["toast"], "kind": "topic"}
 ]

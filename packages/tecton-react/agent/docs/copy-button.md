@@ -19,7 +19,7 @@ import { CopyButton } from "@tecton/react/tecton/copy-button"
 
 ## Do
 
-- Pass the text as `value` and let the component own the press handler.
+- Pass the text as `value` and let the component own the click handler.
 - Leave it icon-only for a quiet affordance, or pass text `children` for a prominent labelled one.
 - Set weight with `variant` (it defaults to `ghost`) and hold time with `timeout`.
 - React to a successful copy with `onCopied`, and to a refused one (insecure context, denied permission) with `onError`, not by wrapping the button in your own handler.
@@ -32,7 +32,7 @@ import { CopyButton } from "@tecton/react/tecton/copy-button"
 Wrong:
 
 ```tsx
-<Button variant="ghost" size="icon-sm" onPress={() => navigator.clipboard.writeText(well.id)}>
+<Button variant="ghost" size="icon-sm" onClick={() => navigator.clipboard.writeText(well.id)}>
   <CopyIcon />
 </Button>
 ```
@@ -45,12 +45,12 @@ Correct:
 
 The hand-rolled version drops everything the component adds: the copied state and check-mark swap, the `aria-label` that flips to "Copied", the announcement, and the "Copy failed" state for a denied or insecure clipboard, which otherwise rejects unhandled.
 
-### HIGH An onPress handler passed to CopyButton
+### HIGH An onClick handler passed to CopyButton
 
 Wrong:
 
 ```tsx
-<CopyButton value={well.id} onPress={() => track("copy")} />
+<CopyButton value={well.id} onClick={() => track("copy")} />
 ```
 
 Correct:
@@ -59,7 +59,7 @@ Correct:
 <CopyButton value={well.id} onCopied={() => track("copy")} />
 ```
 
-`CopyButton` omits `onPress` from its props and spreads the remaining props after its own, so an `onPress` you pass replaces the clipboard handler and the button quietly stops copying.
+`CopyButton` omits `onClick` from its props and spreads the remaining props after its own, so an `onClick` forced through replaces the clipboard handler and the button quietly stops copying.
 
 ### HIGH Supplying the icon as the child
 
@@ -79,7 +79,7 @@ The component already renders `CopyIcon` or `CheckIcon` itself, so a child icon 
 
 ## Before you finish
 
-- Every press is `onPress` and every disabled control is `isDisabled`: `onClick` survives only as React Aria's deprecated alias and `disabled` never reaches the DOM element.
-- Copy-to-clipboard is `CopyButton value={…}` with `onCopied`, with no `onPress` passed to it, no icon child and no hand-written clipboard handler.
+- Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
+- Copy-to-clipboard is `CopyButton value={…}` with `onCopied`, with no `onClick` passed to it, no icon child and no hand-written clipboard handler.
 
 Related: button

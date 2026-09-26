@@ -2,7 +2,7 @@
 component: Button
 module: "@tecton/react/components/button"
 family: actions
-exports: [Button, LinkButton, buttonVariants]
+exports: [Button, buttonVariants]
 notFor:
   - need: a link inside a sentence or a paragraph
     use: Link
@@ -10,7 +10,7 @@ notFor:
     use: DropdownMenu
   - need: copying a value to the clipboard with feedback
     use: CopyButton
-related: [LinkButton, ButtonGroup, Link]
+related: [ButtonGroup, Link]
 ---
 
 ## Use it when
@@ -20,15 +20,15 @@ related: [LinkButton, ButtonGroup, Link]
 
 ## Do
 
-- Handle presses with `onPress` and disable with `isDisabled`; React Aria has no `disabled` contract.
+- Handle presses with `onClick` and disable with `disabled`; add `focusableWhenDisabled` when a disabled button must stay in the tab order (a pending submit).
 - Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`).
 - Mark icons with `data-icon="inline-start" | "inline-end"` so the padding adjusts, and give icon-only buttons an `aria-label`.
-- Navigate with `LinkButton` from this module, or with `buttonVariants()` on a plain `a`.
-- Show work with a `Spinner` child plus `isPending`, which keeps focus and blocks repeat presses (`isDisabled` drops focus); a FAB is the documented `rounded-full shadow-md` recipe.
+- Navigate with `render={<a href="…" />}` plus `nativeButton={false}`, or with `buttonVariants()` on a plain `a`.
+- A trigger (`DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`) takes the button as `render={<Button variant="outline" />}`; never nest a `Button` inside a trigger.
 
 ## Don't
 
-### CRITICAL An anchor nested inside a React Aria Button
+### CRITICAL An anchor nested inside a Button
 
 Wrong:
 
@@ -41,26 +41,28 @@ Wrong:
 Correct:
 
 ```tsx
-<LinkButton variant="secondary" size="sm" href="/wells/34-10-A-12">Open well</LinkButton>
+<Button variant="secondary" size="sm" nativeButton={false} render={<a href="/wells/34-10-A-12" />}>
+  Open well
+</Button>
 ```
 
-React Aria's `Button` has no `asChild`, so the prop is dropped and the anchor is nested inside a `button` that forces `role="button"`: invalid markup, and the link is announced and activated as a button.
+There is no `asChild`, so the prop is dropped and the anchor is nested inside a `button`: invalid markup, and the link is announced and activated as a button.
 
-### HIGH The disabled prop instead of isDisabled
+### HIGH React Aria props on a Button
 
 Wrong:
-
-```tsx
-<Button disabled onPress={submit}>Save</Button>
-```
-
-Correct:
 
 ```tsx
 <Button isDisabled onPress={submit}>Save</Button>
 ```
 
-`disabled` is not part of React Aria's button props, so it never reaches the DOM element and the button stays focusable, hoverable and pressable.
+Correct:
+
+```tsx
+<Button disabled onClick={submit}>Save</Button>
+```
+
+`isDisabled` and `onPress` are not props of this button: they are spread onto the DOM element as unknown attributes, so the button stays enabled and pressing it does nothing.
 
 ### HIGH Sizing and colouring a Button with className
 
@@ -78,18 +80,20 @@ Correct:
 
 The variant owns colour, shape, size and padding, and Tailwind's stock palette is reset here, so `bg-blue-600` emits no CSS while the hand-set height breaks the `size` scale.
 
-### MEDIUM onClick instead of the onPress handler
+### MEDIUM A Button nested inside a trigger
 
 Wrong:
 
 ```tsx
-<Button onClick={() => setOpen(true)}>Open</Button>
+<DialogTrigger>
+  <Button variant="outline">Edit well</Button>
+</DialogTrigger>
 ```
 
 Correct:
 
 ```tsx
-<Button onPress={() => setOpen(true)}>Open</Button>
+<DialogTrigger render={<Button variant="outline" />}>Edit well</DialogTrigger>
 ```
 
-`onClick` survives only as React Aria's deprecated compatibility alias: it is handed a synthetic mouse event with no `pointerType`, so keyboard and touch activations are indistinguishable from a click.
+The trigger already renders a `button`, so a nested `Button` produces a button inside a button: invalid markup with two tab stops for one control.

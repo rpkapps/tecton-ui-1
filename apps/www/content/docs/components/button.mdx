@@ -133,7 +133,7 @@ A Tecton FAB is a `Button` recipe: `className="h-10 rounded-full shadow-md"` for
 
 <Do>
 
-Handle presses with `onPress` and disable with `isDisabled`; React Aria has no `disabled` contract.
+Handle presses with `onClick` and disable with `disabled`; add `focusableWhenDisabled` when a disabled button must stay in the tab order (a pending submit).
 
 </Do>
 
@@ -151,13 +151,13 @@ Mark icons with `data-icon="inline-start" | "inline-end"` so the padding adjusts
 
 <Do>
 
-Navigate with `LinkButton` from this module, or with `buttonVariants()` on a plain `a`.
+Navigate with `render={<a href="…" />}` plus `nativeButton={false}`, or with `buttonVariants()` on a plain `a`.
 
 </Do>
 
 <Do>
 
-Show work with a `Spinner` child plus `isPending`, which keeps focus and blocks repeat presses (`isDisabled` drops focus); a FAB is the documented `rounded-full shadow-md` recipe.
+A trigger (`DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`) takes the button as `render={<Button variant="outline" />}`; never nest a `Button` inside a trigger.
 
 </Do>
 
@@ -195,7 +195,7 @@ Give a button visible text when its icon alone is ambiguous; go icon-only just f
 
 ### Don't
 
-<Dont severity="CRITICAL" title="An anchor nested inside a React Aria Button">
+<Dont severity="CRITICAL" title="An anchor nested inside a Button">
 
 <Wrong>
 
@@ -210,21 +210,23 @@ Give a button visible text when its icon alone is ambiguous; go icon-only just f
 <Correct>
 
 ```tsx
-<LinkButton variant="secondary" size="sm" href="/wells/34-10-A-12">Open well</LinkButton>
+<Button variant="secondary" size="sm" nativeButton={false} render={<a href="/wells/34-10-A-12" />}>
+  Open well
+</Button>
 ```
 
 </Correct>
 
-React Aria's `Button` has no `asChild`, so the prop is dropped and the anchor is nested inside a `button` that forces `role="button"`: invalid markup, and the link is announced and activated as a button.
+There is no `asChild`, so the prop is dropped and the anchor is nested inside a `button`: invalid markup, and the link is announced and activated as a button.
 
 </Dont>
 
-<Dont severity="HIGH" title="The disabled prop instead of isDisabled">
+<Dont severity="HIGH" title="React Aria props on a Button">
 
 <Wrong>
 
 ```tsx
-<Button disabled onPress={submit}>Save</Button>
+<Button isDisabled onPress={submit}>Save</Button>
 ```
 
 </Wrong>
@@ -232,12 +234,12 @@ React Aria's `Button` has no `asChild`, so the prop is dropped and the anchor is
 <Correct>
 
 ```tsx
-<Button isDisabled onPress={submit}>Save</Button>
+<Button disabled onClick={submit}>Save</Button>
 ```
 
 </Correct>
 
-`disabled` is not part of React Aria's button props, so it never reaches the DOM element and the button stays focusable, hoverable and pressable.
+`isDisabled` and `onPress` are not props of this button: they are spread onto the DOM element as unknown attributes, so the button stays enabled and pressing it does nothing.
 
 </Dont>
 
@@ -263,12 +265,14 @@ The variant owns colour, shape, size and padding, and Tailwind's stock palette i
 
 </Dont>
 
-<Dont severity="MEDIUM" title="onClick instead of the onPress handler">
+<Dont severity="MEDIUM" title="A Button nested inside a trigger">
 
 <Wrong>
 
 ```tsx
-<Button onClick={() => setOpen(true)}>Open</Button>
+<DialogTrigger>
+  <Button variant="outline">Edit well</Button>
+</DialogTrigger>
 ```
 
 </Wrong>
@@ -276,12 +280,12 @@ The variant owns colour, shape, size and padding, and Tailwind's stock palette i
 <Correct>
 
 ```tsx
-<Button onPress={() => setOpen(true)}>Open</Button>
+<DialogTrigger render={<Button variant="outline" />}>Edit well</DialogTrigger>
 ```
 
 </Correct>
 
-`onClick` survives only as React Aria's deprecated compatibility alias: it is handed a synthetic mouse event with no `pointerType`, so keyboard and touch activations are indistinguishable from a click.
+The trigger already renders a `button`, so a nested `Button` produces a button inside a button: invalid markup with two tab stops for one control.
 
 </Dont>
 

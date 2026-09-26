@@ -2,7 +2,7 @@
 component: ContextMenu
 module: "@tecton/react/components/context-menu"
 family: actions
-exports: [ContextMenu, ContextMenuTrigger, ContextMenuItem, ContextMenuLabel, ContextMenuGroup, ContextMenuSeparator, ContextMenuShortcut, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent]
+exports: [ContextMenu, ContextMenuTrigger, ContextMenuContent, ContextMenuPortal, ContextMenuItem, ContextMenuCheckboxItem, ContextMenuRadioGroup, ContextMenuRadioItem, ContextMenuLabel, ContextMenuGroup, ContextMenuSeparator, ContextMenuShortcut, ContextMenuSub, ContextMenuSubTrigger, ContextMenuSubContent]
 notFor:
   - need: a menu opened from a visible button
     use: DropdownMenu
@@ -17,19 +17,18 @@ related: [DropdownMenu, ActionBar]
 
 - A row, card or canvas object has secondary actions that would clutter the surface.
 - Those actions are reachable another way too; the context menu is an accelerator, not the only route.
-- The gesture should be the platform's own: right click, Control-click, long press, Shift+F10.
+- The gesture should be the platform's own: right click, Control-click, long press.
 
 ## Do
 
-- Wrap the target in React Aria's `Pressable` and give the wrapped element `role="button"`.
-- Give `ContextMenuTrigger` exactly two children: the `Pressable` target and the `ContextMenu`.
-- Run actions from `onAction` on `ContextMenuItem`, or `onAction(key)` on `ContextMenu` with an `id` per item.
-- Build toggles and exclusive choices with `selectionMode` and `selectedKeys` on `ContextMenuGroup`.
+- Compose `ContextMenu` (the root) > `ContextMenuTrigger` + `ContextMenuContent`; the trigger is the `div` area that listens for the gesture, so put the target's content (or `render` its element) there.
+- Run actions from `onClick` on `ContextMenuItem`.
+- Build toggles with `ContextMenuCheckboxItem` (`checked` / `onCheckedChange`) and exclusive choices with `ContextMenuRadioGroup` (`value` / `onValueChange`) + `ContextMenuRadioItem`.
 - Mark the dangerous entry with `variant="destructive"`; nest with `ContextMenuSub`, `ContextMenuSubTrigger` and `ContextMenuSubContent`.
 
 ## Don't
 
-### CRITICAL A bare element as the context menu target
+### HIGH The React Aria trigger shape
 
 Wrong:
 
@@ -43,17 +42,17 @@ Wrong:
 Correct:
 
 ```tsx
-<ContextMenuTrigger>
-  <Pressable>
-    <div role="button" className="rounded-xl border border-dashed p-6">Right click here</div>
-  </Pressable>
-  <ContextMenu><ContextMenuItem onAction={reload}>Reload</ContextMenuItem></ContextMenu>
-</ContextMenuTrigger>
+<ContextMenu>
+  <ContextMenuTrigger className="rounded-xl border border-dashed p-6">Right click here</ContextMenuTrigger>
+  <ContextMenuContent>
+    <ContextMenuItem onClick={reload}>Reload</ContextMenuItem>
+  </ContextMenuContent>
+</ContextMenu>
 ```
 
-React Aria hands the trigger's interaction props down through a press responder that only `Pressable` consumes, so a plain element receives nothing and right click falls through to the browser's own menu.
+`ContextMenu` is the state root and draws nothing: a trigger outside it has no menu to open, the items render without a `ContextMenuContent` popup, and `onAction` is not an item prop.
 
-### HIGH The Radix onSelect prop instead of onAction
+### HIGH The Radix onSelect prop instead of onClick
 
 Wrong:
 
@@ -64,17 +63,17 @@ Wrong:
 Correct:
 
 ```tsx
-<ContextMenuItem onAction={() => reload()}>Reload</ContextMenuItem>
+<ContextMenuItem onClick={() => reload()}>Reload</ContextMenuItem>
 ```
 
-`onSelect` is not part of React Aria's `MenuItemProps`, so it is dropped and the entry renders, highlights and closes the menu while running nothing.
+`onSelect` is the DOM text-selection event, not the item's activation, so the entry renders, highlights and closes the menu while running nothing.
 
 ### MEDIUM A hand-rolled onContextMenu handler and popover
 
 Wrong:
 
 ```tsx
-<div role="button" onContextMenu={(event) => { event.preventDefault(); setOpen(true) }}>
+<div onContextMenu={(event) => { event.preventDefault(); setOpen(true) }}>
   Right click here
 </div>
 ```
@@ -82,12 +81,10 @@ Wrong:
 Correct:
 
 ```tsx
-<ContextMenuTrigger>
-  <Pressable>
-    <div role="button">Right click here</div>
-  </Pressable>
-  <ContextMenu><ContextMenuItem onAction={reload}>Reload</ContextMenuItem></ContextMenu>
-</ContextMenuTrigger>
+<ContextMenu>
+  <ContextMenuTrigger>Right click here</ContextMenuTrigger>
+  <ContextMenuContent><ContextMenuItem onClick={reload}>Reload</ContextMenuItem></ContextMenuContent>
+</ContextMenu>
 ```
 
-`ContextMenuTrigger` adds what the raw event does not: long press for touch, positioning the popover at the pointer, and closing the menu when the next right click lands outside it.
+`ContextMenuTrigger` adds what the raw event does not: long press for touch, positioning the menu at the pointer, and closing it when the next right click lands outside.

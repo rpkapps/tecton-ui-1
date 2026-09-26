@@ -21,25 +21,17 @@ related: [Select, ToggleGroup]
 
 ## Do
 
-- Drive it with `value` / `defaultValue` / `onChange` on `RadioGroup`; React Aria hands you the string, not an event.
+- Drive it with `value` / `defaultValue` / `onValueChange` on `RadioGroup`; the handler receives the value, not an event.
 - Give each `RadioGroupItem` a `value`; add `id` only so a `FieldLabel htmlFor` can point at it.
 - Name the group with `aria-label`, or wrap it in `FieldSet` and `FieldLegend`.
-- Disable everything with `isDisabled` on the group, one option with `isDisabled` on the item.
-- Mark errors with `isInvalid` on the group and `data-invalid` on each `Field` row.
+- Disable everything with `disabled` on the group, one option with `disabled` on the item.
+- Mark errors with `aria-invalid` on the group and `data-invalid` on each `Field` row.
 
 ## Don't
 
-### CRITICAL Radix onValueChange instead of onChange
+### CRITICAL The React Aria onChange handler
 
 Wrong:
-
-```tsx
-<RadioGroup aria-label="Density" value={density} onValueChange={setDensity}>
-  <RadioGroupItem value="compact" id="density-compact" />
-</RadioGroup>
-```
-
-Correct:
 
 ```tsx
 <RadioGroup aria-label="Density" value={density} onChange={setDensity}>
@@ -47,7 +39,15 @@ Correct:
 </RadioGroup>
 ```
 
-React Aria's `RadioGroup` reports the new value through `onChange`; `onValueChange` is not part of its props, so it is dropped and a controlled group can never leave its initial value.
+Correct:
+
+```tsx
+<RadioGroup aria-label="Density" value={density} onValueChange={setDensity}>
+  <RadioGroupItem value="compact" id="density-compact" />
+</RadioGroup>
+```
+
+`RadioGroup` reports the new value through `onValueChange`; `onChange` is the DOM change event bubbling from the hidden input, so `setDensity` receives an event object and a controlled group never shows the new value.
 
 ### HIGH Keying radio items with id instead of value
 
@@ -69,7 +69,7 @@ Correct:
 </RadioGroup>
 ```
 
-Unlike the collection components, a `Radio` identifies itself to its group by `value` and `id` is only the DOM id used by `htmlFor`, so nothing matches `defaultValue` and no option renders as selected.
+An item identifies itself to its group by `value` and `id` is only the DOM id used by `htmlFor`, so nothing matches `defaultValue` and no option renders as selected.
 
 ### MEDIUM A radio group with no accessible name
 

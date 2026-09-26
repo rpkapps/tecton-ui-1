@@ -22,9 +22,9 @@ import { Progress, ProgressLabel, ProgressValue, ProgressTrack, ProgressIndicato
 ## Do
 
 - Name it: a `ProgressLabel` child, or `aria-label` when the label is already on screen.
-- Let `ProgressValue` print the number; it reads React Aria's formatted `valueText` and follows `formatOptions`, `minValue` and `maxValue`.
-- State the scale when it is not 0–100: `value={loaded} maxValue={total}`.
-- Use `isIndeterminate` while the total is unknown.
+- Let `ProgressValue` print the number; it is formatted from `value`, `min`, `max` and `format` (`Intl.NumberFormat` options).
+- State the scale when it is not 0–100: `value={loaded} max={total}`.
+- Pass `value={null}` while the total is unknown; the bar turns indeterminate.
 - `className` sets the width (`w-full max-w-sm`), never the height or the colour.
 - Show how a task ended beside the progress bar, with a success `Badge` or destructive `Alert`; never recolour the bar.
 - Show `Progress` only for work that takes several seconds; quicker actions get no indicator or a `Spinner` in their button.
@@ -49,7 +49,7 @@ Correct:
 </Progress>
 ```
 
-React Aria's `ProgressBar` takes its name only from a `Label` child or `aria-label`, so the bar is announced as an unnamed progressbar with a bare percentage.
+The progressbar takes its name only from a `ProgressLabel` child or `aria-label`, so the bar is announced as an unnamed progressbar with a bare percentage.
 
 ### HIGH A fraction on the default 0–100 scale
 
@@ -62,10 +62,10 @@ Wrong:
 Correct:
 
 ```tsx
-<Progress aria-label="Uploading survey" value={0.66} maxValue={1} className="w-full" />
+<Progress aria-label="Uploading survey" value={0.66} max={1} className="w-full" />
 ```
 
-`ProgressBar` defaults to `minValue={0} maxValue={100}`, so `0.66` is 0.66 % — the indicator is under a pixel wide and the bar looks stuck at zero.
+`Progress` defaults to `min={0} max={100}`, so `0.66` is 0.66 % — the indicator is under a pixel wide and the bar looks stuck at zero.
 
 ### HIGH Styling the bar through className
 
@@ -86,8 +86,8 @@ Correct:
 ## Before you finish
 
 - Every `Progress`, `CircularProgress` and `Meter` has a name: a `ProgressLabel` child, `label` on the meter, or `aria-label` when the name is already beside it.
-- A value that is not on a 0–100 scale states its scale with `minValue` and `maxValue` (`value={loaded} maxValue={total}`, a 4-out-of-5 score with `maxValue={5}`).
-- An unknown total is `isIndeterminate`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.
+- A value that is not on a 0–100 scale states its scale with `min` and `max` (`value={loaded} max={total}`, a 4-out-of-5 score with `max={5}`).
+- An unknown total is `value={null}`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.
 - A measured task is `Progress` or `CircularProgress`; a score or level that is read rather than completed is a `Meter`, with `color="auto"` choosing the band instead of a hand-written ternary.
 - `className` on `Progress`, `CircularProgress` and `Meter` sets width and placement only — the height, the stroke width and the fill come from `size` and `color`.
 

@@ -23,7 +23,8 @@ import { Kbd, KbdGroup } from "@tecton/react/components/kbd"
 - Inside a `Button` or an `InputGroupAddon`, add `data-icon="inline-end"` (or `inline-start`) so the control trims its padding on that side.
 - Inside a `TooltipContent` leave it alone: `Kbd` already inverts to the tooltip surface through its `in-data-[slot=tooltip-content]` rules.
 - `className` is for nudging placement; the muted surface and the 20 px box belong to the component.
-- Show shortcuts in the user's platform keys, ⌘ on macOS and Ctrl elsewhere (`ShortcutKeys keys="mod+k"`, not a hard-coded `Kbd`).
+- A `Kbd` only shows a key: Tecton binds no shortcuts, so show one only for a key the application handles itself.
+- Show shortcuts in the user's platform keys, ⌘ on macOS and Ctrl elsewhere, not a `Kbd` hard-coded to one platform.
 - Every shortcut shown in a `Kbd` also has a visible control that runs the same action.
 
 ## Don't
@@ -39,7 +40,7 @@ Wrong:
 Correct:
 
 ```tsx
-<Button variant="outline" onPress={() => setPaletteOpen(true)}>
+<Button variant="outline" onClick={() => setPaletteOpen(true)}>
   Search
   <Kbd data-icon="inline-end">⌘K</Kbd>
 </Button>
@@ -87,11 +88,11 @@ Correct:
 </Button>
 ```
 
-The button trims its trailing padding only through `has-data-[icon=inline-end]:pr-1.5`, so without the attribute the key sits in full text padding and the button grows.
+The button trims its trailing padding only through `has-data-[icon=inline-end]:pe-1.5`, so without the attribute the key sits in full text padding and the button grows.
 
 ## Before you finish
 
-- Keyboard keys are `Kbd` (inside a `KbdGroup` for a combination), never hand-built markup, and no handler is attached because `Kbd` is `pointer-events-none`.
+- Keyboard keys are `Kbd` (inside a `KbdGroup` for a combination), never hand-built markup, and no handler is attached because `Kbd` is `pointer-events-none`; Tecton binds no shortcuts, so a `Kbd` names only a key the application handles itself.
 - A category colour that no `variant` carries is a Tecton palette pair in `className` (`bg-blue-120 text-blue-830`), never a stock Tailwind colour.
 
 Related: badge

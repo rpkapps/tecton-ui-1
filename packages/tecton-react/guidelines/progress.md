@@ -24,9 +24,9 @@ related: [CircularProgress, Meter, Spinner]
 ## Do
 
 - Name it: a `ProgressLabel` child, or `aria-label` when the label is already on screen.
-- Let `ProgressValue` print the number; it reads React Aria's formatted `valueText` and follows `formatOptions`, `minValue` and `maxValue`.
-- State the scale when it is not 0–100: `value={loaded} maxValue={total}`.
-- Use `isIndeterminate` while the total is unknown.
+- Let `ProgressValue` print the number; it is formatted from `value`, `min`, `max` and `format` (`Intl.NumberFormat` options).
+- State the scale when it is not 0–100: `value={loaded} max={total}`.
+- Pass `value={null}` while the total is unknown; the bar turns indeterminate.
 - `className` sets the width (`w-full max-w-sm`), never the height or the colour.
 
 ## Don't
@@ -48,7 +48,7 @@ Correct:
 </Progress>
 ```
 
-React Aria's `ProgressBar` takes its name only from a `Label` child or `aria-label`, so the bar is announced as an unnamed progressbar with a bare percentage.
+The progressbar takes its name only from a `ProgressLabel` child or `aria-label`, so the bar is announced as an unnamed progressbar with a bare percentage.
 
 ### HIGH A fraction on the default 0–100 scale
 
@@ -61,10 +61,10 @@ Wrong:
 Correct:
 
 ```tsx
-<Progress aria-label="Uploading survey" value={0.66} maxValue={1} className="w-full" />
+<Progress aria-label="Uploading survey" value={0.66} max={1} className="w-full" />
 ```
 
-`ProgressBar` defaults to `minValue={0} maxValue={100}`, so `0.66` is 0.66 % — the indicator is under a pixel wide and the bar looks stuck at zero.
+`Progress` defaults to `min={0} max={100}`, so `0.66` is 0.66 % — the indicator is under a pixel wide and the bar looks stuck at zero.
 
 ### HIGH Styling the bar through className
 

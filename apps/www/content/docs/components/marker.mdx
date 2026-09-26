@@ -244,7 +244,7 @@ Shimmer streaming text with `className="shimmer"` on `MarkerContent`.
 
 <Do>
 
-Make it interactive with `render={(props) => <a {...props} href={url} />}`, and wrap it in a `MessageScrollerItem` to anchor it.
+Make it interactive with `render={<a href={url} />}`, and wrap it in a `MessageScrollerItem` to anchor it.
 
 </Do>
 
@@ -325,7 +325,7 @@ A `separator` takes its accessible name from `aria-label` and its contents are t
 <Correct>
 
 ```tsx
-<Marker render={(props) => <a {...props} href="/pull/482" />}>
+<Marker render={<a href="/pull/482" />}>
   <MarkerContent>View the pull request</MarkerContent>
 </Marker>
 ```

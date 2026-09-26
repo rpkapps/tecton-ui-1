@@ -66,7 +66,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Hold state with `isSelected` / `defaultSelected` and read changes from `onChange`, which receives a boolean.
+Hold state with `pressed` / `defaultPressed` and read changes from `onPressedChange`, which receives a boolean.
 
 </Do>
 
@@ -84,19 +84,19 @@ Give an icon-only `Toggle` an `aria-label`, and mark a paired icon with `data-ic
 
 <Do>
 
-Disable with `isDisabled`; React Aria ignores `disabled`.
+Disable with `disabled`.
 
 </Do>
 
 <Do>
 
-Style the pressed look through the variant's `data-selected` rules, never with your own colour classes.
+Style the pressed look through the variant's `aria-pressed` rules, never with your own colour classes.
 
 </Do>
 
 <Do>
 
-A selected toggle shows a filled icon as well as its selected background (Tecton glyph `variant={isSelected ? "filled" : "outlined"}`).
+A selected toggle shows a filled icon as well as its selected background (Tecton glyph `variant={pressed ? "filled" : "outlined"}`).
 
 </Do>
 
@@ -122,12 +122,12 @@ A `ToggleGroup` holds only toggles; an action such as Reset is a separate `Butto
 
 ### Don't
 
-<Dont severity="CRITICAL" title="Radix pressed and onPressedChange props">
+<Dont severity="CRITICAL" title="React Aria selection props">
 
 <Wrong>
 
 ```tsx
-<Toggle aria-label="Toggle bold" pressed={bold} onPressedChange={setBold}>
+<Toggle aria-label="Toggle bold" isSelected={bold} onChange={setBold}>
   <BoldIcon />
 </Toggle>
 ```
@@ -137,14 +137,14 @@ A `ToggleGroup` holds only toggles; an action such as Reset is a separate `Butto
 <Correct>
 
 ```tsx
-<Toggle aria-label="Toggle bold" isSelected={bold} onChange={setBold}>
+<Toggle aria-label="Toggle bold" pressed={bold} onPressedChange={setBold}>
   <BoldIcon />
 </Toggle>
 ```
 
 </Correct>
 
-React Aria's `ToggleButton` reads `isSelected` and reports through `onChange(isSelected)`; `pressed` and `onPressedChange` are not in its props, so they are dropped and the button never leaves its initial state.
+`Toggle` reads `pressed` and reports through `onPressedChange(pressed)`; `isSelected` is not a prop and `onChange` is not a boolean callback, so the button never leaves its initial state.
 
 </Dont>
 
@@ -154,7 +154,7 @@ React Aria's `ToggleButton` reads `isSelected` and reports through `onChange(isS
 
 ```tsx
 <Field orientation="horizontal">
-  <Toggle isSelected={notify} onChange={setNotify}>Email notifications</Toggle>
+  <Toggle pressed={notify} onPressedChange={setNotify}>Email notifications</Toggle>
 </Field>
 ```
 
@@ -164,7 +164,7 @@ React Aria's `ToggleButton` reads `isSelected` and reports through `onChange(isS
 
 ```tsx
 <Field orientation="horizontal">
-  <Switch id="notify" isSelected={notify} onChange={setNotify} />
+  <Switch id="notify" checked={notify} onCheckedChange={setNotify} />
   <FieldLabel htmlFor="notify">Email notifications</FieldLabel>
 </Field>
 ```

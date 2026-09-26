@@ -28,12 +28,12 @@ import { NativeSelect, NativeSelectOption, NativeSelectOptGroup } from "@tecton/
 
 ## Don't
 
-### HIGH React Aria props on a native select element
+### HIGH Select props on a native select element
 
 Wrong:
 
 ```tsx
-<NativeSelect isDisabled onSelectionChange={setStatus}>
+<NativeSelect value={status} onValueChange={setStatus}>
   <NativeSelectOption value="todo">Todo</NativeSelectOption>
 </NativeSelect>
 ```
@@ -41,12 +41,12 @@ Wrong:
 Correct:
 
 ```tsx
-<NativeSelect disabled value={status} onChange={(event) => setStatus(event.target.value)}>
+<NativeSelect value={status} onChange={(event) => setStatus(event.target.value)}>
   <NativeSelectOption value="todo">Todo</NativeSelectOption>
 </NativeSelect>
 ```
 
-`NativeSelect` renders a real `select` and spreads its props onto it, so React Aria names like `isDisabled` and `onSelectionChange` reach the DOM as unknown attributes and the control stays enabled and unwired.
+`NativeSelect` renders a real `select` and spreads its props onto it, so `Select`'s `onValueChange` reaches the DOM as an unknown attribute: the handler never fires and the controlled value never changes.
 
 ### MEDIUM Passing a native row count to size
 
@@ -91,6 +91,6 @@ Correct:
 
 ## Before you finish
 
-- `placeholder` sits on `Select` (`SelectValue` takes none), while `NativeSelect` is a real `select` driven by `value` / `onChange(event)` / `disabled` with an empty-valued first `NativeSelectOption` as its placeholder.
+- `placeholder` sits on `SelectValue` and `items` on `Select`, so the trigger shows a label rather than the raw value; `NativeSelect` is a real `select` driven by `value` / `onChange(event)` / `disabled` with an empty-valued first `NativeSelectOption` as its placeholder.
 
 Related: select, combobox

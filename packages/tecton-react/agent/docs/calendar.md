@@ -3,102 +3,96 @@
 # Calendar — @tecton/react/components/calendar
 
 ```tsx
-import { Calendar, RangeCalendar } from "@tecton/react/components/calendar"
+import { Calendar, CalendarDayButton } from "@tecton/react/components/calendar"
 ```
 
 ## Use it when
 
 - A month grid is the point: choosing a spud date, reading which days are booked, stepping through a schedule.
 - The calendar stays on the page — in a `Card`, a panel or a wizard step — rather than hiding behind a trigger.
-- Days need state the value alone cannot carry: unavailable dates, a highlighted span, two months side by side.
+- A period is chosen as two dates: `mode="range"` draws the span between them.
 
 ## Not for
 
 - a compact date field that opens a calendar on demand → `Popover` (tecton docs popover)
 - a year or a month picked in a dense form row → `NativeSelect` (tecton docs native-select)
-- two dates bounding a period → `RangeCalendar` (tecton docs calendar)
 
 ## Do
 
-- Hold the value as an `@internationalized/date` value (a `CalendarDate`, or a `DateRange` of them) and drive it with `value` / `onChange`.
+- Pick the selection with `mode="single" | "multiple" | "range"` and drive it with `selected` / `onSelect`, holding plain `Date` values (a `DateRange` `{ from, to }` for a range).
 - Show more months with `numberOfMonths`, month and year dropdowns with `captionLayout="dropdown"`, week numbers with `showWeekNumber`.
-- Block days with `isDateUnavailable`, `minValue` and `maxValue`; they carry the struck-through and dimmed cell styling.
-- Resize the grid through its variable, `className="[--cell-size:--spacing(11)]"`, and add per-day content with `renderCell`, never by restyling the cells.
-- For a date field, put the `Calendar` in a `Popover` behind a `Button` inside a `Field`; there is no `DatePicker` component.
-- When days are unavailable (rig move, shutdown), say why beside the calendar or in the day; never block days unexplained (`isDateUnavailable`, not `disabled`).
+- Block days with `disabled` — a matcher such as `{ before: new Date() }`, `{ dayOfWeek: [0, 6] }` or a function — so they get the dimmed cell styling.
+- Resize the grid through its variable, `className="[--cell-size:--spacing(11)]"`; never restyle the cells.
+- For a date field, put the `Calendar` in a `PopoverContent` behind a `PopoverTrigger render={<Button variant="outline" />}` inside a `Field`; there is no `DatePicker` component.
+- When days are unavailable (rig move, shutdown), say why beside the calendar or in the day; never block days unexplained (a `disabled` matcher, with the reason in the `footer`).
 - Let users type a date they already know or one far from today (`Input type="date"`) instead of paging a `Calendar` month by month.
-- An optional or filtering date gets a clear button that empties it (value `null`).
+- An optional or filtering date gets a clear button that empties it (`selected` back to `undefined`).
 
 ## Don't
 
-### CRITICAL react-day-picker props on a React Aria calendar
+### CRITICAL React Aria calendar props
 
 Wrong:
+
+```tsx
+<Calendar
+  value={today(getLocalTimeZone())}
+  onChange={setDate}
+  minValue={today(getLocalTimeZone())}
+/>
+```
+
+Correct:
 
 ```tsx
 <Calendar
   mode="single"
   selected={date}
   onSelect={setDate}
-  disabled={(day) => day < new Date()}
+  disabled={{ before: new Date() }}
 />
 ```
 
-Correct:
+`Calendar` is react-day-picker: `value`, `onChange` and `minValue` are not its props and `@internationalized/date` values mean nothing to it, so the grid renders with nothing selected, every day pickable and no callback firing.
 
-```tsx
-<Calendar
-  value={date}
-  onChange={setDate}
-  minValue={today(getLocalTimeZone())}
-/>
-```
-
-This `Calendar` wraps React Aria, not react-day-picker: `mode`, `selected`, `onSelect` and `disabled` are not in `CalendarProps`, so they are filtered out before the grid renders and the calendar comes up uncontrolled with every day still selectable.
-
-### HIGH A JavaScript Date as the value
-
-Wrong:
-
-```tsx
-const [date, setDate] = React.useState<Date>(new Date())
-
-return <Calendar value={date} onChange={setDate} />
-```
-
-Correct:
-
-```tsx
-const [date, setDate] = React.useState<CalendarDate | null>(
-  today(getLocalTimeZone())
-)
-
-return <Calendar value={date} onChange={setDate} />
-```
-
-React Aria reads `calendar`, `era`, `year`, `month` and `day` off the value and hands a `CalendarDate` back from `onChange`, so a `Date` leaves the grid with nothing selected and formatting the value again needs `date.toDate(getLocalTimeZone())`.
-
-### MEDIUM Two Calendars for a start and an end
+### HIGH Two Calendars for a start and an end
 
 Wrong:
 
 ```tsx
 <div className="flex gap-4">
-  <Calendar value={start} onChange={setStart} />
-  <Calendar value={end} onChange={setEnd} />
+  <Calendar mode="single" selected={start} onSelect={setStart} />
+  <Calendar mode="single" selected={end} onSelect={setEnd} />
 </div>
 ```
 
 Correct:
 
 ```tsx
-<RangeCalendar value={range} onChange={setRange} numberOfMonths={2} />
+<Calendar mode="range" selected={range} onSelect={setRange} numberOfMonths={2} />
 ```
 
-`RangeCalendar` is React Aria's range widget: it owns the `data-range-start`, `data-range-middle` and `data-range-end` cell states that draw the span, and it keeps the end on or after the start — neither of which two independent single calendars can produce.
+Only `mode="range"` draws the start, middle and end cell states and keeps the end on or after the start; two single calendars let the user pick an end before the start.
+
+### MEDIUM Resizing the day cells with className
+
+Wrong:
+
+```tsx
+<Calendar mode="single" selected={date} onSelect={setDate} className="[&_button]:size-11" />
+```
+
+Correct:
+
+```tsx
+<Calendar mode="single" selected={date} onSelect={setDate} className="[--cell-size:--spacing(11)]" />
+```
+
+The grid, the navigation buttons and the dropdowns all read `--cell-size`, so resizing only the buttons leaves the header and weekday row at the old width and misaligns the columns.
 
 ## Before you finish
 
-- `Calendar` and `RangeCalendar` are React Aria: `value` / `onChange` hold `@internationalized/date` values and days are blocked with `isDateUnavailable`, `minValue` and `maxValue`, while react-day-picker's `mode`, `selected`, `onSelect` and `disabled` are filtered out.
+- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
+- `Calendar` is react-day-picker: `mode="single" | "multiple" | "range"` with `selected` / `onSelect` holding `Date` values and days blocked with a `disabled` matcher — no `@internationalized/date` values, no `minValue`, no `RangeCalendar`.
 
 Related: popover, field, native-select

@@ -22,7 +22,7 @@ import { InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGr
 
 - Compose `InputGroup` > `InputGroupInput` or `InputGroupTextarea`, then the addons; the group owns the border, ring and height.
 - Always place `InputGroupAddon` **after** the control in the DOM and position it with `align`: `inline-start` / `inline-end` beside an input, `block-start` / `block-end` above or below a textarea.
-- Put buttons in `InputGroupButton` (`size="xs" | "icon-xs" | "sm" | "icon-sm"`, `onPress`, `aria-label` when icon-only), static copy in `InputGroupText`, and mark errors with `aria-invalid` on the control.
+- Put buttons in `InputGroupButton` (`size="xs" | "icon-xs" | "sm" | "icon-sm"`, `onClick`, `aria-label` when icon-only), static copy in `InputGroupText`, and mark errors with `aria-invalid` on the control.
 
 ## Don't
 
