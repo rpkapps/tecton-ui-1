@@ -112,7 +112,11 @@ with imports rewritten to `@tecton/react/...`. The `base` docs cover `toast` ins
 so the sonner page and examples come from the `radix` base (they only call `toast()` from a
 Button's `onClick`); the `direction` page is not synced (applications set the direction with
 `TectonProvider`). Tecton sections of a synced page come from `apps/www/scripts/docs-extras/<name>.mdx`,
-inserted before the upstream "API Reference". Skipped examples are listed in
+inserted before the upstream "API Reference". Consumers never see the libraries under the
+components: the sync drops Base UI `links` from the frontmatter, the "See the Base UI
+documentation" sentences (and an emptied "API Reference"), library callouts and "Migrating from …"
+sections (`stripLibraryReferences`), and fails, naming file and line, if a page or synced example
+still says Base UI, React Aria or Radix (`assertNoLibraryNames`). Skipped examples are listed in
 `apps/www/scripts/sync-report.json`. The synced content keeps shadcn/ui's MIT license.
 
 ## The `dark:` variant

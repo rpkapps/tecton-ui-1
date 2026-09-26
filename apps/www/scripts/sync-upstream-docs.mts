@@ -10,7 +10,9 @@
  * `@tecton/react/...`; examples that depend on upstream-only infrastructure
  * (AI SDK, next/font, chrono-node…) are skipped and the previews that
  * reference them are removed from the page. A report is written next to this
- * script so the skips are visible.
+ * script so the skips are visible. Pointers to the libraries the components
+ * are built on (Base UI links and sentences) are stripped, and the run fails
+ * if a page or example still names one.
  *
  * The sync is atomic: every page and example is generated in memory and
  * checked first (previews resolve, same-page anchors exist, no stock Tailwind
@@ -757,6 +759,22 @@ const PAGE_REWRITES: Record<
       'className="mt-4 border-yellow-160 bg-yellow-110"',
       "chart page"
     ),
+  // The image and fallback take the props of the element they render (the
+  // library they are built on is not named, see stripLibraryReferences).
+  avatar: (mdx) => {
+    mdx = replaceOrThrow(
+      mdx,
+      "It accepts all Base UI Avatar Image props.",
+      "It accepts all `img` props.",
+      "avatar page (AvatarImage)"
+    )
+    return replaceOrThrow(
+      mdx,
+      "It accepts all Base UI Avatar Fallback props.",
+      "It accepts all `span` props.",
+      "avatar page (AvatarFallback)"
+    )
+  },
   // `shadcn init` is for projects that own the component sources
   button: (mdx) =>
     replaceOrThrow(
@@ -906,6 +924,88 @@ function headingSlugs(mdx: string): Set<string> {
   return slugs
 }
 
+// ---------------------------------------------------------------------------
+// the libraries under the components
+// ---------------------------------------------------------------------------
+
+/**
+ * Consumers only ever see Tecton: the libraries the generated components are
+ * built on are never named in the docs (CLAUDE.md). Upstream's base pages point
+ * at Base UI's documentation throughout; these generic transforms remove those
+ * pointers, and `assertNoLibraryNames` fails the sync on anything they miss.
+ */
+const LIBRARY_NAME = /\bbase[- ]ui\b|\breact[- ]aria\b|\bradix\b/i
+const LIBRARY_DOCS_URL = /https?:\/\/(?:www\.)?base-ui\.com\b/
+
+/** Frontmatter lines without `links` entries that point at Base UI (and without an emptied `links:`). */
+function withoutLibraryLinks(lines: string[]): string[] {
+  const kept = lines.filter(
+    (line) => !(/^\s+\w+:/.test(line) && LIBRARY_DOCS_URL.test(line))
+  )
+  return kept.filter(
+    (line, index) =>
+      !(/^links:\s*$/.test(line) && !/^\s+\S/.test(kept[index + 1] ?? ""))
+  )
+}
+
+/** Removes an `## API Reference` heading that has nothing left under it. */
+function dropEmptyApiReference(mdx: string): string {
+  return mdx.replace(
+    /\n## API Reference\n([\s\S]*?)(?=\n## |$)/,
+    (section, body: string) => (body.trim() ? section : "\n")
+  )
+}
+
+function stripLibraryReferences(mdx: string): string {
+  // "See the [Base UI Tabs](https://base-ui.com/…) documentation." and "For
+  // more information…, see the [Base UI documentation](…)." paragraphs
+  mdx = mdx.replace(
+    /^(?:See|For more information)\b[^\n]*\]\(https?:\/\/(?:www\.)?base-ui\.com\/[^)]*\)[^\n]*\n/gm,
+    ""
+  )
+  // callouts about the library (drawer: "now uses Base UI instead of Vaul")
+  mdx = mdx.replace(
+    /<Callout\b[^>]*>((?:(?!<\/Callout>)[\s\S])*)<\/Callout>\n?/g,
+    (callout, body: string) => (LIBRARY_DOCS_URL.test(body) ? "" : callout)
+  )
+  // upstream migration guides between the libraries a component is built on
+  // (drawer: Vaul → Base UI) do not apply to the package
+  mdx = mdx.replace(/\n## Migrating from [^\n]*\n[\s\S]*?(?=\n## |$)/g, "\n")
+  // "The Base UI `Button` component always applies…" → "`Button` always applies…"
+  mdx = mdx.replace(/\bThe Base UI (`[^`\n]+`) component\b/g, "$1")
+  // "composes the portal, overlay, viewport, and popup from Base UI."
+  mdx = mdx.replace(/\s+from Base UI(?=[.,;:])/g, "")
+  return dropEmptyApiReference(mdx)
+}
+
+/**
+ * Throws, naming every file and line, when a library name is left in what a
+ * reader sees. `text` is a page (its `upstream:` frontmatter line is
+ * maintainer metadata the site does not render, and its guidelines section is
+ * held to the same rule by guidelines:check) or an example's code (its
+ * provenance header is hidden by lib/examples.ts and is not passed here).
+ */
+function assertNoLibraryNames(outputs: Map<string, string>) {
+  const hits: string[] = []
+  for (const [file, content] of outputs) {
+    const page = file.endsWith(".mdx")
+    let inGuidelines = false
+    content.split("\n").forEach((line, index) => {
+      if (page && line.includes("{/* guidelines:start */}")) inGuidelines = true
+      if (page && line.includes("{/* guidelines:end */}")) inGuidelines = false
+      if (inGuidelines) return
+      if (page && /^upstream: apps\/v4\//.test(line)) return
+      if (line.startsWith(SYNCED_EXAMPLE_HEADER)) return
+      if (LIBRARY_NAME.test(line))
+        hits.push(`  ${path.relative(REPO, file)}:${index + 1}: ${line.trim()}`)
+    })
+  }
+  if (hits.length)
+    throw new Error(
+      `the synced docs name a library Tecton is built on (consumers only ever see Tecton); remove it in stripLibraryReferences, PAGE_REWRITES / EXAMPLE_REWRITES or the page's docs-extras:\n${hits.join("\n")}`
+    )
+}
+
 function transformMdx(
   mdx: string,
   name: string,
@@ -916,9 +1016,9 @@ function transformMdx(
 ) {
   // frontmatter
   mdx = mdx.replace(/^---\n([\s\S]*?)\n---/, (_m, fm: string) => {
-    const lines = fm
-      .split("\n")
-      .filter((line) => !/^(base|component|featured):/.test(line))
+    const lines = withoutLibraryLinks(
+      fm.split("\n").filter((line) => !/^(base|component|featured):/.test(line))
+    )
     lines.push(`upstream: apps/v4/${upstreamDir}/${name}.mdx`)
     return `---\n${lines.join("\n")}\n---`
   })
@@ -952,6 +1052,7 @@ function transformMdx(
   mdx = mdx.replace(/\n## Next\.js\n[\s\S]*?(?=\n## |$)/, "\n")
 
   mdx = PAGE_REWRITES[name]?.(mdx, removed) ?? mdx
+  mdx = stripLibraryReferences(mdx)
   mdx = mdx.replace(/\btext-gray-500\b/g, "text-muted-foreground")
   mdx = rewriteStockColors(mdx)
 
@@ -1294,6 +1395,16 @@ async function main() {
     ? await fs.readFile(PRETTIER_IGNORE, "utf8")
     : ""
   outputs.set(PRETTIER_IGNORE, prettierIgnore(ignore, report.examples))
+
+  // Last check: no generated page or example names Base UI, React Aria or
+  // Radix (an upstream bump that adds such text fails here).
+  assertNoLibraryNames(
+    new Map(
+      [...outputs].filter(
+        ([file]) => file.endsWith(".mdx") || file.startsWith(OUT_EXAMPLES)
+      )
+    )
+  )
 
   // Everything generated and checked: replace the previously synced files
   // (hand-written pages such as components/index.mdx and Tecton-authored
