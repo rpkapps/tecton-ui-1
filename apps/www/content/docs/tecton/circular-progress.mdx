@@ -1,12 +1,9 @@
 ---
 title: Circular Progress
 description: "Determinate progress ring with an optional centred value, or an indeterminate spinner."
-links:
-  doc: https://react-aria.adobe.com/ProgressBar
 ---
 
 <ComponentPreview name="circular-progress-demo" />
-
 
 ## Usage
 
@@ -18,31 +15,29 @@ import { CircularProgress } from "@tecton/react/tecton/circular-progress"
 <CircularProgress aria-label="Resampling" value={64} showValue />
 ```
 
-<Callout>
-  The shadcn [Progress](/docs/components/progress) is a linear bar and [Spinner](/docs/components/spinner) is an icon. Tecton's circular progress with a value label is a separate component.
-</Callout>
+For a linear bar use [Progress](/docs/components/progress); for a plain loading icon use [Spinner](/docs/components/spinner).
 
 ## Sizes
 
-Use the `size` prop from 16 px (`xs`) to 96 px (`xl`). Stroke width and label size scale with it.
+`size` runs from `xs` (16 px) to `xl` (96 px); stroke and label scale with it.
 
 <ComponentPreview name="circular-progress-sizes" />
 
 ## Colors
 
-Use the `color` prop for the ring colour. `default` paints the ring with the shared `progress` token, the same fill as the linear [Progress](/docs/components/progress); the track is that colour at 38 %.
+`default` uses the `progress` token, the fill of the linear Progress.
 
 <ComponentPreview name="circular-progress-colors" />
 
 ## Value label
 
-Set `showValue` to render the formatted value in the centre, or pass children for custom content. `min`, `max` and `format` (`Intl.NumberFormatOptions`) set the scale and the text.
+`showValue` renders the formatted value in the centre; children replace it with custom content. `min`, `max` and `format` set the scale and the text.
 
 <ComponentPreview name="circular-progress-value" />
 
 ## Indeterminate
 
-Pass `value={null}` for a spinning ring while the amount of work is unknown. With reduced motion requested the ring keeps turning slowly rather than stopping: a still arc would read as a stuck value.
+`value={null}` spins the ring while the amount of work is unknown.
 
 <ComponentPreview name="circular-progress-indeterminate" />
 
@@ -183,12 +178,12 @@ A `div` with `role="progressbar"`; accepts `div` props.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `value` | `number \| null` | - | Current value; `null` is indeterminate (the ring spins). |
-| `min` / `max` | `number` | 0 / 100 | Scale of `value`. |
+| `value` | `number \| null` | - | Required. `null` is indeterminate. |
+| `min` / `max` | `number` | `0` / `100` | Scale of `value`. |
 | `format` | `Intl.NumberFormatOptions` | percent | Format of the shown and announced value. |
 | `locale` | `Intl.LocalesArgument` | runtime locale | Locale of the formatted value. |
-| `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | "md" | Diameter 16 / 24 / 40 / 64 / 96 px. |
-| `color` | `"default" \| "foreground" \| "success" \| "warning" \| "error" \| "info"` | "default" | Ring colour; `default` is the `progress` token. |
-| `showValue` | `boolean` | false | Show the formatted value in the centre. |
-| `children` | `ReactNode` | - | Custom centre content (overrides `showValue`). |
-| `aria-label` | `string` | - | Accessible name (required without a visible label). |
+| `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | `"md"` | Diameter 16 / 24 / 40 / 64 / 96 px. |
+| `color` | `"default" \| "foreground" \| "success" \| "warning" \| "error" \| "info"` | `"default"` | Ring colour. |
+| `showValue` | `boolean` | `false` | Show the formatted value in the centre. |
+| `children` | `ReactNode` | - | Custom centre content; overrides `showValue`. |
+| `aria-label` | `string` | - | Required without a visible label. |

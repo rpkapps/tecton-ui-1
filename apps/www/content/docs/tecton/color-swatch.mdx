@@ -1,10 +1,9 @@
 ---
 title: Color Swatch
-description: "A colour preview chip with optional label and value, for colour tags, legends and theme documentation."
+description: "A colour preview with optional label and value, for colour tags, legends and theme documentation; editable with a preset picker."
 ---
 
 <ComponentPreview name="color-swatch-demo" />
-
 
 ## Usage
 
@@ -16,32 +15,25 @@ import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 <ColorSwatch color="#f59e0b" label="Sandstone" value="#f59e0b" />
 ```
 
-## Sizes
+The swatch is announced as an image named by your `aria-label` (or a string `label`) followed by a generated English colour name, such as "Sandstone, vibrant orange"; `colorName` replaces the generated name.
 
-Use the `size` prop, from 12 px (`xs`) to 48 px (`xl`).
+## Sizes
 
 <ComponentPreview name="color-swatch-sizes" />
 
 ## Shapes
 
-Use the `shape` prop for square, rounded or circular swatches.
-
 <ComponentPreview name="color-swatch-shapes" />
 
 ## Labels
 
-Pass `label` and/or `value` to render text next to the swatch; the value is set in the mono font.
-
-The swatch is a `role="img"` whose accessible name is your `aria-label` (or a string `label`) followed by an English name of the colour, such as "Sandstone, vibrant orange". `colorName` replaces the generated name.
+`label` and `value` render text next to the swatch; the value is set in the mono font.
 
 <ComponentPreview name="color-swatch-labels" />
 
 ## Editable
 
-Pass `onChange` to make the swatch a button that opens a picker: a radio group of preset colours (the Tecton accent fills by default; override with `presets`), the platform colour picker and a hex field. `onChange` receives the new colour as `#RRGGBB`.
-
-- The presets are radios labelled "Presets": Tab enters the group on the checked preset, and the arrow keys move **and select**, so each arrow press calls `onChange`.
-- The hex field commits on Enter or blur. It accepts a hex with or without `#` and any other CSS colour; input that is not a colour reverts to the current value. Alpha is dropped.
+`onChange` turns the swatch into a button that opens a picker: preset colours (the Tecton accents, `colorSwatchPresets`, unless you pass `presets`), the platform colour picker and a hex field. It receives the new colour as `#RRGGBB`. Arrow keys in the presets select as they move, so each press calls `onChange`; the hex field commits on Enter or blur and accepts any CSS colour.
 
 <ComponentPreview name="color-swatch-editable" />
 
@@ -176,16 +168,16 @@ With `label` and `value` the component renders the `color-swatch-item` row itsel
 
 ### ColorSwatch
 
-Other props (`id`, `className`, `style`, `data-*`, `aria-*`, event handlers, `ref`) go to the swatch `span`.
+Other props go to the swatch `span`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `color` | `string` | `"transparent"` | Any CSS colour: hex, `rgb()`, `hsl()`, `oklch()`, a keyword or `var(--token)`. |
-| `colorName` | `string` | generated | Replaces the English colour name in the accessible name. |
-| `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | "md" | Swatch size. |
-| `shape` | `"square" \| "rounded" \| "circle"` | "rounded" | Corner radius. |
+| `color` | `string` | `"transparent"` | Any CSS colour, including `var(--token)`. |
+| `colorName` | `string` | generated | Replaces the colour name in the accessible name. |
+| `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | `"md"` | 12 / 16 / 24 / 32 / 48 px. |
+| `shape` | `"square" \| "rounded" \| "circle"` | `"rounded"` | Corner radius. |
 | `label` | `ReactNode` | - | Text next to the swatch. |
-| `value` | `ReactNode` | - | Secondary mono text (e.g. the hex value). |
-| `onChange` | `(color: string) => void` | - | Makes the swatch editable; called with the picked colour as `#RRGGBB`. |
-| `presets` | `string[]` | Tecton accents | Preset colours shown by the editable picker; any CSS colour or `var(--token)`. A value that does not resolve to a colour is left out. |
-| `aria-label` | `string` | - | What the colour stands for, placed before the colour name; names the button when editable (default "Edit colour"). |
+| `value` | `ReactNode` | - | Secondary mono text, e.g. the hex value. |
+| `onChange` | `(color: string) => void` | - | Makes the swatch editable. |
+| `presets` | `string[]` | `colorSwatchPresets` | Preset colours of the picker; values that resolve to no colour are left out. |
+| `aria-label` | `string` | - | What the colour stands for; names the button when editable (default "Edit colour"). |

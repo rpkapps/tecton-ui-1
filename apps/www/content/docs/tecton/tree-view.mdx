@@ -5,7 +5,6 @@ description: "Hierarchical project, inventory and file structures with folder an
 
 <ComponentPreview name="tree-view-demo" />
 
-
 ## Usage
 
 ```tsx
@@ -13,9 +12,6 @@ import {
   TreeView,
   TreeViewItem,
   TreeViewItemContent,
-  TreeViewAction,
-  TreeViewVisibilityToggle,
-  TreeViewCollection,
 } from "@tecton/react/tecton/tree-view"
 ```
 
@@ -30,33 +26,31 @@ import {
 </TreeView>
 ```
 
-<Callout>
-  shadcn has no tree component; the closest is the file tree built from `Collapsible` and `Sidebar`. `TreeView` is an ARIA treegrid with arrow-key navigation, type-ahead, selection and expansion, plus the Tecton row anatomy.
-</Callout>
+The tree is one tab stop with arrow-key navigation and type-ahead; in a right-to-left tree, Left expands and Right collapses.
 
 ## Nested
 
-Nest `TreeViewItem`s inside each other. For data, pass `items` to `TreeView` with a render function, and render each node's children with `TreeViewCollection`; indentation follows the depth. Rows re-render with their parent, so a row that reads state kept outside `items` (a hidden set) updates without anything else to declare.
+Nest `TreeViewItem`s for a fixed tree. For data, pass `items` and a render function to `TreeView`, and render each node's children with `TreeViewCollection`. Indentation follows the depth.
 
 <ComponentPreview name="tree-view-nested" />
 
 ## States
 
-`selectionMode` (`"none"`, `"single"`, `"multiple"`) with `value` / `defaultValue` / `onValueChange`, and `expanded` / `defaultExpanded` / `onExpandedChange`, all string arrays of row `value`s. `disabled` on a `TreeViewItem` takes it out of selection, expansion and arrow-key movement; `hidden` renders the dimmed *hidden* state from the design system (the row stays in the tree).
+`selectionMode` with `value` / `defaultValue` / `onValueChange`, and `expanded` / `defaultExpanded` / `onExpandedChange`, all arrays of row `value`s. A `disabled` row cannot be selected, expanded or reached with the arrows; a `hidden` row is dimmed but stays in the tree.
 
 <ComponentPreview name="tree-view-states" />
 
 ## Adornments
 
-`TreeViewItemContent` has slots for a `colorTag` (a [ColorSwatch](/docs/tecton/color-swatch)), a `suffix` (a [Badge](/docs/components/badge)) and an `endAdornment` such as `TreeViewVisibilityToggle` or `TreeViewAction`. Arrow keys move from a row into its controls; clicking a control neither selects nor expands the row.
+`TreeViewItemContent` takes a `colorTag` (a [Color Swatch](/docs/tecton/color-swatch)), a `suffix` (a [Badge](/docs/components/badge)) and an `endAdornment` such as `TreeViewVisibilityToggle` or `TreeViewAction`. Arrow keys move from a row into its controls, and clicking a control neither selects nor expands the row.
 
 <ComponentPreview name="tree-view-adornments" />
 
-`TreeViewVisibilityToggle` is a toggle button: its name is always "Hide" and `aria-pressed` carries the state (pressed while the row is hidden), so a screen reader announces "Hide Faults, toggle button, pressed" rather than a name that flips between "Hide" and "Show". Inside `TreeViewItemContent` the name is completed with the row's label; when the label is not plain text, pass `name`. `TreeViewAction` has no name of its own: give it an `aria-label`.
+`TreeViewVisibilityToggle` is named "Hide" plus the row's label and is pressed while the row is hidden; pass `name` when the label is not plain text. Give `TreeViewAction` an `aria-label`.
 
 ## Styling
 
-Rows (`data-slot="tree-view-item"`, a `group/tree-item`) expose presence attributes: `data-selected`, `data-expanded`, `data-disabled` and `data-hidden`, plus `data-level` (depth, from 1). Hover, press and focus have no attributes: use `:hover`, `:active`, `:focus-visible` and `:focus-within`. To reveal a row control on hover:
+Rows carry `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and `data-level` (depth from 1), and are a `group/tree-item`. Hover and focus are `:hover` and `:focus-visible`, so a control revealed on hover reads:
 
 ```tsx
 <TreeViewAction
@@ -64,8 +58,6 @@ Rows (`data-slot="tree-view-item"`, a `group/tree-item`) expose presence attribu
   className="opacity-0 group-hover/tree-item:opacity-100 group-focus-within/tree-item:opacity-100 group-data-selected/tree-item:opacity-100"
 />
 ```
-
-Arrow keys follow the [TectonProvider](/docs/tecton/provider) direction: in a right-to-left tree, Left expands and Right collapses.
 
 {/* guidelines:start */}
 
@@ -218,34 +210,32 @@ Rows expose no hover, press or focus attributes: use `:hover`, `:active`, `:focu
 
 ### TreeView
 
-The treegrid. Accepts `div` attributes (`className`, `aria-label`…).
+Accepts `div` attributes.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `aria-label` | `string` | - | Accessible name of the tree. |
-| `selectionMode` | `"none" \| "single" \| "multiple"` | "none" | Row selection. |
+| `selectionMode` | `"none" \| "single" \| "multiple"` | `"none"` | Row selection. |
 | `value` | `string[]` | - | Selected rows (controlled). |
 | `defaultValue` | `string[]` | - | Initially selected rows. |
-| `onValueChange` | `(value: string[]) => void` | - | Called with every selected row's `value`. |
+| `onValueChange` | `(value: string[]) => void` | - | Called with the selected rows. |
 | `expanded` | `string[]` | - | Expanded rows (controlled). |
 | `defaultExpanded` | `string[]` | - | Initially expanded rows. |
-| `onExpandedChange` | `(expanded: string[]) => void` | - | Called with every expanded row's `value`. |
+| `onExpandedChange` | `(expanded: string[]) => void` | - | Called with the expanded rows. |
 | `items` | `Iterable<T>` | - | Data for the top-level rows; `children` is then `(item: T) => ReactNode`. |
 
 ### TreeViewItem
 
-One row. Put a `TreeViewItemContent` first, then child `TreeViewItem`s or a `TreeViewCollection`.
+One row: a `TreeViewItemContent` first, then child `TreeViewItem`s or a `TreeViewCollection`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `value` | `string` | - | The row's identity, unique in the tree. |
 | `textValue` | `string` | content text | Plain-text name for type-ahead; needed when the content is not plain text. |
-| `disabled` | `boolean` | false | Not selectable, not expandable, skipped by the arrow keys. |
-| `hidden` | `boolean` | false | Dimmed hidden state (`data-hidden`); the row stays visible. |
+| `disabled` | `boolean` | `false` | Not selectable, not expandable, skipped by the arrow keys. |
+| `hidden` | `boolean` | `false` | Dimmed hidden state; the row stays in the tree. |
 
 ### TreeViewCollection
-
-The child rows of a `TreeViewItem`, rendered from data.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -254,34 +244,29 @@ The child rows of a `TreeViewItem`, rendered from data.
 
 ### TreeViewItemContent
 
-Row layout: chevron, icon, colour tag, label, suffix and end adornment.
-
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `kind` | `"folder" \| "item"` | "item" | Folder icon or a small dot. |
+| `kind` | `"folder" \| "item"` | `"item"` | Folder icon or a small dot. |
 | `icon` | `ReactNode` | - | Custom leading icon. |
 | `colorTag` | `ReactNode` | - | 12 px colour tag after the icon. |
 | `suffix` | `ReactNode` | - | Content after the label. |
-| `endAdornment` | `ReactNode` | - | Trailing actions. |
+| `endAdornment` | `ReactNode` | - | Trailing controls. |
 
 ### TreeViewAction
 
-24 px icon button for row actions; renders a vertical ellipsis by default. Give it an `aria-label`.
+A 24 px icon button; a vertical ellipsis unless you pass children.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `aria-label` | `string` | - | Accessible name ("Actions for Faults"). |
-| `onClick` | `() => void` | - | Called on pointer, Enter or Space activation. |
-| `disabled` | `boolean` | false | Disables the button. |
-| `children` | `ReactNode` | `<MoreVerticalIcon />` | Custom icon. |
+| `aria-label` | `string` | - | Accessible name, e.g. "Actions for Faults". |
+| `onClick` | `() => void` | - | Called on activation. |
+| `disabled` | `boolean` | `false` | Disables the button. |
 
 ### TreeViewVisibilityToggle
 
-Eye / eye-off toggle built on `TreeViewAction`. Its accessible name is always "Hide" followed by the row's label (or by `name`), and `aria-pressed` is true while the row is hidden.
-
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `visible` | `boolean` | true | Current visibility; the toggle is pressed when it is `false`. |
+| `visible` | `boolean` | `true` | Current visibility; pressed while `false`. |
 | `onVisibleChange` | `(visible: boolean) => void` | - | Called with the next value. |
-| `name` | `string` | - | What the toggle hides, for the name `"Hide {name}"`. Without it (and without `aria-label` / `aria-labelledby`) the name is "Hide" plus the row's label inside `TreeViewItemContent`. |
-| `disabled` | `boolean` | false | Disables the toggle. |
+| `name` | `string` | row label | What the toggle hides, for the name "Hide {name}". |
+| `disabled` | `boolean` | `false` | Disables the toggle. |

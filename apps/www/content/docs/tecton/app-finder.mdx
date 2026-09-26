@@ -1,24 +1,21 @@
 ---
 title: App Finder
 description: "Application switcher for the shell header: a compact badge for the current app and a searchable, category-grouped palette of every registered application."
-links:
-  doc: https://react-aria.adobe.com/Autocomplete
 ---
 
 <ComponentPreview name="app-finder-demo" />
-
 
 ## Usage
 
 ```tsx
 import {
   AppFinder,
-  AppFinderTrigger,
-  AppFinderMenu,
-  AppFinderInput,
-  AppFinderList,
   AppFinderGroup,
+  AppFinderInput,
   AppFinderItem,
+  AppFinderList,
+  AppFinderMenu,
+  AppFinderTrigger,
 } from "@tecton/react/tecton/app-finder"
 ```
 
@@ -44,29 +41,14 @@ import {
 </AppFinder>
 ```
 
-<Callout>
-  The app finder is owned by the micro-frontend host and replaces the static brand in `AppShellBrand`. It is built on [Command](/docs/components/command) inside a popover: typing filters every group at once and highlights the match, arrow keys move through the results, and the list scrolls, so a catalogue of a hundred applications stays usable. Group by category, give each category a `tone` so the tiles carry the app's identity, and put a "Recent" or "Favourites" group first with `hideWhileSearching`.
-</Callout>
-
-## Composition
-
-```text
-AppFinder
-├── AppFinderTrigger
-└── AppFinderMenu
-    ├── AppFinderInput
-    └── AppFinderList
-        └── AppFinderGroup (heading)
-            └── AppFinderItem …
-```
+The app finder replaces the static brand in [`AppShellBrand`](/docs/tecton/app-shell). Typing filters every group at once on the item's `name` and `keywords` and highlights the match; the list scrolls past 24 rem, so a catalogue of a few hundred applications stays usable. The popover closes after `onSelect`.
 
 ## Large catalogues
 
-Keep item ids unique across groups: an app listed under both "Recent" and its category needs two ids (`recent-dwp` and `dwp`). Mark the "Recent" group `hideWhileSearching` so a query lists each app once, and leave the current app out of it. Pass the short code and the category name in `keywords` so a search for either finds the app. The list is capped at 24 rem or 60 % of the viewport and scrolls; the filter runs on the client, which is fine for a few hundred entries.
-
-## Tones
-
-`AppFinderTrigger` and `AppFinderItem` take a `tone` that colours the code tile from the Tecton palette: `neutral` (default), `blue`, `azure`, `green`, `lime`, `yellow`, `saffron`, `red`, `pink`, `orchid`, `mauve`, `violet` or `lilac`. Assign one tone per category so a user scanning the list can find a family by colour. `AppFinderIcon` renders the same tile on its own, for a command palette or a launcher grid.
+- Keep every `value` unique: an app listed under both "Recent" and its category needs two values (`recent-dwp` and `dwp`).
+- Mark the "Recent" or "Favourites" group `hideWhileSearching` so a query lists each app once.
+- Put the short code and the category in `keywords` so a search for either finds the app.
+- Give each category one `tone` (`neutral`, `blue`, `azure`, `green`, `lime`, `yellow`, `saffron`, `red`, `pink`, `orchid`, `mauve`, `violet`, `lilac`) so a family can be found by colour.
 
 {/* guidelines:start */}
 
@@ -208,70 +190,67 @@ The popover root; renders no element.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `open` / `onOpenChange` | `boolean` / `(open: boolean) => void` | - | Controlled open state. |
-| `defaultOpen` | `boolean` | false | Initial open state when uncontrolled. |
+| `open` | `boolean` | - | Controlled open state. |
+| `defaultOpen` | `boolean` | `false` | Initial open state. |
+| `onOpenChange` | `(open: boolean) => void` | - | Called when the menu opens or closes. |
 
 ### AppFinderTrigger
 
-Ghost `Button` that opens the menu, showing the current app's tile, its name from `sm` up, and a chevron. Accepts `Button` props.
+Ghost `Button` showing the current app's tile, its name from `sm` up, and a chevron. Accepts `Button` props.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `children` | `ReactNode` | - | The short code of the current app, shown in the tile. |
-| `name` | `string` | - | Name of the current app; shown next to the tile on wider screens and used for the default `aria-label`. |
-| `tone` | `AppFinderTone` | "neutral" | Colour of the tile. |
-| `aria-label` | `string` | `"Switch application, current: {name}"` | Override the accessible name. |
+| `children` | `ReactNode` | - | Short code of the current app, shown in the tile. |
+| `name` | `string` | - | Name of the current app; also gives the default `aria-label` "Switch application, current: {name}". |
+| `tone` | `AppFinderTone` | `"neutral"` | Colour of the tile. |
 
 ### AppFinderMenu
 
-Popover (`role="dialog"`) anchored bottom-start, 26 rem wide, wrapping a `Command`. The query resets every time the menu opens; Escape or a click outside closes it.
+The popover, 26 rem wide. The query resets every time it opens.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `aria-label` | `string` | "Applications" | Accessible name of the palette. |
-| `side` | `"top" \| "bottom" \| "left" \| "right" \| "inline-start" \| "inline-end"` | "bottom" | Side of the trigger the menu opens on. |
-| `align` | `"start" \| "center" \| "end"` | "start" | Alignment along that side. |
-| `sideOffset` / `alignOffset` | `number` | 6 / 0 | Distance from the trigger, and shift along the side, in px. |
+| `aria-label` | `string` | `"Applications"` | Accessible name of the palette. |
+| `side` | `"top" \| "bottom" \| "left" \| "right" \| "inline-start" \| "inline-end"` | `"bottom"` | Side of the trigger. |
+| `align` | `"start" \| "center" \| "end"` | `"start"` | Alignment along that side. |
+| `sideOffset` / `alignOffset` | `number` | `6` / `0` | Offsets in px. |
+| `container` | `HTMLElement \| null` | overlay container | Element the popover is portalled into. |
 
 ### AppFinderInput
 
-`CommandInput` (`role="combobox"`) bound to the menu's query; autofocuses when the menu opens. The arrow keys move the highlight in the list and Enter chooses.
+The search field; focused when the menu opens. Arrow keys move through the results and Enter chooses.
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `placeholder` | `string` | "Search applications…" |  |
+| Prop | Type | Default |
+| --- | --- | --- |
+| `placeholder` | `string` | `"Search applications…"` |
 
 ### AppFinderList
 
-`CommandList` (`role="listbox"`) that closes the menu after a choice.
-
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `onSelect` | `(value: string) => void` | - | Called with the `value` of the chosen app. |
-| `emptyMessage` | `ReactNode` | "No applications match" | Shown when the filter matches nothing. |
-| `emptyHint` | `ReactNode` | "Try the app's short code or its category" | Second line of the empty state; pass `null` to drop it. |
+| `onSelect` | `(value: string) => void` | - | Called with the chosen app's `value`; the menu then closes. |
+| `emptyMessage` | `ReactNode` | `"No applications match"` | Shown when nothing matches. |
+| `emptyHint` | `ReactNode` | `"Try the app's short code or its category"` | Second line of the empty state; `null` drops it. |
 
 ### AppFinderGroup
 
-`CommandGroup` with a hairline above every group but the first.
-
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `heading` | `string` | - | Category label. |
-| `hideWhileSearching` | `boolean` | false | Leave the group out while a query is typed (for "Recent" or "Favourites"). |
+| `heading` | `ReactNode` | - | Category label. |
+| `hideWhileSearching` | `boolean` | `false` | Leave the group out while a query is typed. |
 
 ### AppFinderItem
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `value` | `string` | - | Unique identity passed to `onSelect`; not matched by the filter. |
-| `name` | `string` | - | Display name; matched by the filter (case-insensitive substring). |
+| `value` | `string` | - | Identity passed to `onSelect`; not searched. |
+| `name` | `string` | - | Display name; searched (case-insensitive substring). |
 | `description` | `ReactNode` | - | Secondary line. |
-| `icon` | `ReactNode` | - | Glyph or short code in the leading tile. |
-| `tone` | `AppFinderTone` | "neutral" | Colour of the tile. |
-| `keywords` | `string[]` | - | Extra words the filter matches (short code, category, aliases). |
-| `current` | `boolean` | false | Marks the mounted app with a "Current" check and `data-current`. |
+| `icon` | `ReactNode` | - | Glyph or short code in the tile. |
+| `tone` | `AppFinderTone` | `"neutral"` | Colour of the tile. |
+| `keywords` | `string[]` | - | Extra words the search matches. |
+| `current` | `boolean` | `false` | Marks the app being shown with a "Current" check. |
 
 ### AppFinderIcon
 
-The tile on its own: a `span` with `tone` and `size` (`sm` for the trigger, `default` for items).
+The tile on its own (a `span` with `tone` and `size`: `"sm"` or `"default"`), e.g. for a launcher grid.

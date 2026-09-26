@@ -5,7 +5,6 @@ description: "Selectable and removable tags in a group. Static labels are Badges
 
 <ComponentPreview name="chip-demo" />
 
-
 ## Usage
 
 ```tsx
@@ -21,33 +20,21 @@ import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
 </ChipGroup>
 ```
 
-<Callout title="Chip or Badge?">
-  A static label is the shadcn [Badge](/docs/components/badge). `Chip` is the *interactive* label, selected and removed with the mouse or the keyboard, styled with the same `badgeVariants`: a chip and a badge with the same props look identical. A count anchored to an icon is the [CountBadge](/docs/tecton/count-badge).
-</Callout>
+A chip is the interactive [Badge](/docs/components/badge): same `variant`, `appearance` and `size`, same look. Use a Badge for a static label and a [Count Badge](/docs/tecton/count-badge) for a count on an icon.
 
-The group is a grid: <Kbd>←</Kbd> <Kbd>→</Kbd> move between chips (reversed right to left), and the whole group is one tab stop.
-
-## Removable
-
-With `onRemove` on the group, every chip gets a remove button, and <Kbd>Delete</Kbd> or <Kbd>Backspace</Kbd> removes the focused chip (or all selected chips, when it is selected); focus moves to its neighbour. `onRemove` receives the values to remove. Render chips from data with `items` and a function, and `empty` for the list with none.
+The group is one tab stop; <Kbd>←</Kbd> <Kbd>→</Kbd> move between chips. With `onRemove`, every chip gets a remove button and <Kbd>Delete</Kbd> or <Kbd>Backspace</Kbd> removes the focused chip (or all selected chips, when it is selected). Render chips from data with `items` and a function child, as the demo does.
 
 ## Selectable
 
-Set `selectionMode="single"` or `"multiple"` on the group, and hold the selected values with `value` and `onValueChange` (or `defaultValue`). `disallowEmptySelection` keeps one selected. `disabled` disables one chip, or every chip when set on the group.
+Set `selectionMode="single"` or `"multiple"` on the group and hold the selection in `value` / `onValueChange` (or `defaultValue`).
 
 <ComponentPreview name="chip-selectable" />
 
-## Variants and appearance
+## Variants
 
-`variant` and `appearance` are the Badge props: the semantic colours as solid surfaces or as outlines. The default is `variant="secondary"`.
+Every Badge colour, as a solid surface or with `appearance="outline"`. The default is `variant="secondary"`; sizes are `default`, `md` and `lg` (20 / 24 / 28 px), and icons marked `data-icon="inline-start"` scale with them.
 
 <ComponentPreview name="chip-variants" />
-
-## Sizes
-
-Use `size="default" | "md" | "lg"` (20 / 24 / 28 px). Icons marked `data-icon="inline-start"` scale with the size.
-
-<ComponentPreview name="chip-sizes" />
 
 {/* guidelines:start */}
 
@@ -218,13 +205,13 @@ The chip's `className` is merged over `badgeVariants`, so `bg-orange-500` replac
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `aria-label` | `string` | - | Names the chips' grid. |
+| `aria-label` | `string` | - | Names the group. |
 | `selectionMode` | `"none" \| "single" \| "multiple"` | `"none"` | Whether chips can be selected. |
-| `value` | `string[]` | - | The selected chips' values (controlled). |
-| `defaultValue` | `string[]` | - | The selected chips' values at first (uncontrolled). |
+| `value` | `string[]` | - | Selected values (controlled). |
+| `defaultValue` | `string[]` | - | Initially selected values. |
 | `onValueChange` | `(value: string[]) => void` | - | Called with the new selection. |
 | `disallowEmptySelection` | `boolean` | `false` | The last selected chip cannot be deselected. |
-| `onRemove` | `(values: string[]) => void` | - | Makes the chips removable. |
+| `onRemove` | `(values: string[]) => void` | - | Makes the chips removable; called with the values to remove. |
 | `disabled` | `boolean` | `false` | Disables every chip. |
 
 ### ChipList
@@ -239,15 +226,15 @@ The chip's `className` is merged over `badgeVariants`, so `bg-orange-500` replac
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `value` | `string` | - | The chip's identity. Required. |
-| `label` | `string` | text of `children` | Its text for typeahead and screen readers. |
+| `value` | `string` | - | The chip's identity. |
+| `label` | `string` | text of `children` | Text for typeahead and screen readers. |
 | `variant` | `"default" \| "secondary" \| "destructive" \| "outline" \| "ghost" \| "link" \| "success" \| "warning" \| "info"` | `"secondary"` | Badge colour. |
 | `appearance` | `"solid" \| "outline"` | `"solid"` | Filled surface or coloured border. |
 | `size` | `"default" \| "md" \| "lg"` | `"default"` | Height 20 / 24 / 28 px. |
 | `disabled` | `boolean` | `false` | Disables the chip. |
 
-State for styling: `data-selected` and `data-disabled` on a chip, `data-empty` on the list; hover and keyboard focus are `:hover` and `:focus-visible`.
+Style states with `data-selected` and `data-disabled` on a chip and `data-empty` on the list.
 
 ### ChipRemove
 
-The remove button a chip renders by itself in a removable group, named "Remove" and the chip's text. Exported to style or reuse: `children` replaces the X icon.
+The remove button a chip renders by itself in a removable group, named "Remove". `children` replaces the X icon.

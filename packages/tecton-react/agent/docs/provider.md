@@ -28,16 +28,14 @@ import { TectonProvider, useDirection, useLocale } from "@tecton/react/tecton/pr
 
 ## Don't
 
-### HIGH A component library's own provider instead of TectonProvider
+### HIGH A dir attribute instead of TectonProvider
 
 Wrong:
 
 ```tsx
-import { DirectionProvider } from "@base-ui/react/direction-provider"
-
-<DirectionProvider direction="rtl">
+<div dir="rtl">
   <App />
-</DirectionProvider>
+</div>
 ```
 
 Correct:
@@ -50,7 +48,7 @@ import { TectonProvider } from "@tecton/react/tecton/provider"
 </TectonProvider>
 ```
 
-Tecton components read the Tecton context, so a provider imported from a library Tecton is built on reaches at most the components built on that library, and the others — the tree view, `useDirection()` — stay left to right.
+`dir` flips the text flow, but Tecton components read the direction from the provider: without it, arrow keys in menus, sliders, tabs and the tree view, overlay placement and `useDirection()` all stay left to right.
 
 ### HIGH The router's navigate passed through unchanged
 

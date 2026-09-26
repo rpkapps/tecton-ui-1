@@ -5,18 +5,17 @@ description: "Page title block with optional eyebrow, description, section tabs 
 
 <ComponentPreview name="page-header-demo" />
 
-
 ## Usage
 
 ```tsx
 import {
   PageHeader,
-  PageHeaderContent,
-  PageHeaderEyebrow,
-  PageHeaderTitle,
-  PageHeaderDescription,
-  PageHeaderNav,
   PageHeaderActions,
+  PageHeaderContent,
+  PageHeaderDescription,
+  PageHeaderEyebrow,
+  PageHeaderNav,
+  PageHeaderTitle,
 } from "@tecton/react/tecton/page-header"
 ```
 
@@ -33,36 +32,21 @@ import {
 </PageHeader>
 ```
 
-## Composition
-
-Use the following composition:
-
-```text
-PageHeader
-├── PageHeaderContent
-│   ├── PageHeaderEyebrow
-│   ├── PageHeaderTitle
-│   └── PageHeaderDescription
-└── PageHeaderActions
-```
-
 ## Actions
 
-`PageHeaderActions` is an [Overflow](/docs/tecton/overflow) row at the end of the header. Wrap secondary actions in `OverflowItem`: when the header is narrow their labels drop to icons, then they move into a More menu, lowest priority first. Leave the primary action unwrapped so it never leaves. The content keeps its natural width up to 60% of the header and the actions get the rest. The header is a single row at every width: because the actions collapse, it never needs to stack.
+`PageHeaderActions` is an [Overflow](/docs/tecton/overflow) row. Wrap secondary actions in `OverflowItem` so a narrow header drops their labels, then moves them into a More menu; leave the primary action bare. The title takes up to 60 % of the width and the header stays one row at every width.
 
 <ComponentPreview name="page-header-actions" align="start" />
 
 ## Section tabs
 
-`PageHeaderNav` holds the section tabs. Between the title and the actions it keeps its natural width and never collapses. To let the tabs collapse, put the nav inside `PageHeaderActions` as an `OverflowItem` with a `priority`, followed by an `OverflowSpacer` and then the actions: everything is then one overflow row, and the tabs move into the More menu as a single-selection section, all at once, when their priority is reached. Tabs never collapse one by one, so arrow-key navigation and the selected tab stay intact.
-
-In the example the view toggle has priority 1 and the tabs priority 2, so as the header narrows the toggle goes first and the tabs second.
+`PageHeaderNav` holds section tabs and keeps its natural width. To let the tabs collapse too, put the nav inside `PageHeaderActions` as an `OverflowItem` with a `priority` and a menu form, then an `OverflowSpacer`, then the actions. Here the view toggle (priority 1) leaves first and the tabs (priority 2) follow, all at once, as a radio group in the menu.
 
 <ComponentPreview name="page-header-nav" align="start" />
 
 ## Eyebrow
 
-Use `PageHeaderEyebrow` for a breadcrumb or category above the title.
+`PageHeaderEyebrow` holds a breadcrumb or category above the title.
 
 <ComponentPreview name="page-header-eyebrow" />
 
@@ -188,16 +172,8 @@ Let `PageHeaderTitle` be the `h1`: one per page, no heading level or size set th
 
 ### PageHeader, PageHeaderContent, PageHeaderEyebrow, PageHeaderTitle, PageHeaderDescription, PageHeaderNav
 
-Plain styled elements; `PageHeaderTitle` is an `h1` and `PageHeaderNav` is a `nav` (give it an `aria-label`).
-
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `className` | `string` | - |  |
+Styled elements that accept the props of the element they render: `PageHeader` is a `header`, `PageHeaderTitle` an `h1`, `PageHeaderDescription` a `p`, and `PageHeaderNav` a `nav` (give it an `aria-label`).
 
 ### PageHeaderActions
 
-An [Overflow](/docs/tecton/overflow) row (a plain `div`, not a toolbar, so a tab list inside keeps its own arrow keys); accepts every `Overflow` prop.
-
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `labels` | `"auto" \| "always" \| "never"` | "auto" | Whether labels drop to icons before items overflow. |
+An [Overflow](/docs/tecton/overflow#toolbar-overflow) row; accepts every `Overflow` prop. It is not a toolbar, so a tab list inside keeps its own arrow keys.

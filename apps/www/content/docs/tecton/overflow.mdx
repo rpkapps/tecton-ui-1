@@ -9,14 +9,10 @@ description: "A row of controls that collapses in stages when its container gets
 
 ```tsx
 import {
-  Toolbar,
-  Overflow,
+  OverflowDivider,
   OverflowItem,
   OverflowLabel,
-  OverflowDivider,
-  OverflowSpacer,
-  OverflowGroup,
-  OverflowMenu,
+  Toolbar,
 } from "@tecton/react/tecton/overflow"
 ```
 
@@ -36,59 +32,46 @@ import {
 </Toolbar>
 ```
 
-Wrap every control that may leave the row in an `OverflowItem`. Unwrapped children are fixed: they never leave, so the primary action goes in bare. Put the label text in an `OverflowLabel` so it can drop to icon-only; only an item whose control has an icon (an `svg`, `img` or `[data-icon]`) collapses. The `More` menu is rendered at the end automatically; `overflowBadge` on the row shows how many items it holds.
+Wrap every control that may leave the row in an `OverflowItem`, as a direct child of the row; unwrapped children never leave, so the primary action goes in bare. Put the label text in an `OverflowLabel` so an item whose control has an icon can drop to icon-only. The More menu is added at the end automatically.
 
-<Callout>
-  `Toolbar` is a `role="toolbar"`: the arrow keys along its axis move between every visible control in it, whatever renders it (mirrored in right-to-left layouts, stopping at the ends), a text field keeps them until its caret reaches the edge, and Tab leaves the row. Use `Overflow` when the row is not a toolbar semantically (a breadcrumb, a chip row, a header with a tab list). Both need their items and dividers as direct children.
-</Callout>
+`Toolbar` is one tab stop: the arrow keys move between its visible controls and Tab leaves the row. Use `Overflow` for a row that is not a toolbar, such as a header with a tab list.
 
-## Stages
+## How it collapses
 
-The row gives up space one stage at a time and takes it back in reverse. The full contract, including the tie-break, group and focus rules, is in `docs/OVERFLOW-RULES.md` in the repository.
+As the container narrows, the row gives up space in stages and takes it back in reverse, without ever reordering items:
 
-| Stage | What gives |
-| --- | --- |
-| 1 | Elastic items shrink to their minimum. |
-| 2 | Labels drop; items with an icon become icon-only with a tooltip. Items with `labelBehavior="keep"` and text-only items stay as they are. |
-| 3 | Items move into the More menu, lowest `priority` first, ties from the end of the row inward. |
-| 4 | The host compacts its own summary (see [Action Bar](/docs/tecton/action-bar)). |
-| 5 | Fixed items alone do not fit: the row wraps (`lastResort="wrap"`, default) or scrolls. |
-
-Stage 2 collapses every label at once and brings them back only when every item fits again with its label, so the row never flickers between the two. Stage 3 is the only stage that moves items; nothing is ever reordered.
+1. `elastic` items shrink to their minimum.
+2. Every collapsible label drops at once; those items become icon-only with a tooltip.
+3. Items move into the More menu, lowest `priority` first, ties from the end of the row.
+4. When the fixed items alone do not fit, the row wraps (`lastResort="wrap"`) or scrolls.
 
 ## Priority
 
-`priority` decides who leaves first, never where an item sits. The menu keeps source order. `labels="always"` skips the icon-only stage.
+`priority` decides who leaves first, never where an item sits; the menu keeps source order. `labels="always"` skips the icon-only stage.
 
 <ComponentPreview name="overflow-priority" align="start" />
 
 ## Other controls
 
-Each item declares what it becomes in the menu with `overflow`. A button needs nothing: its menu item is built from `label`, `icon`, `shortcut` and `onClick`, and the item passes `onClick` and `disabled` on to its single control element too, so the handler is written once. Other controls pass their own menu form:
+A button needs nothing more: its menu item is built from `label`, `icon`, `shortcut` and `onClick`, and `onClick` and `disabled` also reach the control itself. Any other control passes its menu form as `overflow`:
 
-| Control | Overflow form |
+| Control | `overflow` |
 | --- | --- |
 | Toggle | `DropdownMenuCheckboxItem` bound to the same state |
 | Dropdown trigger | `DropdownMenuSub` with the same items |
 | Select | `DropdownMenuSub` with a `DropdownMenuRadioGroup` |
-| Text input | `DropdownMenuItem` that opens a `Dialog` holding the same input |
-| Anything else | Any menu content, or `overflow="never"` to keep it fixed |
+| Text input | `DropdownMenuItem` that opens a `Dialog` with the same input |
+| Must never leave | `"never"` |
 
-An input is usually `elastic`: it shrinks between `min` and `max` before any label collapses. A dropdown trigger keeps its label (`labelBehavior="keep"`) so the chevron makes sense; give it a `Tooltip` yourself if you want one. An item whose own menu or popover is open is not hidden until it closes.
+A text input is usually `elastic`, and a dropdown trigger keeps its label (`labelBehavior="keep"`). `OverflowGroup` shows its hidden members as a labelled menu section; `collapse="together"` moves the whole group at once. A divider becomes a menu separator and disappears when one side of it is empty.
 
 <ComponentPreview name="overflow-forms" align="start" />
 
-A divider stays as long as something is visible on both sides of it and leaves once one side is empty; two dividers never show side by side (the last of them stays, beside what follows). In the menu it becomes a separator between the hidden items on either side of it. `OverflowGroup` renders its hidden members as a labelled menu section; `collapse="together"` moves the whole group at once.
-
 ## Vertical
 
-`orientation="vertical"` lays the row out as a column and measures heights instead of widths: items leave from the bottom, the More menu sits at the bottom and opens to the side. A tool rail is icon-only already, so give it `labels="never"` and the tooltips show the labels from the start.
+`orientation="vertical"` makes a column: items leave from the bottom and the More menu opens to the side. A tool rail is icon-only already, so give it `labels="never"`.
 
 <ComponentPreview name="overflow-vertical" align="start" />
-
-## Cost
-
-One `ResizeObserver` per row observes the row and its direct children. Sizes are cached per element, hidden items keep their last size and are not measured again, and the visible set lives in a store outside React. Each pass is one walk over the row: a running total is reduced as items are hidden, so cost grows linearly with the number of items. Each item subscribes to its own visibility and the menu to the hidden list, so a resize that hides two items re-renders those two and the menu. A resize that changes nothing notifies nobody. Hidden items stay mounted (`display: none`), so their state survives, and the More menu reads their menu forms only when it opens, so a hidden item re-rendering costs nothing while the menu is closed.
 
 {/* guidelines:start */}
 
@@ -236,63 +219,59 @@ The item's `onClick` (and `disabled`) is both the handler of the generated `Drop
 
 ### Toolbar, Overflow
 
-`Toolbar` is a `div` with `role="toolbar"` and the keyboard described above (give it an `aria-label`); `Overflow` is a plain `div`. Both accept `div` props and:
+`Toolbar` is a `div` with `role="toolbar"` (give it an `aria-label`); `Overflow` is a plain `div`. Both accept `div` props and:
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `orientation` | `"horizontal" \| "vertical"` | "horizontal" | Axis of the row; a vertical row measures heights. |
-| `labels` | `"auto" \| "always" \| "never"` | "auto" | `auto` collapses labels before hiding items; `always` keeps them; `never` is icon-only from the start. |
-| `minimumVisible` | `number` | 0 | Items kept in the row regardless of width. |
-| `lastResort` | `"wrap" \| "scroll"` | "wrap" | What happens when fixed items alone do not fit. A vertical row always scrolls. |
-| `menu` | `boolean` | true | Render the trailing `OverflowMenu`; pass `false` to place one yourself. |
-| `overflowBadge` | `boolean` | false | Show how many items are in the More menu as a count badge on the trigger of the automatic menu (`badge` on `OverflowMenu`). |
+| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` | Axis of the row. |
+| `labels` | `"auto" \| "always" \| "never"` | `"auto"` | `auto` collapses labels before hiding items, `always` keeps them, `never` is icon-only from the start. |
+| `minimumVisible` | `number` | `0` | Items kept in the row regardless of width. |
+| `lastResort` | `"wrap" \| "scroll"` | `"wrap"` | When fixed items alone do not fit. A vertical row scrolls. |
+| `menu` | `boolean` | `true` | Render the More menu; `false` to place an `OverflowMenu` yourself. |
+| `overflowBadge` | `boolean` | `false` | Show the number of hidden items on the More button. |
 
 ### OverflowItem
 
-A `div` wrapper around one control. Must be a direct child of the row.
+A `div` around one control.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `value` | `string` | - | Stable identity of the item, also the key of its menu item. |
-| `priority` | `number` | 0 | Higher stays in the row longer. |
-| `label` | `string` | - | Menu item text, tooltip, and the accessible name while icon-only. |
+| `value` | `string` | - | Stable identity of the item. |
+| `priority` | `number` | `0` | Higher stays in the row longer. |
+| `label` | `string` | - | Menu item text, tooltip, and accessible name while icon-only. |
 | `icon` | `ReactNode` | - | Icon of the menu item. |
-| `shortcut` | `ReactNode` | - | Shortcut hint of the menu item. |
-| `onClick` | `() => void` | - | Handler of the default menu item; also passed to the item's single control element. |
-| `disabled` | `boolean` | - | Disables the menu item and the item's single control element. |
-| `variant` | `"default" \| "destructive"` | "default" | Menu item variant. |
-| `labelBehavior` | `"collapse" \| "keep"` | "collapse" when `label` is set and the control has an icon (`svg`, `img` or `[data-icon]`), else "keep" | Whether the label drops to icon-only. A text-only item cannot go icon-only; `"collapse"` without an icon warns in development. |
-| `tooltip` | `boolean` | `labelBehavior !== "keep"` | Show `label` as a tooltip on the item's single control element while icon-only. |
-| `elastic` | `boolean \| { min?: string; max?: string }` | - | Shrink between these inline sizes before anything collapses (`12rem` to `100%` by default). |
-| `overflow` | `ReactNode \| "never"` | - | Menu form; `"never"` makes the item fixed. Omit for a button. |
+| `shortcut` | `ReactNode` | - | Key hint shown in the menu item. |
+| `onClick` | `() => void` | - | Called by the menu item and by the control. |
+| `disabled` | `boolean` | - | Disables the menu item and the control. |
+| `variant` | `"default" \| "destructive"` | `"default"` | Menu item variant. |
+| `labelBehavior` | `"collapse" \| "keep"` | `"collapse"` with a `label` and an icon, else `"keep"` | Whether the label can drop to icon-only. |
+| `tooltip` | `boolean` | `true` unless `labelBehavior="keep"` | Show `label` as a tooltip while icon-only. |
+| `elastic` | `boolean \| { min?: string; max?: string }` | - | Shrink between these sizes (default `12rem` to `100%`) before anything collapses. |
+| `overflow` | `ReactNode \| "never"` | - | Menu form; `"never"` keeps the item in the row. |
 
 ### OverflowLabel
 
-A `span` for the label text of an item; visually hidden while the row is icon-only.
+A `span` for an item's label text; visually hidden while the item is icon-only.
 
-### OverflowDivider
+### OverflowDivider, OverflowSpacer
 
-A `Separator` across the row, hidden once nothing visible remains on one side of it or when it would sit next to another divider.
-
-### OverflowSpacer
-
-A zero-cost flexible space. Items before it sit at the start of the row, items after it at the end. Like a divider, it leaves once one side of it is empty.
+A separator between items, and a flexible space that pushes what follows to the end. Both disappear when one side of them is empty.
 
 ### OverflowGroup
 
-Renders no element. `value` (stable identity), optional `label` (menu section heading) and `collapse` (`"individually"` or `"together"`).
+Renders no element: `value`, `label` (menu section heading) and `collapse` (`"individually"` or `"together"`).
 
 ### OverflowMenu
 
-The trailing More button and its menu. Rendered automatically unless the row has `menu={false}`.
+The More button and its menu, placed by hand in a row with `menu={false}`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `label` | `string` | "More actions" | Accessible name of the default trigger. |
-| `trigger` | `ReactElement` | - | A custom trigger button element (`<Button variant="outline">More</Button>`) instead of the ellipsis. |
-| `badge` | `boolean` | false | Show how many items are in the menu as a count badge on the trigger ("99+" above 99). The badge is visual only: the menu lists the items it counts. |
-| `className` | `string` | - | Classes for the wrapper around the trigger. |
+| `label` | `string` | `"More actions"` | Accessible name of the default trigger. |
+| `trigger` | `ReactElement` | - | A trigger element, e.g. `<Button variant="outline">More</Button>`, instead of the ellipsis. |
+| `badge` | `boolean` | `false` | Show the number of hidden items on the trigger. |
+| `className` | `string` | - | Classes of the wrapper around the trigger. |
 
-### useIsOverflowItemVisible(value)
+### useIsOverflowItemVisible
 
-Returns whether the item is currently in the row.
+`useIsOverflowItemVisible(value: string): boolean` — whether the item is currently in the row.
