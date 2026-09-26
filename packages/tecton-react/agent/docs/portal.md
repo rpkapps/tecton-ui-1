@@ -21,7 +21,7 @@ import { PortalProvider, usePortalContainer, usePortalTarget } from "@tecton/rea
 ## Do
 
 - Wrap the root of the subtree, not individual overlays: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the context.
-- Create the container once at body level and pass it as `container`; pass a function instead when the element only exists after the first render.
+- Create the container once at body level and pass it as `container`; pass a function instead when the element only exists after the first render (`container={() => hostRef.current}`) — the provider calls it once it has mounted, and again when you pass a new function.
 - Clear an outer provider with `container={null}` — overlays then pass no container and React Aria applies its own default.
 - Reach for `ThemeRoot` first: it creates, classes, syncs and removes that container and wires this provider for you.
 

@@ -21,7 +21,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectPopover, Selec
 
 ## Do
 
-- Put `placeholder` on `Select`; `SelectValue` renders it and takes no placeholder of its own.
+- Label it with `FieldLabel` inside `Select` (or `aria-labelledby` on `Select`), never `htmlFor` on the trigger, which the trigger's own `aria-labelledby` overrides; put `placeholder` on `Select`, as `SelectValue` takes none.
 - Key every item with `id`, drive selection with `value` / `defaultValue` / `onChange(key)`; `selectedKey` and `onSelectionChange` are deprecated.
 - Choose the surface with `SelectTrigger`'s `variant`, the height with its `size="sm" | "default"`.
 - Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`.

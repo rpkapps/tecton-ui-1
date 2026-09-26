@@ -123,7 +123,7 @@ A nested provider normally reuses its parent's registry, so a component can wrap
 
 - The host listens for keys once and every mounted application registers against the same registry.
 - A shortcut must be listed as well as bound: the help dialog and the command palette read `useShortcuts()`.
-- A region owns keys only while focus is inside it — `target` scopes the listener to one element.
+- A region owns keys only while focus is inside it — `target` scopes the listener to one element; a nested provider with a `target` and no `registry` gets a registry of its own, so its shortcuts are not listed with the host's.
 
 ### Not for
 
@@ -155,7 +155,7 @@ Create the registry with `createShortcutRegistry()` in the host and hand the obj
 
 <Do>
 
-Write keys in the registry syntax: `mod+k` for ⌘ / Ctrl, `?` for a symbol, `g w` for a sequence.
+Write keys in the registry syntax: `mod+k` for ⌘ / Ctrl, `?` for a symbol, `g w` for a sequence; a held key fires once, so set `allowRepeat: true` only where holding it should repeat (zoom, nudge).
 
 </Do>
 
@@ -247,7 +247,7 @@ A registry of its own adds a second `document` listener with a list the host can
 
 </Correct>
 
-`ShortcutKeys` resolves `mod` to ⌘ or Ctrl for the reader's platform, splits a chord or a sequence into caps and gives the group one accessible name ("G, then W"), where hand-typed caps freeze the author's platform and are read out letter by letter.
+`ShortcutKeys` resolves `mod` to ⌘ or Ctrl for the reader's platform, splits a chord or a sequence into caps (a chord's keys joined by "+", a sequence's steps by "then") and reads the whole to screen readers as text ("G, then W"); hand-typed caps freeze the author's platform and are read out letter by letter.
 
 </Dont>
 

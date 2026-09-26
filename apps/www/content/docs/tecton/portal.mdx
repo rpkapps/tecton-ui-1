@@ -74,7 +74,7 @@ Wrap the root of the subtree, not individual overlays: `Dialog`, `Sheet`, `Popov
 
 <Do>
 
-Create the container once at body level and pass it as `container`; pass a function instead when the element only exists after the first render.
+Create the container once at body level and pass it as `container`; pass a function instead when the element only exists after the first render (`container={() => hostRef.current}`) — the provider calls it once it has mounted, and again when you pass a new function.
 
 </Do>
 

@@ -61,7 +61,7 @@ Correct:
 <Link href="https://factpages.sodir.no" isExternal>Sodir FactPages</Link>
 ```
 
-`isExternal` sets `target` and `rel="noreferrer noopener"` together and appends the icon at the variant's `0.85em` size; `target="_blank"` alone leaves the opened page with a handle on `window.opener`.
+`isExternal` sets `target` and `rel="noreferrer noopener"` together and appends the icon at the variant's `0.85em` size; a `rel` you pass as well (`nofollow`) is added to those two, never swapped for them. `target="_blank"` alone leaves the opened page with a handle on `window.opener`.
 
 ### MEDIUM Colouring the link with className
 

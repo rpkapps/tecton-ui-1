@@ -95,7 +95,7 @@ Pick the leading glyph with `kind="folder" | "item"` or replace it with `icon`; 
 
 <Do>
 
-Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, `TreeViewAction`).
+Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, which names itself "Hide" plus the row's label with `aria-pressed` for the hidden state, and `TreeViewAction`).
 
 </Do>
 
@@ -201,7 +201,7 @@ Each `Collapsible` is its own widget, so the result is a pile of buttons with no
 
 </Correct>
 
-`textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included.
+`textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included. With dynamic `items`, React Aria caches each rendered row, so a row that also reads state kept outside `items` (the hidden set behind `isHidden` and `TreeViewVisibilityToggle`, a selection map) does not update until that state is listed in `dependencies` on `TreeView` and on every `TreeViewCollection`: `dependencies={[hidden]}`.
 
 </Dont>
 
