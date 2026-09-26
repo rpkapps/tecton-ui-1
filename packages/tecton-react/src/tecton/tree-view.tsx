@@ -292,7 +292,7 @@ function TreeViewItem({
           "group/tree-item relative flex cursor-default items-center rounded-md outline-none select-none",
           "focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-inset",
           selectionMode !== "none" && "hover:bg-accent/60 active:bg-accent",
-          "data-selected:bg-accent data-selected:text-accent-foreground",
+          "data-[selected]:bg-accent data-[selected]:text-accent-foreground",
           "data-hidden:text-muted-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
           className
         )

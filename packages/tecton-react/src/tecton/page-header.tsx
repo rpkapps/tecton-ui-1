@@ -10,8 +10,9 @@ import { Overflow, type OverflowProps } from "@tecton/react/tecton/overflow"
  * `OverflowItem`s with priorities, put an `OverflowSpacer` between them,
  * and they move into the More menu lowest priority first when the header
  * gets narrow (`docs/OVERFLOW-RULES.md`). The title keeps its natural width
- * up to 60% of the header; the row gets the rest. The header is a single
- * row at every width: the actions collapse, so it never needs to stack.
+ * up to 60% of the header; the row gets the rest. The actions collapse
+ * before anything wraps: the row moves below the title only once its fixed
+ * items (the primary action and More) no longer fit beside it.
  */
 function PageHeader({ className, ...props }: React.ComponentProps<"header">) {
   return (

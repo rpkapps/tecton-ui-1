@@ -1562,13 +1562,17 @@ function DrillBackground({ className, ...props }: BackgroundProps) {
           {Array.from({ length: spokes }, (_, i) => {
             const a = (i / spokes) * Math.PI * 2
             const inner = i % 3 === 0 ? 40 : 150
+            // Rounded: the server's and the browser's Math.sin can differ in
+            // the last digit, which React reports as a hydration mismatch.
+            const at = (radius: number, f: (a: number) => number) =>
+              (f(a) * radius).toFixed(2)
             return (
               <line
                 key={i}
-                x1={Math.cos(a) * inner}
-                y1={Math.sin(a) * inner}
-                x2={Math.cos(a) * reach}
-                y2={Math.sin(a) * reach}
+                x1={at(inner, Math.cos)}
+                y1={at(inner, Math.sin)}
+                x2={at(reach, Math.cos)}
+                y2={at(reach, Math.sin)}
                 strokeOpacity={i % 3 === 0 ? 0.9 : 0.35}
               />
             )

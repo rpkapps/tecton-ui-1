@@ -899,7 +899,7 @@
     "names": "button button button variants",
     "useWhen": "Something happens in place: submit, open a dialog, run an action, trigger a menu. A real `button` element is the right semantics, and one of the action weights fits: `default`, `secondary`, `outline`, `ghost`, `destructive`, `link`.",
     "routed": "any action on a value other than copying it something that happens in place instead of navigation a control that performs an action rather than holding state",
-    "do": "Handle presses with `onClick` and disable with `disabled`; add `focusableWhenDisabled` when a disabled button must stay in the tab order (a pending submit). Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`). Mark icons with `data-icon=\"inline-start\" | \"inline-end\"` so the padding adjusts, and give icon-only buttons an `aria-label`. Navigate with `render={<a href=\"…\" />}` plus `nativeButton={false}`, or with `buttonVariants()` on a plain `a`. A trigger (`DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`) takes the button as `render={<Button variant=\"outline\" />}`; never nest a `Button` inside a trigger."
+    "do": "Handle presses with `onClick` and disable with `disabled`; add `focusableWhenDisabled` when a disabled button must stay in the tab order (a pending submit). Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`). Mark icons with `data-icon=\"inline-start\" | \"inline-end\"` so the padding adjusts, and give icon-only buttons an `aria-label`. Navigate with `LinkButton` (`@tecton/react/tecton/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: with `render={<a />}` it keeps `role=\"button\"`, so the link is announced as a button. A trigger (`DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`) takes the button as `render={<Button variant=\"outline\" />}`; never nest a `Button` inside a trigger."
    },
    "notFor": [
     {
@@ -924,7 +924,7 @@
     "buttonVariants"
    ],
    "aliases": [],
-   "tokens": 1210
+   "tokens": 1286
   },
   {
    "id": "button-group",
@@ -1226,7 +1226,7 @@
     "names": "chip chip chip group chip list chip remove",
     "useWhen": "The user toggles the label: active filters, selected facies, chosen horizons. The user removes the label: applied filters, recipients, keywords, attachments. The set is small enough that every chip is on screen at once.",
     "routed": "a tag the user can select or remove from a filter row a person tag the user can select or remove a tag the user can select or remove a tag the user can select or remove",
-    "do": "Compose `ChipGroup > ChipList > Chip` and name the group with `aria-label`; the list is the `role=\"grid\"` it names. Give every `Chip` a `value`: it is what `value`, `onValueChange` and `onRemove` hold. Add a `label` when the children are not plain text. Turn on selection with `selectionMode=\"single\" | \"multiple\"` and `value` / `onValueChange` (or `defaultValue`) on the group; `disabled` on a chip or on the whole group. Turn on removal with `onRemove` on the group: every chip gets its remove button, and Delete or Backspace removes the focused one. Take the look from the Badge axes: `variant`, `appearance=\"outline\"`, `size`. `className` is for layout only; style state with `data-selected`, `data-disabled`, `:hover` and `:focus-visible`."
+    "do": "Compose `ChipGroup > ChipList > Chip` and name the group with `aria-label`; the list is the `role=\"grid\"` it names. Give every `Chip` a `value`: it is what `value`, `onValueChange` and `onRemove` hold. Add a `label` when the children are not plain text. Turn on selection with `selectionMode=\"single\" | \"multiple\"` and `value` / `onValueChange` (or `defaultValue`) on the group; `disabled` on a chip or on the whole group. Turn on removal with `onRemove` on the group: every chip gets its remove button, and Delete or Backspace removes the focused one. Take the look from the Badge axes: `variant`, `appearance=\"outline\"`, `size`. `className` is for layout only; style state with `data-[selected]:` (shadcn's `data-selected:` matches only `\"true\"`), `data-disabled`, `:hover` and `:focus-visible`."
    },
    "notFor": [
     {
@@ -1253,7 +1253,7 @@
     "ChipRemove"
    ],
    "aliases": [],
-   "tokens": 1082
+   "tokens": 1095
   },
   {
    "id": "circular-progress",
@@ -2180,7 +2180,7 @@
     "linkVariants"
    ],
    "aliases": [],
-   "tokens": 896
+   "tokens": 907
   },
   {
    "id": "marker",
@@ -3567,7 +3567,7 @@
     "names": "tree view tree view tree view item tree view item content tree view action tree view visibility toggle tree view collection",
     "useWhen": "A hierarchy is browsed rather than read: a project tree, a field and well inventory, a layer list. Rows carry more than a label: selection, disabled, hidden, a colour, a count, a per-row menu. Arrow-key navigation, expansion and type-ahead have to work across the whole structure.",
     "routed": "an expandable hierarchy of folders and records a hierarchy of folders and records expanded in place",
-    "do": "Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value`; add `textValue` when the row label is not plain text. Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data. Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`. Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`). Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`)."
+    "do": "Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value`; add `textValue` when the row label is not plain text. Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data. Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`. Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`). Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `\"true\"`."
    },
    "notFor": [
     {
@@ -3593,7 +3593,7 @@
     "TreeViewCollection"
    ],
    "aliases": [],
-   "tokens": 1033
+   "tokens": 1060
   },
   {
    "id": "tanstack-table",
@@ -3709,7 +3709,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 1583
+   "tokens": 1673
   },
   {
    "id": "rules",

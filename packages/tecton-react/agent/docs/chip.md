@@ -24,7 +24,7 @@ import { Chip, ChipGroup, ChipList, ChipRemove } from "@tecton/react/tecton/chip
 - Give every `Chip` a `value`: it is what `value`, `onValueChange` and `onRemove` hold. Add a `label` when the children are not plain text.
 - Turn on selection with `selectionMode="single" | "multiple"` and `value` / `onValueChange` (or `defaultValue`) on the group; `disabled` on a chip or on the whole group.
 - Turn on removal with `onRemove` on the group: every chip gets its remove button, and Delete or Backspace removes the focused one.
-- Take the look from the Badge axes: `variant`, `appearance="outline"`, `size`. `className` is for layout only; style state with `data-selected`, `data-disabled`, `:hover` and `:focus-visible`.
+- Take the look from the Badge axes: `variant`, `appearance="outline"`, `size`. `className` is for layout only; style state with `data-[selected]:` (shadcn's `data-selected:` matches only `"true"`), `data-disabled`, `:hover` and `:focus-visible`.
 - Use a `Chip` only to select or remove a value; actions are a `Button`, destinations a `Link`, even when small.
 - Use at most two or three chip colours in one `ChipGroup`, each with one fixed meaning; beyond that, distinguish with text.
 - Give the `ComboboxChipsInput` a placeholder naming what can be added ("Add wells…").

@@ -237,7 +237,7 @@ function Chip({
         "cursor-pointer transition-colors outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring data-disabled:pointer-events-none data-disabled:opacity-50",
         // The chip wraps its children in a grid cell, so the badge's `[&>svg]` sizes do not reach the icon.
         "**:data-[icon]:shrink-0 data-[size=default]:**:data-[icon]:size-3 data-[size=lg]:**:data-[icon]:size-4 data-[size=md]:**:data-[icon]:size-3.5",
-        "hover:brightness-110 data-selected:border-foreground data-selected:ring-1 data-selected:ring-foreground",
+        "hover:brightness-110 data-[selected]:border-foreground data-[selected]:ring-1 data-[selected]:ring-foreground",
         className
       )}
       render={renderDiv}

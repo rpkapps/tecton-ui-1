@@ -137,6 +137,36 @@ describe("Background effects", () => {
     expect(bg).toHaveAttribute("data-animate", "false")
   })
 
+  // The server and the browser may disagree in the last digit of a
+  // Math.sin / Math.cos result, and React reports an unrounded coordinate as
+  // a hydration mismatch, so the SVG geometry is rounded.
+  // (Plain arithmetic such as a dash length is the same everywhere.)
+  const GEOMETRY = new Set([
+    "x",
+    "y",
+    "x1",
+    "y1",
+    "x2",
+    "y2",
+    "cx",
+    "cy",
+    "d",
+    "points",
+    "transform",
+  ])
+  it.each(names)("%s writes rounded SVG coordinates", (name) => {
+    const Effect = backgroundEffects[name]
+    const { container } = render(<Effect />)
+    const unrounded = Array.from(container.querySelectorAll("svg *")).flatMap(
+      (node) =>
+        Array.from(node.attributes)
+          .filter((attr) => GEOMETRY.has(attr.name))
+          .filter((attr) => /\d\.\d{5,}/.test(attr.value))
+          .map((attr) => `<${node.tagName} ${attr.name}="${attr.value}">`)
+    )
+    expect(unrounded).toEqual([])
+  })
+
   // The pulse animates `opacity`, so a dimmed opacity on the same node
   // would never show: the far nodes are dimmed through fill-opacity.
   it("terrain-grid dims the far nodes without fighting the pulse", () => {

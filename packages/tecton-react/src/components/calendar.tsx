@@ -45,6 +45,56 @@ function Calendar({
 }) {
   const defaultClassNames = getDefaultClassNames()
 
+  // DayPicker renders each part as <components.X />, so a part whose
+  // function changes identity remounts: inline parts would rebuild the
+  // whole grid on every render (a click, an arrow key) and drop the
+  // focused day. Keep them stable across renders.
+  const calendarComponents = React.useMemo(
+    (): React.ComponentProps<typeof DayPicker>["components"] => ({
+      Root: ({ className, rootRef, ...props }) => {
+        return (
+          <div
+            data-slot="calendar"
+            ref={rootRef}
+            className={cn(className)}
+            {...props}
+          />
+        )
+      },
+      Chevron: ({ className, orientation, ...props }) => {
+        if (orientation === "left") {
+          return (
+            <ChevronLeftIcon className={cn("rtl:rotate-180 size-4", className)} {...props} />
+          )
+        }
+
+        if (orientation === "right") {
+          return (
+            <ChevronRightIcon className={cn("rtl:rotate-180 size-4", className)} {...props} />
+          )
+        }
+
+        return (
+          <ChevronDownIcon className={cn("size-4", className)} {...props} />
+        )
+      },
+      DayButton: ({ ...props }) => (
+        <CalendarDayButton locale={locale} {...props} />
+      ),
+      WeekNumber: ({ children, ...props }) => {
+        return (
+          <td {...props}>
+            <div className="flex size-(--cell-size) items-center justify-center text-center">
+              {children}
+            </div>
+          </td>
+        )
+      },
+      ...components,
+    }),
+    [locale, components]
+  )
+
   return (
     <DayPicker
       showOutsideDays={showOutsideDays}
@@ -58,7 +108,12 @@ function Calendar({
       locale={locale}
       formatters={{
         formatMonthDropdown: (date) =>
-          date.toLocaleString(locale?.code, { month: "short" }),
+          // The grid is Gregorian; some locales (ar-SA) default to another
+          // calendar in Intl and would name the wrong months.
+          date.toLocaleString(locale?.code, {
+            month: "short",
+            calendar: "gregory",
+          }),
         ...formatters,
       }}
       classNames={{
@@ -150,48 +205,7 @@ function Calendar({
         hidden: cn("invisible", defaultClassNames.hidden),
         ...classNames,
       }}
-      components={{
-        Root: ({ className, rootRef, ...props }) => {
-          return (
-            <div
-              data-slot="calendar"
-              ref={rootRef}
-              className={cn(className)}
-              {...props}
-            />
-          )
-        },
-        Chevron: ({ className, orientation, ...props }) => {
-          if (orientation === "left") {
-            return (
-              <ChevronLeftIcon className={cn("rtl:rotate-180 size-4", className)} {...props} />
-            )
-          }
-
-          if (orientation === "right") {
-            return (
-              <ChevronRightIcon className={cn("rtl:rotate-180 size-4", className)} {...props} />
-            )
-          }
-
-          return (
-            <ChevronDownIcon className={cn("size-4", className)} {...props} />
-          )
-        },
-        DayButton: ({ ...props }) => (
-          <CalendarDayButton locale={locale} {...props} />
-        ),
-        WeekNumber: ({ children, ...props }) => {
-          return (
-            <td {...props}>
-              <div className="flex size-(--cell-size) items-center justify-center text-center">
-                {children}
-              </div>
-            </td>
-          )
-        },
-        ...components,
-      }}
+      components={calendarComponents}
       {...props}
     />
   )
@@ -213,9 +227,12 @@ function CalendarDayButton({
 
   return (
     <Button
+      ref={ref}
       variant="ghost"
       size="icon"
-      data-day={day.date.toLocaleDateString(locale?.code)}
+      data-day={day.date.toLocaleDateString(locale?.code, {
+        calendar: "gregory",
+      })}
       data-selected-single={
         modifiers.selected &&
         !modifiers.range_start &&

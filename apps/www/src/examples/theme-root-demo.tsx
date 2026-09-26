@@ -25,15 +25,13 @@ export default function ThemeRootDemo() {
   const [open, setOpen] = React.useState(false)
   const [slot, setSlot] = React.useState<string | null>(null)
 
-  React.useEffect(() => {
-    if (!open) {
-      setSlot(null)
-      return
-    }
-    const dialog = document.querySelector('[role="dialog"]')
-    const root = dialog?.closest("[data-tecton-root]")
+  // The popup mounts after `open` flips, so an effect on `open` would look
+  // before it exists; a ref callback runs once it is in the document.
+  const locate = React.useCallback((popup: HTMLDivElement | null) => {
+    if (!popup) return
+    const root = popup.closest("[data-tecton-root]")
     setSlot(root?.getAttribute("data-slot") ?? null)
-  }, [open])
+  }, [])
 
   return (
     <ThemeRoot className="rounded-lg border p-6 [--primary:var(--tecton-palette-green-560)]">
@@ -43,7 +41,7 @@ export default function ThemeRootDemo() {
         </p>
         <Dialog open={open} onOpenChange={setOpen}>
           <DialogTrigger render={<Button />}>Open dialog</DialogTrigger>
-          <DialogContent className="sm:max-w-sm">
+          <DialogContent ref={locate} className="sm:max-w-sm">
             <DialogHeader>
               <DialogTitle>Inside the overlay container</DialogTitle>
               <DialogDescription>

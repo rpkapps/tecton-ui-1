@@ -97,6 +97,6 @@ The variant owns the colour and when the underline appears, and Tailwind's stock
 ## Before you finish
 
 - Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
-- Navigation is a `Link` with an `href` (and `external` instead of hand-written `target` and `rel`) or a `Button` with `render={<a href="…" />}` and `nativeButton={false}`, never an anchor nested inside a `Button` and never a `Link` that only runs a handler.
+- Navigation is a `Link` with an `href` (and `external` instead of hand-written `target` and `rel`) or a `LinkButton` when it should look like a button, never an anchor nested inside a `Button` or a `Button` with `render={<a />}` (it keeps `role="button"`) and never a `Link` that only runs a handler.
 
 Related: button, link, provider
