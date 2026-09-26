@@ -11,7 +11,7 @@ upstream: apps/v4/content/docs/components/aria/select.mdx
 
 ## Usage
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import {
   Select,
   SelectContent,
@@ -22,7 +22,7 @@ import {
 } from "@tecton/react/components/select"
 ```
 
-```tsx showLineNumbers
+```tsx lineNumbers
 const items = [
   { label: "Light", value: "light" },
   { label: "Dark", value: "dark" },
@@ -85,7 +85,7 @@ A select with many items that scrolls.
 
 Add the `data-invalid` attribute to the `Field` component and the `isInvalid` prop to the `SelectTrigger` component to show an error state.
 
-```tsx showLineNumbers /data-invalid/ /aria-invalid/
+```tsx lineNumbers /data-invalid/ /aria-invalid/
 <Field data-invalid>
   <FieldLabel>Fruit</FieldLabel>
   <Select isInvalid>{/* ... */}</Select>

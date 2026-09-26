@@ -19,7 +19,7 @@ export function ShimmerOnce() {
       <Button
         variant="outline"
         size="sm"
-        onClick={() => setKey((value) => value + 1)}
+        onPress={() => setKey((value) => value + 1)}
       >
         Replay
       </Button>

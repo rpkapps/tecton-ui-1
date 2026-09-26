@@ -1,6 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/empty-background.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { BellIcon } from "lucide-react"
-import { RefreshCcwIcon } from "lucide-react"
+import { RefreshCcwIcon, BellIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import {

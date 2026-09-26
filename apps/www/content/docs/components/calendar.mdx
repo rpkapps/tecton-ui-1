@@ -14,7 +14,7 @@ upstream: apps/v4/content/docs/components/aria/calendar.mdx
 
 ## Usage
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import {
   getLocalTimeZone,
   today,
@@ -24,7 +24,7 @@ import {
 import { Calendar } from "@tecton/react/components/calendar"
 ```
 
-```tsx showLineNumbers
+```tsx lineNumbers
 const [date, setDate] = React.useState<CalendarDate | null>(
   today(getLocalTimeZone())
 )
@@ -99,7 +99,7 @@ Use `captionLayout="dropdown"` to show month and year dropdowns.
 
 You can customize the size of calendar cells using the `--cell-size` CSS variable. You can also make it responsive by using breakpoint-specific values:
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Calendar
   value={date}
   onChange={setDate}
@@ -109,7 +109,7 @@ You can customize the size of calendar cells using the `--cell-size` CSS variabl
 
 Or use fixed values:
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Calendar
   value={date}
   onChange={setDate}
@@ -120,8 +120,6 @@ Or use fixed values:
 ## RTL
 
 To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
-
-See also the [International Calendars Guide](#international-calendars) for enabling the international calendars such as Persian / Hijri / Jalali.
 
 <ComponentPreview
   name="calendar-rtl"

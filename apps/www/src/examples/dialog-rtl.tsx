@@ -78,12 +78,12 @@ export function DialogRtl() {
           </DialogHeader>
           <FieldGroup>
             <Field>
-              <Label htmlFor="name-1">{t.name}</Label>
-              <Input id="name-1" name="name" defaultValue="Pedro Duarte" />
+              <Label htmlFor="name-1-rtl">{t.name}</Label>
+              <Input id="name-1-rtl" name="name" defaultValue="Pedro Duarte" />
             </Field>
             <Field>
-              <Label htmlFor="username-1">{t.username}</Label>
-              <Input id="username-1" name="username" defaultValue="@peduarte" />
+              <Label htmlFor="username-1-rtl">{t.username}</Label>
+              <Input id="username-1-rtl" name="username" defaultValue="@peduarte" />
             </Field>
           </FieldGroup>
           <DialogFooter>

@@ -1,6 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/aria/empty-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { FolderCodeIcon } from "lucide-react"
-import { ArrowUpRightIcon } from "lucide-react"
+import { ArrowUpRightIcon, FolderCodeIcon } from "lucide-react"
 
 import { Button, LinkButton } from "@tecton/react/components/button"
 import {

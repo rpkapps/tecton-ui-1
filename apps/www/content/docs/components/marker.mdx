@@ -13,11 +13,11 @@ The `Marker` component displays inline conversation markers such as status updat
 
 ## Usage
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import { Marker, MarkerContent, MarkerIcon } from "@tecton/react/components/marker"
 ```
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Marker>
   <MarkerIcon>
     <CheckIcon />
@@ -113,7 +113,7 @@ Turn a marker into a link or button with the `render` prop on `Marker`.
   previewClassName="h-auto theme-blue"
 />
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import { Marker, MarkerContent } from "@tecton/react/components/marker"
 
 export function MarkerLinkDemo() {
@@ -133,7 +133,7 @@ export function MarkerLinkDemo() {
 
 For streaming or progress markers such as "Thinking..." or a running tool, set `role="status"` so assistive tech announces the update as it appears. `Marker` forwards `role` to the underlying element.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Marker role="status">
   <MarkerIcon>
     <Spinner />
@@ -146,7 +146,7 @@ For streaming or progress markers such as "Thinking..." or a running tool, set `
 
 A separator that carries text, such as a date or a section label, needs no role. The divider lines are decorative CSS pseudo-elements, and the text is announced as ordinary content.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Marker variant="separator">
   <MarkerContent>Today</MarkerContent>
 </Marker>
@@ -163,7 +163,7 @@ A separator that carries text, such as a date or a section label, needs no role.
 
 A bordered marker keeps the same semantics as the default marker. The bottom border is decorative, so choose `role="status"`, `render`, or no role based on the marker's purpose.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Marker variant="border">
   <MarkerIcon>
     <FileTextIcon />
@@ -176,7 +176,7 @@ A bordered marker keeps the same semantics as the default marker. The bottom bor
 
 `MarkerIcon` is decorative and hidden from assistive tech with `aria-hidden`, so the adjacent `MarkerContent` carries the meaning. For an icon-only marker, provide an `aria-label` or visible text so it is not announced as empty.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Marker aria-label="Synced">
   <MarkerIcon>
     <CheckIcon />
@@ -188,7 +188,7 @@ A bordered marker keeps the same semantics as the default marker. The bottom bor
 
 When a marker links or triggers an action, render it as a real `<button>` or `<a>` with the `render` prop so it is focusable and exposes the correct role. The accessible name comes from the marker text.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Marker render={(props) => <a {...props} href="/files" />}>
   <MarkerIcon>
     <FileTextIcon />

@@ -8,7 +8,7 @@ import { Button } from "@tecton/react/components/button"
 export function SonnerDescription() {
   return (
     <Button
-      onClick={() =>
+      onPress={() =>
         toast("Event has been created", {
           description: "Monday, January 3rd at 6:00pm",
         })

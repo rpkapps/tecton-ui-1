@@ -25,7 +25,7 @@ export default function InputGroupButtonExample() {
           <InputGroupButton
             aria-label="Copy"
             size="icon-xs"
-            onClick={() => {
+            onPress={() => {
               copyToClipboard("https://x.com/shadcn")
             }}
           >
@@ -54,7 +54,7 @@ export default function InputGroupButtonExample() {
         <InputGroupInput id="input-secure-19" />
         <InputGroupAddon align="inline-end">
           <InputGroupButton
-            onClick={() => setIsFavorite(!isFavorite)}
+            onPress={() => setIsFavorite(!isFavorite)}
             size="icon-xs"
           >
             <StarIcon

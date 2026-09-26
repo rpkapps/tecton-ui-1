@@ -140,6 +140,7 @@ apps/www/src/examples/carousel-plugin.tsx
 apps/www/src/examples/carousel-rtl.tsx
 apps/www/src/examples/carousel-size.tsx
 apps/www/src/examples/carousel-spacing.tsx
+apps/www/src/examples/chart-demo.tsx
 apps/www/src/examples/chart-example.tsx
 apps/www/src/examples/chart-example-axis.tsx
 apps/www/src/examples/chart-example-grid.tsx
@@ -396,7 +397,6 @@ apps/www/src/examples/shimmer-none.tsx
 apps/www/src/examples/shimmer-once.tsx
 apps/www/src/examples/shimmer-rtl.tsx
 apps/www/src/examples/shimmer-spread.tsx
-apps/www/src/examples/sidebar-demo.tsx
 apps/www/src/examples/skeleton-avatar.tsx
 apps/www/src/examples/skeleton-card.tsx
 apps/www/src/examples/skeleton-demo.tsx
