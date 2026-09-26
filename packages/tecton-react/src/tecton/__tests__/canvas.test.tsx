@@ -37,14 +37,14 @@ describe("Canvas", () => {
   })
 
   it.each([
-    ["top-left", ["top-3", "start-3", "flex-col"]],
+    ["top-start", ["top-3", "start-3", "flex-col"]],
     ["top", ["top-3", "left-1/2", "flex-row"]],
-    ["top-right", ["top-3", "end-3", "items-end"]],
-    ["left", ["top-1/2", "start-3"]],
-    ["right", ["top-1/2", "end-3"]],
-    ["bottom-left", ["bottom-3", "start-3"]],
+    ["top-end", ["top-3", "end-3", "items-end"]],
+    ["start", ["top-1/2", "start-3"]],
+    ["end", ["top-1/2", "end-3"]],
+    ["bottom-start", ["bottom-3", "start-3"]],
     ["bottom", ["bottom-3", "left-1/2", "flex-row"]],
-    ["bottom-right", ["end-3", "bottom-3", "items-end"]],
+    ["bottom-end", ["end-3", "bottom-3", "items-end"]],
   ] as const)("CanvasOverlay position=%s", (position, classes) => {
     const { container } = render(<CanvasOverlay position={position} />)
     const overlay = container.querySelector('[data-slot="canvas-overlay"]')
@@ -52,12 +52,38 @@ describe("Canvas", () => {
     expect(overlay).toHaveClass(...classes)
   })
 
-  it("CanvasOverlay defaults to top-left", () => {
+  it("CanvasOverlay defaults to top-start", () => {
     const { container } = render(<CanvasOverlay />)
     expect(
       container.querySelector('[data-slot="canvas-overlay"]')
-    ).toHaveAttribute("data-position", "top-left")
+    ).toHaveAttribute("data-position", "top-start")
   })
+
+  it.each([
+    ["top-start", "start-3"],
+    ["top-end", "end-3"],
+    ["start", "start-3"],
+    ["end", "end-3"],
+    ["bottom-start", "start-3"],
+    ["bottom-end", "end-3"],
+  ] as const)(
+    "CanvasOverlay position=%s is pinned with a logical inset in RTL",
+    (position, inset) => {
+      const { container } = render(
+        <div dir="rtl">
+          <CanvasOverlay position={position} />
+        </div>
+      )
+      const overlay = container.querySelector('[data-slot="canvas-overlay"]')
+      expect(overlay).toHaveClass(inset)
+      // No physical left/right inset: the side flips with the direction.
+      expect(
+        [...(overlay?.classList ?? [])].filter((c) =>
+          /^-?(left|right)-/.test(c)
+        )
+      ).toEqual([])
+    }
+  )
 
   it("CanvasToolbar is a vertical toolbar by default", () => {
     render(<CanvasToolbar aria-label="Tools" />)

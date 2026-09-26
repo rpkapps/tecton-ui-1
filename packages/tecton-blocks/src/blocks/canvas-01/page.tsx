@@ -219,7 +219,7 @@ export default function Page() {
             />
           </CanvasSurface>
 
-          <CanvasOverlay position="top-left">
+          <CanvasOverlay position="top-start">
             <ViewSelect
               label="Map type"
               options={mapViews}
@@ -317,7 +317,7 @@ export default function Page() {
             </CanvasToolbar>
           </CanvasOverlay>
 
-          <CanvasOverlay position="top-right">
+          <CanvasOverlay position="top-end">
             <ViewSelect
               label="Background"
               options={geologyLayers}
@@ -376,7 +376,7 @@ export default function Page() {
             </CanvasToolbar>
           </CanvasOverlay>
 
-          <CanvasOverlay position="bottom-left">
+          <CanvasOverlay position="bottom-start">
             <CanvasLegend aria-label="Legend">
               {legend.map((entry) => (
                 <CanvasLegendItem
@@ -398,7 +398,7 @@ export default function Page() {
             </CanvasLegend>
           </CanvasOverlay>
 
-          <CanvasOverlay position="bottom-right">
+          <CanvasOverlay position="bottom-end">
             <div
               data-slot="scale-bar"
               className="grid gap-0.5 rounded-md border border-border-subtle bg-card/90 px-2 py-1 font-mono text-[10px] text-card-foreground shadow-md backdrop-blur-sm"

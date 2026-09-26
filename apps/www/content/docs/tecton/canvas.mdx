@@ -24,13 +24,13 @@ import {
   <CanvasSurface>
     <MapEngine />
   </CanvasSurface>
-  <CanvasOverlay position="top-left">
+  <CanvasOverlay position="top-start">
     <CanvasToolbar aria-label="Navigation">
       <CanvasToolbarButton aria-label="Zoom in"><ZoomInIcon /></CanvasToolbarButton>
       <CanvasToolbarButton aria-label="Zoom out"><ZoomOutIcon /></CanvasToolbarButton>
     </CanvasToolbar>
   </CanvasOverlay>
-  <CanvasOverlay position="bottom-left">
+  <CanvasOverlay position="bottom-start">
     <CanvasLegend aria-label="Legend">
       <CanvasLegendItem swatch="var(--chart-1)">Existing fields</CanvasLegendItem>
     </CanvasLegend>
@@ -38,7 +38,7 @@ import {
 </Canvas>
 ```
 
-`Canvas` is `flex-1` and fills the remaining height of a flex column such as `AppShellMain`; give it a height when it is embedded. Overlays let pointer events through between their children, so the surface stays interactive around the floating controls.
+`Canvas` is `flex-1` and fills the remaining height of a flex column such as `AppShellMain`; give it a height when it is embedded. Overlays let pointer events through between their children, so the surface stays interactive around the floating controls. Positions follow the reading direction: `start` is the left edge in a left-to-right layout and the right edge in a right-to-left one.
 
 ## Menus in the rail
 
@@ -88,7 +88,7 @@ Write the symbology as `CanvasLegendItem`s inside a `CanvasLegend`: it is a list
 
 <Do>
 
-Pin chrome with `position` on `CanvasOverlay` (the eight edges and corners); side and corner overlays stack their children down the column, `top` and `bottom` across.
+Pin chrome with `position` on `CanvasOverlay` (the eight edges and corners, `top-start` … `bottom-end`); side and corner overlays stack their children down the column, `top` and `bottom` across.
 
 </Do>
 
@@ -129,7 +129,7 @@ Fill a rail with `CanvasToolbarButton`s (a ghost icon `Button`; compose a menu o
 ```tsx
 <Canvas className="h-full">
   <CanvasSurface><MapEngine /></CanvasSurface>
-  <CanvasOverlay position="top-left">
+  <CanvasOverlay position="top-start">
     <CanvasToolbar aria-label="Navigation">
       <CanvasToolbarButton aria-label="Zoom in"><ZoomInIcon /></CanvasToolbarButton>
       <CanvasToolbarButton aria-label="Zoom out"><ZoomOutIcon /></CanvasToolbarButton>
@@ -188,7 +188,7 @@ Fill a rail with `CanvasToolbarButton`s (a ghost icon `Button`; compose a menu o
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `position` | `"top-left" \| "top" \| "top-right" \| "left" \| "right" \| "bottom-left" \| "bottom" \| "bottom-right"` | `"top-left"` | Edge or corner the overlay is pinned to. `top` and `bottom` stack children horizontally, the others vertically. |
+| `position` | `"top-start" \| "top" \| "top-end" \| "start" \| "end" \| "bottom-start" \| "bottom" \| "bottom-end"` | `"top-start"` | Edge or corner the overlay is pinned to. `top` and `bottom` stack children horizontally, the others vertically. |
 
 ### CanvasToolbar
 

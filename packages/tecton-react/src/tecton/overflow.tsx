@@ -1385,7 +1385,7 @@ function OverflowMenu({
         <span
           aria-hidden
           data-slot="overflow-menu-badge"
-          className={countBadgeVariants({ anchor: "top-right" })}
+          className={countBadgeVariants({ anchor: "top-end" })}
         >
           {state.hidden.length > 99 ? "99+" : state.hidden.length}
         </span>
