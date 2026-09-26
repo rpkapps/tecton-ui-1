@@ -19,17 +19,11 @@ import { TectonProvider } from "@tecton/react/tecton/provider"
 </html>
 ```
 
-`TectonProvider` carries the settings every Tecton component reads — the locale, the reading direction, the router and the overlay container. Mount it once at the root of the application. It renders no element of its own, so set the same `dir` and `lang` on `<html>` for the document's own text flow and scrollbars.
-
-Without a provider, components read left to right in the browser's locale (`en-US` while rendering on the server), links do full page loads and overlays portal into `document.body`.
+Mount it once at the root. It renders no element, so set the same `dir` and `lang` on `<html>` for the document's own text flow. Without a provider, components read left to right in the browser's locale, links do full page loads and overlays portal into `document.body`.
 
 ## Direction and locale
 
-- `locale` alone also sets the direction: `ar`, `he`, `fa`, `ur` and the other right-to-left languages give `rtl`.
-- `direction` wins over the locale's own, for a subtree whose layout differs from its language.
-- Read them in components of your own with `useDirection()` (`"ltr" | "rtl"`) or `useLocale()` (`{ locale, direction }`), never from `document.dir`.
-
-## Nesting
+`locale` also sets the direction: `ar`, `he`, `fa`, `ur` and the other right-to-left languages give `rtl`. `direction` overrides it. In your own components read them with `useDirection()` or `useLocale()`, not from `document.dir`.
 
 A nested provider inherits every value it does not set, so a subtree changes only what differs:
 
@@ -43,11 +37,9 @@ A nested provider inherits every value it does not set, so a subtree changes onl
 </TectonProvider>
 ```
 
-A nested `locale` without `direction` takes that locale's direction, not the inherited one.
-
 ## Router
 
-Give the provider your router's `navigate` and `useHref` and Tecton links navigate client-side. A modified click (⌘, Ctrl, Shift, Alt), a `target="_blank"`, a `download` link and a link to another origin are left to the browser. With TanStack Router:
+Pass your router's `navigate` and `useHref` and Tecton links navigate client-side; modified clicks, `target="_blank"`, downloads and other origins are left to the browser. `navigate` receives the link's `href`; `useHref` turns it into the rendered URL, adding a base path. With TanStack Router:
 
 ```tsx title="src/routes/__root.tsx"
 import { Outlet, useRouter } from "@tanstack/react-router"
@@ -68,13 +60,9 @@ function Root() {
 }
 ```
 
-`navigate` receives the link's `href`; `useHref` turns it into the URL rendered on the anchor, which is where a router's base path is added.
-
 ## Overlay container
 
-Every Tecton overlay — `Dialog`, `Sheet`, `AlertDialog`, `Popover`, `HoverCard`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `ContextMenu`, `Drawer`, `CommandDialog` — portals into `document.body`. `portalContainer` changes that for the whole subtree: an element, or a function returning one when the element only exists after the first render (`() => hostRef.current`). The function is called once the provider has mounted, and again whenever a new function is passed; until then overlays use `document.body`. `null` restores `document.body` below an outer provider.
-
-A single-root application does not need it. It is for pages that render several isolated React roots — micro frontends, embedded widgets — where each root's overlays have to land in a body-level container carrying that root's scope class and theme. [`ThemeRoot`](/docs/tecton/theme-root) creates, styles and removes such a container and renders its own `TectonProvider` with it, so a mounted application uses `ThemeRoot` rather than managing the element; see [Micro-frontends](/docs/micro-frontends).
+Overlays (dialogs, sheets, popovers, menus, tooltips, selects) portal into `document.body`. `portalContainer` changes that for the subtree: an element, or a function returning one when it only exists after the first render (`() => hostRef.current`); `null` restores `document.body`. A single-root application does not need it: an independently mounted application uses [Theme Root](/docs/tecton/theme-root), which manages the container for you (see [Micro-frontends](/docs/micro-frontends)).
 
 {/* guidelines:start */}
 
@@ -130,16 +118,14 @@ Read the direction with `useDirection()` (`"ltr" | "rtl"`) in components of your
 
 ### Don't
 
-<Dont severity="HIGH" title="A component library's own provider instead of TectonProvider">
+<Dont severity="HIGH" title="A dir attribute instead of TectonProvider">
 
 <Wrong>
 
 ```tsx
-import { DirectionProvider } from "@base-ui/react/direction-provider"
-
-<DirectionProvider direction="rtl">
+<div dir="rtl">
   <App />
-</DirectionProvider>
+</div>
 ```
 
 </Wrong>
@@ -156,7 +142,7 @@ import { TectonProvider } from "@tecton/react/tecton/provider"
 
 </Correct>
 
-Tecton components read the Tecton context, so a provider imported from a library Tecton is built on reaches at most the components built on that library, and the others — the tree view, `useDirection()` — stay left to right.
+`dir` flips the text flow, but Tecton components read the direction from the provider: without it, arrow keys in menus, sliders, tabs and the tree view, overlay placement and `useDirection()` all stay left to right.
 
 </Dont>
 
@@ -223,11 +209,11 @@ A remote's utilities are wrapped in `@scope (.mfe-a) to ([data-tecton-root])`, s
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `locale` | `string` | inherited, else the browser's | BCP 47 language tag for formatting and collation. Sets `direction` when that is not given. |
+| `locale` | `string` | inherited, else the browser's | BCP 47 language tag; also sets the direction. |
 | `direction` | `"ltr" \| "rtl"` | from `locale`, else inherited, else `"ltr"` | Reading direction. |
 | `navigate` | `(href: string, options?: unknown) => void` | inherited | Client-side navigation for Tecton links. |
 | `useHref` | `(href: string) => string` | inherited | Turns a router path into the rendered `href`. |
-| `portalContainer` | `HTMLElement \| null \| (() => HTMLElement \| null)` | inherited, else `document.body` | Element overlays portal into; a function is resolved after mount. `null` restores `document.body`. |
+| `portalContainer` | `HTMLElement \| null \| (() => HTMLElement \| null)` | inherited, else `document.body` | Element overlays portal into. |
 | `children` | `ReactNode` | - | The application. |
 
 ### useDirection

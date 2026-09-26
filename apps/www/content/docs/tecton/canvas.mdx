@@ -5,17 +5,17 @@ description: "Full-bleed work surface (map, schematic, 3D view) with floating ch
 
 <ComponentPreview name="canvas-demo" />
 
-
 ## Usage
 
 ```tsx
 import {
   Canvas,
-  CanvasSurface,
-  CanvasOverlay,
-  CanvasToolbar,
   CanvasLegend,
   CanvasLegendItem,
+  CanvasOverlay,
+  CanvasSurface,
+  CanvasToolbar,
+  CanvasToolbarButton,
 } from "@tecton/react/tecton/canvas"
 ```
 
@@ -26,7 +26,8 @@ import {
   </CanvasSurface>
   <CanvasOverlay position="top-left">
     <CanvasToolbar aria-label="Navigation">
-      <Button variant="ghost" size="icon-sm" aria-label="Zoom in"><ZoomInIcon /></Button>
+      <CanvasToolbarButton aria-label="Zoom in"><ZoomInIcon /></CanvasToolbarButton>
+      <CanvasToolbarButton aria-label="Zoom out"><ZoomOutIcon /></CanvasToolbarButton>
     </CanvasToolbar>
   </CanvasOverlay>
   <CanvasOverlay position="bottom-left">
@@ -37,20 +38,19 @@ import {
 </Canvas>
 ```
 
-<Callout>
-  `Canvas` is `flex-1` and fills the remaining height of its column, so place it directly in `AppShellMain` or a `SidebarInset`. Overlays ignore pointer events between their children, so the surface stays interactive around the floating controls.
-</Callout>
+`Canvas` is `flex-1` and fills the remaining height of a flex column such as `AppShellMain`; give it a height when it is embedded. Overlays let pointer events through between their children, so the surface stays interactive around the floating controls.
 
-## Composition
+## Menus in the rail
 
-```text
-Canvas
-├── CanvasSurface
-└── CanvasOverlay (position) …
-    ├── CanvasToolbar (orientation)
-    │   └── Button size="icon-sm" …
-    └── CanvasLegend
-        └── CanvasLegendItem
+A tool opens a menu or popover by rendering its trigger through `render`:
+
+```tsx
+<DropdownMenu>
+  <CanvasToolbarButton aria-label="Layers" render={<DropdownMenuTrigger />}>
+    <LayersIcon />
+  </CanvasToolbarButton>
+  <DropdownMenuContent side="inline-end" align="start">…</DropdownMenuContent>
+</DropdownMenu>
 ```
 
 {/* guidelines:start */}
@@ -180,43 +180,34 @@ Fill a rail with `CanvasToolbarButton`s (a ghost icon `Button`; compose a menu o
 
 ## API Reference
 
-### Canvas
+### Canvas, CanvasSurface
 
-Relative, isolated container; `flex-1 min-h-0` so it takes the remaining space.
-
-### CanvasSurface
-
-Absolutely positioned layer filling the canvas. Put the map, SVG or WebGL view here.
+`Canvas` is the relative, isolated container; `CanvasSurface` is the absolutely positioned layer that holds the map, SVG or WebGL view.
 
 ### CanvasOverlay
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `position` | `"top-left" \| "top" \| "top-right" \| "left" \| "right" \| "bottom-left" \| "bottom" \| "bottom-right"` | "top-left" | Edge or corner the overlay is pinned to. Corners and sides stack children vertically, `top` and `bottom` horizontally. |
+| `position` | `"top-left" \| "top" \| "top-right" \| "left" \| "right" \| "bottom-left" \| "bottom" \| "bottom-right"` | `"top-left"` | Edge or corner the overlay is pinned to. `top` and `bottom` stack children horizontally, the others vertically. |
 
 ### CanvasToolbar
 
-A `role="toolbar"` on a floating surface. It is one tab stop: the arrow keys move between its `CanvasToolbarButton`s (Up / Down when vertical, Left / Right when horizontal, mirrored in right-to-left layouts), stop at the ends, and Tab leaves the rail. Give it an `aria-label`.
+A toolbar on a floating surface: one tab stop, arrow keys move between its tools and stop at the ends. Give it an `aria-label`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `orientation` | `"vertical" \| "horizontal"` | "vertical" | Direction of the rail, and of the arrow keys that move along it. |
-| `disabled` | `boolean` | false | Disables every tool in the rail. |
-| `aria-label` | `string` | - | Accessible name of the toolbar. |
+| `orientation` | `"vertical" \| "horizontal"` | `"vertical"` | Direction of the rail and of its arrow keys. |
+| `disabled` | `boolean` | `false` | Disables every tool. |
 
 ### CanvasToolbarButton
 
-A tool in the rail: a `Button` (`variant="ghost"`, `size="icon-sm"` by default) that takes part in the rail's arrow-key navigation. Accepts `Button` props; a disabled tool stays focusable so the arrows do not skip it (`focusableWhenDisabled={false}` removes it). Compose it with a trigger through `render`:
+A ghost icon `Button` (`variant` and `size` can be changed) that takes part in the rail's arrow-key navigation. Accepts `Button` props.
 
-```tsx
-<DropdownMenu>
-  <CanvasToolbarButton aria-label="Layers" render={<DropdownMenuTrigger />}>
-    <LayersIcon />
-  </CanvasToolbarButton>
-  <DropdownMenuContent side="inline-end" align="start">…</DropdownMenuContent>
-</DropdownMenu>
-```
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `focusableWhenDisabled` | `boolean` | `true` | Keep a disabled tool focusable so the arrow keys do not skip it. |
+| `render` | `ReactElement` | - | Element to render the tool as, such as a menu trigger. |
 
 ### CanvasLegend, CanvasLegendItem
 
-A list (`ul`, one `li` per `CanvasLegendItem`) of symbols, so assistive technology reads the names in order. `CanvasLegendItem` takes `swatch`: a CSS colour string or a node for patterns; the swatch is decorative (`aria-hidden`) and the item's children are its name. Give the list an `aria-label` ("Legend").
+A list of symbols; give it an `aria-label`. `CanvasLegendItem` takes `swatch` (a CSS colour string, or a node for a pattern), drawn as a decorative symbol before its name.

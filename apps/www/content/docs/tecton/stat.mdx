@@ -5,17 +5,16 @@ description: "KPI readout with label, tabular mono value, unit, trend delta and 
 
 <ComponentPreview name="stat-demo" />
 
-
 ## Usage
 
 ```tsx
 import {
   Stat,
+  StatDelta,
+  StatGroup,
+  StatHelp,
   StatLabel,
   StatValue,
-  StatDelta,
-  StatHelp,
-  StatGroup,
 } from "@tecton/react/tecton/stat"
 ```
 
@@ -28,41 +27,21 @@ import {
 </Stat>
 ```
 
-<Callout>
-  The IBM Plex Mono value with a sans unit is a Tecton typography rule that no shadcn component carries; `Stat` is the building block for the FDA and Well Design cards.
-</Callout>
-
-## Composition
-
-Use the following composition:
-
-```text
-Stat
-├── StatLabel
-├── StatValue (unit)
-├── StatDelta
-└── StatHelp
-```
+The value is set in the mono font with tabular numbers, the unit in the sans font.
 
 ## Sizes
-
-Use the `size` prop on `Stat` to scale the value.
 
 <ComponentPreview name="stat-sizes" />
 
 ## Delta
 
-Use `StatDelta` with `trend` for an up, down or flat indicator. The colour follows `tone`, which says whether the change is good news rather than which way it went: it defaults to the trend's (up is `positive`, down `negative`, flat `neutral`), so set it where down is good news — cost, CAPEX, downtime, risk.
-
-```tsx
-<StatDelta trend="down" tone="positive">-8% vs. Alternative A</StatDelta>
-```
+`trend` picks the icon, `tone` the colour: `tone` says whether the change is good news. It defaults to the trend's (up `positive`, down `negative`), so set it where down is good — cost, CAPEX, downtime, risk.
 
 <ComponentPreview name="stat-delta" />
 
 ## Group
 
-`StatGroup` lays out several stats in a responsive grid; use `align` on each `Stat`.
+`StatGroup` lays several stats out in a responsive grid.
 
 <ComponentPreview name="stat-group" />
 
@@ -214,34 +193,28 @@ The `unit` slot renders `font-sans text-[0.6em] text-muted-foreground` beside th
 
 ### Stat
 
-Container that sets the value size and alignment.
+A `div`; accepts its props.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `size` | `"sm" \| "md" \| "lg"` | "md" | Value font size 14 / 20 / 28 px. |
-| `align` | `"start" \| "center" \| "end"` | "start" | Alignment of the parts. |
+| `size` | `"sm" \| "md" \| "lg"` | `"md"` | Value size 14 / 20 / 28 px. |
+| `align` | `"start" \| "center" \| "end"` | `"start"` | Alignment of the parts. |
 
 ### StatValue
 
-The value in the mono font with tabular numbers.
-
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `unit` | `ReactNode` | - | Unit rendered after the value. |
+| `unit` | `ReactNode` | - | Unit after the value. |
 
 ### StatDelta
 
-Trend indicator with icon. It sets `data-trend` and `data-tone`.
+Trend icon and text; carries `data-trend` and `data-tone`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `trend` | `"up" \| "down" \| "flat"` | "flat" | Which way the number moved; picks the icon. |
-| `tone` | `"positive" \| "negative" \| "neutral"` | from `trend` | Whether the move is good or bad; picks the colour. Defaults to the trend's (up `positive`, down `negative`, flat `neutral`). |
+| `trend` | `"up" \| "down" \| "flat"` | `"flat"` | Which way the number moved. |
+| `tone` | `"positive" \| "negative" \| "neutral"` | from `trend` | Whether the move is good or bad. |
 
 ### StatLabel, StatHelp, StatGroup
 
-Plain styled elements.
-
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `className` | `string` | - |  |
+Styled `span`, `span` and `div` elements.

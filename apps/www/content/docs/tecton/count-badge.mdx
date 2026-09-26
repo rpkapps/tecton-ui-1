@@ -5,7 +5,6 @@ description: "A count or status dot anchored to the corner of an avatar, icon bu
 
 <ComponentPreview name="count-badge-demo" />
 
-
 ## Usage
 
 ```tsx
@@ -20,31 +19,23 @@ import { CountBadge } from "@tecton/react/tecton/count-badge"
 </CountBadge>
 ```
 
-<Callout title="Naming">
-  This is the Tecton *Badge* from the design system. It is named `CountBadge` in the library so it does not collide with the shadcn `Badge`, which is the static label (the interactive [Chip](/docs/tecton/chip) shares its variants).
-</Callout>
+The badge is hidden from assistive technology, so put the count in the child's accessible name. This is the design system's *Badge*; the library calls it `CountBadge` because [Badge](/docs/components/badge) is the static label.
 
 ## Colors
 
-Use the `color` prop. The values are [Badge](/docs/components/badge)'s `variant` names — `default`, `secondary`, `destructive`, `success`, `warning`, `info` — so the same word means the same status on both. The fills stay solid rather than the `*-surface` tokens a badge uses: a 16 px pill needs the contrast to stay legible.
+`color` takes Badge's `variant` names, so the same word means the same status on both.
 
 <ComponentPreview name="count-badge-colors" />
 
 ## Dot
 
-Use `variant="dot"` for a presence or status indicator without a number.
+`variant="dot"` is a presence or status indicator without a number. `anchor` places the badge on any corner of its child.
 
 <ComponentPreview name="count-badge-dot" />
 
-## Anchor
-
-Use the `anchor` prop to place the badge on any corner of its child.
-
-<ComponentPreview name="count-badge-anchor" />
-
 ## Max, zero and custom content
 
-Counts above `max` render as `max+`. A count of `0` hides the badge unless `showZero` is set; `content` replaces the number with arbitrary content.
+Counts above `max` render as `max+`. A count of `0` hides the badge unless `showZero` is set; `content` replaces the number.
 
 <ComponentPreview name="count-badge-max" />
 
@@ -189,15 +180,15 @@ The dot variant is an 8 px circle that renders no children by design, so the num
 
 ### CountBadge
 
-Wraps its child in a relatively positioned `span` and renders the badge absolutely. The badge is `aria-hidden`: put the count in the child's accessible name (`aria-label="Notifications, 4 unread"`).
+Wraps its child in a relatively positioned `span`; other props go to that `span`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `count` | `number` | - | Number to display. |
-| `max` | `number` | 99 | Counts above this render as `max+`. |
-| `showZero` | `boolean` | false | Render the badge when `count` is 0. |
-| `content` | `ReactNode` | - | Custom content instead of the count. |
-| `invisible` | `boolean` | false | Hide the badge but keep the anchor. |
-| `color` | `"default" \| "secondary" \| "destructive" \| "success" \| "warning" \| "info"` | "default" | Badge colour, named after Badge's `variant`. |
-| `variant` | `"standard" \| "dot"` | "standard" | Number pill or 8 px dot. |
-| `anchor` | `"top-right" \| "top-left" \| "bottom-right" \| "bottom-left"` | "top-right" | Corner of the child. |
+| `max` | `number` | `99` | Counts above this render as `max+`. |
+| `showZero` | `boolean` | `false` | Show the badge when `count` is 0. |
+| `content` | `ReactNode` | - | Content instead of the count, e.g. "New". |
+| `invisible` | `boolean` | `false` | Hide the badge, keep the child. |
+| `color` | `"default" \| "secondary" \| "destructive" \| "success" \| "warning" \| "info"` | `"default"` | Badge colour. |
+| `variant` | `"standard" \| "dot"` | `"standard"` | Number pill or 8 px dot. |
+| `anchor` | `"top-right" \| "top-left" \| "bottom-right" \| "bottom-left"` | `"top-right"` | Corner of the child. |

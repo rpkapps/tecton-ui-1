@@ -5,7 +5,6 @@ description: "Inline text link and button-styled link, both real anchors that na
 
 <ComponentPreview name="link-demo" />
 
-
 ## Usage
 
 ```tsx
@@ -21,37 +20,29 @@ import { Link, LinkButton } from "@tecton/react/tecton/link"
 </LinkButton>
 ```
 
-<Callout>
-  `Button variant="link"` is a button that looks like a link; `Link` is the opposite: a real anchor for navigation. `LinkButton` is an anchor with the `Button` variants and sizes.
-</Callout>
+`Link` is a real anchor for navigation; `Button variant="link"` is a button that only looks like one. By default a link inherits the surrounding font size; `size` sets it.
 
 ## Variants
 
-Use the `variant` prop. `subtle` is always underlined, the others underline on hover.
+`subtle` is always underlined; the others underline on hover.
 
 <ComponentPreview name="link-variants" />
 
-## Sizes
-
-By default the link inherits the surrounding font size; use `size` to set it explicitly.
-
-<ComponentPreview name="link-sizes" />
-
 ## External
 
-Set `external` to open in a new tab with `rel="noreferrer noopener"` and append an icon. A `rel` you pass (`nofollow`) is added to `noreferrer noopener`, never swapped for it, and an explicit `target` wins over the default `_blank`.
+`external` opens the link in a new tab, adds `noreferrer noopener` to `rel` and appends an icon. A `target` you pass wins, and a `rel` you pass is added.
 
 <ComponentPreview name="link-external" />
 
 ## Link button
 
-`LinkButton` takes the `Button` `variant` and `size`, and behaves like `Link`.
+`LinkButton` is an anchor with the `Button` `variant` and `size`.
 
 <ComponentPreview name="link-button" />
 
 ## Routing
 
-With `navigate` (and `useHref` for base paths) on the [TectonProvider](/docs/tecton/provider#router), a plain click on a same-origin link calls `navigate(href, navigateOptions)` instead of loading the page. Modifier and middle clicks, `target="_blank"`, `download` and other origins are left to the browser, so "open in new tab" keeps working. `useHref` maps `href` for the rendered anchor only; `navigate` receives the router path.
+With `navigate` (and optionally `useHref`) on the [TectonProvider](/docs/tecton/provider#router), a plain click on a same-origin link calls `navigate(href, navigateOptions)` instead of loading the page. Modifier and middle clicks, `target="_blank"`, `download` and other origins are left to the browser.
 
 ```tsx
 <Link href="/wells" navigateOptions={{ replace: true }}>
@@ -214,28 +205,26 @@ The variant owns the colour and when the underline appears, and Tailwind's stock
 
 ### Link
 
-Renders an `<a>` and accepts its attributes.
+Renders an `a` and accepts its attributes.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `href` | `string` | - | Destination; mapped by the provider's `useHref` when rendered. |
-| `variant` | `"default" \| "primary" \| "muted" \| "subtle"` | "default" | Colour and underline behaviour. |
-| `size` | `"inherit" \| "sm" \| "md" \| "lg"` | "inherit" | Font size. |
-| `external` | `boolean` | false | Opens in a new tab (`target="_blank"` unless `target` is set), adds `noreferrer noopener` to `rel` and shows an icon. |
-| `disabled` | `boolean` | false | Drops `href` (no navigation, not focusable) and sets `aria-disabled`. |
-| `navigateOptions` | `unknown` | - | Passed to the provider's `navigate` as its second argument. |
+| `href` | `string` | - | Destination; mapped by the provider's `useHref` for the rendered anchor. |
+| `variant` | `"default" \| "primary" \| "muted" \| "subtle"` | `"default"` | Colour and underline. |
+| `size` | `"inherit" \| "sm" \| "md" \| "lg"` | `"inherit"` | Font size. |
+| `external` | `boolean` | `false` | New tab, safe `rel`, external icon. |
+| `disabled` | `boolean` | `false` | Drops `href` (no navigation, not focusable) and sets `aria-disabled`. |
+| `navigateOptions` | `unknown` | - | Second argument of the provider's `navigate`. |
 | `onClick` | `(event: MouseEvent) => void` | - | Runs before navigation; `event.preventDefault()` cancels it. |
-| `render` | `ReactElement \| (props) => ReactElement` | - | Renders another anchor element (for example a router's link) with the link props merged in. |
+| `render` | `ReactElement \| (props, state) => ReactElement` | - | Render another anchor element, such as a router's link, with the link props merged in. |
 
-State attributes: `data-slot="link"`, `data-variant`, `data-disabled` (present when disabled). Hover, press and focus are styled with `:hover`, `:active` and `:focus-visible`.
+A disabled link carries `data-disabled`.
 
 ### LinkButton
 
-Same anchor behaviour and props as `Link` (without `variant`/`size`/`external` of the text link), plus:
+The `href`, `disabled`, `navigateOptions`, `onClick` and `render` props of `Link`, plus:
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `variant` | `"default" \| "outline" \| "secondary" \| "ghost" \| "destructive" \| "link"` | "default" | The `Button` variant. |
-| `size` | `"default" \| "xs" \| "sm" \| "lg" \| "icon" \| "icon-xs" \| "icon-sm" \| "icon-lg"` | "default" | The `Button` size. |
-
-State attributes: `data-slot="button"`, `data-variant`, `data-size`, `data-disabled`.
+| `variant` | `"default" \| "outline" \| "secondary" \| "ghost" \| "destructive" \| "link"` | `"default"` | Button variant. |
+| `size` | `"default" \| "xs" \| "sm" \| "lg" \| "icon" \| "icon-xs" \| "icon-sm" \| "icon-lg"` | `"default"` | Button size. |
