@@ -36,13 +36,13 @@ Use the `color` prop for the ring colour. `default` paints the ring with the sha
 
 ## Value label
 
-Set `showValue` to render the formatted value in the centre, or pass children for custom content. `minValue`, `maxValue` and `formatOptions` come from React Aria.
+Set `showValue` to render the formatted value in the centre, or pass children for custom content. `min`, `max` and `format` (`Intl.NumberFormatOptions`) set the scale and the text.
 
 <ComponentPreview name="circular-progress-value" />
 
 ## Indeterminate
 
-Set `isIndeterminate` for a spinning ring while the amount of work is unknown. With reduced motion requested the ring keeps turning slowly rather than stopping: a still arc would read as a stuck value.
+Pass `value={null}` for a spinning ring while the amount of work is unknown. With reduced motion requested the ring keeps turning slowly rather than stopping: a still arc would read as a stuck value.
 
 <ComponentPreview name="circular-progress-indeterminate" />
 
@@ -86,13 +86,13 @@ Colour with `color="default" | "foreground" | "success" | "warning" | "error" | 
 
 <Do>
 
-Give the scale with `minValue` and `maxValue`, shape the text with `formatOptions`, or pass children for custom centre content.
+Give the scale with `min` and `max`, shape the text with `format` (`Intl.NumberFormatOptions`), or pass children for custom centre content.
 
 </Do>
 
 <Do>
 
-Use `isIndeterminate`, not `value={0}`, while the total is unknown.
+Pass `value={null}`, not `value={0}`, while the total is unknown: the ring spins.
 
 </Do>
 
@@ -153,7 +153,7 @@ The `svg` is `aria-hidden` and `role="progressbar"` takes no name from its conte
 <Wrong>
 
 ```tsx
-<CircularProgress size="sm" isIndeterminate showValue aria-label="Loading well logs" />
+<CircularProgress size="sm" value={null} showValue aria-label="Loading well logs" />
 ```
 
 </Wrong>
@@ -162,14 +162,14 @@ The `svg` is `aria-hidden` and `role="progressbar"` takes no name from its conte
 
 ```tsx
 <div className="flex items-center gap-3 text-sm text-muted-foreground">
-  <CircularProgress size="sm" isIndeterminate aria-label="Loading well logs" />
+  <CircularProgress size="sm" value={null} aria-label="Loading well logs" />
   Loading well logs…
 </div>
 ```
 
 </Correct>
 
-The centre label renders only when `showValue && !isIndeterminate`, so the prop is ignored and the ring spins with an empty middle where the caption was expected.
+The centre label renders only for a determinate value, so the prop is ignored and the ring spins with an empty middle where the caption was expected.
 
 </Dont>
 
@@ -179,10 +179,14 @@ The centre label renders only when `showValue && !isIndeterminate`, so the prop 
 
 ### CircularProgress
 
-React Aria [`ProgressBar`](https://react-aria.adobe.com/ProgressBar); accepts all its props (`value`, `minValue`, `maxValue`, `isIndeterminate`, `formatOptions`, `valueLabel`…).
+A `div` with `role="progressbar"`; accepts `div` props.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
+| `value` | `number \| null` | - | Current value; `null` is indeterminate (the ring spins). |
+| `min` / `max` | `number` | 0 / 100 | Scale of `value`. |
+| `format` | `Intl.NumberFormatOptions` | percent | Format of the shown and announced value. |
+| `locale` | `Intl.LocalesArgument` | runtime locale | Locale of the formatted value. |
 | `size` | `"xs" \| "sm" \| "md" \| "lg" \| "xl"` | "md" | Diameter 16 / 24 / 40 / 64 / 96 px. |
 | `color` | `"default" \| "foreground" \| "success" \| "warning" \| "error" \| "info"` | "default" | Ring colour; `default` is the `progress` token. |
 | `showValue` | `boolean` | false | Show the formatted value in the centre. |

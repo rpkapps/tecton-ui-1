@@ -25,23 +25,22 @@ describe("CopyButton", () => {
     render(<CopyButton value="abc" />)
     const button = screen.getByRole("button", { name: "Copy" })
     expect(button).toHaveAttribute("data-slot", "copy-button")
-    expect(button).toHaveAttribute("data-variant", "ghost")
-    expect(button).toHaveAttribute("data-size", "icon-sm")
+    expect(button).toHaveClass("text-ghost-foreground", "size-7")
     expect(button).not.toHaveAttribute("data-copied")
   })
 
   it("becomes a small labelled button when given children", () => {
     render(<CopyButton value="abc">Copy link</CopyButton>)
     const button = screen.getByRole("button", { name: "Copy link" })
-    expect(button).toHaveAttribute("data-size", "sm")
+    expect(button).toHaveClass("h-7", "px-2")
     expect(button).not.toHaveAttribute("aria-label")
   })
 
   it("respects explicit variant and size", () => {
     render(<CopyButton value="abc" variant="outline" size="lg" />)
     const button = screen.getByRole("button")
-    expect(button).toHaveAttribute("data-variant", "outline")
-    expect(button).toHaveAttribute("data-size", "lg")
+    expect(button).toHaveClass("border-outline-border", "h-9")
+    expect(button).not.toHaveClass("text-ghost-foreground")
   })
 
   it("copies the value, reports it and shows the copied state for the timeout", async () => {
@@ -53,8 +52,8 @@ describe("CopyButton", () => {
     expect(writeText).toHaveBeenCalledWith("hello")
     expect(onCopied).toHaveBeenCalledWith("hello")
     const button = screen.getByRole("button", { name: "Copied" })
-    expect(button).toHaveAttribute("data-copied", "true")
-    expect(button).toHaveClass("data-[copied=true]:text-success")
+    expect(button).toHaveAttribute("data-copied", "")
+    expect(button).toHaveClass("data-copied:text-success")
 
     await waitFor(() => {
       expect(screen.getByRole("button", { name: "Copy" })).not.toHaveAttribute(
@@ -72,7 +71,7 @@ describe("CopyButton", () => {
     await userEvent.click(button)
     await sleep(250)
     // 500ms after the first copy, but only 250ms after the second.
-    expect(button).toHaveAttribute("data-copied", "true")
+    expect(button).toHaveAttribute("data-copied", "")
     await waitFor(() => {
       expect(button).not.toHaveAttribute("data-copied")
     })
@@ -95,9 +94,9 @@ describe("CopyButton", () => {
     expect(onCopied).not.toHaveBeenCalled()
     expect(onError).toHaveBeenCalledWith(error)
     const button = screen.getByRole("button", { name: "Copy failed" })
-    expect(button).toHaveAttribute("data-error", "true")
+    expect(button).toHaveAttribute("data-error", "")
     expect(button).not.toHaveAttribute("data-copied")
-    expect(button).toHaveClass("data-[error=true]:text-destructive")
+    expect(button).toHaveClass("data-error:text-destructive")
     await waitFor(() =>
       expect(screen.getByRole("button", { name: "Copy" })).not.toHaveAttribute(
         "data-error"

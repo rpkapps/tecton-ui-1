@@ -26,7 +26,7 @@ describe("ActionBar", () => {
   })
 
   it("renders nothing when closed", () => {
-    const { container } = render(<ActionBar isOpen={false}>x</ActionBar>)
+    const { container } = render(<ActionBar open={false}>x</ActionBar>)
     expect(container).toBeEmptyDOMElement()
   })
 

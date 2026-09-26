@@ -59,7 +59,7 @@ The button sets `data-copied="true"` or `data-error="true"` while the state is s
 
 <Do>
 
-Pass the text as `value` and let the component own the press handler.
+Pass the text as `value` and let the component own the click handler.
 
 </Do>
 
@@ -96,7 +96,7 @@ Let the component name itself: with no children it sets `aria-label` to "Copy", 
 <Wrong>
 
 ```tsx
-<Button variant="ghost" size="icon-sm" onPress={() => navigator.clipboard.writeText(well.id)}>
+<Button variant="ghost" size="icon-sm" onClick={() => navigator.clipboard.writeText(well.id)}>
   <CopyIcon />
 </Button>
 ```
@@ -115,12 +115,12 @@ The hand-rolled version drops everything the component adds: the copied state an
 
 </Dont>
 
-<Dont severity="HIGH" title="An onPress handler passed to CopyButton">
+<Dont severity="HIGH" title="An onClick handler passed to CopyButton">
 
 <Wrong>
 
 ```tsx
-<CopyButton value={well.id} onPress={() => track("copy")} />
+<CopyButton value={well.id} onClick={() => track("copy")} />
 ```
 
 </Wrong>
@@ -133,7 +133,7 @@ The hand-rolled version drops everything the component adds: the copied state an
 
 </Correct>
 
-`CopyButton` omits `onPress` from its props and spreads the remaining props after its own, so an `onPress` you pass replaces the clipboard handler and the button quietly stops copying.
+`CopyButton` omits `onClick` from its props and spreads the remaining props after its own, so an `onClick` forced through replaces the clipboard handler and the button quietly stops copying.
 
 </Dont>
 
@@ -165,7 +165,7 @@ The component already renders `CopyIcon` or `CheckIcon` itself, so a child icon 
 
 ### CopyButton
 
-The shadcn `Button` with clipboard behaviour; accepts all `Button` props except `onPress`.
+The shadcn `Button` with clipboard behaviour; accepts all `Button` props except `onClick`. While the copied or failed state shows, it carries `data-copied` or `data-error`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |

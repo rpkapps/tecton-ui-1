@@ -41,7 +41,7 @@ const actionBarVariants = cva(
 type ActionBarProps = React.ComponentProps<"div"> &
   VariantProps<typeof actionBarVariants> & {
     /** Render the bar. Default `true`. */
-    isOpen?: boolean
+    open?: boolean
     /** Called on Escape while focus is inside the bar. */
     onDismiss?: () => void
   }
@@ -49,12 +49,12 @@ type ActionBarProps = React.ComponentProps<"div"> &
 function ActionBar({
   className,
   placement = "toolbar",
-  isOpen = true,
+  open = true,
   onDismiss,
   children,
   ...props
 }: ActionBarProps) {
-  if (!isOpen) return null
+  if (!open) return null
 
   return (
     <div
@@ -81,9 +81,8 @@ function ActionBar({
 /**
  * How long the live region stays empty after it mounts, and how long a
  * change waits: screen readers only announce changes to a region they
- * already track, and the bar mounts together with the first selection. The
- * same delay React Aria's `announce()` gives a new live region; it also
- * coalesces a burst of selection changes into one announcement.
+ * already track, and the bar mounts together with the first selection. It
+ * also coalesces a burst of selection changes into one announcement.
  */
 const ANNOUNCE_DELAY = 100
 
@@ -150,7 +149,7 @@ function ActionBarSelection({
           <Button
             variant="ghost"
             size="sm"
-            onPress={onClear}
+            onClick={onClear}
             className="@max-sm/action-bar:hidden"
           >
             Clear
@@ -159,7 +158,7 @@ function ActionBarSelection({
             variant="ghost"
             size="icon-sm"
             aria-label={clearLabel}
-            onPress={onClear}
+            onClick={onClear}
             className="hidden @max-sm/action-bar:inline-flex"
           >
             <XIcon />

@@ -14,9 +14,8 @@ import {
 
 import { Button } from "@tecton/react/components/button"
 import {
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
 } from "@tecton/react/components/dropdown-menu"
 import { Toggle } from "@tecton/react/components/toggle"
 import {
@@ -53,29 +52,22 @@ export default function OverflowVertical() {
           {tools.map(({ id, label, icon: Icon, priority }) => (
             <OverflowItem
               key={id}
-              id={id}
+              value={id}
               label={label}
               priority={priority}
               overflow={
-                <DropdownMenuGroup
-                  selectionMode="single"
-                  selectedKeys={[tool]}
-                  onSelectionChange={(keys) => {
-                    const next = [...keys][0]
-                    if (next) setTool(String(next))
-                  }}
-                >
-                  <DropdownMenuItem id={id}>
+                <DropdownMenuRadioGroup value={tool} onValueChange={setTool}>
+                  <DropdownMenuRadioItem value={id}>
                     <Icon />
                     {label}
-                  </DropdownMenuItem>
-                </DropdownMenuGroup>
+                  </DropdownMenuRadioItem>
+                </DropdownMenuRadioGroup>
               }
             >
               <Toggle
                 aria-label={label}
-                isSelected={tool === id}
-                onChange={() => setTool(id)}
+                pressed={tool === id}
+                onPressedChange={() => setTool(id)}
               >
                 <Icon />
               </Toggle>

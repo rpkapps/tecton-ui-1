@@ -16,7 +16,7 @@ export default function OverflowPriority() {
         {/* labels="always": items keep their text and go straight to the menu. */}
         <Toolbar aria-label="Well toolbar" labels="always">
           <OverflowItem
-            id="assign"
+            value="assign"
             label="Assign"
             icon={<UserPlusIcon />}
             priority={3}
@@ -27,7 +27,7 @@ export default function OverflowPriority() {
             </Button>
           </OverflowItem>
           <OverflowItem
-            id="watch"
+            value="watch"
             label="Watch"
             icon={<BellIcon />}
             priority={2}
@@ -37,13 +37,18 @@ export default function OverflowPriority() {
               <OverflowLabel>Watch</OverflowLabel>
             </Button>
           </OverflowItem>
-          <OverflowItem id="star" label="Star" icon={<StarIcon />} priority={1}>
+          <OverflowItem
+            value="star"
+            label="Star"
+            icon={<StarIcon />}
+            priority={1}
+          >
             <Button variant="outline">
               <StarIcon data-icon="inline-start" />
               <OverflowLabel>Star</OverflowLabel>
             </Button>
           </OverflowItem>
-          <OverflowItem id="pin" label="Pin" icon={<PinIcon />}>
+          <OverflowItem value="pin" label="Pin" icon={<PinIcon />}>
             <Button variant="outline">
               <PinIcon data-icon="inline-start" />
               <OverflowLabel>Pin</OverflowLabel>

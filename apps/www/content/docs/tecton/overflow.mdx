@@ -22,14 +22,14 @@ import {
 
 ```tsx
 <Toolbar aria-label="Well actions">
-  <OverflowItem id="share" label="Share" icon={<ShareIcon />} priority={1}>
+  <OverflowItem value="share" label="Share" icon={<ShareIcon />} priority={1} onClick={share}>
     <Button variant="outline">
       <ShareIcon data-icon="inline-start" />
       <OverflowLabel>Share</OverflowLabel>
     </Button>
   </OverflowItem>
   <OverflowDivider />
-  <OverflowItem id="delete" label="Delete" variant="destructive" labelBehavior="keep">
+  <OverflowItem value="delete" label="Delete" variant="destructive" labelBehavior="keep" onClick={remove}>
     <Button variant="destructive">Delete</Button>
   </OverflowItem>
   <Button>New well</Button>
@@ -39,7 +39,7 @@ import {
 Wrap every control that may leave the row in an `OverflowItem`. Unwrapped children are fixed: they never leave, so the primary action goes in bare. Put the label text in an `OverflowLabel` so it can drop to icon-only; only an item whose control has an icon (an `svg`, `img` or `[data-icon]`) collapses. The `More` menu is rendered at the end automatically; `overflowBadge` on the row shows how many items it holds.
 
 <Callout>
-  `Toolbar` is a React Aria toolbar: one tab stop, arrow keys move between the visible controls. Use `Overflow` when the row is not a toolbar semantically (a breadcrumb, a chip row). Both need their items and dividers as direct children.
+  `Toolbar` is a `role="toolbar"`: the arrow keys along its axis move between every visible control in it, whatever renders it (mirrored in right-to-left layouts, stopping at the ends), a text field keeps them until its caret reaches the edge, and Tab leaves the row. Use `Overflow` when the row is not a toolbar semantically (a breadcrumb, a chip row, a header with a tab list). Both need their items and dividers as direct children.
 </Callout>
 
 ## Stages
@@ -64,17 +64,17 @@ Stage 2 collapses every label at once and brings them back only when every item 
 
 ## Other controls
 
-Each item declares what it becomes in the menu with `overflow`. A button needs nothing: its menu item is built from `label`, `icon`, `shortcut` and `onAction`, and `onAction` is injected into the React Aria `Button` child, so the handler is passed once. Other controls pass their own menu form:
+Each item declares what it becomes in the menu with `overflow`. A button needs nothing: its menu item is built from `label`, `icon`, `shortcut` and `onClick`, and the item passes `onClick` and `disabled` on to its single control element too, so the handler is written once. Other controls pass their own menu form:
 
 | Control | Overflow form |
 | --- | --- |
-| Toggle | `DropdownMenuGroup selectionMode="multiple"` with one item |
+| Toggle | `DropdownMenuCheckboxItem` bound to the same state |
 | Dropdown trigger | `DropdownMenuSub` with the same items |
-| Select | `DropdownMenuSub` with a single-selection group |
+| Select | `DropdownMenuSub` with a `DropdownMenuRadioGroup` |
 | Text input | `DropdownMenuItem` that opens a `Dialog` holding the same input |
 | Anything else | Any menu content, or `overflow="never"` to keep it fixed |
 
-An input is usually `elastic`: it shrinks between `min` and `max` before any label collapses. A dropdown trigger keeps its label (`labelBehavior="keep"`) so the chevron makes sense; wrap its button in a `TooltipTrigger` yourself if you want a tooltip. An item whose own menu or popover is open is not hidden until it closes.
+An input is usually `elastic`: it shrinks between `min` and `max` before any label collapses. A dropdown trigger keeps its label (`labelBehavior="keep"`) so the chevron makes sense; give it a `Tooltip` yourself if you want one. An item whose own menu or popover is open is not hidden until it closes.
 
 <ComponentPreview name="overflow-forms" align="start" />
 
@@ -112,13 +112,13 @@ One `ResizeObserver` per row observes the row and its direct children. Sizes are
 
 <Do>
 
-Wrap every control that may leave the row in an `OverflowItem` with a stable `id`; leave the primary action unwrapped so it is fixed and never collapses.
+Wrap every control that may leave the row in an `OverflowItem` with a stable `value`; leave the primary action unwrapped so it is fixed and never collapses.
 
 </Do>
 
 <Do>
 
-Put the text in an `OverflowLabel` beside an icon and describe the menu entry with `label`, `icon`, `shortcut` and `onAction`; only an item with a `label` and an icon in its control goes icon-only, a text-only item keeps its label.
+Put the text in an `OverflowLabel` beside an icon and describe the menu entry with `label`, `icon`, `shortcut` and `onClick`; only an item with a `label` and an icon in its control goes icon-only, a text-only item keeps its label.
 
 </Do>
 
@@ -130,7 +130,7 @@ Decide who leaves first with `priority` (higher stays longer); the menu always k
 
 <Do>
 
-Use `Toolbar` with an `aria-label` when the row is a toolbar (one tab stop, arrow keys) and `Overflow` when it is not, such as a chip row.
+Use `Toolbar` with an `aria-label` when the row is a toolbar (arrow keys move between every visible control, Tab leaves it) and `Overflow` when it is not, such as a chip row or a header with a tab list.
 
 </Do>
 
@@ -152,7 +152,7 @@ Give a non-button its menu form through `overflow`: a `DropdownMenuSub` for a se
 <Toolbar aria-label="Well actions">
   <Button variant="outline"><TagIcon data-icon="inline-start" />Add tag</Button>
   <Button variant="outline"><ShareIcon data-icon="inline-start" />Share</Button>
-  <Button onPress={create}>New well</Button>
+  <Button onClick={create}>New well</Button>
 </Toolbar>
 ```
 
@@ -162,13 +162,13 @@ Give a non-button its menu form through `overflow`: a `DropdownMenuSub` for a se
 
 ```tsx
 <Toolbar aria-label="Well actions">
-  <OverflowItem id="tag" label="Add tag" icon={<TagIcon />} onAction={addTag}>
+  <OverflowItem value="tag" label="Add tag" icon={<TagIcon />} onClick={addTag}>
     <Button variant="outline"><TagIcon data-icon="inline-start" /><OverflowLabel>Add tag</OverflowLabel></Button>
   </OverflowItem>
-  <OverflowItem id="share" label="Share" icon={<ShareIcon />} onAction={share}>
+  <OverflowItem value="share" label="Share" icon={<ShareIcon />} onClick={share}>
     <Button variant="outline"><ShareIcon data-icon="inline-start" /><OverflowLabel>Share</OverflowLabel></Button>
   </OverflowItem>
-  <Button onPress={create}>New well</Button>
+  <Button onClick={create}>New well</Button>
 </Toolbar>
 ```
 
@@ -183,7 +183,7 @@ Only an `OverflowItem` registers itself with the row's store, so only it can be 
 <Wrong>
 
 ```tsx
-<OverflowItem id="export" label="Export" icon={<DownloadIcon />} onAction={exportRows}>
+<OverflowItem value="export" label="Export" icon={<DownloadIcon />} onClick={exportRows}>
   <Button variant="outline"><DownloadIcon data-icon="inline-start" />Export</Button>
 </OverflowItem>
 ```
@@ -193,7 +193,7 @@ Only an `OverflowItem` registers itself with the row's store, so only it can be 
 <Correct>
 
 ```tsx
-<OverflowItem id="export" label="Export" icon={<DownloadIcon />} onAction={exportRows}>
+<OverflowItem value="export" label="Export" icon={<DownloadIcon />} onClick={exportRows}>
   <Button variant="outline"><DownloadIcon data-icon="inline-start" /><OverflowLabel>Export</OverflowLabel></Button>
 </OverflowItem>
 ```
@@ -209,8 +209,8 @@ The icon-only stage works by putting `sr-only` on `OverflowLabel` alone, so plai
 <Wrong>
 
 ```tsx
-<OverflowItem id="delete" label="Delete" icon={<Trash2Icon />} variant="destructive">
-  <Button variant="destructive" onPress={remove}><Trash2Icon data-icon="inline-start" /><OverflowLabel>Delete</OverflowLabel></Button>
+<OverflowItem value="delete" label="Delete" icon={<Trash2Icon />} variant="destructive">
+  <Button variant="destructive" onClick={remove}><Trash2Icon data-icon="inline-start" /><OverflowLabel>Delete</OverflowLabel></Button>
 </OverflowItem>
 ```
 
@@ -219,14 +219,14 @@ The icon-only stage works by putting `sr-only` on `OverflowLabel` alone, so plai
 <Correct>
 
 ```tsx
-<OverflowItem id="delete" label="Delete" icon={<Trash2Icon />} variant="destructive" onAction={remove}>
+<OverflowItem value="delete" label="Delete" icon={<Trash2Icon />} variant="destructive" onClick={remove}>
   <Button variant="destructive"><Trash2Icon data-icon="inline-start" /><OverflowLabel>Delete</OverflowLabel></Button>
 </OverflowItem>
 ```
 
 </Correct>
 
-`onAction` is both the handler of the generated `DropdownMenuItem` and the `onPress` injected into the React Aria `Button` child through `ButtonContext`, so it fires in both places; left on the button alone, the More-menu entry is built with no handler and does nothing once the item is hidden.
+The item's `onClick` (and `disabled`) is both the handler of the generated `DropdownMenuItem` and passed on to the single control element inside the item, so it fires in both places; left on the button alone, the More-menu entry is built with no handler and does nothing once the item is hidden.
 
 </Dont>
 
@@ -236,7 +236,7 @@ The icon-only stage works by putting `sr-only` on `OverflowLabel` alone, so plai
 
 ### Toolbar, Overflow
 
-`Toolbar` is a React Aria `Toolbar` (give it an `aria-label`); `Overflow` is a `div`. Both accept:
+`Toolbar` is a `div` with `role="toolbar"` and the keyboard described above (give it an `aria-label`); `Overflow` is a plain `div`. Both accept `div` props and:
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -253,16 +253,16 @@ A `div` wrapper around one control. Must be a direct child of the row.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `id` | `string` | - | Stable id, also the key of the menu item. |
+| `value` | `string` | - | Stable identity of the item, also the key of its menu item. |
 | `priority` | `number` | 0 | Higher stays in the row longer. |
 | `label` | `string` | - | Menu item text, tooltip, and the accessible name while icon-only. |
 | `icon` | `ReactNode` | - | Icon of the menu item. |
 | `shortcut` | `ReactNode` | - | Shortcut hint of the menu item. |
-| `onAction` | `() => void` | - | Handler of the default menu item; also injected into a React Aria `Button` child. |
-| `isDisabled` | `boolean` | - | Disables the child button and the menu item. |
+| `onClick` | `() => void` | - | Handler of the default menu item; also passed to the item's single control element. |
+| `disabled` | `boolean` | - | Disables the menu item and the item's single control element. |
 | `variant` | `"default" \| "destructive"` | "default" | Menu item variant. |
 | `labelBehavior` | `"collapse" \| "keep"` | "collapse" when `label` is set and the control has an icon (`svg`, `img` or `[data-icon]`), else "keep" | Whether the label drops to icon-only. A text-only item cannot go icon-only; `"collapse"` without an icon warns in development. |
-| `tooltip` | `boolean` | `labelBehavior !== "keep"` | Show `label` as a tooltip while icon-only. |
+| `tooltip` | `boolean` | `labelBehavior !== "keep"` | Show `label` as a tooltip on the item's single control element while icon-only. |
 | `elastic` | `boolean \| { min?: string; max?: string }` | - | Shrink between these inline sizes before anything collapses (`12rem` to `100%` by default). |
 | `overflow` | `ReactNode \| "never"` | - | Menu form; `"never"` makes the item fixed. Omit for a button. |
 
@@ -280,7 +280,7 @@ A zero-cost flexible space. Items before it sit at the start of the row, items a
 
 ### OverflowGroup
 
-Renders no element. `id`, optional `label` (menu section heading) and `collapse` (`"individually"` or `"together"`).
+Renders no element. `value` (stable identity), optional `label` (menu section heading) and `collapse` (`"individually"` or `"together"`).
 
 ### OverflowMenu
 
@@ -289,10 +289,10 @@ The trailing More button and its menu. Rendered automatically unless the row has
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `label` | `string` | "More actions" | Accessible name of the default trigger. |
-| `trigger` | `ReactNode` | - | A custom trigger button instead of the ellipsis. |
+| `trigger` | `ReactElement` | - | A custom trigger button element (`<Button variant="outline">More</Button>`) instead of the ellipsis. |
 | `badge` | `boolean` | false | Show how many items are in the menu as a count badge on the trigger ("99+" above 99). The badge is visual only: the menu lists the items it counts. |
 | `className` | `string` | - | Classes for the wrapper around the trigger. |
 
-### useIsOverflowItemVisible(id)
+### useIsOverflowItemVisible(value)
 
 Returns whether the item is currently in the row.

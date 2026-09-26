@@ -1,6 +1,5 @@
 import { HandIcon, RulerIcon, ZoomInIcon, ZoomOutIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
 import {
   Canvas,
   CanvasLegend,
@@ -8,6 +7,7 @@ import {
   CanvasOverlay,
   CanvasSurface,
   CanvasToolbar,
+  CanvasToolbarButton,
 } from "@tecton/react/tecton/canvas"
 
 export default function CanvasDemo() {
@@ -16,22 +16,22 @@ export default function CanvasDemo() {
       <CanvasSurface className="bg-[radial-gradient(circle,var(--color-border)_1px,transparent_1px)] [background-size:20px_20px]" />
       <CanvasOverlay position="top-left">
         <CanvasToolbar aria-label="Navigation">
-          <Button variant="ghost" size="icon-sm" aria-label="Zoom in">
+          <CanvasToolbarButton aria-label="Zoom in">
             <ZoomInIcon />
-          </Button>
-          <Button variant="ghost" size="icon-sm" aria-label="Zoom out">
+          </CanvasToolbarButton>
+          <CanvasToolbarButton aria-label="Zoom out">
             <ZoomOutIcon />
-          </Button>
-          <Button variant="ghost" size="icon-sm" aria-label="Pan">
+          </CanvasToolbarButton>
+          <CanvasToolbarButton aria-label="Pan">
             <HandIcon />
-          </Button>
+          </CanvasToolbarButton>
         </CanvasToolbar>
       </CanvasOverlay>
       <CanvasOverlay position="top-right">
         <CanvasToolbar orientation="horizontal" aria-label="Measure">
-          <Button variant="ghost" size="icon-sm" aria-label="Measure">
+          <CanvasToolbarButton aria-label="Measure">
             <RulerIcon />
-          </Button>
+          </CanvasToolbarButton>
         </CanvasToolbar>
       </CanvasOverlay>
       <CanvasOverlay position="bottom-left">

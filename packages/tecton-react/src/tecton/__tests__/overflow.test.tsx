@@ -1,5 +1,11 @@
 import * as React from "react"
-import { act, render, renderHook, screen } from "@testing-library/react"
+import {
+  act,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import {
   afterEach,
@@ -148,7 +154,7 @@ function Item({
 }) {
   return (
     <OverflowItem
-      id={id}
+      value={id}
       data-id={id}
       data-w={w}
       label={props.label ?? id}
@@ -179,7 +185,7 @@ describe("Overflow", () => {
     expect(document.querySelector('[data-slot="overflow-menu"]')).toBeNull()
   })
 
-  it("Toolbar renders the same row on a React Aria toolbar", () => {
+  it("Toolbar renders the same row as a toolbar", () => {
     render(
       <Toolbar aria-label="Tools" orientation="vertical" lastResort="scroll">
         <Item id="a" />
@@ -270,19 +276,31 @@ describe("Overflow", () => {
     expect(root?.style.minInlineSize).toBe("72px")
   })
 
-  it("calls onAction from the menu item and injects it into the row button", async () => {
-    const onAction = vi.fn()
-    render(
+  it("passes onClick and disabled to the row control", async () => {
+    const onClick = vi.fn()
+    const own = vi.fn()
+    const { rerender } = render(
       <Row width={1000}>
-        <Item id="a" onAction={onAction} />
+        <OverflowItem value="a" label="a" onClick={onClick}>
+          <Button onClick={own}>a</Button>
+        </OverflowItem>
       </Row>
     )
     await userEvent.click(screen.getByRole("button", { name: "a" }))
-    expect(onAction).toHaveBeenCalledTimes(1)
+    expect(own).toHaveBeenCalledTimes(1)
+    expect(onClick).toHaveBeenCalledTimes(1)
+    rerender(
+      <Row width={1000}>
+        <OverflowItem value="a" label="a" onClick={onClick} disabled>
+          <Button>a</Button>
+        </OverflowItem>
+      </Row>
+    )
+    expect(screen.getByRole("button", { name: "a" })).toBeDisabled()
   })
 
   it("renders the menu item with icon, shortcut and destructive variant", async () => {
-    const onAction = vi.fn()
+    const onClick = vi.fn()
     render(
       <Row width={10}>
         <Item
@@ -291,7 +309,7 @@ describe("Overflow", () => {
           icon={<svg data-testid="icon" />}
           shortcut="⌘⌫"
           variant="destructive"
-          onAction={onAction}
+          onClick={onClick}
         />
       </Row>
     )
@@ -301,7 +319,20 @@ describe("Overflow", () => {
     expect(item).toContainElement(screen.getByTestId("icon"))
     expect(item).toHaveTextContent("⌘⌫")
     await userEvent.click(item)
-    expect(onAction).toHaveBeenCalledTimes(1)
+    expect(onClick).toHaveBeenCalledTimes(1)
+  })
+
+  it("disables the menu item of a disabled item", async () => {
+    render(
+      <Row width={10}>
+        <Item id="a" disabled />
+      </Row>
+    )
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }))
+    expect(await screen.findByRole("menuitem", { name: "a" })).toHaveAttribute(
+      "aria-disabled",
+      "true"
+    )
   })
 
   it("uses a custom overflow node in the menu", async () => {
@@ -309,7 +340,7 @@ describe("Overflow", () => {
       <Row width={10}>
         <Item
           id="a"
-          overflow={<DropdownMenuItem id="a">Custom form</DropdownMenuItem>}
+          overflow={<DropdownMenuItem>Custom form</DropdownMenuItem>}
         />
       </Row>
     )
@@ -322,7 +353,7 @@ describe("Overflow", () => {
   it("groups menu items under the group label and collapses together", async () => {
     render(
       <Row width={140} labels="always">
-        <OverflowGroup id="edit" label="Edit" collapse="together">
+        <OverflowGroup value="edit" label="Edit" collapse="together">
           <Item id="cut" priority={5} />
           <Item id="copy" priority={0} />
         </OverflowGroup>
@@ -525,18 +556,47 @@ describe("Overflow", () => {
     expect(screen.getByRole("button", { name: "Extra" })).toBeInTheDocument()
   })
 
+  it("opens the menu from a custom trigger element", async () => {
+    render(
+      <Row width={10} menu={false}>
+        <Item id="a" />
+        <OverflowMenu trigger={<Button variant="outline">More</Button>} />
+      </Row>
+    )
+    const trigger = screen.getByRole("button", { name: "More" })
+    expect(trigger).toHaveAttribute("aria-haspopup", "menu")
+    await userEvent.click(trigger)
+    expect(await screen.findByRole("menuitem", { name: "a" })).toBeVisible()
+  })
+
+  it("shows the label of an icon-only item as a tooltip", async () => {
+    render(
+      <Row width={1000} labels="never">
+        <Item id="share" label="Share" />
+      </Row>
+    )
+    // The visually hidden label still names the control.
+    const control = screen.getByRole("button", { name: "Share" })
+    await userEvent.hover(control)
+    await waitFor(() =>
+      expect(
+        document.querySelector('[data-slot="tooltip-content"]')
+      ).toHaveTextContent("Share")
+    )
+  })
+
   it("throws when parts are used outside a row", () => {
     const spy = vi.spyOn(console, "error").mockImplementation(() => {})
     expect(() =>
       render(
-        <OverflowItem id="a">
+        <OverflowItem value="a">
           <button>x</button>
         </OverflowItem>
       )
     ).toThrow(/OverflowItem must be inside <Overflow> or <Toolbar>/)
     expect(() => render(<OverflowDivider />)).toThrow(/OverflowDivider/)
     expect(() => render(<OverflowMenu />)).toThrow(/OverflowMenu/)
-    expect(() => render(<OverflowGroup id="g" />)).toThrow(/OverflowGroup/)
+    expect(() => render(<OverflowGroup value="g" />)).toThrow(/OverflowGroup/)
     spy.mockRestore()
   })
 
@@ -605,7 +665,7 @@ describe("Overflow refs", () => {
   it("fills a caller's ref on a Toolbar, an item and a divider", () => {
     const toolbar = React.createRef<HTMLDivElement>()
     const item = vi.fn()
-    const divider = React.createRef<HTMLElement>()
+    const divider = React.createRef<HTMLDivElement>()
     render(
       <Toolbar ref={toolbar} aria-label="Tools" data-w={150} labels="always">
         <Item id="a" priority={1} ref={item} />
@@ -874,25 +934,23 @@ describe("Overflow badge", () => {
   })
 })
 
-describe("Overflow inside a React Aria collection", () => {
-  // Tabs builds its collection by rendering its children a second time into
-  // a hidden tree of fake nodes; a row in there must not measure them.
+describe("Overflow inside Tabs", () => {
   it("renders a row inside Tabs, next to the tab list and panels", async () => {
     const user = userEvent.setup()
     render(
-      <Tabs defaultSelectedKey="one">
+      <Tabs defaultValue="one">
         <Row width={1000} labels="always">
-          <OverflowItem id="tabs" data-id="tabs" data-w={200}>
+          <OverflowItem value="tabs" data-id="tabs" data-w={200}>
             <TabsList aria-label="Sections">
-              <TabsTrigger id="one">One</TabsTrigger>
-              <TabsTrigger id="two">Two</TabsTrigger>
+              <TabsTrigger value="one">One</TabsTrigger>
+              <TabsTrigger value="two">Two</TabsTrigger>
             </TabsList>
           </OverflowItem>
           <OverflowSpacer />
           <Item id="a" />
         </Row>
-        <TabsContent id="one">First panel</TabsContent>
-        <TabsContent id="two">Second panel</TabsContent>
+        <TabsContent value="one">First panel</TabsContent>
+        <TabsContent value="two">Second panel</TabsContent>
       </Tabs>
     )
     // One real row, measured and laid out as usual.
@@ -907,5 +965,146 @@ describe("Overflow inside a React Aria collection", () => {
     // Still overflows once the real row gets narrow.
     resize(rowEl(), 250)
     expect(itemEl("a")).toHaveAttribute("data-overflowing")
+  })
+})
+
+describe("Toolbar keyboard", () => {
+  function Tools(props: Partial<React.ComponentProps<typeof Toolbar>>) {
+    return (
+      <>
+        <button>Before</button>
+        <Toolbar aria-label="Tools" data-w={1000} labels="always" {...props}>
+          <Item id="a" />
+          <OverflowItem value="search" data-id="search" data-w={100}>
+            <input aria-label="Search" defaultValue="ab" />
+          </OverflowItem>
+          <Item id="b" />
+          <Button>Fixed</Button>
+        </Toolbar>
+        <button>After</button>
+      </>
+    )
+  }
+  const button = (name: string) => screen.getByRole("button", { name })
+  const search = () =>
+    screen.getByRole<HTMLInputElement>("textbox", { name: "Search" })
+
+  it("moves along every visible control with the arrow keys, without wrapping", async () => {
+    const user = userEvent.setup()
+    render(<Tools />)
+    act(() => button("a").focus())
+    await user.keyboard("{ArrowRight}")
+    expect(search()).toHaveFocus()
+    // The caret is at the end: the next arrow leaves the field.
+    search().setSelectionRange(2, 2)
+    await user.keyboard("{ArrowRight}")
+    expect(button("b")).toHaveFocus()
+    await user.keyboard("{ArrowRight}")
+    expect(button("Fixed")).toHaveFocus()
+    await user.keyboard("{ArrowRight}")
+    expect(button("Fixed")).toHaveFocus()
+    await user.keyboard("{ArrowLeft}{ArrowLeft}")
+    expect(search()).toHaveFocus()
+    // Up/Down belong to the other axis.
+    await user.keyboard("{ArrowDown}")
+    expect(search()).toHaveFocus()
+  })
+
+  it("keeps the arrow keys in a text field until the caret reaches its edge", async () => {
+    const user = userEvent.setup()
+    render(<Tools />)
+    act(() => search().focus())
+    search().setSelectionRange(1, 1)
+    await user.keyboard("{ArrowLeft}")
+    expect(search()).toHaveFocus()
+    search().setSelectionRange(0, 0)
+    await user.keyboard("{ArrowLeft}")
+    expect(button("a")).toHaveFocus()
+  })
+
+  it("skips the controls of items in the More menu", async () => {
+    const user = userEvent.setup()
+    render(
+      <Toolbar aria-label="Tools" data-w={150} labels="always">
+        <Item id="a" priority={1} />
+        <Item id="b" priority={0} />
+      </Toolbar>
+    )
+    expect(itemEl("b")).toHaveAttribute("data-overflowing")
+    act(() => button("a").focus())
+    await user.keyboard("{ArrowRight}")
+    expect(button("More actions")).toHaveFocus()
+  })
+
+  it("leaves the More menu's own keyboard alone", async () => {
+    const user = userEvent.setup()
+    render(
+      <Toolbar aria-label="Tools" data-w={150} labels="always">
+        <Item id="a" priority={2} />
+        <Item id="b" priority={1} />
+        <Item id="c" priority={0} />
+      </Toolbar>
+    )
+    act(() => button("More actions").focus())
+    await user.keyboard("{Enter}")
+    const [first, second] = await screen.findAllByRole("menuitem")
+    await waitFor(() => expect(first).toHaveFocus())
+    await user.keyboard("{ArrowDown}")
+    expect(second).toHaveFocus()
+  })
+
+  it("leaves with Tab and returns to the last focused control", async () => {
+    const user = userEvent.setup()
+    render(<Tools />)
+    act(() => button("b").focus())
+    await user.tab()
+    expect(button("After")).toHaveFocus()
+    await user.tab({ shift: true })
+    expect(button("b")).toHaveFocus()
+    await user.tab({ shift: true })
+    expect(button("Before")).toHaveFocus()
+  })
+
+  it("uses Up/Down when vertical", async () => {
+    const user = userEvent.setup()
+    render(<Tools orientation="vertical" />)
+    act(() => button("a").focus())
+    await user.keyboard("{ArrowRight}")
+    expect(button("a")).toHaveFocus()
+    await user.keyboard("{ArrowDown}")
+    expect(search()).toHaveFocus()
+    await user.keyboard("{ArrowUp}")
+    expect(button("a")).toHaveFocus()
+  })
+
+  it("mirrors Left/Right in a right-to-left layout", async () => {
+    const user = userEvent.setup()
+    render(
+      <div dir="rtl">
+        <Toolbar aria-label="Tools" data-w={1000} labels="always">
+          <Item id="a" />
+          <Item id="b" />
+        </Toolbar>
+      </div>
+    )
+    act(() => button("a").focus())
+    await user.keyboard("{ArrowLeft}")
+    expect(button("b")).toHaveFocus()
+    await user.keyboard("{ArrowRight}")
+    expect(button("a")).toHaveFocus()
+  })
+
+  it("leaves the arrow keys alone in a plain Overflow row", async () => {
+    const user = userEvent.setup()
+    render(
+      <Row width={1000} labels="always">
+        <Item id="a" />
+        <Item id="b" />
+      </Row>
+    )
+    expect(screen.queryByRole("toolbar")).toBeNull()
+    act(() => button("a").focus())
+    await user.keyboard("{ArrowRight}")
+    expect(button("a")).toHaveFocus()
   })
 })

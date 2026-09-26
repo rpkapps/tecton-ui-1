@@ -72,13 +72,13 @@ Use the `size` prop for the track height.
 
 <Do>
 
-Name it: `label` renders the React Aria `Label`; use `aria-label` when the name is already beside it.
+Name it: `label` renders the visible label that names the meter; use `aria-label` when the name is already beside it.
 
 </Do>
 
 <Do>
 
-State the scale with `minValue` and `maxValue` whenever it is not 0–100; the segments fill from the percentage.
+State the scale with `min` and `max` whenever it is not 0–100; the segments fill from the percentage.
 
 </Do>
 
@@ -139,12 +139,12 @@ The segments are plain `span`s and `role="meter"` takes no name from them, so wi
 <Correct>
 
 ```tsx
-<Meter label="Confidence" value={4} maxValue={5} showValue />
+<Meter label="Confidence" value={4} max={5} showValue />
 ```
 
 </Correct>
 
-React Aria's `Meter` defaults to `maxValue={100}`, so a 4-out-of-5 score fills 4 % of the track and is announced as 4 %.
+`max` defaults to `100`, so a 4-out-of-5 score fills 4 % of the track and is announced as 4 %.
 
 </Dont>
 
@@ -170,7 +170,7 @@ React Aria's `Meter` defaults to `maxValue={100}`, so a 4-out-of-5 score fills 4
 
 </Correct>
 
-`color="auto"` already applies the 34 / 67 thresholds to the percentage, so the hand-written ternary duplicates a design-system decision and disagrees with it as soon as `minValue` or `maxValue` is not 0–100.
+`color="auto"` already applies the 34 / 67 thresholds to the percentage, so the hand-written ternary duplicates a design-system decision and disagrees with it as soon as `min` or `max` is not 0–100.
 
 </Dont>
 
@@ -202,10 +202,14 @@ React Aria's `Meter` defaults to `maxValue={100}`, so a 4-out-of-5 score fills 4
 
 ### Meter
 
-React Aria [`Meter`](https://react-aria.adobe.com/Meter); accepts all its props (`value`, `minValue`, `maxValue`, `formatOptions`…).
+A `div` with `role="meter"`; accepts `div` props.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
+| `value` | `number` | - | Current value. |
+| `min` / `max` | `number` | 0 / 100 | Scale of `value`; the segments fill from the percentage. |
+| `format` | `Intl.NumberFormatOptions` | percent | Format of the shown and announced value. |
+| `locale` | `Intl.LocalesArgument` | runtime locale | Locale of the formatted value. |
 | `label` | `ReactNode` | - | Visible label; use `aria-label` otherwise. |
 | `segments` | `number` | 5 | Number of blocks; `1` for a continuous bar. |
 | `color` | `"default" \| "success" \| "warning" \| "error" \| "info" \| "auto" \| "custom"` | "default" | Fill colour. `custom` fills from the `--meter-fill` CSS variable. |

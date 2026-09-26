@@ -57,15 +57,9 @@ describe("Meter", () => {
     expect(segments(container)).toHaveLength(3)
   })
 
-  it("respects minValue and maxValue", () => {
+  it("respects min and max", () => {
     const { container } = render(
-      <Meter
-        aria-label="m"
-        value={150}
-        minValue={100}
-        maxValue={200}
-        segments={2}
-      />
+      <Meter aria-label="m" value={150} min={100} max={200} segments={2} />
     )
     expect(fills(container)).toEqual(["100%", "0%"])
   })

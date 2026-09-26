@@ -1,17 +1,13 @@
 "use client"
 
 import * as React from "react"
+import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
-import {
-  composeRenderProps,
-  ProgressBar as ProgressBarPrimitive,
-  type ProgressBarProps,
-} from "react-aria-components"
 
 /**
  * Tecton circular Progress — determinate ring with optional centred value
- * label, or indeterminate spinner. Built on React Aria `ProgressBar`.
+ * label, or an indeterminate spinner when `value` is `null`.
  */
 const circularProgressVariants = cva("relative inline-flex shrink-0", {
   variants: {
@@ -43,9 +39,21 @@ const circularProgressVariants = cva("relative inline-flex shrink-0", {
   },
 })
 
-type CircularProgressProps = Omit<ProgressBarProps, "className" | "children"> &
+type CircularProgressProps = Omit<
+  React.ComponentProps<"div">,
+  "children" | "color"
+> &
   VariantProps<typeof circularProgressVariants> & {
-    className?: string
+    /** The current value; `null` shows an indeterminate spinner. */
+    value: number | null
+    /** @default 0 */
+    min?: number
+    /** @default 100 */
+    max?: number
+    /** Number format of the value (a percentage of the range by default). */
+    format?: Intl.NumberFormatOptions
+    /** Locale of the formatted value (the runtime locale by default). */
+    locale?: Intl.LocalesArgument
     /** Show the formatted value in the centre (determinate only). */
     showValue?: boolean
     /** Custom centre content (overrides `showValue`). */
@@ -55,71 +63,80 @@ type CircularProgressProps = Omit<ProgressBarProps, "className" | "children"> &
 const RADIUS = 20
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
+function toPercentage(value: number, min: number, max: number) {
+  const pct = ((value - min) / (max - min)) * 100
+  return Number.isFinite(pct) ? Math.min(100, Math.max(0, pct)) : 0
+}
+
 function CircularProgress({
   className,
   size = "md",
   color = "default",
+  value,
+  min = 0,
+  max = 100,
   showValue,
   children,
   ...props
 }: CircularProgressProps) {
+  const indeterminate = value == null || !Number.isFinite(value)
+  const pct = indeterminate ? 25 : toPercentage(value, min, max)
+  const offset = CIRCUMFERENCE - (pct / 100) * CIRCUMFERENCE
   return (
-    <ProgressBarPrimitive
+    <ProgressPrimitive.Root
       data-slot="circular-progress"
       data-size={size}
-      className={composeRenderProps(className, (className) =>
-        cn(circularProgressVariants({ size, color }), className)
-      )}
+      className={cn(circularProgressVariants({ size, color }), className)}
+      value={value}
+      min={min}
+      max={max}
       {...props}
     >
-      {({ percentage, valueText, isIndeterminate }) => {
-        const pct = isIndeterminate ? 25 : (percentage ?? 0)
-        const offset = CIRCUMFERENCE - (pct / 100) * CIRCUMFERENCE
-        return (
-          <>
-            <svg
-              viewBox="0 0 48 48"
-              className={cn(
-                "size-full -rotate-90",
-                // Reduced motion keeps a slow turn: a still arc would read
-                // as a stuck value, not as work in progress.
-                isIndeterminate &&
-                  "animate-spin motion-reduce:animate-[spin_3s_linear_infinite]"
-              )}
-              aria-hidden
-            >
-              <circle
-                cx="24"
-                cy="24"
-                r={RADIUS}
-                fill="none"
-                style={{ strokeWidth: "var(--stroke)" }}
-                className="stroke-current opacity-38"
-              />
-              <circle
-                cx="24"
-                cy="24"
-                r={RADIUS}
-                fill="none"
-                style={{ strokeWidth: "var(--stroke)" }}
-                strokeLinecap="round"
-                strokeDasharray={CIRCUMFERENCE}
-                strokeDashoffset={offset}
-                className="stroke-current transition-[stroke-dashoffset] duration-300"
-              />
-            </svg>
-            {(children || (showValue && !isIndeterminate)) && (
-              <span
-                data-slot="circular-progress-value"
-                className="absolute inset-0 flex items-center justify-center font-medium text-foreground tabular-nums"
-              >
-                {children ?? valueText}
-              </span>
-            )}
-          </>
-        )
-      }}
-    </ProgressBarPrimitive>
+      <svg
+        viewBox="0 0 48 48"
+        className={cn(
+          "size-full -rotate-90",
+          // Reduced motion keeps a slow turn: a still arc would read as a
+          // stuck value, not as work in progress.
+          indeterminate &&
+            "animate-spin motion-reduce:animate-[spin_3s_linear_infinite]"
+        )}
+        aria-hidden
+      >
+        <circle
+          cx="24"
+          cy="24"
+          r={RADIUS}
+          fill="none"
+          style={{ strokeWidth: "var(--stroke)" }}
+          className="stroke-current opacity-38"
+        />
+        <circle
+          cx="24"
+          cy="24"
+          r={RADIUS}
+          fill="none"
+          style={{ strokeWidth: "var(--stroke)" }}
+          strokeLinecap="round"
+          strokeDasharray={CIRCUMFERENCE}
+          strokeDashoffset={offset}
+          className="stroke-current transition-[stroke-dashoffset] duration-300"
+        />
+      </svg>
+      {children ? (
+        <span
+          data-slot="circular-progress-value"
+          className="absolute inset-0 flex items-center justify-center font-medium text-foreground tabular-nums"
+        >
+          {children}
+        </span>
+      ) : showValue && !indeterminate ? (
+        <ProgressPrimitive.Value
+          data-slot="circular-progress-value"
+          className="absolute inset-0 flex items-center justify-center font-medium text-foreground tabular-nums"
+        />
+      ) : null}
+    </ProgressPrimitive.Root>
   )
 }
 

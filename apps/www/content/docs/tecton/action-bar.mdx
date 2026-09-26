@@ -18,16 +18,16 @@ import { OverflowItem, OverflowLabel } from "@tecton/react/tecton/overflow"
 ```
 
 ```tsx
-<ActionBar isOpen={selected > 0} onDismiss={clear} aria-label="Selected wells">
+<ActionBar open={selected > 0} onDismiss={clear} aria-label="Selected wells">
   <ActionBarSelection count={selected} total={wells.length} onClear={clear} />
   <ActionBarActions aria-label="Selection actions">
-    <OverflowItem id="tag" label="Add tag" icon={<TagIcon />} onAction={addTag}>
+    <OverflowItem value="tag" label="Add tag" icon={<TagIcon />} onClick={addTag}>
       <Button variant="outline" size="sm">
         <TagIcon data-icon="inline-start" />
         <OverflowLabel>Add tag</OverflowLabel>
       </Button>
     </OverflowItem>
-    <Button size="sm" onPress={assign}>Assign</Button>
+    <Button size="sm" onClick={assign}>Assign</Button>
   </ActionBarActions>
 </ActionBar>
 ```
@@ -93,7 +93,7 @@ A visually hidden `aria-live` region always announces the full text. It is fille
 
 <Do>
 
-Control it with `isOpen` and dismiss with `onDismiss`; the bar owns Escape and the enter transition.
+Control it with `open` and dismiss with `onDismiss`; the bar owns Escape and the enter transition.
 
 </Do>
 
@@ -130,9 +130,9 @@ Choose `placement="toolbar"` to fill a table's toolbar row, `"floating"` for a s
 <Wrong>
 
 ```tsx
-<ActionBar isOpen={selected.size > 0} aria-label="Selected wells">
+<ActionBar open={selected.size > 0} aria-label="Selected wells">
   <span>{selected.size} of {wells.length} selected</span>
-  <Button variant="ghost" size="sm" onPress={clear}>Clear</Button>
+  <Button variant="ghost" size="sm" onClick={clear}>Clear</Button>
 </ActionBar>
 ```
 
@@ -141,7 +141,7 @@ Choose `placement="toolbar"` to fill a table's toolbar row, `"floating"` for a s
 <Correct>
 
 ```tsx
-<ActionBar isOpen={selected.size > 0} onDismiss={clear} aria-label="Selected wells">
+<ActionBar open={selected.size > 0} onDismiss={clear} aria-label="Selected wells">
   <ActionBarSelection count={selected.size} total={wells.length} label="wells" onClear={clear} />
 </ActionBar>
 ```
@@ -159,7 +159,7 @@ Choose `placement="toolbar"` to fill a table's toolbar row, `"floating"` for a s
 ```tsx
 <ActionBarActions aria-label="Selection actions">
   <Button variant="outline" size="sm"><TagIcon data-icon="inline-start" />Add tag</Button>
-  <Button size="sm" onPress={assign}>Assign</Button>
+  <Button size="sm" onClick={assign}>Assign</Button>
 </ActionBarActions>
 ```
 
@@ -169,10 +169,10 @@ Choose `placement="toolbar"` to fill a table's toolbar row, `"floating"` for a s
 
 ```tsx
 <ActionBarActions aria-label="Selection actions">
-  <OverflowItem id="tag" label="Add tag" icon={<TagIcon />} onAction={addTag}>
+  <OverflowItem value="tag" label="Add tag" icon={<TagIcon />} onClick={addTag}>
     <Button variant="outline" size="sm"><TagIcon data-icon="inline-start" /><OverflowLabel>Add tag</OverflowLabel></Button>
   </OverflowItem>
-  <Button size="sm" onPress={assign}>Assign</Button>
+  <Button size="sm" onClick={assign}>Assign</Button>
 </ActionBarActions>
 ```
 
@@ -219,7 +219,7 @@ A `div` with `role="region"`; give it an `aria-label`.
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `placement` | `"toolbar" \| "floating"` | "toolbar" | Row fill, or sticky card at the bottom of the scroll container. |
-| `isOpen` | `boolean` | true | Render the bar. |
+| `open` | `boolean` | true | Render the bar. |
 | `onDismiss` | `() => void` | - | Called on Escape while focus is inside the bar and no overlay is open. |
 
 ### ActionBarSelection

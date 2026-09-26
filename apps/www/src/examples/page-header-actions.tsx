@@ -22,14 +22,18 @@ export default function PageHeaderActionsExample() {
         </PageHeaderContent>
         <PageHeaderActions>
           {/* Secondary actions collapse into the More menu when the header is narrow. */}
-          <OverflowItem id="settings" label="Settings" icon={<SettingsIcon />}>
+          <OverflowItem
+            value="settings"
+            label="Settings"
+            icon={<SettingsIcon />}
+          >
             <Button variant="ghost">
               <SettingsIcon data-icon="inline-start" />
               <OverflowLabel>Settings</OverflowLabel>
             </Button>
           </OverflowItem>
           <OverflowItem
-            id="export"
+            value="export"
             label="Export"
             icon={<DownloadIcon />}
             priority={1}
@@ -40,7 +44,7 @@ export default function PageHeaderActionsExample() {
             </Button>
           </OverflowItem>
           <OverflowItem
-            id="share"
+            value="share"
             label="Share"
             icon={<ShareIcon />}
             priority={2}

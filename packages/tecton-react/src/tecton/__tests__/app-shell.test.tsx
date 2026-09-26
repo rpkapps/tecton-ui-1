@@ -1,8 +1,15 @@
-import { act, render, renderHook, screen } from "@testing-library/react"
+import {
+  act,
+  render,
+  renderHook,
+  screen,
+  waitFor,
+} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { DropdownMenuItem } from "@tecton/react/components/dropdown-menu"
+import { Kbd, KbdGroup } from "@tecton/react/components/kbd"
 import {
   AppShell,
   AppShellAction,
@@ -120,9 +127,8 @@ describe("AppShell", () => {
 })
 
 describe("AppShellActions", () => {
-  beforeEach(() => {
-    vi.spyOn(navigator, "platform", "get").mockReturnValue("Win32")
-  })
+  const tooltip = () =>
+    document.querySelector<HTMLElement>('[data-slot="tooltip-content"]')
 
   it("renders the cluster", () => {
     const { container } = render(
@@ -134,64 +140,57 @@ describe("AppShellActions", () => {
   })
 
   it("AppShellAction is an icon button named by its label with a tooltip", async () => {
-    const onPress = vi.fn()
+    const onClick = vi.fn()
     render(
-      <AppShellAction label="Help" shortcut="?" onPress={onPress}>
+      <AppShellAction label="Help" shortcut="?" onClick={onClick}>
         <svg />
       </AppShellAction>
     )
     const button = screen.getByRole("button", { name: "Help" })
     expect(button).toHaveAttribute("data-slot", "app-shell-action")
-    expect(button).toHaveAttribute("data-size", "icon-sm")
-    expect(button).toHaveAttribute("data-variant", "ghost")
+    expect(button).toHaveClass("size-7", "text-muted-foreground")
 
-    // Keyboard focus shows the tooltip without the hover delay.
+    // Keyboard focus shows the tooltip.
     await userEvent.tab()
     expect(button).toHaveFocus()
-    const tooltip = await screen.findByRole("tooltip")
-    expect(tooltip).toHaveTextContent("Help")
-    expect(
-      tooltip.querySelector('[data-slot="shortcut-keys"]')
-    ).toHaveTextContent("?")
+    await waitFor(() => expect(tooltip()).toHaveTextContent("Help"))
+    expect(tooltip()!.querySelector('[data-slot="kbd"]')).toHaveTextContent("?")
 
     await userEvent.click(button)
-    expect(onPress).toHaveBeenCalled()
+    expect(onClick).toHaveBeenCalled()
   })
 
   it("AppShellAction without a shortcut has no key caps", async () => {
     render(<AppShellAction label="Settings" />)
     await userEvent.tab()
-    const tooltip = await screen.findByRole("tooltip")
-    expect(tooltip.querySelector('[data-slot="shortcut-keys"]')).toBeNull()
+    await waitFor(() => expect(tooltip()).toHaveTextContent("Settings"))
+    expect(tooltip()!.querySelector('[data-slot="kbd"]')).toBeNull()
   })
 
-  it("AppShellCommandTrigger defaults to Search with a ⌘K hint on a Mac", () => {
-    const platform = vi
-      .spyOn(navigator, "platform", "get")
-      .mockReturnValue("MacIntel")
+  it("AppShellCommandTrigger defaults to Search without a shortcut hint", () => {
     render(<AppShellCommandTrigger />)
     const button = screen.getByRole("button", { name: "Search" })
     expect(button).toHaveAttribute("data-slot", "app-shell-command-trigger")
     expect(button).toHaveTextContent("Search")
-    const hint = button.querySelector('[data-slot="shortcut-keys"]')
-    expect(hint).toHaveClass("hidden", "lg:inline-flex")
-    const caps = hint!.querySelectorAll('[data-slot="kbd"]')
-    expect(Array.from(caps, (cap) => cap.textContent)).toEqual(["⌘", "K"])
-    platform.mockRestore()
+    expect(button.querySelector('[data-slot="kbd"]')).toBeNull()
   })
 
-  it("AppShellCommandTrigger shows Ctrl K off Apple platforms", () => {
-    const platform = vi
-      .spyOn(navigator, "platform", "get")
-      .mockReturnValue("Win32")
-    render(<AppShellCommandTrigger />)
-    const hint = screen
-      .getByRole("button", { name: "Search" })
-      .querySelector('[data-slot="shortcut-keys"]')!
-    const caps = hint.querySelectorAll('[data-slot="kbd"]')
-    expect(Array.from(caps, (cap) => cap.textContent)).toEqual(["Ctrl", "K"])
-    expect(hint).not.toHaveTextContent("⌘")
-    platform.mockRestore()
+  it("AppShellCommandTrigger draws a node shortcut as is, on lg and up", () => {
+    render(
+      <AppShellCommandTrigger
+        shortcut={
+          <KbdGroup>
+            <Kbd>⌘</Kbd>
+            <Kbd>K</Kbd>
+          </KbdGroup>
+        }
+      />
+    )
+    const button = screen.getByRole("button", { name: "Search" })
+    const hint = button.querySelector('[data-slot="kbd-group"]')!.parentElement
+    expect(hint).toHaveClass("hidden", "lg:inline-flex")
+    const caps = button.querySelectorAll('[data-slot="kbd"]')
+    expect(Array.from(caps, (cap) => cap.textContent)).toEqual(["⌘", "K"])
   })
 
   it("AppShellCommandTrigger accepts a label, a shortcut and no shortcut", () => {
@@ -238,6 +237,26 @@ describe("AppShellActions", () => {
     ).toBeInTheDocument()
   })
 
+  it("AppShellOverflow can be controlled", async () => {
+    const onOpenChange = vi.fn()
+    const { rerender } = render(
+      <AppShellOverflow open={false} onOpenChange={onOpenChange}>
+        <DropdownMenuItem>Release notes</DropdownMenuItem>
+      </AppShellOverflow>
+    )
+    await userEvent.click(screen.getByRole("button", { name: "More" }))
+    await waitFor(() =>
+      expect(onOpenChange).toHaveBeenCalledWith(true, expect.anything())
+    )
+    expect(screen.queryByRole("menu")).toBeNull()
+    rerender(
+      <AppShellOverflow open onOpenChange={onOpenChange}>
+        <DropdownMenuItem>Release notes</DropdownMenuItem>
+      </AppShellOverflow>
+    )
+    expect(await screen.findByRole("menu")).toBeInTheDocument()
+  })
+
   it("AppShellOverflow accepts a custom label", () => {
     render(<AppShellOverflow label="Extra">x</AppShellOverflow>)
     expect(screen.getByRole("button", { name: "Extra" })).toBeInTheDocument()
@@ -260,7 +279,19 @@ describe("AppShellActions", () => {
     ).toBeInTheDocument()
   })
 
-  it("AppShellUserMenu renders the image when given", () => {
+  it("AppShellUserMenu renders the image when given", async () => {
+    // jsdom loads no images: report this one as loaded.
+    const original = window.Image
+    window.Image = class {
+      onload: (() => void) | null = null
+      onerror: (() => void) | null = null
+      complete = false
+      naturalWidth = 1
+      crossOrigin: string | null = null
+      set src(_: string) {
+        setTimeout(() => this.onload?.())
+      }
+    } as unknown as typeof window.Image
     render(
       <AppShellUserMenu
         user={{ name: "Ada", initials: "A", image: "/ada.png" }}
@@ -268,8 +299,11 @@ describe("AppShellActions", () => {
         x
       </AppShellUserMenu>
     )
-    const img = screen.getByRole("button").querySelector("img")
-    expect(img).toHaveAttribute("src", "/ada.png")
+    const button = screen.getByRole("button")
+    await waitFor(() =>
+      expect(button.querySelector("img")).toHaveAttribute("src", "/ada.png")
+    )
+    window.Image = original
   })
 })
 
