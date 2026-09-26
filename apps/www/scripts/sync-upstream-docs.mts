@@ -459,6 +459,83 @@ function rewritePressHandlers(code: string, exampleName: string): string {
   return code
 }
 
+/**
+ * Upstream labels a Select with `<FieldLabel htmlFor={id}>` next to
+ * `<SelectTrigger id={id}>`. React Aria always sets the trigger's
+ * `aria-labelledby` (to the selected value), which overrides `<label for>`, so
+ * the Select is announced by its value alone. This gives that label an id and
+ * points the Select's `aria-labelledby` at it; the layout stays as upstream's.
+ */
+function rewriteSelectLabels(code: string, exampleName: string): string {
+  const file = ts.createSourceFile(
+    `${exampleName}.tsx`,
+    code,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
+  )
+  type Opening = ts.JsxOpeningElement | ts.JsxSelfClosingElement
+  const tagOf = (el: Opening) => el.tagName.getText(file)
+  const attrOf = (el: Opening, name: string) =>
+    el.attributes.properties.find(
+      (p): p is ts.JsxAttribute =>
+        ts.isJsxAttribute(p) && p.name.getText(file) === name
+    )
+  const valueText = (a: ts.JsxAttribute | undefined) =>
+    a?.initializer?.getText(file)
+  const openings: Opening[] = []
+  const selects: { opening: Opening; triggerId?: string }[] = []
+  const visit = (node: ts.Node) => {
+    if (ts.isJsxOpeningElement(node) || ts.isJsxSelfClosingElement(node)) {
+      openings.push(node)
+    }
+    if (ts.isJsxElement(node) && tagOf(node.openingElement) === "Select") {
+      let triggerId: string | undefined
+      const findTrigger = (child: ts.Node) => {
+        if (
+          (ts.isJsxOpeningElement(child) ||
+            ts.isJsxSelfClosingElement(child)) &&
+          tagOf(child) === "SelectTrigger"
+        ) {
+          triggerId ??= valueText(attrOf(child, "id"))
+        }
+        ts.forEachChild(child, findTrigger)
+      }
+      node.children.forEach(findTrigger)
+      selects.push({ opening: node.openingElement, triggerId })
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(file)
+
+  const labelIdFor = (id: string) =>
+    id.startsWith('"') ? `"${id.slice(1, -1)}-label"` : `{\`\${${id.slice(1, -1)}}-label\`}`
+  const edits: { at: number; text: string }[] = []
+  for (const { opening, triggerId } of selects) {
+    if (!triggerId) continue
+    if (attrOf(opening, "aria-labelledby") || attrOf(opening, "aria-label"))
+      continue
+    const label = openings.find(
+      (el) =>
+        /(^|\.)(Field)?Label$/.test(tagOf(el)) &&
+        valueText(attrOf(el, "htmlFor")) === triggerId
+    )
+    if (!label) continue
+    const labelId = valueText(attrOf(label, "id")) ?? labelIdFor(triggerId)
+    if (!attrOf(label, "id")) {
+      edits.push({ at: label.tagName.getEnd(), text: ` id=${labelId}` })
+    }
+    edits.push({
+      at: opening.tagName.getEnd(),
+      text: ` aria-labelledby=${labelId}`,
+    })
+  }
+  for (const edit of edits.sort((a, b) => b.at - a.at)) {
+    code = code.slice(0, edit.at) + edit.text + code.slice(edit.at)
+  }
+  return code
+}
+
 // ---------------------------------------------------------------------------
 // DOM ids
 // ---------------------------------------------------------------------------
@@ -1078,6 +1155,7 @@ async function main() {
     if (blocked) return skip(`unsupported import: ${blocked}`)
     let code = EXAMPLE_REWRITES[exampleName]?.(rewritten) ?? rewritten
     code = rewritePressHandlers(rewriteStockColors(code), exampleName)
+    code = rewriteSelectLabels(code, exampleName)
     examples.set(exampleName, code)
     return true
   }
