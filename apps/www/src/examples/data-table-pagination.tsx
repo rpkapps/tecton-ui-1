@@ -135,8 +135,8 @@ export default function DataTablePagination() {
           <span>Rows per page</span>
           <Select
             aria-label="Rows per page"
-            selectedKey={String(pagination.pageSize)}
-            onSelectionChange={(key) => {
+            value={String(pagination.pageSize)}
+            onChange={(key) => {
               if (key == null) return
               table.setPageSize(Number(key))
             }}

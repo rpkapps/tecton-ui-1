@@ -315,8 +315,8 @@ function WellsTable({
             <span>Rows per page</span>
             <Select
               aria-label="Rows per page"
-              selectedKey={String(pagination.pageSize)}
-              onSelectionChange={(key) => table.setPageSize(Number(key))}
+              value={String(pagination.pageSize)}
+              onChange={(key) => table.setPageSize(Number(key))}
             >
               <SelectTrigger size="sm" className="h-7 w-18 text-xs">
                 <SelectValue />

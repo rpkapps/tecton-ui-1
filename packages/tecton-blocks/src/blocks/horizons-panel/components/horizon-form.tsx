@@ -59,8 +59,8 @@ function HorizonForm({
       <Field>
         <Select
           className="flex w-full flex-col gap-3"
-          selectedKey={value.pairId}
-          onSelectionChange={(key) => {
+          value={value.pairId}
+          onChange={(key) => {
             const next = getPair(String(key))
             onChange({
               ...value,
@@ -88,8 +88,8 @@ function HorizonForm({
         <Field>
           <Select
             className="flex w-full flex-col gap-3"
-            selectedKey={value.volumeId}
-            onSelectionChange={(key) => set("volumeId", String(key))}
+            value={value.volumeId}
+            onChange={(key) => set("volumeId", String(key))}
           >
             <FieldLabel>Volume</FieldLabel>
             <SelectTrigger variant="filled">
@@ -107,8 +107,8 @@ function HorizonForm({
         <Field>
           <Select
             className="flex w-full flex-col gap-3"
-            selectedKey={String(value.lineWidth)}
-            onSelectionChange={(key) => set("lineWidth", Number(key))}
+            value={String(value.lineWidth)}
+            onChange={(key) => set("lineWidth", Number(key))}
           >
             <FieldLabel>Line</FieldLabel>
             <SelectTrigger variant="filled">
