@@ -47,7 +47,7 @@ This guide will show you how to use [TanStack Table](https://tanstack.com/table)
 
 We are going to build a table to show recent payments. Here's what our data looks like:
 
-```tsx showLineNumbers
+```tsx lineNumbers
 type Payment = {
   id: string
   amount: number
@@ -96,7 +96,7 @@ I'm using a Next.js example here but this works for any other React framework.
 
 TanStack Table v9 is feature-based: you opt into the behavior you want — sorting, filtering, pagination, and so on — by declaring it with `tableFeatures()`. Anything you don't list is tree-shaken out of your bundle. That includes the built-in filter and sort functions: register the ones your columns rely on under `filterFns` and `sortFns` (our email filter uses `includesString`, and string columns sort with `text` / `alphanumeric`).
 
-```tsx showLineNumbers title="app/payments/data-table-features.ts"
+```tsx lineNumbers title="app/payments/data-table-features.ts"
 import {
   columnFilteringFeature,
   columnVisibilityFeature,
@@ -148,7 +148,7 @@ Let's start by building a basic table.
 
 First, we'll define our columns.
 
-```tsx showLineNumbers title="app/payments/columns.tsx" {3,5,16-17,19-29}
+```tsx lineNumbers title="app/payments/columns.tsx" {3,5,16-17,19-29}
 "use client"
 
 import { createColumnHelper } from "@tanstack/react-table"
@@ -192,7 +192,7 @@ formatted, sorted and filtered.
 
 Next, we'll create a `<DataTable />` component to render our table.
 
-```tsx showLineNumbers title="app/payments/data-table.tsx"
+```tsx lineNumbers title="app/payments/data-table.tsx"
 "use client"
 
 import { useTable, type ColumnDef, type RowData } from "@tanstack/react-table"
@@ -274,7 +274,7 @@ export function DataTable<TData extends RowData>({
 
 Finally, we'll render our table in our page component.
 
-```tsx showLineNumbers title="app/payments/page.tsx" {22}
+```tsx lineNumbers title="app/payments/page.tsx" {22}
 import { columns, Payment } from "./columns"
 import { DataTable } from "./data-table"
 
@@ -314,7 +314,7 @@ Let's format the amount cell to display the dollar amount. We'll also align the 
 
 Update the `header` and `cell` definitions for amount as follows:
 
-```tsx showLineNumbers title="app/payments/columns.tsx" {3-13}
+```tsx lineNumbers title="app/payments/columns.tsx" {3-13}
 export const columns = columnHelper.columns([
   columnHelper.accessor("amount", {
     header: () => <div className="text-right">Amount</div>,
@@ -345,7 +345,7 @@ Let's add row actions to our table. We'll use a `<Dropdown />` component for thi
 
 Update our columns definition to add a new `actions` column. The `actions` cell returns a `<Dropdown />` component.
 
-```tsx showLineNumbers title="app/payments/columns.tsx" {4,6-13,17-46}
+```tsx lineNumbers title="app/payments/columns.tsx" {4,6-13,17-46}
 "use client"
 
 import { createColumnHelper } from "@tanstack/react-table"
@@ -414,7 +414,7 @@ Because our features object includes `rowPaginationFeature` and `createPaginated
 
 We can add pagination controls to our table using the `<Button />` component and the `table.previousPage()`, `table.nextPage()` API methods.
 
-```tsx showLineNumbers title="app/payments/data-table.tsx" {1,20-37}
+```tsx lineNumbers title="app/payments/data-table.tsx" {1,20-37}
 import { Button } from "@tecton/react/components/button"
 
 export function DataTable<TData extends RowData>({
@@ -471,7 +471,7 @@ The `rowSortingFeature` and sorted row model are already registered in our featu
 
 ### Update `<DataTable>`
 
-```tsx showLineNumbers title="app/payments/data-table.tsx" showLineNumbers {3,8,15,21-24,31-46}
+```tsx lineNumbers title="app/payments/data-table.tsx" {3,8,15,21-24,31-46}
 "use client"
 
 import * as React from "react"
@@ -530,7 +530,7 @@ export function DataTable<TData extends RowData>({
 
 We can now update the `email` header cell to add sorting controls.
 
-```tsx showLineNumbers title="app/payments/columns.tsx" {4,10-17}
+```tsx lineNumbers title="app/payments/columns.tsx" {4,10-17}
 "use client"
 
 import { createColumnHelper } from "@tanstack/react-table"
@@ -566,7 +566,7 @@ The `columnFilteringFeature` and filtered row model are already part of our feat
 
 ### Update `<DataTable>`
 
-```tsx showLineNumbers title="app/payments/data-table.tsx" {7,13,20-22,29,32,38-46}
+```tsx lineNumbers title="app/payments/data-table.tsx" {7,13,20-22,29,32,38-46}
 "use client"
 
 import * as React from "react"
@@ -634,7 +634,7 @@ Adding column visibility is fairly simple using `@tanstack/react-table` visibili
 
 ### Update `<DataTable>`
 
-```tsx showLineNumbers title="app/payments/data-table.tsx" {8,14-19,29-30,38,42,57-99}
+```tsx lineNumbers title="app/payments/data-table.tsx" {8,14-19,29-30,38,42,57-99}
 "use client"
 
 import * as React from "react"
@@ -755,7 +755,7 @@ Next, we're going to add row selection to our table.
 
 ### Update column definitions
 
-```tsx showLineNumbers title="app/payments/columns.tsx" {6,9-15}
+```tsx lineNumbers title="app/payments/columns.tsx" {6,9-15}
 "use client"
 
 import { createColumnHelper } from "@tanstack/react-table"
@@ -776,7 +776,7 @@ export const columns = columnHelper.columns([
 
 ### Update `<DataTable>`
 
-```tsx showLineNumbers title="app/payments/data-table.tsx" {11,20,25,33-43}
+```tsx lineNumbers title="app/payments/data-table.tsx" {11,20,25,33-43}
 export function DataTable<TData extends RowData>({
   columns,
   data,
@@ -850,9 +850,9 @@ Here are some components you can use to build your data tables. This is from the
 
 Make any column header sortable and hideable.
 
-<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-column-header.tsx](https://github.com/shadcn-ui/ui/blob/main/apps/v4/app/(app)/examples/tasks/components/data-table-column-header.tsx).</Callout>
+<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-column-header.tsx](https://github.com/shadcn-ui/ui/blob/3ba91b1cc83e1bbe4ab35a422ff2a694849c5048/apps/v4/app/(app)/examples/tasks/components/data-table-column-header.tsx).</Callout>
 
-```tsx showLineNumbers {4}
+```tsx lineNumbers {4}
 export const columns = columnHelper.columns([
   columnHelper.accessor("email", {
     header: ({ column }) => (
@@ -866,7 +866,7 @@ export const columns = columnHelper.columns([
 
 Add pagination controls to your table including page size and selection count.
 
-<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-pagination.tsx](https://github.com/shadcn-ui/ui/blob/main/apps/v4/app/(app)/examples/tasks/components/data-table-pagination.tsx).</Callout>
+<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-pagination.tsx](https://github.com/shadcn-ui/ui/blob/3ba91b1cc83e1bbe4ab35a422ff2a694849c5048/apps/v4/app/(app)/examples/tasks/components/data-table-pagination.tsx).</Callout>
 
 ```tsx
 <DataTablePagination table={table} />
@@ -876,7 +876,7 @@ Add pagination controls to your table including page size and selection count.
 
 A component to toggle column visibility.
 
-<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-view-options.tsx](https://github.com/shadcn-ui/ui/blob/main/apps/v4/app/(app)/examples/tasks/components/data-table-view-options.tsx).</Callout>
+<Callout variant="info">The source of this file lives in the upstream shadcn/ui repository: [data-table-view-options.tsx](https://github.com/shadcn-ui/ui/blob/3ba91b1cc83e1bbe4ab35a422ff2a694849c5048/apps/v4/app/(app)/examples/tasks/components/data-table-view-options.tsx).</Callout>
 
 ```tsx
 <DataTableViewOptions table={table} />

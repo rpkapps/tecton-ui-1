@@ -19,6 +19,8 @@ export default function ShortcutsDemo() {
   return (
     <div
       ref={setTarget}
+      role="region"
+      aria-label="Shortcut demo"
       tabIndex={0}
       className="w-full max-w-md rounded-lg border p-4 text-sm outline-none focus-within:ring-2 focus-within:ring-ring/50"
     >

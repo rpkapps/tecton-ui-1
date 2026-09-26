@@ -185,12 +185,69 @@ describe("TreeViewVisibilityToggle", () => {
     expect(onChange).toHaveBeenCalledWith(false)
   })
 
-  it("is labelled Show while hidden and toggles to visible", async () => {
+  // A toggle button keeps its name; the pressed state is what changes. A
+  // "Show" label with aria-pressed="true" would read as "Show, pressed".
+  it("keeps the Hide label while hidden and reports it pressed", async () => {
     const onChange = vi.fn()
     render(<TreeViewVisibilityToggle isVisible={false} onChange={onChange} />)
-    const button = screen.getByRole("button", { name: "Show" })
+    const button = screen.getByRole("button", { name: "Hide" })
     expect(button).toHaveAttribute("aria-pressed", "true")
+    expect(screen.queryByRole("button", { name: "Show" })).toBeNull()
     await userEvent.click(button)
     expect(onChange).toHaveBeenCalledWith(true)
+  })
+
+  it("names itself after the row it sits in", () => {
+    render(
+      <TreeView aria-label="Layers">
+        <TreeViewItem id="faults" textValue="Faults">
+          <TreeViewItemContent
+            endAdornment={<TreeViewVisibilityToggle isVisible={false} />}
+          >
+            Faults
+          </TreeViewItemContent>
+        </TreeViewItem>
+        <TreeViewItem id="wells" textValue="Wells">
+          <TreeViewItemContent endAdornment={<TreeViewVisibilityToggle />}>
+            Wells
+          </TreeViewItemContent>
+        </TreeViewItem>
+      </TreeView>
+    )
+    expect(screen.getByRole("button", { name: "Hide Faults" })).toHaveAttribute(
+      "aria-pressed",
+      "true"
+    )
+    expect(screen.getByRole("button", { name: "Hide Wells" })).toHaveAttribute(
+      "aria-pressed",
+      "false"
+    )
+  })
+
+  it("takes an explicit name or aria-label over the row label", () => {
+    render(
+      <TreeView aria-label="Layers">
+        <TreeViewItem id="faults" textValue="Faults">
+          <TreeViewItemContent
+            endAdornment={<TreeViewVisibilityToggle name="fault sticks" />}
+          >
+            <b>Faults</b>
+          </TreeViewItemContent>
+        </TreeViewItem>
+        <TreeViewItem id="wells" textValue="Wells">
+          <TreeViewItemContent
+            endAdornment={<TreeViewVisibilityToggle aria-label="Wells layer" />}
+          >
+            Wells
+          </TreeViewItemContent>
+        </TreeViewItem>
+      </TreeView>
+    )
+    expect(
+      screen.getByRole("button", { name: "Hide fault sticks" })
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole("button", { name: "Wells layer" })
+    ).toBeInTheDocument()
   })
 })

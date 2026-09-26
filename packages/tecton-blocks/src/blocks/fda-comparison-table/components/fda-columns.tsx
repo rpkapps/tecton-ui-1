@@ -16,6 +16,7 @@ import {
   ShareIcon,
   TrashIcon,
 } from "lucide-react"
+import { useLocale } from "react-aria-components"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -56,15 +57,16 @@ function MonoValue({
   digits?: number
   prefix?: string
 }) {
+  const { locale } = useLocale()
   return (
     <span className={cn("font-mono tabular-nums", className)}>
       {prefix}
-      {value.toLocaleString(undefined, {
+      {value.toLocaleString(locale, {
         minimumFractionDigits: digits,
         maximumFractionDigits: digits,
       })}
       {unit && (
-        <span className="ml-1 text-[0.85em] text-muted-foreground">{unit}</span>
+        <span className="ms-1 text-[0.85em] text-muted-foreground">{unit}</span>
       )}
     </span>
   )
@@ -152,8 +154,10 @@ function createFdaColumns(callbacks: ColumnCallbacks = {}) {
           color="auto"
           size="sm"
           segments={5}
-          valueLabel={riskLabel(getValue())}
-          className="w-28 gap-0.5 [&_[data-slot=meter-value]]:text-[0.625rem]"
+          valueLabel={
+            <span className="text-[0.625rem]">{riskLabel(getValue())}</span>
+          }
+          className="w-28 gap-0.5"
         />
       ),
     }),

@@ -85,6 +85,29 @@ describe("Panel", () => {
     expect(footer.tagName).toBe("FOOTER")
   })
 
+  // jsdom has no layout, so this pins the classes the layout depends on
+  // (checked in Chromium): a nowrap header gave the `flex-1 basis-0` title
+  // no room next to a `basis-full` description, and it shrank to 0px.
+  it("wraps the description onto its own line below the title and actions", () => {
+    const { container } = render(
+      <PanelHeader>
+        <PanelTitle>Alternative B</PanelTitle>
+        <PanelDescription>4 wells, 1 template</PanelDescription>
+        <PanelActions>
+          <button>Open</button>
+        </PanelActions>
+      </PanelHeader>
+    )
+    const slot = (name: string) =>
+      container.querySelector(`[data-slot="${name}"]`)
+    expect(slot("panel-header")).toHaveClass("flex", "flex-wrap")
+    expect(slot("panel-title")).toHaveClass("min-w-0", "flex-1", "truncate")
+    expect(slot("panel-description")).toHaveClass("basis-full", "order-last")
+    // Logical, so the actions sit at the inline end in RTL too.
+    expect(slot("panel-actions")).toHaveClass("ms-auto", "-me-2")
+    expect(slot("panel-actions")).not.toHaveClass("ml-auto", "-mr-2")
+  })
+
   it("merges className on each part", () => {
     const { container } = render(
       <Panel className="p">

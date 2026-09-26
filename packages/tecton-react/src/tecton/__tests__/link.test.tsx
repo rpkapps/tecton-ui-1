@@ -18,7 +18,7 @@ describe("Link", () => {
   })
 
   it.each([
-    ["primary", "text-primary-foreground"],
+    ["primary", "text-link-foreground"],
     ["muted", "text-muted-foreground"],
     ["subtle", "underline"],
   ] as const)("variant=%s", (variant, cls) => {
@@ -55,6 +55,33 @@ describe("Link", () => {
     expect(link).toHaveAttribute("target", "_blank")
     expect(link).toHaveAttribute("rel", "noreferrer noopener")
     expect(link.querySelector("svg")).toHaveAttribute("aria-hidden", "true")
+  })
+
+  it("paints variant=primary with the link colours, never primary-foreground", () => {
+    render(
+      <Link href="#" variant="primary">
+        x
+      </Link>
+    )
+    const link = screen.getByRole("link")
+    expect(link).toHaveClass(
+      "text-link-foreground",
+      "data-hovered:text-link-hover-foreground",
+      "data-pressed:text-link-pressed-foreground"
+    )
+    expect(link).not.toHaveClass("text-primary-foreground")
+  })
+
+  it("adds a caller's rel to noreferrer noopener on an external link", () => {
+    render(
+      <Link href="https://example.com" isExternal rel="nofollow">
+        Docs
+      </Link>
+    )
+    expect(screen.getByRole("link", { name: "Docs" })).toHaveAttribute(
+      "rel",
+      "noreferrer noopener nofollow"
+    )
   })
 
   it("keeps an explicit target and rel when not external", () => {

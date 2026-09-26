@@ -15,7 +15,7 @@ import { PortalProvider } from "@tecton/react/tecton/portal"
 </PortalProvider>
 ```
 
-Every Tecton overlay — `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` — portals into `document.body` by default. `PortalProvider` changes that target for its whole subtree without any prop on the overlays themselves.
+Every Tecton overlay — `Dialog`, `AlertDialog`, `Sheet`, `Drawer`, `Popover`, `HoverCard`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `ContextMenu`, `CommandDialog` — portals into `document.body` by default. `PortalProvider` changes that target for its whole subtree without any prop on the overlays themselves.
 
 ## When to use it
 
@@ -39,9 +39,11 @@ A single-root application does not need it.
 
 - The provider owns a Tecton container context. Each overlay passes its resolved target directly to its React Aria Components primitive, so isolated React roots do not depend on sharing React Aria's private context.
 - With no provider, or with `container={null}`, overlays pass no container at all and React Aria applies its own default (`document.body`, once hydration is over).
+- A container passed to one overlay (`UNSTABLE_portalContainer` on a React Aria overlay, including `DropdownMenu` and `ContextMenu`; `container` on `DrawerPortal`) wins over the provider's.
 - A submenu is the exception: React Aria mounts it inside the root popover's container, which is already in the provider's container. Overriding that would detach the submenu from its parent menu, so Tecton leaves it to React Aria.
 - `Drawer` is built on Base UI, which has no portal context of its own, but it reads this one and forwards the resolved container to its Base UI portal, so it lands in the same place as the other overlays.
 - `container={null}` clears an outer provider and restores the default.
+- A function `container` (`() => ref.current`) is resolved after the provider commits, so it sees an element that only exists once the tree has mounted, and it is resolved again whenever a new function is passed (an inline arrow is a new function on every render). Until the first resolution the overlays use the default target.
 - [`ThemeRoot`](/docs/tecton/theme-root) is the recommended way to get a container: it creates one body-level element that mirrors the root's classes, marks it with `data-tecton-root` and wires it to this provider, so an independently deployed application does not have to manage the element itself.
 
 {/* guidelines:start */}
@@ -72,7 +74,7 @@ Wrap the root of the subtree, not individual overlays: `Dialog`, `Sheet`, `Popov
 
 <Do>
 
-Create the container once at body level and pass it as `container`; pass a function instead when the element only exists after the first render.
+Create the container once at body level and pass it as `container`; pass a function instead when the element only exists after the first render (`container={() => hostRef.current}`) — the provider calls it once it has mounted, and again when you pass a new function.
 
 </Do>
 
@@ -187,7 +189,7 @@ React Aria reads any set `UNSTABLE_portalContainer` as "the caller has decided" 
 
 | Prop        | Type                                                 | Default | Description                                                                                            |
 | ----------- | ---------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------ |
-| `container` | `HTMLElement \| null \| (() => HTMLElement \| null)` | -       | Element the overlays portal into. A function is called while each overlay renders. `null` restores `document.body`. |
+| `container` | `HTMLElement \| null \| (() => HTMLElement \| null)` | -       | Element the overlays portal into. A function is resolved after the provider commits, and again whenever a new function is passed. `null` restores `document.body`. |
 | `children`  | `ReactNode`                                          | -       | Subtree whose overlays are redirected.                                                                 |
 
 ### usePortalContainer

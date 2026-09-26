@@ -50,7 +50,9 @@
  *   - `@charset`, `@import`, `@property`, `@font-face`, `@keyframes` and bodiless
  *     `@layer a, b;` order statements are document-global: inside `@scope` they are
  *     ignored, so they are hoisted to the top of the sheet, unchanged and in
- *     document order (`@charset` / `@import` keep coming first).
+ *     document order (`@charset` / `@import` keep coming first). One that sat
+ *     inside `@media` / `@supports` is hoisted inside a copy of those conditions,
+ *     so it still applies only where it did; a condition left empty is dropped.
  *   - Being document-global, a `@keyframes` is also last-definition-wins, and two
  *     remotes hoist their frames into the same document: whichever `shimmer` was
  *     parsed last animates both. So every set of frames *this sheet defines* is
@@ -88,6 +90,10 @@
  *     what makes `scoped.css`'s base reset and an opted-in `scoped-theme.css` apply
  *     to the remote's own root and to its overlay container while leaving the host's
  *     root alone. Selectors inside `@keyframes` — the steps — are never rewritten.
+ *
+ * Running the plugin twice over the same sheet changes nothing the second time: a
+ * `@scope` with the same prelude is left as it is, and a keyframe name that
+ * already ends in `--<suffix>` is not renamed again.
  *
  * `@scope` needs Chrome/Edge 118+, Safari 17.4+, Firefox 146+. There is no polyfill;
  * an older browser falls back to the unscoped cascade, where the last sheet wins.
@@ -162,9 +168,27 @@ const LEADING_ROOT = /^(?::root|html|body)(?![\w-])/
 /** A selector-list member that is nothing but `:host` / `:host(…)`. */
 const HOST_ONLY = /^:host(?:\([^)]*\))?$/
 
-/** Strings and attribute values carry arbitrary text: blank them before scanning. */
+/**
+ * A class or id name, escapes included: Tailwind's named groups and peers
+ * (`.group\/body`, `.peer\/html`) and arbitrary values (`.w-\[10px\]`) spell
+ * `body` or `html` inside an escaped identifier, which names no element. A CSS
+ * escape is a backslash and one character, or up to six hex digits and an
+ * optional space; anything outside ASCII is an identifier character too.
+ */
+const IDENTIFIER_TOKEN =
+  /[.#](?:\\[0-9a-fA-F]{1,6}[ \t\n\r\f]?|\\[^\n\r\f0-9a-fA-F]|[\w-]|[^\x00-\x7f])+/g
+
+/**
+ * Class and id names, strings and attribute values carry arbitrary text: blank
+ * them before scanning. Identifiers go first, so an escaped quote or bracket
+ * inside a class name (`.content-\[\"x\"\]`) never opens a string or an
+ * attribute.
+ */
 const blankValues = (selector) =>
-  selector.replace(/"[^"]*"|'[^']*'/g, '""').replace(/\[[^\]]*\]/g, "[]")
+  selector
+    .replace(IDENTIFIER_TOKEN, "")
+    .replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'/g, '""')
+    .replace(/\[[^\]]*\]/g, "[]")
 
 /** What may not survive the rewrite, because under `@scope` it matches nothing. */
 const LEFTOVER_PSEUDO = /:(?:root|host)(?![\w-])/
@@ -324,9 +348,19 @@ export default function scopeTecton(options) {
        */
       const versionKeyframes = () => {
         const defined = new Set()
+        // A name that already carries the suffix was versioned by an earlier run
+        // over the same sheet: its frames keep that name (renaming them again
+        // would give `spin--mfe-a--mfe-a`), and a reference to the name it was
+        // versioned from still follows it.
+        const versioned = `--${suffix}`
         sheet.walkAtRules((node) => {
-          if (isKeyframes(atRuleName(node))) defined.add(node.params.trim())
+          if (!isKeyframes(atRuleName(node))) return
+          const name = node.params.trim()
+          defined.add(
+            name.endsWith(versioned) ? name.slice(0, -versioned.length) : name
+          )
         })
+        defined.delete("")
         if (!defined.size) return
         const names = [...defined].sort((a, b) => b.length - a.length)
         // `(?![\w-])` is what keeps `spin` out of `spin-slow`.
@@ -345,16 +379,64 @@ export default function scopeTecton(options) {
       }
       if (suffix) versionKeyframes()
 
-      /** Document-global at-rules, in the order they appeared. */
+      /**
+       * Document-global at-rules, in the order they appeared. One that sat inside
+       * a condition — `@supports (…) { @font-face { … } }`, `@media (…) {
+       * @keyframes … }` — is hoisted inside a copy of that chain of conditions, so
+       * it keeps applying only where it did; consecutive ones under the same chain
+       * share one copy. A `@layer` is not a condition and is not copied: a layer
+       * block at the top of the sheet would declare that layer's position in the
+       * order earlier than the sheet does.
+       */
       const global = []
-      const lift = (container) => {
+      let lastChain = null
+      let lastWrapper = null
+      const sameChain = (a, b) =>
+        a !== null &&
+        a.length === b.length &&
+        a.every((node, index) => node === b[index])
+      const hoist = (node, conditions) => {
+        node.remove()
+        if (!conditions.length) {
+          global.push(node)
+          lastChain = null
+          return
+        }
+        if (sameChain(lastChain, conditions)) {
+          lastWrapper.append(node)
+          return
+        }
+        let outer = null
+        let inner = null
+        for (const condition of conditions) {
+          const copy = condition.clone({ nodes: [] })
+          if (inner) inner.append(copy)
+          else outer = copy
+          inner = copy
+        }
+        inner.append(node)
+        global.push(outer)
+        lastChain = conditions
+        lastWrapper = inner
+      }
+      const lift = (container, conditions) => {
         for (const node of [...container.nodes]) {
           if (node.type !== "atrule") continue
-          if (isGlobalAtRule(node)) global.push(node.remove())
-          else if (node.nodes) lift(node)
+          if (isGlobalAtRule(node)) {
+            hoist(node, conditions)
+            continue
+          }
+          if (!node.nodes) continue
+          const condition = atRuleName(node) !== "layer"
+          const count = node.nodes.length
+          lift(node, condition ? [...conditions, node] : conditions)
+          // A condition that held nothing but hoisted at-rules is left empty:
+          // drop it rather than wrap it in a scope. An emptied `@layer` stays,
+          // since it still declares the layer's place in the order.
+          if (condition && count && !node.nodes.length) node.remove()
         }
       }
-      lift(sheet)
+      lift(sheet, [])
 
       /**
        * Wraps each run of scopable children in one `@scope`; a `@layer` is recursed
@@ -381,6 +463,17 @@ export default function scopeTecton(options) {
           run = []
         }
         for (const node of [...container.nodes]) {
+          // Already scoped by an earlier run over the same sheet (a sheet that is
+          // processed twice, or one that concatenates an already scoped chunk):
+          // wrapping it again would nest `@scope` inside `@scope`.
+          if (
+            node.type === "atrule" &&
+            atRuleName(node) === "scope" &&
+            node.params === params
+          ) {
+            flush()
+            continue
+          }
           const recurse =
             node.type === "atrule" &&
             node.nodes &&

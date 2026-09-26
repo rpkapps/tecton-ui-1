@@ -3,7 +3,9 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { Field, FieldLabel } from "@tecton/react/components/field"
+import { NumberField } from "react-aria-components"
+
+import { Field, FieldError, FieldLabel } from "@tecton/react/components/field"
 import { Input } from "@tecton/react/components/input"
 import {
   Select,
@@ -16,7 +18,14 @@ import { Separator } from "@tecton/react/components/separator"
 import { Slider } from "@tecton/react/components/slider"
 import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 
-import { getPair, getSurface, lineWidths, surfacePairs, volumes } from "../data"
+import {
+  getPair,
+  getSurface,
+  lineWidths,
+  surfacePairs,
+  validateDepths,
+  volumes,
+} from "../data"
 import type { HorizonSettings } from "../data"
 
 type HorizonFormProps = Omit<React.ComponentProps<"div">, "onChange"> & {
@@ -33,7 +42,8 @@ function HorizonForm({
   const pair = getPair(value.pairId)
   const top = getSurface(pair.top)
   const base = getSurface(pair.base)
-  const id = React.useId()
+  const errorId = `${React.useId()}-depth-error`
+  const depthError = validateDepths(value)
 
   const set = <TKey extends keyof HorizonSettings>(
     key: TKey,
@@ -47,11 +57,10 @@ function HorizonForm({
       {...props}
     >
       <Field>
-        <FieldLabel htmlFor={`${id}-pair`}>Surface pair</FieldLabel>
         <Select
-          className="w-full"
-          selectedKey={value.pairId}
-          onSelectionChange={(key) => {
+          className="flex w-full flex-col gap-3"
+          value={value.pairId}
+          onChange={(key) => {
             const next = getPair(String(key))
             onChange({
               ...value,
@@ -61,7 +70,8 @@ function HorizonForm({
             })
           }}
         >
-          <SelectTrigger id={`${id}-pair`} variant="filled">
+          <FieldLabel>Surface pair</FieldLabel>
+          <SelectTrigger variant="filled">
             <SelectValue />
           </SelectTrigger>
           <SelectContent>
@@ -76,13 +86,13 @@ function HorizonForm({
 
       <div className="grid grid-cols-2 gap-3">
         <Field>
-          <FieldLabel htmlFor={`${id}-volume`}>Volume</FieldLabel>
           <Select
-            className="w-full"
-            selectedKey={value.volumeId}
-            onSelectionChange={(key) => set("volumeId", String(key))}
+            className="flex w-full flex-col gap-3"
+            value={value.volumeId}
+            onChange={(key) => set("volumeId", String(key))}
           >
-            <SelectTrigger id={`${id}-volume`} variant="filled">
+            <FieldLabel>Volume</FieldLabel>
+            <SelectTrigger variant="filled">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -95,13 +105,13 @@ function HorizonForm({
           </Select>
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${id}-line`}>Line</FieldLabel>
           <Select
-            className="w-full"
-            selectedKey={String(value.lineWidth)}
-            onSelectionChange={(key) => set("lineWidth", Number(key))}
+            className="flex w-full flex-col gap-3"
+            value={String(value.lineWidth)}
+            onChange={(key) => set("lineWidth", Number(key))}
           >
-            <SelectTrigger id={`${id}-line`} variant="filled">
+            <FieldLabel>Line</FieldLabel>
+            <SelectTrigger variant="filled">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -126,32 +136,21 @@ function HorizonForm({
       <Separator emphasis="subtle" />
 
       <div className="grid grid-cols-2 gap-3">
-        <Field>
-          <FieldLabel htmlFor={`${id}-top`}>Top depth (TVDSS)</FieldLabel>
-          <Input
-            id={`${id}-top`}
-            variant="filled"
-            type="number"
-            className="h-8 font-mono text-sm tabular-nums md:text-xs"
-            value={String(value.topDepth)}
-            onChange={(event) =>
-              set("topDepth", Number(event.target.value) || 0)
-            }
-          />
-        </Field>
-        <Field>
-          <FieldLabel htmlFor={`${id}-bottom`}>Bottom depth (TVDSS)</FieldLabel>
-          <Input
-            id={`${id}-bottom`}
-            variant="filled"
-            type="number"
-            className="h-8 font-mono text-sm tabular-nums md:text-xs"
-            value={String(value.bottomDepth)}
-            onChange={(event) =>
-              set("bottomDepth", Number(event.target.value) || 0)
-            }
-          />
-        </Field>
+        <DepthField
+          label="Top depth (TVDSS)"
+          value={value.topDepth}
+          onChange={(next) => set("topDepth", next)}
+          errorId={depthError ? errorId : undefined}
+        />
+        <DepthField
+          label="Bottom depth (TVDSS)"
+          value={value.bottomDepth}
+          onChange={(next) => set("bottomDepth", next)}
+          errorId={depthError ? errorId : undefined}
+        />
+        <FieldError id={errorId} className="col-span-2 text-xs">
+          {depthError}
+        </FieldError>
       </div>
 
       <LabelledSlider
@@ -173,6 +172,44 @@ function HorizonForm({
         onChange={(next) => set("smoothing", next)}
       />
     </div>
+  )
+}
+
+/**
+ * A depth in metres on React Aria `NumberField`, which accepts a partial
+ * entry such as "-" while typing and formats the value for the locale. An
+ * empty or unparsable entry leaves the previous value in place.
+ */
+function DepthField({
+  label,
+  value,
+  onChange,
+  errorId,
+}: {
+  label: string
+  value: number
+  onChange: (next: number) => void
+  /** Id of the error that describes the pair; set while it is invalid. */
+  errorId?: string | undefined
+}) {
+  return (
+    <Field data-invalid={errorId !== undefined}>
+      <NumberField
+        className="flex flex-col gap-3"
+        value={value}
+        onChange={(next) => {
+          if (!Number.isNaN(next)) onChange(next)
+        }}
+        isInvalid={errorId !== undefined}
+        {...(errorId === undefined ? {} : { "aria-describedby": errorId })}
+      >
+        <FieldLabel>{label}</FieldLabel>
+        <Input
+          variant="filled"
+          className="h-8 font-mono text-sm tabular-nums md:text-xs"
+        />
+      </NumberField>
+    </Field>
   )
 }
 
@@ -243,5 +280,5 @@ function LabelledSlider({
   )
 }
 
-export { HorizonForm, HorizonRow, LabelledSlider }
+export { HorizonForm, HorizonRow, DepthField, LabelledSlider }
 export type { HorizonFormProps }

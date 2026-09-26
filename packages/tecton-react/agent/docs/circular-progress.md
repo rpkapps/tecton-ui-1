@@ -62,7 +62,7 @@ Correct:
 <CircularProgress aria-label="Export" value={40} size="lg" color="default" />
 ```
 
-`size` also sets the `--stroke` width and the centre label's type scale, so overriding only the diameter leaves a hairline ring, and `blue-600` is not a Tecton step — `cn` drops `text-progress` for a class that emits nothing and the stroke falls back to the inherited text colour.
+`size` sets the diameter, the stroke and the centre label's type scale together; the stroke is drawn in the ring's own viewBox units and grows with the diameter, so overriding only the diameter turns the `md` ring into a heavy 7px stroke around a label still at `text-xs`, and `blue-600` is not a Tecton step — `cn` drops `text-progress` for a class that emits nothing and the stroke falls back to the inherited text colour.
 
 ### MEDIUM showValue on an indeterminate ring
 

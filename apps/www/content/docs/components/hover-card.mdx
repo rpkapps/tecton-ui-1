@@ -14,11 +14,11 @@ upstream: apps/v4/content/docs/components/aria/hover-card.mdx
 
 ## Usage
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import { HoverCard, HoverCardTrigger } from "@tecton/react/components/hover-card"
 ```
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <HoverCardTrigger>
   <Button variant="link">Hover</Button>
   <HoverCard>
@@ -42,7 +42,7 @@ HoverCardTrigger
 Use `delay` and `closeDelay` on the `HoverCardTrigger` to control when the card
 opens and closes.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <HoverCardTrigger delay={100} closeDelay={200}>
   <Button variant="link">Hover</Button>
   <HoverCard>Content</HoverCard>
@@ -53,7 +53,7 @@ opens and closes.
 
 Use the `placement` prop on `HoverCard` to control placement.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <HoverCardTrigger>
   <Button variant="link">Hover</Button>
   <HoverCard placement="top">Content</HoverCard>

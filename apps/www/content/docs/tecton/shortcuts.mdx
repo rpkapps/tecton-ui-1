@@ -82,14 +82,18 @@ This shape, and the `Shortcut` fields it takes, are **versioned public API**: a 
 | `mod+k` | ⌘K on macOS, Ctrl+K elsewhere. |
 | `ctrl+shift+p`, `alt+enter` | Explicit modifiers: `ctrl`, `alt`, `shift`, `meta`. |
 | `?`, `/`, `.` | A symbol; matches with or without Shift, whatever the layout. |
-| `g w` | A sequence: `g` then `w` within a second, shown as `G + W`. |
+| `g w` | A sequence: `g` then `w` within a second, shown as `G then W` (read as "G, then W"). |
 | `escape`, `enter`, `arrowup` | Named keys (`esc`, `up`, `space` are aliases). |
 
-Shortcuts without Ctrl, ⌘ or Alt do not fire while an input, textarea or editable element has focus, so `n` never steals a letter from a form. Set `allowInInput` to change that for one shortcut.
+Letters and digits match the key pressed when the character typed hides it: `alt+k` still fires where Option turns K into "˚" on a Mac, and `g w` works on a non-Latin layout. Other Latin layouts match by the character, so a letter stays where the layout puts it.
+
+Shortcuts without Ctrl, ⌘ or Alt do not fire while an input, textarea or editable element has focus (inside a shadow root too), so `n` never steals a letter from a form. Set `allowInInput` to change that for one shortcut.
+
+A held key fires its shortcut once: the key's auto-repeats are swallowed (so the browser's own action does not run either) but do not call `onAction` again, so a toggle does not flicker. Set `allowRepeat` for a shortcut that should keep firing while the key is held, such as a nudge or a zoom step.
 
 ## Listing shortcuts
 
-`useShortcuts()` returns the registered shortcuts and re-renders when they change; the shell's command palette and `?` dialog are built on it. `ShortcutKeys` renders a shortcut as key caps.
+`useShortcuts()` returns the registered shortcuts and re-renders when they change; the shell's command palette and `?` dialog are built on it. `ShortcutKeys` renders a shortcut as key caps: the keys of a chord joined with "+" (`Ctrl + K`, ⌘ on Apple keyboards), the steps of a sequence with "then" (`G then W`). Screen readers get the same as text and the caps are hidden from them, so no key is read out twice.
 
 ```tsx
 const shortcuts = useShortcuts()
@@ -105,6 +109,8 @@ const shortcuts = useShortcuts()
 
 By default the provider listens on `document`. Pass `target` to listen on one element instead, for example a canvas or an editor region that has its own shortcuts only while it is focused. The demo above is scoped that way.
 
+A nested provider normally reuses its parent's registry, so a component can wrap itself in one and still share the host's shortcuts. A nested provider given a `target` but no `registry` gets a registry of its own, listening on that target only: the parent's registry already listens on its own target, and one registry listening in two places would see every key twice. The scoped shortcuts are then listed by `useShortcuts()` inside that provider, not in the host's lists.
+
 <Callout>
   See the [Application shell](/blocks/shell-01) block for the whole loop: the host registers ⌘K and `?`, the mounted application registers its own, and both show up in the palette and the shortcut dialog.
 </Callout>
@@ -117,7 +123,7 @@ By default the provider listens on `document`. Pass `target` to listen on one el
 
 - The host listens for keys once and every mounted application registers against the same registry.
 - A shortcut must be listed as well as bound: the help dialog and the command palette read `useShortcuts()`.
-- A region owns keys only while focus is inside it — `target` scopes the listener to one element.
+- A region owns keys only while focus is inside it — `target` scopes the listener to one element; a nested provider with a `target` and no `registry` gets a registry of its own, so its shortcuts are not listed with the host's.
 
 ### Not for
 
@@ -149,7 +155,7 @@ Create the registry with `createShortcutRegistry()` in the host and hand the obj
 
 <Do>
 
-Write keys in the registry syntax: `mod+k` for ⌘ / Ctrl, `?` for a symbol, `g w` for a sequence.
+Write keys in the registry syntax: `mod+k` for ⌘ / Ctrl, `?` for a symbol, `g w` for a sequence; a held key fires once, so set `allowRepeat: true` only where holding it should repeat (zoom, nudge).
 
 </Do>
 
@@ -241,7 +247,7 @@ A registry of its own adds a second `document` listener with a list the host can
 
 </Correct>
 
-`ShortcutKeys` resolves `mod` to ⌘ or Ctrl for the reader's platform, splits a chord or a sequence into caps and gives the group one accessible name ("G, then W"), where hand-typed caps freeze the author's platform and are read out letter by letter.
+`ShortcutKeys` resolves `mod` to ⌘ or Ctrl for the reader's platform, splits a chord or a sequence into caps (a chord's keys joined by "+", a sequence's steps by "then") and reads the whole to screen readers as text ("G, then W"); hand-typed caps freeze the author's platform and are read out letter by letter.
 
 </Dont>
 
@@ -256,7 +262,7 @@ A registry of its own adds a second `document` listener with a list the host can
 | `registry` | `ShortcutRegistry` | created | The registry to expose; create one with `createShortcutRegistry` to share it outside React. |
 | `target` | `HTMLElement \| Document \| null` | `document` | Element whose `keydown` events are dispatched. |
 
-A nested provider without a `registry` reuses the parent's.
+A nested provider without a `registry` reuses the parent's, unless it has a `target` of its own: then it creates its own registry and listens on that target.
 
 ### useShortcut
 
@@ -272,6 +278,7 @@ Registers one shortcut for the lifetime of the component.
 | `allowInInput` | `boolean` | modifiers only | Fire while typing in a field. |
 | `isEnabled` | `() => boolean` | - | Skip the shortcut when false. |
 | `hidden` | `boolean` | false | Keep out of lists. |
+| `allowRepeat` | `boolean` | false | Fire again while the key is held (auto-repeat). Without it a held key fires once; the repeats are still swallowed. |
 
 ### ShortcutRegistry
 

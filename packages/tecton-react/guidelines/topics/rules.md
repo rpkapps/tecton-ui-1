@@ -27,7 +27,8 @@ sources:
 shipped as one package. Every component the application uses is already in it.
 
 Read `tecton docs react-aria` before writing props — the controls are React
-Aria, not Radix, and `onClick` / `checked` / `value` silently do the wrong thing.
+Aria, not Radix, and `onClick` / `checked` / `onValueChange` silently do the
+wrong thing.
 
 ## Before you finish
 
@@ -56,9 +57,11 @@ looked up. Every line is a condition that has to hold in that file.
   named by `FieldSet` + `FieldLegend`, never by a stray `FieldLabel`.
 - **React Aria prop names** — `onPress` not `onClick`, `isDisabled` not
   `disabled`, `isSelected` with `onChange(isSelected: boolean)` not `checked` /
-  `onCheckedChange`, `isOpen` / `onOpenChange` not `open`, and `selectedKey` /
-  `onSelectionChange` keyed by `id`, with the `Key | null` the handler receives
-  narrowed rather than cast away with `as`.
+  `onCheckedChange`, `isOpen` / `onOpenChange` not `open`, items keyed by `id`
+  not `value`, `value` / `onChange` on `Select` and `Combobox` and
+  `selectedKey` / `onSelectionChange` on `Tabs` — never `onValueChange` — with
+  the `Key | null` a `Select` hands its `onChange` narrowed rather than cast
+  away with `as`.
 - **Empty results are `Empty`** — a list, table, panel or search result with
   nothing to show renders `Empty` with `EmptyTitle` and `EmptyDescription`, not
   a stack of divs and not a `TableRow` with a `colSpan` cell; inside a `Table`

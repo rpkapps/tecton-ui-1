@@ -79,7 +79,7 @@ function GateTrack({
             key={gate.id}
             aria-current={gate.state === "current" ? "step" : undefined}
             className={cn(
-              "w-6 text-center first:text-left last:text-right",
+              "w-6 text-center first:text-start last:text-end",
               gate.state === "current" && "text-foreground"
             )}
           >
@@ -107,26 +107,26 @@ function ProjectSidebar({
     <Sidebar
       data-slot="project-sidebar"
       collapsible="offcanvas"
-      className={cn("border-r border-border-subtle", className)}
+      className={cn("border-e border-border-subtle", className)}
       {...props}
     >
       <SidebarHeader className="flex-row items-center justify-between px-3 py-2">
         <span className="text-sm font-medium">Project details</span>
-        <SidebarTrigger className="-mr-1" />
+        <SidebarTrigger className="-me-1" />
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
           <dl className="grid grid-cols-[auto_1fr] gap-x-4 gap-y-2 px-2 text-xs">
             <dt className="text-muted-foreground">Status</dt>
-            <dd className="text-right">
+            <dd className="text-end">
               <Badge variant="outline" size="default">
                 {project.status}
               </Badge>
             </dd>
             <dt className="text-muted-foreground">Asset</dt>
-            <dd className="text-right font-mono">{project.asset}</dd>
+            <dd className="text-end font-mono">{project.asset}</dd>
             <dt className="text-muted-foreground">Concepts</dt>
-            <dd className="text-right font-mono">{project.concepts.length}</dd>
+            <dd className="text-end font-mono">{project.concepts.length}</dd>
           </dl>
           <GateTrack gates={project.gates} className="mt-4 px-2" />
         </SidebarGroup>
@@ -148,7 +148,7 @@ function ProjectSidebar({
                       {concept.index}
                     </span>
                     <span className="truncate">{concept.name}</span>
-                    <span className="ml-auto font-mono text-[10px] text-muted-foreground">
+                    <span className="ms-auto font-mono text-[10px] text-muted-foreground">
                       {concept.alternatives.length} FDAs
                     </span>
                     <ChevronRightIcon className="transition-transform duration-200 group-data-expanded/collapsible:rotate-90" />
@@ -164,7 +164,7 @@ function ProjectSidebar({
                             }
                           >
                             <span className="truncate">{alternative.name}</span>
-                            <span className="ml-auto font-mono text-[10px] text-muted-foreground">
+                            <span className="ms-auto font-mono text-[10px] text-muted-foreground">
                               {alternative.id}
                             </span>
                           </SidebarMenuSubButton>

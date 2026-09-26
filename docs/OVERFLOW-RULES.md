@@ -67,7 +67,11 @@ actions apply to, and it is better to hide a third-tier action than to turn
    fit again with its label. Each item caches two sizes, full and compact,
    so the decision needs no extra measurement and cannot oscillate.
 3. An item can only go icon-only if it has an icon. A text-only item keeps
-   its label and simply costs more width in stage 3.
+   its label and simply costs more width in stage 3. `OverflowItem` defaults
+   `labelBehavior` to `collapse` only when it has a `label` and its control
+   renders an icon (an `svg`, an `img` or a `[data-icon]`), and to `keep`
+   otherwise; an explicit `labelBehavior="collapse"` on an item without an
+   icon is warned about once in development.
 4. An icon-only item must expose its label: `aria-label` equals the label
    text and a `Tooltip` shows the same text. This is done by `OverflowItem`,
    not by the consumer.
@@ -109,7 +113,10 @@ actions apply to, and it is better to hide a third-tier action than to turn
    their cached width is used to decide whether they can come back.
 8. Gaps count. The row's `gap` is read once from computed style and added
    per visible item. So do margins: a child's inline margins (a divider's
-   spacing) are read once and added to its measured width.
+   spacing) are read once and added to its measured width. A fixed child
+   outside the flex flow (`display: none`, or positioned `absolute` or
+   `fixed`, such as a visually hidden live region) is not a flex item: it
+   costs neither width nor a gap.
 9. The overflow trigger's width is reserved as soon as one item is hidden
    and released only when the last hidden item returns.
 10. Dividers are measured like items but never counted as candidates.
@@ -201,8 +208,10 @@ secondary actions; use a `DropdownMenu` in the row for that.
 
 6.8. The overflow menu's trigger is an icon button with `aria-label="More
 actions"`, the ellipsis icon, `aria-haspopup="menu"`, and a `CountBadge`
-only if the host asks for it (`overflowBadge`). It is placed at the logical
-end of the row, after any fixed trailing item.
+only if the host asks for it (`overflowBadge` on the row, `badge` on an
+`OverflowMenu` rendered by hand). The badge counts the hidden items and is
+`aria-hidden`: the menu itself lists them. The trigger is placed at the
+logical end of the row, after any fixed trailing item.
 
 ## 7. Fixed items and the host reserve
 
@@ -244,13 +253,17 @@ fixed items alone do not fit. Default for `ActionBar` and `PageHeaderActions`.
 overflow trigger stuck to the end. Default for canvas toolbars and
 `AppShellActions`, which sit on a single line by design.
 
-9.3. Reaching stage 5 is logged once in development. It means a host was
-given too many fixed items for its container.
+9.3. Reaching stage 5 is logged once per row in development (a
+`console.warn` naming the space needed and the space available). It means a
+host was given too many fixed items for its container, or a
+`minimumVisible` it cannot honour.
 
 ## 10. Orientation
 
 10.1. A vertical row (canvas side toolbar) applies every rule on block size
-instead of inline size. Labels are already absent, so stage 2 is skipped.
+instead of inline size. Labels are already absent, so stage 2 is skipped:
+with `labels="auto"` a column never collapses labels (dropping one narrows
+an item but does not shorten it); `labels="never"` still renders icon-only.
 A column never wraps, since wrapping would open a second column beside
 it; its last resort is always to scroll.
 
@@ -282,7 +295,9 @@ the same task, before paint. When a hidden item returns while the trigger is
 focused, focus stays on the trigger.
 
 12.4. The overflow menu closes when its last item returns to the row, and
-focus returns to that item.
+focus returns to that item. This holds whether the focus was on the
+trigger or in the open menu; when several items return in one pass, focus
+goes to the first of them in source order.
 
 12.5. Menu items keep their row shortcuts, and pressing a shortcut acts
 without opening the menu.
@@ -305,7 +320,9 @@ on it for behaviour.
 ## 14. Rendering cost
 
 14.1. One `ResizeObserver` per row, observing the row's content box. Never
-`window.resize`.
+`window.resize`. A `MutationObserver` on the row's own child list (not its
+subtree) catches fixed children that a descendant adds or removes without
+re-rendering the row.
 
 14.2. Item widths are cached (rule 5.6). A resize does one pass over the
 cache in priority order; no DOM reads in that pass.
@@ -322,7 +339,9 @@ and notifies nobody.
 unregistering an item does not rerender other items.
 
 14.6. Item reorders (a child added or removed) trigger one remeasure of the
-new item only. Existing widths are kept.
+new item only. Existing widths are kept. This includes an item mounted by
+its own parent's state rather than the row's render: it is measured when it
+registers.
 
 14.7. First paint: every item renders visible with its label, one
 measurement runs in a layout effect before paint and collapses what does

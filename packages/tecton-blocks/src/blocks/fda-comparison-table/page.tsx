@@ -46,21 +46,27 @@ function FdaComparisonTable({
   const [rows, setRows] = React.useState(data)
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
+  // Copies are numbered by a counter that only grows, so an id is never
+  // reused after a row is deleted (the row count would repeat).
+  const copies = React.useRef(0)
 
   const columns = React.useMemo(
     () =>
       createFdaColumns({
         onOpen,
-        onDuplicate: (fda) =>
+        onDuplicate: (fda) => {
+          copies.current += 1
+          const id = `${fda.id}-copy-${copies.current}`
           setRows((current) => [
             ...current,
             {
               ...fda,
-              id: `${fda.id}-copy-${current.length}`,
+              id,
               code: `${fda.code} (copy)`,
               status: "screening",
             },
-          ]),
+          ])
+        },
         onDelete: (fda) =>
           setRows((current) => current.filter((row) => row.id !== fda.id)),
       }),

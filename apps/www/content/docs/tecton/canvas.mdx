@@ -82,7 +82,7 @@ Compose it: `CanvasSurface` for the engine, then one `CanvasOverlay` per edge or
 
 <Do>
 
-Write the symbology as `CanvasLegendItem`s inside a `CanvasLegend`: it is a `dl` of `dt`/`dd` pairs, and `swatch` takes a CSS colour string (`"var(--chart-1)"`) or a node for a pattern.
+Write the symbology as `CanvasLegendItem`s inside a `CanvasLegend`: it is a list of items, each a decorative swatch followed by its name, and `swatch` takes a CSS colour string (`"var(--chart-1)"`) or a node for a pattern.
 
 </Do>
 
@@ -94,7 +94,7 @@ Pin chrome with `position` on `CanvasOverlay` (the eight edges and corners); sid
 
 <Do>
 
-Set a rail's direction with `orientation` on `CanvasToolbar` and give it an `aria-label`; it renders `role="toolbar"` and already carries the floating surface, blur and shadow.
+Set a rail's direction with `orientation` on `CanvasToolbar` and give it an `aria-label`; it is a React Aria `Toolbar` (`role="toolbar"`, arrow keys along the rail, Tab out of it) and already carries the floating surface, blur and shadow.
 
 </Do>
 
@@ -196,12 +196,13 @@ Absolutely positioned layer filling the canvas. Put the map, SVG or WebGL view h
 
 ### CanvasToolbar
 
-Floating surface with `role="toolbar"`; give it an `aria-label`.
+A React Aria [`Toolbar`](https://react-aria.adobe.com/Toolbar) on a floating surface; accepts all its props. It is one tab stop: the arrow keys move between its controls (Up / Down when vertical, Left / Right when horizontal, mirrored in right-to-left layouts) and Tab leaves the rail. Give it an `aria-label`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `orientation` | `"vertical" \| "horizontal"` | "vertical" | Direction of the rail. |
+| `orientation` | `"vertical" \| "horizontal"` | "vertical" | Direction of the rail, and of the arrow keys that move along it. |
+| `aria-label` | `string` | - | Accessible name of the toolbar. |
 
 ### CanvasLegend, CanvasLegendItem
 
-A `dl` of symbols. `CanvasLegendItem` takes `swatch`: a CSS colour string or a node for patterns.
+A list (`ul`, one `li` per `CanvasLegendItem`) of symbols, so assistive technology reads the names in order. `CanvasLegendItem` takes `swatch`: a CSS colour string or a node for patterns; the swatch is decorative (`aria-hidden`) and the item's children are its name. Give the list an `aria-label` ("Legend").

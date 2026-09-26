@@ -3,6 +3,7 @@
 import * as React from "react"
 import { cn } from "cn"
 import { PanelRightIcon, PanelRightOpenIcon } from "lucide-react"
+import { useLocale } from "react-aria-components"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -17,7 +18,12 @@ import {
 
 import { HorizonForm } from "./components/horizon-form"
 import { HorizonReadout } from "./components/horizon-readout"
-import { defaultHorizonSettings, getPair, volumes } from "./data"
+import {
+  defaultHorizonSettings,
+  getPair,
+  validateDepths,
+  volumes,
+} from "./data"
 import type { HorizonSettings } from "./data"
 
 type HorizonsPanelProps = Omit<
@@ -43,6 +49,9 @@ function HorizonsPanel({
   const [value, setValue] = React.useState<HorizonSettings>(initialSettings)
   const [applied, setApplied] = React.useState<HorizonSettings>(initialSettings)
   const dirty = JSON.stringify(value) !== JSON.stringify(applied)
+  const invalid = validateDepths(value) !== undefined
+  const { locale } = useLocale()
+  const metres = (depth: number) => depth.toLocaleString(locale)
   const pair = getPair(value.pairId)
   const volume = volumes.find((item) => item.id === value.volumeId)
 
@@ -76,20 +85,17 @@ function HorizonsPanel({
             { label: "Volume", value: volume?.label ?? "—" },
             {
               label: "Top depth (TVDSS)",
-              value: value.topDepth.toLocaleString(),
+              value: metres(value.topDepth),
               unit: "m",
             },
             {
               label: "Bottom depth (TVDSS)",
-              value: value.bottomDepth.toLocaleString(),
+              value: metres(value.bottomDepth),
               unit: "m",
             },
             {
               label: "Thickness",
-              value: Math.max(
-                0,
-                value.bottomDepth - value.topDepth
-              ).toLocaleString(),
+              value: metres(Math.max(0, value.bottomDepth - value.topDepth)),
               unit: "m",
             },
           ]}
@@ -106,7 +112,7 @@ function HorizonsPanel({
         </Button>
         <Button
           size="sm"
-          isDisabled={!dirty}
+          isDisabled={!dirty || invalid}
           onPress={() => {
             setApplied(value)
             onApply?.(value)
@@ -143,6 +149,12 @@ export default function HorizonsPanelPage() {
 }
 
 export { HorizonsPanel, HorizonForm, HorizonReadout }
-export { surfaces, surfacePairs, volumes, defaultHorizonSettings } from "./data"
+export {
+  surfaces,
+  surfacePairs,
+  volumes,
+  defaultHorizonSettings,
+  validateDepths,
+} from "./data"
 export type { HorizonsPanelProps }
 export type { Surface, SurfacePair, HorizonSettings } from "./data"

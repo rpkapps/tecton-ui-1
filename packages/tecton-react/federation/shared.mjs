@@ -30,12 +30,24 @@
  * Plain ESM with no build step and no dependency — a build config imports it from
  * Node before anything is bundled.
  */
-export const shared = Object.freeze({
-  // One renderer and one DOM binding per document, always.
-  react: { singleton: true },
-  "react-dom": { singleton: true },
-  // Sonner's queue is module state: two copies mean two toast stacks.
-  sonner: { singleton: true },
+/** Freezes a policy table and every policy in it, so no consumer can mutate either. */
+const deepFreeze = (table) => {
+  for (const policy of Object.values(table)) Object.freeze(policy)
+  return Object.freeze(table)
+}
+
+export const shared = deepFreeze({
+  // Not singletons: applications on different React versions may share a page,
+  // each rendering in its own root with its own react-dom. A version both sides
+  // accept is still loaded once. React needs react and react-dom at the same
+  // exact version, so each application pins the two together.
+  react: { singleton: false },
+  "react-dom": { singleton: false },
+  // Not a singleton either: applications release on their own schedules, so no
+  // copy may be forced on the others. Sonner's queue is module state, so a
+  // remote does not import `toast`: the host passes its own through the mount
+  // props and keeps the one Toaster.
+  sonner: { singleton: false },
   // Prefix share (trailing slash): the package has no root export, so each
   // subpath is shared on its own. Not a singleton — versions may differ.
   "@tecton/react/": { singleton: false },

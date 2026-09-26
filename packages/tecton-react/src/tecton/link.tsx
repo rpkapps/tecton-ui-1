@@ -22,7 +22,11 @@ const linkVariants = cva(
     variants: {
       variant: {
         default: "text-foreground data-hovered:underline",
-        primary: "text-primary-foreground data-hovered:underline",
+        // The Tecton text-only action colours (Button variant="link"), not
+        // `primary-foreground`: that is the text *on* a primary fill and is
+        // near-white on a light page.
+        primary:
+          "text-link-foreground data-hovered:text-link-hover-foreground data-hovered:underline data-pressed:text-link-pressed-foreground",
         muted:
           "text-muted-foreground data-hovered:text-foreground data-hovered:underline",
         subtle:
@@ -54,19 +58,26 @@ function Link({
   variant = "default",
   size = "inherit",
   isExternal,
+  target,
+  rel,
   children,
   ...props
 }: LinkProps) {
+  // An external link always keeps `noreferrer noopener`; a caller's `rel`
+  // (e.g. `nofollow`) is added to it, never swapped for it.
+  const relValue =
+    [isExternal && "noreferrer noopener", rel].filter(Boolean).join(" ") ||
+    undefined
   return (
     <LinkPrimitive
       data-slot="link"
       data-variant={variant}
-      target={isExternal ? "_blank" : props.target}
-      rel={isExternal ? "noreferrer noopener" : props.rel}
       className={composeRenderProps(className, (className) =>
         cn(linkVariants({ variant, size }), className)
       )}
       {...props}
+      target={target ?? (isExternal ? "_blank" : undefined)}
+      rel={relValue}
     >
       {children}
       {isExternal && <ExternalLinkIcon aria-hidden />}

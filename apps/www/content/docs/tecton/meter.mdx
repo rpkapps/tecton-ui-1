@@ -46,6 +46,10 @@ Use the `size` prop for the track height.
 
 <ComponentPreview name="meter-sizes" />
 
+## Value label
+
+`showValue` prints the formatted value at the end of the label row; `valueLabel` replaces it with your own text ("Medium", "High"). A string or number `valueLabel` is also what assistive technology announces (`aria-valuetext`), so the spoken value matches the one on screen instead of a percentage. A `valueLabel` that is a React node is shown but not announced; the percentage is announced then.
+
 {/* guidelines:start */}
 
 ## Usage guidelines
@@ -204,7 +208,7 @@ React Aria [`Meter`](https://react-aria.adobe.com/Meter); accepts all its props 
 | --- | --- | --- | --- |
 | `label` | `ReactNode` | - | Visible label; use `aria-label` otherwise. |
 | `segments` | `number` | 5 | Number of blocks; `1` for a continuous bar. |
-| `color` | `"default" \| "success" \| "warning" \| "error" \| "info" \| "auto" \| "custom"` | "default" | Fill colour. |
+| `color` | `"default" \| "success" \| "warning" \| "error" \| "info" \| "auto" \| "custom"` | "default" | Fill colour. `custom` fills from the `--meter-fill` CSS variable. |
 | `size` | `"sm" \| "md" \| "lg"` | "md" | Track height 4 / 6 / 10 px. |
 | `showValue` | `boolean` | false | Show the formatted value at the end of the label row. |
-| `valueLabel` | `ReactNode` | - | Custom value text (e.g. "High"). |
+| `valueLabel` | `ReactNode` | - | Custom value text (e.g. "High"), shown at the end of the label row. A string or number also becomes `aria-valuetext`. |

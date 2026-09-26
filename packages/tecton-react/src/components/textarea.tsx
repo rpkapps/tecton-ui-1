@@ -15,8 +15,8 @@ const textareaVariants = cva(
       variant: {
         outline: "bg-transparent",
         filled:
-          "rounded-b-none border-x-0 border-t-0 border-b-border bg-muted autofill:shadow-[inset_0_0_0_1000px_var(--muted)] autofill:[-webkit-background-clip:border-box] hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-0 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive",
-        text: "rounded-none border-x-0 border-t-0 border-b-border bg-transparent px-0 hover:border-b-foreground/60 focus-visible:border-ring focus-visible:ring-0 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent",
+          "rounded-b-none border-x-0 border-t-0 border-b-border bg-muted autofill:shadow-[inset_0_0_0_1000px_var(--muted)] autofill:[-webkit-background-clip:border-box] hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] focus-visible:border-ring focus-visible:ring-2 aria-invalid:bg-destructive/20 aria-invalid:ring-0 dark:bg-muted dark:hover:bg-[color-mix(in_oklch,var(--muted),var(--foreground)_4%)] dark:aria-invalid:border-destructive",
+        text: "rounded-none border-x-0 border-t-0 border-b-border bg-transparent px-0 hover:border-b-foreground/60 focus-visible:border-ring focus-visible:ring-2 aria-invalid:ring-0 dark:bg-transparent dark:hover:bg-transparent",
       },
     },
     defaultVariants: {

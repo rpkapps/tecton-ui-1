@@ -54,6 +54,8 @@ Selection, disabled and expanded state come from React Aria (`selectionMode`, `d
 
 <ComponentPreview name="tree-view-adornments" />
 
+`TreeViewVisibilityToggle` is a toggle button: its name is always "Hide" and `aria-pressed` carries the state (pressed while the row is hidden), so a screen reader announces "Hide Faults, toggle button, pressed" rather than a name that flips between "Hide" and "Show". Inside `TreeViewItemContent` the name is completed with the row's label, so a column of toggles does not read as a list of bare "Hide"s. When the label is not plain text, pass `name` (`name="Faults"` gives "Hide Faults"). `TreeViewAction` has no name of its own: give it an `aria-label`.
+
 {/* guidelines:start */}
 
 ## Usage guidelines
@@ -93,7 +95,7 @@ Pick the leading glyph with `kind="folder" | "item"` or replace it with `icon`; 
 
 <Do>
 
-Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, `TreeViewAction`).
+Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, which names itself "Hide" plus the row's label with `aria-pressed` for the hidden state, and `TreeViewAction`).
 
 </Do>
 
@@ -199,7 +201,7 @@ Each `Collapsible` is its own widget, so the result is a pile of buttons with no
 
 </Correct>
 
-`textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included.
+`textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included. With dynamic `items`, React Aria caches each rendered row, so a row that also reads state kept outside `items` (the hidden set behind `isHidden` and `TreeViewVisibilityToggle`, a selection map) does not update until that state is listed in `dependencies` on `TreeView` and on every `TreeViewCollection`: `dependencies={[hidden]}`.
 
 </Dont>
 
@@ -241,18 +243,20 @@ Row layout: chevron, icon, colour tag, label, suffix and end adornment.
 
 ### TreeViewAction
 
-24 px icon button for row actions; renders a vertical ellipsis by default.
+24 px icon button for row actions; renders a vertical ellipsis by default. Give it an `aria-label`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
+| `aria-label` | `string` | - | Accessible name ("Actions for Faults"). |
 | `onPress` | `(e: PressEvent) => void` | - | Press handler. |
 | `children` | `ReactNode` | `<MoreVerticalIcon />` | Custom icon. |
 
 ### TreeViewVisibilityToggle
 
-Eye / eye-off toggle built on `TreeViewAction`.
+Eye / eye-off toggle built on `TreeViewAction`. Its accessible name is always "Hide" followed by the row's label (or by `name`), and `aria-pressed` is true while the row is hidden.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `isVisible` | `boolean` | true | Current visibility. |
+| `isVisible` | `boolean` | true | Current visibility; the toggle is pressed when it is `false`. |
 | `onChange` | `(visible: boolean) => void` | - | Called with the next value. |
+| `name` | `string` | - | What the toggle hides, for the name `"Hide {name}"`. Without it (and without `aria-label` / `aria-labelledby`) the name is "Hide" plus the row's label inside `TreeViewItemContent`. |

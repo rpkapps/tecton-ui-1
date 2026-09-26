@@ -32,7 +32,7 @@ related: [Panel, PageHeader, Sheet, AppFinder, Overflow]
 - Put the page content in `AppShellMain`; it is the scrolling region of the work area.
 - Give every `AppShellAction` a `label` — both the accessible name and the tooltip — separate groups with `AppShellDivider`, and on a narrow header hide the low-priority ones (`hidden lg:inline-flex`) in favour of `AppShellOverflow` (`lg:hidden`).
 - For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them, and gate a full-height aside on `useMinWidth(1280)`.
-- Inside an `AppShellSplitPanel` give the `AppShellAside` `className="h-full w-full border-l-0"`; otherwise `className` overrides the height alone (`h-full` in an embedded context) and the shell keeps its surfaces and borders.
+- Inside an `AppShellSplitPanel` give the `AppShellAside` `className="h-full w-full border-s-0"`; otherwise `className` overrides the height alone (`h-full` in an embedded context) and the shell keeps its surfaces and borders.
 
 ## Don't
 
@@ -89,8 +89,8 @@ Correct:
 ```tsx
 function ShellSearch({ open }: { open: () => void }) {
   useShortcut({ id: "shell.palette", keys: "mod+k", label: "Command palette", onAction: open })
-  return <AppShellCommandTrigger shortcut="⌘K" onPress={open}>Search</AppShellCommandTrigger>
+  return <AppShellCommandTrigger onPress={open}>Search</AppShellCommandTrigger>
 }
 ```
 
-`shortcut` on `AppShellCommandTrigger` only renders a `Kbd` and binds nothing, so ⌘K never opens the palette and the key is missing from `useShortcuts()` — the list the shell's help dialog and command palette are built from.
+The trigger's hint (by default `mod+k` drawn for the platform, ⌘ K on a Mac and Ctrl + K elsewhere, or the `Kbd` you pass as `shortcut`) binds nothing, so the key never opens the palette and is missing from `useShortcuts()`, the list the shell's help dialog and command palette are built from.

@@ -11,11 +11,11 @@ upstream: apps/v4/content/docs/components/aria/tooltip.mdx
 
 ## Usage
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
 ```
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <TooltipTrigger>
   <Button>Hover</Button>
   <Tooltip>
@@ -96,6 +96,12 @@ Set `delay` and `closeDelay` on `TooltipTrigger` (Tecton opens at `delay={0}`) a
 <Do>
 
 To explain a disabled control, wrap it: `<span className="inline-block w-fit"><Button isDisabled>Export</Button></span>`.
+
+</Do>
+
+<Do>
+
+A trigger that is not a control (a `Badge`, a term) needs focus and a role, or React Aria's `Focusable` warns and keyboard users never open it: `<Badge render={(props) => <span {...props} tabIndex={0} role="img" aria-label="TVD" />}>TVD</Badge>`.
 
 </Do>
 

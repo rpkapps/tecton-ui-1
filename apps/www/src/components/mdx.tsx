@@ -98,76 +98,92 @@ function DocsLink({
   )
 }
 
-function getFenceLanguage(children: React.ReactNode): string | null {
+const PACKAGE_MANAGER_LANGUAGES = new Set(["bash", "sh", "shell", "zsh"])
+
+/** The fence language: `data-language` (source.config.ts) or `language-*`. */
+function getFenceLanguage(
+  props: Record<string, unknown>,
+  children: React.ReactNode
+): string | null {
+  if (typeof props["data-language"] === "string") return props["data-language"]
   let language: string | null = null
   React.Children.forEach(children, (child) => {
-    if (React.isValidElement<Record<string, unknown>>(child)) {
-      const value = child.props["data-language"]
-      if (typeof value === "string") language = value
-    }
+    if (!React.isValidElement<Record<string, unknown>>(child)) return
+    const value = child.props["data-language"]
+    const className = child.props.className
+    if (typeof value === "string") language = value
+    else if (typeof className === "string")
+      language = /(?:^|\s)language-(\S+)/.exec(className)?.[1] ?? language
   })
   return language
 }
 
+type FenceProps = React.ComponentProps<"pre"> & {
+  /** `title="…"` in the fence meta. */
+  title?: string
+  /** `noCopy` in the fence meta. */
+  allowCopy?: string
+  "data-language"?: string
+  "data-line-numbers"?: boolean | string
+  "data-line-numbers-start"?: number | string
+}
+
 /**
- * Code fences compiled by fumadocs (rehype-code) arrive as <figure><pre><code>.
- * A single-line `bash` fence with an npm command becomes package-manager tabs.
+ * Code fences compiled by fumadocs (rehype-code) arrive as a bare
+ * `<pre class="shiki">`. They get the same markup as <CodeBlock />: a
+ * `figure[data-code-block]` with an optional title and a copy button. A
+ * single-line shell fence with an npm command becomes package-manager tabs.
  */
-function Figure({
+function Pre({
   className,
   children,
+  title,
+  allowCopy,
+  style,
   ...props
-}: React.ComponentProps<"figure">) {
-  const isCode = "data-rehype-pretty-code-figure" in props
-  const code = isCode ? getNodeText(children) : ""
-  if (isCode && getFenceLanguage(children) === "bash") {
-    const commands = getPackageManagerCommands(code)
-    if (commands)
-      return <CodeBlockCommand commands={commands} className={className} />
+}: FenceProps) {
+  const isFence = typeof className === "string" && /\bshiki\b/.test(className)
+  if (!isFence) {
+    return (
+      <pre className={className} style={style} {...props}>
+        {children}
+      </pre>
+    )
   }
+
+  const language = getFenceLanguage(props, children)
+  const code = getNodeText(children)
+  if (language && PACKAGE_MANAGER_LANGUAGES.has(language)) {
+    const commands = getPackageManagerCommands(code)
+    if (commands) return <CodeBlockCommand commands={commands} />
+  }
+
+  const start = Number(props["data-line-numbers-start"])
   return (
-    <figure className={className} {...props}>
-      {isCode && <CopyButton value={code} />}
-      {children}
+    <figure data-code-block="" data-not-typeset>
+      {title && (
+        <figcaption
+          data-code-block-title=""
+          data-language={language ?? undefined}
+          className="text-code-foreground [&_svg]:text-code-foreground flex items-center gap-2 [&_svg]:size-4 [&_svg]:opacity-70"
+        >
+          {language && getIconForLanguageExtension(language)}
+          <span className="truncate">{title}</span>
+        </figcaption>
+      )}
+      {allowCopy !== "false" && <CopyButton value={code} />}
+      <pre
+        className={className}
+        style={
+          Number.isFinite(start) && start > 1
+            ? { ...style, counterReset: `line ${start - 1}` }
+            : style
+        }
+        {...props}
+      >
+        {children}
+      </pre>
     </figure>
-  )
-}
-
-function Figcaption({
-  className,
-  children,
-  ...props
-}: React.ComponentProps<"figcaption">) {
-  const language =
-    "data-language" in props && typeof props["data-language"] === "string"
-      ? props["data-language"]
-      : null
-  return (
-    <figcaption
-      className={cn(
-        "text-code-foreground [&_svg]:text-code-foreground flex items-center gap-2 [&_svg]:size-4 [&_svg]:opacity-70",
-        className
-      )}
-      {...props}
-    >
-      {language && getIconForLanguageExtension(language)}
-      {children}
-    </figcaption>
-  )
-}
-
-function Pre({ className, children, ...props }: React.ComponentProps<"pre">) {
-  return (
-    <pre
-      data-not-typeset
-      className={cn(
-        "no-scrollbar min-w-0 overflow-x-auto overflow-y-auto overscroll-x-contain overscroll-y-auto px-4 py-3.5 outline-none has-data-highlighted-line:px-0 has-data-line-numbers:px-0",
-        className
-      )}
-      {...props}
-    >
-      {children}
-    </pre>
   )
 }
 
@@ -180,8 +196,6 @@ export function getMDXComponents(components?: MDXComponents): MDXComponents {
     h5: heading("h5"),
     h6: heading("h6"),
     a: DocsLink,
-    figure: Figure,
-    figcaption: Figcaption,
     pre: Pre,
     // Typeset tables stay real tables; wide ones scroll horizontally.
     table: (props: React.ComponentProps<"table">) => (

@@ -51,6 +51,37 @@ describe("CircularProgress", () => {
     expect(screen.getByRole("progressbar")).not.toHaveAttribute("aria-valuenow")
   })
 
+  it("slows the spin instead of running it at full speed under reduced motion", () => {
+    const { container } = render(
+      <CircularProgress aria-label="p" isIndeterminate />
+    )
+    expect(container.querySelector("svg")).toHaveClass(
+      "motion-reduce:animate-[spin_3s_linear_infinite]"
+    )
+  })
+
+  // The ring is drawn in a 48-unit viewBox, so the stroke is in those units:
+  // each size's value is its intended screen width scaled up by 48/diameter.
+  it.each([
+    ["xs", 16, 2.5],
+    ["sm", 24, 3],
+    ["md", 40, 3.5],
+    ["lg", 64, 4],
+    ["xl", 96, 5],
+  ] as const)(
+    "size=%s draws a stroke of the intended screen width",
+    (size, diameter, px) => {
+      render(<CircularProgress aria-label="p" value={50} size={size} />)
+      const bar = screen.getByRole("progressbar")
+      const stroke = bar.className.match(/\[--stroke:([\d.]+)px\]/)
+      expect(stroke).not.toBeNull()
+      expect((Number(stroke![1]) * diameter) / 48).toBeCloseTo(px, 1)
+      for (const circle of bar.querySelectorAll("circle")) {
+        expect(circle.style.strokeWidth).toBe("var(--stroke)")
+      }
+    }
+  )
+
   it("does not show a value by default", () => {
     const { container } = render(<CircularProgress aria-label="p" value={50} />)
     expect(

@@ -57,9 +57,6 @@
   "callout": [
    "alert"
   ],
-  "spinner": [
-   "spinner"
-  ],
   "loader": [
    "spinner",
    "skeleton"
@@ -73,12 +70,6 @@
    "chip"
   ],
   "tag": [
-   "chip"
-  ],
-  "tags": [
-   "chip"
-  ],
-  "token": [
    "chip"
   ],
   "kpi": [
@@ -105,9 +96,6 @@
   "hierarchy": [
    "tree"
   ],
-  "breadcrumbs": [
-   "breadcrumb"
-  ],
   "sidenav": [
    "sidebar"
   ],
@@ -119,9 +107,6 @@
    "switch",
    "toggle"
   ],
-  "radio": [
-   "radio"
-  ],
   "textbox": [
    "input"
   ],
@@ -130,12 +115,6 @@
   ],
   "multiline": [
    "textarea"
-  ],
-  "otp": [
-   "otp"
-  ],
-  "pin": [
-   "otp"
   ],
   "hotkey": [
    "shortcut",
@@ -155,10 +134,6 @@
   "slideshow": [
    "carousel"
   ],
-  "expandable": [
-   "accordion",
-   "collapsible"
-  ],
   "expand": [
    "accordion",
    "collapsible"
@@ -167,15 +142,9 @@
    "collapsible",
    "accordion"
   ],
-  "split": [
-   "resizable"
-  ],
   "pane": [
    "resizable",
    "panel"
-  ],
-  "scrollable": [
-   "scroll"
   ],
   "datepicker": [
    "calendar",
@@ -219,9 +188,6 @@
   "divider": [
    "separator"
   ],
-  "rule": [
-   "separator"
-  ],
   "placeholder": [
    "skeleton"
   ],
@@ -233,12 +199,6 @@
   ],
   "donut": [
    "circular"
-  ],
-  "ring": [
-   "circular"
-  ],
-  "palette": [
-   "command"
   ],
   "cmdk": [
    "command"
@@ -259,20 +219,11 @@
   "paging": [
    "pagination"
   ],
-  "pages": [
-   "pagination"
-  ],
   "launcher": [
    "finder"
   ],
   "switcher": [
    "finder"
-  ],
-  "shell": [
-   "shell"
-  ],
-  "header": [
-   "header"
   ],
   "truncate": [
    "overflow"
@@ -282,9 +233,6 @@
   ],
   "rtl": [
    "direction"
-  ],
-  "survey": [
-   "questionnaire"
   ],
   "form": [
    "field"
@@ -302,8 +250,41 @@
   "colour": [
    "color"
   ],
-  "swatch": [
-   "swatch"
+  "pin code": [
+   "otp"
+  ],
+  "verification code": [
+   "otp"
+  ],
+  "progress ring": [
+   "circular"
+  ],
+  "split view": [
+   "resizable"
+  ],
+  "split pane": [
+   "resizable"
+  ],
+  "horizontal rule": [
+   "separator"
+  ],
+  "page numbers": [
+   "pagination"
+  ],
+  "next page": [
+   "pagination"
+  ],
+  "percent": [
+   "progress"
+  ],
+  "percentage": [
+   "progress"
+  ],
+  "per page": [
+   "pagination"
+  ],
+  "design token": [
+   "theme"
   ]
  },
  "entries": [
@@ -536,7 +517,7 @@
     "names": "app shell app shell app shell header app shell brand app shell nav app shell actions app shell action app shell command trigger app shell divider app shell overflow app shell user menu app shell body app shell sidebar app shell main app shell aside app shell split app shell split panel app shell split handle use min width",
     "useWhen": "The outermost frame of an application: a top bar, an optional left rail, a work area, an optional right aside. The frame fills the viewport (`h-svh`) and clips its own overflow, so each region scrolls on its own. The header carries the host's own cluster — search, help, settings, the account menu — so every mounted application shows the same set. A tool panel lives beside the content and the user may drag the divider between them.",
     "routed": "the global action cluster at the end of the shell header the application frame around the work area the top bar of the application frame the application frame around the work area a draggable divider between the regions of the application frame the scrolling work area of the application frame the borders between the regions of the application frame the header button whose tooltip shows a shortcut a fixed navigation column inside the application frame the header, rail and work area of an application that owns the document",
-    "do": "Compose it: `AppShellHeader` (with `AppShellBrand`, `AppShellNav`, `AppShellActions`), then `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`. Put the page content in `AppShellMain`; it is the scrolling region of the work area. Give every `AppShellAction` a `label` — both the accessible name and the tooltip — separate groups with `AppShellDivider`, and on a narrow header hide the low-priority ones (`hidden lg:inline-flex`) in favour of `AppShellOverflow` (`lg:hidden`). For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them, and gate a full-height aside on `useMinWidth(1280)`. Inside an `AppShellSplitPanel` give the `AppShellAside` `className=\"h-full w-full border-l-0\"`; otherwise `className` overrides the height alone (`h-full` in an embedded context) and the shell keeps its surfaces and borders."
+    "do": "Compose it: `AppShellHeader` (with `AppShellBrand`, `AppShellNav`, `AppShellActions`), then `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`. Put the page content in `AppShellMain`; it is the scrolling region of the work area. Give every `AppShellAction` a `label` — both the accessible name and the tooltip — separate groups with `AppShellDivider`, and on a narrow header hide the low-priority ones (`hidden lg:inline-flex`) in favour of `AppShellOverflow` (`lg:hidden`). For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them, and gate a full-height aside on `useMinWidth(1280)`. Inside an `AppShellSplitPanel` give the `AppShellAside` `className=\"h-full w-full border-s-0\"`; otherwise `className` overrides the height alone (`h-full` in an embedded context) and the shell keeps its surfaces and borders."
    },
    "notFor": [
     {
@@ -592,7 +573,7 @@
     "useMinWidth"
    ],
    "aliases": [],
-   "tokens": 1292
+   "tokens": 1306
   },
   {
    "id": "aspect-ratio",
@@ -1040,7 +1021,7 @@
     "names": "canvas canvas canvas surface canvas overlay canvas toolbar canvas legend canvas legend item canvas overlay variants canvas toolbar variants",
     "useWhen": "A map, a schematic, a seismic section or a 3D view owns the whole work area and the chrome floats over it. The surface is pannable or zoomable, so the controls must not steal the drags that pass between them. The view fills whatever height is left in its column rather than a height the design picked.",
     "routed": "a full-bleed map, schematic or 3D view an interactive map, schematic or 3D view",
-    "do": "Compose it: `CanvasSurface` for the engine, then one `CanvasOverlay` per edge or corner holding `CanvasToolbar`s and a `CanvasLegend`. Write the symbology as `CanvasLegendItem`s inside a `CanvasLegend`: it is a `dl` of `dt`/`dd` pairs, and `swatch` takes a CSS colour string (`\"var(--chart-1)\"`) or a node for a pattern. Pin chrome with `position` on `CanvasOverlay` (the eight edges and corners); side and corner overlays stack their children down the column, `top` and `bottom` across. Set a rail's direction with `orientation` on `CanvasToolbar` and give it an `aria-label`; it renders `role=\"toolbar\"` and already carries the floating surface, blur and shadow. Fill a rail with `Button variant=\"ghost\" size=\"icon-sm\"`, and give the canvas its height from the column it sits in: a flex-column parent, or `className=\"h-72\"` when it is embedded."
+    "do": "Compose it: `CanvasSurface` for the engine, then one `CanvasOverlay` per edge or corner holding `CanvasToolbar`s and a `CanvasLegend`. Write the symbology as `CanvasLegendItem`s inside a `CanvasLegend`: it is a list of items, each a decorative swatch followed by its name, and `swatch` takes a CSS colour string (`\"var(--chart-1)\"`) or a node for a pattern. Pin chrome with `position` on `CanvasOverlay` (the eight edges and corners); side and corner overlays stack their children down the column, `top` and `bottom` across. Set a rail's direction with `orientation` on `CanvasToolbar` and give it an `aria-label`; it is a React Aria `Toolbar` (`role=\"toolbar\"`, arrow keys along the rail, Tab out of it) and already carries the floating surface, blur and shadow. Fill a rail with `Button variant=\"ghost\" size=\"icon-sm\"`, and give the canvas its height from the column it sits in: a flex-column parent, or `className=\"h-72\"` when it is embedded."
    },
    "notFor": [
     {
@@ -1076,7 +1057,7 @@
     "canvasToolbarVariants"
    ],
    "aliases": [],
-   "tokens": 1011
+   "tokens": 1036
   },
   {
    "id": "card",
@@ -1317,7 +1298,7 @@
     "CircularProgress"
    ],
    "aliases": [],
-   "tokens": 887
+   "tokens": 923
   },
   {
    "id": "collapsible",
@@ -1445,7 +1426,7 @@
     "useComboboxAnchor"
    ],
    "aliases": [],
-   "tokens": 1141
+   "tokens": 1237
   },
   {
    "id": "command",
@@ -1599,7 +1580,7 @@
     "names": "copy button copy button",
     "useWhen": "A value on screen is meant to be pasted elsewhere: an identifier, a URL, a snippet. The user needs the copy confirmed in place, without a toast or a dialog. The control sits next to the value, usually as a quiet icon button.",
     "routed": "copying a value to the clipboard with feedback",
-    "do": "Pass the text as `value` and let the component own the press handler. Leave it icon-only for a quiet affordance, or pass text `children` for a prominent labelled one. Set weight with `variant` (it defaults to `ghost`) and hold time with `timeout`. React to a successful copy with `onCopied`, not by wrapping the button in your own handler. Let the component name itself: with no children it sets `aria-label` to \"Copy\", then \"Copied\"."
+    "do": "Pass the text as `value` and let the component own the press handler. Leave it icon-only for a quiet affordance, or pass text `children` for a prominent labelled one. Set weight with `variant` (it defaults to `ghost`) and hold time with `timeout`. React to a successful copy with `onCopied`, and to a refused one (insecure context, denied permission) with `onError`, not by wrapping the button in your own handler. Let the component name itself: with no children it sets `aria-label` to \"Copy\", then \"Copied\" or \"Copy failed\"; either outcome is also announced through a polite live region."
    },
    "notFor": [
     {
@@ -1618,7 +1599,7 @@
     "CopyButton"
    ],
    "aliases": [],
-   "tokens": 660
+   "tokens": 707
   },
   {
    "id": "count-badge",
@@ -1631,7 +1612,7 @@
     "names": "count badge count badge",
     "useWhen": "A number belongs to an icon button, an avatar or a tab: unread messages, queued jobs, open comments. A presence or status dot belongs to an avatar or a tab: `variant=\"dot\"`. The number decorates the control; it is not a label the user reads on its own.",
     "routed": "a number pinned to the corner of an icon a count or dot pinned to the corner of an icon or avatar a count or dot pinned to the corner of an icon or avatar a count or a dot pinned to the corner of an icon or an avatar",
-    "do": "Wrap the control — `CountBadge` renders the positioned anchor and the badge, and the control stays its child. Let the badge hide itself: `count={0}` renders nothing unless `showZero`, and `invisible` hides it while keeping the anchor. Pick `color` — `default`, `secondary`, `destructive`, `success`, `warning`, `info`, the same names as Badge's `variant` — `anchor` (`top-right` … `bottom-left`) and `max` (counts above it render as `99+`). Put the number in the control's accessible name — `aria-label=\"Messages, 4 unread\"` — because the badge is decorative."
+    "do": "Wrap the control — `CountBadge` renders the positioned anchor and the badge, and the control stays its child. Let the badge hide itself: `count={0}` renders nothing unless `showZero`, and `invisible` hides it while keeping the anchor. Pick `color` — `default`, `secondary`, `destructive`, `success`, `warning`, `info`, the same names as Badge's `variant` — `anchor` (`top-right` … `bottom-left`) and `max` (counts above it render as `99+`). Put the number in the control's accessible name — `aria-label=\"Messages, 4 unread\"` — because the badge is decorative: it renders `aria-hidden`, so assistive tech never hears the number anywhere else."
    },
    "notFor": [
     {
@@ -1655,7 +1636,7 @@
     "CountBadge"
    ],
    "aliases": [],
-   "tokens": 837
+   "tokens": 858
   },
   {
    "id": "dialog",
@@ -1893,7 +1874,7 @@
     "names": "field field field content field description field error field group field label field legend field separator field set field title",
     "useWhen": "Any control needs a label: `Input`, `Textarea`, `Select`, `Checkbox`, `Switch`, `Slider`. The control needs helper text, a validation message, or both. Related controls need one legend (`FieldSet` + `FieldLegend`) or even spacing (`FieldGroup`).",
     "routed": "a message about a single form field a legend and shared description over a list of checkboxes the label, description and error message around the group the label, description and error message around the code the label, description and error message around the control the label of a control that has a description or an error the caption over a group of related controls a heading beside a control that is already inside a label one labelled control with a description and an error, inside a form the title, description and layout around the control the label, description and layout around the control the label, description and error message around the control",
-    "do": "Give the control an `id` and point `FieldLabel htmlFor` at it. `Field` renders `role=\"group\"`; it associates nothing by itself. Choose the layout with `orientation=\"vertical\" | \"horizontal\" | \"responsive\"`, and add `FieldContent` when the label and description sit beside the control. Put state on `Field` as data attributes: `data-invalid` when the value is rejected, `data-disabled` next to a disabled control. Write helper text as `FieldDescription` and the message as `FieldError` — children, or `errors={field.state.meta.errors}` for a validator's issue list."
+    "do": "Give the control an `id` and point `FieldLabel htmlFor` at it; `Field` renders `role=\"group\"` and associates nothing. A `Select` is the exception: its trigger's `aria-labelledby` overrides `htmlFor`, so put `FieldLabel` inside `Select`, or give the label an `id` and pass it as `Select`'s `aria-labelledby`. Choose the layout with `orientation=\"vertical\" | \"horizontal\" | \"responsive\"`, and add `FieldContent` when the label and description sit beside the control. Put state on `Field` as data attributes: `data-invalid` when the value is rejected, `data-disabled` next to a disabled control. Write helper text as `FieldDescription` and the message as `FieldError` — children, or `errors={field.state.meta.errors}` for a validator's issue list."
    },
    "notFor": [
     {
@@ -1927,7 +1908,7 @@
     "FieldTitle"
    ],
    "aliases": [],
-   "tokens": 1066
+   "tokens": 1111
   },
   {
    "id": "hover-card",
@@ -2235,7 +2216,7 @@
     "linkVariants"
    ],
    "aliases": [],
-   "tokens": 735
+   "tokens": 756
   },
   {
    "id": "marker",
@@ -2458,7 +2439,7 @@
     "names": "overflow overflow toolbar overflow item overflow label overflow group overflow divider overflow spacer overflow menu use is overflow item visible",
     "useWhen": "A row of controls has to survive a container that gets narrow: a panel toolbar, a table header, a card's action row. The actions matter enough to stay reachable, so hiding them outright is not acceptable. The row is measured by its own width, not by a breakpoint — the same toolbar sits in a wide page and a 320 px aside.",
     "routed": "a toolbar that folds into a More menu by measured width",
-    "do": "Wrap every control that may leave the row in an `OverflowItem` with a stable `id`; leave the primary action unwrapped so it is fixed and never collapses. Put the text in an `OverflowLabel` and describe the menu entry with `label`, `icon`, `shortcut` and `onAction`. Decide who leaves first with `priority` (higher stays longer); the menu always keeps source order. Use `Toolbar` with an `aria-label` when the row is a toolbar (one tab stop, arrow keys) and `Overflow` when it is not, such as a chip row. Give a non-button its menu form through `overflow`: a `DropdownMenuSub` for a select or submenu, a `DropdownMenuItem` opening a `Dialog` for a text input, or `\"never\"` to pin the item in the row."
+    "do": "Wrap every control that may leave the row in an `OverflowItem` with a stable `id`; leave the primary action unwrapped so it is fixed and never collapses. Put the text in an `OverflowLabel` beside an icon and describe the menu entry with `label`, `icon`, `shortcut` and `onAction`; only an item with a `label` and an icon in its control goes icon-only, a text-only item keeps its label. Decide who leaves first with `priority` (higher stays longer); the menu always keeps source order. Use `Toolbar` with an `aria-label` when the row is a toolbar (one tab stop, arrow keys) and `Overflow` when it is not, such as a chip row. Give a non-button its menu form through `overflow`: a `DropdownMenuSub` for a select or submenu, a `DropdownMenuItem` opening a `Dialog` for a text input, or `\"never\"` to pin the item in the row."
    },
    "notFor": [
     {
@@ -2491,7 +2472,7 @@
     "useIsOverflowItemVisible"
    ],
    "aliases": [],
-   "tokens": 1190
+   "tokens": 1220
   },
   {
    "id": "page-header",
@@ -2685,7 +2666,7 @@
     "names": "portal portal provider use portal container use portal target",
     "useWhen": "One page holds several isolated React roots — micro frontends, embedded widgets — and each needs a body-level overlay container of its own. That container has to carry a root's scope class, mode class and ownership attributes, so the styles compiled for the root still reach its portalled overlays. An overlay must escape an `overflow: hidden` ancestor and still land somewhere marked, not in a bare `document.body`.",
     "routed": "the element overlays portal into the resolved container inside an overlay you are writing yourself an overlay container without the root marker or a scoped stylesheet",
-    "do": "Wrap the root of the subtree, not individual overlays: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the context. Create the container once at body level and pass it as `container`; pass a function instead when the element only exists after the first render. Clear an outer provider with `container={null}` — overlays then pass no container and React Aria applies its own default. Reach for `ThemeRoot` first: it creates, classes, syncs and removes that container and wires this provider for you."
+    "do": "Wrap the root of the subtree, not individual overlays: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the context. Create the container once at body level and pass it as `container`; pass a function instead when the element only exists after the first render (`container={() => hostRef.current}`) — the provider calls it once it has mounted, and again when you pass a new function. Clear an outer provider with `container={null}` — overlays then pass no container and React Aria applies its own default. Reach for `ThemeRoot` first: it creates, classes, syncs and removes that container and wires this provider for you."
    },
    "notFor": [
     {
@@ -2711,7 +2692,7 @@
     "usePortalTarget"
    ],
    "aliases": [],
-   "tokens": 1147
+   "tokens": 1178
   },
   {
    "id": "progress",
@@ -2934,7 +2915,7 @@
     "names": "select select select trigger select value select content select popover select list select group select label select item select separator select input select empty",
     "useWhen": "A field picks one value out of a known, closed list: a datum, a unit, a status. The list is short enough to scan and needs no typing to get through. The trigger must match the other controls in a field row: `variant=\"outline\" | \"filled\" | \"text\"`.",
     "routed": "a short fixed list that needs no typing choosing a value for a form field a themed popover with icons, rich items or a searchable list the rows-per-page picker beside the controls more than a handful of options picking a value for a form field",
-    "do": "Put `placeholder` on `Select`; `SelectValue` renders it and takes no placeholder of its own. Key every item with `id`, drive selection with `selectedKey` / `defaultSelectedKey` / `onSelectionChange`. Choose the surface with `SelectTrigger`'s `variant`, the height with its `size=\"sm\" | \"default\"`. Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`. To make it searchable, wrap `SelectPopover` in React Aria's `Autocomplete` with `SelectInput` and `SelectList`."
+    "do": "Label it with `FieldLabel` inside `Select` (or `aria-labelledby` on `Select`), never `htmlFor` on the trigger, which the trigger's own `aria-labelledby` overrides; put `placeholder` on `Select`, as `SelectValue` takes none. Key every item with `id`, drive selection with `value` / `defaultValue` / `onChange(key)`; `selectedKey` and `onSelectionChange` are deprecated. Choose the surface with `SelectTrigger`'s `variant`, the height with its `size=\"sm\" | \"default\"`. Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`. To make it searchable, wrap `SelectPopover` in React Aria's `Autocomplete` with `SelectInput` and `SelectList`."
    },
    "notFor": [
     {
@@ -2974,7 +2955,7 @@
     "SelectEmpty"
    ],
    "aliases": [],
-   "tokens": 1073
+   "tokens": 1199
   },
   {
    "id": "separator",
@@ -3072,9 +3053,9 @@
    "summary": "The host listens for keys once and every mounted application registers against the same registry.",
    "fields": {
     "names": "shortcuts shortcuts provider create shortcut registry use shortcut use shortcuts use shortcut registry format shortcut shortcut keys use is mac platform",
-    "useWhen": "The host listens for keys once and every mounted application registers against the same registry. A shortcut must be listed as well as bound: the help dialog and the command palette read `useShortcuts()`. A region owns keys only while focus is inside it — `target` scopes the listener to one element.",
+    "useWhen": "The host listens for keys once and every mounted application registers against the same registry. A shortcut must be listed as well as bound: the help dialog and the command palette read `useShortcuts()`. A region owns keys only while focus is inside it — `target` scopes the listener to one element; a nested provider with a `target` and no `registry` gets a registry of its own, so its shortcuts are not listed with the host's.",
     "routed": "",
-    "do": "Wrap the shell in one `ShortcutsProvider`; a nested provider with no `registry` of its own reuses the parent's. Register from React with `useShortcut`, which removes the shortcut on unmount and always calls the latest render's handler. Create the registry with `createShortcutRegistry()` in the host and hand the object to each mounted application; that shape is versioned public API, so the two sides may be on different package versions. Write keys in the registry syntax: `mod+k` for ⌘ / Ctrl, `?` for a symbol, `g w` for a sequence. Give every shortcut a stable `id`, a `label` and a `group`, and render its caps with `ShortcutKeys`."
+    "do": "Wrap the shell in one `ShortcutsProvider`; a nested provider with no `registry` of its own reuses the parent's. Register from React with `useShortcut`, which removes the shortcut on unmount and always calls the latest render's handler. Create the registry with `createShortcutRegistry()` in the host and hand the object to each mounted application; that shape is versioned public API, so the two sides may be on different package versions. Write keys in the registry syntax: `mod+k` for ⌘ / Ctrl, `?` for a symbol, `g w` for a sequence; a held key fires once, so set `allowRepeat: true` only where holding it should repeat (zoom, nudge). Give every shortcut a stable `id`, a `label` and a `group`, and render its caps with `ShortcutKeys`."
    },
    "notFor": [
     {
@@ -3106,7 +3087,7 @@
     "useIsMacPlatform"
    ],
    "aliases": [],
-   "tokens": 1043
+   "tokens": 1116
   },
   {
    "id": "sidebar",
@@ -3162,7 +3143,7 @@
     "useSidebar"
    ],
    "aliases": [],
-   "tokens": 1083
+   "tokens": 1127
   },
   {
    "id": "skeleton",
@@ -3327,7 +3308,7 @@
     "names": "stat stat stat label stat value stat delta stat help stat group",
     "useWhen": "A card, a panel or a header reports one measured number: cost per barrel, NPV, drilling days. The number wants a unit and a change against a baseline or a previous period. Several KPIs sit side by side and their digits have to align: that is `StatGroup`.",
     "routed": "one measured number with a unit and a change",
-    "do": "Compose the parts inside `Stat`: `StatLabel`, `StatValue` with its `unit`, `StatDelta`, `StatHelp`. Scale the value with `size=\"sm\" | \"md\" | \"lg\"` (14 / 20 / 28 px) and place the block with `align=\"start\" | \"center\" | \"end\"`. Say which way the number moved with `StatDelta`'s `trend=\"up\" | \"down\" | \"flat\"`; it picks both the icon and the semantic colour. Pass the unit to `StatValue`'s `unit` prop rather than writing it into the text, so it renders in the sans face at `0.6em`. Lay a row of KPIs out with `StatGroup`, the responsive `auto-fit` grid; `className` on it is for width and placement only."
+    "do": "Compose the parts inside `Stat`: `StatLabel`, `StatValue` with its `unit`, `StatDelta`, `StatHelp`. Scale the value with `size=\"sm\" | \"md\" | \"lg\"` (14 / 20 / 28 px) and place the block with `align=\"start\" | \"center\" | \"end\"`. Say which way the number moved with `StatDelta`'s `trend=\"up\" | \"down\" | \"flat\"` (the icon), and whether that is good news with `tone=\"positive\" | \"negative\" | \"neutral\"` (the colour). `tone` follows the trend unless you set it: set `tone=\"positive\"` on a falling cost, downtime or risk. Pass the unit to `StatValue`'s `unit` prop rather than writing it into the text, so it renders in the sans face at `0.6em`. Lay a row of KPIs out with `StatGroup`, the responsive `auto-fit` grid; `className` on it is for width and placement only."
    },
    "notFor": [
     {
@@ -3357,7 +3338,7 @@
     "StatGroup"
    ],
    "aliases": [],
-   "tokens": 892
+   "tokens": 942
   },
   {
    "id": "switch",
@@ -3472,7 +3453,7 @@
     "tabsListVariants"
    ],
    "aliases": [],
-   "tokens": 903
+   "tokens": 927
   },
   {
    "id": "textarea",
@@ -3523,7 +3504,7 @@
     "names": "theme root theme root theme root variants",
     "useWhen": "An application is mounted into a page that already carries its own copy of Tecton: a Module Federation remote, an embedded widget. A subtree must be pinned against the shell's mode — a dark map or log viewer in a light application. That subtree's overlays have to stay inside its own `@scope` rule instead of landing in a bare `document.body`.",
     "routed": "the root element of an independently deployed application the root of an independently deployed application, container included",
-    "do": "Render it around the whole mounted tree with the deployable's scope class: `<ThemeRoot className=\"mfe-a\" theme=\"inherit\">`. Keep `theme=\"inherit\"` inside a Tecton shell — the shell's variables, palette and mode inherit — and pin `dark` or `light` only for an inverted island. Retint one root with an arbitrary property in `className`: `[--primary:var(--tecton-palette-green-560)]`, which is mirrored onto the overlay container. Pass `overlayContainer` to reuse an element the shell owns, or `null` to opt out; omit it and the root creates, syncs and removes its own. Pair it with `@tecton/react/styles/scoped.css` and the PostCSS scope plugin, never with `globals.css`."
+    "do": "Render it around the whole mounted tree with the deployable's scope class, and keep layout on an inner element: `<ThemeRoot className=\"mfe-a\"><div className=\"flex h-full flex-col\">…</div></ThemeRoot>`. The overlay container that mirrors `className` is `display: contents`, so layout utilities do nothing there while typography and colour classes reach every overlay. Keep `theme=\"inherit\"` inside a Tecton shell — the shell's variables, palette and mode inherit — and pin `dark` or `light` only for an inverted island. Retint one root with an arbitrary property in `className`: `[--primary:var(--tecton-palette-green-560)]`, which is mirrored onto the overlay container; pass `overlayClassName` instead when only some of the root's classes belong on the overlays (the theme class is always added to it). Pass `overlayContainer` to reuse an element the shell owns, or `null` to opt out; omit it and the root creates, syncs and removes its own. Pair it with `@tecton/react/styles/scoped.css` and the PostCSS scope plugin, never with `globals.css`."
    },
    "notFor": [
     {
@@ -3548,7 +3529,7 @@
     "themeRootVariants"
    ],
    "aliases": [],
-   "tokens": 1094
+   "tokens": 1188
   },
   {
    "id": "toggle",
@@ -3621,7 +3602,7 @@
     "ToggleGroupItem"
    ],
    "aliases": [],
-   "tokens": 882
+   "tokens": 905
   },
   {
    "id": "tooltip",
@@ -3634,7 +3615,7 @@
     "names": "tooltip tooltip tooltip trigger",
     "useWhen": "A control needs a few words of explanation: what an icon button does, why one is disabled. The text is a description, never the only place a fact appears.",
     "routed": "a short label on a control a short label on a control",
-    "do": "Give `TooltipTrigger` exactly two children, in this order: the trigger element, then the `Tooltip`. Give an icon-only trigger its own `aria-label`; the tooltip is `aria-describedby`, not the name. Set `delay` and `closeDelay` on `TooltipTrigger` (Tecton opens at `delay={0}`) and `placement` on `Tooltip`; a `Kbd` inside gets its own spacing, as in `Save changes <Kbd>S</Kbd>`. To explain a disabled control, wrap it: `<span className=\"inline-block w-fit\"><Button isDisabled>Export</Button></span>`."
+    "do": "Give `TooltipTrigger` exactly two children, in this order: the trigger element, then the `Tooltip`. Give an icon-only trigger its own `aria-label`; the tooltip is `aria-describedby`, not the name. Set `delay` and `closeDelay` on `TooltipTrigger` (Tecton opens at `delay={0}`) and `placement` on `Tooltip`; a `Kbd` inside gets its own spacing, as in `Save changes <Kbd>S</Kbd>`. To explain a disabled control, wrap it: `<span className=\"inline-block w-fit\"><Button isDisabled>Export</Button></span>`. A trigger that is not a control (a `Badge`, a term) needs focus and a role, or React Aria's `Focusable` warns and keyboard users never open it: `<Badge render={(props) => <span {...props} tabIndex={0} role=\"img\" aria-label=\"TVD\" />}>TVD</Badge>`."
    },
    "notFor": [
     {
@@ -3659,7 +3640,7 @@
     "TooltipTrigger"
    ],
    "aliases": [],
-   "tokens": 791
+   "tokens": 853
   },
   {
    "id": "tree-view",
@@ -3672,7 +3653,7 @@
     "names": "tree view tree view tree view item tree view item content tree view action tree view visibility toggle tree view collection",
     "useWhen": "A hierarchy is browsed rather than read: a project tree, a field and well inventory, a layer list. Rows carry more than a label: selection, disabled, hidden, a colour, a count, a per-row menu. Arrow-key navigation, expansion and type-ahead have to work across the whole structure.",
     "routed": "an expandable hierarchy of folders and records a hierarchy of folders and records expanded in place",
-    "do": "Give `TreeView` an `aria-label`, and every `TreeViewItem` an `id` and a `textValue`. Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or a `TreeViewCollection` with `items` for dynamic data. Pick the leading glyph with `kind=\"folder\" | \"item\"` or replace it with `icon`; the chevron and the indent are handled for you. Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, `TreeViewAction`). Drive state from `TreeView` — `selectionMode` with `selectedKeys`, `disabledKeys`, `expandedKeys` — and dim a row with `isHidden` on `TreeViewItem`."
+    "do": "Give `TreeView` an `aria-label`, and every `TreeViewItem` an `id` and a `textValue`. Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or a `TreeViewCollection` with `items` for dynamic data. Pick the leading glyph with `kind=\"folder\" | \"item\"` or replace it with `icon`; the chevron and the indent are handled for you. Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, which names itself \"Hide\" plus the row's label with `aria-pressed` for the hidden state, and `TreeViewAction`). Drive state from `TreeView` — `selectionMode` with `selectedKeys`, `disabledKeys`, `expandedKeys` — and dim a row with `isHidden` on `TreeViewItem`."
    },
    "notFor": [
     {
@@ -3698,7 +3679,7 @@
     "TreeViewCollection"
    ],
    "aliases": [],
-   "tokens": 1026
+   "tokens": 1132
   },
   {
    "id": "tanstack-table",
@@ -3806,15 +3787,15 @@
    "summary": "React Aria props instead of Radix props",
    "fields": {
     "names": "react aria",
-    "useWhen": "The Radix-to-React-Aria prop map for @tecton/react, because an agent's prior is shadcn on Radix and most of these substitutions render a dead control rather than an error. Covers onPress instead of onClick, isDisabled instead of disabled, isSelected and onChange instead of checked and onCheckedChange, selectedKey / defaultSelectedKey / onSelectionChange instead of value and onValueChange on Select and Tabs, isOpen and onOpenChange with DialogTrigger wrapping both the Button and the Dialog (there is no DialogContent), the absence of asChild and what replaces it (LinkButton, buttonVariants, the render prop on Badge and ButtonGroupText, the element-valued render on DrawerTrigger), id instead of value on SelectItem, TabsTrigger and TabsContent, isInvalid on React Aria controls versus aria-invalid on Input and Textarea plus data-invalid on Field, and why Link and LinkButton exist. Load before writing any prop, handler or controlled state on a Tecton component.",
+    "useWhen": "The Radix-to-React-Aria prop map for @tecton/react, because an agent's prior is shadcn on Radix and most of these substitutions render a dead control rather than an error. Covers onPress instead of onClick, isDisabled instead of disabled, isSelected and onChange instead of checked and onCheckedChange, value / defaultValue / onChange on Select and Combobox and selectedKey / defaultSelectedKey / onSelectionChange on Tabs instead of Radix's onValueChange, isOpen and onOpenChange with DialogTrigger wrapping both the Button and the Dialog (there is no DialogContent), the absence of asChild and what replaces it (LinkButton, buttonVariants, the render prop on Badge and ButtonGroupText, the element-valued render on DrawerTrigger), id instead of value on SelectItem, TabsTrigger and TabsContent, isInvalid on React Aria controls versus aria-invalid on Input and Textarea plus data-invalid on Field, and why Link and LinkButton exist. Load before writing any prop, handler or controlled state on a Tecton component.",
     "routed": "",
-    "do": "The map Common Mistakes [CRITICAL] onClick instead of onPress [CRITICAL] disabled instead of isDisabled [CRITICAL] checked and onCheckedChange on Checkbox or Switch [CRITICAL] value and onValueChange on Select or Tabs [HIGH] Select controlled with the empty string [HIGH] DialogContent, and open on the Dialog [HIGH] asChild to compose a trigger or a link [HIGH] aria-invalid on a React Aria control [MEDIUM] Button used for navigation"
+    "do": "The map Common Mistakes [CRITICAL] onClick instead of onPress [CRITICAL] disabled instead of isDisabled [CRITICAL] checked and onCheckedChange on Checkbox or Switch [CRITICAL] onValueChange on Select, value on SelectItem [CRITICAL] value and onValueChange on Tabs [HIGH] Select controlled with the empty string [HIGH] DialogContent, and open on the Dialog [HIGH] asChild to compose a trigger or a link [HIGH] aria-invalid on a React Aria control [MEDIUM] Button used for navigation"
    },
    "notFor": [],
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2629
+   "tokens": 2973
   },
   {
    "id": "rules",
@@ -3831,7 +3812,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 3581
+   "tokens": 3612
   },
   {
    "id": "theming",
@@ -3848,7 +3829,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2747
+   "tokens": 2808
   }
  ]
 }

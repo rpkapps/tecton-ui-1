@@ -1,5 +1,7 @@
 import type * as React from "react"
 
+import type { CompareKey } from "./keys"
+
 export type CompareMatrix = {
   title: string
   /** Screenshot in tecton-screenshots/ this matrix mirrors. */
@@ -13,7 +15,7 @@ export type CompareMatrix = {
  * script (apps/www/e2e/compare.spec.ts) renders each at /compare/<key> and
  * places the capture next to the reference PNG.
  */
-export const compareMatrices: Record<string, CompareMatrix> = {
+export const compareMatrices: Record<CompareKey, CompareMatrix> = {
   button: {
     title: "Button — variant matrix",
     reference: "037_components-button__variant-matrix.png",

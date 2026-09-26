@@ -22,7 +22,7 @@ related: [Accordion, Item, ColorSwatch]
 - Give `TreeView` an `aria-label`, and every `TreeViewItem` an `id` and a `textValue`.
 - Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or a `TreeViewCollection` with `items` for dynamic data.
 - Pick the leading glyph with `kind="folder" | "item"` or replace it with `icon`; the chevron and the indent are handled for you.
-- Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, `TreeViewAction`).
+- Hang the extras on `TreeViewItemContent`: `colorTag` (a `ColorSwatch`), `suffix` (a `Badge`), `endAdornment` (`TreeViewVisibilityToggle`, which names itself "Hide" plus the row's label with `aria-pressed` for the hidden state, and `TreeViewAction`).
 - Drive state from `TreeView` — `selectionMode` with `selectedKeys`, `disabledKeys`, `expandedKeys` — and dim a row with `isHidden` on `TreeViewItem`.
 
 ## Don't
@@ -97,4 +97,4 @@ Correct:
 </TreeViewItem>
 ```
 
-`textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included.
+`textValue` is the row's plain-text name for React Aria, and `TreeViewItemContent` wraps the label in chevron, icon, suffix and adornment spans, so without it the row is announced and type-ahead matched as the whole assembled row, badge included. With dynamic `items`, React Aria caches each rendered row, so a row that also reads state kept outside `items` (the hidden set behind `isHidden` and `TreeViewVisibilityToggle`, a selection map) does not update until that state is listed in `dependencies` on `TreeView` and on every `TreeViewCollection`: `dependencies={[hidden]}`.

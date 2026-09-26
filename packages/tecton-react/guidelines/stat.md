@@ -23,7 +23,7 @@ related: [Meter, Badge, ChartContainer]
 
 - Compose the parts inside `Stat`: `StatLabel`, `StatValue` with its `unit`, `StatDelta`, `StatHelp`.
 - Scale the value with `size="sm" | "md" | "lg"` (14 / 20 / 28 px) and place the block with `align="start" | "center" | "end"`.
-- Say which way the number moved with `StatDelta`'s `trend="up" | "down" | "flat"`; it picks both the icon and the semantic colour.
+- Say which way the number moved with `StatDelta`'s `trend="up" | "down" | "flat"` (the icon), and whether that is good news with `tone="positive" | "negative" | "neutral"` (the colour). `tone` follows the trend unless you set it: set `tone="positive"` on a falling cost, downtime or risk.
 - Pass the unit to `StatValue`'s `unit` prop rather than writing it into the text, so it renders in the sans face at `0.6em`.
 - Lay a row of KPIs out with `StatGroup`, the responsive `auto-fit` grid; `className` on it is for width and placement only.
 
@@ -71,11 +71,11 @@ Correct:
 <Stat>
   <StatLabel>CAPEX</StatLabel>
   <StatValue unit="MUSD">312</StatValue>
-  <StatDelta trend="down">-4%</StatDelta>
+  <StatDelta trend="down" tone="positive">-4%</StatDelta>
 </Stat>
 ```
 
-`trend` chooses both halves of the indicator — the `text-success` / `text-destructive` / `text-muted-foreground` colour and the `TrendingUp` / `TrendingDown` / `Minus` icon — so the hand-coloured version keeps the default flat dash while `cn` drops `text-muted-foreground` for a `text-red-600` that emits nothing.
+`trend` picks the `TrendingUp` / `TrendingDown` / `Minus` icon and `tone` the `text-success` / `text-destructive` / `text-muted-foreground` colour — a CAPEX cut points down and reads as good news — so the hand-coloured version keeps the default flat dash while `cn` drops `text-muted-foreground` for a `text-red-600` that emits nothing.
 
 ### MEDIUM The unit written into the value
 

@@ -100,11 +100,16 @@ export function IconGallery() {
                 "flex flex-col items-center gap-2 rounded-md border bg-card p-3 text-xs outline-none hover:bg-accent focus-visible:ring-2 focus-visible:ring-ring/60",
                 icon.source === "placeholder" && "border-dashed"
               )}
-              onClick={() => {
+              onClick={async () => {
                 const snippet = `import { ${icon.name}Icon } from "@tecton/react/icons"`
-                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- undefined in insecure contexts
-                navigator.clipboard?.writeText(snippet)
-                toast(`Copied ${icon.name}Icon import`)
+                try {
+                  // `navigator.clipboard` is undefined in insecure contexts:
+                  // the call throws and lands in the catch.
+                  await navigator.clipboard.writeText(snippet)
+                  toast(`Copied ${icon.name}Icon import`)
+                } catch {
+                  toast.error(`Could not copy the ${icon.name}Icon import`)
+                }
               }}
             >
               <icon.Icon size={size} variant={variant} />

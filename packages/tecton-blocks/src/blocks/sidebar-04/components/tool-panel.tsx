@@ -98,13 +98,13 @@ function ToolPanel({
           />
         </Field>
         <Field>
-          <FieldLabel htmlFor={`${id}-type`}>Type</FieldLabel>
           <Select
-            className="w-full"
-            selectedKey={value.type}
-            onSelectionChange={(key) => update({ type: key as WellType })}
+            className="flex w-full flex-col gap-3"
+            value={value.type}
+            onChange={(key) => update({ type: key as WellType })}
           >
-            <SelectTrigger id={`${id}-type`}>
+            <FieldLabel>Type</FieldLabel>
+            <SelectTrigger>
               <SelectValue />
             </SelectTrigger>
             <SelectContent>

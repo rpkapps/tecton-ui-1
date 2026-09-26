@@ -1,0 +1,4 @@
+# Normalise text files to LF in the repository and in every checkout (Windows included):
+# the generated-file checks, the icon and agent-index builds and the overlay patch
+# compare bytes, and a CRLF working copy would make them report drift.
+* text=auto eol=lf

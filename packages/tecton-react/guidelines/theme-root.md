@@ -21,9 +21,9 @@ related: [PortalProvider, AppShell]
 
 ## Do
 
-- Render it around the whole mounted tree with the deployable's scope class: `<ThemeRoot className="mfe-a" theme="inherit">`.
+- Render it around the whole mounted tree with the deployable's scope class, and keep layout on an inner element: `<ThemeRoot className="mfe-a"><div className="flex h-full flex-col">…</div></ThemeRoot>`. The overlay container that mirrors `className` is `display: contents`, so layout utilities do nothing there while typography and colour classes reach every overlay.
 - Keep `theme="inherit"` inside a Tecton shell — the shell's variables, palette and mode inherit — and pin `dark` or `light` only for an inverted island.
-- Retint one root with an arbitrary property in `className`: `[--primary:var(--tecton-palette-green-560)]`, which is mirrored onto the overlay container.
+- Retint one root with an arbitrary property in `className`: `[--primary:var(--tecton-palette-green-560)]`, which is mirrored onto the overlay container; pass `overlayClassName` instead when only some of the root's classes belong on the overlays (the theme class is always added to it).
 - Pass `overlayContainer` to reuse an element the shell owns, or `null` to opt out; omit it and the root creates, syncs and removes its own.
 - Pair it with `@tecton/react/styles/scoped.css` and the PostCSS scope plugin, never with `globals.css`.
 

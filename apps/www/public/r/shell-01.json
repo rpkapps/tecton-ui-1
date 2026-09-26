@@ -4,6 +4,7 @@
   "title": "Application shell",
   "description": "The micro-frontend host: responsive top bar with app finder, context, command palette, shortcuts help, overflow and user menu; the mounted application registers its keyboard shortcuts with the shell. Requires the @tecton/react package.",
   "dependencies": [
+    "@tecton/react",
     "cn",
     "lucide-react"
   ],

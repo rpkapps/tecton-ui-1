@@ -1,16 +1,34 @@
 import * as React from "react"
 import { notFound } from "@tanstack/react-router"
+import browserCollections from "fumadocs-mdx:collections/browser"
 import { ArrowLeftIcon, ArrowRightIcon, ExternalLinkIcon } from "lucide-react"
 
 import { LinkButton } from "@tecton/react/components/button"
 
 import { DocsTableOfContents } from "@/components/docs-toc"
 import { getMDXComponents } from "@/components/mdx"
-import { docs } from "@/lib/docs"
 import { getDocsPage } from "@/lib/page-tree"
 import { siteConfig } from "@/lib/site"
 
 type DocsPageData = NonNullable<Awaited<ReturnType<typeof getDocsPage>>>
+
+/**
+ * The code-split MDX bodies. Only these reach the browser: the collection
+ * (frontmatter, page tree) stays in the server functions of lib/page-tree.ts.
+ */
+const clientLoader = browserCollections.docs.createClientLoader({
+  // Shares the loaded pages between chunks that duplicate this module.
+  id: "docs",
+  component({ toc, default: MDX }, { data }: { data: DocsPageData }) {
+    return (
+      <Content
+        data={data}
+        toc={toc}
+        body={<MDX components={getMDXComponents()} />}
+      />
+    )
+  },
+})
 
 /**
  * The loader of a docs route: the page at `slugs`, with its code-split MDX
@@ -19,7 +37,7 @@ type DocsPageData = NonNullable<Awaited<ReturnType<typeof getDocsPage>>>
 async function loadDocsPage(slugs: string[]): Promise<DocsPageData> {
   const data = await getDocsPage({ data: slugs })
   if (!data) throw notFound()
-  await docs.getPage(data.path)?.preload()
+  await clientLoader.preload(data.path)
   return data
 }
 
@@ -36,41 +54,27 @@ function docsPageHead({ loaderData }: { loaderData?: DocsPageData }) {
 
 /** A docs page: the MDX at `data.path`, its neighbours and table of contents. */
 function DocsPage({ data }: { data: DocsPageData }) {
+  const Page = clientLoader.getComponent(data.path)
   return (
     <React.Suspense
       fallback={
         <div className="px-4 py-8 text-sm text-muted-foreground">Loading…</div>
       }
     >
-      <Content
-        key={data.path}
-        path={data.path}
-        links={data.links}
-        previous={data.previous}
-        next={data.next}
-      />
+      <Page key={data.path} data={data} />
     </React.Suspense>
   )
 }
 
-type Neighbour = { title: string; url: string } | null
-
 function Content({
-  path,
-  links,
-  previous,
-  next,
+  data: { title, description, links, previous, next },
+  toc,
+  body,
 }: {
-  path: string
-  links?: { doc?: string; api?: string }
-  previous: Neighbour
-  next: Neighbour
+  data: DocsPageData
+  toc: React.ComponentProps<typeof DocsTableOfContents>["toc"]
+  body: React.ReactNode
 }) {
-  const page = docs.getPage(path)
-  if (!page) throw new Error(`unknown page: ${path}`)
-  const { toc } = React.use(page.load())
-  const MDX = page.body
-
   return (
     <div
       data-slot="docs"
@@ -82,7 +86,7 @@ function Content({
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between md:items-start">
               <h1 className="scroll-m-24 text-3xl font-medium tracking-tight sm:text-3xl">
-                {page.title}
+                {title}
               </h1>
               <div className="docs-nav flex items-center gap-2">
                 <div className="ml-auto flex gap-2">
@@ -111,9 +115,9 @@ function Content({
                 </div>
               </div>
             </div>
-            {page.description && (
+            {description && (
               <p className="text-[1.05rem] text-muted-foreground sm:text-base sm:text-balance md:max-w-[80%]">
-                {page.description}
+                {description}
               </p>
             )}
             {(links?.doc || links?.api) && (
@@ -146,7 +150,7 @@ function Content({
             )}
           </div>
           <div className="typeset w-full flex-1 pb-16 *:data-[slot=alert]:first:mt-0 sm:pb-0">
-            <MDX components={getMDXComponents()} />
+            {body}
           </div>
           <div className="hidden h-16 w-full items-center gap-2 px-4 sm:flex sm:px-0">
             {previous && (

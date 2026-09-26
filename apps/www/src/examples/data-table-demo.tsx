@@ -155,7 +155,7 @@ export const columns = columnHelper.columns([
             <DropdownMenuGroup>
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuItem
-                onClick={() => navigator.clipboard.writeText(payment.id)}
+                onAction={() => navigator.clipboard.writeText(payment.id)}
               >
                 Copy payment ID
               </DropdownMenuItem>
@@ -317,7 +317,7 @@ export function DataTableDemo() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
+            onPress={() => table.previousPage()}
             isDisabled={!table.getCanPreviousPage()}
           >
             Previous
@@ -325,7 +325,7 @@ export function DataTableDemo() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
+            onPress={() => table.nextPage()}
             isDisabled={!table.getCanNextPage()}
           >
             Next

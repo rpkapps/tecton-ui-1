@@ -38,7 +38,7 @@ By default the link inherits the surrounding font size; use `size` to set it exp
 
 ## External
 
-Set `isExternal` to open in a new tab with `rel="noreferrer noopener"` and append an icon.
+Set `isExternal` to open in a new tab with `rel="noreferrer noopener"` and append an icon. A `rel` you pass (`nofollow`) is added to `noreferrer noopener`, never swapped for it, and an explicit `target` wins over the default `_blank`.
 
 <ComponentPreview name="link-external" />
 
@@ -149,7 +149,7 @@ With no `href` React Aria renders a `span` with `role="link"`, so the control pr
 
 </Correct>
 
-`isExternal` sets `target` and `rel="noreferrer noopener"` together and appends the icon at the variant's `0.85em` size; `target="_blank"` alone leaves the opened page with a handle on `window.opener`.
+`isExternal` sets `target` and `rel="noreferrer noopener"` together and appends the icon at the variant's `0.85em` size; a `rel` you pass as well (`nofollow`) is added to those two, never swapped for them. `target="_blank"` alone leaves the opened page with a handle on `window.opener`.
 
 </Dont>
 
@@ -187,5 +187,5 @@ React Aria [`Link`](https://react-aria.adobe.com/Link); accepts all its props (`
 | --- | --- | --- | --- |
 | `variant` | `"default" \| "primary" \| "muted" \| "subtle"` | "default" | Colour and underline behaviour. |
 | `size` | `"inherit" \| "sm" \| "md" \| "lg"` | "inherit" | Font size. |
-| `isExternal` | `boolean` | false | Opens in a new tab and shows an icon. |
+| `isExternal` | `boolean` | false | Opens in a new tab (`target="_blank"` unless `target` is set), adds `noreferrer noopener` to `rel` and shows an icon. |
 | `isDisabled` | `boolean` | false | Disables the link. |

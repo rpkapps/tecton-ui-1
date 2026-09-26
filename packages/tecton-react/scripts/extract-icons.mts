@@ -228,7 +228,9 @@ function collectFromDir(dir: string): ExtractedSvg[] {
 
   const readFolder = (folder: string, variantOf: (fileName: string) => IconVariant, strip: RegExp | null) => {
     if (!existsSync(folder)) return;
-    for (const entry of readdirSync(folder, { withFileTypes: true })) {
+    // sorted, so duplicate slugs resolve the same way on every file system
+    const entries = readdirSync(folder, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+    for (const entry of entries) {
       if (!entry.isFile() || !entry.name.toLowerCase().endsWith(".svg")) continue;
       const base = entry.name.replace(/\.svg$/i, "");
       const label = strip ? base.replace(strip, "") : base;

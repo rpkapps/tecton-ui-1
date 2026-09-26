@@ -57,7 +57,7 @@ function Tooltip({
         className
       )}
       {...props}
-      UNSTABLE_portalContainer={portalTarget}
+      UNSTABLE_portalContainer={props.UNSTABLE_portalContainer ?? portalTarget}
     >
       {children}
       <OverlayArrow

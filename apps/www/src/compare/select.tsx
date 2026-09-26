@@ -54,7 +54,7 @@ function SelectCell({
     <Field data-disabled={isDisabled} data-invalid={isInvalid}>
       <FieldLabel htmlFor={id}>Field label</FieldLabel>
       <Select
-        defaultSelectedKey="1"
+        defaultValue="1"
         isDisabled={isDisabled}
         isInvalid={isInvalid}
         className="w-full"

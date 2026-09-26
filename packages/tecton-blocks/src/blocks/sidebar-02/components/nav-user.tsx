@@ -46,13 +46,13 @@ function NavUser({ user }: NavUserProps) {
                 {user.initials}
               </AvatarFallback>
             </Avatar>
-            <div className="grid flex-1 text-left text-sm leading-tight">
+            <div className="grid flex-1 text-start text-sm leading-tight">
               <span className="truncate font-medium">{user.name}</span>
               <span className="truncate text-xs text-sidebar-foreground/70">
                 {user.role}
               </span>
             </div>
-            <ChevronsUpDownIcon className="ml-auto size-4" />
+            <ChevronsUpDownIcon className="ms-auto size-4" />
           </SidebarMenuButton>
           <DropdownMenu
             className="w-(--trigger-width) min-w-56 rounded-lg"
@@ -61,13 +61,13 @@ function NavUser({ user }: NavUserProps) {
           >
             <DropdownMenuGroup>
               <DropdownMenuLabel className="p-0 font-normal">
-                <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+                <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
                   <Avatar size="sm" className="rounded-lg">
                     <AvatarFallback className="rounded-lg">
                       {user.initials}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="grid flex-1 text-left text-sm leading-tight">
+                  <div className="grid flex-1 text-start text-sm leading-tight">
                     <span className="truncate font-medium text-foreground">
                       {user.name}
                     </span>

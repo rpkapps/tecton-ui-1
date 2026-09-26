@@ -62,6 +62,8 @@ function ServerError({
     try {
       await (onRetry?.() ??
         new Promise((resolve) => window.setTimeout(resolve, 900)))
+    } catch {
+      // The retry failed too: stay on this page, ready for another try.
     } finally {
       setRetrying(false)
     }

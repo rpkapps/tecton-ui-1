@@ -35,7 +35,7 @@ export default function ButtonGroupInputGroup() {
           <InputGroupAddon align="inline-end">
             <TooltipTrigger>
               <InputGroupButton
-                onClick={() => setVoiceEnabled(!voiceEnabled)}
+                onPress={() => setVoiceEnabled(!voiceEnabled)}
                 size="icon-xs"
                 data-active={voiceEnabled}
                 className="data-[active=true]:bg-saffron-120 data-[active=true]:text-saffron-830"

@@ -16,11 +16,15 @@ import {
 const circularProgressVariants = cva("relative inline-flex shrink-0", {
   variants: {
     size: {
-      xs: "size-4 text-[0.5rem] [--stroke:2.5px]",
-      sm: "size-6 text-[0.625rem] [--stroke:3px]",
-      md: "size-10 text-xs [--stroke:3.5px]",
-      lg: "size-16 text-sm [--stroke:4px]",
-      xl: "size-24 text-base [--stroke:5px]",
+      // `--stroke` is read inside the SVG, where a px is a unit of the
+      // ring's 48-unit viewBox and scales with the diameter. The values give
+      // 2.5 / 3 / 3.5 / 4 / 5 screen px at the size's own diameter
+      // (xs: 7.5 × 16/48 = 2.5px).
+      xs: "size-4 text-[0.5rem] [--stroke:7.5px]",
+      sm: "size-6 text-[0.625rem] [--stroke:6px]",
+      md: "size-10 text-xs [--stroke:4.2px]",
+      lg: "size-16 text-sm [--stroke:3px]",
+      xl: "size-24 text-base [--stroke:2.5px]",
     },
     color: {
       // `default` is painted with the shared `progress` token, like the
@@ -77,7 +81,10 @@ function CircularProgress({
               viewBox="0 0 48 48"
               className={cn(
                 "size-full -rotate-90",
-                isIndeterminate && "animate-spin"
+                // Reduced motion keeps a slow turn: a still arc would read
+                // as a stuck value, not as work in progress.
+                isIndeterminate &&
+                  "animate-spin motion-reduce:animate-[spin_3s_linear_infinite]"
               )}
               aria-hidden
             >
@@ -86,7 +93,7 @@ function CircularProgress({
                 cy="24"
                 r={RADIUS}
                 fill="none"
-                strokeWidth="var(--stroke)"
+                style={{ strokeWidth: "var(--stroke)" }}
                 className="stroke-current opacity-38"
               />
               <circle
@@ -94,7 +101,7 @@ function CircularProgress({
                 cy="24"
                 r={RADIUS}
                 fill="none"
-                strokeWidth="var(--stroke)"
+                style={{ strokeWidth: "var(--stroke)" }}
                 strokeLinecap="round"
                 strokeDasharray={CIRCUMFERENCE}
                 strokeDashoffset={offset}

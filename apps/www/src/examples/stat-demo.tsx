@@ -11,7 +11,9 @@ export default function StatDemo() {
     <Stat>
       <StatLabel>Cost per barrel</StatLabel>
       <StatValue unit="USD">16.9</StatValue>
-      <StatDelta trend="down">-8% vs. Alternative A</StatDelta>
+      <StatDelta trend="down" tone="positive">
+        -8% vs. Alternative A
+      </StatDelta>
       <StatHelp>Base case, P50 volumes</StatHelp>
     </Stat>
   )

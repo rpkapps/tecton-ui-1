@@ -4,6 +4,7 @@
   "title": "503 · Scheduled maintenance",
   "description": "Planned downtime: window progress, step checklist, status page and notify-me toggle; a hatched workover band crosses the log. Requires the @tecton/react package.",
   "dependencies": [
+    "@tecton/react",
     "cn",
     "lucide-react"
   ],

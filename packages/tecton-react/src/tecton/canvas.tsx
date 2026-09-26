@@ -1,6 +1,13 @@
+"use client"
+
 import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
+import {
+  composeRenderProps,
+  Toolbar as ToolbarPrimitive,
+  type ToolbarProps as ToolbarPrimitiveProps,
+} from "react-aria-components"
 
 /**
  * Tecton Canvas — a full-bleed work surface (map, schematic, 3D view) with
@@ -82,29 +89,42 @@ const canvasToolbarVariants = cva(
   }
 )
 
+type CanvasToolbarProps = Omit<ToolbarPrimitiveProps, "orientation"> &
+  VariantProps<typeof canvasToolbarVariants>
+
+/**
+ * A React Aria `Toolbar`: arrow keys move along the rail (Up/Down when
+ * vertical, Left/Right when horizontal, mirrored in RTL) and Tab leaves it.
+ * Give it an `aria-label`.
+ */
 function CanvasToolbar({
   className,
   orientation = "vertical",
   ...props
-}: React.ComponentProps<"div"> & VariantProps<typeof canvasToolbarVariants>) {
+}: CanvasToolbarProps) {
+  const resolved = orientation ?? "vertical"
   return (
-    <div
-      role="toolbar"
-      aria-orientation={orientation ?? undefined}
+    <ToolbarPrimitive
       data-slot="canvas-toolbar"
-      data-orientation={orientation}
-      className={cn(canvasToolbarVariants({ orientation }), className)}
+      orientation={resolved}
+      className={composeRenderProps(className, (className) =>
+        cn(canvasToolbarVariants({ orientation: resolved }), className)
+      )}
       {...props}
     />
   )
 }
 
-function CanvasLegend({ className, ...props }: React.ComponentProps<"dl">) {
+/**
+ * The symbology as a list: each item is a swatch (decorative) followed by
+ * its name, so assistive tech reads the names in order.
+ */
+function CanvasLegend({ className, ...props }: React.ComponentProps<"ul">) {
   return (
-    <dl
+    <ul
       data-slot="canvas-legend"
       className={cn(
-        "m-0 grid gap-1.5 rounded-md border border-border-subtle bg-card/90 px-2.5 py-2 text-xs text-card-foreground shadow-md backdrop-blur-sm supports-[backdrop-filter]:bg-card/80",
+        "m-0 grid list-none gap-1.5 rounded-md border border-border-subtle bg-card/90 px-2.5 py-2 text-xs text-card-foreground shadow-md backdrop-blur-sm supports-[backdrop-filter]:bg-card/80",
         className
       )}
       {...props}
@@ -117,29 +137,31 @@ function CanvasLegendItem({
   swatch,
   children,
   ...props
-}: React.ComponentProps<"div"> & {
+}: React.ComponentProps<"li"> & {
   /** Colour or pattern of the symbol; a CSS colour string or a node. */
   swatch: React.ReactNode
 }) {
   return (
-    <div
+    <li
       data-slot="canvas-legend-item"
       className={cn("flex items-center gap-2", className)}
       {...props}
     >
-      <dt className="flex size-3 shrink-0 items-center justify-center overflow-hidden rounded-[2px]">
+      <span
+        data-slot="canvas-legend-swatch"
+        aria-hidden
+        className="flex size-3 shrink-0 items-center justify-center overflow-hidden rounded-[2px]"
+      >
         {typeof swatch === "string" ? (
-          <span
-            aria-hidden
-            className="size-full"
-            style={{ background: swatch }}
-          />
+          <span className="size-full" style={{ background: swatch }} />
         ) : (
           swatch
         )}
-      </dt>
-      <dd className="m-0 truncate">{children}</dd>
-    </div>
+      </span>
+      <span data-slot="canvas-legend-label" className="min-w-0 truncate">
+        {children}
+      </span>
+    </li>
   )
 }
 
@@ -153,3 +175,4 @@ export {
   canvasOverlayVariants,
   canvasToolbarVariants,
 }
+export type { CanvasToolbarProps }

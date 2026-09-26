@@ -7,7 +7,11 @@ upstream: apps/v4/content/docs/components/aria/sidebar.mdx
 import { ExternalLinkIcon } from "lucide-react"
 
 <figure className="flex flex-col gap-4">
-  
+  <ComponentPreview
+    name="sidebar-01"
+    type="block"
+    className="w-full"
+  />
   <figcaption className="text-center text-sm text-muted-foreground">
     A sidebar that collapses to icons.
   </figcaption>
@@ -23,7 +27,7 @@ Customizable.
 
 ## Usage
 
-```tsx showLineNumbers title="app/layout.tsx"
+```tsx lineNumbers title="app/layout.tsx"
 import { SidebarProvider, SidebarTrigger } from "@tecton/react/components/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 
@@ -40,7 +44,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 }
 ```
 
-```tsx showLineNumbers title="components/app-sidebar.tsx"
+```tsx lineNumbers title="components/app-sidebar.tsx"
 import {
   Sidebar,
   SidebarContent,
@@ -140,7 +144,7 @@ The `SidebarProvider` component is used to provide the sidebar context to the `S
 
 To change the width, set the `--sidebar-width` and `--sidebar-width-mobile` CSS variables in the `style` prop.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <SidebarProvider
   style={
     {
@@ -157,7 +161,7 @@ To change the width, set the `--sidebar-width` and `--sidebar-width-mobile` CSS 
 
 To trigger the sidebar, you use the `cmd+b` keyboard shortcut on Mac and `ctrl+b` on Windows.
 
-```tsx showLineNumbers title="@tecton/react/components/sidebar.tsx"
+```tsx lineNumbers title="@tecton/react/components/sidebar.tsx"
 const SIDEBAR_KEYBOARD_SHORTCUT = "b"
 ```
 
@@ -184,7 +188,7 @@ The main `Sidebar` component used to render a collapsible sidebar.
   in a `SidebarInset` component.
 </Callout>
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <SidebarProvider>
   <Sidebar variant="inset" />
   <SidebarInset>
@@ -197,7 +201,7 @@ The main `Sidebar` component used to render a collapsible sidebar.
 
 The `useSidebar` hook is used to control the sidebar.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import { useSidebar } from "@tecton/react/components/sidebar"
 
 export function AppSidebar() {
@@ -227,7 +231,7 @@ export function AppSidebar() {
 
 Use the `SidebarHeader` component to add a sticky header to the sidebar.
 
-```tsx showLineNumbers title="components/app-sidebar.tsx"
+```tsx lineNumbers title="components/app-sidebar.tsx"
 <Sidebar>
   <SidebarHeader>
     <SidebarMenu>
@@ -253,7 +257,7 @@ Use the `SidebarHeader` component to add a sticky header to the sidebar.
 
 Use the `SidebarFooter` component to add a sticky footer to the sidebar.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Sidebar>
   <SidebarFooter>
     <SidebarMenu>
@@ -271,7 +275,7 @@ Use the `SidebarFooter` component to add a sticky footer to the sidebar.
 
 The `SidebarContent` component is used to wrap the content of the sidebar. This is where you add your `SidebarGroup` components. It is scrollable.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Sidebar>
   <SidebarContent>
     <SidebarGroup />
@@ -286,7 +290,7 @@ Use the `SidebarGroup` component to create a section within the sidebar.
 
 A `SidebarGroup` has a `SidebarGroupLabel`, a `SidebarGroupContent` and an optional `SidebarGroupAction`.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <SidebarGroup>
   <SidebarGroupLabel>Application</SidebarGroupLabel>
   <SidebarGroupAction>
@@ -298,7 +302,7 @@ A `SidebarGroup` has a `SidebarGroupLabel`, a `SidebarGroupContent` and an optio
 
 To make a `SidebarGroup` collapsible, wrap it in a `Collapsible`.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Collapsible defaultExpanded className="group/collapsible">
   <SidebarGroup>
     <SidebarGroupLabel elementType={CollapsibleTrigger}>
@@ -331,7 +335,7 @@ The `SidebarMenu` component is used for building a menu within a `SidebarGroup`.
   className="mt-6 hidden w-full overflow-hidden rounded-lg border dark:block"
 />
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <SidebarMenu>
   {projects.map((project) => (
     <SidebarMenuItem key={project.name}>
@@ -352,7 +356,7 @@ By default, the `SidebarMenuButton` renders a button, but passing an `href` prop
 
 Use the `isActive` prop to mark a menu item as active.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <SidebarMenuButton href="#" isActive>
   Home
 </SidebarMenuButton>
@@ -362,7 +366,7 @@ Use the `isActive` prop to mark a menu item as active.
 
 The `SidebarMenuAction` component is used to render a menu action within a `SidebarMenuItem`.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <SidebarMenuItem>
   <SidebarMenuButton href="#">
     <Home />
@@ -378,7 +382,7 @@ The `SidebarMenuAction` component is used to render a menu action within a `Side
 
 The `SidebarMenuSub` component is used to render a submenu within a `SidebarMenu`.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <SidebarMenuItem>
   <SidebarMenuButton />
   <SidebarMenuSub>
@@ -393,7 +397,7 @@ The `SidebarMenuSub` component is used to render a submenu within a `SidebarMenu
 
 The `SidebarMenuBadge` component is used to render a badge within a `SidebarMenuItem`.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <SidebarMenuItem>
   <SidebarMenuButton />
   <SidebarMenuBadge>24</SidebarMenuBadge>
@@ -404,7 +408,7 @@ The `SidebarMenuBadge` component is used to render a badge within a `SidebarMenu
 
 The `SidebarMenuSkeleton` component is used to render a skeleton for a `SidebarMenu`.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <SidebarMenu>
   {Array.from({ length: 5 }).map((_, index) => (
     <SidebarMenuItem key={index}>
@@ -418,7 +422,7 @@ The `SidebarMenuSkeleton` component is used to render a skeleton for a `SidebarM
 
 Use the `SidebarTrigger` component to render a button that toggles the sidebar.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import { useSidebar } from "@tecton/react/components/sidebar"
 
 export function CustomTrigger() {
@@ -432,7 +436,7 @@ export function CustomTrigger() {
 
 The `SidebarRail` component is used to render a rail within a `Sidebar`. This rail can be used to toggle the sidebar.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Sidebar>
   <SidebarHeader />
   <SidebarContent>
@@ -447,7 +451,7 @@ The `SidebarRail` component is used to render a rail within a `Sidebar`. This ra
 
 Use the `open` and `onOpenChange` props to control the sidebar.
 
-```tsx showLineNumbers
+```tsx lineNumbers
 export function AppSidebar() {
   const [open, setOpen] = React.useState(false)
 
@@ -523,7 +527,7 @@ Two props on `SidebarProvider` make a provider self-contained:
 | `cookieName` | `string \| false` | `"sidebar_state"` | Cookie the open state is persisted in. `false` writes no cookie at all. |
 | `keyboardShortcut` | `string \| false` | `"b"` | Key used with ⌘ / Ctrl to toggle the sidebar. `false` registers no `keydown` listener. |
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <SidebarProvider cookieName="mfe_a_sidebar" keyboardShortcut={false}>
   <Sidebar />
 </SidebarProvider>
@@ -577,7 +581,7 @@ Pass `tooltip="Wells"` on `SidebarMenuButton`: it shows only while the rail is i
 
 <Do>
 
-Mark the current sidebar destination with a filled icon, not by background alone (`variant="filled"` on the active row, `"outlined"` elsewhere).
+Mark the current sidebar destination with a filled icon, not by background alone: the active row's `SidebarMenuButton` has `isActive` and its Tecton glyph (`@tecton/react/icons`) takes `variant="filled"`; the other rows' glyphs stay `variant="outlined"`. `SidebarMenuButton`'s own `variant` is only `default` | `outline`.
 
 </Do>
 

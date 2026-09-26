@@ -11,7 +11,7 @@ upstream: apps/v4/content/docs/components/aria/select.mdx
 
 ## Usage
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import {
   Select,
   SelectContent,
@@ -22,7 +22,7 @@ import {
 } from "@tecton/react/components/select"
 ```
 
-```tsx showLineNumbers
+```tsx lineNumbers
 const items = [
   { label: "Light", value: "light" },
   { label: "Dark", value: "dark" },
@@ -85,7 +85,7 @@ A select with many items that scrolls.
 
 Add the `data-invalid` attribute to the `Field` component and the `isInvalid` prop to the `SelectTrigger` component to show an error state.
 
-```tsx showLineNumbers /data-invalid/ /aria-invalid/
+```tsx lineNumbers /data-invalid/ /aria-invalid/
 <Field data-invalid>
   <FieldLabel>Fruit</FieldLabel>
   <Select isInvalid>{/* ... */}</Select>
@@ -135,13 +135,13 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Put `placeholder` on `Select`; `SelectValue` renders it and takes no placeholder of its own.
+Label it with `FieldLabel` inside `Select` (or `aria-labelledby` on `Select`), never `htmlFor` on the trigger, which the trigger's own `aria-labelledby` overrides; put `placeholder` on `Select`, as `SelectValue` takes none.
 
 </Do>
 
 <Do>
 
-Key every item with `id`, drive selection with `selectedKey` / `defaultSelectedKey` / `onSelectionChange`.
+Key every item with `id`, drive selection with `value` / `defaultValue` / `onChange(key)`; `selectedKey` and `onSelectionChange` are deprecated.
 
 </Do>
 
@@ -185,7 +185,7 @@ Word the placeholder as the choice it asks for ("Choose a datum", "Search wells 
 
 ### Don't
 
-<Dont severity="CRITICAL" title="Radix value props instead of selectedKey and id">
+<Dont severity="CRITICAL" title="Radix onValueChange and item value instead of onChange and id">
 
 <Wrong>
 
@@ -203,7 +203,7 @@ Word the placeholder as the choice it asks for ("Choose a datum", "Search wells 
 <Correct>
 
 ```tsx
-<Select placeholder="Datum" selectedKey={datum} onSelectionChange={(key) => setDatum(String(key))}>
+<Select placeholder="Datum" value={datum} onChange={setDatum}>
   <SelectTrigger><SelectValue /></SelectTrigger>
   <SelectContent>
     <SelectItem id="msl">Mean sea level</SelectItem>
@@ -213,7 +213,7 @@ Word the placeholder as the choice it asks for ("Choose a datum", "Search wells 
 
 </Correct>
 
-`onValueChange` is not a React Aria prop and `value` on `SelectItem` is the item's object value rather than its collection key, so the handler never fires and no item ever matches the selection.
+`value` on `Select` is right, but `onValueChange` is not a React Aria prop (the handler is `onChange`, handed `Key | null`), `value` on `SelectItem` is the item's object value rather than its collection key, and `SelectValue` ignores `placeholder`, so the handler never fires, no item ever matches and the trigger shows no prompt.
 
 </Dont>
 

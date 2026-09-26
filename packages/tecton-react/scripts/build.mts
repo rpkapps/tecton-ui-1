@@ -4,8 +4,10 @@
  *   bun run scripts/build.mts          (pnpm --filter @tecton/react build)
  *
  * The package is consumed one module at a time (`@tecton/react/components/button`),
- * so the output is UNBUNDLED: one `.js` + `.js.map` + `.d.ts` + `.d.ts.map` per
- * source module, mirroring the `src/` layout under `dist/`.
+ * so the output is UNBUNDLED: one `.js` + `.js.map` + `.d.ts` per source module,
+ * mirroring the `src/` layout under `dist/`. The `.js.map` embeds its sources;
+ * there is no `.d.ts.map`, since it could only point into `src/`, which is not
+ * published (`declarationMap: false` in tsconfig.build.json).
  *
  * Steps
  *   1. clean dist/
@@ -16,9 +18,18 @@
  *      purpose: the emitted declarations then name `@tecton/react/...` verbatim,
  *      exactly like the sources.
  *   4. the relative specifiers inside the emitted `.d.ts` gain `.js` too.
- *   5. CSS — `src/styles/*.css` copied to `dist/styles/`, with every `@source`
- *      directive collapsed into a single one pointing at `../` + the built `.js`,
- *      so Tailwind scans the built output instead of the (unpublished) sources.
+ *   5. CSS — `src/styles/*.css` copied to `dist/styles/`, with every plain
+ *      `@source "<path>";` directive collapsed into a single one pointing at `../`
+ *      + the built `.js`, so Tailwind scans the built output instead of the
+ *      (unpublished) sources. `@source inline(…)` and `@source not …` are not
+ *      paths to scan and are copied verbatim.
+ *   6. checks on the output, each failing the build:
+ *      - every entry whose source starts with `"use client"` starts with it in
+ *        `dist/` too (an RSC consumer breaks without it);
+ *      - every import in `dist/` resolves: a relative one to a file that exists,
+ *        a `@tecton/react/…` self-import through the `exports` map to a file that
+ *        exists, and a bare one to a declared dependency or peer dependency that
+ *        is installed and exports that subpath.
  *
  * `KNOWN_DTS_FAILURES` below tolerates declaration-emit errors for a short list of
  * generated files that a regeneration step still has to fix; every other diagnostic
@@ -37,6 +48,13 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import * as esbuild from "esbuild";
 import ts from "typescript";
+import {
+  collapseSourcePaths,
+  directivesOf,
+  exportsSubpath,
+  specifiersOf,
+  splitSpecifier,
+} from "./build-checks.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const pkgRoot = path.resolve(here, "..");
@@ -116,6 +134,9 @@ async function buildJs(entryPoints: Array<string>) {
     sourcesContent: true,
     tsconfig: path.join(pkgRoot, "tsconfig.json"),
     jsx: "automatic",
+    // esbuild inlines NODE_ENV as "development" when it bundles for the browser;
+    // keep the expression so the consumer's bundler decides.
+    define: { "process.env.NODE_ENV": "process.env.NODE_ENV" },
     plugins: [markExternal],
     logLevel: "warning",
   });
@@ -215,19 +236,8 @@ function copyStyles() {
   mkdirSync(to, { recursive: true });
   const sheets = readdirSync(from).filter((name) => name.endsWith(".css")).sort();
   for (const name of sheets) {
-    const lines = readFileSync(path.join(from, name), "utf8").split(/\r?\n/);
-    let seen = false;
-    const out: Array<string> = [];
-    for (const line of lines) {
-      if (/^\s*@source\b[^;]*;\s*$/.test(line)) {
-        if (seen) continue;
-        seen = true;
-        out.push('@source "../**/*.js";');
-        continue;
-      }
-      out.push(line);
-    }
-    writeFileSync(path.join(to, name), out.join("\n"));
+    const out = collapseSourcePaths(readFileSync(path.join(from, name), "utf8"), '@source "../**/*.js";');
+    writeFileSync(path.join(to, name), out);
   }
   return sheets.length;
 }
@@ -239,6 +249,113 @@ function* walk(dir: string): Generator<string> {
     if (item.isDirectory()) yield* walk(full);
     else yield full;
   }
+}
+
+// ---------------------------------------------------------------------------
+// Output checks
+// ---------------------------------------------------------------------------
+
+/**
+ * `"use client"` is what lets an RSC consumer import a component at all, and
+ * nothing else checks that it survives the build: esbuild keeps a module's
+ * prologue, but a bundling or banner change would drop it silently.
+ */
+function assertUseClient(entryPoints: Array<string>) {
+  const missing: Array<string> = [];
+  for (const entry of entryPoints) {
+    if (!directivesOf(readFileSync(entry, "utf8")).includes("use client")) continue;
+    const out = path.join(DIST, path.relative(SRC, entry)).replace(/\.tsx?$/, ".js");
+    if (!existsSync(out) || !directivesOf(readFileSync(out, "utf8")).includes("use client")) {
+      missing.push(relFromPkg(out));
+    }
+  }
+  if (missing.length) {
+    throw new Error(
+      `"use client" is missing from ${missing.length} built module(s) whose source has it:\n  ${missing.join("\n  ")}`
+    );
+  }
+}
+
+type Manifest = {
+  name: string;
+  dependencies?: Record<string, string>;
+  peerDependencies?: Record<string, string>;
+  exports?: unknown;
+};
+
+/** The file a self-import resolves to, for JS (`import`/`default`) or types. */
+function selfTarget(manifest: Manifest, subpath: string, kind: "js" | "types"): string | undefined {
+  const entry = (manifest.exports as Record<string, unknown> | undefined)?.[subpath];
+  if (typeof entry === "string") return entry;
+  if (typeof entry !== "object" || entry === null) return undefined;
+  const conditions = entry as Record<string, string | undefined>;
+  return kind === "types" ? conditions.types : (conditions.import ?? conditions.default);
+}
+
+/**
+ * Every import in `dist/` has to resolve for a consumer: a relative import to a
+ * file that was built, a self-import through this package's own `exports` map,
+ * and a bare one to a package the consumer is guaranteed to have — a dependency
+ * or a peer dependency — that exports the subpath. esbuild marks every specifier
+ * external, so nothing else would notice a typo, a missing `exports` entry or an
+ * undeclared dependency before a consumer's build does.
+ */
+function assertImportsResolve() {
+  const manifest = JSON.parse(readFileSync(path.join(pkgRoot, "package.json"), "utf8")) as Manifest;
+  const declared = new Set([
+    ...Object.keys(manifest.dependencies ?? {}),
+    ...Object.keys(manifest.peerDependencies ?? {}),
+  ]);
+  const installed = new Map<string, Manifest | null>();
+  const installedManifest = (name: string) => {
+    if (!installed.has(name)) {
+      const file = path.join(pkgRoot, "node_modules", name, "package.json");
+      installed.set(name, existsSync(file) ? (JSON.parse(readFileSync(file, "utf8")) as Manifest) : null);
+    }
+    return installed.get(name) ?? null;
+  };
+
+  const problems: Array<string> = [];
+  let checked = 0;
+  for (const file of walk(DIST)) {
+    const kind = file.endsWith(".d.ts") ? "types" : file.endsWith(".js") ? "js" : file.endsWith(".css") ? "css" : null;
+    if (!kind) continue;
+    for (const specifier of specifiersOf(file, readFileSync(file, "utf8"))) {
+      checked++;
+      const where = `${relFromPkg(file)}: "${specifier}"`;
+      if (specifier.startsWith(".")) {
+        const target = path.resolve(path.dirname(file), specifier);
+        const candidates =
+          kind === "types"
+            ? [target.replace(/\.js$/, ".d.ts"), `${target}.d.ts`, path.join(target, "index.d.ts")]
+            : [target];
+        if (!candidates.some((candidate) => existsSync(candidate))) problems.push(`${where} does not exist`);
+        continue;
+      }
+      const [name, subpath] = splitSpecifier(specifier);
+      if (name === manifest.name) {
+        const target = selfTarget(manifest, subpath, kind === "types" ? "types" : "js");
+        if (!target) problems.push(`${where} is not in the package's exports map`);
+        else if (!existsSync(path.join(pkgRoot, target))) problems.push(`${where} → ${target}, which was not built`);
+        continue;
+      }
+      if (specifier.startsWith("node:")) {
+        problems.push(`${where} is a Node built-in, which a browser bundle cannot import`);
+        continue;
+      }
+      if (!declared.has(name)) {
+        problems.push(`${where}: ${name} is neither a dependency nor a peer dependency`);
+        continue;
+      }
+      const dependency = installedManifest(name);
+      if (!dependency) problems.push(`${where}: ${name} is not installed`);
+      else if (!exportsSubpath(dependency.exports, subpath)) problems.push(`${where}: ${name} does not export ${subpath}`);
+    }
+  }
+  if (problems.length) {
+    throw new Error(`${problems.length} import(s) in dist/ do not resolve:\n  ${problems.join("\n  ")}`);
+  }
+  return checked;
 }
 
 function summarise() {
@@ -262,9 +379,12 @@ async function main() {
   console.log(`build: ${entryPoints.length} entry points`);
   await buildJs(entryPoints);
 
+  assertUseClient(entryPoints);
+
   buildDeclarations();
   const rewritten = rewriteDeclarationSpecifiers();
   const sheets = copyStyles();
+  const imports = assertImportsResolve();
 
   console.log("build: dist/");
   for (const [dir, { js, dts }] of summarise()) {
@@ -273,6 +393,7 @@ async function main() {
   console.log(
     `  styles       ${String(sheets).padStart(3)} css  (${rewritten} d.ts specifiers rewritten)`
   );
+  console.log(`build: ${imports} imports resolve, "use client" kept`);
 }
 
 main().catch((error: unknown) => {

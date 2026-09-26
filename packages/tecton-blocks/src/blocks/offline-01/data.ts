@@ -5,6 +5,9 @@ export const offlineCopy = {
   description:
     "The last request didn't reach the server. What you've already opened stays readable; changes you make now are queued and sync as soon as you're back online.",
   workOfflineHref: "#work-offline",
+  onlineTitle: "You're back online.",
+  onlineDescription:
+    "The connection is restored. Queued edits are syncing, and live updates resume.",
 }
 
 export type ConnectionCheckStatus = "ok" | "checking" | "failed"

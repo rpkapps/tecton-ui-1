@@ -32,10 +32,10 @@ An application that owns the document imports `@tecton/react/globals.css` and ne
 and, appended to `document.body`, one container with the same classes:
 
 ```html
-<div data-slot="theme-root-overlay" data-tecton-root class="dark mfe-a"></div>
+<div data-slot="theme-root-overlay" data-tecton-root class="dark mfe-a" style="display: contents"></div>
 ```
 
-Every Tecton overlay in the subtree — `Dialog`, `Sheet`, `AlertDialog`, `Popover`, `HoverCard`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `ContextMenu`, `Drawer` — portals into that container. It keeps them out of any `overflow: hidden` ancestor while they stay inside the application's own `@scope` rule, so the utilities that style them still apply, and the container mirrors the root's `className`: the scope class, a pinned theme and inline `[--token:…]` overrides all reach the overlays too.
+Every Tecton overlay in the subtree — `Dialog`, `Sheet`, `AlertDialog`, `Popover`, `HoverCard`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `ContextMenu`, `Drawer` — portals into that container. It keeps them out of any `overflow: hidden` ancestor while they stay inside the application's own `@scope` rule, so the utilities that style them still apply, and the container mirrors the root's `className`: the scope class, a pinned theme and inline `[--token:…]` overrides all reach the overlays too. The container is `display: contents` (set inline, so it wins over any `display` utility among the copied classes): it renders no box of its own, so a layout class on the root (`flex h-full p-4`) takes up no space at the end of the body and is no containing block for the overlays.
 
 ## Theme
 
@@ -56,6 +56,14 @@ Pass `overlayContainer` to take over the placement:
 - **omitted** — `ThemeRoot` creates, styles and removes its own container.
 - **an element** — used as is. It is neither restyled nor removed on unmount; give it `data-tecton-root` and the scope class yourself.
 - **`null`** — no container. Overlays pass none and React Aria falls back to `document.body`.
+
+When only some of the root's classes should reach the overlays, pass `overlayClassName`: it replaces the mirrored `className` on the container `ThemeRoot` creates (the theme class is always added). List the scope class and the `[--token:…]` overrides the overlays need:
+
+```tsx
+<ThemeRoot className="mfe-a flex h-full [--primary:var(--tecton-palette-green-560)]" overlayClassName="mfe-a [--primary:var(--tecton-palette-green-560)]">
+  <App />
+</ThemeRoot>
+```
 
 ```tsx
 <ThemeRoot className="mfe-a" overlayContainer={shell.overlayLayer}>
@@ -92,7 +100,7 @@ Pass `overlayContainer` to take over the placement:
 
 <Do>
 
-Render it around the whole mounted tree with the deployable's scope class: `<ThemeRoot className="mfe-a" theme="inherit">`.
+Render it around the whole mounted tree with the deployable's scope class, and keep layout on an inner element: `<ThemeRoot className="mfe-a"><div className="flex h-full flex-col">…</div></ThemeRoot>`. The overlay container that mirrors `className` is `display: contents`, so layout utilities do nothing there while typography and colour classes reach every overlay.
 
 </Do>
 
@@ -104,7 +112,7 @@ Keep `theme="inherit"` inside a Tecton shell — the shell's variables, palette 
 
 <Do>
 
-Retint one root with an arbitrary property in `className`: `[--primary:var(--tecton-palette-green-560)]`, which is mirrored onto the overlay container.
+Retint one root with an arbitrary property in `className`: `[--primary:var(--tecton-palette-green-560)]`, which is mirrored onto the overlay container; pass `overlayClassName` instead when only some of the root's classes belong on the overlays (the theme class is always added to it).
 
 </Do>
 
@@ -220,7 +228,8 @@ A `div` element; every `div` prop is forwarded.
 | --- | --- | --- | --- |
 | `theme` | `"dark" \| "light" \| "inherit"` | "inherit" | Mode class on the root and the overlay container. |
 | `overlayContainer` | `HTMLElement \| null` | created | Element the overlays portal into. An element is used as is; `null` disables the container. |
-| `className` | `string` | - | Scope class, theme overrides and layout; mirrored onto the overlay container. |
+| `className` | `string` | - | Scope class, theme overrides and layout; mirrored onto the overlay container unless `overlayClassName` is set. |
+| `overlayClassName` | `string` | - | Classes for the created overlay container instead of a copy of `className` (the theme class is always added). Ignored when `overlayContainer` is passed. |
 | `children` | `ReactNode` | - | The application. |
 
 ### themeRootVariants

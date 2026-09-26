@@ -16,6 +16,7 @@
     "resolveJsonModule": true,
     "paths": {
       "@/*": ["./src/*"],
+      "fumadocs-mdx:collections/*": ["./.source/*"],
       "@tecton/blocks": ["../../packages/tecton-blocks/src/blocks/index.ts"],
       "@tecton/blocks/*": ["../../packages/tecton-blocks/src/blocks/*"]
     },

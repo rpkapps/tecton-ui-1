@@ -31,6 +31,7 @@ import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
 
 import {
   accents,
+  bioMaxLength,
   channels,
   densities,
   digests,
@@ -38,6 +39,7 @@ import {
   themes,
   timezones,
   unitSystems,
+  validateBio,
 } from "../data"
 import type { Settings } from "../data"
 
@@ -64,7 +66,7 @@ function SettingsSection({
       className={cn("grid gap-4 md:grid-cols-[14rem_1fr] md:gap-8", className)}
     >
       <div className="flex flex-col gap-1">
-        <h3 className="text-sm font-medium">{title}</h3>
+        <h2 className="text-sm font-medium">{title}</h2>
         {description && (
           <p className="text-xs text-muted-foreground">{description}</p>
         )}
@@ -116,12 +118,13 @@ function SelectRow({
   description?: string
   children: React.ReactNode
 }) {
-  const id = React.useId()
+  // The label goes inside the Select: React Aria labels the trigger from it
+  // (a `htmlFor` label outside would be overridden by `aria-labelledby`).
   return (
     <Field>
-      <FieldLabel htmlFor={id}>{label}</FieldLabel>
-      <Select className="w-full" {...props}>
-        <SelectTrigger id={id}>
+      <Select className="flex w-full flex-col gap-3" {...props}>
+        <FieldLabel>{label}</FieldLabel>
+        <SelectTrigger>
           <SelectValue />
         </SelectTrigger>
         <SelectContent>{children}</SelectContent>
@@ -133,8 +136,7 @@ function SelectRow({
 
 function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
   const id = React.useId()
-  const bioError =
-    value.bio.length > 160 ? "Keep it under 160 characters." : undefined
+  const bioError = validateBio(value.bio)
 
   const set = <TKey extends keyof Settings["profile"]>(
     key: TKey,
@@ -177,8 +179,8 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
         </Field>
         <SelectRow
           label="Role"
-          selectedKey={value.role}
-          onSelectionChange={(key) => set("role", String(key))}
+          value={value.role}
+          onChange={(key) => set("role", String(key))}
         >
           {roles.map((role) => (
             <SelectItem key={role.id} id={role.id} textValue={role.label}>
@@ -194,9 +196,14 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
             value={value.bio}
             onChange={(event) => set("bio", event.target.value)}
             aria-invalid={!!bioError}
+            aria-describedby={
+              bioError ? `${id}-bio-count ${id}-bio-error` : `${id}-bio-count`
+            }
           />
-          <FieldDescription>{`${value.bio.length}/160`}</FieldDescription>
-          <FieldError>{bioError}</FieldError>
+          <FieldDescription id={`${id}-bio-count`}>
+            {`${value.bio.length}/${bioMaxLength}`}
+          </FieldDescription>
+          <FieldError id={`${id}-bio-error`}>{bioError}</FieldError>
         </Field>
       </SettingsSection>
 
@@ -208,8 +215,8 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
       >
         <SelectRow
           label="Time zone"
-          selectedKey={value.timezone}
-          onSelectionChange={(key) => set("timezone", String(key))}
+          value={value.timezone}
+          onChange={(key) => set("timezone", String(key))}
         >
           {timezones.map((zone) => (
             <SelectItem key={zone.id} id={zone.id} textValue={zone.label}>
@@ -219,8 +226,8 @@ function ProfileForm({ className, value, onChange }: SectionProps<"profile">) {
         </SelectRow>
         <SelectRow
           label="Unit system"
-          selectedKey={value.units}
-          onSelectionChange={(key) =>
+          value={value.units}
+          onChange={(key) =>
             set("units", String(key) as Settings["profile"]["units"])
           }
           description="Changing units re-formats depths, pressures and volumes; stored values are unaffected."
@@ -265,8 +272,8 @@ function NotificationsForm({
       >
         <SelectRow
           label="Channel"
-          selectedKey={value.channel}
-          onSelectionChange={(key) =>
+          value={value.channel}
+          onChange={(key) =>
             set("channel", String(key) as Settings["notifications"]["channel"])
           }
         >
@@ -282,8 +289,8 @@ function NotificationsForm({
         </SelectRow>
         <SelectRow
           label="Frequency"
-          selectedKey={value.digest}
-          onSelectionChange={(key) =>
+          value={value.digest}
+          onChange={(key) =>
             set("digest", String(key) as Settings["notifications"]["digest"])
           }
         >
@@ -364,8 +371,8 @@ function AppearanceForm({
       >
         <SelectRow
           label="Colour scheme"
-          selectedKey={value.theme}
-          onSelectionChange={(key) =>
+          value={value.theme}
+          onChange={(key) =>
             set("theme", String(key) as Settings["appearance"]["theme"])
           }
         >
@@ -377,8 +384,8 @@ function AppearanceForm({
         </SelectRow>
         <SelectRow
           label="Accent"
-          selectedKey={value.accent}
-          onSelectionChange={(key) => set("accent", String(key))}
+          value={value.accent}
+          onChange={(key) => set("accent", String(key))}
         >
           {accents.map((accent) => (
             <SelectItem key={accent.id} id={accent.id} textValue={accent.label}>
@@ -389,8 +396,8 @@ function AppearanceForm({
         </SelectRow>
         <SelectRow
           label="Density"
-          selectedKey={value.density}
-          onSelectionChange={(key) =>
+          value={value.density}
+          onChange={(key) =>
             set("density", String(key) as Settings["appearance"]["density"])
           }
         >

@@ -247,9 +247,10 @@ export const wells: Well[] = [
   },
 ]
 
-export function formatDate(iso: string): string {
+/** Formats an ISO date as "14 Jan 2020" (in `locale`, British English by default). */
+export function formatDate(iso: string, locale = "en-GB"): string {
   const date = new Date(iso)
-  return date.toLocaleDateString("en-GB", {
+  return date.toLocaleDateString(locale, {
     day: "2-digit",
     month: "short",
     year: "numeric",

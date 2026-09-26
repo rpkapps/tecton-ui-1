@@ -157,12 +157,15 @@ export default function FormTanstackComplex() {
                   field.state.meta.isTouched && !field.state.meta.isValid
                 return (
                   <Field data-invalid={isInvalid}>
-                    <FieldLabel htmlFor={field.name}>Billing Period</FieldLabel>
+                    <FieldLabel id={`${field.name}-label`} htmlFor={field.name}>
+                      Billing Period
+                    </FieldLabel>
                     <Select
+                      aria-labelledby={`${field.name}-label`}
                       name={field.name}
                       placeholder="Select"
-                      selectedKey={field.state.value || null}
-                      onSelectionChange={(key) =>
+                      value={field.state.value || null}
+                      onChange={(key) =>
                         field.handleChange(key ? String(key) : "")
                       }
                       isInvalid={isInvalid}

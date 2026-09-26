@@ -36,7 +36,7 @@ import {
   NotificationsForm,
   ProfileForm,
 } from "./components/settings-forms"
-import { defaultSettings } from "./data"
+import { defaultSettings, isValidSettings } from "./data"
 import type { Settings } from "./data"
 
 type SettingsPageProps = React.ComponentProps<"div"> & {
@@ -57,13 +57,20 @@ function SettingsPage({
   const [saved, setSaved] = React.useState<Settings>(initialSettings)
   const [draft, setDraft] = React.useState<Settings>(initialSettings)
   const [toast, setToast] = React.useState(false)
+  const toastTimer = React.useRef<number | undefined>(undefined)
   const dirty = JSON.stringify(draft) !== JSON.stringify(saved)
+  const valid = isValidSettings(draft)
+
+  React.useEffect(() => () => window.clearTimeout(toastTimer.current), [])
 
   const save = () => {
+    if (!valid) return
     setSaved(draft)
     onSave?.(draft)
     setToast(true)
-    window.setTimeout(() => setToast(false), 3000)
+    // A second save restarts the timer instead of hiding the new toast early.
+    window.clearTimeout(toastTimer.current)
+    toastTimer.current = window.setTimeout(() => setToast(false), 3000)
   }
 
   return (
@@ -148,7 +155,11 @@ function SettingsPage({
       >
         <div className="mx-auto flex w-full max-w-4xl items-center justify-between gap-3 px-4 py-3 md:px-8">
           <span className="text-xs text-muted-foreground">
-            {dirty ? "You have unsaved changes." : "All changes saved."}
+            {!dirty
+              ? "All changes saved."
+              : valid
+                ? "You have unsaved changes."
+                : "Fix the highlighted fields to save."}
           </span>
           <div className="flex items-center gap-2">
             <Button
@@ -159,7 +170,7 @@ function SettingsPage({
             >
               Discard
             </Button>
-            <Button size="sm" isDisabled={!dirty} onPress={save}>
+            <Button size="sm" isDisabled={!dirty || !valid} onPress={save}>
               Save changes
             </Button>
           </div>
@@ -175,6 +186,11 @@ export default function SettingsRoute() {
 }
 
 export { SettingsPage, ProfileForm, NotificationsForm, AppearanceForm }
-export { defaultSettings } from "./data"
+export {
+  defaultSettings,
+  bioMaxLength,
+  validateBio,
+  isValidSettings,
+} from "./data"
 export type { SettingsPageProps }
 export type { Settings } from "./data"

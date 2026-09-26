@@ -100,7 +100,7 @@ importers:
         version: 4.6.2
     devDependencies:
       '@tanstack/eslint-config':
-        specifier: latest
+        specifier: 0.4.0
         version: 0.4.0(@typescript-eslint/utils@8.70.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3)
       '@types/mdx':
         specifier: ^2.0.14
@@ -158,7 +158,7 @@ importers:
         version: 3.8.0(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react-is@19.3.0)(react@19.3.0)(redux@5.0.1)
     devDependencies:
       '@tanstack/eslint-config':
-        specifier: latest
+        specifier: 0.4.0
         version: 0.4.0(@typescript-eslint/utils@8.70.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3)
       '@testing-library/dom':
         specifier: ^10.4.1
@@ -191,7 +191,7 @@ importers:
         specifier: ^19.2.6
         version: 19.3.0(react@19.3.0)
       shadcn:
-        specifier: ^4.21.0
+        specifier: 4.21.0
         version: 4.21.0(typescript@6.0.3)
       typescript:
         specifier: ^6
@@ -252,7 +252,7 @@ importers:
         specifier: ^4
         version: 4.3.3(vite@8.3.0(@types/node@22.20.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.1))
       '@tanstack/eslint-config':
-        specifier: latest
+        specifier: 0.4.0
         version: 0.4.0(@typescript-eslint/utils@8.70.0(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3))(eslint@9.39.5(jiti@2.7.0))(typescript@6.0.3)
       '@tanstack/intent':
         specifier: 0.4.0
@@ -309,7 +309,7 @@ importers:
         specifier: ^19.2.6
         version: 19.3.0(react@19.3.0)
       shadcn:
-        specifier: ^4.21.0
+        specifier: 4.21.0
         version: 4.21.0(typescript@6.0.3)
       tailwindcss:
         specifier: ^4

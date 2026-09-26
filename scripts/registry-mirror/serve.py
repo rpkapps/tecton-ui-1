@@ -5,13 +5,18 @@ Serves apps/v4/public/r/** statically and emulates the dynamic /init route by
 running apps/v4/scripts/local-init.mts (same builders as the upstream route).
 """
 import os
+import shutil
 import subprocess
 import sys
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
 V4 = os.environ.get("SHADCN_V4_DIR")  # .../shadcn-ui/apps/v4
-BUN = os.environ.get("BUN", os.path.expanduser("~/.bun/bin/bun"))
+BUN = (
+    os.environ.get("BUN")
+    or shutil.which("bun")
+    or os.path.expanduser("~/.bun/bin/bun")
+)
 PORT = int(os.environ.get("PORT", "4000"))
 
 

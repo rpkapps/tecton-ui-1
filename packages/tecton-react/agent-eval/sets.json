@@ -1,0 +1,15 @@
+{
+  "$comment": "The query sets search-eval.mjs runs and what each may be used for. \"floor\": the ranking has been tuned against it and scripts/__tests__/agent-search.test.ts holds its hit@3 above a floor. \"report\": frozen, written by someone who has not seen guidelines/ or synonyms.json; its score is reported and never used to pick a change or to set a CI floor (the test fails if one gets a floor). See README.md.",
+  "sets": [
+    {
+      "file": "queries.heldout.json",
+      "use": "floor",
+      "origin": "Written by an agent that saw only the module names and exports, before the ranking was tuned; tuned against since."
+    },
+    {
+      "file": "queries.heldout-2.json",
+      "use": "floor",
+      "origin": "Written by a second agent under the same conditions, after the first stemmer fix; tuned against since."
+    }
+  ]
+}

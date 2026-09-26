@@ -267,7 +267,7 @@ export function DataTableRtl() {
                   <DropdownMenuGroup>
                     <DropdownMenuLabel>{t.actions}</DropdownMenuLabel>
                     <DropdownMenuItem
-                      onClick={() => navigator.clipboard.writeText(payment.id)}
+                      onAction={() => navigator.clipboard.writeText(payment.id)}
                     >
                       {t.copyPaymentId}
                     </DropdownMenuItem>
@@ -424,7 +424,7 @@ export function DataTableRtl() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.previousPage()}
+            onPress={() => table.previousPage()}
             isDisabled={!table.getCanPreviousPage()}
           >
             {t.previous}
@@ -432,7 +432,7 @@ export function DataTableRtl() {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => table.nextPage()}
+            onPress={() => table.nextPage()}
             isDisabled={!table.getCanNextPage()}
           >
             {t.next}

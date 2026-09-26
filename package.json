@@ -9,6 +9,7 @@
     "preview": "pnpm --filter www preview",
     "lint": "pnpm -r run lint",
     "format": "pnpm -r run format",
+    "format:check": "pnpm --filter @tecton/react exec prettier --check --ignore-path ../../.prettierignore \"**/*.{ts,tsx,mjs}\" && pnpm --filter @tecton/blocks exec prettier --check --ignore-path ../../.prettierignore \"**/*.{ts,tsx}\" && pnpm --filter www exec prettier --check --ignore-path ../../.prettierignore --ignore-path .gitignore \"**/*.{ts,tsx}\"",
     "typecheck": "pnpm build:lib && pnpm -r run typecheck",
     "test": "pnpm -r run test",
     "generated:check": "scripts/generated-check.sh",
@@ -26,13 +27,7 @@
   },
   "packageManager": "pnpm@10.33.4",
   "engines": {
-    "node": ">=20"
-  },
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "lightningcss"
-    ]
+    "node": "^22.22.2 || ^24.15.0 || >=26.0.0"
   },
   "intent": {
     "skills": ["workspace:@tecton/react", "@tanstack/*"]

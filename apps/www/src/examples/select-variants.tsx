@@ -23,12 +23,16 @@ export default function SelectVariants() {
     <FieldGroup className="grid w-full max-w-2xl gap-6 md:grid-cols-3">
       {variants.map(({ variant, label }) => (
         <Field key={variant}>
-          <FieldLabel htmlFor={`select-variants-${variant}`}>
+          <FieldLabel
+            id={`select-variants-${variant}-label`}
+            htmlFor={`select-variants-${variant}`}
+          >
             {label}
           </FieldLabel>
           <Select
+            aria-labelledby={`select-variants-${variant}-label`}
             placeholder="Datum"
-            defaultSelectedKey="msl"
+            defaultValue="msl"
             className="w-full"
           >
             <SelectTrigger id={`select-variants-${variant}`} variant={variant}>

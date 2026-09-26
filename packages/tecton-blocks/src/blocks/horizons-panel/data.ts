@@ -111,3 +111,10 @@ export function getSurface(id: string): Surface {
 export function getPair(id: string): SurfacePair {
   return surfacePairs.find((pair) => pair.id === id) ?? surfacePairs[0]
 }
+
+/** The depth pair is valid when the bottom lies deeper than the top. */
+export function validateDepths(value: HorizonSettings): string | undefined {
+  if (value.bottomDepth <= value.topDepth)
+    return "Bottom depth must be deeper than the top depth."
+  return undefined
+}

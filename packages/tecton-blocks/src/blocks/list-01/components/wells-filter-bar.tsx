@@ -70,8 +70,9 @@ function WellsFilterBar({
       {...props}
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-end">
-        <InputGroup aria-label="Search wells" className="md:max-w-xs">
+        <InputGroup className="md:max-w-xs">
           <InputGroupInput
+            aria-label="Search wells"
             placeholder="Search by name, rig or operator…"
             value={value.query}
             onChange={(event) => set("query", event.target.value)}
@@ -83,8 +84,8 @@ function WellsFilterBar({
         <Select
           aria-label="Field"
           className="md:w-48"
-          selectedKey={value.field}
-          onSelectionChange={(key) => set("field", String(key))}
+          value={value.field}
+          onChange={(key) => set("field", String(key))}
         >
           <SelectTrigger>
             <SelectValue />
@@ -103,10 +104,8 @@ function WellsFilterBar({
         <Select
           aria-label="Well type"
           className="md:w-44"
-          selectedKey={value.type}
-          onSelectionChange={(key) =>
-            set("type", String(key) as WellsFilter["type"])
-          }
+          value={value.type}
+          onChange={(key) => set("type", String(key) as WellsFilter["type"])}
         >
           <SelectTrigger>
             <SelectValue />
@@ -126,7 +125,7 @@ function WellsFilterBar({
           <Button
             variant="ghost"
             size="sm"
-            className="md:ml-auto"
+            className="md:ms-auto"
             onPress={() => onChange(emptyFilter)}
           >
             <XIcon /> Clear filters
@@ -170,7 +169,7 @@ function WellsFilterBar({
         {value.statuses.length > 0 && (
           <ChipGroup
             aria-label="Active status filters"
-            className="ml-auto"
+            className="ms-auto"
             onRemove={(keys) =>
               set(
                 "statuses",
@@ -192,7 +191,7 @@ function WellsFilterBar({
           </ChipGroup>
         )}
         {typeof resultCount === "number" && (
-          <span className="ml-auto font-mono text-xs text-muted-foreground tabular-nums">
+          <span className="ms-auto font-mono text-xs text-muted-foreground tabular-nums">
             {resultCount} {resultCount === 1 ? "well" : "wells"}
           </span>
         )}

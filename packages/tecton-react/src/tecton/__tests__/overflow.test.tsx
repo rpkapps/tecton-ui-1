@@ -1,8 +1,23 @@
+import * as React from "react"
 import { act, render, renderHook, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
+import {
+  afterEach,
+  beforeEach,
+  describe,
+  expect,
+  it,
+  vi,
+  type MockInstance,
+} from "vitest"
 
 import { Button } from "@tecton/react/components/button"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@tecton/react/components/tabs"
 import { DropdownMenuItem } from "@tecton/react/components/dropdown-menu"
 import {
   Overflow,
@@ -23,8 +38,63 @@ import {
  * cache-on-first-measure behaviour.
  */
 const originalRect = Element.prototype.getBoundingClientRect
+const OriginalResizeObserver = globalThis.ResizeObserver
+
+/** A ResizeObserver that reports only when a test resizes the row. */
+const observers = new Set<TestObserver>()
+class TestObserver {
+  targets = new Set<Element>()
+  constructor(private callback: ResizeObserverCallback) {
+    observers.add(this)
+  }
+  observe(target: Element) {
+    // As in a browser: only a real element can be observed.
+    if (!(target instanceof Element))
+      throw new TypeError("ResizeObserver.observe: target is not an Element")
+    this.targets.add(target)
+  }
+  unobserve(target: Element) {
+    this.targets.delete(target)
+  }
+  disconnect() {
+    this.targets.clear()
+    observers.delete(this)
+  }
+  takeRecords() {
+    return []
+  }
+  report(target: Element, size: number) {
+    const box = [{ inlineSize: size, blockSize: size }]
+    this.callback(
+      [
+        {
+          target,
+          contentBoxSize: box,
+          borderBoxSize: box,
+        } as unknown as ResizeObserverEntry,
+      ],
+      this
+    )
+  }
+}
+
+/** Gives the row a new width (or height), as a browser's observer would. */
+function resize(root: HTMLElement, size: number) {
+  root.dataset.w = String(size)
+  act(() => {
+    for (const observer of [...observers]) {
+      if (observer.targets.has(root)) observer.report(root, size)
+    }
+  })
+}
+
+const rowEl = () => document.querySelector<HTMLElement>("[data-overflow-root]")!
+
+let warn: MockInstance<typeof console.warn>
 
 beforeEach(() => {
+  vi.stubGlobal("ResizeObserver", TestObserver)
+  warn = vi.spyOn(console, "warn").mockImplementation(() => {})
   Element.prototype.getBoundingClientRect = function (this: Element) {
     const w = Number((this as HTMLElement).dataset.w ?? 0)
     return {
@@ -43,6 +113,9 @@ beforeEach(() => {
 
 afterEach(() => {
   Element.prototype.getBoundingClientRect = originalRect
+  vi.stubGlobal("ResizeObserver", OriginalResizeObserver)
+  observers.clear()
+  warn.mockRestore()
 })
 
 const itemEl = (id: string) =>
@@ -65,10 +138,13 @@ function Row({
 function Item({
   id,
   w = 100,
+  textOnly = false,
   ...props
 }: Partial<React.ComponentProps<typeof OverflowItem>> & {
   id: string
   w?: number
+  /** No icon in the control, so it cannot go icon-only. */
+  textOnly?: boolean
 }) {
   return (
     <OverflowItem
@@ -79,6 +155,7 @@ function Item({
       {...props}
     >
       <Button>
+        {textOnly ? null : <svg aria-hidden data-icon="inline-start" />}
         <OverflowLabel>{props.label ?? id}</OverflowLabel>
       </Button>
     </OverflowItem>
@@ -509,5 +586,326 @@ describe("Overflow", () => {
     rerender(<App labels="always" />)
     expect(itemEl("b")).toHaveAttribute("data-overflowing")
     expect(screen.getByRole("button", { name: "More actions" })).toHaveFocus()
+  })
+})
+
+describe("Overflow refs", () => {
+  it("fills a caller's ref on the row and still collapses", () => {
+    const ref = React.createRef<HTMLDivElement>()
+    render(
+      <Overflow ref={ref} data-w={150} labels="always">
+        <Item id="a" priority={1} />
+        <Item id="b" priority={0} />
+      </Overflow>
+    )
+    expect(ref.current).toBe(rowEl())
+    expect(itemEl("b")).toHaveAttribute("data-overflowing")
+  })
+
+  it("fills a caller's ref on a Toolbar, an item and a divider", () => {
+    const toolbar = React.createRef<HTMLDivElement>()
+    const item = vi.fn()
+    const divider = React.createRef<HTMLElement>()
+    render(
+      <Toolbar ref={toolbar} aria-label="Tools" data-w={150} labels="always">
+        <Item id="a" priority={1} ref={item} />
+        <OverflowDivider ref={divider} data-w={1} />
+        <Item id="b" priority={0} />
+      </Toolbar>
+    )
+    expect(toolbar.current).toBe(screen.getByRole("toolbar"))
+    expect(item).toHaveBeenLastCalledWith(itemEl("a"))
+    expect(divider.current).toBe(
+      document.querySelector('[data-slot="overflow-divider"]')
+    )
+    expect(itemEl("b")).toHaveAttribute("data-overflowing")
+  })
+})
+
+describe("Overflow items that arrive late", () => {
+  it("renders an item that mounts into an icon-only row icon-only", () => {
+    const { rerender } = render(
+      <Row width={150}>
+        <Item id="a" />
+        <Item id="b" />
+      </Row>
+    )
+    expect(itemEl("a")).toHaveAttribute("data-compact")
+    rerender(
+      <Row width={150}>
+        <Item id="a" />
+        <Item id="b" />
+        <Item id="c" />
+      </Row>
+    )
+    expect(itemEl("c")).toHaveAttribute("data-compact")
+    expect(itemEl("c")).not.toHaveAttribute("data-overflowing")
+  })
+
+  it("keeps an item icon-only when it registers again after a priority change", () => {
+    const row = (priority: number) => (
+      <Row width={150}>
+        <Item id="a" priority={priority} />
+        <Item id="b" />
+      </Row>
+    )
+    const { rerender } = render(row(0))
+    expect(itemEl("a")).toHaveAttribute("data-compact")
+    rerender(row(3))
+    expect(itemEl("a")).toHaveAttribute("data-compact")
+    expect(
+      itemEl("a")?.querySelector('[data-slot="overflow-label"]')
+    ).toHaveClass("sr-only")
+  })
+
+  it("measures an item that a child component adds by its own state", () => {
+    function Late() {
+      const [shown, setShown] = React.useState(false)
+      React.useEffect(() => setShown(true), [])
+      return shown ? <Item id="late" /> : null
+    }
+    render(
+      <Row width={150} labels="always">
+        <Item id="a" />
+        <Late />
+      </Row>
+    )
+    // 100 + 100 does not fit in 150: the late item, at the end, leaves.
+    expect(itemEl("late")).toHaveAttribute("data-overflowing")
+    expect(itemEl("a")).not.toHaveAttribute("data-overflowing")
+  })
+})
+
+describe("Overflow focus when the last item returns", () => {
+  it("moves focus from the More trigger to the item that returns", () => {
+    render(
+      <Row width={150} labels="always">
+        <Item id="a" priority={1} />
+        <Item id="b" priority={0} />
+      </Row>
+    )
+    const trigger = screen.getByRole("button", { name: "More actions" })
+    act(() => trigger.focus())
+    resize(rowEl(), 1000)
+    expect(
+      screen.queryByRole("button", { name: "More actions" })
+    ).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "b" })).toHaveFocus()
+  })
+
+  it("moves focus from the open menu to the item that returns", async () => {
+    render(
+      <Row width={150} labels="always">
+        <Item id="a" priority={1} />
+        <Item id="b" priority={0} />
+      </Row>
+    )
+    await userEvent.click(screen.getByRole("button", { name: "More actions" }))
+    await screen.findByRole("menu")
+    resize(rowEl(), 1000)
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+    expect(screen.getByRole("button", { name: "b" })).toHaveFocus()
+  })
+
+  it("leaves focus alone when it was elsewhere", () => {
+    render(
+      <Row width={150} labels="always">
+        <Item id="a" priority={1} />
+        <Item id="b" priority={0} />
+      </Row>
+    )
+    const a = screen.getByRole("button", { name: "a" })
+    act(() => a.focus())
+    resize(rowEl(), 1000)
+    expect(a).toHaveFocus()
+  })
+})
+
+describe("Overflow orientation", () => {
+  it("clears the minimum size of the old axis when the orientation changes", () => {
+    const row = (orientation: "horizontal" | "vertical") => (
+      <Row width={1000} orientation={orientation}>
+        <div data-w={40}>fixed</div>
+        <Item id="a" />
+      </Row>
+    )
+    const { rerender } = render(row("vertical"))
+    expect(rowEl().style.minBlockSize).toBe("72px")
+    expect(rowEl().style.minInlineSize).toBe("")
+    rerender(row("horizontal"))
+    expect(rowEl().style.minBlockSize).toBe("")
+    expect(rowEl().style.minInlineSize).toBe("72px")
+  })
+
+  it("skips the label stage in a vertical row (rule 10.1)", () => {
+    render(
+      <Toolbar aria-label="Tools" orientation="vertical" data-w={150}>
+        <Item id="a" priority={1} />
+        <Item id="b" priority={0} />
+      </Toolbar>
+    )
+    expect(itemEl("a")).not.toHaveAttribute("data-compact")
+    expect(itemEl("b")).not.toHaveAttribute("data-compact")
+    expect(itemEl("b")).toHaveAttribute("data-overflowing")
+  })
+
+  it("is still icon-only from the start with labels=never in a vertical row", () => {
+    render(
+      <Toolbar
+        aria-label="Tools"
+        orientation="vertical"
+        labels="never"
+        data-w={1000}
+      >
+        <Item id="a" />
+      </Toolbar>
+    )
+    expect(itemEl("a")).toHaveAttribute("data-compact")
+  })
+})
+
+describe("Overflow label stage", () => {
+  it("keeps the label of a text-only item, which has no icon to collapse to (rule 4.3)", () => {
+    render(
+      <Row width={180}>
+        <Item id="a" textOnly />
+        <Item id="b" />
+      </Row>
+    )
+    // b goes icon-only; a stays labelled and costs its full width.
+    expect(itemEl("b")).toHaveAttribute("data-compact")
+    expect(itemEl("a")).not.toHaveAttribute("data-compact")
+    expect(
+      itemEl("a")?.querySelector('[data-slot="overflow-label"]')
+    ).not.toHaveClass("sr-only")
+  })
+
+  it("warns once in development about labelBehavior=collapse without an icon", () => {
+    const { rerender } = render(
+      <Row width={1000}>
+        <Item id="a" textOnly labelBehavior="collapse" />
+        <Item id="b" labelBehavior="collapse" />
+      </Row>
+    )
+    rerender(
+      <Row width={1000}>
+        <Item id="a" textOnly labelBehavior="collapse" />
+        <Item id="b" labelBehavior="collapse" />
+      </Row>
+    )
+    const calls = warn.mock.calls.filter(([message]) =>
+      String(message).includes("labelBehavior")
+    )
+    expect(calls).toHaveLength(1)
+    expect(String(calls[0]?.[0])).toContain('"a"')
+  })
+})
+
+describe("Overflow last resort", () => {
+  const lastResortWarnings = () =>
+    warn.mock.calls.filter(([message]) => String(message).includes("stage 5"))
+
+  it("logs once in development when fixed items alone do not fit (rule 9.3)", () => {
+    render(
+      <Row width={100}>
+        <div data-w={200}>fixed</div>
+        <Item id="a" />
+      </Row>
+    )
+    expect(itemEl("a")).toHaveAttribute("data-overflowing")
+    expect(lastResortWarnings()).toHaveLength(1)
+    resize(rowEl(), 90)
+    expect(lastResortWarnings()).toHaveLength(1)
+  })
+
+  it("logs nothing while the row fits", () => {
+    render(
+      <Row width={150} labels="always">
+        <Item id="a" />
+        <Item id="b" />
+      </Row>
+    )
+    expect(itemEl("b")).toHaveAttribute("data-overflowing")
+    expect(lastResortWarnings()).toHaveLength(0)
+  })
+
+  it("gives an absolutely positioned child neither size nor a gap", () => {
+    // 100 + 10 + 100 fits in 215; a third gap for the live region would not.
+    render(
+      <Row width={215} labels="always" style={{ columnGap: "10px" }}>
+        <Item id="a" />
+        <span style={{ position: "absolute" }} data-w={0} />
+        <Item id="b" />
+      </Row>
+    )
+    expect(itemEl("a")).not.toHaveAttribute("data-overflowing")
+    expect(itemEl("b")).not.toHaveAttribute("data-overflowing")
+  })
+})
+
+describe("Overflow badge", () => {
+  it("counts the hidden items on the trigger with overflowBadge", () => {
+    render(
+      <Row width={150} labels="always" overflowBadge>
+        <Item id="a" priority={2} />
+        <Item id="b" />
+        <Item id="c" />
+      </Row>
+    )
+    const badge = document.querySelector('[data-slot="overflow-menu-badge"]')
+    expect(badge).toHaveTextContent("2")
+    expect(badge).toHaveAttribute("aria-hidden", "true")
+    // The trigger keeps its name.
+    expect(
+      screen.getByRole("button", { name: "More actions" })
+    ).toBeInTheDocument()
+  })
+
+  it("shows no badge unless asked", () => {
+    render(
+      <Row width={150} labels="always">
+        <Item id="a" priority={2} />
+        <Item id="b" />
+      </Row>
+    )
+    expect(
+      document.querySelector('[data-slot="overflow-menu-badge"]')
+    ).toBeNull()
+  })
+})
+
+describe("Overflow inside a React Aria collection", () => {
+  // Tabs builds its collection by rendering its children a second time into
+  // a hidden tree of fake nodes; a row in there must not measure them.
+  it("renders a row inside Tabs, next to the tab list and panels", async () => {
+    const user = userEvent.setup()
+    render(
+      <Tabs defaultSelectedKey="one">
+        <Row width={1000} labels="always">
+          <OverflowItem id="tabs" data-id="tabs" data-w={200}>
+            <TabsList aria-label="Sections">
+              <TabsTrigger id="one">One</TabsTrigger>
+              <TabsTrigger id="two">Two</TabsTrigger>
+            </TabsList>
+          </OverflowItem>
+          <OverflowSpacer />
+          <Item id="a" />
+        </Row>
+        <TabsContent id="one">First panel</TabsContent>
+        <TabsContent id="two">Second panel</TabsContent>
+      </Tabs>
+    )
+    // One real row, measured and laid out as usual.
+    expect(document.querySelectorAll("[data-overflow-root]")).toHaveLength(1)
+    expect(itemEl("tabs")).not.toHaveAttribute("data-overflowing")
+    expect(itemEl("a")).not.toHaveAttribute("data-overflowing")
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("First panel")
+
+    await user.click(screen.getByRole("tab", { name: "Two" }))
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("Second panel")
+
+    // Still overflows once the real row gets narrow.
+    resize(rowEl(), 250)
+    expect(itemEl("a")).toHaveAttribute("data-overflowing")
   })
 })

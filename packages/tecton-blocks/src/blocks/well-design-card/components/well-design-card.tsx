@@ -9,6 +9,7 @@ import {
   PencilIcon,
   TrashIcon,
 } from "lucide-react"
+import { useLocale } from "react-aria-components"
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
@@ -65,6 +66,7 @@ function WellDesignCard({
   size = "sm",
   ...props
 }: WellDesignCardProps) {
+  const { locale } = useLocale()
   const phase = phaseMeta[design.phase]
   const risk = riskLabel(design.risk)
 
@@ -116,14 +118,14 @@ function WellDesignCard({
           data-slot="well-design-sketch"
           className="relative rounded-md bg-surface-alt/70 p-3"
         >
-          <div className="absolute top-2 left-2 flex items-center gap-1">
+          <div className="absolute start-2 top-2 flex items-center gap-1">
             {design.isPrimary && (
               <Badge appearance="outline">
                 <CrownIcon /> Primary
               </Badge>
             )}
           </div>
-          <span className="absolute top-2 right-2 font-mono text-[0.625rem] text-muted-foreground">
+          <span className="absolute end-2 top-2 font-mono text-[0.625rem] text-muted-foreground">
             {design.well}
           </span>
           <TrajectorySketch design={design} className="mt-4" />
@@ -132,11 +134,11 @@ function WellDesignCard({
         <StatGroup className="grid-cols-3 gap-x-3 gap-y-2">
           <Stat size="sm">
             <StatLabel>TD</StatLabel>
-            <StatValue unit="ft">{design.td.toLocaleString()}</StatValue>
+            <StatValue unit="ft">{design.td.toLocaleString(locale)}</StatValue>
           </Stat>
           <Stat size="sm">
             <StatLabel>MD</StatLabel>
-            <StatValue unit="ft">{design.md.toLocaleString()}</StatValue>
+            <StatValue unit="ft">{design.md.toLocaleString(locale)}</StatValue>
           </Stat>
           <Stat size="sm">
             <StatLabel>Max inc.</StatLabel>
@@ -158,7 +160,7 @@ function WellDesignCard({
           <ReadoutRow label="DDI" value={design.ddi.toFixed(1)} />
           <ReadoutRow
             label="Kick-off"
-            value={`${design.kickOff.toLocaleString()} ft`}
+            value={`${design.kickOff.toLocaleString(locale)} ft`}
           />
         </dl>
 

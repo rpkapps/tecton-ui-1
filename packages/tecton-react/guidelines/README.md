@@ -125,8 +125,10 @@ explanations of React or Tailwind, no repetition of the API reference.
 - `pnpm --filter @tecton/react guidelines:check` validates every file against the rules above and
   reports the modules that have no file yet.
 - `pnpm --filter @tecton/react agent:build` writes `agent/index.json` and `agent/docs/<id>.md`, the
-  search index and pages behind the `tecton search` / `tecton docs` command (`bin/tecton.mjs`), from
-  these files, `topics/`, `families.json` and `synonyms.json` (query words mapped to the words the guidelines use);
-  `agent:check` fails on drift.
+  search index and pages behind the `tecton search` / `tecton docs` command, from these files,
+  `topics/`, `adopted/`, `families.json` and `synonyms.json` (query words mapped to the words the
+  guidelines use); `agent:check` fails on drift. The search, its ranking and the tokenizer the
+  build shares live in `bin/tecton-lib.mjs`; `bin/tecton.mjs` is only the executable that runs its
+  `main`.
 - `pnpm --filter www docs:guidelines` renders the section into the component pages;
   `docs:sync` runs it too.

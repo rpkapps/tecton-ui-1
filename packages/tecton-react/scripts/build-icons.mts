@@ -46,6 +46,7 @@
 /// <reference types="node" />
 import { existsSync, mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
 import path from "node:path";
+import { pathToFileURL } from "node:url";
 import {
   ICONS_OUT_DIR,
   ICONS_SRC_DIR,
@@ -339,7 +340,8 @@ async function loadTectonDefinitions(): Promise<Map<string, { def: TectonSvgIcon
   for (const name of readdirSync(TECTON_DEFINITIONS_DIR).sort()) {
     if (!/\.ts$/.test(name) || name === "index.ts") continue;
     const file = path.join(TECTON_DEFINITIONS_DIR, name);
-    const mod = (await import(file)) as Record<string, unknown>;
+    // a file URL, not a path: `import("C:\\…")` would read the drive letter as a URL scheme
+    const mod = (await import(pathToFileURL(file).href)) as Record<string, unknown>;
     const def = Object.values(mod).find(
       (v): v is TectonSvgIcon => typeof v === "object" && v !== null && "slug" in v && "viewBox" in v,
     );
@@ -392,6 +394,9 @@ function applyOpticalCrop(sources: Record<IconVariant, SvgSource | undefined>): 
     if (crop.cropped) {
       for (const variant of variants) sources[variant]!.svg = withRootViewBox(sources[variant]!.svg, crop.viewBox);
       notes.push(`// ${who}viewBox: "${viewBox}" cropped to "${crop.viewBox}" (inset ${crop.padding}, ${crop.scale}x)`);
+    } else if (crop.unmeasured?.length) {
+      const tags = crop.unmeasured.map((tag) => `<${tag}>`).join(", ");
+      notes.push(`// ${who}viewBox: "${viewBox}" kept (${tags} cannot be measured)`);
     } else {
       notes.push(`// ${who}viewBox: "${viewBox}" kept (glyph reaches the edge)`);
     }
@@ -752,10 +757,11 @@ async function main(): Promise<void> {
   // Stale generated files (icons removed from the manifest).
   const stale: string[] = [];
   if (existsSync(ICONS_OUT_DIR)) {
-    for (const name of readdirSync(ICONS_OUT_DIR)) {
+    for (const name of readdirSync(ICONS_OUT_DIR).sort()) {
       const file = path.join(ICONS_OUT_DIR, name);
       if (outputs.has(file) || !/\.tsx?$/.test(name)) continue;
-      if (readFileSync(file, "utf8").startsWith(HEADER)) stale.push(file);
+      // a CRLF checkout still carries the header, with a \r before its \n
+      if (readFileSync(file, "utf8").replace(/\r\n/g, "\n").startsWith(HEADER)) stale.push(file);
     }
   }
 

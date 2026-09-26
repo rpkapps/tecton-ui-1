@@ -1,9 +1,16 @@
 "use client"
 
 import * as React from "react"
+import { cva } from "class-variance-authority"
 import { cn } from "cn"
 import { OTPInput, OTPInputContext } from "input-otp"
 import { MinusIcon } from "lucide-react"
+
+// The registry build inlines a style's classes only into a `className` or a
+// `cva()`, so the container classes reach `containerClassName` through a cva.
+const inputOTPContainerVariants = cva(
+  "flex items-center gap-2 has-disabled:opacity-50"
+)
 
 function InputOTP({
   className,
@@ -15,10 +22,7 @@ function InputOTP({
   return (
     <OTPInput
       data-slot="input-otp"
-      containerClassName={cn(
-        "cn-input-otp flex items-center has-disabled:opacity-50",
-        containerClassName
-      )}
+      containerClassName={cn(inputOTPContainerVariants(), containerClassName)}
       spellCheck={false}
       className={cn("disabled:cursor-not-allowed", className)}
       {...props}

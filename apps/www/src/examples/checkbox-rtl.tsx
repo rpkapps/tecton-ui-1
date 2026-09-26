@@ -83,7 +83,7 @@ export function CheckboxRtl() {
       </Field>
       <FieldLabel>
         <Field orientation="horizontal">
-          <Checkbox id="toggle-checkbox-2" name="toggle-checkbox-2" />
+          <Checkbox id="toggle-checkbox-2-rtl" name="toggle-checkbox-2" />
           <FieldContent>
             <FieldTitle>{t.enableNotifications}</FieldTitle>
             <FieldDescription>

@@ -182,11 +182,56 @@ export const metrics: Metric[] = [
   },
 ]
 
-export const axisOptions = [
-  { id: "cost", label: "Cost" },
-  { id: "risk", label: "Risk" },
-  { id: "days", label: "Plan days" },
+export type AxisId = "cost" | "risk" | "days"
+
+/** A metric the quadrant chart can plot on either axis. */
+export type AxisOption = {
+  id: AxisId
+  label: string
+  /** The `DesignPoint` field plotted on the axis. */
+  dataKey: "cost" | "risk" | "planDays"
+  /** Tick label for a value. */
+  format: (value: number) => string
+  /** Axis range for the plotted values. */
+  domain: (values: number[]) => [number, number]
+}
+
+/** Pads the value range by `pad` and rounds it out to multiples of `step`. */
+function paddedDomain(pad: number, step: number) {
+  return (values: number[]): [number, number] => [
+    Math.max(0, Math.floor((Math.min(...values) - pad) / step) * step),
+    Math.ceil((Math.max(...values) + pad) / step) * step,
+  ]
+}
+
+export const axisOptions: [AxisOption, ...AxisOption[]] = [
+  {
+    id: "cost",
+    label: "Cost",
+    dataKey: "cost",
+    format: (value) => `$${value}M`,
+    domain: paddedDomain(15, 10),
+  },
+  {
+    id: "risk",
+    label: "Risk",
+    dataKey: "risk",
+    format: (value) => `${value}%`,
+    // A 0–100 score: the whole scale, so 50 splits the quadrants.
+    domain: () => [0, 100],
+  },
+  {
+    id: "days",
+    label: "Plan days",
+    dataKey: "planDays",
+    format: (value) => `${value}d`,
+    domain: paddedDomain(5, 5),
+  },
 ]
+
+export function getAxis(id: string): AxisOption {
+  return axisOptions.find((option) => option.id === id) ?? axisOptions[0]
+}
 
 export function riskLabel(value: number): string {
   if (value >= 67) return "High"

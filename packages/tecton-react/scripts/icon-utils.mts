@@ -136,7 +136,10 @@ export function scanIconSources(dir: string = ICONS_SRC_DIR): Record<IconVariant
 
   const collect = (folder: string, variant: IconVariant) => {
     if (!existsSync(folder)) return;
-    for (const entry of readdirSync(folder, { withFileTypes: true })) {
+    // sorted: which of two files that slugify alike wins must not depend on the
+    // file system's directory order
+    const entries = readdirSync(folder, { withFileTypes: true }).sort((a, b) => (a.name < b.name ? -1 : a.name > b.name ? 1 : 0));
+    for (const entry of entries) {
       if (!entry.isFile() || !entry.name.toLowerCase().endsWith(".svg")) continue;
       const slug = toSlug(entry.name);
       const file = path.join(folder, entry.name);

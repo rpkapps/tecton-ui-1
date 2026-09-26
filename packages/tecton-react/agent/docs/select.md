@@ -21,8 +21,8 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectPopover, Selec
 
 ## Do
 
-- Put `placeholder` on `Select`; `SelectValue` renders it and takes no placeholder of its own.
-- Key every item with `id`, drive selection with `selectedKey` / `defaultSelectedKey` / `onSelectionChange`.
+- Label it with `FieldLabel` inside `Select` (or `aria-labelledby` on `Select`), never `htmlFor` on the trigger, which the trigger's own `aria-labelledby` overrides; put `placeholder` on `Select`, as `SelectValue` takes none.
+- Key every item with `id`, drive selection with `value` / `defaultValue` / `onChange(key)`; `selectedKey` and `onSelectionChange` are deprecated.
 - Choose the surface with `SelectTrigger`'s `variant`, the height with its `size="sm" | "default"`.
 - Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`.
 - To make it searchable, wrap `SelectPopover` in React Aria's `Autocomplete` with `SelectInput` and `SelectList`.
@@ -31,7 +31,7 @@ import { Select, SelectTrigger, SelectValue, SelectContent, SelectPopover, Selec
 
 ## Don't
 
-### CRITICAL Radix value props instead of selectedKey and id
+### CRITICAL Radix onValueChange and item value instead of onChange and id
 
 Wrong:
 
@@ -47,7 +47,7 @@ Wrong:
 Correct:
 
 ```tsx
-<Select placeholder="Datum" selectedKey={datum} onSelectionChange={(key) => setDatum(String(key))}>
+<Select placeholder="Datum" value={datum} onChange={setDatum}>
   <SelectTrigger><SelectValue /></SelectTrigger>
   <SelectContent>
     <SelectItem id="msl">Mean sea level</SelectItem>
@@ -55,7 +55,7 @@ Correct:
 </Select>
 ```
 
-`onValueChange` is not a React Aria prop and `value` on `SelectItem` is the item's object value rather than its collection key, so the handler never fires and no item ever matches the selection.
+`value` on `Select` is right, but `onValueChange` is not a React Aria prop (the handler is `onChange`, handed `Key | null`), `value` on `SelectItem` is the item's object value rather than its collection key, and `SelectValue` ignores `placeholder`, so the handler never fires, no item ever matches and the trigger shows no prompt.
 
 ### HIGH Restyling the trigger with className instead of variant
 
@@ -100,8 +100,8 @@ React Aria reads `isDisabled` on both `Select` and `SelectItem`; `disabled` is n
 ## Before you finish
 
 - A `Select` inside a `Field` puts the `id` on `SelectTrigger` and points `FieldLabel htmlFor` at that id — `Select` renders a `div` and `SelectTrigger` renders the `button`.
-- `Select`'s `onSelectionChange` is handed `Key | null`, so the handler narrows the `null` that means nothing is selected instead of casting it away with `as`.
-- Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value`, `defaultValue` and `onValueChange` are Radix names React Aria drops.
+- `Select` and `Combobox` are driven by `value` / `defaultValue` / `onChange` (their `selectedKey` / `onSelectionChange` are deprecated), and `Select`'s `onChange` is handed `Key | null`, so the handler narrows the `null` that means nothing is selected instead of casting it away with `as`.
+- Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value` on an item and `onValueChange` anywhere are Radix names React Aria drops, and `Tabs` takes `selectedKey` / `defaultSelectedKey` / `onSelectionChange`, not `value`.
 - `placeholder` sits on `Select` (`SelectValue` takes none), while `NativeSelect` is a real `select` driven by `value` / `onChange(event)` / `disabled` with an empty-valued first `NativeSelectOption` as its placeholder.
 - Word the placeholder as the choice it asks for ("Choose a datum", "Search wells by name or UWI"), never a bare "Select…".
 

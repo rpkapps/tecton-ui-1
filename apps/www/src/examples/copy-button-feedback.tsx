@@ -8,15 +8,17 @@ export default function CopyButtonFeedback() {
   return (
     <div className="flex flex-col items-center gap-3">
       <div className="flex items-center gap-2">
-        <CopyButton value="Top Balder" variant="ghost" onCopied={setLast} />
-        <CopyButton value="Top Sele" variant="ghost" onCopied={setLast} />
-        <CopyButton
-          value="Base Cretaceous"
-          variant="ghost"
-          onCopied={setLast}
-        />
+        {["Top Balder", "Top Sele", "Base Cretaceous"].map((value) => (
+          <CopyButton
+            key={value}
+            value={value}
+            variant="ghost"
+            aria-label={`Copy ${value}`}
+            onCopied={setLast}
+          />
+        ))}
       </div>
-      <p className="text-xs text-muted-foreground">
+      <p aria-live="polite" className="text-xs text-muted-foreground">
         {last ? `Copied "${last}"` : "Nothing copied yet"}
       </p>
     </div>

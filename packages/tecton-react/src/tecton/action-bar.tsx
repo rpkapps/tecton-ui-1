@@ -79,6 +79,24 @@ function ActionBar({
 }
 
 /**
+ * How long the live region stays empty after it mounts, and how long a
+ * change waits: screen readers only announce changes to a region they
+ * already track, and the bar mounts together with the first selection. The
+ * same delay React Aria's `announce()` gives a new live region; it also
+ * coalesces a burst of selection changes into one announcement.
+ */
+const ANNOUNCE_DELAY = 100
+
+function useDeferredAnnouncement(text: string) {
+  const [announced, setAnnounced] = React.useState("")
+  React.useEffect(() => {
+    const timer = setTimeout(() => setAnnounced(text), ANNOUNCE_DELAY)
+    return () => clearTimeout(timer)
+  }, [text])
+  return announced
+}
+
+/**
  * Selection summary: "12 of 340 selected · Clear". Compacts to "12 selected"
  * and then to the bare count as the bar narrows (rule 8); the live region
  * always announces the full text.
@@ -106,14 +124,15 @@ function ActionBarSelection({
     total !== undefined
       ? `${count} of ${total}${noun} selected`
       : `${count}${noun} selected`
+  const announcement = useDeferredAnnouncement(full)
   return (
     <div
       data-slot="action-bar-selection"
       className={cn("flex shrink-0 items-center gap-1 tabular-nums", className)}
       {...props}
     >
-      <span aria-live="polite" className="sr-only">
-        {full}
+      <span aria-live="polite" aria-atomic="true" className="sr-only">
+        {announcement}
       </span>
       <span aria-hidden className="font-medium whitespace-nowrap">
         <span className="@max-lg/action-bar:hidden">{full}</span>

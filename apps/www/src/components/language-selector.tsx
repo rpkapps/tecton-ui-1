@@ -95,8 +95,8 @@ export function LanguageSelector({
   return (
     <Select
       aria-label="Language"
-      selectedKey={value}
-      onSelectionChange={(key) => onValueChange(String(key) as Language)}
+      value={value}
+      onChange={(key) => onValueChange(String(key) as Language)}
     >
       <SelectTrigger
         size="sm"

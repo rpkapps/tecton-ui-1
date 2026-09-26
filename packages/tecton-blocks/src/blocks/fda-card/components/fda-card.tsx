@@ -45,6 +45,11 @@ type FdaCardProps = Omit<React.ComponentProps<typeof Card>, "children"> & {
   onSelectedChange?: (selected: boolean) => void
   onOpen?: (fda: FdaSummary) => void
   onCompare?: (fda: FdaSummary) => void
+  /**
+   * Level of the title heading, one below the heading the cards sit under
+   * (2 under the page's h1, 3 under a section's h2).
+   */
+  headingLevel?: 2 | 3 | 4 | 5 | 6
 }
 
 /**
@@ -58,9 +63,11 @@ function FdaCard({
   onSelectedChange,
   onOpen,
   onCompare,
+  headingLevel = 2,
   size = "sm",
   ...props
 }: FdaCardProps) {
+  const Heading = `h${headingLevel}` as const
   const status = statusMeta[fda.status]
   const rating = ratingMeta[fda.rating]
 
@@ -117,7 +124,9 @@ function FdaCard({
           data-slot="fda-card-summary"
           className="flex flex-col gap-1.5 rounded-md bg-surface-alt/70 p-3"
         >
-          <h3 className="text-base leading-tight font-medium">{fda.title}</h3>
+          <Heading className="text-base leading-tight font-medium">
+            {fda.title}
+          </Heading>
           <p className="text-xs text-muted-foreground">{fda.description}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             <span className="font-mono tabular-nums">{fda.wells}</span> wells ·
@@ -134,7 +143,7 @@ function FdaCard({
           }
           onPress={() => onOpen?.(fda)}
         />
-        <StatGroup className="grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4 sm:divide-x sm:divide-border-subtle sm:[&>*:not(:first-child)]:pl-4">
+        <StatGroup className="grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4 sm:divide-x sm:divide-border-subtle sm:[&>*:not(:first-child)]:ps-4">
           <Stat size="sm">
             <StatLabel>NPV</StatLabel>
             <StatValue unit="mmusd">{fda.economics.npv.toFixed(1)}</StatValue>
@@ -206,7 +215,7 @@ function SectionHeading({
           aria-label={`Open ${title.toLowerCase()} details`}
           {...(onPress === undefined ? {} : { onPress })}
         >
-          <ChevronRightIcon />
+          <ChevronRightIcon className="rtl:rotate-180" />
         </Button>
       </span>
     </div>

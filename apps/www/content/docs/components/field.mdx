@@ -11,7 +11,7 @@ upstream: apps/v4/content/docs/components/aria/field.mdx
 
 ## Usage
 
-```tsx showLineNumbers
+```tsx lineNumbers
 import {
   Field,
   FieldContent,
@@ -26,7 +26,7 @@ import {
 } from "@tecton/react/components/field"
 ```
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <FieldSet>
   <FieldLegend>Profile</FieldLegend>
   <FieldDescription>This appears on invoices and emails.</FieldDescription>
@@ -103,7 +103,7 @@ FieldSet
 
 The `Field` family is designed for composing accessible forms. A typical field is structured as follows:
 
-```tsx showLineNumbers
+```tsx lineNumbers
 <Field>
   <FieldLabel htmlFor="input-id">Label</FieldLabel>
   {/* Input, Select, Switch, etc. */}
@@ -197,7 +197,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 - Add `aria-invalid` on the input itself for assistive technologies.
 - Render `FieldError` immediately after the control or inside `FieldContent` to keep error messages aligned with the field.
 
-```tsx showLineNumbers /data-invalid/ /aria-invalid/
+```tsx lineNumbers /data-invalid/ /aria-invalid/
 <Field data-invalid>
   <FieldLabel htmlFor="email">Email</FieldLabel>
   <Input id="email" type="email" aria-invalid />
@@ -233,7 +233,7 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 <Do>
 
-Give the control an `id` and point `FieldLabel htmlFor` at it. `Field` renders `role="group"`; it associates nothing by itself.
+Give the control an `id` and point `FieldLabel htmlFor` at it; `Field` renders `role="group"` and associates nothing. A `Select` is the exception: its trigger's `aria-labelledby` overrides `htmlFor`, so put `FieldLabel` inside `Select`, or give the label an `id` and pass it as `Select`'s `aria-labelledby`.
 
 </Do>
 
