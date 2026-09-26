@@ -86,6 +86,17 @@ function hasIcon(element: HTMLElement) {
   return element.querySelector("svg, img, [data-icon]") !== null
 }
 
+/**
+ * A real element in a live document: the only kind the row measures. React
+ * Aria collections (Tabs, ListBox, Menu…) render their children a second time
+ * into a hidden tree to build the collection, of fake nodes or inside an inert
+ * `<template>`; `getComputedStyle` and the observers throw on those.
+ */
+function isMeasurable(node: Node | null | undefined): node is HTMLElement {
+  const view = node?.ownerDocument?.defaultView
+  return !!view && node instanceof view.Element && node.isConnected
+}
+
 function assignRef<T>(ref: React.Ref<T> | undefined, value: T | null) {
   if (typeof ref === "function") ref(value)
   else if (ref) ref.current = value
@@ -146,6 +157,9 @@ class OverflowStore {
   // ---- lifecycle -----------------------------------------------------------
 
   attach(root: HTMLElement) {
+    // A copy in a collection's hidden tree: nothing to measure, and the
+    // store stays detached, so every pass is a no-op.
+    if (!isMeasurable(root)) return
     this.root = root
     this.observer = new ResizeObserver((entries) => {
       for (const entry of entries) {
@@ -894,7 +908,7 @@ function OverflowItem({
       ))
 
   React.useLayoutEffect(() => {
-    if (fixed || !ref.current) return
+    if (fixed || !isMeasurable(ref.current)) return
     return store.registerItem({
       id,
       element: ref.current,
@@ -915,7 +929,7 @@ function OverflowItem({
   const compact = !fixed && state.compact
 
   React.useLayoutEffect(() => {
-    if (fixed || !ref.current) return
+    if (fixed || !isMeasurable(ref.current)) return
     // A hidden item re-rendered: the menu re-reads its overflow form.
     if (!visible) store.bumpMenu()
     store.setLabelBehavior(id, resolveLabelBehavior(ref.current))
@@ -927,7 +941,7 @@ function OverflowItem({
     if (
       labelBehaviorProp !== "collapse" ||
       fixed ||
-      !ref.current ||
+      !isMeasurable(ref.current) ||
       warnedNoIcon.current ||
       hasIcon(ref.current) ||
       !isDevelopment()
@@ -1058,7 +1072,10 @@ function OverflowDivider({
   const ref = React.useRef<HTMLDivElement>(null)
   const mergedRef = useMergedRef(ref, refProp)
   React.useLayoutEffect(
-    () => (ref.current ? store.registerDivider(ref.current) : undefined),
+    () =>
+      isMeasurable(ref.current)
+        ? store.registerDivider(ref.current)
+        : undefined,
     [store]
   )
   return (

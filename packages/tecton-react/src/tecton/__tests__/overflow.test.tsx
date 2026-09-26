@@ -12,6 +12,12 @@ import {
 } from "vitest"
 
 import { Button } from "@tecton/react/components/button"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@tecton/react/components/tabs"
 import { DropdownMenuItem } from "@tecton/react/components/dropdown-menu"
 import {
   Overflow,
@@ -42,6 +48,9 @@ class TestObserver {
     observers.add(this)
   }
   observe(target: Element) {
+    // As in a browser: only a real element can be observed.
+    if (!(target instanceof Element))
+      throw new TypeError("ResizeObserver.observe: target is not an Element")
     this.targets.add(target)
   }
   unobserve(target: Element) {
@@ -862,5 +871,41 @@ describe("Overflow badge", () => {
     expect(
       document.querySelector('[data-slot="overflow-menu-badge"]')
     ).toBeNull()
+  })
+})
+
+describe("Overflow inside a React Aria collection", () => {
+  // Tabs builds its collection by rendering its children a second time into
+  // a hidden tree of fake nodes; a row in there must not measure them.
+  it("renders a row inside Tabs, next to the tab list and panels", async () => {
+    const user = userEvent.setup()
+    render(
+      <Tabs defaultSelectedKey="one">
+        <Row width={1000} labels="always">
+          <OverflowItem id="tabs" data-id="tabs" data-w={200}>
+            <TabsList aria-label="Sections">
+              <TabsTrigger id="one">One</TabsTrigger>
+              <TabsTrigger id="two">Two</TabsTrigger>
+            </TabsList>
+          </OverflowItem>
+          <OverflowSpacer />
+          <Item id="a" />
+        </Row>
+        <TabsContent id="one">First panel</TabsContent>
+        <TabsContent id="two">Second panel</TabsContent>
+      </Tabs>
+    )
+    // One real row, measured and laid out as usual.
+    expect(document.querySelectorAll("[data-overflow-root]")).toHaveLength(1)
+    expect(itemEl("tabs")).not.toHaveAttribute("data-overflowing")
+    expect(itemEl("a")).not.toHaveAttribute("data-overflowing")
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("First panel")
+
+    await user.click(screen.getByRole("tab", { name: "Two" }))
+    expect(screen.getByRole("tabpanel")).toHaveTextContent("Second panel")
+
+    // Still overflows once the real row gets narrow.
+    resize(rowEl(), 250)
+    expect(itemEl("a")).toHaveAttribute("data-overflowing")
   })
 })
