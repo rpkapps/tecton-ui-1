@@ -24,13 +24,14 @@
  * })
  * ```
  *
- * Base UI and React Aria are internal dependencies of `@tecton/react`: the
- * application neither imports nor installs them, so it has no version to give —
- * leave `requiredVersion` unset for them and the bundler reads it from
- * `@tecton/react`'s own package.json. They are shared, never as singletons, for
- * the same reason `@tecton/react/` is: the Tecton modules a host and a remote
- * share should run on one copy of the library they are built on, so a provider
- * from one bundle and a component from the other meet on the same contexts.
+ * The primitive libraries `@tecton/react` is built on are internal
+ * dependencies: the application neither imports nor installs them, so it has
+ * no version to give — leave `requiredVersion` unset for them and the bundler
+ * reads it from `@tecton/react`'s own package.json. They are shared, never as
+ * singletons, for the same reason `@tecton/react/` is: the Tecton modules a
+ * host and a remote share should run on one copy of the library they are built
+ * on, so a provider from one bundle and a component from the other meet on the
+ * same contexts.
  *
  * Embla, `input-otp` and `react-resizable-panels` are deliberately absent: they
  * hold no cross-copy state, and a second instance is only bytes.

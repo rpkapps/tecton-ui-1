@@ -697,7 +697,10 @@ function toolbarItems(toolbar: HTMLElement): HTMLElement[] {
     (item) =>
       !item.matches(":disabled") &&
       item.tabIndex !== -1 &&
-      item.closest("[hidden], [inert]") === null
+      item.closest("[hidden], [inert]") === null &&
+      // `display: none` (a responsive `hidden sm:inline-flex`) cannot take focus.
+      (typeof item.checkVisibility !== "function" ||
+        item.checkVisibility({ visibilityProperty: true }))
   )
 }
 
@@ -754,6 +757,11 @@ function useToolbar() {
 
   const onPointerDown = () => {
     pressed.current = true
+    // A press that moves focus elsewhere (the textarea) never reaches
+    // `onFocus`; the flag must not outlive it.
+    requestAnimationFrame(() => {
+      pressed.current = false
+    })
   }
 
   const onFocus = (event: React.FocusEvent<HTMLDivElement>) => {

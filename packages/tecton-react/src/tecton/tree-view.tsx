@@ -466,7 +466,7 @@ type TreeViewActionProps = TreeViewElementProps & {
    * Called when the button is activated (pointer, Enter or Space). The row
    * itself is not selected or toggled by it.
    */
-  onClick?: () => void
+  onClick?: React.MouseEventHandler<HTMLButtonElement>
   /** Disables the button. */
   disabled?: boolean
 }
@@ -483,7 +483,11 @@ function TreeViewAction({
       data-slot="tree-view-action"
       {...props}
       isDisabled={disabled}
-      onPress={onClick && (() => onClick())}
+      // The click event (a synthetic one for Enter and Space), so a menu
+      // trigger composed through `render` handles it like a native button.
+      onClick={
+        onClick as ((event: React.MouseEvent<Element>) => void) | undefined
+      }
       render={renderButton}
       className={cn(
         "flex size-6 items-center justify-center rounded-sm text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4",

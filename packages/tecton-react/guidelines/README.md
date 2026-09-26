@@ -40,7 +40,7 @@ notFor:
     use: Chip
   - need: a count pinned to the corner of an icon or avatar
     use: CountBadge
-  - need: a transient confirmation
+  - need: a confirmation that disappears on its own
     use: toast
 related: [Chip, CountBadge]
 ---

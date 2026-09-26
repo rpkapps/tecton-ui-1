@@ -211,11 +211,19 @@ function linkWithButtonLook(code: string, label: string): string {
   const pattern =
     /<Button\n(\s*)variant="link"\n\s*render=\{<a href="#" \/>\}\n\s*className="text-muted-foreground"\n\s*size="sm"\n\s*nativeButton=\{false\}\n(\s*)>([\s\S]*?)\n(\s*)<\/Button>/
   if (!pattern.test(code)) {
-    throw new Error(`${label}: no link-styled Button to rewrite; update the rewrite`)
+    throw new Error(
+      `${label}: no link-styled Button to rewrite; update the rewrite`
+    )
   }
   code = code.replace(
     pattern,
-    (_match, attrIndent: string, _close: string, children: string, end: string) =>
+    (
+      _match,
+      attrIndent: string,
+      _close: string,
+      children: string,
+      end: string
+    ) =>
       `<a\n${attrIndent}href="#"\n${attrIndent}className={cn(\n${attrIndent}  buttonVariants({ variant: "link", size: "sm" }),\n${attrIndent}  "text-muted-foreground"\n${attrIndent})}\n${end}>${children}\n${end}</a>`
   )
   code = replaceOrThrow(
@@ -775,6 +783,29 @@ const PAGE_REWRITES: Record<
       "avatar page (AvatarFallback)"
     )
   },
+  // The package files are read-only for applications: a custom spinner and
+  // a reusable data table are the application's own components.
+  spinner: (mdx) => {
+    mdx = replaceOrThrow(
+      mdx,
+      "by editing the `Spinner` component.",
+      "by defining your own `Spinner` with it.",
+      "spinner page (customization)"
+    )
+    return replaceOrThrow(
+      mdx,
+      '```tsx showLineNumbers title="components/ui/spinner.tsx"',
+      '```tsx showLineNumbers title="components/spinner.tsx"',
+      "spinner page (customization title)"
+    )
+  },
+  "data-table": (mdx) =>
+    replaceOrThrow(
+      mdx,
+      "extracting it to `components/ui/data-table.tsx`.",
+      "extracting it to a `components/data-table.tsx` file in your application.",
+      "data-table page (tip)"
+    ),
   // `shadcn init` is for projects that own the component sources
   button: (mdx) =>
     replaceOrThrow(

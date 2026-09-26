@@ -94,6 +94,7 @@ export default function FormTanstackRadioGroup() {
                       You can upgrade or downgrade your plan at any time.
                     </FieldDescription>
                     <RadioGroup
+                      aria-label="Plan"
                       name={field.name}
                       value={field.state.value}
                       onValueChange={(value) =>

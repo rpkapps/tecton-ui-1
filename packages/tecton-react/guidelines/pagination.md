@@ -23,7 +23,7 @@ related: [Table, Tabs]
 
 - Compose `Pagination` > `PaginationContent` > one `PaginationItem` per control.
 - Mark the page with `isActive` on `PaginationLink`: it swaps `ghost` for `outline` and sets `aria-current="page"`.
-- Give every control an `href`; `PaginationLink` is a `Button` rendered as an `a`, so a press is a navigation, not a state change. At the first or last page leave `PaginationPrevious` / `PaginationNext` out: a link has no disabled state.
+- Give every control an `href`; `PaginationLink` is a plain `a` with the button look, so a press is a navigation, not a state change. At the first or last page leave `PaginationPrevious` / `PaginationNext` out: a link has no disabled state.
 - Elide the middle with `PaginationEllipsis`, and relabel the ends with `text` on `PaginationPrevious` and `PaginationNext`.
 - Keep `className` to placement (`mx-0 w-auto`); the controls own their size, shape and colour.
 

@@ -25,7 +25,7 @@ export const blocks: BlockEntry[] = [
     name: "shell-01",
     title: "Application shell",
     description:
-      "The micro-frontend host: responsive top bar with app finder, context, command palette, help, overflow and user menu; the mounted application fills the region below.",
+      "The micro-frontend host: responsive top bar with app finder, context, command palette, overflow and user menu; the mounted application fills the region below.",
     category: "layouts",
     component: () => import("./shell-01/page"),
   },

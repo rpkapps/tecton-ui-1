@@ -3,6 +3,12 @@ import { act, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@tecton/react/components/dropdown-menu"
 import { TectonProvider } from "@tecton/react/tecton/provider"
 import {
   TreeView,
@@ -558,8 +564,43 @@ describe("TreeViewAction", () => {
     expect(button.querySelector("svg")).toBeInTheDocument()
     await userEvent.click(button)
     expect(onClick).toHaveBeenCalledTimes(1)
-    expect(onClick).toHaveBeenCalledWith()
+    expect(onClick.mock.calls[0][0]).toHaveProperty("type", "click")
   })
+
+  it.each(["mouse", "Enter", "Space"])(
+    "opens a menu when it is the trigger (%s)",
+    async (input) => {
+      const user = userEvent.setup()
+      render(
+        <TreeView aria-label="Layers">
+          <TreeViewItem value="wells">
+            <TreeViewItemContent
+              endAdornment={
+                <DropdownMenu>
+                  <DropdownMenuTrigger
+                    render={<TreeViewAction aria-label="Actions for Wells" />}
+                  />
+                  <DropdownMenuContent>
+                    <DropdownMenuItem>Rename</DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              }
+            >
+              Wells
+            </TreeViewItemContent>
+          </TreeViewItem>
+        </TreeView>
+      )
+      const trigger = screen.getByRole("button", { name: "Actions for Wells" })
+      if (input === "mouse") {
+        await user.click(trigger)
+      } else {
+        act(() => trigger.focus())
+        await user.keyboard(input === "Enter" ? "{Enter}" : " ")
+      }
+      expect(await screen.findByRole("menu")).toBeInTheDocument()
+    }
+  )
 
   it("renders custom children", () => {
     render(<TreeViewAction aria-label="a">go</TreeViewAction>)

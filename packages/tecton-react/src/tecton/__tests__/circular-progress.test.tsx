@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { CircularProgress } from "@tecton/react/tecton/circular-progress"
+import { TectonProvider } from "@tecton/react/tecton/provider"
 
 const CIRCUMFERENCE = 2 * Math.PI * 20
 
@@ -188,5 +189,17 @@ describe("CircularProgress", () => {
   it("merges className", () => {
     render(<CircularProgress aria-label="p" value={1} className="m-2" />)
     expect(screen.getByRole("progressbar")).toHaveClass("m-2", "relative")
+  })
+
+  it("formats the value in the provider's locale", () => {
+    render(
+      <TectonProvider locale="de-DE">
+        <CircularProgress aria-label="m" value={50} />
+      </TectonProvider>
+    )
+    expect(screen.getByRole("progressbar")).toHaveAttribute(
+      "aria-valuetext",
+      (0.5).toLocaleString("de-DE", { style: "percent" })
+    )
   })
 })

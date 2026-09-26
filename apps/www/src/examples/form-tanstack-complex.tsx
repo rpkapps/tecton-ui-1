@@ -112,6 +112,7 @@ export default function FormTanstackComplex() {
                       Choose your subscription plan.
                     </FieldDescription>
                     <RadioGroup
+                      aria-label="Subscription plan"
                       name={field.name}
                       value={field.state.value}
                       onValueChange={(value) =>

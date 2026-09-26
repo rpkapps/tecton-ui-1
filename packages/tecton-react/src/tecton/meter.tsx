@@ -5,6 +5,8 @@ import { Meter as MeterPrimitive } from "@base-ui/react/meter"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
+import { useLocale } from "@tecton/react/tecton/provider"
+
 /**
  * Tecton Meter — a segmented gauge for risk, complexity or confidence
  * readouts (as used on the FDA and Well Design cards). `segments` controls
@@ -64,7 +66,7 @@ type MeterProps = Omit<React.ComponentProps<"div">, "children" | "color"> &
     max?: number
     /** Number format of the shown value (a percentage of the range by default). */
     format?: Intl.NumberFormatOptions
-    /** Locale of the formatted value (the runtime locale by default). */
+    /** Locale of the formatted value (the `TectonProvider` locale by default). */
     locale?: Intl.LocalesArgument
     label?: React.ReactNode
     /** Number of segments; `1` renders a continuous bar. */
@@ -90,8 +92,10 @@ function Meter({
   color = "default",
   showValue,
   valueLabel,
+  locale,
   ...props
 }: MeterProps) {
+  const contextLocale = useLocale().locale
   // A text `valueLabel` becomes `aria-valuetext`, so the announced value
   // matches the one on screen. A node cannot be text: the formatted value is
   // announced instead.
@@ -106,6 +110,7 @@ function Meter({
 
   return (
     <MeterPrimitive.Root
+      locale={locale ?? contextLocale}
       data-slot="meter"
       data-size={size}
       className={cn(meterVariants({ size }), className)}

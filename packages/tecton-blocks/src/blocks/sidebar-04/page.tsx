@@ -25,6 +25,7 @@ import {
   useMinWidth,
 } from "@tecton/react/tecton/app-shell"
 import { Link } from "@tecton/react/tecton/link"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { NavRail } from "./components/nav-rail"
 import { ToolPanel } from "./components/tool-panel"
@@ -40,6 +41,8 @@ export default function Page() {
   const [panelOpen, setPanelOpen] = React.useState(true)
   // Narrow screens open the panel in a sheet, on request only.
   const [sheetOpen, setSheetOpen] = React.useState(false)
+  // The panel sits on the end edge; `side` is physical.
+  const sheetSide = useDirection() === "rtl" ? "left" : "right"
   const [well, setWell] = React.useState<WellProperties>(defaultWell)
   // The tool panel is a resizable split on `lg` and up only.
   const isWide = useMinWidth(1024)
@@ -107,7 +110,11 @@ export default function Page() {
         inset
       )}
       <Sheet open={sheetOpen && !isWide} onOpenChange={setSheetOpen}>
-        <SheetContent showCloseButton={false} className="gap-0">
+        <SheetContent
+          side={sheetSide}
+          showCloseButton={false}
+          className="gap-0"
+        >
           <SheetTitle className="sr-only">Well properties</SheetTitle>
           <ToolPanel
             value={well}

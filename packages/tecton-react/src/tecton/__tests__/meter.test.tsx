@@ -2,6 +2,7 @@ import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
 import { Meter } from "@tecton/react/tecton/meter"
+import { TectonProvider } from "@tecton/react/tecton/provider"
 
 const segments = (container: HTMLElement) =>
   Array.from(
@@ -167,5 +168,17 @@ describe("Meter", () => {
   it("merges className", () => {
     render(<Meter aria-label="m" value={1} className="w-40" />)
     expect(screen.getByRole("meter")).toHaveClass("w-40", "flex")
+  })
+
+  it("formats the value in the provider's locale", () => {
+    render(
+      <TectonProvider locale="de-DE">
+        <Meter aria-label="m" value={50} />
+      </TectonProvider>
+    )
+    expect(screen.getByRole("meter")).toHaveAttribute(
+      "aria-valuetext",
+      (0.5).toLocaleString("de-DE", { style: "percent" })
+    )
   })
 })

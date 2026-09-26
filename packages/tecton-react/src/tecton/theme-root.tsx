@@ -4,7 +4,7 @@ import * as React from "react"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { TectonContext, TectonProvider } from "@tecton/react/tecton/provider"
 
 import { localeDirection } from "./internal/locale"
 
@@ -101,6 +101,10 @@ function ThemeRoot({
   // root inherits its ancestors' `dir` like any element.
   const direction =
     dir ?? (locale !== undefined ? localeDirection(locale) : undefined)
+  // The overlay container hangs off `<body>`, outside the ancestors the root
+  // inherits `dir` from, so it also takes an outer provider's direction.
+  const outerDirection = React.useContext(TectonContext)?.direction
+  const overlayDirection = direction ?? outerDirection
 
   React.useEffect(() => {
     // A caller-supplied container (or `null`) is used as is and never owned.
@@ -133,9 +137,9 @@ function ThemeRoot({
     // restyle.
     if (overlayContainer !== undefined || !container) return
     container.className = overlayClasses
-    if (direction) container.setAttribute("dir", direction)
+    if (overlayDirection) container.setAttribute("dir", overlayDirection)
     else container.removeAttribute("dir")
-  }, [container, overlayClasses, direction, overlayContainer])
+  }, [container, overlayClasses, overlayDirection, overlayContainer])
 
   return (
     <div

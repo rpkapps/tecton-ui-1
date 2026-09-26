@@ -248,6 +248,10 @@ describe("ThemeRoot", () => {
     })
     expect(result.current).toBe("rtl")
     expect(root()).not.toHaveAttribute("dir")
+    // The container sits under <body>, outside any `dir` the shell set.
+    expect(
+      document.querySelector('[data-slot="theme-root-overlay"]')
+    ).toHaveAttribute("dir", "rtl")
   })
 
   it("leaves a supplied container's dir alone", () => {

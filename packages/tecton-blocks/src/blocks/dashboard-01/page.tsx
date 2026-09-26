@@ -26,6 +26,7 @@ import {
   PageHeaderEyebrow,
   PageHeaderTitle,
 } from "@tecton/react/tecton/page-header"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { AiAgentPanel, useAgentConversation } from "../ai-agent-panel/page"
 import { CostVsRiskPanel } from "../cost-vs-risk-panel/page"
@@ -52,6 +53,8 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
   // separately, so a narrow page does not load with a modal over it.
   const [agentOpen, setAgentOpen] = React.useState(!hideAgent)
   const [sheetOpen, setSheetOpen] = React.useState(false)
+  // The panel sits on the end edge; `side` is physical.
+  const sheetSide = useDirection() === "rtl" ? "left" : "right"
   const [selectedFda, setSelectedFda] = React.useState<string[]>([])
   const [selectedWell, setSelectedWell] = React.useState<string[]>([])
   const conversation = useAgentConversation()
@@ -163,7 +166,11 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
       </AppShellBody>
 
       <Sheet open={sheetOpen && !isWide} onOpenChange={setSheetOpen}>
-        <SheetContent showCloseButton={false} className="gap-0">
+        <SheetContent
+          side={sheetSide}
+          showCloseButton={false}
+          className="gap-0"
+        >
           <SheetTitle className="sr-only">AI Agent</SheetTitle>
           <AiAgentPanel
             conversation={conversation}

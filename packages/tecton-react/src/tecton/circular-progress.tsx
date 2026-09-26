@@ -5,6 +5,8 @@ import { Progress as ProgressPrimitive } from "@base-ui/react/progress"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
+import { useLocale } from "@tecton/react/tecton/provider"
+
 /**
  * Tecton circular Progress — determinate ring with optional centred value
  * label, or an indeterminate spinner when `value` is `null`.
@@ -52,7 +54,7 @@ type CircularProgressProps = Omit<
     max?: number
     /** Number format of the value (a percentage of the range by default). */
     format?: Intl.NumberFormatOptions
-    /** Locale of the formatted value (the runtime locale by default). */
+    /** Locale of the formatted value (the `TectonProvider` locale by default). */
     locale?: Intl.LocalesArgument
     /** Show the formatted value in the centre (determinate only). */
     showValue?: boolean
@@ -83,9 +85,11 @@ function CircularProgress({
   max = 100,
   showValue,
   valueLabel,
+  locale,
   children,
   ...props
 }: CircularProgressProps) {
+  const contextLocale = useLocale().locale
   // A text `valueLabel` becomes `aria-valuetext`, so the announced value
   // matches the one on screen. A node cannot be text: the formatted value is
   // announced instead.
@@ -100,6 +104,7 @@ function CircularProgress({
   const offset = CIRCUMFERENCE - (pct / 100) * CIRCUMFERENCE
   return (
     <ProgressPrimitive.Root
+      locale={locale ?? contextLocale}
       data-slot="circular-progress"
       data-size={size}
       className={cn(circularProgressVariants({ size, color }), className)}

@@ -28,8 +28,8 @@ import type { ShellApp } from "./data"
 
 /**
  * The micro-frontend host shell: a top bar owned by the host (app finder,
- * home, context, command palette, help, release notes, bug report,
- * settings and the user menu) and one region below that the mounted
+ * home, context, command palette, release notes, bug report, settings
+ * and the user menu) and one region below that the mounted
  * application fills with its own layout.
  */
 export default function Page() {
