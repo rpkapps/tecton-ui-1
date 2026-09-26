@@ -40,6 +40,44 @@ describe("ColorSwatch", () => {
     )
   })
 
+  it("passes DOM props through to the plain swatch of an unparseable token", () => {
+    const onMouseEnter = vi.fn()
+    const { container } = render(
+      <ColorSwatch
+        color="var(--tecton-color-accent-lime-fill)"
+        id="lime"
+        data-token="accent-lime"
+        aria-describedby="legend"
+        className="ring"
+        style={{ outlineColor: "red" }}
+        onMouseEnter={onMouseEnter}
+      />
+    )
+    const el = swatch(container)
+    expect(el?.tagName).toBe("SPAN")
+    expect(el).toHaveAttribute("id", "lime")
+    expect(el).toHaveAttribute("data-token", "accent-lime")
+    expect(el).toHaveAttribute("aria-describedby", "legend")
+    expect(el).toHaveClass("ring", "size-6", "rounded-md")
+    // The token stays the background next to the caller's style.
+    expect(el?.style.outlineColor).toBe("red")
+    expect(el?.getAttribute("style")).toContain(
+      "var(--tecton-color-accent-lime-fill)"
+    )
+    // Not DOM attributes.
+    expect(el).not.toHaveAttribute("color")
+    fireEvent.mouseEnter(el!)
+    expect(onMouseEnter).toHaveBeenCalledOnce()
+  })
+
+  it("names the plain swatch by colorName when there is no aria-label", () => {
+    const { container } = render(
+      <ColorSwatch color="var(--brand)" colorName="Brand" />
+    )
+    expect(swatch(container)).toHaveAttribute("aria-label", "Brand")
+    expect(swatch(container)).not.toHaveAttribute("colorname")
+  })
+
   it("prefers an explicit aria-label", () => {
     const { container } = render(
       <ColorSwatch color="oklch(0.7 0.1 200)" aria-label="Sea" />

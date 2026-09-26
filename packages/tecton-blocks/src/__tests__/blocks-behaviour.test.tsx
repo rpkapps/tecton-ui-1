@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 
 import CanvasPage from "../blocks/canvas-01/page"
+import DetailPage, { project } from "../blocks/detail-01/page"
 import {
   axisOptions,
   designs,
@@ -105,5 +106,38 @@ describe("horizons-panel depths", () => {
       "Bottom depth must be deeper than the top depth."
     )
     expect(screen.getByRole("button", { name: "Apply" })).toBeDisabled()
+  })
+})
+
+describe("detail-01 section tabs", () => {
+  /** The panel the selected tab controls, which must exist. */
+  function controlledPanel(tab: HTMLElement) {
+    const id = tab.getAttribute("aria-controls")
+    expect(id).toBeTruthy()
+    const panel = document.getElementById(id ?? "")
+    expect(panel).toHaveAttribute("role", "tabpanel")
+    expect(panel).toHaveAttribute("aria-labelledby", tab.id)
+    return panel
+  }
+
+  it("shows the panel of the chosen tab", { timeout: 30000 }, async () => {
+    const user = userEvent.setup()
+    render(<DetailPage />)
+    const tabs = screen.getByRole("tablist", { name: "Sections" })
+
+    const overview = within(tabs).getByRole("tab", { name: "Overview" })
+    expect(overview).toHaveAttribute("aria-selected", "true")
+    const overviewPanel = controlledPanel(overview)
+    expect(screen.getByRole("tabpanel")).toBe(overviewPanel)
+    expect(overviewPanel).toHaveTextContent(project.concepts[0]!.name)
+
+    const team = within(tabs).getByRole("tab", { name: "Team" })
+    await user.click(team)
+    expect(team).toHaveAttribute("aria-selected", "true")
+    const teamPanel = controlledPanel(team)
+    expect(screen.getByRole("tabpanel")).toBe(teamPanel)
+    expect(teamPanel).toHaveTextContent(`Team for ${project.name}`)
+    // The overview panel is gone with its tab.
+    expect(overviewPanel).not.toBeInTheDocument()
   })
 })
