@@ -294,6 +294,16 @@ const CONTRAST_PAIRS: [string, string, number][] = [
   ["background", "destructive", 3],
 ];
 
+// link text (Button variant=link, tab triggers) on the surfaces it sits on,
+// for whichever of these the map defines
+const mapped = new Set(expected);
+for (const fg of ["link-foreground", "link-hover-foreground"]) {
+  if (!mapped.has(fg)) continue;
+  for (const bg of ["background", "card", "popover"]) {
+    if (mapped.has(bg)) CONTRAST_PAIRS.push([bg, fg, 4.5]);
+  }
+}
+
 const NON_TEXT: [string, string, number, "warn" | "fail"][] = [
   ["background", "border", 1.5, "warn"],
   ["background", "input", 1.5, "warn"],
