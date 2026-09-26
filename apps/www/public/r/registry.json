@@ -717,7 +717,7 @@
       "name": "shell-01",
       "type": "registry:block",
       "title": "Application shell",
-      "description": "The micro-frontend host: responsive top bar with app finder, context, command palette, help, overflow and user menu; the mounted application fills the region below. Requires the @tecton/react package.",
+      "description": "The micro-frontend host: responsive top bar with app finder, context, command palette, overflow and user menu; the mounted application fills the region below. Requires the @tecton/react package.",
       "categories": [
         "layouts"
       ],
