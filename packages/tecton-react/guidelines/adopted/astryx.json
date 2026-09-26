@@ -649,7 +649,7 @@
       "id": "sidebar.SideNav.2",
       "component": "sidebar",
       "where": "do",
-      "text": "Mark the current sidebar destination with a filled icon, not by background alone (`variant=\"filled\"` on the active row, `\"outlined\"` elsewhere).",
+      "text": "Mark the current sidebar destination with a filled icon, not by background alone: the active row's `SidebarMenuButton` has `isActive` and its Tecton glyph (`@tecton/react/icons`) takes `variant=\"filled\"`; the other rows' glyphs stay `variant=\"outlined\"`. `SidebarMenuButton`'s own `variant` is only `default` | `outline`.",
       "origin": "Astryx SideNav #2"
     },
     {

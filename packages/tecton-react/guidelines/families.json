@@ -68,8 +68,8 @@
       ],
       "checklist": [
         "A `Select` inside a `Field` puts the `id` on `SelectTrigger` and points `FieldLabel htmlFor` at that id — `Select` renders a `div` and `SelectTrigger` renders the `button`.",
-        "`Select`'s `onSelectionChange` is handed `Key | null`, so the handler narrows the `null` that means nothing is selected instead of casting it away with `as`.",
-        "Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value`, `defaultValue` and `onValueChange` are Radix names React Aria drops.",
+        "`Select` and `Combobox` are driven by `value` / `defaultValue` / `onChange` (their `selectedKey` / `onSelectionChange` are deprecated), and `Select`'s `onChange` is handed `Key | null`, so the handler narrows the `null` that means nothing is selected instead of casting it away with `as`.",
+        "Items are keyed by `id` on `SelectItem`, `ComboboxItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `value` on an item and `onValueChange` anywhere are Radix names React Aria drops, and `Tabs` takes `selectedKey` / `defaultSelectedKey` / `onSelectionChange`, not `value`.",
         "`RadioGroup` is the exception: each `RadioGroupItem` identifies itself by `value` and the group reports through `onChange`, with `id` used only so a `FieldLabel htmlFor` can reach it.",
         "`ToggleGroup` reads `selectedKeys` / `defaultSelectedKeys` and its `onSelectionChange` hands back a `Set`, not a single value.",
         "`placeholder` sits on `Select` (`SelectValue` takes none), while `NativeSelect` is a real `select` driven by `value` / `onChange(event)` / `disabled` with an empty-valued first `NativeSelectOption` as its placeholder.",
