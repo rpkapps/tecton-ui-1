@@ -3,6 +3,7 @@ import { createFileRoute, notFound } from "@tanstack/react-router"
 
 import { Spinner } from "@tecton/react/components/spinner"
 
+import { isCompareKey } from "@/compare/keys"
 import { compareMatrices } from "@/compare/matrices"
 
 /**
@@ -15,9 +16,9 @@ export const Route = createFileRoute("/compare/$component")({
     theme: search.theme === "light" ? ("light" as const) : ("dark" as const),
   }),
   loader: ({ params }) => {
+    // An own key only: `/compare/constructor` must not find Object.prototype.
+    if (!isCompareKey(params.component)) throw notFound()
     const matrix = compareMatrices[params.component]
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- route param
-    if (!matrix) throw notFound()
     return {
       component: params.component,
       title: matrix.title,
