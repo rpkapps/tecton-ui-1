@@ -32,23 +32,25 @@
   --color-selection-foreground: var(--selection-foreground);
 }
 
-:root {
-  --surface: var(--card);
-  --surface-foreground: var(--card-foreground);
-  --code: var(--card);
-  --code-foreground: var(--card-foreground);
-  --code-highlight: var(--accent);
-  --code-number: var(--muted-foreground);
-  --selection: var(--primary);
-  --selection-foreground: var(--primary-foreground);
-}
-
 @layer base {
+  :root {
+    --surface: var(--card);
+    --surface-foreground: var(--card-foreground);
+    --code: var(--card);
+    --code-foreground: var(--card-foreground);
+    --code-highlight: var(--accent);
+    --code-number: var(--muted-foreground);
+    --selection: var(--primary);
+    --selection-foreground: var(--primary-foreground);
+  }
+
   /* Anchor jumps clear the sticky header; typeset's scroll-margin adds air. */
   html {
     scroll-padding-top: var(--header-height);
   }
-  ::selection {
+  /* Text selection of the docs chrome only: examples (and every other
+     `[data-not-typeset]` subtree) keep the browser / component default. */
+  :where(body :not([data-not-typeset], [data-not-typeset] *))::selection {
     @apply bg-selection text-selection-foreground;
   }
   html {
@@ -73,7 +75,7 @@
 }
 
 @utility container {
-  @apply mx-auto max-w-[1400px] px-4 3xl:max-w-screen-2xl lg:px-8;
+  @apply 3xl:max-w-screen-2xl mx-auto max-w-[1400px] px-4 lg:px-8;
 }
 
 @utility border-ghost {
@@ -129,9 +131,9 @@
     }
   }
 
-  /* Code blocks: MDX fences (fumadocs rehype-code) and <CodeBlock /> both
-     render <figure data-rehype-pretty-code-figure>. */
-  [data-rehype-pretty-code-figure] {
+  /* Code blocks: MDX fences (fumadocs rehype-code, through the `pre` MDX
+     component) and <CodeBlock /> both render <figure data-code-block>. */
+  [data-code-block] {
     background-color: var(--color-code);
     color: var(--color-code-foreground);
     border-radius: var(--radius-2xl);
@@ -144,24 +146,24 @@
     position: relative;
     @apply -mx-1 md:-mx-1;
 
-    &:has([data-rehype-pretty-code-title]) [data-slot="copy-button"] {
+    &:has([data-code-block-title]) [data-slot="copy-button"] {
       top: calc(var(--spacing) * 1.5) !important;
     }
   }
 
-  [data-rehype-pretty-code-figure] pre {
-    @apply no-scrollbar m-0 min-w-0 overflow-x-auto overflow-y-auto overscroll-x-contain overscroll-y-auto bg-transparent px-4 py-3.5 font-mono text-sm leading-relaxed outline-none has-data-highlighted-line:px-0 has-data-line-numbers:px-0;
+  [data-code-block] pre {
+    @apply m-0 no-scrollbar min-w-0 overflow-x-auto overflow-y-auto overscroll-x-contain overscroll-y-auto bg-transparent px-4 py-3.5 font-mono text-sm leading-relaxed outline-none has-data-highlighted-line:px-0 data-line-numbers:px-0;
   }
 
-  [data-rehype-pretty-code-figure] code,
-  [data-rehype-pretty-code-figure] code span {
+  [data-code-block] code,
+  [data-code-block] code span {
     font-variant-ligatures: none;
     font-feature-settings:
       "liga" 0,
       "calt" 0;
   }
 
-  [data-rehype-pretty-code-figure] code {
+  [data-code-block] code {
     display: grid;
     background: transparent;
     padding: 0;
@@ -169,7 +171,7 @@
     border-radius: 0;
   }
 
-  [data-rehype-pretty-code-title] {
+  [data-code-block-title] {
     border-bottom: color-mix(in oklab, var(--border) 30%, transparent);
     border-bottom-width: 1px;
     border-bottom-style: solid;
@@ -180,14 +182,15 @@
     color: var(--color-code-foreground);
   }
 
-  [data-line-numbers] {
-    display: grid;
+  /* `lineNumbers` in a fence's meta: fumadocs sets `data-line-numbers` on the
+     <pre>; `lineNumbers=N` becomes an inline counter-reset (mdx.tsx). */
+  pre[data-line-numbers] {
+    counter-reset: line;
+  }
+
+  [data-line-numbers] code {
     min-width: 100%;
     white-space: pre;
-    border: 0;
-    background: transparent;
-    padding: 0;
-    counter-reset: line;
     box-decoration-break: clone;
   }
 
@@ -209,6 +212,14 @@
     background-color: var(--color-code-highlight);
   }
 
+  /* With highlighted lines the <pre> drops its inline padding so a highlight
+     spans the full width; the lines carry the padding instead. */
+  [data-code-block]
+    pre:has([data-highlighted-line]):not([data-line-numbers])
+    [data-line] {
+    padding-inline: calc(var(--spacing) * 4);
+  }
+
   [data-line] {
     padding-top: calc(var(--spacing) * 0.25);
     padding-bottom: calc(var(--spacing) * 0.25);
@@ -219,19 +230,19 @@
 
   /* ```text trees use box-drawing characters; per-line padding breaks the
      vertical connectors. */
-  [data-rehype-pretty-code-figure] pre[data-language="text"] code,
-  [data-rehype-pretty-code-figure] pre[data-language="plaintext"] code,
-  [data-rehype-pretty-code-figure] code[data-language="text"],
-  [data-rehype-pretty-code-figure] code[data-language="plaintext"] {
+  [data-code-block] pre[data-language="text"] code,
+  [data-code-block] pre[data-language="plaintext"] code,
+  [data-code-block] code[data-language="text"],
+  [data-code-block] code[data-language="plaintext"] {
     display: block !important;
     white-space: pre;
     line-height: 0.95;
     font-variant-ligatures: none;
   }
-  [data-rehype-pretty-code-figure] pre[data-language="text"] [data-line],
-  [data-rehype-pretty-code-figure] pre[data-language="plaintext"] [data-line],
-  [data-rehype-pretty-code-figure] code[data-language="text"] [data-line],
-  [data-rehype-pretty-code-figure] code[data-language="plaintext"] [data-line] {
+  [data-code-block] pre[data-language="text"] [data-line],
+  [data-code-block] pre[data-language="plaintext"] [data-line],
+  [data-code-block] code[data-language="text"] [data-line],
+  [data-code-block] code[data-language="plaintext"] [data-line] {
     padding-top: 0;
     padding-bottom: 0;
     min-height: unset;
@@ -266,7 +277,11 @@
       width: 2px;
       height: 100%;
       content: "";
-      background-color: color-mix(in oklab, var(--muted-foreground) 50%, transparent);
+      background-color: color-mix(
+        in oklab,
+        var(--muted-foreground) 50%,
+        transparent
+      );
     }
   }
 

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 
 import {
@@ -93,7 +94,7 @@ export function DocsTabsContent({
     <TabsContent
       id={id ?? value}
       className={cn(
-        "relative *:[figure]:first:mt-0 [&>.steps]:mt-6 [&>[data-rehype-pretty-code-figure]:first-child]:mt-0",
+        "relative *:[figure]:first:mt-0 [&>.steps]:mt-6 [&>[data-code-block]:first-child]:mt-0",
         className
       )}
       {...props}
@@ -192,15 +193,25 @@ export function Callout({
 /* LinkedCard (used by index pages such as /docs/forms)                       */
 /* ------------------------------------------------------------------------ */
 
-export function LinkedCard({ className, ...props }: React.ComponentProps<"a">) {
-  return (
-    <a
-      data-not-typeset
-      className={cn(
-        "bg-surface text-surface-foreground hover:bg-surface/80 flex w-full flex-col items-center rounded-2xl p-6 transition-colors sm:p-10",
-        className
-      )}
-      {...props}
-    />
+export function LinkedCard({
+  className,
+  href = "",
+  ...props
+}: React.ComponentProps<"a">) {
+  const classes = cn(
+    "bg-surface text-surface-foreground hover:bg-surface/80 flex w-full flex-col items-center rounded-2xl p-6 transition-colors sm:p-10",
+    className
   )
+  // Site pages navigate through the router, not with a full page load.
+  if (href.startsWith("/") && !href.startsWith("//")) {
+    return (
+      <Link
+        to={href}
+        data-not-typeset
+        className={classes}
+        {...(props as object)}
+      />
+    )
+  }
+  return <a href={href} data-not-typeset className={classes} {...props} />
 }
