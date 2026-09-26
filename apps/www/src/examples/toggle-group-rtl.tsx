@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/toggle-group-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/toggle-group-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -43,14 +43,14 @@ export function ToggleGroupRtl() {
   const { dir, t } = useTranslation(translations, "ar")
 
   return (
-    <ToggleGroup variant="outline" defaultSelectedKeys={["list"]} dir={dir}>
-      <ToggleGroupItem id="list" aria-label={t.list}>
+    <ToggleGroup variant="outline" defaultValue={["list"]} dir={dir}>
+      <ToggleGroupItem value="list" aria-label={t.list}>
         {t.list}
       </ToggleGroupItem>
-      <ToggleGroupItem id="grid" aria-label={t.grid}>
+      <ToggleGroupItem value="grid" aria-label={t.grid}>
         {t.grid}
       </ToggleGroupItem>
-      <ToggleGroupItem id="cards" aria-label={t.cards}>
+      <ToggleGroupItem value="cards" aria-label={t.cards}>
         {t.cards}
       </ToggleGroupItem>
     </ToggleGroup>

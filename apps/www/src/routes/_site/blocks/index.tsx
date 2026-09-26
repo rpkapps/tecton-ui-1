@@ -1,7 +1,7 @@
 import * as React from "react"
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 
-import { LinkButton } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/components/button"
 import {
   PageHeader,
   PageHeaderActions,
@@ -70,12 +70,17 @@ function BlocksIndex() {
           </PageHeaderDescription>
         </PageHeaderContent>
         <PageHeaderActions>
-          <LinkButton href="#blocks" size="sm">
+          <Button size="sm" nativeButton={false} render={<a href="#blocks" />}>
             Browse blocks
-          </LinkButton>
-          <LinkButton href="/docs/cli" variant="ghost" size="sm">
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            nativeButton={false}
+            render={<Link to="/docs/$" params={{ _splat: "cli" }} />}
+          >
             Using the CLI
-          </LinkButton>
+          </Button>
         </PageHeaderActions>
       </PageHeader>
 

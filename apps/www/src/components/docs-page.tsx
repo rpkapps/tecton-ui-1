@@ -1,9 +1,9 @@
 import * as React from "react"
-import { notFound } from "@tanstack/react-router"
+import { Link, notFound } from "@tanstack/react-router"
 import browserCollections from "fumadocs-mdx:collections/browser"
 import { ArrowLeftIcon, ArrowRightIcon, ExternalLinkIcon } from "lucide-react"
 
-import { LinkButton } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/components/button"
 
 import { DocsTableOfContents } from "@/components/docs-toc"
 import { getMDXComponents } from "@/components/mdx"
@@ -91,26 +91,28 @@ function Content({
               <div className="docs-nav flex items-center gap-2">
                 <div className="ml-auto flex gap-2">
                   {previous && (
-                    <LinkButton
+                    <Button
                       variant="secondary"
                       size="icon-sm"
                       className="extend-touch-target size-8 shadow-none md:size-7"
-                      href={previous.url}
                       aria-label="Previous"
+                      nativeButton={false}
+                      render={<Link to={previous.url} />}
                     >
                       <ArrowLeftIcon />
-                    </LinkButton>
+                    </Button>
                   )}
                   {next && (
-                    <LinkButton
+                    <Button
                       variant="secondary"
                       size="icon-sm"
                       className="extend-touch-target size-8 shadow-none md:size-7"
-                      href={next.url}
                       aria-label="Next"
+                      nativeButton={false}
+                      render={<Link to={next.url} />}
                     >
                       <ArrowRightIcon />
-                    </LinkButton>
+                    </Button>
                   )}
                 </div>
               </div>
@@ -123,28 +125,30 @@ function Content({
             {(links?.doc || links?.api) && (
               <div className="flex items-center gap-2 pt-2">
                 {links.doc && (
-                  <LinkButton
+                  <Button
                     variant="secondary"
                     size="xs"
-                    href={links.doc}
-                    target="_blank"
-                    rel="noreferrer"
                     className="shadow-none"
+                    nativeButton={false}
+                    render={
+                      <a href={links.doc} target="_blank" rel="noreferrer" />
+                    }
                   >
                     Docs <ExternalLinkIcon data-icon="inline-end" />
-                  </LinkButton>
+                  </Button>
                 )}
                 {links.api && (
-                  <LinkButton
+                  <Button
                     variant="secondary"
                     size="xs"
-                    href={links.api}
-                    target="_blank"
-                    rel="noreferrer"
                     className="shadow-none"
+                    nativeButton={false}
+                    render={
+                      <a href={links.api} target="_blank" rel="noreferrer" />
+                    }
                   >
                     API Reference <ExternalLinkIcon data-icon="inline-end" />
-                  </LinkButton>
+                  </Button>
                 )}
               </div>
             )}
@@ -154,24 +158,26 @@ function Content({
           </div>
           <div className="hidden h-16 w-full items-center gap-2 px-4 sm:flex sm:px-0">
             {previous && (
-              <LinkButton
+              <Button
                 variant="secondary"
                 size="sm"
                 className="shadow-none"
-                href={previous.url}
+                nativeButton={false}
+                render={<Link to={previous.url} />}
               >
                 <ArrowLeftIcon data-icon="inline-start" /> {previous.title}
-              </LinkButton>
+              </Button>
             )}
             {next && (
-              <LinkButton
+              <Button
                 variant="secondary"
                 size="sm"
                 className="ml-auto shadow-none"
-                href={next.url}
+                nativeButton={false}
+                render={<Link to={next.url} />}
               >
                 {next.title} <ArrowRightIcon data-icon="inline-end" />
-              </LinkButton>
+              </Button>
             )}
           </div>
         </div>

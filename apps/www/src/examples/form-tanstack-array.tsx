@@ -114,7 +114,7 @@ export default function FormTanstackArray() {
                                         type="button"
                                         variant="ghost"
                                         size="icon-xs"
-                                        onPress={() => field.removeValue(index)}
+                                        onClick={() => field.removeValue(index)}
                                         aria-label={`Remove email ${index + 1}`}
                                       >
                                         <XIcon />
@@ -137,8 +137,8 @@ export default function FormTanstackArray() {
                       type="button"
                       variant="outline"
                       size="sm"
-                      onPress={() => field.pushValue({ address: "" })}
-                      isDisabled={field.state.value.length >= 5}
+                      onClick={() => field.pushValue({ address: "" })}
+                      disabled={field.state.value.length >= 5}
                     >
                       Add Email Address
                     </Button>
@@ -152,7 +152,7 @@ export default function FormTanstackArray() {
       </CardContent>
       <CardFooter className="border-t">
         <Field orientation="horizontal">
-          <Button type="button" variant="outline" onPress={() => form.reset()}>
+          <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>
           <Button type="submit" form="form-tanstack-array">

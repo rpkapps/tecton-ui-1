@@ -16,7 +16,7 @@ export default function AlertDismissible() {
 
   if (!open) {
     return (
-      <Button variant="outline" size="sm" onPress={() => setOpen(true)}>
+      <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
         Show alert
       </Button>
     )
@@ -37,7 +37,7 @@ export default function AlertDismissible() {
           variant="ghost"
           size="icon-sm"
           aria-label="Dismiss"
-          onPress={() => setOpen(false)}
+          onClick={() => setOpen(false)}
         >
           <XIcon />
         </Button>

@@ -1,14 +1,20 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/tooltip-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/tooltip-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
-import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
 
 export function TooltipDemo() {
   return (
-    <TooltipTrigger>
-      <Button variant="outline">Hover</Button>
-      <Tooltip>
+    <Tooltip>
+      <TooltipTrigger render={<Button variant="outline" />}>
+        Hover
+      </TooltipTrigger>
+      <TooltipContent>
         <p>Add to library</p>
-      </Tooltip>
-    </TooltipTrigger>
+      </TooltipContent>
+    </Tooltip>
   )
 }

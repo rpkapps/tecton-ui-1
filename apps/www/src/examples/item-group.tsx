@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/item-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/item-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import * as React from "react"
 import { PlusIcon } from "lucide-react"
 
@@ -21,19 +21,19 @@ import {
 
 const people = [
   {
-    username: "alex",
-    avatar: "/avatars/01.png",
-    email: "alex@example.com",
+    username: "shadcn",
+    avatar: "https://github.com/shadcn.png",
+    email: "shadcn@vercel.com",
   },
   {
-    username: "jamie",
-    avatar: "/avatars/02.png",
-    email: "jamie@example.com",
+    username: "maxleiter",
+    avatar: "https://github.com/maxleiter.png",
+    email: "maxleiter@vercel.com",
   },
   {
-    username: "taylor",
-    avatar: "/avatars/03.png",
-    email: "taylor@example.com",
+    username: "evilrabbit",
+    avatar: "https://github.com/evilrabbit.png",
+    email: "evilrabbit@vercel.com",
   },
 ]
 

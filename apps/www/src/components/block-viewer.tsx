@@ -8,7 +8,7 @@ import {
   SmartphoneIcon,
   TabletIcon,
 } from "lucide-react"
-import { Button, LinkButton } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/components/button"
 import {
   ResizableHandle,
   ResizablePanel,
@@ -109,7 +109,7 @@ function BlockCode({ name }: { name: string }) {
             <Button
               variant="outline"
               size="sm"
-              onPress={() => setAttempt((n) => n + 1)}
+              onClick={() => setAttempt((n) => n + 1)}
             >
               Retry
             </Button>
@@ -167,13 +167,13 @@ export function BlockViewer({
     >
       <div className="flex w-full items-center gap-2 **:data-[slot=separator]:h-4! **:data-[slot=separator]:self-center">
         <Tabs
-          selectedKey={view}
-          onSelectionChange={(key) => setView(key as View)}
+          value={view}
+          onValueChange={(value) => setView(value as View)}
           className="gap-0"
         >
           <TabsList className="bg-transparent p-0 group-data-horizontal/tabs:h-8">
-            <TabsTrigger id="preview">Preview</TabsTrigger>
-            <TabsTrigger id="code">Code</TabsTrigger>
+            <TabsTrigger value="preview">Preview</TabsTrigger>
+            <TabsTrigger value="code">Code</TabsTrigger>
           </TabsList>
         </Tabs>
         <Separator orientation="vertical" className="mx-1 hidden lg:block" />
@@ -190,29 +190,29 @@ export function BlockViewer({
           <div className="hidden h-7 items-center gap-1 rounded-md border p-[2px] lg:flex">
             <ToggleGroup
               aria-label="Preview width"
-              selectionMode="single"
-              selectedKeys={[size]}
-              disallowEmptySelection
-              onSelectionChange={(keys) => resize(String([...keys][0]) as Size)}
+              value={[size]}
+              onValueChange={(value) => {
+                if (value[0]) resize(value[0] as Size)
+              }}
               spacing={0}
               className="gap-0.5"
             >
               <ToggleGroupItem
-                id="100"
+                value="100"
                 aria-label={sizes["100"]}
                 className="size-[22px] min-w-0 rounded-sm p-0"
               >
                 <MonitorIcon className="size-3.5" />
               </ToggleGroupItem>
               <ToggleGroupItem
-                id="60"
+                value="60"
                 aria-label={sizes["60"]}
                 className="size-[22px] min-w-0 rounded-sm p-0"
               >
                 <TabletIcon className="size-3.5" />
               </ToggleGroupItem>
               <ToggleGroupItem
-                id="30"
+                value="30"
                 aria-label={sizes["30"]}
                 className="size-[22px] min-w-0 rounded-sm p-0"
               >
@@ -220,29 +220,39 @@ export function BlockViewer({
               </ToggleGroupItem>
             </ToggleGroup>
             <Separator orientation="vertical" className="mx-0.5" />
-            <LinkButton
+            <Button
               variant="ghost"
               size="icon-xs"
               className="size-[22px] rounded-sm"
-              href={`/view/${block.name}`}
-              target="_blank"
-              rel="noreferrer"
+              nativeButton={false}
+              render={
+                <a
+                  href={`/view/${block.name}`}
+                  target="_blank"
+                  rel="noreferrer"
+                />
+              }
               aria-label="Open in a new tab"
             >
               <FullscreenIcon className="size-3.5" />
-            </LinkButton>
+            </Button>
           </div>
-          <LinkButton
+          <Button
             variant="outline"
             size="icon-sm"
             className="lg:hidden"
-            href={`/view/${block.name}`}
-            target="_blank"
-            rel="noreferrer"
+            nativeButton={false}
+            render={
+              <a
+                href={`/view/${block.name}`}
+                target="_blank"
+                rel="noreferrer"
+              />
+            }
             aria-label="Open in a new tab"
           >
             <FullscreenIcon />
-          </LinkButton>
+          </Button>
           <Separator orientation="vertical" className="mx-1 hidden lg:block" />
           <CopyButton
             value={command}

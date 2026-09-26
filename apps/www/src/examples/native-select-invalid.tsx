@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/native-select-invalid.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/native-select-invalid.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   NativeSelect,
   NativeSelectOption,

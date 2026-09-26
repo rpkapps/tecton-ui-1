@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/textarea-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/textarea-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
 import { Textarea } from "@tecton/react/components/textarea"
 

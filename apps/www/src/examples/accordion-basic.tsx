@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/accordion-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/accordion-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Accordion,
   AccordionContent,
@@ -29,9 +29,9 @@ const items = [
 
 export function AccordionBasic() {
   return (
-    <Accordion defaultExpandedKeys={["item-1"]} className="max-w-lg">
+    <Accordion defaultValue={["item-1"]} className="max-w-lg">
       {items.map((item) => (
-        <AccordionItem key={item.value} id={item.value}>
+        <AccordionItem key={item.value} value={item.value}>
           <AccordionTrigger>{item.trigger}</AccordionTrigger>
           <AccordionContent>{item.content}</AccordionContent>
         </AccordionItem>

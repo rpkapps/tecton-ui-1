@@ -120,9 +120,11 @@ clone, then `scripts/registry-mirror.sh export` to refresh `tecton.patch`), run
 
 `apps/www/content/docs/components/*.mdx` and the examples in `apps/www/src/examples/*.tsx`
 whose first line is `// Synced from shadcn/ui …` are synced from the same upstream commit
-(`apps/v4/content/docs/components/aria/*.mdx`, `apps/v4/examples/aria/*.tsx`) by
+(`apps/v4/content/docs/components/base/*.mdx`, `apps/v4/examples/base/*.tsx`) by
 `pnpm docs:sync` (`apps/www/scripts/sync-upstream-docs.mts`), with import paths rewritten to
-`@tecton/react/...`. The Tecton sections of a synced page (the overlay variants) come from
+`@tecton/react/...`. The `base` docs cover `toast` instead of `sonner`, so the sonner page and
+its examples come from the `radix` base (they only call `toast()` from a Button's `onClick`);
+the `direction` page is not synced (applications set the direction with `TectonProvider`). The Tecton sections of a synced page (the overlay variants) come from
 `apps/www/scripts/docs-extras/<name>.mdx`, inserted before the upstream "API Reference".
 shadcn/ui is MIT licensed (see `LICENSE.md` in the upstream repository);
 the synced content keeps that license. Examples that need upstream-only infrastructure are

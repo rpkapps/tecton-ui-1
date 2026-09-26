@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/marker-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/marker-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { GitBranchIcon, SearchIcon } from "lucide-react"
 
 import { Marker, MarkerContent, MarkerIcon } from "@tecton/react/components/marker"

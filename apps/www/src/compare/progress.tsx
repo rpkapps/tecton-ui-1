@@ -31,7 +31,7 @@ export default function ProgressMatrix() {
               <Progress
                 key="indeterminate"
                 aria-label="Linear progress"
-                isIndeterminate
+                value={null}
                 className="w-72"
               />,
             ],

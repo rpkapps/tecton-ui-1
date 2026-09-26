@@ -15,8 +15,8 @@ export function SiteFooter() {
             >
               shadcn/ui
             </a>{" "}
-            (React Aria base) and themed through the Tecton design tokens.
-            Package: <span className="font-mono">{siteConfig.package}</span>.
+            and themed through the Tecton design tokens. Package:{" "}
+            <span className="font-mono">{siteConfig.package}</span>.
           </div>
         </div>
       </div>

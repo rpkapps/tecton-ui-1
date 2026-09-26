@@ -1,9 +1,10 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dropdown-menu-shortcuts.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dropdown-menu-shortcuts.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
@@ -14,9 +15,11 @@ import {
 
 export function DropdownMenuShortcuts() {
   return (
-    <DropdownMenuTrigger>
-      <Button variant="outline">Open</Button>
-      <DropdownMenu>
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>
+        Open
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
         <DropdownMenuGroup>
           <DropdownMenuLabel>My Account</DropdownMenuLabel>
           <DropdownMenuItem>
@@ -37,7 +40,7 @@ export function DropdownMenuShortcuts() {
           Log out
           <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
         </DropdownMenuItem>
-      </DropdownMenu>
-    </DropdownMenuTrigger>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

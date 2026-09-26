@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/combobox-input-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/combobox-input-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { GlobeIcon } from "lucide-react"
@@ -54,27 +54,25 @@ const timezones = [
 
 export function ComboxboxInputGroup() {
   return (
-    <Combobox allowsEmptyCollection aria-label="Timezone">
+    <Combobox items={timezones}>
       <ComboboxInput placeholder="Select a timezone">
         <InputGroupAddon>
           <GlobeIcon />
         </InputGroupAddon>
       </ComboboxInput>
-      <ComboboxContent crossOffset={-28} className="w-60">
-        <ComboboxList
-          items={timezones}
-          renderEmptyState={() => (
-            <ComboboxEmpty>No timezones found.</ComboboxEmpty>
-          )}
-        >
+      <ComboboxContent alignOffset={-28} className="w-60">
+        <ComboboxEmpty>No timezones found.</ComboboxEmpty>
+        <ComboboxList>
           {(group) => (
-            <ComboboxGroup id={group.value}>
+            <ComboboxGroup key={group.value} items={group.items}>
               <ComboboxLabel>{group.value}</ComboboxLabel>
-              {group.items.map((item) => (
-                <ComboboxItem key={item} id={item}>
-                  {item}
-                </ComboboxItem>
-              ))}
+              <ComboboxCollection>
+                {(item) => (
+                  <ComboboxItem key={item} value={item}>
+                    {item}
+                  </ComboboxItem>
+                )}
+              </ComboboxCollection>
             </ComboboxGroup>
           )}
         </ComboboxList>

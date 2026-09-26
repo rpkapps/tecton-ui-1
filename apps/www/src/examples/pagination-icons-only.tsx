@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/pagination-icons-only.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/pagination-icons-only.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Field, FieldLabel } from "@tecton/react/components/field"
 import {
   Pagination,
@@ -20,17 +20,17 @@ export function PaginationIconsOnly() {
   return (
     <div className="flex items-center justify-between gap-4">
       <Field orientation="horizontal" className="w-fit">
-        <FieldLabel id="select-rows-per-page-label" htmlFor="select-rows-per-page">Rows per page</FieldLabel>
-        <Select aria-labelledby="select-rows-per-page-label" defaultValue="25">
+        <FieldLabel htmlFor="select-rows-per-page">Rows per page</FieldLabel>
+        <Select defaultValue="25">
           <SelectTrigger className="w-20" id="select-rows-per-page">
             <SelectValue />
           </SelectTrigger>
-          <SelectContent placement="bottom start">
+          <SelectContent align="start">
             <SelectGroup>
-              <SelectItem id="10">10</SelectItem>
-              <SelectItem id="25">25</SelectItem>
-              <SelectItem id="50">50</SelectItem>
-              <SelectItem id="100">100</SelectItem>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="25">25</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+              <SelectItem value="100">100</SelectItem>
             </SelectGroup>
           </SelectContent>
         </Select>

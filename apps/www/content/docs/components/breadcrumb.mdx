@@ -1,10 +1,7 @@
 ---
 title: Breadcrumb
 description: Displays the path to the current resource using a hierarchy of links.
-links:
-  doc: https://react-aria.adobe.com/Breadcrumbs
-  api: https://react-aria.adobe.com/Breadcrumbs#api
-upstream: apps/v4/content/docs/components/aria/breadcrumb.mdx
+upstream: apps/v4/content/docs/components/base/breadcrumb.mdx
 ---
 
 <ComponentPreview
@@ -21,6 +18,7 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
+  BreadcrumbSeparator,
 } from "@tecton/react/components/breadcrumb"
 ```
 
@@ -28,11 +26,15 @@ import {
 <Breadcrumb>
   <BreadcrumbList>
     <BreadcrumbItem>
-      <BreadcrumbLink href="/">Home</BreadcrumbLink>
+      <BreadcrumbLink render={<a href="/" />}>Home</BreadcrumbLink>
     </BreadcrumbItem>
+    <BreadcrumbSeparator />
     <BreadcrumbItem>
-      <BreadcrumbLink href="/components">Components</BreadcrumbLink>
+      <BreadcrumbLink render={<a href="/components" />}>
+        Components
+      </BreadcrumbLink>
     </BreadcrumbItem>
+    <BreadcrumbSeparator />
     <BreadcrumbItem>
       <BreadcrumbPage>Breadcrumb</BreadcrumbPage>
     </BreadcrumbItem>
@@ -49,8 +51,10 @@ Breadcrumb
 └── BreadcrumbList
     ├── BreadcrumbItem
     │   └── BreadcrumbLink
+    ├── BreadcrumbSeparator
     ├── BreadcrumbItem
     │   └── BreadcrumbLink
+    ├── BreadcrumbSeparator
     └── BreadcrumbItem
         └── BreadcrumbPage
 ```
@@ -294,6 +298,15 @@ The `BreadcrumbPage` component displays the current page in the breadcrumb (non-
 | ----------- | -------- | ------- |
 | `className` | `string` | -       |
 
+### BreadcrumbSeparator
+
+The `BreadcrumbSeparator` component displays a separator between breadcrumb items. You can pass custom children to override the default separator icon.
+
+| Prop        | Type              | Default |
+| ----------- | ----------------- | ------- |
+| `children`  | `React.ReactNode` | -       |
+| `className` | `string`          | -       |
+
 ### BreadcrumbEllipsis
 
 The `BreadcrumbEllipsis` component displays an ellipsis indicator for collapsed breadcrumb items.
@@ -301,5 +314,3 @@ The `BreadcrumbEllipsis` component displays an ellipsis indicator for collapsed 
 | Prop        | Type     | Default |
 | ----------- | -------- | ------- |
 | `className` | `string` | -       |
-
-For more information, see the [React Aria documentation](https://react-aria.adobe.com/Breadcrumbs#api).

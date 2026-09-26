@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dropdown-menu-radio-icons.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dropdown-menu-radio-icons.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -7,9 +7,11 @@ import { Building2Icon, CreditCardIcon, WalletIcon } from "lucide-react"
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
-  DropdownMenuItem,
   DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
 
@@ -17,29 +19,32 @@ export function DropdownMenuRadioIcons() {
   const [paymentMethod, setPaymentMethod] = React.useState("card")
 
   return (
-    <DropdownMenuTrigger>
-      <Button variant="outline">Payment Method</Button>
-      <DropdownMenu className="min-w-56">
-        <DropdownMenuGroup
-          selectionMode="single"
-          selectedKeys={[paymentMethod]}
-          onSelectionChange={(keys) => setPaymentMethod([...keys][0] as string)}
-        >
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>
+        Payment Method
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="min-w-56">
+        <DropdownMenuGroup>
           <DropdownMenuLabel>Select Payment Method</DropdownMenuLabel>
-          <DropdownMenuItem id="card">
-            <CreditCardIcon />
-            Credit Card
-          </DropdownMenuItem>
-          <DropdownMenuItem id="paypal">
-            <WalletIcon />
-            PayPal
-          </DropdownMenuItem>
-          <DropdownMenuItem id="bank">
-            <Building2Icon />
-            Bank Transfer
-          </DropdownMenuItem>
+          <DropdownMenuRadioGroup
+            value={paymentMethod}
+            onValueChange={setPaymentMethod}
+          >
+            <DropdownMenuRadioItem value="card">
+              <CreditCardIcon />
+              Credit Card
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="paypal">
+              <WalletIcon />
+              PayPal
+            </DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="bank">
+              <Building2Icon />
+              Bank Transfer
+            </DropdownMenuRadioItem>
+          </DropdownMenuRadioGroup>
         </DropdownMenuGroup>
-      </DropdownMenu>
-    </DropdownMenuTrigger>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

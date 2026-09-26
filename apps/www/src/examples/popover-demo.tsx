@@ -1,14 +1,20 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/popover-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/popover-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
 import { Input } from "@tecton/react/components/input"
 import { Label } from "@tecton/react/components/label"
-import { Popover, PopoverTrigger } from "@tecton/react/components/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@tecton/react/components/popover"
 
 export default function PopoverDemo() {
   return (
-    <PopoverTrigger>
-      <Button variant="outline">Open popover</Button>
-      <Popover className="w-80">
+    <Popover>
+      <PopoverTrigger render={<Button variant="outline" />}>
+        Open popover
+      </PopoverTrigger>
+      <PopoverContent className="w-80">
         <div className="grid gap-4">
           <div className="space-y-2">
             <h4 className="leading-none font-medium">Dimensions</h4>
@@ -51,7 +57,7 @@ export default function PopoverDemo() {
             </div>
           </div>
         </div>
-      </Popover>
-    </PopoverTrigger>
+      </PopoverContent>
+    </Popover>
   )
 }

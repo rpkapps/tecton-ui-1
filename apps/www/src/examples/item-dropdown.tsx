@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/item-dropdown.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/item-dropdown.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { ChevronDownIcon } from "lucide-react"
@@ -11,6 +11,7 @@ import {
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
@@ -25,35 +26,35 @@ import {
 
 const people = [
   {
-    username: "alex",
-    avatar: "/avatars/01.png",
-    email: "alex@example.com",
+    username: "shadcn",
+    avatar: "https://github.com/shadcn.png",
+    email: "shadcn@vercel.com",
   },
   {
-    username: "jamie",
-    avatar: "/avatars/02.png",
-    email: "jamie@example.com",
+    username: "maxleiter",
+    avatar: "https://github.com/maxleiter.png",
+    email: "maxleiter@vercel.com",
   },
   {
-    username: "taylor",
-    avatar: "/avatars/03.png",
-    email: "taylor@example.com",
+    username: "evilrabbit",
+    avatar: "https://github.com/evilrabbit.png",
+    email: "evilrabbit@vercel.com",
   },
 ]
 
 export function ItemDropdown() {
   return (
-    <DropdownMenuTrigger>
-      <Button variant="outline">
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>
         Select <ChevronDownIcon />
-      </Button>
-      <DropdownMenu className="w-48" placement="bottom end">
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-48" align="end">
         <DropdownMenuGroup>
           {people.map((person) => (
             <DropdownMenuItem key={person.username}>
               <Item size="xs" className="w-full p-2">
                 <ItemMedia>
-                  <Avatar className="size-(--avatar-size) [--avatar-size:--spacing(6.5)]">
+                  <Avatar className="size-[--spacing(6.5)]">
                     <AvatarImage src={person.avatar} className="grayscale" />
                     <AvatarFallback>{person.username.charAt(0)}</AvatarFallback>
                   </Avatar>
@@ -68,7 +69,7 @@ export function ItemDropdown() {
             </DropdownMenuItem>
           ))}
         </DropdownMenuGroup>
-      </DropdownMenu>
-    </DropdownMenuTrigger>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/scroll-fade-horizontal.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/scroll-fade-horizontal.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 const tags = [
   "Design",
   "Engineering",

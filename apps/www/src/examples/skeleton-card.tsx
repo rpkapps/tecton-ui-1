@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/skeleton-card.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/skeleton-card.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Card, CardContent, CardHeader } from "@tecton/react/components/card"
 import { Skeleton } from "@tecton/react/components/skeleton"
 

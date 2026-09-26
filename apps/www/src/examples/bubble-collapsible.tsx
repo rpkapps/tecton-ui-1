@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/bubble-collapsible.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/bubble-collapsible.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -6,7 +6,10 @@ import { ChevronDownIcon } from "lucide-react"
 
 import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
 import { Button } from "@tecton/react/components/button"
-import { Collapsible } from "@tecton/react/components/collapsible"
+import {
+  Collapsible,
+  CollapsibleTrigger,
+} from "@tecton/react/components/collapsible"
 
 const text = `The accessibility review found two focus states that were visually too subtle in dark mode.
 
@@ -31,20 +34,23 @@ export function BubbleCollapsible() {
 
       <Bubble variant="muted" align="end">
         <BubbleContent className="whitespace-pre-line">
-          <Collapsible isExpanded={open} onExpandedChange={setOpen}>
+          <Collapsible open={open} onOpenChange={setOpen}>
             <div>{open || !isLong ? text : preview}</div>
             {isLong ? (
-              <Button
-                slot="trigger"
-                variant="link"
-                className="gap-1 p-0 text-muted-foreground"
+              <CollapsibleTrigger
+                render={
+                  <Button
+                    variant="link"
+                    className="gap-1 p-0 text-muted-foreground"
+                  />
+                }
               >
                 {open ? "Show less" : "Show more"}
                 <ChevronDownIcon
                   data-icon="inline-end"
                   className="group-data-panel-open/button:rotate-180"
                 />
-              </Button>
+              </CollapsibleTrigger>
             ) : null}
           </Collapsible>
         </BubbleContent>

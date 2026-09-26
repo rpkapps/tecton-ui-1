@@ -2,9 +2,9 @@
 title: Select
 description: Displays a list of options for the user to pick from—triggered by a button.
 links:
-  doc: https://react-aria.adobe.com/Select
-  api: https://react-aria.adobe.com/Select#api
-upstream: apps/v4/content/docs/components/aria/select.mdx
+  doc: https://base-ui.com/react/components/select
+  api: https://base-ui.com/react/components/select#api-reference
+upstream: apps/v4/content/docs/components/base/select.mdx
 ---
 
 <ComponentPreview name="select-demo" />
@@ -29,14 +29,14 @@ const items = [
   { label: "System", value: "system" },
 ]
 
-<Select placeholder="Theme">
+<Select items={items}>
   <SelectTrigger className="w-[180px]">
-    <SelectValue />
+    <SelectValue placeholder="Theme" />
   </SelectTrigger>
   <SelectContent>
     <SelectGroup>
       {items.map((item) => (
-        <SelectItem key={item.value} id={item.value}>
+        <SelectItem key={item.value} value={item.value}>
           {item.label}
         </SelectItem>
       ))}
@@ -65,6 +65,12 @@ Select
         └── SelectItem
 ```
 
+## Align Item With Trigger
+
+Use `alignItemWithTrigger` on `SelectContent` to control whether the selected item aligns with the trigger. When `true` (default), the popup positions so the selected item appears over the trigger. When `false`, the popup aligns to the trigger edge.
+
+<ComponentPreview name="select-align-item" />
+
 ## Groups
 
 Use `SelectGroup`, `SelectLabel`, and `SelectSeparator` to organize items.
@@ -83,22 +89,18 @@ A select with many items that scrolls.
 
 ## Invalid
 
-Add the `data-invalid` attribute to the `Field` component and the `isInvalid` prop to the `SelectTrigger` component to show an error state.
+Add the `data-invalid` attribute to the `Field` component and the `aria-invalid` attribute to the `SelectTrigger` component to show an error state.
 
 ```tsx lineNumbers /data-invalid/ /aria-invalid/
 <Field data-invalid>
   <FieldLabel>Fruit</FieldLabel>
-  <Select isInvalid>{/* ... */}</Select>
+  <SelectTrigger aria-invalid>
+    <SelectValue />
+  </SelectTrigger>
 </Field>
 ```
 
 <ComponentPreview name="select-invalid" />
-
-## Searchable
-
-Use the [Autocomplete](https://react-aria.adobe.com/Autocomplete) component from React Aria to add search support.
-
-<ComponentPreview name="select-autocomplete" />
 
 ## RTL
 
@@ -275,4 +277,4 @@ Before the popup has mounted its items, `SelectValue` can only print the value i
 
 ## API Reference
 
-See the [React Aria Select](https://react-aria.adobe.com/Select#api) documentation.
+See the [Base UI Select](https://base-ui.com/react/components/select#api-reference) documentation.

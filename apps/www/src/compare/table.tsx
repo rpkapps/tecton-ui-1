@@ -91,42 +91,53 @@ function SortableHead({
 }
 
 export default function TableMatrix() {
+  const [selected, setSelected] = React.useState<string[]>(["USR-2050"])
+  const allSelected = selected.length === users.length
+  const toggle = (id: string, checked: boolean) =>
+    setSelected((current) =>
+      checked ? [...current, id] : current.filter((other) => other !== id)
+    )
+
   return (
     <Page>
       <div className="w-full max-w-4xl">
-        <Table
-          aria-label="Users"
-          selectionMode="multiple"
-          defaultSelectedKeys={["USR-2050"]}
-        >
+        <Table aria-label="Users">
           <TableHeader>
-            <TableHead className="w-10">
-              <Checkbox slot="selection" aria-label="Select all" />
-            </TableHead>
-            <SortableHead isRowHeader active>
-              User
-            </SortableHead>
-            <SortableHead>Email</SortableHead>
-            <SortableHead>Location</SortableHead>
-            <SortableHead>Account status</SortableHead>
-            <SortableHead className="text-right">ID</SortableHead>
-            <TableHead className="w-10 text-right">
-              <Button variant="ghost" size="icon-xs" aria-label="Settings">
-                <SettingsIcon />
-              </Button>
-            </TableHead>
+            <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  aria-label="Select all"
+                  checked={allSelected}
+                  indeterminate={selected.length > 0 && !allSelected}
+                  onCheckedChange={(checked) =>
+                    setSelected(checked ? users.map((user) => user.id) : [])
+                  }
+                />
+              </TableHead>
+              <SortableHead active>User</SortableHead>
+              <SortableHead>Email</SortableHead>
+              <SortableHead>Location</SortableHead>
+              <SortableHead>Account status</SortableHead>
+              <SortableHead className="text-right">ID</SortableHead>
+              <TableHead className="w-10 text-right">
+                <Button variant="ghost" size="icon-xs" aria-label="Settings">
+                  <SettingsIcon />
+                </Button>
+              </TableHead>
+            </TableRow>
           </TableHeader>
           <TableBody>
             {users.map((user, index) => (
               <TableRow
                 key={user.id}
-                id={user.id}
+                data-state={selected.includes(user.id) ? "selected" : undefined}
                 className={index % 2 === 1 ? "bg-muted/30" : undefined}
               >
                 <TableCell>
                   <Checkbox
-                    slot="selection"
                     aria-label={`Select ${user.name}`}
+                    checked={selected.includes(user.id)}
+                    onCheckedChange={(checked) => toggle(user.id, checked)}
                   />
                 </TableCell>
                 <TableCell>
@@ -174,7 +185,7 @@ export default function TableMatrix() {
               variant="ghost"
               size="icon-sm"
               aria-label="Previous page"
-              isDisabled
+              disabled
             >
               <ChevronLeftIcon />
             </Button>

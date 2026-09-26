@@ -1,8 +1,9 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dialog-no-close-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dialog-no-close-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
   DialogClose,
+  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -12,9 +13,11 @@ import {
 
 export function DialogNoCloseButton() {
   return (
-    <DialogTrigger>
-      <Button variant="outline">No Close Button</Button>
-      <Dialog showCloseButton={false}>
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>
+        No Close Button
+      </DialogTrigger>
+      <DialogContent showCloseButton={false}>
         <DialogHeader>
           <DialogTitle>No Close Button</DialogTitle>
           <DialogDescription>
@@ -22,7 +25,7 @@ export function DialogNoCloseButton() {
             corner.
           </DialogDescription>
         </DialogHeader>
-      </Dialog>
-    </DialogTrigger>
+      </DialogContent>
+    </Dialog>
   )
 }

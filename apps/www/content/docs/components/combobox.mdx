@@ -2,9 +2,9 @@
 title: Combobox
 description: Autocomplete input with a list of suggestions.
 links:
-  doc: https://react-aria.adobe.com/ComboBox
-  api: https://react-aria.adobe.com/ComboBox#api
-upstream: apps/v4/content/docs/components/aria/combobox.mdx
+  doc: https://base-ui.com/react/components/combobox
+  api: https://base-ui.com/react/components/combobox#api-reference
+upstream: apps/v4/content/docs/components/base/combobox.mdx
 ---
 
 <ComponentPreview
@@ -30,19 +30,16 @@ const frameworks = ["Next.js", "SvelteKit", "Nuxt.js", "Remix", "Astro"]
 
 export function ExampleCombobox() {
   return (
-    <Combobox allowsEmptyCollection>
+    <Combobox items={frameworks}>
       <ComboboxInput placeholder="Select a framework" />
       <ComboboxContent>
-        <ComboboxList
-          renderEmptyState={() => (
-            <ComboboxEmpty>No items found.</ComboboxEmpty>
-          )}
-        >
-          {frameworks.map((item) => (
-            <ComboboxItem key={item} id={item}>
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxList>
+          {(item) => (
+            <ComboboxItem key={item} value={item}>
               {item}
             </ComboboxItem>
-          ))}
+          )}
         </ComboboxList>
       </ComboboxContent>
     </Combobox>
@@ -60,6 +57,7 @@ A single-line input and a flat list (see [Basic](#basic)).
 Combobox
 ├── ComboboxInput
 └── ComboboxContent
+    ├── ComboboxEmpty
     └── ComboboxList
         ├── ComboboxItem
         └── ComboboxItem
@@ -72,10 +70,11 @@ Multi-select with `multiple`, chips, and a chips input (see [Multiple](#multiple
 ```text
 Combobox
 ├── ComboboxChips
-│   ├── ComboboxChipList
+│   ├── ComboboxValue
 │   │   └── ComboboxChip
 │   └── ComboboxChipsInput
 └── ComboboxContent
+    ├── ComboboxEmpty
     └── ComboboxList
         ├── ComboboxItem
         └── ComboboxItem
@@ -83,27 +82,30 @@ Combobox
 
 ### With groups and collection
 
-Nested items per group using `ComboboxGroup`, with a separator between groups (see [Groups](#groups)).
+Nested items per group using `ComboboxCollection` inside each `ComboboxGroup`, with a separator between groups (see [Groups](#groups)).
 
 ```text
 Combobox
 ├── ComboboxInput
 └── ComboboxContent
+    ├── ComboboxEmpty
     └── ComboboxList
         ├── ComboboxGroup
         │   ├── ComboboxLabel
-        │   ├── ComboboxItem
-        │   └── ComboboxItem
+        │   └── ComboboxCollection
+        │       ├── ComboboxItem
+        │       └── ComboboxItem
         ├── ComboboxSeparator
         └── ComboboxGroup
             ├── ComboboxLabel
-            ├── ComboboxItem
-            └── ComboboxItem
+            └── ComboboxCollection
+                ├── ComboboxItem
+                └── ComboboxItem
 ```
 
 ## Custom Items
 
-Use `textValue` when your items render JSX children.
+Use `itemToStringValue` when your items are objects.
 
 ```tsx lineNumbers
 import * as React from "react"
@@ -130,18 +132,17 @@ const frameworks: Framework[] = [
 
 export function ExampleComboboxCustomItems() {
   return (
-    <Combobox allowsEmptyCollection>
+    <Combobox
+      items={frameworks}
+      itemToStringValue={(framework) => framework.label}
+    >
       <ComboboxInput placeholder="Select a framework" />
       <ComboboxContent>
-        <ComboboxList
-          renderEmptyState={() => (
-            <ComboboxEmpty>No items found.</ComboboxEmpty>
-          )}
-          items={frameworks}
-        >
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxList>
           {(framework) => (
-            <ComboboxItem id={framework.value} textValue={framework.label}>
-              <span>{framework.label}</span>
+            <ComboboxItem key={framework.value} value={framework}>
+              {framework.label}
             </ComboboxItem>
           )}
         </ComboboxList>
@@ -161,7 +162,6 @@ import * as React from "react"
 import {
   Combobox,
   ComboboxChip,
-  ComboboxChipList,
   ComboboxChips,
   ComboboxChipsInput,
   ComboboxContent,
@@ -169,6 +169,7 @@ import {
   ComboboxInput,
   ComboboxItem,
   ComboboxList,
+  ComboboxValue,
 } from "@tecton/react/components/combobox"
 
 const frameworks = ["Next.js", "SvelteKit", "Nuxt.js", "Remix", "Astro"]
@@ -178,28 +179,27 @@ export function ExampleComboboxMultiple() {
 
   return (
     <Combobox
-      selectionMode="multiple"
+      items={frameworks}
+      multiple
       value={value}
-      onChange={setValue}
-      allowsEmptyCollection
+      onValueChange={setValue}
     >
       <ComboboxChips>
-        <ComboboxChipList<{ name: string }>>
-          {(value) => <ComboboxChip id={value.name}>{value.name}</ComboboxChip>}
-        </ComboboxChipList>
+        <ComboboxValue>
+          {value.map((item) => (
+            <ComboboxChip key={item}>{item}</ComboboxChip>
+          ))}
+        </ComboboxValue>
         <ComboboxChipsInput placeholder="Add framework" />
       </ComboboxChips>
       <ComboboxContent>
-        <ComboboxList
-          renderEmptyState={() => (
-            <ComboboxEmpty>No items found.</ComboboxEmpty>
-          )}
-        >
-          {frameworks.map((item) => (
-            <ComboboxItem key={item} id={item}>
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxList>
+          {(item) => (
+            <ComboboxItem key={item} value={item}>
               {item}
             </ComboboxItem>
-          ))}
+          )}
         </ComboboxList>
       </ComboboxContent>
     </Combobox>
@@ -233,21 +233,33 @@ Use `ComboboxGroup` and `ComboboxSeparator` to group items.
 
 ## Custom Items
 
-You can render custom component inside `ComboboxItem`.
+You can render a custom component inside `ComboboxItem`.
 
 <ComponentPreview name="combobox-custom" />
 
 ## Invalid
 
-Use the `isInvalid` prop to make the combobox invalid.
+Use the `aria-invalid` prop to make the combobox invalid.
 
 <ComponentPreview name="combobox-invalid" />
 
 ## Disabled
 
-Use the `isDisabled` prop to disable the combobox.
+Use the `disabled` prop to disable the combobox.
 
 <ComponentPreview name="combobox-disabled" />
+
+## Auto Highlight
+
+Use the `autoHighlight` prop to automatically highlight the first item on filter.
+
+<ComponentPreview name="combobox-auto-highlight" />
+
+## Popup
+
+You can trigger the combobox from a button or any other component by using the `render` prop. Move the `ComboboxInput` inside the `ComboboxContent`.
+
+<ComponentPreview name="combobox-popup" />
 
 ## Input Group
 
@@ -434,4 +446,4 @@ Without `items` the combobox has nothing to filter or count, so `ComboboxEmpty` 
 
 ## API Reference
 
-See the [React Aria](https://react-aria.adobe.com/ComboBox#api) documentation for more information.
+See the [Base UI](https://base-ui.com/react/components/combobox#api-reference) documentation for more information.

@@ -150,7 +150,7 @@ export default function BugReportForm() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="button" variant="outline" onPress={() => form.reset()}>
+          <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>
           <Button type="submit" form="bug-report-form">

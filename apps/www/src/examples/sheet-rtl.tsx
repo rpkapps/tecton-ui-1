@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/sheet-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/sheet-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import {
@@ -11,6 +11,7 @@ import { Input } from "@tecton/react/components/input"
 import {
   Sheet,
   SheetClose,
+  SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
@@ -63,9 +64,11 @@ export function SheetRtl() {
   const { dir, t, language } = useTranslation(translations, "ar")
 
   return (
-    <SheetTrigger>
-      <Button variant="outline">{t.open}</Button>
-      <Sheet
+    <Sheet>
+      <SheetTrigger render={<Button variant="outline" />}>
+        {t.open}
+      </SheetTrigger>
+      <SheetContent
         dir={dir}
         side={dir === "rtl" ? "left" : "right"}
         data-lang={dir === "rtl" ? language : undefined}
@@ -86,9 +89,11 @@ export function SheetRtl() {
         </FieldGroup>
         <SheetFooter>
           <Button type="submit">{t.save}</Button>
-          <SheetClose variant="outline">{t.close}</SheetClose>
+          <SheetClose render={<Button variant="outline" />}>
+            {t.close}
+          </SheetClose>
         </SheetFooter>
-      </Sheet>
-    </SheetTrigger>
+      </SheetContent>
+    </Sheet>
   )
 }

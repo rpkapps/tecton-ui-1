@@ -41,6 +41,9 @@ const spokenLanguages = [
   { label: "Japanese", value: "ja" },
 ] as const
 
+// value → label, so the trigger shows the label of the selected language
+const languageItems = [{ label: "Auto", value: "auto" }, ...spokenLanguages]
+
 const formSchema = z.object({
   language: z
     .string()
@@ -89,10 +92,7 @@ export default function FormTanstackSelect() {
                 return (
                   <Field orientation="responsive" data-invalid={isInvalid}>
                     <FieldContent>
-                      <FieldLabel
-                        id="form-tanstack-select-language-label"
-                        htmlFor="form-tanstack-select-language"
-                      >
+                      <FieldLabel htmlFor="form-tanstack-select-language">
                         Spoken Language
                       </FieldLabel>
                       <FieldDescription>
@@ -103,25 +103,27 @@ export default function FormTanstackSelect() {
                       )}
                     </FieldContent>
                     <Select
-                      aria-labelledby="form-tanstack-select-language-label"
                       name={field.name}
-                      placeholder="Select"
+                      items={languageItems}
                       value={field.state.value || null}
-                      onChange={(key) =>
-                        field.handleChange(key ? String(key) : "")
-                      }
-                      onBlur={field.handleBlur}
-                      isInvalid={isInvalid}
-                      className="min-w-[120px]"
+                      onValueChange={(value) => field.handleChange(value ?? "")}
                     >
-                      <SelectTrigger id="form-tanstack-select-language">
-                        <SelectValue />
+                      <SelectTrigger
+                        id="form-tanstack-select-language"
+                        aria-invalid={isInvalid}
+                        onBlur={field.handleBlur}
+                        className="min-w-[120px]"
+                      >
+                        <SelectValue placeholder="Select" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem id="auto">Auto</SelectItem>
+                        <SelectItem value="auto">Auto</SelectItem>
                         <SelectSeparator />
                         {spokenLanguages.map((language) => (
-                          <SelectItem key={language.value} id={language.value}>
+                          <SelectItem
+                            key={language.value}
+                            value={language.value}
+                          >
                             {language.label}
                           </SelectItem>
                         ))}
@@ -136,7 +138,7 @@ export default function FormTanstackSelect() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="button" variant="outline" onPress={() => form.reset()}>
+          <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>
           <Button type="submit" form="form-tanstack-select">

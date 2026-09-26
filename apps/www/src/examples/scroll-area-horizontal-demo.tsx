@@ -1,8 +1,8 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/scroll-area-horizontal-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/scroll-area-horizontal-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import * as React from "react"
 import Image from "@/components/shims/image"
 
-import { ScrollArea } from "@tecton/react/components/scroll-area"
+import { ScrollArea, ScrollBar } from "@tecton/react/components/scroll-area"
 
 export interface Artwork {
   artist: string
@@ -48,6 +48,7 @@ export function ScrollAreaHorizontalDemo() {
           </figure>
         ))}
       </div>
+      <ScrollBar orientation="horizontal" />
     </ScrollArea>
   )
 }

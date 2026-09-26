@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/scroll-fade-edge.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/scroll-fade-edge.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 const items = [
   "Inbox triage",
   "Design review",

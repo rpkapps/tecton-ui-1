@@ -10,7 +10,7 @@ Density is nothing more than Tailwind classes on the `Table`: an emphasised head
 
 ### Row selection
 
-Add a display column with a React Aria `Checkbox slot="selection"` in the header and in each cell, turn on `selectionMode="multiple"` on the `Table` and mirror its selection into TanStack's `rowSelection` state. Summarise the selection below the table.
+`Table` is a plain HTML table, so selection is TanStack's `rowSelection` state: add a display column with a `Checkbox` in the header (`checked` when every row is selected, `indeterminate` when some are, `onCheckedChange` → `toggleAllRowsSelected`) and one in each cell (`row.getIsSelected()` / `row.toggleSelected`), and mark selected rows with `data-state="selected"`. Summarise the selection below the table.
 
 <ComponentPreview name="data-table-selection" align="start" />
 

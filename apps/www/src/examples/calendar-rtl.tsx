@@ -1,29 +1,50 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/calendar-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/calendar-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
-import {
-  getLocalTimeZone,
-  today,
-  type CalendarDate,
-} from "@internationalized/date"
-import { I18nProvider } from "react-aria-components"
+import { arSA, he } from "react-day-picker/locale"
 
+import {
+  useTranslation,
+  type Translations,
+} from "@/components/language-selector"
 import { Calendar } from "@tecton/react/components/calendar"
 
+const translations: Translations = {
+  en: {
+    dir: "ltr",
+    values: {},
+  },
+  ar: {
+    dir: "rtl",
+    values: {},
+  },
+  he: {
+    dir: "rtl",
+    values: {},
+  },
+}
+
+const locales = {
+  ar: arSA,
+  he: he,
+} as const
+
 export function CalendarRtl() {
-  const [date, setDate] = React.useState<CalendarDate | undefined>(
-    today(getLocalTimeZone())
-  )
+  const { dir, language } = useTranslation(translations, "ar")
+  const [date, setDate] = React.useState<Date | undefined>(new Date())
 
   return (
-    <I18nProvider locale="ar">
-      <Calendar
-        value={date}
-        onChange={setDate}
-        className="rounded-lg border [--cell-size:--spacing(9)]"
-        captionLayout="dropdown"
-      />
-    </I18nProvider>
+    <Calendar
+      mode="single"
+      selected={date}
+      onSelect={setDate}
+      className="rounded-lg border [--cell-size:--spacing(9)]"
+      captionLayout="dropdown"
+      dir={dir}
+      locale={
+        dir === "rtl" ? locales[language as keyof typeof locales] : undefined
+      }
+    />
   )
 }

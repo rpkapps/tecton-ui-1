@@ -1,13 +1,13 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/context-menu-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-"use client"
-
-import { Pressable } from "react-aria-components"
-
+// Synced from shadcn/ui (apps/v4/examples/base/context-menu-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   ContextMenu,
+  ContextMenuCheckboxItem,
+  ContextMenuContent,
   ContextMenuGroup,
   ContextMenuItem,
   ContextMenuLabel,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
   ContextMenuSeparator,
   ContextMenuShortcut,
   ContextMenuSub,
@@ -18,27 +18,22 @@ import {
 
 export function ContextMenuDemo() {
   return (
-    <ContextMenuTrigger>
-      <Pressable>
-        <div
-          role="button"
-          className="flex aspect-video w-full max-w-xs items-center justify-center rounded-xl border border-dashed text-sm"
-        >
-          <span className="hidden pointer-fine:inline-block">
-            Right click here
-          </span>
-          <span className="hidden pointer-coarse:inline-block">
-            Long press here
-          </span>
-        </div>
-      </Pressable>
-      <ContextMenu className="w-48">
+    <ContextMenu>
+      <ContextMenuTrigger className="flex aspect-video w-full max-w-xs items-center justify-center rounded-xl border border-dashed text-sm">
+        <span className="hidden pointer-fine:inline-block">
+          Right click here
+        </span>
+        <span className="hidden pointer-coarse:inline-block">
+          Long press here
+        </span>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-48">
         <ContextMenuGroup>
           <ContextMenuItem>
             Back
             <ContextMenuShortcut>⌘[</ContextMenuShortcut>
           </ContextMenuItem>
-          <ContextMenuItem isDisabled>
+          <ContextMenuItem disabled>
             Forward
             <ContextMenuShortcut>⌘]</ContextMenuShortcut>
           </ContextMenuItem>
@@ -66,23 +61,23 @@ export function ContextMenuDemo() {
           </ContextMenuSub>
         </ContextMenuGroup>
         <ContextMenuSeparator />
-        <ContextMenuGroup
-          selectionMode="multiple"
-          defaultSelectedKeys={["bookmarks"]}
-        >
-          <ContextMenuItem id="bookmarks">Show Bookmarks</ContextMenuItem>
-          <ContextMenuItem id="urls">Show Full URLs</ContextMenuItem>
+        <ContextMenuGroup>
+          <ContextMenuCheckboxItem checked>
+            Show Bookmarks
+          </ContextMenuCheckboxItem>
+          <ContextMenuCheckboxItem>Show Full URLs</ContextMenuCheckboxItem>
         </ContextMenuGroup>
         <ContextMenuSeparator />
-        <ContextMenuGroup
-          selectionMode="single"
-          defaultSelectedKeys={["pedro"]}
-        >
-          <ContextMenuLabel>People</ContextMenuLabel>
-          <ContextMenuItem id="pedro">Pedro Duarte</ContextMenuItem>
-          <ContextMenuItem id="colm">Colm Tuite</ContextMenuItem>
+        <ContextMenuGroup>
+          <ContextMenuRadioGroup value="pedro">
+            <ContextMenuLabel>People</ContextMenuLabel>
+            <ContextMenuRadioItem value="pedro">
+              Pedro Duarte
+            </ContextMenuRadioItem>
+            <ContextMenuRadioItem value="colm">Colm Tuite</ContextMenuRadioItem>
+          </ContextMenuRadioGroup>
         </ContextMenuGroup>
-      </ContextMenu>
-    </ContextMenuTrigger>
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/empty-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/empty-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -8,7 +8,7 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Button, LinkButton } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/components/button"
 import {
   Empty,
   EmptyContent,
@@ -69,15 +69,16 @@ export function EmptyRtl() {
         <Button>{t.createProject}</Button>
         <Button variant="outline">{t.importProject}</Button>
       </EmptyContent>
-      <LinkButton
-        href="#"
+      <Button
         variant="link"
+        render={<a href="#" />}
         className="text-muted-foreground"
         size="sm"
+        nativeButton={false}
       >
         {t.learnMore}{" "}
         <ArrowUpRightIcon className="rtl:rotate-270" data-icon="inline-end" />
-      </LinkButton>
+      </Button>
     </Empty>
   )
 }

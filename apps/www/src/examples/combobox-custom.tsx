@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/combobox-custom.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/combobox-custom.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import {
@@ -17,6 +17,7 @@ import {
 } from "@tecton/react/components/item"
 
 const countries = [
+  { code: "", value: "", continent: "", label: "Select country" },
   {
     code: "ar",
     value: "argentina",
@@ -70,34 +71,28 @@ const countries = [
 
 export function ComboboxWithCustomItems() {
   return (
-    <Combobox allowsEmptyCollection aria-label="Country">
+    <Combobox
+      items={countries.filter((country) => country.code !== "")}
+      itemToStringValue={(country: (typeof countries)[number]) => country.label}
+    >
       <ComboboxInput placeholder="Search countries..." />
       <ComboboxContent>
-        <ComboboxList
-          renderEmptyState={() => (
-            <ComboboxEmpty>No countries found.</ComboboxEmpty>
+        <ComboboxEmpty>No countries found.</ComboboxEmpty>
+        <ComboboxList>
+          {(country) => (
+            <ComboboxItem key={country.code} value={country}>
+              <Item size="xs" className="p-0">
+                <ItemContent>
+                  <ItemTitle className="whitespace-nowrap">
+                    {country.label}
+                  </ItemTitle>
+                  <ItemDescription>
+                    {country.continent} ({country.code})
+                  </ItemDescription>
+                </ItemContent>
+              </Item>
+            </ComboboxItem>
           )}
-        >
-          {countries
-            .filter((country) => country.code !== "")
-            .map((country) => (
-              <ComboboxItem
-                key={country.code}
-                id={country.code}
-                textValue={country.label}
-              >
-                <Item size="xs" className="p-0">
-                  <ItemContent>
-                    <ItemTitle className="whitespace-nowrap">
-                      {country.label}
-                    </ItemTitle>
-                    <ItemDescription>
-                      {country.continent} ({country.code})
-                    </ItemDescription>
-                  </ItemContent>
-                </Item>
-              </ComboboxItem>
-            ))}
         </ComboboxList>
       </ComboboxContent>
     </Combobox>

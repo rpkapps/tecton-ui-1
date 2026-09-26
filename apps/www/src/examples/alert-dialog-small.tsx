@@ -1,8 +1,9 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/alert-dialog-small.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/alert-dialog-small.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
@@ -13,9 +14,11 @@ import { Button } from "@tecton/react/components/button"
 
 export function AlertDialogSmall() {
   return (
-    <AlertDialogTrigger>
-      <Button variant="outline">Show Dialog</Button>
-      <AlertDialog size="sm">
+    <AlertDialog>
+      <AlertDialogTrigger
+        render={<Button variant="outline">Show Dialog</Button>}
+      />
+      <AlertDialogContent size="sm">
         <AlertDialogHeader>
           <AlertDialogTitle>Allow accessory to connect?</AlertDialogTitle>
           <AlertDialogDescription>
@@ -26,7 +29,7 @@ export function AlertDialogSmall() {
           <AlertDialogCancel>Don&apos;t allow</AlertDialogCancel>
           <AlertDialogAction>Allow</AlertDialogAction>
         </AlertDialogFooter>
-      </AlertDialog>
-    </AlertDialogTrigger>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

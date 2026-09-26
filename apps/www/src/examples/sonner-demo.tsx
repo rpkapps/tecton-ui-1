@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/sonner-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/radix/sonner-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { toast } from "sonner"
@@ -9,7 +9,7 @@ export function SonnerDemo() {
   return (
     <Button
       variant="outline"
-      onPress={() =>
+      onClick={() =>
         toast("Event has been created", {
           description: "Sunday, December 03, 2023 at 9:00 AM",
           action: {

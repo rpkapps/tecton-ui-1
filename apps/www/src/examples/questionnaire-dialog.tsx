@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/questionnaire-dialog.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/questionnaire-dialog.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -8,6 +8,7 @@ import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
   DialogClose,
+  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -49,9 +50,11 @@ export function QuestionnaireDialog() {
   }
 
   return (
-    <DialogTrigger isOpen={open} onOpenChange={setOpen}>
-      <Button variant="outline">Open clarification</Button>
-      <Dialog>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger render={<Button variant="outline" />}>
+        Open clarification
+      </DialogTrigger>
+      <DialogContent>
         <Questionnaire
           defaultItem="scope"
           items={items}
@@ -106,7 +109,7 @@ export function QuestionnaireDialog() {
           </QuestionnaireItem>
 
           <DialogFooter>
-            <DialogClose type="button" variant="outline">
+            <DialogClose render={<Button type="button" variant="outline" />}>
               Cancel
             </DialogClose>
             <QuestionnaireActions>
@@ -116,7 +119,7 @@ export function QuestionnaireDialog() {
             </QuestionnaireActions>
           </DialogFooter>
         </Questionnaire>
-      </Dialog>
-    </DialogTrigger>
+      </DialogContent>
+    </Dialog>
   )
 }

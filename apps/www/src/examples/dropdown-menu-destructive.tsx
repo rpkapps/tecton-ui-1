@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dropdown-menu-destructive.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dropdown-menu-destructive.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import { PencilIcon, ShareIcon, TrashIcon } from "lucide-react"
@@ -6,6 +6,7 @@ import { PencilIcon, ShareIcon, TrashIcon } from "lucide-react"
 import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
@@ -14,9 +15,11 @@ import {
 
 export function DropdownMenuDestructive() {
   return (
-    <DropdownMenuTrigger>
-      <Button variant="outline">Actions</Button>
-      <DropdownMenu>
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="outline" />}>
+        Actions
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
         <DropdownMenuGroup>
           <DropdownMenuItem>
             <PencilIcon />
@@ -34,7 +37,7 @@ export function DropdownMenuDestructive() {
             Delete
           </DropdownMenuItem>
         </DropdownMenuGroup>
-      </DropdownMenu>
-    </DropdownMenuTrigger>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/tabs-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/tabs-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Card,
   CardContent,
@@ -15,14 +15,14 @@ import {
 
 export function TabsDemo() {
   return (
-    <Tabs defaultSelectedKey="overview" className="w-[400px]">
+    <Tabs defaultValue="overview" className="w-[400px]">
       <TabsList>
-        <TabsTrigger id="overview">Overview</TabsTrigger>
-        <TabsTrigger id="analytics">Analytics</TabsTrigger>
-        <TabsTrigger id="reports">Reports</TabsTrigger>
-        <TabsTrigger id="settings">Settings</TabsTrigger>
+        <TabsTrigger value="overview">Overview</TabsTrigger>
+        <TabsTrigger value="analytics">Analytics</TabsTrigger>
+        <TabsTrigger value="reports">Reports</TabsTrigger>
+        <TabsTrigger value="settings">Settings</TabsTrigger>
       </TabsList>
-      <TabsContent id="overview">
+      <TabsContent value="overview">
         <Card>
           <CardHeader>
             <CardTitle>Overview</CardTitle>
@@ -36,7 +36,7 @@ export function TabsDemo() {
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent id="analytics">
+      <TabsContent value="analytics">
         <Card>
           <CardHeader>
             <CardTitle>Analytics</CardTitle>
@@ -50,7 +50,7 @@ export function TabsDemo() {
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent id="reports">
+      <TabsContent value="reports">
         <Card>
           <CardHeader>
             <CardTitle>Reports</CardTitle>
@@ -64,7 +64,7 @@ export function TabsDemo() {
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent id="settings">
+      <TabsContent value="settings">
         <Card>
           <CardHeader>
             <CardTitle>Settings</CardTitle>

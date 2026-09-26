@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/collapsible-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/collapsible-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -60,32 +60,32 @@ export function CollapsibleRtl() {
 
   return (
     <Collapsible
-      isExpanded={isOpen}
-      onExpandedChange={setIsOpen}
+      open={isOpen}
+      onOpenChange={setIsOpen}
       className="flex w-[350px] flex-col gap-2"
       dir={dir}
     >
       <div className="flex items-center justify-between gap-4 px-4">
         <h4 className="text-sm font-semibold">{t.orderNumber}</h4>
-        <Button slot="trigger" variant="ghost" size="icon" className="size-8">
+        <CollapsibleTrigger
+          render={<Button variant="ghost" size="icon" className="size-8" />}
+        >
           <ChevronsUpDown />
           <span className="sr-only">Toggle details</span>
-        </Button>
+        </CollapsibleTrigger>
       </div>
       <div className="flex items-center justify-between rounded-md border px-4 py-2 text-sm">
         <span className="text-muted-foreground">{t.status}</span>
         <span className="font-medium">{t.shipped}</span>
       </div>
-      <CollapsibleContent>
-        <div className="flex flex-col gap-2">
-          <div className="rounded-md border px-4 py-2 text-sm">
-            <p className="font-medium">{t.shippingAddress}</p>
-            <p className="text-muted-foreground">{t.address}</p>
-          </div>
-          <div className="rounded-md border px-4 py-2 text-sm">
-            <p className="font-medium">{t.items}</p>
-            <p className="text-muted-foreground">{t.itemsDescription}</p>
-          </div>
+      <CollapsibleContent className="flex flex-col gap-2">
+        <div className="rounded-md border px-4 py-2 text-sm">
+          <p className="font-medium">{t.shippingAddress}</p>
+          <p className="text-muted-foreground">{t.address}</p>
+        </div>
+        <div className="rounded-md border px-4 py-2 text-sm">
+          <p className="font-medium">{t.items}</p>
+          <p className="text-muted-foreground">{t.itemsDescription}</p>
         </div>
       </CollapsibleContent>
     </Collapsible>

@@ -1,11 +1,9 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/context-menu-destructive.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-"use client"
-
+// Synced from shadcn/ui (apps/v4/examples/base/context-menu-destructive.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { ArchiveIcon, PencilIcon, ShareIcon, TrashIcon } from "lucide-react"
-import { Pressable } from "react-aria-components"
 
 import {
   ContextMenu,
+  ContextMenuContent,
   ContextMenuGroup,
   ContextMenuItem,
   ContextMenuSeparator,
@@ -14,21 +12,16 @@ import {
 
 export function ContextMenuDestructive() {
   return (
-    <ContextMenuTrigger>
-      <Pressable>
-        <div
-          role="button"
-          className="flex aspect-video w-full max-w-xs items-center justify-center rounded-xl border border-dashed text-sm"
-        >
-          <span className="hidden pointer-fine:inline-block">
-            Right click here
-          </span>
-          <span className="hidden pointer-coarse:inline-block">
-            Long press here
-          </span>
-        </div>
-      </Pressable>
-      <ContextMenu>
+    <ContextMenu>
+      <ContextMenuTrigger className="flex aspect-video w-full max-w-xs items-center justify-center rounded-xl border border-dashed text-sm">
+        <span className="hidden pointer-fine:inline-block">
+          Right click here
+        </span>
+        <span className="hidden pointer-coarse:inline-block">
+          Long press here
+        </span>
+      </ContextMenuTrigger>
+      <ContextMenuContent>
         <ContextMenuGroup>
           <ContextMenuItem>
             <PencilIcon />
@@ -46,7 +39,7 @@ export function ContextMenuDestructive() {
             Delete
           </ContextMenuItem>
         </ContextMenuGroup>
-      </ContextMenu>
-    </ContextMenuTrigger>
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }

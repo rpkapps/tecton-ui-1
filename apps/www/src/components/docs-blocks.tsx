@@ -47,8 +47,8 @@ export function CodeTabs({
   return (
     <Tabs
       data-not-typeset
-      selectedKey={value}
-      onSelectionChange={(key) => {
+      value={value}
+      onValueChange={(key) => {
         const next = String(key)
         setValue(next)
         try {
@@ -65,18 +65,14 @@ export function CodeTabs({
   )
 }
 
-/** shadcn docs use `value`; React Aria tabs use `id`. Accept both. */
 export function DocsTabsTrigger({
-  value,
-  id,
   className,
   ...props
-}: React.ComponentProps<typeof TabsTrigger> & { value?: string }) {
+}: React.ComponentProps<typeof TabsTrigger>) {
   return (
     <TabsTrigger
-      id={id ?? value}
       className={cn(
-        "h-auto px-0 pb-3 text-base font-medium text-muted-foreground hover:text-foreground data-selected:text-foreground",
+        "h-auto px-0 pb-3 text-base font-medium text-muted-foreground hover:text-foreground data-active:text-foreground",
         className
       )}
       {...props}
@@ -85,14 +81,11 @@ export function DocsTabsTrigger({
 }
 
 export function DocsTabsContent({
-  value,
-  id,
   className,
   ...props
-}: React.ComponentProps<typeof TabsContent> & { value?: string }) {
+}: React.ComponentProps<typeof TabsContent>) {
   return (
     <TabsContent
-      id={id ?? value}
       className={cn(
         "relative *:[figure]:first:mt-0 [&>.steps]:mt-6 [&>[data-code-block]:first-child]:mt-0",
         className
@@ -120,13 +113,11 @@ export function DocsTabsList({
 
 export function DocsTabs({
   className,
-  defaultValue,
   ...props
-}: React.ComponentProps<typeof Tabs> & { defaultValue?: string }) {
+}: React.ComponentProps<typeof Tabs>) {
   return (
     <Tabs
       data-not-typeset
-      defaultSelectedKey={defaultValue}
       className={cn("relative mt-6 w-full gap-4", className)}
       {...props}
     />

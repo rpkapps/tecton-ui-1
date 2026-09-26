@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/checkbox-table.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/checkbox-table.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -41,28 +41,61 @@ const tableData = [
 ]
 
 export function CheckboxInTable() {
+  const [selectedRows, setSelectedRows] = React.useState<Set<string>>(
+    new Set(["1"])
+  )
+
+  const selectAll = selectedRows.size === tableData.length
+
+  const handleSelectAll = (checked: boolean) => {
+    if (checked) {
+      setSelectedRows(new Set(tableData.map((row) => row.id)))
+    } else {
+      setSelectedRows(new Set())
+    }
+  }
+
+  const handleSelectRow = (id: string, checked: boolean) => {
+    const newSelected = new Set(selectedRows)
+    if (checked) {
+      newSelected.add(id)
+    } else {
+      newSelected.delete(id)
+    }
+    setSelectedRows(newSelected)
+  }
+
   return (
-    <Table aria-label="Users" selectionMode="multiple">
+    <Table>
       <TableHeader>
-        <TableHead className="w-8">
-          <Checkbox
-            id="select-all-checkbox"
-            name="select-all-checkbox"
-            slot="selection"
-          />
-        </TableHead>
-        <TableHead isRowHeader>Name</TableHead>
-        <TableHead>Email</TableHead>
-        <TableHead>Role</TableHead>
+        <TableRow>
+          <TableHead className="w-8">
+            <Checkbox
+              id="select-all-checkbox"
+              name="select-all-checkbox"
+              checked={selectAll}
+              onCheckedChange={handleSelectAll}
+            />
+          </TableHead>
+          <TableHead>Name</TableHead>
+          <TableHead>Email</TableHead>
+          <TableHead>Role</TableHead>
+        </TableRow>
       </TableHeader>
       <TableBody>
         {tableData.map((row) => (
-          <TableRow key={row.id}>
+          <TableRow
+            key={row.id}
+            data-state={selectedRows.has(row.id) ? "selected" : undefined}
+          >
             <TableCell>
               <Checkbox
                 id={`row-${row.id}-checkbox`}
                 name={`row-${row.id}-checkbox`}
-                slot="selection"
+                checked={selectedRows.has(row.id)}
+                onCheckedChange={(checked) =>
+                  handleSelectRow(row.id, checked === true)
+                }
               />
             </TableCell>
             <TableCell className="font-medium">{row.name}</TableCell>

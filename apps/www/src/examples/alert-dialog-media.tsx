@@ -1,10 +1,11 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/alert-dialog-media.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/alert-dialog-media.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { CircleFadingPlusIcon } from "lucide-react"
 
 import {
   AlertDialog,
   AlertDialogAction,
   AlertDialogCancel,
+  AlertDialogContent,
   AlertDialogDescription,
   AlertDialogFooter,
   AlertDialogHeader,
@@ -16,9 +17,11 @@ import { Button } from "@tecton/react/components/button"
 
 export function AlertDialogWithMedia() {
   return (
-    <AlertDialogTrigger>
-      <Button variant="outline">Share Project</Button>
-      <AlertDialog>
+    <AlertDialog>
+      <AlertDialogTrigger
+        render={<Button variant="outline">Share Project</Button>}
+      />
+      <AlertDialogContent>
         <AlertDialogHeader>
           <AlertDialogMedia>
             <CircleFadingPlusIcon />
@@ -32,7 +35,7 @@ export function AlertDialogWithMedia() {
           <AlertDialogCancel>Cancel</AlertDialogCancel>
           <AlertDialogAction>Share</AlertDialogAction>
         </AlertDialogFooter>
-      </AlertDialog>
-    </AlertDialogTrigger>
+      </AlertDialogContent>
+    </AlertDialog>
   )
 }

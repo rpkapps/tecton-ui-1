@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/drawer-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/drawer-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -98,7 +98,7 @@ export function DrawerDemo() {
         <div className="flex-1 scroll-fade overflow-y-auto p-4">
           <RadioGroup
             value={deliveryTime}
-            onChange={setDeliveryTime}
+            onValueChange={setDeliveryTime}
             className="gap-2"
           >
             {deliveryTimes.map((time) => (
@@ -120,7 +120,7 @@ export function DrawerDemo() {
           </RadioGroup>
         </div>
         <DrawerFooter>
-          <Button onPress={handleConfirm} className="h-[34px]">
+          <Button onClick={handleConfirm} className="h-[34px]">
             Confirm Delivery Time
           </Button>
           <DrawerClose render={<Button variant="outline" />}>

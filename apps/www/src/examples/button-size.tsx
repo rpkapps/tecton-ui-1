@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/button-size.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/button-size.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { ArrowUpRightIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"

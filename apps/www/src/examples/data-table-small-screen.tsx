@@ -122,22 +122,24 @@ export default function DataTableSmallScreen() {
       <div className="overflow-hidden rounded-md border">
         <Table aria-label="Wells">
           <TableHeader>
-            {table.getFlatHeaders().map((header) => (
-              <TableHead
-                key={header.id}
-                id={header.id}
-                isRowHeader={header.index === 0}
-                className={columnClassName[header.column.id]}
-              >
-                {header.isPlaceholder ? null : (
-                  <table.FlexRender header={header} />
-                )}
-              </TableHead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead
+                    key={header.id}
+                    className={columnClassName[header.column.id]}
+                  >
+                    {header.isPlaceholder ? null : (
+                      <table.FlexRender header={header} />
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
             ))}
           </TableHeader>
-          <TableBody renderEmptyState={() => "No wells."}>
+          <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} id={row.id}>
+              <TableRow key={row.id}>
                 {row.getAllCells().map((cell) => (
                   <TableCell
                     key={cell.id}

@@ -96,7 +96,7 @@ export default function FormTanstackTextarea() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="button" variant="outline" onPress={() => form.reset()}>
+          <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>
           <Button type="submit" form="form-tanstack-textarea">

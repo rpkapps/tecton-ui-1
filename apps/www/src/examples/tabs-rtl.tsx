@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/tabs-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/tabs-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -103,14 +103,14 @@ export function TabsRtl() {
   const { dir, t } = useTranslation(translations, "ar")
 
   return (
-    <Tabs defaultSelectedKey="overview" className="w-full max-w-sm" dir={dir}>
+    <Tabs defaultValue="overview" className="w-full max-w-sm" dir={dir}>
       <TabsList dir={dir}>
-        <TabsTrigger id="overview">{t.overview}</TabsTrigger>
-        <TabsTrigger id="analytics">{t.analytics}</TabsTrigger>
-        <TabsTrigger id="reports">{t.reports}</TabsTrigger>
-        <TabsTrigger id="settings">{t.settings}</TabsTrigger>
+        <TabsTrigger value="overview">{t.overview}</TabsTrigger>
+        <TabsTrigger value="analytics">{t.analytics}</TabsTrigger>
+        <TabsTrigger value="reports">{t.reports}</TabsTrigger>
+        <TabsTrigger value="settings">{t.settings}</TabsTrigger>
       </TabsList>
-      <TabsContent id="overview">
+      <TabsContent value="overview">
         <Card dir={dir}>
           <CardHeader>
             <CardTitle>{t.overviewTitle}</CardTitle>
@@ -121,7 +121,7 @@ export function TabsRtl() {
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent id="analytics">
+      <TabsContent value="analytics">
         <Card dir={dir}>
           <CardHeader>
             <CardTitle>{t.analyticsTitle}</CardTitle>
@@ -132,7 +132,7 @@ export function TabsRtl() {
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent id="reports">
+      <TabsContent value="reports">
         <Card dir={dir}>
           <CardHeader>
             <CardTitle>{t.reportsTitle}</CardTitle>
@@ -143,7 +143,7 @@ export function TabsRtl() {
           </CardContent>
         </Card>
       </TabsContent>
-      <TabsContent id="settings">
+      <TabsContent value="settings">
         <Card dir={dir}>
           <CardHeader>
             <CardTitle>{t.settingsTitle}</CardTitle>

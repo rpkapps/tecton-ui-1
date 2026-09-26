@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/table-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/table-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -121,36 +121,32 @@ export function TableRtl() {
   const { dir, t } = useTranslation(translations, "ar")
 
   return (
-    <figure className="w-full">
-      <Table dir={dir} aria-label={t.caption}>
-        <TableHeader>
-          <TableHead isRowHeader className="w-[100px]">
-            {t.invoice}
-          </TableHead>
+    <Table dir={dir}>
+      <TableCaption>{t.caption}</TableCaption>
+      <TableHeader>
+        <TableRow>
+          <TableHead className="w-[100px]">{t.invoice}</TableHead>
           <TableHead>{t.status}</TableHead>
           <TableHead>{t.method}</TableHead>
           <TableHead className="text-right">{t.amount}</TableHead>
-        </TableHeader>
-        <TableBody>
-          {invoices.map((invoice) => (
-            <TableRow key={invoice.invoice}>
-              <TableCell className="font-medium">{invoice.invoice}</TableCell>
-              <TableCell>{t[invoice.paymentStatus]}</TableCell>
-              <TableCell>{t[invoice.paymentMethod]}</TableCell>
-              <TableCell className="text-right">
-                {invoice.totalAmount}
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-        <TableFooter>
-          <TableRow>
-            <TableCell colSpan={3}>{t.total}</TableCell>
-            <TableCell className="text-right">$2,500.00</TableCell>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {invoices.map((invoice) => (
+          <TableRow key={invoice.invoice}>
+            <TableCell className="font-medium">{invoice.invoice}</TableCell>
+            <TableCell>{t[invoice.paymentStatus]}</TableCell>
+            <TableCell>{t[invoice.paymentMethod]}</TableCell>
+            <TableCell className="text-right">{invoice.totalAmount}</TableCell>
           </TableRow>
-        </TableFooter>
-      </Table>
-      <TableCaption>{t.caption}</TableCaption>
-    </figure>
+        ))}
+      </TableBody>
+      <TableFooter>
+        <TableRow>
+          <TableCell colSpan={3}>{t.total}</TableCell>
+          <TableCell className="text-right">$2,500.00</TableCell>
+        </TableRow>
+      </TableFooter>
+    </Table>
   )
 }

@@ -2,9 +2,8 @@
 title: Command
 description: Command menu for search and quick actions.
 links:
-  doc: https://react-aria.adobe.com/Autocomplete
-  api: https://react-aria.adobe.com/Autocomplete#api
-upstream: apps/v4/content/docs/components/aria/command.mdx
+  doc: https://github.com/dip/cmdk
+upstream: apps/v4/content/docs/components/base/command.mdx
 ---
 
 <ComponentPreview
@@ -12,6 +11,10 @@ upstream: apps/v4/content/docs/components/aria/command.mdx
   align="start"
   previewClassName="h-[24.5rem]"
 />
+
+## About
+
+The `<Command />` component uses the [`cmdk`](https://github.com/dip/cmdk) component by [Dip](https://www.dip.org/).
 
 ## Usage
 
@@ -32,9 +35,8 @@ import {
 ```tsx lineNumbers
 <Command className="max-w-sm rounded-lg border">
   <CommandInput placeholder="Type a command or search..." />
-  <CommandList
-    renderEmptyState={() => <CommandEmpty>No results found.</CommandEmpty>}
-  >
+  <CommandList>
+    <CommandEmpty>No results found.</CommandEmpty>
     <CommandGroup heading="Suggestions">
       <CommandItem>Calendar</CommandItem>
       <CommandItem>Search Emoji</CommandItem>
@@ -58,6 +60,7 @@ Use the following composition to build a `Command`:
 Command
 ├── CommandInput
 └── CommandList
+    ├── CommandEmpty
     ├── CommandGroup
     │   ├── CommandItem
     │   └── CommandItem
@@ -251,4 +254,4 @@ With no `CommandEmpty` a search that matches nothing leaves a blank panel under 
 
 ## API Reference
 
-See the [React Aria](https://react-aria.adobe.com/Autocomplete) documentation for more information.
+See the [cmdk](https://github.com/dip/cmdk) documentation for more information.

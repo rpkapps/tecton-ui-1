@@ -4,14 +4,16 @@ description: A drawer component for React.
 links:
   doc: https://base-ui.com/react/components/drawer
   api: https://base-ui.com/react/components/drawer#api-reference
-upstream: apps/v4/content/docs/components/aria/drawer.mdx
+upstream: apps/v4/content/docs/components/base/drawer.mdx
 ---
 
 <ComponentPreview name="drawer-demo" />
 
 <Callout>
-  The drawer component uses [Base
-  UI](https://base-ui.com/react/components/drawer).
+  The drawer component now uses [Base
+  UI](https://base-ui.com/react/components/drawer) instead of Vaul. If you
+  installed the previous version, see the [migration
+  guide](#migrating-from-vaul).
 </Callout>
 
 ## Usage
@@ -157,8 +159,8 @@ You can combine the `Dialog` and `Drawer` components to create a responsive dial
 
 ## Migrating from Vaul
 
-The Aria drawer now uses [Base UI](https://base-ui.com/react/components/drawer)
-instead of Vaul. If you installed the previous Aria drawer, update your usage
+The base drawer now uses [Base UI](https://base-ui.com/react/components/drawer)
+instead of Vaul. If you installed the previous base drawer, update your usage
 to the Base UI API.
 
 <Steps>
@@ -236,7 +238,7 @@ snap point prop.
 <Step>Review Vaul-only props.</Step>
 
 Vaul props like `handleOnly`, `repositionInputs`, and
-`shouldScaleBackground` do not have one-to-one replacements in the Base UI drawer
+`shouldScaleBackground` do not have one-to-one replacements in the base drawer
 API. Use Base UI props such as `disablePointerDismissal`, `modal`, `snapPoints`,
 or controlled `open` state for the behavior you need.
 

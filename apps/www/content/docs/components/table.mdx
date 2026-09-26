@@ -1,10 +1,7 @@
 ---
 title: Table
 description: A responsive table component.
-links:
-  doc: https://react-aria.adobe.com/Table
-  api: https://react-aria.adobe.com/Table#api
-upstream: apps/v4/content/docs/components/aria/table.mdx
+upstream: apps/v4/content/docs/components/base/table.mdx
 ---
 
 <ComponentPreview
@@ -28,11 +25,14 @@ import {
 
 ```tsx lineNumbers
 <Table>
+  <TableCaption>A list of your recent invoices.</TableCaption>
   <TableHeader>
-    <TableHead isRowHeader className="w-[100px]">Invoice</TableHead>
-    <TableHead>Status</TableHead>
-    <TableHead>Method</TableHead>
-    <TableHead className="text-right">Amount</TableHead>
+    <TableRow>
+      <TableHead className="w-[100px]">Invoice</TableHead>
+      <TableHead>Status</TableHead>
+      <TableHead>Method</TableHead>
+      <TableHead className="text-right">Amount</TableHead>
+    </TableRow>
   </TableHeader>
   <TableBody>
     <TableRow>
@@ -43,7 +43,6 @@ import {
     </TableRow>
   </TableBody>
 </Table>
-<TableCaption>A list of your recent invoices.</TableCaption>
 ```
 
 ## Composition
@@ -245,7 +244,3 @@ A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse 
 </Dont>
 
 {/* guidelines:end */}
-
-## API Reference
-
-See the [React Aria Table](https://react-aria.adobe.com/Table#api) documentation.

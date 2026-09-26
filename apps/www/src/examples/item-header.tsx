@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/item-header.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/item-header.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import Image from "@/components/shims/image"
 
 import {

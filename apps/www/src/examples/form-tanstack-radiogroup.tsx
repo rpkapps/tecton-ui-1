@@ -96,10 +96,9 @@ export default function FormTanstackRadioGroup() {
                     <RadioGroup
                       name={field.name}
                       value={field.state.value}
-                      onChange={field.handleChange}
-                      onBlur={field.handleBlur}
-                      isInvalid={isInvalid}
-                      aria-label="Plan"
+                      onValueChange={(value) =>
+                        field.handleChange(value as string)
+                      }
                     >
                       {plans.map((plan) => (
                         <FieldLabel
@@ -119,6 +118,7 @@ export default function FormTanstackRadioGroup() {
                             <RadioGroupItem
                               value={plan.id}
                               id={`form-tanstack-radiogroup-${plan.id}`}
+                              aria-invalid={isInvalid}
                             />
                           </Field>
                         </FieldLabel>
@@ -136,7 +136,7 @@ export default function FormTanstackRadioGroup() {
       </CardContent>
       <CardFooter>
         <Field orientation="horizontal">
-          <Button type="button" variant="outline" onPress={() => form.reset()}>
+          <Button type="button" variant="outline" onClick={() => form.reset()}>
             Reset
           </Button>
           <Button type="submit" form="form-tanstack-radiogroup">

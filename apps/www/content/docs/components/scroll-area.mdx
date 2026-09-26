@@ -1,7 +1,10 @@
 ---
 title: Scroll Area
 description: Augments native scroll functionality for custom, cross-browser styling.
-upstream: apps/v4/content/docs/components/aria/scroll-area.mdx
+links:
+  doc: https://base-ui.com/react/components/scroll-area
+  api: https://base-ui.com/react/components/scroll-area#api-reference
+upstream: apps/v4/content/docs/components/base/scroll-area.mdx
 ---
 
 <ComponentPreview
@@ -12,7 +15,7 @@ upstream: apps/v4/content/docs/components/aria/scroll-area.mdx
 ## Usage
 
 ```tsx lineNumbers
-import { ScrollArea } from "@tecton/react/components/scroll-area"
+import { ScrollArea, ScrollBar } from "@tecton/react/components/scroll-area"
 ```
 
 ```tsx lineNumbers
@@ -21,7 +24,18 @@ import { ScrollArea } from "@tecton/react/components/scroll-area"
 </ScrollArea>
 ```
 
+## Composition
+
+Use the following composition to build a `ScrollArea`:
+
+```text
+ScrollArea
+└── ScrollBar
+```
+
 ## Horizontal
+
+Use `ScrollBar` with `orientation="horizontal"` for horizontal scrolling.
 
 <ComponentPreview name="scroll-area-horizontal-demo" />
 
@@ -175,3 +189,7 @@ The viewport is `size-full` of the root, so with no height the root grows to its
 </Dont>
 
 {/* guidelines:end */}
+
+## API Reference
+
+See the [Base UI Scroll Area](https://base-ui.com/react/components/scroll-area#api-reference) documentation.

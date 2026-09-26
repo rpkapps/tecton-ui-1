@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/combobox-multiple.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/combobox-multiple.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -6,13 +6,14 @@ import * as React from "react"
 import {
   Combobox,
   ComboboxChip,
-  ComboboxChipList,
   ComboboxChips,
   ComboboxChipsInput,
   ComboboxContent,
   ComboboxEmpty,
   ComboboxItem,
   ComboboxList,
+  ComboboxValue,
+  useComboboxAnchor,
 } from "@tecton/react/components/combobox"
 
 const frameworks = [
@@ -24,31 +25,35 @@ const frameworks = [
 ] as const
 
 export function ComboboxMultiple() {
+  const anchor = useComboboxAnchor()
+
   return (
     <Combobox
-      aria-label="Frameworks"
-      selectionMode="multiple"
+      multiple
+      autoHighlight
+      items={frameworks}
       defaultValue={[frameworks[0]]}
-      allowsEmptyCollection
-      className="w-[250px] max-w-full"
     >
-      <ComboboxChips>
-        <ComboboxChipList<{ name: string }>>
-          {(value) => <ComboboxChip id={value.name}>{value.name}</ComboboxChip>}
-        </ComboboxChipList>
-        <ComboboxChipsInput />
-      </ComboboxChips>
-      <ComboboxContent>
-        <ComboboxList
-          renderEmptyState={() => (
-            <ComboboxEmpty>No items found.</ComboboxEmpty>
+      <ComboboxChips ref={anchor} className="w-full max-w-xs">
+        <ComboboxValue>
+          {(values) => (
+            <React.Fragment>
+              {values.map((value: string) => (
+                <ComboboxChip key={value}>{value}</ComboboxChip>
+              ))}
+              <ComboboxChipsInput />
+            </React.Fragment>
           )}
-        >
-          {frameworks.map((item) => (
-            <ComboboxItem key={item} id={item} value={{ name: item }}>
+        </ComboboxValue>
+      </ComboboxChips>
+      <ComboboxContent anchor={anchor}>
+        <ComboboxEmpty>No items found.</ComboboxEmpty>
+        <ComboboxList>
+          {(item) => (
+            <ComboboxItem key={item} value={item}>
               {item}
             </ComboboxItem>
-          ))}
+          )}
         </ComboboxList>
       </ComboboxContent>
     </Combobox>

@@ -1,7 +1,7 @@
 ---
 title: Marker
 description: Displays an inline status, system note, bordered row, or labeled separator in a conversation.
-upstream: apps/v4/content/docs/components/aria/marker.mdx
+upstream: apps/v4/content/docs/components/base/marker.mdx
 ---
 
 <ComponentPreview
@@ -118,7 +118,7 @@ import { Marker, MarkerContent } from "@tecton/react/components/marker"
 
 export function MarkerLinkDemo() {
   return (
-    <Marker render={(props) => <a {...props} href="#" />}>
+    <Marker render={<a href="#" />}>
       <MarkerContent>View the pull request</MarkerContent>
     </Marker>
   )
@@ -189,7 +189,7 @@ A bordered marker keeps the same semantics as the default marker. The bottom bor
 When a marker links or triggers an action, render it as a real `<button>` or `<a>` with the `render` prop so it is focusable and exposes the correct role. The accessible name comes from the marker text.
 
 ```tsx lineNumbers
-<Marker render={(props) => <a {...props} href="/files" />}>
+<Marker render={<a href="/files" />}>
   <MarkerIcon>
     <FileTextIcon />
   </MarkerIcon>

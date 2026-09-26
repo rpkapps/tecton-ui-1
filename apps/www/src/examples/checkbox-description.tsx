@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/checkbox-description.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/checkbox-description.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Checkbox } from "@tecton/react/components/checkbox"
 import {
   Field,
@@ -15,7 +15,7 @@ export function CheckboxDescription() {
         <Checkbox
           id="terms-checkbox-desc"
           name="terms-checkbox-desc"
-          defaultSelected
+          defaultChecked
         />
         <FieldContent>
           <FieldLabel htmlFor="terms-checkbox-desc">

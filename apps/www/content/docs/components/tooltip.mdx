@@ -2,9 +2,9 @@
 title: Tooltip
 description: A popup that displays information related to an element when the element receives keyboard focus or the mouse hovers over it.
 links:
-  doc: https://react-aria.adobe.com/Tooltip
-  api: https://react-aria.adobe.com/Tooltip#api
-upstream: apps/v4/content/docs/components/aria/tooltip.mdx
+  doc: https://base-ui.com/react/components/tooltip
+  api: https://base-ui.com/react/components/tooltip#api-reference
+upstream: apps/v4/content/docs/components/base/tooltip.mdx
 ---
 
 <ComponentPreview name="tooltip-demo" />
@@ -12,16 +12,20 @@ upstream: apps/v4/content/docs/components/aria/tooltip.mdx
 ## Usage
 
 ```tsx lineNumbers
-import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
 ```
 
 ```tsx lineNumbers
-<TooltipTrigger>
-  <Button>Hover</Button>
-  <Tooltip>
+<Tooltip>
+  <TooltipTrigger>Hover</TooltipTrigger>
+  <TooltipContent>
     <p>Add to library</p>
-  </Tooltip>
-</TooltipTrigger>
+  </TooltipContent>
+</Tooltip>
 ```
 
 ## Composition
@@ -29,14 +33,14 @@ import { Tooltip, TooltipTrigger } from "@tecton/react/components/tooltip"
 Use the following composition to build a `Tooltip`:
 
 ```text
-TooltipTrigger
-├── Button
-└── Tooltip
+Tooltip
+├── TooltipTrigger
+└── TooltipContent
 ```
 
-## Placement
+## Side
 
-Use the `placement` prop to change the position of the tooltip.
+Use the `side` prop to change the position of the tooltip.
 
 <ComponentPreview name="tooltip-sides" />
 
@@ -195,4 +199,4 @@ The tooltip closes as soon as the pointer or focus leaves the trigger and its co
 
 ## API Reference
 
-See the [React Aria Tooltip](https://react-aria.adobe.com/Tooltip#api) documentation.
+See the [Base UI Tooltip](https://base-ui.com/react/components/tooltip#api-reference) documentation.

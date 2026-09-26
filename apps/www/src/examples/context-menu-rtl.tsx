@@ -1,9 +1,8 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/context-menu-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/context-menu-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
 import { ArrowLeftIcon, ArrowRightIcon, RotateCwIcon } from "lucide-react"
-import { Pressable, type Selection } from "react-aria-components"
 
 import {
   useTranslation,
@@ -11,9 +10,13 @@ import {
 } from "@/components/language-selector"
 import {
   ContextMenu,
+  ContextMenuCheckboxItem,
+  ContextMenuContent,
   ContextMenuGroup,
   ContextMenuItem,
   ContextMenuLabel,
+  ContextMenuRadioGroup,
+  ContextMenuRadioItem,
   ContextMenuSeparator,
   ContextMenuShortcut,
   ContextMenuSub,
@@ -93,27 +96,17 @@ const translations: Translations = {
 
 export function ContextMenuRtl() {
   const { dir, t, language } = useTranslation(translations, "ar")
-  const [selectedKeys, setSelectedKeys] = React.useState<Selection>(
-    new Set(["bookmarks"])
-  )
   const [people, setPeople] = React.useState("pedro")
 
   return (
-    <ContextMenuTrigger>
-      <Pressable>
-        <div
-          role="button"
-          className="flex aspect-video w-full max-w-xs items-center justify-center rounded-xl border border-dashed text-sm"
-        >
-          <span className="hidden pointer-fine:inline-block">
-            {t.rightClick}
-          </span>
-          <span className="hidden pointer-coarse:inline-block">
-            {t.longPress}
-          </span>
-        </div>
-      </Pressable>
-      <ContextMenu
+    <ContextMenu>
+      <ContextMenuTrigger className="flex aspect-video w-full max-w-xs items-center justify-center rounded-xl border border-dashed text-sm">
+        <span className="hidden pointer-fine:inline-block">{t.rightClick}</span>
+        <span className="hidden pointer-coarse:inline-block">
+          {t.longPress}
+        </span>
+      </ContextMenuTrigger>
+      <ContextMenuContent
         className="w-48"
         dir={dir}
         data-lang={dir === "rtl" ? language : undefined}
@@ -132,7 +125,7 @@ export function ContextMenuRtl() {
                   {t.back}
                   <ContextMenuShortcut>⌘[</ContextMenuShortcut>
                 </ContextMenuItem>
-                <ContextMenuItem isDisabled>
+                <ContextMenuItem disabled>
                   <ArrowRightIcon />
                   {t.forward}
                   <ContextMenuShortcut>⌘]</ContextMenuShortcut>
@@ -171,28 +164,21 @@ export function ContextMenuRtl() {
           </ContextMenuSub>
         </ContextMenuGroup>
         <ContextMenuSeparator />
-        <ContextMenuGroup
-          selectionMode="multiple"
-          selectedKeys={selectedKeys}
-          onSelectionChange={setSelectedKeys}
-        >
-          <ContextMenuItem id="bookmarks">{t.showBookmarks}</ContextMenuItem>
-          <ContextMenuItem id="urls">{t.showFullUrls}</ContextMenuItem>
+        <ContextMenuGroup>
+          <ContextMenuCheckboxItem checked>
+            {t.showBookmarks}
+          </ContextMenuCheckboxItem>
+          <ContextMenuCheckboxItem>{t.showFullUrls}</ContextMenuCheckboxItem>
         </ContextMenuGroup>
         <ContextMenuSeparator />
-        <ContextMenuGroup
-          selectionMode="single"
-          selectedKeys={[people]}
-          onSelectionChange={(keys) =>
-            setPeople(
-              keys === "all" ? "pedro" : (keys.values().next().value as string)
-            )
-          }
-        >
-          <ContextMenuItem id="pedro">{t.pedro}</ContextMenuItem>
-          <ContextMenuItem id="colm">{t.colm}</ContextMenuItem>
+        <ContextMenuGroup>
+          <ContextMenuRadioGroup value={people} onValueChange={setPeople}>
+            <ContextMenuLabel>{t.people}</ContextMenuLabel>
+            <ContextMenuRadioItem value="pedro">{t.pedro}</ContextMenuRadioItem>
+            <ContextMenuRadioItem value="colm">{t.colm}</ContextMenuRadioItem>
+          </ContextMenuRadioGroup>
         </ContextMenuGroup>
-      </ContextMenu>
-    </ContextMenuTrigger>
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }

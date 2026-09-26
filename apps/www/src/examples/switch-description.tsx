@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/switch-description.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/switch-description.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Field,
   FieldContent,

@@ -2,9 +2,9 @@
 title: Accordion
 description: A vertically stacked set of interactive headings that each reveal a section of content.
 links:
-  doc: https://react-aria.adobe.com/DisclosureGroup
-  api: https://react-aria.adobe.com/DisclosureGroup#api
-upstream: apps/v4/content/docs/components/aria/accordion.mdx
+  doc: https://base-ui.com/react/components/accordion
+  api: https://base-ui.com/react/components/accordion#api-reference
+upstream: apps/v4/content/docs/components/base/accordion.mdx
 ---
 
 <ComponentPreview
@@ -25,8 +25,8 @@ import {
 ```
 
 ```tsx lineNumbers
-<Accordion defaultExpandedKeys={["item-1"]}>
-  <AccordionItem id="item-1">
+<Accordion defaultValue={["item-1"]}>
+  <AccordionItem value="item-1">
     <AccordionTrigger>Is it accessible?</AccordionTrigger>
     <AccordionContent>
       Yes. It adheres to the WAI-ARIA design pattern.
@@ -61,7 +61,7 @@ A basic accordion that shows one item at a time. The first item is open by defau
 
 ## Multiple
 
-Use the `allowsMultipleExpanded` prop to allow multiple items to be open at the same time.
+Use the `multiple` prop to allow multiple items to be open at the same time.
 
 <ComponentPreview
   name="accordion-multiple"
@@ -71,7 +71,7 @@ Use the `allowsMultipleExpanded` prop to allow multiple items to be open at the 
 
 ## Disabled
 
-Use the `isDisabled` prop on `AccordionItem` to disable individual items.
+Use the `disabled` prop on `AccordionItem` to disable individual items.
 
 <ComponentPreview
   name="accordion-disabled"
@@ -244,4 +244,4 @@ Put the heading text straight into `AccordionTrigger`: it renders the heading, t
 
 ## API Reference
 
-See the [React Aria](https://react-aria.adobe.com/DisclosureGroup#api) documentation for more information.
+See the [Base UI](https://base-ui.com/react/components/accordion#api-reference) documentation for more information.

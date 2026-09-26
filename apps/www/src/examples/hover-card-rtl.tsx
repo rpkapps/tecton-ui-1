@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/hover-card-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/hover-card-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import {
@@ -8,6 +8,7 @@ import {
 import { Button } from "@tecton/react/components/button"
 import {
   HoverCard,
+  HoverCardContent,
   HoverCardTrigger,
 } from "@tecton/react/components/hover-card"
 
@@ -15,46 +16,49 @@ const translations: Translations = {
   en: {
     dir: "ltr",
     values: {
+      trigger: "Wireless Headphones",
       name: "Wireless Headphones",
       price: "$99.99",
-      start: "Start",
+      "inline-start": "Inline Start",
       left: "Left",
       top: "Top",
       bottom: "Bottom",
       right: "Right",
-      end: "End",
+      "inline-end": "Inline End",
     },
   },
   ar: {
     dir: "rtl",
     values: {
+      trigger: "سماعات لاسلكية",
       name: "سماعات لاسلكية",
       price: "٩٩.٩٩ $",
-      start: "بداية السطر",
+      "inline-start": "بداية السطر",
       left: "يسار",
       top: "أعلى",
       bottom: "أسفل",
       right: "يمين",
-      end: "نهاية السطر",
+      "inline-end": "نهاية السطر",
     },
   },
   he: {
     dir: "rtl",
     values: {
+      trigger: "אוזניות אלחוטיות",
       name: "אוזניות אלחוטיות",
       price: "99.99 $",
-      start: "תחילת השורה",
+      "inline-start": "תחילת השורה",
       left: "שמאל",
       top: "למעלה",
       bottom: "למטה",
       right: "ימין",
-      end: "סוף השורה",
+      "inline-end": "סוף השורה",
     },
   },
 }
 
 const physicalSides = ["left", "top", "bottom", "right"] as const
-const logicalPlacements = ["start", "end"] as const
+const logicalSides = ["inline-start", "inline-end"] as const
 
 export function HoverCardRtl() {
   const { dir, t } = useTranslation(translations, "ar")
@@ -63,32 +67,44 @@ export function HoverCardRtl() {
     <div className="grid gap-4">
       <div className="flex flex-wrap justify-center gap-2">
         {physicalSides.map((side) => (
-          <HoverCardTrigger key={side} delay={10} closeDelay={100}>
-            <Button variant="outline">{t[side]}</Button>
-            <HoverCard
-              placement={side}
-              dir={dir}
+          <HoverCard key={side}>
+            <HoverCardTrigger
+              delay={10}
+              closeDelay={100}
+              render={<Button variant="outline" />}
+            >
+              {t[side]}
+            </HoverCardTrigger>
+            <HoverCardContent
+              side={side}
               className="flex w-64 flex-col gap-1"
+              dir={dir}
             >
               <div className="font-semibold">{t.name}</div>
               <div className="text-sm text-muted-foreground">{t.price}</div>
-            </HoverCard>
-          </HoverCardTrigger>
+            </HoverCardContent>
+          </HoverCard>
         ))}
       </div>
       <div className="flex flex-wrap justify-center gap-2">
-        {logicalPlacements.map((placement) => (
-          <HoverCardTrigger key={placement} delay={10} closeDelay={100}>
-            <Button variant="outline">{t[placement]}</Button>
-            <HoverCard
-              placement={placement}
-              dir={dir}
+        {logicalSides.map((side) => (
+          <HoverCard key={side}>
+            <HoverCardTrigger
+              delay={10}
+              closeDelay={100}
+              render={<Button variant="outline" />}
+            >
+              {t[side]}
+            </HoverCardTrigger>
+            <HoverCardContent
+              side={side}
               className="flex w-64 flex-col gap-1"
+              dir={dir}
             >
               <div className="font-semibold">{t.name}</div>
               <div className="text-sm text-muted-foreground">{t.price}</div>
-            </HoverCard>
-          </HoverCardTrigger>
+            </HoverCardContent>
+          </HoverCard>
         ))}
       </div>
     </div>

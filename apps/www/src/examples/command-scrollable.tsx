@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/command-scrollable.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/command-scrollable.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -46,34 +46,31 @@ export function CommandManyItems() {
 
   return (
     <div className="flex flex-col gap-4">
-      <Button onPress={() => setOpen(true)} variant="outline" className="w-fit">
+      <Button onClick={() => setOpen(true)} variant="outline" className="w-fit">
         Open Menu
       </Button>
       <CommandDialog open={open} onOpenChange={setOpen}>
         <Command>
           <CommandInput placeholder="Type a command or search..." />
-          <CommandList
-            renderEmptyState={() => (
-              <CommandEmpty>No results found.</CommandEmpty>
-            )}
-          >
+          <CommandList>
+            <CommandEmpty>No results found.</CommandEmpty>
             <CommandGroup heading="Navigation">
-              <CommandItem textValue="Home">
+              <CommandItem>
                 <HomeIcon />
                 <span>Home</span>
                 <CommandShortcut>⌘H</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Inbox">
+              <CommandItem>
                 <InboxIcon />
                 <span>Inbox</span>
                 <CommandShortcut>⌘I</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Documents">
+              <CommandItem>
                 <FileTextIcon />
                 <span>Documents</span>
                 <CommandShortcut>⌘D</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Folders">
+              <CommandItem>
                 <FolderIcon />
                 <span>Folders</span>
                 <CommandShortcut>⌘F</CommandShortcut>
@@ -81,32 +78,32 @@ export function CommandManyItems() {
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading="Actions">
-              <CommandItem textValue="New File">
+              <CommandItem>
                 <PlusIcon />
                 <span>New File</span>
                 <CommandShortcut>⌘N</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="New Folder">
+              <CommandItem>
                 <FolderPlusIcon />
                 <span>New Folder</span>
                 <CommandShortcut>⇧⌘N</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Copy">
+              <CommandItem>
                 <CopyIcon />
                 <span>Copy</span>
                 <CommandShortcut>⌘C</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Cut">
+              <CommandItem>
                 <ScissorsIcon />
                 <span>Cut</span>
                 <CommandShortcut>⌘X</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Paste">
+              <CommandItem>
                 <ClipboardPasteIcon />
                 <span>Paste</span>
                 <CommandShortcut>⌘V</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Delete">
+              <CommandItem>
                 <TrashIcon />
                 <span>Delete</span>
                 <CommandShortcut>⌫</CommandShortcut>
@@ -114,20 +111,20 @@ export function CommandManyItems() {
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading="View">
-              <CommandItem textValue="Grid View">
+              <CommandItem>
                 <LayoutGridIcon />
                 <span>Grid View</span>
               </CommandItem>
-              <CommandItem textValue="List View">
+              <CommandItem>
                 <ListIcon />
                 <span>List View</span>
               </CommandItem>
-              <CommandItem textValue="Zoom In">
+              <CommandItem>
                 <ZoomInIcon />
                 <span>Zoom In</span>
                 <CommandShortcut>⌘+</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Zoom Out">
+              <CommandItem>
                 <ZoomOutIcon />
                 <span>Zoom Out</span>
                 <CommandShortcut>⌘-</CommandShortcut>
@@ -135,45 +132,45 @@ export function CommandManyItems() {
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading="Account">
-              <CommandItem textValue="Profile">
+              <CommandItem>
                 <UserIcon />
                 <span>Profile</span>
                 <CommandShortcut>⌘P</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Billing">
+              <CommandItem>
                 <CreditCardIcon />
                 <span>Billing</span>
                 <CommandShortcut>⌘B</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Settings">
+              <CommandItem>
                 <SettingsIcon />
                 <span>Settings</span>
                 <CommandShortcut>⌘S</CommandShortcut>
               </CommandItem>
-              <CommandItem textValue="Notifications">
+              <CommandItem>
                 <BellIcon />
                 <span>Notifications</span>
               </CommandItem>
-              <CommandItem textValue="Help & Support">
+              <CommandItem>
                 <HelpCircleIcon />
                 <span>Help & Support</span>
               </CommandItem>
             </CommandGroup>
             <CommandSeparator />
             <CommandGroup heading="Tools">
-              <CommandItem textValue="Calculator">
+              <CommandItem>
                 <CalculatorIcon />
                 <span>Calculator</span>
               </CommandItem>
-              <CommandItem textValue="Calendar">
+              <CommandItem>
                 <CalendarIcon />
                 <span>Calendar</span>
               </CommandItem>
-              <CommandItem textValue="Image Editor">
+              <CommandItem>
                 <ImageIcon />
                 <span>Image Editor</span>
               </CommandItem>
-              <CommandItem textValue="Code Editor">
+              <CommandItem>
                 <CodeIcon />
                 <span>Code Editor</span>
               </CommandItem>

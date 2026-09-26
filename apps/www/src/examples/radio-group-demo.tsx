@@ -1,14 +1,10 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/radio-group-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/radio-group-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Label } from "@tecton/react/components/label"
 import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group"
 
 export function RadioGroupDemo() {
   return (
-    <RadioGroup
-      aria-label="Density"
-      defaultValue="comfortable"
-      className="w-fit"
-    >
+    <RadioGroup defaultValue="comfortable" className="w-fit">
       <div className="flex items-center gap-3">
         <RadioGroupItem value="default" id="r1" />
         <Label htmlFor="r1">Default</Label>

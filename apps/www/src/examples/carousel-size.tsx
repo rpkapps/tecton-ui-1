@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/carousel-size.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/carousel-size.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import * as React from "react"
 
 import { Card, CardContent } from "@tecton/react/components/card"

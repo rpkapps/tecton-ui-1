@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/message-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/message-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Avatar,
   AvatarFallback,

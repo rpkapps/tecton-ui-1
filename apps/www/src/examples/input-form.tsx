@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/input-form.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/input-form.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
 import {
   Field,
@@ -47,15 +47,15 @@ export function InputForm() {
             <Input id="form-phone" type="tel" placeholder="+1 (555) 123-4567" />
           </Field>
           <Field>
-            <FieldLabel id="form-country-label" htmlFor="form-country">Country</FieldLabel>
-            <Select aria-labelledby="form-country-label" defaultValue="us">
+            <FieldLabel htmlFor="form-country">Country</FieldLabel>
+            <Select items={countries} defaultValue="us">
               <SelectTrigger id="form-country">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
                 <SelectGroup>
                   {countries.map((country) => (
-                    <SelectItem key={country.value} id={country.value}>
+                    <SelectItem key={country.value} value={country.value}>
                       {country.label}
                     </SelectItem>
                   ))}

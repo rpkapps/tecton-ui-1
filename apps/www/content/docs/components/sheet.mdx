@@ -2,9 +2,9 @@
 title: Sheet
 description: Extends the Dialog component to display content that complements the main content of the screen.
 links:
-  doc: https://react-aria.adobe.com/Modal
-  api: https://react-aria.adobe.com/Modal#api
-upstream: apps/v4/content/docs/components/aria/sheet.mdx
+  doc: https://base-ui.com/react/components/dialog
+  api: https://base-ui.com/react/components/dialog#api-reference
+upstream: apps/v4/content/docs/components/base/sheet.mdx
 ---
 
 <ComponentPreview name="sheet-demo" />
@@ -15,6 +15,7 @@ upstream: apps/v4/content/docs/components/aria/sheet.mdx
 import {
   Sheet,
   SheetClose,
+  SheetContent,
   SheetDescription,
   SheetFooter,
   SheetHeader,
@@ -24,15 +25,15 @@ import {
 ```
 
 ```tsx lineNumbers
-<SheetTrigger>
-  <Button>Open</Button>
-  <Sheet>
+<Sheet>
+  <SheetTrigger>Open</SheetTrigger>
+  <SheetContent>
     <SheetHeader>
       <SheetTitle>Are you absolutely sure?</SheetTitle>
       <SheetDescription>This action cannot be undone.</SheetDescription>
     </SheetHeader>
-  </Sheet>
-</SheetTrigger>
+  </SheetContent>
+</Sheet>
 ```
 
 ## Composition
@@ -40,9 +41,9 @@ import {
 Use the following composition to build a `Sheet`:
 
 ```text
-SheetTrigger
-├── Button
-└── Sheet
+Sheet
+├── SheetTrigger
+└── SheetContent
     ├── SheetHeader
     │   ├── SheetTitle
     │   └── SheetDescription
@@ -212,4 +213,4 @@ The padding lives on `SheetHeader` and `SheetFooter`, not on the sheet, so anyth
 
 ## API Reference
 
-See the [React Aria Modal](https://react-aria.adobe.com/Modal#api) documentation.
+See the [Base UI Dialog](https://base-ui.com/react/components/dialog#api-reference) documentation.

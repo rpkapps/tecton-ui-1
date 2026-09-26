@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/attachment-trigger.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/attachment-trigger.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { CopyIcon, FileSearchIcon, XIcon } from "lucide-react"
 
 import {
@@ -13,6 +13,7 @@ import {
 } from "@tecton/react/components/attachment"
 import {
   Dialog,
+  DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
@@ -22,7 +23,7 @@ import {
 export function AttachmentTriggerDemo() {
   return (
     <div className="mx-auto w-full max-w-sm py-12">
-      <DialogTrigger>
+      <Dialog>
         <Attachment className="w-full">
           <AttachmentMedia>
             <FileSearchIcon />
@@ -39,11 +40,13 @@ export function AttachmentTriggerDemo() {
               <XIcon />
             </AttachmentAction>
           </AttachmentActions>
-          <DialogTrigger>
-            <AttachmentTrigger aria-label="Preview research-summary.pdf" />
-          </DialogTrigger>
+          <DialogTrigger
+            render={
+              <AttachmentTrigger aria-label="Preview research-summary.pdf" />
+            }
+          />
         </Attachment>
-        <Dialog className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md">
           <DialogHeader>
             <DialogTitle>research-summary.pdf</DialogTitle>
             <DialogDescription>
@@ -51,8 +54,8 @@ export function AttachmentTriggerDemo() {
               the actions stay independently clickable above it.
             </DialogDescription>
           </DialogHeader>
-        </Dialog>
-      </DialogTrigger>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

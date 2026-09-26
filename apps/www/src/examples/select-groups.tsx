@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/select-groups.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/select-groups.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import {
   Select,
   SelectContent,
@@ -21,17 +21,21 @@ export function SelectGroups() {
     { label: "Broccoli", value: "broccoli" },
     { label: "Spinach", value: "spinach" },
   ]
-  const allItems = [...fruits, ...vegetables]
+  const allItems = [
+    { label: "Select a fruit", value: null },
+    ...fruits,
+    ...vegetables,
+  ]
   return (
-    <Select placeholder="Select a fruit" className="w-full max-w-48">
-      <SelectTrigger>
+    <Select items={allItems}>
+      <SelectTrigger className="w-full max-w-48">
         <SelectValue />
       </SelectTrigger>
       <SelectContent>
         <SelectGroup>
           <SelectLabel>Fruits</SelectLabel>
           {fruits.map((item) => (
-            <SelectItem key={item.value} id={item.value}>
+            <SelectItem key={item.value} value={item.value}>
               {item.label}
             </SelectItem>
           ))}
@@ -40,7 +44,7 @@ export function SelectGroups() {
         <SelectGroup>
           <SelectLabel>Vegetables</SelectLabel>
           {vegetables.map((item) => (
-            <SelectItem key={item.value} id={item.value}>
+            <SelectItem key={item.value} value={item.value}>
               {item.label}
             </SelectItem>
           ))}

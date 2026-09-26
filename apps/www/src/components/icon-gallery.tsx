@@ -51,30 +51,26 @@ export function IconGallery() {
         />
         <ToggleGroup
           aria-label="Variant"
-          selectionMode="single"
-          selectedKeys={[variant]}
-          disallowEmptySelection
-          onSelectionChange={(keys) => {
-            const next = [...keys][0]
+          value={[variant]}
+          onValueChange={(value) => {
+            const next = value[0]
             if (next === "outlined" || next === "filled") setVariant(next)
           }}
         >
-          <ToggleGroupItem id="outlined">Outlined</ToggleGroupItem>
-          <ToggleGroupItem id="filled">Filled</ToggleGroupItem>
+          <ToggleGroupItem value="outlined">Outlined</ToggleGroupItem>
+          <ToggleGroupItem value="filled">Filled</ToggleGroupItem>
         </ToggleGroup>
         <ToggleGroup
           aria-label="Size"
-          selectionMode="single"
-          selectedKeys={[String(size)]}
-          disallowEmptySelection
-          onSelectionChange={(keys) => {
-            const next = Number([...keys][0])
+          value={[String(size)]}
+          onValueChange={(value) => {
+            const next = Number(value[0])
             if (sizes.includes(next as (typeof sizes)[number]))
               setSize(next as (typeof sizes)[number])
           }}
         >
           {sizes.map((s) => (
-            <ToggleGroupItem key={s} id={String(s)}>
+            <ToggleGroupItem key={s} value={String(s)}>
               {s}px
             </ToggleGroupItem>
           ))}

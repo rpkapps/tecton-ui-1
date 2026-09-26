@@ -1,7 +1,7 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/empty-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/empty-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { ArrowUpRightIcon, FolderCodeIcon } from "lucide-react"
 
-import { Button, LinkButton } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/components/button"
 import {
   Empty,
   EmptyContent,
@@ -28,14 +28,15 @@ export default function EmptyDemo() {
         <Button>Create Project</Button>
         <Button variant="outline">Import Project</Button>
       </EmptyContent>
-      <LinkButton
-        href="#"
+      <Button
         variant="link"
+        render={<a href="#" />}
         className="text-muted-foreground"
         size="sm"
+        nativeButton={false}
       >
         Learn More <ArrowUpRightIcon />
-      </LinkButton>
+      </Button>
     </Empty>
   )
 }

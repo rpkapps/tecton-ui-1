@@ -1,7 +1,7 @@
 ---
 title: Date Picker
 description: A date picker component with range and presets.
-upstream: apps/v4/content/docs/components/aria/date-picker.mdx
+upstream: apps/v4/content/docs/components/base/date-picker.mdx
 ---
 
 <ComponentPreview name="date-picker-demo" />
@@ -12,51 +12,53 @@ upstream: apps/v4/content/docs/components/aria/date-picker.mdx
 "use client"
 
 import * as React from "react"
-import { getLocalTimeZone, type CalendarDate } from "@internationalized/date"
 import { cn } from "cn"
+import { format } from "date-fns"
 import { Calendar as CalendarIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import { Calendar } from "@tecton/react/components/calendar"
-import { Popover, PopoverTrigger } from "@tecton/react/components/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@tecton/react/components/popover"
 
 export function DatePickerDemo() {
-  const [date, setDate] = React.useState<CalendarDate | null>(null)
+  const [date, setDate] = React.useState<Date>()
 
   return (
-    <PopoverTrigger>
-      <Button
-        variant="outline"
-        data-empty={!date}
-        className="justify-start text-left font-normal data-[empty=true]:text-muted-foreground"
+    <Popover>
+      <PopoverTrigger
+        render={
+          <Button
+            variant="outline"
+            data-empty={!date}
+            className="justify-start text-left font-normal data-[empty=true]:text-muted-foreground"
+          />
+        }
       >
         <CalendarIcon />
-        {date ? (
-          date
-            .toDate(getLocalTimeZone())
-            .toLocaleDateString(undefined, { dateStyle: "long" })
-        ) : (
-          <span>Pick a date</span>
-        )}
-      </Button>
-      <Popover className="w-auto p-0">
-        <Calendar value={date} onChange={setDate} />
-      </Popover>
-    </PopoverTrigger>
+        {date ? format(date, "PPP") : <span>Pick a date</span>}
+      </PopoverTrigger>
+      <PopoverContent className="w-auto p-0">
+        <Calendar mode="single" selected={date} onSelect={setDate} />
+      </PopoverContent>
+    </Popover>
   )
 }
 ```
 
-See the [React Aria](https://react-aria.adobe.com/Calendar) documentation for more information.
+See the [React DayPicker](https://react-day-picker.js.org) documentation for more information.
 
 ## Composition
 
 A date picker is built from `Popover` and `Calendar` (there is no `DatePicker` root component):
 
 ```text
-PopoverTrigger
-├── Button
-└── Popover
+Popover
+├── PopoverTrigger
+└── PopoverContent
     └── Calendar
 ```
 

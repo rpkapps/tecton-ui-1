@@ -118,34 +118,33 @@ export default function DataTableDensity() {
       <ToggleGroup
         variant="outline"
         size="sm"
-        disallowEmptySelection
-        selectedKeys={[mode]}
-        onSelectionChange={(keys) => {
-          const key = Array.from(keys)[0]
-          if (key) setMode(key as keyof typeof density)
+        aria-label="Density"
+        value={[mode]}
+        onValueChange={(value) => {
+          if (value[0]) setMode(value[0] as keyof typeof density)
         }}
       >
-        <ToggleGroupItem id="default">Default</ToggleGroupItem>
-        <ToggleGroupItem id="compact">Compact</ToggleGroupItem>
+        <ToggleGroupItem value="default">Default</ToggleGroupItem>
+        <ToggleGroupItem value="compact">Compact</ToggleGroupItem>
       </ToggleGroup>
       <div className="overflow-hidden rounded-md border">
         <Table aria-label="Wells" className={density[mode]}>
           <TableHeader>
-            {table.getFlatHeaders().map((header) => (
-              <TableHead
-                key={header.id}
-                id={header.id}
-                isRowHeader={header.index === 0}
-              >
-                {header.isPlaceholder ? null : (
-                  <table.FlexRender header={header} />
-                )}
-              </TableHead>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : (
+                      <table.FlexRender header={header} />
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
             ))}
           </TableHeader>
-          <TableBody renderEmptyState={() => "No wells."}>
+          <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id} id={row.id}>
+              <TableRow key={row.id}>
                 {row.getAllCells().map((cell) => (
                   <TableCell key={cell.id}>
                     <table.FlexRender cell={cell} />

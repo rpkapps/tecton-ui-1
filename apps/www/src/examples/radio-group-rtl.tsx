@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/radio-group-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/radio-group-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -58,12 +58,7 @@ export function RadioGroupRtl() {
   const { dir, t } = useTranslation(translations, "ar")
 
   return (
-    <RadioGroup
-      aria-label="Density"
-      defaultValue="comfortable"
-      className="w-fit"
-      dir={dir}
-    >
+    <RadioGroup defaultValue="comfortable" className="w-fit" dir={dir}>
       <Field orientation="horizontal">
         <RadioGroupItem value="default" id="r1-rtl" dir={dir} />
         <FieldContent>

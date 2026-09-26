@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/checkbox-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/checkbox-basic.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Checkbox } from "@tecton/react/components/checkbox"
 import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
 

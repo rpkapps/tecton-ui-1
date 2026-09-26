@@ -1,14 +1,7 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/date-picker-input.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/date-picker-input.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
-import {
-  fromDate,
-  getLocalTimeZone,
-  parseDate,
-  toCalendarDate,
-  type CalendarDate,
-} from "@internationalized/date"
 import { CalendarIcon } from "lucide-react"
 
 import { Calendar } from "@tecton/react/components/calendar"
@@ -19,7 +12,11 @@ import {
   InputGroupButton,
   InputGroupInput,
 } from "@tecton/react/components/input-group"
-import { Popover, PopoverTrigger } from "@tecton/react/components/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@tecton/react/components/popover"
 
 function formatDate(date: Date | undefined) {
   if (!date) {
@@ -42,13 +39,11 @@ function isValidDate(date: Date | undefined) {
 
 export function DatePickerInput() {
   const [open, setOpen] = React.useState(false)
-  const [date, setDate] = React.useState<CalendarDate | undefined>(
-    parseDate("2025-06-01")
+  const [date, setDate] = React.useState<Date | undefined>(
+    new Date("2025-06-01")
   )
-  const [month, setMonth] = React.useState<CalendarDate>(date!)
-  const [value, setValue] = React.useState(
-    formatDate(date?.toDate(getLocalTimeZone()))
-  )
+  const [month, setMonth] = React.useState<Date | undefined>(date)
+  const [value, setValue] = React.useState(formatDate(date))
 
   return (
     <Field className="mx-auto w-48">
@@ -62,8 +57,8 @@ export function DatePickerInput() {
             const date = new Date(e.target.value)
             setValue(e.target.value)
             if (isValidDate(date)) {
-              setDate(toCalendarDate(fromDate(date, getLocalTimeZone())))
-              setMonth(toCalendarDate(fromDate(date, getLocalTimeZone())))
+              setDate(date)
+              setMonth(date)
             }
           }}
           onKeyDown={(e) => {
@@ -74,34 +69,39 @@ export function DatePickerInput() {
           }}
         />
         <InputGroupAddon align="inline-end">
-          <PopoverTrigger isOpen={open} onOpenChange={setOpen}>
-            <InputGroupButton
-              id="date-picker"
-              variant="ghost"
-              size="icon-xs"
-              aria-label="Select date"
+          <Popover open={open} onOpenChange={setOpen}>
+            <PopoverTrigger
+              render={
+                <InputGroupButton
+                  id="date-picker"
+                  variant="ghost"
+                  size="icon-xs"
+                  aria-label="Select date"
+                />
+              }
             >
               <CalendarIcon />
               <span className="sr-only">Select date</span>
-            </InputGroupButton>
-            <Popover
+            </PopoverTrigger>
+            <PopoverContent
               className="w-auto overflow-hidden p-0"
-              placement="bottom end"
-              crossOffset={-8}
-              offset={10}
+              align="end"
+              alignOffset={-8}
+              sideOffset={10}
             >
               <Calendar
-                value={date}
-                focusedValue={month}
-                onFocusChange={setMonth}
-                onChange={(date) => {
+                mode="single"
+                selected={date}
+                month={month}
+                onMonthChange={setMonth}
+                onSelect={(date) => {
                   setDate(date)
-                  setValue(formatDate(date?.toDate(getLocalTimeZone())))
+                  setValue(formatDate(date))
                   setOpen(false)
                 }}
               />
-            </Popover>
-          </PopoverTrigger>
+            </PopoverContent>
+          </Popover>
         </InputGroupAddon>
       </InputGroup>
     </Field>

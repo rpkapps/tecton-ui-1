@@ -1,4 +1,4 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dialog-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dialog-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import {
@@ -9,6 +9,7 @@ import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
   DialogClose,
+  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -64,10 +65,12 @@ export function DialogRtl() {
   const { dir, t, language } = useTranslation(translations, "ar")
 
   return (
-    <DialogTrigger>
+    <Dialog>
       <form>
-        <Button variant="outline">{t.openDialog}</Button>
-        <Dialog
+        <DialogTrigger render={<Button variant="outline" />}>
+          {t.openDialog}
+        </DialogTrigger>
+        <DialogContent
           className="sm:max-w-sm"
           dir={dir}
           data-lang={dir === "rtl" ? language : undefined}
@@ -87,11 +90,13 @@ export function DialogRtl() {
             </Field>
           </FieldGroup>
           <DialogFooter>
-            <DialogClose variant="outline">{t.cancel}</DialogClose>
+            <DialogClose render={<Button variant="outline" />}>
+              {t.cancel}
+            </DialogClose>
             <Button type="submit">{t.saveChanges}</Button>
           </DialogFooter>
-        </Dialog>
+        </DialogContent>
       </form>
-    </DialogTrigger>
+    </Dialog>
   )
 }

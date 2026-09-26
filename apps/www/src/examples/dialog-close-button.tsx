@@ -1,8 +1,9 @@
-// Synced from shadcn/ui (apps/v4/examples/aria/dialog-close-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
+// Synced from shadcn/ui (apps/v4/examples/base/dialog-close-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { Button } from "@tecton/react/components/button"
 import {
   Dialog,
   DialogClose,
+  DialogContent,
   DialogDescription,
   DialogFooter,
   DialogHeader,
@@ -14,9 +15,9 @@ import { Label } from "@tecton/react/components/label"
 
 export function DialogCloseButton() {
   return (
-    <DialogTrigger>
-      <Button variant="outline">Share</Button>
-      <Dialog className="sm:max-w-md">
+    <Dialog>
+      <DialogTrigger render={<Button variant="outline" />}>Share</DialogTrigger>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Share link</DialogTitle>
           <DialogDescription>
@@ -36,9 +37,9 @@ export function DialogCloseButton() {
           </div>
         </div>
         <DialogFooter className="sm:justify-start">
-          <DialogClose type="button">Close</DialogClose>
+          <DialogClose render={<Button type="button" />}>Close</DialogClose>
         </DialogFooter>
-      </Dialog>
-    </DialogTrigger>
+      </DialogContent>
+    </Dialog>
   )
 }
