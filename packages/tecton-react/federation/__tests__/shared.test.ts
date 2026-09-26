@@ -37,9 +37,15 @@ describe("shared", () => {
       "react-dom",
       "sonner",
       "@tecton/react/",
+      "@base-ui/react/",
       "react-aria-components",
       "recharts",
     ])
+  })
+
+  it("shares Tecton's internal libraries, but never as singletons", () => {
+    expect(shared["@base-ui/react/"]).toEqual({ singleton: false })
+    expect(shared["react-aria-components"]).toEqual({ singleton: false })
   })
 
   it("carries no versions, and marks only recharts as never eager", () => {

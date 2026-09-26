@@ -3,17 +3,22 @@
 import * as React from "react"
 
 /**
- * Tecton PortalProvider — chooses the element that every Tecton overlay
- * rendered by its children portals into (Dialog, Sheet, Popover, Tooltip,
- * Select, Combobox, Dropdown Menu, Command dialog…). By default overlays
- * portal into `document.body`.
+ * The portal context behind `TectonProvider`'s `portalContainer`: the element
+ * every Tecton overlay rendered below it portals into (Dialog, Sheet,
+ * Popover, Tooltip, Select, Combobox, Dropdown Menu, Drawer, Command
+ * dialog…). By default overlays portal into `document.body`.
  *
  * Applications that render several isolated React roots on one page (micro
  * frontends, embedded widgets) give each root a body-level container of its
- * own, so the overlays keep escaping `overflow: hidden` ancestors while the
- * container carries that root's scoped styles, theme tokens and ownership
- * attributes. Tecton owns the container context and overlay wrappers pass the
- * resolved container directly to their React Aria Components primitive.
+ * own — `ThemeRoot` creates one — so the overlays keep escaping
+ * `overflow: hidden` ancestors while the container carries that root's scoped
+ * styles, theme tokens and ownership attributes. Tecton owns this context,
+ * and each overlay wrapper passes the resolved container straight to its
+ * primitive's portal, so isolated roots never depend on sharing a component
+ * library's private context.
+ *
+ * Applications set the container with `TectonProvider` (or `ThemeRoot`);
+ * `PortalProvider` is the internal building block and not public API.
  */
 type PortalProviderProps = {
   /**
@@ -50,6 +55,7 @@ function useResolvedContainer(
   return isFunction ? resolved : container
 }
 
+/** @internal Use `TectonProvider`'s `portalContainer`. */
 function PortalProvider({ container, children }: PortalProviderProps) {
   const resolved = useResolvedContainer(container)
   return (
@@ -58,20 +64,19 @@ function PortalProvider({ container, children }: PortalProviderProps) {
 }
 
 /**
- * The element overlays currently portal into, or `null` when no
- * `PortalProvider` is in scope (React Aria then uses `document.body`).
+ * The element overlays currently portal into, or `null` when no container is
+ * set (overlays then use `document.body`).
  */
 function usePortalContainer(): HTMLElement | null {
   return React.useContext(PortalContainerContext)
 }
 
 /**
- * The target passed to React Aria Components overlay primitives, or
- * `undefined` when no `PortalProvider` is in scope. `undefined` matters: React
- * Aria reads a set `UNSTABLE_portalContainer` as "the caller has decided" and
- * stops resolving the target itself, which would defeat its own defaults — the
- * root popover's container for submenus, and `document.body` only once
- * hydration is over.
+ * The `container` an overlay passes to its primitive's portal, or `undefined`
+ * when none is set. Never `null`: Base UI reads `container={null}` as "render
+ * nothing" rather than "use the default", so the no-container case has to be
+ * `undefined`, which leaves the primitive to its own default (`document.body`,
+ * or the parent popup's container for a nested menu).
  */
 function usePortalTarget(): HTMLElement | undefined {
   return usePortalContainer() ?? undefined

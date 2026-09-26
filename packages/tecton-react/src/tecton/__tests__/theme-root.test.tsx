@@ -1,9 +1,20 @@
-import { render, screen } from "@testing-library/react"
+import { useDirection as useBaseUiDirection } from "@base-ui/react/direction-provider"
+import { render, renderHook, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it } from "vitest"
 
 import { Button } from "@tecton/react/components/button"
-import { Dialog, DialogTrigger } from "@tecton/react/components/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@tecton/react/components/dialog"
+import {
+  TectonProvider,
+  useDirection,
+  useLocale,
+} from "@tecton/react/tecton/provider"
 import { ThemeRoot } from "@tecton/react/tecton/theme-root"
 
 function root() {
@@ -55,12 +66,13 @@ describe("ThemeRoot", () => {
     const user = userEvent.setup()
     render(
       <ThemeRoot className="mfe-a">
-        <DialogTrigger>
-          <Button>Open</Button>
-          <Dialog>
+        <Dialog>
+          <DialogTrigger render={<Button />}>Open</DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Title</DialogTitle>
             <p>Dialog body</p>
-          </Dialog>
-        </DialogTrigger>
+          </DialogContent>
+        </Dialog>
       </ThemeRoot>
     )
     await user.click(screen.getByRole("button", { name: "Open" }))
@@ -141,18 +153,19 @@ describe("ThemeRoot", () => {
     const user = userEvent.setup()
     render(
       <ThemeRoot overlayContainer={null}>
-        <DialogTrigger>
-          <Button>Open</Button>
-          <Dialog>
+        <Dialog>
+          <DialogTrigger render={<Button />}>Open</DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Title</DialogTitle>
             <p>Dialog body</p>
-          </Dialog>
-        </DialogTrigger>
+          </DialogContent>
+        </Dialog>
       </ThemeRoot>
     )
     expect(containers()).toHaveLength(0)
     await user.click(screen.getByRole("button", { name: "Open" }))
     const dialog = await screen.findByRole("dialog")
-    // React Aria's own default: the overlay portals into `document.body`.
+    // The overlay's own default: it portals into `document.body`.
     expect(dialog.closest("[data-tecton-root]")).toBeNull()
     expect(document.body.contains(dialog)).toBe(true)
   })
@@ -166,12 +179,13 @@ describe("ThemeRoot", () => {
 
     const { unmount } = render(
       <ThemeRoot overlayContainer={supplied}>
-        <DialogTrigger>
-          <Button>Open</Button>
-          <Dialog>
+        <Dialog>
+          <DialogTrigger render={<Button />}>Open</DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Title</DialogTitle>
             <p>Dialog body</p>
-          </Dialog>
-        </DialogTrigger>
+          </DialogContent>
+        </Dialog>
       </ThemeRoot>
     )
     expect(containers()).toHaveLength(0)
@@ -182,6 +196,71 @@ describe("ThemeRoot", () => {
     unmount()
     expect(document.body.contains(supplied)).toBe(true)
     supplied.remove()
+  })
+
+  it("sets dir on the root and the container and feeds the provider", () => {
+    const seen: string[] = []
+    function Probe() {
+      const { locale, direction } = useLocale()
+      seen.push(`${locale}/${direction}/${useBaseUiDirection()}`)
+      return null
+    }
+    const { rerender } = render(
+      <ThemeRoot dir="rtl" locale="ar-EG">
+        <Probe />
+      </ThemeRoot>
+    )
+    expect(root()).toHaveAttribute("dir", "rtl")
+    expect(container()).toHaveAttribute("dir", "rtl")
+    expect(seen.at(-1)).toBe("ar-EG/rtl/rtl")
+
+    rerender(
+      <ThemeRoot dir="ltr" locale="ar-EG">
+        <Probe />
+      </ThemeRoot>
+    )
+    expect(root()).toHaveAttribute("dir", "ltr")
+    expect(container()).toHaveAttribute("dir", "ltr")
+    expect(seen.at(-1)).toBe("ar-EG/ltr/ltr")
+
+    rerender(
+      <ThemeRoot>
+        <Probe />
+      </ThemeRoot>
+    )
+    expect(root()).not.toHaveAttribute("dir")
+    expect(container()).not.toHaveAttribute("dir")
+  })
+
+  it("takes the direction from locale when dir is not set", () => {
+    render(<ThemeRoot locale="he-IL">x</ThemeRoot>)
+    expect(root()).toHaveAttribute("dir", "rtl")
+    expect(container()).toHaveAttribute("dir", "rtl")
+  })
+
+  it("inherits the direction of an outer TectonProvider", () => {
+    const { result } = renderHook(() => useDirection(), {
+      wrapper: ({ children }) => (
+        <TectonProvider direction="rtl">
+          <ThemeRoot>{children}</ThemeRoot>
+        </TectonProvider>
+      ),
+    })
+    expect(result.current).toBe("rtl")
+    expect(root()).not.toHaveAttribute("dir")
+  })
+
+  it("leaves a supplied container's dir alone", () => {
+    const supplied = document.createElement("div")
+    supplied.setAttribute("data-supplied", "")
+    document.body.append(supplied)
+    render(
+      <ThemeRoot dir="rtl" overlayContainer={supplied}>
+        x
+      </ThemeRoot>
+    )
+    expect(root()).toHaveAttribute("dir", "rtl")
+    expect(supplied).not.toHaveAttribute("dir")
   })
 
   it("gives each ThemeRoot its own container", () => {

@@ -2,10 +2,39 @@
 
 import { tanstackConfig } from "@tanstack/eslint-config"
 
+// Blocks are Tecton consumers: the libraries Tecton is built on are internal to
+// @tecton/react and never imported directly (same list in apps/www).
+const LIBRARY_IMPORT_MESSAGE =
+  "Import from @tecton/react instead: the libraries Tecton is built on are internal (TectonProvider replaces their providers)."
+const restrictedLibraryImports = {
+  paths: [
+    "react-aria-components",
+    "react-aria",
+    "react-stately",
+    "@base-ui/react",
+  ].map((name) => ({ name, message: LIBRARY_IMPORT_MESSAGE })),
+  patterns: [
+    {
+      group: [
+        "react-aria-components/*",
+        "react-aria/*",
+        "react-stately/*",
+        "@react-aria/*",
+        "@react-stately/*",
+        "@react-types/*",
+        "@internationalized/*",
+        "@base-ui/react/*",
+      ],
+      message: LIBRARY_IMPORT_MESSAGE,
+    },
+  ],
+}
+
 export default [
   ...tanstackConfig,
   {
     rules: {
+      "no-restricted-imports": ["error", restrictedLibraryImports],
       "import/no-cycle": "off",
       "import/order": "off",
       "sort-imports": "off",

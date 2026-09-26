@@ -4,7 +4,12 @@ import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
 import { Button } from "@tecton/react/components/button"
-import { Dialog, DialogTrigger } from "@tecton/react/components/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogTitle,
+  DialogTrigger,
+} from "@tecton/react/components/dialog"
 import {
   Drawer,
   DrawerContent,
@@ -13,18 +18,24 @@ import {
 } from "@tecton/react/components/drawer"
 import {
   DropdownMenu,
+  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
-import { Popover, PopoverTrigger } from "@tecton/react/components/popover"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@tecton/react/components/popover"
 import {
   PortalProvider,
   usePortalContainer,
   usePortalTarget,
 } from "@tecton/react/tecton/portal"
+import { TectonProvider } from "@tecton/react/tecton/provider"
 
 function makeContainer(name: string) {
   const container = document.createElement("div")
@@ -38,12 +49,13 @@ describe("PortalProvider", () => {
     const container = makeContainer("assets")
     render(
       <PortalProvider container={container}>
-        <DialogTrigger>
-          <Button>Open</Button>
-          <Dialog>
+        <Dialog>
+          <DialogTrigger render={<Button />}>Open</DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Open title</DialogTitle>
             <p>Dialog body</p>
-          </Dialog>
-        </DialogTrigger>
+          </DialogContent>
+        </Dialog>
       </PortalProvider>
     )
     await userEvent.click(screen.getByRole("button", { name: "Open" }))
@@ -52,16 +64,36 @@ describe("PortalProvider", () => {
     container.remove()
   })
 
+  it("portals a Dialog into TectonProvider's portalContainer", async () => {
+    const container = makeContainer("provider")
+    render(
+      <TectonProvider portalContainer={container}>
+        <Dialog>
+          <DialogTrigger render={<Button />}>Open provided</DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Open provided title</DialogTitle>
+            <p>Provided body</p>
+          </DialogContent>
+        </Dialog>
+      </TectonProvider>
+    )
+    await userEvent.click(screen.getByRole("button", { name: "Open provided" }))
+    const body = await screen.findByText("Provided body")
+    expect(container.contains(body)).toBe(true)
+    container.remove()
+  })
+
   it("keeps dialog Escape dismissal and focus restoration in its container", async () => {
     const container = makeContainer("dialog")
     render(
       <PortalProvider container={container}>
-        <DialogTrigger>
-          <Button>Open dialog</Button>
-          <Dialog>
+        <Dialog>
+          <DialogTrigger render={<Button />}>Open dialog</DialogTrigger>
+          <DialogContent>
+            <DialogTitle>Open dialog title</DialogTitle>
             <p>Dialog body</p>
-          </Dialog>
-        </DialogTrigger>
+          </DialogContent>
+        </Dialog>
       </PortalProvider>
     )
     const trigger = screen.getByRole("button", { name: "Open dialog" })
@@ -73,8 +105,7 @@ describe("PortalProvider", () => {
     container.remove()
   })
 
-  // The Drawer is the one overlay built on Base UI rather than React Aria, so
-  // it honours the container through `Drawer.Portal`'s own `container` prop.
+  // The Drawer honours the container through its portal's own `container`.
   it("portals a Drawer into the given container", async () => {
     const container = makeContainer("drawer")
     render(
@@ -115,12 +146,12 @@ describe("PortalProvider", () => {
     const container = makeContainer("reports")
     render(
       <PortalProvider container={() => container}>
-        <PopoverTrigger>
-          <Button>Details</Button>
-          <Popover>
+        <Popover>
+          <PopoverTrigger render={<Button />}>Details</PopoverTrigger>
+          <PopoverContent>
             <p>Popover body</p>
-          </Popover>
-        </PopoverTrigger>
+          </PopoverContent>
+        </Popover>
       </PortalProvider>
     )
     await userEvent.click(screen.getByRole("button", { name: "Details" }))
@@ -137,12 +168,12 @@ describe("PortalProvider", () => {
       return (
         <>
           <PortalProvider container={() => host.current}>
-            <PopoverTrigger>
-              <Button>Ref details</Button>
-              <Popover>
+            <Popover>
+              <PopoverTrigger render={<Button />}>Ref details</PopoverTrigger>
+              <PopoverContent>
                 <p>Ref popover body</p>
-              </Popover>
-            </PopoverTrigger>
+              </PopoverContent>
+            </Popover>
           </PortalProvider>
           <div ref={host} data-testid="ref-host" />
         </>
@@ -193,12 +224,13 @@ describe("PortalProvider", () => {
 
   it("falls back to document.body without a provider", async () => {
     render(
-      <DialogTrigger>
-        <Button>Open</Button>
-        <Dialog>
+      <Dialog>
+        <DialogTrigger render={<Button />}>Open</DialogTrigger>
+        <DialogContent>
+          <DialogTitle>Open title</DialogTitle>
           <p>Plain body</p>
-        </Dialog>
-      </DialogTrigger>
+        </DialogContent>
+      </Dialog>
     )
     await userEvent.click(screen.getByRole("button", { name: "Open" }))
     const body = await screen.findByText("Plain body")
@@ -230,7 +262,9 @@ describe("PortalProvider", () => {
     outer.remove()
   })
 
-  it("leaves the default and null target unset for React Aria to resolve", () => {
+  // Never `null`: a primitive would read `container={null}` as "render
+  // nothing", so no container is `undefined` and the primitive's default.
+  it("leaves the default and null target undefined", () => {
     expect(renderHook(() => usePortalTarget()).result.current).toBeUndefined()
     const { result } = renderHook(() => usePortalTarget(), {
       wrapper: ({ children }) => (
@@ -245,33 +279,33 @@ describe("PortalProvider", () => {
     const onAction = vi.fn()
     render(
       <PortalProvider container={container}>
-        <DropdownMenuTrigger>
-          <Button>Open menu</Button>
-          <DropdownMenu>
+        <DropdownMenu>
+          <DropdownMenuTrigger render={<Button />}>
+            Open menu
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
             <DropdownMenuItem>Plain item</DropdownMenuItem>
             <DropdownMenuSub>
               <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
-                <DropdownMenuItem onAction={onAction}>
+                <DropdownMenuItem onClick={onAction}>
                   Nested item
                 </DropdownMenuItem>
               </DropdownMenuSubContent>
             </DropdownMenuSub>
-          </DropdownMenu>
-        </DropdownMenuTrigger>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </PortalProvider>
     )
     await userEvent.click(screen.getByRole("button", { name: "Open menu" }))
-    const root = document.querySelector('[data-slot="dropdown-menu-content"]')!
+    const root = await screen.findByRole("menu")
     expect(container.contains(root)).toBe(true)
-    await userEvent.click(screen.getByText("More"))
+    await userEvent.click(await screen.findByText("More"))
     const nested = await screen.findByText("Nested item")
-    // React Aria nests a submenu inside the root popover's own container, so it
-    // rides along into the provider's container instead of portalling itself.
+    // The submenu portals into the same container as its parent menu, and
+    // still counts as inside the menu: the item fires instead of the click
+    // reading as an outside press that closes both menus.
     expect(container.contains(nested)).toBe(true)
-    expect(root.parentElement!.contains(nested)).toBe(true)
-    // A submenu mounted outside the root popover reads as an interact-outside:
-    // the menus close and the item never fires.
     await userEvent.click(nested)
     expect(onAction).toHaveBeenCalledTimes(1)
     container.remove()
@@ -280,24 +314,26 @@ describe("PortalProvider", () => {
   it("keeps a submenu usable with no provider in scope", async () => {
     const onAction = vi.fn()
     render(
-      <DropdownMenuTrigger>
-        <Button>Open plain menu</Button>
-        <DropdownMenu>
+      <DropdownMenu>
+        <DropdownMenuTrigger render={<Button />}>
+          Open plain menu
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
           <DropdownMenuSub>
             <DropdownMenuSubTrigger>More</DropdownMenuSubTrigger>
             <DropdownMenuSubContent>
-              <DropdownMenuItem onAction={onAction}>
+              <DropdownMenuItem onClick={onAction}>
                 Plain nested
               </DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
-        </DropdownMenu>
-      </DropdownMenuTrigger>
+        </DropdownMenuContent>
+      </DropdownMenu>
     )
     await userEvent.click(
       screen.getByRole("button", { name: "Open plain menu" })
     )
-    await userEvent.click(screen.getByText("More"))
+    await userEvent.click(await screen.findByText("More"))
     await userEvent.click(await screen.findByText("Plain nested"))
     expect(onAction).toHaveBeenCalledTimes(1)
   })
