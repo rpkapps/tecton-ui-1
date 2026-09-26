@@ -29,7 +29,7 @@ The badge is hidden from assistive technology, so put the count in the child's a
 
 ## Dot
 
-`variant="dot"` is a presence or status indicator without a number. `anchor` places the badge on any corner of its child.
+`variant="dot"` is a presence or status indicator without a number. `anchor` places the badge on any corner of its child. Corners follow the reading direction: `end` is the right side in a left-to-right layout and the left side in a right-to-left one.
 
 <ComponentPreview name="count-badge-dot" />
 
@@ -73,7 +73,7 @@ Let the badge hide itself: `count={0}` renders nothing unless `showZero`, and `i
 
 <Do>
 
-Pick `color` — `default`, `secondary`, `destructive`, `success`, `warning`, `info`, the same names as Badge's `variant` — `anchor` (`top-right` … `bottom-left`) and `max` (counts above it render as `99+`).
+Pick `color` — `default`, `secondary`, `destructive`, `success`, `warning`, `info`, the same names as Badge's `variant` — `anchor` (`top-end` … `bottom-start`) and `max` (counts above it render as `99+`).
 
 </Do>
 
@@ -191,4 +191,4 @@ Wraps its child in a relatively positioned `span`; other props go to that `span`
 | `invisible` | `boolean` | `false` | Hide the badge, keep the child. |
 | `color` | `"default" \| "secondary" \| "destructive" \| "success" \| "warning" \| "info"` | `"default"` | Badge colour. |
 | `variant` | `"standard" \| "dot"` | `"standard"` | Number pill or 8 px dot. |
-| `anchor` | `"top-right" \| "top-left" \| "bottom-right" \| "bottom-left"` | `"top-right"` | Corner of the child. |
+| `anchor` | `"top-end" \| "top-start" \| "bottom-end" \| "bottom-start"` | `"top-end"` | Corner of the child; `start` and `end` follow the reading direction. |

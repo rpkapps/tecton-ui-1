@@ -14,7 +14,7 @@ export default function CanvasDemo() {
   return (
     <Canvas className="h-72 w-full max-w-2xl rounded-lg border">
       <CanvasSurface className="bg-[radial-gradient(circle,var(--color-border)_1px,transparent_1px)] [background-size:20px_20px]" />
-      <CanvasOverlay position="top-left">
+      <CanvasOverlay position="top-start">
         <CanvasToolbar aria-label="Navigation">
           <CanvasToolbarButton aria-label="Zoom in">
             <ZoomInIcon />
@@ -27,14 +27,14 @@ export default function CanvasDemo() {
           </CanvasToolbarButton>
         </CanvasToolbar>
       </CanvasOverlay>
-      <CanvasOverlay position="top-right">
+      <CanvasOverlay position="top-end">
         <CanvasToolbar orientation="horizontal" aria-label="Measure">
           <CanvasToolbarButton aria-label="Measure">
             <RulerIcon />
           </CanvasToolbarButton>
         </CanvasToolbar>
       </CanvasOverlay>
-      <CanvasOverlay position="bottom-left">
+      <CanvasOverlay position="bottom-start">
         <CanvasLegend aria-label="Legend">
           <CanvasLegendItem swatch="var(--chart-1)">
             Existing fields

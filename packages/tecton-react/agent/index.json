@@ -1022,7 +1022,7 @@
     "names": "canvas canvas canvas surface canvas overlay canvas toolbar canvas toolbar button canvas legend canvas legend item canvas overlay variants canvas toolbar variants",
     "useWhen": "A map, a schematic, a seismic section or a 3D view owns the whole work area and the chrome floats over it. The surface is pannable or zoomable, so the controls must not steal the drags that pass between them. The view fills whatever height is left in its column rather than a height the design picked.",
     "routed": "a full-bleed map, schematic or 3D view an interactive map, schematic or 3D view",
-    "do": "Compose it: `CanvasSurface` for the engine, then one `CanvasOverlay` per edge or corner holding `CanvasToolbar`s and a `CanvasLegend`. Write the symbology as `CanvasLegendItem`s inside a `CanvasLegend`: it is a list of items, each a decorative swatch followed by its name, and `swatch` takes a CSS colour string (`\"var(--chart-1)\"`) or a node for a pattern. Pin chrome with `position` on `CanvasOverlay` (the eight edges and corners); side and corner overlays stack their children down the column, `top` and `bottom` across. Set a rail's direction with `orientation` on `CanvasToolbar` and give it an `aria-label`; it is a `role=\"toolbar\"` (arrow keys along the rail, stopping at its ends, Tab out of it) and already carries the floating surface, blur and shadow. Fill a rail with `CanvasToolbarButton`s (a ghost icon `Button`; compose a menu or popover trigger through `render`), and give the canvas its height from the column it sits in: a flex-column parent, or `className=\"h-72\"` when it is embedded."
+    "do": "Compose it: `CanvasSurface` for the engine, then one `CanvasOverlay` per edge or corner holding `CanvasToolbar`s and a `CanvasLegend`. Write the symbology as `CanvasLegendItem`s inside a `CanvasLegend`: it is a list of items, each a decorative swatch followed by its name, and `swatch` takes a CSS colour string (`\"var(--chart-1)\"`) or a node for a pattern. Pin chrome with `position` on `CanvasOverlay` (the eight edges and corners, `top-start` … `bottom-end`); side and corner overlays stack their children down the column, `top` and `bottom` across. Set a rail's direction with `orientation` on `CanvasToolbar` and give it an `aria-label`; it is a `role=\"toolbar\"` (arrow keys along the rail, stopping at its ends, Tab out of it) and already carries the floating surface, blur and shadow. Fill a rail with `CanvasToolbarButton`s (a ghost icon `Button`; compose a menu or popover trigger through `render`), and give the canvas its height from the column it sits in: a flex-column parent, or `className=\"h-72\"` when it is embedded."
    },
    "notFor": [
     {
@@ -1059,7 +1059,7 @@
     "canvasToolbarVariants"
    ],
    "aliases": [],
-   "tokens": 1053
+   "tokens": 1060
   },
   {
    "id": "card",
@@ -1618,7 +1618,7 @@
     "names": "count badge count badge",
     "useWhen": "A number belongs to an icon button, an avatar or a tab: unread messages, queued jobs, open comments. A presence or status dot belongs to an avatar or a tab: `variant=\"dot\"`. The number decorates the control; it is not a label the user reads on its own.",
     "routed": "a number pinned to the corner of an icon a count or dot pinned to the corner of an icon or avatar a count or dot pinned to the corner of an icon or avatar a count or a dot pinned to the corner of an icon or an avatar",
-    "do": "Wrap the control — `CountBadge` renders the positioned anchor and the badge, and the control stays its child. Let the badge hide itself: `count={0}` renders nothing unless `showZero`, and `invisible` hides it while keeping the anchor. Pick `color` — `default`, `secondary`, `destructive`, `success`, `warning`, `info`, the same names as Badge's `variant` — `anchor` (`top-right` … `bottom-left`) and `max` (counts above it render as `99+`). Put the number in the control's accessible name — `aria-label=\"Messages, 4 unread\"` — because the badge is decorative: it renders `aria-hidden`, so assistive tech never hears the number anywhere else."
+    "do": "Wrap the control — `CountBadge` renders the positioned anchor and the badge, and the control stays its child. Let the badge hide itself: `count={0}` renders nothing unless `showZero`, and `invisible` hides it while keeping the anchor. Pick `color` — `default`, `secondary`, `destructive`, `success`, `warning`, `info`, the same names as Badge's `variant` — `anchor` (`top-end` … `bottom-start`) and `max` (counts above it render as `99+`). Put the number in the control's accessible name — `aria-label=\"Messages, 4 unread\"` — because the badge is decorative: it renders `aria-hidden`, so assistive tech never hears the number anywhere else."
    },
    "notFor": [
     {

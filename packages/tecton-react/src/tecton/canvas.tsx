@@ -10,7 +10,8 @@ import { Button } from "@tecton/react/components/button"
 /**
  * Tecton Canvas — a full-bleed work surface (map, schematic, 3D view) with
  * floating chrome. `CanvasSurface` fills the area; `CanvasOverlay` pins
- * controls to an edge or corner; `CanvasToolbar` is the floating tool rail
+ * controls to an edge or corner (logical positions: `start`/`end` follow the
+ * reading direction and mirror in RTL); `CanvasToolbar` is the floating tool rail
  * used inside an overlay, `CanvasToolbarButton` a tool in it; `CanvasLegend`
  * lists the symbology.
  */
@@ -42,25 +43,25 @@ const canvasOverlayVariants = cva(
   {
     variants: {
       position: {
-        "top-left": "start-3 top-3 flex-col items-start",
+        "top-start": "start-3 top-3 flex-col items-start",
         top: "top-3 left-1/2 -translate-x-1/2 flex-row items-center",
-        "top-right": "end-3 top-3 flex-col items-end",
-        left: "start-3 top-1/2 -translate-y-1/2 flex-col items-start",
-        right: "end-3 top-1/2 -translate-y-1/2 flex-col items-end",
-        "bottom-left": "start-3 bottom-3 flex-col items-start",
+        "top-end": "end-3 top-3 flex-col items-end",
+        start: "start-3 top-1/2 -translate-y-1/2 flex-col items-start",
+        end: "end-3 top-1/2 -translate-y-1/2 flex-col items-end",
+        "bottom-start": "start-3 bottom-3 flex-col items-start",
         bottom: "bottom-3 left-1/2 -translate-x-1/2 flex-row items-center",
-        "bottom-right": "end-3 bottom-3 flex-col items-end",
+        "bottom-end": "end-3 bottom-3 flex-col items-end",
       },
     },
     defaultVariants: {
-      position: "top-left",
+      position: "top-start",
     },
   }
 )
 
 function CanvasOverlay({
   className,
-  position = "top-left",
+  position = "top-start",
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof canvasOverlayVariants>) {
   return (
