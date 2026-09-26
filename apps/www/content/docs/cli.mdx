@@ -10,7 +10,7 @@ This page is for the maintainers of the library; applications import `@tecton/re
 shadcn authors every preset (Vega, Nova, …) as a CSS file of Tailwind `@apply` lists that its registry build inlines into the component sources. Tecton is one more preset, in `scripts/registry-mirror/overlay/`:
 
 - `style-tecton.css` — `style-vega.css` with the Tecton deviations (solid 2px focus ring, flat controls, buttons that lighten on hover and press, Tecton tab and toggle colours) and the class lists of the extra variants;
-- `tecton.patch` — registers the style and patches upstream sources: variant axes on `alert`, `badge`, `separator`, `input`, `textarea` and the `select` trigger, the Tecton portal container on every overlay, logical corners on `button-group`, outlined status colours on `sonner`, and `cookieName` / `keyboardShortcut` on `SidebarProvider`.
+- `tecton.patch` — registers the style and patches upstream sources: variant axes on `alert`, `badge`, `separator`, `input`, `textarea` and the `select` trigger, `data-variant` / `data-size` on `button`, the Tecton portal container on every overlay, logical corners on `button-group`, the Tecton tab and toggle colours, tabs that follow their `orientation` and select on arrow keys, an `AlertDialogAction` that closes the prompt, a focus-keeping `calendar`, pagination links announced as links, `aria-label` on the `slider` thumbs, outlined status colours on `sonner`, physical sides and `cookieName` on the `sidebar` (and no built-in keyboard shortcut), and classes outside a `className` moved into a `cva` on `calendar` and `input-otp`. The full list is in `docs/UPSTREAM.md`.
 
 The installed files contain plain Tailwind class strings; `globals.css` keeps only the Tecton values of the shadcn variables.
 

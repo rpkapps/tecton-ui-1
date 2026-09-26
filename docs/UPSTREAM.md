@@ -164,42 +164,58 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
 
 ## Overlay hunks
 
-All on `apps/v4/registry/bases/base/ui/*`:
+`tecton.patch` registers the `tecton` style in `apps/v4/registry/styles.tsx`; every other hunk is on
+`apps/v4/registry/bases/base/ui/*`. Behaviour hunks are tested in
+`src/tecton/__tests__/overlay-behaviour.test.tsx` unless noted.
 
-- **Portal target** — every overlay portals into `container ?? usePortalTarget()`
-  (`@tecton/react/tecton/portal`, fed by `TectonProvider`'s `portalContainer`), so a `container`
-  the caller passes wins. The `*Portal` wrappers take it, and every content part gains an optional
-  `container` (`DialogContent`, `AlertDialogContent`, `SheetContent`, `DrawerContent` through their
-  `*Portal`; `PopoverContent`, `TooltipContent`, `HoverCardContent`, `SelectContent`,
-  `ComboboxContent`, `DropdownMenuContent`, `ContextMenuContent` and their `*SubContent` directly).
-  `usePortalTarget()` is never `null`, which Base UI would read as "render nothing". Tested in
+- **Portal target** (`alert-dialog`, `dialog`, `sheet`, `drawer`, `popover`, `tooltip`,
+  `hover-card`, `select`, `combobox`, `dropdown-menu`, `context-menu`) — every overlay portals
+  into `container ?? usePortalTarget()` (`@tecton/react/tecton/portal`, fed by `TectonProvider`'s
+  `portalContainer`), so a `container` the caller passes wins. The `*Portal` wrappers take it, and
+  every content part gains an optional `container` (`DialogContent`, `AlertDialogContent`,
+  `SheetContent`, `DrawerContent` through their `*Portal`; `PopoverContent`, `TooltipContent`,
+  `HoverCardContent`, `SelectContent`, `ComboboxContent`, `DropdownMenuContent`,
+  `ContextMenuContent` and their `*SubContent` directly). `usePortalTarget()` is never `null`,
+  which Base UI would read as "render nothing". Tested in
   `src/tecton/__tests__/overlay-portal-container.test.tsx`.
 - **Variant axes** — `alert` (`variant` success / warning / info, `appearance` default / outline /
-  filled), `badge` (`variant` success / warning / info, `appearance` solid / outline, `size`
-  default / md / lg, exposed as `data-appearance` / `data-size`; Tecton focus ring), `separator`
-  (`emphasis` subtle / default / strong), `input` / `textarea` / `select` trigger (`variant`
-  outline / filled / text; `inputVariants`, `textareaVariants`, `selectTriggerVariants`).
-- **`tabs`, `toggle`** — the hard-coded active-tab colours, indicator colour and ring, and the
-  toggle's `hover:bg-muted`, are removed so `style-tecton.css` sets the Tecton ones; the default tab
-  list sits on `bg-card`. `Tabs` passes its `orientation` to the Base UI root (upstream only sets
-  `data-orientation`, so vertical tabs kept horizontal arrow keys and `aria-orientation`).
-  `TabsList` defaults `activateOnFocus` to `true`: an arrow key selects the tab it moves to, as the
-  React Aria-based Tecton did (Base UI defaults to manual activation; `false` restores it).
+  filled, exposed as `data-variant` / `data-appearance`; `alertVariants` exported), `badge`
+  (`variant` success / warning / info, `appearance` solid / outline, `size` default / md / lg,
+  exposed as `data-appearance` / `data-size`; 2px focus ring), `separator` (`emphasis` subtle /
+  default / strong, `data-emphasis`, `separatorVariants`), `input` / `textarea` / `select` trigger
+  (`variant` outline / filled / text, `data-variant`; `inputVariants`, `textareaVariants`,
+  `selectTriggerVariants`). The `select` trigger variants and the `input-otp` container are pinned
+  in `src/tecton/__tests__/overlay-variants.test.tsx`.
+- **`button`** — renders `data-variant` / `data-size` (as the other bases do), which the
+  `button-group` rule in `style-tecton.css` keys on to give filled members the outline stroke when
+  the group has an outlined member.
+- **`button-group`** — logical corners (`rounded-e-none` / `rounded-s-none`); members overlap by a
+  pixel (`-ms-px` / `-mt-px`) instead of dropping a border, so each draws a complete ring.
+- **`tabs`** — the hard-coded active-tab colours, indicator colour and 3px ring are removed so
+  `style-tecton.css` sets the Tecton ones (2px ring); the default tab list sits on `bg-card`.
+  `Tabs` passes its `orientation` to the Base UI root (upstream only sets `data-orientation`, so
+  vertical tabs kept horizontal arrow keys and `aria-orientation`). `TabsList` defaults
+  `activateOnFocus` to `true`: an arrow key selects the tab it moves to, as the React Aria-based
+  Tecton did (Base UI defaults to manual activation; `false` restores it).
+- **`toggle`** — the base `hover:bg-muted` is removed so `style-tecton.css` sets the Tecton ghost
+  hover colours; 2px focus ring.
 - **`alert-dialog`** — `AlertDialogAction` renders the Base UI `Close` part with `Button` styling
   (`variant` / `size`, like `AlertDialogCancel`), so a click runs `onClick` and closes the prompt;
   `event.preventBaseUIHandler()` in `onClick` keeps it open.
-- **`button-group`** — logical corners (`rounded-e-none` / `rounded-s-none`); members overlap by a
-  pixel (`-ms-px` / `-mt-px`) so each draws a complete ring.
 - **`sidebar`** — `side` is physical, so the container border (`ltr:` / `rtl:` pairs of logical
   borders), the rail's offcanvas position and resize cursors (`group-data-[side=…]` variants and
   arbitrary cursor values, which the CLI's RTL transform leaves alone) stay on the same physical
   edge in both directions; `SidebarMenuButton` opens its collapsed tooltip away from the sidebar's
-  side (a `SidebarSideContext` set by `Sidebar`) instead of a hard-coded `right`. `SidebarProvider` gains `cookieName?: string | false` (default `"sidebar_state"`)
-  and `keyboardShortcut?: string | false` (default `"b"`), so several micro frontends on one page
-  do not share a cookie or all toggle on one Ctrl/Cmd+B. Tested in
-  `src/tecton/__tests__/sidebar-provider.test.tsx`.
+  side (a `SidebarSideContext` set by `Sidebar`) instead of a hard-coded `right`.
+  `SidebarProvider` gains `cookieName?: string | false` (default `"sidebar_state"`), so several
+  micro frontends on one page do not share one cookie (tested in
+  `src/tecton/__tests__/sidebar-provider.test.tsx`). Upstream's `window` keydown listener for
+  ⌘B / Ctrl+B (`SIDEBAR_KEYBOARD_SHORTCUT`) is removed: Tecton registers no keyboard shortcuts, and
+  an application that wants one calls `toggleSidebar()` from `useSidebar()` in its own handler.
 - **`slider`** — the thumb (a `div`) uses `data-disabled:pointer-events-none` instead of
-  `disabled:`, which never matched.
+  `disabled:`, which never matched. `aria-label` on `Slider` is passed to every thumb's range input
+  instead of the group root (Base UI forwards only `aria-labelledby`), so `<Slider aria-label="…">`
+  names the thumbs as the React Aria-based slider did.
 - **`input-otp`, `calendar`** — classes upstream passes outside a `className` (`containerClassName`,
   DayPicker `classNames`) move into a `cva` (`inputOTPContainerVariants`,
   `calendarDropdownRootVariants`, `calendarCaptionLabelVariants`) so the build inlines them.
@@ -212,11 +228,10 @@ All on `apps/v4/registry/bases/base/ui/*`:
   locales (`ar-SA`) default to a non-Gregorian calendar in `Intl` and named the wrong months (and
   differed between server and browser, a hydration mismatch).
 - **`pagination`** — `PaginationLink` is a plain `a` with `buttonVariants`: a Base UI `Button`
-  rendering an `a` keeps `role="button"`, so the page links were announced as buttons. This and
-  the `calendar`, `tabs`, `alert-dialog` and `sidebar` behaviour are tested in
-  `src/tecton/__tests__/overlay-behaviour.test.tsx`.
+  rendering an `a` keeps `role="button"`, so the page links were announced as buttons.
 - **`sonner`** — `richColors` and outlined status colours (`--success-*`, `--info-*`,
-  `--warning-*`, `--error-*`), matching `alert` with `appearance="outline"`.
+  `--warning-*`, `--error-*`), matching `alert` with `appearance="outline"`; upstream's
+  `toastOptions` class (`cn-toast`, outside a `className`) goes.
 
 ## Renaming the package
 

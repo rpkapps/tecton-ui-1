@@ -3025,7 +3025,7 @@
     "names": "sidebar sidebar sidebar provider sidebar trigger sidebar rail sidebar inset sidebar header sidebar content sidebar footer sidebar group sidebar group label sidebar menu sidebar menu item sidebar menu button sidebar menu action sidebar menu badge sidebar menu sub sidebar menu sub item sidebar menu sub button use sidebar",
     "useWhen": "The application's navigation rail: groups of destinations, an active row, a collapse control. The rail has to survive a phone — below the mobile breakpoint `Sidebar` renders itself as a `Sheet`. Rows carry a count, a per-row action or a second level of destinations.",
     "routed": "a navigation rail the user collapses and expands",
-    "do": "Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it. Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `render={<a href=\"/wells\" />}` (or the router's `Link`) for a destination and `isActive` for the current one. Pick the behaviour with `collapsible=\"offcanvas\" | \"icon\" | \"none\"` and the surface with `variant=\"sidebar\" | \"floating\" | \"inset\"`. Treat `side=\"left\" | \"right\"` as the physical edge: in a right-to-left layout pass `side=\"right\"` (from `useDirection()`) to keep the sidebar at the start; the border, the rail and the collapsed tooltips follow the side. Pass `tooltip=\"Wells\"` (or `TooltipContent` props) on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone."
+    "do": "Wrap the rail, the content and every trigger in one `SidebarProvider`; `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` all call `useSidebar`, which throws outside it. The sidebar registers no keyboard shortcut: an application that wants one calls `toggleSidebar()` from `useSidebar()` in its own key handler. Render a row as `SidebarMenuItem` > `SidebarMenuButton`, with `render={<a href=\"/wells\" />}` (or the router's `Link`) for a destination and `isActive` for the current one. Pick the behaviour with `collapsible=\"offcanvas\" | \"icon\" | \"none\"` and the surface with `variant=\"sidebar\" | \"floating\" | \"inset\"`. Treat `side=\"left\" | \"right\"` as the physical edge: in a right-to-left layout pass `side=\"right\"` (from `useDirection()`) to keep the sidebar at the start; the border, the rail and the collapsed tooltips follow the side. Pass `tooltip=\"Wells\"` (or `TooltipContent` props) on `SidebarMenuButton`: it shows only while the rail is icon-collapsed, which is exactly when the label is gone."
    },
    "notFor": [
     {
@@ -3068,7 +3068,7 @@
     "useSidebar"
    ],
    "aliases": [],
-   "tokens": 1194
+   "tokens": 1197
   },
   {
    "id": "skeleton",
@@ -3119,7 +3119,7 @@
     "names": "slider slider",
     "useWhen": "An approximate value inside a known range: opacity, threshold, zoom, temperature. A range with two or more thumbs, such as a price or depth filter. The exact number matters less than the gesture of moving through the range.",
     "routed": "a value picked from a continuous range",
-    "do": "Bound the range with `min`, `max` and `step` (0–100 by default). Pass `value` / `defaultValue` as an array — one entry per thumb — and read it back in `onValueChange`, whose type is `number | number[]`, so narrow it; `onValueCommitted` fires once on release. Name it with `aria-labelledby` pointing at the visible title's `id`: the slider forwards it to every thumb's range input, which `aria-label` on the root does not reach. Inside a `Field`, use `FieldTitle` (with that `id`) and `FieldDescription`, and show the live value in the description. Disable with `disabled`; switch axis with `orientation=\"vertical\"` plus a height class such as `h-40`."
+    "do": "Bound the range with `min`, `max` and `step` (0–100 by default). Pass `value` / `defaultValue` as an array — one entry per thumb — and read it back in `onValueChange`, whose type is `number | number[]`, so narrow it; `onValueCommitted` fires once on release. Name it with `aria-labelledby` pointing at the visible title's `id`, or with `aria-label` when there is no visible title: the slider forwards either to every thumb's range input. Inside a `Field`, use `FieldTitle` (with that `id`) and `FieldDescription`, and show the live value in the description. Disable with `disabled`; switch axis with `orientation=\"vertical\"` plus a height class such as `h-40`."
    },
    "notFor": [
     {
@@ -3143,7 +3143,7 @@
     "Slider"
    ],
    "aliases": [],
-   "tokens": 819
+   "tokens": 822
   },
   {
    "id": "sonner",

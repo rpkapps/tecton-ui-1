@@ -198,6 +198,19 @@ index 9bdfea8e..1d998339 100644
        },
      },
      defaultVariants: {
+diff --git a/apps/v4/registry/bases/base/ui/button.tsx b/apps/v4/registry/bases/base/ui/button.tsx
+index 20073740..5ec9c753 100644
+--- a/apps/v4/registry/bases/base/ui/button.tsx
++++ b/apps/v4/registry/bases/base/ui/button.tsx
+@@ -41,6 +41,8 @@ function Button({
+   return (
+     <ButtonPrimitive
+       data-slot="button"
++      data-variant={variant}
++      data-size={size}
+       className={cn(buttonVariants({ variant, size, className }))}
+       {...props}
+     />
 diff --git a/apps/v4/registry/bases/base/ui/calendar.tsx b/apps/v4/registry/bases/base/ui/calendar.tsx
 index 568ab9fd..a6a95715 100644
 --- a/apps/v4/registry/bases/base/ui/calendar.tsx
@@ -1066,10 +1079,18 @@ index 72669ad9..80cacd1d 100644
        <SheetPrimitive.Popup
          data-slot="sheet-content"
 diff --git a/apps/v4/registry/bases/base/ui/sidebar.tsx b/apps/v4/registry/bases/base/ui/sidebar.tsx
-index 1ca33564..9d6bcc8a 100644
+index 1ca33564..70aef2a3 100644
 --- a/apps/v4/registry/bases/base/ui/sidebar.tsx
 +++ b/apps/v4/registry/bases/base/ui/sidebar.tsx
-@@ -44,6 +44,10 @@ type SidebarContextProps = {
+@@ -30,7 +30,6 @@ const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+ const SIDEBAR_WIDTH = "16rem"
+ const SIDEBAR_WIDTH_MOBILE = "18rem"
+ const SIDEBAR_WIDTH_ICON = "3rem"
+-const SIDEBAR_KEYBOARD_SHORTCUT = "b"
+ 
+ type SidebarContextProps = {
+   state: "expanded" | "collapsed"
+@@ -44,6 +43,10 @@ type SidebarContextProps = {
  
  const SidebarContext = React.createContext<SidebarContextProps | null>(null)
  
@@ -1080,16 +1101,15 @@ index 1ca33564..9d6bcc8a 100644
  function useSidebar() {
    const context = React.useContext(SidebarContext)
    if (!context) {
-@@ -57,6 +61,8 @@ function SidebarProvider({
+@@ -57,6 +60,7 @@ function SidebarProvider({
    defaultOpen = true,
    open: openProp,
    onOpenChange: setOpenProp,
 +  cookieName = SIDEBAR_COOKIE_NAME,
-+  keyboardShortcut = SIDEBAR_KEYBOARD_SHORTCUT,
    className,
    style,
    children,
-@@ -65,6 +71,24 @@ function SidebarProvider({
+@@ -65,6 +69,15 @@ function SidebarProvider({
    defaultOpen?: boolean
    open?: boolean
    onOpenChange?: (open: boolean) => void
@@ -1102,19 +1122,10 @@ index 1ca33564..9d6bcc8a 100644
 +   * @default "sidebar_state"
 +   */
 +  cookieName?: string | false
-+  /**
-+   * Key that toggles the sidebar together with Meta/Ctrl, or `false` to not
-+   * register the `window` keydown listener at all. Several micro frontends can
-+   * each render a sidebar on one page: give them different keys, or `false`,
-+   * so one shortcut does not toggle every sidebar.
-+   *
-+   * @default "b"
-+   */
-+  keyboardShortcut?: string | false
  }) {
    const isMobile = useIsMobile()
    const [openMobile, setOpenMobile] = React.useState(false)
-@@ -83,9 +107,11 @@ function SidebarProvider({
+@@ -83,9 +96,11 @@ function SidebarProvider({
        }
  
        // This sets the cookie to keep the sidebar state.
@@ -1128,33 +1139,31 @@ index 1ca33564..9d6bcc8a 100644
    )
  
    // Helper to toggle the sidebar.
-@@ -95,11 +121,12 @@ function SidebarProvider({
+@@ -93,21 +108,8 @@ function SidebarProvider({
+     return isMobile ? setOpenMobile((open) => !open) : setOpen((open) => !open)
+   }, [isMobile, setOpen, setOpenMobile])
  
-   // Adds a keyboard shortcut to toggle the sidebar.
-   React.useEffect(() => {
-+    if (keyboardShortcut === false) {
-+      return
-+    }
-+
-     const handleKeyDown = (event: KeyboardEvent) => {
+-  // Adds a keyboard shortcut to toggle the sidebar.
+-  React.useEffect(() => {
+-    const handleKeyDown = (event: KeyboardEvent) => {
 -      if (
 -        event.key === SIDEBAR_KEYBOARD_SHORTCUT &&
 -        (event.metaKey || event.ctrlKey)
 -      ) {
-+      if (event.key === keyboardShortcut && (event.metaKey || event.ctrlKey)) {
-         event.preventDefault()
-         toggleSidebar()
-       }
-@@ -107,7 +134,7 @@ function SidebarProvider({
- 
-     window.addEventListener("keydown", handleKeyDown)
-     return () => window.removeEventListener("keydown", handleKeyDown)
+-        event.preventDefault()
+-        toggleSidebar()
+-      }
+-    }
+-
+-    window.addEventListener("keydown", handleKeyDown)
+-    return () => window.removeEventListener("keydown", handleKeyDown)
 -  }, [toggleSidebar])
-+  }, [keyboardShortcut, toggleSidebar])
++  // Tecton registers no keyboard shortcut: an application that wants one
++  // binds its own key and calls `toggleSidebar()` from `useSidebar()`.
  
    // We add a state so that we can do data-state="expanded" or "collapsed".
    // This makes it easier to style the sidebar with Tailwind classes.
-@@ -231,10 +258,12 @@ function Sidebar({
+@@ -231,10 +233,12 @@ function Sidebar({
          data-side={side}
          className={cn(
            "fixed inset-y-0 z-10 hidden h-svh w-(--sidebar-width) transition-[left,right,width] duration-200 ease-linear data-[side=left]:left-0 data-[side=left]:group-data-[collapsible=offcanvas]:left-[calc(var(--sidebar-width)*-1)] data-[side=right]:right-0 data-[side=right]:group-data-[collapsible=offcanvas]:right-[calc(var(--sidebar-width)*-1)] md:flex",
@@ -1169,7 +1178,7 @@ index 1ca33564..9d6bcc8a 100644
            className
          )}
          {...props}
-@@ -244,7 +273,9 @@ function Sidebar({
+@@ -244,7 +248,9 @@ function Sidebar({
            data-slot="sidebar-inner"
            className="cn-sidebar-inner flex size-full flex-col"
          >
@@ -1180,7 +1189,7 @@ index 1ca33564..9d6bcc8a 100644
          </div>
        </div>
      </div>
-@@ -297,11 +328,15 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
+@@ -297,11 +303,15 @@ function SidebarRail({ className, ...props }: React.ComponentProps<"button">) {
        title="Toggle Sidebar"
        className={cn(
          "cn-sidebar-rail absolute inset-y-0 z-20 hidden w-4 transition-all ease-linear group-data-[side=left]:-right-4 group-data-[side=right]:left-0 after:absolute after:inset-y-0 after:start-1/2 after:w-[2px] sm:flex ltr:-translate-x-1/2 rtl:-translate-x-1/2",
@@ -1201,7 +1210,7 @@ index 1ca33564..9d6bcc8a 100644
          className
        )}
        {...props}
-@@ -519,6 +554,7 @@ function SidebarMenuButton({
+@@ -519,6 +529,7 @@ function SidebarMenuButton({
      tooltip?: string | React.ComponentProps<typeof TooltipContent>
    } & VariantProps<typeof sidebarMenuButtonVariants>) {
    const { isMobile, state } = useSidebar()
@@ -1209,7 +1218,7 @@ index 1ca33564..9d6bcc8a 100644
    const comp = useRender({
      defaultTagName: "button",
      props: mergeProps<"button">(
-@@ -550,7 +586,7 @@ function SidebarMenuButton({
+@@ -550,7 +561,7 @@ function SidebarMenuButton({
      <Tooltip>
        {comp}
        <TooltipContent
@@ -1219,14 +1228,25 @@ index 1ca33564..9d6bcc8a 100644
          hidden={state !== "collapsed" || isMobile}
          {...tooltip}
 diff --git a/apps/v4/registry/bases/base/ui/slider.tsx b/apps/v4/registry/bases/base/ui/slider.tsx
-index 2e55a9a0..17f0f2e8 100644
+index 2e55a9a0..5789a0fe 100644
 --- a/apps/v4/registry/bases/base/ui/slider.tsx
 +++ b/apps/v4/registry/bases/base/ui/slider.tsx
-@@ -40,7 +40,7 @@ function Slider({
+@@ -7,6 +7,7 @@ function Slider({
+   value,
+   min = 0,
+   max = 100,
++  "aria-label": ariaLabel,
+   ...props
+ }: SliderPrimitive.Root.Props) {
+   const _values = Array.isArray(value)
+@@ -40,7 +41,10 @@ function Slider({
            <SliderPrimitive.Thumb
              data-slot="slider-thumb"
              key={index}
 -            className="cn-slider-thumb block shrink-0 select-none disabled:pointer-events-none disabled:opacity-50"
++            // The root passes its `aria-labelledby` to the thumbs' range
++            // inputs but not its `aria-label`, so name each thumb here.
++            aria-label={ariaLabel}
 +            className="cn-slider-thumb block shrink-0 select-none data-disabled:pointer-events-none"
            />
          ))}

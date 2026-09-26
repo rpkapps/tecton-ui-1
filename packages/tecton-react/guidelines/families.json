@@ -182,7 +182,7 @@
       "checklist": [
         "A breadcrumb is `Breadcrumb > BreadcrumbList > BreadcrumbItem` ending in `BreadcrumbPage` (the element marked `aria-current=\"page\"`), never a row of anchors and slashes.",
         "A routing library's link is mounted through `render={<Link to=\"…\" />}` on `BreadcrumbLink` or `SidebarMenuButton`; there is no `asChild`, and a `BreadcrumbSeparator` goes between items.",
-        "Every `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` is inside one `SidebarProvider` — `useSidebar` throws outside it, and a second provider fights the first over the `sidebar_state` cookie and ⌘B.",
+        "Every `Sidebar`, `SidebarTrigger`, `SidebarRail` and `SidebarMenuButton` is inside one `SidebarProvider` — `useSidebar` throws outside it, and a second provider fights the first over the `sidebar_state` cookie.",
         "A navigation row is `SidebarMenuItem > SidebarMenuButton render={<a href=\"…\" />}` with `isActive` on the current one, not a button with a handler.",
         "Paging controls are `Pagination > PaginationContent > PaginationItem`, every control carries an `href`, the current page is marked with `isActive` on `PaginationLink` (which sets both the outline variant and `aria-current=\"page\"`), and the first and last page omit `PaginationPrevious` / `PaginationNext` — a link has no disabled state.",
         "The app switcher is an `AppFinder` whose search is `AppFinderInput` inside `AppFinderMenu` (never an `Input` of your own) and whose tile is tinted with `tone`, never with `className`."
