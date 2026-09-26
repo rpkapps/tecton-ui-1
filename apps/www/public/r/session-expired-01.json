@@ -4,6 +4,7 @@
   "title": "401 · Session expired",
   "description": "Session timed out: unsaved-edits reassurance, password and SSO sign-in, return-to route; the log fades past the moment the session ended. Requires the @tecton/react package.",
   "dependencies": [
+    "@tecton/react",
     "cn",
     "lucide-react"
   ],
