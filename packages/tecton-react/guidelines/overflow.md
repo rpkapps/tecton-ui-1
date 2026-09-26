@@ -23,6 +23,7 @@ related: [ButtonGroup, ActionBar, DropdownMenu]
 
 - Wrap every control that may leave the row in an `OverflowItem` with a stable `id`; leave the primary action unwrapped so it is fixed and never collapses.
 - Put the text in an `OverflowLabel` and describe the menu entry with `label`, `icon`, `shortcut` and `onAction`.
+- Give a control that may go icon-only an icon of its own: only an item with a `label` and an icon in its control collapses to icon-only; a text-only item keeps its label (`labelBehavior` defaults to `keep` there).
 - Decide who leaves first with `priority` (higher stays longer); the menu always keeps source order.
 - Use `Toolbar` with an `aria-label` when the row is a toolbar (one tab stop, arrow keys) and `Overflow` when it is not, such as a chip row.
 - Give a non-button its menu form through `overflow`: a `DropdownMenuSub` for a select or submenu, a `DropdownMenuItem` opening a `Dialog` for a text input, or `"never"` to pin the item in the row.
