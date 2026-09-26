@@ -86,31 +86,38 @@ function toggleIn(label: string) {
 }
 
 describe("tree visibility toggles", () => {
-  it("sidebar-03: Hide becomes a pressed Show and dims the row", async () => {
+  // The toggle keeps one name, "Hide <row>", and aria-pressed carries the state.
+  it("sidebar-03: pressing Hide presses the toggle and dims the row", async () => {
     const user = userEvent.setup()
     render(<Sidebar03Page />)
     const { row, toggle } = toggleIn("34/10-A-12 H")
-    expect(toggle).toHaveAccessibleName("Hide")
+    expect(toggle).toHaveAccessibleName("Hide 34/10-A-12 H")
     expect(toggle).toHaveAttribute("aria-pressed", "false")
     await user.click(toggle)
     const after = toggleIn("34/10-A-12 H")
-    expect(after.toggle).toHaveAccessibleName("Show")
+    expect(after.toggle).toHaveAccessibleName("Hide 34/10-A-12 H")
     expect(after.toggle).toHaveAttribute("aria-pressed", "true")
     expect(after.row).toHaveAttribute("data-hidden", "true")
     expect(row).toBe(after.row)
     await user.click(after.toggle)
-    expect(toggleIn("34/10-A-12 H").toggle).toHaveAccessibleName("Hide")
+    expect(toggleIn("34/10-A-12 H").toggle).toHaveAttribute(
+      "aria-pressed",
+      "false"
+    )
   })
 
-  it("dashboard project tree: Hide becomes a pressed Show", async () => {
+  it("dashboard project tree: pressing Hide presses the toggle", async () => {
     const user = userEvent.setup()
     render(<ProjectTree />)
     const [firstItem] = screen
       .getAllByRole("row")
-      .filter((row) => within(row).queryByRole("button", { name: "Hide" }))
+      .filter((row) => within(row).queryByRole("button", { name: /^Hide / }))
     if (!firstItem) throw new Error("no item row")
-    await user.click(within(firstItem).getByRole("button", { name: "Hide" }))
-    const toggle = within(firstItem).getByRole("button", { name: "Show" })
-    expect(toggle).toHaveAttribute("aria-pressed", "true")
+    const toggle = within(firstItem).getByRole("button", { name: /^Hide / })
+    expect(toggle).toHaveAttribute("aria-pressed", "false")
+    await user.click(toggle)
+    expect(
+      within(firstItem).getByRole("button", { name: /^Hide / })
+    ).toHaveAttribute("aria-pressed", "true")
   })
 })
