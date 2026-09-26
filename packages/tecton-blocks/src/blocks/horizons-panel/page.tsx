@@ -73,7 +73,7 @@ function HorizonsPanel({
             aria-label="Collapse panel"
             {...(onCollapse === undefined ? {} : { onClick: onCollapse })}
           >
-            <PanelRightIcon />
+            <PanelRightIcon className="rtl:rotate-180" />
           </Button>
         </PanelActions>
       </PanelHeader>
@@ -141,7 +141,11 @@ export default function HorizonsPanelPage() {
         />
       ) : (
         <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
-          <PanelRightOpenIcon data-icon="inline-start" /> Show horizons
+          <PanelRightOpenIcon
+            data-icon="inline-start"
+            className="rtl:rotate-180"
+          />{" "}
+          Show horizons
         </Button>
       )}
     </div>

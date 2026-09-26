@@ -30,13 +30,13 @@ export function ModeToggle() {
           value={theme ?? ""}
           onValueChange={(value: string) => setTheme(value)}
         >
-          <DropdownMenuRadioItem value="dark">
+          <DropdownMenuRadioItem value="dark" closeOnClick>
             <MoonIcon /> Dark
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="light">
+          <DropdownMenuRadioItem value="light" closeOnClick>
             <SunIcon /> Light
           </DropdownMenuRadioItem>
-          <DropdownMenuRadioItem value="system">
+          <DropdownMenuRadioItem value="system" closeOnClick>
             <MonitorIcon /> System
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>

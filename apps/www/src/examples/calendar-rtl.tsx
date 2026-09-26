@@ -2,7 +2,7 @@
 "use client"
 
 import * as React from "react"
-import { arSA, he } from "react-day-picker/locale"
+import { arEG, he } from "react-day-picker/locale"
 
 import {
   useTranslation,
@@ -26,7 +26,7 @@ const translations: Translations = {
 }
 
 const locales = {
-  ar: arSA,
+  ar: arEG,
   he: he,
 } as const
 

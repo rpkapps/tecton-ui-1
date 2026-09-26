@@ -3,10 +3,10 @@
 
 import * as React from "react"
 import { format } from "date-fns"
-import { arSA, he } from "date-fns/locale"
+import { arEG, he } from "date-fns/locale"
 import { ChevronDownIcon } from "lucide-react"
 import {
-  arSA as arSADayPicker,
+  arEG as arEGDayPicker,
   he as heDayPicker,
 } from "react-day-picker/locale"
 
@@ -44,12 +44,12 @@ const translations: Translations = {
 }
 
 const dayPickerLocales = {
-  ar: arSADayPicker,
+  ar: arEGDayPicker,
   he: heDayPicker,
 } as const
 
 const dateFnsLocales = {
-  ar: arSA,
+  ar: arEG,
   he: he,
 } as const
 

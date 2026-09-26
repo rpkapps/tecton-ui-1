@@ -46,7 +46,7 @@ function NavMain({ groups }: { groups: NavGroup[] }) {
                   >
                     <item.icon />
                     <span>{item.title}</span>
-                    <ChevronRightIcon className="ms-auto transition-transform duration-200 group-data-open/collapsible:rotate-90" />
+                    <ChevronRightIcon className="ms-auto transition-transform duration-200 group-data-open/collapsible:rotate-90 rtl:rotate-180 rtl:group-data-open/collapsible:rotate-90" />
                   </CollapsibleTrigger>
                   <CollapsibleContent>
                     <SidebarMenuSub>

@@ -71,7 +71,7 @@ export default function Page() {
             aria-label="Open well properties"
             onClick={() => (isWide ? setPanelOpen(true) : setSheetOpen(true))}
           >
-            <PanelRightOpenIcon />
+            <PanelRightOpenIcon className="rtl:rotate-180" />
           </Button>
         )}
       </header>
