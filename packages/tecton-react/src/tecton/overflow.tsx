@@ -69,6 +69,9 @@ type MenuState = { hidden: string[]; version: number }
 /** Size assumed for an icon-only control before it has been measured. */
 const ICON_ONLY = 32
 
+// Declared here: the package's declaration build has no Node types.
+declare const process: { env: { NODE_ENV?: string } }
+
 /** Development builds only; a consumer's bundler replaces `process.env.NODE_ENV`. */
 function isDevelopment() {
   try {

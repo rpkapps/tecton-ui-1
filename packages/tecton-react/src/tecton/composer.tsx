@@ -1131,6 +1131,9 @@ function optionKey(item: ComposerCommandItem) {
   return encodeURIComponent(item.id)
 }
 
+// Declared here: the package's declaration build has no Node types.
+declare const process: { env: { NODE_ENV?: string } }
+
 /** Development builds only; a consumer's bundler replaces `process.env.NODE_ENV`. */
 function isDevelopment() {
   try {
