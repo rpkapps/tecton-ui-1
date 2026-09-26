@@ -49,16 +49,44 @@ export const Route = createRootRoute({
 })
 
 /**
+ * An href the TanStack router must not handle: another origin or a scheme
+ * (`https:`, `mailto:`…), or a protocol-relative URL.
+ */
+function isExternalHref(href: string) {
+  return /^(?:[a-z][a-z\d+.-]*:|\/\/)/i.test(href)
+}
+
+/**
  * Client-side routing for every React Aria `Link` (sidebar items, breadcrumbs,
- * `Button` links…): `href` navigates through the TanStack router instead of a
- * full page load.
+ * `Button` links…): an internal `href` navigates through the TanStack router
+ * instead of a full page load. External hrefs and same-page `#anchors` are
+ * rendered unchanged (React Aria navigates to other origins natively).
  */
 function AriaRouter({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   return (
     <AriaRouterProvider
-      navigate={(to) => void router.navigate({ to })}
-      useHref={(to) => router.buildLocation({ to }).href}
+      navigate={(href) => {
+        if (isExternalHref(href)) {
+          window.location.assign(href)
+          return
+        }
+        if (href.startsWith("#")) {
+          const { pathname, searchStr } = router.state.location
+          void router.navigate({ href: `${pathname}${searchStr}${href}` })
+          return
+        }
+        void router.navigate({ href })
+      }}
+      useHref={(href) =>
+        isExternalHref(href) || href.startsWith("#")
+          ? href
+          : // `href` (path, search and hash in one string) is supported by
+            // buildLocation but missing from its option types.
+            router.buildLocation({ href } as Parameters<
+              typeof router.buildLocation
+            >[0]).href
+      }
     >
       {children}
     </AriaRouterProvider>
