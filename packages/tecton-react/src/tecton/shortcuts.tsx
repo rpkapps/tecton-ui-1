@@ -35,6 +35,12 @@ type Shortcut = {
   isEnabled?: () => boolean
   /** Keep the shortcut out of lists. */
   hidden?: boolean
+  /**
+   * Fire again while the key is held (auto-repeat). Default false: a held
+   * key fires once, so a toggle does not flicker; the repeats are still
+   * swallowed so the browser's own action does not run either.
+   */
+  allowRepeat?: boolean
 }
 
 type Chord = {
@@ -115,9 +121,30 @@ function parseKeys(keys: string, isMac: boolean): Chord[] {
     .map((chord) => parseChord(chord, isMac))
 }
 
-function chordFromEvent(event: KeyboardEvent): Chord {
+/** A pressed chord: the character typed and, where it hides the key, the physical key. */
+type PressedChord = Chord & {
+  /**
+   * The key from `event.code` (`KeyK` → `k`, `Digit1` → `1`), set only when
+   * the character typed is not the key's own: Option on a Mac turns K into
+   * "˚", Shift turns 1 into "!", a non-Latin layout types "л". Everything
+   * else matches by character, so other Latin layouts keep their letters.
+   */
+  code?: string
+}
+
+function chordFromEvent(event: KeyboardEvent): PressedChord {
+  const key = event.key.toLowerCase()
+  const code = event.code || ""
+  const letter = /^Key([A-Z])$/.exec(code)?.[1]?.toLowerCase()
+  const digit = /^Digit([0-9])$/.exec(code)?.[1]
+  const nonAscii = key.length === 1 && key.charCodeAt(0) > 127
+  let physical: string | undefined
+  if (letter !== undefined && (event.altKey || nonAscii)) physical = letter
+  else if (digit !== undefined && (event.altKey || event.shiftKey))
+    physical = digit
   return {
-    key: event.key.toLowerCase(),
+    key,
+    code: physical !== key ? physical : undefined,
     ctrl: event.ctrlKey,
     alt: event.altKey,
     shift: event.shiftKey,
@@ -126,9 +153,10 @@ function chordFromEvent(event: KeyboardEvent): Chord {
   }
 }
 
-function chordMatches(expected: Chord, actual: Chord) {
+function chordMatches(expected: Chord, actual: PressedChord) {
   return (
-    expected.key === actual.key &&
+    (expected.key === actual.key ||
+      (actual.code !== undefined && expected.key === actual.code)) &&
     expected.ctrl === actual.ctrl &&
     expected.alt === actual.alt &&
     expected.meta === actual.meta &&
@@ -140,7 +168,11 @@ function hasModifier(chord: Chord) {
   return chord.ctrl || chord.alt || chord.meta
 }
 
-function isEditableTarget(target: EventTarget | null) {
+function isEditableTarget(event: KeyboardEvent) {
+  // Inside a shadow root the event is retargeted to the host; the path
+  // still starts at the element that has focus. (Empty for an event that
+  // is not being dispatched.)
+  const target = event.composedPath().at(0) ?? event.target
   if (!(target instanceof HTMLElement)) return false
   if (target.isContentEditable) return true
   const tag = target.tagName
@@ -150,9 +182,11 @@ function isEditableTarget(target: EventTarget | null) {
 /** Creates a registry. The host owns it and hands it to the mounted applications. */
 function createShortcutRegistry(): ShortcutRegistry {
   const shortcuts = new Map<string, Shortcut>()
+  // Keys are parsed once, when a shortcut is registered.
+  const parsed = new WeakMap<Shortcut, Chord[]>()
   const listeners = new Set<() => void>()
   let snapshot: Shortcut[] = []
-  let pending: Chord[] = []
+  let pending: PressedChord[] = []
   let pendingAt = 0
   const isMac = isMacPlatform()
 
@@ -167,6 +201,7 @@ function createShortcutRegistry(): ShortcutRegistry {
       // Re-insert so the latest registration takes precedence.
       shortcuts.delete(shortcut.id)
       shortcuts.set(shortcut.id, shortcut)
+      parsed.set(shortcut, parseKeys(shortcut.keys, isMac))
     }
     notify()
     return () => {
@@ -184,6 +219,8 @@ function createShortcutRegistry(): ShortcutRegistry {
 
   const handleKeyDown = (event: KeyboardEvent) => {
     if (event.defaultPrevented) return false
+    // A keydown with no key at all: Chrome's autofill sends these.
+    if (typeof event.key !== "string" || event.key === "") return false
     const key = event.key.toLowerCase()
     if (["shift", "control", "alt", "meta"].includes(key)) return false
 
@@ -193,13 +230,17 @@ function createShortcutRegistry(): ShortcutRegistry {
     pending.push(chord)
     pendingAt = now
 
-    const editable = isEditableTarget(event.target)
+    const editable = isEditableTarget(event)
     const candidates = [...shortcuts.values()].reverse()
 
-    const attempt = (buffer: Chord[]) => {
+    const attempt = (buffer: PressedChord[]) => {
       let prefix = false
       for (const shortcut of candidates) {
-        const sequence = parseKeys(shortcut.keys, isMac)
+        let sequence = parsed.get(shortcut)
+        if (sequence === undefined) {
+          sequence = parseKeys(shortcut.keys, isMac)
+          parsed.set(shortcut, sequence)
+        }
         if (sequence.length < buffer.length) continue
         const matches = buffer.every((entry, index) =>
           chordMatches(sequence[index], entry)
@@ -211,7 +252,7 @@ function createShortcutRegistry(): ShortcutRegistry {
         if (sequence.length === buffer.length) {
           event.preventDefault()
           pending = []
-          shortcut.onAction(event)
+          if (!event.repeat || shortcut.allowRepeat) shortcut.onAction(event)
           return "handled" as const
         }
         prefix = true
@@ -258,6 +299,10 @@ type ShortcutsProviderProps = {
  * Listens for key events once and makes the registry available to the tree.
  * Nested providers without a `registry` of their own reuse the parent's, so
  * a component can wrap itself in one and still share the host's registry.
+ * A nested provider given a `target` but no `registry` gets a registry of
+ * its own instead, listening on that target: the parent's listens on its
+ * own target already, and one registry cannot listen in two places without
+ * seeing every key twice.
  */
 function ShortcutsProvider({
   registry,
@@ -266,7 +311,7 @@ function ShortcutsProvider({
 }: ShortcutsProviderProps) {
   const parent = React.useContext(ShortcutsContext)
   const [fallback] = React.useState(createShortcutRegistry)
-  const value = registry ?? parent ?? fallback
+  const value = registry ?? (target === undefined ? parent : null) ?? fallback
 
   React.useEffect(() => {
     // The parent provider already listens for this registry.
@@ -318,10 +363,14 @@ function useShortcut(
   const registry = useShortcutRegistry()
   const onAction = React.useRef(shortcut.onAction)
   const isEnabled = React.useRef(shortcut.isEnabled)
-  onAction.current = shortcut.onAction
-  isEnabled.current = shortcut.isEnabled
+  // Written after the render commits, so a render React throws away never
+  // leaves its handler behind; before any key can reach it.
+  React.useLayoutEffect(() => {
+    onAction.current = shortcut.onAction
+    isEnabled.current = shortcut.isEnabled
+  })
 
-  const { id, keys, label, group, allowInInput, hidden } = shortcut
+  const { id, keys, label, group, allowInInput, hidden, allowRepeat } = shortcut
   React.useEffect(
     () =>
       registry.register({
@@ -331,10 +380,11 @@ function useShortcut(
         group,
         allowInInput,
         hidden,
+        allowRepeat,
         onAction: (event) => onAction.current(event),
         isEnabled: () => isEnabled.current?.() ?? true,
       }),
-    [registry, id, keys, label, group, allowInInput, hidden]
+    [registry, id, keys, label, group, allowInInput, hidden, allowRepeat]
   )
 }
 
@@ -376,8 +426,10 @@ function useIsMacPlatform(): boolean {
 }
 
 /**
- * Renders a shortcut as key caps (`Kbd`) joined with "+" (`Ctrl + K`,
- * `G + W`); the accessible name spells a sequence out ("G, then W").
+ * Renders a shortcut as key caps (`Kbd`): the keys of a chord joined with
+ * "+" (`Ctrl + K`), the steps of a sequence with "then" (`G then W`). Screen
+ * readers get the same as text ("Ctrl + K", "G, then W"); the caps are
+ * hidden from them, so no key is read out twice.
  */
 function ShortcutKeys({
   keys,
@@ -386,25 +438,36 @@ function ShortcutKeys({
 }: React.ComponentProps<"span"> & { keys: string }) {
   const isMac = useIsMacPlatform()
   const chords = formatShortcut(keys, isMac)
-  const caps = chords.flat()
   const spoken = chords.map((chord) => chord.join(" + ")).join(", then ")
   return (
     <span
       data-slot="shortcut-keys"
-      aria-label={spoken}
       className={cn("inline-flex items-center", className)}
       {...props}
     >
       <KbdGroup aria-hidden className="gap-1">
-        {caps.map((cap, index) => (
-          <React.Fragment key={`${index}-${cap}`}>
-            {index > 0 && (
-              <span className="text-xs text-muted-foreground">+</span>
+        {chords.map((chord, step) => (
+          <React.Fragment key={`${step}-${chord.join("+")}`}>
+            {step > 0 && (
+              <span
+                data-slot="shortcut-keys-then"
+                className="text-xs text-muted-foreground"
+              >
+                then
+              </span>
             )}
-            <Kbd>{cap}</Kbd>
+            {chord.map((cap, index) => (
+              <React.Fragment key={`${index}-${cap}`}>
+                {index > 0 && (
+                  <span className="text-xs text-muted-foreground">+</span>
+                )}
+                <Kbd>{cap}</Kbd>
+              </React.Fragment>
+            ))}
           </React.Fragment>
         ))}
       </KbdGroup>
+      <span className="sr-only">{spoken}</span>
     </span>
   )
 }
