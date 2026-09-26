@@ -51,12 +51,17 @@ function Panel({
   )
 }
 
+/**
+ * The header row wraps: a `PanelDescription` takes a line of its own below
+ * the title and the actions (it is ordered last), so the title keeps the
+ * width the actions leave instead of being squeezed to nothing.
+ */
 function PanelHeader({ className, ...props }: React.ComponentProps<"header">) {
   return (
     <header
       data-slot="panel-header"
       className={cn(
-        "flex shrink-0 items-start gap-2 border-b px-(--panel-px) py-(--panel-py) has-data-[slot=panel-actions]:items-center",
+        "flex shrink-0 flex-wrap items-start gap-x-2 gap-y-1 border-b px-(--panel-px) py-(--panel-py) has-data-[slot=panel-actions]:items-center",
         className
       )}
       {...props}
@@ -86,7 +91,10 @@ function PanelDescription({ className, ...props }: React.ComponentProps<"p">) {
   return (
     <p
       data-slot="panel-description"
-      className={cn("basis-full text-xs text-muted-foreground", className)}
+      className={cn(
+        "order-last basis-full text-xs text-muted-foreground",
+        className
+      )}
       {...props}
     />
   )
@@ -102,7 +110,7 @@ function PanelActions({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="panel-actions"
       className={cn(
-        "-my-1 -mr-2 ml-auto flex shrink-0 items-center gap-1 has-[[data-overflow-root]]:min-w-0 has-[[data-overflow-root]]:flex-1 has-[[data-overflow-root]]:shrink has-[[data-overflow-root]]:basis-0 has-[[data-overflow-root]]:justify-end [&>[data-overflow-root]]:min-w-0 [&>[data-overflow-root]]:flex-1 [&>[data-overflow-root]]:justify-end",
+        "-my-1 ms-auto -me-2 flex shrink-0 items-center gap-1 has-[[data-overflow-root]]:min-w-0 has-[[data-overflow-root]]:flex-1 has-[[data-overflow-root]]:shrink has-[[data-overflow-root]]:basis-0 has-[[data-overflow-root]]:justify-end [&>[data-overflow-root]]:min-w-0 [&>[data-overflow-root]]:flex-1 [&>[data-overflow-root]]:justify-end",
         className
       )}
       {...props}
