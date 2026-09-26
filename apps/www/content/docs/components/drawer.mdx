@@ -271,9 +271,7 @@ Base UI also exposes attributes like `data-swiping`, `data-starting-style`, and
 
 ## Portal container
 
-`Drawer` portals into the `portalContainer` of the nearest [`TectonProvider`](/docs/tecton/provider), like every other Tecton overlay. Without one it portals into `document.body`.
-
-That matters for an application mounted into a page that has its own copy of Tecton. Wrap it in [`ThemeRoot`](/docs/tecton/theme-root) and the drawer lands in that root's body-level overlay container, which carries the same theme class, scope class and token overrides as the application itself — so the drawer is styled by the copy of Tecton that rendered it. See [Micro-frontends](/docs/micro-frontends).
+Like every Tecton overlay, `Drawer` portals into the `portalContainer` of the nearest [`TectonProvider`](/docs/tecton/provider), else into `document.body`; `container` on `DrawerContent` overrides both. Inside a [`ThemeRoot`](/docs/tecton/theme-root) that is the root's overlay container, which carries the application's theme and scope classes, so a mounted application's drawer keeps its styles. See [Micro-frontends](/docs/micro-frontends).
 
 {/* guidelines:start */}
 

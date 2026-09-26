@@ -114,8 +114,8 @@ Rules for the sections:
   - Code blocks are `tsx`, complete enough to paste, with real export names and the Tecton prop
     names (`onClick`, `disabled`, `checked`, `value` / `onValueChange`, `open`, `render`). No
     `// ...`.
-  - The wrong version must be something that looks right from a Radix, React Aria or
-    stock-Tailwind prior: `asChild`, `onPress`, `isDisabled`, `selectedKey`, a trigger wrapping
+  - The wrong version must be something that looks right from another component library or
+    stock Tailwind: `asChild`, `onPress`, `isDisabled`, `selectedKey`, a trigger wrapping
     its overlay, `bg-green-600`, `<a>` inside a `Button`, hand-built status colours where a
     `variant` exists.
 

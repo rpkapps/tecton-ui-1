@@ -174,7 +174,7 @@ the menu; the menu never sorts by priority.
 | Toggle group (multiple) | `ToggleGroup` | One `DropdownMenuCheckboxItem` per option, in a section | |
 | Dropdown trigger | `DropdownMenuTrigger` | `DropdownMenuSub` | Same items rendered in the submenu. |
 | Select | `Select` | `DropdownMenuSub` with a `DropdownMenuRadioGroup` | Value maps to the checked radio item. |
-| Text input, combobox, date picker | The control, elastic | `DropdownMenuItem` that opens a `Dialog` holding the same control | The control keeps its value and validation. React Aria 1.21 has no sub-dialog inside a menu, so the dialog is modal. |
+| Text input, combobox, date picker | The control, elastic | `DropdownMenuItem` that opens a `Dialog` holding the same control | The control keeps its value and validation. The dialog is modal. |
 | Link | `Link` | `DropdownMenuItem` rendering an anchor | |
 | Divider | `Separator orientation="vertical"` | `DropdownMenuSeparator` | Between the hidden items on either side of the divider, even when visible items also stand between them. |
 | Group | `OverflowGroup` | `DropdownMenuGroup` with a label | |
@@ -191,8 +191,8 @@ in the menu. The hint is only a label: Tecton binds no keys, so a key the
 application binds keeps working while the item is hidden, because the
 application binds it and not the button.
 
-6.4. A hidden item's `onAction`, `onPress` and `onChange` handlers are the
-same functions in both forms. The overflow form must never introduce a
+6.4. A hidden item's `onClick` and `onChange` handlers are the same
+functions in both forms. The overflow form must never introduce a
 second code path.
 
 6.5. A submenu (rules for dropdown and select) is one level deep. If the
