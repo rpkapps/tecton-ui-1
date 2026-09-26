@@ -13,7 +13,12 @@ import {
   SidebarProvider,
   SidebarTrigger,
 } from "@tecton/react/components/sidebar"
-import { Tabs, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@tecton/react/components/tabs"
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -34,7 +39,8 @@ import { project, sectionTabs } from "./data"
 /**
  * Detail page with section tabs: a project details sidebar on the left,
  * a page header carrying the section tabs and a list / graph view toggle,
- * and a scrolling body of concept sections.
+ * and a scrolling body with a panel per section: concept sections on the
+ * overview, a placeholder on the others.
  */
 export default function Page() {
   const [section, setSection] = React.useState("overview")
@@ -48,7 +54,12 @@ export default function Page() {
         onSelectAlternative={setSelected}
       />
       <SidebarInset className="min-w-0">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 py-4 md:px-6">
+        {/* Tabs wraps the header, which holds the tab list, and the body, which holds a panel per section. */}
+        <Tabs
+          selectedKey={section}
+          onSelectionChange={(key) => setSection(String(key))}
+          className="mx-auto w-full max-w-7xl gap-6 px-4 py-4 md:px-6"
+        >
           <PageHeader className="items-center">
             <PageHeaderContent className="flex-none flex-row items-center gap-2">
               <SidebarTrigger className="-ms-1 md:hidden" />
@@ -80,18 +91,13 @@ export default function Page() {
                 }
               >
                 <PageHeaderNav aria-label="Project sections">
-                  <Tabs
-                    selectedKey={section}
-                    onSelectionChange={(key) => setSection(String(key))}
-                  >
-                    <TabsList className="h-9 p-1">
-                      {sectionTabs.map((tab) => (
-                        <TabsTrigger key={tab.id} id={tab.id}>
-                          {tab.label}
-                        </TabsTrigger>
-                      ))}
-                    </TabsList>
-                  </Tabs>
+                  <TabsList aria-label="Sections" className="h-9 p-1">
+                    {sectionTabs.map((tab) => (
+                      <TabsTrigger key={tab.id} id={tab.id}>
+                        {tab.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
                 </PageHeaderNav>
               </OverflowItem>
               <OverflowSpacer />
@@ -143,22 +149,33 @@ export default function Page() {
             </PageHeaderActions>
           </PageHeader>
 
-          {view === "list" ? (
-            <div className="flex flex-col gap-10">
-              {project.concepts.map((concept) => (
-                <ConceptSection
-                  key={concept.id}
-                  concept={concept}
-                  selectedAlternative={selected}
-                />
-              ))}
-            </div>
-          ) : (
-            <div className="flex min-h-96 flex-1 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
-              Graph view renders the concept tree here.
-            </div>
-          )}
-        </div>
+          <TabsContent id="overview">
+            {view === "list" ? (
+              <div className="flex flex-col gap-10">
+                {project.concepts.map((concept) => (
+                  <ConceptSection
+                    key={concept.id}
+                    concept={concept}
+                    selectedAlternative={selected}
+                  />
+                ))}
+              </div>
+            ) : (
+              <div className="flex min-h-96 flex-1 items-center justify-center rounded-lg border border-dashed text-sm text-muted-foreground">
+                Graph view renders the concept tree here.
+              </div>
+            )}
+          </TabsContent>
+          {sectionTabs
+            .filter((tab) => tab.id !== "overview")
+            .map((tab) => (
+              <TabsContent key={tab.id} id={tab.id}>
+                <div className="flex min-h-96 items-center justify-center rounded-lg border border-dashed text-muted-foreground">
+                  {tab.label} for {project.name} goes here.
+                </div>
+              </TabsContent>
+            ))}
+        </Tabs>
       </SidebarInset>
     </SidebarProvider>
   )
