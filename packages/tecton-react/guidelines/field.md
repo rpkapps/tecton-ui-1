@@ -21,7 +21,7 @@ related: [Input, Textarea, Label]
 
 ## Do
 
-- Give the control an `id` and point `FieldLabel htmlFor` at it. `Field` renders `role="group"`; it associates nothing by itself.
+- Give the control an `id` and point `FieldLabel htmlFor` at it; `Field` renders `role="group"` and associates nothing. A `Select` is the exception: its trigger's `aria-labelledby` overrides `htmlFor`, so put `FieldLabel` inside `Select`, or give the label an `id` and pass it as `Select`'s `aria-labelledby`.
 - Choose the layout with `orientation="vertical" | "horizontal" | "responsive"`, and add `FieldContent` when the label and description sit beside the control.
 - Put state on `Field` as data attributes: `data-invalid` when the value is rejected, `data-disabled` next to a disabled control.
 - Write helper text as `FieldDescription` and the message as `FieldError` — children, or `errors={field.state.meta.errors}` for a validator's issue list.

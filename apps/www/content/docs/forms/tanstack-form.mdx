@@ -9,7 +9,7 @@ import { InfoIcon } from "lucide-react"
 
 This guide explores how to build forms using TanStack Form. You'll learn to create forms with the `<Field />` component, implement schema validation with Zod, handle errors, and ensure accessibility.
 
-It follows the [upstream shadcn/ui guide](https://ui.shadcn.com/docs/forms/tanstack-form); the examples are rewritten for the React Aria components, whose controls use `isSelected` / `onChange`, `selectedKey` / `onSelectionChange` and `isInvalid` instead of the Radix `checked` / `onCheckedChange`, `value` / `onValueChange` and `aria-invalid` props.
+It follows the [upstream shadcn/ui guide](https://ui.shadcn.com/docs/forms/tanstack-form); the examples are rewritten for the React Aria components, whose controls use `isSelected` / `onChange`, a Select's `value` / `onChange` and `isInvalid` instead of the Radix `checked` / `onCheckedChange`, `value` / `onValueChange` and `aria-invalid` props.
 
 ## Demo
 
@@ -335,7 +335,7 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
 
 ### Select
 
-- For select components, use `selectedKey` and `onSelectionChange` on the `<Select />` component. React Aria selects use `null` for "nothing selected", so map the empty string to `null` and back.
+- For select components, use `value` and `onChange` on the `<Select />` component, and label it with `aria-labelledby` pointing at the `FieldLabel`'s `id` (the trigger's own labelling overrides `htmlFor`). React Aria selects use `null` for "nothing selected", so map the empty string to `null` and back.
 - To show errors, add the `isInvalid` prop to the `<Select />` component and the `data-invalid` prop to the `<Field />` component.
 
 <ComponentPreview
@@ -352,7 +352,10 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
     return (
       <Field orientation="responsive" data-invalid={isInvalid}>
         <FieldContent>
-          <FieldLabel htmlFor="form-tanstack-select-language">
+          <FieldLabel
+            id="form-tanstack-select-language-label"
+            htmlFor="form-tanstack-select-language"
+          >
             Spoken Language
           </FieldLabel>
           <FieldDescription>
@@ -361,10 +364,11 @@ Display errors next to the field using `<FieldError />`. For styling and accessi
           {isInvalid && <FieldError errors={field.state.meta.errors} />}
         </FieldContent>
         <Select
+          aria-labelledby="form-tanstack-select-language-label"
           name={field.name}
           placeholder="Select"
-          selectedKey={field.state.value || null}
-          onSelectionChange={(key) =>
+          value={field.state.value || null}
+          onChange={(key) =>
             field.handleChange(key ? String(key) : "")
           }
           onBlur={field.handleBlur}

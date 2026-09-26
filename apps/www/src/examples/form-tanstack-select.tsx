@@ -89,7 +89,10 @@ export default function FormTanstackSelect() {
                 return (
                   <Field orientation="responsive" data-invalid={isInvalid}>
                     <FieldContent>
-                      <FieldLabel htmlFor="form-tanstack-select-language">
+                      <FieldLabel
+                        id="form-tanstack-select-language-label"
+                        htmlFor="form-tanstack-select-language"
+                      >
                         Spoken Language
                       </FieldLabel>
                       <FieldDescription>
@@ -100,10 +103,11 @@ export default function FormTanstackSelect() {
                       )}
                     </FieldContent>
                     <Select
+                      aria-labelledby="form-tanstack-select-language-label"
                       name={field.name}
                       placeholder="Select"
-                      selectedKey={field.state.value || null}
-                      onSelectionChange={(key) =>
+                      value={field.state.value || null}
+                      onChange={(key) =>
                         field.handleChange(key ? String(key) : "")
                       }
                       onBlur={field.handleBlur}
