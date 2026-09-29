@@ -116,6 +116,8 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--table-active` | `--tecton-color-table-cell-bg-active` | `#4e4853` | `#e4dde7` | exact | Selected table row surface; the hovered row uses accent. |
 | `--slider` | `--tecton-color-accent-graphite-fill` | `#98939d` | `#6d5a7d` | approximated | Slider range, thumb and (at 60%) track: Tecton's default slider is the graphite accent, not the primary action colour. |
 | `--progress` | `--tecton-color-accent-graphite-fill` | `#98939d` | `#6d5a7d` | approximated | Linear progress indicator and (at 38%) track, same graphite accent as the slider. |
+| `--tooltip` | `--tecton-color-action-secondary-bg` / `--tecton-color-text-primary` | `#3a343e` | `#21172a` | approximated | Tooltip surface. Tecton has no tooltip token: light mode keeps shadcn's inverted chip (the primary text colour), dark mode uses the secondary action surface, a raised grey one step above the page, instead of an inverted near-white chip. |
+| `--tooltip-foreground` | `--tecton-color-text-primary` / `--tecton-color-text-inverse` | `#f6f5f8` | `#fafafb` | approximated | Text on a `tooltip` surface. |
 
 ## `@theme inline` entries
 
@@ -191,6 +193,8 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--color-table-active` | `var(--table-active)` | `var(--table-active)` |
 | `--color-slider` | `var(--slider)` | `var(--slider)` |
 | `--color-progress` | `var(--progress)` | `var(--progress)` |
+| `--color-tooltip` | `var(--tooltip)` | `var(--tooltip)` |
+| `--color-tooltip-foreground` | `var(--tooltip-foreground)` | `var(--tooltip-foreground)` |
 
 
 ## Palette (Tailwind colour scale)

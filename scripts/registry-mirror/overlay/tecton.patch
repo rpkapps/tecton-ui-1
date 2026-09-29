@@ -1436,7 +1436,7 @@ index b058b4d0..4154ed67 100644
      variants: {
        variant: {
 diff --git a/apps/v4/registry/bases/base/ui/tooltip.tsx b/apps/v4/registry/bases/base/ui/tooltip.tsx
-index 8fbd22da..39f9406b 100644
+index 8fbd22da..c10b1c90 100644
 --- a/apps/v4/registry/bases/base/ui/tooltip.tsx
 +++ b/apps/v4/registry/bases/base/ui/tooltip.tsx
 @@ -1,6 +1,7 @@
@@ -1467,6 +1467,22 @@ index 8fbd22da..39f9406b 100644
        <TooltipPrimitive.Positioner
          align={align}
          alignOffset={alignOffset}
+@@ -49,13 +54,13 @@ function TooltipContent({
+         <TooltipPrimitive.Popup
+           data-slot="tooltip-content"
+           className={cn(
+-            "cn-tooltip-content cn-tooltip-content-logical z-50 w-fit max-w-xs origin-(--transform-origin) bg-foreground text-background",
++            "cn-tooltip-content cn-tooltip-content-logical z-50 w-fit max-w-xs origin-(--transform-origin) bg-tooltip text-tooltip-foreground",
+             className
+           )}
+           {...props}
+         >
+           {children}
+-          <TooltipPrimitive.Arrow className="cn-tooltip-arrow cn-tooltip-arrow-logical z-50 bg-foreground fill-foreground data-[side=bottom]:top-1 data-[side=left]:top-1/2! data-[side=left]:-right-1 data-[side=left]:-translate-y-1/2 data-[side=right]:top-1/2! data-[side=right]:-left-1 data-[side=right]:-translate-y-1/2 data-[side=top]:-bottom-2.5" />
++          <TooltipPrimitive.Arrow className="cn-tooltip-arrow cn-tooltip-arrow-logical z-50 bg-tooltip fill-tooltip data-[side=bottom]:top-1 data-[side=left]:top-1/2! data-[side=left]:-right-1 data-[side=left]:-translate-y-1/2 data-[side=right]:top-1/2! data-[side=right]:-left-1 data-[side=right]:-translate-y-1/2 data-[side=top]:-bottom-2.5" />
+         </TooltipPrimitive.Popup>
+       </TooltipPrimitive.Positioner>
+     </TooltipPrimitive.Portal>
 diff --git a/apps/v4/registry/styles.tsx b/apps/v4/registry/styles.tsx
 index 073055fb..4a7d8fc5 100644
 --- a/apps/v4/registry/styles.tsx

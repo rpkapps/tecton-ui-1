@@ -916,6 +916,8 @@
   --table-active: var(--tecton-color-table-cell-bg-active);
   --slider: var(--tecton-color-accent-graphite-fill);
   --progress: var(--tecton-color-accent-graphite-fill);
+  --tooltip: var(--tecton-color-text-primary);
+  --tooltip-foreground: var(--tecton-color-text-inverse);
 }
 
 [data-tecton-root]:where(.dark, .dark *, [data-theme="dark"], [data-theme="dark"] *) {
@@ -1822,6 +1824,8 @@
   --table-active: var(--tecton-color-table-cell-bg-active);
   --slider: var(--tecton-color-accent-graphite-fill);
   --progress: var(--tecton-color-accent-graphite-fill);
+  --tooltip: var(--tecton-color-action-secondary-bg);
+  --tooltip-foreground: var(--tecton-color-text-primary);
 }
 
 [data-tecton-root]:where(.light, [data-theme="light"], :is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) :not(.dark, [data-theme="dark"]):not(:is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) :is(.dark, [data-theme="dark"]) *)) {
@@ -2729,6 +2733,8 @@
   --table-active: var(--tecton-color-table-cell-bg-active);
   --slider: var(--tecton-color-accent-graphite-fill);
   --progress: var(--tecton-color-accent-graphite-fill);
+  --tooltip: var(--tecton-color-text-primary);
+  --tooltip-foreground: var(--tecton-color-text-inverse);
 }
 
 @layer base {

@@ -427,7 +427,9 @@
       "color-table-header": "var(--table-header)",
       "color-table-active": "var(--table-active)",
       "color-slider": "var(--slider)",
-      "color-progress": "var(--progress)"
+      "color-progress": "var(--progress)",
+      "color-tooltip": "var(--tooltip)",
+      "color-tooltip-foreground": "var(--tooltip-foreground)"
     },
     "light": {
       "background": "#f6f4f7",
@@ -525,6 +527,8 @@
       "table-active": "#e4dde7",
       "slider": "#6d5a7d",
       "progress": "#6d5a7d",
+      "tooltip": "#21172a",
+      "tooltip-foreground": "#fafafb",
       "tecton-palette-white": "#ffffff",
       "tecton-palette-black": "#000000",
       "tecton-palette-gray-50": "#fafafb",
@@ -968,6 +972,8 @@
       "table-active": "#4e4853",
       "slider": "#98939d",
       "progress": "#98939d",
+      "tooltip": "#3a343e",
+      "tooltip-foreground": "#f6f5f8",
       "tecton-palette-white": "#ffffff",
       "tecton-palette-black": "#000000",
       "tecton-palette-gray-50": "#131214",
@@ -1418,6 +1424,8 @@
       "--table-active": "#e4dde7",
       "--slider": "#6d5a7d",
       "--progress": "#6d5a7d",
+      "--tooltip": "#21172a",
+      "--tooltip-foreground": "#fafafb",
       "--tecton-palette-white": "#ffffff",
       "--tecton-palette-black": "#000000",
       "--tecton-palette-gray-50": "#fafafb",

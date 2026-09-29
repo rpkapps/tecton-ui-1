@@ -474,6 +474,8 @@
   --color-table-active: var(--table-active, var(--tecton-color-table-cell-bg-active, light-dark(#e4dde7, #4e4853)));
   --color-slider: var(--slider, var(--tecton-color-accent-graphite-fill, light-dark(#6d5a7d, #98939d)));
   --color-progress: var(--progress, var(--tecton-color-accent-graphite-fill, light-dark(#6d5a7d, #98939d)));
+  --color-tooltip: var(--tooltip, var(--tecton-color-text-primary, light-dark(#21172a, #3a343e)));
+  --color-tooltip-foreground: var(--tooltip-foreground, var(--tecton-color-text-inverse, light-dark(#fafafb, #f6f5f8)));
 }
 
 @custom-variant dark (&:where(.dark *, [data-theme="dark"] *):not(:where(:is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]), :is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) *)));

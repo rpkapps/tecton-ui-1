@@ -98,6 +98,8 @@
   --table-active: var(--tecton-color-table-cell-bg-active);
   --slider: var(--tecton-color-accent-graphite-fill);
   --progress: var(--tecton-color-accent-graphite-fill);
+  --tooltip: var(--tecton-color-text-primary);
+  --tooltip-foreground: var(--tecton-color-text-inverse);
 }
 
 .dark {
@@ -195,6 +197,8 @@
   --table-active: var(--tecton-color-table-cell-bg-active);
   --slider: var(--tecton-color-accent-graphite-fill);
   --progress: var(--tecton-color-accent-graphite-fill);
+  --tooltip: var(--tecton-color-action-secondary-bg);
+  --tooltip-foreground: var(--tecton-color-text-primary);
 }
 
 .light, [data-theme="light"] {
@@ -293,6 +297,8 @@
   --table-active: var(--tecton-color-table-cell-bg-active);
   --slider: var(--tecton-color-accent-graphite-fill);
   --progress: var(--tecton-color-accent-graphite-fill);
+  --tooltip: var(--tecton-color-text-primary);
+  --tooltip-foreground: var(--tecton-color-text-inverse);
 }
 
 @theme inline {
@@ -366,4 +372,6 @@
   --color-table-active: var(--table-active);
   --color-slider: var(--slider);
   --color-progress: var(--progress);
+  --color-tooltip: var(--tooltip);
+  --color-tooltip-foreground: var(--tooltip-foreground);
 }
