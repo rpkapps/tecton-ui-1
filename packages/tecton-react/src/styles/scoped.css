@@ -411,7 +411,7 @@
   --radius-4xl: calc(var(--radius) * 2.6);
   --font-sans: var(--tecton-font-family-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--tecton-font-family-mono), ui-monospace, monospace;
-  --color-success: var(--success, var(--tecton-color-status-success, light-dark(#0d7f46, #78c692)));
+  --color-success: var(--success, var(--tecton-color-status-success, light-dark(#0c703e, #61b67f)));
   --color-success-foreground: var(--success-foreground, var(--tecton-color-status-success-filled-text, light-dark(#f3fef8, #001607)));
   --color-warning: var(--warning, var(--tecton-color-status-warning, light-dark(#9c6201, #f9a308)));
   --color-warning-foreground: var(--warning-foreground, var(--tecton-color-text-inverse, light-dark(#fafafb, #131214)));
@@ -474,8 +474,8 @@
   --color-table-active: var(--table-active, var(--tecton-color-table-cell-bg-active, light-dark(#e4dde7, #4e4853)));
   --color-slider: var(--slider, var(--tecton-color-accent-graphite-fill, light-dark(#6d5a7d, #98939d)));
   --color-progress: var(--progress, var(--tecton-color-accent-graphite-fill, light-dark(#6d5a7d, #98939d)));
-  --color-tooltip: var(--tooltip, var(--tecton-color-text-primary, light-dark(#21172a, #3a343e)));
-  --color-tooltip-foreground: var(--tooltip-foreground, var(--tecton-color-text-inverse, light-dark(#fafafb, #f6f5f8)));
+  --color-tooltip: var(--tooltip, var(--tecton-color-surface-elevation-2-bg, light-dark(#ffffff, #000000)));
+  --color-tooltip-foreground: var(--tooltip-foreground, var(--tecton-color-text-primary, light-dark(#21172a, #f6f5f8)));
 }
 
 @custom-variant dark (&:where(.dark *, [data-theme="dark"] *):not(:where(:is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]), :is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) *)));

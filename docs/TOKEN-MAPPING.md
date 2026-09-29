@@ -53,7 +53,7 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 
 | shadcn var | Tecton token | dark value | light value | confidence | note |
 | --- | --- | --- | --- | --- | --- |
-| `--success` | `--tecton-color-status-success` | `#78c692` | `#0d7f46` | exact | Status success main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `success-foreground`. |
+| `--success` | `--tecton-color-status-success` | `#61b67f` | `#0c703e` | exact | Status success main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `success-foreground`. |
 | `--success-foreground` | `--tecton-color-status-success-filled-text` | `#001607` | `#f3fef8` | exact | Text on a `success` surface. |
 | `--warning` | `--tecton-color-status-warning` | `#f9a308` | `#9c6201` | exact | Status warning main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `warning-foreground`. |
 | `--warning-foreground` | `--tecton-color-text-inverse` | `#131214` | `#fafafb` | approximated | Text on a `warning` surface: Tecton's filled-text is meant for the pale `warning-surface`, so the inverse text colour is used on the main colour. |
@@ -116,8 +116,8 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--table-active` | `--tecton-color-table-cell-bg-active` | `#4e4853` | `#e4dde7` | exact | Selected table row surface; the hovered row uses accent. |
 | `--slider` | `--tecton-color-accent-graphite-fill` | `#98939d` | `#6d5a7d` | approximated | Slider range, thumb and (at 60%) track: Tecton's default slider is the graphite accent, not the primary action colour. |
 | `--progress` | `--tecton-color-accent-graphite-fill` | `#98939d` | `#6d5a7d` | approximated | Linear progress indicator and (at 38%) track, same graphite accent as the slider. |
-| `--tooltip` | `--tecton-color-action-secondary-bg` / `--tecton-color-text-primary` | `#3a343e` | `#21172a` | approximated | Tooltip surface. Tecton has no tooltip token: light mode keeps shadcn's inverted chip (the primary text colour), dark mode uses the secondary action surface, a raised grey one step above the page, instead of an inverted near-white chip. |
-| `--tooltip-foreground` | `--tecton-color-text-primary` / `--tecton-color-text-inverse` | `#f6f5f8` | `#fafafb` | approximated | Text on a `tooltip` surface. |
+| `--tooltip` | `--tecton-color-surface-elevation-2-bg` | `#000000` | `#ffffff` | exact | Tooltip surface: Tecton's second elevation level, as the Tecton MUI tooltip uses (white in light mode, black in dark mode). |
+| `--tooltip-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | Text on a `tooltip` surface (the Tecton MUI tooltip's text colour). |
 
 ## `@theme inline` entries
 
@@ -207,7 +207,7 @@ and `--color-<family>-<step>` in `@theme inline`, after `--color-*: initial` (Ta
 Shades: `--color-white` (`#ffffff`), `--color-black` (`#000000`).
 Steps (contrast from the page background, both modes): `50` `100` `105` `110` `115` `120` `130` `140` `160` `190` `220` `260` `310` `370` `460` `560` `680` `830` `1000` `1170` `1300` `1440` `1570`.
 
-Coverage: 378/379 opaque colour tokens of the CSS export are ramp members in light mode, 374/375 in dark mode (not on any exposed ramp: `--tecton-color-focus-ring`).
+Coverage: 427/429 opaque colour tokens of the CSS export are ramp members in light mode, 424/425 in dark mode (not on any exposed ramp: `--tecton-color-focus-ring`, `--tecton-color-surface-base-border-active`).
 
 Values are light<br>dark.
 
@@ -235,7 +235,7 @@ Values are light<br>dark.
 `:root`, `.dark` and `@theme inline` blocks of `globals.css` and `tecton-theme.css` hold exactly
 what the map resolves to, completeness, dangling `var()` references, WCAG contrast for every
 surface/foreground pair and sanity rules for both modes.
-Expected failures (Tecton's own values fail these pairs): `palette:--tecton-color-focus-ring`.
+Expected failures (Tecton's own values fail these pairs): `palette:--tecton-color-focus-ring`, `palette:--tecton-color-surface-base-border-active`.
 
 ## Known deviations
 

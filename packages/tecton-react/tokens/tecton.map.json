@@ -485,16 +485,14 @@
       "note": "Linear progress indicator and (at 38%) track, same graphite accent as the slider."
     },
     "tooltip": {
-      "dark": "--tecton-color-action-secondary-bg",
-      "light": "--tecton-color-text-primary",
-      "confidence": "approximated",
-      "note": "Tooltip surface. Tecton has no tooltip token: light mode keeps shadcn's inverted chip (the primary text colour), dark mode uses the secondary action surface, a raised grey one step above the page, instead of an inverted near-white chip."
+      "dark": "--tecton-color-surface-elevation-2-bg",
+      "confidence": "exact",
+      "note": "Tooltip surface: Tecton's second elevation level, as the Tecton MUI tooltip uses (white in light mode, black in dark mode)."
     },
     "tooltip-foreground": {
       "dark": "--tecton-color-text-primary",
-      "light": "--tecton-color-text-inverse",
-      "confidence": "approximated",
-      "note": "Text on a `tooltip` surface."
+      "confidence": "exact",
+      "note": "Text on a `tooltip` surface (the Tecton MUI tooltip's text colour)."
     }
   },
   "theme": {
@@ -539,10 +537,12 @@
   },
   "checks": {
     "allow": [
-      "palette:--tecton-color-focus-ring"
+      "palette:--tecton-color-focus-ring",
+      "palette:--tecton-color-surface-base-border-active"
     ],
     "allowNotes": {
-      "palette:--tecton-color-focus-ring": "The focus ring is Tecton's single `hotPink/460 (focus outline)` value, not a step of a 23-step ramp, so the palette does not expose a hot-pink family."
+      "palette:--tecton-color-focus-ring": "The focus ring is Tecton's single `hotPink/460 (focus outline)` value, not a step of a 23-step ramp, so the palette does not expose a hot-pink family.",
+      "palette:--tecton-color-surface-base-border-active": "The light value (#7d7284) of this token, new in the @webframework/tecton v0.7.0 export, is not a step of the Figma palette ramps; no shadcn variable maps to it."
     }
   }
 }

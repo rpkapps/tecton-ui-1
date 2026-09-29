@@ -206,9 +206,10 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
 - **`toggle`** — the base `hover:bg-muted` is removed so `style-tecton.css` sets the Tecton ghost
   hover colours; 2px focus ring.
 - **`tooltip`** — the popup and arrow use `bg-tooltip` / `text-tooltip-foreground` (tokens in
-  `tecton.map.json`) instead of upstream's inverted `bg-foreground` / `text-background`, so a
-  dark-mode tooltip is a raised grey instead of a near-white chip; light mode is unchanged. A
-  `Kbd` inside one (`style-tecton.css`) tints with `tooltip-foreground`.
+  `tecton.map.json`: Tecton's `surface-elevation-2-bg` with `text-primary`, as the Tecton MUI
+  tooltip) instead of upstream's inverted `bg-foreground` / `text-background`, which was a
+  near-white chip in dark mode. A `Kbd` inside one (`style-tecton.css`) tints with
+  `tooltip-foreground`.
 - **`alert-dialog`** — `AlertDialogAction` renders the Base UI `Close` part with `Button` styling
   (`variant` / `size`, like `AlertDialogCancel`), so a click runs `onClick` and closes the prompt;
   `event.preventBaseUIHandler()` in `onClick` keeps it open.
