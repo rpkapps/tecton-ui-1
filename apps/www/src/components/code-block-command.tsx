@@ -2,15 +2,15 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { CheckIcon, CopyIcon, TerminalIcon } from "lucide-react"
+import { TerminalIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
 } from "@tecton/react/components/tabs"
+import { CopyButton } from "@tecton/react/tecton/copy-button"
 
 const PM_KEY = "tecton-docs:package-manager"
 type PackageManager = "pnpm" | "npm" | "yarn" | "bun"
@@ -91,17 +91,10 @@ export function CodeBlockCommand({
 }) {
   const [packageManager, setPackageManager] =
     React.useState<PackageManager>("pnpm")
-  const [hasCopied, setHasCopied] = React.useState(false)
 
   React.useEffect(() => {
     setPackageManager(readPackageManager())
   }, [])
-
-  React.useEffect(() => {
-    if (!hasCopied) return
-    const timer = setTimeout(() => setHasCopied(false), 2000)
-    return () => clearTimeout(timer)
-  }, [hasCopied])
 
   const order: PackageManager[] = ["pnpm", "npm", "yarn", "bun"]
 
@@ -155,23 +148,10 @@ export function CodeBlockCommand({
           ))}
         </div>
       </Tabs>
-      <Button
-        data-slot="copy-button"
-        size="icon-sm"
-        variant="ghost"
-        className="absolute top-2 right-2 z-10 size-7 opacity-70 hover:opacity-100 focus-visible:opacity-100"
-        onClick={async () => {
-          try {
-            await navigator.clipboard.writeText(commands[packageManager])
-            setHasCopied(true)
-          } catch {
-            // ignore
-          }
-        }}
-        aria-label="Copy"
-      >
-        {hasCopied ? <CheckIcon /> : <CopyIcon />}
-      </Button>
+      <CopyButton
+        value={commands[packageManager]}
+        className="absolute top-2 right-2 z-10 size-7 opacity-70 hover:opacity-100 focus-visible:opacity-100 data-copied:opacity-100 data-error:opacity-100"
+      />
     </figure>
   )
 }

@@ -1586,7 +1586,7 @@
     "names": "copy button copy button",
     "useWhen": "A value on screen is meant to be pasted elsewhere: an identifier, a URL, a snippet. The user needs the copy confirmed in place, without a toast or a dialog. The control sits next to the value, usually as a quiet icon button.",
     "routed": "copying a value to the clipboard with feedback",
-    "do": "Pass the text as `value` and let the component own the click handler. Leave it icon-only for a quiet affordance, or pass text `children` for a prominent labelled one. Set weight with `variant` (it defaults to `ghost`) and hold time with `timeout`. React to a successful copy with `onCopied`, and to a refused one (insecure context, denied permission) with `onError`, not by wrapping the button in your own handler. Let the component name itself: with no children it sets `aria-label` to \"Copy\", then \"Copied\" or \"Copy failed\"; either outcome is also announced through a polite live region."
+    "do": "Pass the text as `value` and let the component own the click handler. Leave it icon-only for a quiet affordance, or pass text `children` for a prominent labelled one. Set weight with `variant` (it defaults to `ghost`) and hold time with `timeout`. React to a successful copy with `onCopied`, and to a refused one with `onError`, not by wrapping the button in your own handler. Where the Clipboard API is missing or denied (plain HTTP on a non-localhost address, an iframe without `clipboard-write`) the button falls back to the legacy copy command, so `onError` fires only when both fail. Let the component name itself: with no children it sets `aria-label` to \"Copy\", then \"Copied\" or \"Copy failed\"; either outcome is also announced through a polite live region."
    },
    "notFor": [
     {
@@ -1605,7 +1605,7 @@
     "CopyButton"
    ],
    "aliases": [],
-   "tokens": 714
+   "tokens": 768
   },
   {
    "id": "count-badge",

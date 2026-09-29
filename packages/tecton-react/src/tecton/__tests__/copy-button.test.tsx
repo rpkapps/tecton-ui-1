@@ -6,6 +6,16 @@ import { CopyButton } from "@tecton/react/tecton/copy-button"
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 
+/** jsdom has no `execCommand`; the legacy copy fallback calls it. */
+function mockExecCommand(result: boolean) {
+  const execCommand = vi.fn().mockReturnValue(result)
+  Object.defineProperty(document, "execCommand", {
+    value: execCommand,
+    configurable: true,
+  })
+  return execCommand
+}
+
 describe("CopyButton", () => {
   let writeText: ReturnType<typeof vi.fn>
 
@@ -19,6 +29,8 @@ describe("CopyButton", () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    // Back to jsdom's own (missing) copy command.
+    Reflect.deleteProperty(document, "execCommand")
   })
 
   it("is an icon-only ghost button labelled Copy by default", () => {
@@ -104,11 +116,40 @@ describe("CopyButton", () => {
     )
   })
 
-  it("fails the same way without a Clipboard API", async () => {
+  it("falls back to the copy command when the clipboard refuses", async () => {
+    writeText.mockRejectedValue(new Error("denied"))
+    const execCommand = mockExecCommand(true)
+    const onCopied = vi.fn()
+    const onError = vi.fn()
+    render(<CopyButton value="hello" onCopied={onCopied} onError={onError} />)
+    const button = screen.getByRole("button", { name: "Copy" })
+    await userEvent.click(button)
+    expect(execCommand).toHaveBeenCalledWith("copy")
+    expect(onCopied).toHaveBeenCalledWith("hello")
+    expect(onError).not.toHaveBeenCalled()
+    expect(button).toHaveAttribute("data-copied", "")
+    expect(button).toHaveFocus()
+    expect(document.querySelector("textarea")).toBeNull()
+  })
+
+  it("falls back to the copy command without a Clipboard API", async () => {
     Object.defineProperty(navigator, "clipboard", {
       value: undefined,
       configurable: true,
     })
+    const execCommand = mockExecCommand(true)
+    render(<CopyButton value="v" />)
+    await userEvent.click(screen.getByRole("button", { name: "Copy" }))
+    expect(execCommand).toHaveBeenCalledWith("copy")
+    expect(screen.getByRole("button", { name: "Copied" })).toBeInTheDocument()
+  })
+
+  it("fails when neither the clipboard nor the copy command works", async () => {
+    Object.defineProperty(navigator, "clipboard", {
+      value: undefined,
+      configurable: true,
+    })
+    mockExecCommand(false)
     const onError = vi.fn()
     render(<CopyButton value="v" onError={onError} />)
     await userEvent.click(screen.getByRole("button", { name: "Copy" }))

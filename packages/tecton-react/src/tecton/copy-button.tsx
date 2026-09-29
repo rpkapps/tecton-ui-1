@@ -8,9 +8,12 @@ import { Button } from "@tecton/react/components/button"
 
 /**
  * Tecton CopyButton — copies `value` to the clipboard and shows a check
- * for `timeout` ms, or a cross and "Copy failed" when the clipboard refuses
- * (insecure context, denied permission). Either outcome is announced
- * politely. Icon-only by default; pass children for a labelled button.
+ * for `timeout` ms, or a cross and "Copy failed" when the copy is refused.
+ * Where the Clipboard API is missing or rejects (a page served over plain
+ * HTTP from a non-localhost address, an iframe without `clipboard-write`),
+ * it falls back to the legacy copy command before giving up. Either outcome
+ * is announced politely. Icon-only by default; pass children for a labelled
+ * button.
  */
 type CopyButtonProps = Omit<
   React.ComponentProps<typeof Button>,
@@ -70,6 +73,45 @@ function announce(message: string) {
   }, 100)
 }
 
+/**
+ * Copies through a selected off-screen textarea and `execCommand("copy")`,
+ * which still works in the contexts that have no Clipboard API. Focus
+ * returns to the element that had it (the button).
+ */
+function legacyCopy(value: string) {
+  const active = document.activeElement
+  const textarea = document.createElement("textarea")
+  textarea.value = value
+  textarea.setAttribute("readonly", "")
+  Object.assign(textarea.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    opacity: "0",
+    pointerEvents: "none",
+  })
+  document.body.append(textarea)
+  textarea.select()
+  let copied = false
+  try {
+    copied = document.execCommand("copy")
+  } catch {
+    copied = false
+  }
+  textarea.remove()
+  if (active instanceof HTMLElement) active.focus({ preventScroll: true })
+  return copied
+}
+
+async function copyText(value: string) {
+  try {
+    // Throws, rather than rejects, where the Clipboard API is missing.
+    await navigator.clipboard.writeText(value)
+  } catch (error) {
+    if (!legacyCopy(value)) throw error
+  }
+}
+
 function CopyButton({
   value,
   timeout = 2000,
@@ -118,8 +160,7 @@ function CopyButton({
       )}
       onClick={async () => {
         try {
-          // Throws, rather than rejects, where the Clipboard API is missing.
-          await navigator.clipboard.writeText(value)
+          await copyText(value)
         } catch (error) {
           show("error")
           onError?.(error)
