@@ -1457,7 +1457,7 @@ function ComposerCommands({
           aria-label={ariaLabel}
           data-slot="composer-commands"
           className={cn(
-            "absolute inset-x-0 bottom-full z-10 mb-2 max-h-64 overflow-y-auto rounded-lg border bg-menu p-1 text-menu-foreground shadow-md outline-none",
+            "absolute inset-x-0 bottom-full z-10 mb-2 max-h-64 overflow-y-auto rounded-lg border bg-popover p-1 text-popover-foreground shadow-md outline-none",
             className
           )}
           // A press, by mouse or touch, anywhere in the list leaves focus

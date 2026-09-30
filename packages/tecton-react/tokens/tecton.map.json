@@ -28,9 +28,9 @@
       "note": "Tecton has no card-specific text token; text-primary is used on every surface."
     },
     "popover": {
-      "dark": "--tecton-color-surface-elevation-2-bg",
+      "dark": "--tecton-color-bg-paper",
       "confidence": "exact",
-      "note": "Second elevation level (white / black), the Tecton MUI popover and dialog surface. Menus use `menu`, side panels `card`."
+      "note": "Surface of every floating panel: dialogs, popovers (and the date picker in one), hover cards, dropdown and context menus, select and combobox lists. Paper, as Tecton MUI menus; tooltips use `tooltip`."
     },
     "popover-foreground": {
       "dark": "--tecton-color-text-primary",
@@ -493,16 +493,6 @@
       "dark": "--tecton-color-text-primary",
       "confidence": "exact",
       "note": "Text on a `tooltip` surface (the Tecton MUI tooltip's text colour)."
-    },
-    "menu": {
-      "dark": "--tecton-color-bg-paper",
-      "confidence": "exact",
-      "note": "Menu surface (dropdown, context menu, select, combobox lists): Tecton MUI menus sit on paper, not on the popover's elevation 2."
-    },
-    "menu-foreground": {
-      "dark": "--tecton-color-text-primary",
-      "confidence": "exact",
-      "note": "Text on a `menu` surface."
     },
     "backdrop": {
       "dark": "--tecton-color-backdrop-fill",

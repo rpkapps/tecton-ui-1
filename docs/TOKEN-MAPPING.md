@@ -17,7 +17,7 @@ Tecton token was chosen (see note); **derived** = computed, no Tecton source.
 | `--foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | Default product UI text. |
 | `--card` | `--tecton-color-bg-paper` | `#131214` | `#fafafb` | exact | Paper surface (cards, panels, docks). |
 | `--card-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | Tecton has no card-specific text token; text-primary is used on every surface. |
-| `--popover` | `--tecton-color-surface-elevation-2-bg` | `#000000` | `#ffffff` | exact | Second elevation level (white / black), the Tecton MUI popover and dialog surface. Menus use `menu`, side panels `card`. |
+| `--popover` | `--tecton-color-bg-paper` | `#131214` | `#fafafb` | exact | Surface of every floating panel: dialogs, popovers (and the date picker in one), hover cards, dropdown and context menus, select and combobox lists. Paper, as Tecton MUI menus; tooltips use `tooltip`. |
 | `--popover-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | See card-foreground. |
 | `--primary` | `--tecton-color-action-primary-bg` | `#5d4d68` | `#644a78` | exact | Filled primary action surface. |
 | `--primary-foreground` | `--tecton-color-action-primary-text` | `#e5e0eb` | `#f7f3f8` | exact | Text on the primary action surface (Tecton switches to #ffffff on hover; Vega uses primary/80 instead). |
@@ -118,8 +118,6 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--progress` | `--tecton-color-extended-lilac-680` | `#af9ebc` | `#6b438c` | exact | Progress indicator (bar), as the Tecton MUI linear progress; the track is `progress-track`. |
 | `--tooltip` | `--tecton-color-surface-elevation-2-bg` | `#000000` | `#ffffff` | exact | Tooltip surface: Tecton's second elevation level, as the Tecton MUI tooltip uses (white in light mode, black in dark mode). |
 | `--tooltip-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | Text on a `tooltip` surface (the Tecton MUI tooltip's text colour). |
-| `--menu` | `--tecton-color-bg-paper` | `#131214` | `#fafafb` | exact | Menu surface (dropdown, context menu, select, combobox lists): Tecton MUI menus sit on paper, not on the popover's elevation 2. |
-| `--menu-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | Text on a `menu` surface. |
 | `--backdrop` | `--tecton-color-backdrop-fill` | `#00000080` | `#ffffff80` | exact | Modal backdrop behind dialogs, sheets and drawers (50% white / black, as the Tecton MUI backdrop), drawn with a light blur. |
 | `--filled` | `--tecton-color-action-filled-bg` | `#9d90a8` | `#674782` | exact | Checked radio button, as the Tecton MUI radio. |
 | `--filled-hover` | `--tecton-color-action-filled-bg-hover` | `#ada0b8` | `#765292` | exact | Checked checkbox or radio while hovered. |
@@ -207,8 +205,6 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--color-progress` | `var(--progress)` | `var(--progress)` |
 | `--color-tooltip` | `var(--tooltip)` | `var(--tooltip)` |
 | `--color-tooltip-foreground` | `var(--tooltip-foreground)` | `var(--tooltip-foreground)` |
-| `--color-menu` | `var(--menu)` | `var(--menu)` |
-| `--color-menu-foreground` | `var(--menu-foreground)` | `var(--menu-foreground)` |
 | `--color-backdrop` | `var(--backdrop)` | `var(--backdrop)` |
 | `--color-filled` | `var(--filled)` | `var(--filled)` |
 | `--color-filled-hover` | `var(--filled-hover)` | `var(--filled-hover)` |

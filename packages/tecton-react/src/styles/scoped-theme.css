@@ -905,7 +905,7 @@
   --foreground: var(--tecton-color-text-primary);
   --card: var(--tecton-color-bg-paper);
   --card-foreground: var(--tecton-color-text-primary);
-  --popover: var(--tecton-color-surface-elevation-2-bg);
+  --popover: var(--tecton-color-bg-paper);
   --popover-foreground: var(--tecton-color-text-primary);
   --primary: var(--tecton-color-action-primary-bg);
   --primary-foreground: var(--tecton-color-action-primary-text);
@@ -998,8 +998,6 @@
   --progress: var(--tecton-color-extended-lilac-680);
   --tooltip: var(--tecton-color-surface-elevation-2-bg);
   --tooltip-foreground: var(--tecton-color-text-primary);
-  --menu: var(--tecton-color-bg-paper);
-  --menu-foreground: var(--tecton-color-text-primary);
   --backdrop: var(--tecton-color-backdrop-fill);
   --filled: var(--tecton-color-action-filled-bg);
   --filled-hover: var(--tecton-color-action-filled-bg-hover);
@@ -1906,7 +1904,7 @@
   --foreground: var(--tecton-color-text-primary);
   --card: var(--tecton-color-bg-paper);
   --card-foreground: var(--tecton-color-text-primary);
-  --popover: var(--tecton-color-surface-elevation-2-bg);
+  --popover: var(--tecton-color-bg-paper);
   --popover-foreground: var(--tecton-color-text-primary);
   --primary: var(--tecton-color-action-primary-bg);
   --primary-foreground: var(--tecton-color-action-primary-text);
@@ -1998,8 +1996,6 @@
   --progress: var(--tecton-color-extended-lilac-680);
   --tooltip: var(--tecton-color-surface-elevation-2-bg);
   --tooltip-foreground: var(--tecton-color-text-primary);
-  --menu: var(--tecton-color-bg-paper);
-  --menu-foreground: var(--tecton-color-text-primary);
   --backdrop: var(--tecton-color-backdrop-fill);
   --filled: var(--tecton-color-action-filled-bg);
   --filled-hover: var(--tecton-color-action-filled-bg-hover);
@@ -2906,7 +2902,7 @@
   --foreground: var(--tecton-color-text-primary);
   --card: var(--tecton-color-bg-paper);
   --card-foreground: var(--tecton-color-text-primary);
-  --popover: var(--tecton-color-surface-elevation-2-bg);
+  --popover: var(--tecton-color-bg-paper);
   --popover-foreground: var(--tecton-color-text-primary);
   --primary: var(--tecton-color-action-primary-bg);
   --primary-foreground: var(--tecton-color-action-primary-text);
@@ -2999,8 +2995,6 @@
   --progress: var(--tecton-color-extended-lilac-680);
   --tooltip: var(--tecton-color-surface-elevation-2-bg);
   --tooltip-foreground: var(--tecton-color-text-primary);
-  --menu: var(--tecton-color-bg-paper);
-  --menu-foreground: var(--tecton-color-text-primary);
   --backdrop: var(--tecton-color-backdrop-fill);
   --filled: var(--tecton-color-action-filled-bg);
   --filled-hover: var(--tecton-color-action-filled-bg-hover);
