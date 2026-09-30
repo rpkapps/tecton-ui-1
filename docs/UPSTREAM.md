@@ -21,7 +21,7 @@ preset, built from `scripts/registry-mirror/overlay/` for the `base` base only:
 
 | File | What it is |
 | --- | --- |
-| `style-tecton.css` | `style-vega.css` with the Tecton deviations: solid 2px focus ring (`ring-2 ring-ring`), flat controls (no `shadow-xs`), buttons that lighten on hover / press (`:active`, since Base UI's Button sets no press attribute), Tecton tab and toggle colours, and the class lists of the extra variants |
+| `style-tecton.css` | `style-vega.css` with the Tecton deviations: solid 2px focus ring (`ring-2 ring-ring`), flat controls (no `shadow-xs`), buttons that lighten on hover / press (`:active`, since Base UI's Button sets no press attribute), Tecton tab and toggle colours, the surfaces and control colours of Tecton's MUI theme (sheet and drawer on `card`, blurred `backdrop` overlays, `filled` checked checkbox / radio, a lilac slider on `slider-rail`, `progress-track`, `content-*` sidebar states), and the class lists of the extra variants |
 | `tecton.patch` | Registers the style in `registry/styles.tsx` and patches `registry/bases/base/ui/*` (see [Overlay hunks](#overlay-hunks)) |
 
 `scripts/registry-mirror.sh build` resets every file under `registry/bases` and
@@ -205,6 +205,11 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   Tecton did (Base UI defaults to manual activation; `false` restores it).
 - **`toggle`** — the base `hover:bg-muted` is removed so `style-tecton.css` sets the Tecton ghost
   hover colours; 2px focus ring.
+- **`tooltip`** — the popup and arrow use `bg-tooltip` / `text-tooltip-foreground` (tokens in
+  `tecton.map.json`: Tecton's `surface-elevation-2-bg` with `text-primary`, as the Tecton MUI
+  tooltip) instead of upstream's inverted `bg-foreground` / `text-background`, which was a
+  near-white chip in dark mode. A `Kbd` inside one (`style-tecton.css`) tints with
+  `tooltip-foreground`.
 - **`alert-dialog`** — `AlertDialogAction` renders the Base UI `Close` part with `Button` styling
   (`variant` / `size`, like `AlertDialogCancel`), so a click runs `onClick` and closes the prompt;
   `event.preventBaseUIHandler()` in `onClick` keeps it open.

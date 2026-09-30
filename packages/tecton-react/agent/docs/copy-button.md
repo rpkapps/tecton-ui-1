@@ -22,7 +22,7 @@ import { CopyButton } from "@tecton/react/tecton/copy-button"
 - Pass the text as `value` and let the component own the click handler.
 - Leave it icon-only for a quiet affordance, or pass text `children` for a prominent labelled one.
 - Set weight with `variant` (it defaults to `ghost`) and hold time with `timeout`.
-- React to a successful copy with `onCopied`, and to a refused one (insecure context, denied permission) with `onError`, not by wrapping the button in your own handler.
+- React to a successful copy with `onCopied`, and to a refused one with `onError`, not by wrapping the button in your own handler. Where the Clipboard API is missing or denied (plain HTTP on a non-localhost address, an iframe without `clipboard-write`) the button falls back to the legacy copy command, so `onError` fires only when both fail.
 - Let the component name itself: with no children it sets `aria-label` to "Copy", then "Copied" or "Copy failed"; either outcome is also announced through a polite live region.
 
 ## Don't
@@ -43,7 +43,7 @@ Correct:
 <CopyButton value={well.id} />
 ```
 
-The hand-rolled version drops everything the component adds: the copied state and check-mark swap, the `aria-label` that flips to "Copied", the announcement, and the "Copy failed" state for a denied or insecure clipboard, which otherwise rejects unhandled.
+The hand-rolled version drops everything the component adds: the copied state and check-mark swap, the `aria-label` that flips to "Copied", the announcement, the legacy copy fallback where the Clipboard API is missing (the handler above throws there), and the "Copy failed" state when both refuse.
 
 ### HIGH An onClick handler passed to CopyButton
 

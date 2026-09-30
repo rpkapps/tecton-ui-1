@@ -17,7 +17,7 @@ Tecton token was chosen (see note); **derived** = computed, no Tecton source.
 | `--foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | Default product UI text. |
 | `--card` | `--tecton-color-bg-paper` | `#131214` | `#fafafb` | exact | Paper surface (cards, panels, docks). |
 | `--card-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | Tecton has no card-specific text token; text-primary is used on every surface. |
-| `--popover` | `--tecton-color-bg-elevated` | `#131214` | `#fafafb` | exact | Elevated surface for menus and popovers. |
+| `--popover` | `--tecton-color-bg-paper` | `#131214` | `#fafafb` | exact | Surface of every floating panel: dialogs, popovers (and the date picker in one), hover cards, dropdown and context menus, select and combobox lists. Paper, as Tecton MUI menus; tooltips use `tooltip`. |
 | `--popover-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | See card-foreground. |
 | `--primary` | `--tecton-color-action-primary-bg` | `#5d4d68` | `#644a78` | exact | Filled primary action surface. |
 | `--primary-foreground` | `--tecton-color-action-primary-text` | `#e5e0eb` | `#f7f3f8` | exact | Text on the primary action surface (Tecton switches to #ffffff on hover; Vega uses primary/80 instead). |
@@ -40,7 +40,7 @@ Tecton token was chosen (see note); **derived** = computed, no Tecton source.
 | `--sidebar-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact |  |
 | `--sidebar-primary` | `--tecton-color-action-primary-bg` | `#5d4d68` | `#644a78` | exact |  |
 | `--sidebar-primary-foreground` | `--tecton-color-action-primary-text` | `#e5e0eb` | `#f7f3f8` | exact |  |
-| `--sidebar-accent` | `--tecton-color-action-tertiary-bg-hover` | `#3a343e` | `#ece8f0` | approximated | See accent. |
+| `--sidebar-accent` | `--tecton-color-content-bg-hover` | `#262528` | `#eae8ec` | exact | Hovered sidebar item: Tecton's content (list item) hover surface, as the Tecton MUI list item button. Pressed and current items use `content-pressed` / `content-active`. |
 | `--sidebar-accent-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact |  |
 | `--sidebar-border` | `--tecton-color-divider-subtle` | `#342f39` | `#e4dde7` | exact | Low-emphasis separator inside panels. |
 | `--sidebar-ring` | `--tecton-color-focus-ring` | `#ff52a8` | `#ff00aa` | exact |  |
@@ -53,7 +53,7 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 
 | shadcn var | Tecton token | dark value | light value | confidence | note |
 | --- | --- | --- | --- | --- | --- |
-| `--success` | `--tecton-color-status-success` | `#78c692` | `#0d7f46` | exact | Status success main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `success-foreground`. |
+| `--success` | `--tecton-color-status-success` | `#61b67f` | `#0c703e` | exact | Status success main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `success-foreground`. |
 | `--success-foreground` | `--tecton-color-status-success-filled-text` | `#001607` | `#f3fef8` | exact | Text on a `success` surface. |
 | `--warning` | `--tecton-color-status-warning` | `#f9a308` | `#9c6201` | exact | Status warning main colour: text, borders and icons (alert/badge outline and default appearance) and a solid surface with `warning-foreground`. |
 | `--warning-foreground` | `--tecton-color-text-inverse` | `#131214` | `#fafafb` | approximated | Text on a `warning` surface: Tecton's filled-text is meant for the pale `warning-surface`, so the inverse text colour is used on the main colour. |
@@ -114,8 +114,20 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--input-hover` | `--tecton-color-input-outlined-border-hover` | `#a7a2ac` | `#6d5a7d` | exact | Outlined input, textarea and select border while hovered. |
 | `--table-header` | `--tecton-color-table-header-bg` | `#433d47` | `#d5cddb` | exact | Table header row surface (Tecton draws the header as a filled band). |
 | `--table-active` | `--tecton-color-table-cell-bg-active` | `#4e4853` | `#e4dde7` | exact | Selected table row surface; the hovered row uses accent. |
-| `--slider` | `--tecton-color-accent-graphite-fill` | `#98939d` | `#6d5a7d` | approximated | Slider range, thumb and (at 60%) track: Tecton's default slider is the graphite accent, not the primary action colour. |
-| `--progress` | `--tecton-color-accent-graphite-fill` | `#98939d` | `#6d5a7d` | approximated | Linear progress indicator and (at 38%) track, same graphite accent as the slider. |
+| `--slider` | `--tecton-color-accent-lilac-main` | `#9f8ead` | `#7a4e9b` | exact | Slider range and thumb (Tecton's lilac); the rail is `slider-rail`. |
+| `--progress` | `--tecton-color-extended-lilac-680` | `#af9ebc` | `#6b438c` | exact | Progress indicator (bar), as the Tecton MUI linear progress; the track is `progress-track`. |
+| `--tooltip` | `--tecton-color-surface-elevation-2-bg` | `#000000` | `#ffffff` | exact | Tooltip surface: Tecton's second elevation level, as the Tecton MUI tooltip uses (white in light mode, black in dark mode). |
+| `--tooltip-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | Text on a `tooltip` surface (the Tecton MUI tooltip's text colour). |
+| `--backdrop` | `--tecton-color-backdrop-fill` | `#00000080` | `#ffffff80` | exact | Modal backdrop behind dialogs, sheets and drawers (50% white / black, as the Tecton MUI backdrop), drawn with a light blur. |
+| `--filled` | `--tecton-color-action-filled-bg` | `#9d90a8` | `#674782` | exact | Checked radio button, as the Tecton MUI radio. |
+| `--filled-hover` | `--tecton-color-action-filled-bg-hover` | `#ada0b8` | `#765292` | exact | Checked checkbox or radio while hovered. |
+| `--filled-pressed` | `--tecton-color-action-filled-bg-press` | `#beb1c8` | `#8b5ba9` | exact | Checked checkbox or radio while pressed. |
+| `--filled-active` | `--tecton-color-action-filled-bg-active` | `#af9ebc` | `#8b5ba9` | exact | Checked checkbox, as the Tecton MUI checkbox. |
+| `--slider-rail` | `--tecton-color-accent-lilac-muted` | `#776284` | `#decae5` | exact | Slider rail behind the `slider` range (Tecton's muted lilac). |
+| `--progress-track` | `--tecton-color-extended-lilac-260` | `#6b5679` | `#b48ac5` | exact | Progress track behind the `progress` bar, as the Tecton MUI linear progress. |
+| `--content-hover` | `--tecton-color-content-bg-hover` | `#262528` | `#eae8ec` | exact | Hovered list item (sidebar item, tree item). |
+| `--content-pressed` | `--tecton-color-content-bg-press` | `#323134` | `#dbd6dd` | exact | Pressed list item. |
+| `--content-active` | `--tecton-color-content-bg-active` | `#323134` | `#dbd6dd` | exact | Selected / current list item (the current sidebar item, a selected tree item). |
 
 ## `@theme inline` entries
 
@@ -191,6 +203,18 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--color-table-active` | `var(--table-active)` | `var(--table-active)` |
 | `--color-slider` | `var(--slider)` | `var(--slider)` |
 | `--color-progress` | `var(--progress)` | `var(--progress)` |
+| `--color-tooltip` | `var(--tooltip)` | `var(--tooltip)` |
+| `--color-tooltip-foreground` | `var(--tooltip-foreground)` | `var(--tooltip-foreground)` |
+| `--color-backdrop` | `var(--backdrop)` | `var(--backdrop)` |
+| `--color-filled` | `var(--filled)` | `var(--filled)` |
+| `--color-filled-hover` | `var(--filled-hover)` | `var(--filled-hover)` |
+| `--color-filled-pressed` | `var(--filled-pressed)` | `var(--filled-pressed)` |
+| `--color-filled-active` | `var(--filled-active)` | `var(--filled-active)` |
+| `--color-slider-rail` | `var(--slider-rail)` | `var(--slider-rail)` |
+| `--color-progress-track` | `var(--progress-track)` | `var(--progress-track)` |
+| `--color-content-hover` | `var(--content-hover)` | `var(--content-hover)` |
+| `--color-content-pressed` | `var(--content-pressed)` | `var(--content-pressed)` |
+| `--color-content-active` | `var(--content-active)` | `var(--content-active)` |
 
 
 ## Palette (Tailwind colour scale)
@@ -203,7 +227,7 @@ and `--color-<family>-<step>` in `@theme inline`, after `--color-*: initial` (Ta
 Shades: `--color-white` (`#ffffff`), `--color-black` (`#000000`).
 Steps (contrast from the page background, both modes): `50` `100` `105` `110` `115` `120` `130` `140` `160` `190` `220` `260` `310` `370` `460` `560` `680` `830` `1000` `1170` `1300` `1440` `1570`.
 
-Coverage: 378/379 opaque colour tokens of the CSS export are ramp members in light mode, 374/375 in dark mode (not on any exposed ramp: `--tecton-color-focus-ring`).
+Coverage: 427/429 opaque colour tokens of the CSS export are ramp members in light mode, 424/425 in dark mode (not on any exposed ramp: `--tecton-color-focus-ring`, `--tecton-color-surface-base-border-active`).
 
 Values are light<br>dark.
 
@@ -231,7 +255,7 @@ Values are light<br>dark.
 `:root`, `.dark` and `@theme inline` blocks of `globals.css` and `tecton-theme.css` hold exactly
 what the map resolves to, completeness, dangling `var()` references, WCAG contrast for every
 surface/foreground pair and sanity rules for both modes.
-Expected failures (Tecton's own values fail these pairs): `palette:--tecton-color-focus-ring`.
+Expected failures (Tecton's own values fail these pairs): `palette:--tecton-color-focus-ring`, `palette:--tecton-color-surface-base-border-active`.
 
 ## Known deviations
 

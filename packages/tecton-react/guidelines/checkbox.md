@@ -87,4 +87,4 @@ Correct:
 <Checkbox id="ready" />
 ```
 
-The checked fill is already `bg-ghost-active-foreground` from the component, and `bg-emerald-600` is outside the Tecton palette, so the class generates no CSS.
+The checked fill is already `bg-filled-active` from the component, and `bg-emerald-600` is outside the Tecton palette, so the class generates no CSS.
