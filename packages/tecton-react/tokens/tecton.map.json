@@ -477,7 +477,7 @@
     "slider": {
       "dark": "--tecton-color-accent-lilac-main",
       "confidence": "exact",
-      "note": "Slider range, as the Tecton MUI slider track; the rail is `slider-rail` and the thumb `primary`."
+      "note": "Slider range and thumb (Tecton's lilac); the rail is `slider-rail`."
     },
     "progress": {
       "dark": "--tecton-color-extended-lilac-680",
@@ -507,7 +507,7 @@
     "backdrop": {
       "dark": "--tecton-color-backdrop-fill",
       "confidence": "exact",
-      "note": "Modal backdrop behind dialogs, sheets and drawers (50% white / black), as the Tecton MUI backdrop."
+      "note": "Modal backdrop behind dialogs, sheets and drawers (50% white / black, as the Tecton MUI backdrop), drawn with a light blur."
     },
     "filled": {
       "dark": "--tecton-color-action-filled-bg",
@@ -532,7 +532,7 @@
     "slider-rail": {
       "dark": "--tecton-color-accent-lilac-muted",
       "confidence": "exact",
-      "note": "Slider rail (at 60%), as the Tecton MUI slider."
+      "note": "Slider rail behind the `slider` range (Tecton's muted lilac)."
     },
     "progress-track": {
       "dark": "--tecton-color-extended-lilac-260",

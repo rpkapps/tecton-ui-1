@@ -114,18 +114,18 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--input-hover` | `--tecton-color-input-outlined-border-hover` | `#a7a2ac` | `#6d5a7d` | exact | Outlined input, textarea and select border while hovered. |
 | `--table-header` | `--tecton-color-table-header-bg` | `#433d47` | `#d5cddb` | exact | Table header row surface (Tecton draws the header as a filled band). |
 | `--table-active` | `--tecton-color-table-cell-bg-active` | `#4e4853` | `#e4dde7` | exact | Selected table row surface; the hovered row uses accent. |
-| `--slider` | `--tecton-color-accent-lilac-main` | `#9f8ead` | `#7a4e9b` | exact | Slider range, as the Tecton MUI slider track; the rail is `slider-rail` and the thumb `primary`. |
+| `--slider` | `--tecton-color-accent-lilac-main` | `#9f8ead` | `#7a4e9b` | exact | Slider range and thumb (Tecton's lilac); the rail is `slider-rail`. |
 | `--progress` | `--tecton-color-extended-lilac-680` | `#af9ebc` | `#6b438c` | exact | Progress indicator (bar), as the Tecton MUI linear progress; the track is `progress-track`. |
 | `--tooltip` | `--tecton-color-surface-elevation-2-bg` | `#000000` | `#ffffff` | exact | Tooltip surface: Tecton's second elevation level, as the Tecton MUI tooltip uses (white in light mode, black in dark mode). |
 | `--tooltip-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | Text on a `tooltip` surface (the Tecton MUI tooltip's text colour). |
 | `--menu` | `--tecton-color-bg-paper` | `#131214` | `#fafafb` | exact | Menu surface (dropdown, context menu, select, combobox lists): Tecton MUI menus sit on paper, not on the popover's elevation 2. |
 | `--menu-foreground` | `--tecton-color-text-primary` | `#f6f5f8` | `#21172a` | exact | Text on a `menu` surface. |
-| `--backdrop` | `--tecton-color-backdrop-fill` | `#00000080` | `#ffffff80` | exact | Modal backdrop behind dialogs, sheets and drawers (50% white / black), as the Tecton MUI backdrop. |
+| `--backdrop` | `--tecton-color-backdrop-fill` | `#00000080` | `#ffffff80` | exact | Modal backdrop behind dialogs, sheets and drawers (50% white / black, as the Tecton MUI backdrop), drawn with a light blur. |
 | `--filled` | `--tecton-color-action-filled-bg` | `#9d90a8` | `#674782` | exact | Checked radio button, as the Tecton MUI radio. |
 | `--filled-hover` | `--tecton-color-action-filled-bg-hover` | `#ada0b8` | `#765292` | exact | Checked checkbox or radio while hovered. |
 | `--filled-pressed` | `--tecton-color-action-filled-bg-press` | `#beb1c8` | `#8b5ba9` | exact | Checked checkbox or radio while pressed. |
 | `--filled-active` | `--tecton-color-action-filled-bg-active` | `#af9ebc` | `#8b5ba9` | exact | Checked checkbox, as the Tecton MUI checkbox. |
-| `--slider-rail` | `--tecton-color-accent-lilac-muted` | `#776284` | `#decae5` | exact | Slider rail (at 60%), as the Tecton MUI slider. |
+| `--slider-rail` | `--tecton-color-accent-lilac-muted` | `#776284` | `#decae5` | exact | Slider rail behind the `slider` range (Tecton's muted lilac). |
 | `--progress-track` | `--tecton-color-extended-lilac-260` | `#6b5679` | `#b48ac5` | exact | Progress track behind the `progress` bar, as the Tecton MUI linear progress. |
 | `--content-hover` | `--tecton-color-content-bg-hover` | `#262528` | `#eae8ec` | exact | Hovered list item (sidebar item, tree item). |
 | `--content-pressed` | `--tecton-color-content-bg-press` | `#323134` | `#dbd6dd` | exact | Pressed list item. |
