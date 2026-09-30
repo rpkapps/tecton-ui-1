@@ -168,7 +168,7 @@ describe("TreeView", () => {
       }
     }
     expect(wells).toHaveAttribute("data-selected", "")
-    expect(wells.className).toContain("hover:bg-accent/60")
+    expect(wells.className).toContain("hover:bg-content-hover")
     expect(wells.className).toContain("focus-visible:ring-2")
     expect(wells.className).not.toMatch(/data-(hovered|pressed|focus-visible)/)
   })
@@ -275,7 +275,7 @@ describe("TreeView selection", () => {
     await userEvent.click(row("Wells"))
     expect(row("Wells")).not.toHaveAttribute("data-selected")
     expect(onValueChange).not.toHaveBeenCalled()
-    expect(row("Wells").className).not.toContain("hover:bg-accent/60")
+    expect(row("Wells").className).not.toContain("hover:bg-content-hover")
   })
 })
 

@@ -28,9 +28,9 @@
       "note": "Tecton has no card-specific text token; text-primary is used on every surface."
     },
     "popover": {
-      "dark": "--tecton-color-bg-elevated",
+      "dark": "--tecton-color-surface-elevation-2-bg",
       "confidence": "exact",
-      "note": "Elevated surface for menus and popovers."
+      "note": "Second elevation level (white / black), the Tecton MUI popover and dialog surface. Menus use `menu`, side panels `card`."
     },
     "popover-foreground": {
       "dark": "--tecton-color-text-primary",
@@ -143,9 +143,9 @@
       "note": ""
     },
     "sidebar-accent": {
-      "dark": "--tecton-color-action-tertiary-bg-hover",
-      "confidence": "approximated",
-      "note": "See accent."
+      "dark": "--tecton-color-content-bg-hover",
+      "confidence": "exact",
+      "note": "Hovered sidebar item: Tecton's content (list item) hover surface, as the Tecton MUI list item button. Pressed and current items use `content-pressed` / `content-active`."
     },
     "sidebar-accent-foreground": {
       "dark": "--tecton-color-text-primary",
@@ -475,14 +475,14 @@
       "note": "Selected table row surface; the hovered row uses accent."
     },
     "slider": {
-      "dark": "--tecton-color-accent-graphite-fill",
-      "confidence": "approximated",
-      "note": "Slider range, thumb and (at 60%) track: Tecton's default slider is the graphite accent, not the primary action colour."
+      "dark": "--tecton-color-accent-lilac-main",
+      "confidence": "exact",
+      "note": "Slider range, as the Tecton MUI slider track; the rail is `slider-rail` and the thumb `primary`."
     },
     "progress": {
-      "dark": "--tecton-color-accent-graphite-fill",
-      "confidence": "approximated",
-      "note": "Linear progress indicator and (at 38%) track, same graphite accent as the slider."
+      "dark": "--tecton-color-extended-lilac-680",
+      "confidence": "exact",
+      "note": "Progress indicator (bar), as the Tecton MUI linear progress; the track is `progress-track`."
     },
     "tooltip": {
       "dark": "--tecton-color-surface-elevation-2-bg",
@@ -493,6 +493,66 @@
       "dark": "--tecton-color-text-primary",
       "confidence": "exact",
       "note": "Text on a `tooltip` surface (the Tecton MUI tooltip's text colour)."
+    },
+    "menu": {
+      "dark": "--tecton-color-bg-paper",
+      "confidence": "exact",
+      "note": "Menu surface (dropdown, context menu, select, combobox lists): Tecton MUI menus sit on paper, not on the popover's elevation 2."
+    },
+    "menu-foreground": {
+      "dark": "--tecton-color-text-primary",
+      "confidence": "exact",
+      "note": "Text on a `menu` surface."
+    },
+    "backdrop": {
+      "dark": "--tecton-color-backdrop-fill",
+      "confidence": "exact",
+      "note": "Modal backdrop behind dialogs, sheets and drawers (50% white / black), as the Tecton MUI backdrop."
+    },
+    "filled": {
+      "dark": "--tecton-color-action-filled-bg",
+      "confidence": "exact",
+      "note": "Checked radio button, as the Tecton MUI radio."
+    },
+    "filled-hover": {
+      "dark": "--tecton-color-action-filled-bg-hover",
+      "confidence": "exact",
+      "note": "Checked checkbox or radio while hovered."
+    },
+    "filled-pressed": {
+      "dark": "--tecton-color-action-filled-bg-press",
+      "confidence": "exact",
+      "note": "Checked checkbox or radio while pressed."
+    },
+    "filled-active": {
+      "dark": "--tecton-color-action-filled-bg-active",
+      "confidence": "exact",
+      "note": "Checked checkbox, as the Tecton MUI checkbox."
+    },
+    "slider-rail": {
+      "dark": "--tecton-color-accent-lilac-muted",
+      "confidence": "exact",
+      "note": "Slider rail (at 60%), as the Tecton MUI slider."
+    },
+    "progress-track": {
+      "dark": "--tecton-color-extended-lilac-260",
+      "confidence": "exact",
+      "note": "Progress track behind the `progress` bar, as the Tecton MUI linear progress."
+    },
+    "content-hover": {
+      "dark": "--tecton-color-content-bg-hover",
+      "confidence": "exact",
+      "note": "Hovered list item (sidebar item, tree item)."
+    },
+    "content-pressed": {
+      "dark": "--tecton-color-content-bg-press",
+      "confidence": "exact",
+      "note": "Pressed list item."
+    },
+    "content-active": {
+      "dark": "--tecton-color-content-bg-active",
+      "confidence": "exact",
+      "note": "Selected / current list item (the current sidebar item, a selected tree item)."
     }
   },
   "theme": {

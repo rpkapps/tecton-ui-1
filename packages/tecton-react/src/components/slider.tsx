@@ -30,7 +30,7 @@ function Slider({
       <SliderPrimitive.Control className="relative flex w-full touch-none items-center select-none data-disabled:opacity-50 data-vertical:h-full data-vertical:min-h-40 data-vertical:w-auto data-vertical:flex-col">
         <SliderPrimitive.Track
           data-slot="slider-track"
-          className="bg-slider/60 relative grow overflow-hidden rounded-full select-none data-horizontal:h-1 data-horizontal:w-full data-vertical:h-full data-vertical:w-1"
+          className="bg-slider-rail/60 relative grow overflow-hidden rounded-full select-none data-horizontal:h-1 data-horizontal:w-full data-vertical:h-full data-vertical:w-1"
         >
           <SliderPrimitive.Indicator
             data-slot="slider-range"
@@ -44,7 +44,7 @@ function Slider({
             // The root passes its `aria-labelledby` to the thumbs' range
             // inputs but not its `aria-label`, so name each thumb here.
             aria-label={ariaLabel}
-            className="bg-slider ring-slider/30 block size-5 shrink-0 rounded-full transition-[color,box-shadow] select-none hover:ring-4 has-focus-visible:ring-2 has-focus-visible:ring-ring data-disabled:pointer-events-none"
+            className="block size-5 shrink-0 rounded-full bg-primary ring-primary/30 transition-[color,box-shadow] select-none hover:ring-4 has-focus-visible:ring-2 has-focus-visible:ring-ring data-disabled:pointer-events-none"
           />
         ))}
       </SliderPrimitive.Control>

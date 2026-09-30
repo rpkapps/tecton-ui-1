@@ -374,7 +374,7 @@
   --color-sidebar-ring: var(--sidebar-ring, var(--tecton-color-focus-ring, light-dark(#ff00aa, #ff52a8)));
   --color-sidebar-border: var(--sidebar-border, var(--tecton-color-divider-subtle, light-dark(#e4dde7, #342f39)));
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground, var(--tecton-color-text-primary, light-dark(#21172a, #f6f5f8)));
-  --color-sidebar-accent: var(--sidebar-accent, var(--tecton-color-action-tertiary-bg-hover, light-dark(#ece8f0, #3a343e)));
+  --color-sidebar-accent: var(--sidebar-accent, var(--tecton-color-content-bg-hover, light-dark(#eae8ec, #262528)));
   --color-sidebar-primary-foreground: var(--sidebar-primary-foreground, var(--tecton-color-action-primary-text, light-dark(#f7f3f8, #e5e0eb)));
   --color-sidebar-primary: var(--sidebar-primary, var(--tecton-color-action-primary-bg, light-dark(#644a78, #5d4d68)));
   --color-sidebar-foreground: var(--sidebar-foreground, var(--tecton-color-text-primary, light-dark(#21172a, #f6f5f8)));
@@ -397,7 +397,7 @@
   --color-primary-foreground: var(--primary-foreground, var(--tecton-color-action-primary-text, light-dark(#f7f3f8, #e5e0eb)));
   --color-primary: var(--primary, var(--tecton-color-action-primary-bg, light-dark(#644a78, #5d4d68)));
   --color-popover-foreground: var(--popover-foreground, var(--tecton-color-text-primary, light-dark(#21172a, #f6f5f8)));
-  --color-popover: var(--popover, var(--tecton-color-bg-elevated, light-dark(#fafafb, #131214)));
+  --color-popover: var(--popover, var(--tecton-color-surface-elevation-2-bg, light-dark(#ffffff, #000000)));
   --color-card-foreground: var(--card-foreground, var(--tecton-color-text-primary, light-dark(#21172a, #f6f5f8)));
   --color-card: var(--card, var(--tecton-color-bg-paper, light-dark(#fafafb, #131214)));
   --color-foreground: var(--foreground, var(--tecton-color-text-primary, light-dark(#21172a, #f6f5f8)));
@@ -472,10 +472,22 @@
   --color-input-hover: var(--input-hover, var(--tecton-color-input-outlined-border-hover, light-dark(#6d5a7d, #a7a2ac)));
   --color-table-header: var(--table-header, var(--tecton-color-table-header-bg, light-dark(#d5cddb, #433d47)));
   --color-table-active: var(--table-active, var(--tecton-color-table-cell-bg-active, light-dark(#e4dde7, #4e4853)));
-  --color-slider: var(--slider, var(--tecton-color-accent-graphite-fill, light-dark(#6d5a7d, #98939d)));
-  --color-progress: var(--progress, var(--tecton-color-accent-graphite-fill, light-dark(#6d5a7d, #98939d)));
+  --color-slider: var(--slider, var(--tecton-color-accent-lilac-main, light-dark(#7a4e9b, #9f8ead)));
+  --color-progress: var(--progress, var(--tecton-color-extended-lilac-680, light-dark(#6b438c, #af9ebc)));
   --color-tooltip: var(--tooltip, var(--tecton-color-surface-elevation-2-bg, light-dark(#ffffff, #000000)));
   --color-tooltip-foreground: var(--tooltip-foreground, var(--tecton-color-text-primary, light-dark(#21172a, #f6f5f8)));
+  --color-menu: var(--menu, var(--tecton-color-bg-paper, light-dark(#fafafb, #131214)));
+  --color-menu-foreground: var(--menu-foreground, var(--tecton-color-text-primary, light-dark(#21172a, #f6f5f8)));
+  --color-backdrop: var(--backdrop, var(--tecton-color-backdrop-fill, light-dark(#ffffff80, #00000080)));
+  --color-filled: var(--filled, var(--tecton-color-action-filled-bg, light-dark(#674782, #9d90a8)));
+  --color-filled-hover: var(--filled-hover, var(--tecton-color-action-filled-bg-hover, light-dark(#765292, #ada0b8)));
+  --color-filled-pressed: var(--filled-pressed, var(--tecton-color-action-filled-bg-press, light-dark(#8b5ba9, #beb1c8)));
+  --color-filled-active: var(--filled-active, var(--tecton-color-action-filled-bg-active, light-dark(#8b5ba9, #af9ebc)));
+  --color-slider-rail: var(--slider-rail, var(--tecton-color-accent-lilac-muted, light-dark(#decae5, #776284)));
+  --color-progress-track: var(--progress-track, var(--tecton-color-extended-lilac-260, light-dark(#b48ac5, #6b5679)));
+  --color-content-hover: var(--content-hover, var(--tecton-color-content-bg-hover, light-dark(#eae8ec, #262528)));
+  --color-content-pressed: var(--content-pressed, var(--tecton-color-content-bg-press, light-dark(#dbd6dd, #323134)));
+  --color-content-active: var(--content-active, var(--tecton-color-content-bg-active, light-dark(#dbd6dd, #323134)));
 }
 
 @custom-variant dark (&:where(.dark *, [data-theme="dark"] *):not(:where(:is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]), :is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) *)));

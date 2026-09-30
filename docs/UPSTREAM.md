@@ -21,7 +21,7 @@ preset, built from `scripts/registry-mirror/overlay/` for the `base` base only:
 
 | File | What it is |
 | --- | --- |
-| `style-tecton.css` | `style-vega.css` with the Tecton deviations: solid 2px focus ring (`ring-2 ring-ring`), flat controls (no `shadow-xs`), buttons that lighten on hover / press (`:active`, since Base UI's Button sets no press attribute), Tecton tab and toggle colours, and the class lists of the extra variants |
+| `style-tecton.css` | `style-vega.css` with the Tecton deviations: solid 2px focus ring (`ring-2 ring-ring`), flat controls (no `shadow-xs`), buttons that lighten on hover / press (`:active`, since Base UI's Button sets no press attribute), Tecton tab and toggle colours, the surfaces and control colours of Tecton's MUI theme (menus on `menu`, sheet and drawer on `card`, `backdrop` overlays, `filled` checked checkbox / radio, `slider-rail`, `progress-track`, `content-*` sidebar states), and the class lists of the extra variants |
 | `tecton.patch` | Registers the style in `registry/styles.tsx` and patches `registry/bases/base/ui/*` (see [Overlay hunks](#overlay-hunks)) |
 
 `scripts/registry-mirror.sh build` resets every file under `registry/bases` and
