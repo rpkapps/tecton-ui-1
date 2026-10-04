@@ -40,14 +40,15 @@ describe("useBusyDelay", () => {
     expect(result.current).toBe(true)
   })
 
-  it("stays true for at least minDuration once shown", () => {
+  it("stays true for at least the default 300ms once shown", () => {
     const { result, rerender } = setup(true)
     advance(200)
     expect(result.current).toBe(true)
 
+    // The default minimum is 300ms: 50ms have passed, 250ms remain.
     advance(50)
     rerender({ pending: false, opts: undefined })
-    advance(149)
+    advance(249)
     expect(result.current).toBe(true)
     advance(1)
     expect(result.current).toBe(false)

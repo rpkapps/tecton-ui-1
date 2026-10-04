@@ -90,4 +90,4 @@ Correct:
 - An unknown total is `value={null}`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.
 - A `Spinner` is never wrapped in a second live region: it already carries `role="status"` and `aria-label="Loading"`.
 
-Related: skeleton, circular-progress, progress
+Related: skeleton, circular-progress, progress, use-busy-delay

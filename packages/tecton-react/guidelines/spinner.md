@@ -10,7 +10,7 @@ notFor:
     use: CircularProgress
   - need: a placeholder that holds the page layout while content loads
     use: Skeleton
-related: [Skeleton, CircularProgress, Progress]
+related: [Skeleton, CircularProgress, Progress, useBusyDelay]
 ---
 
 ## Use it when

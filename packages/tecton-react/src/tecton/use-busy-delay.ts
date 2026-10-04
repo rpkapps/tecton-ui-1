@@ -3,9 +3,9 @@
 import * as React from "react"
 
 type UseBusyDelayOptions = {
-  /** How long `isPending` must stay `true` before the hook reports busy, in ms. */
+  /** How long `isPending` must stay `true` before the hook reports busy, in ms (200 by default). */
   delay?: number
-  /** How long the hook keeps reporting busy once it has, in ms. */
+  /** How long the hook keeps reporting busy once it has, in ms (300 by default). */
   minDuration?: number
 }
 
@@ -21,7 +21,7 @@ type UseBusyDelayOptions = {
  */
 function useBusyDelay(
   isPending: boolean,
-  { delay = 200, minDuration = 200 }: UseBusyDelayOptions = {}
+  { delay = 200, minDuration = 300 }: UseBusyDelayOptions = {}
 ): boolean {
   const [busy, setBusy] = React.useState(false)
   // When the current busy period started; null while not busy. Kept in a ref
