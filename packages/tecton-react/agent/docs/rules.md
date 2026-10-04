@@ -112,7 +112,7 @@ builds and renders unstyled. The *Before you finish* list is the check.
 | Path | Holds |
 | --- | --- |
 | `@tecton/react/components/<name>` | The shadcn components: `button`, `badge`, `alert`, `select`, `dialog`, `field`, `input`, `tabs`, `table`, … |
-| `@tecton/react/tecton/<name>` | Tecton-only components: `chip`, `count-badge`, `circular-progress`, `meter`, `tree-view`, `stat`, `panel`, `page-header`, `app-shell`, `copy-button`, `link`, `provider`, `theme-root`, … |
+| `@tecton/react/tecton/<name>` | Tecton-only components: `chip`, `count-badge`, `circular-progress`, `meter`, `tree-view`, `stat`, `panel`, `page-header`, `app-shell`, `copy-button`, `link`, `provider`, `theme-root`, …; and the Tecton hooks, `use-<name>` (`use-busy-delay`) |
 | `@tecton/react/icons` | The Tecton domain glyphs (`WellIcon`, `SeismicIcon`, `HorizonIcon`, `DrillBitIcon`, …); everything generic comes from `lucide-react` |
 
 The `exports` map is enumerated, one entry per module, so a typo fails at

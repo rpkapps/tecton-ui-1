@@ -9,6 +9,7 @@
  *
  *   @tecton/react/components/badge -> content/docs/components/badge.mdx
  *   @tecton/react/tecton/chip      -> content/docs/tecton/chip.mdx
+ *   @tecton/react/tecton/use-x     -> content/docs/hooks/use-x.mdx   (Tecton hooks)
  *
  * The section is written between `{/* guidelines:start *\/}` and
  * `{/* guidelines:end *\/}`, before "## API Reference" when the page has one and
@@ -29,6 +30,7 @@ import path from "node:path"
 import { fileURLToPath } from "node:url"
 import {
   MODULE_DIRS,
+  docsPageOf,
   loadGuidelines,
   renderNotFor,
 } from "../../../packages/tecton-react/scripts/guidelines-lib.mts"
@@ -202,15 +204,20 @@ export function withGuidelines(mdx: string, moduleKey: string): string {
 // main
 // ---------------------------------------------------------------------------
 
-/** Every `<dir>/<name>.mdx` under content/docs that a module could own. */
+/**
+ * Every `<dir>/<name>.mdx` under content/docs that a module could own, keyed by
+ * module: the Tecton hooks (`tecton/use-*`) are documented under `hooks/`.
+ */
 function docsPages(): Map<string, string> {
   const pages = new Map<string, string>()
-  for (const dir of MODULE_DIRS) {
+  for (const [dir, moduleDir] of [...MODULE_DIRS.map((d) => [d, d]), ["hooks", "tecton"]]) {
     const full = path.join(DOCS, dir)
     if (!existsSync(full)) continue
     for (const entry of readdirSync(full)) {
       if (!entry.endsWith(".mdx") || entry === "index.mdx") continue
-      pages.set(`${dir}/${entry.slice(0, -".mdx".length)}`, path.join(full, entry))
+      const moduleKey = `${moduleDir}/${entry.slice(0, -".mdx".length)}`
+      if (docsPageOf(moduleKey) !== `${dir}/${entry.slice(0, -".mdx".length)}`) continue
+      pages.set(moduleKey, path.join(full, entry))
     }
   }
   return pages
@@ -250,16 +257,16 @@ function main() {
     try {
       next = guideline ? insertSection(lf, renderSection(guideline, catalog)) : removeSection(lf)
     } catch (error) {
-      broken.push(`content/docs/${moduleKey}.mdx: ${(error as Error).message}`)
+      broken.push(`content/docs/${docsPageOf(moduleKey)}.mdx: ${(error as Error).message}`)
       continue
     }
     if (next === lf) continue
-    changed.push(`content/docs/${moduleKey}.mdx${guideline ? "" : " (section removed)"}`)
+    changed.push(`content/docs/${docsPageOf(moduleKey)}.mdx${guideline ? "" : " (section removed)"}`)
     if (!check) writeFileSync(page, next.split("\n").join(eol))
   }
 
   for (const moduleKey of missing) {
-    console.error(`✗ ${moduleKey}: no page at content/docs/${moduleKey}.mdx to render into`)
+    console.error(`✗ ${moduleKey}: no page at content/docs/${docsPageOf(moduleKey)}.mdx to render into`)
   }
   for (const problem of broken) console.error(`✗ ${problem}`)
 

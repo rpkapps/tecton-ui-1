@@ -47,7 +47,9 @@ The `tecton` command ships with the package (`npx tecton …` or
 - `@tecton/react/components/<id>` — the shadcn components (`button`, `select`,
   `dialog`, `field`, `table`, …).
 - `@tecton/react/tecton/<id>` — Tecton-only components (`chip`, `stat`,
-  `panel`, `app-shell`, `provider`, …). `tecton search` prints the exact path.
+  `panel`, `app-shell`, `provider`, …) and the Tecton hooks (`use-busy-delay`:
+  a busy flag that never flashes a spinner on fast work). `tecton search`
+  prints the exact path.
 - `@tecton/react/icons` — the oil & gas glyphs (`WellIcon`, `SeismicIcon`, …);
   every generic glyph comes from `lucide-react`.
 - There is no root export, nothing is installed with `shadcn add`, and nothing

@@ -218,14 +218,30 @@ export function modulePathOf(moduleKey: string): string {
   return `${PKG_NAME}/${moduleKey}`
 }
 
-/** `components/badge` -> `/docs/components/badge` */
-export function docsUrlOf(moduleKey: string): string {
-  return `/docs/${moduleKey}`
+/** A Tecton hook: `tecton/use-busy-delay`. Hooks are `.ts` and documented under Hooks. */
+export function isHookModule(moduleKey: string): boolean {
+  return moduleKey.startsWith("tecton/use-")
 }
 
-/** `components/badge` -> `packages/tecton-react/src/components/badge.tsx` */
+/**
+ * The docs page of a module, relative to content/docs: `components/badge`,
+ * `tecton/chip`, and `hooks/use-busy-delay` for the hook `tecton/use-busy-delay`.
+ */
+export function docsPageOf(moduleKey: string): string {
+  return isHookModule(moduleKey) ? `hooks/${moduleKey.slice("tecton/".length)}` : moduleKey
+}
+
+/** `components/badge` -> `/docs/components/badge` */
+export function docsUrlOf(moduleKey: string): string {
+  return `/docs/${docsPageOf(moduleKey)}`
+}
+
+/**
+ * `components/badge` -> `packages/tecton-react/src/components/badge.tsx`
+ * (`.ts` for a hook).
+ */
 export function sourceFileOf(moduleKey: string): string {
-  return path.join(SRC_DIR, `${moduleKey}.tsx`)
+  return path.join(SRC_DIR, `${moduleKey}${isHookModule(moduleKey) ? ".ts" : ".tsx"}`)
 }
 
 // ---------------------------------------------------------------------------
@@ -252,8 +268,8 @@ export function loadFamilies(dir: string = GUIDELINES_DIR): FamiliesFile {
 export const INTERNAL_MODULES: ReadonlySet<string> = new Set(["components/direction", "tecton/portal"])
 
 /**
- * Every public `.tsx` module under src/components and src/tecton, as module keys
- * (`INTERNAL_MODULES` left out).
+ * Every public `.tsx` module under src/components and src/tecton, plus the
+ * `use-*.ts` hooks under src/tecton, as module keys (`INTERNAL_MODULES` left out).
  */
 export function sourceModules(): string[] {
   const modules: string[] = []
@@ -262,8 +278,10 @@ export function sourceModules(): string[] {
     if (!existsSync(full)) continue
     for (const entry of readdirSync(full, { withFileTypes: true })) {
       if (!entry.isFile()) continue
-      if (!entry.name.endsWith(".tsx") || entry.name.endsWith(".d.tsx")) continue
-      const moduleKey = `${dir}/${entry.name.slice(0, -".tsx".length)}`
+      const ext = entry.name.endsWith(".tsx") ? ".tsx" : entry.name.endsWith(".ts") ? ".ts" : null
+      if (!ext || entry.name.endsWith(".d.ts")) continue
+      const moduleKey = `${dir}/${entry.name.slice(0, -ext.length)}`
+      if (ext === ".ts" && !isHookModule(moduleKey)) continue
       if (!INTERNAL_MODULES.has(moduleKey)) modules.push(moduleKey)
     }
   }
@@ -848,7 +866,9 @@ export function validateGuideline(
     }
     const real = catalog.moduleExports.get(moduleKey)
     if (!real) {
-      errors.push(`frontmatter: "${meta.module}" has no source file at src/${moduleKey}.tsx`)
+      errors.push(
+        `frontmatter: "${meta.module}" has no source file at ${path.relative(PKG_ROOT, sourceFileOf(moduleKey))}`
+      )
     } else {
       for (const name of meta.exports) {
         if (!real.includes(name)) {

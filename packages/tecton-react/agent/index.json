@@ -2635,7 +2635,7 @@
    "fields": {
     "names": "progress progress progress label progress value progress track progress indicator",
     "useWhen": "A task has a start, an end and a measurable fraction between them: an upload, an import, a batch run. The bar belongs in the flow of a panel, a row or a dialog, across the available width. The number matters as much as the bar: `ProgressLabel` plus `ProgressValue`.",
-    "routed": "a full-width determinate bar in the flow of a panel the completion of a task that will finish a measurable percentage the progress of a task the user is watching a measurable percentage",
+    "routed": "a full-width determinate bar in the flow of a panel the completion of a task that will finish a measurable percentage the progress of a task the user is watching a measurable percentage progress through a task whose length is known",
     "do": "Name it: a `ProgressLabel` child, or `aria-label` when the label is already on screen. Let `ProgressValue` print the number; it is formatted from `value`, `min`, `max` and `format` (`Intl.NumberFormat` options). State the scale when it is not 0–100: `value={loaded} max={total}`. Pass `value={null}` while the total is unknown; the bar turns indeterminate. `className` sets the width (`w-full max-w-sm`), never the height or the colour."
    },
    "notFor": [
@@ -3080,7 +3080,7 @@
    "fields": {
     "names": "skeleton skeleton",
     "useWhen": "The shape of the content is known before the data arrives: a card, a table, a form, a list of rows. The wait is long enough to notice, and the layout must not move when the data lands. Several regions load independently and each should keep its place.",
-    "routed": "a placeholder shape while the content loads a placeholder shape while real content loads a placeholder while the content is still loading a placeholder for content whose progress cannot be measured a placeholder that holds the page layout while content loads",
+    "routed": "a placeholder shape while the content loads a placeholder shape while real content loads a placeholder while the content is still loading a placeholder for content whose progress cannot be measured a placeholder that holds the page layout while content loads a placeholder in the shape of the content that is loading",
     "do": "Give every `Skeleton` a size from the spacing scale: `h-4 w-full`, `size-12 rounded-full`, `aspect-video w-full`. Mirror the real layout — the same wrappers, the same gaps, one `Skeleton` per box the content will occupy. Vary the widths with fractions (`w-2/3`, `w-3/4`) so a block reads as text. `className` is for the box; the pulse and the muted surface belong to the component."
    },
    "notFor": [
@@ -3194,7 +3194,7 @@
    "fields": {
     "names": "spinner spinner",
     "useWhen": "A control is busy: a `Button` that is saving, an `InputGroup` that is validating, a `Badge` that says \"Generating\". A small region is waiting, and the wait is short and cannot be measured. An `Empty` state stands in for a running operation, with the spinner inside `EmptyMedia`.",
-    "routed": "a small busy glyph inside a button or an input a busy indicator on an icon button an indeterminate wait a busy indicator inside a button a busy indicator inside a button or an input",
+    "routed": "a small busy glyph inside a button or an input a busy indicator on an icon button an indeterminate wait a busy indicator inside a button a busy indicator inside a button or an input the spinner itself",
     "do": "Inside a `Button` or a `Badge`, give it `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"` so the control trims its padding on that side. Mark the button that is working `disabled` with `focusableWhenDisabled`, so it keeps focus and cannot be pressed twice; make the label a verb: \"Saving…\". Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so set the colour on the parent with a semantic token. `Spinner` already carries `role=\"status\"` and `aria-label=\"Loading\"`; do not wrap it in a second live region."
    },
    "notFor": [
@@ -3214,13 +3214,14 @@
    "related": [
     "skeleton",
     "circular-progress",
-    "progress"
+    "progress",
+    "use-busy-delay"
    ],
    "exports": [
     "Spinner"
    ],
    "aliases": [],
-   "tokens": 849
+   "tokens": 853
   },
   {
    "id": "stat",
@@ -3605,6 +3606,44 @@
    "tokens": 1102
   },
   {
+   "id": "use-busy-delay",
+   "kind": "component",
+   "name": "useBusyDelay",
+   "import": "import { useBusyDelay } from \"@tecton/react/tecton/use-busy-delay\"",
+   "family": "hooks",
+   "summary": "A spinner, skeleton or busy label is driven by a pending flag: a transition, a mutation, a fetch.",
+   "fields": {
+    "names": "use busy delay use busy delay",
+    "useWhen": "A spinner, skeleton or busy label is driven by a pending flag: a transition, a mutation, a fetch. Most requests finish quickly and a spinner that appears for a frame would read as a glitch. The flag can toggle quickly (retries, refetches) and the busy state must not flicker.",
+    "routed": "",
+    "do": "Pass the raw flag (`const busy = useBusyDelay(pending)`) and draw the busy indicator (spinner, skeleton, busy label) from the result. Disable the control while either flag is set, `disabled={pending || busy}` with `focusableWhenDisabled`: `pending` locks it from the first click, `busy` keeps it locked while the spinner holds. Tune the timing with `delay` (200 ms by default) and `minDuration` (300 ms by default) instead of wrapping the hook in your own timers. Call it once per independent pending source; each call owns its own timer and cancels it on unmount."
+   },
+   "notFor": [
+    {
+     "need": "the spinner itself",
+     "id": "spinner"
+    },
+    {
+     "need": "a placeholder in the shape of the content that is loading",
+     "id": "skeleton"
+    },
+    {
+     "need": "progress through a task whose length is known",
+     "id": "progress"
+    }
+   ],
+   "related": [
+    "spinner",
+    "skeleton",
+    "button"
+   ],
+   "exports": [
+    "useBusyDelay"
+   ],
+   "aliases": [],
+   "tokens": 721
+  },
+  {
    "id": "tanstack-table",
    "kind": "external",
    "name": "TanStack Table",
@@ -3735,7 +3774,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2924
+   "tokens": 2938
   },
   {
    "id": "theming",
