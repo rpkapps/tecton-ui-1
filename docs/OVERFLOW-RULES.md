@@ -178,7 +178,7 @@ the menu; the menu never sorts by priority.
 | Link | `Link` | `DropdownMenuItem` rendering an anchor | |
 | Divider | `Separator orientation="vertical"` | `DropdownMenuSeparator` | Between the hidden items on either side of the divider, even when visible items also stand between them. |
 | Group | `OverflowGroup` | `DropdownMenuGroup` with a label | |
-| Custom | Anything | Provided by `overflow={(item) => …}` | Required for a control not listed here. |
+| Custom | Anything | Provided by `overflow={…}` (a menu node) | Required for a control not listed here. |
 
 6.1. `overflow="never"` marks the item fixed; the item is then not a
 candidate and must fit in the reserve (rule 7).

@@ -22,7 +22,7 @@ import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableC
 - Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`.
 - Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state="selected"` for the `bg-table-active` fill.
 - Open a record from a link in its identifying cell, not from a handler on the row.
-- Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-right`, `w-24`).
+- Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
 - Give text-heavy columns (well name, remarks) a minimum width on `TableHead`; they never collapse when the panel narrows.
 
 ## Don't
@@ -102,6 +102,6 @@ A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse 
 - A table is plain HTML — `Table > TableHeader > TableRow > TableHead` and `TableBody > TableRow > TableCell`, with `TableFooter` and `TableCaption` as needed; sorting, filtering and paging come from TanStack Table on these parts.
 - An empty table renders `Empty` in place of the table, or inside one `TableCell` spanning every column when the header has to stay.
 - Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
-- `className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-right`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.
+- `className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-end`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.
 
 Related: item, tree-view, tanstack-table

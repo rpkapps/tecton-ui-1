@@ -449,6 +449,11 @@
       "confidence": "exact",
       "note": "Button variant=link activated text."
     },
+    "disabled-subtle-foreground": {
+      "dark": "--tecton-color-disabled-text-only-text",
+      "confidence": "exact",
+      "note": "Text of a disabled tab, as the Tecton Tab (`disabled-text-only-text`)."
+    },
     "avatar": {
       "dark": "--tecton-color-avatar-fill",
       "confidence": "exact",

@@ -90,7 +90,7 @@
         "tecton/action-bar"
       ],
       "checklist": [
-        "Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.",
+        "Every press is `onClick` and every disabled control is `disabled` (a `Button` that is working adds `focusableWhenDisabled`); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.",
         "A `Button`'s box comes from `size` (`icon`, `icon-xs`, `icon-sm`, `icon-lg` for icon-only) and its weight from `variant`; `size-8`, `h-*`, `p-*`, `rounded-*` and `bg-*` in `className` replace what the variant owns.",
         "Every icon-only `Button`, `Toggle`, `ToggleGroupItem` and `InputGroupButton` has an `aria-label`, and every icon or `Spinner` inside a control carries `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"`.",
         "Every `DropdownMenuItem` and `ContextMenuItem` acts through `onClick` (never `onAction` or `onSelect`), and a dangerous entry is marked `variant=\"destructive\"` rather than `text-red-*`.",
@@ -111,7 +111,7 @@
         "components/skeleton"
       ],
       "checklist": [
-        "Every `Spinner` inside a `Button`, `Badge` or `InputGroupAddon` carries `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"`, and the button that is working is `disabled` with `focusableWhenDisabled` while it spins.",
+        "Every `Spinner` inside a `Button` or `Badge` carries `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"`, and the button that is working is `disabled` with `focusableWhenDisabled` while it spins.",
         "Every `Progress`, `CircularProgress` and `Meter` has a name: a `ProgressLabel` child, `label` on the meter, or `aria-label` when the name is already beside it.",
         "A value that is not on a 0–100 scale states its scale with `min` and `max` (`value={loaded} max={total}`, a 4-out-of-5 score with `max={5}`).",
         "An unknown total is `value={null}`, never `value={0}`, and `showValue` is dropped on an indeterminate ring.",
@@ -203,7 +203,7 @@
         "A table is plain HTML — `Table > TableHeader > TableRow > TableHead` and `TableBody > TableRow > TableCell`, with `TableFooter` and `TableCaption` as needed; sorting, filtering and paging come from TanStack Table on these parts.",
         "An empty table renders `Empty` in place of the table, or inside one `TableCell` spanning every column when the header has to stay.",
         "Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state=\"selected\"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.",
-        "`className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-right`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.",
+        "`className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-end`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.",
         "A KPI is a `Stat` with `StatLabel`, `StatValue` (its unit in the `unit` prop) and `StatDelta` with `trend=\"up\" | \"down\" | \"flat\"`, never a heading and a coloured span, and `className` on `StatGroup` carries width and placement only.",
         "A hierarchy is a `TreeView` with an `aria-label` and a `value` (plus `label` when the content is not plain text) on every `TreeViewItem`, not a pile of nested `Collapsible`s, and rows are never indented with `ps-*`.",
         "A chart is a Recharts chart inside a `ChartContainer` with a `ChartConfig` keyed by `dataKey`, painted with `fill=\"var(--color-<key>)\"` from that config and given a size in `className`, never a Tailwind colour class or a hard-coded hex.",
@@ -291,6 +291,15 @@
         "No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal container themselves.",
         "An independently mounted application is wrapped in a `ThemeRoot` carrying its scope class with `theme=\"inherit\"`, and it imports `@tecton/react/styles/scoped.css`, never `globals.css`.",
         "A theme override for one root goes in `ThemeRoot`'s `className` (`[--primary:var(--tecton-palette-green-560)]`), which is mirrored onto the overlay container; inline CSS variables never reach a portalled overlay."
+      ]
+    },
+    "hooks": {
+      "title": "Hooks",
+      "choice": "Behaviour without markup: a busy flag that waits before it shows and holds once shown",
+      "modules": ["tecton/use-busy-delay"],
+      "checklist": [
+        "A spinner, skeleton or busy label driven by a pending flag reads `useBusyDelay(pending)` rather than the raw flag, so fast work never flashes it, and no `setTimeout` is hand-written around the flag.",
+        "A control whose busy state comes from `useBusyDelay` is `disabled={pending || busy}` with `focusableWhenDisabled`: the raw flag locks it from the first click, the delayed one keeps it locked while the spinner holds, and `disabled={busy}` alone leaves the first `delay` ms open to a second submit."
       ]
     }
   },

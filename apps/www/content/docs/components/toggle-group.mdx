@@ -110,7 +110,7 @@ Leave it single-select for an exclusive choice, add `multiple` for independent t
 
 <Do>
 
-Shape the bar with `variant="outline"`, `size` and `spacing={0}`; the joined corners and shared borders come from the variant.
+Shape the bar with `variant="outline"`, `size` and `spacing={0}`; `spacing={0}` joins the corners, and with `outline` the items share their borders.
 
 </Do>
 
@@ -179,7 +179,7 @@ Items are identified by `value` and the group reports an array through `onValueC
 
 </Correct>
 
-Toggle buttons carry `aria-pressed`, not the `tab` and `tabpanel` roles, so the panel is never associated with its control and arrow-key navigation between views is lost.
+Toggle buttons carry `aria-pressed`, not the `tab` and `tabpanel` roles, so the panel is never associated with its control and the arrow keys only move focus between items instead of switching the view.
 
 </Dont>
 

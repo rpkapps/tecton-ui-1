@@ -73,7 +73,7 @@ const KNOWN_DTS_FAILURES: Array<string> = [];
 /** Entry points: `<dir>` × `<extensions>`, top level only, never `__tests__`. */
 const ENTRY_DIRS: Array<{ dir: string; exts: Array<string> }> = [
   { dir: "src/components", exts: [".tsx"] },
-  { dir: "src/tecton", exts: [".tsx"] },
+  { dir: "src/tecton", exts: [".ts", ".tsx"] },
   // Built (the Tecton modules import it by relative path) but not exported.
   { dir: "src/tecton/internal", exts: [".ts", ".tsx"] },
   { dir: "src/hooks", exts: [".ts"] },

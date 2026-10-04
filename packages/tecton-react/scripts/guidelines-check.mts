@@ -82,7 +82,7 @@ function checkFamilies(dir: string): string[] {
         errors.push(`families.json: "${family}" lists "${moduleKey}", which is internal (INTERNAL_MODULES)`)
       } else if (!existsSync(sourceFileOf(moduleKey))) {
         errors.push(
-          `families.json: "${family}" lists "${moduleKey}", which has no source file at src/${moduleKey}.tsx`
+          `families.json: "${family}" lists "${moduleKey}", which has no source file at ${path.relative(PKG_ROOT, sourceFileOf(moduleKey))}`
         )
       }
     }

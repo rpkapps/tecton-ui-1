@@ -90,7 +90,6 @@ The button's only child is an SVG with no text, so its accessible name is empty 
 
 ## Before you finish
 
-- Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
 - Every icon-only `Button`, `Toggle`, `ToggleGroupItem` and `InputGroupButton` has an `aria-label`, and every icon or `Spinner` inside a control carries `data-icon="inline-start"` or `data-icon="inline-end"`.
 
 Related: toggle-group, button

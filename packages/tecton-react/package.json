@@ -502,6 +502,11 @@
       "import": "./dist/tecton/tree-view.js",
       "default": "./dist/tecton/tree-view.js"
     },
+    "./tecton/use-busy-delay": {
+      "types": "./dist/tecton/use-busy-delay.d.ts",
+      "import": "./dist/tecton/use-busy-delay.js",
+      "default": "./dist/tecton/use-busy-delay.js"
+    },
     "./hooks/use-mobile": {
       "types": "./dist/hooks/use-mobile.d.ts",
       "import": "./dist/hooks/use-mobile.js",

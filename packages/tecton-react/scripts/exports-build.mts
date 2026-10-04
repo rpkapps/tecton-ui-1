@@ -22,7 +22,7 @@
  *                                     (`types`, `import`, then `default` naming
  *                                     the same file, for a resolver that does not
  *                                     match `import` — Jest, older tooling)
- *   ./tecton/<name>, ./hooks/<name>, ./lib/<name>, ./icons, ./icons/<name>
+ *   ./tecton/<name> (.tsx components and .ts hooks), ./hooks/<name>, ./lib/<name>, ./icons, ./icons/<name>
  *
  * Not exported although built: `MODULE_INTERNALS`, `ICON_INTERNALS` and
  * `src/tecton/internal/` (helpers the Tecton modules import by relative path).
@@ -99,11 +99,14 @@ function buildExports() {
     map[`./${name}`] = { types: `./${name}.d.mts`, default: `./${name}.mjs` };
   }
 
-  for (const dir of ["components", "tecton"]) {
-    for (const name of moduleNames(dir, ".tsx")) {
-      if (MODULE_INTERNALS.has(`${dir}/${name}`)) continue;
-      map[`./${dir}/${name}`] = jsEntry(`${dir}/${name}`);
-    }
+  for (const name of moduleNames("components", ".tsx")) {
+    if (MODULE_INTERNALS.has(`components/${name}`)) continue;
+    map[`./components/${name}`] = jsEntry(`components/${name}`);
+  }
+  // Tecton components are .tsx; Tecton hooks (`use-*`) are plain .ts.
+  for (const name of [...moduleNames("tecton", ".tsx"), ...moduleNames("tecton", ".ts")].sort()) {
+    if (MODULE_INTERNALS.has(`tecton/${name}`)) continue;
+    map[`./tecton/${name}`] = jsEntry(`tecton/${name}`);
   }
   for (const name of moduleNames("hooks", ".ts")) {
     map[`./hooks/${name}`] = jsEntry(`hooks/${name}`);

@@ -82,7 +82,7 @@ Correct:
 Wrong:
 
 ```tsx
-<PaginationPrevious href="?page=0" isDisabled={page === 1} />
+<PaginationPrevious href="?page=0" disabled={page === 1} />
 ```
 
 Correct:
@@ -91,4 +91,4 @@ Correct:
 {page > 1 ? <PaginationPrevious href={`?page=${page - 1}`} /> : null}
 ```
 
-`PaginationPrevious` renders an `a`, which has no disabled state: the prop lands on the DOM as an unknown attribute and the control stays a live link to a page that does not exist.
+`PaginationPrevious` renders an `a`, which has no disabled state: the prop lands on the DOM as an attribute the anchor ignores and the control stays a live link to a page that does not exist.

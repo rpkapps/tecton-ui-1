@@ -47,7 +47,9 @@ The `tecton` command ships with the package (`npx tecton …` or
 - `@tecton/react/components/<id>` — the shadcn components (`button`, `select`,
   `dialog`, `field`, `table`, …).
 - `@tecton/react/tecton/<id>` — Tecton-only components (`chip`, `stat`,
-  `panel`, `app-shell`, `provider`, …). `tecton search` prints the exact path.
+  `panel`, `app-shell`, `provider`, …) and the Tecton hooks (`use-busy-delay`:
+  a busy flag that never flashes a spinner on fast work). `tecton search`
+  prints the exact path.
 - `@tecton/react/icons` — the oil & gas glyphs (`WellIcon`, `SeismicIcon`, …);
   every generic glyph comes from `lucide-react`.
 - There is no root export, nothing is installed with `shadcn add`, and nothing
@@ -58,8 +60,8 @@ The `tecton` command ships with the package (`npx tecton …` or
 | Not | But | On |
 | --- | --- | --- |
 | `onPress` | `onClick` | `Button`, `Toggle`, menu items |
-| `isDisabled` | `disabled` (`focusableWhenDisabled` to keep focus) | every control |
-| `isSelected` | `checked` / `onCheckedChange` | `Checkbox`, `Switch` |
+| `isDisabled` | `disabled` (plus `focusableWhenDisabled` on a `Button` to keep focus) | every control |
+| `isSelected` | `checked` / `onCheckedChange`; `pressed` / `onPressedChange` on `Toggle` | `Checkbox`, `Switch`, `Toggle` |
 | `selectedKey` / `onSelectionChange` | `value` / `defaultValue` / `onValueChange` (arrays for multi-value) | `Select`, `Combobox`, `RadioGroup`, `Tabs`, `ToggleGroup`, `Accordion` |
 | `id` on an item | `value` | `SelectItem`, `TabsTrigger`, `ToggleGroupItem`, … |
 | `isOpen` on a wrapping trigger | `open` / `onOpenChange` on the root | overlays and menus |
@@ -103,7 +105,7 @@ in full; `agent:check` keeps this list in step with it.)
   `Badge` with a `variant`, a removable or selectable tag is a `Chip` in a
   `ChipGroup` — never a coloured `div`.
 - **Icons and spinners inside controls** (`Button`, `Badge`, `Chip`,
-  `TabsTrigger`, `InputGroupAddon`) carry `data-icon="inline-start"` or
+  `TabsTrigger`) carry `data-icon="inline-start"` or
   `"inline-end"`.
 - **Icon-only controls are named** with an `aria-label`; a `Tooltip` describes,
   it does not name.

@@ -79,7 +79,6 @@ The component already renders `CopyIcon` or `CheckIcon` itself, so a child icon 
 
 ## Before you finish
 
-- Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
 - Copy-to-clipboard is `CopyButton value={…}` with `onCopied`, with no `onClick` passed to it, no icon child and no hand-written clipboard handler.
 
 Related: button
