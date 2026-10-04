@@ -109,7 +109,7 @@ Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `Tree
 
 <Do>
 
-Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`, and open a row through `onActivate` (Enter, double click on a selectable row), never an `onClick` on its content.
+Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`, and open a row through `onActivate` (Enter or a click; a double click when rows are also selectable), never an `onClick` on its content.
 
 </Do>
 
@@ -279,7 +279,7 @@ A 24 px icon button; a vertical ellipsis unless you pass children. Forwards `id`
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
 | `aria-label` | `string` | - | Accessible name, e.g. "Actions for Faults". |
-| `onClick` | `() => void` | - | Called on activation. |
+| `onClick` | `(event: MouseEvent) => void` | - | Called on activation (pointer, Enter or Space); the row is not selected or toggled. |
 | `disabled` | `boolean` | `false` | Disables the button. |
 
 ### TreeViewVisibilityToggle

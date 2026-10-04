@@ -95,7 +95,6 @@ The bar is its own `@container`, so a fit-content inline size resolves from its 
 
 ## Before you finish
 
-- Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
 - A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `open`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.
 
 Related: button-group, dropdown-menu

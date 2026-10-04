@@ -25,7 +25,7 @@ With children the button is labelled and its size defaults to `sm` instead of `i
 
 ## Feedback
 
-`onCopied` runs after a successful copy and `timeout` sets how long the check shows. When the clipboard refuses the write (insecure context, denied permission) the button shows a cross instead and `onError` receives the error.
+`onCopied` runs after a successful copy and `timeout` sets how long the check shows. When the copy fails (the clipboard refuses the write and the legacy copy command fallback fails too) the button shows a cross instead and `onError` receives the error.
 
 <ComponentPreview name="copy-button-feedback" />
 
@@ -167,7 +167,7 @@ A `Button` with clipboard behaviour; accepts all `Button` props except `onClick`
 | `value` | `string` | - | Text written to the clipboard. |
 | `timeout` | `number` | `2000` | Milliseconds the check or cross is shown. |
 | `onCopied` | `(value: string) => void` | - | Called after a successful copy. |
-| `onError` | `(error: unknown) => void` | - | Called with the clipboard's error when the copy fails. |
+| `onError` | `(error: unknown) => void` | - | Called with the clipboard's error when the copy and its fallback fail. |
 | `variant` | `"default" \| "outline" \| "secondary" \| "ghost" \| "destructive" \| "link"` | `"ghost"` | Button variant. |
 | `size` | `"default" \| "xs" \| "sm" \| "lg" \| "icon" \| "icon-xs" \| "icon-sm" \| "icon-lg"` | `"icon-sm"`, or `"sm"` with children | Button size. |
 | `children` | `ReactNode` | - | Label. |

@@ -377,7 +377,7 @@
     "actionBarVariants"
    ],
    "aliases": [],
-   "tokens": 995
+   "tokens": 946
   },
   {
    "id": "alert",
@@ -710,7 +710,7 @@
     "AvatarBadge"
    ],
    "aliases": [],
-   "tokens": 989
+   "tokens": 971
   },
   {
    "id": "background",
@@ -908,7 +908,7 @@
     "names": "button button button variants",
     "useWhen": "Something happens in place: submit, save, run an action, open a dialog. A real `button` element is the right semantics, and one of the action weights fits: `default`, `secondary`, `outline`, `ghost`, `destructive`, `link`.",
     "routed": "any action on a value other than copying it something that happens in place instead of navigation a control that performs an action rather than holding state",
-    "do": "Handle presses with `onClick` and disable with `disabled`; add `focusableWhenDisabled` when a disabled button must stay in the tab order (a pending submit). Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`). Mark icons with `data-icon=\"inline-start\" | \"inline-end\"` so the padding adjusts, and give icon-only buttons an `aria-label`. Navigate with `LinkButton` (`@tecton/react/tecton/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: with `render={<a />}` it keeps `role=\"button\"`, so the link is announced as a button. A trigger (`DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`) takes the button as `render={<Button variant=\"outline\" />}`; never nest a `Button` inside a trigger."
+    "do": "Handle presses with `onClick` and disable with `disabled`; add `focusableWhenDisabled` when a disabled button must stay in the tab order (a pending submit). Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`). Mark icons with `data-icon=\"inline-start\" | \"inline-end\"` so the padding adjusts, and give icon-only buttons an `aria-label`. Navigate with `LinkButton` (`@tecton/react/tecton/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: `render={<a />}` needs `nativeButton={false}`, which adds `role=\"button\"`, so the link is announced as a button. A trigger (`DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`) takes the button as `render={<Button variant=\"outline\" />}`; never nest a `Button` inside a trigger."
    },
    "notFor": [
     {
@@ -933,7 +933,7 @@
     "buttonVariants"
    ],
    "aliases": [],
-   "tokens": 1285
+   "tokens": 1311
   },
   {
    "id": "button-group",
@@ -974,7 +974,7 @@
     "buttonGroupVariants"
    ],
    "aliases": [],
-   "tokens": 1152
+   "tokens": 1104
   },
   {
    "id": "calendar",
@@ -1522,7 +1522,7 @@
     "useComposer"
    ],
    "aliases": [],
-   "tokens": 979
+   "tokens": 985
   },
   {
    "id": "context-menu",
@@ -1573,7 +1573,7 @@
     "ContextMenuSubContent"
    ],
    "aliases": [],
-   "tokens": 1004
+   "tokens": 952
   },
   {
    "id": "copy-button",
@@ -1605,7 +1605,7 @@
     "CopyButton"
    ],
    "aliases": [],
-   "tokens": 768
+   "tokens": 719
   },
   {
    "id": "count-badge",
@@ -1788,7 +1788,7 @@
     "DropdownMenuSubContent"
    ],
    "aliases": [],
-   "tokens": 1044
+   "tokens": 995
   },
   {
    "id": "empty",
@@ -2097,7 +2097,7 @@
     "names": "kbd kbd kbd group",
     "useWhen": "Naming the key that triggers something: a shortcut hint in a menu item, a tooltip, a button or an input group addon. Showing a combination or a sequence: `KbdGroup` around several `Kbd`. Documenting a shortcut inline in a sentence.",
     "routed": "a keyboard key or a shortcut hint a keyboard key or a shortcut hint",
-    "do": "One key per `Kbd`, wrapped in a `KbdGroup` when there is more than one; a combination that reads as a single token (`Ctrl + B`) may stay in one `Kbd`. Inside a `Button` or an `InputGroupAddon`, add `data-icon=\"inline-end\"` (or `inline-start`) so the control trims its padding on that side. Inside a `TooltipContent` leave it alone: `Kbd` already inverts to the tooltip surface through its `in-data-[slot=tooltip-content]` rules. `className` is for nudging placement; the muted surface and the 20 px box belong to the component. A `Kbd` only shows a key: Tecton binds no shortcuts, so show one only for a key the application handles itself."
+    "do": "One key per `Kbd`, wrapped in a `KbdGroup` when there is more than one; a combination that reads as a single token (`Ctrl + B`) may stay in one `Kbd`. Inside a `Button`, add `data-icon=\"inline-end\"` (or `inline-start`) so the button trims its padding on that side; an `InputGroupAddon` trims its own around a direct `Kbd` child. Inside a `TooltipContent` leave it alone: `Kbd` already inverts to the tooltip surface through its `in-data-[slot=tooltip-content]` rules. `className` is for nudging placement; the muted surface and the 20 px box belong to the component. A `Kbd` only shows a key: Tecton binds no shortcuts, so show one only for a key the application handles itself."
    },
    "notFor": [
     {
@@ -2117,7 +2117,7 @@
     "KbdGroup"
    ],
    "aliases": [],
-   "tokens": 748
+   "tokens": 758
   },
   {
    "id": "label",
@@ -2189,7 +2189,7 @@
     "linkVariants"
    ],
    "aliases": [],
-   "tokens": 907
+   "tokens": 858
   },
   {
    "id": "marker",
@@ -2532,7 +2532,7 @@
     "PaginationEllipsis"
    ],
    "aliases": [],
-   "tokens": 969
+   "tokens": 972
   },
   {
    "id": "panel",
@@ -2886,7 +2886,7 @@
     "names": "select select select trigger select value select content select group select label select item select separator select scroll up button select scroll down button select trigger variants",
     "useWhen": "A field picks one value out of a known, closed list: a datum, a unit, a status. The list is short enough to scan and needs no typing to get through. The trigger must match the other controls in a field row: `variant=\"outline\" | \"filled\" | \"text\"`.",
     "routed": "a short fixed list that needs no typing choosing a value for a form field a themed popover with icons, rich items or a searchable list the rows-per-page picker beside the controls more than a handful of options picking a value for a form field",
-    "do": "Drive it with `value` / `defaultValue` / `onValueChange` on `Select`, identify each `SelectItem` by `value`, and narrow the `null` that `onValueChange` hands over when nothing is selected. Pass `items` (`{ msl: \"Mean sea level\" }` or `[{ value, label }]`) so `SelectValue` shows the label, not the raw value; its `placeholder` shows while nothing is selected. In a `Field`, put the `id` on `SelectTrigger` and point `FieldLabel htmlFor` at it. Choose the surface with `SelectTrigger`'s `variant`, the height with its `size=\"sm\" | \"default\"`; place the list with `side` / `align` on `SelectContent`. Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`."
+    "do": "Drive it with `value` / `defaultValue` / `onValueChange` on `Select`, identify each `SelectItem` by `value`, and narrow the `null` that `onValueChange` hands over when nothing is selected. Pass `items` (`{ msl: \"Mean sea level\" }` or `[{ value, label }]`) so `SelectValue` shows the label, not the raw value; its `placeholder` shows while nothing is selected. In a `Field`, put the `id` on `SelectTrigger` and point `FieldLabel htmlFor` at it. Choose the surface with `SelectTrigger`'s `variant`, the height with its `size=\"sm\" | \"default\"`; place the list with `side` / `align` on `SelectContent`, which apply once `alignItemWithTrigger={false}` (by default a mouse-opened list overlaps the trigger so the selected item lines up with the value). Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`."
    },
    "notFor": [
     {
@@ -2925,7 +2925,7 @@
     "selectTriggerVariants"
    ],
    "aliases": [],
-   "tokens": 1219
+   "tokens": 1256
   },
   {
    "id": "separator",
@@ -3195,7 +3195,7 @@
     "names": "spinner spinner",
     "useWhen": "A control is busy: a `Button` that is saving, an `InputGroup` that is validating, a `Badge` that says \"Generating\". A small region is waiting, and the wait is short and cannot be measured. An `Empty` state stands in for a running operation, with the spinner inside `EmptyMedia`.",
     "routed": "a small busy glyph inside a button or an input a busy indicator on an icon button an indeterminate wait a busy indicator inside a button a busy indicator inside a button or an input",
-    "do": "Inside a `Button`, a `Badge` or an `InputGroupAddon`, give it `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"` so the control trims its padding on that side. Mark the button that is working `disabled` with `focusableWhenDisabled`, so it keeps focus and cannot be pressed twice; make the label a verb: \"Saving…\". Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so set the colour on the parent with a semantic token. `Spinner` already carries `role=\"status\"` and `aria-label=\"Loading\"`; do not wrap it in a second live region."
+    "do": "Inside a `Button` or a `Badge`, give it `data-icon=\"inline-start\"` or `data-icon=\"inline-end\"` so the control trims its padding on that side. Mark the button that is working `disabled` with `focusableWhenDisabled`, so it keeps focus and cannot be pressed twice; make the label a verb: \"Saving…\". Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so set the colour on the parent with a semantic token. `Spinner` already carries `role=\"status\"` and `aria-label=\"Loading\"`; do not wrap it in a second live region."
    },
    "notFor": [
     {
@@ -3220,7 +3220,7 @@
     "Spinner"
    ],
    "aliases": [],
-   "tokens": 859
+   "tokens": 849
   },
   {
    "id": "stat",
@@ -3313,7 +3313,7 @@
     "names": "table table table header table body table footer table head table row table cell table caption",
     "useWhen": "Records of the same shape have to line up in columns: invoices, wells, run results. A footer totals the columns, or a caption names the table. The rows are read, compared or opened; interaction beyond that (sorting, paging) comes from TanStack Table on these parts.",
     "routed": "",
-    "do": "Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`. Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state=\"selected\"` for the `bg-table-active` fill. Open a record from a link in its identifying cell, not from a handler on the row. Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-right`, `w-24`)."
+    "do": "Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`. Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state=\"selected\"` for the `bg-table-active` fill. Open a record from a link in its identifying cell, not from a handler on the row. Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`)."
    },
    "notFor": [
     {
@@ -3341,7 +3341,7 @@
     "TableCaption"
    ],
    "aliases": [],
-   "tokens": 1092
+   "tokens": 1091
   },
   {
    "id": "tabs",
@@ -3484,7 +3484,7 @@
     "toggleVariants"
    ],
    "aliases": [],
-   "tokens": 838
+   "tokens": 789
   },
   {
    "id": "toggle-group",
@@ -3497,7 +3497,7 @@
     "names": "toggle group toggle group toggle group item",
     "useWhen": "A small fixed set of options works as a filter or a formatting control in a toolbar. Several of those options may be on at the same time (`multiple`). The options are icons or one-word labels that fit in a segmented row.",
     "routed": "options that hold an on or off state a compact segmented control in a toolbar a filter that narrows a list in place several related toggles in one segmented control",
-    "do": "Identify each item by `value`; read `value` / `defaultValue` and `onValueChange`, which always hand you an **array** of values. Leave it single-select for an exclusive choice, add `multiple` for independent toggles. Shape the bar with `variant=\"outline\"`, `size` and `spacing={0}`; the joined corners and shared borders come from the variant. Give every icon-only `ToggleGroupItem` an `aria-label`, and stack with `orientation=\"vertical\"`."
+    "do": "Identify each item by `value`; read `value` / `defaultValue` and `onValueChange`, which always hand you an **array** of values. Leave it single-select for an exclusive choice, add `multiple` for independent toggles. Shape the bar with `variant=\"outline\"`, `size` and `spacing={0}`; `spacing={0}` joins the corners, and with `outline` the items share their borders. Give every icon-only `ToggleGroupItem` an `aria-label`, and stack with `orientation=\"vertical\"`."
    },
    "notFor": [
     {
@@ -3523,7 +3523,7 @@
     "ToggleGroupItem"
    ],
    "aliases": [],
-   "tokens": 963
+   "tokens": 976
   },
   {
    "id": "tooltip",
@@ -3563,7 +3563,7 @@
     "TooltipProvider"
    ],
    "aliases": [],
-   "tokens": 1021
+   "tokens": 1018
   },
   {
    "id": "tree-view",
@@ -3576,7 +3576,7 @@
     "names": "tree view tree view tree view item tree view item content tree view action tree view visibility toggle tree view collection",
     "useWhen": "A hierarchy is browsed rather than read: a project tree, a field and well inventory, a layer list. Rows carry more than a label: selection, disabled, hidden, a colour, a count, a per-row menu. Arrow-key navigation, expansion and type-ahead have to work across the whole structure.",
     "routed": "an expandable hierarchy of folders and records a hierarchy of folders and records expanded in place",
-    "do": "Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value`; add `label` when the row content is not plain text. Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data. Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`, and open a row through `onActivate` (Enter, double click on a selectable row), never an `onClick` on its content. Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`). Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `\"true\"`."
+    "do": "Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value`; add `label` when the row content is not plain text. Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data. Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`, and open a row through `onActivate` (Enter or a click; a double click when rows are also selectable), never an `onClick` on its content. Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`). Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `\"true\"`."
    },
    "notFor": [
     {
@@ -3602,7 +3602,7 @@
     "TreeViewCollection"
    ],
    "aliases": [],
-   "tokens": 1096
+   "tokens": 1102
   },
   {
    "id": "tanstack-table",
@@ -3718,7 +3718,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 1676
+   "tokens": 1686
   },
   {
    "id": "rules",
@@ -3735,7 +3735,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2929
+   "tokens": 2924
   },
   {
    "id": "theming",

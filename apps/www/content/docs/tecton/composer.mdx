@@ -205,7 +205,7 @@ A disabled textarea drops focus to the page body mid-reply and stops the user dr
 
 </Correct>
 
-The Enter that confirms a Japanese or Chinese conversion arrives as a keydown too, and in Safari after `compositionend`, so the half-typed message is sent; `ComposerInput` ignores `isComposing` and key code 229.
+The Enter that confirms a Japanese or Chinese conversion arrives as a keydown too, and in Safari after `compositionend`, so the half-typed message is sent; `ComposerInput` ignores an Enter flagged `isComposing` or carrying key code 229.
 
 </Dont>
 

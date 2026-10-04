@@ -23,7 +23,7 @@ related: [ButtonGroup, Link]
 - Handle presses with `onClick` and disable with `disabled`; add `focusableWhenDisabled` when a disabled button must stay in the tab order (a pending submit).
 - Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`).
 - Mark icons with `data-icon="inline-start" | "inline-end"` so the padding adjusts, and give icon-only buttons an `aria-label`.
-- Navigate with `LinkButton` (`@tecton/react/tecton/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: with `render={<a />}` it keeps `role="button"`, so the link is announced as a button.
+- Navigate with `LinkButton` (`@tecton/react/tecton/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: `render={<a />}` needs `nativeButton={false}`, which adds `role="button"`, so the link is announced as a button.
 - A trigger (`DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`) takes the button as `render={<Button variant="outline" />}`; never nest a `Button` inside a trigger.
 
 ## Don't
@@ -46,7 +46,7 @@ Correct:
 </LinkButton>
 ```
 
-There is no `asChild`, so the prop is dropped and the anchor is nested inside a `button`: invalid markup, and the link is announced and activated as a button. `render={<a />}` on the `Button` is no fix either: it keeps `role="button"`.
+There is no `asChild`, so the prop lands on the DOM as an unknown attribute and the anchor is nested inside a `button`: invalid markup, and the link is announced and activated as a button. `render={<a />}` on the `Button` is no fix either: it needs `nativeButton={false}`, which adds `role="button"`.
 
 ### HIGH onPress and isDisabled on a Button
 

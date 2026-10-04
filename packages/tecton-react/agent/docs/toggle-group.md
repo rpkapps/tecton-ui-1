@@ -22,7 +22,7 @@ import { ToggleGroup, ToggleGroupItem } from "@tecton/react/components/toggle-gr
 
 - Identify each item by `value`; read `value` / `defaultValue` and `onValueChange`, which always hand you an **array** of values.
 - Leave it single-select for an exclusive choice, add `multiple` for independent toggles.
-- Shape the bar with `variant="outline"`, `size` and `spacing={0}`; the joined corners and shared borders come from the variant.
+- Shape the bar with `variant="outline"`, `size` and `spacing={0}`; `spacing={0}` joins the corners, and with `outline` the items share their borders.
 - Give every icon-only `ToggleGroupItem` an `aria-label`, and stack with `orientation="vertical"`.
 
 ## Don't
@@ -72,7 +72,7 @@ Correct:
 </Tabs>
 ```
 
-Toggle buttons carry `aria-pressed`, not the `tab` and `tabpanel` roles, so the panel is never associated with its control and arrow-key navigation between views is lost.
+Toggle buttons carry `aria-pressed`, not the `tab` and `tabpanel` roles, so the panel is never associated with its control and the arrow keys only move focus between items instead of switching the view.
 
 ### MEDIUM Icon-only items with no accessible name
 
