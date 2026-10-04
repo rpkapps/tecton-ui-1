@@ -131,6 +131,10 @@
     --color-content-hover: var(--content-hover);
     --color-content-pressed: var(--content-pressed);
     --color-content-active: var(--content-active);
+    --color-disabled: var(--disabled);
+    --color-disabled-foreground: var(--disabled-foreground);
+    --color-disabled-subtle-foreground: var(--disabled-subtle-foreground);
+    --color-disabled-border: var(--disabled-border);
 }
 
 :root {
@@ -207,10 +211,10 @@
     --ghost-pressed-foreground: var(--tecton-color-action-tertiary-text-press);
     --ghost-active: var(--tecton-color-action-tertiary-bg-active);
     --ghost-active-foreground: var(--tecton-color-action-tertiary-text-active);
-    --outline-border: var(--tecton-color-input-outlined-border-hover);
+    --outline-border: var(--tecton-color-action-outlined-border-strong);
     --outline-foreground: var(--tecton-color-action-outlined-text);
     --outline-hover: var(--tecton-color-action-outlined-bg-hover);
-    --outline-hover-border: var(--tecton-color-input-outlined-border-hover);
+    --outline-hover-border: var(--tecton-color-action-outlined-border-hover);
     --outline-hover-foreground: var(--tecton-color-action-outlined-text-hover);
     --outline-pressed: var(--tecton-color-action-outlined-bg-press);
     --outline-pressed-border: var(--tecton-color-action-outlined-border-press);
@@ -241,6 +245,10 @@
     --content-hover: var(--tecton-color-content-bg-hover);
     --content-pressed: var(--tecton-color-content-bg-press);
     --content-active: var(--tecton-color-content-bg-active);
+    --disabled: var(--tecton-color-disabled-filled-bg);
+    --disabled-foreground: var(--tecton-color-disabled-filled-text);
+    --disabled-subtle-foreground: var(--tecton-color-disabled-text-only-text);
+    --disabled-border: var(--tecton-color-disabled-outline-border);
 }
 
 .dark {
@@ -316,10 +324,10 @@
     --ghost-pressed-foreground: var(--tecton-color-action-tertiary-text-press);
     --ghost-active: var(--tecton-color-action-tertiary-bg-active);
     --ghost-active-foreground: var(--tecton-color-action-tertiary-text-active);
-    --outline-border: var(--tecton-color-input-outlined-border-hover);
+    --outline-border: var(--tecton-color-action-outlined-border-strong);
     --outline-foreground: var(--tecton-color-action-outlined-text);
     --outline-hover: var(--tecton-color-action-outlined-bg-hover);
-    --outline-hover-border: var(--tecton-color-input-outlined-border-hover);
+    --outline-hover-border: var(--tecton-color-action-outlined-border-hover);
     --outline-hover-foreground: var(--tecton-color-action-outlined-text-hover);
     --outline-pressed: var(--tecton-color-action-outlined-bg-press);
     --outline-pressed-border: var(--tecton-color-action-outlined-border-press);
@@ -350,6 +358,10 @@
     --content-hover: var(--tecton-color-content-bg-hover);
     --content-pressed: var(--tecton-color-content-bg-press);
     --content-active: var(--tecton-color-content-bg-active);
+    --disabled: var(--tecton-color-disabled-filled-bg);
+    --disabled-foreground: var(--tecton-color-disabled-filled-text);
+    --disabled-subtle-foreground: var(--tecton-color-disabled-text-only-text);
+    --disabled-border: var(--tecton-color-disabled-outline-border);
 }
 
 .light, [data-theme="light"] {
@@ -426,10 +438,10 @@
     --ghost-pressed-foreground: var(--tecton-color-action-tertiary-text-press);
     --ghost-active: var(--tecton-color-action-tertiary-bg-active);
     --ghost-active-foreground: var(--tecton-color-action-tertiary-text-active);
-    --outline-border: var(--tecton-color-input-outlined-border-hover);
+    --outline-border: var(--tecton-color-action-outlined-border-strong);
     --outline-foreground: var(--tecton-color-action-outlined-text);
     --outline-hover: var(--tecton-color-action-outlined-bg-hover);
-    --outline-hover-border: var(--tecton-color-input-outlined-border-hover);
+    --outline-hover-border: var(--tecton-color-action-outlined-border-hover);
     --outline-hover-foreground: var(--tecton-color-action-outlined-text-hover);
     --outline-pressed: var(--tecton-color-action-outlined-bg-press);
     --outline-pressed-border: var(--tecton-color-action-outlined-border-press);
@@ -460,6 +472,10 @@
     --content-hover: var(--tecton-color-content-bg-hover);
     --content-pressed: var(--tecton-color-content-bg-press);
     --content-active: var(--tecton-color-content-bg-active);
+    --disabled: var(--tecton-color-disabled-filled-bg);
+    --disabled-foreground: var(--tecton-color-disabled-filled-text);
+    --disabled-subtle-foreground: var(--tecton-color-disabled-text-only-text);
+    --disabled-border: var(--tecton-color-disabled-outline-border);
 }
 
 @layer base {

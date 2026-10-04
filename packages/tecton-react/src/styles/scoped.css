@@ -452,10 +452,10 @@
   --color-ghost-pressed-foreground: var(--ghost-pressed-foreground, var(--tecton-color-action-tertiary-text-press, light-dark(#563f67, #e3e0e8)));
   --color-ghost-active: var(--ghost-active, var(--tecton-color-action-tertiary-bg-active, light-dark(#e9e3ec, #433d47)));
   --color-ghost-active-foreground: var(--ghost-active-foreground, var(--tecton-color-action-tertiary-text-active, light-dark(#593c70, #e3e0e8)));
-  --color-outline-border: var(--outline-border, var(--tecton-color-input-outlined-border-hover, light-dark(#6d5a7d, #a7a2ac)));
+  --color-outline-border: var(--outline-border, var(--tecton-color-action-outlined-border-strong, light-dark(#725687, #aaa1b2)));
   --color-outline-foreground: var(--outline-foreground, var(--tecton-color-action-outlined-text, light-dark(#644a78, #aaa1b2)));
   --color-outline-hover: var(--outline-hover, var(--tecton-color-action-outlined-bg-hover, light-dark(#f0edf4, #433d47)));
-  --color-outline-hover-border: var(--outline-hover-border, var(--tecton-color-input-outlined-border-hover, light-dark(#6d5a7d, #a7a2ac)));
+  --color-outline-hover-border: var(--outline-hover-border, var(--tecton-color-action-outlined-border-hover, light-dark(#865fa0, #cac5d2)));
   --color-outline-hover-foreground: var(--outline-hover-foreground, var(--tecton-color-action-outlined-text-hover, light-dark(#765292, #e4e0ea)));
   --color-outline-pressed: var(--outline-pressed, var(--tecton-color-action-outlined-bg-press, light-dark(#ddd5e0, #4e4853)));
   --color-outline-pressed-border: var(--outline-pressed-border, var(--tecton-color-action-outlined-border-press, light-dark(#563f67, #d8d5de)));
@@ -486,6 +486,10 @@
   --color-content-hover: var(--content-hover, var(--tecton-color-content-bg-hover, light-dark(#eae8ec, #262528)));
   --color-content-pressed: var(--content-pressed, var(--tecton-color-content-bg-press, light-dark(#dbd6dd, #323134)));
   --color-content-active: var(--content-active, var(--tecton-color-content-bg-active, light-dark(#dbd6dd, #323134)));
+  --color-disabled: var(--disabled, var(--tecton-color-disabled-filled-bg, light-dark(#ffffff33, #00000066)));
+  --color-disabled-foreground: var(--disabled-foreground, var(--tecton-color-disabled-filled-text, light-dark(#b8b1bf, #545356)));
+  --color-disabled-subtle-foreground: var(--disabled-subtle-foreground, var(--tecton-color-disabled-text-only-text, light-dark(#b8b1bf, #4b4a4d)));
+  --color-disabled-border: var(--disabled-border, var(--tecton-color-disabled-outline-border, light-dark(#e1dee4, #323134)));
 }
 
 @custom-variant dark (&:where(.dark *, [data-theme="dark"] *):not(:where(:is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]), :is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) *)));

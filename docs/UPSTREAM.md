@@ -194,11 +194,14 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   in `src/tecton/__tests__/overlay-variants.test.tsx`.
 - **`button`** — renders `data-variant` / `data-size` (as the other bases do), which the
   `button-group` rule in `style-tecton.css` keys on to give filled members the outline stroke when
-  the group has an outlined member.
+  the group has an outlined member. The base `disabled:opacity-50` is removed so each variant
+  draws Tecton's disabled colours (`disabled`, `disabled-foreground`, `disabled-subtle-foreground`,
+  `disabled-border`); `destructive`, which Tecton has no Button for, keeps the half opacity.
 - **`button-group`** — logical corners (`rounded-e-none` / `rounded-s-none`); members overlap by a
   pixel (`-ms-px` / `-mt-px`) instead of dropping a border, so each draws a complete ring.
 - **`tabs`** — the hard-coded active-tab colours, indicator colour and 3px ring are removed so
-  `style-tecton.css` sets the Tecton ones (2px ring); the default tab list sits on `bg-card`.
+  `style-tecton.css` sets the Tecton ones (2px ring); the default tab list sits on `bg-card`. The
+  disabled `opacity-50` is removed too: a disabled tab takes `disabled-subtle-foreground`.
   `Tabs` passes its `orientation` to the Base UI root (upstream only sets `data-orientation`, so
   vertical tabs kept horizontal arrow keys and `aria-orientation`). `TabsList` defaults
   `activateOnFocus` to `true`: an arrow key selects the tab it moves to, as the React Aria-based
