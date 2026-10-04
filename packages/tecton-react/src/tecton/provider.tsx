@@ -3,6 +3,7 @@
 import * as React from "react"
 import { DirectionProvider } from "@base-ui/react/direction-provider"
 
+import { TooltipProvider } from "@tecton/react/components/tooltip"
 import { PortalProvider } from "@tecton/react/tecton/portal"
 
 import { localeDirection } from "./internal/locale"
@@ -83,6 +84,11 @@ function useBrowserLocale() {
  * written in (`ar`, `he`, `fa`… are right to left); `direction` always
  * wins over the locale's own. With no provider at all the direction is
  * `"ltr"` and the locale is the browser's (`"en-US"` on the server).
+ *
+ * The outermost provider also mounts the tooltip provider, so tooltips open
+ * without a delay and moving between them stays instant, as on shadcn/ui
+ * (whose site wraps every page in `TooltipProvider delay={0}`). A
+ * `TooltipProvider` rendered inside overrides it for its subtree.
  */
 function TectonProvider({
   direction,
@@ -121,6 +127,9 @@ function TectonProvider({
       </DirectionProvider>
     </TectonContext>
   )
+  if (parent === null) {
+    content = <TooltipProvider>{content}</TooltipProvider>
+  }
   if (portalContainer !== undefined) {
     content = (
       <PortalProvider container={portalContainer}>{content}</PortalProvider>

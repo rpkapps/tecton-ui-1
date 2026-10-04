@@ -9,6 +9,11 @@ import {
 } from "react-aria-components"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
 import { usePortalTarget } from "@tecton/react/tecton/portal"
 import {
   TectonProvider,
@@ -86,6 +91,22 @@ describe("TectonProvider defaults", () => {
       </TectonProvider>
     )
     expect(container.innerHTML).toBe("<span>child</span>")
+  })
+
+  it("opens tooltips without a delay", async () => {
+    render(
+      <TectonProvider>
+        <Tooltip>
+          <TooltipTrigger>Wells</TooltipTrigger>
+          <TooltipContent>Active wells</TooltipContent>
+        </Tooltip>
+      </TectonProvider>
+    )
+    await userEvent.hover(screen.getByRole("button", { name: "Wells" }))
+    // Base UI's own open delay is 600ms; well under it.
+    expect(
+      await screen.findByText("Active wells", undefined, { timeout: 200 })
+    ).toBeInTheDocument()
   })
 })
 

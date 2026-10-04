@@ -19,7 +19,7 @@ import { TectonProvider } from "@tecton/react/tecton/provider"
 </html>
 ```
 
-Mount it once at the root. It renders no element, so set the same `dir` and `lang` on `<html>` for the document's own text flow. Without a provider, components read left to right in the browser's locale, links do full page loads and overlays portal into `document.body`.
+Mount it once at the root. It renders no element, so set the same `dir` and `lang` on `<html>` for the document's own text flow. It also makes tooltips open on hover without a delay, and keeps them instant while the pointer moves from one to the next; a `TooltipProvider` inside it sets another `delay` for its subtree. Without a provider, components read left to right in the browser's locale, links do full page loads, overlays portal into `document.body` and tooltips wait 600ms before opening.
 
 ## Direction and locale
 
