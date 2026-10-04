@@ -3,7 +3,7 @@ title: Theming
 description: How the Tecton design tokens map to the shadcn CSS variables, how the Tecton colour ramps become the Tailwind palette, and how to extend the theme.
 ---
 
-Tecton UI applies the Tecton visual language **only through the shadcn CSS variables**: the theme is a set of values for `--background`, `--primary`, `--ring` and friends in `globals.css`, plus a few extra tokens for Tecton-only semantics. No CSS targets the generated components. Underneath, the Tecton colour ramps replace Tailwind's stock palette, so `bg-red-140` in application code is a Tecton colour too.
+Tecton UI applies the Tecton visual language **through the shadcn CSS variables** and the `base-tecton` style ([below](#beyond-the-variables)): the theme is a set of values for `--background`, `--primary`, `--ring` and friends in `globals.css`, plus a few extra tokens for Tecton-only semantics. No CSS targets the generated components. Underneath, the Tecton colour ramps replace Tailwind's stock palette, so `bg-red-140` in application code is a Tecton colour too.
 
 ## How it works
 

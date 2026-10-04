@@ -21,7 +21,7 @@ related: [Skeleton, CircularProgress, Progress]
 
 ## Do
 
-- Inside a `Button`, a `Badge` or an `InputGroupAddon`, give it `data-icon="inline-start"` or `data-icon="inline-end"` so the control trims its padding on that side.
+- Inside a `Button` or a `Badge`, give it `data-icon="inline-start"` or `data-icon="inline-end"` so the control trims its padding on that side.
 - Mark the button that is working `disabled` with `focusableWhenDisabled`, so it keeps focus and cannot be pressed twice; make the label a verb: "Saving…".
 - Resize with `size-*` only (`size-3`, `size-6`); the stroke is `currentColor`, so set the colour on the parent with a semantic token.
 - `Spinner` already carries `role="status"` and `aria-label="Loading"`; do not wrap it in a second live region.

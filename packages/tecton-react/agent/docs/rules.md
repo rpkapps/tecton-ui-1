@@ -55,7 +55,7 @@ looked up. Every line is a condition that has to hold in that file.
   tag the user selects or removes is a `Chip` inside a `ChipGroup`. None of the
   three is a `div` with classes.
 - **Icons and spinners inside controls** — every icon or `Spinner` child of a
-  `Button`, `Badge`, `Chip`, `TabsTrigger` or `InputGroupAddon` carries
+  `Button`, `Badge`, `Chip` or `TabsTrigger` carries
   `data-icon="inline-start"` or `data-icon="inline-end"`.
 - **Icon-only controls are named** — every `Button`, `Toggle`,
   `ToggleGroupItem`, `InputGroupButton` and `AppShellAction` with no text child

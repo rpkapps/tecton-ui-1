@@ -49,7 +49,7 @@ Correct:
 </Avatar>
 ```
 
-`AvatarImage` starts in `data-state="error"` when `src` is empty and switches to it on the first failed request, and the class that acts on that is `data-[state=error]:hidden`, so with nothing behind it the avatar is an empty ring — only `AvatarFallback` carries the `peer-data-[state=error]:flex` that brings content back.
+`AvatarImage` renders nothing until the picture has loaded — while it loads, when `src` is empty and after a failed request — so with nothing behind it the avatar is an empty ring; only `AvatarFallback` renders in those states and puts the initials back.
 
 ### MEDIUM An avatar sized with className
 

@@ -71,7 +71,7 @@ Correct:
 </Popover>
 ```
 
-The tooltip closes as soon as the pointer or focus leaves the trigger and its contents sit inside `role="tooltip"`, so the link can never be tabbed to and is never announced as a link.
+The tooltip closes as soon as focus leaves the trigger and its contents sit inside `role="tooltip"`, so the link can never be tabbed to and is never announced as a link.
 
 ### HIGH A trigger wrapping the button and the overlay
 

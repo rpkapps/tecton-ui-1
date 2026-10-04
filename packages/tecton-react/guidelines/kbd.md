@@ -20,7 +20,7 @@ related: [Badge]
 ## Do
 
 - One key per `Kbd`, wrapped in a `KbdGroup` when there is more than one; a combination that reads as a single token (`Ctrl + B`) may stay in one `Kbd`.
-- Inside a `Button` or an `InputGroupAddon`, add `data-icon="inline-end"` (or `inline-start`) so the control trims its padding on that side.
+- Inside a `Button`, add `data-icon="inline-end"` (or `inline-start`) so the button trims its padding on that side; an `InputGroupAddon` trims its own around a direct `Kbd` child.
 - Inside a `TooltipContent` leave it alone: `Kbd` already inverts to the tooltip surface through its `in-data-[slot=tooltip-content]` rules.
 - `className` is for nudging placement; the muted surface and the 20 px box belong to the component.
 - A `Kbd` only shows a key: Tecton binds no shortcuts, so show one only for a key the application handles itself.

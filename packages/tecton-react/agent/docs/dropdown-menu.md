@@ -84,7 +84,6 @@ Tailwind's stock palette is reset, so `text-red-600` emits no CSS, while `varian
 
 ## Before you finish
 
-- Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
 - Every `DropdownMenuItem` and `ContextMenuItem` acts through `onClick` (never `onAction` or `onSelect`), and a dangerous entry is marked `variant="destructive"` rather than `text-red-*`.
 - `DropdownMenu` and `ContextMenu` are roots holding a trigger (`DropdownMenuTrigger render={<Button />}`, `ContextMenuTrigger`) and a `DropdownMenuContent` / `ContextMenuContent`; check marks come from `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) or a `DropdownMenuRadioGroup` (`value` / `onValueChange`).
 - Label menu items with a short verb phrase ("Rename", "Export LAS"); the object comes from what the menu opened on.

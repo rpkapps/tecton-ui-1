@@ -100,7 +100,6 @@ The corner and negative-margin rules stay active whatever the gap is, so a bare 
 
 ## Before you finish
 
-- Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
 - A joined cluster is a `ButtonGroup` with an `aria-label` rather than hand-written corners, and a selection or unsaved-changes bar is an `ActionBar` with `open`, `ActionBarSelection` and `OverflowItem`-wrapped actions inside `ActionBarActions`.
 - In a `Toolbar` or action bar, back and secondary actions come first and the primary button comes last, at the inline end.
 - Separate a `Toolbar` from the content below with a `Separator` or the card header edge, never a hand-coloured border.
