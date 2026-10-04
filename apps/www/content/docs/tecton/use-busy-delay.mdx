@@ -1,0 +1,50 @@
+---
+title: useBusyDelay
+description: "Turns a pending flag into a busy flag that never flashes: it waits before showing and holds once shown."
+---
+
+<ComponentPreview name="use-busy-delay-demo" />
+
+## Usage
+
+```tsx
+import { useBusyDelay } from "@tecton/react/tecton/use-busy-delay"
+```
+
+```tsx
+function SaveButton() {
+  const [pending, startTransition] = React.useTransition()
+  const busy = useBusyDelay(pending)
+
+  return (
+    <Button disabled={pending} onClick={() => startTransition(save)}>
+      {busy && <Spinner data-icon="inline-start" />}
+      Save
+    </Button>
+  )
+}
+```
+
+Drive the spinner, skeleton or busy label from the returned value, and keep `disabled` (or any guard against a second submit) on the raw `pending` flag so the control is locked from the first moment.
+
+## How it behaves
+
+- Work that finishes within `delay` never shows a busy state at all, so a fast response does not blink a spinner.
+- Once the busy state shows, it stays for at least `minDuration`, even when the work finishes right after, so it never appears for a single frame.
+- If `isPending` turns back on while the busy state is still holding, it simply stays on; the minimum is measured from when it first showed.
+- Every change of `isPending`, `delay` or `minDuration` cancels the previous timer before scheduling a new one, and unmounting cancels it too, so a timer left over from an earlier value can never change the result.
+
+In the demo, the fast request never shows a spinner, the medium one shows it for the minimum 200 ms, a little past the end of the work, and the slow one shows it until the work ends.
+
+## Options
+
+```tsx
+const busy = useBusyDelay(isPending, { delay: 400, minDuration: 600 })
+```
+
+| Option | Type | Default | Description |
+| --- | --- | --- | --- |
+| `delay` | `number` | `200` | How long `isPending` must stay `true`, in milliseconds, before the hook returns `true`. |
+| `minDuration` | `number` | `200` | How long, in milliseconds, the hook keeps returning `true` once it has. |
+
+The hook returns a `boolean`. The options type is exported as `UseBusyDelayOptions`.

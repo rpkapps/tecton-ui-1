@@ -21,6 +21,7 @@
     "provider",
     "stat",
     "theme-root",
-    "tree-view"
+    "tree-view",
+    "use-busy-delay"
   ]
 }
