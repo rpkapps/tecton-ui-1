@@ -187,27 +187,27 @@
   }
 
   .cn-button-variant-default {
-    @apply bg-primary text-primary-foreground hover:bg-primary-hover hover:text-primary-hover-foreground focus-visible:bg-primary-hover focus-visible:text-primary-hover-foreground active:bg-primary-pressed active:text-primary-pressed-foreground aria-expanded:bg-primary-active aria-expanded:text-primary-active-foreground disabled:bg-disabled disabled:text-disabled-foreground;
+    @apply bg-primary text-primary-foreground hover:bg-primary-hover hover:text-primary-hover-foreground focus-visible:bg-primary-hover focus-visible:text-primary-hover-foreground active:bg-primary-pressed active:text-primary-pressed-foreground aria-expanded:bg-primary-active aria-expanded:text-primary-active-foreground;
   }
 
   .cn-button-variant-outline {
-    @apply border-outline-border bg-transparent text-outline-foreground hover:border-outline-hover-border hover:bg-outline-hover hover:text-outline-hover-foreground focus-visible:bg-outline-hover focus-visible:text-outline-hover-foreground active:border-outline-pressed-border active:bg-outline-pressed active:text-outline-pressed-foreground aria-expanded:border-outline-active-border aria-expanded:bg-outline-active aria-expanded:text-outline-active-foreground disabled:border-disabled-border disabled:text-disabled-subtle-foreground;
+    @apply border-outline-border bg-transparent text-outline-foreground hover:border-outline-hover-border hover:bg-outline-hover hover:text-outline-hover-foreground focus-visible:bg-outline-hover focus-visible:text-outline-hover-foreground active:border-outline-pressed-border active:bg-outline-pressed active:text-outline-pressed-foreground aria-expanded:border-outline-active-border aria-expanded:bg-outline-active aria-expanded:text-outline-active-foreground;
   }
 
   .cn-button-variant-secondary {
-    @apply bg-secondary text-secondary-foreground hover:bg-secondary-hover hover:text-secondary-hover-foreground focus-visible:bg-secondary-hover focus-visible:text-secondary-hover-foreground active:bg-secondary-pressed active:text-secondary-pressed-foreground aria-expanded:bg-secondary-active aria-expanded:text-secondary-active-foreground disabled:bg-disabled disabled:text-disabled-foreground;
+    @apply bg-secondary text-secondary-foreground hover:bg-secondary-hover hover:text-secondary-hover-foreground focus-visible:bg-secondary-hover focus-visible:text-secondary-hover-foreground active:bg-secondary-pressed active:text-secondary-pressed-foreground aria-expanded:bg-secondary-active aria-expanded:text-secondary-active-foreground;
   }
 
   .cn-button-variant-ghost {
-    @apply text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground active:bg-ghost-pressed active:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground disabled:text-disabled-subtle-foreground;
+    @apply text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground active:bg-ghost-pressed active:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground;
   }
 
   .cn-button-variant-destructive {
-    @apply bg-destructive/10 hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/20 text-destructive focus-visible:border-destructive/40 dark:hover:bg-destructive/30 disabled:opacity-50;
+    @apply bg-destructive/10 hover:bg-destructive/20 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/20 text-destructive focus-visible:border-destructive/40 dark:hover:bg-destructive/30;
   }
 
   .cn-button-variant-link {
-    @apply text-link-foreground underline-offset-4 hover:text-link-hover-foreground hover:underline active:text-link-pressed-foreground aria-expanded:text-link-active-foreground disabled:text-disabled-subtle-foreground;
+    @apply text-link-foreground underline-offset-4 hover:text-link-hover-foreground hover:underline active:text-link-pressed-foreground aria-expanded:text-link-active-foreground;
   }
 
   .cn-button-size-xs {

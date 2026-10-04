@@ -194,9 +194,7 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   in `src/tecton/__tests__/overlay-variants.test.tsx`.
 - **`button`** — renders `data-variant` / `data-size` (as the other bases do), which the
   `button-group` rule in `style-tecton.css` keys on to give filled members the outline stroke when
-  the group has an outlined member. The base `disabled:opacity-50` is removed so each variant
-  draws Tecton's disabled colours (`disabled`, `disabled-foreground`, `disabled-subtle-foreground`,
-  `disabled-border`); `destructive`, which Tecton has no Button for, keeps the half opacity.
+  the group has an outlined member.
 - **`button-group`** — logical corners (`rounded-e-none` / `rounded-s-none`); members overlap by a
   pixel (`-ms-px` / `-mt-px`) instead of dropping a border, so each draws a complete ring.
 - **`tabs`** — the hard-coded active-tab colours, indicator colour and 3px ring are removed so

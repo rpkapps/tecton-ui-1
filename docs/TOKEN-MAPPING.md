@@ -94,10 +94,10 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--ghost-pressed-foreground` | `--tecton-color-action-tertiary-text-press` | `#e3e0e8` | `#563f67` | exact | Text on the pressed ghost surface. |
 | `--ghost-active` | `--tecton-color-action-tertiary-bg-active` | `#433d47` | `#e9e3ec` | exact | Button variant=ghost activated surface. |
 | `--ghost-active-foreground` | `--tecton-color-action-tertiary-text-active` | `#e3e0e8` | `#593c70` | exact | Text on the activated ghost surface. |
-| `--outline-border` | `--tecton-color-action-outlined-border-strong` | `#aaa1b2` | `#725687` | exact | Button variant=outline resting border, as the Tecton Button (`borderColor: action-outlined-border-strong`) and outlined ButtonGroup. |
+| `--outline-border` | `--tecton-color-input-outlined-border-hover` | `#a7a2ac` | `#6d5a7d` | approximated | Button variant=outline resting border. Tracks --input so a button flush against a field draws the same line (button group, input group, a Date button beside a Time input), and takes Tecton's hovered value as the resting one so hover does not move the border. Tecton's own resting Button border is --tecton-color-action-outlined-border-strong. |
 | `--outline-foreground` | `--tecton-color-action-outlined-text` | `#aaa1b2` | `#644a78` | exact | Button variant=outline resting text. |
 | `--outline-hover` | `--tecton-color-action-outlined-bg-hover` | `#433d47` | `#f0edf4` | exact | Button variant=outline hovered / focused surface. |
-| `--outline-hover-border` | `--tecton-color-action-outlined-border-hover` | `#cac5d2` | `#865fa0` | exact | Button variant=outline hovered / focused border. |
+| `--outline-hover-border` | `--tecton-color-input-outlined-border-hover` | `#a7a2ac` | `#6d5a7d` | approximated | Button variant=outline hovered border. Equal to the resting border on purpose: hover changes the surface, not the outline. |
 | `--outline-hover-foreground` | `--tecton-color-action-outlined-text-hover` | `#e4e0ea` | `#765292` | exact | Text on the hovered outline surface. |
 | `--outline-pressed` | `--tecton-color-action-outlined-bg-press` | `#4e4853` | `#ddd5e0` | exact | Button variant=outline pressed surface. |
 | `--outline-pressed-border` | `--tecton-color-action-outlined-border-press` | `#d8d5de` | `#563f67` | exact | Button variant=outline pressed border. |
@@ -109,10 +109,7 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--link-hover-foreground` | `--tecton-color-action-text-only-text-hover` | `#bcb2c4` | `#6b438c` | exact | Button variant=link hovered / focused text. |
 | `--link-pressed-foreground` | `--tecton-color-action-text-only-text-press` | `#beb1c8` | `#463458` | exact | Button variant=link pressed text. |
 | `--link-active-foreground` | `--tecton-color-action-text-only-text-active` | `#beb1c8` | `#5c3878` | exact | Button variant=link activated text. |
-| `--disabled` | `--tecton-color-disabled-filled-bg` | `#00000066` | `#ffffff33` | exact | Disabled filled (default / secondary) button surface, as the Tecton Button; disabled controls are drawn in these colours instead of at half opacity. |
-| `--disabled-foreground` | `--tecton-color-disabled-filled-text` | `#545356` | `#b8b1bf` | exact | Text on a disabled filled (default / secondary) button. |
-| `--disabled-subtle-foreground` | `--tecton-color-disabled-text-only-text` | `#4b4a4d` | `#b8b1bf` | exact | Text of a disabled outline, ghost or link button and a disabled tab (Tecton's outlined and text-only disabled text share this value). |
-| `--disabled-border` | `--tecton-color-disabled-outline-border` | `#323134` | `#e1dee4` | exact | Border of a disabled outline button. |
+| `--disabled-subtle-foreground` | `--tecton-color-disabled-text-only-text` | `#4b4a4d` | `#b8b1bf` | exact | Text of a disabled tab, as the Tecton Tab (`disabled-text-only-text`). |
 | `--avatar` | `--tecton-color-avatar-fill` | `#c2867a` | `#994c4c` | exact | Avatar fallback surface (Tecton's default avatar fill). |
 | `--avatar-foreground` | `--tecton-color-avatar-text` | `#131214` | `#fafafb` | exact | Initials / icon on the avatar fallback surface. |
 | `--input-hover` | `--tecton-color-input-outlined-border-hover` | `#a7a2ac` | `#6d5a7d` | exact | Outlined input, textarea and select border while hovered. |
@@ -200,10 +197,7 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--color-link-hover-foreground` | `var(--link-hover-foreground)` | `var(--link-hover-foreground)` |
 | `--color-link-pressed-foreground` | `var(--link-pressed-foreground)` | `var(--link-pressed-foreground)` |
 | `--color-link-active-foreground` | `var(--link-active-foreground)` | `var(--link-active-foreground)` |
-| `--color-disabled` | `var(--disabled)` | `var(--disabled)` |
-| `--color-disabled-foreground` | `var(--disabled-foreground)` | `var(--disabled-foreground)` |
 | `--color-disabled-subtle-foreground` | `var(--disabled-subtle-foreground)` | `var(--disabled-subtle-foreground)` |
-| `--color-disabled-border` | `var(--disabled-border)` | `var(--disabled-border)` |
 | `--color-avatar` | `var(--avatar)` | `var(--avatar)` |
 | `--color-avatar-foreground` | `var(--avatar-foreground)` | `var(--avatar-foreground)` |
 | `--color-input-hover` | `var(--input-hover)` | `var(--input-hover)` |

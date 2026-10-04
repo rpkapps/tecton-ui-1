@@ -3,21 +3,21 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-md border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-2 focus-visible:ring-ring active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-2 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
         default:
-          "hover:bg-primary-hover hover:text-primary-hover-foreground focus-visible:bg-primary-hover focus-visible:text-primary-hover-foreground active:bg-primary-pressed active:text-primary-pressed-foreground aria-expanded:bg-primary-active aria-expanded:text-primary-active-foreground disabled:bg-disabled disabled:text-disabled-foreground bg-primary text-primary-foreground",
+          "hover:bg-primary-hover hover:text-primary-hover-foreground focus-visible:bg-primary-hover focus-visible:text-primary-hover-foreground active:bg-primary-pressed active:text-primary-pressed-foreground aria-expanded:bg-primary-active aria-expanded:text-primary-active-foreground bg-primary text-primary-foreground",
         outline:
-          "border-outline-border text-outline-foreground hover:border-outline-hover-border hover:bg-outline-hover hover:text-outline-hover-foreground focus-visible:bg-outline-hover focus-visible:text-outline-hover-foreground active:border-outline-pressed-border active:bg-outline-pressed active:text-outline-pressed-foreground aria-expanded:border-outline-active-border aria-expanded:bg-outline-active aria-expanded:text-outline-active-foreground disabled:border-disabled-border disabled:text-disabled-subtle-foreground bg-transparent",
+          "border-outline-border text-outline-foreground hover:border-outline-hover-border hover:bg-outline-hover hover:text-outline-hover-foreground focus-visible:bg-outline-hover focus-visible:text-outline-hover-foreground active:border-outline-pressed-border active:bg-outline-pressed active:text-outline-pressed-foreground aria-expanded:border-outline-active-border aria-expanded:bg-outline-active aria-expanded:text-outline-active-foreground bg-transparent",
         secondary:
-          "hover:bg-secondary-hover hover:text-secondary-hover-foreground focus-visible:bg-secondary-hover focus-visible:text-secondary-hover-foreground active:bg-secondary-pressed active:text-secondary-pressed-foreground aria-expanded:bg-secondary-active aria-expanded:text-secondary-active-foreground disabled:bg-disabled disabled:text-disabled-foreground bg-secondary text-secondary-foreground",
+          "hover:bg-secondary-hover hover:text-secondary-hover-foreground focus-visible:bg-secondary-hover focus-visible:text-secondary-hover-foreground active:bg-secondary-pressed active:text-secondary-pressed-foreground aria-expanded:bg-secondary-active aria-expanded:text-secondary-active-foreground bg-secondary text-secondary-foreground",
         ghost:
-          "text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground active:bg-ghost-pressed active:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground disabled:text-disabled-subtle-foreground",
+          "text-ghost-foreground hover:bg-ghost-hover hover:text-ghost-hover-foreground focus-visible:bg-ghost-hover focus-visible:text-ghost-hover-foreground active:bg-ghost-pressed active:text-ghost-pressed-foreground aria-expanded:bg-ghost-active aria-expanded:text-ghost-active-foreground",
         destructive:
-          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 disabled:opacity-50 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
-        link: "text-link-foreground hover:text-link-hover-foreground active:text-link-pressed-foreground aria-expanded:text-link-active-foreground disabled:text-disabled-subtle-foreground underline-offset-4 hover:underline",
+          "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
+        link: "text-link-foreground hover:text-link-hover-foreground active:text-link-pressed-foreground aria-expanded:text-link-active-foreground underline-offset-4 hover:underline",
       },
       size: {
         default:

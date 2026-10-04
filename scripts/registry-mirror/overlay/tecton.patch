@@ -199,18 +199,9 @@ index 9bdfea8e..1d998339 100644
      },
      defaultVariants: {
 diff --git a/apps/v4/registry/bases/base/ui/button.tsx b/apps/v4/registry/bases/base/ui/button.tsx
-index 20073740..acc283cf 100644
+index 20073740..5ec9c753 100644
 --- a/apps/v4/registry/bases/base/ui/button.tsx
 +++ b/apps/v4/registry/bases/base/ui/button.tsx
-@@ -3,7 +3,7 @@ import { cva, type VariantProps } from "class-variance-authority"
- import { cn } from "cn"
- 
- const buttonVariants = cva(
--  "cn-button group/button inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0",
-+  "cn-button group/button inline-flex shrink-0 items-center justify-center whitespace-nowrap transition-all outline-none select-none disabled:pointer-events-none [&_svg]:pointer-events-none [&_svg]:shrink-0",
-   {
-     variants: {
-       variant: {
 @@ -41,6 +41,8 @@ function Button({
    return (
      <ButtonPrimitive
