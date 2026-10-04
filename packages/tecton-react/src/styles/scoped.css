@@ -486,6 +486,7 @@
   --color-content-hover: var(--content-hover, var(--tecton-color-content-bg-hover, light-dark(#eae8ec, #262528)));
   --color-content-pressed: var(--content-pressed, var(--tecton-color-content-bg-press, light-dark(#dbd6dd, #323134)));
   --color-content-active: var(--content-active, var(--tecton-color-content-bg-active, light-dark(#dbd6dd, #323134)));
+  --color-disabled-subtle-foreground: var(--disabled-subtle-foreground, var(--tecton-color-disabled-text-only-text, light-dark(#b8b1bf, #4b4a4d)));
 }
 
 @custom-variant dark (&:where(.dark *, [data-theme="dark"] *):not(:where(:is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]), :is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) *)));

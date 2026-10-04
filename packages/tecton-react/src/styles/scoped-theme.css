@@ -989,6 +989,7 @@
   --link-hover-foreground: var(--tecton-color-action-text-only-text-hover);
   --link-pressed-foreground: var(--tecton-color-action-text-only-text-press);
   --link-active-foreground: var(--tecton-color-action-text-only-text-active);
+  --disabled-subtle-foreground: var(--tecton-color-disabled-text-only-text);
   --avatar: var(--tecton-color-avatar-fill);
   --avatar-foreground: var(--tecton-color-avatar-text);
   --input-hover: var(--tecton-color-input-outlined-border-hover);
@@ -1987,6 +1988,7 @@
   --link-hover-foreground: var(--tecton-color-action-text-only-text-hover);
   --link-pressed-foreground: var(--tecton-color-action-text-only-text-press);
   --link-active-foreground: var(--tecton-color-action-text-only-text-active);
+  --disabled-subtle-foreground: var(--tecton-color-disabled-text-only-text);
   --avatar: var(--tecton-color-avatar-fill);
   --avatar-foreground: var(--tecton-color-avatar-text);
   --input-hover: var(--tecton-color-input-outlined-border-hover);
@@ -2986,6 +2988,7 @@
   --link-hover-foreground: var(--tecton-color-action-text-only-text-hover);
   --link-pressed-foreground: var(--tecton-color-action-text-only-text-press);
   --link-active-foreground: var(--tecton-color-action-text-only-text-active);
+  --disabled-subtle-foreground: var(--tecton-color-disabled-text-only-text);
   --avatar: var(--tecton-color-avatar-fill);
   --avatar-foreground: var(--tecton-color-avatar-text);
   --input-hover: var(--tecton-color-input-outlined-border-hover);

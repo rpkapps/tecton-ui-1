@@ -131,6 +131,7 @@
     --color-content-hover: var(--content-hover);
     --color-content-pressed: var(--content-pressed);
     --color-content-active: var(--content-active);
+    --color-disabled-subtle-foreground: var(--disabled-subtle-foreground);
 }
 
 :root {
@@ -241,6 +242,7 @@
     --content-hover: var(--tecton-color-content-bg-hover);
     --content-pressed: var(--tecton-color-content-bg-press);
     --content-active: var(--tecton-color-content-bg-active);
+    --disabled-subtle-foreground: var(--tecton-color-disabled-text-only-text);
 }
 
 .dark {
@@ -350,6 +352,7 @@
     --content-hover: var(--tecton-color-content-bg-hover);
     --content-pressed: var(--tecton-color-content-bg-press);
     --content-active: var(--tecton-color-content-bg-active);
+    --disabled-subtle-foreground: var(--tecton-color-disabled-text-only-text);
 }
 
 .light, [data-theme="light"] {
@@ -460,6 +463,7 @@
     --content-hover: var(--tecton-color-content-bg-hover);
     --content-pressed: var(--tecton-color-content-bg-press);
     --content-active: var(--tecton-color-content-bg-active);
+    --disabled-subtle-foreground: var(--tecton-color-disabled-text-only-text);
 }
 
 @layer base {
