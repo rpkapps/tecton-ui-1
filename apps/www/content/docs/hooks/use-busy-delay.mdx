@@ -17,7 +17,11 @@ function SaveButton() {
   const busy = useBusyDelay(pending)
 
   return (
-    <Button disabled={pending} onClick={() => startTransition(save)}>
+    <Button
+      disabled={pending || busy}
+      focusableWhenDisabled
+      onClick={() => startTransition(save)}
+    >
       {busy && <Spinner data-icon="inline-start" />}
       Save
     </Button>
@@ -25,7 +29,7 @@ function SaveButton() {
 }
 ```
 
-Drive the spinner, skeleton or busy label from the returned value, and keep `disabled` (or any guard against a second submit) on the raw `pending` flag so the control is locked from the first moment.
+Drive the spinner, skeleton or busy label from the returned value. Disable the control while either flag is set: `pending` locks it from the first click, before the busy state shows, and `busy` keeps it locked while the spinner holds after the work is done. `focusableWhenDisabled` keeps keyboard focus on the button meanwhile.
 
 ## How it behaves
 
@@ -71,13 +75,13 @@ The hook returns a `boolean`. The options type is exported as `UseBusyDelayOptio
 
 <Do>
 
-Pass the raw flag (`const busy = useBusyDelay(pending)`) and draw only the busy indicator from the result.
+Pass the raw flag (`const busy = useBusyDelay(pending)`) and draw the busy indicator (spinner, skeleton, busy label) from the result.
 
 </Do>
 
 <Do>
 
-Keep `disabled`, and any other guard against a second submit, on the raw `pending` flag so the control locks from the first moment.
+Disable the control while either flag is set, `disabled={pending || busy}` with `focusableWhenDisabled`: `pending` locks it from the first click, `busy` keeps it locked while the spinner holds.
 
 </Do>
 
@@ -123,7 +127,7 @@ The hand-rolled effect never clears its timer, so a request that ends within 200
 
 </Dont>
 
-<Dont severity="MEDIUM" title="Disabling the control from the delayed flag">
+<Dont severity="MEDIUM" title="Disabling the control from the delayed flag alone">
 
 <Wrong>
 
@@ -138,7 +142,7 @@ const busy = useBusyDelay(pending)
 
 ```tsx
 const busy = useBusyDelay(pending)
-<Button disabled={pending} onClick={save}>{busy && <Spinner data-icon="inline-start" />}Save</Button>
+<Button disabled={pending || busy} focusableWhenDisabled onClick={save}>{busy && <Spinner data-icon="inline-start" />}Save</Button>
 ```
 
 </Correct>

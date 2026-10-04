@@ -299,7 +299,7 @@
       "modules": ["tecton/use-busy-delay"],
       "checklist": [
         "A spinner, skeleton or busy label driven by a pending flag reads `useBusyDelay(pending)` rather than the raw flag, so fast work never flashes it, and no `setTimeout` is hand-written around the flag.",
-        "`disabled` and every other guard against a repeated action stay on the raw `pending` flag; only the visual busy state uses the delayed one."
+        "A control whose busy state comes from `useBusyDelay` is `disabled={pending || busy}` with `focusableWhenDisabled`: the raw flag locks it from the first click, the delayed one keeps it locked while the spinner holds, and `disabled={busy}` alone leaves the first `delay` ms open to a second submit."
       ]
     }
   },

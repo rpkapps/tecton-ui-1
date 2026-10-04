@@ -20,8 +20,8 @@ import { useBusyDelay } from "@tecton/react/tecton/use-busy-delay"
 
 ## Do
 
-- Pass the raw flag (`const busy = useBusyDelay(pending)`) and draw only the busy indicator from the result.
-- Keep `disabled`, and any other guard against a second submit, on the raw `pending` flag so the control locks from the first moment.
+- Pass the raw flag (`const busy = useBusyDelay(pending)`) and draw the busy indicator (spinner, skeleton, busy label) from the result.
+- Disable the control while either flag is set, `disabled={pending || busy}` with `focusableWhenDisabled`: `pending` locks it from the first click, `busy` keeps it locked while the spinner holds.
 - Tune the timing with `delay` (200 ms by default) and `minDuration` (300 ms by default) instead of wrapping the hook in your own timers.
 - Call it once per independent pending source; each call owns its own timer and cancels it on unmount.
 
@@ -47,7 +47,7 @@ const showSpinner = useBusyDelay(pending)
 
 The hand-rolled effect never clears its timer, so a request that ends within 200 ms still turns the spinner on afterwards and leaves it on, and nothing holds the spinner for a minimum time.
 
-### MEDIUM Disabling the control from the delayed flag
+### MEDIUM Disabling the control from the delayed flag alone
 
 Wrong:
 
@@ -60,7 +60,7 @@ Correct:
 
 ```tsx
 const busy = useBusyDelay(pending)
-<Button disabled={pending} onClick={save}>{busy && <Spinner data-icon="inline-start" />}Save</Button>
+<Button disabled={pending || busy} focusableWhenDisabled onClick={save}>{busy && <Spinner data-icon="inline-start" />}Save</Button>
 ```
 
 The delayed flag is still `false` for the first 200 ms of the request, so the button stays clickable and a second click submits twice.
@@ -68,6 +68,6 @@ The delayed flag is still `false` for the first 200 ms of the request, so the bu
 ## Before you finish
 
 - A spinner, skeleton or busy label driven by a pending flag reads `useBusyDelay(pending)` rather than the raw flag, so fast work never flashes it, and no `setTimeout` is hand-written around the flag.
-- `disabled` and every other guard against a repeated action stay on the raw `pending` flag; only the visual busy state uses the delayed one.
+- A control whose busy state comes from `useBusyDelay` is `disabled={pending || busy}` with `focusableWhenDisabled`: the raw flag locks it from the first click, the delayed one keeps it locked while the spinner holds, and `disabled={busy}` alone leaves the first `delay` ms open to a second submit.
 
 Related: spinner, skeleton, button

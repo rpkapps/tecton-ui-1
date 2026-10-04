@@ -28,7 +28,8 @@ function Row({ label, ms }: { label: string; ms: number }) {
       <Button
         variant="outline"
         className="w-40"
-        disabled={pending}
+        disabled={pending || busy}
+        focusableWhenDisabled
         onClick={() => run(ms)}
       >
         {busy && <Spinner data-icon="inline-start" />}

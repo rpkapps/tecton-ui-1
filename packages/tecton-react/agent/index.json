@@ -3616,7 +3616,7 @@
     "names": "use busy delay use busy delay",
     "useWhen": "A spinner, skeleton or busy label is driven by a pending flag: a transition, a mutation, a fetch. Most requests finish quickly and a spinner that appears for a frame would read as a glitch. The flag can toggle quickly (retries, refetches) and the busy state must not flicker.",
     "routed": "",
-    "do": "Pass the raw flag (`const busy = useBusyDelay(pending)`) and draw only the busy indicator from the result. Keep `disabled`, and any other guard against a second submit, on the raw `pending` flag so the control locks from the first moment. Tune the timing with `delay` (200 ms by default) and `minDuration` (300 ms by default) instead of wrapping the hook in your own timers. Call it once per independent pending source; each call owns its own timer and cancels it on unmount."
+    "do": "Pass the raw flag (`const busy = useBusyDelay(pending)`) and draw the busy indicator (spinner, skeleton, busy label) from the result. Disable the control while either flag is set, `disabled={pending || busy}` with `focusableWhenDisabled`: `pending` locks it from the first click, `busy` keeps it locked while the spinner holds. Tune the timing with `delay` (200 ms by default) and `minDuration` (300 ms by default) instead of wrapping the hook in your own timers. Call it once per independent pending source; each call owns its own timer and cancels it on unmount."
    },
    "notFor": [
     {
@@ -3641,7 +3641,7 @@
     "useBusyDelay"
    ],
    "aliases": [],
-   "tokens": 651
+   "tokens": 721
   },
   {
    "id": "tanstack-table",

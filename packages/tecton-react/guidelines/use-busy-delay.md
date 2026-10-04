@@ -21,8 +21,8 @@ related: [Spinner, Skeleton, Button]
 
 ## Do
 
-- Pass the raw flag (`const busy = useBusyDelay(pending)`) and draw only the busy indicator from the result.
-- Keep `disabled`, and any other guard against a second submit, on the raw `pending` flag so the control locks from the first moment.
+- Pass the raw flag (`const busy = useBusyDelay(pending)`) and draw the busy indicator (spinner, skeleton, busy label) from the result.
+- Disable the control while either flag is set, `disabled={pending || busy}` with `focusableWhenDisabled`: `pending` locks it from the first click, `busy` keeps it locked while the spinner holds.
 - Tune the timing with `delay` (200 ms by default) and `minDuration` (300 ms by default) instead of wrapping the hook in your own timers.
 - Call it once per independent pending source; each call owns its own timer and cancels it on unmount.
 
@@ -48,7 +48,7 @@ const showSpinner = useBusyDelay(pending)
 
 The hand-rolled effect never clears its timer, so a request that ends within 200 ms still turns the spinner on afterwards and leaves it on, and nothing holds the spinner for a minimum time.
 
-### MEDIUM Disabling the control from the delayed flag
+### MEDIUM Disabling the control from the delayed flag alone
 
 Wrong:
 
@@ -61,7 +61,7 @@ Correct:
 
 ```tsx
 const busy = useBusyDelay(pending)
-<Button disabled={pending} onClick={save}>{busy && <Spinner data-icon="inline-start" />}Save</Button>
+<Button disabled={pending || busy} focusableWhenDisabled onClick={save}>{busy && <Spinner data-icon="inline-start" />}Save</Button>
 ```
 
 The delayed flag is still `false` for the first 200 ms of the request, so the button stays clickable and a second click submits twice.
