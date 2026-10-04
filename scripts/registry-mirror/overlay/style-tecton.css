@@ -1408,7 +1408,7 @@
   }
 
   .cn-tabs-list {
-    @apply rounded-md p-1.5 group-data-horizontal/tabs:h-11 data-[variant=line]:rounded-none data-[variant=line]:p-0 data-[variant=line]:group-data-horizontal/tabs:h-8;
+    @apply gap-1 rounded-md p-1.5 group-data-horizontal/tabs:h-11 data-[variant=line]:rounded-none data-[variant=line]:p-0 data-[variant=line]:group-data-horizontal/tabs:h-8;
   }
 
   .cn-tabs-trigger {
