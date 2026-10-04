@@ -2,6 +2,8 @@ import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 
+import { TectonProvider } from "@tecton/react/tecton/provider"
+
 import CanvasPage from "../blocks/canvas-01/page"
 import DetailPage, { project } from "../blocks/detail-01/page"
 import {
@@ -10,6 +12,7 @@ import {
   getAxis,
 } from "../blocks/cost-vs-risk-panel/page"
 import { FdaComparisonTable } from "../blocks/fda-comparison-table/page"
+import Sidebar01 from "../blocks/sidebar-01/page"
 import HorizonsPage, {
   defaultHorizonSettings,
   validateDepths,
@@ -140,4 +143,37 @@ describe("detail-01 section tabs", () => {
     // The overview panel is gone with its tab.
     expect(overviewPanel).not.toBeInTheDocument()
   })
+})
+
+describe("sidebar-01 icon rail", () => {
+  for (const dir of ["ltr", "rtl"] as const) {
+    it(`opens a section's links beside the collapsed rail (${dir})`, async () => {
+      const user = userEvent.setup()
+      render(
+        <TectonProvider direction={dir}>
+          <div dir={dir}>
+            <Sidebar01 />
+          </div>
+        </TectonProvider>
+      )
+      // The header trigger (the rail on the sidebar edge has the same name).
+      await user.click(
+        screen.getAllByRole("button", { name: "Toggle Sidebar" })[0]!
+      )
+      await user.click(screen.getByRole("button", { name: "Wells" }))
+      const menu = await screen.findByRole("menu")
+      expect(menu.closest("[data-side]")).toHaveAttribute(
+        "data-side",
+        "inline-end"
+      )
+      const links = within(menu).getAllByRole("menuitem")
+      expect(links.map((link) => link.textContent)).toEqual([
+        "34/10-A-12 H",
+        "34/10-A-14 H",
+        "34/10-A-16",
+        "34/10-B-3 AH",
+      ])
+      expect(links[0]).toHaveAttribute("href", "#")
+    })
+  }
 })
