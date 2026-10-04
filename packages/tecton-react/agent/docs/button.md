@@ -22,7 +22,7 @@ import { Button, buttonVariants } from "@tecton/react/components/button"
 - Handle presses with `onClick` and disable with `disabled`; add `focusableWhenDisabled` when a disabled button must stay in the tab order (a pending submit).
 - Pick weight with `variant` and the box with `size`; keep `className` for layout only (`w-full`, `ms-auto`).
 - Mark icons with `data-icon="inline-start" | "inline-end"` so the padding adjusts, and give icon-only buttons an `aria-label`.
-- Navigate with `LinkButton` (`@tecton/react/tecton/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: with `render={<a />}` it keeps `role="button"`, so the link is announced as a button.
+- Navigate with `LinkButton` (`@tecton/react/tecton/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: `render={<a />}` needs `nativeButton={false}`, which adds `role="button"`, so the link is announced as a button.
 - A trigger (`DialogTrigger`, `PopoverTrigger`, `DropdownMenuTrigger`) takes the button as `render={<Button variant="outline" />}`; never nest a `Button` inside a trigger.
 - Each view or panel has one primary button for its main action (`variant="default"`); every other action is secondary, outline or ghost by weight.
 - Label a button with a verb and its object ("Shut in well", "Export LAS"), never "OK", "Submit" or "Click here".
@@ -50,7 +50,7 @@ Correct:
 </LinkButton>
 ```
 
-There is no `asChild`, so the prop is dropped and the anchor is nested inside a `button`: invalid markup, and the link is announced and activated as a button. `render={<a />}` on the `Button` is no fix either: it keeps `role="button"`.
+There is no `asChild`, so the prop lands on the DOM as an unknown attribute and the anchor is nested inside a `button`: invalid markup, and the link is announced and activated as a button. `render={<a />}` on the `Button` is no fix either: it needs `nativeButton={false}`, which adds `role="button"`.
 
 ### HIGH onPress and isDisabled on a Button
 
@@ -104,7 +104,7 @@ The trigger already renders a `button`, so a nested `Button` produces a button i
 
 ## Before you finish
 
-- Every press is `onClick` and every disabled control is `disabled` (with `focusableWhenDisabled` while it works); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
+- Every press is `onClick` and every disabled control is `disabled` (a `Button` that is working adds `focusableWhenDisabled`); `onPress` and `isDisabled` are not props and reach the DOM as stray attributes.
 - A `Button`'s box comes from `size` (`icon`, `icon-xs`, `icon-sm`, `icon-lg` for icon-only) and its weight from `variant`; `size-8`, `h-*`, `p-*`, `rounded-*` and `bg-*` in `className` replace what the variant owns.
 - Every icon-only `Button`, `Toggle`, `ToggleGroupItem` and `InputGroupButton` has an `aria-label`, and every icon or `Spinner` inside a control carries `data-icon="inline-start"` or `data-icon="inline-end"`.
 - `DropdownMenu` and `ContextMenu` are roots holding a trigger (`DropdownMenuTrigger render={<Button />}`, `ContextMenuTrigger`) and a `DropdownMenuContent` / `ContextMenuContent`; check marks come from `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) or a `DropdownMenuRadioGroup` (`value` / `onValueChange`).

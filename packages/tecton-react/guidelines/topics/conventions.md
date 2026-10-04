@@ -36,7 +36,7 @@ own — takes the same prop names, whatever it is built on. Import only from
 | Habit | Tecton | On |
 | --- | --- | --- |
 | `onPress` | `onClick` | `Button`, `Toggle`, menu items, `InputGroupButton`, `AttachmentAction` |
-| `isDisabled` | `disabled` (`focusableWhenDisabled` to keep focus) | every control and item |
+| `isDisabled` | `disabled` (plus `focusableWhenDisabled` on a `Button`, or a part built on it, to keep focus) | every control and item |
 | `isSelected` / `onChange(boolean)` | `checked` / `defaultChecked` / `onCheckedChange` | `Checkbox`, `Switch`, `DropdownMenuCheckboxItem` |
 | `isSelected` on a toggle | `pressed` / `defaultPressed` / `onPressedChange` | `Toggle` |
 | `selectedKey` / `onSelectionChange` / `onChange(key)` | `value` / `defaultValue` / `onValueChange` | `Select`, `Combobox`, `RadioGroup`, `Tabs` |

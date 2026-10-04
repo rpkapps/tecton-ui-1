@@ -70,7 +70,7 @@ Correct:
 </Composer>
 ```
 
-The Enter that confirms a Japanese or Chinese conversion arrives as a keydown too, and in Safari after `compositionend`, so the half-typed message is sent; `ComposerInput` ignores `isComposing` and key code 229.
+The Enter that confirms a Japanese or Chinese conversion arrives as a keydown too, and in Safari after `compositionend`, so the half-typed message is sent; `ComposerInput` ignores an Enter flagged `isComposing` or carrying key code 229.
 
 ### MEDIUM One send button whose label flips to Stop
 

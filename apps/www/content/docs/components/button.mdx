@@ -148,7 +148,7 @@ Mark icons with `data-icon="inline-start" | "inline-end"` so the padding adjusts
 
 <Do>
 
-Navigate with `LinkButton` (`@tecton/react/tecton/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: with `render={<a />}` it keeps `role="button"`, so the link is announced as a button.
+Navigate with `LinkButton` (`@tecton/react/tecton/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: `render={<a />}` needs `nativeButton={false}`, which adds `role="button"`, so the link is announced as a button.
 
 </Do>
 
@@ -214,7 +214,7 @@ Give a button visible text when its icon alone is ambiguous; go icon-only just f
 
 </Correct>
 
-There is no `asChild`, so the prop is dropped and the anchor is nested inside a `button`: invalid markup, and the link is announced and activated as a button. `render={<a />}` on the `Button` is no fix either: it keeps `role="button"`.
+There is no `asChild`, so the prop lands on the DOM as an unknown attribute and the anchor is nested inside a `button`: invalid markup, and the link is announced and activated as a button. `render={<a />}` on the `Button` is no fix either: it needs `nativeButton={false}`, which adds `role="button"`.
 
 </Dont>
 

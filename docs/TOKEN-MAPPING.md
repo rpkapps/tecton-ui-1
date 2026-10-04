@@ -109,6 +109,7 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--link-hover-foreground` | `--tecton-color-action-text-only-text-hover` | `#bcb2c4` | `#6b438c` | exact | Button variant=link hovered / focused text. |
 | `--link-pressed-foreground` | `--tecton-color-action-text-only-text-press` | `#beb1c8` | `#463458` | exact | Button variant=link pressed text. |
 | `--link-active-foreground` | `--tecton-color-action-text-only-text-active` | `#beb1c8` | `#5c3878` | exact | Button variant=link activated text. |
+| `--disabled-subtle-foreground` | `--tecton-color-disabled-text-only-text` | `#4b4a4d` | `#b8b1bf` | exact | Text of a disabled tab, as the Tecton Tab (`disabled-text-only-text`). |
 | `--avatar` | `--tecton-color-avatar-fill` | `#c2867a` | `#994c4c` | exact | Avatar fallback surface (Tecton's default avatar fill). |
 | `--avatar-foreground` | `--tecton-color-avatar-text` | `#131214` | `#fafafb` | exact | Initials / icon on the avatar fallback surface. |
 | `--input-hover` | `--tecton-color-input-outlined-border-hover` | `#a7a2ac` | `#6d5a7d` | exact | Outlined input, textarea and select border while hovered. |
@@ -196,6 +197,7 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--color-link-hover-foreground` | `var(--link-hover-foreground)` | `var(--link-hover-foreground)` |
 | `--color-link-pressed-foreground` | `var(--link-pressed-foreground)` | `var(--link-pressed-foreground)` |
 | `--color-link-active-foreground` | `var(--link-active-foreground)` | `var(--link-active-foreground)` |
+| `--color-disabled-subtle-foreground` | `var(--disabled-subtle-foreground)` | `var(--disabled-subtle-foreground)` |
 | `--color-avatar` | `var(--avatar)` | `var(--avatar)` |
 | `--color-avatar-foreground` | `var(--avatar-foreground)` | `var(--avatar-foreground)` |
 | `--color-input-hover` | `var(--input-hover)` | `var(--input-hover)` |
