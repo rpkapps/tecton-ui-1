@@ -961,7 +961,7 @@ function headingSlugs(mdx: string): Set<string> {
 
 /**
  * Consumers only ever see Tecton: the libraries the generated components are
- * built on are never named in the docs (CLAUDE.md). Upstream's base pages point
+ * built on are never named in the docs (AGENTS.md). Upstream's base pages point
  * at Base UI's documentation throughout; these generic transforms remove those
  * pointers, and `assertNoLibraryNames` fails the sync on anything they miss.
  */
