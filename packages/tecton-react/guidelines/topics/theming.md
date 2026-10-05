@@ -173,8 +173,11 @@ The plugin runs **after** `@tailwindcss/postcss` and wraps the sheet in
 `@scope (.mfe-a) to ([data-tecton-root])`, so the cascade decides by scope
 proximity instead of injection order. Options: `scope` (required),
 `boundary` (default `"[data-tecton-root]"`, or `false`), `rootRules`
-(`"scope"` rewrites a leading `:root` / `html` / `body` to `:scope`), and
-`keyframes` (renames this sheet's own frames `<name>--mfe-a`).
+(`"scope"` rewrites a leading `:root` / `html` / `body` to `:scope`),
+`keyframes` (renames this sheet's own frames `<name>--mfe-a`), and `rem`
+(`"browser"` sizes the remote from the browser's default font size instead of
+the host's `<html>`, for a host that pins its own base such as a 14px
+Angular/PrimeNG shell; put text-size classes on a child of `ThemeRoot`, not on it).
 
 The same scope selector is used in exactly three places: this option,
 `ThemeRoot`'s `className`, and the React root's `identifierPrefix`.

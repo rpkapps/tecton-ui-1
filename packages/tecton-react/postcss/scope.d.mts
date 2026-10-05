@@ -46,6 +46,24 @@ export interface ScopeTectonOptions {
    * and `false` keeps the names as they are.
    */
   keyframes?: { suffix: string } | boolean
+  /**
+   * What a `rem` in the remote's sheet is relative to.
+   *
+   * `"document"` (the default) leaves it alone: it follows the font size of the
+   * host page's `<html>`.
+   *
+   * `"browser"` makes the remote independent of the host's root size while still
+   * following the user's browser font-size setting — for a host that pins `<html>`
+   * to a size of its own (a PrimeNG shell's 14px or 87.5%). Every `<n>rem` in a
+   * declaration becomes `calc(<n> * var(--tecton-rem))`, and the sheet registers
+   * `--tecton-rem` as a `<length>` and sets `font-size: medium; --tecton-rem: 1em`
+   * on the remote's root and its overlay container. The root's own font size is
+   * then always `medium`: put a font-size utility on a child, not on `ThemeRoot`.
+   * Media queries and `@property` initial values are left as they are. With
+   * `rootRules: "document"` Tailwind's scales resolve against the variable's 16px
+   * initial value instead: independent of the host, but not of the user's setting.
+   */
+  rem?: "document" | "browser"
 }
 
 /**

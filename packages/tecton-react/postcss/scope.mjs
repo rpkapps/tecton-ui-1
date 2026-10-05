@@ -91,6 +91,27 @@
  *     to the remote's own root and to its overlay container while leaving the host's
  *     root alone. Selectors inside `@keyframes` — the steps — are never rewritten.
  *
+ * Root-independent sizes (`rem: "browser"`)
+ * ------------------------------------------
+ *
+ * A host page may pin `<html>` to a size of its own — an Angular + PrimeNG shell
+ * sets 14px, or 87.5% — and every `rem` the remote emits (Tailwind's `--spacing`
+ * and `--text-*` scales, arbitrary `[2.5rem]` values) would follow it. With
+ * `rem: "browser"`, every `<n>rem` in a declaration becomes
+ * `calc(<n> * var(--tecton-rem))`, and the sheet gains
+ *
+ *   @property --tecton-rem { syntax: "<length>"; inherits: true; initial-value: 16px }
+ *   [data-tecton-root] { font-size: medium; --tecton-rem: 1em }
+ *
+ * `medium` is the browser's default font size — the user's preference — whatever
+ * the document root says, and a registered `<length>` resolves `1em` to pixels
+ * once, on the remote's root and its overlay container, so the descendants inherit
+ * a fixed length and nested font sizes never compound. The root rule is unlayered:
+ * a font-size utility on the root itself would make `--tecton-rem` depend on
+ * itself, so the root's own size is always `medium` (size a child instead). Media
+ * query lengths are left alone (a `rem` there already means the browser default),
+ * and so are `@property` initial values, which may not reference a variable.
+ *
  * Running the plugin twice over the same sheet changes nothing the second time: a
  * `@scope` with the same prelude is left as it is, and a keyframe name that
  * already ends in `--<suffix>` is not renamed again.
@@ -310,6 +331,57 @@ const namesAnimation = (prop) =>
     : prop.toLowerCase() === "animation" ||
       prop.toLowerCase() === "animation-name"
 
+/** `rem: "browser"` — the variable every `rem` is rewritten against. */
+const REM_VARIABLE = "--tecton-rem"
+
+/**
+ * A `<number>rem` token: not part of an identifier (`--x-2rem`), a hex digit run or
+ * a longer number, and not followed by more identifier characters (`2remx`).
+ */
+const REM_LENGTH =
+  /(?<![\w.#-])([+-]?(?:\d+\.?\d*|\.\d+)(?:e[+-]?\d+)?)rem(?![\w-])/gi
+
+/** Strings and `url(…)` carry text that is not a length: leave them as they are. */
+const OPAQUE = /"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|url\([^)]*\)/gi
+
+const remToVariable = (value) => {
+  let result = ""
+  let last = 0
+  const convert = (part) =>
+    part.replace(REM_LENGTH, (_, number) =>
+      Number(number) === 1
+        ? `var(${REM_VARIABLE})`
+        : `calc(${number} * var(${REM_VARIABLE}))`
+    )
+  for (const match of value.matchAll(OPAQUE)) {
+    result += convert(value.slice(last, match.index)) + match[0]
+    last = match.index + match[0].length
+  }
+  return result + convert(value.slice(last))
+}
+
+/** Inside these, a declaration may not (or need not) reference a variable. */
+const insideStaticAtRule = (decl) => {
+  for (let node = decl.parent; node; node = node.parent) {
+    if (node.type !== "atrule") continue
+    const name = atRuleName(node)
+    if (name === "property" || name === "font-face") return true
+  }
+  return false
+}
+
+const REM_MODES = new Set(["document", "browser"])
+
+const resolveRem = (rem) => {
+  if (rem === undefined) return "document"
+  if (!REM_MODES.has(rem)) {
+    throw new TypeError(
+      'scopeTecton: `rem` must be "document" (leave `rem` relative to the document root) or "browser" (resolve it against the browser\'s default font size on the remote\'s root).'
+    )
+  }
+  return rem
+}
+
 const ROOT_RULE_MODES = new Set(["scope", "document"])
 
 const resolveRootRules = (rootRules) => {
@@ -323,10 +395,10 @@ const resolveRootRules = (rootRules) => {
 }
 
 /**
- * @param {{ scope: string, boundary?: string | false | null, rootRules?: "scope" | "document", keyframes?: { suffix: string } | boolean }} options
+ * @param {{ scope: string, boundary?: string | false | null, rootRules?: "scope" | "document", keyframes?: { suffix: string } | boolean, rem?: "document" | "browser" }} options
  */
 export default function scopeTecton(options) {
-  const { scope, boundary, rootRules, keyframes } = options ?? {}
+  const { scope, boundary, rootRules, keyframes, rem } = options ?? {}
   if (typeof scope !== "string" || !scope.trim()) {
     throw new TypeError(
       'scopeTecton: `scope` is required and must be a non-empty selector string, e.g. scopeTecton({ scope: ".mfe-a" }).'
@@ -336,11 +408,45 @@ export default function scopeTecton(options) {
   const limit = resolveBoundary(boundary)
   const roots = resolveRootRules(rootRules)
   const suffix = resolveKeyframes(keyframes, root)
+  const remMode = resolveRem(rem)
   const params = limit ? `(${root}) to (${limit})` : `(${root})`
 
   return {
     postcssPlugin: "tecton-scope",
-    OnceExit(sheet, { AtRule }) {
+    OnceExit(sheet, { AtRule, Rule }) {
+      /**
+       * `rem: "browser"`: every `rem` follows `--tecton-rem`, which the remote's
+       * root derives from the browser's default font size. The two rules it needs
+       * go through the steps below like any other: the `@property` is hoisted, the
+       * root rule is scoped and gets its `:scope` twin.
+       */
+      const resolveRemAgainstBrowser = () => {
+        sheet.walkDecls((decl) => {
+          if (!/rem/i.test(decl.value) || insideStaticAtRule(decl)) return
+          decl.value = remToVariable(decl.value)
+        })
+        let registered = false
+        sheet.walkAtRules("property", (node) => {
+          if (node.params.trim() === REM_VARIABLE) registered = true
+        })
+        if (registered) return
+        const property = new AtRule({ name: "property", params: REM_VARIABLE })
+        const rootRule = new Rule({ selector: MARKER })
+        property.raws.between = rootRule.raws.between = " "
+        sheet.append(
+          property.append(
+            { prop: "syntax", value: '"<length>"' },
+            { prop: "inherits", value: "true" },
+            { prop: "initial-value", value: "16px" }
+          ),
+          rootRule.append(
+            { prop: "font-size", value: "medium" },
+            { prop: REM_VARIABLE, value: "1em" }
+          )
+        )
+      }
+      if (remMode === "browser") resolveRemAgainstBrowser()
+
       /**
        * A hoisted `@keyframes` is last-definition-wins for the whole document, so
        * the frames this sheet defines get a name of the remote's own — and every
