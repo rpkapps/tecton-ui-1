@@ -5,7 +5,7 @@ description: Tecton's spacing scale and corner radii, and how they map to the Ta
 
 ## Spacing
 
-Tecton's spacing scale is 4px-based and coincides with Tailwind's default spacing (`--spacing: 0.25rem`), so no configuration is needed:
+Tecton's spacing scale is 4px-based and coincides with Tailwind's default spacing (`--spacing` is a quarter of `--tecton-rem`, which is `1rem` unless the page [scales Tecton](#scaling-tecton)), so the usual Tailwind steps apply:
 
 | Tecton | px | Tailwind |
 | --- | --- | --- |
@@ -31,6 +31,25 @@ Tecton's spacing scale is 4px-based and coincides with Tailwind's default spacin
 | space-1800 | 144 | `36` |
 
 The values are also exposed as `--tecton-space-*` variables for non-Tailwind consumers.
+
+## Scaling Tecton
+
+Every size Tecton derives from the root font size (the spacing steps, the `text-*` sizes and the `max-w-*` container widths) is a multiple of one variable, `--tecton-rem`, which defaults to `1rem`. Radii and borders are in pixels and do not take part.
+
+A page that has to change its root font size for something else, such as an Angular micro-frontend built on PrimeNG's 14px base inside a Tecton shell, sets the root and gives Tecton its 16px back in the same place:
+
+```css title="shell.css"
+html {
+  font-size: 87.5%; /* 14px: what PrimeNG is designed for */
+}
+:root {
+  --tecton-rem: calc(1rem / 0.875); /* Tecton stays at 16px */
+}
+```
+
+Both stay relative to the browser's default font size, so a user who enlarges it enlarges both. The variable inherits, so a Tecton micro-frontend mounted in that shell follows it with no setting of its own.
+
+Write sizes the same way in your own code: a Tailwind step (`p-4`, `h-8`, `text-sm`) or `--spacing(n)` in an arbitrary value (`w-[--spacing(104)]`, `text-[--spacing(2.5)]`) follows `--tecton-rem`, a literal `rem` (`w-[26rem]`, `style={{ width: "2rem" }}`) does not.
 
 ## Radius
 

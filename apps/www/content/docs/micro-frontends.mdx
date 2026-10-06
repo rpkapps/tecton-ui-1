@@ -100,25 +100,6 @@ props.toast.success("Simulation finished")
 | `boundary` | `"[data-tecton-root]"` | Lower limit (`@scope (…) to (…)`): the scope ends at the next Tecton root, so a remote mounted inside this one keeps its own styles. A selector, or `false` for none. A root matching its own boundary is not excluded. |
 | `rootRules` | `"scope"` | Rewrites a leading `:root` / `html` / `body` to `:scope`; `"document"` leaves those rules unscoped. |
 | `keyframes` | derived from `scope` | Renames the sheet's `@keyframes` to `<name>--<suffix>`; `{ suffix }` sets the suffix, `false` keeps the names. |
-| `rem` | `"document"` | `"browser"` sizes the remote from the browser's default font size instead of the host's `<html>`. See [hosts with their own root size](#hosts-with-their-own-root-size). |
-
-## Hosts with their own root size
-
-Tecton's spacing, control heights and type scale are in `rem`, so they follow the font size of the host page's `<html>`. A host that pins its own (an Angular shell built on a 14px base, for instance) would render the remote 12.5% too small, while radii and borders, which are in pixels, keep their size.
-
-Pass `rem: "browser"` to make the remote ignore the host's root size and still follow the user's browser font-size setting:
-
-```js title="postcss.config.mjs"
-export default {
-  plugins: [tailwindcss(), scopeTecton({ scope: ".mfe-a", rem: "browser" })],
-}
-```
-
-Every `rem` in the remote's sheet then resolves against `--tecton-rem`, which `ThemeRoot`'s element and its overlay container set to the browser's default font size (16px unless the user changed it). Media queries are unchanged, since a `rem` there already means the browser default.
-
-- The root's own font size is fixed to the browser default: put a text-size class on a child of `ThemeRoot`, not on `ThemeRoot` itself.
-- Sizes written outside the stylesheet (an inline `style={{ width: "2rem" }}`) are not converted; use a class.
-- For the host's own components to follow the user's setting too, the host sets its base as a percentage (`html { font-size: 87.5% }` for 14px) rather than in pixels.
 
 ## Theme
 

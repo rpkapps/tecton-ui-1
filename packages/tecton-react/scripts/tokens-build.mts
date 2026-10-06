@@ -73,6 +73,8 @@ const SCOPED_THEME_CSS = path.join(pkgRoot, "src/styles/scoped-theme.css");
 const PALETTE_CSS = path.join(pkgRoot, "src/styles/tecton-palette.css");
 const GLOBALS_CSS = process.env.GLOBALS_CSS ?? path.join(pkgRoot, "src/styles/globals.css");
 const REGISTRY_THEME = path.join(pkgRoot, "registry/theme.json");
+/** The page-level scale every rem-based theme size reads (see tokens/tecton.map.json `theme`). */
+const REM_VARIABLE = "--tecton-rem";
 const MAPPING_DOC = path.join(repoRoot, "docs/TOKEN-MAPPING.md");
 
 // The shadcn stylesheet globals.css imports is vendored first: the import is
@@ -724,8 +726,10 @@ function buildRegistryTheme() {
   for (const [k, v] of paletteThemeEntries) theme[k.replace(/^--/, "")] = v;
   for (const [k, v] of themeEntries) {
     // registry consumers have no --tecton-* tokens: resolve to literals, keep
-    // --color-<extra> as a reference to the :root/.dark variable.
-    theme[k.replace(/^--/, "")] = k.startsWith("--color-") ? v : resolveValue(v, tokens);
+    // --color-<extra> as a reference to the :root/.dark variable, and keep the
+    // sizes that read --tecton-rem (a variable the page sets, never a token).
+    theme[k.replace(/^--/, "")] =
+      k.startsWith("--color-") || v.includes(REM_VARIABLE) ? v : resolveValue(v, tokens);
   }
   const css: Record<string, Record<string, unknown>> = {};
   for (const f of FONT_IMPORTS) css[`@import "${f}"`] = {};

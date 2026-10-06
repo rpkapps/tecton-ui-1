@@ -979,7 +979,7 @@ function ContourBackground({
           soft when the wander moves it by a fraction of a pixel. */}
       <svg
         xmlns="http://www.w3.org/2000/svg"
-        className="absolute -inset-12 size-[calc(100%+6rem)]"
+        className="absolute -inset-12 size-[calc(100%+--spacing(24))]"
       >
         <g
           style={{

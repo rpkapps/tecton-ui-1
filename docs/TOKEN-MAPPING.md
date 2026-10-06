@@ -141,6 +141,33 @@ Each is declared in `:root`/`.dark` and exposed as `--color-<name>` in `@theme i
 | `--radius-lg` | `var(--tecton-radius-100)` | `8px` |
 | `--radius-xl` | `var(--tecton-radius-150)` | `12px` |
 | `--radius-2xl` | `var(--tecton-radius-200)` | `16px` |
+| `--spacing` | `calc(var(--tecton-rem, 1rem) * 0.25)` | `calc(1rem * 0.25)` |
+| `--text-xs` | `calc(var(--tecton-rem, 1rem) * 0.75)` | `calc(1rem * 0.75)` |
+| `--text-sm` | `calc(var(--tecton-rem, 1rem) * 0.875)` | `calc(1rem * 0.875)` |
+| `--text-base` | `calc(var(--tecton-rem, 1rem) * 1)` | `calc(1rem * 1)` |
+| `--text-lg` | `calc(var(--tecton-rem, 1rem) * 1.125)` | `calc(1rem * 1.125)` |
+| `--text-xl` | `calc(var(--tecton-rem, 1rem) * 1.25)` | `calc(1rem * 1.25)` |
+| `--text-2xl` | `calc(var(--tecton-rem, 1rem) * 1.5)` | `calc(1rem * 1.5)` |
+| `--text-3xl` | `calc(var(--tecton-rem, 1rem) * 1.875)` | `calc(1rem * 1.875)` |
+| `--text-4xl` | `calc(var(--tecton-rem, 1rem) * 2.25)` | `calc(1rem * 2.25)` |
+| `--text-5xl` | `calc(var(--tecton-rem, 1rem) * 3)` | `calc(1rem * 3)` |
+| `--text-6xl` | `calc(var(--tecton-rem, 1rem) * 3.75)` | `calc(1rem * 3.75)` |
+| `--text-7xl` | `calc(var(--tecton-rem, 1rem) * 4.5)` | `calc(1rem * 4.5)` |
+| `--text-8xl` | `calc(var(--tecton-rem, 1rem) * 6)` | `calc(1rem * 6)` |
+| `--text-9xl` | `calc(var(--tecton-rem, 1rem) * 8)` | `calc(1rem * 8)` |
+| `--container-3xs` | `calc(var(--tecton-rem, 1rem) * 16)` | `calc(1rem * 16)` |
+| `--container-2xs` | `calc(var(--tecton-rem, 1rem) * 18)` | `calc(1rem * 18)` |
+| `--container-xs` | `calc(var(--tecton-rem, 1rem) * 20)` | `calc(1rem * 20)` |
+| `--container-sm` | `calc(var(--tecton-rem, 1rem) * 24)` | `calc(1rem * 24)` |
+| `--container-md` | `calc(var(--tecton-rem, 1rem) * 28)` | `calc(1rem * 28)` |
+| `--container-lg` | `calc(var(--tecton-rem, 1rem) * 32)` | `calc(1rem * 32)` |
+| `--container-xl` | `calc(var(--tecton-rem, 1rem) * 36)` | `calc(1rem * 36)` |
+| `--container-2xl` | `calc(var(--tecton-rem, 1rem) * 42)` | `calc(1rem * 42)` |
+| `--container-3xl` | `calc(var(--tecton-rem, 1rem) * 48)` | `calc(1rem * 48)` |
+| `--container-4xl` | `calc(var(--tecton-rem, 1rem) * 56)` | `calc(1rem * 56)` |
+| `--container-5xl` | `calc(var(--tecton-rem, 1rem) * 64)` | `calc(1rem * 64)` |
+| `--container-6xl` | `calc(var(--tecton-rem, 1rem) * 72)` | `calc(1rem * 72)` |
+| `--container-7xl` | `calc(var(--tecton-rem, 1rem) * 80)` | `calc(1rem * 80)` |
 | `--color-success` | `var(--success)` | `var(--success)` |
 | `--color-success-foreground` | `var(--success-foreground)` | `var(--success-foreground)` |
 | `--color-warning` | `var(--warning)` | `var(--warning)` |

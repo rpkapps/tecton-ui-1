@@ -173,11 +173,8 @@ The plugin runs **after** `@tailwindcss/postcss` and wraps the sheet in
 `@scope (.mfe-a) to ([data-tecton-root])`, so the cascade decides by scope
 proximity instead of injection order. Options: `scope` (required),
 `boundary` (default `"[data-tecton-root]"`, or `false`), `rootRules`
-(`"scope"` rewrites a leading `:root` / `html` / `body` to `:scope`),
-`keyframes` (renames this sheet's own frames `<name>--mfe-a`), and `rem`
-(`"browser"` sizes the remote from the browser's default font size instead of
-the host's `<html>`, for a host that pins its own base such as a 14px
-Angular/PrimeNG shell; put text-size classes on a child of `ThemeRoot`, not on it).
+(`"scope"` rewrites a leading `:root` / `html` / `body` to `:scope`), and
+`keyframes` (renames this sheet's own frames `<name>--mfe-a`).
 
 The same scope selector is used in exactly three places: this option,
 `ThemeRoot`'s `className`, and the React root's `identifierPrefix`.
@@ -215,6 +212,21 @@ A remote with **no** Tecton shell to inherit from adds
 `@tecton/react/styles/scoped-theme.css` after `scoped.css` and loads Figtree and
 IBM Plex Mono itself. Leave it out whenever there is a shell: it declares the
 full variable set on the remote's root and stops it following the host.
+
+## Scaling: --tecton-rem
+
+Every rem-based size (spacing steps, `text-*`, `max-w-*` containers) is a multiple of
+`--tecton-rem` (default `1rem`). A shell whose root font size is set for another
+design system keeps Tecton at its own size with one variable:
+
+```css
+html { font-size: 87.5%; }               /* e.g. PrimeNG's 14px base */
+:root { --tecton-rem: calc(1rem / 0.875); } /* Tecton stays at 16px */
+```
+
+It inherits into micro-frontends. In arbitrary values write `--spacing(n)`
+(`w-[--spacing(104)]`, `text-[--spacing(2.5)]`), never a literal `rem`, which
+ignores the variable.
 
 ## Common Mistakes
 

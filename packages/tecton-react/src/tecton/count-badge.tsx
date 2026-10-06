@@ -22,7 +22,7 @@ const countBadgeVariants = cva(
         info: "bg-info text-info-foreground",
       },
       variant: {
-        standard: "h-4 min-w-4 px-1 text-[0.625rem] leading-none",
+        standard: "h-4 min-w-4 px-1 text-[--spacing(2.5)] leading-none",
         dot: "size-2",
       },
       anchor: {

@@ -487,6 +487,33 @@
   --color-content-pressed: var(--content-pressed, var(--tecton-color-content-bg-press, light-dark(#dbd6dd, #323134)));
   --color-content-active: var(--content-active, var(--tecton-color-content-bg-active, light-dark(#dbd6dd, #323134)));
   --color-disabled-subtle-foreground: var(--disabled-subtle-foreground, var(--tecton-color-disabled-text-only-text, light-dark(#b8b1bf, #4b4a4d)));
+  --spacing: calc(var(--tecton-rem, 1rem) * 0.25);
+  --text-xs: calc(var(--tecton-rem, 1rem) * 0.75);
+  --text-sm: calc(var(--tecton-rem, 1rem) * 0.875);
+  --text-base: calc(var(--tecton-rem, 1rem) * 1);
+  --text-lg: calc(var(--tecton-rem, 1rem) * 1.125);
+  --text-xl: calc(var(--tecton-rem, 1rem) * 1.25);
+  --text-2xl: calc(var(--tecton-rem, 1rem) * 1.5);
+  --text-3xl: calc(var(--tecton-rem, 1rem) * 1.875);
+  --text-4xl: calc(var(--tecton-rem, 1rem) * 2.25);
+  --text-5xl: calc(var(--tecton-rem, 1rem) * 3);
+  --text-6xl: calc(var(--tecton-rem, 1rem) * 3.75);
+  --text-7xl: calc(var(--tecton-rem, 1rem) * 4.5);
+  --text-8xl: calc(var(--tecton-rem, 1rem) * 6);
+  --text-9xl: calc(var(--tecton-rem, 1rem) * 8);
+  --container-3xs: calc(var(--tecton-rem, 1rem) * 16);
+  --container-2xs: calc(var(--tecton-rem, 1rem) * 18);
+  --container-xs: calc(var(--tecton-rem, 1rem) * 20);
+  --container-sm: calc(var(--tecton-rem, 1rem) * 24);
+  --container-md: calc(var(--tecton-rem, 1rem) * 28);
+  --container-lg: calc(var(--tecton-rem, 1rem) * 32);
+  --container-xl: calc(var(--tecton-rem, 1rem) * 36);
+  --container-2xl: calc(var(--tecton-rem, 1rem) * 42);
+  --container-3xl: calc(var(--tecton-rem, 1rem) * 48);
+  --container-4xl: calc(var(--tecton-rem, 1rem) * 56);
+  --container-5xl: calc(var(--tecton-rem, 1rem) * 64);
+  --container-6xl: calc(var(--tecton-rem, 1rem) * 72);
+  --container-7xl: calc(var(--tecton-rem, 1rem) * 80);
 }
 
 @custom-variant dark (&:where(.dark *, [data-theme="dark"] *):not(:where(:is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]), :is(.dark, [data-theme="dark"]) :is(.light, [data-theme="light"]) *)));

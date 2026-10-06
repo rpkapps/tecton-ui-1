@@ -3785,13 +3785,13 @@
     "names": "theming",
     "useWhen": "How colour reaches the screen in @tecton/react and what an application may and may not change. Covers the shadcn CSS variables (--background, --primary, --ring, --success-surface, --border-strong) as the only carrier of the theme and their generation from tokens/tecton.map.json, why an application never declares a --color-* and a missing colour is a token request, the fifteen contrast ramps and how to read a step (bg-blue-120 text-blue-830, steps 50 to 1570, no dark: pair), dark-first with the dark class on html, inverting a section with the light or dark class, ThemeRoot with theme=\"inherit\" | \"dark\" | \"light\" for an independently deployed application, and micro-frontends with @tecton/react/styles/scoped.css, the @tecton/react/postcss/scope plugin and @tecton/react/federation/shared. Load when picking a colour, adding a token, toggling or inverting the mode, retinting a subtree, or mounting one Tecton application inside another.",
     "routed": "",
-    "do": "Setup Reading the palette Inverting a section ThemeRoot: an independently deployed application Micro-frontends: scoped utilities Common Mistakes [CRITICAL] Declaring a --color-* in the application stylesheet [HIGH] A dark: pair on a palette step [HIGH] Overriding a shadcn variable with an inline style [HIGH] globals.css inside an embedded remote [MEDIUM] ThemeRoot as the root of a standalone application"
+    "do": "Setup Reading the palette Inverting a section ThemeRoot: an independently deployed application Micro-frontends: scoped utilities Scaling: --tecton-rem Common Mistakes [CRITICAL] Declaring a --color-* in the application stylesheet [HIGH] A dark: pair on a palette step [HIGH] Overriding a shadcn variable with an inline style [HIGH] globals.css inside an embedded remote [MEDIUM] ThemeRoot as the root of a standalone application"
    },
    "notFor": [],
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2924
+   "tokens": 3011
   }
  ]
 }
