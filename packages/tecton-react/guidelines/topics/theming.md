@@ -226,7 +226,7 @@ html { font-size: 87.5%; }               /* e.g. PrimeNG's 14px base */
 ```
 
 It inherits into micro-frontends. In arbitrary values write `--spacing(n)`
-(`w-[--spacing(104)]`, `text-[--spacing(2.5)]`), never a literal `rem`, which
+(`w-[--spacing(104)]`, `text-[length:--spacing(2.5)]`), never a literal `rem`, which
 ignores the variable.
 
 ## Common Mistakes

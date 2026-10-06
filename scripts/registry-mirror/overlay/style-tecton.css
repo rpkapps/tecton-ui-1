@@ -1746,7 +1746,7 @@
   }
 
   .cn-questionnaire-shortcut {
-    @apply border-input bg-background text-muted-foreground size-5 translate-y-[--spacing(0.45)] group-has-data-[slot=questionnaire-choice-description]/questionnaire-choice:translate-y-0.5 items-center justify-center rounded-md border font-mono text-[--spacing(2.5)] font-medium leading-none;
+    @apply border-input bg-background text-muted-foreground size-5 translate-y-[--spacing(0.45)] group-has-data-[slot=questionnaire-choice-description]/questionnaire-choice:translate-y-0.5 items-center justify-center rounded-md border font-mono text-[length:--spacing(2.5)] font-medium leading-none;
   }
 
   .cn-questionnaire-input-wrapper {

@@ -178,7 +178,7 @@ function createFdaColumns(callbacks: ColumnCallbacks = {}) {
           size="sm"
           segments={5}
           valueLabel={
-            <span className="text-[--spacing(2.5)]">
+            <span className="text-[length:--spacing(2.5)]">
               {riskLabel(getValue())}
             </span>
           }

@@ -119,7 +119,7 @@ function TopNav({
             }
           >
             <Avatar size="sm">
-              <AvatarFallback className="text-[--spacing(2.5)]">
+              <AvatarFallback className="text-[length:--spacing(2.5)]">
                 {currentUser.initials}
               </AvatarFallback>
             </Avatar>

@@ -212,7 +212,7 @@ index 20073740..5ec9c753 100644
        {...props}
      />
 diff --git a/apps/v4/registry/bases/base/ui/calendar.tsx b/apps/v4/registry/bases/base/ui/calendar.tsx
-index 568ab9fd..982c3cf2 100644
+index 568ab9fd..5742cb77 100644
 --- a/apps/v4/registry/bases/base/ui/calendar.tsx
 +++ b/apps/v4/registry/bases/base/ui/calendar.tsx
 @@ -1,6 +1,7 @@
@@ -368,7 +368,7 @@ index 568ab9fd..982c3cf2 100644
          weekdays: cn("flex", defaultClassNames.weekdays),
          weekday: cn(
 -          "flex-1 rounded-(--cell-radius) text-[0.8rem] font-normal text-muted-foreground select-none",
-+          "flex-1 rounded-(--cell-radius) text-[--spacing(3.2)] font-normal text-muted-foreground select-none",
++          "flex-1 rounded-(--cell-radius) text-[length:--spacing(3.2)] font-normal text-muted-foreground select-none",
            defaultClassNames.weekday
          ),
          week: cn("mt-2 flex w-full", defaultClassNames.week),
@@ -377,7 +377,7 @@ index 568ab9fd..982c3cf2 100644
          ),
          week_number: cn(
 -          "text-[0.8rem] text-muted-foreground select-none",
-+          "text-[--spacing(3.2)] text-muted-foreground select-none",
++          "text-[length:--spacing(3.2)] text-muted-foreground select-none",
            defaultClassNames.week_number
          ),
          day: cn(

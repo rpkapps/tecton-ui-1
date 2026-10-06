@@ -49,7 +49,7 @@ html {
 
 Both stay relative to the browser's default font size, so a user who enlarges it enlarges both. The variable inherits, so a Tecton micro-frontend mounted in that shell follows it with no setting of its own.
 
-Write sizes the same way in your own code: a Tailwind step (`p-4`, `h-8`, `text-sm`) or `--spacing(n)` in an arbitrary value (`w-[--spacing(104)]`, `text-[--spacing(2.5)]`) follows `--tecton-rem`, a literal `rem` (`w-[26rem]`, `style={{ width: "2rem" }}`) does not.
+Write sizes the same way in your own code: a Tailwind step (`p-4`, `h-8`, `text-sm`) or `--spacing(n)` in an arbitrary value (`w-[--spacing(104)]`, `text-[length:--spacing(2.5)]`) follows `--tecton-rem`, a literal `rem` (`w-[26rem]`, `style={{ width: "2rem" }}`) does not.
 
 ## Radius
 
