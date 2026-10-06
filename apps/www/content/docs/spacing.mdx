@@ -34,7 +34,7 @@ The values are also exposed as `--tecton-space-*` variables for non-Tailwind con
 
 ## Scaling Tecton
 
-Every size Tecton derives from the root font size (the spacing steps, the `text-*` sizes and the `max-w-*` container widths) is a multiple of one variable, `--tecton-rem`, which defaults to `1rem`. Radii and borders are in pixels and do not take part.
+Tecton's rem-based sizes (the spacing steps and the `text-*` sizes) are multiples of one variable, `--tecton-rem`, which defaults to `1rem`. Radii and borders are in pixels and do not take part. The `max-w-*` container widths (`max-w-md`…) stay plain `rem`: Tailwind also uses them for container queries (`@md:`), where a variable is not allowed.
 
 A page that has to change its root font size for something else, such as an Angular micro-frontend built on PrimeNG's 14px base inside a Tecton shell, sets the root and gives Tecton its 16px back in the same place:
 

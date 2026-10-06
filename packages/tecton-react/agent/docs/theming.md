@@ -191,8 +191,9 @@ full variable set on the remote's root and stops it following the host.
 
 ## Scaling: --tecton-rem
 
-Every rem-based size (spacing steps, `text-*`, `max-w-*` containers) is a multiple of
-`--tecton-rem` (default `1rem`). A shell whose root font size is set for another
+The spacing steps and `text-*` sizes are multiples of `--tecton-rem` (default
+`1rem`); `max-w-*` container widths stay plain rem (they also drive `@md:`
+container queries, which cannot read a variable). A shell whose root font size is set for another
 design system keeps Tecton at its own size with one variable:
 
 ```css
