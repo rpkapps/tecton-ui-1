@@ -215,9 +215,10 @@ full variable set on the remote's root and stops it following the host.
 
 ## Scaling: --tecton-rem
 
-The spacing steps and `text-*` sizes are multiples of `--tecton-rem` (default
-`1rem`); `max-w-*` container widths stay plain rem (they also drive `@md:`
-container queries, which cannot read a variable). A shell whose root font size is set for another
+The spacing steps, `text-*` sizes (including `text-2xs`, Tecton's 10px tiny
+text) and named widths (`w-md`, `max-w-md`, `min-w-md`) are multiples of
+`--tecton-rem` (default `1rem`); container query breakpoints (`@md:`) stay
+plain rem, because they cannot read a variable. A shell whose root font size is set for another
 design system keeps Tecton at its own size with one variable:
 
 ```css
@@ -226,7 +227,7 @@ html { font-size: 87.5%; }               /* e.g. PrimeNG's 14px base */
 ```
 
 It inherits into micro-frontends. In arbitrary values write `--spacing(n)`
-(`w-[--spacing(104)]`, `text-[length:--spacing(2.5)]`), never a literal `rem`, which
+(`w-[--spacing(104)]`, `text-[length:--spacing(3)]`), never a literal `rem`, which
 ignores the variable.
 
 ## Common Mistakes

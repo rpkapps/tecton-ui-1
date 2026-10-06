@@ -205,7 +205,7 @@ describe("CircularProgress", () => {
 
   it.each([
     ["xs", "text-[length:--spacing(2)]"],
-    ["sm", "text-[length:--spacing(2.5)]"],
+    ["sm", "text-2xs"],
   ] as const)(
     "size=%s keeps its label size next to the colour class",
     (size, sizeClass) => {
