@@ -502,7 +502,6 @@
   --text-8xl: calc(var(--tecton-rem, 1rem) * 6);
   --text-9xl: calc(var(--tecton-rem, 1rem) * 8);
   --radius-xs: var(--tecton-radius-25, 2px);
-  --text-tiny--line-height: 1.4;
   --max-width-3xs: calc(var(--tecton-rem, 1rem) * 16);
   --max-width-2xs: calc(var(--tecton-rem, 1rem) * 18);
   --max-width-xs: calc(var(--tecton-rem, 1rem) * 20);
