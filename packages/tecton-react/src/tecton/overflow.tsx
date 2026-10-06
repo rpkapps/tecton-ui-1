@@ -1190,7 +1190,7 @@ function OverflowItem({
         className={cn(
           "flex shrink-0 items-center data-overflowing:hidden",
           elastic &&
-            "max-w-(--overflow-max,100%) min-w-(--overflow-min,12rem) flex-1 shrink basis-0 [&>*]:w-full",
+            "max-w-(--overflow-max,100%) min-w-(--overflow-min,--spacing(48)) flex-1 shrink basis-0 [&>*]:w-full",
           className
         )}
         style={

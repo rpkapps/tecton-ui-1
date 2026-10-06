@@ -11,9 +11,9 @@ import { MinusIcon, TrendingDownIcon, TrendingUpIcon } from "lucide-react"
 const statVariants = cva("flex min-w-0 flex-col gap-0.5", {
   variants: {
     size: {
-      sm: "[--stat-value:0.875rem]",
-      md: "[--stat-value:1.25rem]",
-      lg: "[--stat-value:1.75rem]",
+      sm: "[--stat-value:--spacing(3.5)]",
+      md: "[--stat-value:--spacing(5)]",
+      lg: "[--stat-value:--spacing(7)]",
     },
     align: {
       start: "items-start text-start",
@@ -162,7 +162,7 @@ function StatGroup({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="stat-group"
       className={cn(
-        "grid grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] gap-x-6 gap-y-4",
+        "grid grid-cols-[repeat(auto-fit,minmax(--spacing(28),1fr))] gap-x-6 gap-y-4",
         className
       )}
       {...props}
