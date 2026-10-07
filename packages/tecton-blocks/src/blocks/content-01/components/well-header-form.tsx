@@ -50,7 +50,10 @@ function FormSection({
   return (
     <FieldSet
       data-slot="form-section"
-      className={cn("grid gap-4 md:grid-cols-[14rem_1fr] md:gap-8", className)}
+      className={cn(
+        "grid gap-4 md:grid-cols-[--spacing(56)_1fr] md:gap-8",
+        className
+      )}
     >
       <div className="flex flex-col gap-1">
         <FieldLegend variant="label" className="mb-0">
