@@ -331,10 +331,10 @@ describe("sheet", () => {
         "data-[side=left]:left-0",
         "ltr:data-[side=left]:border-r",
         "rtl:data-[side=left]:border-r",
-        "ltr:data-[side=left]:data-starting-style:translate-x-[--spacing(-10)]",
-        "rtl:data-[side=left]:data-starting-style:translate-x-[--spacing(-10)]",
-        "ltr:data-[side=left]:data-ending-style:translate-x-[--spacing(-10)]",
-        "rtl:data-[side=left]:data-ending-style:translate-x-[--spacing(-10)]",
+        "ltr:data-[side=left]:data-starting-style:translate-x-[-2.5rem]",
+        "rtl:data-[side=left]:data-starting-style:translate-x-[-2.5rem]",
+        "ltr:data-[side=left]:data-ending-style:translate-x-[-2.5rem]",
+        "rtl:data-[side=left]:data-ending-style:translate-x-[-2.5rem]",
       ])
     )
     expect(classes.filter((c) => MIRRORED.test(c))).toEqual([])

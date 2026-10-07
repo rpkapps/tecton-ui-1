@@ -155,9 +155,9 @@ describe("Meter", () => {
   })
 
   it.each([
-    ["sm", "[--meter-h:--spacing(1)]"],
-    ["md", "[--meter-h:--spacing(1.5)]"],
-    ["lg", "[--meter-h:--spacing(2.5)]"],
+    ["sm", "[--meter-h:0.25rem]"],
+    ["md", "[--meter-h:0.375rem]"],
+    ["lg", "[--meter-h:0.625rem]"],
   ] as const)("size=%s", (size, cls) => {
     render(<Meter aria-label="m" value={1} size={size} />)
     const meter = screen.getByRole("meter")

@@ -22,9 +22,9 @@ const panelVariants = cva(
         outline: "rounded-xl border border-border bg-transparent",
       },
       size: {
-        sm: "text-sm [--panel-px:--spacing(3)] [--panel-py:--spacing(2)]",
-        md: "text-sm [--panel-px:--spacing(4)] [--panel-py:--spacing(3)]",
-        lg: "[--panel-px:--spacing(6)] [--panel-py:--spacing(4)]",
+        sm: "text-sm [--panel-px:0.75rem] [--panel-py:0.5rem]",
+        md: "text-sm [--panel-px:1rem] [--panel-py:0.75rem]",
+        lg: "[--panel-px:1.5rem] [--panel-py:1rem]",
       },
     },
     defaultVariants: {

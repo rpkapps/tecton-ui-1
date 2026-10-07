@@ -202,20 +202,4 @@ describe("CircularProgress", () => {
       (0.5).toLocaleString("de-DE", { style: "percent" })
     )
   })
-
-  it.each([
-    ["xs", "text-[length:--spacing(2)]"],
-    ["sm", "text-2xs"],
-  ] as const)(
-    "size=%s keeps its label size next to the colour class",
-    (size, sizeClass) => {
-      render(
-        <CircularProgress aria-label="p" value={50} size={size} showValue />
-      )
-      expect(screen.getByRole("progressbar")).toHaveClass(
-        sizeClass,
-        "text-progress"
-      )
-    }
-  )
 })

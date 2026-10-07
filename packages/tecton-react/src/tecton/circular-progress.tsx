@@ -18,8 +18,8 @@ const circularProgressVariants = cva("relative inline-flex shrink-0", {
       // ring's 48-unit viewBox and scales with the diameter. The values give
       // 2.5 / 3 / 3.5 / 4 / 5 screen px at the size's own diameter
       // (xs: 7.5 × 16/48 = 2.5px).
-      xs: "size-4 text-[length:--spacing(2)] [--stroke:7.5px]",
-      sm: "size-6 text-2xs [--stroke:6px]",
+      xs: "size-4 text-[0.5rem] [--stroke:7.5px]",
+      sm: "size-6 text-[0.625rem] [--stroke:6px]",
       md: "size-10 text-xs [--stroke:4.2px]",
       lg: "size-16 text-sm [--stroke:3px]",
       xl: "size-24 text-base [--stroke:2.5px]",

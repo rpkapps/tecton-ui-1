@@ -40,9 +40,9 @@ describe("Panel", () => {
   })
 
   it.each([
-    ["sm", "[--panel-px:--spacing(3)]"],
-    ["md", "[--panel-px:--spacing(4)]"],
-    ["lg", "[--panel-px:--spacing(6)]"],
+    ["sm", "[--panel-px:0.75rem]"],
+    ["md", "[--panel-px:1rem]"],
+    ["lg", "[--panel-px:1.5rem]"],
   ] as const)("size=%s", (size, cls) => {
     const { container } = render(<Panel size={size} />)
     const panel = container.querySelector('[data-slot="panel"]')
