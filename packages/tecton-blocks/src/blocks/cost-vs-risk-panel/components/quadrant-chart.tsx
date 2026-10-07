@@ -184,7 +184,7 @@ function QuadrantTooltip({ point }: { point: DesignPoint }) {
         />
         {point.name}
         {point.isRecommended && (
-          <span className="ms-auto text-[0.625rem] text-muted-foreground">
+          <span className="ms-auto text-2xs text-muted-foreground">
             Recommended
           </span>
         )}

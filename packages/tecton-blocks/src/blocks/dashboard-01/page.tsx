@@ -115,7 +115,7 @@ function Dashboard({ className, hideAgent = false, ...props }: DashboardProps) {
 
               <div
                 data-slot="dashboard-grid"
-                className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-[repeat(auto-fit,minmax(20rem,1fr))]"
+                className="grid grid-cols-1 gap-4 md:grid-cols-2 2xl:grid-cols-[repeat(auto-fit,minmax(--spacing(80),1fr))]"
               >
                 {cards.map((fda) => (
                   <FdaCard

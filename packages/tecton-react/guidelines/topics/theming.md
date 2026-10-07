@@ -213,6 +213,23 @@ A remote with **no** Tecton shell to inherit from adds
 IBM Plex Mono itself. Leave it out whenever there is a shell: it declares the
 full variable set on the remote's root and stops it following the host.
 
+## Scaling: --tecton-rem
+
+The spacing steps, `text-*` sizes (including `text-2xs`, Tecton's 10px tiny
+text) and named widths (`w-md`, `max-w-md`, `min-w-md`) are multiples of
+`--tecton-rem` (default `1rem`); container query breakpoints (`@md:`) stay
+plain rem, because they cannot read a variable. A shell whose root font size is set for another
+design system keeps Tecton at its own size with one variable:
+
+```css
+html { font-size: 87.5%; }               /* e.g. PrimeNG's 14px base */
+:root { --tecton-rem: calc(1rem / 0.875); } /* Tecton stays at 16px */
+```
+
+It inherits into micro-frontends. In arbitrary values write `--spacing(n)`
+(`w-[--spacing(104)]`, `text-[length:--spacing(3)]`), never a literal `rem`, which
+ignores the variable.
+
 ## Common Mistakes
 
 ### [CRITICAL] Declaring a --color-* in the application stylesheet
