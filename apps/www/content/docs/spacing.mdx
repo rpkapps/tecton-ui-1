@@ -5,7 +5,7 @@ description: Tecton's spacing scale and corner radii, and how they map to the Ta
 
 ## Spacing
 
-Tecton's spacing scale is 4px-based and coincides with Tailwind's default spacing (`--spacing` is a quarter of `--tecton-rem`, which is `1rem` unless the page [scales Tecton](#scaling-tecton)), so the usual Tailwind steps apply:
+Tecton's spacing scale is 4px-based and coincides with Tailwind's default spacing (`--spacing: 0.25rem`), so no configuration is needed:
 
 | Tecton | px | Tailwind |
 | --- | --- | --- |
@@ -32,25 +32,6 @@ Tecton's spacing scale is 4px-based and coincides with Tailwind's default spacin
 
 The values are also exposed as `--tecton-space-*` variables for non-Tailwind consumers.
 
-## Scaling Tecton
-
-Tecton's rem-based sizes (the spacing steps, the `text-*` sizes and the named widths `w-md`, `max-w-md`, `min-w-md`…) are multiples of one variable, `--tecton-rem`, which defaults to `1rem`. Radii and borders are in pixels and do not take part. Container query breakpoints (`@md:`) stay plain `rem`, because a variable is not allowed there.
-
-A page that has to change its root font size for something else, such as an Angular micro-frontend built on PrimeNG's 14px base inside a Tecton shell, sets the root and gives Tecton its 16px back in the same place:
-
-```css title="shell.css"
-html {
-  font-size: 87.5%; /* 14px: what PrimeNG is designed for */
-}
-:root {
-  --tecton-rem: calc(1rem / 0.875); /* Tecton stays at 16px */
-}
-```
-
-Both stay relative to the browser's default font size, so a user who enlarges it enlarges both. The variable inherits, so a Tecton micro-frontend mounted in that shell follows it with no setting of its own.
-
-Write sizes the same way in your own code: a Tailwind step (`p-4`, `h-8`, `text-sm`, `text-2xs` for Tecton's 10px tiny text) or `--spacing(n)` in an arbitrary value (`w-[--spacing(104)]`, `text-[length:--spacing(3)]`) follows `--tecton-rem`, a literal `rem` (`w-[26rem]`, `style={{ width: "2rem" }}`) does not.
-
 ## Radius
 
 Tecton's default corner radius is **4px**; the scale is not a multiple of a single base, so the shadcn radius variables are set explicitly instead of being derived from `--radius`:
@@ -58,7 +39,7 @@ Tecton's default corner radius is **4px**; the scale is not a multiple of a sing
 | Tecton | px | shadcn / Tailwind |
 | --- | --- | --- |
 | radius-0 | 0 | `rounded-none` |
-| radius-25 | 2 | `--radius-xs`, `--radius-sm` → `rounded-xs`, `rounded-sm` |
+| radius-25 | 2 | `--radius-sm` → `rounded-sm` |
 | radius-50 | 4 | `--radius`, `--radius-md` → `rounded-md` (default) |
 | radius-100 | 8 | `--radius-lg` → `rounded-lg` |
 | radius-150 | 12 | `--radius-xl` → `rounded-xl` |

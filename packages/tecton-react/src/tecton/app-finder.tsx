@@ -213,7 +213,7 @@ function AppFinderMenu({
       align={align}
       sideOffset={sideOffset}
       className={cn(
-        "w-[--spacing(104)] max-w-[calc(100vw-(--spacing(4)))] gap-0 overflow-hidden rounded-lg p-0",
+        "w-[26rem] max-w-[calc(100vw-1rem)] gap-0 overflow-hidden rounded-lg p-0",
         className
       )}
       {...props}
@@ -290,7 +290,7 @@ function AppFinderList({
     <AppFinderListContext.Provider value={onSelect}>
       <CommandList
         data-slot="app-finder-list"
-        className={cn("max-h-[min(--spacing(96),60vh)]", className)}
+        className={cn("max-h-[min(24rem,60vh)]", className)}
         {...props}
       >
         <CommandEmpty className="flex flex-col items-center gap-1 py-8">

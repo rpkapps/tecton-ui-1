@@ -43,11 +43,7 @@ describe("Stat", () => {
     const { container } = render(<Stat size="lg" align="end" />)
     const stat = container.querySelector('[data-slot="stat"]')
     expect(stat).toHaveAttribute("data-size", "lg")
-    expect(stat).toHaveClass(
-      "[--stat-value:--spacing(7)]",
-      "items-end",
-      "text-end"
-    )
+    expect(stat).toHaveClass("[--stat-value:1.75rem]", "items-end", "text-end")
   })
 
   it("omits the unit element when no unit is given", () => {

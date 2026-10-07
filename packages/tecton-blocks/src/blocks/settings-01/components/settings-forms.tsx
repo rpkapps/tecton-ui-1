@@ -63,10 +63,7 @@ function SettingsSection({
   return (
     <section
       data-slot="settings-section"
-      className={cn(
-        "grid gap-4 md:grid-cols-[--spacing(56)_1fr] md:gap-8",
-        className
-      )}
+      className={cn("grid gap-4 md:grid-cols-[14rem_1fr] md:gap-8", className)}
     >
       <div className="flex flex-col gap-1">
         <h2 className="text-sm font-medium">{title}</h2>

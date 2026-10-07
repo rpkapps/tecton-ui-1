@@ -377,9 +377,7 @@ function TreeViewItemContent({
             "flex h-8 min-w-0 flex-1 items-center gap-1.5 pe-1",
             className
           )}
-          style={{
-            paddingInlineStart: `calc(var(--tecton-rem, 1rem) * ${(level - 1) * 1.25 + 0.25})`,
-          }}
+          style={{ paddingInlineStart: `${(level - 1) * 1.25 + 0.25}rem` }}
         >
           <ButtonPrimitive
             slot="chevron"

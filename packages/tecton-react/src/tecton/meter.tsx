@@ -16,9 +16,9 @@ import { useLocale } from "@tecton/react/tecton/provider"
 const meterVariants = cva("flex w-full flex-col gap-1", {
   variants: {
     size: {
-      sm: "text-xs [--meter-h:--spacing(1)]",
-      md: "text-sm [--meter-h:--spacing(1.5)]",
-      lg: "text-sm [--meter-h:--spacing(2.5)]",
+      sm: "text-xs [--meter-h:0.25rem]",
+      md: "text-sm [--meter-h:0.375rem]",
+      lg: "text-sm [--meter-h:0.625rem]",
     },
   },
   defaultVariants: {

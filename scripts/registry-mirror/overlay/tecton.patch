@@ -212,7 +212,7 @@ index 20073740..5ec9c753 100644
        {...props}
      />
 diff --git a/apps/v4/registry/bases/base/ui/calendar.tsx b/apps/v4/registry/bases/base/ui/calendar.tsx
-index 568ab9fd..0e035115 100644
+index 568ab9fd..a6a95715 100644
 --- a/apps/v4/registry/bases/base/ui/calendar.tsx
 +++ b/apps/v4/registry/bases/base/ui/calendar.tsx
 @@ -1,6 +1,7 @@
@@ -351,7 +351,7 @@ index 568ab9fd..0e035115 100644
            defaultClassNames.dropdown_root
          ),
          dropdown: cn(
-@@ -81,16 +178,15 @@ function Calendar({
+@@ -81,10 +178,9 @@ function Calendar({
            defaultClassNames.dropdown
          ),
          caption_label: cn(
@@ -365,22 +365,6 @@ index 568ab9fd..0e035115 100644
            defaultClassNames.caption_label
          ),
          month_grid: cn("w-full border-collapse", defaultClassNames.month_grid),
-         weekdays: cn("flex", defaultClassNames.weekdays),
-         weekday: cn(
--          "flex-1 rounded-(--cell-radius) text-[0.8rem] font-normal text-muted-foreground select-none",
-+          "flex-1 rounded-(--cell-radius) text-xs font-normal text-muted-foreground select-none",
-           defaultClassNames.weekday
-         ),
-         week: cn("mt-2 flex w-full", defaultClassNames.week),
-@@ -99,7 +195,7 @@ function Calendar({
-           defaultClassNames.week_number_header
-         ),
-         week_number: cn(
--          "text-[0.8rem] text-muted-foreground select-none",
-+          "text-xs text-muted-foreground select-none",
-           defaultClassNames.week_number
-         ),
-         day: cn(
 @@ -133,72 +229,7 @@ function Calendar({
          hidden: cn("invisible", defaultClassNames.hidden),
          ...classNames,
@@ -605,7 +589,7 @@ index 8c68524a..e9b34576 100644
        <DialogPrimitive.Popup
          data-slot="dialog-content"
 diff --git a/apps/v4/registry/bases/base/ui/drawer.tsx b/apps/v4/registry/bases/base/ui/drawer.tsx
-index bebe3a91..037bbb89 100644
+index bebe3a91..1a632390 100644
 --- a/apps/v4/registry/bases/base/ui/drawer.tsx
 +++ b/apps/v4/registry/bases/base/ui/drawer.tsx
 @@ -2,6 +2,7 @@
@@ -663,20 +647,16 @@ index bebe3a91..037bbb89 100644
        {modal === true && (
          <DrawerOverlay data-snap-points={hasSnapPoints ? "" : undefined} />
        )}
-@@ -125,25 +136,25 @@ function DrawerContent({
+@@ -125,7 +136,7 @@ function DrawerContent({
              // Nested.
              "data-nested-drawer-open:overflow-hidden data-nested-drawer-open:brightness-95",
              // Bleed.
 -            "after:pointer-events-none after:absolute after:bg-(--drawer-bleed-background,var(--color-popover)) data-[swipe-axis=x]:after:inset-y-0 data-[swipe-axis=x]:after:w-(--bleed) data-[swipe-axis=y]:after:inset-x-0 data-[swipe-axis=y]:after:h-(--bleed) data-[swipe-direction=down]:after:top-full data-[swipe-direction=left]:after:right-full data-[swipe-direction=right]:after:left-full data-[swipe-direction=up]:after:bottom-full",
 +            "after:pointer-events-none after:absolute after:bg-(--drawer-bleed-background,var(--color-popover)) data-[swipe-axis=x]:after:inset-y-0 data-[swipe-axis=x]:after:w-(--bleed) data-[swipe-axis=y]:after:inset-x-0 data-[swipe-axis=y]:after:h-(--bleed) data-[swipe-direction=down]:after:top-full ltr:data-[swipe-direction=left]:after:right-full rtl:data-[swipe-direction=left]:after:right-full ltr:data-[swipe-direction=right]:after:left-full rtl:data-[swipe-direction=right]:after:left-full data-[swipe-direction=up]:after:bottom-full",
              // Sizing.
--            "[--drawer-content-height:var(--drawer-height,auto)] data-[swipe-axis=x]:[--drawer-content-width:75%] data-[swipe-axis=y]:[--drawer-content-max-height:calc(100dvh-6rem)] data-[swipe-axis=y]:data-snap-points:[--drawer-content-height:100dvh] data-[swipe-axis=x]:sm:[--drawer-content-width:24rem]",
-+            "[--drawer-content-height:var(--drawer-height,auto)] data-[swipe-axis=x]:[--drawer-content-width:75%] data-[swipe-axis=y]:[--drawer-content-max-height:calc(100dvh-(--spacing(24)))] data-[swipe-axis=y]:data-snap-points:[--drawer-content-height:100dvh] data-[swipe-axis=x]:sm:[--drawer-content-width:--spacing(96)]",
+             "[--drawer-content-height:var(--drawer-height,auto)] data-[swipe-axis=x]:[--drawer-content-width:75%] data-[swipe-axis=y]:[--drawer-content-max-height:calc(100dvh-6rem)] data-[swipe-axis=y]:data-snap-points:[--drawer-content-height:100dvh] data-[swipe-axis=x]:sm:[--drawer-content-width:24rem]",
              // Stack.
--            "[--bleed:3rem] [--peek:1rem] [--stack-height:var(--drawer-frontmost-height,var(--drawer-height,0px))] [--stack-peek-offset:max(0px,calc((var(--nested-drawers)-var(--stack-progress))*var(--peek)))] [--stack-progress:clamp(0,var(--drawer-swipe-progress),1)] [--stack-scale-base:max(0,calc(1-(var(--nested-drawers)*var(--stack-step))))] [--stack-scale:clamp(0,calc(var(--stack-scale-base)+(var(--stack-step)*var(--stack-progress))),1)] [--stack-shrink:calc(1-var(--stack-scale))] [--stack-step:0.05]",
-+            "[--bleed:--spacing(12)] [--peek:--spacing(4)] [--stack-height:var(--drawer-frontmost-height,var(--drawer-height,0px))] [--stack-peek-offset:max(0px,calc((var(--nested-drawers)-var(--stack-progress))*var(--peek)))] [--stack-progress:clamp(0,var(--drawer-swipe-progress),1)] [--stack-scale-base:max(0,calc(1-(var(--nested-drawers)*var(--stack-step))))] [--stack-scale:clamp(0,calc(var(--stack-scale-base)+(var(--stack-step)*var(--stack-progress))),1)] [--stack-shrink:calc(1-var(--stack-scale))] [--stack-step:0.05]",
-             // Transitions.
-             "data-ending-style:transform-(--closed-transform) data-ending-style:opacity-[0.9999] data-ending-style:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-nested-drawer-swiping:duration-0 data-ending-style:data-nested-drawer-swiping:duration-[calc(var(--drawer-swipe-strength)*400ms)] data-starting-style:transform-(--closed-transform) data-swiping:duration-0 data-ending-style:data-swiping:duration-[calc(var(--drawer-swipe-strength)*400ms)]",
+@@ -135,15 +146,15 @@ function DrawerContent({
              // Axis: y.
              "data-[swipe-axis=y]:inset-x-0 data-[swipe-axis=y]:data-nested-drawer-open:h-(--stack-height)",
              // Axis: x.
@@ -869,19 +849,6 @@ index 06c96abf..04b3865d 100644
  
 -export { Input }
 +export { Input, inputVariants }
-diff --git a/apps/v4/registry/bases/base/ui/message-scroller.tsx b/apps/v4/registry/bases/base/ui/message-scroller.tsx
-index 37268f11..4d33507f 100644
---- a/apps/v4/registry/bases/base/ui/message-scroller.tsx
-+++ b/apps/v4/registry/bases/base/ui/message-scroller.tsx
-@@ -76,7 +76,7 @@ function MessageScrollerItem({
-       data-slot="message-scroller-item"
-       scrollAnchor={scrollAnchor}
-       className={cn(
--        "cn-message-scroller-item min-w-0 shrink-0 [contain-intrinsic-size:auto_10rem] [content-visibility:auto]",
-+        "cn-message-scroller-item min-w-0 shrink-0 [contain-intrinsic-size:auto_--spacing(40)] [content-visibility:auto]",
-         className
-       )}
-       {...props}
 diff --git a/apps/v4/registry/bases/base/ui/pagination.tsx b/apps/v4/registry/bases/base/ui/pagination.tsx
 index b1f8b1df..4880c73b 100644
 --- a/apps/v4/registry/bases/base/ui/pagination.tsx
@@ -1097,7 +1064,7 @@ index d69c1342..33479f81 100644
 -export { Separator }
 +export { Separator, separatorVariants }
 diff --git a/apps/v4/registry/bases/base/ui/sheet.tsx b/apps/v4/registry/bases/base/ui/sheet.tsx
-index 72669ad9..0b191b7c 100644
+index 72669ad9..3e83f20b 100644
 --- a/apps/v4/registry/bases/base/ui/sheet.tsx
 +++ b/apps/v4/registry/bases/base/ui/sheet.tsx
 @@ -2,6 +2,7 @@
@@ -1151,25 +1118,19 @@ index 72669ad9..0b191b7c 100644
          data-side={side}
          className={cn(
 -          "cn-sheet-content data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] data-[side=left]:data-ending-style:translate-x-[-2.5rem] data-[side=left]:data-starting-style:translate-x-[-2.5rem] data-[side=right]:data-ending-style:translate-x-[2.5rem] data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem]",
-+          "cn-sheet-content data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:data-ending-style:translate-y-[--spacing(10)] data-[side=bottom]:data-starting-style:translate-y-[--spacing(10)] ltr:data-[side=left]:data-ending-style:translate-x-[--spacing(-10)] rtl:data-[side=left]:data-ending-style:translate-x-[--spacing(-10)] ltr:data-[side=left]:data-starting-style:translate-x-[--spacing(-10)] rtl:data-[side=left]:data-starting-style:translate-x-[--spacing(-10)] ltr:data-[side=right]:data-ending-style:translate-x-[--spacing(10)] rtl:data-[side=right]:data-ending-style:translate-x-[--spacing(10)] ltr:data-[side=right]:data-starting-style:translate-x-[--spacing(10)] rtl:data-[side=right]:data-starting-style:translate-x-[--spacing(10)] data-[side=top]:data-ending-style:translate-y-[--spacing(-10)] data-[side=top]:data-starting-style:translate-y-[--spacing(-10)]",
++          "cn-sheet-content data-ending-style:opacity-0 data-starting-style:opacity-0 data-[side=bottom]:data-ending-style:translate-y-[2.5rem] data-[side=bottom]:data-starting-style:translate-y-[2.5rem] ltr:data-[side=left]:data-ending-style:translate-x-[-2.5rem] rtl:data-[side=left]:data-ending-style:translate-x-[-2.5rem] ltr:data-[side=left]:data-starting-style:translate-x-[-2.5rem] rtl:data-[side=left]:data-starting-style:translate-x-[-2.5rem] ltr:data-[side=right]:data-ending-style:translate-x-[2.5rem] rtl:data-[side=right]:data-ending-style:translate-x-[2.5rem] ltr:data-[side=right]:data-starting-style:translate-x-[2.5rem] rtl:data-[side=right]:data-starting-style:translate-x-[2.5rem] data-[side=top]:data-ending-style:translate-y-[-2.5rem] data-[side=top]:data-starting-style:translate-y-[-2.5rem]",
            className
          )}
          {...props}
 diff --git a/apps/v4/registry/bases/base/ui/sidebar.tsx b/apps/v4/registry/bases/base/ui/sidebar.tsx
-index 1ca33564..b56d915c 100644
+index 1ca33564..70aef2a3 100644
 --- a/apps/v4/registry/bases/base/ui/sidebar.tsx
 +++ b/apps/v4/registry/bases/base/ui/sidebar.tsx
-@@ -27,10 +27,9 @@ import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
- 
- const SIDEBAR_COOKIE_NAME = "sidebar_state"
- const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
--const SIDEBAR_WIDTH = "16rem"
--const SIDEBAR_WIDTH_MOBILE = "18rem"
--const SIDEBAR_WIDTH_ICON = "3rem"
+@@ -30,7 +30,6 @@ const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+ const SIDEBAR_WIDTH = "16rem"
+ const SIDEBAR_WIDTH_MOBILE = "18rem"
+ const SIDEBAR_WIDTH_ICON = "3rem"
 -const SIDEBAR_KEYBOARD_SHORTCUT = "b"
-+const SIDEBAR_WIDTH = "calc(var(--tecton-rem, 1rem) * 16)"
-+const SIDEBAR_WIDTH_MOBILE = "calc(var(--tecton-rem, 1rem) * 18)"
-+const SIDEBAR_WIDTH_ICON = "calc(var(--tecton-rem, 1rem) * 3)"
  
  type SidebarContextProps = {
    state: "expanded" | "collapsed"

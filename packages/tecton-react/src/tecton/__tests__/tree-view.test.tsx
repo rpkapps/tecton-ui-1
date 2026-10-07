@@ -78,9 +78,7 @@ describe("TreeView", () => {
     const child = container.querySelector(
       '[data-slot="tree-view-item"][data-level="2"] [data-slot="tree-view-item-content"]'
     ) as HTMLElement
-    expect(child.style.paddingInlineStart).toBe(
-      "calc(var(--tecton-rem, 1rem) * 1.5)"
-    )
+    expect(child.style.paddingInlineStart).toBe("1.5rem")
   })
 
   it("hides the chevron on leaf rows and shows a dot instead of a folder", () => {
