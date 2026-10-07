@@ -7,7 +7,7 @@
  * both undecided). The literal appears in generated component self-imports,
  * hand-written `src/tecton` and block imports, apps/www examples and docs,
  * config (tsconfig paths, vitest aliases, the eslint config, the registry
- * mirror overlay, the blocks registry builder) and prose (CLAUDE.md,
+ * mirror overlay, the blocks registry builder) and prose (AGENTS.md,
  * README.md, docs/UPSTREAM.md).
  *
  * What it does:
