@@ -1,5 +1,12 @@
 import * as React from "react"
-import { act, fireEvent, render, screen, within } from "@testing-library/react"
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
@@ -450,6 +457,27 @@ describe("DocumentTabs", () => {
       expect(onClose).toHaveBeenLastCalledWith(["w2"])
     })
 
+    it("neither focuses nor opens the tab it was opened on", async () => {
+      const user = userEvent.setup()
+      const onValueChange = vi.fn()
+      render(<Strip onValueChange={onValueChange} />)
+      await user.click(screen.getByRole("tab", { name: "Well-01" }))
+      onValueChange.mockClear()
+
+      const target = screen.getByRole("tab", { name: "Well-03" })
+      // The secondary press does not move focus to the tab.
+      expect(fireEvent.mouseDown(target, { button: 2 })).toBe(false)
+      fireEvent.contextMenu(target)
+      expect(await screen.findByRole("menu")).toBeInTheDocument()
+      await user.keyboard("{Escape}")
+      await waitFor(() =>
+        expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+      )
+      expect(onValueChange).not.toHaveBeenCalled()
+      expect(screen.getByRole("tab", { name: "Well-01" })).toHaveFocus()
+      expect(target).toHaveAttribute("aria-selected", "false")
+    })
+
     it("draws an icon and the shortcut on each default item", async () => {
       render(<Strip />)
       fireEvent.contextMenu(screen.getByRole("tab", { name: "Well-02" }))
@@ -742,6 +770,41 @@ describe("DocumentTabs", () => {
         screen.getByRole("button", { name: "Hidden wells (2)" })
       ).toBeInTheDocument()
     })
+  })
+
+  it("renders only the tabs a rename or an overflow concerns", async () => {
+    const user = userEvent.setup()
+    const renders = new Map<string, number>()
+    const count = (id: string) => renders.set(id, (renders.get(id) ?? 0) + 1)
+    // Uncontrolled, so nothing above the strip renders again.
+    render(
+      <DocumentTabs defaultValue="w1" onRename={() => {}}>
+        <DocumentTabsList>
+          {WELLS.map((well) => (
+            <React.Profiler key={well.id} id={well.id} onRender={count}>
+              <DocumentTabsTrigger value={well.id}>
+                <DocumentTabsLabel>{well.label}</DocumentTabsLabel>
+              </DocumentTabsTrigger>
+            </React.Profiler>
+          ))}
+        </DocumentTabsList>
+      </DocumentTabs>
+    )
+    act(() => screen.getByRole("tab", { name: "Well-01" }).focus())
+    renders.clear()
+    await user.keyboard("{F2}")
+    await user.keyboard("{Escape}")
+    expect([...renders.keys()]).toEqual(["w1"])
+
+    renders.clear()
+    resize(250)
+    // Well-03 and Well-04 move into the menu; Well-01 and Well-02 stay put.
+    expect([...renders.keys()].sort()).toEqual(["w3", "w4"])
+  })
+
+  it("hides a leaving panel at once", () => {
+    render(<Strip />)
+    expect(screen.getByRole("tabpanel")).toHaveClass("data-ending-style:hidden")
   })
 
   it("shares one size observer and one context menu across its tabs", () => {
