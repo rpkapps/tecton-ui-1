@@ -1,0 +1,242 @@
+---
+title: Document Tabs
+description: "Workspace tabs the user opens, closes, renames and reorders, with a More menu for the ones that do not fit."
+---
+
+<ComponentPreview name="document-tabs-demo" align="start" />
+
+## Usage
+
+```tsx
+import {
+  DocumentTabs,
+  DocumentTabsAdd,
+  DocumentTabsClose,
+  DocumentTabsContent,
+  DocumentTabsLabel,
+  DocumentTabsList,
+  DocumentTabsTrigger,
+} from "@tecton/react/tecton/document-tabs"
+```
+
+```tsx
+const [wells, setWells] = React.useState(initialWells)
+const [active, setActive] = React.useState(initialWells[0].id)
+
+<DocumentTabs
+  value={active}
+  onValueChange={setActive}
+  onClose={(ids) => setWells((all) => all.filter((w) => !ids.includes(w.id)))}
+  onRename={(id, name) =>
+    setWells((all) => all.map((w) => (w.id === id ? { ...w, name } : w)))
+  }
+  onReorder={(ids) => setWells((all) => ids.map((id) => all.find((w) => w.id === id)!))}
+>
+  <DocumentTabsList aria-label="Open wells">
+    {wells.map((well) => (
+      <DocumentTabsTrigger key={well.id} value={well.id}>
+        <WellIcon />
+        <DocumentTabsLabel>{well.name}</DocumentTabsLabel>
+        <DocumentTabsClose />
+      </DocumentTabsTrigger>
+    ))}
+    <DocumentTabsAdd onClick={addWell} />
+  </DocumentTabsList>
+  {wells.map((well) => (
+    <DocumentTabsContent key={well.id} value={well.id}>…</DocumentTabsContent>
+  ))}
+</DocumentTabs>
+```
+
+The parts are the [Tabs](/docs/components/tabs) parts with the same props: `value`, `defaultValue` and `onValueChange` on the root, `activateOnFocus` on the list, `value` and `disabled` on a trigger, `className` and `render` everywhere. The tabs are the application's state: the strip reports `onClose`, `onRename` and `onReorder`, and the owner updates its list. Leave a callback out and the strip does not offer that action.
+
+## Close
+
+`DocumentTabsClose` puts a × on a tab; a tab without one cannot be closed, which is how a pinned tab is made. The × shows on the open tab and on hover, and always on touch screens. It is not a tab stop: <Kbd>Delete</Kbd> closes the focused tab, and the context menu has Close and Close other tabs. `onClose` receives every value to close. When the open tab closes, the strip first opens its neighbour through `onValueChange` (the next tab, or the previous one if it was the last) and moves focus to it.
+
+## Rename
+
+Double-click a tab, press <Kbd>F2</Kbd> or choose Rename in the context menu to edit `DocumentTabsLabel` in place. <Kbd>Enter</Kbd> or moving away commits, <Kbd>Esc</Kbd> cancels, and an empty or unchanged label is ignored. `onRename` receives the trimmed label.
+
+## Reorder
+
+Drag a tab, or press <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>Shift</Kbd> + an arrow key, to move it. The other tabs step aside while it is dragged; `onReorder` receives every value in the new order once it is dropped, and a screen reader hears the new position.
+
+## Overflow
+
+Tabs keep their order and never shrink below their minimum width. The ones at the end that do not fit move into a More menu after the last visible tab, which shows how many are hidden; the open tab always stays visible, taking the last slot if it has to. Choosing a tab in the menu opens it. Render `DocumentTabsMore` yourself only to rename or restyle its trigger.
+
+<ComponentPreview name="document-tabs-overflow" align="start" />
+
+## Nested
+
+A workspace often has two levels: the open wells, and the open views of the well. Nest a second `DocumentTabs` in each `DocumentTabsContent` with `size="sm"` on its list. The list fills the width of whatever holds it, so a brand or a home button can sit beside it in a row of your own.
+
+<ComponentPreview name="document-tabs-nested" align="start" />
+
+## Keyboard
+
+| Key | Does |
+| --- | --- |
+| <Kbd>←</Kbd> / <Kbd>→</Kbd>, <Kbd>Home</Kbd> / <Kbd>End</Kbd> | Moves between the visible tabs and opens the one focused (mirrored in right-to-left) |
+| <Kbd>Delete</Kbd> | Closes the focused tab |
+| <Kbd>F2</Kbd> | Renames the focused tab |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>Shift</Kbd> + <Kbd>←</Kbd> / <Kbd>→</Kbd> | Moves the focused tab one place |
+| <Kbd>Shift</Kbd> + <Kbd>F10</Kbd>, context menu key | Opens the tab's context menu |
+| <Kbd>Tab</Kbd> | Leaves the tabs for the More menu and the add button, then the open panel |
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The user opens documents into a workspace and keeps several open at once: wells, views of a well, reports.
+- The user closes, renames or reorders those open documents, the way a browser treats its tabs.
+- Open documents can outnumber the room in the row, so the extra ones move into a More menu.
+
+### Not for
+
+- a fixed set of sections of one page or panel: use [Tabs](/docs/components/tabs)
+- the application frame around the workspace: use [AppShell](/docs/tecton/app-shell)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Keep the open documents in application state and render one `DocumentTabsTrigger` and one `DocumentTabsContent` per document, matched by `value`.
+
+</Do>
+
+<Do>
+
+Update that state from `onClose`, `onRename` and `onReorder` on `DocumentTabs`; leave a callback out to turn its action off.
+
+</Do>
+
+<Do>
+
+Compose a tab from an icon, `DocumentTabsLabel` (what rename edits and the More menu shows), an optional `Badge`, and `DocumentTabsClose` last; leave the close out to pin a tab.
+
+</Do>
+
+<Do>
+
+Name the strip with `aria-label` on `DocumentTabsList`, add `DocumentTabsAdd` with an `onClick` that creates and opens a document, and nest a second strip at `size="sm"`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="Nesting a close button in the trigger">
+
+<Wrong>
+
+```tsx
+<TabsTrigger value={well.id}>
+  {well.name}
+  <Button size="icon-xs" onClick={() => close(well.id)}><XIcon /></Button>
+</TabsTrigger>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<DocumentTabsTrigger value={well.id}>
+  <DocumentTabsLabel>{well.name}</DocumentTabsLabel>
+  <DocumentTabsClose />
+</DocumentTabsTrigger>
+```
+
+</Correct>
+
+A button inside a tab is invalid markup that screen readers flatten; `DocumentTabsClose` sits beside the tab, and Delete closes the focused one.
+
+</Dont>
+
+<Dont severity="HIGH" title="Hiding tabs with your own overflow">
+
+<Wrong>
+
+```tsx
+<DocumentTabsList className="overflow-x-auto">{tabs}</DocumentTabsList>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<DocumentTabsList aria-label="Open wells">{tabs}</DocumentTabsList>
+```
+
+</Correct>
+
+The list measures itself and moves the tabs that do not fit into its More menu while keeping the open one visible; a scrolling row hides tabs that neither the arrow keys nor a menu reach.
+
+</Dont>
+
+{/* guidelines:end */}
+
+## API Reference
+
+### DocumentTabs
+
+The root; other props go to the `div`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string \| null` | - | The open tab (controlled). |
+| `defaultValue` | `string \| null` | first tab | The tab open on mount. |
+| `onValueChange` | `(value: string, eventDetails) => void` | - | Called when a tab opens, including the neighbour opened when the open tab closes. |
+| `onClose` | `(values: string[]) => void` | - | Makes tabs with a `DocumentTabsClose` closable; called with the values to close. |
+| `onRename` | `(value: string, label: string) => void` | - | Makes tabs renamable; called with the trimmed new label. |
+| `onReorder` | `(values: string[]) => void` | - | Makes tabs movable; called with every value in the new order. |
+| `messages` | `Partial<DocumentTabsMessages>` | English | The strip's words: `add`, `more`, `rename`, `close`, `closeOthers` and `moved(label, position, total)`. |
+
+### DocumentTabsList
+
+The row: the tab list, the More menu, `DocumentTabsAdd`. `className` goes to the row, other props to the tab list.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `size` | `"default" \| "sm"` | `"default"` | Height 40 / 36 px; `sm` for a nested strip. |
+| `activateOnFocus` | `boolean` | `true` | Open a tab when the arrow keys focus it. |
+| `aria-label` | `string` | - | Names the set of tabs. |
+
+### DocumentTabsTrigger
+
+A tab. Its children are its content: an icon, `DocumentTabsLabel`, a `Badge`, and `DocumentTabsClose` last.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | - | The tab's identity, matched by `DocumentTabsContent`. |
+| `disabled` | `boolean` | `false` | The tab cannot be opened, closed or renamed. |
+
+Style states with `data-active`, `data-closable`, `data-disabled`, `data-dragging` and `data-overflowing` on the `document-tabs-trigger` slot.
+
+### DocumentTabsLabel
+
+The tab's name, a `span` that truncates. It is what rename edits and what the More menu, the close button and the announcements say.
+
+### DocumentTabsClose
+
+The × of a closable tab, a ghost `Button` named "Close" and the label ("Close OW-B: Well-01"); `aria-label` overrides it and `children` replaces the icon.
+
+### DocumentTabsAdd
+
+A ghost icon `Button` named "New tab" after the tabs. Opening a tab is the owner's: pass `onClick`.
+
+### DocumentTabsMore
+
+The More menu trigger, rendered by the list while tabs overflow. `aria-label` (default "More tabs") is followed by the count.
+
+### DocumentTabsContent
+
+The panel of the tab with the same `value`.

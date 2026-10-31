@@ -452,6 +452,11 @@
       "import": "./dist/tecton/count-badge.js",
       "default": "./dist/tecton/count-badge.js"
     },
+    "./tecton/document-tabs": {
+      "types": "./dist/tecton/document-tabs.d.ts",
+      "import": "./dist/tecton/document-tabs.js",
+      "default": "./dist/tecton/document-tabs.js"
+    },
     "./tecton/link": {
       "types": "./dist/tecton/link.d.ts",
       "import": "./dist/tecton/link.js",

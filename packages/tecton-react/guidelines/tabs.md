@@ -8,7 +8,9 @@ notFor:
     use: ToggleGroup
   - need: picking a value for a form field
     use: Select
-related: [ToggleGroup, Select]
+  - need: tabs the user opens, closes, renames or reorders
+    use: DocumentTabs
+related: [ToggleGroup, Select, DocumentTabs]
 ---
 
 ## Use it when
