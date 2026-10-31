@@ -63,6 +63,13 @@ type DragAndDropOptions<TPlace> = {
   getItemElement: (key: string) => HTMLElement | null
   /** The collection element: it takes the pointer and scrolls. */
   getContainer: () => HTMLElement | null
+  /**
+   * The arrow keys that step through the places in a keyboard drag: Up /
+   * Down for "y" (default), Left / Right for "x", mirrored when `direction`
+   * is "rtl". Tab / Shift+Tab step either way.
+   */
+  axis?: "x" | "y"
+  direction?: "ltr" | "rtl"
   /** Where the pointer preview goes (the portal target); the body otherwise. */
   getPreviewContainer?: () => HTMLElement | null
   onDragStart?: (keys: ReadonlyArray<string>, mode: DragMode) => void
@@ -205,8 +212,11 @@ function useDragAndDrop<TPlace>(
           politeness: "assertive",
         })
         const view = event.currentTarget.ownerDocument.defaultView ?? window
+        const { axis, direction } = latest.current.options
         const session = startKeyboardDrag<TPlace>({
           view,
+          axis,
+          direction,
           places: () => strategy().places(store.get().dragging),
           isSame: (a, b) => strategy().isSame(a, b),
           onAim: aim,

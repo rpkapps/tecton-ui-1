@@ -4,6 +4,8 @@
  * - `useDragAndDrop` + `DragAndDropPrimitive.Handle` / `.DropIndicator`: a
  *   collection with its own drop rules (tree rows), from the pointer, the
  *   keyboard and a screen reader.
+ * - `createListStrategy`: the drop strategy of a flat list (table rows or
+ *   columns) for `useDragAndDrop`, with a line between items.
  * - `useSortable`: one row or column reordered with the items sliding aside
  *   (document tabs).
  * - `trackPointerDrag`, `startKeyboardDrag`: the sessions both are built on.
@@ -17,6 +19,8 @@ export type {
   DragState,
   DropStrategy,
 } from "./use-drag-and-drop"
+export { createListStrategy, listPlacement, moveInList } from "./list-strategy"
+export type { ListDropPlace, ListItem } from "./list-strategy"
 export { useSortable, targetSlot } from "./sortable"
 export type { Sortable, SortableOptions } from "./sortable"
 export { trackPointerDrag } from "./pointer-drag"

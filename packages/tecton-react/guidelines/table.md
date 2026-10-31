@@ -8,7 +8,9 @@ notFor:
     use: TanStack Table
   - need: a list of rows with media, a title and actions rather than columns
     use: Item
-related: [Item, TreeView, "TanStack Table"]
+  - need: rows or columns the user drags into another order
+    use: Reorderable
+related: [Item, TreeView, Reorderable, TableColumnResizer, "TanStack Table"]
 ---
 
 ## Use it when

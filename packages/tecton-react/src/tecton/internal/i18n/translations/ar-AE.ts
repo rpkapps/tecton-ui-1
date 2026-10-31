@@ -39,4 +39,7 @@ export default defineTranslations({
     insertBetween: "أدخل بين {beforeItemText} و {afterItemText}",
     insertAfter: "أدخل بعد {itemText}",
   },
+  tableColumnResizer: {
+    resize: "تغيير حجم {columnName}",
+  },
 })

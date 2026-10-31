@@ -16,6 +16,7 @@ import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableC
 
 - sorting, filtering, paging or column visibility over the rows → `TanStack Table` (tecton docs tanstack-table)
 - a list of rows with media, a title and actions rather than columns → `Item` (tecton docs item)
+- rows or columns the user drags into another order → `Reorderable` (tecton docs reorderable)
 
 ## Do
 
@@ -100,8 +101,9 @@ A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse 
 ## Before you finish
 
 - A table is plain HTML — `Table > TableHeader > TableRow > TableHead` and `TableBody > TableRow > TableCell`, with `TableFooter` and `TableCaption` as needed; sorting, filtering and paging come from TanStack Table on these parts.
+- Rows or columns the user drags into order are a `Reorderable` around the `Table` with `ReorderableItem render={<TableRow />}` with a `label` and a `ReorderableHandle` (or headers with `render={<TableHead />}`, `dragHandle={false}` and `orientation="horizontal"`, no grip), never native `draggable` rows; a resizable column has a `TableColumnResizer` in its `TableHead` (`relative`, width from state) on a `table-fixed` table.
 - An empty table renders `Empty` in place of the table, or inside one `TableCell` spanning every column when the header has to stay.
 - Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
 - `className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-end`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.
 
-Related: item, tree-view, tanstack-table
+Related: item, tree-view, reorderable, table-column-resizer, tanstack-table

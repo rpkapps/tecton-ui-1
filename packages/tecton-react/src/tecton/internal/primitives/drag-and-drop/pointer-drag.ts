@@ -73,15 +73,45 @@ function autoScroll(scroller: HTMLElement, y: number) {
   if (depth) scroller.scrollTop += Math.max(-1, Math.min(1, depth / edge)) * 16
 }
 
+/**
+ * A copy of a table row or cell, inside a table of its own: out of its
+ * table, a row would lose its columns' widths. Each cell keeps its width.
+ */
+function tablePreview(item: HTMLElement, copy: HTMLElement) {
+  const doc = item.ownerDocument
+  const cells = item.tagName === "TR" ? [...item.children] : [item]
+  const copies = item.tagName === "TR" ? [...copy.children] : [copy]
+  cells.forEach((cell, at) => {
+    const target = copies[at] as HTMLElement | undefined
+    if (!target) return
+    const width = `${cell.getBoundingClientRect().width}px`
+    Object.assign(target.style, { width, minWidth: width, maxWidth: width })
+  })
+  const table = doc.createElement("table")
+  table.style.borderCollapse = "collapse"
+  table.style.tableLayout = "fixed"
+  const body = doc.createElement("tbody")
+  let row = copy
+  if (item.tagName !== "TR") {
+    row = doc.createElement("tr")
+    row.append(copy)
+  }
+  body.append(row)
+  table.append(body)
+  return table
+}
+
 /** A copy of `item` under the pointer, as the browser's own drag shows one. */
 function createPreview(item: HTMLElement, container: HTMLElement) {
-  const preview = item.cloneNode(true) as HTMLElement
-  for (const element of [preview, ...preview.querySelectorAll("[id]")]) {
+  const copy = item.cloneNode(true) as HTMLElement
+  for (const element of [copy, ...copy.querySelectorAll("[id]")]) {
     element.removeAttribute("id")
   }
   // Not an item of the collection, for its code or assistive technology.
-  preview.removeAttribute("data-slot")
-  preview.removeAttribute("role")
+  copy.removeAttribute("data-slot")
+  copy.removeAttribute("role")
+  const tabular = /^(TR|TH|TD)$/.test(item.tagName)
+  const preview = tabular ? tablePreview(item, copy) : copy
   preview.setAttribute("aria-hidden", "true")
   preview.setAttribute("inert", "")
   const style = getComputedStyle(item)

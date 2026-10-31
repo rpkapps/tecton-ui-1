@@ -96,6 +96,25 @@
   "hierarchy": [
    "tree"
   ],
+  "treegrid": [
+   "tree",
+   "table"
+  ],
+  "tree table": [
+   "tree",
+   "table"
+  ],
+  "rearrange": [
+   "reorder"
+  ],
+  "dnd": [
+   "drag",
+   "reorder"
+  ],
+  "column width": [
+   "resize",
+   "column"
+  ],
   "sidenav": [
    "sidebar"
   ],
@@ -1707,7 +1726,7 @@
    "fields": {
     "names": "document tabs document tabs document tabs list document tabs trigger document tabs label document tabs close document tabs add document tabs more document tabs menu document tabs menu rename document tabs menu close document tabs menu close others document tabs content document tabs list variants",
     "useWhen": "The user opens documents into a workspace and keeps several open at once: wells, views of a well, reports. The user closes, renames or reorders those open documents, the way a browser treats its tabs. Open documents can outnumber the room in the row, so the extra ones move into a More menu.",
-    "routed": "tabs the user opens, closes, renames or reorders",
+    "routed": "open workspace tabs the user drags into another order tabs the user opens, closes, renames or reorders",
     "do": "Keep the open documents in application state and render one `DocumentTabsTrigger` and one `DocumentTabsContent` per document, matched by `value`. Update that state from `onClose`, `onRename` and `onReorder` on `DocumentTabs`; leave a callback out to turn its action off. Compose a tab from an icon, `DocumentTabsLabel` (what rename edits and the More menu shows), an optional `Badge`, and `DocumentTabsClose` last; leave the close out to pin a tab. Name the strip with `aria-label` on `DocumentTabsList`, add `DocumentTabsAdd` with an `onClick` that creates and opens a document, and nest a second strip at `size=\"sm\"`."
    },
    "notFor": [
@@ -2893,6 +2912,47 @@
    "tokens": 995
   },
   {
+   "id": "reorderable",
+   "kind": "component",
+   "name": "Reorderable",
+   "import": "import { Reorderable, ReorderableItem, ReorderableHandle } from \"@tecton/react/tecton/reorderable\"",
+   "family": "data",
+   "summary": "The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs.",
+   "fields": {
+    "names": "reorderable reorderable reorderable item reorderable handle",
+    "useWhen": "The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs. The user moves the columns of a data table into the order they read them in. A short stack of items (steps, tracks, layers) has an order the user decides.",
+    "routed": "rows or columns the user drags into another order",
+    "do": "Keep the order in state as an array of item values, pass it as `value`, render the items in that order and write `onValueChange`'s array back. Wrap the whole `Table` in `Reorderable` and render each row as `ReorderableItem` with `render={<TableRow />}`, or each header with `render={<TableHead />}` and `orientation=\"horizontal\"`. Give every item a `label` (the row's or column's name) and a `ReorderableHandle` in a row; a column header gets `dragHandle={false}` instead and is dragged and focused itself, with no grip. Leave a column that must stay put (the identifying or selection column) out of `value` and render it as a plain `TableHead`; turn every handle off with `disabled` while a sort is applied."
+   },
+   "notFor": [
+    {
+     "need": "open workspace tabs the user drags into another order",
+     "id": "document-tabs"
+    },
+    {
+     "need": "moving rows between folders of a hierarchy",
+     "id": "tree-view"
+    },
+    {
+     "need": "sorting rows by a column's values",
+     "id": "tanstack-table"
+    }
+   ],
+   "related": [
+    "table",
+    "table-column-resizer",
+    "item",
+    "tanstack-table"
+   ],
+   "exports": [
+    "Reorderable",
+    "ReorderableItem",
+    "ReorderableHandle"
+   ],
+   "aliases": [],
+   "tokens": 891
+  },
+  {
    "id": "resizable",
    "kind": "component",
    "name": "ResizablePanelGroup",
@@ -2902,7 +2962,7 @@
    "fields": {
     "names": "resizable resizable panel group resizable panel resizable handle",
     "useWhen": "Two or three regions share one axis and the user decides how the space is split: a tree beside an editor, a list above a detail. The split is a working preference worth remembering (`defaultLayout` in, `onLayoutChanged` out), not a fixed design. The regions are peers; neither is chrome wrapped around the other.",
-    "routed": "",
+    "routed": "splitting a view into panes the user resizes",
     "do": "Size panels with unit strings on `defaultSize`, `minSize` and `maxSize` — `\"25%\"`, `\"320px\"`, `\"20rem\"` — and show a grip with `withHandle` when the divider should be obvious. Give the group a height from outside (`className=\"h-96\"`, or a flex parent): it is `flex h-full w-full` and brings none of its own. This module wraps react-resizable-panels: the props are that library's own (`disabled`, `collapsible`, `onLayoutChanged`, `panelRef`), and a `ResizableHandle` must be a direct child of its group."
    },
    "notFor": [
@@ -3214,7 +3274,7 @@
    "fields": {
     "names": "slider slider",
     "useWhen": "An approximate value inside a known range: opacity, threshold, zoom, temperature. A range with two or more thumbs, such as a price or depth filter. The exact number matters less than the gesture of moving through the range.",
-    "routed": "a value picked from a continuous range",
+    "routed": "a value picked from a continuous range a value picked along a track",
     "do": "Bound the range with `min`, `max` and `step` (0–100 by default). Pass `value` / `defaultValue` as an array — one entry per thumb — and read it back in `onValueChange`, whose type is `number | number[]`, so narrow it; `onValueCommitted` fires once on release. Name it with `aria-labelledby` pointing at the visible title's `id`, or with `aria-label` when there is no visible title: the slider forwards either to every thumb's range input. Inside a `Field`, use `FieldTitle` (with that `id`) and `FieldDescription`, and show the live value in the description. Disable with `disabled`; switch axis with `orientation=\"vertical\"` plus a height class such as `h-40`."
    },
    "notFor": [
@@ -3420,11 +3480,17 @@
     {
      "need": "a list of rows with media, a title and actions rather than columns",
      "id": "item"
+    },
+    {
+     "need": "rows or columns the user drags into another order",
+     "id": "reorderable"
     }
    ],
    "related": [
     "item",
     "tree-view",
+    "reorderable",
+    "table-column-resizer",
     "tanstack-table"
    ],
    "exports": [
@@ -3438,7 +3504,41 @@
     "TableCaption"
    ],
    "aliases": [],
-   "tokens": 1091
+   "tokens": 1230
+  },
+  {
+   "id": "table-column-resizer",
+   "kind": "component",
+   "name": "TableColumnResizer",
+   "import": "import { TableColumnResizer } from \"@tecton/react/tecton/table-column-resizer\"",
+   "family": "data",
+   "summary": "The user widens a data table column to read long values, or narrows one they do not need.",
+   "fields": {
+    "names": "table column resizer table column resizer",
+    "useWhen": "The user widens a data table column to read long values, or narrows one they do not need. Column widths are state the application keeps (TanStack Table's `columnSizing`, a saved layout).",
+    "routed": "",
+    "do": "Put one `TableColumnResizer` last in each resizable `TableHead`, give that head `className=\"relative\"` and `style={{ width }}` from the same state. Give the `Table` `className=\"table-fixed\"` and its total width, and let cells `truncate`, so each column keeps the width it is given. Name it with `label` (the column's name: \"Resize Field\"), bound it with `min` and `max`, and pass `resetValue` for Enter and a double click. Write `onValueChange` back to the width state; save a layout from `onValueCommitted`, which fires once a drag ends."
+   },
+   "notFor": [
+    {
+     "need": "splitting a view into panes the user resizes",
+     "id": "resizable"
+    },
+    {
+     "need": "a value picked along a track",
+     "id": "slider"
+    }
+   ],
+   "related": [
+    "table",
+    "reorderable",
+    "tanstack-table"
+   ],
+   "exports": [
+    "TableColumnResizer"
+   ],
+   "aliases": [],
+   "tokens": 710
   },
   {
    "id": "tabs",
@@ -3677,7 +3777,7 @@
    "fields": {
     "names": "tree view tree view tree view item tree view item content tree view action tree view visibility toggle tree view collection move tree items",
     "useWhen": "A hierarchy is browsed rather than read: a project tree, a field and well inventory, a layer list. Rows carry more than a label: selection, disabled, hidden, a colour, a count, a per-row menu. Arrow-key navigation, expansion and type-ahead have to work across the whole structure.",
-    "routed": "an expandable hierarchy of folders and records a hierarchy of folders and records expanded in place",
+    "routed": "an expandable hierarchy of folders and records moving rows between folders of a hierarchy a hierarchy of folders and records expanded in place",
     "do": "Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value` (add `label` when the row content is not plain text). Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data. Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`, and open a row through `onActivate` (Enter or a click; a double click when rows are also selectable), never an `onClick` on its content. Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`). Let rows move with `onMove` (apply it with `moveTreeItems`, restrict it with `canDrop`), never with drag events of your own on the rows: those have no keyboard path and no drop rules. Row commands go in one `contextMenu={(value) => <ContextMenuContent>…</ContextMenuContent>}` on `TreeView` (`null` for a row without), never a `ContextMenu` around each row; keep a visible `TreeViewAction` for the ones a row cannot do without, since a context menu is hard to find on touch and for most keyboard users. Set `virtualized` on a tree of hundreds of rows or more, with a bounded height (`h-80`, or `min-h-0 flex-1` in a flex column); padding and borders go on a wrapper, since virtualized rows span the full width of the tree. Keep `items` and the render function stable (module-level or `useCallback`), or every parent render re-renders every row. Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden`, `data-context-menu-open` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `\"true\"`."
    },
    "notFor": [
@@ -3688,6 +3788,10 @@
     {
      "need": "a flat list of rows with media, a title and actions",
      "id": "item"
+    },
+    {
+     "need": "a tree table, a hierarchy whose expandable rows have columns",
+     "id": "tanstack-table"
     }
    ],
    "related": [
@@ -3705,7 +3809,7 @@
     "moveTreeItems"
    ],
    "aliases": [],
-   "tokens": 1323
+   "tokens": 1351
   },
   {
    "id": "use-busy-delay",
@@ -3754,7 +3858,7 @@
    "fields": {
     "names": "tanstack table tan stack table ",
     "useWhen": "Data tables are a recipe on the shadcn Table, not a component.",
-    "routed": "rows with sorting, paging and selection rows with columns, sorting, paging and selection paging driven by a table's own sorting and filtering state sorting, filtering, paging or column visibility over the rows",
+    "routed": "rows with sorting, paging and selection rows with columns, sorting, paging and selection paging driven by a table's own sorting and filtering state sorting rows by a column's values sorting, filtering, paging or column visibility over the rows a tree table, a hierarchy whose expandable rows have columns",
     "do": ""
    },
    "notFor": [],

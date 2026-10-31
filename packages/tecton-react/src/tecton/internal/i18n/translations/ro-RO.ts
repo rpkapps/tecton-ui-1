@@ -40,4 +40,7 @@ export default defineTranslations({
     insertBetween: "Inserați între {beforeItemText} și {afterItemText}",
     insertAfter: "Inserați după {itemText}",
   },
+  tableColumnResizer: {
+    resize: "Redimensionați {columnName}",
+  },
 })

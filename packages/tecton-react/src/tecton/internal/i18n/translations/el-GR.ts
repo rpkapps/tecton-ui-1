@@ -39,4 +39,7 @@ export default defineTranslations({
     insertBetween: "Εισαγωγή μεταξύ {beforeItemText} και {afterItemText}",
     insertAfter: "Εισαγωγή μετά από {itemText}",
   },
+  tableColumnResizer: {
+    resize: "Αλλαγή μεγέθους {columnName}",
+  },
 })

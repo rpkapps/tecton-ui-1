@@ -907,3 +907,27 @@ Register `rowPaginationFeature` with `createPaginatedRowModel()`, keep the `pagi
 Hide low-priority columns below `md` with `hidden md:table-cell` on both the header and the cell, and let the primary cell carry that information as a subtitle so nothing is lost on a phone.
 
 <ComponentPreview name="data-table-small-screen" align="start" />
+
+### Column resizing
+
+Register `columnSizingFeature`, keep the `columnSizing` state in React and put a [Table Column Resizer](/docs/tecton/table-column-resizer) on the end edge of each `TableHead` (`className="relative"`, `style={{ width: header.getSize() }}`). Give the `Table` `table-fixed` and the total width (`table.getTotalSize()`), and let cells `truncate`. The limits come from `defaultColumn` (`minSize`, `maxSize`) or each column's own; `resetValue={column.columnDef.size}` is what Enter and a double click go back to. The resizer is a focusable separator: the arrow keys resize too, mirrored in a right-to-left table.
+
+<ComponentPreview name="data-table-column-resize" align="start" />
+
+### Column reordering
+
+Register `columnOrderingFeature` and keep the `columnOrder` state, starting with every column's id. Wrap the `Table` in a [Reorderable](/docs/tecton/reorderable) with `orientation="horizontal"`, render each movable header as a `ReorderableItem` with `render={<TableHead />}` and `dragHandle={false}`, and write the new order back to `columnOrder`. A header has no room for a grip, so it is its own handle: drag it from anywhere (a sort button inside it keeps its clicks), or Tab to it, press Enter or Space and pick the gap with the arrow keys. A column that must stay put (the identifying column, the selection column) is a plain `TableHead` left out of the `Reorderable`'s `value`.
+
+<ComponentPreview name="data-table-column-reorder" align="start" />
+
+### Row reordering
+
+Keep the rows in React state, list their ids as the `Reorderable`'s `value`, render each row as a `ReorderableItem` (`render={<TableRow />}`) with a `ReorderableHandle` in its first cell, and reorder the data in `onValueChange`. Drag the handle, or press Enter or Space on it and pick the gap with the arrow keys. A sorted table has no manual order: hide the handles while a sort is applied, or clear the sort first.
+
+<ComponentPreview name="data-table-row-reorder" align="start" />
+
+### Tree table
+
+Register `rowExpandingFeature` with `createExpandedRowModel()` and pass `getSubRows` (here fields → platforms → wells). In the first column, indent the cell by `row.depth` (`paddingInlineStart`, 1.25rem a level) and put a chevron button, styled like a Tree View row's, before the name of each row that `getCanExpand()`, with `aria-expanded` and an "Expand …" / "Collapse …" name; leaves keep the chevron's space so names line up. `toggleAllRowsExpanded` drives an Expand all / Collapse all button. For a hierarchy without columns, use a [Tree View](/docs/tecton/tree-view).
+
+<ComponentPreview name="data-table-tree" align="start" />

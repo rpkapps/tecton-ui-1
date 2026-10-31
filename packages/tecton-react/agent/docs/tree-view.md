@@ -16,6 +16,7 @@ import { TreeView, TreeViewItem, TreeViewItemContent, TreeViewAction, TreeViewVi
 
 - stacked sections that expand, with no parent and child structure → `Accordion` (tecton docs accordion)
 - a flat list of rows with media, a title and actions → `Item` (tecton docs item)
+- a tree table, a hierarchy whose expandable rows have columns → `TanStack Table` (tecton docs tanstack-table)
 
 ## Do
 

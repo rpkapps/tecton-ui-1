@@ -1,0 +1,212 @@
+---
+title: Reorderable
+description: "Rows, columns or items the user drags into their own order, from a pointer, the keyboard or a screen reader."
+---
+
+<ComponentPreview name="reorderable-demo" />
+
+## Usage
+
+```tsx
+import {
+  Reorderable,
+  ReorderableHandle,
+  ReorderableItem,
+} from "@tecton/react/tecton/reorderable"
+```
+
+```tsx
+const [order, setOrder] = React.useState(["a12", "b3", "c7"])
+
+<Reorderable value={order} onValueChange={setOrder}>
+  {order.map((id) => (
+    <ReorderableItem key={id} value={id} label={names[id]}>
+      {names[id]}
+      <ReorderableHandle />
+    </ReorderableItem>
+  ))}
+</Reorderable>
+```
+
+The order is yours: `value` lists the items' values, the items render in that order, and `onValueChange` hands back the whole new array after a drop.
+
+## Composition
+
+```text
+Reorderable
+└── ReorderableItem
+    └── ReorderableHandle
+```
+
+`Reorderable` is a `div` that also holds the drop line and the keyboard drop targets. Each `ReorderableItem` renders a `div`, or the element you pass to `render`; its `ReorderableHandle` can sit anywhere inside it. With `dragHandle={false}` an item has no handle and is its own: it is dragged from anywhere except its own controls, and is a Tab stop where Enter or Space starts a keyboard drag.
+
+## Tables
+
+Wrap the whole `Table`, not its body, and render each row with `render={<TableRow />}`. For columns, set `orientation="horizontal"` and render each header with `render={<TableHead />}` and `dragHandle={false}`: a header has no room for a grip, so the header itself is dragged and focused. The Data Table page has both recipes with TanStack Table: [row reordering](/docs/components/data-table#row-reordering) and [column reordering](/docs/components/data-table#column-reordering).
+
+Items left out of the page, such as another page of rows or a hidden column, keep their place in `value`: a dropped item lands next to the item it was dropped beside.
+
+## Horizontal
+
+<ComponentPreview name="reorderable-horizontal" />
+
+In a right-to-left layout the first item is rightmost, and the arrow keys follow the reading direction.
+
+## Keyboard and screen readers
+
+- **Pointer:** press the handle (or the item, with `dragHandle={false}`) and drag. A finger on an item without a handle drags after a long press, so a quick swipe still scrolls. A line shows where the item will land. Escape cancels.
+- **Keyboard:** focus the handle and press Enter or Space. The arrow keys (or Tab) move between gaps, each one announced ("Insert between B-3 and C-7"). Enter or Space drops and Escape cancels. Focus returns to the moved item's handle.
+- **Screen reader on a touch screen:** activating the handle turns every gap into a button. Double tap one to drop.
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs.
+- The user moves the columns of a data table into the order they read them in.
+- A short stack of items (steps, tracks, layers) has an order the user decides.
+
+### Not for
+
+- open workspace tabs the user drags into another order: use [DocumentTabs](/docs/tecton/document-tabs)
+- moving rows between folders of a hierarchy: use [TreeView](/docs/tecton/tree-view)
+- sorting rows by a column's values: use [TanStack Table](/docs/components/data-table)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Keep the order in state as an array of item values, pass it as `value`, render the items in that order and write `onValueChange`'s array back.
+
+</Do>
+
+<Do>
+
+Wrap the whole `Table` in `Reorderable` and render each row as `ReorderableItem` with `render={<TableRow />}`, or each header with `render={<TableHead />}` and `orientation="horizontal"`.
+
+</Do>
+
+<Do>
+
+Give every item a `label` (the row's or column's name) and a `ReorderableHandle` in a row; a column header gets `dragHandle={false}` instead and is dragged and focused itself, with no grip.
+
+</Do>
+
+<Do>
+
+Leave a column that must stay put (the identifying or selection column) out of `value` and render it as a plain `TableHead`; turn every handle off with `disabled` while a sort is applied.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="Hand-rolled drag events on table rows">
+
+<Wrong>
+
+```tsx
+<TableRow draggable onDragStart={() => setDragged(well.id)} onDrop={() => move(dragged, well.id)}>
+  <TableCell>{well.name}</TableCell>
+</TableRow>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<ReorderableItem value={well.id} label={well.name} render={<TableRow />}>
+  <TableCell><ReorderableHandle /></TableCell>
+  <TableCell>{well.name}</TableCell>
+</ReorderableItem>
+```
+
+</Correct>
+
+Native drag events never fire from the keyboard, a screen reader or a touch screen, so the order cannot be changed without a mouse.
+
+</Dont>
+
+<Dont severity="HIGH" title="Reorderable placed inside the table body">
+
+<Wrong>
+
+```tsx
+<TableBody>
+  <Reorderable value={order} onValueChange={setOrder}>{rows}</Reorderable>
+</TableBody>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Reorderable value={order} onValueChange={setOrder}>
+  <Table><TableBody>{rows}</TableBody></Table>
+</Reorderable>
+```
+
+</Correct>
+
+`Reorderable` renders a `div` holding the drop line and the keyboard drop targets, which is invalid inside `tbody` and breaks the row layout.
+
+</Dont>
+
+<Dont severity="HIGH" title="Reorder callbacks from other libraries">
+
+<Wrong>
+
+```tsx
+<Reorderable items={order} onReorder={(from, to) => move(from, to)}>{rows}</Reorderable>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Reorderable value={order} onValueChange={(next) => setOrder(next)}>{rows}</Reorderable>
+```
+
+</Correct>
+
+The order is `value` and the whole new array arrives in `onValueChange`; `items` and `onReorder` are ignored, so nothing moves.
+
+</Dont>
+
+{/* guidelines:end */}
+
+## API Reference
+
+### Reorderable
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string[]` | - | The items' values, in order (controlled). |
+| `defaultValue` | `string[]` | `[]` | The initial order, when not controlled. |
+| `onValueChange` | `(value: string[], eventDetails) => void` | - | Called with the new order after a drop. `eventDetails.reason` is `"pointer"`, `"keyboard"` or `"virtual"`. |
+| `orientation` | `"vertical" \| "horizontal"` | `"vertical"` | Stacked items (rows) or items side by side (columns). |
+| `disabled` | `boolean` | `false` | Turns every handle off. |
+| `render` | `ReactElement \| function` | `<div />` | Replaces the element. |
+
+### ReorderableItem
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | - | The item's value in `value`. |
+| `label` | `string` | - | The item's name, used for the handle ("Drag {label}") and the announcements. |
+| `dragHandle` | `boolean` | `true` | `false` makes the item its own handle (table column headers): dragged from anywhere except its controls, focused with Tab, Enter or Space starts a keyboard drag. |
+| `render` | `ReactElement \| function` | `<div />` | Replaces the element: `<TableRow />` or `<TableHead />` in a table. |
+
+Carries `data-dragging` while it is dragged.
+
+### ReorderableHandle
+
+A ghost icon button with a grip icon, unless you pass children. Forwards `className`, `disabled` and the button's other props.

@@ -39,4 +39,7 @@ export default defineTranslations({
     insertBetween: "Vložit mezi {beforeItemText} a {afterItemText}",
     insertAfter: "Vložit za {itemText}",
   },
+  tableColumnResizer: {
+    resize: "Změnit šířku sloupce {columnName}",
+  },
 })
