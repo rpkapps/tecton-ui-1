@@ -466,22 +466,98 @@ describe("DocumentTabs", () => {
       expect(tabNames()[0]).toBe("Well-01")
     })
 
-    it("reorders by dragging a tab past its neighbours' midpoints", () => {
+    /** Lays the tabs out at these inline starts and widths, in DOM order. */
+    function layout(boxes: Array<[x: number, w: number]>) {
+      document
+        .querySelectorAll<HTMLElement>('[data-slot="document-tabs-trigger"]')
+        .forEach((wrapper, index) => {
+          wrapper.dataset.x = String(boxes[index][0])
+          wrapper.dataset.w = String(boxes[index][1])
+        })
+    }
+
+    function drag(name: string, from: number, to: number) {
+      const wrapper = screen
+        .getByRole("tab", { name })
+        .closest<HTMLElement>('[data-slot="document-tabs-trigger"]')!
+      fireEvent.pointerDown(wrapper, { button: 0, pointerId: 1, clientX: from })
+      fireEvent.pointerMove(document, { pointerId: 1, clientX: from + 2 })
+      expect(wrapper).not.toHaveAttribute("data-dragging")
+      fireEvent.pointerMove(document, { pointerId: 1, clientX: to })
+      expect(wrapper).toHaveAttribute("data-dragging")
+      const transform = wrapper.style.transform
+      fireEvent.pointerUp(document, { pointerId: 1, clientX: to })
+      expect(wrapper.style.transform).toBe("")
+      return transform
+    }
+
+    it("reorders once the dragged tab's edge passes a neighbour's middle", () => {
       const onReorder = vi.fn()
       render(<Strip onReorder={onReorder} />)
-      const wrapper = screen
-        .getByRole("tab", { name: "Well-01" })
-        .closest<HTMLElement>('[data-slot="document-tabs-trigger"]')!
-      fireEvent.pointerDown(wrapper, { button: 0, pointerId: 1, clientX: 50 })
-      fireEvent.pointerMove(document, { pointerId: 1, clientX: 52 })
-      expect(wrapper).not.toHaveAttribute("data-dragging")
-      // Centre at 50 + 160 = 210: past the midpoint of Well-02 (150), not Well-03 (250).
-      fireEvent.pointerMove(document, { pointerId: 1, clientX: 210 })
-      expect(wrapper).toHaveAttribute("data-dragging")
-      expect(wrapper.style.transform).toBe("translateX(160px)")
-      fireEvent.pointerUp(document, { pointerId: 1, clientX: 210 })
+      // Trailing edge at 100 + 40 = 140: short of Well-02's middle (150).
+      drag("Well-01", 50, 90)
+      expect(onReorder).not.toHaveBeenCalled()
+      // Trailing edge at 160: past it.
+      expect(drag("Well-01", 50, 110)).toBe("translateX(60px)")
       expect(onReorder).toHaveBeenCalledWith(["w2", "w1", "w3", "w4"])
-      expect(wrapper.style.transform).toBe("")
+    })
+
+    it("reaches the first slot from a tab narrower than the first one", () => {
+      const onReorder = vi.fn()
+      render(<Strip onReorder={onReorder} />)
+      layout([
+        [0, 300],
+        [300, 100],
+        [400, 100],
+        [500, 100],
+      ])
+      drag("Well-03", 450, 0)
+      expect(onReorder).toHaveBeenCalledWith(["w3", "w1", "w2", "w4"])
+    })
+
+    it("reaches the first slot from a tab wider than the first one", () => {
+      const onReorder = vi.fn()
+      render(<Strip onReorder={onReorder} />)
+      layout([
+        [0, 100],
+        [100, 100],
+        [200, 300],
+        [500, 100],
+      ])
+      // Clamped at the start of the strip.
+      expect(drag("Well-03", 350, 0)).toBe("translateX(-200px)")
+      expect(onReorder).toHaveBeenCalledWith(["w3", "w1", "w2", "w4"])
+    })
+
+    it("reaches the last slot from a wide tab", () => {
+      const onReorder = vi.fn()
+      render(<Strip onReorder={onReorder} />)
+      layout([
+        [0, 300],
+        [300, 100],
+        [400, 100],
+        [500, 100],
+      ])
+      expect(drag("Well-01", 150, 1000)).toBe("translateX(300px)")
+      expect(onReorder).toHaveBeenCalledWith(["w2", "w3", "w4", "w1"])
+    })
+
+    it("drags in the reading direction in RTL", () => {
+      const onReorder = vi.fn()
+      render(
+        <TectonProvider direction="rtl">
+          <Strip onReorder={onReorder} />
+        </TectonProvider>
+      )
+      // Right to left: Well-01 is rightmost, the wide Well-04 leftmost.
+      layout([
+        [500, 100],
+        [400, 100],
+        [300, 100],
+        [0, 300],
+      ])
+      expect(drag("Well-04", 150, 1000)).toBe("translateX(300px)")
+      expect(onReorder).toHaveBeenCalledWith(["w4", "w1", "w2", "w3"])
     })
 
     it("does not reorder without onReorder", async () => {
@@ -557,6 +633,17 @@ describe("DocumentTabs", () => {
       expect(wrapper("w1")).not.toHaveAttribute("data-squeezed")
     })
 
+    it("renders no close button in a tab that is in the menu", () => {
+      render(<Strip />)
+      resize(250)
+      expect(
+        screen.getByRole("button", { name: "Close Well-01" })
+      ).toBeInTheDocument()
+      expect(
+        screen.queryByRole("button", { name: "Close Well-03", hidden: true })
+      ).not.toBeInTheDocument()
+    })
+
     it("takes a custom More trigger", () => {
       render(<Strip more={<DocumentTabsMore aria-label="Hidden wells" />} />)
       resize(250)
@@ -564,6 +651,25 @@ describe("DocumentTabs", () => {
         screen.getByRole("button", { name: "Hidden wells (2)" })
       ).toBeInTheDocument()
     })
+  })
+
+  it("shares one size observer and one context menu across its tabs", () => {
+    const many = Array.from({ length: 50 }, (_, index) => ({
+      id: `t${index}`,
+      label: `Tab ${index}`,
+    }))
+    render(<Strip initial={many} defaultValue="t0" />)
+    // (The tab list keeps an observer of its own for its indicator.)
+    const ours = [...observers].filter((observer) =>
+      observer.targets.has(rowEl())
+    )
+    expect(ours).toHaveLength(1)
+    const [observer] = ours
+    // The row and every tab.
+    expect(observer.targets.size).toBe(51)
+    expect(
+      document.querySelectorAll('[data-slot="context-menu-trigger"]')
+    ).toHaveLength(1)
   })
 
   it("calls the add button's onClick", async () => {
