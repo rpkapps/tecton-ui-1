@@ -15,12 +15,14 @@ import {
 } from "@tecton/react/components/dropdown-menu"
 import { TectonProvider } from "@tecton/react/tecton/provider"
 import {
+  moveTreeItems,
   TreeView,
   TreeViewAction,
   TreeViewCollection,
   TreeViewItem,
   TreeViewItemContent,
   TreeViewVisibilityToggle,
+  type TreeViewMove,
 } from "@tecton/react/tecton/tree-view"
 
 function Project(props: Partial<React.ComponentProps<typeof TreeView>>) {
@@ -1166,5 +1168,272 @@ describe("TreeView context menu", () => {
     render(<Project />)
     expect(row("Wells")).toHaveAttribute("data-value", "wells")
     expect(row("Wells")).not.toHaveAttribute("data-context-menu-open")
+  })
+})
+
+describe("moveTreeItems", () => {
+  type Item = { value: string; children?: Item[] }
+  const data = (): Item[] => [
+    {
+      value: "wells",
+      children: [{ value: "a12" }, { value: "a13" }, { value: "b4" }],
+    },
+    {
+      value: "horizons",
+      children: [{ value: "balder" }, { value: "sele" }],
+    },
+    { value: "archive", children: [] },
+  ]
+  const shape = (items: Item[]): unknown =>
+    items.map((item) =>
+      item.children ? { [item.value]: shape(item.children) } : item.value
+    )
+  const move = (
+    values: string[],
+    target: string,
+    position: TreeViewMove["position"]
+  ): TreeViewMove => ({ values, target, position })
+
+  it("moves rows before and after a row", () => {
+    expect(shape(moveTreeItems(data(), move(["b4"], "a12", "before")))).toEqual(
+      [
+        { wells: ["b4", "a12", "a13"] },
+        { horizons: ["balder", "sele"] },
+        { archive: [] },
+      ]
+    )
+    expect(shape(moveTreeItems(data(), move(["a12"], "a13", "after")))).toEqual(
+      [
+        { wells: ["a13", "a12", "b4"] },
+        { horizons: ["balder", "sele"] },
+        { archive: [] },
+      ]
+    )
+  })
+
+  it("moves rows inside a folder, as its last children, across levels", () => {
+    expect(
+      shape(moveTreeItems(data(), move(["sele", "a13"], "archive", "inside")))
+    ).toEqual([
+      { wells: ["a12", "b4"] },
+      { horizons: ["balder"] },
+      // In tree order, whatever the order of `values`.
+      { archive: ["a13", "sele"] },
+    ])
+    expect(
+      shape(moveTreeItems(data(), move(["horizons"], "wells", "inside")))
+    ).toEqual([
+      { wells: ["a12", "a13", "b4", { horizons: ["balder", "sele"] }] },
+      { archive: [] },
+    ])
+  })
+
+  it("keeps the subtrees it does not change", () => {
+    const items = data()
+    const next = moveTreeItems(items, move(["a12"], "b4", "after"))
+    expect(next).not.toBe(items)
+    expect(next[0]).not.toBe(items[0])
+    expect(next[1]).toBe(items[1])
+    expect(next[2]).toBe(items[2])
+  })
+
+  it("changes nothing for a drop into a moved row or an unknown target", () => {
+    const items = data()
+    expect(moveTreeItems(items, move(["wells"], "a13", "after"))).toBe(items)
+    expect(moveTreeItems(items, move(["wells"], "wells", "inside"))).toBe(items)
+    expect(moveTreeItems(items, move(["a12"], "nowhere", "after"))).toBe(items)
+  })
+
+  it("reads `id` by default and takes a getValue", () => {
+    const byId = [{ id: "x" }, { id: "y" }, { id: "z" }]
+    expect(
+      moveTreeItems(byId, move(["z"], "x", "before")).map((item) => item.id)
+    ).toEqual(["z", "x", "y"])
+    const byKey = [{ key: "x" }, { key: "y" }]
+    expect(
+      moveTreeItems(byKey, move(["x"], "y", "after"), (item) => item.key)
+    ).toEqual([{ key: "y" }, { key: "x" }])
+  })
+})
+
+describe("TreeView drag and drop", () => {
+  function Movable(props: Partial<React.ComponentProps<typeof TreeView>>) {
+    return (
+      <TreeView aria-label="Project" defaultExpanded={["wells"]} {...props}>
+        <TreeViewItem value="wells" label="Wells">
+          <TreeViewItemContent kind="folder">Wells</TreeViewItemContent>
+          <TreeViewItem value="a12" label="A-12">
+            <TreeViewItemContent>A-12</TreeViewItemContent>
+          </TreeViewItem>
+          <TreeViewItem value="a13" label="A-13">
+            <TreeViewItemContent>A-13</TreeViewItemContent>
+          </TreeViewItem>
+        </TreeViewItem>
+        <TreeViewItem value="notes" label="Notes">
+          <TreeViewItemContent>Notes</TreeViewItemContent>
+        </TreeViewItem>
+        <TreeViewItem value="archive" label="Archive">
+          <TreeViewItemContent kind="folder">Archive</TreeViewItemContent>
+        </TreeViewItem>
+      </TreeView>
+    )
+  }
+
+  const grip = (name: string) =>
+    screen.getByRole("button", { name: `Drag ${name}` })
+
+  /** Starts a keyboard drag from the grip of row `name`. */
+  async function startDrag(
+    user: ReturnType<typeof userEvent.setup>,
+    name: string
+  ) {
+    act(() => row(name).focus())
+    await user.keyboard("{ArrowRight}")
+    expect(grip(name)).toHaveFocus()
+    await user.keyboard("{Enter}")
+  }
+
+  /** Starts a keyboard drag of `name` and lists every drop target offered. */
+  async function targetsWhileDragging(
+    user: ReturnType<typeof userEvent.setup>,
+    name: string
+  ) {
+    await startDrag(user, name)
+    const seen: string[] = []
+    for (let i = 0; i < 20; i++) {
+      const label = document.activeElement?.getAttribute("aria-label") ?? ""
+      if (seen.includes(label)) break
+      seen.push(label)
+      await user.keyboard("{ArrowDown}")
+    }
+    // A drag session is global: end it before the next test.
+    await user.keyboard("{Escape}")
+    return seen
+  }
+
+  /** Moves the keyboard drag to the target named `label`, then drops. */
+  async function dropOn(
+    user: ReturnType<typeof userEvent.setup>,
+    label: string
+  ) {
+    for (let i = 0; i < 20; i++) {
+      if (document.activeElement?.getAttribute("aria-label") === label) break
+      await user.keyboard("{ArrowDown}")
+    }
+    expect(document.activeElement).toHaveAttribute("aria-label", label)
+    await user.keyboard("{Enter}")
+  }
+
+  it("has no grip unless rows can move", () => {
+    render(<Movable />)
+    expect(screen.queryByRole("button", { name: /^Drag/ })).toBeNull()
+  })
+
+  it("gives every row a grip named after it", () => {
+    render(<Movable onMove={() => {}} />)
+    expect(grip("A-12")).toHaveAttribute("data-slot", "tree-view-drag-handle")
+    expect(grip("Wells")).toBeInTheDocument()
+  })
+
+  it("moves a row next to another from the keyboard", async () => {
+    const user = userEvent.setup()
+    const onMove = vi.fn()
+    render(<Movable onMove={onMove} />)
+    await startDrag(user, "A-12")
+    expect(row("A-12")).toHaveAttribute("data-dragging", "")
+    await dropOn(user, "Insert between Notes and Archive")
+    expect(onMove).toHaveBeenCalledWith({
+      values: ["a12"],
+      target: "archive",
+      position: "before",
+    })
+  })
+
+  it("moves a row inside a folder", async () => {
+    const user = userEvent.setup()
+    const onMove = vi.fn()
+    render(<Movable onMove={onMove} />)
+    await startDrag(user, "Notes")
+    await dropOn(user, "Drop on Archive")
+    expect(onMove).toHaveBeenCalledWith({
+      values: ["notes"],
+      target: "archive",
+      position: "inside",
+    })
+  })
+
+  it("offers no drop on a leaf row, nor into the dragged rows", async () => {
+    const user = userEvent.setup()
+    render(<Movable onMove={() => {}} />)
+    const targets = await targetsWhileDragging(user, "Wells")
+    expect(targets).toContain("Drop on Archive")
+    expect(targets.some((label) => label.includes("Notes"))).toBe(true)
+    expect(targets).not.toContain("Drop on Notes")
+    expect(targets.filter((label) => /A-1[23]/.test(label))).toEqual([])
+  })
+
+  it("leaves out the drops canDrop refuses", async () => {
+    const user = userEvent.setup()
+    const canDrop = vi.fn((move: TreeViewMove) => move.target !== "archive")
+    render(<Movable onMove={() => {}} canDrop={canDrop} />)
+    const targets = await targetsWhileDragging(user, "Notes")
+    expect(targets).not.toContain("Drop on Archive")
+    expect(canDrop).toHaveBeenCalledWith(
+      expect.objectContaining({ values: ["notes"] })
+    )
+  })
+
+  it("cancels with Escape", async () => {
+    const user = userEvent.setup()
+    const onMove = vi.fn()
+    render(<Movable onMove={onMove} />)
+    await startDrag(user, "A-12")
+    await user.keyboard("{ArrowDown}{Escape}")
+    expect(onMove).not.toHaveBeenCalled()
+    expect(row("A-12")).not.toHaveAttribute("data-dragging")
+  })
+
+  it("moves rows of a data tree with moveTreeItems", async () => {
+    const user = userEvent.setup()
+    function Data() {
+      const [items, setItems] = React.useState(inventory(2, 2))
+      const renderNode = React.useCallback(
+        (node: Well): React.ReactElement => (
+          <TreeViewItem value={node.id} label={node.name}>
+            <TreeViewItemContent kind={node.children ? "folder" : "item"}>
+              {node.name}
+            </TreeViewItemContent>
+            <TreeViewCollection items={node.children ?? []}>
+              {renderNode}
+            </TreeViewCollection>
+          </TreeViewItem>
+        ),
+        []
+      )
+      return (
+        <TreeView
+          aria-label="Inventory"
+          items={items}
+          defaultExpanded={["field-0", "field-1"]}
+          onMove={(move) => setItems((current) => moveTreeItems(current, move))}
+        >
+          {renderNode}
+        </TreeView>
+      )
+    }
+    render(<Data />)
+    await startDrag(user, "Well 0-0")
+    await dropOn(user, "Drop on Field 1")
+    const names = screen
+      .getAllByRole("row")
+      .map((element) => element.getAttribute("data-value"))
+    expect(names).toEqual([
+      "field-0",
+      "well-0-1",
+      "field-1",
+      "well-1-0",
+      "well-1-1",
+      "well-0-0",
+    ])
   })
 })

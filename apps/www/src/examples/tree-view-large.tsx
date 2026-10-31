@@ -5,6 +5,7 @@ import {
   ContextMenuItem,
 } from "@tecton/react/components/context-menu"
 import {
+  moveTreeItems,
   TreeView,
   TreeViewCollection,
   TreeViewItem,
@@ -37,6 +38,7 @@ function renderNode(node: Node) {
 }
 
 export default function TreeViewLarge() {
+  const [items, setItems] = React.useState(fields)
   const [selected, setSelected] = React.useState<string[]>([])
   const [opened, setOpened] = React.useState<string | null>(null)
 
@@ -46,13 +48,14 @@ export default function TreeViewLarge() {
         <TreeView
           aria-label="Wells"
           className="h-80"
-          items={fields}
+          items={items}
           virtualized
           selectionMode="multiple"
           value={selected}
           onValueChange={setSelected}
           defaultExpanded={["field-0", "field-1"]}
           onActivate={setOpened}
+          onMove={(move) => setItems((current) => moveTreeItems(current, move))}
           contextMenu={(value) => (
             <ContextMenuContent>
               <ContextMenuItem onClick={() => setOpened(value)}>
