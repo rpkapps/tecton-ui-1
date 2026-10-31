@@ -16,6 +16,11 @@ type VirtualListOptions = {
   overscan?: number
   /** Indices that stay rendered wherever the scroll is (the focused row). */
   keep?: ReadonlyArray<number>
+  /**
+   * Px of content above the first row inside the scroll container (a
+   * sticky table header). Default 0.
+   */
+  start?: number
   enabled?: boolean
 }
 
@@ -37,6 +42,7 @@ function useVirtualList({
   stride,
   overscan = 4,
   keep = [],
+  start = 0,
   enabled = true,
 }: VirtualListOptions): VirtualList {
   const element = React.useRef<HTMLElement | null>(null)
@@ -75,10 +81,11 @@ function useVirtualList({
   )
 
   const height = view.height || stride * FALLBACK_ROWS
-  const first = Math.max(0, Math.floor(view.top / stride) - overscan)
+  const top = Math.max(0, view.top - start)
+  const first = Math.max(0, Math.floor(top / stride) - overscan)
   const last = Math.min(
     count - 1,
-    Math.ceil((view.top + height) / stride) + overscan
+    Math.ceil((top + height) / stride) + overscan
   )
   const keepKey = keep.join(",")
   const indices = React.useMemo(() => {
@@ -94,14 +101,15 @@ function useVirtualList({
     (index: number) => {
       const el = element.current
       if (!el || index < 0) return
-      const top = index * stride
+      // A sticky header covers `start` px at the top of the view.
+      const top = start + index * stride
       const bottom = top + stride
-      if (top < el.scrollTop) el.scrollTop = top
+      if (top - start < el.scrollTop) el.scrollTop = top - start
       else if (bottom > el.scrollTop + el.clientHeight)
         el.scrollTop = bottom - el.clientHeight
       measure()
     },
-    [stride, measure]
+    [stride, start, measure]
   )
 
   return {

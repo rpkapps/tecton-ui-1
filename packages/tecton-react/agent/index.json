@@ -115,6 +115,15 @@
    "resize",
    "column"
   ],
+  "virtual scroll": [
+   "virtualized"
+  ],
+  "windowing": [
+   "virtualized"
+  ],
+  "infinite scroll": [
+   "virtualized"
+  ],
   "sidenav": [
    "sidebar"
   ],
@@ -3470,7 +3479,7 @@
     "names": "table table table header table body table footer table head table row table cell table caption",
     "useWhen": "Records of the same shape have to line up in columns: invoices, wells, run results. A footer totals the columns, or a caption names the table. The rows are read, compared or opened; interaction beyond that (sorting, paging) comes from TanStack Table on these parts.",
     "routed": "",
-    "do": "Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`. Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state=\"selected\"` for the `bg-table-active` fill. Open a record from a link in its identifying cell, not from a handler on the row. Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`)."
+    "do": "Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`. Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state=\"selected\"` for the `bg-table-active` fill. Open a record from a link in its identifying cell, not from a handler on the row. For hundreds of rows or more, set `virtualized` and give the parent a bounded height (`h-96`, with the border); rows must be one height. Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`)."
    },
    "notFor": [
     {
@@ -3504,7 +3513,7 @@
     "TableCaption"
    ],
    "aliases": [],
-   "tokens": 1230
+   "tokens": 1309
   },
   {
    "id": "table-column-resizer",

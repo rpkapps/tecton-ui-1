@@ -931,3 +931,9 @@ Keep the rows in React state, list their ids as the `Reorderable`'s `value`, ren
 Register `rowExpandingFeature` with `createExpandedRowModel()` and pass `getSubRows` (here fields → platforms → wells). In the first column, indent the cell by `row.depth` (`paddingInlineStart`, 1.25rem a level) and put a chevron button, styled like a Tree View row's, before the name of each row that `getCanExpand()`, with `aria-expanded` and an "Expand …" / "Collapse …" name; leaves keep the chevron's space so names line up. `toggleAllRowsExpanded` drives an Expand all / Collapse all button. For a hierarchy without columns, use a [Tree View](/docs/tecton/tree-view).
 
 <ComponentPreview name="data-table-tree" align="start" />
+
+### Virtual scrolling
+
+For thousands of rows, set `virtualized` on the `Table` and give its parent a bounded height (here `h-96`, with the border). Render `table.getRowModel().rows` as usual. The body mounts only the rows in view, the header sticks while the rows scroll, and sorting, selection and row actions work on every row. Rows must be one height. For page-sized chunks instead, use [pagination](#pagination). `Reorderable` sees only the rows in view, so reordering a virtualized table moves rows within the visible window.
+
+<ComponentPreview name="data-table-virtual" align="start" />

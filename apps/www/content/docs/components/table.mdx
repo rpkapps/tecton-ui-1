@@ -102,6 +102,27 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
   previewClassName="h-auto"
 />
 
+## Virtualized
+
+Set `virtualized` on a table of hundreds of rows or more. Pass every row as usual: the body mounts only the rows in view, so a table of thousands renders and scrolls as fast as a short one. The table fills its parent and scrolls in it, so give the parent a bounded height (`h-80`, or `min-h-0 flex-1` in a flex column) and put the border and rounding on the parent too. The header sticks to the top while the rows scroll.
+
+Rows must all be the same height, since the table measures one row and places the rest from it. Cells keep their text on one line, so avoid wrapping content and multi-line cells. Focus is kept: a row whose checkbox or link has focus stays mounted when it scrolls out of view. Screen readers hear the true size, because the table carries `aria-rowcount` and each row `aria-rowindex`.
+
+<ComponentPreview name="table-virtualized" />
+
+```tsx
+<div className="h-80 overflow-hidden rounded-md border">
+  <Table virtualized>
+    <TableHeader>…</TableHeader>
+    <TableBody>
+      {readings.map((reading) => (
+        <TableRow key={reading.depth}>…</TableRow>
+      ))}
+    </TableBody>
+  </Table>
+</div>
+```
+
 {/* guidelines:start */}
 
 ## Usage guidelines
@@ -137,6 +158,12 @@ Select rows with a `Checkbox` per row (and one in the header for all) driven by 
 <Do>
 
 Open a record from a link in its identifying cell, not from a handler on the row.
+
+</Do>
+
+<Do>
+
+For hundreds of rows or more, set `virtualized` and give the parent a bounded height (`h-96`, with the border); rows must be one height.
 
 </Do>
 

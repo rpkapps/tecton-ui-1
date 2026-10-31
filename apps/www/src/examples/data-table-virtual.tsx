@@ -1,0 +1,181 @@
+"use client"
+
+import * as React from "react"
+import {
+  createColumnHelper,
+  createSortedRowModel,
+  rowSortingFeature,
+  sortFn_alphanumeric,
+  sortFn_basic,
+  sortFn_text,
+  tableFeatures,
+  useTable,
+  type SortingState,
+} from "@tanstack/react-table"
+import { ArrowUpDown } from "lucide-react"
+
+import { Badge } from "@tecton/react/components/badge"
+import { Button } from "@tecton/react/components/button"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@tecton/react/components/table"
+
+type Well = {
+  id: string
+  name: string
+  field: string
+  status: "Producing" | "Shut in" | "Drilling"
+  depth: number
+}
+
+const FIELDS = [
+  "Gullfaks",
+  "Statfjord",
+  "Snorre",
+  "Oseberg",
+  "Troll",
+  "Heidrun",
+]
+const STATUSES: Array<Well["status"]> = ["Producing", "Shut in", "Drilling"]
+
+/** 10,000 wells from a seeded generator: the same table on every render. */
+const wells: Well[] = Array.from({ length: 10_000 }, (_, i) => {
+  const seed = (i * 2654435761) % 2 ** 32
+  return {
+    id: `w${i}`,
+    name: `${30 + (i % 7)}/${1 + (i % 12)}-${String.fromCharCode(65 + (i % 26))}-${i + 1}`,
+    field: FIELDS[seed % FIELDS.length],
+    status: STATUSES[(seed >>> 3) % STATUSES.length],
+    depth: 1200 + (seed % 3800),
+  }
+})
+
+const statusVariant = {
+  Producing: "success",
+  "Shut in": "warning",
+  Drilling: "info",
+} as const
+
+const features = tableFeatures({
+  rowSortingFeature,
+  sortedRowModel: createSortedRowModel(),
+  sortFns: {
+    alphanumeric: sortFn_alphanumeric,
+    basic: sortFn_basic,
+    text: sortFn_text,
+  },
+})
+const columnHelper = createColumnHelper<typeof features, Well>()
+
+/** A header that sorts its column. */
+function SortButton({
+  label,
+  onClick,
+}: {
+  label: string
+  onClick: () => void
+}) {
+  return (
+    <Button variant="ghost" size="sm" className="-ms-2" onClick={onClick}>
+      {label}
+      <ArrowUpDown />
+    </Button>
+  )
+}
+
+const columns = columnHelper.columns([
+  columnHelper.accessor("name", {
+    header: ({ column }) => (
+      <SortButton
+        label="Well"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      />
+    ),
+  }),
+  columnHelper.accessor("field", {
+    header: ({ column }) => (
+      <SortButton
+        label="Field"
+        onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+      />
+    ),
+  }),
+  columnHelper.accessor("status", {
+    header: "Status",
+    cell: ({ getValue }) => (
+      <Badge variant={statusVariant[getValue()]} appearance="outline">
+        {getValue()}
+      </Badge>
+    ),
+  }),
+  columnHelper.accessor("depth", {
+    header: ({ column }) => (
+      <div className="flex justify-end">
+        <SortButton
+          label="TD (m)"
+          onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+        />
+      </div>
+    ),
+    cell: ({ getValue }) => (
+      <div className="text-end font-mono tabular-nums">
+        {getValue().toLocaleString("en-US")}
+      </div>
+    ),
+  }),
+])
+
+export default function DataTableVirtual() {
+  const [sorting, setSorting] = React.useState<SortingState>([])
+  const table = useTable({
+    features,
+    data: wells,
+    columns,
+    getRowId: (row) => row.id,
+    state: { sorting },
+    onSortingChange: setSorting,
+  })
+
+  return (
+    <div className="flex w-full max-w-3xl flex-col gap-3">
+      {/* The bounded height the table scrolls in. */}
+      <div className="h-96 overflow-hidden rounded-md border">
+        <Table aria-label="Wells" virtualized>
+          <TableHeader>
+            {table.getHeaderGroups().map((headerGroup) => (
+              <TableRow key={headerGroup.id}>
+                {headerGroup.headers.map((header) => (
+                  <TableHead key={header.id}>
+                    {header.isPlaceholder ? null : (
+                      <table.FlexRender header={header} />
+                    )}
+                  </TableHead>
+                ))}
+              </TableRow>
+            ))}
+          </TableHeader>
+          <TableBody>
+            {/* Every row: the table mounts only the ones in view. */}
+            {table.getRowModel().rows.map((row) => (
+              <TableRow key={row.id}>
+                {row.getAllCells().map((cell) => (
+                  <TableCell key={cell.id}>
+                    <table.FlexRender cell={cell} />
+                  </TableCell>
+                ))}
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+      <p className="text-sm text-muted-foreground tabular-nums">
+        {wells.length.toLocaleString("en-US")} wells
+      </p>
+    </div>
+  )
+}

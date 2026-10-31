@@ -1326,6 +1326,80 @@ index 0c2e93ea..1071e005 100644
        {...props}
      />
    )
+diff --git a/apps/v4/registry/bases/base/ui/table.tsx b/apps/v4/registry/bases/base/ui/table.tsx
+index 160cf7aa..d4974a37 100644
+--- a/apps/v4/registry/bases/base/ui/table.tsx
++++ b/apps/v4/registry/bases/base/ui/table.tsx
+@@ -3,23 +3,56 @@
+ import * as React from "react"
+ import { cn } from "cn"
+ 
+-function Table({ className, ...props }: React.ComponentProps<"table">) {
++import {
++  TableVirtualProvider,
++  useTableVirtualized,
++  useTableVirtualizer,
++  useVirtualRows,
++} from "../tecton/internal/table-virtualizer"
++
++function Table({
++  className,
++  virtualized = false,
++  ...props
++}: React.ComponentProps<"table"> & {
++  /**
++   * Renders only the rows in view. The table fills and scrolls in its
++   * parent, which needs a bounded height; rows are one height and the
++   * header sticks to the top.
++   */
++  virtualized?: boolean
++}) {
++  const virtual = useTableVirtualizer(virtualized)
+   return (
+-    <div data-slot="table-container" className="cn-table-container">
++    <div
++      data-slot="table-container"
++      ref={virtual.containerRef}
++      className={cn("cn-table-container", virtualized && "h-full overflow-auto")}
++    >
+       <table
+         data-slot="table"
++        aria-rowcount={virtual.rowCount}
+         className={cn("cn-table", className)}
+         {...props}
+-      />
++      >
++        <TableVirtualProvider value={virtual.context}>
++          {props.children}
++        </TableVirtualProvider>
++      </table>
+     </div>
+   )
+ }
+ 
+ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
++  const virtualized = useTableVirtualized()
+   return (
+     <thead
+       data-slot="table-header"
+-      className={cn("cn-table-header", className)}
++      className={cn(
++        "cn-table-header",
++        virtualized && "sticky top-0 z-10",
++        className
++      )}
+       {...props}
+     />
+   )
+@@ -30,7 +63,7 @@ function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
+     <tbody
+       data-slot="table-body"
+       className={cn("cn-table-body", className)}
+-      {...props}
++      {...useVirtualRows(props)}
+     />
+   )
+ }
 diff --git a/apps/v4/registry/bases/base/ui/tabs.tsx b/apps/v4/registry/bases/base/ui/tabs.tsx
 index 2b39bbfe..74f568e6 100644
 --- a/apps/v4/registry/bases/base/ui/tabs.tsx
