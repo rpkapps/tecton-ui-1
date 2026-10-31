@@ -306,7 +306,16 @@ function useTreeDragAndDrop({
     },
     getItemElement: (key) => handle.current?.getRowElement(key) ?? null,
     getContainer: () => handle.current?.element ?? null,
-    focusItem: (key) => handle.current?.focusRow(key),
+    // The dropped row, or the closed folder it went into.
+    focusItem: (key) => {
+      const h = handle.current
+      if (!h) return
+      const visible = new Set(h.rows.map((node) => node.value))
+      let target: string | null = key
+      while (target !== null && !visible.has(target))
+        target = h.tree.byValue.get(target)?.parent ?? null
+      if (target !== null) h.focusRow(target)
+    },
     onDragStart: () => latest.current.onDragStart?.(),
     onDrop: (place, keys) =>
       latest.current.onMove?.({

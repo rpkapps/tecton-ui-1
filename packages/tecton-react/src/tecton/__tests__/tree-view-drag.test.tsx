@@ -4,7 +4,9 @@ import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
+  moveTreeItems,
   TreeView,
+  TreeViewCollection,
   TreeViewItem,
   TreeViewItemContent,
 } from "@tecton/react/tecton/tree-view"
@@ -245,6 +247,48 @@ describe("TreeView keyboard and screen reader drag", () => {
         document.querySelector('[aria-live="assertive"]')
       ).toHaveTextContent("Drop complete.")
     )
+    // The move was not applied: the row is where it was, and has focus.
+    await waitFor(() => expect(row("Notes")).toHaveFocus())
+  })
+
+  it("focuses the closed folder a row was dropped into", async () => {
+    type Node = { id: string; children?: Array<Node> }
+    const renderNode = (node: Node) => (
+      <TreeViewItem value={node.id} label={node.id}>
+        <TreeViewItemContent kind={node.children ? "folder" : "item"}>
+          {node.id}
+        </TreeViewItemContent>
+        <TreeViewCollection items={node.children ?? []}>
+          {renderNode}
+        </TreeViewCollection>
+      </TreeViewItem>
+    )
+    function Data() {
+      const [items, setItems] = React.useState<Array<Node>>([
+        { id: "notes" },
+        { id: "archive", children: [{ id: "old" }] },
+      ])
+      return (
+        <TreeView
+          aria-label="Data"
+          items={items}
+          onMove={(move) => setItems((current) => moveTreeItems(current, move))}
+        >
+          {renderNode}
+        </TreeView>
+      )
+    }
+    const user = userEvent.setup()
+    render(<Data />)
+    act(() => row("notes").focus())
+    await user.keyboard("{ArrowRight}{Enter}")
+    while (
+      document.activeElement?.getAttribute("aria-label") !== "Drop on archive"
+    )
+      await user.keyboard("{ArrowDown}")
+    await user.keyboard("{Enter}")
+    expect(screen.queryByRole("row", { name: "notes" })).toBeNull()
+    await waitFor(() => expect(row("archive")).toHaveFocus())
   })
 
   it("opens the aimed folder with the arrow key across", async () => {
