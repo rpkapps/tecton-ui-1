@@ -1,6 +1,6 @@
 /**
- * Internal to `@tecton/react`: one visually hidden live region per
- * politeness level, appended to the document body, for announcements that
+ * Internal to `@tecton/react`: visually hidden live regions (one per
+ * politeness and `slot`), appended to the document body, for announcements that
  * have no element of their own (a selection changed, a drag started, a
  * value was copied). Outside groups and toolbars, so nothing flattens it
  * away; inline styles, so it stays hidden where the page's utilities do not
@@ -9,10 +9,12 @@
 
 type Politeness = "polite" | "assertive"
 
-const regions = new Map<Politeness, HTMLElement>()
+// One region per politeness and `data-slot`.
+const regions = new Map<string, HTMLElement>()
 
 function regionFor(politeness: Politeness, slot: string) {
-  let region = regions.get(politeness)
+  const key = `${politeness}:${slot}`
+  let region = regions.get(key)
   if (!region?.isConnected) {
     region = document.createElement("div")
     region.setAttribute("data-slot", slot)
@@ -31,7 +33,7 @@ function regionFor(politeness: Politeness, slot: string) {
       border: "0",
     })
     document.body.append(region)
-    regions.set(politeness, region)
+    regions.set(key, region)
   }
   return region
 }

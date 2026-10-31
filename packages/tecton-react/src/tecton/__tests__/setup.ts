@@ -34,7 +34,7 @@ if (typeof window.matchMedia !== "function") {
     }) as MediaQueryList
 }
 
-// React Aria calls these on overlays and list items; jsdom has none of them.
+// Overlays, roving focus and drags call these; jsdom has none of them.
 Element.prototype.scrollIntoView = () => {}
 Element.prototype.hasPointerCapture = () => false
 Element.prototype.releasePointerCapture = () => {}

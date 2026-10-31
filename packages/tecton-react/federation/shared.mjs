@@ -67,7 +67,6 @@ export const shared = deepFreeze({
   // does not match), so both are listed.
   "@base-ui/react": { singleton: false },
   "@base-ui/react/": { singleton: false },
-  "react-aria-components": { singleton: false },
   // The chart component pulls all of recharts (~145 KB gzipped). Share it,
   // but never eagerly: only the applications that chart should pay for it.
   recharts: { singleton: false, eager: false },

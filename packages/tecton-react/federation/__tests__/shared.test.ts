@@ -79,7 +79,6 @@ describe("shared", () => {
       "@tecton/react/",
       "@base-ui/react",
       "@base-ui/react/",
-      "react-aria-components",
       "recharts",
     ])
   })
@@ -87,14 +86,23 @@ describe("shared", () => {
   it("shares Tecton's internal libraries, but never as singletons", () => {
     expect(shared["@base-ui/react"]).toEqual({ singleton: false })
     expect(shared["@base-ui/react/"]).toEqual({ singleton: false })
-    expect(shared["react-aria-components"]).toEqual({ singleton: false })
   })
 
-  it("covers every specifier the sources import Base UI and React Aria by", () => {
-    const specifiers = [
-      ...importsOf("@base-ui/react"),
-      ...importsOf("react-aria-components"),
-    ]
+  it("has nothing to share for React Aria: no source imports it", () => {
+    for (const name of [
+      "react-aria-components",
+      "react-aria",
+      "react-stately",
+      "@react-aria",
+      "@react-stately",
+      "@internationalized",
+    ]) {
+      expect([name, [...importsOf(name)]]).toEqual([name, []])
+    }
+  })
+
+  it("covers every specifier the sources import Base UI by", () => {
+    const specifiers = [...importsOf("@base-ui/react")]
     // The root barrel and at least one subpath are both in use.
     expect(specifiers).toContain("@base-ui/react")
     expect(specifiers.some((s) => s.startsWith("@base-ui/react/"))).toBe(true)

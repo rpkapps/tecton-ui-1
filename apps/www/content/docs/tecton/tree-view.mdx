@@ -142,7 +142,7 @@ const [items, setItems] = React.useState(project)
 
 A move is `{ values, target, position }`: the dragged rows' `value`s in tree order, and the row they were dropped `"before"`, `"after"` or `"inside"`. `moveTreeItems` puts rows dropped inside a folder after its children and leaves every untouched subtree as it was, so the rows that did not move are not re-rendered. When the tree mirrors a server, send the move there instead and update `items` from the reply.
 
-Draggable rows get a grip in a column at the start of the tree, before the indent. Rows drag from anywhere with the pointer and, on touch screens, with a long press; the dragged row keeps its look while the browser carries a copy of it. Over a gap between rows, the pointer's position across the tree picks the depth: towards the start drops at an outer level, under a row's label at its own level, and the line shows where the rows will land. Keyboard and screen reader users reach the grip with the arrow keys: Enter picks the row up, the arrow keys go through the drop positions (each one announced), Enter drops and Escape cancels.
+Draggable rows get a grip in a column at the start of the tree, before the indent. Rows drag from anywhere with the pointer and, on touch screens, from the grip or with a long press elsewhere on the row; the dragged row keeps its look while a copy of it follows the pointer, and a collapsed folder held under it opens. Over a gap between rows, the pointer's position across the tree picks the depth: towards the start drops at an outer level, under a row's label at its own level, and the line shows where the rows will land. Keyboard and screen reader users reach the grip with the arrow keys: Enter picks the row up, the arrow keys (or Tab) go through the drop positions, each one announced, Right and Left open and close the folder aimed at, Enter drops and Escape cancels. With a screen reader on a touch screen, activating the grip turns every drop position into a button to swipe to.
 
 Rows only drop inside folders — a row with `kind="folder"` content, or one with children — and never into themselves. `canDrop` adds your own rules:
 
@@ -160,7 +160,7 @@ const topLevel = new Set(project.map((node) => node.id))
 
 ## Large trees
 
-`virtualized` renders only the rows in view, so a tree of thousands of rows mounts, scrolls and expands as fast as a short one. Give the tree a bounded height (`h-80`, or `min-h-0 flex-1` inside a flex column) to scroll in. Rows are then a fixed 32 px tall and span the full width of the tree, which takes no padding: put padding and borders on a wrapper. Keyboard navigation, type-ahead, selection, the context menu and drag and drop work on every row, including those out of view; a drag near the top or bottom edge scrolls the tree.
+`virtualized` renders only the rows in view, so a tree of thousands of rows mounts, scrolls and expands as fast as a short one. Give the tree a bounded height (`h-80`, or `min-h-0 flex-1` inside a flex column) to scroll in. Rows are then a fixed 32 px tall and span the full width of the tree, which takes no padding: put padding and borders on a wrapper. Keyboard navigation, type-ahead, selection, the context menu and drag and drop work on every row, including those out of view; a drag near the top or bottom edge scrolls the tree, or the container or page it scrolls in.
 
 <ComponentPreview name="tree-view-large" />
 
