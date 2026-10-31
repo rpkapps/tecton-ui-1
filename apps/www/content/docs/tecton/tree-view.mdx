@@ -28,6 +28,30 @@ import {
 
 The tree is one tab stop with arrow-key navigation and type-ahead; in a right-to-left tree, Left expands and Right collapses.
 
+## Composition
+
+Use the following composition to build a `TreeView`:
+
+```text
+TreeView
+├── TreeViewItem
+│   ├── TreeViewItemContent
+│   │   └── endAdornment
+│   │       ├── TreeViewVisibilityToggle
+│   │       └── TreeViewAction
+│   ├── TreeViewItem
+│   │   └── TreeViewItemContent
+│   └── TreeViewItem
+│       └── TreeViewItemContent
+└── TreeViewItem
+    ├── TreeViewItemContent
+    └── TreeViewCollection
+        └── TreeViewItem
+            └── TreeViewItemContent
+```
+
+`TreeViewItemContent` comes first in every `TreeViewItem`, then its child rows: nested `TreeViewItem`s for a fixed tree, or one `TreeViewCollection` for rows from data. A row's controls go in the `endAdornment` of its content; the context menu (`contextMenu`) and drag and drop (`onMove`) are set once on `TreeView`, for every row.
+
 ## Nested
 
 Nest `TreeViewItem`s for a fixed tree. For data, pass `items` and a render function to `TreeView`, and render each node's children with `TreeViewCollection`. Indentation follows the depth.
@@ -65,9 +89,92 @@ Nest `TreeViewItem`s for a fixed tree. For data, pass `items` and a render funct
 
 `TreeViewVisibilityToggle` is named "Hide" plus the row's label and is pressed while the row is hidden; pass `name` when the label is not plain text. Give `TreeViewAction` an `aria-label`.
 
+## Context menu
+
+`contextMenu` gives every row a context menu. It is called with the row's `value` when the row is right-clicked, long-pressed, or focused and Shift+F10 or the Menu key is pressed, and returns a [Context Menu](/docs/components/context-menu)'s `ContextMenuContent`, or `null` for a row with no menu. The tree mounts one menu for all its rows, so it costs nothing per row.
+
+Opening a menu moves focus to its row but leaves the selection as it is; the row carries `data-context-menu-open` while its menu shows, and focus returns to it when the menu closes.
+
+<ComponentPreview name="tree-view-context-menu" />
+
+```tsx
+import {
+  ContextMenuContent,
+  ContextMenuItem,
+} from "@tecton/react/components/context-menu"
+
+<TreeView
+  aria-label="Horizons"
+  contextMenu={(value) => (
+    <ContextMenuContent>
+      <ContextMenuItem onClick={() => rename(value)}>Rename</ContextMenuItem>
+      <ContextMenuItem variant="destructive" onClick={() => remove(value)}>
+        Delete
+      </ContextMenuItem>
+    </ContextMenuContent>
+  )}
+>
+  …
+</TreeView>
+```
+
+A context menu is hard to discover on touch screens and for most keyboard users: keep a visible `TreeViewAction` for the commands a row cannot do without.
+
+## Reordering
+
+`onMove` makes rows draggable: drop them between rows at any level, or on a folder to move them into it. A collapsed folder opens when a drag hovers over it, and dragging a selected row moves the whole selection. The tree reports the drop; your `items` change with it, and `moveTreeItems` applies it to `{ value | id, children }` data.
+
+<ComponentPreview name="tree-view-reorder" />
+
+```tsx
+import { moveTreeItems, TreeView } from "@tecton/react/tecton/tree-view"
+
+const [items, setItems] = React.useState(project)
+
+<TreeView
+  aria-label="Project"
+  items={items}
+  onMove={(move) => setItems((current) => moveTreeItems(current, move))}
+>
+  {renderNode}
+</TreeView>
+```
+
+A move is `{ values, target, position }`: the dragged rows' `value`s in tree order, and the row they were dropped `"before"`, `"after"` or `"inside"`. `moveTreeItems` puts rows dropped inside a folder after its children and leaves every untouched subtree as it was, so the rows that did not move are not re-rendered. When the tree mirrors a server, send the move there instead and update `items` from the reply.
+
+Draggable rows get a grip in a column at the start of the tree, before the indent. Rows drag from anywhere with the pointer and, on touch screens, with a long press; the dragged row keeps its look while the browser carries a copy of it. Over a gap between rows, the pointer's position across the tree picks the depth: towards the start drops at an outer level, under a row's label at its own level, and the line shows where the rows will land. Keyboard and screen reader users reach the grip with the arrow keys: Enter picks the row up, the arrow keys go through the drop positions (each one announced), Enter drops and Escape cancels.
+
+Rows only drop inside folders — a row with `kind="folder"` content, or one with children — and never into themselves. `canDrop` adds your own rules:
+
+```tsx
+// The top-level folders stay where they are; everything inside them moves.
+const topLevel = new Set(project.map((node) => node.id))
+
+<TreeView
+  aria-label="Project"
+  items={items}
+  onMove={(move) => setItems((current) => moveTreeItems(current, move))}
+  canDrop={(move) => !move.values.some((value) => topLevel.has(value))}
+>
+```
+
+## Large trees
+
+`virtualized` renders only the rows in view, so a tree of thousands of rows mounts, scrolls and expands as fast as a short one. Give the tree a bounded height (`h-80`, or `min-h-0 flex-1` inside a flex column) to scroll in. Rows are then a fixed 32 px tall and span the full width of the tree, which takes no padding: put padding and borders on a wrapper. Keyboard navigation, type-ahead, selection, the context menu and drag and drop work on every row, including those out of view; a drag near the top or bottom edge scrolls the tree.
+
+<ComponentPreview name="tree-view-large" />
+
+```tsx
+<TreeView aria-label="Wells" className="h-80" items={fields} virtualized>
+  {renderNode}
+</TreeView>
+```
+
+Rows rendered from `items` are kept while `items` and the render function stay the same, so selecting, focusing or expanding a row re-renders only what changed. Define `renderNode` outside the component (or wrap it in `useCallback`) and keep `items` stable: a render function created on every render re-renders every row each time the parent does, which a large tree feels on every click.
+
 ## Styling
 
-Rows carry `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and `data-level` (depth from 1), and are a `group/tree-item`. They are presence attributes; write the selected state as `data-[selected]:…`, since shadcn's `data-selected:` variant matches only `"true"`. Hover and focus are `:hover` and `:focus-visible`, so a control revealed on hover reads:
+Rows carry `data-selected`, `data-expanded`, `data-disabled`, `data-hidden`, `data-context-menu-open`, `data-drop-target` (a folder a drag will drop into) and `data-level` (depth from 1), and are a `group/tree-item`. They are presence attributes; write the selected state as `data-[selected]:…`, since shadcn's `data-selected:` variant matches only `"true"`. Hover and focus are `:hover` and `:focus-visible`, so a control revealed on hover reads:
 
 ```tsx
 <TreeViewAction
@@ -97,13 +204,7 @@ Rows carry `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and 
 
 <Do>
 
-Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value`; add `label` when the row content is not plain text.
-
-</Do>
-
-<Do>
-
-Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data.
+Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value` (add `label` when the row content is not plain text). Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data.
 
 </Do>
 
@@ -115,13 +216,19 @@ Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onV
 
 <Do>
 
-Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`).
+Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`). Let rows move with `onMove` (apply it with `moveTreeItems`, restrict it with `canDrop`), never with drag events of your own on the rows: those have no keyboard path and no drop rules. Row commands go in one `contextMenu={(value) => <ContextMenuContent>…</ContextMenuContent>}` on `TreeView` (`null` for a row without), never a `ContextMenu` around each row; keep a visible `TreeViewAction` for the ones a row cannot do without, since a context menu is hard to find on touch and for most keyboard users.
 
 </Do>
 
 <Do>
 
-Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `"true"`.
+Set `virtualized` on a tree of hundreds of rows or more, with a bounded height (`h-80`, or `min-h-0 flex-1` in a flex column); padding and borders go on a wrapper, since virtualized rows span the full width of the tree. Keep `items` and the render function stable (module-level or `useCallback`), or every parent render re-renders every row.
+
+</Do>
+
+<Do>
+
+Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden`, `data-context-menu-open` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `"true"`.
 
 </Do>
 
@@ -243,6 +350,10 @@ Forwards `id`, `className`, `style`, `aria-labelledby`, `aria-describedby` and `
 | `defaultExpanded` | `string[]` | - | Initially expanded rows. |
 | `onExpandedChange` | `(expanded: string[]) => void` | - | Called with the expanded rows. |
 | `items` | `Iterable<T>` | - | Data for the top-level rows; `children` is then `(item: T) => ReactNode`. |
+| `virtualized` | `boolean` | `false` | Renders only the rows in view; rows are 32 px tall and the tree needs a bounded height. |
+| `contextMenu` | `(value: string) => ReactNode` | - | The context menu of a row (`ContextMenuContent`), or `null` for none. |
+| `onMove` | `(move: TreeViewMove) => void` | - | Makes rows draggable; called with `{ values, target, position }` on a drop. |
+| `canDrop` | `(move: TreeViewMove) => boolean` | - | Whether a drop is allowed, on top of the folder and self rules. |
 
 ### TreeViewItem
 
@@ -254,6 +365,10 @@ One row: a `TreeViewItemContent` first, then child `TreeViewItem`s or a `TreeVie
 | `label` | `string` | content text | Plain-text name for type-ahead and announcements; needed when the content is not plain text. |
 | `disabled` | `boolean` | `false` | Not selectable, not expandable, skipped by the arrow keys. |
 | `hidden` | `boolean` | `false` | Dimmed hidden state; the row stays in the tree. |
+
+### moveTreeItems
+
+`moveTreeItems(items, move, getValue?)` returns `items` with `move` applied, sharing every unchanged subtree. Rows are found by `getValue(item)`, which defaults to `item.value ?? item.id`; their children are `item.children`. A drop into one of the moved rows returns `items` as they were.
 
 ### TreeViewCollection
 
