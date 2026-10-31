@@ -26,6 +26,7 @@ import {
   GripVerticalIcon,
   MoreVerticalIcon,
 } from "lucide-react"
+import type { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu"
 
 import {
   ContextMenu,
@@ -70,18 +71,17 @@ function stateAttributes<TProps extends object>(props: TProps): TProps {
   const result: Record<string, unknown> = {}
   for (const [name, value] of Object.entries(props)) {
     if (DROPPED_ATTRIBUTES.has(name)) continue
-    if (PRESENCE_ATTRIBUTES.has(name)) {
-      if (value !== undefined && value !== false && value !== "false") {
-        result[name] = ""
-      }
-      continue
+    if (!PRESENCE_ATTRIBUTES.has(name)) result[name] = value
+    else if (value !== undefined && value !== false && value !== "false") {
+      result[name] = ""
     }
-    result[name] = value
   }
   return result as TProps
 }
 
-function renderDiv(props: React.ComponentProps<"div">) {
+type DivProps = React.ComponentProps<"div">
+
+function renderDiv(props: DivProps) {
   return <div {...stateAttributes(props)} />
 }
 
@@ -216,9 +216,7 @@ function createMenuStore() {
     },
     subscribe(listener: () => void) {
       listeners.add(listener)
-      return () => {
-        listeners.delete(listener)
-      }
+      return () => void listeners.delete(listener)
     },
   }
 }
@@ -236,15 +234,15 @@ const VIRTUAL_LAYOUT_OPTIONS = {
   dropIndicatorThickness: 10,
 }
 
+const TREE_SELECTOR = '[data-slot="tree-view"]'
 const ROW_SELECTOR = '[data-slot="tree-view-item"]'
 
 /** The enabled row an event happened in, if it belongs to `tree`. */
 function rowOf(target: EventTarget | null, tree: Element | null) {
   if (!(target instanceof Element) || !tree) return null
   const row = target.closest<HTMLElement>(ROW_SELECTOR)
-  if (!row || row.closest('[data-slot="tree-view"]') !== tree) return null
-  if (row.hasAttribute("data-disabled")) return null
-  return row
+  if (!row || row.closest(TREE_SELECTOR) !== tree) return null
+  return row.hasAttribute("data-disabled") ? null : row
 }
 
 /** Opens the context menu from the keyboard, under the row's label. */
@@ -278,36 +276,30 @@ function TreeViewMenuContent({
   return value === null ? null : contextMenu(value)
 }
 
-/** Every row in tree order (depth first), collapsed ones included. */
-function forEachRow(collection: TreeCollection, visit: (key: Key) => void) {
+/**
+ * The values of the rows `keep` accepts, in tree order (depth first),
+ * collapsed rows included.
+ */
+function rowValues(collection: TreeCollection, keep: (key: Key) => boolean) {
+  const values: string[] = []
   const seen = new Set<Key>()
   const walk = (key: Key) => {
-    const node = collection.getItem(key)
-    if (!node || node.type !== "item" || seen.has(key)) return
+    if (collection.getItem(key)?.type !== "item" || seen.has(key)) return
     seen.add(key)
-    visit(key)
+    if (keep(key)) values.push(String(key))
     for (const child of collection.getChildren?.(key) ?? []) walk(child.key)
   }
   for (const node of collection) walk(node.key)
+  return values
 }
 
 /** Every row that `"all"` (select all) stands for, collapsed ones included. */
-function selectableValues(state: TreeState | null): string[] {
+function selectableValues(state: TreeState | null) {
   if (!state) return []
-  const values: string[] = []
-  forEachRow(state.collection, (key) => {
-    if (!state.selectionManager.isDisabled(key)) values.push(String(key))
-  })
-  return values
-}
-
-/** `keys` sorted into tree order. */
-function inTreeOrder(collection: TreeCollection, keys: Set<Key>): string[] {
-  const values: string[] = []
-  forEachRow(collection, (key) => {
-    if (keys.has(key)) values.push(String(key))
-  })
-  return values
+  return rowValues(
+    state.collection,
+    (k) => !state.selectionManager.isDisabled(k)
+  )
 }
 
 /** Whether `key` is one of `rows` or inside one of them. */
@@ -322,19 +314,13 @@ function isWithin(collection: TreeCollection, key: Key, rows: Set<Key>) {
   return false
 }
 
+/** A row with `kind="folder"` content, or with child rows. */
 function isFolder(collection: TreeCollection, key: Key) {
-  const node = collection.getItem(key)
-  if (!node) return false
-  if (
-    (node.props as { "data-kind"?: string } | undefined)?.["data-kind"] ===
-    "folder"
-  ) {
-    return true
-  }
-  for (const child of collection.getChildren?.(key) ?? []) {
-    if (child.type === "item") return true
-  }
-  return false
+  const props = collection.getItem(key)?.props as
+    { "data-kind"?: string } | undefined
+  if (props?.["data-kind"] === "folder") return true
+  const children = [...(collection.getChildren?.(key) ?? [])]
+  return children.some((child) => child.type === "item")
 }
 
 // Geometry of a draggable row, in rem: the grip column at the start, then
@@ -413,24 +399,23 @@ function moveTreeItems<T extends object>(
   }
   if (isMovingAncestor(items, false) !== false) return items
 
+  // A list rebuilt with nothing changed is the same list.
+  const keep = (next: T[], list: T[]) =>
+    next.length === list.length && next.every((item, i) => item === list[i])
+      ? list
+      : next
   const taken: T[] = []
   const take = (list: T[]): T[] => {
-    let changed = false
-    const next: T[] = []
-    for (const item of list) {
-      const children = childrenOf(item)
+    const next = list.flatMap((item) => {
       if (moving.has(getValue(item))) {
         taken.push(item)
-        changed = true
-      } else if (children) {
-        const kept = take(children)
-        if (kept !== children) changed = true
-        next.push(kept === children ? item : withChildren(item, kept))
-      } else {
-        next.push(item)
+        return []
       }
-    }
-    return changed ? next : list
+      const children = childrenOf(item)
+      const kept = children && take(children)
+      return [kept && kept !== children ? withChildren(item, kept) : item]
+    })
+    return keep(next, list)
   }
   const put = (list: T[]): T[] => {
     const index = list.findIndex((item) => getValue(item) === move.target)
@@ -449,11 +434,10 @@ function moveTreeItems<T extends object>(
     }
     const next = list.map((item) => {
       const children = childrenOf(item)
-      if (!children) return item
-      const placed = put(children)
-      return placed === children ? item : withChildren(item, placed)
+      const placed = children && put(children)
+      return placed && placed !== children ? withChildren(item, placed) : item
     })
-    return next.some((item, i) => item !== list[i]) ? next : list
+    return keep(next, list)
   }
   return put(take(items))
 }
@@ -493,12 +477,7 @@ function TreeView<T extends object = object>({
   const stateRef = React.useRef<TreeState | null>(null)
   const treeRef = React.useRef<HTMLDivElement | null>(null)
   const [menuStore] = React.useState(createMenuStore)
-  const menuActionsRef =
-    React.useRef<
-      NonNullable<
-        React.ComponentProps<typeof ContextMenu>["actionsRef"]
-      >["current"]
-    >(null)
+  const menuActionsRef = React.useRef<ContextMenuPrimitive.Root.Actions>(null)
   const { dragAndDropHooks } = useTreeDragAndDrop({
     stateRef,
     treeRef,
@@ -518,39 +497,27 @@ function TreeView<T extends object = object>({
     [items, children]
   )
 
-  const renderTree = (domProps: React.ComponentProps<"div">) => {
-    if (!contextMenu) {
-      const { ref } = domProps
-      return renderDiv({
-        ...domProps,
-        ref: (element: HTMLDivElement | null) => {
-          treeRef.current = element
-          if (typeof ref === "function") ref(element)
-          else if (ref) ref.current = element
-        },
-      })
-    }
-    const { onKeyDown } = domProps
-    return (
-      <ContextMenuTrigger
-        ref={treeRef}
-        render={renderDiv({
-          ...domProps,
-          onKeyDown: (event) => {
-            const row =
-              (event.key === "ContextMenu" ||
-                (event.key === "F10" && event.shiftKey)) &&
-              rowOf(event.target, treeRef.current)
-            if (row) {
-              event.preventDefault()
-              openMenuAt(row)
-              return
-            }
-            onKeyDown?.(event)
-          },
-        })}
-      />
-    )
+  const renderTree = ({ ref, onKeyDown, ...domProps }: DivProps) => {
+    const element = renderDiv({
+      ...domProps,
+      ref: (element: HTMLDivElement | null) => {
+        treeRef.current = element
+        if (typeof ref === "function") ref(element)
+        else if (ref) ref.current = element
+      },
+      onKeyDown: (event) => {
+        // Shift+F10 and the Menu key open the focused row's context menu.
+        const row =
+          contextMenu &&
+          (event.key === "ContextMenu" ||
+            (event.key === "F10" && event.shiftKey)) &&
+          rowOf(event.target, treeRef.current)
+        if (!row) return onKeyDown?.(event)
+        event.preventDefault()
+        openMenuAt(row)
+      },
+    })
+    return contextMenu ? <ContextMenuTrigger render={element} /> : element
   }
 
   const tree = (
@@ -558,15 +525,12 @@ function TreeView<T extends object = object>({
       data-slot="tree-view"
       className={cn(
         "w-full overflow-auto text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-        // Virtualized rows are positioned by the tree, not laid out by it,
-        // and span its full width: padding would push them out sideways.
-        // The 1px between rows is each row's margin, not a `gap`: a drag puts
-        // zero-height elements between rows (the drop line, the screen reader
-        // drop target of a folder), and a gap around them would move the rows.
+        // Rows are spaced by their own margin, not a `gap`: a gap around the
+        // zero-height elements a drag puts between rows would move them.
         virtualized ? "relative block" : "flex flex-col",
         className,
-        // Rows are sized from the rounded `clientWidth`, which can exceed a
-        // fractional content box by a pixel: never scroll sideways for it.
+        // Virtualized rows are positioned across the full, rounded
+        // `clientWidth`: no padding, and no sideways scroll for a pixel over.
         virtualized && "overflow-x-hidden p-0"
       )}
       {...props}
@@ -654,15 +618,13 @@ function visibleNeighbour(
   key: Key,
   direction: "before" | "after"
 ): Key | null {
-  let next =
+  const step = (from: Key) =>
     direction === "after"
-      ? collection.getKeyAfter(key)
-      : collection.getKeyBefore(key)
+      ? collection.getKeyAfter(from)
+      : collection.getKeyBefore(from)
+  let next = step(key)
   while (next != null && collection.getItem(next)?.type !== "item") {
-    next =
-      direction === "after"
-        ? collection.getKeyAfter(next)
-        : collection.getKeyBefore(next)
+    next = step(next)
   }
   return next
 }
@@ -728,26 +690,18 @@ function followScroll(getTree: () => HTMLElement | null) {
 
 /** The row of `tree` under (x, y), or the nearest one by y. */
 function rowAtPoint(tree: HTMLElement, x: number, y: number) {
+  const ours = (row: Element) => row.closest(TREE_SELECTOR) === tree
   const hit = document
     .elementsFromPoint(x, y)
     .find((element) => element.matches(ROW_SELECTOR))
-  if (
-    hit instanceof HTMLElement &&
-    hit.closest('[data-slot="tree-view"]') === tree
-  ) {
-    return hit
-  }
+  if (hit instanceof HTMLElement && ours(hit)) return hit
+  // Over a gap, or rows ignoring the pointer while they scroll.
   let nearest: HTMLElement | null = null
   let distance = Infinity
   for (const row of tree.querySelectorAll<HTMLElement>(ROW_SELECTOR)) {
-    if (row.closest('[data-slot="tree-view"]') !== tree) continue
     const rect = row.getBoundingClientRect()
-    const d =
-      y < rect.top ? rect.top - y : y > rect.bottom ? y - rect.bottom : 0
-    if (d < distance) {
-      distance = d
-      nearest = row
-    }
+    const d = Math.max(rect.top - y, 0, y - rect.bottom)
+    if (ours(row) && d < distance) [nearest, distance] = [row, d]
   }
   return nearest
 }
@@ -833,30 +787,21 @@ function useTreeDragAndDrop({
     // The gap between `above` and `below`, at each level it can take: just
     // before `below`, or after `above` or one of its ancestors when `above`
     // ends deeper than `below` starts.
-    const item = (key: Key, dropPosition: "before" | "after"): DropTarget => ({
-      type: "item",
-      key,
-      dropPosition,
-    })
     const candidates: { level: number; target: DropTarget }[] = []
-    const belowLevel = below == null ? 1 : levelOf(collection, below)
     if (below != null) {
-      candidates.push({ level: belowLevel, target: item(below, "before") })
-    }
-    if (above != null) {
-      for (
-        let level = levelOf(collection, above);
-        level > belowLevel;
-        level--
-      ) {
-        const key = ancestorAt(collection, above, level)
-        candidates.push({ level, target: item(key, "after") })
+      const target: DropTarget = {
+        type: "item",
+        key: below,
+        dropPosition: "before",
       }
-      if (below == null) {
-        candidates.push({
-          level: 1,
-          target: item(ancestorAt(collection, above, 1), "after"),
-        })
+      candidates.push({ level: levelOf(collection, below), target })
+    }
+    const lowest = below == null ? 1 : levelOf(collection, below) + 1
+    if (above != null) {
+      for (let level = levelOf(collection, above); level >= lowest; level--) {
+        const key = ancestorAt(collection, above, level)
+        const target: DropTarget = { type: "item", key, dropPosition: "after" }
+        candidates.push({ level, target })
       }
     }
 
@@ -879,14 +824,12 @@ function useTreeDragAndDrop({
         "text/plain": collection?.getItem(key)?.textValue || String(key),
       }))
     },
-    onDragStart: (event) => {
+    onDragStart: ({ keys }) => {
       const collection = stateRef.current?.collection
-      dragged.current = {
-        keys: event.keys,
-        values: collection
-          ? inTreeOrder(collection, event.keys)
-          : Array.from(event.keys, String),
-      }
+      const values = collection
+        ? rowValues(collection, (key) => keys.has(key))
+        : Array.from(keys, String)
+      dragged.current = { keys, values }
       stopFollowing.current = followScroll(() => treeRef.current)
       latest.current.onDragStart()
     },
@@ -954,35 +897,12 @@ type TreeViewItemProps = Omit<TreeViewElementProps, "id"> & {
   children?: React.ReactNode
 }
 
-function textOf(children: React.ReactNode): string | undefined {
-  let text: string | undefined
-  React.Children.forEach(children, (child) => {
-    if (
-      text === undefined &&
-      React.isValidElement<{ children?: React.ReactNode }>(child) &&
-      child.type === TreeViewItemContent &&
-      (typeof child.props.children === "string" ||
-        typeof child.props.children === "number")
-    ) {
-      text = String(child.props.children)
-    }
-  })
-  return text
-}
-
-/** The `kind` of the row's `TreeViewItemContent`, for drop rules. */
-function kindOf(children: React.ReactNode): string | undefined {
-  let kind: string | undefined
-  React.Children.forEach(children, (child) => {
-    if (
-      kind === undefined &&
-      React.isValidElement<{ kind?: string }>(child) &&
-      child.type === TreeViewItemContent
-    ) {
-      kind = child.props.kind ?? "item"
-    }
-  })
-  return kind
+/** The props of the row's `TreeViewItemContent`: its text and its `kind`. */
+function contentOf(children: React.ReactNode) {
+  return React.Children.toArray(children).find(
+    (child): child is React.ReactElement<TreeViewItemContentProps> =>
+      React.isValidElement(child) && child.type === TreeViewItemContent
+  )?.props
 }
 
 function TreeViewItem({
@@ -1003,16 +923,24 @@ function TreeViewItem({
     },
     () => false
   )
+  const content = contentOf(children)
+  const text = content?.children
   return (
     <TreeItemPrimitive
       data-slot="tree-view-item"
       data-value={value}
-      data-kind={kindOf(children)}
+      // Read by the drop rules, which see rows that are not rendered.
+      data-kind={content && (content.kind ?? "item")}
       data-hidden={hidden ? "" : undefined}
       data-context-menu-open={menuOpen ? "" : undefined}
       {...(props as unknown as React.ComponentProps<typeof TreeItemPrimitive>)}
       id={value}
-      textValue={label ?? textOf(children) ?? ""}
+      textValue={
+        label ??
+        (typeof text === "string" || typeof text === "number"
+          ? String(text)
+          : "")
+      }
       isDisabled={disabled}
       render={renderDiv}
       className={({ selectionMode }) =>
