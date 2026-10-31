@@ -122,11 +122,13 @@ const EMPTY_SET: ReadonlySet<string> = new Set()
 const DocumentTabsRootContext =
   React.createContext<DocumentTabsRootContextValue | null>(null)
 
-function useRootContext(part: string) {
-  const context = React.useContext(DocumentTabsRootContext)
-  if (!context) throw new Error(`${part} must be used within <DocumentTabs>`)
-  return context
+function useRequired<T>(context: React.Context<T | null>, parent: string) {
+  const value = React.useContext(context)
+  if (!value) throw new Error(`Must be used within <${parent}>`)
+  return value
 }
+
+const useRoot = () => useRequired(DocumentTabsRootContext, "DocumentTabs")
 
 /** The details of a change the strip makes itself (closing, the More menu). */
 function changeDetails(
@@ -214,17 +216,20 @@ function DocumentTabs({
     callbacks.current = { onValueChange, onClose, onRename, onReorder }
   })
 
+  const commit = React.useCallback(
+    (next: string, details: DocumentTabsChangeEventDetails) => {
+      callbacks.current.onValueChange?.(next, details)
+      if (!controlled && !details.isCanceled) store.set({ value: next })
+    },
+    [controlled, store]
+  )
   const select = React.useCallback(
     (
       next: string,
       reason: DocumentTabsChangeEventReason = "none",
       event?: Event
-    ) => {
-      const details = changeDetails(reason, event)
-      callbacks.current.onValueChange?.(next, details)
-      if (!controlled && !details.isCanceled) store.set({ value: next })
-    },
-    [controlled, store]
+    ) => commit(next, changeDetails(reason, event)),
+    [commit]
   )
 
   const setEditing = React.useCallback(
@@ -271,9 +276,7 @@ function DocumentTabs({
         data-slot="document-tabs"
         value={value}
         onValueChange={(next, details) => {
-          if (typeof next !== "string") return
-          callbacks.current.onValueChange?.(next, details)
-          if (!controlled && !details.isCanceled) store.set({ value: next })
+          if (typeof next === "string") commit(next, details)
         }}
         className={cn("flex min-w-0 flex-col", className)}
         {...props}
@@ -323,12 +326,7 @@ type DocumentTabsListContextValue = {
 const DocumentTabsListContext =
   React.createContext<DocumentTabsListContextValue | null>(null)
 
-function useListContext(part: string) {
-  const context = React.useContext(DocumentTabsListContext)
-  if (!context)
-    throw new Error(`${part} must be used within <DocumentTabsList>`)
-  return context
-}
+const useList = () => useRequired(DocumentTabsListContext, "DocumentTabsList")
 
 const documentTabsListVariants = cva(
   "group/document-tabs-list relative flex w-full min-w-0 items-stretch border-b border-border-subtle bg-card text-sm",
@@ -376,30 +374,6 @@ function childKey(node: React.ReactNode) {
   return typeof value === "string" ? value : String(node.key)
 }
 
-/** The live region of the list, in its own component so that an announcement does not render the tabs again. */
-function Announcer({
-  handle,
-}: {
-  handle: React.RefObject<((text: string) => void) | null>
-}) {
-  const [text, setText] = React.useState("")
-  React.useLayoutEffect(() => {
-    handle.current = setText
-    return () => {
-      handle.current = null
-    }
-  }, [handle])
-  return (
-    <div
-      data-slot="document-tabs-announcer"
-      aria-live="polite"
-      className="sr-only"
-    >
-      {text}
-    </div>
-  )
-}
-
 type DocumentTabsListProps = TabsPrimitive.List.Props &
   VariantProps<typeof documentTabsListVariants>
 
@@ -410,25 +384,18 @@ function DocumentTabsList({
   children,
   ...props
 }: DocumentTabsListProps) {
-  const root = useRootContext("DocumentTabsList")
+  const root = useRoot()
   const direction = useDirection()
   const rowRef = React.useRef<HTMLDivElement>(null)
   const listRef = React.useRef<HTMLDivElement>(null)
   const entries = React.useRef(new Map<string, TabEntry>())
   const moreWidth = React.useRef(MORE_FALLBACK_WIDTH)
   const pendingFocus = React.useRef<string | null>(null)
-  const announce = React.useRef<((text: string) => void) | null>(null)
+  const announcer = React.useRef<HTMLDivElement>(null)
   const observer = React.useRef<ResizeObserver | null>(null)
   // Each tab's own width, kept while it is squeezed below it.
   const natural = React.useRef(new Map<string, number>())
   const { store } = root
-
-  // The callbacks below are stable, so the list context only changes with
-  // what the tabs draw; they read the latest root and direction from here.
-  const latest = React.useRef({ root, direction })
-  React.useInsertionEffect(() => {
-    latest.current = { root, direction }
-  })
 
   // The add button and the More menu sit beside the tab list, not in it: a
   // tablist owns tabs only.
@@ -559,15 +526,14 @@ function DocumentTabsList({
   // An uncontrolled strip opens its first tab, and opens the first one
   // again when the open tab goes away.
   const ensureSelection = React.useCallback(() => {
-    const { controlled, select } = latest.current.root
     const open = store.get().value
     const values = order()
-    if (controlled || values.length === 0) return
+    if (root.controlled || values.length === 0) return
     if (open !== null && values.includes(open)) return
     const first = values.find((value) => !entries.current.get(value)?.disabled)
     if (first !== undefined)
-      select(first, open === null ? "initial" : "missing")
-  }, [order, store])
+      root.select(first, open === null ? "initial" : "missing")
+  }, [order, root, store])
 
   // Measure again when the tabs, their order or the size change...
   React.useLayoutEffect(() => {
@@ -601,8 +567,7 @@ function DocumentTabsList({
 
   const close = React.useCallback<DocumentTabsListContextValue["close"]>(
     (values, { event, focus: moveFocus = listHasFocus() } = {}) => {
-      const current = latest.current.root
-      const onClose = current.callbacks.current.onClose
+      const onClose = root.callbacks.current.onClose
       if (!onClose || values.length === 0) return
       const tabsInOrder = order()
       const closing = new Set(values)
@@ -616,12 +581,12 @@ function DocumentTabsList({
           tabsInOrder.slice(index + 1).find(open) ??
           tabsInOrder.slice(0, Math.max(index, 0)).reverse().find(open)
         focus = neighbour ?? null
-        if (neighbour !== undefined) current.select(neighbour, "none", event)
+        if (neighbour !== undefined) root.select(neighbour, "none", event)
       }
       if (focus !== null && moveFocus) pendingFocus.current = focus
       onClose(values)
     },
-    [listHasFocus, order, store]
+    [listHasFocus, order, root, store]
   )
 
   const closeOthers = React.useCallback<
@@ -638,17 +603,19 @@ function DocumentTabsList({
     [close, order]
   )
 
-  const reorder = React.useCallback((value: string, next: Array<string>) => {
-    const current = latest.current.root
-    current.callbacks.current.onReorder?.(next)
-    announce.current?.(
-      current.messages.moved(
-        entries.current.get(value)?.label ?? value,
-        next.indexOf(value) + 1,
-        next.length
-      )
-    )
-  }, [])
+  const reorder = React.useCallback(
+    (value: string, next: Array<string>) => {
+      root.callbacks.current.onReorder?.(next)
+      // Written straight into the live region: announcing renders nothing.
+      if (announcer.current)
+        announcer.current.textContent = root.messages.moved(
+          entries.current.get(value)?.label ?? value,
+          next.indexOf(value) + 1,
+          next.length
+        )
+    },
+    [root]
+  )
 
   const move = React.useCallback<DocumentTabsListContextValue["move"]>(
     (value, delta) => {
@@ -670,8 +637,7 @@ function DocumentTabsList({
     // Only the tabs in the row: the ones in the More menu stay put.
     getItems: () =>
       wrappers().filter((wrapper) => !("overflowing" in wrapper.dataset)),
-    enabled: () =>
-      latest.current.root.reorderable && store.get().editing === null,
+    enabled: () => root.reorderable && store.get().editing === null,
     onReorder: (from, to, visible) => {
       const value = visible[from].dataset.value!
       const others = visible
@@ -721,8 +687,6 @@ function DocumentTabsList({
   )
 
   const hasMenu = menu ? !menu.props.disabled : root.renamable || root.closable
-  // Built once: an announcement re-renders the live region alone.
-  const announcer = React.useMemo(() => <Announcer handle={announce} />, [])
 
   const tablist = (
     <TabsPrimitive.List
@@ -753,7 +717,12 @@ function DocumentTabsList({
         )}
         {more}
         {after}
-        {announcer}
+        <div
+          ref={announcer}
+          data-slot="document-tabs-announcer"
+          aria-live="polite"
+          className="sr-only"
+        />
       </div>
     </DocumentTabsListContext>
   )
@@ -770,8 +739,8 @@ function TabsContextMenu({
   menu: React.ReactNode
   children: React.ReactNode
 }) {
-  const root = useRootContext("DocumentTabsList")
-  const list = useListContext("DocumentTabsList")
+  const root = useRoot()
+  const list = useList()
   const [target, setTarget] = React.useState<string | null>(null)
   const acted = React.useRef(false)
   const focusBefore = React.useRef<Element | null>(null)
@@ -844,7 +813,6 @@ function TabsContextMenu({
 /* -------------------------------------------------------------------------- */
 
 type DocumentTabsTriggerContextValue = {
-  value: string
   label: string
   setLabel: (label: string) => void
   close: (event?: Event) => void
@@ -873,11 +841,10 @@ function DocumentTabsTrigger({
   children,
   onKeyDown,
   onDoubleClick,
-  style,
   ...props
 }: DocumentTabsTriggerProps) {
-  const root = useRootContext("DocumentTabsTrigger")
-  const list = useListContext("DocumentTabsTrigger")
+  const root = useRoot()
+  const list = useList()
   const direction = useDirection()
   const [label, setLabel] = React.useState("")
 
@@ -914,7 +881,6 @@ function DocumentTabsTrigger({
   }, [flushFocus, active, overflowing, editing])
   const triggerContext = React.useMemo<DocumentTabsTriggerContextValue>(
     () => ({
-      value,
       label,
       setLabel,
       close: (event) => close([value], { event }),
@@ -942,7 +908,6 @@ function DocumentTabsTrigger({
         data-disabled={disabled ? "" : undefined}
         data-overflowing={overflowing ? "" : undefined}
         data-squeezed={squeezed ? "" : undefined}
-        aria-hidden={overflowing || undefined}
         style={
           overflowing
             ? OVERFLOWING_STYLE
@@ -952,24 +917,23 @@ function DocumentTabsTrigger({
         }
         // `**:transition-none`: a tab that moves into the menu hides at
         // once; a transition would keep its children visible for its length.
-        className="group/document-tab relative flex shrink-0 items-stretch border-e border-border-subtle select-none [-webkit-touch-callout:none] data-dragging:z-10 data-dragging:shadow-md data-overflowing:**:transition-none data-squeezed:min-w-0 data-squeezed:shrink"
+        // The surface is the wrapper's, so the close button shares the tab's
+        // hover and open colours.
+        className="group/document-tab relative flex shrink-0 items-stretch border-e border-border-subtle text-muted-foreground transition-colors select-none [-webkit-touch-callout:none] hover:bg-ghost-hover hover:text-foreground data-dragging:z-10 data-dragging:bg-background data-dragging:shadow-md data-overflowing:**:transition-none data-squeezed:min-w-0 data-squeezed:shrink data-disabled:pointer-events-none data-disabled:text-disabled-subtle-foreground data-active:bg-background data-active:text-foreground"
         onPointerDown={root.reorderable ? list.startDrag : undefined}
       >
+        {/* `transition`, not `transition-all`: a tab back from the More menu
+            must be visible at once to take focus. */}
         <TabsPrimitive.Tab
           data-slot="document-tabs-tab"
+          data-size={list.size}
+          data-closable={closable ? "" : undefined}
+          data-squeezed={squeezed ? "" : undefined}
           value={value}
           disabled={disabled}
-          style={
-            overflowing
-              ? (state) => ({
-                  ...(typeof style === "function" ? style(state) : style),
-                  visibility: "hidden",
-                })
-              : style
-          }
           className={cn(
-            "relative flex h-full max-w-80 min-w-24 items-center gap-2 px-3 whitespace-nowrap text-muted-foreground transition-colors outline-none group-hover/document-tab:bg-ghost-hover group-hover/document-tab:text-foreground group-data-closable/document-tab:pe-9 group-data-dragging/document-tab:bg-background group-data-squeezed/document-tab:min-w-0 group-data-squeezed/document-tab:shrink group-data-squeezed/document-tab:overflow-hidden group-data-[size=sm]/document-tabs-list:min-w-20 group-data-[size=sm]/document-tabs-list:px-2.5 group-data-[size=sm]/document-tabs-list:group-data-closable/document-tab:pe-8 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-disabled:pointer-events-none data-disabled:text-disabled-subtle-foreground data-active:bg-background data-active:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4 [&>[data-slot=badge]]:shrink-0 group-data-squeezed/document-tab:[&>[data-slot=badge]]:hidden",
-            "after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-outline-active-border after:opacity-0 data-active:after:opacity-100",
+            "relative flex h-full max-w-80 min-w-24 items-center gap-2 px-3 whitespace-nowrap transition outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-closable:pe-9 data-squeezed:min-w-0 data-squeezed:shrink data-squeezed:overflow-hidden data-[size=sm]:min-w-20 data-[size=sm]:px-2.5 data-[size=sm]:data-closable:pe-8 *:data-[slot=badge]:shrink-0 data-squeezed:*:data-[slot=badge]:hidden [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+            "after:pointer-events-none after:absolute after:inset-x-0 after:bottom-0 after:h-0.5 after:bg-outline-active-border after:opacity-0 after:transition-opacity data-active:after:opacity-100",
             className
           )}
           onKeyDown={(event) => {
@@ -1044,8 +1008,8 @@ function RenameField({
       spellCheck={false}
       className="absolute inset-1 z-10 min-w-0 rounded-sm bg-background px-2 text-sm text-foreground ring-2 ring-ring outline-none"
       onFocus={(event) => event.currentTarget.select()}
-      // The field owns every key and pointer event while it is open: the
-      // arrow keys move the caret, not the focus between tabs.
+      // The field owns its keys: the arrow keys move the caret, not the
+      // focus between tabs.
       onKeyDown={(event) => {
         event.stopPropagation()
         if (event.key === "Enter") {
@@ -1057,9 +1021,6 @@ function RenameField({
         }
       }}
       onBlur={(event) => finish(event.currentTarget.value, false)}
-      onPointerDown={(event) => event.stopPropagation()}
-      onDoubleClick={(event) => event.stopPropagation()}
-      onContextMenu={(event) => event.stopPropagation()}
     />
   )
 }
@@ -1099,7 +1060,7 @@ function DocumentTabsClose({
   "aria-label": ariaLabel,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const root = useRootContext("DocumentTabsClose")
+  const root = useRoot()
   const trigger = React.useContext(DocumentTabsTriggerContext)
   if (!trigger)
     throw new Error(
@@ -1136,7 +1097,7 @@ function DocumentTabsAdd({
   "aria-label": ariaLabel,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const root = useRootContext("DocumentTabsAdd")
+  const root = useRoot()
   return (
     <Button
       data-slot="document-tabs-add"
@@ -1161,8 +1122,8 @@ function DocumentTabsMore({
   "aria-label": ariaLabel,
   ...props
 }: React.ComponentProps<typeof Button>) {
-  const root = useRootContext("DocumentTabsMore")
-  const list = useListContext("DocumentTabsMore")
+  const root = useRoot()
+  const list = useList()
   const hiddenSet = useStore(root.store, (state) => state.hidden)
   // The tab picked in the menu opens once the menu has closed: opening it
   // moves the trigger, and the closing menu would follow it.
@@ -1216,7 +1177,6 @@ function DocumentTabsMore({
           return (
             <DropdownMenuItem
               key={value}
-              data-value={value}
               disabled={entry?.disabled}
               onClick={() => {
                 picked.current = value
@@ -1247,12 +1207,7 @@ type DocumentTabsMenuContextValue = {
 const DocumentTabsMenuContext =
   React.createContext<DocumentTabsMenuContextValue | null>(null)
 
-function useMenuContext(part: string) {
-  const context = React.useContext(DocumentTabsMenuContext)
-  if (!context)
-    throw new Error(`${part} must be used within <DocumentTabsMenu>`)
-  return context
-}
+const useMenu = () => useRequired(DocumentTabsMenuContext, "DocumentTabsMenu")
 
 type DocumentTabsMenuProps = Omit<
   React.ComponentProps<typeof ContextMenuContent>,
@@ -1278,8 +1233,8 @@ function DocumentTabsMenu({
   finalFocus,
   ...props
 }: DocumentTabsMenuProps) {
-  const root = useRootContext("DocumentTabsMenu")
-  const menu = useMenuContext("DocumentTabsMenu")
+  const root = useRoot()
+  const menu = useMenu()
   let content: React.ReactNode = null
   if (menu.value !== null) {
     content =
@@ -1305,117 +1260,100 @@ function DocumentTabsMenu({
 
 type DocumentTabsMenuItemProps = React.ComponentProps<typeof ContextMenuItem>
 
-/** Renames the tab the menu opened on. Renders nothing without `onRename`. */
-function DocumentTabsMenuRename({
-  children,
-  disabled,
-  onClick,
-  ...props
-}: DocumentTabsMenuItemProps) {
-  const root = useRootContext("DocumentTabsMenuRename")
-  const list = useListContext("DocumentTabsMenuRename")
-  const menu = useMenuContext("DocumentTabsMenuRename")
-  const value = menu.value
-  if (!root.renamable || value === null) return null
-  const entry = list.entries.current.get(value)
-  return (
-    <ContextMenuItem
-      // The shortcut hint is drawn for the eye and announced from here.
-      aria-keyshortcuts={children === undefined ? "F2" : undefined}
-      disabled={disabled || !entry || entry.disabled}
-      onClick={(event) => {
-        onClick?.(event)
-        menu.act()
-        root.setEditing(value)
-      }}
-      {...props}
-    >
-      {children ?? (
-        <>
-          <PencilIcon />
-          {root.messages.rename}
-          <ContextMenuShortcut aria-hidden>F2</ContextMenuShortcut>
-        </>
-      )}
-    </ContextMenuItem>
-  )
+/**
+ * A prebuilt item: rendered only when its action is on, disabled when it
+ * does not apply to the tab, with an icon, a label and a shortcut hint by
+ * default (the hint is drawn; `aria-keyshortcuts` announces it).
+ */
+function menuAction(
+  on: (root: DocumentTabsRootContextValue) => boolean,
+  applies: (list: DocumentTabsListContextValue, value: string) => boolean,
+  run: (
+    root: DocumentTabsRootContextValue,
+    list: DocumentTabsListContextValue,
+    value: string,
+    event: Event
+  ) => void,
+  icon: React.ReactNode,
+  label: keyof DocumentTabsMessages,
+  hint: string,
+  keys: string
+) {
+  return function DocumentTabsMenuAction({
+    children,
+    disabled,
+    onClick,
+    ...props
+  }: DocumentTabsMenuItemProps) {
+    const root = useRoot()
+    const list = useList()
+    const menu = useMenu()
+    const value = menu.value
+    if (!on(root) || value === null) return null
+    return (
+      <ContextMenuItem
+        aria-keyshortcuts={children === undefined ? keys : undefined}
+        disabled={disabled || !applies(list, value)}
+        onClick={(event) => {
+          onClick?.(event)
+          menu.act()
+          run(root, list, value, event.nativeEvent)
+        }}
+        {...props}
+      >
+        {children ?? (
+          <>
+            {icon}
+            {root.messages[label] as string}
+            <ContextMenuShortcut aria-hidden>{hint}</ContextMenuShortcut>
+          </>
+        )}
+      </ContextMenuItem>
+    )
+  }
 }
 
+const closableTab = (list: DocumentTabsListContextValue, value: string) =>
+  !!list.entries.current.get(value)?.closable
+
+/** Renames the tab the menu opened on. Renders nothing without `onRename`. */
+const DocumentTabsMenuRename = menuAction(
+  (root) => root.renamable,
+  (list, value) => list.entries.current.get(value)?.disabled === false,
+  (root, _list, value) => root.setEditing(value),
+  <PencilIcon />,
+  "rename",
+  "F2",
+  "F2"
+)
+
 /** Closes the tab the menu opened on. Renders nothing without `onClose`. */
-function DocumentTabsMenuClose({
-  children,
-  disabled,
-  onClick,
-  ...props
-}: DocumentTabsMenuItemProps) {
-  const root = useRootContext("DocumentTabsMenuClose")
-  const list = useListContext("DocumentTabsMenuClose")
-  const menu = useMenuContext("DocumentTabsMenuClose")
-  const value = menu.value
-  if (!root.closable || value === null) return null
-  return (
-    <ContextMenuItem
-      // The shortcut hint is drawn for the eye and announced from here.
-      aria-keyshortcuts={children === undefined ? "Delete" : undefined}
-      disabled={disabled || !list.entries.current.get(value)?.closable}
-      onClick={(event) => {
-        onClick?.(event)
-        menu.act()
-        list.close([value], { event: event.nativeEvent, focus: true })
-      }}
-      {...props}
-    >
-      {children ?? (
-        <>
-          <XIcon />
-          {root.messages.close}
-          <ContextMenuShortcut aria-hidden>Del</ContextMenuShortcut>
-        </>
-      )}
-    </ContextMenuItem>
-  )
-}
+const DocumentTabsMenuClose = menuAction(
+  (root) => root.closable,
+  closableTab,
+  (_root, list, value, event) => list.close([value], { event, focus: true }),
+  <XIcon />,
+  "close",
+  "Del",
+  "Delete"
+)
 
 /**
  * Closes every closable tab but the one the menu opened on. Renders nothing
  * without `onClose`.
  */
-function DocumentTabsMenuCloseOthers({
-  children,
-  disabled,
-  onClick,
-  ...props
-}: DocumentTabsMenuItemProps) {
-  const root = useRootContext("DocumentTabsMenuCloseOthers")
-  const list = useListContext("DocumentTabsMenuCloseOthers")
-  const menu = useMenuContext("DocumentTabsMenuCloseOthers")
-  const value = menu.value
-  if (!root.closable || value === null) return null
-  const none = !Array.from(list.entries.current).some(
-    ([other, entry]) => other !== value && entry.closable
-  )
-  return (
-    <ContextMenuItem
-      // The shortcut hint is drawn for the eye and announced from here.
-      aria-keyshortcuts={children === undefined ? "Shift+Delete" : undefined}
-      disabled={disabled || none}
-      onClick={(event) => {
-        onClick?.(event)
-        menu.act()
-        list.closeOthers(value, event.nativeEvent)
-      }}
-      {...props}
-    >
-      {children ?? (
-        <>
-          <ListXIcon />
-          {root.messages.closeOthers}
-          <ContextMenuShortcut aria-hidden>⇧Del</ContextMenuShortcut>
-        </>
-      )}
-    </ContextMenuItem>
-  )
-}
+const DocumentTabsMenuCloseOthers = menuAction(
+  (root) => root.closable,
+  (list, value) =>
+    [...list.entries.current.keys()].some(
+      (other) => other !== value && closableTab(list, other)
+    ),
+  (_root, list, value, event) => list.closeOthers(value, event),
+  <ListXIcon />,
+  "closeOthers",
+  "⇧Del",
+  "Shift+Delete"
+)
 
 function DocumentTabsContent({
   className,

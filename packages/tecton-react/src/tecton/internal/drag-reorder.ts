@@ -45,8 +45,6 @@ type DragReorderOptions = {
 type DragReorder = {
   /** Put on each item (or on a parent and pass the item's element). */
   onPointerDown: (event: React.PointerEvent<HTMLElement>) => void
-  /** Ends a drag in progress without moving anything. */
-  cancel: () => void
   /** The `touch-action` the items need for touch drags. */
   touchAction: "pan-y" | "pan-x"
 }
@@ -111,8 +109,6 @@ function useDragReorder({
     }
   })
   const active = React.useRef<(() => void) | null>(null)
-
-  const cancel = React.useCallback(() => active.current?.(), [])
 
   const onPointerDown = React.useCallback(
     (event: React.PointerEvent<HTMLElement>) => {
@@ -204,7 +200,6 @@ function useDragReorder({
 
   return {
     onPointerDown,
-    cancel,
     touchAction: axis === "x" ? "pan-y" : "pan-x",
   }
 }
