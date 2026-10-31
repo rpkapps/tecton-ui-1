@@ -374,8 +374,10 @@ pushed to the far end by an empty spacer.
 are documents the user opened, often more than fit, so they collapse one
 at a time from the end, in their own More menu after the last visible tab.
 The open tab always stays visible, taking the last slot if it has to, and
-the arrow keys skip the hidden ones. The strip measures itself and is never
-placed inside an `Overflow` or a `Toolbar`.
+the arrow keys skip the hidden ones. The visible tabs are sticky: opening a
+tab that is already visible moves nothing, and only the tab opened from the
+menu, a resize or a change to the tabs changes what shows. The strip
+measures itself and is never placed inside an `Overflow` or a `Toolbar`.
 
 ## 16. What never happens
 

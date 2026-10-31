@@ -728,6 +728,25 @@ describe("DocumentTabs", () => {
       expect(overflowing()).toEqual([])
     })
 
+    it("keeps the tabs in the row when a visible one opens", async () => {
+      const user = userEvent.setup()
+      render(<Strip defaultValue="w4" />)
+      const overflowing = () =>
+        Array.from(
+          document.querySelectorAll<HTMLElement>("[data-overflowing]")
+        ).map((element) => element.dataset.value)
+      // Room for three tabs and the More trigger: Well-04 shows as the open one.
+      resize(348)
+      expect(overflowing()).toEqual(["w3"])
+      await user.click(screen.getByRole("tab", { name: "Well-02" }))
+      expect(overflowing()).toEqual(["w3"])
+      // Narrower: the last visible tab goes first; wider: hidden ones return.
+      resize(250)
+      expect(overflowing()).toEqual(["w3", "w4"])
+      resize(1000)
+      expect(overflowing()).toEqual([])
+    })
+
     it("skips the hidden tabs with the arrow keys", async () => {
       const user = userEvent.setup()
       render(<Strip />)

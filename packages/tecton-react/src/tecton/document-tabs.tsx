@@ -257,7 +257,10 @@ function listController() {
   const hasFocus = () =>
     !!tablist.current?.contains(tablist.current.ownerDocument.activeElement)
 
-  /** The longest run of leading tabs that fits beside the open one shows. */
+  /**
+   * The open tab shows, then the tabs already showing, then the others, each
+   * in tab order while they fit: opening a visible tab moves nothing.
+   */
   function measure() {
     const { store } = live.root
     if (!row.current || !tablist.current) return
@@ -280,6 +283,7 @@ function listController() {
       natural.set(values[i], width)
       return width
     })
+    const previous = store.get().hidden
     let next = EMPTY
     let squeezed: string | null = null
     if (widths.reduce((sum, width) => sum + width, 0) > room + 0.5) {
@@ -289,15 +293,17 @@ function listController() {
       if (own > room - moreWidth) squeezed = open
       let budget = room - moreWidth - own
       const visible = new Set([active])
-      for (let i = 0; i < values.length; i++) {
-        if (i === active) continue
-        if (widths[i] > budget) break
-        budget -= widths[i]
-        visible.add(i)
-      }
+      // Adds the tabs `pick` selects while they fit; false once one does not.
+      const fill = (pick: (value: string) => boolean) =>
+        values.every((value, i) => {
+          if (visible.has(i) || !pick(value)) return true
+          if (widths[i] > budget) return false
+          budget -= widths[i]
+          return visible.add(i)
+        })
+      if (fill((value) => !previous.has(value))) fill(() => true)
       next = new Set(values.filter((_, i) => !visible.has(i)))
     }
-    const previous = store.get().hidden
     const same =
       previous.size === next.size && [...next].every((v) => previous.has(v))
     store.set({ hidden: same ? previous : next, squeezed })
