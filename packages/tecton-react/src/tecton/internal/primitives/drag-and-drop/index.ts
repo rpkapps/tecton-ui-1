@@ -1,0 +1,23 @@
+/**
+ * Internal to `@tecton/react`: drag and drop shared by Tecton's components.
+ *
+ * - `useDragAndDrop` + `DragAndDropPrimitive.Handle` / `.DropIndicator`: a
+ *   collection with its own drop rules (tree rows), from the pointer, the
+ *   keyboard and a screen reader.
+ * - `useSortable`: one row or column reordered with the items sliding aside
+ *   (document tabs).
+ * - `trackPointerDrag`, `startKeyboardDrag`: the sessions both are built on.
+ */
+export * as DragAndDropPrimitive from "./index.parts"
+export { useDragAndDrop } from "./use-drag-and-drop"
+export type {
+  DragAndDrop,
+  DragAndDropOptions,
+  DragMode,
+  DragState,
+  DropStrategy,
+} from "./use-drag-and-drop"
+export { useSortable, targetSlot } from "./sortable"
+export type { Sortable, SortableOptions } from "./sortable"
+export { trackPointerDrag } from "./pointer-drag"
+export { startKeyboardDrag } from "./keyboard-drag"

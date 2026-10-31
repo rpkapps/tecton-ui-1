@@ -6,6 +6,8 @@ import { CheckIcon, CopyIcon, XIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 
+import { announce as announceLive } from "./internal/primitives/live-announcer"
+
 /**
  * Tecton CopyButton — copies `value` to the clipboard and shows a check
  * for `timeout` ms, or a cross and "Copy failed" when the copy is refused.
@@ -38,39 +40,10 @@ const STATUS_TEXT = {
  * One polite live region at the end of the body, shared by every copy
  * button: a region beside each button would be an extra sibling in button
  * groups and toolbars, and one inside the button is flattened away with the
- * button's other descendants. Inline styles, so it stays hidden where the
- * page's utilities do not reach (a scoped `ThemeRoot` remote).
+ * button's other descendants.
  */
-let liveRegion: HTMLElement | null = null
-
 function announce(message: string) {
-  if (typeof document === "undefined") return
-  if (!liveRegion?.isConnected) {
-    liveRegion = document.createElement("div")
-    liveRegion.setAttribute("data-slot", "copy-button-announcer")
-    liveRegion.setAttribute("aria-live", "polite")
-    liveRegion.setAttribute("aria-atomic", "true")
-    Object.assign(liveRegion.style, {
-      position: "absolute",
-      width: "1px",
-      height: "1px",
-      margin: "-1px",
-      padding: "0",
-      overflow: "hidden",
-      clip: "rect(0 0 0 0)",
-      clipPath: "inset(50%)",
-      whiteSpace: "nowrap",
-      border: "0",
-    })
-    document.body.append(liveRegion)
-  }
-  const region = liveRegion
-  // Emptied first and filled a moment later: a region that was just created
-  // is not tracked yet, and a second "Copied" in a row must still be a change.
-  region.textContent = ""
-  setTimeout(() => {
-    region.textContent = message
-  }, 100)
+  announceLive(message, { slot: "copy-button-announcer" })
 }
 
 /**

@@ -1,0 +1,8 @@
+export { ChipRoot as Root } from "./root"
+export { ChipList as List } from "./list"
+export { Chip as Chip } from "./chip"
+export { ChipRemove as Remove } from "./remove"
+export type { ChipRootProps, ChipRootState } from "./root"
+export type { ChipListProps, ChipListState } from "./list"
+export type { ChipProps, ChipState } from "./chip"
+export type { ChipRemoveProps, ChipRemoveState } from "./remove"

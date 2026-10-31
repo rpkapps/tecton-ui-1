@@ -3,19 +3,11 @@
 import * as React from "react"
 import type { VariantProps } from "class-variance-authority"
 import { cn } from "cn"
-import {
-  Button as ButtonPrimitive,
-  ListStateContext,
-  TagGroup as TagGroupPrimitive,
-  TagList as TagListPrimitive,
-  Tag as TagPrimitive,
-  type Selection,
-} from "react-aria-components"
 import { XIcon } from "lucide-react"
 
 import { badgeVariants } from "@tecton/react/components/badge"
 
-import { AriaBridge } from "./internal/aria-bridge"
+import { ChipPrimitive } from "./internal/primitives/chip/index"
 
 /**
  * Tecton Chip — the *interactive* label: a selectable / removable chip in a
@@ -58,87 +50,22 @@ type ChipGroupProps = {
   children?: React.ReactNode
 }
 
-type ChipListState = NonNullable<React.ContextType<typeof ListStateContext>>
-
-type ChipGroupContextValue = {
-  disabled: boolean
-  /** The group's live state, for the values behind a "select all". */
-  state: React.RefObject<ChipListState | null>
-}
-
-const ChipGroupContext = React.createContext<ChipGroupContextValue | null>(null)
-
-// The state attributes of the underlying primitives. Tecton keeps the ones
-// consumers style, as presence attributes, and drops the rest: hover and
-// keyboard focus are `:hover` and `:focus-visible`.
-const PRIMITIVE_ATTRIBUTES = [
-  "data-rac",
-  "data-hovered",
-  "data-focused",
-  "data-focus-visible",
-  "data-pressed",
-  "data-pending",
-  "data-allows-removing",
-  "data-selection-mode",
-]
-const PRESENCE_ATTRIBUTES = ["data-selected", "data-disabled", "data-empty"]
-
-function withStateAttributes<TProps extends object>(props: TProps): TProps {
-  const next = { ...props } as Record<string, unknown>
-  for (const name of PRIMITIVE_ATTRIBUTES) delete next[name]
-  for (const name of PRESENCE_ATTRIBUTES) {
-    if (next[name]) next[name] = ""
-    else delete next[name]
-  }
-  return next as TProps
-}
-
-function renderDiv(props: React.ComponentProps<"div">) {
-  return <div {...withStateAttributes(props)} />
-}
-
 function ChipGroup({
   selectionMode = "none",
-  value,
-  defaultValue,
   onValueChange,
-  disallowEmptySelection,
-  disabled = false,
   onRemove,
   className,
   ...props
 }: ChipGroupProps) {
-  const state = React.useRef<ChipListState | null>(null)
-  const context = React.useMemo(() => ({ disabled, state }), [disabled])
-
-  const toValue = (keys: Selection): string[] => {
-    if (keys !== "all") return [...keys].map(String)
-    // "Select all" (Ctrl+A): every chip that can be selected.
-    const current = state.current
-    if (current === null) return []
-    return [...current.collection.getKeys()]
-      .filter((key) => current.selectionManager.canSelectItem(key))
-      .map(String)
-  }
-
   return (
-    <AriaBridge>
-      <ChipGroupContext value={context}>
-        <TagGroupPrimitive
-          data-slot="chip-group"
-          className={cn("flex flex-col gap-2", className)}
-          selectionMode={selectionMode}
-          selectedKeys={value}
-          defaultSelectedKeys={defaultValue}
-          onSelectionChange={
-            onValueChange && ((keys) => onValueChange(toValue(keys)))
-          }
-          disallowEmptySelection={disallowEmptySelection}
-          onRemove={onRemove && ((keys) => onRemove([...keys].map(String)))}
-          {...props}
-        />
-      </ChipGroupContext>
-    </AriaBridge>
+    <ChipPrimitive.Root
+      data-slot="chip-group"
+      className={cn("flex flex-col gap-2", className)}
+      selectionMode={selectionMode}
+      onValueChange={onValueChange && ((value) => onValueChange(value))}
+      onRemove={onRemove && ((values) => onRemove(values))}
+      {...props}
+    />
   )
 }
 
@@ -161,12 +88,6 @@ function ChipList<T>({
   className,
   ...props
 }: ChipListProps<T>) {
-  const group = React.useContext(ChipGroupContext)
-  const state = React.useContext(ListStateContext)
-  React.useLayoutEffect(() => {
-    if (group !== null && state !== null) group.state.current = state
-  })
-
   const chips =
     typeof children === "function"
       ? Array.from(items ?? [], (item) => {
@@ -178,15 +99,14 @@ function ChipList<T>({
       : children
 
   return (
-    <TagListPrimitive
+    <ChipPrimitive.List
       data-slot="chip-list"
       className={cn("flex flex-wrap gap-1.5", className)}
-      renderEmptyState={empty === undefined ? undefined : () => empty}
-      render={renderDiv}
+      empty={empty}
       {...props}
     >
       {chips}
-    </TagListPrimitive>
+    </ChipPrimitive.List>
   )
 }
 
@@ -221,14 +141,14 @@ function Chip({
   appearance = "solid",
   size = "default",
   children,
+  "aria-label": ariaLabel,
   ...props
 }: ChipProps) {
-  const group = React.useContext(ChipGroupContext)
   return (
-    <TagPrimitive
-      id={value}
-      textValue={label ?? (textOf(children).trim() || value)}
-      isDisabled={disabled || group?.disabled}
+    <ChipPrimitive.Chip
+      value={value}
+      textValue={ariaLabel ?? label ?? (textOf(children).trim() || value)}
+      disabled={disabled}
       data-slot="chip"
       data-variant={variant}
       data-appearance={appearance}
@@ -241,16 +161,15 @@ function Chip({
         "hover:brightness-110 data-[selected]:border-foreground data-[selected]:ring-1 data-[selected]:ring-foreground",
         className
       )}
-      render={renderDiv}
       {...props}
     >
-      {({ allowsRemoving }) => (
+      {({ removable }) => (
         <>
           {children}
-          {allowsRemoving && <RemoveButton />}
+          {removable && <RemoveButton />}
         </>
       )}
-    </TagPrimitive>
+    </ChipPrimitive.Chip>
   )
 }
 
@@ -261,24 +180,22 @@ type ChipRemoveProps = {
   "aria-label"?: string
 }
 
+const removeButtonClassName =
+  "ms-0.5 -me-1 inline-flex size-4 shrink-0 items-center justify-center rounded-full opacity-70 outline-none hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-3"
+
 /**
  * The remove button of a chip. A chip in a group with `onRemove` renders its
  * own, named "Remove" plus the chip's text in the group's locale.
  */
 function RemoveButton({ className, children, ...props }: ChipRemoveProps) {
   return (
-    <ButtonPrimitive
-      slot="remove"
+    <ChipPrimitive.Remove
       data-slot="chip-remove"
-      className={cn(
-        "ms-0.5 -me-1 inline-flex size-4 shrink-0 items-center justify-center rounded-full opacity-70 outline-none hover:opacity-100 focus-visible:ring-2 focus-visible:ring-ring [&_svg]:size-3",
-        className
-      )}
-      render={(buttonProps) => <button {...withStateAttributes(buttonProps)} />}
+      className={cn(removeButtonClassName, className)}
       {...props}
     >
       {children ?? <XIcon />}
-    </ButtonPrimitive>
+    </ChipPrimitive.Remove>
   )
 }
 

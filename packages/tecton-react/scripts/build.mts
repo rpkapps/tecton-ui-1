@@ -70,12 +70,16 @@ const DIST = path.join(pkgRoot, "dist");
  */
 const KNOWN_DTS_FAILURES: Array<string> = [];
 
-/** Entry points: `<dir>` × `<extensions>`, top level only, never `__tests__`. */
-const ENTRY_DIRS: Array<{ dir: string; exts: Array<string> }> = [
+/**
+ * Entry points: `<dir>` × `<extensions>`, top level only unless `recursive`,
+ * never `__tests__`.
+ */
+const ENTRY_DIRS: Array<{ dir: string; exts: Array<string>; recursive?: boolean }> = [
   { dir: "src/components", exts: [".tsx"] },
   { dir: "src/tecton", exts: [".ts", ".tsx"] },
-  // Built (the Tecton modules import it by relative path) but not exported.
-  { dir: "src/tecton/internal", exts: [".ts", ".tsx"] },
+  // Built (the Tecton modules import it by relative path) but not exported;
+  // `internal/primitives/` nests a directory per primitive.
+  { dir: "src/tecton/internal", exts: [".ts", ".tsx"], recursive: true },
   { dir: "src/hooks", exts: [".ts"] },
   { dir: "src/lib", exts: [".ts"] },
   { dir: "src/icons", exts: [".ts", ".tsx"] },
@@ -91,14 +95,14 @@ function relFromPkg(absolute: string) {
 
 function collectEntryPoints() {
   const entries: Array<string> = [];
-  for (const { dir, exts } of ENTRY_DIRS) {
+  for (const { dir, exts, recursive = false } of ENTRY_DIRS) {
     const absolute = path.join(pkgRoot, dir);
     if (!existsSync(absolute)) throw new Error(`Missing entry directory: ${dir}`);
-    for (const item of readdirSync(absolute, { withFileTypes: true })) {
+    for (const item of readdirSync(absolute, { withFileTypes: true, recursive })) {
       if (!item.isFile()) continue;
       if (item.name.endsWith(".d.ts")) continue;
       if (!exts.some((ext) => item.name.endsWith(ext))) continue;
-      const file = path.join(absolute, item.name);
+      const file = path.join(item.parentPath, item.name);
       if (relFromPkg(file).includes("__tests__")) continue;
       entries.push(file);
     }

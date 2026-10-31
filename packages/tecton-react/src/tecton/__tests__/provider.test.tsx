@@ -1,12 +1,7 @@
 import * as React from "react"
 import { useDirection as useBaseUiDirection } from "@base-ui/react/direction-provider"
-import { render, renderHook, screen } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
+import { render, renderHook } from "@testing-library/react"
 import { renderToString } from "react-dom/server"
-import {
-  Link as AriaLink,
-  useLocale as useAriaLocale,
-} from "react-aria-components"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import { usePortalTarget } from "@tecton/react/tecton/portal"
@@ -17,7 +12,6 @@ import {
   type TectonProviderProps,
 } from "@tecton/react/tecton/provider"
 
-import { AriaBridge } from "../internal/aria-bridge"
 import { localeDirection } from "../internal/locale"
 import { shouldClientNavigate, useTectonRouter } from "../internal/router"
 
@@ -217,82 +211,6 @@ describe("TectonProvider portalContainer", () => {
   })
 })
 
-describe("AriaBridge", () => {
-  function useAria() {
-    return useAriaLocale()
-  }
-
-  function bridged(...layers: Props[]) {
-    const Outer = wrapper(...layers)
-    return function Wrapper({ children }: { children: React.ReactNode }) {
-      return (
-        <Outer>
-          <AriaBridge>{children}</AriaBridge>
-        </Outer>
-      )
-    }
-  }
-
-  it("feeds React Aria the Tecton locale", () => {
-    const { result } = renderHook(useAria, {
-      wrapper: bridged({ locale: "he-IL" }),
-    })
-    expect(result.current).toEqual({ locale: "he-IL", direction: "rtl" })
-  })
-
-  it("forces the Tecton direction onto a locale written the other way", () => {
-    const ltr = renderHook(useAria, {
-      wrapper: bridged({ locale: "ar-EG", direction: "ltr" }),
-    })
-    expect(ltr.result.current.direction).toBe("ltr")
-    expect(ltr.result.current.locale).toBe("ar-Latn-EG")
-
-    const rtl = renderHook(useAria, {
-      wrapper: bridged({ locale: "en-US", direction: "rtl" }),
-    })
-    expect(rtl.result.current.direction).toBe("rtl")
-    expect(rtl.result.current.locale).toBe("en-Arab-US")
-  })
-
-  it("gives React Aria ltr and the browser locale without a provider", () => {
-    vi.spyOn(navigator, "language", "get").mockReturnValue("ar-EG")
-    const { result } = renderHook(useAria, {
-      wrapper: ({ children }) => <AriaBridge>{children}</AriaBridge>,
-    })
-    expect(result.current.direction).toBe("ltr")
-  })
-
-  it("routes React Aria links through the Tecton navigate", async () => {
-    const navigate = vi.fn()
-    render(
-      <TectonProvider navigate={navigate} useHref={(href) => `/app${href}`}>
-        <AriaBridge>
-          <AriaLink href="/wells">Wells</AriaLink>
-        </AriaBridge>
-      </TectonProvider>
-    )
-    const link = screen.getByRole("link", { name: "Wells" })
-    expect(link).toHaveAttribute("href", "/app/wells")
-    await userEvent.click(link)
-    expect(navigate).toHaveBeenCalledTimes(1)
-    expect(navigate.mock.calls[0]?.[0]).toBe("/wells")
-  })
-
-  it("mounts no router without a navigate", () => {
-    render(
-      <TectonProvider>
-        <AriaBridge>
-          <AriaLink href="/wells">Plain</AriaLink>
-        </AriaBridge>
-      </TectonProvider>
-    )
-    expect(screen.getByRole("link", { name: "Plain" })).toHaveAttribute(
-      "href",
-      "/wells"
-    )
-  })
-})
-
 describe("shouldClientNavigate", () => {
   const plain = {
     button: 0,
@@ -347,13 +265,11 @@ describe("TectonProvider on the server", () => {
   function Probe() {
     const { locale, direction } = useLocale()
     const baseUi = useBaseUiDirection()
-    const aria = useAriaLocale()
     return (
       <span
         data-locale={locale}
         data-direction={direction}
         data-base-ui={baseUi}
-        data-aria={`${aria.locale}/${aria.direction}`}
       />
     )
   }
@@ -362,27 +278,22 @@ describe("TectonProvider on the server", () => {
     vi.spyOn(navigator, "language", "get").mockReturnValue("fr-FR")
     const html = renderToString(
       <TectonProvider>
-        <AriaBridge>
-          <Probe />
-        </AriaBridge>
+        <Probe />
       </TectonProvider>
     )
     expect(html).toContain('data-locale="en-US"')
     expect(html).toContain('data-direction="ltr"')
     expect(html).toContain('data-base-ui="ltr"')
-    expect(html).toContain('data-aria="en-US/ltr"')
   })
 
   it("renders an explicit locale and direction", () => {
     const html = renderToString(
       <TectonProvider locale="ar-EG" portalContainer={null}>
-        <AriaBridge>
-          <Probe />
-        </AriaBridge>
+        <Probe />
       </TectonProvider>
     )
     expect(html).toBe(
-      '<span data-locale="ar-EG" data-direction="rtl" data-base-ui="rtl" data-aria="ar-EG/rtl"></span>'
+      '<span data-locale="ar-EG" data-direction="rtl" data-base-ui="rtl"></span>'
     )
   })
 })
