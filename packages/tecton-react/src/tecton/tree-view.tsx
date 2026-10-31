@@ -33,7 +33,6 @@ import {
 import { usePortalTarget } from "@tecton/react/tecton/portal"
 
 import { AriaBridge } from "./internal/aria-bridge"
-import { startKeyboardDrag, trackPointerDrag } from "./internal/drag-session"
 import { createStore, useStore, type Store } from "./internal/store"
 
 // ---------------------------------------------------------------------------
@@ -710,6 +709,64 @@ function rowAtPoint(tree: HTMLElement, x: number, y: number) {
   return nearest
 }
 
+/** The nearest element that scrolls vertically, the page at the latest. */
+function scrollerOf(element: HTMLElement) {
+  for (
+    let node: HTMLElement | null = element;
+    node;
+    node = node.parentElement
+  ) {
+    const { overflowY } = getComputedStyle(node)
+    if (/auto|scroll/.test(overflowY) && node.scrollHeight > node.clientHeight)
+      return node
+  }
+  return element.ownerDocument.scrollingElement as HTMLElement | null
+}
+
+/** Scrolls `scroller` while `y` is near its top or bottom edge. */
+function autoScroll(scroller: HTMLElement, y: number) {
+  const page = scroller === scroller.ownerDocument.scrollingElement
+  const { top, bottom } = page
+    ? { top: 0, bottom: window.innerHeight }
+    : scroller.getBoundingClientRect()
+  const edge = Math.min(40, (bottom - top) / 4)
+  const depth =
+    y < top + edge ? y - top - edge : y > bottom - edge ? y - bottom + edge : 0
+  if (depth) scroller.scrollTop += Math.max(-1, Math.min(1, depth / edge)) * 16
+}
+
+/** A copy of `row` under the pointer, as the browser's own drag shows one. */
+function dragPreview(row: HTMLElement, container: HTMLElement) {
+  const preview = row.cloneNode(true) as HTMLElement
+  for (const element of [preview, ...preview.querySelectorAll("[id]")]) {
+    element.removeAttribute("id")
+  }
+  // Not a row of the tree for the drag code, nor for assistive technology.
+  preview.removeAttribute("data-slot")
+  preview.removeAttribute("data-value")
+  preview.setAttribute("aria-hidden", "true")
+  preview.inert = true
+  const style = getComputedStyle(row)
+  preview.dir = style.direction
+  Object.assign(preview.style, {
+    position: "fixed",
+    top: "0",
+    left: "0",
+    width: `${row.getBoundingClientRect().width}px`,
+    margin: "0",
+    font: style.font,
+    color: style.color,
+    opacity: "0.8",
+    pointerEvents: "none",
+    zIndex: "50",
+  })
+  preview.classList.add("bg-background", "shadow-md")
+  container.append(preview)
+  return preview
+}
+
+const DRAG_THRESHOLD = 4
+const LONG_PRESS = 500
 const EXPAND_DELAY = 800
 
 type DragSession = {
@@ -719,23 +776,26 @@ type DragSession = {
   /** Where a drop would go now, and since when (to open folders). */
   move: TreeViewMove | null
   since: number
-  /** Ends the pointer or keyboard session. */
+  keyboard: boolean
+  /** Removes the session's listeners and preview. */
   stop: () => void
 }
 
 /**
- * Drag and drop for the tree, on the internal drag sessions rather than
- * React Aria's drag and drop: the tree only learns that rows can be dragged
- * (so a press selects on release, not on press, and the grips get their
- * props), and this decides what is dragged and where it lands.
+ * Drag and drop for the tree, without React Aria's drag and drop: the tree
+ * only learns that rows can be dragged (so a press selects on release, not
+ * on press, and the grips get their props), and the drag runs here.
  *
- * - Pointer: a row (not its other controls), or the selection when the row
- *   is selected. The drop goes where the pointer is: over a gap between
- *   rows, its inline position picks the depth (the column of the level's
- *   chevron), so a row reaches any ancestor level by moving towards the
- *   tree's start. Folders open after 800 ms under the pointer.
+ * - Pointer: a press on a row (not on its other controls) that moves 4 px,
+ *   or a long press with a finger (at once from the grip), drags the row,
+ *   or the selection when the row is selected. The drop goes where the
+ *   pointer is: over a gap between rows, its inline position picks the
+ *   depth (the column of the level's chevron), so a row reaches any ancestor
+ *   level by moving towards the tree's start. Folders open after 800 ms
+ *   under the pointer; the nearest scroll container scrolls at its edges.
  * - Keyboard: Enter or Space on the grip, then the arrow keys through every
- *   place a drop can go; the inline arrows open and close the aimed folder.
+ *   place a drop can go, Enter to drop and Escape to cancel, announced
+ *   through a live region.
  */
 function useTreeDragAndDrop({
   stateRef,
@@ -773,6 +833,9 @@ function useTreeDragAndDrop({
 
   const labelOf = (key: Key) =>
     stateRef.current?.collection.getItem(key)?.textValue || String(key)
+  const announce = (message: string) => {
+    if (announcerRef.current) announcerRef.current.textContent = message
+  }
 
   /** The move a drop at `key` makes, or null where rows cannot go. */
   const moveFor = (key: Key, position: TreeViewMove["position"]) => {
@@ -830,12 +893,12 @@ function useTreeDragAndDrop({
   /** Every place a drop can go, top to bottom, and the first one below `key`. */
   const keyboardMoves = (key: Key) => {
     const collection = stateRef.current?.collection
-    const places: TreeViewMove[] = []
-    let start = 0
-    if (!collection) return { places, start }
+    const moves: TreeViewMove[] = []
+    let next = 0
+    if (!collection) return { moves, next }
     const add = (place: Pick<Place, "key" | "position">) => {
       const move = moveFor(place.key, place.position)
-      if (move) places.push(move)
+      if (move) moves.push(move)
     }
     let above: Key | null = null
     for (
@@ -846,11 +909,11 @@ function useTreeDragAndDrop({
       if (collection.getItem(row)?.type !== "item") continue
       gapPlaces(collection, above, row).forEach(add)
       add({ key: row, position: "inside" })
-      if (row === key) start = places.length
+      if (row === key) next = moves.length
       above = row
     }
     gapPlaces(collection, above, null).forEach(add)
-    return { places, start }
+    return { moves, next }
   }
 
   /** Places the drop line over the gap of the current move. */
@@ -901,37 +964,14 @@ function useTreeDragAndDrop({
   /** Opens the collapsed folder a drop has aimed into for a while. */
   const openAimedFolder = () => {
     const state = stateRef.current
-    const drag = session.current
-    const move = drag?.move
-    if (!state || !drag || move?.position !== "inside") return
+    const move = session.current?.move
+    if (!state || move?.position !== "inside") return
     if (state.expandedKeys.has(move.target)) return
-    if (performance.now() - drag.since >= EXPAND_DELAY) {
-      state.toggleKey(move.target)
-    }
+    if (performance.now() - session.current!.since < EXPAND_DELAY) return
+    state.toggleKey(move.target)
   }
 
-  /** Scrolls the row of `move` into view, rendering it when virtualized. */
-  const reveal = (tree: HTMLElement, move: TreeViewMove) => {
-    const state = stateRef.current
-    if (!state) return
-    const key =
-      move.position === "after" ? lastVisible(state, move.target) : move.target
-    const row = rowElement(tree, key)
-    if (row) return row.scrollIntoView({ block: "nearest" })
-    let index = 0
-    const { collection } = state
-    for (
-      let k = collection.getFirstKey();
-      k != null && k !== key;
-      k = collection.getKeyAfter(k)
-    ) {
-      if (collection.getItem(k)?.type === "item") index++
-    }
-    const { rowSize, gap } = VIRTUAL_LAYOUT_OPTIONS
-    tree.scrollTop = index * (rowSize + gap) - tree.clientHeight / 2
-  }
-
-  const begin = (key: Key) => {
+  const begin = (key: Key, keyboard: boolean) => {
     const state = stateRef.current
     if (!state || session.current) return null
     const { selectionManager: selection, collection } = state
@@ -947,6 +987,7 @@ function useTreeDragAndDrop({
       values,
       move: null,
       since: 0,
+      keyboard,
       stop: () => {},
     }
     session.current = drag
@@ -955,15 +996,155 @@ function useTreeDragAndDrop({
     return drag
   }
 
-  /** Ends the drag, dropping where it aims when `drop`. */
+  /** Ends the drag, dropping where it aims when `drop`; returns the move. */
   const finish = (drop: boolean) => {
     const drag = session.current
-    if (!drag) return
+    if (!drag) return null
     session.current = null
     drag.stop()
     store.set({ dragged: null, dropInside: null })
     if (lineRef.current) lineRef.current.hidden = true
-    if (drop && drag.move) latest.current.onMove?.(drag.move)
+    const move = drop ? drag.move : null
+    if (drag.keyboard) {
+      announce(
+        move
+          ? `Moved ${draggedName(drag)} ${move.position} ${labelOf(move.target)}`
+          : "Move cancelled"
+      )
+    }
+    if (move) latest.current.onMove?.(move)
+    return move
+  }
+
+  const draggedName = (drag: DragSession) =>
+    drag.values.length === 1
+      ? labelOf(drag.values[0])
+      : `${drag.values.length} rows`
+
+  const startPointerDrag = (
+    down: PointerEvent,
+    tree: HTMLElement,
+    row: HTMLElement,
+    key: string,
+    longPress: boolean
+  ) => {
+    const doc = tree.ownerDocument
+    // On the window, ahead of everything else: the tree's own key handling
+    // (on the document when React renders the whole page) must not see the
+    // keys a drag uses.
+    const win = doc.defaultView ?? window
+    const { pointerId } = down
+    const rowBox = row.getBoundingClientRect()
+    const grab = { x: down.clientX - rowBox.left, y: down.clientY - rowBox.top }
+    let pointer = { x: down.clientX, y: down.clientY }
+    let drag: DragSession | null = null
+    let preview: HTMLElement | null = null
+    let scroller: HTMLElement | null = null
+    let frame = 0
+    let cancelling = false
+
+    const tick = () => {
+      frame = requestAnimationFrame(tick)
+      if (scroller) autoScroll(scroller, pointer.y)
+      // Every frame, as rows scroll, open or render under a resting pointer.
+      show(targetAt(pointer.x, pointer.y))
+      openAimedFolder()
+      preview!.style.transform = `translate(${pointer.x - grab.x}px, ${pointer.y - grab.y}px)`
+    }
+
+    const start = () => {
+      drag = begin(key, false)
+      if (!drag) return stop()
+      drag.stop = stop
+      // The drag takes the pointer, as the browser's own does: the press that
+      // began it would otherwise select or open the row on release.
+      cancelling = true
+      down.target?.dispatchEvent(
+        new PointerEvent("pointercancel", {
+          bubbles: true,
+          pointerId,
+          pointerType: down.pointerType,
+        })
+      )
+      cancelling = false
+      try {
+        // Pointer events keep coming outside the window, and rows show no
+        // hover while the drag is on.
+        tree.setPointerCapture(pointerId)
+      } catch {
+        // A pointer the browser no longer tracks.
+      }
+      tree.style.cursor = "grabbing"
+      preview = dragPreview(row, latest.current.portal ?? doc.body)
+      scroller = scrollerOf(tree)
+      tick()
+    }
+    const timer = longPress ? setTimeout(start, LONG_PRESS) : undefined
+
+    const onPointerMove = (event: PointerEvent) => {
+      if (event.pointerId !== pointerId) return
+      pointer = { x: event.clientX, y: event.clientY }
+      if (drag) return
+      const travel = Math.hypot(
+        pointer.x - down.clientX,
+        pointer.y - down.clientY
+      )
+      if (travel < DRAG_THRESHOLD) return
+      // A finger that moves before the long press is scrolling.
+      if (longPress) stop()
+      else start()
+    }
+    const onPointerUp = (event: PointerEvent) => {
+      if (event.pointerId === pointerId) end(true)
+    }
+    const onPointerCancel = (event: PointerEvent) => {
+      if (!cancelling && event.pointerId === pointerId) end(false)
+    }
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "Escape" || !drag) return
+      event.preventDefault()
+      event.stopPropagation()
+      end(false)
+    }
+    // While dragging, a finger moves the rows rather than the page, and a
+    // long press opens no menu.
+    const onTouchMove = (event: TouchEvent) => {
+      if (drag) event.preventDefault()
+    }
+    const onContextMenu = (event: Event) => {
+      if (!drag) return
+      event.preventDefault()
+      event.stopPropagation()
+    }
+
+    const listeners = [
+      ["pointermove", onPointerMove],
+      ["pointerup", onPointerUp],
+      ["pointercancel", onPointerCancel],
+      ["keydown", onKeyDown],
+      ["touchmove", onTouchMove],
+      ["contextmenu", onContextMenu],
+    ] as const
+    for (const [type, listener] of listeners) {
+      win.addEventListener(type, listener as EventListener, {
+        capture: true,
+        passive: false,
+      })
+    }
+
+    function stop() {
+      clearTimeout(timer)
+      cancelAnimationFrame(frame)
+      for (const [type, listener] of listeners) {
+        win.removeEventListener(type, listener as EventListener, true)
+      }
+      preview?.remove()
+      tree.style.cursor = ""
+    }
+    function end(drop: boolean) {
+      if (drag) finish(drop)
+      else stop()
+    }
   }
 
   const onPointerDownCapture = (event: React.PointerEvent<HTMLElement>) => {
@@ -976,75 +1157,111 @@ function useTreeDragAndDrop({
     if (session.current || event.button !== 0) return
     // The row's other controls keep their presses.
     if (!onGrip && target.closest("button, a, input, select, textarea")) return
-    const stop = trackPointerDrag(event.nativeEvent, {
-      item: row,
-      container: tree,
-      previewContainer: latest.current.portal,
-      longPress: event.pointerType === "touch" && !onGrip,
-      onStart: () => {
-        const drag = begin(key)
-        if (drag) drag.stop = stop
-        return !!drag
-      },
-      onMove: (x, y) => {
-        // Every frame, as rows scroll, open or render under a resting pointer.
-        show(targetAt(x, y))
-        openAimedFolder()
-      },
-      onEnd: finish,
-    })
+    const longPress = event.pointerType === "touch" && !onGrip
+    startPointerDrag(event.nativeEvent, tree, row, key, longPress)
   }
 
-  const dragFromKeyboard = (key: Key) => {
+  const startKeyboardDrag = (key: Key) => {
     const tree = treeRef.current
-    const drag = tree && begin(key)
+    const drag = tree && begin(key, true)
     if (!tree || !drag) return
-    drag.stop = startKeyboardDrag<TreeViewMove>({
-      container: tree,
-      name:
-        drag.values.length === 1
-          ? labelOf(drag.values[0])
-          : `${drag.values.length} rows`,
-      places: () => keyboardMoves(key),
-      isSame: (a, b) => a.target === b.target && a.position === b.position,
-      describe: (move) => `${move.position} ${labelOf(move.target)}`,
-      onAim: (move) => {
-        show(move)
-        if (move) reveal(tree, move)
-      },
-      onKey: (event, move) => {
-        const rtl = getComputedStyle(tree).direction === "rtl"
-        const opens = event.key === (rtl ? "ArrowLeft" : "ArrowRight")
-        const closes = event.key === (rtl ? "ArrowRight" : "ArrowLeft")
-        if (!opens && !closes) return false
+    const doc = tree.ownerDocument
+    const win = doc.defaultView ?? window
+    let frame = 0
+    // Rows render as they scroll into view: follow them with the line.
+    const tick = () => {
+      frame = requestAnimationFrame(tick)
+      placeLine()
+    }
+
+    const aim = (step: number) => {
+      const { moves, next } = keyboardMoves(key)
+      const current = drag.move
+      const index = moves.findIndex(
+        (move) =>
+          move.target === current?.target && move.position === current.position
+      )
+      const move: TreeViewMove | null =
+        moves.at(
+          index < 0
+            ? Math.min(next, moves.length - 1)
+            : Math.max(0, Math.min(moves.length - 1, index + step))
+        ) ?? null
+      show(move)
+      if (move) reveal(move)
+      return move
+        ? `Drop ${move.position} ${labelOf(move.target)}`
+        : "Nowhere to drop"
+    }
+
+    /** Scrolls the move's row into view, rendering it when virtualized. */
+    const reveal = (move: TreeViewMove) => {
+      const state = stateRef.current!
+      const key =
+        move.position === "after"
+          ? lastVisible(state, move.target)
+          : move.target
+      const row = rowElement(tree, key)
+      if (row) return row.scrollIntoView({ block: "nearest" })
+      let index = 0
+      const { collection } = state
+      for (
+        let k = collection.getFirstKey();
+        k != null && k !== key;
+        k = collection.getKeyAfter(k)
+      ) {
+        if (collection.getItem(k)?.type === "item") index++
+      }
+      const { rowSize, gap } = VIRTUAL_LAYOUT_OPTIONS
+      tree.scrollTop = index * (rowSize + gap) - tree.clientHeight / 2
+    }
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      const state = stateRef.current
+      const move = drag.move
+      const rtl = getComputedStyle(tree).direction === "rtl"
+      const opens = event.key === (rtl ? "ArrowLeft" : "ArrowRight")
+      const closes = event.key === (rtl ? "ArrowRight" : "ArrowLeft")
+      if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+        announce(aim(event.key === "ArrowDown" ? 1 : -1))
+      } else if ((opens || closes) && move?.position === "inside" && state) {
         // Opens or closes the folder a drop would go into.
-        const state = stateRef.current
-        if (
-          move?.position === "inside" &&
-          state &&
-          state.expandedKeys.has(move.target) !== opens
-        ) {
+        if (state.expandedKeys.has(move.target) !== opens) {
           state.toggleKey(move.target)
         }
-        return true
-      },
-      // Rows render as they scroll into view: follow them with the line.
-      onFrame: placeLine,
-      onEnd: (move) => {
-        finish(move !== null)
-        // Focus stays on the dropped row, which the move may have re-rendered.
-        if (move) {
-          requestAnimationFrame(() => {
-            if (tree.contains(tree.ownerDocument.activeElement)) return
-            stateRef.current?.selectionManager.setFocusedKey(move.values[0])
-            rowElement(tree, move.values[0])?.focus()
-          })
-        }
-      },
-      announce: (message) => {
-        if (announcerRef.current) announcerRef.current.textContent = message
-      },
-    })
+      } else if (event.key === "Enter" || event.key === " ") {
+        const dropped = finish(true)
+        if (dropped) refocus(dropped.values[0])
+      } else if (event.key === "Escape") {
+        finish(false)
+      } else {
+        if (event.key === "Tab") finish(false)
+        return
+      }
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    const onPointerDown = () => finish(false)
+
+    /** Keeps focus on the dropped row, which the move may have re-rendered. */
+    const refocus = (value: string) =>
+      requestAnimationFrame(() => {
+        if (tree.contains(doc.activeElement)) return
+        stateRef.current?.selectionManager.setFocusedKey(value)
+        rowElement(tree, value)?.focus()
+      })
+
+    win.addEventListener("keydown", onKeyDown, true)
+    win.addEventListener("pointerdown", onPointerDown, true)
+    drag.stop = () => {
+      cancelAnimationFrame(frame)
+      win.removeEventListener("keydown", onKeyDown, true)
+      win.removeEventListener("pointerdown", onPointerDown, true)
+    }
+    tick()
+    announce(
+      `Moving ${draggedName(drag)}. ${aim(0)}. Arrow keys choose where, Enter drops, Escape cancels.`
+    )
   }
 
   // React Aria's drag hooks, reduced to what tells the tree its rows drag.
@@ -1088,7 +1305,7 @@ function useTreeDragAndDrop({
                 event.pointerType === "keyboard" ||
                 event.pointerType === "virtual"
               ) {
-                dragFromKeyboard(key)
+                startKeyboardDrag(key)
               }
             },
           },
