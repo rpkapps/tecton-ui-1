@@ -680,6 +680,52 @@ function ancestorAt(collection: TreeCollection, key: Key, level: number) {
   return node?.key ?? key
 }
 
+/**
+ * Keeps a pointer drag aimed while the rows scroll under a resting pointer
+ * (autoscroll at an edge, the wheel): React Aria only re-aims when the pointer
+ * moves, so after a scroll the last drag event is sent again as a `dragover`
+ * from where the pointer rests, a pixel off so it does not read as a repeat.
+ * Returns the cleanup.
+ */
+function followScroll(getTree: () => HTMLElement | null) {
+  let last: DragEvent | null = null
+  let frame = 0
+  let nudge = 1
+  const onPointer = (event: DragEvent) => {
+    if (event.isTrusted) last = event
+  }
+  const onScroll = () => {
+    if (!last || frame) return
+    frame = requestAnimationFrame(() => {
+      frame = 0
+      if (!last?.dataTransfer) return
+      const { clientX, clientY, dataTransfer } = last
+      const under = document.elementFromPoint(clientX, clientY)
+      if (!under || !getTree()?.contains(under)) return
+      nudge = -nudge
+      under.dispatchEvent(
+        new DragEvent("dragover", {
+          bubbles: true,
+          cancelable: true,
+          clientX,
+          clientY: clientY + nudge,
+          dataTransfer,
+        })
+      )
+    })
+  }
+  const events = ["dragenter", "dragover"] as const
+  for (const type of events) document.addEventListener(type, onPointer, true)
+  document.addEventListener("scroll", onScroll, true)
+  return () => {
+    cancelAnimationFrame(frame)
+    for (const type of events) {
+      document.removeEventListener(type, onPointer, true)
+    }
+    document.removeEventListener("scroll", onScroll, true)
+  }
+}
+
 /** The row of `tree` under (x, y), or the nearest one by y. */
 function rowAtPoint(tree: HTMLElement, x: number, y: number) {
   const hit = document
@@ -739,6 +785,8 @@ function useTreeDragAndDrop({
   const dragged = React.useRef<{ keys: Set<Key>; values: string[] } | null>(
     null
   )
+  const stopFollowing = React.useRef<(() => void) | null>(null)
+  React.useEffect(() => () => stopFollowing.current?.(), [])
   /** The move a drop on `target` makes, or null where rows cannot go. */
   const moveFor = (target: DropTarget): TreeViewMove | null => {
     const collection = stateRef.current?.collection
@@ -839,10 +887,13 @@ function useTreeDragAndDrop({
           ? inTreeOrder(collection, event.keys)
           : Array.from(event.keys, String),
       }
+      stopFollowing.current = followScroll(() => treeRef.current)
       latest.current.onDragStart()
     },
     onDragEnd: () => {
       dragged.current = null
+      stopFollowing.current?.()
+      stopFollowing.current = null
     },
     dropTargetDelegate: { getDropTargetFromPoint: targetAt },
     getDropOperation: (target) => (isAllowed(target) ? "move" : "cancel"),
