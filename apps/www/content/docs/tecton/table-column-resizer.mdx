@@ -35,7 +35,7 @@ The resizer holds no layout itself. It sits on the end edge of a `relative` head
 
 ## Keyboard
 
-The resizer is a focusable separator named "Resize {label}":
+The resizer is a focusable separator named `Resize {label}`:
 
 - ArrowRight widens and ArrowLeft narrows, mirrored in a right-to-left table. Hold Shift for steps four times as large.
 - Home sets `min` and End sets `max`.
@@ -161,5 +161,5 @@ Forwards `className`, `style`, `id` and `data-*` attributes.
 | `max` | `number` | `1000` | The widest width. |
 | `step` | `number` | `8` | The arrow keys' step in px. Shift multiplies it by four. |
 | `resetValue` | `number` | - | The width that Enter and a double click go back to. |
-| `label` | `string` | - | The column's name, so the resizer is named "Resize {label}". |
+| `label` | `string` | - | The column's name, so the resizer is named `Resize {label}`. |
 | `disabled` | `boolean` | `false` | Turns the resizer off. |
