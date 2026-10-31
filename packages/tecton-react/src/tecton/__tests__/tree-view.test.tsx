@@ -1293,40 +1293,34 @@ describe("TreeView drag and drop", () => {
     await user.keyboard("{Enter}")
   }
 
-  /** The place the keyboard drag aims at, as announced. */
-  const aimed = () =>
-    /Drop (before|after|inside) [^.]+/.exec(
-      document.querySelector('[data-slot="tree-view-announcer"]')
-        ?.textContent ?? ""
-    )?.[0]
-
-  /** Starts a keyboard drag of `name` and lists every place offered. */
+  /** Starts a keyboard drag of `name` and lists every drop target offered. */
   async function targetsWhileDragging(
     user: ReturnType<typeof userEvent.setup>,
     name: string
   ) {
     await startDrag(user, name)
-    for (let i = 0; i < 20; i++) await user.keyboard("{ArrowUp}")
     const seen: string[] = []
     for (let i = 0; i < 20; i++) {
-      const label = aimed() ?? ""
+      const label = document.activeElement?.getAttribute("aria-label") ?? ""
       if (seen.includes(label)) break
       seen.push(label)
       await user.keyboard("{ArrowDown}")
     }
+    // A drag session is global: end it before the next test.
     await user.keyboard("{Escape}")
     return seen
   }
 
-  /** Moves the keyboard drag down to the place `label`, then drops. */
+  /** Moves the keyboard drag to the target named `label`, then drops. */
   async function dropOn(
     user: ReturnType<typeof userEvent.setup>,
     label: string
   ) {
-    for (let i = 0; i < 20 && aimed() !== label; i++) {
+    for (let i = 0; i < 20; i++) {
+      if (document.activeElement?.getAttribute("aria-label") === label) break
       await user.keyboard("{ArrowDown}")
     }
-    expect(aimed()).toBe(label)
+    expect(document.activeElement).toHaveAttribute("aria-label", label)
     await user.keyboard("{Enter}")
   }
 
@@ -1359,65 +1353,13 @@ describe("TreeView drag and drop", () => {
     expect(chevron("A-12").style.marginInlineStart).toBe("1.25rem")
   })
 
-  it("draws the drop line over the rows, adding none between them", async () => {
-    const user = userEvent.setup()
+  it("spaces rows with their own margin, so drag elements move none", () => {
     render(<Movable onMove={() => {}} />)
-    const rows = screen.getAllByRole("row").length
-    const line = document.querySelector<HTMLElement>(
-      '[data-slot="tree-view-drop-indicator"]'
-    )!
-    expect(line).not.toBeVisible()
-    await startDrag(user, "A-12")
-    expect(line).toBeVisible()
-    expect(line.className).toMatch(/(^|\s)absolute(\s|$)/)
-    expect(screen.getAllByRole("row")).toHaveLength(rows)
-    await user.keyboard("{Escape}")
-    expect(line).not.toBeVisible()
-  })
-
-  it("announces the drag, each place and the drop", async () => {
-    const user = userEvent.setup()
-    render(<Movable onMove={() => {}} />)
-    const announcer = document.querySelector(
-      '[data-slot="tree-view-announcer"]'
-    )!
-    expect(announcer).toHaveAttribute("aria-live", "assertive")
-    await startDrag(user, "Notes")
-    expect(announcer.textContent).toMatch(/^Moving Notes\. Drop /)
-    await dropOn(user, "Drop inside Archive")
-    expect(announcer).toHaveTextContent("Moved Notes inside Archive")
-  })
-
-  it("announces a cancelled drag and leaves focus on the grip", async () => {
-    const user = userEvent.setup()
-    render(<Movable onMove={() => {}} />)
-    await startDrag(user, "A-12")
-    await user.keyboard("{ArrowDown}")
-    expect(grip("A-12")).toHaveFocus()
-    await user.keyboard("{Escape}")
-    expect(
-      document.querySelector('[data-slot="tree-view-announcer"]')
-    ).toHaveTextContent("Move cancelled")
-    expect(grip("A-12")).toHaveFocus()
-  })
-
-  it("drags the selection when the grip's row is selected", async () => {
-    const user = userEvent.setup()
-    const onMove = vi.fn()
-    render(
-      <Movable
-        onMove={onMove}
-        selectionMode="multiple"
-        defaultValue={["a12", "notes"]}
-      />
-    )
-    await startDrag(user, "Notes")
-    await dropOn(user, "Drop inside Archive")
-    expect(onMove).toHaveBeenCalledWith({
-      values: ["a12", "notes"],
-      target: "archive",
-      position: "inside",
-    })
+    // A drag inserts zero-height elements between rows (the drop line, a
+    // folder's screen reader drop target); a flex gap around them would shift
+    // every row below by a pixel.
+    expect(screen.getByRole("treegrid").className).not.toMatch(/\bgap-/)
+    expect(row("A-12").className).toMatch(/(^|\s)mb-px(\s|$)/)
   })
 
   it("leaves the dragged row looking as it was", async () => {
@@ -1439,7 +1381,7 @@ describe("TreeView drag and drop", () => {
     render(<Movable onMove={onMove} />)
     await startDrag(user, "A-12")
     expect(row("A-12")).toHaveAttribute("data-dragging", "")
-    await dropOn(user, "Drop before Archive")
+    await dropOn(user, "Insert between Notes and Archive")
     expect(onMove).toHaveBeenCalledWith({
       values: ["a12"],
       target: "archive",
@@ -1452,7 +1394,7 @@ describe("TreeView drag and drop", () => {
     const onMove = vi.fn()
     render(<Movable onMove={onMove} />)
     await startDrag(user, "Notes")
-    await dropOn(user, "Drop inside Archive")
+    await dropOn(user, "Drop on Archive")
     expect(onMove).toHaveBeenCalledWith({
       values: ["notes"],
       target: "archive",
@@ -1464,9 +1406,9 @@ describe("TreeView drag and drop", () => {
     const user = userEvent.setup()
     render(<Movable onMove={() => {}} />)
     const targets = await targetsWhileDragging(user, "Wells")
-    expect(targets).toContain("Drop inside Archive")
+    expect(targets).toContain("Drop on Archive")
     expect(targets.some((label) => label.includes("Notes"))).toBe(true)
-    expect(targets).not.toContain("Drop inside Notes")
+    expect(targets).not.toContain("Drop on Notes")
     expect(targets.filter((label) => /A-1[23]/.test(label))).toEqual([])
   })
 
@@ -1475,7 +1417,7 @@ describe("TreeView drag and drop", () => {
     const canDrop = vi.fn((move: TreeViewMove) => move.target !== "archive")
     render(<Movable onMove={() => {}} canDrop={canDrop} />)
     const targets = await targetsWhileDragging(user, "Notes")
-    expect(targets).not.toContain("Drop inside Archive")
+    expect(targets).not.toContain("Drop on Archive")
     expect(canDrop).toHaveBeenCalledWith(
       expect.objectContaining({ values: ["notes"] })
     )
@@ -1521,7 +1463,7 @@ describe("TreeView drag and drop", () => {
     }
     render(<Data />)
     await startDrag(user, "Well 0-0")
-    await dropOn(user, "Drop inside Field 1")
+    await dropOn(user, "Drop on Field 1")
     const names = screen
       .getAllByRole("row")
       .map((element) => element.getAttribute("data-value"))
