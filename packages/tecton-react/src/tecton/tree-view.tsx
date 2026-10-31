@@ -332,7 +332,9 @@ function TreeView<T extends object = object>({
         // and span its full width: padding would push them out sideways.
         virtualized ? "relative block" : "flex flex-col gap-px",
         className,
-        virtualized && "p-0"
+        // Rows are sized from the rounded `clientWidth`, which can exceed a
+        // fractional content box by a pixel: never scroll sideways for it.
+        virtualized && "overflow-x-hidden p-0"
       )}
       {...props}
       render={(domProps, renderProps) => {
