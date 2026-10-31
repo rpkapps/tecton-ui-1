@@ -219,7 +219,6 @@ function DocumentTabs({
 }
 
 type TabEntry = {
-  label: string
   /** The tab's content without its close button, for the More menu. */
   content: React.ReactNode
   closable: boolean
@@ -249,6 +248,12 @@ function listController() {
   const wrappers = () =>
     Array.from(tablist.current?.querySelectorAll<HTMLElement>(TRIGGER) ?? [])
   const order = () => wrappers().map((el) => el.dataset.value!)
+  const wrapperOf = (value: string) =>
+    wrappers().find((el) => el.dataset.value === value)
+  /** The text of the tab's `DocumentTabsLabel`, read when needed. */
+  const labelOf = (value: string) =>
+    wrapperOf(value)?.querySelector('[data-slot="document-tabs-label"]')
+      ?.textContent ?? ""
   const hasFocus = () =>
     !!tablist.current?.contains(tablist.current.ownerDocument.activeElement)
 
@@ -331,9 +336,7 @@ function listController() {
     const tab =
       pendingFocus === null
         ? null
-        : tablist.current?.querySelector<HTMLElement>(
-            `${TRIGGER}[data-value="${CSS.escape(pendingFocus)}"] [role="tab"]`
-          )
+        : wrapperOf(pendingFocus)?.querySelector<HTMLElement>('[role="tab"]')
     tab?.focus()
     if (tab && tab.ownerDocument.activeElement === tab) pendingFocus = null
   }
@@ -375,7 +378,7 @@ function listController() {
     // Written straight into the live region: announcing renders nothing.
     if (announcer.current)
       announcer.current.textContent = messages.moved(
-        entries.get(value)?.label ?? value,
+        labelOf(value) || value,
         next.indexOf(value) + 1,
         next.length
       )
@@ -412,6 +415,7 @@ function listController() {
     announcer,
     entries,
     wrappers,
+    labelOf,
     measure,
     observe,
     connect,
@@ -543,13 +547,10 @@ function DocumentTabsList({
   )
 }
 
-type TriggerContext = {
-  label: string
-  setLabel: (label: string) => void
+const TriggerContext = React.createContext<{
+  labelId: string
   close: (event?: Event) => void
-}
-
-const TriggerContext = React.createContext<TriggerContext | null>(null)
+} | null>(null)
 
 const ARROWS: Partial<Record<string, number>> = { ArrowRight: 1, ArrowLeft: -1 }
 
@@ -561,6 +562,9 @@ const OVERFLOWING_STYLE: React.CSSProperties = {
   visibility: "hidden",
   pointerEvents: "none",
 }
+
+/** The add button and the More trigger, beside the tabs. */
+const BESIDE = "mx-1 shrink-0 self-center"
 
 type DocumentTabsTriggerProps = Omit<TabsPrimitive.Tab.Props, "value"> & {
   value: string
@@ -577,7 +581,8 @@ function DocumentTabsTrigger({
 }: DocumentTabsTriggerProps) {
   const root = useRoot()
   const list = useList()
-  const [label, setLabel] = React.useState("")
+  const labelId = React.useId()
+  const wrapper = React.useRef<HTMLDivElement>(null)
 
   // The close button sits beside the tab: a button cannot hold a button.
   const items = React.Children.toArray(children)
@@ -594,34 +599,36 @@ function DocumentTabsTrigger({
     useStore(root.store, (s) => s.editing === value) && !overflowing
 
   React.useLayoutEffect(() => {
-    list.entries.set(value, { label, content, closable, disabled })
+    list.entries.set(value, { content, closable, disabled })
     return () => void list.entries.delete(value)
   })
+  React.useLayoutEffect(() => list.observe(wrapper.current), [list])
+  // A tab back from the More menu takes its colours at once: transitioned,
+  // it would flash in place of the tab it replaces. Runs before the focus
+  // below, which resolves styles.
+  const wasOverflowing = React.useRef(overflowing)
+  React.useLayoutEffect(() => {
+    const el = wrapper.current
+    if (wasOverflowing.current && !overflowing && el) {
+      el.dataset.instant = ""
+      void el.offsetWidth
+      delete el.dataset.instant
+    }
+    wasOverflowing.current = overflowing
+  }, [overflowing])
   // A requested focus can land once this tab opens, shows or stops editing.
   React.useLayoutEffect(
     () => list.flushFocus(),
     [list, active, overflowing, editing]
   )
 
-  const finishRename = (next: string | null, refocus: boolean) => {
-    root.setEditing(null)
-    const trimmed = next?.trim()
-    if (trimmed && trimmed !== label)
-      root.callbacks.current.onRename?.(value, trimmed)
-    if (refocus) list.requestFocus(value)
-  }
-
   const flag = (on: boolean) => (on ? "" : undefined)
   return (
     <TriggerContext
-      value={{
-        label,
-        setLabel,
-        close: (event) => list.close([value], { event }),
-      }}
+      value={{ labelId, close: (event) => list.close([value], { event }) }}
     >
       <div
-        ref={list.observe}
+        ref={wrapper}
         role="presentation"
         data-slot="document-tabs-trigger"
         data-value={value}
@@ -639,7 +646,7 @@ function DocumentTabsTrigger({
         }
         // The wrapper is the surface, so the close button shares its colours;
         // a tab moving into the menu hides at once (`**:transition-none`).
-        className="group/document-tab relative flex shrink-0 items-stretch border-e border-border-subtle text-muted-foreground transition-colors select-none [-webkit-touch-callout:none] hover:bg-ghost-hover hover:text-foreground data-dragging:z-10 data-dragging:bg-background data-dragging:shadow-md data-overflowing:**:transition-none data-squeezed:min-w-0 data-squeezed:shrink data-disabled:pointer-events-none data-disabled:text-disabled-subtle-foreground data-active:bg-background data-active:text-foreground"
+        className="group/document-tab relative flex shrink-0 items-stretch border-e border-border-subtle text-muted-foreground transition-colors select-none [-webkit-touch-callout:none] hover:bg-ghost-hover hover:text-foreground data-dragging:z-10 data-dragging:bg-background data-dragging:shadow-md data-instant:transition-none data-instant:**:transition-none data-instant:**:after:transition-none data-overflowing:**:transition-none data-squeezed:min-w-0 data-squeezed:shrink data-disabled:pointer-events-none data-disabled:text-disabled-subtle-foreground data-active:bg-background data-active:text-foreground"
         onPointerDown={root.reorderable ? list.startDrag : undefined}
       >
         {/* `transition`, not `transition-all`: a tab back from the More menu
@@ -686,37 +693,30 @@ function DocumentTabsTrigger({
         </TabsPrimitive.Tab>
         {/* A tab in the More menu has nothing to press or edit. */}
         {closable && !overflowing ? closeButton : null}
-        {editing ? (
-          <RenameField
-            label={label}
-            name={`${root.messages.rename} ${label}`.trim()}
-            onDone={finishRename}
-          />
-        ) : null}
+        {editing ? <RenameField value={value} /> : null}
       </div>
     </TriggerContext>
   )
 }
 
-function RenameField({
-  label,
-  name,
-  onDone,
-}: {
-  label: string
-  name: string
-  onDone: (label: string | null, refocus: boolean) => void
-}) {
+function RenameField({ value }: { value: string }) {
+  const root = useRoot()
+  const list = useList()
+  const [label] = React.useState(() => list.labelOf(value))
   const done = React.useRef(false)
   const finish = (next: string | null, refocus: boolean) => {
     if (done.current) return
     done.current = true
-    onDone(next, refocus)
+    root.setEditing(null)
+    const trimmed = next?.trim()
+    if (trimmed && trimmed !== label)
+      root.callbacks.current.onRename?.(value, trimmed)
+    if (refocus) list.requestFocus(value)
   }
   return (
     <input
       data-slot="document-tabs-rename"
-      aria-label={name}
+      aria-label={`${root.messages.rename} ${label}`.trim()}
       defaultValue={label}
       autoFocus
       spellCheck={false}
@@ -740,13 +740,9 @@ function DocumentTabsLabel({
   ...props
 }: React.ComponentProps<"span">) {
   const trigger = React.useContext(TriggerContext)
-  const ref = React.useRef<HTMLSpanElement>(null)
-  React.useLayoutEffect(() => {
-    trigger?.setLabel(ref.current?.textContent ?? "")
-  })
   return (
     <span
-      ref={ref}
+      id={trigger?.labelId}
       data-slot="document-tabs-label"
       className={cn("min-w-0 truncate", className)}
       {...props}
@@ -759,19 +755,25 @@ function DocumentTabsClose({
   className,
   children,
   onClick,
-  "aria-label": ariaLabel,
   ...props
 }: React.ComponentProps<typeof Button>) {
   const root = useRoot()
   const trigger = useRequired(TriggerContext, "DocumentTabsTrigger")
+  const ownId = React.useId()
+  const id = props.id ?? ownId
   return (
     <Button
+      id={id}
       data-slot="document-tabs-close"
       type="button"
       variant="ghost"
       size="icon-xs"
       tabIndex={-1}
-      aria-label={ariaLabel ?? `${root.messages.close} ${trigger.label}`.trim()}
+      // Named by its own label and the tab's: "Close Well-01".
+      aria-label={root.messages.close}
+      aria-labelledby={
+        props["aria-label"] ? undefined : `${id} ${trigger.labelId}`
+      }
       className={cn(
         "absolute inset-y-0 end-1.5 z-[1] my-auto text-muted-foreground opacity-0 group-focus-within/document-tab:opacity-100 group-hover/document-tab:opacity-100 group-data-active/document-tab:opacity-100 focus-visible:opacity-100 pointer-coarse:opacity-100",
         className
@@ -792,7 +794,6 @@ function DocumentTabsClose({
 function DocumentTabsAdd({
   className,
   children,
-  "aria-label": ariaLabel,
   ...props
 }: React.ComponentProps<typeof Button>) {
   const root = useRoot()
@@ -802,8 +803,8 @@ function DocumentTabsAdd({
       type="button"
       variant="ghost"
       size="icon-sm"
-      aria-label={ariaLabel ?? root.messages.add}
-      className={cn("mx-1 shrink-0 self-center", className)}
+      aria-label={root.messages.add}
+      className={cn(BESIDE, className)}
       {...props}
     >
       {children ?? <PlusIcon />}
@@ -820,8 +821,8 @@ function DocumentTabsMore({
   const root = useRoot()
   const list = useList()
   const hidden = useStore(root.store, (s) => s.hidden)
-  // The picked tab opens (and takes focus) once the menu has closed, so
-  // the closing menu does not follow its moving trigger.
+  // The picked tab opens (and takes focus) once the menu has closed, so the
+  // closing menu does not follow its moving trigger.
   const picked = React.useRef<string | null>(null)
   const keepFocus = React.useRef(false)
   if (!hidden.size) return null
@@ -830,11 +831,10 @@ function DocumentTabsMore({
     <DropdownMenu
       modal={false}
       onOpenChangeComplete={(open) => {
-        const value = picked.current
-        if (open || value === null) return
+        if (open || picked.current === null) return
+        list.requestFocus(picked.current)
+        root.select(picked.current)
         picked.current = null
-        list.requestFocus(value)
-        root.select(value)
       }}
     >
       <DropdownMenuTrigger
@@ -845,7 +845,7 @@ function DocumentTabsMore({
             variant="ghost"
             size="sm"
             aria-label={`${ariaLabel ?? root.messages.more} (${hidden.size})`}
-            className={cn("mx-1 shrink-0 self-center tabular-nums", className)}
+            className={cn(BESIDE, "tabular-nums", className)}
             {...props}
           />
         }
