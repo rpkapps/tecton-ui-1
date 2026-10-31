@@ -747,6 +747,29 @@ describe("DocumentTabs", () => {
       expect(overflowing()).toEqual([])
     })
 
+    it("counts the margins of the buttons beside the tabs", () => {
+      render(
+        <DocumentTabs defaultValue="w1">
+          <DocumentTabsList>
+            {WELLS.map((well) => (
+              <DocumentTabsTrigger key={well.id} value={well.id}>
+                <DocumentTabsLabel>{well.label}</DocumentTabsLabel>
+              </DocumentTabsTrigger>
+            ))}
+            <DocumentTabsAdd style={{ margin: "0 8px" }} />
+          </DocumentTabsList>
+        </DocumentTabs>
+      )
+      // 388 - add 40 - margins 16 - More 48 = 284: the open tab and one more.
+      // Without the margins Well-03 would fit too, and be clipped.
+      resize(388)
+      expect(
+        Array.from(
+          document.querySelectorAll<HTMLElement>("[data-overflowing]")
+        ).map((element) => element.dataset.value)
+      ).toEqual(["w3", "w4"])
+    })
+
     it("skips the hidden tabs with the arrow keys", async () => {
       const user = userEvent.setup()
       render(<Strip />)

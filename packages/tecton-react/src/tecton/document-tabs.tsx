@@ -271,7 +271,12 @@ function listController() {
       const slot = (child as HTMLElement).dataset.slot
       if (child.contains(tablist.current) || slot?.endsWith("announcer"))
         continue
-      const width = child.getBoundingClientRect().width
+      // Its outer width: the add button and the More trigger have margins.
+      const { marginLeft, marginRight } = getComputedStyle(child)
+      const width =
+        child.getBoundingClientRect().width +
+        (parseFloat(marginLeft) || 0) +
+        (parseFloat(marginRight) || 0)
       if (slot !== "document-tabs-more") room -= width
       else if (width > 0) moreWidth = width
     }
