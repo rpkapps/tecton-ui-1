@@ -293,10 +293,15 @@ function TreeView<T extends object = object>({
   const stateRef = React.useRef<TreeState | null>(null)
   const treeRef = React.useRef<HTMLDivElement | null>(null)
   const [menuStore] = React.useState(createMenuStore)
-  const rows =
-    typeof children === "function"
-      ? renderItems(items ?? [], children)
-      : children
+  // Rendered rows are kept while `items` and the render function stay the
+  // same, so a selection or focus change does not re-render every row.
+  const rows = React.useMemo(
+    () =>
+      typeof children === "function"
+        ? renderItems(items ?? [], children)
+        : children,
+    [items, children]
+  )
 
   const renderTree = (domProps: React.ComponentProps<"div">) => {
     if (!contextMenu) return renderDiv(domProps)
@@ -421,15 +426,20 @@ type TreeViewCollectionProps<T> = {
 }
 
 /**
- * The child rows of a `TreeViewItem` rendered from data. Rows re-render with
- * their parent, so state read outside `items` (a hidden set, a selection
- * map) is always current.
+ * The child rows of a `TreeViewItem` rendered from data. Rows re-render when
+ * `items` or the render function change: a render function created during
+ * render (closing over a hidden set, a selection map) keeps them current,
+ * and a stable one (module-level or `useCallback`) skips the rows the parent
+ * did not change, which large trees need.
  */
 function TreeViewCollection<T>({
   items,
   children,
 }: TreeViewCollectionProps<T>) {
-  return <>{renderItems(items, children)}</>
+  return React.useMemo(
+    () => <>{renderItems(items, children)}</>,
+    [items, children]
+  )
 }
 
 type TreeViewItemProps = Omit<TreeViewElementProps, "id"> & {

@@ -1,6 +1,10 @@
 import * as React from "react"
 
 import {
+  ContextMenuContent,
+  ContextMenuItem,
+} from "@tecton/react/components/context-menu"
+import {
   TreeView,
   TreeViewCollection,
   TreeViewItem,
@@ -34,6 +38,7 @@ function renderNode(node: Node) {
 
 export default function TreeViewLarge() {
   const [selected, setSelected] = React.useState<string[]>([])
+  const [opened, setOpened] = React.useState<string | null>(null)
 
   return (
     <div className="flex w-full max-w-sm flex-col gap-2">
@@ -47,12 +52,24 @@ export default function TreeViewLarge() {
           value={selected}
           onValueChange={setSelected}
           defaultExpanded={["field-0", "field-1"]}
+          onActivate={setOpened}
+          contextMenu={(value) => (
+            <ContextMenuContent>
+              <ContextMenuItem onClick={() => setOpened(value)}>
+                Open
+              </ContextMenuItem>
+              <ContextMenuItem onClick={() => setSelected([value])}>
+                Select only this
+              </ContextMenuItem>
+            </ContextMenuContent>
+          )}
         >
           {renderNode}
         </TreeView>
       </div>
       <p className="text-sm text-muted-foreground">
         {selected.length} of 10,100 rows selected
+        {opened && ` · opened ${opened}`}
       </p>
     </div>
   )

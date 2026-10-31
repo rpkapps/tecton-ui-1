@@ -108,6 +108,8 @@ A context menu is hard to discover on touch screens and for most keyboard users:
 </TreeView>
 ```
 
+Rows rendered from `items` are kept while `items` and the render function stay the same, so selecting, focusing or expanding a row re-renders only what changed. Define `renderNode` outside the component (or wrap it in `useCallback`) and keep `items` stable: a render function created on every render re-renders every row each time the parent does, which a large tree feels on every click.
+
 ## Styling
 
 Rows carry `data-selected`, `data-expanded`, `data-disabled`, `data-hidden`, `data-context-menu-open` and `data-level` (depth from 1), and are a `group/tree-item`. They are presence attributes; write the selected state as `data-[selected]:…`, since shadcn's `data-selected:` variant matches only `"true"`. Hover and focus are `:hover` and `:focus-visible`, so a control revealed on hover reads:
@@ -158,7 +160,7 @@ Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (
 
 <Do>
 
-Set `virtualized` on a tree of hundreds of rows or more, with a bounded height (`h-80`, or `min-h-0 flex-1` in a flex column); padding and borders go on a wrapper, since virtualized rows span the full width of the tree.
+Set `virtualized` on a tree of hundreds of rows or more, with a bounded height (`h-80`, or `min-h-0 flex-1` in a flex column); padding and borders go on a wrapper, since virtualized rows span the full width of the tree. Keep `items` and the render function stable (module-level or `useCallback`), or every parent render re-renders every row.
 
 </Do>
 

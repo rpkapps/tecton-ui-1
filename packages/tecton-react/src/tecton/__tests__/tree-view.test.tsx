@@ -949,6 +949,80 @@ describe("TreeView virtualized", () => {
     expect(onValueChange).toHaveBeenLastCalledWith(["field-1"])
     expect(row("Field 1")).toHaveAttribute("data-selected", "")
   })
+
+  it("does not re-render rows when a controlled selection changes", async () => {
+    const user = userEvent.setup()
+    // Stable render functions, as a module-level `renderNode` would be.
+    const renderWell = vi.fn((node: Well) => (
+      <TreeViewItem value={node.id}>
+        <TreeViewItemContent>{node.name}</TreeViewItemContent>
+      </TreeViewItem>
+    ))
+    const renderField = vi.fn((node: Well) => (
+      <TreeViewItem value={node.id}>
+        <TreeViewItemContent kind="folder">{node.name}</TreeViewItemContent>
+        <TreeViewCollection items={node.children ?? []}>
+          {renderWell}
+        </TreeViewCollection>
+      </TreeViewItem>
+    ))
+    function Controlled() {
+      const [value, setValue] = React.useState<string[]>([])
+      return (
+        <TreeView
+          aria-label="Inventory"
+          items={nodes}
+          virtualized
+          selectionMode="multiple"
+          value={value}
+          onValueChange={setValue}
+        >
+          {renderField}
+        </TreeView>
+      )
+    }
+    render(<Controlled />)
+    expect(renderWell).toHaveBeenCalled()
+    renderField.mockClear()
+    renderWell.mockClear()
+    await user.click(row("Field 1"))
+    await user.keyboard("{ArrowDown}")
+    expect(row("Field 1")).toHaveAttribute("data-selected", "")
+    expect(renderField).not.toHaveBeenCalled()
+    expect(renderWell).not.toHaveBeenCalled()
+  })
+
+  it("re-renders rows when the render function changes", async () => {
+    const user = userEvent.setup()
+    function Suffixed() {
+      const [suffix, setSuffix] = React.useState("")
+      // Created during render: it reads `suffix`, so rows must follow it.
+      const renderNode = (node: Well): React.ReactElement => (
+        <TreeViewItem value={node.id} label={node.name + suffix}>
+          <TreeViewItemContent>{node.name + suffix}</TreeViewItemContent>
+          <TreeViewCollection items={node.children ?? []}>
+            {renderNode}
+          </TreeViewCollection>
+        </TreeViewItem>
+      )
+      return (
+        <>
+          <button onClick={() => setSuffix(" (hidden)")}>Hide</button>
+          <TreeView
+            aria-label="Inventory"
+            items={inventory(2, 2)}
+            defaultExpanded={["field-0"]}
+          >
+            {renderNode}
+          </TreeView>
+        </>
+      )
+    }
+    render(<Suffixed />)
+    await user.click(screen.getByRole("button", { name: "Hide" }))
+    expect(row("Field 0 (hidden)")).toBeInTheDocument()
+    expect(row("Well 0-1 (hidden)")).toBeInTheDocument()
+  })
 })
 
 describe("TreeView context menu", () => {
