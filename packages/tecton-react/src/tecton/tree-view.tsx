@@ -1017,7 +1017,7 @@ function TreeViewItemContent({
               slot="drag"
               data-slot="tree-view-drag-handle"
               render={renderButton}
-              className="flex size-5 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted-foreground/60 outline-none group-focus-within/tree-item:text-muted-foreground group-hover/tree-item:text-muted-foreground hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60 [&_svg]:size-4"
+              className="flex size-5 shrink-0 cursor-grab items-center justify-center rounded-sm text-muted-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring/60 [&_svg]:size-4"
             >
               <GripVerticalIcon />
             </ButtonPrimitive>

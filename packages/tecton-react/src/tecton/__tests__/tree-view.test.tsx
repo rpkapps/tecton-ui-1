@@ -1344,6 +1344,9 @@ describe("TreeView drag and drop", () => {
     const chevron = (name: string) =>
       row(name).querySelector<HTMLElement>('[data-slot="tree-view-chevron"]')!
     expect(grip("A-12").className).not.toMatch(/opacity-0/)
+    // One colour, whatever the row's state.
+    expect(grip("A-12").className).toMatch(/(^|\s)text-muted-foreground(\s|$)/)
+    expect(grip("A-12").className).not.toMatch(/text-muted-foreground\/|:text-/)
     // Every row starts at the same padding, the grip first; the level indent
     // comes after it, on the chevron.
     expect(content("Wells").style.paddingInlineStart).toBe("0.25rem")
