@@ -497,6 +497,17 @@ function TreeView<T extends object = object>({
     [items, children]
   )
 
+  // The selection the tree last reported. Passed back as the same `value`, it
+  // is handed on as it was: it carries the anchor Shift+click extends from,
+  // which an array of values cannot.
+  const reported = React.useRef<Set<Key> | null>(null)
+  const selectedKeys = React.useMemo(() => {
+    const last = reported.current
+    const same =
+      value?.length === last?.size && value?.every((key) => last?.has(key))
+    return same && last ? last : value
+  }, [value])
+
   const renderTree = ({ ref, onKeyDown, ...domProps }: DivProps) => {
     const element = renderDiv({
       ...domProps,
@@ -547,16 +558,18 @@ function TreeView<T extends object = object>({
       // activate it, since rows have no checkbox to select with.
       selectionBehavior={onActivate ? "replace" : "toggle"}
       renderEmptyState={empty === undefined ? undefined : () => empty}
-      selectedKeys={value}
+      selectedKeys={selectedKeys}
       defaultSelectedKeys={defaultValue}
       onSelectionChange={
         onValueChange &&
-        ((selection: Selection) =>
+        ((selection: Selection) => {
+          reported.current = selection === "all" ? null : selection
           onValueChange(
             selection === "all"
               ? selectableValues(stateRef.current)
               : Array.from(selection, String)
-          ))
+          )
+        })
       }
       expandedKeys={expanded}
       defaultExpandedKeys={defaultExpanded}

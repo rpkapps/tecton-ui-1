@@ -243,6 +243,51 @@ describe("TreeView selection", () => {
     expect(row("Wells")).not.toHaveAttribute("data-selected")
   })
 
+  it("extends a controlled selection with Shift+click, from the clicked row", async () => {
+    const user = userEvent.setup()
+    function Controlled({ onActivate }: { onActivate?: () => void }) {
+      const [value, setValue] = React.useState<string[]>([])
+      return (
+        <TreeView
+          aria-label="Rows"
+          selectionMode="multiple"
+          value={value}
+          onValueChange={setValue}
+          onActivate={onActivate}
+        >
+          {["r0", "r1", "r2", "r3", "r4"].map((name) => (
+            <TreeViewItem key={name} value={name}>
+              <TreeViewItemContent>{name}</TreeViewItemContent>
+            </TreeViewItem>
+          ))}
+        </TreeView>
+      )
+    }
+    const selected = () =>
+      screen
+        .getAllByRole("row")
+        .filter((element) => element.hasAttribute("data-selected"))
+        .map((element) => element.dataset.value)
+    // Rows that activate: a click selects one, Shift+click the range.
+    const { unmount } = render(<Controlled onActivate={() => {}} />)
+    await user.click(row("r1"))
+    await user.keyboard("{Shift>}")
+    await user.click(row("r3"))
+    expect(selected()).toEqual(["r1", "r2", "r3"])
+    // The range follows the anchor, not the last row clicked.
+    await user.click(row("r0"))
+    await user.keyboard("{/Shift}")
+    expect(selected()).toEqual(["r0", "r1"])
+    unmount()
+    // Rows that toggle: the same.
+    render(<Controlled />)
+    await user.click(row("r4"))
+    await user.keyboard("{Shift>}")
+    await user.click(row("r2"))
+    await user.keyboard("{/Shift}")
+    expect(selected()).toEqual(["r2", "r3", "r4"])
+  })
+
   it("lists every selectable row on select all, collapsed and nested ones too", async () => {
     const onValueChange = vi.fn()
     render(
