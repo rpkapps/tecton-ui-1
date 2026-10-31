@@ -104,4 +104,4 @@ The root is a `div`, so the handler is mouse-only; `AttachmentTrigger` is a real
 - An attached file is an `Attachment` (`AttachmentMedia`, `AttachmentContent`, `AttachmentActions`) driven through `state="idle" | "uploading" | "processing" | "error" | "done"`, not a `Badge` and not a hand-painted error border.
 - Every `AttachmentAction` has an `aria-label` naming the action and the file and fires through `onClick`, and the card opens through `AttachmentTrigger` rather than an `onClick` on the root `div`.
 
-Related: message, badge, item
+Related: message, badge, item, dropzone

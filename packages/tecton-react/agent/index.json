@@ -189,10 +189,15 @@
    "conversation"
   ],
   "upload": [
-   "attachment"
+   "attachment",
+   "dropzone"
   ],
   "file": [
-   "attachment"
+   "attachment",
+   "dropzone"
+  ],
+  "drop zone": [
+   "dropzone"
   ],
   "divider": [
    "separator"
@@ -629,7 +634,7 @@
    "fields": {
     "names": "attachment attachment attachment group attachment media attachment content attachment title attachment description attachment actions attachment action attachment trigger",
     "useWhen": "A file or an image the user attached: in the composer before sending, or inside a message. The upload lifecycle has to be visible: selected, uploading, processing, failed, done. The card opens something — a preview dialog, a download — while remove or retry stays separate.",
-    "routed": "a file or an image card inside a message or a composer",
+    "routed": "a file or an image card inside a message or a composer showing a file that is already attached, with no picking",
     "do": "Compose it: `AttachmentMedia`, then `AttachmentContent` with `AttachmentTitle` and `AttachmentDescription`, then `AttachmentActions`. Drive the look with `state=\"idle\" | \"uploading\" | \"processing\" | \"error\" | \"done\"`, `size` and `orientation`. Use `AttachmentMedia variant=\"image\"` around an `<img>` and `orientation=\"vertical\"` for a thumbnail; lay several cards out in an `AttachmentGroup`. Give every `AttachmentAction` an `aria-label` naming the action and the file; it is a `Button`, so press it with `onClick`."
    },
    "notFor": [
@@ -649,7 +654,8 @@
    "related": [
     "message",
     "badge",
-    "item"
+    "item",
+    "dropzone"
    ],
    "exports": [
     "Attachment",
@@ -663,7 +669,7 @@
     "AttachmentTrigger"
    ],
    "aliases": [],
-   "tokens": 991
+   "tokens": 994
   },
   {
    "id": "avatar",
@@ -1484,7 +1490,7 @@
    "fields": {
     "names": "composer composer composer field composer input composer toolbar composer submit composer hint composer status message composer attachments composer suggestions composer suggestion composer commands use composer",
     "useWhen": "The user writes to an assistant or agent: the message box under a transcript. A reply streams back and the user must be able to stop it, and keep typing the next message meanwhile. The message carries something besides its text (a selection, a file) that the user can see and remove before sending. The user types slash commands (`/new`, `/summarise`) in the message box and picks one from a list.",
-    "routed": "",
+    "routed": "attaching files to a chat message",
     "do": "Pass the chat's `status` (`\"ready\" | \"submitted\" | \"streaming\" | \"error\"`) and `onStop`; `ComposerSubmit` swaps Send for Stop and Escape stops the reply. Keep `ComposerHint` (visible, or `visible={false}`) so the textarea is described by its keys, and `ComposerStatusMessage` for sent, stopped and failed. Pair it with a transcript whose `MessageScrollerContent` has `aria-busy` while a reply streams, so the reply is announced once, complete. Pass the prompts already sent as `history` (oldest first) for ArrowUp and ArrowDown, and use `submitMode=\"mod-enter\"` for long-form input. Put extra context in `ComposerAttachments`, prompts to start from in `ComposerSuggestions`, slash commands in `ComposerCommands` inside `ComposerField`, and your own buttons (`InputGroupButton`, with or without a tooltip) straight into `ComposerToolbar` before `ComposerSubmit`."
    },
    "notFor": [
@@ -1837,6 +1843,50 @@
    "tokens": 995
   },
   {
+   "id": "dropzone",
+   "kind": "component",
+   "name": "Dropzone",
+   "import": "import { Dropzone, DropzoneArea, DropzoneTrigger, DropzoneList, DropzoneRemove, useDropzone, formatFileSize } from \"@tecton/react/tecton/dropzone\"",
+   "family": "forms",
+   "summary": "The user uploads files by dragging them from the desktop, or picks them with a browse button.",
+   "fields": {
+    "names": "dropzone dropzone dropzone area dropzone trigger dropzone list dropzone remove use dropzone format file size",
+    "useWhen": "The user uploads files by dragging them from the desktop, or picks them with a browse button. The picked files are listed before or while they upload, each with a remove button. The files must match a type, a size or a count, and refused ones need a reason.",
+    "routed": "",
+    "do": "Compose `Dropzone > DropzoneArea` with the `Empty` parts inside it and a `DropzoneTrigger` in `EmptyContent`, then `DropzoneList` with one `Attachment` per file. Keep the files with `value` / `onValueChange` (or `defaultValue`), and limit them with `accept`, `maxSize`, `maxFiles` and `multiple={false}`. Show refused files from `onFileReject`: each rejection has a `reason` and a ready `message` for a `FieldError` or a toast. Drive each card's upload with `Attachment state` (`uploading`, `error`, `done`) and put `DropzoneRemove` in its `AttachmentActions`; print sizes with `formatFileSize`."
+   },
+   "notFor": [
+    {
+     "need": "showing a file that is already attached, with no picking",
+     "id": "attachment"
+    },
+    {
+     "need": "attaching files to a chat message",
+     "id": "composer"
+    },
+    {
+     "need": "a plain one-line text or number entry",
+     "id": "input"
+    }
+   ],
+   "related": [
+    "attachment",
+    "empty",
+    "field"
+   ],
+   "exports": [
+    "Dropzone",
+    "DropzoneArea",
+    "DropzoneTrigger",
+    "DropzoneList",
+    "DropzoneRemove",
+    "useDropzone",
+    "formatFileSize"
+   ],
+   "aliases": [],
+   "tokens": 889
+  },
+  {
    "id": "empty",
    "kind": "component",
    "name": "Empty",
@@ -1974,7 +2024,7 @@
    "fields": {
     "names": "input input",
     "useWhen": "A single line of text: name, email, password, number, date, file. The value is free-form; a fixed set of options belongs in a picker instead. Inside a `Field`, so the control arrives with a label and room for an error.",
-    "routed": "the single-line text control itself a plain field with nothing attached to it a password, a token or any other free-form value an exact number the user types, with units or validation a single line of text",
+    "routed": "a plain one-line text or number entry the single-line text control itself a plain field with nothing attached to it a password, a token or any other free-form value an exact number the user types, with units or validation a single line of text",
     "do": "Pick the surface with `variant=\"outline\" | \"filled\" | \"text\"` — outline in forms, filled in dense panels, text for inline editing. Wire the label by hand: `<FieldLabel htmlFor=\"x\">` plus `<Input id=\"x\">`. Nothing associates them implicitly. `Input` is a real `<input>`: use the DOM props `value`, `onChange(event)`, `disabled`, `required`, `type` and `aria-invalid`. Mirror the state on the `Field` — `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid` — and keep `className` to layout (`w-full`, `col-span-2`)."
    },
    "notFor": [

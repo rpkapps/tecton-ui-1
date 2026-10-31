@@ -457,6 +457,11 @@
       "import": "./dist/tecton/document-tabs.js",
       "default": "./dist/tecton/document-tabs.js"
     },
+    "./tecton/dropzone": {
+      "types": "./dist/tecton/dropzone.d.ts",
+      "import": "./dist/tecton/dropzone.js",
+      "default": "./dist/tecton/dropzone.js"
+    },
     "./tecton/link": {
       "types": "./dist/tecton/link.d.ts",
       "import": "./dist/tecton/link.js",

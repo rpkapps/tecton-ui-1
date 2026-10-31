@@ -10,7 +10,7 @@ notFor:
     use: Chip
   - need: a row of a file browser or a settings list
     use: Item
-related: [Message, Badge, Item]
+related: [Message, Badge, Item, Dropzone]
 ---
 
 ## Use it when
