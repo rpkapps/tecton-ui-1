@@ -146,50 +146,6 @@ Import `./styles/app.css` in `app/layout.tsx`. Components that use hooks already
 
 </Tabs>
 
-## Languages
-
-Tecton is in English. Tree View and Chip carry their screen reader strings — drag and drop announcements, row and grid labels — in 34 languages, about 20 kB gzipped. The `@tecton/react/build/locales` build plugin keeps only the languages you list; any other locale falls back to English.
-
-<Tabs defaultValue="vite">
-
-<TabsList>
-  <TabsTrigger value="vite">Vite / TanStack Start</TabsTrigger>
-  <TabsTrigger value="next">Next.js</TabsTrigger>
-</TabsList>
-
-<TabsContent value="vite">
-
-```ts title="vite.config.ts"
-import tectonLocales from "@tecton/react/build/locales"
-
-export default defineConfig({
-  plugins: [tectonLocales.vite({ locales: ["en-US"] }), react(), tailwindcss()],
-})
-```
-
-</TabsContent>
-
-<TabsContent value="next">
-
-```js title="next.config.mjs"
-import tectonLocales from "@tecton/react/build/locales"
-
-export default {
-  webpack(config) {
-    config.plugins.push(tectonLocales.webpack({ locales: ["en-US"] }))
-    return config
-  },
-  // With Turbopack:
-  turbopack: tectonLocales.turbopack({ locales: ["en-US"] }),
-}
-```
-
-</TabsContent>
-
-</Tabs>
-
-Add a locale to `locales` when the app ships in that language. Rollup and esbuild builds use `tectonLocales.rollup()` and `tectonLocales.esbuild()`.
-
 ## Blocks
 
 Blocks (dashboards, panels, forms, page states) are served as a shadcn registry named `@tecton`. The copied files import the components from `@tecton/react`, so install the package first.

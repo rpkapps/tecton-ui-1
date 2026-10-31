@@ -170,8 +170,6 @@ const topLevel = new Set(project.map((node) => node.id))
 </TreeView>
 ```
 
-For a smaller bundle, keep the tree's screen reader strings to the languages the app ships in with the `@tecton/react/build/locales` build plugin ([Languages](/docs/installation#languages)): about 20 kB gzipped less.
-
 Rows rendered from `items` are kept while `items` and the render function stay the same, so selecting, focusing or expanding a row re-renders only what changed. Define `renderNode` outside the component (or wrap it in `useCallback`) and keep `items` stable: a render function created on every render re-renders every row each time the parent does, which a large tree feels on every click.
 
 ## Styling
