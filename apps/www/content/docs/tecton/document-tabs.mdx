@@ -1,0 +1,318 @@
+---
+title: Document Tabs
+description: Workspace tabs the user opens, closes, renames and reorders, with a More menu for the ones that do not fit.
+---
+
+<ComponentPreview name="document-tabs-demo" previewClassName="h-72" />
+
+## Usage
+
+```tsx lineNumbers
+import {
+  DocumentTabs,
+  DocumentTabsAdd,
+  DocumentTabsClose,
+  DocumentTabsContent,
+  DocumentTabsLabel,
+  DocumentTabsList,
+  DocumentTabsTrigger,
+} from "@tecton/react/tecton/document-tabs"
+```
+
+```tsx lineNumbers
+<DocumentTabs
+  value={active}
+  onValueChange={setActive}
+  onClose={(ids) => setWells((all) => all.filter((w) => !ids.includes(w.id)))}
+>
+  <DocumentTabsList aria-label="Open wells">
+    {wells.map((well) => (
+      <DocumentTabsTrigger key={well.id} value={well.id}>
+        <WellIcon />
+        <DocumentTabsLabel>{well.name}</DocumentTabsLabel>
+        <DocumentTabsClose />
+      </DocumentTabsTrigger>
+    ))}
+    <DocumentTabsAdd onClick={addWell} />
+  </DocumentTabsList>
+  {wells.map((well) => (
+    <DocumentTabsContent key={well.id} value={well.id}>
+      {well.name}
+    </DocumentTabsContent>
+  ))}
+</DocumentTabs>
+```
+
+## Composition
+
+Use the following composition to build `DocumentTabs`:
+
+```text
+DocumentTabs
+├── DocumentTabsList
+│   ├── DocumentTabsTrigger
+│   │   ├── DocumentTabsLabel
+│   │   └── DocumentTabsClose
+│   ├── DocumentTabsMore
+│   ├── DocumentTabsAdd
+│   └── DocumentTabsMenu
+│       ├── DocumentTabsMenuRename
+│       ├── DocumentTabsMenuClose
+│       └── DocumentTabsMenuCloseOthers
+└── DocumentTabsContent
+```
+
+The tabs are your application's state: `onClose`, `onRename` and `onReorder` report what the user did and you update the list. Leave a callback out and the strip does not offer that action.
+
+## Close
+
+Add `DocumentTabsClose` to a tab and pass `onClose` to make it closable; a tab without one stays pinned. <Kbd>Delete</Kbd> closes the focused tab and <Kbd>Shift</Kbd> + <Kbd>Delete</Kbd> closes the others; closing the open tab opens its neighbour first.
+
+<ComponentPreview name="document-tabs-close" />
+
+## Rename
+
+Pass `onRename` to edit `DocumentTabsLabel` in place. Double-click a tab or press <Kbd>F2</Kbd>; <Kbd>Enter</Kbd> saves and <Kbd>Esc</Kbd> cancels.
+
+<ComponentPreview name="document-tabs-rename" />
+
+## Reorder
+
+Pass `onReorder` to let the user drag a tab, or move the focused one with <Kbd>Ctrl</Kbd> + <Kbd>Shift</Kbd> + an arrow key (<Kbd>⌘</Kbd> on macOS).
+
+<ComponentPreview name="document-tabs-reorder" />
+
+## Context menu
+
+Right-click a tab, long-press it or press <Kbd>Shift</Kbd> + <Kbd>F10</Kbd> to open its menu. By default it has Rename, Close and Close other tabs, each with its icon and shortcut, and only the items whose callback is set. Render `DocumentTabsMenu` in the list to choose the items: its children can be a function of the tab's `value`, and the prebuilt items take every `ContextMenuItem` prop. `<DocumentTabsMenu disabled />` turns the menu off.
+
+<ComponentPreview name="document-tabs-menu" />
+
+## Overflow
+
+Tabs that do not fit move into a More menu, and the open tab always stays visible. Opening a tab that is already showing moves nothing; opening one from the menu makes room for it at the end. Render `DocumentTabsMore` yourself only to change its label.
+
+<ComponentPreview name="document-tabs-overflow" />
+
+## Small
+
+Use `size="sm"` on `DocumentTabsList` for a second level of tabs inside a `DocumentTabsContent`.
+
+<ComponentPreview name="document-tabs-nested" />
+
+## RTL
+
+To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl). Pass translated labels through `messages`.
+
+<ComponentPreview name="document-tabs-rtl" direction="rtl" />
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The user opens documents into a workspace and keeps several open at once: wells, views of a well, reports.
+- The user closes, renames or reorders those open documents, the way a browser treats its tabs.
+- Open documents can outnumber the room in the row, so the extra ones move into a More menu.
+
+### Not for
+
+- a fixed set of sections of one page or panel: use [Tabs](/docs/components/tabs)
+- the application frame around the workspace: use [AppShell](/docs/tecton/app-shell)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Keep the open documents in application state and render one `DocumentTabsTrigger` and one `DocumentTabsContent` per document, matched by `value`.
+
+</Do>
+
+<Do>
+
+Update that state from `onClose`, `onRename` and `onReorder` on `DocumentTabs`; leave a callback out to turn its action off.
+
+</Do>
+
+<Do>
+
+Compose a tab from an icon, `DocumentTabsLabel` (what rename edits and the More menu shows), an optional `Badge`, and `DocumentTabsClose` last; leave the close out to pin a tab.
+
+</Do>
+
+<Do>
+
+Name the strip with `aria-label` on `DocumentTabsList`, add `DocumentTabsAdd` with an `onClick` that creates and opens a document, and nest a second strip at `size="sm"`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="Nesting a close button in the trigger">
+
+<Wrong>
+
+```tsx
+<TabsTrigger value={well.id}>
+  {well.name}
+  <Button size="icon-xs" onClick={() => close(well.id)}><XIcon /></Button>
+</TabsTrigger>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<DocumentTabsTrigger value={well.id}>
+  <DocumentTabsLabel>{well.name}</DocumentTabsLabel>
+  <DocumentTabsClose />
+</DocumentTabsTrigger>
+```
+
+</Correct>
+
+A button inside a tab is invalid markup that screen readers flatten; `DocumentTabsClose` sits beside the tab, and Delete closes the focused one.
+
+</Dont>
+
+<Dont severity="HIGH" title="Hiding tabs with your own overflow">
+
+<Wrong>
+
+```tsx
+<DocumentTabsList className="overflow-x-auto">{tabs}</DocumentTabsList>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<DocumentTabsList aria-label="Open wells">{tabs}</DocumentTabsList>
+```
+
+</Correct>
+
+The list measures itself and moves the tabs that do not fit into its More menu while keeping the open one visible; a scrolling row hides tabs that neither the arrow keys nor a menu reach.
+
+</Dont>
+
+{/* guidelines:end */}
+
+## API Reference
+
+### DocumentTabs
+
+The root of the strip and its panels.
+
+| Prop            | Type                                     | Default   |
+| --------------- | ---------------------------------------- | --------- |
+| `value`         | `string \| null`                         | -         |
+| `defaultValue`  | `string \| null`                         | first tab |
+| `onValueChange` | `(value: string, eventDetails) => void`  | -         |
+| `onClose`       | `(values: string[]) => void`             | -         |
+| `onRename`      | `(value: string, label: string) => void` | -         |
+| `onReorder`     | `(values: string[]) => void`             | -         |
+| `messages`      | `Partial<DocumentTabsMessages>`          | English   |
+| `className`     | `string`                                 | -         |
+
+### DocumentTabsList
+
+The row of tabs, the More menu and the add button. `className` goes to the row.
+
+| Prop              | Type                | Default     |
+| ----------------- | ------------------- | ----------- |
+| `size`            | `"default" \| "sm"` | `"default"` |
+| `activateOnFocus` | `boolean`           | `true`      |
+| `className`       | `string`            | -           |
+
+### DocumentTabsTrigger
+
+A tab. Its state is on the `document-tabs-trigger` slot as `data-active`, `data-closable`, `data-disabled`, `data-dragging` and `data-overflowing`.
+
+| Prop        | Type      | Default |
+| ----------- | --------- | ------- |
+| `value`     | `string`  | -       |
+| `disabled`  | `boolean` | `false` |
+| `className` | `string`  | -       |
+
+### DocumentTabsLabel
+
+The tab's name: what rename edits and what the More menu shows.
+
+| Prop        | Type     | Default |
+| ----------- | -------- | ------- |
+| `className` | `string` | -       |
+
+### DocumentTabsClose
+
+The close button of a tab, named "Close" and the tab's label.
+
+| Prop         | Type        | Default     |
+| ------------ | ----------- | ----------- |
+| `aria-label` | `string`    | -           |
+| `children`   | `ReactNode` | `<XIcon />` |
+| `className`  | `string`    | -           |
+
+### DocumentTabsAdd
+
+The button after the tabs that opens a new one.
+
+| Prop         | Type         | Default        |
+| ------------ | ------------ | -------------- |
+| `onClick`    | `() => void` | -              |
+| `aria-label` | `string`     | `"New tab"`    |
+| `children`   | `ReactNode`  | `<PlusIcon />` |
+| `className`  | `string`     | -              |
+
+### DocumentTabsMore
+
+The trigger of the More menu, shown while tabs overflow.
+
+| Prop         | Type     | Default       |
+| ------------ | -------- | ------------- |
+| `aria-label` | `string` | `"More tabs"` |
+| `className`  | `string` | -             |
+
+### DocumentTabsMenu
+
+The context menu of the tabs. It takes the `ContextMenuContent` props.
+
+| Prop        | Type                                         | Default       |
+| ----------- | -------------------------------------------- | ------------- |
+| `children`  | `ReactNode \| ((value: string) => ReactNode)` | default items |
+| `disabled`  | `boolean`                                    | `false`       |
+| `className` | `string`                                     | -             |
+
+### DocumentTabsMenuRename
+
+Renames the tab the menu opened on; rendered only with `onRename`. It takes the `ContextMenuItem` props, and `children` replace the icon, label and shortcut.
+
+| Prop        | Type                         | Default                   |
+| ----------- | ---------------------------- | ------------------------- |
+| `variant`   | `"default" \| "destructive"` | `"default"`               |
+| `children`  | `ReactNode`                  | icon, "Rename", `F2`          |
+| `className` | `string`                     | -                         |
+
+### DocumentTabsMenuClose
+
+Closes the tab the menu opened on; rendered only with `onClose`. Same props as `DocumentTabsMenuRename`; `children` default to an icon, "Close" and <Kbd>Del</Kbd>.
+
+### DocumentTabsMenuCloseOthers
+
+Closes every other closable tab; rendered only with `onClose`. Same props as `DocumentTabsMenuRename`; `children` default to an icon, "Close other tabs" and <Kbd>⇧Del</Kbd>.
+
+### DocumentTabsContent
+
+The panel of the tab with the same `value`.
+
+| Prop        | Type     | Default |
+| ----------- | -------- | ------- |
+| `value`     | `string` | -       |
+| `className` | `string` | -       |

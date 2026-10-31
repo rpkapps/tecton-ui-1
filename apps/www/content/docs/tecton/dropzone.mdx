@@ -1,0 +1,275 @@
+---
+title: Dropzone
+description: "Picks files by drag and drop or a browse button, checks them against type, size and count, and lists them as attachments."
+---
+
+<ComponentPreview name="dropzone-demo" />
+
+## Usage
+
+```tsx
+import {
+  Attachment,
+  AttachmentActions,
+  AttachmentContent,
+  AttachmentDescription,
+  AttachmentTitle,
+} from "@tecton/react/components/attachment"
+import {
+  EmptyContent,
+  EmptyHeader,
+  EmptyTitle,
+} from "@tecton/react/components/empty"
+import {
+  Dropzone,
+  DropzoneArea,
+  DropzoneList,
+  DropzoneRemove,
+  DropzoneTrigger,
+  formatFileSize,
+} from "@tecton/react/tecton/dropzone"
+```
+
+```tsx
+<Dropzone value={files} onValueChange={setFiles} accept="image/*,.pdf">
+  <DropzoneArea>
+    <EmptyHeader>
+      <EmptyTitle>Drop files here</EmptyTitle>
+    </EmptyHeader>
+    <EmptyContent>
+      <DropzoneTrigger>Browse files</DropzoneTrigger>
+    </EmptyContent>
+  </DropzoneArea>
+  <DropzoneList>
+    {files.map((file) => (
+      <Attachment key={file.name} className="w-full">
+        <AttachmentContent>
+          <AttachmentTitle>{file.name}</AttachmentTitle>
+          <AttachmentDescription>{formatFileSize(file.size)}</AttachmentDescription>
+        </AttachmentContent>
+        <AttachmentActions>
+          <DropzoneRemove file={file} />
+        </AttachmentActions>
+      </Attachment>
+    ))}
+  </DropzoneList>
+</Dropzone>
+```
+
+The drop area is an [Empty](/docs/components/empty) with its dashed outline, so it takes the `Empty` parts as children; every picked file is an [Attachment](/docs/components/attachment). The dropzone owns the list: pass `value` and `onValueChange`, or `defaultValue` and read the files back with `useDropzone`.
+
+## Composition
+
+```text
+Dropzone
+├── DropzoneArea
+│   ├── EmptyHeader
+│   │   ├── EmptyMedia
+│   │   ├── EmptyTitle
+│   │   └── EmptyDescription
+│   └── EmptyContent
+│       └── DropzoneTrigger
+└── DropzoneList
+    └── Attachment
+        ├── AttachmentMedia
+        ├── AttachmentContent
+        └── AttachmentActions
+            └── DropzoneRemove
+```
+
+## Upload progress
+
+Uploading is the application's: drive each card with `Attachment state` (`uploading`, `error`, `done`) and add your own actions, such as a retry, next to `DropzoneRemove`.
+
+<ComponentPreview name="dropzone-upload" />
+
+## In a field
+
+`onFileReject` receives the files a drop or a pick refused, each with a `reason` (`"type"`, `"too-large"`, `"too-small"` or `"count"`) and a ready `message`, so the list goes straight into `FieldError`. Set `aria-invalid` on `DropzoneArea` and `data-invalid` on the `Field` to show the error. With `name` the files are also submitted by a native form.
+
+<ComponentPreview name="dropzone-field" />
+
+## Single file
+
+`multiple={false}` keeps one file: a new one replaces it. Use `AttachmentMedia variant="image"` and `orientation="vertical"` for a thumbnail.
+
+<ComponentPreview name="dropzone-single" />
+
+## Accessibility
+
+- `DropzoneTrigger` is a real button and the keyboard's way in. A click elsewhere on the area opens the same picker for the mouse, but the area itself is not focusable, so always keep the trigger.
+- Added, refused and removed files are announced through a polite status region. `messages` overrides the texts, for example to translate them.
+- `DropzoneRemove` is labelled "Remove *name*" and moves focus to the next file's remove button, or to the trigger when the list is empty.
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The user uploads files by dragging them from the desktop, or picks them with a browse button.
+- The picked files are listed before or while they upload, each with a remove button.
+- The files must match a type, a size or a count, and refused ones need a reason.
+
+### Not for
+
+- showing a file that is already attached, with no picking: use [Attachment](/docs/components/attachment)
+- attaching files to a chat message: use [Composer](/docs/tecton/composer)
+- a plain one-line text or number entry: use [Input](/docs/components/input)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Compose `Dropzone > DropzoneArea` with the `Empty` parts inside it and a `DropzoneTrigger` in `EmptyContent`, then `DropzoneList` with one `Attachment` per file.
+
+</Do>
+
+<Do>
+
+Keep the files with `value` / `onValueChange` (or `defaultValue`), and limit them with `accept`, `maxSize`, `maxFiles` and `multiple={false}`.
+
+</Do>
+
+<Do>
+
+Show refused files from `onFileReject`: each rejection has a `reason` and a ready `message` for a `FieldError` or a toast.
+
+</Do>
+
+<Do>
+
+Drive each card's upload with `Attachment state` (`uploading`, `error`, `done`) and put `DropzoneRemove` in its `AttachmentActions`; print sizes with `formatFileSize`.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="HIGH" title="A hand-built drop div">
+
+<Wrong>
+
+```tsx
+<div onDragOver={(e) => e.preventDefault()} onDrop={(e) => setFiles([...e.dataTransfer.files])}>Drop files here</div>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Dropzone value={files} onValueChange={setFiles} accept=".las,.csv">
+  <DropzoneArea>
+    <EmptyTitle>Drop well logs here</EmptyTitle>
+    <DropzoneTrigger>Browse files</DropzoneTrigger>
+  </DropzoneArea>
+</Dropzone>
+```
+
+</Correct>
+
+The div has no keyboard way in, checks no type or size, keeps no drag highlight across its children and announces nothing; `DropzoneArea` does all of that and `DropzoneTrigger` is the button keyboard users need.
+
+</Dont>
+
+<Dont severity="HIGH" title="Leaving out the DropzoneTrigger">
+
+<Wrong>
+
+```tsx
+<DropzoneArea>
+  <EmptyTitle>Drop files or click to browse</EmptyTitle>
+</DropzoneArea>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<DropzoneArea>
+  <EmptyTitle>Drop files here</EmptyTitle>
+  <DropzoneTrigger>Browse files</DropzoneTrigger>
+</DropzoneArea>
+```
+
+</Correct>
+
+A click on the area opens the picker for the mouse only: the area is not focusable, so without the trigger a keyboard or screen reader user cannot add a file at all.
+
+</Dont>
+
+<Dont severity="MEDIUM" title="Picked files as Badges">
+
+<Wrong>
+
+```tsx
+{files.map((file) => <Badge key={file.name}>{file.name}</Badge>)}
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<DropzoneList>
+  {files.map((file) => (
+    <Attachment key={file.name} className="w-full">
+      <AttachmentContent>
+        <AttachmentTitle>{file.name}</AttachmentTitle>
+        <AttachmentDescription>{formatFileSize(file.size)}</AttachmentDescription>
+      </AttachmentContent>
+      <AttachmentActions>
+        <DropzoneRemove file={file} />
+      </AttachmentActions>
+    </Attachment>
+  ))}
+</DropzoneList>
+```
+
+</Correct>
+
+A `Badge` has no slot for the size, no upload `state` and no remove action; `DropzoneRemove` is labelled with "Remove" and the file name, and moves focus on to the next file.
+
+</Dont>
+
+{/* guidelines:end */}
+
+## API Reference
+
+### Dropzone
+
+A `div` that holds the files, the hidden file input and the status region.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` / `defaultValue` / `onValueChange` | `readonly File[]` / `readonly File[]` / `(files: File[]) => void` | - | The files, controlled or not. |
+| `accept` | `string` | - | Allowed files, as in `<input accept>`: extensions, MIME types and wildcards (`"image/*,.pdf"`). |
+| `multiple` | `boolean` | `true` | `false` keeps one file; a new one replaces it. |
+| `maxFiles` | `number` | - | Once reached, the trigger is disabled and further files are refused. |
+| `maxSize` / `minSize` | `number` | - | In bytes. |
+| `onFileReject` | `(rejections: { file, reason, message }[]) => void` | - | The files one drop or pick refused. |
+| `disabled` | `boolean` | `false` | Disables the area, the trigger and the remove buttons. |
+| `name` | `string` | - | Submits the files with a native form under this name. |
+| `messages` | `{ added?, removed?, rejected?, remove? }` | English | Functions returning the announced texts and the remove label. |
+
+### Parts
+
+| Part | Props |
+| --- | --- |
+| `DropzoneArea` | Every `Empty` prop. `data-dragging` while files are held over it, `data-disabled` when the dropzone is disabled or full; `aria-invalid` draws the error border. |
+| `DropzoneTrigger` | Every `Button` prop; `variant` defaults to `"outline"`. Opens the file picker. |
+| `DropzoneList` | A `div` stacking the attachments; renders nothing without children. |
+| `DropzoneRemove` | `file` (required) and every `AttachmentAction` prop; the icon defaults to a cross and `aria-label` to "Remove *name*". |
+
+### useDropzone
+
+`useDropzone()` returns `files`, `open` (opens the picker), `add(files)`, `remove(file)`, `clear`, `dragging` and `disabled`, for a part of your own inside `Dropzone`.
+
+### formatFileSize
+
+`formatFileSize(bytes, locale?)` prints a size in steps of 1024, with one decimal below ten: `formatFileSize(2.4 * 1024 * 1024)` is `"2.4 MB"`.

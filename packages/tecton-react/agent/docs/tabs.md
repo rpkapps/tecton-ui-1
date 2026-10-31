@@ -16,6 +16,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants } from "@tec
 
 - a filter that narrows a list in place → `ToggleGroup` (tecton docs toggle-group)
 - picking a value for a form field → `Select` (tecton docs select)
+- tabs the user opens, closes, renames or reorders → `DocumentTabs` (tecton docs document-tabs)
 
 ## Do
 
@@ -102,4 +103,4 @@ The selected tab carries `data-active`, not `data-state="active"`, and the stock
 - Items identify themselves by `value` on `SelectItem`, `ComboboxItem`, `RadioGroupItem`, `ToggleGroupItem`, `TabsTrigger` and `TabsContent`; `id`, `selectedKey` and `onSelectionChange` are not props of any of them.
 - Every group carries a name: `aria-label` on `ComboboxInput`, `RadioGroup`, `TabsList` or `ToggleGroup`, or a `FieldSet` + `FieldLegend` around it, and every icon-only `ToggleGroupItem` has its own `aria-label`.
 
-Related: toggle-group, select
+Related: toggle-group, select, document-tabs

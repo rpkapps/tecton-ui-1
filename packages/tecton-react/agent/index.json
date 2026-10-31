@@ -189,10 +189,15 @@
    "conversation"
   ],
   "upload": [
-   "attachment"
+   "attachment",
+   "dropzone"
   ],
   "file": [
-   "attachment"
+   "attachment",
+   "dropzone"
+  ],
+  "drop zone": [
+   "dropzone"
   ],
   "divider": [
    "separator"
@@ -522,7 +527,7 @@
    "fields": {
     "names": "app shell app shell app shell header app shell brand app shell nav app shell actions app shell action app shell command trigger app shell divider app shell overflow app shell user menu app shell body app shell sidebar app shell main app shell aside app shell split app shell split panel app shell split handle use min width",
     "useWhen": "The outermost frame of an application: a top bar, an optional left rail, a work area, an optional right aside. The frame fills the viewport (`h-svh`) and clips its own overflow, so each region scrolls on its own. The header carries the host's own cluster — search, help, settings, the account menu — so every mounted application shows the same set. A tool panel lives beside the content and the user may drag the divider between them.",
-    "routed": "the global action cluster at the end of the shell header the application frame around the work area the top bar of the application frame the application frame around the work area a draggable divider between the regions of the application frame the scrolling work area of the application frame the borders between the regions of the application frame a fixed navigation column inside the application frame the header, rail and work area of an application that owns the document",
+    "routed": "the global action cluster at the end of the shell header the application frame around the work area the application frame around the workspace the top bar of the application frame the application frame around the work area a draggable divider between the regions of the application frame the scrolling work area of the application frame the borders between the regions of the application frame a fixed navigation column inside the application frame the header, rail and work area of an application that owns the document",
     "do": "Compose it: `AppShellHeader` (with `AppShellBrand`, `AppShellNav`, `AppShellActions`), then `AppShellBody` holding `AppShellSidebar`, `AppShellMain` and `AppShellAside`. Put the page content in `AppShellMain`; it is the scrolling region of the work area. Give every `AppShellAction` a `label` — both the accessible name and the tooltip — separate groups with `AppShellDivider`, and on a narrow header hide the low-priority ones (`hidden lg:inline-flex`) in favour of `AppShellOverflow` (`lg:hidden`). For a draggable divider, wrap the regions in `AppShellSplit` with an `AppShellSplitPanel` each and an `AppShellSplitHandle` between them, and gate a full-height aside on `useMinWidth(1280)`. Inside an `AppShellSplitPanel` give the `AppShellAside` `className=\"h-full w-full border-s-0\"`; otherwise `className` overrides the height alone (`h-full` in an embedded context) and the shell keeps its surfaces and borders."
    },
    "notFor": [
@@ -629,7 +634,7 @@
    "fields": {
     "names": "attachment attachment attachment group attachment media attachment content attachment title attachment description attachment actions attachment action attachment trigger",
     "useWhen": "A file or an image the user attached: in the composer before sending, or inside a message. The upload lifecycle has to be visible: selected, uploading, processing, failed, done. The card opens something — a preview dialog, a download — while remove or retry stays separate.",
-    "routed": "a file or an image card inside a message or a composer",
+    "routed": "a file or an image card inside a message or a composer showing a file that is already attached, with no picking",
     "do": "Compose it: `AttachmentMedia`, then `AttachmentContent` with `AttachmentTitle` and `AttachmentDescription`, then `AttachmentActions`. Drive the look with `state=\"idle\" | \"uploading\" | \"processing\" | \"error\" | \"done\"`, `size` and `orientation`. Use `AttachmentMedia variant=\"image\"` around an `<img>` and `orientation=\"vertical\"` for a thumbnail; lay several cards out in an `AttachmentGroup`. Give every `AttachmentAction` an `aria-label` naming the action and the file; it is a `Button`, so press it with `onClick`."
    },
    "notFor": [
@@ -649,7 +654,8 @@
    "related": [
     "message",
     "badge",
-    "item"
+    "item",
+    "dropzone"
    ],
    "exports": [
     "Attachment",
@@ -663,7 +669,7 @@
     "AttachmentTrigger"
    ],
    "aliases": [],
-   "tokens": 991
+   "tokens": 994
   },
   {
    "id": "avatar",
@@ -1484,7 +1490,7 @@
    "fields": {
     "names": "composer composer composer field composer input composer toolbar composer submit composer hint composer status message composer attachments composer suggestions composer suggestion composer commands use composer",
     "useWhen": "The user writes to an assistant or agent: the message box under a transcript. A reply streams back and the user must be able to stop it, and keep typing the next message meanwhile. The message carries something besides its text (a selection, a file) that the user can see and remove before sending. The user types slash commands (`/new`, `/summarise`) in the message box and picks one from a list.",
-    "routed": "",
+    "routed": "attaching files to a chat message",
     "do": "Pass the chat's `status` (`\"ready\" | \"submitted\" | \"streaming\" | \"error\"`) and `onStop`; `ComposerSubmit` swaps Send for Stop and Escape stops the reply. Keep `ComposerHint` (visible, or `visible={false}`) so the textarea is described by its keys, and `ComposerStatusMessage` for sent, stopped and failed. Pair it with a transcript whose `MessageScrollerContent` has `aria-busy` while a reply streams, so the reply is announced once, complete. Pass the prompts already sent as `history` (oldest first) for ArrowUp and ArrowDown, and use `submitMode=\"mod-enter\"` for long-form input. Put extra context in `ComposerAttachments`, prompts to start from in `ComposerSuggestions`, slash commands in `ComposerCommands` inside `ComposerField`, and your own buttons (`InputGroupButton`, with or without a tooltip) straight into `ComposerToolbar` before `ComposerSubmit`."
    },
    "notFor": [
@@ -1692,6 +1698,52 @@
    "tokens": 1087
   },
   {
+   "id": "document-tabs",
+   "kind": "component",
+   "name": "DocumentTabs",
+   "import": "import { DocumentTabs, DocumentTabsList, DocumentTabsTrigger, DocumentTabsLabel, DocumentTabsClose, DocumentTabsAdd, DocumentTabsMore, DocumentTabsMenu, DocumentTabsMenuRename, DocumentTabsMenuClose, DocumentTabsMenuCloseOthers, DocumentTabsContent, documentTabsListVariants } from \"@tecton/react/tecton/document-tabs\"",
+   "family": "navigation",
+   "summary": "The user opens documents into a workspace and keeps several open at once: wells, views of a well, reports.",
+   "fields": {
+    "names": "document tabs document tabs document tabs list document tabs trigger document tabs label document tabs close document tabs add document tabs more document tabs menu document tabs menu rename document tabs menu close document tabs menu close others document tabs content document tabs list variants",
+    "useWhen": "The user opens documents into a workspace and keeps several open at once: wells, views of a well, reports. The user closes, renames or reorders those open documents, the way a browser treats its tabs. Open documents can outnumber the room in the row, so the extra ones move into a More menu.",
+    "routed": "tabs the user opens, closes, renames or reorders",
+    "do": "Keep the open documents in application state and render one `DocumentTabsTrigger` and one `DocumentTabsContent` per document, matched by `value`. Update that state from `onClose`, `onRename` and `onReorder` on `DocumentTabs`; leave a callback out to turn its action off. Compose a tab from an icon, `DocumentTabsLabel` (what rename edits and the More menu shows), an optional `Badge`, and `DocumentTabsClose` last; leave the close out to pin a tab. Name the strip with `aria-label` on `DocumentTabsList`, add `DocumentTabsAdd` with an `onClick` that creates and opens a document, and nest a second strip at `size=\"sm\"`."
+   },
+   "notFor": [
+    {
+     "need": "a fixed set of sections of one page or panel",
+     "id": "tabs"
+    },
+    {
+     "need": "the application frame around the workspace",
+     "id": "app-shell"
+    }
+   ],
+   "related": [
+    "tabs",
+    "page-header",
+    "app-shell"
+   ],
+   "exports": [
+    "DocumentTabs",
+    "DocumentTabsList",
+    "DocumentTabsTrigger",
+    "DocumentTabsLabel",
+    "DocumentTabsClose",
+    "DocumentTabsAdd",
+    "DocumentTabsMore",
+    "DocumentTabsMenu",
+    "DocumentTabsMenuRename",
+    "DocumentTabsMenuClose",
+    "DocumentTabsMenuCloseOthers",
+    "DocumentTabsContent",
+    "documentTabsListVariants"
+   ],
+   "aliases": [],
+   "tokens": 684
+  },
+  {
    "id": "drawer",
    "kind": "component",
    "name": "Drawer",
@@ -1789,6 +1841,50 @@
    ],
    "aliases": [],
    "tokens": 995
+  },
+  {
+   "id": "dropzone",
+   "kind": "component",
+   "name": "Dropzone",
+   "import": "import { Dropzone, DropzoneArea, DropzoneTrigger, DropzoneList, DropzoneRemove, useDropzone, formatFileSize } from \"@tecton/react/tecton/dropzone\"",
+   "family": "forms",
+   "summary": "The user uploads files by dragging them from the desktop, or picks them with a browse button.",
+   "fields": {
+    "names": "dropzone dropzone dropzone area dropzone trigger dropzone list dropzone remove use dropzone format file size",
+    "useWhen": "The user uploads files by dragging them from the desktop, or picks them with a browse button. The picked files are listed before or while they upload, each with a remove button. The files must match a type, a size or a count, and refused ones need a reason.",
+    "routed": "",
+    "do": "Compose `Dropzone > DropzoneArea` with the `Empty` parts inside it and a `DropzoneTrigger` in `EmptyContent`, then `DropzoneList` with one `Attachment` per file. Keep the files with `value` / `onValueChange` (or `defaultValue`), and limit them with `accept`, `maxSize`, `maxFiles` and `multiple={false}`. Show refused files from `onFileReject`: each rejection has a `reason` and a ready `message` for a `FieldError` or a toast. Drive each card's upload with `Attachment state` (`uploading`, `error`, `done`) and put `DropzoneRemove` in its `AttachmentActions`; print sizes with `formatFileSize`."
+   },
+   "notFor": [
+    {
+     "need": "showing a file that is already attached, with no picking",
+     "id": "attachment"
+    },
+    {
+     "need": "attaching files to a chat message",
+     "id": "composer"
+    },
+    {
+     "need": "a plain one-line text or number entry",
+     "id": "input"
+    }
+   ],
+   "related": [
+    "attachment",
+    "empty",
+    "field"
+   ],
+   "exports": [
+    "Dropzone",
+    "DropzoneArea",
+    "DropzoneTrigger",
+    "DropzoneList",
+    "DropzoneRemove",
+    "useDropzone",
+    "formatFileSize"
+   ],
+   "aliases": [],
+   "tokens": 889
   },
   {
    "id": "empty",
@@ -1928,7 +2024,7 @@
    "fields": {
     "names": "input input",
     "useWhen": "A single line of text: name, email, password, number, date, file. The value is free-form; a fixed set of options belongs in a picker instead. Inside a `Field`, so the control arrives with a label and room for an error.",
-    "routed": "the single-line text control itself a plain field with nothing attached to it a password, a token or any other free-form value an exact number the user types, with units or validation a single line of text",
+    "routed": "a plain one-line text or number entry the single-line text control itself a plain field with nothing attached to it a password, a token or any other free-form value an exact number the user types, with units or validation a single line of text",
     "do": "Pick the surface with `variant=\"outline\" | \"filled\" | \"text\"` — outline in forms, filled in dense panels, text for inline editing. Wire the label by hand: `<FieldLabel htmlFor=\"x\">` plus `<Input id=\"x\">`. Nothing associates them implicitly. `Input` is a real `<input>`: use the DOM props `value`, `onChange(event)`, `disabled`, `required`, `type` and `aria-invalid`. Mirror the state on the `Field` — `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid` — and keep `className` to layout (`w-full`, `col-span-2`)."
    },
    "notFor": [
@@ -3354,7 +3450,7 @@
    "fields": {
     "names": "tabs tabs tabs list tabs trigger tabs content tabs list variants",
     "useWhen": "A page or panel has two to about six sections the user moves between without navigating away. Exactly one section is visible at a time and each one is a real chunk of content. The strip belongs to the surface it sits on: a page header, a panel, a card.",
-    "routed": "sections that replace each other in the same space switching between sibling views of the same page sections of content the user moves between sections the reader chooses by name switching between sibling sections of one page switching between panels of content switching between panels of content",
+    "routed": "sections that replace each other in the same space switching between sibling views of the same page sections of content the user moves between sections the reader chooses by name a fixed set of sections of one page or panel switching between sibling sections of one page switching between panels of content switching between panels of content",
     "do": "Match every `TabsTrigger` to its `TabsContent` by `value`, the same string on both. Select with `defaultValue` / `value` and `onValueChange`, which receives the tab's value. Choose the strip with `TabsList` `variant=\"default\" | \"line\"`, and a side strip with `orientation=\"vertical\"` on `Tabs`. Give `TabsList` an `aria-label` when no nearby heading names the set; disable one tab with `disabled`. Let the arrow keys select: moving focus to a tab shows its panel. Pass `activateOnFocus={false}` to `TabsList` when a panel is costly to render, so the arrow keys only move focus and Enter or Space selects."
    },
    "notFor": [
@@ -3365,11 +3461,16 @@
     {
      "need": "picking a value for a form field",
      "id": "select"
+    },
+    {
+     "need": "tabs the user opens, closes, renames or reorders",
+     "id": "document-tabs"
     }
    ],
    "related": [
     "toggle-group",
-    "select"
+    "select",
+    "document-tabs"
    ],
    "exports": [
     "Tabs",
@@ -3379,7 +3480,7 @@
     "tabsListVariants"
    ],
    "aliases": [],
-   "tokens": 994
+   "tokens": 1021
   },
   {
    "id": "textarea",
