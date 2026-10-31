@@ -4,7 +4,13 @@ import * as React from "react"
 import { Tabs as TabsPrimitive } from "@base-ui/react/tabs"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
-import { ChevronDownIcon, PlusIcon, XIcon } from "lucide-react"
+import {
+  ChevronDownIcon,
+  ListXIcon,
+  PencilIcon,
+  PlusIcon,
+  XIcon,
+} from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -12,6 +18,7 @@ import {
   ContextMenuContent,
   ContextMenuItem,
   ContextMenuSeparator,
+  ContextMenuShortcut,
   ContextMenuTrigger,
 } from "@tecton/react/components/context-menu"
 import {
@@ -255,6 +262,8 @@ type DocumentTabsListContextValue = {
     values: Array<string>,
     options?: { event?: Event; focus?: boolean }
   ) => void
+  /** Close every closable tab but this one, and focus it. */
+  closeOthers: (value: string, event?: Event) => void
   move: (value: string, delta: -1 | 1) => void
   /** Pointer down on a tab's wrapper: may start a drag to reorder. */
   startDrag: (event: React.PointerEvent<HTMLElement>) => void
@@ -383,12 +392,15 @@ function DocumentTabsList({
   // tablist owns tabs only.
   const items = React.Children.toArray(children)
   const tabs = items.filter(
-    (item) => !isElementOf(item, DocumentTabsAdd, DocumentTabsMore)
+    (item) =>
+      !isElementOf(item, DocumentTabsAdd, DocumentTabsMore, DocumentTabsMenu)
   )
   const more = items.find((item) => isElementOf(item, DocumentTabsMore)) ?? (
     <DocumentTabsMore />
   )
   const after = items.filter((item) => isElementOf(item, DocumentTabsAdd))
+  const menu = items.find((item) => isElementOf(item, DocumentTabsMenu)) as
+    React.ReactElement<DocumentTabsMenuProps> | undefined
   const tabsKey = tabs.map(childKey).join("\u0000")
 
   const wrappers = React.useCallback(
@@ -551,6 +563,20 @@ function DocumentTabsList({
     [listHasFocus, order]
   )
 
+  const closeOthers = React.useCallback<
+    DocumentTabsListContextValue["closeOthers"]
+  >(
+    (value, event) => {
+      const others = order().filter(
+        (other) => other !== value && entries.current.get(other)?.closable
+      )
+      if (others.length === 0) return
+      close(others, { event, focus: false })
+      pendingFocus.current = value
+    },
+    [close, order]
+  )
+
   const reorder = React.useCallback((value: string, next: Array<string>) => {
     const current = latest.current.root
     current.callbacks.current.onReorder?.(next)
@@ -614,6 +640,7 @@ function DocumentTabsList({
       squeezed,
       entries,
       close,
+      closeOthers,
       move,
       startDrag: drag.onPointerDown,
       touchAction: drag.touchAction,
@@ -625,6 +652,7 @@ function DocumentTabsList({
       hidden,
       squeezed,
       close,
+      closeOthers,
       move,
       drag.onPointerDown,
       drag.touchAction,
@@ -634,14 +662,21 @@ function DocumentTabsList({
   )
 
   // One context menu for the whole list: it acts on the tab it opened on.
-  const target =
-    menuTarget === null ? undefined : entries.current.get(menuTarget)
-  const canRename = root.renamable && target !== undefined && !target.disabled
-  const others = () =>
-    order().filter(
-      (value) => value !== menuTarget && entries.current.get(value)?.closable
-    )
-  const hasMenu = root.renamable || root.closable
+  const hasMenu = menu ? !menu.props.disabled : root.renamable || root.closable
+  const menuContext = React.useMemo<DocumentTabsMenuContextValue>(
+    () => ({
+      value: menuTarget,
+      act: () => {
+        menuAction.current = true
+      },
+      finalFocus: () => {
+        const acted = menuAction.current
+        menuAction.current = false
+        return acted || menuTarget === null ? false : tabElement(menuTarget)
+      },
+    }),
+    [menuTarget, tabElement]
+  )
 
   const tablist = (
     <TabsPrimitive.List
@@ -686,53 +721,9 @@ function DocumentTabsList({
             >
               {tablist}
             </ContextMenuTrigger>
-            <ContextMenuContent
-              finalFocus={() => {
-                const acted = menuAction.current
-                menuAction.current = false
-                return acted || menuTarget === null
-                  ? false
-                  : tabElement(menuTarget)
-              }}
-            >
-              {canRename ? (
-                <ContextMenuItem
-                  onClick={() => {
-                    menuAction.current = true
-                    root.setEditing(menuTarget)
-                  }}
-                >
-                  {root.messages.rename}
-                </ContextMenuItem>
-              ) : null}
-              {canRename && root.closable ? <ContextMenuSeparator /> : null}
-              {root.closable ? (
-                <>
-                  <ContextMenuItem
-                    disabled={!target?.closable}
-                    onClick={(event) => {
-                      menuAction.current = true
-                      close([menuTarget!], {
-                        event: event.nativeEvent,
-                        focus: true,
-                      })
-                    }}
-                  >
-                    {root.messages.close}
-                  </ContextMenuItem>
-                  <ContextMenuItem
-                    disabled={others().length === 0}
-                    onClick={(event) => {
-                      menuAction.current = true
-                      requestFocus(menuTarget!)
-                      close(others(), { event: event.nativeEvent })
-                    }}
-                  >
-                    {root.messages.closeOthers}
-                  </ContextMenuItem>
-                </>
-              ) : null}
-            </ContextMenuContent>
+            <DocumentTabsMenuContext value={menuContext}>
+              {menu ?? <DocumentTabsMenu />}
+            </DocumentTabsMenuContext>
           </ContextMenu>
         ) : (
           tablist
@@ -875,7 +866,10 @@ function DocumentTabsTrigger({
             if (event.defaultPrevented) return
             const forward = direction === "rtl" ? "ArrowLeft" : "ArrowRight"
             const backward = direction === "rtl" ? "ArrowRight" : "ArrowLeft"
-            if (event.key === "Delete" && closable) {
+            if (event.key === "Delete" && event.shiftKey && root.closable) {
+              event.preventDefault()
+              list.closeOthers(value, event.nativeEvent)
+            } else if (event.key === "Delete" && closable) {
               event.preventDefault()
               close([value], { event: event.nativeEvent })
             } else if (event.key === "F2" && renamable) {
@@ -1112,6 +1106,191 @@ function DocumentTabsMore({
   )
 }
 
+/* -------------------------------------------------------------------------- */
+/* Context menu                                                               */
+/* -------------------------------------------------------------------------- */
+
+type DocumentTabsMenuContextValue = {
+  /** The tab the menu opened on. */
+  value: string | null
+  /** Marks that an item took over focus (rename field, closing). */
+  act: () => void
+  finalFocus: () => HTMLElement | false | null
+}
+
+const DocumentTabsMenuContext =
+  React.createContext<DocumentTabsMenuContextValue | null>(null)
+
+function useMenuContext(part: string) {
+  const context = React.useContext(DocumentTabsMenuContext)
+  if (!context)
+    throw new Error(`${part} must be used within <DocumentTabsMenu>`)
+  return context
+}
+
+type DocumentTabsMenuProps = Omit<
+  React.ComponentProps<typeof ContextMenuContent>,
+  "children"
+> & {
+  /**
+   * The items, or a function of the value of the tab the menu opened on.
+   * Default: rename, close and close other tabs.
+   */
+  children?: React.ReactNode | ((value: string) => React.ReactNode)
+  /** No context menu on the tabs. */
+  disabled?: boolean
+}
+
+/**
+ * The context menu of the tabs, opened by right click, long press, Shift+F10
+ * or the context menu key on a tab. Render it in `DocumentTabsList` to choose
+ * its items; without it the list shows the default items.
+ */
+function DocumentTabsMenu({
+  children,
+  disabled: _disabled,
+  finalFocus,
+  ...props
+}: DocumentTabsMenuProps) {
+  const root = useRootContext("DocumentTabsMenu")
+  const menu = useMenuContext("DocumentTabsMenu")
+  let content: React.ReactNode = null
+  if (menu.value !== null) {
+    content =
+      typeof children === "function"
+        ? children(menu.value)
+        : (children ?? (
+            <>
+              <DocumentTabsMenuRename />
+              {root.renamable && root.closable ? (
+                <ContextMenuSeparator />
+              ) : null}
+              <DocumentTabsMenuClose />
+              <DocumentTabsMenuCloseOthers />
+            </>
+          ))
+  }
+  return (
+    <ContextMenuContent finalFocus={finalFocus ?? menu.finalFocus} {...props}>
+      {content}
+    </ContextMenuContent>
+  )
+}
+
+type DocumentTabsMenuItemProps = React.ComponentProps<typeof ContextMenuItem>
+
+/** Renames the tab the menu opened on. Renders nothing without `onRename`. */
+function DocumentTabsMenuRename({
+  children,
+  disabled,
+  onClick,
+  ...props
+}: DocumentTabsMenuItemProps) {
+  const root = useRootContext("DocumentTabsMenuRename")
+  const list = useListContext("DocumentTabsMenuRename")
+  const menu = useMenuContext("DocumentTabsMenuRename")
+  const value = menu.value
+  if (!root.renamable || value === null) return null
+  const entry = list.entries.current.get(value)
+  return (
+    <ContextMenuItem
+      // The shortcut hint is drawn for the eye and announced from here.
+      aria-keyshortcuts={children === undefined ? "F2" : undefined}
+      disabled={disabled || !entry || entry.disabled}
+      onClick={(event) => {
+        onClick?.(event)
+        menu.act()
+        root.setEditing(value)
+      }}
+      {...props}
+    >
+      {children ?? (
+        <>
+          <PencilIcon />
+          {root.messages.rename}
+          <ContextMenuShortcut aria-hidden>F2</ContextMenuShortcut>
+        </>
+      )}
+    </ContextMenuItem>
+  )
+}
+
+/** Closes the tab the menu opened on. Renders nothing without `onClose`. */
+function DocumentTabsMenuClose({
+  children,
+  disabled,
+  onClick,
+  ...props
+}: DocumentTabsMenuItemProps) {
+  const root = useRootContext("DocumentTabsMenuClose")
+  const list = useListContext("DocumentTabsMenuClose")
+  const menu = useMenuContext("DocumentTabsMenuClose")
+  const value = menu.value
+  if (!root.closable || value === null) return null
+  return (
+    <ContextMenuItem
+      // The shortcut hint is drawn for the eye and announced from here.
+      aria-keyshortcuts={children === undefined ? "Delete" : undefined}
+      disabled={disabled || !list.entries.current.get(value)?.closable}
+      onClick={(event) => {
+        onClick?.(event)
+        menu.act()
+        list.close([value], { event: event.nativeEvent, focus: true })
+      }}
+      {...props}
+    >
+      {children ?? (
+        <>
+          <XIcon />
+          {root.messages.close}
+          <ContextMenuShortcut aria-hidden>Del</ContextMenuShortcut>
+        </>
+      )}
+    </ContextMenuItem>
+  )
+}
+
+/**
+ * Closes every closable tab but the one the menu opened on. Renders nothing
+ * without `onClose`.
+ */
+function DocumentTabsMenuCloseOthers({
+  children,
+  disabled,
+  onClick,
+  ...props
+}: DocumentTabsMenuItemProps) {
+  const root = useRootContext("DocumentTabsMenuCloseOthers")
+  const list = useListContext("DocumentTabsMenuCloseOthers")
+  const menu = useMenuContext("DocumentTabsMenuCloseOthers")
+  const value = menu.value
+  if (!root.closable || value === null) return null
+  const none = !Array.from(list.entries.current).some(
+    ([other, entry]) => other !== value && entry.closable
+  )
+  return (
+    <ContextMenuItem
+      // The shortcut hint is drawn for the eye and announced from here.
+      aria-keyshortcuts={children === undefined ? "Shift+Delete" : undefined}
+      disabled={disabled || none}
+      onClick={(event) => {
+        onClick?.(event)
+        menu.act()
+        list.closeOthers(value, event.nativeEvent)
+      }}
+      {...props}
+    >
+      {children ?? (
+        <>
+          <ListXIcon />
+          {root.messages.closeOthers}
+          <ContextMenuShortcut aria-hidden>⇧Del</ContextMenuShortcut>
+        </>
+      )}
+    </ContextMenuItem>
+  )
+}
+
 function DocumentTabsContent({
   className,
   ...props
@@ -1133,6 +1312,10 @@ export {
   DocumentTabsClose,
   DocumentTabsAdd,
   DocumentTabsMore,
+  DocumentTabsMenu,
+  DocumentTabsMenuRename,
+  DocumentTabsMenuClose,
+  DocumentTabsMenuCloseOthers,
   DocumentTabsContent,
   documentTabsListVariants,
 }
@@ -1140,6 +1323,7 @@ export type {
   DocumentTabsProps,
   DocumentTabsListProps,
   DocumentTabsTriggerProps,
+  DocumentTabsMenuProps,
   DocumentTabsMessages,
   DocumentTabsChangeEventDetails,
 }

@@ -54,7 +54,11 @@ DocumentTabs
 │   │   ├── DocumentTabsLabel
 │   │   └── DocumentTabsClose
 │   ├── DocumentTabsMore
-│   └── DocumentTabsAdd
+│   ├── DocumentTabsAdd
+│   └── DocumentTabsMenu
+│       ├── DocumentTabsMenuRename
+│       ├── DocumentTabsMenuClose
+│       └── DocumentTabsMenuCloseOthers
 └── DocumentTabsContent
 ```
 
@@ -62,7 +66,7 @@ The tabs are your application's state: `onClose`, `onRename` and `onReorder` rep
 
 ## Close
 
-Add `DocumentTabsClose` to a tab and pass `onClose` to make it closable; a tab without one stays pinned. <Kbd>Delete</Kbd> closes the focused tab, and closing the open tab opens its neighbour first.
+Add `DocumentTabsClose` to a tab and pass `onClose` to make it closable; a tab without one stays pinned. <Kbd>Delete</Kbd> closes the focused tab and <Kbd>Shift</Kbd> + <Kbd>Delete</Kbd> closes the others; closing the open tab opens its neighbour first.
 
 <ComponentPreview name="document-tabs-close" />
 
@@ -77,6 +81,12 @@ Pass `onRename` to edit `DocumentTabsLabel` in place. Double-click a tab or pres
 Pass `onReorder` to let the user drag a tab, or move the focused one with <Kbd>Ctrl</Kbd> + <Kbd>Shift</Kbd> + an arrow key (<Kbd>⌘</Kbd> on macOS).
 
 <ComponentPreview name="document-tabs-reorder" />
+
+## Context menu
+
+Right-click a tab, long-press it or press <Kbd>Shift</Kbd> + <Kbd>F10</Kbd> to open its menu. By default it has Rename, Close and Close other tabs, each with its icon and shortcut, and only the items whose callback is set. Render `DocumentTabsMenu` in the list to choose the items: its children can be a function of the tab's `value`, and the prebuilt items take every `ContextMenuItem` prop. `<DocumentTabsMenu disabled />` turns the menu off.
+
+<ComponentPreview name="document-tabs-menu" />
 
 ## Overflow
 
@@ -269,6 +279,34 @@ The trigger of the More menu, shown while tabs overflow.
 | ------------ | -------- | ------------- |
 | `aria-label` | `string` | `"More tabs"` |
 | `className`  | `string` | -             |
+
+### DocumentTabsMenu
+
+The context menu of the tabs. It takes the `ContextMenuContent` props.
+
+| Prop        | Type                                         | Default       |
+| ----------- | -------------------------------------------- | ------------- |
+| `children`  | `ReactNode \| ((value: string) => ReactNode)` | default items |
+| `disabled`  | `boolean`                                    | `false`       |
+| `className` | `string`                                     | -             |
+
+### DocumentTabsMenuRename
+
+Renames the tab the menu opened on; rendered only with `onRename`. It takes the `ContextMenuItem` props, and `children` replace the icon, label and shortcut.
+
+| Prop        | Type                         | Default                   |
+| ----------- | ---------------------------- | ------------------------- |
+| `variant`   | `"default" \| "destructive"` | `"default"`               |
+| `children`  | `ReactNode`                  | icon, "Rename", `F2`          |
+| `className` | `string`                     | -                         |
+
+### DocumentTabsMenuClose
+
+Closes the tab the menu opened on; rendered only with `onClose`. Same props as `DocumentTabsMenuRename`; `children` default to an icon, "Close" and <Kbd>Del</Kbd>.
+
+### DocumentTabsMenuCloseOthers
+
+Closes every other closable tab; rendered only with `onClose`. Same props as `DocumentTabsMenuRename`; `children` default to an icon, "Close other tabs" and <Kbd>⇧Del</Kbd>.
 
 ### DocumentTabsContent
 

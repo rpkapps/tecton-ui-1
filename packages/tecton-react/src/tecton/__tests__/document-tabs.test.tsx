@@ -3,6 +3,7 @@ import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import { ContextMenuItem } from "@tecton/react/components/context-menu"
 import { TectonProvider } from "@tecton/react/tecton/provider"
 import {
   DocumentTabs,
@@ -11,6 +12,8 @@ import {
   DocumentTabsContent,
   DocumentTabsLabel,
   DocumentTabsList,
+  DocumentTabsMenu,
+  DocumentTabsMenuClose,
   DocumentTabsMore,
   DocumentTabsTrigger,
 } from "@tecton/react/tecton/document-tabs"
@@ -121,6 +124,7 @@ type StripProps = {
   reorderable?: boolean
   activateOnFocus?: boolean
   more?: React.ReactNode
+  menu?: React.ReactNode
 }
 
 /** An application that owns its tabs, as the docs show. */
@@ -132,6 +136,7 @@ function Strip({
   reorderable = true,
   activateOnFocus,
   more,
+  menu,
   ...spies
 }: StripProps) {
   const [tabs, setTabs] = React.useState(initial)
@@ -187,6 +192,7 @@ function Strip({
           </DocumentTabsTrigger>
         ))}
         {more}
+        {menu}
         {spies.onAdd ? <DocumentTabsAdd onClick={spies.onAdd} /> : null}
       </DocumentTabsList>
       {tabs.map((tab) => (
@@ -442,6 +448,91 @@ describe("DocumentTabs", () => {
       fireEvent.contextMenu(screen.getByRole("tab", { name: "Well-02" }))
       await user.click(await screen.findByRole("menuitem", { name: "Close" }))
       expect(onClose).toHaveBeenLastCalledWith(["w2"])
+    })
+
+    it("draws an icon and the shortcut on each default item", async () => {
+      render(<Strip />)
+      fireEvent.contextMenu(screen.getByRole("tab", { name: "Well-02" }))
+      const items = await screen.findAllByRole("menuitem")
+      expect(
+        items.map((item) => item.getAttribute("aria-keyshortcuts"))
+      ).toEqual(["F2", "Delete", "Shift+Delete"])
+      for (const item of items)
+        expect(item.querySelector("svg")).toBeInTheDocument()
+      expect(
+        items.map(
+          (item) =>
+            item.querySelector('[data-slot="context-menu-shortcut"]')
+              ?.textContent
+        )
+      ).toEqual(["F2", "Del", "⇧Del"])
+    })
+
+    it("closes the other tabs with Shift+Delete", async () => {
+      const user = userEvent.setup()
+      const onClose = vi.fn()
+      render(<Strip onClose={onClose} />)
+      await user.click(screen.getByRole("tab", { name: "Well-03" }))
+      await user.keyboard("{Shift>}{Delete}{/Shift}")
+      expect(onClose).toHaveBeenCalledWith(["w1", "w2", "w4"])
+      expect(tabNames()).toEqual(["Well-03"])
+      expect(screen.getByRole("tab", { name: "Well-03" })).toHaveFocus()
+    })
+
+    it("takes items of its own, with the value of the tab it opened on", async () => {
+      const user = userEvent.setup()
+      const duplicate = vi.fn()
+      render(
+        <Strip
+          menu={
+            <DocumentTabsMenu className="custom-menu">
+              {(value) => (
+                <>
+                  <ContextMenuItem onClick={() => duplicate(value)}>
+                    Duplicate
+                  </ContextMenuItem>
+                  <DocumentTabsMenuClose
+                    variant="destructive"
+                    className="custom-close"
+                  >
+                    Close well
+                  </DocumentTabsMenuClose>
+                </>
+              )}
+            </DocumentTabsMenu>
+          }
+        />
+      )
+      fireEvent.contextMenu(screen.getByRole("tab", { name: "Well-03" }))
+      const items = await screen.findAllByRole("menuitem")
+      expect(items.map((item) => item.textContent)).toEqual([
+        "Duplicate",
+        "Close well",
+      ])
+      expect(
+        document.querySelector('[data-slot="context-menu-content"]')
+      ).toHaveClass("custom-menu")
+      expect(items[1]).toHaveClass("custom-close")
+      expect(items[1]).toHaveAttribute("data-variant", "destructive")
+      // Custom children: no shortcut is announced that is not drawn.
+      expect(items[1]).not.toHaveAttribute("aria-keyshortcuts")
+      await user.click(items[0])
+      expect(duplicate).toHaveBeenCalledWith("w3")
+    })
+
+    it("hides the items whose action is off, and turns off with disabled", async () => {
+      const { unmount } = render(<Strip closable={false} />)
+      fireEvent.contextMenu(screen.getByRole("tab", { name: "Well-02" }))
+      const items = await screen.findAllByRole("menuitem")
+      expect(items.map((item) => item.textContent)).toEqual(["RenameF2"])
+      unmount()
+
+      render(<Strip menu={<DocumentTabsMenu disabled />} />)
+      fireEvent.contextMenu(screen.getByRole("tab", { name: "Well-02" }))
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument()
+      expect(
+        document.querySelector('[data-slot="context-menu-trigger"]')
+      ).not.toBeInTheDocument()
     })
   })
 

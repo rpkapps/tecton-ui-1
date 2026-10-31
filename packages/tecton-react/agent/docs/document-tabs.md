@@ -3,7 +3,7 @@
 # DocumentTabs — @tecton/react/tecton/document-tabs
 
 ```tsx
-import { DocumentTabs, DocumentTabsList, DocumentTabsTrigger, DocumentTabsLabel, DocumentTabsClose, DocumentTabsAdd, DocumentTabsMore, DocumentTabsContent, documentTabsListVariants } from "@tecton/react/tecton/document-tabs"
+import { DocumentTabs, DocumentTabsList, DocumentTabsTrigger, DocumentTabsLabel, DocumentTabsClose, DocumentTabsAdd, DocumentTabsMore, DocumentTabsMenu, DocumentTabsMenuRename, DocumentTabsMenuClose, DocumentTabsMenuCloseOthers, DocumentTabsContent, documentTabsListVariants } from "@tecton/react/tecton/document-tabs"
 ```
 
 ## Use it when

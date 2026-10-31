@@ -2,7 +2,7 @@
 component: DocumentTabs
 module: "@tecton/react/tecton/document-tabs"
 family: navigation
-exports: [DocumentTabs, DocumentTabsList, DocumentTabsTrigger, DocumentTabsLabel, DocumentTabsClose, DocumentTabsAdd, DocumentTabsMore, DocumentTabsContent, documentTabsListVariants]
+exports: [DocumentTabs, DocumentTabsList, DocumentTabsTrigger, DocumentTabsLabel, DocumentTabsClose, DocumentTabsAdd, DocumentTabsMore, DocumentTabsMenu, DocumentTabsMenuRename, DocumentTabsMenuClose, DocumentTabsMenuCloseOthers, DocumentTabsContent, documentTabsListVariants]
 notFor:
   - need: a fixed set of sections of one page or panel
     use: Tabs

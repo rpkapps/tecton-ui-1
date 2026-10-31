@@ -1695,11 +1695,11 @@
    "id": "document-tabs",
    "kind": "component",
    "name": "DocumentTabs",
-   "import": "import { DocumentTabs, DocumentTabsList, DocumentTabsTrigger, DocumentTabsLabel, DocumentTabsClose, DocumentTabsAdd, DocumentTabsMore, DocumentTabsContent, documentTabsListVariants } from \"@tecton/react/tecton/document-tabs\"",
+   "import": "import { DocumentTabs, DocumentTabsList, DocumentTabsTrigger, DocumentTabsLabel, DocumentTabsClose, DocumentTabsAdd, DocumentTabsMore, DocumentTabsMenu, DocumentTabsMenuRename, DocumentTabsMenuClose, DocumentTabsMenuCloseOthers, DocumentTabsContent, documentTabsListVariants } from \"@tecton/react/tecton/document-tabs\"",
    "family": "navigation",
    "summary": "The user opens documents into a workspace and keeps several open at once: wells, views of a well, reports.",
    "fields": {
-    "names": "document tabs document tabs document tabs list document tabs trigger document tabs label document tabs close document tabs add document tabs more document tabs content document tabs list variants",
+    "names": "document tabs document tabs document tabs list document tabs trigger document tabs label document tabs close document tabs add document tabs more document tabs menu document tabs menu rename document tabs menu close document tabs menu close others document tabs content document tabs list variants",
     "useWhen": "The user opens documents into a workspace and keeps several open at once: wells, views of a well, reports. The user closes, renames or reorders those open documents, the way a browser treats its tabs. Open documents can outnumber the room in the row, so the extra ones move into a More menu.",
     "routed": "tabs the user opens, closes, renames or reorders",
     "do": "Keep the open documents in application state and render one `DocumentTabsTrigger` and one `DocumentTabsContent` per document, matched by `value`. Update that state from `onClose`, `onRename` and `onReorder` on `DocumentTabs`; leave a callback out to turn its action off. Compose a tab from an icon, `DocumentTabsLabel` (what rename edits and the More menu shows), an optional `Badge`, and `DocumentTabsClose` last; leave the close out to pin a tab. Name the strip with `aria-label` on `DocumentTabsList`, add `DocumentTabsAdd` with an `onClick` that creates and opens a document, and nest a second strip at `size=\"sm\"`."
@@ -1727,11 +1727,15 @@
     "DocumentTabsClose",
     "DocumentTabsAdd",
     "DocumentTabsMore",
+    "DocumentTabsMenu",
+    "DocumentTabsMenuRename",
+    "DocumentTabsMenuClose",
+    "DocumentTabsMenuCloseOthers",
     "DocumentTabsContent",
     "documentTabsListVariants"
    ],
    "aliases": [],
-   "tokens": 661
+   "tokens": 684
   },
   {
    "id": "drawer",
