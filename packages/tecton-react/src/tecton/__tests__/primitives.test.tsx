@@ -20,10 +20,6 @@ import {
 } from "@tecton/react/tecton/tree-view"
 
 import { ChipPrimitive } from "../internal/primitives/chip/index"
-import {
-  createFormatter,
-  type MessageTable,
-} from "../internal/primitives/messages"
 import { edgeKey, nextKey } from "../internal/primitives/navigation"
 import { useSelection } from "../internal/primitives/selection"
 import { buildTree, visibleRows } from "../internal/primitives/tree/collection"
@@ -137,31 +133,6 @@ describe("navigation", () => {
     expect(nextKey(keys, "d", 1, disabled)).toBe("d")
     expect(nextKey(keys, "a", 3, disabled)).toBe("d")
     expect(edgeKey(keys, -1, (k) => k === "d")).toBe("c")
-  })
-})
-
-describe("messages", () => {
-  const table: MessageTable<"greet" | "count"> = {
-    "en-US": {
-      greet: "Hello {name}",
-      count: { "=0": "None", one: "{count} item", other: "{count} items" },
-    },
-    "de-DE": { greet: "Hallo {name}", count: { other: "{count} Dinge" } },
-  }
-
-  it("falls back to the language, then to en-US, and picks plural forms", () => {
-    expect(createFormatter(table, "de-AT")("greet", { name: "A" })).toBe(
-      "Hallo A"
-    )
-    expect(createFormatter(table, "fr-FR")("greet", { name: "A" })).toBe(
-      "Hello A"
-    )
-    const en = createFormatter(table, "en-US")
-    expect([0, 1, 2].map((count) => en("count", { count }))).toEqual([
-      "None",
-      "1 item",
-      "2 items",
-    ])
   })
 })
 
@@ -359,8 +330,9 @@ describe("server rendering and StrictMode", () => {
     const html = renderToString(tree())
     expect(html).toContain('role="treegrid"')
     expect(html).toContain('aria-label="A-12"')
-    expect(html).toContain('aria-label="Wells ziehen"')
-    expect(html).toContain('aria-label="Entfernen"')
+    // The server renders en-US: other locales load in the browser.
+    expect(html).toContain('aria-label="Drag Wells"')
+    expect(html).toContain('aria-label="Remove"')
     const virtual = renderToString(tree({ virtualized: true }))
     expect(virtual).toContain('aria-rowindex="2"')
   })

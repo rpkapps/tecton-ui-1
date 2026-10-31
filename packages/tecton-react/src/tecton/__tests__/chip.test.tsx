@@ -359,14 +359,15 @@ describe("Chip keyboard", () => {
     expect(a).toHaveFocus()
   })
 
-  it("names the remove button in the provider's locale", () => {
+  it("names the remove button in the provider's locale", async () => {
     render(
       <TectonProvider locale="de-DE">
         <Removable />
       </TectonProvider>
     )
+    // The German translations load on demand.
     expect(
-      screen.getByRole("button", { name: "Entfernen A-7" })
+      await screen.findByRole("button", { name: "Entfernen A-7" })
     ).toBeInTheDocument()
   })
 })

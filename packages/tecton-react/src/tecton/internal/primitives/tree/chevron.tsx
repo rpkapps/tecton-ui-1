@@ -1,10 +1,9 @@
 "use client"
 
 import { useStore } from "../../store"
-import { useMessages } from "../messages"
+import { useTranslations } from "../../i18n/translations"
 import { hidden, usePrimitive, type PrimitiveProps } from "../render"
 import { useTreeRoot, useTreeRow } from "./context"
-import { TREE_MESSAGES } from "./messages"
 
 type TreeChevronState = { expanded: boolean; hasChildren: boolean }
 
@@ -18,7 +17,7 @@ type TreeChevronProps = PrimitiveProps<"button", TreeChevronState>
 function TreeChevron(props: TreeChevronProps) {
   const root = useTreeRoot("TreeViewChevron")
   const { node } = useTreeRow("TreeViewChevron")
-  const format = useMessages(TREE_MESSAGES)
+  const t = useTranslations("tree")
   const hasChildren = node.children.length > 0
   const expanded = useStore(
     root.store,
@@ -32,7 +31,7 @@ function TreeChevron(props: TreeChevronProps) {
       ref: root.registerChevron,
       type: "button",
       tabIndex: -1,
-      "aria-label": format(expanded ? "collapse" : "expand"),
+      "aria-label": t(expanded ? "collapse" : "expand"),
       "aria-hidden": hasChildren ? undefined : true,
       disabled: node.disabled || undefined,
       onClick: (event: React.MouseEvent) => {

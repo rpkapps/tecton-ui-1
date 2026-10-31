@@ -6,7 +6,7 @@ import {
   type ChangeEventDetails,
   createChangeEventDetails,
 } from "../event-details"
-import { useMessages } from "../messages"
+import { useTranslations } from "../../i18n/translations"
 import { usePrimitive, type PrimitiveProps } from "../render"
 import {
   type SelectionMode,
@@ -18,7 +18,6 @@ import {
   type ChipRemoveReason,
   type ChipRootContextValue,
 } from "./context"
-import { CHIP_MESSAGES } from "./messages"
 
 type ChipRootState = { disabled: boolean }
 
@@ -60,7 +59,7 @@ function ChipRoot({
   children,
   ...props
 }: ChipRootProps) {
-  const format = useMessages(CHIP_MESSAGES)
+  const t = useTranslations("chip")
   const removeDescriptionId = React.useId()
   const collection = React.useRef({
     order: (): Array<string> => [],
@@ -90,7 +89,7 @@ function ChipRoot({
         if (disabled || !values.length) return
         latestRemove.current?.(values, createChangeEventDetails(reason, event))
       },
-      format,
+      t,
       removeDescriptionId,
       labelling: {
         "aria-label": ariaLabel,
@@ -103,7 +102,7 @@ function ChipRoot({
       selection,
       disabled,
       onRemove,
-      format,
+      t,
       removeDescriptionId,
       ariaLabel,
       ariaLabelledBy,
@@ -121,7 +120,7 @@ function ChipRoot({
           {children}
           {onRemove && (
             <span id={removeDescriptionId} hidden>
-              {format("removeDescription")}
+              {t("removeDescription")}
             </span>
           )}
         </>

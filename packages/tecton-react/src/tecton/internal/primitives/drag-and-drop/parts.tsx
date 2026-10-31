@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { useTranslations } from "../../i18n/translations"
 import { useStore } from "../../store"
 import { hidden, usePrimitive, type PrimitiveProps } from "../render"
 import type { DragAndDrop, DragMode } from "./use-drag-and-drop"
@@ -40,6 +41,9 @@ function DragHandle({ dragAndDrop, value, label, ...props }: DragHandleProps) {
   const dragging = useStore(dragAndDrop.store, (s) =>
     s.dragging.includes(value)
   )
+  // Its own subscription: rows are memoized, and must still re-render when
+  // the locale's translations arrive.
+  const t = useTranslations("dragAndDrop")
   return usePrimitive(
     "button",
     props,
@@ -47,7 +51,7 @@ function DragHandle({ dragAndDrop, value, label, ...props }: DragHandleProps) {
     {
       type: "button",
       tabIndex: -1,
-      "aria-label": dragAndDrop.format("dragItem", { itemText: label }),
+      "aria-label": t("dragItem", { itemText: label }),
       style: { touchAction: "none" },
       onPointerDown: (event: React.PointerEvent<HTMLElement>) => {
         dragAndDrop.onPointerDown(event, value, { handle: true })

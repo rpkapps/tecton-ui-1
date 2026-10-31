@@ -26,7 +26,7 @@ function ChipRemove(props: ChipRemoveProps) {
     Object.assign(own, {
       id,
       tabIndex: -1,
-      "aria-label": root.format("removeButtonLabel"),
+      "aria-label": root.t("removeButtonLabel"),
       "aria-labelledby": `${id} ${chip.rowId}`,
       disabled: disabled || undefined,
       onClick: (event: React.MouseEvent) => {

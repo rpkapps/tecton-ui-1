@@ -22,9 +22,8 @@ import * as React from "react"
 
 import { createStore, type Store } from "../../store"
 import { announce } from "../live-announcer"
-import { useMessages, type Formatter } from "../messages"
+import { useTranslations, type Translator } from "../../i18n/translations"
 import { startKeyboardDrag } from "./keyboard-drag"
-import { DRAG_MESSAGES } from "./messages"
 import { trackPointerDrag, type Point } from "./pointer-drag"
 
 type DragMode = "pointer" | "keyboard" | "virtual"
@@ -49,17 +48,12 @@ type DropStrategy<TPlace> = {
   }
   isSame: (a: TPlace, b: TPlace) => boolean
   /** The place in words, as a drop target's name ("Drop on Wells"). */
-  label: (place: TPlace, format: Formatter<DragMessageKey>) => string
+  label: (place: TPlace, t: Translator<"dragAndDrop">) => string
   /** Called as the aim changes (opening a folder held over, scrolling). */
   onAim?: (place: TPlace | null, mode: DragMode) => void
   /** Other keys during a keyboard drag; `true` when handled. */
   onKey?: (event: KeyboardEvent, place: TPlace | null) => boolean
 }
-
-type DragMessageKey =
-  typeof DRAG_MESSAGES extends Record<string, Record<infer K, unknown>>
-    ? K & string
-    : never
 
 type DragAndDropOptions<TPlace> = {
   strategy: DropStrategy<TPlace>
@@ -82,7 +76,7 @@ type DragAndDropOptions<TPlace> = {
 
 type DragAndDrop<TPlace> = {
   store: Store<DragState<TPlace>>
-  format: Formatter<DragMessageKey>
+  t: Translator<"dragAndDrop">
   isSame: (a: TPlace, b: TPlace) => boolean
   label: (place: TPlace) => string
   /** A press on an item (`handle`: on its drag handle). */
@@ -110,10 +104,10 @@ const LONG_PRESS_POINTERS = new Set(["touch"])
 function useDragAndDrop<TPlace>(
   options: DragAndDropOptions<TPlace>
 ): DragAndDrop<TPlace> {
-  const format = useMessages(DRAG_MESSAGES)
-  const latest = React.useRef({ options, format })
+  const t = useTranslations("dragAndDrop")
+  const latest = React.useRef({ options, t })
   React.useInsertionEffect(() => {
-    latest.current = { options, format }
+    latest.current = { options, t }
   })
 
   const [api] = React.useState(() => {
@@ -151,10 +145,10 @@ function useDragAndDrop<TPlace>(
       stopSession = null
       store.set({ mode: null, dragging: [], aimed: null, places: [] })
       strategy().onAim?.(null, mode ?? "pointer")
-      const { options, format } = latest.current
+      const { options, t } = latest.current
       if (place !== null) options.onDrop(place, dragging)
       if (mode !== "pointer")
-        announce(format(place === null ? "dropCanceled" : "dropComplete"), {
+        announce(t(place === null ? "dropCanceled" : "dropComplete"), {
           politeness: "assertive",
         })
       const back = origin
@@ -173,9 +167,11 @@ function useDragAndDrop<TPlace>(
 
     const api: DragAndDrop<TPlace> = {
       store,
-      format: (key, values) => latest.current.format(key, values),
+      // The current locale's translator, read when called.
+      t: ((...args: Parameters<Translator<"dragAndDrop">>) =>
+        latest.current.t(...args)) as Translator<"dragAndDrop">,
       isSame: (a, b) => strategy().isSame(a, b),
-      label: (place) => strategy().label(place, latest.current.format),
+      label: (place) => strategy().label(place, latest.current.t),
       onPointerDown(event, key, { handle = false } = {}) {
         if (stopSession || event.button !== 0 || event.defaultPrevented) return
         const { options } = latest.current
@@ -205,7 +201,7 @@ function useDragAndDrop<TPlace>(
         event.stopPropagation()
         origin = event.currentTarget
         begin(key, "keyboard")
-        announce(latest.current.format("dragStartedKeyboard"), {
+        announce(latest.current.t("dragStartedKeyboard"), {
           politeness: "assertive",
         })
         const view = event.currentTarget.ownerDocument.defaultView ?? window
@@ -230,7 +226,7 @@ function useDragAndDrop<TPlace>(
         begin(key, "virtual")
         const { places } = strategy().places(store.get().dragging)
         store.set({ places })
-        announce(latest.current.format("dragStartedVirtual"), {
+        announce(latest.current.t("dragStartedVirtual"), {
           politeness: "assertive",
         })
         const view = event.currentTarget.ownerDocument.defaultView ?? window
@@ -285,7 +281,6 @@ export { useDragAndDrop }
 export type {
   DragAndDrop,
   DragAndDropOptions,
-  DragMessageKey,
   DragMode,
   DragState,
   DropStrategy,

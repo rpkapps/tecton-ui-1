@@ -8,9 +8,8 @@
  */
 import * as React from "react"
 
-import { GRID_MESSAGES } from "./grid-messages"
+import { useTranslations } from "../i18n/translations"
 import { announce } from "./live-announcer"
-import { useMessages } from "./messages"
 import type { SelectionBehavior, SelectionMode } from "./selection"
 
 type SelectionAnnouncementOptions = {
@@ -32,7 +31,7 @@ function useSelectionAnnouncement({
   getText,
   getAllKeys,
 }: SelectionAnnouncementOptions) {
-  const format = useMessages(GRID_MESSAGES)
+  const t = useTranslations("grid")
   const last = React.useRef(selected)
   React.useEffect(() => {
     const previous = last.current
@@ -44,11 +43,11 @@ function useSelectionAnnouncement({
     const messages: Array<string> = []
     if (selected.size === 1 && behavior === "replace") {
       const [key] = selected
-      messages.push(format("selectedItem", { item: getText(key) }))
+      messages.push(t("selectedItem", { item: getText(key) }))
     } else if (added.length === 1 && removed.length === 0) {
-      messages.push(format("selectedItem", { item: getText(added[0]) }))
+      messages.push(t("selectedItem", { item: getText(added[0]) }))
     } else if (removed.length === 1 && added.length === 0) {
-      messages.push(format("deselectedItem", { item: getText(removed[0]) }))
+      messages.push(t("deselectedItem", { item: getText(removed[0]) }))
     }
     if (mode === "multiple") {
       const all = getAllKeys()
@@ -56,8 +55,8 @@ function useSelectionAnnouncement({
       if (messages.length === 0 || selected.size > 1 || previous.size > 1)
         messages.push(
           isAll
-            ? format("selectedAll")
-            : format("selectedCount", { count: selected.size })
+            ? t("selectedAll")
+            : t("selectedCount", { count: selected.size })
         )
     }
     announce(messages.join(" "))

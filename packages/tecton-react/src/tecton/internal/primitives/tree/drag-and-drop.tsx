@@ -18,10 +18,9 @@ import * as React from "react"
 
 import { useDirection } from "@tecton/react/tecton/provider"
 
-import type { Formatter } from "../messages"
+import type { Translator } from "../../i18n/translations"
 import {
   useDragAndDrop,
-  type DragMessageKey,
   type DropStrategy,
 } from "../drag-and-drop/use-drag-and-drop"
 import { ancestorAt, isWithin, type Tree, type TreeNode } from "./collection"
@@ -236,27 +235,27 @@ function useTreeDragAndDrop({
 
       isSame: (a, b) => a.key === b.key && a.position === b.position,
 
-      label(place, format: Formatter<DragMessageKey>) {
-        const t = tree()
-        const node = t?.byValue.get(place.key)
+      label(place, t: Translator<"dragAndDrop">) {
+        const current = tree()
+        const node = current?.byValue.get(place.key)
         const text = (n: TreeNode | undefined) => n?.textValue || n?.value || ""
-        if (!t || !node) return ""
+        if (!current || !node) return ""
         if (place.position === "inside")
-          return format("dropOnItem", { itemText: text(node) })
+          return t("dropOnItem", { itemText: text(node) })
         if (place.position === "after")
-          return format("insertAfter", { itemText: text(node) })
+          return t("insertAfter", { itemText: text(node) })
         const siblings =
           node.parent === null
-            ? t.roots
-            : (t.byValue.get(node.parent)?.children ?? [])
+            ? current.roots
+            : (current.byValue.get(node.parent)?.children ?? [])
         const previous = siblings[siblings.indexOf(node) - 1] as
           TreeNode | undefined
         return previous
-          ? format("insertBetween", {
+          ? t("insertBetween", {
               beforeItemText: text(previous),
               afterItemText: text(node),
             })
-          : format("insertBefore", { itemText: text(node) })
+          : t("insertBefore", { itemText: text(node) })
       },
 
       onAim(place, mode) {

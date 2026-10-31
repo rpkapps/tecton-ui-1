@@ -2,15 +2,9 @@
 
 import * as React from "react"
 
-import type { Formatter } from "../messages"
 import type { RovingFocus } from "../roving-focus"
 import type { Selection } from "../selection"
-import type { CHIP_MESSAGES } from "./messages"
-
-type ChipMessageKey =
-  typeof CHIP_MESSAGES extends Record<string, Record<infer K, unknown>>
-    ? K & string
-    : never
+import type { Translator } from "../../i18n/translations"
 
 type ChipRemoveReason = "remove-press" | "keyboard"
 
@@ -28,7 +22,7 @@ type ChipRootContextValue = {
     reason: ChipRemoveReason,
     event?: Event | { nativeEvent: Event }
   ) => void
-  format: Formatter<ChipMessageKey>
+  t: Translator<"chip">
   /** The id of the hidden "Press Delete to remove tag." description. */
   removeDescriptionId: string
   /** The name of the grid, from the root's `aria-*` labelling props. */
