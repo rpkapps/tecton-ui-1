@@ -452,6 +452,11 @@
       "import": "./dist/tecton/count-badge.js",
       "default": "./dist/tecton/count-badge.js"
     },
+    "./tecton/dropzone": {
+      "types": "./dist/tecton/dropzone.d.ts",
+      "import": "./dist/tecton/dropzone.js",
+      "default": "./dist/tecton/dropzone.js"
+    },
     "./tecton/link": {
       "types": "./dist/tecton/link.d.ts",
       "import": "./dist/tecton/link.js",
