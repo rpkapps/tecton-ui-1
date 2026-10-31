@@ -1,8 +1,12 @@
 import * as React from "react"
 import { act, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { describe, expect, it, vi } from "vitest"
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
+import {
+  ContextMenuContent,
+  ContextMenuItem,
+} from "@tecton/react/components/context-menu"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -849,5 +853,244 @@ describe("TreeView activation, empty state and forwarded attributes", () => {
     expect(action).toHaveAttribute("aria-describedby", "hint")
     expect(action).toHaveAttribute("aria-haspopup", "menu")
     expect(action).toHaveAttribute("aria-expanded", "false")
+  })
+})
+
+type Well = { id: string; name: string; children?: Well[] }
+
+/** `fields` folders of `wells` rows each. */
+function inventory(fields: number, wells: number): Well[] {
+  return Array.from({ length: fields }, (_, f) => ({
+    id: `field-${f}`,
+    name: `Field ${f}`,
+    children: Array.from({ length: wells }, (_, w) => ({
+      id: `well-${f}-${w}`,
+      name: `Well ${f}-${w}`,
+    })),
+  }))
+}
+
+function Inventory({
+  nodes,
+  ...props
+}: Partial<React.ComponentProps<typeof TreeView<Well>>> & { nodes: Well[] }) {
+  const renderNode = (node: Well): React.ReactElement => (
+    <TreeViewItem value={node.id}>
+      <TreeViewItemContent kind={node.children ? "folder" : "item"}>
+        {node.name}
+      </TreeViewItemContent>
+      <TreeViewCollection items={node.children ?? []}>
+        {renderNode}
+      </TreeViewCollection>
+    </TreeViewItem>
+  )
+  return (
+    <TreeView aria-label="Inventory" items={nodes} {...props}>
+      {renderNode}
+    </TreeView>
+  )
+}
+
+describe("TreeView virtualized", () => {
+  // jsdom has no layout: give every element a 320 x 320 viewport.
+  beforeEach(() => {
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(320)
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(320)
+  })
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  const nodes = inventory(50, 100)
+  const allFields = nodes.map((node) => node.id)
+
+  it("renders only the rows in view of a 5,050-row tree", () => {
+    render(<Inventory nodes={nodes} virtualized defaultExpanded={allFields} />)
+    const rendered = screen.getAllByRole("row")
+    expect(rendered.length).toBeGreaterThan(5)
+    expect(rendered.length).toBeLessThan(40)
+    expect(row("Field 0")).toBeInTheDocument()
+    expect(screen.queryByRole("row", { name: "Field 49" })).toBeNull()
+    expect(screen.getByRole("treegrid")).toHaveAttribute(
+      "aria-rowcount",
+      "5050"
+    )
+  })
+
+  it("moves to the last row with End, rendering it", async () => {
+    const user = userEvent.setup()
+    render(<Inventory nodes={nodes} virtualized defaultExpanded={allFields} />)
+    await user.tab()
+    expect(row("Field 0")).toHaveFocus()
+    await user.keyboard("{End}")
+    expect(row("Well 49-99")).toHaveFocus()
+  })
+
+  it("reaches a row out of view with type-ahead", async () => {
+    const user = userEvent.setup()
+    render(<Inventory nodes={nodes} virtualized />)
+    await user.tab()
+    await user.keyboard("Field 42")
+    expect(row("Field 42")).toHaveFocus()
+  })
+
+  it("selects rows and reports their values", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    render(
+      <Inventory
+        nodes={nodes}
+        virtualized
+        selectionMode="multiple"
+        onValueChange={onValueChange}
+      />
+    )
+    await user.click(row("Field 1"))
+    expect(onValueChange).toHaveBeenLastCalledWith(["field-1"])
+    expect(row("Field 1")).toHaveAttribute("data-selected", "")
+  })
+})
+
+describe("TreeView context menu", () => {
+  function WithMenu({
+    onPick = () => {},
+    ...props
+  }: Partial<React.ComponentProps<typeof TreeView>> & {
+    onPick?: (action: string, value: string) => void
+  }) {
+    return (
+      <Project
+        contextMenu={(value) => (
+          <ContextMenuContent>
+            <ContextMenuItem onClick={() => onPick("rename", value)}>
+              Rename {value}
+            </ContextMenuItem>
+          </ContextMenuContent>
+        )}
+        {...props}
+      />
+    )
+  }
+
+  it("opens the menu of the right-clicked row without selecting it", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    render(
+      <WithMenu
+        selectionMode="single"
+        defaultValue={["notes"]}
+        onValueChange={onValueChange}
+      />
+    )
+    await user.pointer({ keys: "[MouseRight]", target: row("Wells") })
+    expect(await screen.findByRole("menu")).toBeInTheDocument()
+    expect(
+      screen.getByRole("menuitem", { name: "Rename wells" })
+    ).toBeInTheDocument()
+    // The menu is modal: the tree is hidden from assistive technology.
+    const wells = screen.getByRole("row", { name: "Wells", hidden: true })
+    const notes = screen.getByRole("row", { name: "Notes", hidden: true })
+    expect(wells).toHaveAttribute("data-context-menu-open", "")
+    expect(notes).not.toHaveAttribute("data-context-menu-open")
+    expect(notes).toHaveAttribute("data-selected", "")
+    expect(wells).not.toHaveAttribute("data-selected")
+    expect(onValueChange).not.toHaveBeenCalled()
+  })
+
+  it("calls the item's handler with the row value", async () => {
+    const user = userEvent.setup()
+    const onPick = vi.fn()
+    render(<WithMenu onPick={onPick} />)
+    await user.pointer({ keys: "[MouseRight]", target: row("Notes") })
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Rename notes" })
+    )
+    expect(onPick).toHaveBeenCalledWith("rename", "notes")
+  })
+
+  it("opens from Shift+F10 and the Menu key on the focused row", async () => {
+    const user = userEvent.setup()
+    render(<WithMenu />)
+    await user.tab()
+    expect(row("Wells")).toHaveFocus()
+    await user.keyboard("{Shift>}{F10}{/Shift}")
+    expect(
+      await screen.findByRole("menuitem", { name: "Rename wells" })
+    ).toBeInTheDocument()
+    await user.keyboard("{Escape}")
+    await vi.waitFor(() => expect(screen.queryByRole("menu")).toBeNull())
+    await user.keyboard("{ArrowDown}{ContextMenu}")
+    expect(
+      await screen.findByRole("menuitem", { name: "Rename notes" })
+    ).toBeInTheDocument()
+  })
+
+  it("returns focus to the row when the menu closes", async () => {
+    const user = userEvent.setup()
+    render(<WithMenu />)
+    await user.tab()
+    await user.keyboard("{ArrowDown}{Shift>}{F10}{/Shift}")
+    await screen.findByRole("menu")
+    await user.keyboard("{Escape}")
+    await vi.waitFor(() => expect(row("Notes")).toHaveFocus())
+    expect(row("Notes")).not.toHaveAttribute("data-context-menu-open")
+  })
+
+  it("opens nothing on a disabled row, the empty area or a null menu", async () => {
+    const user = userEvent.setup()
+    render(
+      <TreeView
+        aria-label="Project"
+        contextMenu={(value) =>
+          value === "plain" ? null : (
+            <ContextMenuContent>
+              <ContextMenuItem>Rename</ContextMenuItem>
+            </ContextMenuContent>
+          )
+        }
+      >
+        <TreeViewItem value="off" disabled>
+          <TreeViewItemContent>Off</TreeViewItemContent>
+        </TreeViewItem>
+        <TreeViewItem value="plain">
+          <TreeViewItemContent>Plain</TreeViewItemContent>
+        </TreeViewItem>
+      </TreeView>
+    )
+    await user.pointer({ keys: "[MouseRight]", target: row("Off") })
+    await user.pointer({ keys: "[MouseRight]", target: row("Plain") })
+    await user.pointer({
+      keys: "[MouseRight]",
+      target: screen.getByRole("treegrid"),
+    })
+    expect(screen.queryByRole("menu")).toBeNull()
+  })
+
+  it("works in a virtualized tree", async () => {
+    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(320)
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(320)
+    const user = userEvent.setup()
+    render(
+      <Inventory
+        nodes={inventory(20, 50)}
+        virtualized
+        contextMenu={(value) => (
+          <ContextMenuContent>
+            <ContextMenuItem>Open {value}</ContextMenuItem>
+          </ContextMenuContent>
+        )}
+      />
+    )
+    await user.pointer({ keys: "[MouseRight]", target: row("Field 3") })
+    expect(
+      await screen.findByRole("menuitem", { name: "Open field-3" })
+    ).toBeInTheDocument()
+    vi.restoreAllMocks()
+  })
+
+  it("leaves the tree without a menu when contextMenu is not set", () => {
+    render(<Project />)
+    expect(row("Wells")).toHaveAttribute("data-value", "wells")
+    expect(row("Wells")).not.toHaveAttribute("data-context-menu-open")
   })
 })

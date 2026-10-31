@@ -4,9 +4,11 @@ import * as React from "react"
 import { cn } from "cn"
 import {
   Button as ButtonPrimitive,
+  ListLayout,
   TreeItemContent as TreeItemContentPrimitive,
   TreeItem as TreeItemPrimitive,
   Tree as TreePrimitive,
+  Virtualizer,
   type Key,
   type Selection,
   type TreeRenderProps,
@@ -19,6 +21,11 @@ import {
   FolderOpenIcon,
   MoreVerticalIcon,
 } from "lucide-react"
+
+import {
+  ContextMenu,
+  ContextMenuTrigger,
+} from "@tecton/react/components/context-menu"
 
 import { AriaBridge } from "./internal/aria-bridge"
 
@@ -152,9 +159,94 @@ type TreeViewProps<T extends object = object> = TreeViewElementProps & {
   items?: Iterable<T>
   /** `TreeViewItem`s, or a function rendering one per entry of `items`. */
   children?: React.ReactNode | ((item: T) => React.ReactNode)
+  /**
+   * Renders only the rows in view, for trees of hundreds or thousands of
+   * rows. Rows are then a fixed 32 px tall, and the tree needs a bounded
+   * height (`h-80`, or `min-h-0 flex-1` in a flex column) to scroll in.
+   */
+  virtualized?: boolean
+  /**
+   * The context menu of a row: called with the row's `value` when the row
+   * is right-clicked, long-pressed, or focused and Shift+F10 / the Menu key
+   * is pressed. Return a `ContextMenuContent`, or `null` for no menu. The
+   * selection is not changed.
+   */
+  contextMenu?: (value: string) => React.ReactNode
 }
 
 type TreeState = TreeRenderProps["state"]
+
+/** Which row's context menu is showing; read per row, not through a context
+ * value, so opening a menu re-renders two rows rather than all of them. */
+type MenuState = { value: string | null; open: boolean }
+
+function createMenuStore() {
+  let state: MenuState = { value: null, open: false }
+  const listeners = new Set<() => void>()
+  return {
+    get: () => state,
+    set(next: Partial<MenuState>) {
+      state = { ...state, ...next }
+      for (const listener of listeners) listener()
+    },
+    subscribe(listener: () => void) {
+      listeners.add(listener)
+      return () => {
+        listeners.delete(listener)
+      }
+    },
+  }
+}
+
+type MenuStore = ReturnType<typeof createMenuStore>
+
+const TreeViewMenuContext = React.createContext<MenuStore | null>(null)
+
+const noSubscription = () => () => {}
+
+const VIRTUAL_LAYOUT_OPTIONS = { rowSize: 32, gap: 1 }
+
+const ROW_SELECTOR = '[data-slot="tree-view-item"]'
+
+/** The enabled row an event happened in, if it belongs to `tree`. */
+function rowOf(target: EventTarget | null, tree: Element | null) {
+  if (!(target instanceof Element) || !tree) return null
+  const row = target.closest<HTMLElement>(ROW_SELECTOR)
+  if (!row || row.closest('[data-slot="tree-view"]') !== tree) return null
+  if (row.hasAttribute("data-disabled")) return null
+  return row
+}
+
+/** Opens the context menu from the keyboard, under the row's label. */
+function openMenuAt(row: HTMLElement) {
+  const label = row.querySelector('[data-slot="tree-view-label"]') ?? row
+  const rowRect = row.getBoundingClientRect()
+  const labelRect = label.getBoundingClientRect()
+  const rtl = getComputedStyle(row).direction === "rtl"
+  row.dispatchEvent(
+    new MouseEvent("contextmenu", {
+      bubbles: true,
+      cancelable: true,
+      button: 2,
+      clientX: rtl ? labelRect.right : labelRect.left,
+      clientY: rowRect.bottom,
+    })
+  )
+}
+
+function TreeViewMenuContent({
+  contextMenu,
+}: {
+  contextMenu: (value: string) => React.ReactNode
+}) {
+  const store = React.useContext(TreeViewMenuContext)!
+  const value = React.useSyncExternalStore(
+    store.subscribe,
+    () => store.get().value,
+    () => null
+  )
+  return value === null ? null : contextMenu(value)
+}
 
 /** Every row that `"all"` (select all) stands for, collapsed ones included. */
 function selectableValues(state: TreeState | null): string[] {
@@ -194,56 +286,127 @@ function TreeView<T extends object = object>({
   onExpandedChange,
   items,
   children,
+  virtualized,
+  contextMenu,
   ...props
 }: TreeViewProps<T>) {
   const stateRef = React.useRef<TreeState | null>(null)
+  const treeRef = React.useRef<HTMLDivElement | null>(null)
+  const [menuStore] = React.useState(createMenuStore)
   const rows =
     typeof children === "function"
       ? renderItems(items ?? [], children)
       : children
 
+  const renderTree = (domProps: React.ComponentProps<"div">) => {
+    if (!contextMenu) return renderDiv(domProps)
+    const { onKeyDown } = domProps
+    return (
+      <ContextMenuTrigger
+        ref={treeRef}
+        render={renderDiv({
+          ...domProps,
+          onKeyDown: (event) => {
+            const row =
+              (event.key === "ContextMenu" ||
+                (event.key === "F10" && event.shiftKey)) &&
+              rowOf(event.target, treeRef.current)
+            if (row) {
+              event.preventDefault()
+              openMenuAt(row)
+              return
+            }
+            onKeyDown?.(event)
+          },
+        })}
+      />
+    )
+  }
+
+  const tree = (
+    <TreePrimitive
+      data-slot="tree-view"
+      className={cn(
+        "w-full overflow-auto text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+        // Virtualized rows are positioned by the tree, not laid out by it,
+        // and span its full width: padding would push them out sideways.
+        virtualized ? "relative block" : "flex flex-col gap-px",
+        className,
+        virtualized && "p-0"
+      )}
+      {...props}
+      render={(domProps, renderProps) => {
+        // Kept for `onSelectionChange("all")`, which lists no keys.
+        stateRef.current = renderProps.state
+        return renderTree(domProps)
+      }}
+      selectionMode={selectionMode}
+      disallowEmptySelection={disallowEmptySelection}
+      onAction={onActivate && ((key: Key) => onActivate(String(key)))}
+      // With both, a click selects and a double click activates (the file
+      // browser convention); otherwise a click on a row would only ever
+      // activate it, since rows have no checkbox to select with.
+      selectionBehavior={onActivate ? "replace" : "toggle"}
+      renderEmptyState={empty === undefined ? undefined : () => empty}
+      selectedKeys={value}
+      defaultSelectedKeys={defaultValue}
+      onSelectionChange={
+        onValueChange &&
+        ((selection: Selection) =>
+          onValueChange(
+            selection === "all"
+              ? selectableValues(stateRef.current)
+              : Array.from(selection, String)
+          ))
+      }
+      expandedKeys={expanded}
+      defaultExpandedKeys={defaultExpanded}
+      onExpandedChange={
+        onExpandedChange &&
+        ((keys: Set<Key>) => onExpandedChange(Array.from(keys, String)))
+      }
+    >
+      {rows}
+    </TreePrimitive>
+  )
+
+  const virtualizedTree = virtualized ? (
+    <Virtualizer layout={ListLayout} layoutOptions={VIRTUAL_LAYOUT_OPTIONS}>
+      {tree}
+    </Virtualizer>
+  ) : (
+    tree
+  )
+
+  if (!contextMenu) return <AriaBridge>{virtualizedTree}</AriaBridge>
+
   return (
     <AriaBridge>
-      <TreePrimitive
-        data-slot="tree-view"
-        className={cn(
-          "flex w-full flex-col gap-px overflow-auto text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
-          className
-        )}
-        {...props}
-        render={(domProps, renderProps) => {
-          // Kept for `onSelectionChange("all")`, which lists no keys.
-          stateRef.current = renderProps.state
-          return renderDiv(domProps)
-        }}
-        selectionMode={selectionMode}
-        disallowEmptySelection={disallowEmptySelection}
-        onAction={onActivate && ((key: Key) => onActivate(String(key)))}
-        // With both, a click selects and a double click activates (the file
-        // browser convention); otherwise a click on a row would only ever
-        // activate it, since rows have no checkbox to select with.
-        selectionBehavior={onActivate ? "replace" : "toggle"}
-        renderEmptyState={empty === undefined ? undefined : () => empty}
-        selectedKeys={value}
-        defaultSelectedKeys={defaultValue}
-        onSelectionChange={
-          onValueChange &&
-          ((selection: Selection) =>
-            onValueChange(
-              selection === "all"
-                ? selectableValues(stateRef.current)
-                : Array.from(selection, String)
-            ))
-        }
-        expandedKeys={expanded}
-        defaultExpandedKeys={defaultExpanded}
-        onExpandedChange={
-          onExpandedChange &&
-          ((keys: Set<Key>) => onExpandedChange(Array.from(keys, String)))
-        }
-      >
-        {rows}
-      </TreePrimitive>
+      <TreeViewMenuContext value={menuStore}>
+        <ContextMenu
+          onOpenChange={(open, details) => {
+            if (!open) {
+              menuStore.set({ open: false })
+              return
+            }
+            const row = rowOf(details.event.target, treeRef.current)
+            const rowValue = row?.dataset.value
+            if (rowValue === undefined || contextMenu(rowValue) == null) {
+              details.cancel()
+              return
+            }
+            // Focus follows the menu's row; the selection stays as it is.
+            stateRef.current?.selectionManager.setFocusedKey(rowValue)
+            menuStore.set({ value: rowValue, open: true })
+          }}
+          onOpenChangeComplete={(open) => {
+            if (!open) menuStore.set({ value: null })
+          }}
+        >
+          {virtualizedTree}
+          <TreeViewMenuContent contextMenu={contextMenu} />
+        </ContextMenu>
+      </TreeViewMenuContext>
     </AriaBridge>
   )
 }
@@ -309,10 +472,21 @@ function TreeViewItem({
   children,
   ...props
 }: TreeViewItemProps) {
+  const menuStore = React.useContext(TreeViewMenuContext)
+  const menuOpen = React.useSyncExternalStore(
+    menuStore?.subscribe ?? noSubscription,
+    () => {
+      const state = menuStore?.get()
+      return !!state?.open && state.value === value
+    },
+    () => false
+  )
   return (
     <TreeItemPrimitive
       data-slot="tree-view-item"
+      data-value={value}
       data-hidden={hidden ? "" : undefined}
+      data-context-menu-open={menuOpen ? "" : undefined}
       {...(props as unknown as React.ComponentProps<typeof TreeItemPrimitive>)}
       id={value}
       textValue={label ?? textOf(children) ?? ""}
@@ -324,6 +498,7 @@ function TreeViewItem({
           "focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-inset",
           selectionMode !== "none" && "hover:bg-accent/60 active:bg-accent",
           "data-[selected]:bg-accent data-[selected]:text-accent-foreground",
+          "data-[context-menu-open]:ring-2 data-[context-menu-open]:ring-ring/40 data-[context-menu-open]:ring-inset",
           "data-hidden:text-muted-foreground data-disabled:pointer-events-none data-disabled:opacity-50",
           className
         )
