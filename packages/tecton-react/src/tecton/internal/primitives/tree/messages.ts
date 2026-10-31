@@ -9,9 +9,7 @@
  */
 import type { MessageTable } from "../messages"
 
-type Keys =
-  | "expand"
-  | "collapse"
+type Keys = "expand" | "collapse"
 
 const TREE_MESSAGES: MessageTable<Keys> = {
   "ar-AE": {

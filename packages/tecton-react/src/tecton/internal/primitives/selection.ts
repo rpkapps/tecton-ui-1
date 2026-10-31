@@ -12,7 +12,10 @@
  */
 import * as React from "react"
 
-import { createChangeEventDetails, type ChangeEventDetails } from "./event-details"
+import {
+  createChangeEventDetails,
+  type ChangeEventDetails,
+} from "./event-details"
 import { useControlled } from "./use-controlled"
 
 type SelectionMode = "none" | "single" | "multiple"

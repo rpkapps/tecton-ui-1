@@ -2,7 +2,10 @@ import * as React from "react"
 import { fireEvent, render, screen } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { targetSlot, useDragReorder } from "../internal/drag-reorder"
+import {
+  targetSlot,
+  useSortable,
+} from "../internal/primitives/drag-and-drop/sortable"
 
 /** jsdom has no layout: items declare their box with `data-start` and `data-size`. */
 const originalRect = Element.prototype.getBoundingClientRect
@@ -40,7 +43,7 @@ function Column({
   enabled?: () => boolean
 }) {
   const ref = React.useRef<HTMLUListElement>(null)
-  const drag = useDragReorder({
+  const drag = useSortable({
     axis: "y",
     getItems: () =>
       Array.from(ref.current?.children ?? []) as Array<HTMLElement>,
@@ -83,7 +86,7 @@ const press = (
 const moveTo = (y: number) =>
   fireEvent.pointerMove(document, { pointerId: 7, clientY: y })
 
-describe("useDragReorder", () => {
+describe("useSortable", () => {
   it("reorders a column, and lets items pan across the axis", () => {
     const onReorder = vi.fn()
     render(<Column sizes={[40, 40, 40]} onReorder={onReorder} />)

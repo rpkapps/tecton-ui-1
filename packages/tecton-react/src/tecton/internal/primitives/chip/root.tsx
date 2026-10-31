@@ -2,7 +2,10 @@
 
 import * as React from "react"
 
-import { type ChangeEventDetails, createChangeEventDetails } from "../event-details"
+import {
+  type ChangeEventDetails,
+  createChangeEventDetails,
+} from "../event-details"
 import { useMessages } from "../messages"
 import { usePrimitive, type PrimitiveProps } from "../render"
 import {
@@ -108,7 +111,11 @@ function ChipRoot({
     ]
   )
 
-  const element = usePrimitive("div", props, { disabled }, {
+  const element = usePrimitive(
+    "div",
+    props,
+    { disabled },
+    {
       children: (
         <>
           {children}
@@ -119,7 +126,8 @@ function ChipRoot({
           )}
         </>
       ),
-  })
+    }
+  )
   return <ChipRootContext value={context}>{element}</ChipRootContext>
 }
 

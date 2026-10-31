@@ -9,9 +9,7 @@
  */
 import type { MessageTable } from "../messages"
 
-type Keys =
-  | "removeButtonLabel"
-  | "removeDescription"
+type Keys = "removeButtonLabel" | "removeDescription"
 
 const CHIP_MESSAGES: MessageTable<Keys> = {
   "ar-AE": {
@@ -68,7 +66,8 @@ const CHIP_MESSAGES: MessageTable<Keys> = {
   },
   "hu-HU": {
     removeButtonLabel: "Eltávolítás",
-    removeDescription: "Nyomja meg a Delete billentyűt a címke eltávolításához.",
+    removeDescription:
+      "Nyomja meg a Delete billentyűt a címke eltávolításához.",
   },
   "it-IT": {
     removeButtonLabel: "Rimuovi",
@@ -112,7 +111,8 @@ const CHIP_MESSAGES: MessageTable<Keys> = {
   },
   "ro-RO": {
     removeButtonLabel: "Îndepărtaţi",
-    removeDescription: "Apăsați pe Delete (Ștergere) pentru a elimina eticheta.",
+    removeDescription:
+      "Apăsați pe Delete (Ștergere) pentru a elimina eticheta.",
   },
   "ru-RU": {
     removeButtonLabel: "Удалить",

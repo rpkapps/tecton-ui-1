@@ -21,11 +21,7 @@ function nextKey(
 ): string | null {
   const direction = Math.sign(step) || 1
   let index =
-    from === null
-      ? direction > 0
-        ? -1
-        : keys.length
-      : keys.indexOf(from)
+    from === null ? (direction > 0 ? -1 : keys.length) : keys.indexOf(from)
   let remaining = Math.abs(step) || 1
   let found: string | null = null
   for (
@@ -82,10 +78,7 @@ function useTypeahead(options: TypeaheadOptions) {
     () => new Intl.Collator(locale, { usage: "search", sensitivity: "base" }),
     [locale]
   )
-  React.useEffect(
-    () => () => clearTimeout(state.current.timer),
-    []
-  )
+  React.useEffect(() => () => clearTimeout(state.current.timer), [])
 
   return React.useCallback(
     (event: React.KeyboardEvent) => {
@@ -107,9 +100,7 @@ function useTypeahead(options: TypeaheadOptions) {
       const matches = (k: string) => {
         if (current.isDisabled?.(k)) return false
         const text = current.getText(k)
-        return (
-          collator.compare(text.slice(0, search.length), search) === 0
-        )
+        return collator.compare(text.slice(0, search.length), search) === 0
       }
       // The focused item stays while it still matches; otherwise the next one.
       const ordered = [...keys.slice(start), ...keys.slice(0, start)]

@@ -29,7 +29,7 @@ import {
 } from "@tecton/react/components/dropdown-menu"
 import { useDirection } from "@tecton/react/tecton/provider"
 
-import { useDragReorder } from "./internal/drag-reorder"
+import { useSortable } from "./internal/primitives/drag-and-drop/sortable"
 import { createStore, useStore, type Store } from "./internal/store"
 
 /**
@@ -466,7 +466,7 @@ function DocumentTabsList({
   const root = useRoot()
   const direction = useDirection()
   const [ctl] = React.useState(listController)
-  const drag = useDragReorder({
+  const drag = useSortable({
     direction,
     // Only the tabs in the row: the ones in the More menu stay put.
     getItems: () =>

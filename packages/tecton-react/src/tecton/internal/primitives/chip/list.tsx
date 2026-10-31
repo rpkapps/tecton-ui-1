@@ -95,7 +95,11 @@ function ChipList({ empty, children, ...props }: ChipListProps) {
             const doc = element.current?.ownerDocument
             const active = doc?.activeElement
             // Focus moved on already (the owner focused something else).
-            if (active && active !== doc.body && !element.current?.contains(active))
+            if (
+              active &&
+              active !== doc.body &&
+              !element.current?.contains(active)
+            )
               return
             const keys = order()
             const next = keys.at(Math.min(at, keys.length - 1))
@@ -173,7 +177,11 @@ function ChipList({ empty, children, ...props }: ChipListProps) {
         return
       }
       default:
-        if (mod && event.key.toLowerCase() === "a" && selection.mode === "multiple") {
+        if (
+          mod &&
+          event.key.toLowerCase() === "a" &&
+          selection.mode === "multiple"
+        ) {
           event.preventDefault()
           selection.selectAll(event)
           return

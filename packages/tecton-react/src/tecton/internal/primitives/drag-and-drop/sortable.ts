@@ -1,10 +1,10 @@
 "use client"
 
 /**
- * Internal to `@tecton/react` (not in the package `exports` map): drag to
- * reorder a row or a column of items, with a mouse, a pen or a finger. The
- * caller owns the order; the hook moves the items with transforms while the
- * pointer is down and reports one move when it is released.
+ * Internal to `@tecton/react`: drag to reorder one row or column of items,
+ * with a mouse, a pen or a finger (the drop strategy for flat lists, such
+ * as `DocumentTabs`). The caller owns the order; the items move with
+ * transforms while the pointer is down and one move is reported on release.
  *
  * - The dragged item follows the pointer along the axis, clamped to the
  *   items' extent (a scrolling or clipping container would hide it).
@@ -18,17 +18,20 @@
  *   across the axis still scrolls. A cancelled pointer (the browser took the
  *   gesture) puts everything back.
  *
- * The dragged item carries `data-dragging` while it moves.
+ * The dragged item carries `data-dragging` while it moves. The pointer is
+ * followed by `trackPointerDrag`, shared with the other drag and drop.
  */
 import * as React from "react"
 
-type DragReorderAxis = "x" | "y"
+import { trackPointerDrag } from "./pointer-drag"
 
-type DragReorderOptions = {
+type SortableAxis = "x" | "y"
+
+type SortableOptions = {
   /** The items that can move, in DOM order, read when a drag starts. */
   getItems: () => Array<HTMLElement>
   /** Default `"x"`. */
-  axis?: DragReorderAxis
+  axis?: SortableAxis
   /** Reading direction, for `axis="x"`: in RTL the first item is rightmost. */
   direction?: "ltr" | "rtl"
   /** Pointer travel, in px, before a press becomes a drag. Default 4. */
@@ -42,7 +45,7 @@ type DragReorderOptions = {
   onReorder: (from: number, to: number, items: Array<HTMLElement>) => void
 }
 
-type DragReorder = {
+type Sortable = {
   /** Put on each item (or on a parent and pass the item's element). */
   onPointerDown: (event: React.PointerEvent<HTMLElement>) => void
   /** The `touch-action` the items need for touch drags. */
@@ -51,7 +54,7 @@ type DragReorder = {
 
 type Box = { start: number; end: number; mid: number }
 
-function boxOf(element: Element, axis: DragReorderAxis): Box {
+function boxOf(element: Element, axis: SortableAxis): Box {
   const rect = element.getBoundingClientRect()
   const start = axis === "x" ? rect.left : rect.top
   const end = axis === "x" ? rect.right : rect.bottom
@@ -82,14 +85,14 @@ function targetSlot(
   return target
 }
 
-function useDragReorder({
+function useSortable({
   getItems,
   axis = "x",
   direction = "ltr",
   threshold = 4,
   enabled,
   onReorder,
-}: DragReorderOptions): DragReorder {
+}: SortableOptions): Sortable {
   const options = React.useRef({
     getItems,
     axis,
@@ -121,88 +124,73 @@ function useDragReorder({
       const index = items.indexOf(element)
       if (index < 0 || items.length < 2) return
 
-      const { axis: along, threshold: slop } = current
+      const along = current.axis
       const reversed = along === "x" && current.direction === "rtl"
       const translate = along === "x" ? "translateX" : "translateY"
-      const coordinate = (pointer: PointerEvent | React.PointerEvent) =>
-        along === "x" ? pointer.clientX : pointer.clientY
-      const doc = element.ownerDocument
-      const pointerId = event.pointerId
-      const origin = coordinate(event)
       const boxes = items.map((item) => boxOf(item, along))
       const own = boxes[index]
       const size = own.end - own.start
       const minDelta = Math.min(...boxes.map((box) => box.start)) - own.start
       const maxDelta = Math.max(...boxes.map((box) => box.end)) - own.end
-      let started = false
       let target = index
 
-      const onMove = (pointer: PointerEvent) => {
-        if (pointer.pointerId !== pointerId) return
-        const travel = coordinate(pointer) - origin
-        if (!started) {
-          if (Math.abs(travel) < slop) return
-          started = true
-          element.dataset.dragging = ""
-          for (const item of items)
-            if (item !== element) item.style.transition = "transform 150ms ease"
-        }
-        const delta = Math.min(Math.max(travel, minDelta), maxDelta)
-        element.style.transform = `${translate}(${delta}px)`
-        target = targetSlot(
-          boxes,
-          index,
-          own.start + delta,
-          own.end + delta,
-          reversed
-        )
-        let slot = 0
-        items.forEach((item, at) => {
-          if (at === index) return
-          const shift = (slot < target ? slot : slot + 1) - at
-          item.style.transform = shift
-            ? `${translate}(${shift * size * (reversed ? -1 : 1)}px)`
-            : ""
-          slot++
-        })
-      }
-
-      const finish = (commit: boolean) => {
-        active.current = null
-        doc.removeEventListener("pointermove", onMove)
-        doc.removeEventListener("pointerup", onUp)
-        doc.removeEventListener("pointercancel", onCancel)
-        if (!started) return
+      const restore = () => {
         for (const item of items) {
           item.style.transform = ""
           item.style.transition = ""
         }
         delete element.dataset.dragging
-        if (commit && target !== index)
-          options.current.onReorder(index, target, items)
       }
-      const onUp = (pointer: PointerEvent) => {
-        if (pointer.pointerId === pointerId) finish(true)
+      const stop = trackPointerDrag(event, {
+        axis: along,
+        threshold: current.threshold,
+        onStart: () => {
+          element.dataset.dragging = ""
+          for (const item of items)
+            if (item !== element) item.style.transition = "transform 150ms ease"
+        },
+        onMove: (_point, travel) => {
+          const moved = along === "x" ? travel.x : travel.y
+          const delta = Math.min(Math.max(moved, minDelta), maxDelta)
+          element.style.transform = `${translate}(${delta}px)`
+          target = targetSlot(
+            boxes,
+            index,
+            own.start + delta,
+            own.end + delta,
+            reversed
+          )
+          let slot = 0
+          items.forEach((item, at) => {
+            if (at === index) return
+            const shift = (slot < target ? slot : slot + 1) - at
+            item.style.transform = shift
+              ? `${translate}(${shift * size * (reversed ? -1 : 1)}px)`
+              : ""
+            slot++
+          })
+        },
+        onEnd: (drop) => {
+          restore()
+          if (drop && target !== index)
+            options.current.onReorder(index, target, items)
+        },
+        onStop: () => {
+          active.current = null
+        },
+      })
+      active.current = () => {
+        stop()
+        restore()
       }
-      const onCancel = (pointer: PointerEvent) => {
-        if (pointer.pointerId === pointerId) finish(false)
-      }
-
-      active.current = () => finish(false)
-      doc.addEventListener("pointermove", onMove)
-      doc.addEventListener("pointerup", onUp)
-      doc.addEventListener("pointercancel", onCancel)
     },
     []
   )
 
   React.useEffect(() => () => active.current?.(), [])
 
-  return {
-    onPointerDown,
-    touchAction: axis === "x" ? "pan-y" : "pan-x",
-  }
+  return { onPointerDown, touchAction: axis === "x" ? "pan-y" : "pan-x" }
 }
 
-export { useDragReorder, targetSlot }
-export type { DragReorder, DragReorderAxis, DragReorderOptions }
+export { useSortable, targetSlot }
+export type { Sortable, SortableAxis, SortableOptions }

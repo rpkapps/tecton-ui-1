@@ -20,8 +20,7 @@ type PrimitiveProps<
   className?: string | ((state: TState) => string | undefined)
   /** A style, or a function returning one from the part's state. */
   style?:
-    | React.CSSProperties
-    | ((state: TState) => React.CSSProperties | undefined)
+    React.CSSProperties | ((state: TState) => React.CSSProperties | undefined)
   /** Replaces the element: an element, or a function of the props and state. */
   render?: useRender.RenderProp<TState>
 }
@@ -40,17 +39,20 @@ function usePrimitive<
   ownProps: Record<string, unknown>,
   stateAttributesMapping?: StateAttributes<TState>
 ) {
+  const { ref: ownRef, ...own } = ownProps as { ref?: React.Ref<Element> }
   return useRender<TState, Element>({
     defaultTagName: tag,
     render,
-    ref,
+    // Both the part's own ref and the caller's.
+    ref: ownRef ? (ref ? [ownRef, ref] : ownRef) : ref,
     state,
     stateAttributesMapping,
     props: mergeProps<TTag>(
-      ownProps as never,
+      own as never,
       {
         ...props,
-        className: typeof className === "function" ? className(state) : className,
+        className:
+          typeof className === "function" ? className(state) : className,
         style: typeof style === "function" ? style(state) : style,
       } as never
     ),

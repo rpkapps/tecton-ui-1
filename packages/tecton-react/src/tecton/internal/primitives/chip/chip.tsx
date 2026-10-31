@@ -33,7 +33,13 @@ type ChipProps = Omit<PrimitiveProps<"div", ChipState>, "children"> & {
  * the content. Pressing it selects it (toggle), unless the press is on a
  * button inside it (the remove button).
  */
-function Chip({ value, textValue, disabled: disabledProp, children, ...props }: ChipProps) {
+function Chip({
+  value,
+  textValue,
+  disabled: disabledProp,
+  children,
+  ...props
+}: ChipProps) {
   const root = useRequired(ChipRootContext, "Chip", "ChipGroup")
   const list = useRequired(ChipListContext, "Chip", "ChipList")
   const rowId = React.useId()

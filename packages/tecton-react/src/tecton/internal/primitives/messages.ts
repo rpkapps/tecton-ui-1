@@ -26,8 +26,7 @@ function resolveLocale(table: Record<string, unknown>, locale: string) {
   if (locale in table) return locale
   const language = locale.split(/[-_]/)[0].toLowerCase()
   return (
-    Object.keys(table).find((tag) => tag.split("-")[0] === language) ??
-    "en-US"
+    Object.keys(table).find((tag) => tag.split("-")[0] === language) ?? "en-US"
   )
 }
 

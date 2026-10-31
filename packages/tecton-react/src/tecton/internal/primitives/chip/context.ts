@@ -7,12 +7,10 @@ import type { RovingFocus } from "../roving-focus"
 import type { Selection } from "../selection"
 import type { CHIP_MESSAGES } from "./messages"
 
-type ChipMessageKey = typeof CHIP_MESSAGES extends Record<
-  string,
-  Record<infer K, unknown>
->
-  ? K & string
-  : never
+type ChipMessageKey =
+  typeof CHIP_MESSAGES extends Record<string, Record<infer K, unknown>>
+    ? K & string
+    : never
 
 type ChipRemoveReason = "remove-press" | "keyboard"
 
@@ -54,21 +52,18 @@ const ChipRootContext = React.createContext<ChipRootContextValue | null>(null)
 const ChipListContext = React.createContext<ChipListContextValue | null>(null)
 const ChipContext = React.createContext<ChipContextValue | null>(null)
 
-function useRequired<T>(context: React.Context<T | null>, part: string, root: string): T {
+function useRequired<T>(
+  context: React.Context<T | null>,
+  part: string,
+  root: string
+): T {
   const value = React.useContext(context)
   if (value === null)
-    throw new Error(
-      `Tecton: <${part}> must be placed within <${root}>.`
-    )
+    throw new Error(`Tecton: <${part}> must be placed within <${root}>.`)
   return value
 }
 
-export {
-  ChipContext,
-  ChipListContext,
-  ChipRootContext,
-  useRequired,
-}
+export { ChipContext, ChipListContext, ChipRootContext, useRequired }
 export type {
   ChipRemoveReason,
   ChipContextValue,
