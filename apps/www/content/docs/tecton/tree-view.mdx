@@ -142,7 +142,7 @@ const [items, setItems] = React.useState(project)
 
 A move is `{ values, target, position }`: the dragged rows' `value`s in tree order, and the row they were dropped `"before"`, `"after"` or `"inside"`. `moveTreeItems` puts rows dropped inside a folder after its children and leaves every untouched subtree as it was, so the rows that did not move are not re-rendered. When the tree mirrors a server, send the move there instead and update `items` from the reply.
 
-Rows drag with the pointer and, on touch screens, with a long press. Each row also gets a grip, shown on hover, focus and selection, which keyboard and screen reader users reach with the arrow keys: Enter picks the row up, the arrow keys go through the drop positions (each one announced), Enter drops and Escape cancels.
+Draggable rows get a grip in a column at the start of the tree, before the indent. Rows drag from anywhere with the pointer and, on touch screens, with a long press; the dragged row keeps its look while the browser carries a copy of it. Over a gap between rows, the pointer's position across the tree picks the depth: towards the start drops at an outer level, under a row's label at its own level, and the line shows where the rows will land. Keyboard and screen reader users reach the grip with the arrow keys: Enter picks the row up, the arrow keys go through the drop positions (each one announced), Enter drops and Escape cancels.
 
 Rows only drop inside folders — a row with `kind="folder"` content, or one with children — and never into themselves. `canDrop` adds your own rules:
 
@@ -174,7 +174,7 @@ Rows rendered from `items` are kept while `items` and the render function stay t
 
 ## Styling
 
-Rows carry `data-selected`, `data-expanded`, `data-disabled`, `data-hidden`, `data-context-menu-open`, `data-dragging`, `data-drop-target` (a folder a drag will drop into) and `data-level` (depth from 1), and are a `group/tree-item`. They are presence attributes; write the selected state as `data-[selected]:…`, since shadcn's `data-selected:` variant matches only `"true"`. Hover and focus are `:hover` and `:focus-visible`, so a control revealed on hover reads:
+Rows carry `data-selected`, `data-expanded`, `data-disabled`, `data-hidden`, `data-context-menu-open`, `data-drop-target` (a folder a drag will drop into) and `data-level` (depth from 1), and are a `group/tree-item`. They are presence attributes; write the selected state as `data-[selected]:…`, since shadcn's `data-selected:` variant matches only `"true"`. Hover and focus are `:hover` and `:focus-visible`, so a control revealed on hover reads:
 
 ```tsx
 <TreeViewAction

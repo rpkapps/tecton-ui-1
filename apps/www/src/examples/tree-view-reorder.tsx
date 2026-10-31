@@ -27,6 +27,14 @@ const project: Node[] = [
       { id: "balder", name: "Top Balder" },
       { id: "sele", name: "Top Sele" },
       { id: "bcu", name: "Base Cretaceous" },
+      {
+        id: "interpretations",
+        name: "Interpretations",
+        children: [
+          { id: "faults", name: "Faults" },
+          { id: "picks", name: "Well picks" },
+        ],
+      },
     ],
   },
   { id: "archive", name: "Archive", children: [] },
@@ -54,7 +62,7 @@ export default function TreeViewReorder() {
       className="max-w-sm"
       items={items}
       selectionMode="multiple"
-      defaultExpanded={["wells", "horizons"]}
+      defaultExpanded={["wells", "horizons", "interpretations"]}
       onMove={(move) => setItems((current) => moveTreeItems(current, move))}
     >
       {renderNode}

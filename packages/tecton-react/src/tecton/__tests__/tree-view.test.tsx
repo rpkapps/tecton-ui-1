@@ -1335,6 +1335,37 @@ describe("TreeView drag and drop", () => {
     expect(grip("Wells")).toBeInTheDocument()
   })
 
+  it("keeps the grips visible, in one column before the indent", () => {
+    render(<Movable onMove={() => {}} />)
+    const content = (name: string) =>
+      row(name).querySelector<HTMLElement>(
+        '[data-slot="tree-view-item-content"]'
+      )!
+    const chevron = (name: string) =>
+      row(name).querySelector<HTMLElement>('[data-slot="tree-view-chevron"]')!
+    expect(grip("A-12").className).not.toMatch(/opacity-0/)
+    // Every row starts at the same padding, the grip first; the level indent
+    // comes after it, on the chevron.
+    expect(content("Wells").style.paddingInlineStart).toBe("0.25rem")
+    expect(content("A-12").style.paddingInlineStart).toBe("0.25rem")
+    expect(content("A-12").firstElementChild).toBe(grip("A-12"))
+    expect(chevron("Wells").style.marginInlineStart).toBe("0rem")
+    expect(chevron("A-12").style.marginInlineStart).toBe("1.25rem")
+  })
+
+  it("leaves the dragged row looking as it was", async () => {
+    const user = userEvent.setup()
+    render(<Movable onMove={() => {}} selectionMode="multiple" />)
+    await startDrag(user, "A-12")
+    const dragging = row("A-12").hasAttribute("data-dragging")
+    const className = row("A-12").className
+    await user.keyboard("{Escape}")
+    expect(dragging).toBe(true)
+    expect(className).not.toMatch(/(^|\s)data-\[dragging\]/)
+    // Hover and press styles stay off a dragged row.
+    expect(className).not.toMatch(/(^|\s)(hover|active):/)
+  })
+
   it("moves a row next to another from the keyboard", async () => {
     const user = userEvent.setup()
     const onMove = vi.fn()
