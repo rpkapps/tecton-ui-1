@@ -1353,6 +1353,15 @@ describe("TreeView drag and drop", () => {
     expect(chevron("A-12").style.marginInlineStart).toBe("1.25rem")
   })
 
+  it("spaces rows with their own margin, so drag elements move none", () => {
+    render(<Movable onMove={() => {}} />)
+    // A drag inserts zero-height elements between rows (the drop line, a
+    // folder's screen reader drop target); a flex gap around them would shift
+    // every row below by a pixel.
+    expect(screen.getByRole("treegrid").className).not.toMatch(/\bgap-/)
+    expect(row("A-12").className).toMatch(/(^|\s)mb-px(\s|$)/)
+  })
+
   it("leaves the dragged row looking as it was", async () => {
     const user = userEvent.setup()
     render(<Movable onMove={() => {}} selectionMode="multiple" />)

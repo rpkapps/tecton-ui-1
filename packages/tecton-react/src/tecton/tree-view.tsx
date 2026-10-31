@@ -370,9 +370,8 @@ function TreeViewDropIndicator({
         cn(
           "relative outline-none",
           // Virtualized, the tree gives the line a box centred on the row
-          // boundary. Otherwise it sits between two rows of the flex column,
-          // and takes back the gap it adds so no row moves.
-          virtualized ? "h-full" : "-mb-px h-0",
+          // boundary. Otherwise it sits, with no height, between two rows.
+          virtualized ? "h-full" : "h-0",
           !isDropTarget && "invisible"
         )
       }
@@ -561,7 +560,10 @@ function TreeView<T extends object = object>({
         "w-full overflow-auto text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
         // Virtualized rows are positioned by the tree, not laid out by it,
         // and span its full width: padding would push them out sideways.
-        virtualized ? "relative block" : "flex flex-col gap-px",
+        // The 1px between rows is each row's margin, not a `gap`: a drag puts
+        // zero-height elements between rows (the drop line, the screen reader
+        // drop target of a folder), and a gap around them would move the rows.
+        virtualized ? "relative block" : "flex flex-col",
         className,
         // Rows are sized from the rounded `clientWidth`, which can exceed a
         // fractional content box by a pixel: never scroll sideways for it.
@@ -964,7 +966,7 @@ function TreeViewItem({
       render={renderDiv}
       className={({ selectionMode }) =>
         cn(
-          "group/tree-item relative flex cursor-default items-center rounded-md outline-none select-none",
+          "group/tree-item relative mb-px flex cursor-default items-center rounded-md outline-none select-none",
           "focus-visible:ring-2 focus-visible:ring-ring/60 focus-visible:ring-inset",
           // A dragged row keeps its look: no hover or press state stuck on it.
           selectionMode !== "none" &&
