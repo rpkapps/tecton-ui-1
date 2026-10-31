@@ -149,7 +149,11 @@ function TreeItem({
         </div>
       ),
     },
-    { selectionMode: hidden, hasChildren: hidden }
+    {
+      selectionMode: hidden,
+      hasChildren: hidden,
+      dropTarget: (target) => (target ? { "data-drop-target": "" } : null),
+    }
   )
 }
 
