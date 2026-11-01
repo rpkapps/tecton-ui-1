@@ -40,8 +40,17 @@ type PointerDragOptions = {
   onStart: () => boolean | void
   /** The pointer in the viewport, and its travel since the press. */
   onMove: (point: Point, travel: Point) => void
-  /** Called once when a started drag ends: `drop` on release. */
-  onEnd: (drop: boolean) => void
+  /**
+   * Called once when a started drag ends: `drop` on release, with where the
+   * preview was then (for the item to land from there), if there was one.
+   * On a drop, `takePreview` hands the preview element itself over (to
+   * animate it into place and remove it); otherwise it is removed.
+   */
+  onEnd: (
+    drop: boolean,
+    preview: DOMRect | null,
+    takePreview: (() => HTMLElement) | null
+  ) => void
   /** Called once when the press is over, dragged or not. */
   onStop?: () => void
 }
@@ -151,12 +160,17 @@ function createPreview(item: HTMLElement, container: HTMLElement) {
   preview.setAttribute("aria-hidden", "true")
   preview.setAttribute("inert", "")
   const style = getComputedStyle(item)
+  const box = item.getBoundingClientRect()
   preview.dir = style.direction
   Object.assign(preview.style, {
     position: "fixed",
     top: "0",
     left: "0",
-    width: `${item.getBoundingClientRect().width}px`,
+    // The item's own box: an item sized by its parent (`h-full` in a grid
+    // cell) would otherwise fill the viewport.
+    width: `${box.width}px`,
+    height: `${box.height}px`,
+    boxSizing: "border-box",
     margin: "0",
     font: style.font,
     color: style.color,
@@ -282,10 +296,22 @@ function trackPointerDrag(
   const end = (drop: boolean) => {
     if (ended) return
     const started = dragging
+    // Kept out of `stop()`: the drop may take it over.
+    let ghost = preview
+    const at = ghost?.getBoundingClientRect() ?? null
+    preview = null
     stop()
-    if (!started) return
-    if (drop) swallowNextClick(view)
-    onEnd(drop)
+    const take = (taken: HTMLElement) => () => {
+      ghost = null
+      return taken
+    }
+    try {
+      if (!started) return
+      if (drop) swallowNextClick(view)
+      onEnd(drop, at, drop && ghost ? take(ghost) : null)
+    } finally {
+      ghost?.remove()
+    }
   }
 
   const unlisten = listen(view, {
@@ -348,5 +374,22 @@ function trackPointerDrag(
   return stop
 }
 
-export { trackPointerDrag, scrollerOf, stickyTopOf }
+/**
+ * The element of `elements` nearest `point` (over it: 0 px away), as its
+ * index (-1 for none) and its distance.
+ */
+function nearestTo(elements: ReadonlyArray<HTMLElement>, point: Point) {
+  let index = -1
+  let distance = Infinity
+  elements.forEach((element, at) => {
+    const rect = element.getBoundingClientRect()
+    const dx = Math.max(rect.left - point.x, 0, point.x - rect.right)
+    const dy = Math.max(rect.top - point.y, 0, point.y - rect.bottom)
+    const d = Math.hypot(dx, dy)
+    if (d < distance) [index, distance] = [at, d]
+  })
+  return { index, distance }
+}
+
+export { trackPointerDrag, nearestTo, scrollerOf, stickyTopOf }
 export type { PointerDragOptions, Point }

@@ -22,11 +22,19 @@ type KeyboardDragOptions<TPlace> = {
   places: () => { places: ReadonlyArray<TPlace>; start: number }
   /** Whether two places are the same one. */
   isSame: (a: TPlace, b: TPlace) => boolean
+  /**
+   * Whether two places are the same stop of the arrow keys: a place aimed
+   * otherwise (`onKey`) may be drawn elsewhere than the stop it stands for.
+   * `isSame` by default.
+   */
+  isStop?: (a: TPlace, b: TPlace) => boolean
   /** Shows the aimed place (null for none). */
   onAim: (place: TPlace | null) => void
   /**
-   * Other keys during the drag (opening the aimed folder…): `true` when
-   * handled, which keeps them from the component.
+   * The keys of the drag besides Enter, Space and Escape (opening the
+   * aimed folder, moving across a grid…), ahead of the arrow keys' and
+   * Tab's stepping: `true` when handled, which keeps them from the
+   * component and from the stepping.
    */
   onKey?: (event: KeyboardEvent, place: TPlace | null) => boolean
   /** Called once: with the aimed place on a drop, null on a cancel. */
@@ -42,6 +50,7 @@ function startKeyboardDrag<TPlace>({
   direction = "ltr",
   places,
   isSame,
+  isStop = isSame,
   onAim,
   onKey,
   onEnd,
@@ -52,7 +61,7 @@ function startKeyboardDrag<TPlace>({
   /** Aims `step` places on from the current one. */
   const aim = (step: number) => {
     const { places: list, start } = places()
-    const index = aimed === null ? -1 : list.findIndex((p) => isSame(p, aimed!))
+    const index = aimed === null ? -1 : list.findIndex((p) => isStop(p, aimed!))
     const last = list.length - 1
     aimed =
       list.at(
@@ -79,12 +88,17 @@ function startKeyboardDrag<TPlace>({
   }
 
   const keydown = (event: KeyboardEvent) => {
-    if (event.key === next || (event.key === "Tab" && !event.shiftKey)) aim(1)
+    if (event.key === "Enter" || event.key === " ") end(true)
+    else if (event.key === "Escape") end(false)
+    // The caller first: a layout of its own may move otherwise (the arrow
+    // keys across a grid's rows, between the slots of a swap grid).
+    else if (onKey?.(event, aimed)) {
+      // Handled.
+    } else if (event.key === next || (event.key === "Tab" && !event.shiftKey))
+      aim(1)
     else if (event.key === previous || (event.key === "Tab" && event.shiftKey))
       aim(-1)
-    else if (event.key === "Enter" || event.key === " ") end(true)
-    else if (event.key === "Escape") end(false)
-    else if (!onKey?.(event, aimed)) return
+    else return
     event.preventDefault()
     event.stopPropagation()
   }

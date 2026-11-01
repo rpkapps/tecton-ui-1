@@ -43,6 +43,12 @@ const enUS = {
   tableColumnResizer: {
     resize: "Resize {columnName}",
   },
+  reorderable: {
+    keepHere: "Keep {itemText} here",
+    swapWith: "Swap with {itemText}",
+    moveTo: "Move to {slotText}",
+    emptySlot: "empty slot {index}",
+  },
 } as const satisfies TranslationTable
 
 export default enUS

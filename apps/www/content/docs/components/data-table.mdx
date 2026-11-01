@@ -916,9 +916,24 @@ Hide low-priority columns below `md` with `hidden md:table-cell` on both the hea
 
 ### Column resizing
 
-Register `columnSizingFeature`, keep the `columnSizing` state in React and put a [Table Column Resizer](/docs/tecton/table-column-resizer) on the end edge of each `TableHead` (`className="relative"`, `style={{ width: header.getSize() }}`). Give the `Table` `table-fixed`, the total width (`table.getTotalSize()`) and `minWidth: "100%"`, leave the last column's width unset so it takes the space left, and let cells `truncate`. The limits come from `defaultColumn` (`minSize`, `maxSize`) or each column's own; `resetValue={column.columnDef.size}` is what Enter and a double click go back to. The resizer is a focusable separator: the arrow keys resize too, mirrored in a right-to-left table.
+Register `columnSizingFeature`, keep the `columnSizing` state in React and put a `TableColumnResizer` (from `@tecton/react/tecton/table-column-resizer`) on the end edge of each `TableHead` (`className="relative"`, `style={{ width: header.getSize() }}`). Give the `Table` `table-fixed`, the total width (`table.getTotalSize()`) and `minWidth: "100%"`, leave the last column's width unset so it takes the space left, and let cells `truncate`. The limits come from `defaultColumn` (`minSize`, `maxSize`) or each column's own; `resetValue={column.columnDef.size}` is what Enter and a double click go back to. The resizer is a focusable separator: the arrow keys resize too, mirrored in a right-to-left table.
 
 <ComponentPreview name="data-table-column-resize" align="start" />
+
+`TableColumnResizer` is a focusable separator named `Resize {label}`. ArrowRight widens and ArrowLeft narrows (mirrored in a right-to-left table), with steps four times as large while Shift is held; Home sets `min`, End sets `max`, and Enter or a double click sets `resetValue`. Escape during a drag puts the width back. At rest it is a short line in the middle of the header between columns; dragging draws a guide down the table at the new edge, with a chip that shows the width.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `number` | - | The column's width in px (controlled). |
+| `defaultValue` | `number` | `150` | The initial width, when not controlled. |
+| `onValueChange` | `(value: number, eventDetails) => void` | - | Called with each new width. `eventDetails.reason` is `"drag"`, `"keyboard"` or `"reset"`. |
+| `onValueCommitted` | `(value: number, eventDetails) => void` | - | Called once a drag ends, and after each key. |
+| `min` | `number` | `48` | The narrowest width. |
+| `max` | `number` | `1000` | The widest width. |
+| `step` | `number` | `8` | The arrow keys' step in px. Shift multiplies it by four. |
+| `resetValue` | `number` | - | The width that Enter and a double click go back to. |
+| `label` | `string` | - | The column's name, so the resizer is named `Resize {label}`. |
+| `disabled` | `boolean` | `false` | Turns the resizer off. |
 
 ### Column reordering
 

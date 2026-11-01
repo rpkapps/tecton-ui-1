@@ -57,6 +57,12 @@ export type Frontmatter = {
   exports: string[]
   notFor: NotForEntry[]
   related: string[]
+  /**
+   * The docs page section that documents a module with no page of its own
+   * (`components/data-table#column-resizing`): links go there, and no page
+   * is expected at the module's own path.
+   */
+  docs?: string
 }
 
 export type DontEntry = {
@@ -354,6 +360,11 @@ export function loadCatalog(dir: string = GUIDELINES_DIR): Catalog {
   }
 }
 
+/** Where a guideline's module is documented: its own page, or `docs`. */
+export function guidelineDocsUrl(guideline: { module: string; meta: Frontmatter }) {
+  return guideline.meta.docs ? `/docs/${guideline.meta.docs}` : docsUrlOf(guideline.module)
+}
+
 /**
  * Resolves a `use:` or `related:` name.
  *
@@ -371,7 +382,7 @@ export function resolveReference(name: string, catalog: Catalog): Reference | nu
         name,
         module: guideline.module,
         modulePath: modulePathOf(guideline.module),
-        docs: docsUrlOf(guideline.module),
+        docs: guidelineDocsUrl(guideline),
         hasGuideline: true,
       }
     }
@@ -383,7 +394,9 @@ export function resolveReference(name: string, catalog: Catalog): Reference | nu
       name,
       module: moduleKey,
       modulePath: modulePathOf(moduleKey),
-      docs: docsUrlOf(moduleKey),
+      docs: catalog.guidelines.has(moduleKey)
+        ? guidelineDocsUrl(catalog.guidelines.get(moduleKey)!)
+        : docsUrlOf(moduleKey),
       hasGuideline: catalog.guidelines.has(moduleKey),
     }
   }
@@ -776,7 +789,7 @@ export function readFrontmatter(parsed: ParsedGuideline): {
   // everything else is reported and the checks carry on, so one typo does not
   // hide the other five problems.
   let fatal = false
-  const known = new Set(["component", "module", "family", "exports", "notFor", "related"])
+  const known = new Set(["component", "module", "family", "exports", "notFor", "related", "docs"])
   for (const key of Object.keys(raw)) {
     if (!known.has(key)) errors.push(`frontmatter: unknown field "${key}"`)
   }
@@ -816,6 +829,13 @@ export function readFrontmatter(parsed: ParsedGuideline): {
     fatal = true
   }
 
+  let docs: string | undefined
+  if (raw.docs !== undefined) {
+    if (typeof raw.docs !== "string" || !/^[a-z-]+\/[a-z0-9-]+(#[a-z0-9-]+)?$/.test(raw.docs.trim())) {
+      errors.push(`frontmatter: "docs" must be a docs page, with an optional section ("components/data-table#column-resizing")`)
+    } else docs = raw.docs.trim()
+  }
+
   if (fatal) return { meta: null, errors }
   return {
     meta: {
@@ -825,6 +845,7 @@ export function readFrontmatter(parsed: ParsedGuideline): {
       exports: exports ?? [],
       notFor: notFor ?? [],
       related: related ?? [],
+      ...(docs && { docs }),
     },
     errors,
   }

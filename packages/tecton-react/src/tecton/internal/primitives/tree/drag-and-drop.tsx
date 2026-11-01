@@ -19,6 +19,7 @@ import * as React from "react"
 import { useDirection } from "@tecton/react/tecton/provider"
 
 import type { Translator } from "../../i18n/translations"
+import { useDropAnimation } from "../drag-and-drop/drop-animation"
 import {
   useDragAndDrop,
   type DropStrategy,
@@ -51,6 +52,8 @@ type TreeDragAndDropOptions = {
   levelOffset?: (level: number, row: HTMLElement) => number
   /** The width of a level's column, in px. Default 20. */
   levelWidth?: (row: HTMLElement) => number
+  /** Animates a drop (`useDropAnimation`). Default `true`. */
+  dropAnimation?: boolean
 }
 
 const FOLDER_OPEN_DELAY = 800
@@ -97,9 +100,18 @@ function useTreeDragAndDrop({
   indicator,
   levelOffset = (level) => 4 + 20 + 6 + (level - 1) * 20,
   levelWidth = () => 20,
+  dropAnimation = true,
 }: TreeDragAndDropOptions): TreeDragAndDropConnection {
   const rtl = useDirection() === "rtl"
   const handle = React.useRef<TreeHandle | null>(null)
+  const animation = useDropAnimation({
+    disabled: !dropAnimation,
+    items: () => {
+      const h = handle.current
+      if (!h) return []
+      return h.rows.map((node) => [node.value, h.getRowElement(node.value)])
+    },
+  })
   const latest = React.useRef({
     onMove,
     canDrop,
@@ -316,12 +328,14 @@ function useTreeDragAndDrop({
       if (target !== null) h.focusRow(target)
     },
     onDragStart: () => latest.current.onDragStart?.(),
-    onDrop: (place, keys) =>
+    onDrop: (place, keys, { from }) => {
+      animation.capture(keys, from)
       latest.current.onMove?.({
         values: [...keys],
         target: place.key,
         position: place.position,
-      }),
+      })
+    },
   })
 
   // The rows being dragged, as the tree's state.

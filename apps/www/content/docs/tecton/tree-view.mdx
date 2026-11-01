@@ -158,6 +158,8 @@ const topLevel = new Set(project.map((node) => node.id))
 >
 ```
 
+A drop animates: the dropped rows glide from where they were let go into their place, and the rows they pass slide aside. Nothing moves when the user has asked for reduced motion; `dropAnimation={false}` turns it off.
+
 ## Large trees
 
 `virtualized` renders only the rows in view, so a tree of thousands of rows mounts, scrolls and expands as fast as a short one. Give the tree a bounded height (`h-80`, or `min-h-0 flex-1` inside a flex column) to scroll in. Rows are then a fixed 32 px tall and span the full width of the tree, which takes no padding: put padding and borders on a wrapper. Keyboard navigation, type-ahead, selection, the context menu and drag and drop work on every row, including those out of view; a drag near the top or bottom edge scrolls the tree, or the container or page it scrolls in.
@@ -355,6 +357,7 @@ Forwards `id`, `className`, `style`, `aria-labelledby`, `aria-describedby` and `
 | `contextMenu` | `(value: string) => ReactNode` | - | The context menu of a row (`ContextMenuContent`), or `null` for none. |
 | `onMove` | `(move: TreeViewMove) => void` | - | Makes rows draggable; called with `{ values, target, position }` on a drop. |
 | `canDrop` | `(move: TreeViewMove) => boolean` | - | Whether a drop is allowed, on top of the folder and self rules. |
+| `dropAnimation` | `boolean` | `true` | Animates a drop: the dropped rows glide into their place and the others slide aside. Never with reduced motion. |
 
 ### TreeViewItem
 

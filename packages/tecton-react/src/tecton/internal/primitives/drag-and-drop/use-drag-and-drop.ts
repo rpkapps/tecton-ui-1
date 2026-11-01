@@ -47,12 +47,39 @@ type DropStrategy<TPlace> = {
     start: number
   }
   isSame: (a: TPlace, b: TPlace) => boolean
+  /** Whether two places are the same stop of the arrow keys; `isSame` by default. */
+  isStop?: (a: TPlace, b: TPlace) => boolean
   /** The place in words, as a drop target's name ("Drop on Wells"). */
-  label: (place: TPlace, t: Translator<"dragAndDrop">) => string
+  label: (
+    place: TPlace,
+    t: Translator<"dragAndDrop">,
+    /** The keys being dragged. */
+    dragging: ReadonlyArray<string>
+  ) => string
   /** Called as the aim changes (opening a folder held over, scrolling). */
   onAim?: (place: TPlace | null, mode: DragMode) => void
   /** Other keys during a keyboard drag; `true` when handled. */
   onKey?: (event: KeyboardEvent, place: TPlace | null) => boolean
+  /**
+   * A place other keys of a keyboard drag aim (Up / Down across the rows
+   * of a grid); `undefined` leaves the key to `onKey`.
+   */
+  move?: (
+    event: KeyboardEvent,
+    place: TPlace | null,
+    dragging: ReadonlyArray<string>
+  ) => TPlace | null | undefined
+}
+
+type DropDetails = {
+  mode: DragMode
+  /** Where the pointer preview was let go, for the dropped item to animate from. */
+  from: DOMRect | null
+  /**
+   * Hands the pointer preview over, to animate it into the dropped item's
+   * place and remove it; called during `onDrop` or never.
+   */
+  takePreview: (() => HTMLElement) | null
 }
 
 type DragAndDropOptions<TPlace> = {
@@ -73,7 +100,15 @@ type DragAndDropOptions<TPlace> = {
   /** Where the pointer preview goes (the portal target); the body otherwise. */
   getPreviewContainer?: () => HTMLElement | null
   onDragStart?: (keys: ReadonlyArray<string>, mode: DragMode) => void
-  onDrop: (place: TPlace, keys: ReadonlyArray<string>) => void
+  /**
+   * Drops `keys` on `place`. `from`: where the pointer preview was let go,
+   * for the dropped item to animate from there into its place.
+   */
+  onDrop: (
+    place: TPlace,
+    keys: ReadonlyArray<string>,
+    details: DropDetails
+  ) => void
   /**
    * Focuses an item after a keyboard or virtual drag (the first dropped
    * one); its element's `focus()` by default.
@@ -147,13 +182,22 @@ function useDragAndDrop<TPlace>(
       return keys
     }
 
-    const finish = (place: TPlace | null) => {
+    const finish = (
+      place: TPlace | null,
+      from: DOMRect | null = null,
+      takePreview: (() => HTMLElement) | null = null
+    ) => {
       const { dragging, mode } = store.get()
       stopSession = null
       store.set({ mode: null, dragging: [], aimed: null, places: [] })
       strategy().onAim?.(null, mode ?? "pointer")
       const { options, t } = latest.current
-      if (place !== null) options.onDrop(place, dragging)
+      if (place !== null)
+        options.onDrop(place, dragging, {
+          mode: mode ?? "pointer",
+          from,
+          takePreview,
+        })
       if (mode !== "pointer")
         announce(t(place === null ? "dropCanceled" : "dropComplete"), {
           politeness: "assertive",
@@ -178,7 +222,8 @@ function useDragAndDrop<TPlace>(
       t: ((...args: Parameters<Translator<"dragAndDrop">>) =>
         latest.current.t(...args)) as Translator<"dragAndDrop">,
       isSame: (a, b) => strategy().isSame(a, b),
-      label: (place) => strategy().label(place, latest.current.t),
+      label: (place) =>
+        strategy().label(place, latest.current.t, store.get().dragging),
       onPointerDown(event, key, { handle = false } = {}) {
         if (stopSession || event.button !== 0 || event.defaultPrevented) return
         const { options } = latest.current
@@ -198,7 +243,8 @@ function useDragAndDrop<TPlace>(
           },
           onMove: (point) =>
             aim(strategy().placeAt(point, store.get().dragging)),
-          onEnd: (drop) => finish(drop ? store.get().aimed : null),
+          onEnd: (drop, from, takePreview) =>
+            finish(drop ? store.get().aimed : null, from, takePreview),
           onStop: () => {
             if (store.get().mode === null) stopSession = null
           },
@@ -221,9 +267,16 @@ function useDragAndDrop<TPlace>(
           direction,
           places: () => strategy().places(store.get().dragging),
           isSame: (a, b) => strategy().isSame(a, b),
+          isStop: (a, b) => (strategy().isStop ?? strategy().isSame)(a, b),
           onAim: aim,
-          onKey: (keyEvent, place) =>
-            strategy().onKey?.(keyEvent, place) ?? false,
+          onKey: (keyEvent, place) => {
+            const to = strategy().move?.(keyEvent, place, store.get().dragging)
+            if (to !== undefined) {
+              session.aim(to)
+              return true
+            }
+            return strategy().onKey?.(keyEvent, place) ?? false
+          },
           onEnd: finish,
           isInside: (target) =>
             !!targets && target instanceof Node && targets.contains(target),
@@ -295,5 +348,6 @@ export type {
   DragAndDropOptions,
   DragMode,
   DragState,
+  DropDetails,
   DropStrategy,
 }

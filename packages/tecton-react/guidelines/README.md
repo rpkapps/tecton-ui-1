@@ -54,6 +54,7 @@ related: [Chip, CountBadge]
 | `exports` | Every export this file covers (compound parts included: `Chip`, `ChipGroup`, `ChipList`). Each must be a real export of the module. |
 | `notFor` | The boundaries. `need` is the thing an agent wants, in plain words. `use` is the replacement: a `component` or `exports` name from any guideline file, or a key of `externals` in `families.json` (`toast`, `TanStack Table`). Every entry must name a replacement. |
 | `related` | Components to read next. Same resolution rule as `use`. |
+| `docs` | Optional. The docs page section that documents a module with no page of its own (`components/data-table#column-resizing`). Links to the module go there, and no page is expected at its own path. |
 
 `notFor` is **only** in the frontmatter. The renderers emit it as the "Not for" list, so the body
 must not repeat it.
