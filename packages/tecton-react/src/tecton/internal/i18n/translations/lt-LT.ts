@@ -39,4 +39,7 @@ export default defineTranslations({
     insertBetween: "Įterpti tarp {beforeItemText} ir {afterItemText}",
     insertAfter: "Įterpti po {itemText}",
   },
+  tableColumnResizer: {
+    resize: "Keisti stulpelio {columnName} dydį",
+  },
 })

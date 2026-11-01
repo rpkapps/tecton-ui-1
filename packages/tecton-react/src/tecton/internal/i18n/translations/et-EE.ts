@@ -39,4 +39,7 @@ export default defineTranslations({
     insertBetween: "Sisesta {beforeItemText} ja {afterItemText} vahele",
     insertAfter: "Sisesta {itemText} järele",
   },
+  tableColumnResizer: {
+    resize: "Muuda veeru {columnName} laiust",
+  },
 })

@@ -40,4 +40,7 @@ export default defineTranslations({
     insertBetween: "Beszúrás {beforeItemText} és {afterItemText} közé",
     insertAfter: "Beszúrás {itemText} után",
   },
+  tableColumnResizer: {
+    resize: "{columnName} átméretezése",
+  },
 })

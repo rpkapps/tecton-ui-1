@@ -1,0 +1,172 @@
+---
+title: Table Column Resizer
+description: "The grip on a column header's edge that sets the column's width, by dragging or with the arrow keys."
+---
+
+<ComponentPreview name="table-column-resizer-demo" />
+
+## Usage
+
+```tsx
+import { TableColumnResizer } from "@tecton/react/tecton/table-column-resizer"
+```
+
+```tsx
+<Table className="table-fixed">
+  <TableHeader>
+    <TableRow>
+      <TableHead className="relative" style={{ width }}>
+        Field
+        <TableColumnResizer
+          label="Field"
+          value={width}
+          onValueChange={setWidth}
+          min={80}
+          max={320}
+          resetValue={120}
+        />
+      </TableHead>
+    </TableRow>
+  </TableHeader>
+</Table>
+```
+
+The resizer holds no layout itself. It sits on the end edge of a `relative` header and reports a width in px. You apply that width to the header, and `table-fixed` makes the column keep it. To fill the container, give the table `minWidth: "100%"` next to its total width and leave the last column's width unset: it takes the space left, and the table scrolls once the columns add up to more. With TanStack Table, the width state is `columnSizing`: see the [column resizing recipe](/docs/components/data-table#column-resizing).
+
+## Look
+
+- **At rest:** a short, quiet line in the middle of the header between columns, and none after the last column, so the table's edge does not read as a divider.
+- **Pointer over the header:** the lines run the header's full height, showing where to grab.
+- **Pointer on a grip:** a 2 px line in the active outline colour over a soft tint. Keyboard focus shows the same line inside the focus ring, centred on it.
+- **Dragging:** a guide runs down the table in view at the new edge, and a chip beside it shows the width (`190 px`).
+
+## Keyboard
+
+The resizer is a focusable separator named `Resize {label}`:
+
+- ArrowRight widens and ArrowLeft narrows, mirrored in a right-to-left table. Hold Shift for steps four times as large.
+- Home sets `min` and End sets `max`.
+- Enter, or a double click, sets `resetValue`.
+
+Escape during a drag puts the width back.
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The user widens a data table column to read long values, or narrows one they do not need.
+- Column widths are state the application keeps (TanStack Table's `columnSizing`, a saved layout).
+
+### Not for
+
+- splitting a view into panes the user resizes: use [ResizablePanelGroup](/docs/components/resizable)
+- a value picked along a track: use [Slider](/docs/components/slider)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Put one `TableColumnResizer` last in each resizable `TableHead`, give that head `className="relative"` and `style={{ width }}` from the same state.
+
+</Do>
+
+<Do>
+
+Give the `Table` `className="table-fixed"`, its total width and `minWidth: "100%"`, leave the last column's width unset so it fills the rest, and let cells `truncate`.
+
+</Do>
+
+<Do>
+
+Name it with `label` (the column's name: "Resize Field"), bound it with `min` and `max`, and pass `resetValue` for Enter and a double click.
+
+</Do>
+
+<Do>
+
+Write `onValueChange` back to the width state; save a layout from `onValueCommitted`, which fires once a drag ends.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="A pointer-only resize grip">
+
+<Wrong>
+
+```tsx
+<TableHead className="relative">
+  Field
+  <div onMouseDown={header.getResizeHandler()} className="absolute inset-y-0 end-0 w-1 cursor-col-resize" />
+</TableHead>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<TableHead className="relative" style={{ width: column.getSize() }}>
+  Field
+  <TableColumnResizer label="Field" value={column.getSize()} onValueChange={(size) => setColumnSizing((s) => ({ ...s, [column.id]: size }))} />
+</TableHead>
+```
+
+</Correct>
+
+A bare grip is neither focusable nor announced, so keyboard and screen reader users cannot resize the column at all.
+
+</Dont>
+
+<Dont severity="HIGH" title="Widths on an auto-layout table">
+
+<Wrong>
+
+```tsx
+<Table>
+  <TableHeader><TableRow>{heads}</TableRow></TableHeader>
+</Table>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<Table className="table-fixed" style={{ width: table.getTotalSize() }}>
+  <TableHeader><TableRow>{heads}</TableRow></TableHeader>
+</Table>
+```
+
+</Correct>
+
+An auto-layout table sizes columns from their content and spreads them across the container, so the resizer's value and the column's width drift apart.
+
+</Dont>
+
+{/* guidelines:end */}
+
+## API Reference
+
+### TableColumnResizer
+
+Forwards `className`, `style`, `id` and `data-*` attributes.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `number` | - | The column's width in px (controlled). |
+| `defaultValue` | `number` | `150` | The initial width, when not controlled. |
+| `onValueChange` | `(value: number, eventDetails) => void` | - | Called with each new width. `eventDetails.reason` is `"drag"`, `"keyboard"` or `"reset"`. |
+| `onValueCommitted` | `(value: number, eventDetails) => void` | - | Called once a drag ends, and after each key. |
+| `min` | `number` | `48` | The narrowest width. |
+| `max` | `number` | `1000` | The widest width. |
+| `step` | `number` | `8` | The arrow keys' step in px. Shift multiplies it by four. |
+| `resetValue` | `number` | - | The width that Enter and a double click go back to. |
+| `label` | `string` | - | The column's name, so the resizer is named `Resize {label}`. |
+| `disabled` | `boolean` | `false` | Turns the resizer off. |

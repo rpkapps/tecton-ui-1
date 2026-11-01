@@ -39,4 +39,7 @@ export default defineTranslations({
     insertBetween: "Lisää kohteiden {beforeItemText} ja {afterItemText} väliin",
     insertAfter: "Lisää kohteen {itemText} jälkeen",
   },
+  tableColumnResizer: {
+    resize: "Muuta sarakkeen {columnName} kokoa",
+  },
 })

@@ -8,7 +8,9 @@ notFor:
     use: TanStack Table
   - need: a list of rows with media, a title and actions rather than columns
     use: Item
-related: [Item, TreeView, "TanStack Table"]
+  - need: rows or columns the user drags into another order
+    use: Reorderable
+related: [Item, TreeView, Reorderable, TableColumnResizer, "TanStack Table"]
 ---
 
 ## Use it when
@@ -22,6 +24,7 @@ related: [Item, TreeView, "TanStack Table"]
 - Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`.
 - Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state="selected"` for the `bg-table-active` fill.
 - Open a record from a link in its identifying cell, not from a handler on the row.
+- For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table.
 - Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
 
 ## Don't

@@ -39,4 +39,7 @@ export default defineTranslations({
     insertBetween: "{beforeItemText} 및 {afterItemText} 사이에 삽입",
     insertAfter: "{itemText} 이후에 삽입",
   },
+  tableColumnResizer: {
+    resize: "{columnName} 크기 조정",
+  },
 })

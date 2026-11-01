@@ -40,6 +40,9 @@ const enUS = {
     insertBetween: "Insert between {beforeItemText} and {afterItemText}",
     insertAfter: "Insert after {itemText}",
   },
+  tableColumnResizer: {
+    resize: "Resize {columnName}",
+  },
 } as const satisfies TranslationTable
 
 export default enUS

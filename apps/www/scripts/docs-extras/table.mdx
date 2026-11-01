@@ -1,0 +1,24 @@
+## Virtualized
+
+Set `virtualized` on a table of hundreds of rows or more. The body then mounts only the rows in view, so a table of thousands renders, scrolls and sorts as fast as a short one. The table fills its parent and scrolls in it, so give the parent a bounded height (`h-80`, or `min-h-0 flex-1` in a flex column) and put the border and rounding on the parent too. The header sticks to the top while the rows scroll.
+
+Pass the rows' data as `items` and render one row with a function: it is called only for the rows in view, so a new sort or filter renders a screenful rather than every row. Plain `TableRow` children work too, but every one of them is created on each render.
+
+- **Row height:** the table measures it from the rows it renders, so a compact table (`[&_td]:py-1`) and a default one both work, and a density switch is picked up. Within one table the rows must be one height: keep cells on one line.
+- **Column widths:** the columns are locked in px at the width of their content when first laid out (the header and the first rows), so they do not jump as different rows scroll into view. The space left goes to the columns of text, the last one taking the rest; a column of controls only (a checkbox, a drag handle) stays as narrow as its control. In a container too narrow for them all, the table scrolls sideways. Values that no longer fit end with an ellipsis: give a column a width when its values vary in length. A table you make `table-fixed` with your own widths (column resizing) keeps them.
+- **Focus:** a row whose checkbox or link has focus stays mounted when it scrolls out of view.
+- **Screen readers:** they hear the true size, because the table carries `aria-rowcount` and each row `aria-rowindex`.
+- **Striping:** `nth-child` striping (`[&_tbody_tr:nth-child(even)]`) flickers, because rows shift position as they mount and unmount; leave a virtualized table's rows plain.
+
+<ComponentPreview name="table-virtualized" />
+
+```tsx
+<div className="h-80 overflow-hidden rounded-md border">
+  <Table virtualized>
+    <TableHeader>…</TableHeader>
+    <TableBody items={readings}>
+      {(reading) => <TableRow key={reading.depth}>…</TableRow>}
+    </TableBody>
+  </Table>
+</div>
+```

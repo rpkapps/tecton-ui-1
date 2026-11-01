@@ -19,10 +19,10 @@ Upstream authors every preset as a CSS file of `@apply` lists
 component sources of each base (`apps/v4/registry/bases/<base>/ui/*.tsx`). Tecton is one more
 preset, built from `scripts/registry-mirror/overlay/` for the `base` base only:
 
-| File | What it is |
-| --- | --- |
+| File               | What it is                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `style-tecton.css` | `style-vega.css` with the Tecton deviations: solid 2px focus ring (`ring-2 ring-ring`), flat controls (no `shadow-xs`), buttons that lighten on hover / press (`:active`, since Base UI's Button sets no press attribute), Tecton tab and toggle colours, the surfaces and control colours of Tecton's MUI theme (sheet and drawer on `card`, blurred `backdrop` overlays, `filled` checked checkbox / radio, a lilac slider on `slider-rail`, `progress-track`, `content-*` sidebar states), and the class lists of the extra variants |
-| `tecton.patch` | Registers the style in `registry/styles.tsx` and patches `registry/bases/base/ui/*` (see [Overlay hunks](#overlay-hunks)) |
+| `tecton.patch`     | Registers the style in `registry/styles.tsx` and patches `registry/bases/base/ui/*` (see [Overlay hunks](#overlay-hunks))                                                                                                                                                                                                                                                                                                                                                                                                               |
 
 `scripts/registry-mirror.sh build` resets every file under `registry/bases` and
 `registry/styles.tsx` that differs from the pin (plus every file the patch names), re-applies the
@@ -125,7 +125,7 @@ still says Base UI, React Aria or Radix (`assertNoLibraryNames`). Skipped exampl
 
 The CLI writes `@custom-variant dark (&:is(.dark *));` into `globals.css` from a string hard-coded
 in the CLI, and only when the file has no `@custom-variant` yet; no registry item owns the line. It
-is therefore the CLI's to *create* and `scripts/tokens-build.mts`'s to keep correct: Tecton needs a
+is therefore the CLI's to _create_ and `scripts/tokens-build.mts`'s to keep correct: Tecton needs a
 variant that can leave a dark subtree again (`<div class="light">` in a dark page,
 `<ThemeRoot theme="light">` in a dark shell). `DARK_VARIANT` in `tokens-build.mts` is the single
 source; it is written into `globals.css` and `scoped.css`, and `tokens:check` fails if the two
@@ -135,7 +135,7 @@ differ or the stock line reappears. `scripts/generated-check.sh` does not look a
 
 The CLI writes the shadcn variables in `:root` and `.dark`, and `.dark` repeats every declaration
 because a custom property inherits with its `var()` already substituted. Nothing does that for an
-inverted *light* section, which would inherit `--background`, `--primary`, … already resolved to
+inverted _light_ section, which would inherit `--background`, `--primary`, … already resolved to
 the dark values and render half dark. So `tokens-build.mts` rebuilds a `.light, [data-theme="light"]`
 block from the patched `:root` on every run and places it right after `.dark` (same specificity,
 source order decides). The block is also written into `tecton-theme.css` and into
@@ -251,6 +251,14 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
 - **`sonner`** — `richColors` and outlined status colours (`--success-*`, `--info-*`,
   `--warning-*`, `--error-*`), matching `alert` with `appearance="outline"`; upstream's
   `toastOptions` class (`cn-toast`, outside a `className`) goes.
+- **`table`** — `Table` takes `virtualized`: its container becomes the scroll element
+  (`h-full overflow-auto`, filling a parent of bounded height), `TableHeader` sticks
+  (`sticky top-0 z-10`; the colour is on the `th`) and `TableBody` mounts only the rows in view,
+  with spacer rows for the rest, `aria-rowcount` / `aria-rowindex` and the focused row kept;
+  `TableBody` takes `items` and a render function called only for the rows in view; the columns are
+  locked at their content's first widths (a px `colgroup`, the space left spread over the columns of text and the last column taking the rest, `table-fixed`) unless the caller made the
+  table fixed. The logic is `src/tecton/internal/table-virtualizer.tsx` (on the shared
+  `useVirtualList`); without `virtualized` the markup is unchanged. Tested in `src/tecton/__tests__/table-virtualized.test.tsx`.
 
 ## Renaming the package
 

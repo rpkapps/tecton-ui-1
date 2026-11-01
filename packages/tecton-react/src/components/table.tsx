@@ -3,37 +3,81 @@
 import * as React from "react"
 import { cn } from "cn"
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+import {
+  TableVirtualProvider,
+  useTableVirtualized,
+  useTableVirtualizer,
+  useVirtualRows,
+  type TableBodyRowsProps,
+} from "../tecton/internal/table-virtualizer"
+
+function Table({
+  className,
+  virtualized = false,
+  ...props
+}: React.ComponentProps<"table"> & {
+  /**
+   * Renders only the rows in view. The table fills and scrolls in its
+   * parent, which needs a bounded height; rows are one height and the
+   * header sticks to the top.
+   */
+  virtualized?: boolean
+}) {
+  const virtual = useTableVirtualizer(virtualized)
   return (
     <div
       data-slot="table-container"
-      className="relative w-full overflow-x-auto"
+      ref={virtual.containerRef}
+      className={cn(
+        "relative w-full overflow-x-auto",
+        virtualized && "h-full overflow-auto"
+      )}
     >
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
+        aria-rowcount={virtual.rowCount}
+        className={cn(
+          "w-full caption-bottom text-sm",
+          virtual.tableClassName,
+          className
+        )}
         {...props}
-      />
+      >
+        {virtual.colgroup}
+        <TableVirtualProvider value={virtual.context}>
+          {props.children}
+        </TableVirtualProvider>
+      </table>
     </div>
   )
 }
 
 function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
+  const virtualized = useTableVirtualized()
   return (
     <thead
       data-slot="table-header"
-      className={cn("[&_tr]:border-b-0", className)}
+      className={cn(
+        "[&_tr]:border-b-0",
+        virtualized && "sticky top-0 z-10",
+        className
+      )}
       {...props}
     />
   )
 }
 
-function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
+/**
+ * The rows: `TableRow` elements, or `items` and a render function
+ * `(item, index) => <TableRow …>`, which a virtualized table calls only for
+ * the rows in view.
+ */
+function TableBody<T>({ className, ...props }: TableBodyRowsProps<T>) {
   return (
     <tbody
       data-slot="table-body"
       className={cn("[&_tr:last-child]:border-0", className)}
-      {...props}
+      {...useVirtualRows(props)}
     />
   )
 }

@@ -28,6 +28,12 @@ const styleSources = import.meta.glob<string>(
   { query: "?raw", import: "default" }
 )
 
+/** Helpers shared by the docs examples (`examples/lib/<name>`). */
+const exampleLibSources = import.meta.glob<string>("../examples/lib/*.ts", {
+  query: "?raw",
+  import: "default",
+})
+
 const PREFIX = "../../../../packages/tecton-react/src/"
 const BLOCK_PREFIX = "../../../../packages/tecton-blocks/src/"
 
@@ -45,6 +51,9 @@ for (const [map, ext] of [
 }
 for (const [key, load] of Object.entries(blockSources)) {
   all[key.replace(BLOCK_PREFIX, "").replace(/\.tsx?$/, "")] = load
+}
+for (const [key, load] of Object.entries(exampleLibSources)) {
+  all[key.replace("../", "").replace(/\.ts$/, "")] = load
 }
 
 export function hasSource(path: string) {
@@ -67,6 +76,7 @@ export async function loadSource(path: string): Promise<string> {
 }
 
 export function sourceTitle(path: string) {
+  if (path.startsWith("examples/lib/")) return `${path.slice(9)}.ts`
   if (path.startsWith("styles/"))
     return `@tecton/react/${path.replace("styles/", "")}`
   const ext =

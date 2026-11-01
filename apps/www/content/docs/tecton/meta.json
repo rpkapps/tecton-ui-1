@@ -21,7 +21,9 @@
     "page-header",
     "panel",
     "provider",
+    "reorderable",
     "stat",
+    "table-column-resizer",
     "theme-root",
     "tree-view"
   ]

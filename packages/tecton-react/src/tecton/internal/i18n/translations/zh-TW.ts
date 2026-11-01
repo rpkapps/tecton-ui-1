@@ -39,4 +39,7 @@ export default defineTranslations({
     insertBetween: "插入至「{beforeItemText}」和「{afterItemText}」之間",
     insertAfter: "插入至「{itemText}」之後",
   },
+  tableColumnResizer: {
+    resize: "調整 {columnName} 的大小",
+  },
 })

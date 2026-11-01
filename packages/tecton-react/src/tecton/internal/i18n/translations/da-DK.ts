@@ -39,4 +39,7 @@ export default defineTranslations({
     insertBetween: "Indsæt mellem {beforeItemText} og {afterItemText}",
     insertAfter: "Indsæt efter {itemText}",
   },
+  tableColumnResizer: {
+    resize: "Tilpas størrelsen på {columnName}",
+  },
 })

@@ -496,10 +496,20 @@
       "import": "./dist/tecton/provider.js",
       "default": "./dist/tecton/provider.js"
     },
+    "./tecton/reorderable": {
+      "types": "./dist/tecton/reorderable.d.ts",
+      "import": "./dist/tecton/reorderable.js",
+      "default": "./dist/tecton/reorderable.js"
+    },
     "./tecton/stat": {
       "types": "./dist/tecton/stat.d.ts",
       "import": "./dist/tecton/stat.js",
       "default": "./dist/tecton/stat.js"
+    },
+    "./tecton/table-column-resizer": {
+      "types": "./dist/tecton/table-column-resizer.d.ts",
+      "import": "./dist/tecton/table-column-resizer.js",
+      "default": "./dist/tecton/table-column-resizer.js"
     },
     "./tecton/theme-root": {
       "types": "./dist/tecton/theme-root.d.ts",

@@ -39,4 +39,7 @@ export default defineTranslations({
     insertBetween: "{beforeItemText} と {afterItemText} の間に挿入",
     insertAfter: "{itemText} の後に挿入",
   },
+  tableColumnResizer: {
+    resize: "{columnName} のサイズを変更",
+  },
 })
