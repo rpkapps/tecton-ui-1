@@ -208,7 +208,7 @@
       "checklist": [
         "A table is plain HTML — `Table > TableHeader > TableRow > TableHead` and `TableBody > TableRow > TableCell`, with `TableFooter` and `TableCaption` as needed; sorting, filtering and paging come from TanStack Table on these parts.",
         "Rows or columns the user drags into order are a `Reorderable` around the `Table` with `ReorderableItem render={<TableRow />}` with a `label` and a `ReorderableHandle` (or headers with `render={<TableHead />}`, `dragHandle={false}` and `orientation=\"horizontal\"`, no grip), never native `draggable` rows; a resizable column has a `TableColumnResizer` in its `TableHead` (`relative`, width from state) on a `table-fixed` table.",
-        "A table of hundreds of rows or more is `<Table virtualized>` inside a parent of bounded height (`h-96`), every row passed as a child, not a hand-built window of sliced rows.",
+        "A table of hundreds of rows or more is `<Table virtualized>` inside a parent of bounded height (`h-96`), with `TableBody items={rows}` and a render function, not a hand-built window of sliced rows.",
         "An empty table renders `Empty` in place of the table, or inside one `TableCell` spanning every column when the header has to stay.",
         "Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state=\"selected\"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.",
         "`className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-end`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.",

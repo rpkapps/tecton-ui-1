@@ -8,6 +8,7 @@ import {
   useTableVirtualized,
   useTableVirtualizer,
   useVirtualRows,
+  type TableBodyRowsProps,
 } from "../tecton/internal/table-virtualizer"
 
 function Table({
@@ -35,9 +36,14 @@ function Table({
       <table
         data-slot="table"
         aria-rowcount={virtual.rowCount}
-        className={cn("w-full caption-bottom text-sm", className)}
+        className={cn(
+          "w-full caption-bottom text-sm",
+          virtual.tableClassName,
+          className
+        )}
         {...props}
       >
+        {virtual.colgroup}
         <TableVirtualProvider value={virtual.context}>
           {props.children}
         </TableVirtualProvider>
@@ -61,7 +67,12 @@ function TableHeader({ className, ...props }: React.ComponentProps<"thead">) {
   )
 }
 
-function TableBody({ className, ...props }: React.ComponentProps<"tbody">) {
+/**
+ * The rows: `TableRow` elements, or `items` and a render function
+ * `(item, index) => <TableRow …>`, which a virtualized table calls only for
+ * the rows in view.
+ */
+function TableBody<T>({ className, ...props }: TableBodyRowsProps<T>) {
   return (
     <tbody
       data-slot="table-body"

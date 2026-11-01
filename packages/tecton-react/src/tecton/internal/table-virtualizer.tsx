@@ -6,8 +6,17 @@
  * with a spacer row above and below standing in for the rest, so a table of
  * thousands of rows renders as fast as a short one.
  *
+ * - Rows come from `items` and a render function, called only for the rows
+ *   in view (a sort renders a screenful, not every row), or as elements.
  * - Rows are one height, measured from the rows rendered (the distance
  *   between two rows, so collapsed borders count once).
+ * - The columns keep the widths they had when first laid out (a
+ *   `colgroup` in percentages, `table-fixed`): with automatic layout every
+ *   scroll would resize them to the rows mounted. A table the caller made
+ *   `table-fixed` keeps its own widths.
+ * - A scroll is applied before the browser paints it, with a viewport of
+ *   rows ready beyond each edge, and rows that stay in view do not
+ *   re-render: a fast flick never shows a blank strip.
  * - The header sticks to the top of the container; the window starts below
  *   it.
  * - The row holding focus stays mounted when it scrolls out of view, so a
@@ -33,18 +42,88 @@ const TableVirtualContext =
 /** Row height before any layout (and on the server): Tecton's cells. */
 const ESTIMATED_ROW = 49
 
-/** For `Table`: the container's ref and the table's `aria-rowcount`. */
+/** Cells of locked columns clip what no longer fits, with an ellipsis. */
+const LOCKED_CLASS = "table-fixed [&_td]:overflow-hidden [&_td]:text-ellipsis"
+
+/** Locked columns: widths in % of the table, for the header's text. */
+type Columns =
+  | { state: "measuring" }
+  | { state: "caller" }
+  | {
+      state: "locked"
+      signature: string
+      widths: Array<{ span: number; percent: number }>
+    }
+
+/** What the header's first row says: a change re-measures the columns. */
+function signatureOf(row: HTMLTableRowElement) {
+  return [...row.cells]
+    .map((cell) => `${cell.colSpan}:${cell.textContent}`)
+    .join("|")
+}
+
+/**
+ * For `Table`: the container's ref, the table's `aria-rowcount`, and the
+ * locked columns (a `colgroup` and the table's classes).
+ */
 function useTableVirtualizer(virtualized: boolean) {
   const [container, setContainer] = React.useState<HTMLDivElement | null>(null)
   const [rowCount, setRowCount] = React.useState<number | undefined>()
+  const [columns, setColumns] = React.useState<Columns>({ state: "measuring" })
   const context = React.useMemo<TableVirtualContextValue | null>(
     () => (virtualized ? { container, setRowCount } : null),
     [virtualized, container]
   )
+
+  React.useLayoutEffect(() => {
+    if (!virtualized) return
+    const table = container?.querySelector("table")
+    const head = table?.tHead?.rows[0]
+    if (!table || !head) return
+    if (columns.state === "locked") {
+      // New, moved or renamed columns: measure them again.
+      if (signatureOf(head) !== columns.signature)
+        setColumns({ state: "measuring" })
+      return
+    }
+    if (columns.state === "caller") return
+    // The caller's own fixed layout and widths win.
+    if (getComputedStyle(table).tableLayout === "fixed") {
+      setColumns({ state: "caller" })
+      return
+    }
+    // Wait for rows: a header alone would make every column too narrow.
+    if (!table.tBodies.item(0)?.querySelector("tr[data-index]")) return
+    const total = table.getBoundingClientRect().width
+    if (total <= 0) return
+    setColumns({
+      state: "locked",
+      signature: signatureOf(head),
+      widths: [...head.cells].map((cell) => ({
+        span: cell.colSpan,
+        percent:
+          (cell.getBoundingClientRect().width / total / cell.colSpan) * 100,
+      })),
+    })
+  })
+
+  const locked = virtualized && columns.state === "locked"
   return {
     context,
     containerRef: virtualized ? setContainer : undefined,
     rowCount: virtualized ? rowCount : undefined,
+    tableClassName: locked ? LOCKED_CLASS : undefined,
+    colgroup: locked ? (
+      <colgroup data-slot="table-virtual-columns">
+        {columns.widths.map((column, at) => (
+          <col
+            key={at}
+            span={column.span > 1 ? column.span : undefined}
+            style={{ width: `${column.percent}%` }}
+          />
+        ))}
+      </colgroup>
+    ) : null,
   }
 }
 
@@ -88,18 +167,47 @@ function sameMeasures(a: Measures, b: Measures) {
   )
 }
 
-type BodyProps = React.ComponentProps<"tbody">
+type RenderRow<T> = (item: T, index: number) => React.ReactNode
+
+/** `TableBody`'s props: rows as elements, or `items` and a render function. */
+type TableBodyRowsProps<T> = Omit<React.ComponentProps<"tbody">, "children"> & {
+  /** The rows' data; `children` is then `(item, index) => <TableRow …>`. */
+  items?: ReadonlyArray<T>
+  children?: React.ReactNode | RenderRow<T>
+}
+
+/** Every row of `items`, for a table that is not virtualized. */
+function renderAll<T>(items: ReadonlyArray<T>, render: RenderRow<T>) {
+  return items.map((item, index) => render(item, index))
+}
 
 /**
- * For `TableBody`: its props, with the rows windowed when the table is
- * virtualized (the caller's `ref`, `onFocus` and `onBlur` still run).
+ * For `TableBody`: the `tbody`'s props, with the rows windowed when the
+ * table is virtualized (the caller's `ref`, `onFocus` and `onBlur` still
+ * run).
  */
-function useVirtualRows(props: BodyProps): BodyProps {
-  const { children, ref, onFocus: ownFocus, onBlur: ownBlur } = props
+function useVirtualRows<T>(
+  props: TableBodyRowsProps<T>
+): React.ComponentProps<"tbody"> {
+  const {
+    items,
+    children,
+    ref,
+    onFocus: ownFocus,
+    onBlur: ownBlur,
+    ...rest
+  } = props
   const context = React.useContext(TableVirtualContext)
   const virtualized = context !== null
-  const rows = virtualized ? React.Children.toArray(children) : NO_ROWS
-  const count = rows.length
+  const render = typeof children === "function" ? children : null
+  const elements = React.useMemo(
+    () =>
+      virtualized && !(items && render)
+        ? React.Children.toArray(children as React.ReactNode)
+        : NO_ROWS,
+    [virtualized, items, render, children]
+  )
+  const count = items && render ? items.length : elements.length
   const body = React.useRef<HTMLTableSectionElement | null>(null)
   const [focused, setFocused] = React.useState<number | null>(null)
   const [measures, setMeasures] = React.useState<Measures>({
@@ -108,12 +216,16 @@ function useVirtualRows(props: BodyProps): BodyProps {
     headerRows: 1,
     columns: 1,
   })
+  const [viewHeight, setViewHeight] = React.useState(0)
 
   const virtual = useVirtualList({
     count,
     stride: measures.stride,
     start: measures.headerHeight,
     keep: focused === null ? [] : [focused],
+    // A viewport of rows ready beyond each edge, applied in the frame.
+    overscanPx: viewHeight,
+    sync: true,
     enabled: virtualized,
   })
 
@@ -126,7 +238,8 @@ function useVirtualRows(props: BodyProps): BodyProps {
     return () => attach(null)
   }, [virtualized, container, attach])
 
-  // The rows' height, the header's, and the column count for the spacers.
+  // The rows' height, the header's, the view's, and the column count for
+  // the spacers.
   React.useLayoutEffect(() => {
     if (!virtualized || !body.current) return
     const table = body.current.closest("table")
@@ -167,6 +280,8 @@ function useVirtualRows(props: BodyProps): BodyProps {
       columns: Math.max(columns, 1),
     }
     setMeasures((previous) => (sameMeasures(previous, next) ? previous : next))
+    const height = container?.clientHeight ?? 0
+    setViewHeight((previous) => (previous === height ? previous : height))
   })
 
   const setRowCount = context?.setRowCount
@@ -183,7 +298,27 @@ function useVirtualRows(props: BodyProps): BodyProps {
     [ref]
   )
 
-  if (!virtualized) return props
+  // The rows rendered last time, reused while their source is unchanged:
+  // React skips an element it has already rendered, so a scroll renders
+  // only the rows entering the view. New data, a new render function or
+  // new elements start over.
+  const cache = React.useRef<{
+    sources: unknown
+    rows: Map<number, { rowIndex: number; row: React.ReactNode }>
+  }>({ sources: null, rows: new Map() })
+
+  if (!virtualized) {
+    return {
+      ...rest,
+      ref,
+      onFocus: ownFocus,
+      onBlur: ownBlur,
+      children:
+        items && render
+          ? renderAll(items, render)
+          : (children as React.ReactNode),
+    }
+  }
 
   const onFocus = (event: React.FocusEvent<HTMLTableSectionElement>) => {
     ownFocus?.(event)
@@ -195,6 +330,17 @@ function useVirtualRows(props: BodyProps): BodyProps {
     const next = event.relatedTarget as Node | null
     if (!next || !body.current?.contains(next)) setFocused(null)
   }
+
+  // What the rows are made from, compared by identity.
+  const sources: ReadonlyArray<unknown> =
+    items && render ? [items, render] : [elements]
+  const cached = cache.current.sources as ReadonlyArray<unknown> | null
+  const previousRows =
+    cached?.length === sources.length &&
+    cached.every((source, at) => source === sources[at])
+      ? cache.current.rows
+      : new Map<number, { rowIndex: number; row: React.ReactNode }>()
+  const rowsNow = new Map<number, { rowIndex: number; row: React.ReactNode }>()
 
   const { stride, headerRows, columns } = measures
   const spacer = (key: string, rowsSkipped: number) => (
@@ -210,21 +356,30 @@ function useVirtualRows(props: BodyProps): BodyProps {
   for (const index of virtual.indices) {
     if (index > previous + 1)
       rendered.push(spacer(`spacer-${index}`, index - previous - 1))
-    const row = rows[index]
-    rendered.push(
-      React.isValidElement<Record<string, unknown>>(row)
-        ? React.cloneElement(row, {
-            "aria-rowindex": headerRows + index + 1,
+    const rowIndex = headerRows + index + 1
+    const kept = previousRows.get(index)
+    let row: React.ReactNode
+    if (kept && kept.rowIndex === rowIndex) {
+      row = kept.row
+    } else {
+      const source =
+        items && render ? render(items[index], index) : elements[index]
+      row = React.isValidElement<Record<string, unknown>>(source)
+        ? React.cloneElement(source, {
+            "aria-rowindex": rowIndex,
             "data-index": index,
           })
-        : row
-    )
+        : source
+    }
+    rowsNow.set(index, { rowIndex, row })
+    rendered.push(row)
     previous = index
   }
   if (previous < count - 1)
     rendered.push(spacer("spacer-end", count - 1 - previous))
+  cache.current = { sources, rows: rowsNow }
 
-  return { ...props, children: rendered, ref: bodyRef, onFocus, onBlur }
+  return { ...rest, children: rendered, ref: bodyRef, onFocus, onBlur }
 }
 
 export {
@@ -233,3 +388,4 @@ export {
   useTableVirtualizer,
   useVirtualRows,
 }
+export type { TableBodyRowsProps }

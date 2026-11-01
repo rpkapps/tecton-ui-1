@@ -39,6 +39,12 @@ beforeEach(() => {
           toJSON() {},
         }) as DOMRect
       if (this.tagName === "THEAD") return box(0, HEADER)
+      // The table is 400 px wide; its first column 300 px, the second 100.
+      if (this.tagName === "TABLE") return box(0, HEADER)
+      if (this.tagName === "TH") {
+        const width = (this as HTMLTableCellElement).cellIndex === 0 ? 300 : 100
+        return { ...box(0, HEADER), width, right: width }
+      }
       if (this.tagName === "TR" && index !== undefined)
         return box(HEADER + Number(index) * ROW, ROW)
       return originalRect.call(this)
@@ -177,5 +183,145 @@ describe("Table virtualized", () => {
     expect(
       document.querySelector('[data-slot="table-virtual-spacer"]')
     ).toBeNull()
+  })
+
+  it("locks the columns at their first widths while rows scroll", () => {
+    render(<Wells />)
+    const cols = () =>
+      Array.from(
+        document.querySelectorAll<HTMLElement>(
+          '[data-slot="table-virtual-columns"] col'
+        )
+      ).map((col) => col.style.width)
+    expect(cols()).toEqual(["75%", "25%"])
+    expect(screen.getByRole("table")).toHaveClass("table-fixed")
+    scrollTo(HEADER + 5_000 * ROW)
+    expect(screen.getByText("Well 5000")).toBeInTheDocument()
+    expect(cols()).toEqual(["75%", "25%"])
+  })
+
+  it("leaves a table the caller made fixed with its own widths", () => {
+    render(
+      <div style={{ height: VIEW }}>
+        <Table virtualized style={{ tableLayout: "fixed" }}>
+          <TableHeader>
+            <TableRow>
+              <TableHead style={{ width: 120 }}>Well</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody items={WELLS}>
+            {(well) => (
+              <TableRow key={well.id}>
+                <TableCell>{well.name}</TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    )
+    expect(
+      document.querySelector('[data-slot="table-virtual-columns"]')
+    ).toBeNull()
+  })
+})
+
+describe("Table virtualized with items", () => {
+  const renderCount = new Map<string, number>()
+  function Counted({ id, name }: { id: string; name: string }) {
+    renderCount.set(id, (renderCount.get(id) ?? 0) + 1)
+    return <>{name}</>
+  }
+
+  function Items({
+    items,
+    render: renderRow,
+  }: {
+    items: typeof WELLS
+    render: (well: (typeof WELLS)[number]) => React.ReactNode
+  }) {
+    return (
+      <div style={{ height: VIEW }}>
+        <Table aria-label="Wells" virtualized>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Well</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody items={items}>{renderRow}</TableBody>
+        </Table>
+      </div>
+    )
+  }
+
+  it("renders only the rows in view, and again after a sort", () => {
+    const renderRow = vi.fn((well: (typeof WELLS)[number]) => (
+      <TableRow key={well.id}>
+        <TableCell>{well.name}</TableCell>
+      </TableRow>
+    ))
+    const { rerender } = render(<Items items={WELLS} render={renderRow} />)
+    expect(screen.getByText("Well 0")).toBeInTheDocument()
+    expect(renderRow.mock.calls.length).toBeLessThan(120)
+    expect(bodyRows().length).toBeLessThan(60)
+
+    renderRow.mockClear()
+    const sorted = [...WELLS].reverse()
+    rerender(<Items items={sorted} render={renderRow} />)
+    expect(screen.getByText("Well 9999")).toBeInTheDocument()
+    expect(screen.queryByText("Well 0")).toBeNull()
+    expect(renderRow.mock.calls.length).toBeLessThan(120)
+  })
+
+  it("does not re-render the rows that stay in view on a scroll", () => {
+    renderCount.clear()
+    const renderRow = (well: (typeof WELLS)[number]) => (
+      <TableRow key={well.id}>
+        <TableCell>
+          <Counted id={well.id} name={well.name} />
+        </TableCell>
+      </TableRow>
+    )
+    render(<Items items={WELLS} render={renderRow} />)
+    const row = screen.getByText("Well 3").closest("tr")
+    const before = renderCount.get("w3")
+    scrollTo(HEADER + 2 * ROW)
+    expect(screen.getByText("Well 3").closest("tr")).toBe(row)
+    expect(renderCount.get("w3")).toBe(before)
+  })
+
+  it("applies a scroll before the browser paints it", () => {
+    render(
+      <Items
+        items={WELLS}
+        render={(well) => (
+          <TableRow key={well.id}>
+            <TableCell>{well.name}</TableCell>
+          </TableRow>
+        )}
+      />
+    )
+    Object.defineProperty(container(), "scrollTop", {
+      configurable: true,
+      value: HEADER + 7_000 * ROW,
+    })
+    // A plain event, outside any test flush: the rows are there at once.
+    container().dispatchEvent(new Event("scroll"))
+    expect(screen.getByText("Well 7000")).toBeInTheDocument()
+  })
+
+  it("renders every item when the table is not virtualized", () => {
+    render(
+      <Table>
+        <TableBody items={WELLS.slice(0, 50)}>
+          {(well) => (
+            <TableRow key={well.id}>
+              <TableCell>{well.name}</TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    )
+    expect(document.querySelectorAll("tbody tr")).toHaveLength(50)
+    expect(screen.getByText("Well 49")).toBeInTheDocument()
   })
 })

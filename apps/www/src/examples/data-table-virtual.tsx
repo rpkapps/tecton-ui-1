@@ -24,6 +24,10 @@ import {
   TableHeader,
   TableRow,
 } from "@tecton/react/components/table"
+import {
+  ToggleGroup,
+  ToggleGroupItem,
+} from "@tecton/react/components/toggle-group"
 
 type Well = {
   id: string
@@ -60,6 +64,12 @@ const statusVariant = {
   "Shut in": "warning",
   Drilling: "info",
 } as const
+
+/** Row heights for each density: the table measures whichever is set. */
+const density = {
+  default: "",
+  compact: "[&_th]:h-8 [&_td]:py-1 text-xs",
+}
 
 const features = tableFeatures({
   rowSortingFeature,
@@ -132,6 +142,7 @@ const columns = columnHelper.columns([
 
 export default function DataTableVirtual() {
   const [sorting, setSorting] = React.useState<SortingState>([])
+  const [mode, setMode] = React.useState<keyof typeof density>("default")
   const table = useTable({
     features,
     data: wells,
@@ -143,9 +154,21 @@ export default function DataTableVirtual() {
 
   return (
     <div className="flex w-full max-w-3xl flex-col gap-3">
+      <ToggleGroup
+        variant="outline"
+        size="sm"
+        aria-label="Density"
+        value={[mode]}
+        onValueChange={(value) => {
+          if (value[0]) setMode(value[0] as keyof typeof density)
+        }}
+      >
+        <ToggleGroupItem value="default">Default</ToggleGroupItem>
+        <ToggleGroupItem value="compact">Compact</ToggleGroupItem>
+      </ToggleGroup>
       {/* The bounded height the table scrolls in. */}
       <div className="h-96 overflow-hidden rounded-md border">
-        <Table aria-label="Wells" virtualized>
+        <Table aria-label="Wells" className={density[mode]} virtualized>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -159,9 +182,10 @@ export default function DataTableVirtual() {
               </TableRow>
             ))}
           </TableHeader>
-          <TableBody>
-            {/* Every row: the table mounts only the ones in view. */}
-            {table.getRowModel().rows.map((row) => (
+          {/* The rows' data and how to render one: only the rows in view
+              are rendered, so a sort renders a screenful, not 10,000. */}
+          <TableBody items={table.getRowModel().rows}>
+            {(row) => (
               <TableRow key={row.id}>
                 {row.getAllCells().map((cell) => (
                   <TableCell key={cell.id}>
@@ -169,7 +193,7 @@ export default function DataTableVirtual() {
                   </TableCell>
                 ))}
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>

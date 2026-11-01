@@ -58,6 +58,6 @@ Register `rowExpandingFeature` with `createExpandedRowModel()` and pass `getSubR
 
 ### Virtual scrolling
 
-For thousands of rows, set `virtualized` on the `Table` and give its parent a bounded height (here `h-96`, with the border). Render `table.getRowModel().rows` as usual. The body mounts only the rows in view, the header sticks while the rows scroll, and sorting, selection and row actions work on every row. Rows must be one height. For page-sized chunks instead, use [pagination](#pagination). `Reorderable` sees only the rows in view, so reordering a virtualized table moves rows within the visible window.
+For thousands of rows, set `virtualized` on the `Table` and give its parent a bounded height (here `h-96`, with the border). Pass `items={table.getRowModel().rows}` to `TableBody` and render one row with a function: only the rows in view are rendered, so sorting 10,000 rows renders a screenful. The header sticks while the rows scroll, the columns keep their first widths, and the row height is measured, so the Default / Compact switch works as it does on a short table. Rows must be one height within the table. For page-sized chunks instead, use [pagination](#pagination). `Reorderable` sees only the rows in view, so reordering a virtualized table moves rows within the visible window.
 
 <ComponentPreview name="data-table-virtual" align="start" />

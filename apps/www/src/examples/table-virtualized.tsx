@@ -26,8 +26,8 @@ export default function TableVirtualized() {
             <TableHead className="text-end">RT (Ωm)</TableHead>
           </TableRow>
         </TableHeader>
-        <TableBody>
-          {readings.map((reading) => (
+        <TableBody items={readings}>
+          {(reading) => (
             <TableRow key={reading.depth}>
               <TableCell className="text-end font-mono tabular-nums">
                 {reading.depth.toFixed(1)}
@@ -39,7 +39,7 @@ export default function TableVirtualized() {
                 {reading.resistivity}
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </div>

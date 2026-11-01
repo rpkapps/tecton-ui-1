@@ -7,6 +7,7 @@
  * their owner with `offset(index)`; `size` is the height of the whole list.
  */
 import * as React from "react"
+import { flushSync } from "react-dom"
 
 type VirtualListOptions = {
   count: number
@@ -14,6 +15,16 @@ type VirtualListOptions = {
   stride: number
   /** Rows rendered beyond each edge of the view. */
   overscan?: number
+  /**
+   * Px rendered beyond each edge of the view, when more than `overscan`
+   * rows: a fast flick then finds rows already in place.
+   */
+  overscanPx?: number
+  /**
+   * Applies a scroll before the browser paints it (`flushSync`), so the
+   * rows for a scroll position are in place in the same frame.
+   */
+  sync?: boolean
   /** Indices that stay rendered wherever the scroll is (the focused row). */
   keep?: ReadonlyArray<number>
   /**
@@ -41,6 +52,8 @@ function useVirtualList({
   count,
   stride,
   overscan = 4,
+  overscanPx = 0,
+  sync = false,
   keep = [],
   start = 0,
   enabled = true,
@@ -48,6 +61,10 @@ function useVirtualList({
   const element = React.useRef<HTMLElement | null>(null)
   const [view, setView] = React.useState({ top: 0, height: 0 })
   const cleanup = React.useRef<(() => void) | null>(null)
+  const syncRef = React.useRef(sync)
+  React.useInsertionEffect(() => {
+    syncRef.current = sync
+  })
 
   const measure = React.useCallback(() => {
     const el = element.current
@@ -66,14 +83,15 @@ function useVirtualList({
       element.current = el
       if (!el || !enabled) return
       measure()
-      el.addEventListener("scroll", measure, { passive: true })
+      const onScroll = () => (syncRef.current ? flushSync(measure) : measure())
+      el.addEventListener("scroll", onScroll, { passive: true })
       const observer =
         typeof ResizeObserver === "undefined"
           ? null
           : new ResizeObserver(measure)
       observer?.observe(el)
       cleanup.current = () => {
-        el.removeEventListener("scroll", measure)
+        el.removeEventListener("scroll", onScroll)
         observer?.disconnect()
       }
     },
@@ -82,11 +100,9 @@ function useVirtualList({
 
   const height = view.height || stride * FALLBACK_ROWS
   const top = Math.max(0, view.top - start)
-  const first = Math.max(0, Math.floor(top / stride) - overscan)
-  const last = Math.min(
-    count - 1,
-    Math.ceil((top + height) / stride) + overscan
-  )
+  const extra = Math.max(overscan, Math.ceil(overscanPx / stride))
+  const first = Math.max(0, Math.floor(top / stride) - extra)
+  const last = Math.min(count - 1, Math.ceil((top + height) / stride) + extra)
   const keepKey = keep.join(",")
   const indices = React.useMemo(() => {
     if (!enabled) return Array.from({ length: count }, (_, i) => i)

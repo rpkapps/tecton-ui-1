@@ -254,9 +254,11 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
 - **`table`** — `Table` takes `virtualized`: its container becomes the scroll element
   (`h-full overflow-auto`, filling a parent of bounded height), `TableHeader` sticks
   (`sticky top-0 z-10`; the colour is on the `th`) and `TableBody` mounts only the rows in view,
-  with spacer rows for the rest, `aria-rowcount` / `aria-rowindex` and the focused row kept. The
-  logic is `src/tecton/internal/table-virtualizer.tsx` (on the shared `useVirtualList`); without
-  `virtualized` the markup is unchanged. Tested in `src/tecton/__tests__/table-virtualized.test.tsx`.
+  with spacer rows for the rest, `aria-rowcount` / `aria-rowindex` and the focused row kept;
+  `TableBody` takes `items` and a render function called only for the rows in view; the columns are
+  locked at their first widths (a percentage `colgroup`, `table-fixed`) unless the caller made the
+  table fixed. The logic is `src/tecton/internal/table-virtualizer.tsx` (on the shared
+  `useVirtualList`); without `virtualized` the markup is unchanged. Tested in `src/tecton/__tests__/table-virtualized.test.tsx`.
 
 ## Renaming the package
 
