@@ -40,8 +40,11 @@ type PointerDragOptions = {
   onStart: () => boolean | void
   /** The pointer in the viewport, and its travel since the press. */
   onMove: (point: Point, travel: Point) => void
-  /** Called once when a started drag ends: `drop` on release. */
-  onEnd: (drop: boolean) => void
+  /**
+   * Called once when a started drag ends: `drop` on release, with where the
+   * preview was then (for the item to land from there), if there was one.
+   */
+  onEnd: (drop: boolean, preview: DOMRect | null) => void
   /** Called once when the press is over, dragged or not. */
   onStop?: () => void
 }
@@ -282,10 +285,11 @@ function trackPointerDrag(
   const end = (drop: boolean) => {
     if (ended) return
     const started = dragging
+    const at = preview?.getBoundingClientRect() ?? null
     stop()
     if (!started) return
     if (drop) swallowNextClick(view)
-    onEnd(drop)
+    onEnd(drop, at)
   }
 
   const unlisten = listen(view, {

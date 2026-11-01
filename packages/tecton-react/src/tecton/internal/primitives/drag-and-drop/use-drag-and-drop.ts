@@ -73,7 +73,15 @@ type DragAndDropOptions<TPlace> = {
   /** Where the pointer preview goes (the portal target); the body otherwise. */
   getPreviewContainer?: () => HTMLElement | null
   onDragStart?: (keys: ReadonlyArray<string>, mode: DragMode) => void
-  onDrop: (place: TPlace, keys: ReadonlyArray<string>) => void
+  /**
+   * Drops `keys` on `place`. `from`: where the pointer preview was let go,
+   * for the dropped item to animate from there into its place.
+   */
+  onDrop: (
+    place: TPlace,
+    keys: ReadonlyArray<string>,
+    details: { mode: DragMode; from: DOMRect | null }
+  ) => void
   /**
    * Focuses an item after a keyboard or virtual drag (the first dropped
    * one); its element's `focus()` by default.
@@ -147,13 +155,14 @@ function useDragAndDrop<TPlace>(
       return keys
     }
 
-    const finish = (place: TPlace | null) => {
+    const finish = (place: TPlace | null, from: DOMRect | null = null) => {
       const { dragging, mode } = store.get()
       stopSession = null
       store.set({ mode: null, dragging: [], aimed: null, places: [] })
       strategy().onAim?.(null, mode ?? "pointer")
       const { options, t } = latest.current
-      if (place !== null) options.onDrop(place, dragging)
+      if (place !== null)
+        options.onDrop(place, dragging, { mode: mode ?? "pointer", from })
       if (mode !== "pointer")
         announce(t(place === null ? "dropCanceled" : "dropComplete"), {
           politeness: "assertive",
@@ -198,7 +207,7 @@ function useDragAndDrop<TPlace>(
           },
           onMove: (point) =>
             aim(strategy().placeAt(point, store.get().dragging)),
-          onEnd: (drop) => finish(drop ? store.get().aimed : null),
+          onEnd: (drop, from) => finish(drop ? store.get().aimed : null, from),
           onStop: () => {
             if (store.get().mode === null) stopSession = null
           },

@@ -60,6 +60,12 @@ In a right-to-left layout the first item is rightmost, and the arrow keys follow
 - **Keyboard:** focus the handle and press Enter or Space. The arrow keys (or Tab) move between gaps, each one announced ("Insert between B-3 and C-7"). Enter or Space drops and Escape cancels. The list scrolls to keep the aimed gap in view, clear of a sticky header. Focus returns to the moved item's handle.
 - **Screen reader on a touch screen:** activating the handle turns every gap into a button. Double tap one to drop.
 
+## Animation
+
+A drop animates with a view transition: the dropped item glides from where it was let go (or, from the keyboard, from its old place) into its new one, and the items it passes slide aside. The new order is committed inside a React transition, so it animates when `onValueChange` puts it in React state, as `setOrder` does above; a value set in an external store commits at once, without the animation. Only the items animate, and only on a drop, so your own transitions elsewhere are unaffected.
+
+Nothing moves when the user has asked for reduced motion, in a browser without view transitions, or under React older than 19.3: the items take their new places at once.
+
 {/* guidelines:start */}
 
 ## Usage guidelines
@@ -82,7 +88,7 @@ In a right-to-left layout the first item is rightmost, and the arrow keys follow
 
 <Do>
 
-Keep the order in state as an array of item values, pass it as `value`, render the items in that order and write `onValueChange`'s array back.
+Keep the order in state as an array of item values, pass it as `value`, render the items in that order and write `onValueChange`'s array back. Keep it in React state (`useState`, a reducer) so the drop animates: it is committed in a transition.
 
 </Do>
 
