@@ -916,7 +916,7 @@ Hide low-priority columns below `md` with `hidden md:table-cell` on both the hea
 
 ### Column resizing
 
-Register `columnSizingFeature`, keep the `columnSizing` state in React and put a [Table Column Resizer](/docs/tecton/table-column-resizer) on the end edge of each `TableHead` (`className="relative"`, `style={{ width: header.getSize() }}`). Give the `Table` `table-fixed` and the total width (`table.getTotalSize()`), and let cells `truncate`. The limits come from `defaultColumn` (`minSize`, `maxSize`) or each column's own; `resetValue={column.columnDef.size}` is what Enter and a double click go back to. The resizer is a focusable separator: the arrow keys resize too, mirrored in a right-to-left table.
+Register `columnSizingFeature`, keep the `columnSizing` state in React and put a [Table Column Resizer](/docs/tecton/table-column-resizer) on the end edge of each `TableHead` (`className="relative"`, `style={{ width: header.getSize() }}`). Give the `Table` `table-fixed`, the total width (`table.getTotalSize()`) and `minWidth: "100%"`, leave the last column's width unset so it takes the space left, and let cells `truncate`. The limits come from `defaultColumn` (`minSize`, `maxSize`) or each column's own; `resetValue={column.columnDef.size}` is what Enter and a double click go back to. The resizer is a focusable separator: the arrow keys resize too, mirrored in a right-to-left table.
 
 <ComponentPreview name="data-table-column-resize" align="start" />
 

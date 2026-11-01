@@ -121,22 +121,25 @@ export default function DataTableColumnResize() {
 
   return (
     <div className="w-full max-w-3xl overflow-hidden rounded-md border">
-      {/* `table-fixed` and a total width: each column keeps its own width. */}
+      {/* `table-fixed` and the columns' total width, at least the
+          container's: each column keeps its own width, and the last one,
+          given none, takes the space left. */}
       <Table
         aria-label="Wells"
         className="table-fixed"
-        style={{ width: table.getTotalSize() }}
+        style={{ width: table.getTotalSize(), minWidth: "100%" }}
       >
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
-              {headerGroup.headers.map((header) => {
+              {headerGroup.headers.map((header, at, headers) => {
                 const { column } = header
+                const last = at === headers.length - 1
                 return (
                   <TableHead
                     key={header.id}
                     className="relative"
-                    style={{ width: header.getSize() }}
+                    style={last ? undefined : { width: header.getSize() }}
                   >
                     <div className="truncate">
                       {header.isPlaceholder ? null : (

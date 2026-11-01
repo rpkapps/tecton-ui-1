@@ -25,7 +25,16 @@ import {
  *
  * It holds no width of its own beyond `defaultValue`: give the header
  * `className="relative"`, set the column's width from `value`, and give the
- * `Table` `table-fixed` so the columns keep the widths they are given.
+ * `Table` `table-fixed` so the columns keep the widths they are given. To
+ * fill the container, give the table `minWidth: "100%"` and leave the last
+ * column's width unset: it takes the space left.
+ *
+ * The look: a short, quiet line at rest (none after the last column); the
+ * header's full height while the pointer is over the header; a 2 px line
+ * in the active outline colour on the grip (strong in both themes), with
+ * a tint on hover and the focus ring, centred on it, on keyboard focus;
+ * and while dragging, a guide line down the table in view and the width
+ * beside it.
  */
 
 type TableColumnResizerReason = "drag" | "keyboard" | "reset"
@@ -88,6 +97,8 @@ function TableColumnResizer({
 }: TableColumnResizerProps) {
   const [value, setValue] = useControlled(valueProp, defaultValue)
   const [dragging, setDragging] = React.useState(false)
+  // While dragging: how far the guide runs down the visible table.
+  const [guide, setGuide] = React.useState(0)
   const rtl = useDirection() === "rtl"
   const t = useTranslations("tableColumnResizer")
   const stop = React.useRef<(() => void) | null>(null)
@@ -136,9 +147,23 @@ function TableColumnResizer({
       data-dragging={dragging ? "" : undefined}
       data-disabled={disabled ? "" : undefined}
       className={cn(
-        "group/resizer absolute inset-y-0 end-0 z-10 -me-1.5 w-3 cursor-col-resize touch-none outline-none select-none",
-        "after:absolute after:inset-y-1.5 after:start-[calc(50%-1px)] after:w-0.5 after:rounded-full after:bg-border after:transition-colors",
-        "hover:after:bg-primary focus-visible:after:inset-y-0 focus-visible:after:bg-ring data-dragging:after:inset-y-0 data-dragging:after:bg-primary",
+        // A 12 px grip centred on the column's end edge.
+        "absolute inset-y-0 end-0 z-10 -me-1.5 w-3 cursor-col-resize touch-none outline-none select-none",
+        // The line: short and quiet at rest, the header's full height while
+        // the pointer is over the header, 2 px of the active outline colour
+        // on the grip.
+        "after:pointer-events-none after:absolute after:start-[calc(50%-0.5px)] after:top-1/3 after:bottom-1/3 after:w-px after:bg-border",
+        "in-[thead:hover]:after:inset-y-0",
+        "hover:after:inset-y-0 hover:after:start-[calc(50%-1px)] hover:after:w-0.5 hover:after:bg-outline-active-border",
+        "focus-visible:after:inset-y-0 focus-visible:after:start-[calc(50%-1px)] focus-visible:after:w-0.5 focus-visible:after:bg-outline-active-border",
+        "data-dragging:after:inset-y-0 data-dragging:after:start-[calc(50%-1px)] data-dragging:after:w-0.5 data-dragging:after:bg-outline-active-border",
+        // Behind the line, centred on it: the grip's tint on hover, the
+        // focus ring on keyboard focus.
+        "before:pointer-events-none before:absolute before:inset-y-1 before:start-0.5 before:end-0.5 before:rounded-sm",
+        "hover:before:bg-outline-active-border/15 focus-visible:before:ring-2 focus-visible:before:ring-ring data-dragging:before:bg-transparent",
+        // The table's end edge is no divider: the last column shows its
+        // line only when it is reached for.
+        "[th:last-child>&]:after:opacity-0 [th:last-child>&]:hover:after:opacity-100 [th:last-child>&]:focus-visible:after:opacity-100 [th:last-child>&]:data-dragging:after:opacity-100",
         "data-disabled:pointer-events-none data-disabled:after:hidden",
         className
       )}
@@ -160,6 +185,13 @@ function TableColumnResizer({
             } catch {
               // A pointer the browser no longer tracks.
             }
+            // From the header's bottom to the bottom of the table in view.
+            const scroller =
+              element.closest<HTMLElement>('[data-slot="table-container"]') ??
+              element.closest("table")
+            const head = element.parentElement?.getBoundingClientRect()
+            const box = scroller?.getBoundingClientRect()
+            setGuide(head && box ? Math.max(0, box.bottom - head.bottom) : 0)
             setDragging(true)
           },
           onMove: (_point, travel) =>
@@ -212,7 +244,26 @@ function TableColumnResizer({
         event.stopPropagation()
       }}
       {...props}
-    />
+    >
+      {dragging ? (
+        <>
+          {/* A guide down the table at the new edge, and the width. */}
+          <span
+            aria-hidden="true"
+            data-slot="table-column-resizer-guide"
+            className="pointer-events-none absolute start-[calc(50%-0.5px)] top-full w-px bg-outline-active-border"
+            style={{ height: guide }}
+          />
+          <span
+            aria-hidden="true"
+            data-slot="table-column-resizer-width"
+            className="pointer-events-none absolute start-[calc(50%+0.5rem)] top-full mt-2 inline-flex h-[22px] items-center rounded-sm bg-foreground px-2 font-mono text-xs whitespace-nowrap text-background tabular-nums"
+          >
+            {value} px
+          </span>
+        </>
+      ) : null}
+    </div>
   )
 }
 

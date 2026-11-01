@@ -19,7 +19,7 @@ import { TableColumnResizer } from "@tecton/react/tecton/table-column-resizer"
 ## Do
 
 - Put one `TableColumnResizer` last in each resizable `TableHead`, give that head `className="relative"` and `style={{ width }}` from the same state.
-- Give the `Table` `className="table-fixed"` and its total width, and let cells `truncate`, so each column keeps the width it is given.
+- Give the `Table` `className="table-fixed"`, its total width and `minWidth: "100%"`, leave the last column's width unset so it fills the rest, and let cells `truncate`.
 - Name it with `label` (the column's name: "Resize Field"), bound it with `min` and `max`, and pass `resetValue` for Enter and a double click.
 - Write `onValueChange` back to the width state; save a layout from `onValueCommitted`, which fires once a drag ends.
 

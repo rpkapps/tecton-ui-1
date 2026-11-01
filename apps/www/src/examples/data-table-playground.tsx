@@ -653,14 +653,20 @@ export default function DataTablePlayground() {
               aria-label="Wells"
               virtualized={virtual}
               className={cn(density[mode], resize && "table-fixed")}
-              style={resize ? { width: table.getTotalSize() } : undefined}
+              style={
+                resize
+                  ? { width: table.getTotalSize(), minWidth: "100%" }
+                  : undefined
+              }
             >
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (
                   <TableRow key={headerGroup.id}>
-                    {headerGroup.headers.map((header) => {
+                    {headerGroup.headers.map((header, at, headers) => {
                       const { column } = header
                       const sorted = column.getIsSorted()
+                      // The last column takes the space left.
+                      const last = at === headers.length - 1
                       const content = header.isPlaceholder ? null : (
                         <table.FlexRender header={header} />
                       )
@@ -674,7 +680,10 @@ export default function DataTablePlayground() {
                           resize && "relative",
                           !resize && PINNED.includes(column.id) && "w-11"
                         ),
-                        style: resize ? { width: header.getSize() } : undefined,
+                        style:
+                          resize && !last
+                            ? { width: header.getSize() }
+                            : undefined,
                       }
                       const resizer =
                         resize && DATA_COLUMNS.includes(column.id) ? (

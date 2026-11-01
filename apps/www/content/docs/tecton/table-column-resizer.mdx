@@ -31,7 +31,14 @@ import { TableColumnResizer } from "@tecton/react/tecton/table-column-resizer"
 </Table>
 ```
 
-The resizer holds no layout itself. It sits on the end edge of a `relative` header and reports a width in px. You apply that width to the header, and `table-fixed` makes the column keep it. With TanStack Table, the width state is `columnSizing`: see the [column resizing recipe](/docs/components/data-table#column-resizing).
+The resizer holds no layout itself. It sits on the end edge of a `relative` header and reports a width in px. You apply that width to the header, and `table-fixed` makes the column keep it. To fill the container, give the table `minWidth: "100%"` next to its total width and leave the last column's width unset: it takes the space left, and the table scrolls once the columns add up to more. With TanStack Table, the width state is `columnSizing`: see the [column resizing recipe](/docs/components/data-table#column-resizing).
+
+## Look
+
+- **At rest:** a short, quiet line in the middle of the header between columns, and none after the last column, so the table's edge does not read as a divider.
+- **Pointer over the header:** the lines run the header's full height, showing where to grab.
+- **Pointer on a grip:** a 2 px line in the active outline colour over a soft tint. Keyboard focus shows the same line inside the focus ring, centred on it.
+- **Dragging:** a guide runs down the table in view at the new edge, and a chip beside it shows the width (`190 px`).
 
 ## Keyboard
 
@@ -69,7 +76,7 @@ Put one `TableColumnResizer` last in each resizable `TableHead`, give that head 
 
 <Do>
 
-Give the `Table` `className="table-fixed"` and its total width, and let cells `truncate`, so each column keeps the width it is given.
+Give the `Table` `className="table-fixed"`, its total width and `minWidth: "100%"`, leave the last column's width unset so it fills the rest, and let cells `truncate`.
 
 </Do>
 

@@ -31,14 +31,26 @@ export default function TableColumnResizerDemo() {
 
   return (
     <div className="w-full max-w-xl overflow-hidden rounded-md border">
-      <Table aria-label="Wells" className="w-auto table-fixed">
+      <Table
+        aria-label="Wells"
+        className="table-fixed"
+        style={{
+          width: COLUMNS.reduce((sum, column) => sum + widths[column.id], 0),
+          minWidth: "100%",
+        }}
+      >
         <TableHeader>
           <TableRow>
-            {COLUMNS.map((column) => (
+            {COLUMNS.map((column, at) => (
               <TableHead
                 key={column.id}
                 className="relative"
-                style={{ width: widths[column.id] }}
+                // The last column takes the space left.
+                style={
+                  at === COLUMNS.length - 1
+                    ? undefined
+                    : { width: widths[column.id] }
+                }
               >
                 <div className="truncate">{column.label}</div>
                 <TableColumnResizer

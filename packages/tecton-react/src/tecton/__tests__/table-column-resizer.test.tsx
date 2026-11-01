@@ -147,4 +147,25 @@ describe("TableColumnResizer", () => {
     fireEvent.keyDown(separator(), { key: "End" })
     expect(separator()).toHaveAttribute("aria-valuenow", "160")
   })
+
+  it("shows a guide and the width while dragging, and only then", () => {
+    render(<Resizer />)
+    const guide = () =>
+      document.querySelector('[data-slot="table-column-resizer-guide"]')
+    const width = () =>
+      document.querySelector('[data-slot="table-column-resizer-width"]')
+    expect(guide()).toBeNull()
+    fireEvent.pointerDown(separator(), {
+      button: 0,
+      pointerId: 1,
+      clientX: 160,
+      clientY: 10,
+    })
+    fireEvent.pointerMove(document, { pointerId: 1, clientX: 200, clientY: 10 })
+    expect(guide()).toHaveAttribute("aria-hidden", "true")
+    expect(width()).toHaveTextContent("200 px")
+    fireEvent.pointerUp(document, { pointerId: 1, clientX: 200, clientY: 10 })
+    expect(guide()).toBeNull()
+    expect(width()).toBeNull()
+  })
 })
