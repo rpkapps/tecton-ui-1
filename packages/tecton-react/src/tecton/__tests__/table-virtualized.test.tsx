@@ -185,19 +185,63 @@ describe("Table virtualized", () => {
     ).toBeNull()
   })
 
-  it("locks the columns at their first widths in px, the last one taking the rest", () => {
+  const lockedWidths = () =>
+    Array.from(
+      document.querySelectorAll<HTMLElement>(
+        '[data-slot="table-virtual-columns"] col'
+      )
+    ).map((col) => col.style.width)
+
+  it("locks the columns in px, spreading the space left, the last one taking the rest", () => {
+    // A 600 px container: 200 px past the columns' content (300 and 100),
+    // spread by their widths; the last column has no width of its own.
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(600)
     render(<Wells />)
-    const cols = () =>
-      Array.from(
-        document.querySelectorAll<HTMLElement>(
-          '[data-slot="table-virtual-columns"] col'
-        )
-      ).map((col) => col.style.width)
-    expect(cols()).toEqual(["300px", ""])
+    expect(lockedWidths()).toEqual(["450px", ""])
     expect(screen.getByRole("table")).toHaveClass("table-fixed")
     scrollTo(HEADER + 5_000 * ROW)
     expect(screen.getByText("Well 5000")).toBeInTheDocument()
-    expect(cols()).toEqual(["300px", ""])
+    expect(lockedWidths()).toEqual(["450px", ""])
+  })
+
+  it("keeps every column at its content's width in a narrower container", () => {
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(300)
+    render(<Wells />)
+    // 400 px of columns in 300: the table scrolls sideways.
+    expect(lockedWidths()).toEqual(["300px", "100px"])
+  })
+
+  it("keeps a column of controls as narrow as its control", () => {
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(600)
+    render(
+      <div style={{ height: VIEW }}>
+        <Table virtualized>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Well</TableHead>
+              <TableHead>
+                <input type="checkbox" aria-label="Select all" />
+              </TableHead>
+              <TableHead>Open</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {WELLS.slice(0, 100).map((well) => (
+              <TableRow key={well.id}>
+                <TableCell>{well.name}</TableCell>
+                <TableCell>
+                  <input type="checkbox" aria-label={`Select ${well.name}`} />
+                </TableCell>
+                <TableCell>Open</TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
+    )
+    // Content 300, 100 (+4 for the focus ring) and 100: the 96 px left go
+    // to the columns of text only.
+    expect(lockedWidths()).toEqual(["372px", "104px", ""])
   })
 
   it("hands the columns to the caller's widths and back (resizing)", () => {

@@ -204,6 +204,11 @@ const PAGE_SIZES = [10, 20, 40, 100]
 /** The columns that stay first, before the ones that move. */
 // The drag handle comes first, then the selection checkbox.
 const PINNED = ["drag", "select"]
+/** Pinned columns hold one control each: as narrow as it. */
+const PINNED_CLASS: Record<string, string> = {
+  drag: "w-9 ps-2 pe-0",
+  select: "w-9",
+}
 const DATA_COLUMNS = ["name", "field", "status", "depth", "operator"]
 const LABELS: Record<string, string> = {
   name: "Name",
@@ -256,7 +261,7 @@ function columnsFor({
       ? [
           columnHelper.display({
             id: "drag",
-            size: 44,
+            size: 36,
             enableSorting: false,
             header: () => <span className="sr-only">Move</span>,
             cell: () => <ReorderableHandle />,
@@ -267,7 +272,7 @@ function columnsFor({
       ? [
           columnHelper.display({
             id: "select",
-            size: 44,
+            size: 36,
             enableSorting: false,
             header: ({ table }) => (
               <Checkbox
@@ -698,7 +703,7 @@ export default function DataTablePlayground() {
                           : undefined,
                         className: cn(
                           resize && "relative",
-                          !resize && PINNED.includes(column.id) && "w-11"
+                          PINNED.includes(column.id) && PINNED_CLASS[column.id]
                         ),
                         style:
                           resize && !last
@@ -749,7 +754,10 @@ export default function DataTablePlayground() {
                   const cells = row.getAllCells().map((cell) => (
                     <TableCell
                       key={cell.id}
-                      className={resize ? "truncate" : undefined}
+                      className={cn(
+                        resize && "truncate",
+                        PINNED_CLASS[cell.column.id]
+                      )}
                     >
                       {cellContent(cell)}
                     </TableCell>

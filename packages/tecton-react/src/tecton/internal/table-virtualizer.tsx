@@ -10,12 +10,15 @@
  *   in view (a sort renders a screenful, not every row), or as elements.
  * - Rows are one height, measured from the rows rendered (the distance
  *   between two rows, so collapsed borders count once).
- * - The columns keep the widths they had when first laid out, in px (a
- *   `colgroup`, `table-fixed`), and the last one takes the space left: with
- *   automatic layout every scroll would resize them to the rows mounted,
- *   and in percentages a narrower container would squeeze a small column
- *   (a checkbox) below its content. A table the caller made `table-fixed`,
- *   or whose header cells have widths, keeps its own.
+ * - The columns are locked in px (a `colgroup`, `table-fixed`): with
+ *   automatic layout every scroll would resize them to the rows mounted.
+ *   Each keeps the width of its content as first laid out (the header and
+ *   the rows first rendered); the space left goes to the columns of text,
+ *   the last one taking the rest, while a column of controls only (a
+ *   checkbox, a drag handle) stays as narrow as its control. When the
+ *   container is too narrow for them all, the table scrolls sideways. A
+ *   table the caller made `table-fixed`, or whose header cells have
+ *   widths, keeps its own.
  * - A scroll is applied before the browser paints it, with a viewport of
  *   rows ready beyond each edge, and rows that stay in view do not
  *   re-render: a fast flick never shows a blank strip.
@@ -47,24 +50,95 @@ const ESTIMATED_ROW = 49
 /** Cells of locked columns clip what no longer fits, with an ellipsis. */
 const LOCKED_CLASS = "table-fixed [&_td]:overflow-hidden [&_td]:text-ellipsis"
 
+/** Room past a control (a checkbox, a drag handle) for its focus ring. */
+const CONTROL_SLACK = 4
+
+type LockedColumn = {
+  span: number
+  /** The width of the column's content, in px, as first laid out. */
+  content: number
+  /** Cells with no text, only a control: such a column never grows. */
+  control: boolean
+}
+
 /**
- * Locked columns: each one's width in px as first laid out (the last one's
- * is left out: it takes the space left), for the header's text.
+ * Locked columns, measured at their content's width (the header's text and
+ * the rows first rendered); the space left is spread over the columns of
+ * text when the table is drawn.
  */
 type Columns =
   | { state: "measuring" }
   | { state: "caller" }
-  | {
-      state: "locked"
-      signature: string
-      widths: Array<{ span: number; px: number | null }>
-    }
+  | { state: "locked"; signature: string; columns: Array<LockedColumn> }
 
 /** What the header's first row says: a change re-measures the columns. */
 function signatureOf(row: HTMLTableRowElement) {
   return [...row.cells]
     .map((cell) => `${cell.colSpan}:${cell.textContent}`)
     .join("|")
+}
+
+/**
+ * The header's first row as columns: each cell's content width per column
+ * it spans, and whether the rows show only controls under it.
+ */
+function measureColumns(table: HTMLTableElement, head: HTMLTableRowElement) {
+  // Every column at its content's width, none given the space left.
+  const width = table.style.width
+  table.style.width = "max-content"
+  try {
+    return contentWidths(table, head)
+  } finally {
+    table.style.width = width
+  }
+}
+
+function contentWidths(table: HTMLTableElement, head: HTMLTableRowElement) {
+  const cells = [...head.cells]
+  const total = cells.reduce((sum, cell) => sum + cell.colSpan, 0)
+  const rows = [
+    ...(table.tBodies.item(0)?.querySelectorAll("tr[data-index]") ?? []),
+  ].filter((row) => (row as HTMLTableRowElement).cells.length === total)
+  let start = 0
+  return cells.map((cell): LockedColumn => {
+    const at = start
+    start += cell.colSpan
+    const control =
+      cell.colSpan === 1 &&
+      rows.length > 0 &&
+      rows.every((row) => {
+        const body = (row as HTMLTableRowElement).cells[at]
+        return !body.textContent.trim() && !!body.firstElementChild
+      })
+    return {
+      span: cell.colSpan,
+      content:
+        Math.ceil(cell.getBoundingClientRect().width / cell.colSpan) +
+        (control ? CONTROL_SLACK : 0),
+      control,
+    }
+  })
+}
+
+/**
+ * Each column's width in px for a container `available` px wide: the
+ * space left goes to the columns of text, by their widths, and the last
+ * column takes it (no width of its own); when nothing is left, every
+ * column keeps its content's width and the table scrolls sideways.
+ */
+function widthsFor(columns: Array<LockedColumn>, available: number) {
+  const span = (column: LockedColumn) => column.content * column.span
+  const used = columns.reduce((sum, column) => sum + span(column), 0)
+  const left = Math.max(0, available - used)
+  const growing = columns.some((column) => !column.control)
+    ? columns.filter((column) => !column.control)
+    : columns
+  const share = growing.reduce((sum, column) => sum + span(column), 0)
+  return columns.map((column, at) => {
+    if (left > 0 && at === columns.length - 1) return null
+    const grow = growing.includes(column) && share > 0
+    return column.content + (grow ? (left * column.content) / share : 0)
+  })
 }
 
 /**
@@ -75,10 +149,23 @@ function useTableVirtualizer(virtualized: boolean) {
   const [container, setContainer] = React.useState<HTMLDivElement | null>(null)
   const [rowCount, setRowCount] = React.useState<number | undefined>()
   const [columns, setColumns] = React.useState<Columns>({ state: "measuring" })
+  const [available, setAvailable] = React.useState(0)
   const context = React.useMemo<TableVirtualContextValue | null>(
     () => (virtualized ? { container, setRowCount } : null),
     [virtualized, container]
   )
+  const locked = virtualized && columns.state === "locked"
+
+  // The container's inner width: the space the locked columns share.
+  React.useLayoutEffect(() => {
+    if (!locked || !container) return
+    const update = () => setAvailable(container.clientWidth)
+    update()
+    if (typeof ResizeObserver === "undefined") return
+    const observer = new ResizeObserver(update)
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [locked, container])
 
   React.useLayoutEffect(() => {
     if (!virtualized) return
@@ -110,21 +197,17 @@ function useTableVirtualizer(virtualized: boolean) {
     // Wait for rows: a header alone would make every column too narrow.
     if (!table.tBodies.item(0)?.querySelector("tr[data-index]")) return
     if (table.getBoundingClientRect().width <= 0) return
-    const cells = [...head.cells]
     setColumns({
       state: "locked",
       signature: signatureOf(head),
-      widths: cells.map((cell, at) => ({
-        span: cell.colSpan,
-        px:
-          at === cells.length - 1
-            ? null
-            : cell.getBoundingClientRect().width / cell.colSpan,
-      })),
+      columns: measureColumns(table, head),
     })
   })
 
-  const locked = virtualized && columns.state === "locked"
+  const widths =
+    columns.state === "locked"
+      ? widthsFor(columns.columns, available || (container?.clientWidth ?? 0))
+      : []
   return {
     context,
     containerRef: virtualized ? setContainer : undefined,
@@ -132,11 +215,11 @@ function useTableVirtualizer(virtualized: boolean) {
     tableClassName: locked ? LOCKED_CLASS : undefined,
     colgroup: locked ? (
       <colgroup data-slot="table-virtual-columns">
-        {columns.widths.map((column, at) => (
+        {columns.columns.map((column, at) => (
           <col
             key={at}
             span={column.span > 1 ? column.span : undefined}
-            style={column.px === null ? undefined : { width: column.px }}
+            style={widths[at] == null ? undefined : { width: widths[at] }}
           />
         ))}
       </colgroup>
