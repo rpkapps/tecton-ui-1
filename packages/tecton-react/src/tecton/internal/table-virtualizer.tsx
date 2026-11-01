@@ -19,9 +19,9 @@
  *   container is too narrow for them all, the table scrolls sideways. A
  *   table the caller made `table-fixed`, or whose header cells have
  *   widths, keeps its own.
- * - A scroll is applied before the browser paints it, with a viewport of
- *   rows ready beyond each edge, and rows that stay in view do not
- *   re-render: a fast flick never shows a blank strip.
+ * - The window comes from TanStack Virtual: a scroll is applied before the
+ *   browser paints it, with rows ready beyond each edge, and rows that stay
+ *   in view do not re-render, so a fast flick never shows a blank strip.
  * - The header sticks to the top of the container; the window starts below
  *   it.
  * - The row holding focus stays mounted when it scrolls out of view, so a
@@ -33,8 +33,9 @@
  * table hunk); not part of the public API.
  */
 import * as React from "react"
+import { useVirtualizer, type VirtualItem } from "@tanstack/react-virtual"
 
-import { useVirtualList } from "./primitives/virtual-list"
+import { useKeepRange } from "./primitives/keep-range"
 
 type TableVirtualContextValue = {
   container: HTMLElement | null
@@ -46,6 +47,9 @@ const TableVirtualContext =
 
 /** Row height before any layout (and on the server): Tecton's cells. */
 const ESTIMATED_ROW = 49
+
+/** Rows rendered beyond each edge of the view: about a screenful. */
+const OVERSCAN = 10
 
 /** Cells of locked columns clip what no longer fits, with an ellipsis. */
 const LOCKED_CLASS = "table-fixed [&_td]:overflow-hidden [&_td]:text-ellipsis"
@@ -258,8 +262,11 @@ type Measures = {
 
 const NO_ROWS: Array<React.ReactNode> = []
 
+/** Below this, a difference in px is rounding noise. */
+const SUBPIXEL = 0.01
+
 /** Sub-pixel noise between two measures does not re-render the rows. */
-const near = (a: number, b: number) => Math.abs(a - b) < 0.01
+const near = (a: number, b: number) => Math.abs(a - b) < SUBPIXEL
 
 function sameMeasures(a: Measures, b: Measures) {
   return (
@@ -331,29 +338,23 @@ function useVirtualRows<T>(
   }, [virtualized])
   const measured = React.useRef("")
 
-  const virtual = useVirtualList({
-    count,
-    stride: measures.stride,
-    start: measures.headerHeight,
-    keep: focused === null ? [] : [focused],
-    // A viewport of rows ready beyond each edge, applied in the frame; a
-    // jump (the scrollbar dragged) mounts only the view plus two rows, and
-    // the rest once the scrolling stops.
-    overscan: 2,
-    overscanViews: 1,
-    settleMs: 150,
-    sync: true,
-    enabled: virtualized,
-  })
-
-  // The container scrolls: the list listens to it.
+  // The container scrolls; the window starts below the sticky header.
   const container = context?.container ?? null
-  const attach = virtual.ref
+  const virtualizer = useVirtualizer({
+    count,
+    getScrollElement: () => container,
+    estimateSize: () => measures.stride,
+    scrollMargin: measures.headerHeight,
+    overscan: OVERSCAN,
+    enabled: virtualized,
+    rangeExtractor: useKeepRange(focused === null ? [] : [focused]),
+    // Before layout (and on the server): ten rows.
+    initialRect: { width: 0, height: ESTIMATED_ROW * 10 },
+  })
+  // Rows are one height: a new measure moves every row.
   React.useLayoutEffect(() => {
-    if (!virtualized) return
-    attach(container)
-    return () => attach(null)
-  }, [virtualized, container, attach])
+    if (virtualized) virtualizer.measure()
+  }, [virtualized, virtualizer, measures.stride])
 
   // The rows' height, the header's, the view's, and the column count for
   // the spacers.
@@ -368,7 +369,7 @@ function useVirtualRows<T>(
     // on every scroll: reading a size lays the page out.
     const key = [
       table?.className,
-      virtual.viewHeight,
+      virtualizer.scrollRect?.height,
       fonts,
       Math.min(rendered.length, 2),
       head?.rows.length,
@@ -469,20 +470,20 @@ function useVirtualRows<T>(
       : new Map<number, { rowIndex: number; row: React.ReactNode }>()
   const rowsNow = new Map<number, { rowIndex: number; row: React.ReactNode }>()
 
-  const { stride, headerRows, columns } = measures
-  const spacer = (key: string, rowsSkipped: number) => (
+  const { headerRows, columns } = measures
+  const spacer = (key: string, height: number) => (
     <tr key={key} aria-hidden="true" data-slot="table-virtual-spacer">
-      <td
-        colSpan={columns}
-        style={{ height: rowsSkipped * stride, padding: 0, border: 0 }}
-      />
+      <td colSpan={columns} style={{ height, padding: 0, border: 0 }} />
     </tr>
   )
   const rendered: Array<React.ReactNode> = []
-  let previous = -1
-  for (const index of virtual.indices) {
-    if (index > previous + 1)
-      rendered.push(spacer(`spacer-${index}`, index - previous - 1))
+  // Item offsets count from the top of the container, header included.
+  const margin = virtualizer.options.scrollMargin
+  let previous: VirtualItem | null = null
+  for (const item of virtualizer.getVirtualItems()) {
+    const { index } = item
+    const gap = item.start - (previous ? previous.end : margin)
+    if (gap > SUBPIXEL) rendered.push(spacer(`spacer-${index}`, gap))
     const rowIndex = headerRows + index + 1
     const kept = previousRows.get(index)
     let row: React.ReactNode
@@ -500,10 +501,11 @@ function useVirtualRows<T>(
     }
     rowsNow.set(index, { rowIndex, row })
     rendered.push(row)
-    previous = index
+    previous = item
   }
-  if (previous < count - 1)
-    rendered.push(spacer("spacer-end", count - 1 - previous))
+  const after =
+    virtualizer.getTotalSize() - (previous ? previous.end - margin : 0)
+  if (after > SUBPIXEL) rendered.push(spacer("spacer-end", after))
   cache.current = { sources, rows: rowsNow }
 
   return { ...rest, children: rendered, ref: bodyRef, onFocus, onBlur }

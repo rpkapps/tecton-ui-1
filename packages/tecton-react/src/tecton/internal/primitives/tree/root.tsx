@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useVirtualizer } from "@tanstack/react-virtual"
 
 import { useDirection } from "@tecton/react/tecton/provider"
 
@@ -10,6 +11,7 @@ import {
   type ChangeEventDetails,
 } from "../event-details"
 import { edgeKey, nextKey, useTypeahead } from "../navigation"
+import { useKeepRange } from "../keep-range"
 import { hidden, usePrimitive, type PrimitiveProps } from "../render"
 import { useRovingFocus } from "../roving-focus"
 import {
@@ -19,7 +21,6 @@ import {
 } from "../selection"
 import { useSelectionAnnouncement } from "../selection-announcement"
 import { useControlled } from "../use-controlled"
-import { useVirtualList } from "../virtual-list"
 import {
   buildTree,
   renderCollection,
@@ -94,8 +95,9 @@ const Row = React.memo(function Row({
   rowIndex,
 }: {
   node: TreeNode
-  style: React.CSSProperties | undefined
-  rowIndex: number | undefined
+  /** Virtualized: the row's position, and its `aria-rowindex`. */
+  style?: React.CSSProperties
+  rowIndex?: number
 }) {
   const context = React.useMemo(
     () => ({ node, style, rowIndex }),
@@ -209,19 +211,25 @@ function TreeRoot<T>({
     getElement: (key) => rowElements.current.get(key),
     ensureRendered: (key) => {
       const index = latest.current.rowIndex.get(key)
-      if (index !== undefined) virtual.scrollToIndex(index)
+      if (index !== undefined) virtualizer.scrollToIndex(index)
     },
   })
   const focused = useStore(focus.store, (s) => (virtualized ? s.focused : null))
   const keepValues = [focused, ...(dragAndDrop?.keep() ?? [])]
-  const virtual = useVirtualList({
+  const virtualizer = useVirtualizer({
     count: rows.length,
-    stride: stride || 1,
+    getScrollElement: () => element.current,
+    estimateSize: () => stride,
+    overscan: 4,
     enabled: !!virtualized,
-    keep: keepValues.flatMap((key) => {
-      const index = key === null ? undefined : rowIndex.get(key)
-      return index === undefined ? [] : [index]
-    }),
+    rangeExtractor: useKeepRange(
+      keepValues.flatMap((key) => {
+        const index = key === null ? undefined : rowIndex.get(key)
+        return index === undefined ? [] : [index]
+      })
+    ),
+    // Before layout (and on the server): ten rows.
+    initialRect: { width: 0, height: stride * 10 },
   })
 
   const toggle = React.useCallback(
@@ -508,7 +516,7 @@ function TreeRoot<T>({
     scrollToRow: (key) => {
       const index = rowIndex.get(key)
       if (index === undefined) return
-      if (virtualized) virtual.scrollToIndex(index)
+      if (virtualized) virtualizer.scrollToIndex(index)
       else rowElements.current.get(key)?.scrollIntoView({ block: "nearest" })
     },
   }
@@ -517,28 +525,7 @@ function TreeRoot<T>({
     dragAndDrop?.connect(handle)
   })
 
-  const virtualRef = virtual.ref
-  const rootRef = React.useCallback(
-    (el: HTMLDivElement | null) => {
-      element.current = el
-      virtualRef(el)
-    },
-    [virtualRef]
-  )
-
   const isEmpty = rows.length === 0
-  const renderRow = (node: TreeNode, index: number) => (
-    <Row
-      key={node.value}
-      node={node}
-      rowIndex={virtualized ? index + 1 : undefined}
-      style={
-        virtualized
-          ? virtualStyle(virtual.offset(index), virtualized.rowHeight)
-          : undefined
-      }
-    />
-  )
   const content = isEmpty ? (
     empty === undefined ? null : (
       <div role="row" aria-level={1}>
@@ -548,12 +535,19 @@ function TreeRoot<T>({
   ) : virtualized ? (
     <div
       role="presentation"
-      style={{ position: "relative", height: virtual.size }}
+      style={{ position: "relative", height: virtualizer.getTotalSize() }}
     >
-      {virtual.indices.map((index) => renderRow(rows[index], index))}
+      {virtualizer.getVirtualItems().map(({ index, start }) => (
+        <Row
+          key={rows[index].value}
+          node={rows[index]}
+          rowIndex={index + 1}
+          style={virtualStyle(start, virtualized.rowHeight)}
+        />
+      ))}
     </div>
   ) : (
-    rows.map(renderRow)
+    rows.map((node) => <Row key={node.value} node={node} />)
   )
 
   const rendered = usePrimitive(
@@ -561,7 +555,7 @@ function TreeRoot<T>({
     props,
     { empty: isEmpty, virtualized: !!virtualized, selectionMode },
     {
-      ref: rootRef,
+      ref: element,
       role: "treegrid",
       tabIndex: -1,
       "aria-multiselectable": selectionMode === "multiple" ? true : undefined,

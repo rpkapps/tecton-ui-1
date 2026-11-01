@@ -24,7 +24,6 @@ import { edgeKey, nextKey } from "../internal/primitives/navigation"
 import { useSelection } from "../internal/primitives/selection"
 import { buildTree, visibleRows } from "../internal/primitives/tree/collection"
 import { TreePrimitive } from "../internal/primitives/tree/index"
-import { useVirtualList } from "../internal/primitives/virtual-list"
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -133,30 +132,6 @@ describe("navigation", () => {
     expect(nextKey(keys, "d", 1, disabled)).toBe("d")
     expect(nextKey(keys, "a", 3, disabled)).toBe("d")
     expect(edgeKey(keys, -1, (k) => k === "d")).toBe("c")
-  })
-})
-
-describe("useVirtualList", () => {
-  it("renders the rows in view, plus the ones it must keep", () => {
-    vi.spyOn(HTMLElement.prototype, "clientHeight", "get").mockReturnValue(100)
-    const { result } = renderHook(() => {
-      const list = useVirtualList({
-        count: 1000,
-        stride: 10,
-        overscan: 2,
-        keep: [900],
-      })
-      const ref = React.useRef<HTMLDivElement | null>(null)
-      React.useLayoutEffect(() => {
-        ref.current = document.createElement("div")
-        list.ref(ref.current)
-      }, [list.ref])
-      return list
-    })
-    expect(result.current.indices.slice(0, 3)).toEqual([0, 1, 2])
-    expect(result.current.indices).toContain(900)
-    expect(result.current.indices.length).toBeLessThan(20)
-    expect(result.current.size).toBe(10000)
   })
 })
 

@@ -408,40 +408,7 @@ describe("Table virtualized with items", () => {
   })
 })
 
-describe("Table virtualized scrollbar jumps", () => {
-  afterEach(() => {
-    vi.useRealTimers()
-  })
-
-  const visible = Math.ceil(VIEW / ROW)
-
-  it("mounts about a screenful on a jump, and the rest once it settles", () => {
-    vi.useFakeTimers()
-    render(<Wells />)
-    // A jump far past the prepared rows: the scrollbar dragged.
-    scrollTo(HEADER + 7_000 * ROW)
-    expect(screen.getByText("Well 7000")).toBeInTheDocument()
-    expect(bodyRows().length).toBeLessThanOrEqual(visible + 2 * 2 + 1)
-    // Once the scrolling stops, a viewport of rows each way.
-    act(() => {
-      vi.advanceTimersByTime(200)
-    })
-    expect(bodyRows().length).toBeGreaterThanOrEqual(visible * 3 - 2)
-    expect(screen.getByText("Well 6995")).toBeInTheDocument()
-  })
-
-  it("keeps a viewport of rows each way on a small scroll", () => {
-    vi.useFakeTimers()
-    render(<Wells />)
-    scrollTo(HEADER + 30 * ROW)
-    act(() => {
-      vi.advanceTimersByTime(200)
-    })
-    // Within the prepared rows: not a jump.
-    scrollTo(HEADER + 33 * ROW)
-    expect(bodyRows().length).toBeGreaterThanOrEqual(visible * 3 - 2)
-  })
-
+describe("Table virtualized scrolling", () => {
   it("does not measure the rows again on a scroll", () => {
     render(<Wells />)
     scrollTo(HEADER + 30 * ROW)

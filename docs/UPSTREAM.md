@@ -257,8 +257,8 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   with spacer rows for the rest, `aria-rowcount` / `aria-rowindex` and the focused row kept;
   `TableBody` takes `items` and a render function called only for the rows in view; the columns are
   locked at their content's first widths (a px `colgroup`, the space left spread over the columns of text and the last column taking the rest, `table-fixed`) unless the caller made the
-  table fixed. The logic is `src/tecton/internal/table-virtualizer.tsx` (on the shared
-  `useVirtualList`); without `virtualized` the markup is unchanged. Tested in `src/tecton/__tests__/table-virtualized.test.tsx`.
+  table fixed. The logic is `src/tecton/internal/table-virtualizer.tsx` (on TanStack
+  Virtual's `useVirtualizer`); without `virtualized` the markup is unchanged. Tested in `src/tecton/__tests__/table-virtualized.test.tsx`.
 
 ## Renaming the package
 
