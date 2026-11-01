@@ -5,7 +5,7 @@ Set `virtualized` on a table of hundreds of rows or more. The body then mounts o
 Pass the rows' data as `items` and render one row with a function: it is called only for the rows in view, so a new sort or filter renders a screenful rather than every row. Plain `TableRow` children work too, but every one of them is created on each render.
 
 - **Row height:** the table measures it from the rows it renders, so a compact table (`[&_td]:py-1`) and a default one both work, and a density switch is picked up. Within one table the rows must be one height: keep cells on one line.
-- **Column widths:** the columns keep the widths they had when first laid out, as percentages, so they do not jump as different rows scroll into view. Values that no longer fit end with an ellipsis. A table you make `table-fixed` with your own widths (column resizing) keeps them.
+- **Column widths:** the columns keep the widths they had when first laid out, in px, and the last column takes the space left, so they do not jump as different rows scroll into view and a narrow column (a checkbox) is never squeezed. Values that no longer fit end with an ellipsis. A table you make `table-fixed` with your own widths (column resizing) keeps them.
 - **Focus:** a row whose checkbox or link has focus stays mounted when it scrolls out of view.
 - **Screen readers:** they hear the true size, because the table carries `aria-rowcount` and each row `aria-rowindex`.
 - **Striping:** `nth-child` striping (`[&_tbody_tr:nth-child(even)]`) flickers, because rows shift position as they mount and unmount; leave a virtualized table's rows plain.

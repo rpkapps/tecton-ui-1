@@ -10,10 +10,12 @@
  *   in view (a sort renders a screenful, not every row), or as elements.
  * - Rows are one height, measured from the rows rendered (the distance
  *   between two rows, so collapsed borders count once).
- * - The columns keep the widths they had when first laid out (a
- *   `colgroup` in percentages, `table-fixed`): with automatic layout every
- *   scroll would resize them to the rows mounted. A table the caller made
- *   `table-fixed` keeps its own widths.
+ * - The columns keep the widths they had when first laid out, in px (a
+ *   `colgroup`, `table-fixed`), and the last one takes the space left: with
+ *   automatic layout every scroll would resize them to the rows mounted,
+ *   and in percentages a narrower container would squeeze a small column
+ *   (a checkbox) below its content. A table the caller made `table-fixed`,
+ *   or whose header cells have widths, keeps its own.
  * - A scroll is applied before the browser paints it, with a viewport of
  *   rows ready beyond each edge, and rows that stay in view do not
  *   re-render: a fast flick never shows a blank strip.
@@ -45,14 +47,17 @@ const ESTIMATED_ROW = 49
 /** Cells of locked columns clip what no longer fits, with an ellipsis. */
 const LOCKED_CLASS = "table-fixed [&_td]:overflow-hidden [&_td]:text-ellipsis"
 
-/** Locked columns: widths in % of the table, for the header's text. */
+/**
+ * Locked columns: each one's width in px as first laid out (the last one's
+ * is left out: it takes the space left), for the header's text.
+ */
 type Columns =
   | { state: "measuring" }
   | { state: "caller" }
   | {
       state: "locked"
       signature: string
-      widths: Array<{ span: number; percent: number }>
+      widths: Array<{ span: number; px: number | null }>
     }
 
 /** What the header's first row says: a change re-measures the columns. */
@@ -104,15 +109,17 @@ function useTableVirtualizer(virtualized: boolean) {
     }
     // Wait for rows: a header alone would make every column too narrow.
     if (!table.tBodies.item(0)?.querySelector("tr[data-index]")) return
-    const total = table.getBoundingClientRect().width
-    if (total <= 0) return
+    if (table.getBoundingClientRect().width <= 0) return
+    const cells = [...head.cells]
     setColumns({
       state: "locked",
       signature: signatureOf(head),
-      widths: [...head.cells].map((cell) => ({
+      widths: cells.map((cell, at) => ({
         span: cell.colSpan,
-        percent:
-          (cell.getBoundingClientRect().width / total / cell.colSpan) * 100,
+        px:
+          at === cells.length - 1
+            ? null
+            : cell.getBoundingClientRect().width / cell.colSpan,
       })),
     })
   })
@@ -129,7 +136,7 @@ function useTableVirtualizer(virtualized: boolean) {
           <col
             key={at}
             span={column.span > 1 ? column.span : undefined}
-            style={{ width: `${column.percent}%` }}
+            style={column.px === null ? undefined : { width: column.px }}
           />
         ))}
       </colgroup>

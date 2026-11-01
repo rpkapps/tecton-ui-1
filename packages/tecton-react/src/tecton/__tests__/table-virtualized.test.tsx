@@ -185,7 +185,7 @@ describe("Table virtualized", () => {
     ).toBeNull()
   })
 
-  it("locks the columns at their first widths while rows scroll", () => {
+  it("locks the columns at their first widths in px, the last one taking the rest", () => {
     render(<Wells />)
     const cols = () =>
       Array.from(
@@ -193,11 +193,11 @@ describe("Table virtualized", () => {
           '[data-slot="table-virtual-columns"] col'
         )
       ).map((col) => col.style.width)
-    expect(cols()).toEqual(["75%", "25%"])
+    expect(cols()).toEqual(["300px", ""])
     expect(screen.getByRole("table")).toHaveClass("table-fixed")
     scrollTo(HEADER + 5_000 * ROW)
     expect(screen.getByText("Well 5000")).toBeInTheDocument()
-    expect(cols()).toEqual(["75%", "25%"])
+    expect(cols()).toEqual(["300px", ""])
   })
 
   it("hands the columns to the caller's widths and back (resizing)", () => {
