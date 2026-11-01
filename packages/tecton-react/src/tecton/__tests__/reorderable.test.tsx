@@ -598,7 +598,10 @@ describe("Reorderable", () => {
 describe("Reorderable drop animation", () => {
   // jsdom has no Web Animations: record the calls instead.
   const animate = vi.fn(function (this: Element) {
-    return { finished: Promise.resolve() } as unknown as Animation
+    return {
+      finished: new Promise(() => {}),
+      cancel() {},
+    } as unknown as Animation
   })
   const originalMatchMedia = window.matchMedia
   beforeEach(() => {
@@ -1146,7 +1149,10 @@ describe("Reorderable swap", () => {
 
   describe("animation", () => {
     const animate = vi.fn(function (this: Element) {
-      return { finished: Promise.resolve() } as unknown as Animation
+      return {
+        finished: new Promise(() => {}),
+        cancel() {},
+      } as unknown as Animation
     })
     beforeEach(() => {
       animate.mockClear()
@@ -1186,6 +1192,22 @@ describe("Reorderable swap", () => {
       ]
       expect(keyframes[0].width).toBe("400px")
       expect(keyframes[1].width).toBe("100px")
+    })
+
+    it("animates an item dropped into an empty slot, whose element is new", () => {
+      render(<Swap />)
+      press("A", 50, 50)
+      moveTo(160, 160)
+      animate.mockClear()
+      release(160, 160)
+      // A is mounted afresh in the empty slot and still lands from the
+      // preview, in the drop's own commit.
+      const landed = animate.mock.calls.some(
+        (call, at) =>
+          animate.mock.contexts[at] === itemOf("A") &&
+          (call as unknown as [Array<Keyframe>])[0][0]?.translate !== undefined
+      )
+      expect(landed).toBe(true)
     })
 
     it("does not animate with dropAnimation={false}", () => {

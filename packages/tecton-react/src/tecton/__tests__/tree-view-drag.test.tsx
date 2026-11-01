@@ -348,7 +348,10 @@ describe("TreeView keyboard and screen reader drag", () => {
 describe("TreeView drop animation", () => {
   // jsdom has no Web Animations: record the calls instead.
   const animate = vi.fn(function (this: Element) {
-    return { finished: Promise.resolve() } as unknown as Animation
+    return {
+      finished: new Promise(() => {}),
+      cancel() {},
+    } as unknown as Animation
   })
   beforeEach(() => {
     animate.mockClear()

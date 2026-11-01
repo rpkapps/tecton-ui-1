@@ -10,6 +10,7 @@ import { useDirection } from "@tecton/react/tecton/provider"
 
 import {
   animateFrom,
+  settle,
   useDropAnimation,
 } from "./internal/primitives/drag-and-drop/drop-animation"
 import {
@@ -319,9 +320,12 @@ function Reorderable({
     (moves: ReadonlyArray<readonly [HTMLElement, HTMLElement]>) => {
       const styled = preview.current
       const before = new Map<HTMLElement, DOMRect>()
+      // Where they show now (mid-animation, perhaps), then at rest: the
+      // boxes they move into are measured from where they rest.
       for (const element of [...styled.keys(), ...moves.map(([e]) => e)])
         if (element.isConnected)
           before.set(element, element.getBoundingClientRect())
+      for (const element of before.keys()) settle(element)
       for (const [element, saved] of styled) Object.assign(element.style, saved)
       styled.clear()
       for (const [element, slot] of moves) {
@@ -433,9 +437,18 @@ function Reorderable({
           )
       if (next.every((v, i) => v === current[i])) return
       const details = createChangeEventDetails(dragModeRef.current)
+      // Where every item shows now, the swap included; they slide from
+      // there into the slots the new value gives them, whether the slots'
+      // elements are re-created or given other items.
       animation.capture([key], from)
       onValueChange?.(next, details)
-      if (!details.isCanceled) setValue(next)
+      if (details.isCanceled) return
+      for (const [element, saved] of preview.current) {
+        settle(element)
+        Object.assign(element.style, saved)
+      }
+      preview.current.clear()
+      setValue(next)
     }
   )
 
@@ -647,12 +660,17 @@ function ReorderableItem({
   const dragging = useStore(dragAndDrop.store, (s) =>
     s.dragging.includes(value)
   )
-  const [element, setElement] = React.useState<HTMLElement | null>(null)
-
-  React.useLayoutEffect(
-    () => register(value, { element, label }),
-    [register, value, element, label]
-  )
+  // The element as soon as it is attached, before any layout effect: a
+  // drop that mounts the item in another slot (`mode="swap"`) must find it
+  // in the same commit to animate it.
+  const entry = React.useRef<Entry>({ element: null, label })
+  const attach = React.useCallback((node: HTMLElement | null) => {
+    entry.current.element = node
+  }, [])
+  React.useLayoutEffect(() => {
+    entry.current.label = label
+  }, [label])
+  React.useLayoutEffect(() => register(value, entry.current), [register, value])
 
   const item = React.useMemo(
     () => ({ value, label, root }),
@@ -677,7 +695,7 @@ function ReorderableItem({
     },
     { dragging },
     {
-      ref: setElement,
+      ref: attach,
       "data-slot": "reorderable-item",
       ...(self && {
         tabIndex: 0,

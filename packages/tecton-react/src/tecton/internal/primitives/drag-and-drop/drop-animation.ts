@@ -36,7 +36,36 @@ const LIFTED: Keyframe = {
 /** A capture the drop never committed (cancelled) is dropped after this. */
 const EXPIRY = 1000
 
-type Box = { left: number; top: number }
+type Box = { left: number; top: number; width: number; height: number }
+
+/** The animations this module runs, per element, so a new one can stop them. */
+const running = new WeakMap<Element, Array<Animation>>()
+
+function track(element: Element, animation: Animation) {
+  const list = running.get(element) ?? []
+  list.push(animation)
+  running.set(element, list)
+  const done = () => {
+    const now = running.get(element)
+    if (now)
+      running.set(
+        element,
+        now.filter((a) => a !== animation)
+      )
+  }
+  animation.finished.then(done, done)
+  return animation
+}
+
+/**
+ * Stops the animations running on `element`, so it rests where its styles
+ * put it: measure where it shows first, then settle it, then measure where
+ * it rests. A box measured mid-animation is neither.
+ */
+function settle(element: Element) {
+  for (const animation of running.get(element) ?? []) animation.cancel()
+  running.delete(element)
+}
 
 type Pending = {
   boxes: Map<string, Box>
@@ -161,26 +190,41 @@ function animateFrom(
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!element.isConnected || !element.animate) continue
     if (prefersReducedMotion(element)) return
+    settle(element)
     const now = element.getBoundingClientRect()
-    const dx = old.left - now.left
-    const dy = old.top - now.top
-    if (Math.abs(dx) >= 0.5 || Math.abs(dy) >= 0.5)
+    slide(element, old, now)
+  }
+}
+
+/** Animates `element` from the box `from` to its box `to`: position and size. */
+function slide(element: HTMLElement, from: Box, to: Box) {
+  const dx = from.left - to.left
+  const dy = from.top - to.top
+  let moved: Animation | null = null
+  if (Math.abs(dx) >= 0.5 || Math.abs(dy) >= 0.5)
+    // Added to the element's own `translate`, if it has one.
+    moved = track(
+      element,
       element.animate(
         [{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }],
         { duration: DURATION, easing: EASING, composite: "add" }
       )
-    if (
-      Math.abs(old.width - now.width) >= 0.5 ||
-      Math.abs(old.height - now.height) >= 0.5
     )
+  if (
+    Math.abs(from.width - to.width) >= 0.5 ||
+    Math.abs(from.height - to.height) >= 0.5
+  )
+    track(
+      element,
       element.animate(
         [
-          { width: `${old.width}px`, height: `${old.height}px` },
-          { width: `${now.width}px`, height: `${now.height}px` },
+          { width: `${from.width}px`, height: `${from.height}px` },
+          { width: `${to.width}px`, height: `${to.height}px` },
         ],
         { duration: DURATION, easing: EASING }
       )
-  }
+    )
+  return moved
 }
 
 function useDropAnimation({
@@ -205,13 +249,11 @@ function useDropAnimation({
     }
     const moves: Array<{
       element: HTMLElement
-      dx: number
-      dy: number
+      /** The box it slides from, and its box now. */
+      start: Box
+      rect: DOMRect
       dropped: boolean
-      /** The size it lands from (the preview's), when not its own. */
-      size: { width: number; height: number } | null
     }> = []
-    let moved = false
     const areas = new Map<Element, Bounds | null>()
     for (const [key, element] of latest.current.items()) {
       if (!element) continue
@@ -219,58 +261,49 @@ function useDropAnimation({
       const old = capture.boxes.get(key)
       if (!old) continue
       const rect = element.getBoundingClientRect()
-      const dx = old.left - rect.left
-      const dy = old.top - rect.top
-      // A dropped item already in its place (a swap grid shows the swap
-      // while it is dragged) still lands from where it was let go.
-      const still = Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5
-      if (still && !(dropped && capture.from)) continue
-      moved = true
-      // The first dropped item comes from the preview, the others (a
-      // multiple selection) from their old places.
+      // The first dropped item comes from the preview (its place and its
+      // size), the others from where they showed.
       const from = dropped && capture.from
-      let x = from ? from.left - rect.left : dx
-      let y = from ? from.top - rect.top : dy
+      const source = from || old
+      const same =
+        Math.abs(source.left - rect.left) < 0.5 &&
+        Math.abs(source.top - rect.top) < 0.5 &&
+        Math.abs(source.width - rect.width) < 0.5 &&
+        Math.abs(source.height - rect.height) < 0.5
+      if (from) capture.from = null
+      if (same) continue
+      let x = source.left - rect.left
+      let y = source.top - rect.top
       // From the nearest point inside its scroll containers: a preview let
       // go past a table's edge would otherwise flash a scrollbar.
       for (const area of scrollAreasOf(element, areas)) {
         x = within(x, rect.left, rect.right, area.left, area.right)
         y = within(y, rect.top, rect.bottom, area.top, area.bottom)
       }
-      // A swapped item dropped into a slot of another size grows or shrinks
-      // from the preview's size into it.
-      const size =
-        from &&
-        (Math.abs(from.width - rect.width) >= 0.5 ||
-          Math.abs(from.height - rect.height) >= 0.5)
-          ? { width: from.width, height: from.height }
-          : null
-      moves.push({ element, dx: x, dy: y, dropped, size })
-      if (from) capture.from = null
+      moves.push({
+        element,
+        start: {
+          left: rect.left + x,
+          top: rect.top + y,
+          width: source.width,
+          height: source.height,
+        },
+        rect,
+        dropped,
+      })
     }
-    if (!moved) return
+    if (!moves.length) return
     pending.current = null
-    for (const { element, dx, dy, dropped, size } of moves) {
-      // Added to the item's own `translate`, if it has one.
-      const animation = element.animate(
-        [{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }],
-        { duration: DURATION, easing: EASING, composite: "add" }
-      )
-      if (size) {
-        const now = element.getBoundingClientRect()
-        element.animate(
-          [
-            { width: `${size.width}px`, height: `${size.height}px` },
-            { width: `${now.width}px`, height: `${now.height}px` },
-          ],
-          { duration: DURATION, easing: EASING }
-        )
-      }
+    for (const { element, start, rect, dropped } of moves) {
+      const moved = slide(element, start, rect)
       if (!dropped) continue
-      raise(element, animation)
+      if (moved) raise(element, moved)
       // Lifted while it passes the others, then its own surface (an end
       // keyframe left out is the item's own).
-      element.animate([LIFTED, { ...LIFTED, offset: 0.7 }], DURATION)
+      track(
+        element,
+        element.animate([LIFTED, { ...LIFTED, offset: 0.7 }], DURATION)
+      )
     }
   })
 
@@ -290,8 +323,16 @@ function useDropAnimation({
         if (!element.animate) return
         const rect = element.getBoundingClientRect()
         if (inView(rect, view) || dropped.includes(key))
-          boxes.set(key, { left: rect.left, top: rect.top })
+          boxes.set(key, {
+            left: rect.left,
+            top: rect.top,
+            width: rect.width,
+            height: rect.height,
+          })
       }
+      // Measured where they show; now at rest, for the commit to measure
+      // where they land.
+      for (const [, element] of items()) if (element) settle(element)
       if (!boxes.size) return
       pending.current = {
         boxes,
@@ -309,5 +350,5 @@ function useDropAnimation({
   return api
 }
 
-export { animateFrom, useDropAnimation }
+export { animateFrom, settle, useDropAnimation }
 export type { DropAnimation, DropAnimationOptions }
