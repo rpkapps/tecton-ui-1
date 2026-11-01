@@ -72,6 +72,11 @@ type Pending = {
   dropped: ReadonlySet<string>
   /** Where the preview was let go, and its size, for the first dropped item. */
   from: (Box & { width: number; height: number }) | null
+  /**
+   * The pointer preview itself, handed over by the drop: it lands on the
+   * dropped item, which stays where it showed (a swap's placeholder).
+   */
+  ghost: HTMLElement | null
   expires: number
 }
 
@@ -87,7 +92,58 @@ type DropAnimation = {
    * Measures the items before a drop of `dropped` is applied; `from` is
    * where the pointer preview was let go.
    */
-  capture: (dropped: ReadonlyArray<string>, from: DOMRect | null) => void
+  capture: (
+    dropped: ReadonlyArray<string>,
+    from: DOMRect | null,
+    ghost?: HTMLElement | null
+  ) => void
+  /** Drops the capture (a drop refused after all), removing its preview. */
+  discard: () => void
+}
+
+/**
+ * Lands the pointer preview `ghost` on `element`, which shows where the
+ * dropped item already is (a swap's placeholder): the preview glides into
+ * its box and fades as the item comes up to full strength, then goes.
+ */
+function land(ghost: HTMLElement, element: HTMLElement, rect: DOMRect) {
+  const from = ghost.getBoundingClientRect()
+  const remove = () => ghost.remove()
+  // The preview is fixed at the viewport's corner and placed by translate.
+  ghost
+    .animate(
+      [
+        {
+          transform: `translate(${from.left}px, ${from.top}px)`,
+          width: `${from.width}px`,
+          height: `${from.height}px`,
+        },
+        {
+          transform: `translate(${rect.left}px, ${rect.top}px)`,
+          width: `${rect.width}px`,
+          height: `${rect.height}px`,
+        },
+      ],
+      { duration: DURATION, easing: EASING, fill: "forwards" }
+    )
+    .finished.then(remove, remove)
+  ghost.animate(
+    // Gone before it nearly covers the item: no doubled text as it settles.
+    [
+      { opacity: 0.8 },
+      { opacity: 0.8, offset: 0.3 },
+      { opacity: 0, offset: 0.75 },
+      { opacity: 0 },
+    ],
+    { duration: DURATION, fill: "forwards" }
+  )
+  track(
+    element,
+    element.animate([{ opacity: 0.5 }, { opacity: 1 }], {
+      duration: DURATION,
+      easing: EASING,
+    })
+  )
 }
 
 function prefersReducedMotion(element: Element) {
@@ -262,8 +318,9 @@ function useDropAnimation({
       if (!old) continue
       const rect = element.getBoundingClientRect()
       // The first dropped item comes from the preview (its place and its
-      // size), the others from where they showed.
-      const from = dropped && capture.from
+      // size), the others from where they showed. With the preview handed
+      // over, the item stays where it showed and the preview lands on it.
+      const from = dropped && !capture.ghost && capture.from
       const source = from || old
       const same =
         Math.abs(source.left - rect.left) < 0.5 &&
@@ -292,8 +349,18 @@ function useDropAnimation({
         dropped,
       })
     }
-    if (!moves.length) return
+    const { ghost } = capture
+    const landing = ghost
+      ? [...latest.current.items()].find(([key]) =>
+          capture.dropped.has(key)
+        )?.[1]
+      : null
+    if (!moves.length && !landing) return
     pending.current = null
+    if (ghost) {
+      if (landing) land(ghost, landing, landing.getBoundingClientRect())
+      else ghost.remove()
+    }
     for (const { element, start, rect, dropped } of moves) {
       const moved = slide(element, start, rect)
       if (!dropped) continue
@@ -308,19 +375,21 @@ function useDropAnimation({
   })
 
   const [api] = React.useState<DropAnimation>(() => ({
-    capture(dropped, from) {
-      pending.current = null
+    capture(dropped, from, ghost = null) {
+      api.discard()
       const { disabled, items } = latest.current
-      if (disabled) return
+      // Without an animation the preview just goes.
+      const bail = () => ghost?.remove()
+      if (disabled) return bail()
       const boxes = new Map<string, Box>()
       let view: Window | null = null
       for (const [key, element] of items()) {
         if (!element) continue
         view ??= element.ownerDocument.defaultView
-        if (!view || prefersReducedMotion(element)) return
+        if (!view || prefersReducedMotion(element)) return bail()
         // `animate` is missing from some embedded engines (jsdom).
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-        if (!element.animate) return
+        if (!element.animate) return bail()
         const rect = element.getBoundingClientRect()
         if (inView(rect, view) || dropped.includes(key))
           boxes.set(key, {
@@ -333,7 +402,7 @@ function useDropAnimation({
       // Measured where they show; now at rest, for the commit to measure
       // where they land.
       for (const [, element] of items()) if (element) settle(element)
-      if (!boxes.size) return
+      if (!boxes.size) return bail()
       pending.current = {
         boxes,
         dropped: new Set(dropped),
@@ -343,8 +412,18 @@ function useDropAnimation({
           width: from.width,
           height: from.height,
         },
+        ghost,
         expires: performance.now() + EXPIRY,
       }
+      // A drop that never commits does not leave its preview behind.
+      if (ghost)
+        setTimeout(() => {
+          if (pending.current?.ghost === ghost) api.discard()
+        }, EXPIRY)
+    },
+    discard() {
+      pending.current?.ghost?.remove()
+      pending.current = null
     },
   }))
   return api

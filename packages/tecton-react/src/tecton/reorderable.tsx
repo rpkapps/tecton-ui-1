@@ -422,7 +422,10 @@ function Reorderable({
     (
       place: ReorderPlace,
       keys: ReadonlyArray<string>,
-      { from }: { from: DOMRect | null }
+      {
+        from,
+        takePreview,
+      }: { from: DOMRect | null; takePreview: (() => HTMLElement) | null }
     ) => {
       const key = keys.at(0)
       if (key === undefined) return
@@ -440,9 +443,15 @@ function Reorderable({
       // Where every item shows now, the swap included; they slide from
       // there into the slots the new value gives them, whether the slots'
       // elements are re-created or given other items.
-      animation.capture([key], from)
+      // A swap's placeholder already shows where the item lands: the
+      // pointer preview lands on it rather than the item flying in.
+      animation.capture(
+        [key],
+        from,
+        isSlot(place) ? (takePreview?.() ?? null) : null
+      )
       onValueChange?.(next, details)
-      if (details.isCanceled) return
+      if (details.isCanceled) return animation.discard()
       for (const [element, saved] of preview.current) {
         settle(element)
         Object.assign(element.style, saved)

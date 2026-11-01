@@ -43,8 +43,14 @@ type PointerDragOptions = {
   /**
    * Called once when a started drag ends: `drop` on release, with where the
    * preview was then (for the item to land from there), if there was one.
+   * On a drop, `takePreview` hands the preview element itself over (to
+   * animate it into place and remove it); otherwise it is removed.
    */
-  onEnd: (drop: boolean, preview: DOMRect | null) => void
+  onEnd: (
+    drop: boolean,
+    preview: DOMRect | null,
+    takePreview: (() => HTMLElement) | null
+  ) => void
   /** Called once when the press is over, dragged or not. */
   onStop?: () => void
 }
@@ -290,11 +296,28 @@ function trackPointerDrag(
   const end = (drop: boolean) => {
     if (ended) return
     const started = dragging
-    const at = preview?.getBoundingClientRect() ?? null
+    const ghost = preview
+    const at = ghost?.getBoundingClientRect() ?? null
+    // Kept out of `stop()`: the drop may take it over.
+    preview = null
     stop()
-    if (!started) return
-    if (drop) swallowNextClick(view)
-    onEnd(drop, at)
+    const handoff = { taken: false }
+    try {
+      if (!started) return
+      if (drop) swallowNextClick(view)
+      onEnd(
+        drop,
+        at,
+        drop && ghost
+          ? () => {
+              handoff.taken = true
+              return ghost
+            }
+          : null
+      )
+    } finally {
+      if (!handoff.taken) ghost?.remove()
+    }
   }
 
   const unlisten = listen(view, {

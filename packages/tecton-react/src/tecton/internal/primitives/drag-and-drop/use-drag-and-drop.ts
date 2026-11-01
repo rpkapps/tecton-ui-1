@@ -96,7 +96,15 @@ type DragAndDropOptions<TPlace> = {
   onDrop: (
     place: TPlace,
     keys: ReadonlyArray<string>,
-    details: { mode: DragMode; from: DOMRect | null }
+    details: {
+      mode: DragMode
+      from: DOMRect | null
+      /**
+       * Hands the pointer preview over, to animate it into the dropped
+       * item's place and remove it; called during `onDrop` or never.
+       */
+      takePreview: (() => HTMLElement) | null
+    }
   ) => void
   /**
    * Focuses an item after a keyboard or virtual drag (the first dropped
@@ -171,14 +179,22 @@ function useDragAndDrop<TPlace>(
       return keys
     }
 
-    const finish = (place: TPlace | null, from: DOMRect | null = null) => {
+    const finish = (
+      place: TPlace | null,
+      from: DOMRect | null = null,
+      takePreview: (() => HTMLElement) | null = null
+    ) => {
       const { dragging, mode } = store.get()
       stopSession = null
       store.set({ mode: null, dragging: [], aimed: null, places: [] })
       strategy().onAim?.(null, mode ?? "pointer")
       const { options, t } = latest.current
       if (place !== null)
-        options.onDrop(place, dragging, { mode: mode ?? "pointer", from })
+        options.onDrop(place, dragging, {
+          mode: mode ?? "pointer",
+          from,
+          takePreview,
+        })
       if (mode !== "pointer")
         announce(t(place === null ? "dropCanceled" : "dropComplete"), {
           politeness: "assertive",
@@ -224,7 +240,8 @@ function useDragAndDrop<TPlace>(
           },
           onMove: (point) =>
             aim(strategy().placeAt(point, store.get().dragging)),
-          onEnd: (drop, from) => finish(drop ? store.get().aimed : null, from),
+          onEnd: (drop, from, takePreview) =>
+            finish(drop ? store.get().aimed : null, from, takePreview),
           onStop: () => {
             if (store.get().mode === null) stopSession = null
           },

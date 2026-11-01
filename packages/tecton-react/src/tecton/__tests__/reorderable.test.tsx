@@ -1160,6 +1160,8 @@ describe("Reorderable swap", () => {
     })
     afterEach(() => {
       delete (Element.prototype as { animate?: unknown }).animate
+      // A landing preview waits for its (stubbed, endless) animation.
+      for (const ghost of document.querySelectorAll("[inert]")) ghost.remove()
     })
 
     it("slides the swapped item into the freed slot as the drag aims", () => {
@@ -1174,40 +1176,53 @@ describe("Reorderable swap", () => {
       release(160, 50)
     })
 
-    it("resizes the dropped item from the preview's size into its slot", () => {
+    /** The animations run on `element`, by their first keyframe. */
+    const animationsOf = (element: Element) =>
+      animate.mock.calls.flatMap((call, at) =>
+        animate.mock.contexts[at] === element
+          ? [(call as unknown as [Array<Keyframe>])[0]]
+          : []
+      )
+
+    it("lands the preview on the placeholder as the drop settles", () => {
       render(<Swap />)
       press("A", 50, 50)
       moveTo(160, 50)
       animate.mockClear()
-      // jsdom draws the preview 400 px square; the slot is 100 px.
       release(160, 50)
-      const resized = animate.mock.calls.findIndex(
-        (call, at) =>
-          animate.mock.contexts[at] === itemOf("A") &&
-          (call as unknown as [Array<Keyframe>])[0][0]?.width !== undefined
+      // The preview stays to land: it glides from where it was let go
+      // (jsdom draws it 400 px square at the corner) into A's new slot.
+      const ghost = document.body.querySelector<HTMLElement>(
+        '[aria-hidden="true"][inert]'
+      )!
+      expect(ghost).not.toBeNull()
+      const glide = animationsOf(ghost).find((k) => k[0].transform)!
+      expect(glide[0]).toMatchObject({ width: "400px", height: "400px" })
+      expect(glide[1]).toMatchObject({
+        transform: "translate(110px, 0px)",
+        width: "100px",
+        height: "100px",
+      })
+      expect(animationsOf(ghost).some((k) => k.at(-1)?.opacity === 0)).toBe(
+        true
       )
-      expect(resized).toBeGreaterThanOrEqual(0)
-      const [keyframes] = animate.mock.calls[resized] as unknown as [
-        Array<Keyframe>,
-      ]
-      expect(keyframes[0].width).toBe("400px")
-      expect(keyframes[1].width).toBe("100px")
+      // A stays where its placeholder was and comes up to full strength,
+      // rather than flying in.
+      const own = animationsOf(itemOf("A"))
+      expect(own.some((k) => k[0].opacity === 0.5)).toBe(true)
+      expect(own.some((k) => k[0].translate !== undefined)).toBe(false)
     })
 
-    it("animates an item dropped into an empty slot, whose element is new", () => {
+    it("lands on an item dropped into an empty slot, whose element is new", () => {
       render(<Swap />)
       press("A", 50, 50)
       moveTo(160, 160)
       animate.mockClear()
       release(160, 160)
-      // A is mounted afresh in the empty slot and still lands from the
-      // preview, in the drop's own commit.
-      const landed = animate.mock.calls.some(
-        (call, at) =>
-          animate.mock.contexts[at] === itemOf("A") &&
-          (call as unknown as [Array<Keyframe>])[0][0]?.translate !== undefined
+      // Mounted afresh in the empty slot, in the drop's own commit.
+      expect(animationsOf(itemOf("A")).some((k) => k[0].opacity === 0.5)).toBe(
+        true
       )
-      expect(landed).toBe(true)
     })
 
     it("does not animate with dropAnimation={false}", () => {
