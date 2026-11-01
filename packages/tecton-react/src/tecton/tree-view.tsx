@@ -92,6 +92,12 @@ type TreeViewProps<T extends object = object> = TreeViewElementProps & {
    */
   onMove?: (move: TreeViewMove) => void
   /**
+   * Animates a drop: the dropped rows glide from where they were let go
+   * into their place, and the rows they pass slide aside. Default `true`;
+   * never when the user prefers reduced motion.
+   */
+  dropAnimation?: boolean
+  /**
    * Whether a drop is allowed. Rows already only drop inside folders
    * (`kind="folder"`, or a row with children), never into themselves.
    */
@@ -287,6 +293,7 @@ function TreeView<T extends object = object>({
   contextMenu,
   onMove,
   canDrop,
+  dropAnimation = true,
   ...props
 }: TreeViewProps<T>) {
   const treeRef = React.useRef<HTMLDivElement | null>(null)
@@ -300,6 +307,7 @@ function TreeView<T extends object = object>({
     indicator: <TreeViewDropIndicator />,
     levelOffset: (level) => chevronOffset(level) * remOf(),
     levelWidth: () => INDENT * remOf(),
+    dropAnimation,
   })
 
   const tree = (

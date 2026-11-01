@@ -72,15 +72,18 @@ const WELLS = [
 function Rows({
   onValueChange,
   disabled,
+  dropAnimation,
 }: {
   onValueChange?: (value: Array<string>) => void
   disabled?: boolean
+  dropAnimation?: boolean
 }) {
   const [order, setOrder] = React.useState(WELLS.map((w) => w.id))
   return (
     <Reorderable
       value={order}
       disabled={disabled}
+      dropAnimation={dropAnimation}
       onValueChange={(next) => {
         onValueChange?.(next)
         setOrder(next)
@@ -559,5 +562,75 @@ describe("Reorderable", () => {
     } finally {
       vi.useRealTimers()
     }
+  })
+})
+
+describe("Reorderable drop animation", () => {
+  // jsdom has no Web Animations: record the calls instead.
+  const animate = vi.fn(function (this: Element) {
+    return { finished: Promise.resolve() } as unknown as Animation
+  })
+  const originalMatchMedia = window.matchMedia
+  beforeEach(() => {
+    animate.mockClear()
+    Element.prototype.animate = animate
+  })
+  afterEach(() => {
+    delete (Element.prototype as { animate?: unknown }).animate
+    window.matchMedia = originalMatchMedia
+  })
+
+  /** The translate each row animated from, by its name. */
+  const slides = () =>
+    new Map(
+      animate.mock.calls.flatMap((call, at) => {
+        const [keyframes] = call as unknown as [Array<Keyframe>]
+        const from = keyframes[0]?.translate
+        const row = animate.mock.contexts[at]
+        return from === undefined
+          ? []
+          : [[row.textContent, String(from)] as const]
+      })
+    )
+
+  function dropFirstRowInThirdGap(props: { dropAnimation?: boolean } = {}) {
+    render(<Rows {...props} />)
+    press("A-12", 10, yOf(0))
+    moveTo(10, yOf(2, 20))
+    release(10, yOf(2, 20))
+    expect(names()).toEqual(["B-3", "C-7", "A-12", "D-2"])
+  }
+
+  it("slides the rows that moved, and the dropped one from where it was let go", () => {
+    dropFirstRowInThirdGap()
+    // The preview was let go at the page's top (jsdom draws it there).
+    expect(slides()).toEqual(
+      new Map([
+        ["B-3", "0px 32px"],
+        ["C-7", "0px 32px"],
+        ["A-12", "0px -64px"],
+      ])
+    )
+    // The dropped row starts on the preview's surface.
+    const surfaces = animate.mock.calls.filter((call) =>
+      (call as unknown as [Array<Keyframe>])[0].some(
+        (frame) => frame.backgroundColor !== undefined
+      )
+    )
+    expect(surfaces).toHaveLength(1)
+  })
+
+  it("does not animate with dropAnimation={false}", () => {
+    dropFirstRowInThirdGap({ dropAnimation: false })
+    expect(animate).not.toHaveBeenCalled()
+  })
+
+  it("does not animate when the user prefers reduced motion", () => {
+    window.matchMedia = (query: string) => ({
+      ...originalMatchMedia(query),
+      matches: query.includes("reduce"),
+    })
+    dropFirstRowInThirdGap()
+    expect(animate).not.toHaveBeenCalled()
   })
 })

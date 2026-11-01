@@ -20,7 +20,7 @@ import { Reorderable, ReorderableItem, ReorderableHandle } from "@tecton/react/t
 
 ## Do
 
-- Keep the order in state as an array of item values, pass it as `value`, render the items in that order and write `onValueChange`'s array back. Keep it in React state (`useState`, a reducer) so the drop animates: it is committed in a transition.
+- Keep the order in state as an array of item values, pass it as `value`, render the items in that order and write `onValueChange`'s array back.
 - Wrap the whole `Table` in `Reorderable` and render each row as `ReorderableItem` with `render={<TableRow />}`, or each header with `render={<TableHead />}` and `orientation="horizontal"`.
 - Give every item a `label` (the row's or column's name) and a `ReorderableHandle` in a row; a column header gets `dragHandle={false}` instead and is dragged and focused itself, with no grip.
 - To reorder rows and columns of one table, nest the two `Reorderable`s around it: an item joins the nearest one whose `value` holds it.

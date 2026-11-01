@@ -8,6 +8,7 @@ import { buttonVariants } from "@tecton/react/components/button"
 import { usePortalTarget } from "@tecton/react/tecton/portal"
 import { useDirection } from "@tecton/react/tecton/provider"
 
+import { useDropAnimation } from "./internal/primitives/drag-and-drop/drop-animation"
 import {
   createListStrategy,
   listPlacement,
@@ -57,45 +58,9 @@ import { useStore } from "./internal/store"
  * `Reorderable` is a `div` around the items: around the `Table`, not its
  * body, so the line and the drop targets stay out of the table's markup.
  *
- * A drop animates, where the browser has view transitions and the user has
- * not asked for reduced motion: the dropped item glides from where it was
- * let go into its place, and the others slide aside. The new order is
- * committed in a transition (`startTransition`), so it animates when
- * `onValueChange` puts it in React state.
+ * A drop animates: the dropped item glides from where it was let go into
+ * its place and the items it passes slide aside (`dropAnimation`).
  */
-
-/**
- * React's view transitions (React 19.3). The package supports every React 19,
- * so a drop does not animate under an older one.
- */
-const { ViewTransition, addTransitionType } = React as Partial<typeof React>
-
-/** The transition type of a drop: only the items animate, only on a drop. */
-const DROP_TRANSITION = "reorderable-drop"
-
-/** The last drop: the item, and where its pointer preview was let go. */
-type Drop = { value: string; from: DOMRect | null }
-
-/** A part of a running view transition (`::view-transition-group(…)`). */
-type TransitionPart = {
-  animate: (
-    keyframes: Array<Keyframe>,
-    options: KeyframeAnimationOptions
-  ) => Animation
-  getAnimations: () => Array<Animation>
-}
-
-/** Whether a drop in `element`'s document animates. */
-function canAnimate(element: HTMLElement | null) {
-  const doc = element?.ownerDocument
-  const view = doc?.defaultView
-  return (
-    !!ViewTransition &&
-    !!doc &&
-    "startViewTransition" in doc &&
-    !view?.matchMedia("(prefers-reduced-motion: reduce)").matches
-  )
-}
 
 type ReorderableChangeDetails = ChangeEventDetails<DragMode>
 
@@ -135,6 +100,12 @@ type ReorderableProps = Omit<
   orientation?: "vertical" | "horizontal"
   /** Turns every handle off. */
   disabled?: boolean
+  /**
+   * Animates a drop: the dropped item glides from where it was let go into
+   * its place, and the items it passes slide aside. Default `true`; never
+   * when the user prefers reduced motion.
+   */
+  dropAnimation?: boolean
 }
 
 type Entry = { element: HTMLElement | null; label: string }
@@ -173,8 +144,6 @@ type ReorderableContextValue = {
   has: (value: string) => boolean
   /** The `Reorderable` around this one, if any. */
   parent: ReorderableContextValue | null
-  /** The last drop, for its item's animation. */
-  dropped: React.RefObject<Drop | null>
 }
 
 const ReorderableContext = React.createContext<ReorderableContextValue | null>(
@@ -200,6 +169,7 @@ function Reorderable({
   onValueChange,
   orientation = "vertical",
   disabled = false,
+  dropAnimation = true,
   className,
   children,
   ref,
@@ -247,9 +217,10 @@ function Reorderable({
   }))
 
   const mode = React.useRef<DragMode>("pointer")
-  const dropped = React.useRef<Drop | null>(null)
-  // The item to focus once a keyboard drop has committed.
-  const refocus = React.useRef<string | null>(null)
+  const animation = useDropAnimation({
+    disabled: !dropAnimation,
+    items: () => [...registry].map(([key, entry]) => [key, entry.element]),
+  })
   const change = useEventCallback(
     (
       place: ListDropPlace,
@@ -267,35 +238,11 @@ function Reorderable({
       )
       if (next.every((v, i) => v === current[i])) return
       const details = createChangeEventDetails(mode.current)
-      const animate = canAnimate(root.current)
-      dropped.current = { value: key, from }
-      React.startTransition(() => {
-        if (animate) addTransitionType?.(DROP_TRANSITION)
-        onValueChange?.(next, details)
-        if (details.isCanceled) return
-        if (mode.current !== "pointer") refocus.current = key
-        setValue(next)
-      })
+      animation.capture([key], from)
+      onValueChange?.(next, details)
+      if (!details.isCanceled) setValue(next)
     }
   )
-
-  // A move takes the dropped item out of the document and back, which
-  // blurs its handle: focus it again once the drop has committed.
-  React.useLayoutEffect(() => {
-    const key = refocus.current
-    if (key === null) return
-    refocus.current = null
-    const handle = registry
-      .get(key)
-      ?.element?.querySelector<HTMLElement>('[data-slot="reorderable-handle"]')
-    const active = handle?.ownerDocument.activeElement
-    if (
-      handle &&
-      active !== handle &&
-      (!active || active === handle.ownerDocument.body)
-    )
-      handle.focus()
-  }, [value, registry])
 
   const dragAndDrop = useDragAndDrop<ListDropPlace>({
     strategy,
@@ -345,7 +292,6 @@ function Reorderable({
       register,
       has,
       parent,
-      dropped,
     }),
     [dragAndDrop, orientation, disabled, register, has, parent]
   )
@@ -479,7 +425,7 @@ function ReorderableItem({
     [value, label, root]
   )
 
-  const rendered = usePrimitive(
+  return usePrimitive(
     "div",
     {
       ...props,
@@ -519,43 +465,6 @@ function ReorderableItem({
         <ItemContext.Provider value={item}>{children}</ItemContext.Provider>
       ),
     }
-  )
-
-  if (!ViewTransition) return rendered
-  return (
-    <ViewTransition
-      default="none"
-      update={{ [DROP_TRANSITION]: "auto", default: "none" }}
-      onUpdate={(instance, types) => {
-        const drop = root.dropped.current
-        if (!types.includes(DROP_TRANSITION) || drop?.value !== value) return
-        const group = (instance as { group?: TransitionPart }).group
-        const move = group?.getAnimations().at(0)?.effect
-        if (!group || !(move instanceof KeyframeEffect)) return
-        // From where the pointer let it go, rather than from its old place.
-        const { from } = drop
-        const keyframes = move.getKeyframes()
-        const first = keyframes.at(0)
-        if (from && first)
-          move.setKeyframes([
-            {
-              ...first,
-              transform: `translate(${from.left}px, ${from.top}px)`,
-              width: `${from.width}px`,
-              height: `${from.height}px`,
-            },
-            ...keyframes.slice(1),
-          ])
-        // Over the items it passes.
-        const timing = move.getComputedTiming()
-        group.animate([{ zIndex: 1 }, { zIndex: 1 }], {
-          duration: Number(timing.duration) || 0,
-          delay: timing.delay,
-        })
-      }}
-    >
-      {rendered}
-    </ViewTransition>
   )
 }
 

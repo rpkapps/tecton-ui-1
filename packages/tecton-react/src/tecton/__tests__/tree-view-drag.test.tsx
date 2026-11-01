@@ -344,3 +344,78 @@ describe("TreeView keyboard and screen reader drag", () => {
     expect(screen.queryByRole("button", { name: "Drop on Archive" })).toBeNull()
   })
 })
+
+describe("TreeView drop animation", () => {
+  // jsdom has no Web Animations: record the calls instead.
+  const animate = vi.fn(function (this: Element) {
+    return { finished: Promise.resolve() } as unknown as Animation
+  })
+  beforeEach(() => {
+    animate.mockClear()
+    Element.prototype.animate = animate
+  })
+  afterEach(() => {
+    delete (Element.prototype as { animate?: unknown }).animate
+  })
+
+  function Ordered(props: Partial<React.ComponentProps<typeof TreeView>>) {
+    const [order, setOrder] = React.useState(["a", "b", "c"])
+    return (
+      <TreeView
+        aria-label="Project"
+        onMove={({ values, target, position }) =>
+          setOrder((current) => {
+            const rest = current.filter((value) => !values.includes(value))
+            const at = rest.indexOf(target) + (position === "after" ? 1 : 0)
+            return [...rest.slice(0, at), ...values, ...rest.slice(at)]
+          })
+        }
+        {...props}
+      >
+        {order.map((value) => (
+          <TreeViewItem key={value} value={value} label={value}>
+            <TreeViewItemContent>{value}</TreeViewItemContent>
+          </TreeViewItem>
+        ))}
+      </TreeView>
+    )
+  }
+
+  /** The translate each row animated from, by its name. */
+  const slides = () =>
+    new Map(
+      animate.mock.calls.flatMap((call, at) => {
+        const [keyframes] = call as unknown as [Array<Keyframe>]
+        const from = keyframes[0]?.translate
+        const element = animate.mock.contexts[at]
+        return from === undefined
+          ? []
+          : [[element.getAttribute("data-value"), String(from)] as const]
+      })
+    )
+
+  function dropFirstRowLast(props: { dropAnimation?: boolean } = {}) {
+    render(<Ordered {...props} />)
+    press("a", yOf(0))
+    moveTo(150, yOf(2, 30))
+    release(150, yOf(2, 30))
+    expect(rows().map((r) => r.dataset.value)).toEqual(["b", "c", "a"])
+  }
+
+  it("slides the rows that moved, and the dropped one from where it was let go", () => {
+    dropFirstRowLast()
+    // The preview was let go at the page's top (jsdom draws it there).
+    expect(slides()).toEqual(
+      new Map([
+        ["b", `0px ${ROW}px`],
+        ["c", `0px ${ROW}px`],
+        ["a", `0px ${-2 * ROW}px`],
+      ])
+    )
+  })
+
+  it("does not animate with dropAnimation={false}", () => {
+    dropFirstRowLast({ dropAnimation: false })
+    expect(animate).not.toHaveBeenCalled()
+  })
+})

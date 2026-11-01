@@ -8,6 +8,7 @@
  *   columns) for `useDragAndDrop`, with a line between items.
  * - `useSortable`: one row or column reordered with the items sliding aside
  *   (document tabs).
+ * - `useDropAnimation`: a drop's items sliding into their new places.
  * - `trackPointerDrag`, `startKeyboardDrag`: the sessions both are built on.
  */
 export * as DragAndDropPrimitive from "./index.parts"
@@ -23,5 +24,7 @@ export { createListStrategy, listPlacement, moveInList } from "./list-strategy"
 export type { ListDropPlace, ListItem } from "./list-strategy"
 export { useSortable, targetSlot } from "./sortable"
 export type { Sortable, SortableOptions } from "./sortable"
+export { useDropAnimation } from "./drop-animation"
+export type { DropAnimation, DropAnimationOptions } from "./drop-animation"
 export { trackPointerDrag } from "./pointer-drag"
 export { startKeyboardDrag } from "./keyboard-drag"
