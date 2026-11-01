@@ -85,7 +85,7 @@ const [layout, setLayout] = React.useState(["oil", "gas", null])
 </Reorderable>
 ```
 
-Dragging an item over another slot swaps it with the item there as you hover: the other item glides into the dragged one's slot, and a plain placeholder (a tinted, dashed outline) shows where the dragged one will land, while its content travels with the pointer. Over an empty slot (drawn with a dashed outline) it moves there, and the slot it leaves shows as empty. Back over its own slot, everything returns. On the drop, the item under the pointer glides into its placeholder, taking the slot's size, and fades into the item there. Only the two slots change, whatever their sizes, so nothing else moves.
+Dragging an item over another slot swaps it with the item there as you hover: the other item glides into the dragged one's slot, and a plain placeholder (a tinted, dashed outline) shows where the dragged one will land, while its content travels with the pointer. Over an empty slot it moves there, and the slot it leaves shows as empty. Back over its own slot, everything returns. On the drop, the item under the pointer glides into its placeholder, taking the slot's size, and fades into the item there. Only the two slots change, whatever their sizes, so nothing else moves.
 
 An item takes the size of its slot, including the slot it is shown in during a drag. Make the item a size container (`className="[container-type:size]"`) and show more when there is room: a wide slot's detail with `@min-[14rem]:grid`, a tall slot's list with `[@container(min-height:18rem)]:flex`, as the tiles above do.
 

@@ -830,10 +830,10 @@ type ReorderableSlotProps = PrimitiveProps<"div", ReorderableSlotState> & {
  * A fixed place of a `Reorderable mode="swap"`: render one per entry of
  * `value`, in order, keyed by its index, with its item (if any) inside.
  * Give it its size in the grid (`col-span-2 row-span-2`): it stays put
- * while items swap through it. An empty slot (or one a drag empties)
- * shows a dashed outline and carries `data-empty`; the slot a drag is aimed
- * at carries `data-drop-target`, and the dragged item shows there as a plain
- * placeholder.
+ * while items swap through it. An empty slot (or one a drag empties) is
+ * plain space and carries `data-empty`; the slot a drag is aimed at carries
+ * `data-drop-target`, and the dragged item shows there as a plain
+ * placeholder, the only outline.
  */
 function ReorderableSlot({
   label,
@@ -868,7 +868,7 @@ function ReorderableSlot({
     {
       ...props,
       className: withClass(
-        "relative min-w-0 rounded-xl data-empty:border-2 data-empty:border-dashed data-empty:border-border",
+        "relative min-w-0",
         className
       ),
       ref,
