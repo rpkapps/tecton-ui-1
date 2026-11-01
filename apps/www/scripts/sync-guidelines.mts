@@ -246,7 +246,8 @@ function main() {
     const page = pages.get(moduleKey)
     const guideline = valid.get(moduleKey)
     if (!page) {
-      if (guideline) missing.push(moduleKey)
+      // A module documented in a section of another page has no page of its own.
+      if (guideline && !guideline.meta.docs) missing.push(moduleKey)
       continue
     }
     const current = readFileSync(page, "utf8")
