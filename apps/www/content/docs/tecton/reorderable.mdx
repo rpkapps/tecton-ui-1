@@ -56,8 +56,8 @@ In a right-to-left layout the first item is rightmost, and the arrow keys follow
 
 ## Keyboard and screen readers
 
-- **Pointer:** press the handle (or the item, with `dragHandle={false}`) and drag. A finger on an item without a handle drags after a long press, so a quick swipe still scrolls. A line shows where the item will land. Escape cancels.
-- **Keyboard:** focus the handle and press Enter or Space. The arrow keys (or Tab) move between gaps, each one announced ("Insert between B-3 and C-7"). Enter or Space drops and Escape cancels. Focus returns to the moved item's handle.
+- **Pointer:** press the handle (or the item, with `dragHandle={false}`) and drag. Near the edge of the scroll container (a table's, or the page) the list scrolls, up and down for rows and sideways for columns of a wide table. A finger on an item without a handle drags after a long press, so a quick swipe still scrolls. A line shows where the item will land. Escape cancels.
+- **Keyboard:** focus the handle and press Enter or Space. The arrow keys (or Tab) move between gaps, each one announced ("Insert between B-3 and C-7"). Enter or Space drops and Escape cancels. The list scrolls to keep the aimed gap in view, clear of a sticky header. Focus returns to the moved item's handle.
 - **Screen reader on a touch screen:** activating the handle turns every gap into a button. Double tap one to drop.
 
 {/* guidelines:start */}

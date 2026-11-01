@@ -17,6 +17,10 @@ import {
 } from "./internal/primitives/drag-and-drop/list-strategy"
 import * as DragAndDropPrimitive from "./internal/primitives/drag-and-drop/index.parts"
 import {
+  scrollerOf,
+  stickyTopOf,
+} from "./internal/primitives/drag-and-drop/pointer-drag"
+import {
   useDragAndDrop,
   type DragAndDrop,
   type DragMode,
@@ -96,6 +100,31 @@ type ReorderableProps = Omit<
 
 type Entry = { element: HTMLElement | null; label: string }
 
+/**
+ * Scrolls `element` into view along `axis` within its nearest scroll
+ * container, the least needed, clear of a sticky table header.
+ */
+function reveal(element: HTMLElement, axis: "x" | "y") {
+  const scroller = scrollerOf(element, axis)
+  if (!scroller) return
+  const page = scroller === element.ownerDocument.scrollingElement
+  const view = element.ownerDocument.defaultView ?? window
+  const box = page
+    ? { top: 0, bottom: view.innerHeight, left: 0, right: view.innerWidth }
+    : scroller.getBoundingClientRect()
+  const rect = element.getBoundingClientRect()
+  if (axis === "y") {
+    const top = box.top + stickyTopOf(scroller)
+    if (rect.top < top) scroller.scrollTop -= top - rect.top
+    else if (rect.bottom > box.bottom)
+      scroller.scrollTop += rect.bottom - box.bottom
+  } else if (rect.left < box.left) {
+    scroller.scrollLeft -= box.left - rect.left
+  } else if (rect.right > box.right) {
+    scroller.scrollLeft += rect.right - box.right
+  }
+}
+
 type ReorderableContextValue = {
   dragAndDrop: DragAndDrop<ListDropPlace>
   orientation: "vertical" | "horizontal"
@@ -159,13 +188,22 @@ function Reorderable({
     [registry]
   )
 
-  const [strategy] = React.useState(() =>
-    createListStrategy({
+  const [strategy] = React.useState(() => ({
+    ...createListStrategy({
       items: shown,
       axis: () => latest.current.axis,
       direction: () => latest.current.direction,
-    })
-  )
+    }),
+    // A keyboard or screen reader drag shows the aimed gap: the item
+    // after it (the last one, past the end) scrolls into view.
+    onAim: (place: ListDropPlace | null, dragMode: DragMode) => {
+      if (!place || dragMode === "pointer") return
+      const items = shown()
+      const item = items[Math.min(place.gap, items.length - 1)] as
+        ListItem | undefined
+      if (item) reveal(item.element, latest.current.axis)
+    },
+  }))
 
   const mode = React.useRef<DragMode>("pointer")
   const change = useEventCallback(

@@ -8,8 +8,10 @@
  *   `axis`, when given); with `longPress`, only after the pointer has rested
  *   500 ms (a finger on an item rather than its grip: moving first scrolls).
  * - `onMove` hears the pointer on every move, and on every frame while
- *   `autoScroll` scrolls the nearest scroll container at its edges, so a
- *   drop target stays right under a resting pointer while content scrolls.
+ *   `autoScroll` scrolls the nearest scroll containers of that element at
+ *   their edges (the one that scrolls vertically, and the one that scrolls
+ *   sideways: a wide table), so a drop target stays right under a resting
+ *   pointer while content scrolls.
  * - With `preview`, a copy of the item follows the pointer (the item itself
  *   keeps its look); with `capture`, that element takes the pointer, so
  *   nothing else hovers while dragging. Escape cancels; a click the release
@@ -30,7 +32,7 @@ type PointerDragOptions = {
   longPress?: boolean
   /** Takes the pointer on this element while dragging. */
   capture?: HTMLElement | null
-  /** Scrolls the nearest scroll container of this element at its edges. */
+  /** Scrolls the nearest scroll containers of this element at their edges. */
   autoScroll?: HTMLElement | null
   /** A copy of `item` follows the pointer, appended to `container`. */
   preview?: { item: HTMLElement; container?: HTMLElement | null } | null
@@ -46,31 +48,65 @@ type PointerDragOptions = {
 
 const LONG_PRESS = 500
 
-/** The nearest element that scrolls vertically, the page at the latest. */
-function scrollerOf(element: HTMLElement) {
+/**
+ * The nearest element that scrolls along `axis` ("y": vertically), the
+ * page at the latest.
+ */
+function scrollerOf(element: HTMLElement, axis: "x" | "y" = "y") {
   for (
     let node: HTMLElement | null = element;
     node;
     node = node.parentElement
   ) {
-    const { overflowY } = getComputedStyle(node)
-    if (/auto|scroll/.test(overflowY) && node.scrollHeight > node.clientHeight)
-      return node
+    const style = getComputedStyle(node)
+    const overflow = axis === "y" ? style.overflowY : style.overflowX
+    const scrolls =
+      axis === "y"
+        ? node.scrollHeight > node.clientHeight
+        : node.scrollWidth > node.clientWidth
+    if (/auto|scroll/.test(overflow) && scrolls) return node
   }
   return element.ownerDocument.scrollingElement as HTMLElement | null
 }
 
-/** Scrolls `scroller` while `y` is near its top or bottom edge. */
-function autoScroll(scroller: HTMLElement, y: number) {
+/**
+ * The px a sticky table header covers at the top of `scroller`: an edge
+ * under it would be out of reach, and a row scrolled there out of sight.
+ */
+function stickyTopOf(scroller: HTMLElement) {
+  if (scroller === scroller.ownerDocument.scrollingElement) return 0
+  const head = scroller.querySelector("thead")
+  return head && getComputedStyle(head).position === "sticky"
+    ? head.getBoundingClientRect().height
+    : 0
+}
+
+/**
+ * Scrolls `scroller` along `axis` while `at` (the pointer's x or y) is near
+ * one of its edges; true when it scrolled.
+ */
+function autoScroll(scroller: HTMLElement, at: number, axis: "x" | "y") {
   const page = scroller === scroller.ownerDocument.scrollingElement
-  const { top, bottom } = page
-    ? { top: 0, bottom: window.innerHeight }
+  const view = scroller.ownerDocument.defaultView ?? window
+  const box = page
+    ? { top: 0, bottom: view.innerHeight, left: 0, right: view.innerWidth }
     : scroller.getBoundingClientRect()
-  const edge = Math.min(40, (bottom - top) / 4)
-  if (edge <= 0) return
+  const start = axis === "y" ? box.top + stickyTopOf(scroller) : box.left
+  const end = axis === "y" ? box.bottom : box.right
+  const edge = Math.min(40, (end - start) / 4)
+  if (edge <= 0) return false
   const depth =
-    y < top + edge ? y - top - edge : y > bottom - edge ? y - bottom + edge : 0
-  if (depth) scroller.scrollTop += Math.max(-1, Math.min(1, depth / edge)) * 16
+    at < start + edge
+      ? at - start - edge
+      : at > end - edge
+        ? at - end + edge
+        : 0
+  if (!depth) return false
+  const step = Math.max(-1, Math.min(1, depth / edge)) * 16
+  const before = axis === "y" ? scroller.scrollTop : scroller.scrollLeft
+  if (axis === "y") scroller.scrollTop += step
+  else scroller.scrollLeft += step
+  return (axis === "y" ? scroller.scrollTop : scroller.scrollLeft) !== before
 }
 
 /**
@@ -189,7 +225,11 @@ function trackPointerDrag(
   let ended = false
   let preview: HTMLElement | null = null
   let grab = { x: 0, y: 0 }
-  let scroller: HTMLElement | null = null
+  // The containers that scroll vertically and sideways, if any.
+  let scrollers: { y: HTMLElement | null; x: HTMLElement | null } = {
+    y: null,
+    x: null,
+  }
   let frame = 0
 
   const travel = () => ({ x: pointer.x - origin.x, y: pointer.y - origin.y })
@@ -199,10 +239,13 @@ function trackPointerDrag(
   }
   const tick = () => {
     frame = view.requestAnimationFrame(tick)
-    if (!scroller) return
-    const before = scroller.scrollTop
-    autoScroll(scroller, pointer.y)
-    if (scroller.scrollTop !== before) onMove(pointer, travel())
+    const vertical = scrollers.y
+      ? autoScroll(scrollers.y, pointer.y, "y")
+      : false
+    const sideways = scrollers.x
+      ? autoScroll(scrollers.x, pointer.x, "x")
+      : false
+    if (vertical || sideways) onMove(pointer, travel())
   }
 
   const start = () => {
@@ -223,7 +266,13 @@ function trackPointerDrag(
       place()
     }
     if (scrollFrom) {
-      scroller = scrollerOf(scrollFrom)
+      const sideways = scrollerOf(scrollFrom, "x")
+      scrollers = {
+        y: scrollerOf(scrollFrom, "y"),
+        // Only a container that really scrolls sideways: the page rarely
+        // does, and a drag along the page's edge should not move it.
+        x: sideways === doc.scrollingElement ? null : sideways,
+      }
       frame = view.requestAnimationFrame(tick)
     }
     onMove(pointer, travel())
@@ -299,5 +348,5 @@ function trackPointerDrag(
   return stop
 }
 
-export { trackPointerDrag, scrollerOf }
+export { trackPointerDrag, scrollerOf, stickyTopOf }
 export type { PointerDragOptions, Point }

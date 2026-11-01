@@ -189,7 +189,9 @@ function useDragAndDrop<TPlace>(
         stopSession = trackPointerDrag(event, {
           longPress: touch && !handle,
           capture: container,
-          autoScroll: container,
+          // From the item: the collection's scroll container may sit inside
+          // the collection element (a table's container inside Reorderable).
+          autoScroll: item,
           preview: { item, container: options.getPreviewContainer?.() },
           onStart: () => {
             begin(key, "pointer")

@@ -455,4 +455,48 @@ describe("Reorderable", () => {
     await user.keyboard("{Enter}{Enter}")
     expect(onRows).toHaveBeenLastCalledWith(["b3", "a12", "c7"])
   })
+
+  it("scrolls the container inside it near an edge while dragging", () => {
+    vi.useFakeTimers()
+    try {
+      const ids = Array.from({ length: 40 }, (_, i) => `w${i}`)
+      render(
+        <Reorderable value={ids}>
+          {/* The scroll container inside the list's root, as a table's is. */}
+          <div
+            data-testid="scroller"
+            style={{ overflowY: "auto", overflowX: "hidden", height: 400 }}
+          >
+            {ids.map((id) => (
+              <ReorderableItem key={id} value={id} label={id}>
+                {id}
+                <ReorderableHandle />
+              </ReorderableItem>
+            ))}
+          </div>
+        </Reorderable>
+      )
+      const scroller = screen.getByTestId("scroller")
+      let top = 0
+      Object.defineProperty(scroller, "scrollHeight", { value: 40 * SIZE })
+      Object.defineProperty(scroller, "clientHeight", { value: 400 })
+      Object.defineProperty(scroller, "scrollTop", {
+        get: () => top,
+        set: (value: number) => {
+          top = value
+        },
+      })
+      press("w0", 10, yOf(0))
+      moveTo(10, 120)
+      vi.advanceTimersByTime(100)
+      expect(top).toBe(0)
+      // Within 40 px of the container's bottom edge.
+      moveTo(10, 390)
+      vi.advanceTimersByTime(200)
+      expect(top).toBeGreaterThan(0)
+      release(10, 390)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
 })
