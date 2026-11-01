@@ -32,7 +32,10 @@ const items = () =>
   Array.from(
     document.querySelectorAll<HTMLElement>('[data-slot="reorderable-item"]')
   )
-let layout: "y" | "x" | "x-rtl" = "y"
+let layout: "y" | "x" | "x-rtl" | "grid" | "grid-rtl" = "y"
+/** Grids: three 100 × 32 px items a row, 10 px apart, in a 400 px box. */
+const TILE = 100
+const GRID_GAP = 10
 
 beforeEach(() => {
   layout = "y"
@@ -51,6 +54,17 @@ beforeEach(() => {
       toJSON() {},
     })
     if (index < 0) return rect(0, 0, 400, 400)
+    if (layout === "grid" || layout === "grid-rtl") {
+      const column = index % 3
+      const top = Math.floor(index / 3) * (SIZE + GRID_GAP)
+      const offset = column * (TILE + GRID_GAP)
+      return rect(
+        top,
+        layout === "grid" ? offset : 400 - TILE - offset,
+        TILE,
+        SIZE
+      )
+    }
     const at = index * (SIZE + space)
     if (layout === "y") return rect(at, 0, 400, SIZE)
     if (layout === "x") return rect(0, at, SIZE, SIZE)
@@ -660,5 +674,152 @@ describe("Reorderable drop animation", () => {
     })
     dropFirstRowInThirdGap()
     expect(animate).not.toHaveBeenCalled()
+  })
+})
+
+describe("Reorderable grid", () => {
+  const TILES = ["T1", "T2", "T3", "T4", "T5", "T6"]
+
+  function Grid({
+    dir = "ltr",
+    onValueChange,
+  }: {
+    dir?: "ltr" | "rtl"
+    onValueChange?: (value: Array<string>) => void
+  }) {
+    const [order, setOrder] = React.useState(TILES)
+    return (
+      <TectonProvider direction={dir}>
+        <Reorderable
+          orientation="grid"
+          value={order}
+          onValueChange={(next) => {
+            onValueChange?.(next)
+            setOrder(next)
+          }}
+        >
+          {order.map((tile) => (
+            <ReorderableItem key={tile} value={tile} label={tile}>
+              {tile}
+              <ReorderableHandle />
+            </ReorderableItem>
+          ))}
+        </Reorderable>
+      </TectonProvider>
+    )
+  }
+
+  const line = () =>
+    document.querySelector<HTMLElement>(
+      '[data-slot="reorderable-drop-indicator"]'
+    )!
+  /** The y of grid row `row`, `offset` px into it. */
+  const rowY = (row: number, offset = 16) => row * (SIZE + GRID_GAP) + offset
+
+  it("drops into the gap of the row under the pointer", () => {
+    layout = "grid"
+    const onValueChange = vi.fn()
+    render(<Grid onValueChange={onValueChange} />)
+    expect(document.querySelector('[data-slot="reorderable"]')).toHaveAttribute(
+      "data-orientation",
+      "grid"
+    )
+    press("T1", 50, rowY(0))
+    // Row 2, short of T5's middle: between T4 and T5.
+    moveTo(115, rowY(1))
+    expect(line()).not.toHaveAttribute("hidden")
+    // Halfway between T4 (0–100) and T5 (110–210), over row 2 only.
+    expect(line().style.left).toBe("105px")
+    expect(line().style.top).toBe(`${SIZE + GRID_GAP}px`)
+    expect(line().style.height).toBe(`${SIZE}px`)
+    release(115, rowY(1))
+    expect(onValueChange).toHaveBeenCalledWith([
+      "T2",
+      "T3",
+      "T4",
+      "T1",
+      "T5",
+      "T6",
+    ])
+  })
+
+  it("draws the gap after a row's last item at the end of that row", () => {
+    layout = "grid"
+    const onValueChange = vi.fn()
+    render(<Grid onValueChange={onValueChange} />)
+    press("T1", 50, rowY(0))
+    // Row 1, past T3: the gap before T4, drawn after T3 (220–320).
+    moveTo(390, rowY(0))
+    expect(line().style.left).toBe(`${320 + GRID_GAP / 2}px`)
+    expect(line().style.top).toBe("0px")
+    release(390, rowY(0))
+    expect(onValueChange).toHaveBeenCalledWith([
+      "T2",
+      "T3",
+      "T1",
+      "T4",
+      "T5",
+      "T6",
+    ])
+  })
+
+  it("follows the reading direction in RTL", () => {
+    layout = "grid-rtl"
+    const onValueChange = vi.fn()
+    render(<Grid dir="rtl" onValueChange={onValueChange} />)
+    press("T1", 350, rowY(0))
+    // Row 2 from the right: T4 at 300–400, T5 at 190–290. Past T4's
+    // middle, short of T5's: between them.
+    moveTo(280, rowY(1))
+    expect(line().style.left).toBe("295px")
+    release(280, rowY(1))
+    expect(onValueChange).toHaveBeenCalledWith([
+      "T2",
+      "T3",
+      "T4",
+      "T1",
+      "T5",
+      "T6",
+    ])
+  })
+
+  it("steps across the rows with Up and Down", async () => {
+    layout = "grid"
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    render(<Grid onValueChange={onValueChange} />)
+    act(() => handle("T1").focus())
+    await user.keyboard("{Enter}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert between T2 and T3"
+    )
+    // The gap below, in row 2.
+    await user.keyboard("{ArrowDown}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert between T5 and T6"
+    )
+    // Left and Right go on in reading order.
+    await user.keyboard("{ArrowRight}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert after T6"
+    )
+    // Up from the end of row 2: the end of row 1.
+    await user.keyboard("{ArrowUp}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert between T3 and T4"
+    )
+    await user.keyboard("{Enter}")
+    expect(onValueChange).toHaveBeenCalledWith([
+      "T2",
+      "T3",
+      "T1",
+      "T4",
+      "T5",
+      "T6",
+    ])
   })
 })

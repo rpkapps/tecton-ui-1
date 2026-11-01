@@ -54,6 +54,12 @@ To reorder both the rows and the columns of one table, put one `Reorderable` ins
 
 In a right-to-left layout the first item is rightmost, and the arrow keys follow the reading direction.
 
+## Grid
+
+<ComponentPreview name="reorderable-grid" />
+
+Set `orientation="grid"` for items in rows that wrap: a CSS grid of cards, or a wrapping flex row. Lay the items out with your own classes on `Reorderable` (`grid grid-cols-2 gap-3 sm:grid-cols-3`); the order is still one array, read row by row. The pointer picks the row under it and the gap in that row, and the line spans that row only. From the keyboard, Left and Right (or Tab) step through the gaps in reading order, and Up and Down jump to the nearest gap in the row above or below.
+
 ## Keyboard and screen readers
 
 - **Pointer:** press the handle (or the item, with `dragHandle={false}`) and drag. Near the edge of the scroll container (a table's, or the page) the list scrolls, up and down for rows and sideways for columns of a wide table. A finger on an item without a handle drags after a long press, so a quick swipe still scrolls. A line shows where the item will land. Escape cancels.
@@ -79,6 +85,7 @@ Set `dropAnimation={false}` to drop without it:
 - The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs.
 - The user moves the columns of a data table into the order they read them in.
 - A short stack of items (steps, tracks, layers) has an order the user decides.
+- The user arranges a grid of cards or tiles (a dashboard): `orientation="grid"`.
 
 ### Not for
 
@@ -210,7 +217,7 @@ The order is `value` and the whole new array arrives in `onValueChange`; `items`
 | `value` | `string[]` | - | The items' values, in order (controlled). |
 | `defaultValue` | `string[]` | `[]` | The initial order, when not controlled. |
 | `onValueChange` | `(value: string[], eventDetails) => void` | - | Called with the new order after a drop. `eventDetails.reason` is `"pointer"`, `"keyboard"` or `"virtual"`. |
-| `orientation` | `"vertical" \| "horizontal"` | `"vertical"` | Stacked items (rows) or items side by side (columns). |
+| `orientation` | `"vertical" \| "horizontal" \| "grid"` | `"vertical"` | Stacked items (rows), items side by side (columns), or items in rows that wrap (a grid of cards). |
 | `disabled` | `boolean` | `false` | Turns every handle off. |
 | `dropAnimation` | `boolean` | `true` | Animates a drop: the dropped item glides into its place and the others slide aside. Never with reduced motion. |
 | `render` | `ReactElement \| function` | `<div />` | Replaces the element. |

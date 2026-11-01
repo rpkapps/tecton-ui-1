@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { cn } from "cn"
-import { GripHorizontalIcon, GripVerticalIcon } from "lucide-react"
+import { GripHorizontalIcon, GripIcon, GripVerticalIcon } from "lucide-react"
 
 import { buttonVariants } from "@tecton/react/components/button"
 import { usePortalTarget } from "@tecton/react/tecton/portal"
@@ -13,6 +13,7 @@ import {
   createListStrategy,
   listPlacement,
   moveInList,
+  type ListAxis,
   type ListDropPlace,
   type ListItem,
 } from "./internal/primitives/drag-and-drop/list-strategy"
@@ -44,11 +45,11 @@ import { useStore } from "./internal/store"
 
 /**
  * Tecton Reorderable — items the user puts in order by dragging their
- * handle: table rows, table columns or a stack of items. A mouse, a pen or a
- * finger drags the handle and a line shows where the item will land; Enter
- * or Space on the handle starts a keyboard drag (the arrow keys or Tab pick
- * the gap, Enter drops, Escape cancels); a screen reader's activation turns
- * every gap into a button. Each step is announced.
+ * handle: table rows, table columns, a stack of items or a grid of cards. A
+ * mouse, a pen or a finger drags the handle and a line shows where the item
+ * will land; Enter or Space on the handle starts a keyboard drag (the arrow
+ * keys or Tab pick the gap, Enter drops, Escape cancels); a screen reader's
+ * activation turns every gap into a button. Each step is announced.
  *
  * The order is `value`, an array of item values; the items render in that
  * order. Items left out of the page (another page of rows, a hidden column)
@@ -64,6 +65,8 @@ import { useStore } from "./internal/store"
 
 type ReorderableChangeDetails = ChangeEventDetails<DragMode>
 
+type ReorderableOrientation = "vertical" | "horizontal" | "grid"
+
 /** `base` and the caller's class, which may be a function of the state. */
 function withClass<TState>(
   base: string,
@@ -75,7 +78,7 @@ function withClass<TState>(
 }
 
 type ReorderableState = {
-  orientation: "vertical" | "horizontal"
+  orientation: ReorderableOrientation
   dragging: boolean
   disabled: boolean
 }
@@ -96,8 +99,10 @@ type ReorderableProps = Omit<
   /**
    * "vertical" (default): the items are stacked, as table rows are.
    * "horizontal": the items are side by side, as table columns are.
+   * "grid": the items fill rows that wrap, in reading order (a CSS grid of
+   * cards, a wrapping flex row).
    */
-  orientation?: "vertical" | "horizontal"
+  orientation?: ReorderableOrientation
   /** Turns every handle off. */
   disabled?: boolean
   /**
@@ -137,7 +142,7 @@ function reveal(element: HTMLElement, axis: "x" | "y") {
 
 type ReorderableContextValue = {
   dragAndDrop: DragAndDrop<ListDropPlace>
-  orientation: "vertical" | "horizontal"
+  orientation: ReorderableOrientation
   disabled: boolean
   register: (value: string, entry: Entry) => () => void
   /** Whether `value` is one of this list's items. */
@@ -180,7 +185,8 @@ function Reorderable({
   const portal = usePortalTarget()
   const root = React.useRef<HTMLDivElement | null>(null)
   const [registry] = React.useState(() => new Map<string, Entry>())
-  const axis: "x" | "y" = orientation === "horizontal" ? "x" : "y"
+  const axis: ListAxis =
+    orientation === "horizontal" ? "x" : orientation === "grid" ? "grid" : "y"
 
   const latest = React.useRef({ value, axis, direction })
   React.useInsertionEffect(() => {
@@ -212,7 +218,8 @@ function Reorderable({
       const items = shown()
       const item = items[Math.min(place.gap, items.length - 1)] as
         ListItem | undefined
-      if (item) reveal(item.element, latest.current.axis)
+      // A grid scrolls down, like a column.
+      if (item) reveal(item.element, latest.current.axis === "x" ? "x" : "y")
     },
   }))
 
@@ -246,7 +253,9 @@ function Reorderable({
 
   const dragAndDrop = useDragAndDrop<ListDropPlace>({
     strategy,
-    axis,
+    // In a grid, Left and Right step through the gaps in reading order;
+    // Up and Down cross the rows (the strategy's `move`).
+    axis: axis === "grid" ? "x" : axis,
     direction,
     getDragged: (key) => [key],
     getItemElement: (key) => registry.get(key)?.element ?? null,
@@ -303,7 +312,7 @@ function Reorderable({
       return listPlacement(
         element,
         shown(),
-        place.gap,
+        place,
         latest.current.axis,
         latest.current.direction
       )
@@ -324,7 +333,7 @@ function Reorderable({
           {children}
           <DragAndDropPrimitive.DropIndicator
             data-slot="reorderable-drop-indicator"
-            className={cn("z-10", orientation === "horizontal" ? "w-0" : "h-0")}
+            className={cn("z-10", orientation === "vertical" ? "h-0" : "w-0")}
             dragAndDrop={dragAndDrop}
             getPlacement={getPlacement}
           >
@@ -332,7 +341,7 @@ function Reorderable({
               aria-hidden
               className={cn(
                 "pointer-events-none absolute rounded-full bg-primary",
-                orientation === "horizontal"
+                orientation !== "vertical"
                   ? "inset-y-0 -start-px w-0.5"
                   : "inset-x-0 -top-px h-0.5"
               )}
@@ -489,7 +498,11 @@ function ReorderableHandle({
   const { root } = item
   const off = root.disabled || !!disabled
   const Icon =
-    root.orientation === "horizontal" ? GripHorizontalIcon : GripVerticalIcon
+    root.orientation === "horizontal"
+      ? GripHorizontalIcon
+      : root.orientation === "grid"
+        ? GripIcon
+        : GripVerticalIcon
   return (
     <DragAndDropPrimitive.Handle
       data-slot="reorderable-handle"
@@ -520,6 +533,7 @@ function ReorderableHandle({
 
 export { Reorderable, ReorderableItem, ReorderableHandle }
 export type {
+  ReorderableOrientation,
   ReorderableProps,
   ReorderableItemProps,
   ReorderableHandleProps,

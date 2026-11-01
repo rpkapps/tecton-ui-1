@@ -53,6 +53,15 @@ type DropStrategy<TPlace> = {
   onAim?: (place: TPlace | null, mode: DragMode) => void
   /** Other keys during a keyboard drag; `true` when handled. */
   onKey?: (event: KeyboardEvent, place: TPlace | null) => boolean
+  /**
+   * A place other keys of a keyboard drag aim (Up / Down across the rows
+   * of a grid); `undefined` leaves the key to `onKey`.
+   */
+  move?: (
+    event: KeyboardEvent,
+    place: TPlace | null,
+    dragging: ReadonlyArray<string>
+  ) => TPlace | null | undefined
 }
 
 type DragAndDropOptions<TPlace> = {
@@ -231,8 +240,14 @@ function useDragAndDrop<TPlace>(
           places: () => strategy().places(store.get().dragging),
           isSame: (a, b) => strategy().isSame(a, b),
           onAim: aim,
-          onKey: (keyEvent, place) =>
-            strategy().onKey?.(keyEvent, place) ?? false,
+          onKey: (keyEvent, place) => {
+            const to = strategy().move?.(keyEvent, place, store.get().dragging)
+            if (to !== undefined) {
+              session.aim(to)
+              return true
+            }
+            return strategy().onKey?.(keyEvent, place) ?? false
+          },
           onEnd: finish,
           isInside: (target) =>
             !!targets && target instanceof Node && targets.contains(target),
