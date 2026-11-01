@@ -11,6 +11,8 @@ import {
   TreeViewItemContent,
 } from "@tecton/react/tecton/tree-view"
 
+import { stubAnimations } from "./web-animations"
+
 /**
  * Pointer and screen reader drags. jsdom has no layout: rows are laid out
  * here 32 px tall, 33 px apart, in DOM order, across 300 px.
@@ -346,20 +348,7 @@ describe("TreeView keyboard and screen reader drag", () => {
 })
 
 describe("TreeView drop animation", () => {
-  // jsdom has no Web Animations: record the calls instead.
-  const animate = vi.fn(function (this: Element) {
-    return {
-      finished: new Promise(() => {}),
-      cancel() {},
-    } as unknown as Animation
-  })
-  beforeEach(() => {
-    animate.mockClear()
-    Element.prototype.animate = animate
-  })
-  afterEach(() => {
-    delete (Element.prototype as { animate?: unknown }).animate
-  })
+  const { animate, slides } = stubAnimations()
 
   function Ordered(props: Partial<React.ComponentProps<typeof TreeView>>) {
     const [order, setOrder] = React.useState(["a", "b", "c"])
@@ -384,19 +373,6 @@ describe("TreeView drop animation", () => {
     )
   }
 
-  /** The translate each row animated from, by its name. */
-  const slides = () =>
-    new Map(
-      animate.mock.calls.flatMap((call, at) => {
-        const [keyframes] = call as unknown as [Array<Keyframe>]
-        const from = keyframes[0]?.translate
-        const element = animate.mock.contexts[at]
-        return from === undefined
-          ? []
-          : [[element.getAttribute("data-value"), String(from)] as const]
-      })
-    )
-
   function dropFirstRowLast(props: { dropAnimation?: boolean } = {}) {
     render(<Ordered {...props} />)
     press("a", yOf(0))
@@ -408,7 +384,7 @@ describe("TreeView drop animation", () => {
   it("slides the rows that moved, and the dropped one from where it was let go", () => {
     dropFirstRowLast()
     // The preview was let go at the page's top (jsdom draws it there).
-    expect(slides()).toEqual(
+    expect(slides((row) => row.getAttribute("data-value"))).toEqual(
       new Map([
         ["b", `0px ${ROW}px`],
         ["c", `0px ${ROW}px`],

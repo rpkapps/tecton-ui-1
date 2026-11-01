@@ -36,6 +36,7 @@ import {
   useDragAndDrop,
   type DragAndDrop,
   type DragMode,
+  type DropDetails,
   type DropStrategy,
 } from "./internal/primitives/drag-and-drop/use-drag-and-drop"
 import {
@@ -199,14 +200,8 @@ type ReorderableContextValue = {
   /** `mode="swap"`: the items sit in slots. */
   swap: boolean
   registerSlot: (element: HTMLElement, label: string | undefined) => () => void
-  /** The slot at `index`, in document order. */
-  slotAt: (index: number) => HTMLElement | undefined
-  /** Whether a drag shows the slot `element` emptied (its item moving into an empty slot). */
-  vacated: (
-    element: HTMLElement,
-    aimed: ReorderPlace | null,
-    dragged: string | undefined
-  ) => boolean
+  /** The slots, in document order, and their items. */
+  slots: () => Array<SlotItem>
   orientation: ReorderableOrientation
   disabled: boolean
   register: (value: string, entry: Entry) => () => void
@@ -266,16 +261,10 @@ function Reorderable({
   const axis: ListAxis =
     orientation === "horizontal" ? "x" : orientation === "grid" ? "grid" : "y"
 
-  const latest = React.useRef({
-    value,
-    axis,
-    direction,
-    swap,
-    t,
-    dropAnimation,
-  })
+  const snapshot = { value, axis, direction, swap, t, dropAnimation }
+  const latest = React.useRef(snapshot)
   React.useInsertionEffect(() => {
-    latest.current = { value, axis, direction, swap, t, dropAnimation }
+    latest.current = snapshot
   })
 
   /** The items on the page, in order. */
@@ -295,25 +284,25 @@ function Reorderable({
   const [slotRegistry] = React.useState(
     () => new Map<HTMLElement, string | undefined>()
   )
-  const slotElements = React.useCallback(
-    () =>
-      [...slotRegistry.keys()].sort((a, b) =>
-        a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
-      ),
-    [slotRegistry]
-  )
   const slotItems = React.useCallback(
     (): Array<SlotItem> =>
-      slotElements().map((element, index) => {
-        const item = latest.current.value[index] ?? null
-        return {
-          element,
-          item,
-          itemLabel: item === null ? null : (registry.get(item)?.label ?? item),
-          label: slotRegistry.get(element),
-        }
-      }),
-    [slotElements, slotRegistry, registry]
+      [...slotRegistry]
+        .sort(([a], [b]) =>
+          a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING
+            ? -1
+            : 1
+        )
+        .map(([element, label], index) => {
+          const item = latest.current.value[index] ?? null
+          return {
+            element,
+            item,
+            itemLabel:
+              item === null ? null : (registry.get(item)?.label ?? item),
+            label,
+          }
+        }),
+    [slotRegistry, registry]
   )
 
   // The swap a drag shows (`mode="swap"`): the items moved into other
@@ -322,6 +311,14 @@ function Reorderable({
     new Map<HTMLElement, Partial<CSSStyleDeclaration>>()
   )
   const dragApi = React.useRef<DragAndDrop<ReorderPlace> | null>(null)
+  /** Puts the items a swap preview moved back in their slots, at once. */
+  const unstyle = React.useCallback(() => {
+    for (const [element, saved] of preview.current) {
+      settle(element)
+      Object.assign(element.style, saved)
+    }
+    preview.current.clear()
+  }, [])
   const restyle = React.useCallback(
     (moves: ReadonlyArray<readonly [HTMLElement, HTMLElement]>) => {
       const styled = preview.current
@@ -332,8 +329,7 @@ function Reorderable({
         if (element.isConnected)
           before.set(element, element.getBoundingClientRect())
       for (const element of before.keys()) settle(element)
-      for (const [element, saved] of styled) Object.assign(element.style, saved)
-      styled.clear()
+      unstyle()
       for (const [element, slot] of moves) {
         const natural = element.getBoundingClientRect()
         const own =
@@ -356,7 +352,7 @@ function Reorderable({
       }
       animateFrom(before, !latest.current.dropAnimation)
     },
-    []
+    [unstyle]
   )
 
   const [strategy] = React.useState((): DropStrategy<ReorderPlace> => {
@@ -387,21 +383,19 @@ function Reorderable({
           const store = dragApi.current?.store.get()
           const key = store?.dragging[0]
           if (!store || store.mode === null || key === undefined) return
-          const elements = slotElements()
-          const current = latest.current.value
-          const origin = current.indexOf(key)
+          const list = slotItems()
+          const origin = list.findIndex((slot) => slot.item === key)
+          const target = isSlot(place) ? list.at(place.slot) : undefined
           const moves: Array<readonly [HTMLElement, HTMLElement]> = []
-          if (isSlot(place) && origin >= 0 && place.slot !== origin) {
+          if (target && origin >= 0 && target !== list[origin]) {
             const dragged = registry.get(key)?.element
-            const target = elements[place.slot] as HTMLElement | undefined
-            const occupant = current[place.slot]
-            const other = occupant ? registry.get(occupant)?.element : null
-            if (dragged && target) moves.push([dragged, target])
-            if (other) moves.push([other, elements[origin]])
+            const other = target.item && registry.get(target.item)?.element
+            if (dragged) moves.push([dragged, target.element])
+            if (other) moves.push([other, list[origin].element])
           }
           restyle(moves)
-          if (isSlot(place) && dragMode !== "pointer")
-            elements[place.slot]?.scrollIntoView({
+          if (dragMode !== "pointer")
+            target?.element.scrollIntoView({
               block: "nearest",
               inline: "nearest",
             })
@@ -419,7 +413,6 @@ function Reorderable({
     }
   })
 
-  const dragModeRef = React.useRef<DragMode>("pointer")
   const animation = useDropAnimation({
     disabled: !dropAnimation,
     items: () => [...registry].map(([key, entry]) => [key, entry.element]),
@@ -428,10 +421,7 @@ function Reorderable({
     (
       place: ReorderPlace,
       keys: ReadonlyArray<string>,
-      {
-        from,
-        takePreview,
-      }: { from: DOMRect | null; takePreview: (() => HTMLElement) | null }
+      { mode: dragMode, from, takePreview }: DropDetails
     ) => {
       const key = keys.at(0)
       if (key === undefined) return
@@ -445,7 +435,7 @@ function Reorderable({
             place.gap
           )
       if (next.every((v, i) => v === current[i])) return
-      const details = createChangeEventDetails(dragModeRef.current)
+      const details = createChangeEventDetails(dragMode)
       // Where every item shows now, the swap included; they slide from
       // there into the slots the new value gives them, whether the slots'
       // elements are re-created or given other items.
@@ -458,11 +448,7 @@ function Reorderable({
       )
       onValueChange?.(next, details)
       if (details.isCanceled) return animation.discard()
-      for (const [element, saved] of preview.current) {
-        settle(element)
-        Object.assign(element.style, saved)
-      }
-      preview.current.clear()
+      unstyle()
       setValue(next)
     }
   )
@@ -477,9 +463,6 @@ function Reorderable({
     getItemElement: (key) => registry.get(key)?.element ?? null,
     getContainer: () => root.current,
     getPreviewContainer: () => portal ?? null,
-    onDragStart: (_keys, dragMode) => {
-      dragModeRef.current = dragMode
-    },
     onDrop: change,
     // Back on the dropped item's handle, where the keyboard drag started.
     focusItem: (key) => {
@@ -510,28 +493,6 @@ function Reorderable({
     },
     [slotRegistry]
   )
-  const slotAt = React.useCallback(
-    (index: number) => slotElements()[index] as HTMLElement | undefined,
-    [slotElements]
-  )
-  const vacated = React.useCallback(
-    (
-      element: HTMLElement,
-      aimed: ReorderPlace | null,
-      dragged: string | undefined
-    ) => {
-      if (!isSlot(aimed) || dragged === undefined) return false
-      const current = latest.current.value
-      const origin = current.indexOf(dragged)
-      return (
-        origin >= 0 &&
-        aimed.slot !== origin &&
-        current[aimed.slot] === null &&
-        slotElements()[origin] === element
-      )
-    },
-    [slotElements]
-  )
 
   const register = React.useCallback(
     (key: string, entry: Entry) => {
@@ -554,8 +515,7 @@ function Reorderable({
       dragAndDrop,
       swap,
       registerSlot,
-      slotAt,
-      vacated,
+      slots: slotItems,
       orientation,
       disabled,
       register,
@@ -566,8 +526,7 @@ function Reorderable({
       dragAndDrop,
       swap,
       registerSlot,
-      slotAt,
-      vacated,
+      slotItems,
       orientation,
       disabled,
       register,
@@ -845,21 +804,24 @@ function ReorderableSlot({
   const context = React.useContext(ReorderableContext)
   if (!context)
     throw new Error("ReorderableSlot must be used inside Reorderable")
-  const { dragAndDrop, registerSlot, slotAt, vacated } = context
+  const { dragAndDrop, registerSlot, slots } = context
   const [element, setElement] = React.useState<HTMLElement | null>(null)
   React.useLayoutEffect(
     () => (element ? registerSlot(element, label) : undefined),
     [registerSlot, element, label]
   )
+  const aimed = (s: { aimed: ReorderPlace | null }) =>
+    isSlot(s.aimed) ? slots().at(s.aimed.slot) : undefined
   const dropTarget = useStore(
     dragAndDrop.store,
-    (s) =>
-      isSlot(s.aimed) && element !== null && slotAt(s.aimed.slot) === element
+    (s) => element !== null && aimed(s)?.element === element
   )
   // Empty, or emptied while a drag moves its item into an empty slot.
   const left = useStore(
     dragAndDrop.store,
-    (s) => element !== null && vacated(element, s.aimed, s.dragging[0])
+    (s) =>
+      aimed(s)?.item === null &&
+      slots().find((slot) => slot.element === element)?.item === s.dragging[0]
   )
   const empty =
     left || children === null || children === undefined || children === false
@@ -867,10 +829,7 @@ function ReorderableSlot({
     "div",
     {
       ...props,
-      className: withClass(
-        "relative min-w-0",
-        className
-      ),
+      className: withClass("relative min-w-0", className),
       ref,
     },
     { empty, dropTarget },

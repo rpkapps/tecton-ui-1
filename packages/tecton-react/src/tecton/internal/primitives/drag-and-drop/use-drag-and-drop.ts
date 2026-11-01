@@ -71,6 +71,17 @@ type DropStrategy<TPlace> = {
   ) => TPlace | null | undefined
 }
 
+type DropDetails = {
+  mode: DragMode
+  /** Where the pointer preview was let go, for the dropped item to animate from. */
+  from: DOMRect | null
+  /**
+   * Hands the pointer preview over, to animate it into the dropped item's
+   * place and remove it; called during `onDrop` or never.
+   */
+  takePreview: (() => HTMLElement) | null
+}
+
 type DragAndDropOptions<TPlace> = {
   strategy: DropStrategy<TPlace>
   /** What a drag from `key` carries: the selection, when `key` is in it. */
@@ -96,15 +107,7 @@ type DragAndDropOptions<TPlace> = {
   onDrop: (
     place: TPlace,
     keys: ReadonlyArray<string>,
-    details: {
-      mode: DragMode
-      from: DOMRect | null
-      /**
-       * Hands the pointer preview over, to animate it into the dropped
-       * item's place and remove it; called during `onDrop` or never.
-       */
-      takePreview: (() => HTMLElement) | null
-    }
+    details: DropDetails
   ) => void
   /**
    * Focuses an item after a keyboard or virtual drag (the first dropped
@@ -345,5 +348,6 @@ export type {
   DragAndDropOptions,
   DragMode,
   DragState,
+  DropDetails,
   DropStrategy,
 }

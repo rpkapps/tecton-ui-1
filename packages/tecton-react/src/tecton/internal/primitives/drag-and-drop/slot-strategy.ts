@@ -12,7 +12,7 @@
  *   column first (`move`).
  */
 import type { Translator } from "../../i18n/translations"
-import type { Point } from "./pointer-drag"
+import { nearestTo, type Point } from "./pointer-drag"
 import type { DropStrategy } from "./use-drag-and-drop"
 
 type SlotDropPlace = { slot: number }
@@ -68,15 +68,10 @@ function createSlotStrategy({
   return {
     placeAt(point: Point, dragging) {
       const list = slots()
-      let nearest = -1
-      let distance = Infinity
-      list.forEach(({ element }, index) => {
-        const rect = element.getBoundingClientRect()
-        const dx = Math.max(rect.left - point.x, 0, point.x - rect.right)
-        const dy = Math.max(rect.top - point.y, 0, point.y - rect.bottom)
-        const d = Math.hypot(dx, dy)
-        if (d < distance) [nearest, distance] = [index, d]
-      })
+      const { index: nearest, distance } = nearestTo(
+        list.map((slot) => slot.element),
+        point
+      )
       if (nearest < 0) return null
       // Over the gutter between slots the nearest one still holds; well
       // outside the layout nothing does.

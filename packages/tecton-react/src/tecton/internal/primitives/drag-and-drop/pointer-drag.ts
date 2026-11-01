@@ -296,27 +296,21 @@ function trackPointerDrag(
   const end = (drop: boolean) => {
     if (ended) return
     const started = dragging
-    const ghost = preview
-    const at = ghost?.getBoundingClientRect() ?? null
     // Kept out of `stop()`: the drop may take it over.
+    let ghost = preview
+    const at = ghost?.getBoundingClientRect() ?? null
     preview = null
     stop()
-    const handoff = { taken: false }
+    const take = (taken: HTMLElement) => () => {
+      ghost = null
+      return taken
+    }
     try {
       if (!started) return
       if (drop) swallowNextClick(view)
-      onEnd(
-        drop,
-        at,
-        drop && ghost
-          ? () => {
-              handoff.taken = true
-              return ghost
-            }
-          : null
-      )
+      onEnd(drop, at, drop && ghost ? take(ghost) : null)
     } finally {
-      if (!handoff.taken) ghost?.remove()
+      ghost?.remove()
     }
   }
 
@@ -380,5 +374,22 @@ function trackPointerDrag(
   return stop
 }
 
-export { trackPointerDrag, scrollerOf, stickyTopOf }
+/**
+ * The element of `elements` nearest `point` (over it: 0 px away), as its
+ * index (-1 for none) and its distance.
+ */
+function nearestTo(elements: ReadonlyArray<HTMLElement>, point: Point) {
+  let index = -1
+  let distance = Infinity
+  elements.forEach((element, at) => {
+    const rect = element.getBoundingClientRect()
+    const dx = Math.max(rect.left - point.x, 0, point.x - rect.right)
+    const dy = Math.max(rect.top - point.y, 0, point.y - rect.bottom)
+    const d = Math.hypot(dx, dy)
+    if (d < distance) [index, distance] = [at, d]
+  })
+  return { index, distance }
+}
+
+export { trackPointerDrag, nearestTo, scrollerOf, stickyTopOf }
 export type { PointerDragOptions, Point }

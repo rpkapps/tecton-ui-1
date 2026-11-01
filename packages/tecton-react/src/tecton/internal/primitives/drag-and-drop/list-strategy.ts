@@ -18,7 +18,7 @@
  * keys across the rows aim the nearest gap above or below (`move`).
  */
 import type { Translator } from "../../i18n/translations"
-import type { Point } from "./pointer-drag"
+import { nearestTo, type Point } from "./pointer-drag"
 import type { DropStrategy } from "./use-drag-and-drop"
 
 type ListDropPlace = {
@@ -143,15 +143,10 @@ function createListStrategy({
       if (axis() === "grid") {
         const rtl = direction() === "rtl"
         // The item under the pointer, or the nearest one.
-        let at = 0
-        let distance = Infinity
-        list.forEach(({ element }, i) => {
-          const rect = element.getBoundingClientRect()
-          const dx = Math.max(rect.left - point.x, 0, point.x - rect.right)
-          const dy = Math.max(rect.top - point.y, 0, point.y - rect.bottom)
-          const d = Math.hypot(dx, dy)
-          if (d < distance) [at, distance] = [i, d]
-        })
+        const at = nearestTo(
+          list.map((item) => item.element),
+          point
+        ).index
         // Before it or after it, by the half of it the pointer is on.
         const rect = list[at].element.getBoundingClientRect()
         const mid = rect.left + rect.width / 2

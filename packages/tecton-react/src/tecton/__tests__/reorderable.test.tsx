@@ -20,6 +20,7 @@ import {
 } from "@tecton/react/tecton/reorderable"
 
 import { moveInList } from "../internal/primitives/drag-and-drop/list-strategy"
+import { stubAnimations } from "./web-animations"
 
 /**
  * jsdom has no layout: items are laid out here 32 px apart, in DOM order,
@@ -149,6 +150,10 @@ function Rows({
   )
 }
 
+const line = () =>
+  document.querySelector<HTMLElement>(
+    '[data-slot="reorderable-drop-indicator"]'
+  )!
 const handle = (name: string) =>
   screen.getByRole("button", { name: `Drag ${name}` })
 const names = () => items().map((item) => item.textContent)
@@ -198,11 +203,8 @@ describe("Reorderable", () => {
   it("renders the line and drop targets outside the table", () => {
     const error = vi.spyOn(console, "error").mockImplementation(() => {})
     render(<Rows />)
-    const indicator = document.querySelector(
-      '[data-slot="reorderable-drop-indicator"]'
-    )!
-    expect(indicator.closest("table")).toBeNull()
-    expect(indicator.parentElement).toHaveAttribute("data-slot", "reorderable")
+    expect(line().closest("table")).toBeNull()
+    expect(line().parentElement).toHaveAttribute("data-slot", "reorderable")
     expect(error).not.toHaveBeenCalled()
     error.mockRestore()
   })
@@ -213,11 +215,8 @@ describe("Reorderable", () => {
     press("A-12", 10, yOf(0))
     moveTo(10, yOf(2, 20))
     expect(items()[0]).toHaveAttribute("data-dragging", "")
-    const line = document.querySelector<HTMLElement>(
-      '[data-slot="reorderable-drop-indicator"]'
-    )!
-    expect(line).not.toHaveAttribute("hidden")
-    expect(line.style.top).toBe(`${3 * SIZE}px`)
+    expect(line()).not.toHaveAttribute("hidden")
+    expect(line().style.top).toBe(`${3 * SIZE}px`)
     // The copy under the pointer is a row inside a table of its own.
     const preview = document.body.querySelector("table[aria-hidden='true']")
     expect(preview?.querySelector("tr")).not.toBeNull()
@@ -273,12 +272,9 @@ describe("Reorderable", () => {
       )
       press("A-12", from[0], from[1])
       moveTo(to[0], to[1])
-      const line = document.querySelector<HTMLElement>(
-        '[data-slot="reorderable-drop-indicator"]'
-      )!
-      expect(line).not.toHaveAttribute("hidden")
+      expect(line()).not.toHaveAttribute("hidden")
       expect(
-        orientation === "vertical" ? line.style.top : line.style.left
+        orientation === "vertical" ? line().style.top : line().style.left
       ).toBe(`${at}px`)
       release(to[0], to[1])
     }
@@ -289,9 +285,7 @@ describe("Reorderable", () => {
     render(<Rows onValueChange={onValueChange} />)
     press("B-3", 10, yOf(1))
     moveTo(10, yOf(1, 20))
-    expect(
-      document.querySelector('[data-slot="reorderable-drop-indicator"]')
-    ).toHaveAttribute("hidden")
+    expect(line()).toHaveAttribute("hidden")
     release(10, yOf(1, 20))
     expect(onValueChange).not.toHaveBeenCalled()
   })
@@ -421,11 +415,8 @@ describe("Reorderable", () => {
       clientY: 10,
     })
     moveTo(330, 10)
-    const line = document.querySelector<HTMLElement>(
-      '[data-slot="reorderable-drop-indicator"]'
-    )!
     // The start (right) edge of "status".
-    expect(line.style.left).toBe(`${400 - 2 * SIZE}px`)
+    expect(line().style.left).toBe(`${400 - 2 * SIZE}px`)
     release(330, 10)
     expect(onValueChange).toHaveBeenLastCalledWith(["field", "well", "status"])
 
@@ -596,35 +587,13 @@ describe("Reorderable", () => {
 })
 
 describe("Reorderable drop animation", () => {
-  // jsdom has no Web Animations: record the calls instead.
-  const animate = vi.fn(function (this: Element) {
-    return {
-      finished: new Promise(() => {}),
-      cancel() {},
-    } as unknown as Animation
-  })
+  const { animate, animations, ...stub } = stubAnimations()
   const originalMatchMedia = window.matchMedia
-  beforeEach(() => {
-    animate.mockClear()
-    Element.prototype.animate = animate
-  })
   afterEach(() => {
-    delete (Element.prototype as { animate?: unknown }).animate
     window.matchMedia = originalMatchMedia
   })
-
-  /** The translate each row animated from, by its name. */
-  const slides = () =>
-    new Map(
-      animate.mock.calls.flatMap((call, at) => {
-        const [keyframes] = call as unknown as [Array<Keyframe>]
-        const from = keyframes[0]?.translate
-        const row = animate.mock.contexts[at]
-        return from === undefined
-          ? []
-          : [[row.textContent, String(from)] as const]
-      })
-    )
+  /** The translate each row slid from, by its name. */
+  const slides = () => stub.slides((row) => row.textContent)
 
   function dropFirstRowInThirdGap(props: { dropAnimation?: boolean } = {}) {
     render(<Rows {...props} />)
@@ -645,10 +614,8 @@ describe("Reorderable drop animation", () => {
       ])
     )
     // The dropped row starts on the preview's surface.
-    const surfaces = animate.mock.calls.filter((call) =>
-      (call as unknown as [Array<Keyframe>])[0].some(
-        (frame) => frame.backgroundColor !== undefined
-      )
+    const surfaces = animations().filter(({ keyframes }) =>
+      keyframes.some((frame) => frame.backgroundColor !== undefined)
     )
     expect(surfaces).toHaveLength(1)
   })
@@ -696,49 +663,47 @@ describe("Reorderable drop animation", () => {
   })
 })
 
+/** A grid of `tiles`, dropped into with `orientation="grid"`. */
+function Grid({
+  tiles,
+  dir = "ltr",
+  onValueChange,
+}: {
+  tiles: Array<string>
+  dir?: "ltr" | "rtl"
+  onValueChange?: (value: Array<string>) => void
+}) {
+  const [order, setOrder] = React.useState(tiles)
+  return (
+    <TectonProvider direction={dir}>
+      <Reorderable
+        orientation="grid"
+        value={order}
+        onValueChange={(next) => {
+          onValueChange?.(next)
+          setOrder(next)
+        }}
+      >
+        {order.map((tile) => (
+          <ReorderableItem key={tile} value={tile} label={tile}>
+            {tile}
+            <ReorderableHandle />
+          </ReorderableItem>
+        ))}
+      </Reorderable>
+    </TectonProvider>
+  )
+}
+
 describe("Reorderable grid", () => {
   const TILES = ["T1", "T2", "T3", "T4", "T5", "T6"]
-
-  function Grid({
-    dir = "ltr",
-    onValueChange,
-  }: {
-    dir?: "ltr" | "rtl"
-    onValueChange?: (value: Array<string>) => void
-  }) {
-    const [order, setOrder] = React.useState(TILES)
-    return (
-      <TectonProvider direction={dir}>
-        <Reorderable
-          orientation="grid"
-          value={order}
-          onValueChange={(next) => {
-            onValueChange?.(next)
-            setOrder(next)
-          }}
-        >
-          {order.map((tile) => (
-            <ReorderableItem key={tile} value={tile} label={tile}>
-              {tile}
-              <ReorderableHandle />
-            </ReorderableItem>
-          ))}
-        </Reorderable>
-      </TectonProvider>
-    )
-  }
-
-  const line = () =>
-    document.querySelector<HTMLElement>(
-      '[data-slot="reorderable-drop-indicator"]'
-    )!
   /** The y of grid row `row`, `offset` px into it. */
   const rowY = (row: number, offset = 16) => row * (SIZE + GRID_GAP) + offset
 
   it("drops into the gap of the row under the pointer", () => {
     layout = "grid"
     const onValueChange = vi.fn()
-    render(<Grid onValueChange={onValueChange} />)
+    render(<Grid tiles={TILES} onValueChange={onValueChange} />)
     expect(document.querySelector('[data-slot="reorderable"]')).toHaveAttribute(
       "data-orientation",
       "grid"
@@ -765,7 +730,7 @@ describe("Reorderable grid", () => {
   it("draws the gap after a row's last item at the end of that row", () => {
     layout = "grid"
     const onValueChange = vi.fn()
-    render(<Grid onValueChange={onValueChange} />)
+    render(<Grid tiles={TILES} onValueChange={onValueChange} />)
     press("T1", 50, rowY(0))
     // Row 1, past T3: the gap before T4, drawn after T3 (220–320).
     moveTo(390, rowY(0))
@@ -785,7 +750,7 @@ describe("Reorderable grid", () => {
   it("follows the reading direction in RTL", () => {
     layout = "grid-rtl"
     const onValueChange = vi.fn()
-    render(<Grid dir="rtl" onValueChange={onValueChange} />)
+    render(<Grid tiles={TILES} dir="rtl" onValueChange={onValueChange} />)
     press("T1", 350, rowY(0))
     // Row 2 from the right: T4 at 300–400, T5 at 190–290. Past T4's
     // middle, short of T5's: between them.
@@ -806,7 +771,7 @@ describe("Reorderable grid", () => {
     layout = "grid"
     const user = userEvent.setup()
     const onValueChange = vi.fn()
-    render(<Grid onValueChange={onValueChange} />)
+    render(<Grid tiles={TILES} onValueChange={onValueChange} />)
     act(() => handle("T1").focus())
     await user.keyboard("{Enter}")
     expect(document.activeElement).toHaveAttribute(
@@ -845,41 +810,10 @@ describe("Reorderable grid", () => {
 
 describe("Reorderable bento grid", () => {
   const TILES = ["B1", "B2", "B3", "B4", "B5", "B6", "B7"]
-
-  function Bento({
-    onValueChange,
-  }: {
-    onValueChange?: (value: Array<string>) => void
-  }) {
-    const [order, setOrder] = React.useState(TILES)
-    return (
-      <Reorderable
-        orientation="grid"
-        value={order}
-        onValueChange={(next) => {
-          onValueChange?.(next)
-          setOrder(next)
-        }}
-      >
-        {order.map((tile) => (
-          <ReorderableItem key={tile} value={tile} label={tile}>
-            {tile}
-            <ReorderableHandle />
-          </ReorderableItem>
-        ))}
-      </Reorderable>
-    )
-  }
-
-  const line = () =>
-    document.querySelector<HTMLElement>(
-      '[data-slot="reorderable-drop-indicator"]'
-    )!
-
   it("drops after the tile whose trailing half is under the pointer", () => {
     layout = "bento"
     const onValueChange = vi.fn()
-    render(<Bento onValueChange={onValueChange} />)
+    render(<Grid tiles={TILES} onValueChange={onValueChange} />)
     press("B7", 380, 100)
     // The end of B2 (220–320): halfway to B3 beside it, over B2's height.
     moveTo(300, 16)
@@ -901,7 +835,7 @@ describe("Reorderable bento grid", () => {
   it("draws a gap whose tiles are apart beside the tile it is at", () => {
     layout = "bento"
     const onValueChange = vi.fn()
-    render(<Bento onValueChange={onValueChange} />)
+    render(<Grid tiles={TILES} onValueChange={onValueChange} />)
     press("B7", 380, 100)
     // The start of B4, under B2: the gap after B3 (which is not beside
     // it), drawn between B1 and B4 over B4's height.
@@ -925,7 +859,7 @@ describe("Reorderable bento grid", () => {
     layout = "bento"
     const user = userEvent.setup()
     const onValueChange = vi.fn()
-    render(<Bento onValueChange={onValueChange} />)
+    render(<Grid tiles={TILES} onValueChange={onValueChange} />)
     act(() => handle("B1").focus())
     await user.keyboard("{Enter}")
     expect(document.activeElement).toHaveAttribute(
@@ -1074,9 +1008,7 @@ describe("Reorderable swap", () => {
     expect(itemOf("A")).toHaveAttribute("data-dragging", "")
     expect(slot(1)).toHaveAttribute("data-drop-target", "")
     // No line: the swap shows itself.
-    expect(
-      document.querySelector('[data-slot="reorderable-drop-indicator"]')
-    ).toHaveAttribute("hidden")
+    expect(line()).toHaveAttribute("hidden")
     release(160, 50)
     expect(onValueChange).toHaveBeenCalledWith(["b", "a", "c", null])
     expect(texts()).toEqual(["B", "A", "C", null])
@@ -1159,41 +1091,16 @@ describe("Reorderable swap", () => {
   })
 
   describe("animation", () => {
-    const animate = vi.fn(function (this: Element) {
-      return {
-        finished: new Promise(() => {}),
-        cancel() {},
-      } as unknown as Animation
-    })
-    beforeEach(() => {
-      animate.mockClear()
-      Element.prototype.animate = animate
-    })
-    afterEach(() => {
-      delete (Element.prototype as { animate?: unknown }).animate
-      // A landing preview waits for its (stubbed, endless) animation.
-      for (const ghost of document.querySelectorAll("[inert]")) ghost.remove()
-    })
+    const { animate, keyframesOf: animationsOf } = stubAnimations()
 
     it("slides the swapped item into the freed slot as the drag aims", () => {
       render(<Swap />)
       press("A", 50, 50)
       moveTo(160, 50)
-      const at = animate.mock.contexts.indexOf(itemOf("B"))
-      expect(at).toBeGreaterThanOrEqual(0)
-      const [keyframes] = animate.mock.calls[at] as unknown as [Array<Keyframe>]
       // From B's slot, 110 px to the right of A's.
-      expect(keyframes[0].translate).toBe("110px 0px")
+      expect(animationsOf(itemOf("B"))[0]?.[0].translate).toBe("110px 0px")
       release(160, 50)
     })
-
-    /** The animations run on `element`, by their first keyframe. */
-    const animationsOf = (element: Element) =>
-      animate.mock.calls.flatMap((call, at) =>
-        animate.mock.contexts[at] === element
-          ? [(call as unknown as [Array<Keyframe>])[0]]
-          : []
-      )
 
     it("lands the preview on the placeholder as the drop settles", () => {
       render(<Swap />)

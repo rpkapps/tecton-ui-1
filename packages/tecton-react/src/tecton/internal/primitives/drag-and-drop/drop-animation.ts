@@ -71,7 +71,7 @@ type Pending = {
   boxes: Map<string, Box>
   dropped: ReadonlySet<string>
   /** Where the preview was let go, and its size, for the first dropped item. */
-  from: (Box & { width: number; height: number }) | null
+  from: Box | null
   /**
    * The pointer preview itself, handed over by the drop: it lands on the
    * dropped item, which stays where it showed (a swap's placeholder).
@@ -106,8 +106,9 @@ type DropAnimation = {
  * dropped item already is (a swap's placeholder): the preview glides into
  * its box and fades as the item fades in, then goes.
  */
-function land(ghost: HTMLElement, element: HTMLElement, rect: DOMRect) {
+function land(ghost: HTMLElement, element: HTMLElement) {
   const from = ghost.getBoundingClientRect()
+  const rect = element.getBoundingClientRect()
   const remove = () => ghost.remove()
   // The preview is fixed at the viewport's corner and placed by translate.
   ghost
@@ -301,6 +302,8 @@ function useDropAnimation({
       pending.current = null
       return
     }
+    const { ghost } = capture
+    let landing: HTMLElement | null = null
     const moves: Array<{
       element: HTMLElement
       /** The box it slides from, and its box now. */
@@ -310,23 +313,25 @@ function useDropAnimation({
     }> = []
     const areas = new Map<Element, Bounds | null>()
     for (const [key, element] of latest.current.items()) {
-      if (!element) continue
+      const old = element && capture.boxes.get(key)
+      if (!element || !old) continue
       const dropped = capture.dropped.has(key)
-      const old = capture.boxes.get(key)
-      if (!old) continue
+      // With the preview handed over, the item stays where it showed and
+      // the preview lands on it.
+      if (dropped && ghost) landing ??= element
       const rect = element.getBoundingClientRect()
       // The first dropped item comes from the preview (its place and its
-      // size), the others from where they showed. With the preview handed
-      // over, the item stays where it showed and the preview lands on it.
-      const from = dropped && !capture.ghost && capture.from
+      // size), the others from where they showed.
+      const from = dropped && !ghost && capture.from
       const source = from || old
-      const same =
+      if (from) capture.from = null
+      if (
         Math.abs(source.left - rect.left) < 0.5 &&
         Math.abs(source.top - rect.top) < 0.5 &&
         Math.abs(source.width - rect.width) < 0.5 &&
         Math.abs(source.height - rect.height) < 0.5
-      if (from) capture.from = null
-      if (same) continue
+      )
+        continue
       let x = source.left - rect.left
       let y = source.top - rect.top
       // From the nearest point inside its scroll containers: a preview let
@@ -347,18 +352,10 @@ function useDropAnimation({
         dropped,
       })
     }
-    const { ghost } = capture
-    const landing = ghost
-      ? [...latest.current.items()].find(([key]) =>
-          capture.dropped.has(key)
-        )?.[1]
-      : null
     if (!moves.length && !landing) return
     pending.current = null
-    if (ghost) {
-      if (landing) land(ghost, landing, landing.getBoundingClientRect())
-      else ghost.remove()
-    }
+    if (ghost && landing) land(ghost, landing)
+    else ghost?.remove()
     for (const { element, start, rect, dropped } of moves) {
       const moved = slide(element, start, rect)
       if (!dropped) continue
@@ -388,14 +385,9 @@ function useDropAnimation({
         // `animate` is missing from some embedded engines (jsdom).
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         if (!element.animate) return bail()
+        // A rect is a snapshot: kept as it is.
         const rect = element.getBoundingClientRect()
-        if (inView(rect, view) || dropped.includes(key))
-          boxes.set(key, {
-            left: rect.left,
-            top: rect.top,
-            width: rect.width,
-            height: rect.height,
-          })
+        if (inView(rect, view) || dropped.includes(key)) boxes.set(key, rect)
       }
       // Measured where they show; now at rest, for the commit to measure
       // where they land.
@@ -404,12 +396,7 @@ function useDropAnimation({
       pending.current = {
         boxes,
         dropped: new Set(dropped),
-        from: from && {
-          left: from.left,
-          top: from.top,
-          width: from.width,
-          height: from.height,
-        },
+        from,
         ghost,
         expires: performance.now() + EXPIRY,
       }
