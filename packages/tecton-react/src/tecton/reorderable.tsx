@@ -101,16 +101,27 @@ type ReorderableContextValue = {
   orientation: "vertical" | "horizontal"
   disabled: boolean
   register: (value: string, entry: Entry) => () => void
+  /** Whether `value` is one of this list's items. */
+  has: (value: string) => boolean
+  /** The `Reorderable` around this one, if any. */
+  parent: ReorderableContextValue | null
 }
 
 const ReorderableContext = React.createContext<ReorderableContextValue | null>(
   null
 )
 
-function useReorderable(part: string) {
+/**
+ * The `Reorderable` an item belongs to: the nearest one whose `value`
+ * holds it, so a table can reorder its rows and its columns with one
+ * `Reorderable` inside the other; the nearest one otherwise.
+ */
+function useReorderable(part: string, value: string) {
   const context = React.useContext(ReorderableContext)
   if (!context) throw new Error(`${part} must be used inside Reorderable`)
-  return context
+  let root: ReorderableContextValue | null = context
+  while (root && !root.has(value)) root = root.parent
+  return root ?? context
 }
 
 function Reorderable({
@@ -209,9 +220,22 @@ function Reorderable({
     [registry]
   )
 
+  const parent = React.useContext(ReorderableContext)
+  // Built on first use, once per `value`: most items ask their own list.
+  const has = React.useMemo(() => {
+    let values: Set<string> | null = null
+    return (key: string) => (values ??= new Set(value)).has(key)
+  }, [value])
   const context = React.useMemo<ReorderableContextValue>(
-    () => ({ dragAndDrop, orientation, disabled, register }),
-    [dragAndDrop, orientation, disabled, register]
+    () => ({
+      dragAndDrop,
+      orientation,
+      disabled,
+      register,
+      has,
+      parent,
+    }),
+    [dragAndDrop, orientation, disabled, register, has, parent]
   )
 
   const getPlacement = React.useCallback(
@@ -300,6 +324,7 @@ function isOwnControl(event: React.SyntheticEvent<HTMLElement>) {
 const ItemContext = React.createContext<{
   value: string
   label: string
+  root: ReorderableContextValue
 } | null>(null)
 
 /**
@@ -316,7 +341,8 @@ function ReorderableItem({
   ref,
   ...props
 }: ReorderableItemProps) {
-  const { dragAndDrop, register, disabled } = useReorderable("ReorderableItem")
+  const root = useReorderable("ReorderableItem", value)
+  const { dragAndDrop, register, disabled } = root
   const t = useTranslations("dragAndDrop")
   const self = !dragHandle && !disabled
   const dragging = useStore(dragAndDrop.store, (s) =>
@@ -329,7 +355,10 @@ function ReorderableItem({
     [register, value, element, label]
   )
 
-  const item = React.useMemo(() => ({ value, label }), [value, label])
+  const item = React.useMemo(
+    () => ({ value, label, root }),
+    [value, label, root]
+  )
 
   return usePrimitive(
     "div",
@@ -386,10 +415,10 @@ function ReorderableHandle({
   disabled,
   ...props
 }: ReorderableHandleProps) {
-  const root = useReorderable("ReorderableHandle")
   const item = React.useContext(ItemContext)
   if (!item)
     throw new Error("ReorderableHandle must be used inside ReorderableItem")
+  const { root } = item
   const off = root.disabled || !!disabled
   const Icon =
     root.orientation === "horizontal" ? GripHorizontalIcon : GripVerticalIcon

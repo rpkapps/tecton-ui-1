@@ -363,4 +363,80 @@ describe("Reorderable", () => {
     expect(onValueChange).toHaveBeenLastCalledWith(["status", "field", "well"])
     await waitFor(() => expect(head("status")).toHaveFocus())
   })
+
+  it("reorders the rows and the columns of one table, one Reorderable inside the other", async () => {
+    const user = userEvent.setup()
+    const onRows = vi.fn()
+    const onColumns = vi.fn()
+    function Both() {
+      const [columns, setColumns] = React.useState(["well", "field"])
+      const [rows, setRows] = React.useState(["a12", "b3", "c7"])
+      return (
+        <Reorderable
+          orientation="horizontal"
+          value={columns}
+          onValueChange={(next) => {
+            onColumns(next)
+            setColumns(next)
+          }}
+        >
+          <Reorderable
+            value={rows}
+            onValueChange={(next) => {
+              onRows(next)
+              setRows(next)
+            }}
+          >
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {columns.map((id) => (
+                    <ReorderableItem
+                      key={id}
+                      value={id}
+                      label={id}
+                      dragHandle={false}
+                      render={<TableHead />}
+                    >
+                      {id}
+                    </ReorderableItem>
+                  ))}
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((id) => (
+                  <ReorderableItem
+                    key={id}
+                    value={id}
+                    label={id}
+                    render={<TableRow />}
+                  >
+                    <TableCell>
+                      <ReorderableHandle />
+                    </TableCell>
+                  </ReorderableItem>
+                ))}
+              </TableBody>
+            </Table>
+          </Reorderable>
+        </Reorderable>
+      )
+    }
+    render(<Both />)
+    // The headers belong to the outer, horizontal list.
+    const head = screen.getByRole("columnheader", { name: "field" })
+    expect(head).toHaveAttribute("tabindex", "0")
+    act(() => head.focus())
+    await user.keyboard("{Enter}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert before well"
+    )
+    await user.keyboard("{Enter}")
+    expect(onColumns).toHaveBeenLastCalledWith(["field", "well"])
+    // The rows to the inner, vertical one.
+    act(() => handle("a12").focus())
+    await user.keyboard("{Enter}{Enter}")
+    expect(onRows).toHaveBeenLastCalledWith(["b3", "a12", "c7"])
+  })
 })

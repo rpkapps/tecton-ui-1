@@ -8,6 +8,7 @@ import {
   rowExpandingFeature,
   tableFeatures,
   useTable,
+  type Cell,
   type ExpandedState,
 } from "@tanstack/react-table"
 import {
@@ -84,6 +85,16 @@ const features = tableFeatures({
   expandedRowModel: createExpandedRowModel(),
 })
 const columnHelper = createColumnHelper<typeof features, Asset>()
+
+/**
+ * A cell's content: its renderer called as a plain function. The cell
+ * renderers here use no hooks, so a component per cell (`FlexRender`)
+ * would only add work to every row that scrolls into view.
+ */
+function cellContent<TValue>(cell: Cell<typeof features, Asset, TValue>) {
+  const render = cell.column.columnDef.cell
+  return typeof render === "function" ? render(cell.getContext()) : render
+}
 
 /** Each level is indented by the width of a chevron and its gap. */
 const INDENT = 1.25
@@ -204,9 +215,7 @@ export default function DataTableTreeVirtual() {
             {(row) => (
               <TableRow key={row.id}>
                 {row.getAllCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    <table.FlexRender cell={cell} />
-                  </TableCell>
+                  <TableCell key={cell.id}>{cellContent(cell)}</TableCell>
                 ))}
               </TableRow>
             )}

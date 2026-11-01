@@ -46,6 +46,8 @@ Wrap the whole `Table`, not its body, and render each row with `render={<TableRo
 
 Items left out of the page, such as another page of rows or a hidden column, keep their place in `value`: a dropped item lands next to the item it was dropped beside.
 
+To reorder both the rows and the columns of one table, put one `Reorderable` inside the other around the `Table`. An item belongs to the nearest `Reorderable` whose `value` holds it, so the column headers join the horizontal list and the rows the vertical one. The Data Table [playground](/docs/components/data-table#playground) does this.
+
 ## Horizontal
 
 <ComponentPreview name="reorderable-horizontal" />
@@ -93,6 +95,12 @@ Wrap the whole `Table` in `Reorderable` and render each row as `ReorderableItem`
 <Do>
 
 Give every item a `label` (the row's or column's name) and a `ReorderableHandle` in a row; a column header gets `dragHandle={false}` instead and is dragged and focused itself, with no grip.
+
+</Do>
+
+<Do>
+
+To reorder rows and columns of one table, nest the two `Reorderable`s around it: an item joins the nearest one whose `value` holds it.
 
 </Do>
 

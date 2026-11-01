@@ -200,6 +200,44 @@ describe("Table virtualized", () => {
     expect(cols()).toEqual(["75%", "25%"])
   })
 
+  it("hands the columns to the caller's widths and back (resizing)", () => {
+    function Resizable({ widths }: { widths: boolean }) {
+      return (
+        <div style={{ height: VIEW }}>
+          <Table virtualized>
+            <TableHeader>
+              <TableRow>
+                <TableHead style={widths ? { width: 200 } : undefined}>
+                  Well
+                </TableHead>
+                <TableHead style={widths ? { width: 120 } : undefined}>
+                  Open
+                </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody items={WELLS}>
+              {(well) => (
+                <TableRow key={well.id}>
+                  <TableCell>{well.name}</TableCell>
+                  <TableCell>Open</TableCell>
+                </TableRow>
+              )}
+            </TableBody>
+          </Table>
+        </div>
+      )
+    }
+    const columns = () =>
+      document.querySelector('[data-slot="table-virtual-columns"]')
+    const { rerender } = render(<Resizable widths={false} />)
+    expect(columns()).not.toBeNull()
+    rerender(<Resizable widths />)
+    expect(columns()).toBeNull()
+    expect(screen.getByRole("table")).not.toHaveClass("table-fixed")
+    rerender(<Resizable widths={false} />)
+    expect(columns()).not.toBeNull()
+  })
+
   it("leaves a table the caller made fixed with its own widths", () => {
     render(
       <div style={{ height: VIEW }}>

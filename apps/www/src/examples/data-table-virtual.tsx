@@ -3,13 +3,10 @@
 import * as React from "react"
 import {
   createColumnHelper,
-  createSortedRowModel,
   rowSortingFeature,
-  sortFn_alphanumeric,
-  sortFn_basic,
-  sortFn_text,
   tableFeatures,
   useTable,
+  type Cell,
   type SortingState,
 } from "@tanstack/react-table"
 import { ArrowUpDown } from "lucide-react"
@@ -28,6 +25,8 @@ import {
   ToggleGroup,
   ToggleGroupItem,
 } from "@tecton/react/components/toggle-group"
+
+import { createFastSortedRowModel } from "./lib/fast-sorted-row-model"
 
 type Well = {
   id: string
@@ -73,14 +72,20 @@ const density = {
 
 const features = tableFeatures({
   rowSortingFeature,
-  sortedRowModel: createSortedRowModel(),
-  sortFns: {
-    alphanumeric: sortFn_alphanumeric,
-    basic: sortFn_basic,
-    text: sortFn_text,
-  },
+  // Sorts 10,000 rows in a few ms: see lib/fast-sorted-row-model.ts.
+  sortedRowModel: createFastSortedRowModel(),
 })
 const columnHelper = createColumnHelper<typeof features, Well>()
+
+/**
+ * A cell's content: its renderer called as a plain function. The cell
+ * renderers here use no hooks, so a component per cell (`FlexRender`)
+ * would only add work to every row that scrolls into view.
+ */
+function cellContent<TValue>(cell: Cell<typeof features, Well, TValue>) {
+  const render = cell.column.columnDef.cell
+  return typeof render === "function" ? render(cell.getContext()) : render
+}
 
 /** A header that sorts its column. */
 function SortButton({
@@ -188,9 +193,7 @@ export default function DataTableVirtual() {
             {(row) => (
               <TableRow key={row.id}>
                 {row.getAllCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    <table.FlexRender cell={cell} />
-                  </TableCell>
+                  <TableCell key={cell.id}>{cellContent(cell)}</TableCell>
                 ))}
               </TableRow>
             )}

@@ -878,6 +878,12 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 Tecton ships no `DataTable` component: build tables with [TanStack Table](https://tanstack.com/table/latest) and the `Table` components, as the guide above does. Each recipe below is a self-contained starting point built on `useTable`.
 
+### Playground
+
+Every recipe below at once, on up to 100,000 wells: switch between virtual scrolling and pages, compact and default rows, a flat list and a tree, and turn selection, column resizing, column reordering and row reordering on and off. Sort by any column header. The readout reports how long each click took to paint. Row reordering pauses while the rows are sorted, because a sort has no manual order.
+
+<ComponentPreview name="data-table-playground" align="start" />
+
 ### Density and alternating rows
 
 Density is nothing more than Tailwind classes on the `Table`: an emphasised header (`[&_thead]:bg-muted`), alternating rows (`[&_tbody_tr:nth-child(even)]:bg-surface-alt`) and, for the compact variant, shorter rows and smaller text (`[&_th]:h-8 [&_td]:py-1 text-xs`).
@@ -934,9 +940,13 @@ Register `rowExpandingFeature` with `createExpandedRowModel()` and pass `getSubR
 
 ### Virtual scrolling
 
-For thousands of rows, set `virtualized` on the `Table` and give its parent a bounded height (here `h-96`, with the border). Pass `items={table.getRowModel().rows}` to `TableBody` and render one row with a function: only the rows in view are rendered, so sorting 10,000 rows renders a screenful. The header sticks while the rows scroll, the columns keep their first widths, and the row height is measured, so the Default / Compact switch works as it does on a short table. Rows must be one height within the table. For page-sized chunks instead, use [pagination](#pagination). `Reorderable` sees only the rows in view, so reordering a virtualized table moves rows within the visible window.
+For thousands of rows, set `virtualized` on the `Table` and give its parent a bounded height (here `h-96`, with the border). Pass `items={table.getRowModel().rows}` to `TableBody` and render one row with a function: only the rows in view are rendered, so sorting 10,000 rows renders a screenful. The header sticks while the rows scroll, the columns keep their first widths, and the row height is measured, so the Default / Compact switch works as it does on a short table. Rows must be one height within the table. For page-sized chunks instead, use [pagination](#pagination).
+
+**Fast sorting.** TanStack's own sorted row model calls a comparator, and through it `row.getValue`, about 2 · n · log n times: 3.4 million calls for 100,000 rows. The helper below goes in the same `sortedRowModel` slot. It reads each value once, turns each column into integer ranks in natural order (like `alphanumeric`), and sorts them with the engine's native typed-array sort. It keeps a column's ranks, so the other direction, or that column again later, is a single native sort, and it works out the ranks in idle time before the first click. It does not read a column's own `sortFn`, `invertSorting` or `sortUndefined`, so keep `createSortedRowModel()` for columns that need them. `Reorderable` sees only the rows in view, so reordering a virtualized table moves rows within the visible window.
 
 <ComponentPreview name="data-table-virtual" align="start" />
+
+<ComponentSource src="examples/lib/fast-sorted-row-model" maxLines={30} />
 
 ### Virtual tree table
 

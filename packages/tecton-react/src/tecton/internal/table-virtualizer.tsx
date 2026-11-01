@@ -80,15 +80,25 @@ function useTableVirtualizer(virtualized: boolean) {
     const table = container?.querySelector("table")
     const head = table?.tHead?.rows[0]
     if (!table || !head) return
+    // The caller's own widths win: header cells with a width of their own
+    // (column resizing), or a table the caller made `table-fixed`. The
+    // lock sets neither, so either one is the caller's, and taking them
+    // away gives the columns back to the lock.
+    const callerWidths = [...head.cells].some((cell) => cell.style.width)
     if (columns.state === "locked") {
+      if (callerWidths) setColumns({ state: "caller" })
       // New, moved or renamed columns: measure them again.
-      if (signatureOf(head) !== columns.signature)
+      else if (signatureOf(head) !== columns.signature)
         setColumns({ state: "measuring" })
       return
     }
-    if (columns.state === "caller") return
-    // The caller's own fixed layout and widths win.
-    if (getComputedStyle(table).tableLayout === "fixed") {
+    const callerFixed =
+      callerWidths || getComputedStyle(table).tableLayout === "fixed"
+    if (columns.state === "caller") {
+      if (!callerFixed) setColumns({ state: "measuring" })
+      return
+    }
+    if (callerFixed) {
       setColumns({ state: "caller" })
       return
     }
