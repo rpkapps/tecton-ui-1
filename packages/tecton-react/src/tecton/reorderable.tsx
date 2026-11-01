@@ -300,24 +300,31 @@ type ReorderableItemProps = PrimitiveProps<"div", ReorderableItemState> & {
   label: string
   /**
    * `false`: the item is its own handle, for items with no room for a grip
-   * (table column headers). It is dragged from anywhere on it except its
-   * own controls, and focused with Tab: Enter or Space starts a keyboard
-   * drag. Default `true`: drags start from a `ReorderableHandle`.
+   * (table column headers). It is dragged from anywhere on it, its
+   * buttons included: a press that moves drags, one that does not is the
+   * button's click (sorting); only text fields keep their presses. It is
+   * focused with Tab, and Enter or Space on it (not on its buttons) starts
+   * a keyboard drag. Default `true`: drags start from a
+   * `ReorderableHandle`.
    */
   dragHandle?: boolean
 }
 
-/** A control inside an item keeps its own presses and keys. */
-const CONTROL =
-  'button, a[href], input, select, textarea, [role="button"], [contenteditable="true"]'
+/**
+ * Fields keep their presses: a drag from one would fight selecting its
+ * text. Buttons and links inside an item do not: a press that moves drags
+ * the item, and one that does not is still their click (a column header's
+ * sort button), as in a spreadsheet.
+ */
+const FIELD = 'input, select, textarea, [contenteditable="true"]'
 
-function isOwnControl(event: React.SyntheticEvent<HTMLElement>) {
+function isOwnField(event: React.SyntheticEvent<HTMLElement>) {
   const target = event.target as Element
-  const control = target.closest(CONTROL)
+  const field = target.closest(FIELD)
   return (
-    !!control &&
-    control !== event.currentTarget &&
-    event.currentTarget.contains(control)
+    !!field &&
+    field !== event.currentTarget &&
+    event.currentTarget.contains(field)
   )
 }
 
@@ -382,8 +389,11 @@ function ReorderableItem({
         tabIndex: 0,
         "aria-description": t("dragItem", { itemText: label }),
         onPointerDown: (event: React.PointerEvent<HTMLElement>) => {
-          if (!isOwnControl(event)) dragAndDrop.onPointerDown(event, value)
+          if (!isOwnField(event)) dragAndDrop.onPointerDown(event, value)
         },
+        // A link or an image inside would start the browser's own drag.
+        onDragStart: (event: React.DragEvent<HTMLElement>) =>
+          event.preventDefault(),
         onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => {
           if (event.target === event.currentTarget)
             dragAndDrop.onHandleKeyDown(event, value)

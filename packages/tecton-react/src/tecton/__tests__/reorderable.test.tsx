@@ -335,8 +335,10 @@ describe("Reorderable", () => {
     release(330, 10)
     expect(onValueChange).toHaveBeenLastCalledWith(["field", "well", "status"])
 
-    // A press on the header's own button is the button's: no drag.
-    fireEvent.pointerDown(screen.getByRole("button", { name: "status" }), {
+    // A press on the header's sort button that moves drags the column
+    // (and the click the release would cause does not sort)…
+    const sortButton = () => screen.getByRole("button", { name: "status" })
+    fireEvent.pointerDown(sortButton(), {
       button: 0,
       pointerId: 2,
       pointerType: "mouse",
@@ -345,19 +347,33 @@ describe("Reorderable", () => {
     })
     fireEvent.pointerMove(document, { pointerId: 2, clientX: 380, clientY: 10 })
     fireEvent.pointerUp(document, { pointerId: 2, clientX: 380, clientY: 10 })
-    expect(onValueChange).toHaveBeenCalledTimes(1)
-    // Enter on the button sorts; it does not start a drag.
-    act(() => screen.getByRole("button", { name: "status" }).focus())
-    await user.keyboard("{Enter}")
-    expect(onSort).toHaveBeenCalledWith("status")
-    expect(onValueChange).toHaveBeenCalledTimes(1)
+    fireEvent.click(sortButton())
+    expect(onValueChange).toHaveBeenLastCalledWith(["field", "status", "well"])
+    expect(onSort).not.toHaveBeenCalled()
+    await act(() => new Promise((resolve) => setTimeout(resolve, 0)))
 
-    // The header itself takes Enter; Left steps towards the end in RTL.
+    // …one that does not move is the button's click, and so is Enter.
+    fireEvent.pointerDown(sortButton(), {
+      button: 0,
+      pointerId: 3,
+      pointerType: "mouse",
+      clientX: 352,
+      clientY: 10,
+    })
+    fireEvent.pointerUp(document, { pointerId: 3, clientX: 352, clientY: 10 })
+    fireEvent.click(sortButton())
+    expect(onSort).toHaveBeenCalledTimes(1)
+    act(() => sortButton().focus())
+    await user.keyboard("{Enter}")
+    expect(onSort).toHaveBeenCalledTimes(2)
+    expect(onValueChange).toHaveBeenCalledTimes(2)
+
+    // The header itself takes Enter; Right steps towards the start in RTL.
     act(() => head("status").focus())
     await user.keyboard("{Enter}")
     expect(document.activeElement).toHaveAttribute(
       "aria-label",
-      "Insert between field and well"
+      "Insert after well"
     )
     await user.keyboard("{ArrowRight}{Enter}")
     expect(onValueChange).toHaveBeenLastCalledWith(["status", "field", "well"])

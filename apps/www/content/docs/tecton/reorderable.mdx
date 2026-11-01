@@ -38,7 +38,7 @@ Reorderable
     └── ReorderableHandle
 ```
 
-`Reorderable` is a `div` that also holds the drop line and the keyboard drop targets. Each `ReorderableItem` renders a `div`, or the element you pass to `render`; its `ReorderableHandle` can sit anywhere inside it. With `dragHandle={false}` an item has no handle and is its own: it is dragged from anywhere except its own controls, and is a Tab stop where Enter or Space starts a keyboard drag.
+`Reorderable` is a `div` that also holds the drop line and the keyboard drop targets. Each `ReorderableItem` renders a `div`, or the element you pass to `render`; its `ReorderableHandle` can sit anywhere inside it. With `dragHandle={false}` an item has no handle and is its own: it is dragged from anywhere, its buttons included. A press that moves drags the item, and a press that doesn't is still the button's click, so a column header's sort button keeps sorting. Only text fields keep their presses. The item is a Tab stop where Enter or Space starts a keyboard drag; on its buttons, Enter and Space still press them.
 
 ## Tables
 
@@ -210,7 +210,7 @@ The order is `value` and the whole new array arrives in `onValueChange`; `items`
 | --- | --- | --- | --- |
 | `value` | `string` | - | The item's value in `value`. |
 | `label` | `string` | - | The item's name, used for the handle (`Drag {label}`) and the announcements. |
-| `dragHandle` | `boolean` | `true` | `false` makes the item its own handle (table column headers): dragged from anywhere except its controls, focused with Tab, Enter or Space starts a keyboard drag. |
+| `dragHandle` | `boolean` | `true` | `false` makes the item its own handle (table column headers): dragged from anywhere, buttons included (a press without movement is still their click), focused with Tab, Enter or Space starts a keyboard drag. |
 | `render` | `ReactElement \| function` | `<div />` | Replaces the element: `<TableRow />` or `<TableHead />` in a table. |
 
 Carries `data-dragging` while it is dragged.
