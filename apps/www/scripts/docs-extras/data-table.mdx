@@ -61,3 +61,9 @@ Register `rowExpandingFeature` with `createExpandedRowModel()` and pass `getSubR
 For thousands of rows, set `virtualized` on the `Table` and give its parent a bounded height (here `h-96`, with the border). Pass `items={table.getRowModel().rows}` to `TableBody` and render one row with a function: only the rows in view are rendered, so sorting 10,000 rows renders a screenful. The header sticks while the rows scroll, the columns keep their first widths, and the row height is measured, so the Default / Compact switch works as it does on a short table. Rows must be one height within the table. For page-sized chunks instead, use [pagination](#pagination). `Reorderable` sees only the rows in view, so reordering a virtualized table moves rows within the visible window.
 
 <ComponentPreview name="data-table-virtual" align="start" />
+
+### Virtual tree table
+
+A tree table of thousands of rows combines the two recipes above. `table.getRowModel().rows` holds only the open rows, flattened in order with their `depth`, so pass it as `items` to a `virtualized` table: expanding a field adds its rows to the scroll range, and Expand all opens 13,040 rows while only a screenful is rendered. A chevron that has focus keeps its row mounted while it scrolls out of view. The columns keep the widths they are first laid out with, so give the Name column room for the deepest indent (`w-[45%]` on its `TableHead`).
+
+<ComponentPreview name="data-table-tree-virtual" align="start" />

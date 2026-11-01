@@ -20,11 +20,20 @@ type VirtualListOptions = {
    * rows: a fast flick then finds rows already in place.
    */
   overscanPx?: number
+  /** Like `overscanPx`, in heights of the view (1: a screenful each way). */
+  overscanViews?: number
   /**
    * Applies a scroll before the browser paints it (`flushSync`), so the
    * rows for a scroll position are in place in the same frame.
    */
   sync?: boolean
+  /**
+   * With `overscanPx`: a scroll that jumps past the rows already prepared
+   * (the scrollbar dragged, End) renders only `overscan` rows beyond the
+   * view, so each frame of the jump mounts about a screenful; `overscanPx`
+   * comes back this many ms after the scrolling stops.
+   */
+  settleMs?: number
   /** Indices that stay rendered wherever the scroll is (the focused row). */
   keep?: ReadonlyArray<number>
   /**
@@ -43,6 +52,8 @@ type VirtualList = {
   size: number
   /** Scrolls the least needed to bring row `index` into view. */
   scrollToIndex: (index: number) => void
+  /** The scroll container's height, as last measured (0 before layout). */
+  viewHeight: number
 }
 
 /** The view height before any layout (and on the server): ten rows. */
@@ -52,29 +63,68 @@ function useVirtualList({
   count,
   stride,
   overscan = 4,
-  overscanPx = 0,
+  overscanPx: overscanPxOption = 0,
+  overscanViews = 0,
   sync = false,
+  settleMs = 0,
   keep = [],
   start = 0,
   enabled = true,
 }: VirtualListOptions): VirtualList {
   const element = React.useRef<HTMLElement | null>(null)
-  const [view, setView] = React.useState({ top: 0, height: 0 })
-  const cleanup = React.useRef<(() => void) | null>(null)
-  const syncRef = React.useRef(sync)
-  React.useInsertionEffect(() => {
-    syncRef.current = sync
+  // `jumping`: the last scroll went past the prepared rows.
+  const [view, setView] = React.useState({
+    top: 0,
+    height: 0,
+    jumping: false,
   })
+  const cleanup = React.useRef<(() => void) | null>(null)
+  const overscanPx = overscanPxOption + overscanViews * view.height
+  const latest = React.useRef({ sync, settleMs, overscanPx })
+  React.useInsertionEffect(() => {
+    latest.current = { sync, settleMs, overscanPx }
+  })
+  const settle = React.useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined
+  )
+  React.useEffect(() => () => clearTimeout(settle.current), [])
 
   const measure = React.useCallback(() => {
     const el = element.current
     if (!el) return
-    setView((previous) =>
-      previous.top === el.scrollTop && previous.height === el.clientHeight
-        ? previous
-        : { top: el.scrollTop, height: el.clientHeight }
-    )
+    const top = el.scrollTop
+    const height = el.clientHeight
+    setView((previous) => {
+      if (previous.top === top && previous.height === height) return previous
+      const { settleMs: wait, overscanPx: prepared } = latest.current
+      // A jump: the new view does not touch the rows mounted for the last
+      // one (the view plus `overscanPx` beyond each edge).
+      const jumping =
+        wait > 0 &&
+        (previous.jumping ||
+          Math.abs(top - previous.top) > prepared + previous.height)
+      return { top, height, jumping }
+    })
   }, [])
+
+  const onScroll = React.useCallback(() => {
+    const { sync: now, settleMs: wait } = latest.current
+    if (now) flushSync(measure)
+    else measure()
+    if (wait <= 0) return
+    clearTimeout(settle.current)
+    // Interruptible: a scroll arriving while the extra rows render goes
+    // first.
+    settle.current = setTimeout(
+      () =>
+        React.startTransition(() =>
+          setView((previous) =>
+            previous.jumping ? { ...previous, jumping: false } : previous
+          )
+        ),
+      wait
+    )
+  }, [measure])
 
   const ref = React.useCallback(
     (el: HTMLElement | null) => {
@@ -83,7 +133,6 @@ function useVirtualList({
       element.current = el
       if (!el || !enabled) return
       measure()
-      const onScroll = () => (syncRef.current ? flushSync(measure) : measure())
       el.addEventListener("scroll", onScroll, { passive: true })
       const observer =
         typeof ResizeObserver === "undefined"
@@ -95,12 +144,14 @@ function useVirtualList({
         observer?.disconnect()
       }
     },
-    [enabled, measure]
+    [enabled, measure, onScroll]
   )
 
   const height = view.height || stride * FALLBACK_ROWS
   const top = Math.max(0, view.top - start)
-  const extra = Math.max(overscan, Math.ceil(overscanPx / stride))
+  const extra = view.jumping
+    ? overscan
+    : Math.max(overscan, Math.ceil(overscanPx / stride))
   const first = Math.max(0, Math.floor(top / stride) - extra)
   const last = Math.min(count - 1, Math.ceil((top + height) / stride) + extra)
   const keepKey = keep.join(",")
@@ -134,6 +185,7 @@ function useVirtualList({
     offset: (index) => index * stride,
     size: count * stride,
     scrollToIndex,
+    viewHeight: view.height,
   }
 }
 

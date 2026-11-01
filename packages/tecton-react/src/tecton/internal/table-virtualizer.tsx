@@ -216,15 +216,29 @@ function useVirtualRows<T>(
     headerRows: 1,
     columns: 1,
   })
-  const [viewHeight, setViewHeight] = React.useState(0)
+  const [fonts, setFonts] = React.useState(0)
+  // Rows grow or shrink as the web fonts arrive: measure them again.
+  React.useEffect(() => {
+    if (!virtualized || typeof document === "undefined") return
+    const set = document.fonts as FontFaceSet | undefined
+    if (!set) return
+    const done = () => setFonts((n) => n + 1)
+    set.addEventListener("loadingdone", done)
+    return () => set.removeEventListener("loadingdone", done)
+  }, [virtualized])
+  const measured = React.useRef("")
 
   const virtual = useVirtualList({
     count,
     stride: measures.stride,
     start: measures.headerHeight,
     keep: focused === null ? [] : [focused],
-    // A viewport of rows ready beyond each edge, applied in the frame.
-    overscanPx: viewHeight,
+    // A viewport of rows ready beyond each edge, applied in the frame; a
+    // jump (the scrollbar dragged) mounts only the view plus two rows, and
+    // the rest once the scrolling stops.
+    overscan: 2,
+    overscanViews: 1,
+    settleMs: 150,
     sync: true,
     enabled: virtualized,
   })
@@ -246,6 +260,18 @@ function useVirtualRows<T>(
     const head = table?.tHead ?? null
     const rendered =
       body.current.querySelectorAll<HTMLElement>("tr[data-index]")
+    // Only when something that sets the rows' height may have changed (the
+    // table's classes: density; the view; the fonts; the first rows), not
+    // on every scroll: reading a size lays the page out.
+    const key = [
+      table?.className,
+      virtual.viewHeight,
+      fonts,
+      Math.min(rendered.length, 2),
+      head?.rows.length,
+    ].join("|")
+    if (key === measured.current) return
+    measured.current = key
     // Across the longest run of adjacent rows, in fractional px: a row of
     // 44.5 px measured as 45 would drift by a row every 90.
     let stride = measures.stride
@@ -280,8 +306,6 @@ function useVirtualRows<T>(
       columns: Math.max(columns, 1),
     }
     setMeasures((previous) => (sameMeasures(previous, next) ? previous : next))
-    const height = container?.clientHeight ?? 0
-    setViewHeight((previous) => (previous === height ? previous : height))
   })
 
   const setRowCount = context?.setRowCount

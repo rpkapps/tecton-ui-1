@@ -325,3 +325,50 @@ describe("Table virtualized with items", () => {
     expect(screen.getByText("Well 49")).toBeInTheDocument()
   })
 })
+
+describe("Table virtualized scrollbar jumps", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const visible = Math.ceil(VIEW / ROW)
+
+  it("mounts about a screenful on a jump, and the rest once it settles", () => {
+    vi.useFakeTimers()
+    render(<Wells />)
+    // A jump far past the prepared rows: the scrollbar dragged.
+    scrollTo(HEADER + 7_000 * ROW)
+    expect(screen.getByText("Well 7000")).toBeInTheDocument()
+    expect(bodyRows().length).toBeLessThanOrEqual(visible + 2 * 2 + 1)
+    // Once the scrolling stops, a viewport of rows each way.
+    act(() => {
+      vi.advanceTimersByTime(200)
+    })
+    expect(bodyRows().length).toBeGreaterThanOrEqual(visible * 3 - 2)
+    expect(screen.getByText("Well 6995")).toBeInTheDocument()
+  })
+
+  it("keeps a viewport of rows each way on a small scroll", () => {
+    vi.useFakeTimers()
+    render(<Wells />)
+    scrollTo(HEADER + 30 * ROW)
+    act(() => {
+      vi.advanceTimersByTime(200)
+    })
+    // Within the prepared rows: not a jump.
+    scrollTo(HEADER + 33 * ROW)
+    expect(bodyRows().length).toBeGreaterThanOrEqual(visible * 3 - 2)
+  })
+
+  it("does not measure the rows again on a scroll", () => {
+    render(<Wells />)
+    scrollTo(HEADER + 30 * ROW)
+    const rect = vi.mocked(Element.prototype.getBoundingClientRect)
+    rect.mockClear()
+    scrollTo(HEADER + 32 * ROW)
+    const rowReads = rect.mock.contexts.filter(
+      (element) => (element as Element).tagName === "TR"
+    )
+    expect(rowReads).toHaveLength(0)
+  })
+})
