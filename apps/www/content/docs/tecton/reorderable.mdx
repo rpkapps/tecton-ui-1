@@ -60,11 +60,7 @@ In a right-to-left layout the first item is rightmost, and the arrow keys follow
 
 Set `orientation="grid"` for items in rows that wrap: a CSS grid of cards, or a wrapping flex row. Lay the items out with your own classes on `Reorderable` (`grid grid-cols-2 gap-3 sm:grid-cols-3`); the order is still one array, read row by row. The pointer drops before or after the card under it, and the line spans that card's row only. From the keyboard, Left and Right (or Tab) step through the gaps in reading order, and Up and Down jump to the nearest gap in the row above or below.
 
-### Tiles of several sizes
-
-<ComponentPreview name="reorderable-bento" />
-
-Tiles may span several columns and rows, as in a bento grid: keep each tile's span with its data (`col-span-2 row-span-2`) so it keeps its size wherever it moves. A drop goes before or after the tile under the pointer, by the half of it the pointer is on, and the line is drawn on that side of the tile. Without `grid-flow-dense` the grid places the tiles in the order of `value`, so the reading order stays the drop order; a large tile may then leave a hole the next tiles do not fit in.
+For a dashboard of tiles of several sizes, use [Swap Grid](/docs/tecton/swap-grid) instead. A `Reorderable` keeps an order, and the grid places mixed-size tiles from it, so moving one tile re-places every tile after it and can leave holes. A swap grid's slots stay put: tiles swap places, and an empty slot is a place to drop.
 
 ## Keyboard and screen readers
 
@@ -91,13 +87,14 @@ Set `dropAnimation={false}` to drop without it:
 - The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs.
 - The user moves the columns of a data table into the order they read them in.
 - A short stack of items (steps, tracks, layers) has an order the user decides.
-- The user arranges a grid of cards or tiles (a dashboard): `orientation="grid"`.
+- The user puts a grid of equal cards in order: `orientation="grid"`.
 
 ### Not for
 
 - open workspace tabs the user drags into another order: use [DocumentTabs](/docs/tecton/document-tabs)
 - moving rows between folders of a hierarchy: use [TreeView](/docs/tecton/tree-view)
 - sorting rows by a column's values: use [TanStack Table](/docs/components/data-table)
+- tiles of several sizes the user swaps between fixed slots (a bento grid): use [SwapGrid](/docs/tecton/swap-grid)
 
 ### Do
 

@@ -11,13 +11,14 @@ import { Reorderable, ReorderableItem, ReorderableHandle } from "@tecton/react/t
 - The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs.
 - The user moves the columns of a data table into the order they read them in.
 - A short stack of items (steps, tracks, layers) has an order the user decides.
-- The user arranges a grid of cards or tiles (a dashboard): `orientation="grid"`.
+- The user puts a grid of equal cards in order: `orientation="grid"`.
 
 ## Not for
 
 - open workspace tabs the user drags into another order → `DocumentTabs` (tecton docs document-tabs)
 - moving rows between folders of a hierarchy → `TreeView` (tecton docs tree-view)
 - sorting rows by a column's values → `TanStack Table` (tecton docs tanstack-table)
+- tiles of several sizes the user swaps between fixed slots (a bento grid) → `SwapGrid` (tecton docs swap-grid)
 
 ## Do
 

@@ -50,7 +50,12 @@ type DropStrategy<TPlace> = {
   /** Whether two places are the same stop of the arrow keys; `isSame` by default. */
   isStop?: (a: TPlace, b: TPlace) => boolean
   /** The place in words, as a drop target's name ("Drop on Wells"). */
-  label: (place: TPlace, t: Translator<"dragAndDrop">) => string
+  label: (
+    place: TPlace,
+    t: Translator<"dragAndDrop">,
+    /** The keys being dragged. */
+    dragging: ReadonlyArray<string>
+  ) => string
   /** Called as the aim changes (opening a folder held over, scrolling). */
   onAim?: (place: TPlace | null, mode: DragMode) => void
   /** Other keys during a keyboard drag; `true` when handled. */
@@ -198,7 +203,8 @@ function useDragAndDrop<TPlace>(
       t: ((...args: Parameters<Translator<"dragAndDrop">>) =>
         latest.current.t(...args)) as Translator<"dragAndDrop">,
       isSame: (a, b) => strategy().isSame(a, b),
-      label: (place) => strategy().label(place, latest.current.t),
+      label: (place) =>
+        strategy().label(place, latest.current.t, store.get().dragging),
       onPointerDown(event, key, { handle = false } = {}) {
         if (stopSession || event.button !== 0 || event.defaultPrevented) return
         const { options } = latest.current

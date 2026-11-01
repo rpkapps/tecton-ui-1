@@ -10,6 +10,8 @@ notFor:
     use: TreeView
   - need: sorting rows by a column's values
     use: TanStack Table
+  - need: tiles of several sizes the user swaps between fixed slots (a bento grid)
+    use: SwapGrid
 related: [Table, TableColumnResizer, Item, "TanStack Table"]
 ---
 
@@ -18,7 +20,7 @@ related: [Table, TableColumnResizer, Item, "TanStack Table"]
 - The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs.
 - The user moves the columns of a data table into the order they read them in.
 - A short stack of items (steps, tracks, layers) has an order the user decides.
-- The user arranges a grid of cards or tiles (a dashboard): `orientation="grid"`.
+- The user puts a grid of equal cards in order: `orientation="grid"`.
 
 ## Do
 

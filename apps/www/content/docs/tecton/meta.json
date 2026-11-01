@@ -23,6 +23,7 @@
     "provider",
     "reorderable",
     "stat",
+    "swap-grid",
     "table-column-resizer",
     "theme-root",
     "tree-view"

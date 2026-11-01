@@ -31,8 +31,10 @@ type KeyboardDragOptions<TPlace> = {
   /** Shows the aimed place (null for none). */
   onAim: (place: TPlace | null) => void
   /**
-   * Other keys during the drag (opening the aimed folder…): `true` when
-   * handled, which keeps them from the component.
+   * The keys of the drag besides Enter, Space and Escape (opening the
+   * aimed folder, moving across a grid…), ahead of the arrow keys' and
+   * Tab's stepping: `true` when handled, which keeps them from the
+   * component and from the stepping.
    */
   onKey?: (event: KeyboardEvent, place: TPlace | null) => boolean
   /** Called once: with the aimed place on a drop, null on a cancel. */
@@ -86,12 +88,17 @@ function startKeyboardDrag<TPlace>({
   }
 
   const keydown = (event: KeyboardEvent) => {
-    if (event.key === next || (event.key === "Tab" && !event.shiftKey)) aim(1)
+    if (event.key === "Enter" || event.key === " ") end(true)
+    else if (event.key === "Escape") end(false)
+    // The caller first: a layout of its own may move otherwise (the arrow
+    // keys across a grid's rows, between the slots of a swap grid).
+    else if (onKey?.(event, aimed)) {
+      // Handled.
+    } else if (event.key === next || (event.key === "Tab" && !event.shiftKey))
+      aim(1)
     else if (event.key === previous || (event.key === "Tab" && event.shiftKey))
       aim(-1)
-    else if (event.key === "Enter" || event.key === " ") end(true)
-    else if (event.key === "Escape") end(false)
-    else if (!onKey?.(event, aimed)) return
+    else return
     event.preventDefault()
     event.stopPropagation()
   }

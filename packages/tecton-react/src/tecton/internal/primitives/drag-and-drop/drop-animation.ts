@@ -181,7 +181,10 @@ function useDropAnimation({
       const rect = element.getBoundingClientRect()
       const dx = old.left - rect.left
       const dy = old.top - rect.top
-      if (Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5) continue
+      // A dropped item already in its place (a swap grid shows the swap
+      // while it is dragged) still lands from where it was let go.
+      const still = Math.abs(dx) < 0.5 && Math.abs(dy) < 0.5
+      if (still && !(dropped && capture.from)) continue
       moved = true
       // The first dropped item comes from the preview, the others (a
       // multiple selection) from their old places.

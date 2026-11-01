@@ -1,0 +1,224 @@
+---
+title: Swap Grid
+description: "A layout of slots whose items the user rearranges by swapping them: a dashboard of tiles of several sizes."
+---
+
+<ComponentPreview name="swap-grid-demo" />
+
+## Usage
+
+```tsx
+import {
+  SwapGrid,
+  SwapGridHandle,
+  SwapGridItem,
+  SwapGridSlot,
+} from "@tecton/react/tecton/swap-grid"
+```
+
+```tsx
+const [layout, setLayout] = React.useState({ a: "oil", b: "gas", c: null })
+
+<SwapGrid
+  value={layout}
+  onValueChange={setLayout}
+  className="grid auto-rows-[9rem] grid-cols-3 gap-3"
+>
+  {["a", "b", "c"].map((slot) => (
+    <SwapGridSlot key={slot} value={slot}>
+      {(item) =>
+        item && (
+          <SwapGridItem value={item} label={names[item]} render={<Card />}>
+            {names[item]}
+            <SwapGridHandle />
+          </SwapGridItem>
+        )
+      }
+    </SwapGridSlot>
+  ))}
+</SwapGrid>
+```
+
+The slots are the layout: lay them out with your own grid classes and give each its size (`col-span-2 row-span-2`). They never move. The value says which item each slot holds, `{ [slot]: item | null }`, and `onValueChange` hands back the whole map after a drop.
+
+Dragging an item over another slot swaps it with the item there as you hover, so the result shows before you let go: the other item glides into the dragged one's slot, and the dragged one shows, dimmed, where it will land. Over an empty slot it moves there and leaves its own slot empty. Only those two slots change, whatever their sizes. Back over its own slot, everything returns.
+
+## Composition
+
+```text
+SwapGrid
+└── SwapGridSlot
+    └── SwapGridItem
+        └── SwapGridHandle
+```
+
+`SwapGridSlot`'s children are a function of the item the slot holds, `null` when it is empty. It is called with the swapped item while a drag shows a swap, so render the item from its argument, not from your own state. `SwapGridItem` fills its slot; render it as a `Card` with `render={<Card />}`. With `dragHandle={false}` the item is its own handle, dragged from anywhere on it.
+
+## Tiles of several sizes
+
+Any item can land in any slot, so an item takes its slot's size. Make each slot a size container (`[container-type:size]`) and let the item show more when there is room: a wide slot's detail with `@min-[14rem]:grid`, a tall slot's list with `[@container(min-height:18rem)]:flex`. The demo above does both.
+
+## Empty slots
+
+A slot whose value is `null` shows a dashed outline and takes a drop like any other. Leave a slot or two empty when the user arranges fewer items than the layout holds.
+
+## Keyboard and screen readers
+
+- **Pointer:** press the handle and drag. The slot under the pointer takes the item; over the gutter between slots the nearest one still does. Escape cancels.
+- **Keyboard:** focus the handle and press Enter or Space: the item starts where it is ("Keep Pressure here"). The arrow keys move to the nearest slot wholly in that direction, the same row or column first, and Tab steps through the slots in order. Each slot is announced ("Swap with Alarms", "Move to empty slot 8") and shows its swap. Enter or Space drops, Escape cancels. Focus returns to the moved item's handle.
+- **Screen reader on a touch screen:** activating the handle turns every slot into a button. Double tap one to drop.
+
+Give an empty slot a `label` ("Bottom right") to announce it by name.
+
+## Animation
+
+The swapped items glide between their slots, and the dropped item from where it was let go. Nothing moves when the user has asked for reduced motion; `dropAnimation={false}` turns it off.
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The user rearranges tiles of several sizes on a fixed layout: a bento grid of KPIs, a well overview, a control-room wall.
+- The layout is fixed and the user decides which tile goes where; moving one tile must leave the others in place.
+- Some places of the layout may stay empty until the user fills them.
+
+### Not for
+
+- a list, a table's rows or columns, or a grid of equal cards put in order: use [Reorderable](/docs/tecton/reorderable)
+- open workspace tabs the user drags into another order: use [DocumentTabs](/docs/tecton/document-tabs)
+- files dropped from the desktop: use [Dropzone](/docs/tecton/dropzone)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Keep the layout as data: the slots with their sizes (`col-span-2 row-span-2`), rendered as `SwapGridSlot`s in a fixed order inside your grid classes on `SwapGrid`.
+
+</Do>
+
+<Do>
+
+Keep which tile each slot holds in state, `{ [slot]: tile | null }`, pass it as `value` and write `onValueChange`'s map back.
+
+</Do>
+
+<Do>
+
+Render the tile from the slot's children function argument, `{(tile) => tile && <SwapGridItem …/>}`, so the swap shows while dragging.
+
+</Do>
+
+<Do>
+
+Give every `SwapGridItem` a `label` and a `SwapGridHandle` (or `dragHandle={false}`), and render it as the tile: `render={<Card size="sm" />}`.
+
+</Do>
+
+<Do>
+
+Make each slot a size container (`[container-type:size]`) and show a tile's detail only when its slot has room (`@min-[14rem]:grid`), since any tile can land in any slot.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="Rendering the tile from your own state">
+
+<Wrong>
+
+```tsx
+<SwapGridSlot value={slot}>
+  {layout[slot] && <SwapGridItem value={layout[slot]} label={names[layout[slot]]} />}
+</SwapGridSlot>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<SwapGridSlot value={slot}>
+  {(tile) => tile && <SwapGridItem value={tile} label={names[tile]} />}
+</SwapGridSlot>
+```
+
+</Correct>
+
+The children function receives the swapped tile while a drag hovers a slot; reading your own state shows nothing until the drop, so the user cannot see which tile will move where.
+
+</Dont>
+
+<Dont severity="HIGH" title="Tiles of several sizes in a Reorderable">
+
+<Wrong>
+
+```tsx
+<Reorderable orientation="grid" value={order} onValueChange={setOrder} className="grid grid-cols-4">
+  {order.map((id) => <ReorderableItem key={id} value={id} className={spans[id]} />)}
+</Reorderable>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<SwapGrid value={layout} onValueChange={setLayout} className="grid grid-cols-4">
+  {SLOTS.map((slot) => <SwapGridSlot key={slot.id} value={slot.id} className={slot.span}>{renderTile}</SwapGridSlot>)}
+</SwapGrid>
+```
+
+</Correct>
+
+A `Reorderable` keeps an order, and CSS grid places mixed-size tiles from it: moving one tile re-places every tile after it and opens holes no drop can reach. A swap grid's slots never move, so only the two swapped tiles change.
+
+</Dont>
+
+{/* guidelines:end */}
+
+## API Reference
+
+### SwapGrid
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `Record<string, string \| null>` | - | Which item each slot holds (controlled). |
+| `defaultValue` | `Record<string, string \| null>` | `{}` | The slots' initial items, when not controlled. |
+| `onValueChange` | `(value, eventDetails) => void` | - | Called with the new map after a drop. `eventDetails.reason` is `"pointer"`, `"keyboard"` or `"virtual"`. |
+| `disabled` | `boolean` | `false` | Turns every handle off. |
+| `dropAnimation` | `boolean` | `true` | Animates the swap. Never with reduced motion. |
+| `render` | `ReactElement \| function` | `<div />` | Replaces the element. |
+
+Carries `data-dragging` while an item is dragged.
+
+### SwapGridSlot
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | - | The slot's key in `value`. |
+| `label` | `string` | - | The slot's name, announced for an empty slot (`Move to {label}`). |
+| `children` | `ReactNode \| (item: string \| null) => ReactNode` | - | The slot's content, a function of the item it holds. |
+| `render` | `ReactElement \| function` | `<div />` | Replaces the element. |
+
+Carries `data-empty` when it holds no item and `data-drop-target` while a drag is aimed at it.
+
+### SwapGridItem
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | - | The item's key, as `value` holds it. |
+| `label` | `string` | - | The item's name, used for the handle (`Drag {label}`) and the announcements. |
+| `dragHandle` | `boolean` | `true` | `false` makes the item its own handle, dragged from anywhere on it. |
+| `render` | `ReactElement \| function` | `<div />` | Replaces the element: `<Card />` for a tile. |
+
+Carries `data-dragging` while it is dragged.
+
+### SwapGridHandle
+
+A ghost icon button with a grip icon, unless you pass children. Forwards `className`, `disabled` and the button's other props.

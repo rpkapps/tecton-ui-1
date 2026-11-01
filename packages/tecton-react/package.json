@@ -506,6 +506,11 @@
       "import": "./dist/tecton/stat.js",
       "default": "./dist/tecton/stat.js"
     },
+    "./tecton/swap-grid": {
+      "types": "./dist/tecton/swap-grid.d.ts",
+      "import": "./dist/tecton/swap-grid.js",
+      "default": "./dist/tecton/swap-grid.js"
+    },
     "./tecton/table-column-resizer": {
       "types": "./dist/tecton/table-column-resizer.d.ts",
       "import": "./dist/tecton/table-column-resizer.js",
