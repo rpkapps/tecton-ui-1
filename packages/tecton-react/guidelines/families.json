@@ -198,7 +198,6 @@
       "modules": [
         "components/table",
         "tecton/reorderable",
-        "tecton/swap-grid",
         "tecton/table-column-resizer",
         "tecton/tree-view",
         "components/chart",

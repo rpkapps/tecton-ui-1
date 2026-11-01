@@ -8,7 +8,10 @@ import { buttonVariants } from "@tecton/react/components/button"
 import { usePortalTarget } from "@tecton/react/tecton/portal"
 import { useDirection } from "@tecton/react/tecton/provider"
 
-import { useDropAnimation } from "./internal/primitives/drag-and-drop/drop-animation"
+import {
+  animateFrom,
+  useDropAnimation,
+} from "./internal/primitives/drag-and-drop/drop-animation"
 import {
   createListStrategy,
   listPlacement,
@@ -19,6 +22,12 @@ import {
 } from "./internal/primitives/drag-and-drop/list-strategy"
 import * as DragAndDropPrimitive from "./internal/primitives/drag-and-drop/index.parts"
 import {
+  createSlotStrategy,
+  swapInList,
+  type SlotDropPlace,
+  type SlotItem,
+} from "./internal/primitives/drag-and-drop/slot-strategy"
+import {
   scrollerOf,
   stickyTopOf,
 } from "./internal/primitives/drag-and-drop/pointer-drag"
@@ -26,6 +35,7 @@ import {
   useDragAndDrop,
   type DragAndDrop,
   type DragMode,
+  type DropStrategy,
 } from "./internal/primitives/drag-and-drop/use-drag-and-drop"
 import {
   createChangeEventDetails,
@@ -61,11 +71,26 @@ import { useStore } from "./internal/store"
  *
  * A drop animates: the dropped item glides from where it was let go into
  * its place and the items it passes slide aside (`dropAnimation`).
+ *
+ * `mode="swap"` keeps the layout instead: each `ReorderableSlot` is a fixed
+ * place (a tile of a bento grid), `value[i]` the item slot `i` holds or
+ * `null`, and a drop swaps the dragged item with the one in the slot it is
+ * dropped on, or moves it into an empty slot. The swap shows while the
+ * item is dragged over the slot; only the two slots change.
  */
 
 type ReorderableChangeDetails = ChangeEventDetails<DragMode>
 
 type ReorderableOrientation = "vertical" | "horizontal" | "grid"
+
+type ReorderableMode = "insert" | "swap"
+
+/** Where a drop goes: a gap between items, or a slot (`mode="swap"`). */
+type ReorderPlace = ListDropPlace | SlotDropPlace
+
+const isSlot = (
+  place: ReorderPlace | null | undefined
+): place is SlotDropPlace => !!place && "slot" in place
 
 /** `base` and the caller's class, which may be a function of the state. */
 function withClass<TState>(
@@ -79,14 +104,18 @@ function withClass<TState>(
 
 type ReorderableState = {
   orientation: ReorderableOrientation
+  mode: ReorderableMode
   dragging: boolean
   disabled: boolean
 }
 
-type ReorderableProps = Omit<
-  PrimitiveProps<"div", ReorderableState>,
-  "defaultValue" | "onChange"
-> & {
+type ReorderableInsertProps = {
+  /**
+   * "insert" (default): a drop moves the item into a gap between the
+   * others, which close up behind it. "swap": the items sit in fixed
+   * `ReorderableSlot`s and a drop swaps two of them.
+   */
+  mode?: "insert"
   /** The values of the items, in order (controlled). */
   value?: ReadonlyArray<string>
   /** The initial order, when not controlled. */
@@ -96,22 +125,46 @@ type ReorderableProps = Omit<
     value: Array<string>,
     eventDetails: ReorderableChangeDetails
   ) => void
-  /**
-   * "vertical" (default): the items are stacked, as table rows are.
-   * "horizontal": the items are side by side, as table columns are.
-   * "grid": the items fill rows that wrap, in reading order (a CSS grid of
-   * cards, a wrapping flex row).
-   */
-  orientation?: ReorderableOrientation
-  /** Turns every handle off. */
-  disabled?: boolean
-  /**
-   * Animates a drop: the dropped item glides from where it was let go into
-   * its place, and the items it passes slide aside. Default `true`; never
-   * when the user prefers reduced motion.
-   */
-  dropAnimation?: boolean
 }
+
+type ReorderableSwapProps = {
+  /**
+   * "swap": the items sit in fixed `ReorderableSlot`s and a drop swaps two
+   * of them. "insert" (default): a drop moves the item into a gap.
+   */
+  mode: "swap"
+  /** The item each slot holds, in slot order; `null` for an empty slot (controlled). */
+  value?: ReadonlyArray<string | null>
+  /** The slots' initial items, when not controlled. */
+  defaultValue?: ReadonlyArray<string | null>
+  /** Called with the slots' new items when a drop swaps two of them. */
+  onValueChange?: (
+    value: Array<string | null>,
+    eventDetails: ReorderableChangeDetails
+  ) => void
+}
+
+type ReorderableProps = Omit<
+  PrimitiveProps<"div", ReorderableState>,
+  "defaultValue" | "onChange"
+> &
+  (ReorderableInsertProps | ReorderableSwapProps) & {
+    /**
+     * "vertical" (default): the items are stacked, as table rows are.
+     * "horizontal": the items are side by side, as table columns are.
+     * "grid": the items fill rows that wrap, in reading order (a CSS grid of
+     * cards, a wrapping flex row).
+     */
+    orientation?: ReorderableOrientation
+    /** Turns every handle off. */
+    disabled?: boolean
+    /**
+     * Animates a drop: the dropped item glides from where it was let go into
+     * its place, and the items it passes slide aside. Default `true`; never
+     * when the user prefers reduced motion.
+     */
+    dropAnimation?: boolean
+  }
 
 type Entry = { element: HTMLElement | null; label: string }
 
@@ -141,7 +194,12 @@ function reveal(element: HTMLElement, axis: "x" | "y") {
 }
 
 type ReorderableContextValue = {
-  dragAndDrop: DragAndDrop<ListDropPlace>
+  dragAndDrop: DragAndDrop<ReorderPlace>
+  /** `mode="swap"`: the items sit in slots. */
+  swap: boolean
+  registerSlot: (element: HTMLElement, label: string | undefined) => () => void
+  /** The slot at `index`, in document order. */
+  slotAt: (index: number) => HTMLElement | undefined
   orientation: ReorderableOrientation
   disabled: boolean
   register: (value: string, entry: Entry) => () => void
@@ -171,7 +229,8 @@ function useReorderable(part: string, value: string) {
 function Reorderable({
   value: valueProp,
   defaultValue = [],
-  onValueChange,
+  onValueChange: onValueChangeProp,
+  mode = "insert",
   orientation = "vertical",
   disabled = false,
   dropAnimation = true,
@@ -180,7 +239,19 @@ function Reorderable({
   ref,
   ...props
 }: ReorderableProps) {
-  const [value, setValue] = useControlled(valueProp, defaultValue)
+  const [value, setValue] = useControlled<ReadonlyArray<string | null>>(
+    valueProp,
+    defaultValue
+  )
+  // One signature for both modes: an insert never puts `null` in.
+  const onValueChange = onValueChangeProp as
+    | ((
+        value: Array<string | null>,
+        eventDetails: ReorderableChangeDetails
+      ) => void)
+    | undefined
+  const swap = mode === "swap"
+  const t = useTranslations("reorderable")
   const direction = useDirection()
   const portal = usePortalTarget()
   const root = React.useRef<HTMLDivElement | null>(null)
@@ -188,15 +259,23 @@ function Reorderable({
   const axis: ListAxis =
     orientation === "horizontal" ? "x" : orientation === "grid" ? "grid" : "y"
 
-  const latest = React.useRef({ value, axis, direction })
+  const latest = React.useRef({
+    value,
+    axis,
+    direction,
+    swap,
+    t,
+    dropAnimation,
+  })
   React.useInsertionEffect(() => {
-    latest.current = { value, axis, direction }
+    latest.current = { value, axis, direction, swap, t, dropAnimation }
   })
 
   /** The items on the page, in order. */
   const shown = React.useCallback(
     (): Array<ListItem> =>
       latest.current.value.flatMap((key) => {
+        if (key === null) return []
         const entry = registry.get(key)
         return entry?.element
           ? [{ value: key, element: entry.element, label: entry.label }]
@@ -205,53 +284,162 @@ function Reorderable({
     [registry]
   )
 
-  const [strategy] = React.useState(() => ({
-    ...createListStrategy({
+  // The slots of `mode="swap"`, in document order.
+  const [slotRegistry] = React.useState(
+    () => new Map<HTMLElement, string | undefined>()
+  )
+  const slotElements = React.useCallback(
+    () =>
+      [...slotRegistry.keys()].sort((a, b) =>
+        a.compareDocumentPosition(b) & Node.DOCUMENT_POSITION_FOLLOWING ? -1 : 1
+      ),
+    [slotRegistry]
+  )
+  const slotItems = React.useCallback(
+    (): Array<SlotItem> =>
+      slotElements().map((element, index) => {
+        const item = latest.current.value[index] ?? null
+        return {
+          element,
+          item,
+          itemLabel: item === null ? null : (registry.get(item)?.label ?? item),
+          label: slotRegistry.get(element),
+        }
+      }),
+    [slotElements, slotRegistry, registry]
+  )
+
+  // The swap a drag shows (`mode="swap"`): the items moved into other
+  // slots, with the inline styles they had before.
+  const preview = React.useRef(
+    new Map<HTMLElement, Partial<CSSStyleDeclaration>>()
+  )
+  const dragApi = React.useRef<DragAndDrop<ReorderPlace> | null>(null)
+  const restyle = React.useCallback(
+    (moves: ReadonlyArray<readonly [HTMLElement, HTMLElement]>) => {
+      const styled = preview.current
+      const before = new Map<HTMLElement, DOMRect>()
+      for (const element of [...styled.keys(), ...moves.map(([e]) => e)])
+        if (element.isConnected)
+          before.set(element, element.getBoundingClientRect())
+      for (const [element, saved] of styled) Object.assign(element.style, saved)
+      styled.clear()
+      for (const [element, slot] of moves) {
+        const natural = element.getBoundingClientRect()
+        const own =
+          element
+            .closest<HTMLElement>('[data-slot="reorderable-slot"]')
+            ?.getBoundingClientRect() ?? natural
+        const to = slot.getBoundingClientRect()
+        const { position, zIndex, translate, width, height } = element.style
+        styled.set(element, { position, zIndex, translate, width, height })
+        Object.assign(element.style, {
+          position:
+            getComputedStyle(element).position === "static"
+              ? "relative"
+              : position,
+          zIndex: "1",
+          translate: `${to.left - own.left}px ${to.top - own.top}px`,
+          width: `${natural.width + to.width - own.width}px`,
+          height: `${natural.height + to.height - own.height}px`,
+        })
+      }
+      animateFrom(before, !latest.current.dropAnimation)
+    },
+    []
+  )
+
+  const [strategy] = React.useState((): DropStrategy<ReorderPlace> => {
+    const list = createListStrategy({
       items: shown,
       axis: () => latest.current.axis,
       direction: () => latest.current.direction,
-    }),
-    // A keyboard or screen reader drag shows the aimed gap: the item
-    // after it (the last one, past the end) scrolls into view.
-    onAim: (place: ListDropPlace | null, dragMode: DragMode) => {
-      if (!place || dragMode === "pointer") return
-      const items = shown()
-      const item = items[Math.min(place.gap, items.length - 1)] as
-        ListItem | undefined
-      // A grid scrolls down, like a column.
-      if (item) reveal(item.element, latest.current.axis === "x" ? "x" : "y")
-    },
-  }))
+    })
+    const slots = createSlotStrategy({
+      slots: slotItems,
+      t: () => latest.current.t,
+    })
+    const pick = () =>
+      (latest.current.swap ? slots : list) as DropStrategy<ReorderPlace>
+    return {
+      placeAt: (point, dragging) => pick().placeAt(point, dragging),
+      places: (dragging) => pick().places(dragging),
+      isSame: (a, b) => isSlot(a) === isSlot(b) && pick().isSame(a, b),
+      isStop: (a, b) => (pick().isStop ?? pick().isSame)(a, b),
+      label: (place, translate, dragging) =>
+        pick().label(place, translate, dragging),
+      move: (event, place, dragging) => pick().move?.(event, place, dragging),
+      onAim: (place, dragMode) => {
+        if (latest.current.swap) {
+          // The swap shows while dragging: the dragged item in the aimed
+          // slot, the item there in the dragged one's. (Not as the drag
+          // ends: the drop, or the layout effect below, settles them.)
+          const store = dragApi.current?.store.get()
+          const key = store?.dragging[0]
+          if (!store || store.mode === null || key === undefined) return
+          const elements = slotElements()
+          const current = latest.current.value
+          const origin = current.indexOf(key)
+          const moves: Array<readonly [HTMLElement, HTMLElement]> = []
+          if (isSlot(place) && origin >= 0 && place.slot !== origin) {
+            const dragged = registry.get(key)?.element
+            const target = elements[place.slot] as HTMLElement | undefined
+            const occupant = current[place.slot]
+            const other = occupant ? registry.get(occupant)?.element : null
+            if (dragged && target) moves.push([dragged, target])
+            if (other) moves.push([other, elements[origin]])
+          }
+          restyle(moves)
+          if (isSlot(place) && dragMode !== "pointer")
+            elements[place.slot]?.scrollIntoView({
+              block: "nearest",
+              inline: "nearest",
+            })
+          return
+        }
+        // A keyboard or screen reader drag shows the aimed gap: the item
+        // after it (the last one, past the end) scrolls into view.
+        if (!place || isSlot(place) || dragMode === "pointer") return
+        const items = shown()
+        const item = items[Math.min(place.gap, items.length - 1)] as
+          ListItem | undefined
+        // A grid scrolls down, like a column.
+        if (item) reveal(item.element, latest.current.axis === "x" ? "x" : "y")
+      },
+    }
+  })
 
-  const mode = React.useRef<DragMode>("pointer")
+  const dragModeRef = React.useRef<DragMode>("pointer")
   const animation = useDropAnimation({
     disabled: !dropAnimation,
     items: () => [...registry].map(([key, entry]) => [key, entry.element]),
   })
   const change = useEventCallback(
     (
-      place: ListDropPlace,
+      place: ReorderPlace,
       keys: ReadonlyArray<string>,
       { from }: { from: DOMRect | null }
     ) => {
       const key = keys.at(0)
       if (key === undefined) return
       const current = latest.current.value
-      const next = moveInList(
-        current,
-        shown().map((item) => item.value),
-        key,
-        place.gap
-      )
+      const next: Array<string | null> = isSlot(place)
+        ? swapInList(current, key, place.slot)
+        : moveInList(
+            current as ReadonlyArray<string>,
+            shown().map((item) => item.value),
+            key,
+            place.gap
+          )
       if (next.every((v, i) => v === current[i])) return
-      const details = createChangeEventDetails(mode.current)
+      const details = createChangeEventDetails(dragModeRef.current)
       animation.capture([key], from)
       onValueChange?.(next, details)
       if (!details.isCanceled) setValue(next)
     }
   )
 
-  const dragAndDrop = useDragAndDrop<ListDropPlace>({
+  const dragAndDrop = useDragAndDrop<ReorderPlace>({
     strategy,
     // In a grid, Left and Right step through the gaps in reading order;
     // Up and Down cross the rows (the strategy's `move`).
@@ -262,7 +450,7 @@ function Reorderable({
     getContainer: () => root.current,
     getPreviewContainer: () => portal ?? null,
     onDragStart: (_keys, dragMode) => {
-      mode.current = dragMode
+      dragModeRef.current = dragMode
     },
     onDrop: change,
     // Back on the dropped item's handle, where the keyboard drag started.
@@ -275,7 +463,29 @@ function Reorderable({
     },
   })
 
+  dragApi.current = dragAndDrop
   const dragging = useStore(dragAndDrop.store, (s) => s.mode !== null)
+
+  // A swap shown by a drag that ended without it (cancelled, refused by
+  // `onValueChange`, or no change): its items glide back to their slots. A
+  // drop that swaps re-renders them in their new slots.
+  React.useLayoutEffect(() => {
+    if (!dragging && preview.current.size) restyle([])
+  }, [dragging, restyle])
+
+  const registerSlot = React.useCallback(
+    (element: HTMLElement, label: string | undefined) => {
+      slotRegistry.set(element, label)
+      return () => {
+        slotRegistry.delete(element)
+      }
+    },
+    [slotRegistry]
+  )
+  const slotAt = React.useCallback(
+    (index: number) => slotElements()[index] as HTMLElement | undefined,
+    [slotElements]
+  )
 
   const register = React.useCallback(
     (key: string, entry: Entry) => {
@@ -290,25 +500,39 @@ function Reorderable({
   const parent = React.useContext(ReorderableContext)
   // Built on first use, once per `value`: most items ask their own list.
   const has = React.useMemo(() => {
-    let values: Set<string> | null = null
+    let values: Set<string | null> | null = null
     return (key: string) => (values ??= new Set(value)).has(key)
   }, [value])
   const context = React.useMemo<ReorderableContextValue>(
     () => ({
       dragAndDrop,
+      swap,
+      registerSlot,
+      slotAt,
       orientation,
       disabled,
       register,
       has,
       parent,
     }),
-    [dragAndDrop, orientation, disabled, register, has, parent]
+    [
+      dragAndDrop,
+      swap,
+      registerSlot,
+      slotAt,
+      orientation,
+      disabled,
+      register,
+      has,
+      parent,
+    ]
   )
 
   const getPlacement = React.useCallback(
-    (place: ListDropPlace): React.CSSProperties | null => {
+    (place: ReorderPlace): React.CSSProperties | null => {
       const element = root.current
-      if (!element) return null
+      // A swap shows itself: no line.
+      if (!element || isSlot(place)) return null
       return listPlacement(
         element,
         shown(),
@@ -323,11 +547,12 @@ function Reorderable({
   const element = usePrimitive(
     "div",
     { ...props, className: withClass("relative", className), ref },
-    { orientation, dragging, disabled },
+    { orientation, mode, dragging, disabled },
     {
       ref: root,
       "data-slot": "reorderable",
       "data-orientation": orientation,
+      "data-mode": mode,
       children: (
         <ReorderableContext.Provider value={context}>
           {children}
@@ -350,7 +575,7 @@ function Reorderable({
         </ReorderableContext.Provider>
       ),
     },
-    { orientation: hidden, disabled: hidden }
+    { orientation: hidden, mode: hidden, disabled: hidden }
   )
   return element
 }
@@ -441,6 +666,8 @@ function ReorderableItem({
       className: withClass(
         cn(
           "data-dragging:opacity-50",
+          // A swapped item takes the size of its slot.
+          root.swap && "size-full",
           self &&
             "cursor-grab outline-none select-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-dragging:cursor-grabbing"
         ),
@@ -498,10 +725,10 @@ function ReorderableHandle({
   const { root } = item
   const off = root.disabled || !!disabled
   const Icon =
-    root.orientation === "horizontal"
-      ? GripHorizontalIcon
-      : root.orientation === "grid"
-        ? GripIcon
+    root.swap || root.orientation === "grid"
+      ? GripIcon
+      : root.orientation === "horizontal"
+        ? GripHorizontalIcon
         : GripVerticalIcon
   return (
     <DragAndDropPrimitive.Handle
@@ -531,10 +758,70 @@ function ReorderableHandle({
   )
 }
 
-export { Reorderable, ReorderableItem, ReorderableHandle }
+type ReorderableSlotState = {
+  /** The slot holds no item. */
+  empty: boolean
+  /** A drag is aimed at the slot. */
+  dropTarget: boolean
+}
+
+type ReorderableSlotProps = PrimitiveProps<"div", ReorderableSlotState> & {
+  /** The slot's name, as an empty slot is announced (`Move to {label}`). */
+  label?: string
+}
+
+/**
+ * A fixed place of a `Reorderable mode="swap"`: render one per entry of
+ * `value`, in order, keyed by its index, with its item (if any) inside.
+ * Give it its size in the grid (`col-span-2 row-span-2`): it stays put
+ * while items swap through it. An empty slot shows a dashed outline and the
+ * aimed slot a ring; they carry `data-empty` and `data-drop-target`.
+ */
+function ReorderableSlot({
+  label,
+  className,
+  children,
+  ref,
+  ...props
+}: ReorderableSlotProps) {
+  const context = React.useContext(ReorderableContext)
+  if (!context)
+    throw new Error("ReorderableSlot must be used inside Reorderable")
+  const { dragAndDrop, registerSlot, slotAt } = context
+  const [element, setElement] = React.useState<HTMLElement | null>(null)
+  React.useLayoutEffect(
+    () => (element ? registerSlot(element, label) : undefined),
+    [registerSlot, element, label]
+  )
+  const dropTarget = useStore(
+    dragAndDrop.store,
+    (s) =>
+      isSlot(s.aimed) && element !== null && slotAt(s.aimed.slot) === element
+  )
+  const empty =
+    children === null || children === undefined || children === false
+  return usePrimitive(
+    "div",
+    {
+      ...props,
+      className: withClass(
+        "relative min-w-0 rounded-xl outline-offset-2 data-drop-target:outline-2 data-drop-target:outline-primary data-empty:border-2 data-empty:border-dashed data-empty:border-border",
+        className
+      ),
+      ref,
+    },
+    { empty, dropTarget },
+    { ref: setElement, "data-slot": "reorderable-slot", children },
+    { dropTarget: (aimed) => (aimed ? { "data-drop-target": "" } : null) }
+  )
+}
+
+export { Reorderable, ReorderableItem, ReorderableHandle, ReorderableSlot }
 export type {
+  ReorderableMode,
   ReorderableOrientation,
   ReorderableProps,
+  ReorderableSlotProps,
   ReorderableItemProps,
   ReorderableHandleProps,
   ReorderableChangeDetails,

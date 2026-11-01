@@ -154,12 +154,17 @@ function createPreview(item: HTMLElement, container: HTMLElement) {
   preview.setAttribute("aria-hidden", "true")
   preview.setAttribute("inert", "")
   const style = getComputedStyle(item)
+  const box = item.getBoundingClientRect()
   preview.dir = style.direction
   Object.assign(preview.style, {
     position: "fixed",
     top: "0",
     left: "0",
-    width: `${item.getBoundingClientRect().width}px`,
+    // The item's own box: an item sized by its parent (`h-full` in a grid
+    // cell) would otherwise fill the viewport.
+    width: `${box.width}px`,
+    height: `${box.height}px`,
+    boxSizing: "border-box",
     margin: "0",
     font: style.font,
     color: style.color,

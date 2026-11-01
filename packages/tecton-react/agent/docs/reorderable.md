@@ -11,18 +11,17 @@ import { Reorderable, ReorderableItem, ReorderableHandle } from "@tecton/react/t
 - The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs.
 - The user moves the columns of a data table into the order they read them in.
 - A short stack of items (steps, tracks, layers) has an order the user decides.
-- The user puts a grid of equal cards in order: `orientation="grid"`.
+- The user arranges a grid of cards: equal cards put in order (`orientation="grid"`), or tiles of several sizes swapped between the fixed slots of a bento grid (`mode="swap"`).
 
 ## Not for
 
 - open workspace tabs the user drags into another order → `DocumentTabs` (tecton docs document-tabs)
 - moving rows between folders of a hierarchy → `TreeView` (tecton docs tree-view)
 - sorting rows by a column's values → `TanStack Table` (tecton docs tanstack-table)
-- tiles of several sizes the user swaps between fixed slots (a bento grid) → `SwapGrid` (tecton docs swap-grid)
 
 ## Do
 
-- Keep the order in state as an array of item values, pass it as `value`, render the items in that order and write `onValueChange`'s array back.
+- Keep the order in state as an array of item values, pass it as `value`, render the items in that order and write `onValueChange`'s array back. With `mode="swap"`, `value[i]` is the item of slot `i` (or `null`): render a `ReorderableSlot` per entry, keyed by its index and sized from your layout data, with its item inside as a size container (`[container-type:size]`).
 - Wrap the whole `Table` in `Reorderable` and render each row as `ReorderableItem` with `render={<TableRow />}`, or each header with `render={<TableHead />}` and `orientation="horizontal"`.
 - Give every item a `label` (the row's or column's name) and a `ReorderableHandle` in a row; a column header gets `dragHandle={false}` instead and is dragged and focused itself, with no grip.
 - To reorder rows and columns of one table, nest the two `Reorderable`s around it: an item joins the nearest one whose `value` holds it.

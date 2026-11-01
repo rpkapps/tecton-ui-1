@@ -16,6 +16,7 @@ import {
   Reorderable,
   ReorderableHandle,
   ReorderableItem,
+  ReorderableSlot,
 } from "@tecton/react/tecton/reorderable"
 
 import { moveInList } from "../internal/primitives/drag-and-drop/list-strategy"
@@ -957,5 +958,242 @@ describe("Reorderable bento grid", () => {
       "B6",
       "B7",
     ])
+  })
+})
+
+describe("Reorderable swap", () => {
+  /**
+   * Slots laid out as a 2 × 2 grid of 100 px squares, 10 px apart, in
+   * document order; an item fills its slot (its inline translate moves it).
+   */
+  const slotList = () =>
+    Array.from(
+      document.querySelectorAll<HTMLElement>('[data-slot="reorderable-slot"]')
+    )
+  beforeEach(() => {
+    const items = Element.prototype.getBoundingClientRect
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      const slot = this.closest<HTMLElement>('[data-slot="reorderable-slot"]')
+      const index = slot ? slotList().indexOf(slot) : -1
+      if (index < 0) return items.call(this)
+      const [dx, dy] = ((this as HTMLElement).style.translate || "0px 0px")
+        .split(" ")
+        .map((n) => parseFloat(n) || 0)
+      const left = (index % 2) * 110 + dx
+      const top = Math.floor(index / 2) * 110 + dy
+      return {
+        left,
+        top,
+        right: left + 100,
+        bottom: top + 100,
+        width: 100,
+        height: 100,
+        x: left,
+        y: top,
+        toJSON() {},
+      }
+    }
+  })
+
+  const NAMES: Record<string, string> = { a: "A", b: "B", c: "C" }
+
+  function Swap({
+    onValueChange,
+    dropAnimation,
+  }: {
+    onValueChange?: (value: Array<string | null>) => void
+    dropAnimation?: boolean
+  }) {
+    const [value, setValue] = React.useState<Array<string | null>>([
+      "a",
+      "b",
+      "c",
+      null,
+    ])
+    return (
+      <Reorderable
+        mode="swap"
+        value={value}
+        dropAnimation={dropAnimation}
+        onValueChange={(next) => {
+          onValueChange?.(next)
+          setValue(next)
+        }}
+      >
+        {value.map((id, index) => (
+          <ReorderableSlot key={index} data-testid={`slot-${index}`}>
+            {id && (
+              <ReorderableItem value={id} label={NAMES[id]}>
+                {NAMES[id]}
+                <ReorderableHandle />
+              </ReorderableItem>
+            )}
+          </ReorderableSlot>
+        ))}
+      </Reorderable>
+    )
+  }
+
+  const slot = (index: number) => screen.getByTestId(`slot-${index}`)
+  const itemOf = (name: string) =>
+    screen
+      .getByRole("button", { name: `Drag ${name}` })
+      .closest<HTMLElement>('[data-slot="reorderable-item"]')!
+  const texts = () => slotList().map((s) => s.textContent || null)
+
+  it("reaches each handle with Tab", async () => {
+    const user = userEvent.setup()
+    render(<Swap />)
+    await user.tab()
+    expect(handle("A")).toHaveFocus()
+    await user.tab()
+    expect(handle("B")).toHaveFocus()
+  })
+
+  it("marks an empty slot and the root's mode", () => {
+    render(<Swap />)
+    expect(slot(3)).toHaveAttribute("data-empty", "")
+    expect(slot(0)).not.toHaveAttribute("data-empty")
+    expect(document.querySelector('[data-slot="reorderable"]')).toHaveAttribute(
+      "data-mode",
+      "swap"
+    )
+  })
+
+  it("shows the swap while dragging over a slot, and keeps it on the drop", () => {
+    const onValueChange = vi.fn()
+    render(<Swap onValueChange={onValueChange} />)
+    press("A", 50, 50)
+    moveTo(160, 50)
+    // B is drawn in A's slot, and A, dimmed, in B's.
+    expect(itemOf("B").style.translate).toBe("-110px 0px")
+    expect(itemOf("A").style.translate).toBe("110px 0px")
+    expect(itemOf("A")).toHaveAttribute("data-dragging", "")
+    expect(slot(1)).toHaveAttribute("data-drop-target", "")
+    // No line: the swap shows itself.
+    expect(
+      document.querySelector('[data-slot="reorderable-drop-indicator"]')
+    ).toHaveAttribute("hidden")
+    release(160, 50)
+    expect(onValueChange).toHaveBeenCalledWith(["b", "a", "c", null])
+    expect(texts()).toEqual(["B", "A", "C", null])
+    expect(itemOf("A").style.translate).toBe("")
+    expect(slot(1)).not.toHaveAttribute("data-drop-target")
+  })
+
+  it("moves an item into an empty slot, leaving its own empty", () => {
+    const onValueChange = vi.fn()
+    render(<Swap onValueChange={onValueChange} />)
+    press("A", 50, 50)
+    moveTo(160, 160)
+    expect(itemOf("A").style.translate).toBe("110px 110px")
+    release(160, 160)
+    expect(onValueChange).toHaveBeenCalledWith([null, "b", "c", "a"])
+    expect(slot(0)).toHaveAttribute("data-empty", "")
+  })
+
+  it("puts everything back when the drag returns to its own slot", () => {
+    const onValueChange = vi.fn()
+    render(<Swap onValueChange={onValueChange} />)
+    press("A", 50, 50)
+    moveTo(160, 50)
+    moveTo(40, 40)
+    expect(itemOf("A").style.translate).toBe("")
+    expect(itemOf("B").style.translate).toBe("")
+    release(40, 40)
+    expect(onValueChange).not.toHaveBeenCalled()
+  })
+
+  it("moves between the slots by where they are with the arrow keys", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    render(<Swap onValueChange={onValueChange} />)
+    act(() => handle("A").focus())
+    await user.keyboard("{Enter}")
+    // It starts where it is: nothing swaps until a key aims a slot.
+    expect(document.activeElement).toHaveAttribute("aria-label", "Keep A here")
+    expect(itemOf("B").style.translate).toBe("")
+    // Nothing is wholly left of the first column.
+    await user.keyboard("{ArrowLeft}")
+    expect(document.activeElement).toHaveAttribute("aria-label", "Keep A here")
+    await user.keyboard("{ArrowRight}")
+    expect(document.activeElement).toHaveAttribute("aria-label", "Swap with B")
+    expect(itemOf("B").style.translate).toBe("-110px 0px")
+    await user.keyboard("{ArrowDown}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Move to empty slot 4"
+    )
+    await user.keyboard("{ArrowLeft}")
+    expect(document.activeElement).toHaveAttribute("aria-label", "Swap with C")
+    await user.keyboard("{Enter}")
+    expect(onValueChange).toHaveBeenCalledWith(["c", "b", "a", null])
+    await waitFor(() => expect(handle("A")).toHaveFocus())
+  })
+
+  it("cancels a keyboard drag with Escape, putting the swap back", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    render(<Swap onValueChange={onValueChange} />)
+    act(() => handle("A").focus())
+    await user.keyboard("{Enter}{ArrowRight}")
+    expect(itemOf("B").style.translate).toBe("-110px 0px")
+    await user.keyboard("{Escape}")
+    expect(onValueChange).not.toHaveBeenCalled()
+    expect(itemOf("B").style.translate).toBe("")
+    expect(texts()).toEqual(["A", "B", "C", null])
+  })
+
+  describe("animation", () => {
+    const animate = vi.fn(function (this: Element) {
+      return { finished: Promise.resolve() } as unknown as Animation
+    })
+    beforeEach(() => {
+      animate.mockClear()
+      Element.prototype.animate = animate
+    })
+    afterEach(() => {
+      delete (Element.prototype as { animate?: unknown }).animate
+    })
+
+    it("slides the swapped item into the freed slot as the drag aims", () => {
+      render(<Swap />)
+      press("A", 50, 50)
+      moveTo(160, 50)
+      const at = animate.mock.contexts.indexOf(itemOf("B"))
+      expect(at).toBeGreaterThanOrEqual(0)
+      const [keyframes] = animate.mock.calls[at] as unknown as [Array<Keyframe>]
+      // From B's slot, 110 px to the right of A's.
+      expect(keyframes[0].translate).toBe("110px 0px")
+      release(160, 50)
+    })
+
+    it("resizes the dropped item from the preview's size into its slot", () => {
+      render(<Swap />)
+      press("A", 50, 50)
+      moveTo(160, 50)
+      animate.mockClear()
+      // jsdom draws the preview 400 px square; the slot is 100 px.
+      release(160, 50)
+      const resized = animate.mock.calls.findIndex(
+        (call, at) =>
+          animate.mock.contexts[at] === itemOf("A") &&
+          (call as unknown as [Array<Keyframe>])[0][0]?.width !== undefined
+      )
+      expect(resized).toBeGreaterThanOrEqual(0)
+      const [keyframes] = animate.mock.calls[resized] as unknown as [
+        Array<Keyframe>,
+      ]
+      expect(keyframes[0].width).toBe("400px")
+      expect(keyframes[1].width).toBe("100px")
+    })
+
+    it("does not animate with dropAnimation={false}", () => {
+      render(<Swap dropAnimation={false} />)
+      press("A", 50, 50)
+      moveTo(160, 50)
+      release(160, 50)
+      expect(animate).not.toHaveBeenCalled()
+    })
   })
 })

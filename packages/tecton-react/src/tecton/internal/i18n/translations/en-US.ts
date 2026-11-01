@@ -43,11 +43,11 @@ const enUS = {
   tableColumnResizer: {
     resize: "Resize {columnName}",
   },
-  swapGrid: {
+  reorderable: {
+    keepHere: "Keep {itemText} here",
     swapWith: "Swap with {itemText}",
-    stay: "Keep {itemText} here",
     moveTo: "Move to {slotText}",
-    slot: "empty slot {index}",
+    emptySlot: "empty slot {index}",
   },
 } as const satisfies TranslationTable
 

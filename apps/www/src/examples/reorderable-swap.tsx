@@ -20,28 +20,19 @@ import {
   StatValue,
 } from "@tecton/react/tecton/stat"
 import {
-  SwapGrid,
-  SwapGridHandle,
-  SwapGridItem,
-  SwapGridSlot,
-} from "@tecton/react/tecton/swap-grid"
+  Reorderable,
+  ReorderableHandle,
+  ReorderableItem,
+  ReorderableSlot,
+} from "@tecton/react/tecton/reorderable"
 
 /**
- * The layout: the slots and their sizes. It never changes; the tiles move
- * between the slots. Each slot is a size container, so a tile shows more
- * in a bigger slot (`@min-[14rem]:` for a wide one, a min-height query for
- * a tall one).
+ * The layout: the slots and their sizes, in order. It never changes; the
+ * tiles move between the slots. Each tile is a size container, so it shows
+ * more in a bigger slot (`@min-[14rem]:` for a wide one, a min-height query
+ * for a tall one), also while a drag shows it in another slot.
  */
-const SLOTS = [
-  { id: "hero", span: "col-span-2 row-span-2" },
-  { id: "top", span: "" },
-  { id: "tall", span: "row-span-2" },
-  { id: "middle", span: "" },
-  { id: "bottom-1", span: "" },
-  { id: "bottom-2", span: "" },
-  { id: "bottom-3", span: "" },
-  { id: "bottom-4", span: "" },
-]
+const SLOTS = ["col-span-2 row-span-2", "", "row-span-2", "", "", "", "", ""]
 
 /** Wide slots (two columns) show a tile's detail. */
 const WIDE = "hidden @min-[14rem]:grid"
@@ -190,39 +181,37 @@ const TILES: Record<
   },
 }
 
-export default function SwapGridDemo() {
-  const [layout, setLayout] = React.useState<Record<string, string | null>>({
-    hero: "production",
-    top: "pressure",
-    tall: "alarms",
-    middle: "uptime",
-    "bottom-1": "job",
-    "bottom-2": "water-cut",
-    "bottom-3": "crew",
-    "bottom-4": null,
-  })
+export default function ReorderableSwap() {
+  // The tile in each slot, in slot order; `null` leaves a slot empty.
+  const [layout, setLayout] = React.useState<Array<string | null>>([
+    "production",
+    "pressure",
+    "alarms",
+    "uptime",
+    "job",
+    "water-cut",
+    "crew",
+    null,
+  ])
 
   return (
-    <SwapGrid
+    <Reorderable
+      mode="swap"
       aria-label="Well dashboard"
       value={layout}
       onValueChange={setLayout}
       className="grid w-full max-w-3xl auto-rows-[10rem] grid-cols-2 gap-3 sm:grid-cols-4"
     >
-      {SLOTS.map((slot) => (
-        <SwapGridSlot
-          key={slot.id}
-          value={slot.id}
-          className={`[container-type:size] ${slot.span}`}
-        >
-          {(id) => {
-            const tile = id ? TILES[id] : null
-            if (!id || !tile) return null
-            return (
-              <SwapGridItem
+      {layout.map((id, index) => {
+        const tile = id ? TILES[id] : null
+        return (
+          <ReorderableSlot key={index} className={SLOTS[index]}>
+            {id && tile && (
+              <ReorderableItem
                 value={id}
                 label={tile.name}
                 render={<Card size="sm" />}
+                className="[container-type:size]"
               >
                 <CardHeader>
                   <CardTitle className="truncate">{tile.name}</CardTitle>
@@ -230,7 +219,7 @@ export default function SwapGridDemo() {
                     {tile.detail}
                   </CardDescription>
                   <CardAction>
-                    <SwapGridHandle />
+                    <ReorderableHandle />
                   </CardAction>
                 </CardHeader>
                 <CardContent
@@ -238,11 +227,11 @@ export default function SwapGridDemo() {
                 >
                   {tile.content}
                 </CardContent>
-              </SwapGridItem>
-            )
-          }}
-        </SwapGridSlot>
-      ))}
-    </SwapGrid>
+              </ReorderableItem>
+            )}
+          </ReorderableSlot>
+        )
+      })}
+    </Reorderable>
   )
 }

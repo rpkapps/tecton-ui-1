@@ -41,8 +41,8 @@ type Box = { left: number; top: number }
 type Pending = {
   boxes: Map<string, Box>
   dropped: ReadonlySet<string>
-  /** Where the preview was let go, for the first dropped item. */
-  from: Box | null
+  /** Where the preview was let go, and its size, for the first dropped item. */
+  from: (Box & { width: number; height: number }) | null
   expires: number
 }
 
@@ -145,6 +145,44 @@ function raise(element: HTMLElement, animation: Animation) {
   animation.finished.then(restore, restore)
 }
 
+/**
+ * Slides each element of `before` from the box it had there to the one it
+ * has now, resizing it too when its size changed (a swap preview moving an
+ * item into a slot of another size). Nothing moves when `disabled` or when
+ * the user prefers reduced motion.
+ */
+function animateFrom(
+  before: ReadonlyMap<HTMLElement, DOMRect>,
+  disabled = false
+) {
+  if (disabled) return
+  for (const [element, old] of before) {
+    // `animate` is missing from some embedded engines (jsdom).
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    if (!element.isConnected || !element.animate) continue
+    if (prefersReducedMotion(element)) return
+    const now = element.getBoundingClientRect()
+    const dx = old.left - now.left
+    const dy = old.top - now.top
+    if (Math.abs(dx) >= 0.5 || Math.abs(dy) >= 0.5)
+      element.animate(
+        [{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }],
+        { duration: DURATION, easing: EASING, composite: "add" }
+      )
+    if (
+      Math.abs(old.width - now.width) >= 0.5 ||
+      Math.abs(old.height - now.height) >= 0.5
+    )
+      element.animate(
+        [
+          { width: `${old.width}px`, height: `${old.height}px` },
+          { width: `${now.width}px`, height: `${now.height}px` },
+        ],
+        { duration: DURATION, easing: EASING }
+      )
+  }
+}
+
 function useDropAnimation({
   disabled = false,
   items,
@@ -170,6 +208,8 @@ function useDropAnimation({
       dx: number
       dy: number
       dropped: boolean
+      /** The size it lands from (the preview's), when not its own. */
+      size: { width: number; height: number } | null
     }> = []
     let moved = false
     const areas = new Map<Element, Bounds | null>()
@@ -197,17 +237,35 @@ function useDropAnimation({
         x = within(x, rect.left, rect.right, area.left, area.right)
         y = within(y, rect.top, rect.bottom, area.top, area.bottom)
       }
-      moves.push({ element, dx: x, dy: y, dropped })
+      // A swapped item dropped into a slot of another size grows or shrinks
+      // from the preview's size into it.
+      const size =
+        from &&
+        (Math.abs(from.width - rect.width) >= 0.5 ||
+          Math.abs(from.height - rect.height) >= 0.5)
+          ? { width: from.width, height: from.height }
+          : null
+      moves.push({ element, dx: x, dy: y, dropped, size })
       if (from) capture.from = null
     }
     if (!moved) return
     pending.current = null
-    for (const { element, dx, dy, dropped } of moves) {
+    for (const { element, dx, dy, dropped, size } of moves) {
       // Added to the item's own `translate`, if it has one.
       const animation = element.animate(
         [{ translate: `${dx}px ${dy}px` }, { translate: "0px 0px" }],
         { duration: DURATION, easing: EASING, composite: "add" }
       )
+      if (size) {
+        const now = element.getBoundingClientRect()
+        element.animate(
+          [
+            { width: `${size.width}px`, height: `${size.height}px` },
+            { width: `${now.width}px`, height: `${now.height}px` },
+          ],
+          { duration: DURATION, easing: EASING }
+        )
+      }
       if (!dropped) continue
       raise(element, animation)
       // Lifted while it passes the others, then its own surface (an end
@@ -238,7 +296,12 @@ function useDropAnimation({
       pending.current = {
         boxes,
         dropped: new Set(dropped),
-        from: from && { left: from.left, top: from.top },
+        from: from && {
+          left: from.left,
+          top: from.top,
+          width: from.width,
+          height: from.height,
+        },
         expires: performance.now() + EXPIRY,
       }
     },
@@ -246,5 +309,5 @@ function useDropAnimation({
   return api
 }
 
-export { useDropAnimation }
+export { animateFrom, useDropAnimation }
 export type { DropAnimation, DropAnimationOptions }
