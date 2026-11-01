@@ -76,6 +76,62 @@ function inView(rect: DOMRect, view: Window) {
   )
 }
 
+type Bounds = { left: number; top: number; right: number; bottom: number }
+
+/**
+ * The scroll areas of `element`'s scroll containers, in viewport px: a
+ * moving item kept inside them adds no scrollbar for the length of the
+ * animation (a transform counts towards a container's scrollable overflow).
+ * The page itself is left out.
+ */
+function scrollAreasOf(
+  element: HTMLElement,
+  cache: Map<Element, Bounds | null>
+) {
+  const areas: Array<Bounds> = []
+  const page = element.ownerDocument.scrollingElement
+  for (
+    let node = element.parentElement;
+    node && node !== page && node !== element.ownerDocument.body;
+    node = node.parentElement
+  ) {
+    let area = cache.get(node)
+    if (area === undefined) {
+      const style = getComputedStyle(node)
+      area = null
+      if (
+        /auto|scroll/.test(style.overflow + style.overflowX + style.overflowY)
+      ) {
+        const rect = node.getBoundingClientRect()
+        const left = rect.left + node.clientLeft - node.scrollLeft
+        const top = rect.top + node.clientTop - node.scrollTop
+        area = {
+          left,
+          top,
+          right: left + node.scrollWidth,
+          bottom: top + node.scrollHeight,
+        }
+      }
+      cache.set(node, area)
+    }
+    if (area) areas.push(area)
+  }
+  return areas
+}
+
+/** `offset` narrowed so that `[start, end]` moved by it stays in `[min, max]`. */
+function within(
+  offset: number,
+  start: number,
+  end: number,
+  min: number,
+  max: number
+) {
+  const low = min - start
+  const high = max - end
+  return low > high ? 0 : Math.min(Math.max(offset, low), high)
+}
+
 /** Raises `element` over its siblings while `animation` runs. */
 function raise(element: HTMLElement, animation: Animation) {
   const { position, zIndex } = element.style
@@ -116,6 +172,7 @@ function useDropAnimation({
       dropped: boolean
     }> = []
     let moved = false
+    const areas = new Map<Element, Bounds | null>()
     for (const [key, element] of latest.current.items()) {
       if (!element) continue
       const dropped = capture.dropped.has(key)
@@ -129,12 +186,15 @@ function useDropAnimation({
       // The first dropped item comes from the preview, the others (a
       // multiple selection) from their old places.
       const from = dropped && capture.from
-      moves.push({
-        element,
-        dx: from ? from.left - rect.left : dx,
-        dy: from ? from.top - rect.top : dy,
-        dropped,
-      })
+      let x = from ? from.left - rect.left : dx
+      let y = from ? from.top - rect.top : dy
+      // From the nearest point inside its scroll containers: a preview let
+      // go past a table's edge would otherwise flash a scrollbar.
+      for (const area of scrollAreasOf(element, areas)) {
+        x = within(x, rect.left, rect.right, area.left, area.right)
+        y = within(y, rect.top, rect.bottom, area.top, area.bottom)
+      }
+      moves.push({ element, dx: x, dy: y, dropped })
       if (from) capture.from = null
     }
     if (!moved) return

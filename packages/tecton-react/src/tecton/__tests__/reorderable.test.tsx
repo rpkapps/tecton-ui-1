@@ -625,6 +625,34 @@ describe("Reorderable drop animation", () => {
     expect(animate).not.toHaveBeenCalled()
   })
 
+  it("starts the dropped row inside its scroll container", () => {
+    // The preview let go right of and below the rows' container, which
+    // scrolls but has nothing to scroll (four 32 px rows across 400 px).
+    const layout = Element.prototype.getBoundingClientRect
+    Element.prototype.getBoundingClientRect = function (this: Element) {
+      if (!this.hasAttribute("inert")) return layout.call(this)
+      return { ...layout.call(this), left: 120, top: 200, x: 120, y: 200 }
+    }
+    render(
+      <div
+        style={{ overflow: "auto" }}
+        ref={(element) => {
+          if (!element) return
+          Object.defineProperty(element, "scrollWidth", { value: 400 })
+          Object.defineProperty(element, "scrollHeight", { value: 4 * SIZE })
+        }}
+      >
+        <Rows />
+      </div>
+    )
+    press("A-12", 10, yOf(0))
+    moveTo(10, yOf(2, 20))
+    release(10, yOf(2, 20))
+    // A-12 lands at 64–96 px: it starts at most 32 px lower, the bottom
+    // of the scroll area, and not sideways at all.
+    expect(slides().get("A-12")).toBe("0px 32px")
+  })
+
   it("does not animate when the user prefers reduced motion", () => {
     window.matchMedia = (query: string) => ({
       ...originalMatchMedia(query),
