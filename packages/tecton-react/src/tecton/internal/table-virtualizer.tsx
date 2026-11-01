@@ -50,8 +50,11 @@ const ESTIMATED_ROW = 49
 /** Cells of locked columns clip what no longer fits, with an ellipsis. */
 const LOCKED_CLASS = "table-fixed [&_td]:overflow-hidden [&_td]:text-ellipsis"
 
-/** Room past a control (a checkbox, a drag handle) for its focus ring. */
-const CONTROL_SLACK = 4
+/**
+ * Room past a control (a checkbox, a drag handle): its 2 px focus ring
+ * and 4 px clear of it, so no zoom level rounds the ring away.
+ */
+const CONTROL_SLACK = 6
 
 type LockedColumn = {
   span: number

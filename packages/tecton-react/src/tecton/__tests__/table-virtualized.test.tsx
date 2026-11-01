@@ -239,9 +239,9 @@ describe("Table virtualized", () => {
         </Table>
       </div>
     )
-    // Content 300, 100 (+4 for the focus ring) and 100: the 96 px left go
+    // Content 300, 100 (+6 for the focus ring) and 100: the 94 px left go
     // to the columns of text only.
-    expect(lockedWidths()).toEqual(["372px", "104px", ""])
+    expect(lockedWidths()).toEqual(["370.5px", "106px", ""])
   })
 
   it("hands the columns to the caller's widths and back (resizing)", () => {
