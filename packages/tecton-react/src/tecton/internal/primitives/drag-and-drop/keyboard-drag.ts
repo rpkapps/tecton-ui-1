@@ -22,6 +22,12 @@ type KeyboardDragOptions<TPlace> = {
   places: () => { places: ReadonlyArray<TPlace>; start: number }
   /** Whether two places are the same one. */
   isSame: (a: TPlace, b: TPlace) => boolean
+  /**
+   * Whether two places are the same stop of the arrow keys: a place aimed
+   * otherwise (`onKey`) may be drawn elsewhere than the stop it stands for.
+   * `isSame` by default.
+   */
+  isStop?: (a: TPlace, b: TPlace) => boolean
   /** Shows the aimed place (null for none). */
   onAim: (place: TPlace | null) => void
   /**
@@ -42,6 +48,7 @@ function startKeyboardDrag<TPlace>({
   direction = "ltr",
   places,
   isSame,
+  isStop = isSame,
   onAim,
   onKey,
   onEnd,
@@ -52,7 +59,7 @@ function startKeyboardDrag<TPlace>({
   /** Aims `step` places on from the current one. */
   const aim = (step: number) => {
     const { places: list, start } = places()
-    const index = aimed === null ? -1 : list.findIndex((p) => isSame(p, aimed!))
+    const index = aimed === null ? -1 : list.findIndex((p) => isStop(p, aimed!))
     const last = list.length - 1
     aimed =
       list.at(

@@ -32,10 +32,19 @@ const items = () =>
   Array.from(
     document.querySelectorAll<HTMLElement>('[data-slot="reorderable-item"]')
   )
-let layout: "y" | "x" | "x-rtl" | "grid" | "grid-rtl" = "y"
+let layout: "y" | "x" | "x-rtl" | "grid" | "grid-rtl" | "bento" = "y"
 /** Grids: three 100 × 32 px items a row, 10 px apart, in a 400 px box. */
 const TILE = 100
 const GRID_GAP = 10
+const BENTO = [
+  { left: 0, top: 0, width: 210, height: 74 },
+  { left: 220, top: 0, width: 100, height: 32 },
+  { left: 330, top: 0, width: 100, height: 74 },
+  { left: 220, top: 42, width: 100, height: 32 },
+  { left: 0, top: 84, width: 210, height: 32 },
+  { left: 220, top: 84, width: 100, height: 32 },
+  { left: 330, top: 84, width: 100, height: 32 },
+]
 
 beforeEach(() => {
   layout = "y"
@@ -54,6 +63,12 @@ beforeEach(() => {
       toJSON() {},
     })
     if (index < 0) return rect(0, 0, 400, 400)
+    if (layout === "bento") {
+      // Four 100 px columns, 32 px rows, 10 px apart: B1 2×2, B2 1×1,
+      // B3 1×2, B4 1×1 (under B2), B5 2×1, B6 and B7 1×1.
+      const at = BENTO[index]
+      return rect(at.top, at.left, at.width, at.height)
+    }
     if (layout === "grid" || layout === "grid-rtl") {
       const column = index % 3
       const top = Math.floor(index / 3) * (SIZE + GRID_GAP)
@@ -820,6 +835,127 @@ describe("Reorderable grid", () => {
       "T4",
       "T5",
       "T6",
+    ])
+  })
+})
+
+describe("Reorderable bento grid", () => {
+  const TILES = ["B1", "B2", "B3", "B4", "B5", "B6", "B7"]
+
+  function Bento({
+    onValueChange,
+  }: {
+    onValueChange?: (value: Array<string>) => void
+  }) {
+    const [order, setOrder] = React.useState(TILES)
+    return (
+      <Reorderable
+        orientation="grid"
+        value={order}
+        onValueChange={(next) => {
+          onValueChange?.(next)
+          setOrder(next)
+        }}
+      >
+        {order.map((tile) => (
+          <ReorderableItem key={tile} value={tile} label={tile}>
+            {tile}
+            <ReorderableHandle />
+          </ReorderableItem>
+        ))}
+      </Reorderable>
+    )
+  }
+
+  const line = () =>
+    document.querySelector<HTMLElement>(
+      '[data-slot="reorderable-drop-indicator"]'
+    )!
+
+  it("drops after the tile whose trailing half is under the pointer", () => {
+    layout = "bento"
+    const onValueChange = vi.fn()
+    render(<Bento onValueChange={onValueChange} />)
+    press("B7", 380, 100)
+    // The end of B2 (220–320): halfway to B3 beside it, over B2's height.
+    moveTo(300, 16)
+    expect(line().style.left).toBe("325px")
+    expect(line().style.top).toBe("0px")
+    expect(line().style.height).toBe("32px")
+    release(300, 16)
+    expect(onValueChange).toHaveBeenCalledWith([
+      "B1",
+      "B2",
+      "B7",
+      "B3",
+      "B4",
+      "B5",
+      "B6",
+    ])
+  })
+
+  it("draws a gap whose tiles are apart beside the tile it is at", () => {
+    layout = "bento"
+    const onValueChange = vi.fn()
+    render(<Bento onValueChange={onValueChange} />)
+    press("B7", 380, 100)
+    // The start of B4, under B2: the gap after B3 (which is not beside
+    // it), drawn between B1 and B4 over B4's height.
+    moveTo(230, 58)
+    expect(line().style.left).toBe("215px")
+    expect(line().style.top).toBe("42px")
+    expect(line().style.height).toBe("32px")
+    release(230, 58)
+    expect(onValueChange).toHaveBeenCalledWith([
+      "B1",
+      "B2",
+      "B3",
+      "B7",
+      "B4",
+      "B5",
+      "B6",
+    ])
+  })
+
+  it("steps down to the nearest gap below with the keyboard", async () => {
+    layout = "bento"
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    render(<Bento onValueChange={onValueChange} />)
+    act(() => handle("B1").focus())
+    await user.keyboard("{Enter}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert between B2 and B3"
+    )
+    // Below the line between B2 and B3: the end of B4, under B2.
+    await user.keyboard("{ArrowDown}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert between B4 and B5"
+    )
+    expect(line().style.left).toBe("325px")
+    expect(line().style.top).toBe("42px")
+    // Right and Left go on from that stop, in reading order.
+    await user.keyboard("{ArrowRight}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert between B5 and B6"
+    )
+    await user.keyboard("{ArrowLeft}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert between B4 and B5"
+    )
+    await user.keyboard("{Enter}")
+    expect(onValueChange).toHaveBeenCalledWith([
+      "B2",
+      "B3",
+      "B4",
+      "B1",
+      "B5",
+      "B6",
+      "B7",
     ])
   })
 })

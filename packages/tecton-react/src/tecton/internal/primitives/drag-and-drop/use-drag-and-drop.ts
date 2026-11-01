@@ -47,6 +47,8 @@ type DropStrategy<TPlace> = {
     start: number
   }
   isSame: (a: TPlace, b: TPlace) => boolean
+  /** Whether two places are the same stop of the arrow keys; `isSame` by default. */
+  isStop?: (a: TPlace, b: TPlace) => boolean
   /** The place in words, as a drop target's name ("Drop on Wells"). */
   label: (place: TPlace, t: Translator<"dragAndDrop">) => string
   /** Called as the aim changes (opening a folder held over, scrolling). */
@@ -239,6 +241,7 @@ function useDragAndDrop<TPlace>(
           direction,
           places: () => strategy().places(store.get().dragging),
           isSame: (a, b) => strategy().isSame(a, b),
+          isStop: (a, b) => (strategy().isStop ?? strategy().isSame)(a, b),
           onAim: aim,
           onKey: (keyEvent, place) => {
             const to = strategy().move?.(keyEvent, place, store.get().dragging)

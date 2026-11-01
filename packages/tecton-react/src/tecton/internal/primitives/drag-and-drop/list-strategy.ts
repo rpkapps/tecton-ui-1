@@ -9,12 +9,13 @@
  * columns): a drop moves the item in the whole order, before the item shown
  * after the gap, or after the item shown before it.
  *
- * A grid (`axis: "grid"`) is items in rows that wrap, in reading order (a
- * CSS grid, a wrapping flex row). The pointer picks the row under it, then
- * the gap in that row; the gap after a row's last item is the one before
- * the next row's first, drawn where the pointer is (`end`: at the end of
- * the row above). The arrow keys across the rows aim the nearest gap of the
- * row above or below (`move`).
+ * A grid (`axis: "grid"`) is items laid out in two dimensions, in reading
+ * order: a CSS grid of cards, a wrapping flex row, a bento grid of tiles of
+ * several sizes. The pointer drops before or after the item under it (the
+ * nearest one, over a gap), by the half of it the pointer is on; the line
+ * is drawn on that side of the item, as tall as it (`end`: after the item
+ * before the gap, which may sit apart from the item after it). The arrow
+ * keys across the rows aim the nearest gap above or below (`move`).
  */
 import type { Translator } from "../../i18n/translations"
 import type { Point } from "./pointer-drag"
@@ -30,68 +31,58 @@ type ListItem = { value: string; element: HTMLElement; label: string }
 
 type ListAxis = "x" | "y" | "grid"
 
-/** A row of a grid: the items shown from `start` to before `end`. */
-type GridRow = { start: number; end: number; top: number; bottom: number }
+type Line = { x: number; top: number; bottom: number }
 
-/** The rows of a grid's items, top to bottom. */
-function rowsOf(rects: ReadonlyArray<DOMRect>) {
-  const rows: Array<GridRow> = []
-  rects.forEach((rect, index) => {
-    const row = rows.at(-1)
-    const first = row && rects[row.start]
-    // A new row starts below the middle of the row's first item.
-    if (!row || !first || rect.top >= first.top + first.height / 2) {
-      rows.push({
-        start: index,
-        end: index + 1,
-        top: rect.top,
-        bottom: rect.bottom,
-      })
-      return
-    }
-    row.end = index + 1
-    row.top = Math.min(row.top, rect.top)
-    row.bottom = Math.max(row.bottom, rect.bottom)
-  })
-  return rows
-}
-
-/** The row holding gap `gap` (`end`: the row it ends). */
-function rowOfGap(rows: ReadonlyArray<GridRow>, gap: number, end = false) {
-  return (
-    rows.find((row) =>
-      end ? gap === row.end : gap >= row.start && gap < row.end
-    ) ?? rows.at(-1)
-  )
+/** The space between items side by side: the narrowest one in the grid. */
+function spacingOf(rects: ReadonlyArray<DOMRect>) {
+  let spacing = Infinity
+  for (let at = 1; at < rects.length; at++) {
+    const [a, b] = [rects[at - 1], rects[at]]
+    if (Math.min(a.bottom, b.bottom) <= Math.max(a.top, b.top)) continue
+    const apart = Math.max(b.left - a.right, a.left - b.right)
+    if (apart >= 0) spacing = Math.min(spacing, apart)
+  }
+  return Number.isFinite(spacing) ? spacing : 0
 }
 
 /**
- * The line of a grid's gap, in viewport px: its inline position and the
- * height of its row. Between two items of a row it is halfway between them;
- * at a row's edge, half a column gap outside the item.
+ * The line of a grid's gap, in viewport px. Between two items side by side
+ * it is halfway between them, over the height they share; elsewhere it is
+ * half the grid's spacing outside the item it belongs to (the one after the
+ * gap; the one before with `end`), as tall as that item.
  */
 function gridLine(
   rects: ReadonlyArray<DOMRect>,
   { gap, end = false }: ListDropPlace,
   rtl: boolean
-) {
-  const rows = rowsOf(rects)
-  const row = rowOfGap(rows, gap, end || gap >= rects.length)
-  if (!row) return null
+): Line | null {
+  const before = gap > 0 ? rects.at(gap - 1) : undefined
+  const after = gap < rects.length ? rects.at(gap) : undefined
+  if (!before && !after) return null
   const leading = (rect: DOMRect) => (rtl ? rect.right : rect.left)
   const trailing = (rect: DOMRect) => (rtl ? rect.left : rect.right)
-  // Half the space between two items of a row, signed along the reading
-  // direction (none in a grid of one column).
-  const pair = rows.find((r) => r.end - r.start > 1)
-  const half = pair
-    ? (leading(rects[pair.start + 1]) - trailing(rects[pair.start])) / 2
-    : 0
-  let x: number
-  if (gap > row.start && gap < row.end)
-    x = (trailing(rects[gap - 1]) + leading(rects[gap])) / 2
-  else if (gap >= row.end) x = trailing(rects[row.end - 1]) + half
-  else x = leading(rects[gap]) - half
-  return { x, top: row.top, bottom: row.bottom }
+  const sign = rtl ? -1 : 1
+  const spacing = spacingOf(rects)
+  if (before && after) {
+    const top = Math.max(before.top, after.top)
+    const bottom = Math.min(before.bottom, after.bottom)
+    const apart = (leading(after) - trailing(before)) * sign
+    // Side by side: the item after the gap follows the one before it.
+    if (bottom > top && apart >= -1 && apart <= spacing + 1)
+      return { x: (trailing(before) + leading(after)) / 2, top, bottom }
+  }
+  if (before && (end || !after))
+    return {
+      x: trailing(before) + (sign * spacing) / 2,
+      top: before.top,
+      bottom: before.bottom,
+    }
+  if (!after) return null
+  return {
+    x: leading(after) - (sign * spacing) / 2,
+    top: after.top,
+    bottom: after.bottom,
+  }
 }
 
 type ListStrategyOptions = {
@@ -99,7 +90,7 @@ type ListStrategyOptions = {
   items: () => ReadonlyArray<ListItem>
   /**
    * "y": a column of items (rows); "x": a row of items (columns); "grid":
-   * rows of items that wrap.
+   * items in two dimensions (rows that wrap, tiles of several sizes).
    */
   axis: () => ListAxis
   /** Reading direction, for "x" and "grid": in RTL the first item is rightmost. */
@@ -151,28 +142,23 @@ function createListStrategy({
       if (!list.length) return null
       if (axis() === "grid") {
         const rtl = direction() === "rtl"
-        const rects = list.map(({ element }) => element.getBoundingClientRect())
-        const rows = rowsOf(rects)
-        // The row under the pointer, or the nearest one.
-        let row = rows[0]
+        // The item under the pointer, or the nearest one.
+        let at = 0
         let distance = Infinity
-        for (const r of rows) {
-          const d = Math.max(r.top - point.y, 0, point.y - r.bottom)
-          if (d < distance) [row, distance] = [r, d]
-        }
-        // In it, the first item whose middle the pointer has not passed.
-        let gap = row.end
-        for (let at = row.start; at < row.end; at++) {
-          const mid = rects[at].left + rects[at].width / 2
-          if (rtl ? point.x > mid : point.x < mid) {
-            gap = at
-            break
-          }
-        }
+        list.forEach(({ element }, i) => {
+          const rect = element.getBoundingClientRect()
+          const dx = Math.max(rect.left - point.x, 0, point.x - rect.right)
+          const dy = Math.max(rect.top - point.y, 0, point.y - rect.bottom)
+          const d = Math.hypot(dx, dy)
+          if (d < distance) [at, distance] = [i, d]
+        })
+        // Before it or after it, by the half of it the pointer is on.
+        const rect = list[at].element.getBoundingClientRect()
+        const mid = rect.left + rect.width / 2
+        const after = rtl ? point.x < mid : point.x > mid
+        const gap = after ? at + 1 : at
         if (index >= 0 && isStay(index, gap)) return null
-        return gap === row.end && gap < list.length
-          ? { gap, end: true }
-          : { gap }
+        return after && gap < list.length ? { gap, end: true } : { gap }
       }
       const horizontal = axis() === "x"
       const rtl = horizontal && direction() === "rtl"
@@ -205,9 +191,11 @@ function createListStrategy({
     },
 
     isSame: (a, b) => a.gap === b.gap && !!a.end === !!b.end,
+    // The end of a grid row and the start of the next are one stop.
+    isStop: (a, b) => a.gap === b.gap,
 
-    // In a grid, Up and Down aim the gap of the row above or below nearest
-    // the aimed one.
+    // In a grid, Up and Down aim the nearest gap whose line is above or
+    // below the aimed one's.
     move(event, place, dragging) {
       if (axis() !== "grid" || !place) return undefined
       const up = event.key === "ArrowUp"
@@ -215,38 +203,29 @@ function createListStrategy({
       const list = items()
       const rects = list.map(({ element }) => element.getBoundingClientRect())
       const rtl = direction() === "rtl"
-      const rows = rowsOf(rects)
-      const row = rowOfGap(
-        rows,
-        place.gap,
-        place.end || place.gap >= list.length
-      )
       const line = gridLine(rects, place, rtl)
-      if (!row || !line) return place
+      if (!line) return place
+      const middle = (line.top + line.bottom) / 2
       const index = list.findIndex((item) => item.value === dragging[0])
-      const allowed = (gap: number) => index < 0 || !isStay(index, gap)
-      for (
-        let at = rows.indexOf(row) + (up ? -1 : 1);
-        at >= 0 && at < rows.length;
-        at += up ? -1 : 1
-      ) {
-        const target = rows[at]
-        let best: ListDropPlace | null = null
-        let distance = Infinity
-        for (let gap = target.start; gap <= target.end; gap++) {
-          if (!allowed(gap)) continue
-          const candidate: ListDropPlace =
-            gap === target.end && gap < list.length
-              ? { gap, end: true }
-              : { gap }
-          const x = gridLine(rects, candidate, rtl)?.x
-          if (x === undefined) continue
-          const d = Math.abs(x - line.x)
-          if (d < distance) [best, distance] = [candidate, d]
+      let best: ListDropPlace = place
+      let score = Infinity
+      for (let gap = 0; gap <= list.length; gap++) {
+        if (index >= 0 && isStay(index, gap)) continue
+        for (const end of gap > 0 && gap < list.length
+          ? [false, true]
+          : [false]) {
+          const candidate: ListDropPlace = end ? { gap, end } : { gap }
+          const other = gridLine(rects, candidate, rtl)
+          // Wholly past the aimed line's middle, up or down.
+          if (!other || (up ? other.bottom > middle : other.top < middle))
+            continue
+          const dy = up ? line.top - other.bottom : other.top - line.bottom
+          // The nearest row first, then the nearest along it.
+          const s = Math.max(dy, 0) * 2 + Math.abs(other.x - line.x)
+          if (s < score) [best, score] = [candidate, s]
         }
-        if (best) return best
       }
-      return place
+      return best
     },
 
     label({ gap }, t: Translator<"dragAndDrop">) {

@@ -58,7 +58,13 @@ In a right-to-left layout the first item is rightmost, and the arrow keys follow
 
 <ComponentPreview name="reorderable-grid" />
 
-Set `orientation="grid"` for items in rows that wrap: a CSS grid of cards, or a wrapping flex row. Lay the items out with your own classes on `Reorderable` (`grid grid-cols-2 gap-3 sm:grid-cols-3`); the order is still one array, read row by row. The pointer picks the row under it and the gap in that row, and the line spans that row only. From the keyboard, Left and Right (or Tab) step through the gaps in reading order, and Up and Down jump to the nearest gap in the row above or below.
+Set `orientation="grid"` for items in rows that wrap: a CSS grid of cards, or a wrapping flex row. Lay the items out with your own classes on `Reorderable` (`grid grid-cols-2 gap-3 sm:grid-cols-3`); the order is still one array, read row by row. The pointer drops before or after the card under it, and the line spans that card's row only. From the keyboard, Left and Right (or Tab) step through the gaps in reading order, and Up and Down jump to the nearest gap in the row above or below.
+
+### Tiles of several sizes
+
+<ComponentPreview name="reorderable-bento" />
+
+Tiles may span several columns and rows, as in a bento grid: keep each tile's span with its data (`col-span-2 row-span-2`) so it keeps its size wherever it moves. A drop goes before or after the tile under the pointer, by the half of it the pointer is on, and the line is drawn on that side of the tile. Without `grid-flow-dense` the grid places the tiles in the order of `value`, so the reading order stays the drop order; a large tile may then leave a hole the next tiles do not fit in.
 
 ## Keyboard and screen readers
 
