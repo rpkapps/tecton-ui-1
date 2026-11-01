@@ -201,6 +201,12 @@ type ReorderableContextValue = {
   registerSlot: (element: HTMLElement, label: string | undefined) => () => void
   /** The slot at `index`, in document order. */
   slotAt: (index: number) => HTMLElement | undefined
+  /** Whether a drag shows the slot `element` emptied (its item moving into an empty slot). */
+  vacated: (
+    element: HTMLElement,
+    aimed: ReorderPlace | null,
+    dragged: string | undefined
+  ) => boolean
   orientation: ReorderableOrientation
   disabled: boolean
   register: (value: string, entry: Entry) => () => void
@@ -508,6 +514,24 @@ function Reorderable({
     (index: number) => slotElements()[index] as HTMLElement | undefined,
     [slotElements]
   )
+  const vacated = React.useCallback(
+    (
+      element: HTMLElement,
+      aimed: ReorderPlace | null,
+      dragged: string | undefined
+    ) => {
+      if (!isSlot(aimed) || dragged === undefined) return false
+      const current = latest.current.value
+      const origin = current.indexOf(dragged)
+      return (
+        origin >= 0 &&
+        aimed.slot !== origin &&
+        current[aimed.slot] === null &&
+        slotElements()[origin] === element
+      )
+    },
+    [slotElements]
+  )
 
   const register = React.useCallback(
     (key: string, entry: Entry) => {
@@ -531,6 +555,7 @@ function Reorderable({
       swap,
       registerSlot,
       slotAt,
+      vacated,
       orientation,
       disabled,
       register,
@@ -542,6 +567,7 @@ function Reorderable({
       swap,
       registerSlot,
       slotAt,
+      vacated,
       orientation,
       disabled,
       register,
@@ -692,9 +718,12 @@ function ReorderableItem({
       ...props,
       className: withClass(
         cn(
-          "data-dragging:opacity-50",
-          // A swapped item takes the size of its slot.
-          root.swap && "size-full",
+          // A swapped item takes the size of its slot; while dragged, it
+          // shows as a plain placeholder where it will land (its content
+          // travels with the pointer). A listed item dims in its place.
+          root.swap
+            ? "size-full data-dragging:bg-primary/5 data-dragging:shadow-none data-dragging:ring-0 data-dragging:outline-2 data-dragging:-outline-offset-2 data-dragging:outline-primary/60 data-dragging:outline-dashed data-dragging:*:invisible"
+            : "data-dragging:opacity-50",
           self &&
             "cursor-grab outline-none select-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-dragging:cursor-grabbing"
         ),
@@ -801,8 +830,10 @@ type ReorderableSlotProps = PrimitiveProps<"div", ReorderableSlotState> & {
  * A fixed place of a `Reorderable mode="swap"`: render one per entry of
  * `value`, in order, keyed by its index, with its item (if any) inside.
  * Give it its size in the grid (`col-span-2 row-span-2`): it stays put
- * while items swap through it. An empty slot shows a dashed outline and the
- * aimed slot a ring; they carry `data-empty` and `data-drop-target`.
+ * while items swap through it. An empty slot (or one a drag empties)
+ * shows a dashed outline and carries `data-empty`; the slot a drag is aimed
+ * at carries `data-drop-target`, and the dragged item shows there as a plain
+ * placeholder.
  */
 function ReorderableSlot({
   label,
@@ -814,7 +845,7 @@ function ReorderableSlot({
   const context = React.useContext(ReorderableContext)
   if (!context)
     throw new Error("ReorderableSlot must be used inside Reorderable")
-  const { dragAndDrop, registerSlot, slotAt } = context
+  const { dragAndDrop, registerSlot, slotAt, vacated } = context
   const [element, setElement] = React.useState<HTMLElement | null>(null)
   React.useLayoutEffect(
     () => (element ? registerSlot(element, label) : undefined),
@@ -825,14 +856,19 @@ function ReorderableSlot({
     (s) =>
       isSlot(s.aimed) && element !== null && slotAt(s.aimed.slot) === element
   )
+  // Empty, or emptied while a drag moves its item into an empty slot.
+  const left = useStore(
+    dragAndDrop.store,
+    (s) => element !== null && vacated(element, s.aimed, s.dragging[0])
+  )
   const empty =
-    children === null || children === undefined || children === false
+    left || children === null || children === undefined || children === false
   return usePrimitive(
     "div",
     {
       ...props,
       className: withClass(
-        "relative min-w-0 rounded-xl outline-offset-2 data-drop-target:outline-2 data-drop-target:outline-primary data-empty:border-2 data-empty:border-dashed data-empty:border-border",
+        "relative min-w-0 rounded-xl data-empty:border-2 data-empty:border-dashed data-empty:border-border",
         className
       ),
       ref,

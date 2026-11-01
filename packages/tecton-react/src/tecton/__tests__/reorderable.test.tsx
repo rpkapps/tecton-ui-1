@@ -1095,6 +1095,17 @@ describe("Reorderable swap", () => {
     expect(slot(0)).toHaveAttribute("data-empty", "")
   })
 
+  it("shows the slot an item leaves for an empty one as empty", () => {
+    render(<Swap />)
+    press("A", 50, 50)
+    moveTo(160, 160)
+    expect(slot(0)).toHaveAttribute("data-empty", "")
+    // Over a full slot the item there takes A's place instead.
+    moveTo(160, 50)
+    expect(slot(0)).not.toHaveAttribute("data-empty")
+    release(160, 50)
+  })
+
   it("puts everything back when the drag returns to its own slot", () => {
     const onValueChange = vi.fn()
     render(<Swap onValueChange={onValueChange} />)
@@ -1206,10 +1217,10 @@ describe("Reorderable swap", () => {
       expect(animationsOf(ghost).some((k) => k.at(-1)?.opacity === 0)).toBe(
         true
       )
-      // A stays where its placeholder was and comes up to full strength,
-      // rather than flying in.
+      // A stays where its placeholder was and fades in as the preview
+      // lands, rather than flying in.
       const own = animationsOf(itemOf("A"))
-      expect(own.some((k) => k[0].opacity === 0.5)).toBe(true)
+      expect(own.some((k) => k[0].opacity === 0)).toBe(true)
       expect(own.some((k) => k[0].translate !== undefined)).toBe(false)
     })
 
@@ -1220,7 +1231,7 @@ describe("Reorderable swap", () => {
       animate.mockClear()
       release(160, 160)
       // Mounted afresh in the empty slot, in the drop's own commit.
-      expect(animationsOf(itemOf("A")).some((k) => k[0].opacity === 0.5)).toBe(
+      expect(animationsOf(itemOf("A")).some((k) => k[0].opacity === 0)).toBe(
         true
       )
     })

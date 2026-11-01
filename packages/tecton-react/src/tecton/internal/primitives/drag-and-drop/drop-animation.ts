@@ -104,7 +104,7 @@ type DropAnimation = {
 /**
  * Lands the pointer preview `ghost` on `element`, which shows where the
  * dropped item already is (a swap's placeholder): the preview glides into
- * its box and fades as the item comes up to full strength, then goes.
+ * its box and fades as the item fades in, then goes.
  */
 function land(ghost: HTMLElement, element: HTMLElement, rect: DOMRect) {
   const from = ghost.getBoundingClientRect()
@@ -127,22 +127,20 @@ function land(ghost: HTMLElement, element: HTMLElement, rect: DOMRect) {
       { duration: DURATION, easing: EASING, fill: "forwards" }
     )
     .finished.then(remove, remove)
-  ghost.animate(
-    // Gone before it nearly covers the item: no doubled text as it settles.
-    [
-      { opacity: 0.8 },
-      { opacity: 0.8, offset: 0.3 },
-      { opacity: 0, offset: 0.75 },
-      { opacity: 0 },
-    ],
-    { duration: DURATION, fill: "forwards" }
-  )
+  // A crossfade over the second half only, once the preview (fast out of
+  // the gate) is within a few pixels of the item: no doubled text.
+  const opacity = getComputedStyle(ghost).opacity
+  ghost.animate([{ opacity }, { opacity, offset: 0.5 }, { opacity: 0 }], {
+    duration: DURATION,
+    fill: "forwards",
+  })
+  // The item, a plain placeholder until now, comes in as the preview goes.
   track(
     element,
-    element.animate([{ opacity: 0.5 }, { opacity: 1 }], {
-      duration: DURATION,
-      easing: EASING,
-    })
+    element.animate(
+      [{ opacity: 0 }, { opacity: 0, offset: 0.5 }, { opacity: 1 }],
+      { duration: DURATION }
+    )
   )
 }
 
