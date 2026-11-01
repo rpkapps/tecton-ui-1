@@ -22,9 +22,11 @@ import { moveInList } from "../internal/primitives/drag-and-drop/list-strategy"
 
 /**
  * jsdom has no layout: items are laid out here 32 px apart, in DOM order,
- * down the page (rows) or across it (columns, from the right in RTL).
+ * down the page (rows) or across it (columns, from the right in RTL), with
+ * `space` px between them (none by default, as table rows and columns).
  */
 const SIZE = 32
+let space = 0
 const originalRect = Element.prototype.getBoundingClientRect
 const items = () =>
   Array.from(
@@ -34,6 +36,7 @@ let layout: "y" | "x" | "x-rtl" = "y"
 
 beforeEach(() => {
   layout = "y"
+  space = 0
   Element.prototype.getBoundingClientRect = function (this: Element) {
     const index = items().indexOf(this as HTMLElement)
     const rect = (top: number, left: number, w: number, h: number) => ({
@@ -48,9 +51,10 @@ beforeEach(() => {
       toJSON() {},
     })
     if (index < 0) return rect(0, 0, 400, 400)
-    if (layout === "y") return rect(index * SIZE, 0, 400, SIZE)
-    if (layout === "x") return rect(0, index * SIZE, SIZE, SIZE)
-    return rect(0, 400 - (index + 1) * SIZE, SIZE, SIZE)
+    const at = index * (SIZE + space)
+    if (layout === "y") return rect(at, 0, 400, SIZE)
+    if (layout === "x") return rect(0, at, SIZE, SIZE)
+    return rect(0, 400 - at - SIZE, SIZE, SIZE)
   }
 })
 
@@ -189,6 +193,63 @@ describe("Reorderable", () => {
     expect(names()).toEqual(["B-3", "C-7", "A-12", "D-2"])
     expect(document.body.querySelector("[inert]")).toBeNull()
   })
+
+  it.each([
+    // Item 2 spans 80–112 and item 3 120–152: the line is at 116.
+    {
+      orientation: "vertical",
+      dir: "ltr",
+      from: [10, 16],
+      to: [10, 110],
+      at: 116,
+    },
+    {
+      orientation: "horizontal",
+      dir: "ltr",
+      from: [16, 10],
+      to: [110, 10],
+      at: 116,
+    },
+    // From the right: item 2 spans 288–320 and item 3 248–280.
+    {
+      orientation: "horizontal",
+      dir: "rtl",
+      from: [384, 10],
+      to: [290, 10],
+      at: 284,
+    },
+  ] as const)(
+    "puts the line halfway between spaced items ($orientation, $dir)",
+    ({ orientation, dir, from, to, at }) => {
+      layout = orientation === "vertical" ? "y" : dir === "rtl" ? "x-rtl" : "x"
+      space = 8
+      render(
+        <TectonProvider direction={dir}>
+          <Reorderable
+            orientation={orientation}
+            defaultValue={WELLS.map((w) => w.id)}
+          >
+            {WELLS.map((well) => (
+              <ReorderableItem key={well.id} value={well.id} label={well.name}>
+                {well.name}
+                <ReorderableHandle />
+              </ReorderableItem>
+            ))}
+          </Reorderable>
+        </TectonProvider>
+      )
+      press("A-12", from[0], from[1])
+      moveTo(to[0], to[1])
+      const line = document.querySelector<HTMLElement>(
+        '[data-slot="reorderable-drop-indicator"]'
+      )!
+      expect(line).not.toHaveAttribute("hidden")
+      expect(
+        orientation === "vertical" ? line.style.top : line.style.left
+      ).toBe(`${at}px`)
+      release(to[0], to[1])
+    }
+  )
 
   it("shows no line over the dragged row's own place", () => {
     const onValueChange = vi.fn()

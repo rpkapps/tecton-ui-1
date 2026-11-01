@@ -119,7 +119,9 @@ function createListStrategy({
 
 /**
  * Where the line of `gap` goes, in px from `container`'s padding box: across
- * the container at the gap for a column of items, down it for a row.
+ * the container at the gap for a column of items, down it for a row. Between
+ * two items the line sits halfway across the space between them (their
+ * `gap`, margins); before the first item or past the last, on its edge.
  */
 function listPlacement(
   container: HTMLElement,
@@ -130,15 +132,23 @@ function listPlacement(
 ): { top: number; left: number; right?: number; bottom?: number } | null {
   if (!list.length) return null
   const box = container.getBoundingClientRect()
-  const last = gap >= list.length
-  const rect =
-    list[last ? list.length - 1 : gap].element.getBoundingClientRect()
+  const after =
+    gap < list.length ? list[gap].element.getBoundingClientRect() : null
+  const before =
+    gap > 0
+      ? list[Math.min(gap, list.length) - 1].element.getBoundingClientRect()
+      : null
   // Kept 1 px inside the container: a rounded, clipping frame around it
   // would hide half of the line at its first and last gaps.
   const inside = (at: number, size: number) =>
     Math.min(Math.max(at, 1), Math.max(size - 1, 1))
+  /** Halfway between the end edge before the gap and the start edge after. */
+  const between = (end: number | undefined, start: number | undefined) =>
+    end !== undefined && start !== undefined
+      ? (end + start) / 2
+      : (start ?? end ?? 0)
   if (axis === "y") {
-    const y = last ? rect.bottom : rect.top
+    const y = between(before?.bottom, after?.top)
     return {
       top: inside(
         y - box.top - container.clientTop + container.scrollTop,
@@ -149,8 +159,12 @@ function listPlacement(
     }
   }
   const rtl = direction === "rtl"
-  // The start edge of the item after the gap, or the end edge of the last.
-  const x = last ? (rtl ? rect.left : rect.right) : rtl ? rect.right : rect.left
+  // The end edge of the item before the gap and the start edge of the item
+  // after it.
+  const x = between(
+    rtl ? before?.left : before?.right,
+    rtl ? after?.right : after?.left
+  )
   return {
     left: inside(
       x - box.left - container.clientLeft + container.scrollLeft,
