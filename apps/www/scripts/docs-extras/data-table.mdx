@@ -4,7 +4,7 @@ Tecton ships no `DataTable` component: build tables with [TanStack Table](https:
 
 ### Playground
 
-Every recipe below at once, on up to 100,000 wells: switch between virtual scrolling and pages, compact and default rows, a flat list and a tree, and turn selection, column resizing, column reordering and row reordering on and off. Sort by any column header. The readout reports how long each click took to paint. Row reordering pauses while the rows are sorted, because a sort has no manual order.
+Every recipe below at once, on up to 100,000 wells: switch between virtual scrolling and pages, compact and default rows, a flat list and a tree, and turn selection, column resizing, column reordering and row reordering on and off. Sort by any column header. The readout reports how long each click took to paint. A sort and a manual row order exclude each other: sorting by a column turns row reordering off, and turning row reordering on clears the sort. In pages mode, pick 10, 20, 40 or 100 rows per page.
 
 <ComponentPreview name="data-table-playground" align="start" />
 

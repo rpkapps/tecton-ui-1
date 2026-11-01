@@ -8,6 +8,7 @@ import {
   createColumnHelper,
   createExpandedRowModel,
   createPaginatedRowModel,
+  functionalUpdate,
   rowExpandingFeature,
   rowPaginationFeature,
   rowSelectionFeature,
@@ -37,6 +38,13 @@ import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
 import { Label } from "@tecton/react/components/label"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@tecton/react/components/select"
 import { Switch } from "@tecton/react/components/switch"
 import {
   Table,
@@ -190,8 +198,12 @@ const EVERY_ROW: PaginationState = {
   pageSize: Number.MAX_SAFE_INTEGER,
 }
 
+/** The page sizes on offer in pages mode. */
+const PAGE_SIZES = [10, 20, 40, 100]
+
 /** The columns that stay first, before the ones that move. */
-const PINNED = ["select", "drag"]
+// The drag handle comes first, then the selection checkbox.
+const PINNED = ["drag", "select"]
 const DATA_COLUMNS = ["name", "field", "status", "depth", "operator"]
 const LABELS: Record<string, string> = {
   name: "Name",
@@ -240,6 +252,17 @@ function columnsFor({
   reorderRows: boolean
 }) {
   return columnHelper.columns([
+    ...(reorderRows
+      ? [
+          columnHelper.display({
+            id: "drag",
+            size: 44,
+            enableSorting: false,
+            header: () => <span className="sr-only">Move</span>,
+            cell: () => <ReorderableHandle />,
+          }),
+        ]
+      : []),
     ...(select
       ? [
           columnHelper.display({
@@ -266,17 +289,6 @@ function columnsFor({
                 onCheckedChange={(checked) => row.toggleSelected(checked)}
               />
             ),
-          }),
-        ]
-      : []),
-    ...(reorderRows
-      ? [
-          columnHelper.display({
-            id: "drag",
-            size: 44,
-            enableSorting: false,
-            header: () => <span className="sr-only">Move</span>,
-            cell: () => <ReorderableHandle />,
           }),
         ]
       : []),
@@ -444,18 +456,20 @@ export default function DataTablePlayground() {
   const [sorting, setSorting] = React.useState<SortingState>([])
   const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
   const [columnSizing, setColumnSizing] = React.useState<ColumnSizingState>({})
+  // The order of the columns that move; the pinned ones always lead.
   const [columnOrder, setColumnOrder] = React.useState<ColumnOrderState>([])
   const [expanded, setExpanded] = React.useState<ExpandedState>({ f0: true })
   const [pagination, setPagination] = React.useState<PaginationState>({
     pageIndex: 0,
-    pageSize: 50,
+    pageSize: 10,
   })
   // The wells' own order, for row reordering; reset with the row count.
   const [order, setOrder] = React.useState<Asset[] | null>(null)
 
-  // Rows reorder only in a flat, unsorted list: a sort or a tree has no
-  // manual order.
-  const reorderRows = reorderRowsOn && !tree && sorting.length === 0
+  // Rows reorder only in a flat list (a tree's moves would cross parents).
+  // A sort and a manual order exclude each other: sorting turns row
+  // reordering off, and turning it on clears the sort.
+  const reorderRows = reorderRowsOn && !tree
   const virtual = display === "virtual"
 
   const data = React.useMemo(
@@ -477,24 +491,36 @@ export default function DataTablePlayground() {
       sorting,
       rowSelection,
       columnSizing,
-      columnOrder,
+      columnOrder: [...PINNED, ...columnOrder],
       expanded,
       pagination: virtual ? EVERY_ROW : pagination,
     },
-    onSortingChange: setSorting,
+    onSortingChange: (updater) => {
+      const next = functionalUpdate(updater, sorting)
+      setSorting(next)
+      if (next.length) setReorderRows(false)
+    },
     onRowSelectionChange: setRowSelection,
     onColumnSizingChange: setColumnSizing,
-    onColumnOrderChange: setColumnOrder,
+    onColumnOrderChange: (updater) =>
+      setColumnOrder((order) =>
+        functionalUpdate(updater, [...PINNED, ...order]).filter(
+          (columnId) => !PINNED.includes(columnId)
+        )
+      ),
     onExpandedChange: setExpanded,
     onPaginationChange: setPagination,
     autoResetPageIndex: false,
   })
   const rows = table.getRowModel().rows
+  // Every row in display order, not just the page: a drop moves the row
+  // within the whole list.
+  const allRows = table.getPrePaginatedRowModel().rows
   const rowIds = React.useMemo(
-    () => (reorderRows ? rows.map((row) => row.id) : []),
-    [reorderRows, rows]
+    () => (reorderRows ? allRows.map((row) => row.id) : []),
+    [reorderRows, allRows]
   )
-  const total = table.getPrePaginatedRowModel().rows.length
+  const total = allRows.length
   const allExpanded = tree && table.getIsAllRowsExpanded()
 
   // The columns that move, in their current order.
@@ -586,7 +612,10 @@ export default function DataTablePlayground() {
           label="Reorder rows"
           checked={reorderRowsOn}
           disabled={tree}
-          onCheckedChange={setReorderRows}
+          onCheckedChange={(on) => {
+            setReorderRows(on)
+            if (on) setSorting([])
+          }}
         />
       </div>
 
@@ -610,9 +639,7 @@ export default function DataTablePlayground() {
             Clear sort
           </Button>
         ) : null}
-        {reorderRowsOn && !reorderRows ? (
-          <span>Row reordering is off while the rows are sorted.</span>
-        ) : null}
+
         <span className="ms-auto">
           <TimingReadout timing={timing} />
         </span>
@@ -630,14 +657,7 @@ export default function DataTablePlayground() {
           orientation="horizontal"
           disabled={!reorderColumns}
           value={movable}
-          onValueChange={(next) =>
-            setColumnOrder([
-              ...PINNED.filter((pinned) =>
-                table.getAllLeafColumns().some((c) => c.id === pinned)
-              ),
-              ...next,
-            ])
-          }
+          onValueChange={(next) => setColumnOrder(next)}
           className="h-full"
         >
           <Reorderable
@@ -757,8 +777,34 @@ export default function DataTablePlayground() {
       </div>
 
       {display === "pages" ? (
-        <div className="flex items-center justify-end gap-2 text-sm">
-          <span className="text-muted-foreground tabular-nums">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+          <div className="flex items-center gap-2">
+            <span>Rows per page</span>
+            <Select
+              value={String(pagination.pageSize)}
+              onValueChange={(value) => {
+                // A new size starts again from the first page.
+                if (value)
+                  setPagination({ pageIndex: 0, pageSize: Number(value) })
+              }}
+            >
+              <SelectTrigger
+                size="sm"
+                className="w-18"
+                aria-label="Rows per page"
+              >
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                {PAGE_SIZES.map((size) => (
+                  <SelectItem key={size} value={String(size)}>
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <span className="ms-auto tabular-nums">
             Page {pagination.pageIndex + 1} of{" "}
             {Math.max(1, table.getPageCount()).toLocaleString("en-US")}
           </span>
