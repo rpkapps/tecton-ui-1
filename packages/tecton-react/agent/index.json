@@ -327,6 +327,12 @@
   ],
   "design token": [
    "theme"
+  ],
+  "gridstack": [
+   "widget"
+  ],
+  "draggable grid": [
+   "widget"
   ]
  },
  "entries": [
@@ -1105,7 +1111,7 @@
    "fields": {
     "names": "card card card header card title card description card action card content card footer",
     "useWhen": "A self-contained piece of content stands on its own: a summary, a sign-in form, a media tile. The card is as tall as its content — it does not scroll and it is not part of the app chrome. It sits in a grid or a stack of siblings that should all look the same.",
-    "routed": "a self-contained block of content in a grid a standalone block with its own title, body and footer a heading inside a card a self-contained content block that grows with its text",
+    "routed": "a self-contained block of content in a grid a standalone block with its own title, body and footer a heading inside a card a self-contained content block that grows with its text cards in a layout the user never changes",
     "do": "Compose it: `CardHeader` with `CardTitle`, `CardDescription` and `CardAction`, then `CardContent`, then `CardFooter`. Set density with `size=\"sm\"`, or with the documented `[--card-spacing:--spacing(4)]` on `Card` when a design needs another step. Divide sections with a bare `border-b` on `CardHeader` or `border-t` on `CardFooter`; the card adds the matching padding itself. Bleed content to the edges with `-mx-(--card-spacing)`, so it still lines up with the card inset. Keep `className` to placement and width (`w-full max-w-sm`): the card owns the surface, ring, radius and padding."
    },
    "notFor": [
@@ -2704,7 +2710,7 @@
     "PanelFooter"
    ],
    "aliases": [],
-   "tokens": 807
+   "tokens": 894
   },
   {
    "id": "popover",
@@ -2930,7 +2936,7 @@
    "fields": {
     "names": "reorderable reorderable reorderable item reorderable handle",
     "useWhen": "The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs. The user moves the columns of a data table into the order they read them in. A short stack of items (steps, tracks, layers) has an order the user decides. The user arranges a grid of cards: equal cards put in order (`orientation=\"grid\"`), or tiles of several sizes swapped between the fixed slots of a bento grid (`mode=\"swap\"`).",
-    "routed": "rows or columns the user drags into another order",
+    "routed": "rows or columns the user drags into another order bento tiles that trade fixed slots, or cards of one size put in order",
     "do": "Keep the order in state as an array of item values, pass it as `value`, render the items in that order and write `onValueChange`'s array back. With `mode=\"swap\"`, `value[i]` is the item of slot `i` (or `null`): render a `ReorderableSlot` per entry, keyed by its index and sized from your layout data, with its item inside as a size container (`[container-type:size]`). Wrap the whole `Table` in `Reorderable` and render each row as `ReorderableItem` with `render={<TableRow />}`, or each header with `render={<TableHead />}` and `orientation=\"horizontal\"`. Give every item a `label` (the row's or column's name) and a `ReorderableHandle` in a row; a column header gets `dragHandle={false}` instead and is dragged and focused itself, with no grip. To reorder rows and columns of one table, nest the two `Reorderable`s around it: an item joins the nearest one whose `value` holds it. Leave a column that must stay put (the identifying or selection column) out of `value` and render it as a plain `TableHead`; turn every handle off with `disabled` while a sort is applied."
    },
    "notFor": [
@@ -2971,7 +2977,7 @@
    "fields": {
     "names": "resizable resizable panel group resizable panel resizable handle",
     "useWhen": "Two or three regions share one axis and the user decides how the space is split: a tree beside an editor, a list above a detail. The split is a working preference worth remembering (`defaultLayout` in, `onLayoutChanged` out), not a fixed design. The regions are peers; neither is chrome wrapped around the other.",
-    "routed": "splitting a view into panes the user resizes",
+    "routed": "splitting a view into panes the user resizes two or three panes the user drags apart",
     "do": "Size panels with unit strings on `defaultSize`, `minSize` and `maxSize` — `\"25%\"`, `\"320px\"`, `\"20rem\"` — and show a grip with `withHandle` when the divider should be obvious. Give the group a height from outside (`className=\"h-96\"`, or a flex parent): it is `flex h-full w-full` and brings none of its own. This module wraps react-resizable-panels: the props are that library's own (`disabled`, `collapsible`, `onLayoutChanged`, `panelRef`), and a `ResizableHandle` must be a direct child of its group."
    },
    "notFor": [
@@ -3857,6 +3863,53 @@
    ],
    "aliases": [],
    "tokens": 721
+  },
+  {
+   "id": "widget-grid",
+   "kind": "component",
+   "name": "WidgetGrid",
+   "import": "import { WidgetGrid, WidgetGridContent, WidgetGridItem, WidgetGridHandle, WidgetGridResizeHandle, WidgetGridRemove, WidgetGridSource, useWidgetGridItem } from \"@tecton/react/tecton/widget-grid\"",
+   "family": "surfaces",
+   "summary": "The user arranges their own dashboard: moves widgets, resizes them by whole cells, adds them from a catalog and removes them.",
+   "fields": {
+    "names": "widget grid widget grid widget grid content widget grid item widget grid handle widget grid resize handle widget grid remove widget grid source use widget grid item",
+    "useWhen": "The user arranges their own dashboard: moves widgets, resizes them by whole cells, adds them from a catalog and removes them. The layout is saved per user and restored later, as plain data (`{ id, x, y, w, h }` per widget). Widgets of several sizes share a grid of columns and rows and must never overlap or leave holes.",
+    "routed": "",
+    "do": "Keep the layout in state, pass it as `value` and write `onValueChange`'s layout back; render each widget in the layout's order as a `React.memo` component taking its `id`, which subscribes to its own live data rather than receiving it from the dashboard. Render each `WidgetGridItem` with `render={<Panel />}`, a `label`, the `WidgetGridHandle` first in its `PanelHeader`, `WidgetGridRemove` in `PanelActions` and a `WidgetGridResizeHandle` inside it. Put the toolbar and the catalog inside `WidgetGrid`, around `WidgetGridContent`: each `WidgetGridSource` has the new widget's `value`, `label`, `w` and `h`. Turn the edit mode on with `editable` from an **Edit layout** button, keep the layout the edit started from so **Cancel** restores it, and offer an undo `toast` when `eventDetails.reason` is `\"remove\"` instead of asking first. Give every widget a menu built on `useWidgetGridItem()` (`move`, `canMove`, `resize` with named size presets, `remove`) to arrange without dragging; set its limits in its entry (`minW`, `minH`), and render an `Empty` spanning the grid (`col-span-full row-span-4 row-start-1`) when the layout is empty."
+   },
+   "notFor": [
+    {
+     "need": "cards in a layout the user never changes",
+     "id": "card"
+    },
+    {
+     "need": "bento tiles that trade fixed slots, or cards of one size put in order",
+     "id": "reorderable"
+    },
+    {
+     "need": "two or three panes the user drags apart",
+     "id": "resizable"
+    }
+   ],
+   "related": [
+    "panel",
+    "reorderable",
+    "empty",
+    "sonner",
+    "dropdown-menu"
+   ],
+   "exports": [
+    "WidgetGrid",
+    "WidgetGridContent",
+    "WidgetGridItem",
+    "WidgetGridHandle",
+    "WidgetGridResizeHandle",
+    "WidgetGridRemove",
+    "WidgetGridSource",
+    "useWidgetGridItem"
+   ],
+   "aliases": [],
+   "tokens": 1186
   },
   {
    "id": "tanstack-table",

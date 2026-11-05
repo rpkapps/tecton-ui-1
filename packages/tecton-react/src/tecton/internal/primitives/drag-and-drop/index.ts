@@ -8,6 +8,9 @@
  *   columns) for `useDragAndDrop`, with a line between items.
  * - `createSlotStrategy`: the drop strategy of fixed slots whose items swap
  *   (`Reorderable mode="swap"`).
+ * - `createGridStrategy` (with the layout rules of `grid-layout`): the drop
+ *   strategy of a grid of widgets that are moved and resized by whole cells
+ *   (`WidgetGrid`).
  * - `useSortable`: one row or column reordered with the items sliding aside
  *   (document tabs).
  * - `useDropAnimation`: a drop's items sliding into their new places.
@@ -26,6 +29,10 @@ export { createListStrategy, listPlacement, moveInList } from "./list-strategy"
 export type { ListDropPlace, ListItem } from "./list-strategy"
 export { createSlotStrategy, swapInList } from "./slot-strategy"
 export type { SlotDropPlace, SlotItem } from "./slot-strategy"
+export { createGridStrategy } from "./grid-strategy"
+export type { GridDropPlace, GridMetrics } from "./grid-strategy"
+export { resolveLayout, firstFit, stepMove, stepResize } from "./grid-layout"
+export type { GridLayoutItem, GridRect, GridCompaction } from "./grid-layout"
 export { useSortable, targetSlot } from "./sortable"
 export type { Sortable, SortableOptions } from "./sortable"
 export { useDropAnimation } from "./drop-animation"

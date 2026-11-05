@@ -101,6 +101,12 @@ type DragAndDropOptions<TPlace> = {
   getPreviewContainer?: () => HTMLElement | null
   onDragStart?: (keys: ReadonlyArray<string>, mode: DragMode) => void
   /**
+   * What a keyboard drag of `keys` announces as it starts, for keys of
+   * its own (the arrow keys across a grid); "Press Tab to navigate to a
+   * drop target…" by default.
+   */
+  keyboardInstructions?: (keys: ReadonlyArray<string>) => string
+  /**
    * Drops `keys` on `place`. `from`: where the pointer preview was let go,
    * for the dropped item to animate from there into its place.
    */
@@ -255,10 +261,13 @@ function useDragAndDrop<TPlace>(
         event.preventDefault()
         event.stopPropagation()
         origin = event.currentTarget
-        begin(key, "keyboard")
-        announce(latest.current.t("dragStartedKeyboard"), {
-          politeness: "assertive",
-        })
+        const keys = begin(key, "keyboard")
+        const { keyboardInstructions } = latest.current.options
+        announce(
+          keyboardInstructions?.(keys) ??
+            latest.current.t("dragStartedKeyboard"),
+          { politeness: "assertive" }
+        )
         const view = event.currentTarget.ownerDocument.defaultView ?? window
         const { axis, direction } = latest.current.options
         const session = startKeyboardDrag<TPlace>({

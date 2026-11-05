@@ -49,6 +49,26 @@ const enUS = {
     moveTo: "Move to {slotText}",
     emptySlot: "empty slot {index}",
   },
+  widgetGrid: {
+    handleDescription:
+      "Press Enter to pick it up, then the arrow keys to move it or Shift and the arrow keys to resize it.",
+    dragStarted:
+      "Picked up {itemText}. Use the arrow keys to move it, Shift and the arrow keys to resize it, Enter to drop it or Escape to cancel.",
+    position: "column {column}, row {row}, {width} by {height}",
+    aimed: "{itemText}, {position}",
+    keepHere: "Keep {itemText} here, {position}",
+    placeOf: "To the place of {otherText}, {position}",
+    atEnd: "To the end, {position}",
+    resizeItem: "Resize {itemText}",
+    removeItem: "Remove {itemText}",
+    addItem: "Add {itemText}",
+    sourceDescription:
+      "Press Enter to add it to the grid, or drag it to the place it goes.",
+    moved: "{itemText} moved to {position}.",
+    resized: "{itemText} resized to {width} by {height}.",
+    added: "{itemText} added at {position}.",
+    removed: "{itemText} removed.",
+  },
 } as const satisfies TranslationTable
 
 export default enUS

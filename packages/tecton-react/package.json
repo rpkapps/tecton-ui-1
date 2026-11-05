@@ -526,6 +526,11 @@
       "import": "./dist/tecton/use-busy-delay.js",
       "default": "./dist/tecton/use-busy-delay.js"
     },
+    "./tecton/widget-grid": {
+      "types": "./dist/tecton/widget-grid.d.ts",
+      "import": "./dist/tecton/widget-grid.js",
+      "default": "./dist/tecton/widget-grid.js"
+    },
     "./hooks/use-mobile": {
       "types": "./dist/hooks/use-mobile.d.ts",
       "import": "./dist/hooks/use-mobile.js",

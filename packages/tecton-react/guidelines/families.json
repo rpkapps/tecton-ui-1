@@ -123,10 +123,11 @@
     },
     "surfaces": {
       "title": "Surfaces",
-      "choice": "A content card, a titled application panel, a list row, a page title block, the application frame or a divider",
+      "choice": "A content card, a titled application panel, a dashboard of widgets the user arranges, a list row, a page title block, the application frame or a divider",
       "modules": [
         "components/card",
         "tecton/panel",
+        "tecton/widget-grid",
         "components/item",
         "tecton/page-header",
         "tecton/app-shell",
@@ -135,6 +136,7 @@
       "checklist": [
         "A self-contained block of content is a `Card` composed of `CardHeader` (`CardTitle`, `CardDescription`, `CardAction`), `CardContent` and `CardFooter`; a hand-drawn `rounded-lg border bg-card p-4` on some other component is that `Card` written out by hand.",
         "A titled application surface whose body has to scroll is a `Panel`, and the body is inside `PanelContent` — only that part carries `min-h-0 flex-1 overflow-auto`.",
+        "A dashboard the user arranges is a `WidgetGrid` holding `WidgetGridContent` with a `WidgetGridItem` per entry of `value` (`{ id, x, y, w, h }`, written back from `onValueChange`), each rendered as a `Panel` with a `label`, a `WidgetGridHandle` in its header and a `WidgetGridResizeHandle`, never absolutely positioned or natively `draggable` divs.",
         "`className` on `Card` and `Panel` is placement, width and height only (`w-full max-w-sm`, `h-72`); their padding comes from `--card-spacing` or the `size` scale, so a `p-6` double-pads.",
         "A list row is an `Item` with `ItemMedia`, `ItemContent` (`ItemTitle`, `ItemDescription`) and `ItemActions`, and a clickable row is rendered as a link (`render={<a href=\"…\" />}`) rather than given an `onClick` on a `div`.",
         "Rows inside an `ItemGroup` are divided with `ItemSeparator` and card sections with a bare `border-b` on `CardHeader`, never with a hand-written border colour.",

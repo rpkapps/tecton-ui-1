@@ -414,5 +414,5 @@ function useDropAnimation({
   return api
 }
 
-export { animateFrom, settle, useDropAnimation }
+export { animateFrom, land, settle, useDropAnimation }
 export type { DropAnimation, DropAnimationOptions }

@@ -24,6 +24,7 @@
     "reorderable",
     "stat",
     "theme-root",
-    "tree-view"
+    "tree-view",
+    "widget-grid"
   ]
 }
