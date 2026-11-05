@@ -90,22 +90,36 @@ function createGridStrategy({
   const ownOf = (key: string) => layout().find((item) => item.id === key)
 
   /** What `place` asks of `key`: a resize when its corner stays. */
-  const activeOf = (key: string, place: GridRect): GridActive | null => {
+  const activeOf = (
+    key: string,
+    place: GridRect,
+    as?: GridActive["kind"]
+  ): GridActive | null => {
     const item = itemOf(key)
     if (!item) return null
     const own = ownOf(key)
-    const kind = !own
-      ? "add"
-      : own.x === place.x && own.y === place.y
-        ? "resize"
-        : "move"
+    const kind =
+      as ??
+      (!own
+        ? "add"
+        : own.x === place.x && own.y === place.y
+          ? "resize"
+          : "move")
     const { x, y, w, h } = place
     return { item: { ...item, id: key, x, y, w, h }, kind }
   }
 
-  /** The layout `place` gives, every item where it would end up. */
-  const preview = (key: string, place: GridRect | null) => {
-    const active = place ? activeOf(key, place) : null
+  /**
+   * The layout `place` gives, every item where it would end up; `kind`
+   * says what the change is when its corner does not (a resize from the
+   * top or the start side moves the corner).
+   */
+  const preview = (
+    key: string,
+    place: GridRect | null,
+    kind?: GridActive["kind"]
+  ) => {
+    const active = place ? activeOf(key, place, kind) : null
     return resolveLayout(layout(), options(), active)
   }
 

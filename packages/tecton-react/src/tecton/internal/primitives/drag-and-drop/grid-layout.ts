@@ -20,7 +20,8 @@
  *   (to pass below the items it is dragged past). The items it lands on that fit the columns it left fill its old
  *   place, in reading order (two tiles of a row trade places), rather than
  *   being pushed below it.
- * - A resized item keeps its corner and pushes the items it grows over down.
+ * - A resized item goes ahead of every item it grows over, above it too
+ *   (its top edge dragged up), and they move below it.
  */
 
 type GridRect = { x: number; y: number; w: number; h: number }
@@ -125,14 +126,28 @@ function resolveLayout<T extends GridLayoutItem>(
   // Locked items first, where they are: the others make way for them.
   for (const item of items) if (item.locked && item.id !== id) placed.push(item)
 
-  type Entry = { item: T; rank: number }
+  // Its place in the order: a resize goes ahead of every item it grows
+  // over, above it too (the top edge dragged up), which move below it.
+  type Entry = { item: T; rank: number; at?: number }
   const entries: Array<Entry> = []
   if (moved) {
     // The item goes where it is put, ahead of every item of its target
     // row, which make way; only a move down goes after them, to pass below
     // the items it is dragged past.
     const down = !!origin && active?.kind === "move" && moved.y > origin.y
-    entries.push({ item: moved, rank: down ? 1 : -1 })
+    const at =
+      active?.kind === "resize"
+        ? Math.min(
+            moved.y,
+            ...items
+              .filter(
+                (item) =>
+                  item.id !== id && !item.locked && collides(item, moved)
+              )
+              .map((item) => item.y)
+          )
+        : undefined
+    entries.push({ item: moved, rank: down ? 1 : -1, at })
   }
 
   // The items a move lands on, swapped into its old place when they fit
@@ -173,7 +188,10 @@ function resolveLayout<T extends GridLayoutItem>(
 
   // By row; in a row, the moved item before or after all the others.
   entries.sort(
-    (a, b) => a.item.y - b.item.y || a.rank - b.rank || a.item.x - b.item.x
+    (a, b) =>
+      (a.at ?? a.item.y) - (b.at ?? b.item.y) ||
+      a.rank - b.rank ||
+      a.item.x - b.item.x
   )
 
   for (const { item } of entries) {

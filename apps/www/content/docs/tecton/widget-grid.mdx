@@ -125,7 +125,15 @@ const draft = React.useRef(layout)
 
 Only the grip moves a widget, so its table, list or form keeps working in the edit mode. While a widget is dragged, its content travels with the pointer and a dashed placeholder shows where it will land. The other widgets glide aside, and Escape puts everything back. Near the edge of the page (or of the scroll container around the grid) the grid scrolls.
 
-The resize corner snaps the widget to whole cells as it is dragged, within its `minW` / `maxW` / `minH` / `maxH`, and shows its size (`6 × 4`) in the corner. The widget's content redraws only when it reaches a new cell, not on every pixel, so heavy content keeps up. The widgets it grows over move down out of its way.
+A widget is resized from any of its sides or corners. `WidgetGridResizeHandle` draws the grip in the bottom corner on the inline end side, and puts an invisible zone along each edge and at each corner. Hovered, a zone shows a resize cursor and a short accent line on the edge. Dragged, the widget snaps to whole cells, within its `minW` / `maxW` / `minH` / `maxH`, and shows its size (`6 × 4`) in the corner. The opposite side stays put: drag the start side and the end side keeps its column, drag the top and the bottom keeps its row. The widgets it grows over make way below it, whether they were beside, under or above it. The widget's content redraws only when it reaches a new cell, not on every pixel, so heavy content keeps up.
+
+Limit the sides with `edges`. The corners between two of the given sides resize both ways, and the visible grip shows when the bottom and the end side are both given:
+
+```tsx
+<WidgetGridResizeHandle edges={["bottom", "end"]} />
+```
+
+The grip and the remove button sit above the zones, so a press on them is never a resize.
 
 Make the item a size container (`@container` on `PanelContent`) and show more when there is room. The Production stat above adds "vs. last week" once its widget is wide enough.
 
@@ -410,7 +418,13 @@ The grip: a ghost icon button with a grip icon, unless you pass children. Named 
 
 ### WidgetGridResizeHandle
 
-The resize corner, at the bottom of the inline end side. A pointer's control, hidden from assistive technology (the grip resizes from the keyboard). Rendered only in the edit mode and never on a locked widget.
+The resize grip, at the bottom of the inline end side, and a resize zone along each side and at each corner.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `edges` | `("top" \| "end" \| "bottom" \| "start")[]` | all four | The sides the widget is resized from; the corners between two of them resize both ways. Stacked, only the bottom. |
+
+A pointer's control, hidden from assistive technology (the grip resizes from the keyboard). Rendered only in the edit mode and never on a locked widget. The zones carry `data-slot="widget-grid-resize-edge"`, `data-edge` and `data-resizing`.
 
 ### WidgetGridRemove
 

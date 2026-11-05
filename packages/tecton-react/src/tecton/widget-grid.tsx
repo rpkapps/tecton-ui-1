@@ -84,6 +84,13 @@ import { createStore, useStore, type Store } from "./internal/store"
 
 type WidgetGridLayoutItem = GridLayoutItem
 
+/** A side of a widget it is resized from. */
+type WidgetGridEdge = "top" | "end" | "bottom" | "start"
+
+/** A side of a widget, or a corner between two: where a resize starts. */
+type WidgetGridResizeEdge =
+  WidgetGridEdge | "top-start" | "top-end" | "bottom-start" | "bottom-end"
+
 /** The steps of the spacing scale a grid's gap can take. */
 const WIDGET_GRID_GAPS = [0, 1, 1.5, 2, 3, 4, 5, 6, 8] as const
 
@@ -184,8 +191,9 @@ type GridStoreState = {
   previewById: ReadonlyMap<string, WidgetGridLayoutItem> | null
   /** Stacked: the row each widget starts on in `preview`. */
   previewStackRows: ReadonlyMap<string, number> | null
-  /** The widget being resized. */
+  /** The widget being resized, and the edge or corner it is resized from. */
   resizing: string | null
+  resizeEdge: WidgetGridResizeEdge | null
   /** Whether the grid is narrow enough to stack. */
   stacked: boolean
 }
@@ -212,7 +220,11 @@ type WidgetGridContextValue = {
   registerItem: (id: string, entry: ItemEntry) => () => void
   registerSource: (id: string, entry: SourceEntry) => () => void
   registerContent: (element: HTMLElement | null) => void
-  startResize: (event: React.PointerEvent<HTMLElement>, id: string) => void
+  startResize: (
+    event: React.PointerEvent<HTMLElement>,
+    id: string,
+    edge?: WidgetGridResizeEdge
+  ) => void
   remove: (id: string) => void
   add: (id: string) => void
   move: (id: string, direction: MoveDirection) => void
@@ -359,6 +371,7 @@ function WidgetGrid({
       previewById: null,
       previewStackRows: null,
       resizing: null,
+      resizeEdge: null,
       stacked: false,
     })
   )
@@ -718,7 +731,11 @@ function WidgetGrid({
   })
 
   const startResize = useEventCallback(
-    (event: React.PointerEvent<HTMLElement>, id: string) => {
+    (
+      event: React.PointerEvent<HTMLElement>,
+      id: string,
+      edge: WidgetGridResizeEdge = "bottom-end"
+    ) => {
       if (event.button !== 0 || dragAndDrop.store.get().mode !== null) return
       const origin = latest.current.layout.find((item) => item.id === id)
       const element = items.get(id)?.element
@@ -727,18 +744,47 @@ function WidgetGrid({
       event.preventDefault()
       event.stopPropagation()
       const rtl = latest.current.direction === "rtl"
-      const box = element.getBoundingClientRect()
-      // How far the press is from the widget's bottom corner on the inline
-      // end side: that corner follows the pointer.
+      const stacked = store.get().stacked
+      // The sides that follow the pointer; the opposite ones stay put.
+      // Stacked, a widget spans the one column: only its height changes.
+      const inline = stacked
+        ? null
+        : edge.endsWith("start")
+          ? "start"
+          : edge.endsWith("end")
+            ? "end"
+            : null
+      const block = edge.startsWith("top")
+        ? "top"
+        : edge.startsWith("bottom")
+          ? "bottom"
+          : null
+      /** The pointer from the grid's inline start and top, in px. */
+      const at = (point: { x: number; y: number }, now: GridMetrics) => ({
+        x: rtl ? now.right - point.x : point.x - now.left,
+        y: point.y - now.top,
+      })
+      // How far the press is from the edges it moves, in px: those edges
+      // follow the pointer at that distance.
+      const press = at({ x: event.clientX, y: event.clientY }, m)
+      const right = origin.x + origin.w
+      const bottom = origin.y + origin.h
       const offset = {
-        x: rtl ? event.clientX - box.left : box.right - event.clientX,
-        y: box.bottom - event.clientY,
+        x:
+          inline === "start"
+            ? origin.x * m.columnPitch - press.x
+            : right * m.columnPitch - m.columnGap - press.x,
+        y:
+          block === "top"
+            ? origin.y * m.rowPitch - press.y
+            : bottom * m.rowPitch - m.rowGap - press.y,
       }
-      const { minW, maxW, minH, maxH } = limitsOf(
-        origin,
-        latest.current.options.columns
-      )
+      const { columns } = latest.current.options
+      const { minW, maxW, minH, maxH } = limitsOf(origin, columns)
+      const clamp = (n: number, low: number, high: number) =>
+        Math.min(Math.max(n, low), high)
       let aimed: GridRect = origin
+      store.set({ resizeEdge: edge })
       stopResize.current = trackPointerDrag(event, {
         threshold: 2,
         capture: content.current,
@@ -747,42 +793,57 @@ function WidgetGrid({
           store.set({ resizing: id })
         },
         onMove: (point) => {
-          const rect = element.getBoundingClientRect()
           const now = metrics()
           if (!now) return
-          const width =
-            (rtl ? rect.right - point.x : point.x - rect.left) + offset.x
-          const height = point.y - rect.top + offset.y
-          const gapX = now.columnGap
-          const gapY = now.rowGap
-          const { columns } = latest.current.options
-          // Stacked, a widget spans the one column: only its height changes.
-          const w = store.get().stacked
-            ? origin.w
-            : Math.min(
-                Math.max(Math.round((width + gapX) / now.columnPitch), minW),
-                Math.min(maxW, columns - origin.x)
-              )
-          const h = Math.min(
-            Math.max(Math.round((height + gapY) / now.rowPitch), minH),
-            maxH
-          )
-          const next = { x: origin.x, y: origin.y, w, h }
+          const pointer = at(point, now)
+          const next = { x: origin.x, y: origin.y, w: origin.w, h: origin.h }
+          if (inline === "end") {
+            const edgeAt = pointer.x + offset.x + now.columnGap
+            next.w = clamp(
+              Math.round(edgeAt / now.columnPitch) - origin.x,
+              minW,
+              Math.min(maxW, columns - origin.x)
+            )
+          } else if (inline === "start") {
+            const x = clamp(
+              Math.round((pointer.x + offset.x) / now.columnPitch),
+              Math.max(0, right - maxW),
+              right - minW
+            )
+            next.x = x
+            next.w = right - x
+          }
+          if (block === "bottom") {
+            const edgeAt = pointer.y + offset.y + now.rowGap
+            next.h = clamp(
+              Math.round(edgeAt / now.rowPitch) - origin.y,
+              minH,
+              maxH
+            )
+          } else if (block === "top") {
+            const y = clamp(
+              Math.round((pointer.y + offset.y) / now.rowPitch),
+              Math.max(0, bottom - maxH),
+              bottom - minH
+            )
+            next.y = y
+            next.h = bottom - y
+          }
           if (sameRect(next, aimed)) return
           aimed = next
-          showPreview(grid.preview(id, next))
+          showPreview(grid.preview(id, next, "resize"))
         },
         onStop: () => {
           stopResize.current = null
           if (store.get().resizing === id) {
-            store.set({ resizing: null })
+            store.set({ resizing: null, resizeEdge: null })
             showPreview(null)
           }
         },
         onEnd: (drop) => {
-          store.set({ resizing: null })
+          store.set({ resizing: null, resizeEdge: null })
           if (drop && !sameRect(aimed, origin))
-            commit(grid.preview(id, aimed), "resize", id)
+            commit(grid.preview(id, aimed, "resize"), "resize", id)
           else showPreview(null)
         },
       })
@@ -1374,7 +1435,7 @@ function WidgetGridHandle({
       className={withClass(
         cn(
           buttonVariants({ variant: "ghost", size: "icon-xs" }),
-          "-ms-1 cursor-grab text-muted-foreground data-dragging:cursor-grabbing"
+          "relative z-20 -ms-1 cursor-grab text-muted-foreground data-dragging:cursor-grabbing"
         ),
         className
       )}
@@ -1400,22 +1461,127 @@ function ResizeGlyph() {
   )
 }
 
-type WidgetGridResizeHandleProps = PrimitiveProps<"span", { resizing: boolean }>
+type WidgetGridResizeHandleProps = PrimitiveProps<
+  "span",
+  { resizing: boolean }
+> & {
+  /**
+   * The sides the widget is resized from; the corners between two of them
+   * resize both ways. Default: all four. Stacked, only the bottom.
+   */
+  edges?: ReadonlyArray<WidgetGridEdge>
+}
+
+const ALL_EDGES: ReadonlyArray<WidgetGridEdge> = [
+  "top",
+  "end",
+  "bottom",
+  "start",
+]
+
+/**
+ * Where each side's or corner's zone sits, and its cursor (mirrored in a
+ * right-to-left page). The sides are thin strips along the edges, the
+ * corners small squares; on a touch screen both grow to a finger's size.
+ */
+const RESIZE_ZONES: Record<
+  Exclude<WidgetGridResizeEdge, "bottom-end">,
+  { zone: string; bar: string }
+> = {
+  top: {
+    zone: "inset-x-3 top-0 h-1.5 cursor-ns-resize pointer-coarse:h-3",
+    bar: "inset-x-0 top-0 mx-auto h-0.5 w-8",
+  },
+  bottom: {
+    zone: "inset-x-3 bottom-0 h-1.5 cursor-ns-resize pointer-coarse:h-3",
+    bar: "inset-x-0 bottom-0 mx-auto h-0.5 w-8",
+  },
+  start: {
+    zone: "inset-y-3 start-0 w-1.5 cursor-ew-resize pointer-coarse:w-3",
+    bar: "inset-y-0 start-0 my-auto h-8 w-0.5",
+  },
+  end: {
+    zone: "inset-y-3 end-0 w-1.5 cursor-ew-resize pointer-coarse:w-3",
+    bar: "inset-y-0 end-0 my-auto h-8 w-0.5",
+  },
+  "top-start": {
+    zone: "start-0 top-0 size-2.5 cursor-nwse-resize rtl:cursor-nesw-resize pointer-coarse:size-4",
+    bar: "",
+  },
+  "top-end": {
+    zone: "end-0 top-0 size-2.5 cursor-nesw-resize rtl:cursor-nwse-resize pointer-coarse:size-4",
+    bar: "",
+  },
+  "bottom-start": {
+    zone: "start-0 bottom-0 size-2.5 cursor-nesw-resize rtl:cursor-nwse-resize pointer-coarse:size-4",
+    bar: "",
+  },
+}
+
+/** One side's or corner's zone: invisible, with a line showing on hover. */
+function ResizeZone({
+  edge,
+  value,
+  root,
+}: {
+  edge: Exclude<WidgetGridResizeEdge, "bottom-end">
+  value: string
+  root: WidgetGridContextValue
+}) {
+  const active = useStore(
+    root.store,
+    (s) => s.resizing === value && s.resizeEdge === edge
+  )
+  const { zone, bar } = RESIZE_ZONES[edge]
+  return (
+    <span
+      aria-hidden
+      data-slot="widget-grid-resize-edge"
+      data-edge={edge}
+      data-resizing={active ? "" : undefined}
+      className={cn("group/edge absolute z-10 touch-none select-none", zone)}
+      onPointerDown={(event) => root.startResize(event, value, edge)}
+    >
+      {bar && (
+        <span
+          className={cn(
+            "pointer-events-none absolute rounded-full bg-primary opacity-0 transition-opacity group-hover/edge:opacity-100 group-data-resizing/edge:opacity-100",
+            bar
+          )}
+        />
+      )}
+    </span>
+  )
+}
 
 /**
  * The widget's resize grip, in its bottom corner on the inline end side
- * (bottom right, bottom left in a right-to-left page): drag it and the
- * widget snaps to whole cells, within its size limits, with its size
- * shown. A pointer's control: from the keyboard, Shift and the arrow keys
- * resize a picked-up widget. Only in the edit mode.
+ * (bottom right, bottom left in a right-to-left page), and a zone along
+ * each of its `edges` (all four by default) and at each corner between
+ * two of them: drag any of them and the widget snaps to whole cells,
+ * within its size limits, with its size shown. The opposite side stays
+ * put, and what the widget grows over makes way below it. Stacked, only
+ * the bottom resizes. A pointer's control: from the keyboard, Shift and
+ * the arrow keys resize a picked-up widget. Only in the edit mode.
  */
 function WidgetGridResizeHandle({
   className,
   children,
+  edges = ALL_EDGES,
   ...props
 }: WidgetGridResizeHandleProps) {
   const { root, value, label } = useItem("WidgetGridResizeHandle")
-  const resizing = useStore(root.store, (s) => s.resizing === value)
+  const resizing = useStore(
+    root.store,
+    (s) =>
+      s.resizing === value &&
+      (s.resizeEdge === "bottom-end" || s.resizeEdge === null)
+  )
+  const stacked = useStore(root.store, (s) => s.stacked)
+  const sides = new Set<WidgetGridEdge>(
+    stacked ? edges.filter((edge) => edge === "bottom") : edges
+  )
+  const corner = sides.has("bottom") && (stacked || sides.has("end"))
   const element = usePrimitive(
     "span",
     {
@@ -1431,12 +1597,24 @@ function WidgetGridResizeHandle({
       "data-slot": "widget-grid-resize-handle",
       title: root.t("resizeItem", { itemText: label }),
       onPointerDown: (event: React.PointerEvent<HTMLElement>) =>
-        root.startResize(event, value),
+        root.startResize(event, value, "bottom-end"),
       children: children ?? <ResizeGlyph />,
     }
   )
   if (!root.editable || root.byId.get(value)?.locked) return null
-  return element
+  const zones: Array<Exclude<WidgetGridResizeEdge, "bottom-end">> = []
+  for (const side of ALL_EDGES) if (sides.has(side)) zones.push(side)
+  if (sides.has("top") && sides.has("start")) zones.push("top-start")
+  if (sides.has("top") && sides.has("end")) zones.push("top-end")
+  if (sides.has("bottom") && sides.has("start")) zones.push("bottom-start")
+  return (
+    <>
+      {zones.map((edge) => (
+        <ResizeZone key={edge} edge={edge} value={value} root={root} />
+      ))}
+      {corner && element}
+    </>
+  )
 }
 
 type WidgetGridRemoveProps = PrimitiveProps<"button", object>
@@ -1460,7 +1638,8 @@ function WidgetGridRemove({
       className: withClass(
         cn(
           buttonVariants({ variant: "ghost", size: "icon-xs" }),
-          "text-muted-foreground"
+          // Over the resize zones along the widget's edges.
+          "relative z-20 text-muted-foreground"
         ),
         className
       ),
@@ -1629,6 +1808,8 @@ export type {
   WidgetGridSourceProps,
   WidgetGridLayoutItem,
   WidgetGridGap,
+  WidgetGridEdge,
+  WidgetGridResizeEdge,
   WidgetGridChangeDetails,
   WidgetGridChangeReason,
   WidgetGridItemActions,

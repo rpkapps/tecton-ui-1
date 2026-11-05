@@ -520,6 +520,86 @@ describe("WidgetGrid", () => {
     expect(placement("Production")).toBe("1 / span 8 | 1 / span 3")
   })
 
+  it("resizes from the start side, the end side staying put", () => {
+    const onValueChange = vi.fn()
+    render(<Dashboard onValueChange={onValueChange} />)
+    const edge = itemOf("Pressure").querySelector('[data-edge="start"]')!
+    // Pressure covers columns 7 to 12: its start edge is at 600 px.
+    fireEvent.pointerDown(edge, {
+      button: 0,
+      pointerId: 7,
+      pointerType: "mouse",
+      clientX: 602,
+      clientY: 60,
+    })
+    fireEvent.pointerMove(document, { pointerId: 7, clientX: 395, clientY: 60 })
+    expect(placement("Pressure")).toBe("5 / span 8 | 1 / span 2")
+    // Production, grown over, makes way below it.
+    expect(placement("Production")).toBe("1 / span 6 | 3 / span 2")
+    fireEvent.pointerUp(document, { pointerId: 7, clientX: 395, clientY: 60 })
+    expect(onValueChange.mock.calls[0][1]).toMatchObject({
+      reason: "resize",
+      item: "pressure",
+    })
+  })
+
+  it("resizes from the top, taking the place of what it grows over", () => {
+    render(<Dashboard />)
+    const edge = itemOf("Alarms").querySelector('[data-edge="top"]')!
+    // Alarms starts on row 3 (128 px); its top edge dragged up a row.
+    fireEvent.pointerDown(edge, {
+      button: 0,
+      pointerId: 8,
+      pointerType: "mouse",
+      clientX: 300,
+      clientY: 129,
+    })
+    fireEvent.pointerMove(document, { pointerId: 8, clientX: 300, clientY: 62 })
+    expect(placement("Alarms")).toBe("1 / span 12 | 1 / span 3")
+    expect(placement("Production")).toBe("1 / span 6 | 4 / span 2")
+    expect(placement("Pressure")).toBe("7 / span 6 | 4 / span 2")
+    fireEvent.pointerUp(document, { pointerId: 8, clientX: 300, clientY: 62 })
+    expect(placement("Alarms")).toBe("1 / span 12 | 1 / span 3")
+  })
+
+  it("resizes from the start side on the right in a right-to-left page", () => {
+    render(<Dashboard dir="rtl" />)
+    const edge = itemOf("Pressure").querySelector('[data-edge="start"]')!
+    // Columns count from the right: Pressure's start edge is at 600 px.
+    fireEvent.pointerDown(edge, {
+      button: 0,
+      pointerId: 9,
+      pointerType: "mouse",
+      clientX: 598,
+      clientY: 60,
+    })
+    fireEvent.pointerMove(document, { pointerId: 9, clientX: 805, clientY: 60 })
+    expect(placement("Pressure")).toBe("5 / span 8 | 1 / span 2")
+    fireEvent.pointerUp(document, { pointerId: 9, clientX: 805, clientY: 60 })
+  })
+
+  it("resizes only from the edges it is given", () => {
+    render(
+      <WidgetGrid defaultValue={[{ id: "a", x: 0, y: 0, w: 4, h: 2 }]}>
+        <WidgetGridContent>
+          <WidgetGridItem value="a" label="A">
+            <WidgetGridResizeHandle edges={["bottom", "end"]} />
+          </WidgetGridItem>
+        </WidgetGridContent>
+      </WidgetGrid>
+    )
+    const edges = [
+      ...document.querySelectorAll<HTMLElement>(
+        '[data-slot="widget-grid-resize-edge"]'
+      ),
+    ].map((zone) => zone.dataset.edge)
+    expect(edges).toEqual(["end", "bottom"])
+    // The corner between the two is the visible grip.
+    expect(
+      document.querySelector('[data-slot="widget-grid-resize-handle"]')
+    ).toBeTruthy()
+  })
+
   it("removes a widget, announces it and focuses the next one", async () => {
     const onValueChange = vi.fn()
     render(<Dashboard onValueChange={onValueChange} />)
