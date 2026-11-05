@@ -98,7 +98,7 @@ All three can change at any time, as the **Grid** settings of the demo above do:
 
 ## Compaction
 
-With `compaction="vertical"` (the default) the widgets float up into the space above them, so the grid never has holes. Dragging a widget below another moves it past that one. A widget dropped on one that fits in the columns it left swaps with it, so two tiles of a row trade places. Anything else it lands on makes way below it.
+With `compaction="vertical"` (the default) the widgets float up into the space above them, so the grid never has holes. A dropped widget takes the place it is dropped on, even over the start of a row: a widget dropped in the free corner beside a wider one takes the corner. What it lands on makes way: a widget that fits in the columns it left swaps into its old place (two tiles of a row trade places), anything else moves down below it. Dragging a widget down past another moves it below that one.
 
 With `compaction="none"` the widgets stay where they are put, and only move down to make way.
 

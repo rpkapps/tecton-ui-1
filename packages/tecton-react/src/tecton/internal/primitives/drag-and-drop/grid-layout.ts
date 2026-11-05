@@ -15,9 +15,9 @@
  *   ones first and never moved. An item that lands on placed ones is pushed
  *   down below them; with vertical compaction it then rises as far as it
  *   can, so the grid has no holes.
- * - A moved item takes its place in that order: before the items of its
- *   target row when it moves up or back, after them when it moves down or
- *   on. The items it lands on that fit the columns it left fill its old
+ * - A moved item takes its place in that order: ahead of every item of its
+ *   target row, which make way for it, or after them when it moves down
+ *   (to pass below the items it is dragged past). The items it lands on that fit the columns it left fill its old
  *   place, in reading order (two tiles of a row trade places), rather than
  *   being pushed below it.
  * - A resized item keeps its corner and pushes the items it grows over down.
@@ -126,15 +126,11 @@ function resolveLayout<T extends GridLayoutItem>(
   type Entry = { item: T; rank: number }
   const entries: Array<Entry> = []
   if (moved) {
-    // A resize, or a move up or back, goes before the items of its row.
-    const back =
-      !origin ||
-      moved.y < origin.y ||
-      (moved.y === origin.y && moved.x < origin.x)
-    entries.push({
-      item: moved,
-      rank: active?.kind === "resize" || back ? -1 : 1,
-    })
+    // The item goes where it is put, ahead of every item of its target
+    // row, which make way; only a move down goes after them, to pass below
+    // the items it is dragged past.
+    const down = !!origin && active?.kind === "move" && moved.y > origin.y
+    entries.push({ item: moved, rank: down ? 1 : -1 })
   }
 
   // The items a move lands on, swapped into its old place when they fit
@@ -173,8 +169,9 @@ function resolveLayout<T extends GridLayoutItem>(
     entries.push({ item: entry, rank: 0 })
   }
 
+  // By row; in a row, the moved item before or after all the others.
   entries.sort(
-    (a, b) => a.item.y - b.item.y || a.item.x - b.item.x || a.rank - b.rank
+    (a, b) => a.item.y - b.item.y || a.rank - b.rank || a.item.x - b.item.x
   )
 
   for (const { item } of entries) {

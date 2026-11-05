@@ -546,8 +546,11 @@ function WidgetGrid({
       const next = grid.preview(key, place)
       const ghost = takePreview?.() ?? null
       if (!commit(next, reason, key)) return ghost?.remove()
-      if (ghost && latest.current.animated) landing.current = { key, ghost }
-      else ghost?.remove()
+      if (ghost && latest.current.animated) {
+        landing.current = { key, ghost }
+        // The copy never outlives its landing, whatever becomes of it.
+        setTimeout(() => ghost.remove(), DURATION * 5)
+      } else ghost?.remove()
       if (reason === "add") {
         if (!ghost) entering.current = key
         if (mode === "pointer") {
@@ -619,10 +622,10 @@ function WidgetGrid({
   }, [editable, dragAndDrop])
   React.useEffect(() => () => stopResize.current?.(), [])
 
-  const preview = useStore(store, (s) => s.preview)
-  const shownKey = layoutKey(preview ?? layout)
+  // Re-rendered by every preview, for the effect below to animate it.
+  useStore(store, (s) => s.preview)
 
-  // After every commit that changed what shows: the widgets slide from
+  // After every commit: the widgets slide from
   // where they were, a dropped one's preview lands on it, a new one grows
   // in, and focus goes where a removal left it.
   React.useLayoutEffect(() => {
@@ -667,7 +670,9 @@ function WidgetGrid({
         content.current.focus()
       }
     }
-  }, [shownKey, items])
+    // After every commit, not only those that change what shows: a drop
+    // commits the layout its preview already showed.
+  })
 
   const startResize = useEventCallback(
     (event: React.PointerEvent<HTMLElement>, id: string) => {

@@ -90,6 +90,34 @@ describe("resolveLayout", () => {
     expect(at(down(2), "b")).toEqual([0, 0, 12, 2])
   })
 
+  it("puts a widget where it is dropped, over the start of a row", () => {
+    // A 5-wide widget dropped in the top right corner, beside an 8-wide
+    // one: it takes the corner, and the other makes way below it.
+    const tiles = [
+      { id: "production", x: 0, y: 0, w: 8, h: 2 },
+      { id: "alarms", x: 0, y: 2, w: 5, h: 6 },
+    ]
+    const layout = resolveLayout(tiles, V, {
+      item: { ...tiles[1], x: 7, y: 0 },
+      kind: "move",
+    })
+    expect(at(layout, "alarms")).toEqual([7, 0, 5, 6])
+    expect(at(layout, "production")).toEqual([0, 6, 8, 2])
+  })
+
+  it("takes the place of a wider widget in the same row", () => {
+    const tiles = [
+      { id: "small", x: 0, y: 0, w: 3, h: 2 },
+      { id: "wide", x: 3, y: 0, w: 9, h: 2 },
+    ]
+    const layout = resolveLayout(tiles, V, {
+      item: { ...tiles[0], x: 4 },
+      kind: "move",
+    })
+    expect(at(layout, "small")).toEqual([4, 0, 3, 2])
+    expect(at(layout, "wide")).toEqual([3, 2, 9, 2])
+  })
+
   it("pushes the items a resize grows over down", () => {
     const tiles = [
       { id: "a", x: 0, y: 0, w: 6, h: 2 },
@@ -185,6 +213,7 @@ function Dashboard({
   dir = "ltr",
   initial = START,
   stackBelow,
+  animated = false,
 }: {
   onValueChange?: (
     value: Array<WidgetGridLayoutItem>,
@@ -194,6 +223,7 @@ function Dashboard({
   dir?: "ltr" | "rtl"
   initial?: Array<WidgetGridLayoutItem>
   stackBelow?: number
+  animated?: boolean
 }) {
   const [layout, setLayout] = React.useState(initial)
   return (
@@ -202,7 +232,7 @@ function Dashboard({
         value={layout}
         editable={editable}
         stackBelow={stackBelow}
-        animated={false}
+        animated={animated}
         onValueChange={(next, details) => {
           onValueChange?.(next, details)
           if (!details.isCanceled) setLayout(next)
@@ -414,6 +444,45 @@ describe("WidgetGrid", () => {
     expect(
       onValueChange.mock.calls[0][0].map((i: WidgetGridLayoutItem) => i.id)
     ).toEqual(["pressure", "production", "alarms"])
+  })
+
+  it("lands the pointer's copy on the widget after a drop, and never leaves it behind", async () => {
+    const animate = vi.fn(function (this: Element) {
+      return {
+        finished: new Promise(() => {}),
+        cancel() {},
+      } as unknown as Animation
+    })
+    Element.prototype.animate = animate
+    try {
+      render(<Dashboard animated />)
+      fireEvent.pointerDown(handle("Production"), {
+        button: 0,
+        pointerId: 4,
+        pointerType: "mouse",
+        clientX: 10,
+        clientY: 10,
+      })
+      fireEvent.pointerMove(document, {
+        pointerId: 4,
+        clientX: 630,
+        clientY: 12,
+      })
+      const ghost = [...document.body.children].find(
+        (node) =>
+          node.getAttribute("aria-hidden") === "true" &&
+          node.hasAttribute("inert")
+      )!
+      expect(ghost).toBeTruthy()
+      fireEvent.pointerUp(document, { pointerId: 4, clientX: 630, clientY: 12 })
+      // The copy glides onto the dropped widget…
+      expect(animate.mock.contexts).toContain(ghost)
+      // …and goes, even if its animation never reports its end.
+      await act(() => vi.advanceTimersByTimeAsync(1500))
+      expect(ghost.isConnected).toBe(false)
+    } finally {
+      delete (Element.prototype as { animate?: unknown }).animate
+    }
   })
 
   it("resizes with the pointer, snapping to whole cells", () => {
