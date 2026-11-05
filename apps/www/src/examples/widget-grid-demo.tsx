@@ -48,6 +48,7 @@ import {
   Field,
   FieldDescription,
   FieldGroup,
+  FieldLabel,
   FieldTitle,
 } from "@tecton/react/components/field"
 import {
@@ -58,6 +59,7 @@ import {
   PopoverTrigger,
 } from "@tecton/react/components/popover"
 import { Slider } from "@tecton/react/components/slider"
+import { Switch } from "@tecton/react/components/switch"
 import {
   ToggleGroup,
   ToggleGroupItem,
@@ -605,7 +607,18 @@ function WidgetMenu({ widget, columns }: { widget: Widget; columns: number }) {
   )
 }
 
-type Grid = { columns: number; rowHeight: number; gap: WidgetGridGap }
+type Grid = {
+  columns: number
+  rowHeight: number
+  gap: WidgetGridGap
+  /** Whether the widgets float up into the space above them. */
+  float: boolean
+  /** The grid's height in rows, at the least; 0 for as tall as the widgets. */
+  rows: number
+}
+
+/** The grid heights offered, in rows. */
+const ROWS = [0, 10, 14] as const
 
 /** The gaps offered: steps of the spacing scale. */
 const GAPS = [1, 2, 3, 4, 6] as const satisfies ReadonlyArray<WidgetGridGap>
@@ -684,6 +697,38 @@ function GridSettings({
               The spacing scale: <code>gap-{grid.gap}</code>
             </FieldDescription>
           </Field>
+          <Field orientation="horizontal">
+            <FieldLabel htmlFor="widget-grid-float">Float up</FieldLabel>
+            <Switch
+              id="widget-grid-float"
+              checked={grid.float}
+              onCheckedChange={(float) => onGridChange({ ...grid, float })}
+            />
+          </Field>
+          <Field>
+            <FieldTitle id="widget-grid-rows">Rows</FieldTitle>
+            <ToggleGroup
+              aria-labelledby="widget-grid-rows"
+              variant="outline"
+              size="sm"
+              value={[String(grid.rows)]}
+              onValueChange={(value) => {
+                const rows = ROWS.find((n) => String(n) === value.at(0))
+                if (rows !== undefined) onGridChange({ ...grid, rows })
+              }}
+            >
+              {ROWS.map((n) => (
+                <ToggleGroupItem key={n} value={String(n)}>
+                  {n || "Auto"}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+            <FieldDescription>
+              {grid.float
+                ? "Widgets float up into the space above them."
+                : "Widgets stay where you put them, in the empty rows too."}
+            </FieldDescription>
+          </Field>
         </FieldGroup>
       </PopoverContent>
     </Popover>
@@ -733,6 +778,8 @@ export default function WidgetGridDemo() {
     columns: 12,
     rowHeight: 52,
     gap: 3,
+    float: true,
+    rows: 0,
   })
   // What the edit started from: Cancel goes back to it.
   const draft = React.useRef({ layout, grid })
@@ -758,6 +805,8 @@ export default function WidgetGridDemo() {
       columns={grid.columns}
       rowHeight={grid.rowHeight}
       gap={grid.gap}
+      compaction={grid.float ? "vertical" : "none"}
+      rows={grid.rows}
       stackBelow={520}
       className="flex w-full flex-col gap-3"
     >
@@ -766,7 +815,7 @@ export default function WidgetGridDemo() {
           <h3 className="text-sm font-medium">Gullfaks field</h3>
           <p className="text-xs text-muted-foreground">
             {editing
-              ? "Drag the grips to move, the corners to resize."
+              ? "Drag the grips to move and the corners to resize."
               : "Live · updated every second"}
           </p>
         </div>

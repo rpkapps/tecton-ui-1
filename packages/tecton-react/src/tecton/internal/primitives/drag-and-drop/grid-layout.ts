@@ -41,6 +41,8 @@ type GridCompaction = "vertical" | "none"
 type GridOptions = {
   columns: number
   compaction: GridCompaction
+  /** The grid's height in rows, at the least: rows a widget can be put in. */
+  rows?: number
 }
 
 /** The item a change is about, as it is asked to be. */
@@ -252,7 +254,11 @@ function stepMove(
   dx: number,
   dy: number
 ): GridRect | null {
-  const limit = bottomOf(layout) + from.h + 1
+  // Down to a row below the items, or the grid's own last row.
+  const limit = Math.max(
+    bottomOf(layout) + from.h + 1,
+    (options.rows ?? 0) - from.h
+  )
   for (let step = 1; step <= limit; step += 1) {
     const x = from.x + dx * step
     const y = from.y + dy * step

@@ -127,7 +127,7 @@ function createGridStrategy({
       const m = metrics()
       const item = key === undefined ? null : itemOf(key)
       if (key === undefined || !m || !item) return null
-      const { columns } = options()
+      const { columns, rows = 0 } = options()
       const rtl = direction() === "rtl"
       /** Px from the grid's inline start. */
       const inline = (x: number) => (rtl ? m.right - x : x - m.left)
@@ -155,7 +155,8 @@ function createGridStrategy({
       const w = Math.min(item.w, columns)
       return {
         x: clamp(x, 0, columns - w),
-        y: clamp(y, 0, bottomOf(layout()) + 1),
+        // A row below the items, or anywhere in the grid's own rows.
+        y: clamp(y, 0, Math.max(bottomOf(layout()) + 1, rows - item.h)),
         w,
         h: item.h,
       }

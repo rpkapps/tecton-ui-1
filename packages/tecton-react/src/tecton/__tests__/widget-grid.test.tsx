@@ -214,6 +214,8 @@ function Dashboard({
   initial = START,
   stackBelow,
   animated = false,
+  rows,
+  compaction,
 }: {
   onValueChange?: (
     value: Array<WidgetGridLayoutItem>,
@@ -224,6 +226,8 @@ function Dashboard({
   initial?: Array<WidgetGridLayoutItem>
   stackBelow?: number
   animated?: boolean
+  rows?: number
+  compaction?: "vertical" | "none"
 }) {
   const [layout, setLayout] = React.useState(initial)
   return (
@@ -233,6 +237,8 @@ function Dashboard({
         editable={editable}
         stackBelow={stackBelow}
         animated={animated}
+        rows={rows}
+        compaction={compaction}
         onValueChange={(next, details) => {
           onValueChange?.(next, details)
           if (!details.isCanceled) setLayout(next)
@@ -301,7 +307,11 @@ beforeEach(() => {
     if (element.dataset.slot === "widget-grid-content")
       return box(0, 0, 1200, 600)
     const area = /(\d+) \/ span (\d+)/
-    const column = area.exec(element.style.gridColumn)
+    // Stacked, a widget spans the one column: the grid's width.
+    const column =
+      element.style.gridColumn === "1 / -1"
+        ? ["", "1", "12"]
+        : area.exec(element.style.gridColumn)
     const row = area.exec(element.style.gridRow)
     if (column && row)
       return box(
@@ -562,16 +572,93 @@ describe("WidgetGrid", () => {
     expect(announced()).toContain("Alarms resized to 12 by 3.")
   })
 
-  it("stacks a narrow grid in reading order and stops editing", () => {
+  it("stacks a narrow grid in reading order, where widgets keep their order", () => {
     render(<Dashboard stackBelow={1600} />)
     expect(placement("Production")).toBe("1 / -1 | 1 / span 2")
     expect(placement("Pressure")).toBe("1 / -1 | 3 / span 2")
     expect(placement("Alarms")).toBe("1 / -1 | 5 / span 2")
+    // No grips and no moves, but still resized, removed and added.
     expect(screen.queryByRole("button", { name: /^Drag/ })).toBeNull()
+    expect(
+      screen.getByRole("button", { name: "Move Production right" })
+    ).toHaveProperty("disabled", true)
+    expect(
+      screen.getByRole("button", { name: "Remove Production" })
+    ).toBeTruthy()
+    expect(
+      itemOf("Production").querySelector(
+        '[data-slot="widget-grid-resize-handle"]'
+      )
+    ).toBeTruthy()
     expect(screen.getByRole("button", { name: "Uptime" })).toHaveProperty(
       "disabled",
-      true
+      false
     )
+  })
+
+  it("resizes only the height of a stacked widget, and the stack makes way", () => {
+    const onValueChange = vi.fn()
+    render(<Dashboard stackBelow={1600} onValueChange={onValueChange} />)
+    const grip = itemOf("Production").querySelector(
+      '[data-slot="widget-grid-resize-handle"]'
+    )!
+    // From its bottom corner, down a row and far to the side.
+    fireEvent.pointerDown(grip, {
+      button: 0,
+      pointerId: 5,
+      pointerType: "touch",
+      clientX: 1195,
+      clientY: 125,
+    })
+    fireEvent.pointerMove(document, {
+      pointerId: 5,
+      clientX: 300,
+      clientY: 190,
+    })
+    expect(placement("Production")).toBe("1 / -1 | 1 / span 3")
+    // The widgets after it in the stack move down by the row.
+    expect(placement("Pressure")).toBe("1 / -1 | 4 / span 2")
+    expect(
+      document.querySelector('[data-slot="widget-grid-size"]')?.textContent
+    ).toBe("↕ 3")
+    fireEvent.pointerUp(document, { pointerId: 5, clientX: 300, clientY: 190 })
+    expect(onValueChange.mock.calls[0][1]).toMatchObject({ reason: "resize" })
+    // Its width on a wide screen is kept.
+    expect(
+      onValueChange.mock.calls[0][0].find(
+        (item: WidgetGridLayoutItem) => item.id === "production"
+      )
+    ).toMatchObject({ x: 0, y: 0, w: 6, h: 3 })
+  })
+
+  it("gives the grid empty rows to put widgets in, where they stay", () => {
+    const onValueChange = vi.fn()
+    render(
+      <Dashboard rows={10} compaction="none" onValueChange={onValueChange} />
+    )
+    const grid = document.querySelector<HTMLElement>(
+      '[data-slot="widget-grid-content"]'
+    )!
+    expect(grid.style.gridTemplateRows).toBe("repeat(10, 64px)")
+    // Dragged eight rows down, past the widgets and into the empty rows.
+    fireEvent.pointerDown(handle("Production"), {
+      button: 0,
+      pointerId: 6,
+      pointerType: "mouse",
+      clientX: 10,
+      clientY: 10,
+    })
+    fireEvent.pointerMove(document, { pointerId: 6, clientX: 12, clientY: 522 })
+    expect(placement("Production")).toBe("1 / span 6 | 9 / span 2")
+    fireEvent.pointerUp(document, { pointerId: 6, clientX: 12, clientY: 522 })
+    // Nothing floats up into the space it left.
+    expect(placement("Production")).toBe("1 / span 6 | 9 / span 2")
+    expect(placement("Pressure")).toBe("7 / span 6 | 1 / span 2")
+    expect(placement("Alarms")).toBe("1 / span 12 | 3 / span 2")
+    // From the keyboard, it steps a row at a time down to the last row.
+    fireEvent.keyDown(handle("Production"), { key: "Enter" })
+    fireEvent.keyDown(document.activeElement!, { key: "ArrowUp" })
+    expect(placement("Production")).toBe("1 / span 6 | 8 / span 2")
   })
 
   it("drags a new widget in from a source, with a placeholder", () => {

@@ -135,6 +135,12 @@ type WidgetGridProps = Omit<
   /** The height of a row, in px. Default 64. */
   rowHeight?: number
   /**
+   * The grid's height, in rows, at the least: empty rows the widgets can be
+   * put in. With `compaction="none"`, a widget stays wherever it is put in
+   * them, like a board. Default: as tall as the widgets.
+   */
+  rows?: number
+  /**
    * The space between columns and between rows: a step of the spacing
    * scale, as in the `gap-*` classes (`4` is `gap-4`, 1rem). Default 4.
    */
@@ -153,8 +159,8 @@ type WidgetGridProps = Omit<
   editable?: boolean
   /**
    * Below this width of the grid, in px, the widgets stack in one column,
-   * in reading order, and the layout is not edited. Default 640; `0` never
-   * stacks.
+   * in reading order. Stacked, they are not moved, and resizing changes
+   * their height only. Default 640; `0` never stacks.
    */
   stackBelow?: number
   /**
@@ -176,6 +182,8 @@ type GridStoreState = {
   preview: ReadonlyArray<WidgetGridLayoutItem> | null
   /** `preview` by id, for each widget to find its own entry at once. */
   previewById: ReadonlyMap<string, WidgetGridLayoutItem> | null
+  /** Stacked: the row each widget starts on in `preview`. */
+  previewStackRows: ReadonlyMap<string, number> | null
   /** The widget being resized. */
   resizing: string | null
   /** Whether the grid is narrow enough to stack. */
@@ -196,6 +204,10 @@ type WidgetGridContextValue = {
   rowHeight: number
   gap: WidgetGridGap
   editable: boolean
+  /** Whether widgets can be moved now: editable, and not stacked. */
+  movable: boolean
+  /** The grid's height in rows, at the least (`rows`). */
+  rows: number
   t: Translator<"widgetGrid">
   registerItem: (id: string, entry: ItemEntry) => () => void
   registerSource: (id: string, entry: SourceEntry) => () => void
@@ -291,6 +303,23 @@ function growIn(element: HTMLElement) {
   )
 }
 
+/**
+ * Stacked: the row (1-based) each widget of `order` starts on, one after
+ * another, each as tall as its entry in `sizes`.
+ */
+function stackRowsOf(
+  order: ReadonlyArray<WidgetGridLayoutItem>,
+  sizes: ReadonlyMap<string, WidgetGridLayoutItem> | null
+) {
+  const rows = new Map<string, number>()
+  let row = 1
+  for (const item of order) {
+    rows.set(item.id, row)
+    row += sizes?.get(item.id)?.h ?? item.h
+  }
+  return rows
+}
+
 const rectKey = (rect: GridRect | undefined) =>
   rect ? `${rect.x},${rect.y},${rect.w},${rect.h}` : ""
 
@@ -303,6 +332,7 @@ function WidgetGrid({
   onValueChange,
   columns: columnsProp = 12,
   rowHeight = 64,
+  rows: rowsProp = 0,
   gap: gapProp = 4,
   compaction = "vertical",
   editable: editableProp = true,
@@ -327,16 +357,19 @@ function WidgetGrid({
     createStore<GridStoreState>({
       preview: null,
       previewById: null,
+      previewStackRows: null,
       resizing: null,
       stacked: false,
     })
   )
   const stacked = useStore(store, (s) => s.stacked)
-  const editable = editableProp && !stacked
+  const editable = editableProp
+  const movable = editable && !stacked
+  const rows = Math.max(0, Math.round(rowsProp))
 
   const options = React.useMemo<GridOptions>(
-    () => ({ columns, compaction }),
-    [columns, compaction]
+    () => ({ columns, compaction, rows }),
+    [columns, compaction, rows]
   )
   // What shows: overlaps resolved, limits applied, holes closed.
   const layout = React.useMemo(
@@ -484,6 +517,20 @@ function WidgetGrid({
     (preview: ReadonlyArray<WidgetGridLayoutItem> | null) => {
       const now = store.get()
       if (layoutKey(now.preview) === layoutKey(preview)) return
+      const previewById =
+        preview && new Map(preview.map((item) => [item.id, item]))
+      if (now.stacked) {
+        // Stacked, a taller widget moves every one after it: all slide.
+        measure()
+        store.set({
+          preview,
+          previewById,
+          // In the order the stack shows, which a resize keeps.
+          previewStackRows:
+            previewById && stackRowsOf(latest.current.layout, previewById),
+        })
+        return
+      }
       // Only the widgets this preview moves are measured and animated.
       const from = now.previewById ?? byIdRef.current
       const moved = new Set<string>()
@@ -493,10 +540,7 @@ function WidgetGrid({
         for (const [id, item] of from)
           if (rectKey(byIdRef.current.get(id)) !== rectKey(item)) moved.add(id)
       measure(moved)
-      store.set({
-        preview,
-        previewById: preview && new Map(preview.map((item) => [item.id, item])),
-      })
+      store.set({ preview, previewById, previewStackRows: null })
     },
     [store, measure]
   )
@@ -524,7 +568,7 @@ function WidgetGrid({
       }
       if (!store.get().preview) measure()
       latest.current.setValue(next)
-      store.set({ preview: null, previewById: null })
+      store.set({ preview: null, previewById: null, previewStackRows: null })
       return true
     }
   )
@@ -616,10 +660,9 @@ function WidgetGrid({
   // unmounting.
   const stopResize = React.useRef<(() => void) | null>(null)
   React.useEffect(() => {
-    if (editable) return
-    dragAndDrop.cancel()
-    stopResize.current?.()
-  }, [editable, dragAndDrop])
+    if (!movable) dragAndDrop.cancel()
+    if (!editable) stopResize.current?.()
+  }, [editable, movable, dragAndDrop])
   React.useEffect(() => () => stopResize.current?.(), [])
 
   // Re-rendered by every preview, for the effect below to animate it.
@@ -713,10 +756,13 @@ function WidgetGrid({
           const gapX = now.columnGap
           const gapY = now.rowGap
           const { columns } = latest.current.options
-          const w = Math.min(
-            Math.max(Math.round((width + gapX) / now.columnPitch), minW),
-            Math.min(maxW, columns - origin.x)
-          )
+          // Stacked, a widget spans the one column: only its height changes.
+          const w = store.get().stacked
+            ? origin.w
+            : Math.min(
+                Math.max(Math.round((width + gapX) / now.columnPitch), minW),
+                Math.min(maxW, columns - origin.x)
+              )
           const h = Math.min(
             Math.max(Math.round((height + gapY) / now.rowPitch), minH),
             maxH
@@ -796,7 +842,7 @@ function WidgetGrid({
 
   const step = (id: string, way: MoveDirection) => {
     const from = latest.current.layout.find((item) => item.id === id)
-    if (!from || from.locked) return null
+    if (!from || from.locked || store.get().stacked) return null
     const rtl = latest.current.direction === "rtl"
     const dx = way === "left" ? -1 : way === "right" ? 1 : 0
     const dy = way === "up" ? -1 : way === "down" ? 1 : 0
@@ -895,16 +941,10 @@ function WidgetGrid({
   )
 
   // Stacked, the widgets follow one another in reading order.
-  const stackRows = React.useMemo(() => {
-    if (!stacked) return null
-    const rows = new Map<string, number>()
-    let row = 1
-    for (const item of layout) {
-      rows.set(item.id, row)
-      row += item.h
-    }
-    return rows
-  }, [stacked, layout])
+  const stackRows = React.useMemo(
+    () => (stacked ? stackRowsOf(layout, null) : null),
+    [stacked, layout]
+  )
 
   const context = React.useMemo<WidgetGridContextValue>(
     () => ({
@@ -917,6 +957,8 @@ function WidgetGrid({
       rowHeight,
       gap,
       editable,
+      movable,
+      rows,
       t,
       registerItem,
       registerSource,
@@ -939,6 +981,8 @@ function WidgetGrid({
       rowHeight,
       gap,
       editable,
+      movable,
+      rows,
       t,
       registerItem,
       registerSource,
@@ -1045,6 +1089,8 @@ function WidgetGridContent({
     rowHeight,
     gap,
     editable,
+    rows: minRows,
+    stackRows,
     registerContent,
     press,
   } = context
@@ -1061,7 +1107,12 @@ function WidgetGridContent({
       : undefined
   const sized = resizing ?? (mode && mode !== "pointer" ? dragged : null)
   const sizedRect = sized ? shown.find((item) => item.id === sized) : undefined
-  const rows = bottomOf(shown) + 1
+  // Stacked, the size shows where the widget is in the stack.
+  const sizedRow = useStore(store, (s) =>
+    sized ? (s.previewStackRows?.get(sized) ?? stackRows?.get(sized) ?? 0) : 0
+  )
+  // A row to spare below the widgets, or the grid's own rows.
+  const rows = Math.max(bottomOf(shown) + 1, minRows)
   const active = mode !== null || resizing !== null
   const cells = React.useMemo(
     () =>
@@ -1085,6 +1136,11 @@ function WidgetGridContent({
         gridTemplateColumns: stacked
           ? "minmax(0, 1fr)"
           : `repeat(${columns}, minmax(0, 1fr))`,
+        // The grid's own rows hold their height when empty.
+        gridTemplateRows:
+          minRows && !stacked
+            ? `repeat(${minRows}, ${rowHeight}px)`
+            : undefined,
         gridAutoRows: `${rowHeight}px`,
         gap: spacing(gap),
         ...(typeof style === "function" ? style(state) : style),
@@ -1113,18 +1169,25 @@ function WidgetGridContent({
               }}
             />
           )}
-          {sizedRect && !stacked && (
+          {sizedRect && (!stacked || sizedRow > 0) && (
             <div
               aria-hidden
               data-slot="widget-grid-size"
               dir="ltr"
               className="pointer-events-none relative z-20 m-2 self-end justify-self-end rounded-md bg-foreground px-1.5 py-0.5 font-mono text-xs text-background tabular-nums shadow-sm"
-              style={{
-                gridColumn: `${sizedRect.x + 1} / span ${sizedRect.w}`,
-                gridRow: `${sizedRect.y + 1} / span ${sizedRect.h}`,
-              }}
+              style={
+                stacked
+                  ? {
+                      gridColumn: "1 / -1",
+                      gridRow: `${sizedRow} / span ${sizedRect.h}`,
+                    }
+                  : {
+                      gridColumn: `${sizedRect.x + 1} / span ${sizedRect.w}`,
+                      gridRow: `${sizedRect.y + 1} / span ${sizedRect.h}`,
+                    }
+              }
             >
-              {sizedRect.w} × {sizedRect.h}
+              {stacked ? `↕ ${sizedRect.h}` : `${sizedRect.w} × ${sizedRect.h}`}
             </div>
           )}
           <DragAndDropPrimitive.DropIndicator
@@ -1202,7 +1265,11 @@ function WidgetGridItem({
         return { x, y, w, h }
       })()
     : undefined
-  const stackRow = stackRows?.get(value)
+  const previewRow = useStore(
+    store,
+    (s) => s.previewStackRows?.get(value) ?? null
+  )
+  const stackRow = previewRow ?? stackRows?.get(value)
   const placement: React.CSSProperties =
     rect && stackRow !== undefined
       ? { gridColumn: "1 / -1", gridRow: `${stackRow} / span ${rect.h}` }
@@ -1292,7 +1359,8 @@ function WidgetGridHandle({
   ...props
 }: WidgetGridHandleProps) {
   const { root, value, label } = useItem("WidgetGridHandle")
-  if (!root.editable || root.byId.get(value)?.locked) return null
+  // Stacked, widgets keep their order: no grip.
+  if (!root.movable || root.byId.get(value)?.locked) return null
   return (
     <DragAndDropPrimitive.Handle
       data-slot="widget-grid-handle"
@@ -1353,7 +1421,7 @@ function WidgetGridResizeHandle({
     {
       ...props,
       className: withClass(
-        "absolute end-0 bottom-0 z-10 flex size-6 cursor-nwse-resize touch-none items-end justify-end p-1 text-muted-foreground/70 transition-colors select-none hover:text-foreground data-resizing:text-primary rtl:cursor-nesw-resize [&_svg]:size-3 rtl:[&_svg]:-scale-x-100",
+        "absolute end-0 bottom-0 z-10 flex size-6 cursor-nwse-resize touch-none items-end justify-end p-1 pointer-coarse:size-10 pointer-coarse:p-1.5 text-muted-foreground/70 transition-colors select-none hover:text-foreground data-resizing:text-primary rtl:cursor-nesw-resize [&_svg]:size-3 rtl:[&_svg]:-scale-x-100",
         className
       ),
     },
@@ -1488,7 +1556,8 @@ function WidgetGridSource({
       disabled: off,
       "aria-description": root.t("sourceDescription"),
       onPointerDown: (event: React.PointerEvent<HTMLElement>) => {
-        if (!off) root.dragAndDrop.onPointerDown(event, value)
+        // Stacked, a new widget is added by a press, not dragged in.
+        if (!off && root.movable) root.dragAndDrop.onPointerDown(event, value)
       },
       // An image inside would start the browser's own drag.
       onDragStart: (event: React.DragEvent<HTMLElement>) =>
@@ -1534,7 +1603,7 @@ function useWidgetGridItem(): WidgetGridItemActions {
     editable: root.editable && !!entry && !entry.locked,
     move: (direction) => root.move(value, direction),
     canMove: (direction) =>
-      root.editable && !!entry && !!root.canMove(value, direction),
+      root.movable && !!entry && !!root.canMove(value, direction),
     resize: (size) => root.resize(value, size),
     remove: () => root.remove(value),
   }
