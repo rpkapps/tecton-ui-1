@@ -38,10 +38,11 @@ export default function WidgetGridBasic() {
       value={layout}
       onValueChange={setLayout}
       rowHeight={56}
+      gap={12}
       stackBelow={400}
       className="w-full"
     >
-      <WidgetGridContent className="gap-3">
+      <WidgetGridContent>
         {layout.map(({ id, w, h }) => (
           <WidgetGridItem
             key={id}

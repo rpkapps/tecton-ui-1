@@ -3875,7 +3875,7 @@
     "names": "widget grid widget grid widget grid content widget grid item widget grid handle widget grid resize handle widget grid remove widget grid source use widget grid item",
     "useWhen": "The user arranges their own dashboard: moves widgets, resizes them by whole cells, adds them from a catalog and removes them. The layout is saved per user and restored later, as plain data (`{ id, x, y, w, h }` per widget). Widgets of several sizes share a grid of columns and rows and must never overlap or leave holes.",
     "routed": "",
-    "do": "Keep the layout in state, pass it as `value` and write `onValueChange`'s layout back; keep what each widget shows in a map keyed by `id`, apart from the layout, and render the widgets in the layout's order (`layout.map`). Render each `WidgetGridItem` with `render={<Panel />}`, a `label`, the `WidgetGridHandle` first in its `PanelHeader`, `WidgetGridRemove` in `PanelActions` and a `WidgetGridResizeHandle` inside it. Put the toolbar and the catalog inside `WidgetGrid`, around `WidgetGridContent`: each `WidgetGridSource` has the new widget's `value`, `label`, `w` and `h`. Turn the edit mode on with `editable` from an **Edit layout** button, keep the layout the edit started from so **Cancel** restores it, and offer an undo `toast` when `eventDetails.reason` is `\"remove\"` instead of asking first. Give every widget a menu built on `useWidgetGridItem()` (`move`, `canMove`, `resize` with named size presets, `remove`) to arrange without dragging; set its limits in its entry (`minW`, `minH`), and render an `Empty` spanning the grid (`col-span-full row-span-4 row-start-1`) when the layout is empty."
+    "do": "Keep the layout in state, pass it as `value` and write `onValueChange`'s layout back; render each widget in the layout's order as a `React.memo` component taking its `id`, which subscribes to its own live data rather than receiving it from the dashboard. Render each `WidgetGridItem` with `render={<Panel />}`, a `label`, the `WidgetGridHandle` first in its `PanelHeader`, `WidgetGridRemove` in `PanelActions` and a `WidgetGridResizeHandle` inside it. Put the toolbar and the catalog inside `WidgetGrid`, around `WidgetGridContent`: each `WidgetGridSource` has the new widget's `value`, `label`, `w` and `h`. Turn the edit mode on with `editable` from an **Edit layout** button, keep the layout the edit started from so **Cancel** restores it, and offer an undo `toast` when `eventDetails.reason` is `\"remove\"` instead of asking first. Give every widget a menu built on `useWidgetGridItem()` (`move`, `canMove`, `resize` with named size presets, `remove`) to arrange without dragging; set its limits in its entry (`minW`, `minH`), and render an `Empty` spanning the grid (`col-span-full row-span-4 row-start-1`) when the layout is empty."
    },
    "notFor": [
     {
@@ -3909,7 +3909,7 @@
     "useWidgetGridItem"
    ],
    "aliases": [],
-   "tokens": 1175
+   "tokens": 1186
   },
   {
    "id": "tanstack-table",

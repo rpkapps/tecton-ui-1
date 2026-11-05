@@ -298,6 +298,33 @@ describe("WidgetGrid", () => {
     expect(placement("Alarms")).toBe("1 / span 12 | 3 / span 2")
   })
 
+  it("takes its columns, row height and gap from its props", () => {
+    render(
+      <WidgetGrid
+        defaultValue={[{ id: "a", x: 0, y: 0, w: 4, h: 2 }]}
+        columns={24}
+        rowHeight={48}
+        gap={8}
+      >
+        <WidgetGridContent>
+          <WidgetGridItem value="a" label="A" />
+        </WidgetGridContent>
+      </WidgetGrid>
+    )
+    const grid = document.querySelector<HTMLElement>(
+      '[data-slot="widget-grid-content"]'
+    )!
+    expect(grid.style.gridTemplateColumns).toBe("repeat(24, minmax(0, 1fr))")
+    expect(grid.style.gridAutoRows).toBe("48px")
+    expect(grid.style.gap).toBe("8px")
+    // One strip of cells per column, a cell every row and gap.
+    const cells = document.querySelectorAll<HTMLElement>(
+      '[data-slot="widget-grid-cell"]'
+    )
+    expect(cells.length).toBe(24)
+    expect(cells[0].style.gridRow).toBe("1 / span 3")
+  })
+
   it("hides the handles and the cells outside the edit mode", () => {
     const { rerender } = render(<Dashboard editable={false} />)
     expect(screen.queryByRole("button", { name: /^Drag/ })).toBeNull()
@@ -307,7 +334,7 @@ describe("WidgetGrid", () => {
     expect(handle("Production")).toBeTruthy()
     expect(
       document.querySelectorAll('[data-slot="widget-grid-cell"]').length
-    ).toBe(12 * 5)
+    ).toBe(12)
   })
 
   it("moves a widget with the keyboard and announces each place", async () => {

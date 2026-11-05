@@ -180,14 +180,28 @@ function resolveLayout<T extends GridLayoutItem>(
   for (const { item } of entries) {
     const rect = { ...item }
     // Below whatever it lands on…
-    for (;;) {
-      const over = placed.filter((p) => collides(p, rect))
-      if (!over.length) break
-      rect.y = Math.max(...over.map((p) => p.y + p.h))
+    for (let landed = true; landed;) {
+      landed = false
+      for (const p of placed)
+        if (collides(p, rect)) {
+          rect.y = Math.max(rect.y, p.y + p.h)
+          landed = true
+        }
     }
-    // …then up into the space above it.
-    if (compaction === "vertical")
-      while (rect.y > 0 && free({ ...rect, y: rect.y - 1 })) rect.y -= 1
+    // …then up into the space above it, as far as the nearest item over
+    // its columns: one pass, not a row at a time.
+    if (compaction === "vertical") {
+      let top = 0
+      for (const p of placed)
+        if (
+          p.x < rect.x + rect.w &&
+          rect.x < p.x + p.w &&
+          p.y + p.h <= rect.y &&
+          p.y + p.h > top
+        )
+          top = p.y + p.h
+      rect.y = top
+    }
     placed.push(rect)
   }
   return inReadingOrder(placed)

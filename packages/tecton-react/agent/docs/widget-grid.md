@@ -20,7 +20,7 @@ import { WidgetGrid, WidgetGridContent, WidgetGridItem, WidgetGridHandle, Widget
 
 ## Do
 
-- Keep the layout in state, pass it as `value` and write `onValueChange`'s layout back; keep what each widget shows in a map keyed by `id`, apart from the layout, and render the widgets in the layout's order (`layout.map`).
+- Keep the layout in state, pass it as `value` and write `onValueChange`'s layout back; render each widget in the layout's order as a `React.memo` component taking its `id`, which subscribes to its own live data rather than receiving it from the dashboard.
 - Render each `WidgetGridItem` with `render={<Panel />}`, a `label`, the `WidgetGridHandle` first in its `PanelHeader`, `WidgetGridRemove` in `PanelActions` and a `WidgetGridResizeHandle` inside it.
 - Put the toolbar and the catalog inside `WidgetGrid`, around `WidgetGridContent`: each `WidgetGridSource` has the new widget's `value`, `label`, `w` and `h`.
 - Turn the edit mode on with `editable` from an **Edit layout** button, keep the layout the edit started from so **Cancel** restores it, and offer an undo `toast` when `eventDetails.reason` is `"remove"` instead of asking first.
@@ -80,7 +80,7 @@ The layout is `value` with an `id` per entry, the change arrives in `onValueChan
 Wrong:
 
 ```tsx
-<WidgetGrid value={layout} onValueChange={setLayout} className="grid grid-cols-12 gap-4">
+<WidgetGrid value={layout} onValueChange={setLayout} className="grid grid-cols-12">
   {layout.map((item) => <WidgetGridItem key={item.id} value={item.id} label={names[item.id]} />)}
 </WidgetGrid>
 ```
@@ -88,14 +88,14 @@ Wrong:
 Correct:
 
 ```tsx
-<WidgetGrid value={layout} onValueChange={setLayout}>
-  <WidgetGridContent className="gap-4">
+<WidgetGrid value={layout} onValueChange={setLayout} columns={12} gap={16}>
+  <WidgetGridContent>
     {layout.map((item) => <WidgetGridItem key={item.id} value={item.id} label={names[item.id]} />)}
   </WidgetGridContent>
 </WidgetGrid>
 ```
 
-`WidgetGrid` holds the layout and the catalog around the grid; only `WidgetGridContent` sets the columns and rows the items are placed on, measures the grid for a drag and draws the cells and the placeholder.
+`WidgetGrid` holds the layout and the catalog around the grid; only `WidgetGridContent` lays out the `columns`, `rowHeight` and `gap` set on `WidgetGrid`, measures the grid for a drag and draws the cells and the placeholder.
 
 ## Before you finish
 

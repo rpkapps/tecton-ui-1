@@ -44,6 +44,9 @@ type GridMetrics = {
   /** A column and its gap, a row and its gap, in px. */
   columnPitch: number
   rowPitch: number
+  /** The gaps between columns and between rows, in px. */
+  columnGap: number
+  rowGap: number
 }
 
 type GridStrategyOptions = {
