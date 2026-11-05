@@ -304,7 +304,7 @@ describe("WidgetGrid", () => {
         defaultValue={[{ id: "a", x: 0, y: 0, w: 4, h: 2 }]}
         columns={24}
         rowHeight={48}
-        gap={8}
+        gap={2}
       >
         <WidgetGridContent>
           <WidgetGridItem value="a" label="A" />
@@ -316,7 +316,8 @@ describe("WidgetGrid", () => {
     )!
     expect(grid.style.gridTemplateColumns).toBe("repeat(24, minmax(0, 1fr))")
     expect(grid.style.gridAutoRows).toBe("48px")
-    expect(grid.style.gap).toBe("8px")
+    // A step of the spacing scale, following the theme.
+    expect(grid.style.gap).toBe("calc(var(--spacing) * 2)")
     // One strip of cells per column, a cell every row and gap.
     const cells = document.querySelectorAll<HTMLElement>(
       '[data-slot="widget-grid-cell"]'

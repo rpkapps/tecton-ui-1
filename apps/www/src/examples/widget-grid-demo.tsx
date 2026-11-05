@@ -87,6 +87,7 @@ import {
   WidgetGridResizeHandle,
   WidgetGridSource,
   useWidgetGridItem,
+  type WidgetGridGap,
   type WidgetGridLayoutItem,
 } from "@tecton/react/tecton/widget-grid"
 
@@ -167,12 +168,13 @@ const format = (value: number, digits = 0) =>
   })
 
 function Trend({ reading, digits = 0 }: { reading: Reading; digits?: number }) {
-  const trend =
-    Math.abs(reading.delta) < 1e-9 ? "flat" : reading.delta > 0 ? "up" : "down"
+  // As shown: a change that rounds to nothing is flat.
+  const shown = Number(reading.delta.toFixed(digits))
+  const trend = shown === 0 ? "flat" : shown > 0 ? "up" : "down"
   return (
     <StatDelta trend={trend}>
-      {reading.delta >= 0 ? "+" : "−"}
-      {format(Math.abs(reading.delta), digits)}
+      {shown > 0 ? "+" : shown < 0 ? "−" : ""}
+      {format(Math.abs(shown), digits)}
     </StatDelta>
   )
 }
@@ -603,7 +605,10 @@ function WidgetMenu({ widget, columns }: { widget: Widget; columns: number }) {
   )
 }
 
-type Grid = { columns: number; rowHeight: number; gap: number }
+type Grid = { columns: number; rowHeight: number; gap: WidgetGridGap }
+
+/** The gaps offered: steps of the spacing scale. */
+const GAPS = [1, 2, 3, 4, 6] as const satisfies ReadonlyArray<WidgetGridGap>
 
 const sliderValue = (value: number | ReadonlyArray<number>) =>
   typeof value === "number" ? value : (value[0] ?? 0)
@@ -659,17 +664,25 @@ function GridSettings({
           </Field>
           <Field>
             <FieldTitle id="widget-grid-gap">Gap</FieldTitle>
-            <Slider
+            <ToggleGroup
               aria-labelledby="widget-grid-gap"
-              min={0}
-              max={32}
-              step={2}
-              value={[grid.gap]}
-              onValueChange={(value) =>
-                onGridChange({ ...grid, gap: sliderValue(value) })
-              }
-            />
-            <FieldDescription>{grid.gap} px</FieldDescription>
+              variant="outline"
+              size="sm"
+              value={[String(grid.gap)]}
+              onValueChange={(value) => {
+                const gap = GAPS.find((step) => String(step) === value.at(0))
+                if (gap !== undefined) onGridChange({ ...grid, gap })
+              }}
+            >
+              {GAPS.map((step) => (
+                <ToggleGroupItem key={step} value={String(step)}>
+                  {step}
+                </ToggleGroupItem>
+              ))}
+            </ToggleGroup>
+            <FieldDescription>
+              The spacing scale: <code>gap-{grid.gap}</code>
+            </FieldDescription>
           </Field>
         </FieldGroup>
       </PopoverContent>
@@ -719,7 +732,7 @@ export default function WidgetGridDemo() {
   const [grid, setGrid] = React.useState<Grid>({
     columns: 12,
     rowHeight: 52,
-    gap: 12,
+    gap: 3,
   })
   // What the edit started from: Cancel goes back to it.
   const draft = React.useRef({ layout, grid })

@@ -84,6 +84,22 @@ import { createStore, useStore, type Store } from "./internal/store"
 
 type WidgetGridLayoutItem = GridLayoutItem
 
+/** The steps of the spacing scale a grid's gap can take. */
+const WIDGET_GRID_GAPS = [0, 1, 1.5, 2, 3, 4, 5, 6, 8] as const
+
+type WidgetGridGap = (typeof WIDGET_GRID_GAPS)[number]
+
+/** `gap` as one of the steps (the nearest, for a value from outside TypeScript). */
+function gapStep(gap: number): WidgetGridGap {
+  return WIDGET_GRID_GAPS.reduce<WidgetGridGap>(
+    (best, step) => (Math.abs(step - gap) < Math.abs(best - gap) ? step : best),
+    4
+  )
+}
+
+/** A step of the spacing scale, as CSS: it follows the theme's `--spacing`. */
+const spacing = (step: WidgetGridGap) => `calc(var(--spacing) * ${step})`
+
 type WidgetGridChangeReason = "move" | "resize" | "add" | "remove"
 
 type WidgetGridChangeDetails = ChangeEventDetails<WidgetGridChangeReason> & {
@@ -118,8 +134,11 @@ type WidgetGridProps = Omit<
   columns?: number
   /** The height of a row, in px. Default 64. */
   rowHeight?: number
-  /** The space between columns and between rows, in px. Default 16. */
-  gap?: number
+  /**
+   * The space between columns and between rows: a step of the spacing
+   * scale, as in the `gap-*` classes (`4` is `gap-4`, 1rem). Default 4.
+   */
+  gap?: WidgetGridGap
   /**
    * "vertical" (default): the widgets float up into the space above them,
    * so the grid has no holes. "none": they stay where they are put, and
@@ -175,7 +194,7 @@ type WidgetGridContextValue = {
   layout: ReadonlyArray<WidgetGridLayoutItem>
   columns: number
   rowHeight: number
-  gap: number
+  gap: WidgetGridGap
   editable: boolean
   t: Translator<"widgetGrid">
   registerItem: (id: string, entry: ItemEntry) => () => void
@@ -284,7 +303,7 @@ function WidgetGrid({
   onValueChange,
   columns: columnsProp = 12,
   rowHeight = 64,
-  gap = 16,
+  gap: gapProp = 4,
   compaction = "vertical",
   editable: editableProp = true,
   stackBelow = 640,
@@ -299,6 +318,7 @@ function WidgetGrid({
     defaultValue
   )
   const columns = Math.max(1, Math.round(columnsProp))
+  const gap = gapStep(gapProp)
   const t = useTranslations("widgetGrid")
   const direction = useDirection()
   const portal = usePortalTarget()
@@ -971,9 +991,10 @@ function GridCells({
   rows: number
   columns: number
   rowHeight: number
-  gap: number
+  gap: WidgetGridGap
 }) {
   const mask = cellMask(rowHeight)
+  const pitch = `calc(${rowHeight}px + ${spacing(gap)})`
   return Array.from({ length: columns }, (_, column) => (
     <div
       key={column}
@@ -984,10 +1005,10 @@ function GridCells({
         gridColumn: column + 1,
         gridRow: `1 / span ${rows}`,
         maskImage: mask,
-        maskSize: `100% ${rowHeight + gap}px`,
+        maskSize: `100% ${pitch}`,
         maskRepeat: "repeat-y",
         WebkitMaskImage: mask,
-        WebkitMaskSize: `100% ${rowHeight + gap}px`,
+        WebkitMaskSize: `100% ${pitch}`,
         WebkitMaskRepeat: "repeat-y",
       }}
     />
@@ -996,7 +1017,7 @@ function GridCells({
 
 /**
  * The grid itself: `columns` equal columns and rows of `rowHeight` px,
- * `gap` px apart (all three set on `WidgetGrid`). In the edit mode its cells
+ * a `gap` step of the spacing scale apart (all three set on `WidgetGrid`). In the edit mode its cells
  * show under the widgets, with a row to spare at the bottom; while a
  * widget is resized (or moved from the keyboard) its size shows in its
  * corner, and a new widget dragged in from a source shows as a dashed
@@ -1060,7 +1081,7 @@ function WidgetGridContent({
           ? "minmax(0, 1fr)"
           : `repeat(${columns}, minmax(0, 1fr))`,
         gridAutoRows: `${rowHeight}px`,
-        gap: `${gap}px`,
+        gap: spacing(gap),
         ...(typeof style === "function" ? style(state) : style),
       }),
       ref,
@@ -1533,6 +1554,7 @@ export type {
   WidgetGridRemoveProps,
   WidgetGridSourceProps,
   WidgetGridLayoutItem,
+  WidgetGridGap,
   WidgetGridChangeDetails,
   WidgetGridChangeReason,
   WidgetGridItemActions,

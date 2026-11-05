@@ -88,7 +88,7 @@ Wrong:
 Correct:
 
 ```tsx
-<WidgetGrid value={layout} onValueChange={setLayout} columns={12} gap={16}>
+<WidgetGrid value={layout} onValueChange={setLayout} columns={12} gap={4}>
   <WidgetGridContent>
     {layout.map((item) => <WidgetGridItem key={item.id} value={item.id} label={names[item.id]} />)}
   </WidgetGridContent>

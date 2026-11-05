@@ -198,7 +198,7 @@ export default function WidgetGridLive() {
       value={layout}
       onValueChange={setLayout}
       rowHeight={48}
-      gap={8}
+      gap={2}
       stackBelow={400}
       className="flex w-full flex-col gap-3"
     >

@@ -38,7 +38,7 @@ export default function WidgetGridBasic() {
       value={layout}
       onValueChange={setLayout}
       rowHeight={56}
-      gap={12}
+      gap={3}
       stackBelow={400}
       className="w-full"
     >
