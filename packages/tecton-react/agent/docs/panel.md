@@ -86,6 +86,7 @@ The shadow is the `elevated` variant and the padding is the `size` scale, which 
 ## Before you finish
 
 - A titled application surface whose body has to scroll is a `Panel`, and the body is inside `PanelContent` — only that part carries `min-h-0 flex-1 overflow-auto`.
+- A dashboard the user arranges is a `WidgetGrid` holding `WidgetGridContent` with a `WidgetGridItem` per entry of `value` (`{ id, x, y, w, h }`, written back from `onValueChange`), each rendered as a `Panel` with a `label`, a `WidgetGridHandle` in its header and a `WidgetGridResizeHandle`, never absolutely positioned or natively `draggable` divs.
 - `className` on `Card` and `Panel` is placement, width and height only (`w-full max-w-sm`, `h-72`); their padding comes from `--card-spacing` or the `size` scale, so a `p-6` double-pads.
 
 Related: card, app-shell, sheet

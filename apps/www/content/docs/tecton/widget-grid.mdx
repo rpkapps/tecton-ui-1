@@ -1,0 +1,404 @@
+---
+title: Widget Grid
+description: "A dashboard the user arranges: widgets moved, resized, added and removed on a grid, from a pointer, the keyboard or a screen reader."
+---
+
+<ComponentPreview name="widget-grid-demo" />
+
+Press **Edit layout**, then drag a widget by its grip, resize it from its corner, add one from the row of widgets above the grid (press it, or drag it into place), or remove one and undo it from the toast.
+
+## Usage
+
+```tsx
+import {
+  WidgetGrid,
+  WidgetGridContent,
+  WidgetGridHandle,
+  WidgetGridItem,
+  WidgetGridRemove,
+  WidgetGridResizeHandle,
+} from "@tecton/react/tecton/widget-grid"
+```
+
+```tsx
+const [layout, setLayout] = React.useState([
+  { id: "production", x: 0, y: 0, w: 8, h: 2 },
+  { id: "pressure", x: 8, y: 0, w: 4, h: 2 },
+])
+
+<WidgetGrid value={layout} onValueChange={setLayout} editable={editing}>
+  <WidgetGridContent>
+    {layout.map(({ id }) => (
+      <WidgetGridItem key={id} value={id} label={names[id]} render={<Panel />}>
+        <PanelHeader>
+          <WidgetGridHandle />
+          <PanelTitle>{names[id]}</PanelTitle>
+          <PanelActions>
+            <WidgetGridRemove />
+          </PanelActions>
+        </PanelHeader>
+        <PanelContent>…</PanelContent>
+        <WidgetGridResizeHandle />
+      </WidgetGridItem>
+    ))}
+  </WidgetGridContent>
+</WidgetGrid>
+```
+
+<ComponentPreview name="widget-grid-basic" />
+
+## Composition
+
+```text
+WidgetGrid
+├── WidgetGridSource            (a catalog of widgets to add, anywhere inside)
+└── WidgetGridContent
+    └── WidgetGridItem          (render={<Panel />})
+        ├── WidgetGridHandle
+        ├── WidgetGridRemove
+        └── WidgetGridResizeHandle
+```
+
+`WidgetGrid` holds the layout and wraps everything that works on it: your toolbar, a catalog of `WidgetGridSource`s and the grid. It renders a `div` you lay out yourself (`flex flex-col gap-3`). `WidgetGridContent` is the CSS grid. Each `WidgetGridItem` is placed by its entry of the layout. Render it as a [Panel](/docs/tecton/panel) and put the `WidgetGridHandle` first in the `PanelHeader`, the `WidgetGridRemove` in `PanelActions` and the `WidgetGridResizeHandle` anywhere inside: it sits in the corner by itself.
+
+## The layout
+
+The layout is yours: `value` holds one entry per widget, and `onValueChange` hands back the whole new layout after every change.
+
+```ts
+type WidgetGridLayoutItem = {
+  id: string
+  x: number // column, from the inline start (0-based)
+  y: number // row (0-based)
+  w: number // columns wide
+  h: number // rows tall
+  minW?: number
+  maxW?: number
+  minH?: number
+  maxH?: number
+  locked?: boolean // never moved, resized, pushed or removed
+}
+```
+
+It is plain data, made to be saved: keep what each widget shows (its type, its query) in a map keyed by `id`, apart from the layout. `onValueChange` is called only when the user changes something: after a drop, at the end of a resize, when a widget is added or removed. It is never called while a drag is under way or when the grid mounts, so a saved layout is never overwritten by itself. `eventDetails.reason` says what happened (`"move"`, `"resize"`, `"add"` or `"remove"`), `eventDetails.item` names the widget, and `eventDetails.cancel()` refuses the change.
+
+The new layout comes in reading order, by row and then by column. Render the widgets in that order (`layout.map`) and Tab moves through them as they show.
+
+A layout read from storage may be out of date. Entries that overlap, stick out past the columns or break their size limits are put right as the grid shows them, and the corrected layout is what the next change hands back.
+
+## Compaction
+
+With `compaction="vertical"` (the default) the widgets float up into the space above them, so the grid never has holes. Dragging a widget below another moves it past that one. A widget dropped on one that fits in the columns it left swaps with it, so two tiles of a row trade places. Anything else it lands on makes way below it.
+
+With `compaction="none"` the widgets stay where they are put, and only move down to make way.
+
+## Edit mode
+
+`editable` (default `true`) switches the edit mode. Out of it, the grips, the remove buttons and the resize corners are gone, and the widgets are read, clicked and scrolled like the rest of the page. In it, the grid's cells show under the widgets, with a row to spare at the bottom to drop into.
+
+Give the dashboard an **Edit layout** button rather than leaving it always editable. A layout that moves under the pointer gets dragged by accident while people read a chart, select text or scroll on a touch screen. Treat the edit as a draft: keep the layout it started from, so **Cancel** can go back to it, and **Done** keeps the new one.
+
+```tsx
+const draft = React.useRef(layout)
+
+<Button onClick={() => { draft.current = layout; setEditing(true) }}>Edit layout</Button>
+<Button onClick={() => { setLayout(draft.current); setEditing(false) }}>Cancel</Button>
+```
+
+## Moving and resizing
+
+Only the grip moves a widget, so its chart, table or form keeps working in the edit mode. While a widget is dragged, its content travels with the pointer and a dashed placeholder shows where it will land. The other widgets glide aside, and Escape puts everything back. Near the edge of the page (or of the scroll container around the grid) the grid scrolls.
+
+The resize corner snaps the widget to whole cells as it is dragged, within its `minW` / `maxW` / `minH` / `maxH`, and shows its size (`6 × 4`) in the corner. The widget's content redraws only when it reaches a new cell, not on every pixel, so a heavy chart keeps up. The widgets it grows over move down out of its way.
+
+Make the item a size container (`@container` on `PanelContent`) and show more when there is room. The Production stat above adds "vs. last week" once its widget is wide enough.
+
+## Adding widgets
+
+A `WidgetGridSource` is a widget of your catalog that is not on the grid yet. It renders a `button` with your content. Press it and the widget is added at the first free place, scrolled into view, focused and announced. Drag it and a dashed placeholder of its size follows the pointer over the grid, with the widgets making way. A finger drags after a long press, so the catalog still scrolls.
+
+```tsx
+<WidgetGridSource value="uptime" label="Uptime" w={3} h={2} minW={2}>
+  <ActivityIcon /> Uptime
+</WidgetGridSource>
+```
+
+`value` is the `id` the new widget gets. A source is disabled out of the edit mode and while a widget with its `value` is on the grid. For a widget that can be added more than once, give the source a fresh `value` each time (`chart-${count}`). Put the catalog anywhere inside `WidgetGrid`: a row above the grid as here, or a side `Panel` beside it.
+
+When the layout is empty, render an [Empty](/docs/components/empty) inside `WidgetGridContent` that spans the grid (`col-span-full row-span-4 row-start-1`), with a way to add the first widget. Never leave a blank grid.
+
+## Removing widgets
+
+`WidgetGridRemove` removes its widget at once. The widget fades out, the others close the gap, focus goes to the next widget's grip, and "Pressure removed." is announced. Don't ask first: offer an undo in a [toast](/docs/components/sonner), which costs the user nothing when they meant it.
+
+```tsx
+<WidgetGrid
+  value={layout}
+  onValueChange={(next, { reason, item }) => {
+    const previous = layout
+    setLayout(next)
+    if (reason === "remove")
+      toast(`${names[item]} removed`, {
+        action: { label: "Undo", onClick: () => setLayout(previous) },
+      })
+  }}
+>
+```
+
+## Without dragging
+
+Every drag has a single-press alternative, as WCAG 2.5.7 asks. `useWidgetGridItem()`, called inside a `WidgetGridItem`, gives a widget's menu its actions:
+
+- `move("up" | "down" | "left" | "right")` moves the widget one place, past the widget in the way when need be.
+- `canMove(direction)` says whether that move would do anything, so the item can be disabled.
+- `resize({ w, h })` gives the widget a size, within its limits.
+- `remove()` removes it.
+- `layout` is its entry, and `editable` says whether it can change now.
+
+Each action is announced, as a drop is. Offer named size presets (`Small`, `Medium`, `Large`) that suit the widget, rather than arbitrary sizes:
+
+```tsx
+function WidgetMenu() {
+  const widget = useWidgetGridItem()
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger render={<Button variant="ghost" size="icon-sm" aria-label="Options" />}>
+        <EllipsisIcon />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent>
+        <DropdownMenuItem onClick={() => widget.resize({ w: 12, h: 4 })}>Large</DropdownMenuItem>
+        <DropdownMenuItem disabled={!widget.canMove("up")} onClick={() => widget.move("up")}>
+          Move up
+        </DropdownMenuItem>
+        <DropdownMenuItem variant="destructive" onClick={widget.remove}>Remove</DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+```
+
+`"left"` and `"right"` are what the user sees: in a right-to-left page, `"left"` moves towards the end.
+
+## Keyboard and screen readers
+
+- **Keyboard:** Tab to a widget's grip and press Enter or Space to pick the widget up. The arrow keys move it a cell (or past the widget in the way), and Shift with the arrow keys resizes it a cell. The others make way as it goes. Tab steps through the places of the other widgets and the end of the grid. Each place is announced: "Production, column 4, row 1, 6 by 4". Enter or Space drops the widget and Escape cancels. Focus stays on the moved widget's grip.
+- **Screen reader on a touch screen:** activating the grip turns the widget's own place, the place of every other widget and the end of the grid into buttons. Double tap one to drop.
+- **Without dragging:** a widget menu built on `useWidgetGridItem` (above) moves, resizes and removes with a single press.
+- **Removing** focuses the next widget's grip (the previous one's at the end, the grid when it was the last), and **adding** focuses the new widget's grip.
+
+## Narrow screens
+
+Below `stackBelow` px of width (default 640; `0` never), the grid shows the widgets in one column, in reading order, each as tall as its rows. A layout of twelve columns is not edited on a phone: the handles go, and the layout comes back untouched on a wide screen.
+
+## Right to left
+
+<ComponentPreview name="widget-grid-basic" direction="rtl" />
+
+`x` counts from the inline start, so the same layout mirrors in a right-to-left page with nothing to convert. The resize corner moves to the bottom left, the pointer and the arrow keys follow what the user sees, and so do a menu's `"left"` and `"right"`.
+
+## Animation
+
+The widgets glide into their new places as the layout changes: under a drag, as a drop lands, when a widget is added (it grows in) or removed (it fades out). The pointer's copy of a dropped widget glides into its place. Nothing moves when the user has asked for reduced motion, and `animated={false}` turns it off.
+
+{/* guidelines:start */}
+
+## Usage guidelines
+
+### Use it when
+
+- The user arranges their own dashboard: moves widgets, resizes them by whole cells, adds them from a catalog and removes them.
+- The layout is saved per user and restored later, as plain data (`{ id, x, y, w, h }` per widget).
+- Widgets of several sizes share a grid of columns and rows and must never overlap or leave holes.
+
+### Not for
+
+- cards in a layout the user never changes: use [Card](/docs/components/card)
+- bento tiles that trade fixed slots, or cards of one size put in order: use [Reorderable](/docs/tecton/reorderable)
+- two or three panes the user drags apart: use [ResizablePanelGroup](/docs/components/resizable)
+
+### Do
+
+<DoList>
+
+<Do>
+
+Keep the layout in state, pass it as `value` and write `onValueChange`'s layout back; keep what each widget shows in a map keyed by `id`, apart from the layout, and render the widgets in the layout's order (`layout.map`).
+
+</Do>
+
+<Do>
+
+Render each `WidgetGridItem` with `render={<Panel />}`, a `label`, the `WidgetGridHandle` first in its `PanelHeader`, `WidgetGridRemove` in `PanelActions` and a `WidgetGridResizeHandle` inside it.
+
+</Do>
+
+<Do>
+
+Put the toolbar and the catalog inside `WidgetGrid`, around `WidgetGridContent`: each `WidgetGridSource` has the new widget's `value`, `label`, `w` and `h`.
+
+</Do>
+
+<Do>
+
+Turn the edit mode on with `editable` from an **Edit layout** button, keep the layout the edit started from so **Cancel** restores it, and offer an undo `toast` when `eventDetails.reason` is `"remove"` instead of asking first.
+
+</Do>
+
+<Do>
+
+Give every widget a menu built on `useWidgetGridItem()` (`move`, `canMove`, `resize` with named size presets, `remove`) to arrange without dragging; set its limits in its entry (`minW`, `minH`), and render an `Empty` spanning the grid (`col-span-full row-span-4 row-start-1`) when the layout is empty.
+
+</Do>
+
+</DoList>
+
+### Don't
+
+<Dont severity="CRITICAL" title="Positioning widgets by hand or with a drag library">
+
+<Wrong>
+
+```tsx
+<div className="relative">
+  {layout.map((item) => <div key={item.id} draggable style={{ position: "absolute", left: item.x * 100 }}><Panel>…</Panel></div>)}
+</div>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<WidgetGridContent>
+  {layout.map((item) => (
+    <WidgetGridItem key={item.id} value={item.id} label={names[item.id]} render={<Panel />}>
+      <PanelHeader><WidgetGridHandle /><PanelTitle>{names[item.id]}</PanelTitle></PanelHeader>
+      <WidgetGridResizeHandle />
+    </WidgetGridItem>
+  ))}
+</WidgetGridContent>
+```
+
+</Correct>
+
+Absolute pixel positions do not mirror in a right-to-left page or follow the width of the grid, and native drag events never fire from the keyboard, a screen reader or a touch screen; `WidgetGrid` places the widgets on CSS grid cells and resolves every overlap.
+
+</Dont>
+
+<Dont severity="HIGH" title="Layout props from other grid libraries">
+
+<Wrong>
+
+```tsx
+<WidgetGrid layout={layout} onLayoutChange={setLayout} cols={12}>
+  <WidgetGridItem key="a" data-grid={{ i: "a", x: 0, y: 0, w: 4, h: 2 }} />
+</WidgetGrid>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<WidgetGrid value={[{ id: "a", x: 0, y: 0, w: 4, h: 2 }]} onValueChange={setLayout} columns={12}>
+  <WidgetGridContent>
+    <WidgetGridItem value="a" label="Production" />
+  </WidgetGridContent>
+</WidgetGrid>
+```
+
+</Correct>
+
+The layout is `value` with an `id` per entry, the change arrives in `onValueChange` and the column count is `columns`; `layout`, `onLayoutChange`, `cols`, `i` and `data-grid` are ignored, so nothing is placed.
+
+</Dont>
+
+<Dont severity="HIGH" title="Widgets outside WidgetGridContent">
+
+<Wrong>
+
+```tsx
+<WidgetGrid value={layout} onValueChange={setLayout} className="grid grid-cols-12 gap-4">
+  {layout.map((item) => <WidgetGridItem key={item.id} value={item.id} label={names[item.id]} />)}
+</WidgetGrid>
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+<WidgetGrid value={layout} onValueChange={setLayout}>
+  <WidgetGridContent className="gap-4">
+    {layout.map((item) => <WidgetGridItem key={item.id} value={item.id} label={names[item.id]} />)}
+  </WidgetGridContent>
+</WidgetGrid>
+```
+
+</Correct>
+
+`WidgetGrid` holds the layout and the catalog around the grid; only `WidgetGridContent` sets the columns and rows the items are placed on, measures the grid for a drag and draws the cells and the placeholder.
+
+</Dont>
+
+{/* guidelines:end */}
+
+## API Reference
+
+### WidgetGrid
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `WidgetGridLayoutItem[]` | - | The layout: one entry per widget (controlled). |
+| `defaultValue` | `WidgetGridLayoutItem[]` | `[]` | The initial layout, when not controlled. |
+| `onValueChange` | `(value, eventDetails) => void` | - | Called with the whole new layout, in reading order, after a drop, a resize, an added or a removed widget. `eventDetails.reason` is `"move"`, `"resize"`, `"add"` or `"remove"`, `eventDetails.item` the widget's `id`. |
+| `columns` | `number` | `12` | The number of columns. |
+| `rowHeight` | `number` | `64` | The height of a row, in px. |
+| `compaction` | `"vertical" \| "none"` | `"vertical"` | Whether the widgets float up into the space above them. |
+| `editable` | `boolean` | `true` | The edit mode: the handles, the remove buttons and the cells show only then. |
+| `stackBelow` | `number` | `640` | Below this width, in px, the widgets stack in one column and are not edited. `0` never stacks. |
+| `animated` | `boolean` | `true` | Animates the widgets into their new places. Never with reduced motion. |
+| `render` | `ReactElement \| function` | `<div />` | Replaces the element. |
+
+Carries `data-editable` in the edit mode and `data-stacked` when stacked.
+
+### WidgetGridContent
+
+The CSS grid. The gap comes from your classes (`gap-4` by default). Carries `data-editable`, `data-stacked`, and `data-active` while a widget is dragged or resized.
+
+### WidgetGridItem
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | - | The widget's `id` in the layout. |
+| `label` | `string` | - | The widget's name, used for its handles (`Drag {label}`, `Remove {label}`) and the announcements. |
+| `render` | `ReactElement \| function` | `<div />` | Replaces the element: `<Panel />` for a titled widget. |
+
+Carries `data-dragging` while dragged (`"pointer"`, `"keyboard"` or `"virtual"`), `data-resizing` and `data-locked`.
+
+### WidgetGridHandle
+
+The grip: a ghost icon button with a grip icon, unless you pass children. Named `Drag {label}`. Rendered only in the edit mode and never on a locked widget.
+
+### WidgetGridResizeHandle
+
+The resize corner, at the bottom of the inline end side. A pointer's control, hidden from assistive technology (the grip resizes from the keyboard). Rendered only in the edit mode and never on a locked widget.
+
+### WidgetGridRemove
+
+A ghost icon button with a cross, unless you pass children, named `Remove {label}`. Rendered only in the edit mode and never on a locked widget.
+
+### WidgetGridSource
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `string` | - | The `id` the new widget gets. |
+| `label` | `string` | - | The widget's name, for the announcements. |
+| `w`, `h` | `number` | - | The new widget's size, in cells. |
+| `minW`, `maxW`, `minH`, `maxH` | `number` | - | The new widget's size limits. |
+| `disabled` | `boolean` | `false` | Turns the source off. It is also off out of the edit mode and while its widget is on the grid. |
+| `render` | `ReactElement \| function` | `<button />` | Replaces the element. |
+
+### useWidgetGridItem
+
+Called inside a `WidgetGridItem`. Returns `{ value, label, layout, editable, move, canMove, resize, remove }`.
