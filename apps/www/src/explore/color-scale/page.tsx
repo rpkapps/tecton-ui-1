@@ -1,4 +1,4 @@
-/** Seventeen ways to pick a colour scale, shared by the docs route and the standalone mockup build. */
+/** Ten colour scale dropdowns, shared by the docs route and the standalone mockup build. */
 import { Badge } from "@tecton/react/components/badge"
 import {
   PageHeader,
@@ -8,148 +8,82 @@ import {
   PageHeaderTitle,
 } from "@tecton/react/tecton/page-header"
 
-import PickerSelect from "./v01-select"
-import PickerCombobox from "./v02-combobox"
-import PickerPopoverGrid from "./v03-popover-grid"
-import PickerLegendMenu from "./v04-legend-menu"
-import PickerQuickSwitch from "./v05-quick-switch"
-import PickerRadioCards from "./v06-radio-cards"
-import PickerGallery from "./v07-gallery"
-import PickerPanelList from "./v08-panel-list"
-import PickerStepper from "./v09-stepper"
-import PickerDialog from "./v10-dialog"
-import PickerFullWidthSelect from "./v11-full-width-select"
-import PickerLivePreview from "./v12-live-preview"
-import PickerSplitCompare from "./v13-split-compare"
-import PickerSpectrum from "./v14-spectrum"
-import PickerLightness from "./v15-lightness"
-import PickerGuided from "./v16-guided"
-import PickerStandOut from "./v17-stand-out"
-import { Variation } from "./parts"
+import DropdownChip from "./d01-chip"
+import DropdownGradientOnly from "./d02-gradient-only"
+import DropdownNameOnGradient from "./d03-name-on-gradient"
+import DropdownUnderline from "./d04-underline"
+import DropdownTileGrid from "./d05-tile-grid"
+import DropdownSearch from "./d06-search"
+import DropdownTabbed from "./d07-tabbed"
+import DropdownCascading from "./d08-cascading"
+import DropdownPreviewPane from "./d09-preview-pane"
+import DropdownSplitButton from "./d10-split-button"
+import { DropdownCard } from "./parts"
 
 const variations = [
   {
-    title: "Dropdown",
+    title: "Chip + name",
     description:
-      "A Select with the gradient beside each name, grouped by family. The smallest footprint; drops into any form.",
-    bestFor: "settings forms, export dialogs",
-    Component: PickerSelect,
+      "A small gradient chip beside the name, in the field and every option.",
+    Component: DropdownChip,
   },
   {
-    title: "Searchable combobox",
+    title: "Gradient only",
     description:
-      "Type to narrow the list by name, family or description; colour-blind-safe scales are flagged. The current gradient sits inside the field.",
-    bestFor: "long preset catalogues, keyboard users",
-    Component: PickerCombobox,
+      "The gradient fills the field; each option is its name over a full-width strip.",
+    Component: DropdownGradientOnly,
   },
   {
-    title: "Popover grid",
+    title: "Name on gradient",
     description:
-      "A button that shows the current scale opens every preset as a tile, grouped by family, with a reverse switch. One click picks and closes.",
-    bestFor: "toolbars and headers with little room",
-    Component: PickerPopoverGrid,
+      "The gradient fills the field and each option, with the name on a small label.",
+    Component: DropdownNameOnGradient,
   },
   {
-    title: "Legend menu",
+    title: "Underline",
     description:
-      "The colour bar beside the plot is the picker: its header opens a menu of scales with radio check marks and a reverse toggle.",
-    bestFor: "plot views where the legend is already on screen",
-    Component: PickerLegendMenu,
+      "The name leads; a thin gradient rule underneath carries the colour.",
+    Component: DropdownUnderline,
   },
   {
-    title: "Quick switch",
+    title: "Tile grid",
     description:
-      "Five favourite scales one click away in a segmented control (names in tooltips), the rest under More, plus Reverse.",
-    bestFor: "frequent switching while interpreting",
-    Component: PickerQuickSwitch,
+      "A swatch-sized button for tight toolbars, opening a 4 × 4 grid of tiles.",
+    Component: DropdownTileGrid,
   },
   {
-    title: "Choice cards",
+    title: "Searchable",
     description:
-      "A short curated list as radio cards, each with its gradient, what it is good for and a colour-blind-safe badge.",
-    bestFor: "report and project settings, guiding non-specialists",
-    Component: PickerRadioCards,
+      "Type to narrow by name, family or “safe” for colour-blind-safe scales.",
+    Component: DropdownSearch,
   },
   {
-    title: "Gallery on your data",
+    title: "Tabbed",
     description:
-      "Every preset drawn on the current model, by family, with a deuteranopia and greyscale preview, so the choice is made on the picture.",
-    bestFor: "choosing a scheme for a publication or a new project",
-    Component: PickerGallery,
+      "Family tabs inside the dropdown keep each list to three to five scales.",
+    Component: DropdownTabbed,
   },
   {
-    title: "Side panel list",
+    title: "Cascading menu",
     description:
-      "An inspector panel beside the view: search, family filter chips and a scrolling list of rows with gradient, name and note.",
-    bestFor: "desktop-style applications with an inspector",
-    Component: PickerPanelList,
+      "Three recent scales on top, each family a submenu, Reverse at the foot.",
+    Component: DropdownCascading,
   },
   {
-    title: "Flip-through",
+    title: "List + preview",
     description:
-      "The preview is the picker: step through every scale with the arrows, or jump with the strip of gradients underneath.",
-    bestFor: "comparing scales on one picture",
-    Component: PickerStepper,
+      "Pointing at a scale draws it on the section in a pane beside the list.",
+    Component: DropdownPreviewPane,
   },
   {
-    title: "Dialog with Apply",
+    title: "Split button",
     description:
-      "A deliberate choice: browse by family, preview the draft beside the list, and nothing changes until Apply; Cancel discards.",
-    bestFor: "shared projects where a change affects every section",
-    Component: PickerDialog,
-  },
-  {
-    title: "Full-width dropdown",
-    description:
-      "Like 01, but the gradient is the value: it fills the whole trigger, and each option is a full-width strip under its name, so scales are compared at a usable length.",
-    bestFor: "forms and side panels where the field already has its own row",
-    Component: PickerFullWidthSelect,
-  },
-  {
-    title: "Live preview",
-    description:
-      "Try before you pick: pointing at a scale, or arrowing to it, morphs the section into it. Move away and it eases back to the scale in use; click to commit.",
-    bestFor: "anyone unsure which scale they want",
-    Component: PickerLivePreview,
-  },
-  {
-    title: "Split compare",
-    description:
-      "The scale in use on the left, a candidate on the right. Drag the divider across the features that matter, then swap with one click.",
-    bestFor: "deciding between two finalists, replacing a legacy scale",
-    Component: PickerSplitCompare,
-  },
-  {
-    title: "Spectrum",
-    description:
-      "Every scale at once: the section is sliced into fourteen strips, one per scale. Point at a strip to see the whole section in it; click to choose.",
-    bestFor: "a first, visual overview of the whole catalogue",
-    Component: PickerSpectrum,
-  },
-  {
-    title: "Lightness curves",
-    description:
-      "Pick by perception: each scale's lightness from conductive to resistive, drawn in its own colours. Straight lines read evenly and survive greyscale; humps hide or invent boundaries.",
-    bestFor: "specialists choosing for publication or quantitative reading",
-    Component: PickerLightness,
-  },
-  {
-    title: "Guided recommendation",
-    description:
-      "Answer three questions (data, audience, look) and get the three best scales, ranked, with the reasons for and against each.",
-    bestFor: "non-specialists, report templates",
-    Component: PickerGuided,
-  },
-  {
-    title: "Make this stand out",
-    description:
-      "Pick a feature (the plume, the gravel channel) or click on the section, and the scales are ranked by how strongly that feature's colour differs from its surroundings (ΔE in OKLab).",
-    bestFor: "interpretation: making a target visible to the reader",
-    Component: PickerStandOut,
+      "One click flips back to the previous scale for A/B checks; the chevron opens the list.",
+    Component: DropdownSplitButton,
   },
 ]
 
-/** The exploration page: header, jump links and the ten variations. */
+/** The exploration page: header and the ten dropdowns. */
 export default function ColorScaleExploration() {
   return (
     <div className="flex flex-col">
@@ -159,35 +93,20 @@ export default function ColorScaleExploration() {
             <Badge variant="outline">Exploration</Badge>
           </PageHeaderEyebrow>
           <PageHeaderTitle className="whitespace-normal">
-            Colour scale picker
+            Colour scale dropdown
           </PageHeaderTitle>
           <PageHeaderDescription>
-            Seventeen ways to pick the colour scale of a resistivity inversion
-            from a set of presets, built from Tecton components. Every variation
-            paints the same synthetic 2-D ERT section (2 – 2k Ω·m, log), so they
-            can be compared side by side.
+            Ten dropdowns for picking the colour scale of a resistivity
+            inversion from fourteen presets, built from Tecton components. Open
+            each one to compare the lists.
           </PageHeaderDescription>
         </PageHeaderContent>
       </PageHeader>
-      <nav
-        aria-label="Variations"
-        className="-mt-2 mb-8 flex flex-wrap gap-x-4 gap-y-1 text-sm"
-      >
-        {variations.map((v, i) => (
-          <a
-            key={v.title}
-            href={`#v${i + 1}`}
-            className="text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
-          >
-            {String(i + 1).padStart(2, "0")} {v.title}
-          </a>
-        ))}
-      </nav>
-      <div className="flex flex-col gap-16 pb-16">
+      <div className="grid gap-4 pb-16 sm:grid-cols-2 xl:grid-cols-5">
         {variations.map(({ Component, ...v }, i) => (
-          <Variation key={v.title} index={i + 1} {...v}>
+          <DropdownCard key={v.title} index={i + 1} {...v}>
             <Component />
-          </Variation>
+          </DropdownCard>
         ))}
       </div>
     </div>

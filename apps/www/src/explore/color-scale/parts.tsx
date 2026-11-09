@@ -2,14 +2,19 @@ import * as React from "react"
 import { cn } from "cn"
 
 import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@tecton/react/components/card"
+
+import {
   buildLut,
   colormapCss,
   evenStops,
-  formatOhm,
   getColormap,
   normalize,
-  rgbToHex,
-  ticks as scaleTicks,
   type ScaleType,
 } from "./colormaps"
 import { getErtSection, type Section } from "./model"
@@ -30,74 +35,6 @@ export function presetColorFn(id: string, reversed = false): ColorFn {
     const k = Math.round(t * 255) * 3
     return [lut[k], lut[k + 1], lut[k + 2], 255]
   }
-}
-
-function lutColorFn(lut: ArrayLike<number>): ColorFn {
-  return (value) => {
-    const t = Math.min(
-      1,
-      Math.max(0, normalize(value, RANGE.min, RANGE.max, RANGE.scale))
-    )
-    const k = Math.round(t * 255) * 3
-    return [lut[k], lut[k + 1], lut[k + 2], 255]
-  }
-}
-
-/** A CSS gradient from a lookup table (16 samples is smooth enough for a bar). */
-export function lutCss(lut: ArrayLike<number>, direction = "to right") {
-  const parts = Array.from({ length: 16 }, (_, i) => {
-    const k = Math.round((i / 15) * 255) * 3
-    return `${rgbToHex([lut[k], lut[k + 1], lut[k + 2]])} ${((i / 15) * 100).toFixed(1)}%`
-  })
-  return `linear-gradient(${direction}, ${parts.join(", ")})`
-}
-
-function prefersReducedMotion() {
-  return (
-    typeof window !== "undefined" &&
-    window.matchMedia("(prefers-reduced-motion: reduce)").matches
-  )
-}
-
-/**
- * The colour function of a preset that eases from the previous scale to the
- * next one (320 ms) instead of jumping, and the matching bar gradient.
- */
-export function useMorphingScale(id: string, reversed = false) {
-  const target = React.useMemo(
-    () => buildLut(evenStops(getColormap(id).stops, reversed)),
-    [id, reversed]
-  )
-  const shown = React.useRef<Float32Array>(Float32Array.from(target))
-  const [frame, setFrame] = React.useState(0)
-  React.useEffect(() => {
-    const from = Float32Array.from(shown.current)
-    if (prefersReducedMotion()) {
-      shown.current = Float32Array.from(target)
-      setFrame((f) => f + 1)
-      return
-    }
-    let raf = 0
-    const start = performance.now()
-    const tick = (now: number) => {
-      const t = Math.min(1, (now - start) / 320)
-      const e = 1 - (1 - t) ** 3
-      for (let i = 0; i < target.length; i++)
-        shown.current[i] = from[i] + (target[i] - from[i]) * e
-      setFrame((f) => f + 1)
-      if (t < 1) raf = requestAnimationFrame(tick)
-    }
-    raf = requestAnimationFrame(tick)
-    return () => cancelAnimationFrame(raf)
-  }, [target])
-  return React.useMemo(
-    () => ({
-      color: lutColorFn(Float32Array.from(shown.current)),
-      css: lutCss(shown.current),
-    }),
-    // Each animation frame is a new picture.
-    [frame]
-  )
 }
 
 /** Memoised colour function for a preset. */
@@ -214,136 +151,32 @@ export function ColormapBar({
   )
 }
 
-/** Tick labels along (or up) a colour bar, placed on the scale. */
-export function ColorbarTicks({
-  orientation = "horizontal",
-  className,
-}: {
-  orientation?: "horizontal" | "vertical"
-  className?: string
-}) {
-  const { min, max, scale } = RANGE
-  const list = scaleTicks(min, max, scale)
-  if (orientation === "vertical")
-    return (
-      <div
-        aria-hidden
-        className={cn(
-          "relative w-10 text-xs text-muted-foreground tabular-nums",
-          className
-        )}
-      >
-        {list.map((v) => (
-          <span
-            key={v}
-            className="absolute start-0 flex translate-y-1/2 items-center gap-1"
-            style={{
-              bottom: `${(normalize(v, min, max, scale) * 100).toFixed(3)}%`,
-            }}
-          >
-            <span className="h-px w-1.5 bg-border" />
-            {formatOhm(v)}
-          </span>
-        ))}
-      </div>
-    )
-  return (
-    <div
-      aria-hidden
-      className={cn(
-        "relative h-4 text-xs text-muted-foreground tabular-nums",
-        className
-      )}
-    >
-      {list.map((v) => {
-        const t = normalize(v, min, max, scale)
-        const edge =
-          t < 0.04
-            ? "translate-x-0"
-            : t > 0.96
-              ? "-translate-x-full"
-              : "-translate-x-1/2"
-        return (
-          <span
-            key={v}
-            className={cn("absolute top-0", edge)}
-            style={{ left: `${(t * 100).toFixed(3)}%` }}
-          >
-            {formatOhm(v)}
-          </span>
-        )
-      })}
-    </div>
-  )
-}
-
-/** The section in the chosen scale, with its horizontal colour bar underneath. */
-export function ScalePreview({
-  map,
-  reversed = false,
-  className,
-}: {
-  map: string
-  reversed?: boolean
-  className?: string
-}) {
-  const color = useColorFn(map, reversed)
-  const name = getColormap(map).name
-  return (
-    <div className={cn("flex min-w-0 flex-col gap-3", className)}>
-      <SectionPreview color={color} label={`Section in ${name}`} />
-      <div dir="ltr" className="flex flex-col gap-1">
-        <ColormapBar id={map} reversed={reversed} className="h-3 w-full" />
-        <ColorbarTicks />
-        <span className="text-center text-xs text-muted-foreground">
-          Resistivity (Ω·m) · {name}
-          {reversed ? ", reversed" : ""}
-        </span>
-      </div>
-    </div>
-  )
-}
-
-/** Variation frame on the exploration page. */
-export function Variation({
+/** One dropdown variation: a compact card with its name, a line on why, and the control. */
+export function DropdownCard({
   index,
   title,
   description,
-  bestFor,
   children,
 }: {
   index: number
   title: string
-  description: React.ReactNode
-  bestFor: string
+  description: string
   children: React.ReactNode
 }) {
-  const id = `variation-${index}`
   return (
-    <section
-      aria-labelledby={id}
-      className="flex scroll-mt-20 flex-col gap-3"
-      id={`v${index}`}
-    >
-      <div className="flex flex-col gap-1">
-        <h2 id={id} className="text-lg font-semibold">
+    <Card size="sm" id={`d${index}`} className="scroll-mt-20">
+      <CardHeader>
+        <CardTitle>
           <span className="text-muted-foreground tabular-nums">
             {String(index).padStart(2, "0")}
           </span>{" "}
           {title}
-        </h2>
-        <p className="max-w-3xl text-sm text-muted-foreground">{description}</p>
-        <p className="text-xs text-muted-foreground">
-          <span className="font-medium text-foreground">Best for:</span>{" "}
-          {bestFor}
-        </p>
-      </div>
-      <div
-        data-not-typeset
-        className="rounded-lg border border-border bg-background p-4 sm:p-6"
-      >
+        </CardTitle>
+        <CardDescription>{description}</CardDescription>
+      </CardHeader>
+      <CardContent data-not-typeset className="mt-auto">
         {children}
-      </div>
-    </section>
+      </CardContent>
+    </Card>
   )
 }
