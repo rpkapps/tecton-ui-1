@@ -14,11 +14,14 @@ export type Colormap = {
   group: ColormapGroup
   stops: string[]
   note: string
+  /** Reads correctly with red-green colour-vision deficiency. */
+  cvdSafe?: boolean
 }
 
 export const colormaps: Colormap[] = [
   {
     id: "viridis",
+    cvdSafe: true,
     name: "Viridis",
     group: "perceptual",
     note: "Uniform lightness ramp, colour-blind safe",
@@ -37,6 +40,7 @@ export const colormaps: Colormap[] = [
   },
   {
     id: "cividis",
+    cvdSafe: true,
     name: "Cividis",
     group: "perceptual",
     note: "Optimised for colour-vision deficiency",
@@ -55,6 +59,7 @@ export const colormaps: Colormap[] = [
   },
   {
     id: "magma",
+    cvdSafe: true,
     name: "Magma",
     group: "perceptual",
     note: "Black to pale yellow, prints well",
@@ -72,6 +77,7 @@ export const colormaps: Colormap[] = [
   },
   {
     id: "inferno",
+    cvdSafe: true,
     name: "Inferno",
     group: "perceptual",
     note: "High contrast at the resistive end",
@@ -89,6 +95,7 @@ export const colormaps: Colormap[] = [
   },
   {
     id: "plasma",
+    cvdSafe: true,
     name: "Plasma",
     group: "perceptual",
     note: "No black end, bright throughout",
@@ -185,6 +192,7 @@ export const colormaps: Colormap[] = [
   },
   {
     id: "brbg",
+    cvdSafe: true,
     name: "Brown–Teal",
     group: "diverging",
     note: "Earthy diverging, neutral centre",
@@ -204,6 +212,7 @@ export const colormaps: Colormap[] = [
   },
   {
     id: "puor",
+    cvdSafe: true,
     name: "Orange–Purple",
     group: "diverging",
     note: "Diverging, distinct from red–green",
@@ -241,6 +250,7 @@ export const colormaps: Colormap[] = [
   },
   {
     id: "earth",
+    cvdSafe: true,
     name: "Earth",
     group: "geophysics",
     note: "Clay ochre to bedrock grey-blue",
@@ -259,6 +269,7 @@ export const colormaps: Colormap[] = [
   },
   {
     id: "greys",
+    cvdSafe: true,
     name: "Greys",
     group: "geophysics",
     note: "Monochrome, for overlays and print",
@@ -294,15 +305,6 @@ export function hexToRgb(hex: string): RGB {
       : value
   const n = parseInt(full.slice(0, 6), 16)
   return [(n >> 16) & 255, (n >> 8) & 255, n & 255]
-}
-
-/** Black or white, whichever reads better on `hex` (WCAG relative luminance). */
-export function textOn(hex: string): "black" | "white" {
-  const [r, g, b] = hexToRgb(hex).map((c) => {
-    const v = c / 255
-    return v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4
-  }) as RGB
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.25 ? "black" : "white"
 }
 
 export function rgbToHex([r, g, b]: RGB): string {
@@ -364,45 +366,20 @@ export function buildLut(stops: Stop[], size = 256): Uint8ClampedArray {
   return lut
 }
 
-/**
- * A CSS gradient for a set of stops. With `classes`, the gradient is split into
- * that many flat bands (each band takes the colour at its centre).
- */
-export function gradientCss(
-  stops: Stop[],
-  {
-    direction = "to right",
-    classes,
-  }: { direction?: string; classes?: number | null } = {}
-): string {
-  if (classes && classes > 1) {
-    const parts: string[] = []
-    for (let i = 0; i < classes; i++) {
-      const color = rgbToHex(sampleStops(stops, (i + 0.5) / classes))
-      parts.push(
-        `${color} ${((i / classes) * 100).toFixed(2)}%`,
-        `${color} ${(((i + 1) / classes) * 100).toFixed(2)}%`
-      )
-    }
-    return `linear-gradient(${direction}, ${parts.join(", ")})`
-  }
-  const sorted = [...stops].sort((a, b) => a.pos - b.pos)
-  const parts = sorted.map((s) => `${s.color} ${(s.pos * 100).toFixed(2)}%`)
+/** A CSS gradient through a set of stops. */
+export function gradientCss(stops: Stop[], direction = "to right"): string {
+  const parts = stops.map((s) => `${s.color} ${(s.pos * 100).toFixed(2)}%`)
   return `linear-gradient(${direction}, ${parts.join(", ")})`
 }
 
 export function colormapCss(
   id: string,
-  options: {
-    reversed?: boolean
-    direction?: string
-    classes?: number | null
-  } = {}
+  {
+    reversed = false,
+    direction,
+  }: { reversed?: boolean; direction?: string } = {}
 ) {
-  return gradientCss(
-    evenStops(getColormap(id).stops, options.reversed),
-    options
-  )
+  return gradientCss(evenStops(getColormap(id).stops, reversed), direction)
 }
 
 /* -------------------------------------------------------------------------- */
@@ -424,21 +401,6 @@ export function normalize(
     return (Math.log10(Math.max(value, 1e-6)) - lo) / (hi - lo || 1)
   }
   return (value - min) / (max - min || 1)
-}
-
-/** The inverse of `normalize`. */
-export function denormalize(
-  t: number,
-  min: number,
-  max: number,
-  scale: ScaleType
-) {
-  if (scale === "log") {
-    const lo = Math.log10(Math.max(min, 1e-6))
-    const hi = Math.log10(Math.max(max, 1e-6))
-    return 10 ** (lo + (hi - lo) * t)
-  }
-  return min + (max - min) * t
 }
 
 /** Tick values for a colour bar: decades (1, 2, 5 inside short ranges) on a log scale. */
@@ -477,14 +439,4 @@ export function formatOhm(value: number) {
   if (value >= 100) return String(Math.round(value))
   if (value >= 1) return String(Math.round(value * 10) / 10)
   return value.toPrecision(2)
-}
-
-/** The value at the given percentile (0–100) of a sorted copy of `values`. */
-export function percentile(sorted: Float32Array, p: number) {
-  if (sorted.length === 0) return 0
-  const i = Math.min(
-    sorted.length - 1,
-    Math.max(0, Math.round((p / 100) * (sorted.length - 1)))
-  )
-  return sorted[i]
 }

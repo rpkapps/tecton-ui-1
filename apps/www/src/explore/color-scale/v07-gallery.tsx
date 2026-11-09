@@ -24,12 +24,11 @@ import {
 } from "@tecton/react/components/toggle-group"
 
 import { colormapGroups, colormaps, getColormap } from "./colormaps"
-import { getErtSection } from "./model"
 import { presetColorFn, SectionPreview, type ColorFn } from "./parts"
 
 type Vision = "normal" | "deutan" | "grey"
 
-// Diverging maps belong to difference sections (variation 09), not resistivity.
+// Diverging maps suit difference sections, not resistivity, so they are left out here.
 const galleryGroups = colormapGroups.filter((g) => g.id !== "diverging")
 
 /** Approximate deuteranopia (Machado et al. 2009, severity 1) on sRGB values. */
@@ -50,9 +49,8 @@ function simulate(fn: ColorFn, vision: Vision): ColorFn {
   }
 }
 
-/** 06 — Choose by looking at your own data: every preset rendered on the model, with a colour-vision check. */
-export default function ColorScaleGallery() {
-  const section = getErtSection()
+/** 07 — Choose by looking at your own data: every preset rendered on the model, with a colour-vision check. */
+export default function PickerGallery() {
   const [map, setMap] = React.useState("viridis")
   const [reversed, setReversed] = React.useState(false)
   const [vision, setVision] = React.useState<Vision>("normal")
@@ -84,11 +82,11 @@ export default function ColorScaleGallery() {
             </ToggleGroup>
             <Field orientation="horizontal" className="w-auto">
               <Switch
-                id="v6-reverse"
+                id="p7-reverse"
                 checked={reversed}
                 onCheckedChange={setReversed}
               />
-              <FieldLabel htmlFor="v6-reverse">Reverse</FieldLabel>
+              <FieldLabel htmlFor="p7-reverse">Reverse</FieldLabel>
             </Field>
           </div>
         </div>
@@ -108,15 +106,7 @@ export default function ColorScaleGallery() {
                     id={m.id}
                     name={m.name}
                     note={m.note}
-                    color={simulate(
-                      presetColorFn(m.id, {
-                        reversed,
-                        min: 2,
-                        max: 2000,
-                        scale: "log",
-                      }),
-                      vision
-                    )}
+                    color={simulate(presetColorFn(m.id, reversed), vision)}
                   />
                 ))}
             </RadioGroup>
@@ -145,13 +135,11 @@ const GalleryCard = React.memo(function GalleryCard({
   note: string
   color: ColorFn
 }) {
-  const section = getErtSection()
   return (
-    <FieldLabel htmlFor={`v6-${id}`}>
+    <FieldLabel htmlFor={`p7-${id}`}>
       <Field orientation="horizontal" className="items-start">
         <FieldContent className="gap-2">
           <SectionPreview
-            section={section}
             color={color}
             axes={false}
             label={`Section in ${name}`}
@@ -159,7 +147,7 @@ const GalleryCard = React.memo(function GalleryCard({
           <FieldTitle>{name}</FieldTitle>
           <FieldDescription>{note}</FieldDescription>
         </FieldContent>
-        <RadioGroupItem value={id} id={`v6-${id}`} />
+        <RadioGroupItem value={id} id={`p7-${id}`} />
       </Field>
     </FieldLabel>
   )

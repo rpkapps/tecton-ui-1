@@ -10,13 +10,12 @@ import {
 } from "@tecton/react/components/select"
 
 import {
-  colormapCss,
   colormapGroups,
   colormaps,
   getColormap,
   type ColormapGroup,
 } from "./colormaps"
-import { GradientBar } from "./parts"
+import { ColormapBar } from "./parts"
 
 const items = Object.fromEntries(colormaps.map((map) => [map.id, map.name]))
 
@@ -59,8 +58,9 @@ export function ColormapSelect({
         <SelectValue>
           {(current: string) => (
             <>
-              <GradientBar
-                background={colormapCss(current, { reversed })}
+              <ColormapBar
+                id={current}
+                reversed={reversed}
                 className="h-3 w-10"
               />
               {getColormap(current).name}
@@ -77,8 +77,9 @@ export function ColormapSelect({
               .filter((map) => map.group === group.id)
               .map((map) => (
                 <SelectItem key={map.id} value={map.id}>
-                  <GradientBar
-                    background={colormapCss(map.id, { reversed })}
+                  <ColormapBar
+                    id={map.id}
+                    reversed={reversed}
                     className="h-3 w-16"
                   />
                   {map.name}
