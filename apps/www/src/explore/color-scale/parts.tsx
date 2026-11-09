@@ -8,6 +8,7 @@ import {
   formatOhm,
   getColormap,
   normalize,
+  rgbToHex,
   ticks as scaleTicks,
   type ScaleType,
 } from "./colormaps"
@@ -31,9 +32,103 @@ export function presetColorFn(id: string, reversed = false): ColorFn {
   }
 }
 
+function lutColorFn(lut: ArrayLike<number>): ColorFn {
+  return (value) => {
+    const t = Math.min(
+      1,
+      Math.max(0, normalize(value, RANGE.min, RANGE.max, RANGE.scale))
+    )
+    const k = Math.round(t * 255) * 3
+    return [lut[k], lut[k + 1], lut[k + 2], 255]
+  }
+}
+
+/** A CSS gradient from a lookup table (16 samples is smooth enough for a bar). */
+export function lutCss(lut: ArrayLike<number>, direction = "to right") {
+  const parts = Array.from({ length: 16 }, (_, i) => {
+    const k = Math.round((i / 15) * 255) * 3
+    return `${rgbToHex([lut[k], lut[k + 1], lut[k + 2]])} ${((i / 15) * 100).toFixed(1)}%`
+  })
+  return `linear-gradient(${direction}, ${parts.join(", ")})`
+}
+
+function prefersReducedMotion() {
+  return (
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  )
+}
+
+/**
+ * The colour function of a preset that eases from the previous scale to the
+ * next one (320 ms) instead of jumping, and the matching bar gradient.
+ */
+export function useMorphingScale(id: string, reversed = false) {
+  const target = React.useMemo(
+    () => buildLut(evenStops(getColormap(id).stops, reversed)),
+    [id, reversed]
+  )
+  const shown = React.useRef<Float32Array>(Float32Array.from(target))
+  const [frame, setFrame] = React.useState(0)
+  React.useEffect(() => {
+    const from = Float32Array.from(shown.current)
+    if (prefersReducedMotion()) {
+      shown.current = Float32Array.from(target)
+      setFrame((f) => f + 1)
+      return
+    }
+    let raf = 0
+    const start = performance.now()
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / 320)
+      const e = 1 - (1 - t) ** 3
+      for (let i = 0; i < target.length; i++)
+        shown.current[i] = from[i] + (target[i] - from[i]) * e
+      setFrame((f) => f + 1)
+      if (t < 1) raf = requestAnimationFrame(tick)
+    }
+    raf = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(raf)
+  }, [target])
+  return React.useMemo(
+    () => ({
+      color: lutColorFn(Float32Array.from(shown.current)),
+      css: lutCss(shown.current),
+    }),
+    // Each animation frame is a new picture.
+    [frame]
+  )
+}
+
 /** Memoised colour function for a preset. */
 export function useColorFn(id: string, reversed = false) {
   return React.useMemo(() => presetColorFn(id, reversed), [id, reversed])
+}
+
+/**
+ * Paints the section into a canvas, one pixel per model cell. `color` may
+ * also take the cell's column, for pictures that vary across the section.
+ */
+export function useSectionPaint(
+  color: (value: number, column: number) => [number, number, number, number],
+  section: Section = getErtSection()
+) {
+  const canvas = React.useRef<HTMLCanvasElement>(null)
+  React.useEffect(() => {
+    const ctx = canvas.current?.getContext("2d")
+    if (!ctx) return
+    const image = ctx.createImageData(section.width, section.height)
+    const { values, width } = section
+    for (let i = 0; i < values.length; i++) {
+      const [r, g, b, a] = color(values[i], i % width)
+      image.data[i * 4] = r
+      image.data[i * 4 + 1] = g
+      image.data[i * 4 + 2] = b
+      image.data[i * 4 + 3] = a
+    }
+    ctx.putImageData(image, 0, 0)
+  }, [section, color])
+  return canvas
 }
 
 /**

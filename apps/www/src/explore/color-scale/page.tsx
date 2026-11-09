@@ -1,4 +1,4 @@
-/** Eleven ways to pick a colour scale, shared by the docs route and the standalone mockup build. */
+/** Seventeen ways to pick a colour scale, shared by the docs route and the standalone mockup build. */
 import { Badge } from "@tecton/react/components/badge"
 import {
   PageHeader,
@@ -19,6 +19,12 @@ import PickerPanelList from "./v08-panel-list"
 import PickerStepper from "./v09-stepper"
 import PickerDialog from "./v10-dialog"
 import PickerFullWidthSelect from "./v11-full-width-select"
+import PickerLivePreview from "./v12-live-preview"
+import PickerSplitCompare from "./v13-split-compare"
+import PickerSpectrum from "./v14-spectrum"
+import PickerLightness from "./v15-lightness"
+import PickerGuided from "./v16-guided"
+import PickerStandOut from "./v17-stand-out"
 import { Variation } from "./parts"
 
 const variations = [
@@ -99,6 +105,48 @@ const variations = [
     bestFor: "forms and side panels where the field already has its own row",
     Component: PickerFullWidthSelect,
   },
+  {
+    title: "Live preview",
+    description:
+      "Try before you pick: pointing at a scale, or arrowing to it, morphs the section into it. Move away and it eases back to the scale in use; click to commit.",
+    bestFor: "anyone unsure which scale they want",
+    Component: PickerLivePreview,
+  },
+  {
+    title: "Split compare",
+    description:
+      "The scale in use on the left, a candidate on the right. Drag the divider across the features that matter, then swap with one click.",
+    bestFor: "deciding between two finalists, replacing a legacy scale",
+    Component: PickerSplitCompare,
+  },
+  {
+    title: "Spectrum",
+    description:
+      "Every scale at once: the section is sliced into fourteen strips, one per scale. Point at a strip to see the whole section in it; click to choose.",
+    bestFor: "a first, visual overview of the whole catalogue",
+    Component: PickerSpectrum,
+  },
+  {
+    title: "Lightness curves",
+    description:
+      "Pick by perception: each scale's lightness from conductive to resistive, drawn in its own colours. Straight lines read evenly and survive greyscale; humps hide or invent boundaries.",
+    bestFor: "specialists choosing for publication or quantitative reading",
+    Component: PickerLightness,
+  },
+  {
+    title: "Guided recommendation",
+    description:
+      "Answer three questions (data, audience, look) and get the three best scales, ranked, with the reasons for and against each.",
+    bestFor: "non-specialists, report templates",
+    Component: PickerGuided,
+  },
+  {
+    title: "Make this stand out",
+    description:
+      "Pick a feature (the plume, the gravel channel) or click on the section, and the scales are ranked by how strongly that feature's colour differs from its surroundings (ΔE in OKLab).",
+    bestFor: "interpretation: making a target visible to the reader",
+    Component: PickerStandOut,
+  },
 ]
 
 /** The exploration page: header, jump links and the ten variations. */
@@ -114,8 +162,8 @@ export default function ColorScaleExploration() {
             Colour scale picker
           </PageHeaderTitle>
           <PageHeaderDescription>
-            Eleven ways to pick the colour scale of a resistivity inversion from
-            a set of presets, built from Tecton components. Every variation
+            Seventeen ways to pick the colour scale of a resistivity inversion
+            from a set of presets, built from Tecton components. Every variation
             paints the same synthetic 2-D ERT section (2 – 2k Ω·m, log), so they
             can be compared side by side.
           </PageHeaderDescription>
