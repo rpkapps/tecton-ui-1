@@ -21,6 +21,7 @@ import { Route as SiteBlocksIndexRouteImport } from './routes/_site/blocks/index
 import { Route as SiteBlocksNameRouteImport } from './routes/_site/blocks/$name'
 import { Route as SiteDocsIndexRouteImport } from './routes/_site/docs/index'
 import { Route as SiteDocsSplatRouteImport } from './routes/_site/docs/$'
+import { Route as SiteExploreColorScaleRouteImport } from './routes/_site/explore/color-scale'
 
 const SiteRoute = SiteRouteImport.update({
   id: '/_site',
@@ -81,6 +82,11 @@ const SiteDocsSplatRoute = SiteDocsSplatRouteImport.update({
   path: '/$',
   getParentRoute: () => SiteDocsRoute,
 } as any)
+const SiteExploreColorScaleRoute = SiteExploreColorScaleRouteImport.update({
+  id: '/explore/color-scale',
+  path: '/explore/color-scale',
+  getParentRoute: () => SiteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
@@ -92,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/view/$name': typeof ViewNameRoute
   '/blocks/$name': typeof SiteBlocksNameRoute
   '/docs/$': typeof SiteDocsSplatRoute
+  '/explore/color-scale': typeof SiteExploreColorScaleRoute
   '/blocks/': typeof SiteBlocksIndexRoute
   '/docs/': typeof SiteDocsIndexRoute
 }
@@ -103,6 +110,7 @@ export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
   '/blocks/$name': typeof SiteBlocksNameRoute
   '/docs/$': typeof SiteDocsSplatRoute
+  '/explore/color-scale': typeof SiteExploreColorScaleRoute
   '/blocks': typeof SiteBlocksIndexRoute
   '/docs': typeof SiteDocsIndexRoute
 }
@@ -118,6 +126,7 @@ export interface FileRoutesById {
   '/_site/': typeof SiteIndexRoute
   '/_site/blocks/$name': typeof SiteBlocksNameRoute
   '/_site/docs/$': typeof SiteDocsSplatRoute
+  '/_site/explore/color-scale': typeof SiteExploreColorScaleRoute
   '/_site/blocks/': typeof SiteBlocksIndexRoute
   '/_site/docs/': typeof SiteDocsIndexRoute
 }
@@ -133,6 +142,7 @@ export interface FileRouteTypes {
     | '/view/$name'
     | '/blocks/$name'
     | '/docs/$'
+    | '/explore/color-scale'
     | '/blocks/'
     | '/docs/'
   fileRoutesByTo: FileRoutesByTo
@@ -144,6 +154,7 @@ export interface FileRouteTypes {
     | '/'
     | '/blocks/$name'
     | '/docs/$'
+    | '/explore/color-scale'
     | '/blocks'
     | '/docs'
   id:
@@ -158,6 +169,7 @@ export interface FileRouteTypes {
     | '/_site/'
     | '/_site/blocks/$name'
     | '/_site/docs/$'
+    | '/_site/explore/color-scale'
     | '/_site/blocks/'
     | '/_site/docs/'
   fileRoutesById: FileRoutesById
@@ -254,6 +266,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteDocsSplatRouteImport
       parentRoute: typeof SiteDocsRoute
     }
+    '/_site/explore/color-scale': {
+      id: '/_site/explore/color-scale'
+      path: '/explore/color-scale'
+      fullPath: '/explore/color-scale'
+      preLoaderRoute: typeof SiteExploreColorScaleRouteImport
+      parentRoute: typeof SiteRoute
+    }
   }
 }
 
@@ -291,6 +310,7 @@ interface SiteRouteChildren {
   SiteDocsRoute: typeof SiteDocsRouteWithChildren
   SiteThemesRoute: typeof SiteThemesRoute
   SiteIndexRoute: typeof SiteIndexRoute
+  SiteExploreColorScaleRoute: typeof SiteExploreColorScaleRoute
 }
 
 const SiteRouteChildren: SiteRouteChildren = {
@@ -299,6 +319,7 @@ const SiteRouteChildren: SiteRouteChildren = {
   SiteDocsRoute: SiteDocsRouteWithChildren,
   SiteThemesRoute: SiteThemesRoute,
   SiteIndexRoute: SiteIndexRoute,
+  SiteExploreColorScaleRoute: SiteExploreColorScaleRoute,
 }
 
 const SiteRouteWithChildren = SiteRoute._addFileChildren(SiteRouteChildren)
