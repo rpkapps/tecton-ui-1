@@ -1,4 +1,4 @@
-/** Ten ways to pick a colour scale, shared by the docs route and the standalone mockup build. */
+/** Eleven ways to pick a colour scale, shared by the docs route and the standalone mockup build. */
 import { Badge } from "@tecton/react/components/badge"
 import {
   PageHeader,
@@ -18,6 +18,7 @@ import PickerGallery from "./v07-gallery"
 import PickerPanelList from "./v08-panel-list"
 import PickerStepper from "./v09-stepper"
 import PickerDialog from "./v10-dialog"
+import PickerFullWidthSelect from "./v11-full-width-select"
 import { Variation } from "./parts"
 
 const variations = [
@@ -91,6 +92,13 @@ const variations = [
     bestFor: "shared projects where a change affects every section",
     Component: PickerDialog,
   },
+  {
+    title: "Full-width dropdown",
+    description:
+      "Like 01, but the gradient is the value: it fills the whole trigger, and each option is a full-width strip under its name, so scales are compared at a usable length.",
+    bestFor: "forms and side panels where the field already has its own row",
+    Component: PickerFullWidthSelect,
+  },
 ]
 
 /** The exploration page: header, jump links and the ten variations. */
@@ -106,10 +114,10 @@ export default function ColorScaleExploration() {
             Colour scale picker
           </PageHeaderTitle>
           <PageHeaderDescription>
-            Ten ways to pick the colour scale of a resistivity inversion from a
-            set of presets, built from Tecton components. Every variation paints
-            the same synthetic 2-D ERT section (2 – 2k Ω·m, log), so they can be
-            compared side by side.
+            Eleven ways to pick the colour scale of a resistivity inversion from
+            a set of presets, built from Tecton components. Every variation
+            paints the same synthetic 2-D ERT section (2 – 2k Ω·m, log), so they
+            can be compared side by side.
           </PageHeaderDescription>
         </PageHeaderContent>
       </PageHeader>
