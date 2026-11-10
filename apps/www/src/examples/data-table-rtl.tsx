@@ -1,4 +1,3 @@
-// Synced from shadcn/ui (apps/v4/examples/base/data-table-rtl.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -227,8 +226,8 @@ export function DataTableRtl() {
         }),
         columnHelper.accessor("status", {
           header: t.status,
-          cell: ({ row }) => {
-            const status = row.getValue("status") as string
+          cell: ({ getValue }) => {
+            const status = getValue()
             const statusMap: Record<string, string> = {
               success: t.success,
               processing: t.processing,
@@ -333,7 +332,10 @@ export function DataTableRtl() {
       <div className="flex items-center gap-2 py-4">
         <Input
           placeholder={t.filterEmails}
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          value={
+            (table.getColumn("email")?.getFilterValue() as
+              string | undefined) ?? ""
+          }
           onChange={(event) =>
             table.getColumn("email")?.setFilterValue(event.target.value)
           }
@@ -389,7 +391,7 @@ export function DataTableRtl() {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

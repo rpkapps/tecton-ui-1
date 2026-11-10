@@ -1,4 +1,3 @@
-// Synced from shadcn/ui (apps/v4/examples/base/data-table-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
 import * as React from "react"
@@ -224,7 +223,10 @@ export function DataTableDemo() {
       <div className="flex items-center py-4">
         <Input
           placeholder="Filter emails..."
-          value={(table.getColumn("email")?.getFilterValue() as string) ?? ""}
+          value={
+            (table.getColumn("email")?.getFilterValue() as
+              string | undefined) ?? ""
+          }
           onChange={(event) =>
             table.getColumn("email")?.setFilterValue(event.target.value)
           }
@@ -277,7 +279,7 @@ export function DataTableDemo() {
             ))}
           </TableHeader>
           <TableBody>
-            {table.getRowModel().rows?.length ? (
+            {table.getRowModel().rows.length ? (
               table.getRowModel().rows.map((row) => (
                 <TableRow
                   key={row.id}

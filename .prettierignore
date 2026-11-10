@@ -190,8 +190,6 @@ apps/www/src/examples/context-menu-rtl.tsx
 apps/www/src/examples/context-menu-shortcuts.tsx
 apps/www/src/examples/context-menu-sides.tsx
 apps/www/src/examples/context-menu-submenu.tsx
-apps/www/src/examples/data-table-demo.tsx
-apps/www/src/examples/data-table-rtl.tsx
 apps/www/src/examples/date-picker-basic.tsx
 apps/www/src/examples/date-picker-demo.tsx
 apps/www/src/examples/date-picker-dob.tsx

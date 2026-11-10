@@ -86,8 +86,12 @@ const BLOCK_PREVIEWS: Record<string, string> = {
   "sidebar-demo": "sidebar-01",
 }
 
-/** Upstream docs pages without a component file that are still worth keeping. */
-const EXTRA_PAGES = ["data-table", "date-picker"]
+/**
+ * Upstream docs pages without a component file that are still worth keeping.
+ * `data-table` is not one: it is hand-written (`components/data-table.mdx`,
+ * no `upstream:` line), as the Tecton recipes outgrew the upstream guide.
+ */
+const EXTRA_PAGES = ["date-picker"]
 
 /**
  * Other upstream docs folders that are synced page by page. The pages reference
@@ -783,8 +787,8 @@ const PAGE_REWRITES: Record<
       "avatar page (AvatarFallback)"
     )
   },
-  // The package files are read-only for applications: a custom spinner and
-  // a reusable data table are the application's own components.
+  // The package files are read-only for applications: a custom spinner is
+  // the application's own component.
   spinner: (mdx) => {
     mdx = replaceOrThrow(
       mdx,
@@ -799,13 +803,6 @@ const PAGE_REWRITES: Record<
       "spinner page (customization title)"
     )
   },
-  "data-table": (mdx) =>
-    replaceOrThrow(
-      mdx,
-      "extracting it to `components/ui/data-table.tsx`.",
-      "extracting it to a `components/data-table.tsx` file in your application.",
-      "data-table page (tip)"
-    ),
   // `shadcn init` is for projects that own the component sources
   button: (mdx) =>
     replaceOrThrow(
@@ -1365,6 +1362,16 @@ async function main() {
     report.pages.push(page.folder ? page.key : page.name)
   }
 
+  // Hand-written component pages (no `upstream:` line, such as data-table)
+  // are listed in the navigation with the synced ones, in name order.
+  const authoredPages: string[] = []
+  for (const file of await listFiles(OUT_DOCS)) {
+    if (!file.endsWith(".mdx") || file === "index.mdx") continue
+    const name = file.replace(/\.mdx$/, "")
+    if (plannedPages.some((p) => !p.folder && p.name === name)) continue
+    const content = await fs.readFile(path.join(OUT_DOCS, file), "utf8")
+    if (!SYNCED_PAGE_MARKER.test(content)) authoredPages.push(name)
+  }
   outputs.set(
     path.join(OUT_DOCS, "meta.json"),
     JSON.stringify(
@@ -1372,7 +1379,11 @@ async function main() {
         title: "Components",
         pages: [
           "index",
-          ...plannedPages.filter((p) => !p.folder).map((p) => p.name),
+          ...plannedPages
+            .filter((p) => !p.folder)
+            .map((p) => p.name)
+            .concat(authoredPages)
+            .sort(),
         ],
       },
       null,
