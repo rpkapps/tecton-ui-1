@@ -26,8 +26,13 @@
  *   with its rows or columns.
  *
  * Nothing here reads the DOM: the cells of rows out of view are read from
- * their items (`cell-ranges.ts` walks, counts and sums them).
+ * their items (`cell-ranges.ts` walks, counts and sums them). Loaded on
+ * demand, with the code of the cell selection: until it is there, the root
+ * has no grid, and the rows draw no selection (`cell-marks.ts` reads what
+ * a row's cells show of it).
  */
+import { BOTTOM, END, SELECTED, START, TOP } from "../cell-marks"
+import { cellCount, summarizeCells, type CellSummary } from "./cell-ranges"
 import type { EngineColumn } from "./columns"
 import type { DataTableRowModel } from "./engine"
 import type { EngineRow } from "./rows"
@@ -63,19 +68,18 @@ type CellGrid<T> = {
   /**
    * What a row's cells show of the selection, as text that is the same
    * while they show the same (`""` for none): what a row re-renders on.
-   * `decodeMarks` reads it.
+   * `decode` reads it.
    */
   rowMarks: (id: string) => string
+  /** A row's marks as each column's flags (`decodeMarks`). */
+  decode: typeof decodeMarks
   /** Other ranges, resolved the same way. */
   resolve: (ranges: ReadonlyArray<DataTableCellRange>) => CellGrid<T>
+  /** The selected cells of item rows, each once (worked out once). */
+  count: () => number
+  /** What `DataTableCellSummary` shows of them (worked out once). */
+  summary: () => CellSummary<T>
 }
-
-/** A cell's part in the selection, as flags (`decodeMarks`). */
-const SELECTED = 1
-const TOP = 2
-const BOTTOM = 4
-const START = 8
-const END = 16
 
 const NO_RECTS: ReadonlyArray<CellRect> = []
 
@@ -194,7 +198,7 @@ function resolveCells<T>(
     rects.push({ top, bottom, first: span.first, last: span.last })
   }
   const resolved = rects.length ? rects : NO_RECTS
-  return {
+  const grid: CellGrid<T> = {
     ranges,
     rects: resolved,
     rows,
@@ -217,12 +221,36 @@ function resolveCells<T>(
       }
       return marks
     },
+    decode: decodeMarks,
+    count: () => cellCount(grid),
+    summary: () => summarizeCells(grid),
   }
+  return grid
 }
 
 /**
- * Each column's flags (`SELECTED`, `TOP`…) from a row's marks; `null` for
- * none. The columns `skipped` (`CellGrid.skipped`) hold no selected cell.
+ * The root's cell selection over the rows and columns shown, the columns
+ * hidden below the breakpoints the window is below (`below`) passed over.
+ */
+function resolveSelection<T>(
+  ranges: ReadonlyArray<DataTableCellRange>,
+  model: DataTableRowModel<T>,
+  columns: ReadonlyArray<EngineColumn<T>>,
+  order: ReadonlyArray<string>,
+  below: ReadonlySet<string>
+): CellGrid<T> {
+  const hiddenBelow = new Set(
+    columns.flatMap(({ id, definition }) =>
+      definition.hideBelow && below.has(definition.hideBelow) ? [id] : []
+    )
+  )
+  return resolveCells(ranges, model, columns, { order, hiddenBelow })
+}
+
+/**
+ * Each column's flags (`SELECTED`, `TOP`…) from a row's marks
+ * (`CellGrid.rowMarks`); `null` for none. The columns `skipped`
+ * (`CellGrid.skipped`) hold no selected cell.
  */
 function decodeMarks(
   marks: string,
@@ -250,5 +278,5 @@ function decodeMarks(
   return flags
 }
 
-export { BOTTOM, decodeMarks, END, resolveCells, SELECTED, START, TOP }
+export { decodeMarks, resolveCells, resolveSelection }
 export type { CellGrid, CellRect, ResolveOptions }

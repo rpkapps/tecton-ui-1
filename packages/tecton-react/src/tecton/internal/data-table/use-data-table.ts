@@ -33,7 +33,7 @@ import {
   type DataTableSort,
   type DataTableView,
 } from "./engine/index"
-import { cellCount, summarizeCells } from "./engine/cell-ranges"
+import { loadFeature } from "./lazy"
 import { viewChangeReason } from "./view-reason"
 
 type UseDataTableResult<T> = {
@@ -113,12 +113,17 @@ type UseDataTableResult<T> = {
   /** Selects every cell shown, on every page: `[{}]`, which stays every cell. */
   selectAllCells: () => void
   clearCellSelection: () => void
-  /** The number of cells selected, each counted once; worked out when read. */
+  /**
+   * The number of cells selected, each counted once; worked out when read.
+   * `0` until the cell selection's code has loaded (soon after the table
+   * mounts; reading this asks for it): the part renders again then.
+   */
   selectedCellCount: number
   /**
    * What `DataTableCellSummary` shows, worked out when read: the cells
    * with a value, the numbers among them (of number columns), their sum
-   * and mean (`null` without numbers); `null` with no cell selected.
+   * and mean (`null` without numbers); `null` with no cell selected, and
+   * until the cell selection's code has loaded (as `selectedCellCount`).
    */
   cellSummary: DataTableCellSummaryValue | null
   /** Drops every cell's message (a value refused, a save that failed). */
@@ -148,7 +153,9 @@ type DataTableCellSummaryValue = {
 
 function createResult<T>(
   state: DataTableState<T>,
-  actions: DataTableActions<T>
+  actions: DataTableActions<T>,
+  /** Asks for the cell selection's code (after the render). */
+  wantCells: () => void
 ): UseDataTableResult<T> {
   const { model, view } = state
   // Each builds on the view as it is now: two setters called one after the
@@ -234,13 +241,16 @@ function createResult<T>(
     clearCellSelection: () => {
       actions.setCellSelection([], "none")
     },
+    // Worked out by the code on demand: until it is there, none.
     get selectedCellCount() {
-      return state.cellGrid ? cellCount(state.cellGrid) : 0
+      if (!state.cellGrid) wantCells()
+      return state.cellGrid?.count() ?? 0
     },
     get cellSummary() {
       const grid = state.cellGrid
+      if (!grid) wantCells()
       if (!grid || grid.rects.length === 0) return null
-      const { count, numericCount, sum, average } = summarizeCells(grid)
+      const { count, numericCount, sum, average } = grid.summary()
       return { count, numericCount, sum, average }
     },
     clearCellMessages: () => actions.clearCellMessages(),
@@ -271,8 +281,20 @@ function useDataTable<T = unknown>(): UseDataTableResult<T> {
       "useDataTable must be called in a component inside a DataTable."
     )
   const state = useStore(context.store, (current) => current)
+  // A count or summary read before the cell selection's code came: it is
+  // asked for once rendered (never while rendering, nor on the server).
+  const wanted = React.useRef(false)
+  const mode = state.options.cellSelectionMode
+  React.useEffect(() => {
+    if (!wanted.current || mode === "none") return
+    wanted.current = false
+    loadFeature("cellSelection").catch(() => undefined)
+  })
   return React.useMemo(
-    () => createResult(state, context.actions),
+    () =>
+      createResult(state, context.actions, () => {
+        wanted.current = true
+      }),
     [state, context.actions]
   )
 }

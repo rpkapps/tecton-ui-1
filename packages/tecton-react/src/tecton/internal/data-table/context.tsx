@@ -171,8 +171,14 @@ type DataTableState<T> = {
   readonly clears: number
   /** The cell selection as given (ranges set aside included). */
   readonly cellSelection: ReadonlyArray<DataTableCellRange>
-  /** The cell selection over the rows and columns shown; `null` without a cell selection mode. */
+  /**
+   * The cell selection over the rows and columns shown: resolved by the
+   * code loaded on demand (`cellSelection`), so `null` until it is there,
+   * and without a cell selection mode.
+   */
   readonly cellGrid: CellGrid<T> | null
+  /** The breakpoints the window is below (columns' `hideBelow`), with a cell selection mode. */
+  readonly cellBelow: ReadonlySet<string>
 }
 
 /** A cell being saved (`pending`), or whose value was refused or not saved (`error`). */
@@ -191,12 +197,31 @@ type CellMark = {
   readonly values: ReadonlyArray<DataTableValue>
 }
 
+/**
+ * How cells show their marks: the code that writes puts it in the cells'
+ * store with its first mark (`cell-message.tsx`), so none of it loads up
+ * front.
+ */
+type CellWriter = {
+  /** A cell's mark as it shows with its value now (a message is gone once the value changes). */
+  shownMark: (
+    mark: CellMark | undefined,
+    value: DataTableValue
+  ) => CellMark | undefined
+  /** A cell's message: its description and tooltip. */
+  Message: React.ComponentType<{ message: string; attempted: string | null }>
+  /** Drops every message; the cells saving stay so. */
+  clearMessages: (cells: Store<CellsState>) => void
+}
+
 /** What the rows' cells show of the cell selection and of writes, apart from the table's state. */
 type CellsState = {
   /** The cell selection over the rows and columns shown. */
   readonly grid: CellGrid<unknown> | null
   /** The cells being saved or not saved, by row id, then column id. */
   readonly marks: ReadonlyMap<string, ReadonlyMap<string, CellMark>>
+  /** How they show, there with the first mark. */
+  readonly writer: CellWriter | null
   /** The last change of the cell selection the table made, and why. */
   readonly change: {
     readonly ranges: ReadonlyArray<DataTableCellRange>
@@ -208,9 +233,12 @@ type CellsState = {
 type DataTableCellsChangeDetails =
   DataTableChangeDetails<DataTableCellsChangeReason> & {
     /**
-     * Aborted when a later write takes over any of these cells (or this
-     * one is cancelled): a save still running for them is stale, and its
-     * outcome (a rollback on failure) must not overwrite the later values.
+     * Aborted when a later write takes over any of these cells (one is
+     * enough), or this one is cancelled: a request still running can be
+     * cancelled. The cells no later write took over are still this
+     * write's: if its promise rejects, they show its message. Roll back
+     * compare-and-set (only a cell whose value is still the one written),
+     * so a cell a later write took over keeps its later value.
      */
     signal: AbortSignal
   }
@@ -409,6 +437,7 @@ export {
 export type {
   CellMark,
   CellsState,
+  CellWriter,
   DataTableActions,
   DataTableCellSelectionMode,
   DataTableCellsChangeDetails,

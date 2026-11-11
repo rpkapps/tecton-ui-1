@@ -1,13 +1,13 @@
 /**
- * What a cell can be and shows apart from its value, read as the rows
- * render: whether it can be written (`aria-readonly`, the keys that would
- * edit it), and whether its message (not valid, not saved) still holds.
- * The writes themselves are `cell-write.ts`'s, loaded on demand.
+ * What a cell shows apart from its value, read as the rows render (§7: up
+ * front, with the table): whether it can be written (`aria-readonly`, the
+ * keys that would edit it), and the flags of its part in the cell
+ * selection, which `cell.tsx` draws. The selection itself, and each row's
+ * flags (`CellGrid.decode`), come from the code loaded on demand
+ * (`engine/cells.ts`); a cell's message from the code that writes
+ * (`cell-message.tsx`).
  */
-import type { CellMark } from "./context"
 import type { EngineColumn } from "./engine/columns"
-import type { DataTableValue } from "./engine/types"
-import { isEmptyValue } from "./engine/values"
 
 /**
  * Whether a column's cell of an item can be written: the root's
@@ -26,22 +26,11 @@ function isCellEditable<T>(
   return typeof own === "function" ? own(item) : true
 }
 
-/** Whether two values are the same cell value (empty ones all alike, dates by time). */
-function sameValue(a: DataTableValue, b: DataTableValue) {
-  if (isEmptyValue(a) && isEmptyValue(b)) return true
-  if (a instanceof Date && b instanceof Date) return a.getTime() === b.getTime()
-  return Object.is(a, b)
-}
+/** A cell's part in the selection, as flags (`CellGrid.decode`). */
+const SELECTED = 1
+const TOP = 2
+const BOTTOM = 4
+const START = 8
+const END = 16
 
-/**
- * A cell's mark as it shows with the cell's value now: a message holds
- * while the value is one it was given for, and is gone once the value
- * changes from outside.
- */
-function shownMark(mark: CellMark | undefined, value: DataTableValue) {
-  if (!mark?.error) return mark
-  if (mark.values.some((held) => sameValue(held, value))) return mark
-  return mark.pending === null ? undefined : { ...mark, error: null }
-}
-
-export { isCellEditable, sameValue, shownMark }
+export { BOTTOM, END, isCellEditable, SELECTED, START, TOP }

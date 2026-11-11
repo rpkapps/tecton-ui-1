@@ -72,13 +72,13 @@ The root turns features on: `selectionMode`, `cellSelectionMode`, `editable`, `p
 
 `createColumns` checks the columns once (ids unique and not empty, groups not empty) and throws a clear error otherwise. A column's `type` decides how its values are shown, aligned and sorted:
 
-| `type` | Align | Shown as | Sorted |
-| --- | --- | --- | --- |
-| `"text"` (default) | start | the text | natural and case-insensitive: A-2 before A-10 |
-| `"number"` | end, tabular digits | `Intl.NumberFormat` in the locale, with `format` | numerically |
-| `"date"` | start | `Intl.DateTimeFormat` in the locale, with `format` (`{ dateStyle: "medium" }` by default) | chronologically |
-| `"boolean"` | center | a check for `true`, nothing for `false`; "Yes" / "No" for screen readers | `false` before `true` |
-| `"options"` | start | an outline [Badge](/docs/components/badge) with the option's `label` and `variant` | in the order of `options` |
+| `type`             | Align               | Shown as                                                                                  | Sorted                                        |
+| ------------------ | ------------------- | ----------------------------------------------------------------------------------------- | --------------------------------------------- |
+| `"text"` (default) | start               | the text                                                                                  | natural and case-insensitive: A-2 before A-10 |
+| `"number"`         | end, tabular digits | `Intl.NumberFormat` in the locale, with `format`                                          | numerically                                   |
+| `"date"`           | start               | `Intl.DateTimeFormat` in the locale, with `format` (`{ dateStyle: "medium" }` by default) | chronologically                               |
+| `"boolean"`        | center              | a check for `true`, nothing for `false`; "Yes" / "No" for screen readers                  | `false` before `true`                         |
+| `"options"`        | start               | an outline [Badge](/docs/components/badge) with the option's `label` and `variant`        | in the order of `options`                     |
 
 Empty values (`null`, `undefined`, an empty string) are empty cells and sort last in either direction. `align` overrides the type's alignment, and `compare` its order: `(a, b) => number`, ascending, like `Array#sort`.
 
@@ -186,7 +186,9 @@ While the resizer is dragged, or moved with the keys, the column and the width b
     min={80}
     max={400}
     resetValue={140}
-    onValueChange={(width) => setWidths((current) => ({ ...current, field: width }))}
+    onValueChange={(width) =>
+      setWidths((current) => ({ ...current, field: width }))
+    }
   />
 </TableHead>
 ```
@@ -241,7 +243,12 @@ Pinned columns are the view's `columns.pinned.start` and `.end`, each in the vie
 <ComponentPreview name="data-table-column-visibility" align="start" />
 
 ```tsx
-<DataTable items={allocations} columns={columns} hideableColumns pinnableColumns>
+<DataTable
+  items={allocations}
+  columns={columns}
+  hideableColumns
+  pinnableColumns
+>
   <DataTableToolbar>
     <DataTableColumnsMenu className="ms-auto" />
   </DataTableToolbar>
@@ -309,13 +316,13 @@ The sorting is part of the [view](#the-view): `defaultView={{ sorting: [{ column
 
 **Filters** depend on the column's type. The popover of `DataTableFilter` holds:
 
-| `type` | Filter | Value in the view |
-| --- | --- | --- |
-| `text` | the text the display text contains | `{ type: "text", value }` |
-| `number` | a minimum and a maximum, either left empty | `{ type: "number", min?, max? }` |
-| `date` | a range of days, on a calendar | `{ type: "date", from?, to? }` |
-| `boolean` | Any, Yes or No | `{ type: "boolean", value }` |
-| `options` | a checkbox per option, with its number of rows | `{ type: "options", values }` |
+| `type`    | Filter                                         | Value in the view                |
+| --------- | ---------------------------------------------- | -------------------------------- |
+| `text`    | the text the display text contains             | `{ type: "text", value }`        |
+| `number`  | a minimum and a maximum, either left empty     | `{ type: "number", min?, max? }` |
+| `date`    | a range of days, on a calendar                 | `{ type: "date", from?, to? }`   |
+| `boolean` | Any, Yes or No                                 | `{ type: "boolean", value }`     |
+| `options` | a checkbox per option, with its number of rows | `{ type: "options", values }`    |
 
 The ends of a range are included. A date filter's ends are calendar days in the zone the column shows its dates in (its `format.timeZone`, else the user's): `from` is the first day's midnight there and a `to` at midnight takes in that whole day, so `from` and `to` on the same day keep that one day; a `to` at another time is kept as that instant. The button and the chip show a date filter as days only ("Mar 1, 2024", one date for a single day), even for a column that shows times. A boolean filter keeps the rows whose value is `true` (Yes) or `false` (No): rows without a value match neither. The counts of an options filter are the rows matching the search and the other filters, counted when its popover opens; in server mode, each option's `count`. A column's own `filter(item, filterValue)` replaces its type's, and takes `{ type: "custom", value }` too (set through `useDataTable().setFilter`). Text and number filters reach the view after `searchDelay`, like the search; the others at once, with the reason `"filter"`. A filter's popover loads on its own, in idle time once a `DataTableFilter` is shown, or at once when the button is pointed at, focused or pressed; the button stays the same button, and a press made before the popover is there opens it once it is, unless the user moved on. The calendar of a date filter loads in idle time once a `DataTableFilter` of a date column is shown, with its locale's month names and first day of the week, and month and year dropdowns (a hundred years back to ten ahead); the popover keeps its size while it loads.
 
@@ -349,7 +356,7 @@ In server mode the table does not search or filter: `onViewChange` reports the v
 
 ## Cell selection
 
-`cellSelectionMode="range"` selects cells as a spreadsheet does: a click selects a cell, <Kbd>Shift</Kbd> + click or a drag selects the rectangle from it, <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + click or drag adds another range, and the arrow keys move the selection with focus, <Kbd>Shift</Kbd> + the arrows extending it. `"cell"` selects one cell at a time. Either way the table is focused cell by cell, and <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> copies the selection; with `editable`, <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>V</Kbd> pastes into it, <Kbd>Delete</Kbd> clears it and <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>D</Kbd> fills it down. `DataTableCellSummary` shows the sum, average and count of the selected numbers.
+`cellSelectionMode="range"` selects cells as a spreadsheet does: a click selects a cell, <Kbd>Shift</Kbd> + click or a drag selects the rectangle from it, <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + click or drag adds another range, and the arrow keys move the selection with focus, <Kbd>Shift</Kbd> + the arrows extending it. `"cell"` selects one cell at a time (whole rows, whole columns and every cell are not selected there: `useDataTable`'s `selectAllCells()`, or a `setCellSelection` of only those, leaves the selection as it is, with a warning in development). Either way the table is focused cell by cell, and <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> copies the selection; with `editable`, <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>V</Kbd> pastes into it, <Kbd>Delete</Kbd> clears it and <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>D</Kbd> fills it down. `DataTableCellSummary` shows the sum, average and count of the selected numbers.
 
 <ComponentPreview name="data-table-cell-selection" align="start" />
 
@@ -368,12 +375,12 @@ In server mode the table does not search or filter: `onViewChange` reports the v
 </DataTable>
 ```
 
-- **Ranges.** The selection is an array of ranges: `cellSelection` / `defaultCellSelection` / `onCellSelectionChange(ranges, { reason })`, `reason` being `"item-press"`, `"keyboard"`, `"select-all"`, `"clear"`, `"paste"`, or `"none"` (set through `useDataTable`). A range names its rows and its columns by id, each between a `start` and an `end`, or, left out, every one shown: `{ rows: { start, end }, columns: { start, end } }` is a rectangle of cells, `{ rows }` whole rows (<Kbd>Shift</Kbd> + <Kbd>Space</Kbd>), `{ columns }` whole columns (<Kbd>Ctrl</Kbd> + <Kbd>Space</Kbd>), and `{}` every cell (<Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd>). The anchor is the two `start`s, where the range was begun; the moving corner is the two `end`s.
+- **Ranges.** The selection is an array of ranges: `cellSelection` / `defaultCellSelection` / `onCellSelectionChange(ranges, { reason })`, `reason` being `"item-press"`, `"keyboard"`, `"select-all"`, `"clear"`, `"paste"`, or `"none"` (set through `useDataTable`). A range names its rows and its columns by id, each between a `start` and an `end`, or, left out, every one shown: `{ rows: { start, end }, columns: { start, end } }` is a rectangle of cells, `{ rows }` whole rows (<Kbd>Shift</Kbd> + <Kbd>Space</Kbd>), `{ columns }` whole columns (<Kbd>Ctrl</Kbd> + <Kbd>Space</Kbd>), and `{}` every cell (<Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd>). The anchor is the two `start`s, where the range was begun; the moving corner is the two `end`s. The code of cell selection loads on demand (in idle time once the table mounts, or at its first focus, press or key), and it resolves the ranges: a selection given (`defaultCellSelection`, `cellSelection`) is drawn once it is there, its fill and outline coming with no change of layout. The server's HTML has every cell `aria-selected="false"`.
 - **In the order shown.** A rectangle is positional between its corners, as in a spreadsheet: it holds across scrolling and a column moving, and after a sort, a filter, new data or a new grouping it covers the rows now between its corner rows. Whole rows, whole columns and every cell stay whole whatever the sort, filters, data or columns. While a corner's row is filtered out or in a closed group, the range is set aside: not drawn, copied or summed, still in `cellSelection`, back when the row is. A corner column the view hides keeps the range to the shown columns between the corners, where the view's order puts the hidden one.
 - **Rows and columns that are not data.** Group rows, detail rows and the totals row have no cells to select. A range runs across the group rows between its corners, which are not selected, copied, summed or written; <Kbd>Shift</Kbd> + <Kbd>↑</Kbd> / <Kbd>↓</Kbd> passes over them. The checkbox and drag handle columns are not data columns either, and nor, at the window's width, are the columns hidden below a breakpoint (`hideBelow`): they are left out of the selection, copies, the summary and writes. With focus on a header, a group row or the totals row, copy, paste, <Kbd>Delete</Kbd> and fill down say "Select cells first" rather than act on a selection the user is not on.
 - **Keys and focus.** Focus is on the range's moving corner, so a screen reader reads that cell and its selected state, and the next <Kbd>Shift</Kbd> + arrow goes on from it. Selecting whole rows moves focus to their last row (in the focused column), whole columns to their last column, a paste to its last cell; every cell leaves focus, and the scroll, where they are. <Kbd>Shift</Kbd> + an arrow on whole rows moves their last row, the rows staying whole (sideways, focus moves and the range stays); likewise for whole columns. On every cell, the first <Kbd>Shift</Kbd> + arrow makes the range the rows (or columns) from the first to the last, then moves its end. Whole rows, whole columns and every cell are every row shown, on every page and out of view of a virtualized table, as "select all" is for rows. <Kbd>Escape</Kbd> clears the selection. When <Kbd>Tab</Kbd> enters a table with no cell selected, the cell it enters is selected.
 - **With row selection.** A click on a cell selects the cell; rows are selected by their checkbox and <Kbd>Space</Kbd> (<Kbd>Shift</Kbd> + <Kbd>Space</Kbd> and <Kbd>Ctrl</Kbd> + <Kbd>Space</Kbd> are the cells' in `"range"` mode). <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd> selects every cell from a data cell and every row from the checkbox column. <Kbd>Escape</Kbd> clears the cells first, the rows on a second press.
-- **Copy.** <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> copies each cell's display text, as the table shows it (formatted numbers and dates, option labels, Yes / No), as tab-separated text that Excel and Google Sheets paste as cells (a cell with a tab, a line break or a quote is quoted); as an HTML table, where numbers and dates carry their values for Excel (in Latin digits, whatever the locale shows) and text is marked as text; and, best effort, as the values themselves, which a paste into a DataTable reads back exactly, in any locale. Text a spreadsheet would run as a formula (starting with `=`, `+`, `-`, `@`, a tab or a carriage return) gets a leading `'`, as `exportCsv` does; a paste into a text column drops it. Past 100,000 cells, a copy is the text only, so copying a whole large table stays quick. Rows out of view and on other pages are copied too. Several ranges copy as Excel copies them: ranges in the same rows side by side, ranges in the same columns one under the other; others cannot be copied together, which is announced. With no range, the focused cell is copied.
+- **Copy.** <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> copies each cell's display text, as the table shows it (formatted numbers and dates, option labels, Yes / No), as tab-separated text that Excel and Google Sheets paste as cells (a cell with a tab, a line break or a quote is quoted); as an HTML table, where numbers and dates carry their values for Excel (in Latin digits, whatever the locale shows) and text is marked as text; and, best effort, as the values themselves, which a paste into a DataTable reads back exactly, in any locale. Text a spreadsheet would run as a formula (starting with `=`, `+`, `-`, `@`, a tab or a carriage return) gets a leading `'` in the text and the HTML, as `exportCsv` does, so a paste into Excel or Google Sheets shows that text with the apostrophe rather than running it (`copyCells({ escapeFormulas: false })` leaves it out); a paste into a DataTable's text column drops it. Past 100,000 cells, a copy is the text only, so copying a whole large table stays quick. Rows out of view and on other pages are copied too. Several ranges copy as Excel copies them: ranges in the same rows side by side, ranges in the same columns one under the other; others cannot be copied together, which is announced. With no range, the focused cell is copied.
 - **Drag.** Near an edge of the table (or past it), a drag scrolls the table that way, in a virtualized table too, and the range follows.
 
 <ComponentPreview name="data-table-cell-selection-virtual" align="start" />
@@ -406,16 +413,15 @@ const columns = createColumns<Allocation>([
   columns={columns}
   cellSelectionMode="range"
   editable
-  onCellsChange={async (changes, { signal }) => {
+  onCellsChange={async (changes) => {
     setAllocations((current) => applyChanges(current, changes))
     try {
       await saveAllocations(changes)
     } catch (error) {
-      // A later write has taken over these cells: leave them to it.
-      if (signal.aborted) return
-      // Roll back the cells that still hold what was written.
+      // Roll back the cells that still hold what was written: a cell a
+      // later write has changed again keeps that value.
       setAllocations((current) => rollBack(current, changes))
-      throw error // the cells show its message
+      throw error // the other cells show its message
     }
   }}
 >
@@ -424,17 +430,17 @@ const columns = createColumns<Allocation>([
 - **Which cells.** `editable` on the root turns writing on; a column opts out with `editable: false`, or decides per item with a function. Disabled rows (`isItemDisabled`) are not written. Cells that cannot be written are skipped, and the result says how many ("Pasted 6 cells, 2 not editable").
 - **Paste.** One value fills every selected cell. A block pastes from the range's first cell: repeated over a range that is a whole multiple of it, else once, past the range where it is larger and cut at the last row and column; the selection becomes the cells pasted, and focus goes to its last cell. A block cannot be pasted into several ranges. A copy from a DataTable pastes its values as they are; other text is read as the column's type, in the provider's locale (the table below), or by the column's `parse(text, item)`, which throws to refuse the text. A value is then checked by the column's `validate(value, item)`, whose message refuses it. A refused cell is not written: it shows a dashed `destructive` outline, `aria-invalid`, and the value refused with its message ("“abc”: Enter a number") as its description and in a tooltip.
 - **Clear and fill down.** <Kbd>Delete</Kbd> writes `null` (an empty cell) into the selected cells, `validate` permitting. <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>D</Kbd> copies the first row of each range into the rows below it, in each column; a range of one row takes the row above it, as Excel does.
-- **Saving.** When `onCellsChange` returns a promise, the cells it wrote are dimmed and `aria-busy` until it settles; if it rejects, they show the value and the error's message as a refused cell does, and the failure is announced. A later write that takes over any of the cells aborts the earlier write's `signal`: its save is stale, its failure shows nothing, and it must not roll back over the later values (the example above). `eventDetails.cancel()` drops the write and aborts its signal: nothing is shown or announced.
+- **Saving.** When `onCellsChange` returns a promise, the cells it wrote are dimmed and `aria-busy` until it settles; if it rejects (or the handler throws), they show the value and the error's message as a refused cell does, and the failure is announced. A later write that takes over some of the cells makes them its own: if the earlier write then fails, its message shows on the cells it still has, not on those. Roll back compare-and-set, only the cells whose value is still the one written (the example above), so a cell written again keeps its later value. That later write also aborts the earlier write's `signal` (one cell taken over is enough), for a request to be cancelled; a request cancelled that way rejects, and the cells it still had show that they were not saved. `eventDetails.cancel()` drops the write and aborts its signal: nothing is shown or announced. It counts only when called before the handler returns (before its first `await`): later, reject the promise instead.
 - **Messages.** A cell's message (refused or not saved) shows until the cell is written again, or its value changes from outside (`items` gives it another value), or `useDataTable`'s `clearCellMessages()`; <Kbd>Escape</Kbd> leaves it.
-- **On the clipboard.** Copy and paste use the browser's own clipboard events, so they ask for no permission and carry every format. Where a browser sends no copy or paste event for a table's cell, or before the code they run on has loaded (it loads on the table's first focus), <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> begins a Clipboard API write at once and <Kbd>V</Kbd> reads it, which a browser may ask about. `useDataTable` has `copyCells({ escapeFormulas })`, `pasteCells(text)`, `clearCells` and `fillCellsDown` for buttons of your own.
+- **On the clipboard.** Copy and paste use the browser's own clipboard events, so they ask for no permission and carry every format. Where a browser sends no copy or paste event for a table's cell, or before the code they run on has loaded (it loads on the table's first focus), <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> begins a Clipboard API write at once and <Kbd>V</Kbd> reads it, which a browser may ask about; a write the browser refuses is announced ("The cells could not be copied to the clipboard"). `useDataTable` has `copyCells({ escapeFormulas })`, `pasteCells(text)`, `clearCells` and `fillCellsDown` for buttons of your own.
 
-| Type | Pasted text read as the value |
-| --- | --- |
-| `text` | The text as it is |
-| `number` | Digits with the locale's decimal and group separators ("1,234.5", "1.234,5"), a sign or an accounting "(40)", around the column's currency, percent sign or unit ("12%" is 0.12 in a percent column); else a number as JavaScript writes it ("1234.5") |
-| `date` | An ISO date ("2024-03-01", with a time too), or the day, month and year in the locale's order, the month as a number or a name ("Jan 5, 2024", "5. Jan. 2024"), with a time after it; a two-digit year is 1930–2029, as in Excel. In the column's `timeZone` |
-| `boolean` | Yes / No (in the locale), "true" / "false", "1" / "0" |
-| `options` | An option's label or value |
+| Type      | Pasted text read as the value                                                                                                                                                                                                                                |
+| --------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `text`    | The text as it is                                                                                                                                                                                                                                            |
+| `number`  | Digits with the locale's decimal and group separators ("1,234.5", "1.234,5"), a sign or an accounting "(40)", around the column's currency, percent sign or unit ("12%" is 0.12 in a percent column); else a number as JavaScript writes it ("1234.5")       |
+| `date`    | An ISO date ("2024-03-01", with a time too), or the day, month and year in the locale's order, the month as a number or a name ("Jan 5, 2024", "5. Jan. 2024"), with a time after it; a two-digit year is 1930–2029, as in Excel. In the column's `timeZone` |
+| `boolean` | Yes / No (in the locale), "true" / "false", "1" / "0"                                                                                                                                                                                                        |
+| `options` | An option's label or value                                                                                                                                                                                                                                   |
 
 Case and accents do not matter, direction marks are ignored, and an empty text is an empty cell. Groups of digits must be as the locale writes them: "1,50" is no number in English (it is in German, 1.5), and two-digit groups ("12,34,567") read only in a locale that writes them. A `text` cell's leading `'` before `=`, `+`, `-`, `@`, a tab or a carriage return (a copy's formula guard) is dropped. What the table copies pastes back, in each of Tecton's locales and the formats the column types show, but compact numbers ("1.2K"), which a copy from a DataTable carries as values.
 
@@ -743,17 +749,17 @@ const { rows, total, isLoading } = useWells({ sorting, page, pageSize: 10 })
 
 Change the page and the sorting in the same event and the table reports both before it renders, so the application loads once: a new sort on page 3 reports the sort and page 1 together.
 
-| | `dataMode="client"` | `dataMode="server"` |
-| --- | --- | --- |
-| Sorting | the table sorts `items` | the server sorts; `onViewChange` reports `view.sorting` |
-| Search and filters | the table matches `items` | the server matches; `onViewChange` reports them, the search `searchDelay` (300) ms after the last key |
-| Option counts in filters | counted from `items` | each option's `count` |
-| Totals, export | over every matching row | over the loaded rows |
-| Pages | the table slices `items` | `items` is the page; `rowCount` counts the pages |
-| Header checkbox, <Kbd>Ctrl</Kbd> + <Kbd>A</Kbd> | every row the view matches | the loaded rows |
-| "Select all N" | every row the view matches | every row on the server: "all matching" |
-| Tree children | `itemToChildren`; `undefined` is a row without children | `undefined` is not loaded yet, `[]` none |
-| Selection, open rows, the view | the table's (or yours, controlled) | the same |
+|                                                 | `dataMode="client"`                                     | `dataMode="server"`                                                                                   |
+| ----------------------------------------------- | ------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| Sorting                                         | the table sorts `items`                                 | the server sorts; `onViewChange` reports `view.sorting`                                               |
+| Search and filters                              | the table matches `items`                               | the server matches; `onViewChange` reports them, the search `searchDelay` (300) ms after the last key |
+| Option counts in filters                        | counted from `items`                                    | each option's `count`                                                                                 |
+| Totals, export                                  | over every matching row                                 | over the loaded rows                                                                                  |
+| Pages                                           | the table slices `items`                                | `items` is the page; `rowCount` counts the pages                                                      |
+| Header checkbox, <Kbd>Ctrl</Kbd> + <Kbd>A</Kbd> | every row the view matches                              | the loaded rows                                                                                       |
+| "Select all N"                                  | every row the view matches                              | every row on the server: "all matching"                                                               |
+| Tree children                                   | `itemToChildren`; `undefined` is a row without children | `undefined` is not loaded yet, `[]` none                                                              |
+| Selection, open rows, the view                  | the table's (or yours, controlled)                      | the same                                                                                              |
 
 **All matching.** In server mode, "Select all 1,240" in `DataTableSelectionCount` selects every row the view matches, also the rows not loaded. `onValueChange` then receives the loaded ids as `value` and `eventDetails.allMatching = { except: [] }`; rows deselected after that are added to `except`, and rows loaded later come selected. Send the view and `except` to the server to act on the selection. A change of the search or filters ends "all matching", and so does a controlled `value` set to another selection.
 
@@ -838,13 +844,13 @@ function ExportButton() {
 }
 ```
 
-| Option | Default | Exports |
-| --- | --- | --- |
-| `rows` | `"filtered"` | `"filtered"`: every row the view matches, on every page, in its order; `"selected"`: the selected rows (those the view matches first, in its order); `"page"`: the page's rows |
-| `columns` | `"visible"` | `"visible"`: the columns shown, in their order; `"all"`: every column, hidden ones too |
-| `header` | `true` | The headers as the first record |
-| `bom` | `false` | A byte order mark first, which Excel needs to read UTF-8 |
-| `escapeFormulas` | `true` | A cell that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'`, so a spreadsheet does not run it as a formula (a number column's numbers are left as they are) |
+| Option           | Default      | Exports                                                                                                                                                                                   |
+| ---------------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `rows`           | `"filtered"` | `"filtered"`: every row the view matches, on every page, in its order; `"selected"`: the selected rows (those the view matches first, in its order); `"page"`: the page's rows            |
+| `columns`        | `"visible"`  | `"visible"`: the columns shown, in their order; `"all"`: every column, hidden ones too                                                                                                    |
+| `header`         | `true`       | The headers as the first record                                                                                                                                                           |
+| `bom`            | `false`      | A byte order mark first, which Excel needs to read UTF-8                                                                                                                                  |
+| `escapeFormulas` | `true`       | A cell that starts with `=`, `+`, `-`, `@`, a tab or a carriage return gets a leading `'`, so a spreadsheet does not run it as a formula (a number column's numbers are left as they are) |
 
 In server mode, the export holds the loaded rows; export from the server for the rest. 100,000 rows of 6 columns export in a fraction of a second.
 
@@ -852,49 +858,49 @@ In server mode, the export holds the loaded rows; export from the server for the
 
 The table is one tab stop: <Kbd>Tab</Kbd> enters it at the row or cell that last had focus, and leaves it. Focus is on a row, or on a cell (and the control in it) once the arrows move into the row.
 
-| Key | Does |
-| --- | --- |
-| <Kbd>↓</Kbd> / <Kbd>↑</Kbd> | Next / previous row; from a cell, the cell below / above, through the header rows too |
-| <Kbd>→</Kbd> / <Kbd>←</Kbd> | From a row, its first / last cell; between cells, and between the controls in a cell. In a tree, opens / closes the row, and goes to its parent |
-| <Kbd>↓</Kbd> / <Kbd>↑</Kbd> from a cell, past the last row | The totals row's cell (`totals`) |
-| <Kbd>Home</Kbd> / <Kbd>End</Kbd> | First / last row; from a cell, the first / last cell of the row |
-| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>Home</Kbd> / <Kbd>End</Kbd> | From a cell, the first / last cell of the table |
-| <Kbd>Page Up</Kbd> / <Kbd>Page Down</Kbd> | Up / down a screenful of rows |
-| Letters | The next row whose row header starts with the typed text |
-| <Kbd>Space</Kbd> | Selects or clears the focused row |
-| <Kbd>Shift</Kbd> + <Kbd>Space</Kbd> | Selects the rows from the anchor to the focused row: the anchor is the last row selected or cleared (by a click, <Kbd>Space</Kbd>, a checkbox or <Kbd>Shift</Kbd> + an arrow), not a row the arrow keys only moved to |
-| <Kbd>Shift</Kbd> + <Kbd>↓</Kbd> / <Kbd>↑</Kbd> | Moves and extends the selection |
-| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd> | Selects every row (`"multiple"`) |
-| <Kbd>Escape</Kbd> | Clears the selection |
-| <Kbd>Enter</Kbd> | Activates the row (`onActivate`, its link); on a tree row that does not activate, opens or closes it |
-| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a control | Presses it: a sort button, a checkbox, a link; opens a column's menu, or the popover of its description |
-| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a column header | With `reorderableColumns`, starts moving the column: <Kbd>←</Kbd> / <Kbd>→</Kbd> or <Kbd>Tab</Kbd> pick the place, <Kbd>Enter</Kbd> drops, <Kbd>Escape</Kbd> cancels |
-| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a row's drag handle | With `reorderableRows`, starts moving the row: <Kbd>↑</Kbd> / <Kbd>↓</Kbd> or <Kbd>Tab</Kbd> pick the place, <Kbd>Enter</Kbd> drops, <Kbd>Escape</Kbd> cancels |
-| <Kbd>→</Kbd> / <Kbd>←</Kbd>, <Kbd>Enter</Kbd> on a group row | Opens / closes the group (`groupable`); <Kbd>←</Kbd> on a row in a group goes to the group's row |
-| <Kbd>Space</Kbd> on a group row | Selects or clears the group's rows (`"multiple"`) |
-| <Kbd>→</Kbd> / <Kbd>←</Kbd> on a row with a detail row | Opens / closes its detail row (`renderDetail`); on the detail row, <Kbd>←</Kbd> goes to its row |
-| <Kbd>Tab</Kbd> on a detail row | Into a table of its own inside it (its own keys there); <Kbd>Tab</Kbd> again leaves both tables |
-| <Kbd>←</Kbd> / <Kbd>→</Kbd> on a resizer | After "Resize column" in the column's menu: narrows / widens the column (<Kbd>Shift</Kbd>: four steps); <Kbd>Home</Kbd> / <Kbd>End</Kbd> the narrowest / widest; <Kbd>Enter</Kbd> or <Kbd>Tab</Kbd> keeps the width, <Kbd>Escape</Kbd> puts it back, both back to the menu button |
+| Key                                                               | Does                                                                                                                                                                                                                                                                              |
+| ----------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| <Kbd>↓</Kbd> / <Kbd>↑</Kbd>                                       | Next / previous row; from a cell, the cell below / above, through the header rows too                                                                                                                                                                                             |
+| <Kbd>→</Kbd> / <Kbd>←</Kbd>                                       | From a row, its first / last cell; between cells, and between the controls in a cell. In a tree, opens / closes the row, and goes to its parent                                                                                                                                   |
+| <Kbd>↓</Kbd> / <Kbd>↑</Kbd> from a cell, past the last row        | The totals row's cell (`totals`)                                                                                                                                                                                                                                                  |
+| <Kbd>Home</Kbd> / <Kbd>End</Kbd>                                  | First / last row; from a cell, the first / last cell of the row                                                                                                                                                                                                                   |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>Home</Kbd> / <Kbd>End</Kbd> | From a cell, the first / last cell of the table                                                                                                                                                                                                                                   |
+| <Kbd>Page Up</Kbd> / <Kbd>Page Down</Kbd>                         | Up / down a screenful of rows                                                                                                                                                                                                                                                     |
+| Letters                                                           | The next row whose row header starts with the typed text                                                                                                                                                                                                                          |
+| <Kbd>Space</Kbd>                                                  | Selects or clears the focused row                                                                                                                                                                                                                                                 |
+| <Kbd>Shift</Kbd> + <Kbd>Space</Kbd>                               | Selects the rows from the anchor to the focused row: the anchor is the last row selected or cleared (by a click, <Kbd>Space</Kbd>, a checkbox or <Kbd>Shift</Kbd> + an arrow), not a row the arrow keys only moved to                                                             |
+| <Kbd>Shift</Kbd> + <Kbd>↓</Kbd> / <Kbd>↑</Kbd>                    | Moves and extends the selection                                                                                                                                                                                                                                                   |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd>                     | Selects every row (`"multiple"`)                                                                                                                                                                                                                                                  |
+| <Kbd>Escape</Kbd>                                                 | Clears the selection                                                                                                                                                                                                                                                              |
+| <Kbd>Enter</Kbd>                                                  | Activates the row (`onActivate`, its link); on a tree row that does not activate, opens or closes it                                                                                                                                                                              |
+| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a control                  | Presses it: a sort button, a checkbox, a link; opens a column's menu, or the popover of its description                                                                                                                                                                           |
+| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a column header            | With `reorderableColumns`, starts moving the column: <Kbd>←</Kbd> / <Kbd>→</Kbd> or <Kbd>Tab</Kbd> pick the place, <Kbd>Enter</Kbd> drops, <Kbd>Escape</Kbd> cancels                                                                                                              |
+| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a row's drag handle        | With `reorderableRows`, starts moving the row: <Kbd>↑</Kbd> / <Kbd>↓</Kbd> or <Kbd>Tab</Kbd> pick the place, <Kbd>Enter</Kbd> drops, <Kbd>Escape</Kbd> cancels                                                                                                                    |
+| <Kbd>→</Kbd> / <Kbd>←</Kbd>, <Kbd>Enter</Kbd> on a group row      | Opens / closes the group (`groupable`); <Kbd>←</Kbd> on a row in a group goes to the group's row                                                                                                                                                                                  |
+| <Kbd>Space</Kbd> on a group row                                   | Selects or clears the group's rows (`"multiple"`)                                                                                                                                                                                                                                 |
+| <Kbd>→</Kbd> / <Kbd>←</Kbd> on a row with a detail row            | Opens / closes its detail row (`renderDetail`); on the detail row, <Kbd>←</Kbd> goes to its row                                                                                                                                                                                   |
+| <Kbd>Tab</Kbd> on a detail row                                    | Into a table of its own inside it (its own keys there); <Kbd>Tab</Kbd> again leaves both tables                                                                                                                                                                                   |
+| <Kbd>←</Kbd> / <Kbd>→</Kbd> on a resizer                          | After "Resize column" in the column's menu: narrows / widens the column (<Kbd>Shift</Kbd>: four steps); <Kbd>Home</Kbd> / <Kbd>End</Kbd> the narrowest / widest; <Kbd>Enter</Kbd> or <Kbd>Tab</Kbd> keeps the width, <Kbd>Escape</Kbd> puts it back, both back to the menu button |
 
 With a `cellSelectionMode` (or `editable`), focus moves cell by cell, as in a spreadsheet: the table's tab stop is a cell (the first row's first data cell at first), rows are never focused themselves, and these keys change:
 
-| Key | Does |
-| --- | --- |
-| <Kbd>↓</Kbd> / <Kbd>↑</Kbd> | The cell below / above, through the header rows and the totals row too; selects it |
-| <Kbd>→</Kbd> / <Kbd>←</Kbd> | The next / previous cell; at the row's first cell, focus stays; selects it |
-| <Kbd>Home</Kbd> / <Kbd>End</Kbd>, <Kbd>Page Up</Kbd> / <Kbd>Page Down</Kbd>, <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>Home</Kbd> / <Kbd>End</Kbd> | The row's first / last cell, a screenful up / down in the column, the body's first / last data cell; each selects the cell |
-| <Kbd>Shift</Kbd> + any of the above | Extends the range from its anchor to the cell (in the body, passing over group rows); on whole rows or columns, moves their end (see [Cell selection](#cell-selection)) |
-| <Kbd>Shift</Kbd> + <Kbd>Space</Kbd> | Selects the range's whole rows (`"range"`) |
-| <Kbd>Ctrl</Kbd> + <Kbd>Space</Kbd> | Selects the range's whole columns (`"range"`) |
-| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd> | Selects every cell (`"range"`); from the checkbox column, every row |
-| <Kbd>Escape</Kbd> | Clears the cell selection; once it is clear, the row selection |
-| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> | Copies the selected cells (the focused cell without a selection) |
-| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>V</Kbd> | Pastes into the selection (`editable`) |
-| <Kbd>Delete</Kbd> / <Kbd>Backspace</Kbd> | Clears the selected cells (`editable`) |
-| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>D</Kbd> | Fills each range down from its first row (`editable`) |
-| <Kbd>Space</Kbd> | Selects or clears the focused cell's row (`selectionMode`) |
-| <Kbd>Enter</Kbd> | Activates the row (`onActivate`, its link); on a group or tree row that does not activate, opens or closes it; on a cell that can be written (`editable`), kept for editing it |
-| <Kbd>F2</Kbd> | On a cell that can be written (`editable`), kept for editing it |
+| Key                                                                                                                                            | Does                                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| <Kbd>↓</Kbd> / <Kbd>↑</Kbd>                                                                                                                    | The cell below / above, through the header rows and the totals row too; selects it                                                                                             |
+| <Kbd>→</Kbd> / <Kbd>←</Kbd>                                                                                                                    | The next / previous cell; at the row's first cell, focus stays; selects it                                                                                                     |
+| <Kbd>Home</Kbd> / <Kbd>End</Kbd>, <Kbd>Page Up</Kbd> / <Kbd>Page Down</Kbd>, <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>Home</Kbd> / <Kbd>End</Kbd> | The row's first / last cell, a screenful up / down in the column, the body's first / last data cell; each selects the cell                                                     |
+| <Kbd>Shift</Kbd> + any of the above                                                                                                            | Extends the range from its anchor to the cell (in the body, passing over group rows); on whole rows or columns, moves their end (see [Cell selection](#cell-selection))        |
+| <Kbd>Shift</Kbd> + <Kbd>Space</Kbd>                                                                                                            | Selects the range's whole rows (`"range"`)                                                                                                                                     |
+| <Kbd>Ctrl</Kbd> + <Kbd>Space</Kbd>                                                                                                             | Selects the range's whole columns (`"range"`)                                                                                                                                  |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd>                                                                                                  | Selects every cell (`"range"`); from the checkbox column, every row                                                                                                            |
+| <Kbd>Escape</Kbd>                                                                                                                              | Clears the cell selection; once it is clear, the row selection                                                                                                                 |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd>                                                                                                  | Copies the selected cells (the focused cell without a selection)                                                                                                               |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>V</Kbd>                                                                                                  | Pastes into the selection (`editable`)                                                                                                                                         |
+| <Kbd>Delete</Kbd> / <Kbd>Backspace</Kbd>                                                                                                       | Clears the selected cells (`editable`)                                                                                                                                         |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>D</Kbd>                                                                                                  | Fills each range down from its first row (`editable`)                                                                                                                          |
+| <Kbd>Space</Kbd>                                                                                                                               | Selects or clears the focused cell's row (`selectionMode`)                                                                                                                     |
+| <Kbd>Enter</Kbd>                                                                                                                               | Activates the row (`onActivate`, its link); on a group or tree row that does not activate, opens or closes it; on a cell that can be written (`editable`), kept for editing it |
+| <Kbd>F2</Kbd>                                                                                                                                  | On a cell that can be written (`editable`), kept for editing it                                                                                                                |
 
 A click on a cell focuses and selects it (and does not select its row or activate it: a double click activates, but on a cell that can be written); a press on a group row's cell opens or closes the group, as before.
 
@@ -938,60 +944,60 @@ const columns = React.useMemo(
 
 The root. Renders a `div` (`data-slot="data-table"`) and forwards its props (`className`, `style`, `id`, `data-*`) to it. Every `on…Change` receives the new value and `eventDetails`: `reason`, the DOM `event` when there is one, and `cancel()`, which keeps the change from being applied.
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `items` | `ReadonlyArray<T>` | - | The rows' items. In server mode, the rows of the view and the page. |
-| `columns` | `DataTableColumns<T>` | - | Made with `createColumns`. |
-| `itemToId` | `(item: T) => string` | `String(item.id)` | A row's id: the selection, the open rows and `onActivate` use it. |
-| `itemToChildren` | `(item: T) => ReadonlyArray<T> \| undefined` | - | Makes the rows a tree: an item's children. |
-| `itemToHref` | `(item: T) => string \| undefined` | - | Makes the row header a link, which activating the row follows. |
-| `isItemDisabled` | `(item: T) => boolean` | - | Disables rows. |
-| `disabledBehavior` | `"all" \| "selection"` | `"all"` | `"all"`: a disabled row is not focused, selected or activated. `"selection"`: it is focused and activated, not selected. |
-| `dataMode` | `"client" \| "server"` | `"client"` | `"server"`: the server sorts, matches and pages; the table reports the changes. |
-| `rowCount` | `number` | - | Server mode: the number of rows the view matches. |
-| `loading` | `boolean` | `false` | Skeleton rows while there are none yet, else a bar under the header. |
-| `error` | `ReactNode` | - | Shows the error state in place of the rows; the content is its description, `true` the default one. |
-| `onRetry` | `() => void` | - | Adds "Retry" to the error state. |
-| `hasMore` | `boolean` | `false` | More rows come after `items`: loading rows follow the last row (see [Load more](#load-more)). Not with `pagination`. |
-| `onLoadMore` | `() => void` | - | Called once when the end of the rows comes within two views, not again until `items`, `loading` (back to false) or the view changes; not in client mode while a search or filter is in effect. |
-| `size` | `"default" \| "sm"` | `"default"` | `"sm"`: a shorter header and rows, smaller text. |
-| `striped` | `boolean` | `false` | Every even row on an alternate surface. |
-| `sortable` | `boolean` | `true` | Header buttons sort; <Kbd>Shift</Kbd> + click by several columns. |
-| `filterable` | `boolean` | `false` | Turns on the view's `search` and `filters`: `DataTableSearch`, `DataTableFilter`, `DataTableActiveFilters` (see [Search and filters](#search-and-filters)). |
-| `groupable` | `boolean` | `false` | Turns on the view's `grouping`: group rows with subtotals, `DataTableGroupBy`, "Group by column" in the column menus (see [Grouping](#grouping)). Not in a tree. |
-| `reorderableRows` | `boolean` | `false` | A drag handle per row, to put the rows in order (see [Row reordering](#row-reordering)); flat lists only. |
-| `resizableColumns` | `boolean` | `false` | A resizer on each column header's end edge (see [Resizing](#resizing)). |
-| `reorderableColumns` | `boolean` | `false` | Column headers are dragged into order (see [Reordering](#reordering)). |
-| `hideableColumns` | `boolean` | `false` | Columns are hidden from their menu and `DataTableColumnsMenu`. |
-| `pinnableColumns` | `boolean` | `false` | Columns are pinned to the start or the end from their menu and `DataTableColumnsMenu`. |
-| `pagination` | `boolean` | `false` | Shows the rows a page at a time. |
-| `selectionMode` | `"none" \| "single" \| "multiple"` | `"none"` | Whether rows select, one at a time or several, with a checkbox column. |
-| `cellSelectionMode` | `"none" \| "cell" \| "range"` | `"none"` | Whether cells select, one at a time or in ranges; focus moves cell by cell (see [Cell selection](#cell-selection)). |
-| `cellSelection` | `ReadonlyArray<DataTableCellRange>` | - | The selected ranges (controlled): `{ rows?: { start, end }; columns?: { start, end } }` by row ids and column ids, an axis left out for every one shown. |
-| `defaultCellSelection` | `ReadonlyArray<DataTableCellRange>` | `[]` | The ranges selected at first. |
-| `onCellSelectionChange` | `(ranges: DataTableCellRange[], eventDetails) => void` | - | Called with the selected ranges; `reason` is `"item-press"`, `"keyboard"`, `"select-all"`, `"clear"`, `"paste"` or `"none"` (through `useDataTable`). |
-| `editable` | `boolean` | `false` | Cells are written by pasting, clearing and filling down (with a `cellSelectionMode`), reported through `onCellsChange`; focus moves cell by cell (see [Writing cells](#writing-cells)). |
-| `value` | `ReadonlyArray<string>` | - | The selected rows' ids (controlled). |
-| `defaultValue` | `ReadonlyArray<string>` | `[]` | The rows selected at first. |
-| `onValueChange` | `(value: string[], eventDetails: DataTableSelectionChangeDetails) => void` | - | Called with the selected ids; `eventDetails.allMatching` in server "all matching". |
-| `disallowEmptySelection` | `boolean` | `false` | Keeps at least one row selected. |
-| `view` | `DataTablePartialView` | - | What the table shows (controlled): any part of the view, the rest from `defaultView` or the defaults. Reconciled with the columns. |
-| `defaultView` | `DataTablePartialView` | - | Any part of the view to start from; read once. |
-| `onViewChange` | `(view: DataTableView, eventDetails) => void` | - | Called with the new view; `reason` is `"sort"`, `"search"`, `"filter"`, `"group"`, `"resize"`, `"reorder"`, `"hide"`, `"pin"` or `"reset"`. |
-| `searchDelay` | `number` | `300` in server mode, `0` in client mode | The ms between the last key in the search (or a text or number filter) and the change reaching the view. |
-| `expanded` | `ReadonlyArray<string>` | - | The open tree rows' and detail rows' ids (controlled). |
-| `defaultExpanded` | `ReadonlyArray<string>` | `[]` | The rows open at first. |
-| `onExpandedChange` | `(expanded: string[], eventDetails) => void` | - | Called with the open rows; `reason` is `"item-press"` or `"keyboard"`. |
-| `page` | `number` | - | The page shown, from 1 (controlled). |
-| `defaultPage` | `number` | `1` | The page shown at first. |
-| `onPageChange` | `(page: number, eventDetails) => void` | - | `reason`: `"first"`, `"previous"`, `"next"`, `"last"`, `"reset"` (the view changed), `"page-size"`, `"clamp"` (rows went away), `"group"` (a group closed with focus in it, its row on an earlier page). |
-| `pageSize` | `number` | - | Rows per page (controlled). |
-| `defaultPageSize` | `number` | `10` | Rows per page at first. |
-| `onPageSizeChange` | `(pageSize: number, eventDetails) => void` | - | Called with the new page size. |
-| `pageSizes` | `ReadonlyArray<number>` | `[10, 20, 50, 100]` | The sizes `DataTablePageSize` offers. |
-| `onActivate` | `(id: string, item: T) => void` | - | A row activated: <Kbd>Enter</Kbd>, a click (a double click while rows are selected, or when cells are focused one by one; not from a cell that can be written). |
-| `onRowOrderChange` | `(ids: string[], eventDetails) => void` | - | Rows reordered: every item's id in the new order; `reason` is `"pointer"`, `"keyboard"` or `"virtual"`. |
-| `onCellsChange` | `(changes: DataTableCellChange<T>[], eventDetails) => void \| Promise<void>` | - | Cells written (`editable`): each change is `{ row, column, item, value, previousValue }`; `reason` is `"paste"`, `"clear"`, `"fill"` or `"edit"`; `signal` aborts when a later write takes over any of the cells. A promise shows the cells as saving until it settles, and its rejection's message on them. |
+| Prop                     | Type                                                                         | Default                                  | Description                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ------------------------ | ---------------------------------------------------------------------------- | ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `items`                  | `ReadonlyArray<T>`                                                           | -                                        | The rows' items. In server mode, the rows of the view and the page.                                                                                                                                                                                                                                                                                                                                                        |
+| `columns`                | `DataTableColumns<T>`                                                        | -                                        | Made with `createColumns`.                                                                                                                                                                                                                                                                                                                                                                                                 |
+| `itemToId`               | `(item: T) => string`                                                        | `String(item.id)`                        | A row's id: the selection, the open rows and `onActivate` use it.                                                                                                                                                                                                                                                                                                                                                          |
+| `itemToChildren`         | `(item: T) => ReadonlyArray<T> \| undefined`                                 | -                                        | Makes the rows a tree: an item's children.                                                                                                                                                                                                                                                                                                                                                                                 |
+| `itemToHref`             | `(item: T) => string \| undefined`                                           | -                                        | Makes the row header a link, which activating the row follows.                                                                                                                                                                                                                                                                                                                                                             |
+| `isItemDisabled`         | `(item: T) => boolean`                                                       | -                                        | Disables rows.                                                                                                                                                                                                                                                                                                                                                                                                             |
+| `disabledBehavior`       | `"all" \| "selection"`                                                       | `"all"`                                  | `"all"`: a disabled row is not focused, selected or activated. `"selection"`: it is focused and activated, not selected.                                                                                                                                                                                                                                                                                                   |
+| `dataMode`               | `"client" \| "server"`                                                       | `"client"`                               | `"server"`: the server sorts, matches and pages; the table reports the changes.                                                                                                                                                                                                                                                                                                                                            |
+| `rowCount`               | `number`                                                                     | -                                        | Server mode: the number of rows the view matches.                                                                                                                                                                                                                                                                                                                                                                          |
+| `loading`                | `boolean`                                                                    | `false`                                  | Skeleton rows while there are none yet, else a bar under the header.                                                                                                                                                                                                                                                                                                                                                       |
+| `error`                  | `ReactNode`                                                                  | -                                        | Shows the error state in place of the rows; the content is its description, `true` the default one.                                                                                                                                                                                                                                                                                                                        |
+| `onRetry`                | `() => void`                                                                 | -                                        | Adds "Retry" to the error state.                                                                                                                                                                                                                                                                                                                                                                                           |
+| `hasMore`                | `boolean`                                                                    | `false`                                  | More rows come after `items`: loading rows follow the last row (see [Load more](#load-more)). Not with `pagination`.                                                                                                                                                                                                                                                                                                       |
+| `onLoadMore`             | `() => void`                                                                 | -                                        | Called once when the end of the rows comes within two views, not again until `items`, `loading` (back to false) or the view changes; not in client mode while a search or filter is in effect.                                                                                                                                                                                                                             |
+| `size`                   | `"default" \| "sm"`                                                          | `"default"`                              | `"sm"`: a shorter header and rows, smaller text.                                                                                                                                                                                                                                                                                                                                                                           |
+| `striped`                | `boolean`                                                                    | `false`                                  | Every even row on an alternate surface.                                                                                                                                                                                                                                                                                                                                                                                    |
+| `sortable`               | `boolean`                                                                    | `true`                                   | Header buttons sort; <Kbd>Shift</Kbd> + click by several columns.                                                                                                                                                                                                                                                                                                                                                          |
+| `filterable`             | `boolean`                                                                    | `false`                                  | Turns on the view's `search` and `filters`: `DataTableSearch`, `DataTableFilter`, `DataTableActiveFilters` (see [Search and filters](#search-and-filters)).                                                                                                                                                                                                                                                                |
+| `groupable`              | `boolean`                                                                    | `false`                                  | Turns on the view's `grouping`: group rows with subtotals, `DataTableGroupBy`, "Group by column" in the column menus (see [Grouping](#grouping)). Not in a tree.                                                                                                                                                                                                                                                           |
+| `reorderableRows`        | `boolean`                                                                    | `false`                                  | A drag handle per row, to put the rows in order (see [Row reordering](#row-reordering)); flat lists only.                                                                                                                                                                                                                                                                                                                  |
+| `resizableColumns`       | `boolean`                                                                    | `false`                                  | A resizer on each column header's end edge (see [Resizing](#resizing)).                                                                                                                                                                                                                                                                                                                                                    |
+| `reorderableColumns`     | `boolean`                                                                    | `false`                                  | Column headers are dragged into order (see [Reordering](#reordering)).                                                                                                                                                                                                                                                                                                                                                     |
+| `hideableColumns`        | `boolean`                                                                    | `false`                                  | Columns are hidden from their menu and `DataTableColumnsMenu`.                                                                                                                                                                                                                                                                                                                                                             |
+| `pinnableColumns`        | `boolean`                                                                    | `false`                                  | Columns are pinned to the start or the end from their menu and `DataTableColumnsMenu`.                                                                                                                                                                                                                                                                                                                                     |
+| `pagination`             | `boolean`                                                                    | `false`                                  | Shows the rows a page at a time.                                                                                                                                                                                                                                                                                                                                                                                           |
+| `selectionMode`          | `"none" \| "single" \| "multiple"`                                           | `"none"`                                 | Whether rows select, one at a time or several, with a checkbox column.                                                                                                                                                                                                                                                                                                                                                     |
+| `cellSelectionMode`      | `"none" \| "cell" \| "range"`                                                | `"none"`                                 | Whether cells select, one at a time or in ranges; focus moves cell by cell (see [Cell selection](#cell-selection)).                                                                                                                                                                                                                                                                                                        |
+| `cellSelection`          | `ReadonlyArray<DataTableCellRange>`                                          | -                                        | The selected ranges (controlled): `{ rows?: { start, end }; columns?: { start, end } }` by row ids and column ids, an axis left out for every one shown.                                                                                                                                                                                                                                                                   |
+| `defaultCellSelection`   | `ReadonlyArray<DataTableCellRange>`                                          | `[]`                                     | The ranges selected at first.                                                                                                                                                                                                                                                                                                                                                                                              |
+| `onCellSelectionChange`  | `(ranges: DataTableCellRange[], eventDetails) => void`                       | -                                        | Called with the selected ranges; `reason` is `"item-press"`, `"keyboard"`, `"select-all"`, `"clear"`, `"paste"` or `"none"` (through `useDataTable`).                                                                                                                                                                                                                                                                      |
+| `editable`               | `boolean`                                                                    | `false`                                  | Cells are written by pasting, clearing and filling down (with a `cellSelectionMode`), reported through `onCellsChange`; focus moves cell by cell (see [Writing cells](#writing-cells)).                                                                                                                                                                                                                                    |
+| `value`                  | `ReadonlyArray<string>`                                                      | -                                        | The selected rows' ids (controlled).                                                                                                                                                                                                                                                                                                                                                                                       |
+| `defaultValue`           | `ReadonlyArray<string>`                                                      | `[]`                                     | The rows selected at first.                                                                                                                                                                                                                                                                                                                                                                                                |
+| `onValueChange`          | `(value: string[], eventDetails: DataTableSelectionChangeDetails) => void`   | -                                        | Called with the selected ids; `eventDetails.allMatching` in server "all matching".                                                                                                                                                                                                                                                                                                                                         |
+| `disallowEmptySelection` | `boolean`                                                                    | `false`                                  | Keeps at least one row selected.                                                                                                                                                                                                                                                                                                                                                                                           |
+| `view`                   | `DataTablePartialView`                                                       | -                                        | What the table shows (controlled): any part of the view, the rest from `defaultView` or the defaults. Reconciled with the columns.                                                                                                                                                                                                                                                                                         |
+| `defaultView`            | `DataTablePartialView`                                                       | -                                        | Any part of the view to start from; read once.                                                                                                                                                                                                                                                                                                                                                                             |
+| `onViewChange`           | `(view: DataTableView, eventDetails) => void`                                | -                                        | Called with the new view; `reason` is `"sort"`, `"search"`, `"filter"`, `"group"`, `"resize"`, `"reorder"`, `"hide"`, `"pin"` or `"reset"`.                                                                                                                                                                                                                                                                                |
+| `searchDelay`            | `number`                                                                     | `300` in server mode, `0` in client mode | The ms between the last key in the search (or a text or number filter) and the change reaching the view.                                                                                                                                                                                                                                                                                                                   |
+| `expanded`               | `ReadonlyArray<string>`                                                      | -                                        | The open tree rows' and detail rows' ids (controlled).                                                                                                                                                                                                                                                                                                                                                                     |
+| `defaultExpanded`        | `ReadonlyArray<string>`                                                      | `[]`                                     | The rows open at first.                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `onExpandedChange`       | `(expanded: string[], eventDetails) => void`                                 | -                                        | Called with the open rows; `reason` is `"item-press"` or `"keyboard"`.                                                                                                                                                                                                                                                                                                                                                     |
+| `page`                   | `number`                                                                     | -                                        | The page shown, from 1 (controlled).                                                                                                                                                                                                                                                                                                                                                                                       |
+| `defaultPage`            | `number`                                                                     | `1`                                      | The page shown at first.                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `onPageChange`           | `(page: number, eventDetails) => void`                                       | -                                        | `reason`: `"first"`, `"previous"`, `"next"`, `"last"`, `"reset"` (the view changed), `"page-size"`, `"clamp"` (rows went away), `"group"` (a group closed with focus in it, its row on an earlier page).                                                                                                                                                                                                                   |
+| `pageSize`               | `number`                                                                     | -                                        | Rows per page (controlled).                                                                                                                                                                                                                                                                                                                                                                                                |
+| `defaultPageSize`        | `number`                                                                     | `10`                                     | Rows per page at first.                                                                                                                                                                                                                                                                                                                                                                                                    |
+| `onPageSizeChange`       | `(pageSize: number, eventDetails) => void`                                   | -                                        | Called with the new page size.                                                                                                                                                                                                                                                                                                                                                                                             |
+| `pageSizes`              | `ReadonlyArray<number>`                                                      | `[10, 20, 50, 100]`                      | The sizes `DataTablePageSize` offers.                                                                                                                                                                                                                                                                                                                                                                                      |
+| `onActivate`             | `(id: string, item: T) => void`                                              | -                                        | A row activated: <Kbd>Enter</Kbd>, a click (a double click while rows are selected, or when cells are focused one by one; not from a cell that can be written).                                                                                                                                                                                                                                                            |
+| `onRowOrderChange`       | `(ids: string[], eventDetails) => void`                                      | -                                        | Rows reordered: every item's id in the new order; `reason` is `"pointer"`, `"keyboard"` or `"virtual"`.                                                                                                                                                                                                                                                                                                                    |
+| `onCellsChange`          | `(changes: DataTableCellChange<T>[], eventDetails) => void \| Promise<void>` | -                                        | Cells written (`editable`): each change is `{ row, column, item, value, previousValue }`; `reason` is `"paste"`, `"clear"`, `"fill"` or `"edit"`; `signal` aborts when a later write takes over any of the cells, or on `cancel()` (which counts only before the handler returns). A promise shows the cells as saving until it settles, and its rejection's message (or a throw's) on the cells no later write took over. |
 
 `eventDetails.reason` of `onValueChange` is `"item-press"`, `"keyboard"`, `"select-all"`, `"select-all-matching"`, `"clear"` or `"view"` (the search or filters ended "all matching"). Changes made through `useDataTable` have the reason `"none"`, the cell selection's too.
 
@@ -999,16 +1005,16 @@ The root. Renders a `div` (`data-slot="data-table"`) and forwards its props (`cl
 
 The table, in a rounded frame (`data-slot="data-table-content"`, a `div` that takes `className`, `style` and `data-*`).
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `aria-label` | `string` | - | The table's name. |
-| `aria-labelledby` | `string` | - | The id of the element that names the table. |
-| `aria-describedby` | `string` | - | The id of the element that describes it. |
-| `virtualized` | `boolean` | `false` | Renders only the rows in view; give `DataTableContent` or the root a bounded height. |
-| `empty` | `ReactNode` | - | Shown when there are no rows, in place of the default. |
-| `noResults` | `ReactNode` | - | Shown when no row matches the search and filters, in place of the default. |
-| `renderDetail` | `(item: T) => ReactNode` | - | A row's detail row, shown while the row is open (see [Detail rows](#detail-rows)). Write the item's type, `(well: Well) =>`, or use `DataTableContent<Well>`. |
-| `totals` | `boolean` | `false` | A footer row with each column's aggregate over the rows the view matches (see [Totals](#totals)). |
+| Prop               | Type                     | Default | Description                                                                                                                                                   |
+| ------------------ | ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `aria-label`       | `string`                 | -       | The table's name.                                                                                                                                             |
+| `aria-labelledby`  | `string`                 | -       | The id of the element that names the table.                                                                                                                   |
+| `aria-describedby` | `string`                 | -       | The id of the element that describes it.                                                                                                                      |
+| `virtualized`      | `boolean`                | `false` | Renders only the rows in view; give `DataTableContent` or the root a bounded height.                                                                          |
+| `empty`            | `ReactNode`              | -       | Shown when there are no rows, in place of the default.                                                                                                        |
+| `noResults`        | `ReactNode`              | -       | Shown when no row matches the search and filters, in place of the default.                                                                                    |
+| `renderDetail`     | `(item: T) => ReactNode` | -       | A row's detail row, shown while the row is open (see [Detail rows](#detail-rows)). Write the item's type, `(well: Well) =>`, or use `DataTableContent<Well>`. |
+| `totals`           | `boolean`                | `false` | A footer row with each column's aggregate over the rows the view matches (see [Totals](#totals)).                                                             |
 
 ### DataTableToolbar
 
@@ -1018,21 +1024,21 @@ The row above the table: a `div` (`data-slot="data-table-toolbar"`, `flex flex-w
 
 The search field (see [Search and filters](#search-and-filters)): an [InputGroup](/docs/components/input-group) (`data-slot="data-table-search"`) with a search icon and a clear button. It takes the props of an `input` (`placeholder`, `aria-label`, `className` goes to the group); renders nothing without `filterable`.
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
+| Prop          | Type     | Default  | Description              |
+| ------------- | -------- | -------- | ------------------------ |
 | `placeholder` | `string` | "Search" | The field's placeholder. |
-| `aria-label` | `string` | "Search" | The field's name. |
+| `aria-label`  | `string` | "Search" | The field's name.        |
 
 ### DataTableFilter
 
 A column's filter: an outline button and its popover, by the column's type (see [Search and filters](#search-and-filters)). It takes the props of a [Button](/docs/components/button) (`data-slot="data-table-filter"`, `data-active` while a filter is set); renders nothing without `filterable`, or for a column that is not there or has `filterable: false`.
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `column` | `string` | - | The id of the column to filter. |
-| `variant` | Button `variant` | `"outline"` | The button's look. |
-| `size` | Button `size` | `"sm"` | The button's size. |
-| `children` | `ReactNode` | the column's header and the filter's value | The button's content. |
+| Prop       | Type             | Default                                    | Description                     |
+| ---------- | ---------------- | ------------------------------------------ | ------------------------------- |
+| `column`   | `string`         | -                                          | The id of the column to filter. |
+| `variant`  | Button `variant` | `"outline"`                                | The button's look.              |
+| `size`     | Button `size`    | `"sm"`                                     | The button's size.              |
+| `children` | `ReactNode`      | the column's header and the filter's value | The button's content.           |
 
 ### DataTableActiveFilters
 
@@ -1042,31 +1048,31 @@ The search and each filter in effect as removable chips, then "Clear all": a `di
 
 A row's "⋯" button and its menu, for a column's `cell` (see [Row actions](#row-actions)). Its children are [DropdownMenu](/docs/components/dropdown-menu) items; it takes the props of a [Button](/docs/components/button) (`data-slot="data-table-row-actions"`).
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `children` | `ReactNode` | - | The menu's items. |
-| `align` | `"start" \| "center" \| "end"` | `"end"` | Where the menu lines up with the button. |
-| `aria-label` | `string` | "Row actions" | The button's name. |
-| `variant`, `size` | Button `variant`, `size` | `"ghost"`, `"icon-sm"` (`"icon-xs"` in a small table) | The button's look. |
+| Prop              | Type                           | Default                                               | Description                              |
+| ----------------- | ------------------------------ | ----------------------------------------------------- | ---------------------------------------- |
+| `children`        | `ReactNode`                    | -                                                     | The menu's items.                        |
+| `align`           | `"start" \| "center" \| "end"` | `"end"`                                               | Where the menu lines up with the button. |
+| `aria-label`      | `string`                       | "Row actions"                                         | The button's name.                       |
+| `variant`, `size` | Button `variant`, `size`       | `"ghost"`, `"icon-sm"` (`"icon-xs"` in a small table) | The button's look.                       |
 
 ### DataTableGroupBy
 
 An outline "Group by" button and its menu: a checkbox per groupable column, with its level, an item per level after the first that moves it up a level (focus follows the moved column's item, so pressing it again moves the column on up; each move is announced with the grouping it makes), "Expand all groups", "Collapse all groups" (each off while it has nothing to do) and "Ungroup all" (see [Grouping](#grouping)). While the rows are grouped, the button shows the grouping columns, which describe it. It takes the props of a [Button](/docs/components/button) (`data-slot="data-table-group-by"`, `data-active` while grouped); its menu loads on demand, and it renders nothing without `groupable`.
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `variant` | Button `variant` | `"outline"` | The button's look. |
-| `size` | Button `size` | `"sm"` | The button's size. |
-| `children` | `ReactNode` | "Group by" and the grouping columns | The button's content. |
+| Prop       | Type             | Default                             | Description           |
+| ---------- | ---------------- | ----------------------------------- | --------------------- |
+| `variant`  | Button `variant` | `"outline"`                         | The button's look.    |
+| `size`     | Button `size`    | `"sm"`                              | The button's size.    |
+| `children` | `ReactNode`      | "Group by" and the grouping columns | The button's content. |
 
 ### DataTableColumnsMenu
 
 An outline "Columns" button and its menu: show or hide each column (with `hideableColumns`), pin it (with `pinnableColumns`), and "Reset columns" (see [Columns menu](#columns-menu)). It takes the props of a [Button](/docs/components/button) (`data-slot="data-table-columns-menu"`); renders nothing while neither feature is on.
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `variant` | Button `variant` | `"outline"` | The button's look. |
-| `children` | `ReactNode` | "Columns" and an icon | The button's content. |
+| Prop       | Type             | Default               | Description           |
+| ---------- | ---------------- | --------------------- | --------------------- |
+| `variant`  | Button `variant` | `"outline"`           | The button's look.    |
+| `children` | `ReactNode`      | "Columns" and an icon | The button's content. |
 
 ### DataTableFooter
 
@@ -1098,37 +1104,37 @@ First, previous, next and last page icon buttons, in a group named "Pagination".
 
 A column:
 
-| Field | Type | Default | Description |
-| --- | --- | --- | --- |
-| `id` | `string` | - | Unique among the columns and groups; the view names the column by it. |
-| `header` | `string` | - | Plain text: the header, and the column's name for screen readers. |
-| `type` | `"text" \| "number" \| "date" \| "boolean" \| "options"` | `"text"` | How values are shown, aligned and sorted. |
-| `accessor` | `keyof T \| ((item: T) => DataTableValue)` | `item[id]` | The cell's value: a string, number, boolean, `Date`, `null` or `undefined`. |
-| `format` | `Intl.NumberFormatOptions \| Intl.DateTimeFormatOptions` | - | For a number or date column. |
-| `options` | `ReadonlyArray<{ value: string; label: string; variant?: BadgeVariant; count?: number }>` | - | For an options column: its values, in sort order; in server mode, `count` is the option's number of rows in its filter. |
-| `cell` | `(item: T, details: DataTableCellDetails) => ReactNode` | - | The cell's content, in place of the type's. |
-| `renderHeader` | `(details: DataTableHeaderDetails) => ReactNode` | - | The header's content. |
-| `align` | `"start" \| "center" \| "end"` | by type | The cell's and the header's alignment. |
-| `compare` | `(a: T, b: T) => number` | - | Sorts the column in place of its type's order, ascending. |
-| `filter` | `(item: T, filterValue: DataTableFilterValue) => boolean` | - | Filters the column in place of its type's filter, for any filter value. |
-| `aggregate` | `"sum" \| "avg" \| "min" \| "max" \| "count" \| "countDistinct" \| (values, items) => DataTableValue` | `"sum"` for numbers, `"count"` for booleans | The column's figure in group rows and the totals row. |
-| `renderAggregate` | `(value: DataTableValue, details: { items }) => ReactNode` | - | Draws the aggregate, in place of the formatted value; `items` are the group's or the totals' rows. |
-| `rowHeader` | `boolean` | first column | Names the row and carries the tree's chevron and indent. |
-| `description` | `string` | - | Shown in an info tooltip in the header, and the header's accessible description. |
-| `width` | `number` | content | The column's width in px, which fixes the table's layout (see [Column widths](#column-widths)). |
-| `minWidth`, `maxWidth` | `number` | - | Bounds of the column's width, in px. |
-| `hideBelow` | `"sm" \| "md" \| "lg"` | - | Hides the column below the breakpoint. |
-| `wrap` | `boolean` | `false` | Lets text take several lines; not in a virtualized table. |
-| `sortable` | `false` | - | Keeps the column from sorting. |
-| `filterable` | `false` | - | Keeps the column out of the search and its filter. |
-| `groupable` | `false` | - | Keeps the rows from being grouped by the column. |
-| `resizable` | `false` | - | Keeps the column from being resized. |
-| `reorderable` | `false` | - | Keeps the column in its place. |
-| `hideable` | `false` | - | Keeps the column shown. |
-| `pinnable` | `false` | - | Keeps the column from being pinned. |
-| `editable` | `false \| ((item: T) => boolean)` | - | Keeps the column's cells from being written (`editable` on the root), or decides per item. |
-| `validate` | `(value: DataTableValue, item: T) => string \| null` | - | Checks a value before it is written: a message refuses it (shown on the cell), `null` lets it through. |
-| `parse` | `(text: string, item: T) => DataTableValue` | by type | Reads pasted text as the column's value, in place of its type's reading; throw an `Error` to refuse the text, its message shown on the cell. |
+| Field                  | Type                                                                                                  | Default                                     | Description                                                                                                                                  |
+| ---------------------- | ----------------------------------------------------------------------------------------------------- | ------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                   | `string`                                                                                              | -                                           | Unique among the columns and groups; the view names the column by it.                                                                        |
+| `header`               | `string`                                                                                              | -                                           | Plain text: the header, and the column's name for screen readers.                                                                            |
+| `type`                 | `"text" \| "number" \| "date" \| "boolean" \| "options"`                                              | `"text"`                                    | How values are shown, aligned and sorted.                                                                                                    |
+| `accessor`             | `keyof T \| ((item: T) => DataTableValue)`                                                            | `item[id]`                                  | The cell's value: a string, number, boolean, `Date`, `null` or `undefined`.                                                                  |
+| `format`               | `Intl.NumberFormatOptions \| Intl.DateTimeFormatOptions`                                              | -                                           | For a number or date column.                                                                                                                 |
+| `options`              | `ReadonlyArray<{ value: string; label: string; variant?: BadgeVariant; count?: number }>`             | -                                           | For an options column: its values, in sort order; in server mode, `count` is the option's number of rows in its filter.                      |
+| `cell`                 | `(item: T, details: DataTableCellDetails) => ReactNode`                                               | -                                           | The cell's content, in place of the type's.                                                                                                  |
+| `renderHeader`         | `(details: DataTableHeaderDetails) => ReactNode`                                                      | -                                           | The header's content.                                                                                                                        |
+| `align`                | `"start" \| "center" \| "end"`                                                                        | by type                                     | The cell's and the header's alignment.                                                                                                       |
+| `compare`              | `(a: T, b: T) => number`                                                                              | -                                           | Sorts the column in place of its type's order, ascending.                                                                                    |
+| `filter`               | `(item: T, filterValue: DataTableFilterValue) => boolean`                                             | -                                           | Filters the column in place of its type's filter, for any filter value.                                                                      |
+| `aggregate`            | `"sum" \| "avg" \| "min" \| "max" \| "count" \| "countDistinct" \| (values, items) => DataTableValue` | `"sum"` for numbers, `"count"` for booleans | The column's figure in group rows and the totals row.                                                                                        |
+| `renderAggregate`      | `(value: DataTableValue, details: { items }) => ReactNode`                                            | -                                           | Draws the aggregate, in place of the formatted value; `items` are the group's or the totals' rows.                                           |
+| `rowHeader`            | `boolean`                                                                                             | first column                                | Names the row and carries the tree's chevron and indent.                                                                                     |
+| `description`          | `string`                                                                                              | -                                           | Shown in an info tooltip in the header, and the header's accessible description.                                                             |
+| `width`                | `number`                                                                                              | content                                     | The column's width in px, which fixes the table's layout (see [Column widths](#column-widths)).                                              |
+| `minWidth`, `maxWidth` | `number`                                                                                              | -                                           | Bounds of the column's width, in px.                                                                                                         |
+| `hideBelow`            | `"sm" \| "md" \| "lg"`                                                                                | -                                           | Hides the column below the breakpoint.                                                                                                       |
+| `wrap`                 | `boolean`                                                                                             | `false`                                     | Lets text take several lines; not in a virtualized table.                                                                                    |
+| `sortable`             | `false`                                                                                               | -                                           | Keeps the column from sorting.                                                                                                               |
+| `filterable`           | `false`                                                                                               | -                                           | Keeps the column out of the search and its filter.                                                                                           |
+| `groupable`            | `false`                                                                                               | -                                           | Keeps the rows from being grouped by the column.                                                                                             |
+| `resizable`            | `false`                                                                                               | -                                           | Keeps the column from being resized.                                                                                                         |
+| `reorderable`          | `false`                                                                                               | -                                           | Keeps the column in its place.                                                                                                               |
+| `hideable`             | `false`                                                                                               | -                                           | Keeps the column shown.                                                                                                                      |
+| `pinnable`             | `false`                                                                                               | -                                           | Keeps the column from being pinned.                                                                                                          |
+| `editable`             | `false \| ((item: T) => boolean)`                                                                     | -                                           | Keeps the column's cells from being written (`editable` on the root), or decides per item.                                                   |
+| `validate`             | `(value: DataTableValue, item: T) => string \| null`                                                  | -                                           | Checks a value before it is written: a message refuses it (shown on the cell), `null` lets it through.                                       |
+| `parse`                | `(text: string, item: T) => DataTableValue`                                                           | by type                                     | Reads pasted text as the column's value, in place of its type's reading; throw an `Error` to refuse the text, its message shown on the cell. |
 
 A group: `{ id: string; header: string; description?: string; columns: ReadonlyArray<DataTableColumn<T>> }`.
 
@@ -1170,61 +1176,61 @@ type DataTableFilterValue =
 
 `useDataTable<T>()` returns the state and actions of the `DataTable` around the component. It throws outside a `DataTable`.
 
-| Field | Type | Description |
-| --- | --- | --- |
-| `view` | `DataTableView` | The view. |
-| `setView` | `(view: DataTableView) => void` | Sets the whole view. |
-| `setSorting` | `(sorting: ReadonlyArray<DataTableSort>) => void` | Sets the sorting. |
-| `setSearch` | `(search: string) => void` | Sets the search (with `filterable`). |
-| `setFilter` | `(column: string, value: DataTableFilterValue \| null) => void` | Sets a column's filter, `null` removes it (with `filterable`). |
-| `clearFilters` | `() => void` | Removes every filter and the search. |
-| `setGrouping` | `(grouping: ReadonlyArray<string>) => void` | Groups the rows by these columns, the outermost first; `[]` ungroups (with `groupable`). |
-| `resetView` | `() => void` | Back to `defaultView`, or the defaults. |
-| `setColumnOrder` | `(order: ReadonlyArray<string>) => void` | Puts the columns listed first, in that order; the others follow in their order now (a group's columns stay together). |
-| `setColumnHidden` | `(column: string, hidden: boolean) => void` | Hides or shows a column. |
-| `setColumnWidth` | `(column: string, width: number \| null) => void` | Sets a column's width in px; `null` returns it to its own. |
-| `setColumnPinned` | `(column: string, side: "start" \| "end" \| null) => void` | Pins a column to a side, or unpins it. |
-| `resetColumns` | `() => void` | Returns the order, the hidden columns, the widths and the pins to `defaultView`'s. |
-| `value` | `ReadonlyArray<string>` | The selected rows' ids. |
-| `setValue` | `(value: ReadonlyArray<string>) => void` | Sets the selection. |
-| `selectAll` | `() => void` | Selects every row the view matches (the loaded ones in server mode). |
-| `selectAllMatching` | `() => void` | "Select all N": in server mode, every row the view matches. |
-| `clearSelection` | `() => void` | Clears the selection. |
-| `allMatching` | `{ except: ReadonlyArray<string> } \| null` | Server "all matching", or `null`. |
-| `expanded` | `ReadonlyArray<string>` | The open tree rows' and detail rows' ids. |
-| `setExpanded` | `(expanded: ReadonlyArray<string>) => void` | Sets the open rows. |
-| `expandAllGroups`, `collapseAllGroups` | `() => void` | Opens every group, or closes every group (nested ones too), those of a grouping set in the same handler too. Groups open and close apart from `expanded`. |
-| `canExpandAllGroups`, `canCollapseAllGroups` | `boolean` | Whether some group (of those the search and filters keep) is closed, or open: what the two above would change. |
-| `page`, `pageCount`, `pageSize`, `pageSizes` | `number`, `number`, `number`, `ReadonlyArray<number>` | The page shown (from 1) and the paging. |
-| `setPage`, `setPageSize` | `(n: number) => void` | Changes the page or the page size. |
-| `rows` | `{ all, filtered, page }` | The items: every one, the ones the view matches, the page's. |
-| `rowCount` | `number` | The number of rows the view matches (`rowCount` in server mode). |
-| `columns` | `ReadonlyArray<DataTableLeafColumn<T>>` | The columns shown, in order. |
-| `loading` | `boolean` | The root's `loading`. |
-| `exportCsv` | `(options?) => Promise<string>` | The rows as CSV text (RFC 4180): display values, with the headers first (see [Export](#export)). `rows`: `"filtered"` (default), `"selected"` or `"page"`; `columns`: `"visible"` (default) or `"all"`; `header`, `bom`, `escapeFormulas`. |
-| `cellSelection` | `ReadonlyArray<DataTableCellRange>` | The selected cell ranges (with a `cellSelectionMode`). |
-| `setCellSelection` | `(ranges: ReadonlyArray<DataTableCellRange>) => void` | Sets the cell selection. |
-| `selectAllCells`, `clearCellSelection` | `() => void` | Selects every cell shown, on every page (`[{}]`), or none. |
-| `selectedCellCount` | `number` | The number of selected cells, each counted once. |
-| `cellSummary` | `{ count, numericCount, sum, average } \| null` | What `DataTableCellSummary` shows, as numbers (`sum` and `average` `null` without numbers); `null` with no cell selected. |
-| `clearCellMessages` | `() => void` | Drops every cell's message (a value refused, a save that failed). |
-| `copyCells` | `(options?: { escapeFormulas?: boolean }) => Promise<string>` | Copies the selected cells to the clipboard, as <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> does, and resolves with the tab-separated text; `escapeFormulas: false` leaves text a spreadsheet would run as a formula as it is. |
-| `pasteCells` | `(text: string) => Promise<void>` | Pastes tab-separated text into the selection, as <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>V</Kbd> does (`editable`). |
-| `clearCells`, `fillCellsDown` | `() => Promise<void>` | Empties the selected cells, or fills each range down, as <Kbd>Delete</Kbd> and <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>D</Kbd> do (`editable`). |
+| Field                                        | Type                                                            | Description                                                                                                                                                                                                                                |
+| -------------------------------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `view`                                       | `DataTableView`                                                 | The view.                                                                                                                                                                                                                                  |
+| `setView`                                    | `(view: DataTableView) => void`                                 | Sets the whole view.                                                                                                                                                                                                                       |
+| `setSorting`                                 | `(sorting: ReadonlyArray<DataTableSort>) => void`               | Sets the sorting.                                                                                                                                                                                                                          |
+| `setSearch`                                  | `(search: string) => void`                                      | Sets the search (with `filterable`).                                                                                                                                                                                                       |
+| `setFilter`                                  | `(column: string, value: DataTableFilterValue \| null) => void` | Sets a column's filter, `null` removes it (with `filterable`).                                                                                                                                                                             |
+| `clearFilters`                               | `() => void`                                                    | Removes every filter and the search.                                                                                                                                                                                                       |
+| `setGrouping`                                | `(grouping: ReadonlyArray<string>) => void`                     | Groups the rows by these columns, the outermost first; `[]` ungroups (with `groupable`).                                                                                                                                                   |
+| `resetView`                                  | `() => void`                                                    | Back to `defaultView`, or the defaults.                                                                                                                                                                                                    |
+| `setColumnOrder`                             | `(order: ReadonlyArray<string>) => void`                        | Puts the columns listed first, in that order; the others follow in their order now (a group's columns stay together).                                                                                                                      |
+| `setColumnHidden`                            | `(column: string, hidden: boolean) => void`                     | Hides or shows a column.                                                                                                                                                                                                                   |
+| `setColumnWidth`                             | `(column: string, width: number \| null) => void`               | Sets a column's width in px; `null` returns it to its own.                                                                                                                                                                                 |
+| `setColumnPinned`                            | `(column: string, side: "start" \| "end" \| null) => void`      | Pins a column to a side, or unpins it.                                                                                                                                                                                                     |
+| `resetColumns`                               | `() => void`                                                    | Returns the order, the hidden columns, the widths and the pins to `defaultView`'s.                                                                                                                                                         |
+| `value`                                      | `ReadonlyArray<string>`                                         | The selected rows' ids.                                                                                                                                                                                                                    |
+| `setValue`                                   | `(value: ReadonlyArray<string>) => void`                        | Sets the selection.                                                                                                                                                                                                                        |
+| `selectAll`                                  | `() => void`                                                    | Selects every row the view matches (the loaded ones in server mode).                                                                                                                                                                       |
+| `selectAllMatching`                          | `() => void`                                                    | "Select all N": in server mode, every row the view matches.                                                                                                                                                                                |
+| `clearSelection`                             | `() => void`                                                    | Clears the selection.                                                                                                                                                                                                                      |
+| `allMatching`                                | `{ except: ReadonlyArray<string> } \| null`                     | Server "all matching", or `null`.                                                                                                                                                                                                          |
+| `expanded`                                   | `ReadonlyArray<string>`                                         | The open tree rows' and detail rows' ids.                                                                                                                                                                                                  |
+| `setExpanded`                                | `(expanded: ReadonlyArray<string>) => void`                     | Sets the open rows.                                                                                                                                                                                                                        |
+| `expandAllGroups`, `collapseAllGroups`       | `() => void`                                                    | Opens every group, or closes every group (nested ones too), those of a grouping set in the same handler too. Groups open and close apart from `expanded`.                                                                                  |
+| `canExpandAllGroups`, `canCollapseAllGroups` | `boolean`                                                       | Whether some group (of those the search and filters keep) is closed, or open: what the two above would change.                                                                                                                             |
+| `page`, `pageCount`, `pageSize`, `pageSizes` | `number`, `number`, `number`, `ReadonlyArray<number>`           | The page shown (from 1) and the paging.                                                                                                                                                                                                    |
+| `setPage`, `setPageSize`                     | `(n: number) => void`                                           | Changes the page or the page size.                                                                                                                                                                                                         |
+| `rows`                                       | `{ all, filtered, page }`                                       | The items: every one, the ones the view matches, the page's.                                                                                                                                                                               |
+| `rowCount`                                   | `number`                                                        | The number of rows the view matches (`rowCount` in server mode).                                                                                                                                                                           |
+| `columns`                                    | `ReadonlyArray<DataTableLeafColumn<T>>`                         | The columns shown, in order.                                                                                                                                                                                                               |
+| `loading`                                    | `boolean`                                                       | The root's `loading`.                                                                                                                                                                                                                      |
+| `exportCsv`                                  | `(options?) => Promise<string>`                                 | The rows as CSV text (RFC 4180): display values, with the headers first (see [Export](#export)). `rows`: `"filtered"` (default), `"selected"` or `"page"`; `columns`: `"visible"` (default) or `"all"`; `header`, `bom`, `escapeFormulas`. |
+| `cellSelection`                              | `ReadonlyArray<DataTableCellRange>`                             | The selected cell ranges (with a `cellSelectionMode`).                                                                                                                                                                                     |
+| `setCellSelection`                           | `(ranges: ReadonlyArray<DataTableCellRange>) => void`           | Sets the cell selection.                                                                                                                                                                                                                   |
+| `selectAllCells`, `clearCellSelection`       | `() => void`                                                    | Selects every cell shown, on every page (`[{}]`), or none.                                                                                                                                                                                 |
+| `selectedCellCount`                          | `number`                                                        | The number of selected cells, each counted once. `0` until the cell selection's code has loaded (in idle time once the table mounts; reading it asks for it), then the part renders again.                                                 |
+| `cellSummary`                                | `{ count, numericCount, sum, average } \| null`                 | What `DataTableCellSummary` shows, as numbers (`sum` and `average` `null` without numbers); `null` with no cell selected, and until the code has loaded, as `selectedCellCount`.                                                           |
+| `clearCellMessages`                          | `() => void`                                                    | Drops every cell's message (a value refused, a save that failed).                                                                                                                                                                          |
+| `copyCells`                                  | `(options?: { escapeFormulas?: boolean }) => Promise<string>`   | Copies the selected cells to the clipboard, as <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> does, and resolves with the tab-separated text; `escapeFormulas: false` leaves text a spreadsheet would run as a formula as it is.            |
+| `pasteCells`                                 | `(text: string) => Promise<void>`                               | Pastes tab-separated text into the selection, as <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>V</Kbd> does (`editable`).                                                                                                                          |
+| `clearCells`, `fillCellsDown`                | `() => Promise<void>`                                           | Empties the selected cells, or fills each range down, as <Kbd>Delete</Kbd> and <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>D</Kbd> do (`editable`).                                                                                              |
 
 ### TableColumnResizer
 
 `@tecton/react/tecton/table-column-resizer`: the grip on a column header's end edge (see [Resizing](#resizing)), a focusable `role="separator"` named `Resize {label}` (`data-slot="table-column-resizer"`, `data-dragging` while dragged). <Kbd>←</Kbd> / <Kbd>→</Kbd> narrow and widen it (mirrored right to left; <Kbd>Shift</Kbd>: four steps), <Kbd>Home</Kbd> / <Kbd>End</Kbd> set `min` / `max`, <Kbd>Enter</Kbd> and a double click set `resetValue`, and <Kbd>Escape</Kbd> during a drag puts the width back (in a `DataTable`, the column's menu leads to it, and <Kbd>Enter</Kbd>, <Kbd>Tab</Kbd> and <Kbd>Escape</Kbd> end resizing, a double click fits the column; see [Resizing](#resizing)). While dragging, a guide runs down the table at the new edge, with the width beside it.
 
-| Prop | Type | Default | Description |
-| --- | --- | --- | --- |
-| `value` | `number` | - | The column's width in px (controlled). |
-| `defaultValue` | `number` | `150` | The initial width, when not controlled. |
-| `onValueChange` | `(value: number, eventDetails) => void` | - | Called with each new width while it changes; `reason` is `"drag"`, `"keyboard"` or `"reset"`. |
-| `onValueCommitted` | `(value: number, eventDetails) => void` | - | Called with the width once a drag ends, or after each key. |
-| `min` | `number` | `48` | The narrowest width. |
-| `max` | `number` | `1000` | The widest width. |
-| `step` | `number` | `8` | The arrow keys' step, in px. |
-| `resetValue` | `number` | - | The width <Kbd>Enter</Kbd> and a double click go back to. |
-| `label` | `string` | - | The column's name, for `Resize {label}`. |
-| `disabled` | `boolean` | `false` | Turns the resizer off. |
+| Prop               | Type                                    | Default | Description                                                                                   |
+| ------------------ | --------------------------------------- | ------- | --------------------------------------------------------------------------------------------- |
+| `value`            | `number`                                | -       | The column's width in px (controlled).                                                        |
+| `defaultValue`     | `number`                                | `150`   | The initial width, when not controlled.                                                       |
+| `onValueChange`    | `(value: number, eventDetails) => void` | -       | Called with each new width while it changes; `reason` is `"drag"`, `"keyboard"` or `"reset"`. |
+| `onValueCommitted` | `(value: number, eventDetails) => void` | -       | Called with the width once a drag ends, or after each key.                                    |
+| `min`              | `number`                                | `48`    | The narrowest width.                                                                          |
+| `max`              | `number`                                | `1000`  | The widest width.                                                                             |
+| `step`             | `number`                                | `8`     | The arrow keys' step, in px.                                                                  |
+| `resetValue`       | `number`                                | -       | The width <Kbd>Enter</Kbd> and a double click go back to.                                     |
+| `label`            | `string`                                | -       | The column's name, for `Resize {label}`.                                                      |
+| `disabled`         | `boolean`                               | `false` | Turns the resizer off.                                                                        |

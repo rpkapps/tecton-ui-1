@@ -1,8 +1,8 @@
 /**
- * Cell selection on demand (§7): the selection is drawn from the first
- * render, the code that acts on it loads in idle time (not on mount, never
- * for a table without it), what the user does before it arrives is
- * replayed once it is there, and its arrival changes nothing drawn.
+ * Cell selection on demand (§7): the code that resolves the selection and
+ * acts on it loads in idle time (not on mount, never for a table without
+ * it), what the user does before it arrives is replayed once it is there,
+ * and a selection given draws once it is, changing nothing else.
  */
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
 import { afterEach, describe, expect, it, vi } from "vitest"
@@ -77,7 +77,7 @@ describe("DataTable cell selection on demand", () => {
     expect(chunk.requested).not.toHaveBeenCalled()
   })
 
-  it("draws the selection from the first render, loads in idle time, and replays what came before the code", async () => {
+  it("loads in idle time, replays what came before the code, and draws a selection given once it is there", async () => {
     let idle: (() => void) | null = null
     vi.stubGlobal("requestIdleCallback", (task: () => void) => {
       idle = task
@@ -108,23 +108,29 @@ describe("DataTable cell selection on demand", () => {
         >
           <DataTableContent aria-label="Used" />
         </DataTable>
+        <DataTable items={WELLS} columns={columns} cellSelectionMode="range">
+          <DataTableContent aria-label="Tabbed" />
+        </DataTable>
       </>
     )
     const untouched = screen.getByRole("grid", { name: "Untouched" })
     const used = screen.getByRole("grid", { name: "Used" })
-    // Drawn before any code: the fill, the outline, aria-selected.
+    const tabbed = screen.getByRole("grid", { name: "Tabbed" })
+    // Not drawn before the code: every cell can be selected, none is.
     expect(td(untouched, "Well 0", "field")).toHaveAttribute(
       "aria-selected",
-      "true"
+      "false"
     )
-    expect(td(untouched, "Well 0", "field")).toHaveClass(
-      "bg-table-active",
-      "before:border-t-2"
-    )
+    expect(td(untouched, "Well 0", "field")).not.toHaveClass("bg-table-active")
     const before = untouched.outerHTML
     // Not on mount.
     await act(() => new Promise((resolve) => setTimeout(resolve, 100)))
     expect(chunk.requested).not.toHaveBeenCalled()
+
+    // Tab into another table before the code: its cell is kept by id.
+    const stop = tabbed.querySelector<HTMLElement>('[tabindex="0"]')!
+    act(() => stop.focus())
+    expect(tabbed.querySelector('[aria-selected="true"]')).toBeNull()
 
     // A press, Shift + Down and Ctrl + C before the code: focus moves at
     // once, the selection waits.
@@ -153,12 +159,26 @@ describe("DataTable cell selection on demand", () => {
     expect(
       onCellSelectionChange.mock.calls.map((call) => call[1].reason)
     ).toEqual(["item-press", "keyboard"])
+    // The cell Tab entered, selected once the code came.
+    await waitFor(() => expect(stop).toHaveAttribute("aria-selected", "true"))
     // The copy, after the moves, through the Clipboard API.
     await waitFor(() =>
       expect(writeText).toHaveBeenCalledWith("Gullfaks\r\nSnorre")
     )
-    // Nothing drawn changed as the code arrived.
-    expect(untouched.outerHTML).toBe(before)
+    // The selection given, drawn once the code arrived: the fill, the
+    // outline, aria-selected, and nothing else changed.
+    expect(td(untouched, "Well 0", "field")).toHaveAttribute(
+      "aria-selected",
+      "true"
+    )
+    expect(td(untouched, "Well 0", "field")).toHaveClass(
+      "bg-table-active",
+      "before:border-t-2"
+    )
+    expect(untouched.querySelectorAll('[aria-selected="true"]')).toHaveLength(4)
+    const unmarked = (html: string) =>
+      html.replace(/ class="[^"]*"/g, "").replace(/ aria-selected="\w+"/g, "")
+    expect(unmarked(untouched.outerHTML)).toBe(unmarked(before))
     // Before the idle callbacks are no longer stubbed.
     unmount()
   })

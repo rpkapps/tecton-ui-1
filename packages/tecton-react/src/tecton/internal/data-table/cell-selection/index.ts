@@ -1,11 +1,14 @@
 /**
  * Cell selection's code, loaded on demand (`lazy.ts`, the `cellSelection`
- * feature): what the keys, a press and a drag do to the ranges, copying,
- * pasting, clearing and filling down, and the clipboard's events once it
- * is there (`createCellController`). The ranges as drawn are resolved with
- * the table (`engine/cells.ts`); everything here reads the engine, never
- * the DOM, so cells of rows out of view are copied and written too.
+ * feature): the ranges resolved over the rows and columns shown, for the
+ * root to draw (`resolveSelection`, `engine/cells.ts`); what the keys, a
+ * press and a drag do to them, copying, pasting, clearing and filling
+ * down; and the table's side of it once it is there (`attachCells`: what
+ * `cells.tsx` kept until then, then its events, and the clipboard's).
+ * Everything here reads the engine, never the DOM, so cells of rows out
+ * of view are copied and written too.
  *
+ * - Tab into a table with no cell selected selects the cell it enters.
  * - Moving focus selects the cell it goes to; with Shift, the range from
  *   its anchor (where it was begun) to that cell. A click selects the cell,
  *   Shift + click extends the range, Ctrl / Cmd + click adds a range.
@@ -17,7 +20,8 @@
  * - Shift + arrows on whole rows move their last row (and on whole columns
  *   their last column): the range stays whole. On every cell, the first
  *   Shift + arrow makes the range the rows (or columns) from the first to
- *   the last, then moves its end.
+ *   the last, then moves its end; one that cannot (Shift + Down, past the
+ *   last row) leaves every cell selected, and focus where it was.
  * - With no range, the focused cell stands for the selection (copy, paste,
  *   Delete). With focus off the data cells (a header, a group or totals
  *   row), copy, paste, Delete and fill down say to select cells first.
@@ -43,11 +47,12 @@
  */
 import { announce } from "../../primitives/live-announcer"
 import type { Translator } from "../../i18n/translations"
+import { isTextEntry, type TableGridController } from "../../table-grid"
 import { describeWrite, writeCells, type CellWrite } from "../cell-write"
-import type { CellCommand, CellEnvironment, CellEvent } from "../cells"
+import type { CellCommand, CellEvent, CellHandlers, CellSide } from "../cells"
 import type { DataTableContextValue } from "../context"
-import { cellCount, forEachCell, itemRowsIn } from "../engine/cell-ranges"
-import type { CellGrid, CellRect } from "../engine/cells"
+import { forEachCell, itemRowsIn } from "../engine/cell-ranges"
+import { resolveSelection, type CellGrid, type CellRect } from "../engine/cells"
 import type { EngineColumn } from "../engine/columns"
 import type { EngineRow, ItemRow } from "../engine/rows"
 import type {
@@ -61,6 +66,22 @@ import { startCellDrag } from "./drag"
 import { htmlCell, htmlTable, parseTsv, tsvField } from "./tsv"
 
 type Position = DataTableCellPosition
+
+/** What the code works with: the table, its cells and the grid. */
+type CellEnvironment = {
+  context: DataTableContextValue<unknown>
+  t: () => Translator<"dataTable">
+  table: () => HTMLTableElement | null
+  /** The table's scroll container. */
+  container: () => HTMLElement | null
+  grid: { readonly current: TableGridController | null }
+  /** A cell's place, when it is a data cell of an item row of this table. */
+  positionOf: (cell: Element | null) => Position | null
+  /** Whether focus is on this table (not in a field, nor a table nested in it). */
+  focusIn: () => boolean
+  /** A row's place among the body's rows rendered or not (-1 when not on the page). */
+  bodyIndex: (id: string) => number
+}
 
 type CellHost = {
   context: DataTableContextValue<unknown>
@@ -91,9 +112,19 @@ const corner = (from: Position, to: Position): DataTableCellRange => ({
 
 /** The selection as it is now (changes not rendered yet included), over the rows shown. */
 function gridOf(host: CellHost): CellGrid<unknown> | null {
-  const grid = host.context.store.get().cellGrid
+  const state = host.context.store.get()
+  if (state.options.cellSelectionMode === "none") return null
   const ranges = host.context.actions.currentCellSelection()
-  if (!grid) return null
+  // The root resolves it once it has rendered with this code.
+  const grid =
+    state.cellGrid ??
+    resolveSelection(
+      ranges,
+      state.model,
+      state.layout.columns,
+      state.view.columns.order,
+      state.cellBelow
+    )
   return grid.ranges === ranges ? grid : grid.resolve(ranges)
 }
 
@@ -144,6 +175,12 @@ function nextItemRow(
   for (let at = index + step; at >= first && at <= last; at += step)
     if (rows[at].kind === "item") return at
   return index
+}
+
+/** A move that leaves the selection as it is: focus back where it was. */
+function keep(host: CellHost, from: Position) {
+  focusAt(host, from)
+  return false
 }
 
 /**
@@ -211,6 +248,8 @@ function navigate(
       grid.model.indexOfRow(to.row) - grid.model.indexOfRow(from.row)
     )
     const end = nextItemRow(grid.rows, rows.last, step, rows.first, rows.last)
+    // Past the last row: still every cell, and focus where it was.
+    if (end === rows.last) return keep(host, from)
     const endId = (grid.rows[end] as ItemRow<unknown>).id
     next = {
       rows: {
@@ -233,6 +272,7 @@ function navigate(
         end = at
         break
       }
+    if (end === columns.last) return keep(host, from)
     const endId = grid.columns[end].id
     next = {
       columns: { start: grid.columns[columns.first].id, end: endId },
@@ -247,7 +287,7 @@ function navigate(
 function announceSelected(host: CellHost) {
   const grid = gridOf(host)
   if (!grid) return
-  const count = cellCount(grid)
+  const count = grid.count()
   const { locale } = host.context.store.get().formatter
   if (count > 0)
     announce(
@@ -556,7 +596,11 @@ function clipboardApi(): Partial<Clipboard> | undefined {
 /** Where a copy goes: a copy event's data, a write already begun (`cells.tsx`), or the Clipboard API. */
 type CopySink =
   | { data: DataTransfer }
-  | { resolve: (copied: { text: string; html: string } | null) => void }
+  | {
+      resolve: (copied: { text: string; html: string } | null) => void
+      /** Whether the write begun succeeded. */
+      written: Promise<boolean>
+    }
   | null
 
 /**
@@ -589,8 +633,14 @@ async function copy(
       } catch {
         // The text and HTML are there.
       }
-  } else if (sink) sink.resolve({ text: copied.text, html: copied.html ?? "" })
-  else {
+  } else if (sink) {
+    sink.resolve({ text: copied.text, html: copied.html ?? "" })
+    // Said once the browser has written it (or refused).
+    if (!(await sink.written)) {
+      announce(host.t("copyFailed"))
+      return copied.text
+    }
+  } else {
     const clipboard = clipboardApi()
     if (!clipboard?.writeText) return copied.text
     try {
@@ -826,6 +876,18 @@ function createCellController(environment: CellEnvironment) {
         )
           drag(entry.press)
         return
+      case "focus":
+        // Tab into the table: its cell is the selection, if there is none.
+        if (environment.context.actions.currentCellSelection().length === 0)
+          navigate(
+            host(null),
+            entry.to,
+            null,
+            { extend: false, add: false },
+            "keyboard",
+            entry.event
+          )
+        return
       case "command":
         runCommand(host(entry.focused), entry.command, entry.event)
         return
@@ -904,6 +966,44 @@ function createCellController(environment: CellEnvironment) {
   }
 }
 
+/**
+ * The table's side, once this code is there (`cells.tsx`): the controller
+ * of its events, after it has replayed those that waited (every move, and
+ * the commands while focus is still on the table).
+ */
+function attachCells(side: CellSide): CellHandlers {
+  const table = () =>
+    side.container.current?.querySelector<HTMLTableElement>(":scope > table") ??
+    null
+  const environment: CellEnvironment = {
+    context: side.context,
+    t: () => side.latest.current.t,
+    table,
+    container: () => side.container.current,
+    grid: side.grid,
+    positionOf: side.positionOf,
+    focusIn: () => {
+      const own = table()
+      const active = own?.ownerDocument.activeElement
+      return (
+        !!own &&
+        active instanceof HTMLElement &&
+        own.contains(active) &&
+        active.closest("table") === own &&
+        !isTextEntry(active)
+      )
+    },
+    bodyIndex: (id) => side.latest.current.bodyIndex(id),
+  }
+  const controller = createCellController(environment)
+  const waiting = side.queue.splice(0)
+  const focused = environment.focusIn()
+  for (const entry of waiting)
+    if (entry.kind === "navigate" || entry.kind === "focus" || focused)
+      controller.run(entry)
+  return controller
+}
+
 /** A command of `useDataTable`; resolves with the text copied (`""` otherwise). */
 async function runCellCommand(
   host: CellHost,
@@ -926,11 +1026,13 @@ async function runCellCommand(
 }
 
 export {
+  attachCells,
   copy,
   createCellController,
   navigate,
   paste,
+  resolveSelection,
   runCellCommand,
   runCommand,
 }
-export type { CellHost, CopySink }
+export type { CellEnvironment, CellHost, CopySink }

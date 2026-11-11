@@ -71,7 +71,6 @@ import {
   type CellsState,
 } from "./context"
 import {
-  decodeMarks,
   selectionState,
   type BodyRow,
   type DataTableRowModel,
@@ -80,7 +79,7 @@ import {
   type GroupRow,
   type ItemRow,
 } from "./engine/index"
-import { isCellEditable, shownMark } from "./cell-marks"
+import { isCellEditable } from "./cell-marks"
 import { DataTableRowHandle } from "./row-order"
 import { DataTableSelectionCheckbox } from "./selection-checkbox"
 
@@ -137,6 +136,7 @@ function rowIndex<T>(
 const NO_CELLS: Store<CellsState> = createStore<CellsState>({
   grid: null,
   marks: new Map(),
+  writer: null,
   change: null,
 })
 
@@ -150,10 +150,16 @@ function ItemRowComponent<T>({
   const marks = useStore(cells, (state) => state.grid?.rowMarks(row.id) ?? "")
   const skipped = useStore(cells, (state) => state.grid?.skipped ?? "")
   const writes = useStore(cells, (state) => state.marks.get(row.id))
+  // Set with the first mark, never removed: there whenever `writes` is.
+  const writer = writes ? cells.get().writer : null
   const columnCount = shared.columns.length
+  // Marks come from a grid, which reads them (the code on demand's).
   const flags = React.useMemo(
-    () => decodeMarks(marks, columnCount, skipped),
-    [marks, columnCount, skipped]
+    () =>
+      marks
+        ? (cells.get().grid?.decode(marks, columnCount, skipped) ?? null)
+        : null,
+    [cells, marks, columnCount, skipped]
   )
   // The cells' content, kept while the row and the table's state stay.
   const inner = React.useMemo(
@@ -227,9 +233,13 @@ function ItemRowComponent<T>({
             inner[index],
             flags?.[index],
             writes &&
-              shownMark(writes.get(column.id), column.getValue(row.item)),
+              writer?.shownMark(
+                writes.get(column.id),
+                column.getValue(row.item)
+              ),
             shared.editable &&
-              !isCellEditable(true, column, row.item, row.disabled)
+              !isCellEditable(true, column, row.item, row.disabled),
+            writer
           )
         )}
       </TableRow>

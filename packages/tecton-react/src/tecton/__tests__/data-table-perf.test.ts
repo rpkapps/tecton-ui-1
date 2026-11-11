@@ -50,7 +50,6 @@ import {
   getFormatter,
   layoutColumns,
   reconcileView,
-  resolveCells,
   selectAllIds,
   selectionState,
   toggleIds,
@@ -61,6 +60,7 @@ import {
   type DataTableView,
 } from "../internal/data-table/engine"
 import { copy } from "../internal/data-table/cell-selection/index"
+import { resolveCells } from "../internal/data-table/engine/cells"
 import {
   cellCount,
   summarizeCells,
@@ -526,6 +526,7 @@ describe(
             layout: state.layout,
             formatter: getFormatter(getColumnModel(state.columns), "en-US"),
             cellGrid: grid,
+            options: { cellSelectionMode: "range" },
           }
           const context = {
             store: { get: () => store },

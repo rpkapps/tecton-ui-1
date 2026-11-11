@@ -132,14 +132,13 @@ export default function DataTableCellSelection() {
       columns={columns}
       cellSelectionMode="range"
       editable
-      onCellsChange={async (changes, { signal }) => {
+      onCellsChange={async (changes) => {
         setAllocations((current) => apply(current, changes))
         try {
           await save(changes)
         } catch (error) {
-          // A later write has these cells now: nothing to roll back.
-          if (signal.aborted) return
-          // Back to the values before, and the cells show the error.
+          // Back to the values before, but in the cells a later write
+          // has changed again; the others show the error.
           setAllocations((current) => rollBack(current, changes))
           throw error
         }

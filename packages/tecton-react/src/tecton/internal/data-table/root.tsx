@@ -64,7 +64,6 @@ import {
   isGroupClosed,
   layoutColumns,
   reconcileView,
-  resolveCells,
   resolvePageSize,
   sameIds,
   sameView,
@@ -89,7 +88,6 @@ import {
 } from "./engine/index"
 import {
   DataTableContext,
-  type CellMark,
   type CellsState,
   type DataTableActions,
   type DataTableCellSelectionMode,
@@ -108,7 +106,12 @@ import {
   type DataTableState,
 } from "./context"
 import { useBelowBreakpoints } from "./column-sizing"
-import { loadFeature, usePrefetchFeatures, type FeatureName } from "./lazy"
+import {
+  loadFeature,
+  useFeature,
+  usePrefetchFeatures,
+  type FeatureName,
+} from "./lazy"
 import { viewChangeReason } from "./view-reason"
 import { createWarnings, type Warn } from "./warnings"
 
@@ -761,20 +764,28 @@ function createActions<T>(
       const current = now()
       if (current.cellSelectionMode === "none") return false
       // One range in "cell" mode, of one cell: the last range's moving
-      // corner (a range of whole rows or columns has none).
-      const ranges =
-        current.cellSelectionMode === "cell"
-          ? next.slice(-1).flatMap(({ rows, columns }) =>
-              rows && columns
-                ? [
-                    {
-                      rows: { start: rows.end, end: rows.end },
-                      columns: { start: columns.end, end: columns.end },
-                    },
-                  ]
-                : []
-            )
-          : next
+      // corner. Whole rows or columns have none: such a selection is not
+      // one cell, and is ignored.
+      let ranges = next
+      if (current.cellSelectionMode === "cell") {
+        const last = next.filter((range) => range.rows && range.columns).at(-1)
+        if (next.length && !last) {
+          warn(
+            "cell-mode-whole-axis",
+            'DataTable: `cellSelectionMode="cell"` selects one cell, not whole rows, columns or every cell: the selection is left as it was.'
+          )
+          return false
+        }
+        ranges =
+          last?.rows && last.columns
+            ? [
+                {
+                  rows: { start: last.rows.end, end: last.rows.end },
+                  columns: { start: last.columns.end, end: last.columns.end },
+                },
+              ]
+            : []
+      }
       if (sameRanges(ranges, current.cellSelection)) return false
       const copy = ranges.map(copyRange)
       if (
@@ -802,14 +813,9 @@ function createActions<T>(
       return { canceled: details.isCanceled, result }
     },
     clearCellMessages() {
+      // No writer: no cell has been written, so no message.
       const { cells } = context()
-      const before = cells.get().marks
-      const marks = new Map<string, ReadonlyMap<string, CellMark>>()
-      for (const [row, own] of before) {
-        const kept = new Map([...own].filter(([, mark]) => mark.pending))
-        if (kept.size) marks.set(row, kept)
-      }
-      cells.set({ marks })
+      cells.get().writer?.clearMessages(cells)
     },
     async runCellCommand(command, options) {
       const module = await loadFeature("cellSelection")
@@ -1040,31 +1046,19 @@ function DataTable<T>({
       ? layout.columns.flatMap((column) => column.definition.hideBelow ?? [])
       : NO_BREAKPOINTS
   )
-  const hiddenBelow = React.useMemo(
-    () =>
-      new Set(
-        layout.columns.flatMap(({ id, definition }) =>
-          definition.hideBelow && below.has(definition.hideBelow) ? [id] : []
-        )
-      ),
-    [layout.columns, below]
-  )
+  // Resolved by the code on demand: none until it is there (a selection
+  // given then draws once it is; nothing moves, only the cells' fill).
+  const cellCode = useFeature("cellSelection", cellMode).module
   const cellGrid = React.useMemo(
     () =>
-      cellMode
-        ? resolveCells(cellSelection, model, layout.columns, {
-            order: view.columns.order,
-            hiddenBelow,
-          })
-        : null,
-    [
-      cellMode,
-      cellSelection,
-      model,
-      layout.columns,
-      view.columns.order,
-      hiddenBelow,
-    ]
+      cellCode?.resolveSelection(
+        cellSelection,
+        model,
+        layout.columns,
+        view.columns.order,
+        below
+      ) ?? null,
+    [cellCode, cellSelection, model, layout.columns, view.columns.order, below]
   )
 
   const allMatching =
@@ -1174,6 +1168,7 @@ function DataTable<T>({
       clears,
       cellSelection,
       cellGrid,
+      cellBelow: below,
     }),
     [
       columns,
@@ -1195,6 +1190,7 @@ function DataTable<T>({
       clears,
       cellSelection,
       cellGrid,
+      below,
     ]
   )
 
@@ -1263,6 +1259,7 @@ function DataTable<T>({
     createStore<CellsState>({
       grid: cellGrid as CellsState["grid"],
       marks: NO_MARKS,
+      writer: null,
       change: null,
     })
   )
@@ -1362,7 +1359,7 @@ function DataTable<T>({
     if (editable && onCellsChange === undefined)
       warn(
         "editable-without-on-cells-change",
-        "DataTable: `editable` without `onCellsChange`: the cells written (pasted, cleared, filled) are reported through `onCellsChange`, and the table does not change `items` itself."
+        "DataTable: `editable` without `onCellsChange`: the cells written are reported there; the table does not change `items` itself."
       )
   }, [warn, editable, onCellsChange])
   const activates = onActivate !== undefined && itemToHref === undefined
@@ -1370,7 +1367,7 @@ function DataTable<T>({
     if (editable && activates)
       warn(
         "editable-on-activate",
-        "DataTable: `onActivate` is not reached from editable cells: Enter, F2 and a double click on a cell that can be written edit it. Activate rows from a column that is not editable (`editable: false`), or give them links with `itemToHref`."
+        "DataTable: `onActivate` is not reached from editable cells (Enter, F2 and a double click edit them): activate from a column with `editable: false`, or use `itemToHref`."
       )
   }, [warn, editable, activates])
   React.useEffect(() => {

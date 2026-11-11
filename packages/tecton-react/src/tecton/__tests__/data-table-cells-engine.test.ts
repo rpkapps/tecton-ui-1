@@ -26,18 +26,19 @@ import {
 } from "../internal/data-table/engine/cell-ranges"
 import {
   BOTTOM,
-  createColumns,
-  createDataTableEngine,
-  createDefaultView,
-  decodeMarks,
   END,
-  getColumnModel,
-  layoutColumns,
-  reconcileView,
-  resolveCells,
   SELECTED,
   START,
   TOP,
+} from "../internal/data-table/cell-marks"
+import { decodeMarks, resolveCells } from "../internal/data-table/engine/cells"
+import {
+  createColumns,
+  createDataTableEngine,
+  createDefaultView,
+  getColumnModel,
+  layoutColumns,
+  reconcileView,
   type DataTableCellRange,
   type DataTablePartialView,
 } from "../internal/data-table/engine"

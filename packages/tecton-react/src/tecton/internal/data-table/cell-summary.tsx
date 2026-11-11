@@ -10,7 +10,9 @@
  * no cell is selected.
  *
  * The figures are worked out after the selection is drawn (a deferred
- * render), so extending a large range stays quick. While focus is in the
+ * render), so extending a large range stays quick. They are the code on
+ * demand's (`CellGrid.summary`): until it has loaded, there is no grid,
+ * and nothing shows. While focus is in the
  * table, they are announced once the user stops changing the selection
  * (extending it, a press, select all) over two cells or more: not at every
  * step, nor after a write or a move to a single cell.
@@ -27,7 +29,6 @@ import {
   useNumberFormat,
 } from "./context"
 import { useStore } from "../store"
-import { cellCount, summarizeCells } from "./engine/cell-ranges"
 import type {
   DataTableCellSelectionChangeReason,
   EngineColumn,
@@ -76,7 +77,7 @@ function DataTableCellSummary({
   )
   const deferred = React.useDeferredValue(grid)
   const summary = React.useMemo(
-    () => (deferred && deferred.rects.length ? summarizeCells(deferred) : null),
+    () => (deferred && deferred.rects.length ? deferred.summary() : null),
     [deferred]
   )
   const items = React.useMemo(() => {
@@ -122,7 +123,7 @@ function DataTableCellSummary({
     if (!change || change === said.current || change.ranges !== ranges) return
     said.current = change
     if (!USER_REASONS.has(change.reason)) return
-    if (!grid || cellCount(grid) < 2) return
+    if (!grid || grid.count() < 2) return
     const timer = setTimeout(() => {
       const root = element.current?.closest('[data-slot="data-table"]')
       if (!root?.contains(root.ownerDocument.activeElement)) return

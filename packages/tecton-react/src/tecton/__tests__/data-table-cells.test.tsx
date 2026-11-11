@@ -36,6 +36,7 @@ import {
   type DataTableProps,
 } from "@tecton/react/tecton/data-table"
 import { TectonProvider } from "@tecton/react/tecton/provider"
+import { hydrateRoot } from "react-dom/client"
 import { renderToString } from "react-dom/server"
 
 import { writeCells } from "../internal/data-table/cell-write"
@@ -982,20 +983,48 @@ describe("DataTable cell selection with the table's features", () => {
 })
 
 describe("DataTable cell selection on the server", () => {
-  it("renders the selection in the server's HTML", () => {
-    const html = renderToString(
-      <Table
-        selectionMode="multiple"
-        editable
-        defaultCellSelection={[range("w0", "field", "w1", "status")]}
-        summary
-      />
+  it("leaves a selection given out of the server's HTML, hydrates without a warning and draws it once its code is there", async () => {
+    const table = (
+      <TectonProvider locale="en-US">
+        <Table
+          selectionMode="multiple"
+          editable
+          onCellsChange={() => {}}
+          defaultCellSelection={[range("w0", "field", "w1", "status")]}
+          summary
+        />
+      </TectonProvider>
     )
+    const html = renderToString(table)
     expect(html).toContain('aria-multiselectable="true"')
+    // Every cell can be selected, and none is drawn so yet: the code that
+    // resolves the selection is on demand.
+    expect(html).not.toContain('aria-selected="true"')
+    expect(html).toContain('aria-selected="false"')
+    expect(html).not.toMatch(/<t[dh][^>]*bg-table-active/)
+    expect(html).not.toContain("Count:")
+    const container = document.createElement("div")
+    container.innerHTML = html
+    document.body.append(container)
+    const error = vi.spyOn(console, "error").mockImplementation(() => {})
+    let root: ReturnType<typeof hydrateRoot> | null = null
+    await act(async () => {
+      root = hydrateRoot(container, table)
+    })
+    await loadFeature("cellSelection")
     // Four cells: no row is selected.
-    expect(html.match(/aria-selected="true"/g)).toHaveLength(4)
-    expect(html.match(/bg-table-active/g)?.length).toBeGreaterThanOrEqual(4)
-    expect(html).toContain("Count: 4")
+    await waitFor(() =>
+      expect(container.querySelectorAll('[aria-selected="true"]')).toHaveLength(
+        4
+      )
+    )
+    expect(
+      container.querySelectorAll("td.bg-table-active, th.bg-table-active")
+    ).toHaveLength(4)
+    expect(container.textContent).toContain("Count: 4")
+    expect(error).not.toHaveBeenCalled()
+    act(() => root?.unmount())
+    container.remove()
   })
 })
 
@@ -1182,6 +1211,52 @@ describe("DataTable focus and the range's moving corner", () => {
     ])
     expect(focused()).toBe(td("Well 4", "oil"))
     expect(selected()).toHaveLength(30)
+  })
+
+  it("keeps every cell selected, and focus, after a Shift + arrow that cannot move the end", () => {
+    const onCellSelectionChange = vi.fn()
+    render(<Table onCellSelectionChange={onCellSelectionChange} />)
+    down(td("Well 2", "oil"))
+    press("a", { ctrlKey: true })
+    onCellSelectionChange.mockClear()
+    // Past the last row, and past the last column.
+    press("ArrowDown", { shiftKey: true })
+    expect(focused()).toBe(td("Well 2", "oil"))
+    press("ArrowRight", { shiftKey: true })
+    expect(onCellSelectionChange).not.toHaveBeenCalled()
+    expect(focused()).toBe(td("Well 2", "oil"))
+    expect(selected()).toHaveLength(36)
+  })
+
+  it('ignores whole rows, whole columns and every cell in "cell" mode, and warns', () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    const onCellSelectionChange = vi.fn()
+    let api: ReturnType<typeof useDataTable> | null = null
+    function Probe() {
+      api = useDataTable()
+      return null
+    }
+    render(
+      <Table
+        cellSelectionMode="cell"
+        onCellSelectionChange={onCellSelectionChange}
+      >
+        <Probe />
+      </Table>
+    )
+    down(td("Well 1", "hours"))
+    onCellSelectionChange.mockClear()
+    act(() => api!.selectAllCells())
+    act(() => api!.setCellSelection([{ rows: { start: "w0", end: "w2" } }]))
+    expect(onCellSelectionChange).not.toHaveBeenCalled()
+    expect(selected()).toEqual(["Well 1:hours"])
+    expect(warn).toHaveBeenCalledTimes(1)
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining('`cellSelectionMode="cell"`')
+    )
+    // Clearing still clears.
+    act(() => api!.clearCellSelection())
+    expect(selected()).toEqual([])
   })
 
   it('moves focus to a block paste\'s last cell, the selection and focus agreeing in "cell" mode too', () => {
@@ -1462,6 +1537,15 @@ describe("DataTable Enter, F2 and double click on editable cells", () => {
     // `aria-readonly` on the cells that cannot be written.
     expect(td("Well 1", "well")).toHaveAttribute("aria-readonly", "true")
     expect(td("Well 1", "oil")).not.toHaveAttribute("aria-readonly")
+    // Decided from the items, not the attribute.
+    td("Well 1", "well").removeAttribute("aria-readonly")
+    td("Well 1", "oil").setAttribute("aria-readonly", "true")
+    down(td("Well 1", "well"))
+    press("Enter")
+    expect(onActivate).toHaveBeenCalledTimes(3)
+    down(td("Well 1", "oil"))
+    press("Enter")
+    expect(onActivate).toHaveBeenCalledTimes(3)
   })
 
   it("warns about editable without onCellsChange", () => {
@@ -1516,7 +1600,7 @@ describe("the cell write pipeline", () => {
       ["well", "skipped", undefined, null],
       ["oil", "changed", 250, null],
     ])
-    await expect(outcome.saved).resolves.toEqual({ ok: true })
+    await expect(outcome.saved).resolves.toEqual({ ok: true, superseded: [] })
     expect(td("Well 0", "hours")).not.toHaveAttribute("aria-invalid")
   })
 
@@ -1542,13 +1626,103 @@ describe("the cell write pipeline", () => {
     rejects[1](new Error("Locked"))
     await expect(first.saved).resolves.toEqual({
       ok: false,
-      superseded: true,
-      message: null,
+      message: "Stale",
+      superseded: [{ row: "w0", column: "oil" }],
     })
     await expect(second.saved).resolves.toEqual({
       ok: false,
-      superseded: false,
       message: "Locked",
+      superseded: [],
+    })
+    // The cell shows the later write's message only.
+    await waitFor(() =>
+      expect(td("Well 0", "oil")).toHaveAccessibleDescription("“2”: Locked")
+    )
+  })
+
+  it("marks the cells a save still has when it fails after a later write took some over", async () => {
+    const rejects: Array<(error: Error) => void> = []
+    const signals: Array<AbortSignal> = []
+    const host = withContext({
+      onCellsChange: (_changes, { signal }) => {
+        signals.push(signal)
+        return new Promise<void>((_, reject) => {
+          rejects.push(reject)
+        })
+      },
+    })
+    const first = writeCells(
+      host,
+      [
+        { row: "w0", column: "oil", value: 10 },
+        { row: "w0", column: "hours", value: 6 },
+      ],
+      "paste"
+    )
+    // A later write of the oil cell only, saved at once.
+    host.context.actions.changeCells = () => ({
+      canceled: false,
+      result: undefined,
+    })
+    writeCells(host, [{ row: "w0", column: "oil", value: 20 }], "paste")
+    // One cell taken over is enough to abort the request.
+    expect(signals[0].aborted).toBe(true)
+    rejects[0](new Error("Too much gas"))
+    await expect(first.saved).resolves.toEqual({
+      ok: false,
+      message: "Too much gas",
+      superseded: [{ row: "w0", column: "oil" }],
+    })
+    await waitFor(() =>
+      expect(td("Well 0", "hours")).toHaveAttribute("aria-invalid", "true")
+    )
+    expect(td("Well 0", "hours")).toHaveAccessibleDescription(
+      "“6”: Too much gas"
+    )
+    expect(td("Well 0", "oil")).not.toHaveAttribute("aria-invalid")
+    expect(td("Well 0", "oil")).not.toHaveAttribute("aria-busy")
+  })
+
+  it("takes a handler that throws as a save that failed", async () => {
+    const host = withContext({
+      onCellsChange: () => {
+        throw new Error("Read only")
+      },
+    })
+    const outcome = writeCells(
+      host,
+      [{ row: "w1", column: "oil", value: 7, attempted: "7.0" }],
+      "edit"
+    )
+    expect(outcome.canceled).toBe(false)
+    await expect(outcome.saved).resolves.toEqual({
+      ok: false,
+      message: "Read only",
+      superseded: [],
+    })
+    await waitFor(() =>
+      expect(td("Well 1", "oil")).toHaveAccessibleDescription(
+        "“7.0”: Read only"
+      )
+    )
+  })
+
+  it("counts a cancel only when made before the handler returns", async () => {
+    const host = withContext({
+      onCellsChange: (_changes, details) => {
+        details.cancel()
+      },
+    })
+    const outcome = writeCells(
+      host,
+      [{ row: "w1", column: "oil", value: 7 }],
+      "edit"
+    )
+    expect(outcome.canceled).toBe(true)
+    await expect(outcome.saved).resolves.toEqual({
+      ok: false,
+      message: null,
+      superseded: [],
     })
   })
 })

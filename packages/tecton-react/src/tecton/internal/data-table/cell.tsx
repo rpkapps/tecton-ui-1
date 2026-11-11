@@ -32,8 +32,8 @@
  * being saved is dimmed and `aria-busy`; one not saved or not valid has a
  * dashed `destructive` outline inside the range's, `aria-invalid` and its
  * message (with the value refused) as its description, in a tooltip too
- * (`cell-error.tsx`). In a table whose cells are written, a cell that
- * cannot be is `aria-readonly`.
+ * (`cell-message.tsx`, from the code that writes, `CellWriter`). In a
+ * table whose cells are written, a cell that cannot be is `aria-readonly`.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -44,21 +44,15 @@ import { Spinner } from "@tecton/react/components/spinner"
 import { TableCell, TableHead } from "@tecton/react/components/table"
 import { Link } from "@tecton/react/tecton/link"
 
-import { useTranslations } from "../i18n/translations"
 import type { Store } from "../store"
-import type { CellMark, CellsState, DataTableActions } from "./context"
-import {
-  BOTTOM,
-  END,
-  SELECTED,
-  START,
-  TOP,
-  type EngineColumn,
-  type Formatter,
-  type GroupRow,
-  type ItemRow,
-} from "./engine/index"
-import { useFeature } from "./lazy"
+import { BOTTOM, END, SELECTED, START, TOP } from "./cell-marks"
+import type {
+  CellMark,
+  CellsState,
+  CellWriter,
+  DataTableActions,
+} from "./context"
+import type { EngineColumn, Formatter, GroupRow, ItemRow } from "./engine/index"
 import type { RowOrder } from "./row-order"
 
 /** What detail rows draw: `renderDetail`, kept apart so a new one renders only them. */
@@ -536,44 +530,6 @@ function cellStateClassName(
   )
 }
 
-/**
- * A cell's message as its description, read by screen readers with the
- * cell, and the tooltip that shows it (loaded when one first shows).
- */
-function CellMessage({
-  message,
-  attempted,
-}: {
-  message: string
-  /** What was written, shown before the message. */
-  attempted: string | null
-}) {
-  const t = useTranslations("dataTable")
-  const text = attempted
-    ? t("refusedValue", { value: attempted, message })
-    : message
-  const id = React.useId()
-  const element = React.useRef<HTMLSpanElement | null>(null)
-  const { module, load } = useFeature("cellError", true)
-  React.useEffect(() => {
-    load()
-    // The cell is the row's plain element: described from here.
-    const cell = element.current?.closest("td, th")
-    if (!cell) return
-    cell.setAttribute("aria-describedby", id)
-    return () => cell.removeAttribute("aria-describedby")
-  }, [id, load])
-  const Tip = module?.DataTableCellErrorTip
-  return (
-    <>
-      <span ref={element} id={id} hidden>
-        {text}
-      </span>
-      {Tip && <Tip message={text} cell={element} />}
-    </>
-  )
-}
-
 /** A row's plain text, for type-ahead and announcements: its row header's. */
 function rowText<T>(item: T, shared: RowShared<T>) {
   return shared.rowHeader ? shared.formatter.text(shared.rowHeader, item) : ""
@@ -628,8 +584,9 @@ function cellInner<T>(
 /**
  * A body cell of an item row; `index` is the column's place in
  * `shared.columns`, `inner` its content (`cellInner`), `flags` its part in
- * the cell selection, `mark` its write, and `readOnly` whether it cannot be
- * written in a table whose cells are (`aria-readonly`).
+ * the cell selection, `mark` its write (as `writer` shows it), and
+ * `readOnly` whether it cannot be written in a table whose cells are
+ * (`aria-readonly`).
  */
 function renderCell<T>(
   column: EngineColumn<T>,
@@ -638,7 +595,8 @@ function renderCell<T>(
   inner: React.ReactNode,
   flags = 0,
   mark?: CellMark,
-  readOnly = false
+  readOnly = false,
+  writer?: CellWriter | null
 ): React.ReactNode {
   const pin = shared.pins[index]
   const className = cn(
@@ -656,14 +614,16 @@ function renderCell<T>(
     "aria-busy": (mark && mark.pending !== null) || undefined,
     "aria-invalid": mark?.error ? true : undefined,
   } as const
-  const content = mark?.error ? (
-    <>
-      {inner}
-      <CellMessage message={mark.error} attempted={mark.attempted} />
-    </>
-  ) : (
-    inner
-  )
+  const Message = writer?.Message
+  const content =
+    mark?.error && Message ? (
+      <>
+        {inner}
+        <Message message={mark.error} attempted={mark.attempted} />
+      </>
+    ) : (
+      inner
+    )
   if (column !== shared.rowHeader)
     return (
       <TableCell key={column.id} {...props}>

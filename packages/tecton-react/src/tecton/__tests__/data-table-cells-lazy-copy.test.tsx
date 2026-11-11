@@ -13,6 +13,8 @@ import {
   DataTableContent,
 } from "@tecton/react/tecton/data-table"
 
+import * as announcer from "../internal/primitives/live-announcer"
+
 /** The cell selection's code arrives when the test lets it. */
 const chunk = vi.hoisted(() => {
   let open: () => void = () => {}
@@ -52,7 +54,12 @@ describe("DataTable copy before its code has loaded", () => {
     vi.stubGlobal("requestIdleCallback", () => 1)
     vi.stubGlobal("cancelIdleCallback", () => {})
     vi.stubGlobal("ClipboardItem", FakeClipboardItem)
+    const say = vi.spyOn(announcer, "announce")
     const write = vi.fn((_: Array<FakeClipboardItem>) => Promise.resolve())
+    // The second copy's write is refused (no permission, say).
+    write
+      .mockImplementationOnce(() => Promise.resolve())
+      .mockImplementationOnce(() => Promise.reject(new Error("Denied")))
     Object.defineProperty(navigator, "clipboard", {
       configurable: true,
       value: { write, writeText: vi.fn() },
@@ -78,13 +85,23 @@ describe("DataTable copy before its code has loaded", () => {
     // Down to B-2, then Ctrl + C: the write begins now, in the key's moment.
     fireEvent.keyDown(stop, { key: "ArrowDown", shiftKey: true })
     fireEvent.keyDown(document.activeElement!, { key: "c", ctrlKey: true })
-    expect(write).toHaveBeenCalledTimes(1)
+    fireEvent.keyDown(document.activeElement!, { key: "c", ctrlKey: true })
+    expect(write).toHaveBeenCalledTimes(2)
     const [[item]] = write.mock.calls[0]
     await act(async () => chunk.open())
     const text = await (await item.items["text/plain"]).text()
     expect(text).toBe("A-1\r\nB-2")
     const html = await (await item.items["text/html"]).text()
     expect(html).toContain("<td class=t>B-2</td>")
+    // Said as the browser wrote it: copied, then not.
+    await waitFor(() =>
+      expect(say).toHaveBeenCalledWith(
+        "The cells could not be copied to the clipboard"
+      )
+    )
+    const said = say.mock.calls.map(([text]) => text)
+    expect(said).toContain("Copied 2 cells")
+    expect(said.filter((text) => text === "Copied 2 cells")).toHaveLength(1)
     unmount()
   })
 })
