@@ -221,7 +221,8 @@ function GroupCheckbox<T>({
     () => selectionState(selected, ids),
     [selected, ids]
   )
-  // "Select" and the label: a hidden "Select", then the group's name.
+  // "Select" and the label cell: a hidden "Select", then the cell (its
+  // name, as an item row's checkbox reads its row header).
   const selectId = React.useId()
   return (
     <>
@@ -230,7 +231,7 @@ function GroupCheckbox<T>({
       </span>
       <Checkbox
         data-slot="data-table-group-checkbox"
-        aria-labelledby={`${selectId} ${labelId}-name`}
+        aria-labelledby={`${selectId} ${labelId}`}
         checked={state === "all"}
         indeterminate={state === "some"}
         disabled={ids.length === 0}
@@ -305,9 +306,10 @@ function GroupRowComponent<T>({
     </TableCell>
   )
   // Read "Field: Gullfaks, 6 rows", whatever the label shows (its parts
-  // in spans, the column's name left out when cut): a hidden name, which
-  // the checkbox reads too. With a subtotal in the cell, the name, a pause
-  // and the subtotal as drawn ("Active: No, 11 rows, 29,037").
+  // in spans, the column's name left out when cut), and so does the
+  // checkbox, which reads the cell. With a subtotal in the cell, the name,
+  // a pause and the subtotal ("Active: No, 11 rows, 29,037"): as text, or
+  // as `renderAggregate` draws it, through a hidden name and the subtotal.
   const rowName = t("groupRowLabel", { label, rows: count })
   const pause =
     t("groupRowLabel", { label: "\u0000", rows: "\u0001" })
@@ -317,13 +319,23 @@ function GroupRowComponent<T>({
     const pin = pins[cell.column]
     const column = columns[cell.column]
     const sum = `${labelId}-${cell.column}-sum`
+    const drawn = cell.subtotal ? subtotal(column, row, model, shared) : null
+    const named = typeof drawn !== "string" && drawn !== null
     return (
       <TableHead
         key={`label:${cell.column}:${cell.span}:${cell.subtotal}`}
+        // The checkbox's name, as an item row's checkbox names it by its
+        // row header: read once in the row's name, not twice.
+        id={first ? labelId : undefined}
         scope="row"
-        aria-labelledby={
-          cell.subtotal ? `${sum}-name ${sum}` : `${labelId}-name`
+        aria-label={
+          named
+            ? undefined
+            : drawn === null
+              ? rowName
+              : `${rowName}${pause}${drawn}`
         }
+        aria-labelledby={named ? `${sum}-name ${sum}` : undefined}
         colSpan={cell.span > 1 ? cell.span : undefined}
         className={cn(
           "[&[scope=row]]:font-medium",
@@ -332,16 +344,9 @@ function GroupRowComponent<T>({
         )}
         style={pin && pinStyle(pin)}
       >
-        {/* The name of every width's label: in the first, hidden ones too. */}
-        {first && (
-          <span id={`${labelId}-name`} hidden>
-            {rowName}
-          </span>
-        )}
-        {cell.subtotal && (
+        {named && (
           <span id={`${sum}-name`} hidden>
-            {rowName}
-            {pause.trimEnd()}
+            {`${rowName}${pause.trimEnd()}`}
           </span>
         )}
         <div
@@ -399,7 +404,7 @@ function GroupRowComponent<T>({
                 column.type === "number" && "tabular-nums"
               )}
             >
-              {subtotal(column, row, model, shared)}
+              {drawn}
             </span>
           )}
         </div>

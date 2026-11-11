@@ -42,7 +42,7 @@ import {
   useNumberFormat,
   type DataTableContextValue,
 } from "./context"
-import { getColumnModel, setGrouping } from "./engine/index"
+import { getColumnModel, sameIds, setGrouping } from "./engine/index"
 import { announceGrouping, toggleGrouping } from "./grouping"
 import type { LazyPopupProps } from "./lazy-popup"
 import { useFirstItemFromKeyboard, usePopupTabbing } from "./popup-focus"
@@ -93,19 +93,29 @@ function DataTableGroupByMenu({
   })
 
   // After a move, the item to move to: focusing it highlights it too, so
-  // focus and highlight stay together.
-  const following = React.useRef<number | null>(null)
+  // focus and highlight stay together. Taken by the next render, which
+  // focuses it only when the grouping is the one the move made: an owner
+  // that kept its own (a controlled `view`), or changed it otherwise,
+  // leaves focus where it is.
+  const following = React.useRef<{
+    at: number
+    moved: ReadonlyArray<string>
+  } | null>(null)
   React.useLayoutEffect(() => {
-    const at = following.current
+    const next = following.current
     following.current = null
-    if (at === null) return
-    content.current?.querySelector<HTMLElement>(`[data-level="${at}"]`)?.focus()
-  }, [grouping])
+    if (!next || !sameIds(next.moved, grouping)) return
+    content.current
+      ?.querySelector<HTMLElement>(`[data-level="${next.at}"]`)
+      ?.focus()
+  })
 
   const set = (
     change: (grouping: ReadonlyArray<string>) => ReadonlyArray<string>,
     event: Event | undefined
   ) => {
+    // Any change of the grouping: no move's focus left over.
+    following.current = null
     let after: ReadonlyArray<string> = []
     const applied = actions.updateView(
       (view) => {
@@ -178,14 +188,14 @@ function DataTableGroupByMenu({
                   onClick={(event) => {
                     // Then the moved column's own item, one place up (the
                     // first's again at the top), for another step up.
-                    following.current = Math.max(0, index - 1)
+                    let moved: ReadonlyArray<string> = []
                     if (
-                      !set(
-                        (current) => move(current, index + 1, -1),
-                        event.nativeEvent
-                      )
+                      set((current) => {
+                        moved = move(current, index + 1, -1)
+                        return moved
+                      }, event.nativeEvent)
                     )
-                      following.current = null
+                      following.current = { at: Math.max(0, index - 1), moved }
                   }}
                 >
                   <ArrowUpIcon />

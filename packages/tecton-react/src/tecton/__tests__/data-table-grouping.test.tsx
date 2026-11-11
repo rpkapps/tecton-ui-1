@@ -1426,3 +1426,118 @@ describe("DataTable grouping: second review", () => {
     expect(container).not.toHaveAttribute("data-group-label-clipped")
   })
 })
+
+describe("DataTable grouping: third review", () => {
+  it("names a group's checkbox by its label cell, as an item row's by its row header", () => {
+    render(
+      <Wells selectionMode="multiple" defaultView={{ grouping: ["field"] }} />
+    )
+    const header = group("Field: Gullfaks").querySelector("th")!
+    const box = groupCheckbox("Field: Gullfaks")
+    expect(box.getAttribute("aria-labelledby")?.split(" ")).toContain(header.id)
+    expect(box).toHaveAccessibleName("Select Field: Gullfaks, 6 rows")
+    expect(header).toHaveAccessibleName("Field: Gullfaks, 6 rows")
+  })
+
+  it("names a group's checkbox once, subtotal included, when every column sums", () => {
+    const summed = createColumns<Well>([
+      { id: "depth", header: "Depth (m)", type: "number" },
+      { id: "active", header: "Active", type: "boolean" },
+    ])
+    render(
+      <Wells
+        columns={summed}
+        selectionMode="multiple"
+        defaultView={{ grouping: ["active"] }}
+      />
+    )
+    const inactive = WELLS.filter((well) => !well.active)
+    const depth = inactive
+      .reduce((sum, well) => sum + (well.depth ?? 0), 0)
+      .toLocaleString("en-US")
+    const name = `Active: No, ${inactive.length} rows, ${depth}`
+    expect(group("Active: No").querySelector("th")).toHaveAccessibleName(name)
+    expect(groupCheckbox("Active: No")).toHaveAccessibleName(`Select ${name}`)
+  })
+
+  it("names a cell whose subtotal renderAggregate draws through the drawn subtotal", () => {
+    const drawn = createColumns<Well>([
+      {
+        id: "depth",
+        header: "Depth (m)",
+        type: "number",
+        renderAggregate: (value) => <strong>{String(value)} m</strong>,
+      },
+      { id: "active", header: "Active", type: "boolean" },
+    ])
+    render(<Wells columns={drawn} defaultView={{ grouping: ["active"] }} />)
+    const inactive = WELLS.filter((well) => !well.active)
+    const depth = inactive.reduce((sum, well) => sum + (well.depth ?? 0), 0)
+    expect(group("Active: No").querySelector("th")).toHaveAccessibleName(
+      `Active: No, ${inactive.length} rows, ${depth} m`
+    )
+  })
+
+  it("moves focus after a move only when the owner takes it", async () => {
+    const user = userEvent.setup()
+    await loadFeature("groupBy")
+    let setView: (view: { grouping: Array<string> }) => void = () => {}
+    function Controlled() {
+      const [view, set] = React.useState({
+        grouping: ["field", "status", "spud"],
+      })
+      setView = set
+      // Keeps its own view: the menu's moves are ignored.
+      return (
+        <Wells view={view}>
+          <DataTableGroupBy />
+        </Wells>
+      )
+    }
+    render(<Controlled />)
+    await user.click(screen.getByRole("button", { name: "Group by" }))
+    await screen.findByRole("menu")
+    const item = screen.getByRole("menuitem", { name: "Move Spud date up" })
+    act(() => item.focus())
+    await user.keyboard("{Enter}")
+    expect(item).toHaveFocus()
+    // Later, the owner moves Spud date up itself: focus stays.
+    act(() => setView({ grouping: ["field", "spud", "status"] }))
+    expect(
+      screen.getByRole("menuitem", { name: "Move Status up" })
+    ).toHaveFocus()
+  })
+
+  it("does not take focus back into the table once it was moved out", () => {
+    function Controlled() {
+      const [page, setPage] = React.useState(2)
+      return (
+        <>
+          <button type="button" onClick={() => setPage(1)}>
+            First
+          </button>
+          <Wells
+            pagination
+            defaultPageSize={5}
+            page={page}
+            onPageChange={(next, details) => {
+              if (details.reason !== "group") setPage(next)
+            }}
+            defaultView={{ grouping: ["field"] }}
+          >
+            <Probe />
+          </Wells>
+        </>
+      )
+    }
+    render(<Controlled />)
+    act(() => document.querySelector<HTMLElement>("tbody tr")!.focus())
+    press("ArrowLeft")
+    // Focus out of the table to the page, then page 1 from a script.
+    act(() => (document.activeElement as HTMLElement).blur())
+    expect(focused()).toBe(document.body)
+    fireEvent.click(screen.getByRole("button", { name: "First" }))
+    expect(api?.page).toBe(1)
+    expect(focused()).toBe(document.body)
+  })
+})

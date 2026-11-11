@@ -840,7 +840,11 @@ function DataTableContentImpl({
   // A group's row to focus once the page that holds it shows
   // (`restoreFocusTo`): tried on the first render after it is asked for,
   // and given up there when the page did not change (a controlled `page`
-  // that kept its own), or focus has gone elsewhere since.
+  // that kept its own), or when focus has left the table since. Focus is
+  // in the table when it is asked for; the page change then removes the
+  // focused row, which drops focus to the page without the user moving it:
+  // what counts is whether focus moved out of the table (`focusout` to
+  // elsewhere, the element still there), not where it is now.
   const pendingFocus = React.useRef<{
     key: string
     page: number
@@ -848,6 +852,18 @@ function DataTableContentImpl({
     render: number
   } | null>(null)
   const renders = React.useRef(0)
+  React.useEffect(() => {
+    const element = frame.current
+    if (!element) return
+    const leave = (event: FocusEvent) => {
+      const to = event.relatedTarget as Node | null
+      if (to && element.contains(to)) return
+      // An element removed while focused is no move of the user's.
+      if ((event.target as Node).isConnected) pendingFocus.current = null
+    }
+    element.addEventListener("focusout", leave)
+    return () => element.removeEventListener("focusout", leave)
+  }, [])
   React.useLayoutEffect(() => {
     const pending = pendingFocus.current
     if (!pending || pending.render === renders.current) return
@@ -855,6 +871,7 @@ function DataTableContentImpl({
     if (model.page !== pending.page) return
     const doc = frame.current?.ownerDocument
     const active = doc?.activeElement
+    // Elsewhere on the page: the user's, left as it is.
     if (active && active !== doc.body && !frame.current?.contains(active))
       return
     const at = rows.findIndex(
