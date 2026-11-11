@@ -29,7 +29,7 @@ const actionBarVariants = cva(
         // no room. The card takes the width of its scroll container instead;
         // pass `mx-auto max-w-*` to centre a narrower one.
         floating:
-          "sticky bottom-4 z-20 mx-4 rounded-lg border bg-popover px-3 py-2 text-popover-foreground shadow-lg slide-in-from-bottom-2",
+          "sticky bottom-4 z-20 mx-4 rounded-lg border bg-popover px-3 py-2 text-popover-foreground shadow-lg [--surface:var(--color-popover)] slide-in-from-bottom-2",
       },
     },
     defaultVariants: {

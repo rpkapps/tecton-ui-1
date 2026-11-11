@@ -5,6 +5,7 @@ import { cn } from "cn"
 
 import {
   TableGridProvider,
+  useTableContainer,
   useTableGrid,
   useTableRow,
 } from "../tecton/internal/table-grid"
@@ -36,13 +37,16 @@ function Table({
 }) {
   const virtual = useTableVirtualizer(virtualized)
   const grid = useTableGrid(props)
+  const container = useTableContainer(virtual.containerRef)
   return (
     <div
       data-slot="table-container"
-      ref={virtual.containerRef}
+      ref={container.ref}
+      style={container.style}
       className={cn(
         "relative w-full overflow-x-auto",
-        virtualized && "h-full overflow-auto"
+        virtualized && "h-full overflow-auto",
+        container.className
       )}
     >
       <table

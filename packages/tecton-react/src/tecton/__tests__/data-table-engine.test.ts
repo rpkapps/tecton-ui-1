@@ -853,7 +853,11 @@ describe("view", () => {
     expect(setGrouping(base, ["name"]).grouping).toEqual(["name"])
     expect(setGrouping(base, [])).toBe(base)
     expect(setColumnOrder(base, base.columns.order)).toBe(base)
-    expect(setColumnOrder(base, ["gas"]).columns.order).toEqual(["gas"])
+    // The columns an order leaves out follow, in their order.
+    expect(setColumnOrder(base, ["gas"]).columns.order).toEqual([
+      "gas",
+      ...base.columns.order.filter((id) => id !== "gas"),
+    ])
 
     const hidden = setColumnHidden(base, "gas", true)
     expect(hidden.columns.hidden).toEqual(["gas"])
@@ -941,12 +945,13 @@ describe("layoutColumns", () => {
     expect(
       layoutColumns(columns, view({ columns: { hidden: ["name"] } })).rowHeader
     ).toBe("operator")
+    // Never every column: the first in the order stays, and names the rows.
     expect(
       layoutColumns(
         columns,
         view({ columns: { hidden: definitions.map((d) => d.id) } })
       ).rowHeader
-    ).toBeUndefined()
+    ).toBe(definitions[0].id)
   })
 })
 

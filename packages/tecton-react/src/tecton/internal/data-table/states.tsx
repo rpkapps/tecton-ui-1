@@ -122,7 +122,9 @@ function DataTableErrorState({
 function loadingRows<T>(
   count: number,
   columns: ReadonlyArray<EngineColumn<T>>,
-  selection: boolean
+  selection: boolean,
+  /** Each cell's own class: its border, in a table with pinned columns. */
+  cellClassName?: string
 ) {
   return Array.from({ length: count }, (_, index) => (
     <tr
@@ -131,9 +133,9 @@ function loadingRows<T>(
       data-slot="data-table-loading-row"
       className="border-b border-border-subtle"
     >
-      {selection && <TableCell className="w-px" />}
+      {selection && <TableCell className={cn("w-px", cellClassName)} />}
       {columns.map((column) => (
-        <TableCell key={column.id}>
+        <TableCell key={column.id} className={cellClassName}>
           {/* One line of the cell's text tall (`1lh`): the row is as tall
               as a row of text, at either size. */}
           <Skeleton

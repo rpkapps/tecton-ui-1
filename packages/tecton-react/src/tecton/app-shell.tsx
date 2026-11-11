@@ -38,7 +38,7 @@ function AppShell({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="app-shell"
       className={cn(
-        "grid h-svh w-full grid-rows-[auto_1fr] overflow-hidden bg-background text-foreground",
+        "grid h-svh w-full grid-rows-[auto_1fr] overflow-hidden bg-background text-foreground [--surface:var(--color-background)]",
         className
       )}
       {...props}
@@ -54,7 +54,7 @@ function AppShellHeader({
     <header
       data-slot="app-shell-header"
       className={cn(
-        "flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle bg-card px-3 text-sm",
+        "flex h-12 shrink-0 items-center gap-3 border-b border-border-subtle bg-card px-3 text-sm [--surface:var(--color-card)]",
         className
       )}
       {...props}
@@ -103,7 +103,7 @@ function AppShellSidebar({
     <aside
       data-slot="app-shell-sidebar"
       className={cn(
-        "flex w-64 shrink-0 flex-col overflow-auto border-e border-border-subtle bg-sidebar text-sidebar-foreground",
+        "flex w-64 shrink-0 flex-col overflow-auto border-e border-border-subtle bg-sidebar text-sidebar-foreground [--surface:var(--color-sidebar)]",
         className
       )}
       {...props}
@@ -126,7 +126,7 @@ function AppShellAside({ className, ...props }: React.ComponentProps<"aside">) {
     <aside
       data-slot="app-shell-aside"
       className={cn(
-        "flex w-80 shrink-0 flex-col overflow-auto border-s border-border-subtle bg-card",
+        "flex w-80 shrink-0 flex-col overflow-auto border-s border-border-subtle bg-card [--surface:var(--color-card)]",
         className
       )}
       {...props}

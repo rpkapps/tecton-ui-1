@@ -17,8 +17,8 @@
  *   the last one taking the rest, while a column of controls only (a
  *   checkbox, a drag handle) stays as narrow as its control. When the
  *   container is too narrow for them all, the table scrolls sideways. A
- *   table the caller made `table-fixed`, or whose header cells have
- *   widths, keeps its own.
+ *   table the caller made `table-fixed`, or whose header cells or own
+ *   `colgroup` have widths, keeps its own.
  * - A scroll is applied before the browser paints it, with a viewport of
  *   rows ready beyond each edge, and rows that stay in view do not
  *   re-render: a fast flick never shows a blank strip.
@@ -84,8 +84,13 @@ type Columns =
 
 /** What the header's first row says: a change re-measures the columns. */
 function signatureOf(row: HTMLTableRowElement) {
+  // Whether each cell is laid out too: a column hidden below a breakpoint
+  // (`hidden md:table-cell`) that shows was measured at no width.
   return [...row.cells]
-    .map((cell) => `${cell.colSpan}:${cell.textContent}`)
+    .map(
+      (cell) =>
+        `${cell.colSpan}:${cell.getClientRects().length > 0}:${cell.textContent}`
+    )
     .join("|")
 }
 
@@ -184,10 +189,16 @@ function useTableVirtualizer(virtualized: boolean) {
     const head = table?.tHead?.rows[0]
     if (!table || !head) return
     // The caller's own widths win: header cells with a width of their own
-    // (column resizing), or a table the caller made `table-fixed`. The
-    // lock sets neither, so either one is the caller's, and taking them
-    // away gives the columns back to the lock.
-    const callerWidths = [...head.cells].some((cell) => cell.style.width)
+    // (column resizing), a `colgroup` of the caller's, or a table the
+    // caller made `table-fixed`. The lock sets none of them, so each one is
+    // the caller's, and taking them away gives the columns back to the lock.
+    const callerWidths =
+      [...head.cells].some((cell) => cell.style.width) ||
+      [...table.children].some(
+        (child) =>
+          child.tagName === "COLGROUP" &&
+          child.getAttribute("data-slot") !== "table-virtual-columns"
+      )
     if (columns.state === "locked") {
       if (callerWidths) setColumns({ state: "caller" })
       // New, moved or renamed columns: measure them again.

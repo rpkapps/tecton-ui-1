@@ -48,6 +48,7 @@ Each item needs an `id` (or pass `itemToId`): rows are selected, opened and kept
 ```text
 DataTable
 ├── DataTableToolbar
+│   ├── DataTableColumnsMenu
 │   └── your controls
 ├── DataTableContent
 └── DataTableFooter
@@ -59,7 +60,7 @@ DataTable
 
 `DataTable` holds the state — the items, the columns, the view, the selection, the open rows, the page — and renders a `div` around its parts. `DataTableContent` is the table itself, in a rounded frame: the header, the rows and the states. `DataTableToolbar` above it and `DataTableFooter` below it are layout rows outside the frame; the footer puts the selection count at the start and the page parts at the end. Every part is optional but the content, and parts can be placed anywhere inside `DataTable`. A part reads only the state it shows, so a selection change renders the rows it changes and the count, not the rest of the table.
 
-The root turns features on: `selectionMode`, `pagination`, `itemToChildren`. A part for a feature that is off renders nothing and warns once in development.
+The root turns features on: `selectionMode`, `pagination`, `itemToChildren`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; a column can only turn one off for itself (`resizable: false`, `pinnable: false`). A part for a feature that is off renders nothing and warns once in development.
 
 ## Columns
 
@@ -140,6 +141,128 @@ const columns = createColumns<Well>([
 - **`hideBelow`** hides a column, header and cells, below a breakpoint: `"sm"`, `"md"` or `"lg"`. Keep the row header and the columns that tell rows apart visible at every width.
 - **`wrap`** lets a text column's cells take several lines. Cells keep to one line otherwise, and always in a virtualized table, whose rows are one height (with `wrap`, it warns in development).
 - **`sortable: false`** keeps a column from sorting.
+
+## Column widths
+
+Without widths, the browser lays the columns out from their content and the table fills its frame. A column's `width` (px) fixes the layout: every column then has a width, the table is as wide as their sum and at least as wide as its frame, and the last column (the last one not pinned to the end) stretches over the space left. Once the user sets that column's width, it keeps it like the others and the table may end short of its frame; resetting the columns makes it stretch again. A column with no `width` starts at the width of its content, the header and the rows shown (measured again once rows come, after a table that had none or was loading), up to 400 px; a value too wide for its column is cut with an ellipsis, unless the column `wrap`s. `minWidth` and `maxWidth` bound a column's width, whoever sets it; without `minWidth` a column is at least 48 px wide, and without `maxWidth` the resizer stops at 1000 px, or at the column's width when it is already wider. A column with a `maxWidth` never stretches: the last one without one does, or none. A column hidden below a breakpoint (`hideBelow`) takes no width.
+
+The widths the user sets are the view's `columns.widths` (px, by column id); `width` is the width a column starts at and returns to. Resizing and pinning columns fix the layout too.
+
+```tsx
+const columns = createColumns<Run>([
+  { id: "well", header: "Well", width: 140, minWidth: 112 },
+  { id: "tool", header: "Tool string", width: 200 },
+  { id: "top", header: "Top (m)", type: "number", width: 120, maxWidth: 160 },
+  { id: "remarks", header: "Remarks" },
+])
+```
+
+## Resizing
+
+`resizableColumns` puts a [`TableColumnResizer`](#tablecolumnresizer) on each column header's end edge, and "Resize column", "Fit to content" and "Reset width" in each column's menu. Drag the resizer; a double click on it, or "Fit to content", fits the column to its content, the widest of its header and the cells shown; "Reset width" returns it to its own width (off while the user has set none). From the keyboard, choose "Resize column": focus moves to the resizer, where <Kbd>←</Kbd> / <Kbd>→</Kbd> narrow and widen the column (with <Kbd>Shift</Kbd>, four times as far) and <Kbd>Home</Kbd> / <Kbd>End</Kbd> make it the narrowest or the widest; <Kbd>Enter</Kbd> or <Kbd>Tab</Kbd> keeps the width and <Kbd>Escape</Kbd> puts it back, and both return focus to the menu button. Screen readers hear how, with the resizer. The grid's arrow keys pass over the resizers, and a press on one never focuses it. `resizable: false` keeps a column from being resized.
+
+<ComponentPreview name="data-table-column-resizing" align="start" />
+
+```tsx
+<DataTable items={runs} columns={columns} resizableColumns view={view} onViewChange={setView}>
+```
+
+While the resizer is dragged, or moved with the keys, the column and the width beside the resizer change without the table rendering again; `onViewChange` reports the new width, with the reason `"resize"`, once the drag ends or the keyboard keeps it. A drag put back with <Kbd>Escape</Kbd>, or a key at a bound, reports nothing.
+
+**In a plain Table.** `TableColumnResizer` (`@tecton/react/tecton/table-column-resizer`) is the same grip for a [Table](/docs/components/table) whose widths you keep yourself: put it last in each resizable `TableHead` (`className="relative"`, `style={{ width }}`), write `onValueChange` back to the width, and give the `Table` `className="table-fixed"`, the columns' total width and `minWidth: "100%"`, leaving the last column's width unset so it takes the space left.
+
+```tsx
+<TableHead className="relative" style={{ width: widths.field }}>
+  Field
+  <TableColumnResizer
+    label="Field"
+    value={widths.field}
+    min={80}
+    max={400}
+    resetValue={140}
+    onValueChange={(width) => setWidths((current) => ({ ...current, field: width }))}
+  />
+</TableHead>
+```
+
+## Reordering
+
+`reorderableColumns` lets the user put the columns in order: a column header is its own drag handle, dragged from anywhere on it, its sort button included (a press that moves drags the column, one that does not sorts). A line shows where the column will land. From the keyboard, reach the header (the grid's arrow keys stop on the cell itself before its controls) and press <Kbd>Enter</Kbd> or <Kbd>Space</Kbd>, step through the places with <Kbd>←</Kbd> / <Kbd>→</Kbd> or <Kbd>Tab</Kbd>, and press <Kbd>Enter</Kbd> to drop or <Kbd>Escape</Kbd> to cancel; each step is announced.
+
+<ComponentPreview name="data-table-column-reordering" align="start" />
+
+- A column moves among the columns of its group, and a group, dragged by its header, moves with its columns.
+- The selection column stays first. Pinned columns stay at their edge, and `reorderable: false` keeps a column in its place (the others can still move past it).
+- The order is the view's `columns.order`, reported with the reason `"reorder"`; hidden columns keep their place in it.
+
+The drag and drop code loads on its own, in idle time once a table with `reorderableColumns` is shown (not with the table itself), or at once when a header is pressed before then: <Kbd>Enter</Kbd> then starts moving the column as soon as the code is there, and a pointer press starts dragging if the pointer is still down. The headers look and lay out the same before it arrives.
+
+## Hiding
+
+`hideableColumns` lets the user hide columns: from a column header's menu, or the checkboxes of `DataTableColumnsMenu`. Hidden columns are the view's `columns.hidden`, reported with the reason `"hide"`; `hideable: false` keeps a column shown (a view that hides it is ignored), and a view never hides every column: the first in the order stays, with a warning in development. When the row header column is hidden, the next column shown names the rows.
+
+`hideBelow` is separate: it hides a column below a breakpoint, for the screen's width, whatever the view.
+
+## Pinning
+
+`pinnableColumns` lets the user pin columns to the start or the end of the table, from a column header's menu or `DataTableColumnsMenu`. A pinned column stays in view while the table scrolls sideways, with the background of its row (striped, hovered, selected), and the columns that scroll under it fade in at its inner edge while there are columns hidden on that side. The selection column stays first, pinned at the start while any column is pinned there. In a right-to-left table, the start is on the right.
+
+<ComponentPreview name="data-table-column-pinning" align="start" />
+
+Pinned cells are opaque, in the fill of the surface the table sits on: Tecton's cards, [Panel](/docs/tecton/panel), the [AppShell](/docs/tecton/app-shell)'s parts, dialogs, sheets, drawers, popovers and menus set the `--surface` custom property to their own fill, and the rows of a table with pinned columns take `var(--surface)`, the page background outside them. A surface of your own sets it too:
+
+```tsx
+<section className="bg-muted [--surface:var(--color-muted)]">
+```
+
+```tsx
+<DataTable
+  items={wells}
+  columns={columns}
+  selectionMode="multiple"
+  striped
+  pinnableColumns
+  defaultView={{ columns: { pinned: { start: ["name"], end: ["status"] } } }}
+>
+```
+
+Pinned columns are the view's `columns.pinned.start` and `.end`, each in the view's order, reported with the reason `"pin"`. `pinnable: false` keeps a column from being pinned. A group whose columns are pinned on different sides, or only some of them, shows its header over each part.
+
+## Columns menu
+
+`DataTableColumnsMenu` is an outline "Columns" button, usually in the toolbar, with a menu of the columns: a checkbox per column to show or hide it (`hideableColumns`), a submenu per column to pin it (`pinnableColumns`), and "Reset columns", which returns the order, the hidden columns, the widths and the pins to `defaultView`'s (the reason `"reset"`; off while they are). The columns of a group are listed under its name, in the order the table shows them. Each change is announced. It renders nothing, and warns in development, while neither feature is on.
+
+<ComponentPreview name="data-table-column-visibility" align="start" />
+
+```tsx
+<DataTable items={allocations} columns={columns} hideableColumns pinnableColumns>
+  <DataTableToolbar>
+    <DataTableColumnsMenu className="ms-auto" />
+  </DataTableToolbar>
+  <DataTableContent aria-label="Daily allocation" />
+</DataTable>
+```
+
+It takes the props of a [Button](/docs/components/button) (`variant`, `size`, `className`) and, as `children`, the button's content in place of "Columns".
+
+## Column menus
+
+With `resizableColumns`, `hideableColumns` or `pinnableColumns`, each column header has a menu button with the column's actions for the features that are on: Sort ascending, Sort descending and Clear sort, Resize column, Fit to content and Reset width, Hide, and Pin to start, Pin to end or Unpin. The button sits over the end of the header and takes no room (at the start in a column aligned to the end, whose label then moves aside for it; beside the info button of a column with a `description`, which it would cover): it shows while the pointer is over the header row, focus is in the cell or the menu is open. On touch screens it always shows, beside the label. Sorting from the menu sorts by that column alone (an item is off only when the column is already the only sort, in that direction). The button is one of the header cell's controls: the arrow keys reach it, and <Kbd>Enter</Kbd>, <Kbd>Space</Kbd> or <Kbd>↓</Kbd> open it. Hiding or pinning a column from its menu is announced, and after hiding, focus goes to the header now in its place.
+
+A table that only sorts has no column menus: the header's button sorts.
+
+## Descriptions
+
+A column's or group's `description` is shown by an info button in its header, for units, definitions and sources: pressing it (a click, a tap, or <Kbd>Enter</Kbd> / <Kbd>Space</Kbd>) opens a popover with the text, and <Kbd>Escape</Kbd> or a press elsewhere closes it. It is also the header's accessible description, so screen readers read it with the column's name.
+
+```tsx
+{
+  id: "gor",
+  header: "GOR",
+  type: "number",
+  description: "Gas–oil ratio, Sm³/Sm³.",
+}
+```
 
 ## Size and stripes
 
@@ -343,7 +466,7 @@ Change the page and the sorting in the same event and the table reports both bef
 
 ## The view
 
-The view is what the table shows, as plain data: its `sorting`, `search`, `filters` and `columns`. It starts from `defaultView`, or is controlled with `view` / `onViewChange(view, eventDetails)`. Both take any part of it: the parts left out take their defaults (for `view`, those of `defaultView`). `onViewChange` always reports the whole view, which can be passed back as `view` as it is. `eventDetails.reason` says what changed (`"sort"`, `"search"`, `"filter"`, `"reset"`).
+The view is what the table shows, as plain data: its `sorting`, `search`, `filters` and `columns`. It starts from `defaultView`, or is controlled with `view` / `onViewChange(view, eventDetails)`. Both take any part of it: the parts left out take their defaults (for `view`, those of `defaultView`). `onViewChange` always reports the whole view, which can be passed back as `view` as it is. `eventDetails.reason` says what changed (`"sort"`, `"search"`, `"filter"`, `"resize"`, `"reorder"`, `"hide"`, `"pin"`, `"reset"`).
 
 <ComponentPreview name="data-table-views" align="start" />
 
@@ -371,6 +494,8 @@ A view is JSON, but for the `Date`s of a date filter, which come back from JSON 
 - Unknown column ids are ignored.
 - Columns the view's order leaves out go to their default place, and the columns of a group stay side by side.
 - Sorting and filters on unknown columns, or on columns that cannot (`sortable` off, or the column opted out), are dropped, and so are duplicates.
+- Widths that are not positive numbers are dropped, the others kept within the column's `minWidth` (48 px by default) and `maxWidth`; a column pinned to both sides is pinned to the start.
+- A column with `hideable: false` is never hidden, and neither is every column: the first in the order stays shown.
 - The search is empty while the table is not `filterable`.
 
 ## Custom parts
@@ -410,15 +535,18 @@ The table is one tab stop: <Kbd>Tab</Kbd> enters it at the row or cell that last
 | <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd> | Selects every row (`"multiple"`) |
 | <Kbd>Escape</Kbd> | Clears the selection |
 | <Kbd>Enter</Kbd> | Activates the row (`onActivate`, its link); on a tree row that does not activate, opens or closes it |
-| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a control | Presses it: a sort button, a checkbox, a link |
+| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a control | Presses it: a sort button, a checkbox, a link; opens a column's menu, or the popover of its description |
+| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a column header | With `reorderableColumns`, starts moving the column: <Kbd>←</Kbd> / <Kbd>→</Kbd> or <Kbd>Tab</Kbd> pick the place, <Kbd>Enter</Kbd> drops, <Kbd>Escape</Kbd> cancels |
+| <Kbd>←</Kbd> / <Kbd>→</Kbd> on a resizer | After "Resize column" in the column's menu: narrows / widens the column (<Kbd>Shift</Kbd>: four steps); <Kbd>Home</Kbd> / <Kbd>End</Kbd> the narrowest / widest; <Kbd>Enter</Kbd> or <Kbd>Tab</Kbd> keeps the width, <Kbd>Escape</Kbd> puts it back, both back to the menu button |
 
-In a right-to-left table <Kbd>←</Kbd> and <Kbd>→</Kbd> are swapped.
+In a right-to-left table <Kbd>←</Kbd> and <Kbd>→</Kbd> are swapped. In a column header, the arrow keys stop on the header itself when it can be moved, then on its controls in reading order: its sort button, its description's info button and its menu button. Resizers are not stops: "Resize column" reaches them. In resize mode, <Kbd>Enter</Kbd> keeps the width rather than returning the column to its own (use "Reset width" for that).
 
 ## Accessibility
 
 - The table is an ARIA grid, a treegrid with `itemToChildren`. Name it with `aria-label` or `aria-labelledby` on `DataTableContent`; `aria-describedby` points to a longer description.
 - Each row is named by its row header (`rowHeader`), which screen readers read with each cell; make it the column that tells the rows apart. Each row's checkbox is named after it ("Select 34/10-A-12").
 - A sorted header carries `aria-sort`, and a sort is announced; with several sorted columns, each header says its place ("sort 2 of 3, ascending").
+- A column's `description` is its header's accessible description, and a header that can be moved is described as such ("Drag Oil"); moving it from the keyboard names each place and announces the drop. Each column's menu button is named after it ("Oil options"), each resizer too ("Resize Oil"), and hiding or pinning a column from its menu is announced.
 - Selection changes are announced while focus is in the table, as are loading, the rows loaded and "No results". `DataTablePageInfo` and `DataTableSelectionCount` are live regions.
 - On pages, in a virtualized table and in server mode, the table carries the full `aria-rowcount` and each row its `aria-rowindex`, so screen readers hear the real size. Tree rows carry `aria-level`, `aria-expanded`, `aria-posinset` and `aria-setsize`.
 - While loading, the table is `aria-busy`; skeleton rows are hidden from screen readers, and the error state is an alert.
@@ -427,7 +555,7 @@ In a right-to-left table <Kbd>←</Kbd> and <Kbd>→</Kbd> are swapped.
 
 ## Right to left and localization
 
-Direction and locale come from the [TectonProvider](/docs/tecton/provider). In a right-to-left locale the columns run from the right, the arrow keys and the page buttons are mirrored, and the tree's chevron points the other way. Numbers, dates and the counts ("3 of 1,240 selected", "Page 2 of 13") are formatted with `Intl` in the provider's locale, and the table's own texts (the states, the page parts, the selection count, the announcements) are translated in every Tecton locale.
+Direction and locale come from the [TectonProvider](/docs/tecton/provider). In a right-to-left locale the columns run from the right, the arrow keys, the page buttons, the resizers and column dragging are mirrored, pinned columns stick to the start on the right, and the tree's chevron points the other way. Numbers, dates and the counts ("3 of 1,240 selected", "Page 2 of 13") are formatted with `Intl` in the provider's locale, and the table's own texts (the states, the page parts, the selection count, the column menus, the announcements) are translated in every Tecton locale.
 
 <ComponentPreview name="data-table-rtl" direction="rtl" align="start" />
 
@@ -468,6 +596,10 @@ The root. Renders a `div` (`data-slot="data-table"`) and forwards its props (`cl
 | `striped` | `boolean` | `false` | Every even row on an alternate surface. |
 | `sortable` | `boolean` | `true` | Header buttons sort; <Kbd>Shift</Kbd> + click by several columns. |
 | `filterable` | `boolean` | `false` | Applies the view's `search` and `filters`, set through `useDataTable`. |
+| `resizableColumns` | `boolean` | `false` | A resizer on each column header's end edge (see [Resizing](#resizing)). |
+| `reorderableColumns` | `boolean` | `false` | Column headers are dragged into order (see [Reordering](#reordering)). |
+| `hideableColumns` | `boolean` | `false` | Columns are hidden from their menu and `DataTableColumnsMenu`. |
+| `pinnableColumns` | `boolean` | `false` | Columns are pinned to the start or the end from their menu and `DataTableColumnsMenu`. |
 | `pagination` | `boolean` | `false` | Shows the rows a page at a time. |
 | `selectionMode` | `"none" \| "single" \| "multiple"` | `"none"` | Whether rows select, one at a time or several, with a checkbox column. |
 | `value` | `ReadonlyArray<string>` | - | The selected rows' ids (controlled). |
@@ -476,7 +608,7 @@ The root. Renders a `div` (`data-slot="data-table"`) and forwards its props (`cl
 | `disallowEmptySelection` | `boolean` | `false` | Keeps at least one row selected. |
 | `view` | `DataTablePartialView` | - | What the table shows (controlled): any part of the view, the rest from `defaultView` or the defaults. Reconciled with the columns. |
 | `defaultView` | `DataTablePartialView` | - | Any part of the view to start from; read once. |
-| `onViewChange` | `(view: DataTableView, eventDetails) => void` | - | Called with the new view; `reason` is `"sort"`, `"search"`, `"filter"` or `"reset"`. |
+| `onViewChange` | `(view: DataTableView, eventDetails) => void` | - | Called with the new view; `reason` is `"sort"`, `"search"`, `"filter"`, `"resize"`, `"reorder"`, `"hide"`, `"pin"` or `"reset"`. |
 | `expanded` | `ReadonlyArray<string>` | - | The open tree rows' ids (controlled). |
 | `defaultExpanded` | `ReadonlyArray<string>` | `[]` | The rows open at first. |
 | `onExpandedChange` | `(expanded: string[], eventDetails) => void` | - | Called with the open rows; `reason` is `"item-press"` or `"keyboard"`. |
@@ -507,6 +639,15 @@ The table, in a rounded frame (`data-slot="data-table-content"`, a `div` that ta
 ### DataTableToolbar
 
 The row above the table: a `div` (`data-slot="data-table-toolbar"`, `flex flex-wrap items-center gap-2`) for your controls. Takes the props of a `div`.
+
+### DataTableColumnsMenu
+
+An outline "Columns" button and its menu: show or hide each column (with `hideableColumns`), pin it (with `pinnableColumns`), and "Reset columns" (see [Columns menu](#columns-menu)). It takes the props of a [Button](/docs/components/button) (`data-slot="data-table-columns-menu"`); renders nothing while neither feature is on.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | Button `variant` | `"outline"` | The button's look. |
+| `children` | `ReactNode` | "Columns" and an icon | The button's content. |
 
 ### DataTableFooter
 
@@ -547,11 +688,18 @@ A column:
 | `align` | `"start" \| "center" \| "end"` | by type | The cell's and the header's alignment. |
 | `compare` | `(a: T, b: T) => number` | - | Sorts the column in place of its type's order, ascending. |
 | `rowHeader` | `boolean` | first column | Names the row and carries the tree's chevron and indent. |
+| `description` | `string` | - | Shown in an info tooltip in the header, and the header's accessible description. |
+| `width` | `number` | content | The column's width in px, which fixes the table's layout (see [Column widths](#column-widths)). |
+| `minWidth`, `maxWidth` | `number` | - | Bounds of the column's width, in px. |
 | `hideBelow` | `"sm" \| "md" \| "lg"` | - | Hides the column below the breakpoint. |
 | `wrap` | `boolean` | `false` | Lets text take several lines; not in a virtualized table. |
 | `sortable` | `false` | - | Keeps the column from sorting. |
+| `resizable` | `false` | - | Keeps the column from being resized. |
+| `reorderable` | `false` | - | Keeps the column in its place. |
+| `hideable` | `false` | - | Keeps the column shown. |
+| `pinnable` | `false` | - | Keeps the column from being pinned. |
 
-A group: `{ id: string; header: string; columns: ReadonlyArray<DataTableColumn<T>> }`.
+A group: `{ id: string; header: string; description?: string; columns: ReadonlyArray<DataTableColumn<T>> }`.
 
 `DataTableCellDetails` is `{ id, column, value, text, depth }`: the row's id, the column's id, the value, its display text and the row's depth from 0. `DataTableHeaderDetails` is `{ column, header, sorted }`, `sorted` being `"ascending"`, `"descending"` or `null`.
 
@@ -590,6 +738,11 @@ type DataTableView = {
 | `setFilter` | `(column: string, value: DataTableFilterValue \| null) => void` | Sets a column's filter, `null` removes it (with `filterable`). |
 | `clearFilters` | `() => void` | Removes every filter and the search. |
 | `resetView` | `() => void` | Back to `defaultView`, or the defaults. |
+| `setColumnOrder` | `(order: ReadonlyArray<string>) => void` | Puts the columns listed first, in that order; the others follow in their order now (a group's columns stay together). |
+| `setColumnHidden` | `(column: string, hidden: boolean) => void` | Hides or shows a column. |
+| `setColumnWidth` | `(column: string, width: number \| null) => void` | Sets a column's width in px; `null` returns it to its own. |
+| `setColumnPinned` | `(column: string, side: "start" \| "end" \| null) => void` | Pins a column to a side, or unpins it. |
+| `resetColumns` | `() => void` | Returns the order, the hidden columns, the widths and the pins to `defaultView`'s. |
 | `value` | `ReadonlyArray<string>` | The selected rows' ids. |
 | `setValue` | `(value: ReadonlyArray<string>) => void` | Sets the selection. |
 | `selectAll` | `() => void` | Selects every row the view matches (the loaded ones in server mode). |
@@ -605,3 +758,20 @@ type DataTableView = {
 | `columns` | `ReadonlyArray<DataTableLeafColumn<T>>` | The columns shown, in order. |
 | `loading` | `boolean` | The root's `loading`. |
 | `exportCsv` | `(options?) => Promise<string>` | The rows as CSV text (RFC 4180): display values, with the headers first. `rows`: `"filtered"` (default), `"selected"` or `"page"`; `columns`: `"visible"` (default) or `"all"`; `header`, `bom`, `escapeFormulas`. |
+
+### TableColumnResizer
+
+`@tecton/react/tecton/table-column-resizer`: the grip on a column header's end edge (see [Resizing](#resizing)), a focusable `role="separator"` named `Resize {label}` (`data-slot="table-column-resizer"`, `data-dragging` while dragged). <Kbd>←</Kbd> / <Kbd>→</Kbd> narrow and widen it (mirrored right to left; <Kbd>Shift</Kbd>: four steps), <Kbd>Home</Kbd> / <Kbd>End</Kbd> set `min` / `max`, <Kbd>Enter</Kbd> and a double click set `resetValue`, and <Kbd>Escape</Kbd> during a drag puts the width back (in a `DataTable`, the column's menu leads to it, and <Kbd>Enter</Kbd>, <Kbd>Tab</Kbd> and <Kbd>Escape</Kbd> end resizing, a double click fits the column; see [Resizing](#resizing)). While dragging, a guide runs down the table at the new edge, with the width beside it.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `value` | `number` | - | The column's width in px (controlled). |
+| `defaultValue` | `number` | `150` | The initial width, when not controlled. |
+| `onValueChange` | `(value: number, eventDetails) => void` | - | Called with each new width while it changes; `reason` is `"drag"`, `"keyboard"` or `"reset"`. |
+| `onValueCommitted` | `(value: number, eventDetails) => void` | - | Called with the width once a drag ends, or after each key. |
+| `min` | `number` | `48` | The narrowest width. |
+| `max` | `number` | `1000` | The widest width. |
+| `step` | `number` | `8` | The arrow keys' step, in px. |
+| `resetValue` | `number` | - | The width <Kbd>Enter</Kbd> and a double click go back to. |
+| `label` | `string` | - | The column's name, for `Resize {label}`. |
+| `disabled` | `boolean` | `false` | Turns the resizer off. |

@@ -11,6 +11,14 @@
  * The row header column (`rowHeader`, the first column by default) is a
  * `th scope="row"` that names the row, carries the tree's chevron and
  * indent, and is the row's link with `itemToHref`.
+ *
+ * A pinned column's cells stick to their edge (`position: sticky`, at a
+ * variable of the frame's, `column-sizing.ts`) with their row's
+ * background: the row is then opaque, and its cells inherit its fill, so
+ * stripes, hover and selection show on them too. A stuck cell would be
+ * painted over the row's collapsed border (unevenly, by browser), so a
+ * table with pinned columns draws each cell's border itself, in separate
+ * borders.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -51,8 +59,53 @@ type RowShared<T> = {
   rowIndexOf: ((id: string) => number) | null
   /** The header's rows, which `aria-rowindex` counts first. */
   headerRows: number
+  /** Columns have fixed widths: what does not fit a cell is cut with an ellipsis. */
+  fixed: boolean
+  /** Each column's pin, by its place in `columns`. */
+  pins: ReadonlyArray<CellPin | undefined>
+  /** The selection column's pin: at the start while a column is pinned there. */
+  selectionPin: CellPin | undefined
+  /** Columns are pinned: the row is opaque, each cell draws its border. */
+  pinned: boolean
   actions: DataTableActions<T>
 }
+
+/** Where a pinned column's cells stick: the edge, and how far from it (a CSS length). */
+type CellPin = { side: "start" | "end"; offset: string }
+
+function pinStyle(pin: CellPin): React.CSSProperties {
+  return pin.side === "start"
+    ? { insetInlineStart: pin.offset }
+    : { insetInlineEnd: pin.offset }
+}
+
+/**
+ * A pinned body cell: over the cells scrolled under it, in its row's fill
+ * (a row header's own transparent fill too). It covers its part of the
+ * focused row's outline, so it draws that part: the ring along its top and
+ * bottom, and on the row's first and last cell its outer side.
+ */
+const pinnedCellClassName = cn(
+  "sticky z-[1] bg-inherit [&[scope=row]]:bg-inherit",
+  "[tr:focus-visible>&]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring)]",
+  "[tr:focus-visible>&:first-child]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring),inset_2px_0_0_var(--color-ring)]",
+  "rtl:[tr:focus-visible>&:first-child]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring),inset_-2px_0_0_var(--color-ring)]",
+  "[tr:focus-visible>&:last-child]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring),inset_-2px_0_0_var(--color-ring)]",
+  "rtl:[tr:focus-visible>&:last-child]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring),inset_2px_0_0_var(--color-ring)]"
+)
+
+/** A pinned header cell: over the other header cells and their resizers. */
+const pinnedHeadClassName = "sticky z-20"
+
+/** A row with pinned cells is opaque, for its cells to take its fill. */
+const pinnedRowClassName = "bg-[var(--surface,var(--color-background))]"
+
+/**
+ * Every body cell of a table with pinned columns: the row's border, drawn
+ * by the cell (but on the last row) in the table's separate borders.
+ */
+const cellBorderClassName =
+  "border-b border-border-subtle [tr:last-child>&]:border-b-0"
 
 /** Each tree level is indented by the width of a chevron and its gap. */
 const INDENT = 1.25
@@ -76,11 +129,18 @@ function columnClassName<T>(column: EngineColumn<T>) {
   return cn(ALIGN[column.align], hideBelow && HIDE_BELOW[hideBelow])
 }
 
-function bodyClassName<T>(column: EngineColumn<T>, shared: RowShared<T>) {
+function bodyClassName<T>(
+  column: EngineColumn<T>,
+  pin: CellPin | undefined,
+  shared: RowShared<T>
+) {
   return cn(
     columnClassName(column),
     column.type === "number" && "tabular-nums",
-    shared.wrap && column.definition.wrap && "whitespace-normal"
+    shared.fixed && "overflow-hidden text-ellipsis",
+    shared.pinned && cellBorderClassName,
+    shared.wrap && column.definition.wrap && "whitespace-normal",
+    pin && pinnedCellClassName
   )
 }
 
@@ -187,17 +247,20 @@ function rowText<T>(item: T, shared: RowShared<T>) {
   return shared.rowHeader ? shared.formatter.text(shared.rowHeader, item) : ""
 }
 
-/** A body cell of an item row. */
+/** A body cell of an item row; `index` is the column's place in `shared.columns`. */
 function renderCell<T>(
   column: EngineColumn<T>,
+  index: number,
   row: ItemRow<T>,
   shared: RowShared<T>
 ): React.ReactNode {
   let content = cellContent(column, row, shared.formatter)
-  const className = bodyClassName(column, shared)
+  const pin = shared.pins[index]
+  const className = bodyClassName(column, pin, shared)
+  const style = pin && pinStyle(pin)
   if (column !== shared.rowHeader)
     return (
-      <TableCell key={column.id} className={className}>
+      <TableCell key={column.id} className={className} style={style}>
         {content}
       </TableCell>
     )
@@ -226,11 +289,21 @@ function renderCell<T>(
     )
   // A row header takes the look of its row's cells (the table's own).
   return (
-    <TableHead key={column.id} scope="row" className={className}>
+    <TableHead key={column.id} scope="row" className={className} style={style}>
       {content}
     </TableHead>
   )
 }
 
-export { cellContent, columnClassName, renderCell, rowText }
-export type { RowShared }
+export {
+  cellBorderClassName,
+  cellContent,
+  columnClassName,
+  pinnedCellClassName,
+  pinnedHeadClassName,
+  pinnedRowClassName,
+  pinStyle,
+  renderCell,
+  rowText,
+}
+export type { CellPin, RowShared }

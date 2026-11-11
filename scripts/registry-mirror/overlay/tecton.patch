@@ -1327,16 +1327,17 @@ index 0c2e93ea..1071e005 100644
      />
    )
 diff --git a/apps/v4/registry/bases/base/ui/table.tsx b/apps/v4/registry/bases/base/ui/table.tsx
-index 160cf7aa..30c611cd 100644
+index 160cf7aa..064dc94e 100644
 --- a/apps/v4/registry/bases/base/ui/table.tsx
 +++ b/apps/v4/registry/bases/base/ui/table.tsx
-@@ -3,34 +3,90 @@
+@@ -3,34 +3,97 @@
  import * as React from "react"
  import { cn } from "cn"
  
 -function Table({ className, ...props }: React.ComponentProps<"table">) {
 +import {
 +  TableGridProvider,
++  useTableContainer,
 +  useTableGrid,
 +  useTableRow,
 +} from "../tecton/internal/table-grid"
@@ -1368,12 +1369,18 @@ index 160cf7aa..30c611cd 100644
 +}) {
 +  const virtual = useTableVirtualizer(virtualized)
 +  const grid = useTableGrid(props)
++  const container = useTableContainer(virtual.containerRef)
    return (
 -    <div data-slot="table-container" className="cn-table-container">
 +    <div
 +      data-slot="table-container"
-+      ref={virtual.containerRef}
-+      className={cn("cn-table-container", virtualized && "h-full overflow-auto")}
++      ref={container.ref}
++      style={container.style}
++      className={cn(
++        "cn-table-container",
++        virtualized && "h-full overflow-auto",
++        container.className
++      )}
 +    >
        <table
          data-slot="table"
@@ -1429,7 +1436,7 @@ index 160cf7aa..30c611cd 100644
      />
    )
  }
-@@ -50,7 +106,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
+@@ -50,7 +113,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
      <tr
        data-slot="table-row"
        className={cn("cn-table-row has-aria-expanded:bg-muted/50", className)}

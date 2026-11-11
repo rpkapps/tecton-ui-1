@@ -11,24 +11,56 @@
  * It reads only the slices of the table's state it draws: a selection
  * change reaches the grid (its `value`) and the rows it changes, not this
  * component, the header or the other rows.
+ *
+ * The columns: their widths (`column-sizing.ts`; a resize is drawn without
+ * rendering while it is dragged), pinned columns that stick to the frame's
+ * edges with the content scrolled under them fading in at their inner
+ * edge (the `scroll-fade-x` utility, its mask starting where the pinned
+ * columns end, shown only while there is content on that side), and
+ * reordering, whose drag and drop loads on demand and renders beside the
+ * table (`column-reorder.tsx`).
  */
 import * as React from "react"
 import { cn } from "cn"
 
 import { Table, TableBody } from "@tecton/react/components/table"
+import { useDirection } from "@tecton/react/tecton/provider"
 
 import { useTranslations } from "../i18n/translations"
-import { TableGridConfig, type TableGridOptions } from "../table-grid"
-import type { RowShared } from "./cell"
+import {
+  TableContainerConfig,
+  TableGridConfig,
+  type TableGridOptions,
+} from "../table-grid"
+import { cellBorderClassName, type CellPin, type RowShared } from "./cell"
+import {
+  createColumnOrder,
+  listsOf,
+  movableColumns,
+  type ColumnOrder,
+} from "./column-order"
+import {
+  colWidths,
+  pinOffset,
+  tableStyle,
+  useColumnSizing,
+} from "./column-sizing"
 import {
   useDataTableContext,
   useDataTableSelector,
   useNumberFormat,
   type DataTableContextValue,
 } from "./context"
-import { clearFilters, type BodyRow } from "./engine/index"
+import {
+  clearFilters,
+  type BodyRow,
+  type ColumnLayout,
+  type DataTableColumns,
+  type EngineColumn,
+} from "./engine/index"
+import { useFeature } from "./lazy"
 import { viewChangeReason } from "./view-reason"
-import { DataTableHeader } from "./header"
+import { DataTableHeader, type HeaderShared } from "./header"
 import { describeRow, renderRow } from "./row"
 import {
   DataTableEmptyState,
@@ -75,6 +107,113 @@ function DataTableGrid({
   const value = useDataTableSelector(context, (state) => state.value)
   const config = React.useMemo(() => ({ ...options, value }), [options, value])
   return <TableGridConfig value={config}>{children}</TableGridConfig>
+}
+
+/**
+ * The scrolled content fades in at the inner edge of the pinned columns
+ * (`scroll-fade-x` on the table's scroll container, with its mask moved
+ * there): the start's fade shows once the table is scrolled from the
+ * start, the end's while there is more to scroll to. RTL mirrors it.
+ * Without scroll-driven animations the utility would fade for good: the
+ * fade is then left out.
+ */
+const PINNED_FADE = cn(
+  "scroll-fade-x",
+  "[--scroll-fade-mask:linear-gradient(to_var(--data-table-fade-to),#000_var(--data-table-pinned-start),transparent_var(--data-table-pinned-start),#000_calc(var(--data-table-pinned-start)_+_var(--scroll-fade-s)_*_var(--data-table-fade-start)),#000_calc(100%_-_var(--data-table-pinned-end)_-_var(--scroll-fade-e)_*_var(--data-table-fade-end)),transparent_calc(100%_-_var(--data-table-pinned-end)),#000_calc(100%_-_var(--data-table-pinned-end)))]",
+  "not-supports-[animation-timeline:scroll()]:[--scroll-fade-e-size:0px] not-supports-[animation-timeline:scroll()]:[--scroll-fade-s-size:0px]"
+)
+
+/** Whether the columns are laid out with fixed widths (see `column-sizing.ts`). */
+function hasFixedWidths<T>(layout: ColumnLayout<T>, resizable: boolean) {
+  return (
+    resizable ||
+    layout.pinnedStart + layout.pinnedEnd > 0 ||
+    layout.columns.some(
+      (column) =>
+        layout.width(column.id) !== undefined ||
+        column.minWidth !== undefined ||
+        column.maxWidth !== undefined
+    )
+  )
+}
+
+/** `next`, or the last array while it holds the same items. */
+function useSameItems<TItem>(next: ReadonlyArray<TItem>) {
+  const last = React.useRef(next)
+  const same =
+    last.current.length === next.length &&
+    last.current.every((item, index) => item === next[index])
+  const kept = same ? last.current : next
+  React.useLayoutEffect(() => {
+    last.current = kept
+  })
+  return kept
+}
+
+/** Each shown column's pin, by its place: the variable it sticks at. */
+function pinsOf(count: number, start: number, end: number) {
+  return Array.from({ length: count }, (_, index): CellPin | undefined =>
+    index < start
+      ? { side: "start", offset: pinOffset(index) }
+      : index >= count - end
+        ? { side: "end", offset: pinOffset(index) }
+        : undefined
+  )
+}
+
+const SELECTION_PIN: CellPin = { side: "start", offset: "0px" }
+
+/**
+ * Column reordering (`reorderableColumns`): the headers' side of it at
+ * once, its drag and drop once loaded.
+ */
+function useColumnOrder(
+  context: DataTableContextValue<unknown>,
+  frame: React.RefObject<HTMLElement | null>,
+  columns: DataTableColumns<unknown>,
+  layout: ColumnLayout<unknown>,
+  on: boolean
+) {
+  const feature = useFeature("dragAndDrop", on)
+  const snapshot = React.useMemo(
+    () => (on ? movableColumns(columns, layout) : null),
+    [on, columns, layout]
+  )
+  const { load } = feature
+  const [order] = React.useState<ColumnOrder>(() =>
+    createColumnOrder(
+      context.actions,
+      () => frame.current,
+      load,
+      snapshot ?? { columns, movable: NO_COLUMNS, labels: new Map() }
+    )
+  )
+  React.useLayoutEffect(() => {
+    if (snapshot) order.snapshot.current = snapshot
+    const lists = snapshot ? listsOf(columns, snapshot.movable) : []
+    const key = (value: ReadonlyArray<string | null>) => JSON.stringify(value)
+    // A list's drag stays while the list does.
+    if (key(lists) !== key(order.store.get().lists)) order.store.set({ lists })
+  }, [order, columns, snapshot])
+  return {
+    order: snapshot ? order : null,
+    movable: snapshot?.movable ?? NO_COLUMNS,
+    module: feature.module,
+  }
+}
+
+const NO_COLUMNS: ReadonlySet<string> = new Set()
+
+/** Written out whole, so Tailwind finds them: a `col` hidden with its cells. */
+const HIDE_BELOW_COLUMN = {
+  sm: "hidden sm:table-column",
+  md: "hidden md:table-column",
+  lg: "hidden lg:table-column",
+} as const
+
+function hideBelowColumn<T>(column: EngineColumn<T>) {
+  const { hideBelow } = column.definition
+  return hideBelow ? HIDE_BELOW_COLUMN[hideBelow] : undefined
 }
 
 /** The header's height while `active`, for the bar under it. */
@@ -149,6 +288,10 @@ function DataTableContentImpl({
   const formatter = useDataTableSelector(context, (state) => state.formatter)
   const options = useDataTableSelector(context, (state) => state.options)
   const sorting = useDataTableSelector(context, (state) => state.view.sorting)
+  const widths = useDataTableSelector(
+    context,
+    (state) => state.view.columns.widths
+  )
   const grouped = useDataTableSelector(
     context,
     (state) => state.view.grouping.length > 0
@@ -164,12 +307,54 @@ function DataTableContentImpl({
   const server = options.dataMode === "server"
 
   const selection = options.selectionMode !== "none"
-  const rowHeader = layout.columns.find(
+  const rtl = useDirection() === "rtl"
+  const failed = Boolean(error)
+  const rows = failed ? NO_ROWS : model.rows
+  const firstLoad = loading && !failed && rows.length === 0
+  const frame = React.useRef<HTMLDivElement | null>(null)
+  const pinned = layout.pinnedStart + layout.pinnedEnd > 0
+  const container = React.useRef<HTMLDivElement | null>(null)
+  const sizer = useColumnSizing({
+    frame,
+    container,
+    layout,
+    widths,
+    selection,
+    fixed: hasFixedWidths(layout, options.resizableColumns),
+    ready: !firstLoad,
+    rows: rows.length > 0 && !loading,
+    rtl,
+  })
+  const { sizing } = sizer
+  const fade = pinned && sizing !== null
+  const containerConfig = React.useMemo(
+    () => ({ ref: container, className: fade ? PINNED_FADE : undefined }),
+    [fade]
+  )
+  // The rows render with the columns, their pins and the selection's: a
+  // new width alone (a resize) leaves them as they are.
+  const shownColumns = useSameItems(layout.columns)
+  const pins = React.useMemo(
+    () => pinsOf(layout.columns.length, layout.pinnedStart, layout.pinnedEnd),
+    [layout.columns.length, layout.pinnedStart, layout.pinnedEnd]
+  )
+  const selectionPin =
+    selection && sizing?.selectionPinned ? SELECTION_PIN : undefined
+  const fixed = sizing !== null
+  const order = useColumnOrder(
+    context,
+    frame,
+    columns,
+    layout,
+    options.reorderableColumns
+  )
+
+  const rowHeader = shownColumns.find(
     (column) => column.id === layout.rowHeader
   )
   const shared = React.useMemo<RowShared<unknown>>(
     () => ({
-      columns: layout.columns,
+      columns: shownColumns,
       rowHeader,
       formatter,
       selection,
@@ -178,13 +363,17 @@ function DataTableContentImpl({
       disableRows: options.disabledBehavior === "all",
       linked: options.linked,
       wrap: !virtualized,
-      columnCount: layout.columns.length + (selection ? 1 : 0),
+      columnCount: shownColumns.length + (selection ? 1 : 0),
       rowIndexOf: options.pagination ? model.indexOfRow : null,
       headerRows: layout.headerRows.length,
+      fixed,
+      pins,
+      selectionPin,
+      pinned,
       actions,
     }),
     [
-      layout.columns,
+      shownColumns,
       rowHeader,
       formatter,
       selection,
@@ -197,6 +386,10 @@ function DataTableContentImpl({
       options.pagination ? model : null,
       layout.headerRows.length,
       virtualized,
+      fixed,
+      pins,
+      selectionPin,
+      pinned,
       actions,
     ]
   )
@@ -259,11 +452,7 @@ function DataTableContentImpl({
       )
   }, [actions, virtualized, layout.columns])
 
-  const failed = Boolean(error)
-  const rows = failed ? NO_ROWS : model.rows
-  const firstLoad = loading && !failed && rows.length === 0
   const refreshing = loading && !failed && rows.length > 0
-  const frame = React.useRef<HTMLDivElement | null>(null)
   const setFrame = React.useCallback(
     (element: HTMLDivElement | null) => {
       frame.current = element
@@ -306,6 +495,20 @@ function DataTableContentImpl({
     (empty ?? <DataTableEmptyState />)
   )
 
+  const header: HeaderShared<unknown> = {
+    context,
+    columns,
+    layout,
+    sorting,
+    options,
+    sizer,
+    pins,
+    selectionPin,
+    order: order.order,
+    movable: order.movable,
+  }
+  const ReorderColumns = order.module?.DataTableColumnReorder
+
   return (
     <div
       ref={setFrame}
@@ -318,44 +521,61 @@ function DataTableContentImpl({
         className
       )}
       {...props}
+      style={sizer.style ? { ...sizer.style, ...props.style } : props.style}
     >
       <DataTableGrid context={context} options={grid}>
-        <Table
-          size={options.size}
-          striped={options.striped}
-          virtualized={virtualized}
-          aria-label={ariaLabel}
-          aria-labelledby={ariaLabelledBy}
-          aria-describedby={ariaDescribedBy}
-          aria-busy={loading || undefined}
-          // Left out, not undefined: a virtualized body counts its own.
-          {...(rowCount === undefined ? {} : { "aria-rowcount": rowCount })}
-        >
-          <DataTableHeader
-            context={context}
-            columns={columns}
-            layout={layout}
-            sorting={sorting}
-            sortable={options.sortable}
-            selectionMode={options.selectionMode}
+        <TableContainerConfig value={containerConfig}>
+          <Table
             size={options.size}
-          />
-          {firstLoad ? (
-            <TableBody>
-              {loadingRows(
-                options.pagination ? model.pageSize : LOADING_ROWS,
-                layout.columns,
-                selection
-              )}
-            </TableBody>
-          ) : (
-            <TableBody items={rows} empty={state}>
-              {render}
-            </TableBody>
-          )}
-        </Table>
+            striped={options.striped}
+            virtualized={virtualized}
+            className={cn(
+              sizer.mode === "fixed" && "table-fixed",
+              // Each cell draws its border (`cell.tsx`).
+              pinned && "border-separate border-spacing-0"
+            )}
+            style={
+              sizer.mode === "fixed" && sizing ? tableStyle(sizing) : undefined
+            }
+            aria-label={ariaLabel}
+            aria-labelledby={ariaLabelledBy}
+            aria-describedby={ariaDescribedBy}
+            aria-busy={loading || undefined}
+            // Left out, not undefined: a virtualized body counts its own.
+            {...(rowCount === undefined ? {} : { "aria-rowcount": rowCount })}
+          >
+            {sizer.mode === "fixed" && sizing && (
+              <colgroup data-slot="data-table-columns">
+                {selection && <col style={{ width: sizing.selection }} />}
+                {colWidths(sizing).map((width, index) => (
+                  <col
+                    key={shownColumns[index].id}
+                    className={hideBelowColumn(shownColumns[index])}
+                    style={width === undefined ? undefined : { width }}
+                  />
+                ))}
+              </colgroup>
+            )}
+            <DataTableHeader shared={header} />
+            {firstLoad ? (
+              <TableBody>
+                {loadingRows(
+                  options.pagination ? model.pageSize : LOADING_ROWS,
+                  layout.columns,
+                  selection,
+                  pinned ? cellBorderClassName : undefined
+                )}
+              </TableBody>
+            ) : (
+              <TableBody items={rows} empty={state}>
+                {render}
+              </TableBody>
+            )}
+          </Table>
+        </TableContainerConfig>
       </DataTableGrid>
       {refreshing && <DataTableProgress top={headerHeight} />}
+      {ReorderColumns && order.order && <ReorderColumns order={order.order} />}
       {/* One region for the table's life, so each change is read. */}
       <span role="status" className="sr-only">
         {status}

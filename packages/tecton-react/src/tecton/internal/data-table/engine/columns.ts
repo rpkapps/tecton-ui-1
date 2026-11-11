@@ -309,28 +309,127 @@ function getColumnModel<T>(columns: DataTableColumns<T>): ColumnModel<T> {
   return model
 }
 
-/** `width` within a column's `minWidth` / `maxWidth` (the minimum wins). */
+/** The narrowest a column is, unless its `minWidth` says. */
+const MIN_COLUMN_WIDTH = 48
+/**
+ * The widest the user resizes a column to, unless its `maxWidth` says: a
+ * ceiling for the resizer, not for a width a column has (one stretched
+ * over a wide table may be wider).
+ */
+const MAX_COLUMN_WIDTH = 1000
+
+/**
+ * `width` within a column's `minWidth` (48 px when it has none) and its
+ * `maxWidth`; the minimum wins.
+ */
 function clampColumnWidth(
   minWidth: number | undefined,
   maxWidth: number | undefined,
   width: number
 ) {
-  let clamped = width
-  if (maxWidth !== undefined) clamped = Math.min(clamped, maxWidth)
-  if (minWidth !== undefined) clamped = Math.max(clamped, minWidth)
-  return clamped
+  return Math.max(
+    minWidth ?? MIN_COLUMN_WIDTH,
+    maxWidth === undefined ? width : Math.min(width, maxWidth)
+  )
+}
+
+/** The group a column or group is in; `null` at the top level. */
+function parentOf<T>(model: ColumnModel<T>, id: string): string | null {
+  const node = model.byId.get(id) ?? model.groups.get(id)
+  return node?.groups.at(-1) ?? null
+}
+
+/** The columns and groups directly in `parent` (the top level for `null`), in definition order. */
+function childrenOf<T>(
+  model: ColumnModel<T>,
+  parent: string | null
+): ReadonlyArray<ColumnNode> {
+  if (parent === null) return model.tree
+  const find = (nodes: ReadonlyArray<ColumnNode>): ColumnNode | undefined => {
+    for (const node of nodes) {
+      if (node.kind !== "group") continue
+      if (node.id === parent) return node
+      const found = find(node.children)
+      if (found) return found
+    }
+    return undefined
+  }
+  const group = find(model.tree)
+  return group?.kind === "group" ? group.children : []
+}
+
+/** Where a column or group starts in `order`: its first column's place. */
+function placeIn<T>(
+  model: ColumnModel<T>,
+  position: ReadonlyMap<string, number>,
+  id: string
+) {
+  const leaves = model.groups.get(id)?.columns ?? [id]
+  return Math.min(...leaves.map((leaf) => position.get(leaf) ?? Infinity))
+}
+
+/**
+ * The columns and groups directly in `parent` (the top level for `null`), in
+ * the order `order` (a reconciled `columns.order`) shows them: the list a
+ * column or group moves within when the user reorders the columns.
+ */
+function siblingsInOrder<T>(
+  model: ColumnModel<T>,
+  order: ReadonlyArray<string>,
+  parent: string | null
+): Array<string> {
+  const position = new Map(order.map((id, index) => [id, index]))
+  return childrenOf(model, parent)
+    .map((node) => node.id)
+    .sort((a, b) => placeIn(model, position, a) - placeIn(model, position, b))
+}
+
+/**
+ * `order` with the columns and groups directly in `parent` put in the order
+ * of `siblings` (their ids); a group's columns move with it, and every
+ * other column keeps its place among its own siblings.
+ */
+function orderSiblings<T>(
+  model: ColumnModel<T>,
+  order: ReadonlyArray<string>,
+  parent: string | null,
+  siblings: ReadonlyArray<string>
+): Array<string> {
+  const position = new Map(order.map((id, index) => [id, index]))
+  const rank = new Map(siblings.map((id, index) => [id, index]))
+  const arrange = (
+    nodes: ReadonlyArray<ColumnNode>,
+    within: string | null
+  ): Array<string> =>
+    nodes
+      .map((node) => ({
+        id: node.id,
+        at: placeIn(model, position, node.id),
+        ids:
+          node.kind === "column" ? [node.id] : arrange(node.children, node.id),
+      }))
+      .sort((a, b) =>
+        within === parent
+          ? (rank.get(a.id) ?? Infinity) - (rank.get(b.id) ?? Infinity) ||
+            a.at - b.at
+          : a.at - b.at
+      )
+      .flatMap((node) => node.ids)
+  return arrange(model.tree, null)
 }
 
 /**
  * The header rows over the given leaf columns, in the order given. A group
  * spans its consecutive columns (split where columns of another group, or
- * none, come between them); the leaf columns are all in the last row, with
- * placeholders above a column that sits in fewer groups than the deepest,
- * merged while they sit side by side under the same cell.
+ * none, come between them, and where `segments` differ: pinned columns
+ * never share a cell with unpinned ones); the leaf columns are all in the
+ * last row, with placeholders above a column that sits in fewer groups
+ * than the deepest, merged while they sit side by side under the same cell.
  */
 function buildHeaderRows<T>(
   model: ColumnModel<T>,
-  columnIds: ReadonlyArray<string>
+  columnIds: ReadonlyArray<string>,
+  segments?: ReadonlyArray<string>
 ): Array<HeaderRow> {
   const columns = columnIds.flatMap((id) => model.byId.get(id) ?? [])
   if (!columns.length) return []
@@ -360,10 +459,11 @@ function buildHeaderRows<T>(
             : null
       // What the cell belongs to: itself, or for a placeholder the cell
       // above it, so placeholders under different cells stay apart.
-      const owner =
+      const owner = `${segments?.[position] ?? ""}|${
         kind === "placeholder"
           ? `placeholder:${column.groups[column.groups.length - 1] ?? ""}`
           : `${kind}:${id}`
+      }`
       const last = cells[cells.length - 1] as (typeof cells)[number] | undefined
       if (kind !== "column" && last && previous === owner) {
         last.colSpan++
@@ -384,7 +484,18 @@ function buildHeaderRows<T>(
   return rows
 }
 
-export { buildHeaderRows, clampColumnWidth, createColumns, getColumnModel }
+export {
+  buildHeaderRows,
+  childrenOf,
+  clampColumnWidth,
+  MAX_COLUMN_WIDTH,
+  MIN_COLUMN_WIDTH,
+  createColumns,
+  getColumnModel,
+  orderSiblings,
+  parentOf,
+  siblingsInOrder,
+}
 export type {
   ColumnModel,
   ColumnNode,

@@ -16,9 +16,11 @@ const panelVariants = cva(
       // border inside its own box: a Panel fills containers that clip overflow
       // (resizable wrappers, split panels), where an outset ring is cut off.
       variant: {
-        default: "rounded-xl border border-foreground/10 bg-card",
-        elevated: "rounded-xl border border-foreground/10 bg-card shadow-md",
-        flat: "rounded-xl bg-card",
+        default:
+          "rounded-xl border border-foreground/10 bg-card [--surface:var(--color-card)]",
+        elevated:
+          "rounded-xl border border-foreground/10 bg-card shadow-md [--surface:var(--color-card)]",
+        flat: "rounded-xl bg-card [--surface:var(--color-card)]",
         outline: "rounded-xl border border-border bg-transparent",
       },
       size: {

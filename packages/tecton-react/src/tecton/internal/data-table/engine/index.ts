@@ -4,7 +4,8 @@
  * and the public types of `./types` only.
  *
  * - `columns`: `createColumns`, the column model, header rows.
- * - `layout`: the columns a view shows, in order, pinned, with widths.
+ * - `layout`: the columns a view shows, in order, pinned, with widths;
+ *   `sizing`: their widths in px and where pinned columns stick.
  * - `format`: display text in the locale, and search's text folding.
  * - `view`: defaults, reconciliation and the view reducers.
  * - `engine`: the row pipeline (`createDataTableEngine`), over the stages
@@ -20,9 +21,13 @@
 export { aggregate, aggregateColumns } from "./aggregate"
 export {
   buildHeaderRows,
+  childrenOf,
   clampColumnWidth,
   createColumns,
   getColumnModel,
+  orderSiblings,
+  parentOf,
+  siblingsInOrder,
 } from "./columns"
 export type {
   ColumnModel,
@@ -44,6 +49,14 @@ export { DEFAULT_LABELS, foldText, getFormatter, resolveLocale } from "./format"
 export type { FormatLabels, Formatter } from "./format"
 export { layoutColumns } from "./layout"
 export type { ColumnLayout } from "./layout"
+export {
+  columnWidth,
+  DEFAULT_COLUMN_WIDTH,
+  MAX_COLUMN_WIDTH,
+  MIN_COLUMN_WIDTH,
+  sizeColumns,
+} from "./sizing"
+export type { ColumnSizing, SizingOptions } from "./sizing"
 export {
   clampPage,
   DEFAULT_PAGE_SIZE,
@@ -78,8 +91,11 @@ export {
   clearFilters,
   createDefaultView,
   DEFAULT_CAPABILITIES,
+  hidesEveryColumn,
   reconcileView,
   resetColumns,
+  sameColumns,
+  sameIds,
   sameFilters,
   sameFilterValue,
   sameSorting,

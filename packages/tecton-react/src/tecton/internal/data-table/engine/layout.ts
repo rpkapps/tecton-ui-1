@@ -20,7 +20,10 @@ type ColumnLayout<T> = {
   readonly pinnedStart: number
   readonly pinnedEnd: number
   readonly hidden: ReadonlyArray<EngineColumn<T>>
-  /** The row header column: the model's when shown, else the first shown column. */
+  /**
+   * The row header column: the model's when shown, else the next column
+   * shown in the view's order.
+   */
   readonly rowHeader: string | undefined
   readonly headerRows: ReadonlyArray<HeaderRow>
   /** The column's width in px: the view's, else its own `width`. */
@@ -55,25 +58,47 @@ function layoutColumns<T>(
     (column) => !start.has(column.id) && !end.has(column.id)
   )
   const display = [...pinnedStart, ...middle, ...pinnedEnd]
-  const rowHeader =
-    model.rowHeader !== undefined && !hiddenIds.has(model.rowHeader)
-      ? model.rowHeader
-      : display[0]?.id
   const layout: ColumnLayout<T> = {
     columns: display,
     pinnedStart: pinnedStart.length,
     pinnedEnd: pinnedEnd.length,
     hidden: ordered.filter((column) => hiddenIds.has(column.id)),
-    rowHeader,
+    rowHeader: rowHeaderOf(model.rowHeader, ordered, hiddenIds),
     headerRows: buildHeaderRows(
       model,
-      display.map((column) => column.id)
+      display.map((column) => column.id),
+      // Pinned columns never share a group's header with the others.
+      display.map((_, index) =>
+        index < pinnedStart.length
+          ? "start"
+          : index >= display.length - pinnedEnd.length
+            ? "end"
+            : ""
+      )
     ),
     width: (id) =>
       Object.hasOwn(widths, id) ? widths[id] : model.byId.get(id)?.width,
   }
   byColumns.set(columns, layout)
   return layout
+}
+
+/**
+ * The row header column: the model's, or while it is hidden the next one
+ * shown in the view's order (the one before it when it is the last).
+ */
+function rowHeaderOf<T>(
+  rowHeader: string | undefined,
+  ordered: ReadonlyArray<EngineColumn<T>>,
+  hidden: ReadonlySet<string>
+) {
+  if (rowHeader === undefined || !hidden.has(rowHeader)) return rowHeader
+  const at = ordered.findIndex((column) => column.id === rowHeader)
+  const shown = (column: EngineColumn<T>) => !hidden.has(column.id)
+  return (
+    ordered.slice(at + 1).find(shown) ??
+    ordered.slice(0, at).reverse().find(shown)
+  )?.id
 }
 
 export { layoutColumns }

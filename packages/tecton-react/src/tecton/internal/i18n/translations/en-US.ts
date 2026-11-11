@@ -84,6 +84,41 @@ const enUS = {
     sortCleared: "{columnName} no longer sorted",
     yes: "Yes",
     no: "No",
+    // The columns menu (`DataTableColumnsMenu`): its button, its sections
+    // and its last item.
+    columns: "Columns",
+    showColumns: "Show columns",
+    pinColumns: "Pin columns",
+    // Where a column is pinned: the choices for it in the columns menu
+    // (the start is the left in left-to-right languages).
+    notPinned: "Not pinned",
+    pinnedStart: "Start",
+    pinnedEnd: "End",
+    resetColumns: "Reset columns",
+    // A column header's menu button and its items.
+    columnMenu: "{columnName} options",
+    sortAscending: "Sort ascending",
+    sortDescending: "Sort descending",
+    clearSort: "Clear sort",
+    // Focuses the column's resizer: the arrow keys then resize it.
+    resizeColumn: "Resize column",
+    fitColumn: "Fit to content",
+    resetColumnWidth: "Reset width",
+    // Read with the resizer while the arrow keys resize the column.
+    resizeHint:
+      "Use the left and right arrow keys to resize the column. Press Enter to keep the width or Escape to cancel.",
+    hideColumn: "Hide column",
+    pinToStart: "Pin to start",
+    pinToEnd: "Pin to end",
+    unpin: "Unpin",
+    // The button in a column header that shows the column's description.
+    columnDescription: "About {columnName}",
+    // Announced when a column header's menu hides or pins its column.
+    columnHidden: "{columnName} hidden",
+    columnShown: "{columnName} shown",
+    columnPinnedStart: "{columnName} pinned to the start",
+    columnPinnedEnd: "{columnName} pinned to the end",
+    columnUnpinned: "{columnName} unpinned",
   },
   tableColumnResizer: {
     resize: "Resize {columnName}",

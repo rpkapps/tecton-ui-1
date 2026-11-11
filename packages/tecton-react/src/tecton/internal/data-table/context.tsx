@@ -142,6 +142,8 @@ type DataTableActions<T> = {
     reason: DataTableViewChangeReason,
     event?: Event
   ) => boolean
+  /** The view as it is now, changes not rendered yet included. */
+  currentView: () => DataTableView
   /** Changes the view as it is now, changes not rendered yet included. */
   updateView: (
     change: (view: DataTableView) => DataTableView,
@@ -193,8 +195,11 @@ type DataTableActions<T> = {
   ) => void
   /** A row activated (Enter, a click when rows do not select): `onActivate`, then its link. */
   activate: (id: string, event?: Event) => void
-  /** Focuses the table's tab stop, for a control that goes away while focused. */
-  focusTable: () => void
+  /**
+   * Focuses the table's tab stop, for a control that goes away while
+   * focused; `later`: once the change that removes it has rendered.
+   */
+  focusTable: (later?: boolean) => void
   /** The content's frame, where the table is. */
   setFrame: (element: HTMLElement | null) => void
   /** The row's link, from `itemToHref`. */

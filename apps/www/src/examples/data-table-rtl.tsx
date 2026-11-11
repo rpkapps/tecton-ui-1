@@ -23,6 +23,7 @@ const translations: Translations = {
       table: "Wells",
       well: "Well",
       field: "Field",
+      operator: "Operator",
       status: "Status",
       depth: "TD (m)",
       producing: "Producing",
@@ -36,6 +37,7 @@ const translations: Translations = {
       table: "الآبار",
       well: "البئر",
       field: "الحقل",
+      operator: "المشغّل",
       status: "الحالة",
       depth: "العمق الكلي (م)",
       producing: "منتجة",
@@ -49,6 +51,7 @@ const translations: Translations = {
       table: "בארות",
       well: "באר",
       field: "שדה",
+      operator: "מפעיל",
       status: "סטטוס",
       depth: "עומק סופי (מ׳)",
       producing: "מפיקה",
@@ -62,17 +65,20 @@ type Well = {
   id: string
   name: string
   field: string
+  operator: string
   status: "producing" | "shut-in" | "drilling"
   depth: number
 }
 
 const FIELDS = ["Gullfaks", "Snorre", "Valhall", "Balder"]
+const OPERATORS = ["Equinor", "Equinor", "Aker BP", "Aker BP"]
 const STATUSES: Array<Well["status"]> = ["producing", "shut-in", "drilling"]
 
 const wells: Array<Well> = Array.from({ length: 24 }, (_, i) => ({
   id: `w${i + 1}`,
   name: `34/10-${String.fromCharCode(65 + (i % 3))}-${i + 1}`,
   field: FIELDS[i % FIELDS.length],
+  operator: OPERATORS[i % OPERATORS.length],
   status: STATUSES[(i * 5) % STATUSES.length],
   depth: 1800 + ((i * 389) % 2600),
 }))
@@ -90,6 +96,7 @@ export default function DataTableRtl() {
           cell: (_, { text }) => <bdi>{text}</bdi>,
         },
         { id: "field", header: t.field },
+        { id: "operator", header: t.operator },
         {
           id: "status",
           header: t.status,
@@ -112,6 +119,11 @@ export default function DataTableRtl() {
       selectionMode="multiple"
       pagination
       defaultPageSize={5}
+      resizableColumns
+      reorderableColumns
+      hideableColumns
+      pinnableColumns
+      defaultView={{ columns: { pinned: { start: ["name"], end: [] } } }}
       className="w-full"
     >
       <DataTableContent aria-label={t.table} />

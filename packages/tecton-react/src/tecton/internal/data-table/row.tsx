@@ -13,6 +13,7 @@
  * the grid its id, text, level and expanded state.
  */
 import * as React from "react"
+import { cn } from "cn"
 
 import { TableCell, TableRow } from "@tecton/react/components/table"
 
@@ -21,7 +22,15 @@ import {
   type RowDescription,
   type TableRowGridProps,
 } from "../table-grid"
-import { renderCell, rowText, type RowShared } from "./cell"
+import {
+  cellBorderClassName,
+  pinnedCellClassName,
+  pinnedRowClassName,
+  pinStyle,
+  renderCell,
+  rowText,
+  type RowShared,
+} from "./cell"
 import type { BodyRow, GroupRow, ItemRow } from "./engine/index"
 import { DataTableSelectionCheckbox } from "./selection-checkbox"
 
@@ -102,13 +111,23 @@ function ItemRowComponent<T>({
         aria-rowindex={rowIndex(row.id, props["aria-rowindex"], shared)}
         aria-posinset={shared.levelled ? row.posinset : undefined}
         aria-setsize={shared.levelled ? row.setsize : undefined}
+        className={cn(shared.pinned && pinnedRowClassName)}
       >
         {shared.selection && (
-          <TableCell className="w-px">
+          <TableCell
+            className={cn(
+              "w-px",
+              shared.pinned && cellBorderClassName,
+              shared.selectionPin && pinnedCellClassName
+            )}
+            style={shared.selectionPin && pinStyle(shared.selectionPin)}
+          >
             <DataTableSelectionCheckbox />
           </TableCell>
         )}
-        {shared.columns.map((column) => renderCell(column, row, shared))}
+        {shared.columns.map((column, index) =>
+          renderCell(column, index, row, shared)
+        )}
       </TableRow>
     </TableRowConfig>
   )

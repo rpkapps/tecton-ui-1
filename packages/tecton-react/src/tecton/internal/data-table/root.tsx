@@ -17,8 +17,9 @@
  *   "all matching" ends with a change of search or filters.
  * - Server "all matching" holds while the selection is the one it last
  *   reported: a controlled `value` set to anything else ends it.
- * - Development warnings, once each: items without ids or sharing one, and
- *   features that cannot work together (the later one is off).
+ * - Development warnings, once each: items without ids or sharing one, a
+ *   view that hides every column, and features that cannot work together
+ *   (the later one is off).
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -43,6 +44,7 @@ import {
   enterAllMatching,
   getColumnModel,
   getFormatter,
+  hidesEveryColumn,
   layoutColumns,
   reconcileView,
   resolvePageSize,
@@ -125,9 +127,13 @@ type DataTableProps<T> = Omit<
   filterable?: boolean
   groupable?: boolean
   editable?: boolean
+  /** A resizer on each column header's end edge (`resizable: false` opts a column out). */
   resizableColumns?: boolean
+  /** Column headers are dragged into order, a column among its group's. */
   reorderableColumns?: boolean
+  /** Columns are hidden from their header's menu and `DataTableColumnsMenu`. */
   hideableColumns?: boolean
+  /** Columns are pinned to the start or the end, from the same menus. */
   pinnableColumns?: boolean
   reorderableRows?: boolean
   /** Pages of `pageSize` rows, with the footer's page parts. */
@@ -359,6 +365,7 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
         changePage(1, "reset", event)
       return true
     },
+    currentView: () => now().view,
     updateView(change, reason, event) {
       const { view } = now()
       const next = change(view)
@@ -478,8 +485,12 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
       if (current.navigate) current.navigate(href)
       else window.location.assign(href)
     },
-    focusTable() {
-      frame?.querySelector<HTMLElement>('table [tabindex="0"]')?.focus()
+    focusTable(later = false) {
+      const focus = () =>
+        frame?.querySelector<HTMLElement>('table [tabindex="0"]')?.focus()
+      // After the render, and the grid's own tab stop update after it.
+      if (later) setTimeout(focus)
+      else focus()
     },
     setFrame(element) {
       frame = element
@@ -895,6 +906,14 @@ function DataTable<T>({
           )}${duplicateIds.length > 5 ? ` and ${duplicateIds.length - 5} more` : ""}. Rows are selected, opened and kept across sorting by id: make each item's id unique.`
       )
   }, [warn, idIssues])
+  const hidesAll = hidesEveryColumn(columns, rawView.columns?.hidden)
+  React.useEffect(() => {
+    if (hidesAll)
+      warn(
+        "hides-every-column",
+        "DataTable: the view hides every column; the first column in its order stays shown."
+      )
+  }, [warn, hidesAll])
   React.useEffect(() => {
     if (groupable && tree)
       warn(

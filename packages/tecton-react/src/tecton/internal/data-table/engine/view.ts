@@ -15,8 +15,10 @@
  *   the column's (any type is kept for a column with its own `filter`);
  * - search is `""` while the table is not filterable;
  * - widths that are not positive numbers are dropped, the others clamped to
- *   the column's `minWidth` / `maxWidth`; a column pinned to both sides is
- *   pinned to the start.
+ *   the column's `minWidth` (48 px by default) and `maxWidth`; a column
+ *   pinned to both sides is pinned to the start;
+ * - a column with `hideable: false` is never hidden, and neither is every
+ *   column: the first in the order then stays shown.
  * A piece that needs no change is returned as it was (and the view itself
  * when nothing changes), so memoized work downstream is kept.
  *
@@ -156,7 +158,7 @@ function reconcileModelView<T>(
   const filters = reconcileFilters(model, view.filters, capabilities)
   const grouping = reconcileGrouping(model, view.grouping, capabilities)
   const order = reconcileOrder(model, view.columns.order)
-  const hidden = knownIds(model, view.columns.hidden)
+  const hidden = reconcileHidden(model, order, view.columns.hidden)
   const widths = reconcileWidths(model, view.columns.widths)
   const start = knownIds(model, view.columns.pinned.start)
   const end = knownIds(model, view.columns.pinned.end, start)
@@ -209,6 +211,32 @@ function knownIds<T>(
     next.push(id)
   }
   return keepIfSame(Array.isArray(ids) ? ids : undefined, next)
+}
+
+/**
+ * The hidden columns: known ones that can be hidden (`hideable: false` is
+ * always shown), and never every column: the first in `order` then stays.
+ */
+function reconcileHidden<T>(
+  model: ColumnModel<T>,
+  order: ReadonlyArray<string>,
+  hidden: ReadonlyArray<string> | undefined
+): ReadonlyArray<string> {
+  const known = knownIds(model, hidden)
+  let next = known.filter((id) => model.byId.get(id)?.hideable !== false)
+  if (next.length >= model.leaves.length)
+    next = next.filter((id) => id !== order[0])
+  return next.length === known.length ? known : next
+}
+
+/** Whether `hidden` would hide every column (which reconciliation does not let it). */
+function hidesEveryColumn<T>(
+  columns: DataTableColumns<T>,
+  hidden: ReadonlyArray<string> | undefined
+) {
+  const { leaves } = getColumnModel(columns)
+  const set = new Set(Array.isArray(hidden) ? hidden : [])
+  return leaves.length > 0 && leaves.every((leaf) => set.has(leaf.id))
 }
 
 function reconcileSorting<T>(
@@ -453,6 +481,18 @@ function sameWidths(
   )
 }
 
+/** Whether two views' columns are the same, by value. */
+function sameColumns(a: DataTableView["columns"], b: DataTableView["columns"]) {
+  return (
+    a === b ||
+    (sameIds(a.order, b.order) &&
+      sameIds(a.hidden, b.hidden) &&
+      sameWidths(a.widths, b.widths) &&
+      sameIds(a.pinned.start, b.pinned.start) &&
+      sameIds(a.pinned.end, b.pinned.end))
+  )
+}
+
 /** Whether two views are the same, piece by piece, by value. */
 function sameView(a: DataTableView, b: DataTableView) {
   if (a === b) return true
@@ -463,11 +503,7 @@ function sameView(a: DataTableView, b: DataTableView) {
     a.search === b.search &&
     sameFilters(a.filters, b.filters) &&
     sameIds(a.grouping, b.grouping) &&
-    sameIds(x.order, y.order) &&
-    sameIds(x.hidden, y.hidden) &&
-    sameWidths(x.widths, y.widths) &&
-    sameIds(x.pinned.start, y.pinned.start) &&
-    sameIds(x.pinned.end, y.pinned.end)
+    sameColumns(x, y)
   )
 }
 
@@ -568,11 +604,22 @@ function setColumns(
   return { ...view, columns: { ...view.columns, ...patch } }
 }
 
+/**
+ * Puts the columns in `order`; the columns it leaves out follow, in the
+ * order they have now. Reconciliation keeps a group's columns together.
+ */
 function setColumnOrder(
   view: DataTableView,
   order: ReadonlyArray<string>
 ): DataTableView {
-  return sameIds(view.columns.order, order) ? view : setColumns(view, { order })
+  const listed = new Set(order)
+  const next = [
+    ...listed,
+    ...view.columns.order.filter((id) => !listed.has(id)),
+  ]
+  return sameIds(view.columns.order, next)
+    ? view
+    : setColumns(view, { order: next })
 }
 
 function setColumnHidden(
@@ -640,9 +687,11 @@ function resetColumns(
 export {
   clearFilters,
   createDefaultView,
+  hidesEveryColumn,
   DEFAULT_CAPABILITIES,
   reconcileView,
   resetColumns,
+  sameColumns,
   sameFilters,
   sameFilterValue,
   sameIds,

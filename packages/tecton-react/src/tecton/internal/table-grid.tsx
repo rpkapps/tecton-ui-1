@@ -14,7 +14,8 @@
  *   Ctrl / Cmd: of the table); Page Up / Down move a page; typing a row's
  *   first letters goes to it.
  * - A cell holding controls (a checkbox, a sort button, a link) is entered
- *   at its first control; a cell without one is focused itself. Every row,
+ *   at its first control; a cell without one is focused itself. Cells not
+ *   laid out (hidden below a breakpoint) are passed over. Every row,
  *   cell and control is out of the Tab order but the one with focus, so
  *   Tab leaves the table.
  * - Space selects the focused row (Shift: the range to it; Ctrl / Cmd: adds
@@ -280,9 +281,39 @@ function isCell(element: Element): element is HTMLTableCellElement {
   return element.tagName === "TD" || element.tagName === "TH"
 }
 
-/** A control the user can focus (not disabled, hidden or inert). */
+/** Whether a cell is laid out: not hidden below a breakpoint (`hidden md:table-cell`). */
+function isShown(cell: Element) {
+  if (cell.getClientRects().length > 0) return true
+  // No boxes: hidden, unless nothing in the table is laid out (a table not
+  // rendered yet, or no layout at all), when every cell counts.
+  const table = cell.closest("table")
+  return !table || table.getClientRects().length === 0
+}
+
+/** The nearest cell laid out from `cell` on, `step` 1 forwards or -1 backwards. */
+function shownFrom(cell: Element | null, step: 1 | -1) {
+  for (
+    let at = cell;
+    at;
+    at = step === 1 ? at.nextElementSibling : at.previousElementSibling
+  )
+    if (isCell(at) && isShown(at)) return at
+  return null
+}
+
+/** A column resizer: never one of the grid's stops, nor its tab stop. */
+function isResizer(element: HTMLElement) {
+  return element.dataset.slot === "table-column-resizer"
+}
+
+/**
+ * A control the user can focus (not disabled, hidden or inert). A column
+ * resizer is left out: it takes the arrow keys itself, so it is reached
+ * through its column's menu ("Resize column") instead.
+ */
 function isFocusableControl(element: HTMLElement) {
   if (element.tagName === "TR" || isCell(element)) return false
+  if (isResizer(element)) return false
   if ((element as HTMLButtonElement).disabled) return false
   if (element instanceof HTMLInputElement && element.type === "hidden")
     return false
@@ -590,18 +621,23 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     return column
   }
 
+  /** The cell in `column`, or the nearest one laid out when it is not. */
   const cellAt = (row: HTMLTableRowElement, column: number) => {
     let start = 0
+    let found: HTMLTableCellElement | null = null
     for (const cell of row.cells) {
-      if (column < start + cell.colSpan) return cell
+      if (column < start + cell.colSpan) {
+        found = cell
+        break
+      }
       start += cell.colSpan
     }
-    return row.cells.item(row.cells.length - 1)
+    found ??= row.cells.item(row.cells.length - 1)
+    return found && (shownFrom(found, 1) ?? shownFrom(found, -1))
   }
 
   const lastColumn = (row: HTMLTableRowElement) => {
-    const last = row.cells[row.cells.length - 1] as
-      HTMLTableCellElement | undefined
+    const last = shownFrom(row.lastElementChild, -1)
     return last ? columnOf(last) : 0
   }
 
@@ -696,7 +732,9 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       !stop ||
       !stop.isConnected ||
       stop.closest("table") !== el ||
-      (stop.tagName === "TR" && infoOf(stop)?.disabled)
+      (stop.tagName === "TR" && infoOf(stop)?.disabled) ||
+      // In a cell no longer laid out (a breakpoint passed).
+      !isShown(stop.tagName === "TR" ? stop : (stop.closest("td, th") ?? stop))
     ) {
       stop = defaultStop()
       tabStop.current = stop
@@ -942,7 +980,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
             info.onExpandedChange(true, event.nativeEvent)
             return
           }
-          const first = row.cells[0] as HTMLTableCellElement | undefined
+          const first = shownFrom(row.firstElementChild, 1)
           if (first) {
             handled()
             focusElement(stopsOf(first)[0])
@@ -953,8 +991,8 @@ function useTableGrid(own: React.ComponentProps<"table">) {
         const stops = stopsOf(cell)
         const at = stops.indexOf(target)
         if (at >= 0 && at < stops.length - 1) return focusElement(stops[at + 1])
-        const next = cell.nextElementSibling
-        if (next && isCell(next)) focusElement(stopsOf(next)[0])
+        const next = shownFrom(cell.nextElementSibling, 1)
+        if (next) focusElement(stopsOf(next)[0])
         return
       }
       case backward: {
@@ -972,8 +1010,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
             return
           }
           if (!treegrid) {
-            const last = row.cells[row.cells.length - 1] as
-              HTMLTableCellElement | undefined
+            const last = shownFrom(row.lastElementChild, -1)
             if (last) {
               handled()
               const stops = stopsOf(last)
@@ -986,8 +1023,8 @@ function useTableGrid(own: React.ComponentProps<"table">) {
         const stops = stopsOf(cell)
         const at = stops.indexOf(target)
         if (at > 0) return focusElement(stops[at - 1])
-        const previous = cell.previousElementSibling
-        if (previous && isCell(previous)) {
+        const previous = shownFrom(cell.previousElementSibling, -1)
+        if (previous) {
           const before = stopsOf(previous)
           return focusElement(before[before.length - 1])
         }
@@ -1133,6 +1170,9 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     own.onFocus?.(event)
     if (!grid || !owns(event.target)) return
     const target = event.target
+    // Focus goes to a resizer only while it resizes (its column's menu
+    // sends it there, and takes it back): the table's tab stop stays.
+    if (isResizer(target)) return
     lastFocused.current = target
     const row = target.closest("tr")
     if (!row || !isGridRow(row)) return
@@ -1378,6 +1418,7 @@ function useTableRow({
 }: React.ComponentProps<"tr">): React.ComponentProps<"tr"> {
   const config = React.useContext(TableRowConfigContext)
   const gridConfig = React.useContext(TableGridConfigContext)
+  const containerConfig = React.useContext(TableContainerConfigContext)
   const {
     value,
     disabled = false,
@@ -1433,14 +1474,16 @@ function useTableRow({
   )
   const row = React.useMemo(() => ({ value, disabled }), [value, disabled])
   // A table nested in a cell is a table of its own: neither the grid's
-  // options nor this row's state reach it.
+  // options, nor this row's state, nor the container's config reach it.
   const isolated =
-    gridConfig === null && config === null ? (
+    gridConfig === null && config === null && containerConfig === null ? (
       children
     ) : (
       <TableGridConfigContext.Provider value={null}>
         <TableRowConfigContext.Provider value={null}>
-          {children}
+          <TableContainerConfigContext.Provider value={null}>
+            {children}
+          </TableContainerConfigContext.Provider>
         </TableRowConfigContext.Provider>
       </TableGridConfigContext.Provider>
     )
@@ -1467,10 +1510,61 @@ function useTableRow({
   }
 }
 
+/**
+ * What a `Table`'s scroll container takes from the component around the
+ * table (`DataTable`): classes and a style of its own (the fade at pinned
+ * columns' edges), and its element, handed back through `ref`. Internal,
+ * like grid mode: a plain `Table` never sees it.
+ */
+type TableContainerOptions = {
+  className?: string
+  style?: React.CSSProperties
+  ref?: React.Ref<HTMLDivElement>
+}
+
+const TableContainerConfigContext =
+  React.createContext<TableContainerOptions | null>(null)
+
+/** Gives the scroll container of the `Table` inside it `value`. */
+function TableContainerConfig({
+  value,
+  children,
+}: {
+  value: TableContainerOptions
+  children: React.ReactNode
+}) {
+  return (
+    <TableContainerConfigContext.Provider value={value}>
+      {children}
+    </TableContainerConfigContext.Provider>
+  )
+}
+
+/**
+ * For `Table`: its container's extra classes and style, and one ref for
+ * the table's own (`own`, the virtualizer's) and the config's.
+ */
+function useTableContainer(own: React.Ref<HTMLDivElement> | undefined) {
+  const config = React.useContext(TableContainerConfigContext)
+  const theirs = config?.ref
+  const ref = React.useCallback(
+    (element: HTMLDivElement | null) => {
+      for (const target of [own, theirs]) {
+        if (typeof target === "function") target(element)
+        else if (target) target.current = element
+      }
+    },
+    [own, theirs]
+  )
+  return { ref, className: config?.className, style: config?.style }
+}
+
 export {
+  TableContainerConfig,
   TableGridConfig,
   TableGridProvider,
   TableRowConfig,
+  useTableContainer,
   useTableGrid,
   useTableGridConfig,
   useTableGridContext,
@@ -1481,6 +1575,7 @@ export type {
   HeaderSelection,
   RowDescription,
   TableGridBody,
+  TableContainerOptions,
   TableGridOptions,
   TableRowGridProps,
 }

@@ -10,6 +10,10 @@
  * - `usePrefetchFeatures(names)` loads the features a mounted table has on,
  *   in idle time, so they are there before they are first used; an `eager`
  *   feature loads as soon as the table mounts instead.
+ * - `useFeature(name, on)` is a feature's module for a part to render with:
+ *   `undefined` until it has loaded (the part renders without it, with no
+ *   change of layout), then the module; and `load`, for a press that needs
+ *   it before the idle prefetch has brought it.
  * - Nothing loads on the server or while rendering: only effects and
  *   handlers call these.
  *
@@ -47,7 +51,7 @@ const FEATURES = {
   /** `cellSelectionMode`: ranges, copy and paste, fill down. */
   cellSelection: feature(pending),
   /** `reorderableColumns`, `reorderableRows`. */
-  dragAndDrop: feature(pending),
+  dragAndDrop: feature(() => import("./column-reorder")),
   /** The calendar of a date filter or editor. */
   dateInput: feature(pending),
 }
@@ -57,6 +61,8 @@ type FeatureModule<TName extends FeatureName> =
   (typeof FEATURES)[TName] extends Feature<infer TModule> ? TModule : never
 
 const loads = new Map<FeatureName, Promise<object>>()
+/** The modules loaded, for a part that mounts after its feature has. */
+const loaded = new Map<FeatureName, object>()
 
 function loadFeature<TName extends FeatureName>(
   name: TName
@@ -65,6 +71,12 @@ function loadFeature<TName extends FeatureName>(
   if (!load) {
     load = FEATURES[name].load()
     loads.set(name, load)
+    load
+      .then((module) => {
+        loaded.set(name, module)
+        for (const listener of [...listeners]) listener()
+      })
+      .catch(() => undefined)
     // An unreachable chunk is not remembered: the next call tries again.
     load.catch(() => loads.delete(name))
   }
@@ -100,5 +112,38 @@ function usePrefetchFeatures(names: ReadonlyArray<FeatureName>) {
   }, [key])
 }
 
-export { loadFeature, usePrefetchFeatures }
+/** Told when a module has loaded, for `useFeature`. */
+const listeners = new Set<() => void>()
+
+function subscribe(listener: () => void) {
+  listeners.add(listener)
+  return () => {
+    listeners.delete(listener)
+  }
+}
+
+/**
+ * A feature's module while `on`: `undefined` until it has loaded (a
+ * prefetch in idle time, or `load`), then the module. Never on the server
+ * nor while hydrating, so the first render is the server's even when
+ * another table has loaded the feature already. `load` asks for it now (a
+ * press that needs it).
+ */
+function useFeature<TName extends FeatureName>(
+  name: TName,
+  on: boolean
+): { module: FeatureModule<TName> | undefined; load: () => void } {
+  const module = React.useSyncExternalStore(
+    subscribe,
+    () => loaded.get(name) as FeatureModule<TName> | undefined,
+    () => undefined
+  )
+  const load = React.useCallback(() => {
+    // A failed load is tried again by the next press.
+    loadFeature(name).catch(() => undefined)
+  }, [name])
+  return { module: on ? module : undefined, load }
+}
+
+export { loadFeature, useFeature, usePrefetchFeatures }
 export type { FeatureModule, FeatureName }

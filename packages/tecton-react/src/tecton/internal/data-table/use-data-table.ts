@@ -18,6 +18,11 @@ import {
 } from "./context"
 import {
   clearFilters,
+  resetColumns,
+  setColumnHidden,
+  setColumnOrder,
+  setColumnPinned,
+  setColumnWidth,
   setFilter,
   setGrouping,
   setSearch,
@@ -43,6 +48,19 @@ type UseDataTableResult<T> = {
   setGrouping: (grouping: ReadonlyArray<string>) => void
   /** Back to `defaultView` (or the defaults). */
   resetView: () => void
+  /**
+   * The columns' order, by id (every column, shown or not; the rest go to
+   * their default place, a group's columns side by side).
+   */
+  setColumnOrder: (order: ReadonlyArray<string>) => void
+  /** Hides or shows a column. */
+  setColumnHidden: (column: string, hidden: boolean) => void
+  /** A column's width in px; `null` returns it to its own. */
+  setColumnWidth: (column: string, width: number | null) => void
+  /** Pins a column to the start or the end; `null` unpins it. */
+  setColumnPinned: (column: string, side: "start" | "end" | null) => void
+  /** The columns' order, hidden columns, widths and pins back to `defaultView`'s. */
+  resetColumns: () => void
   /** The selected rows' ids. */
   value: ReadonlyArray<string>
   setValue: (value: ReadonlyArray<string>) => void
@@ -105,6 +123,16 @@ function createResult<T>(
     setGrouping: (grouping) =>
       update((current) => setGrouping(current, grouping), "group"),
     resetView: () => update(() => state.defaults, "reset"),
+    setColumnOrder: (order) =>
+      update((current) => setColumnOrder(current, order), "reorder"),
+    setColumnHidden: (column, hidden) =>
+      update((current) => setColumnHidden(current, column, hidden), "hide"),
+    setColumnWidth: (column, width) =>
+      update((current) => setColumnWidth(current, column, width), "resize"),
+    setColumnPinned: (column, side) =>
+      update((current) => setColumnPinned(current, column, side), "pin"),
+    resetColumns: () =>
+      update((current) => resetColumns(current, state.defaults), "reset"),
     value: state.value,
     setValue: (value) => actions.setValue(value, "none"),
     selectAll: () => actions.selectAll(),

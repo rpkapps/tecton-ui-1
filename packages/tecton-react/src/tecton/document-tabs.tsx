@@ -446,7 +446,7 @@ const ListContext = React.createContext<ListContext | null>(null)
 const useList = () => useRequired(ListContext, "DocumentTabsList")
 
 const documentTabsListVariants = cva(
-  "group/document-tabs-list relative flex w-full min-w-0 items-stretch border-b border-border-subtle bg-card text-sm",
+  "group/document-tabs-list relative flex w-full min-w-0 items-stretch border-b border-border-subtle bg-card text-sm [--surface:var(--color-card)]",
   {
     variants: { size: { default: "h-10", sm: "h-9" } },
     defaultVariants: { size: "default" },

@@ -272,7 +272,8 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   `TableBody` takes `items` and a render function called only for the rows in view, and `empty`
   (one row across every column); the columns are locked at their content's first widths (a px
   `colgroup`, the space left spread over the columns of text and the last column taking the
-  rest, `table-fixed`) unless the caller made the table fixed. The logic is
+  rest, `table-fixed`) unless the caller made the table fixed (`table-fixed`, header cells with
+  widths, or a `colgroup` of its own, as `DataTable` renders for its column widths). The logic is
   `src/tecton/internal/table-virtualizer.tsx` (on the shared `useVirtualList`); without
   `virtualized` the markup is unchanged. Tested in `src/tecton/__tests__/table-virtualized.test.tsx`.
   The hunk also calls `useTableGrid` in `Table` and `useTableRow` in `TableRow`: grid mode,
@@ -285,7 +286,20 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   like `data-[state=selected]`; rows and cells get a focus ring. The logic is
   `src/tecton/internal/table-grid.tsx` (on the shared selection, type-ahead and announcement
   primitives); outside a `TableGridConfig` the markup is unchanged and no grid prop is public.
-  Tested in `src/tecton/__tests__/table-grid.test.tsx`.
+  Tested in `src/tecton/__tests__/table-grid.test.tsx`. The container also reads
+  `useTableContainer` (`table-grid.tsx`): inside a `TableContainerConfig` (internal, used by
+  `DataTable` for the fade at pinned columns' edges) it takes that config's `className` and
+  `style` and hands its element to the config's `ref`; outside one it is unchanged.
+- **`--surface`** (`style-tecton.css` only) — every opaque surface sets an inherited
+  `--surface` to its own fill: `card`, `sheet` and `drawer` content `var(--color-card)`; the
+  `dialog`, `alert-dialog`, `popover`, `hover-card`, `dropdown-menu`, `context-menu` (their
+  submenus are the same content), `select`, `combobox` and `command` surfaces
+  `var(--color-popover)`; the sidebar
+  `var(--color-sidebar)` and its inset `var(--color-background)`. `DataTable` fills the rows of a
+  table with pinned columns with `var(--surface, var(--color-background))`, so pinned cells match
+  the surface the table sits on, through theme changes. Tecton's own surfaces in `src/tecton`
+  (`Panel`, the `AppShell` parts, `ActionBar`, the composer's popup, the document tabs' strip)
+  set it in their own classes.
 
 ## Renaming the package
 
