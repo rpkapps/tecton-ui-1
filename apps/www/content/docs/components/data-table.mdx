@@ -909,16 +909,14 @@ A plain `Table` is read, not worked: Tab visits every link and checkbox in it, o
 | Escape | Clears the selection. |
 | Enter | Calls `onActivate` with the row's `value`; in a tree table without it, opens or closes the row. |
 
-A cell holding controls (a checkbox, a sort button, a link) is entered at its first control, which takes Enter and Space itself; a cell without one is focused itself. Every row, cell and control but the one with focus is out of the Tab order. While focus is in the table, selection changes and sorting (a header's `aria-sort` changing) are announced. In a `virtualized` table, a row out of view is scrolled to before it is focused, and Ctrl + A selects the rows out of view too. Give its `TableBody` `itemToStringValue` (and `isItemDisabled` when rows can be disabled, `itemToStringLabel` for type-ahead): Ctrl + A and Shift ranges then read the rows out of view from their items. Without them, each row out of view is rendered to read its props, which takes seconds for 100,000 rows; with them, selecting 100,000 rows takes a fifth of a second.
+A cell holding controls (a checkbox, a sort button, a link) is entered at its first control, which takes Enter and Space itself; a cell without one is focused itself. Every row, cell and control but the one with focus is out of the Tab order. While focus is in the table, selection changes and sorting (a header's `aria-sort` changing) are announced. A `TableBody` with `items` identifies each row by its item: the row's `value` is the item's `id` (`itemToId` picks another one), and `isItemDisabled` says which rows are disabled, so its rows need no `value` of their own. In a `virtualized` table, a row out of view is scrolled to before it is focused, and Ctrl + A and Shift ranges select the rows out of view too. A row whose `disabled` is set only on its `TableRow` is known once it renders: use `isItemDisabled` in a virtualized table, or Ctrl + A also selects the disabled rows out of view.
 
 ```tsx
 <TableBody
   items={table.getRowModel().rows}
-  itemToStringValue={(row) => row.id}
-  itemToStringLabel={(row) => row.original.name}
   isItemDisabled={(row) => !row.getCanSelect()}
 >
-  {(row) => <TableRow key={row.id} value={row.id}>…</TableRow>}
+  {(row) => <TableRow key={row.id}>…</TableRow>}
 </TableBody>
 ```
 
@@ -936,7 +934,7 @@ With the pointer, a click on a row toggles it. With `onActivate`, a click select
 
 | `TableRow` prop | Type | Description |
 | --- | --- | --- |
-| `value` | `string` | The row's identity in the table's `value` and `onActivate`. |
+| `value` | `string` | The row's identity in the table's `value` and `onActivate`. A row from `TableBody` `items` takes its item's id. |
 | `disabled` | `boolean` | Skipped by the keyboard; cannot be selected or activated. |
 | `textValue` | `string` | The row's plain text, for type-ahead and announcements; the row header's text by default. Give it in a `virtualized` table, whose rows out of view have no text to read. |
 | `level` | `number` | The row's depth in a tree table, from 1. |
@@ -946,9 +944,8 @@ With the pointer, a click on a row toggles it. With `onActivate`, a click select
 | `TableBody` prop | Type | Description |
 | --- | --- | --- |
 | `empty` | `ReactNode` | Shown in one row across every column when there are no rows, with or without `grid`. |
-| `itemToStringValue` | `(item) => string` | An item's row `value`: a virtualized grid table reads the rows out of view from their items. |
-| `itemToStringLabel` | `(item) => string` | An item's row text, for type-ahead and announcements. |
-| `isItemDisabled` | `(item) => boolean` | Whether an item's row is disabled, read with `itemToStringValue`. |
+| `itemToId` | `(item) => string` | In a grid table, the id of an item's row: its `value` in the selection and `onActivate`. `item.id` by default. |
+| `isItemDisabled` | `(item) => boolean` | In a grid table, whether an item's row is disabled. |
 
 A `TableSelectionCheckbox` (from `@tecton/react/tecton/table-selection-checkbox`) is the selection checkbox of a grid table: in a row it shows and toggles that row and is named "Select" and the row's header; in the header it selects or clears every row and shows a dash while only some are selected, and it renders only with `selectionMode="multiple"`.
 

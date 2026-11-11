@@ -756,10 +756,7 @@ export default function DataTablePlayground() {
               </TableHeader>
               <TableBody
                 items={rows}
-                // Ctrl + A and Shift ranges read the rows out of view from
-                // these instead of rendering each one.
-                itemToStringValue={(row) => row.id}
-                itemToStringLabel={(row) => row.original.name}
+                // Rows take their item's id (row.id) as their value.
                 isItemDisabled={(row) => !row.getCanSelect()}
               >
                 {(row) => {
@@ -775,7 +772,6 @@ export default function DataTablePlayground() {
                     </TableCell>
                   ))
                   const rowProps = {
-                    value: row.id,
                     textValue: row.original.name,
                     ...(tree && {
                       level: row.depth + 1,

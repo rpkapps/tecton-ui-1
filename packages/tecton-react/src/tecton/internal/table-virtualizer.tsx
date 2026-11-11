@@ -286,14 +286,11 @@ type TableBodyRowsProps<T> = Omit<React.ComponentProps<"tbody">, "children"> & {
   /** Shown in a single row across every column when there are no rows. */
   empty?: React.ReactNode
   /**
-   * An item's row `value`. In a virtualized grid table, Ctrl/Cmd + A and
-   * Shift ranges then read the rows out of view from their items rather
-   * than by rendering each one.
+   * In a grid table, the id of an item's row: its `value` in the table's
+   * selection and `onActivate`. `item.id` by default.
    */
-  itemToStringValue?: (item: T) => string
-  /** An item's row text (`textValue`), for type-ahead and announcements. */
-  itemToStringLabel?: (item: T) => string
-  /** Whether an item's row is disabled, read with `itemToStringValue`. */
+  itemToId?: (item: T) => string
+  /** In a grid table, whether an item's row is disabled. */
   isItemDisabled?: (item: T) => boolean
 }
 
@@ -309,8 +306,52 @@ function isDevelopment() {
   }
 }
 
-/** Reading rows by rendering them took long enough to say so (once). */
-let warnedSlowRows = false
+/** A row's own `value` differed from its item's id (said once). */
+let warnedValue = false
+
+/** `item.id` as a string, when the item has one. */
+function defaultItemId(item: unknown): string | undefined {
+  if (typeof item !== "object" || item === null || !("id" in item))
+    return undefined
+  const { id } = item
+  return typeof id === "string" || typeof id === "number"
+    ? String(id)
+    : undefined
+}
+
+/**
+ * A row rendered from an item, with the item's id as its `value` and
+ * disabled when the item is: on the row, or on the element a part
+ * renders it through (`<ReorderableItem render={<TableRow />}>`).
+ */
+function withItemProps(
+  row: React.ReactNode,
+  id: string | undefined,
+  disabled: boolean
+): React.ReactNode {
+  if (!React.isValidElement<Record<string, unknown>>(row)) return row
+  const inner = row.props.render
+  const target = React.isValidElement<Record<string, unknown>>(inner)
+    ? inner
+    : row
+  const patch: Record<string, unknown> = {}
+  if (id !== undefined && target.props.value !== id) {
+    if (target.props.value !== undefined && !warnedValue && isDevelopment()) {
+      warnedValue = true
+      console.warn(
+        `TableBody: a row's value (${String(target.props.value)}) is not its item's id (${id}). Rows from items take their item's id: pass itemToId to choose it.`
+      )
+    }
+    patch.value = id
+  }
+  if (disabled && target.props.disabled !== true) patch.disabled = true
+  if (Object.keys(patch).length === 0) return row
+  return target === row
+    ? React.cloneElement(row, patch)
+    : React.cloneElement(row, {
+        render: React.cloneElement(inner as React.ReactElement, patch),
+      })
+}
 
 /** The row `empty` is shown in, across `columns` columns. */
 function emptyRow(empty: React.ReactNode, columns: number) {
@@ -354,8 +395,7 @@ function useVirtualRows<T>(
     items,
     children,
     empty,
-    itemToStringValue,
-    itemToStringLabel,
+    itemToId,
     isItemDisabled,
     ref,
     onFocus: ownFocus,
@@ -365,7 +405,27 @@ function useVirtualRows<T>(
   const context = React.useContext(TableVirtualContext)
   const grid = useTableGridContext()
   const virtualized = context !== null
-  const render = typeof children === "function" ? children : null
+  const ownRender = typeof children === "function" ? children : null
+  // In a grid table, a row from an item is identified by the item. The
+  // accessors are read when called: inline ones keep the rows rendered.
+  const accessors = React.useRef({ itemToId, isItemDisabled })
+  accessors.current = { itemToId, isItemDisabled }
+  const toId = React.useCallback(
+    (item: T) => (accessors.current.itemToId ?? defaultItemId)(item),
+    []
+  )
+  const isOff = React.useCallback(
+    (item: T) => accessors.current.isItemDisabled?.(item) ?? false,
+    []
+  )
+  const render = React.useMemo<RenderRow<T> | null>(
+    () =>
+      ownRender && grid
+        ? (item, index) =>
+            withItemProps(ownRender(item, index), toId(item), isOff(item))
+        : ownRender,
+    [ownRender, grid, toId, isOff]
+  )
   const elements = React.useMemo(
     () =>
       virtualized && !(items && render)
@@ -481,15 +541,9 @@ function useVirtualRows<T>(
   // and scrolling one into view to focus it.
   const latestCount = React.useRef(count)
   latestCount.current = count
-  // Read from the items when the accessors say how (fast); otherwise from
-  // the elements the render function returns, one call per row.
-  const accessors = React.useRef({
-    itemToStringValue,
-    itemToStringLabel,
-    isItemDisabled,
-  })
-  accessors.current = { itemToStringValue, itemToStringLabel, isItemDisabled }
-  const fromItems = !!(items && render && itemToStringValue)
+  // Rows from items are read from their items: their id and whether they
+  // are disabled. Anything else (a row's text for type-ahead, its level)
+  // and items without an id render that one row.
   const reader = React.useMemo(() => {
     if (!virtualized) return null
     const one = new Map<number, RowDescription>()
@@ -504,34 +558,20 @@ function useVirtualRows<T>(
       return row
     }
     const describe = (): Array<RowDescription> => {
-      const {
-        itemToStringValue: toValue,
-        itemToStringLabel: toLabel,
-        isItemDisabled: isOff,
-      } = accessors.current
-      if (items && render && toValue)
-        return items.map((item) => ({
-          value: toValue(item),
-          textValue: toLabel?.(item),
-          disabled: isOff?.(item) ?? false,
-          level: undefined,
-        }))
       if (!(items && render)) return elements.map(describeRowElement)
-      const start = performance.now()
-      const rows = items.map((item, index) => describeAt(index))
-      const took = performance.now() - start
-      if (took > 100 && !warnedSlowRows && isDevelopment()) {
-        warnedSlowRows = true
-        console.warn(
-          `TableBody: reading ${items.length.toLocaleString("en-US")} rows out of view took ${Math.round(took)} ms, rendering each one. Pass itemToStringValue (and isItemDisabled, itemToStringLabel) to read them from their items.`
-        )
-      }
-      return rows
+      return items.map((item, index) => {
+        const id = toId(item)
+        if (id === undefined) return describeAt(index)
+        return {
+          value: id,
+          textValue: undefined,
+          disabled: isOff(item),
+          level: undefined,
+        }
+      })
     }
     return { describe, describeAt }
-    // The accessors are read when called; a new pair of them does not
-    // throw the rows read so far away.
-  }, [virtualized, items, render, elements, fromItems])
+  }, [virtualized, items, render, elements, toId, isOff])
   const describe = reader?.describe ?? null
   const describeAt = reader?.describeAt ?? null
   const scrollToIndex = virtual.scrollToIndex

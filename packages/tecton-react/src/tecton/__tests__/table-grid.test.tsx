@@ -298,6 +298,31 @@ describe("Table grid", () => {
   })
 })
 
+describe("Table grid with items", () => {
+  it("gives rows from items their item's id as their value", () => {
+    const onValueChange = vi.fn()
+    render(
+      <Table
+        grid
+        aria-label="Wells"
+        selectionMode="multiple"
+        onValueChange={onValueChange}
+      >
+        <TableBody items={WELLS} isItemDisabled={(well) => !!well.disabled}>
+          {(well) => (
+            <TableRow key={well.id}>
+              <TableCell>{well.name}</TableCell>
+            </TableRow>
+          )}
+        </TableBody>
+      </Table>
+    )
+    fireEvent.click(cell("34/10-A-14"))
+    expect(onValueChange).toHaveBeenLastCalledWith(["a14"], expect.anything())
+    expect(row("34/10-B-03")).toHaveAttribute("aria-disabled", "true")
+  })
+})
+
 describe("TableSelectionCheckbox", () => {
   it("is named after its row and toggles it", () => {
     const onValueChange = vi.fn()
@@ -504,10 +529,12 @@ describe("Table grid virtualized", () => {
 
   function Many({
     onValueChange,
-    accessors = false,
+    disabledItems = false,
+    itemToId,
     onRender,
   }: Pick<TableGridOptions, "onValueChange"> & {
-    accessors?: boolean
+    disabledItems?: boolean
+    itemToId?: (item: Item) => string
     onRender?: (item: Item) => void
   }) {
     return (
@@ -526,18 +553,17 @@ describe("Table grid virtualized", () => {
           </TableHeader>
           <TableBody
             items={MANY}
-            {...(accessors && {
-              itemToStringValue: (well: Item) => well.id,
-              itemToStringLabel: (well: Item) => well.name,
-              isItemDisabled: (well: Item) => well.id === "w5000",
-            })}
+            itemToId={itemToId}
+            isItemDisabled={
+              disabledItems ? (well) => well.id === "w5000" : undefined
+            }
           >
             {(well) => {
               onRender?.(well)
+              // No value: rows from items take their item's id.
               return (
                 <TableRow
                   key={well.id}
-                  value={well.id}
                   textValue={well.name}
                   disabled={well.id === "w5000"}
                 >
@@ -609,37 +635,49 @@ describe("Table grid virtualized", () => {
     expect(focused()).toHaveTextContent("Well 0")
   })
 
-  it("selects every row, the ones out of view too", () => {
-    layout()
-    const onValueChange = vi.fn()
-    render(<Many onValueChange={onValueChange} />)
-    act(() => row("Well 0").focus())
-    press("a", { ctrlKey: true })
-    const [value] = onValueChange.mock.lastCall as [Array<string>]
-    // The disabled row is left out.
-    expect(value).toHaveLength(9_999)
-    expect(value).not.toContain("w5000")
-    expect(value[9_998]).toBe("w9999")
-  })
-
-  it("reads the rows out of view from their items, without rendering them", () => {
+  it("selects every row by its item's id, without rendering the rows out of view", () => {
     layout()
     const onValueChange = vi.fn()
     const onRender = vi.fn()
-    render(<Many accessors onValueChange={onValueChange} onRender={onRender} />)
+    render(<Many onValueChange={onValueChange} onRender={onRender} />)
     act(() => row("Well 0").focus())
     onRender.mockClear()
     press("a", { ctrlKey: true })
     const [value] = onValueChange.mock.lastCall as [Array<string>]
-    expect(value).toHaveLength(9_999)
-    expect(value).not.toContain("w5000")
+    expect(value).toHaveLength(10_000)
+    expect(value[9_999]).toBe("w9999")
     // Only the rows in view render again (they show as selected).
     expect(onRender.mock.calls.length).toBeLessThan(100)
+    expect(row("Well 0")).toHaveAttribute("aria-selected", "true")
   })
 
-  it("goes to a row out of view by its label", () => {
+  it("leaves out the rows isItemDisabled marks, out of view too", () => {
     layout()
-    render(<Many accessors />)
+    const onValueChange = vi.fn()
+    render(<Many disabledItems onValueChange={onValueChange} />)
+    act(() => row("Well 0").focus())
+    press("a", { ctrlKey: true })
+    const [value] = onValueChange.mock.lastCall as [Array<string>]
+    expect(value).toHaveLength(9_999)
+    expect(value).not.toContain("w5000")
+  })
+
+  it("takes the row id from itemToId", () => {
+    layout()
+    const onValueChange = vi.fn()
+    render(
+      <Many itemToId={(well) => well.name} onValueChange={onValueChange} />
+    )
+    fireEvent.click(cell("Well 1"))
+    expect(onValueChange).toHaveBeenLastCalledWith(
+      ["Well 1"],
+      expect.anything()
+    )
+  })
+
+  it("goes to a row out of view by its text", () => {
+    layout()
+    render(<Many />)
     scrollable()
     act(() => row("Well 0").focus())
     act(() => {

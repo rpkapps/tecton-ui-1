@@ -183,7 +183,7 @@ Leave a table that is only read without `grid` (screen readers read a grid as so
 
 <Do>
 
-For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table. A virtualized `grid` table's `TableBody` also takes `itemToStringValue` (and `isItemDisabled`), so selecting every row does not render each one.
+For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table. In a `grid` table, rows from `items` take their item's `id` as their `value` (`itemToId` picks another), and `isItemDisabled` marks the disabled ones.
 
 </Do>
 
