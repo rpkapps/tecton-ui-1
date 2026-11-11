@@ -909,7 +909,18 @@ A plain `Table` is read, not worked: Tab visits every link and checkbox in it, o
 | Escape | Clears the selection. |
 | Enter | Calls `onActivate` with the row's `value`; in a tree table without it, opens or closes the row. |
 
-A cell holding controls (a checkbox, a sort button, a link) is entered at its first control, which takes Enter and Space itself; a cell without one is focused itself. Every row, cell and control but the one with focus is out of the Tab order. While focus is in the table, selection changes and sorting (a header's `aria-sort` changing) are announced. In a `virtualized` table, a row out of view is scrolled to before it is focused, and Ctrl + A selects the rows out of view too. To know those rows, Ctrl + A and a Shift range that runs out of view read each row's `value`, `textValue` and `disabled` from the element the render function returns, calling it once per row: keep that function free of work beyond building the row. For 10,000 TanStack rows of eight columns it takes about a third of a second.
+A cell holding controls (a checkbox, a sort button, a link) is entered at its first control, which takes Enter and Space itself; a cell without one is focused itself. Every row, cell and control but the one with focus is out of the Tab order. While focus is in the table, selection changes and sorting (a header's `aria-sort` changing) are announced. In a `virtualized` table, a row out of view is scrolled to before it is focused, and Ctrl + A selects the rows out of view too. Give its `TableBody` `itemToStringValue` (and `isItemDisabled` when rows can be disabled, `itemToStringLabel` for type-ahead): Ctrl + A and Shift ranges then read the rows out of view from their items. Without them, each row out of view is rendered to read its props, which takes seconds for 100,000 rows; with them, selecting 100,000 rows takes a fifth of a second.
+
+```tsx
+<TableBody
+  items={table.getRowModel().rows}
+  itemToStringValue={(row) => row.id}
+  itemToStringLabel={(row) => row.original.name}
+  isItemDisabled={(row) => !row.getCanSelect()}
+>
+  {(row) => <TableRow key={row.id} value={row.id}>…</TableRow>}
+</TableBody>
+```
 
 With the pointer, a click on a row toggles it. With `onActivate`, a click selects only that row (Ctrl or ⌘ + click adds it, Shift + click the range) and a double click activates it; when rows do not select, a click activates. A click on a control in the row is left to the control.
 
@@ -932,7 +943,14 @@ With the pointer, a click on a row toggles it. With `onActivate`, a click select
 | `expanded` | `boolean` | Whether the row's child rows show; leave it out for a row without any. |
 | `onExpandedChange` | `(expanded: boolean) => void` | Called when Right, Left or Enter opens or closes the row. |
 
-`TableBody` takes `empty`, shown in one row across every column when there are no rows, with or without `grid`. A `TableSelectionCheckbox` (from `@tecton/react/tecton/table-selection-checkbox`) is the selection checkbox of a grid table: in a row it shows and toggles that row and is named "Select" and the row's header; in the header it selects or clears every row and shows a dash while only some are selected, and it renders only with `selectionMode="multiple"`.
+| `TableBody` prop | Type | Description |
+| --- | --- | --- |
+| `empty` | `ReactNode` | Shown in one row across every column when there are no rows, with or without `grid`. |
+| `itemToStringValue` | `(item) => string` | An item's row `value`: a virtualized grid table reads the rows out of view from their items. |
+| `itemToStringLabel` | `(item) => string` | An item's row text, for type-ahead and announcements. |
+| `isItemDisabled` | `(item) => boolean` | Whether an item's row is disabled, read with `itemToStringValue`. |
+
+A `TableSelectionCheckbox` (from `@tecton/react/tecton/table-selection-checkbox`) is the selection checkbox of a grid table: in a row it shows and toggles that row and is named "Select" and the row's header; in the header it selects or clears every row and shows a dash while only some are selected, and it renders only with `selectionMode="multiple"`.
 
 ### Playground
 

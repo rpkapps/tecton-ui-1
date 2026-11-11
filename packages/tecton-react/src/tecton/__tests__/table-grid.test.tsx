@@ -500,7 +500,16 @@ describe("Table grid virtualized", () => {
     name: `Well ${i}`,
   }))
 
-  function Many({ onValueChange }: Pick<TableGridOptions, "onValueChange">) {
+  type Item = (typeof MANY)[number]
+
+  function Many({
+    onValueChange,
+    accessors = false,
+    onRender,
+  }: Pick<TableGridOptions, "onValueChange"> & {
+    accessors?: boolean
+    onRender?: (item: Item) => void
+  }) {
     return (
       <div style={{ height: VIEW }}>
         <Table
@@ -515,12 +524,27 @@ describe("Table grid virtualized", () => {
               <TableHead>Well</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody items={MANY}>
-            {(well) => (
-              <TableRow key={well.id} value={well.id} textValue={well.name}>
-                <TableCell>{well.name}</TableCell>
-              </TableRow>
-            )}
+          <TableBody
+            items={MANY}
+            {...(accessors && {
+              itemToStringValue: (well: Item) => well.id,
+              itemToStringLabel: (well: Item) => well.name,
+              isItemDisabled: (well: Item) => well.id === "w5000",
+            })}
+          >
+            {(well) => {
+              onRender?.(well)
+              return (
+                <TableRow
+                  key={well.id}
+                  value={well.id}
+                  textValue={well.name}
+                  disabled={well.id === "w5000"}
+                >
+                  <TableCell>{well.name}</TableCell>
+                </TableRow>
+              )
+            }}
           </TableBody>
         </Table>
       </div>
@@ -592,8 +616,36 @@ describe("Table grid virtualized", () => {
     act(() => row("Well 0").focus())
     press("a", { ctrlKey: true })
     const [value] = onValueChange.mock.lastCall as [Array<string>]
-    expect(value).toHaveLength(10_000)
-    expect(value[9_999]).toBe("w9999")
+    // The disabled row is left out.
+    expect(value).toHaveLength(9_999)
+    expect(value).not.toContain("w5000")
+    expect(value[9_998]).toBe("w9999")
+  })
+
+  it("reads the rows out of view from their items, without rendering them", () => {
+    layout()
+    const onValueChange = vi.fn()
+    const onRender = vi.fn()
+    render(<Many accessors onValueChange={onValueChange} onRender={onRender} />)
+    act(() => row("Well 0").focus())
+    onRender.mockClear()
+    press("a", { ctrlKey: true })
+    const [value] = onValueChange.mock.lastCall as [Array<string>]
+    expect(value).toHaveLength(9_999)
+    expect(value).not.toContain("w5000")
+    // Only the rows in view render again (they show as selected).
+    expect(onRender.mock.calls.length).toBeLessThan(100)
+  })
+
+  it("goes to a row out of view by its label", () => {
+    layout()
+    render(<Many accessors />)
+    scrollable()
+    act(() => row("Well 0").focus())
+    act(() => {
+      for (const key of "Well 9876") press(key)
+    })
+    expect(focused()).toHaveTextContent("Well 9876")
   })
 })
 

@@ -38,6 +38,7 @@ import { useVirtualList } from "./primitives/virtual-list"
 import {
   describeRowElement,
   useTableGridContext,
+  type RowDescription,
   type TableGridBody,
 } from "./table-grid"
 
@@ -284,7 +285,32 @@ type TableBodyRowsProps<T> = Omit<React.ComponentProps<"tbody">, "children"> & {
   children?: React.ReactNode | RenderRow<T>
   /** Shown in a single row across every column when there are no rows. */
   empty?: React.ReactNode
+  /**
+   * An item's row `value`. In a virtualized grid table, Ctrl/Cmd + A and
+   * Shift ranges then read the rows out of view from their items rather
+   * than by rendering each one.
+   */
+  itemToStringValue?: (item: T) => string
+  /** An item's row text (`textValue`), for type-ahead and announcements. */
+  itemToStringLabel?: (item: T) => string
+  /** Whether an item's row is disabled, read with `itemToStringValue`. */
+  isItemDisabled?: (item: T) => boolean
 }
+
+// Declared here: the package's declaration build has no Node types.
+declare const process: { env: { NODE_ENV?: string } }
+
+/** Development builds only; a consumer's bundler replaces `process.env.NODE_ENV`. */
+function isDevelopment() {
+  try {
+    return process.env.NODE_ENV !== "production"
+  } catch {
+    return false
+  }
+}
+
+/** Reading rows by rendering them took long enough to say so (once). */
+let warnedSlowRows = false
 
 /** The row `empty` is shown in, across `columns` columns. */
 function emptyRow(empty: React.ReactNode, columns: number) {
@@ -328,6 +354,9 @@ function useVirtualRows<T>(
     items,
     children,
     empty,
+    itemToStringValue,
+    itemToStringLabel,
+    isItemDisabled,
     ref,
     onFocus: ownFocus,
     onBlur: ownBlur,
@@ -452,29 +481,71 @@ function useVirtualRows<T>(
   // and scrolling one into view to focus it.
   const latestCount = React.useRef(count)
   latestCount.current = count
-  const describe = React.useMemo(
-    () =>
-      virtualized
-        ? () =>
-            items && render
-              ? items.map((item, index) =>
-                  describeRowElement(render(item, index))
-                )
-              : elements.map(describeRowElement)
-        : null,
-    [virtualized, items, render, elements]
-  )
+  // Read from the items when the accessors say how (fast); otherwise from
+  // the elements the render function returns, one call per row.
+  const accessors = React.useRef({
+    itemToStringValue,
+    itemToStringLabel,
+    isItemDisabled,
+  })
+  accessors.current = { itemToStringValue, itemToStringLabel, isItemDisabled }
+  const fromItems = !!(items && render && itemToStringValue)
+  const reader = React.useMemo(() => {
+    if (!virtualized) return null
+    const one = new Map<number, RowDescription>()
+    const describeAt = (index: number): RowDescription => {
+      let row = one.get(index)
+      if (!row) {
+        row = describeRowElement(
+          items && render ? render(items[index], index) : elements[index]
+        )
+        one.set(index, row)
+      }
+      return row
+    }
+    const describe = (): Array<RowDescription> => {
+      const {
+        itemToStringValue: toValue,
+        itemToStringLabel: toLabel,
+        isItemDisabled: isOff,
+      } = accessors.current
+      if (items && render && toValue)
+        return items.map((item) => ({
+          value: toValue(item),
+          textValue: toLabel?.(item),
+          disabled: isOff?.(item) ?? false,
+          level: undefined,
+        }))
+      if (!(items && render)) return elements.map(describeRowElement)
+      const start = performance.now()
+      const rows = items.map((item, index) => describeAt(index))
+      const took = performance.now() - start
+      if (took > 100 && !warnedSlowRows && isDevelopment()) {
+        warnedSlowRows = true
+        console.warn(
+          `TableBody: reading ${items.length.toLocaleString("en-US")} rows out of view took ${Math.round(took)} ms, rendering each one. Pass itemToStringValue (and isItemDisabled, itemToStringLabel) to read them from their items.`
+        )
+      }
+      return rows
+    }
+    return { describe, describeAt }
+    // The accessors are read when called; a new pair of them does not
+    // throw the rows read so far away.
+  }, [virtualized, items, render, elements, fromItems])
+  const describe = reader?.describe ?? null
+  const describeAt = reader?.describeAt ?? null
   const scrollToIndex = virtual.scrollToIndex
   React.useLayoutEffect(() => {
     if (!grid || !virtualized) return
     const handle: TableGridBody = {
       count: () => latestCount.current,
       describe,
+      describeAt,
       scrollToIndex,
     }
     grid.setBody(handle)
     return () => grid.setBody(null)
-  }, [grid, virtualized, describe, scrollToIndex])
+  }, [grid, virtualized, describe, describeAt, scrollToIndex])
   // A row the grid was asked to focus may have just been rendered.
   React.useLayoutEffect(() => {
     grid?.flush()

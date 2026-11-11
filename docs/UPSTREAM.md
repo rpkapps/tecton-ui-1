@@ -265,7 +265,8 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   activate. `TableRow` takes `value`, `disabled`, `textValue`, `level`, `expanded` and
   `onExpandedChange` (dropped without `grid`) and sets `aria-selected` / `data-selected="true"`,
   which `cn-table-row` fills with `bg-table-active` like `data-[state=selected]`; rows and cells get
-  a focus ring. `TableBody` takes `empty`. The logic is `src/tecton/internal/table-grid.tsx` (on
+  a focus ring. `TableBody` takes `empty`, and `itemToStringValue` / `itemToStringLabel` /
+  `isItemDisabled`, which a virtualized grid reads the rows out of view from (otherwise it renders them). The logic is `src/tecton/internal/table-grid.tsx` (on
   the shared selection, type-ahead and announcement primitives), the hunk calls `useTableGrid` in
   `Table` and `useTableRow` in `TableRow`; without `grid` the markup is unchanged. Tested in
   `src/tecton/__tests__/table-grid.test.tsx`.

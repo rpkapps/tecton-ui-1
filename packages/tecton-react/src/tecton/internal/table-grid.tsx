@@ -117,6 +117,8 @@ type TableGridBody = {
   count: () => number
   /** Every body row's props, in order; null when the body renders them all. */
   describe: (() => Array<RowDescription>) | null
+  /** One body row's props, read from its element (0-based in the body). */
+  describeAt: ((index: number) => RowDescription) | null
   /** Scrolls a virtualized body to a row (0-based in the body). */
   scrollToIndex: ((index: number) => void) | null
 }
@@ -253,6 +255,7 @@ function useTableGrid<
     rows: Array<RowDescription>
     byKey: Map<string, RowDescription>
     keys: Array<string>
+    indexByKey: Map<string, number>
   } | null>(null)
   const [tree, setTree] = React.useState(false)
   const levels = React.useRef(0)
@@ -292,13 +295,15 @@ function useTableGrid<
     if (described.current?.source !== describe) {
       const rows = describe()
       const byKey = new Map<string, RowDescription>()
+      const indexByKey = new Map<string, number>()
       const keys: Array<string> = []
-      for (const row of rows) {
-        if (row.value === undefined) continue
+      rows.forEach((row, index) => {
+        if (row.value === undefined) return
         byKey.set(row.value, row)
+        indexByKey.set(row.value, index)
         keys.push(row.value)
-      }
-      described.current = { source: describe, rows, byKey, keys }
+      })
+      described.current = { source: describe, rows, byKey, keys, indexByKey }
     }
     return described.current
   }
@@ -337,7 +342,15 @@ function useTableGrid<
   const textOf = (key: string) => {
     const row = byValue.current.get(key)
     if (row) return rowText(row)
-    return describedRow(key)?.textValue ?? key
+    const text = describedRow(key)?.textValue
+    if (text !== undefined) return text
+    // Rows read from their items without a label: render this one only.
+    const { describe, describeAt } = body.current ?? {}
+    const index = describe
+      ? describedRows(describe).indexByKey.get(key)
+      : undefined
+    if (index === undefined || !describeAt) return key
+    return describeAt(index).textValue ?? key
   }
 
   // ---- selection ----------------------------------------------------------
@@ -851,9 +864,7 @@ function useTableGrid<
       const row = rowAt(at)
       const rowLevel = row
         ? infoOf(row)?.level
-        : body.current?.describe
-          ? describeRows()[at - start]?.level
-          : undefined
+        : body.current?.describeAt?.(at - start).level
       if (rowLevel !== undefined && rowLevel < level) return at
     }
     return null

@@ -754,7 +754,14 @@ export default function DataTablePlayground() {
                   </TableRow>
                 ))}
               </TableHeader>
-              <TableBody items={rows}>
+              <TableBody
+                items={rows}
+                // Ctrl + A and Shift ranges read the rows out of view from
+                // these instead of rendering each one.
+                itemToStringValue={(row) => row.id}
+                itemToStringLabel={(row) => row.original.name}
+                isItemDisabled={(row) => !row.getCanSelect()}
+              >
                 {(row) => {
                   const cells = row.getAllCells().map((cell) => (
                     <TableCell
