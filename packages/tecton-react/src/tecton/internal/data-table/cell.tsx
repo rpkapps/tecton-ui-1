@@ -10,7 +10,8 @@
  *
  * The row header column (`rowHeader`, the first column by default) is a
  * `th scope="row"` that names the row, carries the tree's chevron and
- * indent, and is the row's link with `itemToHref`.
+ * indent (or the chevron of a row with a detail row), and is the row's
+ * link with `itemToHref`.
  *
  * A pinned column's cells stick to their edge (`position: sticky`, at a
  * variable of the frame's, `column-sizing.ts`) with their row's
@@ -29,8 +30,13 @@ import { Spinner } from "@tecton/react/components/spinner"
 import { TableCell, TableHead } from "@tecton/react/components/table"
 import { Link } from "@tecton/react/tecton/link"
 
+import type { Store } from "../store"
 import type { DataTableActions } from "./context"
 import type { EngineColumn, Formatter, ItemRow } from "./engine/index"
+import type { RowOrder } from "./row-order"
+
+/** What detail rows draw: `renderDetail`, kept apart so a new one renders only them. */
+type DetailStore = Store<{ render: ((item: never) => React.ReactNode) | null }>
 
 /** What every row of a table renders with; one object while none of it changes. */
 type RowShared<T> = {
@@ -39,8 +45,15 @@ type RowShared<T> = {
   /** The column that names the row. */
   rowHeader: EngineColumn<T> | undefined
   formatter: Formatter<T>
-  /** A selection checkbox column comes first. */
+  /** A selection checkbox column comes before the data columns. */
   selection: boolean
+  /** A drag handle column comes first (`reorderableRows`). */
+  handle: boolean
+  /** The rows' order, while they can be moved; `null` hides the handles. */
+  order: RowOrder | null
+  size: "default" | "sm"
+  /** Rows open to show a detail row (`renderDetail`). */
+  detail: DetailStore | null
   /** Rows have a level: a tree, or groups. */
   levelled: boolean
   tree: boolean
@@ -50,7 +63,9 @@ type RowShared<T> = {
   linked: boolean
   /** Columns may wrap: not in a virtualized table, whose rows are one height. */
   wrap: boolean
-  /** Every column, the selection column included. */
+  /** Only the rows in view are rendered. */
+  virtualized: boolean
+  /** Every column, the handle and selection columns included. */
   columnCount: number
   /**
    * On pages: a row's place among every page's rows (the engine's), for its
@@ -65,6 +80,8 @@ type RowShared<T> = {
   pins: ReadonlyArray<CellPin | undefined>
   /** The selection column's pin: at the start while a column is pinned there. */
   selectionPin: CellPin | undefined
+  /** The handle column's pin, likewise. */
+  handlePin: CellPin | undefined
   /** Columns are pinned: the row is opaque, each cell draws its border. */
   pinned: boolean
   actions: DataTableActions<T>
@@ -187,20 +204,27 @@ function cellContent<T>(
   }
 }
 
-/** The chevron (or its space) and indent before a tree row's header. */
+/**
+ * The chevron (or its space) and indent before a tree row's header, or the
+ * chevron of a row with a detail row (`indent` off).
+ */
 function TreeIndent<T>({
   row,
   actions,
+  indent,
   children,
 }: {
   row: ItemRow<T>
   actions: DataTableActions<T>
+  indent: boolean
   children: React.ReactNode
 }) {
   return (
     <div
       className="flex items-center gap-1"
-      style={{ paddingInlineStart: `${row.depth * INDENT}rem` }}
+      style={
+        indent ? { paddingInlineStart: `${row.depth * INDENT}rem` } : undefined
+      }
     >
       {row.loading ? (
         <span
@@ -217,14 +241,17 @@ function TreeIndent<T>({
           tabIndex={-1}
           aria-hidden
           data-slot="data-table-chevron"
-          onClick={(event) =>
+          // Not focused by a press: its row is, and becomes the tab stop.
+          onMouseDown={(event) => event.preventDefault()}
+          onClick={(event) => {
+            event.currentTarget.closest("tr")?.focus({ preventScroll: true })
             actions.setRowExpanded(
               row.id,
               !row.expanded,
               "item-press",
               event.nativeEvent
             )
-          }
+          }}
           className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground outline-none hover:bg-accent hover:text-foreground"
         >
           <ChevronRightIcon
@@ -281,9 +308,9 @@ function renderCell<T>(
         {content}
       </Link>
     )
-  if (shared.tree)
+  if (shared.tree || shared.detail)
     content = (
-      <TreeIndent row={row} actions={shared.actions}>
+      <TreeIndent row={row} actions={shared.actions} indent={shared.tree}>
         {content}
       </TreeIndent>
     )
@@ -306,4 +333,4 @@ export {
   renderCell,
   rowText,
 }
-export type { CellPin, RowShared }
+export type { CellPin, DetailStore, RowShared }

@@ -9,7 +9,14 @@
  * - Rows come from `items` and a render function, called only for the rows
  *   in view (a sort renders a screenful, not every row), or as elements.
  * - Rows are one height, measured from the rows rendered (the distance
- *   between two rows, so collapsed borders count once).
+ *   between two rows, so collapsed borders count once). A row marked
+ *   `data-variable-height` (a table's detail row) is measured on its own
+ *   once rendered, and again as it resizes; until then it counts as one
+ *   row. Its height is kept by its item, so it stays right as rows sort.
+ *   A row above the view that turns out taller or shorter moves the
+ *   scroll position by as much, before the browser paints, so the rows in
+ *   view stay where they are (the browser's own scroll anchoring is off:
+ *   the spacers it would anchor to are this module's).
  * - The columns are locked in px (a `colgroup`, `table-fixed`): with
  *   automatic layout every scroll would resize them to the rows mounted.
  *   Each keeps the width of its content as first laid out (the header and
@@ -27,7 +34,9 @@
  * - The row holding focus stays mounted when it scrolls out of view, so a
  *   focused checkbox or link is never lost.
  * - Each row keeps the `nth-child` parity of its index, so a striped
- *   table's stripes stay on their rows as rows mount and unmount.
+ *   table's stripes stay on their rows as rows mount and unmount. With
+ *   rows that are not striped on their own (a detail row, which takes its
+ *   row's fill), the grid's `rowParity` gives each row's instead.
  * - The table announces its true size: `aria-rowcount` on the table and
  *   `aria-rowindex` on each rendered row.
  *
@@ -35,6 +44,7 @@
  * table hunk); not part of the public API.
  */
 import * as React from "react"
+import { flushSync } from "react-dom"
 
 import { useVirtualList } from "./primitives/virtual-list"
 import {
@@ -349,7 +359,9 @@ function useVirtualRows<T>(
   } = props
   const context = React.useContext(TableVirtualContext)
   const grid = useTableGridContext()
-  const describeItem = useTableGridConfig()?.describeItem
+  const gridConfig = useTableGridConfig()
+  const describeItem = gridConfig?.describeItem
+  const rowParity = gridConfig?.rowParity
   const virtualized = context !== null
   const render = typeof children === "function" ? children : null
   const elements = React.useMemo(
@@ -382,10 +394,35 @@ function useVirtualRows<T>(
   }, [virtualized])
   const measured = React.useRef("")
 
+  // The rows of their own height, by item (by index for elements).
+  const heights = React.useRef(new Map<unknown, number>())
+  const [heightsChanged, setHeightsChanged] = React.useState(0)
+  const keyOf = React.useCallback(
+    (index: number): unknown => (items && render ? items[index] : index),
+    [items, render]
+  )
+  const sizes = React.useMemo(() => {
+    void heightsChanged
+    if (heights.current.size === 0) return undefined
+    const found = new Map<number, number>()
+    const kept = new Map<unknown, number>()
+    for (let index = 0; index < count; index++) {
+      const key = keyOf(index)
+      const height = heights.current.get(key)
+      if (height === undefined) continue
+      found.set(index, height)
+      kept.set(key, height)
+    }
+    // The rows that went are forgotten; one that comes back is measured again.
+    heights.current = kept
+    return found
+  }, [heightsChanged, count, keyOf])
+
   const virtual = useVirtualList({
     count,
     stride: measures.stride,
     start: measures.headerHeight,
+    sizes,
     keep: focused === null ? [] : [focused],
     // A viewport of rows ready beyond each edge, applied in the frame; a
     // jump (the scrollbar dragged) mounts only the view plus two rows, and
@@ -412,8 +449,10 @@ function useVirtualRows<T>(
     if (!virtualized || !body.current) return
     const table = body.current.closest("table")
     const head = table?.tHead ?? null
-    const rendered =
-      body.current.querySelectorAll<HTMLElement>("tr[data-index]")
+    // Rows of their own height are measured apart (below).
+    const rendered = body.current.querySelectorAll<HTMLElement>(
+      "tr[data-index]:not([data-variable-height])"
+    )
     // Only when something that sets the rows' height may have changed (the
     // table's classes and size; the view; the fonts; the first rows), not
     // on every scroll: reading a size lays the page out.
@@ -462,6 +501,85 @@ function useVirtualRows<T>(
     }
     setMeasures((previous) => (sameMeasures(previous, next) ? previous : next))
   })
+
+  // Rows of their own height: measured as they render and as they resize.
+  const latestKeyOf = React.useRef(keyOf)
+  latestKeyOf.current = keyOf
+  // Made for a virtualized body only, once it has a row to watch.
+  const sizeObserver = React.useRef<ResizeObserver | null>(null)
+  // Where rows are now, for a row measured above the view.
+  const anchor = React.useRef({
+    offset: virtual.offset,
+    start: measures.headerHeight,
+    stride: measures.stride,
+  })
+  anchor.current = {
+    offset: virtual.offset,
+    start: measures.headerHeight,
+    stride: measures.stride,
+  }
+  /** The scroll the rows above the view moved by, applied once they render. */
+  const shift = React.useRef(0)
+  /** Keeps a row's height; whether it changed. */
+  function record(row: HTMLElement) {
+    if (!row.isConnected || row.dataset.index === undefined) return false
+    const height = row.getBoundingClientRect().height
+    const index = Number(row.dataset.index)
+    const key = latestKeyOf.current(index)
+    const before = heights.current.get(key) ?? anchor.current.stride
+    if (height <= 0 || near(before, height)) return false
+    heights.current.set(key, height)
+    // Wholly above the view: the rows in view would move by the difference.
+    const scroller = context?.container
+    if (scroller && anchor.current.offset(index) + before <= scroller.scrollTop)
+      shift.current += height - before
+    return true
+  }
+  React.useLayoutEffect(() => {
+    const scroller = context?.container
+    if (!scroller || shift.current === 0) return
+    scroller.scrollTop += shift.current
+    shift.current = 0
+  })
+  // The scroll position is this module's to keep (above).
+  React.useLayoutEffect(() => {
+    const scroller = context?.container
+    if (!virtualized || !scroller) return
+    const before = scroller.style.overflowAnchor
+    scroller.style.overflowAnchor = "none"
+    return () => {
+      scroller.style.overflowAnchor = before
+    }
+  }, [virtualized, context?.container])
+  const observed = React.useRef(new Set<HTMLElement>())
+  React.useLayoutEffect(() => {
+    if (!virtualized || !body.current) return
+    let changed = false
+    const rows = body.current.querySelectorAll<HTMLElement>(
+      "tr[data-index][data-variable-height]"
+    )
+    for (const row of rows) {
+      if (observed.current.has(row)) continue
+      if (!sizeObserver.current && typeof ResizeObserver !== "undefined")
+        sizeObserver.current = new ResizeObserver((entries) => {
+          let resized = false
+          for (const entry of entries)
+            resized = record(entry.target as HTMLElement) || resized
+          // Rendered before the next paint, with the scroll kept.
+          if (resized) flushSync(() => setHeightsChanged((n) => n + 1))
+        })
+      observed.current.add(row)
+      sizeObserver.current?.observe(row)
+      changed = record(row) || changed
+    }
+    for (const row of observed.current)
+      if (!row.isConnected) {
+        observed.current.delete(row)
+        sizeObserver.current?.unobserve(row)
+      }
+    if (changed) setHeightsChanged((n) => n + 1)
+  })
+  React.useEffect(() => () => sizeObserver.current?.disconnect(), [])
 
   // The grid reaches the rows out of view through the body: how many
   // there are, what they are (read from their items), and scrolling one
@@ -563,12 +681,17 @@ function useVirtualRows<T>(
       : new Map<number, { rowIndex: number; row: React.ReactNode }>()
   const rowsNow = new Map<number, { rowIndex: number; row: React.ReactNode }>()
 
-  const { stride, headerRows, columns } = measures
-  const spacer = (key: string, rowsSkipped: number) => (
+  const { headerRows, columns } = measures
+  /** A row standing in for the rows `from` to `to` (exclusive). */
+  const spacer = (key: string, from: number, to: number) => (
     <tr key={key} aria-hidden="true" data-slot="table-virtual-spacer">
       <td
         colSpan={columns}
-        style={{ height: rowsSkipped * stride, padding: 0, border: 0 }}
+        style={{
+          height: virtual.offset(to) - virtual.offset(from),
+          padding: 0,
+          border: 0,
+        }}
       />
     </tr>
   )
@@ -582,8 +705,9 @@ function useVirtualRows<T>(
   let previous = -1
   for (const index of virtual.indices) {
     if (index > previous + 1)
-      rendered.push(spacer(`spacer-${index}`, index - previous - 1))
-    if (rendered.length % 2 !== index % 2)
+      rendered.push(spacer(`spacer-${index}`, previous + 1, index))
+    const stripe = rowParity ? rowParity(index) : index % 2
+    if (stripe !== null && rendered.length % 2 !== stripe)
       rendered.push(parity(`parity-${index}`))
     const rowIndex = headerRows + index + 1
     const kept = previousRows.get(index)
@@ -605,7 +729,7 @@ function useVirtualRows<T>(
     previous = index
   }
   if (previous < count - 1)
-    rendered.push(spacer("spacer-end", count - 1 - previous))
+    rendered.push(spacer("spacer-end", previous + 1, count))
   if (isEmpty) rendered.push(emptyRow(empty, columns))
   cache.current = { sources, rows: rowsNow }
 

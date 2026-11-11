@@ -14,8 +14,11 @@
  * column's filter, by its type:
  * - text: the display text contains the value, like search;
  * - number: `min` ≤ value ≤ `max` (either may be left out);
- * - date: `from` ≤ date ≤ `to`, where a `to` at midnight takes in that day;
- * - boolean: the value is `value` (no value counts as `false`);
+ * - date: `from` ≤ date ≤ `to`, where a `to` at midnight takes in that day
+ *   (midnight in the column's `format.timeZone`, which its days are shown
+ *   in, or the local zone);
+ * - boolean: the value is `value` (an empty value matches neither: rows
+ *   without one show only with no filter);
  * - options: the value is one of `values`;
  * - the column's own `filter` function, for any filter value, when it has one.
  * An empty value never matches a number, date or options filter.
@@ -34,7 +37,14 @@ import type { Core, RowSet } from "./core"
 import { createFolder, foldText, type Formatter } from "./format"
 import type { IdleTask } from "./idle"
 import type { DataTableFilterValue, DataTableView } from "./types"
-import { isEmptyValue, toBoolean, toNumber, toTime } from "./values"
+import {
+  dayOf,
+  isEmptyValue,
+  startOfDay,
+  toBoolean,
+  toNumber,
+  toTime,
+} from "./values"
 
 /** Whether the row at `index` (depth first) holding `item` matches. */
 type RowPredicate<T> = (index: number, item: T) => boolean
@@ -174,16 +184,14 @@ function searchMask<T>(
   return mask
 }
 
-/** The exclusive end of a date filter's `to`: the next day when it is a midnight. */
-function rangeEnd(to: Date) {
-  const midnight =
-    to.getHours() === 0 &&
-    to.getMinutes() === 0 &&
-    to.getSeconds() === 0 &&
-    to.getMilliseconds() === 0
-  if (!midnight) return { time: to.getTime(), inclusive: true }
-  const next = new Date(to)
-  next.setDate(next.getDate() + 1)
+/**
+ * The end of a date filter's `to`: the next day's start when it is a
+ * midnight in `timeZone` (or the local zone), exclusive.
+ */
+function rangeEnd(to: Date, timeZone: string | undefined) {
+  const day = dayOf(to, timeZone)
+  if (!day.midnight) return { time: to.getTime(), inclusive: true }
+  const next = startOfDay(day.year, day.month, day.day + 1, timeZone)
   return { time: next.getTime(), inclusive: false }
 }
 
@@ -210,8 +218,9 @@ function columnPredicate<T>(
     }
     case "date": {
       const from = value.from?.getTime() ?? -Infinity
+      const { timeZone } = (column.format ?? {}) as Intl.DateTimeFormatOptions
       const end = value.to
-        ? rangeEnd(value.to)
+        ? rangeEnd(value.to, timeZone)
         : { time: Infinity, inclusive: true }
       return (_, item) => {
         const time = toTime(getValue(item))
@@ -223,7 +232,7 @@ function columnPredicate<T>(
       }
     }
     case "boolean":
-      return (_, item) => (toBoolean(getValue(item)) ?? false) === value.value
+      return (_, item) => toBoolean(getValue(item)) === value.value
     case "options": {
       const values = new Set(value.values)
       return (_, item) => {

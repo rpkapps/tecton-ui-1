@@ -30,6 +30,14 @@ import { Skeleton } from "@tecton/react/components/skeleton"
 import { TableCell } from "@tecton/react/components/table"
 
 import { useTranslations } from "../i18n/translations"
+import {
+  cellBorderClassName,
+  pinnedCellClassName,
+  pinnedRowClassName,
+  pinStyle,
+  type CellPin,
+  type RowShared,
+} from "./cell"
 import type { EngineColumn } from "./engine/index"
 
 function State({
@@ -115,27 +123,77 @@ function DataTableErrorState({
 }
 
 /**
- * The rows shown while the first rows load: plain rows, not the grid's (so
- * the keyboard does not stop on them), hidden from screen readers, which
- * hear the table busy and "Loading".
+ * The error of a load of more rows (`hasMore`), after the rows loaded: a
+ * row across every column, an alert with "Retry". Not a row of the grid's:
+ * the keyboard stops on its button by Tab.
+ */
+function DataTableMoreError({
+  columns,
+  description,
+  onRetry,
+}: {
+  columns: number
+  /** In place of the default description. */
+  description: React.ReactNode
+  onRetry: (() => void) | undefined
+}) {
+  const t = useTranslations("dataTable")
+  return (
+    <tr data-slot="data-table-more-error">
+      <TableCell colSpan={columns}>
+        <div
+          role="alert"
+          className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm whitespace-normal"
+        >
+          <CircleAlertIcon aria-hidden className="size-4 text-destructive" />
+          <span>{description ?? t("errorTitle")}</span>
+          {onRetry && (
+            <Button variant="outline" size="sm" onClick={onRetry}>
+              {t("retry")}
+            </Button>
+          )}
+        </div>
+      </TableCell>
+    </tr>
+  )
+}
+
+/**
+ * The rows shown while the first rows load, and after the last row while
+ * more come (`hasMore`): plain rows, not the grid's (so the keyboard does
+ * not stop on them), hidden from screen readers, which hear the table busy
+ * and "Loading". Their pinned cells stick like the other rows'.
  */
 function loadingRows<T>(
   count: number,
   columns: ReadonlyArray<EngineColumn<T>>,
-  selection: boolean,
-  /** Each cell's own class: its border, in a table with pinned columns. */
-  cellClassName?: string
+  shared: Pick<
+    RowShared<T>,
+    "selection" | "handle" | "pinned" | "pins" | "selectionPin" | "handlePin"
+  >
 ) {
+  const cell = (pin: CellPin | undefined, className?: string) => ({
+    className: cn(
+      className,
+      shared.pinned && cellBorderClassName,
+      pin && pinnedCellClassName
+    ),
+    style: pin && pinStyle(pin),
+  })
   return Array.from({ length: count }, (_, index) => (
     <tr
       key={index}
       aria-hidden
       data-slot="data-table-loading-row"
-      className="border-b border-border-subtle"
+      className={cn(
+        "border-b border-border-subtle",
+        shared.pinned && pinnedRowClassName
+      )}
     >
-      {selection && <TableCell className={cn("w-px", cellClassName)} />}
-      {columns.map((column) => (
-        <TableCell key={column.id} className={cellClassName}>
+      {shared.handle && <TableCell {...cell(shared.handlePin, "w-px")} />}
+      {shared.selection && <TableCell {...cell(shared.selectionPin, "w-px")} />}
+      {columns.map((column, at) => (
+        <TableCell key={column.id} {...cell(shared.pins[at])}>
           {/* One line of the cell's text tall (`1lh`): the row is as tall
               as a row of text, at either size. */}
           <Skeleton
@@ -174,6 +232,7 @@ function DataTableProgress({ top }: { top: number }) {
 export {
   DataTableEmptyState,
   DataTableErrorState,
+  DataTableMoreError,
   DataTableNoResultsState,
   DataTableProgress,
   loadingRows,

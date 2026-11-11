@@ -119,6 +119,44 @@ const enUS = {
     columnPinnedStart: "{columnName} pinned to the start",
     columnPinnedEnd: "{columnName} pinned to the end",
     columnUnpinned: "{columnName} unpinned",
+    // The search field (`DataTableSearch`): its placeholder and name, and
+    // its clear button.
+    search: "Search",
+    // The search's chip among the active filters ("Search: well 4"): a noun.
+    searchChip: "Search",
+    clearSearch: "Clear search",
+    // A filter's button (`DataTableFilter`), named after its column, and
+    // the fields in its popover.
+    filterBy: "Filter by {columnName}",
+    filterContains: "Contains",
+    filterMin: "Min",
+    filterMax: "Max",
+    // A yes / no filter's choice that keeps every row.
+    filterAny: "Any",
+    clearFilter: "Clear",
+    noOptions: "No options",
+    // A filter's value in words: number and date ranges ({from}, {to} and
+    // {value} are formatted numbers or dates).
+    filterRange: "{from}–{to}",
+    filterAtLeast: "≥ {value}",
+    filterAtMost: "≤ {value}",
+    filterFrom: "From {value}",
+    filterUntil: "Until {value}",
+    // More than two options chosen in a filter; {total} is formatted.
+    optionsSelected: { other: "{total} selected" },
+    // A chip of the active filters: the column's name and the filter's
+    // value ("Status: Producing, Drilling").
+    filterChip: "{columnName}: {value}",
+    activeFilters: "Active filters",
+    clearAll: "Clear all",
+    // Read once the search or filters change; {total} is formatted.
+    resultsCount: { one: "{total} result", other: "{total} results" },
+    // The button of a row's menu (`DataTableRowActions`).
+    rowActions: "Row actions",
+    // The column of the rows' drag handles, for screen readers.
+    reorderRowsColumn: "Reorder",
+    // Names the totals row.
+    total: "Total",
   },
   tableColumnResizer: {
     resize: "Resize {columnName}",

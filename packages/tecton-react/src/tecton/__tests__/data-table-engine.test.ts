@@ -9,6 +9,7 @@ import {
   clearFilters,
   createColumns,
   createDataTableEngine,
+  createDetailCache,
   createDefaultView,
   enterAllMatching,
   foldText,
@@ -47,6 +48,7 @@ import {
   type GroupRow,
   type ItemRow,
   type ViewCapabilities,
+  withDetailRows,
 } from "../internal/data-table/engine"
 import { toCsv } from "../internal/data-table/engine/csv"
 import {
@@ -1259,14 +1261,14 @@ describe("engine: filters", () => {
     ).toEqual(["A-2"])
   })
 
-  it("filters booleans, no value as false, and options by value", () => {
+  it("filters booleans, leaving out rows with no value, and options by value", () => {
     expect(filter({ active: { type: "boolean", value: true } })).toEqual([
       "A-2",
       "a-1",
     ])
+    // B-1 has no value: neither Yes nor No.
     expect(filter({ active: { type: "boolean", value: false } })).toEqual([
       "A-10",
-      "B-1",
     ])
     expect(
       filter({ status: { type: "options", values: ["drilling", "shut-in"] } })
@@ -1436,10 +1438,9 @@ describe("engine: tree", () => {
     expect(found.rows).toHaveLength(61)
   })
 
-  it("ignores grouping and detail rows in a tree", () => {
+  it("ignores grouping in a tree", () => {
     const result = runTree({
       view: view({ grouping: ["operator"] }),
-      detail: true,
       expanded: ["field-3"],
     })
     expect(ids(result.rows)).toEqual(["field-1", "field-2", "field-3", "s-1"])
@@ -1683,46 +1684,45 @@ describe("aggregate", () => {
 
 describe("engine: detail rows, pagination, totals", () => {
   it("follows an expanded row with its detail row", () => {
-    const result = run({ detail: true, expanded: ["A-2"] })
-    expect(ids(result.rows)).toEqual([
-      "A-10",
-      "A-2",
-      "detail:A-2",
-      "B-1",
-      "a-1",
-    ])
-    expect(items(result.rows)[1]).toMatchObject({
-      hasDetail: true,
-      expandable: true,
-      expanded: true,
-    })
-    expect(result.rows[2]).toMatchObject({
-      kind: "detail",
-      id: "A-2",
-      depth: 0,
-    })
-    expect(result.indexOf("A-2")).toBe(1)
-    expect(result.indexOf("B-1")).toBe(3)
+    const result = run()
+    const rows = withDetailRows(
+      result.rows,
+      new Set(["A-2"]),
+      createDetailCache()
+    )
+    expect(ids(rows)).toEqual(["A-10", "A-2", "detail:A-2", "B-1", "a-1"])
+    expect(rows[1]).toMatchObject({ expandable: true, expanded: true })
+    expect(rows[0]).toMatchObject({ expandable: true, expanded: false })
+    expect(rows[2]).toMatchObject({ kind: "detail", id: "A-2", depth: 0 })
   })
 
-  it("pages rows, detail rows going with theirs", () => {
-    const result = run({
-      detail: true,
-      expanded: ["A-2"],
-      pagination: { page: 1, pageSize: 2 },
-    })
-    expect(ids(result.rows)).toEqual(["A-10", "A-2", "detail:A-2"])
+  it("keeps a detail row's and an unchanged row's objects", () => {
+    const cache = createDetailCache<Well>()
+    const result = run()
+    const first = withDetailRows(result.rows, new Set(["A-2"]), cache)
+    const again = withDetailRows(result.rows, new Set(["A-2", "B-1"]), cache)
+    expect(again[0]).toBe(first[0])
+    expect(again[1]).toBe(first[1])
+    expect(again[2]).toBe(first[2])
+    expect(again[3]).not.toBe(first[3])
+  })
+
+  it("does not run again to open a flat list's detail row", () => {
+    const engine = createDataTableEngine<Well>()
+    const first = run({}, engine)
+    expect(run({ expanded: ["A-2"] }, engine)).toBe(first)
+  })
+
+  it("pages rows", () => {
+    const result = run({ pagination: { page: 1, pageSize: 2 } })
+    expect(ids(result.rows)).toEqual(["A-10", "A-2"])
     expect([
       result.page,
       result.pageCount,
       result.displayRowCount,
       result.pageSize,
     ]).toEqual([1, 2, 4, 2])
-    const second = run({
-      detail: true,
-      expanded: ["A-2"],
-      pagination: { page: 2, pageSize: 2 },
-    })
+    const second = run({ pagination: { page: 2, pageSize: 2 } })
     expect(ids(second.rows)).toEqual(["B-1", "a-1"])
     expect(second.pageItems().map((w) => w.id)).toEqual(["B-1", "a-1"])
     expect(second.indexOf("B-1")).toBe(0)

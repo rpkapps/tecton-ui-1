@@ -356,11 +356,23 @@ describe("DataTable column resizing", () => {
     await waitFor(() => expect(separator(name)).toHaveFocus())
   }
 
-  it("puts a named resizer on each resizable column's header, none without the feature", () => {
+  it("puts a named resizer on each resizable column's header, none without the feature", async () => {
     const { unmount } = render(<Fields columns={sized} />)
     expect(screen.queryAllByRole("separator")).toHaveLength(0)
     unmount()
     render(<Fields columns={sized} resizableColumns />)
+    // The grips are drawn at once; the resizers' code comes in idle time.
+    const placeholders = document.querySelectorAll(
+      '[data-slot="data-table-resizer-placeholder"]'
+    )
+    if (placeholders.length > 0) {
+      expect(placeholders).toHaveLength(5)
+      for (const grip of placeholders)
+        expect(grip).toHaveAttribute("aria-hidden", "true")
+    }
+    await waitFor(() =>
+      expect(screen.getAllByRole("separator")).toHaveLength(5)
+    )
     expect(
       screen
         .getAllByRole("separator")
@@ -380,7 +392,9 @@ describe("DataTable column resizing", () => {
   it("is no arrow stop: the arrows walk the whole header row past it", async () => {
     const user = userEvent.setup()
     render(<Fields columns={sized} resizableColumns />)
-    expect(separator("Field")).toHaveAttribute("tabindex", "-1")
+    await waitFor(() =>
+      expect(separator("Field")).toHaveAttribute("tabindex", "-1")
+    )
     const sort = within(header("Field")).getByRole("button", { name: "Field" })
     act(() => sort.focus())
     const name = () =>
@@ -419,8 +433,9 @@ describe("DataTable column resizing", () => {
     render(
       <Fields columns={sized} resizableColumns onViewChange={onViewChange} />
     )
-    const trigger = screen.getByRole("button", { name: "Oil options" })
-    await user.click(trigger)
+    // The menu button is a plain one until the menu loads.
+    const trigger = () => screen.getByRole("button", { name: "Oil options" })
+    await user.click(trigger())
     await user.click(
       await screen.findByRole("menuitem", { name: "Resize column" })
     )
@@ -434,7 +449,7 @@ describe("DataTable column resizing", () => {
     expect(onViewChange).toHaveBeenCalledTimes(1)
     expect(lastView(onViewChange)[0].columns.widths).toEqual({ oil: 106 })
     expect(lastView(onViewChange)[1].reason).toBe("resize")
-    expect(trigger).toHaveFocus()
+    expect(trigger()).toHaveFocus()
 
     // Escape: the width drawn goes back, nothing is reported.
     await resize(user, "Oil")
@@ -444,13 +459,13 @@ describe("DataTable column resizing", () => {
     expect(cols()[2]).toBe("106px")
     expect(separator("Oil")).toHaveAttribute("aria-valuenow", "106")
     expect(onViewChange).toHaveBeenCalledTimes(1)
-    expect(trigger).toHaveFocus()
+    expect(trigger()).toHaveFocus()
 
     // Tab keeps the width too; Home and End reach the bounds.
     await resize(user, "Oil")
     await user.keyboard("{End}{Tab}")
     expect(lastView(onViewChange)[0].columns.widths).toEqual({ oil: 200 })
-    expect(trigger).toHaveFocus()
+    expect(trigger()).toHaveFocus()
   })
 
   it("mirrors the arrows in resize mode right to left", async () => {
@@ -832,7 +847,13 @@ describe("DataTable column reordering", () => {
     render(<Fields reorderableColumns onViewChange={onViewChange} />)
     await waitFor(() => expect(line()).not.toBeNull())
     act(() => header("Field").focus())
+    // From its own place, one place a key.
     await user.keyboard("{Enter}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert before Operator"
+    )
+    await user.keyboard("{ArrowRight}")
     expect(document.activeElement).toHaveAttribute(
       "aria-label",
       "Insert between Operator and Production"
@@ -872,9 +893,14 @@ describe("DataTable column reordering", () => {
     await user.keyboard("{Enter}")
     expect(document.activeElement).toHaveAttribute(
       "aria-label",
-      "Insert between Operator and Production"
+      "Insert after Production"
     )
     // From the right: Right goes back towards the start.
+    await user.keyboard("{ArrowRight}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert between Operator and Production"
+    )
     await user.keyboard("{ArrowRight}")
     expect(document.activeElement).toHaveAttribute(
       "aria-label",

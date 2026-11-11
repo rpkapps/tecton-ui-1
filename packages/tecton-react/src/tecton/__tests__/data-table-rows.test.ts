@@ -339,6 +339,67 @@ describe("facets", () => {
     ])
   })
 
+  it("are kept across runs until the rows, the search or another column's filter change", () => {
+    const engine = createDataTableEngine<Well>()
+    const filtered = (filters: DataTablePartialView["filters"], search = "") =>
+      run({ view: view({ filters, search }) }, engine)
+    const status = { type: "options", values: ["producing"] } as const
+    const first = filtered({ status }).facets("status")
+    // The column's own filter changing: the same counts.
+    expect(
+      filtered({ status: { type: "options", values: ["drilling"] } }).facets(
+        "status"
+      )
+    ).toBe(first)
+    // A run with nothing changed (a sort, an expanded row): the same.
+    expect(filtered({ status }).facets("status")).toBe(first)
+    // Another column's filter, the search or the rows: counted again.
+    const oil = filtered({ status, oil: { type: "number", min: 6 } })
+    expect(oil.facets("status")).not.toBe(first)
+    expect(oil.facets("status").get("producing")).toBe(1)
+    expect(filtered({ status }, "shell").facets("status")).not.toBe(first)
+    expect(
+      run(
+        { items: [...fleet], view: view({ filters: { status } }) },
+        engine
+      ).facets("status")
+    ).not.toBe(first)
+  })
+
+  it("count each row of a tree that matches by itself, at any level", () => {
+    const tree: Array<Well> = [
+      well("f", {
+        status: "producing",
+        children: [
+          well("a", { status: "producing", oil: 4 }),
+          well("b", {
+            status: "drilling",
+            children: [well("c", { status: "producing", oil: 2 })],
+          }),
+        ],
+      }),
+    ]
+    const result = run({
+      items: tree,
+      itemToChildren: (w) => w.children,
+      view: view({ filters: { oil: { type: "number", max: 50 } } }),
+    })
+    // f and b hold 100 each: a and c only.
+    expect(result.facets("status").get("producing")).toBe(2)
+    expect(result.facets("status").get("drilling")).toBe(0)
+    // Collapsed or not: the same rows count.
+    expect(
+      run({
+        items: tree,
+        itemToChildren: (w) => w.children,
+        expanded: ["f", "b"],
+        view: view({ filters: { oil: { type: "number", max: 50 } } }),
+      })
+        .facets("status")
+        .get("producing")
+    ).toBe(2)
+  })
+
   it("count the loaded rows in server mode", () => {
     const result = run({ dataMode: "server", view: view({ search: "shell" }) })
     expect(result.facets("status").get("producing")).toBe(3)
@@ -418,9 +479,16 @@ describe("shared rows", () => {
 
   it("redo nothing for an equal expanded list made anew", () => {
     const engine = createDataTableEngine<Well>()
-    const first = run({ detail: true, expanded: ["1", "2"] }, engine)
-    expect(run({ detail: true, expanded: ["2", "1"] }, engine)).toBe(first)
-    const changed = run({ detail: true, expanded: ["1"] }, engine)
+    const tree = {
+      items: [
+        well("a", { children: [well("a-1")] }),
+        well("b", { children: [well("b-1")] }),
+      ],
+      itemToChildren: (w: Well) => w.children,
+    }
+    const first = run({ ...tree, expanded: ["a", "b"] }, engine)
+    expect(run({ ...tree, expanded: ["b", "a"] }, engine)).toBe(first)
+    const changed = run({ ...tree, expanded: ["a"] }, engine)
     expect(changed.rows[0]).toBe(first.rows[0])
     expect(changed.rows[1]).toBe(first.rows[1])
   })
@@ -615,17 +683,6 @@ describe("rows hidden by a search", () => {
   const row = (result: ReturnType<typeof run>, id: string) =>
     items(result.rows).find((r) => r.id === id)
 
-  it("come back collapsed when collapsed while hidden", () => {
-    const engine = createDataTableEngine<Well>()
-    const base = { items: many, detail: true }
-    run({ ...base, expanded: ["w4"] }, engine)
-    run({ ...base, expanded: ["w4"], view: searching }, engine)
-    run({ ...base, expanded: [], view: searching }, engine)
-    const back = run({ ...base, expanded: [] }, engine)
-    expect(row(back, "w4")?.expanded).toBe(false)
-    expect(keys(back.rows)).not.toContain("detail:w4")
-  })
-
   it("come back disabled when disabled while hidden", () => {
     const engine = createDataTableEngine<Well>()
     run({ items: many }, engine)
@@ -653,12 +710,9 @@ describe("rows hidden by a search", () => {
     const engine = createDataTableEngine<Well>()
     const input: Partial<DataTableEngineInput<Well>> = {
       items: many,
-      detail: true,
     }
     for (let step = 0; step < 600; step++) {
-      switch (
-        pick(["search", "search", "expanded", "disabled", "sort", "detail"])
-      ) {
+      switch (pick(["search", "search", "expanded", "disabled", "sort"])) {
         case "search":
           input.view = view({
             search: pick(["", "", "shell", "equinor", "well 1"]),
@@ -682,9 +736,6 @@ describe("rows hidden by a search", () => {
               },
             ],
           }
-          break
-        case "detail":
-          input.detail = random() < 0.7
           break
       }
       const incremental = run(input, engine)

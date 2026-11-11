@@ -20,6 +20,10 @@
  * - Development warnings, once each: items without ids or sharing one, a
  *   view that hides every column, and features that cannot work together
  *   (the later one is off).
+ * - The search reaches the view (and `onViewChange`) `searchDelay` ms after
+ *   the user stops typing (`search.tsx`); the field shows each key at once.
+ * - Rows are reordered in a flat list only, the order being the
+ *   application's (`onRowOrderChange`).
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -37,6 +41,7 @@ import { createStore } from "../store"
 import {
   allMatchingValue,
   clampPage,
+  clearFilters,
   createDataTableEngine,
   createDefaultView,
   DEFAULT_PAGE_SIZE,
@@ -72,12 +77,14 @@ import {
   type DataTableOptions,
   type DataTablePageChangeReason,
   type DataTablePageSizeChangeReason,
+  type DataTableRowOrderChangeReason,
   type DataTableSelectionChangeDetails,
   type DataTableSelectionChangeReason,
   type DataTableSelectionMode,
   type DataTableState,
 } from "./context"
 import { loadFeature, usePrefetchFeatures, type FeatureName } from "./lazy"
+import { viewChangeReason } from "./view-reason"
 import { createWarnings, type Warn } from "./warnings"
 
 type DataTableProps<T> = Omit<
@@ -116,6 +123,18 @@ type DataTableProps<T> = Omit<
   error?: React.ReactNode
   /** Adds "Retry" to the error state. */
   onRetry?: () => void
+  /**
+   * More rows come after `items` (loaded as the user scrolls): loading rows
+   * show at the end, and `onLoadMore` is called as they come near.
+   */
+  hasMore?: boolean
+  /**
+   * Called once when the end of the rows comes within two views (not again
+   * until `items`, `loading` back to false or the view changes): load the
+   * next rows and add them to `items`. In client mode, not while a search
+   * or filter is in effect: use server mode to load what matches.
+   */
+  onLoadMore?: () => void
   // Look
   /** `sm` is compact: shorter header and rows, smaller text. */
   size?: "default" | "sm"
@@ -124,6 +143,10 @@ type DataTableProps<T> = Omit<
   // Features: on at the root, a column can only turn one off.
   /** Header buttons sort (Shift: by several columns); on by default. */
   sortable?: boolean
+  /**
+   * The view's search and filters apply (`DataTableSearch`,
+   * `DataTableFilter`); `filterable: false` opts a column out.
+   */
   filterable?: boolean
   groupable?: boolean
   editable?: boolean
@@ -135,6 +158,10 @@ type DataTableProps<T> = Omit<
   hideableColumns?: boolean
   /** Columns are pinned to the start or the end, from the same menus. */
   pinnableColumns?: boolean
+  /**
+   * Rows are dragged into order by a handle at their start (flat lists
+   * only); the order is the application's: `onRowOrderChange`.
+   */
   reorderableRows?: boolean
   /** Pages of `pageSize` rows, with the footer's page parts. */
   pagination?: boolean
@@ -153,6 +180,11 @@ type DataTableProps<T> = Omit<
     view: DataTableView,
     eventDetails: DataTableChangeDetails<DataTableViewChangeReason>
   ) => void
+  /**
+   * How long after the last key the search reaches the view, in ms: 300 in
+   * server mode (one request once the user pauses), 0 in client mode.
+   */
+  searchDelay?: number
   // Row selection
   /** The selected rows' ids (controlled). */
   value?: ReadonlyArray<string>
@@ -192,6 +224,14 @@ type DataTableProps<T> = Omit<
   // Events
   /** A row activated: Enter, or a click (a double click when rows select). */
   onActivate?: (id: string, item: T) => void
+  /**
+   * Rows reordered (`reorderableRows`): every item's id, in the new order.
+   * Put `items` in that order; the table does not reorder them itself.
+   */
+  onRowOrderChange?: (
+    ids: Array<string>,
+    eventDetails: DataTableChangeDetails<DataTableRowOrderChangeReason>
+  ) => void
 }
 
 /** The props and state the actions read, as of the last render. */
@@ -223,6 +263,9 @@ type Latest<T> = {
   onPageChange: DataTableProps<T>["onPageChange"]
   onPageSizeChange: DataTableProps<T>["onPageSizeChange"]
   onRetry: DataTableProps<T>["onRetry"]
+  onLoadMore: DataTableProps<T>["onLoadMore"]
+  onRowOrderChange: DataTableProps<T>["onRowOrderChange"]
+  setClears: React.Dispatch<React.SetStateAction<number>>
   setView: (view: DataTablePartialView) => void
   setValue: (value: ReadonlyArray<string>) => void
   setMatching: (matching: Matching | null) => void
@@ -366,6 +409,15 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
       return true
     },
     currentView: () => now().view,
+    clearFilters(event) {
+      now().setClears((count) => count + 1)
+      return actions.updateView(clearFilters, viewChangeReason, event)
+    },
+    resetView(event) {
+      const current = now()
+      current.setClears((count) => count + 1)
+      return actions.setView(current.defaults, "reset", event)
+    },
     updateView(change, reason, event) {
       const { view } = now()
       const next = change(view)
@@ -486,8 +538,14 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
       else window.location.assign(href)
     },
     focusTable(later = false) {
-      const focus = () =>
-        frame?.querySelector<HTMLElement>('table [tabindex="0"]')?.focus()
+      // The table's own stop, not one of a table nested in its rows.
+      const focus = () => {
+        const table = frame?.querySelector("table")
+        const stops = table?.querySelectorAll<HTMLElement>('[tabindex="0"]')
+        ;[...(stops ?? [])]
+          .find((stop) => stop.closest("table") === table)
+          ?.focus()
+      }
       // After the render, and the grid's own tab stop update after it.
       if (later) setTimeout(focus)
       else focus()
@@ -500,6 +558,14 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
     },
     retry() {
       now().onRetry?.()
+    },
+    loadMore() {
+      now().onLoadMore?.()
+    },
+    reorderRows(ids, reason, event) {
+      const details = createChangeEventDetails(reason, event)
+      now().onRowOrderChange?.([...ids], details)
+      return !details.isCanceled
     },
     async exportCsv(options = {}) {
       const { toCsv } = await loadFeature("csv")
@@ -573,6 +639,8 @@ function DataTable<T>({
   loading = false,
   error,
   onRetry,
+  hasMore = false,
+  onLoadMore,
   size = "default",
   striped = false,
   sortable = true,
@@ -590,6 +658,7 @@ function DataTable<T>({
   view: viewProp,
   defaultView,
   onViewChange,
+  searchDelay,
   value: valueProp,
   defaultValue,
   onValueChange,
@@ -605,6 +674,7 @@ function DataTable<T>({
   onPageSizeChange,
   pageSizes = DEFAULT_PAGE_SIZES,
   onActivate,
+  onRowOrderChange,
   className,
   children,
   ...props
@@ -616,8 +686,10 @@ function DataTable<T>({
   const tree = itemToChildren !== undefined
   const server = dataMode === "server"
 
-  // A tree's rows nest by their items, not by grouping (§4.3).
+  // A tree's rows nest by their items, not by grouping or a flat order
+  // (§4.3).
   const grouping = groupable && !tree
+  const rowOrder = reorderableRows && !tree
   const capabilities = React.useMemo<ViewCapabilities>(
     () => ({ sortable, filterable, groupable: grouping }),
     [sortable, filterable, grouping]
@@ -650,6 +722,7 @@ function DataTable<T>({
     defaultValue ?? NO_IDS
   )
   const [matching, setMatching] = React.useState<Matching | null>(null)
+  const [clears, setClears] = React.useState(0)
   const [expanded, setExpanded] = useControlled<ReadonlyArray<string>>(
     expandedProp,
     defaultExpanded ?? NO_IDS
@@ -703,6 +776,9 @@ function DataTable<T>({
   const linked = itemToHref !== undefined
   const activatable = onActivate !== undefined || linked
   const retryable = onRetry !== undefined
+  // Load more is for a list without pages: pages load their own rows.
+  const more = hasMore && !pagination
+  const delay = Math.max(0, searchDelay ?? (server ? 300 : 0))
   // Compared by value: an inline array is a new one on every render.
   const pageSizesKey = pageSizes.join(",")
   const sizes = React.useMemo(
@@ -722,7 +798,7 @@ function DataTable<T>({
       reorderableColumns,
       hideableColumns,
       pinnableColumns,
-      reorderableRows,
+      reorderableRows: rowOrder,
       pagination,
       selectionMode,
       cellSelectionMode,
@@ -732,6 +808,8 @@ function DataTable<T>({
       linked,
       activatable,
       retryable,
+      hasMore: more,
+      searchDelay: delay,
       pageSizes: sizes,
     }),
     [
@@ -746,7 +824,7 @@ function DataTable<T>({
       reorderableColumns,
       hideableColumns,
       pinnableColumns,
-      reorderableRows,
+      rowOrder,
       pagination,
       selectionMode,
       cellSelectionMode,
@@ -756,6 +834,8 @@ function DataTable<T>({
       linked,
       activatable,
       retryable,
+      more,
+      delay,
       sizes,
     ]
   )
@@ -776,6 +856,7 @@ function DataTable<T>({
       expanded,
       loading,
       error: error ?? null,
+      clears,
     }),
     [
       columns,
@@ -792,6 +873,7 @@ function DataTable<T>({
       expanded,
       loading,
       error,
+      clears,
     ]
   )
 
@@ -825,6 +907,9 @@ function DataTable<T>({
     onPageChange,
     onPageSizeChange,
     onRetry,
+    onLoadMore,
+    onRowOrderChange,
+    setClears,
     setView,
     setValue,
     setMatching,
@@ -867,7 +952,8 @@ function DataTable<T>({
   if (editable) features.push("editing")
   if (cellSelectionMode !== "none") features.push("cellSelection")
   if (reorderableColumns || reorderableRows) features.push("dragAndDrop")
-  if ((filterable || editable) && hasDates) features.push("dateInput")
+  // A date filter asks for its calendar itself (`DataTableFilter`).
+  if (editable && hasDates) features.push("dateInput")
   usePrefetchFeatures(features)
 
   // New columns re-render every row: said when they are new but the same.
@@ -921,6 +1007,20 @@ function DataTable<T>({
         "DataTable: `groupable` is off in a tree (`itemToChildren`): a tree's rows nest by their items, so they are not grouped."
       )
   }, [warn, groupable, tree])
+  React.useEffect(() => {
+    if (reorderableRows && tree)
+      warn(
+        "reorderable-rows-tree",
+        "DataTable: `reorderableRows` is off in a tree (`itemToChildren`): rows are reordered in a flat list only."
+      )
+  }, [warn, reorderableRows, tree])
+  React.useEffect(() => {
+    if (hasMore && pagination)
+      warn(
+        "has-more-pagination",
+        "DataTable: `hasMore` is off with `pagination`: pages are loaded a page at a time (`onPageChange`), not as the user scrolls."
+      )
+  }, [warn, hasMore, pagination])
   React.useEffect(() => {
     if (server && pagination && rowCount === undefined)
       warn(

@@ -9,10 +9,7 @@
  * The headers render as they will from the first paint (a tab stop, the
  * grab cursor): only their handlers wait for the code, which loads in idle
  * time once the table is shown. A press before it has arrived asks for it
- * and waits: Enter or Space starts the keyboard drag once it has (unless
- * focus has left the header or another key was pressed since), and a
- * pointer press starts dragging then if the pointer is still down. Nothing
- * here imports drag and drop.
+ * and waits (`drag-wait.ts`). Nothing here imports drag and drop.
  *
  * A column moves among its siblings: the columns and groups of its group,
  * or of the top level; a group moves with its columns. Pinned columns, and
@@ -24,6 +21,7 @@ import type { ListDropPlace } from "../primitives/drag-and-drop/list-strategy"
 import type { DragAndDrop } from "../primitives/drag-and-drop/use-drag-and-drop"
 import { createStore, useStore, type Store } from "../store"
 import type { DataTableActions } from "./context"
+import { createDragWait } from "./drag-wait"
 import {
   getColumnModel,
   orderSiblings,
@@ -97,68 +95,14 @@ function createColumnOrder(
   const drags = new Map<string | null, ColumnDrag>()
   const snapshot = { current: initial }
   const model = () => getColumnModel(snapshot.current.columns)
-  /** The press waiting for the code, and how to stop waiting. */
-  let waiting: {
-    id: string
-    start: (drag: ColumnDrag, element: HTMLElement) => void
-    stop: () => void
-  } | null = null
-  const stopWaiting = () => {
-    waiting?.stop()
-    waiting = null
-  }
+  const waiting = createDragWait<ColumnDrag>()
 
   return {
     store,
     snapshot,
     frame,
     wait(id, press) {
-      stopWaiting()
-      if ("key" in press) {
-        const { key } = press
-        // Given up when focus leaves the header or another key is pressed.
-        const element = elements.get(id)
-        const view = element?.ownerDocument.defaultView ?? window
-        const cancel = () => stopWaiting()
-        element?.addEventListener("focusout", cancel)
-        view.addEventListener("keydown", cancel, true)
-        waiting = {
-          id,
-          // What a keyboard drag reads of the key that starts it.
-          start: (drag, element) =>
-            drag.onHandleKeyDown(
-              {
-                key,
-                currentTarget: element,
-                preventDefault: () => undefined,
-                stopPropagation: () => undefined,
-              } as unknown as React.KeyboardEvent<HTMLElement>,
-              id
-            ),
-          stop: () => {
-            element?.removeEventListener("focusout", cancel)
-            view.removeEventListener("keydown", cancel, true)
-          },
-        }
-      } else {
-        const { pointer } = press
-        const view = pointer.currentTarget.ownerDocument.defaultView ?? window
-        // Let go before the code arrives: a click, no drag.
-        const release = (event: PointerEvent) => {
-          if (event.pointerId === pointer.pointerId) stopWaiting()
-        }
-        const stop = () => {
-          view.removeEventListener("pointerup", release, true)
-          view.removeEventListener("pointercancel", release, true)
-        }
-        view.addEventListener("pointerup", release, true)
-        view.addEventListener("pointercancel", release, true)
-        waiting = {
-          id,
-          start: (drag) => drag.onPointerDown(pointer, id),
-          stop,
-        }
-      }
+      waiting.wait(id, elements.get(id) ?? null, press)
       load()
     },
     register(id) {
@@ -199,12 +143,10 @@ function createColumnOrder(
     },
     connect(list, drag) {
       drags.set(list, drag)
-      const press = waiting
-      const element = press && elements.get(press.id)
-      if (press && element && parentOf(model(), press.id) === list) {
-        stopWaiting()
-        press.start(drag, element)
-      }
+      const id = waiting.waiting()
+      const element = id === null ? undefined : elements.get(id)
+      if (id !== null && element && parentOf(model(), id) === list)
+        waiting.start(drag, element)
       return () => {
         if (drags.get(list) === drag) drags.delete(list)
       }

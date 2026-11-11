@@ -676,7 +676,7 @@ index bebe3a91..1a632390 100644
            )}
            {...props}
 diff --git a/apps/v4/registry/bases/base/ui/dropdown-menu.tsx b/apps/v4/registry/bases/base/ui/dropdown-menu.tsx
-index 4c4543e2..74e2002d 100644
+index 4c4543e2..b5cc4068 100644
 --- a/apps/v4/registry/bases/base/ui/dropdown-menu.tsx
 +++ b/apps/v4/registry/bases/base/ui/dropdown-menu.tsx
 @@ -2,6 +2,7 @@
@@ -709,9 +709,11 @@ index 4c4543e2..74e2002d 100644
  }
  
  function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
-@@ -24,14 +36,18 @@ function DropdownMenuContent({
+@@ -23,21 +35,27 @@ function DropdownMenuContent({
+   alignOffset = 0,
    side = "bottom",
    sideOffset = 4,
++  anchor,
    className,
 +  container,
    ...props
@@ -719,7 +721,8 @@ index 4c4543e2..74e2002d 100644
 +  Pick<MenuPrimitive.Portal.Props, "container"> &
    Pick<
      MenuPrimitive.Positioner.Props,
-     "align" | "alignOffset" | "side" | "sideOffset"
+-    "align" | "alignOffset" | "side" | "sideOffset"
++    "align" | "alignOffset" | "side" | "sideOffset" | "anchor"
    >) {
 +  const portalTarget = usePortalTarget()
 +
@@ -729,6 +732,13 @@ index 4c4543e2..74e2002d 100644
        <MenuPrimitive.Positioner
          className="isolate z-50 outline-none"
          align={align}
+         alignOffset={alignOffset}
+         side={side}
+         sideOffset={sideOffset}
++        anchor={anchor}
+       >
+         <MenuPrimitive.Popup
+           data-slot="dropdown-menu-content"
 diff --git a/apps/v4/registry/bases/base/ui/hover-card.tsx b/apps/v4/registry/bases/base/ui/hover-card.tsx
 index f76bbaa2..17940b96 100644
 --- a/apps/v4/registry/bases/base/ui/hover-card.tsx
@@ -896,7 +906,7 @@ index b1f8b1df..4880c73b 100644
    )
  }
 diff --git a/apps/v4/registry/bases/base/ui/popover.tsx b/apps/v4/registry/bases/base/ui/popover.tsx
-index 808aa62d..bf903bda 100644
+index 808aa62d..c8aebb7b 100644
 --- a/apps/v4/registry/bases/base/ui/popover.tsx
 +++ b/apps/v4/registry/bases/base/ui/popover.tsx
 @@ -2,6 +2,7 @@
@@ -907,17 +917,19 @@ index 808aa62d..bf903bda 100644
  import { cn } from "cn"
  
  function Popover({ ...props }: PopoverPrimitive.Root.Props) {
-@@ -18,14 +19,18 @@ function PopoverContent({
+@@ -18,19 +19,25 @@ function PopoverContent({
    alignOffset = 0,
    side = "bottom",
    sideOffset = 4,
++  anchor,
 +  container,
    ...props
  }: PopoverPrimitive.Popup.Props &
 +  Pick<PopoverPrimitive.Portal.Props, "container"> &
    Pick<
      PopoverPrimitive.Positioner.Props,
-     "align" | "alignOffset" | "side" | "sideOffset"
+-    "align" | "alignOffset" | "side" | "sideOffset"
++    "align" | "alignOffset" | "side" | "sideOffset" | "anchor"
    >) {
 +  const portalTarget = usePortalTarget()
 +
@@ -927,6 +939,12 @@ index 808aa62d..bf903bda 100644
        <PopoverPrimitive.Positioner
          align={align}
          alignOffset={alignOffset}
+         side={side}
+         sideOffset={sideOffset}
++        anchor={anchor}
+         className="isolate z-50"
+       >
+         <PopoverPrimitive.Popup
 diff --git a/apps/v4/registry/bases/base/ui/select.tsx b/apps/v4/registry/bases/base/ui/select.tsx
 index 2cb76c11..80927f4f 100644
 --- a/apps/v4/registry/bases/base/ui/select.tsx

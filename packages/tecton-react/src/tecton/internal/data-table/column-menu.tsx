@@ -23,27 +23,26 @@ import {
   ArrowLeftRightIcon,
   ArrowUpIcon,
   ChevronsLeftRightEllipsisIcon,
-  EllipsisVerticalIcon,
   EyeOffIcon,
   PinIcon,
   PinOffIcon,
   RotateCcwIcon,
   XIcon,
 } from "lucide-react"
-import { cn } from "cn"
 
-import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
 
 import { useTranslations, type Translator } from "../i18n/translations"
 import { announce } from "../primitives/live-announcer"
+import { loadFeature } from "./lazy"
+import type { LazyPopupProps } from "./lazy-popup"
+import { useFirstItemFromKeyboard, usePopupTabbing } from "./popup-focus"
 import type { DataTableContextValue } from "./context"
 import {
   setColumnHidden,
@@ -62,14 +61,6 @@ type ColumnMenuOptions = {
   hideable: boolean
   /** Pinning is on for the column. */
   pinnable: boolean
-}
-
-/**
- * Whether a column has a menu: for a column feature beyond sorting (which
- * the header's own button does), the menu then sorting too.
- */
-function hasColumnMenu(options: ColumnMenuOptions) {
-  return options.resizable || options.hideable || options.pinnable
 }
 
 /** What a sort set from the menu says that the grid does not. */
@@ -91,7 +82,7 @@ function DataTableColumnMenu<T>({
   resizerRef,
   onFit,
   onResetWidth,
-  className,
+  popup,
 }: {
   column: EngineColumn<T>
   context: DataTableContextValue<T>
@@ -107,14 +98,21 @@ function DataTableColumnMenu<T>({
   onFit: (event: Event) => void
   /** "Reset width"; off (`undefined`) while the user has set none. */
   onResetWidth: ((event: Event) => void) | undefined
-  className?: string
+  /** The menu's state, from its button in the header (`lazy-popup.ts`). */
+  popup: LazyPopupProps
 }) {
   const t = useTranslations("dataTable")
   const { actions, store } = context
+  const content = React.useRef<HTMLDivElement | null>(null)
+  useFirstItemFromKeyboard(content, popup.open, popup.openedBy)
+  usePopupTabbing(popup, "menu")
   // Where focus goes as the menu closes: the resizer for "Resize column";
   // nowhere yet after "Hide column" (it is decided once the view shows
   // whether the column went); else back to the button.
   const closing = React.useRef<"resize" | "hide" | null>(null)
+  React.useEffect(() => {
+    if (popup.open) closing.current = null
+  }, [popup.open])
   const columnName = column.header
   const at = sorting.findIndex((sorted) => sorted.column === column.id)
   const direction = at === -1 ? null : sorting[at].direction
@@ -199,8 +197,15 @@ function DataTableColumnMenu<T>({
       <DropdownMenuGroup key="column">
         {options.resizable && (
           <DropdownMenuItem
-            // The resizer, focused as the menu closes, enters resize mode.
-            onClick={() => (closing.current = "resize")}
+            // The resizer, focused as the menu closes, enters resize mode;
+            // once it is there, if its code is still to come.
+            onClick={() => {
+              closing.current = "resize"
+              if (resizerRef.current) return
+              loadFeature("resizer")
+                .then(() => setTimeout(() => resizerRef.current?.focus()))
+                .catch(() => undefined)
+            }}
           >
             <ArrowLeftRightIcon />
             {t("resizeColumn")}
@@ -252,36 +257,23 @@ function DataTableColumnMenu<T>({
 
   return (
     <DropdownMenu
-      onOpenChange={(open) => {
-        if (open) closing.current = null
-      }}
+      open={popup.open}
+      onOpenChange={popup.onOpenChange}
+      onOpenChangeComplete={popup.onOpenChangeComplete}
     >
-      <DropdownMenuTrigger
-        data-slot="data-table-column-menu"
-        render={
-          <Button
-            variant="ghost"
-            size="icon-xs"
-            ref={triggerRef}
-            aria-label={t("columnMenu", { columnName })}
-            // The cell's own press drags the column; this one opens the menu.
-            onPointerDown={(event) => event.stopPropagation()}
-            className={cn(
-              "text-muted-foreground hover:text-foreground",
-              className
-            )}
-          />
-        }
-      >
-        <EllipsisVerticalIcon />
-      </DropdownMenuTrigger>
       <DropdownMenuContent
+        ref={content}
+        id={popup.popupId}
+        aria-labelledby={popup.buttonId}
+        anchor={popup.anchor}
         align="end"
         className="w-auto min-w-44"
         finalFocus={() =>
           closing.current === "resize"
-            ? (resizerRef.current ?? true)
-            : closing.current !== "hide"
+            ? (resizerRef.current ?? false)
+            : closing.current === "hide"
+              ? false
+              : popup.finalFocus()
         }
       >
         {sections.map((section, index) => (
@@ -295,5 +287,5 @@ function DataTableColumnMenu<T>({
   )
 }
 
-export { DataTableColumnMenu, hasColumnMenu }
+export { DataTableColumnMenu }
 export type { ColumnMenuOptions }

@@ -96,8 +96,13 @@ describe("DataTable column reordering on demand", () => {
     await waitFor(() =>
       expect(document.activeElement).toHaveAttribute(
         "aria-label",
-        "Insert after TD (m)"
+        "Insert between Well and TD (m)"
       )
+    )
+    await user.keyboard("{ArrowRight}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert after TD (m)"
     )
     await user.keyboard("{Enter}")
     expect(onViewChange.mock.calls.at(-1)?.[0].columns.order).toEqual([

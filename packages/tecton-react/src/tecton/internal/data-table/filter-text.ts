@@ -1,0 +1,113 @@
+/**
+ * A filter's value in words, for its `DataTableFilter` button and its chip
+ * in `DataTableActiveFilters`: the text a text filter looks for, a number
+ * range ("1,000–3,000", "≥ 1,000"), a range of days (one day when both
+ * ends are the same), Yes / No, the options' labels ("Producing,
+ * Drilling"; with `short`, "3 selected" past two). Numbers read as the
+ * column formats them, days as its date fields (its `dateStyle`, else
+ * medium) in its time zone, never its time; a custom filter value has no
+ * words (`null`).
+ */
+import type { Translator } from "../i18n/translations"
+import type {
+  DataTableFilterValue,
+  EngineColumn,
+  Formatter,
+} from "./engine/index"
+import { dayOf } from "./engine/values"
+
+const dayFormats = new Map<string, Intl.DateTimeFormat>()
+
+/** A date column's days, without their time: its date fields and zone. */
+function dayFormat<T>(column: EngineColumn<T>, locale: string) {
+  const {
+    dateStyle,
+    timeZone,
+    calendar,
+    numberingSystem,
+    era,
+    year,
+    month,
+    day,
+    weekday,
+  } = (column.format ?? {}) as Intl.DateTimeFormatOptions
+  const fields = { era, year, month, day, weekday }
+  const own = Object.values(fields).some((field) => field !== undefined)
+  const options: Intl.DateTimeFormatOptions = {
+    ...(dateStyle || !own ? { dateStyle: dateStyle ?? "medium" } : fields),
+    timeZone,
+    calendar,
+    numberingSystem,
+  }
+  const key = `${locale}|${JSON.stringify(options)}`
+  let format = dayFormats.get(key)
+  if (!format) {
+    format = new Intl.DateTimeFormat(locale, options)
+    dayFormats.set(key, format)
+  }
+  return format
+}
+
+function filterText<T>(
+  column: EngineColumn<T>,
+  value: DataTableFilterValue,
+  formatter: Formatter<T>,
+  t: Translator<"dataTable">,
+  { short = false }: { short?: boolean } = {}
+): string | null {
+  const format = (raw: number) => formatter.format(column, raw)
+  switch (value.type) {
+    case "text":
+      return value.value.trim()
+    case "number": {
+      const { min, max } = value
+      if (min !== undefined && max !== undefined)
+        return t("filterRange", { from: format(min), to: format(max) })
+      if (min !== undefined) return t("filterAtLeast", { value: format(min) })
+      if (max !== undefined) return t("filterAtMost", { value: format(max) })
+      return null
+    }
+    case "date": {
+      const { from, to } = value
+      const days = dayFormat(column, formatter.locale)
+      const { timeZone } = days.resolvedOptions()
+      const same = (a: Date, b: Date) => {
+        const x = dayOf(a, timeZone)
+        const y = dayOf(b, timeZone)
+        return x.year === y.year && x.month === y.month && x.day === y.day
+      }
+      if (from && to)
+        return same(from, to)
+          ? days.format(from)
+          : t("filterRange", { from: days.format(from), to: days.format(to) })
+      if (from) return t("filterFrom", { value: days.format(from) })
+      if (to) return t("filterUntil", { value: days.format(to) })
+      return null
+    }
+    case "boolean":
+      return formatter.format(column, value.value)
+    case "options": {
+      if (short && value.values.length > 2)
+        return t("optionsSelected", {
+          count: value.values.length,
+          total: value.values.length.toLocaleString(formatter.locale),
+        })
+      // In the column's order, by label.
+      const chosen = new Set(value.values)
+      const labels = column.options
+        .filter((option) => chosen.has(option.value))
+        .map((option) => option.label)
+      const known = new Set(column.options.map((option) => option.value))
+      for (const other of value.values)
+        if (!known.has(other)) labels.push(other)
+      return new Intl.ListFormat(formatter.locale, {
+        style: "short",
+        type: "unit",
+      }).format(labels)
+    }
+    case "custom":
+      return null
+  }
+}
+
+export { filterText }

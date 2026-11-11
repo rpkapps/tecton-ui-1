@@ -85,12 +85,13 @@ import {
   indexRows,
   lazy,
   pageRows,
-  type BodyRow,
+  type EngineRow,
   type TotalsRow,
 } from "./rows"
 import { rankingTask, sortRows, type SortPass } from "./sort"
 import type {
   DataTableColumns,
+  DataTableFilterValue,
   DataTableSort,
   DataTableValue,
   DataTableView,
@@ -119,12 +120,10 @@ type DataTableEngineInput<T> = {
   sortable?: boolean
   /** The root's `filterable` (default `false`): with it the search index is prepared in idle time. */
   filterable?: boolean
-  /** Expanded rows (tree rows and detail rows), by item id. */
+  /** Expanded tree rows, by item id. */
   expanded?: ReadonlyArray<string> | ReadonlySet<string>
   /** Closed groups, by group key: groups are open unless listed. */
   collapsedGroups?: ReadonlyArray<string> | ReadonlySet<string>
-  /** Whether rows have a detail row (`renderDetail`); not in a tree. */
-  detail?: boolean
   /** Pages from 1; `null` or left out for no pagination. */
   pagination?: { page: number; pageSize: number } | null
   /** Server mode: the number of rows the view matches on the server. */
@@ -133,14 +132,14 @@ type DataTableEngineInput<T> = {
 
 type DataTableRowModel<T> = {
   /** The body rows to render: the page's when paginated (with its continued ancestors first). */
-  readonly rows: ReadonlyArray<BodyRow<T>>
+  readonly rows: ReadonlyArray<EngineRow<T>>
   /** Every body row, on every page. */
-  readonly allRows: ReadonlyArray<BodyRow<T>>
+  readonly allRows: ReadonlyArray<EngineRow<T>>
   /** The page shown (clamped), from 1. */
   readonly page: number
   readonly pageCount: number
   readonly pageSize: number
-  /** The item and group rows shown, on every page (detail rows not counted): what client pages count. */
+  /** The item and group rows shown, on every page: what client pages count. */
   readonly displayRowCount: number
   /** The items the view matches: the server's `rowCount` in server mode, `matchingCount` in client mode. */
   readonly rowCount: number
@@ -253,6 +252,22 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
   }
   const worker = createIdleWorker()
   const cache = createRowCache<T>()
+  /**
+   * Facets by column, with what they were counted over: kept across runs
+   * (a filter toggled in the popover counts the column again only when the
+   * other filters, the search or the rows change).
+   */
+  const facetCache = new Map<
+    string,
+    {
+      rows: Core<T>
+      formatter: Formatter<T>
+      search: Uint8Array | null
+      filters: DataTableView["filters"]
+      server: boolean
+      counts: ReadonlyMap<string, number>
+    }
+  >()
 
   const steadySorting = steady<ReadonlyArray<DataTableSort>>(sameSorting)
   const steadyFilters = steady<DataTableView["filters"]>(sameFilters)
@@ -407,8 +422,7 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       disabled: Uint8Array | null,
       expanded: ReadonlySet<string>,
       autoExpanded: Uint8Array | "parents" | null,
-      collapsedGroups: ReadonlySet<string>,
-      detail: boolean
+      collapsedGroups: ReadonlySet<string>
     ) =>
       buildRows({
         core: rows,
@@ -420,14 +434,13 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
         expanded,
         autoExpanded,
         collapsedGroups,
-        detail,
         cache,
       })
   )
   const rowIndex = memoOne(indexRows<T>)
   const paging = memoOne(
     (
-      allRows: ReadonlyArray<BodyRow<T>>,
+      allRows: ReadonlyArray<EngineRow<T>>,
       paginated: boolean,
       server: boolean,
       requestedPage: number,
@@ -436,8 +449,7 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       matching: number
     ) => {
       const pageSize = resolvePageSize(requestedSize)
-      let counted = 0
-      for (const row of allRows) if (row.kind !== "detail") counted++
+      const counted = allRows.length
       const rowCount = server ? (serverCount ?? matching) : matching
       if (server) {
         const pageCount = paginated ? getPageCount(rowCount, pageSize) : 1
@@ -473,7 +485,7 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       formatter: Formatter<T>,
       set: RowSet,
       groups: OrderedGroups<T> | null,
-      allRows: ReadonlyArray<BodyRow<T>>,
+      allRows: ReadonlyArray<EngineRow<T>>,
       page: ReturnType<typeof paging>,
       disabled: Uint8Array | null,
       filters: DataTableView["filters"],
@@ -514,7 +526,6 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
         string,
         Readonly<Record<string, DataTableValue>>
       >()
-      const facets = new Map<string, ReadonlyMap<string, number>>()
       return {
         rows: page.rows,
         allRows,
@@ -603,23 +614,38 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
           }
         }),
         facets: (id) => {
-          let counts = facets.get(id)
-          if (!counts) {
-            const column = columns.byId.get(id)
-            if (!column) return new Map()
-            const others = server
-              ? null
-              : compileFilter(
-                  columns.byId,
-                  filters,
-                  index,
-                  search,
-                  items.length,
-                  id
-                )
-            counts = countFacets(rows, column, others, formatter)
-            facets.set(id, counts)
-          }
+          const column = columns.byId.get(id)
+          if (!column) return new Map()
+          const others: Record<string, DataTableFilterValue> = { ...filters }
+          delete others[id]
+          const cached = facetCache.get(id)
+          if (
+            cached?.rows === rows &&
+            cached.formatter === formatter &&
+            cached.search === search &&
+            cached.server === server &&
+            sameFilters(cached.filters, others)
+          )
+            return cached.counts
+          const predicate = server
+            ? null
+            : compileFilter(
+                columns.byId,
+                filters,
+                index,
+                search,
+                items.length,
+                id
+              )
+          const counts = countFacets(rows, column, predicate, formatter)
+          facetCache.set(id, {
+            rows,
+            formatter,
+            search,
+            filters: others,
+            server,
+            counts,
+          })
           return counts
         },
       }
@@ -694,10 +720,11 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
         formatter,
         server,
         disabled,
-        expanded,
+        // Only a tree's rows open: a flat list's detail rows are the
+        // content's, and opening one redoes nothing here.
+        tree ? expanded : EMPTY_SET,
         autoExpanded,
-        steadyCollapsed(toSet(input.collapsedGroups)),
-        input.detail === true
+        steadyCollapsed(toSet(input.collapsedGroups))
       )
       const matchingCount = set.context
         ? set.all.length - set.context.reduce((count, flag) => count + flag, 0)

@@ -51,9 +51,17 @@ const FEATURES = {
   /** `cellSelectionMode`: ranges, copy and paste, fill down. */
   cellSelection: feature(pending),
   /** `reorderableColumns`, `reorderableRows`. */
-  dragAndDrop: feature(() => import("./column-reorder")),
-  /** The calendar of a date filter or editor. */
-  dateInput: feature(pending),
+  dragAndDrop: feature(() => import("./reorder")),
+  /** The calendar of a date filter or editor, and its locale. */
+  dateInput: feature(() => import("./filter-date")),
+  /** Column menus and description popovers (`header-popups.tsx`). */
+  headerPopups: feature(() => import("./header-popups")),
+  /** `resizableColumns`: the columns' resizers and their drags. */
+  resizer: feature(() => import("../../table-column-resizer")),
+  /** `DataTableFilter`'s popover and its filters (`filter-popover.tsx`). */
+  filters: feature(() => import("./filter-popover")),
+  /** `DataTableRowActions`' menu (`row-actions-menu.tsx`). */
+  rowActions: feature(() => import("./row-actions-menu")),
 }
 
 type FeatureName = keyof typeof FEATURES
@@ -100,7 +108,11 @@ function usePrefetchFeatures(names: ReadonlyArray<FeatureName>) {
   const key = names.join(" ")
   React.useEffect(() => {
     if (!key) return
-    const wanted = key.split(" ") as Array<FeatureName>
+    // Asked for already (by another table, another row): nothing to wait for.
+    const wanted = (key.split(" ") as Array<FeatureName>).filter(
+      (name) => !loads.has(name)
+    )
+    if (!wanted.length) return
     const prefetch = () => {
       // A prefetch that fails is retried by the load that needs the module.
       for (const name of wanted) loadFeature(name).catch(() => undefined)

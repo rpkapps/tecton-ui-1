@@ -19,7 +19,8 @@
  * The selection column's header holds the select-all checkbox in the last
  * row (a cell named "Select" above it, and in its place for single
  * selection), so every header row has the same columns for the grid to
- * move through. Placeholders are named after the columns below them.
+ * move through; the drag handle column's cells, before it, are named
+ * "Reorder". Placeholders are named after the columns below them.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -27,6 +28,7 @@ import {
   ArrowDownIcon,
   ArrowUpDownIcon,
   ArrowUpIcon,
+  EllipsisVerticalIcon,
   InfoIcon,
 } from "lucide-react"
 
@@ -36,13 +38,8 @@ import {
   TableHeader,
   TableRow,
 } from "@tecton/react/components/table"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@tecton/react/components/popover"
-import { TableColumnResizer } from "@tecton/react/tecton/table-column-resizer"
 
+import { columnResizerClassName } from "../column-resizer-style"
 import { useTranslations, type Translator } from "../i18n/translations"
 import { announce } from "../primitives/live-announcer"
 import {
@@ -56,7 +53,7 @@ import {
   useColumnDragging,
   type ColumnOrder,
 } from "./column-order"
-import { DataTableColumnMenu, hasColumnMenu } from "./column-menu"
+import type { ColumnMenuOptions, DataTableColumnMenu } from "./column-menu"
 import type { ColumnSizer } from "./column-sizing"
 import {
   useDataTableSelector,
@@ -76,6 +73,9 @@ import {
   type EngineColumn,
   type HeaderCell,
 } from "./engine/index"
+import { useFeature } from "./lazy"
+import { useLazyPopup } from "./lazy-popup"
+import { createPressWait } from "./press-wait"
 import { DataTableSelectionCheckbox } from "./selection-checkbox"
 
 /** Where a sort button's negative margin goes: to the edge its text sits on. */
@@ -133,6 +133,109 @@ const DRAGGABLE =
   "cursor-grab select-none data-dragging:cursor-grabbing data-dragging:opacity-50"
 
 /**
+ * Whether a column has a menu: for a column feature beyond sorting (which
+ * the header's own button does), the menu then sorting too.
+ */
+function hasColumnMenu(options: ColumnMenuOptions) {
+  return options.resizable || options.hideable || options.pinnable
+}
+
+/** The props of a column's menu, as `column-menu.tsx` takes them. */
+type ColumnMenuProps<T> = Omit<
+  React.ComponentProps<typeof DataTableColumnMenu<T>>,
+  "popup"
+>
+
+/**
+ * A column's menu button: a plain button for its whole life, which opens
+ * the menu once the menu's code is there (`lazy-popup.ts`,
+ * `header-popups.tsx`).
+ */
+function ColumnMenu<T>({
+  loadResizer,
+  className,
+  ...props
+}: ColumnMenuProps<T> & { loadResizer: () => void; className?: string }) {
+  const t = useTranslations("dataTable")
+  const lazy = useLazyPopup("headerPopups", {
+    popup: "menu",
+    // "Resize column" focuses the resizer: asked for with the menu.
+    also: loadResizer,
+    anchor: props.triggerRef,
+  })
+  const Menu = lazy.module?.DataTableColumnMenu as
+    typeof DataTableColumnMenu<T> | undefined
+  return (
+    <>
+      <Button
+        variant="ghost"
+        size="icon-xs"
+        data-slot="data-table-column-menu"
+        aria-label={t("columnMenu", { columnName: props.column.header })}
+        className={cn("text-muted-foreground hover:text-foreground", className)}
+        {...lazy.buttonProps}
+        // The cell's own press drags the column; this one opens the menu.
+        onPointerDown={(event) => event.stopPropagation()}
+      >
+        <EllipsisVerticalIcon />
+      </Button>
+      {lazy.mounted && Menu && <Menu {...props} popup={lazy.popupProps} />}
+    </>
+  )
+}
+
+/**
+ * The resizer of a column (`TableColumnResizer`), loaded on demand: until
+ * then its grip is drawn the same, absolutely placed (nothing moves when
+ * the resizer takes its place), and a drag started on it carries on with
+ * the resizer if the pointer is still down when it arrives.
+ */
+function useResizer(on: boolean) {
+  const feature = useFeature("resizer", on)
+  const [wait] = React.useState(() =>
+    createPressWait<null>((_, element, { pointer }) => {
+      if (!pointer || typeof PointerEvent === "undefined") return
+      element.dispatchEvent(
+        new PointerEvent("pointerdown", {
+          bubbles: true,
+          cancelable: true,
+          pointerId: pointer.pointerId,
+          pointerType: pointer.pointerType,
+          isPrimary: true,
+          button: 0,
+          buttons: 1,
+          clientX: pointer.clientX,
+          clientY: pointer.clientY,
+        })
+      )
+    })
+  )
+  const { load } = feature
+  const placeholder = (className: string | undefined) => (
+    <div
+      aria-hidden
+      data-slot="data-table-resizer-placeholder"
+      className={cn(columnResizerClassName, className)}
+      onPointerEnter={load}
+      onPointerDown={(event) => {
+        if (event.button !== 0) return
+        event.preventDefault()
+        wait.wait("resize", event.currentTarget, { pointer: event })
+        load()
+      }}
+    />
+  )
+  return {
+    Resizer: feature.module?.TableColumnResizer,
+    placeholder,
+    load,
+    /** The resizer is mounted: it takes a drag started before it came. */
+    start: (element: HTMLElement | null) =>
+      element ? wait.start(null, element) : wait.cancel(),
+  }
+}
+
+/**
  * What a sort button press says that the grid does not: the grid
  * announces the first sort's direction as the header's `aria-sort`
  * changes; a column added to or cycled in a multi-sort, and a sort
@@ -171,15 +274,22 @@ type HeaderShared<T> = {
   /** Each shown column's pin, by display index. */
   pins: ReadonlyArray<CellPin | undefined>
   selectionPin: CellPin | undefined
+  handlePin: CellPin | undefined
   /** With `reorderableColumns`: the columns and groups that move. */
   order: ColumnOrder | null
   movable: ReadonlySet<string>
 }
 
+/** The look of a description's info button, before and after its popover loads. */
+const DESCRIPTION_BUTTON =
+  "inline-flex size-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-popup-open:text-foreground"
+
 /**
  * A column's or group's description: an info button that shows it in a
  * popover when pressed (a pointer, a finger or the keyboard). Screen
- * readers hear it with the header itself (its accessible description).
+ * readers hear it with the header itself (its accessible description). The
+ * button is a plain one for its whole life; the popover loads on demand
+ * (`header-popups.tsx`, `lazy-popup.ts`).
  */
 function ColumnDescription({
   name,
@@ -189,29 +299,25 @@ function ColumnDescription({
   description: string
 }) {
   const t = useTranslations("dataTable")
+  const lazy = useLazyPopup("headerPopups", { popup: "dialog" })
+  const Description = lazy.module?.DataTableColumnDescription
   return (
-    <Popover>
-      <PopoverTrigger
+    <>
+      <button
+        type="button"
         data-slot="data-table-column-description"
+        aria-label={t("columnDescription", { columnName: name })}
+        className={DESCRIPTION_BUTTON}
+        {...lazy.buttonProps}
         // The cell's own press drags the column; this one shows the text.
         onPointerDown={(event) => event.stopPropagation()}
-        render={
-          <button
-            type="button"
-            aria-label={t("columnDescription", { columnName: name })}
-            className="inline-flex size-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-popup-open:text-foreground"
-          />
-        }
       >
         <InfoIcon aria-hidden className="size-3.5" />
-      </PopoverTrigger>
-      <PopoverContent
-        data-slot="data-table-column-description-content"
-        className="w-auto max-w-xs text-sm font-normal whitespace-normal"
-      >
-        {description}
-      </PopoverContent>
-    </Popover>
+      </button>
+      {lazy.mounted && Description && (
+        <Description description={description} popup={lazy.popupProps} />
+      )}
+    </>
   )
 }
 
@@ -332,6 +438,15 @@ function DataTableColumnHeader<T>({
   const triggerRef = React.useRef<HTMLButtonElement | null>(null)
   const resizeHintId = `${React.useId()}-resize`
   const resizerRef = React.useRef<HTMLDivElement | null>(null)
+  const resizer = useResizer(canResize)
+  const Resizer = resizer.Resizer
+  const startResizer = resizer.start
+  React.useEffect(() => {
+    if (Resizer) startResizer(resizerRef.current)
+  }, [Resizer, startResizer])
+  // The last column's grip stays inside the table: half of it past the
+  // edge would be cut by the frame, and scroll the table.
+  const lastGrip = index === layout.columns.length - 1 ? "me-0" : undefined
 
   // The resizer's width while it changes: drawn through `preview`, so only
   // this cell renders until the drag ends (or the keyboard is done).
@@ -420,7 +535,8 @@ function DataTableColumnHeader<T>({
     )
   }
   const columnMenu = hasColumnMenu(menu) && (
-    <DataTableColumnMenu
+    <ColumnMenu
+      loadResizer={resizer.load}
       column={column}
       context={context}
       options={menu}
@@ -535,17 +651,16 @@ function DataTableColumnHeader<T>({
         )}
         {columnMenu}
       </div>
-      {canResize && (
-        <TableColumnResizer
+      {canResize && !Resizer && resizer.placeholder(lastGrip)}
+      {canResize && Resizer && (
+        <Resizer
           ref={resizerRef}
           // Not one of the grid's stops, and a press does not focus it: the
           // menu's "Resize column" reaches it (resize mode).
           tabIndex={-1}
           onMouseDown={(event) => event.preventDefault()}
           aria-describedby={resizing ? resizeHintId : undefined}
-          // The last column's grip stays inside the table: half of it past
-          // the edge would be cut by the frame, and scroll the table.
-          className={cn(index === layout.columns.length - 1 && "me-0")}
+          className={lastGrip}
           label={column.header}
           // A column hidden below a breakpoint has no width: its own then.
           value={Math.max(
@@ -679,6 +794,7 @@ function cellPin<T>(
 
 function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
   const t = useTranslations("table")
+  const tDataTable = useTranslations("dataTable")
   const { layout, options } = shared
   const { byId } = getColumnModel(shared.columns)
   const last = layout.headerRows.length - 1
@@ -687,6 +803,9 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
   // Cells with nothing to show are still named for the grid's keyboard,
   // which stops on every header cell.
   const selectColumn = <span className="sr-only">{t("select")}</span>
+  const handleColumn = (
+    <span className="sr-only">{tDataTable("reorderRowsColumn")}</span>
+  )
   return (
     <TableHeader>
       {layout.headerRows.map((row) => {
@@ -698,6 +817,17 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
           counts.set(cell.id, (counts.get(cell.id) ?? 0) + 1)
         return (
           <TableRow key={row.key}>
+            {options.reorderableRows && (
+              <TableHead
+                className={cn(
+                  row.level === last && "w-px",
+                  shared.handlePin && pinnedHeadClassName
+                )}
+                style={shared.handlePin && pinStyle(shared.handlePin)}
+              >
+                {handleColumn}
+              </TableHead>
+            )}
             {selection && (
               <TableHead
                 className={cn(

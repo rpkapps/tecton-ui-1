@@ -6,6 +6,7 @@ import {
   createColumns,
   DataTable,
   DataTableContent,
+  DataTableSearch,
 } from "@tecton/react/tecton/data-table"
 
 import { checkbox, focusRow, layout, press } from "./data-table-fixtures"
@@ -101,5 +102,45 @@ describe("DataTable at 100,000 rows", () => {
     // A sort with everything selected.
     expect(timed(sort)).toBeLessThan(LIMIT_MS)
     expect(names.mock.calls.length).toBeLessThan(500)
+  }, 60_000)
+
+  it("searches as the user types, rendering only the rows the result shows", () => {
+    layout()
+    // How many cells render: a keystroke renders the rows in view that
+    // changed, never every row.
+    const cell = vi.fn((item: Item) => item.depth)
+    const searched = createColumns<Item>([
+      { id: "name", header: "Well" },
+      { id: "depth", header: "Depth", type: "number", cell },
+    ])
+    render(
+      <div style={{ height: 400 }}>
+        <DataTable items={MANY} columns={searched} filterable>
+          <DataTableSearch />
+          <DataTableContent aria-label="Wells" virtualized />
+        </DataTable>
+      </div>
+    )
+    const box = screen.getByRole("searchbox", { name: "Search" })
+    const type = (value: string) => {
+      cell.mockClear()
+      const start = performance.now()
+      act(() => {
+        fireEvent.change(box, { target: { value } })
+      })
+      return performance.now() - start
+    }
+    // The first search builds the index.
+    expect(type("Well 9")).toBeLessThan(LIMIT_MS)
+    expect(cell.mock.calls.length).toBeLessThan(100)
+    expect(type("Well 99")).toBeLessThan(LIMIT_MS)
+    expect(cell.mock.calls.length).toBeLessThan(100)
+    expect(type("Well 999")).toBeLessThan(LIMIT_MS)
+    expect(
+      document.querySelectorAll("tbody tr[data-index]").length
+    ).toBeLessThan(100)
+    // A key the result does not change (a trailing space) renders no row.
+    type("Well 999 ")
+    expect(cell).not.toHaveBeenCalled()
   }, 60_000)
 })

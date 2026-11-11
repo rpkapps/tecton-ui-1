@@ -5,6 +5,12 @@
  * list of thousands renders only the rows in view. The scroll container is
  * the element `ref` is set on: it needs a bounded height. Rows are placed by
  * their owner with `offset(index)`; `size` is the height of the whole list.
+ *
+ * A few rows may have a height of their own (`sizes`, measured by the
+ * owner: a table's detail rows): the rows' offsets then add up the
+ * difference of each one above, found by binary search over those rows
+ * only, so the rest stay one stride each and a list of 100,000 rows with a
+ * handful of them costs no more to window.
  */
 import * as React from "react"
 import { flushSync } from "react-dom"
@@ -36,6 +42,8 @@ type VirtualListOptions = {
   settleMs?: number
   /** Indices that stay rendered wherever the scroll is (the focused row). */
   keep?: ReadonlyArray<number>
+  /** The rows whose height is not `stride`: index → px. */
+  sizes?: ReadonlyMap<number, number>
   /**
    * Px of content above the first row inside the scroll container (a
    * sticky table header). Default 0.
@@ -59,6 +67,75 @@ type VirtualList = {
 /** The view height before any layout (and on the server): ten rows. */
 const FALLBACK_ROWS = 10
 
+/** Where rows are: one stride each, but the rows of `sizes`. */
+type RowLayout = {
+  offset: (index: number) => number
+  sizeOf: (index: number) => number
+  /** The row at `px` from the top (the last one past the end). */
+  indexAt: (px: number) => number
+  /** The first row that starts at or below `px`. */
+  endAt: (px: number) => number
+  total: number
+}
+
+function rowLayout(
+  count: number,
+  stride: number,
+  sizes: ReadonlyMap<number, number> | undefined
+): RowLayout {
+  const own = sizes
+    ? [...sizes].filter(([index]) => index >= 0 && index < count)
+    : []
+  if (own.length === 0)
+    return {
+      offset: (index) => index * stride,
+      sizeOf: () => stride,
+      indexAt: (px) =>
+        Math.min(Math.max(0, count - 1), Math.max(0, Math.floor(px / stride))),
+      endAt: (px) => Math.ceil(px / stride),
+      total: count * stride,
+    }
+  own.sort((a, b) => a[0] - b[0])
+  const indices = own.map(([index]) => index)
+  // The extra height of the rows of their own before each one.
+  const before = [0]
+  for (const [, size] of own)
+    before.push(before[before.length - 1] + size - stride)
+  /** How many rows of their own come before `index`. */
+  const rank = (index: number) => {
+    let low = 0
+    let high = indices.length
+    while (low < high) {
+      const mid = (low + high) >> 1
+      if (indices[mid] < index) low = mid + 1
+      else high = mid
+    }
+    return low
+  }
+  const offset = (index: number) => index * stride + before[rank(index)]
+  const heights = new Map(own)
+  const indexAt = (px: number) => {
+    let low = 0
+    let high = Math.max(0, count - 1)
+    while (low < high) {
+      const mid = (low + high + 1) >> 1
+      if (offset(mid) <= px) low = mid
+      else high = mid - 1
+    }
+    return low
+  }
+  return {
+    offset,
+    sizeOf: (index) => heights.get(index) ?? stride,
+    indexAt,
+    endAt: (px) => {
+      const at = indexAt(px)
+      return offset(at) >= px ? at : at + 1
+    },
+    total: count * stride + before[before.length - 1],
+  }
+}
+
 function useVirtualList({
   count,
   stride,
@@ -68,6 +145,7 @@ function useVirtualList({
   sync = false,
   settleMs = 0,
   keep = [],
+  sizes,
   start = 0,
   enabled = true,
 }: VirtualListOptions): VirtualList {
@@ -147,13 +225,17 @@ function useVirtualList({
     [enabled, measure, onScroll]
   )
 
+  const layout = React.useMemo(
+    () => rowLayout(count, stride, sizes),
+    [count, stride, sizes]
+  )
   const height = view.height || stride * FALLBACK_ROWS
   const top = Math.max(0, view.top - start)
   const extra = view.jumping
     ? overscan
     : Math.max(overscan, Math.ceil(overscanPx / stride))
-  const first = Math.max(0, Math.floor(top / stride) - extra)
-  const last = Math.min(count - 1, Math.ceil((top + height) / stride) + extra)
+  const first = Math.max(0, layout.indexAt(top) - extra)
+  const last = Math.min(count - 1, layout.endAt(top + height) + extra)
   const keepKey = keep.join(",")
   const indices = React.useMemo(() => {
     if (!enabled) return Array.from({ length: count }, (_, i) => i)
@@ -169,21 +251,21 @@ function useVirtualList({
       const el = element.current
       if (!el || index < 0) return
       // A sticky header covers `start` px at the top of the view.
-      const top = start + index * stride
-      const bottom = top + stride
+      const top = start + layout.offset(index)
+      const bottom = top + layout.sizeOf(index)
       if (top - start < el.scrollTop) el.scrollTop = top - start
       else if (bottom > el.scrollTop + el.clientHeight)
         el.scrollTop = bottom - el.clientHeight
       measure()
     },
-    [stride, start, measure]
+    [layout, start, measure]
   )
 
   return {
     ref,
     indices,
-    offset: (index) => index * stride,
-    size: count * stride,
+    offset: layout.offset,
+    size: layout.total,
     scrollToIndex,
     viewHeight: view.height,
   }

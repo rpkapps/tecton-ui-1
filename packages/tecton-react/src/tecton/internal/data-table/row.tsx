@@ -11,12 +11,23 @@
  * Each row passes the props a virtualized body gives it (`aria-rowindex`,
  * `data-index`) on to its `TableRow`, inside the `TableRowConfig` that tells
  * the grid its id, text, level and expanded state.
+ *
+ * A row with a detail row (`renderDetail`) is a treegrid row of level 1
+ * that opens like a tree row (its chevron, Right / Left, Enter); its detail
+ * row is the level 2 row under it, one cell across every column, holding
+ * whatever `renderDetail` draws (a table of its own too: the rows' grid
+ * state does not reach it). The detail row takes its row's fill, and the
+ * stripes of the rows after it stay as they were: an empty hidden row
+ * before it keeps their parity (a virtualized body is told each row's,
+ * through `rowParity`, and puts none there). It is measured on its own in
+ * a virtualized body.
  */
 import * as React from "react"
 import { cn } from "cn"
 
 import { TableCell, TableRow } from "@tecton/react/components/table"
 
+import { createStore, useStore } from "../store"
 import {
   TableRowConfig,
   type RowDescription,
@@ -29,9 +40,11 @@ import {
   pinStyle,
   renderCell,
   rowText,
+  type DetailStore,
   type RowShared,
 } from "./cell"
-import type { BodyRow, GroupRow, ItemRow } from "./engine/index"
+import type { BodyRow, DetailRow, GroupRow, ItemRow } from "./engine/index"
+import { DataTableRowHandle } from "./row-order"
 import { DataTableSelectionCheckbox } from "./selection-checkbox"
 
 type RowProps<TRow, T> = Omit<React.ComponentProps<"tr">, "children"> & {
@@ -65,7 +78,7 @@ function describeRow<T>(row: BodyRow<T>, shared: RowShared<T>): RowDescription {
         value: undefined,
         textValue: undefined,
         disabled: false,
-        level: undefined,
+        level: row.depth + 2,
       }
   }
 }
@@ -108,11 +121,35 @@ function ItemRowComponent<T>({
     <TableRowConfig value={config}>
       <TableRow
         {...props}
+        ref={shared.order?.register(row.id)}
         aria-rowindex={rowIndex(row.id, props["aria-rowindex"], shared)}
         aria-posinset={shared.levelled ? row.posinset : undefined}
         aria-setsize={shared.levelled ? row.setsize : undefined}
-        className={cn(shared.pinned && pinnedRowClassName)}
+        className={cn(
+          shared.pinned && pinnedRowClassName,
+          // The row being dragged, as a column's header is.
+          shared.handle && "has-data-dragging:opacity-50"
+        )}
       >
+        {shared.handle && (
+          <TableCell
+            className={cn(
+              "w-px pe-0",
+              shared.pinned && cellBorderClassName,
+              shared.handlePin && pinnedCellClassName
+            )}
+            style={shared.handlePin && pinStyle(shared.handlePin)}
+          >
+            {shared.order && !row.continued && (
+              <DataTableRowHandle
+                order={shared.order}
+                id={row.id}
+                label={config.textValue ?? row.id}
+                size={shared.size}
+              />
+            )}
+          </TableCell>
+        )}
         {shared.selection && (
           <TableCell
             className={cn(
@@ -167,7 +204,65 @@ function GroupRowComponent<T>({
   )
 }
 
+const NO_DETAIL: DetailStore = createStore<{
+  render: ((item: never) => React.ReactNode) | null
+}>({ render: null })
+
+/**
+ * Its fill is its row's: striped with it, not by its own place. The row is
+ * just before it in a virtualized body, before the hidden row otherwise.
+ */
+const DETAIL_STRIPE = {
+  virtualized:
+    "[[data-striped]>tbody>tr:nth-child(even)+&]:bg-surface-alt [[data-striped]>tbody>tr:nth-child(odd)+&]:bg-transparent",
+  all: "[[data-striped]>tbody>tr:nth-child(even)+tr+&]:bg-surface-alt [[data-striped]>tbody>tr:nth-child(odd)+tr+&]:bg-transparent",
+} as const
+
+/** A row's detail row, across every column (see the module comment). */
+function DetailRowComponent<T>({
+  row,
+  shared,
+  ...props
+}: RowProps<DetailRow<T>, T>) {
+  const render = useStore(shared.detail ?? NO_DETAIL, (state) => state.render)
+  const config = React.useMemo<TableRowGridProps>(
+    () => ({ level: row.depth + 2 }),
+    [row.depth]
+  )
+  const index = shared.rowIndexOf
+    ? shared.headerRows + shared.rowIndexOf(row.id) + 2
+    : props["aria-rowindex"]
+  return (
+    <TableRowConfig value={config}>
+      <TableRow
+        {...props}
+        aria-rowindex={index}
+        aria-posinset={1}
+        aria-setsize={1}
+        data-variable-height=""
+        className={cn(
+          shared.virtualized ? DETAIL_STRIPE.virtualized : DETAIL_STRIPE.all,
+          shared.pinned && pinnedRowClassName
+        )}
+      >
+        <TableCell
+          colSpan={shared.columnCount}
+          className={cn(
+            "whitespace-normal",
+            shared.pinned && cellBorderClassName
+          )}
+        >
+          {render?.(row.item as never)}
+        </TableCell>
+      </TableRow>
+    </TableRowConfig>
+  )
+}
+
 const DataTableItemRow = React.memo(ItemRowComponent) as typeof ItemRowComponent
+const DataTableDetailRow = React.memo(
+  DetailRowComponent
+) as typeof DetailRowComponent
 const DataTableGroupRow = React.memo(
   GroupRowComponent
 ) as typeof GroupRowComponent
@@ -180,7 +275,16 @@ function renderRow<T>(row: BodyRow<T>, shared: RowShared<T>) {
     case "group":
       return <DataTableGroupRow key={row.key} row={row} shared={shared} />
     case "detail":
-      return null
+      // Rendered all at once, the rows after it keep their stripes' parity
+      // through an empty hidden row; a virtualized body is told the parity.
+      return shared.virtualized ? (
+        <DataTableDetailRow key={row.key} row={row} shared={shared} />
+      ) : (
+        <React.Fragment key={row.key}>
+          <tr hidden aria-hidden data-slot="data-table-parity" />
+          <DataTableDetailRow row={row} shared={shared} />
+        </React.Fragment>
+      )
   }
 }
 

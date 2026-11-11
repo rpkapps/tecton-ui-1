@@ -1,14 +1,14 @@
 /**
- * Display rows: the one flat list of plain objects (items, group rows,
- * detail rows) that the body renders and a virtualizer windows, built from
- * the sorted rows or groups (`buildRows`), and its pages (`pageRows`).
+ * Display rows: the one flat list of plain objects (items and group rows)
+ * that the body renders and a virtualizer windows, built from the sorted
+ * rows or groups (`buildRows`), and its pages (`pageRows`); and the detail
+ * rows the content adds under the rows it opens (`withDetailRows`).
  *
  * - A tree row's children follow it while it is expanded: in `expanded`,
  *   or shown expanded because a match is below it (`autoExpanded`).
  * - Group rows come before their rows and are open unless their key is in
  *   `collapsedGroups`; their `ids`, `items` and `aggregates` are the
  *   model's to give (`DataTableRowModel.groupIds` and the like).
- * - An expanded row with a detail row (not in a tree) is followed by it.
  * - `depth` is from 0. Tree and group rows (and the rows in groups) carry
  *   `posinset` / `setsize` among the rows shown with the same parent; a
  *   flat list's rows do not (their position is their index).
@@ -44,7 +44,6 @@ type ItemRow<T> = {
   readonly setsize?: number
   /** Has children shown in the tree (after filtering). */
   readonly hasChildren: boolean
-  readonly hasDetail: boolean
   /** Has a chevron: children, a detail row, or (server) children not loaded yet. */
   readonly expandable: boolean
   readonly expanded: boolean
@@ -101,7 +100,10 @@ type TotalsRow<T> = {
   readonly aggregates: Readonly<Record<string, DataTableValue>>
 }
 
-type BodyRow<T> = ItemRow<T> | GroupRow | DetailRow<T>
+/** The engine's rows: items and groups. */
+type EngineRow<T> = ItemRow<T> | GroupRow
+/** The rows a body renders: the engine's, and detail rows. */
+type BodyRow<T> = EngineRow<T> | DetailRow<T>
 type DisplayRow<T> = BodyRow<T> | TotalsRow<T>
 
 /** The rows of the last build, for the next to share. */
@@ -112,7 +114,6 @@ type RowCache<T> = {
   /** Group rows by group number in `grouping`. */
   grouping: object | undefined
   groups: Array<GroupRow | undefined>
-  details: Map<string, DetailRow<T>>
   /** What a flat list's rows were built from, besides their order. */
   flat: ReadonlyArray<unknown> | undefined
   /** The number of the last build, and by position the last build each item row was in. */
@@ -126,7 +127,6 @@ function createRowCache<T>(): RowCache<T> {
     items: [],
     grouping: undefined,
     groups: [],
-    details: new Map(),
     flat: undefined,
     build: 0,
     stamps: [],
@@ -163,17 +163,15 @@ type BuildRowsInput<T> = {
   /** Rows shown expanded however `expanded` is: 1 by position, `"parents"` for every row with children. */
   autoExpanded: Uint8Array | "parents" | null
   collapsedGroups: ReadonlySet<string>
-  detail: boolean
   cache: RowCache<T>
 }
 
 /** The body rows (see the module comment). */
-function buildRows<T>(input: BuildRowsInput<T>): Array<BodyRow<T>> {
+function buildRows<T>(input: BuildRowsInput<T>): Array<EngineRow<T>> {
   const { core, set, groups, expanded, autoExpanded, cache } = input
   const { items, ids } = core
   const children = set.children
-  const hasDetail = input.detail && !children
-  const out: Array<BodyRow<T>> = []
+  const out: Array<EngineRow<T>> = []
   retarget(cache, core)
   // A flat list's rows hold nothing about their place: when what they are
   // built from is the same, the rows of the last build are still right,
@@ -184,14 +182,12 @@ function buildRows<T>(input: BuildRowsInput<T>): Array<BodyRow<T>> {
   const flatState =
     children || groups
       ? undefined
-      : [core, input.server, input.disabled, expanded, set.context, hasDetail]
+      : [core, input.server, input.disabled, expanded, set.context]
   const reuse =
     flatState !== undefined &&
     cache.flat?.length === flatState.length &&
     flatState.every((part, i) => cache.flat?.[i] === part)
   cache.flat = flatState
-  const previousDetails = cache.details
-  cache.details = new Map()
   if (groups && cache.grouping !== groups.grouping) {
     // Another grouping: keep the rows of groups it still has, by key.
     const byKey = new Map(
@@ -217,22 +213,11 @@ function buildRows<T>(input: BuildRowsInput<T>): Array<BodyRow<T>> {
     cache.stamps[row] = build
     if (built) {
       out.push(built)
-      if (built.expanded && hasDetail) {
-        const detail = previousDetails.get(id) ?? {
-          kind: "detail" as const,
-          key: `detail:${id}`,
-          id,
-          item,
-          depth: 0,
-        }
-        cache.details.set(id, detail)
-        out.push(detail)
-      }
       return false
     }
     const hasChildren = children?.[row] !== undefined
     const unloaded = input.server && core.unloaded?.[row] === 1
-    const expandable = hasChildren || hasDetail || unloaded
+    const expandable = hasChildren || unloaded
     const isExpanded =
       expandable &&
       (expanded.has(id) ||
@@ -250,7 +235,6 @@ function buildRows<T>(input: BuildRowsInput<T>): Array<BodyRow<T>> {
       previous.posinset === posinset &&
       previous.setsize === setsize &&
       previous.hasChildren === hasChildren &&
-      previous.hasDetail === hasDetail &&
       previous.expandable === expandable &&
       previous.expanded === isExpanded &&
       previous.loading === loading &&
@@ -270,7 +254,6 @@ function buildRows<T>(input: BuildRowsInput<T>): Array<BodyRow<T>> {
               depth,
               parentId,
               hasChildren,
-              hasDetail,
               expandable,
               expanded: isExpanded,
               loading,
@@ -287,7 +270,6 @@ function buildRows<T>(input: BuildRowsInput<T>): Array<BodyRow<T>> {
               posinset,
               setsize,
               hasChildren,
-              hasDetail,
               expandable,
               expanded: isExpanded,
               loading,
@@ -297,15 +279,6 @@ function buildRows<T>(input: BuildRowsInput<T>): Array<BodyRow<T>> {
       cache.items[row] = next
     }
     out.push(next)
-    if (isExpanded && hasDetail) {
-      const before = previousDetails.get(id)
-      const detail =
-        before?.item === item && before.depth === depth
-          ? before
-          : { kind: "detail" as const, key: `detail:${id}`, id, item, depth }
-      cache.details.set(id, detail)
-      out.push(detail)
-    }
     return isExpanded && hasChildren
   }
 
@@ -403,65 +376,107 @@ function buildRows<T>(input: BuildRowsInput<T>): Array<BodyRow<T>> {
 }
 
 /** Each row's index in `rows`, by key: the ids of items and the keys of groups. */
-function indexRows<T>(rows: ReadonlyArray<BodyRow<T>>) {
+function indexRows<T>(rows: ReadonlyArray<EngineRow<T>>) {
   const map = new Map<string, number>()
-  rows.forEach((row, i) => {
-    if (row.kind !== "detail") map.set(row.key, i)
-  })
+  rows.forEach((row, i) => map.set(row.key, i))
   return map
 }
 
 type Page<T> = {
-  rows: ReadonlyArray<BodyRow<T>>
-  /** The rows the pages are counted in: item and group rows, not detail rows. */
+  rows: ReadonlyArray<EngineRow<T>>
+  /** The rows the pages are counted in. */
   counted: number
   page: number
   pageCount: number
 }
 
 /**
- * Page `page` (clamped) of `pageSize` rows, detail rows going with their
- * row, and the page's continued ancestors first (see the module comment).
+ * Page `page` (clamped) of `pageSize` rows, with the page's continued
+ * ancestors first (see the module comment).
  */
 function pageRows<T>(
-  rows: ReadonlyArray<BodyRow<T>>,
+  rows: ReadonlyArray<EngineRow<T>>,
   page: number,
   pageSize: number,
   indexOfRow: () => ReadonlyMap<string, number>
 ): Page<T> {
-  let counted = 0
-  for (const row of rows) if (row.kind !== "detail") counted++
+  const counted = rows.length
   const pageCount = getPageCount(counted, pageSize)
   const current = clampPage(page, pageCount)
   const first = (current - 1) * pageSize
-  let start = rows.length
-  let end = rows.length
-  let seen = 0
-  for (let i = 0; i < rows.length; i++) {
-    if (rows[i].kind === "detail") continue
-    if (seen === first) start = i
-    if (seen === first + pageSize) {
-      end = i
-      break
-    }
-    seen++
-  }
-  const slice = rows.slice(start, end)
-  const top = slice[0] as BodyRow<T> | undefined
-  if (top === undefined || top.kind === "detail" || top.parentId === null)
+  const slice = rows.slice(first, first + pageSize)
+  const top = slice.at(0)
+  if (top === undefined || top.parentId === null)
     return { rows: slice, counted, page: current, pageCount }
-  const ancestors: Array<BodyRow<T>> = []
+  const ancestors: Array<EngineRow<T>> = []
   const index = indexOfRow()
   let parentId: string | null = top.parentId
   while (parentId !== null) {
     const at = index.get(parentId)
     if (at === undefined) break
     const parent = rows[at]
-    if (parent.kind === "detail") break
     ancestors.unshift({ ...parent, continued: true })
     parentId = parent.parentId
   }
   return { rows: [...ancestors, ...slice], counted, page: current, pageCount }
+}
+
+/** What `withDetailRows` keeps between calls, so unchanged rows stay the same objects. */
+type DetailCache<T> = {
+  /** Each engine row as it opens to a detail row: closed, and open. */
+  rows: WeakMap<ItemRow<T>, { closed?: ItemRow<T>; open?: ItemRow<T> }>
+  details: Map<string, DetailRow<T>>
+}
+
+function createDetailCache<T>(): DetailCache<T> {
+  return { rows: new WeakMap(), details: new Map() }
+}
+
+/**
+ * `rows` (a flat or grouped list's, not a tree's) with a detail row after
+ * each item row that is `expanded`: every item row opens (`expandable`),
+ * and is followed by its detail row while open. A row and a detail row
+ * that do not change are the same objects as in the last call.
+ */
+function withDetailRows<T>(
+  rows: ReadonlyArray<EngineRow<T>>,
+  expanded: ReadonlySet<string>,
+  cache: DetailCache<T>
+): Array<BodyRow<T>> {
+  const out: Array<BodyRow<T>> = []
+  const details = new Map<string, DetailRow<T>>()
+  for (const row of rows) {
+    if (row.kind !== "item") {
+      out.push(row)
+      continue
+    }
+    const open = expanded.has(row.id)
+    let variants = cache.rows.get(row)
+    if (!variants) cache.rows.set(row, (variants = {}))
+    const key = open ? "open" : "closed"
+    const shown = (variants[key] ??= {
+      ...row,
+      expandable: true,
+      expanded: open,
+    })
+    out.push(shown)
+    if (!open) continue
+    const before = cache.details.get(row.id)
+    const detail =
+      before?.item === row.item && before.depth === row.depth
+        ? before
+        : {
+            kind: "detail" as const,
+            key: `detail:${row.id}`,
+            id: row.id,
+            item: row.item,
+            depth: row.depth,
+          }
+    details.set(row.id, detail)
+    out.push(detail)
+  }
+  cache.details = details
+  return out
 }
 
 /** A value computed when first asked for, then kept. */
@@ -499,12 +514,23 @@ function displayOrder<T>(
   return Uint32Array.from(out)
 }
 
-export { buildRows, createRowCache, displayOrder, indexRows, lazy, pageRows }
+export {
+  buildRows,
+  createDetailCache,
+  createRowCache,
+  displayOrder,
+  indexRows,
+  lazy,
+  pageRows,
+  withDetailRows,
+}
 export type {
   BodyRow,
   BuildRowsInput,
+  DetailCache,
   DetailRow,
   DisplayRow,
+  EngineRow,
   GroupRow,
   ItemRow,
   Page,

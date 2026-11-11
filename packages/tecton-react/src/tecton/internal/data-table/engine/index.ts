@@ -11,7 +11,8 @@
  * - `engine`: the row pipeline (`createDataTableEngine`), over the stages
  *   of `core` (rows as positions), `filter` (search, filters, facets),
  *   `group` (groups as ranges), `sort` (rank-based sorting) and `rows`
- *   (display rows and pages); `idle` prepares ranks and the search index.
+ *   (display rows and pages; the content adds detail rows with
+ *   `withDetailRows`); `idle` prepares ranks and the search index.
  * - `aggregate`, `pagination`, `selection`: what group rows, the footer
  *   and selection compute.
  *
@@ -65,10 +66,13 @@ export {
   resolvePageSize,
   shouldResetPage,
 } from "./pagination"
+export { createDetailCache, withDetailRows } from "./rows"
 export type {
   BodyRow,
+  DetailCache,
   DetailRow,
   DisplayRow,
+  EngineRow,
   GroupRow,
   ItemRow,
   TotalsRow,

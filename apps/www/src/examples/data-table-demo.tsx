@@ -6,11 +6,14 @@ import { Button } from "@tecton/react/components/button"
 import {
   createColumns,
   DataTable,
+  DataTableActiveFilters,
   DataTableContent,
+  DataTableFilter,
   DataTableFooter,
   DataTablePageButtons,
   DataTablePageInfo,
   DataTablePageSize,
+  DataTableSearch,
   DataTableSelectionCount,
   DataTableToolbar,
   useDataTable,
@@ -115,12 +118,15 @@ export default function DataTableDemo() {
       columns={columns}
       selectionMode="multiple"
       pagination
+      filterable
       className="w-full"
     >
+      <span id="data-table-demo-title" className="font-medium">
+        North Sea wells
+      </span>
       <DataTableToolbar>
-        <span id="data-table-demo-title" className="font-medium">
-          North Sea wells
-        </span>
+        <DataTableSearch />
+        <DataTableFilter column="status" />
         <ShutInButton
           onShutIn={(ids) =>
             setWells((current) =>
@@ -131,6 +137,7 @@ export default function DataTableDemo() {
           }
         />
       </DataTableToolbar>
+      <DataTableActiveFilters />
       <DataTableContent aria-labelledby="data-table-demo-title" />
       <DataTableFooter>
         <DataTableSelectionCount />

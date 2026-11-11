@@ -295,20 +295,22 @@ describe("Reorderable", () => {
     const onValueChange = vi.fn()
     render(<Rows onValueChange={onValueChange} />)
     act(() => handle("A-12").focus())
+    // It starts at its own place, named after the rows around it.
     await user.keyboard("{Enter}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert before B-3"
+    )
+    // One key, one place.
+    await user.keyboard("{ArrowDown}")
     expect(document.activeElement).toHaveAttribute(
       "aria-label",
       "Insert between B-3 and C-7"
     )
-    await user.keyboard("{ArrowDown}")
-    expect(document.activeElement).toHaveAttribute(
-      "aria-label",
-      "Insert between C-7 and D-2"
-    )
     await user.keyboard("{Tab}")
     expect(document.activeElement).toHaveAttribute(
       "aria-label",
-      "Insert after D-2"
+      "Insert between C-7 and D-2"
     )
     await waitFor(() =>
       expect(
@@ -316,7 +318,7 @@ describe("Reorderable", () => {
       ).toHaveTextContent(/^Started dragging/)
     )
     await user.keyboard("{Enter}")
-    expect(onValueChange).toHaveBeenCalledWith(["b3", "c7", "d2", "a12"])
+    expect(onValueChange).toHaveBeenCalledWith(["b3", "c7", "a12", "d2"])
     // Focus is back on the moved row's handle.
     await waitFor(() => expect(handle("A-12")).toHaveFocus())
   })
@@ -339,10 +341,12 @@ describe("Reorderable", () => {
       .getAllByRole("button")
       .map((button) => button.getAttribute("aria-label"))
       .filter((label) => /^Insert/.test(label ?? ""))
+    // Its own place too, last: a drop there moves nothing.
     expect(targets).toEqual([
       "Insert before A-12",
       "Insert between A-12 and B-3",
       "Insert between B-3 and C-7",
+      "Insert after C-7",
     ])
     await userEvent.click(
       screen.getByRole("button", { name: "Insert before A-12" })
@@ -458,7 +462,7 @@ describe("Reorderable", () => {
     await user.keyboard("{Enter}")
     expect(document.activeElement).toHaveAttribute(
       "aria-label",
-      "Insert after well"
+      "Insert between field and well"
     )
     await user.keyboard("{ArrowRight}{Enter}")
     expect(onValueChange).toHaveBeenLastCalledWith(["status", "field", "well"])
@@ -531,13 +535,18 @@ describe("Reorderable", () => {
     await user.keyboard("{Enter}")
     expect(document.activeElement).toHaveAttribute(
       "aria-label",
+      "Insert after well"
+    )
+    await user.keyboard("{ArrowLeft}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
       "Insert before well"
     )
     await user.keyboard("{Enter}")
     expect(onColumns).toHaveBeenLastCalledWith(["field", "well"])
     // The rows to the inner, vertical one.
     act(() => handle("a12").focus())
-    await user.keyboard("{Enter}{Enter}")
+    await user.keyboard("{Enter}{ArrowDown}{Enter}")
     expect(onRows).toHaveBeenLastCalledWith(["b3", "a12", "c7"])
   })
 
@@ -776,6 +785,11 @@ describe("Reorderable grid", () => {
     await user.keyboard("{Enter}")
     expect(document.activeElement).toHaveAttribute(
       "aria-label",
+      "Insert before T2"
+    )
+    await user.keyboard("{ArrowRight}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
       "Insert between T2 and T3"
     )
     // The gap below, in row 2.
@@ -862,6 +876,11 @@ describe("Reorderable bento grid", () => {
     render(<Grid tiles={TILES} onValueChange={onValueChange} />)
     act(() => handle("B1").focus())
     await user.keyboard("{Enter}")
+    expect(document.activeElement).toHaveAttribute(
+      "aria-label",
+      "Insert before B2"
+    )
+    await user.keyboard("{ArrowRight}")
     expect(document.activeElement).toHaveAttribute(
       "aria-label",
       "Insert between B2 and B3"

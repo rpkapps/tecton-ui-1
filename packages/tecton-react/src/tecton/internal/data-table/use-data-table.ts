@@ -17,7 +17,6 @@ import {
   type DataTableState,
 } from "./context"
 import {
-  clearFilters,
   resetColumns,
   setColumnHidden,
   setColumnOrder,
@@ -119,10 +118,14 @@ function createResult<T>(
       update((current) => setSearch(current, search), "search"),
     setFilter: (column, value) =>
       update((current) => setFilter(current, column, value), "filter"),
-    clearFilters: () => update(clearFilters, viewChangeReason),
+    clearFilters: () => {
+      actions.clearFilters()
+    },
     setGrouping: (grouping) =>
       update((current) => setGrouping(current, grouping), "group"),
-    resetView: () => update(() => state.defaults, "reset"),
+    resetView: () => {
+      actions.resetView()
+    },
     setColumnOrder: (order) =>
       update((current) => setColumnOrder(current, order), "reorder"),
     setColumnHidden: (column, hidden) =>

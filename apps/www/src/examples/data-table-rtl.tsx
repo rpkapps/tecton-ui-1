@@ -9,11 +9,15 @@ import {
 import {
   createColumns,
   DataTable,
+  DataTableActiveFilters,
   DataTableContent,
+  DataTableFilter,
   DataTableFooter,
   DataTablePageButtons,
   DataTablePageInfo,
+  DataTableSearch,
   DataTableSelectionCount,
+  DataTableToolbar,
 } from "@tecton/react/tecton/data-table"
 
 const translations: Translations = {
@@ -123,10 +127,17 @@ export default function DataTableRtl() {
       reorderableColumns
       hideableColumns
       pinnableColumns
+      filterable
       defaultView={{ columns: { pinned: { start: ["name"], end: [] } } }}
       className="w-full"
     >
-      <DataTableContent aria-label={t.table} />
+      <DataTableToolbar>
+        <DataTableSearch />
+        <DataTableFilter column="status" />
+        <DataTableFilter column="depth" />
+      </DataTableToolbar>
+      <DataTableActiveFilters />
+      <DataTableContent aria-label={t.table} totals />
       <DataTableFooter>
         <DataTableSelectionCount />
         <DataTablePageInfo />

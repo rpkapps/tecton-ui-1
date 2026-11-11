@@ -117,6 +117,19 @@ type TableGridOptions = {
    * have registered theirs.
    */
   tree?: boolean
+  /** Filled with what the component around the table asks of the grid. */
+  controller?: { current: TableGridController | null }
+  /**
+   * A virtualized body's row's stripe parity (0 or 1) by its index, `null`
+   * for a row that takes another's fill; the index's own by default.
+   */
+  rowParity?: (index: number) => 0 | 1 | null
+}
+
+/** What the component around a grid table asks of it. */
+type TableGridController = {
+  /** Scrolls the body row with this `value` into view, rendered or not. */
+  scrollToRow: (value: string) => void
 }
 
 /** A body row's grid state, given by `TableRowConfig`. */
@@ -229,6 +242,14 @@ function TableRowConfig({
     </TableRowConfigContext.Provider>
   )
 }
+
+/**
+ * The row of an outer grid a table is nested in (a detail row's): the
+ * nested grid's tab stop is out of the Tab order while focus is outside
+ * that row, so the outer grid stays one Tab stop.
+ */
+const TableOuterRowContext =
+  React.createContext<React.RefObject<HTMLTableRowElement | null> | null>(null)
 
 /** The row a `DataTableSelectionCheckbox` is in. */
 const TableGridRowContext = React.createContext<{
@@ -345,9 +366,11 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     isDisabled: isDisabledProp,
     getSelectedCount,
     tree: treeProp = false,
+    controller,
   } = config ?? {}
   const t = useTranslations("table")
   const rtl = useDirection() === "rtl"
+  const outerRow = React.useContext(TableOuterRowContext)
   const selectionMode: SelectionMode = grid ? selectionModeProp : "none"
   const behavior: SelectionBehavior = selectionBehavior
 
@@ -359,13 +382,14 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   const managed = React.useRef(new Map<HTMLElement, string | null>())
   const tabStop = React.useRef<HTMLElement | null>(null)
   /**
-   * Where focus last was: a row index (header rows first), a column, and
-   * whether the row was a body row.
+   * Where focus last was: a row index (header rows first), a column,
+   * whether the row was a body row, and its level.
    */
   const position = React.useRef<{
     row: number
     column: number | null
     body: boolean
+    level: number | undefined
   } | null>(null)
   /** The element in the table that last had focus, to put focus back when it goes. */
   const lastFocused = React.useRef<HTMLElement | null>(null)
@@ -599,6 +623,43 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       element.setAttribute("tabindex", tabIndex)
   }
 
+  /** Puts back the tab index an element had before the grid managed it. */
+  const restoreTabIndex = (element: HTMLElement) => {
+    if (!managed.current.has(element)) return
+    const original = managed.current.get(element)
+    managed.current.delete(element)
+    if (original === null || original === undefined)
+      element.removeAttribute("tabindex")
+    else element.setAttribute("tabindex", original)
+  }
+
+  /**
+   * The controls of a plain table nested in a row of this grid (a detail
+   * row's): Tab stops only while focus is in that row, out of the Tab
+   * order otherwise, as a nested grid's stop, so the grid stays one stop.
+   * A nested grid keeps its own (`outerRow`).
+   */
+  const syncNestedTables = () => {
+    const el = table.current
+    if (!el || !grid) return
+    const active = el.ownerDocument.activeElement
+    for (const nested of el.querySelectorAll("table")) {
+      // Its own grid's, or a grid's inside it.
+      if (nested.closest('table[role="grid"], table[role="treegrid"]') !== el)
+        continue
+      let row = nested.parentElement?.closest("tr") ?? null
+      while (row && row.closest("table") !== el)
+        row = row.parentElement?.closest("tr") ?? null
+      if (!row || !isGridRow(row)) continue
+      const awake = row.contains(active)
+      for (const control of nested.querySelectorAll<HTMLElement>(FOCUSABLE)) {
+        if (control.closest("table") !== nested) continue
+        if (awake) restoreTabIndex(control)
+        else setTabIndex(control, "-1")
+      }
+    }
+  }
+
   /** A cell's focus stops: the cell itself when it has no controls (or is one), then its controls. */
   const stopsOf = (cell: HTMLTableCellElement): Array<HTMLElement> => {
     const controls = [...cell.querySelectorAll<HTMLElement>(FOCUSABLE)].filter(
@@ -687,13 +748,26 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     if (at) {
       // A body row's place stays in the body as rows go: the last row now.
       const [start, end] = bodyRange()
-      const index = at.body
-        ? Math.max(start, Math.min(at.row, end - 1))
-        : at.row
+      let index = at.body ? Math.max(start, Math.min(at.row, end - 1)) : at.row
+      let column = at.column
+      // A child row gone with its siblings (its parent closed: a tree row,
+      // a detail row) leaves focus on its parent, the nearest row above of
+      // a lower level; one gone alone, on the sibling now in its place.
+      if (at.body && at.level !== undefined && at.level > 1 && end > start) {
+        const level = infoOf(rowAt(index))?.level
+        const parent =
+          level === undefined || level < at.level
+            ? parentIndex(Math.min(at.row, end), at.level)
+            : null
+        if (parent !== null) {
+          index = parent
+          column = null
+        }
+      }
       const row = at.body && end <= start ? null : rowAt(index)
       if (row && !(isBody(index) && infoOf(row)?.disabled)) {
-        if (at.column === null) return row
-        const cell = cellAt(row, at.column)
+        if (column === null) return row
+        const cell = cellAt(row, column)
         if (cell) return stopsOf(cell)[0]
       }
     }
@@ -747,7 +821,12 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       setTabIndex(control, "-1")
     }
     for (const row of bodyRows()) if (row !== stop) setTabIndex(row, "-1")
-    if (stop) setTabIndex(stop, "0")
+    // Nested in a row of another grid: a Tab stop only while focus is in
+    // that row (entered from it), out of the Tab order otherwise.
+    const outer = outerRow?.current
+    const dormant = !!outer && !outer.contains(doc.activeElement)
+    if (stop) setTabIndex(stop, dormant ? "-1" : "0")
+    syncNestedTables()
     for (const element of managed.current.keys())
       if (!element.isConnected) managed.current.delete(element)
     if (lost) {
@@ -763,14 +842,32 @@ function useTableGrid(own: React.ComponentProps<"table">) {
 
   const scrollIntoView = (element: HTMLElement) => {
     element.scrollIntoView({ block: "nearest", inline: "nearest" })
-    // A sticky header covers the rows scrolled under it.
-    const head = table.current?.tHead
+    // A sticky header covers the rows scrolled under it, and so does a
+    // sticky footer (a totals row) at the bottom.
     const container = table.current?.parentElement
-    if (!head || !container || head.contains(element)) return
-    if (getComputedStyle(head).position !== "sticky") return
-    const covered =
-      head.getBoundingClientRect().bottom - element.getBoundingClientRect().top
-    if (covered > 0) container.scrollTop -= covered
+    if (!container) return
+    const head = table.current?.tHead
+    if (
+      head &&
+      !head.contains(element) &&
+      getComputedStyle(head).position === "sticky"
+    ) {
+      const covered =
+        head.getBoundingClientRect().bottom -
+        element.getBoundingClientRect().top
+      if (covered > 0) return void (container.scrollTop -= covered)
+    }
+    const foot = table.current?.tFoot
+    if (
+      foot &&
+      !foot.contains(element) &&
+      getComputedStyle(foot).position === "sticky"
+    ) {
+      const covered =
+        element.getBoundingClientRect().bottom -
+        foot.getBoundingClientRect().top
+      if (covered > 0) container.scrollTop += covered
+    }
   }
 
   const focusElement = (element: HTMLElement) => {
@@ -1166,10 +1263,53 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     if (pressed) onActivate?.(pressed.value, event.nativeEvent)
   }
 
+  /** The cell of this table's own that holds `target`, through any tables nested in cells. */
+  const ownCellOf = (target: Element): HTMLTableCellElement | null => {
+    for (let at: Element | null = target; at;) {
+      const cell: Element | null = at.closest("td, th")
+      if (!cell || !isCell(cell)) return null
+      if (cell.closest("table") === table.current) return cell
+      at = cell.parentElement
+    }
+    return null
+  }
+
+  /** Where focus is: a row index, a column, whether a body row, its level. */
+  const record = (
+    row: HTMLTableRowElement,
+    cell: HTMLTableCellElement | null
+  ) => {
+    const index = indexOf(row)
+    const inBody = isBody(index)
+    position.current = {
+      row: index,
+      column: cell ? columnOf(cell) : null,
+      body: inBody,
+      level: inBody ? infoOf(row)?.level : undefined,
+    }
+  }
+
   const onFocus = (event: React.FocusEvent<HTMLTableElement>) => {
     own.onFocus?.(event)
-    if (!grid || !owns(event.target)) return
-    const target = event.target
+    if (!grid) return
+    queueMicrotask(syncNestedTables)
+    const target: EventTarget = event.target
+    if (
+      !owns(target) &&
+      target instanceof HTMLElement &&
+      table.current?.contains(target)
+    ) {
+      // In a table nested in a cell (a detail row's): remembered, so focus
+      // comes back to the row if that table goes, but never this grid's
+      // tab stop.
+      const cell = ownCellOf(target)
+      const row = cell?.parentElement as HTMLTableRowElement | undefined
+      if (!cell || !row || !isGridRow(row)) return
+      lastFocused.current = target
+      record(row, cell)
+      return
+    }
+    if (!owns(target)) return
     // Focus goes to a resizer only while it resizes (its column's menu
     // sends it there, and takes it back): the table's tab stop stays.
     if (isResizer(target)) return
@@ -1179,17 +1319,16 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     const found = target.closest("td, th")
     const cell =
       found && isCell(found) && found.parentElement === row ? found : null
+    // A press on a control kept out of the keyboard's way (a tree's
+    // chevron, hidden from screen readers) does not make it the tab stop.
+    const stop: HTMLElement = target
+    if (stop !== row && stop !== cell && !isFocusableControl(stop)) return
     if (tabStop.current !== target) {
       if (tabStop.current) setTabIndex(tabStop.current, "-1")
       tabStop.current = target
       setTabIndex(target, "0")
     }
-    const index = indexOf(row)
-    position.current = {
-      row: index,
-      column: cell ? columnOf(cell) : null,
-      body: isBody(index),
-    }
+    record(row, cell)
   }
 
   const onBlur = (event: React.FocusEvent<HTMLTableElement>) => {
@@ -1198,6 +1337,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     // nothing to put back. Only an element removed while focused leaves
     // `lastFocused` set, and a removal that blurs shows as disconnected.
     const left = event.target as HTMLElement
+    if (grid) queueMicrotask(syncNestedTables)
     queueMicrotask(() => {
       if (lastFocused.current === left && left.isConnected)
         lastFocused.current = null
@@ -1227,6 +1367,24 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     }
   })
   const flush = React.useCallback(() => latest.current.flushNow(), [])
+
+  React.useLayoutEffect(() => {
+    if (!controller || !grid) return
+    controller.current = {
+      scrollToRow: (value) => {
+        const row = byValue.current.get(value)
+        if (row) return scrollIntoView(row)
+        const describe = body.current?.describe
+        const index = describe
+          ? describedRows(describe).indexByKey.get(value)
+          : undefined
+        if (index !== undefined) body.current?.scrollToIndex?.(index)
+      },
+    }
+    return () => {
+      controller.current = null
+    }
+  })
 
   // ---- effects ------------------------------------------------------------
 
@@ -1269,6 +1427,22 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   React.useLayoutEffect(() => {
     if (grid) sync()
   })
+
+  // The outer row gaining or losing focus wakes or puts to sleep the stop.
+  // The row is set after this grid's first layout (a parent's ref comes
+  // after its children's effects): the first sync with it is here.
+  React.useEffect(() => {
+    const outer = outerRow?.current
+    if (!grid || !outer) return
+    const update = () => queueMicrotask(() => latest.current.sync())
+    latest.current.sync()
+    outer.addEventListener("focusin", update)
+    outer.addEventListener("focusout", update)
+    return () => {
+      outer.removeEventListener("focusin", update)
+      outer.removeEventListener("focusout", update)
+    }
+  }, [grid, outerRow])
 
   // Sorting is announced: a header's `aria-sort` turning ascending or
   // descending while focus is in the table.
@@ -1452,15 +1626,16 @@ function useTableRow({
   })
   const register = grid?.register
   const levelled = level !== undefined
+  const element = React.useRef<HTMLTableRowElement | null>(null)
   const rowRef = React.useCallback(
-    (element: HTMLTableRowElement | null) => {
-      const unregister =
-        element && register ? register(element, info) : undefined
+    (row: HTMLTableRowElement | null) => {
+      element.current = row
+      const unregister = row && register ? register(row, info) : undefined
       const cleanup =
         typeof ref === "function"
-          ? ref(element)
+          ? ref(row)
           : ref
-            ? void (ref.current = element)
+            ? void (ref.current = row)
             : undefined
       return () => {
         unregister?.()
@@ -1474,7 +1649,8 @@ function useTableRow({
   )
   const row = React.useMemo(() => ({ value, disabled }), [value, disabled])
   // A table nested in a cell is a table of its own: neither the grid's
-  // options, nor this row's state, nor the container's config reach it.
+  // options, nor this row's state, nor the container's config reach it;
+  // a grid row tells it the row it is in.
   const isolated =
     gridConfig === null && config === null && containerConfig === null ? (
       children
@@ -1482,7 +1658,13 @@ function useTableRow({
       <TableGridConfigContext.Provider value={null}>
         <TableRowConfigContext.Provider value={null}>
           <TableContainerConfigContext.Provider value={null}>
-            {children}
+            {grid ? (
+              <TableOuterRowContext.Provider value={element}>
+                {children}
+              </TableOuterRowContext.Provider>
+            ) : (
+              children
+            )}
           </TableContainerConfigContext.Provider>
         </TableRowConfigContext.Provider>
       </TableGridConfigContext.Provider>
@@ -1576,6 +1758,7 @@ export type {
   RowDescription,
   TableGridBody,
   TableContainerOptions,
+  TableGridController,
   TableGridOptions,
   TableRowGridProps,
 }

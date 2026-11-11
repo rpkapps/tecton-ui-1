@@ -86,4 +86,111 @@ function toBoolean(value: DataTableValue): boolean | undefined {
   return Boolean(value)
 }
 
-export { isEmptyValue, toBoolean, toDate, toDay, toNumber, toTime }
+const zoneFormats = new Map<string, Intl.DateTimeFormat>()
+
+/** The calendar day and time of `time` in `timeZone` (an IANA zone). */
+function partsIn(time: number, timeZone: string) {
+  let format = zoneFormats.get(timeZone)
+  if (!format) {
+    format = new Intl.DateTimeFormat("en-US", {
+      timeZone,
+      hourCycle: "h23",
+      year: "numeric",
+      month: "numeric",
+      day: "numeric",
+      hour: "numeric",
+      minute: "numeric",
+      second: "numeric",
+    })
+    zoneFormats.set(timeZone, format)
+  }
+  const parts: Record<string, number> = {}
+  for (const part of format.formatToParts(time))
+    if (part.type !== "literal") parts[part.type] = Number(part.value)
+  return {
+    year: parts.year,
+    month: parts.month - 1,
+    day: parts.day,
+    hour: parts.hour,
+    minute: parts.minute,
+    second: parts.second,
+  }
+}
+
+/**
+ * The first instant of a calendar day (`month` from 0, overflow allowed) in
+ * `timeZone`, or in the local zone without one: where a date column's day
+ * begins, as its `format.timeZone` shows days. Usually its midnight; on a
+ * day whose midnight the zone skips (summer time starting at 00:00, as in
+ * Santiago or Beirut), the moment the clocks jump to, the day's first.
+ */
+function startOfDay(
+  year: number,
+  month: number,
+  day: number,
+  timeZone?: string
+): Date {
+  // A local midnight the zone skips is moved past the gap: the day's first
+  // instant.
+  if (!timeZone) return new Date(year, month, day)
+  const wanted = Date.UTC(year, month, day)
+  // The zone's offset at that moment, twice: once more across a change of
+  // offset (summer time) between the guess and the answer.
+  let time = wanted
+  for (let pass = 0; pass < 2; pass++) {
+    const p = partsIn(time, timeZone)
+    const shown = Date.UTC(p.year, p.month, p.day, p.hour, p.minute, p.second)
+    time -= shown - wanted
+  }
+  const dayAt = (at: number) => {
+    const p = partsIn(at, timeZone)
+    return Date.UTC(p.year, p.month, p.day)
+  }
+  // Midnight skipped: the guess falls in the day before. The day begins at
+  // the jump, the first instant whose day is the wanted one (within the
+  // few hours a jump can span).
+  if (dayAt(time) < wanted) {
+    let low = time
+    let high = time + 4 * 3_600_000
+    if (dayAt(high) < wanted) return new Date(time)
+    while (high - low > 1) {
+      const middle = Math.floor((low + high) / 2)
+      if (dayAt(middle) < wanted) low = middle
+      else high = middle
+    }
+    time = high
+  }
+  return new Date(time)
+}
+
+/**
+ * The calendar day `date` falls on in `timeZone` (the local zone without
+ * one); `midnight`: `date` is that day's first instant (`startOfDay`).
+ */
+function dayOf(date: Date, timeZone?: string) {
+  const p = timeZone
+    ? partsIn(date.getTime(), timeZone)
+    : {
+        year: date.getFullYear(),
+        month: date.getMonth(),
+        day: date.getDate(),
+      }
+  const start = startOfDay(p.year, p.month, p.day, timeZone)
+  return {
+    year: p.year,
+    month: p.month,
+    day: p.day,
+    midnight: start.getTime() === date.getTime(),
+  }
+}
+
+export {
+  dayOf,
+  isEmptyValue,
+  startOfDay,
+  toBoolean,
+  toDate,
+  toDay,
+  toNumber,
+  toTime,
+}

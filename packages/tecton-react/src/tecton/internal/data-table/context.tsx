@@ -59,6 +59,9 @@ type DataTablePageChangeReason =
 
 type DataTablePageSizeChangeReason = "select" | "none"
 
+/** How rows were reordered: dragged, moved with the keyboard, or by a screen reader's drop targets. */
+type DataTableRowOrderChangeReason = "pointer" | "keyboard" | "virtual"
+
 /** The second argument of every `on…Change` of `DataTable`. */
 type DataTableChangeDetails<TReason extends string> =
   ChangeEventDetails<TReason>
@@ -107,6 +110,10 @@ type DataTableOptions = {
   readonly activatable: boolean
   /** `onRetry` is set. */
   readonly retryable: boolean
+  /** More rows come after the items (`hasMore`, without pages). */
+  readonly hasMore: boolean
+  /** The ms between the last key and the search reaching the view. */
+  readonly searchDelay: number
   readonly pageSizes: ReadonlyArray<number>
 }
 
@@ -132,6 +139,12 @@ type DataTableState<T> = {
   readonly loading: boolean
   /** `error` as given: `true` or content shows the error state. */
   readonly error: React.ReactNode
+  /**
+   * Bumped by "Clear all", "Clear filters" and a reset, even when the view
+   * stays as it was: a search or filter field drops what it was waiting to
+   * send.
+   */
+  readonly clears: number
 }
 
 /** What the parts do; each reads the latest props and state. */
@@ -144,6 +157,10 @@ type DataTableActions<T> = {
   ) => boolean
   /** The view as it is now, changes not rendered yet included. */
   currentView: () => DataTableView
+  /** Removes the search and every filter ("Clear all"); whether the view changed. */
+  clearFilters: (event?: Event) => boolean
+  /** Back to the default view; whether it changed. */
+  resetView: (event?: Event) => boolean
   /** Changes the view as it is now, changes not rendered yet included. */
   updateView: (
     change: (view: DataTableView) => DataTableView,
@@ -205,6 +222,14 @@ type DataTableActions<T> = {
   /** The row's link, from `itemToHref`. */
   hrefOf: (item: T) => string | undefined
   retry: () => void
+  /** The end of the rows came near: `onLoadMore`. */
+  loadMore: () => void
+  /** Reports a new order of every item's id; `false` when cancelled. */
+  reorderRows: (
+    ids: ReadonlyArray<string>,
+    reason: DataTableRowOrderChangeReason,
+    event?: Event
+  ) => boolean
   exportCsv: (options?: DataTableExportOptions) => Promise<string>
   /** Warns once in development. */
   warn: Warn
@@ -282,6 +307,7 @@ export type {
   DataTableOptions,
   DataTablePageChangeReason,
   DataTablePageSizeChangeReason,
+  DataTableRowOrderChangeReason,
   DataTableSelectionChangeDetails,
   DataTableSelectionChangeReason,
   DataTableSelectionMode,
