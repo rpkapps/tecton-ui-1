@@ -156,7 +156,7 @@ export default defineTranslations({
     expandAllGroups: "Розгорнути всі групи",
     collapseAllGroups: "Згорнути всі групи",
     groupByColumn: "Групувати за стовпцем",
-    ungroup: "Скасувати групування",
+    ungroupColumn: "Скасувати групування за стовпцем",
     groupedBy: "Згруповано за {columnNames}",
     ungrouped: "Рядки більше не згруповані",
     groupLabel: "{columnName}: {value}",
@@ -167,6 +167,7 @@ export default defineTranslations({
       many: "{total} рядків",
       other: "{total} рядка",
     },
+    groupRowLabel: "{label}, {rows}",
   },
   tableColumnResizer: {
     resize: "Змінити розмір стовпця {columnName}",

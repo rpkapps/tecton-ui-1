@@ -159,7 +159,7 @@ export default defineTranslations({
     expandAllGroups: "توسيع كل المجموعات",
     collapseAllGroups: "طي كل المجموعات",
     groupByColumn: "التجميع حسب العمود",
-    ungroup: "إلغاء التجميع",
+    ungroupColumn: "إلغاء التجميع حسب العمود",
     groupedBy: "تم التجميع حسب {columnNames}",
     ungrouped: "لم تعد الصفوف مجمّعة",
     groupLabel: "{columnName}: {value}",
@@ -172,6 +172,7 @@ export default defineTranslations({
       many: "{total} صفًا",
       other: "{total} صف",
     },
+    groupRowLabel: "{label}، {rows}",
   },
   tableColumnResizer: {
     resize: "تغيير حجم {columnName}",

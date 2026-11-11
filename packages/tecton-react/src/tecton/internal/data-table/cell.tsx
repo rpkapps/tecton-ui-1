@@ -32,7 +32,7 @@ import { Link } from "@tecton/react/tecton/link"
 
 import type { Store } from "../store"
 import type { DataTableActions } from "./context"
-import type { EngineColumn, Formatter, ItemRow } from "./engine/index"
+import type { EngineColumn, Formatter, GroupRow, ItemRow } from "./engine/index"
 import type { RowOrder } from "./row-order"
 
 /** What detail rows draw: `renderDetail`, kept apart so a new one renders only them. */
@@ -65,6 +65,11 @@ type RowShared<T> = {
   columnsById: ReadonlyMap<string, EngineColumn<T>>
   /** Where a group row's label goes (`groupCellsOf`). */
   groupCells: GroupCells
+  /**
+   * A group row's name ("Field: Gullfaks"): whole, and in parts, the
+   * value apart from the column's name around it.
+   */
+  groupLabel: (row: GroupRow) => GroupLabel
   /** `disabledBehavior="all"`: a disabled row is disabled in the grid too. */
   disableRows: boolean
   /** Row headers are links (`itemToHref`). */
@@ -95,24 +100,57 @@ type RowShared<T> = {
   actions: DataTableActions<T>
 }
 
+/** A group row's name, and its parts: the column's name before and after the value. */
+type GroupLabel = {
+  text: string
+  before: string
+  value: string
+  after: string
+}
+
+/** The widths a table can differ at: below `sm`, then from each breakpoint on. */
+type Tier = "base" | "sm" | "md" | "lg"
+
 /**
- * Where a group row's label goes: from the first column, over the columns
- * after it that sum nothing, are pinned as it is and shown at every width
- * (`span`). When the first column is hidden below a breakpoint, the label
- * has a second cell for below it (`below`), from the second column, shown
- * only there; `null` otherwise.
+ * A cell of a group row: the label's, from a column (`column`) over the
+ * `span` columns shown from it, or a column's own (its subtotal). `shown`
+ * is whether it is laid out at each of `GroupCells.tiers`.
  *
- * Pinned to the start, the label may go on over the empty columns that
- * scroll after it, on its row's fill: it stays in view with the pinned
- * columns, cut only where a column sums something. `reach` is the number
- * of columns it may cover (`span` when it keeps to its cell); their width
- * is the frame's `--data-table-group-label` (`groupLabelWidth`), so a
- * resize renders no row. Scrolled sideways, the label keeps to its cell
- * (`content.tsx`).
+ * - `subtotal`: every column shown sums something, so the label is in the
+ *   first one, with that column's subtotal after it.
+ * - `reach`: the label, in the first column pinned to the start, may go on
+ *   over the empty columns that scroll after it (`GroupCells.reach`).
+ */
+type GroupCell =
+  | {
+      kind: "label"
+      column: number
+      span: number
+      subtotal: boolean
+      reach: boolean
+      shown: ReadonlyArray<boolean>
+    }
+  | { kind: "column"; column: number; shown: ReadonlyArray<boolean> }
+
+/**
+ * A group row's cells (`groupCellsOf`), in order. At each width, the label
+ * is in the first column shown that sums nothing, over the columns shown
+ * after it that sum nothing and are pinned as it is; the columns before
+ * it and after those have their own cells, with their subtotals. A column
+ * hidden below a breakpoint moves the label where it is hidden: a label
+ * cell per place, each laid out only at its widths (`shownClassName`).
+ *
+ * Pinned to the start, the label in the first column may go on over the
+ * empty columns that scroll after it, on its row's fill: it stays in view
+ * with the pinned columns, cut only where a column sums something.
+ * `reach` is the number of columns it may cover (0 when it keeps to its
+ * cell); their width is the frame's `--data-table-group-label`
+ * (`groupLabelWidth`), so a resize renders no row. Scrolled sideways, the
+ * label keeps to its cell (`content.tsx`).
  */
 type GroupCells = {
-  span: number
-  below: { breakpoint: "sm" | "md" | "lg"; span: number } | null
+  tiers: ReadonlyArray<Tier>
+  cells: ReadonlyArray<GroupCell>
   reach: number
 }
 
@@ -169,15 +207,33 @@ const HIDE_BELOW = {
   lg: "hidden lg:table-cell",
 } as const
 
-/** A cell shown only below a breakpoint: where a hidden column's place is taken. */
-const SHOW_BELOW = {
-  sm: "sm:hidden",
-  md: "md:hidden",
-  lg: "lg:hidden",
-} as const
-
 function sameSide(a: CellPin | undefined, b: CellPin | undefined) {
   return a?.side === b?.side
+}
+
+const RANK = { base: 0, sm: 1, md: 2, lg: 3 } as const
+
+/** Written out whole, so Tailwind finds them: a cell's display from a breakpoint on. */
+const DISPLAY = {
+  sm: { shown: "sm:table-cell", hidden: "sm:hidden" },
+  md: { shown: "md:table-cell", hidden: "md:hidden" },
+  lg: { shown: "lg:table-cell", hidden: "lg:hidden" },
+} as const
+
+/** The classes that lay a cell out only at the tiers it is `shown` at. */
+function shownClassName(
+  tiers: ReadonlyArray<Tier>,
+  shown: ReadonlyArray<boolean>
+) {
+  if (shown.every(Boolean)) return undefined
+  return cn(
+    !shown[0] && "hidden",
+    tiers.map((tier, index) =>
+      tier === "base" || shown[index] === shown[index - 1]
+        ? undefined
+        : DISPLAY[tier][shown[index] ? "shown" : "hidden"]
+    )
+  )
 }
 
 /** Where the group rows of these columns put their label (`GroupCells`). */
@@ -185,33 +241,91 @@ function groupCellsOf<T>(
   columns: ReadonlyArray<EngineColumn<T>>,
   pins: ReadonlyArray<CellPin | undefined>
 ): GroupCells {
-  const empty = (index: number) =>
-    !columns[index].aggregate && !columns[index].definition.hideBelow
-  let span = 1
-  while (span < columns.length && empty(span) && sameSide(pins[span], pins[0]))
-    span++
-  const breakpoint = columns[0]?.definition.hideBelow
-  const below =
-    breakpoint && columns.length > 1 && !columns[1].definition.hideBelow
-      ? { breakpoint, span: Math.max(span, 2) - 1 }
-      : null
-  let reach = span
-  if (pins[0]?.side === "start")
-    while (reach < columns.length && empty(reach) && pins[reach] === undefined)
-      reach++
-  return { span, below, reach }
+  const tiers: Array<Tier> = ["base"]
+  for (const tier of ["sm", "md", "lg"] as const)
+    if (columns.some((column) => column.definition.hideBelow === tier))
+      tiers.push(tier)
+  const visible = (index: number, tier: Tier) => {
+    const below = columns[index].definition.hideBelow
+    return !below || RANK[below] <= RANK[tier]
+  }
+  const sums = (index: number) => columns[index].aggregate !== null
+  // At each tier: where the label is, and the columns it covers.
+  const labels: Array<{ column: number; span: number; subtotal: boolean }> = []
+  const covered = tiers.map((tier) => {
+    const shown = columns.flatMap((_, index) =>
+      visible(index, tier) ? [index] : []
+    )
+    const start = shown.find((index) => !sums(index))
+    const label =
+      start === undefined
+        ? { column: shown[0] ?? 0, span: 1, subtotal: true }
+        : { column: start, span: 1, subtotal: false }
+    const cover = [label.column]
+    if (!label.subtotal)
+      for (const index of shown.slice(shown.indexOf(label.column) + 1)) {
+        if (sums(index) || !sameSide(pins[index], pins[label.column])) break
+        cover.push(index)
+      }
+    label.span = cover.length
+    labels.push(label)
+    return new Set(cover)
+  })
+  // The label in the first column may run on over the empty columns that
+  // scroll after it (pinned columns stay, hidden ones take no room).
+  let reach = 0
+  if (pins[0]?.side === "start" && columns.length > 0 && !sums(0)) {
+    let end = 1
+    while (
+      end < columns.length &&
+      !sums(end) &&
+      (pins[end] === undefined || pins[end]?.side === "start")
+    )
+      end++
+    // Only past the pinned columns: within them, the label's own cell.
+    for (let index = 1; index < end; index++)
+      if (pins[index] === undefined) reach = end
+  }
+  const cells: Array<GroupCell> = []
+  columns.forEach((_, index) => {
+    // The label cells that start here, one per place it takes.
+    const here = new Map<string, Array<boolean>>()
+    labels.forEach((label, tier) => {
+      if (label.column !== index) return
+      const key = `${label.span}:${label.subtotal}`
+      const shown = here.get(key) ?? tiers.map(() => false)
+      shown[tier] = true
+      here.set(key, shown)
+    })
+    for (const shown of here.values()) {
+      const label = labels[shown.indexOf(true)]
+      cells.push({
+        kind: "label",
+        ...label,
+        reach: reach > 0 && index === 0 && !label.subtotal,
+        shown,
+      })
+    }
+    const own = tiers.map(
+      (tier, at) => visible(index, tier) && !covered[at].has(index)
+    )
+    if (own.some(Boolean))
+      cells.push({ kind: "column", column: index, shown: own })
+  })
+  return { tiers, cells, reach }
 }
 
 /**
  * The frame's variables for the group rows' label: the width of the
  * columns it may cover (`GroupCells.reach`), from the columns' fixed
- * widths; none when it keeps to its cell.
+ * widths (none for a column hidden at this width); none when it keeps to
+ * its cell.
  */
 function groupLabelWidth(
   cells: GroupCells,
   widths: ReadonlyArray<number> | undefined
 ): Record<string, string> | undefined {
-  if (cells.reach === cells.span || !widths) return undefined
+  if (cells.reach === 0 || !widths) return undefined
   const width = widths.slice(0, cells.reach).reduce((sum, at) => sum + at, 0)
   return { "--data-table-group-label": `${width}px` }
 }
@@ -410,6 +524,7 @@ function renderCell<T>(
 }
 
 export {
+  ALIGN,
   cellBorderClassName,
   cellContent,
   columnClassName,
@@ -423,6 +538,13 @@ export {
   pinStyle,
   renderCell,
   rowText,
-  SHOW_BELOW,
+  shownClassName,
 }
-export type { CellPin, DetailStore, GroupCells, RowShared }
+export type {
+  CellPin,
+  DetailStore,
+  GroupCell,
+  GroupCells,
+  GroupLabel,
+  RowShared,
+}

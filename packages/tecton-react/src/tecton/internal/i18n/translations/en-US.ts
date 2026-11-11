@@ -167,7 +167,7 @@ const enUS = {
     expandAllGroups: "Expand all groups",
     collapseAllGroups: "Collapse all groups",
     groupByColumn: "Group by column",
-    ungroup: "Ungroup",
+    ungroupColumn: "Ungroup column",
     // Announced when the grouping changes; {columnNames} is a list of
     // column names ("Field and Status").
     groupedBy: "Grouped by {columnNames}",
@@ -178,6 +178,9 @@ const enUS = {
     groupLabel: "{columnName}: {value}",
     emptyGroup: "(Empty)",
     groupCount: { one: "{total} row", other: "{total} rows" },
+    // A group row's name for screen readers: its label and its count,
+    // with a pause between them ("Field: Gullfaks, 6 rows").
+    groupRowLabel: "{label}, {rows}",
   },
   tableColumnResizer: {
     resize: "Resize {columnName}",

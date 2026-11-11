@@ -156,7 +156,7 @@ export default defineTranslations({
     expandAllGroups: "Rozwiń wszystkie grupy",
     collapseAllGroups: "Zwiń wszystkie grupy",
     groupByColumn: "Grupuj według kolumny",
-    ungroup: "Rozgrupuj",
+    ungroupColumn: "Rozgrupuj według kolumny",
     groupedBy: "Pogrupowano według {columnNames}",
     ungrouped: "Wiersze nie są już pogrupowane",
     groupLabel: "{columnName}: {value}",
@@ -167,6 +167,7 @@ export default defineTranslations({
       many: "{total} wierszy",
       other: "{total} wiersza",
     },
+    groupRowLabel: "{label}, {rows}",
   },
   tableColumnResizer: {
     resize: "Zmień rozmiar kolumny {columnName}",

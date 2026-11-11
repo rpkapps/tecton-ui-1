@@ -49,6 +49,7 @@ import {
   groupCellsOf,
   groupLabelWidth,
   type CellPin,
+  type GroupLabel,
   type DetailStore,
   type RowShared,
 } from "./cell"
@@ -73,12 +74,14 @@ import {
 import {
   createDetailCache,
   getColumnModel,
+  isGroupClosed,
   withDetailRows,
   type BodyRow,
   type ColumnLayout,
   type DataTableColumns,
   type DataTableRowModel,
   type EngineColumn,
+  type GroupRow,
 } from "./engine/index"
 import { useFeature, usePrefetchFeatures } from "./lazy"
 import { DataTableHeader, type HeaderShared } from "./header"
@@ -399,8 +402,8 @@ function hideBelowColumn<T>(column: EngineColumn<T>) {
  * A group row's label over the empty columns after its pinned cell
  * (`groupLabelWidth`) while the table is scrolled to its start; once
  * scrolled sideways, within its cell, so the columns scrolling under the
- * pinned ones are not covered. Set on the scroll container, which no
- * render of the table's writes to, as the user scrolls.
+ * pinned ones are not covered. Marked on the scroll container, as the
+ * user scrolls: no render of the table's writes to it.
  */
 function useGroupLabelClip(
   container: React.RefObject<HTMLDivElement | null>,
@@ -409,24 +412,19 @@ function useGroupLabelClip(
   React.useLayoutEffect(() => {
     const element = container.current
     if (!on || !element) return
-    let clipped = false
-    const update = () => {
-      const scrolled = Math.abs(element.scrollLeft) > 0.5
-      if (scrolled === clipped) return
-      clipped = scrolled
-      if (scrolled) element.style.setProperty(GROUP_LABEL, "initial")
-      else element.style.removeProperty(GROUP_LABEL)
-    }
+    const update = () =>
+      element.toggleAttribute(CLIPPED, Math.abs(element.scrollLeft) > 0.5)
     update()
     element.addEventListener("scroll", update, { passive: true })
     return () => {
       element.removeEventListener("scroll", update)
-      element.style.removeProperty(GROUP_LABEL)
+      element.removeAttribute(CLIPPED)
     }
   }, [container, on])
 }
 
-const GROUP_LABEL = "--data-table-group-label"
+/** Read by the group rows' label (`row.tsx`). */
+const CLIPPED = "data-group-label-clipped"
 
 /** The header's height while `active`, for the bar under it. */
 function useHeaderHeight(
@@ -724,6 +722,25 @@ function DataTableContentImpl({
   const labelWidth = grouped ? (reachWidth ?? NO_LABEL_WIDTH) : undefined
   useGroupLabelClip(container, reachWidth !== undefined)
   const multiple = options.selectionMode === "multiple"
+  const tTable = useTranslations("dataTable")
+  const groupLabel = React.useMemo(() => {
+    const known = new WeakMap<GroupRow, GroupLabel>()
+    return (row: GroupRow): GroupLabel => {
+      let label = known.get(row)
+      if (!label) {
+        const header = columnsById.get(row.column)?.header ?? row.column
+        const value = row.text === "" ? tTable("emptyGroup") : row.text
+        // The translation's own order: the value's place in it.
+        const [before = "", after = ""] = tTable("groupLabel", {
+          columnName: header,
+          value: "\u0000",
+        }).split("\u0000")
+        label = { text: before + value + after, before, value, after }
+        known.set(row, label)
+      }
+      return label
+    }
+  }, [tTable, columnsById])
   const shared = React.useMemo<RowShared<unknown>>(
     () => ({
       columns: shownColumns,
@@ -740,6 +757,7 @@ function DataTableContentImpl({
       multiple,
       columnsById,
       groupCells,
+      groupLabel,
       disableRows: options.disabledBehavior === "all",
       linked: options.linked,
       wrap: !virtualized,
@@ -747,12 +765,16 @@ function DataTableContentImpl({
       columnCount: shownColumns.length + (selection ? 1 : 0) + (handle ? 1 : 0),
       rowIndexOf: options.pagination
         ? (id: string) => {
-            // The engine's place, after the open detail rows before it.
+            // The engine's place, after the open detail rows before it; a
+            // server page's rows after the rows of the pages before it
+            // (see `rowCount` below).
             const at = model.indexOfRow(id)
             let before = 0
             for (const other of openOnPages)
               if (model.indexOfRow(other) < at) before++
-            return at + before
+            return (
+              (server ? (model.page - 1) * model.pageSize : 0) + at + before
+            )
           }
         : null,
       headerRows: layout.headerRows.length,
@@ -779,9 +801,11 @@ function DataTableContentImpl({
       multiple,
       columnsById,
       groupCells,
+      groupLabel,
       options.disabledBehavior,
       options.linked,
       options.pagination,
+      server,
       // On pages only: a new model gives the rows new places.
       options.pagination ? model : null,
       layout.headerRows.length,
@@ -813,6 +837,23 @@ function DataTableContentImpl({
   // The body's rows as rendered, for the grid to find a closed group: set
   // before the layout effects, where the grid looks for it.
   const shownRows = React.useRef(rows)
+  // A group's row to focus once the page that holds it shows
+  // (`restoreFocusTo`): given up when another page shows instead.
+  const pendingFocus = React.useRef<{
+    key: string
+    page: number
+    from: number
+  } | null>(null)
+  React.useLayoutEffect(() => {
+    const pending = pendingFocus.current
+    if (!pending || model.page === pending.from) return
+    pendingFocus.current = null
+    if (model.page !== pending.page) return
+    const at = rows.findIndex(
+      (row) => row.key === pending.key && !("continued" in row && row.continued)
+    )
+    if (at !== -1) gridController.current?.focusRow(at)
+  }, [rows, model.page])
   React.useInsertionEffect(() => {
     shownRows.current = rows
   })
@@ -844,16 +885,33 @@ function DataTableContentImpl({
           ? Math.max(0, current.rowCount - allMatching.except.length)
           : selected.size
       },
-      // A row gone with the group that closed over it: focus goes to the
-      // group's row (the outermost closed one).
-      restoreFocusTo: (id) => {
-        const { model: current, collapsedGroups } = store.get()
-        if (collapsedGroups.length === 0) return null
-        const closed = new Set(collapsedGroups)
-        const group = current.groupPath(id).find((key) => closed.has(key))
+      // A row gone with the group that closed over it (an item, its
+      // detail row, a group in it), or a group's row repeated at the top of
+      // a page that went as the group closed: focus goes to the group's
+      // own row (the outermost closed one), on the page that holds it.
+      restoreFocusTo: (id, focused) => {
+        const { model: current, closedGroups } = store.get()
+        const group =
+          current
+            .groupPath(id)
+            .find((key) => isGroupClosed(closedGroups, key)) ??
+          // A group's row itself (no item has its key).
+          (current.item(id) === undefined && current.indexOfRow(id) >= 0
+            ? id
+            : undefined)
         if (group === undefined) return null
-        const at = shownRows.current.findIndex((row) => row.key === group)
-        return at === -1 ? null : at
+        const at = shownRows.current.findIndex(
+          (row) => row.key === group && !("continued" in row && row.continued)
+        )
+        if (at !== -1) return at
+        // On an earlier page: that page, then the row (`pendingFocus`).
+        const index = current.indexOfRow(group)
+        if (!focused || index === -1 || server || !options.pagination)
+          return null
+        const page = Math.floor(index / current.pageSize) + 1
+        pendingFocus.current = { key: group, page, from: current.page }
+        actions.setPage(page, "group")
+        return null
       },
     }),
     [
@@ -861,6 +919,8 @@ function DataTableContentImpl({
       options.disallowEmptySelection,
       options.activatable,
       options.disabledBehavior,
+      options.pagination,
+      server,
       actions,
       describeItem,
       shared.levelled,
@@ -921,7 +981,21 @@ function DataTableContentImpl({
   // Every page's rows, when only some are in the DOM: on pages, or the
   // server's count in a virtualized table; unknown (-1) while more rows
   // come and the server does not say how many. The totals row is the last.
+  //
+  // In server mode the server's items are counted (`rowCount`), and the
+  // rows that are not items, known only for the loaded ones (group rows,
+  // a group's row repeated at the top of the page, detail rows), are
+  // added to them; a page's rows take the places after the pages before
+  // it, (page − 1) × pageSize items (`rowIndexOf`). So no row's index is
+  // past the count, whatever is grouped or open.
   const headerRows = layout.headerRows.length
+  const extraRows = server
+    ? bodyRows.reduce(
+        (count, row) =>
+          row.kind === "item" && !row.continued ? count : count + 1,
+        0
+      )
+    : 0
   const footerRows = totals && !failed && !firstLoad ? 1 : 0
   const counted =
     more && !(server && model.rowCount > rows.length)
@@ -929,7 +1003,7 @@ function DataTableContentImpl({
       : options.pagination && !server
         ? headerRows + model.allRows.length + openOnPages.length
         : server && (options.pagination || virtualized)
-          ? headerRows + model.rowCount + (bodyRows.length - model.rows.length)
+          ? headerRows + model.rowCount + extraRows
           : virtualized && footerRows
             ? headerRows + rows.length
             : undefined

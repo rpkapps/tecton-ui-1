@@ -149,7 +149,7 @@ export default defineTranslations({
     expandAllGroups: "Proširi sve grupe",
     collapseAllGroups: "Skupi sve grupe",
     groupByColumn: "Grupiši po koloni",
-    ungroup: "Razgrupiši",
+    ungroupColumn: "Razgrupiši po koloni",
     groupedBy: "Grupisano po {columnNames}",
     ungrouped: "Redovi više nisu grupisani",
     groupLabel: "{columnName}: {value}",
@@ -159,6 +159,7 @@ export default defineTranslations({
       few: "{total} reda",
       other: "{total} redova",
     },
+    groupRowLabel: "{label}, {rows}",
   },
   tableColumnResizer: {
     resize: "Promeni veličinu kolone {columnName}",

@@ -150,7 +150,7 @@ export default defineTranslations({
     expandAllGroups: "Proširi sve grupe",
     collapseAllGroups: "Sažmi sve grupe",
     groupByColumn: "Grupiraj po stupcu",
-    ungroup: "Razgrupiraj",
+    ungroupColumn: "Razgrupiraj po stupcu",
     groupedBy: "Grupirano po {columnNames}",
     ungrouped: "Retci više nisu grupirani",
     groupLabel: "{columnName}: {value}",
@@ -160,6 +160,7 @@ export default defineTranslations({
       few: "{total} retka",
       other: "{total} redaka",
     },
+    groupRowLabel: "{label}, {rows}",
   },
   tableColumnResizer: {
     resize: "Promijeni veličinu stupca {columnName}",

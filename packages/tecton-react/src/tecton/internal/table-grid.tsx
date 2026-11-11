@@ -130,15 +130,18 @@ type TableGridOptions = {
    * Where focus goes when the body row it was on (by its `value`, or its
    * `id`) went away: the body index (from 0) of a row that closed over it
    * (a group), `null` for the grid's own choice (the row now in its place,
-   * or the nearest).
+   * or the nearest). `focused`: focus was on that row (not only the tab
+   * stop), so it may be taken elsewhere (`controller.focusRow`).
    */
-  restoreFocusTo?: (row: string) => number | null
+  restoreFocusTo?: (row: string, focused: boolean) => number | null
 }
 
 /** What the component around a grid table asks of it. */
 type TableGridController = {
   /** Scrolls the body row with this `value` into view, rendered or not. */
   scrollToRow: (value: string) => void
+  /** Focuses the body row at this index (from 0), scrolled to when out of view. */
+  focusRow: (index: number) => void
 }
 
 /** A body row's grid state, given by `TableRowConfig`. */
@@ -766,17 +769,17 @@ function useTableGrid(own: React.ComponentProps<"table">) {
    * The row index of the row that closed over the row focus was on
    * (`restoreFocusTo`), while that row is gone; `null` for none.
    */
-  const closedOver = () => {
+  const closedOver = (focused: boolean) => {
     const at = position.current
     if (!at?.body || at.id === undefined || !restoreFocusTo) return null
-    const index = restoreFocusTo(at.id)
+    const index = restoreFocusTo(at.id, focused)
     return index === null || index >= bodyCount()
       ? null
       : headRows().length + index
   }
 
-  const defaultStop = (): HTMLElement | null => {
-    const closed = closedOver()
+  const defaultStop = (focused = false): HTMLElement | null => {
+    const closed = closedOver(focused)
     const closer = closed === null ? null : rowAt(closed)
     if (closer && !infoOf(closer)?.disabled) return closer
     const at = position.current
@@ -845,7 +848,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       // In a cell no longer laid out (a breakpoint passed).
       !isShown(stop.tagName === "TR" ? stop : (stop.closest("td, th") ?? stop))
     ) {
-      stop = defaultStop()
+      stop = defaultStop(lost)
       tabStop.current = stop
     }
     for (const control of el.querySelectorAll<HTMLElement>(FOCUSABLE)) {
@@ -869,9 +872,9 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       // The row now at its place (or the nearest), else the body's own
       // control, else the table's first stop.
       const control = bodyRows().length === 0 ? bodyControl() : null
-      const target = control ?? defaultStop()
+      const target = control ?? defaultStop(true)
       // The row that closed over it, scrolled to when it is out of view.
-      const closed = control ? null : closedOver()
+      const closed = control ? null : closedOver(true)
       if (closed !== null && rowAt(closed) === null)
         whenRendered(closed, focusElement)
       else if (target === control) control?.focus({ preventScroll: true })
@@ -1425,6 +1428,10 @@ function useTableGrid(own: React.ComponentProps<"table">) {
           ? describedRows(describe).indexByKey.get(value)
           : undefined
         if (index !== undefined) body.current?.scrollToIndex?.(index)
+      },
+      focusRow: (index) => {
+        const at = headRows().length + index
+        if (isBody(at)) whenRendered(at, focusElement)
       },
     }
     return () => {

@@ -151,7 +151,7 @@ export default defineTranslations({
     expandAllGroups: "Extindeți toate grupurile",
     collapseAllGroups: "Restrângeți toate grupurile",
     groupByColumn: "Grupați după coloană",
-    ungroup: "Anulați gruparea",
+    ungroupColumn: "Anulați gruparea după coloană",
     groupedBy: "Grupat după {columnNames}",
     ungrouped: "Rândurile nu mai sunt grupate",
     groupLabel: "{columnName}: {value}",
@@ -161,6 +161,7 @@ export default defineTranslations({
       few: "{total} rânduri",
       other: "{total} de rânduri",
     },
+    groupRowLabel: "{label}, {rows}",
   },
   tableColumnResizer: {
     resize: "Redimensionați {columnName}",

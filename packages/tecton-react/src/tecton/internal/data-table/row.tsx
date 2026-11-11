@@ -46,18 +46,18 @@ import {
   type TableRowGridProps,
 } from "../table-grid"
 import {
+  ALIGN,
   cellBorderClassName,
-  columnClassName,
-  HIDE_BELOW,
   INDENT,
   pinnedCellClassName,
   pinnedRowClassName,
   pinStyle,
   renderCell,
   rowText,
-  SHOW_BELOW,
+  shownClassName,
   type CellPin,
   type DetailStore,
+  type GroupCell,
   type RowShared,
 } from "./cell"
 import { useDataTableContext, useDataTableSelector } from "./context"
@@ -95,7 +95,7 @@ function describeRow<T>(row: BodyRow<T>, shared: RowShared<T>): RowDescription {
     case "group":
       return {
         value: undefined,
-        textValue: row.text,
+        textValue: shared.groupLabel(row).text,
         disabled: false,
         level: row.depth + 1,
       }
@@ -221,30 +221,28 @@ function GroupCheckbox<T>({
     () => selectionState(selected, ids),
     [selected, ids]
   )
-  // "Select" and the label: the checkbox's own name, then the label's.
-  const element = React.useRef<HTMLElement | null>(null)
-  const [labelledBy, setLabelledBy] = React.useState(labelId)
-  React.useLayoutEffect(() => {
-    const own = element.current?.id
-    setLabelledBy(own ? `${own} ${labelId}` : labelId)
-  }, [labelId])
+  // "Select" and the label: a hidden "Select", then the group's name.
+  const selectId = React.useId()
   return (
-    <Checkbox
-      ref={element}
-      data-slot="data-table-group-checkbox"
-      aria-label={t("select")}
-      aria-labelledby={labelledBy}
-      checked={state === "all"}
-      indeterminate={state === "some"}
-      disabled={ids.length === 0}
-      onCheckedChange={(_checked, eventDetails) =>
-        shared.actions.toggleGroupSelected(
-          row.key,
-          "item-press",
-          eventDetails.event
-        )
-      }
-    />
+    <>
+      <span id={selectId} hidden>
+        {t("select")}
+      </span>
+      <Checkbox
+        data-slot="data-table-group-checkbox"
+        aria-labelledby={`${selectId} ${labelId}`}
+        checked={state === "all"}
+        indeterminate={state === "some"}
+        disabled={ids.length === 0}
+        onCheckedChange={(_checked, eventDetails) =>
+          shared.actions.toggleGroupSelected(
+            row.key,
+            "item-press",
+            eventDetails.event
+          )
+        }
+      />
+    </>
   )
 }
 
@@ -278,11 +276,8 @@ function GroupRowComponent<T>({
   // The subtotals are the model's: they change with the items in the group.
   const model = useDataTableSelector(context, (state) => state.model)
   const { actions, columns, pins, groupCells } = shared
-  const header = shared.columnsById.get(row.column)?.header ?? row.column
-  const label = t("groupLabel", {
-    columnName: header,
-    value: row.text === "" ? t("emptyGroup") : row.text,
-  })
+  const name = shared.groupLabel(row)
+  const label = name.text
   const count = t("groupCount", {
     count: row.count,
     total: row.count.toLocaleString(shared.formatter.locale),
@@ -309,86 +304,103 @@ function GroupRowComponent<T>({
       {content}
     </TableCell>
   )
-  const labelCell = (
-    key: string,
-    span: number,
-    pin: CellPin | undefined,
-    className: string | undefined,
-    id: string | undefined,
-    reach = false
-  ) => (
-    <TableHead
-      key={key}
-      id={id}
-      scope="row"
-      colSpan={span > 1 ? span : undefined}
-      className={cn("[&[scope=row]]:font-medium", className, pinned(pin))}
-      style={pin && pinStyle(pin)}
-    >
-      <div
+  const labelCell = (cell: GroupCell & { kind: "label" }, first: boolean) => {
+    const pin = pins[cell.column]
+    const column = columns[cell.column]
+    return (
+      <TableHead
+        key={`label:${cell.column}:${cell.span}:${cell.subtotal}`}
+        // The checkbox's name: the label of any width (hidden ones too).
+        id={first ? labelId : undefined}
+        scope="row"
+        // Read "Field: Gullfaks, 6 rows", whatever the label shows (its
+        // parts in spans, the column's name left out when cut).
+        aria-label={t("groupRowLabel", { label, rows: count })}
+        colSpan={cell.span > 1 ? cell.span : undefined}
         className={cn(
-          "flex items-center gap-1",
-          // Over the empty columns after its cell, on the row's fill;
-          // within its cell until they are measured.
-          reach &&
-            "relative w-max max-w-[calc(var(--data-table-group-label,calc(100%+2rem))-2rem)] bg-inherit pe-2"
+          "[&[scope=row]]:font-medium",
+          shownClassName(groupCells.tiers, cell.shown),
+          pinned(pin)
         )}
-        style={{ paddingInlineStart: `${row.depth * INDENT}rem` }}
+        style={pin && pinStyle(pin)}
       >
-        <span
-          aria-hidden
-          data-slot="data-table-group-chevron"
-          className="flex size-6 shrink-0 items-center justify-center text-muted-foreground"
+        <div
+          className={cn(
+            "flex items-center gap-1",
+            // Over the empty columns after its cell, on the row's fill;
+            // within its cell until they are measured, and once the table
+            // is scrolled sideways.
+            cell.reach && GROUP_LABEL_REACH
+          )}
+          style={{ paddingInlineStart: `${row.depth * INDENT}rem` }}
         >
-          <ChevronRightIcon
+          <span
+            aria-hidden
+            data-slot="data-table-group-chevron"
+            className="flex size-6 shrink-0 items-center justify-center text-muted-foreground"
+          >
+            <ChevronRightIcon
+              className={cn(
+                "size-4 transition-transform rtl:-scale-x-100",
+                row.open && "rotate-90 rtl:-rotate-90"
+              )}
+            />
+          </span>
+          {/* Short of room, the count gives way first (it shrinks, the label
+              does not), then the label is cut: never past the cell, the
+              chevron and its gap. Beside a subtotal, both shrink. */}
+          <span
             className={cn(
-              "size-4 transition-transform rtl:-scale-x-100",
-              row.open && "rotate-90 rtl:-rotate-90"
+              "truncate",
+              cell.subtotal ? "min-w-0" : "max-w-[calc(100%-1.75rem)] shrink-0"
             )}
-          />
-        </span>
-        <span className="min-w-0 truncate">{label}</span>
-        {/* Short of room, the count gives way first. */}
-        <span className="min-w-0 shrink-[999] truncate font-normal text-muted-foreground tabular-nums">
-          {count}
-        </span>
-      </div>
-    </TableHead>
-  )
-  const first = columns[0]
-  const { span, below } = groupCells
-  const cells: Array<React.ReactNode> = [
-    labelCell(
-      "label",
-      span,
-      pins[0],
-      first.definition.hideBelow && HIDE_BELOW[first.definition.hideBelow],
-      labelId,
-      groupCells.reach > span
-    ),
-  ]
-  if (below)
-    cells.push(
-      labelCell(
-        "label-below",
-        below.span,
-        pins[1],
-        SHOW_BELOW[below.breakpoint],
-        undefined
-      )
+          >
+            {name.before && (
+              <span className={cn(cell.reach && GROUP_LABEL_COLUMN)}>
+                {name.before}
+              </span>
+            )}
+            {name.value}
+            {name.after && (
+              <span className={cn(cell.reach && GROUP_LABEL_COLUMN)}>
+                {name.after}
+              </span>
+            )}
+          </span>
+          <span className="min-w-0 truncate font-normal text-muted-foreground tabular-nums">
+            {count}
+          </span>
+          {cell.subtotal && (
+            // Every column shown sums: the first one's subtotal is here.
+            <span
+              className={cn(
+                "ms-auto shrink-0 ps-4 font-normal",
+                column.type === "number" && "tabular-nums"
+              )}
+            >
+              {subtotal(column, row, model, shared)}
+            </span>
+          )}
+        </div>
+      </TableHead>
     )
-  columns.forEach((column, index) => {
-    if (index < span) return
-    // Below the breakpoint, the label's second cell is in its place.
-    const covered = below && span === 1 && index === 1
-    const pin = pins[index]
-    cells.push(
+  }
+  let labelled = false
+  const cells = groupCells.cells.map((cell) => {
+    if (cell.kind === "label") {
+      const first = !labelled
+      labelled = true
+      return labelCell(cell, first)
+    }
+    const column = columns[cell.column]
+    const pin = pins[cell.column]
+    return (
       <TableCell
         key={column.id}
         className={cn(
-          columnClassName(column),
+          ALIGN[column.align],
+          shownClassName(groupCells.tiers, cell.shown),
           column.type === "number" && "tabular-nums",
-          covered && HIDE_BELOW[below.breakpoint],
           pinned(pin)
         )}
         style={pin && pinStyle(pin)}
@@ -430,6 +442,21 @@ function GroupRowComponent<T>({
   )
 }
 
+/**
+ * A group label that may go on over the empty columns after its pinned
+ * cell (`GroupCells.reach`): as wide as they are, on the row's fill. Kept
+ * to its cell until they are measured, and while the table is scrolled
+ * sideways (`data-group-label-clipped` on this table's scroll container,
+ * `content.tsx`), where the column's name goes first, then the count, so
+ * the value stays in view (the cell's `aria-label` names it whole).
+ */
+const GROUP_LABEL_REACH = cn(
+  "relative w-max max-w-[calc(var(--data-table-group-label,calc(100%+2rem))-2rem)] bg-inherit pe-2",
+  "[[data-group-label-clipped]>table>tbody>tr>th>&]:max-w-full"
+)
+const GROUP_LABEL_COLUMN =
+  "[[data-group-label-clipped]>table>tbody>tr>th>div>span>&]:hidden"
+
 const NO_DETAIL: DetailStore = createStore<{
   render: ((item: never) => React.ReactNode) | null
 }>({ render: null })
@@ -451,9 +478,11 @@ function DetailRowComponent<T>({
   ...props
 }: RowProps<DetailRow<T>, T>) {
   const render = useStore(shared.detail ?? NO_DETAIL, (state) => state.render)
+  // Named after its item: a detail row (or a table in it) that a closing
+  // group takes away sends focus where its row's would go.
   const config = React.useMemo<TableRowGridProps>(
-    () => ({ level: row.depth + 2 }),
-    [row.depth]
+    () => ({ level: row.depth + 2, id: row.id }),
+    [row.depth, row.id]
   )
   const index = shared.rowIndexOf
     ? shared.headerRows + shared.rowIndexOf(row.id) + 2

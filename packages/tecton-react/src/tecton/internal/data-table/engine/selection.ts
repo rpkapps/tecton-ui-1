@@ -7,7 +7,8 @@
  *   every page in client mode, the loaded items in server mode
  *   (`selectAllIds`), not the rows a filtered tree shows only as context
  *   for its matches; the header checkbox shows `selectionState`.
- * - A group row's checkbox selects or clears its items (`toggleIds`).
+ * - A group row's checkbox selects or clears its items that can be
+ *   (`DataTableRowModel.groupSelectableIds`, `toggleIds`).
  * - Server mode "Select all N" enters all-matching (`enterAllMatching`):
  *   `value` is the loaded items, `allMatching.except` the rows deselected
  *   since; rows loaded later come selected (`allMatchingValue`), and a
@@ -17,7 +18,6 @@
  * take a `Set` too, for large selections.
  */
 import type { DataTableRowModel } from "./engine"
-import type { GroupRow } from "./rows"
 import type { DataTableView } from "./types"
 import { viewMatchesChanged } from "./view"
 
@@ -33,14 +33,6 @@ function asSet(ids: Ids): ReadonlySet<string> {
 /** The items "select all" selects: every matching item that is not disabled. */
 function selectAllIds<T>(model: DataTableRowModel<T>): ReadonlyArray<string> {
   return model.selectableIds()
-}
-
-/** A group's items that can be selected. */
-function groupIds<T>(
-  model: DataTableRowModel<T>,
-  group: GroupRow
-): Array<string> {
-  return model.groupIds(group.key).filter((id) => !model.isDisabled(id))
 }
 
 /**
@@ -134,7 +126,6 @@ export {
   allMatchingAfterViewChange,
   allMatchingValue,
   enterAllMatching,
-  groupIds,
   selectAllIds,
   selectedCount,
   selectionState,

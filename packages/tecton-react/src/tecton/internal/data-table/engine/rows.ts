@@ -6,8 +6,8 @@
  *
  * - A tree row's children follow it while it is expanded: in `expanded`,
  *   or shown expanded because a match is below it (`autoExpanded`).
- * - Group rows come before their rows and are open unless their key is in
- *   `collapsedGroups`; their `ids`, `items` and `aggregates` are the
+ * - Group rows come before their rows and are open unless `closedGroups`
+ *   closes them; their `ids`, `items` and `aggregates` are the
  *   model's to give (`DataTableRowModel.groupIds` and the like).
  * - `depth` is from 0. Tree and group rows (and the rows in groups) carry
  *   `posinset` / `setsize` among the rows shown with the same parent; a
@@ -100,6 +100,23 @@ type TotalsRow<T> = {
   readonly aggregates: Readonly<Record<string, DataTableValue>>
 }
 
+/**
+ * Which groups are closed: those in `keys`, or (`all`) every group but
+ * those in `keys`, so that "close every group" holds for groups yet to
+ * come (a grouping set in the same handler).
+ */
+type ClosedGroups = {
+  readonly all: boolean
+  readonly keys: ReadonlySet<string>
+}
+
+const ALL_OPEN: ClosedGroups = { all: false, keys: new Set() }
+const ALL_CLOSED: ClosedGroups = { all: true, keys: new Set() }
+
+function isGroupClosed(closed: ClosedGroups, key: string) {
+  return closed.all !== closed.keys.has(key)
+}
+
 /** The engine's rows: items and groups. */
 type EngineRow<T> = ItemRow<T> | GroupRow
 /** The rows a body renders: the engine's, and detail rows. */
@@ -162,7 +179,7 @@ type BuildRowsInput<T> = {
   expanded: ReadonlySet<string>
   /** Rows shown expanded however `expanded` is: 1 by position, `"parents"` for every row with children. */
   autoExpanded: Uint8Array | "parents" | null
-  collapsedGroups: ReadonlySet<string>
+  closedGroups: ClosedGroups
   cache: RowCache<T>
 }
 
@@ -317,7 +334,7 @@ function buildRows<T>(input: BuildRowsInput<T>): Array<EngineRow<T>> {
     for (let i = from; i < to; i++) {
       const group = level[i]
       const key = grouping.keys[group]
-      const open = !input.collapsedGroups.has(key)
+      const open = !isGroupClosed(input.closedGroups, key)
       const firstItem = items[grouping.first[group]]
       const count = ordered.end[group] - ordered.start[group]
       const value = column.getValue(firstItem)
@@ -515,11 +532,14 @@ function displayOrder<T>(
 }
 
 export {
+  ALL_CLOSED,
+  ALL_OPEN,
   buildRows,
   createDetailCache,
   createRowCache,
   displayOrder,
   indexRows,
+  isGroupClosed,
   lazy,
   pageRows,
   withDetailRows,
@@ -527,6 +547,7 @@ export {
 export type {
   BodyRow,
   BuildRowsInput,
+  ClosedGroups,
   DetailCache,
   DetailRow,
   DisplayRow,

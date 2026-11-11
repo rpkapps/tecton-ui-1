@@ -183,7 +183,8 @@ describe("DataTable grouped at 100,000 rows", () => {
       </div>
     )
     const group = (label: string) =>
-      screen.getByText(label).closest("tr") as HTMLTableRowElement
+      screen.getByRole("rowheader", { name: new RegExp(`^${label},`) })
+        .parentElement as HTMLTableRowElement
     const timed = (fn: () => void) => {
       cell.mockClear()
       const start = performance.now()

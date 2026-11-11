@@ -77,17 +77,38 @@ const columns = createColumns<Well>([
   },
 ])
 
-/** Expand and collapse every group: a part of your own, from `useDataTable`. */
+/**
+ * Expand and collapse every group: a part of your own, from `useDataTable`.
+ * A button with nothing to do is off, and keeps focus once pressed.
+ */
 function GroupToggles() {
-  const { view, expandAllGroups, collapseAllGroups } = useDataTable<Well>()
+  const {
+    view,
+    expandAllGroups,
+    collapseAllGroups,
+    canExpandAllGroups,
+    canCollapseAllGroups,
+  } = useDataTable<Well>()
   if (view.grouping.length === 0) return null
   return (
     <>
-      <Button variant="ghost" size="sm" onClick={expandAllGroups}>
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={!canExpandAllGroups}
+        focusableWhenDisabled
+        onClick={expandAllGroups}
+      >
         <ChevronsUpDownIcon aria-hidden />
         Expand all
       </Button>
-      <Button variant="ghost" size="sm" onClick={collapseAllGroups}>
+      <Button
+        variant="ghost"
+        size="sm"
+        disabled={!canCollapseAllGroups}
+        focusableWhenDisabled
+        onClick={collapseAllGroups}
+      >
         <ChevronsDownUpIcon aria-hidden />
         Collapse all
       </Button>

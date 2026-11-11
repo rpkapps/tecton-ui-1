@@ -105,12 +105,24 @@ function perTime(fn: (time: number) => string) {
 /** The parts of a day a date's group key is made of, in order. */
 const KEY_PARTS = ["era", "year", "month", "day", "weekday"] as const
 
+/** A weekday's place in the week, Monday first (ISO 8601), from its `en-US` short name. */
+const WEEKDAYS: Readonly<Record<string, string>> = {
+  Mon: "1",
+  Tue: "2",
+  Wed: "3",
+  Thu: "4",
+  Fri: "5",
+  Sat: "6",
+  Sun: "7",
+}
+
 /**
  * A date column's group key of a time: the day its format shows (its
  * time left out, `dayFormat`) in its time zone (`format.timeZone`, else
  * the local one). `YYYY-MM-DD` for a format that shows the whole day (the
  * default); else the parts it shows, in order (`YYYY-MM` for a month and
- * year), so the rows of a group show the same day.
+ * year, a weekday by its number from Monday), so the rows of a group show
+ * the same day, and keys sort as the calendar does.
  */
 function dateKeyReader(
   options: EngineColumn<unknown>["format"]
@@ -135,6 +147,9 @@ function dateKeyReader(
     const parts = new Map(
       format.formatToParts(time).map((part) => [part.type, part.value])
     )
+    const weekday = parts.get("weekday")
+    if (weekday !== undefined)
+      parts.set("weekday", WEEKDAYS[weekday] ?? weekday)
     return KEY_PARTS.flatMap((part) => parts.get(part) ?? []).join("-")
   })
 }
@@ -281,7 +296,23 @@ function orderGroups<T>(
       const descending =
         passes.find((pass) => pass.column === column)?.descending ?? false
       const sort = [{ column, descending }]
-      if (
+      if (column.type === "date" && !column.compare) {
+        // A date's groups by their keys, which sort as the calendar does
+        // (`dateKeyReader`): a format without the year (months) by its
+        // place in the year, not by the first row's date.
+        const empty = groups.filter((group) => grouping.values[group] === "")
+        const named = Array.from(groups)
+          .filter((group) => grouping.values[group] !== "")
+          .sort((a, b) =>
+            grouping.values[a] < grouping.values[b]
+              ? -1
+              : grouping.values[a] > grouping.values[b]
+                ? 1
+                : 0
+          )
+        if (descending) named.reverse()
+        ordered = Uint32Array.from([...named, ...empty])
+      } else if (
         column.type === "text" &&
         !column.compare &&
         !hasRanks(items, column)

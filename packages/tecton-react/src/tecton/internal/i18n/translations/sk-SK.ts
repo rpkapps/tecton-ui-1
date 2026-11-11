@@ -152,7 +152,7 @@ export default defineTranslations({
     expandAllGroups: "Rozbaliť všetky skupiny",
     collapseAllGroups: "Zbaliť všetky skupiny",
     groupByColumn: "Zoskupiť podľa stĺpca",
-    ungroup: "Zrušiť zoskupenie",
+    ungroupColumn: "Zrušiť zoskupenie podľa stĺpca",
     groupedBy: "Zoskupené podľa {columnNames}",
     ungrouped: "Riadky už nie sú zoskupené",
     groupLabel: "{columnName}: {value}",
@@ -163,6 +163,7 @@ export default defineTranslations({
       many: "{total} riadka",
       other: "{total} riadkov",
     },
+    groupRowLabel: "{label}, {rows}",
   },
   tableColumnResizer: {
     resize: "Zmeniť veľkosť stĺpca {columnName}",

@@ -154,7 +154,7 @@ export default defineTranslations({
     expandAllGroups: "Išskleisti visas grupes",
     collapseAllGroups: "Suskleisti visas grupes",
     groupByColumn: "Grupuoti pagal stulpelį",
-    ungroup: "Panaikinti grupavimą",
+    ungroupColumn: "Panaikinti grupavimą pagal stulpelį",
     groupedBy: "Sugrupuota pagal {columnNames}",
     ungrouped: "Eilutės nebegrupuojamos",
     groupLabel: "{columnName}: {value}",
@@ -165,6 +165,7 @@ export default defineTranslations({
       many: "{total} eilutės",
       other: "{total} eilučių",
     },
+    groupRowLabel: "{label}, {rows}",
   },
   tableColumnResizer: {
     resize: "Keisti stulpelio {columnName} dydį",

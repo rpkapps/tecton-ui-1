@@ -78,6 +78,10 @@ type UseDataTableResult<T> = {
   expandAllGroups: () => void
   /** Closes every group, nested ones too. */
   collapseAllGroups: () => void
+  /** Some group (of those the search and filters keep) is closed: `expandAllGroups` opens it. */
+  canExpandAllGroups: boolean
+  /** Some group (of those the search and filters keep) is open: `collapseAllGroups` closes it. */
+  canCollapseAllGroups: boolean
   /** The page shown, from 1. */
   page: number
   pageCount: number
@@ -151,6 +155,14 @@ function createResult<T>(
     setExpanded: (expanded) => actions.setExpanded(expanded, "none"),
     expandAllGroups: () => actions.expandAllGroups(),
     collapseAllGroups: () => actions.collapseAllGroups(),
+    // Counted when read: a part that does not read them costs nothing.
+    get canExpandAllGroups() {
+      return state.groupCounts().closed > 0
+    },
+    get canCollapseAllGroups() {
+      const counts = state.groupCounts()
+      return counts.closed < counts.total
+    },
     page: model.page,
     pageCount: model.pageCount,
     pageSize: model.pageSize,

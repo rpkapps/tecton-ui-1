@@ -66,9 +66,16 @@ export {
   resolvePageSize,
   shouldResetPage,
 } from "./pagination"
-export { createDetailCache, withDetailRows } from "./rows"
+export {
+  ALL_CLOSED,
+  ALL_OPEN,
+  createDetailCache,
+  isGroupClosed,
+  withDetailRows,
+} from "./rows"
 export type {
   BodyRow,
+  ClosedGroups,
   DetailCache,
   DetailRow,
   DisplayRow,
@@ -82,7 +89,6 @@ export {
   allMatchingAfterViewChange,
   allMatchingValue,
   enterAllMatching,
-  groupIds,
   selectAllIds,
   selectedCount,
   selectionState,

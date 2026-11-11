@@ -484,7 +484,9 @@ among its siblings, and a virtualized tree works the same way.
 {
   id: "actions",
   header: "Actions",
+  // No value to sort or group by.
   sortable: false,
+  groupable: false,
   align: "end",
   cell: (well) => (
     <DataTableRowActions>
@@ -515,7 +517,7 @@ const columns = createColumns<Allocation>([
 
 ## Grouping
 
-`groupable` groups the rows by the columns of the view's `grouping`, the outermost first: a group row for each value, with the rows that have it under it, and groups in groups for a second column. `DataTableGroupBy` is a "Group by" button with a menu to choose the columns and their order, and each column header's menu has "Group by column" (adding it as the last level) and "Ungroup"; a column opts out with `groupable: false`. The grouping is part of the view, set from `defaultView` / `view`, reported through `onViewChange` with the reason `"group"`, and through `useDataTable`'s `setGrouping`.
+`groupable` groups the rows by the columns of the view's `grouping`, the outermost first: a group row for each value, with the rows that have it under it, and groups in groups for a second column. `DataTableGroupBy` is a "Group by" button with a menu to choose the columns and their order, and each column header's menu has "Group by column" (adding it as the last level) and "Ungroup column"; a column opts out with `groupable: false`. Set it on a column without values of its own, such as an actions column: the table cannot tell, and every row would be in one "(Empty)" group. The grouping is part of the view, set from `defaultView` / `view`, reported through `onViewChange` with the reason `"group"`, and through `useDataTable`'s `setGrouping`.
 
 <ComponentPreview name="data-table-grouping" align="start" />
 
@@ -541,15 +543,15 @@ const columns = createColumns<Allocation>([
 </DataTable>
 ```
 
-- A group row shows its chevron, the column and the value ("Field: Gullfaks", formatted as the column shows it) and its number of rows, across the first columns that sum nothing, and each aggregate column's subtotal over the group's rows: the same aggregates as the [totals row](#totals), drawn by `renderAggregate` too. Rows without a value make one group, "(Empty)", last.
-- Values group as the column shows them: numbers at the precision of their `format`, dates by the day their format shows in its `timeZone` (a format of a month and a year groups by month; a time in the format is left out of the group's name).
-- Groups are open at first. A click on a group row opens or closes it; <Kbd>→</Kbd> / <Kbd>←</Kbd> and <Kbd>Enter</Kbd> do from the keyboard, and <Kbd>←</Kbd> on a row goes to its group. Which groups are closed is the table's own, not the view's: a new grouping opens every group. "Expand all groups" and "Collapse all groups" are in `DataTableGroupBy`'s menu, and `useDataTable` has `expandAllGroups` and `collapseAllGroups`. When a group closes over the focused row, focus goes to the group's row.
+- A group row shows its chevron, the column and the value ("Field: Gullfaks", formatted as the column shows it) and its number of rows, and each aggregate column's subtotal over the group's rows: the same aggregates as the [totals row](#totals), drawn by `renderAggregate` too. The label is in the first column shown that sums nothing, over the empty columns after it; the columns before it show their subtotals. When every column shown sums, the label is in the first cell, with that column's subtotal after it. Rows without a value make one group, "(Empty)", last.
+- Values group as the column shows them: numbers at the precision of their `format`, dates by the day their format shows in its `timeZone` (a format of a month and a year groups by month; a time in the format is left out of the group's name). Date groups follow the calendar: a format of the month alone orders January to December, whatever the year of their rows.
+- Groups are open at first. A click on a group row opens or closes it; <Kbd>→</Kbd> / <Kbd>←</Kbd> and <Kbd>Enter</Kbd> do from the keyboard, and <Kbd>←</Kbd> on a row goes to its group. Which groups are closed is the table's own, not the view's: a new grouping opens every group. "Expand all groups" and "Collapse all groups" are in `DataTableGroupBy`'s menu, each off while it has nothing to do, and `useDataTable` has `expandAllGroups` and `collapseAllGroups`, with `canExpandAllGroups` and `canCollapseAllGroups` for your own buttons (the example below). Collapsing every group right after setting a grouping, in one handler, collapses the new grouping's groups. When a group closes over the focused row (or its detail row), focus goes to the group's row, on the page that holds it when the row was at the top of a later one.
 - With `selectionMode="multiple"`, a group row's checkbox (or <Kbd>Space</Kbd> on the row) selects every row of the group that can be selected, or clears them all, and is indeterminate while some are. Disabled rows are left out. In server "all matching", the rows of a group cleared become exceptions.
 - Groups are in their column's sort order: the direction the view sorts that column in, else ascending, the empty group last; the rows in each group are sorted by the view's sorting. In server mode, groups keep the order their first rows come in.
 - The search and filters apply first: groups, counts and subtotals are of the rows that match.
-- On pages, a page counts group rows as rows; a page that starts inside a group repeats the group's row at its top, not counted. In server mode the loaded rows (the page) are grouped, counted from `rowCount` as without groups.
+- On pages, a page counts group rows as rows; a page that starts inside a group repeats the group's row at its top, not counted. In server mode the loaded rows (the page) are grouped, counted from `rowCount` as without groups; for screen readers, a page's rows come after the rows of the pages before it, and its group rows are added to the count.
 - Group rows are rows of a virtualized table too, so a grouped table of 100,000 rows scrolls as fast as a flat one; opening or closing a group renders only the rows it shows.
-- Pinned columns: the group's name stays in the pinned columns at the start, and group rows are opaque under the columns scrolled past them. A first column hidden below a breakpoint (`hideBelow`) hands the name to the next one there.
+- Pinned columns: the group's name stays in the pinned columns at the start, and group rows are opaque under the columns scrolled past them. At the start of a scroll, a name in the first column runs on over the empty columns after it; scrolled sideways, it keeps to its cell, the column's name and then the count giving way first, so the value stays in view. Below a breakpoint that hides a column (`hideBelow`), the name is in the first column still shown that sums nothing.
 - Detail rows open inside groups; drag handles of `reorderableRows` are hidden while grouped; `exportCsv` exports the rows in the groups' order, without the group rows. Grouping is off in a tree (`itemToChildren`), with a warning in development.
 
 <ComponentPreview name="data-table-grouping-virtual" align="start" />
@@ -862,7 +864,7 @@ The root. Renders a `div` (`data-slot="data-table"`) and forwards its props (`cl
 | `onExpandedChange` | `(expanded: string[], eventDetails) => void` | - | Called with the open rows; `reason` is `"item-press"` or `"keyboard"`. |
 | `page` | `number` | - | The page shown, from 1 (controlled). |
 | `defaultPage` | `number` | `1` | The page shown at first. |
-| `onPageChange` | `(page: number, eventDetails) => void` | - | `reason`: `"first"`, `"previous"`, `"next"`, `"last"`, `"reset"` (the view changed), `"page-size"`, `"clamp"` (rows went away). |
+| `onPageChange` | `(page: number, eventDetails) => void` | - | `reason`: `"first"`, `"previous"`, `"next"`, `"last"`, `"reset"` (the view changed), `"page-size"`, `"clamp"` (rows went away), `"group"` (a group closed with focus in it, its row on an earlier page). |
 | `pageSize` | `number` | - | Rows per page (controlled). |
 | `defaultPageSize` | `number` | `10` | Rows per page at first. |
 | `onPageSizeChange` | `(pageSize: number, eventDetails) => void` | - | Called with the new page size. |
@@ -928,7 +930,7 @@ A row's "⋯" button and its menu, for a column's `cell` (see [Row actions](#row
 
 ### DataTableGroupBy
 
-An outline "Group by" button and its menu: a checkbox per groupable column, with its level, an item per level after the first that moves it up a level, "Expand all groups", "Collapse all groups" and "Ungroup all" (see [Grouping](#grouping)). While the rows are grouped, the button shows the grouping columns, which describe it. It takes the props of a [Button](/docs/components/button) (`data-slot="data-table-group-by"`, `data-active` while grouped); its menu loads on demand, and it renders nothing without `groupable`.
+An outline "Group by" button and its menu: a checkbox per groupable column, with its level, an item per level after the first that moves it up a level (focus stays on the level, for another step), "Expand all groups", "Collapse all groups" (each off while it has nothing to do) and "Ungroup all" (see [Grouping](#grouping)). While the rows are grouped, the button shows the grouping columns, which describe it. It takes the props of a [Button](/docs/components/button) (`data-slot="data-table-group-by"`, `data-active` while grouped); its menu loads on demand, and it renders nothing without `groupable`.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
@@ -1063,7 +1065,8 @@ type DataTableFilterValue =
 | `allMatching` | `{ except: ReadonlyArray<string> } \| null` | Server "all matching", or `null`. |
 | `expanded` | `ReadonlyArray<string>` | The open tree rows' and detail rows' ids. |
 | `setExpanded` | `(expanded: ReadonlyArray<string>) => void` | Sets the open rows. |
-| `expandAllGroups`, `collapseAllGroups` | `() => void` | Opens every group, or closes every group (nested ones too). Groups open and close apart from `expanded`. |
+| `expandAllGroups`, `collapseAllGroups` | `() => void` | Opens every group, or closes every group (nested ones too), those of a grouping set in the same handler too. Groups open and close apart from `expanded`. |
+| `canExpandAllGroups`, `canCollapseAllGroups` | `boolean` | Whether some group (of those the search and filters keep) is closed, or open: what the two above would change. |
 | `page`, `pageCount`, `pageSize`, `pageSizes` | `number`, `number`, `number`, `ReadonlyArray<number>` | The page shown (from 1) and the paging. |
 | `setPage`, `setPageSize` | `(n: number) => void` | Changes the page or the page size. |
 | `rows` | `{ all, filtered, page }` | The items: every one, the ones the view matches, the page's. |

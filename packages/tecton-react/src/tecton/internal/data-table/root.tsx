@@ -42,6 +42,8 @@ import { useControlled } from "../primitives/use-controlled"
 import { useTectonRouter } from "../router"
 import { createStore } from "../store"
 import {
+  ALL_CLOSED,
+  ALL_OPEN,
   allMatchingValue,
   clampPage,
   clearFilters,
@@ -53,6 +55,7 @@ import {
   getColumnModel,
   getFormatter,
   hidesEveryColumn,
+  isGroupClosed,
   layoutColumns,
   reconcileView,
   resolvePageSize,
@@ -63,6 +66,7 @@ import {
   sortColumn,
   toggleIds,
   viewMatchesChanged,
+  type ClosedGroups,
   type ColumnLayout,
   type DataTableAllMatching,
   type DataTableColumns,
@@ -80,6 +84,7 @@ import {
   type DataTableContextValue,
   type DataTableExpandedChangeReason,
   type DataTableOptions,
+  type GroupCounts,
   type DataTablePageChangeReason,
   type DataTablePageSizeChangeReason,
   type DataTableRowOrderChangeReason,
@@ -257,7 +262,7 @@ type Latest<T> = {
   allMatching: DataTableAllMatching | null
   selectable: () => ReadonlyArray<string>
   expanded: ReadonlyArray<string>
-  collapsedGroups: ReadonlyArray<string>
+  closedGroups: ClosedGroups
   page: number
   pageSize: number
   server: boolean
@@ -286,10 +291,10 @@ type Latest<T> = {
   setPageSize: (pageSize: number) => void
 }
 
-/** The closed groups' keys, and the grouping they were closed in. */
+/** The closed groups, and the grouping they were closed in. */
 type Collapsed = {
   grouping: ReadonlyArray<string>
-  keys: ReadonlyArray<string>
+  closed: ClosedGroups
 }
 
 /** Server "all matching", with the selection it reported. */
@@ -299,7 +304,22 @@ type Matching = {
 }
 
 const NO_IDS: ReadonlyArray<string> = []
-const NO_GROUPS: Collapsed = { grouping: NO_IDS, keys: NO_IDS }
+const NO_GROUPS: Collapsed = { grouping: NO_IDS, closed: ALL_OPEN }
+
+function countGroups(
+  keys: ReadonlyArray<string>,
+  closed: ClosedGroups
+): GroupCounts {
+  let listed = 0
+  if (closed.keys.size > 0) {
+    const shown = new Set(keys)
+    for (const key of closed.keys) if (shown.has(key)) listed++
+  }
+  return {
+    total: keys.length,
+    closed: closed.all ? keys.length - listed : listed,
+  }
+}
 
 function sameMembers(a: ReadonlyArray<string>, b: ReadonlyArray<string>) {
   if (a === b) return true
@@ -345,7 +365,7 @@ type Pending<T> = Partial<
     | "value"
     | "allMatching"
     | "expanded"
-    | "collapsedGroups"
+    | "closedGroups"
     | "page"
     | "pageSize"
   >
@@ -418,10 +438,22 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
     return commitSelection(next, reason, event, matching)
   }
 
-  const setCollapsed = (keys: ReadonlyArray<string>) => {
+  /**
+   * The closed groups of the grouping as it is now: those of the last
+   * render, unless the grouping changed since (every group open then).
+   */
+  const closedNow = () => {
     const current = now()
-    current.setCollapsed({ grouping: current.view.grouping, keys })
-    set({ collapsedGroups: keys })
+    if (pending.closedGroups) return pending.closedGroups
+    return sameIds(latest.current.view.grouping, current.view.grouping)
+      ? current.closedGroups
+      : ALL_OPEN
+  }
+  /** Closes groups, in the grouping as it is now (one set in the same handler too). */
+  const setClosed = (closed: ClosedGroups) => {
+    const current = now()
+    current.setCollapsed({ grouping: current.view.grouping, closed })
+    set({ closedGroups: closed })
   }
 
   const changePage = (
@@ -501,19 +533,26 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
       changeSelection(toggleIds(current.value, ids), reason, event)
     },
     setGroupOpen(key, open) {
-      const { collapsedGroups } = now()
-      if (collapsedGroups.includes(key) !== open) return
-      setCollapsed(
-        open
-          ? collapsedGroups.filter((other) => other !== key)
-          : [...collapsedGroups, key]
-      )
+      const closed = closedNow()
+      if (isGroupClosed(closed, key) !== open) return
+      const keys = new Set(closed.keys)
+      if (!keys.delete(key)) keys.add(key)
+      setClosed({ all: closed.all, keys })
     },
+    // Every group, those of a grouping set in the same handler too: kept
+    // as "all", not as the groups there are now. Nothing to do without a
+    // grouping, or with every group so already.
     expandAllGroups() {
-      if (now().collapsedGroups.length > 0) setCollapsed(NO_IDS)
+      const closed = closedNow()
+      if (now().view.grouping.length === 0) return
+      if (!closed.all && closed.keys.size === 0) return
+      setClosed(ALL_OPEN)
     },
     collapseAllGroups() {
-      setCollapsed(now().model.groupKeys())
+      const closed = closedNow()
+      if (now().view.grouping.length === 0) return
+      if (closed.all && closed.keys.size === 0) return
+      setClosed(ALL_CLOSED)
     },
     selectAll(event) {
       if (now().selectionMode !== "multiple") return
@@ -796,7 +835,7 @@ function DataTable<T>({
   const [collapsed, setCollapsed] = React.useState<Collapsed>(NO_GROUPS)
   const ofGrouping = sameIds(collapsed.grouping, view.grouping)
   if (!ofGrouping && collapsed !== NO_GROUPS) setCollapsed(NO_GROUPS)
-  const collapsedGroups = ofGrouping ? collapsed.keys : NO_IDS
+  const closedGroups = ofGrouping ? collapsed.closed : ALL_OPEN
   const [page, setPage] = useControlled(pageProp, defaultPage ?? 1)
   const [pageSize, setPageSize] = useControlled(
     pageSizeProp,
@@ -820,11 +859,19 @@ function DataTable<T>({
     sortable,
     filterable,
     expanded,
-    collapsedGroups,
+    collapsedGroups: closedGroups,
     pagination: pagination ? { page, pageSize } : null,
     rowCount,
   })
   const layout = layoutColumns(columns, view)
+  // How many groups (of those the search and filters keep) there are and
+  // how many are closed, for "expand all" / "collapse all": counted when
+  // asked for, once per grouping and closing.
+  const groupKeys = model.groupKeys()
+  const groupCounts = React.useMemo(() => {
+    let counts: GroupCounts | undefined
+    return () => (counts ??= countGroups(groupKeys, closedGroups))
+  }, [groupKeys, closedGroups])
   const formatter = getFormatter(getColumnModel(columns), locale, labels)
 
   const allMatching =
@@ -925,7 +972,8 @@ function DataTable<T>({
       selectable,
       allMatching,
       expanded,
-      collapsedGroups,
+      closedGroups,
+      groupCounts,
       loading,
       error: error ?? null,
       clears,
@@ -943,7 +991,8 @@ function DataTable<T>({
       selectable,
       allMatching,
       expanded,
-      collapsedGroups,
+      closedGroups,
+      groupCounts,
       loading,
       error,
       clears,
@@ -964,7 +1013,7 @@ function DataTable<T>({
     allMatching,
     selectable,
     expanded,
-    collapsedGroups,
+    closedGroups,
     page,
     pageSize,
     server,

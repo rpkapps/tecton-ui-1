@@ -147,7 +147,7 @@ export default defineTranslations({
     expandAllGroups: "הרחב את כל הקבוצות",
     collapseAllGroups: "כווץ את כל הקבוצות",
     groupByColumn: "קבץ לפי עמודה",
-    ungroup: "בטל קיבוץ",
+    ungroupColumn: "בטל קיבוץ לפי עמודה",
     groupedBy: "מקובץ לפי {columnNames}",
     ungrouped: "השורות כבר אינן מקובצות",
     groupLabel: "{columnName}: {value}",
@@ -157,6 +157,7 @@ export default defineTranslations({
       two: "{total} שורות",
       other: "{total} שורות",
     },
+    groupRowLabel: "{label}, {rows}",
   },
   tableColumnResizer: {
     resize: "שנה את גודל {columnName}",

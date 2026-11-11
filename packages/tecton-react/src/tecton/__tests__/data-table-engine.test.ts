@@ -16,7 +16,6 @@ import {
   getColumnModel,
   getFormatter,
   getPageCount,
-  groupIds,
   layoutColumns,
   reconcileView,
   resetColumns,
@@ -1935,11 +1934,16 @@ describe("selection", () => {
     const shell = groups(result.rows).find(
       (row) => row.text === "Shell"
     ) as GroupRow
-    expect(groupIds(result, shell)).toEqual([])
+    // What its checkbox selects: none, every row of it disabled.
+    expect(result.groupSelectableIds(shell.key)).toEqual([])
     const equinor = groups(result.rows).find(
       (row) => row.text === "Equinor"
     ) as GroupRow
-    expect(groupIds(result, equinor)).toEqual(["B-1"])
+    expect(result.groupSelectableIds(equinor.key)).toEqual(["B-1"])
+    // A group's checkbox over them: none selected, then all.
+    const ids = result.groupSelectableIds(equinor.key)
+    expect(selectionState([], ids)).toBe("none")
+    expect(selectionState(toggleIds([], ids), ids)).toBe("all")
   })
 
   it("selects all matching in server mode, with exceptions", () => {

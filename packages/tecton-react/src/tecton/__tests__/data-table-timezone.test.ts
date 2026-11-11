@@ -170,6 +170,56 @@ describe("date-only strings west of UTC", () => {
     ])
   })
 
+  it("order the groups of a format without the year by the calendar", () => {
+    const run = (
+      format: Intl.DateTimeFormatOptions,
+      direction?: "ascending" | "descending"
+    ) => {
+      const dated = createColumns<Well>([
+        { id: "id", header: "Well" },
+        { id: "spud", header: "Spud", type: "date", format },
+      ])
+      const view = reconcileView(
+        dated,
+        {
+          grouping: ["spud"],
+          sorting: direction ? [{ column: "spud", direction }] : [],
+        },
+        createDefaultView(dated, undefined, ALL),
+        ALL
+      )
+      return createDataTableEngine<Well>()
+        .run({
+          items: [
+            // February of an earlier year than January's: by the month.
+            { id: "a", spud: "2019-02-10T12:00:00Z" },
+            { id: "b", spud: "2020-01-15T12:00:00Z" },
+            { id: "c", spud: "2018-03-01T12:00:00Z" },
+            { id: "d", spud: null },
+          ],
+          columns: dated,
+          view,
+        })
+        .rows.filter((row): row is GroupRow => row.kind === "group")
+        .map((row) => row.text)
+    }
+    const months = { month: "long", timeZone: "UTC" } as const
+    expect(run(months)).toEqual(["January", "February", "March", ""])
+    expect(run(months, "descending")).toEqual([
+      "March",
+      "February",
+      "January",
+      "",
+    ])
+    // Weekdays from Monday: Sunday 10 Feb, Wednesday 15 Jan, Thursday 1 Mar.
+    expect(run({ weekday: "long", timeZone: "UTC" })).toEqual([
+      "Wednesday",
+      "Thursday",
+      "Sunday",
+      "",
+    ])
+  })
+
   it("name a group by the day of a format with no day of its own", () => {
     const timeOnly = createColumns<Well>([
       { id: "id", header: "Well" },

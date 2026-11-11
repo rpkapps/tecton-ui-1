@@ -156,7 +156,7 @@ export default defineTranslations({
     expandAllGroups: "Razširi vse skupine",
     collapseAllGroups: "Strni vse skupine",
     groupByColumn: "Združi po stolpcu",
-    ungroup: "Razdruži",
+    ungroupColumn: "Razdruži po stolpcu",
     groupedBy: "Združeno po {columnNames}",
     ungrouped: "Vrstice niso več združene",
     groupLabel: "{columnName}: {value}",
@@ -167,6 +167,7 @@ export default defineTranslations({
       few: "{total} vrstice",
       other: "{total} vrstic",
     },
+    groupRowLabel: "{label}, {rows}",
   },
   tableColumnResizer: {
     resize: "Spremeni velikost stolpca {columnName}",

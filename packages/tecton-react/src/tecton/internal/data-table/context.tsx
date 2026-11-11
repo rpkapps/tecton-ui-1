@@ -17,6 +17,7 @@ import type { SelectionReason } from "../primitives/selection"
 import { useStore, type Store } from "../store"
 import {
   resolveLocale,
+  type ClosedGroups,
   type ColumnLayout,
   type CsvOptions,
   type DataTableAllMatching,
@@ -55,6 +56,11 @@ type DataTablePageChangeReason =
   | "page-size"
   /** Rows went away: the page asked for is past the last one, which shows. */
   | "clamp"
+  /**
+   * A group closed with focus in it, its row on an earlier page (repeated
+   * at the top of this one): the page that holds it.
+   */
+  | "group"
   | "none"
 
 type DataTablePageSizeChangeReason = "select" | "none"
@@ -117,6 +123,9 @@ type DataTableOptions = {
   readonly pageSizes: ReadonlyArray<number>
 }
 
+/** The groups the search and filters keep, and how many of them are closed. */
+type GroupCounts = { readonly total: number; readonly closed: number }
+
 type DataTableState<T> = {
   readonly columns: DataTableColumns<T>
   readonly model: DataTableRowModel<T>
@@ -136,8 +145,10 @@ type DataTableState<T> = {
   readonly selectable: () => ReadonlyArray<string>
   readonly allMatching: DataTableAllMatching | null
   readonly expanded: ReadonlyArray<string>
-  /** The closed groups' keys (groups are open unless closed). */
-  readonly collapsedGroups: ReadonlyArray<string>
+  /** The closed groups (groups are open unless closed). */
+  readonly closedGroups: ClosedGroups
+  /** The groups there are and how many are closed: worked out when read. */
+  readonly groupCounts: () => GroupCounts
   readonly loading: boolean
   /** `error` as given: `true` or content shows the error state. */
   readonly error: React.ReactNode
@@ -327,4 +338,5 @@ export type {
   DataTableSelectionChangeReason,
   DataTableSelectionMode,
   DataTableState,
+  GroupCounts,
 }

@@ -4,7 +4,7 @@
  * A column header's menu: the column's actions for the features that are on
  * and that the column has not opted out of, in sections: sort (ascending,
  * descending, clear), grouping ("Group by column", which adds it as the
- * last level of the grouping, or "Ungroup"), then the column itself
+ * last level of the grouping, or "Ungroup column"), then the column itself
  * (resize, fit to content, reset width, hide, pin to the start or the end,
  * unpin). The menu button renders only with a column feature beyond
  * sorting: a header that only sorts has its sort button.
@@ -224,7 +224,7 @@ function DataTableColumnMenu<T>({
       <DropdownMenuGroup key="group">
         <DropdownMenuItem onClick={(event) => group(event.nativeEvent)}>
           {grouped ? <UngroupIcon /> : <GroupIcon />}
-          {grouped ? t("ungroup") : t("groupByColumn")}
+          {grouped ? t("ungroupColumn") : t("groupByColumn")}
         </DropdownMenuItem>
       </DropdownMenuGroup>
     )

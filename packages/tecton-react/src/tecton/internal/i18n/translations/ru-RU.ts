@@ -155,7 +155,7 @@ export default defineTranslations({
     expandAllGroups: "Развернуть все группы",
     collapseAllGroups: "Свернуть все группы",
     groupByColumn: "Группировать по столбцу",
-    ungroup: "Отменить группировку",
+    ungroupColumn: "Отменить группировку по столбцу",
     groupedBy: "Сгруппировано по {columnNames}",
     ungrouped: "Строки больше не сгруппированы",
     groupLabel: "{columnName}: {value}",
@@ -166,6 +166,7 @@ export default defineTranslations({
       many: "{total} строк",
       other: "{total} строки",
     },
+    groupRowLabel: "{label}, {rows}",
   },
   tableColumnResizer: {
     resize: "Изменить размер столбца {columnName}",

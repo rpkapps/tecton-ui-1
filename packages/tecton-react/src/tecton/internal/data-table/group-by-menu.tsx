@@ -9,8 +9,10 @@
  *   grouped by; checking one adds it as the last level;
  * - with two levels or more, an item per level after the first that moves
  *   it a level up, before the one above it (the menu stays open, for a
- *   move of several steps);
- * - while grouped, "Expand all groups" and "Collapse all groups";
+ *   move of several steps: the items are the levels', so focus stays on
+ *   the level pressed);
+ * - while grouped, "Expand all groups" (off while every group is open)
+ *   and "Collapse all groups" (off while every group is closed);
  * - "Ungroup all".
  *
  * Each change of the grouping is announced.
@@ -75,10 +77,14 @@ function DataTableGroupByMenu({
     (state) => state.view.columns.order
   )
   const grouping = useDataTableSelector(context, (state) => state.view.grouping)
-  const collapsed = useDataTableSelector(
+  const canExpand = useDataTableSelector(
     context,
-    (state) => state.collapsedGroups.length > 0
+    (state) => state.groupCounts().closed > 0
   )
+  const canCollapse = useDataTableSelector(context, (state) => {
+    const counts = state.groupCounts()
+    return counts.closed < counts.total
+  })
   const { byId } = getColumnModel(columns)
   const headerOf = (id: string) => byId.get(id)?.header ?? id
   const groupable = order.flatMap((id) => {
@@ -152,14 +158,17 @@ function DataTableGroupByMenu({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuLabel>{t("groupOrder")}</DropdownMenuLabel>
-              {grouping.slice(1).map((id) => (
+              {grouping.slice(1).map((id, index) => (
                 <DropdownMenuItem
-                  key={id}
+                  // By level, not by column: a move leaves as many items,
+                  // each in its place, so the one focused stays the one
+                  // highlighted (and pressed again, moves the next).
+                  key={index}
                   // Open for a move of several steps.
                   closeOnClick={false}
                   onClick={(event) =>
                     set(
-                      (current) => move(current, current.indexOf(id), -1),
+                      (current) => move(current, index + 1, -1),
                       event.nativeEvent
                     )
                   }
@@ -176,13 +185,16 @@ function DataTableGroupByMenu({
             <DropdownMenuSeparator />
             <DropdownMenuGroup>
               <DropdownMenuItem
-                disabled={!collapsed}
+                disabled={!canExpand}
                 onClick={() => actions.expandAllGroups()}
               >
                 <ChevronsUpDownIcon />
                 {t("expandAllGroups")}
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => actions.collapseAllGroups()}>
+              <DropdownMenuItem
+                disabled={!canCollapse}
+                onClick={() => actions.collapseAllGroups()}
+              >
                 <ChevronsDownUpIcon />
                 {t("collapseAllGroups")}
               </DropdownMenuItem>

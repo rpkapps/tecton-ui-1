@@ -151,7 +151,7 @@ export default defineTranslations({
     expandAllGroups: "Izvērst visas grupas",
     collapseAllGroups: "Sakļaut visas grupas",
     groupByColumn: "Grupēt pēc kolonnas",
-    ungroup: "Atcelt grupēšanu",
+    ungroupColumn: "Atcelt grupēšanu pēc kolonnas",
     groupedBy: "Grupēts pēc {columnNames}",
     ungrouped: "Rindas vairs nav grupētas",
     groupLabel: "{columnName}: {value}",
@@ -161,6 +161,7 @@ export default defineTranslations({
       one: "{total} rinda",
       other: "{total} rindas",
     },
+    groupRowLabel: "{label}, {rows}",
   },
   tableColumnResizer: {
     resize: "Mainīt kolonnas {columnName} izmēru",

@@ -18,9 +18,14 @@ import {
 } from "@tecton/react/tecton/data-table"
 import { TectonProvider } from "@tecton/react/tecton/provider"
 
-import { groupCellsOf, groupLabelWidth } from "../internal/data-table/cell"
+import {
+  groupCellsOf,
+  groupLabelWidth,
+  shownClassName,
+} from "../internal/data-table/cell"
 import { getColumnModel } from "../internal/data-table/engine"
 import { loadFeature } from "../internal/data-table/lazy"
+import { describeRow } from "../internal/data-table/row"
 import * as announcer from "../internal/primitives/live-announcer"
 import {
   columns,
@@ -54,8 +59,21 @@ const groups = () =>
     ),
     (header) => header.querySelector(".truncate")?.textContent
   )
-const group = (label: string) =>
-  screen.getByText(label).closest("tr") as HTMLTableRowElement
+/** The group row of a label ("Field: Gullfaks"), its parts in spans. */
+const group = (label: string) => {
+  const found = [
+    ...document.querySelectorAll<HTMLTableRowElement>(
+      '[data-slot="data-table-group-row"]'
+    ),
+  ].filter((tr) =>
+    [...tr.querySelectorAll("th .truncate")].some(
+      (span) => span.textContent === label
+    )
+  )
+  if (found.length !== 1)
+    throw new Error(`${found.length} group rows labelled "${label}"`)
+  return found[0]
+}
 const groupCheckbox = (label: string) =>
   group(label).querySelector<HTMLElement>(
     '[data-slot="data-table-group-checkbox"]'
@@ -664,7 +682,7 @@ describe("DataTable grouping with other features", () => {
       { id: "depth", header: "Depth", type: "number" },
     ])
     render(<Wells columns={narrow} defaultView={{ grouping: ["field"] }} />)
-    const gullfaks = screen.getAllByText("Field: Gullfaks")[0].closest("tr")!
+    const gullfaks = group("Field: Gullfaks")
     const cells = [...gullfaks.cells]
     expect(cells[0]).toHaveClass("hidden", "md:table-cell")
     expect(cells[0]).toHaveAttribute("colspan", "2")
@@ -675,37 +693,121 @@ describe("DataTable grouping with other features", () => {
 })
 
 describe("groupCellsOf", () => {
-  const model = getColumnModel(
-    createColumns<Well>([
-      { id: "name", header: "Well" },
-      { id: "field", header: "Field" },
-      { id: "status", header: "Status", hideBelow: "md" },
-      { id: "depth", header: "Depth", type: "number" },
-    ])
-  )
+  type Row = { a: string; b: string; c: number; d: string }
+  const leaves = (columns: Parameters<typeof createColumns<Row>>[0]) =>
+    getColumnModel(createColumns<Row>(columns)).leaves
   const pin = { side: "start", offset: "0px" } as const
+  /** Each cell as `label:<column>x<span>` or `<column>`, with the tiers it shows at. */
+  const layout = (cells: ReturnType<typeof groupCellsOf>) =>
+    cells.cells.map(
+      (cell) =>
+        `${cell.kind === "label" ? `label:${cell.column}x${cell.span}${cell.subtotal ? "+sum" : ""}` : cell.column}@${cell.shown.map(Number).join("")}`
+    )
 
   it("spans the first columns that sum nothing, pinned alike", () => {
-    expect(groupCellsOf(model.leaves, [])).toEqual({
-      span: 2,
-      below: null,
-      reach: 2,
-    })
-    expect(groupCellsOf(model.leaves, [pin]).span).toBe(1)
+    const columns = leaves([
+      { id: "a", header: "A" },
+      { id: "b", header: "B" },
+      { id: "c", header: "C", type: "number" },
+      { id: "d", header: "D" },
+    ])
+    expect(layout(groupCellsOf(columns, []))).toEqual([
+      "label:0x2@1",
+      "2@1",
+      "3@1",
+    ])
+    expect(layout(groupCellsOf(columns, [pin]))).toEqual([
+      "label:0x1@1",
+      "1@1",
+      "2@1",
+      "3@1",
+    ])
   })
 
-  it("lets a pinned label run over the empty columns after it", () => {
-    const cells = groupCellsOf(model.leaves, [pin])
-    // Up to the column hidden below a breakpoint.
-    expect(cells.reach).toBe(2)
-    expect(groupLabelWidth(cells, [140, 120, 100, 90])).toEqual({
+  it("starts at the first column that sums nothing, those before it with their subtotals", () => {
+    const columns = leaves([
+      { id: "c", header: "C", type: "number" },
+      { id: "a", header: "A" },
+      { id: "b", header: "B" },
+    ])
+    expect(layout(groupCellsOf(columns, []))).toEqual(["0@1", "label:1x2@1"])
+  })
+
+  it("puts the label and the subtotal in the first cell when every column sums", () => {
+    const columns = leaves([
+      { id: "c", header: "C", type: "number" },
+      { id: "a", header: "A", aggregate: "count" },
+    ])
+    expect(layout(groupCellsOf(columns, []))).toEqual([
+      "label:0x1+sum@1",
+      "1@1",
+    ])
+  })
+
+  it("moves the label where a column is hidden below a breakpoint", () => {
+    // The first two hidden below md: below it, the label is in the column
+    // that sums, with its subtotal.
+    expect(
+      layout(
+        groupCellsOf(
+          leaves([
+            { id: "a", header: "A", hideBelow: "md" },
+            { id: "b", header: "B", hideBelow: "md" },
+            { id: "c", header: "C", type: "number" },
+          ]),
+          []
+        )
+      )
+    ).toEqual(["label:0x2@01", "label:2x1+sum@10", "2@01"])
+    // The first hidden, the second sums: below md the label is in the
+    // third, the subtotal in its own cell.
+    expect(
+      layout(
+        groupCellsOf(
+          leaves([
+            { id: "a", header: "A", hideBelow: "md" },
+            { id: "c", header: "C", type: "number" },
+            { id: "b", header: "B" },
+          ]),
+          []
+        )
+      )
+    ).toEqual(["label:0x1@01", "1@11", "label:2x1@10", "2@01"])
+  })
+
+  it("writes the display of a cell for the widths it shows at", () => {
+    expect(shownClassName(["base", "md"], [false, true])).toBe(
+      "hidden md:table-cell"
+    )
+    expect(shownClassName(["base", "sm", "lg"], [true, false, true])).toBe(
+      "sm:hidden lg:table-cell"
+    )
+    expect(shownClassName(["base", "md"], [true, true])).toBeUndefined()
+  })
+
+  it("lets a pinned label in the first column run over the empty columns after it", () => {
+    const columns = leaves([
+      { id: "a", header: "A" },
+      { id: "b", header: "B" },
+      { id: "d", header: "D", hideBelow: "md" },
+      { id: "c", header: "C", type: "number" },
+    ])
+    const cells = groupCellsOf(columns, [pin])
+    // Up to the column that sums (one hidden takes no room).
+    expect(cells.reach).toBe(3)
+    expect(
+      cells.cells.find((cell) => cell.kind === "label" && cell.reach)
+    ).toBeDefined()
+    expect(groupLabelWidth(cells, [140, 120, 0, 90])).toEqual({
       "--data-table-group-label": "260px",
     })
     // Not past a column that sums, nor before the widths are measured.
-    const summed = groupCellsOf([model.leaves[0], model.leaves[3]], [pin])
-    expect(summed.reach).toBe(1)
+    const summed = groupCellsOf([columns[0], columns[3]], [pin])
+    expect(summed.reach).toBe(0)
     expect(groupLabelWidth(summed, [140, 90])).toBeUndefined()
     expect(groupLabelWidth(cells, undefined)).toBeUndefined()
+    // Nor when the first column sums: the label is not there.
+    expect(groupCellsOf([columns[3], columns[0]], [pin]).reach).toBe(0)
   })
 })
 
@@ -733,7 +835,9 @@ describe("DataTable column menu grouping", () => {
     expect(say).toHaveBeenLastCalledWith("Grouped by Field and Status")
     await waitFor(() => expect(screen.queryByRole("menu")).toBeNull())
     await user.click(screen.getByRole("button", { name: "Field options" }))
-    await user.click(await screen.findByRole("menuitem", { name: "Ungroup" }))
+    await user.click(
+      await screen.findByRole("menuitem", { name: "Ungroup column" })
+    )
     expect(api?.view.grouping).toEqual(["status"])
   })
 
@@ -887,5 +991,275 @@ describe("DataTable grouping, server rendered", () => {
     expect(error).not.toHaveBeenCalled()
     act(() => root.unmount())
     container.remove()
+  })
+})
+
+describe("DataTable grouping: review fixes", () => {
+  const highlighted = () =>
+    document.querySelector<HTMLElement>('[role="menu"] [data-highlighted]')
+
+  it("keeps focus and highlight together on a move item, with 2 and 3 levels", async () => {
+    const user = userEvent.setup()
+    await loadFeature("groupBy")
+    render(
+      <Wells defaultView={{ grouping: ["field", "status", "spud"] }}>
+        <DataTableGroupBy />
+        <Probe />
+      </Wells>
+    )
+    await user.click(screen.getByRole("button", { name: "Group by" }))
+    await screen.findByRole("menu")
+    // The last level's item, from the keyboard.
+    act(() =>
+      screen.getByRole("menuitem", { name: "Move Spud date up" }).focus()
+    )
+    await user.keyboard("{Enter}")
+    expect(api?.view.grouping).toEqual(["field", "spud", "status"])
+    // The same place, now moving Status: focused and highlighted.
+    const item = screen.getByRole("menuitem", { name: "Move Status up" })
+    expect(item).toHaveFocus()
+    expect(highlighted()).toBe(item)
+    await user.keyboard("{Enter}")
+    expect(api?.view.grouping).toEqual(["field", "status", "spud"])
+    expect(document.activeElement).toBe(highlighted())
+    // A pointer press keeps the item in its place too.
+    await user.click(screen.getByRole("menuitem", { name: "Move Status up" }))
+    expect(api?.view.grouping).toEqual(["status", "field", "spud"])
+    expect(
+      screen.getByRole("menuitem", { name: "Move Field up" })
+    ).toBeInTheDocument()
+  })
+
+  it("keeps the one move item focused with 2 levels", async () => {
+    const user = userEvent.setup()
+    await loadFeature("groupBy")
+    render(
+      <Wells defaultView={{ grouping: ["field", "status"] }}>
+        <DataTableGroupBy />
+        <Probe />
+      </Wells>
+    )
+    await user.click(screen.getByRole("button", { name: "Group by" }))
+    await screen.findByRole("menu")
+    act(() => screen.getByRole("menuitem", { name: "Move Status up" }).focus())
+    await user.keyboard("{Enter}")
+    expect(api?.view.grouping).toEqual(["status", "field"])
+    const item = screen.getByRole("menuitem", { name: "Move Field up" })
+    expect(item).toHaveFocus()
+    expect(highlighted()).toBe(item)
+  })
+
+  it("goes to the page that holds a group's row when it closes from a page after", () => {
+    const onPageChange = vi.fn()
+    render(
+      <Wells
+        pagination
+        defaultPageSize={5}
+        defaultPage={2}
+        onPageChange={onPageChange}
+        defaultView={{ grouping: ["field"] }}
+      >
+        <Probe />
+      </Wells>
+    )
+    // Page 2 starts with Gullfaks' row, repeated from page 1.
+    const repeated = document.querySelector<HTMLTableRowElement>("tbody tr")!
+    act(() => repeated.focus())
+    press("ArrowLeft")
+    expect(api?.page).toBe(1)
+    expect(onPageChange).toHaveBeenLastCalledWith(
+      1,
+      expect.objectContaining({ reason: "group" })
+    )
+    expect(focused()).toBe(group("Field: Gullfaks"))
+    expect(group("Field: Gullfaks")).toHaveAttribute("aria-expanded", "false")
+  })
+
+  it("puts the label in the first column that sums nothing, and keeps every subtotal", () => {
+    const summed = createColumns<Well>([
+      { id: "depth", header: "Depth (m)", type: "number" },
+      { id: "name", header: "Well" },
+      { id: "field", header: "Field" },
+      { id: "active", header: "Active", type: "boolean" },
+    ])
+    render(
+      <Wells columns={summed} defaultView={{ grouping: ["field"] }}>
+        <Probe />
+      </Wells>
+    )
+    const gullfaks = WELLS.filter((well) => well.field === "Gullfaks")
+    const depth = gullfaks
+      .reduce((sum, well) => sum + (well.depth ?? 0), 0)
+      .toLocaleString("en-US")
+    const cells = () =>
+      [...group("Field: Gullfaks").cells].map(
+        (cell) =>
+          `${cell.tagName}${cell.colSpan > 1 ? `x${cell.colSpan}` : ""}:${cell.textContent}`
+      )
+    expect(cells()).toEqual([
+      `TD:${depth}`,
+      "THx2:Field: Gullfaks6 rows",
+      `TD:${gullfaks.filter((well) => well.active).length}`,
+    ])
+    // Reordered: the label where the first column without a sum is.
+    act(() => api?.setColumnOrder(["name", "depth", "field", "active"]))
+    expect(cells()).toEqual([
+      "TH:Field: Gullfaks6 rows",
+      `TD:${depth}`,
+      "TD:",
+      `TD:${gullfaks.filter((well) => well.active).length}`,
+    ])
+    // Every column shown sums: the label and the first subtotal share a cell.
+    act(() => {
+      api?.setColumnHidden("name", true)
+      api?.setColumnHidden("field", true)
+    })
+    expect(cells()).toEqual([
+      `TH:Field: Gullfaks6 rows${depth}`,
+      `TD:${gullfaks.filter((well) => well.active).length}`,
+    ])
+  })
+
+  it("sends focus from a detail row in a closing group to the group's row", () => {
+    render(
+      <Wells
+        defaultExpanded={["w5"]}
+        defaultView={{ grouping: ["field"] }}
+        contentProps={{
+          renderDetail: (well: Well) => `Detail of ${well.name}`,
+        }}
+      >
+        <Probe />
+      </Wells>
+    )
+    const detail = screen.getByText("Detail of Well 05").closest("tr")!
+    act(() => detail.focus())
+    act(() => api?.collapseAllGroups())
+    expect(focused()).toBe(group("Field: Gullfaks"))
+  })
+
+  it("closes every group of a grouping set in the same handler", () => {
+    render(
+      <Wells>
+        <Probe />
+      </Wells>
+    )
+    act(() => {
+      api?.setGrouping(["field"])
+      api?.collapseAllGroups()
+    })
+    expect(
+      [...document.querySelectorAll('[data-slot="data-table-group-row"]')].map(
+        (row) => row.getAttribute("aria-expanded")
+      )
+    ).toEqual(["false", "false", "false", "false"])
+    // And opens every group of the next one.
+    act(() => {
+      api?.setGrouping(["status"])
+      api?.expandAllGroups()
+    })
+    expect(group("Status: Producing")).toHaveAttribute("aria-expanded", "true")
+  })
+
+  it("renders nothing for collapse all without a grouping", () => {
+    let renders = 0
+    function Count() {
+      renders++
+      return <Probe />
+    }
+    render(
+      <Wells>
+        <Count />
+      </Wells>
+    )
+    const before = renders
+    act(() => api?.collapseAllGroups())
+    act(() => api?.expandAllGroups())
+    expect(renders).toBe(before)
+  })
+
+  it("says whether every group can be opened or closed", async () => {
+    render(
+      <Wells defaultView={{ grouping: ["field"] }}>
+        <Probe />
+      </Wells>
+    )
+    expect(api?.canExpandAllGroups).toBe(false)
+    expect(api?.canCollapseAllGroups).toBe(true)
+    act(() => api?.collapseAllGroups())
+    expect(api?.canExpandAllGroups).toBe(true)
+    expect(api?.canCollapseAllGroups).toBe(false)
+    fireEvent.click(group("Field: Gullfaks"))
+    expect(api?.canExpandAllGroups).toBe(true)
+    expect(api?.canCollapseAllGroups).toBe(true)
+    // The menu's items follow them.
+    const user = userEvent.setup()
+    await loadFeature("groupBy")
+    act(() => api?.expandAllGroups())
+    render(
+      <Wells defaultView={{ grouping: ["field"] }}>
+        <DataTableGroupBy />
+      </Wells>
+    )
+    await user.click(screen.getByRole("button", { name: "Group by" }))
+    await screen.findByRole("menu")
+    expect(
+      screen.getByRole("menuitem", { name: "Expand all groups" })
+    ).toHaveAttribute("aria-disabled", "true")
+    await user.click(
+      screen.getByRole("menuitem", { name: "Collapse all groups" })
+    )
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull())
+    await user.click(screen.getByRole("button", { name: "Group by" }))
+    await screen.findByRole("menu")
+    expect(
+      screen.getByRole("menuitem", { name: "Collapse all groups" })
+    ).toHaveAttribute("aria-disabled", "true")
+  })
+
+  it("describes a group row out of view by the label it shows", () => {
+    const shared = {
+      groupLabel: () => ({
+        text: "Field: Gullfaks",
+        before: "Field: ",
+        value: "Gullfaks",
+        after: "",
+      }),
+    } as unknown as Parameters<typeof describeRow>[1]
+    const row = { kind: "group", key: "g", depth: 0 } as Parameters<
+      typeof describeRow
+    >[0]
+    expect(describeRow(row, shared).textValue).toBe("Field: Gullfaks")
+  })
+
+  it("names a group row with its count, after a pause", () => {
+    render(<Wells defaultView={{ grouping: ["field"] }} />)
+    expect(group("Field: Gullfaks").querySelector("th")).toHaveAccessibleName(
+      "Field: Gullfaks, 6 rows"
+    )
+  })
+
+  it("gives server pages' rows their places after the pages before, group rows counted", () => {
+    render(
+      <Wells
+        items={WELLS.slice(0, 10)}
+        dataMode="server"
+        rowCount={100}
+        pagination
+        defaultPage={3}
+        defaultView={{ grouping: ["field"] }}
+      />
+    )
+    const table = screen.getByRole("treegrid")
+    const rows = [...document.querySelectorAll("tbody tr")]
+    // 1 header row, 20 rows on pages 1 and 2.
+    expect(rows[0]).toHaveAttribute("aria-rowindex", "22")
+    const last = Number(rows.at(-1)?.getAttribute("aria-rowindex"))
+    // 10 items and 4 group rows on this page; the count holds them.
+    expect(last).toBe(22 + 13)
+    expect(Number(table.getAttribute("aria-rowcount"))).toBe(1 + 100 + 4)
+    expect(last).toBeLessThanOrEqual(
+      Number(table.getAttribute("aria-rowcount"))
+    )
   })
 })

@@ -80,12 +80,14 @@ import {
   clampPage,
 } from "./pagination"
 import {
+  ALL_OPEN,
   buildRows,
   createRowCache,
   displayOrder,
   indexRows,
   lazy,
   pageRows,
+  type ClosedGroups,
   type EngineRow,
   type TotalsRow,
 } from "./rows"
@@ -123,8 +125,11 @@ type DataTableEngineInput<T> = {
   filterable?: boolean
   /** Expanded tree rows, by item id. */
   expanded?: ReadonlyArray<string> | ReadonlySet<string>
-  /** Closed groups, by group key: groups are open unless listed. */
-  collapsedGroups?: ReadonlyArray<string> | ReadonlySet<string>
+  /**
+   * Closed groups, by group key: groups are open unless listed; or which
+   * are closed (`ClosedGroups`, every group but some with `all`).
+   */
+  collapsedGroups?: ReadonlyArray<string> | ReadonlySet<string> | ClosedGroups
   /** Pages from 1; `null` or left out for no pagination. */
   pagination?: { page: number; pageSize: number } | null
   /** Server mode: the number of rows the view matches on the server. */
@@ -246,6 +251,13 @@ function toSet(ids: ReadonlyArray<string> | ReadonlySet<string> | undefined) {
   return ids instanceof Set ? ids : new Set(ids)
 }
 
+function closedOf(
+  collapsed: DataTableEngineInput<unknown>["collapsedGroups"]
+): ClosedGroups {
+  if (!collapsed) return ALL_OPEN
+  return "all" in collapsed ? collapsed : { all: false, keys: toSet(collapsed) }
+}
+
 function sameSet(a: ReadonlySet<string>, b: ReadonlySet<string>) {
   if (a === b) return true
   if (a.size !== b.size) return false
@@ -303,7 +315,9 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
   const steadyGrouping = steady<ReadonlyArray<string>>(sameIds)
   const steadyHidden = steady<ReadonlyArray<string>>(sameIds)
   const steadyExpanded = steady<ReadonlySet<string>>(sameSet)
-  const steadyCollapsed = steady<ReadonlySet<string>>(sameSet)
+  const steadyCollapsed = steady<ClosedGroups>(
+    (a, b) => a.all === b.all && sameSet(a.keys, b.keys)
+  )
   const steadyDisabled = steady<Uint8Array | null>(sameFlags)
 
   // Bumped when loaded children call for new core rows over the same items.
@@ -451,7 +465,7 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       disabled: Uint8Array | null,
       expanded: ReadonlySet<string>,
       autoExpanded: Uint8Array | "parents" | null,
-      collapsedGroups: ReadonlySet<string>
+      closedGroups: ClosedGroups
     ) =>
       buildRows({
         core: rows,
@@ -462,7 +476,7 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
         disabled,
         expanded,
         autoExpanded,
-        collapsedGroups,
+        closedGroups,
         cache,
       })
   )
@@ -811,7 +825,7 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
         // content's, and opening one redoes nothing here.
         tree ? expanded : EMPTY_SET,
         autoExpanded,
-        steadyCollapsed(toSet(input.collapsedGroups))
+        steadyCollapsed(closedOf(input.collapsedGroups))
       )
       const matchingCount = set.context
         ? set.all.length - set.context.reduce((count, flag) => count + flag, 0)
