@@ -1,11 +1,11 @@
 ---
 title: Data Table
-description: "Records in columns: typed columns, sorting, search and filters, grouping with subtotals, row selection, pages, trees, detail rows, totals, rows loaded as the user scrolls and virtualized rows, in the browser or from a server."
+description: "Records in columns: typed columns, sorting, search and filters, grouping with subtotals, row and cell selection with copy and paste, pages, trees, detail rows, totals, rows loaded as the user scrolls and virtualized rows, in the browser or from a server."
 ---
 
 <ComponentPreview name="data-table-demo" align="start" />
 
-`DataTable` shows records of one shape — wells, logging runs, work orders — in columns, and gives the user what a list of records needs: sorting by one column or several, search and filters, grouping with subtotals, row selection with select all, pages, trees, detail rows, a totals row, rows the user reorders, rows that open or link to a record, CSV export, and the empty, no results, error and loading states. The table is a grid: one tab stop, moved through with the arrow keys, with its selection, sorting and loading announced to screen readers.
+`DataTable` shows records of one shape — wells, logging runs, work orders — in columns, and gives the user what a list of records needs: sorting by one column or several, search and filters, grouping with subtotals, row selection with select all, cell selection with copy, paste and fill down, pages, trees, detail rows, a totals row, rows the user reorders, rows that open or link to a record, CSV export, and the empty, no results, error and loading states. The table is a grid: one tab stop, moved through with the arrow keys, with its selection, sorting and loading announced to screen readers.
 
 Use [Table](/docs/components/table) for a table that is read rather than worked with: a short, fixed set of rows, a summary, a specification sheet. Use `DataTable` when the rows are data the user sorts, selects, pages or opens.
 
@@ -58,6 +58,7 @@ DataTable
 │   └── DataTableRowActions (in a column's cell)
 └── DataTableFooter
     ├── DataTableSelectionCount
+    ├── DataTableCellSummary
     ├── DataTablePageSize
     ├── DataTablePageInfo
     └── DataTablePageButtons
@@ -65,7 +66,7 @@ DataTable
 
 `DataTable` holds the state — the items, the columns, the view, the selection, the open rows, the page — and renders a `div` around its parts. `DataTableContent` is the table itself, in a rounded frame: the header, the rows and the states. `DataTableToolbar` above it and `DataTableFooter` below it are layout rows outside the frame; the footer puts the selection count at the start and the page parts at the end. Every part is optional but the content, and parts can be placed anywhere inside `DataTable`. A part reads only the state it shows, so a selection change renders the rows it changes and the count, not the rest of the table.
 
-The root turns features on: `selectionMode`, `pagination`, `filterable`, `groupable`, `itemToChildren`, `reorderableRows`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; a column can only turn one off for itself (`filterable: false`, `groupable: false`, `resizable: false`, `pinnable: false`). A part for a feature that is off renders nothing and warns once in development.
+The root turns features on: `selectionMode`, `cellSelectionMode`, `editable`, `pagination`, `filterable`, `groupable`, `itemToChildren`, `reorderableRows`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; a column can only turn one off for itself (`filterable: false`, `groupable: false`, `editable: false`, `resizable: false`, `pinnable: false`). A part for a feature that is off renders nothing and warns once in development.
 
 ## Columns
 
@@ -345,6 +346,88 @@ In server mode the table does not search or filter: `onViewChange` reports the v
 `isItemDisabled` disables rows. With `disabledBehavior="all"` (the default) a disabled row cannot be focused, selected or opened; with `"selection"` it can be focused and opened, but not selected.
 
 **Select all** selects every row the view matches, on every page, not only the rows on screen. `DataTableSelectionCount` shows "3 of 1,240 selected". When every row shown is selected and more rows match (other pages, closed tree rows, the server's rows), it offers "Select all 1,240"; once they are, it offers "Clear selection". Tree rows are selected on their own: selecting a parent does not select its children.
+
+## Cell selection
+
+`cellSelectionMode="range"` selects cells as a spreadsheet does: a click selects a cell, <Kbd>Shift</Kbd> + click or a drag selects the rectangle from it, <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + click or drag adds another range, and the arrow keys move the selection with focus, <Kbd>Shift</Kbd> + the arrows extending it. `"cell"` selects one cell at a time. Either way the table is focused cell by cell, and <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> copies the selection; with `editable`, <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>V</Kbd> pastes into it, <Kbd>Delete</Kbd> clears it and <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>D</Kbd> fills it down. `DataTableCellSummary` shows the sum, average and count of the selected numbers.
+
+<ComponentPreview name="data-table-cell-selection" align="start" />
+
+```tsx
+<DataTable
+  items={allocations}
+  columns={columns}
+  cellSelectionMode="range"
+  editable
+  onCellsChange={(changes) => save(changes)}
+>
+  <DataTableContent aria-label="Daily allocation" />
+  <DataTableFooter>
+    <DataTableCellSummary />
+  </DataTableFooter>
+</DataTable>
+```
+
+- **Ranges.** The selection is an array of ranges, each between two cells named by row id and column id: `cellSelection` / `defaultCellSelection` / `onCellSelectionChange(ranges, { reason })`, `reason` being `"item-press"`, `"keyboard"`, `"select-all"`, `"clear"` or `"paste"`. A range is `{ start, end }`: `start` is where it was begun (its anchor), `end` the corner that moves, where focus is, so a screen reader reads that cell and its selected state, and the next <Kbd>Shift</Kbd> + arrow goes on from it.
+- **In the order shown.** A range is the rectangle between its corners in the order the rows and columns are shown now: it holds across scrolling and a column moving, and after a sort or a new grouping it covers the rows now between its corners. While a corner's row is filtered out or in a closed group, or its column is hidden, the range is set aside: not drawn, copied or summed, still in `cellSelection`, back when the row or column is.
+- **Rows that are not data.** Group rows, detail rows and the totals row have no cells to select. A range runs across the group rows between its corners, which are not selected, copied, summed or written; <Kbd>Shift</Kbd> + <Kbd>↑</Kbd> / <Kbd>↓</Kbd> passes over them. The checkbox and drag handle columns are not data columns either.
+- **Keys.** <Kbd>Shift</Kbd> + <Kbd>Space</Kbd> selects the whole rows of the range, <Kbd>Ctrl</Kbd> + <Kbd>Space</Kbd> its whole columns, <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd> every cell, and <Kbd>Escape</Kbd> clears the selection. Whole rows and columns, and every cell, mean every row shown, on every page and out of view of a virtualized table, as "select all" does for rows.
+- **With row selection.** A click on a cell selects the cell; rows are selected by their checkbox and <Kbd>Space</Kbd> (<Kbd>Shift</Kbd> + <Kbd>Space</Kbd> and <Kbd>Ctrl</Kbd> + <Kbd>Space</Kbd> are the cells' in `"range"` mode). <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd> selects every cell from a data cell and every row from the checkbox column. <Kbd>Escape</Kbd> clears the cells first, the rows on a second press.
+- **Copy.** <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> copies each cell's display text, as the table shows it (formatted numbers and dates, option labels, Yes / No), as tab-separated text that Excel and Google Sheets paste as cells (a cell with a tab, a line break or a quote is quoted) and as an HTML table. Rows out of view and on other pages are copied too. Several ranges copy as Excel copies them: ranges in the same rows side by side, ranges in the same columns one under the other; others cannot be copied together, which is announced. With no range, the focused cell is copied.
+- **Drag.** Near an edge of the table (or past it), a drag scrolls the table that way, in a virtualized table too, and the range follows.
+
+<ComponentPreview name="data-table-cell-selection-virtual" align="start" />
+
+Selecting, extending and summing never read the DOM: a range over 100,000 rows of a virtualized table, every cell selected with <Kbd>Ctrl</Kbd> + <Kbd>A</Kbd>, copies and sums in a fraction of a second, and changing the selection renders only the rows whose cells change.
+
+### Writing cells
+
+With `editable`, the cells of the selection are written by pasting, <Kbd>Delete</Kbd> (or <Kbd>Backspace</Kbd>) and fill down, and reported through `onCellsChange(changes, { reason })`; update `items` from them, as the table does not change them itself. Each change is `{ id, column, item, value, previousValue }`, and `reason` is `"paste"`, `"clear"` or `"fill"` (`"edit"` is for editors). A cell given its own value is written but not reported.
+
+```tsx
+const columns = createColumns<Allocation>([
+  // The well is the record's: not written.
+  { id: "well", header: "Well", editable: false },
+  {
+    id: "hours",
+    header: "On stream (h)",
+    type: "number",
+    validate: (value) =>
+      typeof value === "number" && (value < 0 || value > 24)
+        ? "Enter 0 to 24 hours"
+        : null,
+  },
+  // Locked rows keep their oil figure.
+  { id: "oil", header: "Oil (Sm³)", type: "number", editable: (row) => !row.locked },
+])
+
+<DataTable
+  items={allocations}
+  columns={columns}
+  cellSelectionMode="range"
+  editable
+  onCellsChange={async (changes) => {
+    setAllocations((current) => applyChanges(current, changes))
+    await saveAllocations(changes) // rejected: the cells show its message
+  }}
+>
+```
+
+- **Which cells.** `editable` on the root turns writing on; a column opts out with `editable: false`, or decides per item with a function. Disabled rows (`isItemDisabled`) are not written. Cells that cannot be written are skipped, and the result says how many ("Pasted 6 cells, 2 not editable").
+- **Paste.** One value fills every selected cell. A block pastes from the range's first cell: repeated over a range that is a whole multiple of it, else once, past the range where it is larger and cut at the last row and column; the selection becomes the cells pasted. A block cannot be pasted into several ranges. Pasted text is read as the column's type, in the provider's locale (the table below), or by the column's `parse(text, item)`, which throws to refuse the text. A value is then checked by the column's `validate(value, item)`, whose message refuses it. A refused cell is not written: it shows a `destructive` outline, `aria-invalid`, and its message as its description and in a tooltip, until it is written again.
+- **Clear and fill down.** <Kbd>Delete</Kbd> writes `null` (an empty cell) into the selected cells, `validate` permitting. <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>D</Kbd> copies the first row of each range into the rows below it, in each column; a range of one row takes the row above it, as Excel does.
+- **Saving.** When `onCellsChange` returns a promise, the cells it wrote are dimmed and `aria-busy` until it settles; if it rejects, they show the error's message as a refused cell does, and the failure is announced. `eventDetails.cancel()` drops the write: nothing is shown or announced.
+- **On the clipboard.** Copy and paste use the browser's own clipboard events, so they ask for no permission and carry both formats. Where a browser sends no copy or paste event for a table's cell (Safari), <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> and <Kbd>V</Kbd> use the Clipboard API instead, which may ask. `useDataTable` has `copyCells`, `pasteCells(text)`, `clearCellValues` and `fillDown` for buttons of your own.
+
+| Type | Pasted text read as the value |
+| --- | --- |
+| `text` | The text as it is |
+| `number` | Digits with the locale's decimal and group separators ("1,234.5", "1.234,5"), a sign or an accounting "(40)", around the column's currency, percent sign or unit ("12%" is 0.12 in a percent column); else a number as JavaScript writes it ("1234.5") |
+| `date` | An ISO date ("2024-03-01", with a time too), or the day, month and year in the locale's order, the month as a number or a name ("Jan 5, 2024", "5. Jan. 2024"), with a time after it; a two-digit year is 1930–2029, as in Excel. In the column's `timeZone` |
+| `boolean` | Yes / No (in the locale), "true" / "false", "1" / "0" |
+| `options` | An option's label or value |
+
+Case and accents do not matter, and an empty text is an empty cell. What the table copies pastes back.
 
 ## Pagination
 
@@ -784,6 +867,27 @@ The table is one tab stop: <Kbd>Tab</Kbd> enters it at the row or cell that last
 | <Kbd>Tab</Kbd> on a detail row | Into a table of its own inside it (its own keys there); <Kbd>Tab</Kbd> again leaves both tables |
 | <Kbd>←</Kbd> / <Kbd>→</Kbd> on a resizer | After "Resize column" in the column's menu: narrows / widens the column (<Kbd>Shift</Kbd>: four steps); <Kbd>Home</Kbd> / <Kbd>End</Kbd> the narrowest / widest; <Kbd>Enter</Kbd> or <Kbd>Tab</Kbd> keeps the width, <Kbd>Escape</Kbd> puts it back, both back to the menu button |
 
+With a `cellSelectionMode` (or `editable`), focus moves cell by cell, as in a spreadsheet: the table's tab stop is a cell (the first row's first data cell at first), rows are never focused themselves, and these keys change:
+
+| Key | Does |
+| --- | --- |
+| <Kbd>↓</Kbd> / <Kbd>↑</Kbd> | The cell below / above, through the header rows and the totals row too; selects it |
+| <Kbd>→</Kbd> / <Kbd>←</Kbd> | The next / previous cell; at the row's first cell, focus stays; selects it |
+| <Kbd>Home</Kbd> / <Kbd>End</Kbd>, <Kbd>Page Up</Kbd> / <Kbd>Page Down</Kbd>, <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>Home</Kbd> / <Kbd>End</Kbd> | The row's first / last cell, a screenful up / down in the column, the table's first / last cell; each selects the cell |
+| <Kbd>Shift</Kbd> + any of the above | Extends the range from its anchor to the cell (in the body, passing over group rows) |
+| <Kbd>Shift</Kbd> + <Kbd>Space</Kbd> | Selects the range's whole rows (`"range"`) |
+| <Kbd>Ctrl</Kbd> + <Kbd>Space</Kbd> | Selects the range's whole columns (`"range"`) |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>A</Kbd> | Selects every cell (`"range"`); from the checkbox column, every row |
+| <Kbd>Escape</Kbd> | Clears the cell selection; once it is clear, the row selection |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> | Copies the selected cells (the focused cell without a selection) |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>V</Kbd> | Pastes into the selection (`editable`) |
+| <Kbd>Delete</Kbd> / <Kbd>Backspace</Kbd> | Clears the selected cells (`editable`) |
+| <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>D</Kbd> | Fills each range down from its first row (`editable`) |
+| <Kbd>Space</Kbd> | Selects or clears the focused cell's row (`selectionMode`) |
+| <Kbd>Enter</Kbd> | Activates the row (`onActivate`, its link); on a group or tree row that does not activate, opens or closes it |
+
+A click on a cell focuses and selects it (and does not select its row or activate it: a double click activates); a press on a group row's cell opens or closes the group, as before.
+
 In a right-to-left table <Kbd>←</Kbd> and <Kbd>→</Kbd> are swapped. In a column header, the arrow keys stop on the header itself when it can be moved, then on its controls in reading order: its sort button, its description's info button and its menu button. Resizers are not stops: "Resize column" reaches them. In resize mode, <Kbd>Enter</Kbd> keeps the width rather than returning the column to its own (use "Reset width" for that).
 
 ## Accessibility
@@ -797,10 +901,11 @@ In a right-to-left table <Kbd>←</Kbd> and <Kbd>→</Kbd> are swapped. In a col
 - While loading, the table is `aria-busy`; skeleton rows are hidden from screen readers, and the error state is an alert.
 - When the focused row goes (a new page, a sort, a search or filter it no longer matches, an error in place of the rows), focus moves to the row now in its place, or to the state's button; when a tree row's children, a detail row or a group close with focus in them, to their row (the group's). It never drops to the page.
 - A disabled row with `disabledBehavior="all"` is skipped by the arrow keys; with `"selection"` it is reached but cannot be selected.
+- With a cell selection, the selected cells carry `aria-selected="true"` and the grid is `aria-multiselectable` in `"range"` mode. Focus is on the moving corner of the range, so each extension reads the cell reached and its selected state; selecting whole rows, columns or every cell, copying, pasting, clearing and filling down are announced ("12 cells selected", "Pasted 6 cells, 2 not editable"), and `DataTableCellSummary`'s figures once the selection stops changing. A cell being saved is `aria-busy`; a refused or failed one is `aria-invalid`, its message its accessible description.
 
 ## Right to left and localization
 
-Direction and locale come from the [TectonProvider](/docs/tecton/provider). In a right-to-left locale the columns run from the right, the arrow keys, the page buttons, the resizers and column dragging are mirrored, pinned columns stick to the start on the right, and the chevrons of tree rows and group rows point the other way (<Kbd>←</Kbd> opens a group, <Kbd>→</Kbd> closes it). Numbers, dates and the counts ("3 of 1,240 selected", "Page 2 of 13") are formatted with `Intl` in the provider's locale, and the table's own texts (the states, the page parts, the selection count, the column menus, the group rows' "(Empty)" and row counts, the announcements) are translated in every Tecton locale.
+Direction and locale come from the [TectonProvider](/docs/tecton/provider). In a right-to-left locale the columns run from the right, the arrow keys, the page buttons, the resizers and column dragging are mirrored, pinned columns stick to the start on the right, and the chevrons of tree rows and group rows point the other way (<Kbd>←</Kbd> opens a group, <Kbd>→</Kbd> closes it). A cell range's outline and the arrow keys that extend it follow the direction too. Numbers, dates and the counts ("3 of 1,240 selected", "Page 2 of 13", the cell summary) are formatted with `Intl` in the provider's locale, pasted numbers and dates are read in it, and the table's own texts (the states, the page parts, the selection count, the cell summary, the column menus, the group rows' "(Empty)" and row counts, the messages of refused cells, the announcements) are translated in every Tecton locale.
 
 <ComponentPreview name="data-table-rtl" direction="rtl" align="start" />
 
@@ -851,6 +956,11 @@ The root. Renders a `div` (`data-slot="data-table"`) and forwards its props (`cl
 | `pinnableColumns` | `boolean` | `false` | Columns are pinned to the start or the end from their menu and `DataTableColumnsMenu`. |
 | `pagination` | `boolean` | `false` | Shows the rows a page at a time. |
 | `selectionMode` | `"none" \| "single" \| "multiple"` | `"none"` | Whether rows select, one at a time or several, with a checkbox column. |
+| `cellSelectionMode` | `"none" \| "cell" \| "range"` | `"none"` | Whether cells select, one at a time or in ranges; focus moves cell by cell (see [Cell selection](#cell-selection)). |
+| `cellSelection` | `ReadonlyArray<DataTableCellRange>` | - | The selected ranges, `{ start: { row, column }, end: { row, column } }` by row id and column id (controlled). |
+| `defaultCellSelection` | `ReadonlyArray<DataTableCellRange>` | `[]` | The ranges selected at first. |
+| `onCellSelectionChange` | `(ranges: DataTableCellRange[], eventDetails) => void` | - | Called with the selected ranges; `reason` is `"item-press"`, `"keyboard"`, `"select-all"`, `"clear"` or `"paste"`. |
+| `editable` | `boolean` | `false` | Cells are written by pasting, clearing and filling down (with a `cellSelectionMode`), reported through `onCellsChange`; focus moves cell by cell (see [Writing cells](#writing-cells)). |
 | `value` | `ReadonlyArray<string>` | - | The selected rows' ids (controlled). |
 | `defaultValue` | `ReadonlyArray<string>` | `[]` | The rows selected at first. |
 | `onValueChange` | `(value: string[], eventDetails: DataTableSelectionChangeDetails) => void` | - | Called with the selected ids; `eventDetails.allMatching` in server "all matching". |
@@ -871,6 +981,7 @@ The root. Renders a `div` (`data-slot="data-table"`) and forwards its props (`cl
 | `pageSizes` | `ReadonlyArray<number>` | `[10, 20, 50, 100]` | The sizes `DataTablePageSize` offers. |
 | `onActivate` | `(id: string, item: T) => void` | - | A row activated: <Kbd>Enter</Kbd>, a click (a double click while rows are selected). |
 | `onRowOrderChange` | `(ids: string[], eventDetails) => void` | - | Rows reordered: every item's id in the new order; `reason` is `"pointer"`, `"keyboard"` or `"virtual"`. |
+| `onCellsChange` | `(changes: DataTableCellChange<T>[], eventDetails) => void \| Promise<void>` | - | Cells written (`editable`): each change is `{ id, column, item, value, previousValue }`; `reason` is `"paste"`, `"clear"`, `"fill"` or `"edit"`. A promise shows the cells as saving until it settles, and its rejection's message on them. |
 
 `eventDetails.reason` of `onValueChange` is `"item-press"`, `"keyboard"`, `"select-all"`, `"select-all-matching"`, `"clear"` or `"view"` (the search or filters ended "all matching"). Changes made through `useDataTable` have the reason `"none"`.
 
@@ -955,6 +1066,10 @@ The row below the table: a `div` (`data-slot="data-table-footer"`) for the selec
 
 "3 of 1,240 selected", with "Select all N" and "Clear selection" when they apply (see [Selection](#selection) and [All matching](#server-data)). A `div` (`data-slot="data-table-selection-count"`); renders nothing while `selectionMode` is `"none"`.
 
+### DataTableCellSummary
+
+The sum, average and count of the numbers in the selected cells (of number columns), and the count of every selected cell with a value ("Sum: 10,127 · Average: 843.9 · Numerical count: 12 · Count: 12"), formatted as the numbers' column when they share one format. Counted from the items, rows out of view and on other pages included. A `div` with `role="group"` named "Selected cells" (`data-slot="data-table-cell-summary"`); renders nothing while no cell is selected, and while `cellSelectionMode` is `"none"`. Its figures are announced once the selection stops changing, while focus is in the table.
+
 ### DataTablePageSize
 
 "Rows per page" and a [Select](/docs/components/select) of `pageSizes` (a page size the list leaves out is added). A `div` (`data-slot="data-table-page-size"`); renders nothing without `pagination`.
@@ -1001,6 +1116,9 @@ A column:
 | `reorderable` | `false` | - | Keeps the column in its place. |
 | `hideable` | `false` | - | Keeps the column shown. |
 | `pinnable` | `false` | - | Keeps the column from being pinned. |
+| `editable` | `false \| ((item: T) => boolean)` | - | Keeps the column's cells from being written (`editable` on the root), or decides per item. |
+| `validate` | `(value: DataTableValue, item: T) => string \| null` | - | Checks a value before it is written: a message refuses it (shown on the cell), `null` lets it through. |
+| `parse` | `(text: string, item: T) => DataTableValue` | by type | Reads pasted text as the column's value, in place of its type's reading; throw an `Error` to refuse the text, its message shown on the cell. |
 
 A group: `{ id: string; header: string; description?: string; columns: ReadonlyArray<DataTableColumn<T>> }`.
 
@@ -1074,6 +1192,14 @@ type DataTableFilterValue =
 | `columns` | `ReadonlyArray<DataTableLeafColumn<T>>` | The columns shown, in order. |
 | `loading` | `boolean` | The root's `loading`. |
 | `exportCsv` | `(options?) => Promise<string>` | The rows as CSV text (RFC 4180): display values, with the headers first (see [Export](#export)). `rows`: `"filtered"` (default), `"selected"` or `"page"`; `columns`: `"visible"` (default) or `"all"`; `header`, `bom`, `escapeFormulas`. |
+| `cellSelection` | `ReadonlyArray<DataTableCellRange>` | The selected cell ranges (with a `cellSelectionMode`). |
+| `setCellSelection` | `(ranges: ReadonlyArray<DataTableCellRange>) => void` | Sets the cell selection. |
+| `selectAllCells`, `clearCellSelection` | `() => void` | Selects every cell shown (on every page), or none. |
+| `selectedCellCount` | `number` | The number of selected cells, each counted once. |
+| `cellSummary` | `{ count, numericCount, sum, average } \| null` | What `DataTableCellSummary` shows, as numbers (`sum` and `average` `null` without numbers); `null` with no cell selected. |
+| `copyCells` | `() => Promise<string>` | Copies the selected cells to the clipboard, as <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>C</Kbd> does, and resolves with the tab-separated text. |
+| `pasteCells` | `(text: string) => Promise<void>` | Pastes tab-separated text into the selection, as <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>V</Kbd> does (`editable`). |
+| `clearCellValues`, `fillDown` | `() => Promise<void>` | Clears the selected cells, or fills each range down, as <Kbd>Delete</Kbd> and <Kbd>Ctrl</Kbd> / <Kbd>⌘</Kbd> + <Kbd>D</Kbd> do (`editable`). |
 
 ### TableColumnResizer
 

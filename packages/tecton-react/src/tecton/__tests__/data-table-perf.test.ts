@@ -35,6 +35,9 @@
  *   collapse and expand a tree row ... 18 / 15    (no budget; limit 50)
  *   select all ....................... 15 / 23    (50)
  *   CSV, 100k × 6 columns ........... 212 / 205   (500)
+ *   select every cell, 100k × 7 ....... 16         (50)
+ *   sum a column of 100k cells ........ 24         (50)
+ *   copy 100k × 6 cells (TSV + HTML) . 358         (500)
  */
 import { afterEach, describe, expect, it, vi } from "vitest"
 
@@ -44,7 +47,9 @@ import {
   createDefaultView,
   getColumnModel,
   getFormatter,
+  layoutColumns,
   reconcileView,
+  resolveCells,
   selectAllIds,
   selectionState,
   toggleIds,
@@ -53,7 +58,14 @@ import {
   type DataTablePartialView,
   type DataTableView,
 } from "../internal/data-table/engine"
+import { copy } from "../internal/data-table/cell-selection/index"
+import {
+  cellCount,
+  summarizeCells,
+} from "../internal/data-table/engine/cell-ranges"
+import type { DataTableContextValue } from "../internal/data-table/context"
 import { toCsv } from "../internal/data-table/engine/csv"
+import { createTranslator } from "../internal/i18n/translations"
 
 const ROWS = 100_000
 const RUNS = 5
@@ -458,6 +470,85 @@ describe(
         ({ columns, formatter }) => {
           const csv = toCsv(wells, columns, formatter)
           expect(csv.length).toBeGreaterThan(ROWS * 20)
+        }
+      )
+      expect(time).toBeLessThan(500 * HEADROOM)
+    })
+
+    /** A model of every row, the columns shown, and a range between two corners. */
+    const cellSetup = (partial: DataTablePartialView = {}) => {
+      const { view, run, columns } = setup()
+      const shown = view(partial)
+      const model = run(shown)
+      const layout = layoutColumns(columns, shown)
+      const items = model.allRows
+      const ranges = (first: string, last: string) => [
+        {
+          start: { row: items[0].id, column: first },
+          end: { row: items[items.length - 1].id, column: last },
+        },
+      ]
+      return { model, layout, columns, ranges }
+    }
+
+    it("selects every cell, 100,000 rows × 7 columns, within 50 ms", () => {
+      const time = median(cellSetup, ({ model, layout, ranges }) => {
+        const grid = resolveCells(
+          ranges("name", "active"),
+          model,
+          layout.columns
+        )
+        expect(cellCount(grid)).toBe(ROWS * 7)
+        // What the rows in view read to draw it.
+        for (const row of model.allRows.slice(0, 40))
+          expect(grid.rowMarks(row.id)).not.toBe("")
+      })
+      expect(time).toBeLessThan(50 * HEADROOM)
+    })
+
+    it("sums a column of 100,000 selected cells within 50 ms", () => {
+      const time = median(cellSetup, ({ model, layout, ranges }) => {
+        const summary = summarizeCells(
+          resolveCells(ranges("oil", "oil"), model, layout.columns)
+        )
+        expect(summary.numericCount).toBe(ROWS)
+      })
+      expect(time).toBeLessThan(50 * HEADROOM)
+    })
+
+    it("copies 100,000 × 6 cells as tab-separated text and HTML within 500 ms", () => {
+      const time = median(
+        () => {
+          const state = cellSetup({ columns: { hidden: ["field"] } })
+          const grid = resolveCells(
+            state.ranges("name", "active"),
+            state.model,
+            state.layout.columns
+          )
+          const store = {
+            model: state.model,
+            layout: state.layout,
+            formatter: getFormatter(getColumnModel(state.columns), "en-US"),
+            cellGrid: grid,
+          }
+          const context = {
+            store: { get: () => store },
+            actions: { currentCellSelection: () => grid.ranges },
+          } as unknown as DataTableContextValue<unknown>
+          return { context, data: new Map<string, string>() }
+        },
+        ({ context, data }) => {
+          void copy(
+            {
+              context,
+              t: createTranslator("dataTable", "en-US"),
+              focused: null,
+            },
+            {
+              setData: (type: string, value: string) => data.set(type, value),
+            } as unknown as DataTransfer
+          )
+          expect(data.get("text/plain")!.length).toBeGreaterThan(ROWS * 20)
         }
       )
       expect(time).toBeLessThan(500 * HEADROOM)

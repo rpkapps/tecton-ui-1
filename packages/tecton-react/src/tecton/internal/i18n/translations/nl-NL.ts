@@ -151,6 +151,52 @@ export default defineTranslations({
     emptyGroup: "(Leeg)",
     groupCount: { one: "{total} rij", other: "{total} rijen" },
     groupRowLabel: "{label}, {rows}",
+    cellsSelected: {
+      one: "{total} cel geselecteerd",
+      other: "{total} cellen geselecteerd",
+    },
+    cellsCopied: {
+      one: "{total} cel gekopieerd",
+      other: "{total} cellen gekopieerd",
+    },
+    cellsPasted: {
+      "=0": "Geen cellen geplakt",
+      one: "{total} cel geplakt",
+      other: "{total} cellen geplakt",
+    },
+    cellsCleared: {
+      "=0": "Geen cellen gewist",
+      one: "{total} cel gewist",
+      other: "{total} cellen gewist",
+    },
+    cellsFilled: {
+      "=0": "Geen cellen gevuld",
+      one: "{total} cel gevuld",
+      other: "{total} cellen gevuld",
+    },
+    cellsSkipped: { other: "{total} niet bewerkbaar" },
+    cellsInvalid: { other: "{total} ongeldig" },
+    cellMessage: "{columnName}: {message}",
+    cellsNotSaved: {
+      one: "{total} cel niet opgeslagen: {message}",
+      other: "{total} cellen niet opgeslagen: {message}",
+    },
+    saveFailed: "De wijziging kon niet worden opgeslagen",
+    copyMultiple:
+      "Deze bereiken kunnen niet samen worden gekopieerd: selecteer bereiken in dezelfde rijen of in dezelfde kolommen",
+    pasteMultiple:
+      "Een blok cellen kan niet in meerdere bereiken worden geplakt",
+    copyFailed: "De cellen konden niet naar het klembord worden gekopieerd",
+    invalidValue: "Geen geldige waarde",
+    invalidNumber: "Voer een getal in",
+    invalidDate: "Voer een datum in",
+    invalidBoolean: "Voer {yes} of {no} in",
+    invalidOption: "Kies een van de opties",
+    cellSummary: "Geselecteerde cellen",
+    summarySum: "Som: {value}",
+    summaryAverage: "Gemiddelde: {value}",
+    summaryNumericCount: "Numeriek aantal: {value}",
+    summaryCount: "Aantal: {value}",
   },
   tableColumnResizer: {
     resize: "Formaat van {columnName} wijzigen",

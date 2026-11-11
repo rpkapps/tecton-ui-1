@@ -152,6 +152,52 @@ export default defineTranslations({
     emptyGroup: "(Leer)",
     groupCount: { one: "{total} Zeile", other: "{total} Zeilen" },
     groupRowLabel: "{label}, {rows}",
+    cellsSelected: {
+      one: "{total} Zelle ausgewählt",
+      other: "{total} Zellen ausgewählt",
+    },
+    cellsCopied: {
+      one: "{total} Zelle kopiert",
+      other: "{total} Zellen kopiert",
+    },
+    cellsPasted: {
+      "=0": "Keine Zellen eingefügt",
+      one: "{total} Zelle eingefügt",
+      other: "{total} Zellen eingefügt",
+    },
+    cellsCleared: {
+      "=0": "Keine Zellen geleert",
+      one: "{total} Zelle geleert",
+      other: "{total} Zellen geleert",
+    },
+    cellsFilled: {
+      "=0": "Keine Zellen ausgefüllt",
+      one: "{total} Zelle ausgefüllt",
+      other: "{total} Zellen ausgefüllt",
+    },
+    cellsSkipped: { other: "{total} nicht bearbeitbar" },
+    cellsInvalid: { other: "{total} ungültig" },
+    cellMessage: "{columnName}: {message}",
+    cellsNotSaved: {
+      one: "{total} Zelle nicht gespeichert: {message}",
+      other: "{total} Zellen nicht gespeichert: {message}",
+    },
+    saveFailed: "Die Änderung konnte nicht gespeichert werden",
+    copyMultiple:
+      "Diese Bereiche können nicht zusammen kopiert werden: Wählen Sie Bereiche in denselben Zeilen oder in denselben Spalten aus",
+    pasteMultiple:
+      "Ein Zellblock kann nicht in mehrere Bereiche eingefügt werden",
+    copyFailed: "Die Zellen konnten nicht in die Zwischenablage kopiert werden",
+    invalidValue: "Kein gültiger Wert",
+    invalidNumber: "Geben Sie eine Zahl ein",
+    invalidDate: "Geben Sie ein Datum ein",
+    invalidBoolean: "Geben Sie {yes} oder {no} ein",
+    invalidOption: "Wählen Sie eine der Optionen",
+    cellSummary: "Ausgewählte Zellen",
+    summarySum: "Summe: {value}",
+    summaryAverage: "Mittelwert: {value}",
+    summaryNumericCount: "Numerische Anzahl: {value}",
+    summaryCount: "Anzahl: {value}",
   },
   tableColumnResizer: {
     resize: "Größe von {columnName} ändern",

@@ -156,6 +156,55 @@ export default defineTranslations({
     emptyGroup: "(Vide)",
     groupCount: { one: "{total} ligne", other: "{total} lignes" },
     groupRowLabel: "{label}, {rows}",
+    cellsSelected: {
+      one: "{total} cellule sélectionnée",
+      other: "{total} cellules sélectionnées",
+    },
+    cellsCopied: {
+      one: "{total} cellule copiée",
+      other: "{total} cellules copiées",
+    },
+    cellsPasted: {
+      "=0": "Aucune cellule collée",
+      one: "{total} cellule collée",
+      other: "{total} cellules collées",
+    },
+    cellsCleared: {
+      "=0": "Aucune cellule effacée",
+      one: "{total} cellule effacée",
+      other: "{total} cellules effacées",
+    },
+    cellsFilled: {
+      "=0": "Aucune cellule remplie",
+      one: "{total} cellule remplie",
+      other: "{total} cellules remplies",
+    },
+    cellsSkipped: {
+      one: "{total} non modifiable",
+      other: "{total} non modifiables",
+    },
+    cellsInvalid: { one: "{total} non valide", other: "{total} non valides" },
+    cellMessage: "{columnName} : {message}",
+    cellsNotSaved: {
+      one: "{total} cellule non enregistrée : {message}",
+      other: "{total} cellules non enregistrées : {message}",
+    },
+    saveFailed: "La modification n’a pas pu être enregistrée",
+    copyMultiple:
+      "Ces plages ne peuvent pas être copiées ensemble : sélectionnez des plages sur les mêmes lignes ou dans les mêmes colonnes",
+    pasteMultiple:
+      "Un bloc de cellules ne peut pas être collé dans plusieurs plages",
+    copyFailed: "Les cellules n’ont pas pu être copiées dans le presse-papiers",
+    invalidValue: "Valeur non valide",
+    invalidNumber: "Saisissez un nombre",
+    invalidDate: "Saisissez une date",
+    invalidBoolean: "Saisissez {yes} ou {no}",
+    invalidOption: "Choisissez l’une des options",
+    cellSummary: "Cellules sélectionnées",
+    summarySum: "Somme : {value}",
+    summaryAverage: "Moyenne : {value}",
+    summaryNumericCount: "Nombre de valeurs numériques : {value}",
+    summaryCount: "Nombre : {value}",
   },
   tableColumnResizer: {
     resize: "Redimensionner {columnName}",

@@ -151,6 +151,55 @@ export default defineTranslations({
     emptyGroup: "(Κενό)",
     groupCount: { one: "{total} γραμμή", other: "{total} γραμμές" },
     groupRowLabel: "{label}, {rows}",
+    cellsSelected: {
+      one: "Επιλέχθηκε {total} κελί",
+      other: "Επιλέχθηκαν {total} κελιά",
+    },
+    cellsCopied: {
+      one: "Αντιγράφηκε {total} κελί",
+      other: "Αντιγράφηκαν {total} κελιά",
+    },
+    cellsPasted: {
+      "=0": "Δεν επικολλήθηκαν κελιά",
+      one: "Επικολλήθηκε {total} κελί",
+      other: "Επικολλήθηκαν {total} κελιά",
+    },
+    cellsCleared: {
+      "=0": "Δεν απαλείφθηκαν κελιά",
+      one: "Απαλείφθηκε {total} κελί",
+      other: "Απαλείφθηκαν {total} κελιά",
+    },
+    cellsFilled: {
+      "=0": "Δεν συμπληρώθηκαν κελιά",
+      one: "Συμπληρώθηκε {total} κελί",
+      other: "Συμπληρώθηκαν {total} κελιά",
+    },
+    cellsSkipped: {
+      one: "{total} μη επεξεργάσιμο",
+      other: "{total} μη επεξεργάσιμα",
+    },
+    cellsInvalid: { one: "{total} μη έγκυρο", other: "{total} μη έγκυρα" },
+    cellMessage: "{columnName}: {message}",
+    cellsNotSaved: {
+      one: "{total} κελί δεν αποθηκεύτηκε: {message}",
+      other: "{total} κελιά δεν αποθηκεύτηκαν: {message}",
+    },
+    saveFailed: "Δεν ήταν δυνατή η αποθήκευση της αλλαγής",
+    copyMultiple:
+      "Αυτές οι περιοχές δεν μπορούν να αντιγραφούν μαζί: επιλέξτε περιοχές στις ίδιες γραμμές ή στις ίδιες στήλες",
+    pasteMultiple:
+      "Ένα μπλοκ κελιών δεν μπορεί να επικολληθεί σε πολλές περιοχές",
+    copyFailed: "Δεν ήταν δυνατή η αντιγραφή των κελιών στο πρόχειρο",
+    invalidValue: "Μη έγκυρη τιμή",
+    invalidNumber: "Εισαγάγετε έναν αριθμό",
+    invalidDate: "Εισαγάγετε μια ημερομηνία",
+    invalidBoolean: "Εισαγάγετε {yes} ή {no}",
+    invalidOption: "Επιλέξτε μία από τις επιλογές",
+    cellSummary: "Επιλεγμένα κελιά",
+    summarySum: "Άθροισμα: {value}",
+    summaryAverage: "Μέσος όρος: {value}",
+    summaryNumericCount: "Αριθμητικό πλήθος: {value}",
+    summaryCount: "Πλήθος: {value}",
   },
   tableColumnResizer: {
     resize: "Αλλαγή μεγέθους {columnName}",

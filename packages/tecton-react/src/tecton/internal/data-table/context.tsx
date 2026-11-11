@@ -17,10 +17,15 @@ import type { SelectionReason } from "../primitives/selection"
 import { useStore, type Store } from "../store"
 import {
   resolveLocale,
+  type CellGrid,
   type ClosedGroups,
   type ColumnLayout,
   type CsvOptions,
   type DataTableAllMatching,
+  type DataTableCellChange,
+  type DataTableCellRange,
+  type DataTableCellSelectionChangeReason,
+  type DataTableCellsChangeReason,
   type DataTableColumns,
   type DataTableRowModel,
   type DataTableView,
@@ -30,6 +35,9 @@ import {
 import type { Warn } from "./warnings"
 
 type DataTableSelectionMode = "none" | "single" | "multiple"
+
+/** Whether cells select: one at a time, or in ranges. */
+type DataTableCellSelectionMode = "none" | "cell" | "range"
 
 /** Why the selection changed. */
 type DataTableSelectionChangeReason =
@@ -105,7 +113,9 @@ type DataTableOptions = {
   readonly reorderableRows: boolean
   readonly pagination: boolean
   readonly selectionMode: DataTableSelectionMode
-  readonly cellSelectionMode: "none" | "cell" | "range"
+  readonly cellSelectionMode: DataTableCellSelectionMode
+  /** Cells are focused one by one, as in a spreadsheet: `editable` or a cell selection. */
+  readonly cellFocus: boolean
   readonly disabledBehavior: "all" | "selection"
   readonly disallowEmptySelection: boolean
   /** `itemToChildren` is set. */
@@ -158,7 +168,29 @@ type DataTableState<T> = {
    * send.
    */
   readonly clears: number
+  /** The cell selection as given (ranges set aside included). */
+  readonly cellSelection: ReadonlyArray<DataTableCellRange>
+  /** The cell selection over the rows and columns shown; `null` without a cell selection mode. */
+  readonly cellGrid: CellGrid<T> | null
 }
+
+/** A cell being saved (`pending`, the write's number) or not saved (`error`). */
+type CellMark = {
+  readonly pending: number | null
+  readonly error: string | null
+}
+
+/** What the rows' cells show of the cell selection and of writes, apart from the table's state. */
+type CellsState = {
+  /** The cell selection over the rows and columns shown. */
+  readonly grid: CellGrid<unknown> | null
+  /** The cells being saved or not saved, by row id, then column id. */
+  readonly marks: ReadonlyMap<string, ReadonlyMap<string, CellMark>>
+}
+
+/** The second argument of `onCellsChange`. */
+type DataTableCellsChangeDetails =
+  DataTableChangeDetails<DataTableCellsChangeReason>
 
 /** What the parts do; each reads the latest props and state. */
 type DataTableActions<T> = {
@@ -257,6 +289,28 @@ type DataTableActions<T> = {
     event?: Event
   ) => boolean
   exportCsv: (options?: DataTableExportOptions) => Promise<string>
+  /** Whether the cell selection changed: `false` when it is the same, or cancelled. */
+  setCellSelection: (
+    cellSelection: ReadonlyArray<DataTableCellRange>,
+    reason: DataTableCellSelectionChangeReason,
+    event?: Event
+  ) => boolean
+  /** The cell selection as it is now, changes not rendered yet included. */
+  currentCellSelection: () => ReadonlyArray<DataTableCellRange>
+  /**
+   * Reports written cells (`onCellsChange`): whether it was cancelled, and
+   * what it returned (a promise while they save).
+   */
+  changeCells: (
+    changes: Array<DataTableCellChange<T>>,
+    reason: DataTableCellsChangeReason,
+    event?: Event
+  ) => { canceled: boolean; result: unknown }
+  /** Runs a cell command of `useDataTable` (copy, paste, clear, fill down), its code loaded first. */
+  runCellCommand: (
+    command: "copy" | "paste" | "clear" | "fill",
+    text?: string
+  ) => Promise<string>
   /** Warns once in development. */
   warn: Warn
 }
@@ -264,6 +318,8 @@ type DataTableActions<T> = {
 type DataTableContextValue<T> = {
   store: Store<DataTableState<T>>
   actions: DataTableActions<T>
+  /** What the cells show of the cell selection and of writes (`CellsState`). */
+  cells: Store<CellsState>
 }
 
 const DataTableContext =
@@ -325,7 +381,11 @@ export {
   useNumberFormat,
 }
 export type {
+  CellMark,
+  CellsState,
   DataTableActions,
+  DataTableCellSelectionMode,
+  DataTableCellsChangeDetails,
   DataTableChangeDetails,
   DataTableContextValue,
   DataTableExpandedChangeReason,

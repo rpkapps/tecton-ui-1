@@ -48,8 +48,10 @@ const FEATURES = {
   csv: feature(() => import("./engine/csv")),
   /** `editable`: editors, validation, saves. */
   editing: feature(pending),
-  /** `cellSelectionMode`: ranges, copy and paste, fill down. */
-  cellSelection: feature(pending),
+  /** `cellSelectionMode`: ranges, the drag, copy and paste, fill down, writes. */
+  cellSelection: feature(() => import("./cell-selection/index")),
+  /** A cell's message (not valid, not saved) in a tooltip: loaded when one first shows. */
+  cellError: feature(() => import("./cell-error")),
   /** `reorderableColumns`, `reorderableRows`. */
   dragAndDrop: feature(() => import("./reorder")),
   /** The calendar of a date filter or editor, and its locale. */

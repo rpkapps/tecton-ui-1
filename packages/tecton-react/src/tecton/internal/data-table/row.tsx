@@ -6,7 +6,11 @@
  * The engine keeps a row's object while nothing about the row changes, so
  * a sort, a page or another row opening renders only the rows that change;
  * a row's selection is read by its `TableRow` from the grid, so selecting a
- * row renders that row's `tr` and checkbox, not its cells.
+ * row renders that row's `tr` and checkbox, not its cells. Its cells' part
+ * in the cell selection, and their writes, are read from the `cells`
+ * store, as text that is the same while they show the same: selecting
+ * cells renders the rows whose cells change, and in them the cells' own
+ * elements, not their content.
  *
  * Each row passes the props a virtualized body gives it (`aria-rowindex`,
  * `data-index`) on to its `TableRow`, inside the `TableRowConfig` that tells
@@ -39,7 +43,7 @@ import { Checkbox } from "@tecton/react/components/checkbox"
 import { TableCell, TableHead, TableRow } from "@tecton/react/components/table"
 
 import { useTranslations } from "../i18n/translations"
-import { createStore, useStore } from "../store"
+import { createStore, useStore, type Store } from "../store"
 import {
   TableRowConfig,
   type RowDescription,
@@ -48,6 +52,7 @@ import {
 import {
   ALIGN,
   cellBorderClassName,
+  cellInner,
   INDENT,
   pinnedCellClassName,
   pinnedRowClassName,
@@ -60,8 +65,13 @@ import {
   type GroupCell,
   type RowShared,
 } from "./cell"
-import { useDataTableContext, useDataTableSelector } from "./context"
 import {
+  useDataTableContext,
+  useDataTableSelector,
+  type CellsState,
+} from "./context"
+import {
+  decodeMarks,
   selectionState,
   type BodyRow,
   type DataTableRowModel,
@@ -123,12 +133,30 @@ function rowIndex<T>(
     : given
 }
 
+const NO_CELLS: Store<CellsState> = createStore<CellsState>({
+  grid: null,
+  marks: new Map(),
+})
+
 function ItemRowComponent<T>({
   row,
   shared,
   ...props
 }: RowProps<ItemRow<T>, T>) {
   const { actions } = shared
+  const cells = shared.cells ?? NO_CELLS
+  const marks = useStore(cells, (state) => state.grid?.rowMarks(row.id) ?? "")
+  const writes = useStore(cells, (state) => state.marks.get(row.id))
+  const columnCount = shared.columns.length
+  const flags = React.useMemo(
+    () => decodeMarks(marks, columnCount),
+    [marks, columnCount]
+  )
+  // The cells' content, kept while the row and the table's state stay.
+  const inner = React.useMemo(
+    () => shared.columns.map((column) => cellInner(column, row, shared)),
+    [row, shared]
+  )
   const config = React.useMemo<TableRowGridProps>(
     () => ({
       value: row.id,
@@ -189,7 +217,14 @@ function ItemRowComponent<T>({
           </TableCell>
         )}
         {shared.columns.map((column, index) =>
-          renderCell(column, index, row, shared)
+          renderCell(
+            column,
+            index,
+            shared,
+            inner[index],
+            flags?.[index],
+            writes?.get(column.id)
+          )
         )}
       </TableRow>
     </TableRowConfig>

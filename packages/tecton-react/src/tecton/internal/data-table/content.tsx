@@ -30,6 +30,10 @@
  * While more rows load, the table is busy and the loading rows show, not
  * the bar under the header. The status region says how many rows match
  * once the search or filters change.
+ *
+ * The cells: with `editable` or a cell selection, focus moves cell by cell
+ * (the grid's `cellFocus`); a cell selection's keys, presses and clipboard
+ * are `cells.tsx`'s, and each row draws its cells' part in it.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -84,6 +88,7 @@ import {
   type GroupRow,
 } from "./engine/index"
 import { useFeature, usePrefetchFeatures } from "./lazy"
+import { useCellSelection } from "./cells"
 import { DataTableHeader, type HeaderShared } from "./header"
 import { describeRow, renderRow } from "./row"
 import { createRowOrder, inItemOrder, type RowOrder } from "./row-order"
@@ -705,6 +710,13 @@ function DataTableContentImpl({
 
   const gridController = React.useRef<TableGridController | null>(null)
   const rowOrder = useRowOrder(context, frame, gridController, model, handle)
+  const cellMode = options.cellSelectionMode !== "none"
+  const cellSelection = useCellSelection({
+    context,
+    container,
+    grid: gridController,
+    on: cellMode,
+  })
 
   const rowHeader = shownColumns.find(
     (column) => column.id === layout.rowHeader
@@ -784,6 +796,7 @@ function DataTableContentImpl({
       handlePin,
       pinned,
       actions,
+      cells: cellMode ? context.cells : null,
     }),
     [
       shownColumns,
@@ -816,6 +829,8 @@ function DataTableContentImpl({
       handlePin,
       pinned,
       actions,
+      cellMode,
+      context.cells,
     ]
   )
   const render = React.useCallback(
@@ -905,6 +920,11 @@ function DataTableContentImpl({
       tree: shared.levelled,
       controller: gridController,
       rowParity,
+      cellFocus: options.cellFocus,
+      // A row is entered at its first column of data.
+      firstCell: (selection ? 1 : 0) + (handle ? 1 : 0),
+      onCellNavigate: cellMode ? cellSelection.onCellNavigate : undefined,
+      multiselectable: options.cellSelectionMode === "range",
       // Select all and the header read the engine, never the rows'
       // descriptions: no row is formatted or described for them.
       getAllValues: () => store.get().selectable(),
@@ -966,6 +986,12 @@ function DataTableContentImpl({
       options.activatable,
       options.disabledBehavior,
       options.pagination,
+      options.cellFocus,
+      options.cellSelectionMode,
+      cellMode,
+      cellSelection.onCellNavigate,
+      selection,
+      handle,
       server,
       actions,
       describeItem,
@@ -1121,6 +1147,7 @@ function DataTableContentImpl({
             aria-labelledby={ariaLabelledBy}
             aria-describedby={ariaDescribedBy}
             aria-busy={loading || undefined}
+            onKeyDown={cellMode ? cellSelection.onKeyDown : undefined}
             // Left out, not undefined: a virtualized body counts its own.
             {...(rowCount === undefined ? {} : { "aria-rowcount": rowCount })}
           >

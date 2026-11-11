@@ -38,6 +38,16 @@
  * - In a virtualized table, a row out of view is scrolled to before it is
  *   focused, and the rows out of view are read from their items
  *   (`describeItem`) when a range or "select all" needs them.
+ * - With `cellFocus` (a spreadsheet: `DataTable`'s cell selection and
+ *   editing), focus moves from cell to cell, never to a row: the first tab
+ *   stop is a cell, Up / Down always move within the column, Left at a
+ *   row's first cell stays, a press on a body cell focuses it (keeping the
+ *   browser from selecting text) rather than selecting its row, and a
+ *   single click no longer activates (Enter and a double click do). Each
+ *   move to another cell is told (`onCellNavigate`), with Shift for
+ *   "extend": then Up / Down, Page Up / Down and Ctrl / Cmd + Home / End
+ *   stay in the body and pass over its rows without a `value` (a group's),
+ *   and the row selection does not follow.
  *
  * Used by the generated `Table`, `TableBody` and `TableRow` (the overlay's
  * table hunk), `DataTable` and its selection checkbox; not part of the
@@ -134,6 +144,25 @@ type TableGridOptions = {
    * stop), so it may be taken elsewhere (`controller.focusRow`).
    */
   restoreFocusTo?: (row: string, focused: boolean) => number | null
+  /** Focus moves cell by cell, as in a spreadsheet (see the module comment). */
+  cellFocus?: boolean
+  /** With `cellFocus`: the column (from 0) a row is entered at when none is known. */
+  firstCell?: number
+  /**
+   * With `cellFocus`: focus moved to another cell, from the keyboard or by
+   * a press on a body cell (`event` is the `mousedown`); `from` is the cell
+   * it was on, `extend` whether Shift was held.
+   */
+  onCellNavigate?: (
+    cell: HTMLTableCellElement,
+    details: {
+      from: HTMLTableCellElement | null
+      event: Event
+      extend: boolean
+    }
+  ) => void
+  /** Several cells can be selected (ranges): `aria-multiselectable` without row selection too. */
+  multiselectable?: boolean
 }
 
 /** What the component around a grid table asks of it. */
@@ -142,6 +171,10 @@ type TableGridController = {
   scrollToRow: (value: string) => void
   /** Focuses the body row at this index (from 0), scrolled to when out of view. */
   focusRow: (index: number) => void
+  /** A body row's `value`, read from its element. */
+  rowValue: (row: HTMLTableRowElement) => string | undefined
+  /** Focuses a cell (its first stop), scrolled into view unless `scroll` is false. */
+  focusCell: (cell: HTMLTableCellElement, scroll?: boolean) => void
 }
 
 /** A body row's grid state, given by `TableRowConfig`. */
@@ -387,6 +420,10 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     tree: treeProp = false,
     controller,
     restoreFocusTo,
+    cellFocus = false,
+    firstCell = 0,
+    onCellNavigate,
+    multiselectable = false,
   } = config ?? {}
   const t = useTranslations("table")
   const rtl = useDirection() === "rtl"
@@ -778,10 +815,20 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       : headRows().length + index
   }
 
+  /** A row's stop: the row, or with `cellFocus` its cell in `column` (`firstCell` by default). */
+  const rowStop = (
+    row: HTMLTableRowElement,
+    column: number | null = null
+  ): HTMLElement => {
+    if (!cellFocus) return row
+    const cell = cellAt(row, column ?? firstCell)
+    return cell ? stopsOf(cell)[0] : row
+  }
+
   const defaultStop = (focused = false): HTMLElement | null => {
     const closed = closedOver(focused)
     const closer = closed === null ? null : rowAt(closed)
-    if (closer && !infoOf(closer)?.disabled) return closer
+    if (closer && !infoOf(closer)?.disabled) return rowStop(closer)
     const at = position.current
     if (at) {
       // A body row's place stays in the body as rows go: the last row now.
@@ -804,13 +851,13 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       }
       const row = at.body && end <= start ? null : rowAt(index)
       if (row && !(isBody(index) && infoOf(row)?.disabled)) {
-        if (column === null) return row
+        if (column === null) return rowStop(row)
         const cell = cellAt(row, column)
         if (cell) return stopsOf(cell)[0]
       }
     }
     const first = bodyRows().find((row) => !infoOf(row)?.disabled)
-    if (first) return first
+    if (first) return rowStop(first)
     const head = table.current?.tHead?.rows.item(0)?.cells.item(0)
     return head ? stopsOf(head)[0] : null
   }
@@ -844,7 +891,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       !stop ||
       !stop.isConnected ||
       stop.closest("table") !== el ||
-      (stop.tagName === "TR" && infoOf(stop)?.disabled) ||
+      (stop.tagName === "TR" && (cellFocus || infoOf(stop)?.disabled)) ||
       // In a cell no longer laid out (a breakpoint passed).
       !isShown(stop.tagName === "TR" ? stop : (stop.closest("td, th") ?? stop))
     ) {
@@ -876,7 +923,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       // The row that closed over it, scrolled to when it is out of view.
       const closed = control ? null : closedOver(true)
       if (closed !== null && rowAt(closed) === null)
-        whenRendered(closed, focusElement)
+        whenRendered(closed, (row) => focusElement(rowStop(row)))
       else if (target === control) control?.focus({ preventScroll: true })
       else if (target) focusElement(target)
     }
@@ -912,13 +959,34 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     }
   }
 
-  const focusElement = (element: HTMLElement) => {
+  const focusElement = (element: HTMLElement, scroll = true) => {
     const previous = tabStop.current
     if (previous && previous !== element) setTabIndex(previous, "-1")
     tabStop.current = element
     setTabIndex(element, "0")
     element.focus({ preventScroll: true })
-    scrollIntoView(element)
+    if (scroll) scrollIntoView(element)
+  }
+
+  /** The cell of this table's own that holds focus. */
+  const focusedCell = () => {
+    const active = table.current?.ownerDocument.activeElement
+    return active && owns(active) ? ownCellOf(active) : null
+  }
+
+  /**
+   * Focuses a cell's first stop; with `cellFocus`, tells it as a move
+   * (`onCellNavigate`): one to another cell, or any press.
+   */
+  const focusCell = (
+    cell: HTMLTableCellElement,
+    from: HTMLTableCellElement | null,
+    event: Event,
+    extend: boolean
+  ) => {
+    focusElement(stopsOf(cell)[0])
+    if (cellFocus && (cell !== from || event.type === "mousedown"))
+      onCellNavigate?.(cell, { from, event, extend })
   }
 
   /** Calls `then` with the row at `index`, once it is rendered. */
@@ -952,21 +1020,42 @@ function useTableGrid(own: React.ComponentProps<"table">) {
 
   // ---- moving -------------------------------------------------------------
 
-  /** The index `steps` enabled rows from `from` within `[start, end)`, or the furthest. */
-  const walk = (from: number, steps: number, start: number, end: number) => {
+  /** A body row's `value`, rendered or not. */
+  const valueAt = (index: number) => {
+    const row = rowAt(index)
+    if (row) return infoOf(row)?.value
+    return body.current?.describeAt?.(index - headRows().length).value
+  }
+  const withoutValue = (index: number) => valueAt(index) === undefined
+
+  /**
+   * The index `steps` enabled rows from `from` within `[start, end)`, or the
+   * furthest; rows `skip` says so are passed over.
+   */
+  const walk = (
+    from: number,
+    steps: number,
+    start: number,
+    end: number,
+    skip?: (index: number) => boolean
+  ) => {
     const direction = Math.sign(steps) || 1
     let remaining = Math.abs(steps) || 1
     let found: number | null = null
     for (let at = from + direction; at >= start && at < end; at += direction) {
-      if (disabledAt(at)) continue
+      if (disabledAt(at) || skip?.(at)) continue
       found = at
       if (--remaining === 0) break
     }
     return found
   }
 
-  const edge = (first: boolean, start: number, end: number) =>
-    walk(first ? start - 1 : end, first ? 1 : -1, start, end)
+  const edge = (
+    first: boolean,
+    start: number,
+    end: number,
+    skip?: (index: number) => boolean
+  ) => walk(first ? start - 1 : end, first ? 1 : -1, start, end, skip)
 
   const bodyRange = () => {
     const head = headRows().length
@@ -985,9 +1074,15 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     { extend = false }: { extend?: boolean } = {}
   ) => {
     if (index === null) return
+    const from = cellFocus ? focusedCell() : null
     whenRendered(index, (row) => {
-      const cell = column === null ? null : cellAt(row, column)
-      focusElement(cell ? stopsOf(cell)[0] : row)
+      const cell = cellAt(row, column ?? firstCell)
+      if (cellFocus && cell) {
+        if (event) focusCell(cell, from, event.nativeEvent, extend)
+        else focusElement(stopsOf(cell)[0])
+        // The cell selection follows the moves, not the rows' selection.
+        if (onCellNavigate) return
+      } else focusElement(column !== null && cell ? stopsOf(cell)[0] : row)
       if (!event || !isBody(index)) return
       const info = infoOf(row)
       if (!info || info.value === undefined || selectionMode === "none") return
@@ -1061,6 +1156,14 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     const forward = rtl ? "ArrowLeft" : "ArrowRight"
     const backward = rtl ? "ArrowRight" : "ArrowLeft"
     const [bodyStart, bodyEnd] = bodyRange()
+    // Extending a cell selection: in the body, over the rows of items.
+    const extending = cellFocus && event.shiftKey && column !== null
+    const vertical = (step: number) =>
+      column === null
+        ? walk(index, step, bodyStart, bodyEnd)
+        : extending
+          ? walk(index, step, bodyStart, bodyEnd, withoutValue)
+          : walk(index, step, 0, total())
     const handled = () => {
       event.preventDefault()
       event.stopPropagation()
@@ -1071,22 +1174,14 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       case "ArrowUp": {
         handled()
         const step = event.key === "ArrowDown" ? 1 : -1
-        const next =
-          column === null
-            ? walk(index, step, bodyStart, bodyEnd)
-            : walk(index, step, 0, total())
-        moveTo(next, column, event, { extend: event.shiftKey })
+        moveTo(vertical(step), column, event, { extend: event.shiftKey })
         return
       }
       case "PageDown":
       case "PageUp": {
         handled()
         const step = (event.key === "PageDown" ? 1 : -1) * pageSize()
-        const next =
-          column === null
-            ? walk(index, step, bodyStart, bodyEnd)
-            : walk(index, step, 0, total())
-        moveTo(next, column, event, { extend: event.shiftKey })
+        moveTo(vertical(step), column, event, { extend: event.shiftKey })
         return
       }
       case "Home":
@@ -1098,7 +1193,9 @@ function useTableGrid(own: React.ComponentProps<"table">) {
             extend: event.shiftKey && mod,
           })
         } else if (mod) {
-          const to = edge(first, 0, total())
+          const to = extending
+            ? edge(first, bodyStart, bodyEnd, withoutValue)
+            : edge(first, 0, total())
           if (to === null) return
           whenRendered(to, (target) =>
             moveTo(to, first ? 0 : lastColumn(target), event, {
@@ -1108,7 +1205,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
         } else {
           const to = first ? 0 : lastColumn(row)
           const target = cellAt(row, to)
-          if (target) focusElement(stopsOf(target)[0])
+          if (target) focusCell(target, cell, event.nativeEvent, event.shiftKey)
         }
         return
       }
@@ -1131,7 +1228,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
         const at = stops.indexOf(target)
         if (at >= 0 && at < stops.length - 1) return focusElement(stops[at + 1])
         const next = shownFrom(cell.nextElementSibling, 1)
-        if (next) focusElement(stopsOf(next)[0])
+        if (next) focusCell(next, cell, event.nativeEvent, event.shiftKey)
         return
       }
       case backward: {
@@ -1165,9 +1262,17 @@ function useTableGrid(own: React.ComponentProps<"table">) {
         const previous = shownFrom(cell.previousElementSibling, -1)
         if (previous) {
           const before = stopsOf(previous)
-          return focusElement(before[before.length - 1])
+          focusElement(before[before.length - 1])
+          if (cellFocus)
+            onCellNavigate?.(previous, {
+              from: cell,
+              event: event.nativeEvent,
+              extend: event.shiftKey,
+            })
+          return
         }
-        if (inBody && info && !info.disabled) focusElement(row)
+        // A spreadsheet's first cell is as far as focus goes.
+        if (inBody && info && !info.disabled && !cellFocus) focusElement(row)
         return
       }
       case "Enter": {
@@ -1263,8 +1368,24 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     return { row, info, value: info.value }
   }
 
+  /** A press on a body cell, not on a control in it, with `cellFocus`. */
+  const pressedCell = (event: React.MouseEvent) => {
+    const pressed = event.button === 0 ? pressedRow(event) : null
+    if (!pressed) return null
+    const cell = ownCellOf(event.target as HTMLElement)
+    return cell?.parentElement === pressed.row ? cell : null
+  }
+
   const onMouseDown = (event: React.MouseEvent<HTMLTableElement>) => {
     own.onMouseDown?.(event)
+    if (cellFocus) {
+      const cell = event.defaultPrevented ? null : pressedCell(event)
+      if (!cell) return
+      // Focus moves to the cell, and text is not selected (a drag selects cells).
+      event.preventDefault()
+      focusCell(cell, focusedCell(), event.nativeEvent, event.shiftKey)
+      return
+    }
     // Shift + click selects a range: keep the browser from selecting text.
     if (event.shiftKey && selectionMode === "multiple" && pressedRow(event))
       event.preventDefault()
@@ -1272,6 +1393,12 @@ function useTableGrid(own: React.ComponentProps<"table">) {
 
   const onClick = (event: React.MouseEvent<HTMLTableElement>) => {
     own.onClick?.(event)
+    // A spreadsheet's click is its press's, on the cell: rows are selected
+    // by their checkbox, activated by a double click.
+    if (cellFocus) {
+      clickActivated.current = false
+      return
+    }
     if (event.defaultPrevented || event.button !== 0) return
     const pressed = pressedRow(event)
     if (!pressed) return
@@ -1368,6 +1495,11 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     const found = target.closest("td, th")
     const cell =
       found && isCell(found) && found.parentElement === row ? found : null
+    // A spreadsheet's row is not a stop: focus goes on to its cell.
+    if (cellFocus && target === row && isBody(indexOf(row))) {
+      const stop = rowStop(row, position.current?.column ?? null)
+      if (stop !== row) return focusElement(stop)
+    }
     // A press on a control kept out of the keyboard's way (a tree's
     // chevron, hidden from screen readers) does not make it the tab stop.
     const stop: HTMLElement = target
@@ -1431,8 +1563,11 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       },
       focusRow: (index) => {
         const at = headRows().length + index
-        if (isBody(at)) whenRendered(at, focusElement)
+        if (isBody(at)) whenRendered(at, (row) => focusElement(rowStop(row)))
       },
+      rowValue: (row) => infoOf(row)?.value,
+      focusCell: (cell, scroll = true) =>
+        focusElement(stopsOf(cell)[0], scroll),
     }
     return () => {
       controller.current = null
@@ -1601,7 +1736,8 @@ function useTableGrid(own: React.ComponentProps<"table">) {
         ...own,
         ref,
         role: treegrid ? "treegrid" : "grid",
-        "aria-multiselectable": selectionMode === "multiple" ? true : undefined,
+        "aria-multiselectable":
+          selectionMode === "multiple" || multiselectable ? true : undefined,
         onKeyDown,
         onMouseDown,
         onClick,
@@ -1801,6 +1937,8 @@ function useTableContainer(own: React.Ref<HTMLDivElement> | undefined) {
 }
 
 export {
+  isMac,
+  isTextEntry,
   TableContainerConfig,
   TableGridConfig,
   TableGridProvider,

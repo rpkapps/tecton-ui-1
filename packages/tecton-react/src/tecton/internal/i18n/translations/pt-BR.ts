@@ -153,6 +153,56 @@ export default defineTranslations({
     emptyGroup: "(Vazio)",
     groupCount: { one: "{total} linha", other: "{total} linhas" },
     groupRowLabel: "{label}, {rows}",
+    cellsSelected: {
+      one: "{total} célula selecionada",
+      other: "{total} células selecionadas",
+    },
+    cellsCopied: {
+      one: "{total} célula copiada",
+      other: "{total} células copiadas",
+    },
+    cellsPasted: {
+      "=0": "Nenhuma célula colada",
+      one: "{total} célula colada",
+      other: "{total} células coladas",
+    },
+    cellsCleared: {
+      "=0": "Nenhuma célula limpa",
+      one: "{total} célula limpa",
+      other: "{total} células limpas",
+    },
+    cellsFilled: {
+      "=0": "Nenhuma célula preenchida",
+      one: "{total} célula preenchida",
+      other: "{total} células preenchidas",
+    },
+    cellsSkipped: {
+      one: "{total} não editável",
+      other: "{total} não editáveis",
+    },
+    cellsInvalid: { one: "{total} inválida", other: "{total} inválidas" },
+    cellMessage: "{columnName}: {message}",
+    cellsNotSaved: {
+      one: "{total} célula não salva: {message}",
+      other: "{total} células não salvas: {message}",
+    },
+    saveFailed: "Não foi possível salvar a alteração",
+    copyMultiple:
+      "Esses intervalos não podem ser copiados juntos: selecione intervalos nas mesmas linhas ou nas mesmas colunas",
+    pasteMultiple:
+      "Não é possível colar um bloco de células em vários intervalos",
+    copyFailed:
+      "Não foi possível copiar as células para a área de transferência",
+    invalidValue: "Valor inválido",
+    invalidNumber: "Insira um número",
+    invalidDate: "Insira uma data",
+    invalidBoolean: "Insira {yes} ou {no}",
+    invalidOption: "Escolha uma das opções",
+    cellSummary: "Células selecionadas",
+    summarySum: "Soma: {value}",
+    summaryAverage: "Média: {value}",
+    summaryNumericCount: "Contagem numérica: {value}",
+    summaryCount: "Contagem: {value}",
   },
   tableColumnResizer: {
     resize: "Redimensionar {columnName}",

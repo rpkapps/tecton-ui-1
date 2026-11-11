@@ -20,6 +20,17 @@
  * painted over the row's collapsed border (unevenly, by browser), so a
  * table with pinned columns draws each cell's border itself, in separate
  * borders.
+ *
+ * With a cell selection, each data cell carries its column's id
+ * (`data-column`), and a selected cell its fill (`bg-table-active`),
+ * `aria-selected` and, on a range's edges, the range's outline: drawn by
+ * the cells on its edges (a `ring` border along each, inside the cell),
+ * not by an element over the table, so it is right on pinned columns and
+ * under a sticky header, costs only the cells in view of a virtualized
+ * table, and mirrors right to left on its own (logical sides). A cell
+ * being saved is dimmed and `aria-busy`; one not saved or not valid has a
+ * `destructive` outline, `aria-invalid` and its message as its
+ * description (in a tooltip too, `cell-error.tsx`).
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -31,8 +42,19 @@ import { TableCell, TableHead } from "@tecton/react/components/table"
 import { Link } from "@tecton/react/tecton/link"
 
 import type { Store } from "../store"
-import type { DataTableActions } from "./context"
-import type { EngineColumn, Formatter, GroupRow, ItemRow } from "./engine/index"
+import type { CellMark, CellsState, DataTableActions } from "./context"
+import {
+  BOTTOM,
+  END,
+  SELECTED,
+  START,
+  TOP,
+  type EngineColumn,
+  type Formatter,
+  type GroupRow,
+  type ItemRow,
+} from "./engine/index"
+import { useFeature } from "./lazy"
 import type { RowOrder } from "./row-order"
 
 /** What detail rows draw: `renderDetail`, kept apart so a new one renders only them. */
@@ -98,6 +120,8 @@ type RowShared<T> = {
   /** Columns are pinned: the row is opaque, each cell draws its border. */
   pinned: boolean
   actions: DataTableActions<T>
+  /** What the cells show of the cell selection and of writes; `null` without a cell selection mode. */
+  cells: Store<CellsState> | null
 }
 
 /** A group row's name, and its parts: the column's name before and after the value. */
@@ -463,28 +487,87 @@ function TreeIndent<T>({
   )
 }
 
+/** A selected cell's fill: a row header's own transparent one too. */
+const SELECTED_CELL = "bg-table-active [&[scope=row]]:bg-table-active"
+/** The outline drawn inside a cell, along the sides given. */
+const OUTLINE =
+  "before:pointer-events-none before:absolute before:inset-0 before:border-ring"
+const EDGE = {
+  top: "before:border-t-2",
+  bottom: "before:border-b-2",
+  start: "before:border-s-2",
+  end: "before:border-e-2",
+} as const
+const INVALID_CELL =
+  "before:pointer-events-none before:absolute before:inset-0 before:border-2 before:border-destructive"
+const PENDING_CELL = "text-muted-foreground"
+
+/** A cell's classes for its part in the selection (`flags`) and its write (`mark`). */
+function cellStateClassName(
+  flags: number,
+  mark: CellMark | undefined,
+  pinned: boolean
+) {
+  if (!flags && !mark) return undefined
+  return cn(
+    // The outline's box: a pinned cell is one already (sticky).
+    !pinned && "relative",
+    flags & SELECTED && SELECTED_CELL,
+    (flags & (TOP | BOTTOM | START | END)) !== 0 && OUTLINE,
+    flags & TOP && EDGE.top,
+    flags & BOTTOM && EDGE.bottom,
+    flags & START && EDGE.start,
+    flags & END && EDGE.end,
+    mark && mark.pending !== null && PENDING_CELL,
+    mark?.error && INVALID_CELL
+  )
+}
+
+/**
+ * A cell's message as its description, read by screen readers with the
+ * cell, and the tooltip that shows it (loaded when one first shows).
+ */
+function CellMessage({ message }: { message: string }) {
+  const id = React.useId()
+  const element = React.useRef<HTMLSpanElement | null>(null)
+  const { module, load } = useFeature("cellError", true)
+  React.useEffect(() => {
+    load()
+    // The cell is the row's plain element: described from here.
+    const cell = element.current?.closest("td, th")
+    if (!cell) return
+    cell.setAttribute("aria-describedby", id)
+    return () => cell.removeAttribute("aria-describedby")
+  }, [id, load])
+  const Tip = module?.DataTableCellErrorTip
+  return (
+    <>
+      <span ref={element} id={id} hidden>
+        {message}
+      </span>
+      {Tip && <Tip message={message} cell={element} />}
+    </>
+  )
+}
+
 /** A row's plain text, for type-ahead and announcements: its row header's. */
 function rowText<T>(item: T, shared: RowShared<T>) {
   return shared.rowHeader ? shared.formatter.text(shared.rowHeader, item) : ""
 }
 
-/** A body cell of an item row; `index` is the column's place in `shared.columns`. */
-function renderCell<T>(
+/**
+ * What a body cell of an item row holds: its content, and in the row
+ * header its link and tree chevron. Kept by the row while the row and the
+ * table's shared state stay, so a change of the cell's selection or write
+ * renders the cell's element only.
+ */
+function cellInner<T>(
   column: EngineColumn<T>,
-  index: number,
   row: ItemRow<T>,
   shared: RowShared<T>
 ): React.ReactNode {
   let content = cellContent(column, row, shared.formatter)
-  const pin = shared.pins[index]
-  const className = bodyClassName(column, pin, shared)
-  const style = pin && pinStyle(pin)
-  if (column !== shared.rowHeader)
-    return (
-      <TableCell key={column.id} className={className} style={style}>
-        {content}
-      </TableCell>
-    )
+  if (column !== shared.rowHeader) return content
   const href = shared.linked ? shared.actions.hrefOf(row.item) : undefined
   // A row disabled for everything is not followed either.
   if (href !== undefined)
@@ -515,9 +598,53 @@ function renderCell<T>(
         {content}
       </TreeIndent>
     )
+  return content
+}
+
+/**
+ * A body cell of an item row; `index` is the column's place in
+ * `shared.columns`, `inner` its content (`cellInner`), `flags` its part in
+ * the cell selection and `mark` its write.
+ */
+function renderCell<T>(
+  column: EngineColumn<T>,
+  index: number,
+  shared: RowShared<T>,
+  inner: React.ReactNode,
+  flags = 0,
+  mark?: CellMark
+): React.ReactNode {
+  const pin = shared.pins[index]
+  const className = cn(
+    bodyClassName(column, pin, shared),
+    cellStateClassName(flags, mark, pin !== undefined)
+  )
+  const style = pin && pinStyle(pin)
+  const props = {
+    className,
+    style,
+    "data-column": shared.cells ? column.id : undefined,
+    "aria-selected": flags & SELECTED ? true : undefined,
+    "aria-busy": (mark && mark.pending !== null) || undefined,
+    "aria-invalid": mark?.error ? true : undefined,
+  } as const
+  const content = mark?.error ? (
+    <>
+      {inner}
+      <CellMessage message={mark.error} />
+    </>
+  ) : (
+    inner
+  )
+  if (column !== shared.rowHeader)
+    return (
+      <TableCell key={column.id} {...props}>
+        {content}
+      </TableCell>
+    )
   // A row header takes the look of its row's cells (the table's own).
   return (
-    <TableHead key={column.id} scope="row" className={className} style={style}>
+    <TableHead key={column.id} scope="row" {...props}>
       {content}
     </TableHead>
   )
@@ -527,6 +654,7 @@ export {
   ALIGN,
   cellBorderClassName,
   cellContent,
+  cellInner,
   columnClassName,
   groupCellsOf,
   groupLabelWidth,

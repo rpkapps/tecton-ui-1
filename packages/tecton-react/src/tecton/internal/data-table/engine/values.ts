@@ -194,6 +194,7 @@ function dayOf(date: Date, timeZone?: string) {
 export {
   dayOf,
   isEmptyValue,
+  partsIn,
   startOfDay,
   toBoolean,
   toDate,

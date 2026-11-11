@@ -123,7 +123,17 @@ type DataTableLeafColumn<T> = {
   compare?: (a: T, b: T) => number
   /** Filters the column's rows in place of its type's filter, for any filter value. */
   filter?: (item: T, filterValue: DataTableFilterValue) => boolean
+  /**
+   * Checks a value before it is written (pasted, filled, cleared): a
+   * message rejects it, `null` lets it through.
+   */
   validate?: (value: DataTableValue, item: T) => string | null
+  /**
+   * Reads pasted text as the column's value, in place of its type's
+   * reading (a number in the locale, a date, Yes / No, an option's
+   * label). Throw an `Error` to reject the text: its message is shown.
+   */
+  parse?: (text: string, item: T) => DataTableValue
   /** In px. */
   width?: number
   /** In px. */
@@ -138,6 +148,10 @@ type DataTableLeafColumn<T> = {
   sortable?: false
   filterable?: false
   groupable?: false
+  /**
+   * Opts the column out of `editable`, or (a function) decides per item
+   * whether its cell can be written.
+   */
   editable?: false | ((item: T) => boolean)
   resizable?: false
   reorderable?: false
@@ -213,6 +227,49 @@ type DataTablePartialView = {
   }
 }
 
+/** A cell, by its row's id and its column's id. */
+type DataTableCellPosition = { row: string; column: string }
+
+/**
+ * A rectangle of cells between two corners (`start` is where it was begun,
+ * the anchor; `end` the corner that moves), in the order the rows and
+ * columns are shown.
+ */
+type DataTableCellRange = {
+  start: DataTableCellPosition
+  end: DataTableCellPosition
+}
+
+/** Why the cell selection changed. */
+type DataTableCellSelectionChangeReason =
+  /** A click, a drag. */
+  | "item-press"
+  | "keyboard"
+  /** Ctrl / Cmd + A. */
+  | "select-all"
+  /** Escape. */
+  | "clear"
+  /** The selection became the cells a paste wrote. */
+  | "paste"
+  /** Set through `useDataTable`. */
+  | "none"
+
+/** Why cells were written. */
+type DataTableCellsChangeReason = "edit" | "paste" | "clear" | "fill"
+
+/** One cell written, for `onCellsChange`. */
+type DataTableCellChange<T> = {
+  /** The row's id. */
+  id: string
+  /** The column's id. */
+  column: string
+  item: T
+  /** The new value, as the column's type reads it (`null` for an empty cell). */
+  value: DataTableValue
+  /** The value before, from the column's `accessor`. */
+  previousValue: DataTableValue
+}
+
 type DataTableViewChangeReason =
   | "sort"
   | "search"
@@ -227,7 +284,12 @@ type DataTableViewChangeReason =
 export type {
   DataTableAggregate,
   DataTableBadgeVariant,
+  DataTableCellChange,
   DataTableCellDetails,
+  DataTableCellPosition,
+  DataTableCellRange,
+  DataTableCellSelectionChangeReason,
+  DataTableCellsChangeReason,
   DataTableColumn,
   DataTableColumnGroup,
   DataTableColumns,

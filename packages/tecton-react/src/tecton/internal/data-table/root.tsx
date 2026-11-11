@@ -27,13 +27,19 @@
  * - Groups are open unless closed: which ones are closed is the table's
  *   own, kept for the grouping they were closed in (a new grouping opens
  *   every group). A group's checkbox selects its items that can be.
+ * - The cell selection (`cellSelectionMode`) is ranges by row and column
+ *   id, resolved against the rows and columns shown (`engine/cells.ts`);
+ *   what the cells draw of it, and the cells being saved or not saved,
+ *   are a store of their own (`cells`), which each row reads its slice of.
+ *   Written cells are reported through `onCellsChange`; the table never
+ *   changes `items` itself.
  */
 import * as React from "react"
 import { cn } from "cn"
 
 import { useLocale } from "@tecton/react/tecton/provider"
 
-import { useTranslations } from "../i18n/translations"
+import { useTranslations, type Translator } from "../i18n/translations"
 import {
   createChangeEventDetails,
   type ChangeEventDetails,
@@ -58,6 +64,7 @@ import {
   isGroupClosed,
   layoutColumns,
   reconcileView,
+  resolveCells,
   resolvePageSize,
   sameIds,
   sameView,
@@ -69,6 +76,9 @@ import {
   type ClosedGroups,
   type ColumnLayout,
   type DataTableAllMatching,
+  type DataTableCellChange,
+  type DataTableCellRange,
+  type DataTableCellSelectionChangeReason,
   type DataTableColumns,
   type DataTablePartialView,
   type DataTableRowModel,
@@ -79,7 +89,10 @@ import {
 } from "./engine/index"
 import {
   DataTableContext,
+  type CellsState,
   type DataTableActions,
+  type DataTableCellSelectionMode,
+  type DataTableCellsChangeDetails,
   type DataTableChangeDetails,
   type DataTableContextValue,
   type DataTableExpandedChangeReason,
@@ -164,6 +177,12 @@ type DataTableProps<T> = Omit<
    * `groupable: false` opts a column out. Not in a tree.
    */
   groupable?: boolean
+  /**
+   * Cells can be written: pasted into, cleared and filled down (with a
+   * `cellSelectionMode`), reported through `onCellsChange`; a column opts
+   * out with `editable: false`, or per item with a function. Cells are
+   * focused one by one.
+   */
   editable?: boolean
   /** A resizer on each column header's end edge (`resizable: false` opts a column out). */
   resizableColumns?: boolean
@@ -182,7 +201,12 @@ type DataTableProps<T> = Omit<
   pagination?: boolean
   /** Whether rows select, one at a time or several (with a checkbox column). */
   selectionMode?: DataTableSelectionMode
-  cellSelectionMode?: "none" | "cell" | "range"
+  /**
+   * Whether cells select (§5.8): `"cell"` one at a time, `"range"` in
+   * rectangles (Shift + arrows, Shift + click, a drag; Ctrl / Cmd adds
+   * another). Cells are focused one by one, and copied with Ctrl / Cmd + C.
+   */
+  cellSelectionMode?: DataTableCellSelectionMode
   // View
   /**
    * What the table shows (controlled): any part of the view, the rest taken
@@ -210,6 +234,14 @@ type DataTableProps<T> = Omit<
   ) => void
   /** Keeps at least one row selected. */
   disallowEmptySelection?: boolean
+  // Cell selection
+  /** The selected cells' ranges, by row id and column id (controlled). */
+  cellSelection?: ReadonlyArray<DataTableCellRange>
+  defaultCellSelection?: ReadonlyArray<DataTableCellRange>
+  onCellSelectionChange?: (
+    cellSelection: Array<DataTableCellRange>,
+    eventDetails: DataTableChangeDetails<DataTableCellSelectionChangeReason>
+  ) => void
   // Expanded
   /** The open tree rows' ids (controlled). */
   expanded?: ReadonlyArray<string>
@@ -247,6 +279,16 @@ type DataTableProps<T> = Omit<
     ids: Array<string>,
     eventDetails: DataTableChangeDetails<DataTableRowOrderChangeReason>
   ) => void
+  /**
+   * Cells written (`editable`): pasted, cleared, filled down. Update
+   * `items`; the table does not change them itself. Return a promise to
+   * show the cells as saving until it settles, and as not saved, with the
+   * error's message, if it rejects.
+   */
+  onCellsChange?: (
+    changes: Array<DataTableCellChange<T>>,
+    eventDetails: DataTableCellsChangeDetails
+  ) => void | Promise<void>
 }
 
 /** The props and state the actions read, as of the last render. */
@@ -270,6 +312,9 @@ type Latest<T> = {
   loading: boolean
   selectionMode: DataTableSelectionMode
   disallowEmptySelection: boolean
+  cellSelectionMode: DataTableCellSelectionMode
+  cellSelection: ReadonlyArray<DataTableCellRange>
+  t: Translator<"dataTable">
   itemToHref: DataTableProps<T>["itemToHref"]
   navigate: ((href: string) => void) | undefined
   onActivate: DataTableProps<T>["onActivate"]
@@ -281,6 +326,8 @@ type Latest<T> = {
   onRetry: DataTableProps<T>["onRetry"]
   onLoadMore: DataTableProps<T>["onLoadMore"]
   onRowOrderChange: DataTableProps<T>["onRowOrderChange"]
+  onCellSelectionChange: DataTableProps<T>["onCellSelectionChange"]
+  onCellsChange: DataTableProps<T>["onCellsChange"]
   setClears: React.Dispatch<React.SetStateAction<number>>
   setView: (view: DataTablePartialView) => void
   setValue: (value: ReadonlyArray<string>) => void
@@ -289,6 +336,7 @@ type Latest<T> = {
   setCollapsed: (collapsed: Collapsed) => void
   setPage: (page: number) => void
   setPageSize: (pageSize: number) => void
+  setCellSelection: (cellSelection: ReadonlyArray<DataTableCellRange>) => void
 }
 
 /** The closed groups, and the grouping they were closed in. */
@@ -304,6 +352,8 @@ type Matching = {
 }
 
 const NO_IDS: ReadonlyArray<string> = []
+const NO_RANGES: ReadonlyArray<DataTableCellRange> = []
+const NO_MARKS: CellsState["marks"] = new Map()
 const NO_GROUPS: Collapsed = { grouping: NO_IDS, closed: ALL_OPEN }
 
 function countGroups(
@@ -368,6 +418,7 @@ type Pending<T> = Partial<
     | "closedGroups"
     | "page"
     | "pageSize"
+    | "cellSelection"
   >
 >
 
@@ -382,7 +433,29 @@ function modifiers(event: Event | undefined) {
   }
 }
 
-function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
+/** Whether two cell selections are the same ranges, in the same order. */
+function sameRanges(
+  a: ReadonlyArray<DataTableCellRange>,
+  b: ReadonlyArray<DataTableCellRange>
+) {
+  if (a === b) return true
+  if (a.length !== b.length) return false
+  return a.every((range, index) => {
+    const other = b[index]
+    return (
+      range.start.row === other.start.row &&
+      range.start.column === other.start.column &&
+      range.end.row === other.end.row &&
+      range.end.column === other.end.column
+    )
+  })
+}
+
+function createActions<T>(
+  latest: { current: Latest<T> },
+  warn: Warn,
+  context: () => DataTableContextValue<T>
+) {
   // Changes made one after the other before the root renders (two setters
   // in one handler) build on each other, not on the last render.
   let pending: Pending<T> = {}
@@ -670,6 +743,52 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
       now().onRowOrderChange?.([...ids], details)
       return !details.isCanceled
     },
+    setCellSelection(next, reason, event) {
+      const current = now()
+      if (current.cellSelectionMode === "none") return false
+      // One range in "cell" mode, of one cell.
+      const ranges =
+        current.cellSelectionMode === "cell"
+          ? next
+              .slice(-1)
+              .map((range) => ({ start: range.end, end: range.end }))
+          : next
+      if (sameRanges(ranges, current.cellSelection)) return false
+      const copy = ranges.map((range) => ({
+        start: { ...range.start },
+        end: { ...range.end },
+      }))
+      if (
+        !emit(
+          current.onCellSelectionChange,
+          current.setCellSelection,
+          copy,
+          reason,
+          event
+        )
+      )
+        return false
+      set({ cellSelection: copy })
+      return true
+    },
+    currentCellSelection: () => now().cellSelection,
+    changeCells(changes, reason, event) {
+      const details = createChangeEventDetails(reason, event)
+      const result = now().onCellsChange?.(changes, details)
+      return { canceled: details.isCanceled, result }
+    },
+    async runCellCommand(command, text) {
+      const module = await loadFeature("cellSelection")
+      return module.runCellCommand(
+        {
+          context: context() as DataTableContextValue<unknown>,
+          t: now().t,
+          focused: null,
+        },
+        command,
+        text
+      )
+    },
     async exportCsv(options = {}) {
       const { toCsv } = await loadFeature("csv")
       // Read once loaded: the state the export was asked for, or later.
@@ -758,6 +877,10 @@ function DataTable<T>({
   pagination = false,
   selectionMode = "none",
   cellSelectionMode = "none",
+  cellSelection: cellSelectionProp,
+  defaultCellSelection,
+  onCellSelectionChange,
+  onCellsChange,
   view: viewProp,
   defaultView,
   onViewChange,
@@ -836,6 +959,9 @@ function DataTable<T>({
   const ofGrouping = sameIds(collapsed.grouping, view.grouping)
   if (!ofGrouping && collapsed !== NO_GROUPS) setCollapsed(NO_GROUPS)
   const closedGroups = ofGrouping ? collapsed.closed : ALL_OPEN
+  const [cellSelection, setCellSelection] = useControlled<
+    ReadonlyArray<DataTableCellRange>
+  >(cellSelectionProp, defaultCellSelection ?? NO_RANGES)
   const [page, setPage] = useControlled(pageProp, defaultPage ?? 1)
   const [pageSize, setPageSize] = useControlled(
     pageSizeProp,
@@ -873,6 +999,12 @@ function DataTable<T>({
     return () => (counts ??= countGroups(groupKeys, closedGroups))
   }, [groupKeys, closedGroups])
   const formatter = getFormatter(getColumnModel(columns), locale, labels)
+  const cellMode = cellSelectionMode !== "none"
+  const cellGrid = React.useMemo(
+    () =>
+      cellMode ? resolveCells(cellSelection, model, layout.columns) : null,
+    [cellMode, cellSelection, model, layout.columns]
+  )
 
   const allMatching =
     matching &&
@@ -920,6 +1052,7 @@ function DataTable<T>({
       pagination,
       selectionMode,
       cellSelectionMode,
+      cellFocus: editable || cellMode,
       disabledBehavior,
       disallowEmptySelection,
       tree,
@@ -946,6 +1079,7 @@ function DataTable<T>({
       pagination,
       selectionMode,
       cellSelectionMode,
+      cellMode,
       disabledBehavior,
       disallowEmptySelection,
       tree,
@@ -977,6 +1111,8 @@ function DataTable<T>({
       loading,
       error: error ?? null,
       clears,
+      cellSelection,
+      cellGrid,
     }),
     [
       columns,
@@ -996,6 +1132,8 @@ function DataTable<T>({
       loading,
       error,
       clears,
+      cellSelection,
+      cellGrid,
     ]
   )
 
@@ -1021,6 +1159,9 @@ function DataTable<T>({
     loading,
     selectionMode,
     disallowEmptySelection,
+    cellSelectionMode,
+    cellSelection,
+    t,
     itemToHref,
     navigate,
     onActivate,
@@ -1032,6 +1173,8 @@ function DataTable<T>({
     onRetry,
     onLoadMore,
     onRowOrderChange,
+    onCellSelectionChange,
+    onCellsChange,
     setClears,
     setView,
     setValue,
@@ -1040,20 +1183,35 @@ function DataTable<T>({
     setCollapsed,
     setPage,
     setPageSize,
+    setCellSelection,
   }
   const latest = React.useRef(latestValues)
+  // The context, for the actions that hand it to on-demand code: set below.
+  const [own] = React.useState<{ context: DataTableContextValue<T> | null }>(
+    () => ({ context: null })
+  )
   const [{ actions, viewChanged, pageShown, committed }] = React.useState(() =>
-    createActions(latest, warn)
+    createActions(latest, warn, () => own.context as DataTableContextValue<T>)
   )
   React.useInsertionEffect(() => {
     latest.current = latestValues
     committed()
   })
   const [store] = React.useState(() => createStore(state))
-  const [context] = React.useState(() => ({ store, actions }))
+  const [cells] = React.useState(() =>
+    createStore<CellsState>({
+      grid: cellGrid as CellsState["grid"],
+      marks: NO_MARKS,
+    })
+  )
+  const [context] = React.useState<DataTableContextValue<T>>(() => {
+    own.context = { store, actions, cells }
+    return own.context
+  })
   React.useLayoutEffect(() => {
     store.set(state)
-  }, [store, state])
+    cells.set({ grid: cellGrid as CellsState["grid"] })
+  }, [store, cells, state, cellGrid])
 
   const previous = React.useRef({ view, page })
   React.useLayoutEffect(() => {

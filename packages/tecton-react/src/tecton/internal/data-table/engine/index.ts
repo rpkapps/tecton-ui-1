@@ -14,7 +14,12 @@
  *   (display rows and pages; the content adds detail rows with
  *   `withDetailRows`); `idle` prepares ranks and the search index.
  * - `aggregate`, `pagination`, `selection`: what group rows, the footer
- *   and selection compute.
+ *   and selection compute; `cells`: the cell selection over the rows and
+ *   columns shown.
+ *
+ * The selected cells' walk, count and summary are in the engine's
+ * cell-ranges module, imported by what uses them, so the code that loads
+ * on demand does not pull them up front through this module.
  *
  * CSV export is in the engine's csv module, left out here so the root can
  * load it on demand, as a separate chunk, when an export is first asked for.
@@ -38,6 +43,16 @@ export type {
   HeaderCell,
   HeaderRow,
 } from "./columns"
+export {
+  BOTTOM,
+  decodeMarks,
+  END,
+  resolveCells,
+  SELECTED,
+  START,
+  TOP,
+} from "./cells"
+export type { CellGrid, CellRect } from "./cells"
 export type { CsvOptions } from "./csv"
 export { createDataTableEngine } from "./engine"
 export type {

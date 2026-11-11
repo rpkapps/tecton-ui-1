@@ -27,11 +27,13 @@ import {
   setSearch,
   setSorting,
   type DataTableAllMatching,
+  type DataTableCellRange,
   type DataTableFilterValue,
   type DataTableLeafColumn,
   type DataTableSort,
   type DataTableView,
 } from "./engine/index"
+import { cellCount, summarizeCells } from "./engine/cell-ranges"
 import { viewChangeReason } from "./view-reason"
 
 type UseDataTableResult<T> = {
@@ -105,6 +107,39 @@ type UseDataTableResult<T> = {
    * first. Loads the exporter the first time it is called.
    */
   exportCsv: (options?: DataTableExportOptions) => Promise<string>
+  /** The selected cells' ranges (`cellSelectionMode`), by row id and column id. */
+  cellSelection: ReadonlyArray<DataTableCellRange>
+  setCellSelection: (cellSelection: ReadonlyArray<DataTableCellRange>) => void
+  /** Selects every cell shown, on every page (one range). */
+  selectAllCells: () => void
+  clearCellSelection: () => void
+  /** The number of cells selected, each counted once; worked out when read. */
+  selectedCellCount: number
+  /**
+   * What `DataTableCellSummary` shows, worked out when read: the cells
+   * with a value, the numbers among them (of number columns), their sum
+   * and mean (`null` without numbers); `null` with no cell selected.
+   */
+  cellSummary: DataTableCellSummaryValue | null
+  /**
+   * Copies the selected cells to the clipboard (tab-separated text and an
+   * HTML table, as Ctrl / Cmd + C does) and resolves with the text.
+   */
+  copyCells: () => Promise<string>
+  /** Pastes tab-separated text into the selected cells (`editable`), as Ctrl / Cmd + V does. */
+  pasteCells: (text: string) => Promise<void>
+  /** Empties the selected cells that can be written (`editable`), as Delete does. */
+  clearCellValues: () => Promise<void>
+  /** Fills each range down from its first row (`editable`), as Ctrl / Cmd + D does. */
+  fillDown: () => Promise<void>
+}
+
+/** `useDataTable().cellSummary`. */
+type DataTableCellSummaryValue = {
+  count: number
+  numericCount: number
+  sum: number | null
+  average: number | null
 }
 
 function createResult<T>(
@@ -185,6 +220,52 @@ function createResult<T>(
     columns: state.layout.columns.map((column) => column.definition),
     loading: state.loading,
     exportCsv: actions.exportCsv,
+    cellSelection: state.cellSelection,
+    setCellSelection: (cellSelection) => {
+      actions.setCellSelection(cellSelection, "none")
+    },
+    selectAllCells: () => {
+      const { cellGrid } = state
+      if (!cellGrid) return
+      const items = cellGrid.rows.filter((row) => row.kind === "item")
+      const [firstRow, lastRow] = [items.at(0), items.at(-1)]
+      const [firstColumn, lastColumn] = [
+        cellGrid.columns.at(0),
+        cellGrid.columns.at(-1),
+      ]
+      if (!firstRow || !lastRow || !firstColumn || !lastColumn) return
+      actions.setCellSelection(
+        [
+          {
+            start: { row: firstRow.id, column: firstColumn.id },
+            end: { row: lastRow.id, column: lastColumn.id },
+          },
+        ],
+        "none"
+      )
+    },
+    clearCellSelection: () => {
+      actions.setCellSelection([], "none")
+    },
+    get selectedCellCount() {
+      return state.cellGrid ? cellCount(state.cellGrid) : 0
+    },
+    get cellSummary() {
+      const grid = state.cellGrid
+      if (!grid || grid.rects.length === 0) return null
+      const { count, numericCount, sum, average } = summarizeCells(grid)
+      return { count, numericCount, sum, average }
+    },
+    copyCells: () => actions.runCellCommand("copy"),
+    pasteCells: async (text) => {
+      await actions.runCellCommand("paste", text)
+    },
+    clearCellValues: async () => {
+      await actions.runCellCommand("clear")
+    },
+    fillDown: async () => {
+      await actions.runCellCommand("fill")
+    },
   }
 }
 
@@ -209,4 +290,4 @@ function useDataTable<T = unknown>(): UseDataTableResult<T> {
 }
 
 export { useDataTable }
-export type { UseDataTableResult }
+export type { DataTableCellSummaryValue, UseDataTableResult }

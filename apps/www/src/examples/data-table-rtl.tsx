@@ -10,6 +10,7 @@ import {
   createColumns,
   DataTable,
   DataTableActiveFilters,
+  DataTableCellSummary,
   DataTableContent,
   DataTableFilter,
   DataTableFooter,
@@ -122,6 +123,7 @@ export default function DataTableRtl() {
       items={wells}
       columns={columns}
       selectionMode="multiple"
+      cellSelectionMode="range"
       pagination
       defaultPageSize={5}
       resizableColumns
@@ -146,6 +148,7 @@ export default function DataTableRtl() {
       <DataTableContent aria-label={t.table} totals />
       <DataTableFooter>
         <DataTableSelectionCount />
+        <DataTableCellSummary />
         <DataTablePageInfo />
         <DataTablePageButtons />
       </DataTableFooter>
