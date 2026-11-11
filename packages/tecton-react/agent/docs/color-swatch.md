@@ -86,8 +86,4 @@ Correct:
 
 With `label` and `detail` the component renders the `color-swatch-item` row itself — name over detail, the detail in the mono face and `muted-foreground`, `className` moved from the swatch to the row — while `text-zinc-500` is stock Tailwind that emits no CSS at all.
 
-## Before you finish
-
-- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
-
 Related: badge, chart, tree-view

@@ -877,9 +877,66 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
 
 Tecton ships no `DataTable` component: build tables with [TanStack Table](https://tanstack.com/table/latest) and the `Table` components, as the guide above does. Each recipe below is a self-contained starting point built on `useTable`.
 
+### Keyboard navigation
+
+A plain `Table` is read, not worked: Tab visits every link and checkbox in it, one after another. When rows are selected or opened, set `grid` on the `Table`. The table becomes one tab stop that the arrow keys move through, announced as a grid (a treegrid when its rows have a `level`), and gives each `TableRow` a `value`: the row's identity in the selection and in `onActivate`. Leave `grid` off a table that is only read: screen readers read a plain table more easily.
+
+```tsx
+<Table grid selectionMode="multiple" value={selected} onValueChange={setSelected}>
+  <TableHeader>…</TableHeader>
+  <TableBody empty="No wells match the filter.">
+    {wells.map((well) => (
+      <TableRow key={well.id} value={well.id} textValue={well.name}>
+        …
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+```
+
+| Key | Action |
+| --- | --- |
+| Tab, Shift + Tab | Into the table, at the row or cell that last had focus, and out of it again. |
+| Down, Up | The next or previous row; from a cell, the cell below or above, the header's included. Disabled rows are skipped. |
+| Right, Left | From a row into its first cell, then from cell to cell, through each control of a cell; Left from the first cell goes back to the row. On a row of a tree table, Right opens it and Left closes it, or goes to its parent. Mirrored in a right-to-left table. |
+| Home, End | The first or last row; from a cell, the first or last cell of its row. |
+| Ctrl + Home, Ctrl + End | The first or last cell of the table. |
+| Page Up, Page Down | A page of rows up or down. |
+| Letters | The next row whose text starts with them: its `textValue`, else its row header's text. |
+| Space | Selects or deselects the row; with Shift, the range from the last row pressed. |
+| Shift + Down, Shift + Up | Extend the selection. |
+| Ctrl + A (⌘ A) | Selects every row. |
+| Escape | Clears the selection. |
+| Enter | Calls `onActivate` with the row's `value`; in a tree table without it, opens or closes the row. |
+
+A cell holding controls (a checkbox, a sort button, a link) is entered at its first control, which takes Enter and Space itself; a cell without one is focused itself. Every row, cell and control but the one with focus is out of the Tab order. While focus is in the table, selection changes and sorting (a header's `aria-sort` changing) are announced. In a `virtualized` table, a row out of view is scrolled to before it is focused, and Ctrl + A selects the rows out of view too. To know those rows, Ctrl + A and a Shift range that runs out of view read each row's `value`, `textValue` and `disabled` from the element the render function returns, calling it once per row: keep that function free of work beyond building the row. For 10,000 TanStack rows of eight columns it takes about a third of a second.
+
+With the pointer, a click on a row toggles it. With `onActivate`, a click selects only that row (Ctrl or ⌘ + click adds it, Shift + click the range) and a double click activates it; when rows do not select, a click activates. A click on a control in the row is left to the control.
+
+| `Table` prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `grid` | `boolean` | `false` | Makes the table an interactive grid: one tab stop, moved through with the keyboard. The other props below need it. |
+| `selectionMode` | `"none" \| "single" \| "multiple"` | `"none"` | Whether rows select, one at a time or several. |
+| `value` | `string[]` | - | The selected rows' `value`s (controlled). |
+| `defaultValue` | `string[]` | - | The rows selected at first, when not controlled. |
+| `onValueChange` | `(value: string[], eventDetails) => void` | - | Called with the new selection. `eventDetails.reason` is `"item-press"`, `"keyboard"`, `"select-all"` or `"clear"`. |
+| `disallowEmptySelection` | `boolean` | `false` | Keeps at least one row selected. |
+| `onActivate` | `(value: string) => void` | - | Called when a row is activated: Enter, or a click (a double click when rows select). |
+
+| `TableRow` prop | Type | Description |
+| --- | --- | --- |
+| `value` | `string` | The row's identity in the table's `value` and `onActivate`. |
+| `disabled` | `boolean` | Skipped by the keyboard; cannot be selected or activated. |
+| `textValue` | `string` | The row's plain text, for type-ahead and announcements; the row header's text by default. Give it in a `virtualized` table, whose rows out of view have no text to read. |
+| `level` | `number` | The row's depth in a tree table, from 1. |
+| `expanded` | `boolean` | Whether the row's child rows show; leave it out for a row without any. |
+| `onExpandedChange` | `(expanded: boolean) => void` | Called when Right, Left or Enter opens or closes the row. |
+
+`TableBody` takes `empty`, shown in one row across every column when there are no rows, with or without `grid`. A `TableSelectionCheckbox` (from `@tecton/react/tecton/table-selection-checkbox`) is the selection checkbox of a grid table: in a row it shows and toggles that row and is named "Select" and the row's header; in the header it selects or clears every row and shows a dash while only some are selected, and it renders only with `selectionMode="multiple"`.
+
 ### Playground
 
-Every recipe below at once, on up to 100,000 wells: switch between virtual scrolling and pages, compact and default rows, a flat list and a tree, and turn selection, column resizing, column reordering and row reordering on and off. Sort by any column header. The readout reports how long each click took to paint. A sort and a manual row order exclude each other: sorting by a column turns row reordering off, and turning row reordering on clears the sort. In pages mode, pick 10, 20, 40 or 100 rows per page.
+Every recipe below at once, on up to 100,000 wells, in a [`grid`](#keyboard-navigation) table: switch between virtual scrolling and pages, compact and default rows, a flat list and a tree, and turn selection, column resizing, column reordering and row reordering on and off. Sort by any column header. The readout reports how long each click took to paint. A sort and a manual row order exclude each other: sorting by a column turns row reordering off, and turning row reordering on clears the sort. In pages mode, pick 10, 20, 40 or 100 rows per page.
 
 <ComponentPreview name="data-table-playground" align="start" />
 
@@ -891,7 +948,7 @@ Density is nothing more than Tailwind classes on the `Table`: an emphasised head
 
 ### Row selection
 
-`Table` is a plain HTML table, so selection is TanStack's `rowSelection` state: add a display column with a `Checkbox` in the header (`checked` when every row is selected, `indeterminate` when some are, `onCheckedChange` → `toggleAllRowsSelected`) and one in each cell (`row.getIsSelected()` / `row.toggleSelected`), and mark selected rows with `data-state="selected"`. Summarise the selection below the table.
+Set [`grid`](#keyboard-navigation) and `selectionMode="multiple"` on the `Table`, give each `TableRow` its `value` (`row.id`) and put a `TableSelectionCheckbox` in the header and the cells of a display column. TanStack keeps the selection: pass `value={Object.keys(rowSelection)}` and turn `onValueChange` back into `rowSelection`. Selected rows get `aria-selected` and the `bg-table-active` fill themselves, and Space, Shift + arrows, Ctrl + A and Escape select from the keyboard. Summarise the selection below the table. A table without `grid` selects with a plain `Checkbox` per row driven by `row.toggleSelected`, and marks a selected row with `data-state="selected"`.
 
 <ComponentPreview name="data-table-selection" align="start" />
 
@@ -948,7 +1005,7 @@ Keep the rows in React state, list their ids as the `Reorderable`'s `value`, ren
 
 ### Tree table
 
-Register `rowExpandingFeature` with `createExpandedRowModel()` and pass `getSubRows` (here fields → platforms → wells). In the first column, indent the cell by `row.depth` (`paddingInlineStart`, 1.25rem a level) and put a chevron button, styled like a Tree View row's, before the name of each row that `getCanExpand()`, with `aria-expanded` and an "Expand …" / "Collapse …" name; leaves keep the chevron's space so names line up. `toggleAllRowsExpanded` drives an Expand all / Collapse all button. For a hierarchy without columns, use a [Tree View](/docs/tecton/tree-view).
+Register `rowExpandingFeature` with `createExpandedRowModel()` and pass `getSubRows` (here fields → platforms → wells). Set [`grid`](#keyboard-navigation) on the `Table` and give each `TableRow` its `level` (`row.depth + 1`), `expanded` (`row.getIsExpanded()` for a row that `getCanExpand()`, left out for a leaf) and `onExpandedChange` (`row.toggleExpanded`): the table is a treegrid, and Right / Left open and close a row and Left goes from a child to its parent. `aria-posinset` and `aria-setsize` (`row.index + 1`, and the length of the parent's `subRows`) let a screen reader say "2 of 3". In the first column, indent the cell by `row.depth` (`paddingInlineStart`, 1.25rem a level) and put a chevron button, styled like a Tree View row's, before the name of each row that can expand. It is for the pointer: give it `tabIndex={-1}` and `aria-hidden`, as the row itself says whether it is open. Leaves keep the chevron's space so names line up. `toggleAllRowsExpanded` drives an Expand all / Collapse all button. For a hierarchy without columns, use a [Tree View](/docs/tecton/tree-view).
 
 <ComponentPreview name="data-table-tree" align="start" />
 

@@ -35,6 +35,11 @@
 import * as React from "react"
 
 import { useVirtualList } from "./primitives/virtual-list"
+import {
+  describeRowElement,
+  useTableGridContext,
+  type TableGridBody,
+} from "./table-grid"
 
 type TableVirtualContextValue = {
   container: HTMLElement | null
@@ -277,6 +282,33 @@ type TableBodyRowsProps<T> = Omit<React.ComponentProps<"tbody">, "children"> & {
   /** The rows' data; `children` is then `(item, index) => <TableRow …>`. */
   items?: ReadonlyArray<T>
   children?: React.ReactNode | RenderRow<T>
+  /** Shown in a single row across every column when there are no rows. */
+  empty?: React.ReactNode
+}
+
+/** The row `empty` is shown in, across `columns` columns. */
+function emptyRow(empty: React.ReactNode, columns: number) {
+  return (
+    <tr key="table-empty" data-slot="table-empty">
+      <td
+        colSpan={columns}
+        className="h-24 px-4 py-3 text-center align-middle text-muted-foreground"
+      >
+        {empty}
+      </td>
+    </tr>
+  )
+}
+
+/** The columns of the table a body is in: its header's first row, or its first row. */
+function columnCount(body: HTMLTableSectionElement) {
+  const table = body.closest("table")
+  const row = table?.tHead?.rows[0] ?? table?.rows[0]
+  if (!row) return 1
+  return Math.max(
+    1,
+    [...row.cells].reduce((sum, cell) => sum + cell.colSpan, 0)
+  )
 }
 
 /** Every row of `items`, for a table that is not virtualized. */
@@ -295,12 +327,14 @@ function useVirtualRows<T>(
   const {
     items,
     children,
+    empty,
     ref,
     onFocus: ownFocus,
     onBlur: ownBlur,
     ...rest
   } = props
   const context = React.useContext(TableVirtualContext)
+  const grid = useTableGridContext()
   const virtualized = context !== null
   const render = typeof children === "function" ? children : null
   const elements = React.useMemo(
@@ -312,6 +346,8 @@ function useVirtualRows<T>(
   )
   const count = items && render ? items.length : elements.length
   const body = React.useRef<HTMLTableSectionElement | null>(null)
+  // A body without rows shows `empty` across the columns, counted once laid out.
+  const [emptyColumns, setEmptyColumns] = React.useState(1)
   const [focused, setFocused] = React.useState<number | null>(null)
   const [measures, setMeasures] = React.useState<Measures>({
     stride: ESTIMATED_ROW,
@@ -411,6 +447,50 @@ function useVirtualRows<T>(
     setMeasures((previous) => (sameMeasures(previous, next) ? previous : next))
   })
 
+  // The grid reaches the rows out of view through the body: how many
+  // there are, what they are (read from their elements, only when asked),
+  // and scrolling one into view to focus it.
+  const latestCount = React.useRef(count)
+  latestCount.current = count
+  const describe = React.useMemo(
+    () =>
+      virtualized
+        ? () =>
+            items && render
+              ? items.map((item, index) =>
+                  describeRowElement(render(item, index))
+                )
+              : elements.map(describeRowElement)
+        : null,
+    [virtualized, items, render, elements]
+  )
+  const scrollToIndex = virtual.scrollToIndex
+  React.useLayoutEffect(() => {
+    if (!grid || !virtualized) return
+    const handle: TableGridBody = {
+      count: () => latestCount.current,
+      describe,
+      scrollToIndex,
+    }
+    grid.setBody(handle)
+    return () => grid.setBody(null)
+  }, [grid, virtualized, describe, scrollToIndex])
+  // A row the grid was asked to focus may have just been rendered.
+  React.useLayoutEffect(() => {
+    grid?.flush()
+  })
+
+  const isEmpty =
+    empty !== undefined &&
+    (virtualized || (items && render)
+      ? count === 0
+      : React.Children.count(children as React.ReactNode) === 0)
+  React.useLayoutEffect(() => {
+    if (!isEmpty || !body.current) return
+    const columns = columnCount(body.current)
+    setEmptyColumns((previous) => (previous === columns ? previous : columns))
+  })
+
   const setRowCount = context?.setRowCount
   React.useLayoutEffect(() => {
     setRowCount?.(virtualized ? measures.headerRows + count : undefined)
@@ -435,15 +515,14 @@ function useVirtualRows<T>(
   }>({ sources: null, rows: new Map() })
 
   if (!virtualized) {
+    const rows =
+      items && render ? renderAll(items, render) : (children as React.ReactNode)
     return {
       ...rest,
-      ref,
+      ref: bodyRef,
       onFocus: ownFocus,
       onBlur: ownBlur,
-      children:
-        items && render
-          ? renderAll(items, render)
-          : (children as React.ReactNode),
+      children: isEmpty ? emptyRow(empty, emptyColumns) : rows,
     }
   }
 
@@ -504,6 +583,7 @@ function useVirtualRows<T>(
   }
   if (previous < count - 1)
     rendered.push(spacer("spacer-end", count - 1 - previous))
+  if (isEmpty) rendered.push(emptyRow(empty, columns))
   cache.current = { sources, rows: rowsNow }
 
   return { ...rest, children: rendered, ref: bodyRef, onFocus, onBlur }

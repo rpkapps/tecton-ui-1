@@ -1,8 +1,9 @@
 /**
  * lv-LV translations, loaded only when a `TectonProvider` uses this locale.
  *
- * The strings of the namespaces `grid`, `chip`, `tree` and `dragAndDrop` are
- * copied from React Aria (`react-aria` 3.52), © Adobe, Apache License 2.0
+ * The strings of the namespaces `grid`, `chip`, `tree`, `dragAndDrop` and
+ * `table` are copied from React Aria (`react-aria` 3.52; `table` from
+ * `@react-aria/table` 3.17), © Adobe, Apache License 2.0
  * (https://www.apache.org/licenses/LICENSE-2.0).
  */
 import { defineTranslations } from "../translations"
@@ -38,6 +39,12 @@ export default defineTranslations({
     insertBefore: "Ievietojiet pirms {itemText}",
     insertBetween: "Ievietojiet starp {beforeItemText} un {afterItemText}",
     insertAfter: "Ievietojiet pēc {itemText}",
+  },
+  table: {
+    select: "Atlasīt",
+    selectAll: "Atlasīt visu",
+    ascendingSort: "kārtots pēc kolonnas {columnName} augošā secībā",
+    descendingSort: "kārtots pēc kolonnas {columnName} dilstošā secībā",
   },
   tableColumnResizer: {
     resize: "Mainīt kolonnas {columnName} izmēru",

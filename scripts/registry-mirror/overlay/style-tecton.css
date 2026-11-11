@@ -1375,7 +1375,7 @@
   }
 
   .cn-table-row {
-    @apply hover:bg-accent data-[state=selected]:bg-table-active border-border-subtle border-b transition-colors;
+    @apply hover:bg-accent data-[state=selected]:bg-table-active data-selected:bg-table-active data-disabled:text-muted-foreground focus-visible:outline-ring border-border-subtle border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2;
   }
 
   .cn-table-row-aria {
@@ -1383,7 +1383,7 @@
   }
 
   .cn-table-head {
-    @apply bg-table-header text-muted-foreground h-12 px-4 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0;
+    @apply bg-table-header text-muted-foreground focus-visible:outline-ring h-12 px-4 text-left align-middle font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 [&:has([role=checkbox])]:pr-0;
   }
 
   .cn-table-head-aria {
@@ -1391,7 +1391,7 @@
   }
 
   .cn-table-cell {
-    @apply px-4 py-3 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0;
+    @apply focus-visible:outline-ring px-4 py-3 align-middle whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 [&:has([role=checkbox])]:pr-0;
   }
 
   .cn-table-cell-aria {

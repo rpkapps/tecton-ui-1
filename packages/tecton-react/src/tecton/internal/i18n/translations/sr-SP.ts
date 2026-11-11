@@ -1,8 +1,9 @@
 /**
  * sr-SP translations, loaded only when a `TectonProvider` uses this locale.
  *
- * The strings of the namespaces `grid`, `chip`, `tree` and `dragAndDrop` are
- * copied from React Aria (`react-aria` 3.52), © Adobe, Apache License 2.0
+ * The strings of the namespaces `grid`, `chip`, `tree`, `dragAndDrop` and
+ * `table` are copied from React Aria (`react-aria` 3.52; `table` from
+ * `@react-aria/table` 3.17), © Adobe, Apache License 2.0
  * (https://www.apache.org/licenses/LICENSE-2.0).
  */
 import { defineTranslations } from "../translations"
@@ -38,6 +39,12 @@ export default defineTranslations({
     insertBefore: "Umetnite ispred {itemText}",
     insertBetween: "Umetnite između {beforeItemText} i {afterItemText}",
     insertAfter: "Umetnite posle {itemText}",
+  },
+  table: {
+    select: "Izaberite",
+    selectAll: "Izaberite sve",
+    ascendingSort: "sortirano po kolonama {columnName} rastućim redosledom",
+    descendingSort: "sortirano po kolonama {columnName} padajućim redosledom",
   },
   tableColumnResizer: {
     resize: "Promeni veličinu kolone {columnName}",

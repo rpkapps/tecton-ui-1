@@ -111,9 +111,10 @@ function useSelection({
     ) => {
       const current = latest.current
       if (current.disallowEmptySelection && next.length === 0) return false
+      const previous = new Set(current.value)
       const same =
         next.length === current.value.length &&
-        next.every((key) => current.value.includes(key))
+        next.every((key) => previous.has(key))
       if (same) return false
       const details = createChangeEventDetails(reason, event)
       current.onValueChange?.(next, details)
@@ -129,7 +130,8 @@ function useSelection({
       const set = new Set(keys)
       const ordered = latest.current.getAllKeys().filter((k) => set.has(k))
       // Keys outside the collection (controlled values not rendered) stay.
-      for (const key of set) if (!ordered.includes(key)) ordered.push(key)
+      const placed = new Set(ordered)
+      for (const key of set) if (!placed.has(key)) ordered.push(key)
       return ordered
     }
     return {

@@ -1,8 +1,9 @@
 /**
  * et-EE translations, loaded only when a `TectonProvider` uses this locale.
  *
- * The strings of the namespaces `grid`, `chip`, `tree` and `dragAndDrop` are
- * copied from React Aria (`react-aria` 3.52), © Adobe, Apache License 2.0
+ * The strings of the namespaces `grid`, `chip`, `tree`, `dragAndDrop` and
+ * `table` are copied from React Aria (`react-aria` 3.52; `table` from
+ * `@react-aria/table` 3.17), © Adobe, Apache License 2.0
  * (https://www.apache.org/licenses/LICENSE-2.0).
  */
 import { defineTranslations } from "../translations"
@@ -38,6 +39,12 @@ export default defineTranslations({
     insertBefore: "Sisesta {itemText} ette",
     insertBetween: "Sisesta {beforeItemText} ja {afterItemText} vahele",
     insertAfter: "Sisesta {itemText} järele",
+  },
+  table: {
+    select: "Vali",
+    selectAll: "Vali kõik",
+    ascendingSort: "sorditud veeru järgi {columnName} tõusvas järjestuses",
+    descendingSort: "sorditud veeru järgi {columnName} laskuvas järjestuses",
   },
   tableColumnResizer: {
     resize: "Muuda veeru {columnName} laiust",

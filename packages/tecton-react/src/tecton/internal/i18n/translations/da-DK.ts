@@ -1,8 +1,9 @@
 /**
  * da-DK translations, loaded only when a `TectonProvider` uses this locale.
  *
- * The strings of the namespaces `grid`, `chip`, `tree` and `dragAndDrop` are
- * copied from React Aria (`react-aria` 3.52), © Adobe, Apache License 2.0
+ * The strings of the namespaces `grid`, `chip`, `tree`, `dragAndDrop` and
+ * `table` are copied from React Aria (`react-aria` 3.52; `table` from
+ * `@react-aria/table` 3.17), © Adobe, Apache License 2.0
  * (https://www.apache.org/licenses/LICENSE-2.0).
  */
 import { defineTranslations } from "../translations"
@@ -38,6 +39,12 @@ export default defineTranslations({
     insertBefore: "Indsæt før {itemText}",
     insertBetween: "Indsæt mellem {beforeItemText} og {afterItemText}",
     insertAfter: "Indsæt efter {itemText}",
+  },
+  table: {
+    select: "Vælg",
+    selectAll: "Vælg alle",
+    ascendingSort: "sorteret efter kolonne {columnName} i stigende rækkefølge",
+    descendingSort: "sorteret efter kolonne {columnName} i faldende rækkefølge",
   },
   tableColumnResizer: {
     resize: "Tilpas størrelsen på {columnName}",

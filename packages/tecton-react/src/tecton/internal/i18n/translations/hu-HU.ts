@@ -1,8 +1,9 @@
 /**
  * hu-HU translations, loaded only when a `TectonProvider` uses this locale.
  *
- * The strings of the namespaces `grid`, `chip`, `tree` and `dragAndDrop` are
- * copied from React Aria (`react-aria` 3.52), © Adobe, Apache License 2.0
+ * The strings of the namespaces `grid`, `chip`, `tree`, `dragAndDrop` and
+ * `table` are copied from React Aria (`react-aria` 3.52; `table` from
+ * `@react-aria/table` 3.17), © Adobe, Apache License 2.0
  * (https://www.apache.org/licenses/LICENSE-2.0).
  */
 import { defineTranslations } from "../translations"
@@ -39,6 +40,14 @@ export default defineTranslations({
     insertBefore: "Beszúrás {itemText} elé",
     insertBetween: "Beszúrás {beforeItemText} és {afterItemText} közé",
     insertAfter: "Beszúrás {itemText} után",
+  },
+  table: {
+    select: "Kijelölés",
+    selectAll: "Összes kijelölése",
+    ascendingSort:
+      "rendezve a(z) {columnName} oszlop szerint, növekvő sorrendben",
+    descendingSort:
+      "rendezve a(z) {columnName} oszlop szerint, csökkenő sorrendben",
   },
   tableColumnResizer: {
     resize: "{columnName} átméretezése",

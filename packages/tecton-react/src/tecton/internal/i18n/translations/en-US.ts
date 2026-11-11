@@ -2,8 +2,9 @@
  * English (United States): the default, bundled with every component, and
  * the source of the translation types (namespaces, keys and placeholders).
  *
- * The strings of the namespaces `grid`, `chip`, `tree` and `dragAndDrop` are
- * copied from React Aria (`react-aria` 3.52), © Adobe, Apache License 2.0
+ * The strings of the namespaces `grid`, `chip`, `tree`, `dragAndDrop` and
+ * `table` are copied from React Aria (`react-aria` 3.52; `table` from
+ * `@react-aria/table` 3.17), © Adobe, Apache License 2.0
  * (https://www.apache.org/licenses/LICENSE-2.0).
  */
 import type { TranslationTable } from "../translations"
@@ -39,6 +40,12 @@ const enUS = {
     insertBefore: "Insert before {itemText}",
     insertBetween: "Insert between {beforeItemText} and {afterItemText}",
     insertAfter: "Insert after {itemText}",
+  },
+  table: {
+    select: "Select",
+    selectAll: "Select All",
+    ascendingSort: "sorted by column {columnName} in ascending order",
+    descendingSort: "sorted by column {columnName} in descending order",
   },
   tableColumnResizer: {
     resize: "Resize {columnName}",

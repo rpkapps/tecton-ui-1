@@ -1327,14 +1327,21 @@ index 0c2e93ea..1071e005 100644
      />
    )
 diff --git a/apps/v4/registry/bases/base/ui/table.tsx b/apps/v4/registry/bases/base/ui/table.tsx
-index 160cf7aa..bdf8d2f1 100644
+index 160cf7aa..8e82ee13 100644
 --- a/apps/v4/registry/bases/base/ui/table.tsx
 +++ b/apps/v4/registry/bases/base/ui/table.tsx
-@@ -3,34 +3,74 @@
+@@ -3,34 +3,84 @@
  import * as React from "react"
  import { cn } from "cn"
  
 -function Table({ className, ...props }: React.ComponentProps<"table">) {
++import {
++  TableGridProvider,
++  useTableGrid,
++  useTableRow,
++  type TableGridProps,
++  type TableRowProps,
++} from "../tecton/internal/table-grid"
 +import {
 +  TableVirtualProvider,
 +  useTableVirtualized,
@@ -1347,15 +1354,16 @@ index 160cf7aa..bdf8d2f1 100644
 +  className,
 +  virtualized = false,
 +  ...props
-+}: React.ComponentProps<"table"> & {
++}: Omit<React.ComponentProps<"table">, "defaultValue"> & {
 +  /**
 +   * Renders only the rows in view. The table fills and scrolls in its
 +   * parent, which needs a bounded height; rows are one height and the
 +   * header sticks to the top.
 +   */
 +  virtualized?: boolean
-+}) {
++} & TableGridProps) {
 +  const virtual = useTableVirtualizer(virtualized)
++  const grid = useTableGrid(props)
    return (
 -    <div data-slot="table-container" className="cn-table-container">
 +    <div
@@ -1366,15 +1374,18 @@ index 160cf7aa..bdf8d2f1 100644
        <table
          data-slot="table"
 -        className={cn("cn-table", className)}
+-        {...props}
+-      />
 +        aria-rowcount={virtual.rowCount}
 +        className={cn("cn-table", virtual.tableClassName, className)}
-         {...props}
--      />
++        {...grid.props}
 +      >
 +        {virtual.colgroup}
-+        <TableVirtualProvider value={virtual.context}>
-+          {props.children}
-+        </TableVirtualProvider>
++        <TableGridProvider value={grid.context}>
++          <TableVirtualProvider value={virtual.context}>
++            {props.children}
++          </TableVirtualProvider>
++        </TableGridProvider>
 +      </table>
      </div>
    )
@@ -1409,6 +1420,21 @@ index 160cf7aa..bdf8d2f1 100644
        className={cn("cn-table-body", className)}
 -      {...props}
 +      {...useVirtualRows(props)}
+     />
+   )
+ }
+@@ -45,12 +95,12 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
+   )
+ }
+ 
+-function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
++function TableRow({ className, ...props }: TableRowProps) {
+   return (
+     <tr
+       data-slot="table-row"
+       className={cn("cn-table-row has-aria-expanded:bg-muted/50", className)}
+-      {...props}
++      {...useTableRow(props)}
      />
    )
  }

@@ -1,8 +1,9 @@
 /**
  * lt-LT translations, loaded only when a `TectonProvider` uses this locale.
  *
- * The strings of the namespaces `grid`, `chip`, `tree` and `dragAndDrop` are
- * copied from React Aria (`react-aria` 3.52), © Adobe, Apache License 2.0
+ * The strings of the namespaces `grid`, `chip`, `tree`, `dragAndDrop` and
+ * `table` are copied from React Aria (`react-aria` 3.52; `table` from
+ * `@react-aria/table` 3.17), © Adobe, Apache License 2.0
  * (https://www.apache.org/licenses/LICENSE-2.0).
  */
 import { defineTranslations } from "../translations"
@@ -38,6 +39,12 @@ export default defineTranslations({
     insertBefore: "Įterpti prieš {itemText}",
     insertBetween: "Įterpti tarp {beforeItemText} ir {afterItemText}",
     insertAfter: "Įterpti po {itemText}",
+  },
+  table: {
+    select: "Pasirinkti",
+    selectAll: "Pasirinkti viską",
+    ascendingSort: "surikiuota pagal stulpelį {columnName} didėjančia tvarka",
+    descendingSort: "surikiuota pagal stulpelį {columnName} mažėjančia tvarka",
   },
   tableColumnResizer: {
     resize: "Keisti stulpelio {columnName} dydį",

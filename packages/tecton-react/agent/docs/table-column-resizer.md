@@ -70,6 +70,5 @@ An auto-layout table sizes columns from their content and spreads them across th
 ## Before you finish
 
 - Rows or columns the user drags into order are a `Reorderable` around the `Table` with `ReorderableItem render={<TableRow />}` with a `label` and a `ReorderableHandle` (or headers with `render={<TableHead />}`, `dragHandle={false}` and `orientation="horizontal"`, no grip), never native `draggable` rows; a resizable column has a `TableColumnResizer` in its `TableHead` (`relative`, width from state) on a `table-fixed` table.
-- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
 
 Related: table, reorderable, tanstack-table

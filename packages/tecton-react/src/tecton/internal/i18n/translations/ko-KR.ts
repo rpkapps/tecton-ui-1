@@ -1,8 +1,9 @@
 /**
  * ko-KR translations, loaded only when a `TectonProvider` uses this locale.
  *
- * The strings of the namespaces `grid`, `chip`, `tree` and `dragAndDrop` are
- * copied from React Aria (`react-aria` 3.52), © Adobe, Apache License 2.0
+ * The strings of the namespaces `grid`, `chip`, `tree`, `dragAndDrop` and
+ * `table` are copied from React Aria (`react-aria` 3.52; `table` from
+ * `@react-aria/table` 3.17), © Adobe, Apache License 2.0
  * (https://www.apache.org/licenses/LICENSE-2.0).
  */
 import { defineTranslations } from "../translations"
@@ -38,6 +39,12 @@ export default defineTranslations({
     insertBefore: "{itemText} 이전에 삽입",
     insertBetween: "{beforeItemText} 및 {afterItemText} 사이에 삽입",
     insertAfter: "{itemText} 이후에 삽입",
+  },
+  table: {
+    select: "선택",
+    selectAll: "모두 선택",
+    ascendingSort: "{columnName} 열을 기준으로 오름차순으로 정렬됨",
+    descendingSort: "{columnName} 열을 기준으로 내림차순으로 정렬됨",
   },
   tableColumnResizer: {
     resize: "{columnName} 크기 조정",

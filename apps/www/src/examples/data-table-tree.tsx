@@ -126,11 +126,13 @@ const columns = columnHelper.columns([
         style={{ paddingInlineStart: `${row.depth * INDENT}rem` }}
       >
         {row.getCanExpand() ? (
-          // The chevron of a Tree View row: quiet, not a pressed button.
+          // The chevron of a Tree View row: quiet, not a pressed button. It
+          // is for the pointer: the row itself says whether it is expanded,
+          // and Right / Left or Enter on the row open and close it.
           <button
             type="button"
-            aria-expanded={row.getIsExpanded()}
-            aria-label={`${row.getIsExpanded() ? "Collapse" : "Expand"} ${getValue()}`}
+            tabIndex={-1}
+            aria-hidden
             onClick={() => row.toggleExpanded()}
             className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
           >
@@ -201,7 +203,8 @@ export default function DataTableTree() {
         </Button>
       </div>
       <div className="overflow-hidden rounded-md border">
-        <Table aria-label="Assets">
+        {/* A treegrid: rows carry their level and open with Right / Left. */}
+        <Table grid aria-label="Assets">
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -217,7 +220,20 @@ export default function DataTableTree() {
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
+              <TableRow
+                key={row.id}
+                value={row.id}
+                textValue={row.original.name}
+                level={row.depth + 1}
+                expanded={row.getCanExpand() ? row.getIsExpanded() : undefined}
+                onExpandedChange={(open) => row.toggleExpanded(open)}
+                // Its place among its siblings: "2 of 3".
+                aria-posinset={row.index + 1}
+                aria-setsize={
+                  (row.getParentRow()?.subRows ?? table.getCoreRowModel().rows)
+                    .length
+                }
+              >
                 {row.getAllCells().map((cell) => (
                   <TableCell key={cell.id}>
                     <table.FlexRender cell={cell} />

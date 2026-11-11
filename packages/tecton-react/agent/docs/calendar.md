@@ -92,7 +92,6 @@ The grid, the navigation buttons and the dropdowns all read `--cell-size`, so re
 
 ## Before you finish
 
-- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
 - `Calendar` is react-day-picker: `mode="single" | "multiple" | "range"` with `selected` / `onSelect` holding `Date` values and days blocked with a `disabled` matcher — no `@internationalized/date` values, no `minValue`, no `RangeCalendar`.
 
 Related: popover, field, native-select

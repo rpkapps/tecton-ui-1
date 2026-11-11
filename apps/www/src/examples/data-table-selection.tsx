@@ -10,7 +10,6 @@ import {
 import type { RowSelectionState } from "@tanstack/react-table"
 
 import { Badge } from "@tecton/react/components/badge"
-import { Checkbox } from "@tecton/react/components/checkbox"
 import {
   Table,
   TableBody,
@@ -19,6 +18,7 @@ import {
   TableHeader,
   TableRow,
 } from "@tecton/react/components/table"
+import { TableSelectionCheckbox } from "@tecton/react/tecton/table-selection-checkbox"
 
 type Well = {
   id: string
@@ -74,27 +74,12 @@ const features = tableFeatures({ rowSelectionFeature })
 const columnHelper = createColumnHelper<typeof features, Well>()
 
 const columns = columnHelper.columns([
-  // The selection column: the header checkbox selects every row (and shows
-  // a dash while only some are), each cell checkbox its own row.
+  // The selection column: the table's own checkboxes. The header one
+  // selects every row (a dash while only some are), each cell one its row.
   columnHelper.display({
     id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        aria-label="Select all wells"
-        checked={table.getIsAllRowsSelected()}
-        indeterminate={
-          table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
-        }
-        onCheckedChange={(checked) => table.toggleAllRowsSelected(checked)}
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        aria-label={`Select ${row.original.name}`}
-        checked={row.getIsSelected()}
-        onCheckedChange={(checked) => row.toggleSelected(checked)}
-      />
-    ),
+    header: () => <TableSelectionCheckbox />,
+    cell: () => <TableSelectionCheckbox />,
   }),
   columnHelper.accessor("name", { header: "Well" }),
   columnHelper.accessor("field", { header: "Field" }),
@@ -131,7 +116,17 @@ export default function DataTableSelection() {
   return (
     <div className="flex w-full max-w-3xl flex-col gap-3">
       <div className="overflow-hidden rounded-md border">
-        <Table aria-label="Wells">
+        {/* A grid: Tab lands on the table, the arrow keys move through it,
+            Space selects a row, Shift extends, Ctrl/Cmd + A selects all. */}
+        <Table
+          grid
+          aria-label="Wells"
+          selectionMode="multiple"
+          value={Object.keys(rowSelection)}
+          onValueChange={(value) =>
+            setRowSelection(Object.fromEntries(value.map((id) => [id, true])))
+          }
+        >
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
@@ -154,7 +149,8 @@ export default function DataTableSelection() {
             {table.getRowModel().rows.map((row) => (
               <TableRow
                 key={row.id}
-                data-state={row.getIsSelected() ? "selected" : undefined}
+                value={row.id}
+                textValue={row.original.name}
               >
                 {row.getAllCells().map((cell) => (
                   <TableCell key={cell.id}>

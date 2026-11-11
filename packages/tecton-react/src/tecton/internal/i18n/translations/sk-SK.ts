@@ -1,8 +1,9 @@
 /**
  * sk-SK translations, loaded only when a `TectonProvider` uses this locale.
  *
- * The strings of the namespaces `grid`, `chip`, `tree` and `dragAndDrop` are
- * copied from React Aria (`react-aria` 3.52), © Adobe, Apache License 2.0
+ * The strings of the namespaces `grid`, `chip`, `tree`, `dragAndDrop` and
+ * `table` are copied from React Aria (`react-aria` 3.52; `table` from
+ * `@react-aria/table` 3.17), © Adobe, Apache License 2.0
  * (https://www.apache.org/licenses/LICENSE-2.0).
  */
 import { defineTranslations } from "../translations"
@@ -38,6 +39,12 @@ export default defineTranslations({
     insertBefore: "Vložiť pred položku {itemText}",
     insertBetween: "Vložiť medzi položky {beforeItemText} a {afterItemText}",
     insertAfter: "Vložiť za položku {itemText}",
+  },
+  table: {
+    select: "Vybrať",
+    selectAll: "Vybrať všetko",
+    ascendingSort: "zoradené zostupne podľa stĺpca {columnName}",
+    descendingSort: "zoradené zostupne podľa stĺpca {columnName}",
   },
   tableColumnResizer: {
     resize: "Zmeniť veľkosť stĺpca {columnName}",

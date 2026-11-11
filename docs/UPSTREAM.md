@@ -259,6 +259,16 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   locked at their content's first widths (a px `colgroup`, the space left spread over the columns of text and the last column taking the rest, `table-fixed`) unless the caller made the
   table fixed. The logic is `src/tecton/internal/table-virtualizer.tsx` (on the shared
   `useVirtualList`); without `virtualized` the markup is unchanged. Tested in `src/tecton/__tests__/table-virtualized.test.tsx`.
+  `Table` also takes `grid` (with `selectionMode`, `value` / `defaultValue` / `onValueChange`,
+  `disallowEmptySelection` and `onActivate`): the table becomes a grid (a treegrid when rows have a
+  `level`) that is one tab stop, moved through with the keyboard, with rows that select and
+  activate. `TableRow` takes `value`, `disabled`, `textValue`, `level`, `expanded` and
+  `onExpandedChange` (dropped without `grid`) and sets `aria-selected` / `data-selected="true"`,
+  which `cn-table-row` fills with `bg-table-active` like `data-[state=selected]`; rows and cells get
+  a focus ring. `TableBody` takes `empty`. The logic is `src/tecton/internal/table-grid.tsx` (on
+  the shared selection, type-ahead and announcement primitives), the hunk calls `useTableGrid` in
+  `Table` and `useTableRow` in `TableRow`; without `grid` the markup is unchanged. Tested in
+  `src/tecton/__tests__/table-grid.test.tsx`.
 
 ## Renaming the package
 

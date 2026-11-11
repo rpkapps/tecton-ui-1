@@ -9,8 +9,7 @@ import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableC
 ## Use it when
 
 - Records of the same shape have to line up in columns: invoices, wells, run results.
-- A footer totals the columns, or a caption names the table.
-- The rows are read, compared or opened; interaction beyond that (sorting, paging) comes from TanStack Table on these parts.
+- A footer totals the columns, or a caption names the table; the rows are read, compared, selected or opened, with sorting and paging from TanStack Table on these parts.
 
 ## Not for
 
@@ -21,10 +20,10 @@ import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableC
 ## Do
 
 - Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`.
-- Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state="selected"` for the `bg-table-active` fill.
-- Open a record from a link in its identifying cell, not from a handler on the row.
+- When rows are selected or opened, set `grid`: the table is one tab stop the arrow keys move through. Give every `TableRow` a `value`, select with `selectionMode` and `value` / `onValueChange` (a `TableSelectionCheckbox` in the header and in each row) and open a row with `onActivate`; a tree table's rows take `level`, `expanded` and `onExpandedChange`.
+- Leave a table that is only read without `grid` (screen readers read a grid as something to operate, not as a document); open its records from a link in the identifying cell.
 - For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table.
-- Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
+- Show an empty result as `Empty` in place of the table, or as `TableBody empty={…}` (one row across every column) when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
 - Give text-heavy columns (well name, remarks) a minimum width on `TableHead`; they never collapse when the panel narrows.
 
 ## Don't
@@ -57,7 +56,7 @@ Correct:
 
 The grid emits no table semantics, so assistive technology reads a stream of unassociated cells with no row or column count, and `bg-zinc-100` is stock Tailwind the reset palette emits no CSS for — the header band is `bg-table-header` on `TableHead`.
 
-### HIGH selectionMode and selectedKeys on the table
+### HIGH selectedKeys, onSelectionChange and renderEmptyState on the table
 
 Wrong:
 
@@ -71,13 +70,13 @@ Wrong:
 Correct:
 
 ```tsx
-<Table>
-  <TableHeader><TableRow><TableHead>Well</TableHead></TableRow></TableHeader>
-  <TableBody>{rows.length ? rows : <TableRow><TableCell><Empty>No wells</Empty></TableCell></TableRow>}</TableBody>
+<Table grid aria-label="Wells" selectionMode="multiple" value={selected} onValueChange={setSelected}>
+  <TableHeader><TableRow><TableHead><TableSelectionCheckbox /></TableHead><TableHead>Well</TableHead></TableRow></TableHeader>
+  <TableBody empty={<Empty>No wells</Empty>}>{rows}</TableBody>
 </Table>
 ```
 
-`Table` is a plain `table`: `selectionMode`, `selectedKeys`, `isRowHeader` and `renderEmptyState` land on the DOM as unknown attributes, so nothing is selectable and an empty body renders nothing.
+Selection is `grid` with `selectionMode` and `value` / `onValueChange` (each `TableRow` with its `value`), and an empty body is `empty` on `TableBody`: `selectedKeys`, `onSelectionChange`, `isRowHeader` and `renderEmptyState` are not `Table` props, so nothing is selectable and an empty body renders nothing. Without `grid`, `selectionMode` does not compile.
 
 ### HIGH Activating a row with onClick
 
@@ -92,20 +91,20 @@ Wrong:
 Correct:
 
 ```tsx
-<TableRow>
-  <TableCell><Link href={`/wells/${well.id}`}>{well.name}</Link></TableCell>
-</TableRow>
+<Table grid onActivate={(id) => openWell(id)}>
+  <TableBody><TableRow value={well.id}><TableCell>{well.name}</TableCell></TableRow></TableBody>
+</Table>
 ```
 
-A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse only; a link in the identifying cell is reachable, announced and middle-clickable.
+A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse only. In a `grid` table, `onActivate` opens the row from Enter and a click (a double click when rows select); in a table that is only read, a link in the identifying cell is reachable, announced and middle-clickable.
 
 ## Before you finish
 
 - A table is plain HTML — `Table > TableHeader > TableRow > TableHead` and `TableBody > TableRow > TableCell`, with `TableFooter` and `TableCaption` as needed; sorting, filtering and paging come from TanStack Table on these parts.
 - Rows or columns the user drags into order are a `Reorderable` around the `Table` with `ReorderableItem render={<TableRow />}` with a `label` and a `ReorderableHandle` (or headers with `render={<TableHead />}`, `dragHandle={false}` and `orientation="horizontal"`, no grip), never native `draggable` rows; a resizable column has a `TableColumnResizer` in its `TableHead` (`relative`, width from state) on a `table-fixed` table.
 - A table of hundreds of rows or more is `<Table virtualized>` inside a parent of bounded height (`h-96`), with `TableBody items={rows}` and a render function, not a hand-built window of sliced rows.
-- An empty table renders `Empty` in place of the table, or inside one `TableCell` spanning every column when the header has to stay.
-- Row selection is a `Checkbox` per row driven by your own state (the row marked `data-state="selected"`), and a row opens through a link in its identifying cell, never an `onClick` on the `tr`.
+- An empty table renders `Empty` in place of the table, or `TableBody empty={…}` (one row across every column) when the header has to stay.
+- A table whose rows are selected or opened is `<Table grid>` with `selectionMode`, `value` / `onValueChange` and `onActivate`, a `value` on every `TableRow` and `TableSelectionCheckbox` for the checkboxes; a table that is only read stays plain and opens a row through a link in its identifying cell, never an `onClick` on the `tr`.
 - `className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-end`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.
 
-Related: item, tree-view, reorderable, table-column-resizer, tanstack-table
+Related: item, tree-view, reorderable, table-column-resizer, table-selection-checkbox, tanstack-table

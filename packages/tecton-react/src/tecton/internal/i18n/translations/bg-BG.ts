@@ -1,8 +1,9 @@
 /**
  * bg-BG translations, loaded only when a `TectonProvider` uses this locale.
  *
- * The strings of the namespaces `grid`, `chip`, `tree` and `dragAndDrop` are
- * copied from React Aria (`react-aria` 3.52), © Adobe, Apache License 2.0
+ * The strings of the namespaces `grid`, `chip`, `tree`, `dragAndDrop` and
+ * `table` are copied from React Aria (`react-aria` 3.52; `table` from
+ * `@react-aria/table` 3.17), © Adobe, Apache License 2.0
  * (https://www.apache.org/licenses/LICENSE-2.0).
  */
 import { defineTranslations } from "../translations"
@@ -38,6 +39,12 @@ export default defineTranslations({
     insertBefore: "Вмъкни преди {itemText}",
     insertBetween: "Вмъкни между {beforeItemText} и {afterItemText}",
     insertAfter: "Вмъкни след {itemText}",
+  },
+  table: {
+    select: "Изберете",
+    selectAll: "Изберете всичко",
+    ascendingSort: "сортирано по колона {columnName} във възходящ ред",
+    descendingSort: "сортирано по колона {columnName} в низходящ ред",
   },
   tableColumnResizer: {
     resize: "Преоразмеряване на {columnName}",

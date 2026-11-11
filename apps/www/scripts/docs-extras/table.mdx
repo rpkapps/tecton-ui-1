@@ -1,3 +1,20 @@
+## Grid
+
+When rows are selected or opened, set `grid`: the table becomes one tab stop that the arrow keys move through, announced as a grid, with rows that select (`selectionMode`, `value` / `onValueChange`, a `TableSelectionCheckbox` per row) and open (`onActivate`). Give every `TableRow` a `value`. Leave a table that is only read without it. [Data Table](/docs/components/data-table#keyboard-navigation) lists the keys and the props, with recipes for selection and tree tables.
+
+```tsx
+<Table grid selectionMode="multiple" value={selected} onValueChange={setSelected}>
+  <TableHeader>…</TableHeader>
+  <TableBody empty="No wells match the filter.">
+    {wells.map((well) => (
+      <TableRow key={well.id} value={well.id}>
+        …
+      </TableRow>
+    ))}
+  </TableBody>
+</Table>
+```
+
 ## Virtualized
 
 Set `virtualized` on a table of hundreds of rows or more. The body then mounts only the rows in view, so a table of thousands renders, scrolls and sorts as fast as a short one. The table fills its parent and scrolls in it, so give the parent a bounded height (`h-80`, or `min-h-0 flex-1` in a flex column) and put the border and rounding on the parent too. The header sticks to the top while the rows scroll.

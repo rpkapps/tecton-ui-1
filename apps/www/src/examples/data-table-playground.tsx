@@ -36,7 +36,6 @@ import {
 
 import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
 import { Label } from "@tecton/react/components/label"
 import {
   Select,
@@ -64,6 +63,7 @@ import {
   ReorderableItem,
 } from "@tecton/react/tecton/reorderable"
 import { TableColumnResizer } from "@tecton/react/tecton/table-column-resizer"
+import { TableSelectionCheckbox } from "@tecton/react/tecton/table-selection-checkbox"
 
 import { createFastSortedRowModel } from "./lib/fast-sorted-row-model"
 
@@ -274,26 +274,8 @@ function columnsFor({
             id: "select",
             size: 36,
             enableSorting: false,
-            header: ({ table }) => (
-              <Checkbox
-                aria-label="Select all rows"
-                checked={table.getIsAllRowsSelected()}
-                indeterminate={
-                  table.getIsSomeRowsSelected() && !table.getIsAllRowsSelected()
-                }
-                onCheckedChange={(checked) =>
-                  table.toggleAllRowsSelected(checked)
-                }
-              />
-            ),
-            cell: ({ row }) => (
-              <Checkbox
-                aria-label={`Select ${row.original.name}`}
-                checked={row.getIsSelected()}
-                indeterminate={row.getIsSomeSelected()}
-                onCheckedChange={(checked) => row.toggleSelected(checked)}
-              />
-            ),
+            header: () => <TableSelectionCheckbox />,
+            cell: () => <TableSelectionCheckbox />,
           }),
         ]
       : []),
@@ -307,10 +289,11 @@ function columnsFor({
             style={{ paddingInlineStart: `${row.depth * INDENT}rem` }}
           >
             {row.getCanExpand() ? (
+              // For the pointer: the row says whether it is expanded.
               <button
                 type="button"
-                aria-expanded={row.getIsExpanded()}
-                aria-label={`${row.getIsExpanded() ? "Collapse" : "Expand"} ${getValue()}`}
+                tabIndex={-1}
+                aria-hidden
                 onClick={() => row.toggleExpanded()}
                 className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
               >
@@ -533,7 +516,11 @@ export default function DataTablePlayground() {
     .getAllLeafColumns()
     .map((column) => column.id)
     .filter((columnId) => !PINNED.includes(columnId))
-  const selected = Object.keys(rowSelection).length
+  const selectedIds = React.useMemo(
+    () => Object.keys(rowSelection),
+    [rowSelection]
+  )
+  const selected = selectedIds.length
 
   return (
     <div
@@ -675,8 +662,26 @@ export default function DataTablePlayground() {
             className="h-full"
           >
             <Table
+              grid
               aria-label="Wells"
               virtualized={virtual}
+              selectionMode={select ? "multiple" : "none"}
+              value={selectedIds}
+              onValueChange={(value, { reason }) => {
+                // TanStack keeps the selection, so selecting a field
+                // selects its wells too.
+                if (reason === "select-all") table.toggleAllRowsSelected(true)
+                else if (reason === "clear") table.toggleAllRowsSelected(false)
+                else {
+                  const next = new Set(value)
+                  for (const rowId of value)
+                    if (!(rowId in rowSelection))
+                      table.getRow(rowId, true).toggleSelected(true)
+                  for (const rowId of selectedIds)
+                    if (!next.has(rowId))
+                      table.getRow(rowId, true).toggleSelected(false)
+                }
+              }}
               className={cn(density[mode], resize && "table-fixed")}
               style={
                 resize
@@ -762,18 +767,29 @@ export default function DataTablePlayground() {
                       {cellContent(cell)}
                     </TableCell>
                   ))
-                  const state = row.getIsSelected() ? "selected" : undefined
+                  const rowProps = {
+                    value: row.id,
+                    textValue: row.original.name,
+                    ...(tree && {
+                      level: row.depth + 1,
+                      expanded: row.getCanExpand()
+                        ? row.getIsExpanded()
+                        : undefined,
+                      onExpandedChange: (open: boolean) =>
+                        row.toggleExpanded(open),
+                    }),
+                  }
                   return reorderRows ? (
                     <ReorderableItem
                       key={row.id}
                       value={row.id}
                       label={row.original.name}
-                      render={<TableRow data-state={state} />}
+                      render={<TableRow {...rowProps} />}
                     >
                       {cells}
                     </ReorderableItem>
                   ) : (
-                    <TableRow key={row.id} data-state={state}>
+                    <TableRow key={row.id} {...rowProps}>
                       {cells}
                     </TableRow>
                   )

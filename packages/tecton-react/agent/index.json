@@ -1043,7 +1043,7 @@
     "CalendarDayButton"
    ],
    "aliases": [],
-   "tokens": 976
+   "tokens": 928
   },
   {
    "id": "canvas",
@@ -1219,7 +1219,7 @@
     "ChartStyle"
    ],
    "aliases": [],
-   "tokens": 1119
+   "tokens": 1070
   },
   {
    "id": "checkbox",
@@ -1231,7 +1231,7 @@
    "fields": {
     "names": "checkbox checkbox",
     "useWhen": "An independent yes/no value the user confirms by submitting the form. Several options from a list may be picked at once. A parent row summarising children that are partly selected (`indeterminate`).",
-    "routed": "a term the user ticks as part of submitting a form",
+    "routed": "a term the user ticks as part of submitting a form a checkbox in a form, a filter or a settings list",
     "do": "Control it with `checked` and `onCheckedChange(checked: boolean)`, or leave it uncontrolled with `defaultChecked`. Give it an `id` and point a `FieldLabel htmlFor` at it inside a `Field orientation=\"horizontal\"`; add `FieldContent` when there is a description. Disable with `disabled` and put `data-disabled` on the `Field` so the label dims with it. Mark errors with `aria-invalid` on the checkbox and `data-invalid` on the `Field`, then render the message in `FieldError`. Submit it with a form through `name` (and `value`); a row-selection column in a `Table` is a `Checkbox` per row driven by your own selection state."
    },
    "notFor": [
@@ -1412,7 +1412,7 @@
     "ColorSwatch"
    ],
    "aliases": [],
-   "tokens": 849
+   "tokens": 794
   },
   {
    "id": "combobox",
@@ -2959,7 +2959,7 @@
     "ReorderableHandle"
    ],
    "aliases": [],
-   "tokens": 1026
+   "tokens": 978
   },
   {
    "id": "resizable",
@@ -3429,7 +3429,7 @@
     "StatGroup"
    ],
    "aliases": [],
-   "tokens": 990
+   "tokens": 942
   },
   {
    "id": "switch",
@@ -3477,9 +3477,9 @@
    "summary": "Records of the same shape have to line up in columns: invoices, wells, run results.",
    "fields": {
     "names": "table table table header table body table footer table head table row table cell table caption",
-    "useWhen": "Records of the same shape have to line up in columns: invoices, wells, run results. A footer totals the columns, or a caption names the table. The rows are read, compared or opened; interaction beyond that (sorting, paging) comes from TanStack Table on these parts.",
+    "useWhen": "Records of the same shape have to line up in columns: invoices, wells, run results. A footer totals the columns, or a caption names the table; the rows are read, compared, selected or opened, with sorting and paging from TanStack Table on these parts.",
     "routed": "",
-    "do": "Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`. Select rows with a `Checkbox` per row (and one in the header for all) driven by your own state, and mark a selected row with `data-state=\"selected\"` for the `bg-table-active` fill. Open a record from a link in its identifying cell, not from a handler on the row. For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table. Show an empty result as `Empty` in place of the table, or inside one `TableCell colSpan={n}` when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`)."
+    "do": "Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`. When rows are selected or opened, set `grid`: the table is one tab stop the arrow keys move through. Give every `TableRow` a `value`, select with `selectionMode` and `value` / `onValueChange` (a `TableSelectionCheckbox` in the header and in each row) and open a row with `onActivate`; a tree table's rows take `level`, `expanded` and `onExpandedChange`. Leave a table that is only read without `grid` (screen readers read a grid as something to operate, not as a document); open its records from a link in the identifying cell. For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table. Show an empty result as `Empty` in place of the table, or as `TableBody empty={…}` (one row across every column) when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`)."
    },
    "notFor": [
     {
@@ -3500,6 +3500,7 @@
     "tree-view",
     "reorderable",
     "table-column-resizer",
+    "table-selection-checkbox",
     "tanstack-table"
    ],
    "exports": [
@@ -3513,7 +3514,7 @@
     "TableCaption"
    ],
    "aliases": [],
-   "tokens": 1331
+   "tokens": 1557
   },
   {
    "id": "table-column-resizer",
@@ -3547,7 +3548,41 @@
     "TableColumnResizer"
    ],
    "aliases": [],
-   "tokens": 719
+   "tokens": 670
+  },
+  {
+   "id": "table-selection-checkbox",
+   "kind": "component",
+   "name": "TableSelectionCheckbox",
+   "import": "import { TableSelectionCheckbox } from \"@tecton/react/tecton/table-selection-checkbox\"",
+   "family": "data",
+   "summary": "The rows of a `<Table grid selectionMode=\"multiple\">` (or `\"single\"`) are selected with checkboxes, in a column of their own.",
+   "fields": {
+    "names": "table selection checkbox table selection checkbox",
+    "useWhen": "The rows of a `<Table grid selectionMode=\"multiple\">` (or `\"single\"`) are selected with checkboxes, in a column of their own. The header needs one checkbox that selects or clears every row and shows a dash while only some are selected.",
+    "routed": "",
+    "do": "Put one `TableSelectionCheckbox` in the header's selection cell and one in each row's: it reads the row it is in and the table's selection, and takes no `checked` or `onCheckedChange`. Give every `TableRow` its `value`: the checkbox toggles that value in the table's `value` / `onValueChange`, and is disabled with the row. Keep the selection where the rest of the table state is (TanStack Table's `rowSelection`): `value={Object.keys(rowSelection)}`, and `onValueChange` written back to it. Make the identifying cell the row's header (`TableHead scope=\"row\"`), or give the row a `textValue`: the checkbox is named \"Select\" and that text."
+   },
+   "notFor": [
+    {
+     "need": "a checkbox in a form, a filter or a settings list",
+     "id": "checkbox"
+    },
+    {
+     "need": "selecting items of a hierarchy without columns",
+     "id": "tree-view"
+    }
+   ],
+   "related": [
+    "table",
+    "checkbox",
+    "tanstack-table"
+   ],
+   "exports": [
+    "TableSelectionCheckbox"
+   ],
+   "aliases": [],
+   "tokens": 732
   },
   {
    "id": "tabs",
@@ -3786,7 +3821,7 @@
    "fields": {
     "names": "tree view tree view tree view item tree view item content tree view action tree view visibility toggle tree view collection move tree items",
     "useWhen": "A hierarchy is browsed rather than read: a project tree, a field and well inventory, a layer list. Rows carry more than a label: selection, disabled, hidden, a colour, a count, a per-row menu. Arrow-key navigation, expansion and type-ahead have to work across the whole structure.",
-    "routed": "an expandable hierarchy of folders and records moving rows between folders of a hierarchy a hierarchy of folders and records expanded in place",
+    "routed": "an expandable hierarchy of folders and records moving rows between folders of a hierarchy a hierarchy of folders and records expanded in place selecting items of a hierarchy without columns",
     "do": "Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value` (add `label` when the row content is not plain text). Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data. Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`, and open a row through `onActivate` (Enter or a click; a double click when rows are also selectable), never an `onClick` on its content. Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`). Let rows move with `onMove` (apply it with `moveTreeItems`, restrict it with `canDrop`), never with drag events of your own on the rows: those have no keyboard path and no drop rules. Row commands go in one `contextMenu={(value) => <ContextMenuContent>…</ContextMenuContent>}` on `TreeView` (`null` for a row without), never a `ContextMenu` around each row; keep a visible `TreeViewAction` for the ones a row cannot do without, since a context menu is hard to find on touch and for most keyboard users. Set `virtualized` on a tree of hundreds of rows or more, with a bounded height (`h-80`, or `min-h-0 flex-1` in a flex column); padding and borders go on a wrapper, since virtualized rows span the full width of the tree. Keep `items` and the render function stable (module-level or `useCallback`), or every parent render re-renders every row. Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden`, `data-context-menu-open` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `\"true\"`."
    },
    "notFor": [
@@ -3818,7 +3853,7 @@
     "moveTreeItems"
    ],
    "aliases": [],
-   "tokens": 1351
+   "tokens": 1302
   },
   {
    "id": "use-busy-delay",
@@ -3863,10 +3898,10 @@
    "kind": "external",
    "name": "TanStack Table",
    "import": "import { useReactTable } from \"@tanstack/react-table\"",
-   "summary": "Data tables are a recipe on the shadcn Table, not a component.",
+   "summary": "Data tables are a recipe on Table, not a component; `<Table grid>` adds keyboard navigation and row selection.",
    "fields": {
     "names": "tanstack table tan stack table ",
-    "useWhen": "Data tables are a recipe on the shadcn Table, not a component.",
+    "useWhen": "Data tables are a recipe on Table, not a component; `<Table grid>` adds keyboard navigation and row selection.",
     "routed": "rows with sorting, paging and selection rows with columns, sorting, paging and selection paging driven by a table's own sorting and filtering state sorting rows by a column's values sorting, filtering, paging or column visibility over the rows a tree table, a hierarchy whose expandable rows have columns",
     "do": ""
    },
@@ -3876,7 +3911,7 @@
    "aliases": [
     "react-table"
    ],
-   "tokens": 49
+   "tokens": 61
   },
   {
    "id": "tanstack-form",

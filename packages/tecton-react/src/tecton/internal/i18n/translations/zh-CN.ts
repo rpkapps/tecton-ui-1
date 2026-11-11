@@ -1,8 +1,9 @@
 /**
  * zh-CN translations, loaded only when a `TectonProvider` uses this locale.
  *
- * The strings of the namespaces `grid`, `chip`, `tree` and `dragAndDrop` are
- * copied from React Aria (`react-aria` 3.52), © Adobe, Apache License 2.0
+ * The strings of the namespaces `grid`, `chip`, `tree`, `dragAndDrop` and
+ * `table` are copied from React Aria (`react-aria` 3.52; `table` from
+ * `@react-aria/table` 3.17), © Adobe, Apache License 2.0
  * (https://www.apache.org/licenses/LICENSE-2.0).
  */
 import { defineTranslations } from "../translations"
@@ -37,6 +38,12 @@ export default defineTranslations({
     insertBefore: "插入到 {itemText} 之前",
     insertBetween: "插入到 {beforeItemText} 和 {afterItemText} 之间",
     insertAfter: "插入到 {itemText} 之后",
+  },
+  table: {
+    select: "选择",
+    selectAll: "全选",
+    ascendingSort: "按列 {columnName} 升序排序",
+    descendingSort: "按列 {columnName} 降序排序",
   },
   tableColumnResizer: {
     resize: "调整 {columnName} 的大小",

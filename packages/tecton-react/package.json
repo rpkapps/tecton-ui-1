@@ -511,6 +511,11 @@
       "import": "./dist/tecton/table-column-resizer.js",
       "default": "./dist/tecton/table-column-resizer.js"
     },
+    "./tecton/table-selection-checkbox": {
+      "types": "./dist/tecton/table-selection-checkbox.d.ts",
+      "import": "./dist/tecton/table-selection-checkbox.js",
+      "default": "./dist/tecton/table-selection-checkbox.js"
+    },
     "./tecton/theme-root": {
       "types": "./dist/tecton/theme-root.d.ts",
       "import": "./dist/tecton/theme-root.js",
