@@ -102,9 +102,11 @@ import {
   loadingRows,
 } from "./states"
 
-// Development only: every warning is behind this test, written out at its
-// call site so that a consumer's bundler, replacing `process.env.NODE_ENV`,
-// drops it and its message from a production build (`warnings.ts`).
+// Development only: every warning is behind `process.env.NODE_ENV`,
+// written out at its call site so that a consumer's bundler (which replaces
+// that expression, not `typeof process`) drops it and its message from a
+// production build, and in a `try` so that, with no bundler and no
+// `process`, there is no warning rather than an error (`warnings.ts`).
 declare const process: { env: { NODE_ENV?: string } }
 
 type DataTableContentProps<T = unknown> = Omit<
@@ -622,16 +624,19 @@ function DataTableContentImpl({
     [detail, options.pagination, open, model]
   )
   React.useEffect(() => {
-    if (
-      typeof process !== "undefined" &&
-      process.env.NODE_ENV !== "production" &&
-      renderDetail !== undefined &&
-      options.tree
-    )
-      actions.warn(
-        "detail-tree",
-        "DataTableContent: `renderDetail` is off in a tree (`itemToChildren`): a tree's rows open to show their children."
+    try {
+      if (
+        process.env.NODE_ENV !== "production" &&
+        renderDetail !== undefined &&
+        options.tree
       )
+        actions.warn(
+          "detail-tree",
+          "DataTableContent: `renderDetail` is off in a tree (`itemToChildren`): a tree's rows open to show their children."
+        )
+    } catch {
+      // No `process` (no bundler): no warning.
+    }
   }, [actions, renderDetail, options.tree])
 
   const selection = options.selectionMode !== "none"
@@ -1030,17 +1035,17 @@ function DataTableContentImpl({
   React.useEffect(() => {
     if (!virtualized) return
     const wrapped = layout.columns.filter((column) => column.definition.wrap)
-    if (
-      typeof process !== "undefined" &&
-      process.env.NODE_ENV !== "production" &&
-      wrapped.length > 0
-    )
-      actions.warn(
-        "wrap-virtualized",
-        `DataTableContent: \`wrap\` is off for ${wrapped
-          .map((column) => `"${column.id}"`)
-          .join(", ")} in a virtualized table, whose rows are one height.`
-      )
+    try {
+      if (process.env.NODE_ENV !== "production" && wrapped.length > 0)
+        actions.warn(
+          "wrap-virtualized",
+          `DataTableContent: \`wrap\` is off for ${wrapped
+            .map((column) => `"${column.id}"`)
+            .join(", ")} in a virtualized table, whose rows are one height.`
+        )
+    } catch {
+      // No `process` (no bundler): no warning.
+    }
   }, [actions, virtualized, layout.columns])
 
   // More rows to come: loading rows after the last one, and no bar. Not

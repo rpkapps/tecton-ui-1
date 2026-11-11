@@ -35,9 +35,11 @@ import {
 } from "./engine/index"
 import type { Warn } from "./warnings"
 
-// Development only: every warning is behind this test, written out at its
-// call site so that a consumer's bundler, replacing `process.env.NODE_ENV`,
-// drops it and its message from a production build (`warnings.ts`).
+// Development only: every warning is behind `process.env.NODE_ENV`,
+// written out at its call site so that a consumer's bundler (which replaces
+// that expression, not `typeof process`) drops it and its message from a
+// production build, and in a `try` so that, with no bundler and no
+// `process`, there is no warning rather than an error (`warnings.ts`).
 declare const process: { env: { NODE_ENV?: string } }
 
 type DataTableSelectionMode = "none" | "single" | "multiple"
@@ -420,15 +422,15 @@ function useFeatureWarning(
 ) {
   const { warn } = context.actions
   React.useEffect(() => {
-    if (
-      typeof process !== "undefined" &&
-      process.env.NODE_ENV !== "production" &&
-      off
-    )
-      warn(
-        `off:${part}`,
-        `${part} renders nothing: ${feature} is off on its DataTable.`
-      )
+    try {
+      if (process.env.NODE_ENV !== "production" && off)
+        warn(
+          `off:${part}`,
+          `${part} renders nothing: ${feature} is off on its DataTable.`
+        )
+    } catch {
+      // No `process` (no bundler): no warning.
+    }
   }, [warn, off, part, feature])
 }
 
