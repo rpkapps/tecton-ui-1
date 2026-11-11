@@ -150,6 +150,8 @@ export default defineTranslations({
     cellsSkipped: { other: "{total} 个不可编辑" },
     cellsInvalid: { other: "{total} 个无效" },
     cellMessage: "{columnName}：{message}",
+    refusedValue: "“{value}”：{message}",
+    selectCellsFirst: "请先选择单元格",
     cellsNotSaved: { other: "{total} 个单元格未保存：{message}" },
     saveFailed: "无法保存更改",
     copyMultiple: "无法同时复制这些区域：请选择位于相同行或相同列的区域",

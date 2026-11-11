@@ -231,13 +231,16 @@ type DataTablePartialView = {
 type DataTableCellPosition = { row: string; column: string }
 
 /**
- * A rectangle of cells between two corners (`start` is where it was begun,
- * the anchor; `end` the corner that moves), in the order the rows and
- * columns are shown.
+ * Cells selected together: rows and columns, each between two ids
+ * (`start`, where the range was begun, its anchor; `end`, the side that
+ * moves) or, left out, every one shown. `{ rows }` is whole rows, `{
+ * columns }` whole columns, `{}` every cell; whole axes follow the rows and
+ * columns shown (a sort, a filter, new data). Two corners make a rectangle
+ * in the order shown, between them.
  */
 type DataTableCellRange = {
-  start: DataTableCellPosition
-  end: DataTableCellPosition
+  rows?: { start: string; end: string }
+  columns?: { start: string; end: string }
 }
 
 /** Why the cell selection changed. */
@@ -251,7 +254,7 @@ type DataTableCellSelectionChangeReason =
   | "clear"
   /** The selection became the cells a paste wrote. */
   | "paste"
-  /** Set through `useDataTable`. */
+  /** Set through `useDataTable` (`setCellSelection`, `selectAllCells`, `clearCellSelection`). */
   | "none"
 
 /** Why cells were written. */
@@ -260,7 +263,7 @@ type DataTableCellsChangeReason = "edit" | "paste" | "clear" | "fill"
 /** One cell written, for `onCellsChange`. */
 type DataTableCellChange<T> = {
   /** The row's id. */
-  id: string
+  row: string
   /** The column's id. */
   column: string
   item: T

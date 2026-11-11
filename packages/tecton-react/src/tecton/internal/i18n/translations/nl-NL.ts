@@ -177,6 +177,8 @@ export default defineTranslations({
     cellsSkipped: { other: "{total} niet bewerkbaar" },
     cellsInvalid: { other: "{total} ongeldig" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "‘{value}’: {message}",
+    selectCellsFirst: "Selecteer eerst cellen",
     cellsNotSaved: {
       one: "{total} cel niet opgeslagen: {message}",
       other: "{total} cellen niet opgeslagen: {message}",

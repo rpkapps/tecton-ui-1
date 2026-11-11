@@ -201,6 +201,8 @@ export default defineTranslations({
       other: "{total} nevalide",
     },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "„{value}”: {message}",
+    selectCellsFirst: "Selectați mai întâi celulele",
     cellsNotSaved: {
       one: "{total} celulă nesalvată: {message}",
       few: "{total} celule nesalvate: {message}",

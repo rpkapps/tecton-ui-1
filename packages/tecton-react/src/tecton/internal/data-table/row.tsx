@@ -80,6 +80,7 @@ import {
   type GroupRow,
   type ItemRow,
 } from "./engine/index"
+import { isCellEditable, shownMark } from "./cell-marks"
 import { DataTableRowHandle } from "./row-order"
 import { DataTableSelectionCheckbox } from "./selection-checkbox"
 
@@ -136,6 +137,7 @@ function rowIndex<T>(
 const NO_CELLS: Store<CellsState> = createStore<CellsState>({
   grid: null,
   marks: new Map(),
+  change: null,
 })
 
 function ItemRowComponent<T>({
@@ -146,11 +148,12 @@ function ItemRowComponent<T>({
   const { actions } = shared
   const cells = shared.cells ?? NO_CELLS
   const marks = useStore(cells, (state) => state.grid?.rowMarks(row.id) ?? "")
+  const skipped = useStore(cells, (state) => state.grid?.skipped ?? "")
   const writes = useStore(cells, (state) => state.marks.get(row.id))
   const columnCount = shared.columns.length
   const flags = React.useMemo(
-    () => decodeMarks(marks, columnCount),
-    [marks, columnCount]
+    () => decodeMarks(marks, columnCount, skipped),
+    [marks, columnCount, skipped]
   )
   // The cells' content, kept while the row and the table's state stay.
   const inner = React.useMemo(
@@ -223,7 +226,10 @@ function ItemRowComponent<T>({
             shared,
             inner[index],
             flags?.[index],
-            writes?.get(column.id)
+            writes &&
+              shownMark(writes.get(column.id), column.getValue(row.item)),
+            shared.editable &&
+              !isCellEditable(true, column, row.item, row.disabled)
           )
         )}
       </TableRow>

@@ -203,6 +203,8 @@ export default defineTranslations({
     cellsSkipped: { other: "нельзя изменить: {total}" },
     cellsInvalid: { other: "недопустимых значений: {total}" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "«{value}»: {message}",
+    selectCellsFirst: "Сначала выберите ячейки",
     cellsNotSaved: {
       one: "Не сохранена {total} ячейка: {message}",
       few: "Не сохранено {total} ячейки: {message}",

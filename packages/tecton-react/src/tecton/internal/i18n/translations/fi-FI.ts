@@ -180,6 +180,8 @@ export default defineTranslations({
       other: "{total} virheellistä",
     },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "”{value}”: {message}",
+    selectCellsFirst: "Valitse ensin solut",
     cellsNotSaved: {
       one: "{total} solua ei tallennettu: {message}",
       other: "{total} solua ei tallennettu: {message}",

@@ -36,6 +36,18 @@ type Feature<TModule> = {
   eager: boolean
 }
 
+/**
+ * What the editing code gives the table (phase §5.9): a cell to start
+ * editing, by Enter, F2 or a double click. Until it is there, those keys on
+ * an editable cell do nothing (`content.tsx`).
+ */
+type EditingFeature = {
+  startEditing?: (
+    cell: { row: string; column: string },
+    how: "enter" | "edit" | "double-click"
+  ) => void
+}
+
 function feature<TModule extends object>(
   load: () => Promise<TModule>,
   eager = false
@@ -47,7 +59,7 @@ const FEATURES = {
   /** `exportCsv`: loaded when it is first called, never prefetched. */
   csv: feature(() => import("./engine/csv")),
   /** `editable`: editors, validation, saves. */
-  editing: feature(pending),
+  editing: feature<EditingFeature>(pending),
   /** `cellSelectionMode`: ranges, the drag, copy and paste, fill down, writes. */
   cellSelection: feature(() => import("./cell-selection/index")),
   /** A cell's message (not valid, not saved) in a tooltip: loaded when one first shows. */
@@ -162,4 +174,4 @@ function useFeature<TName extends FeatureName>(
 }
 
 export { loadFeature, useFeature, usePrefetchFeatures }
-export type { FeatureModule, FeatureName }
+export type { EditingFeature, FeatureModule, FeatureName }

@@ -107,10 +107,10 @@ type UseDataTableResult<T> = {
    * first. Loads the exporter the first time it is called.
    */
   exportCsv: (options?: DataTableExportOptions) => Promise<string>
-  /** The selected cells' ranges (`cellSelectionMode`), by row id and column id. */
+  /** The selected cells' ranges (`cellSelectionMode`), by row ids and column ids. */
   cellSelection: ReadonlyArray<DataTableCellRange>
   setCellSelection: (cellSelection: ReadonlyArray<DataTableCellRange>) => void
-  /** Selects every cell shown, on every page (one range). */
+  /** Selects every cell shown, on every page: `[{}]`, which stays every cell. */
   selectAllCells: () => void
   clearCellSelection: () => void
   /** The number of cells selected, each counted once; worked out when read. */
@@ -121,17 +121,21 @@ type UseDataTableResult<T> = {
    * and mean (`null` without numbers); `null` with no cell selected.
    */
   cellSummary: DataTableCellSummaryValue | null
+  /** Drops every cell's message (a value refused, a save that failed). */
+  clearCellMessages: () => void
   /**
    * Copies the selected cells to the clipboard (tab-separated text and an
-   * HTML table, as Ctrl / Cmd + C does) and resolves with the text.
+   * HTML table, as Ctrl / Cmd + C does) and resolves with the text. Text
+   * that a spreadsheet would run as a formula gets a leading `'` unless
+   * `escapeFormulas` is `false`.
    */
-  copyCells: () => Promise<string>
+  copyCells: (options?: { escapeFormulas?: boolean }) => Promise<string>
   /** Pastes tab-separated text into the selected cells (`editable`), as Ctrl / Cmd + V does. */
   pasteCells: (text: string) => Promise<void>
   /** Empties the selected cells that can be written (`editable`), as Delete does. */
-  clearCellValues: () => Promise<void>
+  clearCells: () => Promise<void>
   /** Fills each range down from its first row (`editable`), as Ctrl / Cmd + D does. */
-  fillDown: () => Promise<void>
+  fillCellsDown: () => Promise<void>
 }
 
 /** `useDataTable().cellSummary`. */
@@ -225,24 +229,7 @@ function createResult<T>(
       actions.setCellSelection(cellSelection, "none")
     },
     selectAllCells: () => {
-      const { cellGrid } = state
-      if (!cellGrid) return
-      const items = cellGrid.rows.filter((row) => row.kind === "item")
-      const [firstRow, lastRow] = [items.at(0), items.at(-1)]
-      const [firstColumn, lastColumn] = [
-        cellGrid.columns.at(0),
-        cellGrid.columns.at(-1),
-      ]
-      if (!firstRow || !lastRow || !firstColumn || !lastColumn) return
-      actions.setCellSelection(
-        [
-          {
-            start: { row: firstRow.id, column: firstColumn.id },
-            end: { row: lastRow.id, column: lastColumn.id },
-          },
-        ],
-        "none"
-      )
+      actions.setCellSelection([{}], "none")
     },
     clearCellSelection: () => {
       actions.setCellSelection([], "none")
@@ -256,14 +243,15 @@ function createResult<T>(
       const { count, numericCount, sum, average } = summarizeCells(grid)
       return { count, numericCount, sum, average }
     },
-    copyCells: () => actions.runCellCommand("copy"),
+    clearCellMessages: () => actions.clearCellMessages(),
+    copyCells: (options) => actions.runCellCommand("copy", options),
     pasteCells: async (text) => {
-      await actions.runCellCommand("paste", text)
+      await actions.runCellCommand("paste", { text })
     },
-    clearCellValues: async () => {
+    clearCells: async () => {
       await actions.runCellCommand("clear")
     },
-    fillDown: async () => {
+    fillCellsDown: async () => {
       await actions.runCellCommand("fill")
     },
   }

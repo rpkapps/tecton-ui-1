@@ -2,7 +2,9 @@
  * The cells of a cell selection (`cells.ts`), read from their items: each
  * selected cell once (ranges that overlap share theirs), their number, and
  * the figures `DataTableCellSummary` shows. Group rows inside a range are
- * passed over. Kept apart from `cells.ts` (what the rows read to draw the
+ * passed over, and so are the columns hidden below the window's
+ * breakpoint. The count and the summary are kept per selection (`CellGrid`):
+ * reading them again costs nothing. Kept apart from `cells.ts` (what the rows read to draw the
  * selection), so a table that never walks its cells up front (no summary;
  * the code that copies and writes loads on demand) does not bundle this
  * with it.
@@ -45,12 +47,13 @@ function forEachCell<T>(
     columnIndex: number
   ) => void
 ) {
-  const { rects, rows, columns } = grid
+  const { rects, rows, columns, skip } = grid
   rects.forEach((rect, k) => {
     for (let r = rect.top; r <= rect.bottom; r++) {
       const row = rows[r]
       if (row.kind !== "item") continue
       for (let c = rect.first; c <= rect.last; c++) {
+        if (skip?.[c] === 1) continue
         if (k > 0 && inEarlier(rects, k, r, c)) continue
         visit(row, columns[c], r, c)
       }
@@ -70,22 +73,29 @@ function itemRowsIn<T>(
   return indices
 }
 
+const counts = new WeakMap<object, number>()
+
 /** The number of selected cells, each counted once. */
 function cellCount<T>(grid: CellGrid<T>) {
-  const { rects, rows } = grid
-  if (rects.length === 0) return 0
+  const count = counts.get(grid)
+  if (count !== undefined) return count
+  const { rects, rows, skip } = grid
+  let total = 0
   // Without group rows (a flat list, a tree), one rect is its area.
   if (rects.length === 1 && grid.model.groupKeys().length === 0) {
     const [rect] = rects
-    return (rect.bottom - rect.top + 1) * (rect.last - rect.first + 1)
-  }
-  let count = 0
-  rects.forEach((rect, k) => {
-    for (const r of itemRowsIn(rows, rect.top, rect.bottom))
-      for (let c = rect.first; c <= rect.last; c++)
-        if (k === 0 || !inEarlier(rects, k, r, c)) count++
-  })
-  return count
+    let across = 0
+    for (let c = rect.first; c <= rect.last; c++) if (skip?.[c] !== 1) across++
+    total = (rect.bottom - rect.top + 1) * across
+  } else
+    rects.forEach((rect, k) => {
+      for (const r of itemRowsIn(rows, rect.top, rect.bottom))
+        for (let c = rect.first; c <= rect.last; c++)
+          if (skip?.[c] !== 1 && (k === 0 || !inEarlier(rects, k, r, c)))
+            total++
+    })
+  counts.set(grid, total)
+  return total
 }
 
 /** What `DataTableCellSummary` shows of the selected cells. */
@@ -102,8 +112,12 @@ type CellSummary<T> = {
   numberColumns: ReadonlyArray<EngineColumn<T>>
 }
 
+const summaries = new WeakMap<object, CellSummary<never>>()
+
 /** Counts and sums the selected cells, from their items. */
 function summarizeCells<T>(grid: CellGrid<T>): CellSummary<T> {
+  const known = summaries.get(grid) as CellSummary<T> | undefined
+  if (known) return known
   let count = 0
   let numericCount = 0
   let sum = 0
@@ -119,13 +133,15 @@ function summarizeCells<T>(grid: CellGrid<T>): CellSummary<T> {
     sum += number
     numberColumns.add(column)
   })
-  return {
+  const summary: CellSummary<T> = {
     count,
     numericCount,
     sum: numericCount ? sum : null,
     average: numericCount ? sum / numericCount : null,
     numberColumns: [...numberColumns],
   }
+  summaries.set(grid, summary)
+  return summary
 }
 
 export { cellCount, forEachCell, itemRowsIn, summarizeCells }

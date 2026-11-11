@@ -178,6 +178,8 @@ export default defineTranslations({
     cellsSkipped: { other: "{total} nicht bearbeitbar" },
     cellsInvalid: { other: "{total} ungültig" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "„{value}“: {message}",
+    selectCellsFirst: "Wählen Sie zuerst Zellen aus",
     cellsNotSaved: {
       one: "{total} Zelle nicht gespeichert: {message}",
       other: "{total} Zellen nicht gespeichert: {message}",

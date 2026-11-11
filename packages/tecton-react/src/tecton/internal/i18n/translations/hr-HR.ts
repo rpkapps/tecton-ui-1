@@ -192,6 +192,8 @@ export default defineTranslations({
     cellsSkipped: { other: "ne može se uređivati: {total}" },
     cellsInvalid: { other: "nevaljano: {total}" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "„{value}”: {message}",
+    selectCellsFirst: "Najprije odaberite ćelije",
     cellsNotSaved: {
       one: "{total} ćelija nije spremljena: {message}",
       few: "{total} ćelije nisu spremljene: {message}",

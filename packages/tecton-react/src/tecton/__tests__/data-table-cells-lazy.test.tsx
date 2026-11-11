@@ -52,8 +52,8 @@ const range = (
   endRow = startRow,
   endColumn = startColumn
 ): DataTableCellRange => ({
-  start: { row: startRow, column: startColumn },
-  end: { row: endRow, column: endColumn },
+  rows: { start: startRow, end: endRow },
+  columns: { start: startColumn, end: endColumn },
 })
 
 const td = (table: HTMLElement, well: string, column: string) =>
@@ -126,7 +126,7 @@ describe("DataTable cell selection on demand", () => {
     await act(() => new Promise((resolve) => setTimeout(resolve, 100)))
     expect(chunk.requested).not.toHaveBeenCalled()
 
-    // A press, Shift + Down and a copy before the code: focus moves at
+    // A press, Shift + Down and Ctrl + C before the code: focus moves at
     // once, the selection waits.
     fireEvent.mouseDown(td(used, "Well 1", "field"), { button: 0 })
     fireEvent.mouseUp(window)
@@ -137,8 +137,7 @@ describe("DataTable cell selection on demand", () => {
       shiftKey: true,
     })
     expect(document.activeElement).toBe(td(used, "Well 2", "field"))
-    const data = { setData: vi.fn(), getData: () => "" }
-    fireEvent.copy(document.activeElement!, { clipboardData: data })
+    fireEvent.keyDown(document.activeElement!, { key: "c", ctrlKey: true })
     expect(onCellSelectionChange).not.toHaveBeenCalled()
     expect(used.querySelector('[aria-selected="true"]')).toBeNull()
 
@@ -158,7 +157,6 @@ describe("DataTable cell selection on demand", () => {
     await waitFor(() =>
       expect(writeText).toHaveBeenCalledWith("Gullfaks\r\nSnorre")
     )
-    expect(data.setData).not.toHaveBeenCalled()
     // Nothing drawn changed as the code arrived.
     expect(untouched.outerHTML).toBe(before)
     // Before the idle callbacks are no longer stubbed.

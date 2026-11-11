@@ -158,6 +158,8 @@ export default defineTranslations({
     cellsSkipped: { other: "編集不可 {total} 個" },
     cellsInvalid: { other: "無効 {total} 個" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "「{value}」: {message}",
+    selectCellsFirst: "先にセルを選択してください",
     cellsNotSaved: {
       other: "{total} 個のセルを保存できませんでした: {message}",
     },

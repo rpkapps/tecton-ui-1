@@ -149,6 +149,8 @@ export default defineTranslations({
     cellsSkipped: { other: "편집 불가 {total}개" },
     cellsInvalid: { other: "유효하지 않음 {total}개" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "“{value}”: {message}",
+    selectCellsFirst: "먼저 셀을 선택하세요",
     cellsNotSaved: { other: "셀 {total}개를 저장하지 못함: {message}" },
     saveFailed: "변경 사항을 저장할 수 없습니다",
     copyMultiple:

@@ -197,6 +197,8 @@ export default defineTranslations({
       other: "{total} לא חוקיים",
     },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "„{value}”: {message}",
+    selectCellsFirst: "יש לבחור תאים תחילה",
     cellsNotSaved: {
       one: "תא אחד לא נשמר: {message}",
       two: "{total} תאים לא נשמרו: {message}",

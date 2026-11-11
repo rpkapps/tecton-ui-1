@@ -209,6 +209,12 @@ const enUS = {
     cellsInvalid: { other: "{total} not valid" },
     // A cell's message: its column's name and why its value was refused.
     cellMessage: "{columnName}: {message}",
+    // A cell's message in its tooltip and description: the value refused
+    // (or not saved) and why.
+    refusedValue: "“{value}”: {message}",
+    // Copy, paste, Delete or fill down with focus off the data cells (on a
+    // header, a group row or the totals row).
+    selectCellsFirst: "Select cells first",
     // Announced when a save of written cells fails; {message} is the
     // application's error.
     cellsNotSaved: {

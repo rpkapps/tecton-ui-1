@@ -179,6 +179,8 @@ export default defineTranslations({
     cellsSkipped: { one: "{total} no editable", other: "{total} no editables" },
     cellsInvalid: { one: "{total} no válida", other: "{total} no válidas" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "«{value}»: {message}",
+    selectCellsFirst: "Seleccione primero las celdas",
     cellsNotSaved: {
       one: "{total} celda no guardada: {message}",
       other: "{total} celdas no guardadas: {message}",

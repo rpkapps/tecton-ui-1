@@ -204,6 +204,8 @@ export default defineTranslations({
     cellsSkipped: { other: "nieedytowalne: {total}" },
     cellsInvalid: { other: "nieprawidłowe: {total}" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "„{value}”: {message}",
+    selectCellsFirst: "Najpierw zaznacz komórki",
     cellsNotSaved: {
       one: "Nie zapisano {total} komórki: {message}",
       few: "Nie zapisano {total} komórek: {message}",

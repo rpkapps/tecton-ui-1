@@ -167,6 +167,8 @@ export default defineTranslations({
     cellsSkipped: { other: "{total} nem szerkeszthető" },
     cellsInvalid: { other: "{total} érvénytelen" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "„{value}”: {message}",
+    selectCellsFirst: "Először jelöljön ki cellákat",
     cellsNotSaved: { other: "{total} cella mentése nem sikerült: {message}" },
     saveFailed: "A módosítást nem sikerült menteni",
     copyMultiple:

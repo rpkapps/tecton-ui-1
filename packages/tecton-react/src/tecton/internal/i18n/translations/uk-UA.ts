@@ -204,6 +204,8 @@ export default defineTranslations({
     cellsSkipped: { other: "не можна змінити: {total}" },
     cellsInvalid: { other: "недійсних значень: {total}" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "«{value}»: {message}",
+    selectCellsFirst: "Спершу виберіть клітинки",
     cellsNotSaved: {
       one: "Не збережено {total} клітинку: {message}",
       few: "Не збережено {total} клітинки: {message}",

@@ -711,12 +711,6 @@ function DataTableContentImpl({
   const gridController = React.useRef<TableGridController | null>(null)
   const rowOrder = useRowOrder(context, frame, gridController, model, handle)
   const cellMode = options.cellSelectionMode !== "none"
-  const cellSelection = useCellSelection({
-    context,
-    container,
-    grid: gridController,
-    on: cellMode,
-  })
 
   const rowHeader = shownColumns.find(
     (column) => column.id === layout.rowHeader
@@ -797,6 +791,8 @@ function DataTableContentImpl({
       pinned,
       actions,
       cells: cellMode ? context.cells : null,
+      cellFocus: options.cellFocus,
+      editable: options.editable,
     }),
     [
       shownColumns,
@@ -831,6 +827,8 @@ function DataTableContentImpl({
       actions,
       cellMode,
       context.cells,
+      options.cellFocus,
+      options.editable,
     ]
   )
   const render = React.useCallback(
@@ -852,6 +850,22 @@ function DataTableContentImpl({
   // The body's rows as rendered, for the grid to find a closed group: set
   // before the layout effects, where the grid looks for it.
   const shownRows = React.useRef(rows)
+  // A row's place in the body (detail rows counted), for focus to go to a
+  // cell selection's corner.
+  const bodyIndex = React.useCallback(
+    (id: string) =>
+      shownRows.current.findIndex(
+        (row) => row.kind === "item" && row.id === id && !row.continued
+      ),
+    []
+  )
+  const cellSelection = useCellSelection({
+    context,
+    container,
+    grid: gridController,
+    on: cellMode,
+    bodyIndex,
+  })
   // A group's row to focus once the page that holds it shows
   // (`restoreFocusTo`): tried on the first render after it is asked for,
   // and given up there when the page did not change (a controlled `page`
@@ -924,6 +938,7 @@ function DataTableContentImpl({
       // A row is entered at its first column of data.
       firstCell: (selection ? 1 : 0) + (handle ? 1 : 0),
       onCellNavigate: cellMode ? cellSelection.onCellNavigate : undefined,
+      onCellAction: options.cellFocus ? cellSelection.onCellAction : undefined,
       multiselectable: options.cellSelectionMode === "range",
       // Select all and the header read the engine, never the rows'
       // descriptions: no row is formatted or described for them.
@@ -990,6 +1005,7 @@ function DataTableContentImpl({
       options.cellSelectionMode,
       cellMode,
       cellSelection.onCellNavigate,
+      cellSelection.onCellAction,
       selection,
       handle,
       server,
@@ -1148,6 +1164,8 @@ function DataTableContentImpl({
             aria-describedby={ariaDescribedBy}
             aria-busy={loading || undefined}
             onKeyDown={cellMode ? cellSelection.onKeyDown : undefined}
+            onFocus={cellMode ? cellSelection.onFocus : undefined}
+            onMouseDown={cellMode ? cellSelection.onMouseDown : undefined}
             // Left out, not undefined: a virtualized body counts its own.
             {...(rowCount === undefined ? {} : { "aria-rowcount": rowCount })}
           >

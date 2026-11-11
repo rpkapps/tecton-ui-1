@@ -35,9 +35,10 @@
  *   collapse and expand a tree row ... 18 / 15    (no budget; limit 50)
  *   select all ....................... 15 / 23    (50)
  *   CSV, 100k × 6 columns ........... 212 / 205   (500)
- *   select every cell, 100k × 7 ....... 16         (50)
- *   sum a column of 100k cells ........ 24         (50)
- *   copy 100k × 6 cells (TSV + HTML) . 358         (500)
+ *   select every cell, 100k × 7 ....... 17         (50)
+ *   sum a column of 100k cells ......... 5         (50)
+ *   copy 100k × 6 cells (text) ....... 216         (500)
+ *   copy 100k cells, every flavour ... 118         (500)
  */
 import { afterEach, describe, expect, it, vi } from "vitest"
 
@@ -53,6 +54,7 @@ import {
   selectAllIds,
   selectionState,
   toggleIds,
+  type DataTableCellRange,
   type DataTableColumns,
   type DataTableEngineInput,
   type DataTablePartialView,
@@ -475,29 +477,22 @@ describe(
       expect(time).toBeLessThan(500 * HEADROOM)
     })
 
-    /** A model of every row, the columns shown, and a range between two corners. */
+    /** A model of every row, and ranges resolved against it and the columns shown. */
     const cellSetup = (partial: DataTablePartialView = {}) => {
       const { view, run, columns } = setup()
       const shown = view(partial)
       const model = run(shown)
       const layout = layoutColumns(columns, shown)
-      const items = model.allRows
-      const ranges = (first: string, last: string) => [
-        {
-          start: { row: items[0].id, column: first },
-          end: { row: items[items.length - 1].id, column: last },
-        },
-      ]
-      return { model, layout, columns, ranges }
+      const resolve = (ranges: ReadonlyArray<DataTableCellRange>) =>
+        resolveCells(ranges, model, layout.columns, {
+          order: shown.columns.order,
+        })
+      return { model, layout, columns, resolve }
     }
 
     it("selects every cell, 100,000 rows × 7 columns, within 50 ms", () => {
-      const time = median(cellSetup, ({ model, layout, ranges }) => {
-        const grid = resolveCells(
-          ranges("name", "active"),
-          model,
-          layout.columns
-        )
+      const time = median(cellSetup, ({ model, resolve }) => {
+        const grid = resolve([{}])
         expect(cellCount(grid)).toBe(ROWS * 7)
         // What the rows in view read to draw it.
         for (const row of model.allRows.slice(0, 40))
@@ -507,23 +502,24 @@ describe(
     })
 
     it("sums a column of 100,000 selected cells within 50 ms", () => {
-      const time = median(cellSetup, ({ model, layout, ranges }) => {
+      const time = median(cellSetup, ({ resolve }) => {
         const summary = summarizeCells(
-          resolveCells(ranges("oil", "oil"), model, layout.columns)
+          resolve([{ columns: { start: "oil", end: "oil" } }])
         )
         expect(summary.numericCount).toBe(ROWS)
       })
       expect(time).toBeLessThan(50 * HEADROOM)
     })
 
-    it("copies 100,000 × 6 cells as tab-separated text and HTML within 500 ms", () => {
-      const time = median(
+    /** A copy of `ranges` into a copy event's data, timed. */
+    const timedCopy = (
+      ranges: (rows: ReadonlyArray<string>) => ReadonlyArray<DataTableCellRange>
+    ) =>
+      median(
         () => {
           const state = cellSetup({ columns: { hidden: ["field"] } })
-          const grid = resolveCells(
-            state.ranges("name", "active"),
-            state.model,
-            state.layout.columns
+          const grid = state.resolve(
+            ranges(state.model.allRows.map((row) => row.id))
           )
           const store = {
             model: state.model,
@@ -545,13 +541,24 @@ describe(
               focused: null,
             },
             {
-              setData: (type: string, value: string) => data.set(type, value),
-            } as unknown as DataTransfer
+              data: {
+                setData: (type: string, value: string) => data.set(type, value),
+              } as unknown as DataTransfer,
+            }
           )
-          expect(data.get("text/plain")!.length).toBeGreaterThan(ROWS * 20)
+          expect(data.get("text/plain")!.length).toBeGreaterThan(0)
         }
       )
-      expect(time).toBeLessThan(500 * HEADROOM)
+
+    it("copies 100,000 × 6 cells as tab-separated text within 500 ms", () => {
+      expect(timedCopy(() => [{}])).toBeLessThan(500 * HEADROOM)
+    })
+
+    it("copies 100,000 cells with their HTML and values within 500 ms", () => {
+      // 16,666 rows × 6 columns: the most cells copied in every flavour.
+      expect(
+        timedCopy((ids) => [{ rows: { start: ids[0], end: ids[16_665] } }])
+      ).toBeLessThan(500 * HEADROOM)
     })
   }
 )

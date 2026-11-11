@@ -2,27 +2,28 @@
 
 /**
  * The cell selection's side of `DataTableContent` that is there from the
- * first render (§7): which keys and presses are the cell selection's, and
- * the clipboard's events, recorded and handed to the code that acts on
- * them (`cell-selection/`, loaded on demand), at once when it is there.
+ * first render (§7): which keys and presses are the cell selection's, kept
+ * in order and handed to the code that acts on them (`cell-selection/`,
+ * loaded on demand: from the table's first focus, or in idle time), at
+ * once when it is there. That code handles the clipboard's events too;
+ * before it is there, Ctrl / Cmd + C begins its write in the key's own
+ * moment, with the content to come (a `ClipboardItem` of promises), and
+ * Ctrl / Cmd + V keeps the paste event's text.
  *
  * - The grid moves focus cell by cell (`TableGridOptions.cellFocus`) and
- *   says where it went (`onCellNavigate`): the selection follows.
- * - Keys (on a cell, not in a field): Shift + Space selects the rows of the
- *   range, Ctrl + Space its columns, Ctrl / Cmd + A every cell (on a data
+ *   says where it went (`onCellNavigate`): the selection follows. Tab into
+ *   a table with no cell selected selects the cell it enters.
+ * - Keys (on a cell, not in a field): Shift + Space selects the range's
+ *   rows, Ctrl + Space its columns, Ctrl / Cmd + A every cell (on a data
  *   cell, or always without row selection: from the checkbox column it
  *   selects every row), Escape clears the cell selection (the row
  *   selection on a second press), Delete / Backspace clears the cells and
- *   Ctrl / Cmd + D fills down (`editable`).
- * - Copy and paste are the browser's own events, handled while focus is
- *   on the table's cells: their data is the clipboard's, in every format,
- *   with no permission asked. Where the browser sends none for a table's
- *   cell (Safari, with no text selected), Ctrl / Cmd + C and V fall back
- *   to the Clipboard API.
- * - Before the code has loaded, what the user does waits and is replayed
- *   once it is there, in order: the selection follows every move and
- *   press (a press still held starts its drag), and a command runs unless
- *   focus has left the table since. Nothing renders differently meanwhile.
+ *   Ctrl / Cmd + D fills down (`editable`). Off the data cells (a header,
+ *   a group or totals row), those that would write or copy say to select
+ *   cells first.
+ * - Enter, F2 and a double click on a cell that can be written are its
+ *   editor's (`EditingFeature`): until there is one, they do nothing
+ *   there; on other cells, Enter and a double click activate the row.
  */
 import * as React from "react"
 
@@ -33,6 +34,7 @@ import {
   type TableGridController,
   type TableGridOptions,
 } from "../table-grid"
+import type { CopySink } from "./cell-selection/index"
 import type { DataTableContextValue } from "./context"
 import type { DataTableCellPosition } from "./engine/index"
 import { useFeature } from "./lazy"
@@ -45,13 +47,17 @@ type CellCommand =
   | "clear-selection"
   | "clear"
   | "fill"
+  /** Copy, paste or a write with focus off the data cells. */
+  | "notice"
+
+type Position = DataTableCellPosition
 
 /** What the user did, as the code on demand takes it (`createCellController`). */
 type CellEvent =
   | {
       kind: "navigate"
-      to: DataTableCellPosition
-      from: DataTableCellPosition | null
+      to: Position
+      from: Position | null
       extend: boolean
       add: boolean
       event: Event
@@ -61,22 +67,17 @@ type CellEvent =
   | {
       kind: "command"
       command: CellCommand
-      focused: DataTableCellPosition | null
+      focused: Position | null
       event: Event
     }
   | {
       kind: "paste"
-      /** The pasted text, or `null` to read it from the Clipboard API. */
-      text: string | null
-      focused: DataTableCellPosition | null
+      /** What a paste event carried; `null` to read the Clipboard API. */
+      pasted: { text: string; values?: string } | null
+      focused: Position | null
       event: Event
     }
-  | {
-      kind: "copy"
-      focused: DataTableCellPosition | null
-      /** A copy event's data, written at once; else the Clipboard API's. */
-      data: DataTransfer | null
-    }
+  | { kind: "copy"; focused: Position | null; sink: CopySink }
 
 /** What the code on demand works with: the table, its cells and the grid. */
 type CellEnvironment = {
@@ -87,7 +88,11 @@ type CellEnvironment = {
   container: () => HTMLElement | null
   grid: React.RefObject<TableGridController | null>
   /** A cell's place, when it is a data cell of an item row of this table. */
-  positionOf: (cell: Element | null) => DataTableCellPosition | null
+  positionOf: (cell: Element | null) => Position | null
+  /** Whether focus is on this table (not in a field, nor a table nested in it). */
+  focusIn: () => boolean
+  /** A row's place among the body's rows rendered or not (-1 when not on the page). */
+  bodyIndex: (id: string) => number
 }
 
 /** The command of a key, if the cell selection takes it. */
@@ -122,10 +127,45 @@ function commandOf(
       return "select-column"
     return null
   }
-  if (!editable || !(onCell || selected)) return null
-  if ((key === "Delete" || key === "Backspace") && !mod) return "clear"
-  if (mod && key === "d" && !event.shiftKey) return "fill"
-  return null
+  if (!editable) return null
+  const write =
+    ((key === "Delete" || key === "Backspace") && !mod) ||
+    (mod && key === "d" && !event.shiftKey)
+  if (!write) return null
+  if (!onCell) return selected ? "notice" : null
+  return key === "d" ? "fill" : "clear"
+}
+
+/**
+ * A Clipboard API write begun now, in the user's gesture, with the
+ * content to come (`resolve`); `null` where the browser cannot.
+ */
+function beginWrite(): CopySink {
+  const clipboard =
+    typeof navigator === "undefined"
+      ? undefined
+      : (navigator as { clipboard?: Partial<Clipboard> }).clipboard
+  if (typeof ClipboardItem !== "function" || !clipboard?.write) return null
+  let resolve: (copied: { text: string; html: string } | null) => void = () =>
+    undefined
+  const copied = new Promise<{ text: string; html: string } | null>((done) => {
+    resolve = done
+  })
+  const blob = (type: string, part: "text" | "html") =>
+    copied.then((content) => {
+      // Nothing to copy: the write fails, the clipboard stays.
+      if (!content) throw new Error("Nothing to copy")
+      return new Blob([content[part]], { type })
+    })
+  clipboard
+    .write([
+      new ClipboardItem({
+        "text/plain": blob("text/plain", "text"),
+        "text/html": blob("text/html", "html"),
+      }),
+    ])
+    .catch(() => undefined)
+  return { resolve }
 }
 
 function useCellSelection({
@@ -133,18 +173,22 @@ function useCellSelection({
   container,
   grid,
   on,
+  bodyIndex,
 }: {
   context: DataTableContextValue<unknown>
   /** The table's scroll container. */
   container: React.RefObject<HTMLDivElement | null>
   grid: React.RefObject<TableGridController | null>
   on: boolean
+  bodyIndex: (id: string) => number
 }) {
   const t = useTranslations("dataTable")
   const { module, load } = useFeature("cellSelection", on)
-  const translate = React.useRef(t)
+  // Read only for a cell that can be written.
+  const editing = useFeature("editing", true).module
+  const latest = React.useRef({ t, bodyIndex, editing })
   React.useInsertionEffect(() => {
-    translate.current = t
+    latest.current = { t, bodyIndex, editing }
   })
   const [queue] = React.useState<Array<CellEvent>>(() => [])
 
@@ -154,7 +198,7 @@ function useCellSelection({
       null
     return {
       context,
-      t: () => translate.current,
+      t: () => latest.current.t,
       table,
       container: () => container.current,
       grid,
@@ -169,99 +213,99 @@ function useCellSelection({
           ? null
           : { row, column }
       },
+      focusIn: () => {
+        const own = table()
+        const active = own?.ownerDocument.activeElement
+        return (
+          !!own &&
+          active instanceof HTMLElement &&
+          own.contains(active) &&
+          active.closest("table") === own &&
+          !isTextEntry(active)
+        )
+      },
+      bodyIndex: (id) => latest.current.bodyIndex(id),
     }
   })
   const controller = React.useMemo(
     () => module?.createCellController(environment),
     [module, environment]
   )
-  React.useEffect(() => () => controller?.stop(), [controller])
-  const latest = React.useRef(controller)
+  const latestController = React.useRef(controller)
   React.useInsertionEffect(() => {
-    latest.current = controller
+    latestController.current = controller
   })
+  React.useEffect(() => () => controller?.stop(), [controller])
 
   const { table, positionOf } = environment
-  /** Whether focus is on this table (not in a field, nor a table nested in it). */
-  const focusIn = () => {
-    const own = table()
-    const active = own?.ownerDocument.activeElement
-    return (
-      !!own &&
-      active instanceof HTMLElement &&
-      own.contains(active) &&
-      active.closest("table") === own &&
-      !isTextEntry(active)
-    )
-  }
-  const focusedAt = () =>
-    positionOf(table()?.ownerDocument.activeElement?.closest("td, th") ?? null)
   const hasRanges = () => context.actions.currentCellSelection().length > 0
 
-  const dispatch = (entry: CellEvent) => {
-    if (latest.current) return latest.current.run(entry)
-    queue.push(entry)
-    // A press let go before the code came was a click: no drag.
-    if (entry.kind === "navigate" && entry.press) {
-      const press = entry.press
-      const view = table()?.ownerDocument.defaultView ?? window
-      const release = () => {
-        press.released = true
-        view.removeEventListener("mouseup", release, true)
+  const dispatch = React.useCallback(
+    (entry: CellEvent) => {
+      const current = latestController.current
+      if (current) return current.run(entry)
+      queue.push(entry)
+      // A press let go before the code came was a click: no drag.
+      if (entry.kind === "navigate" && entry.press) {
+        const press = entry.press
+        const view = environment.table()?.ownerDocument.defaultView ?? window
+        const release = () => {
+          press.released = true
+          view.removeEventListener("mouseup", release, true)
+        }
+        view.addEventListener("mouseup", release, true)
       }
-      view.addEventListener("mouseup", release, true)
-    }
-    load()
-  }
+      load()
+    },
+    [queue, environment, load]
+  )
 
-  // Replays what waited, once the code is there.
+  // Replays what waited, once the code is there: every move, and the
+  // commands while focus is still on the table.
   React.useEffect(() => {
     if (!controller) return
     const waiting = queue.splice(0)
-    const focused = focusIn()
+    const focused = environment.focusIn()
     for (const entry of waiting)
       if (entry.kind === "navigate" || focused) controller.run(entry)
-  })
+  }, [controller, queue, environment])
 
-  /** A Ctrl / Cmd + C or V whose clipboard event has not come (yet). */
-  const awaited = React.useRef<{ handled: boolean } | null>(null)
+  /** A press in progress: the focus it brings is its own (not Tab's). */
+  const pressing = React.useRef(false)
 
-  React.useEffect(() => {
-    const doc = container.current?.ownerDocument
-    if (!on || !doc) return
-    const handle = (event: ClipboardEvent, paste: boolean) => {
-      if (!focusIn()) return
-      if (paste && !context.store.get().options.editable) return
-      if (awaited.current) awaited.current.handled = true
-      const focused = focusedAt()
-      if (!focused && !hasRanges()) return
-      event.preventDefault()
-      // A copy's data is written now, or (the code still to come) through
-      // the Clipboard API once it is; a paste's text is read now.
-      dispatch(
-        paste
-          ? {
-              kind: "paste",
-              text: event.clipboardData?.getData("text/plain") ?? "",
-              focused,
-              event,
-            }
-          : {
-              kind: "copy",
-              focused,
-              data: latest.current ? event.clipboardData : null,
-            }
-      )
-    }
-    const onCopy = (event: ClipboardEvent) => handle(event, false)
-    const onPaste = (event: ClipboardEvent) => handle(event, true)
-    doc.addEventListener("copy", onCopy)
-    doc.addEventListener("paste", onPaste)
-    return () => {
-      doc.removeEventListener("copy", onCopy)
-      doc.removeEventListener("paste", onPaste)
-    }
-  })
+  const onMouseDown = () => {
+    pressing.current = true
+    setTimeout(() => {
+      pressing.current = false
+    })
+  }
+
+  const onFocus = (event: React.FocusEvent<HTMLTableElement>) => {
+    if (!on) return
+    // The code, as soon as the table is used.
+    load()
+    const own = table()
+    const from = event.relatedTarget
+    if (
+      pressing.current ||
+      hasRanges() ||
+      (from instanceof Node && own?.contains(from))
+    )
+      return
+    // Tab into the table: its cell is the selection.
+    const to = positionOf(
+      (event.target as Element | null)?.closest("td, th") ?? null
+    )
+    if (to)
+      dispatch({
+        kind: "navigate",
+        to,
+        from: null,
+        extend: false,
+        add: false,
+        event: event.nativeEvent,
+      })
+  }
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLTableElement>) => {
     if (!on || event.defaultPrevented || event.altKey) return
@@ -274,20 +318,51 @@ function useCellSelection({
     const selected = hasRanges()
     const mod = isMac() ? event.metaKey : event.ctrlKey
     const key = event.key.toLowerCase()
+    const done = () => {
+      event.preventDefault()
+      event.stopPropagation()
+    }
     if (mod && !event.shiftKey && (key === "c" || key === "v")) {
       if ((!focused && !selected) || (key === "v" && !editable)) return
-      // Not prevented: the browser's copy or paste event follows; where
-      // none comes, the Clipboard API.
-      const waiting = { handled: false }
-      awaited.current = waiting
       const native = event.nativeEvent
+      const current = latestController.current
+      if (current) {
+        if (current.key(key === "c" ? "copy" : "paste", focused, native)) done()
+        return
+      }
+      if (!focused) {
+        done()
+        return dispatch({
+          kind: "command",
+          command: "notice",
+          focused,
+          event: native,
+        })
+      }
+      if (key === "c") {
+        // The write begins now, in the key's moment (a later write could
+        // be refused); without the Clipboard API, once the code is there.
+        done()
+        return dispatch({ kind: "copy", focused, sink: beginWrite() })
+      }
+      // The browser's paste event, its text kept for the code; where none
+      // comes, the Clipboard API's.
+      const doc = target.ownerDocument
+      let pasted: CellEvent | null = null
+      const keep = (paste: ClipboardEvent) => {
+        paste.preventDefault()
+        pasted = {
+          kind: "paste",
+          pasted: { text: paste.clipboardData?.getData("text/plain") ?? "" },
+          focused,
+          event: paste,
+        }
+      }
+      doc.addEventListener("paste", keep, { once: true })
       setTimeout(() => {
-        if (awaited.current === waiting) awaited.current = null
-        if (waiting.handled) return
+        doc.removeEventListener("paste", keep)
         dispatch(
-          key === "c"
-            ? { kind: "copy", focused, data: null }
-            : { kind: "paste", text: null, focused, event: native }
+          pasted ?? { kind: "paste", pasted: null, focused, event: native }
         )
       })
       return
@@ -300,8 +375,7 @@ function useCellSelection({
       selected,
     })
     if (!command) return
-    event.preventDefault()
-    event.stopPropagation()
+    done()
     dispatch({ kind: "command", command, focused, event: event.nativeEvent })
   }
 
@@ -325,19 +399,57 @@ function useCellSelection({
     })
   }
 
+  // Enter, F2, a double click: a cell that can be written is its editor's.
+  // It is one not `aria-readonly` in a table whose cells are written.
+  const onCellAction: NonNullable<TableGridOptions["onCellAction"]> = (
+    cell,
+    _event,
+    how
+  ) => {
+    const at = positionOf(cell)
+    if (
+      !at ||
+      !context.store.get().options.editable ||
+      cell.getAttribute("aria-readonly") === "true"
+    )
+      return false
+    latest.current.editing?.startEditing?.(at, how)
+    return true
+  }
+
   // Stable for the grid's options and the table: they call the latest.
-  const handlers = React.useRef({ onKeyDown, onCellNavigate })
+  const handlers = React.useRef({
+    onKeyDown,
+    onCellNavigate,
+    onCellAction,
+    onFocus,
+    onMouseDown,
+  })
   React.useInsertionEffect(() => {
-    handlers.current = { onKeyDown, onCellNavigate }
+    handlers.current = {
+      onKeyDown,
+      onCellNavigate,
+      onCellAction,
+      onFocus,
+      onMouseDown,
+    }
   })
   return React.useMemo(
     () => ({
       onKeyDown: (event: React.KeyboardEvent<HTMLTableElement>) =>
         handlers.current.onKeyDown(event),
+      onFocus: (event: React.FocusEvent<HTMLTableElement>) =>
+        handlers.current.onFocus(event),
+      onMouseDown: () => handlers.current.onMouseDown(),
       onCellNavigate: (
         cell: HTMLTableCellElement,
         details: Parameters<NonNullable<TableGridOptions["onCellNavigate"]>>[1]
       ) => handlers.current.onCellNavigate(cell, details),
+      onCellAction: (
+        cell: HTMLTableCellElement,
+        event: Event,
+        how: "enter" | "edit" | "double-click"
+      ) => handlers.current.onCellAction(cell, event, how),
     }),
     []
   )

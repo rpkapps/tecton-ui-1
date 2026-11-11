@@ -94,36 +94,53 @@ function save(changes: ReadonlyArray<DataTableCellChange<Allocation>>) {
   })
 }
 
+/** The changes applied to the allocations: each cell's value. */
+function apply(
+  current: ReadonlyArray<Allocation>,
+  changes: ReadonlyArray<DataTableCellChange<Allocation>>
+) {
+  return current.map((allocation) => {
+    const own = changes.filter((change) => change.row === allocation.id)
+    if (own.length === 0) return allocation
+    const next: Record<string, unknown> = { ...allocation }
+    for (const change of own) next[change.column] = change.value ?? 0
+    return next as Allocation
+  })
+}
+
+/** The changes rolled back: a cell only while it still holds the value written. */
+function rollBack(
+  current: ReadonlyArray<Allocation>,
+  changes: ReadonlyArray<DataTableCellChange<Allocation>>
+) {
+  return apply(
+    current,
+    changes
+      .filter((change) => {
+        const now = current.find((allocation) => allocation.id === change.row)
+        return now?.[change.column as keyof Allocation] === (change.value ?? 0)
+      })
+      .map((change) => ({ ...change, value: change.previousValue }))
+  )
+}
+
 export default function DataTableCellSelection() {
   const [allocations, setAllocations] = React.useState(INITIAL)
-  const apply = (changes: ReadonlyArray<DataTableCellChange<Allocation>>) =>
-    setAllocations((current) =>
-      current.map((allocation) => {
-        const own = changes.filter((change) => change.id === allocation.id)
-        if (own.length === 0) return allocation
-        const next: Record<string, unknown> = { ...allocation }
-        for (const change of own) next[change.column] = change.value ?? 0
-        return next as Allocation
-      })
-    )
   return (
     <DataTable
       items={allocations}
       columns={columns}
       cellSelectionMode="range"
       editable
-      onCellsChange={async (changes) => {
-        apply(changes)
+      onCellsChange={async (changes, { signal }) => {
+        setAllocations((current) => apply(current, changes))
         try {
           await save(changes)
         } catch (error) {
+          // A later write has these cells now: nothing to roll back.
+          if (signal.aborted) return
           // Back to the values before, and the cells show the error.
-          apply(
-            changes.map((change) => ({
-              ...change,
-              value: change.previousValue,
-            }))
-          )
+          setAllocations((current) => rollBack(current, changes))
           throw error
         }
       }}

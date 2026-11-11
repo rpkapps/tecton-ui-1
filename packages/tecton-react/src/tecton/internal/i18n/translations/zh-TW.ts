@@ -152,6 +152,8 @@ export default defineTranslations({
     cellsSkipped: { other: "{total} 個無法編輯" },
     cellsInvalid: { other: "{total} 個無效" },
     cellMessage: "{columnName}：{message}",
+    refusedValue: "「{value}」：{message}",
+    selectCellsFirst: "請先選取儲存格",
     cellsNotSaved: { other: "{total} 個儲存格未儲存：{message}" },
     saveFailed: "無法儲存變更",
     copyMultiple: "無法一起複製這些範圍：請選取位於相同列或相同欄的範圍",

@@ -21,16 +21,19 @@
  * table with pinned columns draws each cell's border itself, in separate
  * borders.
  *
- * With a cell selection, each data cell carries its column's id
- * (`data-column`), and a selected cell its fill (`bg-table-active`),
- * `aria-selected` and, on a range's edges, the range's outline: drawn by
+ * With cells focused one by one, each data cell carries its column's id
+ * (`data-column`). With a cell selection, each says whether it is selected
+ * (`aria-selected`), and a selected cell has its fill (`bg-table-active`)
+ * and, on a range's edges, the range's outline: drawn by
  * the cells on its edges (a `ring` border along each, inside the cell),
  * not by an element over the table, so it is right on pinned columns and
  * under a sticky header, costs only the cells in view of a virtualized
  * table, and mirrors right to left on its own (logical sides). A cell
  * being saved is dimmed and `aria-busy`; one not saved or not valid has a
- * `destructive` outline, `aria-invalid` and its message as its
- * description (in a tooltip too, `cell-error.tsx`).
+ * dashed `destructive` outline inside the range's, `aria-invalid` and its
+ * message (with the value refused) as its description, in a tooltip too
+ * (`cell-error.tsx`). In a table whose cells are written, a cell that
+ * cannot be is `aria-readonly`.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -41,6 +44,7 @@ import { Spinner } from "@tecton/react/components/spinner"
 import { TableCell, TableHead } from "@tecton/react/components/table"
 import { Link } from "@tecton/react/tecton/link"
 
+import { useTranslations } from "../i18n/translations"
 import type { Store } from "../store"
 import type { CellMark, CellsState, DataTableActions } from "./context"
 import {
@@ -122,6 +126,10 @@ type RowShared<T> = {
   actions: DataTableActions<T>
   /** What the cells show of the cell selection and of writes; `null` without a cell selection mode. */
   cells: Store<CellsState> | null
+  /** Cells are focused one by one (`editable` or a cell selection): they carry their column's id. */
+  cellFocus: boolean
+  /** Cells can be written: one that cannot is `aria-readonly`. */
+  editable: boolean
 }
 
 /** A group row's name, and its parts: the column's name before and after the value. */
@@ -498,8 +506,13 @@ const EDGE = {
   start: "before:border-s-2",
   end: "before:border-e-2",
 } as const
+/**
+ * A refused or failed cell's outline: its own box, inset within the
+ * range's (so both show where they meet), dashed so it reads apart from
+ * the range's ring in either theme.
+ */
 const INVALID_CELL =
-  "before:pointer-events-none before:absolute before:inset-0 before:border-2 before:border-destructive"
+  "after:pointer-events-none after:absolute after:inset-1 after:rounded-sm after:border-2 after:border-dashed after:border-destructive"
 const PENDING_CELL = "text-muted-foreground"
 
 /** A cell's classes for its part in the selection (`flags`) and its write (`mark`). */
@@ -527,7 +540,18 @@ function cellStateClassName(
  * A cell's message as its description, read by screen readers with the
  * cell, and the tooltip that shows it (loaded when one first shows).
  */
-function CellMessage({ message }: { message: string }) {
+function CellMessage({
+  message,
+  attempted,
+}: {
+  message: string
+  /** What was written, shown before the message. */
+  attempted: string | null
+}) {
+  const t = useTranslations("dataTable")
+  const text = attempted
+    ? t("refusedValue", { value: attempted, message })
+    : message
   const id = React.useId()
   const element = React.useRef<HTMLSpanElement | null>(null)
   const { module, load } = useFeature("cellError", true)
@@ -543,9 +567,9 @@ function CellMessage({ message }: { message: string }) {
   return (
     <>
       <span ref={element} id={id} hidden>
-        {message}
+        {text}
       </span>
-      {Tip && <Tip message={message} cell={element} />}
+      {Tip && <Tip message={text} cell={element} />}
     </>
   )
 }
@@ -604,7 +628,8 @@ function cellInner<T>(
 /**
  * A body cell of an item row; `index` is the column's place in
  * `shared.columns`, `inner` its content (`cellInner`), `flags` its part in
- * the cell selection and `mark` its write.
+ * the cell selection, `mark` its write, and `readOnly` whether it cannot be
+ * written in a table whose cells are (`aria-readonly`).
  */
 function renderCell<T>(
   column: EngineColumn<T>,
@@ -612,7 +637,8 @@ function renderCell<T>(
   shared: RowShared<T>,
   inner: React.ReactNode,
   flags = 0,
-  mark?: CellMark
+  mark?: CellMark,
+  readOnly = false
 ): React.ReactNode {
   const pin = shared.pins[index]
   const className = cn(
@@ -623,15 +649,17 @@ function renderCell<T>(
   const props = {
     className,
     style,
-    "data-column": shared.cells ? column.id : undefined,
-    "aria-selected": flags & SELECTED ? true : undefined,
+    "data-column": shared.cellFocus ? column.id : undefined,
+    // Every data cell can be selected: said of each, selected or not.
+    "aria-selected": shared.cells ? (flags & SELECTED) !== 0 : undefined,
+    "aria-readonly": readOnly || undefined,
     "aria-busy": (mark && mark.pending !== null) || undefined,
     "aria-invalid": mark?.error ? true : undefined,
   } as const
   const content = mark?.error ? (
     <>
       {inner}
-      <CellMessage message={mark.error} />
+      <CellMessage message={mark.error} attempted={mark.attempted} />
     </>
   ) : (
     inner

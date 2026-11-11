@@ -1,7 +1,9 @@
 /**
  * Cells as the clipboard holds them between spreadsheets: tab-separated
  * text (as Excel and Google Sheets write and read it) and an HTML table
- * (which they read as cells too, keeping a cell with a line break whole).
+ * (which they read as cells too, keeping a cell with a line break whole,
+ * and a cell's own value and format where it carries Excel's attributes:
+ * `x:num`, `mso-number-format`).
  *
  * - A field holding a tab, a line break or a quote is quoted, its quotes
  *   doubled; rows are separated by CRLF, with none after the last.
@@ -29,21 +31,43 @@ const ESCAPES: Record<string, string> = {
   '"': "&quot;",
 }
 
+const MARKUP = /[&<>"\r\n]/
+
 function escapeHtml(text: string) {
+  if (!MARKUP.test(text)) return text
   return text
     .replace(/[&<>"]/g, (character) => ESCAPES[character])
     .replace(/\r\n|\r|\n/g, "<br>")
 }
 
-/** Rows of fields as an HTML table. */
-function toHtml(rows: ReadonlyArray<ReadonlyArray<string>>): string {
-  const body = rows
-    .map(
-      (fields) =>
-        `<tr>${fields.map((field) => `<td>${escapeHtml(field)}</td>`).join("")}</tr>`
+/** A cell of an HTML table: its text, and attributes written as they are (escaped by the caller). */
+type HtmlCell = { text: string; attributes: string }
+
+/** A cell as HTML. */
+function htmlCell(text: string, attributes: string) {
+  return `<td${attributes}>${escapeHtml(text)}</td>`
+}
+
+/**
+ * Excel's number formats, as classes (`class=t`): one rule each rather
+ * than a style on every cell. `t` is text, `d` a date, `dt` a date and
+ * time, `p` a percentage.
+ */
+const FORMATS = `<style>.t{mso-number-format:"\\@"}.d{mso-number-format:"Short Date"}.dt{mso-number-format:"General Date"}.p{mso-number-format:Percent}</style>`
+
+/** Rows of cells (`htmlCell`) as an HTML table, with Excel's namespace for `x:num` and its formats. */
+function htmlTable(rows: ReadonlyArray<string>) {
+  return `<html xmlns:x="urn:schemas-microsoft-com:office:excel"><head>${FORMATS}</head><body><table><tbody>${rows.join("")}</tbody></table></body></html>`
+}
+
+/** Rows of cells as an HTML table. */
+function toHtml(rows: ReadonlyArray<ReadonlyArray<HtmlCell>>): string {
+  return htmlTable(
+    rows.map(
+      (cells) =>
+        `<tr>${cells.map((cell) => htmlCell(cell.text, cell.attributes)).join("")}</tr>`
     )
-    .join("")
-  return `<table><tbody>${body}</tbody></table>`
+  )
 }
 
 /** Tab-separated text as rows of fields; `[]` for no text. */
@@ -100,4 +124,5 @@ function parseTsv(text: string): Array<Array<string>> {
   return rows
 }
 
-export { parseTsv, toHtml, toTsv }
+export { htmlCell, htmlTable, parseTsv, toHtml, toTsv, tsvField }
+export type { HtmlCell }

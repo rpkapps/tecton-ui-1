@@ -11,8 +11,9 @@
  *
  * The figures are worked out after the selection is drawn (a deferred
  * render), so extending a large range stays quick. While focus is in the
- * table, they are announced once the selection stops changing, not at
- * every step.
+ * table, they are announced once the user stops changing the selection
+ * (extending it, a press, select all) over two cells or more: not at every
+ * step, nor after a write or a move to a single cell.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -25,11 +26,22 @@ import {
   useFeatureWarning,
   useNumberFormat,
 } from "./context"
-import { summarizeCells } from "./engine/cell-ranges"
-import type { EngineColumn } from "./engine/index"
+import { useStore } from "../store"
+import { cellCount, summarizeCells } from "./engine/cell-ranges"
+import type {
+  DataTableCellSelectionChangeReason,
+  EngineColumn,
+} from "./engine/index"
 
 /** How long the selection stays the same before its summary is announced. */
 const ANNOUNCE_DELAY = 750
+
+/** The changes of the selection the user makes. */
+const USER_REASONS = new Set<DataTableCellSelectionChangeReason>([
+  "keyboard",
+  "item-press",
+  "select-all",
+])
 
 /** The format the numbers' columns share, as a column to format them with; else `null`. */
 function sharedFormat(columns: ReadonlyArray<EngineColumn<unknown>>) {
@@ -95,25 +107,34 @@ function DataTableCellSummary({
   }, [summary, formatter, numbers, t])
 
   const element = React.useRef<HTMLDivElement | null>(null)
+  // Said once the user stops changing the selection (extending it, a
+  // press, select all), over two cells or more: not after a write, a move
+  // to one cell, or a selection set by the application.
+  const change = useStore(context.cells, (cells) => cells.change)
+  const ranges = useDataTableSelector(context, (state) => state.cellSelection)
+  const said = React.useRef(change)
   const spoken = items.map((item) => item.text).join("\u0000")
-  const first = React.useRef(true)
+  const latestSpoken = React.useRef(spoken)
+  React.useInsertionEffect(() => {
+    latestSpoken.current = spoken
+  })
   React.useEffect(() => {
-    if (first.current) {
-      first.current = false
-      return
-    }
-    if (!spoken) return
+    if (!change || change === said.current || change.ranges !== ranges) return
+    said.current = change
+    if (!USER_REASONS.has(change.reason)) return
+    if (!grid || cellCount(grid) < 2) return
     const timer = setTimeout(() => {
       const root = element.current?.closest('[data-slot="data-table"]')
       if (!root?.contains(root.ownerDocument.activeElement)) return
+      if (!latestSpoken.current) return
       announce(
         new Intl.ListFormat(formatter.locale, { type: "unit" }).format(
-          spoken.split("\u0000")
+          latestSpoken.current.split("\u0000")
         )
       )
     }, ANNOUNCE_DELAY)
     return () => clearTimeout(timer)
-  }, [spoken, formatter.locale])
+  }, [change, ranges, grid, formatter.locale])
 
   if (mode === "none" || items.length === 0) return null
   return (

@@ -38,7 +38,13 @@ import {
 import { TectonProvider } from "@tecton/react/tecton/provider"
 import { renderToString } from "react-dom/server"
 
+import { writeCells } from "../internal/data-table/cell-write"
+import {
+  DataTableContext,
+  type DataTableContextValue,
+} from "../internal/data-table/context"
 import { loadFeature } from "../internal/data-table/lazy"
+import { createTranslator } from "../internal/i18n/translations"
 import * as announcer from "../internal/primitives/live-announcer"
 import { layout, scrollable } from "./data-table-fixtures"
 
@@ -134,8 +140,8 @@ const range = (
   endRow = startRow,
   endColumn = startColumn
 ): DataTableCellRange => ({
-  start: { row: startRow, column: startColumn },
-  end: { row: endRow, column: endColumn },
+  rows: { start: startRow, end: endRow },
+  columns: { start: startColumn, end: endColumn },
 })
 
 /** Focuses the table's tab stop (a data cell), as Tab does. */
@@ -216,7 +222,9 @@ describe("DataTable spreadsheet focus", () => {
     press("End", { ctrlKey: true })
     expect(focused()).toBe(td("Well 5", "active"))
     press("Home", { ctrlKey: true })
-    // The table's first cell: the header's (its sort button).
+    // A spreadsheet's first cell: the body's, not the header's.
+    expect(focused()).toBe(td("Well 0", "well"))
+    press("ArrowUp")
     expect(focused().closest("thead")).not.toBeNull()
     press("ArrowDown")
     press("PageDown")
@@ -300,7 +308,8 @@ describe("DataTable cell selection", () => {
       "before:border-b-2",
       "before:border-e-2"
     )
-    expect(td("Well 0", "field")).not.toHaveAttribute("aria-selected")
+    // Every data cell says whether it is selected.
+    expect(td("Well 0", "field")).toHaveAttribute("aria-selected", "false")
     expect(td("Well 0", "field")).not.toHaveClass("bg-table-active")
   })
 
@@ -359,17 +368,17 @@ describe("DataTable cell selection", () => {
     press("ArrowDown", { shiftKey: true })
     press(" ", { shiftKey: true })
     expect(onCellSelectionChange.mock.calls.at(-1)?.[0]).toEqual([
-      range("w1", "well", "w2", "active"),
+      { rows: { start: "w1", end: "w2" } },
     ])
     expect(say).toHaveBeenLastCalledWith("12 cells selected")
     down(td("Well 1", "hours"))
     press(" ", { ctrlKey: true })
     expect(onCellSelectionChange.mock.calls.at(-1)?.[0]).toEqual([
-      range("w0", "hours", "w5", "hours"),
+      { columns: { start: "hours", end: "hours" } },
     ])
     press("a", { ctrlKey: true })
     expect(onCellSelectionChange).toHaveBeenLastCalledWith(
-      [range("w0", "well", "w5", "active")],
+      [{}],
       expect.objectContaining({ reason: "select-all" })
     )
     expect(selected()).toHaveLength(36)
@@ -512,7 +521,8 @@ describe("DataTable cell selection", () => {
         defaultCellSelection={[range("w0", "hours", "w1", "oil")]}
       />
     )
-    expect(selected()).toEqual([])
+    // A hidden corner column keeps the shown ones between the corners.
+    expect(selected()).toEqual(["Well 0:hours", "Well 1:hours"])
     rerender(
       <Table
         filterable
@@ -536,9 +546,11 @@ describe("DataTable cells to the clipboard", () => {
     expect(data.data.get("text/plain")).toBe(
       "Well 0\tGullfaks\tFlowing\t20\t100\tYes\r\nWell 1\tGullfaks\tTesting\t21\t200\tNo"
     )
-    expect(data.data.get("text/html")).toContain(
-      "<tr><td>Well 0</td><td>Gullfaks</td>"
-    )
+    const html = data.data.get("text/html")!
+    // Text marked as text, numbers with their values, for Excel.
+    expect(html).toContain('<style>.t{mso-number-format:"\\@"}')
+    expect(html).toContain("<tr><td class=t>Well 0</td>")
+    expect(html).toContain('<td x:num="100">100</td>')
     expect(say).toHaveBeenLastCalledWith("Copied 12 cells")
   })
 
@@ -620,7 +632,7 @@ describe("DataTable cells written", () => {
     ]
     expect(details.reason).toBe("paste")
     expect(
-      changes.map((change) => [change.id, change.column, change.value])
+      changes.map((change) => [change.row, change.column, change.value])
     ).toEqual([
       ["w1", "status", "shut-in"],
       ["w1", "hours", 24],
@@ -660,7 +672,7 @@ describe("DataTable cells written", () => {
     const [changes] = onCellsChange.mock.calls[0] as [
       Array<DataTableCellChange<Allocation>>,
     ]
-    expect(changes.map((change) => `${change.id}:${change.column}`)).toEqual([
+    expect(changes.map((change) => `${change.row}:${change.column}`)).toEqual([
       "w0:field",
       "w1:field",
     ])
@@ -669,9 +681,11 @@ describe("DataTable cells written", () => {
     )
     const invalid = td("Well 0", "hours")
     expect(invalid).toHaveAttribute("aria-invalid", "true")
-    expect(invalid).toHaveAccessibleDescription("At most 24 hours")
-    expect(invalid).toHaveClass("before:border-destructive")
-    expect(td("Well 1", "hours")).toHaveAccessibleDescription("Enter a number")
+    expect(invalid).toHaveAccessibleDescription("“30”: At most 24 hours")
+    expect(invalid).toHaveClass("after:border-destructive")
+    expect(td("Well 1", "hours")).toHaveAccessibleDescription(
+      "“x”: Enter a number"
+    )
   })
 
   it("fills one pasted value into every selected cell, and repeats a block over a range that is a multiple of it", () => {
@@ -712,7 +726,7 @@ describe("DataTable cells written", () => {
     ]
     expect(
       changes.map(
-        (change) => `${change.id}:${change.column}:${String(change.value)}`
+        (change) => `${change.row}:${change.column}:${String(change.value)}`
       )
     ).toEqual([
       "w1:oil:1",
@@ -733,10 +747,10 @@ describe("DataTable cells written", () => {
     press("Delete")
     expect(onCellsChange).toHaveBeenLastCalledWith(
       [
-        expect.objectContaining({ id: "w0", column: "field", value: null }),
-        expect.objectContaining({ id: "w0", column: "status", value: null }),
-        expect.objectContaining({ id: "w1", column: "field", value: null }),
-        expect.objectContaining({ id: "w1", column: "status", value: null }),
+        expect.objectContaining({ row: "w0", column: "field", value: null }),
+        expect.objectContaining({ row: "w0", column: "status", value: null }),
+        expect.objectContaining({ row: "w1", column: "field", value: null }),
+        expect.objectContaining({ row: "w1", column: "status", value: null }),
       ],
       expect.objectContaining({ reason: "clear" })
     )
@@ -745,7 +759,7 @@ describe("DataTable cells written", () => {
     expect(onCellsChange).toHaveBeenLastCalledWith(
       [
         expect.objectContaining({
-          id: "w1",
+          row: "w1",
           column: "status",
           value: "flowing",
         }),
@@ -757,7 +771,7 @@ describe("DataTable cells written", () => {
     down(td("Well 4", "oil"))
     press("d", { ctrlKey: true })
     expect(onCellsChange).toHaveBeenLastCalledWith(
-      [expect.objectContaining({ id: "w4", column: "oil", value: 400 })],
+      [expect.objectContaining({ row: "w4", column: "oil", value: 400 })],
       expect.anything()
     )
   })
@@ -783,7 +797,7 @@ describe("DataTable cells written", () => {
       expect(onCellsChange).toHaveBeenCalledWith(
         [
           expect.objectContaining({
-            id: "w0",
+            row: "w0",
             column: "field",
             value: "Snorre",
           }),
@@ -822,7 +836,7 @@ describe("DataTable cells written", () => {
     const cell = td("Well 0", "oil")
     expect(cell).not.toHaveAttribute("aria-busy")
     expect(cell).toHaveAttribute("aria-invalid", "true")
-    expect(cell).toHaveAccessibleDescription("The well is locked")
+    expect(cell).toHaveAccessibleDescription("“8”: The well is locked")
     expect(say).toHaveBeenLastCalledWith(
       "1 cell not saved: The well is locked",
       {
@@ -842,7 +856,7 @@ describe("DataTable cells written", () => {
     fireEvent.pointerEnter(td("Well 0", "hours"))
     await waitFor(() =>
       expect(
-        screen.getByText("At most 24 hours", {
+        screen.getByText("“99”: At most 24 hours", {
           selector: "[data-slot=tooltip-content]",
         })
       ).toBeInTheDocument()
@@ -1048,13 +1062,493 @@ describe("useDataTable's cell selection", () => {
     expect(writeText).toHaveBeenCalledWith("20\t100\r\n21\t200")
     await act(() => table!.pasteCells("1"))
     expect(onCellsChange.mock.calls.at(-1)?.[1].reason).toBe("paste")
-    await act(() => table!.clearCellValues())
+    await act(() => table!.clearCells())
     expect(onCellsChange.mock.calls.at(-1)?.[1].reason).toBe("clear")
-    await act(() => table!.fillDown())
+    await act(() => table!.fillCellsDown())
     expect(onCellsChange.mock.calls.at(-1)?.[1].reason).toBe("fill")
     act(() => table!.selectAllCells())
+    expect(table!.cellSelection).toEqual([{}])
     expect(table!.selectedCellCount).toBe(36)
     act(() => table!.clearCellSelection())
     expect(table!.cellSelection).toEqual([])
+  })
+})
+
+describe("DataTable whole rows, whole columns and every cell", () => {
+  it("keeps every cell, whole columns and whole rows whole across a sort and a filter", () => {
+    const onCellSelectionChange = vi.fn()
+    const view = { sorting: [], search: "" }
+    const { rerender } = render(
+      <Table
+        filterable
+        view={view}
+        onCellSelectionChange={onCellSelectionChange}
+      />
+    )
+    down(td("Well 1", "oil"))
+    press("a", { ctrlKey: true })
+    expect(onCellSelectionChange.mock.calls.at(-1)?.[0]).toEqual([{}])
+    rerender(
+      <Table
+        filterable
+        view={{
+          sorting: [{ column: "oil", direction: "descending" }],
+          search: "",
+        }}
+        onCellSelectionChange={onCellSelectionChange}
+      />
+    )
+    expect(selected()).toHaveLength(36)
+    rerender(
+      <Table
+        filterable
+        view={{ sorting: [], search: "Well" }}
+        defaultCellSelection={[]}
+        onCellSelectionChange={onCellSelectionChange}
+      />
+    )
+    expect(selected()).toHaveLength(36)
+  })
+
+  it("keeps whole columns whole after a sort, and a whole column's cells under new data", () => {
+    const { rerender } = render(
+      <Table
+        defaultCellSelection={[{ columns: { start: "oil", end: "oil" } }]}
+      />
+    )
+    expect(selected()).toHaveLength(6)
+    const more = [...ITEMS, { ...ITEMS[0], id: "w6", well: "Well 6", oil: 700 }]
+    rerender(
+      <Table
+        items={more}
+        defaultCellSelection={[{ columns: { start: "oil", end: "oil" } }]}
+      />
+    )
+    expect(selected()).toHaveLength(7)
+  })
+})
+
+describe("DataTable focus and the range's moving corner", () => {
+  it("moves focus to the last row of whole rows, and Shift + Down moves it, the rows staying whole", () => {
+    const onCellSelectionChange = vi.fn()
+    render(<Table onCellSelectionChange={onCellSelectionChange} />)
+    down(td("Well 1", "hours"))
+    press("ArrowDown", { shiftKey: true })
+    press("ArrowUp", { shiftKey: true })
+    press("ArrowUp", { shiftKey: true })
+    // Well 1 up to Well 0: rows.end is Well 0.
+    press(" ", { shiftKey: true })
+    expect(onCellSelectionChange.mock.calls.at(-1)?.[0]).toEqual([
+      { rows: { start: "w1", end: "w0" } },
+    ])
+    expect(focused()).toBe(td("Well 0", "hours"))
+    press("ArrowDown", { shiftKey: true })
+    press("ArrowDown", { shiftKey: true })
+    press("ArrowDown", { shiftKey: true })
+    expect(onCellSelectionChange.mock.calls.at(-1)?.[0]).toEqual([
+      { rows: { start: "w1", end: "w3" } },
+    ])
+    expect(focused()).toBe(td("Well 3", "hours"))
+    // Sideways, the rows stay whole: focus moves, the range does not.
+    press("ArrowRight", { shiftKey: true })
+    expect(onCellSelectionChange.mock.calls.at(-1)?.[0]).toEqual([
+      { rows: { start: "w1", end: "w3" } },
+    ])
+    expect(selected()).toHaveLength(18)
+  })
+
+  it("moves focus to the last column of whole columns, and Shift + Right extends them", () => {
+    const onCellSelectionChange = vi.fn()
+    render(<Table onCellSelectionChange={onCellSelectionChange} />)
+    down(td("Well 2", "field"))
+    press(" ", { ctrlKey: true })
+    expect(focused()).toBe(td("Well 2", "field"))
+    press("ArrowRight", { shiftKey: true })
+    expect(onCellSelectionChange.mock.calls.at(-1)?.[0]).toEqual([
+      { columns: { start: "field", end: "status" } },
+    ])
+    expect(focused()).toBe(td("Well 2", "status"))
+  })
+
+  it("leaves focus where it is on every cell, then makes the axis first to last and moves its end", () => {
+    const onCellSelectionChange = vi.fn()
+    render(<Table onCellSelectionChange={onCellSelectionChange} />)
+    down(td("Well 2", "oil"))
+    press("a", { ctrlKey: true })
+    expect(focused()).toBe(td("Well 2", "oil"))
+    press("ArrowUp", { shiftKey: true })
+    expect(onCellSelectionChange.mock.calls.at(-1)?.[0]).toEqual([
+      { rows: { start: "w0", end: "w4" } },
+    ])
+    expect(focused()).toBe(td("Well 4", "oil"))
+    expect(selected()).toHaveLength(30)
+  })
+
+  it('moves focus to a block paste\'s last cell, the selection and focus agreeing in "cell" mode too', () => {
+    for (const mode of ["range", "cell"] as const) {
+      const onCellSelectionChange = vi.fn()
+      const { unmount } = render(
+        <Table
+          editable
+          cellSelectionMode={mode}
+          onCellsChange={() => {}}
+          onCellSelectionChange={onCellSelectionChange}
+        />
+      )
+      down(td("Well 1", "hours"))
+      fireEvent.paste(focused(), {
+        clipboardData: clipboardData("1\t2\n3\t4"),
+      })
+      expect(focused()).toBe(td("Well 2", "oil"))
+      expect(onCellSelectionChange.mock.calls.at(-1)?.[0]).toEqual(
+        mode === "range"
+          ? [range("w1", "hours", "w2", "oil")]
+          : [range("w2", "oil")]
+      )
+      unmount()
+    }
+  })
+
+  it("selects the cell Tab enters on, when no cell is selected", () => {
+    const onCellSelectionChange = vi.fn()
+    render(
+      <>
+        <button type="button">Before</button>
+        <Table onCellSelectionChange={onCellSelectionChange} />
+      </>
+    )
+    act(() => screen.getByRole("button", { name: "Before" }).focus())
+    tabIn()
+    expect(onCellSelectionChange).toHaveBeenLastCalledWith(
+      [range("w0", "well")],
+      expect.objectContaining({ reason: "keyboard" })
+    )
+  })
+})
+
+describe("DataTable writes over writes", () => {
+  it("aborts a save a later write takes over, and shows no message when it then fails", async () => {
+    const saves: Array<{
+      signal: AbortSignal
+      fail: (error: Error) => void
+    }> = []
+    const onCellsChange = vi.fn(
+      (_: unknown, details: { signal: AbortSignal }) =>
+        new Promise<void>((_resolve, reject) => {
+          saves.push({ signal: details.signal, fail: reject })
+        })
+    )
+    render(<Table editable onCellsChange={onCellsChange} />)
+    down(td("Well 0", "oil"))
+    fireEvent.paste(focused(), { clipboardData: clipboardData("9") })
+    fireEvent.paste(focused(), { clipboardData: clipboardData("8") })
+    expect(saves[0].signal.aborted).toBe(true)
+    expect(saves[1].signal.aborted).toBe(false)
+    await act(async () => saves[0].fail(new Error("Stale")))
+    expect(td("Well 0", "oil")).not.toHaveAttribute("aria-invalid")
+    // Still saving: the later write's.
+    expect(td("Well 0", "oil")).toHaveAttribute("aria-busy", "true")
+    await act(async () => saves[1].fail(new Error("Locked")))
+    expect(td("Well 0", "oil")).toHaveAccessibleDescription("“8”: Locked")
+  })
+
+  it("aborts the signal of a cancelled write", () => {
+    let signal: AbortSignal | undefined
+    render(
+      <Table
+        editable
+        onCellsChange={(_, details) => {
+          signal = details.signal
+          details.cancel()
+        }}
+      />
+    )
+    down(td("Well 0", "oil"))
+    fireEvent.paste(focused(), { clipboardData: clipboardData("9") })
+    expect(signal?.aborted).toBe(true)
+  })
+
+  it("drops a message once the cell's value changes from outside, and on clearCellMessages", () => {
+    let table: ReturnType<typeof useDataTable<Allocation>> | undefined
+    function Probe() {
+      table = useDataTable<Allocation>()
+      return null
+    }
+    const { rerender } = render(
+      <Table editable onCellsChange={() => {}}>
+        <Probe />
+      </Table>
+    )
+    down(td("Well 0", "hours"))
+    fireEvent.paste(focused(), { clipboardData: clipboardData("99") })
+    down(td("Well 1", "hours"))
+    fireEvent.paste(focused(), { clipboardData: clipboardData("abc") })
+    expect(td("Well 0", "hours")).toHaveAttribute("aria-invalid")
+    // Escape does not drop it.
+    press("Escape")
+    expect(td("Well 1", "hours")).toHaveAttribute("aria-invalid")
+    const changed = ITEMS.map((item) =>
+      item.id === "w0" ? { ...item, hours: 23 } : item
+    )
+    rerender(
+      <Table editable items={changed} onCellsChange={() => {}}>
+        <Probe />
+      </Table>
+    )
+    expect(td("Well 0", "hours")).not.toHaveAttribute("aria-invalid")
+    expect(td("Well 1", "hours")).toHaveAttribute("aria-invalid")
+    act(() => table!.clearCellMessages())
+    expect(td("Well 1", "hours")).not.toHaveAttribute("aria-invalid")
+  })
+})
+
+describe("DataTable clipboard flavours", () => {
+  it("guards text a spreadsheet would run as a formula, unless asked not to", async () => {
+    const writeText = vi.fn(() => Promise.resolve())
+    clipboardApi({ writeText })
+    let table: ReturnType<typeof useDataTable<Allocation>> | undefined
+    function Probe() {
+      table = useDataTable<Allocation>()
+      return null
+    }
+    const formulas = ITEMS.map((item, i) =>
+      i === 0 ? { ...item, field: "=HYPERLINK(1)" } : item
+    )
+    render(
+      <Table
+        items={formulas}
+        defaultCellSelection={[range("w0", "field", "w0", "hours")]}
+      >
+        <Probe />
+      </Table>
+    )
+    await expect(act(() => table!.copyCells())).resolves.toBe(
+      "'=HYPERLINK(1)\tFlowing\t20"
+    )
+    await expect(
+      act(() => table!.copyCells({ escapeFormulas: false }))
+    ).resolves.toBe("=HYPERLINK(1)\tFlowing\t20")
+  })
+
+  it("pastes a table's copied values as they are, whatever their text", () => {
+    const onCellsChange = vi.fn()
+    render(
+      <TectonProvider locale="de-DE">
+        <Table
+          editable
+          onCellsChange={onCellsChange}
+          defaultCellSelection={[range("w0", "hours", "w0", "oil")]}
+        />
+      </TectonProvider>
+    )
+    tabIn()
+    const data = clipboardData()
+    fireEvent.copy(focused(), { clipboardData: data })
+    const values = data.data.get("application/x-tecton-cells+json")
+    expect(JSON.parse(values!)).toEqual({ tecton: 1, values: [[20, 100]] })
+    down(td("Well 3", "hours"))
+    // The text says something else: the values win.
+    const pasted = clipboardData("1.000,5\tx")
+    pasted.data.set("application/x-tecton-cells+json", values!)
+    fireEvent.paste(focused(), { clipboardData: pasted })
+    expect(onCellsChange.mock.calls[0][0]).toEqual([
+      expect.objectContaining({ row: "w3", column: "hours", value: 20 }),
+      expect.objectContaining({ row: "w3", column: "oil", value: 100 }),
+    ])
+  })
+
+  it("says to select cells first when focus is off the data cells", () => {
+    const onCellsChange = vi.fn()
+    render(
+      <Table
+        editable
+        onCellsChange={onCellsChange}
+        defaultCellSelection={[range("w0", "field")]}
+      />
+    )
+    down(td("Well 0", "field"))
+    press("ArrowUp")
+    expect(focused().closest("thead")).not.toBeNull()
+    press("Delete")
+    expect(say).toHaveBeenLastCalledWith("Select cells first")
+    say.mockClear()
+    const data = clipboardData()
+    fireEvent.copy(focused(), { clipboardData: data })
+    expect(data.setData).not.toHaveBeenCalled()
+    expect(say).toHaveBeenLastCalledWith("Select cells first")
+    expect(onCellsChange).not.toHaveBeenCalled()
+  })
+})
+
+describe("DataTable cells hidden below a breakpoint", () => {
+  it("leaves them out of the selection, a copy and the summary", () => {
+    // Below md: md and lg columns are hidden.
+    vi.stubGlobal("matchMedia", (query: string) => ({
+      matches: query.includes("40rem"),
+      media: query,
+      addEventListener: () => {},
+      removeEventListener: () => {},
+    }))
+    const hidden = createColumns<Allocation>([
+      { id: "well", header: "Well" },
+      { id: "field", header: "Field", hideBelow: "md" },
+      { id: "hours", header: "Hours", type: "number" },
+      { id: "oil", header: "Oil", type: "number", hideBelow: "lg" },
+    ])
+    render(<Table columns={hidden} summary />)
+    down(td("Well 0", "well"))
+    press("a", { ctrlKey: true })
+    expect(selected().filter((cell) => cell.endsWith(":field"))).toEqual([])
+    const data = clipboardData()
+    fireEvent.copy(focused(), { clipboardData: data })
+    expect(data.data.get("text/plain")!.split("\r\n")[0]).toBe("Well 0\t20")
+    expect(
+      screen.getByRole("group", { name: "Selected cells" })
+    ).toHaveTextContent("Count: 12")
+  })
+})
+
+describe("DataTable summary announcements", () => {
+  it("says the summary once the user stops extending a selection of two cells or more, not after a move or a write", async () => {
+    vi.useFakeTimers()
+    try {
+      render(<Table editable onCellsChange={() => {}} summary />)
+      down(td("Well 0", "hours"))
+      act(() => {
+        vi.advanceTimersByTime(1000)
+      })
+      const summaries = () =>
+        say.mock.calls.filter(([text]: [unknown]) =>
+          String(text).startsWith("Sum")
+        )
+      expect(summaries()).toHaveLength(0)
+      press("ArrowDown", { shiftKey: true })
+      press("ArrowDown", { shiftKey: true })
+      act(() => {
+        vi.advanceTimersByTime(1000)
+      })
+      expect(summaries()).toEqual([
+        ["Sum: 63, Average: 21, Numerical count: 3, Count: 3"],
+      ])
+      fireEvent.paste(focused(), { clipboardData: clipboardData("5") })
+      act(() => {
+        vi.advanceTimersByTime(1000)
+      })
+      expect(summaries()).toHaveLength(1)
+    } finally {
+      vi.useRealTimers()
+    }
+  })
+})
+
+describe("DataTable Enter, F2 and double click on editable cells", () => {
+  it("keeps them for editing on a cell that can be written, and activates from the others", () => {
+    const onActivate = vi.fn()
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    render(<Table editable onCellsChange={() => {}} onActivate={onActivate} />)
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("`onActivate` is not reached from editable cells")
+    )
+    down(td("Well 1", "oil"))
+    press("Enter")
+    press("F2")
+    fireEvent.doubleClick(td("Well 1", "oil"))
+    expect(onActivate).not.toHaveBeenCalled()
+    // The well column is not editable: it activates.
+    down(td("Well 1", "well"))
+    press("Enter")
+    fireEvent.doubleClick(td("Well 1", "well"))
+    expect(onActivate).toHaveBeenCalledTimes(2)
+    // `aria-readonly` on the cells that cannot be written.
+    expect(td("Well 1", "well")).toHaveAttribute("aria-readonly", "true")
+    expect(td("Well 1", "oil")).not.toHaveAttribute("aria-readonly")
+  })
+
+  it("warns about editable without onCellsChange", () => {
+    const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
+    render(<Table editable />)
+    expect(warn).toHaveBeenCalledWith(
+      expect.stringContaining("`editable` without `onCellsChange`")
+    )
+  })
+})
+
+describe("the cell write pipeline", () => {
+  /** The table's context, for the pipeline an editor calls. */
+  function withContext(props: TableProps = {}) {
+    let context: DataTableContextValue<unknown> | null = null
+    function Probe() {
+      context = React.useContext(DataTableContext)
+      return null
+    }
+    render(
+      <Table editable {...props}>
+        <Probe />
+      </Table>
+    )
+    return { context: context!, t: createTranslator("dataTable", "en-US") }
+  }
+
+  it("says what became of each cell, and leaves a refused one unmarked for an editor", async () => {
+    const host = withContext({ onCellsChange: () => {} })
+    const outcome = writeCells(
+      host,
+      [
+        { row: "w0", column: "hours", text: "abc" },
+        { row: "w0", column: "oil", value: 100 },
+        { row: "w0", column: "well", value: "x" },
+        { row: "w1", column: "oil", text: "250" },
+      ],
+      "edit",
+      undefined,
+      { markInvalid: false }
+    )
+    expect(
+      outcome.cells.map((cell) => [
+        cell.column,
+        cell.status,
+        cell.value,
+        cell.message,
+      ])
+    ).toEqual([
+      ["hours", "invalid", undefined, "Enter a number"],
+      ["oil", "unchanged", 100, null],
+      ["well", "skipped", undefined, null],
+      ["oil", "changed", 250, null],
+    ])
+    await expect(outcome.saved).resolves.toEqual({ ok: true })
+    expect(td("Well 0", "hours")).not.toHaveAttribute("aria-invalid")
+  })
+
+  it("settles a save as failed, or superseded, never rejecting", async () => {
+    const rejects: Array<(error: Error) => void> = []
+    const host = withContext({
+      onCellsChange: () =>
+        new Promise<void>((_, reject) => {
+          rejects.push(reject)
+        }),
+    })
+    const first = writeCells(
+      host,
+      [{ row: "w0", column: "oil", value: 1 }],
+      "edit"
+    )
+    const second = writeCells(
+      host,
+      [{ row: "w0", column: "oil", value: 2 }],
+      "edit"
+    )
+    rejects[0](new Error("Stale"))
+    rejects[1](new Error("Locked"))
+    await expect(first.saved).resolves.toEqual({
+      ok: false,
+      superseded: true,
+      message: null,
+    })
+    await expect(second.saved).resolves.toEqual({
+      ok: false,
+      superseded: false,
+      message: "Locked",
+    })
   })
 })

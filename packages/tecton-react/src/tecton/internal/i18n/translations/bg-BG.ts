@@ -180,6 +180,8 @@ export default defineTranslations({
     },
     cellsInvalid: { one: "{total} невалидна", other: "{total} невалидни" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "„{value}“: {message}",
+    selectCellsFirst: "Първо изберете клетки",
     cellsNotSaved: {
       one: "{total} клетка не е запазена: {message}",
       other: "{total} клетки не са запазени: {message}",

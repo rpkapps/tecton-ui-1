@@ -200,6 +200,8 @@ export default defineTranslations({
     cellsSkipped: { other: "nedá sa upraviť: {total}" },
     cellsInvalid: { other: "neplatné: {total}" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "„{value}“: {message}",
+    selectCellsFirst: "Najprv vyberte bunky",
     cellsNotSaved: {
       one: "{total} bunka sa neuložila: {message}",
       few: "{total} bunky sa neuložili: {message}",

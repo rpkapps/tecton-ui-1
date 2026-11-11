@@ -219,6 +219,8 @@ export default defineTranslations({
     cellsSkipped: { other: "{total} غير قابلة للتعديل" },
     cellsInvalid: { other: "{total} غير صالحة" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "«{value}»: {message}",
+    selectCellsFirst: "حدد الخلايا أولاً",
     cellsNotSaved: {
       zero: "لم يتم حفظ {total} خلية: {message}",
       one: "لم يتم حفظ خلية واحدة: {message}",

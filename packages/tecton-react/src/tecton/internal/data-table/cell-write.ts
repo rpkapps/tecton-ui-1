@@ -3,77 +3,87 @@
  * of cells, whatever made it (a paste, Delete, fill down, an editor), goes
  * through `writeCells`, which
  *
- * 1. keeps the cells that can be written: the root's `editable` on, the
- *    column not opted out (`editable: false`, or its function `false` for
- *    the item), the row not disabled; the others are skipped;
+ * 1. keeps the cells that can be written (`isCellEditable`); the others
+ *    are skipped;
  * 2. reads a pasted text as the column's value (`cell-parse.ts`, or the
  *    column's `parse`), and checks the value with the column's `validate`:
- *    a cell that fails is not written and shows its message;
+ *    a cell that fails is not written, and (unless the caller shows the
+ *    message itself, an editor: `markInvalid: false`) shows its message;
  * 3. reports the cells whose value changes in one `onCellsChange(changes,
- *    { reason })` (a cell given its own value is written, not reported);
+ *    { reason, signal })` (a cell given its own value is written, not
+ *    reported);
  * 4. while a promise it returned is pending, shows those cells as saving
  *    (dimmed, `aria-busy`), and if it rejects, as not saved, with the
  *    error's message (announced too).
  *
- * A cell shows a message (not valid, not saved) until it is written again.
- * What a cell shows is the `cells` store's `marks`, which its row reads.
+ * A later write that takes over any cell of a write still saving aborts
+ * that write's `signal`: its outcome is stale, so a rejection then shows no
+ * message (and the application must not roll back over the later values).
+ * A message shows until the cell is written again, its value changes from
+ * outside (`shownMark`), or `clearCellMessages`.
  *
- * Loaded on demand, with the code that writes (`lazy.ts`).
+ * The result says what became of each cell, and `saved` settles (never
+ * rejects) with whether the save succeeded: what an editor needs to close,
+ * or to stay open with the error. Loaded on demand, with the code that
+ * writes (`lazy.ts`).
  */
 import { announce } from "../primitives/live-announcer"
 import type { Translator } from "../i18n/translations"
+import { isCellEditable, sameValue } from "./cell-marks"
 import { parseCellText, type ParseMessages } from "./cell-parse"
-import type { CellMark, CellsState, DataTableContextValue } from "./context"
-import { getColumnModel, type EngineColumn } from "./engine/columns"
+import type { CellMark, DataTableContextValue } from "./context"
+import { getColumnModel } from "./engine/columns"
 import type {
   DataTableCellChange,
   DataTableCellsChangeReason,
   DataTableValue,
 } from "./engine/types"
-import { isEmptyValue } from "./engine/values"
 
 /** A cell to write: a value, or a text to read as the column's value. */
 type CellWrite =
   | { row: string; column: string; value: DataTableValue }
   | { row: string; column: string; text: string }
 
+/** What became of a cell given to `writeCells`. */
+type CellWriteResult = {
+  row: string
+  column: string
+  /**
+   * `changed`: reported to `onCellsChange`; `unchanged`: written with its
+   * own value; `skipped`: cannot be written; `invalid`: refused (`message`).
+   */
+  status: "changed" | "unchanged" | "skipped" | "invalid"
+  /** The value written (read from the text); `undefined` for a cell not written. */
+  value: DataTableValue
+  message: string | null
+}
+
+/** How a save settled: `superseded` when a later write took over its cells. */
+type SaveResult =
+  { ok: true } | { ok: false; superseded: boolean; message: string | null }
+
 /** What a write did. */
 type WriteOutcome = {
-  /** The cells written (given their value, changed or not). */
+  cells: ReadonlyArray<CellWriteResult>
+  /** The cells written (changed or not). */
   written: number
-  /** The cells that cannot be written. */
   skipped: number
-  /** The cells whose value was not valid: their column's header and message, in order. */
-  invalid: ReadonlyArray<{ column: string; message: string }>
+  /** The refused cells' column header, message and the text written. */
+  invalid: ReadonlyArray<{ column: string; message: string; attempted: string }>
   /** `onCellsChange` cancelled the write. */
   canceled: boolean
-  /** Settles once the cells are saved (at once, without a promise); never rejects. */
-  saved: Promise<void>
+  /** Settles once the cells are saved, or not (at once without a promise); never rejects. */
+  saved: Promise<SaveResult>
+}
+
+type WriteOptions = {
+  /** Whether a refused cell shows its message (default); an editor shows it itself. */
+  markInvalid?: boolean
 }
 
 type WriteHost = {
   context: DataTableContextValue<unknown>
   t: Translator<"dataTable">
-}
-
-/** Whether a column's cell of a row can be written. */
-function isCellEditable<T>(
-  context: DataTableContextValue<T>,
-  column: EngineColumn<T>,
-  id: string,
-  item: T
-) {
-  const { options, model } = context.store.get()
-  if (!options.editable || model.isDisabled(id)) return false
-  const { editable } = column.definition
-  if (editable === false) return false
-  return typeof editable === "function" ? editable(item) : true
-}
-
-function sameValue(a: DataTableValue, b: DataTableValue) {
-  if (isEmptyValue(a) && isEmptyValue(b)) return true
-  if (a instanceof Date && b instanceof Date) return a.getTime() === b.getTime()
-  return Object.is(a, b)
 }
 
 function parseMessages(t: Translator<"dataTable">): ParseMessages {
@@ -111,7 +121,14 @@ function markCells(
   cells.set({ marks })
 }
 
+/** A write still saving: its cells' owner until a later write takes one. */
+type Batch = { id: number; controller: AbortController }
+
+/** The writes saving, per table (its `cells` store), by cell. */
+const saving = new WeakMap<object, Map<string, Batch>>()
 let writes = 0
+
+const keyOf = (row: string, column: string) => `${row}\u0000${column}`
 
 /** The message of a save's rejection, or the table's own. */
 function messageOf(error: unknown, fallback: string) {
@@ -125,33 +142,64 @@ function writeCells(
   host: WriteHost,
   cells: ReadonlyArray<CellWrite>,
   reason: DataTableCellsChangeReason,
-  event?: Event
+  event?: Event,
+  { markInvalid = true }: WriteOptions = {}
 ): WriteOutcome {
   const { context, t } = host
   const state = context.store.get()
-  const { model, formatter } = state
+  const { model, formatter, options } = state
   const { byId } = getColumnModel(state.columns)
   const labels = { yes: t("yes"), no: t("no") }
   const messages = parseMessages(t)
   const changes: Array<DataTableCellChange<unknown>> = []
-  const invalid: Array<{ column: string; message: string }> = []
+  const results: Array<CellWriteResult> = []
+  const invalid: Array<{ column: string; message: string; attempted: string }> =
+    []
   const marks: Array<{ row: string; column: string; mark: CellMark | null }> =
     []
   const marked = context.cells.get().marks
   const hasMark = (row: string, column: string) =>
     marked.get(row)?.has(column) === true
-  let skipped = 0
-  let written = 0
   for (const cell of cells) {
     const item = model.item(cell.row)
     const column = byId.get(cell.column)
+    const result: CellWriteResult = {
+      row: cell.row,
+      column: cell.column,
+      status: "skipped",
+      value: undefined,
+      message: null,
+    }
+    results.push(result)
     if (
       item === undefined ||
       !column ||
-      !isCellEditable(context, column, cell.row, item)
-    ) {
-      skipped++
+      !isCellEditable(
+        options.editable,
+        column,
+        item,
+        model.isDisabled(cell.row)
+      )
+    )
       continue
+    const attempted =
+      "text" in cell ? cell.text : formatter.format(column, cell.value)
+    const previousValue = column.getValue(item)
+    const refuse = (message: string) => {
+      result.status = "invalid"
+      result.message = message
+      invalid.push({ column: column.header, message, attempted })
+      if (markInvalid)
+        marks.push({
+          row: cell.row,
+          column: cell.column,
+          mark: {
+            pending: null,
+            error: message,
+            attempted,
+            values: [previousValue],
+          },
+        })
     }
     let value: DataTableValue
     if ("text" in cell) {
@@ -161,83 +209,130 @@ function writeCells(
         messages,
       })
       if ("error" in parsed) {
-        invalid.push({ column: column.header, message: parsed.error })
-        marks.push({ ...cell, mark: { pending: null, error: parsed.error } })
+        refuse(parsed.error)
         continue
       }
       value = parsed.value
     } else value = cell.value
     const message = column.definition.validate?.(value, item) ?? null
     if (message) {
-      invalid.push({ column: column.header, message })
-      marks.push({ ...cell, mark: { pending: null, error: message } })
+      refuse(message)
       continue
     }
-    written++
-    const previousValue = column.getValue(item)
+    result.value = value
     if (sameValue(previousValue, value)) {
-      if (hasMark(cell.row, cell.column)) marks.push({ ...cell, mark: null })
+      result.status = "unchanged"
+      if (hasMark(cell.row, cell.column))
+        marks.push({ row: cell.row, column: cell.column, mark: null })
       continue
     }
+    result.status = "changed"
     changes.push({
-      id: cell.row,
+      row: cell.row,
       column: column.id,
       item,
       value,
       previousValue,
     })
   }
-  const outcome = (canceled: boolean, saved: Promise<void>): WriteOutcome => ({
-    written,
-    skipped,
+  const outcome = (canceled: boolean, saved: Promise<SaveResult>) => ({
+    cells: results,
+    written: results.filter(
+      (result) => result.status === "changed" || result.status === "unchanged"
+    ).length,
+    skipped: results.filter((result) => result.status === "skipped").length,
     invalid,
     canceled,
     saved,
   })
   if (changes.length === 0) {
     markCells(context.cells, marks)
-    return outcome(false, Promise.resolve())
+    return outcome(false, Promise.resolve({ ok: true }))
   }
+  const batch: Batch = { id: ++writes, controller: new AbortController() }
   const { canceled, result } = context.actions.changeCells(
     changes,
     reason,
-    event
+    event,
+    batch.controller.signal
   )
-  if (canceled) return outcome(true, Promise.resolve())
+  if (canceled) {
+    batch.controller.abort()
+    return outcome(
+      true,
+      Promise.resolve({ ok: false, superseded: false, message: null })
+    )
+  }
+  // The writes saving these cells are stale now.
+  let owners = saving.get(context.cells)
+  if (!owners) saving.set(context.cells, (owners = new Map()))
+  for (const change of changes) {
+    const key = keyOf(change.row, change.column)
+    const owner = owners.get(key)
+    if (owner) {
+      owner.controller.abort()
+      owners.delete(key)
+    }
+  }
   const thenable =
     typeof (result as PromiseLike<void> | undefined)?.then === "function"
       ? (result as PromiseLike<void>)
       : null
-  const batch = ++writes
-  for (const change of changes)
+  for (const change of changes) {
     marks.push({
-      row: change.id,
+      row: change.row,
       column: change.column,
-      mark: thenable ? { pending: batch, error: null } : null,
+      mark: thenable
+        ? { pending: batch.id, error: null, attempted: null, values: [] }
+        : null,
     })
+    if (thenable) owners.set(keyOf(change.row, change.column), batch)
+  }
   markCells(context.cells, marks)
-  if (!thenable) return outcome(false, Promise.resolve())
-  // Each cell back from this write, unless a later one has it since.
+  if (!thenable) return outcome(false, Promise.resolve({ ok: true }))
+  const table = owners
+  // Each cell this write still has: back from saving, or not saved.
   const settle = (error: string | null) => {
     const now = context.cells.get().marks
+    const own = changes.filter(
+      (change) => now.get(change.row)?.get(change.column)?.pending === batch.id
+    )
+    for (const change of own) {
+      const key = keyOf(change.row, change.column)
+      if (table.get(key) === batch) table.delete(key)
+    }
     markCells(
       context.cells,
-      changes.flatMap((change) =>
-        now.get(change.id)?.get(change.column)?.pending === batch
-          ? [
-              {
-                row: change.id,
-                column: change.column,
-                mark: error ? { pending: null, error } : null,
-              },
-            ]
-          : []
-      )
+      own.map((change) => {
+        const column = byId.get(change.column)
+        return {
+          row: change.row,
+          column: change.column,
+          mark: error
+            ? {
+                pending: null,
+                error,
+                attempted: column
+                  ? formatter.format(column, change.value)
+                  : String(change.value),
+                values: [change.previousValue, change.value],
+              }
+            : null,
+        }
+      })
     )
   }
   const saved = Promise.resolve(thenable).then(
-    () => settle(null),
-    (error: unknown) => {
+    (): SaveResult => {
+      settle(null)
+      return { ok: true }
+    },
+    (error: unknown): SaveResult => {
+      // Taken over by a later write: stale, so no message.
+      if (batch.controller.signal.aborted) {
+        settle(null)
+        return { ok: false, superseded: true, message: null }
+      }
       const message = messageOf(error, t("saveFailed"))
       settle(message)
       announce(
@@ -248,6 +343,7 @@ function writeCells(
         }),
         { politeness: "assertive" }
       )
+      return { ok: false, superseded: false, message }
     }
   )
   return outcome(false, saved)
@@ -292,5 +388,12 @@ function describeWrite(
   return new Intl.ListFormat(locale, { type: "unit" }).format(parts)
 }
 
-export { describeWrite, isCellEditable, markCells, writeCells }
-export type { CellWrite, WriteHost, WriteOutcome }
+export { describeWrite, markCells, writeCells }
+export type {
+  CellWrite,
+  CellWriteResult,
+  SaveResult,
+  WriteHost,
+  WriteOptions,
+  WriteOutcome,
+}

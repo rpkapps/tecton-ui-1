@@ -175,6 +175,8 @@ export default defineTranslations({
     },
     cellsInvalid: { one: "{total} ogiltig", other: "{total} ogiltiga" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "”{value}”: {message}",
+    selectCellsFirst: "Markera celler först",
     cellsNotSaved: {
       one: "{total} cell sparades inte: {message}",
       other: "{total} celler sparades inte: {message}",

@@ -202,6 +202,8 @@ export default defineTranslations({
     cellsSkipped: { other: "neredaguojamų: {total}" },
     cellsInvalid: { other: "netinkamų: {total}" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "„{value}“: {message}",
+    selectCellsFirst: "Pirmiausia pažymėkite langelius",
     cellsNotSaved: {
       one: "Neišsaugotas {total} langelis: {message}",
       few: "Neišsaugoti {total} langeliai: {message}",

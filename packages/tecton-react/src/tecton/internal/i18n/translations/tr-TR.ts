@@ -167,6 +167,8 @@ export default defineTranslations({
     cellsSkipped: { other: "{total} düzenlenemez" },
     cellsInvalid: { other: "{total} geçersiz" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "“{value}”: {message}",
+    selectCellsFirst: "Önce hücreleri seçin",
     cellsNotSaved: { other: "{total} hücre kaydedilmedi: {message}" },
     saveFailed: "Değişiklik kaydedilemedi",
     copyMultiple:

@@ -89,6 +89,7 @@ import {
 } from "./engine/index"
 import {
   DataTableContext,
+  type CellMark,
   type CellsState,
   type DataTableActions,
   type DataTableCellSelectionMode,
@@ -106,6 +107,7 @@ import {
   type DataTableSelectionMode,
   type DataTableState,
 } from "./context"
+import { useBelowBreakpoints } from "./column-sizing"
 import { loadFeature, usePrefetchFeatures, type FeatureName } from "./lazy"
 import { viewChangeReason } from "./view-reason"
 import { createWarnings, type Warn } from "./warnings"
@@ -353,6 +355,7 @@ type Matching = {
 
 const NO_IDS: ReadonlyArray<string> = []
 const NO_RANGES: ReadonlyArray<DataTableCellRange> = []
+const NO_BREAKPOINTS: ReadonlyArray<"sm" | "md" | "lg"> = []
 const NO_MARKS: CellsState["marks"] = new Map()
 const NO_GROUPS: Collapsed = { grouping: NO_IDS, closed: ALL_OPEN }
 
@@ -433,6 +436,12 @@ function modifiers(event: Event | undefined) {
   }
 }
 
+type Span = { start: string; end: string } | undefined
+
+function sameSpan(a: Span, b: Span) {
+  return a === b || (!!a && !!b && a.start === b.start && a.end === b.end)
+}
+
 /** Whether two cell selections are the same ranges, in the same order. */
 function sameRanges(
   a: ReadonlyArray<DataTableCellRange>,
@@ -440,15 +449,20 @@ function sameRanges(
 ) {
   if (a === b) return true
   if (a.length !== b.length) return false
-  return a.every((range, index) => {
-    const other = b[index]
-    return (
-      range.start.row === other.start.row &&
-      range.start.column === other.start.column &&
-      range.end.row === other.end.row &&
-      range.end.column === other.end.column
-    )
-  })
+  return a.every(
+    (range, index) =>
+      sameSpan(range.rows, b[index].rows) &&
+      sameSpan(range.columns, b[index].columns)
+  )
+}
+
+/** A range as its own plain object, each axis given copied. */
+function copyRange(range: DataTableCellRange): DataTableCellRange {
+  const copy: DataTableCellRange = {}
+  if (range.rows) copy.rows = { start: range.rows.start, end: range.rows.end }
+  if (range.columns)
+    copy.columns = { start: range.columns.start, end: range.columns.end }
+  return copy
 }
 
 function createActions<T>(
@@ -746,18 +760,23 @@ function createActions<T>(
     setCellSelection(next, reason, event) {
       const current = now()
       if (current.cellSelectionMode === "none") return false
-      // One range in "cell" mode, of one cell.
+      // One range in "cell" mode, of one cell: the last range's moving
+      // corner (a range of whole rows or columns has none).
       const ranges =
         current.cellSelectionMode === "cell"
-          ? next
-              .slice(-1)
-              .map((range) => ({ start: range.end, end: range.end }))
+          ? next.slice(-1).flatMap(({ rows, columns }) =>
+              rows && columns
+                ? [
+                    {
+                      rows: { start: rows.end, end: rows.end },
+                      columns: { start: columns.end, end: columns.end },
+                    },
+                  ]
+                : []
+            )
           : next
       if (sameRanges(ranges, current.cellSelection)) return false
-      const copy = ranges.map((range) => ({
-        start: { ...range.start },
-        end: { ...range.end },
-      }))
+      const copy = ranges.map(copyRange)
       if (
         !emit(
           current.onCellSelectionChange,
@@ -769,15 +788,30 @@ function createActions<T>(
       )
         return false
       set({ cellSelection: copy })
+      // What the summary announces after: a change the user made.
+      context().cells.set({ change: { ranges: copy, reason } })
       return true
     },
     currentCellSelection: () => now().cellSelection,
-    changeCells(changes, reason, event) {
-      const details = createChangeEventDetails(reason, event)
+    changeCells(changes, reason, event, signal) {
+      const details: DataTableCellsChangeDetails = Object.assign(
+        createChangeEventDetails(reason, event),
+        { signal }
+      )
       const result = now().onCellsChange?.(changes, details)
       return { canceled: details.isCanceled, result }
     },
-    async runCellCommand(command, text) {
+    clearCellMessages() {
+      const { cells } = context()
+      const before = cells.get().marks
+      const marks = new Map<string, ReadonlyMap<string, CellMark>>()
+      for (const [row, own] of before) {
+        const kept = new Map([...own].filter(([, mark]) => mark.pending))
+        if (kept.size) marks.set(row, kept)
+      }
+      cells.set({ marks })
+    },
+    async runCellCommand(command, options) {
       const module = await loadFeature("cellSelection")
       return module.runCellCommand(
         {
@@ -786,7 +820,7 @@ function createActions<T>(
           focused: null,
         },
         command,
-        text
+        options
       )
     },
     async exportCsv(options = {}) {
@@ -1000,10 +1034,37 @@ function DataTable<T>({
   }, [groupKeys, closedGroups])
   const formatter = getFormatter(getColumnModel(columns), locale, labels)
   const cellMode = cellSelectionMode !== "none"
+  // Columns hidden below the window's breakpoint hold no selected cells.
+  const below = useBelowBreakpoints(
+    cellMode
+      ? layout.columns.flatMap((column) => column.definition.hideBelow ?? [])
+      : NO_BREAKPOINTS
+  )
+  const hiddenBelow = React.useMemo(
+    () =>
+      new Set(
+        layout.columns.flatMap(({ id, definition }) =>
+          definition.hideBelow && below.has(definition.hideBelow) ? [id] : []
+        )
+      ),
+    [layout.columns, below]
+  )
   const cellGrid = React.useMemo(
     () =>
-      cellMode ? resolveCells(cellSelection, model, layout.columns) : null,
-    [cellMode, cellSelection, model, layout.columns]
+      cellMode
+        ? resolveCells(cellSelection, model, layout.columns, {
+            order: view.columns.order,
+            hiddenBelow,
+          })
+        : null,
+    [
+      cellMode,
+      cellSelection,
+      model,
+      layout.columns,
+      view.columns.order,
+      hiddenBelow,
+    ]
   )
 
   const allMatching =
@@ -1202,6 +1263,7 @@ function DataTable<T>({
     createStore<CellsState>({
       grid: cellGrid as CellsState["grid"],
       marks: NO_MARKS,
+      change: null,
     })
   )
   const [context] = React.useState<DataTableContextValue<T>>(() => {
@@ -1296,6 +1358,21 @@ function DataTable<T>({
         "DataTable: `reorderableRows` is off in a tree (`itemToChildren`): rows are reordered in a flat list only."
       )
   }, [warn, reorderableRows, tree])
+  React.useEffect(() => {
+    if (editable && onCellsChange === undefined)
+      warn(
+        "editable-without-on-cells-change",
+        "DataTable: `editable` without `onCellsChange`: the cells written (pasted, cleared, filled) are reported through `onCellsChange`, and the table does not change `items` itself."
+      )
+  }, [warn, editable, onCellsChange])
+  const activates = onActivate !== undefined && itemToHref === undefined
+  React.useEffect(() => {
+    if (editable && activates)
+      warn(
+        "editable-on-activate",
+        "DataTable: `onActivate` is not reached from editable cells: Enter, F2 and a double click on a cell that can be written edit it. Activate rows from a column that is not editable (`editable: false`), or give them links with `itemToHref`."
+      )
+  }, [warn, editable, activates])
   React.useEffect(() => {
     if (hasMore && pagination)
       warn(

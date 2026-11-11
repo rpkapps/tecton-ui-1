@@ -28,6 +28,7 @@ import {
   type DataTableCellsChangeReason,
   type DataTableColumns,
   type DataTableRowModel,
+  type DataTableValue,
   type DataTableView,
   type DataTableViewChangeReason,
   type Formatter,
@@ -174,10 +175,20 @@ type DataTableState<T> = {
   readonly cellGrid: CellGrid<T> | null
 }
 
-/** A cell being saved (`pending`, the write's number) or not saved (`error`). */
+/** A cell being saved (`pending`), or whose value was refused or not saved (`error`). */
 type CellMark = {
+  /** The write saving it, while it saves. */
   readonly pending: number | null
+  /** Why the value written was refused, or not saved. */
   readonly error: string | null
+  /** What was written, as text, with `error`. */
+  readonly attempted: string | null
+  /**
+   * The values `error` holds for: the cell's value then, and the value
+   * written. Once the cell's value is another (changed from outside), the
+   * message is gone.
+   */
+  readonly values: ReadonlyArray<DataTableValue>
 }
 
 /** What the rows' cells show of the cell selection and of writes, apart from the table's state. */
@@ -186,11 +197,23 @@ type CellsState = {
   readonly grid: CellGrid<unknown> | null
   /** The cells being saved or not saved, by row id, then column id. */
   readonly marks: ReadonlyMap<string, ReadonlyMap<string, CellMark>>
+  /** The last change of the cell selection the table made, and why. */
+  readonly change: {
+    readonly ranges: ReadonlyArray<DataTableCellRange>
+    readonly reason: DataTableCellSelectionChangeReason
+  } | null
 }
 
 /** The second argument of `onCellsChange`. */
 type DataTableCellsChangeDetails =
-  DataTableChangeDetails<DataTableCellsChangeReason>
+  DataTableChangeDetails<DataTableCellsChangeReason> & {
+    /**
+     * Aborted when a later write takes over any of these cells (or this
+     * one is cancelled): a save still running for them is stale, and its
+     * outcome (a rollback on failure) must not overwrite the later values.
+     */
+    signal: AbortSignal
+  }
 
 /** What the parts do; each reads the latest props and state. */
 type DataTableActions<T> = {
@@ -304,12 +327,15 @@ type DataTableActions<T> = {
   changeCells: (
     changes: Array<DataTableCellChange<T>>,
     reason: DataTableCellsChangeReason,
-    event?: Event
+    event: Event | undefined,
+    signal: AbortSignal
   ) => { canceled: boolean; result: unknown }
+  /** Drops every cell's message (not valid, not saved); the cells saving stay so. */
+  clearCellMessages: () => void
   /** Runs a cell command of `useDataTable` (copy, paste, clear, fill down), its code loaded first. */
   runCellCommand: (
     command: "copy" | "paste" | "clear" | "fill",
-    text?: string
+    options?: { text?: string; escapeFormulas?: boolean }
   ) => Promise<string>
   /** Warns once in development. */
   warn: Warn

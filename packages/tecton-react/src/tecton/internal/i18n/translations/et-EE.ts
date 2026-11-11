@@ -177,6 +177,8 @@ export default defineTranslations({
     },
     cellsInvalid: { one: "{total} vigane", other: "{total} vigast" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "„{value}“: {message}",
+    selectCellsFirst: "Valige esmalt lahtrid",
     cellsNotSaved: {
       one: "{total} lahter jäi salvestamata: {message}",
       other: "{total} lahtrit jäi salvestamata: {message}",

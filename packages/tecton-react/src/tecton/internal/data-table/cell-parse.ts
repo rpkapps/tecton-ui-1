@@ -3,18 +3,25 @@
  * shows reads back as its value, in the table's locale, so cells copied
  * from the table, or from a spreadsheet in the same language, paste back.
  *
- * - text: as it is.
- * - number: digits with the locale's decimal and group separators
- *   (groups of two or three digits; ASCII and Arabic-Indic digits, and
- *   the Arabic separators), a
- *   leading `+`, `-` or `−`, an accounting `(…)` for a negative, the
- *   column's currency, percent sign or unit around it (a `%` divides by
- *   100 in a percent column); else a number as JavaScript writes it
- *   ("1234.5", "1e3").
+ * - text: as it is, but a `'` before `=`, `+`, `-`, `@`, a tab or a
+ *   carriage return (what a copy puts there, `escapeFormulas`) dropped.
+ * - number: digits with the locale's decimal and group separators, the
+ *   groups as the locale writes them (three digits; two before the last
+ *   three where the locale groups so, as en-IN does), so "1,50" is no
+ *   number in English (ASCII and Arabic-Indic digits, and the Arabic
+ *   separators), a leading `+`, `-` or `−`, an accounting `(…)` for a
+ *   negative, the column's currency, percent sign or unit around it (a `%`
+ *   divides by 100 in a percent column); else a number as JavaScript
+ *   writes it ("1234.5", "1e3"). Compact numbers ("1.2K") are not read: a
+ *   copy from the table carries the values themselves (`cell-selection/`).
  * - date: an ISO date ("2024-03-01", with a time too), or the day, month
- *   and year in the locale's order, the month as a number or a name (long
- *   or short), with a time after it (and AM / PM); a two-digit year is
- *   1930–2029, as Excel reads it. Days are in the column's `timeZone`.
+ *   and year in the locale's order (the order of a date with the month as a
+ *   number, or with its name: "1 mars 2024", "2024. gada 1. marts"), with a
+ *   time after it (and AM / PM, "μ.μ."); a two-digit year is 1930–2029, as
+ *   Excel reads it. Days are in the column's `timeZone`.
+ *
+ * Direction marks (U+200E, U+200F, U+061C, the embeddings and isolates)
+ * that `Intl` writes in right-to-left text are dropped first.
  * - boolean: the Yes / No labels, "true" / "false", "1" / "0".
  * - options: an option's label or value.
  *
@@ -47,6 +54,8 @@ type ParseContext = {
 type NumberSymbols = {
   decimal: string
   group: string
+  /** The locale groups two digits before the last three (12,34,567). */
+  pairs: boolean
   /** Currency symbols, percent signs and units the column's format writes. */
   affixes: ReadonlyArray<string>
   minus: string
@@ -61,10 +70,15 @@ function symbolsOf(locale: string, format: Intl.NumberFormatOptions = {}) {
     const plain = new Intl.NumberFormat(locale).formatToParts(-1234567.5)
     const part = (type: string) =>
       plain.find((at) => at.type === type)?.value ?? ""
-    const own = new Intl.NumberFormat(locale, format).formatToParts(-1234.5)
+    const groups = plain.filter((at) => at.type === "integer")
+    // Units agree with their number in some languages ("متر", "مترًا").
+    const own = [-1234.5, 1, 2, 3, 11, 42, 0.5].flatMap((sample) =>
+      new Intl.NumberFormat(locale, format).formatToParts(sample)
+    )
     symbols = {
       decimal: part("decimal") || ".",
       group: part("group"),
+      pairs: groups.slice(1, -1).some((at) => at.value.length === 2),
       affixes: own
         .filter(
           (at) =>
@@ -72,8 +86,10 @@ function symbolsOf(locale: string, format: Intl.NumberFormatOptions = {}) {
             at.type === "percentSign" ||
             at.type === "unit"
         )
-        .map((at) => foldText(at.value).replace(/\s/g, ""))
-        .filter(Boolean),
+        .map((at) => foldText(at.value.replace(BIDI, "")).replace(/\s/g, ""))
+        .filter((affix, index, all) => affix && all.indexOf(affix) === index)
+        // The longest first: "مترًا" before "متر".
+        .sort((a, b) => b.length - a.length),
       minus: part("minusSign") || "-",
     }
     numberSymbols.set(key, symbols)
@@ -83,6 +99,9 @@ function symbolsOf(locale: string, format: Intl.NumberFormatOptions = {}) {
 
 const MINUS = /^[-−‒–]/
 
+/** Direction marks, embeddings and isolates. */
+const BIDI = /[\u200e\u200f\u061c\u202a-\u202e\u2066-\u2069]/g
+
 function parseNumber(
   text: string,
   locale: string,
@@ -91,7 +110,7 @@ function parseNumber(
   const symbols = symbolsOf(locale, format)
   // Digits as ASCII, spaces (the no-break ones `Intl` writes) removed,
   // and the Arabic separators as the locale's.
-  let rest = foldText(text)
+  let rest = foldText(text.replace(BIDI, ""))
     .replace(/\s/g, "")
     .replace(/\u066c/g, symbols.group)
     .replace(/\u066b/g, symbols.decimal)
@@ -132,10 +151,17 @@ function strictNumber(text: string, symbols: NumberSymbols) {
   let digits = whole
   if (symbols.group && whole.includes(symbols.group)) {
     const groups = whole.split(symbols.group)
-    // 1,234,567 or (Indian) 12,34,567: groups of two or three after the first.
+    // 1,234,567, or (en-IN) 12,34,567: the last group of three, those
+    // before it of three, or two where the locale groups so. "1,50" is
+    // not a number in English: read as JavaScript's below, or refused.
+    const middle = groups.slice(1, -1)
     if (
       !groups[0] ||
-      groups.slice(1).some((group) => group.length < 2 || group.length > 3)
+      groups[0].length > 3 ||
+      groups[groups.length - 1].length !== 3 ||
+      middle.some(
+        (group) => group.length !== 3 && !(symbols.pairs && group.length === 2)
+      )
     )
       return undefined
     digits = groups.join("")
@@ -151,8 +177,13 @@ function strictNumber(text: string, symbols: NumberSymbols) {
   )
 }
 
+type DateField = "year" | "month" | "day"
+
 type DateSymbols = {
-  order: ReadonlyArray<"year" | "month" | "day">
+  /** The order of a date with its month as a number. */
+  order: ReadonlyArray<DateField>
+  /** The order of a date with its month's name. */
+  named: ReadonlyArray<DateField>
   /** Month names (long, short, as in a date and alone), folded, by month from 0. */
   months: ReadonlyMap<string, number>
   am: string
@@ -161,24 +192,28 @@ type DateSymbols = {
 
 const dateSymbols = new Map<string, DateSymbols>()
 
-const strip = (text: string) => foldText(text).replace(/[.\s]/g, "")
+const strip = (text: string) =>
+  foldText(text.replace(BIDI, "")).replace(/[.\s]/g, "")
 
 function dateSymbolsOf(locale: string) {
   let symbols = dateSymbols.get(locale)
   if (!symbols) {
     const options = { calendar: "gregory", numberingSystem: "latn" } as const
-    const order = new Intl.DateTimeFormat(locale, {
-      ...options,
-      year: "numeric",
-      month: "numeric",
-      day: "numeric",
-    })
-      .formatToParts(new Date(2033, 10, 22))
-      .flatMap((part) =>
-        part.type === "year" || part.type === "month" || part.type === "day"
-          ? [part.type]
-          : []
-      )
+    const orderOf = (month: "numeric" | "long") =>
+      new Intl.DateTimeFormat(locale, {
+        ...options,
+        year: "numeric",
+        month,
+        day: "numeric",
+      })
+        .formatToParts(new Date(2033, 10, 22))
+        .flatMap((part) =>
+          part.type === "year" || part.type === "month" || part.type === "day"
+            ? [part.type]
+            : []
+        )
+    const order = orderOf("numeric")
+    const named = orderOf("long")
     const months = new Map<string, number>()
     for (const month of ["long", "short"] as const) {
       const alone = new Intl.DateTimeFormat(locale, { ...options, month })
@@ -189,11 +224,12 @@ function dateSymbolsOf(locale: string) {
       })
       for (let m = 0; m < 12; m++) {
         const date = new Date(2033, m, 15)
-        const names = [
-          alone.format(date),
-          inDate.formatToParts(date).find((part) => part.type === "month")
-            ?.value ?? "",
-        ]
+        const parts = inDate.formatToParts(date)
+        const at = parts.findIndex((part) => part.type === "month")
+        const name = parts[at]?.value ?? ""
+        // A prefix written onto the month (Hebrew "במרץ", in March).
+        const prefix = /(\p{L}+)$/u.exec(parts[at - 1]?.value ?? "")?.[1]
+        const names = [alone.format(date), name, prefix ? prefix + name : ""]
         for (const name of names) {
           const key = strip(name)
           // Names with digits (Japanese "1月") are read as numbers.
@@ -213,6 +249,7 @@ function dateSymbolsOf(locale: string) {
       )
     symbols = {
       order: order.length === 3 ? order : ["month", "day", "year"],
+      named: named.length === 3 ? named : ["month", "day", "year"],
       months,
       am: period(1) || "am",
       pm: period(13) || "pm",
@@ -286,7 +323,12 @@ function parseDate(
   format: Intl.DateTimeFormatOptions | undefined
 ): Date | undefined {
   const timeZone = format?.timeZone
-  const folded = foldText(text.trim())
+  // Without direction marks, and without the dots of abbreviations ("Jan.",
+  // "μ.μ."): a dot after a letter, never one between digits.
+  const folded = foldText(text.replace(BIDI, "").trim()).replace(
+    /(\p{L})\./gu,
+    "$1"
+  )
   if (ISO_ZONED.test(folded)) {
     const time = Date.parse(text.trim())
     return Number.isFinite(time) ? new Date(time) : undefined
@@ -311,16 +353,16 @@ function parseDate(
       numbers.push(token)
       continue
     }
-    const word = token.replace(/\./g, "")
-    if (month === undefined && symbols.months.has(word))
-      month = symbols.months.get(word)
-    else if (word === symbols.am || word === "am") period = "am"
-    else if (word === symbols.pm || word === "pm") period = "pm"
+    if (month === undefined && symbols.months.has(token))
+      month = symbols.months.get(token)
+    else if (token === symbols.am || token === "am") period = "am"
+    else if (token === symbols.pm || token === "pm") period = "pm"
   }
-  const fields: Partial<Record<"year" | "month" | "day", string>> = {}
-  const wanted = symbols.order.filter(
-    (field) => field !== "month" || month === undefined
-  )
+  const fields: Partial<Record<DateField, string>> = {}
+  const wanted =
+    month === undefined
+      ? symbols.order
+      : symbols.named.filter((field) => field !== "month")
   for (const field of wanted) {
     const next = numbers.shift()
     if (next === undefined) break
@@ -374,7 +416,8 @@ function parseCellText<T>(
   const locale = resolveLocale(context.locale)
   switch (column.type) {
     case "text":
-      return { value: text }
+      // A copy's `'` before what a spreadsheet would run as a formula.
+      return { value: /^'[=+\-@\t\r]/.test(text) ? text.slice(1) : text }
     case "number": {
       const value = parseNumber(text, locale, column.format)
       return value === undefined

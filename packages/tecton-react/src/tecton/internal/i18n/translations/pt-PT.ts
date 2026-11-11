@@ -181,6 +181,8 @@ export default defineTranslations({
     },
     cellsInvalid: { one: "{total} inválida", other: "{total} inválidas" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "«{value}»: {message}",
+    selectCellsFirst: "Selecione primeiro as células",
     cellsNotSaved: {
       one: "{total} célula não guardada: {message}",
       other: "{total} células não guardadas: {message}",

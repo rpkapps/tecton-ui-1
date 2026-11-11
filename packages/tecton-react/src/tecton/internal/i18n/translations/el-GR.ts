@@ -180,6 +180,8 @@ export default defineTranslations({
     },
     cellsInvalid: { one: "{total} μη έγκυρο", other: "{total} μη έγκυρα" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "«{value}»: {message}",
+    selectCellsFirst: "Επιλέξτε πρώτα κελιά",
     cellsNotSaved: {
       one: "{total} κελί δεν αποθηκεύτηκε: {message}",
       other: "{total} κελιά δεν αποθηκεύτηκαν: {message}",

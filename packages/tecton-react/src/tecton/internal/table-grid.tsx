@@ -47,7 +47,10 @@
  *   move to another cell is told (`onCellNavigate`), with Shift for
  *   "extend": then Up / Down, Page Up / Down and Ctrl / Cmd + Home / End
  *   stay in the body and pass over its rows without a `value` (a group's),
- *   and the row selection does not follow.
+ *   and the row selection does not follow. Ctrl / Cmd + Home / End go to
+ *   the body's first and last cells. Enter, F2 and a double click go to
+ *   the cell first (`onCellAction`: an editable cell edits), then to the
+ *   row as usual.
  *
  * Used by the generated `Table`, `TableBody` and `TableRow` (the overlay's
  * table hunk), `DataTable` and its selection checkbox; not part of the
@@ -163,14 +166,28 @@ type TableGridOptions = {
   ) => void
   /** Several cells can be selected (ranges): `aria-multiselectable` without row selection too. */
   multiselectable?: boolean
+  /**
+   * With `cellFocus`: Enter, F2 (`"edit"`) or a double click on a cell;
+   * `true` when the cell took it (editing it), else Enter and a double
+   * click activate the row as usual.
+   */
+  onCellAction?: (
+    cell: HTMLTableCellElement,
+    event: Event,
+    kind: "enter" | "edit" | "double-click"
+  ) => boolean
 }
 
 /** What the component around a grid table asks of it. */
 type TableGridController = {
   /** Scrolls the body row with this `value` into view, rendered or not. */
   scrollToRow: (value: string) => void
-  /** Focuses the body row at this index (from 0), scrolled to when out of view. */
-  focusRow: (index: number) => void
+  /**
+   * Focuses the body row at this index (from 0), or its cell in `column`
+   * (from 0, as laid out), scrolled to when out of view (unless `scroll`
+   * is false and it is rendered).
+   */
+  focusRow: (index: number, column?: number, scroll?: boolean) => void
   /** A body row's `value`, read from its element. */
   rowValue: (row: HTMLTableRowElement) => string | undefined
   /** Focuses a cell (its first stop), scrolled into view unless `scroll` is false. */
@@ -424,6 +441,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     firstCell = 0,
     onCellNavigate,
     multiselectable = false,
+    onCellAction,
   } = config ?? {}
   const t = useTranslations("table")
   const rtl = useDirection() === "rtl"
@@ -1193,14 +1211,20 @@ function useTableGrid(own: React.ComponentProps<"table">) {
             extend: event.shiftKey && mod,
           })
         } else if (mod) {
-          const to = extending
+          // A spreadsheet's first and last cells are its body's.
+          const to = cellFocus
             ? edge(first, bodyStart, bodyEnd, withoutValue)
             : edge(first, 0, total())
           if (to === null) return
           whenRendered(to, (target) =>
-            moveTo(to, first ? 0 : lastColumn(target), event, {
-              extend: event.shiftKey,
-            })
+            moveTo(
+              to,
+              first ? (cellFocus ? firstCell : 0) : lastColumn(target),
+              event,
+              {
+                extend: event.shiftKey,
+              }
+            )
           )
         } else {
           const to = first ? 0 : lastColumn(row)
@@ -1275,7 +1299,21 @@ function useTableGrid(own: React.ComponentProps<"table">) {
         if (inBody && info && !info.disabled && !cellFocus) focusElement(row)
         return
       }
+      case "F2":
       case "Enter": {
+        // A spreadsheet's cell that edits takes them (not activation).
+        if (
+          cellFocus &&
+          cell &&
+          !onControl &&
+          onCellAction?.(
+            cell,
+            event.nativeEvent,
+            event.key === "F2" ? "edit" : "enter"
+          )
+        )
+          return handled()
+        if (event.key === "F2") return
         if (onControl || !info || info.disabled) return
         if (onActivate && info.value !== undefined) {
           handled()
@@ -1433,6 +1471,8 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   const onDoubleClick = (event: React.MouseEvent<HTMLTableElement>) => {
     own.onDoubleClick?.(event)
     if (event.defaultPrevented || clickActivated.current) return
+    const cell = cellFocus ? pressedCell(event) : null
+    if (cell && onCellAction?.(cell, event.nativeEvent, "double-click")) return
     const pressed = pressedRow(event)
     if (pressed) onActivate?.(pressed.value, event.nativeEvent)
   }
@@ -1561,9 +1601,13 @@ function useTableGrid(own: React.ComponentProps<"table">) {
           : undefined
         if (index !== undefined) body.current?.scrollToIndex?.(index)
       },
-      focusRow: (index) => {
+      focusRow: (index, column, scroll = true) => {
         const at = headRows().length + index
-        if (isBody(at)) whenRendered(at, (row) => focusElement(rowStop(row)))
+        if (!isBody(at)) return
+        whenRendered(at, (row) => {
+          const cell = column === undefined ? null : cellAt(row, column)
+          focusElement(cell ? stopsOf(cell)[0] : rowStop(row), scroll)
+        })
       },
       rowValue: (row) => infoOf(row)?.value,
       focusCell: (cell, scroll = true) =>

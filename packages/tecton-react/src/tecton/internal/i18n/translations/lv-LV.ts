@@ -193,6 +193,8 @@ export default defineTranslations({
     cellsSkipped: { other: "nav rediģējamas: {total}" },
     cellsInvalid: { other: "nederīgas: {total}" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "“{value}”: {message}",
+    selectCellsFirst: "Vispirms atlasiet šūnas",
     cellsNotSaved: {
       zero: "{total} šūnas nav saglabātas: {message}",
       one: "{total} šūna nav saglabāta: {message}",

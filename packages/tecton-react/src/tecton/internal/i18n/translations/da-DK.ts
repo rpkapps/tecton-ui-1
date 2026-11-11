@@ -172,6 +172,8 @@ export default defineTranslations({
     cellsSkipped: { other: "{total} kan ikke redigeres" },
     cellsInvalid: { one: "{total} ugyldig", other: "{total} ugyldige" },
     cellMessage: "{columnName}: {message}",
+    refusedValue: "“{value}”: {message}",
+    selectCellsFirst: "Markér først celler",
     cellsNotSaved: {
       one: "{total} celle blev ikke gemt: {message}",
       other: "{total} celler blev ikke gemt: {message}",
