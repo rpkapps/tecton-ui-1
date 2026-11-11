@@ -4,32 +4,34 @@ import * as React from "react"
 
 import { Checkbox } from "@tecton/react/components/checkbox"
 
-import { useTranslations } from "./internal/i18n/translations"
-import { useStore } from "./internal/store"
-import { useTableGridContext, useTableGridRow } from "./internal/table-grid"
+import { useTranslations } from "../i18n/translations"
+import { useStore } from "../store"
+import { useTableGridContext, useTableGridRow } from "../table-grid"
 
-type TableSelectionCheckboxProps = Omit<
+type DataTableSelectionCheckboxProps = Omit<
   React.ComponentProps<typeof Checkbox>,
   "checked" | "defaultChecked" | "indeterminate" | "onCheckedChange"
 >
 
 /**
- * The selection checkbox of a `<Table grid>`. In a `TableRow`, it shows and
+ * The selection checkbox of a grid table (`TableGridConfig`), for the
+ * selection column of `DataTable`. In a `TableRow`, it shows and
  * toggles that row (Shift + click: the range to it), named "Select" and
  * the row's header; in the header, it shows whether every row, some or
  * none are selected and selects or clears them all ("Select All"), and
- * renders only when `selectionMode="multiple"`. It is out of the Tab order:
+ * renders only when `selectionMode="multiple"` (disabled while no row can be
+ * selected). It is out of the Tab order:
  * the arrow keys reach it, and Space on the row does what it does.
  */
-function TableSelectionCheckbox({
+function DataTableSelectionCheckbox({
   ref,
   disabled,
   ...props
-}: TableSelectionCheckboxProps) {
+}: DataTableSelectionCheckboxProps) {
   const grid = useTableGridContext()
   if (!grid)
     throw new Error(
-      "TableSelectionCheckbox must be used inside a Table with grid"
+      "DataTableSelectionCheckbox must be used inside a Table in a TableGridConfig"
     )
   // The header row is a TableRow too, without a `value`.
   const context = useTableGridRow()
@@ -49,6 +51,8 @@ function TableSelectionCheckbox({
     grid.store,
     () => !row && grid.headerSelection() === "some"
   )
+  // The header's: nothing to select (no rows, or none selectable).
+  const empty = useStore(grid.store, () => !row && !grid.canSelectAll())
 
   // Named after the row too: "Select" and the row's header (or first text).
   React.useLayoutEffect(() => {
@@ -88,14 +92,21 @@ function TableSelectionCheckbox({
       aria-labelledby={row ? labelledBy : undefined}
       checked={checked}
       indeterminate={indeterminate}
-      disabled={!!(disabled || row?.disabled)}
+      // A row that cannot be selected (`disabledBehavior="selection"`) can
+      // still be focused and activated: only its checkbox is disabled.
+      disabled={
+        !!disabled ||
+        !!row?.disabled ||
+        (value !== undefined && !grid.isSelectable(value)) ||
+        empty
+      }
       onCheckedChange={(_checked, eventDetails) => {
         const event = eventDetails.event as MouseEvent | undefined
-        if (!row) {
+        if (value === undefined) {
           grid.toggleAll(event)
           return
         }
-        grid.select(row.value!, {
+        grid.select(value, {
           toggle: true,
           range: !!event?.shiftKey,
           event,
@@ -106,5 +117,5 @@ function TableSelectionCheckbox({
   )
 }
 
-export { TableSelectionCheckbox }
-export type { TableSelectionCheckboxProps }
+export { DataTableSelectionCheckbox }
+export type { DataTableSelectionCheckboxProps }

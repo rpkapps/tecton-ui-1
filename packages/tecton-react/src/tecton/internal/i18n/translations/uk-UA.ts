@@ -47,6 +47,55 @@ export default defineTranslations({
     descendingSort:
       "відсортовано за стовпцем {columnName} у низхідному порядку",
   },
+  dataTable: {
+    loading: "Завантаження",
+    emptyTitle: "Немає рядків",
+    emptyDescription: "Тут поки що нічого немає.",
+    noResultsTitle: "Нічого не знайдено",
+    noResultsDescription:
+      "Немає рядків, що відповідають умовам пошуку та фільтрам.",
+    clearFilters: "Скинути фільтри",
+    errorTitle: "Не вдалося завантажити рядки",
+    errorDescription: "Під час завантаження даних сталася помилка.",
+    retry: "Повторити",
+    rowsPerPage: "Рядків на сторінці",
+    pageInfo: "Сторінка {page} з {pageCount}",
+    pagination: "Навігація сторінками",
+    firstPage: "Перша сторінка",
+    previousPage: "Попередня сторінка",
+    nextPage: "Наступна сторінка",
+    lastPage: "Остання сторінка",
+    selectedCount: {
+      one: "Вибрано {selected} з {total}",
+      few: "Вибрано {selected} з {total}",
+      many: "Вибрано {selected} з {total}",
+      other: "Вибрано {selected} з {total}",
+    },
+    selectAllMatching: {
+      one: "Вибрати всі {total} рядок",
+      few: "Вибрати всі {total} рядки",
+      many: "Вибрати всі {total} рядків",
+      other: "Вибрати всі {total} рядка",
+    },
+    clearSelection: "Скасувати вибір",
+    rowsLoaded: {
+      one: "Показано {total} рядок",
+      few: "Показано {total} рядки",
+      many: "Показано {total} рядків",
+      other: "Показано {total} рядка",
+    },
+    sortPositionAscending:
+      "відсортовано у висхідному порядку, {position} з {total} у порядку сортування",
+    sortPositionDescending:
+      "відсортовано у низхідному порядку, {position} з {total} у порядку сортування",
+    sortAddedAscending:
+      "{columnName}: сортування за зростанням, {position} з {total}",
+    sortAddedDescending:
+      "{columnName}: сортування за спаданням, {position} з {total}",
+    sortCleared: "{columnName}: сортування знято",
+    yes: "Так",
+    no: "Ні",
+  },
   tableColumnResizer: {
     resize: "Змінити розмір стовпця {columnName}",
   },

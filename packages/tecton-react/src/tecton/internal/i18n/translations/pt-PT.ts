@@ -46,6 +46,50 @@ export default defineTranslations({
     ascendingSort: "Ordenar por coluna {columnName} em ordem ascendente",
     descendingSort: "Ordenar por coluna {columnName} em ordem descendente",
   },
+  dataTable: {
+    loading: "A carregar",
+    emptyTitle: "Nenhuma linha",
+    emptyDescription: "Ainda não há nada para mostrar aqui.",
+    noResultsTitle: "Nenhum resultado",
+    noResultsDescription: "Nenhuma linha corresponde à pesquisa e aos filtros.",
+    clearFilters: "Limpar filtros",
+    errorTitle: "Não foi possível carregar as linhas",
+    errorDescription: "Ocorreu um erro ao carregar os dados.",
+    retry: "Tentar novamente",
+    rowsPerPage: "Linhas por página",
+    pageInfo: "Página {page} de {pageCount}",
+    pagination: "Paginação",
+    firstPage: "Primeira página",
+    previousPage: "Página anterior",
+    nextPage: "Página seguinte",
+    lastPage: "Última página",
+    selectedCount: {
+      one: "{selected} de {total} selecionada",
+      many: "{selected} de {total} selecionadas",
+      other: "{selected} de {total} selecionadas",
+    },
+    selectAllMatching: {
+      one: "Selecionar {total} linha",
+      many: "Selecionar todas as {total} de linhas",
+      other: "Selecionar todas as {total} linhas",
+    },
+    clearSelection: "Limpar seleção",
+    rowsLoaded: {
+      one: "A mostrar {total} linha",
+      other: "A mostrar {total} linhas",
+    },
+    sortPositionAscending:
+      "ordenado em ordem ascendente, {position} de {total} na ordem de ordenação",
+    sortPositionDescending:
+      "ordenado em ordem descendente, {position} de {total} na ordem de ordenação",
+    sortAddedAscending:
+      "{columnName} ordenado de forma ascendente, {position} de {total}",
+    sortAddedDescending:
+      "{columnName} ordenado de forma descendente, {position} de {total}",
+    sortCleared: "{columnName} já não está ordenado",
+    yes: "Sim",
+    no: "Não",
+  },
   tableColumnResizer: {
     resize: "Redimensionar {columnName}",
   },

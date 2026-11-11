@@ -6,6 +6,6 @@
 import { useReactTable } from "@tanstack/react-table"
 ```
 
-Data tables are a recipe on Table, not a component; `<Table grid>` adds keyboard navigation and row selection.
+Data tables are a recipe on Table, not a component.
 
 Docs: /docs/components/data-table

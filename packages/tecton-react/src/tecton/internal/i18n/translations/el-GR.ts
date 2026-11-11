@@ -46,6 +46,49 @@ export default defineTranslations({
     ascendingSort: "διαλογή ανά στήλη {columnName} σε αύξουσα σειρά",
     descendingSort: "διαλογή ανά στήλη {columnName} σε φθίνουσα σειρά",
   },
+  dataTable: {
+    loading: "Φόρτωση",
+    emptyTitle: "Δεν υπάρχουν γραμμές",
+    emptyDescription: "Δεν υπάρχει ακόμη τίποτα για εμφάνιση εδώ.",
+    noResultsTitle: "Δεν βρέθηκαν αποτελέσματα",
+    noResultsDescription:
+      "Καμία γραμμή δεν αντιστοιχεί στην αναζήτηση και στα φίλτρα.",
+    clearFilters: "Απαλοιφή φίλτρων",
+    errorTitle: "Δεν ήταν δυνατή η φόρτωση των γραμμών",
+    errorDescription: "Παρουσιάστηκε σφάλμα κατά τη φόρτωση των δεδομένων.",
+    retry: "Επανάληψη",
+    rowsPerPage: "Γραμμές ανά σελίδα",
+    pageInfo: "Σελίδα {page} από {pageCount}",
+    pagination: "Σελιδοποίηση",
+    firstPage: "Πρώτη σελίδα",
+    previousPage: "Προηγούμενη σελίδα",
+    nextPage: "Επόμενη σελίδα",
+    lastPage: "Τελευταία σελίδα",
+    selectedCount: {
+      one: "Επιλέχθηκε {selected} από {total}",
+      other: "Επιλέχθηκαν {selected} από {total}",
+    },
+    selectAllMatching: {
+      one: "Επιλογή {total} γραμμής",
+      other: "Επιλογή και των {total} γραμμών",
+    },
+    clearSelection: "Απαλοιφή επιλογής",
+    rowsLoaded: {
+      one: "Εμφανίζεται {total} γραμμή",
+      other: "Εμφανίζονται {total} γραμμές",
+    },
+    sortPositionAscending:
+      "ταξινομημένο σε αύξουσα σειρά, {position} από {total} στη σειρά ταξινόμησης",
+    sortPositionDescending:
+      "ταξινομημένο σε φθίνουσα σειρά, {position} από {total} στη σειρά ταξινόμησης",
+    sortAddedAscending:
+      "Η στήλη {columnName} ταξινομήθηκε σε αύξουσα σειρά, {position} από {total}",
+    sortAddedDescending:
+      "Η στήλη {columnName} ταξινομήθηκε σε φθίνουσα σειρά, {position} από {total}",
+    sortCleared: "Η στήλη {columnName} δεν ταξινομείται πλέον",
+    yes: "Ναι",
+    no: "Όχι",
+  },
   tableColumnResizer: {
     resize: "Αλλαγή μεγέθους {columnName}",
   },

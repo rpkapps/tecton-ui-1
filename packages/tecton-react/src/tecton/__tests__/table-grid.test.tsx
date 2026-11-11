@@ -18,12 +18,43 @@ import {
   TableRow,
 } from "@tecton/react/components/table"
 import { TectonProvider } from "@tecton/react/tecton/provider"
-import { TableSelectionCheckbox } from "@tecton/react/tecton/table-selection-checkbox"
 
+import { DataTableSelectionCheckbox } from "../internal/data-table/selection-checkbox"
 import {
-  describeRowElement,
+  TableGridConfig,
+  TableRowConfig,
+  type RowDescription,
   type TableGridOptions,
+  type TableRowGridProps,
 } from "../internal/table-grid"
+
+/** A `Table` in grid mode, as `DataTable` renders it. */
+function GridTable({
+  options = {},
+  ...props
+}: React.ComponentProps<typeof Table> & { options?: TableGridOptions }) {
+  return (
+    <TableGridConfig value={options}>
+      <Table {...props} />
+    </TableGridConfig>
+  )
+}
+
+/**
+ * A body row with its grid state. A component that passes its props on to
+ * `TableRow`, as a virtualized body clones its rows with `aria-rowindex` and
+ * `data-index`.
+ */
+function GridRow({
+  config,
+  ...props
+}: React.ComponentProps<typeof TableRow> & { config: TableRowGridProps }) {
+  return (
+    <TableRowConfig value={config}>
+      <TableRow {...props} />
+    </TableRowConfig>
+  )
+}
 
 type Well = { id: string; name: string; status: string; disabled?: boolean }
 
@@ -50,7 +81,7 @@ function Wells({
         <TableRow>
           {checkboxes && (
             <TableHead>
-              <TableSelectionCheckbox />
+              <DataTableSelectionCheckbox />
             </TableHead>
           )}
           <TableHead>Well</TableHead>
@@ -59,25 +90,28 @@ function Wells({
       </TableHeader>
       <TableBody>
         {WELLS.map((well) => (
-          <TableRow key={well.id} value={well.id} disabled={well.disabled}>
+          <GridRow
+            key={well.id}
+            config={{ value: well.id, disabled: well.disabled }}
+          >
             {checkboxes && (
               <TableCell>
-                <TableSelectionCheckbox />
+                <DataTableSelectionCheckbox />
               </TableCell>
             )}
             <TableHead scope="row">{well.name}</TableHead>
             <TableCell>
               {link ? <a href={`#${well.id}`}>{well.status}</a> : well.status}
             </TableCell>
-          </TableRow>
+          </GridRow>
         ))}
       </TableBody>
     </>
   )
   return grid ? (
-    <Table grid aria-label="Wells" {...options}>
+    <GridTable aria-label="Wells" options={options}>
       {rows}
-    </Table>
+    </GridTable>
   ) : (
     <Table aria-label="Wells">{rows}</Table>
   )
@@ -102,13 +136,15 @@ afterEach(() => {
 })
 
 describe("Table grid", () => {
-  it("leaves a table without grid as it was", () => {
+  it("leaves a table outside a TableGridConfig as it was", () => {
     render(<Wells grid={false} link />)
     const table = screen.getByRole("table")
     expect(table).not.toHaveAttribute("role")
     expect(row("34/10-A-12")).not.toHaveAttribute("tabindex")
-    expect(row("34/10-A-12")).not.toHaveAttribute("value")
+    expect(row("34/10-A-12")).not.toHaveAttribute("aria-selected")
     expect(row("34/10-B-03")).not.toHaveAttribute("aria-disabled")
+    expect(row("34/10-B-03")).not.toHaveAttribute("data-disabled")
+    expect(screen.getAllByRole("link")[0]).not.toHaveAttribute("tabindex")
   })
 
   it("is a grid with one tab stop: the first enabled row", () => {
@@ -233,6 +269,43 @@ describe("Table grid", () => {
     expect(row("34/10-B-03")).toHaveAttribute("aria-selected", "false")
   })
 
+  it("shows a controlled value, and a default one when not controlled", () => {
+    const { rerender } = render(
+      <Wells selectionMode="multiple" value={["a14"]} />
+    )
+    expect(row("34/10-A-14")).toHaveAttribute("aria-selected", "true")
+    // Controlled: a click asks for a change, the value stays.
+    fireEvent.click(cell("34/10-A-12"))
+    expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "false")
+    rerender(<Wells selectionMode="multiple" value={["a12"]} />)
+    expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "true")
+    expect(row("34/10-A-14")).toHaveAttribute("aria-selected", "false")
+  })
+
+  it("starts from defaultValue when not controlled", () => {
+    render(<Wells selectionMode="multiple" defaultValue={["c07"]} />)
+    expect(row("Gullfaks C-07")).toHaveAttribute("aria-selected", "true")
+    fireEvent.click(cell("34/10-A-12"))
+    expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "true")
+  })
+
+  it("keeps a row selected with disallowEmptySelection", () => {
+    const onValueChange = vi.fn()
+    render(
+      <Wells
+        selectionMode="single"
+        defaultValue={["a12"]}
+        disallowEmptySelection
+        onValueChange={onValueChange}
+      />
+    )
+    focusFirstRow()
+    press("Escape")
+    press(" ")
+    expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "true")
+    expect(onValueChange).not.toHaveBeenCalled()
+  })
+
   it("toggles a row on click; a disabled row does nothing", () => {
     const onValueChange = vi.fn()
     render(<Wells selectionMode="multiple" onValueChange={onValueChange} />)
@@ -247,9 +320,15 @@ describe("Table grid", () => {
     expect(onValueChange).toHaveBeenCalledTimes(2)
   })
 
-  it("selects one row on click and activates on double click with onActivate", () => {
+  it('selects one row on click and activates on double click with selectionBehavior="replace"', () => {
     const onActivate = vi.fn()
-    render(<Wells selectionMode="multiple" onActivate={onActivate} />)
+    render(
+      <Wells
+        selectionMode="multiple"
+        selectionBehavior="replace"
+        onActivate={onActivate}
+      />
+    )
     fireEvent.click(cell("Shut in"))
     fireEvent.click(cell("34/10-A-12"))
     expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "true")
@@ -257,21 +336,59 @@ describe("Table grid", () => {
     fireEvent.click(cell("Shut in"), { ctrlKey: true })
     expect(row("34/10-A-14")).toHaveAttribute("aria-selected", "true")
     fireEvent.doubleClick(cell("Shut in"))
-    expect(onActivate).toHaveBeenCalledWith("a14")
+    expect(onActivate).toHaveBeenCalledWith("a14", expect.any(Event))
     // From the keyboard, the selection follows focus; Enter activates.
     act(() => row("34/10-A-12").focus())
     press("ArrowDown")
     expect(row("34/10-A-14")).toHaveAttribute("aria-selected", "true")
     expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "false")
     press("Enter")
-    expect(onActivate).toHaveBeenLastCalledWith("a14")
+    expect(onActivate).toHaveBeenLastCalledWith("a14", expect.any(Event))
+  })
+
+  it('toggles rows with "toggle" and activates a click only while none is selected', () => {
+    const onActivate = vi.fn()
+    render(
+      <Wells checkboxes selectionMode="multiple" onActivate={onActivate} />
+    )
+    // Nothing selected: a click activates.
+    fireEvent.click(cell("Shut in"))
+    expect(onActivate).toHaveBeenLastCalledWith("a14", expect.any(Event))
+    expect(row("34/10-A-14")).toHaveAttribute("aria-selected", "false")
+    // Its double click does not activate again.
+    fireEvent.click(cell("Shut in"), { detail: 2 })
+    fireEvent.doubleClick(cell("Shut in"))
+    expect(onActivate).toHaveBeenCalledTimes(1)
+    // Once a row is selected, a click toggles a row, keeping the others.
+    fireEvent.click(screen.getByRole("checkbox", { name: "Select 34/10-A-12" }))
+    fireEvent.click(cell("Shut in"))
+    expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "true")
+    expect(row("34/10-A-14")).toHaveAttribute("aria-selected", "true")
+    expect(onActivate).toHaveBeenCalledTimes(1)
+    // The arrows move focus only; Space toggles; Enter activates.
+    act(() => row("34/10-A-12").focus())
+    press("ArrowDown")
+    expect(focused()).toBe(row("34/10-A-14"))
+    expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "true")
+    expect(row("34/10-A-14")).toHaveAttribute("aria-selected", "true")
+    press(" ")
+    expect(row("34/10-A-14")).toHaveAttribute("aria-selected", "false")
+    expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "true")
+    press("Enter")
+    expect(onActivate).toHaveBeenLastCalledWith("a14", expect.any(Event))
+    // A double click activates while rows are selected.
+    fireEvent.doubleClick(cell("Gullfaks C-07"))
+    expect(onActivate).toHaveBeenLastCalledWith("c07", expect.any(Event))
+    // Shift + the arrows still extend.
+    press("ArrowUp", { shiftKey: true })
+    expect(row("34/10-A-12")).toHaveAttribute("aria-selected", "true")
   })
 
   it("activates on click when rows do not select", () => {
     const onActivate = vi.fn()
     render(<Wells onActivate={onActivate} />)
     fireEvent.click(cell("Shut in"))
-    expect(onActivate).toHaveBeenCalledWith("a14")
+    expect(onActivate).toHaveBeenCalledWith("a14", expect.any(Event))
     expect(row("34/10-A-14")).not.toHaveAttribute("aria-selected")
     fireEvent.click(cell("Drilling"))
     expect(onActivate).toHaveBeenCalledTimes(1)
@@ -299,31 +416,33 @@ describe("Table grid", () => {
 })
 
 describe("Table grid with items", () => {
-  it("gives rows from items their item's id as their value", () => {
+  it("gives rows from items the state their TableRowConfig says", () => {
     const onValueChange = vi.fn()
     render(
-      <Table
-        grid
+      <GridTable
         aria-label="Wells"
-        selectionMode="multiple"
-        onValueChange={onValueChange}
+        options={{ selectionMode: "multiple", onValueChange }}
       >
-        <TableBody items={WELLS} isItemDisabled={(well) => !!well.disabled}>
+        <TableBody items={WELLS}>
           {(well) => (
-            <TableRow key={well.id}>
+            <GridRow
+              key={well.id}
+              config={{ value: well.id, disabled: well.disabled }}
+            >
               <TableCell>{well.name}</TableCell>
-            </TableRow>
+            </GridRow>
           )}
         </TableBody>
-      </Table>
+      </GridTable>
     )
     fireEvent.click(cell("34/10-A-14"))
     expect(onValueChange).toHaveBeenLastCalledWith(["a14"], expect.anything())
     expect(row("34/10-B-03")).toHaveAttribute("aria-disabled", "true")
+    expect(row("34/10-B-03")).toHaveAttribute("data-disabled")
   })
 })
 
-describe("TableSelectionCheckbox", () => {
+describe("DataTableSelectionCheckbox", () => {
   it("is named after its row and toggles it", () => {
     const onValueChange = vi.fn()
     render(
@@ -347,6 +466,27 @@ describe("TableSelectionCheckbox", () => {
     ).toHaveAttribute("aria-disabled", "true")
   })
 
+  it("selects the range to its row with Shift + click", () => {
+    const onValueChange = vi.fn()
+    render(
+      <Wells
+        checkboxes
+        selectionMode="multiple"
+        onValueChange={onValueChange}
+      />
+    )
+    fireEvent.click(screen.getByRole("checkbox", { name: "Select 34/10-A-12" }))
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "Select Gullfaks C-07" }),
+      { shiftKey: true }
+    )
+    // The disabled row in the range is left out.
+    expect(onValueChange).toHaveBeenLastCalledWith(
+      ["a12", "a14", "c07"],
+      expect.anything()
+    )
+  })
+
   it("selects or clears every row from the header", () => {
     render(<Wells checkboxes selectionMode="multiple" />)
     const all = screen.getByRole("checkbox", { name: "Select All" })
@@ -367,6 +507,11 @@ describe("TableSelectionCheckbox", () => {
     expect(screen.getAllByRole("checkbox")).toHaveLength(WELLS.length)
   })
 
+  it("renders nothing when rows do not select", () => {
+    render(<Wells checkboxes />)
+    expect(screen.queryByRole("checkbox")).toBeNull()
+  })
+
   it("throws outside a grid table", () => {
     vi.spyOn(console, "error").mockImplementation(() => {})
     expect(() =>
@@ -375,13 +520,13 @@ describe("TableSelectionCheckbox", () => {
           <tbody>
             <tr>
               <td>
-                <TableSelectionCheckbox />
+                <DataTableSelectionCheckbox />
               </td>
             </tr>
           </tbody>
         </table>
       )
-    ).toThrow(/inside a Table with grid/)
+    ).toThrow(/inside a Table in a TableGridConfig/)
   })
 })
 
@@ -396,31 +541,33 @@ describe("Table grid as a tree", () => {
     }
     const open = expanded.includes("gullfaks")
     return (
-      <Table grid aria-label="Assets">
+      <GridTable aria-label="Assets">
         <TableHeader>
           <TableRow>
             <TableHead>Name</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          <TableRow
-            value="gullfaks"
-            level={1}
-            expanded={open}
-            onExpandedChange={toggle("gullfaks")}
+          <GridRow
+            config={{
+              value: "gullfaks",
+              level: 1,
+              expanded: open,
+              onExpandedChange: toggle("gullfaks"),
+            }}
           >
             <TableCell>Gullfaks</TableCell>
-          </TableRow>
+          </GridRow>
           {open && (
-            <TableRow value="gfa" level={2}>
+            <GridRow config={{ value: "gfa", level: 2 }}>
               <TableCell>Gullfaks A</TableCell>
-            </TableRow>
+            </GridRow>
           )}
-          <TableRow value="oseberg" level={1}>
+          <GridRow config={{ value: "oseberg", level: 1 }}>
             <TableCell>Oseberg</TableCell>
-          </TableRow>
+          </GridRow>
         </TableBody>
-      </Table>
+      </GridTable>
     )
   }
 
@@ -458,7 +605,7 @@ describe("Table grid details", () => {
     function Sorted() {
       const [sort, setSort] = React.useState<"ascending" | undefined>()
       return (
-        <Table grid aria-label="Wells">
+        <GridTable aria-label="Wells">
           <TableHeader>
             <TableRow>
               <TableHead aria-sort={sort}>
@@ -469,11 +616,11 @@ describe("Table grid details", () => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow value="a12">
+            <GridRow config={{ value: "a12" }}>
               <TableCell>34/10-A-12</TableCell>
-            </TableRow>
+            </GridRow>
           </TableBody>
-        </Table>
+        </GridTable>
       )
     }
     render(<Sorted />)
@@ -492,7 +639,7 @@ describe("Table grid details", () => {
 
   it("shows `empty` across the columns when there are no rows", () => {
     render(
-      <Table grid aria-label="Wells">
+      <GridTable aria-label="Wells">
         <TableHeader>
           <TableRow>
             <TableHead>Well</TableHead>
@@ -500,17 +647,124 @@ describe("Table grid details", () => {
           </TableRow>
         </TableHeader>
         <TableBody empty="No wells">{[]}</TableBody>
-      </Table>
+      </GridTable>
     )
     expect(cell("No wells")).toHaveAttribute("colspan", "2")
     // With no rows, Tab lands on the header.
     expect(tabStops()).toEqual([cell("Well")])
   })
 
-  it("gives every element its own tabindex back when grid is turned off", () => {
+  it("leaves the controls of `empty` in the Tab order and to their own keys", () => {
+    render(
+      <GridTable aria-label="Wells">
+        <TableHeader>
+          <TableRow>
+            <TableHead>Well</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody
+          empty={
+            <button
+              type="button"
+              onKeyDown={(event) => event.stopPropagation()}
+            >
+              Clear filters
+            </button>
+          }
+        >
+          {[]}
+        </TableBody>
+      </GridTable>
+    )
+    const button = screen.getByRole("button", { name: "Clear filters" })
+    expect(button).not.toHaveAttribute("tabindex")
+    act(() => button.focus())
+    const down = fireEvent.keyDown(button, { key: "ArrowDown" })
+    // Not the grid's row: the key is not taken, focus stays.
+    expect(down).toBe(true)
+    expect(focused()).toBe(button)
+  })
+
+  it("is a treegrid from the first render with `tree`", () => {
+    render(<Wells tree />)
+    expect(screen.getByRole("treegrid")).toBeInTheDocument()
+  })
+
+  it("selects every row getAllValues gives, and only those isSelectable allows", () => {
+    const onValueChange = vi.fn()
+    render(
+      <Wells
+        checkboxes
+        selectionMode="multiple"
+        onValueChange={onValueChange}
+        getAllValues={() => ["a12", "a14", "c07", "x99"]}
+        isSelectable={(value) => value !== "a14"}
+      />
+    )
+    focusFirstRow()
+    press("a", { ctrlKey: true })
+    expect(onValueChange).toHaveBeenLastCalledWith(
+      ["a12", "c07", "x99"],
+      expect.objectContaining({ reason: "select-all" })
+    )
+    // The header counts the rows given that can be selected, not the
+    // rows rendered.
+    const all = screen.getByRole("checkbox", { name: "Select All" })
+    expect(all).toHaveAttribute("aria-checked", "true")
+    fireEvent.click(
+      screen.getByRole("checkbox", { name: "Select Gullfaks C-07" })
+    )
+    expect(all).toHaveAttribute("aria-checked", "mixed")
+    // Not selectable: focused and its checkbox disabled, never selected.
+    act(() => row("34/10-A-14").focus())
+    expect(focused()).toBe(row("34/10-A-14"))
+    expect(row("34/10-A-14")).not.toHaveAttribute("aria-disabled")
+    const calls = onValueChange.mock.calls.length
+    press(" ")
+    expect(onValueChange).toHaveBeenCalledTimes(calls)
+  })
+
+  it("leaves a plain table in a cell a plain table", () => {
+    render(
+      <GridTable aria-label="Wells" options={{ selectionMode: "multiple" }}>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Well</TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <GridRow config={{ value: "a12", level: 1, expanded: false }}>
+            <TableCell>
+              <Table aria-label="Logs">
+                <TableBody>
+                  <TableRow>
+                    <TableCell>Gamma ray</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
+            </TableCell>
+          </GridRow>
+        </TableBody>
+      </GridTable>
+    )
+    const inner = screen.getByRole("table", { name: "Logs" })
+    expect(inner).not.toHaveAttribute("role")
+    const innerRow = screen.getByText("Gamma ray").closest("tr")!
+    // Neither the grid's options nor the outer row's state reach it.
+    expect(innerRow).not.toHaveAttribute("aria-selected")
+    expect(innerRow).not.toHaveAttribute("aria-level")
+    expect(innerRow).not.toHaveAttribute("aria-expanded")
+    expect(innerRow).not.toHaveAttribute("tabindex")
+  })
+
+  it("gives every element its own tabindex back when the grid goes", () => {
     const { rerender } = render(<Wells link />)
-    expect(screen.getAllByRole("link")[0]).toHaveAttribute("tabindex", "-1")
+    const link = screen.getAllByRole("link")[0]
+    expect(link).toHaveAttribute("tabindex", "-1")
+    // Without its TableGridConfig the table mounts anew, and the grid's
+    // cleanup restores the tabindexes of the elements it leaves.
     rerender(<Wells link grid={false} />)
+    expect(link).not.toHaveAttribute("tabindex")
     expect(screen.getAllByRole("link")[0]).not.toHaveAttribute("tabindex")
     expect(row("34/10-A-12")).not.toHaveAttribute("tabindex")
   })
@@ -527,52 +781,57 @@ describe("Table grid virtualized", () => {
 
   type Item = (typeof MANY)[number]
 
+  const DISABLED = "w5000"
+
+  /** What a virtualized `DataTable` says of its items. */
+  const describeWell = (well: Item): RowDescription => ({
+    value: well.id,
+    textValue: well.name,
+    disabled: well.id === DISABLED,
+    level: undefined,
+  })
+
   function Many({
-    onValueChange,
-    disabledItems = false,
-    itemToId,
+    describeItem = describeWell,
     onRender,
-  }: Pick<TableGridOptions, "onValueChange"> & {
-    disabledItems?: boolean
-    itemToId?: (item: Item) => string
+    ...options
+  }: Omit<TableGridOptions, "describeItem"> & {
+    describeItem?: ((well: Item, index: number) => RowDescription) | null
     onRender?: (item: Item) => void
   }) {
     return (
       <div style={{ height: VIEW }}>
-        <Table
-          grid
+        <GridTable
           virtualized
           aria-label="Wells"
-          selectionMode="multiple"
-          onValueChange={onValueChange}
+          options={{
+            selectionMode: "multiple",
+            describeItem: describeItem ?? undefined,
+            ...options,
+          }}
         >
           <TableHeader>
             <TableRow>
               <TableHead>Well</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody
-            items={MANY}
-            itemToId={itemToId}
-            isItemDisabled={
-              disabledItems ? (well) => well.id === "w5000" : undefined
-            }
-          >
-            {(well) => {
+          <TableBody items={MANY}>
+            {(well, index) => {
               onRender?.(well)
-              // No value: rows from items take their item's id.
+              const { value, textValue, disabled, level } = describeItem
+                ? describeItem(well, index)
+                : describeWell(well)
               return (
-                <TableRow
+                <GridRow
                   key={well.id}
-                  textValue={well.name}
-                  disabled={well.id === "w5000"}
+                  config={{ value, textValue, disabled, level }}
                 >
                   <TableCell>{well.name}</TableCell>
-                </TableRow>
+                </GridRow>
               )
             }}
           </TableBody>
-        </Table>
+        </GridTable>
       </div>
     )
   }
@@ -635,7 +894,7 @@ describe("Table grid virtualized", () => {
     expect(focused()).toHaveTextContent("Well 0")
   })
 
-  it("selects every row by its item's id, without rendering the rows out of view", () => {
+  it("selects every row through describeItem, without rendering the rows out of view", () => {
     layout()
     const onValueChange = vi.fn()
     const onRender = vi.fn()
@@ -644,38 +903,84 @@ describe("Table grid virtualized", () => {
     onRender.mockClear()
     press("a", { ctrlKey: true })
     const [value] = onValueChange.mock.lastCall as [Array<string>]
-    expect(value).toHaveLength(10_000)
-    expect(value[9_999]).toBe("w9999")
+    // The row describeItem disables is left out, out of view too.
+    expect(value).toHaveLength(9_999)
+    expect(value).not.toContain(DISABLED)
+    expect(value[9_998]).toBe("w9999")
     // Only the rows in view render again (they show as selected).
     expect(onRender.mock.calls.length).toBeLessThan(100)
     expect(row("Well 0")).toHaveAttribute("aria-selected", "true")
   })
 
-  it("leaves out the rows isItemDisabled marks, out of view too", () => {
-    layout()
-    const onValueChange = vi.fn()
-    render(<Many disabledItems onValueChange={onValueChange} />)
-    act(() => row("Well 0").focus())
-    press("a", { ctrlKey: true })
-    const [value] = onValueChange.mock.lastCall as [Array<string>]
-    expect(value).toHaveLength(9_999)
-    expect(value).not.toContain("w5000")
-  })
-
-  it("takes the row id from itemToId", () => {
+  it("takes the rows' values from describeItem", () => {
     layout()
     const onValueChange = vi.fn()
     render(
-      <Many itemToId={(well) => well.name} onValueChange={onValueChange} />
+      <Many
+        describeItem={(well) => ({ ...describeWell(well), value: well.name })}
+        onValueChange={onValueChange}
+      />
     )
     fireEvent.click(cell("Well 1"))
     expect(onValueChange).toHaveBeenLastCalledWith(
       ["Well 1"],
       expect.anything()
     )
+    act(() => row("Well 0").focus())
+    press("a", { ctrlKey: true })
+    const [value] = onValueChange.mock.lastCall as [Array<string>]
+    expect(value.at(-1)).toBe("Well 9999")
   })
 
-  it("goes to a row out of view by its text", () => {
+  it("passes describeItem each item with its index", () => {
+    layout()
+    const describeItem =
+      vi.fn<(well: Item, index: number) => RowDescription>(describeWell)
+    const onValueChange = vi.fn()
+    render(<Many describeItem={describeItem} onValueChange={onValueChange} />)
+    act(() => row("Well 0").focus())
+    describeItem.mockClear()
+    press("a", { ctrlKey: true })
+    // Compared by hand: a failing toHaveBeenCalledWith would print every call.
+    const last = describeItem.mock.calls.find(([, index]) => index === 9_999)
+    expect(last?.[0]).toBe(MANY[9_999])
+  })
+
+  it("selects all from getAllValues and isDisabled, describing no row", () => {
+    layout()
+    const describeItem =
+      vi.fn<(well: Item, index: number) => RowDescription>(describeWell)
+    const onValueChange = vi.fn()
+    const values = MANY.map((well) => well.id)
+    render(
+      <Many
+        describeItem={describeItem}
+        onValueChange={onValueChange}
+        getAllValues={() => values}
+        isDisabled={(value) => value === DISABLED}
+      />
+    )
+    act(() => row("Well 0").focus())
+    describeItem.mockClear()
+    press("a", { ctrlKey: true })
+    expect(describeItem).not.toHaveBeenCalled()
+    const [value] = onValueChange.mock.lastCall as [Array<string>]
+    expect(value).toHaveLength(9_999)
+    expect(value).not.toContain(DISABLED)
+  })
+
+  it("knows only the rows rendered without describeItem", () => {
+    layout()
+    const onValueChange = vi.fn()
+    render(<Many describeItem={null} onValueChange={onValueChange} />)
+    act(() => row("Well 0").focus())
+    press("a", { ctrlKey: true })
+    const [value] = onValueChange.mock.lastCall as [Array<string>]
+    expect(value.length).toBeGreaterThan(0)
+    expect(value.length).toBeLessThan(100)
+  })
+
+  it("goes to a row out of view by the text describeItem gives", () => {
     layout()
     render(<Many />)
     scrollable()
@@ -685,30 +990,25 @@ describe("Table grid virtualized", () => {
     })
     expect(focused()).toHaveTextContent("Well 9876")
   })
-})
 
-describe("describeRowElement", () => {
-  it("reads a row's props, through a render element too", () => {
-    expect(
-      describeRowElement(
-        <TableRow value="a12" textValue="34/10-A-12" level={2} disabled />
-      )
-    ).toEqual({
-      value: "a12",
-      textValue: "34/10-A-12",
-      level: 2,
-      disabled: true,
+  it("goes from a row to its parent out of view by the level describeItem gives", async () => {
+    layout()
+    const describeLevel = (well: Item, index: number): RowDescription => ({
+      ...describeWell(well),
+      level: index === 0 ? 1 : 2,
     })
-    const Wrapper = (_: { value: string; render: React.ReactElement }) => null
-    expect(
-      describeRowElement(
-        <Wrapper value="a14" render={<TableRow textValue="34/10-A-14" />} />
-      )
-    ).toEqual({
-      value: "a14",
-      textValue: "34/10-A-14",
-      level: undefined,
-      disabled: false,
+    render(<Many describeItem={describeLevel} selectionMode="none" />)
+    scrollable()
+    expect(await screen.findByRole("treegrid")).toBeInTheDocument()
+    act(() => row("Well 0").focus())
+    act(() => {
+      press("End")
     })
+    expect(focused()).toHaveTextContent("Well 9999")
+    expect(screen.queryByText("Well 0")).toBeNull()
+    act(() => {
+      press("ArrowLeft")
+    })
+    expect(focused()).toHaveTextContent("Well 0")
   })
 })

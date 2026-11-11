@@ -47,6 +47,50 @@ export default defineTranslations({
     descendingSort:
       "razvrstano po stupcima {columnName} padajućim redoslijedom",
   },
+  dataTable: {
+    loading: "Učitavanje",
+    emptyTitle: "Nema redaka",
+    emptyDescription: "Ovdje još nema ničega za prikaz.",
+    noResultsTitle: "Nema rezultata",
+    noResultsDescription: "Nijedan redak ne odgovara pretraživanju i filtrima.",
+    clearFilters: "Očistite filtre",
+    errorTitle: "Učitavanje redaka nije uspjelo",
+    errorDescription: "Došlo je do pogreške pri učitavanju podataka.",
+    retry: "Pokušajte ponovno",
+    rowsPerPage: "Redaka po stranici",
+    pageInfo: "Stranica {page} od {pageCount}",
+    pagination: "Straničenje",
+    firstPage: "Prva stranica",
+    previousPage: "Prethodna stranica",
+    nextPage: "Sljedeća stranica",
+    lastPage: "Zadnja stranica",
+    selectedCount: {
+      one: "Odabran je {selected} od {total}",
+      few: "Odabrana su {selected} od {total}",
+      other: "Odabrano je {selected} od {total}",
+    },
+    selectAllMatching: {
+      one: "Odaberite {total} redak",
+      few: "Odaberite sva {total} retka",
+      other: "Odaberite svih {total} redaka",
+    },
+    clearSelection: "Poništite odabir",
+    rowsLoaded: {
+      one: "Prikazan je {total} redak",
+      few: "Prikazana su {total} retka",
+      other: "Prikazano je {total} redaka",
+    },
+    sortPositionAscending:
+      "razvrstano rastućim redoslijedom, {position} od {total} u redoslijedu sortiranja",
+    sortPositionDescending:
+      "razvrstano padajućim redoslijedom, {position} od {total} u redoslijedu sortiranja",
+    sortAddedAscending: "{columnName} sortirano uzlazno, {position} od {total}",
+    sortAddedDescending:
+      "{columnName} sortirano silazno, {position} od {total}",
+    sortCleared: "{columnName} više nije sortirano",
+    yes: "Da",
+    no: "Ne",
+  },
   tableColumnResizer: {
     resize: "Promijeni veličinu stupca {columnName}",
   },

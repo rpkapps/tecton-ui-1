@@ -190,7 +190,7 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   exposed as `data-appearance` / `data-size`; 2px focus ring), `separator` (`emphasis` subtle /
   default / strong, `data-emphasis`, `separatorVariants`), `input` / `textarea` / `select` trigger
   (`variant` outline / filled / text, `data-variant`; `inputVariants`, `textareaVariants`,
-  `selectTriggerVariants`). The `select` trigger variants and the `input-otp` container are pinned
+  `selectTriggerVariants`), `table` (`size` default / sm, `striped`; see `table` below). The `select` trigger variants and the `input-otp` container are pinned
   in `src/tecton/__tests__/overlay-variants.test.tsx`.
 - **`button`** — renders `data-variant` / `data-size` (as the other bases do), which the
   `button-group` rule in `style-tecton.css` keys on to give filled members the outline stroke when
@@ -251,25 +251,41 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
 - **`sonner`** — `richColors` and outlined status colours (`--success-*`, `--info-*`,
   `--warning-*`, `--error-*`), matching `alert` with `appearance="outline"`; upstream's
   `toastOptions` class (`cn-toast`, outside a `className`) goes.
-- **`table`** — `Table` takes `virtualized`: its container becomes the scroll element
+- **`table`** — `Table` takes `size` (`"default"` / `"sm"`, `data-size`) and `striped`
+  (`data-striped`), a variant axis like `badge`'s. In `style-tecton.css` `sm` gives the table
+  `text-xs` (`data-[size=sm]:`; a nested table resets it with its own `text-sm`) and its own
+  `TableHead`s `h-8` and `TableCell`s `py-1` (`[:where([data-size=sm]>*>tr)>&]:`, so a table
+  nested in a cell keeps its own size; the horizontal padding stays), while `striped` gives
+  every even row of the table's own body `bg-surface-alt` (`[&:where([data-striped]>tbody>:nth-child(even))]:`).
+  The conditions are in `:where()`, no more specific than the part's class, so the hover,
+  selected and expanded fills win over the stripe (the footer and a nested table are not
+  striped). A `TableHead` with `scope="row"` (a row header in the body) takes the body
+  cell's look: `h-auto py-3` (`py-1` at `sm`), `font-normal`, `text-inherit` and no header
+  background (`[&[scope=row]]:`, one attribute more specific than the header's rules), so a
+  row names itself without looking like a column header. Tested in
+  `src/tecton/__tests__/table.test.tsx`.
+  `Table` also takes `virtualized`: its container becomes the scroll element
   (`h-full overflow-auto`, filling a parent of bounded height), `TableHeader` sticks
   (`sticky top-0 z-10`; the colour is on the `th`) and `TableBody` mounts only the rows in view,
-  with spacer rows for the rest, `aria-rowcount` / `aria-rowindex` and the focused row kept;
-  `TableBody` takes `items` and a render function called only for the rows in view; the columns are
-  locked at their content's first widths (a px `colgroup`, the space left spread over the columns of text and the last column taking the rest, `table-fixed`) unless the caller made the
-  table fixed. The logic is `src/tecton/internal/table-virtualizer.tsx` (on the shared
-  `useVirtualList`); without `virtualized` the markup is unchanged. Tested in `src/tecton/__tests__/table-virtualized.test.tsx`.
-  `Table` also takes `grid` (with `selectionMode`, `value` / `defaultValue` / `onValueChange`,
-  `disallowEmptySelection` and `onActivate`): the table becomes a grid (a treegrid when rows have a
-  `level`) that is one tab stop, moved through with the keyboard, with rows that select and
-  activate. `TableRow` takes `value`, `disabled`, `textValue`, `level`, `expanded` and
-  `onExpandedChange` (dropped without `grid`) and sets `aria-selected` / `data-selected="true"`,
-  which `cn-table-row` fills with `bg-table-active` like `data-[state=selected]`; rows and cells get
-  a focus ring. `TableBody` takes `empty`, and `itemToId` (default `item.id`) and `isItemDisabled`:
-  in a grid, rows from `items` take their item's id as `value`, so a virtualized grid knows the rows out of view. The logic is `src/tecton/internal/table-grid.tsx` (on
-  the shared selection, type-ahead and announcement primitives), the hunk calls `useTableGrid` in
-  `Table` and `useTableRow` in `TableRow`; without `grid` the markup is unchanged. Tested in
-  `src/tecton/__tests__/table-grid.test.tsx`.
+  with spacer rows for the rest (and an empty row where one keeps the rows' `nth-child` parity,
+  so `striped` does not flicker), `aria-rowcount` / `aria-rowindex` and the focused row kept;
+  `TableBody` takes `items` and a render function called only for the rows in view, and `empty`
+  (one row across every column); the columns are locked at their content's first widths (a px
+  `colgroup`, the space left spread over the columns of text and the last column taking the
+  rest, `table-fixed`) unless the caller made the table fixed. The logic is
+  `src/tecton/internal/table-virtualizer.tsx` (on the shared `useVirtualList`); without
+  `virtualized` the markup is unchanged. Tested in `src/tecton/__tests__/table-virtualized.test.tsx`.
+  The hunk also calls `useTableGrid` in `Table` and `useTableRow` in `TableRow`: grid mode,
+  internal to the package and turned on by `DataTable`. A `Table` inside a `TableGridConfig`
+  becomes a grid (a treegrid when rows have a `level`) that is one tab stop, moved through with
+  the keyboard, with rows that select and activate; each body row's `value`, `disabled`,
+  `textValue`, `level` and `expanded` come from a `TableRowConfig` around it, and the rows of a
+  virtualized body out of view from the config's `describeItem`. A selected row gets
+  `aria-selected` / `data-selected="true"`, which `cn-table-row` fills with `bg-table-active`
+  like `data-[state=selected]`; rows and cells get a focus ring. The logic is
+  `src/tecton/internal/table-grid.tsx` (on the shared selection, type-ahead and announcement
+  primitives); outside a `TableGridConfig` the markup is unchanged and no grid prop is public.
+  Tested in `src/tecton/__tests__/table-grid.test.tsx`.
 
 ## Renaming the package
 

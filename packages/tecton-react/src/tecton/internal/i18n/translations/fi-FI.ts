@@ -48,6 +48,47 @@ export default defineTranslations({
     descendingSort:
       "lajiteltu sarakkeen {columnName} mukaan laskevassa järjestyksessä",
   },
+  dataTable: {
+    loading: "Ladataan",
+    emptyTitle: "Ei rivejä",
+    emptyDescription: "Täällä ei ole vielä mitään näytettävää.",
+    noResultsTitle: "Ei tuloksia",
+    noResultsDescription: "Mikään rivi ei vastaa hakua ja suodattimia.",
+    clearFilters: "Tyhjennä suodattimet",
+    errorTitle: "Rivejä ei voitu ladata",
+    errorDescription: "Tietojen lataamisessa tapahtui virhe.",
+    retry: "Yritä uudelleen",
+    rowsPerPage: "Rivejä sivulla",
+    pageInfo: "Sivu {page}/{pageCount}",
+    pagination: "Sivutus",
+    firstPage: "Ensimmäinen sivu",
+    previousPage: "Edellinen sivu",
+    nextPage: "Seuraava sivu",
+    lastPage: "Viimeinen sivu",
+    selectedCount: {
+      one: "{selected}/{total} valittu",
+      other: "{selected}/{total} valittu",
+    },
+    selectAllMatching: {
+      one: "Valitse {total} rivi",
+      other: "Valitse kaikki {total} riviä",
+    },
+    clearSelection: "Tyhjennä valinta",
+    rowsLoaded: {
+      one: "Näytetään {total} rivi",
+      other: "Näytetään {total} riviä",
+    },
+    sortPositionAscending:
+      "lajiteltu nousevassa järjestyksessä, {position}/{total} lajittelujärjestyksessä",
+    sortPositionDescending:
+      "lajiteltu laskevassa järjestyksessä, {position}/{total} lajittelujärjestyksessä",
+    sortAddedAscending: "{columnName} lajiteltu nousevasti, {position}/{total}",
+    sortAddedDescending:
+      "{columnName} lajiteltu laskevasti, {position}/{total}",
+    sortCleared: "{columnName} ei ole enää lajiteltu",
+    yes: "Kyllä",
+    no: "Ei",
+  },
   tableColumnResizer: {
     resize: "Muuta sarakkeen {columnName} kokoa",
   },

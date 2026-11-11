@@ -451,6 +451,11 @@
       "import": "./dist/tecton/count-badge.js",
       "default": "./dist/tecton/count-badge.js"
     },
+    "./tecton/data-table": {
+      "types": "./dist/tecton/data-table.d.ts",
+      "import": "./dist/tecton/data-table.js",
+      "default": "./dist/tecton/data-table.js"
+    },
     "./tecton/document-tabs": {
       "types": "./dist/tecton/document-tabs.d.ts",
       "import": "./dist/tecton/document-tabs.js",
@@ -510,11 +515,6 @@
       "types": "./dist/tecton/table-column-resizer.d.ts",
       "import": "./dist/tecton/table-column-resizer.js",
       "default": "./dist/tecton/table-column-resizer.js"
-    },
-    "./tecton/table-selection-checkbox": {
-      "types": "./dist/tecton/table-selection-checkbox.d.ts",
-      "import": "./dist/tecton/table-selection-checkbox.js",
-      "default": "./dist/tecton/table-selection-checkbox.js"
     },
     "./tecton/theme-root": {
       "types": "./dist/tecton/theme-root.d.ts",

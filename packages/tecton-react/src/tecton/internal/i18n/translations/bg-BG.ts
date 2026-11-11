@@ -46,6 +46,49 @@ export default defineTranslations({
     ascendingSort: "сортирано по колона {columnName} във възходящ ред",
     descendingSort: "сортирано по колона {columnName} в низходящ ред",
   },
+  dataTable: {
+    loading: "Зареждане",
+    emptyTitle: "Няма редове",
+    emptyDescription: "Тук все още няма нищо за показване.",
+    noResultsTitle: "Няма резултати",
+    noResultsDescription:
+      "Няма редове, които отговарят на търсенето и филтрите.",
+    clearFilters: "Изчистете филтрите",
+    errorTitle: "Редовете не можаха да бъдат заредени",
+    errorDescription: "Възникна грешка при зареждането на данните.",
+    retry: "Опитайте отново",
+    rowsPerPage: "Редове на страница",
+    pageInfo: "Страница {page} от {pageCount}",
+    pagination: "Страниране",
+    firstPage: "Първа страница",
+    previousPage: "Предишна страница",
+    nextPage: "Следваща страница",
+    lastPage: "Последна страница",
+    selectedCount: {
+      one: "Избран {selected} от {total}",
+      other: "Избрани {selected} от {total}",
+    },
+    selectAllMatching: {
+      one: "Изберете {total} ред",
+      other: "Изберете всички {total} реда",
+    },
+    clearSelection: "Изчистете избора",
+    rowsLoaded: {
+      one: "Показан е {total} ред",
+      other: "Показани са {total} реда",
+    },
+    sortPositionAscending:
+      "сортирано във възходящ ред, {position} от {total} в реда на сортиране",
+    sortPositionDescending:
+      "сортирано в низходящ ред, {position} от {total} в реда на сортиране",
+    sortAddedAscending:
+      "{columnName} е сортирано възходящо, {position} от {total}",
+    sortAddedDescending:
+      "{columnName} е сортирано низходящо, {position} от {total}",
+    sortCleared: "{columnName} вече не е сортирано",
+    yes: "Да",
+    no: "Не",
+  },
   tableColumnResizer: {
     resize: "Преоразмеряване на {columnName}",
   },

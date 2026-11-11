@@ -46,6 +46,48 @@ export default defineTranslations({
     ascendingSort: "{columnName} sütuna göre artan düzende sırala",
     descendingSort: "{columnName} sütuna göre azalan düzende sırala",
   },
+  dataTable: {
+    loading: "Yükleniyor",
+    emptyTitle: "Satır yok",
+    emptyDescription: "Burada henüz gösterilecek bir şey yok.",
+    noResultsTitle: "Sonuç yok",
+    noResultsDescription: "Aramayla ve filtrelerle eşleşen satır yok.",
+    clearFilters: "Filtreleri temizle",
+    errorTitle: "Satırlar yüklenemedi",
+    errorDescription: "Veriler yüklenirken bir sorun oluştu.",
+    retry: "Yeniden dene",
+    rowsPerPage: "Sayfa başına satır",
+    pageInfo: "Sayfa {page}/{pageCount}",
+    pagination: "Sayfalandırma",
+    firstPage: "İlk sayfa",
+    previousPage: "Önceki sayfa",
+    nextPage: "Sonraki sayfa",
+    lastPage: "Son sayfa",
+    selectedCount: {
+      one: "{selected}/{total} seçildi",
+      other: "{selected}/{total} seçildi",
+    },
+    selectAllMatching: {
+      one: "{total} satırı seç",
+      other: "{total} satırın tümünü seç",
+    },
+    clearSelection: "Seçimi temizle",
+    rowsLoaded: {
+      one: "{total} satır gösteriliyor",
+      other: "{total} satır gösteriliyor",
+    },
+    sortPositionAscending:
+      "artan düzende sıralandı, sıralama düzeninde {position}/{total}",
+    sortPositionDescending:
+      "azalan düzende sıralandı, sıralama düzeninde {position}/{total}",
+    sortAddedAscending:
+      "{columnName} artan şekilde sıralandı, {position}/{total}",
+    sortAddedDescending:
+      "{columnName} azalan şekilde sıralandı, {position}/{total}",
+    sortCleared: "{columnName} artık sıralı değil",
+    yes: "Evet",
+    no: "Hayır",
+  },
   tableColumnResizer: {
     resize: "{columnName} öğesini yeniden boyutlandır",
   },

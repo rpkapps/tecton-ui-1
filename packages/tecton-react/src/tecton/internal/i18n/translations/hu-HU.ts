@@ -49,6 +49,45 @@ export default defineTranslations({
     descendingSort:
       "rendezve a(z) {columnName} oszlop szerint, csökkenő sorrendben",
   },
+  dataTable: {
+    loading: "Betöltés",
+    emptyTitle: "Nincsenek sorok",
+    emptyDescription: "Itt még nincs megjeleníthető tartalom.",
+    noResultsTitle: "Nincs találat",
+    noResultsDescription: "Egy sor sem felel meg a keresésnek és a szűrőknek.",
+    clearFilters: "Szűrők törlése",
+    errorTitle: "Nem sikerült betölteni a sorokat",
+    errorDescription: "Hiba történt az adatok betöltése közben.",
+    retry: "Újrapróbálkozás",
+    rowsPerPage: "Sorok oldalanként",
+    pageInfo: "Oldal: {page}/{pageCount}",
+    pagination: "Lapozás",
+    firstPage: "Első oldal",
+    previousPage: "Előző oldal",
+    nextPage: "Következő oldal",
+    lastPage: "Utolsó oldal",
+    selectedCount: {
+      one: "{selected}/{total} kijelölve",
+      other: "{selected}/{total} kijelölve",
+    },
+    selectAllMatching: {
+      one: "{total} sor kijelölése",
+      other: "Mind a(z) {total} sor kijelölése",
+    },
+    clearSelection: "Kijelölés megszüntetése",
+    rowsLoaded: { one: "{total} sor látható", other: "{total} sor látható" },
+    sortPositionAscending:
+      "rendezve növekvő sorrendben, {position}/{total} a rendezési sorrendben",
+    sortPositionDescending:
+      "rendezve csökkenő sorrendben, {position}/{total} a rendezési sorrendben",
+    sortAddedAscending:
+      "{columnName} növekvő sorrendbe rendezve, {position}/{total}",
+    sortAddedDescending:
+      "{columnName} csökkenő sorrendbe rendezve, {position}/{total}",
+    sortCleared: "{columnName} már nincs rendezve",
+    yes: "Igen",
+    no: "Nem",
+  },
   tableColumnResizer: {
     resize: "{columnName} átméretezése",
   },

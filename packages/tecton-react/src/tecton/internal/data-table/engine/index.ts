@@ -1,0 +1,99 @@
+/**
+ * Internal to `@tecton/react`: DataTable's engine, plain TypeScript with no
+ * React. The parts build on it; `data-table.tsx` re-exports `createColumns`
+ * and the public types of `./types` only.
+ *
+ * - `columns`: `createColumns`, the column model, header rows.
+ * - `layout`: the columns a view shows, in order, pinned, with widths.
+ * - `format`: display text in the locale, and search's text folding.
+ * - `view`: defaults, reconciliation and the view reducers.
+ * - `engine`: the row pipeline (`createDataTableEngine`), over the stages
+ *   of `core` (rows as positions), `filter` (search, filters, facets),
+ *   `group` (groups as ranges), `sort` (rank-based sorting) and `rows`
+ *   (display rows and pages); `idle` prepares ranks and the search index.
+ * - `aggregate`, `pagination`, `selection`: what group rows, the footer
+ *   and selection compute.
+ *
+ * CSV export is in the engine's csv module, left out here so the root can
+ * load it on demand, as a separate chunk, when an export is first asked for.
+ */
+export { aggregate, aggregateColumns } from "./aggregate"
+export {
+  buildHeaderRows,
+  clampColumnWidth,
+  createColumns,
+  getColumnModel,
+} from "./columns"
+export type {
+  ColumnModel,
+  ColumnNode,
+  EngineColumn,
+  EngineColumnGroup,
+  HeaderCell,
+  HeaderRow,
+} from "./columns"
+export type { CsvOptions } from "./csv"
+export { createDataTableEngine } from "./engine"
+export type {
+  DataTableDataMode,
+  DataTableEngine,
+  DataTableEngineInput,
+  DataTableRowModel,
+} from "./engine"
+export { DEFAULT_LABELS, foldText, getFormatter, resolveLocale } from "./format"
+export type { FormatLabels, Formatter } from "./format"
+export { layoutColumns } from "./layout"
+export type { ColumnLayout } from "./layout"
+export {
+  clampPage,
+  DEFAULT_PAGE_SIZE,
+  DEFAULT_PAGE_SIZES,
+  getPageCount,
+  resolvePageSize,
+  shouldResetPage,
+} from "./pagination"
+export type {
+  BodyRow,
+  DetailRow,
+  DisplayRow,
+  GroupRow,
+  ItemRow,
+  TotalsRow,
+} from "./rows"
+export type { IdIssues } from "./core"
+export {
+  allMatchingAfterViewChange,
+  allMatchingValue,
+  enterAllMatching,
+  groupIds,
+  selectAllIds,
+  selectedCount,
+  selectionState,
+  setSelectedInAllMatching,
+  toggleIds,
+} from "./selection"
+export type { DataTableAllMatching } from "./selection"
+export type * from "./types"
+export {
+  clearFilters,
+  createDefaultView,
+  DEFAULT_CAPABILITIES,
+  reconcileView,
+  resetColumns,
+  sameFilters,
+  sameFilterValue,
+  sameSorting,
+  sameView,
+  setColumnHidden,
+  setColumnOrder,
+  setColumnPinned,
+  setColumnWidth,
+  setFilter,
+  setGrouping,
+  setSearch,
+  setSorting,
+  sortColumn,
+  toggleSorting,
+  viewMatchesChanged,
+} from "./view"
+export type { ViewCapabilities } from "./view"

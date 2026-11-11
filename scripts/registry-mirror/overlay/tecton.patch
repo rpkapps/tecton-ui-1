@@ -1327,10 +1327,10 @@ index 0c2e93ea..1071e005 100644
      />
    )
 diff --git a/apps/v4/registry/bases/base/ui/table.tsx b/apps/v4/registry/bases/base/ui/table.tsx
-index 160cf7aa..8e82ee13 100644
+index 160cf7aa..30c611cd 100644
 --- a/apps/v4/registry/bases/base/ui/table.tsx
 +++ b/apps/v4/registry/bases/base/ui/table.tsx
-@@ -3,34 +3,84 @@
+@@ -3,34 +3,90 @@
  import * as React from "react"
  import { cn } from "cn"
  
@@ -1339,8 +1339,6 @@ index 160cf7aa..8e82ee13 100644
 +  TableGridProvider,
 +  useTableGrid,
 +  useTableRow,
-+  type TableGridProps,
-+  type TableRowProps,
 +} from "../tecton/internal/table-grid"
 +import {
 +  TableVirtualProvider,
@@ -1352,16 +1350,22 @@ index 160cf7aa..8e82ee13 100644
 +
 +function Table({
 +  className,
++  size = "default",
++  striped = false,
 +  virtualized = false,
 +  ...props
-+}: Omit<React.ComponentProps<"table">, "defaultValue"> & {
++}: React.ComponentProps<"table"> & {
++  /** `sm` is compact: shorter header and rows, smaller text. */
++  size?: "default" | "sm"
++  /** Every even body row on an alternate surface. */
++  striped?: boolean
 +  /**
 +   * Renders only the rows in view. The table fills and scrolls in its
 +   * parent, which needs a bounded height; rows are one height and the
 +   * header sticks to the top.
 +   */
 +  virtualized?: boolean
-+} & TableGridProps) {
++}) {
 +  const virtual = useTableVirtualizer(virtualized)
 +  const grid = useTableGrid(props)
    return (
@@ -1376,6 +1380,8 @@ index 160cf7aa..8e82ee13 100644
 -        className={cn("cn-table", className)}
 -        {...props}
 -      />
++        data-size={size}
++        data-striped={striped ? "" : undefined}
 +        aria-rowcount={virtual.rowCount}
 +        className={cn("cn-table", virtual.tableClassName, className)}
 +        {...grid.props}
@@ -1423,13 +1429,7 @@ index 160cf7aa..8e82ee13 100644
      />
    )
  }
-@@ -45,12 +95,12 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
-   )
- }
- 
--function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
-+function TableRow({ className, ...props }: TableRowProps) {
-   return (
+@@ -50,7 +106,7 @@ function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
      <tr
        data-slot="table-row"
        className={cn("cn-table-row has-aria-expanded:bg-muted/50", className)}

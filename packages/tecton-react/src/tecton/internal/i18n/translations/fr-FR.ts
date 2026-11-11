@@ -48,6 +48,52 @@ export default defineTranslations({
     descendingSort:
       "trié en fonction de la colonne {columnName} par ordre décroissant",
   },
+  dataTable: {
+    loading: "Chargement",
+    emptyTitle: "Aucune ligne",
+    emptyDescription: "Il n’y a encore rien à afficher ici.",
+    noResultsTitle: "Aucun résultat",
+    noResultsDescription:
+      "Aucune ligne ne correspond à la recherche et aux filtres.",
+    clearFilters: "Effacer les filtres",
+    errorTitle: "Impossible de charger les lignes",
+    errorDescription:
+      "Une erreur s’est produite lors du chargement des données.",
+    retry: "Réessayer",
+    rowsPerPage: "Lignes par page",
+    pageInfo: "Page {page} sur {pageCount}",
+    pagination: "Pagination",
+    firstPage: "Première page",
+    previousPage: "Page précédente",
+    nextPage: "Page suivante",
+    lastPage: "Dernière page",
+    selectedCount: {
+      one: "{selected} ligne sélectionnée sur {total}",
+      many: "{selected} de lignes sélectionnées sur {total}",
+      other: "{selected} lignes sélectionnées sur {total}",
+    },
+    selectAllMatching: {
+      one: "Sélectionner {total} ligne",
+      many: "Sélectionner les {total} de lignes",
+      other: "Sélectionner les {total} lignes",
+    },
+    clearSelection: "Effacer la sélection",
+    rowsLoaded: {
+      one: "{total} ligne affichée",
+      other: "{total} lignes affichées",
+    },
+    sortPositionAscending:
+      "trié par ordre croissant, {position} sur {total} dans l’ordre de tri",
+    sortPositionDescending:
+      "trié par ordre décroissant, {position} sur {total} dans l’ordre de tri",
+    sortAddedAscending:
+      "{columnName} trié par ordre croissant, {position} sur {total}",
+    sortAddedDescending:
+      "{columnName} trié par ordre décroissant, {position} sur {total}",
+    sortCleared: "{columnName} n’est plus trié",
+    yes: "Oui",
+    no: "Non",
+  },
   tableColumnResizer: {
     resize: "Redimensionner {columnName}",
   },

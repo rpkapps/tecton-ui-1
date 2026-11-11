@@ -46,6 +46,51 @@ export default defineTranslations({
     ascendingSort: "ordenado por columna {columnName} en sentido ascendente",
     descendingSort: "ordenado por columna {columnName} en orden descendente",
   },
+  dataTable: {
+    loading: "Cargando",
+    emptyTitle: "No hay filas",
+    emptyDescription: "Todavía no hay nada que mostrar aquí.",
+    noResultsTitle: "No hay resultados",
+    noResultsDescription:
+      "Ninguna fila coincide con la búsqueda y los filtros.",
+    clearFilters: "Borrar filtros",
+    errorTitle: "No se han podido cargar las filas",
+    errorDescription: "Se ha producido un error al cargar los datos.",
+    retry: "Reintentar",
+    rowsPerPage: "Filas por página",
+    pageInfo: "Página {page} de {pageCount}",
+    pagination: "Paginación",
+    firstPage: "Primera página",
+    previousPage: "Página anterior",
+    nextPage: "Página siguiente",
+    lastPage: "Última página",
+    selectedCount: {
+      one: "{selected} de {total} seleccionada",
+      many: "{selected} de {total} seleccionadas",
+      other: "{selected} de {total} seleccionadas",
+    },
+    selectAllMatching: {
+      one: "Seleccionar {total} fila",
+      many: "Seleccionar las {total} de filas",
+      other: "Seleccionar las {total} filas",
+    },
+    clearSelection: "Borrar selección",
+    rowsLoaded: {
+      one: "Se muestra {total} fila",
+      other: "Se muestran {total} filas",
+    },
+    sortPositionAscending:
+      "ordenado en sentido ascendente, {position} de {total} en el orden de clasificación",
+    sortPositionDescending:
+      "ordenado en orden descendente, {position} de {total} en el orden de clasificación",
+    sortAddedAscending:
+      "{columnName} ordenado de forma ascendente, {position} de {total}",
+    sortAddedDescending:
+      "{columnName} ordenado de forma descendente, {position} de {total}",
+    sortCleared: "{columnName} ya no está ordenado",
+    yes: "Sí",
+    no: "No",
+  },
   tableColumnResizer: {
     resize: "Cambiar el tamaño de {columnName}",
   },

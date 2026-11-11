@@ -20,9 +20,9 @@ import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableC
 ## Do
 
 - Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`.
-- When rows are selected or opened, set `grid`: the table is one tab stop the arrow keys move through. Give every `TableRow` a `value`, select with `selectionMode` and `value` / `onValueChange` (a `TableSelectionCheckbox` in the header and in each row) and open a row with `onActivate`; a tree table's rows take `level`, `expanded` and `onExpandedChange`.
-- Leave a table that is only read without `grid` (screen readers read a grid as something to operate, not as a document); open its records from a link in the identifying cell.
-- For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table. In a `grid` table, rows from `items` take their item's `id` as their `value` (`itemToId` picks another), and `isItemDisabled` marks the disabled ones.
+- Set `size="sm"` for a compact table of dense data, and `striped` to put every even body row on an alternate surface; hover and selected rows keep their fill over the stripe.
+- Open a record from a link in its identifying cell.
+- For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table.
 - Show an empty result as `Empty` in place of the table, or as `TableBody empty={…}` (one row across every column) when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
 - Give text-heavy columns (well name, remarks) a minimum width on `TableHead`; they never collapse when the panel narrows.
 
@@ -56,27 +56,21 @@ Correct:
 
 The grid emits no table semantics, so assistive technology reads a stream of unassociated cells with no row or column count, and `bg-zinc-100` is stock Tailwind the reset palette emits no CSS for — the header band is `bg-table-header` on `TableHead`.
 
-### HIGH selectedKeys, onSelectionChange and renderEmptyState on the table
+### HIGH Density and stripes from classes
 
 Wrong:
 
 ```tsx
-<Table aria-label="Wells" selectionMode="multiple" selectedKeys={selected} onSelectionChange={setSelected}>
-  <TableHeader><TableHead isRowHeader>Well</TableHead></TableHeader>
-  <TableBody renderEmptyState={() => "No wells"}>{rows}</TableBody>
-</Table>
+<Table className="text-xs [&_td]:py-1 [&_tbody_tr:nth-child(even)]:bg-surface-alt">{rows}</Table>
 ```
 
 Correct:
 
 ```tsx
-<Table grid aria-label="Wells" selectionMode="multiple" value={selected} onValueChange={setSelected}>
-  <TableHeader><TableRow><TableHead><TableSelectionCheckbox /></TableHead><TableHead>Well</TableHead></TableRow></TableHeader>
-  <TableBody empty={<Empty>No wells</Empty>}>{rows}</TableBody>
-</Table>
+<Table size="sm" striped>{rows}</Table>
 ```
 
-Selection is `grid` with `selectionMode` and `value` / `onValueChange` (each `TableRow` with its `value`), and an empty body is `empty` on `TableBody`: `selectedKeys`, `onSelectionChange`, `isRowHeader` and `renderEmptyState` are not `Table` props, so nothing is selectable and an empty body renders nothing. Without `grid`, `selectionMode` does not compile.
+Hand-written classes miss the header's height, paint the stripe over the hover and selected fill, and shift as a virtualized table mounts and unmounts rows, so the stripes flicker while it scrolls. `size` and `striped` set every part and keep each row on its stripe.
 
 ### HIGH Activating a row with onClick
 
@@ -91,12 +85,12 @@ Wrong:
 Correct:
 
 ```tsx
-<Table grid onActivate={(id) => openWell(id)}>
-  <TableBody><TableRow value={well.id}><TableCell>{well.name}</TableCell></TableRow></TableBody>
-</Table>
+<TableRow>
+  <TableCell><Link href={`/wells/${well.id}`}>{well.name}</Link></TableCell>
+</TableRow>
 ```
 
-A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse only. In a `grid` table, `onActivate` opens the row from Enter and a click (a double click when rows select); in a table that is only read, a link in the identifying cell is reachable, announced and middle-clickable.
+A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse only. A link in the identifying cell is reachable, announced and middle-clickable.
 
 ## Before you finish
 
@@ -104,7 +98,7 @@ A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse 
 - Rows or columns the user drags into order are a `Reorderable` around the `Table` with `ReorderableItem render={<TableRow />}` with a `label` and a `ReorderableHandle` (or headers with `render={<TableHead />}`, `dragHandle={false}` and `orientation="horizontal"`, no grip), never native `draggable` rows; a resizable column has a `TableColumnResizer` in its `TableHead` (`relative`, width from state) on a `table-fixed` table.
 - A table of hundreds of rows or more is `<Table virtualized>` inside a parent of bounded height (`h-96`), with `TableBody items={rows}` and a render function, not a hand-built window of sliced rows.
 - An empty table renders `Empty` in place of the table, or `TableBody empty={…}` (one row across every column) when the header has to stay.
-- A table whose rows are selected or opened is `<Table grid>` with `selectionMode`, `value` / `onValueChange` and `onActivate`, a `value` on every `TableRow` and `TableSelectionCheckbox` for the checkboxes; a table that is only read stays plain and opens a row through a link in its identifying cell, never an `onClick` on the `tr`.
+- A table opens a row through a link in its identifying cell, never an `onClick` on the `tr`; a compact or striped table is `size="sm"` or `striped` on `Table`, never `[&_td]:py-1` or `nth-child` classes.
 - `className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-end`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.
 
-Related: item, tree-view, reorderable, table-column-resizer, table-selection-checkbox, tanstack-table
+Related: item, tree-view, reorderable, table-column-resizer, tanstack-table

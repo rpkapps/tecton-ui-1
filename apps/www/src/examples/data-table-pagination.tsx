@@ -1,184 +1,64 @@
 "use client"
 
-import * as React from "react"
 import {
-  createColumnHelper,
-  createPaginatedRowModel,
-  rowPaginationFeature,
-  tableFeatures,
-  useTable,
-} from "@tanstack/react-table"
-import type { PaginationState } from "@tanstack/react-table"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+  createColumns,
+  DataTable,
+  DataTableContent,
+  DataTableFooter,
+  DataTablePageButtons,
+  DataTablePageInfo,
+  DataTablePageSize,
+} from "@tecton/react/tecton/data-table"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@tecton/react/components/select"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@tecton/react/components/table"
-
-type Well = {
+type Run = {
   id: string
-  name: string
-  field: string
-  status: "Producing" | "Shut in" | "Drilling"
-  depth: number
-  operator: string
+  well: string
+  tool: string
+  top: number
+  date: Date
 }
 
-const fields = ["Gullfaks", "Statfjord", "Snorre", "Visund"]
-const statuses = ["Producing", "Producing", "Shut in", "Drilling"] as const
-const wells: Well[] = Array.from({ length: 23 }, (_, i) => ({
-  id: `w${i + 1}`,
-  name: `34/10-${String.fromCharCode(65 + (i % 6))}-${i + 1}`,
-  field: fields[i % fields.length],
-  status: statuses[(i * 7) % statuses.length],
-  depth: 1800 + ((i * 137) % 2200),
-  operator: i % 5 === 4 ? "Petoro" : "Equinor",
+const TOOLS = ["Gamma ray", "Resistivity", "Density", "Neutron", "Sonic"]
+
+/** 137 logging runs over five wells. */
+const runs: Array<Run> = Array.from({ length: 137 }, (_, i) => ({
+  id: `run-${i + 1}`,
+  well: `34/10-A-${(i % 5) + 10}`,
+  tool: TOOLS[(i * 3) % TOOLS.length],
+  top: 800 + ((i * 173) % 2400),
+  date: new Date(Date.UTC(2023, 0, 1 + i * 2)),
 }))
 
-const statusVariant = {
-  Producing: "success",
-  "Shut in": "warning",
-  Drilling: "info",
-} as const
-
-const features = tableFeatures({
-  rowPaginationFeature,
-  paginatedRowModel: createPaginatedRowModel(),
-})
-const columnHelper = createColumnHelper<typeof features, Well>()
-
-const columns = columnHelper.columns([
-  columnHelper.accessor("name", { header: "Well" }),
-  columnHelper.accessor("field", { header: "Field" }),
-  columnHelper.accessor("status", {
-    header: "Status",
-    cell: ({ getValue }) => (
-      <Badge variant={statusVariant[getValue()]} appearance="outline">
-        {getValue()}
-      </Badge>
-    ),
-  }),
-  columnHelper.accessor("depth", {
-    header: () => <div className="text-end">TD (m)</div>,
-    cell: ({ getValue }) => (
-      <div className="text-end font-mono tabular-nums">
-        {getValue().toLocaleString("en-US")}
-      </div>
-    ),
-  }),
-  columnHelper.accessor("operator", { header: "Operator" }),
+const columns = createColumns<Run>([
+  { id: "id", header: "Run", accessor: (run) => run.id.replace("run-", "#") },
+  { id: "well", header: "Well" },
+  { id: "tool", header: "Tool" },
+  { id: "top", header: "Top (m)", type: "number" },
+  {
+    id: "date",
+    header: "Logged",
+    type: "date",
+    format: { dateStyle: "medium", timeZone: "UTC" },
+  },
 ])
 
-const pageSizes = [5, 10, 25]
-
 export default function DataTablePagination() {
-  const [pagination, setPagination] = React.useState<PaginationState>({
-    pageIndex: 0,
-    pageSize: 5,
-  })
-  const table = useTable({
-    features,
-    data: wells,
-    columns,
-    getRowId: (row) => row.id,
-    state: { pagination },
-    onPaginationChange: setPagination,
-  })
-
   return (
-    <div className="flex w-full max-w-3xl flex-col gap-3">
-      <div className="overflow-hidden rounded-md border">
-        <Table aria-label="Wells">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : (
-                      <table.FlexRender header={header} />
-                    )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow key={row.id}>
-                {row.getAllCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    <table.FlexRender cell={cell} />
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-      <div className="flex flex-wrap items-center justify-end gap-4 text-sm text-muted-foreground">
-        <span className="me-auto tabular-nums">{wells.length} wells</span>
-        <div className="flex items-center gap-2">
-          <span>Rows per page</span>
-          <Select
-            value={String(pagination.pageSize)}
-            onValueChange={(value) => {
-              if (value) table.setPageSize(Number(value))
-            }}
-          >
-            <SelectTrigger
-              size="sm"
-              className="w-18"
-              aria-label="Rows per page"
-            >
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {pageSizes.map((size) => (
-                <SelectItem key={size} value={String(size)}>
-                  {size}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-        <span className="tabular-nums">
-          Page {pagination.pageIndex + 1} of {Math.max(1, table.getPageCount())}
-        </span>
-        <div className="flex items-center gap-1">
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label="Previous page"
-            onClick={() => table.previousPage()}
-            disabled={!table.getCanPreviousPage()}
-          >
-            <ChevronLeftIcon />
-          </Button>
-          <Button
-            variant="outline"
-            size="icon-sm"
-            aria-label="Next page"
-            onClick={() => table.nextPage()}
-            disabled={!table.getCanNextPage()}
-          >
-            <ChevronRightIcon />
-          </Button>
-        </div>
-      </div>
-    </div>
+    <DataTable
+      items={runs}
+      columns={columns}
+      pagination
+      defaultPageSize={5}
+      pageSizes={[5, 10, 25]}
+      size="sm"
+      className="w-full"
+    >
+      <DataTableContent aria-label="Logging runs" />
+      <DataTableFooter>
+        <DataTablePageSize />
+        <DataTablePageInfo />
+        <DataTablePageButtons />
+      </DataTableFooter>
+    </DataTable>
   )
 }

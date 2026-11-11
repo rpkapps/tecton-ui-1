@@ -86,11 +86,7 @@ A table showing actions for each row using a `<DropdownMenu />` component.
 
 ## Data Table
 
-You can use the `<Table />` component to build more complex data tables. Combine it with [@tanstack/react-table](https://tanstack.com/table/latest) to create tables with sorting, filtering and pagination.
-
-See the [Data Table](/docs/components/data-table) documentation for more information.
-
-You can also see an example of a data table in the [Tasks](https://ui.shadcn.com/examples/tasks) demo.
+When rows are sorted, filtered, selected or paged, use [Data Table](/docs/components/data-table): it is built on these parts and adds keyboard navigation, selection and the rest of a data table's features.
 
 ## RTL
 
@@ -102,20 +98,15 @@ To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui
   previewClassName="h-auto"
 />
 
-## Grid
+## Size and stripes
 
-When rows are selected or opened, set `grid`: the table becomes one tab stop that the arrow keys move through, announced as a grid, with rows that select (`selectionMode`, `value` / `onValueChange`, a `TableSelectionCheckbox` per row) and open (`onActivate`). Give every `TableRow` a `value`. Leave a table that is only read without it. [Data Table](/docs/components/data-table#keyboard-navigation) lists the keys and the props, with recipes for selection and tree tables.
+Set `size="sm"` for a compact table: a shorter header and rows and smaller text, for dense data that is scanned rather than read. Set `striped` to put every even body row on an alternate surface, which helps the eye follow a wide row across its columns. Hover and selected rows keep their own fill over the stripe, and the footer is never striped.
+
+<ComponentPreview name="table-size" />
 
 ```tsx
-<Table grid selectionMode="multiple" value={selected} onValueChange={setSelected}>
-  <TableHeader>…</TableHeader>
-  <TableBody empty="No wells match the filter.">
-    {wells.map((well) => (
-      <TableRow key={well.id} value={well.id}>
-        …
-      </TableRow>
-    ))}
-  </TableBody>
+<Table size="sm" striped>
+  …
 </Table>
 ```
 
@@ -125,11 +116,11 @@ Set `virtualized` on a table of hundreds of rows or more. The body then mounts o
 
 Pass the rows' data as `items` and render one row with a function: it is called only for the rows in view, so a new sort or filter renders a screenful rather than every row. Plain `TableRow` children work too, but every one of them is created on each render.
 
-- **Row height:** the table measures it from the rows it renders, so a compact table (`[&_td]:py-1`) and a default one both work, and a density switch is picked up. Within one table the rows must be one height: keep cells on one line.
+- **Row height:** the table measures it from the rows it renders, so `size="sm"` and the default size both work, and a switch between them is picked up. Within one table the rows must be one height: keep cells on one line.
 - **Column widths:** the columns are locked in px at the width of their content when first laid out (the header and the first rows), so they do not jump as different rows scroll into view. The space left goes to the columns of text, the last one taking the rest; a column of controls only (a checkbox, a drag handle) stays as narrow as its control. In a container too narrow for them all, the table scrolls sideways. Values that no longer fit end with an ellipsis: give a column a width when its values vary in length. A table you make `table-fixed` with your own widths (column resizing) keeps them.
 - **Focus:** a row whose checkbox or link has focus stays mounted when it scrolls out of view.
 - **Screen readers:** they hear the true size, because the table carries `aria-rowcount` and each row `aria-rowindex`.
-- **Striping:** `nth-child` striping (`[&_tbody_tr:nth-child(even)]`) flickers, because rows shift position as they mount and unmount; leave a virtualized table's rows plain.
+- **Striping:** with `striped`, each row keeps its stripe as rows mount and unmount. Hand-written `nth-child` striping (`[&_tbody_tr:nth-child(even)]`) shifts with the mounted rows and flickers, so use the prop.
 
 <ComponentPreview name="table-virtualized" />
 
@@ -171,19 +162,19 @@ Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBo
 
 <Do>
 
-When rows are selected or opened, set `grid`: the table is one tab stop the arrow keys move through. Give every `TableRow` a `value`, select with `selectionMode` and `value` / `onValueChange` (a `TableSelectionCheckbox` in the header and in each row) and open a row with `onActivate`; a tree table's rows take `level`, `expanded` and `onExpandedChange`.
+Set `size="sm"` for a compact table of dense data, and `striped` to put every even body row on an alternate surface; hover and selected rows keep their fill over the stripe.
 
 </Do>
 
 <Do>
 
-Leave a table that is only read without `grid` (screen readers read a grid as something to operate, not as a document); open its records from a link in the identifying cell.
+Open a record from a link in its identifying cell.
 
 </Do>
 
 <Do>
 
-For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table. In a `grid` table, rows from `items` take their item's `id` as their `value` (`itemToId` picks another), and `isItemDisabled` marks the disabled ones.
+For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table.
 
 </Do>
 
@@ -237,15 +228,12 @@ The grid emits no table semantics, so assistive technology reads a stream of una
 
 </Dont>
 
-<Dont severity="HIGH" title="selectedKeys, onSelectionChange and renderEmptyState on the table">
+<Dont severity="HIGH" title="Density and stripes from classes">
 
 <Wrong>
 
 ```tsx
-<Table aria-label="Wells" selectionMode="multiple" selectedKeys={selected} onSelectionChange={setSelected}>
-  <TableHeader><TableHead isRowHeader>Well</TableHead></TableHeader>
-  <TableBody renderEmptyState={() => "No wells"}>{rows}</TableBody>
-</Table>
+<Table className="text-xs [&_td]:py-1 [&_tbody_tr:nth-child(even)]:bg-surface-alt">{rows}</Table>
 ```
 
 </Wrong>
@@ -253,15 +241,12 @@ The grid emits no table semantics, so assistive technology reads a stream of una
 <Correct>
 
 ```tsx
-<Table grid aria-label="Wells" selectionMode="multiple" value={selected} onValueChange={setSelected}>
-  <TableHeader><TableRow><TableHead><TableSelectionCheckbox /></TableHead><TableHead>Well</TableHead></TableRow></TableHeader>
-  <TableBody empty={<Empty>No wells</Empty>}>{rows}</TableBody>
-</Table>
+<Table size="sm" striped>{rows}</Table>
 ```
 
 </Correct>
 
-Selection is `grid` with `selectionMode` and `value` / `onValueChange` (each `TableRow` with its `value`), and an empty body is `empty` on `TableBody`: `selectedKeys`, `onSelectionChange`, `isRowHeader` and `renderEmptyState` are not `Table` props, so nothing is selectable and an empty body renders nothing. Without `grid`, `selectionMode` does not compile.
+Hand-written classes miss the header's height, paint the stripe over the hover and selected fill, and shift as a virtualized table mounts and unmounts rows, so the stripes flicker while it scrolls. `size` and `striped` set every part and keep each row on its stripe.
 
 </Dont>
 
@@ -280,14 +265,14 @@ Selection is `grid` with `selectionMode` and `value` / `onValueChange` (each `Ta
 <Correct>
 
 ```tsx
-<Table grid onActivate={(id) => openWell(id)}>
-  <TableBody><TableRow value={well.id}><TableCell>{well.name}</TableCell></TableRow></TableBody>
-</Table>
+<TableRow>
+  <TableCell><Link href={`/wells/${well.id}`}>{well.name}</Link></TableCell>
+</TableRow>
 ```
 
 </Correct>
 
-A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse only. In a `grid` table, `onActivate` opens the row from Enter and a click (a double click when rows select); in a table that is only read, a link in the identifying cell is reachable, announced and middle-clickable.
+A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse only. A link in the identifying cell is reachable, announced and middle-clickable.
 
 </Dont>
 

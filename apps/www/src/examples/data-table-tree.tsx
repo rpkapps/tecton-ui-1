@@ -1,42 +1,23 @@
 "use client"
 
-import * as React from "react"
-import { cn } from "cn"
 import {
-  createColumnHelper,
-  createExpandedRowModel,
-  rowExpandingFeature,
-  tableFeatures,
-  useTable,
-  type ExpandedState,
-} from "@tanstack/react-table"
-import {
-  ChevronRightIcon,
-  ChevronsDownUpIcon,
-  ChevronsUpDownIcon,
-} from "lucide-react"
-
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@tecton/react/components/table"
+  createColumns,
+  DataTable,
+  DataTableContent,
+  DataTableFooter,
+  DataTableSelectionCount,
+} from "@tecton/react/tecton/data-table"
 
 type Asset = {
   id: string
   name: string
-  kind: "Field" | "Platform" | "Well"
-  status?: "Producing" | "Shut in" | "Drilling"
+  kind: string
+  status?: "producing" | "shut-in" | "drilling"
   depth?: number
-  children?: Asset[]
+  children?: Array<Asset>
 }
 
-const assets: Asset[] = [
+const assets: Array<Asset> = [
   {
     id: "gullfaks",
     name: "Gullfaks",
@@ -51,199 +32,117 @@ const assets: Asset[] = [
             id: "a12",
             name: "34/10-A-12",
             kind: "Well",
-            status: "Producing",
+            status: "producing",
             depth: 3250,
+            children: [
+              {
+                id: "a12-t2",
+                name: "34/10-A-12 T2",
+                kind: "Sidetrack",
+                status: "producing",
+                depth: 3610,
+              },
+            ],
           },
           {
-            id: "a14",
-            name: "34/10-A-14",
+            id: "a7",
+            name: "34/10-A-7",
             kind: "Well",
-            status: "Producing",
-            depth: 3105,
+            status: "shut-in",
+            depth: 2875,
           },
         ],
       },
       {
-        id: "gfb",
-        name: "Gullfaks B",
+        id: "gfc",
+        name: "Gullfaks C",
         kind: "Platform",
         children: [
           {
-            id: "b3",
-            name: "34/10-B-3",
+            id: "c4",
+            name: "34/10-C-4",
             kind: "Well",
-            status: "Shut in",
-            depth: 2980,
+            status: "producing",
+            depth: 3390,
           },
         ],
       },
     ],
   },
   {
-    id: "statfjord",
-    name: "Statfjord",
+    id: "snorre",
+    name: "Snorre",
     kind: "Field",
     children: [
       {
-        id: "sfc",
-        name: "Statfjord C",
+        id: "sna",
+        name: "Snorre A",
         kind: "Platform",
         children: [
           {
-            id: "c7",
-            name: "33/9-C-7",
+            id: "p7",
+            name: "34/7-P-7",
             kind: "Well",
-            status: "Drilling",
+            status: "drilling",
             depth: 1420,
+          },
+          {
+            id: "p9",
+            name: "34/7-P-9",
+            kind: "Well",
+            status: "producing",
+            depth: 4410,
           },
         ],
       },
     ],
   },
+  {
+    id: "valhall",
+    name: "Valhall",
+    kind: "Field",
+    children: [
+      {
+        id: "g2",
+        name: "2/8-G-2",
+        kind: "Well",
+        status: "producing",
+        depth: 2730,
+      },
+    ],
+  },
 ]
 
-const statusVariant = {
-  Producing: "success",
-  "Shut in": "warning",
-  Drilling: "info",
-} as const
-
-const features = tableFeatures({
-  rowExpandingFeature,
-  expandedRowModel: createExpandedRowModel(),
-})
-const columnHelper = createColumnHelper<typeof features, Asset>()
-
-/** Each level is indented by the width of a chevron and its gap. */
-const INDENT = 1.25
-
-const columns = columnHelper.columns([
-  columnHelper.accessor("name", {
-    header: "Name",
-    cell: ({ row, getValue }) => (
-      <div
-        className="flex items-center gap-1"
-        style={{ paddingInlineStart: `${row.depth * INDENT}rem` }}
-      >
-        {row.getCanExpand() ? (
-          // The chevron of a Tree View row: quiet, not a pressed button. It
-          // is for the pointer: the row itself says whether it is expanded,
-          // and Right / Left or Enter on the row open and close it.
-          <button
-            type="button"
-            tabIndex={-1}
-            aria-hidden
-            onClick={() => row.toggleExpanded()}
-            className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground outline-none hover:bg-accent hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring/60"
-          >
-            <ChevronRightIcon
-              className={cn(
-                "size-4 transition-transform rtl:-scale-x-100",
-                row.getIsExpanded() && "rotate-90 rtl:-rotate-90"
-              )}
-            />
-          </button>
-        ) : (
-          // Leaves line up with their parent's name, past the chevron.
-          <span aria-hidden className="size-6 shrink-0" />
-        )}
-        <span className={row.depth === 0 ? "font-medium" : undefined}>
-          {getValue()}
-        </span>
-      </div>
-    ),
-  }),
-  columnHelper.accessor("kind", { header: "Type" }),
-  columnHelper.accessor("status", {
+const columns = createColumns<Asset>([
+  { id: "name", header: "Name" },
+  { id: "kind", header: "Type" },
+  {
+    id: "status",
     header: "Status",
-    cell: ({ getValue }) => {
-      const status = getValue()
-      return status ? (
-        <Badge variant={statusVariant[status]} appearance="outline">
-          {status}
-        </Badge>
-      ) : null
-    },
-  }),
-  columnHelper.accessor("depth", {
-    header: () => <div className="text-end">TD (m)</div>,
-    cell: ({ getValue }) => (
-      <div className="text-end font-mono tabular-nums">
-        {getValue()?.toLocaleString("en-US")}
-      </div>
-    ),
-  }),
+    type: "options",
+    options: [
+      { value: "producing", label: "Producing", variant: "success" },
+      { value: "shut-in", label: "Shut in", variant: "warning" },
+      { value: "drilling", label: "Drilling", variant: "info" },
+    ],
+  },
+  { id: "depth", header: "TD (m)", type: "number" },
 ])
 
 export default function DataTableTree() {
-  const [expanded, setExpanded] = React.useState<ExpandedState>({
-    gullfaks: true,
-  })
-  const table = useTable({
-    features,
-    data: assets,
-    columns,
-    getRowId: (row) => row.id,
-    getSubRows: (row) => row.children,
-    state: { expanded },
-    onExpandedChange: setExpanded,
-  })
-  const all = table.getIsAllRowsExpanded()
-
   return (
-    <div className="flex w-full max-w-3xl flex-col gap-3">
-      <div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => table.toggleAllRowsExpanded(!all)}
-        >
-          {all ? <ChevronsDownUpIcon /> : <ChevronsUpDownIcon />}
-          {all ? "Collapse all" : "Expand all"}
-        </Button>
-      </div>
-      <div className="overflow-hidden rounded-md border">
-        {/* A treegrid: rows carry their level and open with Right / Left. */}
-        <Table grid aria-label="Assets">
-          <TableHeader>
-            {table.getHeaderGroups().map((headerGroup) => (
-              <TableRow key={headerGroup.id}>
-                {headerGroup.headers.map((header) => (
-                  <TableHead key={header.id}>
-                    {header.isPlaceholder ? null : (
-                      <table.FlexRender header={header} />
-                    )}
-                  </TableHead>
-                ))}
-              </TableRow>
-            ))}
-          </TableHeader>
-          <TableBody>
-            {table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                value={row.id}
-                textValue={row.original.name}
-                level={row.depth + 1}
-                expanded={row.getCanExpand() ? row.getIsExpanded() : undefined}
-                onExpandedChange={(open) => row.toggleExpanded(open)}
-                // Its place among its siblings: "2 of 3".
-                aria-posinset={row.index + 1}
-                aria-setsize={
-                  (row.getParentRow()?.subRows ?? table.getCoreRowModel().rows)
-                    .length
-                }
-              >
-                {row.getAllCells().map((cell) => (
-                  <TableCell key={cell.id}>
-                    <table.FlexRender cell={cell} />
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-    </div>
+    <DataTable
+      items={assets}
+      columns={columns}
+      itemToChildren={(asset) => asset.children}
+      defaultExpanded={["gullfaks", "gfa"]}
+      selectionMode="multiple"
+      className="w-full"
+    >
+      <DataTableContent aria-label="Assets" />
+      <DataTableFooter>
+        <DataTableSelectionCount />
+      </DataTableFooter>
+    </DataTable>
   )
 }

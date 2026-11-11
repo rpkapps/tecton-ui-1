@@ -89,7 +89,7 @@ const BLOCK_PREVIEWS: Record<string, string> = {
 /**
  * Upstream docs pages without a component file that are still worth keeping.
  * `data-table` is not one: it is hand-written (`components/data-table.mdx`,
- * no `upstream:` line), as the Tecton recipes outgrew the upstream guide.
+ * no `upstream:` line): it documents Tecton's own `DataTable`.
  */
 const EXTRA_PAGES = ["date-picker"]
 
@@ -855,6 +855,15 @@ const PAGE_REWRITES: Record<
       "calendar page (RTL)"
     )
   },
+  // Tecton's Data Table is a component of its own, not a recipe on a table
+  // library, and has no Tasks demo here.
+  table: (mdx) =>
+    replaceOrThrow(
+      mdx,
+      /\n## Data Table\n[\s\S]*?(?=\n## )/,
+      "\n## Data Table\n\nWhen rows are sorted, filtered, selected or paged, use [Data Table](/docs/components/data-table): it is built on these parts and adds keyboard navigation, selection and the rest of a data table's features.\n",
+      "table page (Data Table)"
+    ),
 }
 
 const PREVIEW_TAG =

@@ -46,6 +46,55 @@ export default defineTranslations({
     ascendingSort: "сортировать столбец {columnName} в порядке возрастания",
     descendingSort: "сортировать столбец {columnName} в порядке убывания",
   },
+  dataTable: {
+    loading: "Загрузка",
+    emptyTitle: "Нет строк",
+    emptyDescription: "Здесь пока ничего нет.",
+    noResultsTitle: "Ничего не найдено",
+    noResultsDescription:
+      "Нет строк, соответствующих условиям поиска и фильтрам.",
+    clearFilters: "Сбросить фильтры",
+    errorTitle: "Не удалось загрузить строки",
+    errorDescription: "При загрузке данных произошла ошибка.",
+    retry: "Повторить",
+    rowsPerPage: "Строк на странице",
+    pageInfo: "Страница {page} из {pageCount}",
+    pagination: "Навигация по страницам",
+    firstPage: "Первая страница",
+    previousPage: "Предыдущая страница",
+    nextPage: "Следующая страница",
+    lastPage: "Последняя страница",
+    selectedCount: {
+      one: "Выбрана {selected} из {total}",
+      few: "Выбраны {selected} из {total}",
+      many: "Выбрано {selected} из {total}",
+      other: "Выбрано {selected} из {total}",
+    },
+    selectAllMatching: {
+      one: "Выбрать все {total} строку",
+      few: "Выбрать все {total} строки",
+      many: "Выбрать все {total} строк",
+      other: "Выбрать все {total} строки",
+    },
+    clearSelection: "Отменить выбор",
+    rowsLoaded: {
+      one: "Показана {total} строка",
+      few: "Показаны {total} строки",
+      many: "Показано {total} строк",
+      other: "Показано {total} строки",
+    },
+    sortPositionAscending:
+      "отсортировано в порядке возрастания, {position} из {total} в порядке сортировки",
+    sortPositionDescending:
+      "отсортировано в порядке убывания, {position} из {total} в порядке сортировки",
+    sortAddedAscending:
+      "{columnName}: сортировка по возрастанию, {position} из {total}",
+    sortAddedDescending:
+      "{columnName}: сортировка по убыванию, {position} из {total}",
+    sortCleared: "{columnName}: сортировка снята",
+    yes: "Да",
+    no: "Нет",
+  },
   tableColumnResizer: {
     resize: "Изменить размер столбца {columnName}",
   },

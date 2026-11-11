@@ -1,0 +1,302 @@
+/**
+ * Grouping (`view.grouping`, not with a tree), as typed arrays rather than
+ * objects per group, so grouping 100,000 rows by a column with as many
+ * values costs a few linear passes.
+ *
+ * `groupRows` gives every row a group at each level: rows with the same
+ * value (strings as they are, numbers at the precision their column shows,
+ * booleans, dates by their local day) share one, nested by the grouping
+ * columns, numbered as they first appear. A group's key is opaque and
+ * stable while the grouping and that value stay (the locale does not
+ * change it).
+ *
+ * Grouping by a column with tens of thousands of distinct values (an id, a
+ * name) makes as many group rows, and costs more than the grouping budget
+ * of 150 ms for 100,000 rows (about 300 ms the first time on the machine
+ * the perf tests note): group by columns of categories.
+ *
+ * `orderGroups` orders them: each level's groups by the grouping column's
+ * sort order of their value (a text column's distinct texts directly, else
+ * their first row's value) (the view's direction when it
+ * sorts by that column, else ascending; no value last), within their parent
+ * group; server mode keeps the order groups first appear in. The rows are
+ * sorted by the sort passes once, then put into their groups in that order
+ * with one counting sort, into one array where every group, at any level,
+ * is a range (`start` to `end`).
+ */
+import type { EngineColumn } from "./columns"
+import type { Core } from "./core"
+import { hasRanks, sortRows, sortTexts, type SortPass } from "./sort"
+import { isEmptyValue, toBoolean, toDay, toNumber, toTime } from "./values"
+
+type Grouping<T> = {
+  readonly columns: ReadonlyArray<EngineColumn<T>>
+  /** The grouped rows (positions), in data order. */
+  readonly rows: Uint32Array
+  /** Per group: its level, parent group (-1 at the top), first row (position) and key. */
+  readonly level: Uint8Array
+  readonly parent: Int32Array
+  readonly first: Uint32Array
+  readonly keys: ReadonlyArray<string>
+  /** Per group: the value it groups by (`groupValue`). */
+  readonly values: ReadonlyArray<string>
+  /** Each level's groups, as they first appear. */
+  readonly levels: ReadonlyArray<Uint32Array>
+  /** Each row's group at the last level, by position. */
+  readonly leafOf: Int32Array
+}
+
+type OrderedGroups<T> = {
+  readonly grouping: Grouping<T>
+  /** Each level's groups in order, children after their siblings' order of parents. */
+  readonly order: ReadonlyArray<Uint32Array>
+  /** Per group: its index in its level's `order`. */
+  readonly orderIndex: Uint32Array
+  /** The rows, sorted and in their groups' order. */
+  readonly rows: Uint32Array
+  /** Per group: its range in `rows`. */
+  readonly start: Uint32Array
+  readonly end: Uint32Array
+  /** Per group above the last level: its children's range in the next level's `order`. */
+  readonly childStart: Uint32Array
+  readonly childEnd: Uint32Array
+}
+
+const numberKeys = new WeakMap<object, Intl.NumberFormat>()
+
+/**
+ * A number as its column shows it, in a locale-free form (`en-US`, no
+ * grouping): rows that show the same number ("1" for 1.2 and 1.4 at no
+ * decimals) share a group, whatever the locale.
+ */
+function numberKey<T>(column: EngineColumn<T>, number: number) {
+  let format = numberKeys.get(column)
+  if (!format) {
+    format = new Intl.NumberFormat("en-US", {
+      ...column.format,
+      useGrouping: false,
+    })
+    numberKeys.set(column, format)
+  }
+  return format.format(number)
+}
+
+/**
+ * The value a row is grouped by, as a string: strings as they are, numbers
+ * at the precision shown, dates by local day, `""` for none.
+ */
+function groupValue<T>(column: EngineColumn<T>, item: T): string {
+  const value = column.getValue(item)
+  if (isEmptyValue(value)) return ""
+  switch (column.type) {
+    case "date": {
+      const time = toTime(value)
+      return time === undefined ? "" : toDay(time)
+    }
+    case "boolean":
+      return String(toBoolean(value))
+    case "number": {
+      const number = toNumber(value)
+      return number === undefined ? String(value) : numberKey(column, number)
+    }
+    default:
+      return value instanceof Date ? value.toISOString() : String(value)
+  }
+}
+
+function groupRows<T>(
+  core: Core<T>,
+  rows: Uint32Array,
+  columns: ReadonlyArray<EngineColumn<T>>
+): Grouping<T> {
+  const { items } = core
+  const m = rows.length
+  const level: Array<number> = []
+  const parent: Array<number> = []
+  const first: Array<number> = []
+  const keys: Array<string> = []
+  const groupValues: Array<string> = []
+  const levels: Array<Uint32Array> = []
+  // Each row's group at the level before, then at this one.
+  let groupOf = new Int32Array(m).fill(-1)
+  columns.forEach((column, depth) => {
+    const values = new Map<string, number>()
+    const valueOf = new Uint32Array(m)
+    const texts: Array<string> = []
+    for (let j = 0; j < m; j++) {
+      const text = groupValue(column, items[rows[j]])
+      let slot = values.get(text)
+      if (slot === undefined) {
+        slot = texts.length
+        values.set(text, slot)
+        texts.push(text)
+      }
+      valueOf[j] = slot
+    }
+    const v = texts.length
+    const groups = new Map<number, number>()
+    // At the top a value is its group, numbered as the values are; below,
+    // a group is a value within a parent.
+    const top = depth === 0 ? new Int32Array(v).fill(-1) : undefined
+    const next = new Int32Array(m)
+    const created: Array<number> = []
+    const prefix = `${encodeURIComponent(column.id)}=`
+    for (let j = 0; j < m; j++) {
+      const up = groupOf[j]
+      const composite = (up + 1) * v + valueOf[j]
+      let group = top ? top[valueOf[j]] : groups.get(composite)
+      if (group === undefined || group === -1) {
+        group = keys.length
+        if (top) top[valueOf[j]] = group
+        else groups.set(composite, group)
+        created.push(group)
+        level.push(depth)
+        parent.push(up)
+        first.push(rows[j])
+        groupValues.push(texts[valueOf[j]])
+        const value = encodeURIComponent(texts[valueOf[j]])
+        keys.push(
+          up === -1
+            ? `group:${prefix}${value}`
+            : `${keys[up]}/${prefix}${value}`
+        )
+      }
+      next[j] = group
+    }
+    levels.push(Uint32Array.from(created))
+    groupOf = next
+  })
+  const leafOf = new Int32Array(items.length).fill(-1)
+  for (let j = 0; j < m; j++) leafOf[rows[j]] = groupOf[j]
+  return {
+    columns,
+    rows,
+    level: Uint8Array.from(level),
+    parent: Int32Array.from(parent),
+    first: Uint32Array.from(first),
+    keys,
+    values: groupValues,
+    levels,
+    leafOf,
+  }
+}
+
+/** `list` stably ordered by `keyOf` (integers below `size`). */
+function countingSort(
+  list: Uint32Array,
+  size: number,
+  keyOf: (value: number) => number
+) {
+  const starts = new Uint32Array(size + 1)
+  for (const value of list) starts[keyOf(value) + 1]++
+  for (let k = 1; k <= size; k++) starts[k] += starts[k - 1]
+  const out = new Uint32Array(list.length)
+  for (const value of list) out[starts[keyOf(value)]++] = value
+  return out
+}
+
+function orderGroups<T>(
+  core: Core<T>,
+  grouping: Grouping<T>,
+  passes: ReadonlyArray<SortPass<T>>,
+  server: boolean
+): OrderedGroups<T> {
+  const { items } = core
+  const count = grouping.keys.length
+  const orderIndex = new Uint32Array(count)
+  const order: Array<Uint32Array> = []
+  const byFirst = new Int32Array(items.length)
+  grouping.levels.forEach((groups, depth) => {
+    let ordered = groups
+    if (!server) {
+      // The groups' first rows, sorted as the column sorts, order the
+      // groups: by the column's ranks when they are prepared, else by
+      // ranking those rows alone (a few, for most groupings), or for a text
+      // column by sorting the groups' distinct texts.
+      const column = grouping.columns[depth]
+      const descending =
+        passes.find((pass) => pass.column === column)?.descending ?? false
+      const sort = [{ column, descending }]
+      if (
+        column.type === "text" &&
+        !column.compare &&
+        !hasRanks(items, column)
+      ) {
+        // A text column's groups are its distinct texts: sort them alone.
+        const empty = groups.filter((group) => grouping.values[group] === "")
+        const named = groups.filter((group) => grouping.values[group] !== "")
+        const order = sortTexts(
+          Array.from(named, (group) => grouping.values[group])
+        )
+        if (descending) order.reverse()
+        ordered = Uint32Array.from([
+          ...Array.from(order, (i) => named[i]),
+          ...empty,
+        ])
+      } else if (hasRanks(items, column)) {
+        for (const group of groups) byFirst[grouping.first[group]] = group
+        const firsts = groups.map((group) => grouping.first[group])
+        ordered = sortRows(items, firsts, sort).map((row) => byFirst[row])
+      } else {
+        const firsts = Array.from(
+          groups,
+          (group) => items[grouping.first[group]]
+        )
+        const positions = new Uint32Array(groups.length)
+        for (let i = 0; i < positions.length; i++) positions[i] = i
+        ordered = sortRows(firsts, positions, sort).map((i) => groups[i])
+      }
+    }
+    if (depth > 0) {
+      const above = order[depth - 1].length
+      ordered = countingSort(
+        ordered,
+        above,
+        (group) => orderIndex[grouping.parent[group]]
+      )
+    }
+    ordered.forEach((group, i) => {
+      orderIndex[group] = i
+    })
+    order.push(ordered)
+  })
+
+  const leaves = order[order.length - 1]
+  const sorted = server ? grouping.rows : sortRows(items, grouping.rows, passes)
+  const rows = countingSort(
+    sorted,
+    leaves.length,
+    (row) => orderIndex[grouping.leafOf[row]]
+  )
+  const start = new Uint32Array(count).fill(rows.length)
+  const end = new Uint32Array(count)
+  // Leaf groups' ranges from the rows; then each parent spans its children.
+  for (let i = 0; i < rows.length; i++) {
+    const group = grouping.leafOf[rows[i]]
+    if (i < start[group]) start[group] = i
+    end[group] = i + 1
+  }
+  const childStart = new Uint32Array(count)
+  const childEnd = new Uint32Array(count)
+  for (let depth = order.length - 1; depth > 0; depth--)
+    order[depth].forEach((group, i) => {
+      const up = grouping.parent[group]
+      if (start[group] < start[up]) start[up] = start[group]
+      if (end[group] > end[up]) end[up] = end[group]
+      if (childEnd[up] === 0) childStart[up] = i
+      childEnd[up] = i + 1
+    })
+  return {
+    grouping,
+    order,
+    orderIndex,
+    rows,
+    start,
+    end,
+    childStart,
+    childEnd,
+  }
+}
+
+export { groupRows, orderGroups }
+export type { Grouping, OrderedGroups }

@@ -47,6 +47,50 @@ export default defineTranslations({
     descendingSort:
       "classificado pela coluna {columnName} em ordem decrescente",
   },
+  dataTable: {
+    loading: "Carregando",
+    emptyTitle: "Nenhuma linha",
+    emptyDescription: "Ainda não há nada para mostrar aqui.",
+    noResultsTitle: "Nenhum resultado",
+    noResultsDescription: "Nenhuma linha corresponde à pesquisa e aos filtros.",
+    clearFilters: "Limpar filtros",
+    errorTitle: "Não foi possível carregar as linhas",
+    errorDescription: "Ocorreu um erro ao carregar os dados.",
+    retry: "Tentar novamente",
+    rowsPerPage: "Linhas por página",
+    pageInfo: "Página {page} de {pageCount}",
+    pagination: "Paginação",
+    firstPage: "Primeira página",
+    previousPage: "Página anterior",
+    nextPage: "Próxima página",
+    lastPage: "Última página",
+    selectedCount: {
+      one: "{selected} de {total} selecionada",
+      many: "{selected} de {total} selecionadas",
+      other: "{selected} de {total} selecionadas",
+    },
+    selectAllMatching: {
+      one: "Selecionar {total} linha",
+      many: "Selecionar todas as {total} de linhas",
+      other: "Selecionar todas as {total} linhas",
+    },
+    clearSelection: "Limpar seleção",
+    rowsLoaded: {
+      one: "Mostrando {total} linha",
+      other: "Mostrando {total} linhas",
+    },
+    sortPositionAscending:
+      "classificado em ordem crescente, {position} de {total} na ordem de classificação",
+    sortPositionDescending:
+      "classificado em ordem decrescente, {position} de {total} na ordem de classificação",
+    sortAddedAscending:
+      "{columnName} classificado em ordem crescente, {position} de {total}",
+    sortAddedDescending:
+      "{columnName} classificado em ordem decrescente, {position} de {total}",
+    sortCleared: "{columnName} não está mais classificado",
+    yes: "Sim",
+    no: "Não",
+  },
   tableColumnResizer: {
     resize: "Redimensionar {columnName}",
   },

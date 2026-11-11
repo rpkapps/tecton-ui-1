@@ -42,11 +42,11 @@ Reorderable
 
 ## Tables
 
-Wrap the whole `Table`, not its body, and render each row with `render={<TableRow />}`. For columns, set `orientation="horizontal"` and render each header with `render={<TableHead />}` and `dragHandle={false}`: a header has no room for a grip, so the header itself is dragged and focused. The Data Table page has both recipes with TanStack Table: [row reordering](/docs/components/data-table#row-reordering) and [column reordering](/docs/components/data-table#column-reordering).
+Wrap the whole `Table`, not its body, and render each row with `render={<TableRow />}`. For columns, set `orientation="horizontal"` and render each header with `render={<TableHead />}` and `dragHandle={false}`: a header has no room for a grip, so the header itself is dragged and focused.
 
 Items left out of the page, such as another page of rows or a hidden column, keep their place in `value`: a dropped item lands next to the item it was dropped beside.
 
-To reorder both the rows and the columns of one table, put one `Reorderable` inside the other around the `Table`. An item belongs to the nearest `Reorderable` whose `value` holds it, so the column headers join the horizontal list and the rows the vertical one. The Data Table [playground](/docs/components/data-table#playground) does this.
+To reorder both the rows and the columns of one table, put one `Reorderable` inside the other around the `Table`. An item belongs to the nearest `Reorderable` whose `value` holds it, so the column headers join the horizontal list and the rows the vertical one.
 
 ## Horizontal
 

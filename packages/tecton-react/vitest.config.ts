@@ -21,7 +21,22 @@ export default defineConfig({
           name: "components",
           environment: "jsdom",
           include: ["src/**/__tests__/**/*.test.{ts,tsx}"],
+          exclude: ["src/**/__tests__/**/*-perf.test.ts"],
           setupFiles: ["./src/tecton/__tests__/setup.ts"],
+        },
+      },
+      {
+        // Performance budgets time the engine, so they run alone: after
+        // every other project has finished (a higher group order), one
+        // file at a time, rather than beside a hundred other test files.
+        extends: true,
+        test: {
+          name: "perf",
+          environment: "jsdom",
+          include: ["src/**/__tests__/**/*-perf.test.ts"],
+          setupFiles: ["./src/tecton/__tests__/setup.ts"],
+          fileParallelism: false,
+          sequence: { groupOrder: 1 },
         },
       },
       {

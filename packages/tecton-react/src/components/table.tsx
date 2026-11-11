@@ -7,8 +7,6 @@ import {
   TableGridProvider,
   useTableGrid,
   useTableRow,
-  type TableGridProps,
-  type TableRowProps,
 } from "../tecton/internal/table-grid"
 import {
   TableVirtualProvider,
@@ -20,16 +18,22 @@ import {
 
 function Table({
   className,
+  size = "default",
+  striped = false,
   virtualized = false,
   ...props
-}: Omit<React.ComponentProps<"table">, "defaultValue"> & {
+}: React.ComponentProps<"table"> & {
+  /** `sm` is compact: shorter header and rows, smaller text. */
+  size?: "default" | "sm"
+  /** Every even body row on an alternate surface. */
+  striped?: boolean
   /**
    * Renders only the rows in view. The table fills and scrolls in its
    * parent, which needs a bounded height; rows are one height and the
    * header sticks to the top.
    */
   virtualized?: boolean
-} & TableGridProps) {
+}) {
   const virtual = useTableVirtualizer(virtualized)
   const grid = useTableGrid(props)
   return (
@@ -43,9 +47,11 @@ function Table({
     >
       <table
         data-slot="table"
+        data-size={size}
+        data-striped={striped ? "" : undefined}
         aria-rowcount={virtual.rowCount}
         className={cn(
-          "w-full caption-bottom text-sm",
+          "w-full caption-bottom text-sm data-[size=sm]:text-xs",
           virtual.tableClassName,
           className
         )}
@@ -105,12 +111,12 @@ function TableFooter({ className, ...props }: React.ComponentProps<"tfoot">) {
   )
 }
 
-function TableRow({ className, ...props }: TableRowProps) {
+function TableRow({ className, ...props }: React.ComponentProps<"tr">) {
   return (
     <tr
       data-slot="table-row"
       className={cn(
-        "data-[state=selected]:bg-table-active data-selected:bg-table-active border-border-subtle border-b transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring has-aria-expanded:bg-muted/50 data-disabled:text-muted-foreground",
+        "data-[state=selected]:bg-table-active data-selected:bg-table-active border-border-subtle [&:where([data-striped]>tbody>:nth-child(even))]:bg-surface-alt border-b transition-colors hover:bg-accent focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring has-aria-expanded:bg-muted/50 data-disabled:text-muted-foreground",
         className
       )}
       {...useTableRow(props)}
@@ -123,7 +129,7 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "bg-table-header h-12 px-4 text-start align-middle font-medium whitespace-nowrap text-muted-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring [&:has([role=checkbox])]:pe-0",
+        "bg-table-header h-12 px-4 text-start align-middle font-medium whitespace-nowrap text-muted-foreground focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring [&:has([role=checkbox])]:pe-0 [&[scope=row]]:h-auto [&[scope=row]]:bg-transparent [&[scope=row]]:py-3 [&[scope=row]]:font-normal [&[scope=row]]:text-inherit [:where([data-size=sm]>*>tr)>&]:h-8 [:where([data-size=sm]>*>tr)>&[scope=row]]:py-1",
         className
       )}
       {...props}
@@ -136,7 +142,7 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "px-4 py-3 align-middle whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring [&:has([role=checkbox])]:pe-0",
+        "px-4 py-3 align-middle whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-ring [&:has([role=checkbox])]:pe-0 [:where([data-size=sm]>*>tr)>&]:py-1",
         className
       )}
       {...props}

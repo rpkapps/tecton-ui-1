@@ -46,6 +46,49 @@ export default defineTranslations({
     ascendingSort: "gesorteerd in oplopende volgorde in kolom {columnName}",
     descendingSort: "gesorteerd in aflopende volgorde in kolom {columnName}",
   },
+  dataTable: {
+    loading: "Laden",
+    emptyTitle: "Geen rijen",
+    emptyDescription: "Er is hier nog niets om weer te geven.",
+    noResultsTitle: "Geen resultaten",
+    noResultsDescription:
+      "Er zijn geen rijen die overeenkomen met de zoekopdracht en de filters.",
+    clearFilters: "Filters wissen",
+    errorTitle: "De rijen konden niet worden geladen",
+    errorDescription: "Er is iets misgegaan bij het laden van de gegevens.",
+    retry: "Opnieuw proberen",
+    rowsPerPage: "Rijen per pagina",
+    pageInfo: "Pagina {page} van {pageCount}",
+    pagination: "Paginering",
+    firstPage: "Eerste pagina",
+    previousPage: "Vorige pagina",
+    nextPage: "Volgende pagina",
+    lastPage: "Laatste pagina",
+    selectedCount: {
+      one: "{selected} van {total} geselecteerd",
+      other: "{selected} van {total} geselecteerd",
+    },
+    selectAllMatching: {
+      one: "{total} rij selecteren",
+      other: "Alle {total} rijen selecteren",
+    },
+    clearSelection: "Selectie wissen",
+    rowsLoaded: {
+      one: "{total} rij wordt weergegeven",
+      other: "{total} rijen worden weergegeven",
+    },
+    sortPositionAscending:
+      "gesorteerd in oplopende volgorde, {position} van {total} in de sorteervolgorde",
+    sortPositionDescending:
+      "gesorteerd in aflopende volgorde, {position} van {total} in de sorteervolgorde",
+    sortAddedAscending:
+      "{columnName} oplopend gesorteerd, {position} van {total}",
+    sortAddedDescending:
+      "{columnName} aflopend gesorteerd, {position} van {total}",
+    sortCleared: "{columnName} niet meer gesorteerd",
+    yes: "Ja",
+    no: "Nee",
+  },
   tableColumnResizer: {
     resize: "Formaat van {columnName} wijzigen",
   },

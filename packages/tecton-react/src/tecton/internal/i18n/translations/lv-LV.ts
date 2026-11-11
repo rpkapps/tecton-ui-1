@@ -46,6 +46,52 @@ export default defineTranslations({
     ascendingSort: "kārtots pēc kolonnas {columnName} augošā secībā",
     descendingSort: "kārtots pēc kolonnas {columnName} dilstošā secībā",
   },
+  dataTable: {
+    loading: "Notiek ielāde",
+    emptyTitle: "Nav rindu",
+    emptyDescription: "Šeit vēl nav ko rādīt.",
+    noResultsTitle: "Nav rezultātu",
+    noResultsDescription:
+      "Meklēšanas un filtru kritērijiem neatbilst neviena rinda.",
+    clearFilters: "Notīrīt filtrus",
+    errorTitle: "Rindas nevarēja ielādēt",
+    errorDescription: "Ielādējot datus, radās kļūda.",
+    retry: "Mēģināt vēlreiz",
+    rowsPerPage: "Rindas lapā",
+    pageInfo: "Lapa {page} no {pageCount}",
+    pagination: "Lappušu navigācija",
+    firstPage: "Pirmā lapa",
+    previousPage: "Iepriekšējā lapa",
+    nextPage: "Nākamā lapa",
+    lastPage: "Pēdējā lapa",
+    selectedCount: {
+      zero: "Atlasītas {selected} no {total}",
+      one: "Atlasīta {selected} no {total}",
+      other: "Atlasītas {selected} no {total}",
+    },
+    selectAllMatching: {
+      zero: "Atlasīt visas {total} rindas",
+      one: "Atlasīt {total} rindu",
+      other: "Atlasīt visas {total} rindas",
+    },
+    clearSelection: "Notīrīt atlasi",
+    rowsLoaded: {
+      zero: "Rāda {total} rindu",
+      one: "Rāda {total} rindu",
+      other: "Rāda {total} rindas",
+    },
+    sortPositionAscending:
+      "kārtots augošā secībā, {position} no {total} kārtošanas secībā",
+    sortPositionDescending:
+      "kārtots dilstošā secībā, {position} no {total} kārtošanas secībā",
+    sortAddedAscending:
+      "{columnName} sakārtots augošā secībā, {position} no {total}",
+    sortAddedDescending:
+      "{columnName} sakārtots dilstošā secībā, {position} no {total}",
+    sortCleared: "{columnName} vairs nav sakārtots",
+    yes: "Jā",
+    no: "Nē",
+  },
   tableColumnResizer: {
     resize: "Mainīt kolonnas {columnName} izmēru",
   },

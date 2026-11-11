@@ -47,6 +47,44 @@ const enUS = {
     ascendingSort: "sorted by column {columnName} in ascending order",
     descendingSort: "sorted by column {columnName} in descending order",
   },
+  dataTable: {
+    loading: "Loading",
+    emptyTitle: "No rows",
+    emptyDescription: "There is nothing to show here yet.",
+    noResultsTitle: "No results",
+    noResultsDescription: "No rows match the search and filters.",
+    clearFilters: "Clear filters",
+    errorTitle: "The rows could not be loaded",
+    errorDescription: "Something went wrong while loading the data.",
+    retry: "Retry",
+    rowsPerPage: "Rows per page",
+    pageInfo: "Page {page} of {pageCount}",
+    pagination: "Pagination",
+    firstPage: "First page",
+    previousPage: "Previous page",
+    nextPage: "Next page",
+    lastPage: "Last page",
+    // The plural form follows the number of selected rows ({selected});
+    // {total} is the number of rows the view matches. Both are formatted.
+    selectedCount: { other: "{selected} of {total} selected" },
+    // The plural form follows the number of rows to select ({total}).
+    selectAllMatching: { other: "Select all {total}" },
+    clearSelection: "Clear selection",
+    // Read after a load: the plural form follows the number of rows ({total}).
+    rowsLoaded: { one: "Showing {total} row", other: "Showing {total} rows" },
+    // In a sort button, when the table sorts by several columns.
+    sortPositionAscending:
+      "sorted in ascending order, {position} of {total} in sort order",
+    sortPositionDescending:
+      "sorted in descending order, {position} of {total} in sort order",
+    // Announced when a column joins or changes place in a multi-column sort.
+    sortAddedAscending: "{columnName} sorted ascending, {position} of {total}",
+    sortAddedDescending:
+      "{columnName} sorted descending, {position} of {total}",
+    sortCleared: "{columnName} no longer sorted",
+    yes: "Yes",
+    no: "No",
+  },
   tableColumnResizer: {
     resize: "Resize {columnName}",
   },

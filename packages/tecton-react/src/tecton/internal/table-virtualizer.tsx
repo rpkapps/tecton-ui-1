@@ -26,6 +26,8 @@
  *   it.
  * - The row holding focus stays mounted when it scrolls out of view, so a
  *   focused checkbox or link is never lost.
+ * - Each row keeps the `nth-child` parity of its index, so a striped
+ *   table's stripes stay on their rows as rows mount and unmount.
  * - The table announces its true size: `aria-rowcount` on the table and
  *   `aria-rowindex` on each rendered row.
  *
@@ -36,7 +38,7 @@ import * as React from "react"
 
 import { useVirtualList } from "./primitives/virtual-list"
 import {
-  describeRowElement,
+  useTableGridConfig,
   useTableGridContext,
   type RowDescription,
   type TableGridBody,
@@ -285,72 +287,6 @@ type TableBodyRowsProps<T> = Omit<React.ComponentProps<"tbody">, "children"> & {
   children?: React.ReactNode | RenderRow<T>
   /** Shown in a single row across every column when there are no rows. */
   empty?: React.ReactNode
-  /**
-   * In a grid table, the id of an item's row: its `value` in the table's
-   * selection and `onActivate`. `item.id` by default.
-   */
-  itemToId?: (item: T) => string
-  /** In a grid table, whether an item's row is disabled. */
-  isItemDisabled?: (item: T) => boolean
-}
-
-// Declared here: the package's declaration build has no Node types.
-declare const process: { env: { NODE_ENV?: string } }
-
-/** Development builds only; a consumer's bundler replaces `process.env.NODE_ENV`. */
-function isDevelopment() {
-  try {
-    return process.env.NODE_ENV !== "production"
-  } catch {
-    return false
-  }
-}
-
-/** A row's own `value` differed from its item's id (said once). */
-let warnedValue = false
-
-/** `item.id` as a string, when the item has one. */
-function defaultItemId(item: unknown): string | undefined {
-  if (typeof item !== "object" || item === null || !("id" in item))
-    return undefined
-  const { id } = item
-  return typeof id === "string" || typeof id === "number"
-    ? String(id)
-    : undefined
-}
-
-/**
- * A row rendered from an item, with the item's id as its `value` and
- * disabled when the item is: on the row, or on the element a part
- * renders it through (`<ReorderableItem render={<TableRow />}>`).
- */
-function withItemProps(
-  row: React.ReactNode,
-  id: string | undefined,
-  disabled: boolean
-): React.ReactNode {
-  if (!React.isValidElement<Record<string, unknown>>(row)) return row
-  const inner = row.props.render
-  const target = React.isValidElement<Record<string, unknown>>(inner)
-    ? inner
-    : row
-  const patch: Record<string, unknown> = {}
-  if (id !== undefined && target.props.value !== id) {
-    if (target.props.value !== undefined && !warnedValue && isDevelopment()) {
-      warnedValue = true
-      console.warn(
-        `TableBody: a row's value (${String(target.props.value)}) is not its item's id (${id}). Rows from items take their item's id: pass itemToId to choose it.`
-      )
-    }
-    patch.value = id
-  }
-  if (disabled && target.props.disabled !== true) patch.disabled = true
-  if (Object.keys(patch).length === 0) return row
-  return target === row
-    ? React.cloneElement(row, patch)
-    : React.cloneElement(row, {
-        render: React.cloneElement(inner as React.ReactElement, patch),
-      })
 }
 
 /** The row `empty` is shown in, across `columns` columns. */
@@ -395,8 +331,6 @@ function useVirtualRows<T>(
     items,
     children,
     empty,
-    itemToId,
-    isItemDisabled,
     ref,
     onFocus: ownFocus,
     onBlur: ownBlur,
@@ -404,28 +338,9 @@ function useVirtualRows<T>(
   } = props
   const context = React.useContext(TableVirtualContext)
   const grid = useTableGridContext()
+  const describeItem = useTableGridConfig()?.describeItem
   const virtualized = context !== null
-  const ownRender = typeof children === "function" ? children : null
-  // In a grid table, a row from an item is identified by the item. The
-  // accessors are read when called: inline ones keep the rows rendered.
-  const accessors = React.useRef({ itemToId, isItemDisabled })
-  accessors.current = { itemToId, isItemDisabled }
-  const toId = React.useCallback(
-    (item: T) => (accessors.current.itemToId ?? defaultItemId)(item),
-    []
-  )
-  const isOff = React.useCallback(
-    (item: T) => accessors.current.isItemDisabled?.(item) ?? false,
-    []
-  )
-  const render = React.useMemo<RenderRow<T> | null>(
-    () =>
-      ownRender && grid
-        ? (item, index) =>
-            withItemProps(ownRender(item, index), toId(item), isOff(item))
-        : ownRender,
-    [ownRender, grid, toId, isOff]
-  )
+  const render = typeof children === "function" ? children : null
   const elements = React.useMemo(
     () =>
       virtualized && !(items && render)
@@ -489,10 +404,11 @@ function useVirtualRows<T>(
     const rendered =
       body.current.querySelectorAll<HTMLElement>("tr[data-index]")
     // Only when something that sets the rows' height may have changed (the
-    // table's classes: density; the view; the fonts; the first rows), not
+    // table's classes and size; the view; the fonts; the first rows), not
     // on every scroll: reading a size lays the page out.
     const key = [
       table?.className,
+      table?.dataset.size,
       virtual.viewHeight,
       fonts,
       Math.min(rendered.length, 2),
@@ -537,41 +453,18 @@ function useVirtualRows<T>(
   })
 
   // The grid reaches the rows out of view through the body: how many
-  // there are, what they are (read from their elements, only when asked),
-  // and scrolling one into view to focus it.
+  // there are, what they are (read from their items), and scrolling one
+  // into view to focus it.
   const latestCount = React.useRef(count)
   latestCount.current = count
-  // Rows from items are read from their items: their id and whether they
-  // are disabled. Anything else (a row's text for type-ahead, its level)
-  // and items without an id render that one row.
   const reader = React.useMemo(() => {
-    if (!virtualized) return null
-    const one = new Map<number, RowDescription>()
-    const describeAt = (index: number): RowDescription => {
-      let row = one.get(index)
-      if (!row) {
-        row = describeRowElement(
-          items && render ? render(items[index], index) : elements[index]
-        )
-        one.set(index, row)
-      }
-      return row
+    if (!virtualized || !items || !render || !describeItem) return null
+    const read = describeItem as (item: T, index: number) => RowDescription
+    return {
+      describe: () => items.map(read),
+      describeAt: (index: number) => read(items[index], index),
     }
-    const describe = (): Array<RowDescription> => {
-      if (!(items && render)) return elements.map(describeRowElement)
-      return items.map((item, index) => {
-        const id = toId(item)
-        if (id === undefined) return describeAt(index)
-        return {
-          value: id,
-          textValue: undefined,
-          disabled: isOff(item),
-          level: undefined,
-        }
-      })
-    }
-    return { describe, describeAt }
-  }, [virtualized, items, render, elements, toId, isOff])
+  }, [virtualized, items, render, describeItem])
   const describe = reader?.describe ?? null
   const describeAt = reader?.describeAt ?? null
   const scrollToIndex = virtual.scrollToIndex
@@ -668,11 +561,19 @@ function useVirtualRows<T>(
       />
     </tr>
   )
+  // Every row keeps the parity of its index among the body's children, so
+  // `nth-child` (a striped table) is the same whichever rows are mounted:
+  // an empty row makes up the difference before a row that would shift.
+  const parity = (key: string) => (
+    <tr key={key} aria-hidden="true" data-slot="table-virtual-parity" />
+  )
   const rendered: Array<React.ReactNode> = []
   let previous = -1
   for (const index of virtual.indices) {
     if (index > previous + 1)
       rendered.push(spacer(`spacer-${index}`, index - previous - 1))
+    if (rendered.length % 2 !== index % 2)
+      rendered.push(parity(`parity-${index}`))
     const rowIndex = headerRows + index + 1
     const kept = previousRows.get(index)
     let row: React.ReactNode

@@ -1359,7 +1359,7 @@
   }
 
   .cn-table {
-    @apply w-full caption-bottom text-sm;
+    @apply w-full caption-bottom text-sm data-[size=sm]:text-xs;
   }
 
   .cn-table-header {
@@ -1374,16 +1374,23 @@
     @apply bg-muted text-muted-foreground border-t-0 font-normal [&>tr]:last:border-b-0;
   }
 
+  /* The size and stripe conditions are in a :where(), so they weigh no more
+     than the part's own class: hover, selected and expanded fills win over
+     the stripe. The direct-child chains reach only the table's own rows and
+     cells, never a nested table's (nor, for the stripe, the footer's). */
   .cn-table-row {
-    @apply hover:bg-accent data-[state=selected]:bg-table-active data-selected:bg-table-active data-disabled:text-muted-foreground focus-visible:outline-ring border-border-subtle border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2;
+    @apply hover:bg-accent data-[state=selected]:bg-table-active data-selected:bg-table-active data-disabled:text-muted-foreground focus-visible:outline-ring border-border-subtle border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 [&:where([data-striped]>tbody>:nth-child(even))]:bg-surface-alt;
   }
 
   .cn-table-row-aria {
     @apply data-selected:bg-table-active;
   }
 
+  /* A row header (`scope="row"`) in the body reads as one of its row's
+     cells: their padding, weight, colour and background, at either size.
+     The attribute weighs one class more than the header's own rules. */
   .cn-table-head {
-    @apply bg-table-header text-muted-foreground focus-visible:outline-ring h-12 px-4 text-left align-middle font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 [&:has([role=checkbox])]:pr-0;
+    @apply bg-table-header text-muted-foreground focus-visible:outline-ring h-12 px-4 text-left align-middle font-medium whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 [:where([data-size=sm]>*>tr)>&]:h-8 [&:has([role=checkbox])]:pr-0 [&[scope=row]]:h-auto [&[scope=row]]:bg-transparent [&[scope=row]]:py-3 [&[scope=row]]:font-normal [&[scope=row]]:text-inherit [:where([data-size=sm]>*>tr)>&[scope=row]]:py-1;
   }
 
   .cn-table-head-aria {
@@ -1391,7 +1398,7 @@
   }
 
   .cn-table-cell {
-    @apply focus-visible:outline-ring px-4 py-3 align-middle whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 [&:has([role=checkbox])]:pr-0;
+    @apply focus-visible:outline-ring px-4 py-3 align-middle whitespace-nowrap focus-visible:outline-2 focus-visible:-outline-offset-2 [:where([data-size=sm]>*>tr)>&]:py-1 [&:has([role=checkbox])]:pr-0;
   }
 
   .cn-table-cell-aria {

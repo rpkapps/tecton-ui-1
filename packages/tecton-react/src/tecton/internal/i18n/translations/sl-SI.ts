@@ -48,6 +48,54 @@ export default defineTranslations({
     descendingSort:
       "razvrščeno po stolpcu {columnName} v padajočem vrstnem redu",
   },
+  dataTable: {
+    loading: "Nalaganje",
+    emptyTitle: "Ni vrstic",
+    emptyDescription: "Tukaj še ni ničesar za prikaz.",
+    noResultsTitle: "Ni rezultatov",
+    noResultsDescription: "Nobena vrstica se ne ujema z iskanjem in filtri.",
+    clearFilters: "Počistite filtre",
+    errorTitle: "Vrstic ni bilo mogoče naložiti",
+    errorDescription: "Pri nalaganju podatkov je prišlo do napake.",
+    retry: "Poskusite znova",
+    rowsPerPage: "Vrstic na stran",
+    pageInfo: "Stran {page} od {pageCount}",
+    pagination: "Ostranjevanje",
+    firstPage: "Prva stran",
+    previousPage: "Prejšnja stran",
+    nextPage: "Naslednja stran",
+    lastPage: "Zadnja stran",
+    selectedCount: {
+      one: "Izbrana je {selected} od {total}",
+      two: "Izbrani sta {selected} od {total}",
+      few: "Izbrane so {selected} od {total}",
+      other: "Izbranih je {selected} od {total}",
+    },
+    selectAllMatching: {
+      one: "Izberite {total} vrstico",
+      two: "Izberite {total} vrstici",
+      few: "Izberite vse {total} vrstice",
+      other: "Izberite vseh {total} vrstic",
+    },
+    clearSelection: "Počistite izbor",
+    rowsLoaded: {
+      one: "Prikazana je {total} vrstica",
+      two: "Prikazani sta {total} vrstici",
+      few: "Prikazane so {total} vrstice",
+      other: "Prikazanih je {total} vrstic",
+    },
+    sortPositionAscending:
+      "razvrščeno v naraščajočem vrstnem redu, {position} od {total} v vrstnem redu razvrščanja",
+    sortPositionDescending:
+      "razvrščeno v padajočem vrstnem redu, {position} od {total} v vrstnem redu razvrščanja",
+    sortAddedAscending:
+      "{columnName} razvrščeno naraščajoče, {position} od {total}",
+    sortAddedDescending:
+      "{columnName} razvrščeno padajoče, {position} od {total}",
+    sortCleared: "{columnName} ni več razvrščeno",
+    yes: "Da",
+    no: "Ne",
+  },
   tableColumnResizer: {
     resize: "Spremeni velikost stolpca {columnName}",
   },

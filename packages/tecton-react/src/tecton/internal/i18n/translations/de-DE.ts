@@ -48,6 +48,48 @@ export default defineTranslations({
     descendingSort:
       "sortiert nach Spalte {columnName} in absteigender Reihenfolge",
   },
+  dataTable: {
+    loading: "Wird geladen",
+    emptyTitle: "Keine Zeilen",
+    emptyDescription: "Hier gibt es noch nichts anzuzeigen.",
+    noResultsTitle: "Keine Ergebnisse",
+    noResultsDescription: "Keine Zeilen entsprechen der Suche und den Filtern.",
+    clearFilters: "Filter zurücksetzen",
+    errorTitle: "Die Zeilen konnten nicht geladen werden",
+    errorDescription: "Beim Laden der Daten ist ein Fehler aufgetreten.",
+    retry: "Erneut versuchen",
+    rowsPerPage: "Zeilen pro Seite",
+    pageInfo: "Seite {page} von {pageCount}",
+    pagination: "Seitennavigation",
+    firstPage: "Erste Seite",
+    previousPage: "Vorherige Seite",
+    nextPage: "Nächste Seite",
+    lastPage: "Letzte Seite",
+    selectedCount: {
+      one: "{selected} von {total} ausgewählt",
+      other: "{selected} von {total} ausgewählt",
+    },
+    selectAllMatching: {
+      one: "{total} Zeile auswählen",
+      other: "Alle {total} Zeilen auswählen",
+    },
+    clearSelection: "Auswahl aufheben",
+    rowsLoaded: {
+      one: "{total} Zeile wird angezeigt",
+      other: "{total} Zeilen werden angezeigt",
+    },
+    sortPositionAscending:
+      "sortiert in aufsteigender Reihenfolge, {position} von {total} in der Sortierreihenfolge",
+    sortPositionDescending:
+      "sortiert in absteigender Reihenfolge, {position} von {total} in der Sortierreihenfolge",
+    sortAddedAscending:
+      "{columnName} aufsteigend sortiert, {position} von {total}",
+    sortAddedDescending:
+      "{columnName} absteigend sortiert, {position} von {total}",
+    sortCleared: "{columnName} nicht mehr sortiert",
+    yes: "Ja",
+    no: "Nein",
+  },
   tableColumnResizer: {
     resize: "Größe von {columnName} ändern",
   },

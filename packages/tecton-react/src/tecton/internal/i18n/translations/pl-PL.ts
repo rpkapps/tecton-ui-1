@@ -48,6 +48,54 @@ export default defineTranslations({
     descendingSort:
       "posortowano według kolumny {columnName} w porządku malejącym",
   },
+  dataTable: {
+    loading: "Ładowanie",
+    emptyTitle: "Brak wierszy",
+    emptyDescription: "Nie ma tu jeszcze nic do wyświetlenia.",
+    noResultsTitle: "Brak wyników",
+    noResultsDescription: "Żaden wiersz nie pasuje do wyszukiwania i filtrów.",
+    clearFilters: "Wyczyść filtry",
+    errorTitle: "Nie udało się załadować wierszy",
+    errorDescription: "Podczas ładowania danych wystąpił błąd.",
+    retry: "Spróbuj ponownie",
+    rowsPerPage: "Wiersze na stronie",
+    pageInfo: "Strona {page} z {pageCount}",
+    pagination: "Paginacja",
+    firstPage: "Pierwsza strona",
+    previousPage: "Poprzednia strona",
+    nextPage: "Następna strona",
+    lastPage: "Ostatnia strona",
+    selectedCount: {
+      one: "Zaznaczono {selected} z {total}",
+      few: "Zaznaczono {selected} z {total}",
+      many: "Zaznaczono {selected} z {total}",
+      other: "Zaznaczono {selected} z {total}",
+    },
+    selectAllMatching: {
+      one: "Zaznacz {total} wiersz",
+      few: "Zaznacz wszystkie {total} wiersze",
+      many: "Zaznacz wszystkie {total} wierszy",
+      other: "Zaznacz wszystkie {total} wiersza",
+    },
+    clearSelection: "Wyczyść zaznaczenie",
+    rowsLoaded: {
+      one: "Wyświetlany jest {total} wiersz",
+      few: "Wyświetlane są {total} wiersze",
+      many: "Wyświetlanych jest {total} wierszy",
+      other: "Wyświetlane jest {total} wiersza",
+    },
+    sortPositionAscending:
+      "posortowano w porządku rosnącym, {position} z {total} w kolejności sortowania",
+    sortPositionDescending:
+      "posortowano w porządku malejącym, {position} z {total} w kolejności sortowania",
+    sortAddedAscending:
+      "{columnName} posortowano rosnąco, {position} z {total}",
+    sortAddedDescending:
+      "{columnName} posortowano malejąco, {position} z {total}",
+    sortCleared: "{columnName} nie jest już sortowane",
+    yes: "Tak",
+    no: "Nie",
+  },
   tableColumnResizer: {
     resize: "Zmień rozmiar kolumny {columnName}",
   },

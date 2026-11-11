@@ -48,6 +48,50 @@ export default defineTranslations({
     descendingSort:
       "sortate după coloana {columnName} în ordine descrescătoare",
   },
+  dataTable: {
+    loading: "Se încarcă",
+    emptyTitle: "Niciun rând",
+    emptyDescription: "Încă nu există nimic de afișat aici.",
+    noResultsTitle: "Niciun rezultat",
+    noResultsDescription: "Niciun rând nu corespunde căutării și filtrelor.",
+    clearFilters: "Ștergeți filtrele",
+    errorTitle: "Rândurile nu au putut fi încărcate",
+    errorDescription: "A apărut o eroare la încărcarea datelor.",
+    retry: "Reîncercați",
+    rowsPerPage: "Rânduri pe pagină",
+    pageInfo: "Pagina {page} din {pageCount}",
+    pagination: "Paginare",
+    firstPage: "Prima pagină",
+    previousPage: "Pagina anterioară",
+    nextPage: "Pagina următoare",
+    lastPage: "Ultima pagină",
+    selectedCount: {
+      one: "{selected} din {total} selectat",
+      few: "{selected} din {total} selectate",
+      other: "{selected} din {total} selectate",
+    },
+    selectAllMatching: {
+      one: "Selectați {total} rând",
+      few: "Selectați toate cele {total} rânduri",
+      other: "Selectați toate cele {total} de rânduri",
+    },
+    clearSelection: "Anulați selecția",
+    rowsLoaded: {
+      one: "Se afișează {total} rând",
+      few: "Se afișează {total} rânduri",
+      other: "Se afișează {total} de rânduri",
+    },
+    sortPositionAscending:
+      "sortat în ordine crescătoare, {position} din {total} în ordinea de sortare",
+    sortPositionDescending:
+      "sortat în ordine descrescătoare, {position} din {total} în ordinea de sortare",
+    sortAddedAscending: "{columnName} sortat crescător, {position} din {total}",
+    sortAddedDescending:
+      "{columnName} sortat descrescător, {position} din {total}",
+    sortCleared: "{columnName} nu mai este sortat",
+    yes: "Da",
+    no: "Nu",
+  },
   tableColumnResizer: {
     resize: "Redimensionați {columnName}",
   },
