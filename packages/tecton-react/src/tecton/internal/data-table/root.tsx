@@ -115,6 +115,11 @@ import {
 import { viewChangeReason } from "./view-reason"
 import { createWarnings, type Warn } from "./warnings"
 
+// Development only: every warning is behind this test, written out at its
+// call site so that a consumer's bundler, replacing `process.env.NODE_ENV`,
+// drops it and its message from a production build (`warnings.ts`).
+declare const process: { env: { NODE_ENV?: string } }
+
 type DataTableProps<T> = Omit<
   React.ComponentProps<"div">,
   "defaultValue" | "onChange"
@@ -770,10 +775,14 @@ function createActions<T>(
       if (current.cellSelectionMode === "cell") {
         const last = next.filter((range) => range.rows && range.columns).at(-1)
         if (next.length && !last) {
-          warn(
-            "cell-mode-whole-axis",
-            'DataTable: `cellSelectionMode="cell"` selects one cell, not whole rows, columns or every cell: the selection is left as it was.'
+          if (
+            typeof process !== "undefined" &&
+            process.env.NODE_ENV !== "production"
           )
+            warn(
+              "cell-mode-whole-axis",
+              'DataTable: `cellSelectionMode="cell"` selects one cell, not whole rows, columns or every cell: the selection is left as it was.'
+            )
           return false
         }
         ranges =
@@ -1258,6 +1267,7 @@ function DataTable<T>({
   const [cells] = React.useState(() =>
     createStore<CellsState>({
       grid: cellGrid as CellsState["grid"],
+      waiting: cellMode && cellSelection.length > 0 && !cellGrid,
       marks: NO_MARKS,
       writer: null,
       change: null,
@@ -1269,8 +1279,11 @@ function DataTable<T>({
   })
   React.useLayoutEffect(() => {
     store.set(state)
-    cells.set({ grid: cellGrid as CellsState["grid"] })
-  }, [store, cells, state, cellGrid])
+    cells.set({
+      grid: cellGrid as CellsState["grid"],
+      waiting: cellMode && cellSelection.length > 0 && !cellGrid,
+    })
+  }, [store, cells, state, cellGrid, cellMode, cellSelection])
 
   const previous = React.useRef({ view, page })
   React.useLayoutEffect(() => {
@@ -1307,7 +1320,11 @@ function DataTable<T>({
       const { leaves, groups } = getColumnModel(handle)
       return [...leaves.map((leaf) => leaf.id), ...groups.keys()].join(" ")
     }
-    if (ids(previous) === ids(columns))
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      ids(previous) === ids(columns)
+    )
       warn(
         "inline-columns",
         "DataTable: `columns` is a new object on every render, with the same columns, so every row renders again on every change (a selection, a page). Make the columns once with `createColumns` at module level, or in a `React.useMemo`."
@@ -1317,12 +1334,20 @@ function DataTable<T>({
   const { idIssues } = model
   React.useEffect(() => {
     const { missingIds, duplicateIds } = idIssues
-    if (missingIds > 0)
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      missingIds > 0
+    )
       warn(
         "missing-ids",
         `DataTable: ${missingIds} ${missingIds === 1 ? "item has" : "items have"} no id. Rows are selected, opened and kept across sorting by id: give each item an \`id\`, or pass \`itemToId\`.`
       )
-    if (duplicateIds.length > 0)
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      duplicateIds.length > 0
+    )
       warn(
         "duplicate-ids",
         `DataTable: more than one item has the id ${duplicateIds
@@ -1335,28 +1360,47 @@ function DataTable<T>({
   }, [warn, idIssues])
   const hidesAll = hidesEveryColumn(columns, rawView.columns?.hidden)
   React.useEffect(() => {
-    if (hidesAll)
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      hidesAll
+    )
       warn(
         "hides-every-column",
         "DataTable: the view hides every column; the first column in its order stays shown."
       )
   }, [warn, hidesAll])
   React.useEffect(() => {
-    if (groupable && tree)
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      groupable &&
+      tree
+    )
       warn(
         "groupable-tree",
         "DataTable: `groupable` is off in a tree (`itemToChildren`): a tree's rows nest by their items, so they are not grouped."
       )
   }, [warn, groupable, tree])
   React.useEffect(() => {
-    if (reorderableRows && tree)
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      reorderableRows &&
+      tree
+    )
       warn(
         "reorderable-rows-tree",
         "DataTable: `reorderableRows` is off in a tree (`itemToChildren`): rows are reordered in a flat list only."
       )
   }, [warn, reorderableRows, tree])
   React.useEffect(() => {
-    if (editable && onCellsChange === undefined)
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      editable &&
+      onCellsChange === undefined
+    )
       warn(
         "editable-without-on-cells-change",
         "DataTable: `editable` without `onCellsChange`: the cells written are reported there; the table does not change `items` itself."
@@ -1364,21 +1408,37 @@ function DataTable<T>({
   }, [warn, editable, onCellsChange])
   const activates = onActivate !== undefined && itemToHref === undefined
   React.useEffect(() => {
-    if (editable && activates)
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      editable &&
+      activates
+    )
       warn(
         "editable-on-activate",
         "DataTable: `onActivate` is not reached from editable cells (Enter, F2 and a double click edit them): activate from a column with `editable: false`, or use `itemToHref`."
       )
   }, [warn, editable, activates])
   React.useEffect(() => {
-    if (hasMore && pagination)
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      hasMore &&
+      pagination
+    )
       warn(
         "has-more-pagination",
         "DataTable: `hasMore` is off with `pagination`: pages are loaded a page at a time (`onPageChange`), not as the user scrolls."
       )
   }, [warn, hasMore, pagination])
   React.useEffect(() => {
-    if (server && pagination && rowCount === undefined)
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      server &&
+      pagination &&
+      rowCount === undefined
+    )
       warn(
         "server-row-count",
         "DataTable: in server mode, pages are counted from `rowCount`: pass the number of rows the view matches, or the table has a single page."

@@ -15,8 +15,10 @@
  *   promises); Ctrl / Cmd + V keeps the paste event's text. Once the code
  *   is there, it handles the clipboard's events itself.
  * - The grid moves focus cell by cell (`TableGridOptions.cellFocus`) and
- *   says where it went (`onCellNavigate`): the selection follows. Tab into
- *   the table is kept too (the code selects the cell it enters).
+ *   says where it went (`onCellNavigate`): the selection follows. Focus
+ *   coming to a cell is kept too: the code tells Tab into the table (which
+ *   selects the cell it enters) from a press. Escape, and a write or copy
+ *   off the data cells, count a move still waiting as a selection.
  * - Keys (on a cell, not in a field): Shift + Space selects the range's
  *   rows, Ctrl + Space its columns, Ctrl / Cmd + A every cell (on a data
  *   cell, or always without row selection: from the checkbox column it
@@ -69,11 +71,11 @@ type CellEvent =
       extend: boolean
       add: boolean
       event: Event
-      /** A press: where it was, and whether it has been let go (a click, no drag). */
-      press?: { x: number; y: number; released: boolean }
+      /** A press, and where it was (a drag may follow). */
+      press?: { x: number; y: number }
     }
-  /** Focus came into the table from outside, not by a press: Tab. */
-  | { kind: "focus"; to: Position; event: Event }
+  /** Focus came to a cell (Tab into the table, if not from a press or from inside: the code tells). */
+  | { kind: "focus"; to: Position; event: FocusEvent }
   | {
       kind: "command"
       command: CellCommand
@@ -233,43 +235,26 @@ function useCellSelection({
           : grid.current?.rowValue(cell?.parentElement as HTMLTableRowElement)
       return column === undefined || row === undefined ? null : { row, column }
     }
-    const hasRanges = () => context.actions.currentCellSelection().length > 0
+    // Ranges, or a move still waiting for the code (which selects).
+    const hasRanges = () =>
+      context.actions.currentCellSelection().length > 0 ||
+      (!handlers.current &&
+        queue.some(
+          (entry) => entry.kind === "navigate" || entry.kind === "focus"
+        ))
     const dispatch = (entry: CellEvent) => {
       const current = handlers.current
       if (current) return current.run(entry)
       queue.push(entry)
-      // A press let go before the code came was a click: no drag.
-      if (entry.kind === "navigate" && entry.press) {
-        const press = entry.press
-        const release = () => {
-          press.released = true
-          window.removeEventListener("mouseup", release, true)
-        }
-        window.addEventListener("mouseup", release, true)
-      }
       load()
     }
-    /** A press in progress: the focus it brings is its own (not Tab's). */
-    let pressing = false
 
-    const onMouseDown = () => {
-      pressing = true
-      setTimeout(() => {
-        pressing = false
-      })
-      load()
-    }
+    // The code, as soon as the table is used.
+    const onMouseDown = () => load()
 
     const onFocus = (event: React.FocusEvent<HTMLTableElement>) => {
       if (!latest.current.on) return
-      // The code, as soon as the table is used.
       load()
-      const from = event.relatedTarget
-      if (
-        pressing ||
-        (from instanceof Node && event.currentTarget.contains(from))
-      )
-        return
       const to = positionOf(
         (event.target as Element | null)?.closest("td, th") ?? null
       )
@@ -364,9 +349,7 @@ function useCellSelection({
         extend,
         add: !!press && (isMac() ? press.metaKey : press.ctrlKey),
         event,
-        press: press
-          ? { x: press.clientX, y: press.clientY, released: false }
-          : undefined,
+        press: press ? { x: press.clientX, y: press.clientY } : undefined,
       })
     }
 

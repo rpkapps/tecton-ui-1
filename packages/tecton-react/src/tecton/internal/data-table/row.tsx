@@ -79,7 +79,7 @@ import {
   type GroupRow,
   type ItemRow,
 } from "./engine/index"
-import { isCellEditable } from "./cell-marks"
+import { isCellEditable, UNKNOWN } from "./cell-marks"
 import { DataTableRowHandle } from "./row-order"
 import { DataTableSelectionCheckbox } from "./selection-checkbox"
 
@@ -133,8 +133,12 @@ function rowIndex<T>(
     : given
 }
 
+/** A row's marks while a selection given is still to be resolved. */
+const WAITING = "?"
+
 const NO_CELLS: Store<CellsState> = createStore<CellsState>({
   grid: null,
+  waiting: false,
   marks: new Map(),
   writer: null,
   change: null,
@@ -147,7 +151,10 @@ function ItemRowComponent<T>({
 }: RowProps<ItemRow<T>, T>) {
   const { actions } = shared
   const cells = shared.cells ?? NO_CELLS
-  const marks = useStore(cells, (state) => state.grid?.rowMarks(row.id) ?? "")
+  // `WAITING`: whether a cell is selected is not known yet.
+  const marks = useStore(cells, (state) =>
+    state.grid ? state.grid.rowMarks(row.id) : state.waiting ? WAITING : ""
+  )
   const skipped = useStore(cells, (state) => state.grid?.skipped ?? "")
   const writes = useStore(cells, (state) => state.marks.get(row.id))
   // Set with the first mark, never removed: there whenever `writes` is.
@@ -156,7 +163,7 @@ function ItemRowComponent<T>({
   // Marks come from a grid, which reads them (the code on demand's).
   const flags = React.useMemo(
     () =>
-      marks
+      marks && marks !== WAITING
         ? (cells.get().grid?.decode(marks, columnCount, skipped) ?? null)
         : null,
     [cells, marks, columnCount, skipped]
@@ -231,7 +238,7 @@ function ItemRowComponent<T>({
             index,
             shared,
             inner[index],
-            flags?.[index],
+            marks === WAITING ? UNKNOWN : flags?.[index],
             writes &&
               writer?.shownMark(
                 writes.get(column.id),

@@ -116,8 +116,12 @@ describe("DataTable cell selection on demand", () => {
     const untouched = screen.getByRole("grid", { name: "Untouched" })
     const used = screen.getByRole("grid", { name: "Used" })
     const tabbed = screen.getByRole("grid", { name: "Tabbed" })
-    // Not drawn before the code: every cell can be selected, none is.
-    expect(td(untouched, "Well 0", "field")).toHaveAttribute(
+    // Not drawn before the code, nor said: whether a cell of the selection
+    // given is selected is not known yet. A table without one says "false".
+    expect(td(untouched, "Well 0", "field")).not.toHaveAttribute(
+      "aria-selected"
+    )
+    expect(td(used, "Well 0", "field")).toHaveAttribute(
       "aria-selected",
       "false"
     )

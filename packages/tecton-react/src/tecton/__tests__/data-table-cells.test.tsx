@@ -997,10 +997,10 @@ describe("DataTable cell selection on the server", () => {
     )
     const html = renderToString(table)
     expect(html).toContain('aria-multiselectable="true"')
-    // Every cell can be selected, and none is drawn so yet: the code that
-    // resolves the selection is on demand.
+    // Not drawn yet, nor said: the code that resolves the selection is on
+    // demand, so whether a cell is selected is not known (rows say theirs).
     expect(html).not.toContain('aria-selected="true"')
-    expect(html).toContain('aria-selected="false"')
+    expect(html).not.toMatch(/<t[dh][^>]*aria-selected/)
     expect(html).not.toMatch(/<t[dh][^>]*bg-table-active/)
     expect(html).not.toContain("Count:")
     const container = document.createElement("div")

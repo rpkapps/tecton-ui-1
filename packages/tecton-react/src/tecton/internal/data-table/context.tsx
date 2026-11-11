@@ -35,6 +35,11 @@ import {
 } from "./engine/index"
 import type { Warn } from "./warnings"
 
+// Development only: every warning is behind this test, written out at its
+// call site so that a consumer's bundler, replacing `process.env.NODE_ENV`,
+// drops it and its message from a production build (`warnings.ts`).
+declare const process: { env: { NODE_ENV?: string } }
+
 type DataTableSelectionMode = "none" | "single" | "multiple"
 
 /** Whether cells select: one at a time, or in ranges. */
@@ -218,6 +223,11 @@ type CellWriter = {
 type CellsState = {
   /** The cell selection over the rows and columns shown. */
   readonly grid: CellGrid<unknown> | null
+  /**
+   * A selection is given but not resolved yet (its code is still to
+   * come): whether a cell is selected is not known, so it is not said.
+   */
+  readonly waiting: boolean
   /** The cells being saved or not saved, by row id, then column id. */
   readonly marks: ReadonlyMap<string, ReadonlyMap<string, CellMark>>
   /** How they show, there with the first mark. */
@@ -410,7 +420,11 @@ function useFeatureWarning(
 ) {
   const { warn } = context.actions
   React.useEffect(() => {
-    if (off)
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      off
+    )
       warn(
         `off:${part}`,
         `${part} renders nothing: ${feature} is off on its DataTable.`

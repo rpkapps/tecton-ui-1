@@ -816,6 +816,8 @@ function paste(host: CellHost, pasted: Pasted, event?: Event) {
  */
 function createCellController(environment: CellEnvironment) {
   let stopDrag: (() => void) | null = null
+  /** A press in progress: the focus it brings is its own (not Tab's). */
+  let pressing = false
   const host = (focused: Position | null): CellHost => ({
     context: environment.context,
     t: environment.t(),
@@ -869,25 +871,34 @@ function createCellController(environment: CellEnvironment) {
           entry.press ? "item-press" : "keyboard",
           entry.event
         )
+        // A press let go before this code came (a click) ends its drag at
+        // the pointer's first move.
         if (
           entry.press &&
-          !entry.press.released &&
           environment.context.store.get().options.cellSelectionMode === "range"
         )
           drag(entry.press)
         return
-      case "focus":
-        // Tab into the table: its cell is the selection, if there is none.
-        if (environment.context.actions.currentCellSelection().length === 0)
-          navigate(
-            host(null),
-            entry.to,
-            null,
-            { extend: false, add: false },
-            "keyboard",
-            entry.event
-          )
+      case "focus": {
+        // Tab into the table (not a press, nor a move inside it): its cell
+        // is the selection, if there is none.
+        const from = entry.event.relatedTarget
+        if (
+          pressing ||
+          (from instanceof Node && environment.table()?.contains(from)) ||
+          environment.context.actions.currentCellSelection().length > 0
+        )
+          return
+        navigate(
+          host(null),
+          entry.to,
+          null,
+          { extend: false, add: false },
+          "keyboard",
+          entry.event
+        )
         return
+      }
       case "command":
         runCommand(host(entry.focused), entry.command, entry.event)
         return
@@ -904,6 +915,14 @@ function createCellController(environment: CellEnvironment) {
   let awaited: { handled: boolean } | null = null
 
   const doc = environment.table()?.ownerDocument ?? document
+  const onPress = () => {
+    pressing = true
+    setTimeout(() => {
+      pressing = false
+    })
+  }
+  // Before the grid's own handler, which focuses the cell.
+  doc.addEventListener("mousedown", onPress, true)
   const handle = (event: ClipboardEvent, pasting: boolean) => {
     if (!environment.focusIn()) return
     if (pasting && !environment.context.store.get().options.editable) return
@@ -960,6 +979,7 @@ function createCellController(environment: CellEnvironment) {
     stop: () => {
       stopDrag?.()
       stopDrag = null
+      doc.removeEventListener("mousedown", onPress, true)
       doc.removeEventListener("copy", onCopy)
       doc.removeEventListener("paste", onPaste)
     },
@@ -998,9 +1018,15 @@ function attachCells(side: CellSide): CellHandlers {
   const controller = createCellController(environment)
   const waiting = side.queue.splice(0)
   const focused = environment.focusIn()
-  for (const entry of waiting)
+  waiting.forEach((entry, index) => {
+    // The focus a press brought: the press's (the grid focuses its cell
+    // first).
+    const next = waiting.at(index + 1)
+    if (entry.kind === "focus" && next?.kind === "navigate" && next.press)
+      return
     if (entry.kind === "navigate" || entry.kind === "focus" || focused)
       controller.run(entry)
+  })
   return controller
 }
 

@@ -32,5 +32,7 @@ const TOP = 2
 const BOTTOM = 4
 const START = 8
 const END = 16
+/** Not known yet (a selection given, its code still to come): neither selected nor not. */
+const UNKNOWN = -1
 
-export { BOTTOM, END, isCellEditable, SELECTED, START, TOP }
+export { BOTTOM, END, isCellEditable, SELECTED, START, TOP, UNKNOWN }

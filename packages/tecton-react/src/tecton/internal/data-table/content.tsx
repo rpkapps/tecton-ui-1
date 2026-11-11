@@ -102,6 +102,11 @@ import {
   loadingRows,
 } from "./states"
 
+// Development only: every warning is behind this test, written out at its
+// call site so that a consumer's bundler, replacing `process.env.NODE_ENV`,
+// drops it and its message from a production build (`warnings.ts`).
+declare const process: { env: { NODE_ENV?: string } }
+
 type DataTableContentProps<T = unknown> = Omit<
   React.ComponentProps<"div">,
   "children"
@@ -617,7 +622,12 @@ function DataTableContentImpl({
     [detail, options.pagination, open, model]
   )
   React.useEffect(() => {
-    if (renderDetail !== undefined && options.tree)
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      renderDetail !== undefined &&
+      options.tree
+    )
       actions.warn(
         "detail-tree",
         "DataTableContent: `renderDetail` is off in a tree (`itemToChildren`): a tree's rows open to show their children."
@@ -1020,7 +1030,11 @@ function DataTableContentImpl({
   React.useEffect(() => {
     if (!virtualized) return
     const wrapped = layout.columns.filter((column) => column.definition.wrap)
-    if (wrapped.length > 0)
+    if (
+      typeof process !== "undefined" &&
+      process.env.NODE_ENV !== "production" &&
+      wrapped.length > 0
+    )
       actions.warn(
         "wrap-virtualized",
         `DataTableContent: \`wrap\` is off for ${wrapped

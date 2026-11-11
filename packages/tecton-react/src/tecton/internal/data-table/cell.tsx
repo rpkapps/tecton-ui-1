@@ -45,7 +45,7 @@ import { TableCell, TableHead } from "@tecton/react/components/table"
 import { Link } from "@tecton/react/tecton/link"
 
 import type { Store } from "../store"
-import { BOTTOM, END, SELECTED, START, TOP } from "./cell-marks"
+import { BOTTOM, END, SELECTED, START, TOP, UNKNOWN } from "./cell-marks"
 import type {
   CellMark,
   CellsState,
@@ -584,7 +584,7 @@ function cellInner<T>(
 /**
  * A body cell of an item row; `index` is the column's place in
  * `shared.columns`, `inner` its content (`cellInner`), `flags` its part in
- * the cell selection, `mark` its write (as `writer` shows it), and
+ * the cell selection (`UNKNOWN` until a selection given is resolved), `mark` its write (as `writer` shows it), and
  * `readOnly` whether it cannot be written in a table whose cells are
  * (`aria-readonly`).
  */
@@ -599,9 +599,10 @@ function renderCell<T>(
   writer?: CellWriter | null
 ): React.ReactNode {
   const pin = shared.pins[index]
+  const known = flags !== UNKNOWN
   const className = cn(
     bodyClassName(column, pin, shared),
-    cellStateClassName(flags, mark, pin !== undefined)
+    cellStateClassName(known ? flags : 0, mark, pin !== undefined)
   )
   const style = pin && pinStyle(pin)
   const props = {
@@ -609,7 +610,9 @@ function renderCell<T>(
     style,
     "data-column": shared.cellFocus ? column.id : undefined,
     // Every data cell can be selected: said of each, selected or not.
-    "aria-selected": shared.cells ? (flags & SELECTED) !== 0 : undefined,
+    // Not said while a selection given is still to be resolved.
+    "aria-selected":
+      shared.cells && known ? (flags & SELECTED) !== 0 : undefined,
     "aria-readonly": readOnly || undefined,
     "aria-busy": (mark && mark.pending !== null) || undefined,
     "aria-invalid": mark?.error ? true : undefined,
