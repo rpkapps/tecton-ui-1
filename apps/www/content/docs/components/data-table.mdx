@@ -1,11 +1,11 @@
 ---
 title: Data Table
-description: "Records in columns: typed columns, sorting, search and filters, row selection, pages, trees, detail rows, totals, rows loaded as the user scrolls and virtualized rows, in the browser or from a server."
+description: "Records in columns: typed columns, sorting, search and filters, grouping with subtotals, row selection, pages, trees, detail rows, totals, rows loaded as the user scrolls and virtualized rows, in the browser or from a server."
 ---
 
 <ComponentPreview name="data-table-demo" align="start" />
 
-`DataTable` shows records of one shape — wells, logging runs, work orders — in columns, and gives the user what a list of records needs: sorting by one column or several, search and filters, row selection with select all, pages, trees, detail rows, a totals row, rows the user reorders, rows that open or link to a record, CSV export, and the empty, no results, error and loading states. The table is a grid: one tab stop, moved through with the arrow keys, with its selection, sorting and loading announced to screen readers.
+`DataTable` shows records of one shape — wells, logging runs, work orders — in columns, and gives the user what a list of records needs: sorting by one column or several, search and filters, grouping with subtotals, row selection with select all, pages, trees, detail rows, a totals row, rows the user reorders, rows that open or link to a record, CSV export, and the empty, no results, error and loading states. The table is a grid: one tab stop, moved through with the arrow keys, with its selection, sorting and loading announced to screen readers.
 
 Use [Table](/docs/components/table) for a table that is read rather than worked with: a short, fixed set of rows, a summary, a specification sheet. Use `DataTable` when the rows are data the user sorts, selects, pages or opens.
 
@@ -50,6 +50,7 @@ DataTable
 ├── DataTableToolbar
 │   ├── DataTableSearch
 │   ├── DataTableFilter
+│   ├── DataTableGroupBy
 │   ├── DataTableColumnsMenu
 │   └── your controls
 ├── DataTableActiveFilters
@@ -64,7 +65,7 @@ DataTable
 
 `DataTable` holds the state — the items, the columns, the view, the selection, the open rows, the page — and renders a `div` around its parts. `DataTableContent` is the table itself, in a rounded frame: the header, the rows and the states. `DataTableToolbar` above it and `DataTableFooter` below it are layout rows outside the frame; the footer puts the selection count at the start and the page parts at the end. Every part is optional but the content, and parts can be placed anywhere inside `DataTable`. A part reads only the state it shows, so a selection change renders the rows it changes and the count, not the rest of the table.
 
-The root turns features on: `selectionMode`, `pagination`, `filterable`, `itemToChildren`, `reorderableRows`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; a column can only turn one off for itself (`filterable: false`, `resizable: false`, `pinnable: false`). A part for a feature that is off renders nothing and warns once in development.
+The root turns features on: `selectionMode`, `pagination`, `filterable`, `groupable`, `itemToChildren`, `reorderableRows`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; a column can only turn one off for itself (`filterable: false`, `groupable: false`, `resizable: false`, `pinnable: false`). A part for a feature that is off renders nothing and warns once in development.
 
 ## Columns
 
@@ -512,6 +513,47 @@ const columns = createColumns<Allocation>([
 <DataTableContent aria-label="Daily allocation" totals />
 ```
 
+## Grouping
+
+`groupable` groups the rows by the columns of the view's `grouping`, the outermost first: a group row for each value, with the rows that have it under it, and groups in groups for a second column. `DataTableGroupBy` is a "Group by" button with a menu to choose the columns and their order, and each column header's menu has "Group by column" (adding it as the last level) and "Ungroup"; a column opts out with `groupable: false`. The grouping is part of the view, set from `defaultView` / `view`, reported through `onViewChange` with the reason `"group"`, and through `useDataTable`'s `setGrouping`.
+
+<ComponentPreview name="data-table-grouping" align="start" />
+
+```tsx
+const columns = createColumns<Allocation>([
+  { id: "well", header: "Well" },
+  { id: "field", header: "Field" },
+  { id: "hours", header: "On stream (h)", type: "number", aggregate: "avg" },
+  { id: "oil", header: "Oil (Sm³)", type: "number" },
+])
+
+<DataTable
+  items={allocations}
+  columns={columns}
+  groupable
+  selectionMode="multiple"
+  defaultView={{ grouping: ["field"] }}
+>
+  <DataTableToolbar>
+    <DataTableGroupBy />
+  </DataTableToolbar>
+  <DataTableContent aria-label="Daily allocation" totals />
+</DataTable>
+```
+
+- A group row shows its chevron, the column and the value ("Field: Gullfaks", formatted as the column shows it) and its number of rows, across the first columns that sum nothing, and each aggregate column's subtotal over the group's rows: the same aggregates as the [totals row](#totals), drawn by `renderAggregate` too. Rows without a value make one group, "(Empty)", last.
+- Values group as the column shows them: numbers at the precision of their `format`, dates by the day their format shows in its `timeZone` (a format of a month and a year groups by month; a time in the format is left out of the group's name).
+- Groups are open at first. A click on a group row opens or closes it; <Kbd>→</Kbd> / <Kbd>←</Kbd> and <Kbd>Enter</Kbd> do from the keyboard, and <Kbd>←</Kbd> on a row goes to its group. Which groups are closed is the table's own, not the view's: a new grouping opens every group. "Expand all groups" and "Collapse all groups" are in `DataTableGroupBy`'s menu, and `useDataTable` has `expandAllGroups` and `collapseAllGroups`. When a group closes over the focused row, focus goes to the group's row.
+- With `selectionMode="multiple"`, a group row's checkbox (or <Kbd>Space</Kbd> on the row) selects every row of the group that can be selected, or clears them all, and is indeterminate while some are. Disabled rows are left out. In server "all matching", the rows of a group cleared become exceptions.
+- Groups are in their column's sort order: the direction the view sorts that column in, else ascending, the empty group last; the rows in each group are sorted by the view's sorting. In server mode, groups keep the order their first rows come in.
+- The search and filters apply first: groups, counts and subtotals are of the rows that match.
+- On pages, a page counts group rows as rows; a page that starts inside a group repeats the group's row at its top, not counted. In server mode the loaded rows (the page) are grouped, counted from `rowCount` as without groups.
+- Group rows are rows of a virtualized table too, so a grouped table of 100,000 rows scrolls as fast as a flat one; opening or closing a group renders only the rows it shows.
+- Pinned columns: the group's name stays in the pinned columns at the start, and group rows are opaque under the columns scrolled past them. A first column hidden below a breakpoint (`hideBelow`) hands the name to the next one there.
+- Detail rows open inside groups; drag handles of `reorderableRows` are hidden while grouped; `exportCsv` exports the rows in the groups' order, without the group rows. Grouping is off in a tree (`itemToChildren`), with a warning in development.
+
+<ComponentPreview name="data-table-grouping-virtual" align="start" />
+
 ## Row reordering
 
 `reorderableRows` adds a drag handle at the start of each row, for the user to put the rows in order: drag it, or reach it with the arrow keys and press <Kbd>Enter</Kbd> or <Kbd>Space</Kbd>, then <Kbd>↑</Kbd> / <Kbd>↓</Kbd> (or <Kbd>Tab</Kbd>) move it one place each, from its own place, and <Kbd>Enter</Kbd> drops, <Kbd>Escape</Kbd> cancels; each place is announced ("Insert between 34/7-D-2 and 2/8-C-3"). `onRowOrderChange(ids, eventDetails)` receives every item's id in the new order (reason `"pointer"`, `"keyboard"` or `"virtual"`): put `items` in that order.
@@ -625,7 +667,7 @@ Change the page and the sorting in the same event and the table reports both bef
 
 ## The view
 
-The view is what the table shows, as plain data: its `sorting`, `search`, `filters` and `columns`. It starts from `defaultView`, or is controlled with `view` / `onViewChange(view, eventDetails)`. Both take any part of it: the parts left out take their defaults (for `view`, those of `defaultView`). `onViewChange` always reports the whole view, which can be passed back as `view` as it is. `eventDetails.reason` says what changed (`"sort"`, `"search"`, `"filter"`, `"resize"`, `"reorder"`, `"hide"`, `"pin"`, `"reset"`).
+The view is what the table shows, as plain data: its `sorting`, `search`, `filters`, `grouping` and `columns`. It starts from `defaultView`, or is controlled with `view` / `onViewChange(view, eventDetails)`. Both take any part of it: the parts left out take their defaults (for `view`, those of `defaultView`). `onViewChange` always reports the whole view, which can be passed back as `view` as it is. `eventDetails.reason` says what changed (`"sort"`, `"search"`, `"filter"`, `"group"`, `"resize"`, `"reorder"`, `"hide"`, `"pin"`, `"reset"`). Which groups are closed is not part of the view: it is the table's own.
 
 <ComponentPreview name="data-table-views" align="start" />
 
@@ -652,7 +694,7 @@ A view is JSON, but for the `Date`s of a date filter, which come back from JSON 
 
 - Unknown column ids are ignored.
 - Columns the view's order leaves out go to their default place, and the columns of a group stay side by side.
-- Sorting and filters on unknown columns, or on columns that cannot (`sortable` off, or the column opted out), are dropped, and so are duplicates.
+- Sorting, filters and grouping on unknown columns, or on columns that cannot (`sortable`, `filterable` or `groupable` off, or the column opted out), are dropped, and so are duplicates.
 - Widths that are not positive numbers are dropped, the others kept within the column's `minWidth` (48 px by default) and `maxWidth`; a column pinned to both sides is pinned to the start.
 - A column with `hideable: false` is never hidden, and neither is every column: the first in the order stays shown.
 - The search is empty while the table is not `filterable`.
@@ -678,7 +720,7 @@ A component that calls `useDataTable` renders again on every change of the table
 
 ## Export
 
-`exportCsv(options?)` from `useDataTable` returns the rows as CSV text (RFC 4180), never the detail rows: each cell as the table shows it (numbers and dates formatted in the locale, options by their label, booleans as Yes / No), the columns' headers first, records ending with CRLF. The download and the file name are yours. The exporter loads the first time it is called.
+`exportCsv(options?)` from `useDataTable` returns the rows as CSV text (RFC 4180), never the detail rows or group rows (grouped, the rows come in the groups' order): each cell as the table shows it (numbers and dates formatted in the locale, options by their label, booleans as Yes / No), the columns' headers first, records ending with CRLF. The download and the file name are yours. The exporter loads the first time it is called.
 
 <ComponentPreview name="data-table-export" align="start" />
 
@@ -734,6 +776,8 @@ The table is one tab stop: <Kbd>Tab</Kbd> enters it at the row or cell that last
 | <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a control | Presses it: a sort button, a checkbox, a link; opens a column's menu, or the popover of its description |
 | <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a column header | With `reorderableColumns`, starts moving the column: <Kbd>←</Kbd> / <Kbd>→</Kbd> or <Kbd>Tab</Kbd> pick the place, <Kbd>Enter</Kbd> drops, <Kbd>Escape</Kbd> cancels |
 | <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a row's drag handle | With `reorderableRows`, starts moving the row: <Kbd>↑</Kbd> / <Kbd>↓</Kbd> or <Kbd>Tab</Kbd> pick the place, <Kbd>Enter</Kbd> drops, <Kbd>Escape</Kbd> cancels |
+| <Kbd>→</Kbd> / <Kbd>←</Kbd>, <Kbd>Enter</Kbd> on a group row | Opens / closes the group (`groupable`); <Kbd>←</Kbd> on a row in a group goes to the group's row |
+| <Kbd>Space</Kbd> on a group row | Selects or clears the group's rows (`"multiple"`) |
 | <Kbd>→</Kbd> / <Kbd>←</Kbd> on a row with a detail row | Opens / closes its detail row (`renderDetail`); on the detail row, <Kbd>←</Kbd> goes to its row |
 | <Kbd>Tab</Kbd> on a detail row | Into a table of its own inside it (its own keys there); <Kbd>Tab</Kbd> again leaves both tables |
 | <Kbd>←</Kbd> / <Kbd>→</Kbd> on a resizer | After "Resize column" in the column's menu: narrows / widens the column (<Kbd>Shift</Kbd>: four steps); <Kbd>Home</Kbd> / <Kbd>End</Kbd> the narrowest / widest; <Kbd>Enter</Kbd> or <Kbd>Tab</Kbd> keeps the width, <Kbd>Escape</Kbd> puts it back, both back to the menu button |
@@ -742,19 +786,19 @@ In a right-to-left table <Kbd>←</Kbd> and <Kbd>→</Kbd> are swapped. In a col
 
 ## Accessibility
 
-- The table is an ARIA grid, a treegrid with `itemToChildren` or `renderDetail`. Name it with `aria-label` or `aria-labelledby` on `DataTableContent`; `aria-describedby` points to a longer description.
+- The table is an ARIA grid, a treegrid with `itemToChildren`, `renderDetail` or a grouping. Name it with `aria-label` or `aria-labelledby` on `DataTableContent`; `aria-describedby` points to a longer description.
 - Each row is named by its row header (`rowHeader`), which screen readers read with each cell; make it the column that tells the rows apart. Each row's checkbox is named after it ("Select 34/10-A-12").
 - A sorted header carries `aria-sort`, and a sort is announced; with several sorted columns, each header says its place ("sort 2 of 3, ascending").
 - A column's `description` is its header's accessible description, and a header that can be moved is described as such ("Drag Oil"); moving it from the keyboard names each place and announces the drop. Each column's menu button is named after it ("Oil options"), each resizer too ("Resize Oil"), and hiding or pinning a column from its menu is announced.
 - Selection changes are announced while focus is in the table, as are loading, the rows loaded, the number of rows matching once the search or filters change ("12 results"), and "No results". The search field, the filter buttons ("Filter by Status", with the filter's value as their description) and the active filters (a grid of chips named "Active filters") are named, and each drag handle is named after its row ("Drag 34/10-A-12"). `DataTablePageInfo` and `DataTableSelectionCount` are live regions.
-- On pages, in a virtualized table and in server mode, the table carries the full `aria-rowcount` and each row its `aria-rowindex`, so screen readers hear the real size. Tree rows carry `aria-level`, `aria-expanded`, `aria-posinset` and `aria-setsize`.
+- On pages, in a virtualized table and in server mode, the table carries the full `aria-rowcount` and each row its `aria-rowindex`, so screen readers hear the real size. Tree rows and group rows carry `aria-level`, `aria-expanded`, `aria-posinset` and `aria-setsize`; a group row's name ("Field: Gullfaks, 6 rows") is its row header, and its checkbox is named after it. A change of the grouping from a menu is announced ("Grouped by Field and Status").
 - While loading, the table is `aria-busy`; skeleton rows are hidden from screen readers, and the error state is an alert.
-- When the focused row goes (a new page, a sort, a search or filter it no longer matches, an error in place of the rows), focus moves to the row now in its place, or to the state's button; when a tree row's children or a detail row close with focus in them, to their row. It never drops to the page.
+- When the focused row goes (a new page, a sort, a search or filter it no longer matches, an error in place of the rows), focus moves to the row now in its place, or to the state's button; when a tree row's children, a detail row or a group close with focus in them, to their row (the group's). It never drops to the page.
 - A disabled row with `disabledBehavior="all"` is skipped by the arrow keys; with `"selection"` it is reached but cannot be selected.
 
 ## Right to left and localization
 
-Direction and locale come from the [TectonProvider](/docs/tecton/provider). In a right-to-left locale the columns run from the right, the arrow keys, the page buttons, the resizers and column dragging are mirrored, pinned columns stick to the start on the right, and the tree's chevron points the other way. Numbers, dates and the counts ("3 of 1,240 selected", "Page 2 of 13") are formatted with `Intl` in the provider's locale, and the table's own texts (the states, the page parts, the selection count, the column menus, the announcements) are translated in every Tecton locale.
+Direction and locale come from the [TectonProvider](/docs/tecton/provider). In a right-to-left locale the columns run from the right, the arrow keys, the page buttons, the resizers and column dragging are mirrored, pinned columns stick to the start on the right, and the chevrons of tree rows and group rows point the other way (<Kbd>←</Kbd> opens a group, <Kbd>→</Kbd> closes it). Numbers, dates and the counts ("3 of 1,240 selected", "Page 2 of 13") are formatted with `Intl` in the provider's locale, and the table's own texts (the states, the page parts, the selection count, the column menus, the group rows' "(Empty)" and row counts, the announcements) are translated in every Tecton locale.
 
 <ComponentPreview name="data-table-rtl" direction="rtl" align="start" />
 
@@ -797,6 +841,7 @@ The root. Renders a `div` (`data-slot="data-table"`) and forwards its props (`cl
 | `striped` | `boolean` | `false` | Every even row on an alternate surface. |
 | `sortable` | `boolean` | `true` | Header buttons sort; <Kbd>Shift</Kbd> + click by several columns. |
 | `filterable` | `boolean` | `false` | Turns on the view's `search` and `filters`: `DataTableSearch`, `DataTableFilter`, `DataTableActiveFilters` (see [Search and filters](#search-and-filters)). |
+| `groupable` | `boolean` | `false` | Turns on the view's `grouping`: group rows with subtotals, `DataTableGroupBy`, "Group by column" in the column menus (see [Grouping](#grouping)). Not in a tree. |
 | `reorderableRows` | `boolean` | `false` | A drag handle per row, to put the rows in order (see [Row reordering](#row-reordering)); flat lists only. |
 | `resizableColumns` | `boolean` | `false` | A resizer on each column header's end edge (see [Resizing](#resizing)). |
 | `reorderableColumns` | `boolean` | `false` | Column headers are dragged into order (see [Reordering](#reordering)). |
@@ -810,7 +855,7 @@ The root. Renders a `div` (`data-slot="data-table"`) and forwards its props (`cl
 | `disallowEmptySelection` | `boolean` | `false` | Keeps at least one row selected. |
 | `view` | `DataTablePartialView` | - | What the table shows (controlled): any part of the view, the rest from `defaultView` or the defaults. Reconciled with the columns. |
 | `defaultView` | `DataTablePartialView` | - | Any part of the view to start from; read once. |
-| `onViewChange` | `(view: DataTableView, eventDetails) => void` | - | Called with the new view; `reason` is `"sort"`, `"search"`, `"filter"`, `"resize"`, `"reorder"`, `"hide"`, `"pin"` or `"reset"`. |
+| `onViewChange` | `(view: DataTableView, eventDetails) => void` | - | Called with the new view; `reason` is `"sort"`, `"search"`, `"filter"`, `"group"`, `"resize"`, `"reorder"`, `"hide"`, `"pin"` or `"reset"`. |
 | `searchDelay` | `number` | `300` in server mode, `0` in client mode | The ms between the last key in the search (or a text or number filter) and the change reaching the view. |
 | `expanded` | `ReadonlyArray<string>` | - | The open tree rows' and detail rows' ids (controlled). |
 | `defaultExpanded` | `ReadonlyArray<string>` | `[]` | The rows open at first. |
@@ -881,6 +926,16 @@ A row's "⋯" button and its menu, for a column's `cell` (see [Row actions](#row
 | `aria-label` | `string` | "Row actions" | The button's name. |
 | `variant`, `size` | Button `variant`, `size` | `"ghost"`, `"icon-sm"` (`"icon-xs"` in a small table) | The button's look. |
 
+### DataTableGroupBy
+
+An outline "Group by" button and its menu: a checkbox per groupable column, with its level, an item per level after the first that moves it up a level, "Expand all groups", "Collapse all groups" and "Ungroup all" (see [Grouping](#grouping)). While the rows are grouped, the button shows the grouping columns, which describe it. It takes the props of a [Button](/docs/components/button) (`data-slot="data-table-group-by"`, `data-active` while grouped); its menu loads on demand, and it renders nothing without `groupable`.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `variant` | Button `variant` | `"outline"` | The button's look. |
+| `size` | Button `size` | `"sm"` | The button's size. |
+| `children` | `ReactNode` | "Group by" and the grouping columns | The button's content. |
+
 ### DataTableColumnsMenu
 
 An outline "Columns" button and its menu: show or hide each column (with `hideableColumns`), pin it (with `pinnableColumns`), and "Reset columns" (see [Columns menu](#columns-menu)). It takes the props of a [Button](/docs/components/button) (`data-slot="data-table-columns-menu"`); renders nothing while neither feature is on.
@@ -929,8 +984,8 @@ A column:
 | `align` | `"start" \| "center" \| "end"` | by type | The cell's and the header's alignment. |
 | `compare` | `(a: T, b: T) => number` | - | Sorts the column in place of its type's order, ascending. |
 | `filter` | `(item: T, filterValue: DataTableFilterValue) => boolean` | - | Filters the column in place of its type's filter, for any filter value. |
-| `aggregate` | `"sum" \| "avg" \| "min" \| "max" \| "count" \| "countDistinct" \| (values, items) => DataTableValue` | `"sum"` for numbers, `"count"` for booleans | The column's figure in the totals row. |
-| `renderAggregate` | `(value: DataTableValue, details: { items }) => ReactNode` | - | Draws the aggregate, in place of the formatted value. |
+| `aggregate` | `"sum" \| "avg" \| "min" \| "max" \| "count" \| "countDistinct" \| (values, items) => DataTableValue` | `"sum"` for numbers, `"count"` for booleans | The column's figure in group rows and the totals row. |
+| `renderAggregate` | `(value: DataTableValue, details: { items }) => ReactNode` | - | Draws the aggregate, in place of the formatted value; `items` are the group's or the totals' rows. |
 | `rowHeader` | `boolean` | first column | Names the row and carries the tree's chevron and indent. |
 | `description` | `string` | - | Shown in an info tooltip in the header, and the header's accessible description. |
 | `width` | `number` | content | The column's width in px, which fixes the table's layout (see [Column widths](#column-widths)). |
@@ -939,6 +994,7 @@ A column:
 | `wrap` | `boolean` | `false` | Lets text take several lines; not in a virtualized table. |
 | `sortable` | `false` | - | Keeps the column from sorting. |
 | `filterable` | `false` | - | Keeps the column out of the search and its filter. |
+| `groupable` | `false` | - | Keeps the rows from being grouped by the column. |
 | `resizable` | `false` | - | Keeps the column from being resized. |
 | `reorderable` | `false` | - | Keeps the column in its place. |
 | `hideable` | `false` | - | Keeps the column shown. |
@@ -992,6 +1048,7 @@ type DataTableFilterValue =
 | `setSearch` | `(search: string) => void` | Sets the search (with `filterable`). |
 | `setFilter` | `(column: string, value: DataTableFilterValue \| null) => void` | Sets a column's filter, `null` removes it (with `filterable`). |
 | `clearFilters` | `() => void` | Removes every filter and the search. |
+| `setGrouping` | `(grouping: ReadonlyArray<string>) => void` | Groups the rows by these columns, the outermost first; `[]` ungroups (with `groupable`). |
 | `resetView` | `() => void` | Back to `defaultView`, or the defaults. |
 | `setColumnOrder` | `(order: ReadonlyArray<string>) => void` | Puts the columns listed first, in that order; the others follow in their order now (a group's columns stay together). |
 | `setColumnHidden` | `(column: string, hidden: boolean) => void` | Hides or shows a column. |
@@ -1006,6 +1063,7 @@ type DataTableFilterValue =
 | `allMatching` | `{ except: ReadonlyArray<string> } \| null` | Server "all matching", or `null`. |
 | `expanded` | `ReadonlyArray<string>` | The open tree rows' and detail rows' ids. |
 | `setExpanded` | `(expanded: ReadonlyArray<string>) => void` | Sets the open rows. |
+| `expandAllGroups`, `collapseAllGroups` | `() => void` | Opens every group, or closes every group (nested ones too). Groups open and close apart from `expanded`. |
 | `page`, `pageCount`, `pageSize`, `pageSizes` | `number`, `number`, `number`, `ReadonlyArray<number>` | The page shown (from 1) and the paging. |
 | `setPage`, `setPageSize` | `(n: number) => void` | Changes the page or the page size. |
 | `rows` | `{ all, filtered, page }` | The items: every one, the ones the view matches, the page's. |

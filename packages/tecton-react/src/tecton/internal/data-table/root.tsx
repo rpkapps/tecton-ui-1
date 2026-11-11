@@ -24,6 +24,9 @@
  *   the user stops typing (`search.tsx`); the field shows each key at once.
  * - Rows are reordered in a flat list only, the order being the
  *   application's (`onRowOrderChange`).
+ * - Groups are open unless closed: which ones are closed is the table's
+ *   own, kept for the grouping they were closed in (a new grouping opens
+ *   every group). A group's checkbox selects its items that can be.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -53,10 +56,12 @@ import {
   layoutColumns,
   reconcileView,
   resolvePageSize,
+  sameIds,
   sameView,
   selectAllIds,
   shouldResetPage,
   sortColumn,
+  toggleIds,
   viewMatchesChanged,
   type ColumnLayout,
   type DataTableAllMatching,
@@ -148,6 +153,11 @@ type DataTableProps<T> = Omit<
    * `DataTableFilter`); `filterable: false` opts a column out.
    */
   filterable?: boolean
+  /**
+   * The view's grouping applies: group rows with subtotals,
+   * `DataTableGroupBy`, "Group by column" in the column menus;
+   * `groupable: false` opts a column out. Not in a tree.
+   */
   groupable?: boolean
   editable?: boolean
   /** A resizer on each column header's end edge (`resizable: false` opts a column out). */
@@ -247,6 +257,7 @@ type Latest<T> = {
   allMatching: DataTableAllMatching | null
   selectable: () => ReadonlyArray<string>
   expanded: ReadonlyArray<string>
+  collapsedGroups: ReadonlyArray<string>
   page: number
   pageSize: number
   server: boolean
@@ -270,8 +281,15 @@ type Latest<T> = {
   setValue: (value: ReadonlyArray<string>) => void
   setMatching: (matching: Matching | null) => void
   setExpanded: (expanded: ReadonlyArray<string>) => void
+  setCollapsed: (collapsed: Collapsed) => void
   setPage: (page: number) => void
   setPageSize: (pageSize: number) => void
+}
+
+/** The closed groups' keys, and the grouping they were closed in. */
+type Collapsed = {
+  grouping: ReadonlyArray<string>
+  keys: ReadonlyArray<string>
 }
 
 /** Server "all matching", with the selection it reported. */
@@ -281,6 +299,7 @@ type Matching = {
 }
 
 const NO_IDS: ReadonlyArray<string> = []
+const NO_GROUPS: Collapsed = { grouping: NO_IDS, keys: NO_IDS }
 
 function sameMembers(a: ReadonlyArray<string>, b: ReadonlyArray<string>) {
   if (a === b) return true
@@ -322,7 +341,13 @@ function itemsOf<T>(model: DataTableRowModel<T>, ids: ReadonlyArray<string>) {
 type Pending<T> = Partial<
   Pick<
     Latest<T>,
-    "view" | "value" | "allMatching" | "expanded" | "page" | "pageSize"
+    | "view"
+    | "value"
+    | "allMatching"
+    | "expanded"
+    | "collapsedGroups"
+    | "page"
+    | "pageSize"
   >
 >
 
@@ -370,6 +395,33 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
     current.setMatching(allMatching ? { allMatching, value: next } : null)
     set({ value: next, allMatching })
     return true
+  }
+
+  /**
+   * A new selection from the rows (the grid, a group's checkbox): in
+   * all-matching, the rows deselected are the exceptions.
+   */
+  const changeSelection = (
+    next: Array<string>,
+    reason: DataTableSelectionChangeReason,
+    event: Event | undefined
+  ) => {
+    const { allMatching, value } = now()
+    let matching: DataTableAllMatching | null = null
+    if (allMatching && reason !== "clear") {
+      const after = new Set(next)
+      const except = new Set(allMatching.except)
+      for (const id of value) if (!after.has(id)) except.add(id)
+      for (const id of next) except.delete(id)
+      matching = { except: [...except] }
+    }
+    return commitSelection(next, reason, event, matching)
+  }
+
+  const setCollapsed = (keys: ReadonlyArray<string>) => {
+    const current = now()
+    current.setCollapsed({ grouping: current.view.grouping, keys })
+    set({ collapsedGroups: keys })
   }
 
   const changePage = (
@@ -438,18 +490,30 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
       commitSelection([...value], reason, event, null)
     },
     gridValueChange(next, details) {
-      const { allMatching, value } = now()
-      let matching: DataTableAllMatching | null = null
-      // In all-matching, the rows deselected are the exceptions.
-      if (allMatching && details.reason !== "clear") {
-        const after = new Set(next)
-        const except = new Set(allMatching.except)
-        for (const id of value) if (!after.has(id)) except.add(id)
-        for (const id of next) except.delete(id)
-        matching = { except: [...except] }
-      }
-      if (!commitSelection(next, details.reason, details.event, matching))
+      if (!changeSelection(next, details.reason, details.event))
         details.cancel()
+    },
+    toggleGroupSelected(key, reason, event) {
+      const current = now()
+      if (current.selectionMode !== "multiple") return
+      const ids = current.model.groupSelectableIds(key)
+      if (ids.length === 0) return
+      changeSelection(toggleIds(current.value, ids), reason, event)
+    },
+    setGroupOpen(key, open) {
+      const { collapsedGroups } = now()
+      if (collapsedGroups.includes(key) !== open) return
+      setCollapsed(
+        open
+          ? collapsedGroups.filter((other) => other !== key)
+          : [...collapsedGroups, key]
+      )
+    },
+    expandAllGroups() {
+      if (now().collapsedGroups.length > 0) setCollapsed(NO_IDS)
+    },
+    collapseAllGroups() {
+      setCollapsed(now().model.groupKeys())
     },
     selectAll(event) {
       if (now().selectionMode !== "multiple") return
@@ -727,6 +791,12 @@ function DataTable<T>({
     expandedProp,
     defaultExpanded ?? NO_IDS
   )
+  // A new grouping opens every group: those closed in another are
+  // forgotten.
+  const [collapsed, setCollapsed] = React.useState<Collapsed>(NO_GROUPS)
+  const ofGrouping = sameIds(collapsed.grouping, view.grouping)
+  if (!ofGrouping && collapsed !== NO_GROUPS) setCollapsed(NO_GROUPS)
+  const collapsedGroups = ofGrouping ? collapsed.keys : NO_IDS
   const [page, setPage] = useControlled(pageProp, defaultPage ?? 1)
   const [pageSize, setPageSize] = useControlled(
     pageSizeProp,
@@ -750,6 +820,7 @@ function DataTable<T>({
     sortable,
     filterable,
     expanded,
+    collapsedGroups,
     pagination: pagination ? { page, pageSize } : null,
     rowCount,
   })
@@ -854,6 +925,7 @@ function DataTable<T>({
       selectable,
       allMatching,
       expanded,
+      collapsedGroups,
       loading,
       error: error ?? null,
       clears,
@@ -871,6 +943,7 @@ function DataTable<T>({
       selectable,
       allMatching,
       expanded,
+      collapsedGroups,
       loading,
       error,
       clears,
@@ -891,6 +964,7 @@ function DataTable<T>({
     allMatching,
     selectable,
     expanded,
+    collapsedGroups,
     page,
     pageSize,
     server,
@@ -914,6 +988,7 @@ function DataTable<T>({
     setValue,
     setMatching,
     setExpanded,
+    setCollapsed,
     setPage,
     setPageSize,
   }

@@ -3,7 +3,7 @@
 /**
  * Tecton DataTable — a complete data table over records: columns by type
  * (`createColumns`), sorting by one column or several, search and filters,
- * row selection (with "select all" over every page, and every matching row
+ * grouping with subtotals, row selection (with "select all" over every page, and every matching row
  * in server mode), pages, rows loaded as the user scrolls, trees, detail
  * rows, a totals row, virtualized rows, links, rows the user reorders,
  * columns the user resizes, reorders, hides and pins, CSV export, and the
@@ -38,6 +38,7 @@ export { DataTableSearch } from "./internal/data-table/search"
 export { DataTableFilter } from "./internal/data-table/filter"
 export { DataTableActiveFilters } from "./internal/data-table/active-filters"
 export { DataTableColumnsMenu } from "./internal/data-table/columns-menu"
+export { DataTableGroupBy } from "./internal/data-table/group-by"
 export { DataTableRowActions } from "./internal/data-table/row-actions"
 export { DataTableFooter } from "./internal/data-table/footer"
 export { DataTableSelectionCount } from "./internal/data-table/selection-count"
@@ -56,6 +57,7 @@ export type { DataTableSearchProps } from "./internal/data-table/search"
 export type { DataTableFilterProps } from "./internal/data-table/filter"
 export type { DataTableActiveFiltersProps } from "./internal/data-table/active-filters"
 export type { DataTableColumnsMenuProps } from "./internal/data-table/columns-menu"
+export type { DataTableGroupByProps } from "./internal/data-table/group-by"
 export type { DataTableRowActionsProps } from "./internal/data-table/row-actions"
 export type {
   DataTableChangeDetails,

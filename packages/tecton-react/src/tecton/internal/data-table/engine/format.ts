@@ -29,6 +29,11 @@ type Formatter<T> = {
   /** The display text of `column`'s cell for `item`. */
   text: (column: EngineColumn<T>, item: T) => string
   /**
+   * The text of a group of `column`'s rows with `item`'s value: its display
+   * text, but a date column's day alone (rows group by day, `group.ts`).
+   */
+  groupText: (column: EngineColumn<T>, item: T) => string
+  /**
    * The display text of an aggregate of `column`: counts as plain integers,
    * the other built-ins (and functions) in the column's format.
    */
@@ -144,6 +149,34 @@ function columnFormat<T>(
   }
 }
 
+/** The parts of a date format that show a time, not a day. */
+const TIME_FIELDS = [
+  "hour",
+  "minute",
+  "second",
+  "fractionalSecondDigits",
+  "dayPeriod",
+  "hour12",
+  "hourCycle",
+  "timeStyle",
+  "timeZoneName",
+] as const
+const DAY_FIELDS = ["era", "year", "month", "day", "weekday", "dateStyle"]
+
+/**
+ * A date format's day alone: its time fields left out (the zone, calendar
+ * and digits kept), the medium date style when nothing of the day is left.
+ */
+function dayFormat(
+  options: EngineColumn<unknown>["format"] = DEFAULT_DATE_FORMAT
+): Intl.DateTimeFormatOptions {
+  const day: Record<string, unknown> = { ...options }
+  for (const field of TIME_FIELDS) delete day[field]
+  return DAY_FIELDS.some((field) => day[field] !== undefined)
+    ? day
+    : { ...day, dateStyle: "medium" }
+}
+
 const formatters = new WeakMap<object, Map<string, Formatter<never>>>()
 
 /**
@@ -174,10 +207,24 @@ function getFormatter<T>(
     }
     return format
   }
+  const dayTexts = new Map<EngineColumn<T>, (time: number) => string>()
   const formatter: Formatter<T> = {
     locale: resolved,
     format: (column, value) => formatOf(column)(value),
     text: (column, item) => formatOf(column)(column.getValue(item)),
+    groupText: (column, item) => {
+      const value = column.getValue(item)
+      if (column.type !== "date") return formatOf(column)(value)
+      const date = toDate(value)
+      if (!date) return ""
+      let text = dayTexts.get(column)
+      if (!text) {
+        const format = getDateFormat(resolved, dayFormat(column.format))
+        text = remembered((time) => format.format(time))
+        dayTexts.set(column, text)
+      }
+      return text(date.getTime())
+    },
     formatAggregate: (column, value, aggregate = column.aggregate) => {
       if (aggregate === "count" || aggregate === "countDistinct") {
         const number = toNumber(value)
@@ -255,5 +302,12 @@ function createFolder() {
   }
 }
 
-export { createFolder, DEFAULT_LABELS, foldText, getFormatter, resolveLocale }
+export {
+  createFolder,
+  dayFormat,
+  DEFAULT_LABELS,
+  foldText,
+  getFormatter,
+  resolveLocale,
+}
 export type { FormatLabels, Formatter }

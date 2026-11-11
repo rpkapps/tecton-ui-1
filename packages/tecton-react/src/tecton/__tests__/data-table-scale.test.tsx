@@ -7,6 +7,7 @@ import {
   DataTable,
   DataTableContent,
   DataTableSearch,
+  useDataTable,
 } from "@tecton/react/tecton/data-table"
 
 import { checkbox, focusRow, layout, press } from "./data-table-fixtures"
@@ -141,6 +142,75 @@ describe("DataTable at 100,000 rows", () => {
     ).toBeLessThan(100)
     // A key the result does not change (a trailing space) renders no row.
     type("Well 999 ")
+    expect(cell).not.toHaveBeenCalled()
+  }, 60_000)
+})
+
+describe("DataTable grouped at 100,000 rows", () => {
+  type Grouped = Item & { field: string }
+  const GROUPED: Array<Grouped> = MANY.map((item, i) => ({
+    ...item,
+    field: `Field ${i % 8}`,
+  }))
+  // How many cells render: opening or closing a group renders the rows it
+  // shows or moves into view, never every row.
+  const cell = vi.fn((item: Grouped) => item.depth)
+  const columns = createColumns<Grouped>([
+    { id: "name", header: "Well" },
+    { id: "field", header: "Field" },
+    { id: "depth", header: "Depth", type: "number", cell },
+  ])
+  let api: ReturnType<typeof useDataTable> | undefined
+  function Probe() {
+    api = useDataTable()
+    return null
+  }
+
+  it("opens and closes groups without rendering every row", () => {
+    layout()
+    render(
+      <div style={{ height: 400 }}>
+        <DataTable
+          items={GROUPED}
+          columns={columns}
+          groupable
+          selectionMode="multiple"
+          defaultView={{ grouping: ["field"] }}
+        >
+          <Probe />
+          <DataTableContent aria-label="Wells" virtualized />
+        </DataTable>
+      </div>
+    )
+    const group = (label: string) =>
+      screen.getByText(label).closest("tr") as HTMLTableRowElement
+    const timed = (fn: () => void) => {
+      cell.mockClear()
+      const start = performance.now()
+      act(fn)
+      return performance.now() - start
+    }
+    // The first group, in view: its rows go, the next groups' come.
+    expect(timed(() => fireEvent.click(group("Field: Field 0")))).toBeLessThan(
+      LIMIT_MS
+    )
+    expect(group("Field: Field 0")).toHaveAttribute("aria-expanded", "false")
+    expect(cell.mock.calls.length).toBeLessThan(100)
+    expect(timed(() => fireEvent.click(group("Field: Field 0")))).toBeLessThan(
+      LIMIT_MS
+    )
+    expect(cell.mock.calls.length).toBeLessThan(100)
+    // Every group, then every group again: the rows in view only.
+    expect(timed(() => api?.collapseAllGroups())).toBeLessThan(LIMIT_MS)
+    expect(document.querySelectorAll("tbody tr[data-index]")).toHaveLength(8)
+    expect(timed(() => api?.expandAllGroups())).toBeLessThan(LIMIT_MS)
+    expect(cell.mock.calls.length).toBeLessThan(100)
+    // A group's checkbox selects its 12,500 rows.
+    const box = group("Field: Field 0").querySelector<HTMLElement>(
+      '[data-slot="data-table-group-checkbox"]'
+    )!
+    expect(timed(() => fireEvent.click(box))).toBeLessThan(LIMIT_MS)
+    expect(box).toHaveAttribute("aria-checked", "true")
     expect(cell).not.toHaveBeenCalled()
   }, 60_000)
 })

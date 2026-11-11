@@ -50,6 +50,7 @@ import { getColumnModel, type ColumnModel, type EngineColumn } from "./columns"
 import {
   buildCore,
   childrenLoaded,
+  NO_ROWS,
   type Core,
   type IdIssues,
   type RowSet,
@@ -161,8 +162,15 @@ type DataTableRowModel<T> = {
   isDisabled: (id: string) => boolean
   /** The display text of an item's row header cell, or a group's text: for type-ahead. */
   textOf: (id: string) => string
-  /** The ids of the matching items, at every level, in display order: "select all". */
+  /** The ids of the matching items, at every level, in display order. */
   matchingIds: () => ReadonlyArray<string>
+  /**
+   * The ids "select all" selects: the matching items that are not
+   * disabled, in display order. The same array while the rows that match,
+   * their order and `isItemDisabled`'s answers stay (a group or tree row
+   * opening or closing, a new page keep it).
+   */
+  selectableIds: () => ReadonlyArray<string>
   /** Every item, depth first, in data order. */
   allItems: () => ReadonlyArray<T>
   /** The matching items, at every level, in display order. */
@@ -173,9 +181,20 @@ type DataTableRowModel<T> = {
   groupKeys: () => ReadonlyArray<string>
   /** A group's item ids, nested groups included, in display order. */
   groupIds: (key: string) => ReadonlyArray<string>
+  /**
+   * A group's item ids that can be selected (not disabled), in display
+   * order: what its checkbox selects. The same array while the groups and
+   * `isItemDisabled`'s answers stay (a group opening or closing keeps it).
+   */
+  groupSelectableIds: (key: string) => ReadonlyArray<string>
   groupItems: (key: string) => ReadonlyArray<T>
-  /** A group's subtotals, by column id. */
+  /** A group's subtotals, by column id; kept while the groups stay. */
   groupAggregates: (key: string) => Readonly<Record<string, DataTableValue>>
+  /**
+   * The keys of the groups an item (by id) or a group (by key) is in, the
+   * outermost first; empty when not grouped.
+   */
+  groupPath: (id: string) => ReadonlyArray<string>
   /** The rows shown expanded because a match is below them, while filtering a tree. */
   expandedByFilter: () => ReadonlySet<string>
   /** The totals row over the matching items (a tree's matching leaves). */
@@ -252,6 +271,16 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
   }
   const worker = createIdleWorker()
   const cache = createRowCache<T>()
+  /** Groups' selectable ids and subtotals, by the groups they are of (`model`). */
+  const groupCache = new WeakMap<
+    object,
+    {
+      disabled: Uint8Array | null
+      aggregates: ReadonlyArray<EngineColumn<T>>
+      ids: Map<string, ReadonlyArray<string>>
+      values: Map<string, Readonly<Record<string, DataTableValue>>>
+    }
+  >()
   /**
    * Facets by column, with what they were counted over: kept across runs
    * (a filter toggled in the popover counts the column again only when the
@@ -438,6 +467,35 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       })
   )
   const rowIndex = memoOne(indexRows<T>)
+  // The matching rows in display order (not context), their ids, and those
+  // that can be selected: kept across the models that only open, close or
+  // page rows, for "select all" and the header checkbox to compare by
+  // identity.
+  const matchingOrder = memoOne(
+    (set: RowSet, groups: OrderedGroups<T> | null): Uint32Array => {
+      const order = displayOrder(set, groups)
+      return set.context
+        ? order.filter((position) => set.context?.[position] !== 1)
+        : order
+    }
+  )
+  const matchingIdList = memoOne(
+    (order: Uint32Array, rows: Core<T>): ReadonlyArray<string> =>
+      Array.from(order, (position) => rows.ids[position])
+  )
+  const selectableIdList = memoOne(
+    (
+      order: Uint32Array,
+      rows: Core<T>,
+      disabled: Uint8Array | null
+    ): ReadonlyArray<string> => {
+      if (!disabled) return matchingIdList(order, rows)
+      const list: Array<string> = []
+      for (const position of order)
+        if (disabled[position] !== 1) list.push(rows.ids[position])
+      return list
+    }
+  )
   const paging = memoOne(
     (
       allRows: ReadonlyArray<EngineRow<T>>,
@@ -504,12 +562,7 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
         return position === undefined ? undefined : items[position]
       }
       // The matching rows (not context) in display order.
-      const matching = lazy(() => {
-        const order = displayOrder(set, groups)
-        return set.context
-          ? order.filter((position) => set.context?.[position] !== 1)
-          : order
-      })
+      const matching = lazy(() => matchingOrder(set, groups))
       const filteredItems = lazy(() =>
         Array.from(matching(), (position) => items[position])
       )
@@ -522,10 +575,14 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
           ? undefined
           : groups.rows.subarray(groups.start[group], groups.end[group])
       }
-      const groupAggregates = new Map<
-        string,
-        Readonly<Record<string, DataTableValue>>
-      >()
+      // Kept with the groups, across the models of their opening and
+      // closing: a group's checkbox and subtotals are not worked out again.
+      let kept = groupCache.get(groups ?? set)
+      if (kept?.disabled !== disabled || kept.aggregates !== aggregates) {
+        kept = { disabled, aggregates, ids: new Map(), values: new Map() }
+        groupCache.set(groups ?? set, kept)
+      }
+      const known = kept
       return {
         rows: page.rows,
         allRows,
@@ -552,11 +609,13 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
           const group = groupIndex().get(id)
           if (group === undefined || !groups) return ""
           const column = groups.grouping.columns[groups.grouping.level[group]]
-          return formatter.text(column, items[groups.grouping.first[group]])
+          return formatter.groupText(
+            column,
+            items[groups.grouping.first[group]]
+          )
         },
-        matchingIds: lazy(() =>
-          Array.from(matching(), (position) => ids[position])
-        ),
+        matchingIds: () => matchingIdList(matching(), rows),
+        selectableIds: () => selectableIdList(matching(), rows, disabled),
         allItems: () => items,
         filteredItems,
         pageItems: lazy(() =>
@@ -573,15 +632,43 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
           const range = groupRange(key)
           return range ? Array.from(range, (position) => items[position]) : []
         },
+        groupPath: (id) => {
+          if (!groups) return NO_IDS
+          const { grouping } = groups
+          const position = rows.positions.get(id)
+          const self = groupIndex().get(id)
+          // An item's group at the last level, or a group's parent; -1 for none.
+          let group =
+            position !== undefined
+              ? grouping.leafOf[position]
+              : self !== undefined
+                ? grouping.parent[self]
+                : -1
+          const path: Array<string> = []
+          for (; group >= 0; group = grouping.parent[group])
+            path.unshift(grouping.keys[group])
+          return path
+        },
+        groupSelectableIds: (key) => {
+          let selectable = known.ids.get(key)
+          if (!selectable) {
+            const list: Array<string> = []
+            for (const position of groupRange(key) ?? NO_ROWS)
+              if (disabled?.[position] !== 1) list.push(ids[position])
+            selectable = list
+            known.ids.set(key, selectable)
+          }
+          return selectable
+        },
         groupAggregates: (key) => {
-          let values = groupAggregates.get(key)
+          let values = known.values.get(key)
           if (!values) {
             const range = groupRange(key)
             values = aggregateColumns(
               aggregates,
               range ? Array.from(range, (position) => items[position]) : []
             )
-            groupAggregates.set(key, values)
+            known.values.set(key, values)
           }
           return values
         },

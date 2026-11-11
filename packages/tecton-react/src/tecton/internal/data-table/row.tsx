@@ -21,12 +21,24 @@
  * before it keeps their parity (a virtualized body is told each row's,
  * through `rowParity`, and puts none there). It is measured on its own in
  * a virtualized body.
+ *
+ * A group row (`groupable`) is a treegrid row of the group's level, open
+ * by default, opened and closed like a tree row (Right / Left, Enter, a
+ * click anywhere on it but its checkbox): a chevron, "Column: value" and
+ * its number of items in a row header over the first columns that sum
+ * nothing (`groupCellsOf`), each aggregate column's subtotal over the
+ * group's items, and a checkbox (Space on the row) that selects them. It
+ * reads the row model itself, so its subtotals follow the items while its
+ * engine row stays the same.
  */
 import * as React from "react"
 import { cn } from "cn"
+import { ChevronRightIcon } from "lucide-react"
 
-import { TableCell, TableRow } from "@tecton/react/components/table"
+import { Checkbox } from "@tecton/react/components/checkbox"
+import { TableCell, TableHead, TableRow } from "@tecton/react/components/table"
 
+import { useTranslations } from "../i18n/translations"
 import { createStore, useStore } from "../store"
 import {
   TableRowConfig,
@@ -35,15 +47,29 @@ import {
 } from "../table-grid"
 import {
   cellBorderClassName,
+  columnClassName,
+  HIDE_BELOW,
+  INDENT,
   pinnedCellClassName,
   pinnedRowClassName,
   pinStyle,
   renderCell,
   rowText,
+  SHOW_BELOW,
+  type CellPin,
   type DetailStore,
   type RowShared,
 } from "./cell"
-import type { BodyRow, DetailRow, GroupRow, ItemRow } from "./engine/index"
+import { useDataTableContext, useDataTableSelector } from "./context"
+import {
+  selectionState,
+  type BodyRow,
+  type DataTableRowModel,
+  type DetailRow,
+  type EngineColumn,
+  type GroupRow,
+  type ItemRow,
+} from "./engine/index"
 import { DataTableRowHandle } from "./row-order"
 import { DataTableSelectionCheckbox } from "./selection-checkbox"
 
@@ -170,35 +196,235 @@ function ItemRowComponent<T>({
   )
 }
 
-/** A group's row, across every column: its value and the number of its rows. */
+/**
+ * A group row's checkbox: checked while every item of the group that can
+ * be selected is, indeterminate while some are; it selects them all, or
+ * clears them. Named "Select" and the group's label, like a row's.
+ */
+function GroupCheckbox<T>({
+  row,
+  shared,
+  labelId,
+}: {
+  row: GroupRow
+  shared: RowShared<T>
+  labelId: string
+}) {
+  const t = useTranslations("table")
+  const context = useDataTableContext<T>("DataTableContent")
+  const model = useDataTableSelector(context, (state) => state.model)
+  const selected = useDataTableSelector(context, (state) => state.selected)
+  // The same array while the groups stay: a group opening or closing
+  // works out nothing again.
+  const ids = model.groupSelectableIds(row.key)
+  const state = React.useMemo(
+    () => selectionState(selected, ids),
+    [selected, ids]
+  )
+  // "Select" and the label: the checkbox's own name, then the label's.
+  const element = React.useRef<HTMLElement | null>(null)
+  const [labelledBy, setLabelledBy] = React.useState(labelId)
+  React.useLayoutEffect(() => {
+    const own = element.current?.id
+    setLabelledBy(own ? `${own} ${labelId}` : labelId)
+  }, [labelId])
+  return (
+    <Checkbox
+      ref={element}
+      data-slot="data-table-group-checkbox"
+      aria-label={t("select")}
+      aria-labelledby={labelledBy}
+      checked={state === "all"}
+      indeterminate={state === "some"}
+      disabled={ids.length === 0}
+      onCheckedChange={(_checked, eventDetails) =>
+        shared.actions.toggleGroupSelected(
+          row.key,
+          "item-press",
+          eventDetails.event
+        )
+      }
+    />
+  )
+}
+
+/** A group's subtotal in a column: `renderAggregate`, or formatted as the column. */
+function subtotal<T>(
+  column: EngineColumn<T>,
+  row: GroupRow,
+  model: DataTableRowModel<T>,
+  shared: RowShared<T>
+): React.ReactNode {
+  if (!column.aggregate) return null
+  const value = model.groupAggregates(row.key)[column.id]
+  const { renderAggregate } = column.definition
+  return renderAggregate
+    ? renderAggregate(value, { items: model.groupItems(row.key) })
+    : shared.formatter.formatAggregate(column, value)
+}
+
+/**
+ * A group's row (see the module comment): its chevron, label and number of
+ * rows in the first columns, its subtotals in the aggregate columns, its
+ * checkbox in the selection column. A click on it opens or closes it.
+ */
 function GroupRowComponent<T>({
   row,
   shared,
   ...props
 }: RowProps<GroupRow, T>) {
+  const t = useTranslations("dataTable")
+  const context = useDataTableContext<T>("DataTableContent")
+  // The subtotals are the model's: they change with the items in the group.
+  const model = useDataTableSelector(context, (state) => state.model)
+  const { actions, columns, pins, groupCells } = shared
+  const header = shared.columnsById.get(row.column)?.header ?? row.column
+  const label = t("groupLabel", {
+    columnName: header,
+    value: row.text === "" ? t("emptyGroup") : row.text,
+  })
+  const count = t("groupCount", {
+    count: row.count,
+    total: row.count.toLocaleString(shared.formatter.locale),
+  })
+  const labelId = React.useId()
   const config = React.useMemo<TableRowGridProps>(
-    () => ({ textValue: row.text, level: row.depth + 1 }),
-    [row]
+    () => ({
+      id: row.key,
+      textValue: label,
+      level: row.depth + 1,
+      expanded: row.open,
+      onExpandedChange: (open: boolean) => actions.setGroupOpen(row.key, open),
+      onToggleSelected: shared.multiple
+        ? (event: Event) =>
+            actions.toggleGroupSelected(row.key, "keyboard", event)
+        : undefined,
+    }),
+    [row, label, actions, shared.multiple]
   )
+  const pinned = (pin: CellPin | undefined) =>
+    cn(shared.pinned && cellBorderClassName, pin && pinnedCellClassName)
+  const controlCell = (pin: CellPin | undefined, content?: React.ReactNode) => (
+    <TableCell className={cn("w-px", pinned(pin))} style={pin && pinStyle(pin)}>
+      {content}
+    </TableCell>
+  )
+  const labelCell = (
+    key: string,
+    span: number,
+    pin: CellPin | undefined,
+    className: string | undefined,
+    id: string | undefined,
+    reach = false
+  ) => (
+    <TableHead
+      key={key}
+      id={id}
+      scope="row"
+      colSpan={span > 1 ? span : undefined}
+      className={cn("[&[scope=row]]:font-medium", className, pinned(pin))}
+      style={pin && pinStyle(pin)}
+    >
+      <div
+        className={cn(
+          "flex items-center gap-1",
+          // Over the empty columns after its cell, on the row's fill;
+          // within its cell until they are measured.
+          reach &&
+            "relative w-max max-w-[calc(var(--data-table-group-label,calc(100%+2rem))-2rem)] bg-inherit pe-2"
+        )}
+        style={{ paddingInlineStart: `${row.depth * INDENT}rem` }}
+      >
+        <span
+          aria-hidden
+          data-slot="data-table-group-chevron"
+          className="flex size-6 shrink-0 items-center justify-center text-muted-foreground"
+        >
+          <ChevronRightIcon
+            className={cn(
+              "size-4 transition-transform rtl:-scale-x-100",
+              row.open && "rotate-90 rtl:-rotate-90"
+            )}
+          />
+        </span>
+        <span className="min-w-0 truncate">{label}</span>
+        {/* Short of room, the count gives way first. */}
+        <span className="min-w-0 shrink-[999] truncate font-normal text-muted-foreground tabular-nums">
+          {count}
+        </span>
+      </div>
+    </TableHead>
+  )
+  const first = columns[0]
+  const { span, below } = groupCells
+  const cells: Array<React.ReactNode> = [
+    labelCell(
+      "label",
+      span,
+      pins[0],
+      first.definition.hideBelow && HIDE_BELOW[first.definition.hideBelow],
+      labelId,
+      groupCells.reach > span
+    ),
+  ]
+  if (below)
+    cells.push(
+      labelCell(
+        "label-below",
+        below.span,
+        pins[1],
+        SHOW_BELOW[below.breakpoint],
+        undefined
+      )
+    )
+  columns.forEach((column, index) => {
+    if (index < span) return
+    // Below the breakpoint, the label's second cell is in its place.
+    const covered = below && span === 1 && index === 1
+    const pin = pins[index]
+    cells.push(
+      <TableCell
+        key={column.id}
+        className={cn(
+          columnClassName(column),
+          column.type === "number" && "tabular-nums",
+          covered && HIDE_BELOW[below.breakpoint],
+          pinned(pin)
+        )}
+        style={pin && pinStyle(pin)}
+      >
+        {subtotal(column, row, model, shared)}
+      </TableCell>
+    )
+  })
   return (
     <TableRowConfig value={config}>
       <TableRow
         {...props}
+        data-slot="data-table-group-row"
         aria-rowindex={rowIndex(row.id, props["aria-rowindex"], shared)}
         aria-posinset={row.posinset}
         aria-setsize={row.setsize}
+        className="bg-table-header font-medium"
+        onClick={(event) => {
+          // Its checkbox selects; a double click opens and closes it once.
+          if (event.button !== 0 || event.detail > 1) return
+          const target = event.target as HTMLElement
+          if (target.closest("button, input, a, label, [role=checkbox]")) return
+          const text = target.ownerDocument.getSelection()
+          if (text && !text.isCollapsed) return
+          actions.setGroupOpen(row.key, !row.open)
+        }}
       >
-        <TableCell
-          colSpan={shared.columnCount}
-          className="bg-table-header font-medium"
-        >
-          <span style={{ paddingInlineStart: `${row.depth * 1.25}rem` }}>
-            {row.text}{" "}
-            <span className="text-muted-foreground tabular-nums">
-              ({row.count.toLocaleString(shared.formatter.locale)})
-            </span>
-          </span>
-        </TableCell>
+        {shared.handle && controlCell(shared.handlePin)}
+        {shared.selection &&
+          controlCell(
+            shared.selectionPin,
+            shared.multiple ? (
+              <GroupCheckbox row={row} shared={shared} labelId={labelId} />
+            ) : null
+          )}
+        {cells}
       </TableRow>
     </TableRowConfig>
   )

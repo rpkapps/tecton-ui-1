@@ -157,6 +157,27 @@ const enUS = {
     reorderRowsColumn: "Reorder",
     // Names the totals row.
     total: "Total",
+    // Grouping: the group-by button and menu (`DataTableGroupBy`), where a
+    // grouping column moves a level up (before the one above it), and the
+    // items of a column header's menu.
+    groupBy: "Group by",
+    groupOrder: "Order",
+    moveGroupUp: "Move {columnName} up",
+    ungroupAll: "Ungroup all",
+    expandAllGroups: "Expand all groups",
+    collapseAllGroups: "Collapse all groups",
+    groupByColumn: "Group by column",
+    ungroup: "Ungroup",
+    // Announced when the grouping changes; {columnNames} is a list of
+    // column names ("Field and Status").
+    groupedBy: "Grouped by {columnNames}",
+    ungrouped: "Rows no longer grouped",
+    // A group row: the grouping column's name and the group's value
+    // ("Field: Gullfaks"), the value of rows that have none, and the
+    // number of rows in the group ({total} is formatted).
+    groupLabel: "{columnName}: {value}",
+    emptyGroup: "(Empty)",
+    groupCount: { one: "{total} row", other: "{total} rows" },
   },
   tableColumnResizer: {
     resize: "Resize {columnName}",

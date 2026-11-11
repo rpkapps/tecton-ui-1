@@ -31,8 +31,8 @@ function asSet(ids: Ids): ReadonlySet<string> {
 }
 
 /** The items "select all" selects: every matching item that is not disabled. */
-function selectAllIds<T>(model: DataTableRowModel<T>): Array<string> {
-  return model.matchingIds().filter((id) => !model.isDisabled(id))
+function selectAllIds<T>(model: DataTableRowModel<T>): ReadonlyArray<string> {
+  return model.selectableIds()
 }
 
 /** A group's items that can be selected. */
@@ -74,7 +74,7 @@ function enterAllMatching<T>(model: DataTableRowModel<T>): {
   value: Array<string>
   allMatching: DataTableAllMatching
 } {
-  return { value: selectAllIds(model), allMatching: { except: [] } }
+  return { value: [...selectAllIds(model)], allMatching: { except: [] } }
 }
 
 /** Selects or deselects one row while in all-matching: a deselected row is excepted. */
@@ -100,7 +100,10 @@ function setSelectedInAllMatching(
 function allMatchingValue<T>(
   model: DataTableRowModel<T>,
   allMatching: DataTableAllMatching
-): Array<string> {
+): ReadonlyArray<string> {
+  // Nothing excepted: the selectable ids themselves, the same array while
+  // the matching rows stay.
+  if (allMatching.except.length === 0) return selectAllIds(model)
   const except = new Set(allMatching.except)
   return selectAllIds(model).filter((id) => !except.has(id))
 }

@@ -98,4 +98,95 @@ describe("date-only strings west of UTC", () => {
       ["group:spud=", 1],
     ])
   })
+
+  it("group by their day in the column's time zone, named by the day alone", () => {
+    const zoned = createColumns<Well>([
+      { id: "id", header: "Well" },
+      {
+        id: "spud",
+        header: "Spud",
+        type: "date",
+        format: { dateStyle: "long", timeStyle: "short", timeZone: "UTC" },
+      },
+    ])
+    const view = reconcileView(
+      zoned,
+      { grouping: ["spud"] },
+      createDefaultView(zoned, undefined, ALL),
+      ALL
+    )
+    const result = createDataTableEngine<Well>().run({
+      items: [
+        // 1 March in Los Angeles, 2 March in UTC.
+        { id: "a", spud: "2024-03-01T20:00:00-08:00" },
+        { id: "b", spud: "2024-03-02T10:00:00Z" },
+        { id: "c", spud: "2024-03-01T10:00:00Z" },
+      ],
+      columns: zoned,
+      view,
+    })
+    const groups = result.rows.filter(
+      (row): row is GroupRow => row.kind === "group"
+    )
+    expect(groups.map((row) => [row.key, row.text, row.count])).toEqual([
+      ["group:spud=2024-03-01", "March 1, 2024", 1],
+      ["group:spud=2024-03-02", "March 2, 2024", 2],
+    ])
+    expect(result.textOf("group:spud=2024-03-02")).toBe("March 2, 2024")
+  })
+
+  it("group by the part of the day a format shows: a month and year", () => {
+    const monthly = createColumns<Well>([
+      { id: "id", header: "Well" },
+      {
+        id: "spud",
+        header: "Spud",
+        type: "date",
+        format: { year: "numeric", month: "short", timeZone: "UTC" },
+      },
+    ])
+    const view = reconcileView(
+      monthly,
+      { grouping: ["spud"] },
+      createDefaultView(monthly, undefined, ALL),
+      ALL
+    )
+    const result = createDataTableEngine<Well>().run({
+      items: [
+        { id: "a", spud: "2024-03-01T10:00:00Z" },
+        { id: "b", spud: "2024-03-31T23:00:00Z" },
+        // April in UTC, still March in Los Angeles.
+        { id: "c", spud: "2024-04-01T02:00:00Z" },
+      ],
+      columns: monthly,
+      view,
+    })
+    const groups = result.rows.filter(
+      (row): row is GroupRow => row.kind === "group"
+    )
+    expect(groups.map((row) => [row.key, row.text, row.count])).toEqual([
+      ["group:spud=2024-03", "Mar 2024", 2],
+      ["group:spud=2024-04", "Apr 2024", 1],
+    ])
+  })
+
+  it("name a group by the day of a format with no day of its own", () => {
+    const timeOnly = createColumns<Well>([
+      { id: "id", header: "Well" },
+      {
+        id: "spud",
+        header: "Spud",
+        type: "date",
+        format: { timeStyle: "short" },
+      },
+    ])
+    const model = getColumnModel(timeOnly)
+    const spud = model.byId.get("spud") as NonNullable<
+      ReturnType<typeof model.byId.get>
+    >
+    const formatter = getFormatter(model, "en-US")
+    const item = { id: "a", spud: "2024-03-01T09:30:00" }
+    expect(formatter.text(spud, item)).toBe("9:30 AM")
+    expect(formatter.groupText(spud, item)).toBe("Mar 1, 2024")
+  })
 })

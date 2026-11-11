@@ -136,6 +136,8 @@ type DataTableState<T> = {
   readonly selectable: () => ReadonlyArray<string>
   readonly allMatching: DataTableAllMatching | null
   readonly expanded: ReadonlyArray<string>
+  /** The closed groups' keys (groups are open unless closed). */
+  readonly collapsedGroups: ReadonlyArray<string>
   readonly loading: boolean
   /** `error` as given: `true` or content shows the error state. */
   readonly error: React.ReactNode
@@ -185,6 +187,19 @@ type DataTableActions<T> = {
     value: Array<string>,
     eventDetails: ChangeEventDetails<SelectionReason>
   ) => void
+  /**
+   * A group's checkbox (or Space on its row): selects every item of the
+   * group that can be, or clears them when all are selected.
+   */
+  toggleGroupSelected: (
+    key: string,
+    reason: DataTableSelectionChangeReason,
+    event?: Event
+  ) => void
+  /** Opens or closes a group, by its key. */
+  setGroupOpen: (key: string, open: boolean) => void
+  expandAllGroups: () => void
+  collapseAllGroups: () => void
   selectAll: (event?: Event) => void
   /** "Select all N": all-matching in server mode, every matching row in client mode. */
   selectAllMatching: (event?: Event) => void

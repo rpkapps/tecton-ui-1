@@ -137,7 +137,12 @@ const DRAGGABLE =
  * the header's own button does), the menu then sorting too.
  */
 function hasColumnMenu(options: ColumnMenuOptions) {
-  return options.resizable || options.hideable || options.pinnable
+  return (
+    options.resizable ||
+    options.hideable ||
+    options.pinnable ||
+    options.groupable
+  )
 }
 
 /** The props of a column's menu, as `column-menu.tsx` takes them. */
@@ -422,7 +427,11 @@ function DataTableColumnHeader<T>({
     hideable:
       options.hideableColumns && column.hideable && layout.columns.length > 1,
     pinnable: options.pinnableColumns && column.pinnable,
+    groupable: options.groupable && column.groupable,
   }
+  const grouped = useDataTableSelector(context, (state) =>
+    state.view.grouping.includes(column.id)
+  )
   const draggable = order !== null && shared.movable.has(column.id)
   const dragging = useColumnDragging(order, column.id)
   const ids = useDescriptions(column.description, draggable)
@@ -542,6 +551,7 @@ function DataTableColumnHeader<T>({
       options={menu}
       sorting={sorting}
       pinned={side}
+      grouped={grouped}
       announceSort={announceSort}
       triggerRef={triggerRef}
       resizerRef={resizerRef}

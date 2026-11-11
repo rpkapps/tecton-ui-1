@@ -57,6 +57,14 @@ type RowShared<T> = {
   /** Rows have a level: a tree, or groups. */
   levelled: boolean
   tree: boolean
+  /** Rows are in groups: their row headers are indented under them. */
+  grouped: boolean
+  /** Multiple selection: a group row's checkbox selects its rows. */
+  multiple: boolean
+  /** Every column, shown or not, by id: a group row names its column. */
+  columnsById: ReadonlyMap<string, EngineColumn<T>>
+  /** Where a group row's label goes (`groupCellsOf`). */
+  groupCells: GroupCells
   /** `disabledBehavior="all"`: a disabled row is disabled in the grid too. */
   disableRows: boolean
   /** Row headers are links (`itemToHref`). */
@@ -85,6 +93,27 @@ type RowShared<T> = {
   /** Columns are pinned: the row is opaque, each cell draws its border. */
   pinned: boolean
   actions: DataTableActions<T>
+}
+
+/**
+ * Where a group row's label goes: from the first column, over the columns
+ * after it that sum nothing, are pinned as it is and shown at every width
+ * (`span`). When the first column is hidden below a breakpoint, the label
+ * has a second cell for below it (`below`), from the second column, shown
+ * only there; `null` otherwise.
+ *
+ * Pinned to the start, the label may go on over the empty columns that
+ * scroll after it, on its row's fill: it stays in view with the pinned
+ * columns, cut only where a column sums something. `reach` is the number
+ * of columns it may cover (`span` when it keeps to its cell); their width
+ * is the frame's `--data-table-group-label` (`groupLabelWidth`), so a
+ * resize renders no row. Scrolled sideways, the label keeps to its cell
+ * (`content.tsx`).
+ */
+type GroupCells = {
+  span: number
+  below: { breakpoint: "sm" | "md" | "lg"; span: number } | null
+  reach: number
 }
 
 /** Where a pinned column's cells stick: the edge, and how far from it (a CSS length). */
@@ -139,6 +168,53 @@ const HIDE_BELOW = {
   md: "hidden md:table-cell",
   lg: "hidden lg:table-cell",
 } as const
+
+/** A cell shown only below a breakpoint: where a hidden column's place is taken. */
+const SHOW_BELOW = {
+  sm: "sm:hidden",
+  md: "md:hidden",
+  lg: "lg:hidden",
+} as const
+
+function sameSide(a: CellPin | undefined, b: CellPin | undefined) {
+  return a?.side === b?.side
+}
+
+/** Where the group rows of these columns put their label (`GroupCells`). */
+function groupCellsOf<T>(
+  columns: ReadonlyArray<EngineColumn<T>>,
+  pins: ReadonlyArray<CellPin | undefined>
+): GroupCells {
+  const empty = (index: number) =>
+    !columns[index].aggregate && !columns[index].definition.hideBelow
+  let span = 1
+  while (span < columns.length && empty(span) && sameSide(pins[span], pins[0]))
+    span++
+  const breakpoint = columns[0]?.definition.hideBelow
+  const below =
+    breakpoint && columns.length > 1 && !columns[1].definition.hideBelow
+      ? { breakpoint, span: Math.max(span, 2) - 1 }
+      : null
+  let reach = span
+  if (pins[0]?.side === "start")
+    while (reach < columns.length && empty(reach) && pins[reach] === undefined)
+      reach++
+  return { span, below, reach }
+}
+
+/**
+ * The frame's variables for the group rows' label: the width of the
+ * columns it may cover (`GroupCells.reach`), from the columns' fixed
+ * widths; none when it keeps to its cell.
+ */
+function groupLabelWidth(
+  cells: GroupCells,
+  widths: ReadonlyArray<number> | undefined
+): Record<string, string> | undefined {
+  if (cells.reach === cells.span || !widths) return undefined
+  const width = widths.slice(0, cells.reach).reduce((sum, at) => sum + at, 0)
+  return { "--data-table-group-label": `${width}px` }
+}
 
 /** A column's alignment and breakpoint, for its header and its cells. */
 function columnClassName<T>(column: EngineColumn<T>) {
@@ -205,18 +281,22 @@ function cellContent<T>(
 }
 
 /**
- * The chevron (or its space) and indent before a tree row's header, or the
- * chevron of a row with a detail row (`indent` off).
+ * The chevron (or its space) and indent before a tree row's header, the
+ * chevron of a row with a detail row (`indent` off), or the indent of a
+ * row in groups.
  */
 function TreeIndent<T>({
   row,
   actions,
   indent,
+  spacer,
   children,
 }: {
   row: ItemRow<T>
   actions: DataTableActions<T>
   indent: boolean
+  /** A row without a chevron keeps its space (a tree's leaf, beside its siblings). */
+  spacer: boolean
   children: React.ReactNode
 }) {
   return (
@@ -261,9 +341,9 @@ function TreeIndent<T>({
             )}
           />
         </button>
-      ) : (
+      ) : spacer ? (
         <span aria-hidden className="size-6 shrink-0" />
-      )}
+      ) : null}
       <span className="min-w-0 truncate">{children}</span>
     </div>
   )
@@ -308,9 +388,16 @@ function renderCell<T>(
         {content}
       </Link>
     )
-  if (shared.tree || shared.detail)
+  if (shared.tree || shared.detail || shared.grouped)
     content = (
-      <TreeIndent row={row} actions={shared.actions} indent={shared.tree}>
+      <TreeIndent
+        row={row}
+        actions={shared.actions}
+        indent={shared.tree || shared.grouped}
+        // In groups, a row has no chevron of its own (nor its siblings):
+        // only its level's indent, the name's room kept.
+        spacer={shared.tree}
+      >
         {content}
       </TreeIndent>
     )
@@ -326,11 +413,16 @@ export {
   cellBorderClassName,
   cellContent,
   columnClassName,
+  groupCellsOf,
+  groupLabelWidth,
+  HIDE_BELOW,
+  INDENT,
   pinnedCellClassName,
   pinnedHeadClassName,
   pinnedRowClassName,
   pinStyle,
   renderCell,
   rowText,
+  SHOW_BELOW,
 }
-export type { CellPin, DetailStore, RowShared }
+export type { CellPin, DetailStore, GroupCells, RowShared }

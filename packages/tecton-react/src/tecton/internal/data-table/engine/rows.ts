@@ -72,7 +72,7 @@ type GroupRow = {
   readonly column: string
   /** The grouping column's value of the group's first row. */
   readonly value: DataTableValue
-  /** That value's display text. */
+  /** That value's display text (a date's day); `""` for no value. */
   readonly text: string
   /** The number of items in the group, nested groups included. */
   readonly count: number
@@ -321,7 +321,7 @@ function buildRows<T>(input: BuildRowsInput<T>): Array<EngineRow<T>> {
       const firstItem = items[grouping.first[group]]
       const count = ordered.end[group] - ordered.start[group]
       const value = column.getValue(firstItem)
-      const text = input.formatter.text(column, firstItem)
+      const text = input.formatter.groupText(column, firstItem)
       const before = cache.groups[group]
       const row: GroupRow =
         before?.depth === depth &&

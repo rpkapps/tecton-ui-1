@@ -27,10 +27,12 @@
  *   does when rows do not select, or (with "toggle") while none is
  *   selected. Enter on a row with `expanded` opens or closes it, and so do
  *   Right / Left on the row.
+ * - Space on a row that selects other rows (`onToggleSelected`, a group's)
+ *   selects or clears them.
  * - When the focused row or cell goes away (rows removed, a state in their
- *   place), focus goes to the row now at its place, the nearest one, or the
- *   body's own control (an empty state's button); it never drops to the
- *   page.
+ *   place), focus goes to the row that closed over it (`restoreFocusTo`, a
+ *   group), else the row now at its place, the nearest one, or the body's
+ *   own control (an empty state's button); it never drops to the page.
  * - Selection changes and sorting (a header's `aria-sort` changing) are
  *   announced while focus is in the table.
  * - In a virtualized table, a row out of view is scrolled to before it is
@@ -124,6 +126,13 @@ type TableGridOptions = {
    * for a row that takes another's fill; the index's own by default.
    */
   rowParity?: (index: number) => 0 | 1 | null
+  /**
+   * Where focus goes when the body row it was on (by its `value`, or its
+   * `id`) went away: the body index (from 0) of a row that closed over it
+   * (a group), `null` for the grid's own choice (the row now in its place,
+   * or the nearest).
+   */
+  restoreFocusTo?: (row: string) => number | null
 }
 
 /** What the component around a grid table asks of it. */
@@ -146,6 +155,13 @@ type TableRowGridProps = {
   expanded?: boolean
   /** Called when Right / Left or Enter opens or closes the row. */
   onExpandedChange?: (expanded: boolean, event: Event) => void
+  /** Names a row without a `value` (a group's), for `restoreFocusTo`. */
+  id?: string
+  /**
+   * Space on a row without a `value` that selects other rows (a group's,
+   * by its checkbox), with multiple selection.
+   */
+  onToggleSelected?: (event: Event) => void
 }
 
 type RowInfo = Required<Pick<TableRowGridProps, "disabled">> &
@@ -367,6 +383,7 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     getSelectedCount,
     tree: treeProp = false,
     controller,
+    restoreFocusTo,
   } = config ?? {}
   const t = useTranslations("table")
   const rtl = useDirection() === "rtl"
@@ -390,6 +407,8 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     column: number | null
     body: boolean
     level: number | undefined
+    /** A body row's `value`, or its `id`. */
+    id: string | undefined
   } | null>(null)
   /** The element in the table that last had focus, to put focus back when it goes. */
   const lastFocused = React.useRef<HTMLElement | null>(null)
@@ -743,7 +762,23 @@ function useTableGrid(own: React.ComponentProps<"table">) {
     return !!infoOf(rowAt(index))?.disabled
   }
 
+  /**
+   * The row index of the row that closed over the row focus was on
+   * (`restoreFocusTo`), while that row is gone; `null` for none.
+   */
+  const closedOver = () => {
+    const at = position.current
+    if (!at?.body || at.id === undefined || !restoreFocusTo) return null
+    const index = restoreFocusTo(at.id)
+    return index === null || index >= bodyCount()
+      ? null
+      : headRows().length + index
+  }
+
   const defaultStop = (): HTMLElement | null => {
+    const closed = closedOver()
+    const closer = closed === null ? null : rowAt(closed)
+    if (closer && !infoOf(closer)?.disabled) return closer
     const at = position.current
     if (at) {
       // A body row's place stays in the body as rows go: the last row now.
@@ -835,7 +870,11 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       // control, else the table's first stop.
       const control = bodyRows().length === 0 ? bodyControl() : null
       const target = control ?? defaultStop()
-      if (target === control) control?.focus({ preventScroll: true })
+      // The row that closed over it, scrolled to when it is out of view.
+      const closed = control ? null : closedOver()
+      if (closed !== null && rowAt(closed) === null)
+        whenRendered(closed, focusElement)
+      else if (target === control) control?.focus({ preventScroll: true })
       else if (target) focusElement(target)
     }
   }
@@ -1144,6 +1183,11 @@ function useTableGrid(own: React.ComponentProps<"table">) {
       case " ": {
         if (onControl) return
         if (typeahead(event)) return
+        if (info?.onToggleSelected && selectionMode === "multiple") {
+          handled()
+          if (!info.disabled) info.onToggleSelected(event.nativeEvent)
+          return
+        }
         if (!info || info.value === undefined || selectionMode === "none")
           return
         handled()
@@ -1281,11 +1325,13 @@ function useTableGrid(own: React.ComponentProps<"table">) {
   ) => {
     const index = indexOf(row)
     const inBody = isBody(index)
+    const info = inBody ? infoOf(row) : undefined
     position.current = {
       row: index,
       column: cell ? columnOf(cell) : null,
       body: inBody,
-      level: inBody ? infoOf(row)?.level : undefined,
+      level: info?.level,
+      id: info?.value ?? info?.id,
     }
   }
 
@@ -1600,6 +1646,8 @@ function useTableRow({
     level,
     expanded,
     onExpandedChange,
+    id,
+    onToggleSelected,
   } = config ?? {}
   const grid = React.useContext(TableGridContext)
   const selected = useStore(
@@ -1613,6 +1661,8 @@ function useTableRow({
     level,
     expanded,
     onExpandedChange,
+    id,
+    onToggleSelected,
   })
   React.useInsertionEffect(() => {
     info.current = {
@@ -1622,6 +1672,8 @@ function useTableRow({
       level,
       expanded,
       onExpandedChange,
+      id,
+      onToggleSelected,
     }
   })
   const register = grid?.register

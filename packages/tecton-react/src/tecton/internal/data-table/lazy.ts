@@ -62,6 +62,8 @@ const FEATURES = {
   filters: feature(() => import("./filter-popover")),
   /** `DataTableRowActions`' menu (`row-actions-menu.tsx`). */
   rowActions: feature(() => import("./row-actions-menu")),
+  /** `DataTableGroupBy`'s menu (`group-by-menu.tsx`). */
+  groupBy: feature(() => import("./group-by-menu")),
 }
 
 type FeatureName = keyof typeof FEATURES

@@ -44,6 +44,7 @@ type UseDataTableResult<T> = {
   setFilter: (column: string, value: DataTableFilterValue | null) => void
   /** Removes every filter and the search. */
   clearFilters: () => void
+  /** The columns to group by, by id: the outermost first (`groupable`). */
   setGrouping: (grouping: ReadonlyArray<string>) => void
   /** Back to `defaultView` (or the defaults). */
   resetView: () => void
@@ -70,9 +71,13 @@ type UseDataTableResult<T> = {
   clearSelection: () => void
   /** Server mode: every row the view matches is selected but `except`; else `null`. */
   allMatching: DataTableAllMatching | null
-  /** The open tree rows' ids. */
+  /** The open tree rows' and detail rows' ids. */
   expanded: ReadonlyArray<string>
   setExpanded: (expanded: ReadonlyArray<string>) => void
+  /** Opens every group (groups are open until closed). */
+  expandAllGroups: () => void
+  /** Closes every group, nested ones too. */
+  collapseAllGroups: () => void
   /** The page shown, from 1. */
   page: number
   pageCount: number
@@ -144,6 +149,8 @@ function createResult<T>(
     allMatching: state.allMatching,
     expanded: state.expanded,
     setExpanded: (expanded) => actions.setExpanded(expanded, "none"),
+    expandAllGroups: () => actions.expandAllGroups(),
+    collapseAllGroups: () => actions.collapseAllGroups(),
     page: model.page,
     pageCount: model.pageCount,
     pageSize: model.pageSize,

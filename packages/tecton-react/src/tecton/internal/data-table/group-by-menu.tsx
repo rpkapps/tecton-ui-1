@@ -1,0 +1,205 @@
+"use client"
+
+/**
+ * `DataTableGroupBy`'s menu, loaded on demand (`lazy.ts`, the `groupBy`
+ * feature; the part renders a plain button until then, `group-by.tsx`):
+ *
+ * - a checkbox per groupable column, in the columns' order (hidden ones
+ *   too: a column grouped by is often hidden), with its level while it is
+ *   grouped by; checking one adds it as the last level;
+ * - with two levels or more, an item per level after the first that moves
+ *   it a level up, before the one above it (the menu stays open, for a
+ *   move of several steps);
+ * - while grouped, "Expand all groups" and "Collapse all groups";
+ * - "Ungroup all".
+ *
+ * Each change of the grouping is announced.
+ */
+import * as React from "react"
+import {
+  ArrowUpIcon,
+  ChevronsDownUpIcon,
+  ChevronsUpDownIcon,
+  UngroupIcon,
+} from "lucide-react"
+
+import {
+  DropdownMenu,
+  DropdownMenuCheckboxItem,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@tecton/react/components/dropdown-menu"
+import { useLocale } from "@tecton/react/tecton/provider"
+
+import { useTranslations } from "../i18n/translations"
+import {
+  useDataTableSelector,
+  useNumberFormat,
+  type DataTableContextValue,
+} from "./context"
+import { getColumnModel, setGrouping } from "./engine/index"
+import { announceGrouping, toggleGrouping } from "./grouping"
+import type { LazyPopupProps } from "./lazy-popup"
+import { useFirstItemFromKeyboard, usePopupTabbing } from "./popup-focus"
+
+/** `list` with the item at `from` moved by `step` places. */
+function move(list: ReadonlyArray<string>, from: number, step: number) {
+  const to = from + step
+  if (from < 0 || to < 0 || to >= list.length) return list
+  const next = [...list]
+  next.splice(to, 0, ...next.splice(from, 1))
+  return next
+}
+
+function DataTableGroupByMenu({
+  context,
+  popup,
+}: {
+  context: DataTableContextValue<unknown>
+  /** The menu's state, from its button (`lazy-popup.ts`). */
+  popup: LazyPopupProps
+}) {
+  const t = useTranslations("dataTable")
+  const { locale } = useLocale()
+  const format = useNumberFormat()
+  const { actions } = context
+  const content = React.useRef<HTMLDivElement | null>(null)
+  useFirstItemFromKeyboard(content, popup.open, popup.openedBy)
+  usePopupTabbing(popup, "menu")
+  const columns = useDataTableSelector(context, (state) => state.columns)
+  const order = useDataTableSelector(
+    context,
+    (state) => state.view.columns.order
+  )
+  const grouping = useDataTableSelector(context, (state) => state.view.grouping)
+  const collapsed = useDataTableSelector(
+    context,
+    (state) => state.collapsedGroups.length > 0
+  )
+  const { byId } = getColumnModel(columns)
+  const headerOf = (id: string) => byId.get(id)?.header ?? id
+  const groupable = order.flatMap((id) => {
+    const column = byId.get(id)
+    return column?.groupable ? [column] : []
+  })
+
+  const set = (
+    change: (grouping: ReadonlyArray<string>) => ReadonlyArray<string>,
+    event: Event | undefined
+  ) => {
+    let after: ReadonlyArray<string> = []
+    if (
+      actions.updateView(
+        (view) => {
+          after = change(view.grouping)
+          return setGrouping(view, after)
+        },
+        "group",
+        event
+      )
+    )
+      announceGrouping(t, after, headerOf, locale)
+  }
+
+  return (
+    <DropdownMenu
+      open={popup.open}
+      onOpenChange={popup.onOpenChange}
+      onOpenChangeComplete={popup.onOpenChangeComplete}
+    >
+      <DropdownMenuContent
+        ref={content}
+        id={popup.popupId}
+        aria-labelledby={popup.buttonId}
+        anchor={popup.anchor}
+        align="start"
+        className="w-auto min-w-52"
+        finalFocus={popup.finalFocus}
+      >
+        <DropdownMenuGroup>
+          <DropdownMenuLabel>{t("groupBy")}</DropdownMenuLabel>
+          {groupable.map((column) => {
+            const level = grouping.indexOf(column.id)
+            return (
+              <DropdownMenuCheckboxItem
+                key={column.id}
+                checked={level !== -1}
+                onCheckedChange={(checked, details) =>
+                  set(
+                    (current) => toggleGrouping(current, column.id, checked),
+                    details.event
+                  )
+                }
+              >
+                {column.header}
+                {level !== -1 && (
+                  <span
+                    aria-hidden
+                    className="ms-auto text-xs text-muted-foreground tabular-nums"
+                  >
+                    {format.format(level + 1)}
+                  </span>
+                )}
+              </DropdownMenuCheckboxItem>
+            )
+          })}
+        </DropdownMenuGroup>
+        {grouping.length > 1 && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>{t("groupOrder")}</DropdownMenuLabel>
+              {grouping.slice(1).map((id) => (
+                <DropdownMenuItem
+                  key={id}
+                  // Open for a move of several steps.
+                  closeOnClick={false}
+                  onClick={(event) =>
+                    set(
+                      (current) => move(current, current.indexOf(id), -1),
+                      event.nativeEvent
+                    )
+                  }
+                >
+                  <ArrowUpIcon />
+                  {t("moveGroupUp", { columnName: headerOf(id) })}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuGroup>
+          </>
+        )}
+        {grouping.length > 0 && (
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuGroup>
+              <DropdownMenuItem
+                disabled={!collapsed}
+                onClick={() => actions.expandAllGroups()}
+              >
+                <ChevronsUpDownIcon />
+                {t("expandAllGroups")}
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => actions.collapseAllGroups()}>
+                <ChevronsDownUpIcon />
+                {t("collapseAllGroups")}
+              </DropdownMenuItem>
+            </DropdownMenuGroup>
+          </>
+        )}
+        <DropdownMenuSeparator />
+        <DropdownMenuItem
+          disabled={grouping.length === 0}
+          onClick={(event) => set(() => [], event.nativeEvent)}
+        >
+          <UngroupIcon />
+          {t("ungroupAll")}
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+export { DataTableGroupByMenu }

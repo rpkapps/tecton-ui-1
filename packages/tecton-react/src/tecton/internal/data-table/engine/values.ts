@@ -68,6 +68,13 @@ function toDay(time: number) {
   return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
 }
 
+/** The calendar day of a time in `timeZone` (an IANA zone), as `YYYY-MM-DD`. */
+function toDayIn(time: number, timeZone: string) {
+  const p = partsIn(time, timeZone)
+  const pad = (n: number) => String(n).padStart(2, "0")
+  return `${p.year}-${pad(p.month + 1)}-${pad(p.day)}`
+}
+
 function toDate(value: DataTableValue): Date | undefined {
   if (value instanceof Date)
     return toTime(value) === undefined ? undefined : value
@@ -191,6 +198,7 @@ export {
   toBoolean,
   toDate,
   toDay,
+  toDayIn,
   toNumber,
   toTime,
 }

@@ -13,6 +13,7 @@ import {
   DataTableContent,
   DataTableFilter,
   DataTableFooter,
+  DataTableGroupBy,
   DataTablePageButtons,
   DataTablePageInfo,
   DataTableSearch,
@@ -128,13 +129,18 @@ export default function DataTableRtl() {
       hideableColumns
       pinnableColumns
       filterable
-      defaultView={{ columns: { pinned: { start: ["name"], end: [] } } }}
+      groupable
+      defaultView={{
+        grouping: ["field"],
+        columns: { pinned: { start: ["name"], end: [] } },
+      }}
       className="w-full"
     >
       <DataTableToolbar>
         <DataTableSearch />
         <DataTableFilter column="status" />
         <DataTableFilter column="depth" />
+        <DataTableGroupBy />
       </DataTableToolbar>
       <DataTableActiveFilters />
       <DataTableContent aria-label={t.table} totals />

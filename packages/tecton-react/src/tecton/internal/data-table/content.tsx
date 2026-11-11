@@ -45,7 +45,13 @@ import {
   type TableGridController,
   type TableGridOptions,
 } from "../table-grid"
-import { type CellPin, type DetailStore, type RowShared } from "./cell"
+import {
+  groupCellsOf,
+  groupLabelWidth,
+  type CellPin,
+  type DetailStore,
+  type RowShared,
+} from "./cell"
 import {
   createColumnOrder,
   listsOf,
@@ -126,6 +132,7 @@ const NO_ROWS: ReadonlyArray<Row> = []
 const NO_IDS: ReadonlySet<string> = new Set()
 const NO_OPEN: ReadonlyArray<string> = []
 const NO_FEATURES = [] as const
+const NO_LABEL_WIDTH = { "--data-table-group-label": "initial" }
 const HEADER = ["headerPopups"] as const
 const HEADER_AND_RESIZER = ["headerPopups", "resizer"] as const
 
@@ -388,6 +395,39 @@ function hideBelowColumn<T>(column: EngineColumn<T>) {
   return hideBelow ? HIDE_BELOW_COLUMN[hideBelow] : undefined
 }
 
+/**
+ * A group row's label over the empty columns after its pinned cell
+ * (`groupLabelWidth`) while the table is scrolled to its start; once
+ * scrolled sideways, within its cell, so the columns scrolling under the
+ * pinned ones are not covered. Set on the scroll container, which no
+ * render of the table's writes to, as the user scrolls.
+ */
+function useGroupLabelClip(
+  container: React.RefObject<HTMLDivElement | null>,
+  on: boolean
+) {
+  React.useLayoutEffect(() => {
+    const element = container.current
+    if (!on || !element) return
+    let clipped = false
+    const update = () => {
+      const scrolled = Math.abs(element.scrollLeft) > 0.5
+      if (scrolled === clipped) return
+      clipped = scrolled
+      if (scrolled) element.style.setProperty(GROUP_LABEL, "initial")
+      else element.style.removeProperty(GROUP_LABEL)
+    }
+    update()
+    element.addEventListener("scroll", update, { passive: true })
+    return () => {
+      element.removeEventListener("scroll", update)
+      element.style.removeProperty(GROUP_LABEL)
+    }
+  }, [container, on])
+}
+
+const GROUP_LABEL = "--data-table-group-label"
+
 /** The header's height while `active`, for the bar under it. */
 function useHeaderHeight(
   frame: React.RefObject<HTMLDivElement | null>,
@@ -647,6 +687,7 @@ function DataTableContentImpl({
     options.resizableColumns ||
     options.hideableColumns ||
     options.pinnableColumns ||
+    options.groupable ||
     shownColumns.some((column) => column.description !== undefined) ||
     layout.headerRows.some((row) =>
       row.cells.some(
@@ -670,6 +711,19 @@ function DataTableContentImpl({
   const rowHeader = shownColumns.find(
     (column) => column.id === layout.rowHeader
   )
+  const columnsById = getColumnModel(columns).byId
+  const groupCells = React.useMemo(
+    () => groupCellsOf(shownColumns, pins),
+    [shownColumns, pins]
+  )
+  // Set on every grouped table's frame, so a grouped table in a detail row
+  // never reads the outer one's.
+  const reachWidth = grouped
+    ? groupLabelWidth(groupCells, sizing?.widths)
+    : undefined
+  const labelWidth = grouped ? (reachWidth ?? NO_LABEL_WIDTH) : undefined
+  useGroupLabelClip(container, reachWidth !== undefined)
+  const multiple = options.selectionMode === "multiple"
   const shared = React.useMemo<RowShared<unknown>>(
     () => ({
       columns: shownColumns,
@@ -682,6 +736,10 @@ function DataTableContentImpl({
       detail: detail ? detailStore : null,
       levelled: options.tree || grouped || detail,
       tree: options.tree,
+      grouped,
+      multiple,
+      columnsById,
+      groupCells,
       disableRows: options.disabledBehavior === "all",
       linked: options.linked,
       wrap: !virtualized,
@@ -718,6 +776,9 @@ function DataTableContentImpl({
       openOnPages,
       options.tree,
       grouped,
+      multiple,
+      columnsById,
+      groupCells,
       options.disabledBehavior,
       options.linked,
       options.pagination,
@@ -749,6 +810,12 @@ function DataTableContentImpl({
     () => (parity ? rowParityOf(rows) : undefined),
     [parity, rows]
   )
+  // The body's rows as rendered, for the grid to find a closed group: set
+  // before the layout effects, where the grid looks for it.
+  const shownRows = React.useRef(rows)
+  React.useInsertionEffect(() => {
+    shownRows.current = rows
+  })
   const grid = React.useMemo<TableGridOptions>(
     () => ({
       selectionMode: options.selectionMode,
@@ -776,6 +843,17 @@ function DataTableContentImpl({
         return allMatching
           ? Math.max(0, current.rowCount - allMatching.except.length)
           : selected.size
+      },
+      // A row gone with the group that closed over it: focus goes to the
+      // group's row (the outermost closed one).
+      restoreFocusTo: (id) => {
+        const { model: current, collapsedGroups } = store.get()
+        if (collapsedGroups.length === 0) return null
+        const closed = new Set(collapsedGroups)
+        const group = current.groupPath(id).find((key) => closed.has(key))
+        if (group === undefined) return null
+        const at = shownRows.current.findIndex((row) => row.key === group)
+        return at === -1 ? null : at
       },
     }),
     [
@@ -899,7 +977,11 @@ function DataTableContentImpl({
         className
       )}
       {...props}
-      style={sizer.style ? { ...sizer.style, ...props.style } : props.style}
+      style={
+        sizer.style || labelWidth
+          ? { ...sizer.style, ...labelWidth, ...props.style }
+          : props.style
+      }
     >
       <DataTableGrid context={context} options={grid}>
         <TableContainerConfig value={containerConfig}>

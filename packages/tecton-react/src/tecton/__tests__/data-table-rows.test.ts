@@ -462,6 +462,70 @@ describe("groups", () => {
       open.rows.find((row) => row.key === "2")
     )
   })
+
+  it("keep a group's selectable ids and subtotals while the groups stay", () => {
+    const engine = createDataTableEngine<Well>()
+    const isItemDisabled = (item: Well) => item.id === "3"
+    const open = run({ view: nested, isItemDisabled }, engine)
+    const key = "group:status=producing"
+    // In display order, by operator: Equinor's 5, then Shell's 1 (not 3).
+    expect(open.groupSelectableIds(key)).toEqual(["5", "1"])
+    const closed = run(
+      { view: nested, isItemDisabled, collapsedGroups: [key] },
+      engine
+    )
+    expect(closed).not.toBe(open)
+    expect(closed.groupSelectableIds(key)).toBe(open.groupSelectableIds(key))
+    expect(closed.groupAggregates(key)).toBe(open.groupAggregates(key))
+    // Other groups (a sort) work them out again.
+    const sorted = run(
+      {
+        view: {
+          ...nested,
+          sorting: [{ column: "oil", direction: "ascending" }],
+        },
+        isItemDisabled,
+      },
+      engine
+    )
+    expect(sorted.groupSelectableIds(key)).not.toBe(
+      open.groupSelectableIds(key)
+    )
+    expect(sorted.groupSelectableIds(key)).toEqual(["5", "1"])
+  })
+
+  it("keep the ids select all selects while groups open and close", () => {
+    const engine = createDataTableEngine<Well>()
+    const isItemDisabled = (item: Well) => item.id === "3"
+    const open = run({ view: nested, isItemDisabled }, engine)
+    expect(open.selectableIds()).toEqual(["2", "5", "1", "6", "4"])
+    expect(selectAllIds(open)).toBe(open.selectableIds())
+    const closed = run(
+      { view: nested, isItemDisabled, collapsedGroups: open.groupKeys() },
+      engine
+    )
+    expect(closed.selectableIds()).toBe(open.selectableIds())
+    expect(closed.matchingIds()).toBe(open.matchingIds())
+    const searched = run(
+      { view: { ...nested, search: "Well 5" }, isItemDisabled },
+      engine
+    )
+    expect(searched.selectableIds()).toEqual(["5"])
+  })
+
+  it("give the groups an item or a group is in, the outermost first", () => {
+    const result = run({ view: nested })
+    expect(result.groupPath("1")).toEqual([
+      "group:status=producing",
+      "group:status=producing/operator=Shell",
+    ])
+    expect(result.groupPath("group:status=producing/operator=Shell")).toEqual([
+      "group:status=producing",
+    ])
+    expect(result.groupPath("group:status=producing")).toEqual([])
+    expect(result.groupPath("nothing")).toEqual([])
+    expect(run().groupPath("1")).toEqual([])
+  })
 })
 
 describe("shared rows", () => {

@@ -28,6 +28,9 @@
  *   group by ~90k values, prepared .. 178 / 195   (150: missed)
  *   group by ~90k values, first time  300 / 305   (no budget)
  *   group by 3 columns + aggregates . 150 / 152   (150: at the budget)
+ *   group by a date, by day ......... 145 / 139   (150: near it; 3,650 groups)
+ *   close and open every group ....... 12 / 11    (no budget; limit 50)
+ *   select a group of 12,500 rows ...... 6 / 7     (no budget; limit 50)
  *   close and open a group ........... 17 / 17    (no budget; limit 50)
  *   collapse and expand a tree row ... 18 / 15    (no budget; limit 50)
  *   select all ....................... 15 / 23    (50)
@@ -43,6 +46,8 @@ import {
   getFormatter,
   reconcileView,
   selectAllIds,
+  selectionState,
+  toggleIds,
   type DataTableColumns,
   type DataTableEngineInput,
   type DataTablePartialView,
@@ -342,6 +347,48 @@ describe(
         expect(total).toBeGreaterThan(0)
       })
       expect(time).toBeLessThan(150 * HEADROOM)
+    })
+
+    it("groups by a date column, by day, with aggregates within 150 ms", () => {
+      const time = median(setup, ({ view, run }) => {
+        const result = run(view({ grouping: ["spud"] }))
+        expect(result.groupKeys().length).toBeGreaterThan(3_000)
+        for (const row of result.rows)
+          if (row.kind === "group") result.groupAggregates(row.key)
+      })
+      expect(time).toBeLessThan(150 * HEADROOM)
+    })
+
+    it("closes every group of 2 levels, then opens them, within 50 ms", () => {
+      const time = median(
+        () => {
+          const state = setup()
+          const grouping = state.view({ grouping: ["operator", "status"] })
+          const keys = state.run(grouping).groupKeys()
+          return { ...state, grouping, keys }
+        },
+        ({ run, grouping, keys }) => {
+          run(grouping, { collapsedGroups: keys })
+          run(grouping)
+        }
+      )
+      expect(time).toBeLessThan(50 * HEADROOM)
+    })
+
+    it("selects a group of ~12,500 rows within 50 ms", () => {
+      const time = median(
+        () => {
+          const state = setup()
+          const result = state.run(state.view({ grouping: ["operator"] }))
+          return { result, key: result.groupKeys()[0] }
+        },
+        ({ result, key }) => {
+          // As the group's checkbox does: its rows that can be selected.
+          const ids = result.groupSelectableIds(key)
+          expect(selectionState(toggleIds([], ids), ids)).toBe("all")
+        }
+      )
+      expect(time).toBeLessThan(50 * HEADROOM)
     })
 
     it("closes and opens a group of open groups within 50 ms", () => {

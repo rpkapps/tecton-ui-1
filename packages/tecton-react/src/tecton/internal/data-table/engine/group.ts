@@ -5,10 +5,10 @@
  *
  * `groupRows` gives every row a group at each level: rows with the same
  * value (strings as they are, numbers at the precision their column shows,
- * booleans, dates by their local day) share one, nested by the grouping
- * columns, numbered as they first appear. A group's key is opaque and
- * stable while the grouping and that value stay (the locale does not
- * change it).
+ * booleans, dates by the day shown in the column's time zone) share one,
+ * nested by the grouping columns, numbered as they first appear. A
+ * group's key is opaque and stable while the grouping and that value stay
+ * (the locale does not change it).
  *
  * Grouping by a column with tens of thousands of distinct values (an id, a
  * name) makes as many group rows, and costs more than the grouping budget
@@ -26,8 +26,16 @@
  */
 import type { EngineColumn } from "./columns"
 import type { Core } from "./core"
+import { dayFormat } from "./format"
 import { hasRanks, sortRows, sortTexts, type SortPass } from "./sort"
-import { isEmptyValue, toBoolean, toDay, toNumber, toTime } from "./values"
+import {
+  isEmptyValue,
+  toBoolean,
+  toDay,
+  toDayIn,
+  toNumber,
+  toTime,
+} from "./values"
 
 type Grouping<T> = {
   readonly columns: ReadonlyArray<EngineColumn<T>>
@@ -81,26 +89,81 @@ function numberKey<T>(column: EngineColumn<T>, number: number) {
   return format.format(number)
 }
 
+/** `fn`, remembering its result for each time. */
+function perTime(fn: (time: number) => string) {
+  const known = new Map<number, string>()
+  return (time: number) => {
+    let key = known.get(time)
+    if (key === undefined) {
+      key = fn(time)
+      known.set(time, key)
+    }
+    return key
+  }
+}
+
+/** The parts of a day a date's group key is made of, in order. */
+const KEY_PARTS = ["era", "year", "month", "day", "weekday"] as const
+
 /**
- * The value a row is grouped by, as a string: strings as they are, numbers
- * at the precision shown, dates by local day, `""` for none.
+ * A date column's group key of a time: the day its format shows (its
+ * time left out, `dayFormat`) in its time zone (`format.timeZone`, else
+ * the local one). `YYYY-MM-DD` for a format that shows the whole day (the
+ * default); else the parts it shows, in order (`YYYY-MM` for a month and
+ * year), so the rows of a group show the same day.
  */
-function groupValue<T>(column: EngineColumn<T>, item: T): string {
-  const value = column.getValue(item)
-  if (isEmptyValue(value)) return ""
-  switch (column.type) {
-    case "date": {
-      const time = toTime(value)
-      return time === undefined ? "" : toDay(time)
+function dateKeyReader(
+  options: EngineColumn<unknown>["format"]
+): (time: number) => string {
+  const day = dayFormat(options)
+  const zone = day.timeZone
+  const whole =
+    day.dateStyle !== undefined ||
+    (day.year !== undefined && day.month !== undefined && day.day !== undefined)
+  if (whole) return perTime(zone ? (time) => toDayIn(time, zone) : toDay)
+  const format = new Intl.DateTimeFormat("en-US", {
+    timeZone: zone,
+    calendar: day.calendar,
+    numberingSystem: "latn",
+    era: day.era && "short",
+    year: day.year && "numeric",
+    month: day.month && "2-digit",
+    day: day.day && "2-digit",
+    weekday: day.weekday && "short",
+  })
+  return perTime((time) => {
+    const parts = new Map(
+      format.formatToParts(time).map((part) => [part.type, part.value])
+    )
+    return KEY_PARTS.flatMap((part) => parts.get(part) ?? []).join("-")
+  })
+}
+
+/**
+ * How rows are grouped by `column`: each row's value as a string, numbers
+ * at the precision shown, dates by the day shown (`dateKeyReader`), `""`
+ * for none.
+ */
+function groupValueReader<T>(column: EngineColumn<T>): (item: T) => string {
+  const dateKey =
+    column.type === "date" ? dateKeyReader(column.format) : undefined
+  return (item) => {
+    const value = column.getValue(item)
+    if (isEmptyValue(value)) return ""
+    switch (column.type) {
+      case "date": {
+        const time = toTime(value)
+        return time === undefined || !dateKey ? "" : dateKey(time)
+      }
+      case "boolean":
+        return String(toBoolean(value))
+      case "number": {
+        const number = toNumber(value)
+        return number === undefined ? String(value) : numberKey(column, number)
+      }
+      default:
+        return value instanceof Date ? value.toISOString() : String(value)
     }
-    case "boolean":
-      return String(toBoolean(value))
-    case "number": {
-      const number = toNumber(value)
-      return number === undefined ? String(value) : numberKey(column, number)
-    }
-    default:
-      return value instanceof Date ? value.toISOString() : String(value)
   }
 }
 
@@ -120,11 +183,12 @@ function groupRows<T>(
   // Each row's group at the level before, then at this one.
   let groupOf = new Int32Array(m).fill(-1)
   columns.forEach((column, depth) => {
+    const groupValue = groupValueReader(column)
     const values = new Map<string, number>()
     const valueOf = new Uint32Array(m)
     const texts: Array<string> = []
     for (let j = 0; j < m; j++) {
-      const text = groupValue(column, items[rows[j]])
+      const text = groupValue(items[rows[j]])
       let slot = values.get(text)
       if (slot === undefined) {
         slot = texts.length
