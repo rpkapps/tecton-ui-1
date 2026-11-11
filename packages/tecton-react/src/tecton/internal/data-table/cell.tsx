@@ -530,7 +530,6 @@ export {
   columnClassName,
   groupCellsOf,
   groupLabelWidth,
-  HIDE_BELOW,
   INDENT,
   pinnedCellClassName,
   pinnedHeadClassName,

@@ -105,7 +105,7 @@ function perTime(fn: (time: number) => string) {
 /** The parts of a day a date's group key is made of, in order. */
 const KEY_PARTS = ["era", "year", "month", "day", "weekday"] as const
 
-/** A weekday's place in the week, Monday first (ISO 8601), from its `en-US` short name. */
+/** A weekday's number, Monday 1 to Sunday 7 (ISO 8601), from its `en-US` short name. */
 const WEEKDAYS: Readonly<Record<string, string>> = {
   Mon: "1",
   Tue: "2",
@@ -129,10 +129,8 @@ function dateKeyReader(
 ): (time: number) => string {
   const day = dayFormat(options)
   const zone = day.timeZone
-  const whole =
-    day.dateStyle !== undefined ||
-    (day.year !== undefined && day.month !== undefined && day.day !== undefined)
-  if (whole) return perTime(zone ? (time) => toDayIn(time, zone) : toDay)
+  if (isWholeDay(day))
+    return perTime(zone ? (time) => toDayIn(time, zone) : toDay)
   const format = new Intl.DateTimeFormat("en-US", {
     timeZone: zone,
     calendar: day.calendar,
@@ -152,6 +150,72 @@ function dateKeyReader(
       parts.set("weekday", WEEKDAYS[weekday] ?? weekday)
     return KEY_PARTS.flatMap((part) => parts.get(part) ?? []).join("-")
   })
+}
+
+/** Whether a date format shows the whole day: grouped by `YYYY-MM-DD`. */
+function isWholeDay(day: Intl.DateTimeFormatOptions) {
+  return (
+    day.dateStyle !== undefined ||
+    (day.year !== undefined && day.month !== undefined && day.day !== undefined)
+  )
+}
+
+/**
+ * The calendar order of a date column's groups (empty ones apart). Whole
+ * days by time: a day's rows all fall within it, so any of them orders the
+ * days, whatever their year (before 1000, or before the era). Days shown
+ * in part by their keys' parts compared as numbers (an era's years
+ * backwards before Christ), weekdays from the locale's first day of the
+ * week (`firstDay`, 1 for Monday to 7 for Sunday).
+ */
+function dateGroupOrder<T>(
+  column: EngineColumn<T>,
+  grouping: Grouping<T>,
+  items: ReadonlyArray<T>,
+  firstDay: number
+): (a: number, b: number) => number {
+  const day = dayFormat(column.format)
+  if (isWholeDay(day)) {
+    const times = new Map<number, number>()
+    const time = (group: number) => {
+      let at = times.get(group)
+      if (at === undefined) {
+        at = toTime(column.getValue(items[grouping.first[group]])) ?? 0
+        times.set(group, at)
+      }
+      return at
+    }
+    return (a, b) => time(a) - time(b)
+  }
+  const weekday = day.weekday !== undefined
+  const era = day.era !== undefined
+  const parts = new Map<number, Array<string>>()
+  const partsOf = (group: number) => {
+    let list = parts.get(group)
+    if (!list) {
+      list = grouping.values[group].split("-")
+      parts.set(group, list)
+    }
+    return list
+  }
+  const place = (weekdayNumber: number) => (weekdayNumber - firstDay + 7) % 7
+  return (a, b) => {
+    const x = partsOf(a)
+    const y = partsOf(b)
+    const beforeChrist = era && x[0] === "BC" && y[0] === "BC"
+    for (let i = 0; i < x.length; i++) {
+      if (x[i] === y[i]) continue
+      if (weekday && i === x.length - 1)
+        return place(Number(x[i])) - place(Number(y[i]))
+      const m = Number(x[i])
+      const n = Number(y[i])
+      if (Number.isFinite(m) && Number.isFinite(n))
+        return beforeChrist && i === 1 ? n - m : m - n
+      // Eras: before Christ first.
+      return x[i] === "BC" ? -1 : y[i] === "BC" ? 1 : x[i] < y[i] ? -1 : 1
+    }
+    return 0
+  }
 }
 
 /**
@@ -278,7 +342,9 @@ function orderGroups<T>(
   core: Core<T>,
   grouping: Grouping<T>,
   passes: ReadonlyArray<SortPass<T>>,
-  server: boolean
+  server: boolean,
+  /** The locale's first day of the week, 1 (Monday) to 7: weekday groups start there. */
+  firstDay = 1
 ): OrderedGroups<T> {
   const { items } = core
   const count = grouping.keys.length
@@ -297,19 +363,13 @@ function orderGroups<T>(
         passes.find((pass) => pass.column === column)?.descending ?? false
       const sort = [{ column, descending }]
       if (column.type === "date" && !column.compare) {
-        // A date's groups by their keys, which sort as the calendar does
-        // (`dateKeyReader`): a format without the year (months) by its
-        // place in the year, not by the first row's date.
+        // A date's groups in calendar order (`dateGroupOrder`): a format
+        // without the year (months) by its place in the year, not by the
+        // first row's date.
         const empty = groups.filter((group) => grouping.values[group] === "")
         const named = Array.from(groups)
           .filter((group) => grouping.values[group] !== "")
-          .sort((a, b) =>
-            grouping.values[a] < grouping.values[b]
-              ? -1
-              : grouping.values[a] > grouping.values[b]
-                ? 1
-                : 0
-          )
+          .sort(dateGroupOrder(column, grouping, items, firstDay))
         if (descending) named.reverse()
         ordered = Uint32Array.from([...named, ...empty])
       } else if (

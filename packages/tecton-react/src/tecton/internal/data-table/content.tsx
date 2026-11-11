@@ -838,24 +838,45 @@ function DataTableContentImpl({
   // before the layout effects, where the grid looks for it.
   const shownRows = React.useRef(rows)
   // A group's row to focus once the page that holds it shows
-  // (`restoreFocusTo`): given up when another page shows instead.
+  // (`restoreFocusTo`): tried on the first render after it is asked for,
+  // and given up there when the page did not change (a controlled `page`
+  // that kept its own), or focus has gone elsewhere since.
   const pendingFocus = React.useRef<{
     key: string
     page: number
-    from: number
+    /** The render it was asked in. */
+    render: number
   } | null>(null)
+  const renders = React.useRef(0)
   React.useLayoutEffect(() => {
     const pending = pendingFocus.current
-    if (!pending || model.page === pending.from) return
+    if (!pending || pending.render === renders.current) return
     pendingFocus.current = null
     if (model.page !== pending.page) return
+    const doc = frame.current?.ownerDocument
+    const active = doc?.activeElement
+    if (active && active !== doc.body && !frame.current?.contains(active))
+      return
     const at = rows.findIndex(
       (row) => row.key === pending.key && !("continued" in row && row.continued)
     )
     if (at !== -1) gridController.current?.focusRow(at)
-  }, [rows, model.page])
+  })
+  // What the last render changed, for `restoreFocusTo`: a group closed on
+  // the same page, not the page itself (a page change, rows clamped).
+  const closedGroups = useDataTableSelector(
+    context,
+    (state) => state.closedGroups
+  )
+  const lastRender = React.useRef({ closedGroups, page: model.page })
+  const groupClosed = React.useRef(false)
   React.useInsertionEffect(() => {
+    renders.current++
     shownRows.current = rows
+    const before = lastRender.current
+    groupClosed.current =
+      before.closedGroups !== closedGroups && before.page === model.page
+    lastRender.current = { closedGroups, page: model.page }
   })
   const grid = React.useMemo<TableGridOptions>(
     () => ({
@@ -888,15 +909,16 @@ function DataTableContentImpl({
       // A row gone with the group that closed over it (an item, its
       // detail row, a group in it), or a group's row repeated at the top of
       // a page that went as the group closed: focus goes to the group's
-      // own row (the outermost closed one), on the page that holds it.
+      // own row (the outermost closed one), on the page that holds it. A
+      // row gone with its page (a page change, rows clamped) is the grid's.
       restoreFocusTo: (id, focused) => {
-        const { model: current, closedGroups } = store.get()
+        const { model: current, closedGroups: closed } = store.get()
         const group =
-          current
-            .groupPath(id)
-            .find((key) => isGroupClosed(closedGroups, key)) ??
-          // A group's row itself (no item has its key).
-          (current.item(id) === undefined && current.indexOfRow(id) >= 0
+          current.groupPath(id).find((key) => isGroupClosed(closed, key)) ??
+          // A group's own row, gone as it closed.
+          (current.item(id) === undefined &&
+          current.indexOfRow(id) >= 0 &&
+          isGroupClosed(closed, id)
             ? id
             : undefined)
         if (group === undefined) return null
@@ -904,12 +926,19 @@ function DataTableContentImpl({
           (row) => row.key === group && !("continued" in row && row.continued)
         )
         if (at !== -1) return at
-        // On an earlier page: that page, then the row (`pendingFocus`).
+        // On an earlier page, closed just now: that page, then the row
+        // (`pendingFocus`).
         const index = current.indexOfRow(group)
-        if (!focused || index === -1 || server || !options.pagination)
+        if (
+          !focused ||
+          !groupClosed.current ||
+          index === -1 ||
+          server ||
+          !options.pagination
+        )
           return null
         const page = Math.floor(index / current.pageSize) + 1
-        pendingFocus.current = { key: group, page, from: current.page }
+        pendingFocus.current = { key: group, page, render: renders.current }
         actions.setPage(page, "group")
         return null
       },

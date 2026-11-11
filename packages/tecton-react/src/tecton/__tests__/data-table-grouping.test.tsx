@@ -1009,25 +1009,30 @@ describe("DataTable grouping: review fixes", () => {
     )
     await user.click(screen.getByRole("button", { name: "Group by" }))
     await screen.findByRole("menu")
+    const say = vi.spyOn(announcer, "announce")
     // The last level's item, from the keyboard.
     act(() =>
       screen.getByRole("menuitem", { name: "Move Spud date up" }).focus()
     )
     await user.keyboard("{Enter}")
     expect(api?.view.grouping).toEqual(["field", "spud", "status"])
-    // The same place, now moving Status: focused and highlighted.
-    const item = screen.getByRole("menuitem", { name: "Move Status up" })
+    expect(say).toHaveBeenLastCalledWith(
+      "Grouped by Field, Spud date, and Status"
+    )
+    // Spud date's own item now, one place up: focused and highlighted.
+    const item = screen.getByRole("menuitem", { name: "Move Spud date up" })
     expect(item).toHaveFocus()
     expect(highlighted()).toBe(item)
+    // Again: Spud date goes on up, to the top.
     await user.keyboard("{Enter}")
-    expect(api?.view.grouping).toEqual(["field", "status", "spud"])
+    expect(api?.view.grouping).toEqual(["spud", "field", "status"])
     expect(document.activeElement).toBe(highlighted())
-    // A pointer press keeps the item in its place too.
+    expect(highlighted()).toHaveAccessibleName("Move Field up")
+    // A pointer press on the last item: Status's item follows it.
     await user.click(screen.getByRole("menuitem", { name: "Move Status up" }))
-    expect(api?.view.grouping).toEqual(["status", "field", "spud"])
-    expect(
-      screen.getByRole("menuitem", { name: "Move Field up" })
-    ).toBeInTheDocument()
+    expect(api?.view.grouping).toEqual(["spud", "status", "field"])
+    expect(document.activeElement).toBe(highlighted())
+    expect(highlighted()).toHaveAccessibleName("Move Status up")
   })
 
   it("keeps the one move item focused with 2 levels", async () => {
@@ -1092,10 +1097,12 @@ describe("DataTable grouping: review fixes", () => {
       .reduce((sum, well) => sum + (well.depth ?? 0), 0)
       .toLocaleString("en-US")
     const cells = () =>
-      [...group("Field: Gullfaks").cells].map(
-        (cell) =>
-          `${cell.tagName}${cell.colSpan > 1 ? `x${cell.colSpan}` : ""}:${cell.textContent}`
-      )
+      [...group("Field: Gullfaks").cells].map((cell) => {
+        // What it draws: its hidden name left out.
+        const drawn = cell.cloneNode(true) as HTMLElement
+        for (const hidden of drawn.querySelectorAll("[hidden]")) hidden.remove()
+        return `${cell.tagName}${cell.colSpan > 1 ? `x${cell.colSpan}` : ""}:${drawn.textContent}`
+      })
     expect(cells()).toEqual([
       `TD:${depth}`,
       "THx2:Field: Gullfaks6 rows",
@@ -1261,5 +1268,161 @@ describe("DataTable grouping: review fixes", () => {
     expect(last).toBeLessThanOrEqual(
       Number(table.getAttribute("aria-rowcount"))
     )
+  })
+})
+
+describe("DataTable grouping: second review", () => {
+  it("leaves a page change to the grid when the focused group row only left the page", () => {
+    const onPageChange = vi.fn()
+    render(
+      <Wells
+        pagination
+        defaultPageSize={5}
+        defaultPage={2}
+        onPageChange={(page, details) => onPageChange(page, details.reason)}
+        defaultView={{ grouping: ["field"] }}
+      >
+        <Probe />
+      </Wells>
+    )
+    act(() => group("Field: Snorre").focus())
+    act(() => api?.setPage(5))
+    expect(onPageChange.mock.calls).toEqual([[5, "none"]])
+    expect(api?.page).toBe(5)
+  })
+
+  it("leaves rows clamped by new items to the grid, closed groups too", () => {
+    const onPageChange = vi.fn()
+    const { rerender } = render(
+      <Wells
+        pagination
+        defaultPageSize={5}
+        defaultPage={4}
+        onPageChange={(page, details) => onPageChange(page, details.reason)}
+        defaultView={{ grouping: ["field"] }}
+      >
+        <Probe />
+      </Wells>
+    )
+    act(() => api?.collapseAllGroups())
+    act(() => api?.expandAllGroups())
+    act(() => api?.setPage(4))
+    const focusedRow = document.querySelector<HTMLElement>("tbody tr")!
+    act(() => focusedRow.focus())
+    onPageChange.mockClear()
+    rerender(
+      <Wells
+        items={WELLS.slice(0, 6)}
+        pagination
+        defaultPageSize={5}
+        defaultPage={4}
+        onPageChange={(page, details) => onPageChange(page, details.reason)}
+        defaultView={{ grouping: ["field"] }}
+      >
+        <Probe />
+      </Wells>
+    )
+    expect(onPageChange.mock.calls.map(([, reason]) => reason)).not.toContain(
+      "group"
+    )
+  })
+
+  it("drops the focus it was to restore when a controlled page keeps its own", () => {
+    function Controlled() {
+      const [page, setPage] = React.useState(2)
+      return (
+        <>
+          <button type="button" onClick={() => setPage(1)}>
+            First
+          </button>
+          <Wells
+            pagination
+            defaultPageSize={5}
+            page={page}
+            onPageChange={(next, details) => {
+              if (details.reason !== "group") setPage(next)
+            }}
+            defaultView={{ grouping: ["field"] }}
+          >
+            <Probe />
+          </Wells>
+        </>
+      )
+    }
+    render(<Controlled />)
+    // Page 2 starts with Gullfaks' row repeated: closing it asks for page 1.
+    act(() => document.querySelector<HTMLElement>("tbody tr")!.focus())
+    press("ArrowLeft")
+    expect(api?.page).toBe(2)
+    // Later, page 1 from outside the table: focus stays outside.
+    const first = screen.getByRole("button", { name: "First" })
+    act(() => first.focus())
+    fireEvent.click(first)
+    expect(api?.page).toBe(1)
+    expect(focused()).toBe(first)
+  })
+
+  it("names a label cell with the subtotal it holds", () => {
+    const summed = createColumns<Well>([
+      { id: "depth", header: "Depth (m)", type: "number" },
+      { id: "active", header: "Active", type: "boolean" },
+    ])
+    render(<Wells columns={summed} defaultView={{ grouping: ["active"] }} />)
+    const inactive = WELLS.filter((well) => !well.active)
+    const depth = inactive
+      .reduce((sum, well) => sum + (well.depth ?? 0), 0)
+      .toLocaleString("en-US")
+    const header = group("Active: No").querySelector("th")!
+    expect(header).toHaveAccessibleName(
+      `Active: No, ${inactive.length} rows, ${depth}`
+    )
+    // The subtotal is drawn in the cell too.
+    expect(header.textContent).toContain(depth)
+  })
+
+  it("marks the scroll container scrolled sideways, which the label's selectors reach", () => {
+    const sized = createColumns<Well>([
+      { id: "name", header: "Well", width: 140 },
+      { id: "field", header: "Field", width: 120 },
+      { id: "status", header: "Status", width: 120 },
+      { id: "depth", header: "Depth (m)", type: "number", width: 100 },
+    ])
+    render(
+      <Wells
+        columns={sized}
+        pinnableColumns
+        defaultView={{
+          grouping: ["field"],
+          columns: { pinned: { start: ["name"], end: [] } },
+        }}
+      />
+    )
+    const container = document.querySelector<HTMLElement>(
+      '[data-slot="table-container"]'
+    )!
+    let left = 0
+    Object.defineProperty(container, "scrollLeft", {
+      configurable: true,
+      get: () => left,
+    })
+    const label = group("Field: Gullfaks").querySelector("th > div")!
+    expect(label.className).toContain("w-max")
+    left = 80
+    fireEvent.scroll(container)
+    expect(container).toHaveAttribute("data-group-label-clipped")
+    // The structure the label's variants are written against.
+    expect(
+      label.matches("[data-group-label-clipped]>table>tbody>tr>th>div")
+    ).toBe(true)
+    const prefix = label.querySelector(".truncate > span")!
+    expect(prefix).toHaveTextContent("Field:")
+    expect(
+      prefix.matches(
+        "[data-group-label-clipped]>table>tbody>tr>th>div>span>span"
+      )
+    ).toBe(true)
+    left = 0
+    fireEvent.scroll(container)
+    expect(container).not.toHaveAttribute("data-group-label-clipped")
   })
 })

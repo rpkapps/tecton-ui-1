@@ -173,7 +173,21 @@ describe("date-only strings west of UTC", () => {
   it("order the groups of a format without the year by the calendar", () => {
     const run = (
       format: Intl.DateTimeFormatOptions,
-      direction?: "ascending" | "descending"
+      {
+        direction,
+        locale,
+        spuds = [
+          // February of an earlier year than January's: by the month.
+          "2019-02-10T12:00:00Z",
+          "2020-01-15T12:00:00Z",
+          "2018-03-01T12:00:00Z",
+          null,
+        ],
+      }: {
+        direction?: "ascending" | "descending"
+        locale?: string
+        spuds?: Array<string | null>
+      } = {}
     ) => {
       const dated = createColumns<Well>([
         { id: "id", header: "Well" },
@@ -190,34 +204,89 @@ describe("date-only strings west of UTC", () => {
       )
       return createDataTableEngine<Well>()
         .run({
-          items: [
-            // February of an earlier year than January's: by the month.
-            { id: "a", spud: "2019-02-10T12:00:00Z" },
-            { id: "b", spud: "2020-01-15T12:00:00Z" },
-            { id: "c", spud: "2018-03-01T12:00:00Z" },
-            { id: "d", spud: null },
-          ],
+          items: spuds.map((spud, i) => ({ id: String(i), spud })),
           columns: dated,
           view,
+          locale,
         })
         .rows.filter((row): row is GroupRow => row.kind === "group")
         .map((row) => row.text)
     }
     const months = { month: "long", timeZone: "UTC" } as const
     expect(run(months)).toEqual(["January", "February", "March", ""])
-    expect(run(months, "descending")).toEqual([
+    expect(run(months, { direction: "descending" })).toEqual([
       "March",
       "February",
       "January",
       "",
     ])
-    // Weekdays from Monday: Sunday 10 Feb, Wednesday 15 Jan, Thursday 1 Mar.
-    expect(run({ weekday: "long", timeZone: "UTC" })).toEqual([
+    // Weekdays from the locale's first day: Sunday 10 Feb, Wednesday 15
+    // Jan, Thursday 1 Mar.
+    const weekdays = { weekday: "long", timeZone: "UTC" } as const
+    expect(run(weekdays, { locale: "en-US" })).toEqual([
+      "Sunday",
       "Wednesday",
       "Thursday",
-      "Sunday",
       "",
     ])
+    expect(run(weekdays, { locale: "nb-NO" })).toEqual([
+      "onsdag",
+      "torsdag",
+      "søndag",
+      "",
+    ])
+  })
+
+  it("order years before 1000, and before the era, as the calendar does", () => {
+    const early = (format: Intl.DateTimeFormatOptions) =>
+      createDataTableEngine<{ id: string; spud: Date }>()
+        .run({
+          items: [
+            { id: "a", spud: new Date(Date.UTC(2019, 11, 1)) },
+            { id: "b", spud: new Date(Date.UTC(999, 5, 1)) },
+            { id: "c", spud: new Date(Date.UTC(-499, 5, 1)) },
+            { id: "d", spud: new Date(Date.UTC(-399, 5, 1)) },
+          ],
+          columns: createColumns<{ id: string; spud: Date }>([
+            { id: "id", header: "Well" },
+            { id: "spud", header: "Spud", type: "date", format },
+          ]),
+          view: {
+            ...createDefaultView(
+              createColumns<{ id: string; spud: Date }>([
+                { id: "id", header: "Well" },
+              ]),
+              undefined,
+              ALL
+            ),
+            grouping: ["spud"],
+          },
+        })
+        .rows.filter((row): row is GroupRow => row.kind === "group")
+        .map((row) => row.text)
+    // Whole days: by time.
+    expect(
+      early({
+        year: "numeric",
+        month: "short",
+        day: "numeric",
+        era: "short",
+        timeZone: "UTC",
+      })
+    ).toEqual([
+      "Jun 1, 500 BC",
+      "Jun 1, 400 BC",
+      "Jun 1, 999 AD",
+      "Dec 1, 2019 AD",
+    ])
+    // A month and year: the years as numbers, before Christ backwards.
+    expect(
+      early({ year: "numeric", month: "short", era: "short", timeZone: "UTC" })
+    ).toEqual(["Jun 500 BC", "Jun 400 BC", "Jun 999 AD", "Dec 2019 AD"])
+    // Without the era, as shown: 400 BC reads as 400.
+    expect(early({ year: "numeric", month: "short", timeZone: "UTC" })).toEqual(
+      ["Jun 400", "Jun 500", "Jun 999", "Dec 2019"]
+    )
   })
 
   it("name a group by the day of a format with no day of its own", () => {

@@ -251,6 +251,26 @@ function toSet(ids: ReadonlyArray<string> | ReadonlySet<string> | undefined) {
   return ids instanceof Set ? ids : new Set(ids)
 }
 
+const firstDays = new Map<string, number>()
+
+/**
+ * A locale's first day of the week, 1 (Monday) to 7 (Sunday): from
+ * `Intl.Locale`'s week info where the engine has it, else Monday.
+ */
+function firstDayOf(locale: string) {
+  let day = firstDays.get(locale)
+  if (day === undefined) {
+    type WeekInfo = { firstDay?: number }
+    const info = new Intl.Locale(locale) as Intl.Locale & {
+      getWeekInfo?: () => WeekInfo
+      weekInfo?: WeekInfo
+    }
+    day = (info.getWeekInfo?.() ?? info.weekInfo)?.firstDay ?? 1
+    firstDays.set(locale, day)
+  }
+  return day
+}
+
 function closedOf(
   collapsed: DataTableEngineInput<unknown>["collapsedGroups"]
 ): ClosedGroups {
@@ -413,9 +433,10 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       rows: Core<T>,
       grouping: Grouping<T> | null,
       passes: ReadonlyArray<SortPass<T>>,
-      server: boolean
+      server: boolean,
+      firstDay: number
     ): OrderedGroups<T> | null =>
-      grouping && orderGroups(rows, grouping, passes, server)
+      grouping && orderGroups(rows, grouping, passes, server, firstDay)
   )
   const aggregateColumnsOf = memoOne((model: ColumnModel<T>) =>
     model.leaves.filter((column) => column.aggregate)
@@ -804,7 +825,8 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
         rows,
         grouped(rows, set, columns, steadyGrouping(view.grouping)),
         passes,
-        server
+        server,
+        firstDayOf(formatter.locale)
       )
       const sorted = server || groups ? set : sortedSet(rows, set, passes)
       const filtering = filter !== null

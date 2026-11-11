@@ -230,7 +230,7 @@ function GroupCheckbox<T>({
       </span>
       <Checkbox
         data-slot="data-table-group-checkbox"
-        aria-labelledby={`${selectId} ${labelId}`}
+        aria-labelledby={`${selectId} ${labelId}-name`}
         checked={state === "all"}
         indeterminate={state === "some"}
         disabled={ids.length === 0}
@@ -304,18 +304,26 @@ function GroupRowComponent<T>({
       {content}
     </TableCell>
   )
+  // Read "Field: Gullfaks, 6 rows", whatever the label shows (its parts
+  // in spans, the column's name left out when cut): a hidden name, which
+  // the checkbox reads too. With a subtotal in the cell, the name, a pause
+  // and the subtotal as drawn ("Active: No, 11 rows, 29,037").
+  const rowName = t("groupRowLabel", { label, rows: count })
+  const pause =
+    t("groupRowLabel", { label: "\u0000", rows: "\u0001" })
+      .split("\u0000")[1]
+      ?.split("\u0001")[0] ?? ""
   const labelCell = (cell: GroupCell & { kind: "label" }, first: boolean) => {
     const pin = pins[cell.column]
     const column = columns[cell.column]
+    const sum = `${labelId}-${cell.column}-sum`
     return (
       <TableHead
         key={`label:${cell.column}:${cell.span}:${cell.subtotal}`}
-        // The checkbox's name: the label of any width (hidden ones too).
-        id={first ? labelId : undefined}
         scope="row"
-        // Read "Field: Gullfaks, 6 rows", whatever the label shows (its
-        // parts in spans, the column's name left out when cut).
-        aria-label={t("groupRowLabel", { label, rows: count })}
+        aria-labelledby={
+          cell.subtotal ? `${sum}-name ${sum}` : `${labelId}-name`
+        }
         colSpan={cell.span > 1 ? cell.span : undefined}
         className={cn(
           "[&[scope=row]]:font-medium",
@@ -324,6 +332,18 @@ function GroupRowComponent<T>({
         )}
         style={pin && pinStyle(pin)}
       >
+        {/* The name of every width's label: in the first, hidden ones too. */}
+        {first && (
+          <span id={`${labelId}-name`} hidden>
+            {rowName}
+          </span>
+        )}
+        {cell.subtotal && (
+          <span id={`${sum}-name`} hidden>
+            {rowName}
+            {pause.trimEnd()}
+          </span>
+        )}
         <div
           className={cn(
             "flex items-center gap-1",
@@ -373,6 +393,7 @@ function GroupRowComponent<T>({
           {cell.subtotal && (
             // Every column shown sums: the first one's subtotal is here.
             <span
+              id={sum}
               className={cn(
                 "ms-auto shrink-0 ps-4 font-normal",
                 column.type === "number" && "tabular-nums"
@@ -448,7 +469,12 @@ function GroupRowComponent<T>({
  * to its cell until they are measured, and while the table is scrolled
  * sideways (`data-group-label-clipped` on this table's scroll container,
  * `content.tsx`), where the column's name goes first, then the count, so
- * the value stays in view (the cell's `aria-label` names it whole).
+ * the value stays in view (the cell's hidden name names it whole).
+ *
+ * The variants read the generated `Table`'s structure, the scroll
+ * container > table > tbody > tr > th, then this label's div and spans,
+ * child by child (so a table nested in a cell is not reached): a wrapper
+ * added there breaks them, which a test checks (`data-table-grouping`).
  */
 const GROUP_LABEL_REACH = cn(
   "relative w-max max-w-[calc(var(--data-table-group-label,calc(100%+2rem))-2rem)] bg-inherit pe-2",

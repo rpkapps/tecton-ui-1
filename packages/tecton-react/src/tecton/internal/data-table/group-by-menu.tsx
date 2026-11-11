@@ -8,9 +8,9 @@
  *   too: a column grouped by is often hidden), with its level while it is
  *   grouped by; checking one adds it as the last level;
  * - with two levels or more, an item per level after the first that moves
- *   it a level up, before the one above it (the menu stays open, for a
- *   move of several steps: the items are the levels', so focus stays on
- *   the level pressed);
+ *   it a level up, before the one above it (the menu stays open, focus on
+ *   the moved column's item, so pressing it again moves it on up; each
+ *   move is announced with the grouping it makes);
  * - while grouped, "Expand all groups" (off while every group is open)
  *   and "Collapse all groups" (off while every group is closed);
  * - "Ungroup all".
@@ -92,22 +92,31 @@ function DataTableGroupByMenu({
     return column?.groupable ? [column] : []
   })
 
+  // After a move, the item to move to: focusing it highlights it too, so
+  // focus and highlight stay together.
+  const following = React.useRef<number | null>(null)
+  React.useLayoutEffect(() => {
+    const at = following.current
+    following.current = null
+    if (at === null) return
+    content.current?.querySelector<HTMLElement>(`[data-level="${at}"]`)?.focus()
+  }, [grouping])
+
   const set = (
     change: (grouping: ReadonlyArray<string>) => ReadonlyArray<string>,
     event: Event | undefined
   ) => {
     let after: ReadonlyArray<string> = []
-    if (
-      actions.updateView(
-        (view) => {
-          after = change(view.grouping)
-          return setGrouping(view, after)
-        },
-        "group",
-        event
-      )
+    const applied = actions.updateView(
+      (view) => {
+        after = change(view.grouping)
+        return setGrouping(view, after)
+      },
+      "group",
+      event
     )
-      announceGrouping(t, after, headerOf, locale)
+    if (applied) announceGrouping(t, after, headerOf, locale)
+    return applied
   }
 
   return (
@@ -161,17 +170,23 @@ function DataTableGroupByMenu({
               {grouping.slice(1).map((id, index) => (
                 <DropdownMenuItem
                   // By level, not by column: a move leaves as many items,
-                  // each in its place, so the one focused stays the one
-                  // highlighted (and pressed again, moves the next).
+                  // each in its place (see `following`).
                   key={index}
+                  data-level={index}
                   // Open for a move of several steps.
                   closeOnClick={false}
-                  onClick={(event) =>
-                    set(
-                      (current) => move(current, index + 1, -1),
-                      event.nativeEvent
+                  onClick={(event) => {
+                    // Then the moved column's own item, one place up (the
+                    // first's again at the top), for another step up.
+                    following.current = Math.max(0, index - 1)
+                    if (
+                      !set(
+                        (current) => move(current, index + 1, -1),
+                        event.nativeEvent
+                      )
                     )
-                  }
+                      following.current = null
+                  }}
                 >
                   <ArrowUpIcon />
                   {t("moveGroupUp", { columnName: headerOf(id) })}
