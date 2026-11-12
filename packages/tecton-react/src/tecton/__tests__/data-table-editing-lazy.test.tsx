@@ -2,9 +2,9 @@
  * Editing before its code has loaded (§7): nothing is asked for as an
  * editable table mounts (it is prefetched in idle time); the first focus
  * asks for it; what the user does meanwhile waits for it, each cell by its
- * ids: the characters typed (Backspace taking one back) begin the edit
- * once the code comes, if focus is still on their cell; Escape drops the
- * edit waiting; a boolean cell's checkbox toggled is written. The cell
+ * ids: the keys are pressed again once the code comes (Backspace taking a
+ * character back, Escape dropping the edit), an edit left by a press on
+ * another cell saved; a boolean cell's checkbox toggled is written. The cell
  * keeps its content under the editor, so nothing moves as it opens.
  */
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
@@ -87,7 +87,8 @@ describe("DataTable editing before its code has loaded", () => {
     fireEvent.mouseDown(td("Well 2", "depth"), { button: 0 })
     expect(press("9")).toBe(false)
     expect(press("Escape")).toBe(false)
-    // One begun, then left: focus moved on.
+    // One begun, then left (a press on another cell): saved once the code
+    // comes, as focus leaving it saves it.
     fireEvent.mouseDown(td("Well 3", "depth"), { button: 0 })
     press("5")
     // The one that stays: its characters, Backspace taking one back.
@@ -118,7 +119,7 @@ describe("DataTable editing before its code has loaded", () => {
       ).map(([changes]) =>
         changes.map((change) => [change.row, change.column, change.value])
       )
-    ).toEqual([[["w0", "active", true]]])
+    ).toEqual([[["w0", "active", true]], [["w3", "depth", 5]]])
 
     // From now on, at once.
     press("Enter")

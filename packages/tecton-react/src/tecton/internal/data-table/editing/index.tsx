@@ -35,8 +35,8 @@
  *   leaving the rows and columns shown (a page, a group closed, the row
  *   filtered out). A row removed or disabled has nowhere to save to: the
  *   draft is dropped, and that is announced.
- * - What waited for this code (`edits.tsx`) is replayed in order: starts,
- *   saves that move, starts on the cell moved to (`moved`).
+ * - What waited for this code (`edits.tsx`) is done again in order: the
+ *   keys pressed before it, pressed again (`pressAgain`).
  * - When an edit ends with focus in its editor, focus goes back to its
  *   cell; the cell selection follows a move.
  */
@@ -55,7 +55,14 @@ import {
 } from "../cell-write"
 import type { CellEditor, EditingCell } from "../context"
 import { foldText } from "../engine/format"
-import type { EditEvent, EditHandlers, EditSide, EditStart } from "../edits"
+import type {
+  EditEvent,
+  EditHandlers,
+  EditSide,
+  EditStart,
+  KeyChain,
+} from "../edits"
+import { keyDefault } from "./keys"
 import type {
   DataTableCellPosition,
   DataTableValue,
@@ -80,16 +87,15 @@ const EDITOR: CellEditor = { Editor }
 
 /**
  * A number as its editor shows it: every digit it has (the shortest that
- * reads back as it), in the locale, without grouping, with the column's
- * currency, percent sign or unit.
+ * reads back as it), in the locale, without grouping or an exponent, with
+ * the column's currency, percent sign or unit.
  */
 function numberText(
   value: number,
   format: Intl.NumberFormatOptions | undefined,
   locale: string
 ) {
-  const plain = String(value)
-  if (!Number.isFinite(value) || /e/i.test(plain)) return plain
+  if (!Number.isFinite(value)) return String(value)
   const {
     style,
     currency,
@@ -99,9 +105,13 @@ function numberText(
     unitDisplay,
     signDisplay,
   } = format ?? {}
-  // A percent shows its value times 100: two fewer decimals.
+  // The decimals of its shortest digits, the exponent of a very small or
+  // large number counted; a percent shows its value times 100: two fewer.
+  const [mantissa, exponent] = value.toExponential().split("e")
   const decimals =
-    (plain.split(".")[1]?.length ?? 0) - (style === "percent" ? 2 : 0)
+    (mantissa.split(".")[1]?.length ?? 0) -
+    Number(exponent) -
+    (style === "percent" ? 2 : 0)
   const digits = Math.min(100, Math.max(0, decimals))
   return new Intl.NumberFormat(locale, {
     style,
@@ -136,6 +146,8 @@ function attachEditing(side: EditSide): EditHandlers {
   const { store, cells, actions } = context
   const t = () => side.latest.current.t
   let current: Session | null = null
+  /** Edits begun: each edit's editor is its own (a key of its own). */
+  let edits = 0
 
   const doc = () => side.container.current?.ownerDocument ?? document
   const columnOf = (id: string) =>
@@ -231,19 +243,12 @@ function attachEditing(side: EditSide): EditHandlers {
     }
   }
 
-  /** Where the last save moved to (or its cell): a start without a cell is there. */
-  let moved: Position | null = null
-
   const start = (
-    at: Position | null,
+    cell: Position,
     how: EditStart,
     text: string,
-    now: boolean,
-    /** Characters of the value taken back before `text`. */
-    back = 0
+    now: boolean
   ) => {
-    const cell = at ?? moved
-    if (!cell) return
     if (current && same(current, cell)) return current.focus()
     const found = writable(cell)
     // A cell that cannot be written leaves the edit there as it is; a
@@ -258,17 +263,13 @@ function attachEditing(side: EditSide): EditHandlers {
       cells.get().marks.get(cell.row)?.get(cell.column),
       value
     )
-    const typed = how === "type" ? text : how === "compose" ? text : null
+    const typed = how === "type" ? text : how === "compose" ? "" : null
     const refused = mark?.error ? mark.attempted : null
     const own = editText(column, value, formatter)
-    // Typed after Enter, F2 or a double click, before this code came:
-    // after the value.
-    const kept = [...(refused ?? own)]
-    const draft = typed ?? kept.slice(0, kept.length - back).join("") + text
+    const draft = typed ?? refused ?? own
     // A custom editor's value: the text it began with, read as the
     // column's (`null` when it does not read), unless it is the value's.
-    const unchanged =
-      typed === null && refused === null && text === "" && back === 0
+    const unchanged = typed === null && refused === null
     let initial = value
     if (!unchanged) {
       const parsed = parse(column, item, draft)
@@ -305,11 +306,10 @@ function attachEditing(side: EditSide): EditHandlers {
       controller,
     }
     current = session
-    moved = cell
     // From `useDataTable`: to the cell first (scrolled to); its editor
     // takes focus once it renders.
     if (how === "api") focusAt(cell)
-    const editing: EditingCell = { ...cell, session, error: null }
+    const editing: EditingCell = { ...cell, id: ++edits, session, error: null }
     // In the key's moment, the editor is there and focused before the key's
     // default (a composition) goes on.
     if (now) flushSync(() => cells.set({ editing }))
@@ -354,7 +354,8 @@ function attachEditing(side: EditSide): EditHandlers {
         const [result] = outcome.cells
         if (result.status === "invalid" && !markInvalid) {
           const message = result.message ?? ""
-          cells.set({ editing: { ...cell, session, error: message } })
+          const shown = cells.get().editing
+          if (shown) cells.set({ editing: { ...shown, error: message } })
           const column = columnOf(cell.column)
           announce(
             t()("cellMessage", {
@@ -383,7 +384,6 @@ function attachEditing(side: EditSide): EditHandlers {
     }
     cells.set({ editing: null })
     const target = move && nextCell(cell, move)
-    moved = target ?? cell
     if (target) {
       focusAt(target)
       if (store.get().options.cellSelectionMode !== "none")
@@ -433,12 +433,11 @@ function attachEditing(side: EditSide): EditHandlers {
   const run = (entry: EditEvent, now: boolean) => {
     switch (entry.kind) {
       case "start":
-        return start(entry.cell, entry.how, entry.text, now, entry.back)
+        return start(entry.cell, entry.how, entry.text, now)
+      case "keys":
+        return pressAgain(entry)
       case "write":
         return write(entry.cell, entry.value, entry.reason, entry.event)
-      case "save":
-        if (current) finish(current, { commit: true, move: entry.move })
-        return
       case "stop":
         if (current) finish(current, { commit: entry.commit })
     }
@@ -482,31 +481,85 @@ function attachEditing(side: EditSide): EditHandlers {
   })
 
   cells.set({ editor: EDITOR })
-  // What waited for this code: an edit begins only if focus is still on
-  // its cell (the user did not move on); from `useDataTable`, always.
+
   const focusedOn = (cell: Position) => {
     const active = doc().activeElement
     const at = side.positionOf(active?.closest("td, th") ?? null)
     return at !== null && same(at, cell)
   }
-  // A start on its cell, not focused: it and the keys after it (up to the
-  // next start on a cell) are dropped.
-  let dropped = false
-  for (const entry of side.queue.splice(0)) {
-    if (entry.kind === "start" && entry.cell)
-      dropped = entry.how !== "api" && !focusedOn(entry.cell)
-    if (dropped) continue
-    run(
-      // A composition before the code: an editor with what followed.
-      entry.kind === "start" && entry.how === "compose"
-        ? { ...entry, how: "type" }
-        : entry,
-      false
-    )
+
+  /**
+   * Keys pressed before this code, pressed again (see `edits.tsx`): from
+   * their cell, in order, each through the handlers a key goes through
+   * now, at the element focus is on by then; what the browser itself does
+   * with a key the handlers leave alone (`keyDefault`) is done too. A
+   * chain released before this code came then ends its edit as focus
+   * leaving it does (saved), and focus goes back where the user took it.
+   */
+  const pressAgain = (chain: KeyChain) => {
+    const document = doc()
+    const away = document.activeElement
+    if (!focusedOn(chain.cell)) focusAt(chain.cell)
+    // Its cell not there to focus (scrolled away and gone): nothing to do.
+    if (!focusedOn(chain.cell)) return
+    if (chain.press) start(chain.cell, "double-click", "", true)
+    for (const key of chain.keys) {
+      const target = (document.activeElement ?? document.body) as HTMLElement
+      const init: KeyboardEventInit = {
+        key: key.key,
+        code: key.code,
+        shiftKey: key.shiftKey,
+        ctrlKey: key.ctrlKey,
+        altKey: key.altKey,
+        metaKey: key.metaKey,
+        modifierAltGraph: key.altGraph,
+        isComposing: key.isComposing,
+        bubbles: true,
+        cancelable: true,
+        composed: true,
+      }
+      const view = document.defaultView ?? window
+      if (target.dispatchEvent(new view.KeyboardEvent("keydown", init)))
+        keyDefault(target, key)
+      if (target.isConnected)
+        target.dispatchEvent(new view.KeyboardEvent("keyup", init))
+      // What the key changed is rendered before the next, as between two
+      // keys pressed (a key's render would wait for a microtask).
+      flushSync(() => undefined)
+    }
+    if (!chain.released) return
+    if (current) finish(current, { commit: true, markInvalid: true })
+    if (
+      away instanceof HTMLElement &&
+      away.isConnected &&
+      away !== document.body
+    ) {
+      away.focus({ preventScroll: true })
+      // The cell the user pressed is the selection, as the press made it.
+      const at = side.positionOf(away.closest("td, th"))
+      if (at && store.get().options.cellSelectionMode !== "none")
+        actions.setCellSelection(
+          [
+            {
+              rows: { start: at.row, end: at.row },
+              columns: { start: at.column, end: at.column },
+            },
+          ],
+          "item-press"
+        )
+    } else if (!(away instanceof HTMLElement) || away === document.body) {
+      // The press was on the page itself: focus goes back to it.
+      const active = document.activeElement
+      if (active instanceof HTMLElement && active !== document.body)
+        active.blur()
+    }
   }
 
   return {
     run,
+    replay: (entries) => {
+      for (const entry of entries) run(entry, true)
+    },
     press: (event) => {
       const session = current
       const target = event.target as Element

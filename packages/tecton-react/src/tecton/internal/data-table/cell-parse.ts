@@ -154,8 +154,18 @@ function parseNumber(
   // A percentage's value: the decimal point moved two places, not a
   // division (12.3 % is 0.123 exactly).
   return (percent || typed) && format?.style === "percent"
-    ? Number(`${number}e-2`)
+    ? shiftDecimal(number, -2)
     : number
+}
+
+/**
+ * A number with its decimal point moved `places` (a percentage's value):
+ * in its decimal digits, not by a division, so 12.3 is 0.123 exactly; the
+ * exponent of a very small or large number ("1e-7") moved with it.
+ */
+function shiftDecimal(number: number, places: number) {
+  const [mantissa, exponent = "0"] = String(number).split("e")
+  return Number(`${mantissa}e${Number(exponent) + places}`)
 }
 
 /** Digits with the locale's separators only; `undefined` otherwise. */
@@ -297,14 +307,25 @@ function timeIn(
     return startOfDay(year, month, day, timeZone)
   if (!timeZone) return new Date(year, month, day, hour, minute, second)
   const wanted = Date.UTC(year, month, day, hour, minute, second)
-  // The zone's offset, twice: once more across a change of offset.
-  let time = wanted
-  for (let pass = 0; pass < 2; pass++) {
+  // The zone's offset at an instant (ms ahead of UTC).
+  const offsetAt = (time: number) => {
     const p = partsIn(time, timeZone)
-    time -=
-      Date.UTC(p.year, p.month, p.day, p.hour, p.minute, p.second) - wanted
+    return (
+      Date.UTC(p.year, p.month, p.day, p.hour, p.minute, p.second) -
+      Math.floor(time / 1000) * 1000
+    )
   }
-  return new Date(time)
+  // The offsets before and after a change of offset near the time: the
+  // earlier instant that shows the wall time (one hour twice: the first),
+  // and a time the change skips is read with the offset before it, so it
+  // falls forward ("compatible": 02:30 in a skipped hour is 03:30).
+  const before = wanted - offsetAt(wanted - 86_400_000)
+  const after = wanted - offsetAt(wanted + 86_400_000)
+  const shows = (time: number) => time + offsetAt(time) === wanted
+  if (shows(before) && shows(after)) return new Date(Math.min(before, after))
+  if (shows(before)) return new Date(before)
+  if (shows(after)) return new Date(after)
+  return new Date(before)
 }
 
 /** A two-digit year as Excel reads it: 1930–2029. */

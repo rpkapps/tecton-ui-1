@@ -165,10 +165,15 @@ describe("DataTable editing: starting an edit", () => {
     expect(press("7")).toBe(false)
     expect(editor()).toHaveValue("7")
     press("Escape")
-    // AltGr (Ctrl + Alt) on every platform.
-    expect(press("@", { ctrlKey: true, altKey: true })).toBe(false)
+    // AltGr (Ctrl + Alt, AltGraph) on every platform.
+    expect(
+      press("@", { ctrlKey: true, altKey: true, modifierAltGraph: true })
+    ).toBe(false)
     expect(editor()).toHaveValue("@")
     press("Escape")
+    // Ctrl + Alt without AltGraph (Linux): a shortcut.
+    press("a", { ctrlKey: true, altKey: true })
+    expect(focused()).toBe(td("Well 2", "depth"))
     // Alt alone is a shortcut but on a Mac (Option types characters).
     press("x", { altKey: true })
     press("c", { ctrlKey: true })
@@ -834,7 +839,10 @@ describe("DataTable editing: an editor's text", () => {
         "en-US"
       )
     ).toBe("1234567")
-    expect(numberText(1e21, undefined, "en-US")).toBe("1e+21")
+    // Very small and large numbers in full, without an exponent.
+    expect(numberText(1e21, undefined, "en-US")).toBe("1000000000000000000000")
+    expect(numberText(1e-7, undefined, "en-US")).toBe("0.0000001")
+    expect(numberText(1e-9, { style: "percent" }, "en-US")).toBe("0.0000001%")
   })
 
   it("Alt + Down edits a date or options cell with its calendar or list open", async () => {

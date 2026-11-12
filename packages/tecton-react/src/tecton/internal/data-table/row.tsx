@@ -257,6 +257,7 @@ function ItemRowComponent<T>({
                   row,
                   shared,
                   <Editor
+                    key={edited.id}
                     editing={edited}
                     column={column as EngineColumn<unknown>}
                     item={row.item}

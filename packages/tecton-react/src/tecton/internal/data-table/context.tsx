@@ -232,6 +232,8 @@ type CellWriter = {
 type EditingCell = {
   readonly row: string
   readonly column: string
+  /** The edit's own number: its editor is new for each edit. */
+  readonly id: number
   readonly session: object
   readonly error: string | null
 }

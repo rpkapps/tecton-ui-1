@@ -1225,6 +1225,7 @@ function DataTableContentImpl({
             onKeyDown={cellKeys ? onKeyDown : undefined}
             onFocus={cellKeys ? onFocus : undefined}
             onMouseDown={cellKeys ? onMouseDown : undefined}
+            onBlur={editable ? editing.onBlur : undefined}
             // Left out, not undefined: a virtualized body counts its own.
             {...(rowCount === undefined ? {} : { "aria-rowcount": rowCount })}
           >

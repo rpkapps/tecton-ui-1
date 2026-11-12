@@ -116,7 +116,7 @@ export function ButtonGroupRtl() {
               <MoreHorizontalIcon />
             </DropdownMenuTrigger>
             <DropdownMenuContent
-              align={dir === "rtl" ? "start" : "end"}
+              align="end"
               data-lang={dir === "rtl" ? language : undefined}
               dir={dir}
               className="w-40"

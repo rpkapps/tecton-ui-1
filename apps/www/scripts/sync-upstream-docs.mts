@@ -261,6 +261,31 @@ function toGregorianArabic(label: string) {
 // Per-example source fixes for upstream demos that assume the vega look.
 const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
   "calendar-rtl": toGregorianArabic("calendar-rtl"),
+  // Upstream mirrors the menus' alignment by hand, for a portal that is
+  // left to right: Tecton's right-to-left preview portals its overlays in
+  // its own direction (`ThemeRoot`), where `start` and `end` are already
+  // the reading direction's, so the hand mirror would flip them twice.
+  "dropdown-menu-rtl": (code) =>
+    replaceOrThrow(
+      code,
+      'align={dir === "rtl" ? "end" : "start"}',
+      'align="start"',
+      "dropdown-menu-rtl"
+    ),
+  "breadcrumb-rtl": (code) =>
+    replaceOrThrow(
+      code,
+      'align={dir === "rtl" ? "end" : "start"}',
+      'align="start"',
+      "breadcrumb-rtl"
+    ),
+  "button-group-rtl": (code) =>
+    replaceOrThrow(
+      code,
+      'align={dir === "rtl" ? "start" : "end"}',
+      'align="end"',
+      "button-group-rtl"
+    ),
   "date-picker-rtl": toGregorianArabic("date-picker-rtl"),
   // Upstream's docs site serves its components at /components; ours at /docs/components.
   "breadcrumb-separator": (code) =>

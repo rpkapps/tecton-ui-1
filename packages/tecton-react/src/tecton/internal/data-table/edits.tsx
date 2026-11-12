@@ -25,13 +25,19 @@
  *   has no editor, and Enter, F2 and a double click are not its (one that
  *   draws its own `cell`, and so no checkbox, is toggled by them).
  *
- * Before the code is there, every key on the cell an edit waits on is the
- * edits' (`waitingKey`): characters and Backspace change the edit's text,
- * Escape drops it, Enter and Tab save it and move, a key that edits then
- * begins an edit of the cell moved to, and the keys that would move focus
- * or the caret are kept. Replayed in order once the code comes, they give
- * what they give once it is there ("5 Enter 6 Enter 7": two cells saved,
- * the third edited with "7"), unless focus has left that cell meanwhile.
+ * Before the code is there, a key or a double click that begins an edit
+ * begins a chain (`keys`): every key pressed on that cell from then on is
+ * kept as it was pressed, its default prevented, and pressed again in
+ * order once the code is there, through the same handlers a key pressed
+ * then goes through, focus moving as they move it: what the keys do is
+ * what they would have done had the code been there. Shortcuts (Ctrl /
+ * Cmd + a key) are left to the table as they come. Three things end a
+ * chain before the code comes (it is `released`): Tab with no edit open
+ * (by the chain's own keys so far), which leaves the table, as the grid's
+ * Tab does, and so is not prevented; a press on another cell or off the
+ * table; focus leaving the table. A released chain is pressed again all
+ * the same, then its edit ends as focus leaving it would end it (saved),
+ * and focus goes back where the user took it.
  */
 import * as React from "react"
 
@@ -61,24 +67,38 @@ type EditStart =
 /** Where a save moves: Enter's, Shift + Enter's, Tab's, Shift + Tab's. */
 type SaveMove = "down" | "up" | "next" | "previous"
 
+/** A key as it was pressed, to press it again. */
+type KeyPress = {
+  key: string
+  code: string
+  shiftKey: boolean
+  ctrlKey: boolean
+  altKey: boolean
+  metaKey: boolean
+  altGraph: boolean
+  isComposing: boolean
+}
+
+/** Keys before the code (see the module comment). */
+type KeyChain = {
+  kind: "keys"
+  /** The cell they were pressed on. */
+  cell: Position
+  /** Begun by a double click (not a key). */
+  press: boolean
+  keys: Array<KeyPress>
+  /** Ended before the code came (Tab out, a press elsewhere, focus gone). */
+  released: boolean
+}
+
 /**
- * What the user did, as the code on demand takes it (`attachEditing`).
- *
- * - `start`: an edit of `cell` (`null`: the cell the save before it moved
- *   to); `text`, typed in place of the value (`type`), or after it (typed
- *   after Enter, F2 or a double click, before the code came).
- * - `save`: the edit before it saved, and focus moved (Enter, Tab).
+ * What the user did, as the code on demand takes it (`attachEditing`):
+ * an edit to begin (`start`, at once or from `useDataTable`), the keys of
+ * a chain, a cell written at once, the edit's end.
  */
 type EditEvent =
-  | {
-      kind: "start"
-      cell: Position | null
-      how: EditStart
-      text: string
-      /** Characters of the value Backspace took back, before `text` (after Enter). */
-      back?: number
-    }
-  | { kind: "save"; move: SaveMove }
+  | { kind: "start"; cell: Position; how: EditStart; text: string }
+  | KeyChain
   | {
       kind: "write"
       cell: Position
@@ -104,8 +124,6 @@ type EditSide = {
       bodyIndex: (id: string) => number
     }
   }
-  /** What the user did before the code came, in order. */
-  queue: Array<EditEvent>
 }
 
 /** What the code on demand does with the table's events. */
@@ -115,14 +133,16 @@ type EditHandlers = {
    * there, focused, before it returns).
    */
   run: (entry: EditEvent, now: boolean) => void
+  /** Does what waited for the code, in order (keys pressed again). */
+  replay: (entries: ReadonlyArray<EditEvent>) => void
   /** A press on the table: one in the cell being edited, off its editor, keeps focus in the editor. */
   press: (event: React.MouseEvent) => void
   stop: () => void
 }
 
 /**
- * The character a key types, if it types one, not a shortcut: Ctrl + Alt is
- * AltGr on Windows, Option types characters on a Mac (only there). Space
+ * The character a key types, if it types one, not a shortcut: AltGr types
+ * characters (`AltGraph`), and Option does on a Mac (only there). Space
  * types only where it selects nothing (`spaceTypes`).
  */
 function typedOf(event: React.KeyboardEvent, spaceTypes: boolean) {
@@ -130,35 +150,18 @@ function typedOf(event: React.KeyboardEvent, spaceTypes: boolean) {
   // One character (an astral one is two code units).
   if ([...key].length !== 1 || event.metaKey) return null
   if (key === " " && !spaceTypes) return null
-  const altGr = event.ctrlKey && event.altKey
+  // AltGr as the platform says it (Windows: Ctrl + Alt with AltGraph); a
+  // browser that cannot say, Ctrl + Alt. Ctrl + Alt + a letter without it
+  // (Linux) is a shortcut.
+  const { nativeEvent } = event
+  const altGr =
+    typeof nativeEvent.getModifierState === "function"
+      ? nativeEvent.getModifierState("AltGraph")
+      : event.ctrlKey && event.altKey
   if (event.ctrlKey && !altGr) return null
   if (event.altKey && !altGr && !isMac()) return null
   return key
 }
-
-/** Where Enter, Shift + Enter, Tab and Shift + Tab save to, else `null`. */
-function saveMoveOf(event: React.KeyboardEvent): SaveMove | null {
-  if (event.altKey || event.ctrlKey || event.metaKey) return null
-  if (event.key === "Enter") return event.shiftKey ? "up" : "down"
-  if (event.key === "Tab") return event.shiftKey ? "previous" : "next"
-  return null
-}
-
-/** The keys that move the caret in an editor, or focus on a cell. */
-const MOVING = new Set([
-  "ArrowLeft",
-  "ArrowRight",
-  "ArrowUp",
-  "ArrowDown",
-  "Home",
-  "End",
-  "PageUp",
-  "PageDown",
-  "Tab",
-  "Delete",
-  "Backspace",
-  "Escape",
-])
 
 /**
  * The edit a key begins on a cell of this type, if any; `spaceTypes`: Space
@@ -185,6 +188,16 @@ function startOf(
   const text = typedOf(event, spaceTypes)
   return text === null ? null : { how: "type", text }
 }
+
+/** Keys that only modify others. */
+const MODIFIERS = new Set([
+  "Shift",
+  "Control",
+  "Alt",
+  "Meta",
+  "AltGraph",
+  "CapsLock",
+])
 
 const same = (a: Position, b: Position) =>
   a.row === b.row && a.column === b.column
@@ -216,14 +229,31 @@ function useCellEditing({
   const handlers = React.useRef<EditHandlers | null>(null)
 
   const [api] = React.useState(() => {
-    /** The cell focus stays on while edits wait for the code: theirs, in order. */
-    let chain: Position | null = null
+    /** The chain the keys go to while the code is still to come. */
+    let chain: { entry: KeyChain; editing: boolean } | null = null
     const dispatch = (entry: EditEvent, now: boolean) => {
       const current = handlers.current
       if (current) return current.run(entry, now)
       queue.push(entry)
-      if (entry.kind === "start" && entry.cell) chain = entry.cell
       load()
+    }
+    /** Begins a chain on a cell (the code is still to come). */
+    const begin = (cell: Position, press: boolean) => {
+      const entry: KeyChain = {
+        kind: "keys",
+        cell,
+        press,
+        keys: [],
+        released: false,
+      }
+      chain = { entry, editing: true }
+      dispatch(entry, false)
+      return entry
+    }
+    /** Ends the chain the keys went to: pressed again all the same, then saved. */
+    const release = () => {
+      if (chain) chain.entry.released = true
+      chain = null
     }
     /** The column of a cell that can be written, else `null`. */
     const editableAt = (at: Position): EngineColumn<unknown> | null => {
@@ -238,52 +268,35 @@ function useCellEditing({
     }
     const spaceTypes = () =>
       context.store.get().options.selectionMode === "none"
-
+    const record = (event: React.KeyboardEvent): KeyPress => ({
+      key: event.key,
+      code: event.code,
+      shiftKey: event.shiftKey,
+      ctrlKey: event.ctrlKey,
+      altKey: event.altKey,
+      metaKey: event.metaKey,
+      altGraph: event.nativeEvent.getModifierState("AltGraph"),
+      isComposing: event.nativeEvent.isComposing,
+    })
     /**
-     * A key while edits wait for the code, focus still on their cell:
-     * every key is theirs, so the outcome is the same whenever the code
-     * comes. In an edit, characters and Backspace change its text, Escape
-     * drops it, Enter and Tab save it and move, the keys that would move
-     * the caret are kept; after a save, a key that edits begins an edit of
-     * the cell moved to, and the others are kept.
+     * Whether an edit is open after a key, by the chain's keys so far (for
+     * Tab: in an edit it saves and moves; with none, it leaves the table).
      */
-    const waitingKey = (
-      event: React.KeyboardEvent,
-      last: EditEvent,
-      done: () => void
-    ) => {
-      if (last.kind === "start") {
-        if (event.key === "Escape") {
-          queue.pop()
-          return done()
-        }
-        if (event.key === "Backspace") {
-          if (last.text) last.text = [...last.text].slice(0, -1).join("")
-          else last.back = (last.back ?? 0) + 1
-          return done()
-        }
-        const move = saveMoveOf(event)
-        if (move) {
-          queue.push({ kind: "save", move })
-          return done()
-        }
-        const text = typedOf(event, true)
-        if (text !== null) last.text += text
-        if (text !== null || MOVING.has(event.key)) done()
-        return
-      }
-      const start =
-        event.key === "Enter" || event.key === "F2"
-          ? {
-              how: event.key === "F2" ? ("edit" as const) : ("enter" as const),
-              text: "",
-            }
-          : startOf(event, "text", spaceTypes())
-      if (start) {
-        queue.push({ kind: "start", cell: null, ...start })
-        return done()
-      }
-      if (MOVING.has(event.key)) done()
+    const editingAfter = (editing: boolean, event: React.KeyboardEvent) => {
+      const { key } = event
+      if (editing)
+        return !(
+          ((key === "Enter" || key === "Tab") &&
+            !event.ctrlKey &&
+            !event.metaKey &&
+            !event.altKey) ||
+          key === "Escape"
+        )
+      return (
+        key === "Enter" ||
+        key === "F2" ||
+        startOf(event, "options", spaceTypes()) !== null
+      )
     }
 
     const onKeyDown = (event: React.KeyboardEvent<HTMLTableElement>) => {
@@ -297,17 +310,18 @@ function useCellEditing({
         event.preventDefault()
         event.stopPropagation()
       }
-      const last = queue.at(-1)
-      if (
-        !handlers.current &&
-        chain &&
-        same(chain, at) &&
-        (last?.kind === "start" || last?.kind === "save")
-      )
-        return waitingKey(event, last, done)
+      const mod = isMac() ? event.metaKey : event.ctrlKey
+      if (!handlers.current && chain && same(chain.entry.cell, at)) {
+        // Shortcuts and modifiers alone are the table's, as they come.
+        if ((mod && !event.altKey) || MODIFIERS.has(event.key)) return
+        // Tab with no edit open leaves the table: natively, as the grid's.
+        if (event.key === "Tab" && !chain.editing) return release()
+        chain.entry.keys.push(record(event))
+        chain.editing = editingAfter(chain.editing, event)
+        return done()
+      }
       const column = editableAt(at)
       if (!column) return
-      const mod = isMac() ? event.metaKey : event.ctrlKey
       if (event.key === "Backspace" || event.key === "Delete") {
         // With a cell selection, its cells are cleared (`cells.tsx`).
         if (
@@ -329,8 +343,20 @@ function useCellEditing({
         )
       }
       const start = startOf(event, column.type, spaceTypes())
+      // The code still to come: the key begins a chain (Enter and F2 too).
+      if (!handlers.current) {
+        const edits =
+          start !== null ||
+          (column.type !== "boolean" &&
+            (event.key === "Enter" || event.key === "F2") &&
+            !event.altKey &&
+            !mod)
+        if (!edits) return
+        begin(at, false).keys.push(record(event))
+        return done()
+      }
       if (!start) return
-      if (start.how === "compose" && handlers.current) {
+      if (start.how === "compose") {
         // The key's own default goes on in the editor, focused by now.
         event.stopPropagation()
         return dispatch({ kind: "start", cell: at, ...start }, true)
@@ -350,9 +376,12 @@ function useCellEditing({
       const at = positionOf(cell)
       const column = at && editableAt(at)
       if (!at || !column) return false
-      if (column.type !== "boolean")
-        dispatch({ kind: "start", cell: at, how, text: "" }, true)
-      else if (column.definition.cell) {
+      if (column.type !== "boolean") {
+        if (handlers.current)
+          handlers.current.run({ kind: "start", cell: at, how, text: "" }, true)
+        // Enter and F2 began a chain already (`onKeyDown`).
+        else if (how === "double-click") begin(at, true)
+      } else if (column.definition.cell) {
         const item = context.store.get().model.item(at.row)
         const value = toBoolean(column.getValue(item))
         dispatch(
@@ -366,10 +395,25 @@ function useCellEditing({
     // The code, as soon as the table is used.
     const onFocus = () => load()
 
-    // A press in the cell being edited is the code's (an edit is there).
+    // A press in the cell being edited is the code's (an edit is there);
+    // before it, a press off a chain's cell ends the chain.
     const onMouseDown = (event: React.MouseEvent<HTMLTableElement>) => {
       load()
-      handlers.current?.press(event)
+      if (handlers.current) return handlers.current.press(event)
+      const at = positionOf((event.target as Element).closest("td, th"))
+      if (chain && !(at && same(at, chain.entry.cell))) release()
+    }
+
+    // Focus leaving the table ends a chain.
+    const onBlur = (event: React.FocusEvent<HTMLTableElement>) => {
+      const to = event.relatedTarget as Node | null
+      if (!handlers.current && chain && !event.currentTarget.contains(to))
+        release()
+    }
+
+    /** The code is there: its handlers take the keys from now. */
+    const settle = () => {
+      chain = null
     }
 
     const requests: EditRequests = {
@@ -379,7 +423,8 @@ function useCellEditing({
         // No code yet: no edit to end, but one still waiting.
         if (!handlers.current) {
           const last = queue.at(-1)
-          if (last?.kind === "start") queue.push({ kind: "stop", commit })
+          if (last?.kind === "start" || last?.kind === "keys")
+            queue.push({ kind: "stop", commit })
           return
         }
         dispatch({ kind: "stop", commit }, false)
@@ -388,7 +433,15 @@ function useCellEditing({
         dispatch({ kind: "write", cell, value, reason: "edit", event }, false),
     }
 
-    return { onKeyDown, onCellAction, onFocus, onMouseDown, requests }
+    return {
+      onKeyDown,
+      onCellAction,
+      onFocus,
+      onMouseDown,
+      onBlur,
+      requests,
+      settle,
+    }
   })
 
   React.useLayoutEffect(() => {
@@ -397,7 +450,10 @@ function useCellEditing({
     return () => context.cells.set({ edits: null })
   }, [on, context, api])
 
-  // The code, once it is there: it takes what waited, and the events from then.
+  // The code, once it is there: what waited is done again (in a task of
+  // its own, after this render's work, so an editor it opens renders at
+  // once), and the events from then are its own. Keys pressed meanwhile
+  // still wait their turn.
   React.useEffect(() => {
     if (!module) return
     const attached = module.attachEditing({
@@ -406,17 +462,32 @@ function useCellEditing({
       grid,
       positionOf,
       latest,
-      queue,
     })
-    handlers.current = attached
+    const live = () => {
+      handlers.current = attached
+      api.settle()
+      attached.replay(queue.splice(0))
+    }
+    // Nothing waited: its own at once.
+    if (queue.length === 0) live()
+    const timer = queue.length === 0 ? undefined : setTimeout(live)
     return () => {
+      clearTimeout(timer)
       handlers.current = null
       attached.stop()
     }
-  }, [module, context, container, grid, positionOf, queue])
+  }, [module, context, container, grid, positionOf, queue, api])
 
   return api
 }
 
 export { useCellEditing }
-export type { EditEvent, EditHandlers, EditSide, EditStart, SaveMove }
+export type {
+  EditEvent,
+  EditHandlers,
+  EditSide,
+  EditStart,
+  KeyChain,
+  KeyPress,
+  SaveMove,
+}

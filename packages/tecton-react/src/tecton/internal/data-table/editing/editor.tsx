@@ -20,7 +20,10 @@
  * cell's font and alignment, and the cell's own focus ring outlines it
  * (`cell.tsx`). Popups open from the cell, in Tecton's portal.
  *
- * Focus leaving the editor saves, once it has settled (a microtask): focus
+ * Focus leaving the editor saves: at once for another cell (rendered once
+ * the table has moved focus there) and for an element of the page no popup
+ * holds (a button: rendered at once, so a click there sees the value); for
+ * a popup, or no element, once focus has settled (a microtask): focus
  * going into the editor's own popups (portalled, but in its React tree, so
  * their focus events reach it) keeps the edit, and so does focus going to
  * another window (it stays on the field, to come back to).
@@ -30,11 +33,13 @@
  * message, which a tooltip on the cell shows too (`cell-error.tsx`).
  */
 import * as React from "react"
+import { flushSync } from "react-dom"
 import { cn } from "cn"
 import { CalendarIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import { Input } from "@tecton/react/components/input"
+import { usePortalTarget } from "@tecton/react/tecton/portal"
 
 import { useTranslations } from "../../i18n/translations"
 import type { CellEditorProps } from "../context"
@@ -353,6 +358,8 @@ function CellEditor({ editing, column, item, display, wrap }: CellEditorProps) {
   const cell = React.useRef<HTMLElement | null>(null)
   /** A save waiting for focus to settle: a focus in the editor drops it. */
   const leaving = React.useRef(0)
+  /** Tecton's overlay container, where popups are (else `document.body`). */
+  const portal = usePortalTarget()
   const messageId = React.useId()
   const { error } = editing
   const rowName = controller.context.store.get().model.textOf(session.row)
@@ -406,17 +413,27 @@ function CellEditor({ editing, column, item, display, wrap }: CellEditorProps) {
         event: blurred,
       })
     const token = ++leaving.current
-    // To another cell, or anything else of the table: saved at once (a
-    // popup of the editor's is never in the table).
-    if (
-      to &&
-      !box.current?.contains(to) &&
-      session.cell?.closest("table")?.contains(to)
-    )
-      return save()
-    // Elsewhere, once focus has settled: into the editor again (its popup,
-    // whose focus reaches it through React's tree), or still on the field
-    // (another window took focus), the edit goes on.
+    if (to && !box.current?.contains(to)) {
+      // To another cell, or anything else of the table: saved at once,
+      // rendered once the table has moved focus there (an editor going in
+      // the middle of that move would take focus back to its cell).
+      if (session.cell?.closest("table")?.contains(to)) return save()
+      // To an element of the page that no popup holds (a button): saved
+      // at once, and rendered, so a press there (even one in the same
+      // task) sees the value. A popup may be the editor's own: its focus
+      // reaches the editor through React's tree, so that waits.
+      if (
+        !(to instanceof Element && to.closest("[data-base-ui-portal]")) &&
+        !portal?.contains(to)
+      ) {
+        // The application's update rendered too, before the press goes on.
+        if (!session.closed) flushSync(save)
+        return
+      }
+    }
+    // Into a popup, or nowhere: once focus has settled, into the editor
+    // again (its popup), or still on the field (another window took
+    // focus), the edit goes on.
     const doc = event.currentTarget.ownerDocument
     queueMicrotask(() => {
       if (session.closed || token !== leaving.current) return

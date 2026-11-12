@@ -36,7 +36,7 @@ import {
   type DataTableProps,
 } from "@tecton/react/tecton/data-table"
 
-import { parseCellText } from "../internal/data-table/cell-parse"
+import { parseCellText, parseDate } from "../internal/data-table/cell-parse"
 import { getColumnModel } from "../internal/data-table/engine/columns"
 import { loadFeature } from "../internal/data-table/lazy"
 import * as announcer from "../internal/primitives/live-announcer"
@@ -199,6 +199,29 @@ describe("DataTable editing: dates", () => {
     expect(field()).toHaveAccessibleDescription("Enter a date")
   })
 
+  it("reads a wall time a change of offset skips forward, and one it repeats as the first", () => {
+    const at = (text: string, timeZone: string) =>
+      parseDate(text, "en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
+        timeZone,
+      })?.toISOString()
+    // 02:30 does not exist: 03:30 (Temporal's "compatible").
+    expect(at("2024-03-10 02:30", "America/New_York")).toBe(
+      "2024-03-10T07:30:00.000Z"
+    )
+    expect(at("2024-03-31 02:30", "Europe/Oslo")).toBe(
+      "2024-03-31T01:30:00.000Z"
+    )
+    // 01:30 twice: the first.
+    expect(at("2024-11-03 01:30", "America/New_York")).toBe(
+      "2024-11-03T05:30:00.000Z"
+    )
+    expect(at("2024-07-01 14:30", "America/New_York")).toBe(
+      "2024-07-01T18:30:00.000Z"
+    )
+  })
+
   it("takes this year for a format without one, when there is no value", () => {
     const dayOnly = createColumns<Reading>([
       { id: "name", header: "Well" },
@@ -299,6 +322,20 @@ describe("DataTable editing: percentages", () => {
     })
     expect(parseCellText(cut, "15%", READINGS[0], context)).toEqual({
       value: 0.15,
+    })
+    // Very small and large percentages: the exponent moved, never NaN.
+    const typed = { ...context, typed: true }
+    expect(parseCellText(cut, "0.0000001", READINGS[0], typed)).toEqual({
+      value: 1e-9,
+    })
+    expect(parseCellText(cut, "0.0000001%", READINGS[0], context)).toEqual({
+      value: 1e-9,
+    })
+    expect(parseCellText(cut, "1e25%", READINGS[0], context)).toEqual({
+      value: 1e23,
+    })
+    expect(parseCellText(cut, "1e25", READINGS[0], typed)).toEqual({
+      value: 1e23,
     })
   })
 })
@@ -501,6 +538,95 @@ describe("DataTable editing: the options list", () => {
     expect(
       await screen.findByRole("listbox", { name: "Operator" })
     ).toBeInTheDocument()
+  })
+})
+
+describe("DataTable editing: focus leaving", () => {
+  it("saves on a press on another cell, and that cell keeps focus", async () => {
+    // The application's `items` take the value (the table renders again
+    // as the editor goes).
+    function App() {
+      const [items, setItems] = React.useState(READINGS)
+      return (
+        <Table
+          items={items}
+          onCellsChange={(changes) =>
+            setItems((current) =>
+              current.map((item) => {
+                const change = changes.find((each) => each.row === item.id)
+                return change
+                  ? { ...item, operator: String(change.value) }
+                  : item
+              })
+            )
+          }
+        />
+      )
+    }
+    render(<App />)
+    edit("Well 0", "operator")
+    typeIn("OKEA")
+    // The edited cell is not focused on the way (a browser keeps focus
+    // there, dropping the press's own move). Outside `act`, as in a
+    // browser, so that the table's effects run as the editor goes.
+    const back = vi.fn()
+    td("Well 0", "operator").addEventListener("focus", back)
+    const environment = globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
+    environment.IS_REACT_ACT_ENVIRONMENT = false
+    try {
+      td("Well 1", "operator").dispatchEvent(
+        new MouseEvent("mousedown", { bubbles: true, cancelable: true })
+      )
+      await new Promise((resolve) => setTimeout(resolve, 0))
+    } finally {
+      environment.IS_REACT_ACT_ENVIRONMENT = true
+    }
+    expect(back).not.toHaveBeenCalled()
+    expect(td("Well 0", "operator")).toHaveTextContent("OKEA")
+    expect(editing()).toBeNull()
+    expect(td("Well 1", "operator").contains(focused())).toBe(true)
+  })
+
+  it("saves at once for a control of the page, so a click in the same task sees the value", () => {
+    function App() {
+      const [items, setItems] = React.useState(READINGS)
+      const latest = React.useRef(items)
+      latest.current = items
+      const [seen, setSeen] = React.useState("")
+      return (
+        <>
+          <Table
+            items={items}
+            onCellsChange={(changes) =>
+              setItems((current) =>
+                current.map((item) => {
+                  const change = changes.find((each) => each.row === item.id)
+                  return change
+                    ? { ...item, operator: String(change.value) }
+                    : item
+                })
+              )
+            }
+          />
+          <button
+            type="button"
+            onClick={() => setSeen(latest.current[0].operator)}
+          >
+            Export
+          </button>
+          <output>{seen}</output>
+        </>
+      )
+    }
+    render(<App />)
+    edit("Well 0", "operator")
+    typeIn("OKEA")
+    const button = screen.getByRole("button", { name: "Export" })
+    act(() => {
+      button.focus()
+      button.click()
+    })
+    expect(screen.getByText("OKEA", { selector: "output" })).toBeInTheDocument()
   })
 })
 
