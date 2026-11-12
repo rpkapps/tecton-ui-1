@@ -1,5 +1,13 @@
 import * as React from "react"
-import { act, fireEvent, render, screen, within } from "@testing-library/react"
+import {
+  act,
+  fireEvent,
+  render,
+  screen,
+  waitFor,
+  within,
+} from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
@@ -275,6 +283,119 @@ describe("DataTable disabled rows", () => {
     press("a", { ctrlKey: true })
     expect(lastValue(onValueChange)).toEqual(["w1", "w3", "w4"])
     expect(selectAll()).toHaveAttribute("aria-checked", "true")
+  })
+})
+
+describe("DataTable disabled reasons", () => {
+  const isItemDisabled = (well: Well) => well.id === "w2"
+  const REASON = "Plugged wells can't be added to a project"
+  const itemToDisabledReason = (well: Well) =>
+    well.id === "w2" || well.id === "w3" ? REASON : undefined
+  const tooltip = () =>
+    document.querySelector<HTMLElement>('[data-slot="tooltip-content"]')
+  const triggers = () =>
+    document.querySelectorAll('[data-slot="table-selection-reason"]')
+
+  it.each(["all", "selection"] as const)(
+    'shows why a row cannot be selected on hover, with disabledBehavior="%s"',
+    async (disabledBehavior) => {
+      render(
+        <Wells
+          items={WELLS.slice(0, 4)}
+          isItemDisabled={isItemDisabled}
+          itemToDisabledReason={itemToDisabledReason}
+          disabledBehavior={disabledBehavior}
+        />
+      )
+      // Only the disabled row's checkbox: Well 03 has a reason, but can be
+      // selected.
+      expect(triggers()).toHaveLength(1)
+      expect(checkbox("Well 02")).toHaveAccessibleDescription(REASON)
+      expect(checkbox("Well 03")).not.toHaveAttribute("aria-describedby")
+      expect(tooltip()).toBeNull()
+      await userEvent.hover(checkbox("Well 02"))
+      await waitFor(() => expect(tooltip()).toHaveTextContent(REASON))
+    }
+  )
+
+  it('shows the reason as the arrow keys reach the checkbox, with disabledBehavior="selection"', async () => {
+    render(
+      <Wells
+        items={WELLS.slice(0, 4)}
+        isItemDisabled={isItemDisabled}
+        itemToDisabledReason={itemToDisabledReason}
+        disabledBehavior="selection"
+      />
+    )
+    focusRow("Well 01")
+    press("ArrowDown")
+    // The row says why Space does not select it.
+    expect(focused()).toBe(row("Well 02"))
+    expect(row("Well 02")).toHaveAccessibleDescription(REASON)
+    expect(row("Well 03")).not.toHaveAttribute("aria-describedby")
+    press("ArrowRight")
+    expect(focused()).toBe(checkbox("Well 02"))
+    await waitFor(() => expect(tooltip()).toHaveTextContent(REASON))
+    // Focus moving on closes it.
+    press("ArrowDown")
+    expect(focused()).toBe(checkbox("Well 03"))
+    await waitFor(() => expect(tooltip()).toBeNull())
+  })
+
+  it('describes a row that focus passes over, with disabledBehavior="all"', () => {
+    render(
+      <Wells
+        items={WELLS.slice(0, 4)}
+        isItemDisabled={isItemDisabled}
+        itemToDisabledReason={itemToDisabledReason}
+      />
+    )
+    expect(row("Well 02")).toHaveAccessibleDescription(REASON)
+    expect(checkbox("Well 02")).toHaveAccessibleDescription(REASON)
+    focusRow("Well 01")
+    press("ArrowDown")
+    expect(focused()).toBe(row("Well 03"))
+  })
+
+  it("renders no tooltip or description without a reason", async () => {
+    const { rerender } = render(
+      <Wells
+        items={WELLS.slice(0, 4)}
+        isItemDisabled={isItemDisabled}
+        itemToDisabledReason={() => undefined}
+        disabledBehavior="selection"
+      />
+    )
+    const none = async () => {
+      expect(triggers()).toHaveLength(0)
+      expect(checkbox("Well 02")).toHaveAttribute("aria-disabled", "true")
+      expect(checkbox("Well 02")).not.toHaveAttribute("aria-describedby")
+      expect(row("Well 02")).not.toHaveAttribute("aria-describedby")
+      await userEvent.hover(checkbox("Well 02"))
+      await new Promise((resolve) => setTimeout(resolve, 700))
+      expect(tooltip()).toBeNull()
+      await userEvent.unhover(checkbox("Well 02"))
+    }
+    await none()
+    rerender(
+      <Wells
+        items={WELLS.slice(0, 4)}
+        isItemDisabled={isItemDisabled}
+        disabledBehavior="selection"
+      />
+    )
+    await none()
+    // A reason, once the row can be selected, is not shown.
+    rerender(
+      <Wells
+        items={WELLS.slice(0, 4)}
+        itemToDisabledReason={itemToDisabledReason}
+        disabledBehavior="selection"
+      />
+    )
+    expect(checkbox("Well 02")).not.toHaveAttribute("aria-disabled")
+    expect(triggers()).toHaveLength(0)
+    expect(checkbox("Well 02")).not.toHaveAttribute("aria-describedby")
   })
 })
 

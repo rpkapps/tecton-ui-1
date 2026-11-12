@@ -89,6 +89,8 @@ const columns = createColumns<Well>([
 const MODES: Array<DataTableSelectionMode> = ["none", "single", "multiple"]
 
 const isPlugged = (well: Well) => well.status === "plugged"
+const pluggedReason = (well: Well) =>
+  isPlugged(well) ? "Plugged wells can't be added to a project" : undefined
 
 export default function DataTableSelection() {
   const [mode, setMode] = React.useState<DataTableSelectionMode>("multiple")
@@ -108,6 +110,8 @@ export default function DataTableSelection() {
         // can still be focused and opened ("selection").
         isItemDisabled={selectPlugged ? undefined : isPlugged}
         disabledBehavior="selection"
+        // Shown on a plugged well's checkbox while it cannot be selected.
+        itemToDisabledReason={pluggedReason}
         onActivate={(_, well) => setOpened(well.name)}
       >
         <DataTableToolbar className="gap-4">

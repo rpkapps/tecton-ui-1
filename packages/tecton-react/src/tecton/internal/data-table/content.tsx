@@ -780,6 +780,7 @@ function DataTableContentImpl({
       groupLabel,
       disableRows: options.disabledBehavior === "all",
       linked: options.linked,
+      disabledReasons: options.disabledReasons,
       wrap: !virtualized,
       virtualized,
       columnCount: shownColumns.length + (selection ? 1 : 0) + (handle ? 1 : 0),
@@ -824,6 +825,7 @@ function DataTableContentImpl({
       groupLabel,
       options.disabledBehavior,
       options.linked,
+      options.disabledReasons,
       options.pagination,
       server,
       // On pages only: a new model gives the rows new places.
