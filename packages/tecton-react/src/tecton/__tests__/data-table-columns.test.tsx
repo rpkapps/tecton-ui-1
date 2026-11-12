@@ -312,7 +312,12 @@ describe("DataTable column groups", () => {
     const group = screen.getByRole("columnheader", { name: "Production" })
     // Under the group's name, and at its start; then between every column
     // of the header, in and out of the group.
-    expect(group).toHaveClass("border-b", "border-b-border", "border-s", "border-s-border")
+    expect(group).toHaveClass(
+      "border-b",
+      "border-b-border",
+      "border-s",
+      "border-s-border"
+    )
     for (const name of ["Operator", "Oil", "Gas", "Water", "Wells"])
       expect(header(name)).toHaveClass("border-s")
     // "Wells", in no group, spans both rows: the end edge goes on through
