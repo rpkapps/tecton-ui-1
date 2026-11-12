@@ -374,9 +374,13 @@ type Slot = {
  * that row's components and elements in place instead of unmounting one
  * row and mounting another. The frame then builds no elements and restyles
  * only what changed in them, as cheap as the rows' new text. Once the
- * scrolling settles, every such row takes its own key back, mounting
- * afresh, so no state of the row it stood in for stays with it. A row that
- * stays in view keeps its key throughout (the focused row, kept mounted).
+ * scrolling settles, every such row takes its own key back: React moves
+ * the instance rendered with that key (which may have stood in for another
+ * row meanwhile) back to its row, or mounts one when no row has the key.
+ * A row that stays in view keeps its key throughout (the focused row, kept
+ * mounted) and is never moved among the others: a row coming before it
+ * takes no key that was after it, its own included (it keeps the one it
+ * had, or takes a new one and mounts afresh).
  */
 function recycle({
   rows,
@@ -417,10 +421,13 @@ function recycle({
     if (kept && (before.key === null || !used.has(before.key)))
       place(index, row, before.key)
   }
-  // Each row's place among the rows rendered before.
+  // Each row's place among the rows rendered before, in the order they
+  // were rendered (by index: `previous` lists the rows staying first).
   const places = new Map<string, number>()
-  for (const slot of previous.values())
-    if (slot.key !== null) places.set(slot.key, places.size)
+  for (const index of [...previous.keys()].sort((a, b) => a - b)) {
+    const key = previous.get(index)!.key
+    if (key !== null) places.set(key, places.size)
+  }
   // The keys of the rows that left, for the rows coming, in their order.
   const freed = jumping
     ? [...previous].flatMap(([index, slot]) =>
@@ -456,14 +463,13 @@ function recycle({
       freed.splice(at, 1)
       continue
     }
-    // Its own key held by a row that took it over: one of its own until
-    // that row settles (the one it had, while it is free).
+    // Its own key, unless a row took it over or it was after the row
+    // staying next (React would move that row to put it back): the one it
+    // had, on the same terms, or a new one.
+    const free = (key: string | null | undefined): key is string =>
+      key != null && !used.has(key) && (places.get(key) ?? -1) < limit
     const before = previous.get(index)?.key
-    place(
-      index,
-      row,
-      !used.has(own) ? own : before && !used.has(before) ? before : unique()
-    )
+    place(index, row, free(own) ? own : free(before) ? before : unique())
   }
   return next
 }
@@ -1039,9 +1045,10 @@ function useVirtualRows<T>(
 }
 
 export {
+  recycle,
   TableVirtualProvider,
   useTableVirtualized,
   useTableVirtualizer,
   useVirtualRows,
 }
-export type { TableBodyRowsProps }
+export type { Slot, TableBodyRowsProps }

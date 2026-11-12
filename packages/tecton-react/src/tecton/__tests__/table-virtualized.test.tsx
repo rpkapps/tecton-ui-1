@@ -15,6 +15,10 @@ import {
   DataTable,
   DataTableContent,
 } from "@tecton/react/tecton/data-table"
+import {
+  recycle,
+  type Slot,
+} from "@tecton/react/tecton/internal/table-virtualizer"
 
 /**
  * jsdom has no layout: the table's container is 400 px tall, the header
@@ -770,5 +774,136 @@ describe("DataTable virtualized scrolls", () => {
     })
     expect(row).toHaveFocus()
     expect(screen.getByText("Reading 0")).toBeInTheDocument()
+  })
+})
+
+/**
+ * The keys rows take through jumps and settles (`recycle`). A row that
+ * stays in view keeps its element where it is: React moves an element
+ * (taking focus off it) when a row before it takes a key that was after it.
+ */
+describe("Table virtualized row keys", () => {
+  function KeyedRow(_: { index: number }) {
+    return null
+  }
+  /** A row of another kind (every third), whose keys others do not take. */
+  function GroupRow(_: { index: number }) {
+    return null
+  }
+  let fresh = 0
+  /** The rows at `indices` keyed from `previous`. */
+  function step(
+    previous: ReadonlyMap<number, Slot>,
+    indices: ReadonlyArray<number>,
+    jumping: boolean
+  ) {
+    const rows = new Map<number, React.ReactNode>()
+    for (const index of indices)
+      rows.set(
+        index,
+        index % 3 === 0 ? (
+          <GroupRow key={`r${index}`} index={index} />
+        ) : (
+          <KeyedRow key={`r${index}`} index={index} />
+        )
+      )
+    return recycle({ rows, previous, jumping, unique: () => `u${fresh++}` })
+  }
+  /** The keys in the order the rows are rendered. */
+  const order = (slots: ReadonlyMap<number, Slot>) =>
+    [...slots.keys()]
+      .sort((a, b) => a - b)
+      .map((index) => slots.get(index)!.key!)
+  /** The keys React's keyed reconciliation moves from `before` to `after`. */
+  function moved(before: ReadonlyArray<string>, after: ReadonlyArray<string>) {
+    const was = new Map(before.map((key, at) => [key, at]))
+    const out: Array<string> = []
+    let last = 0
+    for (const key of after) {
+      const at = was.get(key)
+      if (at === undefined) continue
+      if (at < last) out.push(key)
+      else last = at
+    }
+    return out
+  }
+  const range = (from: number, to: number) =>
+    Array.from({ length: to - from + 1 }, (_, at) => from + at)
+
+  /**
+   * The rows keyed for `indices`, and the rows staying (the same key at the
+   * same index) that React would move. No key is given twice.
+   */
+  function check(
+    previous: ReadonlyMap<number, Slot>,
+    indices: ReadonlyArray<number>,
+    jumping: boolean
+  ) {
+    const next = step(previous, indices, jumping)
+    const keys = order(next)
+    expect(new Set(keys).size).toBe(keys.length)
+    const stays = new Set(
+      [...next].flatMap(([index, slot]) =>
+        previous.get(index)?.key === slot.key ? [slot.key] : []
+      )
+    )
+    return {
+      next,
+      moved: moved(order(previous), keys).filter((key) => stays.has(key)),
+    }
+  }
+
+  it("never moves the focused row on a jump away and back", () => {
+    const slots = step(new Map(), range(40, 60), false)
+    // Row 50 focused, kept through a jump to row 1000 and back.
+    const away = check(slots, [50, ...range(1000, 1020)], true)
+    expect(away.moved).toEqual([])
+    const back = check(away.next, range(40, 60), true)
+    expect(back.next.get(50)!.key).toBe("r50")
+    expect(back.moved).toEqual([])
+    // Settled: the rows take their own keys back, row 50 where it is.
+    const settled = check(back.next, range(40, 60), false)
+    expect(settled.next.get(50)!.key).toBe("r50")
+    expect(settled.moved).toEqual([])
+  })
+
+  it("takes the rows' places in the order they are rendered", () => {
+    const slots = step(new Map(), range(53, 60), false)
+    // Rows 49 to 52 come before the rows staying, mounted after them.
+    const up = check(slots, range(49, 57), true)
+    expect(up.moved).toEqual([])
+    // Rows 46 to 48 take the keys of rows 56 and 57, rendered after row 49.
+    const further = check(up.next, range(46, 55), true)
+    expect(further.moved).toEqual([])
+  })
+
+  it("never moves a row staying, nor repeats a key, through jumps and settles", () => {
+    // Seeded: the same sequences on every run.
+    let seed = 12_345
+    const random = () => {
+      seed = (seed * 1_103_515_245 + 12_345) % 2_147_483_648
+      return seed / 2_147_483_648
+    }
+    const focused = 60
+    const bad: Array<string> = []
+    for (let run = 0; run < 400; run++) {
+      let slots = step(new Map(), range(50, 70), false)
+      for (let at = 0; at < 6; at++) {
+        const jumping = at < 5 && random() < 0.8
+        // Mostly a window overlapping the last, at times a far jump.
+        const start = Math.floor(random() * (random() < 0.8 ? 120 : 1000))
+        const size = 3 + Math.floor(random() * 15)
+        const indices = [
+          ...new Set([focused, ...range(start, start + size)]),
+        ].sort((a, b) => a - b)
+        const result = check(slots, indices, jumping)
+        if (result.moved.length > 0)
+          bad.push(
+            `run ${run} step ${at}${jumping ? " (jump)" : ""}: ${result.moved.join(",")}`
+          )
+        slots = result.next
+      }
+    }
+    expect(bad).toEqual([])
   })
 })
