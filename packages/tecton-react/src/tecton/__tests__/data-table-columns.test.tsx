@@ -459,6 +459,23 @@ describe("DataTable column resizing", () => {
     await waitFor(() => expect(separator(name)).toHaveFocus())
   }
 
+  it("puts the grip of a column pinned to the end on its start edge, the inner one", async () => {
+    render(
+      <Fields
+        columns={sized}
+        resizableColumns
+        pinnableColumns
+        defaultView={{ columns: { pinned: { start: [], end: ["name"] } } }}
+      />
+    )
+    await waitFor(() =>
+      expect(screen.getAllByRole("separator")).toHaveLength(5)
+    )
+    expect(separator("Field")).toHaveAttribute("data-edge", "start")
+    expect(separator("Field")).toHaveClass("start-0")
+    expect(separator("Oil")).toHaveAttribute("data-edge", "end")
+  })
+
   it("puts a named resizer on each resizable column's header, none without the feature", async () => {
     const { unmount } = render(<Fields columns={sized} />)
     expect(screen.queryAllByRole("separator")).toHaveLength(0)

@@ -36,7 +36,10 @@ import {
   TableRow,
 } from "@tecton/react/components/table"
 
-import { columnResizerClassName } from "../column-resizer-style"
+import {
+  columnResizerClassName,
+  columnResizerStartClassName,
+} from "../column-resizer-style"
 import { useTranslations, type Translator } from "../i18n/translations"
 import { announce } from "../primitives/live-announcer"
 import {
@@ -400,14 +403,21 @@ function DataTableColumnHeader<T>({
   React.useEffect(() => {
     if (Resizer) startResizer(resizerRef.current)
   }, [Resizer, startResizer])
+  // A column pinned to the end grows toward its start: its grip is on its
+  // start edge, the inner one, rather than on the table's frame.
+  const gripEdge = pin?.side === "end" ? "start" : "end"
   // The last column's grip stays inside the table: half of it past the
   // edge would be cut by the frame, and scroll the table.
-  const lastGrip = index === layout.columns.length - 1 ? "me-0" : undefined
-  // On the start's pinned edge, and in a ruled header, the divider is the
-  // grip's line at rest.
+  const lastGrip =
+    gripEdge === "end" && index === layout.columns.length - 1
+      ? "me-0"
+      : undefined
+  // On a pinned edge, and in a ruled header, the divider is the grip's line
+  // at rest.
   const grip = cn(
+    gripEdge === "start" && columnResizerStartClassName,
     lastGrip,
-    ((pin?.edge && pin.side === "start") || ruled) && "after:bg-transparent"
+    (pin?.edge || ruled) && "after:bg-transparent"
   )
 
   // The resizer's width while it changes: drawn through `preview`, so only
@@ -627,6 +637,7 @@ function DataTableColumnHeader<T>({
           onMouseDown={(event) => event.preventDefault()}
           aria-describedby={resizing ? resizeHintId : undefined}
           className={grip}
+          edge={gripEdge}
           label={column.header}
           // A column hidden below a breakpoint has no width: its own then.
           value={Math.max(

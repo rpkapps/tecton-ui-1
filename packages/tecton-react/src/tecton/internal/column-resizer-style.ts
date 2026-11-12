@@ -25,4 +25,10 @@ const columnResizerClassName = cn(
   "data-disabled:pointer-events-none data-disabled:after:hidden"
 )
 
-export { columnResizerClassName }
+/**
+ * The grip on the column's start edge instead (`edge="start"`): for a
+ * column pinned to the table's end, whose inner edge is its start.
+ */
+const columnResizerStartClassName = "start-0 end-auto -ms-1.5 me-0"
+
+export { columnResizerClassName, columnResizerStartClassName }

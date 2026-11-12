@@ -5,7 +5,10 @@ import { cn } from "cn"
 
 import { useDirection } from "@tecton/react/tecton/provider"
 
-import { columnResizerClassName } from "./internal/column-resizer-style"
+import {
+  columnResizerClassName,
+  columnResizerStartClassName,
+} from "./internal/column-resizer-style"
 import { useTranslations } from "./internal/i18n/translations"
 import { trackPointerDrag } from "./internal/primitives/drag-and-drop/pointer-drag"
 import {
@@ -23,6 +26,9 @@ import {
  * focus it and press the arrow keys (Shift for bigger steps), Home or End
  * for the narrowest or widest, Enter (or a double click) for `resetValue`.
  * In a right-to-left table the edge, the drag and the arrow keys mirror.
+ * With `edge="start"` the grip sits on the header's start edge instead (a
+ * column pinned to the table's end grows toward its start): dragging or
+ * pressing the arrow toward the start widens it.
  *
  * It holds no width of its own beyond `defaultValue`: give the header
  * `className="relative"`, set the column's width from `value`, and give the
@@ -71,6 +77,11 @@ type TableColumnResizerProps = Omit<
   resetValue?: number
   /** The column's name: the resizer is named "Resize {label}". */
   label?: string
+  /**
+   * The header edge the grip sits on: `"end"` (default), or `"start"` for a
+   * column that grows toward its start (one pinned to the table's end).
+   */
+  edge?: "start" | "end"
   disabled?: boolean
 }
 
@@ -88,6 +99,7 @@ function TableColumnResizer({
   step = 8,
   resetValue,
   label,
+  edge = "end",
   disabled = false,
   className,
   onPointerDown,
@@ -101,6 +113,8 @@ function TableColumnResizer({
   // While dragging: how far the guide runs down the visible table.
   const [guide, setGuide] = React.useState(0)
   const rtl = useDirection() === "rtl"
+  // +1 when moving toward the inline end widens the column.
+  const sign = (rtl ? -1 : 1) * (edge === "start" ? -1 : 1)
   const t = useTranslations("tableColumnResizer")
   const stop = React.useRef<(() => void) | null>(null)
   const latest = React.useRef(value)
@@ -147,7 +161,12 @@ function TableColumnResizer({
       tabIndex={disabled ? undefined : 0}
       data-dragging={dragging ? "" : undefined}
       data-disabled={disabled ? "" : undefined}
-      className={cn(columnResizerClassName, className)}
+      data-edge={edge}
+      className={cn(
+        columnResizerClassName,
+        edge === "start" && columnResizerStartClassName,
+        className
+      )}
       onPointerDown={(event) => {
         onPointerDown?.(event)
         if (disabled || event.defaultPrevented || event.button !== 0) return
@@ -176,12 +195,7 @@ function TableColumnResizer({
             setDragging(true)
           },
           onMove: (_point, travel) =>
-            change(
-              from + (rtl ? -travel.x : travel.x),
-              "drag",
-              undefined,
-              false
-            ),
+            change(from + sign * travel.x, "drag", undefined, false),
           onEnd: (drop) => {
             if (drop) change(latest.current, "drag", undefined, true)
             else change(from, "drag", undefined, true)
@@ -196,8 +210,8 @@ function TableColumnResizer({
         onKeyDown?.(event)
         if (disabled || event.defaultPrevented) return
         const by = event.shiftKey ? step * 4 : step
-        const wider = rtl ? "ArrowLeft" : "ArrowRight"
-        const narrower = rtl ? "ArrowRight" : "ArrowLeft"
+        const wider = sign > 0 ? "ArrowRight" : "ArrowLeft"
+        const narrower = sign > 0 ? "ArrowLeft" : "ArrowRight"
         let next: number | null = null
         let reason: TableColumnResizerReason = "keyboard"
         if (event.key === wider) next = latest.current + by
