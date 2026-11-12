@@ -117,7 +117,7 @@ describe("DataTable pages", () => {
         ),
       ]
         .map((item) =>
-          item.matches("[data-jump]")
+          item.matches("[data-ellipsis]")
             ? "…"
             : item.getAttribute("aria-label")?.startsWith("Page ")
               ? item.textContent
@@ -163,57 +163,27 @@ describe("DataTable pages", () => {
     const row = (which: "wide" | "narrow") =>
       [
         ...document.querySelectorAll<HTMLElement>(
-          `[data-slot="pagination-item"]:not([data-${which === "wide" ? "narrow" : "wide"}]) > :is([aria-label^="Page "], [data-jump])`
+          `[data-slot="pagination-item"]:not([data-${which === "wide" ? "narrow" : "wide"}]) > :is([aria-label^="Page "], [data-ellipsis])`
         ),
       ].map((item) =>
-        item.dataset.jump === "previous"
+        item.dataset.ellipsis === "previous"
           ? "«"
-          : item.dataset.jump === "next"
+          : item.dataset.ellipsis === "next"
             ? "»"
             : item.textContent
       )
-    /** The ellipsis of the wide row. */
-    const jump = (direction: "previous" | "next") =>
+    /** An ellipsis of the wide row, or of the narrow one. */
+    const ellipsis = (
+      direction: "previous" | "next",
+      which: "wide" | "narrow" = "wide"
+    ) =>
       document.querySelector<HTMLElement>(
-        `[data-slot="pagination-item"]:not([data-narrow]) [data-jump="${direction}"]`
+        `[data-slot="pagination-item"]${which === "wide" ? ":not([data-narrow])" : "[data-narrow]"} [data-ellipsis="${direction}"]`
       )!
-
-    it("jump five pages back or forward, to the first or last page at most", () => {
-      const onPageChange = vi.fn()
-      render(<Wells items={many} onPageChange={onPageChange} />)
-      expect(jump("next")).toHaveAccessibleName("Next 5 pages")
-      fireEvent.click(jump("next"))
-      expect(info()).toBe("Page 6 of 24")
-      expect(onPageChange).toHaveBeenLastCalledWith(
-        6,
-        expect.objectContaining({ reason: "page" })
-      )
-      expect(jump("previous")).toHaveAccessibleName("Previous 5 pages")
-      fireEvent.click(jump("next"))
-      expect(info()).toBe("Page 11 of 24")
-      fireEvent.click(jump("previous"))
-      expect(info()).toBe("Page 6 of 24")
-      fireEvent.click(jump("previous"))
-      expect(info()).toBe("Page 1 of 24")
-      fireEvent.click(button("Page 24"))
-      fireEvent.click(jump("previous"))
-      expect(info()).toBe("Page 19 of 24")
-      fireEvent.click(jump("next"))
-      // Clamped: 24, not 24 + 5.
-      expect(info()).toBe("Page 24 of 24")
-      fireEvent.click(button("Previous page"))
-      fireEvent.click(button("Previous page"))
-      fireEvent.click(button("Previous page"))
-      // Page 21: the narrow row's ellipsis (the wide row shows 20 to 24).
-      expect(info()).toBe("Page 21 of 24")
-      fireEvent.click(
-        document.querySelector<HTMLElement>('[data-narrow] [data-jump="next"]')!
-      )
-      expect(onPageChange).toHaveBeenLastCalledWith(
-        24,
-        expect.objectContaining({ reason: "page" })
-      )
-    })
+    /** The page picker's field, once it is open. */
+    const field = () => screen.findByRole("textbox", { name: "Go to page" })
+    const picker = () =>
+      document.querySelector('[data-slot="data-table-page-picker"]')
 
     it("keep the same number of slots in each row on every page", () => {
       render(<Wells items={many} />)
@@ -236,35 +206,214 @@ describe("DataTable pages", () => {
       render(<Wells items={many.slice(0, 40)} />)
       expect(row("wide")).toEqual(["1", "2", "3", "4"])
       expect(row("narrow")).toEqual(["1", "2", "3", "4"])
-      expect(document.querySelector("[data-jump]")).toBeNull()
+      expect(document.querySelector("[data-ellipsis]")).toBeNull()
     })
 
-    it("keep focus, or give it to the current page when the jump takes them away", async () => {
+    it("show their dots, named Go to page, also in a tooltip", async () => {
       const user = userEvent.setup()
       render(<Wells items={many} defaultPage={10} />)
-      await user.click(jump("next"))
-      expect(info()).toBe("Page 15 of 24")
-      expect(jump("next")).toHaveFocus()
-      await user.click(jump("next"))
-      expect(info()).toBe("Page 20 of 24")
-      await user.click(jump("next"))
-      // The last pages are in view: no ellipsis after them.
-      expect(info()).toBe("Page 24 of 24")
+      for (const direction of ["previous", "next"] as const) {
+        expect(ellipsis(direction)).toHaveAccessibleName("Go to page")
+        // The dots alone: no double arrow.
+        expect(ellipsis(direction).querySelectorAll("svg")).toHaveLength(1)
+      }
+      await user.hover(ellipsis("next"))
       expect(
-        document.querySelector(
-          '[data-slot="pagination-item"]:not([data-narrow]) [data-jump="next"]'
-        )
-      ).toBeNull()
-      expect(button("Page 24")).toHaveFocus()
+        await screen.findByText("Go to page", {}, { timeout: 3000 })
+      ).toBeInTheDocument()
     })
 
-    it("name themselves in a tooltip", async () => {
+    it("open the page picker, empty and focused, from each ellipsis", async () => {
       const user = userEvent.setup()
-      render(<Wells items={many} />)
-      await user.hover(jump("next"))
+      const onPageChange = vi.fn()
+      render(
+        <Wells items={many} defaultPage={10} onPageChange={onPageChange} />
+      )
+      for (const [direction, which] of [
+        ["previous", "wide"],
+        ["next", "wide"],
+        ["previous", "narrow"],
+        ["next", "narrow"],
+      ] as const) {
+        const trigger = ellipsis(direction, which)
+        await user.click(trigger)
+        const input = await field()
+        await waitFor(() => expect(input).toHaveFocus())
+        expect(input).toHaveValue("")
+        expect(input).toHaveAttribute("placeholder", "1–24")
+        expect(input).toHaveAttribute("inputmode", "numeric")
+        expect(trigger).toHaveAttribute("aria-expanded", "true")
+        expect(screen.getByRole("button", { name: "Go" })).toBeInTheDocument()
+        await user.keyboard("{Escape}")
+        await waitFor(() => expect(picker()).toBeNull())
+        expect(trigger).toHaveAttribute("aria-expanded", "false")
+      }
+      // Opening it changes nothing.
+      expect(info()).toBe("Page 10 of 24")
+      expect(onPageChange).not.toHaveBeenCalled()
+    })
+
+    it("go to the page typed on Enter, focusing it", async () => {
+      const user = userEvent.setup()
+      const onPageChange = vi.fn()
+      render(<Wells items={many} onPageChange={onPageChange} />)
+      await user.click(ellipsis("next"))
+      await user.type(await field(), "17{Enter}")
+      expect(info()).toBe("Page 17 of 24")
+      expect(onPageChange).toHaveBeenCalledTimes(1)
+      expect(onPageChange).toHaveBeenLastCalledWith(
+        17,
+        expect.objectContaining({ reason: "page" })
+      )
+      await waitFor(() => expect(picker()).toBeNull())
+      await waitFor(() => expect(button("Page 17")).toHaveFocus())
+    })
+
+    it("go to the page typed with Go, focusing it where its ellipsis went", async () => {
+      const user = userEvent.setup()
+      const onPageChange = vi.fn()
+      render(<Wells items={many} onPageChange={onPageChange} />)
+      await user.click(ellipsis("next"))
+      await user.type(await field(), "24")
+      await user.click(screen.getByRole("button", { name: "Go" }))
+      expect(info()).toBe("Page 24 of 24")
+      expect(onPageChange).toHaveBeenLastCalledWith(
+        24,
+        expect.objectContaining({ reason: "page" })
+      )
+      // The last pages are in view: the ellipsis it opened from is gone.
+      expect(row("wide")).toEqual(["1", "«", "20", "21", "22", "23", "24"])
+      await waitFor(() => expect(picker()).toBeNull())
+      await waitFor(() => expect(button("Page 24")).toHaveFocus())
+    })
+
+    it("refuse an empty field, 0 and a page past the last, with the field's error", async () => {
+      const user = userEvent.setup()
+      const onPageChange = vi.fn()
+      render(<Wells items={many} onPageChange={onPageChange} />)
+      await user.click(ellipsis("next"))
+      const input = await field()
+      // Not invalid before a page is asked for.
+      expect(input).not.toHaveAttribute("aria-invalid")
+      expect(screen.queryByRole("alert")).toBeNull()
+      for (const text of ["", "0", "25", "240"]) {
+        await user.clear(input)
+        await user.type(input, `${text}{Enter}`)
+        expect(input).toHaveAttribute("aria-invalid", "true")
+        const error = screen.getByRole("alert")
+        expect(error).toHaveTextContent("Enter a page from 1 to 24")
+        expect(input).toHaveAccessibleDescription("Enter a page from 1 to 24")
+        expect(input.closest('[data-slot="field"]')).toHaveAttribute(
+          "data-invalid",
+          "true"
+        )
+      }
+      // Still open, on the same page, focus in the field.
+      expect(picker()).not.toBeNull()
+      expect(input).toHaveFocus()
+      expect(info()).toBe("Page 1 of 24")
+      expect(onPageChange).not.toHaveBeenCalled()
+      // A page there is clears the error as it is typed.
+      await user.clear(input)
+      await user.type(input, "8")
+      expect(input).not.toHaveAttribute("aria-invalid")
+      expect(screen.queryByRole("alert")).toBeNull()
+      await user.keyboard("{Enter}")
+      expect(info()).toBe("Page 8 of 24")
+    })
+
+    it("take whole numbers only, the arrows kept within the pages", async () => {
+      const user = userEvent.setup()
+      render(<Wells items={many} defaultPage={10} />)
+      await user.click(ellipsis("next"))
+      const input = await field()
+      // Digits only: no sign, no decimals, no letters.
+      await user.type(input, "-1.5e")
+      expect(input).toHaveValue("15")
+      // Other digits are digits too (fullwidth, Arabic-Indic).
+      await user.clear(input)
+      await user.type(input, "１٢")
+      expect(input).toHaveValue("12")
+      // The arrows step from the current page when empty, within 1 to 24.
+      await user.clear(input)
+      await user.keyboard("{ArrowUp}")
+      expect(input).toHaveValue("11")
+      await user.keyboard("{ArrowDown}{ArrowDown}")
+      expect(input).toHaveValue("9")
+      await user.clear(input)
+      await user.type(input, "300")
+      await user.keyboard("{ArrowDown}")
+      expect(input).toHaveValue("24")
+      await user.keyboard("{ArrowUp}")
+      expect(input).toHaveValue("24")
+      await user.clear(input)
+      await user.type(input, "1")
+      await user.keyboard("{ArrowDown}")
+      expect(input).toHaveValue("1")
+    })
+
+    it("give focus back to the ellipsis on Escape, changing nothing", async () => {
+      const user = userEvent.setup()
+      const onPageChange = vi.fn()
+      render(
+        <Wells items={many} defaultPage={10} onPageChange={onPageChange} />
+      )
+      await user.click(ellipsis("previous"))
+      await user.type(await field(), "3")
+      await user.keyboard("{Escape}")
+      await waitFor(() => expect(picker()).toBeNull())
+      await waitFor(() => expect(ellipsis("previous")).toHaveFocus())
+      expect(info()).toBe("Page 10 of 24")
+      expect(onPageChange).not.toHaveBeenCalled()
+      // It opens empty again.
+      await user.click(ellipsis("previous"))
+      expect(await field()).toHaveValue("")
+    })
+  })
+
+  describe('"Page 3 of 5"', () => {
+    const many = Array.from({ length: 240 }, (_, i) => ({
+      ...WELLS[0],
+      id: `m${i}`,
+      name: `M ${i}`,
+    }))
+    const pageOf = () =>
+      document
+        .querySelector('[data-slot="data-table-page-of"]')!
+        .closest("button")!
+
+    it("is a ghost button that opens the page picker, and goes to the page typed", async () => {
+      const user = userEvent.setup()
+      const onPageChange = vi.fn()
+      render(<Wells items={many} defaultPage={5} onPageChange={onPageChange} />)
+      expect(pageOf()).toHaveAccessibleName("Page 5 of 24")
+      expect(pageOf()).toHaveAttribute("data-variant", "ghost")
+      // Its text keeps the width of its widest.
       expect(
-        await screen.findByText("Next 5 pages", {}, { timeout: 3000 })
-      ).toBeInTheDocument()
+        document.querySelector('[data-slot="data-table-page-of"]')
+      ).toHaveAttribute("data-widest", "Page 24 of 24")
+      await user.click(pageOf())
+      const input = await screen.findByRole("textbox", { name: "Go to page" })
+      await waitFor(() => expect(input).toHaveFocus())
+      expect(pageOf()).toHaveAttribute("aria-expanded", "true")
+      await user.type(input, "20{Enter}")
+      expect(onPageChange).toHaveBeenLastCalledWith(
+        20,
+        expect.objectContaining({ reason: "page" })
+      )
+      expect(pageOf()).toHaveAccessibleName("Page 20 of 24")
+      // Back to it: the page buttons are not there at its width.
+      await waitFor(() => expect(pageOf()).toHaveFocus())
+    })
+
+    it("gives focus back on Escape", async () => {
+      const user = userEvent.setup()
+      render(<Wells items={many} defaultPage={5} />)
+      await user.click(pageOf())
+      await screen.findByRole("textbox", { name: "Go to page" })
+      await user.keyboard("{Escape}")
+      await waitFor(() => expect(pageOf()).toHaveFocus())
+      expect(pageOf()).toHaveAccessibleName("Page 5 of 24")
     })
   })
 

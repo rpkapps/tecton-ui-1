@@ -56,8 +56,8 @@ type DataTablePageChangeReason =
   | "previous"
   | "next"
   /**
-   * A page's own button, or an ellipsis: five pages back or forward (to
-   * the first or last page at most).
+   * A page's own button, or the page picker ("Go to page", opened from an
+   * ellipsis or from "Page 3 of 5").
    */
   | "page"
   /** The view's search, filters, sorting or grouping changed: back to page 1. */

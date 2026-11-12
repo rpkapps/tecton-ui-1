@@ -66,14 +66,10 @@ export default defineTranslations({
     pageOf: "Pagina {page} di {pageCount}",
     previousPage: "Pagina precedente",
     nextPage: "Pagina successiva",
-    previousPages: {
-      one: "{pages} pagina precedente",
-      other: "{pages} pagine precedenti",
-    },
-    nextPages: {
-      one: "{pages} pagina successiva",
-      other: "{pages} pagine successive",
-    },
+    pagePicker: "Vai alla pagina",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "Vai",
+    pagePickerInvalid: "Inserisci una pagina da {from} a {to}",
     selectAllMatching: {
       one: "Seleziona {total} riga",
       many: "Seleziona tutte le {total} di righe",

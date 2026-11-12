@@ -469,7 +469,7 @@ The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reas
 | `onExpandedChange` | `(expanded, eventDetails) => void` | - | Called with the open rows. |
 | `page` | `number` | - | The page, from 1 (controlled). |
 | `defaultPage` | `number` | `1` | The initial page. |
-| `onPageChange` | `(page, eventDetails) => void` | - | Called with the new page; `reason` is `"previous"`, `"next"` or `"page"` (a page's button, or an ellipsis: five pages back or forward) from `DataTablePagination`, else `"reset"`, `"page-size"`, `"clamp"` or `"group"`. |
+| `onPageChange` | `(page, eventDetails) => void` | - | Called with the new page; `reason` is `"previous"`, `"next"` or `"page"` (a page's button, or a page picked in "Go to page") from `DataTablePagination`, else `"reset"`, `"page-size"`, `"clamp"` or `"group"`. |
 | `pageSize` | `number` | - | Rows per page (controlled). |
 | `defaultPageSize` | `number` | `10` | Initial rows per page. |
 | `onPageSizeChange` | `(pageSize, eventDetails) => void` | - | Called with the new page size. |
@@ -571,7 +571,7 @@ Right after `DataTableContent`, the table's last band (inside its border, on the
 
 ### DataTablePagination
 
-A rows-per-page [Select](/docs/components/select), the rows shown and [Pagination](/docs/components/pagination), for `pagination`; takes the props of a `div`. The page resets to 1 when the view changes. It stays on one line: as its width shrinks it drops the "Rows per page" label (kept as the Select's name), then the words of Previous and Next, then the pages but the current one and its neighbours, and below about 400 px shows "Page 3 of 5" between the arrows. An ellipsis jumps five pages back or forward (to the first or last page at most); its dots turn into a double arrow on hover and focus, and its name ("Next 5 pages") shows as a tooltip. Its controls keep their places as the page changes: each row of pages has as many slots on every page, the rows shown keep the width of their widest text, and the last page, short of rows, keeps the height of a full one, so the button under the pointer stays there.
+A rows-per-page [Select](/docs/components/select), the rows shown and [Pagination](/docs/components/pagination), for `pagination`; takes the props of a `div`. The page resets to 1 when the view changes. It stays on one line: as its width shrinks it drops the "Rows per page" label (kept as the Select's name), then the words of Previous and Next, then the pages but the current one and its neighbours, and below about 400 px shows "Page 3 of 5" between the arrows. An ellipsis, or "Page 3 of 5" at the narrowest, opens "Go to page": a popover with a page field and Go. Enter or Go opens that page, focus moving to its button; a page outside 1 to the last shows the field's error; the up and down arrows step through the pages; Escape closes it. Its controls keep their places as the page changes: each row of pages has as many slots on every page, the rows shown keep the width of their widest text, and the last page, short of rows, keeps the height of a full one, so the button under the pointer stays there.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |

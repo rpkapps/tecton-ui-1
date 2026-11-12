@@ -65,8 +65,10 @@ export default defineTranslations({
     pageOf: "{page}/{pageCount}페이지",
     previousPage: "이전 페이지",
     nextPage: "다음 페이지",
-    previousPages: { other: "이전 {pages}페이지" },
-    nextPages: { other: "다음 {pages}페이지" },
+    pagePicker: "페이지로 이동",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "이동",
+    pagePickerInvalid: "{from}~{to} 사이의 페이지를 입력하세요",
     selectAllMatching: {
       other: "{total}개 행 모두 선택",
     },

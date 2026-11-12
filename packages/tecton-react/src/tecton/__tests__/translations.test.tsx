@@ -97,20 +97,47 @@ describe("translations", () => {
     expect(partial("removeDescription")).toBe("Press Delete to remove tag.")
   })
 
-  it("chooses the plural form of the pagination's jumps by the pages they jump", async () => {
+  it("chooses the plural form of a count by the locale's rules", async () => {
     const tables = Object.fromEntries(await locales())
-    const jump = (locale: string, count: number) =>
+    const results = (locale: string, count: number) =>
       createTranslator(
         "dataTable",
         locale,
         tables[`${locale}.ts`] as never
-      )("nextPages", { count, pages: count })
-    expect(jump("en-US", 5)).toBe("Next 5 pages")
-    expect(jump("de-DE", 5)).toBe("Nächste 5 Seiten")
-    expect(jump("ru-RU", 5)).toBe("Следующие 5 страниц")
-    expect(jump("ru-RU", 3)).toBe("Следующие 3 страницы")
-    expect(jump("pl-PL", 5)).toBe("Następne 5 stron")
-    expect(jump("ar-AE", 5)).toBe("5 صفحات تالية")
+      )("resultsCount", { count, total: count })
+    expect(results("en-US", 5)).toBe("5 results")
+    expect(results("de-DE", 5)).toBe("5 Ergebnisse")
+    expect(results("ru-RU", 5)).toBe("5 результатов")
+    expect(results("ru-RU", 3)).toBe("3 результата")
+    expect(results("pl-PL", 5)).toBe("5 wyników")
+    expect(results("ar-AE", 5)).toBe("5 نتائج")
+  })
+
+  it("names the pagination's page picker in every locale", async () => {
+    const tables = Object.fromEntries(await locales())
+    for (const [file, table] of Object.entries(tables)) {
+      const strings = table.dataTable
+      expect([file, strings.previousPages, strings.nextPages]).toEqual([
+        file,
+        undefined,
+        undefined,
+      ])
+      for (const key of [
+        "pagePicker",
+        "pagePickerHint",
+        "pagePickerGo",
+        "pagePickerInvalid",
+      ])
+        expect([file, key, typeof strings[key]]).toEqual([file, key, "string"])
+    }
+    const picker = createTranslator(
+      "dataTable",
+      "de-DE",
+      tables["de-DE.ts"] as never
+    )
+    expect(picker("pagePickerInvalid", { from: "1", to: "24" })).toBe(
+      "Eine Seite von 1 bis 24 eingeben"
+    )
   })
 
   it("renders en-US first, then the provider's locale once it has loaded", async () => {

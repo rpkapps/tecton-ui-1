@@ -7,39 +7,46 @@
  * pages (the first, the last, the current one and its neighbours, an
  * ellipsis for the others) and next. The pages are buttons, not links: the
  * `Button` that `PaginationLink`'s look is (ghost, the current page
- * outline), in `PaginationItem`s. An ellipsis is a button too, which jumps
- * five pages back or forward (its dots a double arrow on hover). The rows
- * are the server's `rowCount` in server mode. It renders nothing, and
- * warns once in development, while `pagination` is off.
+ * outline), in `PaginationItem`s. An ellipsis is a button too, "Go to
+ * page", which opens the page picker: a `Popover` with a page field and Go
+ * (`PagePicker`). The rows are the server's `rowCount` in server mode. It
+ * renders nothing, and warns once in development, while `pagination` is
+ * off.
  *
  * It stays on one line: it is a container (`@container`, the width it is
  * given, the footer's), and as that narrows it lets go of what it can
  * spare, in turn: the "Rows per page" label (the `Select` keeps it as its
  * name), the words of Previous and Next (their icons stay), the pages but
  * the current one and its neighbours (ellipses for the others), and below
- * about 400 px the page buttons, for "Page 3 of 5" between the arrows.
+ * about 400 px the page buttons, for "Page 3 of 5" between the arrows: a
+ * button that opens the page picker too.
  *
  * Its controls keep their places as the page changes, so the one under the
  * pointer is pressed again: each row of pages has as many slots on every
  * page, and the rows shown and "Page 3 of 5" keep the width of their
- * widest text.
+ * widest text. The page picker opens over them, moving nothing.
  */
 import * as React from "react"
 import { cn } from "cn"
 import {
   ChevronLeftIcon,
   ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
   MoreHorizontalIcon,
 } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
+import { Field, FieldError, FieldLabel } from "@tecton/react/components/field"
+import { Input } from "@tecton/react/components/input"
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
 } from "@tecton/react/components/pagination"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@tecton/react/components/popover"
 import {
   Select,
   SelectContent,
@@ -84,9 +91,6 @@ const NEAR = "@max-[25rem]/data-table-pagination:hidden"
 const NARROW =
   "hidden @max-[34rem]/data-table-pagination:block @max-[25rem]/data-table-pagination:hidden"
 const PAGE_OF = "hidden @max-[25rem]/data-table-pagination:block"
-
-/** The pages an ellipsis jumps, back or forward. */
-const JUMP = 5
 
 /** A page's button, or an ellipsis: the pages before or after the ones shown. */
 type Slot = number | "previous" | "next"
@@ -303,7 +307,13 @@ function RowRange({ context }: { context: DataTableContextValue<unknown> }) {
   )
 }
 
-/** Previous, the pages and next: `Pagination`'s parts, as buttons. */
+/** A place that does not move: where the picker's trigger was as it closed. */
+type FixedPlace = { getBoundingClientRect: () => DOMRect }
+
+/**
+ * Previous, the pages and next: `Pagination`'s parts, as buttons. The
+ * ellipses and "Page 3 of 5" are the triggers of one page picker.
+ */
 function PageButtons({ context }: { context: DataTableContextValue<unknown> }) {
   const t = useTranslations("dataTable")
   const format = useNumberFormat()
@@ -315,16 +325,44 @@ function PageButtons({ context }: { context: DataTableContextValue<unknown> }) {
   // Read when pressed: the page a click lands on is the current one's neighbour.
   const current = () => context.store.get().model.page
   const nav = React.useRef<HTMLElement>(null)
-  // An ellipsis pressed: focus stays on it, or, when the jump took it away
-  // (the first or last pages now in view), goes to the current page.
-  const jumped = React.useRef(false)
-  React.useLayoutEffect(() => {
-    if (!jumped.current) return
-    jumped.current = false
-    const element = nav.current
-    if (!element || element.contains(document.activeElement)) return
-    element.querySelector<HTMLElement>('[aria-current="page"]')?.focus()
-  }, [page])
+
+  // The page picker: one popover, opened by the trigger pressed (an
+  // ellipsis or "Page 3 of 5", each with its own id) and placed by it.
+  const id = React.useId()
+  const pageOfId = `${id}page-of`
+  const [open, setOpen] = React.useState(false)
+  const [triggerId, setTriggerId] = React.useState<string | null>(null)
+  // As it closes, it stays where it was: a page picked may take its
+  // ellipsis away (the first or last pages now in view).
+  const [held, setHeld] = React.useState<FixedPlace | undefined>()
+  // A page picked: focus goes to it, not back to the trigger.
+  const picked = React.useRef(false)
+  const field = React.useRef<HTMLInputElement>(null)
+
+  const hold = () => {
+    const trigger = triggerId ? document.getElementById(triggerId) : null
+    if (!trigger?.isConnected) return
+    const rect = trigger.getBoundingClientRect()
+    setHeld({ getBoundingClientRect: () => rect })
+  }
+  const onOpenChange = (
+    next: boolean,
+    details: { trigger?: Element | undefined }
+  ) => {
+    if (next) {
+      setTriggerId(details.trigger?.id || null)
+      setHeld(undefined)
+      picked.current = false
+    } else if (open) hold()
+    setOpen(next)
+  }
+  const pick = (to: number, event: Event) => {
+    picked.current = true
+    hold()
+    setOpen(false)
+    context.actions.setPage(to, "page", event)
+  }
+
   const pages = pageItems(page, pageCount).map(
     ({ key, slot, row, className }) =>
       typeof slot === "number" ? (
@@ -353,140 +391,270 @@ function PageButtons({ context }: { context: DataTableContextValue<unknown> }) {
           data-narrow={row === "narrow" ? "" : undefined}
           className={className}
         >
-          <PageJump
+          <PagePickerEllipsis
+            id={`${id}${key}`}
             direction={slot}
-            onJump={(event) => {
-              jumped.current = true
-              const to = current() + (slot === "previous" ? -JUMP : JUMP)
-              context.actions.setPage(
-                Math.min(Math.max(to, 1), Math.max(pageCount, 1)),
-                "page",
-                event.nativeEvent
-              )
-            }}
+            // Its tooltip waits while its picker is open.
+            pickerOpen={open && triggerId === `${id}${key}`}
           />
         </PaginationItem>
       )
   )
   return (
-    <Pagination
-      ref={nav}
-      aria-label={t("pagination")}
-      className="mx-0 w-auto justify-end"
+    <Popover
+      open={open}
+      triggerId={triggerId}
+      onOpenChange={onOpenChange}
+      onOpenChangeComplete={(next) => {
+        if (!next) setHeld(undefined)
+      }}
     >
-      <PaginationContent>
-        <PaginationItem>
-          <Button
-            variant="ghost"
-            className={cn(
-              "ps-2!",
-              // Its icon alone: a square button.
-              "@max-[40rem]/data-table-pagination:size-9 @max-[40rem]/data-table-pagination:px-0!"
-            )}
-            aria-label={t("previousPage")}
-            // Focus stays on the button that reached the first page.
-            focusableWhenDisabled
-            disabled={page <= 1}
-            onClick={(event: React.MouseEvent) =>
-              context.actions.setPage(
-                current() - 1,
-                "previous",
-                event.nativeEvent
-              )
-            }
-          >
-            <ChevronLeftIcon
-              data-icon="inline-start"
-              className="rtl:rotate-180"
-            />
-            <span className={NO_WORDS}>{t("previous")}</span>
-          </Button>
-        </PaginationItem>
-        {pages}
-        <PaginationItem className={PAGE_OF}>
-          <span
-            data-slot="data-table-page-of"
-            data-widest={t("pageOf", {
-              page: format.format(Math.max(pageCount, 1)),
-              pageCount: format.format(Math.max(pageCount, 1)),
-            })}
-            className={cn(
-              "justify-items-center px-1 text-muted-foreground",
-              STEADY
-            )}
-          >
-            <span>
-              {t("pageOf", {
-                page: format.format(page),
-                pageCount: format.format(Math.max(pageCount, 1)),
-              })}
-            </span>
-          </span>
-        </PaginationItem>
-        <PaginationItem>
-          <Button
-            variant="ghost"
-            className={cn(
-              "pe-2!",
-              "@max-[40rem]/data-table-pagination:size-9 @max-[40rem]/data-table-pagination:px-0!"
-            )}
-            aria-label={t("nextPage")}
-            // Focus stays on the button that reached the last page.
-            focusableWhenDisabled
-            disabled={page >= pageCount}
-            onClick={(event: React.MouseEvent) =>
-              context.actions.setPage(current() + 1, "next", event.nativeEvent)
-            }
-          >
-            <span className={NO_WORDS}>{t("next")}</span>
-            <ChevronRightIcon
-              data-icon="inline-end"
-              className="rtl:rotate-180"
-            />
-          </Button>
-        </PaginationItem>
-      </PaginationContent>
-    </Pagination>
+      <Pagination
+        ref={nav}
+        aria-label={t("pagination")}
+        className="mx-0 w-auto justify-end"
+      >
+        <PaginationContent>
+          <PaginationItem>
+            <Button
+              variant="ghost"
+              className={cn(
+                "ps-2!",
+                // Its icon alone: a square button.
+                "@max-[40rem]/data-table-pagination:size-9 @max-[40rem]/data-table-pagination:px-0!"
+              )}
+              aria-label={t("previousPage")}
+              // Focus stays on the button that reached the first page.
+              focusableWhenDisabled
+              disabled={page <= 1}
+              onClick={(event: React.MouseEvent) =>
+                context.actions.setPage(
+                  current() - 1,
+                  "previous",
+                  event.nativeEvent
+                )
+              }
+            >
+              <ChevronLeftIcon
+                data-icon="inline-start"
+                className="rtl:rotate-180"
+              />
+              <span className={NO_WORDS}>{t("previous")}</span>
+            </Button>
+          </PaginationItem>
+          {pages}
+          <PaginationItem className={PAGE_OF}>
+            {/* No page buttons at this width: "Page 3 of 5" picks the page. */}
+            <PopoverTrigger
+              id={pageOfId}
+              render={<Button variant="ghost" className="px-2" />}
+            >
+              <span
+                data-slot="data-table-page-of"
+                data-widest={t("pageOf", {
+                  page: format.format(Math.max(pageCount, 1)),
+                  pageCount: format.format(Math.max(pageCount, 1)),
+                })}
+                className={cn("justify-items-center", STEADY)}
+              >
+                <span>
+                  {t("pageOf", {
+                    page: format.format(page),
+                    pageCount: format.format(Math.max(pageCount, 1)),
+                  })}
+                </span>
+              </span>
+            </PopoverTrigger>
+          </PaginationItem>
+          <PaginationItem>
+            <Button
+              variant="ghost"
+              className={cn(
+                "pe-2!",
+                "@max-[40rem]/data-table-pagination:size-9 @max-[40rem]/data-table-pagination:px-0!"
+              )}
+              aria-label={t("nextPage")}
+              // Focus stays on the button that reached the last page.
+              focusableWhenDisabled
+              disabled={page >= pageCount}
+              onClick={(event: React.MouseEvent) =>
+                context.actions.setPage(
+                  current() + 1,
+                  "next",
+                  event.nativeEvent
+                )
+              }
+            >
+              <span className={NO_WORDS}>{t("next")}</span>
+              <ChevronRightIcon
+                data-icon="inline-end"
+                className="rtl:rotate-180"
+              />
+            </Button>
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+      <PopoverContent
+        data-slot="data-table-page-picker"
+        anchor={held}
+        initialFocus={field}
+        finalFocus={() => {
+          if (!picked.current) return true
+          picked.current = false
+          // From "Page 3 of 5", back to it (the only page control there);
+          // else to the page picked, which is in view at that width.
+          if (triggerId === pageOfId) return true
+          return (
+            nav.current?.querySelector<HTMLElement>('[aria-current="page"]') ??
+            true
+          )
+        }}
+        className="w-56"
+      >
+        <PagePicker
+          field={field}
+          page={page}
+          pageCount={Math.max(pageCount, 1)}
+          onPick={pick}
+        />
+      </PopoverContent>
+    </Popover>
   )
 }
 
 /**
- * An ellipsis that jumps `JUMP` pages back or forward: `Pagination`'s
- * dots, which turn into a double arrow on hover and keyboard focus, its
- * name also a tooltip.
+ * An ellipsis: `Pagination`'s dots, a ghost icon button named "Go to page"
+ * (also its tooltip), which opens the page picker.
  */
-function PageJump({
+function PagePickerEllipsis({
+  id,
   direction,
-  onJump,
+  pickerOpen,
 }: {
+  id: string
   direction: "previous" | "next"
-  onJump: (event: React.MouseEvent) => void
+  pickerOpen: boolean
 }) {
   const t = useTranslations("dataTable")
-  const format = useNumberFormat()
-  const label = t(direction === "previous" ? "previousPages" : "nextPages", {
-    count: JUMP,
-    pages: format.format(JUMP),
-  })
-  const Arrow = direction === "previous" ? ChevronsLeftIcon : ChevronsRightIcon
+  const label = t("pagePicker")
   return (
-    <Tooltip>
+    <Tooltip disabled={pickerOpen}>
       <TooltipTrigger
         render={
-          <Button
-            variant="ghost"
-            size="icon"
-            data-jump={direction}
-            aria-label={label}
-            onClick={onJump}
+          <PopoverTrigger
+            id={id}
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                data-ellipsis={direction}
+                aria-label={label}
+              />
+            }
           />
         }
       >
-        <MoreHorizontalIcon className="group-hover/button:hidden group-focus-visible/button:hidden" />
-        <Arrow className="hidden group-hover/button:block group-focus-visible/button:block rtl:rotate-180" />
+        <MoreHorizontalIcon aria-hidden />
       </TooltipTrigger>
       <TooltipContent>{label}</TooltipContent>
     </Tooltip>
+  )
+}
+
+const DIGITS: ReadonlyArray<[first: number, last: number]> = [
+  [0x30, 0x39], // 0–9
+  [0x660, 0x669], // Arabic-Indic
+  [0x6f0, 0x6f9], // Extended Arabic-Indic (Persian, Urdu)
+  [0xff10, 0xff19], // Fullwidth (Japanese and Chinese input)
+]
+
+/** The digits of `text`, as 0–9: a whole number has nothing else. */
+function digitsOf(text: string) {
+  let digits = ""
+  for (const char of text) {
+    const code = char.codePointAt(0)!
+    const range = DIGITS.find(([first, last]) => code >= first && code <= last)
+    if (range) digits += String(code - range[0])
+  }
+  return digits
+}
+
+/**
+ * The page picker's form: a page field ("Go to page", its hint the pages
+ * there are, "1–24") and Go. Enter or Go picks the page; a page outside
+ * 1 to `pageCount`, or none, is refused with the field's error. It opens
+ * empty, its hint in view. The field takes digits only (a whole number),
+ * and the up and down arrows step through the pages, from the current one,
+ * kept within them.
+ */
+function PagePicker({
+  field,
+  page,
+  pageCount,
+  onPick,
+}: {
+  field: React.RefObject<HTMLInputElement | null>
+  page: number
+  pageCount: number
+  onPick: (page: number, event: Event) => void
+}) {
+  const t = useTranslations("dataTable")
+  const format = useNumberFormat()
+  const id = React.useId()
+  const [text, setText] = React.useState("")
+  // Refused once: the error follows the text from then on.
+  const [refused, setRefused] = React.useState(false)
+  const value = text === "" ? null : Number(text)
+  const valid = value !== null && value >= 1 && value <= pageCount
+  const invalid = refused && !valid
+  const range = {
+    from: format.format(1),
+    to: format.format(pageCount),
+  }
+  return (
+    <form
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault()
+        if (valid) onPick(value, event.nativeEvent)
+        else {
+          setRefused(true)
+          field.current?.focus()
+        }
+      }}
+    >
+      <Field data-invalid={invalid || undefined} className="gap-2">
+        <FieldLabel htmlFor={`${id}-page`}>{t("pagePicker")}</FieldLabel>
+        <div className="flex gap-2">
+          <Input
+            ref={field}
+            id={`${id}-page`}
+            inputMode="numeric"
+            autoComplete="off"
+            enterKeyHint="go"
+            placeholder={t("pagePickerHint", range)}
+            value={text}
+            aria-invalid={invalid || undefined}
+            aria-describedby={invalid ? `${id}-error` : undefined}
+            className="min-w-0 flex-1 tabular-nums"
+            onChange={(event) => setText(digitsOf(event.currentTarget.value))}
+            onKeyDown={(event) => {
+              if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return
+              event.preventDefault()
+              const from = value ?? page
+              const to = from + (event.key === "ArrowUp" ? 1 : -1)
+              setText(String(Math.min(Math.max(to, 1), pageCount)))
+            }}
+          />
+          <Button type="submit">{t("pagePickerGo")}</Button>
+        </div>
+        {invalid && (
+          <FieldError id={`${id}-error`}>
+            {t("pagePickerInvalid", range)}
+          </FieldError>
+        )}
+      </Field>
+    </form>
   )
 }
 

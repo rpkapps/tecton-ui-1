@@ -65,11 +65,10 @@ export default defineTranslations({
     pageOf: "Sayfa {page}/{pageCount}",
     previousPage: "Önceki sayfa",
     nextPage: "Sonraki sayfa",
-    previousPages: {
-      one: "Önceki {pages} sayfa",
-      other: "Önceki {pages} sayfa",
-    },
-    nextPages: { one: "Sonraki {pages} sayfa", other: "Sonraki {pages} sayfa" },
+    pagePicker: "Sayfaya git",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "Git",
+    pagePickerInvalid: "{from} ile {to} arasında bir sayfa girin",
     selectAllMatching: {
       one: "{total} satırı seç",
       other: "{total} satırın tümünü seç",

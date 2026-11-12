@@ -65,8 +65,10 @@ export default defineTranslations({
     pageOf: "{page} / {pageCount} ページ",
     previousPage: "前のページ",
     nextPage: "次のページ",
-    previousPages: { other: "前の {pages} ページ" },
-    nextPages: { other: "次の {pages} ページ" },
+    pagePicker: "ページへ移動",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "移動",
+    pagePickerInvalid: "{from}～{to} の範囲でページを入力してください",
     selectAllMatching: {
       other: "{total} 行すべてを選択",
     },

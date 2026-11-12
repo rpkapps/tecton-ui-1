@@ -70,13 +70,14 @@ const enUS = {
     pageOf: "Page {page} of {pageCount}",
     previousPage: "Previous page",
     nextPage: "Next page",
-    // The pagination's ellipses, which jump {pages} (a formatted number)
-    // pages back or forward; the plural form follows that number.
-    previousPages: {
-      one: "Previous {pages} page",
-      other: "Previous {pages} pages",
-    },
-    nextPages: { one: "Next {pages} page", other: "Next {pages} pages" },
+    // The page picker, opened from the pagination's ellipses (named after
+    // it) and from "Page 3 of 5": its page field's label, the field's hint
+    // (the pages there are; {from} and {to} are formatted numbers), its
+    // button, and its message for a page outside them.
+    pagePicker: "Go to page",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "Go",
+    pagePickerInvalid: "Enter a page from {from} to {to}",
     // The plural form follows the number of rows to select ({total}).
     selectAllMatching: { other: "Select all {total}" },
     clearSelection: "Clear selection",

@@ -66,14 +66,10 @@ export default defineTranslations({
     pageOf: "Σελίδα {page} από {pageCount}",
     previousPage: "Προηγούμενη σελίδα",
     nextPage: "Επόμενη σελίδα",
-    previousPages: {
-      one: "Προηγούμενη {pages} σελίδα",
-      other: "Προηγούμενες {pages} σελίδες",
-    },
-    nextPages: {
-      one: "Επόμενη {pages} σελίδα",
-      other: "Επόμενες {pages} σελίδες",
-    },
+    pagePicker: "Μετάβαση σε σελίδα",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "Μετάβαση",
+    pagePickerInvalid: "Εισαγάγετε μια σελίδα από {from} έως {to}",
     selectAllMatching: {
       one: "Επιλογή {total} γραμμής",
       other: "Επιλογή και των {total} γραμμών",

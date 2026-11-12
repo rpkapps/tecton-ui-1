@@ -67,18 +67,10 @@ export default defineTranslations({
     pageOf: "Сторінка {page} з {pageCount}",
     previousPage: "Попередня сторінка",
     nextPage: "Наступна сторінка",
-    previousPages: {
-      one: "Попередня {pages} сторінка",
-      few: "Попередні {pages} сторінки",
-      many: "Попередні {pages} сторінок",
-      other: "Попередні {pages} сторінки",
-    },
-    nextPages: {
-      one: "Наступна {pages} сторінка",
-      few: "Наступні {pages} сторінки",
-      many: "Наступні {pages} сторінок",
-      other: "Наступні {pages} сторінки",
-    },
+    pagePicker: "Перейти на сторінку",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "Перейти",
+    pagePickerInvalid: "Введіть сторінку від {from} до {to}",
     selectAllMatching: {
       one: "Вибрати всі {total} рядок",
       few: "Вибрати всі {total} рядки",

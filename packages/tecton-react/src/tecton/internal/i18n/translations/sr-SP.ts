@@ -65,16 +65,10 @@ export default defineTranslations({
     pageOf: "Stranica {page} od {pageCount}",
     previousPage: "Prethodna stranica",
     nextPage: "Sledeća stranica",
-    previousPages: {
-      one: "Prethodna {pages} stranica",
-      few: "Prethodne {pages} stranice",
-      other: "Prethodnih {pages} stranica",
-    },
-    nextPages: {
-      one: "Sledeća {pages} stranica",
-      few: "Sledeće {pages} stranice",
-      other: "Sledećih {pages} stranica",
-    },
+    pagePicker: "Idi na stranicu",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "Idi",
+    pagePickerInvalid: "Unesite stranicu od {from} do {to}",
     selectAllMatching: {
       one: "Izaberite {total} red",
       few: "Izaberite sva {total} reda",

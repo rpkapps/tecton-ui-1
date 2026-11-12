@@ -68,11 +68,10 @@ export default defineTranslations({
     pageOf: "{page}/{pageCount}. oldal",
     previousPage: "Előző oldal",
     nextPage: "Következő oldal",
-    previousPages: { one: "Előző {pages} oldal", other: "Előző {pages} oldal" },
-    nextPages: {
-      one: "Következő {pages} oldal",
-      other: "Következő {pages} oldal",
-    },
+    pagePicker: "Ugrás oldalra",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "Ugrás",
+    pagePickerInvalid: "Adjon meg egy oldalt {from} és {to} között",
     selectAllMatching: {
       one: "{total} sor kijelölése",
       other: "Mind a(z) {total} sor kijelölése",
