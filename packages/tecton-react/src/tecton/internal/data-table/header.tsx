@@ -550,7 +550,10 @@ function DataTableColumnHeader<T>({
         draggable && DRAGGABLE,
         pin && pinnedHeadClassName,
         pinEdgeClassName(pin),
-        edge && GROUP_EDGE
+        edge && GROUP_EDGE,
+        // While its resizer is dragged, the guide and the width it draws
+        // below the header are not clipped by a pinned edge's cell.
+        canResize && "has-[>[role=separator][data-dragging]]:overflow-visible"
       )}
       style={pin && pinStyle(pin)}
     >

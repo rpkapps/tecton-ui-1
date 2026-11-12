@@ -252,7 +252,14 @@ function TableColumnResizer({
           <span
             aria-hidden="true"
             data-slot="table-column-resizer-width"
-            className="pointer-events-none absolute start-[calc(50%+0.5rem)] top-full mt-2 inline-flex h-[22px] items-center rounded-sm bg-foreground px-2 font-mono text-xs whitespace-nowrap text-background tabular-nums"
+            className={cn(
+              "pointer-events-none absolute top-full mt-2 inline-flex h-[22px] items-center rounded-sm bg-foreground px-2 font-mono text-xs whitespace-nowrap text-background tabular-nums",
+              // Beside the guide, away from the column: over the columns
+              // the edge moves into (a pinned column's cells would cover it).
+              edge === "start"
+                ? "end-[calc(50%+0.5rem)]"
+                : "start-[calc(50%+0.5rem)]"
+            )}
           >
             {value} px
           </span>
