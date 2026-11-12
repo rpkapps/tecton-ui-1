@@ -34,6 +34,7 @@ import { Link } from "@tecton/react/tecton/link"
 import type { Store } from "../store"
 import type { DataTableActions } from "./context"
 import type { EngineColumn, Formatter, GroupRow, ItemRow } from "./engine/index"
+import type { RowOrder } from "./row-order"
 
 /** What detail rows draw: `renderDetail`, kept apart so a new one renders only them. */
 type DetailStore = Store<{ render: ((item: never) => React.ReactNode) | null }>
@@ -47,6 +48,10 @@ type RowShared<T> = {
   formatter: Formatter<T>
   /** A selection checkbox column comes before the data columns. */
   selection: boolean
+  /** A drag handle column comes first (`reorderableRows`). */
+  handle: boolean
+  /** The rows' order, while they can be moved; `null` hides the handles. */
+  order: RowOrder | null
   size: "default" | "sm"
   /** Rows open to show a detail row (`renderDetail`). */
   detail: DetailStore | null
@@ -74,7 +79,7 @@ type RowShared<T> = {
   wrap: boolean
   /** Only the rows in view are rendered. */
   virtualized: boolean
-  /** Every column, the selection column included. */
+  /** Every column, the handle and selection columns included. */
   columnCount: number
   /**
    * On pages: a row's place among every page's rows (the engine's), for its
@@ -89,6 +94,8 @@ type RowShared<T> = {
   pins: ReadonlyArray<CellPin | undefined>
   /** The selection column's pin: at the start while a column is pinned there. */
   selectionPin: CellPin | undefined
+  /** The handle column's pin, likewise. */
+  handlePin: CellPin | undefined
   /** Columns are pinned: the row is opaque, each cell draws its border. */
   pinned: boolean
   actions: DataTableActions<T>

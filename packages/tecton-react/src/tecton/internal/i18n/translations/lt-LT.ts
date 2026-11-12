@@ -62,6 +62,7 @@ export default defineTranslations({
     previous: "Ankstesnis",
     next: "Kitas",
     goToPage: "{page} puslapis",
+    pageOf: "{page} puslapis iš {pageCount}",
     previousPage: "Ankstesnis puslapis",
     nextPage: "Kitas puslapis",
     selectAllMatching: {
@@ -143,6 +144,7 @@ export default defineTranslations({
       other: "{total} rezultatų",
     },
     rowActions: "Eilutės veiksmai",
+    reorderRowsColumn: "Keisti tvarką",
     total: "Iš viso",
     groupBy: "Grupuoti pagal",
     groupOrder: "Tvarka",

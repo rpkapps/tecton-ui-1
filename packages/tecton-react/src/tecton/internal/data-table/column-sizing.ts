@@ -21,9 +21,10 @@
  *   the table; the view takes the width when the drag ends.
  * - `fit` lays the table out at its content's width for a moment to read a
  *   column's: its widest cell rendered, or its header.
- * - The selection column before the data columns is measured too: the
- *   engine's selection column, which sticks at the start while a column is
- *   pinned there.
+ * - The columns of controls before the data columns (the rows' drag
+ *   handles, then the selection checkboxes) are measured too, and size as
+ *   one: the engine's selection column, which sticks at the start while a
+ *   column is pinned there.
  */
 import * as React from "react"
 
@@ -101,8 +102,12 @@ function useBelowBreakpoints(used: ReadonlyArray<Breakpoint>) {
 
 /** The key of the selection column's measured width. */
 const SELECTION = "\u0000selection"
+/** The key of the drag handle column's measured width. */
+const HANDLE = "\u0000handle"
 /** The selection column before it is measured: a checkbox and the cell's start padding. */
 const SELECTION_WIDTH = 32
+/** The handle column before it is measured: a small icon button and the cell's padding. */
+const HANDLE_WIDTH = 56
 
 /** The frame's variables for `sizing`, the scrollbar's width included at the end. */
 function sizingVariables(
@@ -136,8 +141,8 @@ type ColumnSizer = {
   mode: SizingMode
   /** The widths, while they are fixed (or measured). */
   sizing: ColumnSizing | null
-  /** The width of the selection column, in px, while fixed. */
-  controls: { selection: number }
+  /** The widths of the columns of controls, in px, while fixed. */
+  controls: { handle: number; selection: number }
   /** The frame's variables for `sizing`. */
   style: React.CSSProperties | undefined
   /** Draws `column` at `width` until the next render, without rendering. */
@@ -154,6 +159,7 @@ function useColumnSizing({
   layout,
   widths,
   selection,
+  handle = false,
   fixed,
   ready,
   rows,
@@ -167,6 +173,8 @@ function useColumnSizing({
   widths: Readonly<Record<string, number>>
   /** A selection column comes before the data columns. */
   selection: boolean
+  /** A drag handle column comes first. */
+  handle?: boolean
   /** The table is laid out with fixed widths. */
   fixed: boolean
   /** The table can be measured (not the first load's skeleton). */
@@ -201,6 +209,7 @@ function useColumnSizing({
   const missing =
     fixed &&
     ((selection && measured.widths[SELECTION] === undefined) ||
+      (handle && measured.widths[HANDLE] === undefined) ||
       unsized.some((column) => measured.widths[column.id] === undefined) ||
       (rows && !measured.rows && unsized.length > 0))
   const mode: SizingMode = !fixed
@@ -210,23 +219,28 @@ function useColumnSizing({
       : "fixed"
   const controls = React.useMemo(
     () => ({
+      handle: handle ? measured.widths[HANDLE] || HANDLE_WIDTH : 0,
       selection: selection ? measured.widths[SELECTION] || SELECTION_WIDTH : 0,
     }),
-    [selection, measured]
+    [handle, selection, measured]
   )
   const sizing = React.useMemo(
     () =>
       fixed
         ? sizeColumns(layout, {
             widthOf: (column) => columnWidth(column, layout, measured.widths),
-            selection: selection ? controls.selection : undefined,
+            // The columns of controls size as one.
+            selection:
+              selection || handle
+                ? controls.handle + controls.selection
+                : undefined,
             hidden,
             stretches: (column) => !Object.hasOwn(widths, column.id),
           })
         : null,
-    [fixed, layout, measured, selection, controls, hidden, widths]
+    [fixed, layout, measured, selection, handle, controls, hidden, widths]
   )
-  const lead = selection ? 1 : 0
+  const lead = (handle ? 1 : 0) + (selection ? 1 : 0)
 
   React.useLayoutEffect(() => {
     if (mode !== "measure") return
@@ -250,7 +264,8 @@ function useColumnSizing({
       const last = head[head.length - 1]
       const cells = cellsByColumn(last) ?? [...last.cells]
       const next: Partial<Record<string, number>> = { ...measured.widths }
-      if (selection) next[SELECTION] = Math.ceil(widthOf(cells[0]))
+      if (handle) next[HANDLE] = Math.ceil(widthOf(cells[0]))
+      if (selection) next[SELECTION] = Math.ceil(widthOf(cells[handle ? 1 : 0]))
       layout.columns.forEach((column, index) => {
         if (layout.width(column.id) !== undefined) return
         const cell = cells[index + lead] as Element | undefined
@@ -261,7 +276,7 @@ function useColumnSizing({
     } finally {
       table.style.width = width
     }
-  }, [mode, frame, layout, measured, selection, lead, rows, shown])
+  }, [mode, frame, layout, measured, selection, handle, lead, rows, shown])
 
   // A pinned end edge sits clear of a vertical scrollbar (a virtualized
   // body), which the fade must leave alone too.

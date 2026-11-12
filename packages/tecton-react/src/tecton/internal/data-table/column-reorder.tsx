@@ -15,8 +15,8 @@
  * puts focus back on the moved header.
  */
 import * as React from "react"
+import { cn } from "cn"
 
-import { usePortalTarget } from "@tecton/react/tecton/portal"
 import { useDirection } from "@tecton/react/tecton/provider"
 
 import * as DragAndDropPrimitive from "../primitives/drag-and-drop/index.parts"
@@ -39,7 +39,6 @@ function ColumnList({
   list: string | null
 }) {
   const direction = useDirection()
-  const portal = usePortalTarget()
   const latest = React.useRef(direction)
   React.useInsertionEffect(() => {
     latest.current = direction
@@ -58,7 +57,9 @@ function ColumnList({
     getDragged: (key) => [key],
     getItemElement: (key) => order.element(key),
     getContainer: order.frame,
-    getPreviewContainer: () => portal ?? null,
+    // In the frame (fixed, so not clipped by it): the drop line, drawn
+    // over it, stays in view in any stacking context the page has.
+    getPreviewContainer: order.frame,
     onDrop: (place, keys) => {
       const key = keys.at(0)
       if (key === undefined) return
@@ -92,13 +93,18 @@ function ColumnList({
   return (
     <DragAndDropPrimitive.DropIndicator
       data-slot="data-table-column-drop-indicator"
-      className="z-30 w-0"
+      // Over the dragged header's preview (z-50), which would hide it.
+      className="z-[51] w-0"
       dragAndDrop={drag}
       getPlacement={getPlacement}
     >
       <span
         aria-hidden
-        className="pointer-events-none absolute inset-y-0 -start-px w-0.5 rounded-full bg-primary"
+        className={cn(
+          "pointer-events-none absolute inset-y-0 -start-px w-0.5 rounded-full bg-primary-active",
+          // A dot at its top, as a tree's drop line has at its start.
+          "before:absolute before:top-0.5 before:left-1/2 before:size-2 before:-translate-x-1/2 before:rounded-full before:border-2 before:border-primary-active before:bg-background"
+        )}
       />
     </DragAndDropPrimitive.DropIndicator>
   )

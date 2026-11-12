@@ -62,6 +62,7 @@ export default defineTranslations({
     previous: "이전",
     next: "다음",
     goToPage: "{page}페이지",
+    pageOf: "{page}/{pageCount}페이지",
     previousPage: "이전 페이지",
     nextPage: "다음 페이지",
     selectAllMatching: {
@@ -126,6 +127,7 @@ export default defineTranslations({
     clearAll: "모두 지우기",
     resultsCount: { other: "결과 {total}개" },
     rowActions: "행 작업",
+    reorderRowsColumn: "순서 변경",
     total: "합계",
     groupBy: "그룹화 기준",
     groupOrder: "순서",

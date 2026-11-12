@@ -64,6 +64,7 @@ export default defineTranslations({
     previous: "Anterioara",
     next: "Următoarea",
     goToPage: "Pagina {page}",
+    pageOf: "Pagina {page} din {pageCount}",
     previousPage: "Pagina anterioară",
     nextPage: "Pagina următoare",
     selectAllMatching: {
@@ -141,6 +142,7 @@ export default defineTranslations({
       other: "{total} de rezultate",
     },
     rowActions: "Acțiuni pentru rând",
+    reorderRowsColumn: "Reordonați",
     total: "Total",
     groupBy: "Grupați după",
     groupOrder: "Ordine",

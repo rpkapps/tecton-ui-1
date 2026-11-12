@@ -66,6 +66,8 @@ const enUS = {
     previous: "Previous",
     next: "Next",
     goToPage: "Page {page}",
+    // The page shown, where the table is too narrow for the page buttons.
+    pageOf: "Page {page} of {pageCount}",
     previousPage: "Previous page",
     nextPage: "Next page",
     // The plural form follows the number of rows to select ({total}).
@@ -159,6 +161,8 @@ const enUS = {
     resultsCount: { one: "{total} result", other: "{total} results" },
     // The button of a row's menu (`DataTableRowActions`).
     rowActions: "Row actions",
+    // The column of the rows' drag handles, for screen readers.
+    reorderRowsColumn: "Reorder",
     // Names the totals row.
     total: "Total",
     // Grouping: the group-by button and menu (`DataTableGroupBy`), where a

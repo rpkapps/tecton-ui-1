@@ -64,6 +64,7 @@ export default defineTranslations({
     previous: "Prejšnja",
     next: "Naslednja",
     goToPage: "Stran {page}",
+    pageOf: "Stran {page} od {pageCount}",
     previousPage: "Prejšnja stran",
     nextPage: "Naslednja stran",
     selectAllMatching: {
@@ -145,6 +146,7 @@ export default defineTranslations({
       other: "{total} rezultatov",
     },
     rowActions: "Dejanja vrstice",
+    reorderRowsColumn: "Spremeni vrstni red",
     total: "Skupaj",
     groupBy: "Združi po",
     groupOrder: "Vrstni red",

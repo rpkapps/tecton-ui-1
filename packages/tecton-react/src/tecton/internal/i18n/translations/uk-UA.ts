@@ -64,6 +64,7 @@ export default defineTranslations({
     previous: "Попередня",
     next: "Наступна",
     goToPage: "Сторінка {page}",
+    pageOf: "Сторінка {page} з {pageCount}",
     previousPage: "Попередня сторінка",
     nextPage: "Наступна сторінка",
     selectAllMatching: {
@@ -145,6 +146,7 @@ export default defineTranslations({
       other: "{total} результату",
     },
     rowActions: "Дії з рядком",
+    reorderRowsColumn: "Змінити порядок",
     total: "Разом",
     groupBy: "Групувати за",
     groupOrder: "Порядок",

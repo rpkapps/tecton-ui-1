@@ -23,7 +23,8 @@
  *
  * The rows: detail rows under the rows that open (`renderDetail`, which
  * makes the table a treegrid: each row of level 1, its detail row of level
- * 2), a totals row in the footer (`totals.tsx`), and
+ * 2), a drag handle column for row reordering (its drag and drop on demand
+ * too, `row-reorder.tsx`), a totals row in the footer (`totals.tsx`), and
  * with `hasMore` loading rows after the last row: `onLoadMore` is called
  * when they come within two views of being seen (the table's scroll area
  * in a virtualized table, the page's otherwise), once per number of items.
@@ -86,6 +87,7 @@ import {
 import { useFeature, usePrefetchFeatures } from "./lazy"
 import { DataTableHeader, type HeaderShared } from "./header"
 import { describeRow, renderRow } from "./row"
+import { createRowOrder, inItemOrder, type RowOrder } from "./row-order"
 import { DataTableTotals } from "./totals"
 import {
   DataTableEmptyState,
@@ -208,6 +210,40 @@ function pinsOf(count: number, start: number, end: number) {
 }
 
 const FIRST_PIN: CellPin = { side: "start", offset: "0px" }
+
+/**
+ * Row reordering (`reorderableRows`): the rows' side of it at once (the
+ * handles, `row-order.tsx`), its drag and drop once loaded. The handles
+ * show while the rows are in the items' order.
+ */
+function useRowOrder(
+  context: DataTableContextValue<unknown>,
+  frame: React.RefObject<HTMLElement | null>,
+  grid: { current: TableGridController | null },
+  model: DataTableRowModel<unknown>,
+  on: boolean
+) {
+  const feature = useFeature("dragAndDrop", on)
+  const { load } = feature
+  const [order] = React.useState<RowOrder>(() =>
+    createRowOrder(context.actions, () => frame.current, grid, load)
+  )
+  const movable = useDataTableSelector(
+    context,
+    (state) => on && inItemOrder(state.view)
+  )
+  React.useLayoutEffect(() => {
+    if (!on) return
+    order.snapshot.current = {
+      shown: model.rows.flatMap((row) =>
+        row.kind === "item" && !row.continued ? [row.id] : []
+      ),
+      all: model.matchingIds,
+      label: model.textOf,
+    }
+  }, [order, model, on])
+  return { order: movable ? order : null, module: feature.module }
+}
 
 /**
  * Where the loading rows after a table's last row (`element`) scroll into
@@ -587,6 +623,7 @@ function DataTableContentImpl({
   }, [actions, renderDetail, options.tree])
 
   const selection = options.selectionMode !== "none"
+  const handle = options.reorderableRows
   const rtl = useDirection() === "rtl"
   // With more rows to come, an error over loaded rows shows after them, in
   // place of the loading rows; the error state takes the rows' place only
@@ -604,6 +641,7 @@ function DataTableContentImpl({
     layout,
     widths,
     selection,
+    handle,
     fixed: hasFixedWidths(layout, options.resizableColumns),
     ready: !firstLoad,
     rows: rows.length > 0 && !loading,
@@ -618,9 +656,19 @@ function DataTableContentImpl({
     () => pinsOf(layout.columns.length, layout.pinnedStart, layout.pinnedEnd),
     [layout.columns.length, layout.pinnedStart, layout.pinnedEnd]
   )
-  // The checkboxes stick at the start while a column does.
-  const selectionPin =
-    selection && sizing?.selectionPinned === true ? FIRST_PIN : undefined
+  // The columns of controls stick at the start while a column does: the
+  // handles first, then the checkboxes.
+  const controlsPinned = sizing?.selectionPinned === true
+  const handlePin = handle && controlsPinned ? FIRST_PIN : undefined
+  const selectionPin = React.useMemo<CellPin | undefined>(
+    () =>
+      selection && controlsPinned
+        ? handle
+          ? { side: "start", offset: `${sizer.controls.handle}px` }
+          : FIRST_PIN
+        : undefined,
+    [selection, controlsPinned, handle, sizer.controls.handle]
+  )
   const fixed = sizing !== null
   const order = useColumnOrder(
     context,
@@ -655,6 +703,7 @@ function DataTableContentImpl({
   )
 
   const gridController = React.useRef<TableGridController | null>(null)
+  const rowOrder = useRowOrder(context, frame, gridController, model, handle)
 
   const rowHeader = shownColumns.find(
     (column) => column.id === layout.rowHeader
@@ -697,6 +746,8 @@ function DataTableContentImpl({
       rowHeader,
       formatter,
       selection,
+      handle,
+      order: rowOrder.order,
       size: options.size,
       detail: detail ? detailStore : null,
       levelled: options.tree || grouped || detail,
@@ -710,7 +761,7 @@ function DataTableContentImpl({
       linked: options.linked,
       wrap: !virtualized,
       virtualized,
-      columnCount: shownColumns.length + (selection ? 1 : 0),
+      columnCount: shownColumns.length + (selection ? 1 : 0) + (handle ? 1 : 0),
       rowIndexOf: options.pagination
         ? (id: string) => {
             // The engine's place, after the open detail rows before it; a
@@ -729,6 +780,7 @@ function DataTableContentImpl({
       fixed,
       pins,
       selectionPin,
+      handlePin,
       pinned,
       actions,
     }),
@@ -737,6 +789,8 @@ function DataTableContentImpl({
       rowHeader,
       formatter,
       selection,
+      handle,
+      rowOrder.order,
       options.size,
       detail,
       detailStore,
@@ -758,6 +812,7 @@ function DataTableContentImpl({
       fixed,
       pins,
       selectionPin,
+      handlePin,
       pinned,
       actions,
     ]
@@ -1026,10 +1081,12 @@ function DataTableContentImpl({
     sizer,
     pins,
     selectionPin,
+    handlePin,
     order: order.order,
     movable: order.movable,
   }
   const ReorderColumns = order.module?.DataTableColumnReorder
+  const ReorderRows = rowOrder.module?.DataTableRowReorder
 
   return (
     <div
@@ -1037,6 +1094,9 @@ function DataTableContentImpl({
       data-slot="data-table-content"
       className={cn(
         "relative min-h-0 overflow-hidden rounded-md border",
+        // A footer right after it is its last band (`footer.tsx`), and
+        // has the bottom border and corners.
+        "[&:has(+[data-slot=data-table-footer]:not(:empty))]:rounded-b-none [&:has(+[data-slot=data-table-footer]:not(:empty))]:border-b-0",
         // Its own height (`h-96`), else what a root of bounded height
         // leaves it: `flex-auto` keeps `height`, which `flex-1` would not.
         virtualized && "flex-auto",
@@ -1072,6 +1132,7 @@ function DataTableContentImpl({
           >
             {sizer.mode === "fixed" && sizing && (
               <colgroup data-slot="data-table-columns">
+                {handle && <col style={{ width: sizer.controls.handle }} />}
                 {selection && (
                   <col style={{ width: sizer.controls.selection }} />
                 )}
@@ -1131,6 +1192,7 @@ function DataTableContentImpl({
       </DataTableGrid>
       {refreshing && <DataTableProgress top={headerHeight} />}
       {ReorderColumns && order.order && <ReorderColumns order={order.order} />}
+      {ReorderRows && rowOrder.order && <ReorderRows order={rowOrder.order} />}
       {/* One region for the table's life, so each change is read. */}
       <span role="status" className="sr-only">
         {status}

@@ -64,6 +64,7 @@ export default defineTranslations({
     previous: "Edellinen",
     next: "Seuraava",
     goToPage: "Sivu {page}",
+    pageOf: "Sivu {page}/{pageCount}",
     previousPage: "Edellinen sivu",
     nextPage: "Seuraava sivu",
     selectAllMatching: {
@@ -135,6 +136,7 @@ export default defineTranslations({
     clearAll: "Tyhjennä kaikki",
     resultsCount: { one: "{total} tulos", other: "{total} tulosta" },
     rowActions: "Rivin toiminnot",
+    reorderRowsColumn: "Järjestä uudelleen",
     total: "Yhteensä",
     groupBy: "Ryhmittele",
     groupOrder: "Järjestys",

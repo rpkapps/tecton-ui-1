@@ -19,7 +19,9 @@
  * it. The grid's arrow keys go through each cell's controls in order.
  *
  * The selection column's header spans every header row too: the
- * select-all checkbox, or a cell named "Select" for single selection. The
+ * select-all checkbox, or a cell named "Select" for single selection; so
+ * does the drag handle column's (`reorderableRows`) before it, named
+ * "Reorder". The
  * grid moves through the header's columns with the cells spanning rows in
  * every row they span.
  */
@@ -306,6 +308,7 @@ type HeaderShared<T> = {
   /** Each shown column's pin, by display index. */
   pins: ReadonlyArray<CellPin | undefined>
   selectionPin: CellPin | undefined
+  handlePin: CellPin | undefined
   /** With `reorderableColumns`: the columns and groups that move. */
   order: ColumnOrder | null
   movable: ReadonlySet<string>
@@ -892,6 +895,7 @@ function cellPin<T>(
 
 function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
   const t = useTranslations("table")
+  const tDataTable = useTranslations("dataTable")
   const { layout, options } = shared
   const { byId } = getColumnModel(shared.columns)
   const last = layout.headerRows.length - 1
@@ -912,7 +916,7 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
     }
   }
   edges.delete(layout.columns.length)
-  if (!selection) edges.delete(0)
+  if (!selection && !options.reorderableRows) edges.delete(0)
   // A cell with nothing to show is still named for the grid's keyboard,
   // which stops on every header cell.
   const selectColumn = <span className="sr-only">{t("select")}</span>
@@ -927,6 +931,17 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
           counts.set(cell.id, (counts.get(cell.id) ?? 0) + 1)
         return (
           <TableRow key={row.key}>
+            {options.reorderableRows && row.level === 0 && (
+              <TableHead
+                rowSpan={last > 0 ? last + 1 : undefined}
+                className={cn("w-px", shared.handlePin && pinnedHeadClassName)}
+                style={shared.handlePin && pinStyle(shared.handlePin)}
+              >
+                <span className="sr-only">
+                  {tDataTable("reorderRowsColumn")}
+                </span>
+              </TableHead>
+            )}
             {selection && row.level === 0 && (
               <TableHead
                 rowSpan={last > 0 ? last + 1 : undefined}

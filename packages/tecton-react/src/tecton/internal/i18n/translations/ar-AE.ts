@@ -62,6 +62,7 @@ export default defineTranslations({
     previous: "السابق",
     next: "التالي",
     goToPage: "الصفحة {page}",
+    pageOf: "الصفحة {page} من {pageCount}",
     previousPage: "الصفحة السابقة",
     nextPage: "الصفحة التالية",
     selectAllMatching: {
@@ -146,6 +147,7 @@ export default defineTranslations({
       other: "{total} نتيجة",
     },
     rowActions: "إجراءات الصف",
+    reorderRowsColumn: "إعادة الترتيب",
     total: "الإجمالي",
     groupBy: "تجميع حسب",
     groupOrder: "الترتيب",

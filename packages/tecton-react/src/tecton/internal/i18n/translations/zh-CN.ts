@@ -61,6 +61,7 @@ export default defineTranslations({
     previous: "上一页",
     next: "下一页",
     goToPage: "第 {page} 页",
+    pageOf: "第 {page} 页，共 {pageCount} 页",
     previousPage: "上一页",
     nextPage: "下一页",
     selectAllMatching: {
@@ -124,6 +125,7 @@ export default defineTranslations({
     clearAll: "全部清除",
     resultsCount: { other: "{total} 个结果" },
     rowActions: "行操作",
+    reorderRowsColumn: "重新排序",
     total: "合计",
     groupBy: "分组依据",
     groupOrder: "顺序",

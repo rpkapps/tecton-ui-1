@@ -63,6 +63,7 @@ export default defineTranslations({
     previous: "Προηγούμενη",
     next: "Επόμενη",
     goToPage: "Σελίδα {page}",
+    pageOf: "Σελίδα {page} από {pageCount}",
     previousPage: "Προηγούμενη σελίδα",
     nextPage: "Επόμενη σελίδα",
     selectAllMatching: {
@@ -135,6 +136,7 @@ export default defineTranslations({
     clearAll: "Απαλοιφή όλων",
     resultsCount: { one: "{total} αποτέλεσμα", other: "{total} αποτελέσματα" },
     rowActions: "Ενέργειες γραμμής",
+    reorderRowsColumn: "Αναδιάταξη",
     total: "Σύνολο",
     groupBy: "Ομαδοποίηση κατά",
     groupOrder: "Σειρά",

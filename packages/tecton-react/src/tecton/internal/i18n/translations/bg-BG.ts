@@ -63,6 +63,7 @@ export default defineTranslations({
     previous: "Предишна",
     next: "Следваща",
     goToPage: "Страница {page}",
+    pageOf: "Страница {page} от {pageCount}",
     previousPage: "Предишна страница",
     nextPage: "Следваща страница",
     selectAllMatching: {
@@ -135,6 +136,7 @@ export default defineTranslations({
     clearAll: "Изчистване на всички",
     resultsCount: { one: "{total} резултат", other: "{total} резултата" },
     rowActions: "Действия за реда",
+    reorderRowsColumn: "Пренареждане",
     total: "Общо",
     groupBy: "Групиране по",
     groupOrder: "Ред",
