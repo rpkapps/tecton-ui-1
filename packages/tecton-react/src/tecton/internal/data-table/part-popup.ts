@@ -19,6 +19,10 @@
  *   into the row, the More button goes away), the popup moves with them; it
  *   is never left by an element that has gone, which would put it in the
  *   corner of the page.
+ * - As it closes, it stays where it was until its exit animation is done:
+ *   what closed it may also lay the toolbar out again (a filter's button
+ *   takes its summary, grows, and goes into the More menu), and the
+ *   button it was placed by goes as it fades.
  * - How the popup was opened (`openedBy`): a date filter's calendar focuses
  *   its day when it was opened from the keyboard, and a menu opened from
  *   the More menu with a key has its first item active, as from its own
@@ -40,6 +44,9 @@ import * as React from "react"
 type OpenedBy = "keyboard" | "pointer"
 
 type OpenChangeDetails = { event?: Event }
+
+/** A place that does not move: where the popup was as it began to close. */
+type FixedPlace = { getBoundingClientRect: () => DOMRect }
 
 /** How an open was asked for: a key, or a click with no pointer (Enter, Space). */
 function openedByOf(event: Event | undefined): OpenedBy {
@@ -85,6 +92,8 @@ function usePartPopup() {
   // More button); `undefined` leaves the trigger.
   const [anchor, setAnchor] = React.useState<HTMLElement | undefined>()
   const [fromMenu, setFromMenu] = React.useState(false)
+  // While it closes: where it was, so it fades out there.
+  const [closing, setClosing] = React.useState<FixedPlace | undefined>()
 
   // While open, the popup follows the toolbar's layout.
   React.useLayoutEffect(() => {
@@ -116,11 +125,20 @@ function usePartPopup() {
     return () => observer.disconnect()
   }, [open])
 
+  /** Where the popup is placed now, held for its exit animation. */
+  const holdPlace = () => {
+    const place = anchor ?? trigger.current
+    if (!place?.isConnected) return
+    const rect = place.getBoundingClientRect()
+    setClosing({ getBoundingClientRect: () => rect })
+  }
+
   const onOpenChange = (next: boolean, details?: OpenChangeDetails) => {
     if (next) {
       setOpenedBy(openedByOf(details?.event))
       setFromMenu(false)
-    }
+      setClosing(undefined)
+    } else if (open) holdPlace()
     setOpen(next)
   }
 
@@ -138,7 +156,10 @@ function usePartPopup() {
     /** The trigger's ref. */
     trigger,
     openBy,
-    close: () => setOpen(false),
+    close: () => {
+      if (open) holdPlace()
+      setOpen(false)
+    },
     /** For the popup's root (`DropdownMenu`, `Popover`). */
     root: {
       // Not modal: no scroll lock (above).
@@ -149,11 +170,12 @@ function usePartPopup() {
         if (next) return
         setAnchor(undefined)
         setFromMenu(false)
+        setClosing(undefined)
       },
     },
     /** For the popup's content (`DropdownMenuContent`, `PopoverContent`). */
     content: {
-      anchor,
+      anchor: closing ?? anchor,
       // Back to the More button while the part is in the menu.
       finalFocus: anchor
         ? (): HTMLElement | boolean => placeOf(trigger.current) ?? true
