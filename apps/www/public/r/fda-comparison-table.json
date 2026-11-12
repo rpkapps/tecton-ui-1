@@ -4,8 +4,8 @@
   "title": "FDA comparison table",
   "description": "Selectable data table ranking field development alternatives by NPV, CAPEX, risk and status. Requires the @tecton/react package.",
   "dependencies": [
-    "@tecton/react",
     "@tanstack/react-table",
+    "@tecton/react",
     "cn",
     "lucide-react"
   ],

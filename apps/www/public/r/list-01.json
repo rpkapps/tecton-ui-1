@@ -4,8 +4,8 @@
   "title": "Wells list",
   "description": "Filterable, paginated wells table with search, selects, status chips and an empty state. Requires the @tecton/react package.",
   "dependencies": [
-    "@tecton/react",
     "@tanstack/react-table",
+    "@tecton/react",
     "cn",
     "lucide-react"
   ],

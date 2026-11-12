@@ -381,7 +381,7 @@
     "AccordionContent"
    ],
    "aliases": [],
-   "tokens": 953
+   "tokens": 949
   },
   {
    "id": "action-bar",
@@ -422,7 +422,7 @@
     "actionBarVariants"
    ],
    "aliases": [],
-   "tokens": 946
+   "tokens": 942
   },
   {
    "id": "alert",
@@ -467,7 +467,7 @@
     "alertVariants"
    ],
    "aliases": [],
-   "tokens": 1184
+   "tokens": 1178
   },
   {
    "id": "alert-dialog",
@@ -510,7 +510,7 @@
     "AlertDialogPortal"
    ],
    "aliases": [],
-   "tokens": 1219
+   "tokens": 1215
   },
   {
    "id": "app-finder",
@@ -555,7 +555,7 @@
     "appFinderIconVariants"
    ],
    "aliases": [],
-   "tokens": 927
+   "tokens": 923
   },
   {
    "id": "app-shell",
@@ -624,7 +624,7 @@
     "useMinWidth"
    ],
    "aliases": [],
-   "tokens": 1261
+   "tokens": 1257
   },
   {
    "id": "aspect-ratio",
@@ -662,7 +662,7 @@
     "AspectRatio"
    ],
    "aliases": [],
-   "tokens": 898
+   "tokens": 894
   },
   {
    "id": "attachment",
@@ -709,7 +709,7 @@
     "AttachmentTrigger"
    ],
    "aliases": [],
-   "tokens": 992
+   "tokens": 988
   },
   {
    "id": "avatar",
@@ -756,7 +756,7 @@
     "AvatarBadge"
    ],
    "aliases": [],
-   "tokens": 970
+   "tokens": 966
   },
   {
    "id": "background",
@@ -815,7 +815,7 @@
     "backgroundSpeeds"
    ],
    "aliases": [],
-   "tokens": 1088
+   "tokens": 1084
   },
   {
    "id": "badge",
@@ -856,7 +856,7 @@
     "Badge"
    ],
    "aliases": [],
-   "tokens": 1046
+   "tokens": 1042
   },
   {
    "id": "breadcrumb",
@@ -900,7 +900,7 @@
     "BreadcrumbEllipsis"
    ],
    "aliases": [],
-   "tokens": 1015
+   "tokens": 1011
   },
   {
    "id": "bubble",
@@ -941,7 +941,7 @@
     "BubbleReactions"
    ],
    "aliases": [],
-   "tokens": 900
+   "tokens": 896
   },
   {
    "id": "button",
@@ -979,7 +979,7 @@
     "buttonVariants"
    ],
    "aliases": [],
-   "tokens": 1309
+   "tokens": 1303
   },
   {
    "id": "button-group",
@@ -1020,7 +1020,7 @@
     "buttonGroupVariants"
    ],
    "aliases": [],
-   "tokens": 1102
+   "tokens": 1098
   },
   {
    "id": "calendar",
@@ -1055,7 +1055,7 @@
     "CalendarDayButton"
    ],
    "aliases": [],
-   "tokens": 975
+   "tokens": 971
   },
   {
    "id": "canvas",
@@ -1105,7 +1105,7 @@
     "canvasToolbarVariants"
    ],
    "aliases": [],
-   "tokens": 1061
+   "tokens": 1057
   },
   {
    "id": "card",
@@ -1153,7 +1153,7 @@
     "CardFooter"
    ],
    "aliases": [],
-   "tokens": 911
+   "tokens": 907
   },
   {
    "id": "carousel",
@@ -1192,7 +1192,7 @@
     "useCarousel"
    ],
    "aliases": [],
-   "tokens": 950
+   "tokens": 946
   },
   {
    "id": "chart",
@@ -1231,7 +1231,7 @@
     "ChartStyle"
    ],
    "aliases": [],
-   "tokens": 1117
+   "tokens": 1113
   },
   {
    "id": "checkbox",
@@ -1268,7 +1268,7 @@
     "Checkbox"
    ],
    "aliases": [],
-   "tokens": 810
+   "tokens": 806
   },
   {
    "id": "chip",
@@ -1308,7 +1308,7 @@
     "ChipRemove"
    ],
    "aliases": [],
-   "tokens": 1096
+   "tokens": 1092
   },
   {
    "id": "circular-progress",
@@ -1346,7 +1346,7 @@
     "CircularProgress"
    ],
    "aliases": [],
-   "tokens": 927
+   "tokens": 923
   },
   {
    "id": "code-block",
@@ -1383,7 +1383,7 @@
     "CodeBlockFooter"
    ],
    "aliases": [],
-   "tokens": 606
+   "tokens": 600
   },
   {
    "id": "collapsible",
@@ -1423,7 +1423,7 @@
     "CollapsibleContent"
    ],
    "aliases": [],
-   "tokens": 1079
+   "tokens": 1075
   },
   {
    "id": "color-swatch",
@@ -1461,7 +1461,7 @@
     "ColorSwatch"
    ],
    "aliases": [],
-   "tokens": 849
+   "tokens": 845
   },
   {
    "id": "combobox",
@@ -1510,7 +1510,7 @@
     "useComboboxAnchor"
    ],
    "aliases": [],
-   "tokens": 1348
+   "tokens": 1344
   },
   {
    "id": "command",
@@ -1555,7 +1555,7 @@
     "CommandShortcut"
    ],
    "aliases": [],
-   "tokens": 878
+   "tokens": 874
   },
   {
    "id": "composer",
@@ -1605,7 +1605,7 @@
     "useComposer"
    ],
    "aliases": [],
-   "tokens": 985
+   "tokens": 981
   },
   {
    "id": "context-menu",
@@ -1656,7 +1656,7 @@
     "ContextMenuSubContent"
    ],
    "aliases": [],
-   "tokens": 950
+   "tokens": 946
   },
   {
    "id": "copy-button",
@@ -1688,7 +1688,7 @@
     "CopyButton"
    ],
    "aliases": [],
-   "tokens": 719
+   "tokens": 715
   },
   {
    "id": "count-badge",
@@ -1725,7 +1725,7 @@
     "CountBadge"
    ],
    "aliases": [],
-   "tokens": 858
+   "tokens": 854
   },
   {
    "id": "dialog",
@@ -1772,7 +1772,7 @@
     "DialogPortal"
    ],
    "aliases": [],
-   "tokens": 1085
+   "tokens": 1081
   },
   {
    "id": "document-tabs",
@@ -1818,7 +1818,7 @@
     "documentTabsListVariants"
    ],
    "aliases": [],
-   "tokens": 685
+   "tokens": 681
   },
   {
    "id": "drawer",
@@ -1865,7 +1865,7 @@
     "DrawerSwipeHandle"
    ],
    "aliases": [],
-   "tokens": 910
+   "tokens": 906
   },
   {
    "id": "dropdown-menu",
@@ -1917,7 +1917,7 @@
     "DropdownMenuSubContent"
    ],
    "aliases": [],
-   "tokens": 994
+   "tokens": 990
   },
   {
    "id": "dropzone",
@@ -1961,7 +1961,7 @@
     "formatFileSize"
    ],
    "aliases": [],
-   "tokens": 890
+   "tokens": 886
   },
   {
    "id": "empty",
@@ -2003,7 +2003,7 @@
     "EmptyContent"
    ],
    "aliases": [],
-   "tokens": 890
+   "tokens": 886
   },
   {
    "id": "field",
@@ -2050,7 +2050,7 @@
     "FieldTitle"
    ],
    "aliases": [],
-   "tokens": 1094
+   "tokens": 1090
   },
   {
    "id": "hover-card",
@@ -2089,7 +2089,7 @@
     "HoverCardContent"
    ],
    "aliases": [],
-   "tokens": 783
+   "tokens": 779
   },
   {
    "id": "input",
@@ -2131,7 +2131,7 @@
     "Input"
    ],
    "aliases": [],
-   "tokens": 1137
+   "tokens": 1133
   },
   {
    "id": "input-group",
@@ -2174,7 +2174,7 @@
     "InputGroupTextarea"
    ],
    "aliases": [],
-   "tokens": 836
+   "tokens": 832
   },
   {
    "id": "input-otp",
@@ -2214,7 +2214,7 @@
     "InputOTPSeparator"
    ],
    "aliases": [],
-   "tokens": 627
+   "tokens": 623
   },
   {
    "id": "item",
@@ -2261,7 +2261,7 @@
     "ItemFooter"
    ],
    "aliases": [],
-   "tokens": 955
+   "tokens": 951
   },
   {
    "id": "kbd",
@@ -2294,7 +2294,7 @@
     "KbdGroup"
    ],
    "aliases": [],
-   "tokens": 756
+   "tokens": 752
   },
   {
    "id": "label",
@@ -2330,7 +2330,7 @@
     "Label"
    ],
    "aliases": [],
-   "tokens": 659
+   "tokens": 655
   },
   {
    "id": "link",
@@ -2366,7 +2366,7 @@
     "linkVariants"
    ],
    "aliases": [],
-   "tokens": 859
+   "tokens": 855
   },
   {
    "id": "marker",
@@ -2411,7 +2411,7 @@
     "markerVariants"
    ],
    "aliases": [],
-   "tokens": 779
+   "tokens": 775
   },
   {
    "id": "message",
@@ -2458,7 +2458,7 @@
     "MessageFooter"
    ],
    "aliases": [],
-   "tokens": 857
+   "tokens": 853
   },
   {
    "id": "message-scroller",
@@ -2500,7 +2500,7 @@
     "useMessageScrollerVisibility"
    ],
    "aliases": [],
-   "tokens": 1008
+   "tokens": 1004
   },
   {
    "id": "meter",
@@ -2537,7 +2537,7 @@
     "Meter"
    ],
    "aliases": [],
-   "tokens": 904
+   "tokens": 900
   },
   {
    "id": "native-select",
@@ -2576,7 +2576,7 @@
     "NativeSelectOptGroup"
    ],
    "aliases": [],
-   "tokens": 781
+   "tokens": 777
   },
   {
    "id": "number-field",
@@ -2621,7 +2621,7 @@
     "NumberFieldSlider"
    ],
    "aliases": [],
-   "tokens": 1013
+   "tokens": 1009
   },
   {
    "id": "overflow",
@@ -2667,7 +2667,7 @@
     "useIsOverflowItemVisible"
    ],
    "aliases": [],
-   "tokens": 1241
+   "tokens": 1237
   },
   {
    "id": "page-header",
@@ -2711,7 +2711,7 @@
     "PageHeaderActions"
    ],
    "aliases": [],
-   "tokens": 744
+   "tokens": 740
   },
   {
    "id": "pagination",
@@ -2754,7 +2754,7 @@
     "PaginationEllipsis"
    ],
    "aliases": [],
-   "tokens": 970
+   "tokens": 966
   },
   {
    "id": "panel",
@@ -2802,7 +2802,7 @@
     "PanelFooter"
    ],
    "aliases": [],
-   "tokens": 807
+   "tokens": 803
   },
   {
    "id": "popover",
@@ -2845,7 +2845,7 @@
     "PopoverDescription"
    ],
    "aliases": [],
-   "tokens": 989
+   "tokens": 985
   },
   {
    "id": "progress",
@@ -2891,7 +2891,7 @@
     "ProgressIndicator"
    ],
    "aliases": [],
-   "tokens": 944
+   "tokens": 940
   },
   {
    "id": "provider",
@@ -2930,7 +2930,7 @@
     "useLocale"
    ],
    "aliases": [],
-   "tokens": 1000
+   "tokens": 994
   },
   {
    "id": "questionnaire",
@@ -2978,7 +2978,7 @@
     "QuestionnaireSubmit"
    ],
    "aliases": [],
-   "tokens": 1019
+   "tokens": 1015
   },
   {
    "id": "radio-group",
@@ -3016,7 +3016,7 @@
     "RadioGroupItem"
    ],
    "aliases": [],
-   "tokens": 993
+   "tokens": 989
   },
   {
    "id": "reorderable",
@@ -3057,7 +3057,7 @@
     "ReorderableHandle"
    ],
    "aliases": [],
-   "tokens": 1027
+   "tokens": 1023
   },
   {
    "id": "resizable",
@@ -3097,7 +3097,7 @@
     "ResizableHandle"
    ],
    "aliases": [],
-   "tokens": 1079
+   "tokens": 1075
   },
   {
    "id": "scroll-area",
@@ -3136,7 +3136,7 @@
     "ScrollBar"
    ],
    "aliases": [],
-   "tokens": 853
+   "tokens": 849
   },
   {
    "id": "select",
@@ -3188,7 +3188,7 @@
     "selectTriggerVariants"
    ],
    "aliases": [],
-   "tokens": 1254
+   "tokens": 1250
   },
   {
    "id": "separator",
@@ -3226,7 +3226,7 @@
     "Separator"
    ],
    "aliases": [],
-   "tokens": 733
+   "tokens": 729
   },
   {
    "id": "sheet",
@@ -3275,7 +3275,7 @@
     "SheetFooter"
    ],
    "aliases": [],
-   "tokens": 946
+   "tokens": 942
   },
   {
    "id": "sidebar",
@@ -3331,7 +3331,7 @@
     "useSidebar"
    ],
    "aliases": [],
-   "tokens": 1197
+   "tokens": 1191
   },
   {
    "id": "skeleton",
@@ -3369,7 +3369,7 @@
     "Skeleton"
    ],
    "aliases": [],
-   "tokens": 716
+   "tokens": 712
   },
   {
    "id": "slider",
@@ -3406,7 +3406,7 @@
     "Slider"
    ],
    "aliases": [],
-   "tokens": 825
+   "tokens": 821
   },
   {
    "id": "spinner",
@@ -3445,7 +3445,7 @@
     "Spinner"
    ],
    "aliases": [],
-   "tokens": 851
+   "tokens": 847
   },
   {
    "id": "stat",
@@ -3488,7 +3488,7 @@
     "StatGroup"
    ],
    "aliases": [],
-   "tokens": 991
+   "tokens": 987
   },
   {
    "id": "switch",
@@ -3525,7 +3525,7 @@
     "Switch"
    ],
    "aliases": [],
-   "tokens": 680
+   "tokens": 676
   },
   {
    "id": "table",
@@ -3572,7 +3572,7 @@
     "TableCaption"
    ],
    "aliases": [],
-   "tokens": 1330
+   "tokens": 1326
   },
   {
    "id": "table-column-resizer",
@@ -3606,7 +3606,7 @@
     "TableColumnResizer"
    ],
    "aliases": [],
-   "tokens": 719
+   "tokens": 715
   },
   {
    "id": "tabs",
@@ -3648,7 +3648,7 @@
     "tabsListVariants"
    ],
    "aliases": [],
-   "tokens": 1020
+   "tokens": 1016
   },
   {
    "id": "textarea",
@@ -3686,7 +3686,7 @@
     "Textarea"
    ],
    "aliases": [],
-   "tokens": 835
+   "tokens": 831
   },
   {
    "id": "theme-root",
@@ -3720,7 +3720,7 @@
     "themeRootVariants"
    ],
    "aliases": [],
-   "tokens": 1186
+   "tokens": 1176
   },
   {
    "id": "toast",
@@ -3769,7 +3769,7 @@
     "useToastManager"
    ],
    "aliases": [],
-   "tokens": 958
+   "tokens": 948
   },
   {
    "id": "toggle",
@@ -3803,7 +3803,7 @@
     "toggleVariants"
    ],
    "aliases": [],
-   "tokens": 788
+   "tokens": 784
   },
   {
    "id": "toggle-group",
@@ -3842,7 +3842,7 @@
     "ToggleGroupItem"
    ],
    "aliases": [],
-   "tokens": 975
+   "tokens": 971
   },
   {
    "id": "tooltip",
@@ -3882,7 +3882,7 @@
     "TooltipProvider"
    ],
    "aliases": [],
-   "tokens": 1016
+   "tokens": 1012
   },
   {
    "id": "trace",
@@ -3927,7 +3927,7 @@
     "TraceCollapsibleContent"
    ],
    "aliases": [],
-   "tokens": 667
+   "tokens": 663
   },
   {
    "id": "tree-view",
@@ -3971,7 +3971,7 @@
     "moveTreeItems"
    ],
    "aliases": [],
-   "tokens": 1352
+   "tokens": 1348
   },
   {
    "id": "use-busy-delay",
@@ -4009,7 +4009,7 @@
     "useBusyDelay"
    ],
    "aliases": [],
-   "tokens": 722
+   "tokens": 718
   },
   {
    "id": "tanstack-table",
@@ -4069,7 +4069,7 @@
    "aliases": [
     "lucide-react"
    ],
-   "tokens": 43
+   "tokens": 41
   },
   {
    "id": "tecton-icons",
@@ -4108,7 +4108,7 @@
    "aliases": [
     "icons"
    ],
-   "tokens": 373
+   "tokens": 371
   },
   {
    "id": "conventions",
@@ -4125,7 +4125,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 1732
+   "tokens": 1720
   },
   {
    "id": "rules",
@@ -4142,7 +4142,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 2979
+   "tokens": 2941
   },
   {
    "id": "theming",
@@ -4159,7 +4159,7 @@
    "related": [],
    "exports": [],
    "aliases": [],
-   "tokens": 3116
+   "tokens": 3086
   }
  ]
 }
