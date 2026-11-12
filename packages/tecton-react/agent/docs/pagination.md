@@ -14,7 +14,7 @@ import { Pagination, PaginationContent, PaginationItem, PaginationLink, Paginati
 
 ## Not for
 
-- paging driven by a table's own sorting and filtering state → `TanStack Table` (tecton docs tanstack-table)
+- paging driven by a table's own sorting and filtering state → `DataTable` (tecton docs data-table)
 - switching between sibling sections of one page → `Tabs` (tecton docs tabs)
 - the rows-per-page picker beside the controls → `Select` (tecton docs select)
 

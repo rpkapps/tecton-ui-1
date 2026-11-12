@@ -11,6 +11,10 @@
  *   @tecton/react/tecton/chip      -> content/docs/tecton/chip.mdx
  *   @tecton/react/tecton/use-x     -> content/docs/hooks/use-x.mdx   (Tecton hooks)
  *
+ * A guideline whose `docs` names a whole page (`docs: components/data-table`)
+ * renders into that page instead; one that names a section (`…#resizing`)
+ * has no section of its own.
+ *
  * The section is written between `{/* guidelines:start *\/}` and
  * `{/* guidelines:end *\/}`, before "## API Reference" when the page has one and
  * at the end when it does not. Everything outside the markers is left alone, so
@@ -195,7 +199,10 @@ export function withGuidelines(mdx: string, moduleKey: string): string {
     const files = [...invalid.keys()].map((file) => path.basename(file)).join(", ")
     throw new Error(`sync-guidelines: ${files} fail guidelines:check — fix them before syncing ${moduleKey}`)
   }
-  const guideline = valid.get(moduleKey)
+  // A module whose `docs` names this whole page renders into it, as in main().
+  const guideline =
+    valid.get(moduleKey) ??
+    [...valid.values()].find((candidate) => candidate.meta.docs === moduleKey)
   if (!guideline) return removeSection(mdx)
   return insertSection(mdx, renderSection(guideline, catalog))
 }
@@ -227,6 +234,16 @@ function main() {
   const check = process.argv.includes("--check")
   const { catalog, valid, invalid } = guidelines()
   const pages = docsPages()
+  // A module whose `docs` names a whole page, not a section, renders into
+  // that page (tecton/data-table -> components/data-table.mdx).
+  for (const [moduleKey, guideline] of valid) {
+    const docs = guideline.meta.docs
+    if (!docs || docs.includes("#") || pages.has(moduleKey)) continue
+    const page = path.join(DOCS, `${docs}.mdx`)
+    if (!existsSync(page)) continue
+    pages.delete(docs)
+    pages.set(moduleKey, page)
+  }
   const changed: string[] = []
   const missing: string[] = []
 
@@ -258,11 +275,11 @@ function main() {
     try {
       next = guideline ? insertSection(lf, renderSection(guideline, catalog)) : removeSection(lf)
     } catch (error) {
-      broken.push(`content/docs/${docsPageOf(moduleKey)}.mdx: ${(error as Error).message}`)
+      broken.push(`${path.relative(WWW, page)}: ${(error as Error).message}`)
       continue
     }
     if (next === lf) continue
-    changed.push(`content/docs/${docsPageOf(moduleKey)}.mdx${guideline ? "" : " (section removed)"}`)
+    changed.push(`${path.relative(WWW, page)}${guideline ? "" : " (section removed)"}`)
     if (!check) writeFileSync(page, next.split("\n").join(eol))
   }
 

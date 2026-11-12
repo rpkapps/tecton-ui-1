@@ -209,7 +209,9 @@
         "components/calendar"
       ],
       "checklist": [
-        "A table is plain HTML — `Table > TableHeader > TableRow > TableHead` and `TableBody > TableRow > TableCell`, with `TableFooter` and `TableCaption` as needed; sorting, filtering and paging come from TanStack Table on these parts.",
+        "Every table of records in an application is a `DataTable` (columns from `createColumns`, features turned on at the root, `aria-label` on `DataTableContent`), never a `Table` with sort, selection or paging state of its own, so tables behave the same across applications; `Table` is for a short, static table that is only read.",
+        "`DataTable` columns are made once (module level or `React.useMemo`) with a `type` and raw values from `accessor`; a row opens through `itemToHref` or `onActivate`, its commands are a `DataTableRowActions` in a `cell`, and the actions on the selection go in `DataTableActionBar`.",
+        "A static table is plain HTML — `Table > TableHeader > TableRow > TableHead` and `TableBody > TableRow > TableCell`, with `TableFooter` and `TableCaption` as needed.",
         "Rows or columns the user drags into order are a `Reorderable` around the `Table` with `ReorderableItem render={<TableRow />}` with a `label` and a `ReorderableHandle` (or headers with `render={<TableHead />}`, `dragHandle={false}` and `orientation=\"horizontal\"`, no grip), never native `draggable` rows; a resizable column has a `TableColumnResizer` in its `TableHead` (`relative`, width from state) on a `table-fixed` table.",
         "A table of hundreds of rows or more is `<Table virtualized>` inside a parent of bounded height (`h-96`), with `TableBody items={rows}` and a render function, not a hand-built window of sliced rows.",
         "An empty table renders `Empty` in place of the table, or `TableBody empty={…}` (one row across every column) when the header has to stay.",
@@ -319,11 +321,6 @@
       "import": "import { toast } from \"sonner\"",
       "docs": "/docs/components/sonner",
       "note": "The Toaster component is @tecton/react/components/sonner; toast() itself comes from the sonner package."
-    },
-    "TanStack Table": {
-      "import": "import { useReactTable } from \"@tanstack/react-table\"",
-      "docs": "/docs/components/data-table",
-      "note": "Data tables are a recipe on Table, not a component."
     },
     "TanStack Form": {
       "import": "import { useForm } from \"@tanstack/react-form\"",

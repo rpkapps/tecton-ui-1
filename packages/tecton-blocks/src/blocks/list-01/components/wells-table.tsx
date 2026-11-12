@@ -1,35 +1,18 @@
 "use client"
 
 import * as React from "react"
-import {
-  createColumnHelper,
-  createPaginatedRowModel,
-  createSortedRowModel,
-  rowPaginationFeature,
-  rowSelectionFeature,
-  rowSortingFeature,
-  tableFeatures,
-  useTable,
-} from "@tanstack/react-table"
-import type { RowSelectionState, SortingState } from "@tanstack/react-table"
 import { cn } from "cn"
 import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
   DatabaseIcon,
-  MoreVerticalIcon,
+  DownloadIcon,
+  FolderPlusIcon,
   PlusIcon,
 } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
 import {
-  DropdownMenu,
-  DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
 import {
   Empty,
@@ -40,388 +23,162 @@ import {
   EmptyTitle,
 } from "@tecton/react/components/empty"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@tecton/react/components/select"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@tecton/react/components/table"
-import { useLocale } from "@tecton/react/tecton/provider"
+  createColumns,
+  DataTable,
+  DataTableActionBar,
+  DataTableContent,
+  DataTableFooter,
+  DataTablePagination,
+  DataTableRowActions,
+} from "@tecton/react/tecton/data-table"
+import { OverflowItem, OverflowLabel } from "@tecton/react/tecton/overflow"
 
-import { formatDate, statusMeta, typeMeta } from "../data"
-import type { Well } from "../data"
+import { statusMeta, typeMeta } from "../data"
+import type { Well, WellStatus } from "../data"
 
-// TanStack Table v9: declare the features the wells table uses.
-const features = tableFeatures({
-  rowPaginationFeature,
-  rowSelectionFeature,
-  rowSortingFeature,
-  paginatedRowModel: createPaginatedRowModel(),
-  sortedRowModel: createSortedRowModel(),
-})
+const statusOptions = (Object.keys(statusMeta) as WellStatus[]).map(
+  (status) => ({
+    value: status,
+    label: statusMeta[status].label,
+    variant: statusMeta[status].color,
+  })
+)
 
-const columns = createColumnHelper<typeof features, Well>()
-
-/** A number in the reader's locale (`TectonProvider`, else the browser). */
-function LocaleNumber({
-  value,
-  ...props
-}: React.ComponentProps<"span"> & { value: number }) {
-  const { locale } = useLocale()
-  return <span {...props}>{value.toLocaleString(locale)}</span>
-}
-
-/** An ISO date in the reader's locale. */
-function LocaleDate({
-  value,
-  ...props
-}: React.ComponentProps<"span"> & { value: string }) {
-  const { locale } = useLocale()
-  return <span {...props}>{formatDate(value, locale)}</span>
+/** Numbers and dates in the reader's locale, set in mono like the well names. */
+function mono(_: Well, { text }: { text: string }) {
+  return <span className="font-mono tabular-nums">{text}</span>
 }
 
 function createWellColumns(onOpen?: (well: Well) => void) {
-  return columns.columns([
-    columns.display({
-      id: "select",
-      header: ({ table }) => {
-        // Checked when every row of the page is selected; mixed when some
-        // row (on any page) is. Checking selects every row, unchecking
-        // clears the selection.
-        const page = table.getRowModel().rows
-        const all = page.length > 0 && page.every((row) => row.getIsSelected())
-        const some = table.getSelectedRowModel().rows.length > 0
-        return (
-          <Checkbox
-            aria-label="Select all rows"
-            checked={all}
-            indeterminate={some && !all}
-            onCheckedChange={(checked) => {
-              if (checked) table.toggleAllRowsSelected(true)
-              else table.setRowSelection({})
-            }}
-          />
-        )
-      },
-      cell: ({ row }) => (
-        <Checkbox
-          aria-label={`Select row ${row.original.name}`}
-          checked={row.getIsSelected()}
-          onCheckedChange={(checked) => row.toggleSelected(checked)}
-        />
-      ),
-      enableSorting: false,
-    }),
-    columns.accessor("name", {
+  return createColumns<Well>([
+    {
+      id: "name",
       header: "Well",
-      cell: ({ getValue }) => (
-        <span className="font-mono font-medium tabular-nums">{getValue()}</span>
+      cell: (well) => (
+        <span className="font-mono font-medium tabular-nums">{well.name}</span>
       ),
-    }),
-    columns.accessor("field", { header: "Field" }),
-    columns.accessor("type", {
+    },
+    { id: "field", header: "Field", hideBelow: "sm" },
+    {
+      id: "type",
       header: "Type",
-      cell: ({ getValue }) => typeMeta[getValue()],
-    }),
-    columns.accessor("status", {
-      header: "Status",
-      cell: ({ getValue }) => {
-        const meta = statusMeta[getValue()]
-        return (
-          <Badge variant={meta.color} appearance="outline">
-            {meta.label}
-          </Badge>
-        )
-      },
-    }),
-    columns.accessor("td", {
-      header: "TD (m MD)",
-      cell: ({ getValue }) => (
-        <LocaleNumber
-          value={getValue()}
-          className="block text-end font-mono tabular-nums"
-        />
-      ),
-    }),
-    columns.accessor("spud", {
+      accessor: (well) => typeMeta[well.type],
+      hideBelow: "md",
+    },
+    { id: "status", header: "Status", type: "options", options: statusOptions },
+    { id: "td", header: "TD (m MD)", type: "number", cell: mono },
+    {
+      id: "spud",
       header: "Spud",
-      cell: ({ getValue }) => (
-        <LocaleDate value={getValue()} className="font-mono tabular-nums" />
-      ),
-    }),
-    columns.accessor("rig", { header: "Rig" }),
-    columns.display({
+      type: "date",
+      // The ISO date is a calendar day: read and shown in UTC.
+      accessor: (well) => new Date(`${well.spud}T00:00:00Z`),
+      format: {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        timeZone: "UTC",
+      },
+      cell: mono,
+      hideBelow: "lg",
+    },
+    { id: "rig", header: "Rig", hideBelow: "lg" },
+    {
       id: "actions",
-      header: "",
-      enableSorting: false,
-      cell: ({ row }) => (
-        <span className="flex justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger
-              render={
-                <Button
-                  variant="ghost"
-                  size="icon-xs"
-                  aria-label={`Actions for ${row.original.name}`}
-                />
-              }
-            >
-              <MoreVerticalIcon />
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="bottom" align="end">
-              <DropdownMenuItem onClick={() => onOpen?.(row.original)}>
-                Open
-              </DropdownMenuItem>
-              <DropdownMenuItem>Add to project</DropdownMenuItem>
-              <DropdownMenuItem>Export logs</DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem variant="destructive">Archive</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </span>
+      header: "Actions",
+      renderHeader: () => <span className="sr-only">Actions</span>,
+      align: "end",
+      sortable: false,
+      hideable: false,
+      cell: (well) => (
+        <DataTableRowActions aria-label={`Actions for ${well.name}`}>
+          <DropdownMenuItem onClick={() => onOpen?.(well)}>
+            Open
+          </DropdownMenuItem>
+          <DropdownMenuItem>Add to project</DropdownMenuItem>
+          <DropdownMenuItem>Export logs</DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem variant="destructive">Archive</DropdownMenuItem>
+        </DataTableRowActions>
       ),
-    }),
+    },
   ])
 }
 
 const pageSizeOptions = [10, 25, 50, 100]
 
-type WellsTableProps = React.ComponentProps<"div"> & {
+type WellsTableProps = Omit<React.ComponentProps<"div">, "defaultValue"> & {
   data: Well[]
   onOpen?: ((well: Well) => void) | undefined
-  /** Rows per page. */
+  /** Rows per page at first; the reader changes it in the footer. */
   pageSize?: number
-  onRowSelectionChange?: (selection: RowSelectionState) => void
+  /** Called with the ids of the selected wells. */
+  onSelectionChange?: (ids: ReadonlyArray<string>) => void
 }
 
 /**
- * Paginated, sortable, selectable wells table: TanStack Table state rendered
- * with the `Table` parts. A header sorts its column, a row's checkbox selects
- * it, and a click on a row (outside its controls) opens the well — the row's
- * actions menu opens it from the keyboard. Cells stack into labelled rows on
- * narrow viewports.
+ * Paginated, sortable, selectable wells table on `DataTable`. A header
+ * sorts its column, a row's checkbox selects it, and Enter, a double
+ * click or a click while nothing is selected opens the well; the row's
+ * actions menu opens it too. While wells are selected, an action bar
+ * offers to add them to a project or export their logs. On narrow
+ * viewports the less important columns hide.
  */
 function WellsTable({
   className,
   data,
   onOpen,
   pageSize = 10,
-  onRowSelectionChange,
+  onSelectionChange,
   ...props
 }: WellsTableProps) {
-  const wellColumns = React.useMemo(() => createWellColumns(onOpen), [onOpen])
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
-  const [pagination, setPagination] = React.useState({ pageIndex: 0, pageSize })
-
-  React.useEffect(() => {
-    onRowSelectionChange?.(rowSelection)
-  }, [rowSelection, onRowSelectionChange])
-
-  const table = useTable({
-    features,
-    data,
-    columns: wellColumns,
-    getRowId: (row) => row.id,
-    state: { sorting, rowSelection, pagination },
-    onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
-    onPaginationChange: setPagination,
-  })
-
-  const rows = table.getRowModel().rows
+  const columns = React.useMemo(() => createWellColumns(onOpen), [onOpen])
 
   return (
-    <div
-      data-slot="wells-table"
-      className={cn(
-        "flex w-full flex-col overflow-hidden rounded-md border bg-card text-sm",
-        className
-      )}
+    <DataTable
+      items={data}
+      columns={columns}
+      selectionMode="multiple"
+      pagination
+      defaultPageSize={pageSize}
+      pageSizes={pageSizeOptions}
+      striped
+      {...(onSelectionChange === undefined
+        ? {}
+        : { onValueChange: (ids) => onSelectionChange(ids) })}
+      {...(onOpen === undefined
+        ? {}
+        : { onActivate: (_: string, well: Well) => onOpen(well) })}
+      className={cn("w-full", className)}
       {...props}
     >
-      <Table aria-label="Wells">
-        <TableHeader className="bg-muted max-md:sr-only [&_tr]:border-border-subtle">
-          <tr>
-            {table.getFlatHeaders().map((header) => {
-              const sortable = header.column.getCanSort()
-              const sorted = header.column.getIsSorted()
-              const content = header.isPlaceholder ? null : (
-                <table.FlexRender header={header} />
-              )
-              return (
-                <TableHead
-                  key={header.id}
-                  aria-sort={
-                    !sortable
-                      ? undefined
-                      : sorted === "asc"
-                        ? "ascending"
-                        : sorted === "desc"
-                          ? "descending"
-                          : "none"
-                  }
-                  className={cn(
-                    "h-11 px-3 text-xs",
-                    header.column.id === "select" && "w-10"
-                  )}
-                >
-                  {sortable ? (
-                    // Ascending first, then toggles; one sorted column.
-                    <button
-                      type="button"
-                      className="-mx-1 rounded-sm px-1 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                      onClick={() =>
-                        header.column.toggleSorting(sorted === "asc", false)
-                      }
-                    >
-                      {content}
-                    </button>
-                  ) : (
-                    content
-                  )}
-                </TableHead>
-              )
-            })}
-          </tr>
-        </TableHeader>
-        <TableBody className="max-md:[&_:is(td,th)]:flex max-md:[&_:is(td,th)]:h-auto max-md:[&_:is(td,th)]:justify-between max-md:[&_:is(td,th)]:py-1.5 max-md:[&_:is(td,th)]:before:text-muted-foreground max-md:[&_:is(td,th)]:before:content-[attr(data-label)] [&_tr]:border-border-subtle max-md:[&_tr]:flex max-md:[&_tr]:flex-col max-md:[&_tr]:py-2 [&_tr:nth-child(even)]:bg-surface-alt/60">
-          {rows.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={table.getFlatHeaders().length}
-                className="py-8 text-center text-muted-foreground"
-              >
-                No results.
-              </TableCell>
-            </TableRow>
-          ) : (
-            rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-selected={row.getIsSelected() ? "" : undefined}
-                onClick={(event) => {
-                  // Not a click on the row's checkbox or menu, nor one that
-                  // reached it through a portal (the menu's popup).
-                  const target = event.target as Element
-                  if (
-                    !onOpen ||
-                    !event.currentTarget.contains(target) ||
-                    target.closest("button, a, input, [role=checkbox]")
-                  )
-                    return
-                  onOpen(row.original)
-                }}
-                className={cn(
-                  "hover:bg-accent/60 data-[selected]:bg-accent",
-                  onOpen && "cursor-pointer"
-                )}
-              >
-                {row.getAllCells().map((cell) => {
-                  const label =
-                    typeof cell.column.columnDef.header === "string"
-                      ? cell.column.columnDef.header
-                      : undefined
-                  // The well name names the row: a row header, so a screen
-                  // reader reads it with every cell of the row.
-                  return cell.column.id === "name" ? (
-                    <th
-                      key={cell.id}
-                      scope="row"
-                      data-slot="table-cell"
-                      data-label={label}
-                      className="h-11 px-3 py-3 text-start align-middle font-normal whitespace-nowrap"
-                    >
-                      <table.FlexRender cell={cell} />
-                    </th>
-                  ) : (
-                    <TableCell
-                      key={cell.id}
-                      data-label={label}
-                      className={cn(
-                        "h-11 px-3",
-                        cell.column.id === "select" && "w-10"
-                      )}
-                    >
-                      <table.FlexRender cell={cell} />
-                    </TableCell>
-                  )
-                })}
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-      <div
-        data-slot="wells-table-footer"
-        className="flex items-center justify-between gap-3 border-t bg-muted/60 px-3 py-1.5 text-xs text-muted-foreground"
-      >
-        <span className="tabular-nums">
-          {table.getSelectedRowModel().rows.length} of{" "}
-          {table.getPrePaginatedRowModel().rows.length} selected
-        </span>
-        <div className="ms-auto flex items-center gap-3">
-          <div className="flex items-center gap-1.5">
-            <span>Rows per page</span>
-            <Select
-              value={String(pagination.pageSize)}
-              onValueChange={(value) => table.setPageSize(Number(value))}
-              items={pageSizeOptions.map((size) => ({
-                value: String(size),
-                label: String(size),
-              }))}
-            >
-              <SelectTrigger
-                aria-label="Rows per page"
-                size="sm"
-                className="h-7 w-18 text-xs"
-              >
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {pageSizeOptions.map((size) => (
-                  <SelectItem key={size} value={String(size)}>
-                    {size}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <span className="tabular-nums">
-            Page {pagination.pageIndex + 1} of{" "}
-            {Math.max(1, table.getPageCount())}
-          </span>
-          <div className="flex items-center">
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              aria-label="Previous page"
-              onClick={() => table.previousPage()}
-              disabled={!table.getCanPreviousPage()}
-            >
-              <ChevronLeftIcon className="rtl:rotate-180" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              aria-label="Next page"
-              onClick={() => table.nextPage()}
-              disabled={!table.getCanNextPage()}
-            >
-              <ChevronRightIcon className="rtl:rotate-180" />
-            </Button>
-          </div>
-        </div>
-      </div>
-    </div>
+      <DataTableActionBar aria-label="Selected wells">
+        <OverflowItem
+          value="project"
+          label="Add to project"
+          icon={<FolderPlusIcon />}
+        >
+          <Button variant="outline" size="sm">
+            <FolderPlusIcon data-icon="inline-start" />
+            <OverflowLabel>Add to project</OverflowLabel>
+          </Button>
+        </OverflowItem>
+        <OverflowItem
+          value="export"
+          label="Export logs"
+          icon={<DownloadIcon />}
+        >
+          <Button variant="outline" size="sm">
+            <DownloadIcon data-icon="inline-start" />
+            <OverflowLabel>Export logs</OverflowLabel>
+          </Button>
+        </OverflowItem>
+      </DataTableActionBar>
+      <DataTableContent aria-label="Wells" />
+      <DataTableFooter>
+        <DataTablePagination />
+      </DataTableFooter>
+    </DataTable>
   )
 }
 

@@ -3,7 +3,7 @@
   {"q": "dropdown menu for row actions", "answers": ["dropdown-menu"], "kind": "direct"},
   {"q": "breadcrumb trail for nested pages", "answers": ["breadcrumb"], "kind": "direct"},
   {"q": "avatar group for team members", "answers": ["avatar"], "kind": "direct"},
-  {"q": "data grid for well records", "answers": ["table"], "kind": "direct"},
+  {"q": "data grid for well records", "answers": ["data-table"], "kind": "direct"},
   {"q": "KPI card for production rate", "answers": ["stat"], "kind": "direct"},
   {"q": "skeleton loader while data loads", "answers": ["skeleton"], "kind": "direct"},
   {"q": "accordion for FAQ sections", "answers": ["accordion"], "kind": "direct"},
@@ -84,7 +84,7 @@
   {"q": "collapse extra toolbar icons into a \"more\" menu on a narrow rig dashboard", "answers": ["overflow"], "kind": "domain"},
   {"q": "confirm before shutting in a well", "answers": ["alert-dialog", "dialog"], "kind": "domain"},
   {"q": "background texture evoking seismic waves for a landing page", "answers": ["background"], "kind": "domain"},
-  {"q": "table of well logs with sortable columns", "answers": ["table"], "kind": "domain"},
+  {"q": "table of well logs with sortable columns", "answers": ["data-table"], "kind": "domain"},
   {"q": "divider between the wellbore header and the log track", "answers": ["separator"], "kind": "domain"},
   {"q": "label above the \"spud date\" input", "answers": ["label"], "kind": "domain"},
   {"q": "full-bleed drawing surface for annotating a seismic section", "answers": ["canvas"], "kind": "domain"}

@@ -1,0 +1,84 @@
+---
+component: DataTable
+module: "@tecton/react/tecton/data-table"
+family: data
+docs: "components/data-table"
+exports: [DataTable, DataTableContent, DataTableToolbar, DataTableSearch, DataTableFilter, DataTableActiveFilters, DataTableGroupBy, DataTableColumnsMenu, DataTableRowActions, DataTableActionBar, DataTableFooter, DataTablePagination, createColumns, useDataTable]
+notFor:
+  - need: a short static table of a few rows that is only read, such as a spec sheet, a legend or the figures of a report
+    use: Table
+  - need: a hierarchy that is browsed, with no columns
+    use: TreeView
+  - need: a list of rows with media, a title and actions rather than columns
+    use: Item
+  - need: rows the user drags into an order of their own
+    use: Reorderable
+related: [Table, ActionBar, TreeView, Badge]
+---
+
+## Use it when
+
+- An application shows records in columns, a data grid of wells, work orders, run results or documents. Use `DataTable` for every such table, even one that only sorts today, so tables look and behave the same in every application.
+- Rows are sorted, searched, filtered, grouped, selected, paged or opened, or the user hides, pins, resizes or reorders the columns.
+- The rows are many (`virtualized`, or loaded as the user scrolls with `hasMore`), come page by page from a server (`dataMode="server"`), or form a hierarchy with columns (`itemToChildren`) or detail rows (`renderDetail`).
+
+## Do
+
+- Make the columns once with `createColumns`, at module level or in a `React.useMemo`: each has an `id`, a plain-text `header` and a `type` (`text`, `number`, `date`, `boolean`, `options`) that sets the alignment, format, sort and filter. Return raw numbers and `Date`s from `accessor`, format with `format`, and use `cell(item, { text })` only to draw the value differently.
+- Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `groupable`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; sorting is on), then place their parts: `DataTableToolbar` with `DataTableSearch`, a `DataTableFilter column` per filter, `DataTableGroupBy` and `DataTableColumnsMenu`; `DataTableActiveFilters`; `DataTableContent`; `DataTableFooter` with `DataTablePagination`.
+- Name the table with `aria-label` on `DataTableContent`, open a row with `itemToHref` or `onActivate` on the root, put a row's commands in a `DataTableRowActions` in a column's `cell`, and the actions on the selected rows in `DataTableActionBar` (each in an `OverflowItem`; the bar shows the count and Clear itself).
+- Set `size="sm"` and `striped` on `DataTable` for dense data; show the states with `loading`, `error` with `onRetry`, and `empty` / `noResults` on `DataTableContent`.
+- With `dataMode="server"`, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange`, `onPageChange` and `onPageSizeChange`; keep a saved view with `defaultView` and `onViewChange`. A part of your own reads the table with `useDataTable()` (`value`, `clearSelection`, `exportCsv`).
+
+## Don't
+
+### CRITICAL A records table hand-built on Table
+
+Wrong:
+
+```tsx
+const rows = [...wells].sort(byDepth).slice(page * 10, page * 10 + 10)
+<Table>
+  <TableHeader>
+    <TableRow>
+      <TableHead><Checkbox checked={allSelected} onCheckedChange={toggleAll} /></TableHead>
+      <TableHead><button onClick={() => setSort("depth")}>Depth</button></TableHead>
+    </TableRow>
+  </TableHeader>
+  <TableBody>{rows.map((well) => <WellRow key={well.id} well={well} />)}</TableBody>
+</Table>
+<Button onClick={() => setPage(page + 1)}>Next</Button>
+```
+
+Correct:
+
+```tsx
+<DataTable items={wells} columns={columns} selectionMode="multiple" pagination>
+  <DataTableContent aria-label="Wells" />
+  <DataTableFooter>
+    <DataTablePagination />
+  </DataTableFooter>
+</DataTable>
+```
+
+Every hand-built table sorts, selects and pages a little differently, with no `aria-sort`, no grid keyboard, no announcements and no selection across pages; `DataTable` gives every application the same table.
+
+### HIGH Formatting values inside a cell
+
+Wrong:
+
+```tsx
+const columns = createColumns<Well>([
+  { id: "depth", header: "Depth (m)", cell: (well) => <div className="text-end">{well.depth.toLocaleString()}</div> },
+])
+```
+
+Correct:
+
+```tsx
+const columns = createColumns<Well>([
+  { id: "depth", header: "Depth (m)", type: "number", format: { maximumFractionDigits: 0 } },
+])
+```
+
+Without `type` the column is text: it sits at the start, sorts and filters as text and has no sum, and `toLocaleString()` formats in the browser's locale, not the provider's.

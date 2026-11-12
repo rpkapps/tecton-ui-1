@@ -82,27 +82,46 @@
    "stat"
   ],
   "grid": [
+   "datatable",
    "table"
   ],
   "datagrid": [
-   "table"
+   "data",
+   "datatable"
+  ],
+  "data grid": [
+   "datatable"
   ],
   "spreadsheet": [
-   "table"
+   "data",
+   "datatable"
+  ],
+  "sortable table": [
+   "data",
+   "datatable"
+  ],
+  "sortable columns": [
+   "data",
+   "datatable"
+  ],
+  "records table": [
+   "data",
+   "datatable"
   ],
   "rows": [
-   "table"
+   "table",
+   "datatable"
   ],
   "hierarchy": [
    "tree"
   ],
   "treegrid": [
    "tree",
-   "table"
+   "datatable"
   ],
   "tree table": [
    "tree",
-   "table"
+   "datatable"
   ],
   "rearrange": [
    "reorder"
@@ -1123,7 +1142,7 @@
     },
     {
      "need": "rows with sorting, paging and selection",
-     "id": "tanstack-table"
+     "id": "data-table"
     }
    ],
    "related": [
@@ -1141,7 +1160,7 @@
     "CardFooter"
    ],
    "aliases": [],
-   "tokens": 912
+   "tokens": 910
   },
   {
    "id": "carousel",
@@ -1679,6 +1698,62 @@
    "tokens": 858
   },
   {
+   "id": "data-table",
+   "kind": "component",
+   "name": "DataTable",
+   "import": "import { DataTable, DataTableContent, DataTableToolbar, DataTableSearch, DataTableFilter, DataTableActiveFilters, DataTableGroupBy, DataTableColumnsMenu, DataTableRowActions, DataTableActionBar, DataTableFooter, DataTablePagination, createColumns, useDataTable } from \"@tecton/react/tecton/data-table\"",
+   "family": "data",
+   "summary": "An application shows records in columns, a data grid of wells, work orders, run results or documents. Use `DataTable` for every such table, even one that only sorts today, so tables look and behave the same in every application.",
+   "fields": {
+    "names": "data table data table data table content data table toolbar data table search data table filter data table active filters data table group by data table columns menu data table row actions data table action bar data table footer data table pagination create columns use data table",
+    "useWhen": "An application shows records in columns, a data grid of wells, work orders, run results or documents. Use `DataTable` for every such table, even one that only sorts today, so tables look and behave the same in every application. Rows are sorted, searched, filtered, grouped, selected, paged or opened, or the user hides, pins, resizes or reorders the columns. The rows are many (`virtualized`, or loaded as the user scrolls with `hasMore`), come page by page from a server (`dataMode=\"server\"`), or form a hierarchy with columns (`itemToChildren`) or detail rows (`renderDetail`).",
+    "routed": "rows with sorting, paging and selection rows with columns, sorting, paging and selection paging driven by a table's own sorting and filtering state sorting rows by a column's values records in an application, or rows that are sorted, searched, filtered, selected or paged a tree table, a hierarchy whose expandable rows have columns",
+    "do": "Make the columns once with `createColumns`, at module level or in a `React.useMemo`: each has an `id`, a plain-text `header` and a `type` (`text`, `number`, `date`, `boolean`, `options`) that sets the alignment, format, sort and filter. Return raw numbers and `Date`s from `accessor`, format with `format`, and use `cell(item, { text })` only to draw the value differently. Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `groupable`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; sorting is on), then place their parts: `DataTableToolbar` with `DataTableSearch`, a `DataTableFilter column` per filter, `DataTableGroupBy` and `DataTableColumnsMenu`; `DataTableActiveFilters`; `DataTableContent`; `DataTableFooter` with `DataTablePagination`. Name the table with `aria-label` on `DataTableContent`, open a row with `itemToHref` or `onActivate` on the root, put a row's commands in a `DataTableRowActions` in a column's `cell`, and the actions on the selected rows in `DataTableActionBar` (each in an `OverflowItem`; the bar shows the count and Clear itself). Set `size=\"sm\"` and `striped` on `DataTable` for dense data; show the states with `loading`, `error` with `onRetry`, and `empty` / `noResults` on `DataTableContent`. With `dataMode=\"server\"`, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange`, `onPageChange` and `onPageSizeChange`; keep a saved view with `defaultView` and `onViewChange`. A part of your own reads the table with `useDataTable()` (`value`, `clearSelection`, `exportCsv`)."
+   },
+   "notFor": [
+    {
+     "need": "a short static table of a few rows that is only read, such as a spec sheet, a legend or the figures of a report",
+     "id": "table"
+    },
+    {
+     "need": "a hierarchy that is browsed, with no columns",
+     "id": "tree-view"
+    },
+    {
+     "need": "a list of rows with media, a title and actions rather than columns",
+     "id": "item"
+    },
+    {
+     "need": "rows the user drags into an order of their own",
+     "id": "reorderable"
+    }
+   ],
+   "related": [
+    "table",
+    "action-bar",
+    "tree-view",
+    "badge"
+   ],
+   "exports": [
+    "DataTable",
+    "DataTableContent",
+    "DataTableToolbar",
+    "DataTableSearch",
+    "DataTableFilter",
+    "DataTableActiveFilters",
+    "DataTableGroupBy",
+    "DataTableColumnsMenu",
+    "DataTableRowActions",
+    "DataTableActionBar",
+    "DataTableFooter",
+    "DataTablePagination",
+    "createColumns",
+    "useDataTable"
+   ],
+   "aliases": [],
+   "tokens": 1305
+  },
+  {
    "id": "date-picker",
    "kind": "component",
    "name": "DatePicker",
@@ -2209,7 +2284,7 @@
    "fields": {
     "names": "item item item group item separator item header item media item content item title item description item actions item footer",
     "useWhen": "One row of a list: a file, a person, a well, a setting with a switch beside it. The row has a shape — media, then title and description, then actions. A stack of rows should look and space consistently: wrap them in `ItemGroup`.",
-    "routed": "a row of a file browser or a settings list a row of an application list, with media, title and actions one row in a list of records a row of a list with media, title and actions a row of an application list, with media, title and actions a divider between the rows of a list a list of rows with media, a title and actions rather than columns a flat list of rows with media, a title and actions",
+    "routed": "a row of a file browser or a settings list a row of an application list, with media, title and actions one row in a list of records a list of rows with media, a title and actions rather than columns a row of a list with media, title and actions a row of an application list, with media, title and actions a divider between the rows of a list a list of rows with media, a title and actions rather than columns a flat list of rows with media, a title and actions",
     "do": "Compose it: `ItemMedia`, then `ItemContent` with `ItemTitle` and `ItemDescription`, then `ItemActions`. Make the whole row a link with `render={<a href=\"/wells/34-10-a-12\" />}` (or the router's `Link`); the `[a]:` rules give it the hover and focus states. Choose the look with `variant=\"default\" | \"outline\" | \"muted\"` and the density with `size=\"default\" | \"sm\" | \"xs\"`. Use `ItemMedia variant=\"icon\"` for a glyph and `variant=\"image\"` for a thumbnail; an `Avatar` goes in the plain `ItemMedia`. Separate rows inside an `ItemGroup` with `ItemSeparator`, never with a border class on the row."
    },
    "notFor": [
@@ -2219,7 +2294,7 @@
     },
     {
      "need": "rows with columns, sorting, paging and selection",
-     "id": "tanstack-table"
+     "id": "data-table"
     },
     {
      "need": "the trailing actions of a panel header",
@@ -2244,7 +2319,7 @@
     "ItemFooter"
    ],
    "aliases": [],
-   "tokens": 956
+   "tokens": 954
   },
   {
    "id": "kbd",
@@ -2667,7 +2742,7 @@
    "notFor": [
     {
      "need": "paging driven by a table's own sorting and filtering state",
-     "id": "tanstack-table"
+     "id": "data-table"
     },
     {
      "need": "switching between sibling sections of one page",
@@ -2692,7 +2767,7 @@
     "PaginationEllipsis"
    ],
    "aliases": [],
-   "tokens": 972
+   "tokens": 969
   },
   {
    "id": "panel",
@@ -2965,8 +3040,8 @@
    "summary": "The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs.",
    "fields": {
     "names": "reorderable reorderable reorderable item reorderable handle",
-    "useWhen": "The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs. The user moves the columns of a data table into the order they read them in. A short stack of items (steps, tracks, layers) has an order the user decides. The user arranges a grid of cards: equal cards put in order (`orientation=\"grid\"`), or tiles of several sizes swapped between the fixed slots of a bento grid (`mode=\"swap\"`).",
-    "routed": "rows or columns the user drags into another order",
+    "useWhen": "The user puts rows of a table in their own order: a drilling queue, a run sequence, a playlist of logs. The user moves the columns of a plain `Table` into the order they read them in (a `DataTable` does it with `reorderableColumns`). A short stack of items (steps, tracks, layers) has an order the user decides. The user arranges a grid of cards: equal cards put in order (`orientation=\"grid\"`), or tiles of several sizes swapped between the fixed slots of a bento grid (`mode=\"swap\"`).",
+    "routed": "rows the user drags into an order of their own rows or columns the user drags into another order",
     "do": "Keep the order in state as an array of item values, pass it as `value`, render the items in that order and write `onValueChange`'s array back. With `mode=\"swap\"`, `value[i]` is the item of slot `i` (or `null`): render a `ReorderableSlot` per entry, keyed by its index and sized from your layout data, with its item inside as a size container (`[container-type:size]`). Wrap the whole `Table` in `Reorderable` and render each row as `ReorderableItem` with `render={<TableRow />}`, or each header with `render={<TableHead />}` and `orientation=\"horizontal\"`. Give every item a `label` (the row's or column's name) and a `ReorderableHandle` in a row; a column header gets `dragHandle={false}` instead and is dragged and focused itself, with no grip. To reorder rows and columns of one table, nest the two `Reorderable`s around it: an item joins the nearest one whose `value` holds it. Leave a column that must stay put (the identifying or selection column) out of `value` and render it as a plain `TableHead`; turn every handle off with `disabled` while a sort is applied."
    },
    "notFor": [
@@ -2980,14 +3055,14 @@
     },
     {
      "need": "sorting rows by a column's values",
-     "id": "tanstack-table"
+     "id": "data-table"
     }
    ],
    "related": [
     "table",
+    "data-table",
     "table-column-resizer",
-    "item",
-    "tanstack-table"
+    "item"
    ],
    "exports": [
     "Reorderable",
@@ -2995,7 +3070,7 @@
     "ReorderableHandle"
    ],
    "aliases": [],
-   "tokens": 978
+   "tokens": 988
   },
   {
    "id": "resizable",
@@ -3510,17 +3585,17 @@
    "name": "Table",
    "import": "import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption } from \"@tecton/react/components/table\"",
    "family": "data",
-   "summary": "Records of the same shape have to line up in columns: invoices, wells, run results.",
+   "summary": "A short, static table is read rather than worked with: a spec sheet, a legend, the figures of a report or a dialog, a comparison in documentation.",
    "fields": {
     "names": "table table table header table body table footer table head table row table cell table caption",
-    "useWhen": "Records of the same shape have to line up in columns: invoices, wells, run results. A footer totals the columns, or a caption names the table; the rows are read, compared, selected or opened, with sorting and paging from TanStack Table on these parts.",
-    "routed": "",
-    "do": "Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`. Set `size=\"sm\"` for a compact table of dense data, and `striped` to put every even body row on an alternate surface; hover and selected rows keep their fill over the stripe. Open a record from a link in its identifying cell. For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table. Show an empty result as `Empty` in place of the table, or as `TableBody empty={…}` (one row across every column) when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`)."
+    "useWhen": "A short, static table is read rather than worked with: a spec sheet, a legend, the figures of a report or a dialog, a comparison in documentation. The layout is free-form: cells of your own, spans, a footer that totals the columns, a caption that names the table.",
+    "routed": "a short static table of a few rows that is only read, such as a spec sheet, a legend or the figures of a report",
+    "do": "Keep `Table` for content that is only read; records in an application go in a `DataTable`, so every records table looks and behaves the same. Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`; open a record from a link in its identifying cell. Set `size=\"sm\"` for a compact table of dense data, and `striped` to put every even body row on an alternate surface; hover and selected rows keep their fill over the stripe. For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table. Show an empty result as `Empty` in place of the table, or as `TableBody empty={…}` (one row across every column) when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`)."
    },
    "notFor": [
     {
-     "need": "sorting, filtering, paging or column visibility over the rows",
-     "id": "tanstack-table"
+     "need": "records in an application, or rows that are sorted, searched, filtered, selected or paged",
+     "id": "data-table"
     },
     {
      "need": "a list of rows with media, a title and actions rather than columns",
@@ -3532,11 +3607,11 @@
     }
    ],
    "related": [
+    "data-table",
     "item",
     "tree-view",
     "reorderable",
-    "table-column-resizer",
-    "tanstack-table"
+    "table-column-resizer"
    ],
    "exports": [
     "Table",
@@ -3549,7 +3624,7 @@
     "TableCaption"
    ],
    "aliases": [],
-   "tokens": 1260
+   "tokens": 1368
   },
   {
    "id": "table-column-resizer",
@@ -3821,7 +3896,7 @@
    "fields": {
     "names": "tree view tree view tree view item tree view item content tree view action tree view visibility toggle tree view collection move tree items",
     "useWhen": "A hierarchy is browsed rather than read: a project tree, a field and well inventory, a layer list. Rows carry more than a label: selection, disabled, hidden, a colour, a count, a per-row menu. Arrow-key navigation, expansion and type-ahead have to work across the whole structure.",
-    "routed": "an expandable hierarchy of folders and records moving rows between folders of a hierarchy a hierarchy of folders and records expanded in place",
+    "routed": "an expandable hierarchy of folders and records a hierarchy that is browsed, with no columns moving rows between folders of a hierarchy a hierarchy of folders and records expanded in place",
     "do": "Give `TreeView` an `aria-label` and every `TreeViewItem` a unique `value` (add `label` when the row content is not plain text). Put `TreeViewItemContent` first inside each `TreeViewItem`, then the child `TreeViewItem`s — or `items` on `TreeView` and a `TreeViewCollection` per node for data. Drive state with string arrays: `selectionMode`, `value` / `defaultValue` / `onValueChange` and `expanded` / `defaultExpanded` / `onExpandedChange`; mark rows with `disabled` and `hidden` on `TreeViewItem`, and open a row through `onActivate` (Enter or a click; a double click when rows are also selectable), never an `onClick` on its content. Hang the extras on `TreeViewItemContent`: `colorTag`, `suffix`, `endAdornment` (`TreeViewVisibilityToggle` with `visible` / `onVisibleChange`, `TreeViewAction` with `onClick`). Let rows move with `onMove` (apply it with `moveTreeItems`, restrict it with `canDrop`), never with drag events of your own on the rows: those have no keyboard path and no drop rules. Row commands go in one `contextMenu={(value) => <ContextMenuContent>…</ContextMenuContent>}` on `TreeView` (`null` for a row without), never a `ContextMenu` around each row; keep a visible `TreeViewAction` for the ones a row cannot do without, since a context menu is hard to find on touch and for most keyboard users. Set `virtualized` on a tree of hundreds of rows or more, with a bounded height (`h-80`, or `min-h-0 flex-1` in a flex column); padding and borders go on a wrapper, since virtualized rows span the full width of the tree. Keep `items` and the render function stable (module-level or `useCallback`), or every parent render re-renders every row. Style rows from the presence attributes `data-selected`, `data-expanded`, `data-disabled`, `data-hidden`, `data-context-menu-open` and from `:hover` / `:focus-visible` (`group-hover/tree-item:opacity-100`). Write the selected state as `data-[selected]:…`: shadcn's `data-selected:` variant matches only `\"true\"`."
    },
    "notFor": [
@@ -3835,7 +3910,7 @@
     },
     {
      "need": "a tree table, a hierarchy whose expandable rows have columns",
-     "id": "tanstack-table"
+     "id": "data-table"
     }
    ],
    "related": [
@@ -3853,7 +3928,7 @@
     "moveTreeItems"
    ],
    "aliases": [],
-   "tokens": 1302
+   "tokens": 1300
   },
   {
    "id": "use-busy-delay",
@@ -3892,26 +3967,6 @@
    ],
    "aliases": [],
    "tokens": 721
-  },
-  {
-   "id": "tanstack-table",
-   "kind": "external",
-   "name": "TanStack Table",
-   "import": "import { useReactTable } from \"@tanstack/react-table\"",
-   "summary": "Data tables are a recipe on Table, not a component.",
-   "fields": {
-    "names": "tanstack table tan stack table ",
-    "useWhen": "Data tables are a recipe on Table, not a component.",
-    "routed": "rows with sorting, paging and selection rows with columns, sorting, paging and selection paging driven by a table's own sorting and filtering state sorting rows by a column's values sorting, filtering, paging or column visibility over the rows a tree table, a hierarchy whose expandable rows have columns",
-    "do": ""
-   },
-   "notFor": [],
-   "related": [],
-   "exports": [],
-   "aliases": [
-    "react-table"
-   ],
-   "tokens": 46
   },
   {
    "id": "tanstack-form",

@@ -9,7 +9,7 @@ notFor:
   - need: a flat list of rows with media, a title and actions
     use: Item
   - need: a tree table, a hierarchy whose expandable rows have columns
-    use: TanStack Table
+    use: DataTable
 related: [Accordion, Item, ColorSwatch]
 ---
 

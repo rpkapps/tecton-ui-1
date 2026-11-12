@@ -131,7 +131,6 @@ const ALLOWED_MODULES = new Set([
   "react-day-picker/locale",
   "recharts",
   "input-otp",
-  "@tanstack/react-table",
   "zod",
   "embla-carousel-autoplay",
   "react-textarea-autosize",
@@ -887,7 +886,7 @@ const PAGE_REWRITES: Record<
     replaceOrThrow(
       mdx,
       /\n## Data Table\n[\s\S]*?(?=\n## )/,
-      "\n## Data Table\n\nWhen rows are sorted, filtered, selected or paged, use [Data Table](/docs/components/data-table): it is built on these parts and adds keyboard navigation, selection and the rest of a data table's features.\n",
+      "\n## Data Table\n\nFor records in an application, use [Data Table](/docs/components/data-table): it is built on these parts and adds typed columns, sorting, search and filters, selection, pages and keyboard navigation, so every records table looks and behaves the same. Keep `Table` for a short table that is only read.\n",
       "table page (Data Table)"
     ),
 }

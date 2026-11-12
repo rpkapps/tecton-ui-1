@@ -8,20 +8,20 @@ import { Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableC
 
 ## Use it when
 
-- Records of the same shape have to line up in columns: invoices, wells, run results.
-- A footer totals the columns, or a caption names the table; the rows are read, compared, selected or opened, with sorting and paging from TanStack Table on these parts.
+- A short, static table is read rather than worked with: a spec sheet, a legend, the figures of a report or a dialog, a comparison in documentation.
+- The layout is free-form: cells of your own, spans, a footer that totals the columns, a caption that names the table.
 
 ## Not for
 
-- sorting, filtering, paging or column visibility over the rows → `TanStack Table` (tecton docs tanstack-table)
+- records in an application, or rows that are sorted, searched, filtered, selected or paged → `DataTable` (tecton docs data-table)
 - a list of rows with media, a title and actions rather than columns → `Item` (tecton docs item)
 - rows or columns the user drags into another order → `Reorderable` (tecton docs reorderable)
 
 ## Do
 
-- Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`.
+- Keep `Table` for content that is only read; records in an application go in a `DataTable`, so every records table looks and behaves the same.
+- Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`; open a record from a link in its identifying cell.
 - Set `size="sm"` for a compact table of dense data, and `striped` to put every even body row on an alternate surface; hover and selected rows keep their fill over the stripe.
-- Open a record from a link in its identifying cell.
 - For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table.
 - Show an empty result as `Empty` in place of the table, or as `TableBody empty={…}` (one row across every column) when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
 - Give text-heavy columns (well name, remarks) a minimum width on `TableHead`; they never collapse when the panel narrows.
@@ -94,11 +94,12 @@ A `tr` has no role, no tab stop and no Enter key, so the row opens with a mouse 
 
 ## Before you finish
 
-- A table is plain HTML — `Table > TableHeader > TableRow > TableHead` and `TableBody > TableRow > TableCell`, with `TableFooter` and `TableCaption` as needed; sorting, filtering and paging come from TanStack Table on these parts.
+- Every table of records in an application is a `DataTable` (columns from `createColumns`, features turned on at the root, `aria-label` on `DataTableContent`), never a `Table` with sort, selection or paging state of its own, so tables behave the same across applications; `Table` is for a short, static table that is only read.
+- A static table is plain HTML — `Table > TableHeader > TableRow > TableHead` and `TableBody > TableRow > TableCell`, with `TableFooter` and `TableCaption` as needed.
 - Rows or columns the user drags into order are a `Reorderable` around the `Table` with `ReorderableItem render={<TableRow />}` with a `label` and a `ReorderableHandle` (or headers with `render={<TableHead />}`, `dragHandle={false}` and `orientation="horizontal"`, no grip), never native `draggable` rows; a resizable column has a `TableColumnResizer` in its `TableHead` (`relative`, width from state) on a `table-fixed` table.
 - A table of hundreds of rows or more is `<Table virtualized>` inside a parent of bounded height (`h-96`), with `TableBody items={rows}` and a render function, not a hand-built window of sliced rows.
 - An empty table renders `Empty` in place of the table, or `TableBody empty={…}` (one row across every column) when the header has to stay.
 - A table opens a row through a link in its identifying cell, never an `onClick` on the `tr`; a compact or striped table is `size="sm"` or `striped` on `Table`, never `[&_td]:py-1` or `nth-child` classes.
 - `className` on `TableHead`, `TableRow` and `TableCell` is alignment and width only (`text-end`, `w-24`): `text-muted-foreground`, `font-medium` and any colour class restyle what the parts already own.
 
-Related: item, tree-view, reorderable, table-column-resizer, tanstack-table
+Related: data-table, item, tree-view, reorderable, table-column-resizer

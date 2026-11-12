@@ -86,7 +86,7 @@ A table showing actions for each row using a `<DropdownMenu />` component.
 
 ## Data Table
 
-When rows are sorted, filtered, selected or paged, use [Data Table](/docs/components/data-table): it is built on these parts and adds keyboard navigation, selection and the rest of a data table's features.
+For records in an application, use [Data Table](/docs/components/data-table): it is built on these parts and adds typed columns, sorting, search and filters, selection, pages and keyboard navigation, so every records table looks and behaves the same. Keep `Table` for a short table that is only read.
 
 ## RTL
 
@@ -141,12 +141,12 @@ Pass the rows' data as `items` and render one row with a function: it is called 
 
 ### Use it when
 
-- Records of the same shape have to line up in columns: invoices, wells, run results.
-- A footer totals the columns, or a caption names the table; the rows are read, compared, selected or opened, with sorting and paging from TanStack Table on these parts.
+- A short, static table is read rather than worked with: a spec sheet, a legend, the figures of a report or a dialog, a comparison in documentation.
+- The layout is free-form: cells of your own, spans, a footer that totals the columns, a caption that names the table.
 
 ### Not for
 
-- sorting, filtering, paging or column visibility over the rows: use [TanStack Table](/docs/components/data-table)
+- records in an application, or rows that are sorted, searched, filtered, selected or paged: use [DataTable](/docs/components/data-table)
 - a list of rows with media, a title and actions rather than columns: use [Item](/docs/components/item)
 - rows or columns the user drags into another order: use [Reorderable](/docs/tecton/reorderable)
 
@@ -156,19 +156,19 @@ Pass the rows' data as `items` and render one row with a function: it is called 
 
 <Do>
 
-Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`.
+Keep `Table` for content that is only read; records in an application go in a `DataTable`, so every records table looks and behaves the same.
+
+</Do>
+
+<Do>
+
+Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`; open a record from a link in its identifying cell.
 
 </Do>
 
 <Do>
 
 Set `size="sm"` for a compact table of dense data, and `striped` to put every even body row on an alternate surface; hover and selected rows keep their fill over the stripe.
-
-</Do>
-
-<Do>
-
-Open a record from a link in its identifying cell.
 
 </Do>
 
