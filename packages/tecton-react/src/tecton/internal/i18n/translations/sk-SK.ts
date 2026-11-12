@@ -62,6 +62,7 @@ export default defineTranslations({
     previous: "Predchádzajúca",
     next: "Ďalšia",
     goToPage: "Strana {page}",
+    pageOf: "Strana {page} z {pageCount}",
     previousPage: "Predchádzajúca strana",
     nextPage: "Nasledujúca strana",
     selectAllMatching: {
@@ -141,6 +142,7 @@ export default defineTranslations({
       other: "{total} výsledkov",
     },
     rowActions: "Akcie riadka",
+    reorderRowsColumn: "Zmeniť poradie",
     total: "Spolu",
     groupBy: "Zoskupiť podľa",
     groupOrder: "Poradie",

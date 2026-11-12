@@ -1,6 +1,7 @@
 /**
  * A press that comes before the code it needs has loaded (`lazy.ts`): on a
- * column header before drag and drop (column reordering), on a
+ * column header or a row's drag handle before drag and drop (column and
+ * row reordering), on a
  * resizer's grip before the resizer. The press asks for the code and
  * waits; once the code is there, the part gives the press to it (`start`),
  * as if it had come then. (Menus and popovers wait differently: their

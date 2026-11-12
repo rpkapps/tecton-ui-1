@@ -42,8 +42,8 @@ function feature<TModule extends object>(
 const FEATURES = {
   /** `exportCsv`: loaded when it is first called, never prefetched. */
   csv: feature(() => import("./engine/csv")),
-  /** `reorderableColumns`: the headers' drag and drop. */
-  dragAndDrop: feature(() => import("./column-reorder")),
+  /** `reorderableColumns`, `reorderableRows`: one chunk for both. */
+  dragAndDrop: feature(() => import("./reorder")),
   /** A date filter's calendar: `DateRangePicker`'s (`date-calendar.tsx`). */
   dateInput: feature(() => import("../date-calendar")),
   /** Column menus and description popovers (`header-popups.tsx`). */

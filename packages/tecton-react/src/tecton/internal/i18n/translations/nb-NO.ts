@@ -62,6 +62,7 @@ export default defineTranslations({
     previous: "Forrige",
     next: "Neste",
     goToPage: "Side {page}",
+    pageOf: "Side {page} av {pageCount}",
     previousPage: "Forrige side",
     nextPage: "Neste side",
     selectAllMatching: {
@@ -129,6 +130,7 @@ export default defineTranslations({
     clearAll: "Fjern alle",
     resultsCount: { one: "{total} resultat", other: "{total} resultater" },
     rowActions: "Radhandlinger",
+    reorderRowsColumn: "Endre rekkefølge",
     total: "Totalt",
     groupBy: "Grupper etter",
     groupOrder: "Rekkefølge",

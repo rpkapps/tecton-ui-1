@@ -62,6 +62,7 @@ export default defineTranslations({
     previous: "Önceki",
     next: "Sonraki",
     goToPage: "Sayfa {page}",
+    pageOf: "Sayfa {page}/{pageCount}",
     previousPage: "Önceki sayfa",
     nextPage: "Sonraki sayfa",
     selectAllMatching: {
@@ -134,6 +135,7 @@ export default defineTranslations({
     clearAll: "Tümünü temizle",
     resultsCount: { other: "{total} sonuç" },
     rowActions: "Satır işlemleri",
+    reorderRowsColumn: "Yeniden sırala",
     total: "Toplam",
     groupBy: "Gruplandır",
     groupOrder: "Sıra",

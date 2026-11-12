@@ -65,9 +65,11 @@ DataTable
 
 The root holds the state and turns features on (`selectionMode`, `pagination`, `filterable`, `groupable`, `…Columns`); a part for a feature that is off renders nothing and warns in development.
 
+A `DataTableFooter` right after `DataTableContent` is the table's last band, inside its border and below the totals row: its rows scroll above it in a virtualized table. Put `DataTablePagination` there. A second footer, or one placed elsewhere, is a plain row under the table.
+
 ## Columns
 
-A column's `type` sets how its values are shown, aligned and sorted; `cell` draws your own content, and a column with `columns` is a group.
+A column's `type` sets how its values are shown, aligned and sorted; `cell` draws your own content, and a column with `columns` is a group. With `reorderableColumns`, as here, drag a header to move its column (a grouped column moves among its group's, a group with its columns); a line shows where it will drop.
 
 <ComponentPreview name="data-table-columns" align="start" />
 
@@ -146,6 +148,25 @@ Search matches the shown columns' display text, ignoring case and accents. A col
 | `itemToHref` | Makes each row header a link, followed through the [TectonProvider](/docs/tecton/provider)'s router. |
 
 Select all selects every row the view matches, on every page.
+
+## Row reordering
+
+`reorderableRows` adds a drag handle at the start of each row. Drag it, or reach it with <Kbd>→</Kbd> and press <Kbd>Enter</Kbd>: <Kbd>↑</Kbd> / <Kbd>↓</Kbd> move it one place at a time, each place announced ("Insert between 34/7-D-2 and 2/8-C-3"), <Kbd>Enter</Kbd> drops and <Kbd>Escape</Kbd> cancels. `onRowOrderChange(ids, eventDetails)` gets every item's id in the new order: put `items` in that order.
+
+<ComponentPreview name="data-table-row-reordering" align="start" />
+
+```tsx
+<DataTable
+  items={jobs}
+  columns={columns}
+  reorderableRows
+  onRowOrderChange={(ids) => setJobs(ids.map((id) => byId.get(id)!))}
+>
+```
+
+- Rows move in the items' order: while the view sorts, searches, filters or groups, the handles are hidden (their column stays).
+- On pages, a row moves within its page; in a virtualized table, the keyboard steps through every row.
+- Flat lists only: off in a tree.
 
 ## Virtualized rows
 
@@ -265,6 +286,7 @@ The table is one tab stop; focus is on a row, or on a cell once the arrows move 
 | <Kbd>Enter</Kbd> | Opens the row (`onActivate`, its link) |
 | <Kbd>Enter</Kbd> / <Kbd>F2</Kbd> | Into a cell's field; <Kbd>Escape</Kbd> back to the cell |
 | <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a header | Starts moving the column (`reorderableColumns`) |
+| <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a row's handle | Starts moving the row (`reorderableRows`): <Kbd>↑</Kbd> / <Kbd>↓</Kbd>, then <Kbd>Enter</Kbd> or <Kbd>Escape</Kbd> |
 | <Kbd>←</Kbd> / <Kbd>→</Kbd> on a resizer | Narrows / widens the column; <Kbd>Enter</Kbd> keeps, <Kbd>Escape</Kbd> reverts |
 
 ## Accessibility
@@ -431,6 +453,7 @@ The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reas
 | `reorderableColumns` | `boolean` | `false` | Users reorder columns. |
 | `hideableColumns` | `boolean` | `false` | Users hide columns. |
 | `pinnableColumns` | `boolean` | `false` | Users pin columns. |
+| `reorderableRows` | `boolean` | `false` | A drag handle per row; flat lists only. |
 | `pagination` | `boolean` | `false` | Shows a page at a time. |
 | `selectionMode` | `"none" \| "single" \| "multiple"` | `"none"` | Row selection. |
 | `value` | `ReadonlyArray<string>` | - | Selected ids (controlled). |
@@ -452,6 +475,7 @@ The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reas
 | `onPageSizeChange` | `(pageSize, eventDetails) => void` | - | Called with the new page size. |
 | `pageSizes` | `ReadonlyArray<number>` | `[10, 20, 50, 100]` | The page sizes `DataTablePagination` offers. |
 | `onActivate` | `(id: string, item: T) => void` | - | Called when a row opens. |
+| `onRowOrderChange` | `(ids: string[], eventDetails) => void` | - | Called with every item's id in the new order; `reason` is `"pointer"`, `"keyboard"` or `"virtual"`. |
 
 ### DataTableContent
 
@@ -543,11 +567,11 @@ An [ActionBar](/docs/tecton/action-bar) bound to the selection, shown only while
 
 ### DataTableFooter
 
-The row below the table.
+Right after `DataTableContent`, the table's last band (inside its border, on the totals row's fill, outside the rows' scroll area); elsewhere, a row below the table. Takes the props of a `div`; empty, it takes no room.
 
 ### DataTablePagination
 
-A rows-per-page [Select](/docs/components/select), the rows shown and [Pagination](/docs/components/pagination), for `pagination`; takes the props of a `div`. The page resets to 1 when the view changes.
+A rows-per-page [Select](/docs/components/select), the rows shown and [Pagination](/docs/components/pagination), for `pagination`; takes the props of a `div`. The page resets to 1 when the view changes. It stays on one line: as its width shrinks it drops the "Rows per page" label (kept as the Select's name), then the words of Previous and Next, then the pages but the current one and its neighbours, and below about 400 px shows "Page 3 of 5" between the arrows.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |

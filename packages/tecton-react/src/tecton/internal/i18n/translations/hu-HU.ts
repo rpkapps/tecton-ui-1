@@ -65,6 +65,7 @@ export default defineTranslations({
     previous: "Előző",
     next: "Következő",
     goToPage: "{page}. oldal",
+    pageOf: "{page}/{pageCount}. oldal",
     previousPage: "Előző oldal",
     nextPage: "Következő oldal",
     selectAllMatching: {
@@ -134,6 +135,7 @@ export default defineTranslations({
     clearAll: "Összes törlése",
     resultsCount: { one: "{total} találat", other: "{total} találat" },
     rowActions: "Sorműveletek",
+    reorderRowsColumn: "Átrendezés",
     total: "Összesen",
     groupBy: "Csoportosítás",
     groupOrder: "Sorrend",

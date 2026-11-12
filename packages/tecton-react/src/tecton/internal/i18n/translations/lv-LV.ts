@@ -63,6 +63,7 @@ export default defineTranslations({
     previous: "Iepriekšējā",
     next: "Nākamā",
     goToPage: "{page}. lapa",
+    pageOf: "{page}. lapa no {pageCount}",
     previousPage: "Iepriekšējā lapa",
     nextPage: "Nākamā lapa",
     selectAllMatching: {
@@ -141,6 +142,7 @@ export default defineTranslations({
       other: "{total} rezultāti",
     },
     rowActions: "Rindas darbības",
+    reorderRowsColumn: "Mainīt secību",
     total: "Kopā",
     groupBy: "Grupēt pēc",
     groupOrder: "Secība",

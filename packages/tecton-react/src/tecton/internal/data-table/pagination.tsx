@@ -10,6 +10,13 @@
  * outline), in `PaginationItem`s. The rows are the server's `rowCount` in
  * server mode. It renders nothing, and warns once in development, while
  * `pagination` is off.
+ *
+ * It stays on one line: it is a container (`@container`, the width it is
+ * given, the footer's), and as that narrows it lets go of what it can
+ * spare, in turn: the "Rows per page" label (the `Select` keeps it as its
+ * name), the words of Previous and Next (their icons stay), the pages but
+ * the current one and its neighbours (ellipses for the others), and below
+ * about 400 px the page buttons, for "Page 3 of 5" between the arrows.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -48,6 +55,21 @@ type DataTablePaginationProps = React.ComponentProps<"div"> & {
 }
 
 /**
+ * The widths (of the pagination, a container) below which it lets go of a
+ * part (see the module comment), widest first.
+ */
+const NO_LABEL = "@max-[46rem]/data-table-pagination:hidden"
+const NO_WORDS = "@max-[40rem]/data-table-pagination:hidden"
+/** A page or ellipsis of the wide row only. */
+const WIDE = "@max-[34rem]/data-table-pagination:hidden"
+/** The current page and its neighbours: gone only for "Page 3 of 5". */
+const NEAR = "@max-[25rem]/data-table-pagination:hidden"
+/** An ellipsis of the narrow row only, before or after the neighbours. */
+const NARROW =
+  "hidden @max-[34rem]/data-table-pagination:block @max-[25rem]/data-table-pagination:hidden"
+const PAGE_OF = "hidden @max-[25rem]/data-table-pagination:block"
+
+/**
  * The pages to show a button for, and `null` for an ellipsis: every page
  * up to 7, else the first, the last, the current one and its neighbours
  * (five in a row at either end), so the row keeps its length as the page
@@ -70,6 +92,25 @@ function pagesToShow(page: number, pageCount: number): Array<number | null> {
   return [1, null, page - 1, page, page + 1, null, pageCount]
 }
 
+/**
+ * The pages and ellipses of every width, each with where it is laid out:
+ * the wide row (`pagesToShow`), and the narrow one, the current page and
+ * its neighbours with an ellipsis for the pages before and after them
+ * (`NARROW` ellipses of its own, the wide row's ellipses left out). One
+ * button per page, so each is in the page once.
+ */
+function pageItems(page: number, pageCount: number) {
+  const items: Array<{ to: number | null; className: string }> = []
+  if (page - 1 > 1) items.push({ to: null, className: NARROW })
+  for (const to of pagesToShow(page, pageCount))
+    items.push({
+      to,
+      className: to !== null && Math.abs(to - page) <= 1 ? NEAR : WIDE,
+    })
+  if (page + 1 < pageCount) items.push({ to: null, className: NARROW })
+  return items
+}
+
 function DataTablePagination({
   pageSizes: ownSizes,
   className,
@@ -83,14 +124,16 @@ function DataTablePagination({
     <div
       data-slot="data-table-pagination"
       className={cn(
-        "flex flex-wrap items-center justify-end gap-x-6 gap-y-2 text-sm",
+        "@container/data-table-pagination min-w-0 flex-1 text-sm",
         className
       )}
       {...props}
     >
-      <PageSize context={context} ownSizes={ownSizes} />
-      <RowRange context={context} />
-      <PageButtons context={context} />
+      <div className="flex items-center justify-end gap-x-6 whitespace-nowrap @max-[34rem]/data-table-pagination:gap-x-3">
+        <PageSize context={context} ownSizes={ownSizes} />
+        <RowRange context={context} />
+        <PageButtons context={context} />
+      </div>
     </div>
   )
 }
@@ -105,7 +148,6 @@ function PageSize({
 }) {
   const t = useTranslations("dataTable")
   const format = useNumberFormat()
-  const labelId = React.useId()
   const pageSize = useDataTableSelector(
     context,
     (state) => state.model.pageSize
@@ -126,7 +168,10 @@ function PageSize({
   if (pageSizes.length === 0) return null
   return (
     <div data-slot="data-table-page-size" className="flex items-center gap-2">
-      <span id={labelId}>{t("rowsPerPage")}</span>
+      {/* The `Select`'s name is its own: this label can go. */}
+      <span aria-hidden className={NO_LABEL}>
+        {t("rowsPerPage")}
+      </span>
       <Select
         value={String(pageSize)}
         onValueChange={(value, eventDetails) => {
@@ -138,7 +183,7 @@ function PageSize({
             )
         }}
       >
-        <SelectTrigger size="sm" className="w-18" aria-labelledby={labelId}>
+        <SelectTrigger size="sm" className="w-18" aria-label={t("rowsPerPage")}>
           <SelectValue>
             {(value: string) => format.format(Number(value))}
           </SelectValue>
@@ -199,6 +244,32 @@ function PageButtons({ context }: { context: DataTableContextValue<unknown> }) {
   )
   // Read when pressed: the page a click lands on is the current one's neighbour.
   const current = () => context.store.get().model.page
+  const pages = pageItems(page, pageCount).map(({ to, className }, index) =>
+    to === null ? (
+      <PaginationItem
+        key={`ellipsis-${index}`}
+        data-narrow={className === NARROW ? "" : undefined}
+        className={className}
+      >
+        <PaginationEllipsis />
+      </PaginationItem>
+    ) : (
+      <PaginationItem key={to} className={className}>
+        <Button
+          variant={to === page ? "outline" : "ghost"}
+          size="icon"
+          aria-current={to === page ? "page" : undefined}
+          aria-label={t("goToPage", { page: format.format(to) })}
+          className="tabular-nums"
+          onClick={(event: React.MouseEvent) =>
+            context.actions.setPage(to, "page", event.nativeEvent)
+          }
+        >
+          {format.format(to)}
+        </Button>
+      </PaginationItem>
+    )
+  )
   return (
     <Pagination
       aria-label={t("pagination")}
@@ -208,7 +279,11 @@ function PageButtons({ context }: { context: DataTableContextValue<unknown> }) {
         <PaginationItem>
           <Button
             variant="ghost"
-            className="ps-2!"
+            className={cn(
+              "ps-2!",
+              // Its icon alone: a square button.
+              "@max-[40rem]/data-table-pagination:size-9 @max-[40rem]/data-table-pagination:px-0!"
+            )}
             aria-label={t("previousPage")}
             // Focus stays on the button that reached the first page.
             focusableWhenDisabled
@@ -225,35 +300,28 @@ function PageButtons({ context }: { context: DataTableContextValue<unknown> }) {
               data-icon="inline-start"
               className="rtl:rotate-180"
             />
-            <span className="hidden sm:block">{t("previous")}</span>
+            <span className={NO_WORDS}>{t("previous")}</span>
           </Button>
         </PaginationItem>
-        {pagesToShow(page, pageCount).map((to, index) =>
-          to === null ? (
-            <PaginationItem key={`ellipsis-${index}`}>
-              <PaginationEllipsis />
-            </PaginationItem>
-          ) : (
-            <PaginationItem key={to}>
-              <Button
-                variant={to === page ? "outline" : "ghost"}
-                size="icon"
-                aria-current={to === page ? "page" : undefined}
-                aria-label={t("goToPage", { page: format.format(to) })}
-                className="tabular-nums"
-                onClick={(event: React.MouseEvent) =>
-                  context.actions.setPage(to, "page", event.nativeEvent)
-                }
-              >
-                {format.format(to)}
-              </Button>
-            </PaginationItem>
-          )
-        )}
+        {pages}
+        <PaginationItem className={PAGE_OF}>
+          <span
+            data-slot="data-table-page-of"
+            className="px-2 text-muted-foreground tabular-nums"
+          >
+            {t("pageOf", {
+              page: format.format(page),
+              pageCount: format.format(Math.max(pageCount, 1)),
+            })}
+          </span>
+        </PaginationItem>
         <PaginationItem>
           <Button
             variant="ghost"
-            className="pe-2!"
+            className={cn(
+              "pe-2!",
+              "@max-[40rem]/data-table-pagination:size-9 @max-[40rem]/data-table-pagination:px-0!"
+            )}
             aria-label={t("nextPage")}
             // Focus stays on the button that reached the last page.
             focusableWhenDisabled
@@ -262,7 +330,7 @@ function PageButtons({ context }: { context: DataTableContextValue<unknown> }) {
               context.actions.setPage(current() + 1, "next", event.nativeEvent)
             }
           >
-            <span className="hidden sm:block">{t("next")}</span>
+            <span className={NO_WORDS}>{t("next")}</span>
             <ChevronRightIcon
               data-icon="inline-end"
               className="rtl:rotate-180"

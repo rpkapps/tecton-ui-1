@@ -78,38 +78,18 @@ const columns = createColumns<Well>([
     width: 150,
     format: { dateStyle: "medium", timeZone: "UTC" },
   },
+  // Flat columns: groups would give the header a second row over every
+  // column, groups in view or not (see the Columns example for groups).
+  { id: "md", header: "MD (m)", type: "number", width: 130 },
+  { id: "tvd", header: "TVD (m)", type: "number", width: 130 },
+  { id: "oil", header: "Oil (Sm³/d)", type: "number", width: 150 },
+  { id: "gas", header: "Gas (kSm³/d)", type: "number", width: 150 },
   {
-    id: "depth",
-    header: "Depth",
-    columns: [
-      { id: "md", header: "MD (m)", type: "number", width: 130 },
-      { id: "tvd", header: "TVD (m)", type: "number", width: 130 },
-    ],
-  },
-  {
-    id: "production",
-    header: "Production",
-    columns: [
-      {
-        id: "oil",
-        header: "Oil (Sm³/d)",
-        type: "number",
-        width: 150,
-      },
-      {
-        id: "gas",
-        header: "Gas (kSm³/d)",
-        type: "number",
-        width: 150,
-      },
-      {
-        id: "waterCut",
-        header: "Water cut",
-        type: "number",
-        width: 140,
-        format: { style: "percent", maximumFractionDigits: 0 },
-      },
-    ],
+    id: "waterCut",
+    header: "Water cut",
+    type: "number",
+    width: 140,
+    format: { style: "percent", maximumFractionDigits: 0 },
   },
   {
     id: "pressure",

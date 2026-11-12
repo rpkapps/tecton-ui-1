@@ -12,6 +12,10 @@
  * `data-index`) on to its `TableRow`, inside the `TableRowConfig` that tells
  * the grid its id, text, level and expanded state.
  *
+ * With `reorderableRows`, a column of drag handles comes first
+ * (`row-order.tsx`): each item row's handle, drawn while the rows are in
+ * the items' order; each row's `tr` is registered for the drag.
+ *
  * A row with a detail row (`renderDetail`) is a treegrid row of level 1
  * that opens like a tree row (its chevron, Right / Left, Enter); its detail
  * row is the level 2 row under it, one cell across every column, holding
@@ -70,6 +74,7 @@ import {
   type GroupRow,
   type ItemRow,
 } from "./engine/index"
+import { DataTableRowHandle } from "./row-order"
 import { DataTableSelectionCheckbox } from "./selection-checkbox"
 
 type RowProps<TRow, T> = Omit<React.ComponentProps<"tr">, "children"> & {
@@ -146,11 +151,35 @@ function ItemRowComponent<T>({
     <TableRowConfig value={config}>
       <TableRow
         {...props}
+        ref={shared.order?.register(row.id)}
         aria-rowindex={rowIndex(row.id, props["aria-rowindex"], shared)}
         aria-posinset={shared.levelled ? row.posinset : undefined}
         aria-setsize={shared.levelled ? row.setsize : undefined}
-        className={cn(shared.pinned && pinnedRowClassName)}
+        className={cn(
+          shared.pinned && pinnedRowClassName,
+          // The row being dragged, as a column's header is.
+          shared.handle && "has-data-dragging:opacity-50"
+        )}
       >
+        {shared.handle && (
+          <TableCell
+            className={cn(
+              "w-px pe-0",
+              shared.pinned && cellBorderClassName,
+              shared.handlePin && pinnedCellClassName
+            )}
+            style={shared.handlePin && pinStyle(shared.handlePin)}
+          >
+            {shared.order && !row.continued && (
+              <DataTableRowHandle
+                order={shared.order}
+                id={row.id}
+                label={config.textValue ?? row.id}
+                size={shared.size}
+              />
+            )}
+          </TableCell>
+        )}
         {shared.selection && (
           <TableCell
             className={cn(
@@ -435,6 +464,7 @@ function GroupRowComponent<T>({
           actions.setGroupOpen(row.key, !row.open)
         }}
       >
+        {shared.handle && controlCell(shared.handlePin)}
         {shared.selection &&
           controlCell(
             shared.selectionPin,

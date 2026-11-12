@@ -64,6 +64,7 @@ export type {
   DataTableExportOptions,
   DataTablePageChangeReason,
   DataTablePageSizeChangeReason,
+  DataTableRowOrderChangeReason,
   DataTableSelectionChangeDetails,
   DataTableSelectionChangeReason,
   DataTableSelectionMode,

@@ -25,6 +25,8 @@
  * - Groups are open unless closed: which ones are closed is the table's
  *   own, kept for the grouping they were closed in (a new grouping opens
  *   every group). A group's checkbox selects its items that can be.
+ * - Rows are reordered in a flat list only, the order being the
+ *   application's (`onRowOrderChange`).
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -85,6 +87,7 @@ import {
   type GroupCounts,
   type DataTablePageChangeReason,
   type DataTablePageSizeChangeReason,
+  type DataTableRowOrderChangeReason,
   type DataTableSelectionChangeDetails,
   type DataTableSelectionChangeReason,
   type DataTableSelectionMode,
@@ -176,6 +179,11 @@ type DataTableProps<T> = Omit<
   hideableColumns?: boolean
   /** Columns are pinned to the start or the end, from the same menus. */
   pinnableColumns?: boolean
+  /**
+   * Rows are dragged into order by a handle at their start (flat lists
+   * only); the order is the application's: `onRowOrderChange`.
+   */
+  reorderableRows?: boolean
   /** Pages of `pageSize` rows, with the footer's page parts. */
   pagination?: boolean
   /** Whether rows select, one at a time or several (with a checkbox column). */
@@ -236,6 +244,14 @@ type DataTableProps<T> = Omit<
   // Events
   /** A row activated: Enter, or a click (a double click when rows select). */
   onActivate?: (id: string, item: T) => void
+  /**
+   * Rows reordered (`reorderableRows`): every item's id, in the new order.
+   * Put `items` in that order; the table does not reorder them itself.
+   */
+  onRowOrderChange?: (
+    ids: Array<string>,
+    eventDetails: DataTableChangeDetails<DataTableRowOrderChangeReason>
+  ) => void
 }
 
 /** The props and state the actions read, as of the last render. */
@@ -262,6 +278,7 @@ type Latest<T> = {
   itemToHref: DataTableProps<T>["itemToHref"]
   navigate: ((href: string) => void) | undefined
   onActivate: DataTableProps<T>["onActivate"]
+  onRowOrderChange: DataTableProps<T>["onRowOrderChange"]
   onViewChange: DataTableProps<T>["onViewChange"]
   onValueChange: DataTableProps<T>["onValueChange"]
   onExpandedChange: DataTableProps<T>["onExpandedChange"]
@@ -653,6 +670,11 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
     loadMore() {
       now().onLoadMore?.()
     },
+    reorderRows(ids, reason, event) {
+      const details = createChangeEventDetails(reason, event)
+      now().onRowOrderChange?.([...ids], details)
+      return !details.isCanceled
+    },
     async exportCsv(options = {}) {
       const { toCsv } = await loadFeature("csv")
       // Read once loaded: the state the export was asked for, or later.
@@ -736,6 +758,7 @@ function DataTable<T>({
   reorderableColumns = false,
   hideableColumns = false,
   pinnableColumns = false,
+  reorderableRows = false,
   pagination = false,
   selectionMode = "none",
   view: viewProp,
@@ -757,6 +780,7 @@ function DataTable<T>({
   onPageSizeChange,
   pageSizes = DEFAULT_PAGE_SIZES,
   onActivate,
+  onRowOrderChange,
   className,
   children,
   ...props
@@ -771,6 +795,7 @@ function DataTable<T>({
   // A tree's rows nest by their items, not by grouping or a flat order
   // (§4.3).
   const grouping = groupable && !tree
+  const rowOrder = reorderableRows && !tree
   const capabilities = React.useMemo<ViewCapabilities>(
     () => ({ sortable, filterable, groupable: grouping }),
     [sortable, filterable, grouping]
@@ -893,6 +918,7 @@ function DataTable<T>({
       reorderableColumns,
       hideableColumns,
       pinnableColumns,
+      reorderableRows: rowOrder,
       pagination,
       selectionMode,
       disabledBehavior,
@@ -916,6 +942,7 @@ function DataTable<T>({
       reorderableColumns,
       hideableColumns,
       pinnableColumns,
+      rowOrder,
       pagination,
       selectionMode,
       disabledBehavior,
@@ -996,6 +1023,7 @@ function DataTable<T>({
     itemToHref,
     navigate,
     onActivate,
+    onRowOrderChange,
     onViewChange,
     onValueChange,
     onExpandedChange,
@@ -1039,7 +1067,7 @@ function DataTable<T>({
   // ---- on demand, warnings ------------------------------------------------
 
   const features: Array<FeatureName> = []
-  if (reorderableColumns) features.push("dragAndDrop")
+  if (reorderableColumns || rowOrder) features.push("dragAndDrop")
   usePrefetchFeatures(features)
 
   // New columns re-render every row: said when they are new but the same.
@@ -1116,6 +1144,17 @@ function DataTable<T>({
       // No `process` (no bundler): no warning.
     }
   }, [warn, groupable, tree])
+  React.useEffect(() => {
+    try {
+      if (process.env.NODE_ENV !== "production" && reorderableRows && tree)
+        warn(
+          "reorderable-rows-tree",
+          "DataTable: `reorderableRows` is off in a tree (`itemToChildren`): rows are reordered in a flat list only."
+        )
+    } catch {
+      // No `process` (no bundler): no warning.
+    }
+  }, [warn, reorderableRows, tree])
   React.useEffect(() => {
     try {
       if (process.env.NODE_ENV !== "production" && hasMore && pagination)

@@ -127,7 +127,14 @@ const columns = createColumns<Well>([
 
 export default function DataTableColumns() {
   return (
-    <DataTable items={wells} columns={columns} className="w-full">
+    <DataTable
+      items={wells}
+      columns={columns}
+      // Drag a header to move its column (a grouped one among its group's);
+      // with the keyboard, Enter on a header, the arrows, then Enter.
+      reorderableColumns
+      className="w-full"
+    >
       <DataTableContent aria-label="Wells by location and drilling data" />
     </DataTable>
   )

@@ -62,6 +62,7 @@ export default defineTranslations({
     previous: "Eelmine",
     next: "Järgmine",
     goToPage: "Lehekülg {page}",
+    pageOf: "Lehekülg {page}/{pageCount}",
     previousPage: "Eelmine leht",
     nextPage: "Järgmine leht",
     selectAllMatching: {
@@ -132,6 +133,7 @@ export default defineTranslations({
     clearAll: "Tühjenda kõik",
     resultsCount: { one: "{total} tulemus", other: "{total} tulemust" },
     rowActions: "Rea toimingud",
+    reorderRowsColumn: "Muuda järjestust",
     total: "Kokku",
     groupBy: "Rühmita",
     groupOrder: "Järjestus",

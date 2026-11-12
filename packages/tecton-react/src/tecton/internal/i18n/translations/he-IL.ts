@@ -62,6 +62,7 @@ export default defineTranslations({
     previous: "הקודם",
     next: "הבא",
     goToPage: "עמוד {page}",
+    pageOf: "עמוד {page} מתוך {pageCount}",
     previousPage: "העמוד הקודם",
     nextPage: "העמוד הבא",
     selectAllMatching: {
@@ -137,6 +138,7 @@ export default defineTranslations({
       other: "{total} תוצאות",
     },
     rowActions: "פעולות שורה",
+    reorderRowsColumn: "שינוי סדר",
     total: "סה״כ",
     groupBy: "קבץ לפי",
     groupOrder: "סדר",

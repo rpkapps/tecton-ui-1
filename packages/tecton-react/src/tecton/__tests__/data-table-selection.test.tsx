@@ -278,6 +278,45 @@ describe("DataTable disabled rows", () => {
   })
 })
 
+describe("DataTable disabled rows that change", () => {
+  it("selects a row once `isItemDisabled` no longer disables it", () => {
+    const onValueChange = vi.fn()
+    const items = WELLS.slice(0, 4)
+    const { rerender } = render(
+      <Wells
+        items={items}
+        isItemDisabled={(well) => well.id === "w2"}
+        disabledBehavior="selection"
+        onValueChange={onValueChange}
+      />
+    )
+    expect(checkbox("Well 02")).toHaveAttribute("aria-disabled", "true")
+    rerender(
+      <Wells
+        items={items}
+        isItemDisabled={undefined}
+        disabledBehavior="selection"
+        onValueChange={onValueChange}
+      />
+    )
+    expect(checkbox("Well 02")).not.toHaveAttribute("aria-disabled")
+    focusRow("Well 02")
+    press(" ")
+    expect(lastValue(onValueChange)).toEqual(["w2"])
+    // Disabled again, by a new function with other answers.
+    rerender(
+      <Wells
+        items={items}
+        isItemDisabled={(well) => well.id !== "w1"}
+        disabledBehavior="selection"
+        onValueChange={onValueChange}
+      />
+    )
+    expect(checkbox("Well 03")).toHaveAttribute("aria-disabled", "true")
+    expect(checkbox("Well 01")).not.toHaveAttribute("aria-disabled")
+  })
+})
+
 describe("DataTable server selection", () => {
   const PAGE_ONE = WELLS.slice(0, 10)
   const PAGE_TWO = WELLS.slice(10, 20)

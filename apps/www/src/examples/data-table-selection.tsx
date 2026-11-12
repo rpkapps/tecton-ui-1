@@ -88,9 +88,11 @@ const columns = createColumns<Well>([
 
 const MODES: Array<DataTableSelectionMode> = ["none", "single", "multiple"]
 
+const isPlugged = (well: Well) => well.status === "plugged"
+
 export default function DataTableSelection() {
   const [mode, setMode] = React.useState<DataTableSelectionMode>("multiple")
-  const [focusDisabled, setFocusDisabled] = React.useState(false)
+  const [selectPlugged, setSelectPlugged] = React.useState(false)
   const [value, setValue] = React.useState<ReadonlyArray<string>>(["a12"])
   const [opened, setOpened] = React.useState<string | null>(null)
 
@@ -102,8 +104,10 @@ export default function DataTableSelection() {
         selectionMode={mode}
         value={value}
         onValueChange={setValue}
-        isItemDisabled={(well) => well.status === "plugged"}
-        disabledBehavior={focusDisabled ? "selection" : "all"}
+        // Plugged wells cannot be selected unless the switch is on; they
+        // can still be focused and opened ("selection").
+        isItemDisabled={selectPlugged ? undefined : isPlugged}
+        disabledBehavior="selection"
         onActivate={(_, well) => setOpened(well.name)}
       >
         <DataTableToolbar className="gap-4">
@@ -123,12 +127,22 @@ export default function DataTableSelection() {
           </ToggleGroup>
           <Field orientation="horizontal" className="w-auto">
             <Switch
-              id="data-table-disabled-behavior"
-              checked={focusDisabled}
-              onCheckedChange={setFocusDisabled}
+              id="data-table-select-plugged"
+              checked={selectPlugged}
+              onCheckedChange={(checked) => {
+                setSelectPlugged(checked)
+                // Disabled again: the plugged wells leave the selection.
+                if (!checked)
+                  setValue((ids) =>
+                    ids.filter((id) => {
+                      const well = wells.find((item) => item.id === id)
+                      return !well || !isPlugged(well)
+                    })
+                  )
+              }}
             />
-            <FieldLabel htmlFor="data-table-disabled-behavior">
-              Plugged wells can be opened
+            <FieldLabel htmlFor="data-table-select-plugged">
+              Plugged wells can be selected
             </FieldLabel>
           </Field>
         </DataTableToolbar>

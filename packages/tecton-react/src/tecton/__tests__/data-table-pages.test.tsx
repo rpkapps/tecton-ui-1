@@ -110,7 +110,12 @@ describe("DataTable pages", () => {
     }))
     render(<Wells items={many} />)
     const shown = () =>
-      [...document.querySelectorAll('[data-slot="pagination-item"] > *')]
+      // The wide row: the narrow row's own ellipses left out.
+      [
+        ...document.querySelectorAll(
+          '[data-slot="pagination-item"]:not([data-narrow]) > *'
+        ),
+      ]
         .map((item) =>
           item.matches('[data-slot="pagination-ellipsis"]')
             ? "…"
@@ -126,6 +131,26 @@ describe("DataTable pages", () => {
     fireEvent.click(button("Page 24"))
     expect(shown()).toEqual(["1", "…", "20", "21", "22", "23", "24"])
     expect(range()).toBe("231–240 of 240")
+  })
+
+  it("has the narrow widths' parts too: the neighbours' ellipses and \"Page 5 of 24\"", () => {
+    const many = Array.from({ length: 240 }, (_, i) => ({
+      ...WELLS[0],
+      id: `m${i}`,
+      name: `M ${i}`,
+    }))
+    render(<Wells items={many} />)
+    fireEvent.click(button("Page 5"))
+    // One button per page: the narrow row shows some of the same ones.
+    expect(screen.getAllByRole("button", { name: "Page 5" })).toHaveLength(1)
+    expect(document.querySelectorAll("[data-narrow]")).toHaveLength(2)
+    expect(
+      document.querySelector('[data-slot="data-table-page-of"]')
+    ).toHaveTextContent("Page 5 of 24")
+    // Its label can go: the Select keeps its name.
+    expect(
+      screen.getByRole("combobox", { name: "Rows per page" })
+    ).toHaveAttribute("aria-label", "Rows per page")
   })
 
   it("announces the rows shown as they change", () => {

@@ -72,6 +72,9 @@ type DataTablePageChangeReason =
 
 type DataTablePageSizeChangeReason = "select" | "none"
 
+/** How rows were reordered: dragged, moved with the keyboard, or by a screen reader's drop targets. */
+type DataTableRowOrderChangeReason = "pointer" | "keyboard" | "virtual"
+
 /** The second argument of every `on…Change` of `DataTable`. */
 type DataTableChangeDetails<TReason extends string> =
   ChangeEventDetails<TReason>
@@ -105,6 +108,8 @@ type DataTableOptions = {
   readonly reorderableColumns: boolean
   readonly hideableColumns: boolean
   readonly pinnableColumns: boolean
+  /** Rows are dragged into order (`reorderableRows`, not in a tree). */
+  readonly reorderableRows: boolean
   readonly pagination: boolean
   readonly selectionMode: DataTableSelectionMode
   readonly disabledBehavior: "all" | "selection"
@@ -251,6 +256,12 @@ type DataTableActions<T> = {
   retry: () => void
   /** The end of the rows came near: `onLoadMore`. */
   loadMore: () => void
+  /** Reports a new order of every item's id; `false` when cancelled. */
+  reorderRows: (
+    ids: ReadonlyArray<string>,
+    reason: DataTableRowOrderChangeReason,
+    event?: Event
+  ) => boolean
   exportCsv: (options?: DataTableExportOptions) => Promise<string>
   /** Warns once in development. */
   warn: Warn
@@ -332,6 +343,7 @@ export type {
   DataTableOptions,
   DataTablePageChangeReason,
   DataTablePageSizeChangeReason,
+  DataTableRowOrderChangeReason,
   DataTableSelectionChangeDetails,
   DataTableSelectionChangeReason,
   DataTableSelectionMode,

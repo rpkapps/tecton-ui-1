@@ -62,6 +62,7 @@ export default defineTranslations({
     previous: "Forrige",
     next: "Næste",
     goToPage: "Side {page}",
+    pageOf: "Side {page} af {pageCount}",
     previousPage: "Forrige side",
     nextPage: "Næste side",
     selectAllMatching: {
@@ -130,6 +131,7 @@ export default defineTranslations({
     clearAll: "Ryd alle",
     resultsCount: { one: "{total} resultat", other: "{total} resultater" },
     rowActions: "Rækkehandlinger",
+    reorderRowsColumn: "Omarranger",
     total: "I alt",
     groupBy: "Gruppér efter",
     groupOrder: "Rækkefølge",
