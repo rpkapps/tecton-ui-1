@@ -168,23 +168,24 @@ beforeEach(() => {
       // Laid out at its content's width (measuring, fitting).
       if (measured && table.style.width === "max-content")
         return rect(0, measured)
-      const row = this.parentElement as HTMLTableRowElement
-      const selection = row.cells[0].querySelector('[role="checkbox"]')
-        ? 1
-        : row.cells[0].textContent === "Select"
-          ? 1
-          : 0
+      // Its columns: those it is over in the header (cells spanning rows
+      // over their columns in each row).
+      const head = this.closest("thead")!
+      const first = head.rows[0].cells[0]
+      const selection =
+        !!first.querySelector('[role="checkbox"]') ||
+        first.textContent === "Select"
+      const columns = headColumns(head)
+      const cell = this as HTMLTableCellElement
+      const at = columns.find((row) => row.includes(cell))!.indexOf(cell)
+      const widthOf = (column: number) =>
+        column === 0 && selection ? SELECTION : LEAF
       let left = 0
-      let span = 0
-      for (const cell of row.cells) {
-        const width =
-          span === 0 && selection
-            ? SELECTION + LEAF * (cell.colSpan - 1)
-            : LEAF * cell.colSpan
-        if (cell === this) return rect(rtl ? 1000 - left - width : left, width)
-        left += width
-        span += cell.colSpan
-      }
+      for (let column = 0; column < at; column++) left += widthOf(column)
+      let width = 0
+      for (let column = at; column < at + cell.colSpan; column++)
+        width += widthOf(column)
+      return rect(rtl ? 1000 - left - width : left, width)
     }
     if (this.matches('[data-slot="data-table-content"], table'))
       return rect(0, 1000, 0, 400)
@@ -196,17 +197,36 @@ afterEach(() => {
   vi.restoreAllMocks()
 })
 
+/**
+ * Each header row's cells by column: a cell spanning rows (a column in
+ * fewer groups) over its columns in each row it spans.
+ */
+function headColumns(head: HTMLTableSectionElement) {
+  const rows = [...head.rows]
+  const grid = rows.map((): Array<HTMLTableCellElement> => [])
+  rows.forEach((row, y) => {
+    let x = 0
+    for (const cell of row.cells) {
+      while (grid[y][x]) x++
+      for (let dy = 0; dy < Math.max(1, cell.rowSpan); dy++)
+        for (let dx = 0; dx < cell.colSpan; dx++)
+          if (grid[y + dy]) grid[y + dy][x + dx] = cell
+      x += cell.colSpan
+    }
+  })
+  return grid
+}
+/** A column's own header (`scope=col`), in whichever header row it starts. */
 const header = (name: string) =>
-  within(document.querySelector<HTMLElement>("thead tr:last-child")!).getByRole(
-    "columnheader",
-    { name }
-  )
+  within(document.querySelector<HTMLElement>("thead")!)
+    .getAllByRole("columnheader", { name })
+    .find((cell) => cell.getAttribute("scope") === "col")!
 /** The leaf headers' names, in order. */
 const headers = () =>
-  Array.from(
-    document.querySelectorAll("thead tr:last-child th[scope=col]"),
-    (cell) => cell.getAttribute("aria-label")
-  )
+  headColumns(document.querySelector("thead")!)
+    .at(-1)!
+    .filter((cell) => cell.getAttribute("scope") === "col")
+    .map((cell) => cell.getAttribute("aria-label"))
 const cols = () =>
   Array.from(
     document.querySelectorAll<HTMLElement>(
@@ -227,6 +247,66 @@ const lastView = (onViewChange: ReturnType<typeof vi.fn>) =>
   ]
 
 describe("DataTable column groups", () => {
+  it("spans the header rows with the columns in no group, and the arrows walk them in every row", async () => {
+    const user = userEvent.setup()
+    render(<Fields selectionMode="multiple" sortable={false} />)
+    const head = document.querySelector("thead")!
+    const [top, leaves] = head.rows
+    // No empty cell above a column in no group: it spans both rows, as the
+    // selection column does.
+    expect(
+      [...top.cells].map((cell) => [
+        cell.getAttribute("aria-label") ?? cell.textContent,
+        cell.rowSpan,
+        cell.colSpan,
+      ])
+    ).toEqual([
+      ["", 2, 1],
+      ["Field", 2, 1],
+      ["Operator", 2, 1],
+      ["Production", 1, 3],
+      ["Wells", 2, 1],
+    ])
+    expect(
+      [...leaves.cells].map((cell) => cell.getAttribute("aria-label"))
+    ).toEqual(["Oil", "Gas", "Water"])
+    const active = () => (document.activeElement as HTMLElement).closest("th")!
+    const name = () =>
+      active().getAttribute("aria-label") ?? active().textContent
+    act(() => within(top.cells[0]).getByRole("checkbox").focus())
+    // Along the columns' row, through the cells spanning into it.
+    await user.keyboard("{ArrowRight}{ArrowRight}")
+    expect(name()).toBe("Operator")
+    await user.keyboard("{ArrowRight}")
+    expect(name()).toBe("Oil")
+    await user.keyboard("{ArrowRight}")
+    expect(name()).toBe("Gas")
+    await user.keyboard("{ArrowRight}")
+    expect(name()).toBe("Water")
+    await user.keyboard("{ArrowRight}")
+    expect(name()).toBe("Wells")
+    await user.keyboard("{ArrowLeft}")
+    expect(name()).toBe("Water")
+    // Up to the group, and along its row.
+    await user.keyboard("{ArrowUp}")
+    expect(name()).toBe("Production")
+    await user.keyboard("{ArrowLeft}")
+    expect(name()).toBe("Operator")
+    await user.keyboard("{ArrowRight}{ArrowRight}")
+    expect(name()).toBe("Wells")
+    // Down from a cell spanning both rows: to the body, past the header.
+    await user.keyboard("{ArrowDown}")
+    expect(document.activeElement!.closest("tbody")).not.toBeNull()
+    await user.keyboard("{ArrowUp}")
+    expect(name()).toBe("Wells")
+    await user.keyboard("{ArrowUp}")
+    expect(name()).toBe("Wells")
+    await user.keyboard("{Home}")
+    expect(within(active()).queryByRole("checkbox")).not.toBeNull()
+    await user.keyboard("{End}")
+    expect(name()).toBe("Wells")
+  })
+
   it("draws a divider at each group's edges through the header rows, and under the group's name", () => {
     render(<Fields selectionMode="multiple" />)
     const group = screen.getByRole("columnheader", { name: "Production" })
@@ -238,11 +318,10 @@ describe("DataTable column groups", () => {
     expect(header("Water")).not.toHaveClass("border-s")
     expect(header("Wells")).toHaveClass("border-s")
     expect(header("Operator")).not.toHaveClass("border-s")
-    // The cell above "Wells", in no group: the end edge goes on through it.
-    const top = screen.getAllByRole("row")[0] as HTMLTableRowElement
-    const above = [...top.cells].at(-1)!
-    expect(above).toHaveClass("border-s")
-    expect(above).not.toHaveClass("border-b")
+    // "Wells", in no group, spans both rows: the end edge goes on through
+    // it, and no empty cell stands above it.
+    expect(header("Wells")).toHaveAttribute("rowspan", "2")
+    expect(header("Wells")).not.toHaveClass("border-b")
     // The group row is as tall as its text.
     expect(group).toHaveClass("h-8")
   })
@@ -395,10 +474,15 @@ describe("DataTable column resizing", () => {
     await waitFor(() =>
       expect(screen.getAllByRole("separator")).toHaveLength(5)
     )
+    // In the columns' order (the columns in no group start in the top row).
     expect(
-      screen
-        .getAllByRole("separator")
-        .map((element) => element.getAttribute("aria-label"))
+      headColumns(document.querySelector("thead")!)
+        .at(-1)!
+        .flatMap((cell) =>
+          within(cell)
+            .queryAllByRole("separator")
+            .map((element) => element.getAttribute("aria-label"))
+        )
     ).toEqual([
       "Resize Field",
       "Resize Oil",
@@ -969,8 +1053,8 @@ describe("DataTable column reordering", () => {
       "Wells",
     ])
     expect(
-      document
-        .querySelector("thead tr:last-child th")!
+      headColumns(document.querySelector("thead")!)
+        .at(-1)![0]
         .querySelector('[role="checkbox"]')
     ).not.toBeNull()
   })

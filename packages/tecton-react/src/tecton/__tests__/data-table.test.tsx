@@ -196,25 +196,26 @@ describe("DataTable", () => {
       screen.getByRole("grid").querySelector("thead")!
     ).getAllByRole("row")
     const upper = within(top).getAllByRole("columnheader")
-    // Selection, placeholder over "Well", the group, placeholder over "Depth".
+    // The selection column, "Well", the group and "Depth": the columns in
+    // no group span both rows, so no empty cell stands above their names.
     expect(upper).toHaveLength(4)
     expect(upper[2]).toHaveTextContent("Location")
     expect(upper[2]).toHaveAttribute("colspan", "2")
     expect(upper[2]).toHaveAttribute("scope", "colgroup")
-    // Cells with nothing to show are named for the keyboard, which stops
-    // on them: the selection column, and placeholders after the columns.
-    expect(upper[0]).toHaveTextContent("Select")
-    expect(upper[0].firstElementChild).toHaveClass("sr-only")
-    expect(upper[1]).toHaveTextContent("Well")
-    expect(upper[3]).toHaveTextContent("Depth")
-    // The checkbox sits in the leaf row, with the columns.
-    expect(within(upper[0]).queryByRole("checkbox")).toBeNull()
+    expect(upper[2]).not.toHaveAttribute("rowspan")
+    for (const at of [0, 1, 3])
+      expect(upper[at]).toHaveAttribute("rowspan", "2")
+    expect(upper[1]).toHaveAttribute("scope", "col")
+    expect(upper[1]).toHaveAccessibleName("Well")
+    expect(upper[3]).toHaveAccessibleName("Depth")
+    // The checkbox in the selection column's cell, across both rows.
+    expect(within(upper[0]).getByRole("checkbox")).toBeInTheDocument()
+    // The group's columns in the second row.
     expect(
       within(leaves)
         .getAllByRole("columnheader")
-        .map((h) => h.textContent)
-    ).toEqual(["", "Well", "Field", "Status", "Depth"])
-    expect(within(leaves).getByRole("checkbox")).toBeInTheDocument()
+        .map((h) => h.getAttribute("aria-label"))
+    ).toEqual(["Field", "Status"])
   })
 
   it("hides a column below its breakpoint, header and cells", () => {

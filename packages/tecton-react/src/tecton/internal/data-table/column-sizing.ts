@@ -27,6 +27,7 @@
  */
 import * as React from "react"
 
+import { cellsByColumn } from "../table-grid"
 import {
   columnWidth,
   sizeColumns,
@@ -245,7 +246,9 @@ function useColumnSizing({
     const width = table.style.width
     table.style.width = "max-content"
     try {
-      const cells = [...head[head.length - 1].cells]
+      // Each column's own header: in the last row, or spanning down to it.
+      const last = head[head.length - 1]
+      const cells = cellsByColumn(last) ?? [...last.cells]
       const next: Partial<Record<string, number>> = { ...measured.widths }
       if (selection) next[SELECTION] = Math.ceil(widthOf(cells[0]))
       layout.columns.forEach((column, index) => {
@@ -341,7 +344,8 @@ function useColumnSizing({
       const head = table?.tHead?.rows
       if (index < 0 || !table || !head?.length) return null
       const offset = current.lead
-      const cell = head[head.length - 1].cells[index + offset] as
+      const last = head[head.length - 1]
+      const cell = (cellsByColumn(last) ?? [...last.cells])[index + offset] as
         HTMLTableCellElement | undefined
       const col = table.querySelector<HTMLElement>(
         `colgroup[data-slot="data-table-columns"] > col:nth-child(${index + offset + 1})`
