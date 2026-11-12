@@ -180,7 +180,7 @@ For hundreds of rows or more, set `virtualized`, give the parent a bounded heigh
 
 <Do>
 
-Show an empty result as `Empty` in place of the table, or as `TableBody empty={…}` (one row across every column) when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
+Show an empty value as a muted em dash, with "No value" for screen readers, as `DataTable` draws it: `<TableCell><span aria-hidden className="text-muted-foreground">—</span><span className="sr-only">No value</span></TableCell>` (aligned as the column, never "N/A" or "-"); show an empty result as `Empty` in place of the table, or as `TableBody empty={…}` (one row across every column) when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
 
 </Do>
 

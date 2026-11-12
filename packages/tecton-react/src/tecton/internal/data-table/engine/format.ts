@@ -8,7 +8,8 @@
  * - boolean: `labels.yes` / `labels.no` (the cell draws a check instead).
  * - options: the option's label (the value itself when no option has it).
  *
- * Empty values are `""`. `Intl` formatters are made once per locale and
+ * Empty values are `""` (`hasNoValue`: the cell draws its empty value, the
+ * filters' and groups' "No value"). `Intl` formatters are made once per locale and
  * options and shared; `getFormatter` keeps one formatter per column model,
  * locale and labels, which also remembers the text of repeated dates and
  * numbers. An invalid locale falls back to `en-US` rather than throw.
@@ -146,6 +147,34 @@ function columnFormat<T>(
           : value instanceof Date
             ? value.toISOString()
             : String(value)
+  }
+}
+
+/**
+ * Whether `value` has no display text in `column`: `null`, `undefined`,
+ * `""`, an invalid number or date, or a value a number or date column
+ * cannot read. The cell draws the column's empty value for it, and the
+ * filters' "No value" matches it.
+ */
+function hasNoValue<T>(column: EngineColumn<T>, value: DataTableValue) {
+  switch (column.type) {
+    case "number":
+      return (
+        toNumber(value) === undefined &&
+        (typeof value !== "string" || value === "")
+      )
+    case "date":
+      return toDate(value) === undefined
+    case "boolean":
+      return toBoolean(value) === undefined
+    case "options":
+      return (
+        value === null ||
+        value === undefined ||
+        (value === "" && !column.optionIndex.has(""))
+      )
+    case "text":
+      return value === null || value === undefined || value === ""
   }
 }
 
@@ -308,6 +337,7 @@ export {
   DEFAULT_LABELS,
   foldText,
   getFormatter,
+  hasNoValue,
   resolveLocale,
 }
 export type { FormatLabels, Formatter }

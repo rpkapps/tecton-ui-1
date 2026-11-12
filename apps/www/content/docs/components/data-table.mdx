@@ -81,7 +81,7 @@ A column's `type` sets how its values are shown, aligned and sorted; `cell` draw
 | `"boolean"` | center | a check for `true` | `false` first |
 | `"options"` | start | a [Badge](/docs/components/badge) per option | in `options` order |
 
-Empty values sort last. Return raw numbers and `Date`s from `accessor`, not formatted text.
+Empty values sort last and show a muted dash ([Empty values](#empty-values)). Return raw numbers and `Date`s from `accessor`, not formatted text.
 
 ### Sorting by several columns
 
@@ -153,7 +153,41 @@ Pinned cells are opaque in `var(--surface)`; a custom surface sets it: `classNam
 | `boolean` | Any, Yes or No | `{ type: "boolean", value }` |
 | `options` | a checkbox per option, with counts | `{ type: "options", values }` |
 
-Search matches the shown columns' display text, ignoring case and accents. A column's own `filter(item, value)` replaces its type's.
+Each filter also offers "No value" (`empty: true`) for a column with empty values. Search matches the shown columns' display text, ignoring case and accents. A column's own `filter(item, value)` replaces its type's.
+
+## Empty values
+
+A value that is `null`, `undefined`, `""`, `NaN` or an invalid `Date` shows as a muted em dash in the column's alignment, which screen readers read as "No value". Return `null` from `accessor` for a missing value, never a placeholder such as "N/A". Some wells in the example above have no status, TD, spud date or subsea flag.
+
+| Where | An empty value |
+| --- | --- |
+| Cell | A muted "—", read as "No value"; the column's `emptyValue` replaces it, `null` leaves the cell blank. |
+| Custom `cell` | Gets the column's `emptyValue` in its details, to return when `text` is `""`. |
+| Search, CSV | Empty text: never matched, an empty field. |
+| Sorting | Last, ascending and descending. |
+| Grouping | One group, "No value", last. |
+| Totals | Left out of the built-in aggregates. |
+
+```tsx
+const columns = createColumns<Well>([
+  { id: "operator", header: "Operator", emptyValue: "Unassigned" },
+  {
+    id: "report",
+    header: "Report",
+    cell: (well, { text, emptyValue }) => (text === "" ? emptyValue : <Link href={well.reportUrl}>{text}</Link>),
+  },
+])
+```
+
+While a row has no value in a column, its filter offers "No value": the last option of an options filter, apart, with its count; a checkbox under a text or number filter's fields and beside a date filter's Clear; a fourth choice after Any, Yes and No. It keeps the rows without a value besides those the rest of the filter keeps, or only those when the rest is unset, and its chip reads "Status: Producing, No value" or "TD (m): 1,000–2,000 or no value".
+
+In the view it is `empty: true` on the filter's value. A value without it matches as before, so saved views keep working; in server mode, where the table sees only the loaded rows, "No value" is always offered and reaches `onViewChange` for the server to apply (`OR depth IS NULL`).
+
+```ts
+{ type: "number", min: 1000, max: 2000, empty: true } // 1,000 to 2,000, or no value
+{ type: "options", values: [], empty: true } // no value only
+{ type: "boolean", empty: true } // no value only
+```
 
 ## Selection
 
@@ -258,6 +292,7 @@ With `dataMode="server"`, the table reports each view and page change and shows 
 | --- | --- | --- |
 | Sort, search, filter, page | the table | the server, from `onViewChange` / `onPageChange` |
 | Option counts | from `items` | each option's `count` |
+| "No value" filter | while a row has no value | always; `empty: true` in the filter |
 | Totals, export | every matching row | the loaded rows |
 | "Select all N" | every matching row | all matching: `eventDetails.allMatching.except` |
 
@@ -350,7 +385,7 @@ Direction and locale come from the [TectonProvider](/docs/tecton/provider): colu
 
 <Do>
 
-Make the columns once with `createColumns`, at module level or in a `React.useMemo`: each has an `id`, a plain-text `header` and a `type` (`text`, `number`, `date`, `boolean`, `options`) that sets the alignment, format, sort and filter. Return raw numbers and `Date`s from `accessor`, format with `format`, and use `cell(item, { text })` only to draw the value differently.
+Make the columns once with `createColumns`, at module level or in a `React.useMemo`: each has an `id`, a plain-text `header` and a `type` (`text`, `number`, `date`, `boolean`, `options`) that sets the alignment, format, sort and filter. Return raw numbers and `Date`s from `accessor`, format with `format`, and use `cell(item, { text })` only to draw the value differently. Leave a missing value empty (`null` from `accessor`): the cell shows a muted em dash read as "No value", it exports as an empty field, sorts last, groups under "No value" and is offered as each filter's "No value". Change it per column with `emptyValue`; a `cell` of your own returns `emptyValue` from its details when `text` is `""`.
 
 </Do>
 
@@ -442,6 +477,28 @@ const columns = createColumns<Well>([
 </Correct>
 
 Without `type` the column is text: it sits at the start, sorts and filters as text and has no sum, and `toLocaleString()` formats in the browser's locale, not the provider's.
+
+</Dont>
+
+<Dont severity="HIGH" title="Placeholder text for missing values">
+
+<Wrong>
+
+```tsx
+const columns = createColumns<Well>([{ id: "depth", header: "Depth (m)", type: "number", accessor: (well) => well.depth ?? "N/A" }])
+```
+
+</Wrong>
+
+<Correct>
+
+```tsx
+const columns = createColumns<Well>([{ id: "depth", header: "Depth (m)", type: "number", accessor: (well) => well.depth }])
+```
+
+</Correct>
+
+"N/A" is a value: it is drawn as text instead of the table's muted dash, read as "N/A" in every locale, written to the CSV, and the filters' "No value" does not find it.
 
 </Dont>
 
@@ -617,6 +674,7 @@ A rows-per-page [Select](/docs/components/select), the rows shown and [Paginatio
 | `format` | `Intl.NumberFormatOptions \| Intl.DateTimeFormatOptions` | - | Number or date format. |
 | `options` | `ReadonlyArray<DataTableOption>` | - | `{ value, label, variant?, count? }`, in sort order. |
 | `cell` | `(item: T, details) => ReactNode` | - | Custom cell content. |
+| `emptyValue` | `ReactNode` | muted "—", read as "No value" | A cell without a value; `null` for a blank cell. |
 | `renderHeader` | `(details) => ReactNode` | - | Custom header content. |
 | `align` | `"start" \| "center" \| "end"` | by type | Cell and header alignment. |
 | `compare` | `(a: T, b: T) => number` | - | Custom ascending sort. |
@@ -632,7 +690,7 @@ A rows-per-page [Select](/docs/components/select), the rows shown and [Paginatio
 | `sortable`, `filterable`, `groupable` | `false` | - | Opts out of the feature. |
 | `resizable`, `reorderable`, `hideable`, `pinnable` | `false` | - | Opts out of the feature. |
 
-A group is `{ id, header, description?, columns }`. `cell` gets `{ id, column, value, text, depth }`; `renderHeader` gets `{ column, header, sorted }`.
+A group is `{ id, header, description?, columns }`. `cell` gets `{ id, column, value, text, depth, emptyValue }`; `renderHeader` gets `{ column, header, sorted }`.
 
 ### DataTableView
 
@@ -651,12 +709,14 @@ type DataTableView = {
 }
 
 // `view` and `defaultView` take a DataTablePartialView: every part optional.
+// `empty: true` is "No value": the rows without a value match too, or alone
+// when the rest is unset (`value: ""`, no range, no `value`, `values: []`).
 type DataTableFilterValue =
-  | { type: "text"; value: string }
-  | { type: "number"; min?: number; max?: number }
-  | { type: "date"; from?: Date; to?: Date }
-  | { type: "boolean"; value: boolean }
-  | { type: "options"; values: ReadonlyArray<string> }
+  | { type: "text"; value: string; empty?: boolean }
+  | { type: "number"; min?: number; max?: number; empty?: boolean }
+  | { type: "date"; from?: Date; to?: Date; empty?: boolean }
+  | { type: "boolean"; value?: boolean; empty?: boolean }
+  | { type: "options"; values: ReadonlyArray<string>; empty?: boolean }
   | { type: "custom"; value: unknown }
 ```
 

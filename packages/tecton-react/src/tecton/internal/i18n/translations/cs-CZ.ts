@@ -141,6 +141,7 @@ export default defineTranslations({
     filterAtMost: "≤ {value}",
     filterFrom: "Od {value}",
     filterUntil: "Do {value}",
+    filterOrNoValue: "{value} nebo bez hodnoty",
     optionsSelected: { other: "Vybráno: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktivní filtry",
@@ -165,7 +166,7 @@ export default defineTranslations({
     groupedBy: "Seskupeno podle {columnNames}",
     ungrouped: "Řádky již nejsou seskupeny",
     groupLabel: "{columnName}: {value}",
-    emptyGroup: "(Prázdné)",
+    noValue: "Bez hodnoty",
     groupCount: {
       one: "{total} řádek",
       few: "{total} řádky",

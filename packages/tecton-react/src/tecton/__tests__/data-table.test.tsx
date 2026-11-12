@@ -131,10 +131,10 @@ describe("DataTable", () => {
     const no = screen.getByText("No")
     expect(no).toHaveClass("sr-only")
     expect(no.closest("td")?.querySelector("svg")).toBeNull()
-    // Empty values are empty cells.
+    // Empty values: a muted dash, read as "No value".
     const empty = row("34/10-B-03").querySelectorAll("td")
-    expect(empty[2]).toBeEmptyDOMElement()
-    expect(empty[3]).toBeEmptyDOMElement()
+    expect(empty[2]).toHaveTextContent("—No value")
+    expect(empty[3]).toHaveTextContent("—No value")
   })
 
   it("renders a column's cell with the cell's details", () => {
@@ -157,6 +157,7 @@ describe("DataTable", () => {
       value: 1000,
       text: "1,000",
       depth: 0,
+      emptyValue: expect.anything(),
     })
   })
 

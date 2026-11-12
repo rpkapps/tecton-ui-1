@@ -45,6 +45,7 @@ import {
   type TableGridOptions,
 } from "../table-grid"
 import {
+  emptyValueContent,
   groupCellsOf,
   groupLabelWidth,
   type CellPin,
@@ -749,7 +750,7 @@ function DataTableContentImpl({
       let label = known.get(row)
       if (!label) {
         const header = columnsById.get(row.column)?.header ?? row.column
-        const value = row.text === "" ? tTable("emptyGroup") : row.text
+        const value = row.text === "" ? tTable("noValue") : row.text
         // The translation's own order: the value's place in it.
         const [before = "", after = ""] = tTable("groupLabel", {
           columnName: header,
@@ -761,11 +762,14 @@ function DataTableContentImpl({
       return label
     }
   }, [tTable, columnsById])
+  const noValue = tTable("noValue")
+  const emptyValue = React.useMemo(() => emptyValueContent(noValue), [noValue])
   const shared = React.useMemo<RowShared<unknown>>(
     () => ({
       columns: shownColumns,
       rowHeader,
       formatter,
+      emptyValue,
       selection,
       handle,
       order: rowOrder.order,
@@ -810,6 +814,7 @@ function DataTableContentImpl({
       shownColumns,
       rowHeader,
       formatter,
+      emptyValue,
       selection,
       handle,
       rowOrder.order,

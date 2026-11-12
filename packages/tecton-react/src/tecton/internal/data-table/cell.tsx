@@ -6,7 +6,9 @@
  * `cell` draws its own content; otherwise the type decides (§4.1): text
  * and dates as their display text, numbers at the end in tabular digits,
  * options as an outline `Badge` with the option's label, booleans as a
- * check (with Yes / No for screen readers).
+ * check (with Yes / No for screen readers). A cell without a value shows
+ * the column's `emptyValue`, by default a muted em dash that screen
+ * readers read as "No value" (`emptyValueContent`).
  *
  * The row header column (`rowHeader`, the first column by default) is a
  * `th scope="row"` that names the row, carries the tree's chevron and
@@ -46,6 +48,8 @@ type RowShared<T> = {
   /** The column that names the row. */
   rowHeader: EngineColumn<T> | undefined
   formatter: Formatter<T>
+  /** What a cell without a value shows, unless its column says (`emptyValueContent`). */
+  emptyValue: React.ReactNode
   /** A selection checkbox column comes before the data columns. */
   selection: boolean
   /** A drag handle column comes first (`reorderableRows`). */
@@ -415,15 +419,35 @@ function bodyClassName<T>(
   )
 }
 
+/**
+ * The table's empty value: a muted em dash, aligned as the column's text,
+ * hidden from screen readers, which read `label` ("No value") instead.
+ */
+function emptyValueContent(label: string): React.ReactNode {
+  return (
+    <>
+      <span
+        aria-hidden
+        data-slot="data-table-empty-value"
+        className="text-muted-foreground"
+      >
+        —
+      </span>
+      <span className="sr-only">{label}</span>
+    </>
+  )
+}
+
 /** The cell's content: the column's `cell`, or its type's display. */
 function cellContent<T>(
   column: EngineColumn<T>,
   row: ItemRow<T>,
-  formatter: Formatter<T>
+  shared: RowShared<T>
 ): React.ReactNode {
+  const { formatter } = shared
   const value = column.getValue(row.item)
   const text = formatter.format(column, value)
-  const { cell } = column.definition
+  const { cell, emptyValue = shared.emptyValue } = column.definition
   if (cell)
     return cell(row.item, {
       id: row.id,
@@ -431,8 +455,9 @@ function cellContent<T>(
       value,
       text,
       depth: row.depth,
+      emptyValue,
     })
-  if (text === "") return null
+  if (text === "") return emptyValue
   switch (column.type) {
     case "boolean":
       // `true`, or a value that reads as it ("true", 1).
@@ -541,7 +566,7 @@ function renderCell<T>(
   row: ItemRow<T>,
   shared: RowShared<T>
 ): React.ReactNode {
-  let content = cellContent(column, row, shared.formatter)
+  let content = cellContent(column, row, shared)
   const pin = shared.pins[index]
   const className = bodyClassName(column, pin, shared)
   const style = pin && pinStyle(pin)
@@ -593,6 +618,7 @@ export {
   ALIGN,
   cellBorderClassName,
   columnClassName,
+  emptyValueContent,
   groupCellsOf,
   groupLabelWidth,
   INDENT,

@@ -3,10 +3,11 @@
  * in `DataTableActiveFilters`: the text a text filter looks for, a number
  * range ("1,000–3,000", "≥ 1,000"), a range of days (one day when both
  * ends are the same), Yes / No, the options' labels ("Producing,
- * Drilling"; with `short`, "3 selected" past two). Numbers read as the
- * column formats them, days as its date fields (its `dateStyle`, else
- * medium) in its time zone, never its time; a custom filter value has no
- * words (`null`).
+ * Drilling"; with `short`, "3 selected" past two), each with its "No value"
+ * ("No value" alone, "1,000–3,000 or no value", "Producing, No value").
+ * Numbers read as the column formats them, days as its date fields (its
+ * `dateStyle`, else medium) in its time zone, never its time; a custom
+ * filter value has no words (`null`).
  */
 import type { Translator } from "../i18n/translations"
 import type {
@@ -55,10 +56,26 @@ function filterText<T>(
   t: Translator<"dataTable">,
   { short = false }: { short?: boolean } = {}
 ): string | null {
+  if (value.type === "custom") return null
+  if (value.type === "options")
+    return optionsText(column, value, formatter, t, short)
+  const text = valueText(column, value, formatter, t)
+  if (!value.empty) return text
+  // "No value": alone, or after the rest of the filter.
+  return text ? t("filterOrNoValue", { value: text }) : t("noValue")
+}
+
+/** The words of a filter but its "No value", `null` when it is unset. */
+function valueText<T>(
+  column: EngineColumn<T>,
+  value: Exclude<DataTableFilterValue, { type: "custom" | "options" }>,
+  formatter: Formatter<T>,
+  t: Translator<"dataTable">
+): string | null {
   const format = (raw: number) => formatter.format(column, raw)
   switch (value.type) {
     case "text":
-      return value.value.trim()
+      return value.value.trim() || null
     case "number": {
       const { min, max } = value
       if (min !== undefined && max !== undefined)
@@ -85,29 +102,38 @@ function filterText<T>(
       return null
     }
     case "boolean":
-      return formatter.format(column, value.value)
-    case "options": {
-      if (short && value.values.length > 2)
-        return t("optionsSelected", {
-          count: value.values.length,
-          total: value.values.length.toLocaleString(formatter.locale),
-        })
-      // In the column's order, by label.
-      const chosen = new Set(value.values)
-      const labels = column.options
-        .filter((option) => chosen.has(option.value))
-        .map((option) => option.label)
-      const known = new Set(column.options.map((option) => option.value))
-      for (const other of value.values)
-        if (!known.has(other)) labels.push(other)
-      return new Intl.ListFormat(formatter.locale, {
-        style: "short",
-        type: "unit",
-      }).format(labels)
-    }
-    case "custom":
-      return null
+      return value.value === undefined
+        ? null
+        : formatter.format(column, value.value)
   }
+}
+
+/** The options chosen, by label, "No value" last (`short`: a count past two). */
+function optionsText<T>(
+  column: EngineColumn<T>,
+  value: Extract<DataTableFilterValue, { type: "options" }>,
+  formatter: Formatter<T>,
+  t: Translator<"dataTable">,
+  short: boolean
+) {
+  const count = value.values.length + (value.empty ? 1 : 0)
+  if (short && count > 2)
+    return t("optionsSelected", {
+      count,
+      total: count.toLocaleString(formatter.locale),
+    })
+  // In the column's order, by label.
+  const chosen = new Set(value.values)
+  const labels = column.options
+    .filter((option) => chosen.has(option.value))
+    .map((option) => option.label)
+  const known = new Set(column.options.map((option) => option.value))
+  for (const other of value.values) if (!known.has(other)) labels.push(other)
+  if (value.empty) labels.push(t("noValue"))
+  return new Intl.ListFormat(formatter.locale, {
+    style: "short",
+    type: "unit",
+  }).format(labels)
 }
 
 export { filterText }

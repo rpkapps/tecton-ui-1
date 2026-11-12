@@ -60,7 +60,9 @@ import {
   countFacets,
   createSearchIndex,
   filterRows,
+  hasEmptyValues,
   searchMask,
+  type Facets,
   type RowPredicate,
   type SearchIndex,
 } from "./filter"
@@ -206,9 +208,15 @@ type DataTableRowModel<T> = {
   totals: () => TotalsRow<T>
   /**
    * How many rows match the search and every filter but `column`'s, per
-   * value: option values for an options column, display text for others.
+   * value (option values for an options column, display text for others),
+   * and without a value.
    */
-  facets: (column: string) => ReadonlyMap<string, number>
+  facets: (column: string) => Facets
+  /**
+   * Whether any row, matching or not, has no value in `column`: its filter
+   * then offers "No value" (in server mode, the loaded rows).
+   */
+  hasEmptyValues: (column: string) => boolean
 }
 
 type DataTableEngine<T> = {
@@ -217,6 +225,7 @@ type DataTableEngine<T> = {
 
 const EMPTY_SET: ReadonlySet<string> = new Set()
 const NO_IDS: ReadonlyArray<string> = []
+const NO_FACETS: Facets = { counts: new Map(), empty: 0 }
 
 function defaultItemToId(item: unknown) {
   return String((item as { id?: unknown } | null)?.id)
@@ -326,9 +335,11 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
       search: Uint8Array | null
       filters: DataTableView["filters"]
       server: boolean
-      counts: ReadonlyMap<string, number>
+      counts: Facets
     }
   >()
+  /** Whether a column has empty values, by the rows and column read. */
+  const emptyCache = new WeakMap<Core<T>, WeakMap<EngineColumn<T>, boolean>>()
 
   const steadySorting = steady<ReadonlyArray<DataTableSort>>(sameSorting)
   const steadyFilters = steady<DataTableView["filters"]>(sameFilters)
@@ -735,9 +746,21 @@ function createDataTableEngine<T>(): DataTableEngine<T> {
             },
           }
         }),
+        hasEmptyValues: (id) => {
+          const column = columns.byId.get(id)
+          if (!column) return false
+          let byColumn = emptyCache.get(rows)
+          if (!byColumn) emptyCache.set(rows, (byColumn = new WeakMap()))
+          let empty = byColumn.get(column)
+          if (empty === undefined) {
+            empty = hasEmptyValues(rows, column)
+            byColumn.set(column, empty)
+          }
+          return empty
+        },
         facets: (id) => {
           const column = columns.byId.get(id)
-          if (!column) return new Map()
+          if (!column) return NO_FACETS
           const others: Record<string, DataTableFilterValue> = { ...filters }
           delete others[id]
           const cached = facetCache.get(id)

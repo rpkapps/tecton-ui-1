@@ -21,7 +21,7 @@ import { DataTable, DataTableContent, DataTableToolbar, DataTableSearch, DataTab
 
 ## Do
 
-- Make the columns once with `createColumns`, at module level or in a `React.useMemo`: each has an `id`, a plain-text `header` and a `type` (`text`, `number`, `date`, `boolean`, `options`) that sets the alignment, format, sort and filter. Return raw numbers and `Date`s from `accessor`, format with `format`, and use `cell(item, { text })` only to draw the value differently.
+- Make the columns once with `createColumns`, at module level or in a `React.useMemo`: each has an `id`, a plain-text `header` and a `type` (`text`, `number`, `date`, `boolean`, `options`) that sets the alignment, format, sort and filter. Return raw numbers and `Date`s from `accessor`, format with `format`, and use `cell(item, { text })` only to draw the value differently. Leave a missing value empty (`null` from `accessor`): the cell shows a muted em dash read as "No value", it exports as an empty field, sorts last, groups under "No value" and is offered as each filter's "No value". Change it per column with `emptyValue`; a `cell` of your own returns `emptyValue` from its details when `text` is `""`.
 - Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `groupable`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; sorting is on, by several columns with Shift + click or a column menu's "Add to sort", one only with `multiSort={false}`), then place their parts: `DataTableToolbar` with `DataTableSearch`, a `DataTableFilter column` per filter, `DataTableGroupBy` and `DataTableColumnsMenu`; `DataTableActiveFilters`; `DataTableContent`; `DataTableFooter` with `DataTablePagination`.
 - Name the table with `aria-label` on `DataTableContent`, open a row with `itemToHref` or `onActivate` on the root, say why a disabled row cannot be selected with `itemToDisabledReason`, put a row's commands in a `DataTableRowActions` in a column's `cell`, and the actions on the selected rows in `DataTableActionBar` (each in an `OverflowItem`; the bar shows the count and Clear itself).
 - Set `size="sm"` and `striped` on `DataTable` for dense data; show the states with `loading`, `error` with `onRetry`, and `empty` / `noResults` on `DataTableContent`.
@@ -79,6 +79,22 @@ const columns = createColumns<Well>([
 ```
 
 Without `type` the column is text: it sits at the start, sorts and filters as text and has no sum, and `toLocaleString()` formats in the browser's locale, not the provider's.
+
+### HIGH Placeholder text for missing values
+
+Wrong:
+
+```tsx
+const columns = createColumns<Well>([{ id: "depth", header: "Depth (m)", type: "number", accessor: (well) => well.depth ?? "N/A" }])
+```
+
+Correct:
+
+```tsx
+const columns = createColumns<Well>([{ id: "depth", header: "Depth (m)", type: "number", accessor: (well) => well.depth }])
+```
+
+"N/A" is a value: it is drawn as text instead of the table's muted dash, read as "N/A" in every locale, written to the CSV, and the filters' "No value" does not find it.
 
 ## Before you finish
 

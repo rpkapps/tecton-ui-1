@@ -65,6 +65,12 @@ type DataTableCellDetails = {
   text: string
   /** How deep the row is in a tree or in groups, from 0. */
   depth: number
+  /**
+   * What the column shows for no value (`text` is `""`): its `emptyValue`,
+   * or the muted em dash read as "No value". Return it for an empty value
+   * to keep the table's convention.
+   */
+  emptyValue: React.ReactNode
 }
 
 /** The argument of a column's `renderHeader`. */
@@ -93,6 +99,12 @@ type DataTableLeafColumn<T> = {
   /** For an `options` column: its values, in sort order. */
   options?: ReadonlyArray<DataTableOption>
   cell?: (item: T, details: DataTableCellDetails) => React.ReactNode
+  /**
+   * What a cell with no value shows (`null`, `undefined`, `""`, an invalid
+   * number or date): a muted em dash, read as "No value", by default;
+   * `null` leaves the cell blank. A `cell` gets it as `emptyValue`.
+   */
+  emptyValue?: React.ReactNode
   renderHeader?: (details: DataTableHeaderDetails) => React.ReactNode
   /** By type by default: numbers at the end, booleans centred, the rest at the start. */
   align?: "start" | "center" | "end"
@@ -154,13 +166,18 @@ type DataTableSort = {
  * A column's filter, by the column's type; `custom` is for a column with a
  * `filter` function. Number and date ranges include their ends, and a `to`
  * at midnight includes that whole day.
+ *
+ * `empty: true` is the filter's "No value": the rows without a value match
+ * too, besides those the rest of the filter matches, or alone when the rest
+ * is unset (a text `value` of `""`, no range, no boolean `value`, no option
+ * `values`). Without it an empty value never matches.
  */
 type DataTableFilterValue =
-  | { type: "text"; value: string }
-  | { type: "number"; min?: number; max?: number }
-  | { type: "date"; from?: Date; to?: Date }
-  | { type: "boolean"; value: boolean }
-  | { type: "options"; values: ReadonlyArray<string> }
+  | { type: "text"; value: string; empty?: boolean }
+  | { type: "number"; min?: number; max?: number; empty?: boolean }
+  | { type: "date"; from?: Date; to?: Date; empty?: boolean }
+  | { type: "boolean"; value?: boolean; empty?: boolean }
+  | { type: "options"; values: ReadonlyArray<string>; empty?: boolean }
   | { type: "custom"; value: unknown }
 
 /**

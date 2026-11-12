@@ -167,6 +167,13 @@ const enUS = {
     filterAtMost: "≤ {value}",
     filterFrom: "From {value}",
     filterUntil: "Until {value}",
+    // A missing value: what screen readers read for the dash of a cell
+    // without one, a filter's choice for the rows without one, and the
+    // group of those rows.
+    noValue: "No value",
+    // A filter's value that also keeps the rows without one ("1,000–2,000
+    // or no value"); {value} is the rest of the filter in words.
+    filterOrNoValue: "{value} or no value",
     // More than two options chosen in a filter; {total} is formatted.
     optionsSelected: { other: "{total} selected" },
     // A chip of the active filters: the column's name and the filter's
@@ -198,10 +205,9 @@ const enUS = {
     groupedBy: "Grouped by {columnNames}",
     ungrouped: "Rows no longer grouped",
     // A group row: the grouping column's name and the group's value
-    // ("Field: Gullfaks"), the value of rows that have none, and the
+    // ("Field: Gullfaks"; `noValue` for the rows that have none), and the
     // number of rows in the group ({total} is formatted).
     groupLabel: "{columnName}: {value}",
-    emptyGroup: "(Empty)",
     groupCount: { one: "{total} row", other: "{total} rows" },
     // A group row's name for screen readers: its label and its count,
     // with a pause between them ("Field: Gullfaks, 6 rows").

@@ -11,8 +11,9 @@
  *   and the columns of a group stay side by side, as do groups in groups;
  * - sorting, filters and grouping on unknown columns, or on columns that
  *   cannot (the root's feature off, or the column opted out), are dropped,
- *   and so are duplicates, empty filters and filters of another type than
- *   the column's (any type is kept for a column with its own `filter`);
+ *   and so are duplicates, empty filters (but one with `empty: true`, its
+ *   "No value") and filters of another type than the column's (any type
+ *   is kept for a column with its own `filter`);
  * - search is `""` while the table is not filterable;
  * - widths that are not positive numbers are dropped, the others clamped to
  *   the column's `minWidth` (48 px by default) and `maxWidth`; a column
@@ -300,46 +301,64 @@ function reconcileFilter(
     return undefined
   const value = input as DataTableFilterValue
   if (!column.filter && value.type !== column.type) return undefined
+  if (value.type === "custom") return column.filter ? value : undefined
+  // "No value": only `true` counts; a flag that is not a boolean goes.
+  const empty = value.empty === true
+  const flag = empty ? { empty } : {}
+  const kept = value.empty === undefined || typeof value.empty === "boolean"
   switch (value.type) {
-    case "text":
-      return typeof value.value === "string" && value.value.trim() !== ""
-        ? value
-        : undefined
+    case "text": {
+      const text = typeof value.value === "string" ? value.value : undefined
+      if (!empty && (text === undefined || text.trim() === "")) return undefined
+      if (kept && text !== undefined && text === value.value) return value
+      return { type: "text", value: text ?? "", ...flag }
+    }
     case "number": {
       const min = finiteNumber(value.min)
       const max = finiteNumber(value.max)
-      if (min === undefined && max === undefined) return undefined
-      if (min === value.min && max === value.max) return value
+      if (min === undefined && max === undefined && !empty) return undefined
+      if (kept && min === value.min && max === value.max) return value
       return {
         type: "number",
         ...(min === undefined ? {} : { min }),
         ...(max === undefined ? {} : { max }),
+        ...flag,
       }
     }
     case "date": {
       // A view read back from JSON has strings where the dates were.
       const from = toDate(value.from)
       const to = toDate(value.to)
-      if (!from && !to) return undefined
-      if (from === value.from && to === value.to) return value
+      if (!from && !to && !empty) return undefined
+      if (kept && from === value.from && to === value.to) return value
       return {
         type: "date",
         ...(from ? { from } : {}),
         ...(to ? { to } : {}),
+        ...flag,
       }
     }
-    case "boolean":
-      return typeof value.value === "boolean" ? value : undefined
-    case "options": {
-      if (!Array.isArray(value.values)) return undefined
-      const values = value.values.filter((v) => typeof v === "string")
-      if (!values.length) return undefined
-      return values.length === value.values.length
-        ? value
-        : { type: "options", values }
+    case "boolean": {
+      const wanted = typeof value.value === "boolean" ? value.value : undefined
+      if (wanted === undefined && !empty) return undefined
+      if (kept && wanted === value.value) return value
+      return {
+        type: "boolean",
+        ...(wanted === undefined ? {} : { value: wanted }),
+        ...flag,
+      }
     }
-    case "custom":
-      return column.filter ? value : undefined
+    case "options": {
+      const values = Array.isArray(value.values)
+        ? value.values.filter((v) => typeof v === "string")
+        : []
+      if (!values.length && !empty) return undefined
+      return kept &&
+        Array.isArray(value.values) &&
+        values.length === value.values.length
+        ? value
+        : { type: "options", values, ...flag }
+    }
     default:
       return undefined
   }
@@ -445,6 +464,12 @@ function sameTime(a: Date | undefined, b: Date | undefined) {
 
 function sameFilterValue(a: DataTableFilterValue, b: DataTableFilterValue) {
   if (a === b) return true
+  if (
+    a.type !== "custom" &&
+    b.type !== "custom" &&
+    (a.empty === true) !== (b.empty === true)
+  )
+    return false
   switch (a.type) {
     case "text":
       return b.type === "text" && a.value === b.value

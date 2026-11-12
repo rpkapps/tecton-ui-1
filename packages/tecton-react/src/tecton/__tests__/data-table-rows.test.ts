@@ -319,21 +319,21 @@ describe("facets", () => {
       }),
     })
     // Oil ≥ 6: wells 1, 2, 4, 6.
-    expect([...result.facets("status")]).toEqual([
+    expect([...result.facets("status").counts]).toEqual([
       ["drilling", 1],
       ["producing", 1],
       ["shut-in", 0],
       ["plugged", 1],
     ])
     // Producing and oil ≥ 6: well 1 only.
-    expect([...result.facets("operator")]).toEqual([["Shell", 1]])
+    expect([...result.facets("operator").counts]).toEqual([["Shell", 1]])
     expect(result.facets("status")).toBe(result.facets("status"))
-    expect(result.facets("ghost").size).toBe(0)
+    expect(result.facets("ghost").counts.size).toBe(0)
   })
 
   it("count booleans by their text, with the search", () => {
     const result = run({ view: view({ search: "equinor" }) })
-    expect([...result.facets("active")]).toEqual([
+    expect([...result.facets("active").counts]).toEqual([
       ["No", 1],
       ["Yes", 1],
     ])
@@ -356,7 +356,7 @@ describe("facets", () => {
     // Another column's filter, the search or the rows: counted again.
     const oil = filtered({ status, oil: { type: "number", min: 6 } })
     expect(oil.facets("status")).not.toBe(first)
-    expect(oil.facets("status").get("producing")).toBe(1)
+    expect(oil.facets("status").counts.get("producing")).toBe(1)
     expect(filtered({ status }, "shell").facets("status")).not.toBe(first)
     expect(
       run(
@@ -385,8 +385,8 @@ describe("facets", () => {
       view: view({ filters: { oil: { type: "number", max: 50 } } }),
     })
     // f and b hold 100 each: a and c only.
-    expect(result.facets("status").get("producing")).toBe(2)
-    expect(result.facets("status").get("drilling")).toBe(0)
+    expect(result.facets("status").counts.get("producing")).toBe(2)
+    expect(result.facets("status").counts.get("drilling")).toBe(0)
     // Collapsed or not: the same rows count.
     expect(
       run({
@@ -396,13 +396,13 @@ describe("facets", () => {
         view: view({ filters: { oil: { type: "number", max: 50 } } }),
       })
         .facets("status")
-        .get("producing")
+        .counts.get("producing")
     ).toBe(2)
   })
 
   it("count the loaded rows in server mode", () => {
     const result = run({ dataMode: "server", view: view({ search: "shell" }) })
-    expect(result.facets("status").get("producing")).toBe(3)
+    expect(result.facets("status").counts.get("producing")).toBe(3)
   })
 })
 

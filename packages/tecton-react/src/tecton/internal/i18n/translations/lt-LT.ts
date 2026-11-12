@@ -143,6 +143,7 @@ export default defineTranslations({
     filterAtMost: "≤ {value}",
     filterFrom: "Nuo {value}",
     filterUntil: "Iki {value}",
+    filterOrNoValue: "{value} arba nėra reikšmės",
     optionsSelected: { other: "Pasirinkta: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktyvūs filtrai",
@@ -167,7 +168,7 @@ export default defineTranslations({
     groupedBy: "Sugrupuota pagal {columnNames}",
     ungrouped: "Eilutės nebegrupuojamos",
     groupLabel: "{columnName}: {value}",
-    emptyGroup: "(Tuščia)",
+    noValue: "Nėra reikšmės",
     groupCount: {
       one: "{total} eilutė",
       few: "{total} eilutės",
