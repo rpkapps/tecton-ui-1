@@ -185,13 +185,23 @@ function TableColumnResizer({
             } catch {
               // A pointer the browser no longer tracks.
             }
-            // From the header's bottom to the bottom of the table in view.
+            // From the header's bottom to the bottom of the table in view:
+            // the scroller's content box, above its horizontal scrollbar
+            // (a guide reaching past it would make the table scroll).
             const scroller =
               element.closest<HTMLElement>('[data-slot="table-container"]') ??
               element.closest("table")
             const head = element.parentElement?.getBoundingClientRect()
             const box = scroller?.getBoundingClientRect()
-            setGuide(head && box ? Math.max(0, box.bottom - head.bottom) : 0)
+            const bottom =
+              box && scroller
+                ? box.top + scroller.clientTop + scroller.clientHeight
+                : undefined
+            setGuide(
+              head && bottom !== undefined
+                ? Math.max(0, Math.floor(bottom - head.bottom))
+                : 0
+            )
             setDragging(true)
           },
           onMove: (_point, travel) =>
