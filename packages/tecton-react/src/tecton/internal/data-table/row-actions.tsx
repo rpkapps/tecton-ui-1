@@ -12,7 +12,8 @@
  *
  * The button is the menu's own trigger, as on a `DropdownMenu`; the menu's
  * items render only while it is open, so scrolling through many rows
- * renders no menus.
+ * renders no menus. The menu is not modal: a press outside closes it and
+ * goes on to what it pressed (another row's button opens that row's menu).
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -56,7 +57,8 @@ function DataTableRowActions({
     (state) => state.options.size === "sm"
   )
   return (
-    <DropdownMenu>
+    // Not modal, as the table's other menus: no scroll lock (`part-popup.ts`).
+    <DropdownMenu modal={false}>
       <DropdownMenuTrigger
         data-slot="data-table-row-actions"
         aria-label={ariaLabel ?? t("rowActions")}
