@@ -151,7 +151,8 @@ type GroupCells = {
 /**
  * Where a pinned column's cells stick: the edge, and how far from it (a
  * CSS length); `edge` for the column next to the scrolled ones (the last
- * pinned at the start, the first at the end), which draws their fade.
+ * pinned at the start, the first at the end), which draws the divider and
+ * shadow between them (`pinEdgeClassName`).
  */
 type CellPin = { side: "start" | "end"; offset: string; edge?: boolean }
 
@@ -177,45 +178,57 @@ const pinnedCellClassName = cn(
 )
 
 /**
- * The fade of the columns scrolled under the pinned ones, at the inner
- * edge of the pinned column next to them: a band past that edge in the
- * cell's own fill (the header's, the row's stripe, hover or selection,
- * inherited, so it is always the row's), opaque at the edge and clear at
- * its far side, so the scrolled content dissolves into the row it is in.
- * The band is 2rem, a few glyphs wide, and eases out (`--pin-fade`): over
- * a narrower or linear one a glyph going under the edge still reads as
- * cut. It is Tecton's scroll fade (`scroll-fade-x`): its reveal
- * keyframes, run by the table's scroll position, so the start's fade
- * shows once the table is scrolled from its start and the end's while
- * there is more to scroll to, its `--scroll-fade-size` and
- * `--scroll-fade-reveal`. The cell clips its content but for the band (a
- * length: Chrome computes a `calc()` in `overflow-clip-margin` as 0).
- * Without scroll-driven animations there is no fade. RTL mirrors it.
+ * Where the pinned columns end: the column next to the scrolled ones (its
+ * `CellPin.edge`) draws a divider along its inner side, in the border
+ * colour of the header's group dividers, in every row (header, body,
+ * totals, group and loading rows; a detail row draws it itself), whether
+ * or not anything is scrolled under it.
+ *
+ * Past the divider, over the scrolled columns, a shadow shows while there
+ * is content under that side: the start's once the table is scrolled from
+ * its start, the end's while there is more to scroll to. It is Tecton's
+ * scroll fade (`scroll-fade-x`) run by the table's scroll position: its
+ * reveal keyframes grow the shadow to its width (`--scroll-fade-size`)
+ * over the first `--scroll-fade-reveal` of scrolling. The shadow is a
+ * band of black, the elevation shadows' colour, that clears away from the
+ * edge; a band per cell, so the rows' meet without a seam. Without
+ * scroll-driven animations there is the divider alone. RTL mirrors it.
+ *
+ * A cell that clips its content (fixed widths) clips it but for the
+ * shadow (a length: Chrome computes a `calc()` in `overflow-clip-margin`
+ * as 0); a group row's label cell does not clip (`pinEdgeClassName`).
  */
-const PIN_FADE = cn(
-  "overflow-clip [overflow-clip-margin:2rem]",
-  "after:pointer-events-none after:absolute after:inset-y-0 after:bg-inherit after:content-[''] after:[--scroll-fade-size:2rem]",
-  "after:[--pin-fade:#000,rgb(0_0_0/0.97)_15%,rgb(0_0_0/0.85)_30%,rgb(0_0_0/0.6)_50%,rgb(0_0_0/0.3)_70%,rgb(0_0_0/0.08)_88%,transparent]",
+const PIN_SHADOW = cn(
+  "after:pointer-events-none after:absolute after:top-0 after:-bottom-[var(--pin-edge-under,0px)] after:content-[''] after:[--scroll-fade-size:--spacing(4)]",
+  "after:from-black/10 after:via-black/3 after:via-40% after:to-transparent dark:after:from-black/70 dark:after:via-black/25",
   "after:[animation-duration:1ms] after:[animation-fill-mode:both] after:[animation-timeline:scroll(nearest_inline)] after:[animation-timing-function:ease-in-out]",
   "not-supports-[animation-timeline:scroll()]:after:hidden"
 )
 
-const PIN_FADE_SIDE = {
+const PIN_EDGE = {
   start: cn(
-    PIN_FADE,
-    "after:start-full after:w-(--scroll-fade-s) after:[animation-name:scroll-fade-reveal-s] after:[animation-range:0_var(--scroll-fade-reveal,--spacing(24))]",
-    "after:[mask-image:linear-gradient(to_right,var(--pin-fade))] rtl:after:[mask-image:linear-gradient(to_left,var(--pin-fade))]"
+    "border-e border-e-border",
+    PIN_SHADOW,
+    "after:start-[calc(100%+1px)] after:w-(--scroll-fade-s) after:bg-linear-to-r rtl:after:bg-linear-to-l",
+    "after:[animation-name:scroll-fade-reveal-s] after:[animation-range:0_var(--scroll-fade-reveal,--spacing(24))]"
   ),
   end: cn(
-    PIN_FADE,
-    "after:end-full after:w-(--scroll-fade-e) after:[animation-name:scroll-fade-reveal-e] after:[animation-range:calc(100%-var(--scroll-fade-reveal,--spacing(24)))_100%]",
-    "after:[mask-image:linear-gradient(to_left,var(--pin-fade))] rtl:after:[mask-image:linear-gradient(to_right,var(--pin-fade))]"
+    "border-s border-s-border",
+    PIN_SHADOW,
+    "after:end-[calc(100%+1px)] after:w-(--scroll-fade-e) after:bg-linear-to-l rtl:after:bg-linear-to-r",
+    "after:[animation-name:scroll-fade-reveal-e] after:[animation-range:calc(100%-var(--scroll-fade-reveal,--spacing(24)))_100%]"
   ),
 } as const
 
-/** The fade a pinned cell draws, when it is the inner edge's. */
-function pinFadeClassName(pin: CellPin | undefined) {
-  return pin?.edge ? PIN_FADE_SIDE[pin.side] : undefined
+/** A cell that clips its content, but for the shadow past it. */
+const PIN_EDGE_CLIP = "overflow-clip [overflow-clip-margin:1.25rem]"
+
+/**
+ * The divider and shadow a pinned cell draws when it is at the inner edge
+ * (`clip: false` for a cell whose content may run past it).
+ */
+function pinEdgeClassName(pin: CellPin | undefined, clip = true) {
+  return pin?.edge ? cn(clip && PIN_EDGE_CLIP, PIN_EDGE[pin.side]) : undefined
 }
 
 /** A pinned header cell: over the other header cells and their resizers. */
@@ -226,10 +239,11 @@ const pinnedRowClassName = "bg-[var(--surface,var(--color-background))]"
 
 /**
  * Every body cell of a table with pinned columns: the row's border, drawn
- * by the cell (but on the last row) in the table's separate borders.
+ * by the cell (but on the last row) in the table's separate borders; the
+ * pinned edge's shadow goes on over it (`--pin-edge-under`).
  */
 const cellBorderClassName =
-  "border-b border-border-subtle [tr:last-child>&]:border-b-0"
+  "border-b border-border-subtle [--pin-edge-under:1px] [tr:last-child>&]:border-b-0 [tr:last-child>&]:[--pin-edge-under:0px]"
 
 /** Each tree level is indented by the width of a chevron and its gap. */
 const INDENT = 1.25
@@ -388,7 +402,7 @@ function bodyClassName<T>(
     shared.pinned && cellBorderClassName,
     shared.wrap && column.definition.wrap && "whitespace-normal",
     pin && pinnedCellClassName,
-    pinFadeClassName(pin)
+    pinEdgeClassName(pin)
   )
 }
 
@@ -576,7 +590,7 @@ export {
   pinnedCellClassName,
   pinnedHeadClassName,
   pinnedRowClassName,
-  pinFadeClassName,
+  pinEdgeClassName,
   pinStyle,
   renderCell,
   rowText,

@@ -45,7 +45,7 @@ import { useTranslations, type Translator } from "../i18n/translations"
 import { announce } from "../primitives/live-announcer"
 import {
   columnClassName,
-  pinFadeClassName,
+  pinEdgeClassName,
   pinnedHeadClassName,
   pinStyle,
   type CellPin,
@@ -617,7 +617,7 @@ function DataTableColumnHeader<T>({
         columnClassName(column),
         draggable && DRAGGABLE,
         pin && pinnedHeadClassName,
-        pinFadeClassName(pin),
+        pinEdgeClassName(pin),
         edge && GROUP_EDGE
       )}
       style={pin && pinStyle(pin)}
@@ -797,7 +797,7 @@ function DataTableGroupHeader<T>({
         GROUP_ROW,
         draggable && DRAGGABLE,
         pin && pinnedHeadClassName,
-        pinFadeClassName(pin),
+        pinEdgeClassName(pin),
         edge && GROUP_EDGE,
         group && GROUP_UNDER
       )}

@@ -49,6 +49,7 @@ import {
   ALIGN,
   cellBorderClassName,
   INDENT,
+  pinEdgeClassName,
   pinnedCellClassName,
   pinnedRowClassName,
   pinStyle,
@@ -273,11 +274,26 @@ function GroupRowComponent<T>({
     }),
     [row, label, actions, shared.multiple]
   )
-  const pinned = (pin: CellPin | undefined) =>
-    // No fade: the group's label goes on over the columns after its cell.
-    cn(shared.pinned && cellBorderClassName, pin && pinnedCellClassName)
+  // A cell over the column at the pinned columns' inner edge draws it,
+  // without clipping: the group's label goes on over the columns after it.
+  const pinned = (column: number, span = 1) => {
+    const pin = pins[column]
+    const edge = pins.slice(column, column + span).some((at) => at?.edge)
+    return cn(
+      shared.pinned && cellBorderClassName,
+      pin && pinnedCellClassName,
+      pin && edge && pinEdgeClassName({ ...pin, edge }, false)
+    )
+  }
   const controlCell = (pin: CellPin | undefined, content?: React.ReactNode) => (
-    <TableCell className={cn("w-px", pinned(pin))} style={pin && pinStyle(pin)}>
+    <TableCell
+      className={cn(
+        "w-px",
+        shared.pinned && cellBorderClassName,
+        pin && pinnedCellClassName
+      )}
+      style={pin && pinStyle(pin)}
+    >
       {content}
     </TableCell>
   )
@@ -316,7 +332,8 @@ function GroupRowComponent<T>({
         className={cn(
           "[&[scope=row]]:font-medium",
           shownClassName(groupCells.tiers, cell.shown),
-          pinned(pin)
+          pinned(cell.column, cell.span),
+          cell.reach && GROUP_LABEL_REACH_EDGE
         )}
         style={pin && pinStyle(pin)}
       >
@@ -403,7 +420,7 @@ function GroupRowComponent<T>({
           ALIGN[column.align],
           shownClassName(groupCells.tiers, cell.shown),
           column.type === "number" && "tabular-nums",
-          pinned(pin)
+          pinned(cell.column)
         )}
         style={pin && pinStyle(pin)}
       >
@@ -467,6 +484,13 @@ const GROUP_LABEL_REACH = cn(
 )
 const GROUP_LABEL_COLUMN =
   "[[data-group-label-clipped]>table>tbody>tr>th>div>span>&]:hidden"
+/**
+ * The pinned columns' divider (`pinEdgeClassName`) on a label cell that
+ * may reach past it: bridged by the group's band while the label goes on
+ * over the columns after it, drawn once it keeps to its cell.
+ */
+const GROUP_LABEL_REACH_EDGE =
+  "border-e-transparent [[data-group-label-clipped]>table>tbody>tr>&]:border-e-border"
 
 const NO_DETAIL: DetailStore = createStore<{
   render: ((item: never) => React.ReactNode) | null
@@ -480,6 +504,24 @@ const DETAIL_STRIPE = {
   virtualized:
     "[[data-striped]>tbody>tr:nth-child(even)+&]:bg-surface-alt [[data-striped]>tbody>tr:nth-child(odd)+&]:bg-transparent",
   all: "[[data-striped]>tbody>tr:nth-child(even)+tr+&]:bg-surface-alt [[data-striped]>tbody>tr:nth-child(odd)+tr+&]:bg-transparent",
+} as const
+
+/**
+ * The pinned columns' divider (`pinEdgeClassName`) through a detail row,
+ * which has no pinned cells: a line stuck where theirs is, as tall as the
+ * cell (its padding and bottom border too), under the detail's content.
+ */
+const DETAIL_DIVIDER_LINE =
+  "pointer-events-none sticky col-start-1 row-start-1 w-px bg-border -mt-3 -mb-[calc(--spacing(3)+1px)] in-data-[size=sm]:-mt-1 in-data-[size=sm]:-mb-[calc(--spacing(1)+1px)]"
+const DETAIL_DIVIDER = {
+  start: cn(
+    DETAIL_DIVIDER_LINE,
+    "start-[calc(var(--data-table-pinned-start)-1px)] justify-self-start"
+  ),
+  end: cn(
+    DETAIL_DIVIDER_LINE,
+    "end-[calc(var(--data-table-pinned-end)-1px)] justify-self-end"
+  ),
 } as const
 
 /** A row's detail row, across every column (see the module comment). */
@@ -518,7 +560,17 @@ function DetailRowComponent<T>({
             shared.pinned && cellBorderClassName
           )}
         >
-          {render?.(row.item as never)}
+          <div className="grid">
+            {shared.pins[0]?.side === "start" && (
+              <span aria-hidden className={DETAIL_DIVIDER.start} />
+            )}
+            {shared.pins.at(-1)?.side === "end" && (
+              <span aria-hidden className={DETAIL_DIVIDER.end} />
+            )}
+            <div className="relative col-start-1 row-start-1 min-w-0">
+              {render?.(row.item as never)}
+            </div>
+          </div>
         </TableCell>
       </TableRow>
     </TableRowConfig>
