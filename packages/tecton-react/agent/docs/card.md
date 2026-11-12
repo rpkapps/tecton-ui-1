@@ -17,7 +17,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardAction, CardContent, 
 - a titled tool surface whose body scrolls and whose footer stays put → `Panel` (tecton docs panel)
 - one row in a list of records → `Item` (tecton docs item)
 - the title block at the top of a page → `PageHeader` (tecton docs page-header)
-- rows with sorting, paging and selection → `TanStack Table` (tecton docs tanstack-table)
+- rows with sorting, paging and selection → `DataTable` (tecton docs data-table)
 
 ## Do
 

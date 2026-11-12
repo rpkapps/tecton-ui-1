@@ -1,42 +1,43 @@
 "use client"
 
 import * as React from "react"
-import { useTable } from "@tanstack/react-table"
-import type { RowSelectionState, SortingState } from "@tanstack/react-table"
 import { cn } from "cn"
 import { PlusIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@tecton/react/components/table"
+  DataTable,
+  DataTableActionBar,
+  DataTableContent,
+} from "@tecton/react/tecton/data-table"
 
-import {
-  createFdaColumns,
-  fdaTableFeatures,
-  MonoValue,
-} from "./components/fda-columns"
+import { createFdaColumns, MonoValue } from "./components/fda-columns"
+import type { RankedAlternative } from "./components/fda-columns"
 import { alternatives as allAlternatives } from "./data"
 import type { FieldDevelopmentAlternative } from "./data"
 
-type FdaComparisonTableProps = React.ComponentProps<"div"> & {
+type FdaComparisonTableProps = Omit<
+  React.ComponentProps<"div">,
+  "defaultValue"
+> & {
   data?: FieldDevelopmentAlternative[]
   onOpen?: (fda: FieldDevelopmentAlternative) => void
-  onAddComparison?: () => void
+  /** Called with the selected alternatives, from the selection's action bar. */
+  onAddComparison?: (fdas: FieldDevelopmentAlternative[]) => void
+}
+
+/** The alternative as the list keeps it, without its rank. */
+function unranked({ rank: _rank, ...fda }: RankedAlternative) {
+  return fda
 }
 
 /**
  * FDA comparison table — ranked field development alternatives with mono
- * economics, an auto-coloured risk meter, status badges and a row menu.
- * TanStack Table state (sorting, selection) rendered with the `Table` parts
- * in a compact, alternating-row layout: a header sorts its column, a row's
- * checkbox selects it, and a click on a row (outside its controls) opens it
- * — the row's actions menu opens it from the keyboard.
+ * economics, an auto-coloured risk meter, status badges and a row menu, on
+ * a compact, striped `DataTable`: a header sorts its column, a row's
+ * checkbox selects it, and Enter, a double click or a click while nothing
+ * is selected opens it; the row's actions menu opens it too. While rows
+ * are selected, an action bar adds them to a comparison.
  */
 function FdaComparisonTable({
   className,
@@ -46,23 +47,28 @@ function FdaComparisonTable({
   ...props
 }: FdaComparisonTableProps) {
   const [rows, setRows] = React.useState(data)
-  const [sorting, setSorting] = React.useState<SortingState>([])
-  const [rowSelection, setRowSelection] = React.useState<RowSelectionState>({})
+  const [selected, setSelected] = React.useState<ReadonlyArray<string>>([])
   // Copies are numbered by a counter that only grows, so an id is never
   // reused after a row is deleted (the row count would repeat).
   const copies = React.useRef(0)
 
+  // The rank is the alternative's place in the list, whatever the sort.
+  const ranked = React.useMemo(
+    () => rows.map((fda, index) => ({ ...fda, rank: index + 1 })),
+    [rows]
+  )
+
   const columns = React.useMemo(
     () =>
       createFdaColumns({
-        onOpen,
+        onOpen: onOpen && ((fda) => onOpen(unranked(fda))),
         onDuplicate: (fda) => {
           copies.current += 1
           const id = `${fda.id}-copy-${copies.current}`
           setRows((current) => [
             ...current,
             {
-              ...fda,
+              ...unranked(fda),
               id,
               code: `${fda.code} (copy)`,
               status: "screening",
@@ -75,156 +81,40 @@ function FdaComparisonTable({
     [onOpen]
   )
 
-  const table = useTable({
-    features: fdaTableFeatures,
-    data: rows,
-    columns,
-    getRowId: (row) => row.id,
-    state: { sorting, rowSelection },
-    onSortingChange: setSorting,
-    onRowSelectionChange: setRowSelection,
-  })
-
-  const selectedCount = table.getSelectedRowModel().rows.length
-
   return (
-    <div
-      data-slot="fda-comparison-table"
-      className={cn(
-        "flex w-full flex-col overflow-hidden rounded-md border bg-card text-xs",
-        className
-      )}
+    <DataTable
+      items={ranked}
+      columns={columns}
+      selectionMode="multiple"
+      value={selected}
+      onValueChange={setSelected}
+      size="sm"
+      striped
+      {...(onOpen === undefined
+        ? {}
+        : {
+            onActivate: (_: string, fda: RankedAlternative) =>
+              onOpen(unranked(fda)),
+          })}
+      className={cn("w-full", className)}
       {...props}
     >
-      <Table aria-label="Field development alternatives">
-        <TableHeader className="bg-muted [&_tr]:border-border-subtle">
-          <tr>
-            {table.getFlatHeaders().map((header) => {
-              const sortable = header.column.getCanSort()
-              const sorted = header.column.getIsSorted()
-              const content = header.isPlaceholder ? null : (
-                <table.FlexRender header={header} />
-              )
-              return (
-                <TableHead
-                  key={header.id}
-                  aria-sort={
-                    !sortable
-                      ? undefined
-                      : sorted === "asc"
-                        ? "ascending"
-                        : sorted === "desc"
-                          ? "descending"
-                          : "none"
-                  }
-                  className={cn(
-                    "h-9 px-2 text-xs",
-                    header.column.id === "select" && "w-10"
-                  )}
-                >
-                  {sortable ? (
-                    // Ascending first, then toggles; one sorted column.
-                    <button
-                      type="button"
-                      className="-mx-1 rounded-sm px-1 outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring"
-                      onClick={() =>
-                        header.column.toggleSorting(sorted === "asc", false)
-                      }
-                    >
-                      {content}
-                    </button>
-                  ) : (
-                    content
-                  )}
-                </TableHead>
-              )
-            })}
-          </tr>
-        </TableHeader>
-        <TableBody className="[&_tr]:border-border-subtle [&_tr:nth-child(even)]:bg-surface-alt/60">
-          {table.getRowModel().rows.length === 0 ? (
-            <TableRow>
-              <TableCell
-                colSpan={table.getFlatHeaders().length}
-                className="py-8 text-center text-muted-foreground"
-              >
-                No alternatives yet.
-              </TableCell>
-            </TableRow>
-          ) : (
-            table.getRowModel().rows.map((row) => (
-              <TableRow
-                key={row.id}
-                data-selected={row.getIsSelected() ? "" : undefined}
-                onClick={(event) => {
-                  // Not a click on the row's checkbox or menu, nor one that
-                  // reached it through a portal (the menu's popup).
-                  const target = event.target as Element
-                  if (
-                    !onOpen ||
-                    !event.currentTarget.contains(target) ||
-                    target.closest("button, a, input, [role=checkbox]")
-                  )
-                    return
-                  onOpen(row.original)
-                }}
-                className={cn(
-                  "hover:bg-accent/60 data-[selected]:bg-accent",
-                  onOpen && "cursor-pointer"
-                )}
-              >
-                {row.getAllCells().map((cell) =>
-                  // The FDA column names the row: a row header, so a
-                  // screen reader reads it with every cell of the row.
-                  cell.column.id === "code" ? (
-                    <th
-                      key={cell.id}
-                      scope="row"
-                      data-slot="table-cell"
-                      className="h-9 px-2 py-3 text-start align-middle font-normal whitespace-nowrap"
-                    >
-                      <table.FlexRender cell={cell} />
-                    </th>
-                  ) : (
-                    <TableCell
-                      key={cell.id}
-                      className={cn(
-                        "h-9 px-2",
-                        cell.column.id === "select" && "w-10"
-                      )}
-                    >
-                      <table.FlexRender cell={cell} />
-                    </TableCell>
-                  )
-                )}
-              </TableRow>
-            ))
-          )}
-        </TableBody>
-      </Table>
-      <div
-        data-slot="fda-comparison-table-footer"
-        className="flex items-center justify-between gap-3 border-t bg-muted/60 px-2 py-1.5 text-xs text-muted-foreground"
-      >
-        <div className="flex items-center gap-2">
-          <span className="tabular-nums">
-            {selectedCount} of {table.getRowModel().rows.length} selected
-          </span>
-          <Button
-            variant="ghost"
-            size="xs"
-            {...(onAddComparison === undefined
-              ? {}
-              : { onClick: onAddComparison })}
-          >
-            <PlusIcon /> Add comparison
-            {selectedCount > 1 && (
-              <span className="text-muted-foreground">({selectedCount})</span>
-            )}
-          </Button>
-        </div>
-      </div>
-    </div>
+      <DataTableActionBar aria-label="Selected alternatives">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() =>
+            onAddComparison?.(rows.filter((row) => selected.includes(row.id)))
+          }
+        >
+          <PlusIcon data-icon="inline-start" /> Add comparison
+        </Button>
+      </DataTableActionBar>
+      <DataTableContent
+        aria-label="Field development alternatives"
+        empty="No alternatives yet."
+      />
+    </DataTable>
   )
 }
 
@@ -250,4 +140,5 @@ export default function FdaComparisonTablePage() {
 export { FdaComparisonTable, createFdaColumns, MonoValue }
 export { alternatives, statusMeta, riskLabel, formatFirstOil } from "./data"
 export type { FdaComparisonTableProps }
+export type { RankedAlternative } from "./components/fda-columns"
 export type { FieldDevelopmentAlternative, FdaStatus } from "./data"

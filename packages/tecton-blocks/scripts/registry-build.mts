@@ -83,7 +83,6 @@ const KNOWN_DEPENDENCIES = new Set([
   "class-variance-authority",
   "cn",
   "lucide-react",
-  "@tanstack/react-table",
   "recharts",
   "sonner",
 ])

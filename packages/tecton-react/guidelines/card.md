@@ -11,7 +11,7 @@ notFor:
   - need: the title block at the top of a page
     use: PageHeader
   - need: rows with sorting, paging and selection
-    use: TanStack Table
+    use: DataTable
 related: [Panel, Item, PageHeader]
 ---
 

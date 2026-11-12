@@ -56,28 +56,29 @@ describe("list-01", () => {
     const user = userEvent.setup()
     const onOpen = vi.fn()
     render(<WellsListPage onOpen={onOpen} />)
-    const table = screen.getByRole("table", { name: "Wells" })
+    const table = screen.getByRole("grid", { name: "Wells" })
     const [first] = wells
     if (!first) throw new Error("no wells")
 
-    const row = screen.getByRole("checkbox", {
-      name: `Select row ${first.name}`,
-    })
+    const firstRow = within(table)
+      .getByRole("rowheader", { name: first.name })
+      .closest("tr")
+    if (!firstRow) throw new Error("no row")
+    const row = within(firstRow).getByRole("checkbox")
     await user.click(row)
-    expect(row).toHaveAttribute("aria-checked", "true")
-    expect(
-      screen.getByText(`1 of ${wells.length} selected`)
-    ).toBeInTheDocument()
-    const all = screen.getByRole("checkbox", { name: "Select all rows" })
+    expect(row).toBeChecked()
+    const bar = () => screen.getByRole("region", { name: "Selected wells" })
+    expect(bar()).toHaveTextContent(`1 of ${wells.length} selected`)
+    const all = within(table).getByRole("checkbox", { name: "Select All" })
     expect(all).toHaveAttribute("aria-checked", "mixed")
     await user.click(all)
-    expect(
-      screen.getByText(`${wells.length} of ${wells.length} selected`)
-    ).toBeInTheDocument()
+    expect(bar()).toHaveTextContent(
+      `${wells.length} of ${wells.length} selected`
+    )
     await user.click(all)
     expect(
-      screen.getByText(`0 of ${wells.length} selected`)
-    ).toBeInTheDocument()
+      screen.queryByRole("region", { name: "Selected wells" })
+    ).not.toBeInTheDocument()
 
     const header = within(table).getByRole("columnheader", { name: "Well" })
     expect(header).toHaveAttribute("aria-sort", "none")
@@ -86,7 +87,8 @@ describe("list-01", () => {
     await user.click(within(header).getByRole("button"))
     expect(header).toHaveAttribute("aria-sort", "descending")
 
-    await user.click(within(table).getAllByRole("row")[1]!)
+    // A click on a row while nothing is selected opens it.
+    await user.click(within(table).getAllByRole("rowheader")[0]!)
     expect(onOpen).toHaveBeenCalledTimes(1)
   })
 

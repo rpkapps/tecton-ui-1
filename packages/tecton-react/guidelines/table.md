@@ -4,25 +4,25 @@ module: "@tecton/react/components/table"
 family: data
 exports: [Table, TableHeader, TableBody, TableFooter, TableHead, TableRow, TableCell, TableCaption]
 notFor:
-  - need: sorting, filtering, paging or column visibility over the rows
-    use: TanStack Table
+  - need: records in an application, or rows that are sorted, searched, filtered, selected or paged
+    use: DataTable
   - need: a list of rows with media, a title and actions rather than columns
     use: Item
   - need: rows or columns the user drags into another order
     use: Reorderable
-related: [Item, TreeView, Reorderable, TableColumnResizer, "TanStack Table"]
+related: [DataTable, Item, TreeView, Reorderable, TableColumnResizer]
 ---
 
 ## Use it when
 
-- Records of the same shape have to line up in columns: invoices, wells, run results.
-- A footer totals the columns, or a caption names the table; the rows are read, compared, selected or opened, with sorting and paging from TanStack Table on these parts.
+- A short, static table is read rather than worked with: a spec sheet, a legend, the figures of a report or a dialog, a comparison in documentation.
+- The layout is free-form: cells of your own, spans, a footer that totals the columns, a caption that names the table.
 
 ## Do
 
-- Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`.
+- Keep `Table` for content that is only read; records in an application go in a `DataTable`, so every records table looks and behaves the same.
+- Compose plain HTML: `Table` > `TableHeader` > `TableRow` > `TableHead`, `TableBody` > `TableRow` > `TableCell`, optional `TableFooter` and `TableCaption`; open a record from a link in its identifying cell.
 - Set `size="sm"` for a compact table of dense data, and `striped` to put every even body row on an alternate surface; hover and selected rows keep their fill over the stripe.
-- Open a record from a link in its identifying cell.
 - For hundreds of rows or more, set `virtualized`, give the parent a bounded height (`h-96`, with the border) and pass `items` with a render function to `TableBody`; rows are one height within the table.
 - Show an empty result as `Empty` in place of the table, or as `TableBody empty={…}` (one row across every column) when the header must stay; keep `className` on the parts to alignment and width (`text-end`, `w-24`).
 
