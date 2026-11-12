@@ -954,7 +954,7 @@ diff --git a/apps/v4/registry/bases/base/ui/select.tsx b/apps/v4/registry/bases/
 index 2cb76c11..80927f4f 100644
 --- a/apps/v4/registry/bases/base/ui/select.tsx
 +++ b/apps/v4/registry/bases/base/ui/select.tsx
-@@ -2,6 +2,8 @@
+@@ -2,11 +2,18 @@
  
  import * as React from "react"
  import { Select as SelectPrimitive } from "@base-ui/react/select"
@@ -963,7 +963,18 @@ index 2cb76c11..80927f4f 100644
  import { cn } from "cn"
  
  import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
-@@ -28,22 +30,38 @@ function SelectValue({ className, ...props }: SelectPrimitive.Value.Props) {
+ 
+-const Select = SelectPrimitive.Root
++function Select<Value, Multiple extends boolean | undefined = false>({
++  modal = false,
++  ...props
++}: SelectPrimitive.Root.Props<Value, Multiple>) {
++  return <SelectPrimitive.Root modal={modal} {...props} />
++}
+ 
+ function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
+   return (
+@@ -28,22 +35,38 @@
    )
  }
  
@@ -1009,10 +1020,15 @@ index 2cb76c11..80927f4f 100644
        {...props}
      >
        {children}
-@@ -71,14 +89,18 @@ function SelectContent({
-   align = "center",
+@@ -68,17 +91,21 @@
+   children,
+   side = "bottom",
+   sideOffset = 4,
+-  align = "center",
++  align = "start",
    alignOffset = 0,
-   alignItemWithTrigger = true,
+-  alignItemWithTrigger = true,
++  alignItemWithTrigger = false,
 +  container,
    ...props
  }: SelectPrimitive.Popup.Props &
@@ -1029,7 +1045,7 @@ index 2cb76c11..80927f4f 100644
        <SelectPrimitive.Positioner
          side={side}
          sideOffset={sideOffset}
-@@ -217,4 +239,5 @@ export {
+@@ -217,4 +244,5 @@
    SelectSeparator,
    SelectTrigger,
    SelectValue,

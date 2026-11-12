@@ -7,7 +7,12 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { ChevronDownIcon, CheckIcon, ChevronUpIcon } from "lucide-react"
 
-const Select = SelectPrimitive.Root
+function Select<Value, Multiple extends boolean | undefined = false>({
+  modal = false,
+  ...props
+}: SelectPrimitive.Root.Props<Value, Multiple>) {
+  return <SelectPrimitive.Root modal={modal} {...props} />
+}
 
 function SelectGroup({ className, ...props }: SelectPrimitive.Group.Props) {
   return (
@@ -79,9 +84,9 @@ function SelectContent({
   children,
   side = "bottom",
   sideOffset = 4,
-  align = "center",
+  align = "start",
   alignOffset = 0,
-  alignItemWithTrigger = true,
+  alignItemWithTrigger = false,
   container,
   ...props
 }: SelectPrimitive.Popup.Props &

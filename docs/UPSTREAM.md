@@ -194,6 +194,16 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   lock re-probes scrollbar-gutter support on `<html>`, restyling the whole document (150–200 ms per
   open and close on a page with a DataTable, the open animation lost). Tested in
   `src/tecton/__tests__/dropdown-menu-modal.test.tsx`.
+- **Non-modal `Select`, list below the trigger** (`select`) — `Select` is a function that defaults
+  `modal` to `false` (upstream re-exports the root), and `SelectContent` defaults
+  `alignItemWithTrigger` to `false` and `align` to `"start"`; all three pass through. A modal Select
+  and an aligned list (the selected item over the value: fixed positioning, no anchor tracking)
+  each lock page scroll, with the same whole-document restyle as a modal `DropdownMenu`. The list
+  opens below the trigger instead, start-aligned so a trigger narrower than the list's `min-w-36`
+  keeps the list under it (as the aligned list sat), and plays its open animation (aligned lists
+  have `animate-none`). Tested in `src/tecton/__tests__/select-modal.test.tsx`. `ContextMenu` stays
+  modal: Base UI's context-menu root drops `modal` (its props omit it, and the menu store forces
+  `modal` for a context menu), so no overlay default can reach it.
 - **Variant axes** — `alert` (`variant` success / warning / info, `appearance` default / outline /
   filled, exposed as `data-variant` / `data-appearance`; `alertVariants` exported), `badge`
   (`variant` success / warning / info, `appearance` solid / outline, `size` default / md / lg,
