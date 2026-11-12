@@ -178,20 +178,24 @@ const pinnedCellClassName = cn(
 
 /**
  * The fade of the columns scrolled under the pinned ones, at the inner
- * edge of the pinned column next to them: a short band past that edge in
- * the cell's own fill (the header's, the row's stripe, hover or
- * selection), so the scrolled content dissolves into the row it is in. It
- * is Tecton's scroll fade (`scroll-fade-x`): its reveal keyframes, run by
- * the table's scroll position, so the start's fade shows once the table
- * is scrolled from its start and the end's while there is more to scroll
- * to, its `--scroll-fade-size` and `--scroll-fade-reveal`. The cell clips
- * its content but for the band (a length: Chrome computes a `calc()` in
- * `overflow-clip-margin` as 0). Without scroll-driven animations there is
- * no fade. RTL mirrors it.
+ * edge of the pinned column next to them: a band past that edge in the
+ * cell's own fill (the header's, the row's stripe, hover or selection,
+ * inherited, so it is always the row's), opaque at the edge and clear at
+ * its far side, so the scrolled content dissolves into the row it is in.
+ * The band is 2rem, a few glyphs wide, and eases out (`--pin-fade`): over
+ * a narrower or linear one a glyph going under the edge still reads as
+ * cut. It is Tecton's scroll fade (`scroll-fade-x`): its reveal
+ * keyframes, run by the table's scroll position, so the start's fade
+ * shows once the table is scrolled from its start and the end's while
+ * there is more to scroll to, its `--scroll-fade-size` and
+ * `--scroll-fade-reveal`. The cell clips its content but for the band (a
+ * length: Chrome computes a `calc()` in `overflow-clip-margin` as 0).
+ * Without scroll-driven animations there is no fade. RTL mirrors it.
  */
 const PIN_FADE = cn(
-  "overflow-clip [overflow-clip-margin:0.75rem]",
-  "after:pointer-events-none after:absolute after:inset-y-0 after:bg-inherit after:content-[''] after:[--scroll-fade-size:0.75rem]",
+  "overflow-clip [overflow-clip-margin:2rem]",
+  "after:pointer-events-none after:absolute after:inset-y-0 after:bg-inherit after:content-[''] after:[--scroll-fade-size:2rem]",
+  "after:[--pin-fade:#000,rgb(0_0_0/0.97)_15%,rgb(0_0_0/0.85)_30%,rgb(0_0_0/0.6)_50%,rgb(0_0_0/0.3)_70%,rgb(0_0_0/0.08)_88%,transparent]",
   "after:[animation-duration:1ms] after:[animation-fill-mode:both] after:[animation-timeline:scroll(nearest_inline)] after:[animation-timing-function:ease-in-out]",
   "not-supports-[animation-timeline:scroll()]:after:hidden"
 )
@@ -200,12 +204,12 @@ const PIN_FADE_SIDE = {
   start: cn(
     PIN_FADE,
     "after:start-full after:w-(--scroll-fade-s) after:[animation-name:scroll-fade-reveal-s] after:[animation-range:0_var(--scroll-fade-reveal,--spacing(24))]",
-    "after:[mask-image:linear-gradient(to_right,#000,transparent)] rtl:after:[mask-image:linear-gradient(to_left,#000,transparent)]"
+    "after:[mask-image:linear-gradient(to_right,var(--pin-fade))] rtl:after:[mask-image:linear-gradient(to_left,var(--pin-fade))]"
   ),
   end: cn(
     PIN_FADE,
     "after:end-full after:w-(--scroll-fade-e) after:[animation-name:scroll-fade-reveal-e] after:[animation-range:calc(100%-var(--scroll-fade-reveal,--spacing(24)))_100%]",
-    "after:[mask-image:linear-gradient(to_left,#000,transparent)] rtl:after:[mask-image:linear-gradient(to_right,#000,transparent)]"
+    "after:[mask-image:linear-gradient(to_left,var(--pin-fade))] rtl:after:[mask-image:linear-gradient(to_right,var(--pin-fade))]"
   ),
 } as const
 
