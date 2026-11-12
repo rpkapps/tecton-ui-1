@@ -1,8 +1,8 @@
 "use client"
 
 /**
- * The `dateInput` feature of `lazy.ts`: a date filter's calendar (and,
- * later, a date editor's), loaded on demand with the calendar's code. The
+ * The `dateInput` feature of `lazy.ts`: a date filter's calendar and a
+ * date editor's, loaded on demand with the calendar's code. The
  * calendar is in the provider's locale: its month and day names, its first
  * day of the week, its labels for screen readers, each locale a chunk of
  * its own loaded with it (en-US is built in). It shows `fallback` while a
@@ -140,4 +140,50 @@ function DateRangeFilter({
   )
 }
 
-export { DateRangeFilter }
+/**
+ * A day picked on a month calendar, for a date editor: the day shown
+ * focused as it opens (the selected one, else today's), so the arrows move
+ * from it at once.
+ */
+function DateCalendar({
+  value,
+  onValueChange,
+  locale,
+  dir,
+  fallback,
+}: {
+  value: Date | undefined
+  onValueChange: (day: Date) => void
+  /** The provider's locale. */
+  locale: string
+  dir: "ltr" | "rtl"
+  /** Shown while the calendar's locale loads. */
+  fallback: React.ReactNode
+}) {
+  const calendarLocale = useCalendarLocale(locale)
+  const [month, setMonth] = React.useState(() => value ?? new Date())
+  const [endMonth] = React.useState(
+    () => new Date(new Date().getFullYear() + 10, 11)
+  )
+  if (calendarLocale === null) return fallback
+  return (
+    <Calendar
+      mode="single"
+      selected={value}
+      onSelect={(day) => {
+        if (day) onValueChange(day)
+      }}
+      month={month}
+      onMonthChange={setMonth}
+      captionLayout="dropdown"
+      endMonth={endMonth}
+      locale={calendarLocale}
+      dir={dir}
+      fixedWeeks
+      autoFocus
+      className="p-0"
+    />
+  )
+}
+
+export { DateCalendar, DateRangeFilter }

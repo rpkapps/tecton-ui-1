@@ -10,7 +10,9 @@
  * in the cell selection, and their writes, are read from the `cells`
  * store, as text that is the same while they show the same: selecting
  * cells renders the rows whose cells change, and in them the cells' own
- * elements, not their content.
+ * elements, not their content. The cell being edited is read there too: its
+ * row draws the editor (the code on demand's, `editing/`) in place of its
+ * content, which stays under it.
  *
  * Each row passes the props a virtualized body gives it (`aria-rowindex`,
  * `data-index`) on to its `TableRow`, inside the `TableRowConfig` that tells
@@ -52,6 +54,7 @@ import {
 import {
   ALIGN,
   cellBorderClassName,
+  cellContent,
   cellInner,
   INDENT,
   pinnedCellClassName,
@@ -142,6 +145,9 @@ const NO_CELLS: Store<CellsState> = createStore<CellsState>({
   marks: new Map(),
   writer: null,
   change: null,
+  editing: null,
+  editor: null,
+  edits: null,
 })
 
 function ItemRowComponent<T>({
@@ -157,6 +163,12 @@ function ItemRowComponent<T>({
   )
   const skipped = useStore(cells, (state) => state.grid?.skipped ?? "")
   const writes = useStore(cells, (state) => state.marks.get(row.id))
+  // The cell being edited, when it is one of this row's: only its row
+  // renders as an edit begins and ends (and its editor as the user types).
+  const editing = useStore(cells, (state) =>
+    state.editing?.row === row.id ? state.editing : null
+  )
+  const editor = editing ? cells.get().editor : null
   // Set with the first mark, never removed: there whenever `writes` is.
   const writer = writes ? cells.get().writer : null
   const columnCount = shared.columns.length
@@ -232,23 +244,45 @@ function ItemRowComponent<T>({
             <DataTableSelectionCheckbox />
           </TableCell>
         )}
-        {shared.columns.map((column, index) =>
-          renderCell(
+        {shared.columns.map((column, index) => {
+          const edited = editing?.column === column.id ? editing : null
+          const Editor = edited && editor?.Editor
+          return renderCell(
             column,
             index,
             shared,
-            inner[index],
-            marks === WAITING ? UNKNOWN : flags?.[index],
-            writes &&
-              writer?.shownMark(
-                writes.get(column.id),
-                column.getValue(row.item)
-              ),
-            shared.editable &&
-              !isCellEditable(true, column, row.item, row.disabled),
-            writer
+            Editor
+              ? cellInner(
+                  column,
+                  row,
+                  shared,
+                  <Editor
+                    editing={edited}
+                    column={column as EngineColumn<unknown>}
+                    item={row.item}
+                    display={cellContent(column, row, shared.formatter)}
+                    wrap={shared.wrap && column.definition.wrap === true}
+                  />
+                )
+              : inner[index],
+            {
+              flags: marks === WAITING ? UNKNOWN : flags?.[index],
+              // While edited, the cell shows its editor's state, not its write's.
+              mark:
+                writes && !Editor
+                  ? writer?.shownMark(
+                      writes.get(column.id),
+                      column.getValue(row.item)
+                    )
+                  : undefined,
+              readOnly:
+                shared.editable &&
+                !isCellEditable(true, column, row.item, row.disabled),
+              writer,
+              editing: Editor ? { invalid: edited.error !== null } : null,
+            }
           )
-        )}
+        })}
       </TableRow>
     </TableRowConfig>
   )

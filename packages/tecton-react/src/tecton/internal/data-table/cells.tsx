@@ -27,12 +27,10 @@
  *   Ctrl / Cmd + D fills down (`editable`). Off the data cells (a header,
  *   a group or totals row), those that would write or copy say to select
  *   cells first.
- * - Enter, F2 and a double click on a cell that can be written (read from
- *   the items, as `aria-readonly` is) are its editor's (`EditingFeature`):
- *   until there is one, they do nothing there; on other cells, Enter and a
- *   double click activate the row. Decided here, not by the code on
- *   demand: a table that is `editable` without a cell selection never
- *   loads it, and a key before it came must not activate the row instead.
+ *
+ * Editing's keys (Enter, F2, typing, a double click) are `edits.tsx`'s:
+ * a table that is `editable` without a cell selection never loads this
+ * code.
  */
 import * as React from "react"
 
@@ -43,7 +41,6 @@ import {
   type TableGridController,
   type TableGridOptions,
 } from "../table-grid"
-import { isCellEditable } from "./cell-marks"
 import type { CopySink } from "./cell-selection/index"
 import type { DataTableContextValue } from "./context"
 import type { DataTableCellPosition } from "./engine/index"
@@ -215,11 +212,9 @@ function useCellSelection({
 }) {
   const t = useTranslations("dataTable")
   const { module, load } = useFeature("cellSelection", on)
-  // Read only for a cell that can be written.
-  const editing = useFeature("editing", true).module
-  const latest = React.useRef({ t, bodyIndex, editing, on })
+  const latest = React.useRef({ t, bodyIndex, on })
   React.useInsertionEffect(() => {
-    latest.current = { t, bodyIndex, editing, on }
+    latest.current = { t, bodyIndex, on }
   })
   const [queue] = React.useState<Array<CellEvent>>(() => [])
   const handlers = React.useRef<CellHandlers | null>(null)
@@ -353,39 +348,12 @@ function useCellSelection({
       })
     }
 
-    // Enter, F2, a double click: a cell that can be written is its editor's.
-    const onCellAction: NonNullable<TableGridOptions["onCellAction"]> = (
-      cell,
-      _event,
-      how
-    ) => {
-      const at = positionOf(cell)
-      if (!at) return false
-      const { options, model, layout } = context.store.get()
-      const item = model.item(at.row)
-      const column = layout.columns.find((each) => each.id === at.column)
-      if (
-        item === undefined ||
-        !column ||
-        !isCellEditable(
-          options.editable,
-          column,
-          item,
-          model.isDisabled(at.row)
-        )
-      )
-        return false
-      latest.current.editing?.startEditing?.(at, how)
-      return true
-    }
-
     return {
       positionOf,
       onKeyDown,
       onFocus,
       onMouseDown,
       onCellNavigate,
-      onCellAction,
     }
   })
 

@@ -23,6 +23,7 @@ import {
   type CsvOptions,
   type DataTableAllMatching,
   type DataTableCellChange,
+  type DataTableCellPosition,
   type DataTableCellRange,
   type DataTableCellSelectionChangeReason,
   type DataTableCellsChangeReason,
@@ -31,6 +32,7 @@ import {
   type DataTableValue,
   type DataTableView,
   type DataTableViewChangeReason,
+  type EngineColumn,
   type Formatter,
 } from "./engine/index"
 import type { Warn } from "./warnings"
@@ -184,7 +186,7 @@ type DataTableState<T> = {
    * and without a cell selection mode.
    */
   readonly cellGrid: CellGrid<T> | null
-  /** The breakpoints the window is below (columns' `hideBelow`), with a cell selection mode. */
+  /** The breakpoints the window is below (columns' `hideBelow`), with a cell selection mode or `editable`. */
   readonly cellBelow: ReadonlySet<string>
 }
 
@@ -221,6 +223,55 @@ type CellWriter = {
   clearMessages: (cells: Store<CellsState>) => void
 }
 
+/**
+ * The cell being edited (`editable`): its row and column, the editor's
+ * session (the code on demand's, opaque here) and the message of a draft
+ * that is not valid. A new object only when the edit begins, ends or its
+ * message changes: typing renders the editor alone, not its row.
+ */
+type EditingCell = {
+  readonly row: string
+  readonly column: string
+  readonly session: object
+  readonly error: string | null
+}
+
+/** What the row of the cell being edited gives its editor. */
+type CellEditorProps = {
+  editing: EditingCell
+  column: EngineColumn<unknown>
+  item: unknown
+  /** The cell's content as it shows, kept under the editor so the cell keeps its size. */
+  display: React.ReactNode
+  /** Multi-line: a `wrap` column, in a table whose rows may grow. */
+  wrap: boolean
+}
+
+/**
+ * The editors (`editing/`): put in the cells' store by the code on demand
+ * as it attaches, so the rows draw an editor only once it is there.
+ */
+type CellEditor = {
+  Editor: React.ComponentType<CellEditorProps>
+}
+
+/**
+ * The table's editing, as `useDataTable` and a boolean cell's checkbox
+ * reach it (`cells.tsx`): kept until its code is there, then handed to it.
+ */
+type EditRequests = {
+  /** Edits a cell (focused first), its value kept. */
+  start: (cell: DataTableCellPosition) => void
+  /** Ends the edit: saves the draft (`commit`), or drops it. */
+  stop: (commit: boolean) => void
+  /** Writes a cell's value at once (a boolean cell's checkbox). */
+  write: (
+    cell: DataTableCellPosition,
+    value: DataTableValue,
+    event?: Event
+  ) => void
+}
+
 /** What the rows' cells show of the cell selection and of writes, apart from the table's state. */
 type CellsState = {
   /** The cell selection over the rows and columns shown. */
@@ -239,6 +290,12 @@ type CellsState = {
     readonly ranges: ReadonlyArray<DataTableCellRange>
     readonly reason: DataTableCellSelectionChangeReason
   } | null
+  /** The cell being edited, one at a time. */
+  readonly editing: EditingCell | null
+  /** The editors, there once their code is. */
+  readonly editor: CellEditor | null
+  /** The table's editing, while `DataTableContent` is there with `editable`. */
+  readonly edits: EditRequests | null
 }
 
 /** The second argument of `onCellsChange`. */
@@ -451,9 +508,13 @@ export {
   useNumberFormat,
 }
 export type {
+  CellEditor,
+  CellEditorProps,
   CellMark,
   CellsState,
   CellWriter,
+  EditingCell,
+  EditRequests,
   DataTableActions,
   DataTableCellSelectionMode,
   DataTableCellsChangeDetails,

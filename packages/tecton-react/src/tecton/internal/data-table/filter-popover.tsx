@@ -32,10 +32,10 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from "@tecton/react/components/radio-group"
-import { Skeleton } from "@tecton/react/components/skeleton"
 import { useDirection, useLocale } from "@tecton/react/tecton/provider"
 
 import { useTranslations } from "../i18n/translations"
+import { CalendarPlaceholder } from "./calendar-placeholder"
 import {
   useDataTableSelector,
   useNumberFormat,
@@ -241,19 +241,6 @@ function OptionsFilter({
           </div>
         )
       })}
-    </div>
-  )
-}
-
-/**
- * The calendar's place while its code loads: as big as the calendar, a month
- * of six weeks (`fixedWeeks`), so the popover does not change size.
- */
-function CalendarPlaceholder() {
-  return (
-    <div aria-hidden className="flex h-[19.125rem] w-56 flex-col gap-4">
-      <Skeleton className="mx-auto h-8 w-32" />
-      <Skeleton className="flex-1" />
     </div>
   )
 }

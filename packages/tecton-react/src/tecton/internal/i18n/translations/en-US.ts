@@ -234,6 +234,14 @@ const enUS = {
     invalidDate: "Enter a date",
     invalidBoolean: "Enter {yes} or {no}",
     invalidOption: "Choose one of the options",
+    // Editing (`editable`): an editor's name, its column's and its row's
+    // ("Depth, Troll A-1"); said once a save that took a while is done;
+    // the date editor's calendar button; the options editor's list when
+    // nothing matches what was typed.
+    editorLabel: "{columnName}, {rowName}",
+    cellSaved: "Saved",
+    chooseDate: "Choose a date",
+    noMatchingOptions: "No matching options",
     // `DataTableCellSummary`: its name, and its figures over the selected
     // cells ({value} is formatted).
     cellSummary: "Selected cells",

@@ -33,7 +33,9 @@
  *
  * The cells: with `editable` or a cell selection, focus moves cell by cell
  * (the grid's `cellFocus`); a cell selection's keys, presses and clipboard
- * are `cells.tsx`'s, and each row draws its cells' part in it.
+ * are `cells.tsx`'s, editing's keys and presses `edits.tsx`'s (first: a key
+ * that edits is not the selection's), and each row draws its cells' part
+ * in them.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -89,6 +91,7 @@ import {
 } from "./engine/index"
 import { useFeature, usePrefetchFeatures } from "./lazy"
 import { useCellSelection } from "./cells"
+import { useCellEditing } from "./edits"
 import { DataTableHeader, type HeaderShared } from "./header"
 import { describeRow, renderRow } from "./row"
 import { createRowOrder, inItemOrder, type RowOrder } from "./row-order"
@@ -805,9 +808,12 @@ function DataTableContentImpl({
       handlePin,
       pinned,
       actions,
-      cells: cellMode ? context.cells : null,
+      cells: cellMode || options.editable ? context.cells : null,
+      selecting: cellMode,
       cellFocus: options.cellFocus,
       editable: options.editable,
+      editLabel: (columnName: string, rowName: string) =>
+        tTable("editorLabel", { columnName, rowName }),
     }),
     [
       shownColumns,
@@ -844,6 +850,7 @@ function DataTableContentImpl({
       context.cells,
       options.cellFocus,
       options.editable,
+      tTable,
     ]
   )
   const render = React.useCallback(
@@ -881,6 +888,39 @@ function DataTableContentImpl({
     on: cellMode,
     bodyIndex,
   })
+  const editing = useCellEditing({
+    context,
+    container,
+    grid: gridController,
+    on: options.editable,
+    bodyIndex,
+    positionOf: cellSelection.positionOf,
+  })
+  // Editing's keys first: a key that edits is not the cell selection's.
+  const { editable } = options
+  const onKeyDown = React.useCallback(
+    (event: React.KeyboardEvent<HTMLTableElement>) => {
+      if (editable) editing.onKeyDown(event)
+      if (cellMode && !event.isPropagationStopped())
+        cellSelection.onKeyDown(event)
+    },
+    [editable, cellMode, editing, cellSelection]
+  )
+  const onFocus = React.useCallback(
+    (event: React.FocusEvent<HTMLTableElement>) => {
+      if (editable) editing.onFocus()
+      if (cellMode) cellSelection.onFocus(event)
+    },
+    [editable, cellMode, editing, cellSelection]
+  )
+  const onMouseDown = React.useCallback(
+    (event: React.MouseEvent<HTMLTableElement>) => {
+      if (editable) editing.onMouseDown(event)
+      if (cellMode) cellSelection.onMouseDown()
+    },
+    [editable, cellMode, editing, cellSelection]
+  )
+  const cellKeys = cellMode || editable
   // A group's row to focus once the page that holds it shows
   // (`restoreFocusTo`): tried on the first render after it is asked for,
   // and given up there when the page did not change (a controlled `page`
@@ -953,7 +993,7 @@ function DataTableContentImpl({
       // A row is entered at its first column of data.
       firstCell: (selection ? 1 : 0) + (handle ? 1 : 0),
       onCellNavigate: cellMode ? cellSelection.onCellNavigate : undefined,
-      onCellAction: options.cellFocus ? cellSelection.onCellAction : undefined,
+      onCellAction: options.editable ? editing.onCellAction : undefined,
       multiselectable: options.cellSelectionMode === "range",
       // Select all and the header read the engine, never the rows'
       // descriptions: no row is formatted or described for them.
@@ -1020,7 +1060,7 @@ function DataTableContentImpl({
       options.cellSelectionMode,
       cellMode,
       cellSelection.onCellNavigate,
-      cellSelection.onCellAction,
+      editing.onCellAction,
       selection,
       handle,
       server,
@@ -1182,9 +1222,9 @@ function DataTableContentImpl({
             aria-labelledby={ariaLabelledBy}
             aria-describedby={ariaDescribedBy}
             aria-busy={loading || undefined}
-            onKeyDown={cellMode ? cellSelection.onKeyDown : undefined}
-            onFocus={cellMode ? cellSelection.onFocus : undefined}
-            onMouseDown={cellMode ? cellSelection.onMouseDown : undefined}
+            onKeyDown={cellKeys ? onKeyDown : undefined}
+            onFocus={cellKeys ? onFocus : undefined}
+            onMouseDown={cellKeys ? onMouseDown : undefined}
             // Left out, not undefined: a virtualized body counts its own.
             {...(rowCount === undefined ? {} : { "aria-rowcount": rowCount })}
           >

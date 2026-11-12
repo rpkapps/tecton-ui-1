@@ -77,20 +77,48 @@ type DataTableHeaderDetails = {
   sorted: DataTableSort["direction"] | null
 }
 
-/** The props of a column's `renderEditor`. */
+/**
+ * The props of a column's `renderEditor`: an editor of its own for the
+ * column's cells, drawn over the cell being edited (the cell keeps its
+ * size; the editor fills it). Enter saves and moves down, Shift + Enter
+ * up, Tab and Shift + Tab to the next and previous cell, Escape cancels,
+ * unless the editor prevents the key's default (a list taking Enter).
+ */
 type DataTableEditorProps<T> = {
   item: T
   /** The column's id. */
   column: string
-  /** The value being edited. */
+  /**
+   * The value being edited: the cell's, or (begun by typing) the
+   * character typed read as the column's value, `null` when it does not
+   * read as one.
+   */
   value: DataTableValue
   onValueChange: (value: DataTableValue) => void
-  /** Saves the value and ends editing. */
-  onCommit: () => void
-  /** Ends editing without saving. */
-  onCancel: () => void
-  /** The column's `validate` message for the value, `null` when valid. */
+  /**
+   * Saves the value (checked by the column's `validate` first) and ends
+   * the edit; `move`: where focus goes then (`"none"`, the cell, by
+   * default).
+   */
+  commit: (options?: {
+    move?: "down" | "up" | "next" | "previous" | "none"
+  }) => void
+  /** Ends the edit without saving. */
+  cancel: () => void
+  /** Why the value was not saved (the column's `validate`), `null` while it is valid. */
   error: string | null
+  /**
+   * For the element that takes focus (an input): its `ref` (focused as the
+   * edit begins), its name, `aria-invalid` and `aria-describedby` with the
+   * error, and a `className` that makes a text field flush with the cell.
+   */
+  inputProps: {
+    ref: React.RefCallback<HTMLElement>
+    "aria-label": string
+    "aria-invalid": true | undefined
+    "aria-describedby": string | undefined
+    className: string
+  }
 }
 
 type DataTableLeafColumn<T> = {
@@ -110,6 +138,7 @@ type DataTableLeafColumn<T> = {
   options?: ReadonlyArray<DataTableOption>
   cell?: (item: T, details: DataTableCellDetails) => React.ReactNode
   renderHeader?: (details: DataTableHeaderDetails) => React.ReactNode
+  /** The cell's editor in place of its type's (`editable`). */
   renderEditor?: (props: DataTableEditorProps<T>) => React.ReactNode
   /** By type by default: numbers at the end, booleans centred, the rest at the start. */
   align?: "start" | "center" | "end"
@@ -124,14 +153,15 @@ type DataTableLeafColumn<T> = {
   /** Filters the column's rows in place of its type's filter, for any filter value. */
   filter?: (item: T, filterValue: DataTableFilterValue) => boolean
   /**
-   * Checks a value before it is written (pasted, filled, cleared): a
-   * message rejects it, `null` lets it through.
+   * Checks a value before it is written (edited, pasted, filled,
+   * cleared): a message rejects it, `null` lets it through.
    */
   validate?: (value: DataTableValue, item: T) => string | null
   /**
-   * Reads pasted text as the column's value, in place of its type's
-   * reading (a number in the locale, a date, Yes / No, an option's
-   * label). Throw an `Error` to reject the text: its message is shown.
+   * Reads text typed in the cell's editor or pasted as the column's
+   * value, in place of its type's reading (a number in the locale, a
+   * date, Yes / No, an option's label). Throw an `Error` to reject the
+   * text: its message is shown.
    */
   parse?: (text: string, item: T) => DataTableValue
   /** In px. */

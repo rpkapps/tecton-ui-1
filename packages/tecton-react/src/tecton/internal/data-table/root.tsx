@@ -190,7 +190,8 @@ type DataTableProps<T> = Omit<
    */
   groupable?: boolean
   /**
-   * Cells can be written: pasted into, cleared and filled down (with a
+   * Cells can be written: edited in place (Enter, F2, typing, a double
+   * click), pasted into, cleared and filled down (with a
    * `cellSelectionMode`), reported through `onCellsChange`; a column opts
    * out with `editable: false`, or per item with a function. Cells are
    * focused one by one.
@@ -292,10 +293,10 @@ type DataTableProps<T> = Omit<
     eventDetails: DataTableChangeDetails<DataTableRowOrderChangeReason>
   ) => void
   /**
-   * Cells written (`editable`): pasted, cleared, filled down. Update
-   * `items`; the table does not change them itself. Return a promise to
-   * show the cells as saving until it settles, and as not saved, with the
-   * error's message, if it rejects.
+   * Cells written (`editable`): edited, pasted, cleared, filled down.
+   * Update `items`; the table does not change them itself. Return a
+   * promise to show the cells as saving until it settles, and as not
+   * saved, with the error's message, if it rejects.
    */
   onCellsChange?: (
     changes: Array<DataTableCellChange<T>>,
@@ -1052,9 +1053,10 @@ function DataTable<T>({
   }, [groupKeys, closedGroups])
   const formatter = getFormatter(getColumnModel(columns), locale, labels)
   const cellMode = cellSelectionMode !== "none"
-  // Columns hidden below the window's breakpoint hold no selected cells.
+  // Columns hidden below the window's breakpoint hold no selected cells,
+  // and an editor's Tab passes over them.
   const below = useBelowBreakpoints(
-    cellMode
+    cellMode || editable
       ? layout.columns.flatMap((column) => column.definition.hideBelow ?? [])
       : NO_BREAKPOINTS
   )
@@ -1274,6 +1276,9 @@ function DataTable<T>({
       marks: NO_MARKS,
       writer: null,
       change: null,
+      editing: null,
+      editor: null,
+      edits: null,
     })
   )
   const [context] = React.useState<DataTableContextValue<T>>(() => {

@@ -16,7 +16,8 @@
  *    promise's to reject;
  * 4. while a promise it returned is pending, shows those cells as saving
  *    (dimmed, `aria-busy`), and if it rejects (or the handler throws), as
- *    not saved, with the error's message (announced too).
+ *    not saved, with the error's message (announced too: politely for an
+ *    edit, at once for the others).
  *
  * A later write that takes over a cell of a write still saving makes that
  * cell the later write's, and aborts the earlier write's `signal` (one
@@ -381,6 +382,8 @@ function writeCells(
     (error: unknown): SaveResult => {
       const message = messageOf(error, t("saveFailed"))
       const { own, superseded } = settle(message)
+      // An edit's cell is the one the user just left: said politely, as
+      // its save would be (`editing/`); a paste or a fill, at once.
       if (own)
         announce(
           t("cellsNotSaved", {
@@ -388,7 +391,7 @@ function writeCells(
             total: own.toLocaleString(formatter.locale),
             message,
           }),
-          { politeness: "assertive" }
+          { politeness: reason === "edit" ? "polite" : "assertive" }
         )
       return { ok: false, message, superseded }
     }
@@ -435,7 +438,7 @@ function describeWrite(
   return new Intl.ListFormat(locale, { type: "unit" }).format(parts)
 }
 
-export { describeWrite, markCells, writeCells }
+export { describeWrite, markCells, parseMessages, writeCells }
 export type {
   CellAt,
   CellWrite,

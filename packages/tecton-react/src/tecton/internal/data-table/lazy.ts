@@ -18,34 +18,16 @@
  *   handlers call these.
  *
  * Adding a feature is one entry of `FEATURES`: its `import()`, and `true`
- * after it to make it eager. The entries a later phase fills in load nothing yet. To
- * bundle a feature with the table instead (its size is small enough to not
- * matter), import its module statically where it is used.
+ * after it to make it eager. To bundle a feature with the table instead
+ * (its size is small enough to not matter), import its module statically
+ * where it is used.
  */
 import * as React from "react"
-
-/** The module of a feature whose code is still to come. */
-type PendingFeature = Readonly<Record<never, never>>
-
-const PENDING: PendingFeature = Object.freeze({})
-const pending = () => Promise.resolve(PENDING)
 
 type Feature<TModule> = {
   load: () => Promise<TModule>
   /** Loaded as soon as a table mounts with the feature on, not in idle time. */
   eager: boolean
-}
-
-/**
- * What the editing code gives the table (phase §5.9): a cell to start
- * editing, by Enter, F2 or a double click. Until it is there, those keys on
- * an editable cell do nothing (`content.tsx`).
- */
-type EditingFeature = {
-  startEditing?: (
-    cell: { row: string; column: string },
-    how: "enter" | "edit" | "double-click"
-  ) => void
 }
 
 function feature<TModule extends object>(
@@ -58,8 +40,8 @@ function feature<TModule extends object>(
 const FEATURES = {
   /** `exportCsv`: loaded when it is first called, never prefetched. */
   csv: feature(() => import("./engine/csv")),
-  /** `editable`: editors, validation, saves. */
-  editing: feature<EditingFeature>(pending),
+  /** `editable`: the editors, their keys and moves, saves. */
+  editing: feature(() => import("./editing/index")),
   /** `cellSelectionMode`: ranges, the drag, copy and paste, fill down, writes. */
   cellSelection: feature(() => import("./cell-selection/index")),
   /** A cell's message (not valid, not saved) in a tooltip: loaded when one first shows. */
@@ -174,4 +156,4 @@ function useFeature<TName extends FeatureName>(
 }
 
 export { loadFeature, useFeature, usePrefetchFeatures }
-export type { EditingFeature, FeatureModule, FeatureName }
+export type { FeatureModule, FeatureName }

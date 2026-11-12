@@ -80,7 +80,7 @@ const FIELDS = ["Gullfaks", "Snorre", "Valhall", "Balder"]
 const OPERATORS = ["Equinor", "Equinor", "Aker BP", "Aker BP"]
 const STATUSES: Array<Well["status"]> = ["producing", "shut-in", "drilling"]
 
-const wells: Array<Well> = Array.from({ length: 24 }, (_, i) => ({
+const WELLS: Array<Well> = Array.from({ length: 24 }, (_, i) => ({
   id: `w${i + 1}`,
   name: `34/10-${String.fromCharCode(65 + (i % 3))}-${i + 1}`,
   field: FIELDS[i % FIELDS.length],
@@ -91,6 +91,7 @@ const wells: Array<Well> = Array.from({ length: 24 }, (_, i) => ({
 
 export default function DataTableRtl() {
   const { t } = useTranslation(translations, "ar")
+  const [wells, setWells] = React.useState(WELLS)
   // New columns when the language changes, the same ones otherwise.
   const columns = React.useMemo(
     () =>
@@ -100,6 +101,7 @@ export default function DataTableRtl() {
           id: "name",
           header: t.well,
           cell: (_, { text }) => <bdi>{text}</bdi>,
+          editable: false,
         },
         { id: "field", header: t.field },
         { id: "operator", header: t.operator },
@@ -132,6 +134,18 @@ export default function DataTableRtl() {
       pinnableColumns
       filterable
       groupable
+      editable
+      onCellsChange={(changes) =>
+        setWells((current) =>
+          current.map((well) => {
+            const own = changes.filter((change) => change.row === well.id)
+            return own.reduce(
+              (next, change) => ({ ...next, [change.column]: change.value }),
+              well
+            )
+          })
+        )
+      }
       defaultView={{
         grouping: ["field"],
         columns: { pinned: { start: ["name"], end: [] } },

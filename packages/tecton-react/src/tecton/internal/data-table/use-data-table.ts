@@ -8,9 +8,10 @@
  */
 import * as React from "react"
 
-import { useStore } from "../store"
+import { useStore, type Store } from "../store"
 import {
   DataTableContext,
+  type CellsState,
   type DataTableActions,
   type DataTableContextValue,
   type DataTableExportOptions,
@@ -27,6 +28,7 @@ import {
   setSearch,
   setSorting,
   type DataTableAllMatching,
+  type DataTableCellPosition,
   type DataTableCellRange,
   type DataTableFilterValue,
   type DataTableLeafColumn,
@@ -141,6 +143,20 @@ type UseDataTableResult<T> = {
   clearCells: () => Promise<void>
   /** Fills each range down from its first row (`editable`), as Ctrl / Cmd + D does. */
   fillCellsDown: () => Promise<void>
+  /** The cell being edited (`editable`), by its row and column ids; `null` when none is. */
+  editingCell: DataTableCellPosition | null
+  /**
+   * Edits a cell (`editable`), as F2 does: focus goes to it (scrolled into
+   * view) and into its editor, its value kept. A cell that cannot be
+   * written, or is not shown, is left as it is. Loads the editors the
+   * first time, if the table has not yet.
+   */
+  startEditing: (cell: DataTableCellPosition) => void
+  /**
+   * Ends the edit: saves the draft (`commit`, the default; a draft that is
+   * not valid keeps the editor, with its message), or drops it.
+   */
+  stopEditing: (options?: { commit?: boolean }) => void
 }
 
 /** `useDataTable().cellSummary`. */
@@ -154,6 +170,8 @@ type DataTableCellSummaryValue = {
 function createResult<T>(
   state: DataTableState<T>,
   actions: DataTableActions<T>,
+  cells: Store<CellsState>,
+  editingCell: DataTableCellPosition | null,
   /** Asks for the cell selection's code (after the render). */
   wantCells: () => void
 ): UseDataTableResult<T> {
@@ -264,6 +282,10 @@ function createResult<T>(
     fillCellsDown: async () => {
       await actions.runCellCommand("fill")
     },
+    editingCell,
+    // There while `DataTableContent` is, with `editable`.
+    startEditing: (cell) => cells.get().edits?.start(cell),
+    stopEditing: (options) => cells.get().edits?.stop(options?.commit ?? true),
   }
 }
 
@@ -281,6 +303,16 @@ function useDataTable<T = unknown>(): UseDataTableResult<T> {
       "useDataTable must be called in a component inside a DataTable."
     )
   const state = useStore(context.store, (current) => current)
+  // As a key: a part renders as an edit begins and ends, not as its draft
+  // or its message changes.
+  const editingKey = useStore(context.cells, ({ editing }) =>
+    editing ? JSON.stringify([editing.row, editing.column]) : null
+  )
+  const editingCell = React.useMemo(() => {
+    if (editingKey === null) return null
+    const [row, column] = JSON.parse(editingKey) as [string, string]
+    return { row, column }
+  }, [editingKey])
   // A count or summary read before the cell selection's code came: it is
   // asked for once rendered (never while rendering, nor on the server).
   const wanted = React.useRef(false)
@@ -292,10 +324,10 @@ function useDataTable<T = unknown>(): UseDataTableResult<T> {
   })
   return React.useMemo(
     () =>
-      createResult(state, context.actions, () => {
+      createResult(state, context.actions, context.cells, editingCell, () => {
         wanted.current = true
       }),
-    [state, context.actions]
+    [state, context.actions, context.cells, editingCell]
   )
 }
 

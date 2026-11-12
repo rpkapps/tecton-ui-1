@@ -33,19 +33,31 @@
  * dashed `destructive` outline inside the range's, `aria-invalid` and its
  * message (with the value refused) as its description, in a tooltip too
  * (`cell-message.tsx`, from the code that writes, `CellWriter`). In a
- * table whose cells are written, a cell that cannot be is `aria-readonly`.
+ * table whose cells are written, a cell that cannot be is `aria-readonly`,
+ * and a boolean cell that can be is a checkbox, written as it is toggled
+ * (it has no editor). The cell being edited holds its editor in place of
+ * its content (`cellInner`), outlined by the cell's focus ring.
  */
 import * as React from "react"
 import { cn } from "cn"
 import { CheckIcon, ChevronRightIcon } from "lucide-react"
 
 import { Badge } from "@tecton/react/components/badge"
+import { Checkbox } from "@tecton/react/components/checkbox"
 import { Spinner } from "@tecton/react/components/spinner"
 import { TableCell, TableHead } from "@tecton/react/components/table"
 import { Link } from "@tecton/react/tecton/link"
 
 import type { Store } from "../store"
-import { BOTTOM, END, SELECTED, START, TOP, UNKNOWN } from "./cell-marks"
+import {
+  BOTTOM,
+  END,
+  isCellEditable,
+  SELECTED,
+  START,
+  TOP,
+  UNKNOWN,
+} from "./cell-marks"
 import type {
   CellMark,
   CellsState,
@@ -118,12 +130,19 @@ type RowShared<T> = {
   /** Columns are pinned: the row is opaque, each cell draws its border. */
   pinned: boolean
   actions: DataTableActions<T>
-  /** What the cells show of the cell selection and of writes; `null` without a cell selection mode. */
+  /**
+   * What the cells show of the cell selection, of writes and of the edit;
+   * `null` without a cell selection mode or `editable`.
+   */
   cells: Store<CellsState> | null
+  /** Cells select (`cellSelectionMode`): each says whether it is selected. */
+  selecting: boolean
   /** Cells are focused one by one (`editable` or a cell selection): they carry their column's id. */
   cellFocus: boolean
   /** Cells can be written: one that cannot is `aria-readonly`. */
   editable: boolean
+  /** The name of a cell's editor (its checkbox): its column's and its row's ("Active, Troll A-1"). */
+  editLabel: (columnName: string, rowName: string) => string
 }
 
 /** A group row's name, and its parts: the column's name before and after the value. */
@@ -377,11 +396,18 @@ function bodyClassName<T>(
   )
 }
 
+/** A boolean cell that can be written: a checkbox, written as it is toggled. */
+type CellToggle = {
+  label: string
+  write: (checked: boolean, event: Event) => void
+}
+
 /** The cell's content: the column's `cell`, or its type's display. */
 function cellContent<T>(
   column: EngineColumn<T>,
   row: ItemRow<T>,
-  formatter: Formatter<T>
+  formatter: Formatter<T>,
+  toggle?: CellToggle | null
 ): React.ReactNode {
   const value = column.getValue(row.item)
   const text = formatter.format(column, value)
@@ -394,6 +420,19 @@ function cellContent<T>(
       text,
       depth: row.depth,
     })
+  if (toggle)
+    return (
+      <Checkbox
+        data-slot="data-table-cell-checkbox"
+        aria-label={toggle.label}
+        checked={text !== "" && text === formatter.format(column, true)}
+        onCheckedChange={(checked, details) =>
+          toggle.write(checked, details.event)
+        }
+        // Dimmed with its cell while it saves.
+        className="[[aria-busy=true]>&]:opacity-50"
+      />
+    )
   if (text === "") return null
   switch (column.type) {
     case "boolean":
@@ -417,6 +456,29 @@ function cellContent<T>(
     }
     default:
       return text
+  }
+}
+
+/** A boolean cell's checkbox, when it can be written (and draws no `cell` of its own). */
+function toggleOf<T>(
+  column: EngineColumn<T>,
+  row: ItemRow<T>,
+  shared: RowShared<T>
+): CellToggle | null {
+  const { cells } = shared
+  if (
+    column.type !== "boolean" ||
+    column.definition.cell ||
+    !cells ||
+    !isCellEditable(shared.editable, column, row.item, row.disabled)
+  )
+    return null
+  return {
+    label: shared.editLabel(column.header, rowText(row.item, shared)),
+    write: (checked, event) =>
+      cells
+        .get()
+        .edits?.write({ row: row.id, column: column.id }, checked, event),
   }
 }
 
@@ -539,16 +601,23 @@ function rowText<T>(item: T, shared: RowShared<T>) {
  * What a body cell of an item row holds: its content, and in the row
  * header its link and tree chevron. Kept by the row while the row and the
  * table's shared state stay, so a change of the cell's selection or write
- * renders the cell's element only.
+ * renders the cell's element only. `editor`, for the cell being edited,
+ * takes the content's place (and the link's: the chevron and indent stay).
  */
 function cellInner<T>(
   column: EngineColumn<T>,
   row: ItemRow<T>,
-  shared: RowShared<T>
+  shared: RowShared<T>,
+  editor?: React.ReactNode
 ): React.ReactNode {
-  let content = cellContent(column, row, shared.formatter)
+  let content =
+    editor ??
+    cellContent(column, row, shared.formatter, toggleOf(column, row, shared))
   if (column !== shared.rowHeader) return content
-  const href = shared.linked ? shared.actions.hrefOf(row.item) : undefined
+  const href =
+    shared.linked && editor === undefined
+      ? shared.actions.hrefOf(row.item)
+      : undefined
   // A row disabled for everything is not followed either.
   if (href !== undefined)
     content = (
@@ -581,28 +650,44 @@ function cellInner<T>(
   return content
 }
 
+/** A body cell's state, as its row reads it from the cells' store. */
+type CellState = {
+  /** Its part in the cell selection (`UNKNOWN` until a selection given is resolved). */
+  flags?: number
+  /** Its write, as `writer` shows it. */
+  mark?: CellMark
+  /** It cannot be written, in a table whose cells are (`aria-readonly`). */
+  readOnly?: boolean
+  writer?: CellWriter | null
+  /** It is being edited; `invalid`: its draft is not valid. */
+  editing?: { invalid: boolean } | null
+}
+
+/**
+ * The cell being edited: outlined by the cell's own focus ring (its editor
+ * has none, `editing/`), dashed in `destructive` too while its draft is not
+ * valid.
+ */
+const EDITING_CELL = "outline-2 -outline-offset-2 outline-ring"
+
 /**
  * A body cell of an item row; `index` is the column's place in
- * `shared.columns`, `inner` its content (`cellInner`), `flags` its part in
- * the cell selection (`UNKNOWN` until a selection given is resolved), `mark` its write (as `writer` shows it), and
- * `readOnly` whether it cannot be written in a table whose cells are
- * (`aria-readonly`).
+ * `shared.columns`, `inner` its content (`cellInner`).
  */
 function renderCell<T>(
   column: EngineColumn<T>,
   index: number,
   shared: RowShared<T>,
   inner: React.ReactNode,
-  flags = 0,
-  mark?: CellMark,
-  readOnly = false,
-  writer?: CellWriter | null
+  { flags = 0, mark, readOnly = false, writer, editing }: CellState = {}
 ): React.ReactNode {
   const pin = shared.pins[index]
   const known = flags !== UNKNOWN
   const className = cn(
     bodyClassName(column, pin, shared),
-    cellStateClassName(known ? flags : 0, mark, pin !== undefined)
+    cellStateClassName(known ? flags : 0, mark, pin !== undefined),
+    editing && EDITING_CELL,
+    editing?.invalid && cn(pin === undefined && "relative", INVALID_CELL)
   )
   const style = pin && pinStyle(pin)
   const props = {
@@ -612,7 +697,7 @@ function renderCell<T>(
     // Every data cell can be selected: said of each, selected or not.
     // Not said while a selection given is still to be resolved.
     "aria-selected":
-      shared.cells && known ? (flags & SELECTED) !== 0 : undefined,
+      shared.selecting && known ? (flags & SELECTED) !== 0 : undefined,
     "aria-readonly": readOnly || undefined,
     "aria-busy": (mark && mark.pending !== null) || undefined,
     "aria-invalid": mark?.error ? true : undefined,
@@ -660,6 +745,7 @@ export {
 }
 export type {
   CellPin,
+  CellState,
   DetailStore,
   GroupCell,
   GroupCells,
