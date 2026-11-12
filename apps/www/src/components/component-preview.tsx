@@ -6,6 +6,7 @@ import { cn } from "cn"
 import { Button } from "@tecton/react/components/button"
 import { Spinner } from "@tecton/react/components/spinner"
 import { TectonProvider } from "@tecton/react/tecton/provider"
+import { ThemeRoot } from "@tecton/react/tecton/theme-root"
 
 import { CodeBlock } from "@/components/code-block"
 import {
@@ -264,12 +265,13 @@ function RtlPreview({ children }: { children: React.ReactNode }) {
   const dir = language === "en" ? "ltr" : "rtl"
   const locale =
     language === "ar" ? "ar-EG" : language === "he" ? "he-IL" : "en-US"
+  // A theme root: the overlays the preview opens portal into a container of
+  // its own, in its direction, so they are placed and laid out as in a
+  // right-to-left application.
   return (
-    <TectonProvider locale={locale} direction={dir}>
-      <div dir={dir} data-lang={language}>
-        {children}
-      </div>
-    </TectonProvider>
+    <ThemeRoot locale={locale} dir={dir} data-lang={language}>
+      {children}
+    </ThemeRoot>
   )
 }
 

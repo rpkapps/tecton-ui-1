@@ -391,7 +391,13 @@ function bodyClassName<T>(
     column.type === "number" && "tabular-nums",
     shared.fixed && "overflow-hidden text-ellipsis",
     shared.pinned && cellBorderClassName,
-    shared.wrap && column.definition.wrap && "whitespace-normal",
+    // Its line breaks shown, as its editor's text area has them.
+    shared.wrap && column.definition.wrap && "break-words whitespace-pre-wrap",
+    // A checkbox centred in the cell's own padding (the table's cells drop
+    // their end padding around a selection checkbox).
+    column.type === "boolean" &&
+      shared.editable &&
+      "[&:has([role=checkbox])]:pe-4",
     pin && pinnedCellClassName
   )
 }
@@ -429,8 +435,8 @@ function cellContent<T>(
         onCheckedChange={(checked, details) =>
           toggle.write(checked, details.event)
         }
-        // Dimmed with its cell while it saves.
-        className="[[aria-busy=true]>&]:opacity-50"
+        // Centred; dimmed with its cell while it saves.
+        className="mx-auto [[aria-busy=true]>&]:opacity-50"
       />
     )
   if (text === "") return null

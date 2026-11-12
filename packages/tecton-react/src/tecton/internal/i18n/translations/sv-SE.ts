@@ -195,6 +195,8 @@ export default defineTranslations({
     cellSaved: "Sparat",
     chooseDate: "Välj ett datum",
     noMatchingOptions: "Inga matchande alternativ",
+    editDiscarded:
+      "Redigeringen har förkastats: raden är inte längre tillgänglig",
     cellSummary: "Markerade celler",
     summarySum: "Summa: {value}",
     summaryAverage: "Medel: {value}",

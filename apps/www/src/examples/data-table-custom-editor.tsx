@@ -2,6 +2,7 @@
 
 import * as React from "react"
 
+import { Input } from "@tecton/react/components/input"
 import {
   createColumns,
   DataTable,
@@ -32,21 +33,26 @@ const INITIAL: Array<Casing> = [
 /**
  * A depth in metres, the unit beside the field: the table's keys (Enter,
  * Tab, Escape) save and cancel it, and `inputProps` names it, focuses it
- * and makes it flush with the cell.
+ * and makes Tecton's `Input` flush with the cell. It starts from the
+ * value, or from `initialText` when that is no number yet: a character
+ * typed to begin the edit ("-") is kept.
  */
 function MetresEditor({
   value,
+  initialText,
   onValueChange,
   inputProps,
 }: DataTableEditorProps<Casing>) {
+  // The number without its unit; a text that is none yet ("-") as typed.
   const [text, setText] = React.useState(
-    typeof value === "number" ? String(value) : ""
+    typeof value === "number" ? String(value) : (initialText ?? "")
   )
   return (
     <span className="flex size-full items-center gap-1">
-      <input
+      <Input
         {...inputProps}
-        inputMode="decimal"
+        // A minus sign on phones too (iOS's decimal keypad has none).
+        inputMode="text"
         value={text}
         onChange={(event) => {
           const next = event.target.value
@@ -76,9 +82,7 @@ const columns = createColumns<Casing>([
     format: { style: "unit", unit: "meter" },
     renderEditor: (props) => <MetresEditor {...props} />,
     validate: (value) =>
-      typeof value !== "number" || value <= 0
-        ? "Enter a depth in metres"
-        : null,
+      typeof value !== "number" ? "Enter a depth in metres" : null,
   },
 ])
 

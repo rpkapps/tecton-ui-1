@@ -224,6 +224,7 @@ export default defineTranslations({
     cellSaved: "Išsaugota",
     chooseDate: "Pasirinkite datą",
     noMatchingOptions: "Atitinkančių parinkčių nėra",
+    editDiscarded: "Redagavimas atmestas: eilutė nebepasiekiama",
     cellSummary: "Pažymėti langeliai",
     summarySum: "Suma: {value}",
     summaryAverage: "Vidurkis: {value}",

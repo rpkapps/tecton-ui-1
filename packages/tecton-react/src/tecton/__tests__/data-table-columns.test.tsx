@@ -1540,7 +1540,9 @@ describe("DataTable hideBelow and wrap", () => {
       'colgroup[data-slot="data-table-columns"] > col'
     )
     expect(wells).toHaveClass("hidden", "md:table-column")
-    expect(screen.getByText("ConocoPhillips")).toHaveClass("whitespace-normal")
+    expect(screen.getByText("ConocoPhillips")).toHaveClass(
+      "whitespace-pre-wrap"
+    )
   })
 })
 

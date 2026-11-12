@@ -11,14 +11,19 @@
  *   number in English (ASCII and Arabic-Indic digits, and the Arabic
  *   separators), a leading `+`, `-` or `−`, an accounting `(…)` for a
  *   negative, the column's currency, percent sign or unit around it (a `%`
- *   divides by 100 in a percent column); else a number as JavaScript
- *   writes it ("1234.5", "1e3"). Compact numbers ("1.2K") are not read: a
+ *   in a percent column is a percentage: its decimal point moved two
+ *   places, so "12.3%" is exactly 0.123; typed in the editor, a bare number
+ *   is one too, as in a spreadsheet); else a number as JavaScript writes
+ *   it ("1234.5", "1e3"). Compact numbers ("1.2K") are not read: a
  *   copy from the table carries the values themselves (`cell-selection/`).
  * - date: an ISO date ("2024-03-01", with a time too), or the day, month
  *   and year in the locale's order (the order of a date with the month as a
  *   number, or with its name: "1 mars 2024", "2024. gada 1. marts"), with a
  *   time after it (and AM / PM, "μ.μ."); a two-digit year is 1930–2029, as
- *   Excel reads it. Days are in the column's `timeZone`.
+ *   Excel reads it. Days are in the column's `timeZone`. The parts the
+ *   column's format does not show (its time of day, or the day or year of
+ *   a "March 2024" column), when the text has none, are the cell's value
+ *   before's, else the first of the month, this year and midnight.
  *
  * Direction marks (U+200E, U+200F, U+061C, the embeddings and isolates)
  * that `Intl` writes in right-to-left text are dropped first.
@@ -31,7 +36,7 @@
 import type { EngineColumn } from "./engine/columns"
 import { foldText, resolveLocale, type FormatLabels } from "./engine/format"
 import type { DataTableValue } from "./engine/types"
-import { partsIn, startOfDay } from "./engine/values"
+import { partsIn, startOfDay, toDate } from "./engine/values"
 
 /** The messages of text a column's type cannot read. */
 type ParseMessages = {
@@ -49,6 +54,11 @@ type ParseContext = {
   locale: string
   labels: FormatLabels
   messages: ParseMessages
+  /**
+   * Typed in the cell's editor (not pasted): a bare number in a percent
+   * column is a percentage ("15" is 15 %), as in a spreadsheet.
+   */
+  typed?: boolean
 }
 
 type NumberSymbols = {
@@ -105,7 +115,9 @@ const BIDI = /[\u200e\u200f\u061c\u202a-\u202e\u2066-\u2069]/g
 function parseNumber(
   text: string,
   locale: string,
-  format: Intl.NumberFormatOptions | undefined
+  format: Intl.NumberFormatOptions | undefined,
+  /** A bare number in a percent column is a percentage (typed, not pasted). */
+  typed = false
 ): number | undefined {
   const symbols = symbolsOf(locale, format)
   // Digits as ASCII, spaces (the no-break ones `Intl` writes) removed,
@@ -139,7 +151,11 @@ function parseNumber(
     number = Number(rest)
   if (number === undefined || !Number.isFinite(number)) return undefined
   if (negative) number = -number
-  return percent && format?.style === "percent" ? number / 100 : number
+  // A percentage's value: the decimal point moved two places, not a
+  // division (12.3 % is 0.123 exactly).
+  return (percent || typed) && format?.style === "percent"
+    ? Number(`${number}e-2`)
+    : number
 }
 
 /** Digits with the locale's separators only; `undefined` otherwise. */
@@ -317,12 +333,73 @@ function makeDate(
   return timeIn(year, month, day, hour, minute, second, timeZone)
 }
 
+type ShownParts = {
+  /** The day, month and year the format shows. */
+  fields: ReadonlySet<DateField>
+  /** It shows a time of day. */
+  time: boolean
+}
+
+const shownParts = new Map<string, ShownParts>()
+
+/** The parts of a date a column's format shows (`dateStyle: "medium"` by default). */
+function shownOf(format: Intl.DateTimeFormatOptions | undefined) {
+  const own = format ?? { dateStyle: "medium" as const }
+  const key = JSON.stringify(own)
+  let shown = shownParts.get(key)
+  if (!shown) {
+    const types = new Set<string>(
+      new Intl.DateTimeFormat("en-US", { ...own, timeZone: "UTC" })
+        .formatToParts(0)
+        .map((part) => part.type)
+    )
+    shown = {
+      fields: new Set(
+        (["year", "month", "day"] as const).filter((field) => types.has(field))
+      ),
+      time: ["hour", "minute", "second"].some((part) => types.has(part)),
+    }
+    shownParts.set(key, shown)
+  }
+  return shown
+}
+
+/**
+ * What a date takes for the parts its column's format does not show, and
+ * text without them: the cell's value before's (in the column's time
+ * zone), else the first of the month, this year, midnight.
+ */
+function fillOf(base: Date | null | undefined, timeZone: string | undefined) {
+  if (!base) {
+    const now = new Date()
+    return { year: now.getFullYear(), month: now.getMonth(), day: 1, time: [] }
+  }
+  const p = timeZone
+    ? partsIn(base.getTime(), timeZone)
+    : {
+        year: base.getFullYear(),
+        month: base.getMonth(),
+        day: base.getDate(),
+        hour: base.getHours(),
+        minute: base.getMinutes(),
+        second: base.getSeconds(),
+      }
+  return { ...p, time: [p.hour, p.minute, p.second] }
+}
+
 function parseDate(
   text: string,
   locale: string,
-  format: Intl.DateTimeFormatOptions | undefined
+  format: Intl.DateTimeFormatOptions | undefined,
+  /** The cell's value before: the parts the format does not show come from it. */
+  base?: Date | null
 ): Date | undefined {
   const timeZone = format?.timeZone
+  const shown = shownOf(format)
+  const fill = fillOf(base, timeZone)
+  // The time of day a format without one keeps.
+  const timeOf = (time: ReadonlyArray<number>) =>
+    time.length > 0 || shown.time ? time : fill.time
   // Without direction marks, and without the dots of abbreviations ("Jan.",
   // "μ.μ."): a dot after a letter, never one between digits.
   const folded = foldText(text.replace(BIDI, "").trim()).replace(
@@ -340,7 +417,7 @@ function parseDate(
       Number(y),
       Number(m) - 1,
       Number(d),
-      time.filter(Boolean).map(Number),
+      timeOf(time.filter(Boolean).map(Number)),
       timeZone
     )
   }
@@ -359,26 +436,40 @@ function parseDate(
     else if (token === symbols.pm || token === "pm") period = "pm"
   }
   const fields: Partial<Record<DateField, string>> = {}
-  const wanted =
+  const order =
     month === undefined
       ? symbols.order
       : symbols.named.filter((field) => field !== "month")
+  // Every part, or those the format shows ("April 2024" in a column of
+  // months): the others are taken (`fill`).
+  const wanted =
+    numbers.length >= order.length
+      ? order
+      : order.filter((field) => shown.fields.has(field))
   for (const field of wanted) {
     const next = numbers.shift()
     if (next === undefined) break
     fields[field] = next
   }
-  if (fields.year === undefined) return undefined
+  const taken = (field: DateField) => !shown.fields.has(field)
+  if (fields.year === undefined && !taken("year")) return undefined
+  if (month === undefined && fields.month === undefined && !taken("month"))
+    return undefined
   const time = numbers.map(Number)
   if (period && time.length > 0) {
     if (period === "pm" && time[0] < 12) time[0] += 12
     if (period === "am" && time[0] === 12) time[0] = 0
   }
   return makeDate(
-    fullYear(fields.year),
-    month ?? Number(fields.month ?? NaN) - 1,
-    Number(fields.day ?? 1),
-    time,
+    fields.year === undefined ? fill.year : fullYear(fields.year),
+    month ??
+      (fields.month === undefined ? fill.month : Number(fields.month) - 1),
+    fields.day === undefined
+      ? taken("day")
+        ? fill.day
+        : 1
+      : Number(fields.day),
+    timeOf(time),
     timeZone
   )
 }
@@ -419,13 +510,18 @@ function parseCellText<T>(
       // A copy's `'` before what a spreadsheet would run as a formula.
       return { value: /^'[=+\-@\t\r]/.test(text) ? text.slice(1) : text }
     case "number": {
-      const value = parseNumber(text, locale, column.format)
+      const value = parseNumber(text, locale, column.format, context.typed)
       return value === undefined
         ? { error: context.messages.number }
         : { value }
     }
     case "date": {
-      const value = parseDate(text, locale, column.format)
+      const value = parseDate(
+        text,
+        locale,
+        column.format,
+        toDate(column.getValue(item))
+      )
       return value === undefined ? { error: context.messages.date } : { value }
     }
     case "boolean": {

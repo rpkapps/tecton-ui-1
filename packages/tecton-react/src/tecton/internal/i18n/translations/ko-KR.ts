@@ -166,6 +166,7 @@ export default defineTranslations({
     cellSaved: "저장됨",
     chooseDate: "날짜 선택",
     noMatchingOptions: "일치하는 옵션 없음",
+    editDiscarded: "편집이 취소됨: 행을 더 이상 사용할 수 없습니다",
     cellSummary: "선택한 셀",
     summarySum: "합계: {value}",
     summaryAverage: "평균: {value}",

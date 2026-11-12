@@ -8,10 +8,9 @@
  *   Enter is a new line), the cell growing with its lines;
  * - number: an input (`inputMode="decimal"`), read in the locale;
  * - date: an input read in the locale, and a calendar from the cell (Alt +
- *   Down, or its button): a day picked is saved;
- * - options: a combobox, its list of the options' badges from the cell,
- *   the options matching what is typed; Enter and Tab save the option
- *   highlighted, a click the option clicked;
+ *   Down, or its button), loaded apart (`date.tsx`);
+ * - options: a combobox (`options.tsx`, loaded apart), a field with the
+ *   same text until it is there;
  * - a column's `renderEditor`: its own, over the cell, Enter, Tab and
  *   Escape (that it does not take itself) saving and cancelling as above.
  *
@@ -21,6 +20,11 @@
  * cell's font and alignment, and the cell's own focus ring outlines it
  * (`cell.tsx`). Popups open from the cell, in Tecton's portal.
  *
+ * Focus leaving the editor saves, once it has settled (a microtask): focus
+ * going into the editor's own popups (portalled, but in its React tree, so
+ * their focus events reach it) keeps the edit, and so does focus going to
+ * another window (it stays on the field, to come back to).
+ *
  * The editor is named by its column and its row ("Depth, Troll A-1"); a
  * draft that is not valid makes it `aria-invalid`, described by the
  * message, which a tooltip on the cell shows too (`cell-error.tsx`).
@@ -29,105 +33,23 @@ import * as React from "react"
 import { cn } from "cn"
 import { CalendarIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
-import {
-  Combobox,
-  ComboboxChipsInput,
-  ComboboxContent,
-  ComboboxEmpty,
-  ComboboxItem,
-  ComboboxList,
-} from "@tecton/react/components/combobox"
 import { Input } from "@tecton/react/components/input"
-import { Popover, PopoverContent } from "@tecton/react/components/popover"
-import { useDirection, useLocale } from "@tecton/react/tecton/provider"
 
 import { useTranslations } from "../../i18n/translations"
-import { CalendarPlaceholder } from "../calendar-placeholder"
 import type { CellEditorProps } from "../context"
-import { foldText } from "../engine/format"
-import type {
-  DataTableEditorProps,
-  DataTableOption,
-  DataTableValue,
-  EngineColumn,
-} from "../engine/index"
-import { dayOf, startOfDay, toDate } from "../engine/values"
+import type { DataTableEditorProps, DataTableValue } from "../engine/index"
 import { useFeature } from "../lazy"
+import {
+  FLUSH,
+  FLUSH_FIELD,
+  Holder,
+  keyMove,
+  OPTION_FIELD,
+  runKey,
+  type EditorParts,
+} from "./parts"
 import type { EditMove, Session } from "./session"
-
-/**
- * A field over the cell's content: its size, the cell's font, size and
- * alignment, no border, fill or ring of its own.
- */
-const FLUSH =
-  "absolute inset-0 h-full w-full min-w-0 rounded-none border-0 bg-transparent p-0 text-[length:inherit] shadow-none transition-none [text-align:inherit] focus-visible:ring-0 aria-invalid:ring-0 md:text-[length:inherit] dark:aria-invalid:ring-0"
-
-/** The same for a custom editor's own field (`inputProps.className`). */
-const FLUSH_CUSTOM =
-  "h-full w-full min-w-0 bg-transparent p-0 [font:inherit] [text-align:inherit] outline-none"
-
-/** The cell's content as it shows, unseen under the editor: the cell keeps its size. */
-function Holder({ children }: { children: React.ReactNode }) {
-  return (
-    <span aria-hidden className="invisible">
-      {children}
-    </span>
-  )
-}
-
-type KeyMove = Exclude<EditMove, null> | "cancel"
-
-/** What Enter, Tab and Escape do in an editor; `undefined` for a key that is its own. */
-function keyMove(
-  event: React.KeyboardEvent,
-  multiline: boolean
-): KeyMove | undefined {
-  // An input method's keys are its own: Enter picks its candidate.
-  if (event.nativeEvent.isComposing || event.keyCode === 229) return undefined
-  if (event.altKey || event.ctrlKey || event.metaKey) return undefined
-  switch (event.key) {
-    case "Enter":
-      if (multiline && event.shiftKey) return undefined
-      return event.shiftKey ? "up" : "down"
-    case "Tab":
-      return event.shiftKey ? "previous" : "next"
-    case "Escape":
-      return "cancel"
-  }
-  return undefined
-}
-
-/** Saves and moves, or cancels, by a key's move; whether the key was taken. */
-function runKey(session: Session, event: React.KeyboardEvent, move: KeyMove) {
-  event.preventDefault()
-  event.stopPropagation()
-  const { finish } = session.controller
-  if (move === "cancel") finish(session, { commit: false })
-  else finish(session, { commit: true, move, event: event.nativeEvent })
-}
-
-/** What each editor is given. */
-type EditorParts = {
-  session: Session
-  column: EngineColumn<unknown>
-  item: unknown
-  display: React.ReactNode
-  /** The editor's name, invalid state and description. */
-  field: {
-    "aria-label": string
-    "aria-invalid": true | undefined
-    "aria-describedby": string | undefined
-  }
-  error: string | null
-  /** The element that takes focus. */
-  target: React.RefObject<HTMLElement | null>
-  /** The cell, which popups open from. */
-  cell: React.RefObject<HTMLElement | null>
-  /** The editor's popup: focus in it is still the edit's. */
-  popup: React.RefObject<HTMLElement | null>
-}
 
 /** Text and numbers: an input, a textarea in a `wrap` column. */
 function TextEditor({
@@ -151,13 +73,14 @@ function TextEditor({
   if (multiline)
     return (
       <>
-        {/* The draft, wrapped as the textarea wraps it: the cell grows with its lines. */}
+        {/* The draft, wrapped as the textarea and the cell wrap it
+            (`whitespace-pre-wrap`): the cell grows with its lines. */}
         <span
           aria-hidden
           className="invisible block break-words whitespace-pre-wrap"
         >
           {draft}
-          {"\u200b"}
+          {"​"}
         </span>
         {/* A plain text area: the cell is all of its look (the input's
             component would bring only classes to undo). */}
@@ -167,7 +90,7 @@ function TextEditor({
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={onKeyDown}
-          className={cn(FLUSH, "resize-none overflow-hidden outline-none")}
+          className={cn(FLUSH, "resize-none overflow-hidden")}
         />
       </>
     )
@@ -180,6 +103,8 @@ function TextEditor({
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
         onKeyDown={onKeyDown}
+        // Phones show digits; iOS's keypad has no minus (a column of
+        // negative numbers can draw its own editor, `renderEditor`).
         inputMode={column.type === "number" ? "decimal" : undefined}
         autoComplete="off"
         className={FLUSH}
@@ -189,25 +114,16 @@ function TextEditor({
 }
 
 /**
- * A date: its text, and a calendar from the cell (Alt + Down, the button).
- * A day picked keeps the value's time of day, in the column's time zone.
+ * A date: its text, and a calendar from the cell (Alt + Down, the button),
+ * whose popover loads apart (`date.tsx`): asked for as it opens, it shows
+ * once it is there.
  */
-function DateEditor({
-  session,
-  column,
-  item,
-  display,
-  field,
-  target,
-  cell,
-  popup,
-}: EditorParts) {
+function DateEditor(parts: EditorParts) {
+  const { session, display, field, target } = parts
   const t = useTranslations("dataTable")
-  const { locale } = useLocale()
-  const direction = useDirection()
   const [draft, setDraft] = React.useState(session.draft)
   const [open, setOpen] = React.useState(false)
-  const { module, load } = useFeature("dateInput", true)
+  const { module, load } = useFeature("editingDate", true)
   React.useInsertionEffect(() => {
     session.draft = draft
     session.read = () => ({ text: draft })
@@ -219,29 +135,7 @@ function DateEditor({
   React.useEffect(() => {
     if (open && !module) load()
   }, [open, module, load])
-  const { timeZone } = (column.format ?? {}) as Intl.DateTimeFormatOptions
-  const { controller } = session
-  const parsed = controller.parse(column, item, draft)
-  const date = "value" in parsed ? toDate(parsed.value) : undefined
-  const shown = date && dayOf(date, timeZone)
-  const pick = (day: Date) => {
-    const start = startOfDay(
-      day.getFullYear(),
-      day.getMonth(),
-      day.getDate(),
-      timeZone
-    )
-    // The time of day of the value before (its draft's, else its own).
-    const before = date ?? toDate(column.getValue(item))
-    const own = before && dayOf(before, timeZone)
-    const time = own
-      ? before.getTime() -
-        startOfDay(own.year, own.month, own.day, timeZone).getTime()
-      : 0
-    const value = new Date(start.getTime() + time)
-    controller.finish(session, { commit: true, draft: { value } })
-  }
-  const DateCalendar = module?.DateCalendar
+  const DatePopup = module?.DatePopup
   return (
     <>
       <Holder>{display}</Holder>
@@ -281,150 +175,65 @@ function DateEditor({
         // The field keeps focus.
         onMouseDown={(event) => event.preventDefault()}
         onClick={() => setOpen((was) => !was)}
-        // In the cell's end padding: the text keeps all its room.
-        className="absolute -end-4 top-1/2 h-6 w-4 -translate-y-1/2 rounded-sm"
+        // In the cell's end padding (16 px), clear of its 2 px focus ring:
+        // the text keeps all its room.
+        className="absolute -end-3 top-1/2 h-6 w-3 -translate-y-1/2 rounded-sm"
       >
-        <CalendarIcon className="size-3.5" />
+        <CalendarIcon className="size-3" />
       </Button>
-      <Popover open={open} onOpenChange={setOpen}>
-        <PopoverContent
-          ref={popup as React.RefObject<HTMLDivElement | null>}
-          anchor={cell}
-          align="start"
-          aria-label={t("chooseDate")}
-          dir={direction}
-          // The calendar focuses its day itself; closing, back to the field.
-          initialFocus={false}
-          finalFocus={target}
-          className="w-auto"
-        >
-          {DateCalendar ? (
-            <DateCalendar
-              value={shown && new Date(shown.year, shown.month, shown.day)}
-              onValueChange={pick}
-              locale={locale}
-              dir={direction}
-              fallback={<CalendarPlaceholder />}
-            />
-          ) : (
-            <CalendarPlaceholder />
-          )}
-        </PopoverContent>
-      </Popover>
+      {DatePopup && (
+        <DatePopup
+          {...parts}
+          draft={draft}
+          open={open}
+          onOpenChange={setOpen}
+        />
+      )}
     </>
   )
 }
 
 /**
- * An options column: a combobox over the cell, its list from the cell.
- * Every option shows until the user types; then those whose label holds
- * the text (case and accents aside), the first highlighted. Enter and Tab
- * save the option highlighted, else the text (read as an option's label or
- * value: one that is neither is refused); a click saves the option.
+ * An options column: its combobox (`options.tsx`), loaded apart; until it
+ * is there, a field with the same text, so typing goes on (Enter and Tab
+ * save the first option the text matches, as the combobox does).
  */
-function OptionsEditor({
-  session,
-  column,
-  item,
-  display,
-  field,
-  target,
-  cell,
-  popup,
-}: EditorParts) {
-  const t = useTranslations("dataTable")
-  const direction = useDirection()
-  const { options } = column
+function OptionsEditor(parts: EditorParts) {
+  const { session, display, field, target } = parts
+  const { module, load } = useFeature("editingOptions", true)
+  React.useEffect(() => {
+    if (!module) load()
+  }, [module, load])
   const [text, setText] = React.useState(session.draft)
   const [typed, setTyped] = React.useState(session.how === "type")
-  const [open, setOpen] = React.useState(false)
-  const highlighted = React.useRef<DataTableOption | undefined>(undefined)
-  // Opened once the editor is laid out, from the cell.
-  React.useEffect(() => setOpen(true), [])
-  const index = column.optionIndex.get(String(column.getValue(item)))
-  const selected = index === undefined ? null : options[index]
-  const query = foldText(text.trim())
-  const filtered = typed && query !== ""
-  const shown = React.useMemo(
-    () =>
-      filtered
-        ? options.filter((option) => foldText(option.label).includes(query))
-        : options,
-    [filtered, query, options]
-  )
   React.useInsertionEffect(() => {
     session.draft = text
-    session.read = () => {
-      // The option highlighted; typed, the first that matches.
-      const option = highlighted.current ?? (filtered ? shown[0] : undefined)
-      return option
-        ? { value: option.value, attempted: option.label }
-        : { text }
-    }
   })
+  const change = (next: string, byUser: boolean) => {
+    setText(next)
+    if (byUser) setTyped(true)
+  }
+  const Combobox = module?.OptionsCombobox
+  if (Combobox)
+    return (
+      <Combobox {...parts} text={text} onTextChange={change} typed={typed} />
+    )
   return (
-    <Combobox<DataTableOption>
-      items={options}
-      filteredItems={shown}
-      value={selected}
-      inputValue={text}
-      onInputValueChange={(next, details) => {
-        setText(next)
-        if (details.reason === "input-change") setTyped(true)
-      }}
-      onValueChange={(option) => {
-        if (option)
-          session.controller.finish(session, {
-            commit: true,
-            draft: { value: option.value, attempted: option.label },
-          })
-      }}
-      open={open}
-      onOpenChange={(next, details) => {
-        // Escape cancels the edit (the field's own keys), not only the list.
-        if (details.reason !== "escape-key") setOpen(next)
-      }}
-      autoHighlight
-      onItemHighlighted={(option) => {
-        highlighted.current = option
-      }}
-      itemToStringLabel={(option) => option.label}
-      isItemEqualToValue={(a, b) => a.value === b.value}
-    >
+    <>
       <Holder>{display}</Holder>
-      {/* The combobox's bare field: the cell is its frame. */}
-      <ComboboxChipsInput
+      <input
         ref={target as React.RefObject<HTMLInputElement | null>}
         {...field}
+        value={text}
+        onChange={(event) => change(event.target.value, true)}
         onKeyDown={(event) => {
           const move = keyMove(event, false)
-          if (!move) return
-          event.preventBaseUIHandler()
-          runKey(session, event, move)
+          if (move) runKey(session, event, move)
         }}
         autoComplete="off"
-        className={cn(FLUSH, "outline-none")}
+        className={cn(FLUSH, OPTION_FIELD)}
       />
-      <ComboboxContent
-        ref={popup as React.RefObject<HTMLDivElement | null>}
-        anchor={cell}
-        // In the table's direction wherever it is portalled.
-        dir={direction}
-        // As wide as the cell, or its badges and checks.
-        className="w-auto min-w-(--anchor-width)"
-      >
-        <ComboboxEmpty>{t("noMatchingOptions")}</ComboboxEmpty>
-        <ComboboxList>
-          {(option: DataTableOption) => (
-            <ComboboxItem key={option.value} value={option}>
-              <Badge variant={option.variant ?? "outline"} appearance="outline">
-                {option.label}
-              </Badge>
-            </ComboboxItem>
-          )}
-        </ComboboxList>
-      </ComboboxContent>
-    </Combobox>
+    </>
   )
 }
 
@@ -473,6 +282,7 @@ function CustomEditor({
     item,
     column: column.id,
     value,
+    initialText: session.initialText,
     onValueChange: (next: DataTableValue) => {
       latest.current = next
       setValue(next)
@@ -484,7 +294,7 @@ function CustomEditor({
       }),
     cancel: () => finish(session, { commit: false }),
     error,
-    inputProps: { ref, ...field, className: FLUSH_CUSTOM },
+    inputProps: { ref, ...field, className: FLUSH_FIELD },
   }
   return (
     <>
@@ -541,7 +351,8 @@ function CellEditor({ editing, column, item, display, wrap }: CellEditorProps) {
   const box = React.useRef<HTMLSpanElement | null>(null)
   const target = React.useRef<HTMLElement | null>(null)
   const cell = React.useRef<HTMLElement | null>(null)
-  const popup = React.useRef<HTMLElement | null>(null)
+  /** A save waiting for focus to settle: a focus in the editor drops it. */
+  const leaving = React.useRef(0)
   const messageId = React.useId()
   const { error } = editing
   const rowName = controller.context.store.get().model.textOf(session.row)
@@ -556,14 +367,11 @@ function CellEditor({ editing, column, item, display, wrap }: CellEditorProps) {
     const own = element?.closest<HTMLTableCellElement>("td, th") ?? null
     cell.current = own
     session.cell = own
-    session.owns = (node) =>
-      node !== null &&
-      (!!element?.contains(node) || !!popup.current?.contains(node))
     session.focus = () => target.current?.focus({ preventScroll: true })
     session.mounted++
     // Focus, the caret at the end of the text.
     const field = target.current
-    if (field && !session.owns(field.ownerDocument.activeElement)) {
+    if (field && !element?.contains(field.ownerDocument.activeElement)) {
       field.focus({ preventScroll: true })
       if (
         field instanceof HTMLInputElement ||
@@ -582,9 +390,14 @@ function CellEditor({ editing, column, item, display, wrap }: CellEditorProps) {
     }
   }, [session, controller])
 
+  const onFocus = () => {
+    leaving.current++
+    session.focused = true
+  }
   const onBlur = (event: React.FocusEvent) => {
+    session.focused = false
+    const left = event.target
     const to = event.relatedTarget as Node | null
-    if (session.closed || session.owns(to)) return
     const blurred = event.nativeEvent
     const save = () =>
       controller.finish(session, {
@@ -592,13 +405,26 @@ function CellEditor({ editing, column, item, display, wrap }: CellEditorProps) {
         markInvalid: true,
         event: blurred,
       })
-    if (to) return save()
-    // Focus gone nowhere in the page: once it has settled, another window
-    // taking it leaves it on the editor (to come back to); a press on the
-    // page outside any control does not.
+    const token = ++leaving.current
+    // To another cell, or anything else of the table: saved at once (a
+    // popup of the editor's is never in the table).
+    if (
+      to &&
+      !box.current?.contains(to) &&
+      session.cell?.closest("table")?.contains(to)
+    )
+      return save()
+    // Elsewhere, once focus has settled: into the editor again (its popup,
+    // whose focus reaches it through React's tree), or still on the field
+    // (another window took focus), the edit goes on.
     const doc = event.currentTarget.ownerDocument
     queueMicrotask(() => {
-      if (!session.closed && !session.owns(doc.activeElement)) save()
+      if (session.closed || token !== leaving.current) return
+      if (doc.activeElement === left) {
+        session.focused = true
+        return
+      }
+      save()
     })
   }
 
@@ -611,7 +437,6 @@ function CellEditor({ editing, column, item, display, wrap }: CellEditorProps) {
     error,
     target,
     cell,
-    popup,
   }
   const render = column.definition.renderEditor as
     ((props: DataTableEditorProps<unknown>) => React.ReactNode) | undefined
@@ -620,6 +445,7 @@ function CellEditor({ editing, column, item, display, wrap }: CellEditorProps) {
       ref={box}
       data-slot="data-table-editor"
       className="relative block min-h-[1lh]"
+      onFocus={onFocus}
       onBlur={onBlur}
     >
       {render ? (

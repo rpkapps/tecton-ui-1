@@ -1,11 +1,12 @@
 /**
- * An edit in progress, as the controller (`index.tsx`) and the editor it
- * draws (`editor.tsx`) share it: one per table at a time, from the key or
- * press that begins it to the save or cancel that ends it.
+ * An edit in progress, as the controller (`index.tsx`) and the editors it
+ * draws (`editor.tsx`, `options.tsx`, `date.tsx`) share it: one per table
+ * at a time, from the key or press that begins it to the save or cancel
+ * that ends it.
  */
 import type { Translator } from "../../i18n/translations"
 import type { DataTableContextValue } from "../context"
-import type { EditStart } from "../edits"
+import type { EditStart, SaveMove } from "../edits"
 import type { ParseResult } from "../cell-parse"
 import type { DataTableValue, EngineColumn } from "../engine/index"
 
@@ -14,7 +15,7 @@ import type { DataTableValue, EngineColumn } from "../engine/index"
  * Enter), to the next or previous cell that can be written (Tab, Shift +
  * Tab), or nowhere (`null`: it stays on the cell).
  */
-type EditMove = "down" | "up" | "next" | "previous" | null
+type EditMove = SaveMove | null
 
 /** What a draft writes: the text typed (read as the column's value), or a value. */
 type Draft =
@@ -46,7 +47,7 @@ type EditController = {
   t: () => Translator<"dataTable">
   /** Ends the edit (see `FinishOptions`); `false` when it stays (its draft not valid). */
   finish: (session: Session, options: FinishOptions) => boolean
-  /** A text read as the column's value, as a save reads it. */
+  /** A text typed, read as the column's value, as a save reads it. */
   parse: (
     column: EngineColumn<unknown>,
     item: unknown,
@@ -59,17 +60,27 @@ type Session = {
   readonly column: string
   readonly how: EditStart
   /**
-   * The editor's text: what it began with (the value as text, the
-   * character typed, a failed save's text), then the draft as typed, kept
-   * for a remount of the editor.
+   * The text the edit began with: the value as text, the character typed,
+   * a failed save's text (a custom editor's `initialText`).
    */
+  readonly initialText: string
+  /**
+   * The value's own text when the edit began with it (not typed, not a
+   * failed save's): a draft still equal to it is no change, and is not
+   * written.
+   */
+  readonly own: string | null
+  /** The editor's text as typed, kept for a remount of the editor. */
   draft: string
   /** A custom editor's value, likewise. */
   value: DataTableValue
-  /** The draft now, as the editor has it. */
+  /**
+   * The draft now: the editor's, once it is drawn; until then (keys
+   * replayed before it rendered) read from `draft` and `value`.
+   */
   read: () => Draft | null
-  /** Whether a node is the editor's (its popups too): focus there is still the edit's. */
-  owns: (node: Node | null) => boolean
+  /** Focus is in the editor, its popups (portalled) included. */
+  focused: boolean
   /** Focuses the editor. */
   focus: () => void
   /** The cell, once the editor is in it. */

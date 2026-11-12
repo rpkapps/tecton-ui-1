@@ -199,6 +199,7 @@ export default defineTranslations({
     cellSaved: "Gespeichert",
     chooseDate: "Datum auswählen",
     noMatchingOptions: "Keine passenden Optionen",
+    editDiscarded: "Bearbeitung verworfen: Die Zeile ist nicht mehr verfügbar",
     cellSummary: "Ausgewählte Zellen",
     summarySum: "Summe: {value}",
     summaryAverage: "Mittelwert: {value}",

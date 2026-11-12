@@ -213,6 +213,7 @@ export default defineTranslations({
     cellSaved: "Spremljeno",
     chooseDate: "Odaberite datum",
     noMatchingOptions: "Nema odgovarajućih opcija",
+    editDiscarded: "Uređivanje odbačeno: redak više nije dostupan",
     cellSummary: "Odabrane ćelije",
     summarySum: "Zbroj: {value}",
     summaryAverage: "Prosjek: {value}",

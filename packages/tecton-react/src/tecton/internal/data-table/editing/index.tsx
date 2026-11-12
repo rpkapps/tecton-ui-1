@@ -8,7 +8,8 @@
  *
  * - An edit begins with the cell's value as text (a number in full, in the
  *   locale), the character typed, or empty for a composition; a cell whose
- *   save failed, or whose text was refused, begins with that text.
+ *   save failed, or whose text was refused, begins with that text (what
+ *   was typed).
  * - Saving writes the draft through `writeCells` (`cell-write.ts`), which
  *   reads a text as the column's type does (`parse` too) and checks it
  *   (`validate`). A draft that is not valid keeps the editor, with its
@@ -25,11 +26,17 @@
  *   draft that is not valid then ends the edit too, its cell showing the
  *   message with the text refused, and opening on it again. A press in
  *   the cell being edited, off its editor, keeps focus in the editor.
+ * - A draft still the value's own text is no change: the edit ends,
+ *   nothing written (a text need not read back as its value: a date's
+ *   time of day, a month's day).
  * - The edit follows its row through new items. A change of the view that
  *   orders or picks the rows (sorting, search, filters, grouping) saves it
  *   and ends it, as a click on a header does; so does its row or column
  *   leaving the rows and columns shown (a page, a group closed, the row
- *   gone or disabled).
+ *   filtered out). A row removed or disabled has nowhere to save to: the
+ *   draft is dropped, and that is announced.
+ * - What waited for this code (`edits.tsx`) is replayed in order: starts,
+ *   saves that move, starts on the cell moved to (`moved`).
  * - When an edit ends with focus in its editor, focus goes back to its
  *   cell; the cell selection follows a move.
  */
@@ -37,7 +44,7 @@ import { flushSync } from "react-dom"
 
 import { announce } from "../../primitives/live-announcer"
 import { isCellEditable } from "../cell-marks"
-import { shownMark } from "../cell-message"
+import { sameValue, shownMark } from "../cell-message"
 import { parseCellText } from "../cell-parse"
 import {
   describeWrite,
@@ -47,6 +54,7 @@ import {
   type SaveResult,
 } from "../cell-write"
 import type { CellEditor, EditingCell } from "../context"
+import { foldText } from "../engine/format"
 import type { EditEvent, EditHandlers, EditSide, EditStart } from "../edits"
 import type {
   DataTableCellPosition,
@@ -223,18 +231,26 @@ function attachEditing(side: EditSide): EditHandlers {
     }
   }
 
+  /** Where the last save moved to (or its cell): a start without a cell is there. */
+  let moved: Position | null = null
+
   const start = (
-    cell: Position,
+    at: Position | null,
     how: EditStart,
     text: string,
-    now: boolean
+    now: boolean,
+    /** Characters of the value taken back before `text`. */
+    back = 0
   ) => {
+    const cell = at ?? moved
+    if (!cell) return
     if (current && same(current, cell)) return current.focus()
+    const found = writable(cell)
+    // A cell that cannot be written leaves the edit there as it is; a
+    // boolean cell's checkbox is its editor.
+    if (!found || found.column.type === "boolean") return
     // One at a time: the edit before ends as a click elsewhere ends it.
     if (current) finish(current, { commit: true, markInvalid: true })
-    const found = writable(cell)
-    // A boolean cell's checkbox is its editor.
-    if (!found || found.column.type === "boolean") return
     const { item, column } = found
     const { formatter } = store.get()
     const value = column.getValue(item)
@@ -242,27 +258,46 @@ function attachEditing(side: EditSide): EditHandlers {
       cells.get().marks.get(cell.row)?.get(cell.column),
       value
     )
-    const typed = how === "type" ? text : how === "compose" ? "" : null
+    const typed = how === "type" ? text : how === "compose" ? text : null
     const refused = mark?.error ? mark.attempted : null
-    // Typed after Enter, F2 or a double click, before this code came: after the value.
-    const kept = refused ?? editText(column, value, formatter)
-    const draft = typed ?? kept + text
-    // A custom editor's value: the text typed or refused, read as the
-    // column's (empty when it does not read).
-    const read = typed ?? (text ? draft : refused)
-    let own = value
-    if (read !== null) {
-      const parsed = parse(column, item, read)
-      own = "value" in parsed ? parsed.value : null
+    const own = editText(column, value, formatter)
+    // Typed after Enter, F2 or a double click, before this code came:
+    // after the value.
+    const kept = [...(refused ?? own)]
+    const draft = typed ?? kept.slice(0, kept.length - back).join("") + text
+    // A custom editor's value: the text it began with, read as the
+    // column's (`null` when it does not read), unless it is the value's.
+    const unchanged =
+      typed === null && refused === null && text === "" && back === 0
+    let initial = value
+    if (!unchanged) {
+      const parsed = parse(column, item, draft)
+      initial = "value" in parsed ? parsed.value : null
     }
+    const options = column.type === "options" ? column.options : null
     const session: Session = {
       row: cell.row,
       column: cell.column,
       how,
+      initialText: draft,
+      own: unchanged ? own : null,
       draft,
-      value: own,
-      read: () => null,
-      owns: () => false,
+      value: initial,
+      // Until an editor is drawn (keys replayed at once): its text, the
+      // option it matches first (as the options editor highlights it), a
+      // custom editor's value.
+      read: () => {
+        if (column.definition.renderEditor) return { value: session.value }
+        const query = foldText(session.draft.trim())
+        const option =
+          options && query && session.draft !== session.own
+            ? options.find((each) => foldText(each.label).includes(query))
+            : undefined
+        return option
+          ? { value: option.value, attempted: session.draft }
+          : { text: session.draft }
+      },
+      focused: false,
       focus: () => undefined,
       cell: null,
       mounted: 0,
@@ -270,6 +305,7 @@ function attachEditing(side: EditSide): EditHandlers {
       controller,
     }
     current = session
+    moved = cell
     // From `useDataTable`: to the cell first (scrolled to); its editor
     // takes focus once it renders.
     if (how === "api") focusAt(cell)
@@ -297,7 +333,17 @@ function attachEditing(side: EditSide): EditHandlers {
     const cell = { row: session.row, column: session.column }
     if (commit) {
       const draft = options.draft ?? session.read()
-      if (draft) {
+      // The value's own text, as it began: no change, nothing written
+      // (its text may not read back as it: a date's time of day).
+      const found = writable(cell)
+      const unchanged =
+        draft !== null &&
+        session.own !== null &&
+        ("text" in draft
+          ? draft.text === session.own
+          : found !== null &&
+            sameValue(draft.value, found.column.getValue(found.item)))
+      if (draft && !unchanged) {
         const outcome = writeCells(
           { context, t: t() },
           [{ ...cell, ...draft }],
@@ -331,12 +377,13 @@ function attachEditing(side: EditSide): EditHandlers {
     current = null
     // Focus in the editor goes back to its cell, before the editor goes.
     const element = session.cell
-    if (element?.isConnected && session.owns(doc().activeElement)) {
+    if (element?.isConnected && session.focused) {
       if (!element.hasAttribute("tabindex")) element.tabIndex = -1
       element.focus({ preventScroll: true })
     }
     cells.set({ editing: null })
     const target = move && nextCell(cell, move)
+    moved = target ?? cell
     if (target) {
       focusAt(target)
       if (store.get().options.cellSelectionMode !== "none")
@@ -386,9 +433,12 @@ function attachEditing(side: EditSide): EditHandlers {
   const run = (entry: EditEvent, now: boolean) => {
     switch (entry.kind) {
       case "start":
-        return start(entry.cell, entry.how, entry.text, now)
+        return start(entry.cell, entry.how, entry.text, now, entry.back)
       case "write":
         return write(entry.cell, entry.value, entry.reason, entry.event)
+      case "save":
+        if (current) finish(current, { commit: true, move: entry.move })
+        return
       case "stop":
         if (current) finish(current, { commit: entry.commit })
     }
@@ -411,7 +461,23 @@ function attachEditing(side: EditSide): EditHandlers {
       key = next
     }
     const session = current
-    if (session && (reordered || !writable(session)))
+    if (!session) return
+    // Its row gone, or no longer written (disabled): nothing to write to.
+    const item = state.model.item(session.row)
+    const column = columnOf(session.column)
+    if (
+      item === undefined ||
+      (column &&
+        !isCellEditable(
+          state.options.editable,
+          column,
+          item,
+          state.model.isDisabled(session.row)
+        ))
+    ) {
+      finish(session, { commit: false })
+      announce(t()("editDiscarded"))
+    } else if (reordered || !writable(session))
       finish(session, { commit: true, markInvalid: true })
   })
 
@@ -423,11 +489,15 @@ function attachEditing(side: EditSide): EditHandlers {
     const at = side.positionOf(active?.closest("td, th") ?? null)
     return at !== null && same(at, cell)
   }
+  // A start on its cell, not focused: it and the keys after it (up to the
+  // next start on a cell) are dropped.
+  let dropped = false
   for (const entry of side.queue.splice(0)) {
-    if (entry.kind === "start" && entry.how !== "api" && !focusedOn(entry.cell))
-      continue
+    if (entry.kind === "start" && entry.cell)
+      dropped = entry.how !== "api" && !focusedOn(entry.cell)
+    if (dropped) continue
     run(
-      // A composition before the code: an empty editor, and what followed.
+      // A composition before the code: an editor with what followed.
       entry.kind === "start" && entry.how === "compose"
         ? { ...entry, how: "type" }
         : entry,
@@ -440,7 +510,12 @@ function attachEditing(side: EditSide): EditHandlers {
     press: (event) => {
       const session = current
       const target = event.target as Element
-      if (!session || event.button !== 0 || session.owns(target)) return
+      if (
+        !session ||
+        event.button !== 0 ||
+        target.closest('[data-slot="data-table-editor"]')
+      )
+        return
       const at = side.positionOf(target.closest("td, th"))
       if (at && same(at, session)) event.preventDefault()
     },

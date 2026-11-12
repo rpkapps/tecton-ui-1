@@ -192,6 +192,7 @@ export default defineTranslations({
     cellSaved: "Gemt",
     chooseDate: "Vælg en dato",
     noMatchingOptions: "Ingen matchende muligheder",
+    editDiscarded: "Redigeringen er kasseret: rækken findes ikke længere",
     cellSummary: "Markerede celler",
     summarySum: "Sum: {value}",
     summaryAverage: "Gennemsnit: {value}",

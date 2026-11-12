@@ -184,6 +184,7 @@ export default defineTranslations({
     cellSaved: "Mentve",
     chooseDate: "Dátum kiválasztása",
     noMatchingOptions: "Nincs egyező lehetőség",
+    editDiscarded: "A szerkesztés elvetve: a sor már nem érhető el",
     cellSummary: "Kijelölt cellák",
     summarySum: "Összeg: {value}",
     summaryAverage: "Átlag: {value}",

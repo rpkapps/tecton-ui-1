@@ -166,6 +166,7 @@ export default defineTranslations({
     cellSaved: "已保存",
     chooseDate: "选择日期",
     noMatchingOptions: "没有匹配的选项",
+    editDiscarded: "已放弃编辑：该行已不可用",
     cellSummary: "所选单元格",
     summarySum: "求和：{value}",
     summaryAverage: "平均值：{value}",

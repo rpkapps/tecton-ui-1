@@ -214,6 +214,7 @@ export default defineTranslations({
     cellSaved: "Saglabāts",
     chooseDate: "Izvēlieties datumu",
     noMatchingOptions: "Nav atbilstošu opciju",
+    editDiscarded: "Labojums atmests: rinda vairs nav pieejama",
     cellSummary: "Atlasītās šūnas",
     summarySum: "Summa: {value}",
     summaryAverage: "Vidējais: {value}",

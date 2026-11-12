@@ -247,6 +247,7 @@ function writeCells(
         locale: formatter.locale,
         labels,
         messages,
+        typed: reason === "edit",
       })
       if ("error" in parsed) {
         refuse(parsed.error)
@@ -276,10 +277,12 @@ function writeCells(
     }
     changes.push(change)
     // A save that fails shows the value as the cell shows it (a pasted
-    // text read as the value), or what an editor says was typed.
+    // text read as the value), or what was typed in an editor.
     attemptedOf.set(
       change,
-      "text" in cell ? formatter.format(column, value) : attempted
+      "text" in cell && reason !== "edit"
+        ? formatter.format(column, value)
+        : attempted
     )
   }
   const outcome = (canceled: boolean, saved: Promise<SaveResult>) => ({

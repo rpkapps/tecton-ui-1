@@ -42,6 +42,10 @@ const FEATURES = {
   csv: feature(() => import("./engine/csv")),
   /** `editable`: the editors, their keys and moves, saves. */
   editing: feature(() => import("./editing/index")),
+  /** The options editor's combobox, for a table with an options column that can be written. */
+  editingOptions: feature(() => import("./editing/options")),
+  /** The date editor's calendar popover (its calendar is `dateInput`'s). */
+  editingDate: feature(() => import("./editing/date")),
   /** `cellSelectionMode`: ranges, the drag, copy and paste, fill down, writes. */
   cellSelection: feature(() => import("./cell-selection/index")),
   /** A cell's message (not valid, not saved) in a tooltip: loaded when one first shows. */

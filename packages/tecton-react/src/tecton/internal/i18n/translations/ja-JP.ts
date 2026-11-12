@@ -177,6 +177,7 @@ export default defineTranslations({
     cellSaved: "保存しました",
     chooseDate: "日付を選択",
     noMatchingOptions: "一致する選択肢がありません",
+    editDiscarded: "編集を破棄しました：この行は利用できなくなりました",
     cellSummary: "選択したセル",
     summarySum: "合計: {value}",
     summaryAverage: "平均: {value}",

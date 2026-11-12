@@ -1305,17 +1305,24 @@ function DataTable<T>({
 
   // ---- on demand, warnings ------------------------------------------------
 
-  const hasDates = React.useMemo(
-    () =>
-      getColumnModel(columns).leaves.some((column) => column.type === "date"),
-    [columns]
-  )
+  // The editors of the types a table's columns that can be written have.
+  const edited = React.useMemo(() => {
+    const types = new Set<string>()
+    for (const column of getColumnModel(columns).leaves)
+      if (
+        column.definition.editable !== false &&
+        !column.definition.renderEditor
+      )
+        types.add(column.type)
+    return types
+  }, [columns])
   const features: Array<FeatureName> = []
   if (editable) features.push("editing")
+  if (editable && edited.has("options")) features.push("editingOptions")
+  // A date filter asks for its calendar itself (`DataTableFilter`).
+  if (editable && edited.has("date")) features.push("editingDate", "dateInput")
   if (cellSelectionMode !== "none") features.push("cellSelection")
   if (reorderableColumns || reorderableRows) features.push("dragAndDrop")
-  // A date filter asks for its calendar itself (`DataTableFilter`).
-  if (editable && hasDates) features.push("dateInput")
   usePrefetchFeatures(features)
 
   // New columns re-render every row: said when they are new but the same.

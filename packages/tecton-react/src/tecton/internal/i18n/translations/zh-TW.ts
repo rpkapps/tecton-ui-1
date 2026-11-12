@@ -168,6 +168,7 @@ export default defineTranslations({
     cellSaved: "已儲存",
     chooseDate: "選擇日期",
     noMatchingOptions: "沒有相符的選項",
+    editDiscarded: "已捨棄編輯：該列已無法使用",
     cellSummary: "選取的儲存格",
     summarySum: "加總：{value}",
     summaryAverage: "平均值：{value}",

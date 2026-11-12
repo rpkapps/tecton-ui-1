@@ -243,6 +243,7 @@ export default defineTranslations({
     cellSaved: "تم الحفظ",
     chooseDate: "اختر تاريخًا",
     noMatchingOptions: "لا توجد خيارات مطابقة",
+    editDiscarded: "تم تجاهل التعديل: لم يعد الصف متاحًا",
     cellSummary: "الخلايا المحددة",
     summarySum: "المجموع: {value}",
     summaryAverage: "المتوسط: {value}",

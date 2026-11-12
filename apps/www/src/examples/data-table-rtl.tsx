@@ -32,6 +32,7 @@ const translations: Translations = {
       operator: "Operator",
       status: "Status",
       depth: "TD (m)",
+      spud: "Spud date",
       producing: "Producing",
       shutIn: "Shut in",
       drilling: "Drilling",
@@ -46,6 +47,7 @@ const translations: Translations = {
       operator: "المشغّل",
       status: "الحالة",
       depth: "العمق الكلي (م)",
+      spud: "تاريخ بدء الحفر",
       producing: "منتجة",
       shutIn: "مغلقة",
       drilling: "قيد الحفر",
@@ -60,6 +62,7 @@ const translations: Translations = {
       operator: "מפעיל",
       status: "סטטוס",
       depth: "עומק סופי (מ׳)",
+      spud: "תאריך תחילת קידוח",
       producing: "מפיקה",
       shutIn: "סגורה",
       drilling: "בקידוח",
@@ -74,6 +77,7 @@ type Well = {
   operator: string
   status: "producing" | "shut-in" | "drilling"
   depth: number
+  spud: Date
 }
 
 const FIELDS = ["Gullfaks", "Snorre", "Valhall", "Balder"]
@@ -87,6 +91,7 @@ const WELLS: Array<Well> = Array.from({ length: 24 }, (_, i) => ({
   operator: OPERATORS[i % OPERATORS.length],
   status: STATUSES[(i * 5) % STATUSES.length],
   depth: 1800 + ((i * 389) % 2600),
+  spud: new Date(Date.UTC(2008 + (i % 12), (i * 5) % 12, 1 + ((i * 7) % 27))),
 }))
 
 export default function DataTableRtl() {
@@ -116,6 +121,12 @@ export default function DataTableRtl() {
           ],
         },
         { id: "depth", header: t.depth, type: "number" },
+        {
+          id: "spud",
+          header: t.spud,
+          type: "date",
+          format: { dateStyle: "medium", timeZone: "UTC" },
+        },
       ]),
     [t]
   )
@@ -156,6 +167,7 @@ export default function DataTableRtl() {
         <DataTableSearch />
         <DataTableFilter column="status" />
         <DataTableFilter column="depth" />
+        <DataTableFilter column="spud" />
         <DataTableGroupBy />
       </DataTableToolbar>
       <DataTableActiveFilters />

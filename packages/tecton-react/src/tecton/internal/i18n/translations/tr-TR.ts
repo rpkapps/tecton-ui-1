@@ -184,6 +184,7 @@ export default defineTranslations({
     cellSaved: "Kaydedildi",
     chooseDate: "Tarih seçin",
     noMatchingOptions: "Eşleşen seçenek yok",
+    editDiscarded: "Düzenleme atıldı: satır artık kullanılamıyor",
     cellSummary: "Seçili hücreler",
     summarySum: "Toplam: {value}",
     summaryAverage: "Ortalama: {value}",

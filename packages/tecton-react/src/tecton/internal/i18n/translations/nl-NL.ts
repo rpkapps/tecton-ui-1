@@ -198,6 +198,7 @@ export default defineTranslations({
     cellSaved: "Opgeslagen",
     chooseDate: "Kies een datum",
     noMatchingOptions: "Geen overeenkomende opties",
+    editDiscarded: "Bewerking verworpen: de rij is niet meer beschikbaar",
     cellSummary: "Geselecteerde cellen",
     summarySum: "Som: {value}",
     summaryAverage: "Gemiddelde: {value}",

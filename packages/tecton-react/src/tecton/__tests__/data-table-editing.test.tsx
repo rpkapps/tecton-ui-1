@@ -127,6 +127,8 @@ beforeAll(async () => {
   await loadFeature("editing")
   await loadFeature("cellSelection")
   await loadFeature("dateInput")
+  await loadFeature("editingOptions")
+  await loadFeature("editingDate")
   await loadFeature("cellError")
 })
 afterEach(() => {
@@ -156,20 +158,46 @@ describe("DataTable editing: starting an edit", () => {
     expect(onCellsChange).not.toHaveBeenCalled()
   })
 
-  it("replaces the value with a character typed, AltGr's and Option's too, not with shortcuts or Space", () => {
+  it("replaces the value with a character typed, AltGr's too, not with shortcuts", () => {
     render(<Table onCellsChange={() => {}} />)
     down(td("Well 2", "depth"))
     // Prevented: the character is the draft, not typed again.
     expect(press("7")).toBe(false)
     expect(editor()).toHaveValue("7")
     press("Escape")
+    // AltGr (Ctrl + Alt) on every platform.
     expect(press("@", { ctrlKey: true, altKey: true })).toBe(false)
     expect(editor()).toHaveValue("@")
     press("Escape")
+    // Alt alone is a shortcut but on a Mac (Option types characters).
+    press("x", { altKey: true })
     press("c", { ctrlKey: true })
-    press(" ")
     press("x", { metaKey: true })
     expect(focused()).toBe(td("Well 2", "depth"))
+    vi.spyOn(navigator, "platform", "get").mockReturnValue("MacIntel")
+    expect(press("å", { altKey: true })).toBe(false)
+    expect(editor()).toHaveValue("å")
+    press("Escape")
+  })
+
+  it("types a space with Space where rows do not select; where they do, Space selects the row", () => {
+    const onValueChange = vi.fn()
+    const { unmount } = render(<Table onCellsChange={() => {}} />)
+    down(td("Well 1", "remarks"))
+    expect(press(" ")).toBe(false)
+    expect(editor()).toHaveValue(" ")
+    unmount()
+    render(
+      <Table
+        selectionMode="multiple"
+        onValueChange={onValueChange}
+        onCellsChange={() => {}}
+      />
+    )
+    down(td("Well 1", "remarks"))
+    press(" ")
+    expect(focused()).toBe(td("Well 1", "remarks"))
+    expect(onValueChange).toHaveBeenCalledWith(["w1"], expect.anything())
   })
 
   it("opens an empty editor at once for a composition, which goes on in it", () => {
@@ -507,8 +535,8 @@ describe("DataTable editing: validation and saves", () => {
     await act(async () => saves[1].reject(new Error("Past the rig's rating")))
     const cell = td("Well 2", "depth")
     expect(cell).toHaveAttribute("aria-invalid", "true")
-    // The value as the cell shows it.
-    expect(cell).toHaveAccessibleDescription("“4,100”: Past the rig's rating")
+    // The text typed.
+    expect(cell).toHaveAccessibleDescription("“4100”: Past the rig's rating")
     // Said politely: the user has moved on from the cell.
     expect(say).toHaveBeenCalledWith(
       "1 cell not saved: Past the rig's rating",
@@ -516,7 +544,7 @@ describe("DataTable editing: validation and saves", () => {
     )
     expect(say).not.toHaveBeenCalledWith("Saved", expect.anything())
     // Opened again, with the value attempted.
-    expect(edit("Well 2", "depth")).toHaveValue("4,100")
+    expect(edit("Well 2", "depth")).toHaveValue("4100")
   })
 
   it("leaves a superseded save to the later one", async () => {
@@ -568,7 +596,7 @@ describe("DataTable editing: validation and saves", () => {
     press("Enter")
     return waitFor(() =>
       expect(td("Well 1", "depth")).toHaveAccessibleDescription(
-        "“1,300”: Read only today"
+        "“1300”: Read only today"
       )
     )
   })

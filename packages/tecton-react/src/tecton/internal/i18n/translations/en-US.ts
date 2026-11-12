@@ -237,11 +237,13 @@ const enUS = {
     // Editing (`editable`): an editor's name, its column's and its row's
     // ("Depth, Troll A-1"); said once a save that took a while is done;
     // the date editor's calendar button; the options editor's list when
-    // nothing matches what was typed.
+    // nothing matches what was typed; an edit whose row went away (removed
+    // or disabled by new data).
     editorLabel: "{columnName}, {rowName}",
     cellSaved: "Saved",
     chooseDate: "Choose a date",
     noMatchingOptions: "No matching options",
+    editDiscarded: "Edit discarded: the row is no longer available",
     // `DataTableCellSummary`: its name, and its figures over the selected
     // cells ({value} is formatted).
     cellSummary: "Selected cells",

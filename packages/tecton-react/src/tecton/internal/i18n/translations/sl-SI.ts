@@ -226,6 +226,7 @@ export default defineTranslations({
     cellSaved: "Shranjeno",
     chooseDate: "Izberite datum",
     noMatchingOptions: "Ni ustreznih možnosti",
+    editDiscarded: "Urejanje zavrženo: vrstica ni več na voljo",
     cellSummary: "Izbrane celice",
     summarySum: "Vsota: {value}",
     summaryAverage: "Povprečje: {value}",

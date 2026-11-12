@@ -218,6 +218,7 @@ export default defineTranslations({
     cellSaved: "נשמר",
     chooseDate: "בחירת תאריך",
     noMatchingOptions: "אין אפשרויות תואמות",
+    editDiscarded: "העריכה בוטלה: השורה כבר אינה זמינה",
     cellSummary: "תאים שנבחרו",
     summarySum: "סכום: {value}",
     summaryAverage: "ממוצע: {value}",

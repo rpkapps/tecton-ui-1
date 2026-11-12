@@ -89,11 +89,18 @@ type DataTableEditorProps<T> = {
   /** The column's id. */
   column: string
   /**
-   * The value being edited: the cell's, or (begun by typing) the
-   * character typed read as the column's value, `null` when it does not
-   * read as one.
+   * The value being edited: the cell's, or the text it began with
+   * (`initialText`: the character typed) read as the column's value,
+   * `null` when that text does not read as one ("-" in a number column).
    */
   value: DataTableValue
+  /**
+   * The text the edit began with: the character typed (an edit begun by
+   * typing), else the value as the built-in editor shows it (Enter, F2, a
+   * double click), or the text of a save that failed. Start a field from
+   * it, so a character typed is not lost.
+   */
+  initialText: string | null
   onValueChange: (value: DataTableValue) => void
   /**
    * Saves the value (checked by the column's `validate` first) and ends

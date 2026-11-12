@@ -1,7 +1,7 @@
 /**
  * Keys after one that edits, before the editing code has loaded (§7): the
  * characters typed after Enter go after the cell's value (Backspace taking
- * one back, Space staying the grid's); Escape drops an edit waiting, a
+ * one back); Escape drops an edit waiting, a
  * composition's too; once the code is there, a composition's key opens an
  * empty editor at once.
  */
@@ -67,8 +67,8 @@ describe("DataTable editing: keys after one that edits, before the code", () => 
     for (const key of [" ", "o", "k", "!", "Backspace"]) press(key)
     await act(async () => chunk.open())
     await waitFor(() => expect(focused().tagName).toBe("INPUT"))
-    // Space is the grid's, not the edit's: "ESP" and "ok".
-    expect(focused()).toHaveValue("ESPok")
+    // In an edit, Space types a space.
+    expect(focused()).toHaveValue("ESP ok")
     expect(td("Well 0")).toContainElement(focused())
     press("Escape")
     fireEvent.mouseDown(td("Well 1"), { button: 0 })

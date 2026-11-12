@@ -201,6 +201,8 @@ export default defineTranslations({
     cellSaved: "Αποθηκεύτηκε",
     chooseDate: "Επιλέξτε ημερομηνία",
     noMatchingOptions: "Δεν υπάρχουν αντίστοιχες επιλογές",
+    editDiscarded:
+      "Η επεξεργασία απορρίφθηκε: η γραμμή δεν είναι πλέον διαθέσιμη",
     cellSummary: "Επιλεγμένα κελιά",
     summarySum: "Άθροισμα: {value}",
     summaryAverage: "Μέσος όρος: {value}",

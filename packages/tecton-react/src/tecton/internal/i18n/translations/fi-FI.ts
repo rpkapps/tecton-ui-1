@@ -200,6 +200,7 @@ export default defineTranslations({
     cellSaved: "Tallennettu",
     chooseDate: "Valitse päivämäärä",
     noMatchingOptions: "Ei vastaavia vaihtoehtoja",
+    editDiscarded: "Muokkaus hylättiin: rivi ei ole enää käytettävissä",
     cellSummary: "Valitut solut",
     summarySum: "Summa: {value}",
     summaryAverage: "Keskiarvo: {value}",

@@ -245,7 +245,7 @@ describe("DataTable", () => {
         <DataTableContent aria-label="Wells" />
       </DataTable>
     )
-    expect(cell("Gullfaks")).toHaveClass("whitespace-normal")
+    expect(cell("Gullfaks")).toHaveClass("whitespace-pre-wrap")
   })
 })
 

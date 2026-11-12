@@ -199,6 +199,7 @@ export default defineTranslations({
     cellSaved: "Guardado",
     chooseDate: "Elegir una fecha",
     noMatchingOptions: "No hay opciones coincidentes",
+    editDiscarded: "Edición descartada: la fila ya no está disponible",
     cellSummary: "Celdas seleccionadas",
     summarySum: "Suma: {value}",
     summaryAverage: "Promedio: {value}",

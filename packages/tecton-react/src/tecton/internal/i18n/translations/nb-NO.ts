@@ -191,6 +191,8 @@ export default defineTranslations({
     cellSaved: "Lagret",
     chooseDate: "Velg en dato",
     noMatchingOptions: "Ingen samsvarende alternativer",
+    editDiscarded:
+      "Redigeringen ble forkastet: raden er ikke lenger tilgjengelig",
     cellSummary: "Merkede celler",
     summarySum: "Sum: {value}",
     summaryAverage: "Gjennomsnitt: {value}",
