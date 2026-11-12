@@ -1,60 +1,27 @@
-// Synced from shadcn/ui (apps/v4/examples/base/date-picker-time.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import * as React from "react"
-import { format } from "date-fns"
-import { ChevronDownIcon } from "lucide-react"
-
-import { Button } from "@tecton/react/components/button"
-import { Calendar } from "@tecton/react/components/calendar"
 import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
 import { Input } from "@tecton/react/components/input"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@tecton/react/components/popover"
+import { DatePicker } from "@tecton/react/tecton/date-picker"
 
-export function DatePickerTime() {
-  const [open, setOpen] = React.useState(false)
-  const [date, setDate] = React.useState<Date | undefined>(undefined)
-
+export default function DatePickerTime() {
   return (
     <FieldGroup className="mx-auto max-w-xs flex-row">
       <Field>
-        <FieldLabel htmlFor="date-picker-optional">Date</FieldLabel>
-        <Popover open={open} onOpenChange={setOpen}>
-          <PopoverTrigger
-            render={
-              <Button
-                variant="outline"
-                id="date-picker-optional"
-                className="w-32 justify-between font-normal"
-              />
-            }
-          >
-            {date ? format(date, "PPP") : "Select date"}
-            <ChevronDownIcon data-icon="inline-end" />
-          </PopoverTrigger>
-          <PopoverContent className="w-auto overflow-hidden p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={date}
-              captionLayout="dropdown"
-              defaultMonth={date}
-              onSelect={(date) => {
-                setDate(date)
-                setOpen(false)
-              }}
-            />
-          </PopoverContent>
-        </Popover>
+        <FieldLabel htmlFor="date-picker-time-date">Date</FieldLabel>
+        <DatePicker
+          id="date-picker-time-date"
+          className="w-32"
+          captionLayout="dropdown"
+          placeholder="Select date"
+          format={{ dateStyle: "medium" }}
+        />
       </Field>
       <Field className="w-32">
-        <FieldLabel htmlFor="time-picker-optional">Time</FieldLabel>
+        <FieldLabel htmlFor="date-picker-time-time">Time</FieldLabel>
         <Input
           type="time"
-          id="time-picker-optional"
+          id="date-picker-time-time"
           step="1"
           defaultValue="10:30:00"
           className="appearance-none bg-background [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-calendar-picker-indicator]:appearance-none"

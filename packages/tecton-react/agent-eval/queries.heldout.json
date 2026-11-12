@@ -14,7 +14,7 @@
   {"q": "radio group for a single choice", "answers": ["radio-group"], "kind": "direct"},
   {"q": "switch to toggle dark mode", "answers": ["switch"], "kind": "direct"},
   {"q": "slider for selecting a depth range", "answers": ["slider"], "kind": "direct"},
-  {"q": "calendar for picking a report date", "answers": ["calendar"], "kind": "direct"},
+  {"q": "calendar for picking a report date", "answers": ["calendar", "date-picker"], "kind": "direct"},
   {"q": "color swatch picker for chart series", "answers": ["color-swatch"], "kind": "direct"},
   {"q": "button group for save and cancel", "answers": ["button-group"], "kind": "direct"},
   {"q": "kbd hint showing a keyboard shortcut", "answers": ["kbd"], "kind": "direct"},

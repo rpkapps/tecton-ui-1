@@ -88,10 +88,12 @@ const BLOCK_PREVIEWS: Record<string, string> = {
 
 /**
  * Upstream docs pages without a component file that are still worth keeping.
- * `data-table` is not one: it is hand-written (`components/data-table.mdx`,
- * no `upstream:` line): it documents Tecton's own `DataTable`.
+ * `data-table` and `date-picker` are not: they are hand-written
+ * (`components/<name>.mdx`, no `upstream:` line) and document Tecton's own
+ * `DataTable`, `DatePicker` and `DateRangePicker` where upstream has recipes.
+ * Their examples (`date-picker-*`) are Tecton's too and are not synced.
  */
-const EXTRA_PAGES = ["date-picker"]
+const EXTRA_PAGES: Array<string> = []
 
 /**
  * Other upstream docs folders that are synced page by page. The pages reference
@@ -286,7 +288,6 @@ const EXAMPLE_REWRITES: Record<string, (code: string) => string> = {
       'align="end"',
       "button-group-rtl"
     ),
-  "date-picker-rtl": toGregorianArabic("date-picker-rtl"),
   // Upstream's docs site serves its components at /components; ours at /docs/components.
   "breadcrumb-separator": (code) =>
     replaceOrThrow(

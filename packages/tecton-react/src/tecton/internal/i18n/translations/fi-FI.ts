@@ -154,4 +154,26 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Muuta sarakkeen {columnName} kokoa",
   },
+  datePicker: {
+    placeholder: "Valitse päivämäärä",
+    rangePlaceholder: "Valitse aikaväli",
+    chooseDate: "Valitse päivämäärä",
+    chooseDateRange: "Valitse aikaväli",
+    presets: "Pikavalinnat",
+    today: "Tänään",
+    yesterday: "Eilen",
+    last7Days: "Viimeiset 7 päivää",
+    last30Days: "Viimeiset 30 päivää",
+    thisMonth: "Tämä kuukausi",
+    lastMonth: "Viime kuukausi",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "{selected}/{total} valittu" },
+    selectedOfTotalLabelled: { other: "{selected}/{total} {label} valittu" },
+    selected: { other: "{selected} valittu" },
+    selectedLabelled: { other: "{selected} {label} valittu" },
+    clear: "Tyhjennä",
+    clearSelection: "Tyhjennä valinta",
+    actions: "Toiminnot",
+  },
 })

@@ -151,4 +151,26 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Muuda veeru {columnName} laiust",
   },
+  datePicker: {
+    placeholder: "Vali kuupäev",
+    rangePlaceholder: "Vali kuupäevavahemik",
+    chooseDate: "Vali kuupäev",
+    chooseDateRange: "Vali kuupäevavahemik",
+    presets: "Kiirvalikud",
+    today: "Täna",
+    yesterday: "Eile",
+    last7Days: "Viimased 7 päeva",
+    last30Days: "Viimased 30 päeva",
+    thisMonth: "See kuu",
+    lastMonth: "Eelmine kuu",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "{selected}/{total} valitud" },
+    selectedOfTotalLabelled: { other: "{selected}/{total} {label} valitud" },
+    selected: { other: "{selected} valitud" },
+    selectedLabelled: { other: "{selected} {label} valitud" },
+    clear: "Tühjenda",
+    clearSelection: "Tühjenda valik",
+    actions: "Toimingud",
+  },
 })

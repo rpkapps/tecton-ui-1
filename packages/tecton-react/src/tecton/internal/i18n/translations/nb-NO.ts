@@ -148,4 +148,26 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Endre størrelse på {columnName}",
   },
+  datePicker: {
+    placeholder: "Velg en dato",
+    rangePlaceholder: "Velg en datoperiode",
+    chooseDate: "Velg en dato",
+    chooseDateRange: "Velg en datoperiode",
+    presets: "Hurtigvalg",
+    today: "I dag",
+    yesterday: "I går",
+    last7Days: "Siste 7 dager",
+    last30Days: "Siste 30 dager",
+    thisMonth: "Denne måneden",
+    lastMonth: "Forrige måned",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "{selected} av {total} valgt" },
+    selectedOfTotalLabelled: { other: "{selected} av {total} {label} valgt" },
+    selected: { other: "{selected} valgt" },
+    selectedLabelled: { other: "{selected} {label} valgt" },
+    clear: "Fjern",
+    clearSelection: "Fjern utvalg",
+    actions: "Handlinger",
+  },
 })

@@ -145,4 +145,28 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "調整 {columnName} 的大小",
   },
+  datePicker: {
+    placeholder: "選擇日期",
+    rangePlaceholder: "選擇日期範圍",
+    chooseDate: "選擇日期",
+    chooseDateRange: "選擇日期範圍",
+    presets: "快速選取",
+    today: "今天",
+    yesterday: "昨天",
+    last7Days: "過去 7 天",
+    last30Days: "過去 30 天",
+    thisMonth: "本月",
+    lastMonth: "上個月",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "已選取 {selected} 項，共 {total} 項" },
+    selectedOfTotalLabelled: {
+      other: "{label}：已選取 {selected} 個，共 {total} 個",
+    },
+    selected: { other: "已選取 {selected} 項" },
+    selectedLabelled: { other: "{label}：已選取 {selected} 個" },
+    clear: "清除",
+    clearSelection: "清除選取",
+    actions: "動作",
+  },
 })

@@ -155,4 +155,42 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Cambiar el tamaño de {columnName}",
   },
+  datePicker: {
+    placeholder: "Selecciona una fecha",
+    rangePlaceholder: "Selecciona un intervalo de fechas",
+    chooseDate: "Elegir una fecha",
+    chooseDateRange: "Elegir un intervalo de fechas",
+    presets: "Intervalos predefinidos",
+    today: "Hoy",
+    yesterday: "Ayer",
+    last7Days: "Últimos 7 días",
+    last30Days: "Últimos 30 días",
+    thisMonth: "Este mes",
+    lastMonth: "Mes pasado",
+  },
+  actionBar: {
+    selectedOfTotal: {
+      one: "{selected} de {total} seleccionado",
+      many: "{selected} de {total} seleccionados",
+      other: "{selected} de {total} seleccionados",
+    },
+    selectedOfTotalLabelled: {
+      one: "{selected} de {total} {label} seleccionado",
+      many: "{selected} de {total} {label} seleccionados",
+      other: "{selected} de {total} {label} seleccionados",
+    },
+    selected: {
+      one: "{selected} seleccionado",
+      many: "{selected} seleccionados",
+      other: "{selected} seleccionados",
+    },
+    selectedLabelled: {
+      one: "{selected} {label} seleccionado",
+      many: "{selected} {label} seleccionados",
+      other: "{selected} {label} seleccionados",
+    },
+    clear: "Borrar",
+    clearSelection: "Borrar selección",
+    actions: "Acciones",
+  },
 })

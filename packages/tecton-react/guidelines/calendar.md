@@ -5,10 +5,10 @@ family: data
 exports: [Calendar, CalendarDayButton]
 notFor:
   - need: a compact date field that opens a calendar on demand
-    use: Popover
+    use: DatePicker
   - need: a year or a month picked in a dense form row
     use: NativeSelect
-related: [Popover, Field, NativeSelect]
+related: [DatePicker, Field, NativeSelect]
 ---
 
 ## Use it when
@@ -23,7 +23,7 @@ related: [Popover, Field, NativeSelect]
 - Show more months with `numberOfMonths`, month and year dropdowns with `captionLayout="dropdown"`, week numbers with `showWeekNumber`.
 - Block days with `disabled` — a matcher such as `{ before: new Date() }`, `{ dayOfWeek: [0, 6] }` or a function — so they get the dimmed cell styling.
 - Resize the grid through its variable, `className="[--cell-size:--spacing(11)]"`; never restyle the cells.
-- For a date field, put the `Calendar` in a `PopoverContent` behind a `PopoverTrigger render={<Button variant="outline" />}` inside a `Field`; there is no `DatePicker` component.
+- For a date field use `DatePicker` (a range: `DateRangePicker`), which puts this `Calendar` in a `Popover` behind a button or a date input; never assemble one from `Popover` and `Calendar`.
 
 ## Don't
 

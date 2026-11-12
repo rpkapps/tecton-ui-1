@@ -164,4 +164,42 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Mainīt kolonnas {columnName} izmēru",
   },
+  datePicker: {
+    placeholder: "Izvēlieties datumu",
+    rangePlaceholder: "Izvēlieties datumu diapazonu",
+    chooseDate: "Izvēlieties datumu",
+    chooseDateRange: "Izvēlieties datumu diapazonu",
+    presets: "Ātrā izvēle",
+    today: "Šodien",
+    yesterday: "Vakar",
+    last7Days: "Pēdējās 7 dienas",
+    last30Days: "Pēdējās 30 dienas",
+    thisMonth: "Šis mēnesis",
+    lastMonth: "Iepriekšējais mēnesis",
+  },
+  actionBar: {
+    selectedOfTotal: {
+      zero: "Atlasīti {selected} no {total}",
+      one: "Atlasīts {selected} no {total}",
+      other: "Atlasīti {selected} no {total}",
+    },
+    selectedOfTotalLabelled: {
+      zero: "Atlasīti {selected} no {total} {label}",
+      one: "Atlasīts {selected} no {total} {label}",
+      other: "Atlasīti {selected} no {total} {label}",
+    },
+    selected: {
+      zero: "Atlasīti {selected}",
+      one: "Atlasīts {selected}",
+      other: "Atlasīti {selected}",
+    },
+    selectedLabelled: {
+      zero: "Atlasīti {selected} {label}",
+      one: "Atlasīts {selected} {label}",
+      other: "Atlasīti {selected} {label}",
+    },
+    clear: "Notīrīt",
+    clearSelection: "Notīrīt atlasi",
+    actions: "Darbības",
+  },
 })

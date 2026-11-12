@@ -153,4 +153,26 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "{columnName} átméretezése",
   },
+  datePicker: {
+    placeholder: "Dátum kiválasztása",
+    rangePlaceholder: "Dátumtartomány kiválasztása",
+    chooseDate: "Dátum kiválasztása",
+    chooseDateRange: "Dátumtartomány kiválasztása",
+    presets: "Gyorsválasztás",
+    today: "Ma",
+    yesterday: "Tegnap",
+    last7Days: "Elmúlt 7 nap",
+    last30Days: "Elmúlt 30 nap",
+    thisMonth: "Ez a hónap",
+    lastMonth: "Előző hónap",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "{selected}/{total} kijelölve" },
+    selectedOfTotalLabelled: { other: "{selected}/{total} {label} kijelölve" },
+    selected: { other: "{selected} kijelölve" },
+    selectedLabelled: { other: "{selected} {label} kijelölve" },
+    clear: "Törlés",
+    clearSelection: "Kijelölés törlése",
+    actions: "Műveletek",
+  },
 })

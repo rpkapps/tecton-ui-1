@@ -145,4 +145,28 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "{columnName} のサイズを変更",
   },
+  datePicker: {
+    placeholder: "日付を選択",
+    rangePlaceholder: "期間を選択",
+    chooseDate: "日付を選択",
+    chooseDateRange: "期間を選択",
+    presets: "プリセット",
+    today: "今日",
+    yesterday: "昨日",
+    last7Days: "過去 7 日間",
+    last30Days: "過去 30 日間",
+    thisMonth: "今月",
+    lastMonth: "先月",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "{total} 件中 {selected} 件を選択済み" },
+    selectedOfTotalLabelled: {
+      other: "{label}：{total} 件中 {selected} 件を選択済み",
+    },
+    selected: { other: "{selected} 件を選択済み" },
+    selectedLabelled: { other: "{label}：{selected} 件を選択済み" },
+    clear: "クリア",
+    clearSelection: "選択をクリア",
+    actions: "アクション",
+  },
 })

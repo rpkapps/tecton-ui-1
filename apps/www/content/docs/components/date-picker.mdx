@@ -1,102 +1,110 @@
 ---
 title: Date Picker
-description: A date picker component with range and presets.
-upstream: apps/v4/content/docs/components/base/date-picker.mdx
+description: A date, or a range of dates, picked on a calendar that opens from a button or a date input.
 ---
 
 <ComponentPreview name="date-picker-demo" />
 
 ## Usage
 
-```tsx lineNumbers title="components/example-date-picker.tsx"
-"use client"
-
-import * as React from "react"
-import { cn } from "cn"
-import { format } from "date-fns"
-import { Calendar as CalendarIcon } from "lucide-react"
-
-import { Button } from "@tecton/react/components/button"
-import { Calendar } from "@tecton/react/components/calendar"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@tecton/react/components/popover"
-
-export function DatePickerDemo() {
-  const [date, setDate] = React.useState<Date>()
-
-  return (
-    <Popover>
-      <PopoverTrigger
-        render={
-          <Button
-            variant="outline"
-            data-empty={!date}
-            className="justify-start text-left font-normal data-[empty=true]:text-muted-foreground"
-          />
-        }
-      >
-        <CalendarIcon />
-        {date ? format(date, "PPP") : <span>Pick a date</span>}
-      </PopoverTrigger>
-      <PopoverContent className="w-auto p-0">
-        <Calendar mode="single" selected={date} onSelect={setDate} />
-      </PopoverContent>
-    </Popover>
-  )
-}
+```tsx
+import { DatePicker, DateRangePicker } from "@tecton/react/tecton/date-picker"
 ```
 
-See the [React DayPicker](https://react-day-picker.js.org) documentation for more information.
+```tsx
+const [date, setDate] = React.useState<Date>()
 
-## Composition
-
-A date picker is built from `Popover` and `Calendar` (there is no `DatePicker` root component):
-
-```text
-Popover
-├── PopoverTrigger
-└── PopoverContent
-    └── Calendar
+<Field>
+  <FieldLabel htmlFor="spud-date">Spud date</FieldLabel>
+  <DatePicker id="spud-date" value={date} onValueChange={setDate} />
+</Field>
 ```
 
-## Basic
+`DatePicker` and `DateRangePicker` put a [Calendar](/docs/components/calendar) in a [Popover](/docs/components/popover). The date is written with `Intl.DateTimeFormat`, and the calendar's month and day names come in the same locale: both follow the [TectonProvider](/docs/tecton/provider), as does the direction.
 
-A basic date picker component.
+## In a field
+
+The label names the trigger; the date describes it. Give it `className="w-full"` to fill the field.
 
 <ComponentPreview name="date-picker-basic" />
 
-## Range Picker
+## Range
 
-A date picker component for selecting a range of dates.
+`DateRangePicker` shows two months. The first day picked starts the range, the second ends it and closes the calendar.
 
 <ComponentPreview name="date-picker-range" />
 
-## Date of Birth
+## Presets
 
-A date picker component for selecting a date of birth. This component includes a dropdown caption layout for date and month selection.
+`presets` adds buttons that pick a range at once: `"today"`, `"yesterday"`, `"last7Days"`, `"last30Days"`, `"thisMonth"`, `"lastMonth"` (their labels are translated), or `{ label, value }` of your own.
 
-<ComponentPreview name="date-picker-dob" />
+<ComponentPreview name="date-picker-presets" />
 
 ## Input
 
-A date picker component with an input field for selecting a date.
+`variant="input"` is a date input with a calendar button. It reads the date as the locale writes it ("June 1, 2025", "6/1/2025", "1. Juni 2025") or as an ISO date, and writes it out on blur. Alt+↓ opens the calendar.
 
 <ComponentPreview name="date-picker-input" />
 
-## Time Picker
+## Date of birth
 
-A date picker component with a time input field for selecting a time.
+`captionLayout="dropdown"` adds month and year dropdowns, for dates years away; `maxDate` stops at today.
+
+<ComponentPreview name="date-picker-dob" />
+
+## Time
+
+A `DatePicker` next to an `Input type="time"`. `format` sets how the date is written.
 
 <ComponentPreview name="date-picker-time" />
 
 ## RTL
 
-To enable RTL support in shadcn/ui, see the [RTL configuration guide](https://ui.shadcn.com/docs/rtl).
+In a right-to-left locale the calendar, its arrows and the popover mirror.
 
-<ComponentPreview
-  name="date-picker-rtl"
-  direction="rtl"
-/>
+<ComponentPreview name="date-picker-rtl" direction="rtl" />
+
+## Keyboard
+
+| Key                       | Does                                                       |
+| ------------------------- | ---------------------------------------------------------- |
+| Enter, Space              | Opens the calendar from the button, on the day picked      |
+| Alt+↓, ↓                  | Opens the calendar from the date input                     |
+| Arrows, Page Up/Down      | Move by day, week or month in the calendar                 |
+| Enter, Space (on a day)   | Picks the day, closes the calendar, focus goes back        |
+| Escape                    | Closes the calendar without a change, focus goes back      |
+| Enter (in the date input) | Reads the typed date                                       |
+
+## API
+
+### DatePicker
+
+| Prop                                        | Type                                    | Default                 |
+| ------------------------------------------- | --------------------------------------- | ----------------------- |
+| `value` / `defaultValue`                    | `Date \| undefined`                     | —                       |
+| `onValueChange`                             | `(value: Date \| undefined) => void`    | —                       |
+| `open` / `defaultOpen`                      | `boolean`                               | `false`                 |
+| `onOpenChange`                              | `(open: boolean) => void`               | —                       |
+| `variant`                                   | `"button" \| "input"`                   | `"button"`              |
+| `placeholder`                               | `string`                                | "Pick a date"           |
+| `minDate` / `maxDate`                       | `Date`                                  | —                       |
+| `format`                                    | `Intl.DateTimeFormatOptions`            | `{ dateStyle: "long" }` |
+| `captionLayout`                             | `"label" \| "dropdown"`                 | `"label"`               |
+| `disabled`                                  | `boolean`                               | `false`                 |
+| `name`                                      | `string`: submits `YYYY-MM-DD`          | —                       |
+| `id`, `className`, `aria-*`, event handlers | on the button, or on the input          | —                       |
+
+### DateRangePicker
+
+The same props as `DatePicker` except `variant`, `captionLayout` and `name`, and:
+
+| Prop                     | Type                                                      | Default                                               |
+| ------------------------ | --------------------------------------------------------- | ----------------------------------------------------- |
+| `value` / `defaultValue` | `DateRange \| undefined`: `{ from?: Date; to?: Date }`    | —                                                     |
+| `onValueChange`          | `(value: DateRange \| undefined) => void`                 | —                                                     |
+| `numberOfMonths`         | `number`                                                  | `2`                                                   |
+| `presets`                | `Array<DateRangePresetName \| { label; value }>`          | —                                                     |
+| `placeholder`            | `string`                                                  | "Pick a date range"                                   |
+| `format`                 | `Intl.DateTimeFormatOptions`, for both ends               | `{ month: "short", day: "numeric", year: "numeric" }` |
+
+For a calendar that stays on the page, use [Calendar](/docs/components/calendar).

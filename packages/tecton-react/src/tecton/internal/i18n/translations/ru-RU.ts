@@ -168,4 +168,36 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Изменить размер столбца {columnName}",
   },
+  datePicker: {
+    placeholder: "Выберите дату",
+    rangePlaceholder: "Выберите период",
+    chooseDate: "Выберите дату",
+    chooseDateRange: "Выберите период",
+    presets: "Быстрый выбор",
+    today: "Сегодня",
+    yesterday: "Вчера",
+    last7Days: "Последние 7 дней",
+    last30Days: "Последние 30 дней",
+    thisMonth: "Этот месяц",
+    lastMonth: "Прошлый месяц",
+  },
+  actionBar: {
+    selectedOfTotal: {
+      one: "Выбран {selected} из {total}",
+      few: "Выбрано {selected} из {total}",
+      many: "Выбрано {selected} из {total}",
+      other: "Выбрано {selected} из {total}",
+    },
+    selectedOfTotalLabelled: { other: "Выбрано {selected} из {total} {label}" },
+    selected: {
+      one: "Выбран {selected}",
+      few: "Выбрано {selected}",
+      many: "Выбрано {selected}",
+      other: "Выбрано {selected}",
+    },
+    selectedLabelled: { other: "Выбрано {selected} {label}" },
+    clear: "Очистить",
+    clearSelection: "Снять выделение",
+    actions: "Действия",
+  },
 })

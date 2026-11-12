@@ -160,4 +160,42 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "שנה את גודל {columnName}",
   },
+  datePicker: {
+    placeholder: "בחירת תאריך",
+    rangePlaceholder: "בחירת טווח תאריכים",
+    chooseDate: "בחירת תאריך",
+    chooseDateRange: "בחירת טווח תאריכים",
+    presets: "טווחים מוגדרים מראש",
+    today: "היום",
+    yesterday: "אתמול",
+    last7Days: "7 הימים האחרונים",
+    last30Days: "30 הימים האחרונים",
+    thisMonth: "החודש",
+    lastMonth: "החודש שעבר",
+  },
+  actionBar: {
+    selectedOfTotal: {
+      one: "נבחר {selected} מתוך {total}",
+      two: "נבחרו {selected} מתוך {total}",
+      other: "נבחרו {selected} מתוך {total}",
+    },
+    selectedOfTotalLabelled: {
+      one: "נבחר {selected} מתוך {total} {label}",
+      two: "נבחרו {selected} מתוך {total} {label}",
+      other: "נבחרו {selected} מתוך {total} {label}",
+    },
+    selected: {
+      one: "נבחר {selected}",
+      two: "נבחרו {selected}",
+      other: "נבחרו {selected}",
+    },
+    selectedLabelled: {
+      one: "נבחר {selected} {label}",
+      two: "נבחרו {selected} {label}",
+      other: "נבחרו {selected} {label}",
+    },
+    clear: "ניקוי",
+    clearSelection: "ניקוי הבחירה",
+    actions: "פעולות",
+  },
 })

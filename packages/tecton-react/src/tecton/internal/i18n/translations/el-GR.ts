@@ -154,4 +154,35 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Αλλαγή μεγέθους {columnName}",
   },
+  datePicker: {
+    placeholder: "Επιλέξτε ημερομηνία",
+    rangePlaceholder: "Επιλέξτε εύρος ημερομηνιών",
+    chooseDate: "Επιλέξτε ημερομηνία",
+    chooseDateRange: "Επιλέξτε εύρος ημερομηνιών",
+    presets: "Γρήγορες επιλογές",
+    today: "Σήμερα",
+    yesterday: "Χθες",
+    last7Days: "Τελευταίες 7 ημέρες",
+    last30Days: "Τελευταίες 30 ημέρες",
+    thisMonth: "Αυτός ο μήνας",
+    lastMonth: "Προηγούμενος μήνας",
+  },
+  actionBar: {
+    selectedOfTotal: {
+      one: "Επιλέχθηκε {selected} από {total}",
+      other: "Επιλέχθηκαν {selected} από {total}",
+    },
+    selectedOfTotalLabelled: {
+      one: "Επιλέχθηκε {selected} από {total} {label}",
+      other: "Επιλέχθηκαν {selected} από {total} {label}",
+    },
+    selected: { one: "Επιλέχθηκε {selected}", other: "Επιλέχθηκαν {selected}" },
+    selectedLabelled: {
+      one: "Επιλέχθηκε {selected} {label}",
+      other: "Επιλέχθηκαν {selected} {label}",
+    },
+    clear: "Απαλοιφή",
+    clearSelection: "Απαλοιφή επιλογής",
+    actions: "Ενέργειες",
+  },
 })
