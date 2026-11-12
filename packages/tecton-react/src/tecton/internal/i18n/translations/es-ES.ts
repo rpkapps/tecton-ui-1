@@ -66,6 +66,14 @@ export default defineTranslations({
     pageOf: "Página {page} de {pageCount}",
     previousPage: "Página anterior",
     nextPage: "Página siguiente",
+    previousPages: {
+      one: "{pages} página anterior",
+      other: "{pages} páginas anteriores",
+    },
+    nextPages: {
+      one: "{pages} página siguiente",
+      other: "{pages} páginas siguientes",
+    },
     selectAllMatching: {
       one: "Seleccionar {total} fila",
       many: "Seleccionar las {total} de filas",

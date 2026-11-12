@@ -70,6 +70,13 @@ const enUS = {
     pageOf: "Page {page} of {pageCount}",
     previousPage: "Previous page",
     nextPage: "Next page",
+    // The pagination's ellipses, which jump {pages} (a formatted number)
+    // pages back or forward; the plural form follows that number.
+    previousPages: {
+      one: "Previous {pages} page",
+      other: "Previous {pages} pages",
+    },
+    nextPages: { one: "Next {pages} page", other: "Next {pages} pages" },
     // The plural form follows the number of rows to select ({total}).
     selectAllMatching: { other: "Select all {total}" },
     clearSelection: "Clear selection",

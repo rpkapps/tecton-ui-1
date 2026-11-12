@@ -66,6 +66,14 @@ export default defineTranslations({
     pageOf: "Страница {page} от {pageCount}",
     previousPage: "Предишна страница",
     nextPage: "Следваща страница",
+    previousPages: {
+      one: "Предишната {pages} страница",
+      other: "Предишните {pages} страници",
+    },
+    nextPages: {
+      one: "Следващата {pages} страница",
+      other: "Следващите {pages} страници",
+    },
     selectAllMatching: {
       one: "Изберете {total} ред",
       other: "Изберете всички {total} реда",

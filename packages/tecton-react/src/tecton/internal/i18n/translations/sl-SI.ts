@@ -67,6 +67,18 @@ export default defineTranslations({
     pageOf: "Stran {page} od {pageCount}",
     previousPage: "Prejšnja stran",
     nextPage: "Naslednja stran",
+    previousPages: {
+      one: "Prejšnja {pages} stran",
+      two: "Prejšnji {pages} strani",
+      few: "Prejšnje {pages} strani",
+      other: "Prejšnjih {pages} strani",
+    },
+    nextPages: {
+      one: "Naslednja {pages} stran",
+      two: "Naslednji {pages} strani",
+      few: "Naslednje {pages} strani",
+      other: "Naslednjih {pages} strani",
+    },
     selectAllMatching: {
       one: "Izberite {total} vrstico",
       two: "Izberite {total} vrstici",

@@ -67,6 +67,16 @@ export default defineTranslations({
     pageOf: "Pagina {page} din {pageCount}",
     previousPage: "Pagina anterioară",
     nextPage: "Pagina următoare",
+    previousPages: {
+      one: "{pages} pagină anterioară",
+      few: "{pages} pagini anterioare",
+      other: "{pages} de pagini anterioare",
+    },
+    nextPages: {
+      one: "{pages} pagină următoare",
+      few: "{pages} pagini următoare",
+      other: "{pages} de pagini următoare",
+    },
     selectAllMatching: {
       one: "Selectați {total} rând",
       few: "Selectați toate cele {total} rânduri",

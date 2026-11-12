@@ -67,6 +67,14 @@ export default defineTranslations({
     pageOf: "Sivu {page}/{pageCount}",
     previousPage: "Edellinen sivu",
     nextPage: "Seuraava sivu",
+    previousPages: {
+      one: "Edellinen {pages} sivu",
+      other: "Edelliset {pages} sivua",
+    },
+    nextPages: {
+      one: "Seuraava {pages} sivu",
+      other: "Seuraavat {pages} sivua",
+    },
     selectAllMatching: {
       one: "Valitse {total} rivi",
       other: "Valitse kaikki {total} riviä",

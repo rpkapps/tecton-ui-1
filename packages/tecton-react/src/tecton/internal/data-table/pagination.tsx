@@ -7,9 +7,10 @@
  * pages (the first, the last, the current one and its neighbours, an
  * ellipsis for the others) and next. The pages are buttons, not links: the
  * `Button` that `PaginationLink`'s look is (ghost, the current page
- * outline), in `PaginationItem`s. The rows are the server's `rowCount` in
- * server mode. It renders nothing, and warns once in development, while
- * `pagination` is off.
+ * outline), in `PaginationItem`s. An ellipsis is a button too, which jumps
+ * five pages back or forward (its dots a double arrow on hover). The rows
+ * are the server's `rowCount` in server mode. It renders nothing, and
+ * warns once in development, while `pagination` is off.
  *
  * It stays on one line: it is a container (`@container`, the width it is
  * given, the footer's), and as that narrows it lets go of what it can
@@ -17,16 +18,26 @@
  * name), the words of Previous and Next (their icons stay), the pages but
  * the current one and its neighbours (ellipses for the others), and below
  * about 400 px the page buttons, for "Page 3 of 5" between the arrows.
+ *
+ * Its controls keep their places as the page changes, so the one under the
+ * pointer is pressed again: each row of pages has as many slots on every
+ * page, and the rows shown and "Page 3 of 5" keep the width of their
+ * widest text.
  */
 import * as React from "react"
 import { cn } from "cn"
-import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
+import {
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  ChevronsLeftIcon,
+  ChevronsRightIcon,
+  MoreHorizontalIcon,
+} from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
 } from "@tecton/react/components/pagination"
 import {
@@ -36,6 +47,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@tecton/react/components/select"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
 
 import { useTranslations } from "../i18n/translations"
 import {
@@ -62,53 +78,92 @@ const NO_LABEL = "@max-[46rem]/data-table-pagination:hidden"
 const NO_WORDS = "@max-[40rem]/data-table-pagination:hidden"
 /** A page or ellipsis of the wide row only. */
 const WIDE = "@max-[34rem]/data-table-pagination:hidden"
-/** The current page and its neighbours: gone only for "Page 3 of 5". */
+/** A page of both rows: gone only for "Page 3 of 5". */
 const NEAR = "@max-[25rem]/data-table-pagination:hidden"
-/** An ellipsis of the narrow row only, before or after the neighbours. */
+/** A page or ellipsis of the narrow row only. */
 const NARROW =
   "hidden @max-[34rem]/data-table-pagination:block @max-[25rem]/data-table-pagination:hidden"
 const PAGE_OF = "hidden @max-[25rem]/data-table-pagination:block"
 
+/** The pages an ellipsis jumps, back or forward. */
+const JUMP = 5
+
+/** A page's button, or an ellipsis: the pages before or after the ones shown. */
+type Slot = number | "previous" | "next"
+
 /**
- * The pages to show a button for, and `null` for an ellipsis: every page
- * up to 7, else the first, the last, the current one and its neighbours
- * (five in a row at either end), so the row keeps its length as the page
- * changes.
+ * The wide row: every page up to 7, else seven slots, the first page, the
+ * last, the current one and its neighbours, and an ellipsis for the others
+ * (five pages in a row at either end).
  */
-function pagesToShow(page: number, pageCount: number): Array<number | null> {
+function wideRow(page: number, pageCount: number): Array<Slot> {
   if (pageCount <= 7)
     return Array.from({ length: pageCount }, (_, index) => index + 1)
-  if (page <= 4) return [1, 2, 3, 4, 5, null, pageCount]
+  if (page <= 4) return [1, 2, 3, 4, 5, "next", pageCount]
   if (page >= pageCount - 3)
     return [
       1,
-      null,
+      "previous",
       pageCount - 4,
       pageCount - 3,
       pageCount - 2,
       pageCount - 1,
       pageCount,
     ]
-  return [1, null, page - 1, page, page + 1, null, pageCount]
+  return [1, "previous", page - 1, page, page + 1, "next", pageCount]
 }
 
 /**
- * The pages and ellipses of every width, each with where it is laid out:
- * the wide row (`pagesToShow`), and the narrow one, the current page and
- * its neighbours with an ellipsis for the pages before and after them
- * (`NARROW` ellipses of its own, the wide row's ellipses left out). One
- * button per page, so each is in the page once.
+ * The narrow row: every page up to 4, else five slots, the current page and
+ * its neighbours between ellipses (four pages in a row at either end).
+ */
+function narrowRow(page: number, pageCount: number): Array<Slot> {
+  if (pageCount <= 4)
+    return Array.from({ length: pageCount }, (_, index) => index + 1)
+  if (page <= 2) return [1, 2, 3, 4, "next"]
+  if (page >= pageCount - 1)
+    return ["previous", pageCount - 3, pageCount - 2, pageCount - 1, pageCount]
+  return ["previous", page - 1, page, page + 1, "next"]
+}
+
+/**
+ * The pages and ellipses of both rows, in order, each with the widths it
+ * shows at. Each row keeps its number of slots as the page changes, so
+ * Previous and Next stay where they are. A page is one button for both
+ * rows (in the page once); an ellipsis is its row's own.
  */
 function pageItems(page: number, pageCount: number) {
-  const items: Array<{ to: number | null; className: string }> = []
-  if (page - 1 > 1) items.push({ to: null, className: NARROW })
-  for (const to of pagesToShow(page, pageCount))
-    items.push({
-      to,
-      className: to !== null && Math.abs(to - page) <= 1 ? NEAR : WIDE,
+  const items = new Map<
+    string,
+    { slot: Slot; at: number; wide: boolean; narrow: boolean }
+  >()
+  for (const [row, slots] of [
+    ["wide", wideRow(page, pageCount)],
+    ["narrow", narrowRow(page, pageCount)],
+  ] as const)
+    slots.forEach((slot, index) => {
+      // Between the pages around it: a page k at 2k, an ellipsis next to
+      // its neighbour.
+      const at =
+        typeof slot === "number"
+          ? 2 * slot
+          : slot === "previous"
+            ? 2 * (slots[index + 1] as number) - 1
+            : 2 * (slots[index - 1] as number) + 1
+      const key = typeof slot === "number" ? String(slot) : `${slot}-${row}`
+      const item = items.get(key) ?? { slot, at, wide: false, narrow: false }
+      item[row] = true
+      items.set(key, item)
     })
-  if (page + 1 < pageCount) items.push({ to: null, className: NARROW })
-  return items
+  return [...items]
+    .sort(([, a], [, b]) => a.at - b.at)
+    .map(([key, { slot, wide, narrow }]) => ({
+      key,
+      slot,
+      // Marked for the tests (jsdom has no container queries).
+      row: wide && narrow ? undefined : wide ? "wide" : "narrow",
+      className: wide && narrow ? NEAR : wide ? WIDE : NARROW,
+    }))
 }
 
 function DataTablePagination({
@@ -129,7 +184,7 @@ function DataTablePagination({
       )}
       {...props}
     >
-      <div className="flex items-center justify-end gap-x-6 whitespace-nowrap @max-[34rem]/data-table-pagination:gap-x-3">
+      <div className="flex items-center justify-end gap-x-6 whitespace-nowrap @max-[34rem]/data-table-pagination:gap-x-3 @max-[25rem]/data-table-pagination:gap-x-2">
         <PageSize context={context} ownSizes={ownSizes} />
         <RowRange context={context} />
         <PageButtons context={context} />
@@ -200,6 +255,14 @@ function PageSize({
   )
 }
 
+/**
+ * Text that keeps the width of its widest value (`data-widest`), so the
+ * parts after it stay where they are as it changes: "1–10" and "11–20",
+ * "Page 9" and "Page 10". The widest value is drawn hidden, under the text.
+ */
+const STEADY =
+  "grid tabular-nums before:invisible before:col-start-1 before:row-start-1 before:content-[attr(data-widest)] *:col-start-1 *:row-start-1"
+
 /** "1–10 of 240": the rows of the page, announced as they change. */
 function RowRange({ context }: { context: DataTableContextValue<unknown> }) {
   const t = useTranslations("dataTable")
@@ -222,13 +285,20 @@ function RowRange({ context }: { context: DataTableContextValue<unknown> }) {
       data-slot="data-table-row-range"
       aria-live="polite"
       aria-atomic="true"
-      className="text-muted-foreground tabular-nums"
-    >
-      {t("rowRange", {
-        from: format.format(from),
-        to: format.format(to),
+      data-widest={t("rowRange", {
+        from: format.format(total),
+        to: format.format(total),
         total: format.format(total),
       })}
+      className={cn("justify-items-end text-muted-foreground", STEADY)}
+    >
+      <span>
+        {t("rowRange", {
+          from: format.format(from),
+          to: format.format(to),
+          total: format.format(total),
+        })}
+      </span>
     </span>
   )
 }
@@ -244,34 +314,63 @@ function PageButtons({ context }: { context: DataTableContextValue<unknown> }) {
   )
   // Read when pressed: the page a click lands on is the current one's neighbour.
   const current = () => context.store.get().model.page
-  const pages = pageItems(page, pageCount).map(({ to, className }, index) =>
-    to === null ? (
-      <PaginationItem
-        key={`ellipsis-${index}`}
-        data-narrow={className === NARROW ? "" : undefined}
-        className={className}
-      >
-        <PaginationEllipsis />
-      </PaginationItem>
-    ) : (
-      <PaginationItem key={to} className={className}>
-        <Button
-          variant={to === page ? "outline" : "ghost"}
-          size="icon"
-          aria-current={to === page ? "page" : undefined}
-          aria-label={t("goToPage", { page: format.format(to) })}
-          className="tabular-nums"
-          onClick={(event: React.MouseEvent) =>
-            context.actions.setPage(to, "page", event.nativeEvent)
-          }
+  const nav = React.useRef<HTMLElement>(null)
+  // An ellipsis pressed: focus stays on it, or, when the jump took it away
+  // (the first or last pages now in view), goes to the current page.
+  const jumped = React.useRef(false)
+  React.useLayoutEffect(() => {
+    if (!jumped.current) return
+    jumped.current = false
+    const element = nav.current
+    if (!element || element.contains(document.activeElement)) return
+    element.querySelector<HTMLElement>('[aria-current="page"]')?.focus()
+  }, [page])
+  const pages = pageItems(page, pageCount).map(
+    ({ key, slot, row, className }) =>
+      typeof slot === "number" ? (
+        <PaginationItem
+          key={key}
+          data-wide={row === "wide" ? "" : undefined}
+          className={className}
         >
-          {format.format(to)}
-        </Button>
-      </PaginationItem>
-    )
+          <Button
+            variant={slot === page ? "outline" : "ghost"}
+            size="icon"
+            aria-current={slot === page ? "page" : undefined}
+            aria-label={t("goToPage", { page: format.format(slot) })}
+            className="tabular-nums"
+            onClick={(event: React.MouseEvent) =>
+              context.actions.setPage(slot, "page", event.nativeEvent)
+            }
+          >
+            {format.format(slot)}
+          </Button>
+        </PaginationItem>
+      ) : (
+        <PaginationItem
+          key={key}
+          data-wide={row === "wide" ? "" : undefined}
+          data-narrow={row === "narrow" ? "" : undefined}
+          className={className}
+        >
+          <PageJump
+            direction={slot}
+            onJump={(event) => {
+              jumped.current = true
+              const to = current() + (slot === "previous" ? -JUMP : JUMP)
+              context.actions.setPage(
+                Math.min(Math.max(to, 1), Math.max(pageCount, 1)),
+                "page",
+                event.nativeEvent
+              )
+            }}
+          />
+        </PaginationItem>
+      )
   )
   return (
     <Pagination
+      ref={nav}
       aria-label={t("pagination")}
       className="mx-0 w-auto justify-end"
     >
@@ -307,12 +406,21 @@ function PageButtons({ context }: { context: DataTableContextValue<unknown> }) {
         <PaginationItem className={PAGE_OF}>
           <span
             data-slot="data-table-page-of"
-            className="px-2 text-muted-foreground tabular-nums"
-          >
-            {t("pageOf", {
-              page: format.format(page),
+            data-widest={t("pageOf", {
+              page: format.format(Math.max(pageCount, 1)),
               pageCount: format.format(Math.max(pageCount, 1)),
             })}
+            className={cn(
+              "justify-items-center px-1 text-muted-foreground",
+              STEADY
+            )}
+          >
+            <span>
+              {t("pageOf", {
+                page: format.format(page),
+                pageCount: format.format(Math.max(pageCount, 1)),
+              })}
+            </span>
           </span>
         </PaginationItem>
         <PaginationItem>
@@ -339,6 +447,46 @@ function PageButtons({ context }: { context: DataTableContextValue<unknown> }) {
         </PaginationItem>
       </PaginationContent>
     </Pagination>
+  )
+}
+
+/**
+ * An ellipsis that jumps `JUMP` pages back or forward: `Pagination`'s
+ * dots, which turn into a double arrow on hover and keyboard focus, its
+ * name also a tooltip.
+ */
+function PageJump({
+  direction,
+  onJump,
+}: {
+  direction: "previous" | "next"
+  onJump: (event: React.MouseEvent) => void
+}) {
+  const t = useTranslations("dataTable")
+  const format = useNumberFormat()
+  const label = t(direction === "previous" ? "previousPages" : "nextPages", {
+    count: JUMP,
+    pages: format.format(JUMP),
+  })
+  const Arrow = direction === "previous" ? ChevronsLeftIcon : ChevronsRightIcon
+  return (
+    <Tooltip>
+      <TooltipTrigger
+        render={
+          <Button
+            variant="ghost"
+            size="icon"
+            data-jump={direction}
+            aria-label={label}
+            onClick={onJump}
+          />
+        }
+      >
+        <MoreHorizontalIcon className="group-hover/button:hidden group-focus-visible/button:hidden" />
+        <Arrow className="hidden group-hover/button:block group-focus-visible/button:block rtl:rotate-180" />
+      </TooltipTrigger>
+      <TooltipContent>{label}</TooltipContent>
+    </Tooltip>
   )
 }
 

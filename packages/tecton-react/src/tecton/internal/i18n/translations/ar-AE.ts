@@ -65,6 +65,22 @@ export default defineTranslations({
     pageOf: "الصفحة {page} من {pageCount}",
     previousPage: "الصفحة السابقة",
     nextPage: "الصفحة التالية",
+    previousPages: {
+      zero: "{pages} صفحة سابقة",
+      one: "الصفحة السابقة",
+      two: "الصفحتان السابقتان",
+      few: "{pages} صفحات سابقة",
+      many: "{pages} صفحة سابقة",
+      other: "{pages} صفحة سابقة",
+    },
+    nextPages: {
+      zero: "{pages} صفحة تالية",
+      one: "الصفحة التالية",
+      two: "الصفحتان التاليتان",
+      few: "{pages} صفحات تالية",
+      many: "{pages} صفحة تالية",
+      other: "{pages} صفحة تالية",
+    },
     selectAllMatching: {
       zero: "تحديد كل الصفوف ({total})",
       one: "تحديد الصف ({total})",

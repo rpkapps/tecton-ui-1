@@ -65,6 +65,14 @@ export default defineTranslations({
     pageOf: "Lehekülg {page}/{pageCount}",
     previousPage: "Eelmine leht",
     nextPage: "Järgmine leht",
+    previousPages: {
+      one: "Eelmine {pages} leht",
+      other: "Eelmised {pages} lehte",
+    },
+    nextPages: {
+      one: "Järgmine {pages} leht",
+      other: "Järgmised {pages} lehte",
+    },
     selectAllMatching: {
       one: "Vali {total} rida",
       other: "Vali kõik {total} rida",

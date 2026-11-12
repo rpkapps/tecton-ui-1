@@ -117,7 +117,7 @@ describe("DataTable pages", () => {
         ),
       ]
         .map((item) =>
-          item.matches('[data-slot="pagination-ellipsis"]')
+          item.matches("[data-jump]")
             ? "…"
             : item.getAttribute("aria-label")?.startsWith("Page ")
               ? item.textContent
@@ -151,6 +151,155 @@ describe("DataTable pages", () => {
     expect(
       screen.getByRole("combobox", { name: "Rows per page" })
     ).toHaveAttribute("aria-label", "Rows per page")
+  })
+
+  describe("ellipses", () => {
+    const many = Array.from({ length: 240 }, (_, i) => ({
+      ...WELLS[0],
+      id: `m${i}`,
+      name: `M ${i}`,
+    }))
+    /** The pages and ellipses of a row ("wide" or "narrow"), in order. */
+    const row = (which: "wide" | "narrow") =>
+      [
+        ...document.querySelectorAll<HTMLElement>(
+          `[data-slot="pagination-item"]:not([data-${which === "wide" ? "narrow" : "wide"}]) > :is([aria-label^="Page "], [data-jump])`
+        ),
+      ].map((item) =>
+        item.dataset.jump === "previous"
+          ? "«"
+          : item.dataset.jump === "next"
+            ? "»"
+            : item.textContent
+      )
+    /** The ellipsis of the wide row. */
+    const jump = (direction: "previous" | "next") =>
+      document.querySelector<HTMLElement>(
+        `[data-slot="pagination-item"]:not([data-narrow]) [data-jump="${direction}"]`
+      )!
+
+    it("jump five pages back or forward, to the first or last page at most", () => {
+      const onPageChange = vi.fn()
+      render(<Wells items={many} onPageChange={onPageChange} />)
+      expect(jump("next")).toHaveAccessibleName("Next 5 pages")
+      fireEvent.click(jump("next"))
+      expect(info()).toBe("Page 6 of 24")
+      expect(onPageChange).toHaveBeenLastCalledWith(
+        6,
+        expect.objectContaining({ reason: "page" })
+      )
+      expect(jump("previous")).toHaveAccessibleName("Previous 5 pages")
+      fireEvent.click(jump("next"))
+      expect(info()).toBe("Page 11 of 24")
+      fireEvent.click(jump("previous"))
+      expect(info()).toBe("Page 6 of 24")
+      fireEvent.click(jump("previous"))
+      expect(info()).toBe("Page 1 of 24")
+      fireEvent.click(button("Page 24"))
+      fireEvent.click(jump("previous"))
+      expect(info()).toBe("Page 19 of 24")
+      fireEvent.click(jump("next"))
+      // Clamped: 24, not 24 + 5.
+      expect(info()).toBe("Page 24 of 24")
+      fireEvent.click(button("Previous page"))
+      fireEvent.click(button("Previous page"))
+      fireEvent.click(button("Previous page"))
+      // Page 21: the narrow row's ellipsis (the wide row shows 20 to 24).
+      expect(info()).toBe("Page 21 of 24")
+      fireEvent.click(
+        document.querySelector<HTMLElement>('[data-narrow] [data-jump="next"]')!
+      )
+      expect(onPageChange).toHaveBeenLastCalledWith(
+        24,
+        expect.objectContaining({ reason: "page" })
+      )
+    })
+
+    it("keep the same number of slots in each row on every page", () => {
+      render(<Wells items={many} />)
+      expect(row("wide")).toEqual(["1", "2", "3", "4", "5", "»", "24"])
+      expect(row("narrow")).toEqual(["1", "2", "3", "4", "»"])
+      for (let page = 1; page <= 24; page++) {
+        fireEvent.click(screen.getByRole("button", { name: `Page ${page}` }))
+        expect(row("wide")).toHaveLength(7)
+        expect(row("narrow")).toHaveLength(5)
+        expect(row("narrow")).toContain(String(page))
+      }
+      expect(row("narrow")).toEqual(["«", "21", "22", "23", "24"])
+      fireEvent.click(button("Page 21"))
+      fireEvent.click(button("Page 20"))
+      expect(row("wide")).toEqual(["1", "«", "19", "20", "21", "»", "24"])
+      expect(row("narrow")).toEqual(["«", "19", "20", "21", "»"])
+    })
+
+    it("show every page when they fit in the slots", () => {
+      render(<Wells items={many.slice(0, 40)} />)
+      expect(row("wide")).toEqual(["1", "2", "3", "4"])
+      expect(row("narrow")).toEqual(["1", "2", "3", "4"])
+      expect(document.querySelector("[data-jump]")).toBeNull()
+    })
+
+    it("keep focus, or give it to the current page when the jump takes them away", async () => {
+      const user = userEvent.setup()
+      render(<Wells items={many} defaultPage={10} />)
+      await user.click(jump("next"))
+      expect(info()).toBe("Page 15 of 24")
+      expect(jump("next")).toHaveFocus()
+      await user.click(jump("next"))
+      expect(info()).toBe("Page 20 of 24")
+      await user.click(jump("next"))
+      // The last pages are in view: no ellipsis after them.
+      expect(info()).toBe("Page 24 of 24")
+      expect(
+        document.querySelector(
+          '[data-slot="pagination-item"]:not([data-narrow]) [data-jump="next"]'
+        )
+      ).toBeNull()
+      expect(button("Page 24")).toHaveFocus()
+    })
+
+    it("name themselves in a tooltip", async () => {
+      const user = userEvent.setup()
+      render(<Wells items={many} />)
+      await user.hover(jump("next"))
+      expect(
+        await screen.findByText("Next 5 pages", {}, { timeout: 3000 })
+      ).toBeInTheDocument()
+    })
+  })
+
+  it("keeps the rows shown, and Page 3 of 5, as wide as their widest text", () => {
+    render(<Wells defaultPageSize={5} />)
+    expect(
+      document.querySelector('[data-slot="data-table-row-range"]')
+    ).toHaveAttribute("data-widest", "23–23 of 23")
+    expect(
+      document.querySelector('[data-slot="data-table-page-of"]')
+    ).toHaveAttribute("data-widest", "Page 5 of 5")
+  })
+
+  it("keeps a full page's height on the last page, short of rows", () => {
+    vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(
+      function (this: HTMLElement) {
+        return this.querySelectorAll("tbody tr").length * 40
+      }
+    )
+    render(<Wells defaultPageSize={10} />)
+    const frame = document.querySelector<HTMLElement>(
+      '[data-slot="data-table-content"]'
+    )!
+    expect(frame.style.minHeight).toBe("")
+    fireEvent.click(button("Page 3"))
+    expect(names()).toEqual(ids(21, 23))
+    expect(frame.style.minHeight).toBe("400px")
+    fireEvent.click(button("Page 1"))
+    expect(frame.style.minHeight).toBe("")
+    // Another page size: measured again on a full page.
+    render(<Wells defaultPageSize={20} defaultPage={2} />)
+    const other = document.querySelectorAll<HTMLElement>(
+      '[data-slot="data-table-content"]'
+    )[1]
+    expect(other.style.minHeight).toBe("")
   })
 
   it("announces the rows shown as they change", () => {

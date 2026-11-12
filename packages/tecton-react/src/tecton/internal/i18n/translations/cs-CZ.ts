@@ -65,6 +65,18 @@ export default defineTranslations({
     pageOf: "Stránka {page} z {pageCount}",
     previousPage: "Předchozí stránka",
     nextPage: "Další stránka",
+    previousPages: {
+      one: "Předchozí {pages} stránka",
+      few: "Předchozí {pages} stránky",
+      many: "Předchozích {pages} stránky",
+      other: "Předchozích {pages} stránek",
+    },
+    nextPages: {
+      one: "Další {pages} stránka",
+      few: "Další {pages} stránky",
+      many: "Dalších {pages} stránky",
+      other: "Dalších {pages} stránek",
+    },
     selectAllMatching: {
       one: "Vybrat {total} řádek",
       few: "Vybrat všechny {total} řádky",
