@@ -27,6 +27,7 @@ import {
 } from "@tecton/react/components/select"
 import { Separator } from "@tecton/react/components/separator"
 import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+import { NumberInput } from "@tecton/react/tecton/number-input"
 
 import {
   densityLabel,
@@ -122,20 +123,19 @@ function FaciesForm({ className, value, onChange, ...props }: FaciesFormProps) {
             onValueChange={(next) => set("methodId", next)}
             items={toItems(methods)}
           />
-          <Field className="w-24">
+          <Field className="w-28">
             <FieldLabel htmlFor={`${id}-realizations`}>Realizations</FieldLabel>
-            <Input
+            <NumberInput
               id={`${id}-realizations`}
               variant="filled"
-              type="number"
-              className="font-mono tabular-nums"
-              value={String(value.realizations)}
-              onChange={(event) =>
-                set(
-                  "realizations",
-                  Math.max(1, Number(event.target.value) || 1)
-                )
-              }
+              min={1}
+              format={{ maximumFractionDigits: 0 }}
+              className="font-mono"
+              value={value.realizations}
+              onValueChange={(next) => {
+                // A whole number of runs; emptied, the last one stays.
+                if (next !== null) set("realizations", Math.round(next))
+              }}
             />
           </Field>
         </div>

@@ -346,6 +346,21 @@
   ],
   "design token": [
    "theme"
+  ],
+  "number field": [
+   "quantity"
+  ],
+  "numeric input": [
+   "number",
+   "quantity"
+  ],
+  "spinbutton": [
+   "quantity",
+   "step"
+  ],
+  "stepper": [
+   "quantity",
+   "step"
   ]
  },
  "entries": [
@@ -2159,11 +2174,11 @@
    "name": "Input",
    "import": "import { Input } from \"@tecton/react/components/input\"",
    "family": "forms",
-   "summary": "A single line of text: name, email, password, number, date, file.",
+   "summary": "A single line of text: name, email, password, an identifier, a file.",
    "fields": {
     "names": "input input",
-    "useWhen": "A single line of text: name, email, password, number, date, file. The value is free-form; a fixed set of options belongs in a picker instead. Inside a `Field`, so the control arrives with a label and room for an error.",
-    "routed": "a plain one-line text or number entry the single-line text control itself a plain field with nothing attached to it a password, a token or any other free-form value an exact number the user types, with units or validation a single line of text",
+    "useWhen": "A single line of text: name, email, password, an identifier, a file. The value is free-form; a fixed set of options belongs in a picker instead. Inside a `Field`, so the control arrives with a label and room for an error.",
+    "routed": "a plain one-line text or number entry the single-line text control itself a plain field with nothing attached to it a password, a token or any other free-form value free text, or digits that are not a quantity (a well name, an identifier, a phone number) an exact number the user types, with units or validation a single line of text",
     "do": "Pick the surface with `variant=\"outline\" | \"filled\" | \"text\"` — outline in forms, filled in dense panels, text for inline editing. Wire the label by hand: `<FieldLabel htmlFor=\"x\">` plus `<Input id=\"x\">`. Nothing associates them implicitly. `Input` is a real `<input>`: use the DOM props `value`, `onChange(event)`, `disabled`, `required`, `type` and `aria-invalid`. Mirror the state on the `Field` — `data-disabled` beside `disabled`, `data-invalid` beside `aria-invalid` — and keep `className` to layout (`w-full`, `col-span-2`)."
    },
    "notFor": [
@@ -2176,6 +2191,10 @@
      "id": "input-group"
     },
     {
+     "need": "a quantity typed or stepped, with bounds, a step or a unit",
+     "id": "number-input"
+    },
+    {
      "need": "the label, description and error message around the control",
      "id": "field"
     }
@@ -2183,13 +2202,14 @@
    "related": [
     "field",
     "input-group",
-    "textarea"
+    "textarea",
+    "number-input"
    ],
    "exports": [
     "Input"
    ],
    "aliases": [],
-   "tokens": 1109
+   "tokens": 1215
   },
   {
    "id": "input-group",
@@ -2244,7 +2264,7 @@
    "fields": {
     "names": "input otp input otp input otpgroup input otpslot input otpseparator",
     "useWhen": "A one-time code from email, SMS or an authenticator app. A short fixed-length PIN the user reads from somewhere and types once. The value has a known length and every character deserves its own box.",
-    "routed": "a verification code split into separate boxes",
+    "routed": "a verification code split into separate boxes a one-time code typed one character per box",
     "do": "Set `maxLength` to the number of `InputOTPSlot` children, and give each slot its absolute `index` across every group. Control it with `value` and `onChange(value: string)`, or leave it uncontrolled with `defaultValue`. Restrict the alphabet with `pattern={REGEXP_ONLY_DIGITS}` or `REGEXP_ONLY_DIGITS_AND_CHARS` from `input-otp`. Split long codes with `InputOTPGroup` and `InputOTPSeparator`, and mark errors with `aria-invalid` on each `InputOTPSlot`. Wrap it in a `Field` with a `FieldLabel htmlFor` pointing at the `InputOTP` id, and disable with `disabled`."
    },
    "notFor": [
@@ -2388,7 +2408,7 @@
     "Label"
    ],
    "aliases": [],
-   "tokens": 660
+   "tokens": 656
   },
   {
    "id": "link",
@@ -2635,6 +2655,44 @@
    ],
    "aliases": [],
    "tokens": 782
+  },
+  {
+   "id": "number-input",
+   "kind": "component",
+   "name": "NumberInput",
+   "import": "import { NumberInput } from \"@tecton/react/tecton/number-input\"",
+   "family": "forms",
+   "summary": "The user types a quantity: a depth, a count, a rate, a percentage, a page number, often with a unit (metres, %, currency) shown in the locale's format.",
+   "fields": {
+    "names": "number input number input",
+    "useWhen": "The user types a quantity: a depth, a count, a rate, a percentage, a page number, often with a unit (metres, %, currency) shown in the locale's format. The value has bounds or a natural increment the user steps through with − and +, or the arrow keys.",
+    "routed": "a quantity typed or stepped, with bounds, a step or a unit",
+    "do": "Hold a number: `value` / `defaultValue` are `number | null` (`null` while empty) and `onValueChange(value, eventDetails)` reports each change. Bound and step it with `min`, `max`, `step` and `largeStep` (Shift); Home and End go to the bounds. Show units and decimals with `format` (`Intl.NumberFormatOptions`); the value stays a plain number and the locale is the `TectonProvider`'s. Wire it like `Input`: `id` with `FieldLabel htmlFor`, `aria-invalid` with `data-invalid` on the `Field` and the message in `FieldError`; set `allowOutOfRange` when a value past `min` / `max` must be reported rather than clamped. Match the form with `variant=\"outline\" | \"filled\" | \"text\"` and `size=\"default\" | \"sm\"`; `className` sets width and placement only."
+   },
+   "notFor": [
+    {
+     "need": "free text, or digits that are not a quantity (a well name, an identifier, a phone number)",
+     "id": "input"
+    },
+    {
+     "need": "a one-time code typed one character per box",
+     "id": "input-otp"
+    },
+    {
+     "need": "a value picked by dragging along a scale",
+     "id": "slider"
+    }
+   ],
+   "related": [
+    "field",
+    "input",
+    "slider"
+   ],
+   "exports": [
+    "NumberInput"
+   ],
+   "aliases": [],
+   "tokens": 974
   },
   {
    "id": "overflow",
@@ -3394,7 +3452,7 @@
    "fields": {
     "names": "slider slider",
     "useWhen": "An approximate value inside a known range: opacity, threshold, zoom, temperature. A range with two or more thumbs, such as a price or depth filter. The exact number matters less than the gesture of moving through the range.",
-    "routed": "a value picked from a continuous range a value picked along a track",
+    "routed": "a value picked by dragging along a scale a value picked from a continuous range a value picked along a track",
     "do": "Bound the range with `min`, `max` and `step` (0–100 by default). Pass `value` / `defaultValue` as an array — one entry per thumb — and read it back in `onValueChange`, whose type is `number | number[]`, so narrow it; `onValueCommitted` fires once on release. Name it with `aria-labelledby` pointing at the visible title's `id`, or with `aria-label` when there is no visible title: the slider forwards either to every thumb's range input. Inside a `Field`, use `FieldTitle` (with that `id`) and `FieldDescription`, and show the live value in the description. Disable with `disabled`; switch axis with `orientation=\"vertical\"` plus a height class such as `h-40`."
    },
    "notFor": [

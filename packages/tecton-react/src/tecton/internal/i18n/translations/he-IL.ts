@@ -59,16 +59,13 @@ export default defineTranslations({
     rowsPerPage: "שורות בעמוד",
     pagination: "ניווט בין עמודים",
     rowRange: "{from}–{to} מתוך {total}",
-    previous: "הקודם",
-    next: "הבא",
-    goToPage: "עמוד {page}",
+    page: "עמוד",
     pageOf: "עמוד {page} מתוך {pageCount}",
     previousPage: "העמוד הקודם",
     nextPage: "העמוד הבא",
-    pagePicker: "מעבר לעמוד",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "מעבר",
-    pagePickerInvalid: "הזן עמוד מ-{from} עד {to}",
+    firstPage: "העמוד הראשון",
+    lastPage: "העמוד האחרון",
+    rows: "שורות",
     selectAllMatching: {
       one: "בחר {total} שורה",
       two: "בחר את שתי השורות ({total})",
@@ -224,5 +221,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "פעולות נוספות",
+  },
+  numberInput: {
+    increase: "הגדל",
+    decrease: "הקטן",
   },
 })

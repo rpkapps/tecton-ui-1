@@ -59,16 +59,13 @@ export default defineTranslations({
     rowsPerPage: "每頁列數",
     pagination: "分頁",
     rowRange: "第 {from}–{to} 列，共 {total} 列",
-    previous: "上一頁",
-    next: "下一頁",
-    goToPage: "第 {page} 頁",
+    page: "頁碼",
     pageOf: "第 {page} 頁，共 {pageCount} 頁",
     previousPage: "上一頁",
     nextPage: "下一頁",
-    pagePicker: "跳至頁面",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "前往",
-    pagePickerInvalid: "請輸入 {from}–{to} 之間的頁碼",
+    firstPage: "第一頁",
+    lastPage: "最後一頁",
+    rows: "列數",
     selectAllMatching: {
       other: "選取全部 {total} 列",
     },
@@ -188,5 +185,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "更多動作",
+  },
+  numberInput: {
+    increase: "增加",
+    decrease: "減少",
   },
 })

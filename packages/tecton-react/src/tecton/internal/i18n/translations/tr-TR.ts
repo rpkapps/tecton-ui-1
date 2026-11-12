@@ -59,16 +59,13 @@ export default defineTranslations({
     rowsPerPage: "Sayfa başına satır",
     pagination: "Sayfalandırma",
     rowRange: "{from}–{to} / {total}",
-    previous: "Önceki",
-    next: "Sonraki",
-    goToPage: "Sayfa {page}",
+    page: "Sayfa",
     pageOf: "Sayfa {page}/{pageCount}",
     previousPage: "Önceki sayfa",
     nextPage: "Sonraki sayfa",
-    pagePicker: "Sayfaya git",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Git",
-    pagePickerInvalid: "{from} ile {to} arasında bir sayfa girin",
+    firstPage: "İlk sayfa",
+    lastPage: "Son sayfa",
+    rows: "Satır",
     selectAllMatching: {
       one: "{total} satırı seç",
       other: "{total} satırın tümünü seç",
@@ -197,5 +194,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Diğer işlemler",
+  },
+  numberInput: {
+    increase: "Artır",
+    decrease: "Azalt",
   },
 })

@@ -59,16 +59,13 @@ export default defineTranslations({
     rowsPerPage: "페이지당 행 수",
     pagination: "페이지 매기기",
     rowRange: "{from}–{to} / {total}",
-    previous: "이전",
-    next: "다음",
-    goToPage: "{page}페이지",
+    page: "페이지",
     pageOf: "{page}/{pageCount}페이지",
     previousPage: "이전 페이지",
     nextPage: "다음 페이지",
-    pagePicker: "페이지로 이동",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "이동",
-    pagePickerInvalid: "{from}~{to} 사이의 페이지를 입력하세요",
+    firstPage: "첫 페이지",
+    lastPage: "마지막 페이지",
+    rows: "행",
     selectAllMatching: {
       other: "{total}개 행 모두 선택",
     },
@@ -188,5 +185,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "추가 작업",
+  },
+  numberInput: {
+    increase: "증가",
+    decrease: "감소",
   },
 })

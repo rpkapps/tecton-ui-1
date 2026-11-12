@@ -8,7 +8,7 @@ import { Input } from "@tecton/react/components/input"
 
 ## Use it when
 
-- A single line of text: name, email, password, number, date, file.
+- A single line of text: name, email, password, an identifier, a file.
 - The value is free-form; a fixed set of options belongs in a picker instead.
 - Inside a `Field`, so the control arrives with a label and room for an error.
 
@@ -16,6 +16,7 @@ import { Input } from "@tecton/react/components/input"
 
 - more than one line of free text → `Textarea` (tecton docs textarea)
 - an icon, a prefix or a button inside the field → `InputGroup` (tecton docs input-group)
+- a quantity typed or stepped, with bounds, a step or a unit → `NumberInput` (tecton docs number-input)
 - the label, description and error message around the control → `Field` (tecton docs field)
 
 ## Do
@@ -101,6 +102,7 @@ Correct:
 ## Before you finish
 
 - `Input`, `Textarea` and `NativeSelect` are real DOM elements, so they take `value`, `onChange(event)` read through `event.target.value`, `disabled`, `required` and `aria-invalid`.
+- A quantity is typed in a `NumberInput` holding a `number | null` in `value` / `onValueChange`, bounded by `min` / `max`, stepped by `step` / `largeStep`, its unit in `format` — never an `Input type="number"`, whose browser spinners, string value and locale-blind parsing Tecton does not style or fix.
 - `Input`, `Textarea` and `SelectTrigger` take their surface from `variant="outline" | "filled" | "text"`, and `className` on them carries layout only (`w-full`, `col-span-2`).
 - An icon, unit, hint or in-field button lives in an `InputGroup` with `InputGroupInput` (never a plain `Input`) and an `InputGroupAddon` placed after the control in the DOM and positioned with `align`.
 - A date is picked with a `DatePicker` (`variant="input"` to type it too) and a period with a `DateRangePicker`, both holding plain `Date` values in `value` / `onValueChange` — never a `Popover` and a `Calendar` put together by hand, nor an `Input type="date"`.
@@ -108,4 +110,4 @@ Correct:
 - Never let a placeholder stand in for the label; keep it to an example value such as `34/10-A-12`.
 - Mark as required only the fields a record cannot be saved without, and show that mark visibly in their label.
 
-Related: field, input-group, textarea
+Related: field, input-group, textarea, number-input

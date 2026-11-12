@@ -374,6 +374,8 @@ The table is one tab stop; focus is on a row, or on a cell once the arrows move 
 | <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a header | Starts moving the column (`reorderableColumns`) |
 | <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a row's handle | Starts moving the row (`reorderableRows`): <Kbd>↑</Kbd> / <Kbd>↓</Kbd>, then <Kbd>Enter</Kbd> or <Kbd>Escape</Kbd> |
 | <Kbd>←</Kbd> / <Kbd>→</Kbd> on a resizer | Narrows / widens the column; <Kbd>Enter</Kbd> keeps, <Kbd>Escape</Kbd> reverts |
+| <Kbd>Enter</Kbd> in the page field | Opens the page typed, kept within the pages there are |
+| <Kbd>↑</Kbd> / <Kbd>↓</Kbd> in the page field | Next / previous page; <Kbd>Home</Kbd> / <Kbd>End</Kbd> the first / last |
 
 ## Accessibility
 
@@ -580,7 +582,7 @@ The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reas
 | `onExpandedChange` | `(expanded, eventDetails) => void` | - | Called with the open rows. |
 | `page` | `number` | - | The page, from 1 (controlled). |
 | `defaultPage` | `number` | `1` | The initial page. |
-| `onPageChange` | `(page, eventDetails) => void` | - | Called with the new page; `reason` is `"previous"`, `"next"` or `"page"` (a page's button, or a page picked in "Go to page") from `DataTablePagination`, else `"reset"`, `"page-size"`, `"clamp"` or `"group"`. |
+| `onPageChange` | `(page, eventDetails) => void` | - | Called with the new page; `reason` is `"first"`, `"previous"`, `"next"` or `"last"` (its arrow buttons) or `"page"` (its page field: typed, or stepped with the arrow keys, Home and End) from `DataTablePagination`, else `"reset"`, `"page-size"`, `"clamp"` or `"group"`. |
 | `pageSize` | `number` | - | Rows per page (controlled). |
 | `defaultPageSize` | `number` | `10` | Initial rows per page. |
 | `onPageSizeChange` | `(pageSize, eventDetails) => void` | - | Called with the new page size. |
@@ -678,11 +680,13 @@ An [ActionBar](/docs/tecton/action-bar) bound to the selection, shown only while
 
 ### DataTableFooter
 
-Right after `DataTableContent`, the table's last band (inside its border, on the totals row's fill, outside the rows' scroll area); elsewhere, a row below the table. Takes the props of a `div`; empty, it takes no room.
+Right after `DataTableContent`, the table's last band (inside its border, on the totals row's fill, outside the rows' scroll area), as tall as a body row of the table's `size` and in its text size; elsewhere, a row below the table. Takes the props of a `div`; empty, it takes no room.
 
 ### DataTablePagination
 
-A rows-per-page [Select](/docs/components/select), the rows shown and [Pagination](/docs/components/pagination), for `pagination`; takes the props of a `div`. The page resets to 1 when the view changes. It stays on one line: as its width shrinks it drops the "Rows per page" label (kept as the Select's name), then the words of Previous and Next, then the pages but the current one and its neighbours, and below about 400 px shows "Page 3 of 5" between the arrows. An ellipsis, or "Page 3 of 5" at the narrowest, opens "Go to page": a popover with a page field and Go. Enter or Go opens that page, focus moving to its button; a page outside 1 to the last shows the field's error; the up and down arrows step through the pages; Escape closes it. Its controls keep their places as the page changes: each row of pages has as many slots on every page, the rows shown keep the width of their widest text, and the last page, short of rows, keeps the height of a full one, so the button under the pointer stays there.
+A spreadsheet's page strip, for `pagination`; takes the props of a `div`. At the start, "Rows" and a rows-per-page [Select](/docs/components/select) (named "Rows per page"), then the rows shown ("21–30 of 50"); at the end, [Pagination](/docs/components/pagination) with First, Previous, the page field ("Page [3] of 5", a [Number Input](/docs/tecton/number-input) from 1 to the last page), Next and Last. The arrows are disabled at the ends. In the page field, <Kbd>Enter</Kbd> opens the page typed, kept within the pages there are (an empty field goes back to the current page); leaving the field opens it too, but a page outside them, a fraction or nothing goes back to the current page; the up and down arrows, Home and End move through the pages at once. The page resets to 1 when the view changes.
+
+It follows the table's `size`: in a `DataTableFooter` the band is as tall as a body row, with `icon-sm` arrows and the default Select and field, or, compact (`size="sm"`), `icon-xs` arrows and the small Select and field. It stays on one line: as its width shrinks it lets go, in turn, of the "Rows" label (the Select keeps its name), the Select, First and Last, the words around the field ("[3] / 5" instead) and the rows shown; Previous, the field and Next always stay. The widths depend on the size and on the digits of the last page. Its controls keep their places as the page changes: the rows shown keep the width of their widest text, the field the width of the last page's number, and the last page, short of rows, keeps the height of a full one, so the button under the pointer stays there.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |

@@ -61,16 +61,13 @@ export default defineTranslations({
     rowsPerPage: "Wiersze na stronie",
     pagination: "Paginacja",
     rowRange: "{from}–{to} z {total}",
-    previous: "Poprzednia",
-    next: "Następna",
-    goToPage: "Strona {page}",
+    page: "Strona",
     pageOf: "Strona {page} z {pageCount}",
     previousPage: "Poprzednia strona",
     nextPage: "Następna strona",
-    pagePicker: "Przejdź do strony",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Przejdź",
-    pagePickerInvalid: "Wpisz stronę od {from} do {to}",
+    firstPage: "Pierwsza strona",
+    lastPage: "Ostatnia strona",
+    rows: "Wiersze",
     selectAllMatching: {
       one: "Zaznacz {total} wiersz",
       few: "Zaznacz wszystkie {total} wiersze",
@@ -217,5 +214,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Więcej akcji",
+  },
+  numberInput: {
+    increase: "Zwiększ",
+    decrease: "Zmniejsz",
   },
 })

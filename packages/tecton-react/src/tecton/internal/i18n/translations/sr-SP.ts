@@ -59,16 +59,13 @@ export default defineTranslations({
     rowsPerPage: "Redova po stranici",
     pagination: "Navigacija po stranicama",
     rowRange: "{from}–{to} od {total}",
-    previous: "Prethodna",
-    next: "Sledeća",
-    goToPage: "Stranica {page}",
+    page: "Stranica",
     pageOf: "Stranica {page} od {pageCount}",
     previousPage: "Prethodna stranica",
     nextPage: "Sledeća stranica",
-    pagePicker: "Idi na stranicu",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Idi",
-    pagePickerInvalid: "Unesite stranicu od {from} do {to}",
+    firstPage: "Prva stranica",
+    lastPage: "Poslednja stranica",
+    rows: "Redovi",
     selectAllMatching: {
       one: "Izaberite {total} red",
       few: "Izaberite sva {total} reda",
@@ -223,5 +220,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Više radnji",
+  },
+  numberInput: {
+    increase: "Povećaj",
+    decrease: "Smanji",
   },
 })

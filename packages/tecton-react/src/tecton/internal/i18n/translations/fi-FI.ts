@@ -61,16 +61,13 @@ export default defineTranslations({
     rowsPerPage: "Rivejä sivulla",
     pagination: "Sivutus",
     rowRange: "{from}–{to} / {total}",
-    previous: "Edellinen",
-    next: "Seuraava",
-    goToPage: "Sivu {page}",
+    page: "Sivu",
     pageOf: "Sivu {page}/{pageCount}",
     previousPage: "Edellinen sivu",
     nextPage: "Seuraava sivu",
-    pagePicker: "Siirry sivulle",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Siirry",
-    pagePickerInvalid: "Anna sivu väliltä {from}–{to}",
+    firstPage: "Ensimmäinen sivu",
+    lastPage: "Viimeinen sivu",
+    rows: "Rivit",
     selectAllMatching: {
       one: "Valitse {total} rivi",
       other: "Valitse kaikki {total} riviä",
@@ -198,5 +195,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Lisää toimintoja",
+  },
+  numberInput: {
+    increase: "Suurenna",
+    decrease: "Pienennä",
   },
 })

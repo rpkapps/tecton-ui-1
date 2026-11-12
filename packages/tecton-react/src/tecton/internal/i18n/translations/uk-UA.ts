@@ -61,16 +61,13 @@ export default defineTranslations({
     rowsPerPage: "Рядків на сторінці",
     pagination: "Навігація сторінками",
     rowRange: "{from}–{to} з {total}",
-    previous: "Попередня",
-    next: "Наступна",
-    goToPage: "Сторінка {page}",
+    page: "Сторінка",
     pageOf: "Сторінка {page} з {pageCount}",
     previousPage: "Попередня сторінка",
     nextPage: "Наступна сторінка",
-    pagePicker: "Перейти на сторінку",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Перейти",
-    pagePickerInvalid: "Введіть сторінку від {from} до {to}",
+    firstPage: "Перша сторінка",
+    lastPage: "Остання сторінка",
+    rows: "Рядки",
     selectAllMatching: {
       one: "Вибрати всі {total} рядок",
       few: "Вибрати всі {total} рядки",
@@ -215,5 +212,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Інші дії",
+  },
+  numberInput: {
+    increase: "Збільшити",
+    decrease: "Зменшити",
   },
 })

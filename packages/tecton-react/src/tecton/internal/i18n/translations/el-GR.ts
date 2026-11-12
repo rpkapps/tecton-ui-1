@@ -60,16 +60,13 @@ export default defineTranslations({
     rowsPerPage: "Γραμμές ανά σελίδα",
     pagination: "Σελιδοποίηση",
     rowRange: "{from}–{to} από {total}",
-    previous: "Προηγούμενη",
-    next: "Επόμενη",
-    goToPage: "Σελίδα {page}",
+    page: "Σελίδα",
     pageOf: "Σελίδα {page} από {pageCount}",
     previousPage: "Προηγούμενη σελίδα",
     nextPage: "Επόμενη σελίδα",
-    pagePicker: "Μετάβαση σε σελίδα",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Μετάβαση",
-    pagePickerInvalid: "Εισαγάγετε μια σελίδα από {from} έως {to}",
+    firstPage: "Πρώτη σελίδα",
+    lastPage: "Τελευταία σελίδα",
+    rows: "Γραμμές",
     selectAllMatching: {
       one: "Επιλογή {total} γραμμής",
       other: "Επιλογή και των {total} γραμμών",
@@ -210,5 +207,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Περισσότερες ενέργειες",
+  },
+  numberInput: {
+    increase: "Αύξηση",
+    decrease: "Μείωση",
   },
 })

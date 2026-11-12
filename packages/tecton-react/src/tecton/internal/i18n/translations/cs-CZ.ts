@@ -59,16 +59,13 @@ export default defineTranslations({
     rowsPerPage: "Řádků na stránku",
     pagination: "Stránkování",
     rowRange: "{from}–{to} z {total}",
-    previous: "Předchozí",
-    next: "Další",
-    goToPage: "Stránka {page}",
+    page: "Stránka",
     pageOf: "Stránka {page} z {pageCount}",
     previousPage: "Předchozí stránka",
     nextPage: "Další stránka",
-    pagePicker: "Přejít na stránku",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Přejít",
-    pagePickerInvalid: "Zadejte stránku od {from} do {to}",
+    firstPage: "První stránka",
+    lastPage: "Poslední stránka",
+    rows: "Řádky",
     selectAllMatching: {
       one: "Vybrat {total} řádek",
       few: "Vybrat všechny {total} řádky",
@@ -231,5 +228,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Další akce",
+  },
+  numberInput: {
+    increase: "Zvýšit",
+    decrease: "Snížit",
   },
 })

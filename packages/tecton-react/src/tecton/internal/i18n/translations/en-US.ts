@@ -60,24 +60,19 @@ const enUS = {
     rowsPerPage: "Rows per page",
     pagination: "Pagination",
     // `DataTablePagination`: the rows of the page ({from}, {to} and {total}
-    // are formatted numbers), the short labels of its previous and next
-    // buttons, and the name of a page's button.
+    // are formatted numbers).
     rowRange: "{from}–{to} of {total}",
-    previous: "Previous",
-    next: "Next",
-    goToPage: "Page {page}",
-    // The page shown, where the table is too narrow for the page buttons.
+    // The name of the page field, and the words around it ("Page [3] of
+    // 5"): {page} is where the field goes, {pageCount} is formatted.
+    page: "Page",
     pageOf: "Page {page} of {pageCount}",
+    // The names of its arrow buttons.
     previousPage: "Previous page",
     nextPage: "Next page",
-    // The page picker, opened from the pagination's ellipses (named after
-    // it) and from "Page 3 of 5": its page field's label, the field's hint
-    // (the pages there are; {from} and {to} are formatted numbers), its
-    // button, and its message for a page outside them.
-    pagePicker: "Go to page",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Go",
-    pagePickerInvalid: "Enter a page from {from} to {to}",
+    firstPage: "First page",
+    lastPage: "Last page",
+    // The visible label of the rows-per-page select (named `rowsPerPage`).
+    rows: "Rows",
     // The plural form follows the number of rows to select ({total}).
     selectAllMatching: { other: "Select all {total}" },
     clearSelection: "Clear selection",
@@ -270,6 +265,11 @@ const enUS = {
     // The name of the "⋯" button that opens the menu of the items that do
     // not fit in a toolbar or row.
     moreActions: "More actions",
+  },
+  numberInput: {
+    // The names of NumberInput's buttons that step the value down and up.
+    increase: "Increase",
+    decrease: "Decrease",
   },
 } as const satisfies TranslationTable
 

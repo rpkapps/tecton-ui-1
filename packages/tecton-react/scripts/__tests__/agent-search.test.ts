@@ -151,6 +151,21 @@ describe("tecton search", () => {
     expect(top(query, 1)).toEqual([id])
   })
 
+  // A number goes to NumberInput; free text stays with Input.
+  it.each([
+    ["number input", "number-input"],
+    ["NumberInput", "number-input"],
+    ["number field", "number-input"],
+    ["numeric input", "number-input"],
+    ["spinbutton", "number-input"],
+    ["stepper", "number-input"],
+    ["input type number with min and max", "number-input"],
+    ["text input", "input"],
+    ["password field", "input"],
+  ])("routes %s to %s", (query, id) => {
+    expect(top(query, 1)).toEqual([id])
+  })
+
   it("splits camelCase but keeps the identifier whole too", () => {
     expect(tokenize("ScrollArea")).toEqual(["scroll", "area", "scrollarea"])
     expect(tokenize("isSelected")).toContain("isselect")

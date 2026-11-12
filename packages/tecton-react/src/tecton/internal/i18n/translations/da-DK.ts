@@ -59,16 +59,13 @@ export default defineTranslations({
     rowsPerPage: "Rækker pr. side",
     pagination: "Sideinddeling",
     rowRange: "{from}–{to} af {total}",
-    previous: "Forrige",
-    next: "Næste",
-    goToPage: "Side {page}",
+    page: "Side",
     pageOf: "Side {page} af {pageCount}",
     previousPage: "Forrige side",
     nextPage: "Næste side",
-    pagePicker: "Gå til side",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Gå",
-    pagePickerInvalid: "Angiv en side fra {from} til {to}",
+    firstPage: "Første side",
+    lastPage: "Sidste side",
+    rows: "Rækker",
     selectAllMatching: {
       one: "Vælg {total} række",
       other: "Vælg alle {total} rækker",
@@ -193,5 +190,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Flere handlinger",
+  },
+  numberInput: {
+    increase: "Forøg",
+    decrease: "Formindsk",
   },
 })

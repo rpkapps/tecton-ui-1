@@ -481,6 +481,11 @@
       "import": "./dist/tecton/meter.js",
       "default": "./dist/tecton/meter.js"
     },
+    "./tecton/number-input": {
+      "types": "./dist/tecton/number-input.d.ts",
+      "import": "./dist/tecton/number-input.js",
+      "default": "./dist/tecton/number-input.js"
+    },
     "./tecton/overflow": {
       "types": "./dist/tecton/overflow.d.ts",
       "import": "./dist/tecton/overflow.js",

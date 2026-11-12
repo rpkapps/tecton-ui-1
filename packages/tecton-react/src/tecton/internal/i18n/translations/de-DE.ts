@@ -61,16 +61,13 @@ export default defineTranslations({
     rowsPerPage: "Zeilen pro Seite",
     pagination: "Seitennavigation",
     rowRange: "{from}–{to} von {total}",
-    previous: "Zurück",
-    next: "Weiter",
-    goToPage: "Seite {page}",
+    page: "Seite",
     pageOf: "Seite {page} von {pageCount}",
     previousPage: "Vorherige Seite",
     nextPage: "Nächste Seite",
-    pagePicker: "Gehe zu Seite",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Los",
-    pagePickerInvalid: "Eine Seite von {from} bis {to} eingeben",
+    firstPage: "Erste Seite",
+    lastPage: "Letzte Seite",
+    rows: "Zeilen",
     selectAllMatching: {
       one: "{total} Zeile auswählen",
       other: "Alle {total} Zeilen auswählen",
@@ -201,5 +198,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Weitere Aktionen",
+  },
+  numberInput: {
+    increase: "Erhöhen",
+    decrease: "Verringern",
   },
 })

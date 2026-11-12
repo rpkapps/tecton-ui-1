@@ -8,14 +8,16 @@ notFor:
     use: Textarea
   - need: an icon, a prefix or a button inside the field
     use: InputGroup
+  - need: a quantity typed or stepped, with bounds, a step or a unit
+    use: NumberInput
   - need: the label, description and error message around the control
     use: Field
-related: [Field, InputGroup, Textarea]
+related: [Field, InputGroup, Textarea, NumberInput]
 ---
 
 ## Use it when
 
-- A single line of text: name, email, password, number, date, file.
+- A single line of text: name, email, password, an identifier, a file.
 - The value is free-form; a fixed set of options belongs in a picker instead.
 - Inside a `Field`, so the control arrives with a label and room for an error.
 

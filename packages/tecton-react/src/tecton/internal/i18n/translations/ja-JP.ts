@@ -59,16 +59,13 @@ export default defineTranslations({
     rowsPerPage: "1 ページあたりの行数",
     pagination: "ページネーション",
     rowRange: "{from}–{to} / {total}",
-    previous: "前へ",
-    next: "次へ",
-    goToPage: "{page} ページ",
+    page: "ページ",
     pageOf: "{page} / {pageCount} ページ",
     previousPage: "前のページ",
     nextPage: "次のページ",
-    pagePicker: "ページへ移動",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "移動",
-    pagePickerInvalid: "{from}～{to} の範囲でページを入力してください",
+    firstPage: "最初のページ",
+    lastPage: "最後のページ",
+    rows: "行数",
     selectAllMatching: {
       other: "{total} 行すべてを選択",
     },
@@ -188,5 +185,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "その他のアクション",
+  },
+  numberInput: {
+    increase: "増やす",
+    decrease: "減らす",
   },
 })

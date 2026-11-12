@@ -61,16 +61,13 @@ export default defineTranslations({
     rowsPerPage: "Rânduri pe pagină",
     pagination: "Paginare",
     rowRange: "{from}–{to} din {total}",
-    previous: "Anterioara",
-    next: "Următoarea",
-    goToPage: "Pagina {page}",
+    page: "Pagina",
     pageOf: "Pagina {page} din {pageCount}",
     previousPage: "Pagina anterioară",
     nextPage: "Pagina următoare",
-    pagePicker: "Salt la pagina",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Salt",
-    pagePickerInvalid: "Introduceți o pagină de la {from} la {to}",
+    firstPage: "Prima pagină",
+    lastPage: "Ultima pagină",
+    rows: "Rânduri",
     selectAllMatching: {
       one: "Selectați {total} rând",
       few: "Selectați toate cele {total} rânduri",
@@ -225,5 +222,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Mai multe acțiuni",
+  },
+  numberInput: {
+    increase: "Măriți",
+    decrease: "Micșorați",
   },
 })

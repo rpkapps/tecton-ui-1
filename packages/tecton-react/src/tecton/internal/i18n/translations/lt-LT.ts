@@ -59,16 +59,13 @@ export default defineTranslations({
     rowsPerPage: "Eilučių puslapyje",
     pagination: "Puslapiavimas",
     rowRange: "{from}–{to} iš {total}",
-    previous: "Ankstesnis",
-    next: "Kitas",
-    goToPage: "{page} puslapis",
+    page: "Puslapis",
     pageOf: "{page} puslapis iš {pageCount}",
     previousPage: "Ankstesnis puslapis",
     nextPage: "Kitas puslapis",
-    pagePicker: "Eiti į puslapį",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Eiti",
-    pagePickerInvalid: "Įveskite puslapį nuo {from} iki {to}",
+    firstPage: "Pirmas puslapis",
+    lastPage: "Paskutinis puslapis",
+    rows: "Eilutės",
     selectAllMatching: {
       one: "Pasirinkti {total} eilutę",
       few: "Pasirinkti visas eilutes ({total})",
@@ -215,5 +212,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Daugiau veiksmų",
+  },
+  numberInput: {
+    increase: "Padidinti",
+    decrease: "Sumažinti",
   },
 })
