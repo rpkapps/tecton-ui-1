@@ -172,6 +172,7 @@ export default defineTranslations({
     last30Days: "Последните 30 дни",
     thisMonth: "Този месец",
     lastMonth: "Миналия месец",
+    clear: "Изчистване",
   },
   actionBar: {
     selectedOfTotal: {

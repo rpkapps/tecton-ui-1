@@ -172,6 +172,7 @@ export default defineTranslations({
     last30Days: "Afgelopen 30 dagen",
     thisMonth: "Deze maand",
     lastMonth: "Vorige maand",
+    clear: "Wissen",
   },
   actionBar: {
     selectedOfTotal: { other: "{selected} van {total} geselecteerd" },

@@ -43,7 +43,8 @@ import { useEventCallback } from "./internal/primitives/use-controlled"
  * `Intl.DateTimeFormat` in the `TectonProvider`'s locale, the calendar's
  * month and day names come in the same locale, and both follow its
  * direction. A day picked closes the popover and focus goes back to what
- * opened it; Escape does the same without a change.
+ * opened it; Escape does the same without a change. While there is a date,
+ * the popover ends with "Clear", which empties it and closes the same way.
  */
 
 /** A range of days; `to` is absent while only the start is known. */
@@ -112,7 +113,10 @@ type DatePickerProps = ControlProps &
 type DateRangePresetName =
   "today" | "yesterday" | "last7Days" | "last30Days" | "thisMonth" | "lastMonth"
 
-/** A preset of your own. */
+/**
+ * A preset of your own. A `value` without `to` is one day, as `"today"` is;
+ * `minDate` / `maxDate` bound it as they bound the named presets.
+ */
 type DateRangePreset = { label: string; value: DateRange }
 
 type DateRangePickerProps = ControlProps &
@@ -121,11 +125,18 @@ type DateRangePickerProps = ControlProps &
     value?: DateRange | undefined
     /** The range picked at first, uncontrolled. */
     defaultValue?: DateRange | undefined
-    /** Called with the range once both ends are picked, or a preset is. */
+    /**
+     * Called with the range once both ends are picked, or a preset is (both
+     * ends set), or with `undefined` when it is cleared.
+     */
     onValueChange?: (value: DateRange | undefined) => void
     /** Months shown side by side (stacked on narrow screens). Default 2. */
     numberOfMonths?: number
-    /** Buttons under the calendar that pick a range at once. */
+    /**
+     * Buttons under the calendar that pick a range at once, within
+     * `minDate` / `maxDate`: a preset that crosses a bound stops at it, one
+     * wholly outside them is disabled.
+     */
     presets?: ReadonlyArray<DateRangePresetName | DateRangePreset>
   }
 
@@ -236,6 +247,11 @@ function DatePicker(props: DatePickerProps) {
     onOpenChange
   )
   const formatter = useFormatter(format, { dateStyle: "long" })
+  /** A day picked, or none (Clear): the popover closes, focus goes back. */
+  const pick = (day: Date | undefined) => {
+    setValue(day)
+    setOpen(false)
+  }
   const hidden = name ? (
     <input
       type="hidden"
@@ -281,13 +297,11 @@ function DatePicker(props: DatePickerProps) {
         onOpenChange={setOpen}
         disabled={disabled}
         popupLabel={t("chooseDate")}
+        onClear={value ? () => pick(undefined) : undefined}
       >
         <SingleCalendar
           value={value}
-          onPick={(day) => {
-            setValue(day)
-            setOpen(false)
-          }}
+          onPick={pick}
           minDate={minDate}
           maxDate={maxDate}
           captionLayout={captionLayout}
@@ -310,6 +324,7 @@ function DateButton({
   onOpenChange,
   disabled,
   popupLabel,
+  onClear,
   children,
   "aria-describedby": describedBy,
   ...controlProps
@@ -323,8 +338,11 @@ function DateButton({
   onOpenChange: (open: boolean) => void
   disabled: boolean | undefined
   popupLabel: string
+  /** Shows "Clear" under the calendar; absent while there is no date. */
+  onClear: (() => void) | undefined
   children: React.ReactNode
 }) {
+  const t = useTranslations("datePicker")
   const valueId = React.useId()
   const triggerRef = React.useRef<HTMLButtonElement>(null)
   const labelled = useHasLabel(triggerRef)
@@ -364,6 +382,16 @@ function DateButton({
         initialFocus={keyboard ? false : undefined}
       >
         <DayFocusContext value={keyboard}>{children}</DayFocusContext>
+        {onClear ? (
+          <div
+            data-slot="date-picker-footer"
+            className="flex w-0 min-w-full justify-end border-t p-2"
+          >
+            <Button variant="ghost" size="sm" onClick={onClear}>
+              {t("clear")}
+            </Button>
+          </div>
+        ) : null}
       </PopoverContent>
     </Popover>
   )
@@ -576,6 +604,11 @@ function DateRangePicker(props: DateRangePickerProps) {
       ? formatter.formatRange(value.from, value.to)
       : formatter.format(value.from)
     : undefined
+  /** A range picked, or none (Clear): the popover closes, focus goes back. */
+  const pick = (range: DateRange | undefined) => {
+    setValue(range)
+    setOpen(false)
+  }
 
   return (
     <DateButton
@@ -593,13 +626,11 @@ function DateRangePicker(props: DateRangePickerProps) {
       onOpenChange={setOpen}
       disabled={disabled}
       popupLabel={t("chooseDateRange")}
+      onClear={text ? () => pick(undefined) : undefined}
     >
       <RangeCalendar
         value={value}
-        onPick={(range) => {
-          setValue(range)
-          setOpen(false)
-        }}
+        onPick={pick}
         numberOfMonths={numberOfMonths}
         presets={presets}
         minDate={minDate}

@@ -187,6 +187,7 @@ export default defineTranslations({
     last30Days: "Zadnjih 30 dni",
     thisMonth: "Ta mesec",
     lastMonth: "Prejšnji mesec",
+    clear: "Počisti",
   },
   actionBar: {
     selectedOfTotal: {

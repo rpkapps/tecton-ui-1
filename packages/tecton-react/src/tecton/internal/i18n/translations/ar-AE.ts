@@ -190,6 +190,7 @@ export default defineTranslations({
     last30Days: "آخر 30 يومًا",
     thisMonth: "هذا الشهر",
     lastMonth: "الشهر الماضي",
+    clear: "مسح",
   },
   actionBar: {
     selectedOfTotal: { other: "تم تحديد {selected} من {total}" },

@@ -163,6 +163,7 @@ export default defineTranslations({
     last30Days: "過去 30 日間",
     thisMonth: "今月",
     lastMonth: "先月",
+    clear: "クリア",
   },
   actionBar: {
     selectedOfTotal: { other: "{total} 件中 {selected} 件を選択済み" },

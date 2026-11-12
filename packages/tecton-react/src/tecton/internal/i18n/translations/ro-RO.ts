@@ -182,6 +182,7 @@ export default defineTranslations({
     last30Days: "Ultimele 30 de zile",
     thisMonth: "Luna aceasta",
     lastMonth: "Luna trecută",
+    clear: "Ștergeți",
   },
   actionBar: {
     selectedOfTotal: {

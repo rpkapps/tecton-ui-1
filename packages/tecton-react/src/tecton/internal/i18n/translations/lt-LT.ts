@@ -185,6 +185,7 @@ export default defineTranslations({
     last30Days: "Paskutinės 30 dienų",
     thisMonth: "Šis mėnuo",
     lastMonth: "Praėjęs mėnuo",
+    clear: "Išvalyti",
   },
   actionBar: {
     selectedOfTotal: { other: "Pasirinkta {selected} iš {total}" },

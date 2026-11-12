@@ -163,6 +163,7 @@ export default defineTranslations({
     last30Days: "過去 30 天",
     thisMonth: "本月",
     lastMonth: "上個月",
+    clear: "清除",
   },
   actionBar: {
     selectedOfTotal: { other: "已選取 {selected} 項，共 {total} 項" },

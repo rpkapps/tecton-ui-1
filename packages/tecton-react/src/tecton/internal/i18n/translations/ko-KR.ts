@@ -163,6 +163,7 @@ export default defineTranslations({
     last30Days: "최근 30일",
     thisMonth: "이번 달",
     lastMonth: "지난달",
+    clear: "지우기",
   },
   actionBar: {
     selectedOfTotal: { other: "{total}개 중 {selected}개 선택됨" },

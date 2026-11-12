@@ -183,6 +183,7 @@ export default defineTranslations({
     last30Days: "Posledních 30 dní",
     thisMonth: "Tento měsíc",
     lastMonth: "Minulý měsíc",
+    clear: "Vymazat",
   },
   actionBar: {
     selectedOfTotal: {

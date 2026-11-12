@@ -186,6 +186,7 @@ export default defineTranslations({
     last30Days: "Последние 30 дней",
     thisMonth: "Этот месяц",
     lastMonth: "Прошлый месяц",
+    clear: "Очистить",
   },
   actionBar: {
     selectedOfTotal: {

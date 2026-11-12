@@ -1,5 +1,5 @@
 import * as React from "react"
-import { act, render, screen, waitFor } from "@testing-library/react"
+import { act, render, screen, waitFor, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
@@ -159,6 +159,46 @@ describe("DatePicker", () => {
     await user.click(screen.getByRole("button"))
     expect(screen.queryByRole("dialog")).toBeNull()
   })
+
+  it("clears the date with Clear, closes and refocuses the trigger", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    const { container } = en(
+      <DatePicker
+        name="spud"
+        defaultValue={JUNE_1}
+        onValueChange={onValueChange}
+      />
+    )
+    const trigger = screen.getByRole("button", { name: "June 1, 2025" })
+    await user.click(trigger)
+    const dialog = await screen.findByRole("dialog")
+    await user.click(within(dialog).getByRole("button", { name: "Clear" }))
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(undefined)
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+    await waitFor(() => expect(trigger).toHaveFocus())
+    expect(trigger).toHaveTextContent("Pick a date")
+    expect(trigger).toHaveAttribute("data-empty", "true")
+    expect(container.querySelector('input[name="spud"]')).toHaveValue("")
+
+    // No date, no Clear.
+    await user.click(trigger)
+    const empty = await screen.findByRole("dialog")
+    expect(within(empty).queryByRole("button", { name: "Clear" })).toBeNull()
+  })
+
+  it("asks the owner to clear a controlled date", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    en(<DatePicker value={JUNE_1} onValueChange={onValueChange} />)
+    const trigger = screen.getByRole("button", { name: "June 1, 2025" })
+    await user.click(trigger)
+    await user.click(await screen.findByRole("button", { name: "Clear" }))
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(undefined)
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+    // The owner has not changed it.
+    expect(trigger).toHaveTextContent("June 1, 2025")
+  })
 })
 
 describe("DatePicker variant=input", () => {
@@ -236,6 +276,14 @@ describe("DatePicker variant=input", () => {
     )
     expect(screen.getByRole("textbox")).toHaveValue("December 24, 2025")
   })
+
+  it("has no Clear in its calendar: emptying the text clears", async () => {
+    const user = userEvent.setup()
+    en(<Input defaultValue={JUNE_1} />)
+    await user.click(screen.getByRole("button", { name: "Choose a date" }))
+    const dialog = await screen.findByRole("dialog")
+    expect(within(dialog).queryByRole("button", { name: "Clear" })).toBeNull()
+  })
 })
 
 describe("DateRangePicker", () => {
@@ -302,6 +350,178 @@ describe("DateRangePicker", () => {
     await user.click(await screen.findByRole("button", { name: "Q1" }))
     expect(onValueChange).toHaveBeenLastCalledWith(quarter)
     expect(trigger).toHaveTextContent("Jan 1 – Mar 31, 2025")
+  })
+
+  it("disables the presets outside minDate and maxDate, in their place", async () => {
+    const user = userEvent.setup()
+    en(
+      <DateRangePicker
+        minDate={new Date(2025, 5, 10)}
+        maxDate={new Date(2025, 5, 20)}
+        presets={[
+          "yesterday",
+          {
+            label: "Early June",
+            value: { from: JUNE_1, to: new Date(2025, 5, 9) },
+          },
+          {
+            label: "Mid June",
+            value: { from: JUNE_1, to: new Date(2025, 5, 30) },
+          },
+          {
+            label: "July",
+            value: { from: new Date(2025, 6, 1), to: new Date(2025, 6, 31) },
+          },
+          { label: "Nothing", value: {} },
+        ]}
+      />
+    )
+    await user.click(screen.getByRole("button"))
+    const presets = await screen.findByRole("group", { name: "Presets" })
+    expect(presets).toHaveTextContent("YesterdayEarly JuneMid JuneJulyNothing")
+    const button = (name: string) =>
+      within(presets).getByRole("button", { name })
+    expect(button("Yesterday")).toBeDisabled()
+    expect(button("Early June")).toBeDisabled()
+    expect(button("Mid June")).toBeEnabled()
+    expect(button("July")).toBeDisabled()
+    expect(button("Nothing")).toBeDisabled()
+  })
+
+  it("clamps a preset that crosses minDate or maxDate to them", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    const now = new Date()
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+    en(
+      <DateRangePicker
+        // A bound with a time of day still bounds by day.
+        minDate={now}
+        onValueChange={onValueChange}
+        presets={["yesterday", "last30Days"]}
+      />
+    )
+    const trigger = screen.getByRole("button")
+    await user.click(trigger)
+    expect(
+      await screen.findByRole("button", { name: "Yesterday" })
+    ).toBeDisabled()
+    await user.click(screen.getByRole("button", { name: "Last 30 days" }))
+    expect(onValueChange).toHaveBeenLastCalledWith({ from: today, to: today })
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+  })
+
+  it("clamps a preset of its own on both sides", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    en(
+      <DateRangePicker
+        minDate={new Date(2025, 5, 10)}
+        maxDate={new Date(2025, 5, 20, 18, 30)}
+        onValueChange={onValueChange}
+        presets={[
+          { label: "June", value: { from: JUNE_1, to: new Date(2025, 5, 30) } },
+        ]}
+      />
+    )
+    await user.click(screen.getByRole("button"))
+    await user.click(await screen.findByRole("button", { name: "June" }))
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith({
+      from: new Date(2025, 5, 10),
+      to: new Date(2025, 5, 20),
+    })
+  })
+
+  it("picks a preset of its own without `to` as one day", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    const spud = new Date(2025, 5, 3)
+    en(
+      <DateRangePicker
+        onValueChange={onValueChange}
+        presets={[{ label: "Spud day", value: { from: spud } }]}
+      />
+    )
+    const trigger = screen.getByRole("button")
+    await user.click(trigger)
+    await user.click(await screen.findByRole("button", { name: "Spud day" }))
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith({
+      from: spud,
+      to: spud,
+    })
+    expect(trigger).toHaveTextContent("Jun 3, 2025")
+  })
+
+  it("clears the range with Clear, closes and refocuses the trigger", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    en(
+      <DateRangePicker
+        defaultValue={{ from: JUNE_1, to: new Date(2025, 5, 3) }}
+        onValueChange={onValueChange}
+        presets={["last7Days"]}
+      />
+    )
+    const trigger = screen.getByRole("button", { name: /^Jun 1\s–\s3, 2025$/ })
+    trigger.focus()
+    await user.keyboard("{Enter}")
+    const dialog = await screen.findByRole("dialog")
+    const clear = within(dialog).getByRole("button", { name: "Clear" })
+    // After the calendar and its presets.
+    expect(clear.closest('[data-slot="date-picker-footer"]')).toBe(
+      dialog.lastElementChild
+    )
+    await user.click(clear)
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(undefined)
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+    await waitFor(() => expect(trigger).toHaveFocus())
+    expect(trigger).toHaveTextContent("Pick a date range")
+    expect(trigger).toHaveAttribute("data-empty", "true")
+
+    await user.click(trigger)
+    const empty = await screen.findByRole("dialog")
+    expect(within(empty).queryByRole("button", { name: "Clear" })).toBeNull()
+  })
+
+  it("shows no Clear without a range", async () => {
+    const user = userEvent.setup()
+    en(<DateRangePicker presets={["today"]} />)
+    await user.click(screen.getByRole("button"))
+    const dialog = await screen.findByRole("dialog")
+    expect(within(dialog).queryByRole("button", { name: "Clear" })).toBeNull()
+    expect(dialog.querySelector('[data-slot="date-picker-footer"]')).toBeNull()
+  })
+
+  it("asks the owner to clear a controlled range", async () => {
+    const user = userEvent.setup()
+    const onValueChange = vi.fn()
+    const range = { from: JUNE_1, to: new Date(2025, 5, 3) }
+    const { rerender } = en(
+      <DateRangePicker value={range} onValueChange={onValueChange} />
+    )
+    const trigger = screen.getByRole("button")
+    await user.click(trigger)
+    await user.click(await screen.findByRole("button", { name: "Clear" }))
+    expect(onValueChange).toHaveBeenCalledExactlyOnceWith(undefined)
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+    // The owner has not changed it: still the range, Clear still offered.
+    expect(trigger).toHaveTextContent("Jun 1 – 3, 2025")
+    await user.click(trigger)
+    expect(
+      await screen.findByRole("button", { name: "Clear" })
+    ).toBeInTheDocument()
+    await user.keyboard("{Escape}")
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+
+    rerender(
+      <TectonProvider locale="en-US">
+        <DateRangePicker value={undefined} onValueChange={onValueChange} />
+      </TectonProvider>
+    )
+    expect(trigger).toHaveTextContent("Pick a date range")
+    await user.click(trigger)
+    const dialog = await screen.findByRole("dialog")
+    expect(within(dialog).queryByRole("button", { name: "Clear" })).toBeNull()
   })
 
   it("shows numberOfMonths months", async () => {

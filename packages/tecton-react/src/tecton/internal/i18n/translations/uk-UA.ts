@@ -187,6 +187,7 @@ export default defineTranslations({
     last30Days: "Останні 30 днів",
     thisMonth: "Цей місяць",
     lastMonth: "Минулий місяць",
+    clear: "Очистити",
   },
   actionBar: {
     selectedOfTotal: { other: "Вибрано {selected} з {total}" },

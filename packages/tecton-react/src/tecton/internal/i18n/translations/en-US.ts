@@ -222,6 +222,8 @@ const enUS = {
     last30Days: "Last 30 days",
     thisMonth: "This month",
     lastMonth: "Last month",
+    // The button under the calendar that empties the date or the range.
+    clear: "Clear",
   },
   actionBar: {
     // The selection summary. The plural form follows the number selected

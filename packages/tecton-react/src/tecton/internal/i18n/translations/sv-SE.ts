@@ -167,6 +167,7 @@ export default defineTranslations({
     last30Days: "Senaste 30 dagarna",
     thisMonth: "Den här månaden",
     lastMonth: "Förra månaden",
+    clear: "Rensa",
   },
   actionBar: {
     selectedOfTotal: {

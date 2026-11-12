@@ -178,6 +178,7 @@ export default defineTranslations({
     last30Days: "30 הימים האחרונים",
     thisMonth: "החודש",
     lastMonth: "החודש שעבר",
+    clear: "נקה",
   },
   actionBar: {
     selectedOfTotal: {

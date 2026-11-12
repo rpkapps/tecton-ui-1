@@ -167,6 +167,7 @@ export default defineTranslations({
     last30Days: "Seneste 30 dage",
     thisMonth: "Denne måned",
     lastMonth: "Sidste måned",
+    clear: "Ryd",
   },
   actionBar: {
     selectedOfTotal: { other: "{selected} af {total} valgt" },

@@ -172,6 +172,7 @@ export default defineTranslations({
     last30Days: "Viimeiset 30 päivää",
     thisMonth: "Tämä kuukausi",
     lastMonth: "Viime kuukausi",
+    clear: "Tyhjennä",
   },
   actionBar: {
     selectedOfTotal: { other: "{selected}/{total} valittu" },

@@ -19,6 +19,7 @@ import type {
   DatePickerProps,
   DateRange,
   DateRangePickerProps,
+  DateRangePreset,
   DateRangePresetName,
 } from "../date-picker"
 import { useCalendarLocale } from "./calendar-locale"
@@ -117,6 +118,28 @@ const PRESET_RANGES: Record<DateRangePresetName, () => Required<DateRange>> = {
 }
 
 /**
+ * The range a preset picks as of now, within `minDate` and `maxDate`: an end
+ * past a bound is moved to it, and a preset wholly outside them picks
+ * nothing (`null`: its button is disabled). A preset of your own without
+ * `to` is its one day.
+ */
+function presetRange(
+  preset: DateRangePresetName | DateRangePreset,
+  minDate?: Date,
+  maxDate?: Date
+): Required<DateRange> | null {
+  const range =
+    typeof preset === "string" ? PRESET_RANGES[preset]() : preset.value
+  const first = range.from ?? range.to
+  const last = range.to ?? range.from
+  if (!first || !last) return null
+  let [from, to] = first <= last ? [first, last] : [last, first]
+  if (minDate && !isWithin(from, minDate)) from = startOfDay(minDate)
+  if (maxDate && !isWithin(to, undefined, maxDate)) to = startOfDay(maxDate)
+  return isWithin(from, undefined, to) ? { from, to } : null
+}
+
+/**
  * The calendar of a range: the first day picked starts a new range, the
  * second ends it (in either order), then `onPick`.
  */
@@ -175,15 +198,19 @@ function RangeCalendar({
         >
           {presets.map((preset) => {
             const named = typeof preset === "string"
+            // Out of bounds, a preset stays in its place, disabled.
+            const range = presetRange(preset, minDate, maxDate)
             return (
               <Button
                 key={named ? preset : preset.label}
                 variant="outline"
                 size="sm"
                 className="flex-1"
+                disabled={!range}
                 onClick={() => {
-                  const range = named ? PRESET_RANGES[preset]() : preset.value
-                  onPick({ from: range.from!, to: range.to! })
+                  // As of the click: "Today" past midnight is the new day.
+                  const picked = presetRange(preset, minDate, maxDate)
+                  if (picked) onPick(picked)
                 }}
               >
                 {named ? t(preset) : preset.label}

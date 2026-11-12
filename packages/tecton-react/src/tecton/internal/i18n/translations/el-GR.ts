@@ -172,6 +172,7 @@ export default defineTranslations({
     last30Days: "Τελευταίες 30 ημέρες",
     thisMonth: "Αυτός ο μήνας",
     lastMonth: "Προηγούμενος μήνας",
+    clear: "Απαλοιφή",
   },
   actionBar: {
     selectedOfTotal: {

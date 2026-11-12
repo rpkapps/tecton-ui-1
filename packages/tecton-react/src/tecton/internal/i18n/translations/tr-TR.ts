@@ -171,6 +171,7 @@ export default defineTranslations({
     last30Days: "Son 30 gün",
     thisMonth: "Bu ay",
     lastMonth: "Geçen ay",
+    clear: "Temizle",
   },
   actionBar: {
     selectedOfTotal: { other: "{selected}/{total} seçildi" },

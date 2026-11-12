@@ -173,6 +173,7 @@ export default defineTranslations({
     last30Days: "Últimos 30 días",
     thisMonth: "Este mes",
     lastMonth: "Mes pasado",
+    clear: "Borrar",
   },
   actionBar: {
     selectedOfTotal: {

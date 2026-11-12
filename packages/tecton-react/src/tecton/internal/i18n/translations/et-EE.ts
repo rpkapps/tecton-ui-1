@@ -169,6 +169,7 @@ export default defineTranslations({
     last30Days: "Viimased 30 päeva",
     thisMonth: "See kuu",
     lastMonth: "Eelmine kuu",
+    clear: "Tühjenda",
   },
   actionBar: {
     selectedOfTotal: { other: "{selected}/{total} valitud" },

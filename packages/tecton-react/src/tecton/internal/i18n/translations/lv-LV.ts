@@ -182,6 +182,7 @@ export default defineTranslations({
     last30Days: "Pēdējās 30 dienas",
     thisMonth: "Šis mēnesis",
     lastMonth: "Iepriekšējais mēnesis",
+    clear: "Notīrīt",
   },
   actionBar: {
     selectedOfTotal: {

@@ -171,6 +171,7 @@ export default defineTranslations({
     last30Days: "Elmúlt 30 nap",
     thisMonth: "Ez a hónap",
     lastMonth: "Előző hónap",
+    clear: "Törlés",
   },
   actionBar: {
     selectedOfTotal: { other: "{selected}/{total} kijelölve" },
