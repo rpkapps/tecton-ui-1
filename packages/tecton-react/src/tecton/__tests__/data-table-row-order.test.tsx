@@ -165,6 +165,15 @@ describe("DataTable row reordering", () => {
     // Above the middle of Well 02.
     fireEvent.pointerMove(document, { pointerId: 1, clientX: 20, clientY: 90 })
     expect(handle("Well 04")).toHaveAttribute("data-dragging")
+    // An opaque copy in the table's frame, level with the row, cut to the
+    // frame: the pointer's sideways travel does not move it.
+    fireEvent.pointerMove(document, { pointerId: 1, clientX: 80, clientY: 90 })
+    const preview = document.querySelector<HTMLElement>(
+      '[data-slot="data-table-content"] > table[inert]'
+    )!
+    expect(preview.style.opacity).toBe("1")
+    expect(preview.style.transform).toMatch(/^translate\(0px, /)
+    expect(preview.style.clipPath).toMatch(/^inset\(/)
     fireEvent.pointerUp(document, { pointerId: 1, clientX: 20, clientY: 90 })
     expect(onRowOrderChange).toHaveBeenCalledWith(
       ["w1", "w4", "w2", "w3"],

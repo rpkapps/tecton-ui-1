@@ -426,5 +426,11 @@ function tableStyle(sizing: ColumnSizing) {
   }
 }
 
-export { colWidths, pinOffset, tableStyle, useColumnSizing }
+export {
+  colWidths,
+  pinOffset,
+  tableStyle,
+  useBelowBreakpoints,
+  useColumnSizing,
+}
 export type { ColumnSizer, SizingMode }

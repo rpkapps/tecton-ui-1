@@ -62,6 +62,7 @@ import {
   colWidths,
   pinOffset,
   tableStyle,
+  useBelowBreakpoints,
   useColumnSizing,
 } from "./column-sizing"
 import {
@@ -83,7 +84,7 @@ import {
   type GroupRow,
 } from "./engine/index"
 import { useFeature, usePrefetchFeatures } from "./lazy"
-import { DataTableHeader, type HeaderShared } from "./header"
+import { DataTableHeader, shownHeaderRows, type HeaderShared } from "./header"
 import { describeRow, renderRow } from "./row"
 import { createRowOrder, inItemOrder, type RowOrder } from "./row-order"
 import { DataTableTotals } from "./totals"
@@ -646,6 +647,18 @@ function DataTableContentImpl({
     rtl,
   })
   const { sizing } = sizer
+  // The header's rows but those of groups over hidden columns only.
+  const below = useBelowBreakpoints(
+    layout.columns.flatMap((column) => column.definition.hideBelow ?? [])
+  )
+  const headerLayout = React.useMemo(() => {
+    const byId = new Map(layout.columns.map((column) => [column.id, column]))
+    const headerRows = shownHeaderRows(layout.headerRows, (id) => {
+      const hideBelow = byId.get(id)?.definition.hideBelow
+      return hideBelow !== undefined && below.has(hideBelow)
+    })
+    return headerRows === layout.headerRows ? layout : { ...layout, headerRows }
+  }, [layout, below])
   const containerConfig = React.useMemo(() => ({ ref: container }), [])
   // The rows render with the columns, their pins and the selection's: a
   // new width alone (a resize) leaves them as they are.
@@ -774,7 +787,7 @@ function DataTableContentImpl({
             )
           }
         : null,
-      headerRows: layout.headerRows.length,
+      headerRows: headerLayout.headerRows.length,
       fixed,
       pins,
       selectionPin,
@@ -805,7 +818,7 @@ function DataTableContentImpl({
       server,
       // On pages only: a new model gives the rows new places.
       options.pagination ? model : null,
-      layout.headerRows.length,
+      headerLayout.headerRows.length,
       virtualized,
       fixed,
       pins,
@@ -1035,7 +1048,7 @@ function DataTableContentImpl({
   // added to them; a page's rows take the places after the pages before
   // it, (page − 1) × pageSize items (`rowIndexOf`). So no row's index is
   // past the count, whatever is grouped or open.
-  const headerRows = layout.headerRows.length
+  const headerRows = headerLayout.headerRows.length
   const extraRows = server
     ? bodyRows.reduce(
         (count, row) =>
@@ -1073,7 +1086,7 @@ function DataTableContentImpl({
   const header: HeaderShared<unknown> = {
     context,
     columns,
-    layout,
+    layout: headerLayout,
     sorting,
     options,
     sizer,
