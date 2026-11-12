@@ -27,6 +27,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@tecton/react/components/empty"
+import { Progress } from "@tecton/react/components/progress"
 import { Skeleton } from "@tecton/react/components/skeleton"
 import { TableCell } from "@tecton/react/components/table"
 
@@ -60,12 +61,10 @@ function State({
       <EmptyHeader>
         <EmptyMedia
           variant="icon"
-          // An error's icon on the destructive fill, as a destructive
-          // Badge's or a filled destructive Alert's.
+          // An error's icon on a translucent destructive tint, as the
+          // table's outlined status badges (an outline destructive Badge).
           className={
-            role === "alert"
-              ? "bg-destructive-surface text-destructive-surface-foreground"
-              : undefined
+            role === "alert" ? "bg-destructive/10 text-destructive" : undefined
           }
         >
           {icon}
@@ -218,23 +217,20 @@ function loadingRows<T>(
 }
 
 /**
- * An indeterminate bar `top` px down the frame (the header's height): a
- * highlight sweeping along the track, or a still bar with reduced motion.
- * Not `Progress`: its indicator takes its width from the value, so with no
- * value it has none, and its parts take no class to draw one.
+ * An indeterminate `Progress` (`value={null}`) `top` px down the frame (the
+ * header's height), named "Loading": a segment sweeping across the track,
+ * or a pulsing bar with reduced motion.
  */
 function DataTableProgress({ top }: { top: number }) {
   const t = useTranslations("dataTable")
   return (
-    <div
-      role="progressbar"
+    <Progress
+      value={null}
       aria-label={t("loading")}
       data-slot="data-table-progress"
-      className="pointer-events-none absolute inset-x-0 z-20 h-0.5 overflow-hidden bg-progress-track"
+      className="pointer-events-none absolute inset-x-0 z-20"
       style={{ top }}
-    >
-      <div className="size-full bg-linear-to-r from-transparent via-progress to-transparent bg-size-[200%_100%] bg-no-repeat motion-safe:animate-[tw-shimmer_1.5s_linear_infinite] motion-reduce:bg-progress motion-reduce:bg-none rtl:[animation-direction:reverse]" />
-    </div>
+    />
   )
 }
 

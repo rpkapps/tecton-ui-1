@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs"
+import path from "node:path"
 import * as React from "react"
 import { fireEvent, render, screen } from "@testing-library/react"
 import { compile } from "tailwindcss"
@@ -39,6 +41,16 @@ const HOVER = "rgb(3, 3, 3)"
 const PLAIN = "rgba(0, 0, 0, 0)"
 
 /**
+ * The vendored shadcn stylesheet's variants, as an application compiles
+ * them: `data-selected:` is `:where([data-selected="true"])`, which weighs
+ * no more than the stripe.
+ */
+const SHADCN_CSS = readFileSync(
+  path.join(import.meta.dirname, "../../styles/shadcn.css"),
+  "utf8"
+)
+
+/**
  * The CSS of every class in the document. jsdom has no hover state, so
  * `:hover` is written as `[data-hover]` (the same specificity: a
  * pseudo-class weighs as an attribute), out of its `@media (hover: hover)`.
@@ -47,7 +59,9 @@ async function applyStyles() {
   const classes = new Set<string>()
   for (const element of document.body.querySelectorAll("*"))
     for (const name of element.classList) classes.add(name)
-  const compiler = await compile(`${THEME}\n@tailwind utilities;`)
+  const compiler = await compile(
+    `${THEME}\n${SHADCN_CSS}\n@tailwind utilities;`
+  )
   const css = compiler
     .build([...classes])
     .replace(/@media \(hover: hover\) \{([\s\S]*?\})\s*\}/g, "$1")
@@ -280,6 +294,23 @@ describe("Table striped", () => {
     striped.removeAttribute("data-selected")
     striped.setAttribute("data-state", "selected")
     expect(background(striped)).toBe(SELECTED)
+  })
+
+  it("fills a selected row the same whatever its stripe, and hover over both", async () => {
+    render(<Wells striped />)
+    await applyStyles()
+    const rows = WELLS.map(row)
+    for (const tr of rows) tr.setAttribute("data-selected", "true")
+    expect(rows.map(background)).toEqual(rows.map(() => SELECTED))
+    for (const tr of rows) {
+      tr.setAttribute("data-hover", "")
+      expect(background(tr)).toBe(HOVER)
+      tr.removeAttribute("data-hover")
+    }
+    // Hover wins over the stripe of an unselected row too.
+    for (const tr of rows) tr.removeAttribute("data-selected")
+    rows[1].setAttribute("data-hover", "")
+    expect(background(rows[1])).toBe(HOVER)
   })
 
   it("stripes only its own rows, not a table inside one", async () => {

@@ -492,15 +492,12 @@ describe("DataTable states", () => {
     const onRetry = vi.fn()
     const { rerender } = render(<Wells error onRetry={onRetry} />)
     expect(screen.getByText("The rows could not be loaded")).toBeInTheDocument()
-    // Its icon on the destructive fill.
+    // Its icon on a translucent destructive tint, as the outlined badges.
     expect(
       document.querySelector(
         '[data-slot="data-table-state"] [data-slot="empty-icon"]'
       )
-    ).toHaveClass(
-      "bg-destructive-surface",
-      "text-destructive-surface-foreground"
-    )
+    ).toHaveClass("bg-destructive/10", "text-destructive")
     expect(
       screen.getByText("Something went wrong while loading the data.")
     ).toBeInTheDocument()
@@ -540,9 +537,10 @@ describe("DataTable states", () => {
     expect(names()).toHaveLength(FEW.length)
     const bar = screen.getByRole("progressbar", { name: "Loading" })
     expect(bar).not.toHaveAttribute("aria-valuenow")
-    expect(bar.firstElementChild).toHaveClass(
-      "motion-safe:animate-[tw-shimmer_1.5s_linear_infinite]"
-    )
+    expect(bar).toHaveAttribute("data-indeterminate")
+    expect(
+      bar.querySelector('[data-slot="progress-indicator"]')
+    ).toHaveAttribute("data-indeterminate")
   })
 })
 

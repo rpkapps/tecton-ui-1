@@ -1018,8 +1018,14 @@
     @apply bg-progress-track h-1 rounded-none;
   }
 
+  /* Indeterminate (`value={null}`): the indicator spans the track and a
+     segment of 40% of it sweeps across, entering at the start and leaving at
+     the end, eased in and out. The segment is a background image 240% wide
+     (the track, the segment and the track again), moved by the vendored
+     `tw-shimmer` keyframes (background-position 100% → 0); RTL runs them in
+     reverse. With reduced motion the whole bar pulses instead. */
   .cn-progress-indicator {
-    @apply bg-progress;
+    @apply bg-progress data-indeterminate:w-full data-indeterminate:bg-transparent data-indeterminate:bg-[linear-gradient(to_right,transparent_41.667%,var(--color-progress)_41.667%,var(--color-progress)_58.333%,transparent_58.333%)] data-indeterminate:bg-size-[240%_100%] data-indeterminate:bg-no-repeat data-indeterminate:motion-safe:animate-[tw-shimmer_1.6s_cubic-bezier(0.4,0,0.6,1)_infinite] rtl:data-indeterminate:motion-safe:[animation-direction:reverse] data-indeterminate:motion-reduce:bg-progress data-indeterminate:motion-reduce:bg-none data-indeterminate:motion-reduce:animate-pulse;
   }
 
   .cn-progress-label {
@@ -1375,11 +1381,13 @@
   }
 
   /* The size and stripe conditions are in a :where(), so they weigh no more
-     than the part's own class: hover, selected and expanded fills win over
-     the stripe. The direct-child chains reach only the table's own rows and
+     than the part's own class: hover and expanded fills win over the stripe.
+     A selected row is left out of the stripe: `data-selected:` is itself a
+     :where() and would tie with it, so a selected even row would keep its
+     stripe. The direct-child chains reach only the table's own rows and
      cells, never a nested table's (nor, for the stripe, the footer's). */
   .cn-table-row {
-    @apply hover:bg-accent data-[state=selected]:bg-table-active data-selected:bg-table-active data-disabled:text-muted-foreground focus-visible:outline-ring border-border-subtle border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 [&:where([data-striped]>tbody>:nth-child(even))]:bg-surface-alt;
+    @apply hover:bg-accent data-[state=selected]:bg-table-active data-selected:bg-table-active data-disabled:text-muted-foreground focus-visible:outline-ring border-border-subtle border-b transition-colors focus-visible:outline-2 focus-visible:-outline-offset-2 [&:where([data-striped]>tbody>:nth-child(even):not([data-selected=true],[data-state=selected]))]:bg-surface-alt;
   }
 
   .cn-table-row-aria {
