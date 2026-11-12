@@ -160,15 +160,13 @@
         "components/label",
         "tecton/number-field",
         "tecton/dropzone",
-        "tecton/date-picker",
-        "tecton/number-input"
+        "tecton/date-picker"
       ],
       "checklist": [
         "Every control in a `Field` has an `id` and a `FieldLabel htmlFor` pointing at it — `Field` renders `role=\"group\"` and associates nothing by itself.",
         "For a `Select` the `id` goes on `SelectTrigger`; a `Slider` has no `htmlFor` target and is named by `aria-labelledby` pointing at its `FieldTitle`'s `id`; a group of controls — a `RadioGroup`, a `ChipGroup`, a set of checkboxes — is named by `FieldSet` + `FieldLegend`, never by a stray `FieldLabel`.",
         "`Checkbox` and `Switch` are driven by `checked` / `defaultChecked` and `onCheckedChange(checked: boolean)`: no `isSelected`, and no reading `e.target` off the callback.",
         "`Input`, `Textarea` and `NativeSelect` are real DOM elements, so they take `value`, `onChange(event)` read through `event.target.value`, `disabled`, `required` and `aria-invalid`.",
-        "A quantity is typed in a `NumberInput` holding a `number | null` in `value` / `onValueChange`, bounded by `min` / `max`, stepped by `step` / `largeStep`, its unit in `format` — never an `Input type=\"number\"`, whose browser spinners, string value and locale-blind parsing Tecton does not style or fix.",
         "An invalid value sets `aria-invalid` on the control **and** `data-invalid` on the `Field`, with the message rendered in `FieldError` rather than a red paragraph.",
         "`Input`, `Textarea` and `SelectTrigger` take their surface from `variant=\"outline\" | \"filled\" | \"text\"`, and `className` on them carries layout only (`w-full`, `col-span-2`).",
         "An icon, unit, hint or in-field button on a text field lives in an `InputGroup` with `InputGroupInput` (never a plain `Input`) and an `InputGroupAddon` placed after the control in the DOM and positioned with `align`; a `NumberField` uses its own `NumberFieldGroup` instead.",

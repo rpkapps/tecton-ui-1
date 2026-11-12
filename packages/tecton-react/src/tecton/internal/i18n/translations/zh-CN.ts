@@ -183,7 +183,7 @@ export default defineTranslations({
   overflow: {
     moreActions: "更多操作",
   },
-  numberInput: {
+  numberField: {
     increase: "增加",
     decrease: "减少",
   },

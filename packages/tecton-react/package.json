@@ -496,11 +496,6 @@
       "import": "./dist/tecton/number-field.js",
       "default": "./dist/tecton/number-field.js"
     },
-    "./number-input": {
-      "types": "./dist/tecton/number-input.d.ts",
-      "import": "./dist/tecton/number-input.js",
-      "default": "./dist/tecton/number-input.js"
-    },
     "./overflow": {
       "types": "./dist/tecton/overflow.d.ts",
       "import": "./dist/tecton/overflow.js",

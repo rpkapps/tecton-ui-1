@@ -222,7 +222,7 @@ export default defineTranslations({
   overflow: {
     moreActions: "Vairāk darbību",
   },
-  numberInput: {
+  numberField: {
     increase: "Palielināt",
     decrease: "Samazināt",
   },

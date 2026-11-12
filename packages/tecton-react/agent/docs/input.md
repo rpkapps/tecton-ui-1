@@ -102,7 +102,6 @@ Correct:
 ## Before you finish
 
 - `Input`, `Textarea` and `NativeSelect` are real DOM elements, so they take `value`, `onChange(event)` read through `event.target.value`, `disabled`, `required` and `aria-invalid`.
-- A quantity is typed in a `NumberInput` holding a `number | null` in `value` / `onValueChange`, bounded by `min` / `max`, stepped by `step` / `largeStep`, its unit in `format` — never an `Input type="number"`, whose browser spinners, string value and locale-blind parsing Tecton does not style or fix.
 - `Input`, `Textarea` and `SelectTrigger` take their surface from `variant="outline" | "filled" | "text"`, and `className` on them carries layout only (`w-full`, `col-span-2`).
 - An icon, unit, hint or in-field button on a text field lives in an `InputGroup` with `InputGroupInput` (never a plain `Input`) and an `InputGroupAddon` placed after the control in the DOM and positioned with `align`; a `NumberField` uses its own `NumberFieldGroup` instead.
 - A number the user types or steps is a `NumberField` (never `Input type="number"`): the `id` goes on `NumberField`, the unit in `NumberFieldUnit` or `format`, and `onValueChange` reports `number | null`.

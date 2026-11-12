@@ -153,8 +153,8 @@ describe("tecton search", () => {
 
   // A number goes to NumberField; free text stays with Input.
   it.each([
-    ["number input", "number-input"],
-    ["NumberInput", "number-input"],
+    ["number input", "number-field"],
+    ["NumberField", "number-field"],
     ["number field", "number-field"],
     ["numeric input", "number-field"],
     ["spinbutton", "number-field"],

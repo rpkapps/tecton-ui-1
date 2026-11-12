@@ -37,7 +37,13 @@ import { Label } from "@tecton/react/label"
 import { PopoverContent, PopoverTitle } from "@tecton/react/popover"
 import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
 import { Separator } from "@tecton/react/separator"
-import { NumberInput } from "@tecton/react/number-input"
+import {
+  NumberField,
+  NumberFieldDecrement,
+  NumberFieldGroup,
+  NumberFieldIncrement,
+  NumberFieldInput,
+} from "@tecton/react/number-field"
 
 import { CalendarLoading } from "../calendar-loading"
 import { useTranslations } from "../i18n/translations"
@@ -195,15 +201,22 @@ function NumberFilter({
       <Label htmlFor={`${id}-${bound}`}>
         {bound === "min" ? t("filterMin") : t("filterMax")}
       </Label>
-      <NumberInput
+      <NumberField
         id={`${id}-${bound}`}
         value={draft[bound]}
-        aria-describedby={`${id}-column`}
         onValueChange={(next) => change({ ...draft, [bound]: next })}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") flush()
-        }}
-      />
+      >
+        <NumberFieldGroup>
+          <NumberFieldDecrement />
+          <NumberFieldInput
+            aria-describedby={`${id}-column`}
+            onKeyDown={(event) => {
+              if (event.key === "Enter") flush()
+            }}
+          />
+          <NumberFieldIncrement />
+        </NumberFieldGroup>
+      </NumberField>
     </div>
   )
   return (

@@ -232,7 +232,7 @@ export default defineTranslations({
   overflow: {
     moreActions: "Več dejanj",
   },
-  numberInput: {
+  numberField: {
     increase: "Povečaj",
     decrease: "Zmanjšaj",
   },

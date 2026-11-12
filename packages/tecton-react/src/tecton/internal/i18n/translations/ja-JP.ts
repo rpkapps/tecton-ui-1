@@ -185,7 +185,7 @@ export default defineTranslations({
   overflow: {
     moreActions: "その他のアクション",
   },
-  numberInput: {
+  numberField: {
     increase: "増やす",
     decrease: "減らす",
   },

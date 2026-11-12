@@ -185,7 +185,7 @@ export default defineTranslations({
   overflow: {
     moreActions: "추가 작업",
   },
-  numberInput: {
+  numberField: {
     increase: "증가",
     decrease: "감소",
   },

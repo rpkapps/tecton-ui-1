@@ -190,7 +190,7 @@ export default defineTranslations({
   overflow: {
     moreActions: "Flere handlinger",
   },
-  numberInput: {
+  numberField: {
     increase: "Forøg",
     decrease: "Formindsk",
   },

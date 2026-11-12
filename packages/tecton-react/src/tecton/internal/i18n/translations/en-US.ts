@@ -264,8 +264,8 @@ const enUS = {
     // not fit in a toolbar or row.
     moreActions: "More actions",
   },
-  numberInput: {
-    // The names of NumberInput's buttons that step the value down and up.
+  numberField: {
+    // The names of NumberField's buttons that step the value down and up.
     increase: "Increase",
     decrease: "Decrease",
   },

@@ -194,7 +194,7 @@ export default defineTranslations({
   overflow: {
     moreActions: "További műveletek",
   },
-  numberInput: {
+  numberField: {
     increase: "Növelés",
     decrease: "Csökkentés",
   },

@@ -139,16 +139,18 @@ describe("DataTable pages", () => {
   })
 
   describe("the page field", () => {
-    it("is a NumberInput between the words, named Page, without steppers", () => {
+    it("is a NumberField between the words, named Page, without minus and plus", () => {
       render(<Wells items={many} defaultPage={3} />)
       const input = field()
-      expect(input).toHaveAttribute("data-slot", "number-input-input")
+      expect(input).toHaveAttribute("data-slot", "number-field-input")
       expect(input).toHaveValue("3")
       expect(input).toHaveAttribute("inputmode", "numeric")
       expect(input).toHaveAccessibleDescription("of 24")
       const box = input.closest('[data-slot="data-table-page-field"]')!
       expect(
-        box.querySelector('[data-slot="number-input-steppers"]')
+        box.querySelector(
+          '[data-slot="number-field-decrement"], [data-slot="number-field-increment"]'
+        )
       ).toBeNull()
       // "Page [3] of 24", and the narrow "[3] / 24".
       expect(
@@ -273,7 +275,7 @@ describe("DataTable pages", () => {
 
     it("is as wide as the last page's number, so nothing moves as the page changes", () => {
       render(<Wells items={many} />)
-      const box = field().closest('[data-slot="number-input"]')!
+      const box = field().closest('[data-slot="number-field"]')!
         .parentElement as HTMLElement
       const width = box.style.width
       // Two digits ("24") and the field's padding.
@@ -369,7 +371,7 @@ describe("DataTable pages", () => {
     expect(
       screen.getByRole("combobox", { name: "Rows per page" })
     ).toHaveAttribute("data-size", "default")
-    expect(field().closest('[data-slot="number-input-group"]')).toHaveAttribute(
+    expect(field().closest('[data-slot="number-field-group"]')).toHaveAttribute(
       "data-size",
       "default"
     )
@@ -390,7 +392,7 @@ describe("DataTable pages", () => {
     expect(
       screen.getByRole("combobox", { name: "Rows per page" })
     ).toHaveAttribute("data-size", "sm")
-    expect(field().closest('[data-slot="number-input-group"]')).toHaveAttribute(
+    expect(field().closest('[data-slot="number-field-group"]')).toHaveAttribute(
       "data-size",
       "sm"
     )

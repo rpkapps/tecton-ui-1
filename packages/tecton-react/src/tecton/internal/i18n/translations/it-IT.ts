@@ -212,7 +212,7 @@ export default defineTranslations({
   overflow: {
     moreActions: "Altre azioni",
   },
-  numberInput: {
+  numberField: {
     increase: "Aumenta",
     decrease: "Diminuisci",
   },

@@ -34,7 +34,11 @@ Wrong:
 ```tsx
 <div className="flex items-center gap-2">
   <Label>Rows per page</Label>
-  <NumberInput id="rows" className="w-24" />
+  <NumberField id="rows" className="w-24">
+    <NumberFieldGroup>
+      <NumberFieldInput />
+    </NumberFieldGroup>
+  </NumberField>
 </div>
 ```
 
@@ -43,7 +47,11 @@ Correct:
 ```tsx
 <div className="flex items-center gap-2">
   <Label htmlFor="rows">Rows per page</Label>
-  <NumberInput id="rows" className="w-24" />
+  <NumberField id="rows" className="w-24">
+    <NumberFieldGroup>
+      <NumberFieldInput />
+    </NumberFieldGroup>
+  </NumberField>
 </div>
 ```
 

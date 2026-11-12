@@ -212,7 +212,7 @@ export default defineTranslations({
   overflow: {
     moreActions: "Daugiau veiksmų",
   },
-  numberInput: {
+  numberField: {
     increase: "Padidinti",
     decrease: "Sumažinti",
   },

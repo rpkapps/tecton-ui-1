@@ -5,7 +5,8 @@
  * one line. At the start, the rows-per-page `Select` with its "Rows" label
  * and the rows shown ("21–30 of 50", announced as it changes); at the end,
  * Tecton's `Pagination` with First, Previous, the page field ("Page [3] of
- * 5", a `NumberInput` from 1 to the last page) and Next, Last. The rows are
+ * 5", a `NumberField` from 1 to the last page, without its minus and plus
+ * buttons) and Next, Last. The rows are
  * the server's `rowCount` in server mode. It renders nothing, and warns
  * once in development, while `pagination` is off.
  *
@@ -50,7 +51,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@tecton/react/select"
-import { NumberInput } from "@tecton/react/number-input"
+import {
+  NumberField,
+  NumberFieldGroup,
+  NumberFieldInput,
+} from "@tecton/react/number-field"
 
 import { useTranslations } from "../i18n/translations"
 import {
@@ -461,18 +466,19 @@ function PageField({
         // The last page's digits (tabular), and the field's padding.
         style={{ width: `max(2.5rem, calc(${count.length}ch + 0.625rem))` }}
       >
-        <NumberInput
-          aria-label={t("page")}
-          aria-describedby={`${id}-count`}
-          size={size}
-          steppers={false}
+        {/*
+          A page typed is kept as it is, out of range too (`settle` decides
+          what it opens); the arrow keys step by whole pages and clamp. The
+          wheel does not step it: it would change the number in the field,
+          not the table's page.
+        */}
+        <NumberField
           min={1}
           max={pageCount}
+          smallStep={1}
           allowOutOfRange
-          autoComplete="off"
-          enterKeyHint="go"
+          allowWheelScrub={false}
           value={draft}
-          className="[&_[data-slot=number-input-input]]:px-1 [&_[data-slot=number-input-input]]:text-center"
           onValueChange={(value, eventDetails) => {
             // Its own formatting as it loses focus: `settle` decides.
             if (eventDetails.reason === "input-blur") return
@@ -482,19 +488,34 @@ function PageField({
             if (eventDetails.reason === "keyboard" && value !== null)
               context.actions.setPage(value, "page", eventDetails.event)
           }}
-          onBlur={(event) => settle(event.nativeEvent)}
-          onKeyDown={(event) => {
-            if (event.key !== "Enter") return
-            event.preventDefault()
-            // Settled as it loses focus, which also formats what was
-            // typed; focus comes straight back.
-            const input = event.currentTarget
-            clamping.current = true
-            input.blur()
-            clamping.current = false
-            input.focus()
-          }}
-        />
+        >
+          {/* No minus and plus: the arrows beside it step the pages. */}
+          <NumberFieldGroup
+            data-size={size}
+            // A small `SelectTrigger`'s height when compact.
+            className={cn(size === "sm" && "h-7")}
+          >
+            <NumberFieldInput
+              aria-label={t("page")}
+              aria-describedby={`${id}-count`}
+              autoComplete="off"
+              enterKeyHint="go"
+              className="px-1 text-center"
+              onBlur={(event) => settle(event.nativeEvent)}
+              onKeyDown={(event) => {
+                if (event.key !== "Enter") return
+                event.preventDefault()
+                // Settled as it loses focus, which also formats what was
+                // typed; focus comes straight back.
+                const input = event.currentTarget
+                clamping.current = true
+                input.blur()
+                clamping.current = false
+                input.focus()
+              }}
+            />
+          </NumberFieldGroup>
+        </NumberField>
       </span>
       <span id={`${id}-count`} data-step="words" className={STEPS.words}>
         {after.trim()}

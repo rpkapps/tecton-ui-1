@@ -382,14 +382,14 @@ describe("DataTableFilter", () => {
     render(<Wells onViewChange={onViewChange} />)
     await user.click(filterButton("Depth (m)"))
     const min = screen.getByRole("textbox", { name: "Min" })
-    expect(min).toHaveAttribute("data-slot", "number-input-input")
+    expect(min).toHaveAttribute("data-slot", "number-field-input")
     expect(min).toHaveAccessibleDescription("Depth (m)")
     expect(
       document.querySelector('input[type="number"]:not([aria-hidden])')
     ).toBeNull()
     await user.type(min, "2000")
     const [, increase] = min
-      .closest('[data-slot="number-input-group"]')!
+      .closest('[data-slot="number-field-group"]')!
       .querySelectorAll("button")
     expect(increase).toHaveAccessibleName("Increase")
     await user.click(increase)

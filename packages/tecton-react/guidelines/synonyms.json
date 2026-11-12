@@ -110,6 +110,7 @@
     "numeric": ["number"],
     "spin button": ["number"],
     "spinbutton": ["number"],
-    "numeric input": ["number", "numberfield"]
+    "numeric input": ["number", "numberfield"],
+    "number input": ["numberfield"]
   }
 }

@@ -151,16 +151,18 @@ describe("translations", () => {
     )
   })
 
-  it("names NumberInput's steppers in every locale", async () => {
+  it("names NumberField's minus and plus buttons in every locale", async () => {
     const tables = Object.fromEntries(await locales())
     for (const [file, table] of Object.entries(tables))
-      expect([file, typeof table.numberInput.increase]).toEqual([
-        file,
-        "string",
-      ])
+      for (const key of ["increase", "decrease"] as const)
+        expect([file, key, typeof table.numberField[key]]).toEqual([
+          file,
+          key,
+          "string",
+        ])
     expect(
       createTranslator(
-        "numberInput",
+        "numberField",
         "fr-FR",
         tables["fr-FR.ts"] as never
       )("increase")

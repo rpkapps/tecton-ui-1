@@ -192,7 +192,7 @@ export default defineTranslations({
   overflow: {
     moreActions: "Rohkem toiminguid",
   },
-  numberInput: {
+  numberField: {
     increase: "Suurenda",
     decrease: "Vähenda",
   },
