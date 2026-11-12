@@ -270,7 +270,7 @@ function useColumnSizing({
         if (layout.width(column.id) !== undefined) return
         const cell = cells[index + lead] as Element | undefined
         // 0: not laid out (hidden below a breakpoint); it takes the default.
-        next[column.id] = cell ? Math.ceil(widthOf(cell)) : 0
+        next[column.id] = cell ? Math.ceil(headerWidthOf(cell)) : 0
       })
       setMeasured({ widths: next, rows })
     } finally {
@@ -382,7 +382,7 @@ function useColumnSizing({
       })
       if (col) col.style.width = ""
       try {
-        return Math.ceil(widthOf(cell))
+        return Math.ceil(headerWidthOf(cell))
       } finally {
         Object.assign(style, {
           tableLayout: saved.tableLayout,
@@ -407,6 +407,38 @@ function useColumnSizing({
 function widthOf(element: Element) {
   return element.getBoundingClientRect().width
 }
+
+/**
+ * The width a column needs for its header cell: the cell, or, where its
+ * menu button floats over the end of the label (absolutely placed, taking
+ * no room, with a fine pointer), the label's own width, the cell's padding,
+ * the button and a small gap, whichever is wider. A column as wide as its
+ * label alone would have the button over its sort arrow.
+ */
+function headerWidthOf(cell: Element) {
+  const width = widthOf(cell)
+  const button = cell.querySelector<HTMLElement>(
+    '[data-slot="data-table-column-menu"]'
+  )
+  const content = cell.firstElementChild as HTMLElement | null
+  if (!button || !content) return width
+  const view = cell.ownerDocument.defaultView
+  if (view?.getComputedStyle(button).position !== "absolute") return width
+  // The cell's padding, then the label at its own width, not stretched to
+  // the column's.
+  const padding = width - widthOf(content)
+  const saved = content.style.width
+  content.style.width = "max-content"
+  try {
+    const room = widthOf(content) + padding + widthOf(button) + MENU_GAP
+    return Math.max(width, room)
+  } finally {
+    content.style.width = saved
+  }
+}
+
+/** Between a header's sort arrow and its floating menu button, in px. */
+const MENU_GAP = 4
 
 /** The width of the vertical scrollbar of the table's container. */
 function scrollbarOf(container: HTMLElement | null) {
