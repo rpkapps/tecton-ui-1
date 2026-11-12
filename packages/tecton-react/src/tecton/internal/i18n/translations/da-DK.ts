@@ -77,6 +77,12 @@ export default defineTranslations({
     selectionBar: "Valgte rækker",
     selectionActions: "Handlinger for de valgte rækker",
     rowsLoaded: { one: "Viser {total} række", other: "Viser {total} rækker" },
+    showMore: "Vis flere",
+    shownOfTotal: { other: "Viser {shown} af {total}" },
+    moreRowsLoaded: {
+      one: "Indlæste {total} række mere",
+      other: "Indlæste {total} rækker mere",
+    },
     sortPositionAscending:
       "sorteret i stigende rækkefølge, {position} af {total} i sorteringsrækkefølgen",
     sortPositionDescending:

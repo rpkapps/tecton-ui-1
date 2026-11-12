@@ -80,6 +80,12 @@ export default defineTranslations({
       one: "Kuvatakse {total} rida",
       other: "Kuvatakse {total} rida",
     },
+    showMore: "Kuva rohkem",
+    shownOfTotal: { other: "Kuvatakse {shown} / {total}" },
+    moreRowsLoaded: {
+      one: "Laaditi veel {total} rida",
+      other: "Laaditi veel {total} rida",
+    },
     sortPositionAscending:
       "sorditud tõusvas järjestuses, {position}/{total} sortimisjärjekorras",
     sortPositionDescending:

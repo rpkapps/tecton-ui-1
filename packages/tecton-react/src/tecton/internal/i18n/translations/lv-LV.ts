@@ -83,6 +83,13 @@ export default defineTranslations({
       one: "Rāda {total} rindu",
       other: "Rāda {total} rindas",
     },
+    showMore: "Rādīt vairāk",
+    shownOfTotal: { other: "Rāda {shown} no {total}" },
+    moreRowsLoaded: {
+      zero: "Ielādētas vēl {total} rindas",
+      one: "Ielādēta vēl {total} rinda",
+      other: "Ielādētas vēl {total} rindas",
+    },
     sortPositionAscending:
       "kārtots augošā secībā, {position} no {total} kārtošanas secībā",
     sortPositionDescending:

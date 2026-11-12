@@ -85,6 +85,14 @@ export default defineTranslations({
       many: "Показано {total} строк",
       other: "Показано {total} строки",
     },
+    showMore: "Показать ещё",
+    shownOfTotal: { other: "Показано {shown} из {total}" },
+    moreRowsLoaded: {
+      one: "Загружена ещё {total} строка",
+      few: "Загружены ещё {total} строки",
+      many: "Загружено ещё {total} строк",
+      other: "Загружено ещё {total} строки",
+    },
     sortPositionAscending:
       "отсортировано в порядке возрастания, {position} из {total} в порядке сортировки",
     sortPositionDescending:

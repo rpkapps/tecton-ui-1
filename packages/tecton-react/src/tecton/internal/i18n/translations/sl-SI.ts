@@ -86,6 +86,14 @@ export default defineTranslations({
       few: "Prikazane so {total} vrstice",
       other: "Prikazanih je {total} vrstic",
     },
+    showMore: "Prikaži več",
+    shownOfTotal: { other: "Prikazano {shown} od {total}" },
+    moreRowsLoaded: {
+      one: "Naložena je še {total} vrstica",
+      two: "Naloženi sta še {total} vrstici",
+      few: "Naložene so še {total} vrstice",
+      other: "Naloženih je še {total} vrstic",
+    },
     sortPositionAscending:
       "razvrščeno v naraščajočem vrstnem redu, {position} od {total} v vrstnem redu razvrščanja",
     sortPositionDescending:

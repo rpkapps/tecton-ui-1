@@ -82,6 +82,15 @@ export default defineTranslations({
       one: "Se muestra {total} fila",
       other: "Se muestran {total} filas",
     },
+    showMore: "Mostrar más",
+    shownOfTotal: {
+      one: "Se muestra {shown} de {total}",
+      other: "Se muestran {shown} de {total}",
+    },
+    moreRowsLoaded: {
+      one: "Se ha cargado {total} fila más",
+      other: "Se han cargado {total} filas más",
+    },
     sortPositionAscending:
       "ordenado en sentido ascendente, {position} de {total} en el orden de clasificación",
     sortPositionDescending:

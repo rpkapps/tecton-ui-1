@@ -289,6 +289,221 @@ describe("DataTable load more", () => {
   })
 })
 
+describe('DataTable load more with "Show more" (loadMore="button")', () => {
+  const band = () =>
+    document.querySelector<HTMLElement>('[data-slot="data-table-show-more"]')
+  const showMore = () => screen.getByRole("button", { name: "Show more" })
+  // The table's live region (the spinner is a status too).
+  const status = () =>
+    document.querySelector('[data-slot="data-table-content"] > [role="status"]')
+
+  it("shows the band after the last row, with no loading rows and no observer", () => {
+    render(<Wells hasMore loadMore="button" onLoadMore={() => {}} />)
+    expect(loadingRows()).toHaveLength(0)
+    expect(observers).toHaveLength(0)
+    const row = band()!
+    // After the last row, in the place of the loading rows; not hidden.
+    expect(row.parentElement).toHaveAttribute(
+      "data-slot",
+      "data-table-loading-more"
+    )
+    expect(row.parentElement).not.toHaveAttribute("aria-hidden")
+    expect(
+      row.parentElement?.previousElementSibling?.lastElementChild
+    ).toHaveTextContent("Well 10")
+    expect(within(row).getByRole("button", { name: "Show more" })).toBe(
+      showMore()
+    )
+    // No total known: the rows shown.
+    expect(row).toHaveTextContent("Showing 10 rows")
+  })
+
+  it("counts the rows shown of the server's rowCount, formatted", () => {
+    render(
+      <Wells
+        hasMore
+        loadMore="button"
+        onLoadMore={() => {}}
+        dataMode="server"
+        rowCount={1500}
+      />
+    )
+    expect(band()).toHaveTextContent("Showing 10 of 1,500")
+  })
+
+  it("calls onLoadMore once per press, and is disabled with a spinner while the rows load", async () => {
+    const user = userEvent.setup()
+    const onLoadMore = vi.fn()
+    const { rerender } = render(
+      <Wells hasMore loadMore="button" onLoadMore={onLoadMore} />
+    )
+    await user.click(showMore())
+    expect(onLoadMore).toHaveBeenCalledTimes(1)
+    rerender(
+      <Wells hasMore loadMore="button" onLoadMore={onLoadMore} loading />
+    )
+    expect(showMore()).toHaveAttribute("aria-disabled", "true")
+    expect(
+      showMore().querySelector('[data-slot="spinner"]')
+    ).toBeInTheDocument()
+    // The band stays: no loading rows, no bar, the table busy.
+    expect(loadingRows()).toHaveLength(0)
+    expect(
+      document.querySelector('[data-slot="data-table-progress"]')
+    ).toBeNull()
+    expect(screen.getByRole("grid")).toHaveAttribute("aria-busy", "true")
+    await user.click(showMore())
+    expect(onLoadMore).toHaveBeenCalledTimes(1)
+  })
+
+  it("keeps focus on the button through a load, and says how many rows came", async () => {
+    const user = userEvent.setup()
+    const onLoadMore = vi.fn()
+    const { rerender } = render(
+      <Wells hasMore loadMore="button" onLoadMore={onLoadMore} />
+    )
+    await user.click(showMore())
+    rerender(
+      <Wells hasMore loadMore="button" onLoadMore={onLoadMore} loading />
+    )
+    expect(showMore()).toHaveFocus()
+    expect(status()).toHaveTextContent("Loading")
+    rerender(
+      <Wells
+        hasMore
+        loadMore="button"
+        onLoadMore={onLoadMore}
+        items={WELLS.slice(0, 20)}
+      />
+    )
+    expect(showMore()).toHaveFocus()
+    expect(band()).toHaveTextContent("Showing 20 rows")
+    expect(status()).toHaveTextContent("Loaded 10 more rows")
+    // Enter on the focused button asks again.
+    await user.keyboard("{Enter}")
+    expect(onLoadMore).toHaveBeenCalledTimes(2)
+  })
+
+  it("moves focus to the first new row once there are no more", async () => {
+    const user = userEvent.setup()
+    const { rerender } = render(
+      <Wells hasMore loadMore="button" onLoadMore={() => {}} />
+    )
+    await user.click(showMore())
+    rerender(<Wells hasMore loadMore="button" onLoadMore={() => {}} loading />)
+    rerender(
+      <Wells
+        hasMore={false}
+        loadMore="button"
+        onLoadMore={() => {}}
+        items={WELLS.slice(0, 13)}
+      />
+    )
+    expect(band()).toBeNull()
+    expect(screen.getByRole("row", { name: /Well 11/ })).toHaveFocus()
+    expect(status()).toHaveTextContent("Loaded 3 more rows")
+  })
+
+  it("is not there without more rows", () => {
+    render(<Wells hasMore={false} loadMore="button" onLoadMore={() => {}} />)
+    expect(band()).toBeNull()
+    expect(screen.queryByRole("button", { name: "Show more" })).toBeNull()
+  })
+
+  it("shows the error in its place, with Retry, and keeps focus there", async () => {
+    const user = userEvent.setup()
+    const onRetry = vi.fn()
+    const props = {
+      hasMore: true,
+      loadMore: "button" as const,
+      onLoadMore: () => {},
+      onRetry,
+    }
+    const { rerender } = render(<Wells {...props} />)
+    await user.click(showMore())
+    rerender(<Wells {...props} loading />)
+    rerender(<Wells {...props} error="The next wells did not load." />)
+    expect(band()).toBeNull()
+    const alert = screen.getByRole("alert")
+    expect(alert).toHaveTextContent("The next wells did not load.")
+    const retry = within(alert).getByRole("button", { name: "Retry" })
+    expect(retry).toHaveFocus()
+    await user.click(retry)
+    expect(onRetry).toHaveBeenCalledTimes(1)
+    // The retry loads: "Show more" again, focused, spinning.
+    rerender(<Wells {...props} loading />)
+    expect(showMore()).toHaveFocus()
+    expect(showMore()).toHaveAttribute("aria-disabled", "true")
+  })
+
+  it("follows the windowed rows of a virtualized table", () => {
+    layout()
+    render(
+      <div style={{ height: 400 }}>
+        <Wells
+          hasMore
+          loadMore="button"
+          onLoadMore={() => {}}
+          items={WELLS}
+          virtualized
+        />
+      </div>
+    )
+    expect(observers).toHaveLength(0)
+    const row = band()!
+    expect(row.parentElement?.previousElementSibling).toHaveAttribute(
+      "data-slot",
+      "table-body"
+    )
+    expect(row).toHaveTextContent("Showing 23 rows")
+  })
+
+  it("loads a virtualized table's first rows outside the body of its rows, which measures the rows when they come", () => {
+    layout()
+    const { rerender } = render(
+      <div style={{ height: 400 }}>
+        <Wells items={[]} loading dataMode="server" virtualized />
+      </div>
+    )
+    const skeletons = document.querySelectorAll(
+      '[data-slot="data-table-loading-row"]'
+    )
+    expect(skeletons).toHaveLength(5)
+    expect(skeletons[0].parentElement).toHaveAttribute(
+      "data-slot",
+      "data-table-loading-rows"
+    )
+    // Not rows of the virtualized body: its columns and rows' height are
+    // measured from the rows.
+    expect(document.querySelector("tr[data-index]")).toBeNull()
+    expect(document.querySelector("colgroup")).toBeNull()
+    rerender(
+      <div style={{ height: 400 }}>
+        <Wells items={WELLS} dataMode="server" virtualized />
+      </div>
+    )
+    expect(document.querySelector("tr[data-index]")).toBeInTheDocument()
+  })
+
+  it("comes before the totals row", () => {
+    render(
+      <DataTable
+        items={WELLS.slice(0, 10)}
+        columns={columns}
+        hasMore
+        loadMore="button"
+        onLoadMore={() => {}}
+      >
+        <DataTableContent aria-label="Wells" totals />
+      </DataTable>
+    )
+    expect(band()?.parentElement?.nextElementSibling).toHaveAttribute(
+      "data-slot",
+      "data-table-totals"
+    )
+  })
+})
+
 describe("useDataTable exportCsv", () => {
   it("exports the rows matching the filters, or the selected ones, in the view's order", async () => {
     let api: ReturnType<typeof useDataTable<Well>> | undefined

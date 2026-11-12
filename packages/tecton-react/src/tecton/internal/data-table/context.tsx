@@ -131,6 +131,10 @@ type DataTableOptions = {
   readonly retryable: boolean
   /** More rows come after the items (`hasMore`, without pages). */
   readonly hasMore: boolean
+  /** How more rows are asked for: as the end scrolls near, or by "Show more". */
+  readonly loadMore: "scroll" | "button"
+  /** Server mode with `rowCount`: the rows the view matches are known. */
+  readonly rowCountKnown: boolean
   /** The ms between the last key and the search reaching the view. */
   readonly searchDelay: number
   readonly pageSizes: ReadonlyArray<number>

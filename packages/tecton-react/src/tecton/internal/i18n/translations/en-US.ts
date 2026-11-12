@@ -86,6 +86,17 @@ const enUS = {
     selectionActions: "Actions for the selected rows",
     // Read after a load: the plural form follows the number of rows ({total}).
     rowsLoaded: { one: "Showing {total} row", other: "Showing {total} rows" },
+    // `loadMore="button"`: the button after the last row, and beside it
+    // the rows shown of the rows the view matches (the plural form follows
+    // {shown}; {shown} and {total} are formatted).
+    showMore: "Show more",
+    shownOfTotal: { other: "Showing {shown} of {total}" },
+    // Read once "Show more" has loaded rows: the plural form follows the
+    // rows added ({total}, formatted).
+    moreRowsLoaded: {
+      one: "Loaded {total} more row",
+      other: "Loaded {total} more rows",
+    },
     // In a sort button, when the table sorts by several columns.
     sortPositionAscending:
       "sorted in ascending order, {position} of {total} in sort order",

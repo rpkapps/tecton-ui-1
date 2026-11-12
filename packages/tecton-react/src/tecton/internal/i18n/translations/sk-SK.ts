@@ -84,6 +84,14 @@ export default defineTranslations({
       many: "Zobrazuje sa {total} riadka",
       other: "Zobrazuje sa {total} riadkov",
     },
+    showMore: "Zobraziť viac",
+    shownOfTotal: { other: "Zobrazuje sa {shown} z {total}" },
+    moreRowsLoaded: {
+      one: "Načítal sa ďalší {total} riadok",
+      few: "Načítali sa ďalšie {total} riadky",
+      many: "Načítalo sa ďalších {total} riadka",
+      other: "Načítalo sa ďalších {total} riadkov",
+    },
     sortPositionAscending:
       "zoradené vzostupne, {position} z {total} v poradí zoradenia",
     sortPositionDescending:

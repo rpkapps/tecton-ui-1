@@ -86,6 +86,14 @@ export default defineTranslations({
       many: "Wyświetlanych jest {total} wierszy",
       other: "Wyświetlane jest {total} wiersza",
     },
+    showMore: "Pokaż więcej",
+    shownOfTotal: { other: "Wyświetlono {shown} z {total}" },
+    moreRowsLoaded: {
+      one: "Wczytano jeszcze {total} wiersz",
+      few: "Wczytano jeszcze {total} wiersze",
+      many: "Wczytano jeszcze {total} wierszy",
+      other: "Wczytano jeszcze {total} wiersza",
+    },
     sortPositionAscending:
       "posortowano w porządku rosnącym, {position} z {total} w kolejności sortowania",
     sortPositionDescending:

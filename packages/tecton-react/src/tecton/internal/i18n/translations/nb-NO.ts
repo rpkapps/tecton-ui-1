@@ -77,6 +77,12 @@ export default defineTranslations({
     selectionBar: "Valgte rader",
     selectionActions: "Handlinger for de valgte radene",
     rowsLoaded: { one: "Viser {total} rad", other: "Viser {total} rader" },
+    showMore: "Vis flere",
+    shownOfTotal: { other: "Viser {shown} av {total}" },
+    moreRowsLoaded: {
+      one: "Lastet inn {total} rad til",
+      other: "Lastet inn {total} rader til",
+    },
     sortPositionAscending:
       "sortert i stigende rekkefølge, {position} av {total} i sorteringsrekkefølgen",
     sortPositionDescending:

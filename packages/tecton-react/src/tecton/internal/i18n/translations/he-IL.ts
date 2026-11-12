@@ -82,6 +82,16 @@ export default defineTranslations({
       two: "מוצגות {total} שורות",
       other: "מוצגות {total} שורות",
     },
+    showMore: "הצג עוד",
+    shownOfTotal: {
+      one: "מוצגת {shown} מתוך {total}",
+      other: "מוצגות {shown} מתוך {total}",
+    },
+    moreRowsLoaded: {
+      one: "נטענה {total} שורה נוספת",
+      two: "נטענו {total} שורות נוספות",
+      other: "נטענו {total} שורות נוספות",
+    },
     sortPositionAscending: "מוין בסדר עולה, {position} מתוך {total} בסדר המיון",
     sortPositionDescending:
       "מוין בסדר יורד, {position} מתוך {total} בסדר המיון",

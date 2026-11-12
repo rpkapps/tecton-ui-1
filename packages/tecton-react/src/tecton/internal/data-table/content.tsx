@@ -27,8 +27,12 @@
  * when they come within two views of being seen (the table's scroll area
  * in a virtualized table, the page's otherwise), once per number of items.
  * While more rows load, the table is busy and the loading rows show, not
- * the bar under the header. The status region says how many rows match
- * once the search or filters change.
+ * the bar under the header. With `loadMore="button"`, a "Show more" band
+ * takes the loading rows' place (`DataTableShowMore`): no observer, its
+ * button calls `onLoadMore` and spins while the rows load; focus stays on
+ * it, or goes to the first new row once there are no more, and the status
+ * region says how many rows came. The status region says how many rows
+ * match once the search or filters change.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -95,6 +99,7 @@ import {
   DataTableMoreError,
   DataTableNoResultsState,
   DataTableProgress,
+  DataTableShowMore,
   loadingRows,
 } from "./states"
 
@@ -322,6 +327,121 @@ function useLoadMore(
   }, [target, root, on, virtualized, items, view, loadMore])
 }
 
+/** The place after the last row: the loading rows, "Show more" or the error. */
+const MORE_SLOT = '[data-slot="data-table-loading-more"]'
+const CONTENT = '[data-slot="data-table-content"]'
+
+/**
+ * "Show more" (`loadMore="button"`). A press loads the next rows
+ * (`loadMore`); once more items came, `added` says how many, for the
+ * status region (under a new `key` each time, so that the same count is
+ * read again). A load the press did not ask for (a sort, a refresh)
+ * clears it.
+ *
+ * Focus in the place after the rows (on "Show more", or on "Retry" of the
+ * error shown there) stays in it as it changes: when the element focus was
+ * on goes, it moves to the button there now, or, with none (no more rows),
+ * to the first row the last press brought, else to the table.
+ */
+function useShowMore({
+  on,
+  frame,
+  rows,
+  items,
+  loading,
+  loadMore,
+  focusRow,
+  focusTable,
+}: {
+  /** `loadMore="button"`. */
+  on: boolean
+  frame: React.RefObject<HTMLElement | null>
+  /** The body's rows. */
+  rows: number
+  /** The items loaded. */
+  items: number
+  loading: boolean
+  loadMore: () => void
+  focusRow: (index: number) => void
+  focusTable: () => void
+}) {
+  const asked = React.useRef<number | null>(null)
+  const firstNew = React.useRef<number | null>(null)
+  const [added, setAdded] = React.useState<{
+    count: number
+    key: number
+  } | null>(null)
+  React.useEffect(() => {
+    const from = asked.current
+    if (loading) {
+      if (from === null) setAdded(null)
+      return
+    }
+    if (from === null || items === from) return
+    asked.current = null
+    setAdded(
+      items > from
+        ? (last) => ({ count: items - from, key: (last?.key ?? 0) + 1 })
+        : null
+    )
+  }, [loading, items])
+
+  // The element in the place after the rows that focus is on: set as focus
+  // enters it, kept when the element goes (no move of the user's).
+  const focused = React.useRef<Element | null>(null)
+  React.useEffect(() => {
+    const element = frame.current
+    if (!element) return
+    const inSlot = (node: EventTarget | null): node is Element =>
+      node instanceof Element &&
+      node.closest(MORE_SLOT)?.closest(CONTENT) === element
+    const enter = (event: FocusEvent) => {
+      if (inSlot(event.target)) focused.current = event.target
+      // Not where the grid puts the focus it lost as the element went:
+      // that is the layout effect below's to move.
+      else if (focused.current?.isConnected) focused.current = null
+    }
+    const leave = (event: FocusEvent) => {
+      if (inSlot(event.relatedTarget)) return
+      if ((event.target as Node).isConnected) focused.current = null
+    }
+    element.addEventListener("focusin", enter)
+    element.addEventListener("focusout", leave)
+    return () => {
+      element.removeEventListener("focusin", enter)
+      element.removeEventListener("focusout", leave)
+    }
+  }, [frame])
+  // After the grid's own layout effects, which may have put the focus it
+  // lost on the table's first stop.
+  React.useLayoutEffect(() => {
+    const element = frame.current
+    const was = focused.current
+    if (!element || !was || was.isConnected) return
+    focused.current = null
+    if (!on) return
+    const doc = element.ownerDocument
+    const active = doc.activeElement
+    // Elsewhere on the page: the user's, left as it is.
+    if (active && active !== doc.body && !element.contains(active)) return
+    const slot = [...element.querySelectorAll(MORE_SLOT)].find(
+      (candidate) => candidate.closest(CONTENT) === element
+    )
+    const control = slot?.querySelector<HTMLElement>("button")
+    const first = firstNew.current
+    if (control) control.focus()
+    else if (first !== null && rows > first) focusRow(first)
+    else focusTable()
+  })
+
+  const press = React.useCallback(() => {
+    asked.current = items
+    firstNew.current = rows
+    loadMore()
+  }, [items, rows, loadMore])
+  return { added, press }
+}
+
 /**
  * A virtualized body's stripe parity per row, when detail rows (which take
  * their row's fill) are open: each row's by the rows before it but them.
@@ -529,6 +649,7 @@ function useStatus({
   rowCount,
   noResults,
   results,
+  added,
 }: {
   /** The error state says it, as an alert. */
   failed: boolean
@@ -538,6 +659,8 @@ function useStatus({
   noResults: boolean
   /** The rows matching the search and filters, to say; `null` for none. */
   results: number | null
+  /** The rows "Show more" brought, to say; `null` for none. */
+  added: number | null
 }) {
   const t = useTranslations("dataTable")
   const format = useNumberFormat()
@@ -550,6 +673,8 @@ function useStatus({
   if (failed) return ""
   if (loading) return t("loading")
   if (noResults) return t("noResultsTitle")
+  if (added !== null)
+    return t("moreRowsLoaded", { count: added, total: format.format(added) })
   if (results !== null)
     return t("resultsCount", {
       count: results,
@@ -1023,6 +1148,8 @@ function DataTableContentImpl({
   // loaded is the server's to say (server mode).
   const more =
     options.hasMore && !failed && rows.length > 0 && (server || !searching)
+  // "Show more" in their place, without the observer.
+  const button = options.loadMore === "button"
   const refreshing = loading && !failed && rows.length > 0 && !more
   const setFrame = React.useCallback(
     (element: HTMLDivElement | null) => {
@@ -1040,6 +1167,22 @@ function DataTableContentImpl({
     items: model.allItems(),
     loading,
   })
+  const itemCount = model.allItems().length
+  const focusRow = React.useCallback(
+    (index: number) => gridController.current?.focusRow(index),
+    []
+  )
+  const focusTable = React.useCallback(() => actions.focusTable(), [actions])
+  const showMore = useShowMore({
+    on: button,
+    frame,
+    rows: rows.length,
+    items: itemCount,
+    loading,
+    loadMore: actions.loadMore,
+    focusRow,
+    focusTable,
+  })
   const status = useStatus({
     failed,
     loading,
@@ -1047,11 +1190,12 @@ function DataTableContentImpl({
     rowCount: model.rowCount,
     noResults: !failed && !loading && searching && rows.length === 0,
     results: failed ? null : results,
+    added: failed ? null : (showMore.added?.count ?? null),
   })
   const moreRows = React.useRef<HTMLTableSectionElement | null>(null)
   const view = useDataTableSelector(context, (state) => state.view)
   useLoadMore(moreRows, container, {
-    on: more && !inlineError && !loading,
+    on: more && !inlineError && !loading && !button,
     virtualized,
     rearm: [model.allItems(), view],
     loadMore: actions.loadMore,
@@ -1175,28 +1319,48 @@ function DataTableContentImpl({
               </colgroup>
             )}
             <DataTableHeader shared={header} />
+            {/* The loading rows in a body of their own, not the rows':
+                a virtualized body locks its columns' widths and measures
+                its rows' height from the first rows it renders, which are
+                to be the rows (a badge, a button), not a line of skeleton
+                each. */}
             {firstLoad ? (
-              <TableBody>
+              <tbody
+                data-slot="data-table-loading-rows"
+                className="[&_tr:last-child]:border-0"
+              >
                 {loadingRows(
                   options.pagination ? model.pageSize : LOADING_ROWS,
                   layout.columns,
                   shared
                 )}
-              </TableBody>
+              </tbody>
             ) : (
               <TableBody items={rows} empty={state}>
                 {render}
               </TableBody>
             )}
-            {more && !inlineError && (
-              <tbody
-                ref={moreRows}
-                aria-hidden
-                data-slot="data-table-loading-more"
-              >
-                {loadingRows(MORE_ROWS, layout.columns, shared)}
-              </tbody>
-            )}
+            {more &&
+              !inlineError &&
+              (button ? (
+                <tbody data-slot="data-table-loading-more">
+                  <DataTableShowMore
+                    columns={shared.columnCount}
+                    shown={itemCount}
+                    total={options.rowCountKnown ? model.rowCount : undefined}
+                    loading={loading}
+                    onShowMore={showMore.press}
+                  />
+                </tbody>
+              ) : (
+                <tbody
+                  ref={moreRows}
+                  aria-hidden
+                  data-slot="data-table-loading-more"
+                >
+                  {loadingRows(MORE_ROWS, layout.columns, shared)}
+                </tbody>
+              ))}
             {inlineError && (
               <tbody data-slot="data-table-loading-more">
                 <DataTableMoreError
@@ -1222,9 +1386,11 @@ function DataTableContentImpl({
       {refreshing && <DataTableProgress top={headerHeight} />}
       {ReorderColumns && order.order && <ReorderColumns order={order.order} />}
       {ReorderRows && rowOrder.order && <ReorderRows order={rowOrder.order} />}
-      {/* One region for the table's life, so each change is read. */}
+      {/* One region for the table's life, so each change is read; a new
+          text for each batch "Show more" brought, read even when it says
+          the same. */}
       <span role="status" className="sr-only">
-        {status}
+        <React.Fragment key={showMore.added?.key ?? 0}>{status}</React.Fragment>
       </span>
     </div>
   )

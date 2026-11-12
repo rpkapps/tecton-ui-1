@@ -231,13 +231,39 @@ Select all selects every row the view matches, on every page.
 
 <ComponentPreview name="data-table-virtual" align="start" />
 
-For rows sent in batches, `hasMore` and `onLoadMore` load more as the user scrolls; set `loading` while a batch is out and `error` when it fails.
+For rows the server sends in batches, see [Load more](#load-more).
+
+## Load more
+
+For rows sent in batches, `hasMore` says more follow and `onLoadMore` loads the next batch: add it to `items`. Set `loading` while a batch is out, and `error` with `onRetry` when it fails: the error shows after the loaded rows, with Retry. Here the server sends 50 of 500 readings at a time: switch between loading on scroll and with a button, and turn on "Fail the next batch" to see the error.
+
+<ComponentPreview name="data-table-load-more" align="start" />
 
 ```tsx
-<DataTable items={rows} columns={columns} hasMore={rows.length < total} onLoadMore={loadNext} loading={isLoading} className="h-96">
-  <DataTableContent aria-label="Gauge readings" virtualized />
+<DataTable
+  items={rows}
+  columns={columns}
+  dataMode="server"
+  rowCount={total}
+  hasMore={rows.length < total}
+  onLoadMore={loadNext}
+  loading={isLoading}
+  error={error}
+  onRetry={loadNext}
+  className="h-96"
+>
+  <DataTableContent aria-label="Meter readings" virtualized />
 </DataTable>
 ```
+
+`loadMore` sets how the next batch is asked for:
+
+| `loadMore` | Next batch | Use it when |
+| --- | --- | --- |
+| `"scroll"` (default) | Loads as the end of the rows comes near, with loading rows after the last row. | The table has a bounded height (`virtualized`) or is the last thing on the page: the user only scrolls. |
+| `"button"` | Loads when the user presses Show more, after the last row, beside "Showing 50 of 500" (of `rowCount` in server mode; "Showing 50 rows" without it). | Something follows the table (a footer, the page's next section) that loading on scroll would keep pushing away, or the user should decide when to load. |
+
+With `"button"`, the button spins while the batch loads and keeps focus; once no more rows follow, focus moves to the first new row, and screen readers hear "Loaded 50 more rows". Load more is off with `pagination`, and in client mode while a search or filter is in effect: use server mode to load what matches.
 
 ## Trees and detail rows
 
@@ -370,7 +396,7 @@ Direction and locale come from the [TectonProvider](/docs/tecton/provider): colu
 
 - An application shows records in columns, a data grid of wells, work orders, run results or documents. Use `DataTable` for every such table, even one that only sorts today, so tables look and behave the same in every application.
 - Rows are sorted, searched, filtered, grouped, selected, paged or opened, or the user hides, pins, resizes or reorders the columns.
-- The rows are many (`virtualized`, or loaded as the user scrolls with `hasMore`), come page by page from a server (`dataMode="server"`), or form a hierarchy with columns (`itemToChildren`) or detail rows (`renderDetail`).
+- The rows are many (`virtualized`, or loaded in batches with `hasMore`: as the user scrolls, or from Show more with `loadMore="button"` when content follows the table), come page by page from a server (`dataMode="server"`), or form a hierarchy with columns (`itemToChildren`) or detail rows (`renderDetail`).
 
 ### Not for
 
@@ -526,7 +552,8 @@ The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reas
 | `error` | `ReactNode` | - | Shows the error state; `true` for the default text. |
 | `onRetry` | `() => void` | - | Adds Retry to the error state. |
 | `hasMore` | `boolean` | `false` | More rows follow; not with `pagination`. |
-| `onLoadMore` | `() => void` | - | Called when the end of the rows nears. |
+| `loadMore` | `"scroll" \| "button"` | `"scroll"` | How more rows are asked for: as the end of the rows nears, or by Show more after the last row. |
+| `onLoadMore` | `() => void` | - | Called to load the next rows: when the end of the rows nears, or on Show more. |
 | `size` | `"default" \| "sm"` | `"default"` | Compact rows. |
 | `striped` | `boolean` | `false` | Alternate row fills. |
 | `sortable` | `boolean` | `true` | Headers sort. |

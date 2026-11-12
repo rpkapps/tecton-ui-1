@@ -84,6 +84,14 @@ export default defineTranslations({
       many: "Rodoma {total} eilutės",
       other: "Rodoma {total} eilučių",
     },
+    showMore: "Rodyti daugiau",
+    shownOfTotal: { other: "Rodoma {shown} iš {total}" },
+    moreRowsLoaded: {
+      one: "Įkelta dar {total} eilutė",
+      few: "Įkeltos dar {total} eilutės",
+      many: "Įkelta dar {total} eilutės",
+      other: "Įkelta dar {total} eilučių",
+    },
     sortPositionAscending:
       "surikiuota didėjančia tvarka, {position} iš {total} rikiavimo tvarkoje",
     sortPositionDescending:

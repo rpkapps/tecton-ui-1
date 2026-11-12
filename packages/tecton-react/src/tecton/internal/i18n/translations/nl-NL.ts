@@ -81,6 +81,12 @@ export default defineTranslations({
       one: "{total} rij wordt weergegeven",
       other: "{total} rijen worden weergegeven",
     },
+    showMore: "Meer weergeven",
+    shownOfTotal: { other: "{shown} van {total} weergegeven" },
+    moreRowsLoaded: {
+      one: "{total} extra rij geladen",
+      other: "{total} extra rijen geladen",
+    },
     sortPositionAscending:
       "gesorteerd in oplopende volgorde, {position} van {total} in de sorteervolgorde",
     sortPositionDescending:

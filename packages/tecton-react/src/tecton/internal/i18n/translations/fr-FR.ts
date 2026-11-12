@@ -85,6 +85,12 @@ export default defineTranslations({
       one: "{total} ligne affichée",
       other: "{total} lignes affichées",
     },
+    showMore: "Afficher plus",
+    shownOfTotal: { other: "Affichage de {shown} sur {total}" },
+    moreRowsLoaded: {
+      one: "{total} ligne de plus chargée",
+      other: "{total} lignes de plus chargées",
+    },
     sortPositionAscending:
       "trié par ordre croissant, {position} sur {total} dans l’ordre de tri",
     sortPositionDescending:

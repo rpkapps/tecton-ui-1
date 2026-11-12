@@ -80,6 +80,12 @@ export default defineTranslations({
     selectionBar: "Kijelölt sorok",
     selectionActions: "Műveletek a kijelölt sorokkal",
     rowsLoaded: { one: "{total} sor látható", other: "{total} sor látható" },
+    showMore: "Több megjelenítése",
+    shownOfTotal: { other: "{shown} / {total} látható" },
+    moreRowsLoaded: {
+      one: "További {total} sor betöltve",
+      other: "További {total} sor betöltve",
+    },
     sortPositionAscending:
       "rendezve növekvő sorrendben, {position}/{total} a rendezési sorrendben",
     sortPositionDescending:

@@ -83,6 +83,13 @@ export default defineTranslations({
       few: "Prikazana su {total} retka",
       other: "Prikazano je {total} redaka",
     },
+    showMore: "Prikaži više",
+    shownOfTotal: { other: "Prikazano {shown} od {total}" },
+    moreRowsLoaded: {
+      one: "Učitan je još {total} redak",
+      few: "Učitana su još {total} retka",
+      other: "Učitano je još {total} redaka",
+    },
     sortPositionAscending:
       "razvrstano rastućim redoslijedom, {position} od {total} u redoslijedu sortiranja",
     sortPositionDescending:

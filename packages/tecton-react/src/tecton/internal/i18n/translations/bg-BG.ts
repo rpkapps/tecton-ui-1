@@ -81,6 +81,15 @@ export default defineTranslations({
       one: "Показан е {total} ред",
       other: "Показани са {total} реда",
     },
+    showMore: "Покажи още",
+    shownOfTotal: {
+      one: "Показан {shown} от {total}",
+      other: "Показани {shown} от {total}",
+    },
+    moreRowsLoaded: {
+      one: "Зареден е още {total} ред",
+      other: "Заредени са още {total} реда",
+    },
     sortPositionAscending:
       "сортирано във възходящ ред, {position} от {total} в реда на сортиране",
     sortPositionDescending:

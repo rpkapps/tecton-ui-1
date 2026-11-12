@@ -10,7 +10,7 @@ import { DataTable, DataTableContent, DataTableToolbar, DataTableSearch, DataTab
 
 - An application shows records in columns, a data grid of wells, work orders, run results or documents. Use `DataTable` for every such table, even one that only sorts today, so tables look and behave the same in every application.
 - Rows are sorted, searched, filtered, grouped, selected, paged or opened, or the user hides, pins, resizes or reorders the columns.
-- The rows are many (`virtualized`, or loaded as the user scrolls with `hasMore`), come page by page from a server (`dataMode="server"`), or form a hierarchy with columns (`itemToChildren`) or detail rows (`renderDetail`).
+- The rows are many (`virtualized`, or loaded in batches with `hasMore`: as the user scrolls, or from Show more with `loadMore="button"` when content follows the table), come page by page from a server (`dataMode="server"`), or form a hierarchy with columns (`itemToChildren`) or detail rows (`renderDetail`).
 
 ## Not for
 

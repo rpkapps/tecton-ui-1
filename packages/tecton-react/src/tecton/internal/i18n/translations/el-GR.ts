@@ -81,6 +81,15 @@ export default defineTranslations({
       one: "Εμφανίζεται {total} γραμμή",
       other: "Εμφανίζονται {total} γραμμές",
     },
+    showMore: "Εμφάνιση περισσότερων",
+    shownOfTotal: {
+      one: "Εμφανίζεται {shown} από {total}",
+      other: "Εμφανίζονται {shown} από {total}",
+    },
+    moreRowsLoaded: {
+      one: "Φορτώθηκε {total} ακόμη γραμμή",
+      other: "Φορτώθηκαν {total} ακόμη γραμμές",
+    },
     sortPositionAscending:
       "ταξινομημένο σε αύξουσα σειρά, {position} από {total} στη σειρά ταξινόμησης",
     sortPositionDescending:

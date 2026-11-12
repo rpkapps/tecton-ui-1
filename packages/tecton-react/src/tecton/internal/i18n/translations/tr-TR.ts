@@ -80,6 +80,12 @@ export default defineTranslations({
       one: "{total} satır gösteriliyor",
       other: "{total} satır gösteriliyor",
     },
+    showMore: "Daha fazla göster",
+    shownOfTotal: { other: "{shown} / {total} gösteriliyor" },
+    moreRowsLoaded: {
+      one: "{total} satır daha yüklendi",
+      other: "{total} satır daha yüklendi",
+    },
     sortPositionAscending:
       "artan düzende sıralandı, sıralama düzeninde {position}/{total}",
     sortPositionDescending:

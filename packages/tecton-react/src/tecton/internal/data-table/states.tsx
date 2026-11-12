@@ -8,7 +8,10 @@
  *   an `Empty` in the body's one row, under the header;
  * - first load: Skeleton rows, as many as a page (5 without pages);
  * - refreshing with rows: a thin indeterminate bar under the header, the
- *   rows staying where they are.
+ *   rows staying where they are;
+ * - more rows to come (`hasMore`): loading rows after the last row, or with
+ *   `loadMore="button"` a band there with "Show more"; an error loading
+ *   them, after the rows, with "Retry".
  *
  * The default texts are localized; `DataTableContent`'s `empty` and
  * `noResults`, and `error`'s content, replace them.
@@ -29,9 +32,11 @@ import {
 } from "@tecton/react/components/empty"
 import { Progress } from "@tecton/react/components/progress"
 import { Skeleton } from "@tecton/react/components/skeleton"
+import { Spinner } from "@tecton/react/components/spinner"
 import { TableCell } from "@tecton/react/components/table"
 
 import { useTranslations } from "../i18n/translations"
+import { useNumberFormat } from "./context"
 import {
   cellBorderClassName,
   pinnedCellClassName,
@@ -170,6 +175,71 @@ function DataTableMoreError({
 }
 
 /**
+ * "Show more" after the last row (`loadMore="button"`): a band across every
+ * column on the footer's fill, as tall as the footer, with how many rows
+ * show (of how many the view matches, when the server says: `total`) and
+ * the button, at the band's end, kept in view at the end of a table
+ * scrolled sideways. Not a row of the grid's: the keyboard stops on its
+ * button by Tab. While a load is out the button stays where it is, and
+ * keeps focus, disabled with a spinner; the table is busy and says
+ * "Loading".
+ */
+function DataTableShowMore({
+  columns,
+  shown,
+  total,
+  loading,
+  onShowMore,
+}: {
+  columns: number
+  /** The rows loaded. */
+  shown: number
+  /** The rows the view matches, when known. */
+  total: number | undefined
+  loading: boolean
+  onShowMore: () => void
+}) {
+  const t = useTranslations("dataTable")
+  const format = useNumberFormat()
+  return (
+    <tr
+      data-slot="data-table-show-more"
+      className="border-t border-border-subtle bg-muted"
+    >
+      {/* Not clipping (a virtualized table clips its cells): the content
+          sticks to the end of the table's scroll area, not of the cell. */}
+      <TableCell
+        colSpan={columns}
+        className="h-12 overflow-visible! px-3 py-1.5"
+      >
+        <div className="sticky end-3 ms-auto flex w-max items-center gap-x-6">
+          <span className="text-muted-foreground tabular-nums">
+            {total === undefined
+              ? t("rowsLoaded", { count: shown, total: format.format(shown) })
+              : t("shownOfTotal", {
+                  count: shown,
+                  shown: format.format(shown),
+                  total: format.format(total),
+                })}
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={loading}
+            // Focus stays on it while the rows load.
+            focusableWhenDisabled
+            onClick={onShowMore}
+          >
+            {loading && <Spinner data-icon="inline-start" aria-hidden />}
+            {t("showMore")}
+          </Button>
+        </div>
+      </TableCell>
+    </tr>
+  )
+}
+
+/**
  * The rows shown while the first rows load, and after the last row while
  * more come (`hasMore`): plain rows, not the grid's (so the keyboard does
  * not stop on them), hidden from screen readers, which hear the table busy
@@ -244,5 +314,6 @@ export {
   DataTableMoreError,
   DataTableNoResultsState,
   DataTableProgress,
+  DataTableShowMore,
   loadingRows,
 }

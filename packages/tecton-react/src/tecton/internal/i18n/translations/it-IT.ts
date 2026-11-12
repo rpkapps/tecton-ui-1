@@ -82,6 +82,12 @@ export default defineTranslations({
       one: "{total} riga visualizzata",
       other: "{total} righe visualizzate",
     },
+    showMore: "Mostra altro",
+    shownOfTotal: { other: "Visualizzazione di {shown} su {total}" },
+    moreRowsLoaded: {
+      one: "Caricata {total} altra riga",
+      other: "Caricate altre {total} righe",
+    },
     sortPositionAscending:
       "in ordine crescente, {position} di {total} nell’ordinamento",
     sortPositionDescending:

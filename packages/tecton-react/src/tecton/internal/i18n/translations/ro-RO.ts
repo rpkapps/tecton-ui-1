@@ -84,6 +84,13 @@ export default defineTranslations({
       few: "Se afișează {total} rânduri",
       other: "Se afișează {total} de rânduri",
     },
+    showMore: "Afișează mai multe",
+    shownOfTotal: { other: "Se afișează {shown} din {total}" },
+    moreRowsLoaded: {
+      one: "S-a încărcat încă {total} rând",
+      few: "S-au încărcat încă {total} rânduri",
+      other: "S-au încărcat încă {total} de rânduri",
+    },
     sortPositionAscending:
       "sortat în ordine crescătoare, {position} din {total} în ordinea de sortare",
     sortPositionDescending:

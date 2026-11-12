@@ -82,6 +82,12 @@ export default defineTranslations({
       one: "Näytetään {total} rivi",
       other: "Näytetään {total} riviä",
     },
+    showMore: "Näytä lisää",
+    shownOfTotal: { other: "Näytetään {shown} / {total}" },
+    moreRowsLoaded: {
+      one: "Ladattiin {total} rivi lisää",
+      other: "Ladattiin {total} riviä lisää",
+    },
     sortPositionAscending:
       "lajiteltu nousevassa järjestyksessä, {position}/{total} lajittelujärjestyksessä",
     sortPositionDescending:

@@ -87,6 +87,15 @@ export default defineTranslations({
       many: "عرض {total} صفًا",
       other: "عرض {total} صف",
     },
+    showMore: "عرض المزيد",
+    shownOfTotal: { other: "عرض {shown} من {total}" },
+    moreRowsLoaded: {
+      one: "تم تحميل {total} صف إضافي",
+      two: "تم تحميل {total} صفين إضافيين",
+      few: "تم تحميل {total} صفوف إضافية",
+      many: "تم تحميل {total} صفًا إضافيًا",
+      other: "تم تحميل {total} صف إضافي",
+    },
     sortPositionAscending:
       "مرتب بترتيب تصاعدي، {position} من {total} في ترتيب الفرز",
     sortPositionDescending:

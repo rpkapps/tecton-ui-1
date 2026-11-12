@@ -86,6 +86,14 @@ export default defineTranslations({
       many: "Показано {total} рядків",
       other: "Показано {total} рядка",
     },
+    showMore: "Показати більше",
+    shownOfTotal: { other: "Показано {shown} з {total}" },
+    moreRowsLoaded: {
+      one: "Завантажено ще {total} рядок",
+      few: "Завантажено ще {total} рядки",
+      many: "Завантажено ще {total} рядків",
+      other: "Завантажено ще {total} рядка",
+    },
     sortPositionAscending:
       "відсортовано у висхідному порядку, {position} з {total} у порядку сортування",
     sortPositionDescending:

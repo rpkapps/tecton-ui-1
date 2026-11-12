@@ -147,15 +147,24 @@ type DataTableProps<T> = Omit<
   /** Adds "Retry" to the error state. */
   onRetry?: () => void
   /**
-   * More rows come after `items` (loaded as the user scrolls): loading rows
-   * show at the end, and `onLoadMore` is called as they come near.
+   * More rows come after `items`, loaded in batches (`loadMore`): with
+   * `"scroll"`, loading rows show at the end, and `onLoadMore` is called as
+   * they come near; with `"button"`, "Show more" after the last row calls it.
    */
   hasMore?: boolean
   /**
-   * Called once when the end of the rows comes within two views (not again
-   * until `items`, `loading` back to false or the view changes): load the
-   * next rows and add them to `items`. In client mode, not while a search
-   * or filter is in effect: use server mode to load what matches.
+   * How the next rows are asked for while `hasMore`: `"scroll"` (default)
+   * as the end of the rows comes near; `"button"` by "Show more" after the
+   * last row, with how many rows show (of `rowCount` in server mode), for a
+   * table with content under it that loading on scroll would push away.
+   */
+  loadMore?: "scroll" | "button"
+  /**
+   * Load the next rows and add them to `items`. With `loadMore="scroll"`,
+   * called once when the end of the rows comes within two views (not again
+   * until `items`, `loading` back to false or the view changes); with
+   * `"button"`, when "Show more" is pressed. In client mode, not while a
+   * search or filter is in effect: use server mode to load what matches.
    */
   onLoadMore?: () => void
   // Look
@@ -767,6 +776,7 @@ function DataTable<T>({
   error,
   onRetry,
   hasMore = false,
+  loadMore = "scroll",
   onLoadMore,
   size = "default",
   striped = false,
@@ -920,6 +930,7 @@ function DataTable<T>({
   const retryable = onRetry !== undefined
   // Load more is for a list without pages: pages load their own rows.
   const more = hasMore && !pagination
+  const rowCountKnown = server && rowCount !== undefined
   const delay = Math.max(0, searchDelay ?? (server ? 300 : 0))
   // Compared by value: an inline array is a new one on every render.
   const pageSizesKey = pageSizes.join(",")
@@ -951,6 +962,8 @@ function DataTable<T>({
       activatable,
       retryable,
       hasMore: more,
+      loadMore,
+      rowCountKnown,
       searchDelay: delay,
       pageSizes: sizes,
     }),
@@ -977,6 +990,8 @@ function DataTable<T>({
       activatable,
       retryable,
       more,
+      loadMore,
+      rowCountKnown,
       delay,
       sizes,
     ]

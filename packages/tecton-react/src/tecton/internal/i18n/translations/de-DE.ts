@@ -82,6 +82,12 @@ export default defineTranslations({
       one: "{total} Zeile wird angezeigt",
       other: "{total} Zeilen werden angezeigt",
     },
+    showMore: "Mehr anzeigen",
+    shownOfTotal: { other: "{shown} von {total} angezeigt" },
+    moreRowsLoaded: {
+      one: "{total} weitere Zeile geladen",
+      other: "{total} weitere Zeilen geladen",
+    },
     sortPositionAscending:
       "sortiert in aufsteigender Reihenfolge, {position} von {total} in der Sortierreihenfolge",
     sortPositionDescending:
