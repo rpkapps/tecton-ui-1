@@ -197,6 +197,9 @@ export default defineTranslations({
     noMatchingOptions: "Inga matchande alternativ",
     editDiscarded:
       "Redigeringen har förkastats: raden är inte längre tillgänglig",
+    editNotSaved: "”{value}” sparades inte: {message}",
+    editNotSavedLater:
+      "”{value}” sparades inte: {message}. Senare ändringar tillämpades inte.",
     cellSummary: "Markerade celler",
     summarySum: "Summa: {value}",
     summaryAverage: "Medel: {value}",

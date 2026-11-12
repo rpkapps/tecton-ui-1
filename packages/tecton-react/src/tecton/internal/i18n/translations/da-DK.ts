@@ -193,6 +193,9 @@ export default defineTranslations({
     chooseDate: "Vælg en dato",
     noMatchingOptions: "Ingen matchende muligheder",
     editDiscarded: "Redigeringen er kasseret: rækken findes ikke længere",
+    editNotSaved: "“{value}” blev ikke gemt: {message}",
+    editNotSavedLater:
+      "“{value}” blev ikke gemt: {message}. Senere ændringer blev ikke anvendt.",
     cellSummary: "Markerede celler",
     summarySum: "Sum: {value}",
     summaryAverage: "Gennemsnit: {value}",

@@ -227,6 +227,9 @@ export default defineTranslations({
     chooseDate: "Виберіть дату",
     noMatchingOptions: "Немає відповідних варіантів",
     editDiscarded: "Редагування скасовано: рядок більше не доступний",
+    editNotSaved: "«{value}» не збережено: {message}",
+    editNotSavedLater:
+      "«{value}» не збережено: {message}. Подальші зміни не застосовано.",
     cellSummary: "Вибрані клітинки",
     summarySum: "Сума: {value}",
     summaryAverage: "Середнє: {value}",

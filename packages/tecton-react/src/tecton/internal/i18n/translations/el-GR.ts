@@ -203,6 +203,9 @@ export default defineTranslations({
     noMatchingOptions: "Δεν υπάρχουν αντίστοιχες επιλογές",
     editDiscarded:
       "Η επεξεργασία απορρίφθηκε: η γραμμή δεν είναι πλέον διαθέσιμη",
+    editNotSaved: "Το «{value}» δεν αποθηκεύτηκε: {message}",
+    editNotSavedLater:
+      "Το «{value}» δεν αποθηκεύτηκε: {message}. Οι μεταγενέστερες αλλαγές δεν εφαρμόστηκαν.",
     cellSummary: "Επιλεγμένα κελιά",
     summarySum: "Άθροισμα: {value}",
     summaryAverage: "Μέσος όρος: {value}",

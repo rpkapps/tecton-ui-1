@@ -223,6 +223,9 @@ export default defineTranslations({
     chooseDate: "Vyberte datum",
     noMatchingOptions: "Žádné odpovídající možnosti",
     editDiscarded: "Úprava zahozena: řádek již není k dispozici",
+    editNotSaved: "„{value}“ nebylo uloženo: {message}",
+    editNotSavedLater:
+      "„{value}“ nebylo uloženo: {message}. Pozdější změny nebyly použity.",
     cellSummary: "Vybrané buňky",
     summarySum: "Součet: {value}",
     summaryAverage: "Průměr: {value}",

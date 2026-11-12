@@ -193,6 +193,9 @@ export default defineTranslations({
     noMatchingOptions: "Ingen samsvarende alternativer",
     editDiscarded:
       "Redigeringen ble forkastet: raden er ikke lenger tilgjengelig",
+    editNotSaved: "«{value}» ble ikke lagret: {message}",
+    editNotSavedLater:
+      "«{value}» ble ikke lagret: {message}. Senere endringer ble ikke tatt i bruk.",
     cellSummary: "Merkede celler",
     summarySum: "Sum: {value}",
     summaryAverage: "Gjennomsnitt: {value}",

@@ -201,6 +201,9 @@ export default defineTranslations({
     chooseDate: "Изберете дата",
     noMatchingOptions: "Няма съвпадащи опции",
     editDiscarded: "Редакцията е отхвърлена: редът вече не е наличен",
+    editNotSaved: "„{value}“ не е запазено: {message}",
+    editNotSavedLater:
+      "„{value}“ не е запазено: {message}. Следващите промени не са приложени.",
     cellSummary: "Избрани клетки",
     summarySum: "Сума: {value}",
     summaryAverage: "Средно: {value}",

@@ -198,6 +198,9 @@ export default defineTranslations({
     chooseDate: "Vali kuupäev",
     noMatchingOptions: "Sobivaid valikuid pole",
     editDiscarded: "Muudatus loobuti: rida pole enam saadaval",
+    editNotSaved: "„{value}“ jäi salvestamata: {message}",
+    editNotSavedLater:
+      "„{value}“ jäi salvestamata: {message}. Hilisemaid muudatusi ei rakendatud.",
     cellSummary: "Valitud lahtrid",
     summarySum: "Summa: {value}",
     summaryAverage: "Keskmine: {value}",

@@ -25,6 +25,7 @@ import {
 
 import type * as Lazy from "../internal/data-table/lazy"
 import { loadFeature } from "../internal/data-table/lazy"
+import * as announcer from "../internal/primitives/live-announcer"
 
 /** The editing code, held back for a table while `ready` is false. */
 const gate = vi.hoisted(() => {
@@ -169,15 +170,19 @@ async function run(steps: Array<Step>, loaded: boolean) {
   gate.set(loaded)
   const onCellsChange = vi.fn()
   const { unmount } = render(
-    <DataTable
-      items={WELLS}
-      columns={columns}
-      editable
-      onCellsChange={onCellsChange}
-    >
-      <DataTableContent aria-label="Wells" />
-    </DataTable>
+    <>
+      <DataTable
+        items={WELLS}
+        columns={columns}
+        editable
+        onCellsChange={onCellsChange}
+      >
+        <DataTableContent aria-label="Wells" />
+      </DataTable>
+      <button type="button">Outside</button>
+    </>
   )
+  const said = vi.spyOn(announcer, "announce")
   const user = userEvent.setup({ delay: null })
   const after: Array<ReturnType<typeof state>> = []
   for (const step of steps) {
@@ -197,8 +202,14 @@ async function run(steps: Array<Step>, loaded: boolean) {
     end: state(),
     editors: document.querySelectorAll('[data-slot="data-table-editor"]')
       .length,
+    error: document
+      .querySelector('[data-slot="data-table-editor"] [aria-invalid="true"]')
+      ?.getAttribute("aria-label"),
+    depths: WELLS.map((well) => td(well.name, "depth").textContent),
+    said: said.mock.calls.map(([message]) => message),
   }
   unmount()
+  said.mockRestore()
   return { ...outcome, before }
 }
 
@@ -341,24 +352,79 @@ describe("DataTable editing: the field before the code", () => {
     await act(async () => gate.set(true))
   })
 
-  it("marks a text refused before the code, as focus leaving an editor does", async () => {
-    const steps = [at("Well 0", "depth"), "abc{Enter}"]
-    const queued = await run(steps, false)
-    expect(queued.writes).toEqual([])
-    expect(queued.invalid).toEqual(["depth"])
-    expect(queued.end.at).toEqual(["TD", "depth", "Well 1"])
-    const loaded = await run(steps, true)
-    // Loaded, the editor stays, with the text.
-    expect(loaded.end.field).toEqual(["Depth, Well 0", "abc", 3, 3])
-  })
-
-  it("writes the later texts all the same, each to its own cell", async () => {
+  it("stops at a text refused before the code: nothing after it is applied, and its editor opens again", async () => {
+    // "ab" refused once the code comes: the Backspaces and "5" typed after
+    // it went to Well 1 (focus had moved on), and are not applied.
     const queued = await run(
-      [at("Well 0", "depth"), "x{Enter}9999{Enter}2{Enter}"],
+      [at("Well 0", "depth"), "ab{Enter}{Backspace}{Backspace}5{Enter}"],
       false
     )
-    expect(queued.writes).toEqual([[["w2", "depth", 2], "edit"]])
-    expect(queued.invalid).toEqual(["depth", "depth"])
+    expect(queued.writes).toEqual([])
+    expect(queued.depths.slice(1)).toEqual(["1,250", "1,500", "1,750", "2,000"])
+    expect(queued.invalid).toEqual([])
+    expect(queued.end.field).toEqual(["Depth, Well 0", "ab", 2, 2])
+    expect(queued.error).toBe("Depth, Well 0")
+    expect(queued.editors).toBe(1)
+    expect(queued.said).toEqual([
+      "“ab” was not saved: Enter a number. Later changes were not applied.",
+    ])
+  })
+
+  it("closes a field opened after a text refused, unwritten", async () => {
+    // "15009" refused (at most 5,000); the field opened on Well 3 after it
+    // is closed, and the refused cell's editor opens again.
+    const queued = await run(
+      [at("Well 2", "depth"), "{Enter}9{Enter}{Enter}"],
+      false
+    )
+    expect(queued.writes).toEqual([])
+    expect(queued.end.field).toEqual(["Depth, Well 2", "15009", 5, 5])
+    expect(queued.error).toBe("Depth, Well 2")
+    expect(queued.editors).toBe(1)
+    expect(queued.said).toEqual([
+      "“15009” was not saved: At most 5,000. Later changes were not applied.",
+    ])
+    // Escape after it: nothing came after the text refused.
+    const escaped = await run(
+      [at("Well 2", "depth"), "{Enter}9{Enter}{Enter}{Escape}"],
+      false
+    )
+    expect(escaped.end.field).toEqual(["Depth, Well 2", "15009", 5, 5])
+    expect(escaped.said).toEqual(["“15009” was not saved: At most 5,000"])
+  })
+
+  it("only marks a text refused when focus has left the table", async () => {
+    const queued = await run(
+      [
+        at("Well 0", "depth"),
+        "x{Enter}7",
+        async (user) => {
+          await user.click(screen.getByRole("button", { name: "Outside" }))
+        },
+      ],
+      false
+    )
+    // Focus is not taken back; the "7" saved after it is not applied.
+    expect(queued.end.at).toEqual(["BUTTON", undefined, undefined])
+    expect(queued.writes).toEqual([])
+    expect(queued.invalid).toEqual(["depth"])
+    expect(queued.editors).toBe(0)
+    expect(queued.said).toEqual([
+      "“x” was not saved: Enter a number. Later changes were not applied.",
+    ])
+  })
+
+  it("applies what came before a text refused", async () => {
+    const queued = await run(
+      [at("Well 0", "depth"), "2{Enter}{Delete}{ArrowDown}x{Enter}9{Enter}"],
+      false
+    )
+    expect(queued.writes).toEqual([
+      [["w0", "depth", 2], "edit"],
+      [["w1", "depth", null], "clear"],
+    ])
+    expect(queued.end.field).toEqual(["Depth, Well 2", "x", 1, 1])
+    expect(queued.depths[3]).toBe("1,750")
   })
 
   it("gives a custom editor the text as its initial text", async () => {

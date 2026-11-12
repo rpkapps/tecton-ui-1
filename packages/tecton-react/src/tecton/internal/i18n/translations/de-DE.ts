@@ -200,6 +200,9 @@ export default defineTranslations({
     chooseDate: "Datum auswählen",
     noMatchingOptions: "Keine passenden Optionen",
     editDiscarded: "Bearbeitung verworfen: Die Zeile ist nicht mehr verfügbar",
+    editNotSaved: "„{value}“ wurde nicht gespeichert: {message}",
+    editNotSavedLater:
+      "„{value}“ wurde nicht gespeichert: {message}. Spätere Änderungen wurden nicht übernommen.",
     cellSummary: "Ausgewählte Zellen",
     summarySum: "Summe: {value}",
     summaryAverage: "Mittelwert: {value}",

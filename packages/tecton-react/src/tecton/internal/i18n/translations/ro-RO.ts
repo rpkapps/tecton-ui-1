@@ -223,6 +223,9 @@ export default defineTranslations({
     chooseDate: "Alegeți o dată",
     noMatchingOptions: "Nicio opțiune potrivită",
     editDiscarded: "Editare anulată: rândul nu mai este disponibil",
+    editNotSaved: "„{value}” nu a fost salvat: {message}",
+    editNotSavedLater:
+      "„{value}” nu a fost salvat: {message}. Modificările ulterioare nu au fost aplicate.",
     cellSummary: "Celule selectate",
     summarySum: "Sumă: {value}",
     summaryAverage: "Medie: {value}",

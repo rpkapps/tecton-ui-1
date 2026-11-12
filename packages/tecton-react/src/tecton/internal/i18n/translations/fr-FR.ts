@@ -207,6 +207,9 @@ export default defineTranslations({
     chooseDate: "Choisir une date",
     noMatchingOptions: "Aucune option correspondante",
     editDiscarded: "Modification abandonnée : la ligne n’est plus disponible",
+    editNotSaved: "« {value} » n’a pas été enregistré : {message}",
+    editNotSavedLater:
+      "« {value} » n’a pas été enregistré : {message}. Les modifications suivantes n’ont pas été appliquées.",
     cellSummary: "Cellules sélectionnées",
     summarySum: "Somme : {value}",
     summaryAverage: "Moyenne : {value}",

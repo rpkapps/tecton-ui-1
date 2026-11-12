@@ -199,6 +199,9 @@ export default defineTranslations({
     chooseDate: "Kies een datum",
     noMatchingOptions: "Geen overeenkomende opties",
     editDiscarded: "Bewerking verworpen: de rij is niet meer beschikbaar",
+    editNotSaved: "‘{value}’ is niet opgeslagen: {message}",
+    editNotSavedLater:
+      "‘{value}’ is niet opgeslagen: {message}. Latere wijzigingen zijn niet toegepast.",
     cellSummary: "Geselecteerde cellen",
     summarySum: "Som: {value}",
     summaryAverage: "Gemiddelde: {value}",

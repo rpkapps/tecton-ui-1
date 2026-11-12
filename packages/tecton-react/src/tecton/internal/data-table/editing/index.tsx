@@ -37,9 +37,10 @@
  *   draft is dropped, and that is announced.
  * - What waited for this code (`edits.tsx`) is done in order, from the
  *   data: the texts the browser's fields saved before it (written as a
- *   blur writes them, a text refused marking its cell), cells cleared or
- *   toggled; then the editor takes over a field still open (`take`), with
- *   its text, selection and focus, once an input method has composed.
+ *   blur writes them), cells cleared or toggled; then the editor takes
+ *   over a field still open (`take`), with its text, selection and focus,
+ *   once an input method has composed. A text refused stops it there
+ *   (`replay`): nothing after it is applied, and its editor opens again.
  * - When an edit ends with focus in its editor, focus goes back to its
  *   cell; the cell selection follows a move.
  */
@@ -328,7 +329,7 @@ function attachEditing(side: EditSide): EditHandlers {
       case "start":
         return start(entry.cell, entry.how, entry.text, now)
       case "save":
-        return save(entry.cell, entry.text, entry.event)
+        return void save(entry.cell, entry.text, entry.event, true)
       case "write":
         return write(entry.cell, entry.value, entry.reason, entry.event)
       case "stop":
@@ -381,21 +382,75 @@ function attachEditing(side: EditSide): EditHandlers {
   /**
    * A field's text saved before this code (`edits.tsx`): written as focus
    * leaving an editor writes it, from the data (its row need not be
-   * rendered); refused, its cell shows the text with the message.
+   * rendered); refused, its message (its cell marked with it if `mark`).
    */
-  const save = (cell: Position, text: string, event?: Event) => {
-    if (current && same(current, cell)) return
+  const save = (
+    cell: Position,
+    text: string,
+    event: Event | undefined,
+    mark: boolean
+  ): string | null => {
+    if (current && same(current, cell)) return null
     const column = columnOf(cell.column)
-    if (!column) return
+    if (!column) return null
     const outcome = writeCells(
       { context, t: t() },
       [{ ...cell, ...textDraft(column, text) }],
       "edit",
       event,
-      { markInvalid: true }
+      { markInvalid: mark }
     )
     const [result] = outcome.cells
+    if (result.status === "invalid") return result.message ?? ""
     if (result.status === "changed") announceSaved(cell, outcome.saved)
+    return null
+  }
+
+  /**
+   * What waited for this code, in order. A text refused stops it there:
+   * what came after it was typed as if it had been saved (focus moved on),
+   * so none of it is applied (a field still open is closed, unwritten).
+   * With focus still in the table, the refused cell's editor opens again
+   * with its text and message, as the table would have left it; with
+   * focus gone, the cell is marked. Either way, it is said.
+   */
+  const replay = (
+    entries: ReadonlyArray<EditEvent>,
+    field: FieldSession | null
+  ) => {
+    for (const [index, entry] of entries.entries()) {
+      if (entry.kind !== "save") {
+        run(entry, false)
+        continue
+      }
+      const container = side.container.current
+      const inTable =
+        container?.contains(container.ownerDocument.activeElement) ?? false
+      const message = save(entry.cell, entry.text, entry.event, !inTable)
+      if (message === null) continue
+      const later =
+        index < entries.length - 1 || (field !== null && !field.closed)
+      if (field && !field.closed) field.close(false)
+      if (inTable) {
+        focusAt(entry.cell)
+        selectMoved(context, entry.cell)
+        start(entry.cell, "enter", entry.text, false, {
+          own: null,
+          selection: null,
+        })
+        const shown = cells.get().editing
+        if (shown && same(shown, entry.cell))
+          cells.set({ editing: { ...shown, error: message } })
+      }
+      announce(
+        t()(later ? "editNotSavedLater" : "editNotSaved", {
+          value: entry.text,
+          message,
+        })
+      )
+      return
+    }
+    if (field) take(field)
   }
 
   /**
@@ -434,10 +489,7 @@ function attachEditing(side: EditSide): EditHandlers {
 
   return {
     run,
-    replay: (entries, field) => {
-      for (const entry of entries) run(entry, false)
-      if (field) take(field)
-    },
+    replay,
     press: (event) => {
       const session = current
       const target = event.target as Element

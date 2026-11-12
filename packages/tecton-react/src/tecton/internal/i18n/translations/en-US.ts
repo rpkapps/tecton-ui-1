@@ -244,6 +244,11 @@ const enUS = {
     chooseDate: "Choose a date",
     noMatchingOptions: "No matching options",
     editDiscarded: "Edit discarded: the row is no longer available",
+    // A text typed before the editing code loaded, refused once it did
+    // ("Later": the edits typed after it, not applied).
+    editNotSaved: "“{value}” was not saved: {message}",
+    editNotSavedLater:
+      "“{value}” was not saved: {message}. Later changes were not applied.",
     // `DataTableCellSummary`: its name, and its figures over the selected
     // cells ({value} is formatted).
     cellSummary: "Selected cells",

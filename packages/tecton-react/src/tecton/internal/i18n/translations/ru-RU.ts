@@ -226,6 +226,9 @@ export default defineTranslations({
     chooseDate: "Выберите дату",
     noMatchingOptions: "Нет подходящих вариантов",
     editDiscarded: "Изменение отменено: строка больше недоступна",
+    editNotSaved: "«{value}» не сохранено: {message}",
+    editNotSavedLater:
+      "«{value}» не сохранено: {message}. Последующие изменения не применены.",
     cellSummary: "Выбранные ячейки",
     summarySum: "Сумма: {value}",
     summaryAverage: "Среднее: {value}",

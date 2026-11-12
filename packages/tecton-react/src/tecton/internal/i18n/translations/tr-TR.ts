@@ -185,6 +185,9 @@ export default defineTranslations({
     chooseDate: "Tarih seçin",
     noMatchingOptions: "Eşleşen seçenek yok",
     editDiscarded: "Düzenleme atıldı: satır artık kullanılamıyor",
+    editNotSaved: "“{value}” kaydedilmedi: {message}",
+    editNotSavedLater:
+      "“{value}” kaydedilmedi: {message}. Sonraki değişiklikler uygulanmadı.",
     cellSummary: "Seçili hücreler",
     summarySum: "Toplam: {value}",
     summaryAverage: "Ortalama: {value}",
