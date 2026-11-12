@@ -1,9 +1,9 @@
 "use client"
 
 /**
- * `DataTableFilter`'s popover, loaded on demand (`lazy.ts`, the `filters`
- * feature; the part renders a plain button until then, `filter.tsx`): the
- * column's filter, by its type (§4.1), with "Clear" while one is set.
+ * `DataTableFilter`'s popover content (the part renders the popover and its
+ * trigger, `filter.tsx`): the column's filter, by its type (§4.1), with
+ * "Clear" while one is set. It renders only while the popover is open.
  *
  * - text: a field; the rows whose display text contains it (like search);
  * - number: a minimum and a maximum, either left empty;
@@ -24,11 +24,7 @@ import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
 import { Input } from "@tecton/react/components/input"
 import { Label } from "@tecton/react/components/label"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTitle,
-} from "@tecton/react/components/popover"
+import { PopoverContent, PopoverTitle } from "@tecton/react/components/popover"
 import {
   RadioGroup,
   RadioGroupItem,
@@ -45,8 +41,7 @@ import { useDelayedCommit } from "./delayed-commit"
 import type { DataTableFilterValue, EngineColumn } from "./engine/index"
 import { dayOf, startOfDay } from "./engine/values"
 import { useFeature } from "./lazy"
-import type { LazyPopupProps } from "./lazy-popup"
-import { usePopupTabbing } from "./popup-focus"
+import type { PartPopup } from "./part-popup"
 
 /** Sets the column's filter; `null` removes it. Whether the view took it. */
 type SetColumnFilter = (value: DataTableFilterValue | null) => boolean
@@ -285,7 +280,15 @@ function DateFilter({
   React.useEffect(() => {
     if (!module) load()
   }, [module, load])
-  if (!module) return <CalendarLoading numberOfMonths={DATE_FILTER_MONTHS} />
+  // The calendar's days (two months of buttons) render just after the
+  // popover's first frame, in a render React pauses for the browser's
+  // frames: the popover opens and animates at once, as a `Popover` does,
+  // and the calendar fills its place, the same size, a frame or two later.
+  const shown = React.useDeferredValue(true, false)
+  if (!module || !shown)
+    return (
+      <CalendarLoading numberOfMonths={DATE_FILTER_MONTHS} spinner={!module} />
+    )
   const { DayFocusContext, RangeCalendar } = module
   return (
     <DayFocusContext value={focusDay}>
@@ -380,7 +383,10 @@ function FilterContent({
   }
 }
 
-/** The filter's popover, by its button (`filter.tsx`, `lazy-popup.ts`). */
+/**
+ * The filter's popover content, in the part's `Popover` by its trigger
+ * (`filter.tsx`, `part-popup.ts`).
+ */
 function DataTableFilterPopover({
   context,
   column,
@@ -392,12 +398,11 @@ function DataTableFilterPopover({
   column: EngineColumn<unknown>
   value: DataTableFilterValue | undefined
   set: SetColumnFilter
-  /** The popover's state, from its button. */
-  popup: LazyPopupProps
+  /** The popover's state, from the part. */
+  popup: PartPopup
 }) {
   const t = useTranslations("dataTable")
   const content = React.useRef<HTMLDivElement | null>(null)
-  usePopupTabbing(popup, "dialog")
   const date = column.type === "date"
   const clear = () => {
     set(null)
@@ -418,70 +423,56 @@ function DataTableFilterPopover({
   const keyboard = popup.openedBy === "keyboard"
   const contentProps = {
     ref: content,
-    id: popup.popupId,
-    anchor: popup.anchor,
-    finalFocus: popup.finalFocus,
+    anchor: popup.content.anchor,
+    finalFocus: popup.content.finalFocus,
     align: "start" as const,
     "data-slot": "data-table-filter-content",
   }
-  return (
-    <Popover
-      open={popup.open}
-      onOpenChange={popup.onOpenChange}
-      onOpenChangeComplete={popup.onOpenChangeComplete}
+  return date ? (
+    // `DateRangePicker`'s popover: its calendar, then Clear while a
+    // filter is set (where the picker has its presets).
+    <PopoverContent
+      {...contentProps}
+      aria-label={column.header}
+      // From the keyboard, the calendar focuses its day itself.
+      initialFocus={keyboard ? false : undefined}
+      className="w-auto gap-0 overflow-hidden p-0"
     >
-      {date ? (
-        // `DateRangePicker`'s popover: its calendar, then Clear while a
-        // filter is set (where the picker has its presets).
-        <PopoverContent
-          {...contentProps}
-          aria-label={column.header}
-          // From the keyboard, the calendar focuses its day itself.
-          initialFocus={keyboard ? false : undefined}
-          className="w-auto gap-0 overflow-hidden p-0"
-        >
-          <DateFilter
-            column={column}
-            value={value?.type === "date" ? value : undefined}
-            set={set}
-            focusDay={keyboard}
-            onPicked={() => popup.onOpenChange(false, {})}
-          />
-          {value && (
-            <div className="flex w-0 min-w-full border-t p-3">
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={clear}
-              >
-                {t("clearFilter")}
-              </Button>
-            </div>
-          )}
-        </PopoverContent>
-      ) : (
-        <PopoverContent
-          {...contentProps}
-          className="flex w-auto min-w-56 flex-col gap-3"
-        >
-          <div className="flex min-h-6 items-center justify-between gap-4">
-            <PopoverTitle className="text-sm">{column.header}</PopoverTitle>
-            {value && (
-              <Button
-                variant="ghost"
-                size="xs"
-                className="-me-1.5"
-                onClick={clear}
-              >
-                {t("clearFilter")}
-              </Button>
-            )}
-          </div>
-          <FilterContent context={context} column={column} set={set} />
-        </PopoverContent>
+      <DateFilter
+        column={column}
+        value={value?.type === "date" ? value : undefined}
+        set={set}
+        focusDay={keyboard}
+        onPicked={popup.close}
+      />
+      {value && (
+        <div className="flex w-0 min-w-full border-t p-3">
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={clear}
+          >
+            {t("clearFilter")}
+          </Button>
+        </div>
       )}
-    </Popover>
+    </PopoverContent>
+  ) : (
+    <PopoverContent
+      {...contentProps}
+      className="flex w-auto min-w-56 flex-col gap-3"
+    >
+      <div className="flex min-h-6 items-center justify-between gap-4">
+        <PopoverTitle className="text-sm">{column.header}</PopoverTitle>
+        {value && (
+          <Button variant="ghost" size="xs" className="-me-1.5" onClick={clear}>
+            {t("clearFilter")}
+          </Button>
+        )}
+      </div>
+      <FilterContent context={context} column={column} set={set} />
+    </PopoverContent>
   )
 }
 

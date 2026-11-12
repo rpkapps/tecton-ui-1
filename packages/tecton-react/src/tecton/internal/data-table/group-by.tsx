@@ -6,16 +6,18 @@
  * `group-by-menu.tsx`). While the rows are grouped, the button shows the
  * grouping columns, the outermost first ("Group by · Field, Status").
  *
- * The button is a plain one for its whole life; the menu's code loads on
- * demand, in idle time once the button is shown or as it is pointed at or
- * focused, and a press made before it is there opens the menu once it is
- * (`lazy-popup.ts`). Without `groupable` it renders nothing, with a
- * warning in development.
+ * The button is the menu's own trigger, as on a `DropdownMenu`
+ * (`part-popup.ts`), and the menu's items render only while it is open.
+ * Without `groupable` it renders nothing, with a warning in development.
  */
 import * as React from "react"
 import { ListTreeIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+} from "@tecton/react/components/dropdown-menu"
 import { useLocale } from "@tecton/react/tecton/provider"
 
 import { useTranslations } from "../i18n/translations"
@@ -25,8 +27,8 @@ import {
   useFeatureWarning,
 } from "./context"
 import { getColumnModel, resolveLocale } from "./engine/index"
-import { usePrefetchFeatures } from "./lazy"
-import { mergeButtonProps, useLazyPopup } from "./lazy-popup"
+import { DataTableGroupByMenu } from "./group-by-menu"
+import { usePartPopup } from "./part-popup"
 import { DataTableToolbarItem } from "./toolbar"
 import { DataTableTriggerSummary } from "./trigger-summary"
 
@@ -37,9 +39,6 @@ type DataTableGroupByProps = Omit<
   /** The button's content: "Group by" (and the grouping columns) by default. */
   children?: React.ReactNode
 }
-
-const NO_FEATURES = [] as const
-const GROUP_BY = ["groupBy"] as const
 
 function DataTableGroupBy({
   children,
@@ -58,8 +57,7 @@ function DataTableGroupBy({
   const grouping = useDataTableSelector(context, (state) => state.view.grouping)
   const off = !groupable
   useFeatureWarning(context, off, "DataTableGroupBy", "`groupable`")
-  usePrefetchFeatures(off ? NO_FEATURES : GROUP_BY)
-  const lazy = useLazyPopup("groupBy", { on: !off, popup: "menu" })
+  const popup = usePartPopup()
   const summaryId = React.useId()
   if (off) return null
 
@@ -80,19 +78,19 @@ function DataTableGroupBy({
     "aria-describedby": !children && summary ? summaryId : undefined,
     ...props,
   }
-  const Menu = lazy.module?.DataTableGroupByMenu
   return (
-    <>
-      <DataTableToolbarItem
-        value="data-table-group-by"
-        label={t("groupBy")}
-        icon={<ListTreeIcon aria-hidden />}
-        open={lazy.openBy}
-      >
-        <Button
+    <DataTableToolbarItem
+      value="data-table-group-by"
+      label={t("groupBy")}
+      icon={<ListTreeIcon aria-hidden />}
+      open={popup.openBy}
+    >
+      <DropdownMenu {...popup.root}>
+        <DropdownMenuTrigger
+          ref={popup.trigger}
           data-slot="data-table-group-by"
           data-active={summary ? "" : undefined}
-          {...mergeButtonProps(trigger, lazy.buttonProps)}
+          render={<Button {...trigger} />}
         >
           {children ?? (
             <>
@@ -105,12 +103,10 @@ function DataTableGroupBy({
               )}
             </>
           )}
-        </Button>
-      </DataTableToolbarItem>
-      {lazy.mounted && Menu && (
-        <Menu context={context} popup={lazy.popupProps} />
-      )}
-    </>
+        </DropdownMenuTrigger>
+        <DataTableGroupByMenu context={context} popup={popup} />
+      </DropdownMenu>
+    </DataTableToolbarItem>
   )
 }
 

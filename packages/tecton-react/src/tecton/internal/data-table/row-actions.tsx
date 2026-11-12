@@ -10,22 +10,24 @@
  * Space or Down open the menu, and focus comes back to it as the menu
  * closes. A press on it neither selects nor activates the row.
  *
- * A row holds a plain button for its whole life: the menu's code loads on
- * demand (in idle time, or as a button is pointed at or focused), and a
- * row's menu is rendered only while it is open (`row-actions-menu.tsx`),
- * so scrolling through many rows renders no menus. A press made before
- * the code is there opens the menu once it is (`lazy-popup.ts`).
+ * The button is the menu's own trigger, as on a `DropdownMenu`; the menu's
+ * items render only while it is open, so scrolling through many rows
+ * renders no menus.
  */
 import * as React from "react"
 import { cn } from "cn"
 import { EllipsisIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuTrigger,
+} from "@tecton/react/components/dropdown-menu"
 
 import { useTranslations } from "../i18n/translations"
 import { useDataTableContext, useDataTableSelector } from "./context"
-import { usePrefetchFeatures } from "./lazy"
-import { mergeButtonProps, useLazyPopup } from "./lazy-popup"
+import { gridMenuKeys } from "./part-popup"
 
 type DataTableRowActionsProps = Omit<
   React.ComponentProps<typeof Button>,
@@ -37,8 +39,6 @@ type DataTableRowActionsProps = Omit<
   align?: "start" | "center" | "end"
 }
 
-const ROW_ACTIONS = ["rowActions"] as const
-
 function DataTableRowActions({
   children,
   align = "end",
@@ -46,6 +46,7 @@ function DataTableRowActions({
   size,
   className,
   "aria-label": ariaLabel,
+  onKeyDown,
   ...props
 }: DataTableRowActionsProps) {
   const t = useTranslations("dataTable")
@@ -54,30 +55,30 @@ function DataTableRowActions({
     context,
     (state) => state.options.size === "sm"
   )
-  usePrefetchFeatures(ROW_ACTIONS)
-  const lazy = useLazyPopup("rowActions", { popup: "menu" })
-  const trigger: React.ComponentProps<typeof Button> = {
-    variant,
-    size: size ?? (small ? "icon-xs" : "icon-sm"),
-    "aria-label": ariaLabel ?? t("rowActions"),
-    className: cn("text-muted-foreground", className),
-    ...props,
-  }
-  const Menu = lazy.module?.DataTableRowActionsMenu
   return (
-    <>
-      <Button
+    <DropdownMenu>
+      <DropdownMenuTrigger
         data-slot="data-table-row-actions"
-        {...mergeButtonProps(trigger, lazy.buttonProps)}
+        aria-label={ariaLabel ?? t("rowActions")}
+        onKeyDown={(event) => {
+          onKeyDown?.(event)
+          gridMenuKeys(event)
+        }}
+        render={
+          <Button
+            variant={variant}
+            size={size ?? (small ? "icon-xs" : "icon-sm")}
+            className={cn("text-muted-foreground", className)}
+            {...props}
+          />
+        }
       >
         <EllipsisIcon aria-hidden />
-      </Button>
-      {lazy.mounted && Menu && (
-        <Menu align={align} popup={lazy.popupProps}>
-          {children}
-        </Menu>
-      )}
-    </>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align={align} className="w-auto min-w-40">
+        {children}
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }
 

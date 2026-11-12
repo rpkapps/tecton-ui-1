@@ -23,6 +23,7 @@ import {
   ArrowLeftRightIcon,
   ArrowUpIcon,
   ChevronsLeftRightEllipsisIcon,
+  EllipsisVerticalIcon,
   EyeOffIcon,
   GroupIcon,
   PinIcon,
@@ -32,12 +33,14 @@ import {
   XIcon,
 } from "lucide-react"
 
+import { Button } from "@tecton/react/components/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
 
 import { useLocale } from "@tecton/react/tecton/provider"
@@ -45,8 +48,7 @@ import { useLocale } from "@tecton/react/tecton/provider"
 import { useTranslations, type Translator } from "../i18n/translations"
 import { announce } from "../primitives/live-announcer"
 import { loadFeature } from "./lazy"
-import type { LazyPopupProps } from "./lazy-popup"
-import { useFirstItemFromKeyboard, usePopupTabbing } from "./popup-focus"
+import { gridMenuKeys } from "./part-popup"
 import type { DataTableContextValue } from "./context"
 import {
   getColumnModel,
@@ -80,20 +82,7 @@ type AnnounceSort = (
   after: ReadonlyArray<DataTableSort>
 ) => void
 
-function DataTableColumnMenu<T>({
-  column,
-  context,
-  options,
-  sorting,
-  pinned,
-  grouped,
-  announceSort,
-  triggerRef,
-  resizerRef,
-  onFit,
-  onResetWidth,
-  popup,
-}: {
+type ColumnMenuProps<T> = {
   column: EngineColumn<T>
   context: DataTableContextValue<T>
   options: ColumnMenuOptions
@@ -110,22 +99,82 @@ function DataTableColumnMenu<T>({
   onFit: (event: Event) => void
   /** "Reset width"; off (`undefined`) while the user has set none. */
   onResetWidth: ((event: Event) => void) | undefined
-  /** The menu's state, from its button in the header (`lazy-popup.ts`). */
-  popup: LazyPopupProps
+}
+
+/** Where focus goes as the menu closes, when not back to its button. */
+type Closing = React.RefObject<"resize" | "hide" | null>
+
+/**
+ * The column's menu button, the menu's own trigger as on a
+ * `DropdownMenu`, and the menu, whose items render only while it is open.
+ */
+function DataTableColumnMenu<T>({
+  loadResizer,
+  className,
+  ...props
+}: ColumnMenuProps<T> & {
+  /** Asks for the resizer's code ("Resize column" focuses it). */
+  loadResizer: () => void
+  className?: string
 }) {
   const t = useTranslations("dataTable")
-  const { locale } = useLocale()
-  const { actions, store } = context
-  const content = React.useRef<HTMLDivElement | null>(null)
-  useFirstItemFromKeyboard(content, popup.open, popup.openedBy)
-  usePopupTabbing(popup, "menu")
+  const { triggerRef, resizerRef } = props
   // Where focus goes as the menu closes: the resizer for "Resize column";
   // nowhere yet after "Hide column" (it is decided once the view shows
   // whether the column went); else back to the button.
-  const closing = React.useRef<"resize" | "hide" | null>(null)
-  React.useEffect(() => {
-    if (popup.open) closing.current = null
-  }, [popup.open])
+  const closing: Closing = React.useRef(null)
+  return (
+    <DropdownMenu
+      onOpenChange={(open) => {
+        if (open) closing.current = null
+      }}
+    >
+      <DropdownMenuTrigger
+        ref={triggerRef}
+        data-slot="data-table-column-menu"
+        aria-label={t("columnMenu", { columnName: props.column.header })}
+        onKeyDown={gridMenuKeys}
+        // The cell's own press drags the column; this one opens the menu.
+        onPointerDown={(event) => event.stopPropagation()}
+        onPointerEnter={loadResizer}
+        onFocus={loadResizer}
+        render={<Button variant="ghost" size="icon-xs" className={className} />}
+      >
+        <EllipsisVerticalIcon />
+      </DropdownMenuTrigger>
+      <DropdownMenuContent
+        align="end"
+        className="w-auto min-w-44"
+        finalFocus={() =>
+          closing.current === "resize"
+            ? (resizerRef.current ?? false)
+            : closing.current !== "hide"
+        }
+      >
+        <ColumnMenuItems {...props} closing={closing} />
+      </DropdownMenuContent>
+    </DropdownMenu>
+  )
+}
+
+/** The menu's items, in sections. */
+function ColumnMenuItems<T>({
+  column,
+  context,
+  options,
+  sorting,
+  pinned,
+  grouped,
+  announceSort,
+  triggerRef,
+  resizerRef,
+  onFit,
+  onResetWidth,
+  closing,
+}: ColumnMenuProps<T> & { closing: Closing }) {
+  const t = useTranslations("dataTable")
+  const { locale } = useLocale()
+  const { actions, store } = context
   const columnName = column.header
   const at = sorting.findIndex((sorted) => sorted.column === column.id)
   const direction = at === -1 ? null : sorting[at].direction
@@ -291,36 +340,12 @@ function DataTableColumnMenu<T>({
       </DropdownMenuGroup>
     )
 
-  return (
-    <DropdownMenu
-      open={popup.open}
-      onOpenChange={popup.onOpenChange}
-      onOpenChangeComplete={popup.onOpenChangeComplete}
-    >
-      <DropdownMenuContent
-        ref={content}
-        id={popup.popupId}
-        aria-labelledby={popup.buttonId}
-        anchor={popup.anchor}
-        align="end"
-        className="w-auto min-w-44"
-        finalFocus={() =>
-          closing.current === "resize"
-            ? (resizerRef.current ?? false)
-            : closing.current === "hide"
-              ? false
-              : popup.finalFocus()
-        }
-      >
-        {sections.map((section, index) => (
-          <React.Fragment key={index}>
-            {index > 0 && <DropdownMenuSeparator />}
-            {section}
-          </React.Fragment>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
+  return sections.map((section, index) => (
+    <React.Fragment key={index}>
+      {index > 0 && <DropdownMenuSeparator />}
+      {section}
+    </React.Fragment>
+  ))
 }
 
 export { DataTableColumnMenu }

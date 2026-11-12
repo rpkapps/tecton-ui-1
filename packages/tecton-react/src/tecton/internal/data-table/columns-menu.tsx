@@ -51,6 +51,7 @@ import {
   type DataTableView,
   type EngineColumn,
 } from "./engine/index"
+import { useFirstItemFromKeyboard, usePartPopup } from "./part-popup"
 import { DataTableToolbarItem } from "./toolbar"
 
 type DataTableColumnsMenuProps = Omit<
@@ -126,11 +127,14 @@ function DataTableColumnsMenu({
     context,
     (state) => state.options.pinnableColumns
   )
-  // Opened from the toolbar's menu (`DataTableToolbarItem`): placed by its
-  // "More" button, focus going back to it.
-  const [open, setOpen] = React.useState(false)
-  const more = React.useRef<HTMLButtonElement | null>(null)
-  const [byMore, setByMore] = React.useState(false)
+  // Opened from the toolbar's menu (`DataTableToolbarItem`) too: placed by
+  // its "More" button, focus going back to it (`part-popup.ts`).
+  const popup = usePartPopup()
+  const content = React.useRef<HTMLDivElement | null>(null)
+  useFirstItemFromKeyboard(
+    content,
+    popup.open && popup.fromMenu && popup.openedBy === "keyboard"
+  )
   const off = !hideable && !pinnable
   useFeatureWarning(
     context,
@@ -265,20 +269,11 @@ function DataTableColumnsMenu({
       value="data-table-columns-menu"
       label={t("columns")}
       icon={<Columns3Icon aria-hidden />}
-      open={(button) => {
-        more.current = button
-        setByMore(true)
-        setOpen(true)
-      }}
+      open={popup.openBy}
     >
-      <DropdownMenu
-        open={open}
-        onOpenChange={setOpen}
-        onOpenChangeComplete={(next) => {
-          if (!next) setByMore(false)
-        }}
-      >
+      <DropdownMenu {...popup.root}>
         <DropdownMenuTrigger
+          ref={popup.trigger}
           data-slot="data-table-columns-menu"
           render={<Button variant={variant} {...props} />}
         >
@@ -290,10 +285,11 @@ function DataTableColumnsMenu({
           )}
         </DropdownMenuTrigger>
         <DropdownMenuContent
+          ref={content}
           align="end"
           className="w-auto min-w-52"
-          anchor={byMore ? more : undefined}
-          finalFocus={byMore ? more : undefined}
+          anchor={popup.content.anchor}
+          finalFocus={popup.content.finalFocus}
         >
           {hideable && (
             <DropdownMenuGroup>

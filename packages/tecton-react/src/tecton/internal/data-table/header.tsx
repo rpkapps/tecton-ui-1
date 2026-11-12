@@ -27,13 +27,7 @@
  */
 import * as React from "react"
 import { cn } from "cn"
-import {
-  ArrowDownIcon,
-  ArrowUpDownIcon,
-  ArrowUpIcon,
-  EllipsisVerticalIcon,
-  InfoIcon,
-} from "lucide-react"
+import { ArrowDownIcon, ArrowUpDownIcon, ArrowUpIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
 import {
@@ -57,7 +51,11 @@ import {
   useColumnDragging,
   type ColumnOrder,
 } from "./column-order"
-import type { ColumnMenuOptions, DataTableColumnMenu } from "./column-menu"
+import { DataTableColumnDescription as ColumnDescription } from "./column-description"
+import {
+  DataTableColumnMenu as ColumnMenu,
+  type ColumnMenuOptions,
+} from "./column-menu"
 import type { ColumnSizer } from "./column-sizing"
 import {
   useDataTableSelector,
@@ -79,7 +77,6 @@ import {
   type HeaderRow,
 } from "./engine/index"
 import { useFeature } from "./lazy"
-import { useLazyPopup } from "./lazy-popup"
 import { createPressWait } from "./press-wait"
 import { DataTableSelectionCheckbox } from "./selection-checkbox"
 
@@ -168,53 +165,6 @@ function hasColumnMenu(options: ColumnMenuOptions) {
     options.hideable ||
     options.pinnable ||
     options.groupable
-  )
-}
-
-/** The props of a column's menu, as `column-menu.tsx` takes them. */
-type ColumnMenuProps<T> = Omit<
-  React.ComponentProps<typeof DataTableColumnMenu<T>>,
-  "popup"
->
-
-/**
- * A column's menu button: a plain button for its whole life, which opens
- * the menu once the menu's code is there (`lazy-popup.ts`,
- * `header-popups.tsx`).
- */
-function ColumnMenu<T>({
-  loadResizer,
-  className,
-  ...props
-}: ColumnMenuProps<T> & { loadResizer: () => void; className?: string }) {
-  const t = useTranslations("dataTable")
-  const lazy = useLazyPopup("headerPopups", {
-    popup: "menu",
-    // "Resize column" focuses the resizer: asked for with the menu.
-    also: loadResizer,
-    anchor: props.triggerRef,
-  })
-  const Menu = lazy.module?.DataTableColumnMenu as
-    typeof DataTableColumnMenu<T> | undefined
-  return (
-    <>
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        data-slot="data-table-column-menu"
-        aria-label={t("columnMenu", { columnName: props.column.header })}
-        className={className}
-        {...lazy.buttonProps}
-        // The cell's own press drags the column; this one opens the menu.
-        onPointerDown={(event) => {
-          event.stopPropagation()
-          lazy.buttonProps.onPointerDown()
-        }}
-      >
-        <EllipsisVerticalIcon />
-      </Button>
-      {lazy.mounted && Menu && <Menu {...props} popup={lazy.popupProps} />}
-    </>
   )
 }
 
@@ -312,46 +262,6 @@ type HeaderShared<T> = {
   /** With `reorderableColumns`: the columns and groups that move. */
   order: ColumnOrder | null
   movable: ReadonlySet<string>
-}
-
-/**
- * A column's or group's description: an info button that shows it in a
- * popover when pressed (a pointer, a finger or the keyboard). Screen
- * readers hear it with the header itself (its accessible description). The
- * button is a plain one for its whole life; the popover loads on demand
- * (`header-popups.tsx`, `lazy-popup.ts`).
- */
-function ColumnDescription({
-  name,
-  description,
-}: {
-  name: string
-  description: string
-}) {
-  const t = useTranslations("dataTable")
-  const lazy = useLazyPopup("headerPopups", { popup: "dialog" })
-  const Description = lazy.module?.DataTableColumnDescription
-  return (
-    <>
-      <Button
-        variant="ghost"
-        size="icon-xs"
-        data-slot="data-table-column-description"
-        aria-label={t("columnDescription", { columnName: name })}
-        {...lazy.buttonProps}
-        // The cell's own press drags the column; this one shows the text.
-        onPointerDown={(event) => {
-          event.stopPropagation()
-          lazy.buttonProps.onPointerDown()
-        }}
-      >
-        <InfoIcon aria-hidden />
-      </Button>
-      {lazy.mounted && Description && (
-        <Description description={description} popup={lazy.popupProps} />
-      )}
-    </>
-  )
 }
 
 /**

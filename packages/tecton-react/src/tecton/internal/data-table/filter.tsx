@@ -7,18 +7,18 @@
  * options with their counts).
  *
  * The button shows the filter's value while one is set ("Status ·
- * Producing, Drilling"). The button is a plain one for its whole life; the
- * popover's code loads on demand, in idle time once the button is shown or
- * as it is pointed at or focused, and a press made before it is there opens
- * the popover once it is (`lazy-popup.ts`). A date column's
- * button asks for the calendar too. A column that opts out (`filterable:
- * false`), an unknown column, or a table without `filterable` renders
- * nothing, with a warning in development.
+ * Producing, Drilling"). The button is the popover's own trigger, as on a
+ * `Popover` (`part-popup.ts`), and the popover's content renders only
+ * while it is open. A date column's calendar loads on demand: in idle time
+ * once the button is shown, or as it is pointed at or focused. A column
+ * that opts out (`filterable: false`), an unknown column, or a table
+ * without `filterable` renders nothing, with a warning in development.
  */
 import * as React from "react"
 import { ListFilterIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
+import { Popover, PopoverTrigger } from "@tecton/react/components/popover"
 
 import { useTranslations } from "../i18n/translations"
 import {
@@ -32,10 +32,10 @@ import {
   setFilter,
   type DataTableFilterValue,
 } from "./engine/index"
-import type { SetColumnFilter } from "./filter-popover"
+import { DataTableFilterPopover, type SetColumnFilter } from "./filter-popover"
 import { filterText } from "./filter-text"
 import { loadFeature, usePrefetchFeatures } from "./lazy"
-import { mergeButtonProps, useLazyPopup } from "./lazy-popup"
+import { usePartPopup } from "./part-popup"
 import { DataTableToolbarItem } from "./toolbar"
 import { DataTableTriggerSummary } from "./trigger-summary"
 
@@ -50,10 +50,9 @@ type DataTableFilterProps = Omit<
 }
 
 const NO_FEATURES = [] as const
-const FILTERS = ["filters"] as const
-const DATE_FILTERS = ["filters", "dateInput"] as const
+const DATE_FILTERS = ["dateInput"] as const
 
-/** Asks for a date filter's calendar with its popover. */
+/** Asks for a date filter's calendar before its popover opens. */
 const loadCalendar = () => {
   loadFeature("dateInput").catch(() => undefined)
 }
@@ -64,6 +63,8 @@ function DataTableFilter({
   variant = "outline",
   size = "sm",
   className,
+  onPointerEnter,
+  onFocus,
   ...props
 }: DataTableFilterProps) {
   const t = useTranslations("dataTable")
@@ -90,12 +91,8 @@ function DataTableFilter({
       : "`filterable`"
   )
   const date = column?.type === "date"
-  usePrefetchFeatures(off ? NO_FEATURES : date ? DATE_FILTERS : FILTERS)
-  const lazy = useLazyPopup("filters", {
-    on: !off,
-    popup: "dialog",
-    also: date ? loadCalendar : undefined,
-  })
+  usePrefetchFeatures(!off && date ? DATE_FILTERS : NO_FEATURES)
+  const popup = usePartPopup()
   const summaryId = React.useId()
   if (off) return null
 
@@ -121,6 +118,15 @@ function DataTableFilter({
     "aria-label": children ? undefined : t("filterBy", { columnName }),
     "aria-describedby": !children && summary ? summaryId : undefined,
     className,
+    // A date filter's calendar, asked for before the press.
+    onPointerEnter: (event) => {
+      onPointerEnter?.(event)
+      if (date) loadCalendar()
+    },
+    onFocus: (event) => {
+      onFocus?.(event)
+      if (date) loadCalendar()
+    },
     ...props,
   }
   const content = children ?? (
@@ -134,33 +140,31 @@ function DataTableFilter({
       )}
     </>
   )
-  const Popover = lazy.module?.DataTableFilterPopover
   return (
-    <>
-      <DataTableToolbarItem
-        value={`data-table-filter:${column.id}`}
-        label={t("filterBy", { columnName })}
-        icon={<ListFilterIcon aria-hidden />}
-        open={lazy.openBy}
-      >
-        <Button
+    <DataTableToolbarItem
+      value={`data-table-filter:${column.id}`}
+      label={t("filterBy", { columnName })}
+      icon={<ListFilterIcon aria-hidden />}
+      open={popup.openBy}
+    >
+      <Popover {...popup.root}>
+        <PopoverTrigger
+          ref={popup.trigger}
           data-slot="data-table-filter"
           data-active={value ? "" : undefined}
-          {...mergeButtonProps(trigger, lazy.buttonProps)}
+          render={<Button {...trigger} />}
         >
           {content}
-        </Button>
-      </DataTableToolbarItem>
-      {lazy.mounted && Popover && (
-        <Popover
+        </PopoverTrigger>
+        <DataTableFilterPopover
           context={context}
           column={column}
           value={value}
           set={set}
-          popup={lazy.popupProps}
+          popup={popup}
         />
-      )}
-    </>
+      </Popover>
+    </DataTableToolbarItem>
   )
 }
 
