@@ -6,10 +6,11 @@
  * fewer groups than the deepest spans the rows below its last group
  * (`rowSpan`), from its group's row down (from the top for a column in
  * none), so no empty cell stands above its name. A column that sorts has a sort
- * button: a click cycles ascending, descending, off; Shift + click adds the
- * column to a multi-sort (§5.2). The first sort is the header's `aria-sort`,
- * which the grid announces; with several, each sorted header shows its
- * place in the order.
+ * button: a click cycles ascending, descending, off; Shift + click (or
+ * Shift + Enter) adds the column to a multi-sort (§5.2), with `multiSort`.
+ * The first sort is the header's `aria-sort`, which the grid announces;
+ * with several, each sorted header shows its place in the order, a count
+ * at the arrow's corner (`SORT_POSITION`).
  *
  * Each column's header also holds, as the features are on: its
  * description (an info button with a tooltip, and the cell's accessible
@@ -153,6 +154,16 @@ const GROUP_ROW = "h-8"
  */
 const GROUP_LABEL =
   "sticky start-[calc(var(--data-table-pinned-start,0px)+--spacing(4))] w-fit max-w-full"
+
+/**
+ * A column's place in a multi-column sort: a count pill at the sort arrow's
+ * top corner, filled with the header's text colour and lettered in its
+ * fill, so it reads at a glance. It overhangs the button's padding on the
+ * arrow's outer side (the start in an end-aligned column, whose arrow
+ * comes first) and covers no part of the arrow's head.
+ */
+const SORT_POSITION =
+  "pointer-events-none absolute -top-1.5 flex h-3.5 min-w-3.5 items-center justify-center rounded-full bg-muted-foreground px-1 text-[0.6875rem] leading-none font-semibold text-table-header tabular-nums"
 
 /** A header cell that is its own drag handle. */
 const DRAGGABLE =
@@ -373,6 +384,7 @@ function DataTableColumnHeader<T>({
   const canResize = options.resizableColumns && column.resizable && !!sizing
   const menu = {
     sortable: canSort,
+    multiSort: options.multiSort,
     resizable: canResize,
     hideable:
       options.hideableColumns && column.hideable && layout.columns.length > 1,
@@ -496,14 +508,16 @@ function DataTableColumnHeader<T>({
     }) ?? column.header
   const press = (event: React.MouseEvent) => {
     const before = context.store.get().view.sorting
+    // Shift + click (or Shift + Enter, whose click has Shift too) adds the
+    // column to the sort.
+    const add = event.shiftKey && options.multiSort
     // Said only for a sort that applied (`onViewChange` may cancel it).
-    if (!context.actions.sort(column.id, event.shiftKey, event.nativeEvent))
-      return
+    if (!context.actions.sort(column.id, add, event.nativeEvent)) return
     announceSort(
       t,
       column,
       before,
-      toggleSorting(before, column.id, { multi: event.shiftKey })
+      toggleSorting(before, column.id, { multi: add })
     )
   }
   const columnMenu = hasColumnMenu(menu) && (
@@ -578,8 +592,9 @@ function DataTableColumnHeader<T>({
             onClick={press}
           >
             <span className="truncate">{label}</span>
-            {/* The place in a multi-sort sits on the arrow, so the button
-                keeps its width as columns join the sort. */}
+            {/* The place in a multi-sort sits on the arrow's outer corner,
+                over the button's padding, so the button keeps its width as
+                columns join the sort. */}
             <span className="relative flex">
               {direction === "ascending" ? (
                 <ArrowUpIcon aria-hidden />
@@ -592,12 +607,18 @@ function DataTableColumnHeader<T>({
                 <span
                   aria-hidden
                   data-slot="data-table-sort-position"
-                  className="absolute -end-1.5 -top-1.5 text-[0.625rem] leading-none text-muted-foreground tabular-nums"
+                  className={cn(
+                    SORT_POSITION,
+                    column.align === "end" ? "-start-3" : "-end-3"
+                  )}
                 >
                   {at + 1}
                 </span>
               )}
             </span>
+            {/* A word apart from the label in the button's name (the flex
+                container draws no space). */}
+            {multi && " "}
             {multi && (
               <span className="sr-only">
                 {direction === "ascending"

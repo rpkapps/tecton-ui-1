@@ -164,8 +164,13 @@ type DataTableProps<T> = Omit<
   /** Every even row on an alternate surface. */
   striped?: boolean
   // Features: on at the root, a column can only turn one off.
-  /** Header buttons sort (Shift: by several columns); on by default. */
+  /** Header buttons sort; on by default. */
   sortable?: boolean
+  /**
+   * Sorting by several columns: Shift + click on a header, and "Add to sort"
+   * in the column menus. On by default; off, a view keeps its first sort.
+   */
+  multiSort?: boolean
   /**
    * The view's search and filters apply (`DataTableSearch`,
    * `DataTableFilter`); `filterable: false` opts a column out.
@@ -525,7 +530,10 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
     },
     sort(column, multi, event) {
       return actions.updateView(
-        (view) => sortColumn(view, column, { multi }),
+        (view) =>
+          sortColumn(view, column, {
+            multi: multi && now().capabilities.multiSort !== false,
+          }),
         "sort",
         event
       )
@@ -763,6 +771,7 @@ function DataTable<T>({
   size = "default",
   striped = false,
   sortable = true,
+  multiSort = true,
   filterable = false,
   groupable = false,
   resizableColumns = false,
@@ -808,8 +817,8 @@ function DataTable<T>({
   const grouping = groupable && !tree
   const rowOrder = reorderableRows && !tree
   const capabilities = React.useMemo<ViewCapabilities>(
-    () => ({ sortable, filterable, groupable: grouping }),
-    [sortable, filterable, grouping]
+    () => ({ sortable, multiSort, filterable, groupable: grouping }),
+    [sortable, multiSort, filterable, grouping]
   )
 
   // ---- state --------------------------------------------------------------
@@ -924,6 +933,7 @@ function DataTable<T>({
       size,
       striped,
       sortable,
+      multiSort,
       filterable,
       groupable: grouping,
       resizableColumns,
@@ -949,6 +959,7 @@ function DataTable<T>({
       size,
       striped,
       sortable,
+      multiSort,
       filterable,
       grouping,
       resizableColumns,

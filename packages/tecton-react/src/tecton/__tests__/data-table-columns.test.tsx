@@ -1488,7 +1488,7 @@ describe("DataTable column header menu", () => {
     expect(
       await screen.findByRole("menuitem", { name: "Sort descending" })
     ).not.toHaveAttribute("aria-disabled")
-    await user.click(screen.getByRole("menuitem", { name: "Clear sort" }))
+    await user.click(screen.getByRole("menuitem", { name: "Remove from sort" }))
     expect(lastView(onViewChange)[0].sorting).toEqual([
       { column: "operator", direction: "ascending" },
     ])
@@ -1511,6 +1511,250 @@ describe("DataTable column header menu", () => {
     expect(
       await screen.findByRole("menuitem", { name: "Sort descending" })
     ).toHaveAttribute("aria-disabled", "true")
+  })
+})
+
+describe("DataTable multi-column sort from the column menu", () => {
+  const items = () =>
+    [...screen.getByRole("menu").querySelectorAll('[role^="menuitem"]')].map(
+      (item) => item.textContent
+    )
+  const openMenu = async (
+    user: ReturnType<typeof userEvent.setup>,
+    name: string
+  ) => {
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull())
+    await user.click(screen.getByRole("button", { name: `${name} options` }))
+    await screen.findByRole("menu")
+  }
+  const positions = () =>
+    [...document.querySelectorAll('[data-slot="data-table-sort-position"]')]
+      .map((badge) => [
+        badge.closest("th")?.getAttribute("aria-label"),
+        badge.textContent,
+      ])
+      // In the sort's order.
+      .sort((a, b) => Number(a[1]) - Number(b[1]))
+  const sortButton = (name: string) =>
+    within(header(name)).getByRole("button", { name: new RegExp(`^${name}`) })
+
+  it("offers only the plain sort while no other column is sorted", async () => {
+    const user = userEvent.setup()
+    render(<Fields hideableColumns />)
+    await openMenu(user, "Oil")
+    expect(items()).toEqual([
+      "Sort ascending",
+      "Sort descending",
+      "Hide column",
+    ])
+    await user.click(screen.getByRole("menuitem", { name: "Sort ascending" }))
+    // Sorted alone: "Clear sort", and nothing to add it to.
+    await openMenu(user, "Oil")
+    expect(items()).toEqual([
+      "Sort ascending",
+      "Sort descending",
+      "Clear sort",
+      "Hide column",
+    ])
+    expect(screen.queryByText("Add to sort")).toBeNull()
+  })
+
+  it("adds a column to the sort, changes its direction in place, removes it and clears every sort", async () => {
+    const user = userEvent.setup()
+    const onViewChange = vi.fn()
+    render(<Fields hideableColumns onViewChange={onViewChange} />)
+    await openMenu(user, "Operator")
+    await user.click(screen.getByRole("menuitem", { name: "Sort ascending" }))
+
+    // Another column is sorted: the column's direction, under "Add to sort".
+    await openMenu(user, "Oil")
+    expect(items()).toEqual([
+      "Sort ascending",
+      "Sort descending",
+      "Clear sort",
+      "Ascending",
+      "Descending",
+      "Hide column",
+    ])
+    const group = screen.getByRole("group", { name: "Add to sort" })
+    expect(
+      within(group).getByRole("menuitemradio", { name: "Ascending" })
+    ).toHaveAttribute("aria-checked", "false")
+    await user.click(
+      within(group).getByRole("menuitemradio", { name: "Descending" })
+    )
+    expect(lastView(onViewChange)[0].sorting).toEqual([
+      { column: "operator", direction: "ascending" },
+      { column: "oil", direction: "descending" },
+    ])
+    expect(lastView(onViewChange)[1].reason).toBe("sort")
+    await waitFor(() =>
+      expect(announcer()).toHaveTextContent("Oil sorted descending, 2 of 2")
+    )
+
+    await openMenu(user, "Wells")
+    await user.click(screen.getByRole("menuitemradio", { name: "Ascending" }))
+    expect(positions()).toEqual([
+      ["Operator", "1"],
+      ["Oil", "2"],
+      ["Wells", "3"],
+    ])
+
+    // In the sort: its place, its direction checked, "Remove from sort".
+    await openMenu(user, "Oil")
+    expect(items()).toEqual([
+      "Sort ascending",
+      "Sort descending",
+      "Clear sort",
+      "Ascending",
+      "Descending",
+      "Remove from sort",
+      "Hide column",
+    ])
+    const placed = screen.getByRole("group", { name: "Sort order: 2 of 3" })
+    expect(
+      within(placed).getByRole("menuitemradio", { name: "Descending" })
+    ).toHaveAttribute("aria-checked", "true")
+    // Another direction keeps the column's place.
+    await user.click(
+      within(placed).getByRole("menuitemradio", { name: "Ascending" })
+    )
+    expect(lastView(onViewChange)[0].sorting).toEqual([
+      { column: "operator", direction: "ascending" },
+      { column: "oil", direction: "ascending" },
+      { column: "wells", direction: "ascending" },
+    ])
+
+    await openMenu(user, "Oil")
+    await user.click(screen.getByRole("menuitem", { name: "Remove from sort" }))
+    expect(lastView(onViewChange)[0].sorting).toEqual([
+      { column: "operator", direction: "ascending" },
+      { column: "wells", direction: "ascending" },
+    ])
+    expect(positions()).toEqual([
+      ["Operator", "1"],
+      ["Wells", "2"],
+    ])
+    await waitFor(() =>
+      expect(announcer()).toHaveTextContent("Oil no longer sorted")
+    )
+
+    // "Clear sort", from a column not in the sort, removes every sort.
+    await openMenu(user, "Gas")
+    await user.click(screen.getByRole("menuitem", { name: "Clear sort" }))
+    expect(lastView(onViewChange)[0].sorting).toEqual([])
+    expect(positions()).toEqual([])
+    await waitFor(() =>
+      expect(announcer()).toHaveTextContent("Sorting cleared")
+    )
+  })
+
+  it('sorts by the column alone from "Sort ascending" in a multi-sort', async () => {
+    const user = userEvent.setup()
+    const onViewChange = vi.fn()
+    render(
+      <Fields
+        hideableColumns
+        defaultView={{
+          sorting: [
+            { column: "operator", direction: "ascending" },
+            { column: "wells", direction: "descending" },
+          ],
+        }}
+        onViewChange={onViewChange}
+      />
+    )
+    await openMenu(user, "Wells")
+    await user.click(screen.getByRole("menuitem", { name: "Sort ascending" }))
+    expect(lastView(onViewChange)[0].sorting).toEqual([
+      { column: "wells", direction: "ascending" },
+    ])
+  })
+
+  it("shows each sorted column's place, read with its direction", () => {
+    render(
+      <Fields
+        size="sm"
+        defaultView={{
+          sorting: [
+            { column: "wells", direction: "descending" },
+            { column: "name", direction: "ascending" },
+            { column: "oil", direction: "descending" },
+          ],
+        }}
+      />
+    )
+    expect(positions()).toEqual([
+      ["Wells", "1"],
+      ["Field", "2"],
+      ["Oil", "3"],
+    ])
+    expect(sortButton("Wells")).toHaveAccessibleName(
+      "Wells sorted in descending order, 1 of 3 in sort order"
+    )
+    expect(sortButton("Field")).toHaveAccessibleName(
+      "Field sorted in ascending order, 2 of 3 in sort order"
+    )
+    // The count is drawn only: the button's name has it.
+    for (const badge of document.querySelectorAll(
+      '[data-slot="data-table-sort-position"]'
+    ))
+      expect(badge).toHaveAttribute("aria-hidden")
+  })
+
+  it('keeps to one sort with multiSort={false}: no "Add to sort", and Shift + click sorts alone', async () => {
+    const user = userEvent.setup()
+    const onViewChange = vi.fn()
+    render(
+      <Fields
+        hideableColumns
+        multiSort={false}
+        defaultView={{
+          sorting: [
+            { column: "operator", direction: "ascending" },
+            { column: "wells", direction: "descending" },
+          ],
+        }}
+        onViewChange={onViewChange}
+      />
+    )
+    // A view keeps its first sort.
+    expect(header("Operator")).toHaveAttribute("aria-sort", "ascending")
+    expect(header("Wells")).toHaveAttribute("aria-sort", "none")
+    expect(positions()).toEqual([])
+    await openMenu(user, "Oil")
+    expect(items()).toEqual([
+      "Sort ascending",
+      "Sort descending",
+      "Hide column",
+    ])
+    await user.keyboard("{Escape}")
+    fireEvent.click(
+      within(header("Oil")).getByRole("button", { name: "Oil" }),
+      { shiftKey: true }
+    )
+    expect(lastView(onViewChange)[0].sorting).toEqual([
+      { column: "oil", direction: "ascending" },
+    ])
+  })
+
+  it("adds to the sort with Shift + Enter on a header, as with Shift + click", async () => {
+    const user = userEvent.setup()
+    const onViewChange = vi.fn()
+    render(<Fields onViewChange={onViewChange} />)
+    fireEvent.click(sortButton("Operator"))
+    act(() => sortButton("Gas").focus())
+    await user.keyboard("{Shift>}{Enter}{/Shift}")
+    expect(lastView(onViewChange)[0].sorting).toEqual([
+      { column: "operator", direction: "ascending" },
+      { column: "gas", direction: "ascending" },
+    ])
+    fireEvent.click(sortButton("Wells"), { shiftKey: true })
+    expect(positions()).toEqual([
+      ["Operator", "1"],
+      ["Gas", "2"],
+      ["Wells", "3"],
+    ])
   })
 })
 

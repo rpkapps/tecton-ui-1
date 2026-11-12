@@ -2,8 +2,11 @@
 
 /**
  * A column header's menu: the column's actions for the features that are on
- * and that the column has not opted out of, in sections: sort (ascending,
- * descending, clear), grouping ("Group by column", which adds it as the
+ * and that the column has not opted out of, in sections: sort (ascending or
+ * descending by the column alone, and "Clear sort", which removes every
+ * sort); while another column is sorted (`multiSort`), the column's place
+ * in a multi-column sort ("Add to sort", or "Sort order: 2 of 3", with its
+ * direction to choose, and "Remove from sort"); grouping ("Group by column", which adds it as the
  * last level of the grouping, or "Ungroup column"), then the column itself
  * (resize, fit to content, reset width, hide, pin to the start or the end,
  * unpin). The menu button renders only with a column feature beyond
@@ -26,6 +29,7 @@ import {
   EllipsisVerticalIcon,
   EyeOffIcon,
   GroupIcon,
+  ListMinusIcon,
   PinIcon,
   PinOffIcon,
   RotateCcwIcon,
@@ -39,6 +43,9 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@tecton/react/components/dropdown-menu"
@@ -64,6 +71,8 @@ import { announceGrouping, toggleGrouping } from "./grouping"
 type ColumnMenuOptions = {
   /** Sorting is on for the column. */
   sortable: boolean
+  /** The table sorts by several columns at once. */
+  multiSort: boolean
   /** Resizing is on for the column. */
   resizable: boolean
   /** Hiding is on for the column, and it is not the last one shown. */
@@ -204,15 +213,45 @@ function ColumnMenuItems<T>({
   const direction = at === -1 ? null : sorting[at].direction
   // Only a sort the menu would not change is off: the column sorted alone.
   const sole = sorting.length === 1 ? direction : null
+  // Another column is sorted: the column can join the sort, or has its
+  // place in it.
+  const multi =
+    options.multiSort && sorting.length > (direction === null ? 0 : 1)
 
-  const sort = (next: DataTableSort["direction"] | null, event: Event) => {
+  /** Sets the sort `change` makes of the sort as it is now. */
+  const sort = (
+    change: (
+      before: ReadonlyArray<DataTableSort>
+    ) => ReadonlyArray<DataTableSort>,
+    event: Event | undefined
+  ) => {
     const before = store.get().view.sorting
-    const after: ReadonlyArray<DataTableSort> = next
-      ? [{ column: column.id, direction: next }]
-      : before.filter((sorted) => sorted.column !== column.id)
-    if (actions.updateView((view) => setSorting(view, after), "sort", event))
-      announceSort(t, column, before, after)
+    const after = change(before)
+    if (!actions.updateView((view) => setSorting(view, after), "sort", event))
+      return
+    // Every sort cleared, not just the column's own: said once.
+    if (after.length === 0 && before.some((s) => s.column !== column.id))
+      announce(t("sortsCleared"))
+    else announceSort(t, column, before, after)
   }
+  /** The column alone, in `next`'s direction. */
+  const sortBy = (next: DataTableSort["direction"]) => () => [
+    { column: column.id, direction: next },
+  ]
+  /** The column in `next`'s direction where it is in the sort, or added last. */
+  const sortWithin =
+    (next: DataTableSort["direction"]) =>
+    (before: ReadonlyArray<DataTableSort>) =>
+      before.some((sorted) => sorted.column === column.id)
+        ? before.map((sorted) =>
+            sorted.column === column.id
+              ? { ...sorted, direction: next }
+              : sorted
+          )
+        : [...before, { column: column.id, direction: next }]
+  const removeSort = (before: ReadonlyArray<DataTableSort>) =>
+    before.filter((sorted) => sorted.column !== column.id)
+  const clearSort = () => []
   const group = (event: Event) => {
     const { byId } = getColumnModel(store.get().columns)
     let after: ReadonlyArray<string> = []
@@ -272,22 +311,62 @@ function ColumnMenuItems<T>({
       <DropdownMenuGroup key="sort">
         <DropdownMenuItem
           disabled={sole === "ascending"}
-          onClick={(event) => sort("ascending", event.nativeEvent)}
+          onClick={(event) => sort(sortBy("ascending"), event.nativeEvent)}
         >
           <ArrowUpIcon />
           {t("sortAscending")}
         </DropdownMenuItem>
         <DropdownMenuItem
           disabled={sole === "descending"}
-          onClick={(event) => sort("descending", event.nativeEvent)}
+          onClick={(event) => sort(sortBy("descending"), event.nativeEvent)}
         >
           <ArrowDownIcon />
           {t("sortDescending")}
         </DropdownMenuItem>
-        {direction && (
-          <DropdownMenuItem onClick={(event) => sort(null, event.nativeEvent)}>
+        {(direction || multi) && (
+          <DropdownMenuItem
+            onClick={(event) => sort(clearSort, event.nativeEvent)}
+          >
             <XIcon />
             {t("clearSort")}
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuGroup>
+    )
+  // The column's direction in a multi-column sort: chosen, it joins the
+  // sort last, or changes where it is.
+  if (options.sortable && multi)
+    sections.push(
+      <DropdownMenuGroup key="multi-sort">
+        <DropdownMenuRadioGroup
+          value={direction ?? ""}
+          onValueChange={(next: DataTableSort["direction"], details) =>
+            sort(sortWithin(next), details.event)
+          }
+        >
+          <DropdownMenuLabel>
+            {direction
+              ? t("sortOrderPosition", {
+                  position: at + 1,
+                  total: sorting.length,
+                })
+              : t("addToSort")}
+          </DropdownMenuLabel>
+          <DropdownMenuRadioItem value="ascending" closeOnClick>
+            <ArrowUpIcon />
+            {t("ascending")}
+          </DropdownMenuRadioItem>
+          <DropdownMenuRadioItem value="descending" closeOnClick>
+            <ArrowDownIcon />
+            {t("descending")}
+          </DropdownMenuRadioItem>
+        </DropdownMenuRadioGroup>
+        {direction && (
+          <DropdownMenuItem
+            onClick={(event) => sort(removeSort, event.nativeEvent)}
+          >
+            <ListMinusIcon />
+            {t("removeFromSort")}
           </DropdownMenuItem>
         )}
       </DropdownMenuGroup>

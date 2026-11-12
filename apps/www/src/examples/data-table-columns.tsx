@@ -133,6 +133,14 @@ export default function DataTableColumns() {
       // Drag a header to move its column (a grouped one among its group's);
       // with the keyboard, Enter on a header, the arrows, then Enter.
       reorderableColumns
+      // Sorted by field, then by MD within each field: the numbers by the
+      // arrows give the order. Shift + click a header to add it.
+      defaultView={{
+        sorting: [
+          { column: "field", direction: "ascending" },
+          { column: "md", direction: "descending" },
+        ],
+      }}
       className="w-full"
     >
       <DataTableContent aria-label="Wells by location and drilling data" />

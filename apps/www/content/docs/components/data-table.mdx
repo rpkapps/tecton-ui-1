@@ -83,6 +83,27 @@ A column's `type` sets how its values are shown, aligned and sorted; `cell` draw
 
 Empty values sort last. Return raw numbers and `Date`s from `accessor`, not formatted text.
 
+### Sorting by several columns
+
+A click on a header sorts by that column alone; <Kbd>Shift</Kbd> + click (or <Kbd>Shift</Kbd> + <Kbd>Enter</Kbd>) adds it as the next sort, or turns it round where it is. The table above starts sorted by Field, then MD: while two or more columns sort, each sorted header shows its place by the arrow, and screen readers hear it with the direction ("2 of 2 in sort order").
+
+With a column menu (`resizableColumns`, `hideableColumns`, `pinnableColumns` or `groupable`), the menu does the same without the keyboard: while another column sorts, **Add to sort** with Ascending or Descending appends the column; on a column already in the sort, the group shows its place (**Sort order: 2 of 3**) and changes its direction there, and **Remove from sort** takes it out. **Sort ascending** and **Sort descending** still sort by the column alone, and **Clear sort** removes every sort.
+
+```tsx
+<DataTable
+  items={wells}
+  columns={columns}
+  defaultView={{
+    sorting: [
+      { column: "field", direction: "ascending" },
+      { column: "md", direction: "descending" },
+    ],
+  }}
+>
+```
+
+`view.sorting` lists the sorts in order, first one first; in [server mode](#server-data) the server gets the whole list from `onViewChange`. `multiSort={false}` keeps the table to one sort: <Kbd>Shift</Kbd> + click sorts alone, the menus have no **Add to sort** and a view keeps its first sort.
+
 ## Resizing
 
 `resizableColumns` adds a resizer to each header and Resize, Fit to content and Reset width to the column menus.
@@ -229,7 +250,7 @@ A `cell` can also render a field: <Kbd>Enter</Kbd> or <Kbd>F2</Kbd> moves into i
 
 ## Server data
 
-With `dataMode="server"`, the table reports each view and page change and shows the `items` the server returns; `rowCount` is the server's total.
+With `dataMode="server"`, the table reports each view and page change and shows the `items` the server returns; `rowCount` is the server's total. Here <Kbd>Shift</Kbd> + click a second header: `view.sorting` holds both sorts, in order, and the request below carries them.
 
 <ComponentPreview name="data-table-server" align="start" />
 
@@ -287,6 +308,8 @@ The table is one tab stop; focus is on a row, or on a cell once the arrows move 
 | <Kbd>Escape</Kbd> | Clears the selection |
 | <Kbd>Enter</Kbd> | Opens the row (`onActivate`, its link) |
 | <Kbd>Enter</Kbd> / <Kbd>F2</Kbd> | Into a cell's field; <Kbd>Escape</Kbd> back to the cell |
+| <Kbd>Enter</Kbd> on a header's sort button | Sorts by the column: ascending, descending, off |
+| <Kbd>Shift</Kbd> + <Kbd>Enter</Kbd> on a header's sort button | Adds the column to the sort, or turns it round there (`multiSort`) |
 | <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a header | Starts moving the column (`reorderableColumns`) |
 | <Kbd>Enter</Kbd> / <Kbd>Space</Kbd> on a row's handle | Starts moving the row (`reorderableRows`): <Kbd>↑</Kbd> / <Kbd>↓</Kbd>, then <Kbd>Enter</Kbd> or <Kbd>Escape</Kbd> |
 | <Kbd>←</Kbd> / <Kbd>→</Kbd> on a resizer | Narrows / widens the column; <Kbd>Enter</Kbd> keeps, <Kbd>Escape</Kbd> reverts |
@@ -333,7 +356,7 @@ Make the columns once with `createColumns`, at module level or in a `React.useMe
 
 <Do>
 
-Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `groupable`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; sorting is on), then place their parts: `DataTableToolbar` with `DataTableSearch`, a `DataTableFilter column` per filter, `DataTableGroupBy` and `DataTableColumnsMenu`; `DataTableActiveFilters`; `DataTableContent`; `DataTableFooter` with `DataTablePagination`.
+Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `groupable`, `resizableColumns`, `reorderableColumns`, `hideableColumns`, `pinnableColumns`; sorting is on, by several columns with Shift + click or a column menu's "Add to sort", one only with `multiSort={false}`), then place their parts: `DataTableToolbar` with `DataTableSearch`, a `DataTableFilter column` per filter, `DataTableGroupBy` and `DataTableColumnsMenu`; `DataTableActiveFilters`; `DataTableContent`; `DataTableFooter` with `DataTablePagination`.
 
 </Do>
 
@@ -351,7 +374,7 @@ Set `size="sm"` and `striped` on `DataTable` for dense data; show the states wit
 
 <Do>
 
-With `dataMode="server"`, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange`, `onPageChange` and `onPageSizeChange`; keep a saved view with `defaultView` and `onViewChange`. A part of your own reads the table with `useDataTable()` (`value`, `clearSelection`, `exportCsv`).
+With `dataMode="server"`, pass the page's `items`, `rowCount` and `loading`, and load from `onViewChange` (its `view.sorting` lists every sort, first one first), `onPageChange` and `onPageSizeChange`; keep a saved view with `defaultView` and `onViewChange`. A part of your own reads the table with `useDataTable()` (`value`, `clearSelection`, `exportCsv`).
 
 </Do>
 
@@ -449,7 +472,8 @@ The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reas
 | `onLoadMore` | `() => void` | - | Called when the end of the rows nears. |
 | `size` | `"default" \| "sm"` | `"default"` | Compact rows. |
 | `striped` | `boolean` | `false` | Alternate row fills. |
-| `sortable` | `boolean` | `true` | Headers sort; <Kbd>Shift</Kbd> + click by several. |
+| `sortable` | `boolean` | `true` | Headers sort. |
+| `multiSort` | `boolean` | `true` | Sorting by several columns: <Kbd>Shift</Kbd> + click, Add to sort. |
 | `filterable` | `boolean` | `false` | Turns on search and filters. |
 | `groupable` | `boolean` | `false` | Turns on grouping. |
 | `resizableColumns` | `boolean` | `false` | Users resize columns. |

@@ -116,6 +116,15 @@ const enUS = {
     sortAscending: "Sort ascending",
     sortDescending: "Sort descending",
     clearSort: "Clear sort",
+    // The column menu's group for the column's direction in a multi-column
+    // sort: "Add to sort", or its place ("Sort order: 2 of 3"), then its items.
+    addToSort: "Add to sort",
+    sortOrderPosition: "Sort order: {position} of {total}",
+    ascending: "Ascending",
+    descending: "Descending",
+    removeFromSort: "Remove from sort",
+    // Announced when "Clear sort" removes every sort.
+    sortsCleared: "Sorting cleared",
     // Focuses the column's resizer: the arrow keys then resize it.
     resizeColumn: "Resize column",
     fitColumn: "Fit to content",

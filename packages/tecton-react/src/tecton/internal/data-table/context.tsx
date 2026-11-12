@@ -105,6 +105,8 @@ type DataTableOptions = {
   readonly size: "default" | "sm"
   readonly striped: boolean
   readonly sortable: boolean
+  /** Several columns sort at once (`multiSort`). */
+  readonly multiSort: boolean
   readonly filterable: boolean
   readonly groupable: boolean
   readonly resizableColumns: boolean
@@ -197,7 +199,10 @@ type DataTableActions<T> = {
         ) => DataTableViewChangeReason),
     event?: Event
   ) => boolean
-  /** A sort button pressed: Shift (`multi`) adds the column to the sort. */
+  /**
+   * A sort button pressed: Shift (`multi`) adds the column to the sort,
+   * with `multiSort`.
+   */
   sort: (column: string, multi: boolean, event?: Event) => boolean
   setValue: (
     value: ReadonlyArray<string>,

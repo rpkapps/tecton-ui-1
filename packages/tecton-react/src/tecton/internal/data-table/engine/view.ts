@@ -44,6 +44,8 @@ import { toDate } from "./values"
 /** The root's features that decide which parts of a view apply. */
 type ViewCapabilities = {
   sortable: boolean
+  /** More than one column sorts at once; without it, only the first sort applies. */
+  multiSort?: boolean
   filterable: boolean
   groupable: boolean
 }
@@ -258,7 +260,8 @@ function reconcileSorting<T>(
         return valid
       })
     : []
-  return next.length === list.length && Array.isArray(sorting) ? sorting : next
+  const kept = capabilities.multiSort === false ? next.slice(0, 1) : next
+  return kept.length === list.length && Array.isArray(sorting) ? sorting : kept
 }
 
 function reconcileGrouping<T>(
