@@ -15,10 +15,10 @@ const columnResizerClassName = cn(
   "hover:after:inset-y-0 hover:after:start-[calc(50%-1px)] hover:after:w-0.5 hover:after:bg-primary-active",
   "focus-visible:after:inset-y-0 focus-visible:after:start-[calc(50%-1px)] focus-visible:after:w-0.5 focus-visible:after:bg-primary-active",
   "data-dragging:after:inset-y-0 data-dragging:after:start-[calc(50%-1px)] data-dragging:after:w-0.5 data-dragging:after:bg-primary-active",
-  // Behind the line, centred on it: the grip's tint on hover, the
-  // focus ring on keyboard focus.
+  // Behind the line, centred on it: the focus ring on keyboard focus (on
+  // hover the line alone shows the grip).
   "before:pointer-events-none before:absolute before:inset-y-1 before:start-0.5 before:end-0.5 before:rounded-sm",
-  "hover:before:bg-primary-active/15 focus-visible:before:ring-2 focus-visible:before:ring-ring data-dragging:before:bg-transparent",
+  "focus-visible:before:ring-2 focus-visible:before:ring-ring",
   // The table's end edge is no divider: the last column shows its
   // line only when it is reached for.
   "[th:last-child>&]:after:opacity-0 [th:last-child>&]:hover:after:opacity-100 [th:last-child>&]:focus-visible:after:opacity-100 [th:last-child>&]:data-dragging:after:opacity-100",

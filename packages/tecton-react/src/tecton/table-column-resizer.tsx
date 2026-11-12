@@ -39,7 +39,7 @@ import {
  * The look: a short, quiet line at rest (none after the last column); the
  * header's full height while the pointer is over the header; a 2 px line
  * in the drop line's colour (`primary-active`) on the grip, with
- * a tint on hover and the focus ring, centred on it, on keyboard focus;
+ * the focus ring, centred on it, on keyboard focus;
  * and while dragging, a guide line down the table in view and the width
  * beside it, on the tooltip's surface.
  */
