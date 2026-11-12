@@ -156,8 +156,6 @@ const enUS = {
     filterContains: "Contains",
     filterMin: "Min",
     filterMax: "Max",
-    // A yes / no filter's choice that keeps every row.
-    filterAny: "Any",
     clearFilter: "Clear",
     noOptions: "No options",
     // A filter's value in words: number and date ranges ({from}, {to} and

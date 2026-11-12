@@ -132,7 +132,6 @@ export default defineTranslations({
     filterContains: "Περιέχει",
     filterMin: "Ελάχ.",
     filterMax: "Μέγ.",
-    filterAny: "Όλα",
     clearFilter: "Απαλοιφή",
     noOptions: "Δεν υπάρχουν επιλογές",
     filterRange: "{from}–{to}",

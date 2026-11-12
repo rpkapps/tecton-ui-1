@@ -131,7 +131,6 @@ export default defineTranslations({
     filterContains: "İçerir",
     filterMin: "En az",
     filterMax: "En çok",
-    filterAny: "Tümü",
     clearFilter: "Temizle",
     noOptions: "Seçenek yok",
     filterRange: "{from}–{to}",

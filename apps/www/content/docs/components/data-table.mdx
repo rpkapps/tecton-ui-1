@@ -150,10 +150,10 @@ Pinned cells are opaque in `var(--surface)`; a custom surface sets it: `classNam
 | `text` | contains the text | `{ type: "text", value }` |
 | `number` | minimum and maximum | `{ type: "number", min?, max? }` |
 | `date` | a [date range picker](/docs/components/date-picker) | `{ type: "date", from?, to? }` |
-| `boolean` | Any, Yes or No | `{ type: "boolean", value }` |
+| `boolean` | Yes or No, radio buttons with counts | `{ type: "boolean", value? }` |
 | `options` | a checkbox per option, with counts | `{ type: "options", values }` |
 
-Each filter also offers "No value" (`empty: true`) for a column with empty values. Search matches the shown columns' display text, ignoring case and accents. A column's own `filter(item, value)` replaces its type's.
+A yes / no filter is laid out as an options filter, with radio buttons: neither chosen keeps every row, and Clear goes back to that. Each filter also offers "No value" (`empty: true`) for a column with empty values. Search matches the shown columns' display text, ignoring case and accents. A column's own `filter(item, value)` replaces its type's.
 
 ## Empty values
 
@@ -179,13 +179,14 @@ const columns = createColumns<Well>([
 ])
 ```
 
-While a row has no value in a column, its filter offers "No value": the last option of an options filter, apart, with its count; a checkbox under a text or number filter's fields and beside a date filter's Clear; a fourth choice after Any, Yes and No. It keeps the rows without a value besides those the rest of the filter keeps, or only those when the rest is unset, and its chip reads "Status: Producing, No value" or "TD (m): 1,000–2,000 or no value".
+While a row has no value in a column, its filter offers "No value": the last option of an options filter, apart, with its count; a checkbox under a text or number filter's fields and beside a date filter's Clear; a checkbox after a yes / no filter's Yes and No, apart, with its count, as in an options filter. It keeps the rows without a value besides those the rest of the filter keeps, or only those when the rest is unset, and its chip reads "Status: Producing, No value", "TD (m): 1,000–2,000 or no value" or "Subsea: Yes or no value".
 
 In the view it is `empty: true` on the filter's value. A value without it matches as before, so saved views keep working; in server mode, where the table sees only the loaded rows, "No value" is always offered and reaches `onViewChange` for the server to apply (`OR depth IS NULL`).
 
 ```ts
 { type: "number", min: 1000, max: 2000, empty: true } // 1,000 to 2,000, or no value
 { type: "options", values: [], empty: true } // no value only
+{ type: "boolean", value: true, empty: true } // yes, or no value
 { type: "boolean", empty: true } // no value only
 ```
 
@@ -291,7 +292,7 @@ With `dataMode="server"`, the table reports each view and page change and shows 
 | | Client | Server |
 | --- | --- | --- |
 | Sort, search, filter, page | the table | the server, from `onViewChange` / `onPageChange` |
-| Option counts | from `items` | each option's `count` |
+| Option counts | from `items` | each option's `count`; none for yes / no |
 | "No value" filter | while a row has no value | always; `empty: true` in the filter |
 | Totals, export | every matching row | the loaded rows |
 | "Select all N" | every matching row | all matching: `eventDetails.allMatching.except` |

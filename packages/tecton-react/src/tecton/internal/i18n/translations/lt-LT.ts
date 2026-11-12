@@ -135,7 +135,6 @@ export default defineTranslations({
     filterContains: "Yra",
     filterMin: "Min.",
     filterMax: "Maks.",
-    filterAny: "Visi",
     clearFilter: "Išvalyti",
     noOptions: "Parinkčių nėra",
     filterRange: "{from}–{to}",

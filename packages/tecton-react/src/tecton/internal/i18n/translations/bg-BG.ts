@@ -132,7 +132,6 @@ export default defineTranslations({
     filterContains: "Съдържа",
     filterMin: "Мин.",
     filterMax: "Макс.",
-    filterAny: "Всички",
     clearFilter: "Изчистване",
     noOptions: "Няма опции",
     filterRange: "{from}–{to}",

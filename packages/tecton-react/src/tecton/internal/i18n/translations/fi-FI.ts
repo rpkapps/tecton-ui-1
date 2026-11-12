@@ -132,7 +132,6 @@ export default defineTranslations({
     filterContains: "Sisältää",
     filterMin: "Väh.",
     filterMax: "Enint.",
-    filterAny: "Kaikki",
     clearFilter: "Tyhjennä",
     noOptions: "Ei vaihtoehtoja",
     filterRange: "{from}–{to}",

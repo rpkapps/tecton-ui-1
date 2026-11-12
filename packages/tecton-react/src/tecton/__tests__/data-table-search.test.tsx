@@ -376,16 +376,70 @@ describe("DataTableFilter", () => {
     expect(names()).toEqual(["Well 06"])
   })
 
-  it("filters a boolean column by Yes or No, Any removing the filter", async () => {
+  it("filters a boolean column by Yes or No, radio buttons with counts, Clear removing the filter", async () => {
     const user = userEvent.setup({ delay: null })
     const onViewChange = vi.fn()
     render(<Wells onViewChange={onViewChange} />)
     await user.click(filterButton("Active"))
-    await user.click(screen.getByRole("radio", { name: "No" }))
+    const group = screen.getByRole("radiogroup", { name: "Active" })
+    const yes = within(group).getByRole("radio", { name: "Yes" })
+    const no = within(group).getByRole("radio", { name: "No" })
+    // Neither chosen is any value; no "Any" choice, and no "No value"
+    // while every row has one.
+    expect(within(group).getAllByRole("radio")).toHaveLength(2)
+    expect(yes).not.toBeChecked()
+    expect(no).not.toBeChecked()
+    expect(
+      screen.queryByRole("checkbox", { name: "No value" })
+    ).not.toBeInTheDocument()
+    // Each with its number of rows, as an options filter's.
+    expect(yes.closest("div")).toHaveTextContent(/^Yes4$/)
+    expect(no.closest("div")).toHaveTextContent(/^No4$/)
+    await user.click(yes)
+    expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
+      active: { type: "boolean", value: true },
+    })
+    expect(names()).toEqual(["Well 01", "Well 03", "Well 05", "Well 07"])
+    expect(filterButton("Active")).toHaveTextContent("Yes")
+    expect(chips()).toEqual(["Active: Yes"])
+    // A radio button stays chosen when clicked again.
+    await user.click(yes)
+    expect(yes).toBeChecked()
+    await user.click(no)
+    expect(yes).not.toBeChecked()
+    expect(no).toBeChecked()
+    expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
+      active: { type: "boolean", value: false },
+    })
     expect(names()).toEqual(["Well 02", "Well 04", "Well 06", "Well 08"])
-    await user.click(screen.getByRole("radio", { name: "Any" }))
+    expect(chips()).toEqual(["Active: No"])
+    // The counts leave out the column's own filter.
+    expect(yes.closest("div")).toHaveTextContent(/^Yes4$/)
+    await user.click(screen.getByRole("button", { name: "Clear" }))
     expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({})
     expect(names()).toHaveLength(8)
+    expect(chips()).toEqual([])
+    expect(no).not.toBeChecked()
+    await waitFor(() => expect(focused()).toBe(yes))
+  })
+
+  it("counts a boolean column's rows with the search and the other filters", async () => {
+    const user = userEvent.setup({ delay: null })
+    render(
+      <Wells
+        defaultView={{
+          filters: { status: { type: "options", values: ["producing"] } },
+        }}
+      />
+    )
+    // Producing: wells 1, 4 and 7.
+    await user.click(filterButton("Active"))
+    expect(
+      screen.getByRole("radio", { name: "Yes" }).closest("div")
+    ).toHaveTextContent(/^Yes2$/)
+    expect(
+      screen.getByRole("radio", { name: "No" }).closest("div")
+    ).toHaveTextContent(/^No1$/)
   })
 
   it("removes the filter with Clear, and moves focus into the filter", async () => {

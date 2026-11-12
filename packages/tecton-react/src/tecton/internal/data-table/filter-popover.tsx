@@ -10,7 +10,9 @@
  * - date: a range of days picked on `DateRangePicker`'s calendar, in a
  *   popover like the picker's (its code and locale load on demand too,
  *   `date-calendar.tsx`; the popover keeps its size meanwhile);
- * - boolean: Any, Yes or No;
+ * - boolean: Yes or No, radio buttons laid out as an options filter's
+ *   checkboxes, with their numbers of rows (none in server mode); neither
+ *   chosen is any value;
  * - options: a checkbox per option with its number of rows: those matching
  *   the search and the other filters, counted when the popover opens (in
  *   server mode, the options' own `count`).
@@ -20,7 +22,7 @@
  * chosen: the filter's `empty`, the rows without a value besides those the
  * rest matches. It is the last option, apart, with its count; a checkbox
  * under a text or number filter's fields and beside a date filter's Clear;
- * a fourth choice of a yes / no filter.
+ * and, as in an options filter, after a yes / no filter's Yes and No.
  *
  * Text and numbers reach the view `searchDelay` ms after the last key,
  * like search; the other types at once.
@@ -245,51 +247,84 @@ function NumberFilter({
 }
 
 function BooleanFilter({
+  column,
   value,
   set,
   noValue,
-}: FilterProps<Extract<DataTableFilterValue, { type: "boolean" }>>) {
+  counts,
+  emptyCount,
+}: FilterProps<Extract<DataTableFilterValue, { type: "boolean" }>> & {
+  /** The number of rows whose value is `choice`. */
+  counts: (choice: boolean) => number | undefined
+  /** The number of rows without a value, when known. */
+  emptyCount: number | undefined
+}) {
   const t = useTranslations("dataTable")
+  const format = useNumberFormat()
   const id = React.useId()
-  const current =
-    value === undefined
-      ? "any"
-      : value.value === undefined
-        ? "none"
-        : value.value
-          ? "yes"
-          : "no"
+  const empty = value?.empty === true
+  const update = (choice: boolean | undefined, empty: boolean) =>
+    set(
+      choice === undefined && !empty
+        ? null
+        : {
+            type: "boolean",
+            ...(choice === undefined ? {} : { value: choice }),
+            ...emptyFlag(empty),
+          }
+    )
   const choices = [
-    { value: "any", label: t("filterAny") },
-    { value: "yes", label: t("yes") },
-    { value: "no", label: t("no") },
-    ...(noValue || current === "none"
-      ? [{ value: "none", label: t("noValue") }]
-      : []),
+    { value: true, label: t("yes") },
+    { value: false, label: t("no") },
   ]
+  // An options filter's rows, as radio buttons: neither chosen is any
+  // value, as Clear leaves it.
   return (
-    <RadioGroup
-      value={current}
-      onValueChange={(next) =>
-        set(
-          next === "any"
-            ? null
-            : next === "none"
-              ? { type: "boolean", empty: true }
-              : { type: "boolean", value: next === "yes" }
-        )
-      }
-      className="gap-2"
-    >
-      {choices.map((choice) => (
-        <div key={choice.value} className="flex items-center gap-2">
-          <RadioGroupItem id={`${id}-${choice.value}`} value={choice.value} />
-          <Label htmlFor={`${id}-${choice.value}`} className="font-normal">
-            {choice.label}
-          </Label>
-        </div>
-      ))}
-    </RadioGroup>
+    <div className="flex flex-col">
+      <RadioGroup
+        aria-label={column.header}
+        value={value?.value ?? null}
+        onValueChange={(choice: boolean) => update(choice, empty)}
+        className="flex flex-col gap-0"
+      >
+        {choices.map((choice) => {
+          const count = counts(choice.value)
+          return (
+            <div
+              key={String(choice.value)}
+              className="flex min-h-8 items-center gap-2 rounded-sm px-1"
+            >
+              <RadioGroupItem
+                id={`${id}-${choice.value}`}
+                value={choice.value}
+              />
+              <Label
+                htmlFor={`${id}-${choice.value}`}
+                className="flex-1 font-normal"
+              >
+                {choice.label}
+              </Label>
+              {count !== undefined && (
+                <span className="text-xs text-muted-foreground tabular-nums">
+                  {format.format(count)}
+                </span>
+              )}
+            </div>
+          )
+        })}
+      </RadioGroup>
+      {noValue && (
+        <>
+          <Separator className="-mx-4 my-1 data-horizontal:w-auto" />
+          <NoValueChoice
+            checked={empty}
+            onCheckedChange={(on) => update(value?.value, on)}
+            count={emptyCount}
+            className="rounded-sm px-1"
+          />
+        </>
+      )}
+    </div>
   )
 }
 
@@ -488,7 +523,9 @@ function FilterContent({
   // Counted now that the popover is open, for this view.
   const facets = React.useMemo(
     () =>
-      column.type === "options" && !server ? model.facets(column.id) : null,
+      (column.type === "options" || column.type === "boolean") && !server
+        ? model.facets(column.id)
+        : null,
     [column, server, model]
   )
   const noValue = useNoValue(context, column, value)
@@ -516,6 +553,10 @@ function FilterContent({
         <BooleanFilter
           {...props}
           value={value?.type === "boolean" ? value : undefined}
+          counts={(choice) =>
+            facets ? (facets.counts.get(String(choice)) ?? 0) : undefined
+          }
+          emptyCount={facets?.empty}
         />
       )
     case "options":

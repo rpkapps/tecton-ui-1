@@ -136,7 +136,6 @@ export default defineTranslations({
     filterContains: "Contient",
     filterMin: "Min.",
     filterMax: "Max.",
-    filterAny: "Tous",
     clearFilter: "Effacer",
     noOptions: "Aucune option",
     filterRange: "{from}–{to}",

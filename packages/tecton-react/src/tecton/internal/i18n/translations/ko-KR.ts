@@ -123,7 +123,6 @@ export default defineTranslations({
     filterContains: "포함",
     filterMin: "최소",
     filterMax: "최대",
-    filterAny: "전체",
     clearFilter: "지우기",
     noOptions: "옵션 없음",
     filterRange: "{from}–{to}",

@@ -32,9 +32,9 @@
  *
  * Facets (`countFacets`) count, per value of a column, the rows matching the
  * search and every filter but the column's own: by option value for an
- * options column, by display text for the others, and apart the rows
- * without a value (the "No value" choice, offered while any row has none,
- * `hasEmptyValues`).
+ * options column, by "true" and "false" for a boolean one, by display text
+ * for the others, and apart the rows without a value (the "No value"
+ * choice, offered while any row has none, `hasEmptyValues`).
  */
 import type { EngineColumn } from "./columns"
 import type { Core, RowSet } from "./core"
@@ -406,6 +406,24 @@ function countFacets<T>(
     )
     for (const [key, count] of others) facets.set(key, count)
     return { counts: facets, empty }
+  }
+  if (column.type === "boolean") {
+    let yes = 0
+    let no = 0
+    for (let i = 0; i < items.length; i++) {
+      if (predicate && !predicate(i, items[i])) continue
+      const value = toBoolean(column.getValue(items[i]))
+      if (value === undefined) empty++
+      else if (value) yes++
+      else no++
+    }
+    return {
+      counts: new Map([
+        ["true", yes],
+        ["false", no],
+      ]),
+      empty,
+    }
   }
   for (let i = 0; i < items.length; i++) {
     if (predicate && !predicate(i, items[i])) continue

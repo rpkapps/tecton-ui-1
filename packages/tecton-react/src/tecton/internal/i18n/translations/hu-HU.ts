@@ -131,7 +131,6 @@ export default defineTranslations({
     filterContains: "Tartalmazza",
     filterMin: "Min.",
     filterMax: "Max.",
-    filterAny: "Bármelyik",
     clearFilter: "Törlés",
     noOptions: "Nincsenek lehetőségek",
     filterRange: "{from}–{to}",

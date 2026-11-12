@@ -331,12 +331,13 @@ describe("facets", () => {
     expect(result.facets("ghost").counts.size).toBe(0)
   })
 
-  it("count booleans by their text, with the search", () => {
+  it("count booleans by their value, with the search", () => {
     const result = run({ view: view({ search: "equinor" }) })
     expect([...result.facets("active").counts]).toEqual([
-      ["No", 1],
-      ["Yes", 1],
+      ["true", 1],
+      ["false", 1],
     ])
+    expect(result.facets("active").empty).toBe(0)
   })
 
   it("are kept across runs until the rows, the search or another column's filter change", () => {

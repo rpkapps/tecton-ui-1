@@ -123,7 +123,6 @@ export default defineTranslations({
     filterContains: "次を含む",
     filterMin: "最小",
     filterMax: "最大",
-    filterAny: "すべて",
     clearFilter: "クリア",
     noOptions: "オプションがありません",
     filterRange: "{from}～{to}",
