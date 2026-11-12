@@ -200,4 +200,7 @@ export default defineTranslations({
     clearSelection: "Poništi izbor",
     actions: "Radnje",
   },
+  overflow: {
+    moreActions: "Više radnji",
+  },
 })

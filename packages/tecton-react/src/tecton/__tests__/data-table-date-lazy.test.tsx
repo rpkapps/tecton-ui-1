@@ -20,7 +20,7 @@ const chunk = vi.hoisted(() => {
   })
   return { gate, open: () => open(), requested: vi.fn() }
 })
-vi.mock("../internal/data-table/filter-date", async (importOriginal) => {
+vi.mock("../internal/date-calendar", async (importOriginal) => {
   chunk.requested()
   await chunk.gate
   return importOriginal()
@@ -54,13 +54,15 @@ describe("DataTable date filter on demand", () => {
       await screen.findByRole("button", { name: "Nach Spud date filtern" })
     )
     const dialog = await screen.findByRole("dialog", { name: "Spud date" })
-    // The calendar's place, as big as a month.
-    expect(dialog.querySelector('[aria-hidden="true"].w-56')).not.toBeNull()
+    // The calendar's place, as big as its two months.
+    expect(
+      dialog.querySelector('[data-slot="date-picker-loading"]')
+    ).not.toBeNull()
     await act(async () => chunk.open())
     // In German, from the calendar's own locale chunk.
     expect(
-      await within(dialog).findByRole("grid", {}, { timeout: 10_000 })
-    ).toBeInTheDocument()
+      await within(dialog).findAllByRole("grid", {}, { timeout: 10_000 })
+    ).toHaveLength(2)
     await waitFor(() =>
       expect(
         within(dialog).getByRole("button", { name: "Zum nächsten Monat" })

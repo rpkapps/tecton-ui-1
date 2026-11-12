@@ -169,4 +169,7 @@ export default defineTranslations({
     clearSelection: "選択をクリア",
     actions: "アクション",
   },
+  overflow: {
+    moreActions: "その他のアクション",
+  },
 })

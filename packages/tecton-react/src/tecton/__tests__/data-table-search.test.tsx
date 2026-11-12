@@ -466,11 +466,55 @@ describe("DataTableFilter", () => {
       /Mar 1, 2020–Mar 31, 2020/
     )
     await user.click(filterButton("Spud date"))
+    const dialog = await screen.findByRole("dialog", { name: "Spud date" })
     const grid = await screen.findByRole("grid", { name: /March 2020/ })
+    // As in a DateRangePicker: the first day starts a range, the second
+    // (before it here) ends it, sets the filter and closes the popover.
     await user.click(within(grid).getByRole("button", { name: /March 10th/ }))
+    expect(onViewChange).not.toHaveBeenCalled()
+    await user.click(within(grid).getByRole("button", { name: /March 4th/ }))
     const filters = onViewChange.mock.calls.at(-1)?.[0].filters
-    expect(filters.spud.type).toBe("date")
+    expect(filters.spud).toEqual({
+      type: "date",
+      from: new Date(2020, 2, 4),
+      to: new Date(2020, 2, 10),
+    })
+    await waitFor(() => expect(dialog).not.toBeInTheDocument())
+    expect(filterButton("Spud date")).toHaveFocus()
   })
+
+  it("shows the date filter's calendar in the provider's locale and direction", async () => {
+    const user = userEvent.setup({ delay: null })
+    render(
+      <TectonProvider locale="he-IL">
+        <Wells
+          defaultView={{
+            filters: {
+              spud: { type: "date", from: new Date(2020, 2, 1) },
+            },
+          }}
+        />
+      </TectonProvider>
+    )
+    await user.click(
+      screen
+        .getAllByRole("button")
+        .find((button) => button.getAttribute("aria-label")?.includes("Spud"))!
+    )
+    const calendar = await waitFor(
+      () => {
+        const element = document.querySelector('[data-slot="calendar"]')
+        expect(element).not.toBeNull()
+        return element!
+      },
+      { timeout: 10_000 }
+    )
+    expect(calendar.closest("[dir]")?.getAttribute("dir")).toBe("rtl")
+    // Two months, as a DateRangePicker's, named in Hebrew.
+    const grids = within(screen.getByRole("dialog")).getAllByRole("grid")
+    expect(grids).toHaveLength(2)
+    expect(grids[0]).toHaveAccessibleName(/מרץ 2020/)
+  }, 20_000)
 })
 
 describe("DataTableActiveFilters", () => {

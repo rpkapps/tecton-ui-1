@@ -185,4 +185,7 @@ export default defineTranslations({
     clearSelection: "Απαλοιφή επιλογής",
     actions: "Ενέργειες",
   },
+  overflow: {
+    moreActions: "Περισσότερες ενέργειες",
+  },
 })

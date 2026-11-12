@@ -202,4 +202,7 @@ export default defineTranslations({
     clearSelection: "Ștergeți selecția",
     actions: "Acțiuni",
   },
+  overflow: {
+    moreActions: "Mai multe acțiuni",
+  },
 })

@@ -180,4 +180,7 @@ export default defineTranslations({
     clearSelection: "Rensa markering",
     actions: "Åtgärder",
   },
+  overflow: {
+    moreActions: "Fler åtgärder",
+  },
 })

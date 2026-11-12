@@ -12,6 +12,7 @@ import {
   DataTableToolbar,
   useDataTable,
 } from "@tecton/react/tecton/data-table"
+import { OverflowSpacer } from "@tecton/react/tecton/overflow"
 
 type Well = {
   id: string
@@ -81,13 +82,7 @@ function ExportButton() {
     }
   }
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="ms-auto"
-      disabled={busy}
-      onClick={download}
-    >
+    <Button variant="outline" size="sm" disabled={busy} onClick={download}>
       <DownloadIcon aria-hidden />
       Export CSV
     </Button>
@@ -99,6 +94,7 @@ export default function DataTableExport() {
     <DataTable items={WELLS} columns={columns} filterable className="w-full">
       <DataTableToolbar>
         <DataTableSearch />
+        <OverflowSpacer />
         <ExportButton />
       </DataTableToolbar>
       <DataTableContent aria-label="Wells" />

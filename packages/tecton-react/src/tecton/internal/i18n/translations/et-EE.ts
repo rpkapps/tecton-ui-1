@@ -173,4 +173,7 @@ export default defineTranslations({
     clearSelection: "Tühjenda valik",
     actions: "Toimingud",
   },
+  overflow: {
+    moreActions: "Rohkem toiminguid",
+  },
 })

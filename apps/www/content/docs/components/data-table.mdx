@@ -142,7 +142,7 @@ Search matches the shown columns' display text, ignoring case and accents. A col
 | --- | --- |
 | `value` / `onValueChange` | The selected row ids. |
 | `isItemDisabled` | Disables rows; `disabledBehavior="selection"` keeps them focusable and openable. |
-| `onActivate(id, item)` | Called when a row opens: <Kbd>Enter</Kbd>, or a click while no row is selected. |
+| `onActivate(id, item)` | Called when a row opens: <Kbd>Enter</Kbd>, a double click, or a click while no row is selected. |
 | `itemToHref` | Makes each row header a link, followed through the [TectonProvider](/docs/tecton/provider)'s router. |
 
 Select all selects every row the view matches, on every page.
@@ -326,10 +326,11 @@ The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reas
 | `onExpandedChange` | `(expanded, eventDetails) => void` | - | Called with the open rows. |
 | `page` | `number` | - | The page, from 1 (controlled). |
 | `defaultPage` | `number` | `1` | The initial page. |
-| `onPageChange` | `(page, eventDetails) => void` | - | Called with the new page. |
+| `onPageChange` | `(page, eventDetails) => void` | - | Called with the new page; `reason` is `"previous"`, `"next"` or `"page"` from `DataTablePagination`, else `"reset"`, `"page-size"`, `"clamp"` or `"group"`. |
 | `pageSize` | `number` | - | Rows per page (controlled). |
 | `defaultPageSize` | `number` | `10` | Initial rows per page. |
 | `onPageSizeChange` | `(pageSize, eventDetails) => void` | - | Called with the new page size. |
+| `pageSizes` | `ReadonlyArray<number>` | `[10, 20, 50, 100]` | The page sizes `DataTablePagination` offers. |
 | `onActivate` | `(id: string, item: T) => void` | - | Called when a row opens. |
 
 ### DataTableContent
@@ -348,7 +349,12 @@ The table in its frame.
 
 ### DataTableToolbar
 
-The row above the table, an overflow [Toolbar](/docs/tecton/overflow): items that do not fit move into a More menu.
+The row above the table: a [Toolbar](/docs/tecton/overflow) (`ToolbarProps`). The search, filters, Group by and Columns placed in it are its overflow items: when the row runs out of room they move into its More menu, and the search stays. Other children stay in the row unless wrapped in an `OverflowItem`; an `OverflowSpacer` pushes what follows to the end.
+
+| Prop | Type | Default | Description |
+| --- | --- | --- | --- |
+| `aria-label` | `string` | `"Table tools"` | The toolbar's name. |
+| `minimumVisible` | `number` | `1` | Items kept in the row. |
 
 ### DataTableSearch
 
@@ -402,15 +408,18 @@ A row's "⋯" menu, for a column's `cell`; takes the props of a [Button](/docs/c
 | `children` | `ReactNode` | - | [DropdownMenu](/docs/components/dropdown-menu) items. |
 | `align` | `"start" \| "center" \| "end"` | `"end"` | The menu's alignment. |
 | `aria-label` | `string` | `"Row actions"` | The button's name. |
-| `variant`, `size` | Button `variant`, `size` | `"ghost"`, `"icon-sm"` | The button's look. |
+| `variant`, `size` | Button `variant`, `size` | `"ghost"`, `"icon-sm"` (`"icon-xs"` when `size="sm"`) | The button's look. |
 
 ### DataTableActionBar
 
-An [ActionBar](/docs/tecton/action-bar) bound to the selection: count, total, "Select all N" (all matching in server mode) and Clear. Shown only while rows are selected.
+An [ActionBar](/docs/tecton/action-bar) bound to the selection, shown only while rows are selected: count, total, "Select all N" (all matching in server mode) and Clear. Takes the `ActionBar`'s props but `open`. <Kbd>Escape</Kbd> in the bar clears the selection and focus goes back to the table.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `children` | `ReactNode` | - | The actions for the selected rows. |
+| `children` | `ReactNode` | - | The actions, in an overflow [Toolbar](/docs/tecton/overflow): wrap each in an `OverflowItem` to let it move into the More menu. |
+| `placement` | `"toolbar" \| "floating"` | `"toolbar"` | In the flow, or floating over the rows. |
+| `aria-label` | `string` | `"Selected rows"` | The bar's name. |
+| `onOpenChange` | `(open: boolean) => void` | - | Called with `false` on <Kbd>Escape</Kbd>, before the selection clears. |
 
 ### DataTableFooter
 
@@ -418,11 +427,11 @@ The row below the table.
 
 ### DataTablePagination
 
-A rows-per-page [Select](/docs/components/select) and [Pagination](/docs/components/pagination), for `pagination`. The page resets to 1 when the view changes.
+A rows-per-page [Select](/docs/components/select), the rows shown and [Pagination](/docs/components/pagination), for `pagination`; takes the props of a `div`. The page resets to 1 when the view changes.
 
 | Prop | Type | Default | Description |
 | --- | --- | --- | --- |
-| `pageSizes` | `ReadonlyArray<number>` | `[10, 20, 50, 100]` | The page sizes offered. |
+| `pageSizes` | `ReadonlyArray<number>` | the root's `pageSizes` | The page sizes offered; `[]` leaves the Select out. |
 
 ### createColumns
 
@@ -526,5 +535,5 @@ type DataTableFilterValue =
 | `max` | `number` | `1000` | Widest width. |
 | `step` | `number` | `8` | Arrow key step. |
 | `resetValue` | `number` | - | Width on <Kbd>Enter</Kbd> or double click. |
-| `label` | `string` | - | Column name, for "Resize {label}". |
+| `label` | `string` | - | Column name, for `"Resize {label}"`. |
 | `disabled` | `boolean` | `false` | Turns it off. |

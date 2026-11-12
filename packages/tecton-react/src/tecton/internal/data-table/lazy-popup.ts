@@ -56,6 +56,22 @@ type LazyPopupProps = {
   tabOut: () => void
 }
 
+/**
+ * Where focus goes back to as the popup closes: the button, or, while an
+ * overflow toolbar has moved the button into its More menu (a filter's
+ * value made it wider), that menu's button, not the page.
+ */
+function returnTarget(button: HTMLButtonElement): HTMLElement {
+  const item = button.closest('[data-slot="overflow-item"][data-overflowing]')
+  const root = item?.parentElement?.closest(
+    '[data-slot="toolbar"], [data-slot="overflow"]'
+  )
+  return (
+    root?.querySelector<HTMLElement>('[data-slot="overflow-menu"] button') ??
+    button
+  )
+}
+
 function useLazyPopup<TName extends FeatureName>(
   name: TName,
   {
@@ -223,7 +239,12 @@ function useLazyPopup<TName extends FeatureName>(
     popupId,
     buttonId,
     openedBy,
-    finalFocus: () => (movedOn.current ? false : (placedBy.current ?? true)),
+    finalFocus: () =>
+      movedOn.current
+        ? false
+        : placedBy.current
+          ? returnTarget(placedBy.current)
+          : true,
     tabOut,
     onOpenChange: (next, details) => {
       if (next) return

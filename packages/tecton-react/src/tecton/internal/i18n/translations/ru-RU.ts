@@ -200,4 +200,7 @@ export default defineTranslations({
     clearSelection: "Снять выделение",
     actions: "Действия",
   },
+  overflow: {
+    moreActions: "Другие действия",
+  },
 })

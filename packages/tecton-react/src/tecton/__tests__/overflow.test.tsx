@@ -228,6 +228,31 @@ describe("Overflow", () => {
     expect(items.map((i) => i.textContent)).toEqual(["b", "c"])
   })
 
+  it("names the More button in the provider's locale; `label` overrides it", async () => {
+    const { unmount } = render(
+      <TectonProvider locale="de-DE">
+        <Row width={150} labels="always">
+          <Item id="a" />
+          <Item id="b" />
+        </Row>
+      </TectonProvider>
+    )
+    expect(
+      await screen.findByRole("button", { name: "Weitere Aktionen" })
+    ).toBeInTheDocument()
+    unmount()
+    render(
+      <TectonProvider locale="de-DE">
+        <Row width={150} labels="always" menu={false}>
+          <Item id="a" />
+          <Item id="b" />
+          <OverflowMenu label="Mehr" />
+        </Row>
+      </TectonProvider>
+    )
+    expect(screen.getByRole("button", { name: "Mehr" })).toBeInTheDocument()
+  })
+
   it("breaks priority ties from the logical end", () => {
     render(
       <Row width={150} labels="always">

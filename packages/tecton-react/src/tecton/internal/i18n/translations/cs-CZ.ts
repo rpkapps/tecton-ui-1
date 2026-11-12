@@ -207,4 +207,7 @@ export default defineTranslations({
     clearSelection: "Zrušit výběr",
     actions: "Akce",
   },
+  overflow: {
+    moreActions: "Další akce",
+  },
 })

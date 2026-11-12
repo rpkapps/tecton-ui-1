@@ -7,8 +7,9 @@
  *
  * - text: a field; the rows whose display text contains it (like search);
  * - number: a minimum and a maximum, either left empty;
- * - date: a range of days picked on a calendar (its code and locale load
- *   on demand too, `filter-date.tsx`; the popover keeps its size meanwhile);
+ * - date: a range of days picked on `DateRangePicker`'s calendar, in a
+ *   popover like the picker's (its code and locale load on demand too,
+ *   `date-calendar.tsx`; the popover keeps its size meanwhile);
  * - boolean: Any, Yes or No;
  * - options: a checkbox per option with its number of rows: those matching
  *   the search and the other filters, counted when the popover opens (in
@@ -32,9 +33,8 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from "@tecton/react/components/radio-group"
-import { Skeleton } from "@tecton/react/components/skeleton"
-import { useDirection, useLocale } from "@tecton/react/tecton/provider"
 
+import { CalendarLoading } from "../calendar-loading"
 import { useTranslations } from "../i18n/translations"
 import {
   useDataTableSelector,
@@ -245,71 +245,67 @@ function OptionsFilter({
   )
 }
 
-/**
- * The calendar's place while its code loads: as big as the calendar, a month
- * of six weeks (`fixedWeeks`), so the popover does not change size.
- */
-function CalendarPlaceholder() {
-  return (
-    <div aria-hidden className="flex h-[19.125rem] w-56 flex-col gap-4">
-      <Skeleton className="mx-auto h-8 w-32" />
-      <Skeleton className="flex-1" />
-    </div>
-  )
-}
+/** Months a date filter's calendar shows, as `DateRangePicker`'s. */
+const DATE_FILTER_MONTHS = 2
 
 /**
- * A date filter's ends are calendar days: the day picked starts at midnight
- * in the column's `format.timeZone` (the zone its days are shown in) or the
+ * A date filter: `DateRangePicker`'s calendar, its code loaded on demand
+ * (`date-calendar.tsx`, the `dateInput` feature), its place kept meanwhile.
+ * The first day picked starts a range, the second ends it, sets the filter
+ * and closes the popover (`onPicked`), as the picker does.
+ *
+ * A filter's ends are calendar days: the day picked starts at midnight in
+ * the column's `format.timeZone` (the zone its days are shown in) or the
  * local zone; the calendar shows each end's day in that zone.
  */
 function DateFilter({
   column,
   value,
   set,
-}: FilterProps<Extract<DataTableFilterValue, { type: "date" }>>) {
+  focusDay,
+  onPicked,
+}: Pick<
+  FilterProps<Extract<DataTableFilterValue, { type: "date" }>>,
+  "column" | "value" | "set"
+> & {
+  /** Opened from the keyboard: the calendar focuses its day. */
+  focusDay: boolean
+  onPicked: () => void
+}) {
   const { timeZone } = (column.format ?? {}) as Intl.DateTimeFormatOptions
   const toCalendar = (date: Date | undefined) => {
     if (!date) return undefined
     const day = dayOf(date, timeZone)
     return new Date(day.year, day.month, day.day)
   }
-  const fromCalendar = (date: Date | undefined) =>
-    date &&
+  const fromCalendar = (date: Date) =>
     startOfDay(date.getFullYear(), date.getMonth(), date.getDate(), timeZone)
   const { module, load } = useFeature("dateInput", true)
-  const { locale } = useLocale()
-  const direction = useDirection()
   // Asked for as the popover opens, if the idle prefetch has not brought it.
   React.useEffect(() => {
     if (!module) load()
   }, [module, load])
-  if (!module) return <CalendarPlaceholder />
-  const { DateRangeFilter } = module
+  if (!module) return <CalendarLoading numberOfMonths={DATE_FILTER_MONTHS} />
+  const { DayFocusContext, RangeCalendar } = module
   return (
-    <DateRangeFilter
-      value={
-        value
-          ? { from: toCalendar(value.from), to: toCalendar(value.to) }
-          : undefined
-      }
-      onValueChange={(range) => {
-        const from = fromCalendar(range?.from)
-        const to = fromCalendar(range?.to)
-        set(
-          from || to
-            ? {
-                type: "date",
-                ...(from ? { from } : {}),
-                ...(to ? { to } : {}),
-              }
-            : null
-        )
-      }}
-      locale={locale}
-      dir={direction}
-      fallback={<CalendarPlaceholder />}
-    />
+    <DayFocusContext value={focusDay}>
+      <RangeCalendar
+        value={
+          value
+            ? { from: toCalendar(value.from), to: toCalendar(value.to) }
+            : undefined
+        }
+        onPick={(range) => {
+          set({
+            type: "date",
+            from: fromCalendar(range.from),
+            to: fromCalendar(range.to),
+          })
+          onPicked()
+        }}
+        numberOfMonths={DATE_FILTER_MONTHS}
+      />
+    </DayFocusContext>
   )
 }
 
@@ -360,12 +356,8 @@ function FilterContent({
         />
       )
     case "date":
-      return (
-        <DateFilter
-          {...props}
-          value={value?.type === "date" ? value : undefined}
-        />
-      )
+      // In a popover of its own (`DataTableFilterPopover`).
+      return null
     case "boolean":
       return (
         <BooleanFilter
@@ -406,16 +398,31 @@ function DataTableFilterPopover({
   const t = useTranslations("dataTable")
   const content = React.useRef<HTMLDivElement | null>(null)
   usePopupTabbing(popup, "dialog")
+  const date = column.type === "date"
   const clear = () => {
     set(null)
-    // "Clear" goes with the filter: focus moves to the filter's first field.
-    setTimeout(() =>
-      content.current
-        ?.querySelector<HTMLElement>(
+    // "Clear" goes with the filter: focus moves to the filter's first
+    // field, or to the calendar's day.
+    setTimeout(() => {
+      const element = content.current
+      ;(
+        element?.querySelector<HTMLElement>(
+          '[role="grid"] button[tabindex="0"]'
+        ) ??
+        element?.querySelector<HTMLElement>(
           'input:not([type="hidden"]), [role="checkbox"], [role="radio"], button'
         )
-        ?.focus()
-    )
+      )?.focus()
+    })
+  }
+  const keyboard = popup.openedBy === "keyboard"
+  const contentProps = {
+    ref: content,
+    id: popup.popupId,
+    anchor: popup.anchor,
+    finalFocus: popup.finalFocus,
+    align: "start" as const,
+    "data-slot": "data-table-filter-content",
   }
   return (
     <Popover
@@ -423,30 +430,57 @@ function DataTableFilterPopover({
       onOpenChange={popup.onOpenChange}
       onOpenChangeComplete={popup.onOpenChangeComplete}
     >
-      <PopoverContent
-        ref={content}
-        id={popup.popupId}
-        anchor={popup.anchor}
-        finalFocus={popup.finalFocus}
-        align="start"
-        data-slot="data-table-filter-content"
-        className="flex w-auto min-w-56 flex-col gap-3"
-      >
-        <div className="flex min-h-6 items-center justify-between gap-4">
-          <PopoverTitle className="text-sm">{column.header}</PopoverTitle>
+      {date ? (
+        // `DateRangePicker`'s popover: its calendar, then Clear while a
+        // filter is set (where the picker has its presets).
+        <PopoverContent
+          {...contentProps}
+          aria-label={column.header}
+          // From the keyboard, the calendar focuses its day itself.
+          initialFocus={keyboard ? false : undefined}
+          className="w-auto gap-0 overflow-hidden p-0"
+        >
+          <DateFilter
+            column={column}
+            value={value?.type === "date" ? value : undefined}
+            set={set}
+            focusDay={keyboard}
+            onPicked={() => popup.onOpenChange(false, {})}
+          />
           {value && (
-            <Button
-              variant="ghost"
-              size="xs"
-              className="-me-1.5"
-              onClick={clear}
-            >
-              {t("clearFilter")}
-            </Button>
+            <div className="flex w-0 min-w-full border-t p-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="flex-1"
+                onClick={clear}
+              >
+                {t("clearFilter")}
+              </Button>
+            </div>
           )}
-        </div>
-        <FilterContent context={context} column={column} set={set} />
-      </PopoverContent>
+        </PopoverContent>
+      ) : (
+        <PopoverContent
+          {...contentProps}
+          className="flex w-auto min-w-56 flex-col gap-3"
+        >
+          <div className="flex min-h-6 items-center justify-between gap-4">
+            <PopoverTitle className="text-sm">{column.header}</PopoverTitle>
+            {value && (
+              <Button
+                variant="ghost"
+                size="xs"
+                className="-me-1.5"
+                onClick={clear}
+              >
+                {t("clearFilter")}
+              </Button>
+            )}
+          </div>
+          <FilterContent context={context} column={column} set={set} />
+        </PopoverContent>
+      )}
     </Popover>
   )
 }

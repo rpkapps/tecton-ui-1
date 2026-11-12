@@ -44,8 +44,8 @@ const FEATURES = {
   csv: feature(() => import("./engine/csv")),
   /** `reorderableColumns`: the headers' drag and drop. */
   dragAndDrop: feature(() => import("./column-reorder")),
-  /** The calendar of a date filter, and its locale. */
-  dateInput: feature(() => import("./filter-date")),
+  /** A date filter's calendar: `DateRangePicker`'s (`date-calendar.tsx`). */
+  dateInput: feature(() => import("../date-calendar")),
   /** Column menus and description popovers (`header-popups.tsx`). */
   headerPopups: feature(() => import("./header-popups")),
   /** `resizableColumns`: the columns' resizers and their drags. */

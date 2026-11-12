@@ -170,4 +170,7 @@ export default defineTranslations({
     clearSelection: "Fjern utvalg",
     actions: "Handlinger",
   },
+  overflow: {
+    moreActions: "Flere handlinger",
+  },
 })

@@ -193,4 +193,7 @@ export default defineTranslations({
     clearSelection: "Wyczyść zaznaczenie",
     actions: "Akcje",
   },
+  overflow: {
+    moreActions: "Więcej akcji",
+  },
 })

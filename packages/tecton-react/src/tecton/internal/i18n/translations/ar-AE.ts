@@ -196,4 +196,7 @@ export default defineTranslations({
     clearSelection: "مسح التحديد",
     actions: "الإجراءات",
   },
+  overflow: {
+    moreActions: "مزيد من الإجراءات",
+  },
 })

@@ -193,4 +193,7 @@ export default defineTranslations({
     clearSelection: "Cancella selezione",
     actions: "Azioni",
   },
+  overflow: {
+    moreActions: "Altre azioni",
+  },
 })

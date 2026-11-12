@@ -144,7 +144,7 @@ export default function DataTableServer() {
         items={result?.rows ?? []}
         columns={columns}
         dataMode="server"
-        rowCount={result?.total}
+        rowCount={result?.total ?? 0}
         loading={loading}
         onViewChange={(view) => setSorting(view.sorting)}
         pagination

@@ -325,26 +325,26 @@ describe("DataTable server selection", () => {
     fireEvent.click(selectAll())
     expect(lastValue(onValueChange)).toHaveLength(10)
     expect(lastDetails(onValueChange).allMatching).toBeNull()
-    expect(count()).toBe("10 of 1240 selected")
+    expect(count()).toBe("10 of 1,240 selected")
 
     fireEvent.click(screen.getByRole("button", { name: "Select all 1,240" }))
     expect(lastValue(onValueChange)).toHaveLength(10)
     expect(lastDetails(onValueChange).reason).toBe("select-all-matching")
     expect(lastDetails(onValueChange).allMatching).toEqual({ except: [] })
-    expect(count()).toBe("1240 of 1240 selected")
+    expect(count()).toBe("1,240 of 1,240 selected")
 
     // A row deselected is an exception.
     fireEvent.click(checkbox("Well 03"))
     expect(lastDetails(onValueChange).allMatching).toEqual({ except: ["w3"] })
     expect(lastValue(onValueChange)).not.toContain("w3")
-    expect(count()).toBe("1239 of 1240 selected")
+    expect(count()).toBe("1,239 of 1,240 selected")
     fireEvent.click(checkbox("Well 03"))
     expect(lastDetails(onValueChange).allMatching).toEqual({ except: [] })
 
     // Rows loaded later come selected.
     rerender(<Server onValueChange={onValueChange} items={PAGE_TWO} />)
     expect(row("Well 11")).toHaveAttribute("aria-selected", "true")
-    expect(count()).toBe("1240 of 1240 selected")
+    expect(count()).toBe("1,240 of 1,240 selected")
   })
 
   it("leaves all-matching when the search changes", () => {
@@ -352,11 +352,11 @@ describe("DataTable server selection", () => {
     render(<Server onValueChange={onValueChange} controlled />)
     fireEvent.click(selectAll())
     fireEvent.click(screen.getByRole("button", { name: "Select all 1,240" }))
-    expect(count()).toBe("1240 of 1240 selected")
+    expect(count()).toBe("1,240 of 1,240 selected")
     act(() => setSearch?.("Gullfaks"))
     expect(lastDetails(onValueChange).reason).toBe("view")
     expect(lastDetails(onValueChange).allMatching).toBeNull()
-    expect(count()).toBe("10 of 1240 selected")
+    expect(count()).toBe("10 of 1,240 selected")
   })
 
   it("leaves all-matching when a controlled value is set to another selection", () => {
@@ -384,9 +384,9 @@ describe("DataTable server selection", () => {
     render(<Owner />)
     fireEvent.click(selectAll())
     fireEvent.click(screen.getByRole("button", { name: "Select all 1,240" }))
-    expect(count()).toBe("1240 of 1240 selected")
+    expect(count()).toBe("1,240 of 1,240 selected")
     fireEvent.click(screen.getByRole("button", { name: "Reset" }))
-    expect(count()).toBe("1 of 1240 selected")
+    expect(count()).toBe("1 of 1,240 selected")
   })
 })
 

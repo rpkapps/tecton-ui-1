@@ -175,4 +175,7 @@ export default defineTranslations({
     clearSelection: "Kijelölés törlése",
     actions: "Műveletek",
   },
+  overflow: {
+    moreActions: "További műveletek",
+  },
 })

@@ -161,6 +161,8 @@ describe("DataTableFilter on a date column shown in UTC", () => {
     expect(
       within(grid).getByRole("button", { name: /March 1st.*selected/ })
     ).toBeInTheDocument()
+    // The range picked anew: its first day, then its last.
+    await user.click(within(grid).getByRole("button", { name: /March 1st/ }))
     await user.click(within(grid).getByRole("button", { name: /March 5th/ }))
     await waitFor(() => expect(onViewChange).toHaveBeenCalled())
     const filter = onViewChange.mock.calls.at(-1)?.[0].filters.spud

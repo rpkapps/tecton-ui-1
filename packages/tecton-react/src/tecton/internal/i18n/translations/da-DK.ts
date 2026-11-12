@@ -171,4 +171,7 @@ export default defineTranslations({
     clearSelection: "Ryd valg",
     actions: "Handlinger",
   },
+  overflow: {
+    moreActions: "Flere handlinger",
+  },
 })

@@ -167,4 +167,7 @@ export default defineTranslations({
     clearSelection: "清除选择",
     actions: "操作",
   },
+  overflow: {
+    moreActions: "更多操作",
+  },
 })

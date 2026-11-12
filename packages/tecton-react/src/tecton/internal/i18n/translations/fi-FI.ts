@@ -176,4 +176,7 @@ export default defineTranslations({
     clearSelection: "Tyhjennä valinta",
     actions: "Toiminnot",
   },
+  overflow: {
+    moreActions: "Lisää toimintoja",
+  },
 })

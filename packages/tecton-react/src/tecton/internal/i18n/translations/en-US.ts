@@ -226,6 +226,11 @@ const enUS = {
     // The name of the actions toolbar.
     actions: "Actions",
   },
+  overflow: {
+    // The name of the "⋯" button that opens the menu of the items that do
+    // not fit in a toolbar or row.
+    moreActions: "More actions",
+  },
 } as const satisfies TranslationTable
 
 export default enUS

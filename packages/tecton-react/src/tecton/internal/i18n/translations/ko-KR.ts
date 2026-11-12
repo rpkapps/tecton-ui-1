@@ -169,4 +169,7 @@ export default defineTranslations({
     clearSelection: "선택 해제",
     actions: "작업",
   },
+  overflow: {
+    moreActions: "추가 작업",
+  },
 })

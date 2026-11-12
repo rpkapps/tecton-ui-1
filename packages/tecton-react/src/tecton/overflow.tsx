@@ -24,6 +24,8 @@ import {
 } from "@tecton/react/components/tooltip"
 import { useDirection } from "@tecton/react/tecton/provider"
 
+import { useTranslations } from "./internal/i18n/translations"
+
 /**
  * Tecton Overflow — a flex row that gives up space in stages when its
  * container gets narrower: elastic items shrink, labels collapse to icons,
@@ -1308,7 +1310,7 @@ function OverflowSpacer({ className, ...props }: React.ComponentProps<"div">) {
 // ---- menu ----------------------------------------------------------------------
 
 type OverflowMenuProps = {
-  /** Accessible name of the default trigger. Default "More actions". */
+  /** Accessible name of the default trigger. Default "More actions" (translated). */
   label?: string
   /** A custom trigger button (an element, e.g. `<Button variant="outline" />`) instead of the ellipsis. */
   trigger?: React.ReactElement
@@ -1318,11 +1320,12 @@ type OverflowMenuProps = {
 }
 
 function OverflowMenu({
-  label = "More actions",
+  label,
   trigger,
   badge = false,
   className,
 }: OverflowMenuProps) {
+  const t = useTranslations("overflow")
   const { store, orientation } = useOverflow("OverflowMenu")
   const state = React.useSyncExternalStore(
     React.useCallback((cb) => store.subscribeMenu(cb), [store]),
@@ -1366,7 +1369,13 @@ function OverflowMenu({
           <DropdownMenuTrigger render={trigger} />
         ) : (
           <DropdownMenuTrigger
-            render={<Button variant="ghost" size="icon" aria-label={label} />}
+            render={
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label={label ?? t("moreActions")}
+              />
+            }
           >
             <EllipsisIcon />
           </DropdownMenuTrigger>

@@ -191,4 +191,7 @@ export default defineTranslations({
     clearSelection: "Išvalyti pasirinkimą",
     actions: "Veiksmai",
   },
+  overflow: {
+    moreActions: "Daugiau veiksmų",
+  },
 })

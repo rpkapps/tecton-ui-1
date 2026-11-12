@@ -202,4 +202,7 @@ export default defineTranslations({
     clearSelection: "Notīrīt atlasi",
     actions: "Darbības",
   },
+  overflow: {
+    moreActions: "Vairāk darbību",
+  },
 })
