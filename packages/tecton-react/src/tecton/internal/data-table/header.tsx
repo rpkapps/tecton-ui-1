@@ -137,8 +137,8 @@ const MENU_BUTTON_BESIDE = cn("ms-auto", MENU_SHOWN)
  * The divider at a column group's edges, through every header row below
  * the group's own, and under the group's cell: the table's border token.
  */
-const GROUP_EDGE = "border-s border-border"
-const GROUP_UNDER = "border-b border-border"
+const GROUP_EDGE = "border-s border-s-border"
+const GROUP_UNDER = "border-b border-b-border"
 
 /**
  * A row of group headers above the columns' own: as tall as its text (the
@@ -428,6 +428,7 @@ function DataTableColumnHeader<T>({
   column,
   index,
   edge,
+  ruled,
   rowSpan,
   shared,
 }: {
@@ -436,6 +437,8 @@ function DataTableColumnHeader<T>({
   index: number
   /** A column group starts or ends at the column's start edge. */
   edge: boolean
+  /** Every column of the header is ruled off: a column group is shown. */
+  ruled: boolean
   /** The header rows it spans: the rows below its last group. */
   rowSpan: number
   shared: HeaderShared<T>
@@ -490,10 +493,11 @@ function DataTableColumnHeader<T>({
   // The last column's grip stays inside the table: half of it past the
   // edge would be cut by the frame, and scroll the table.
   const lastGrip = index === layout.columns.length - 1 ? "me-0" : undefined
-  // On the start's pinned edge, the divider is the grip's line at rest.
+  // On the start's pinned edge, and in a ruled header, the divider is the
+  // grip's line at rest.
   const grip = cn(
     lastGrip,
-    pin?.edge && pin.side === "start" && "after:bg-transparent"
+    ((pin?.edge && pin.side === "start") || ruled) && "after:bg-transparent"
   )
 
   // The resizer's width while it changes: drawn through `preview`, so only
@@ -910,16 +914,21 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
   // row (not at the table's edges, which the frame draws; at its first
   // column, after the selection column).
   const edges = new Set<number>()
+  let grouped = false
   for (const row of layout.headerRows) {
     let at = 0
     for (const cell of row.cells) {
       if (cell.kind === "group" && cell.id !== null) {
+        grouped = true
         edges.add(at)
         edges.add(at + cell.colSpan)
       }
       at += cell.colSpan
     }
   }
+  // With a group, every column is ruled off in the header, so the columns
+  // under a group and beside it read as one grid.
+  if (grouped) for (let at = 1; at < layout.columns.length; at++) edges.add(at)
   edges.delete(layout.columns.length)
   if (!selection && !options.reorderableRows) edges.delete(0)
   // Nor beside the start's pinned columns, which draw their divider there.
@@ -976,6 +985,7 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
                     column={column}
                     index={index.get(column.id) ?? at}
                     edge={edges.has(at)}
+                    ruled={grouped}
                     rowSpan={rowSpan}
                     shared={shared}
                   />

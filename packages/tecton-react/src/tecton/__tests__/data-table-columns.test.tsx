@@ -307,17 +307,14 @@ describe("DataTable column groups", () => {
     expect(name()).toBe("Wells")
   })
 
-  it("draws a divider at each group's edges through the header rows, and under the group's name", () => {
+  it("rules off every header column once a group is shown, and draws a line under the group's name", () => {
     render(<Fields selectionMode="multiple" />)
     const group = screen.getByRole("columnheader", { name: "Production" })
-    // Under the group's name, and at its start and its end (the start of
-    // the column after it), in both rows.
-    expect(group).toHaveClass("border-b", "border-s", "border-border")
-    expect(header("Oil")).toHaveClass("border-s")
-    expect(header("Gas")).not.toHaveClass("border-s")
-    expect(header("Water")).not.toHaveClass("border-s")
-    expect(header("Wells")).toHaveClass("border-s")
-    expect(header("Operator")).not.toHaveClass("border-s")
+    // Under the group's name, and at its start; then between every column
+    // of the header, in and out of the group.
+    expect(group).toHaveClass("border-b", "border-b-border", "border-s", "border-s-border")
+    for (const name of ["Operator", "Oil", "Gas", "Water", "Wells"])
+      expect(header(name)).toHaveClass("border-s")
     // "Wells", in no group, spans both rows: the end edge goes on through
     // it, and no empty cell stands above it.
     expect(header("Wells")).toHaveAttribute("rowspan", "2")
@@ -1291,9 +1288,9 @@ describe("DataTable column pinning", () => {
       "140px",
       "160px",
     ])
-    // The first pinned at the end draws the divider and shadow, the next not.
+    // The first pinned at the end draws the divider and shadow, the next
+    // only the header's rule (a group is shown).
     expect(header("Field")).toHaveClass("border-s", "border-s-border", END_FADE)
-    expect(header("Operator")).not.toHaveClass("border-s")
     expect(header("Operator")).not.toHaveClass(END_FADE)
     // The group over the pinned columns' place is split from theirs.
     expect(
