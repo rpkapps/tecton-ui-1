@@ -60,16 +60,13 @@ export default defineTranslations({
     rowsPerPage: "Редове на страница",
     pagination: "Страниране",
     rowRange: "{from}–{to} от {total}",
-    previous: "Предишна",
-    next: "Следваща",
-    goToPage: "Страница {page}",
+    page: "Страница",
     pageOf: "Страница {page} от {pageCount}",
     previousPage: "Предишна страница",
     nextPage: "Следваща страница",
-    pagePicker: "Към страница",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Отиди",
-    pagePickerInvalid: "Въведете страница от {from} до {to}",
+    firstPage: "Първа страница",
+    lastPage: "Последна страница",
+    rows: "Редове",
     selectAllMatching: {
       one: "Изберете {total} ред",
       other: "Изберете всички {total} реда",
@@ -201,5 +198,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Още действия",
+  },
+  numberInput: {
+    increase: "Увеличаване",
+    decrease: "Намаляване",
   },
 })

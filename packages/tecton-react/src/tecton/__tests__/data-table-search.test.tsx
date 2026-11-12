@@ -355,17 +355,46 @@ describe("DataTableFilter", () => {
     const user = userEvent.setup({ delay: null })
     render(<Wells />)
     await user.click(filterButton("Depth (m)"))
-    const min = screen.getByRole("spinbutton", { name: "Min" })
+    const min = screen.getByRole("textbox", { name: "Min" })
     await user.type(min, "2000")
     const depths = WELLS.slice(0, 8)
       .filter((well) => (well.depth ?? 0) >= 2000)
       .map((well) => well.name)
     expect(names()).toEqual(depths)
-    await user.type(screen.getByRole("spinbutton", { name: "Max" }), "3000.0")
-    expect(screen.getByRole("spinbutton", { name: "Max" })).toHaveValue(3000)
+    const max = screen.getByRole("textbox", { name: "Max" })
+    await user.type(max, "3000.0")
+    expect(max).toHaveValue("3000.0")
     expect(filterButton("Depth (m)")).toHaveTextContent("2,000–3,000")
+    // Formatted once it loses focus.
+    await user.click(min)
+    expect(max).toHaveValue("3,000")
     await user.clear(min)
     expect(filterButton("Depth (m)")).toHaveTextContent("≤ 3,000")
+  })
+
+  it("steps a number filter's bounds with its buttons and arrow keys, not native spinners", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    render(<Wells onViewChange={onViewChange} />)
+    await user.click(filterButton("Depth (m)"))
+    const min = screen.getByRole("textbox", { name: "Min" })
+    expect(min).toHaveAttribute("data-slot", "number-input-input")
+    expect(min).toHaveAccessibleDescription("Depth (m)")
+    expect(
+      document.querySelector('input[type="number"]:not([aria-hidden])')
+    ).toBeNull()
+    await user.type(min, "2000")
+    const [, increase] = min
+      .closest('[data-slot="number-input-group"]')!
+      .querySelectorAll("button")
+    expect(increase).toHaveAccessibleName("Increase")
+    await user.click(increase)
+    expect(min).toHaveValue("2,001")
+    await user.keyboard("{ArrowDown}{Enter}")
+    expect(min).toHaveValue("2,000")
+    expect(onViewChange.mock.calls.at(-1)?.[0].filters).toEqual({
+      depth: { type: "number", min: 2000 },
+    })
   })
 
   it("filters a text column by what its text contains", async () => {

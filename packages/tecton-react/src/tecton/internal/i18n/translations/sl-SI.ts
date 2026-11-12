@@ -61,16 +61,13 @@ export default defineTranslations({
     rowsPerPage: "Vrstic na stran",
     pagination: "Ostranjevanje",
     rowRange: "{from}–{to} od {total}",
-    previous: "Prejšnja",
-    next: "Naslednja",
-    goToPage: "Stran {page}",
+    page: "Stran",
     pageOf: "Stran {page} od {pageCount}",
     previousPage: "Prejšnja stran",
     nextPage: "Naslednja stran",
-    pagePicker: "Pojdi na stran",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Pojdi",
-    pagePickerInvalid: "Vnesite stran od {from} do {to}",
+    firstPage: "Prva stran",
+    lastPage: "Zadnja stran",
+    rows: "Vrstice",
     selectAllMatching: {
       one: "Izberite {total} vrstico",
       two: "Izberite {total} vrstici",
@@ -227,5 +224,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Več dejanj",
+  },
+  numberInput: {
+    increase: "Povečaj",
+    decrease: "Zmanjšaj",
   },
 })

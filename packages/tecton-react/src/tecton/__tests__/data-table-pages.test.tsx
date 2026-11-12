@@ -41,40 +41,49 @@ function Wells({
 }
 
 const button = (name: string) => screen.getByRole("button", { name })
-/** "Page 2 of 5": the current page's button, and the last page's. */
+/** The page field. */
+const field = () =>
+  screen.getByRole<HTMLInputElement>("textbox", { name: "Page" })
+/** "Page 2 of 5": the page field's value and the number of pages. */
 const info = () => {
-  const pages = [
-    ...document.querySelectorAll<HTMLElement>(
-      '[data-slot="pagination-item"] button[aria-label^="Page "]'
-    ),
-  ]
-  const current = pages.find((page) => page.hasAttribute("aria-current"))
-  return `Page ${current?.textContent} of ${pages.at(-1)?.textContent}`
+  const count = document.querySelector('[data-step="count"]')?.textContent
+  return `Page ${field().value} of ${count?.replace(/^\/\s*/, "")}`
 }
 const range = () =>
   document.querySelector('[data-slot="data-table-row-range"]')?.textContent
 const ids = (from: number, to: number) =>
   WELLS.slice(from - 1, to).map((well) => well.name)
+/** The parts `DataTablePagination` lets go of as it narrows, by `data-step`. */
+const step = (name: string) =>
+  document.querySelectorAll<HTMLElement>(`[data-step="${name}"]`)
+const many = Array.from({ length: 240 }, (_, i) => ({
+  ...WELLS[0],
+  id: `m${i}`,
+  name: `M ${i}`,
+}))
 
 afterEach(() => {
   vi.restoreAllMocks()
 })
 
 describe("DataTable pages", () => {
-  it("shows a page of rows, and moves between pages with the buttons", () => {
+  it("shows a page of rows, and moves between pages with First, Previous, Next and Last", () => {
     const onPageChange = vi.fn()
     render(<Wells defaultPageSize={5} onPageChange={onPageChange} />)
     expect(names()).toEqual(ids(1, 5))
     expect(info()).toBe("Page 1 of 5")
     expect(range()).toBe("1–5 of 23")
-    expect(
-      screen.getByRole("navigation", { name: "Pagination" })
-    ).toBeInTheDocument()
-    // Buttons, not links; the current page's says so.
+    const nav = screen.getByRole("navigation", { name: "Pagination" })
+    // Buttons, not links: the arrows and the page field.
     expect(screen.queryAllByRole("link")).toHaveLength(0)
-    expect(button("Page 1")).toHaveAttribute("aria-current", "page")
-    // The way back is disabled on the first page, and keeps focus.
-    expect(button("Previous page")).toHaveAttribute("aria-disabled", "true")
+    expect(
+      within(nav)
+        .getAllByRole("button")
+        .map((item) => item.getAttribute("aria-label"))
+    ).toEqual(["First page", "Previous page", "Next page", "Last page"])
+    // The ways back are disabled on the first page, and keep focus.
+    for (const name of ["First page", "Previous page"])
+      expect(button(name)).toHaveAttribute("aria-disabled", "true")
 
     fireEvent.click(button("Next page"))
     expect(names()).toEqual(ids(6, 10))
@@ -84,347 +93,307 @@ describe("DataTable pages", () => {
       2,
       expect.objectContaining({ reason: "next" })
     )
-    fireEvent.click(button("Page 5"))
+    fireEvent.click(button("Last page"))
     expect(names()).toEqual(ids(21, 23))
+    expect(info()).toBe("Page 5 of 5")
     expect(range()).toBe("21–23 of 23")
     expect(onPageChange).toHaveBeenLastCalledWith(
       5,
-      expect.objectContaining({ reason: "page" })
+      expect.objectContaining({ reason: "last" })
     )
-    expect(button("Next page")).toHaveAttribute("aria-disabled", "true")
+    for (const name of ["Next page", "Last page"])
+      expect(button(name)).toHaveAttribute("aria-disabled", "true")
+    expect(button("First page")).not.toHaveAttribute("aria-disabled", "true")
     fireEvent.click(button("Previous page"))
     expect(info()).toBe("Page 4 of 5")
-    fireEvent.click(button("Page 1"))
+    expect(onPageChange).toHaveBeenLastCalledWith(
+      4,
+      expect.objectContaining({ reason: "previous" })
+    )
+    fireEvent.click(button("First page"))
     expect(info()).toBe("Page 1 of 5")
     expect(onPageChange).toHaveBeenLastCalledWith(
       1,
-      expect.objectContaining({ reason: "page" })
+      expect.objectContaining({ reason: "first" })
     )
   })
 
-  it("shows the first, the last and the current page's neighbours, with ellipses", () => {
-    const many = Array.from({ length: 240 }, (_, i) => ({
-      ...WELLS[0],
-      id: `m${i}`,
-      name: `M ${i}`,
-    }))
-    render(<Wells items={many} />)
-    const shown = () =>
-      // The wide row: the narrow row's own ellipses left out.
-      [
-        ...document.querySelectorAll(
-          '[data-slot="pagination-item"]:not([data-narrow]) > *'
-        ),
-      ]
-        .map((item) =>
-          item.matches("[data-ellipsis]")
-            ? "…"
-            : item.getAttribute("aria-label")?.startsWith("Page ")
-              ? item.textContent
-              : null
-        )
-        .filter((item) => item !== null)
-    expect(shown()).toEqual(["1", "2", "3", "4", "5", "…", "24"])
-    expect(range()).toBe("1–10 of 240")
-    fireEvent.click(button("Page 5"))
-    expect(shown()).toEqual(["1", "…", "4", "5", "6", "…", "24"])
-    fireEvent.click(button("Page 24"))
-    expect(shown()).toEqual(["1", "…", "20", "21", "22", "23", "24"])
-    expect(range()).toBe("231–240 of 240")
+  it("draws the arrows' icons mirrored in a right-to-left table", () => {
+    render(
+      <TectonProvider direction="rtl">
+        <Wells defaultPageSize={5} />
+      </TectonProvider>
+    )
+    for (const name of [
+      "First page",
+      "Previous page",
+      "Next page",
+      "Last page",
+    ])
+      expect(button(name).querySelector("svg")).toHaveClass("rtl:rotate-180")
+    // In reading order: First and Previous first, at the start of the row.
+    const order = [
+      ...document.querySelectorAll<HTMLElement>("[data-page-button]"),
+    ].map((item) => item.dataset.pageButton)
+    expect(order).toEqual(["first", "previous", "next", "last"])
   })
 
-  it("has the narrow widths' parts too: the neighbours' ellipses and \"Page 5 of 24\"", () => {
-    const many = Array.from({ length: 240 }, (_, i) => ({
-      ...WELLS[0],
-      id: `m${i}`,
-      name: `M ${i}`,
-    }))
-    render(<Wells items={many} />)
-    fireEvent.click(button("Page 5"))
-    // One button per page: the narrow row shows some of the same ones.
-    expect(screen.getAllByRole("button", { name: "Page 5" })).toHaveLength(1)
-    expect(document.querySelectorAll("[data-narrow]")).toHaveLength(2)
-    expect(
-      document.querySelector('[data-slot="data-table-page-of"]')
-    ).toHaveTextContent("Page 5 of 24")
-    // Its label can go: the Select keeps its name.
-    expect(
-      screen.getByRole("combobox", { name: "Rows per page" })
-    ).toHaveAttribute("aria-label", "Rows per page")
-  })
-
-  describe("ellipses", () => {
-    const many = Array.from({ length: 240 }, (_, i) => ({
-      ...WELLS[0],
-      id: `m${i}`,
-      name: `M ${i}`,
-    }))
-    /** The pages and ellipses of a row ("wide" or "narrow"), in order. */
-    const row = (which: "wide" | "narrow") =>
-      [
-        ...document.querySelectorAll<HTMLElement>(
-          `[data-slot="pagination-item"]:not([data-${which === "wide" ? "narrow" : "wide"}]) > :is([aria-label^="Page "], [data-ellipsis])`
-        ),
-      ].map((item) =>
-        item.dataset.ellipsis === "previous"
-          ? "«"
-          : item.dataset.ellipsis === "next"
-            ? "»"
-            : item.textContent
-      )
-    /** An ellipsis of the wide row, or of the narrow one. */
-    const ellipsis = (
-      direction: "previous" | "next",
-      which: "wide" | "narrow" = "wide"
-    ) =>
-      document.querySelector<HTMLElement>(
-        `[data-slot="pagination-item"]${which === "wide" ? ":not([data-narrow])" : "[data-narrow]"} [data-ellipsis="${direction}"]`
-      )!
-    /** The page picker's field, once it is open. */
-    const field = () => screen.findByRole("textbox", { name: "Go to page" })
-    const picker = () =>
-      document.querySelector('[data-slot="data-table-page-picker"]')
-
-    it("keep the same number of slots in each row on every page", () => {
-      render(<Wells items={many} />)
-      expect(row("wide")).toEqual(["1", "2", "3", "4", "5", "»", "24"])
-      expect(row("narrow")).toEqual(["1", "2", "3", "4", "»"])
-      for (let page = 1; page <= 24; page++) {
-        fireEvent.click(screen.getByRole("button", { name: `Page ${page}` }))
-        expect(row("wide")).toHaveLength(7)
-        expect(row("narrow")).toHaveLength(5)
-        expect(row("narrow")).toContain(String(page))
-      }
-      expect(row("narrow")).toEqual(["«", "21", "22", "23", "24"])
-      fireEvent.click(button("Page 21"))
-      fireEvent.click(button("Page 20"))
-      expect(row("wide")).toEqual(["1", "«", "19", "20", "21", "»", "24"])
-      expect(row("narrow")).toEqual(["«", "19", "20", "21", "»"])
-    })
-
-    it("show every page when they fit in the slots", () => {
-      render(<Wells items={many.slice(0, 40)} />)
-      expect(row("wide")).toEqual(["1", "2", "3", "4"])
-      expect(row("narrow")).toEqual(["1", "2", "3", "4"])
-      expect(document.querySelector("[data-ellipsis]")).toBeNull()
-    })
-
-    it("show their dots, named Go to page, also in a tooltip", async () => {
-      const user = userEvent.setup()
-      render(<Wells items={many} defaultPage={10} />)
-      for (const direction of ["previous", "next"] as const) {
-        expect(ellipsis(direction)).toHaveAccessibleName("Go to page")
-        // The dots alone: no double arrow.
-        expect(ellipsis(direction).querySelectorAll("svg")).toHaveLength(1)
-      }
-      await user.hover(ellipsis("next"))
+  describe("the page field", () => {
+    it("is a NumberInput between the words, named Page, without steppers", () => {
+      render(<Wells items={many} defaultPage={3} />)
+      const input = field()
+      expect(input).toHaveAttribute("data-slot", "number-input-input")
+      expect(input).toHaveValue("3")
+      expect(input).toHaveAttribute("inputmode", "numeric")
+      expect(input).toHaveAccessibleDescription("of 24")
+      const box = input.closest('[data-slot="data-table-page-field"]')!
       expect(
-        await screen.findByText("Go to page", {}, { timeout: 3000 })
-      ).toBeInTheDocument()
-    })
-
-    it("open the page picker, empty and focused, from each ellipsis", async () => {
-      const user = userEvent.setup()
-      const onPageChange = vi.fn()
-      render(
-        <Wells items={many} defaultPage={10} onPageChange={onPageChange} />
+        box.querySelector('[data-slot="number-input-steppers"]')
+      ).toBeNull()
+      // "Page [3] of 24", and the narrow "[3] / 24".
+      expect(
+        [...box.querySelectorAll('[data-step="words"]')].map(
+          (item) => item.textContent
+        )
+      ).toEqual(["Page", "of 24"])
+      expect(box.querySelector('[data-step="count"]')).toHaveTextContent("/ 24")
+      expect(box.querySelector('[data-step="count"]')).toHaveAttribute(
+        "aria-hidden"
       )
-      for (const [direction, which] of [
-        ["previous", "wide"],
-        ["next", "wide"],
-        ["previous", "narrow"],
-        ["next", "narrow"],
-      ] as const) {
-        const trigger = ellipsis(direction, which)
-        await user.click(trigger)
-        const input = await field()
-        await waitFor(() => expect(input).toHaveFocus())
-        expect(input).toHaveValue("")
-        expect(input).toHaveAttribute("placeholder", "1–24")
-        expect(input).toHaveAttribute("inputmode", "numeric")
-        expect(trigger).toHaveAttribute("aria-expanded", "true")
-        expect(screen.getByRole("button", { name: "Go" })).toBeInTheDocument()
-        await user.keyboard("{Escape}")
-        await waitFor(() => expect(picker()).toBeNull())
-        expect(trigger).toHaveAttribute("aria-expanded", "false")
-      }
-      // Opening it changes nothing.
-      expect(info()).toBe("Page 10 of 24")
-      expect(onPageChange).not.toHaveBeenCalled()
     })
 
-    it("go to the page typed on Enter, focusing it", async () => {
+    it("opens the page typed on Enter, keeping focus in the field", async () => {
       const user = userEvent.setup()
       const onPageChange = vi.fn()
       render(<Wells items={many} onPageChange={onPageChange} />)
-      await user.click(ellipsis("next"))
-      await user.type(await field(), "17{Enter}")
+      await user.click(field())
+      await user.keyboard("{Control>}a{/Control}17{Enter}")
       expect(info()).toBe("Page 17 of 24")
+      expect(range()).toBe("161–170 of 240")
       expect(onPageChange).toHaveBeenCalledTimes(1)
       expect(onPageChange).toHaveBeenLastCalledWith(
         17,
         expect.objectContaining({ reason: "page" })
       )
-      await waitFor(() => expect(picker()).toBeNull())
-      await waitFor(() => expect(button("Page 17")).toHaveFocus())
+      expect(field()).toHaveFocus()
     })
 
-    it("go to the page typed with Go, focusing it where its ellipsis went", async () => {
+    it("opens the page typed as it loses focus", async () => {
       const user = userEvent.setup()
       const onPageChange = vi.fn()
       render(<Wells items={many} onPageChange={onPageChange} />)
-      await user.click(ellipsis("next"))
-      await user.type(await field(), "24")
-      await user.click(screen.getByRole("button", { name: "Go" }))
-      expect(info()).toBe("Page 24 of 24")
+      await user.click(field())
+      await user.keyboard("{Control>}a{/Control}9")
+      expect(onPageChange).not.toHaveBeenCalled()
+      await user.tab()
+      expect(info()).toBe("Page 9 of 24")
       expect(onPageChange).toHaveBeenLastCalledWith(
-        24,
+        9,
         expect.objectContaining({ reason: "page" })
       )
-      // The last pages are in view: the ellipsis it opened from is gone.
-      expect(row("wide")).toEqual(["1", "«", "20", "21", "22", "23", "24"])
-      await waitFor(() => expect(picker()).toBeNull())
-      await waitFor(() => expect(button("Page 24")).toHaveFocus())
     })
 
-    it("refuse an empty field, 0 and a page past the last, with the field's error", async () => {
+    it("clamps a page past the ends on Enter, and goes back to the page on an empty field", async () => {
       const user = userEvent.setup()
       const onPageChange = vi.fn()
-      render(<Wells items={many} onPageChange={onPageChange} />)
-      await user.click(ellipsis("next"))
-      const input = await field()
-      // Not invalid before a page is asked for.
-      expect(input).not.toHaveAttribute("aria-invalid")
-      expect(screen.queryByRole("alert")).toBeNull()
-      for (const text of ["", "0", "25", "240"]) {
-        await user.clear(input)
-        await user.type(input, `${text}{Enter}`)
-        expect(input).toHaveAttribute("aria-invalid", "true")
-        const error = screen.getByRole("alert")
-        expect(error).toHaveTextContent("Enter a page from 1 to 24")
-        expect(input).toHaveAccessibleDescription("Enter a page from 1 to 24")
-        expect(input.closest('[data-slot="field"]')).toHaveAttribute(
-          "data-invalid",
-          "true"
-        )
-      }
-      // Still open, on the same page, focus in the field.
-      expect(picker()).not.toBeNull()
-      expect(input).toHaveFocus()
+      render(<Wells items={many} defaultPage={5} onPageChange={onPageChange} />)
+      await user.click(field())
+      await user.keyboard("{Control>}a{/Control}240{Enter}")
+      expect(info()).toBe("Page 24 of 24")
+      expect(onPageChange).toHaveBeenLastCalledWith(24, expect.anything())
+      await user.keyboard("{Control>}a{/Control}0{Enter}")
       expect(info()).toBe("Page 1 of 24")
-      expect(onPageChange).not.toHaveBeenCalled()
-      // A page there is clears the error as it is typed.
-      await user.clear(input)
-      await user.type(input, "8")
-      expect(input).not.toHaveAttribute("aria-invalid")
-      expect(screen.queryByRole("alert")).toBeNull()
+      await user.keyboard("{Control>}a{/Control}2.6{Enter}")
+      expect(info()).toBe("Page 3 of 24")
+      onPageChange.mockClear()
+      await user.clear(field())
       await user.keyboard("{Enter}")
-      expect(info()).toBe("Page 8 of 24")
+      expect(info()).toBe("Page 3 of 24")
+      expect(onPageChange).not.toHaveBeenCalled()
     })
 
-    it("take whole numbers only, the arrows kept within the pages", async () => {
+    it("goes back to the page as it loses focus with a page outside them, a fraction or nothing", async () => {
       const user = userEvent.setup()
-      render(<Wells items={many} defaultPage={10} />)
-      await user.click(ellipsis("next"))
-      const input = await field()
-      // Digits only: no sign, no decimals, no letters.
-      await user.type(input, "-1.5e")
-      expect(input).toHaveValue("15")
-      // Other digits are digits too (fullwidth, Arabic-Indic).
-      await user.clear(input)
-      await user.type(input, "１٢")
-      expect(input).toHaveValue("12")
-      // The arrows step from the current page when empty, within 1 to 24.
-      await user.clear(input)
-      await user.keyboard("{ArrowUp}")
-      expect(input).toHaveValue("11")
-      await user.keyboard("{ArrowDown}{ArrowDown}")
-      expect(input).toHaveValue("9")
-      await user.clear(input)
-      await user.type(input, "300")
-      await user.keyboard("{ArrowDown}")
-      expect(input).toHaveValue("24")
-      await user.keyboard("{ArrowUp}")
-      expect(input).toHaveValue("24")
-      await user.clear(input)
-      await user.type(input, "1")
-      await user.keyboard("{ArrowDown}")
-      expect(input).toHaveValue("1")
+      const onPageChange = vi.fn()
+      render(<Wells items={many} defaultPage={5} onPageChange={onPageChange} />)
+      for (const text of ["0", "25", "240", "-3", "2.5", ""]) {
+        await user.click(field())
+        await user.keyboard(`{Control>}a{/Control}{Backspace}${text}`)
+        await user.tab()
+        expect([text, info()]).toEqual([text, "Page 5 of 24"])
+      }
+      expect(onPageChange).not.toHaveBeenCalled()
+      // Letters are not taken at all.
+      await user.click(field())
+      await user.keyboard("{Control>}a{/Control}x")
+      expect(field()).toHaveValue("5")
     })
 
-    it("give focus back to the ellipsis on Escape, changing nothing", async () => {
+    it("steps through the pages with the arrow keys, Home and End, at once", async () => {
       const user = userEvent.setup()
       const onPageChange = vi.fn()
       render(
         <Wells items={many} defaultPage={10} onPageChange={onPageChange} />
       )
-      await user.click(ellipsis("previous"))
-      await user.type(await field(), "3")
-      await user.keyboard("{Escape}")
-      await waitFor(() => expect(picker()).toBeNull())
-      await waitFor(() => expect(ellipsis("previous")).toHaveFocus())
-      expect(info()).toBe("Page 10 of 24")
-      expect(onPageChange).not.toHaveBeenCalled()
-      // It opens empty again.
-      await user.click(ellipsis("previous"))
-      expect(await field()).toHaveValue("")
-    })
-  })
-
-  describe('"Page 3 of 5"', () => {
-    const many = Array.from({ length: 240 }, (_, i) => ({
-      ...WELLS[0],
-      id: `m${i}`,
-      name: `M ${i}`,
-    }))
-    const pageOf = () =>
-      document
-        .querySelector('[data-slot="data-table-page-of"]')!
-        .closest("button")!
-
-    it("is a ghost button that opens the page picker, and goes to the page typed", async () => {
-      const user = userEvent.setup()
-      const onPageChange = vi.fn()
-      render(<Wells items={many} defaultPage={5} onPageChange={onPageChange} />)
-      expect(pageOf()).toHaveAccessibleName("Page 5 of 24")
-      expect(pageOf()).toHaveAttribute("data-variant", "ghost")
-      // Its text keeps the width of its widest.
-      expect(
-        document.querySelector('[data-slot="data-table-page-of"]')
-      ).toHaveAttribute("data-widest", "Page 24 of 24")
-      await user.click(pageOf())
-      const input = await screen.findByRole("textbox", { name: "Go to page" })
-      await waitFor(() => expect(input).toHaveFocus())
-      expect(pageOf()).toHaveAttribute("aria-expanded", "true")
-      await user.type(input, "20{Enter}")
+      await user.click(field())
+      await user.keyboard("{ArrowUp}")
+      expect(info()).toBe("Page 11 of 24")
       expect(onPageChange).toHaveBeenLastCalledWith(
-        20,
+        11,
         expect.objectContaining({ reason: "page" })
       )
-      expect(pageOf()).toHaveAccessibleName("Page 20 of 24")
-      // Back to it: the page buttons are not there at its width.
-      await waitFor(() => expect(pageOf()).toHaveFocus())
+      await user.keyboard("{ArrowDown}{ArrowDown}")
+      expect(info()).toBe("Page 9 of 24")
+      expect(range()).toBe("81–90 of 240")
+      await user.keyboard("{End}")
+      expect(info()).toBe("Page 24 of 24")
+      await user.keyboard("{ArrowUp}")
+      expect(info()).toBe("Page 24 of 24")
+      await user.keyboard("{Home}")
+      expect(info()).toBe("Page 1 of 24")
+      await user.keyboard("{ArrowDown}")
+      expect(info()).toBe("Page 1 of 24")
+      expect(field()).toHaveFocus()
     })
 
-    it("gives focus back on Escape", async () => {
+    it("follows the page changed elsewhere", () => {
+      render(<Wells items={many} />)
+      fireEvent.click(button("Next page"))
+      fireEvent.click(button("Next page"))
+      expect(field()).toHaveValue("3")
+    })
+
+    it("goes back to the page a controlled table keeps", async () => {
       const user = userEvent.setup()
-      render(<Wells items={many} defaultPage={5} />)
-      await user.click(pageOf())
-      await screen.findByRole("textbox", { name: "Go to page" })
-      await user.keyboard("{Escape}")
-      await waitFor(() => expect(pageOf()).toHaveFocus())
-      expect(pageOf()).toHaveAccessibleName("Page 5 of 24")
+      render(<Wells items={many} page={4} onPageChange={() => {}} />)
+      await user.click(field())
+      await user.keyboard("{Control>}a{/Control}12{Enter}")
+      await waitFor(() => expect(field()).toHaveValue("4"))
+    })
+
+    it("is as wide as the last page's number, so nothing moves as the page changes", () => {
+      render(<Wells items={many} />)
+      const box = field().closest('[data-slot="number-input"]')!
+        .parentElement as HTMLElement
+      const width = box.style.width
+      // Two digits ("24") and the field's padding.
+      expect(width).toContain("2ch + 0.625rem")
+      fireEvent.click(button("Last page"))
+      expect(box.style.width).toBe(width)
     })
   })
 
-  it("keeps the rows shown, and Page 3 of 5, as wide as their widest text", () => {
+  it("keeps the rows shown as wide as their widest text", () => {
     render(<Wells defaultPageSize={5} />)
     expect(
       document.querySelector('[data-slot="data-table-row-range"]')
     ).toHaveAttribute("data-widest", "23–23 of 23")
+  })
+
+  describe("as it narrows", () => {
+    it("names the parts it lets go of, in turn", () => {
+      render(<Wells items={many} />)
+      // The "Rows" label, the Select, First and Last, the words around
+      // the field ("/ 24" instead), and the rows shown.
+      expect(step("label")[0]).toHaveTextContent("Rows")
+      expect(step("label")[0]).toHaveAttribute("aria-hidden")
+      expect(step("page-size")[0]).toContainElement(
+        screen.getByRole("combobox", { name: "Rows per page" })
+      )
+      expect([...step("ends")].map((item) => item.textContent)).toEqual([
+        "",
+        "",
+      ])
+      expect(
+        [...step("ends")].map((item) =>
+          item.querySelector("button")?.getAttribute("aria-label")
+        )
+      ).toEqual(["First page", "Last page"])
+      expect(step("words")).toHaveLength(2)
+      expect(step("count")).toHaveLength(1)
+      expect(step("range")).toHaveLength(1)
+      // Previous, the field and Next have no step: they always stay.
+      for (const name of ["Previous page", "Next page"])
+        expect(button(name).closest("[data-step]")).toBeNull()
+      expect(field().closest("[data-step]")).toBeNull()
+    })
+
+    it("lets them go at container widths by size and the last page's digits, in order", () => {
+      const widths = (part: string) =>
+        [...step(part)[0].className.matchAll(/@max-\[([\d.]+)rem\]/g)].map(
+          ([, rem]) => Number(rem)
+        )
+      render(<Wells items={many} />)
+      const pagination = document.querySelector(
+        '[data-slot="data-table-pagination"]'
+      )!
+      expect(pagination).toHaveAttribute("data-size", "default")
+      expect(pagination).toHaveAttribute("data-fit", "default-short")
+      expect(pagination).toHaveClass("@container/data-table-pagination")
+      // One width per size and digits, each step narrower than the last.
+      const order = ["label", "page-size", "ends", "words", "range"].map(widths)
+      for (const list of order) expect(list).toHaveLength(6)
+      for (let i = 1; i < order.length; i++)
+        order[i].forEach((rem, fit) =>
+          expect(rem).toBeLessThan(order[i - 1][fit])
+        )
+      // "/ 24" shows where the words go.
+      expect(widths("count")).toEqual(widths("words"))
+      expect(step("count")[0]).toHaveClass("hidden")
+    })
+
+    it("fits a long last page, and the compact size", () => {
+      const thousands = Array.from({ length: 12_400 }, (_, i) => ({
+        ...WELLS[0],
+        id: `t${i}`,
+        name: `T ${i}`,
+      }))
+      render(<Wells items={thousands} size="sm" />)
+      expect(
+        document.querySelector('[data-slot="data-table-pagination"]')
+      ).toHaveAttribute("data-fit", "sm-long")
+      expect(info()).toBe("Page 1 of 1,240")
+    })
+  })
+
+  it("follows the table's size: the band's height and its controls", () => {
+    const { unmount } = render(<Wells items={many} />)
+    const band = () =>
+      document.querySelector('[data-slot="data-table-footer"]')!
+    expect(band()).toHaveAttribute("data-size", "default")
+    expect(band()).toHaveClass(
+      "text-sm",
+      "[[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*6+1lh+1px)]"
+    )
+    expect(button("Next page")).toHaveAttribute("data-size", "icon-sm")
     expect(
-      document.querySelector('[data-slot="data-table-page-of"]')
-    ).toHaveAttribute("data-widest", "Page 5 of 5")
+      screen.getByRole("combobox", { name: "Rows per page" })
+    ).toHaveAttribute("data-size", "default")
+    expect(field().closest('[data-slot="number-input-group"]')).toHaveAttribute(
+      "data-size",
+      "default"
+    )
+    unmount()
+    render(<Wells items={many} size="sm" />)
+    expect(band()).toHaveAttribute("data-size", "sm")
+    expect(band()).toHaveClass(
+      "text-xs",
+      "[[data-slot=data-table-content]+&]:min-h-[calc(var(--spacing)*2+1lh+1px)]"
+    )
+    for (const name of [
+      "First page",
+      "Previous page",
+      "Next page",
+      "Last page",
+    ])
+      expect(button(name)).toHaveAttribute("data-size", "icon-xs")
+    expect(
+      screen.getByRole("combobox", { name: "Rows per page" })
+    ).toHaveAttribute("data-size", "sm")
+    expect(field().closest('[data-slot="number-input-group"]')).toHaveAttribute(
+      "data-size",
+      "sm"
+    )
   })
 
   it("keeps a full page's height on the last page, short of rows", () => {
@@ -438,10 +407,10 @@ describe("DataTable pages", () => {
       '[data-slot="data-table-content"]'
     )!
     expect(frame.style.minHeight).toBe("")
-    fireEvent.click(button("Page 3"))
+    fireEvent.click(button("Last page"))
     expect(names()).toEqual(ids(21, 23))
     expect(frame.style.minHeight).toBe("400px")
-    fireEvent.click(button("Page 1"))
+    fireEvent.click(button("First page"))
     expect(frame.style.minHeight).toBe("")
     // Another page size: measured again on a full page.
     render(<Wells defaultPageSize={20} defaultPage={2} />)

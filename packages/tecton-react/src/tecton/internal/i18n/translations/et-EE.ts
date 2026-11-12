@@ -59,16 +59,13 @@ export default defineTranslations({
     rowsPerPage: "Ridu lehel",
     pagination: "Lehtede navigeerimine",
     rowRange: "{from}–{to} / {total}",
-    previous: "Eelmine",
-    next: "Järgmine",
-    goToPage: "Lehekülg {page}",
+    page: "Lehekülg",
     pageOf: "Lehekülg {page}/{pageCount}",
     previousPage: "Eelmine leht",
     nextPage: "Järgmine leht",
-    pagePicker: "Mine lehele",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Mine",
-    pagePickerInvalid: "Sisestage lehekülg vahemikus {from}–{to}",
+    firstPage: "Esimene leht",
+    lastPage: "Viimane leht",
+    rows: "Read",
     selectAllMatching: {
       one: "Vali {total} rida",
       other: "Vali kõik {total} rida",
@@ -189,5 +186,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Rohkem toiminguid",
+  },
+  numberInput: {
+    increase: "Suurenda",
+    decrease: "Vähenda",
   },
 })

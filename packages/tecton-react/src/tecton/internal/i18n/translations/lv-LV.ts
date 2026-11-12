@@ -60,16 +60,13 @@ export default defineTranslations({
     rowsPerPage: "Rindas lapā",
     pagination: "Lappušu navigācija",
     rowRange: "{from}–{to} no {total}",
-    previous: "Iepriekšējā",
-    next: "Nākamā",
-    goToPage: "{page}. lapa",
+    page: "Lapa",
     pageOf: "{page}. lapa no {pageCount}",
     previousPage: "Iepriekšējā lapa",
     nextPage: "Nākamā lapa",
-    pagePicker: "Pāriet uz lapu",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Pāriet",
-    pagePickerInvalid: "Ievadiet lapu no {from} līdz {to}",
+    firstPage: "Pirmā lapa",
+    lastPage: "Pēdējā lapa",
+    rows: "Rindas",
     selectAllMatching: {
       zero: "Atlasīt visas {total} rindas",
       one: "Atlasīt {total} rindu",
@@ -218,5 +215,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Vairāk darbību",
+  },
+  numberInput: {
+    increase: "Palielināt",
+    decrease: "Samazināt",
   },
 })

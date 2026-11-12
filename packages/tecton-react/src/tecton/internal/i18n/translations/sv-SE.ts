@@ -59,16 +59,13 @@ export default defineTranslations({
     rowsPerPage: "Rader per sida",
     pagination: "Sidnumrering",
     rowRange: "{from}–{to} av {total}",
-    previous: "Föregående",
-    next: "Nästa",
-    goToPage: "Sida {page}",
+    page: "Sida",
     pageOf: "Sida {page} av {pageCount}",
     previousPage: "Föregående sida",
     nextPage: "Nästa sida",
-    pagePicker: "Gå till sida",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Gå",
-    pagePickerInvalid: "Ange en sida från {from} till {to}",
+    firstPage: "Första sidan",
+    lastPage: "Sista sidan",
+    rows: "Rader",
     selectAllMatching: {
       one: "Markera {total} rad",
       other: "Markera alla {total} rader",
@@ -196,5 +193,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Fler åtgärder",
+  },
+  numberInput: {
+    increase: "Öka",
+    decrease: "Minska",
   },
 })

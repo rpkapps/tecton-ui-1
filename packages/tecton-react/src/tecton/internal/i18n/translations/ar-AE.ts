@@ -59,16 +59,13 @@ export default defineTranslations({
     rowsPerPage: "عدد الصفوف في الصفحة",
     pagination: "التنقل بين الصفحات",
     rowRange: "{from}–{to} من {total}",
-    previous: "السابق",
-    next: "التالي",
-    goToPage: "الصفحة {page}",
+    page: "الصفحة",
     pageOf: "الصفحة {page} من {pageCount}",
     previousPage: "الصفحة السابقة",
     nextPage: "الصفحة التالية",
-    pagePicker: "الانتقال إلى صفحة",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "انتقال",
-    pagePickerInvalid: "أدخل صفحة من {from} إلى {to}",
+    firstPage: "الصفحة الأولى",
+    lastPage: "الصفحة الأخيرة",
+    rows: "الصفوف",
     selectAllMatching: {
       zero: "تحديد كل الصفوف ({total})",
       one: "تحديد الصف ({total})",
@@ -212,5 +209,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "مزيد من الإجراءات",
+  },
+  numberInput: {
+    increase: "زيادة",
+    decrease: "إنقاص",
   },
 })

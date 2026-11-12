@@ -60,16 +60,13 @@ export default defineTranslations({
     rowsPerPage: "Строк на странице",
     pagination: "Навигация по страницам",
     rowRange: "{from}–{to} из {total}",
-    previous: "Назад",
-    next: "Далее",
-    goToPage: "Страница {page}",
+    page: "Страница",
     pageOf: "Страница {page} из {pageCount}",
     previousPage: "Предыдущая страница",
     nextPage: "Следующая страница",
-    pagePicker: "Перейти на страницу",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Перейти",
-    pagePickerInvalid: "Введите страницу от {from} до {to}",
+    firstPage: "Первая страница",
+    lastPage: "Последняя страница",
+    rows: "Строки",
     selectAllMatching: {
       one: "Выбрать все {total} строку",
       few: "Выбрать все {total} строки",
@@ -216,5 +213,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Другие действия",
+  },
+  numberInput: {
+    increase: "Увеличить",
+    decrease: "Уменьшить",
   },
 })

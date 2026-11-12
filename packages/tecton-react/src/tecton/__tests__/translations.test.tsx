@@ -113,31 +113,58 @@ describe("translations", () => {
     expect(results("ar-AE", 5)).toBe("5 نتائج")
   })
 
-  it("names the pagination's page picker in every locale", async () => {
+  it("names the pagination's arrows, page field and rows in every locale", async () => {
     const tables = Object.fromEntries(await locales())
     for (const [file, table] of Object.entries(tables)) {
       const strings = table.dataTable
-      expect([file, strings.previousPages, strings.nextPages]).toEqual([
-        file,
-        undefined,
-        undefined,
-      ])
+      // The page picker and the page buttons are gone.
       for (const key of [
         "pagePicker",
         "pagePickerHint",
         "pagePickerGo",
         "pagePickerInvalid",
+        "goToPage",
+        "previous",
+        "next",
+      ])
+        expect([file, key, strings[key]]).toEqual([file, key, undefined])
+      for (const key of [
+        "firstPage",
+        "previousPage",
+        "nextPage",
+        "lastPage",
+        "page",
+        "pageOf",
+        "rows",
+        "rowsPerPage",
       ])
         expect([file, key, typeof strings[key]]).toEqual([file, key, "string"])
     }
-    const picker = createTranslator(
+    const de = createTranslator(
       "dataTable",
       "de-DE",
       tables["de-DE.ts"] as never
     )
-    expect(picker("pagePickerInvalid", { from: "1", to: "24" })).toBe(
-      "Eine Seite von 1 bis 24 eingeben"
+    expect(de("firstPage")).toBe("Erste Seite")
+    expect(de("pageOf", { page: "3", pageCount: "1.240" })).toBe(
+      "Seite 3 von 1.240"
     )
+  })
+
+  it("names NumberInput's steppers in every locale", async () => {
+    const tables = Object.fromEntries(await locales())
+    for (const [file, table] of Object.entries(tables))
+      expect([file, typeof table.numberInput.increase]).toEqual([
+        file,
+        "string",
+      ])
+    expect(
+      createTranslator(
+        "numberInput",
+        "fr-FR",
+        tables["fr-FR.ts"] as never
+      )("increase")
+    ).toBe("Augmenter")
   })
 
   it("renders en-US first, then the provider's locale once it has loaded", async () => {

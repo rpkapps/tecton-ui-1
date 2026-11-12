@@ -63,16 +63,13 @@ export default defineTranslations({
     rowsPerPage: "Lignes par page",
     pagination: "Pagination",
     rowRange: "{from}–{to} sur {total}",
-    previous: "Précédent",
-    next: "Suivant",
-    goToPage: "Page {page}",
+    page: "Page",
     pageOf: "Page {page} sur {pageCount}",
     previousPage: "Page précédente",
     nextPage: "Page suivante",
-    pagePicker: "Aller à la page",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "OK",
-    pagePickerInvalid: "Saisissez une page de {from} à {to}",
+    firstPage: "Première page",
+    lastPage: "Dernière page",
+    rows: "Lignes",
     selectAllMatching: {
       one: "Sélectionner {total} ligne",
       many: "Sélectionner les {total} de lignes",
@@ -212,5 +209,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Plus d’actions",
+  },
+  numberInput: {
+    increase: "Augmenter",
+    decrease: "Diminuer",
   },
 })

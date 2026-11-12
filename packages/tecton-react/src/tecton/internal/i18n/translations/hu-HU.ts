@@ -62,16 +62,13 @@ export default defineTranslations({
     rowsPerPage: "Sorok oldalanként",
     pagination: "Lapozás",
     rowRange: "{from}–{to} / {total}",
-    previous: "Előző",
-    next: "Következő",
-    goToPage: "{page}. oldal",
+    page: "Oldal",
     pageOf: "{page}/{pageCount}. oldal",
     previousPage: "Előző oldal",
     nextPage: "Következő oldal",
-    pagePicker: "Ugrás oldalra",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Ugrás",
-    pagePickerInvalid: "Adjon meg egy oldalt {from} és {to} között",
+    firstPage: "Első oldal",
+    lastPage: "Utolsó oldal",
+    rows: "Sorok",
     selectAllMatching: {
       one: "{total} sor kijelölése",
       other: "Mind a(z) {total} sor kijelölése",
@@ -191,5 +188,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "További műveletek",
+  },
+  numberInput: {
+    increase: "Növelés",
+    decrease: "Csökkentés",
   },
 })

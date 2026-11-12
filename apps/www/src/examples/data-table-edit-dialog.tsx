@@ -27,6 +27,7 @@ import {
   DataTableContent,
   DataTableRowActions,
 } from "@tecton/react/tecton/data-table"
+import { NumberInput } from "@tecton/react/tecton/number-input"
 
 type Status = "producing" | "shut-in" | "drilling"
 
@@ -138,10 +139,9 @@ export default function DataTableEditDialog() {
                 </Field>
                 <Field>
                   <FieldLabel htmlFor="edit-well-depth">TD (m)</FieldLabel>
-                  <Input
+                  <NumberInput
                     id="edit-well-depth"
                     name="depth"
-                    type="number"
                     min={0}
                     defaultValue={well.depth}
                     required

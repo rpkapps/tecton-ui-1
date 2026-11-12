@@ -104,6 +104,10 @@
     "percent": ["progress"],
     "percentage": ["progress"],
     "per page": ["pagination"],
-    "design token": ["theme"]
+    "design token": ["theme"],
+    "number field": ["quantity"],
+    "numeric input": ["number", "quantity"],
+    "spinbutton": ["quantity", "step"],
+    "stepper": ["quantity", "step"]
   }
 }

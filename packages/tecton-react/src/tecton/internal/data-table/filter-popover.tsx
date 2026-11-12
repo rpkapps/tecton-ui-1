@@ -38,6 +38,7 @@ import {
   RadioGroupItem,
 } from "@tecton/react/components/radio-group"
 import { Separator } from "@tecton/react/components/separator"
+import { NumberInput } from "@tecton/react/tecton/number-input"
 
 import { CalendarLoading } from "../calendar-loading"
 import { useTranslations } from "../i18n/translations"
@@ -154,14 +155,8 @@ function TextFilter({
   )
 }
 
-/** A number field's text as a bound: empty is none. */
-function parseBound(text: string) {
-  if (text.trim() === "") return undefined
-  const number = Number(text)
-  return Number.isFinite(number) ? number : undefined
-}
-
-type Bounds = { min: string; max: string; empty: boolean }
+/** A number filter's bounds: `null` (its field empty) is none. */
+type Bounds = { min: number | null; max: number | null; empty: boolean }
 
 function NumberFilter({
   column,
@@ -175,47 +170,37 @@ function NumberFilter({
   const id = React.useId()
   const { draft, change, flush } = useDelayedCommit<Bounds>({
     value: {
-      min: String(value?.min ?? ""),
-      max: String(value?.max ?? ""),
+      min: value?.min ?? null,
+      max: value?.max ?? null,
       empty: value?.empty === true,
     },
-    commit: ({ min: low, max: high, empty }) => {
-      const min = parseBound(low)
-      const max = parseBound(high)
-      return set(
-        min === undefined && max === undefined && !empty
+    commit: ({ min, max, empty }) =>
+      set(
+        min === null && max === null && !empty
           ? null
           : {
               type: "number",
-              ...(min === undefined ? {} : { min }),
-              ...(max === undefined ? {} : { max }),
+              ...(min === null ? {} : { min }),
+              ...(max === null ? {} : { max }),
               ...emptyFlag(empty),
             }
-      )
-    },
+      ),
     delay,
     clears,
-    // "1.0" typed is the 1 the view holds: the field keeps what was typed.
-    same: (a, b) =>
-      parseBound(a.min) === parseBound(b.min) &&
-      parseBound(a.max) === parseBound(b.max) &&
-      a.empty === b.empty,
+    same: (a, b) => a.min === b.min && a.max === b.max && a.empty === b.empty,
   })
+  // Only the number reaches the draft: the field keeps what was typed
+  // ("3000.0" is the 3000 the view holds) until it loses focus.
   const field = (bound: "min" | "max") => (
     <div className="flex min-w-0 flex-1 flex-col gap-2">
       <Label htmlFor={`${id}-${bound}`}>
         {bound === "min" ? t("filterMin") : t("filterMax")}
       </Label>
-      <Input
+      <NumberInput
         id={`${id}-${bound}`}
-        type="number"
-        step="any"
-        inputMode="decimal"
         value={draft[bound]}
         aria-describedby={`${id}-column`}
-        onChange={(event) =>
-          change({ ...draft, [bound]: event.currentTarget.value })
-        }
+        onValueChange={(next) => change({ ...draft, [bound]: next })}
         onKeyDown={(event) => {
           if (event.key === "Enter") flush()
         }}

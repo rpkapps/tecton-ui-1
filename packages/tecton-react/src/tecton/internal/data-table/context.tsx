@@ -53,11 +53,14 @@ type DataTableExpandedChangeReason = "item-press" | "keyboard" | "none"
 
 /** Why the page changed. */
 type DataTablePageChangeReason =
+  /** `DataTablePagination`'s arrow buttons. */
+  | "first"
   | "previous"
   | "next"
+  | "last"
   /**
-   * A page's own button, or the page picker ("Go to page", opened from an
-   * ellipsis or from "Page 3 of 5").
+   * The page typed in `DataTablePagination`'s page field (on Enter or as it
+   * loses focus), or stepped there with the arrow keys, Home or End.
    */
   | "page"
   /** The view's search, filters, sorting or grouping changed: back to page 1. */

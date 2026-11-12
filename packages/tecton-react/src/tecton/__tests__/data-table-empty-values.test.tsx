@@ -320,8 +320,8 @@ describe("DataTableFilter No value", () => {
     })
     expect(names()).toEqual(["B-2", "D-4"])
     expect(chips()).toEqual(["TD (m): No value"])
-    await user.type(screen.getByRole("spinbutton", { name: "Min" }), "1800")
-    await user.type(screen.getByRole("spinbutton", { name: "Max" }), "2500")
+    await user.type(screen.getByRole("textbox", { name: "Min" }), "1800")
+    await user.type(screen.getByRole("textbox", { name: "Max" }), "2500")
     expect(lastFilters(onViewChange)).toEqual({
       depth: { type: "number", min: 1800, max: 2500, empty: true },
     })

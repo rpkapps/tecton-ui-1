@@ -60,16 +60,13 @@ export default defineTranslations({
     rowsPerPage: "Rijen per pagina",
     pagination: "Paginering",
     rowRange: "{from}–{to} van {total}",
-    previous: "Vorige",
-    next: "Volgende",
-    goToPage: "Pagina {page}",
+    page: "Pagina",
     pageOf: "Pagina {page} van {pageCount}",
     previousPage: "Vorige pagina",
     nextPage: "Volgende pagina",
-    pagePicker: "Ga naar pagina",
-    pagePickerHint: "{from}–{to}",
-    pagePickerGo: "Ga",
-    pagePickerInvalid: "Voer een pagina van {from} tot en met {to} in",
+    firstPage: "Eerste pagina",
+    lastPage: "Laatste pagina",
+    rows: "Rijen",
     selectAllMatching: {
       one: "{total} rij selecteren",
       other: "Alle {total} rijen selecteren",
@@ -194,5 +191,9 @@ export default defineTranslations({
   },
   overflow: {
     moreActions: "Meer acties",
+  },
+  numberInput: {
+    increase: "Verhogen",
+    decrease: "Verlagen",
   },
 })
