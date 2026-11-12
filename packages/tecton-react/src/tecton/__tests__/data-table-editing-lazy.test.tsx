@@ -1,13 +1,15 @@
 /**
  * Editing before its code has loaded (§7): nothing is asked for as an
  * editable table mounts (it is prefetched in idle time); the first focus
- * asks for it; what the user does meanwhile waits for it, each cell by its
- * ids: the keys are pressed again once the code comes (Backspace taking a
- * character back, Escape dropping the edit), an edit left by a press on
- * another cell saved; a boolean cell's checkbox toggled is written. The cell
- * keeps its content under the editor, so nothing moves as it opens.
+ * asks for it. Meanwhile an edit is the browser's own field, at once
+ * (Escape dropping it); what it saved (a press on another cell) and a
+ * boolean cell's checkbox toggled are written once the code comes, each
+ * cell by its ids, and the editor takes over the field still open, with
+ * its text and caret. The cell keeps its content under the field, so
+ * nothing moves as it opens.
  */
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react"
+import userEvent from "@testing-library/user-event"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
@@ -83,26 +85,30 @@ describe("DataTable editing before its code has loaded", () => {
     // A checkbox toggled: written once the code is there.
     fireEvent.click(screen.getByRole("checkbox", { name: "Active, Well 0" }))
     await waitFor(() => expect(chunk.asked).toBe(1))
-    // An edit begun, then dropped with Escape (kept from a dialog).
+    // An edit begun, at once, then dropped with Escape (kept from a dialog).
     fireEvent.mouseDown(td("Well 2", "depth"), { button: 0 })
     expect(press("9")).toBe(false)
+    expect(focused()).toHaveValue("9")
     expect(press("Escape")).toBe(false)
+    expect(focused()).toBe(td("Well 2", "depth"))
     // One begun, then left (a press on another cell): saved once the code
     // comes, as focus leaving it saves it.
     fireEvent.mouseDown(td("Well 3", "depth"), { button: 0 })
     press("5")
-    // The one that stays: its characters, Backspace taking one back.
+    // The one that stays: what is typed is the field's.
     fireEvent.mouseDown(td("Well 1", "depth"), { button: 0 })
-    for (const key of ["1", "2", "Backspace", "3"])
-      expect(press(key)).toBe(false)
-    expect(focused()).toBe(td("Well 1", "depth"))
-    expect(document.querySelector('[data-slot="data-table-editor"]')).toBeNull()
+    const user = userEvent.setup({ delay: null })
+    await user.keyboard("12{Backspace}3{ArrowLeft}")
+    const before = focused() as HTMLInputElement
+    expect(before).toHaveValue("13")
+    expect(onCellsChange).not.toHaveBeenCalled()
 
     await act(async () => chunk.open())
-    await waitFor(() => expect(focused().tagName).toBe("INPUT"))
+    await waitFor(() => expect(focused()).not.toBe(before))
     const field = focused() as HTMLInputElement
+    expect(field.tagName).toBe("INPUT")
     expect(field).toHaveValue("13")
-    expect(field.selectionStart).toBe(2)
+    expect(field.selectionStart).toBe(1)
     expect(td("Well 1", "depth")).toContainElement(field)
     expect(
       document.querySelectorAll('[data-slot="data-table-editor"]')

@@ -38,12 +38,12 @@ import { cn } from "cn"
 import { CalendarIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
-import { Input } from "@tecton/react/components/input"
 import { usePortalTarget } from "@tecton/react/tecton/portal"
 
 import { useTranslations } from "../../i18n/translations"
 import type { CellEditorProps } from "../context"
 import type { DataTableEditorProps, DataTableValue } from "../engine/index"
+import { AREA, BOX } from "../edit-field"
 import { useFeature } from "../lazy"
 import {
   FLUSH,
@@ -95,14 +95,16 @@ function TextEditor({
           value={draft}
           onChange={(event) => setDraft(event.target.value)}
           onKeyDown={onKeyDown}
-          className={cn(FLUSH, "resize-none overflow-hidden")}
+          className={cn(FLUSH, AREA)}
         />
       </>
     )
   return (
     <>
       <Holder>{display}</Holder>
-      <Input
+      {/* A plain input, as the field before the editing code is
+          (`edit-field.tsx`): the cell is all of its look. */}
+      <input
         ref={target as React.RefObject<HTMLInputElement | null>}
         {...field}
         value={draft}
@@ -144,7 +146,7 @@ function DateEditor(parts: EditorParts) {
   return (
     <>
       <Holder>{display}</Holder>
-      <Input
+      <input
         ref={target as React.RefObject<HTMLInputElement | null>}
         {...field}
         value={draft}
@@ -376,16 +378,27 @@ function CellEditor({ editing, column, item, display, wrap }: CellEditorProps) {
     session.cell = own
     session.focus = () => target.current?.focus({ preventScroll: true })
     session.mounted++
-    // Focus, the caret at the end of the text.
+    // Focus, the caret at the end of the text (or where a field before
+    // the editing code had it).
     const field = target.current
     if (field && !element?.contains(field.ownerDocument.activeElement)) {
       field.focus({ preventScroll: true })
       if (
         field instanceof HTMLInputElement ||
         field instanceof HTMLTextAreaElement
-      )
-        field.setSelectionRange(field.value.length, field.value.length)
+      ) {
+        const end = field.value.length
+        const { selection } = session
+        if (selection)
+          field.setSelectionRange(
+            Math.min(selection.start, end),
+            Math.min(selection.end, end),
+            selection.direction
+          )
+        else field.setSelectionRange(end, end)
+      }
     }
+    session.selection = null
     return () => {
       session.mounted--
       // Gone without the edit ending (its row moved away): it ends, saved.
@@ -461,7 +474,7 @@ function CellEditor({ editing, column, item, display, wrap }: CellEditorProps) {
     <span
       ref={box}
       data-slot="data-table-editor"
-      className="relative block min-h-[1lh]"
+      className={BOX}
       onFocus={onFocus}
       onBlur={onBlur}
     >

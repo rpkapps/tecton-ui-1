@@ -72,12 +72,18 @@ type Session = {
   readonly own: string | null
   /** The editor's text as typed, kept for a remount of the editor. */
   draft: string
+  /**
+   * Where the caret and selection go as the editor takes focus (a field
+   * before the editing code taken over); `null`: the caret at the end.
+   */
+  selection: {
+    start: number
+    end: number
+    direction: "forward" | "backward" | "none"
+  } | null
   /** A custom editor's value, likewise. */
   value: DataTableValue
-  /**
-   * The draft now: the editor's, once it is drawn; until then (keys
-   * replayed before it rendered) read from `draft` and `value`.
-   */
+  /** The draft now: the editor's, once it is drawn; until then, `draft` and `value`'s. */
   read: () => Draft | null
   /** Focus is in the editor, its popups (portalled) included. */
   focused: boolean
