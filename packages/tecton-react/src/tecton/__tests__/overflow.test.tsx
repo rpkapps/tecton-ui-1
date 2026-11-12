@@ -887,6 +887,143 @@ describe("Overflow label stage", () => {
   })
 })
 
+describe("Overflow layout depends only on the width", () => {
+  /** Which items are in the More menu, in source order. */
+  const layout = () =>
+    [
+      ...document.querySelectorAll<HTMLElement>('[data-slot="overflow-item"]'),
+    ].map((item) => `${item.dataset.id}${item.dataset.overflowing ?? "+"}`)
+
+  /** A search box grown to its 256 px maximum; it costs its 128 px minimum. */
+  function Items() {
+    return (
+      <>
+        <Item
+          id="search"
+          w={256}
+          priority={10}
+          labelBehavior="keep"
+          elastic={{ min: "8rem", max: "16rem" }}
+          style={{ minWidth: "128px" }}
+        />
+        <Item id="a" />
+        <Item id="b" />
+        <Item id="c" />
+      </>
+    )
+  }
+
+  const WIDTHS = [160, 240, 300, 340, 428, 500]
+
+  function fresh(width: number) {
+    const { unmount } = render(
+      <Row width={width} labels="always">
+        <Items />
+      </Row>
+    )
+    const result = layout()
+    unmount()
+    return result
+  }
+
+  it("gives the same width the same layout, whatever the widths before it", () => {
+    const expected = new Map(WIDTHS.map((width) => [width, fresh(width)]))
+    render(
+      <Row width={WIDTHS[0]} labels="always">
+        <Items />
+      </Row>
+    )
+    // Narrow to wide and back, then wide to narrow and back.
+    const path = [...WIDTHS, ...[...WIDTHS].reverse(), ...WIDTHS]
+    for (const width of path) {
+      resize(rowEl(), width)
+      expect(layout(), `at ${width}px`).toEqual(expected.get(width))
+    }
+  })
+
+  it("never moves an item into the menu while it fits beside the elastic item at its minimum", () => {
+    // 128 + 3 × 100 = 428: everything fits with the search at its minimum,
+    // though it is 256 px wide now.
+    render(
+      <Row width={428} labels="always">
+        <Items />
+      </Row>
+    )
+    expect(layout()).toEqual(["search+", "a+", "b+", "c+"])
+    resize(rowEl(), 200)
+    resize(rowEl(), 428)
+    expect(layout()).toEqual(["search+", "a+", "b+", "c+"])
+    // One pixel less and the last item goes.
+    resize(rowEl(), 427)
+    expect(layout()).toEqual(["search+", "a+", "b+", "c"])
+  })
+
+  it("measures an item again when its content changes in the menu, and brings it back", async () => {
+    // A filter whose summary made it wide went into the menu; the summary is
+    // then cleared from outside the row (a "Clear all" under the toolbar).
+    const row = (summary: boolean) => (
+      <Row width={300} labels="always">
+        <Item id="a" />
+        <Item id="b" />
+        <Item
+          id="c"
+          w={summary ? 200 : 100}
+          label={summary ? "c: Producing" : "c"}
+        />
+      </Row>
+    )
+    const { rerender } = render(row(true))
+    expect(layout()).toEqual(["a+", "b+", "c"])
+    rerender(row(false))
+    // No resize: the row hears of the change in the hidden item itself.
+    await waitFor(() => expect(layout()).toEqual(["a+", "b+", "c+"]))
+    expect(itemEl("c")).toBeVisible()
+  })
+
+  it("lets an item kept in the row by its open popup leave once the popup closes", async () => {
+    const row = (open: boolean) => (
+      <Row width={250} labels="always">
+        <Item id="a" />
+        <OverflowItem value="b" data-id="b" data-w={100} label="b">
+          <Button aria-expanded={open}>b</Button>
+        </OverflowItem>
+      </Row>
+    )
+    const { rerender } = render(row(false))
+    expect(layout()).toEqual(["a+", "b+"])
+    // Its popup open, b grows (a filter's summary): a leaves instead of b.
+    rerender(row(true))
+    itemEl("b")!.dataset.w = "200"
+    act(() => {
+      for (const observer of [...observers])
+        if (observer.targets.has(itemEl("b")!))
+          observer.report(itemEl("b")!, 200)
+    })
+    // Let the row hear of its own changes (the More menu mounting) first.
+    await act(async () => {})
+    expect(layout()).toEqual(["a", "b+"])
+    // Closed, the row is laid out as a fresh one at this width would be.
+    rerender(row(false))
+    await waitFor(() => expect(layout()).toEqual(["a+", "b"]))
+  })
+
+  it("keeps an item in the menu while the popup opened from there is open", () => {
+    const row = (open: boolean) => (
+      <Row width={150} labels="always">
+        <Item id="a" />
+        <OverflowItem value="b" data-id="b" data-w={100} label="b">
+          <Button aria-expanded={open}>b</Button>
+        </OverflowItem>
+      </Row>
+    )
+    const { rerender } = render(row(false))
+    expect(layout()).toEqual(["a+", "b"])
+    rerender(row(true))
+    resize(rowEl(), 151)
+    expect(layout()).toEqual(["a+", "b"])
+  })
+})
+
 describe("Overflow last resort", () => {
   const lastResortWarnings = () =>
     warn.mock.calls.filter(([message]) => String(message).includes("stage 5"))
