@@ -155,6 +155,67 @@ describe("DataTable popups", () => {
     await waitFor(() => expect(menuButton).toHaveFocus())
   })
 
+  it("keeps the page as it is under an open menu: no backdrop, no scroll lock", async () => {
+    const user = userEvent.setup()
+    render(<Wells />)
+    const html = document.documentElement
+    const before = html.getAttribute("style")
+    for (const open of [() => button("Field options"), rowActions]) {
+      await user.click(open())
+      expect(await screen.findByRole("menu")).toBeInTheDocument()
+      await settle()
+      // A modal menu's backdrop, over the page.
+      expect(
+        document.querySelector('[role="presentation"][data-base-ui-inert]')
+      ).toBeNull()
+      expect(html.getAttribute("style")).toBe(before)
+      await user.keyboard("{Escape}")
+      await waitFor(() => expect(screen.queryByRole("menu")).toBeNull())
+    }
+  })
+
+  it("lets a press outside an open menu close it and do what it pressed, focus staying there", async () => {
+    const user = userEvent.setup()
+    render(<Wells />)
+    const menuButton = button("Field options")
+    await user.click(menuButton)
+    expect(await screen.findByRole("menu")).toBeInTheDocument()
+    // Another popup's button: the menu closes, the filter opens and keeps
+    // focus.
+    await user.click(button("Filter by Field"))
+    const dialog = await screen.findByRole("dialog")
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull())
+    await settle()
+    expect(menuButton).not.toHaveFocus()
+    expect(
+      dialog.contains(document.activeElement) ||
+        document.activeElement === button("Filter by Field")
+    ).toBe(true)
+    await user.keyboard("{Escape}")
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+    // Another column's menu: it opens at once, with focus.
+    await user.click(menuButton)
+    await screen.findByRole("menu")
+    await user.click(button("TD (m) options"))
+    await waitFor(() =>
+      expect(button("TD (m) options")).toHaveAttribute("aria-expanded", "true")
+    )
+    expect(menuButton).toHaveAttribute("aria-expanded", "false")
+    await settle()
+    expect(screen.getAllByRole("menu")).toHaveLength(1)
+    expect(screen.getByRole("menu").contains(document.activeElement)).toBe(true)
+    // Another row's actions: that row's menu opens.
+    await user.keyboard("{Escape}")
+    const actions = () => screen.getAllByRole("button", { name: "Row actions" })
+    await user.click(actions()[0])
+    await screen.findByRole("menu")
+    await user.click(actions()[1])
+    await waitFor(() =>
+      expect(actions()[1]).toHaveAttribute("aria-expanded", "true")
+    )
+    expect(actions()[0]).toHaveAttribute("aria-expanded", "false")
+  })
+
   it("opens a filter on the click; a click on its button closes it; Down does not open it", async () => {
     const user = userEvent.setup()
     render(<Wells />)

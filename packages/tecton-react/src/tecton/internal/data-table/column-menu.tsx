@@ -105,6 +105,24 @@ type ColumnMenuProps<T> = {
 type Closing = React.RefObject<"resize" | "hide" | null>
 
 /**
+ * Focus is on an element other than the menu's button, outside the menu:
+ * taken by a press outside it that closed the menu (a cell, a field,
+ * another menu opening).
+ */
+function focusMovedAway(
+  trigger: HTMLElement | null,
+  popup: HTMLElement | null
+) {
+  const active = trigger?.ownerDocument.activeElement
+  return (
+    !!active &&
+    active !== trigger &&
+    active !== active.ownerDocument.body &&
+    !popup?.contains(active)
+  )
+}
+
+/**
  * The column's menu button, the menu's own trigger as on a
  * `DropdownMenu`, and the menu, whose items render only while it is open.
  */
@@ -123,8 +141,12 @@ function DataTableColumnMenu<T>({
   // nowhere yet after "Hide column" (it is decided once the view shows
   // whether the column went); else back to the button.
   const closing: Closing = React.useRef(null)
+  const popup = React.useRef<HTMLDivElement | null>(null)
   return (
     <DropdownMenu
+      // Not modal, as the table's other menus: no scroll lock
+      // (`part-popup.ts`).
+      modal={false}
       onOpenChange={(open) => {
         if (open) closing.current = null
       }}
@@ -143,13 +165,16 @@ function DataTableColumnMenu<T>({
         <EllipsisVerticalIcon />
       </DropdownMenuTrigger>
       <DropdownMenuContent
+        ref={popup}
         align="end"
         className="w-auto min-w-44"
-        finalFocus={() =>
-          closing.current === "resize"
-            ? (resizerRef.current ?? false)
-            : closing.current !== "hide"
-        }
+        finalFocus={() => {
+          if (closing.current === "resize") return resizerRef.current ?? false
+          if (closing.current === "hide") return false
+          // A press outside that gave focus to something else (a cell, a
+          // field) leaves it there.
+          return !focusMovedAway(triggerRef.current, popup.current)
+        }}
       >
         <ColumnMenuItems {...props} closing={closing} />
       </DropdownMenuContent>
