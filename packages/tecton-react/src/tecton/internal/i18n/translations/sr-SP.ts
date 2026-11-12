@@ -136,7 +136,6 @@ export default defineTranslations({
     filterContains: "Sadrži",
     filterMin: "Min.",
     filterMax: "Maks.",
-    filterAny: "Sve",
     clearFilter: "Obriši",
     noOptions: "Nema opcija",
     filterRange: "{from}–{to}",

@@ -130,7 +130,6 @@ export default defineTranslations({
     filterContains: "Innehåller",
     filterMin: "Min.",
     filterMax: "Max.",
-    filterAny: "Alla",
     clearFilter: "Rensa",
     noOptions: "Inga alternativ",
     filterRange: "{from}–{to}",

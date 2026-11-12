@@ -138,7 +138,6 @@ export default defineTranslations({
     filterContains: "Satur",
     filterMin: "Min.",
     filterMax: "Maks.",
-    filterAny: "Visi",
     clearFilter: "Notīrīt",
     noOptions: "Nav opciju",
     filterRange: "{from}–{to}",

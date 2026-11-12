@@ -132,7 +132,6 @@ export default defineTranslations({
     filterContains: "Sisaldab",
     filterMin: "Min",
     filterMax: "Max",
-    filterAny: "Kõik",
     clearFilter: "Tühjenda",
     noOptions: "Valikuid pole",
     filterRange: "{from}–{to}",

@@ -142,7 +142,6 @@ export default defineTranslations({
     filterContains: "Vsebuje",
     filterMin: "Najm.",
     filterMax: "Najv.",
-    filterAny: "Vse",
     clearFilter: "Počisti",
     noOptions: "Ni možnosti",
     filterRange: "{from}–{to}",

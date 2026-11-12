@@ -208,8 +208,8 @@ type DataTableRowModel<T> = {
   totals: () => TotalsRow<T>
   /**
    * How many rows match the search and every filter but `column`'s, per
-   * value (option values for an options column, display text for others),
-   * and without a value.
+   * value (option values for an options column, "true" and "false" for a
+   * boolean one, display text for others), and without a value.
    */
   facets: (column: string) => Facets
   /**

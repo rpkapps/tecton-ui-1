@@ -386,21 +386,96 @@ describe("DataTableFilter No value", () => {
     expect(chips()).toEqual(["Field: gull or no value"])
   })
 
-  it("adds No value to a yes / no filter as a fourth choice", async () => {
+  it("adds No value to a yes / no filter after Yes and No, as a checkbox with its count", async () => {
     const user = userEvent.setup({ delay: null })
     const onViewChange = vi.fn()
     render(<Wells onViewChange={onViewChange} />)
     await user.click(filterButton("Active"))
-    expect(screen.getAllByRole("radio")).toHaveLength(4)
-    await user.click(screen.getByRole("radio", { name: "No value" }))
+    expect(screen.getAllByRole("radio")).toHaveLength(2)
+    const yes = screen.getByRole("radio", { name: "Yes" })
+    const noValue = screen.getByRole("checkbox", { name: "No value" })
+    // A-1 and D-4 yes, C-3 no, B-2 none.
+    expect(yes.closest("div")).toHaveTextContent(/^Yes2$/)
+    expect(
+      screen.getByRole("radio", { name: "No" }).closest("div")
+    ).toHaveTextContent(/^No1$/)
+    expect(noValue.closest("div")).toHaveTextContent(/^No value1$/)
+    // Apart, after a separator, as an options filter's.
+    const separator = document.querySelector(
+      '[data-slot="data-table-filter-content"] [data-slot="separator"]'
+    )
+    expect(separator?.nextElementSibling).toBe(
+      noValue.closest('[data-slot="data-table-filter-no-value"]')
+    )
+    // No value alone: only the rows without one.
+    await user.click(noValue)
     expect(lastFilters(onViewChange)).toEqual({
       active: { type: "boolean", empty: true },
     })
     expect(names()).toEqual(["B-2"])
     expect(chips()).toEqual(["Active: No value"])
-    await user.click(screen.getByRole("radio", { name: "Yes" }))
+    expect(filterButton("Active")).toHaveTextContent("No value")
+    expect(yes).not.toBeChecked()
+    // Yes and No value: yes or none.
+    await user.click(yes)
+    expect(lastFilters(onViewChange)).toEqual({
+      active: { type: "boolean", value: true, empty: true },
+    })
+    expect(names()).toEqual(["A-1", "B-2", "D-4"])
+    expect(chips()).toEqual(["Active: Yes or no value"])
+    expect(filterButton("Active")).toHaveTextContent("Yes or no value")
+    expect(noValue).toBeChecked()
+    // The counts stay those of the other filters' rows.
+    expect(yes.closest("div")).toHaveTextContent(/^Yes2$/)
+    expect(noValue.closest("div")).toHaveTextContent(/^No value1$/)
+    await user.click(noValue)
+    expect(lastFilters(onViewChange)).toEqual({
+      active: { type: "boolean", value: true },
+    })
     expect(names()).toEqual(["A-1", "D-4"])
     expect(chips()).toEqual(["Active: Yes"])
+    // Clear goes back to any value.
+    await user.click(noValue)
+    await user.click(screen.getByRole("button", { name: "Clear" }))
+    expect(lastFilters(onViewChange)).toEqual({})
+    expect(yes).not.toBeChecked()
+    expect(noValue).not.toBeChecked()
+    expect(names()).toEqual(["A-1", "B-2", "C-3", "D-4"])
+  })
+
+  it("offers a yes / no filter's No value in server mode, without counts", async () => {
+    const user = userEvent.setup({ delay: null })
+    const onViewChange = vi.fn()
+    // The page loaded has a value everywhere.
+    render(
+      <DataTable
+        items={[WELLS[0], WELLS[2]]}
+        columns={columns}
+        dataMode="server"
+        filterable
+        onViewChange={onViewChange}
+      >
+        <DataTableFilter column="active" />
+        <DataTableActiveFilters />
+        <DataTableContent aria-label="Wells" />
+      </DataTable>
+    )
+    await user.click(filterButton("Active"))
+    const yes = screen.getByRole("radio", { name: "Yes" })
+    const noValue = screen.getByRole("checkbox", { name: "No value" })
+    expect(yes.closest("div")).toHaveTextContent(/^Yes$/)
+    expect(
+      screen.getByRole("radio", { name: "No" }).closest("div")
+    ).toHaveTextContent(/^No$/)
+    expect(noValue.closest("div")).toHaveTextContent(/^No value$/)
+    await user.click(yes)
+    await user.click(noValue)
+    expect(lastFilters(onViewChange)).toEqual({
+      active: { type: "boolean", value: true, empty: true },
+    })
+    expect(chips()).toEqual(["Active: Yes or no value"])
+    // The server's rows, as given.
+    expect(names()).toEqual(["A-1", "C-3"])
   })
 
   it("sends No value to the server as `empty`, offered whatever the loaded rows", async () => {

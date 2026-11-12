@@ -138,7 +138,6 @@ export default defineTranslations({
     filterContains: "Obsahuje",
     filterMin: "Min.",
     filterMax: "Max.",
-    filterAny: "Vše",
     clearFilter: "Vymazat",
     noOptions: "Žádné možnosti",
     filterRange: "{from}–{to}",

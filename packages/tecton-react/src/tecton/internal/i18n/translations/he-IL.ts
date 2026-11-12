@@ -137,7 +137,6 @@ export default defineTranslations({
     filterContains: "מכיל",
     filterMin: "מינימום",
     filterMax: "מקסימום",
-    filterAny: "הכול",
     clearFilter: "נקה",
     noOptions: "אין אפשרויות",
     filterRange: "{from}–{to}",

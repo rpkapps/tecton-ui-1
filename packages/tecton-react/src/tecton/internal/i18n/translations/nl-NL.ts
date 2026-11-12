@@ -135,7 +135,6 @@ export default defineTranslations({
     filterContains: "Bevat",
     filterMin: "Min.",
     filterMax: "Max.",
-    filterAny: "Alle",
     clearFilter: "Wissen",
     noOptions: "Geen opties",
     filterRange: "{from}–{to}",

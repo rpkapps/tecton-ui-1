@@ -138,7 +138,6 @@ export default defineTranslations({
     filterContains: "Conține",
     filterMin: "Min.",
     filterMax: "Max.",
-    filterAny: "Oricare",
     clearFilter: "Ștergeți",
     noOptions: "Nicio opțiune",
     filterRange: "{from}–{to}",
