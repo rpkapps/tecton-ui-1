@@ -38,10 +38,10 @@ import {
  *
  * The look: a short, quiet line at rest (none after the last column); the
  * header's full height while the pointer is over the header; a 2 px line
- * in the active outline colour on the grip (strong in both themes), with
+ * in the drop line's colour (`primary-active`) on the grip, with
  * a tint on hover and the focus ring, centred on it, on keyboard focus;
  * and while dragging, a guide line down the table in view and the width
- * beside it.
+ * beside it, on the tooltip's surface.
  */
 
 type TableColumnResizerReason = "drag" | "keyboard" | "reset"
@@ -256,14 +256,14 @@ function TableColumnResizer({
           <span
             aria-hidden="true"
             data-slot="table-column-resizer-guide"
-            className="pointer-events-none absolute start-[calc(50%-0.5px)] top-full w-px bg-outline-active-border"
+            className="pointer-events-none absolute start-[calc(50%-0.5px)] top-full w-px bg-primary-active"
             style={{ height: guide }}
           />
           <span
             aria-hidden="true"
             data-slot="table-column-resizer-width"
             className={cn(
-              "pointer-events-none absolute top-full mt-2 inline-flex h-[22px] items-center rounded-sm bg-foreground px-2 font-mono text-xs whitespace-nowrap text-background tabular-nums",
+              "pointer-events-none absolute top-full mt-2 inline-flex h-[22px] items-center rounded-md bg-tooltip px-2 font-mono text-xs whitespace-nowrap text-tooltip-foreground tabular-nums",
               // Beside the guide, away from the column: over the columns
               // the edge moves into (a pinned column's cells would cover it).
               edge === "start"
