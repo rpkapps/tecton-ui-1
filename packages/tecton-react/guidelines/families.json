@@ -158,7 +158,8 @@
         "components/input-group",
         "components/input-otp",
         "components/label",
-        "tecton/dropzone"
+        "tecton/dropzone",
+        "tecton/date-picker"
       ],
       "checklist": [
         "Every control in a `Field` has an `id` and a `FieldLabel htmlFor` pointing at it — `Field` renders `role=\"group\"` and associates nothing by itself.",
@@ -169,6 +170,7 @@
         "`Input`, `Textarea` and `SelectTrigger` take their surface from `variant=\"outline\" | \"filled\" | \"text\"`, and `className` on them carries layout only (`w-full`, `col-span-2`).",
         "An icon, unit, hint or in-field button lives in an `InputGroup` with `InputGroupInput` (never a plain `Input`) and an `InputGroupAddon` placed after the control in the DOM and positioned with `align`.",
         "`Slider` is bounded with `min`, `max` and `step`, holds an array `value` and narrows the `number | number[]` that `onValueChange` reports; `FieldTitle` renders a `div` and names a control only through `aria-labelledby`.",
+        "A date is picked with a `DatePicker` (`variant=\"input\"` to type it too) and a period with a `DateRangePicker`, both holding plain `Date` values in `value` / `onValueChange` — never a `Popover` and a `Calendar` put together by hand, nor an `Input type=\"date\"`.",
         "Files are picked with a `Dropzone`: an `Empty`-based `DropzoneArea` holding a `DropzoneTrigger` (the keyboard's way in), the files in `value` / `onValueChange`, limits in `accept`, `maxSize` and `maxFiles`, and each picked file an `Attachment` in `DropzoneList` with a `DropzoneRemove` — never a `div` with `onDrop`."
       ]
     },

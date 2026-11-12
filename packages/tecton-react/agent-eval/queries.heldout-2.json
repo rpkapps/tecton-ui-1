@@ -64,7 +64,7 @@
 {"q": "Seismic viewer: give the geologist a full-bleed canvas with pan and zoom tools and an amplitude colour legend", "answers": ["canvas"], "kind": "domain"},
 {"q": "Production dashboard: display today's barrels produced with a delta arrow versus yesterday's total", "answers": ["stat"], "kind": "domain"},
 {"q": "Well list screen: let the user expand a row to see its completion stages nested underneath", "answers": ["tree-view"], "kind": "domain"},
-{"q": "Drilling report screen: let the toolpusher pick the report date from a calendar control", "answers": ["calendar"], "kind": "domain"},
+{"q": "Drilling report screen: let the toolpusher pick the report date from a calendar control", "answers": ["calendar", "date-picker"], "kind": "domain"},
 {"q": "Seismic viewer: give the section subtle drifting contour lines behind the canvas for visual texture", "answers": ["background"], "kind": "domain"},
 {"q": "Well list screen: show a static status badge reading producing, shut-in or drilling on each row", "answers": ["badge"], "kind": "domain"},
 {"q": "Production dashboard: show each field engineer's avatar next to the wells they're assigned to", "answers": ["avatar"], "kind": "domain"},

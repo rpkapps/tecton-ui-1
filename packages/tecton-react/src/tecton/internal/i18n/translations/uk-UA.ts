@@ -239,4 +239,26 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Змінити розмір стовпця {columnName}",
   },
+  datePicker: {
+    placeholder: "Виберіть дату",
+    rangePlaceholder: "Виберіть період",
+    chooseDate: "Виберіть дату",
+    chooseDateRange: "Виберіть період",
+    presets: "Швидкий вибір",
+    today: "Сьогодні",
+    yesterday: "Учора",
+    last7Days: "Останні 7 днів",
+    last30Days: "Останні 30 днів",
+    thisMonth: "Цей місяць",
+    lastMonth: "Минулий місяць",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "Вибрано {selected} з {total}" },
+    selectedOfTotalLabelled: { other: "Вибрано {selected} з {total} {label}" },
+    selected: { other: "Вибрано {selected}" },
+    selectedLabelled: { other: "Вибрано {selected} {label}" },
+    clear: "Очистити",
+    clearSelection: "Скасувати вибір",
+    actions: "Дії",
+  },
 })

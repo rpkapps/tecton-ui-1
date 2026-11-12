@@ -213,4 +213,35 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Преоразмеряване на {columnName}",
   },
+  datePicker: {
+    placeholder: "Изберете дата",
+    rangePlaceholder: "Изберете период",
+    chooseDate: "Изберете дата",
+    chooseDateRange: "Изберете период",
+    presets: "Бърз избор",
+    today: "Днес",
+    yesterday: "Вчера",
+    last7Days: "Последните 7 дни",
+    last30Days: "Последните 30 дни",
+    thisMonth: "Този месец",
+    lastMonth: "Миналия месец",
+  },
+  actionBar: {
+    selectedOfTotal: {
+      one: "Избран {selected} от {total}",
+      other: "Избрани {selected} от {total}",
+    },
+    selectedOfTotalLabelled: {
+      one: "Избран {selected} от {total} {label}",
+      other: "Избрани {selected} от {total} {label}",
+    },
+    selected: { one: "Избран {selected}", other: "Избрани {selected}" },
+    selectedLabelled: {
+      one: "Избран {selected} {label}",
+      other: "Избрани {selected} {label}",
+    },
+    clear: "Изчисти",
+    clearSelection: "Изчистете избора",
+    actions: "Действия",
+  },
 })

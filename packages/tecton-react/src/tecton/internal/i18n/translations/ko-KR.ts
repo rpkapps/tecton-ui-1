@@ -179,4 +179,28 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "{columnName} 크기 조정",
   },
+  datePicker: {
+    placeholder: "날짜 선택",
+    rangePlaceholder: "기간 선택",
+    chooseDate: "날짜 선택",
+    chooseDateRange: "기간 선택",
+    presets: "빠른 선택",
+    today: "오늘",
+    yesterday: "어제",
+    last7Days: "최근 7일",
+    last30Days: "최근 30일",
+    thisMonth: "이번 달",
+    lastMonth: "지난달",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "{total}개 중 {selected}개 선택됨" },
+    selectedOfTotalLabelled: {
+      other: "{label} {total}개 중 {selected}개 선택됨",
+    },
+    selected: { other: "{selected}개 선택됨" },
+    selectedLabelled: { other: "{label} {selected}개 선택됨" },
+    clear: "지우기",
+    clearSelection: "선택 해제",
+    actions: "작업",
+  },
 })

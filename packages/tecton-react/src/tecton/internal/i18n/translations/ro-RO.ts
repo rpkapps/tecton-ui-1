@@ -235,4 +235,42 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Redimensionați {columnName}",
   },
+  datePicker: {
+    placeholder: "Alegeți o dată",
+    rangePlaceholder: "Alegeți un interval de date",
+    chooseDate: "Alegeți o dată",
+    chooseDateRange: "Alegeți un interval de date",
+    presets: "Intervale predefinite",
+    today: "Astăzi",
+    yesterday: "Ieri",
+    last7Days: "Ultimele 7 zile",
+    last30Days: "Ultimele 30 de zile",
+    thisMonth: "Luna aceasta",
+    lastMonth: "Luna trecută",
+  },
+  actionBar: {
+    selectedOfTotal: {
+      one: "{selected} din {total} selectat",
+      few: "{selected} din {total} selectate",
+      other: "{selected} din {total} selectate",
+    },
+    selectedOfTotalLabelled: {
+      one: "{selected} din {total} {label} selectat",
+      few: "{selected} din {total} {label} selectate",
+      other: "{selected} din {total} {label} selectate",
+    },
+    selected: {
+      one: "{selected} selectat",
+      few: "{selected} selectate",
+      other: "{selected} selectate",
+    },
+    selectedLabelled: {
+      one: "{selected} {label} selectat",
+      few: "{selected} {label} selectate",
+      other: "{selected} {label} selectate",
+    },
+    clear: "Ștergeți",
+    clearSelection: "Ștergeți selecția",
+    actions: "Acțiuni",
+  },
 })

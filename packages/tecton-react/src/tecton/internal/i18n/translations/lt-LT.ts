@@ -237,4 +237,28 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Keisti stulpelio {columnName} dydį",
   },
+  datePicker: {
+    placeholder: "Pasirinkite datą",
+    rangePlaceholder: "Pasirinkite laikotarpį",
+    chooseDate: "Pasirinkite datą",
+    chooseDateRange: "Pasirinkite laikotarpį",
+    presets: "Greitas pasirinkimas",
+    today: "Šiandien",
+    yesterday: "Vakar",
+    last7Days: "Paskutinės 7 dienos",
+    last30Days: "Paskutinės 30 dienų",
+    thisMonth: "Šis mėnuo",
+    lastMonth: "Praėjęs mėnuo",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "Pasirinkta {selected} iš {total}" },
+    selectedOfTotalLabelled: {
+      other: "Pasirinkta {selected} iš {total} {label}",
+    },
+    selected: { other: "Pasirinkta {selected}" },
+    selectedLabelled: { other: "Pasirinkta {selected} {label}" },
+    clear: "Išvalyti",
+    clearSelection: "Išvalyti pasirinkimą",
+    actions: "Veiksmai",
+  },
 })

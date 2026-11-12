@@ -225,4 +225,42 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Promeni veličinu kolone {columnName}",
   },
+  datePicker: {
+    placeholder: "Izaberite datum",
+    rangePlaceholder: "Izaberite opseg datuma",
+    chooseDate: "Izaberite datum",
+    chooseDateRange: "Izaberite opseg datuma",
+    presets: "Brzi izbor",
+    today: "Danas",
+    yesterday: "Juče",
+    last7Days: "Poslednjih 7 dana",
+    last30Days: "Poslednjih 30 dana",
+    thisMonth: "Ovaj mesec",
+    lastMonth: "Prošli mesec",
+  },
+  actionBar: {
+    selectedOfTotal: {
+      one: "Izabran je {selected} od {total}",
+      few: "Izabrana su {selected} od {total}",
+      other: "Izabrano je {selected} od {total}",
+    },
+    selectedOfTotalLabelled: {
+      one: "Izabran je {selected} od {total} {label}",
+      few: "Izabrana su {selected} od {total} {label}",
+      other: "Izabrano je {selected} od {total} {label}",
+    },
+    selected: {
+      one: "Izabran je {selected}",
+      few: "Izabrana su {selected}",
+      other: "Izabrano je {selected}",
+    },
+    selectedLabelled: {
+      one: "Izabran je {selected} {label}",
+      few: "Izabrana su {selected} {label}",
+      other: "Izabrano je {selected} {label}",
+    },
+    clear: "Obriši",
+    clearSelection: "Poništi izbor",
+    actions: "Radnje",
+  },
 })

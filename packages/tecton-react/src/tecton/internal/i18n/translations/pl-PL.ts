@@ -239,4 +239,28 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Zmień rozmiar kolumny {columnName}",
   },
+  datePicker: {
+    placeholder: "Wybierz datę",
+    rangePlaceholder: "Wybierz zakres dat",
+    chooseDate: "Wybierz datę",
+    chooseDateRange: "Wybierz zakres dat",
+    presets: "Szybki wybór",
+    today: "Dzisiaj",
+    yesterday: "Wczoraj",
+    last7Days: "Ostatnie 7 dni",
+    last30Days: "Ostatnie 30 dni",
+    thisMonth: "Ten miesiąc",
+    lastMonth: "Poprzedni miesiąc",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "Zaznaczono {selected} z {total}" },
+    selectedOfTotalLabelled: {
+      other: "Zaznaczono {selected} z {total} {label}",
+    },
+    selected: { other: "Zaznaczono {selected}" },
+    selectedLabelled: { other: "Zaznaczono {selected} {label}" },
+    clear: "Wyczyść",
+    clearSelection: "Wyczyść zaznaczenie",
+    actions: "Akcje",
+  },
 })

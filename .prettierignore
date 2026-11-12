@@ -190,13 +190,6 @@ apps/www/src/examples/context-menu-rtl.tsx
 apps/www/src/examples/context-menu-shortcuts.tsx
 apps/www/src/examples/context-menu-sides.tsx
 apps/www/src/examples/context-menu-submenu.tsx
-apps/www/src/examples/date-picker-basic.tsx
-apps/www/src/examples/date-picker-demo.tsx
-apps/www/src/examples/date-picker-dob.tsx
-apps/www/src/examples/date-picker-input.tsx
-apps/www/src/examples/date-picker-range.tsx
-apps/www/src/examples/date-picker-rtl.tsx
-apps/www/src/examples/date-picker-time.tsx
 apps/www/src/examples/dialog-close-button.tsx
 apps/www/src/examples/dialog-demo.tsx
 apps/www/src/examples/dialog-no-close-button.tsx

@@ -103,6 +103,7 @@ Correct:
 - `Input`, `Textarea` and `NativeSelect` are real DOM elements, so they take `value`, `onChange(event)` read through `event.target.value`, `disabled`, `required` and `aria-invalid`.
 - `Input`, `Textarea` and `SelectTrigger` take their surface from `variant="outline" | "filled" | "text"`, and `className` on them carries layout only (`w-full`, `col-span-2`).
 - An icon, unit, hint or in-field button lives in an `InputGroup` with `InputGroupInput` (never a plain `Input`) and an `InputGroupAddon` placed after the control in the DOM and positioned with `align`.
+- A date is picked with a `DatePicker` (`variant="input"` to type it too) and a period with a `DateRangePicker`, both holding plain `Date` values in `value` / `onValueChange` — never a `Popover` and a `Calendar` put together by hand, nor an `Input type="date"`.
 - Every numeric value shows its unit (ft, psi, bbl/d): an `InputGroupText` end addon on an `Input`, after the live value on a `Slider`.
 - Never let a placeholder stand in for the label; keep it to an example value such as `34/10-A-12`.
 - Mark as required only the fields a record cannot be saved without, and show that mark visibly in their label.

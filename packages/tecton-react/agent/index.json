@@ -1020,13 +1020,13 @@
    "fields": {
     "names": "calendar calendar calendar day button",
     "useWhen": "A month grid is the point: choosing a spud date, reading which days are booked, stepping through a schedule. The calendar stays on the page — in a `Card`, a panel or a wizard step — rather than hiding behind a trigger. A period is chosen as two dates: `mode=\"range\"` draws the span between them.",
-    "routed": "",
-    "do": "Pick the selection with `mode=\"single\" | \"multiple\" | \"range\"` and drive it with `selected` / `onSelect`, holding plain `Date` values (a `DateRange` `{ from, to }` for a range). Show more months with `numberOfMonths`, month and year dropdowns with `captionLayout=\"dropdown\"`, week numbers with `showWeekNumber`. Block days with `disabled` — a matcher such as `{ before: new Date() }`, `{ dayOfWeek: [0, 6] }` or a function — so they get the dimmed cell styling. Resize the grid through its variable, `className=\"[--cell-size:--spacing(11)]\"`; never restyle the cells. For a date field, put the `Calendar` in a `PopoverContent` behind a `PopoverTrigger render={<Button variant=\"outline\" />}` inside a `Field`; there is no `DatePicker` component."
+    "routed": "a month grid that stays on the page",
+    "do": "Pick the selection with `mode=\"single\" | \"multiple\" | \"range\"` and drive it with `selected` / `onSelect`, holding plain `Date` values (a `DateRange` `{ from, to }` for a range). Show more months with `numberOfMonths`, month and year dropdowns with `captionLayout=\"dropdown\"`, week numbers with `showWeekNumber`. Block days with `disabled` — a matcher such as `{ before: new Date() }`, `{ dayOfWeek: [0, 6] }` or a function — so they get the dimmed cell styling. Resize the grid through its variable, `className=\"[--cell-size:--spacing(11)]\"`; never restyle the cells. For a date field use `DatePicker` (a range: `DateRangePicker`), which puts this `Calendar` in a `Popover` behind a button or a date input; never assemble one from `Popover` and `Calendar`."
    },
    "notFor": [
     {
      "need": "a compact date field that opens a calendar on demand",
-     "id": "popover"
+     "id": "date-picker"
     },
     {
      "need": "a year or a month picked in a dense form row",
@@ -1034,7 +1034,7 @@
     }
    ],
    "related": [
-    "popover",
+    "date-picker",
     "field",
     "native-select"
    ],
@@ -1043,7 +1043,7 @@
     "CalendarDayButton"
    ],
    "aliases": [],
-   "tokens": 928
+   "tokens": 936
   },
   {
    "id": "canvas",
@@ -1679,6 +1679,42 @@
    "tokens": 858
   },
   {
+   "id": "date-picker",
+   "kind": "component",
+   "name": "DatePicker",
+   "import": "import { DatePicker, DateRangePicker, datePickerVariants } from \"@tecton/react/tecton/date-picker\"",
+   "family": "forms",
+   "summary": "A form field holds one date — a spud date, a report date, a date of birth — picked on a calendar that opens from a button.",
+   "fields": {
+    "names": "date picker date picker date range picker date picker variants",
+    "useWhen": "A form field holds one date — a spud date, a report date, a date of birth — picked on a calendar that opens from a button. The user may know the date and want to type it: `variant=\"input\"`, a date input with a calendar button. A period is picked as a start and an end: `DateRangePicker`, two months side by side, with `presets` such as `\"last7Days\"` and `\"thisMonth\"`.",
+    "routed": "a compact date field that opens a calendar on demand",
+    "do": "Put it in a `Field` with an `id` and a `FieldLabel htmlFor`: the label names the trigger and the date describes it. Hold plain `Date` values in `value` / `defaultValue` / `onValueChange` (a `{ from, to }` range for `DateRangePicker`); `onValueChange` reports `undefined` when the date is cleared. Bound the days with `minDate` / `maxDate`, and pass `captionLayout=\"dropdown\"` when the date is years away (a date of birth). Let the `TectonProvider` set the locale: the text, the calendar's month and day names and its first weekday all follow it; change how the date is written with `format` (`Intl.DateTimeFormat` options), never by formatting it yourself. Give `className` the width only (`w-full` in a `Field`, `w-48`)."
+   },
+   "notFor": [
+    {
+     "need": "a month grid that stays on the page",
+     "id": "calendar"
+    },
+    {
+     "need": "a year or a month picked in a dense form row",
+     "id": "native-select"
+    }
+   ],
+   "related": [
+    "field",
+    "calendar",
+    "popover"
+   ],
+   "exports": [
+    "DatePicker",
+    "DateRangePicker",
+    "datePickerVariants"
+   ],
+   "aliases": [],
+   "tokens": 920
+  },
+  {
    "id": "dialog",
    "kind": "component",
    "name": "Dialog",
@@ -2078,7 +2114,7 @@
     "Input"
    ],
    "aliases": [],
-   "tokens": 1043
+   "tokens": 1109
   },
   {
    "id": "input-group",
@@ -2496,7 +2532,7 @@
    "fields": {
     "names": "native select native select native select option native select opt group",
     "useWhen": "You want the platform's own dropdown: native keyboard behaviour and the mobile wheel, with no popover. A form posts natively and the value has to come from a real `select` element in the DOM. The row is dense and the options are plain text, with no icons or descriptions.",
-    "routed": "a year or a month picked in a dense form row the browser's own dropdown, for a dense form or a phone",
+    "routed": "a year or a month picked in a dense form row a year or a month picked in a dense form row the browser's own dropdown, for a dense form or a phone",
     "do": "Treat it as a `select`: `value` / `defaultValue` / `onChange(event)`, `disabled`, `required`, `name`. Set the height with `size=\"sm\" | \"default\"`; the native row-count `size` is deliberately not available. Make the first `NativeSelectOption` an empty-valued row when you need a placeholder. Group options with `NativeSelectOptGroup label=\"…\"`. Signal errors with `aria-invalid` on the select and `data-invalid` on the surrounding `Field`."
    },
    "notFor": [
@@ -2716,7 +2752,7 @@
    "fields": {
     "names": "popover popover popover trigger popover content popover header popover title popover description",
     "useWhen": "A few controls belong to one trigger and should appear next to it: dimensions, a colour, a filter. The user opens it deliberately by pressing, and the page behind it stays live. The content is interactive — inputs, buttons, a small form — so a `Tooltip` is out.",
-    "routed": "a compact date field that opens a calendar on demand short content anchored to the control that opened it content the user opens deliberately and works in content anchored to the control that opened it content with a link, a button or a field inside it",
+    "routed": "short content anchored to the control that opened it content the user opens deliberately and works in content anchored to the control that opened it content with a link, a button or a field inside it",
     "do": "Compose `Popover` (the root) > `PopoverTrigger render={<Button variant=\"outline\" />}` + `PopoverContent`; control it with `open` / `onOpenChange` on `Popover`. Position with `side` (`\"top\" | \"bottom\" | \"left\" | \"right\" | \"inline-start\" | \"inline-end\"`) and `align` (`\"start\" | \"center\" | \"end\"`) on `PopoverContent`, nudged with `sideOffset` / `alignOffset`. Structure the top with `PopoverHeader`, `PopoverTitle` and `PopoverDescription`; the content is already a `flex flex-col gap-4`. Use `className` on `PopoverContent` for width only (`w-80`): it owns its padding, radius, shadow and surface."
    },
    "notFor": [

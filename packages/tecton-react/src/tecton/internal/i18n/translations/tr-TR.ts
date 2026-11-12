@@ -197,4 +197,26 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "{columnName} öğesini yeniden boyutlandır",
   },
+  datePicker: {
+    placeholder: "Tarih seçin",
+    rangePlaceholder: "Tarih aralığı seçin",
+    chooseDate: "Tarih seçin",
+    chooseDateRange: "Tarih aralığı seçin",
+    presets: "Hızlı seçim",
+    today: "Bugün",
+    yesterday: "Dün",
+    last7Days: "Son 7 gün",
+    last30Days: "Son 30 gün",
+    thisMonth: "Bu ay",
+    lastMonth: "Geçen ay",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "{selected}/{total} seçildi" },
+    selectedOfTotalLabelled: { other: "{selected}/{total} {label} seçildi" },
+    selected: { other: "{selected} seçildi" },
+    selectedLabelled: { other: "{selected} {label} seçildi" },
+    clear: "Temizle",
+    clearSelection: "Seçimi temizle",
+    actions: "Eylemler",
+  },
 })

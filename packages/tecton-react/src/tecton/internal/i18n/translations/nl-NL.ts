@@ -211,4 +211,28 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Formaat van {columnName} wijzigen",
   },
+  datePicker: {
+    placeholder: "Kies een datum",
+    rangePlaceholder: "Kies een periode",
+    chooseDate: "Kies een datum",
+    chooseDateRange: "Kies een periode",
+    presets: "Snelkeuzes",
+    today: "Vandaag",
+    yesterday: "Gisteren",
+    last7Days: "Afgelopen 7 dagen",
+    last30Days: "Afgelopen 30 dagen",
+    thisMonth: "Deze maand",
+    lastMonth: "Vorige maand",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "{selected} van {total} geselecteerd" },
+    selectedOfTotalLabelled: {
+      other: "{selected} van {total} {label} geselecteerd",
+    },
+    selected: { other: "{selected} geselecteerd" },
+    selectedLabelled: { other: "{selected} {label} geselecteerd" },
+    clear: "Wissen",
+    clearSelection: "Selectie wissen",
+    actions: "Acties",
+  },
 })

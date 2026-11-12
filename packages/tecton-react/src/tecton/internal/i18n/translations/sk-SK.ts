@@ -235,4 +235,46 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Zmeniť veľkosť stĺpca {columnName}",
   },
+  datePicker: {
+    placeholder: "Vyberte dátum",
+    rangePlaceholder: "Vyberte rozsah dátumov",
+    chooseDate: "Vyberte dátum",
+    chooseDateRange: "Vyberte rozsah dátumov",
+    presets: "Rýchly výber",
+    today: "Dnes",
+    yesterday: "Včera",
+    last7Days: "Posledných 7 dní",
+    last30Days: "Posledných 30 dní",
+    thisMonth: "Tento mesiac",
+    lastMonth: "Minulý mesiac",
+  },
+  actionBar: {
+    selectedOfTotal: {
+      one: "Vybratý {selected} z {total}",
+      few: "Vybraté {selected} z {total}",
+      many: "Vybratých {selected} z {total}",
+      other: "Vybratých {selected} z {total}",
+    },
+    selectedOfTotalLabelled: {
+      one: "Vybratý {selected} z {total} {label}",
+      few: "Vybraté {selected} z {total} {label}",
+      many: "Vybratých {selected} z {total} {label}",
+      other: "Vybratých {selected} z {total} {label}",
+    },
+    selected: {
+      one: "Vybratý {selected}",
+      few: "Vybraté {selected}",
+      many: "Vybratých {selected}",
+      other: "Vybratých {selected}",
+    },
+    selectedLabelled: {
+      one: "Vybratý {selected} {label}",
+      few: "Vybraté {selected} {label}",
+      many: "Vybratých {selected} {label}",
+      other: "Vybratých {selected} {label}",
+    },
+    clear: "Vymazať",
+    clearSelection: "Zrušiť výber",
+    actions: "Akcie",
+  },
 })

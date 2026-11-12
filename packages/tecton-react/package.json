@@ -456,6 +456,11 @@
       "import": "./dist/tecton/data-table.js",
       "default": "./dist/tecton/data-table.js"
     },
+    "./tecton/date-picker": {
+      "types": "./dist/tecton/date-picker.d.ts",
+      "import": "./dist/tecton/date-picker.js",
+      "default": "./dist/tecton/date-picker.js"
+    },
     "./tecton/document-tabs": {
       "types": "./dist/tecton/document-tabs.d.ts",
       "import": "./dist/tecton/document-tabs.js",

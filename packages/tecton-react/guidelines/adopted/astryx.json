@@ -670,7 +670,7 @@
       "id": "calendar.Calendar.5",
       "component": "calendar",
       "where": "do",
-      "text": "Let users type a date they already know or one far from today (`Input type=\"date\"`) instead of paging a `Calendar` month by month.",
+      "text": "Let users type a date they already know or one far from today (`DatePicker variant=\"input\"`) instead of paging a `Calendar` month by month.",
       "origin": "Astryx Calendar #5"
     },
     {

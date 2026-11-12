@@ -209,4 +209,35 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Ändra storlek på {columnName}",
   },
+  datePicker: {
+    placeholder: "Välj ett datum",
+    rangePlaceholder: "Välj ett datumintervall",
+    chooseDate: "Välj ett datum",
+    chooseDateRange: "Välj ett datumintervall",
+    presets: "Snabbval",
+    today: "I dag",
+    yesterday: "I går",
+    last7Days: "Senaste 7 dagarna",
+    last30Days: "Senaste 30 dagarna",
+    thisMonth: "Den här månaden",
+    lastMonth: "Förra månaden",
+  },
+  actionBar: {
+    selectedOfTotal: {
+      one: "{selected} av {total} markerad",
+      other: "{selected} av {total} markerade",
+    },
+    selectedOfTotalLabelled: {
+      one: "{selected} av {total} {label} markerad",
+      other: "{selected} av {total} {label} markerade",
+    },
+    selected: { one: "{selected} markerad", other: "{selected} markerade" },
+    selectedLabelled: {
+      one: "{selected} {label} markerad",
+      other: "{selected} {label} markerade",
+    },
+    clear: "Rensa",
+    clearSelection: "Rensa markering",
+    actions: "Åtgärder",
+  },
 })

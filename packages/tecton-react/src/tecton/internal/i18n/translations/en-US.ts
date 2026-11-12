@@ -266,6 +266,37 @@ const enUS = {
     moveTo: "Move to {slotText}",
     emptySlot: "empty slot {index}",
   },
+  datePicker: {
+    // The trigger's text while no date is picked.
+    placeholder: "Pick a date",
+    rangePlaceholder: "Pick a date range",
+    // The calendar button of the date input, and the calendar's popover.
+    chooseDate: "Choose a date",
+    chooseDateRange: "Choose a date range",
+    // The buttons under a range calendar that pick a range at once.
+    presets: "Presets",
+    today: "Today",
+    yesterday: "Yesterday",
+    last7Days: "Last 7 days",
+    last30Days: "Last 30 days",
+    thisMonth: "This month",
+    lastMonth: "Last month",
+  },
+  actionBar: {
+    // The selection summary. The plural form follows the number selected
+    // ({selected}); {total} is how many there are; both are formatted.
+    // {label} is the application's noun for the items, e.g. "wells".
+    selectedOfTotal: { other: "{selected} of {total} selected" },
+    selectedOfTotalLabelled: {
+      other: "{selected} of {total} {label} selected",
+    },
+    selected: { other: "{selected} selected" },
+    selectedLabelled: { other: "{selected} {label} selected" },
+    clear: "Clear",
+    clearSelection: "Clear selection",
+    // The name of the actions toolbar.
+    actions: "Actions",
+  },
 } as const satisfies TranslationTable
 
 export default enUS

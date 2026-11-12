@@ -256,4 +256,28 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "تغيير حجم {columnName}",
   },
+  datePicker: {
+    placeholder: "اختر تاريخًا",
+    rangePlaceholder: "اختر نطاقًا زمنيًا",
+    chooseDate: "اختر تاريخًا",
+    chooseDateRange: "اختر نطاقًا زمنيًا",
+    presets: "خيارات سريعة",
+    today: "اليوم",
+    yesterday: "أمس",
+    last7Days: "آخر 7 أيام",
+    last30Days: "آخر 30 يومًا",
+    thisMonth: "هذا الشهر",
+    lastMonth: "الشهر الماضي",
+  },
+  actionBar: {
+    selectedOfTotal: { other: "تم تحديد {selected} من {total}" },
+    selectedOfTotalLabelled: {
+      other: "تم تحديد {selected} من {total} {label}",
+    },
+    selected: { other: "تم تحديد {selected}" },
+    selectedLabelled: { other: "تم تحديد {selected} {label}" },
+    clear: "مسح",
+    clearSelection: "مسح التحديد",
+    actions: "الإجراءات",
+  },
 })

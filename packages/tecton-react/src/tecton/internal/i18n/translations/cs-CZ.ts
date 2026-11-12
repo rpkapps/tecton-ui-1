@@ -235,4 +235,46 @@ export default defineTranslations({
   tableColumnResizer: {
     resize: "Změnit šířku sloupce {columnName}",
   },
+  datePicker: {
+    placeholder: "Vyberte datum",
+    rangePlaceholder: "Vyberte rozsah dat",
+    chooseDate: "Vyberte datum",
+    chooseDateRange: "Vyberte rozsah dat",
+    presets: "Předvolby",
+    today: "Dnes",
+    yesterday: "Včera",
+    last7Days: "Posledních 7 dní",
+    last30Days: "Posledních 30 dní",
+    thisMonth: "Tento měsíc",
+    lastMonth: "Minulý měsíc",
+  },
+  actionBar: {
+    selectedOfTotal: {
+      one: "Vybrán {selected} z {total}",
+      few: "Vybrány {selected} z {total}",
+      many: "Vybráno {selected} z {total}",
+      other: "Vybráno {selected} z {total}",
+    },
+    selectedOfTotalLabelled: {
+      one: "Vybrán {selected} z {total} {label}",
+      few: "Vybrány {selected} z {total} {label}",
+      many: "Vybráno {selected} z {total} {label}",
+      other: "Vybráno {selected} z {total} {label}",
+    },
+    selected: {
+      one: "Vybrán {selected}",
+      few: "Vybrány {selected}",
+      many: "Vybráno {selected}",
+      other: "Vybráno {selected}",
+    },
+    selectedLabelled: {
+      one: "Vybrán {selected} {label}",
+      few: "Vybrány {selected} {label}",
+      many: "Vybráno {selected} {label}",
+      other: "Vybráno {selected} {label}",
+    },
+    clear: "Zrušit",
+    clearSelection: "Zrušit výběr",
+    actions: "Akce",
+  },
 })
