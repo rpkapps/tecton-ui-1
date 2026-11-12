@@ -1940,7 +1940,7 @@
     "names": "dropdown menu dropdown menu dropdown menu trigger dropdown menu content dropdown menu portal dropdown menu group dropdown menu label dropdown menu item dropdown menu checkbox item dropdown menu radio group dropdown menu radio item dropdown menu separator dropdown menu shortcut dropdown menu sub dropdown menu sub trigger dropdown menu sub content",
     "useWhen": "A button opens a menu of actions: row actions, an account menu, a \"more\" overflow menu. Some of those entries are toggles or one exclusive choice, shown with check marks. The list wants submenus, shortcut hints, or a destructive entry at the end.",
     "routed": "a list of actions behind a single button a short list of actions opened from a header button a long list of actions behind one trigger several related actions behind one control a menu of actions opened from a button a menu opened from a visible button every action behind one button from the start a menu of actions rather than a value",
-    "do": "Compose `DropdownMenu` (the root) > `DropdownMenuTrigger render={<Button variant=\"ghost\" size=\"icon\" />}` + `DropdownMenuContent`. Run actions from `onClick` on `DropdownMenuItem`; the menu closes after it. Show toggles with `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) and one exclusive choice with `DropdownMenuRadioGroup` (`value` / `onValueChange`) holding `DropdownMenuRadioItem value=\"…\"`. Title groups with `DropdownMenuLabel` inside a `DropdownMenuGroup`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut` (a label only — Tecton binds no keys). Place with `side` / `align` on `DropdownMenuContent` and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`."
+    "do": "Compose `DropdownMenu` (the root) > `DropdownMenuTrigger render={<Button variant=\"ghost\" size=\"icon\" />}` + `DropdownMenuContent` (placed with `side` / `align`); nest with `DropdownMenuSub` > `DropdownMenuSubTrigger` + `DropdownMenuSubContent`. Run actions from `onClick` on `DropdownMenuItem`; the menu closes after it. Show toggles with `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) and one exclusive choice with `DropdownMenuRadioGroup` (`value` / `onValueChange`) holding `DropdownMenuRadioItem value=\"…\"`. Title groups with `DropdownMenuLabel` inside a `DropdownMenuGroup`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut` (a label only — Tecton binds no keys). Leave the menu non-modal (the default: the page keeps scrolling and a press outside closes the menu and still acts); pass `modal` only when an outside press must just close it, e.g. over destructive controls — it locks page scroll."
    },
    "notFor": [
     {
@@ -1979,7 +1979,7 @@
     "DropdownMenuSubContent"
    ],
    "aliases": [],
-   "tokens": 995
+   "tokens": 1046
   },
   {
    "id": "dropzone",

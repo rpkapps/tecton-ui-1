@@ -28,16 +28,16 @@
  *   the More menu with a key has its first item active, as from its own
  *   trigger.
  *
- * The parts' menus are not modal (`modal: false` here; a column's menu and
- * a row's actions pass it themselves), as their popovers are not. A modal
- * menu locks the page's scroll as it opens and unlocks it as it closes,
- * and with classic scrollbars each lock restyles every element of the
- * page (it sets `overflow` and `scrollbar-gutter` on `<html>`, and reads
- * the layout right after): on a page that holds a table, a task of 150 ms
- * or more at each open and each close, the open animation not drawn at
- * all. Not modal, a press outside still closes the menu, then does what it
- * pressed (another column's menu opens at once, a field takes focus), and
- * the page scrolls under the menu, which follows its button.
+ * The parts' menus are not modal, as their popovers are not: `root` passes
+ * no `modal`, and a `DropdownMenu`, as a `Popover`, is not modal unless it
+ * is given one (the table's column menus and row actions rely on it too).
+ * A modal menu would lock the page's scroll as it opens and unlock it as it
+ * closes, and with classic scrollbars each lock restyles every element of
+ * the page: on a page that holds a table, a task of 150 ms or more at each
+ * open and each close, the open animation not drawn at all. Not modal, a
+ * press outside still closes the menu, then does what it pressed (another
+ * column's menu opens at once, a field takes focus), and the page scrolls
+ * under the menu, which follows its button.
  */
 import * as React from "react"
 
@@ -162,8 +162,6 @@ function usePartPopup() {
     },
     /** For the popup's root (`DropdownMenu`, `Popover`). */
     root: {
-      // Not modal: no scroll lock (above).
-      modal: false as const,
       open,
       onOpenChange,
       onOpenChangeComplete: (next: boolean) => {

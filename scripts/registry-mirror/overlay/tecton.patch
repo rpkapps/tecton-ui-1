@@ -687,8 +687,13 @@ index 4c4543e2..b5cc4068 100644
  import { cn } from "cn"
  
  import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
-@@ -10,8 +11,19 @@ function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
-   return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
+@@ -9,9 +10,22 @@ import { IconPlaceholder } from "@/app/(create)/components/icon-placeholder"
+-function DropdownMenu({ ...props }: MenuPrimitive.Root.Props) {
+-  return <MenuPrimitive.Root data-slot="dropdown-menu" {...props} />
++function DropdownMenu({ modal = false, ...props }: MenuPrimitive.Root.Props) {
++  return (
++    <MenuPrimitive.Root data-slot="dropdown-menu" modal={modal} {...props} />
++  )
  }
  
 -function DropdownMenuPortal({ ...props }: MenuPrimitive.Portal.Props) {
@@ -709,7 +714,7 @@ index 4c4543e2..b5cc4068 100644
  }
  
  function DropdownMenuTrigger({ ...props }: MenuPrimitive.Trigger.Props) {
-@@ -23,21 +35,27 @@ function DropdownMenuContent({
+@@ -23,21 +37,27 @@ function DropdownMenuContent({
    alignOffset = 0,
    side = "bottom",
    sideOffset = 4,

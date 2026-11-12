@@ -144,9 +144,8 @@ function DataTableColumnMenu<T>({
   const popup = React.useRef<HTMLDivElement | null>(null)
   return (
     <DropdownMenu
-      // Not modal, as the table's other menus: no scroll lock
+      // Not modal (the default), as the table's other menus: no scroll lock
       // (`part-popup.ts`).
-      modal={false}
       onOpenChange={(open) => {
         if (open) closing.current = null
       }}

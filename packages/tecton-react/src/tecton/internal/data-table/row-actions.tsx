@@ -57,8 +57,9 @@ function DataTableRowActions({
     (state) => state.options.size === "sm"
   )
   return (
-    // Not modal, as the table's other menus: no scroll lock (`part-popup.ts`).
-    <DropdownMenu modal={false}>
+    // Not modal (the default), as the table's other menus: no scroll lock
+    // (`part-popup.ts`).
+    <DropdownMenu>
       <DropdownMenuTrigger
         data-slot="data-table-row-actions"
         aria-label={ariaLabel ?? t("rowActions")}

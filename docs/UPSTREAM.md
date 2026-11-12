@@ -189,6 +189,11 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   `*Trigger`. The DataTable's toolbar parts use it: opened from the toolbar's "More" menu, their
   popup sits by the More button (`src/tecton/internal/data-table/part-popup.ts`). Tested in
   `src/tecton/__tests__/data-table-toolbar.test.tsx`.
+- **Non-modal `DropdownMenu`** (`dropdown-menu`) — `DropdownMenu` defaults `modal` to `false` and
+  passes it through, so `modal` still makes a menu modal. A modal menu locks page scroll, and each
+  lock re-probes scrollbar-gutter support on `<html>`, restyling the whole document (150–200 ms per
+  open and close on a page with a DataTable, the open animation lost). Tested in
+  `src/tecton/__tests__/dropdown-menu-modal.test.tsx`.
 - **Variant axes** — `alert` (`variant` success / warning / info, `appearance` default / outline /
   filled, exposed as `data-variant` / `data-appearance`; `alertVariants` exported), `badge`
   (`variant` success / warning / info, `appearance` solid / outline, `size` default / md / lg,

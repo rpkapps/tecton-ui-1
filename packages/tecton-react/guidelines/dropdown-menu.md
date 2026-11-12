@@ -21,11 +21,11 @@ related: [ContextMenu, Button, Select]
 
 ## Do
 
-- Compose `DropdownMenu` (the root) > `DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}` + `DropdownMenuContent`.
+- Compose `DropdownMenu` (the root) > `DropdownMenuTrigger render={<Button variant="ghost" size="icon" />}` + `DropdownMenuContent` (placed with `side` / `align`); nest with `DropdownMenuSub` > `DropdownMenuSubTrigger` + `DropdownMenuSubContent`.
 - Run actions from `onClick` on `DropdownMenuItem`; the menu closes after it.
 - Show toggles with `DropdownMenuCheckboxItem` (`checked` / `onCheckedChange`) and one exclusive choice with `DropdownMenuRadioGroup` (`value` / `onValueChange`) holding `DropdownMenuRadioItem value="…"`.
 - Title groups with `DropdownMenuLabel` inside a `DropdownMenuGroup`, divide with `DropdownMenuSeparator`, hint keys with `DropdownMenuShortcut` (a label only — Tecton binds no keys).
-- Place with `side` / `align` on `DropdownMenuContent` and nest with `DropdownMenuSub`, `DropdownMenuSubTrigger` and `DropdownMenuSubContent`.
+- Leave the menu non-modal (the default: the page keeps scrolling and a press outside closes the menu and still acts); pass `modal` only when an outside press must just close it, e.g. over destructive controls — it locks page scroll.
 
 ## Don't
 

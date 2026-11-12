@@ -838,9 +838,9 @@ function DocumentTabsMore({
   const keepFocus = React.useRef(false)
   if (!hidden.size) return null
   return (
-    // Not modal: no scroll lock or inert page, like a browser's tab list.
+    // Not modal (the default): no scroll lock or inert page, like a
+    // browser's tab list.
     <DropdownMenu
-      modal={false}
       onOpenChangeComplete={(open) => {
         if (open || picked.current === null) return
         list.requestFocus(picked.current)
