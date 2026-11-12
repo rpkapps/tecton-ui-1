@@ -1662,6 +1662,72 @@ describe("DataTable hideBelow and wrap", () => {
   })
 })
 
+describe("DataTable header rows of groups over hidden columns", () => {
+  const grouped = createColumns<Field>([
+    { id: "name", header: "Field" },
+    {
+      id: "production",
+      header: "Production",
+      columns: [
+        { id: "oil", header: "Oil", type: "number", hideBelow: "md" },
+        { id: "gas", header: "Gas", type: "number", hideBelow: "md" },
+      ],
+    },
+  ])
+  const headRows = () => document.querySelectorAll("thead > tr")
+  const wide = () =>
+    vi.spyOn(window, "matchMedia").mockImplementation(
+      (query) =>
+        ({
+          matches: true,
+          media: query,
+          addEventListener: () => {},
+          removeEventListener: () => {},
+        }) as unknown as MediaQueryList
+    )
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it("draws no row of groups while every grouped column is hidden below its breakpoint", () => {
+    // The test window is below every breakpoint.
+    render(<Fields columns={grouped} selectionMode="multiple" />)
+    expect(headRows()).toHaveLength(1)
+    for (const cell of headRows()[0].children)
+      expect(cell).not.toHaveAttribute("rowspan")
+    expect(
+      screen.queryByRole("columnheader", { name: "Production" })
+    ).toBeNull()
+  })
+
+  it("draws the row of groups once a grouped column is laid out", () => {
+    wide()
+    render(<Fields columns={grouped} selectionMode="multiple" />)
+    expect(headRows()).toHaveLength(2)
+    expect(header("Field")).toHaveAttribute("rowspan", "2")
+    expect(
+      screen.getByRole("columnheader", { name: "Production" })
+    ).toBeInTheDocument()
+  })
+
+  it("keeps a row of groups over a column that is not hidden", () => {
+    const some = createColumns<Field>([
+      { id: "name", header: "Field" },
+      {
+        id: "production",
+        header: "Production",
+        columns: [
+          { id: "oil", header: "Oil", type: "number" },
+          { id: "gas", header: "Gas", type: "number", hideBelow: "md" },
+        ],
+      },
+    ])
+    render(<Fields columns={some} />)
+    expect(headRows()).toHaveLength(2)
+  })
+})
+
 describe("DataTable grid keys and cells not laid out", () => {
   it("passes over cells hidden below a breakpoint", async () => {
     const user = userEvent.setup()

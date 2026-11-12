@@ -123,6 +123,8 @@ function DataTableRowReorder({ order }: { order: RowOrder }) {
     // In the frame (fixed, so not clipped by it): the drop line, drawn
     // over it, stays in view in any stacking context the page has.
     getPreviewContainer: order.frame,
+    // Opaque, moving along the table only, and inside its frame.
+    preview: { locked: true, clip: order.frame, solid: true },
     onDrop: (place, keys, details) => {
       const key = keys.at(0)
       if (key !== undefined) order.drop(key, place.gap, details.mode)

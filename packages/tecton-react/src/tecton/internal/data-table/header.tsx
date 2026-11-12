@@ -994,5 +994,30 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
   )
 }
 
-export { DataTableHeader }
+/**
+ * The header rows to draw: the columns' (the last), and each row of groups
+ * with a group over a column that is laid out (`hidden`: a column hidden
+ * below its `hideBelow`), from level 0 down again. A row of groups over
+ * hidden columns only would stand empty, and the columns' headers would
+ * span it: a header two rows tall with one row of names. The rows kept
+ * are the same objects when none is left out.
+ */
+function shownHeaderRows(
+  rows: ReadonlyArray<HeaderRow>,
+  hidden: (column: string) => boolean
+): ReadonlyArray<HeaderRow> {
+  const last = rows.length - 1
+  const kept = rows.filter(
+    (row) =>
+      row.level === last ||
+      row.cells.some(
+        (cell) =>
+          cell.kind === "group" && cell.columns.some((id) => !hidden(id))
+      )
+  )
+  if (kept.length === rows.length) return rows
+  return kept.map((row, level) => ({ ...row, level }))
+}
+
+export { DataTableHeader, shownHeaderRows }
 export type { HeaderShared }
