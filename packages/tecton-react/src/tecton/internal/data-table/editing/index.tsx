@@ -39,8 +39,9 @@
  *   data: the texts the browser's fields saved before it (written as a
  *   blur writes them), cells cleared or toggled; then the editor takes
  *   over a field still open (`take`), with its text, selection and focus,
- *   once an input method has composed. A text refused stops it there
- *   (`replay`): nothing after it is applied, and its editor opens again.
+ *   once an input method has composed. A text refused stops the keys
+ *   after it (`replay`): none is applied, up to a press elsewhere; its
+ *   editor opens again, or, the user having moved on, its cell is marked.
  * - When an edit ends with focus in its editor, focus goes back to its
  *   cell; the cell selection follows a move.
  */
@@ -330,6 +331,8 @@ function attachEditing(side: EditSide): EditHandlers {
         return start(entry.cell, entry.how, entry.text, now)
       case "save":
         return void save(entry.cell, entry.text, entry.event, true)
+      case "press":
+        return
       case "write":
         return write(entry.cell, entry.value, entry.reason, entry.event)
       case "stop":
@@ -407,47 +410,66 @@ function attachEditing(side: EditSide): EditHandlers {
   }
 
   /**
-   * What waited for this code, in order. A text refused stops it there:
-   * what came after it was typed as if it had been saved (focus moved on),
-   * so none of it is applied (a field still open is closed, unwritten).
-   * With focus still in the table, the refused cell's editor opens again
-   * with its text and message, as the table would have left it; with
-   * focus gone, the cell is marked. Either way, it is said.
+   * What waited for this code, in order. A text refused stops the keys
+   * that came after it (typed as if it had been saved, focus moved on):
+   * none of them is applied, up to a press on the table (the user's next
+   * move), from which on all is applied again. Without such a press, a
+   * field still open is closed unwritten and, with focus still in the
+   * table, the refused cell's editor opens again with its text, selection
+   * and message, as the table would have left it; otherwise (a press
+   * after it, or focus gone from the table) the cell is marked, as focus
+   * leaving an editor marks it. Either way, it is said.
    */
   const replay = (
     entries: ReadonlyArray<EditEvent>,
     field: FieldSession | null
   ) => {
-    for (const [index, entry] of entries.entries()) {
+    let index = 0
+    while (index < entries.length) {
+      const entry = entries[index++]
       if (entry.kind !== "save") {
         run(entry, false)
         continue
       }
+      const press = entries.findIndex(
+        (each, at) => at >= index && each.kind === "press"
+      )
       const container = side.container.current
-      const inTable =
-        container?.contains(container.ownerDocument.activeElement) ?? false
-      const message = save(entry.cell, entry.text, entry.event, !inTable)
+      const reopen =
+        press < 0 &&
+        (container?.contains(container.ownerDocument.activeElement) ?? false)
+      const message = save(entry.cell, entry.text, entry.event, !reopen)
       if (message === null) continue
+      const after = entries.slice(index, press < 0 ? undefined : press)
       const later =
-        index < entries.length - 1 || (field !== null && !field.closed)
-      if (field && !field.closed) field.close(false)
-      if (inTable) {
-        focusAt(entry.cell)
-        selectMoved(context, entry.cell)
-        start(entry.cell, "enter", entry.text, false, {
-          own: null,
-          selection: null,
-        })
-        const shown = cells.get().editing
-        if (shown && same(shown, entry.cell))
-          cells.set({ editing: { ...shown, error: message } })
-      }
+        after.some((each) => each.kind !== "press") ||
+        (press < 0 && field !== null && !field.closed)
       announce(
         t()(later ? "editNotSavedLater" : "editNotSaved", {
           value: entry.text,
           message,
         })
       )
+      if (press >= 0) {
+        index = press + 1
+        continue
+      }
+      if (field && !field.closed) field.close(false)
+      if (reopen) {
+        focusAt(entry.cell)
+        selectMoved(context, entry.cell)
+        const [from, to] = entry.selection ?? [
+          entry.text.length,
+          entry.text.length,
+        ]
+        start(entry.cell, "enter", entry.text, false, {
+          own: null,
+          selection: { start: from, end: to, direction: "none" },
+        })
+        const shown = cells.get().editing
+        if (shown && same(shown, entry.cell))
+          cells.set({ editing: { ...shown, error: message } })
+      }
       return
     }
     if (field) take(field)

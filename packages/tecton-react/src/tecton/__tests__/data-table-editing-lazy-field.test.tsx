@@ -414,6 +414,78 @@ describe("DataTable editing: the field before the code", () => {
     ])
   })
 
+  it("marks a text refused when a press on the table came after it, and applies what came after the press", async () => {
+    // As loaded: "ab" refused, the user moves on by a press, types there.
+    const steps: Array<Step> = [
+      at("Well 0", "depth"),
+      "ab{Enter}",
+      async (user) => {
+        await user.click(td("Well 2", "remarks"))
+      },
+      "hello",
+    ]
+    const queued = await run(steps, false)
+    const loaded = await run(steps, true)
+    expect(queued.end).toEqual(loaded.end)
+    expect(queued.end.field).toEqual(["Remarks, Well 2", "hello", 5, 5])
+    expect(queued.writes).toEqual(loaded.writes)
+    expect(queued.invalid).toEqual(["depth"])
+    expect(queued.invalid).toEqual(loaded.invalid)
+    expect(queued.said).toEqual(["“ab” was not saved: Enter a number"])
+  })
+
+  it("drops only the keys between a text refused and the press after it", async () => {
+    const queued = await run(
+      [
+        at("Well 0", "depth"),
+        // "5" typed on Well 1 after "ab" was refused: not applied.
+        "ab{Enter}5{Enter}",
+        async (user) => {
+          await user.click(td("Well 3", "depth"))
+        },
+        "7{Enter}",
+      ],
+      false
+    )
+    expect(queued.writes).toEqual([[["w3", "depth", 7], "edit"]])
+    expect(queued.depths.slice(1, 3)).toEqual(["1,250", "1,500"])
+    expect(queued.invalid).toEqual(["depth"])
+    expect(queued.end.at).toEqual(["TD", "depth", "Well 4"])
+    expect(queued.said).toEqual([
+      "“ab” was not saved: Enter a number. Later changes were not applied.",
+    ])
+  })
+
+  it("ends a field open after a text refused at the press, unwritten, and hands over the one after it", async () => {
+    const queued = await run(
+      [
+        at("Well 0", "depth"),
+        "ab{Enter}5",
+        async (user) => {
+          await user.click(td("Well 3", "remarks"))
+        },
+        "x",
+      ],
+      false
+    )
+    expect(queued.writes).toEqual([])
+    expect(queued.depths[1]).toBe("1,250")
+    expect(queued.end.field).toEqual(["Remarks, Well 3", "x", 1, 1])
+    expect(queued.editors).toBe(1)
+  })
+
+  it("opens a refused editor again with the caret where it was", async () => {
+    const steps: Array<Step> = [
+      at("Well 0", "depth"),
+      "{F2}{ArrowLeft}{ArrowLeft}9{Enter}",
+    ]
+    const queued = await run(steps, false)
+    const loaded = await run(steps, true)
+    expect(queued.end.field).toEqual(["Depth, Well 0", "10900", 3, 3])
+    expect(queued.end).toEqual(loaded.end)
+    expect(queued.error).toBe(loaded.error)
+  })
+
   it("applies what came before a text refused", async () => {
     const queued = await run(
       [at("Well 0", "depth"), "2{Enter}{Delete}{ArrowDown}x{Enter}9{Enter}"],

@@ -86,7 +86,16 @@ type SaveMove = "down" | "up" | "next" | "previous"
  */
 type EditEvent =
   | { kind: "start"; cell: Position; how: EditStart; text: string }
-  | { kind: "save"; cell: Position; text: string; event?: Event }
+  | {
+      kind: "save"
+      cell: Position
+      text: string
+      /** The field's selection as it closed (its editor opens again with it, refused). */
+      selection: [number, number] | null
+      event?: Event
+    }
+  /** A press on the table before the code: what came after it is the user's next move. */
+  | { kind: "press" }
   | {
       kind: "write"
       cell: Position
@@ -359,7 +368,19 @@ function useCellEditing({
       const text = field?.value ?? session.draft
       // Still the value's own text: no change.
       if (commit && text !== session.own)
-        dispatch({ kind: "save", cell, text, event }, false)
+        dispatch(
+          {
+            kind: "save",
+            cell,
+            text,
+            selection: field && [
+              field.selectionStart ?? 0,
+              field.selectionEnd ?? 0,
+            ],
+            event,
+          },
+          false
+        )
       focusBack(field)
       if (cells.get().editing?.session === session) cells.set({ editing: null })
       const target = move && nextCell(context, cell, move)
@@ -501,19 +522,18 @@ function useCellEditing({
     const onFocus = () => load()
 
     // A press in the cell being edited, off its field, keeps focus there.
+    // Before the code, a press elsewhere is the user's next move: a field
+    // open ends there (saved), and the press is kept, in order (`replay`).
     const onMouseDown = (event: React.MouseEvent<HTMLTableElement>) => {
       load()
       if (handlers.current) return handlers.current.press(event)
       const field = openField()
       const target = event.target as Element
-      if (
-        !field ||
-        event.button !== 0 ||
-        target.closest('[data-slot="data-table-editor"]')
-      )
-        return
+      if (target.closest('[data-slot="data-table-editor"]')) return
       const at = positionOf(target.closest("td, th"))
-      if (at && same(at, field)) event.preventDefault()
+      if (field && at && same(at, field)) return event.preventDefault()
+      field?.close(true)
+      queue.push({ kind: "press" })
     }
 
     const requests: EditRequests = {
