@@ -67,14 +67,10 @@ export default defineTranslations({
     pageOf: "Sivu {page}/{pageCount}",
     previousPage: "Edellinen sivu",
     nextPage: "Seuraava sivu",
-    previousPages: {
-      one: "Edellinen {pages} sivu",
-      other: "Edelliset {pages} sivua",
-    },
-    nextPages: {
-      one: "Seuraava {pages} sivu",
-      other: "Seuraavat {pages} sivua",
-    },
+    pagePicker: "Siirry sivulle",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "Siirry",
+    pagePickerInvalid: "Anna sivu väliltä {from}–{to}",
     selectAllMatching: {
       one: "Valitse {total} rivi",
       other: "Valitse kaikki {total} riviä",

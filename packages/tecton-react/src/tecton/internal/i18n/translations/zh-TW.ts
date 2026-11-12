@@ -65,8 +65,10 @@ export default defineTranslations({
     pageOf: "第 {page} 頁，共 {pageCount} 頁",
     previousPage: "上一頁",
     nextPage: "下一頁",
-    previousPages: { other: "向前 {pages} 頁" },
-    nextPages: { other: "向後 {pages} 頁" },
+    pagePicker: "跳至頁面",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "前往",
+    pagePickerInvalid: "請輸入 {from}–{to} 之間的頁碼",
     selectAllMatching: {
       other: "選取全部 {total} 列",
     },

@@ -65,11 +65,10 @@ export default defineTranslations({
     pageOf: "Sida {page} av {pageCount}",
     previousPage: "Föregående sida",
     nextPage: "Nästa sida",
-    previousPages: {
-      one: "Föregående {pages} sida",
-      other: "Föregående {pages} sidor",
-    },
-    nextPages: { one: "Nästa {pages} sida", other: "Nästa {pages} sidor" },
+    pagePicker: "Gå till sida",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "Gå",
+    pagePickerInvalid: "Ange en sida från {from} till {to}",
     selectAllMatching: {
       one: "Markera {total} rad",
       other: "Markera alla {total} rader",

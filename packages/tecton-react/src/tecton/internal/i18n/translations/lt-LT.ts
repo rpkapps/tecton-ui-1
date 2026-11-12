@@ -65,18 +65,10 @@ export default defineTranslations({
     pageOf: "{page} puslapis iš {pageCount}",
     previousPage: "Ankstesnis puslapis",
     nextPage: "Kitas puslapis",
-    previousPages: {
-      one: "Ankstesnis {pages} puslapis",
-      few: "Ankstesni {pages} puslapiai",
-      many: "Ankstesnio {pages} puslapio",
-      other: "Ankstesnių {pages} puslapių",
-    },
-    nextPages: {
-      one: "Kitas {pages} puslapis",
-      few: "Kiti {pages} puslapiai",
-      many: "Kito {pages} puslapio",
-      other: "Kitų {pages} puslapių",
-    },
+    pagePicker: "Eiti į puslapį",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "Eiti",
+    pagePickerInvalid: "Įveskite puslapį nuo {from} iki {to}",
     selectAllMatching: {
       one: "Pasirinkti {total} eilutę",
       few: "Pasirinkti visas eilutes ({total})",

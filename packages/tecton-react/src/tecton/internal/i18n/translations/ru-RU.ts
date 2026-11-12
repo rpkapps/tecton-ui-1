@@ -66,18 +66,10 @@ export default defineTranslations({
     pageOf: "Страница {page} из {pageCount}",
     previousPage: "Предыдущая страница",
     nextPage: "Следующая страница",
-    previousPages: {
-      one: "Предыдущая {pages} страница",
-      few: "Предыдущие {pages} страницы",
-      many: "Предыдущие {pages} страниц",
-      other: "Предыдущие {pages} страницы",
-    },
-    nextPages: {
-      one: "Следующая {pages} страница",
-      few: "Следующие {pages} страницы",
-      many: "Следующие {pages} страниц",
-      other: "Следующие {pages} страницы",
-    },
+    pagePicker: "Перейти на страницу",
+    pagePickerHint: "{from}–{to}",
+    pagePickerGo: "Перейти",
+    pagePickerInvalid: "Введите страницу от {from} до {to}",
     selectAllMatching: {
       one: "Выбрать все {total} строку",
       few: "Выбрать все {total} строки",
