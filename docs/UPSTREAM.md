@@ -296,7 +296,7 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   primitives); outside a `TableGridConfig` the markup is unchanged and no grid prop is public.
   Tested in `src/tecton/__tests__/table-grid.test.tsx`. The container also reads
   `useTableContainer` (`table-grid.tsx`): inside a `TableContainerConfig` (internal, used by
-  `DataTable` for the fade at pinned columns' edges) it takes that config's `className` and
+  `DataTable` for the divider and scroll shadow at pinned columns' edges) it takes that config's `className` and
   `style` and hands its element to the config's `ref`; outside one it is unchanged.
 - **`--surface`** (`style-tecton.css` only) — every opaque surface sets an inherited
   `--surface` to its own fill: `card`, `sheet` and `drawer` content `var(--color-card)`; the

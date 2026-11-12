@@ -47,7 +47,7 @@ import { useTranslations, type Translator } from "../i18n/translations"
 import { announce } from "../primitives/live-announcer"
 import {
   columnClassName,
-  pinFadeClassName,
+  pinEdgeClassName,
   pinnedHeadClassName,
   pinStyle,
   type CellPin,
@@ -490,6 +490,11 @@ function DataTableColumnHeader<T>({
   // The last column's grip stays inside the table: half of it past the
   // edge would be cut by the frame, and scroll the table.
   const lastGrip = index === layout.columns.length - 1 ? "me-0" : undefined
+  // On the start's pinned edge, the divider is the grip's line at rest.
+  const grip = cn(
+    lastGrip,
+    pin?.edge && pin.side === "start" && "after:bg-transparent"
+  )
 
   // The resizer's width while it changes: drawn through `preview`, so only
   // this cell renders until the drag ends (or the keyboard is done).
@@ -620,7 +625,7 @@ function DataTableColumnHeader<T>({
         columnClassName(column),
         draggable && DRAGGABLE,
         pin && pinnedHeadClassName,
-        pinFadeClassName(pin),
+        pinEdgeClassName(pin),
         edge && GROUP_EDGE
       )}
       style={pin && pinStyle(pin)}
@@ -698,7 +703,7 @@ function DataTableColumnHeader<T>({
         )}
         {columnMenu}
       </div>
-      {canResize && !Resizer && resizer.placeholder(lastGrip)}
+      {canResize && !Resizer && resizer.placeholder(grip)}
       {canResize && Resizer && (
         <Resizer
           ref={resizerRef}
@@ -707,7 +712,7 @@ function DataTableColumnHeader<T>({
           tabIndex={-1}
           onMouseDown={(event) => event.preventDefault()}
           aria-describedby={resizing ? resizeHintId : undefined}
-          className={lastGrip}
+          className={grip}
           label={column.header}
           // A column hidden below a breakpoint has no width: its own then.
           value={Math.max(
@@ -800,7 +805,7 @@ function DataTableGroupHeader<T>({
         GROUP_ROW,
         draggable && DRAGGABLE,
         pin && pinnedHeadClassName,
-        pinFadeClassName(pin),
+        pinEdgeClassName(pin),
         edge && GROUP_EDGE,
         group && GROUP_UNDER
       )}
@@ -917,6 +922,8 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
   }
   edges.delete(layout.columns.length)
   if (!selection && !options.reorderableRows) edges.delete(0)
+  // Nor beside the start's pinned columns, which draw their divider there.
+  if (layout.pinnedStart > 0) edges.delete(layout.pinnedStart)
   // A cell with nothing to show is still named for the grid's keyboard,
   // which stops on every header cell.
   const selectColumn = <span className="sr-only">{t("select")}</span>

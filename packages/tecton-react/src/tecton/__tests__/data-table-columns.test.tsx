@@ -1169,7 +1169,7 @@ describe("DataTable column hiding rules", () => {
   })
 })
 
-/** The fade a pinned column draws at its inner edge (`cell.tsx`). */
+/** The shadow a pinned column casts past its inner edge (`cell.tsx`). */
 const START_FADE = "after:[animation-name:scroll-fade-reveal-s]"
 const END_FADE = "after:[animation-name:scroll-fade-reveal-e]"
 const FADE_START = `[class*="${START_FADE}"]`
@@ -1238,11 +1238,13 @@ describe("DataTable column pinning", () => {
     expect(body.closest("tr")).toHaveClass(
       "bg-[var(--surface,var(--color-background))]"
     )
-    // The columns scrolled under it fade at its inner edge, in each cell's
-    // own fill: the scroll fade's keyframes on the pinned cells, not a mask
-    // over the table.
-    expect(wells).toHaveClass(START_FADE, "after:bg-inherit")
-    expect(body).toHaveClass(START_FADE, "after:bg-inherit")
+    // Its inner edge draws a divider, and a shadow over the columns
+    // scrolled under it: the scroll fade's keyframes on the pinned cells,
+    // not a mask over the table.
+    expect(wells).toHaveClass("border-e", "border-e-border", START_FADE)
+    expect(body).toHaveClass("border-e", "border-e-border", START_FADE)
+    expect(body).not.toHaveClass("after:bg-inherit")
+    expect(checkbox).not.toHaveClass("border-e")
     expect(checkbox).not.toHaveClass(START_FADE)
     expect(container().className).not.toContain("scroll-fade")
   })
@@ -1289,8 +1291,9 @@ describe("DataTable column pinning", () => {
       "140px",
       "160px",
     ])
-    // The first pinned at the end fades the columns under it, the next not.
-    expect(header("Field")).toHaveClass(END_FADE)
+    // The first pinned at the end draws the divider and shadow, the next not.
+    expect(header("Field")).toHaveClass("border-s", "border-s-border", END_FADE)
+    expect(header("Operator")).not.toHaveClass("border-s")
     expect(header("Operator")).not.toHaveClass(END_FADE)
     // The group over the pinned columns' place is split from theirs.
     expect(
@@ -1705,7 +1708,7 @@ describe("DataTable grid keys and cells not laid out", () => {
 })
 
 describe("DataTable around other tables and surfaces", () => {
-  it("keeps the pinned columns' fade from a plain table in one of its cells", () => {
+  it("keeps the pinned columns' edge from a plain table in one of its cells", () => {
     const nested = createColumns<Field>([
       { id: "name", header: "Field", width: 140 },
       {

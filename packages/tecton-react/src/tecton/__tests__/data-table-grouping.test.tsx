@@ -684,6 +684,35 @@ describe("DataTable grouping with other features", () => {
     expect(cells.at(-1)).toHaveClass("sticky", "bg-inherit")
     // The label stays within the pinned columns.
     expect(cells[0]).not.toHaveAttribute("colspan")
+    // The pinned edges' divider and shadow, the label's content unclipped
+    // (its band bridging the start's divider while it runs on past it).
+    expect(cells[0]).toHaveClass("border-e", "border-e-transparent")
+    expect(cells[0]).not.toHaveClass("overflow-clip")
+    expect(cells.at(-1)).toHaveClass("border-s", "border-s-border")
+  })
+
+  it("draws the pinned columns' dividers through a detail row, under its content", () => {
+    render(
+      <Wells
+        pinnableColumns
+        defaultExpanded={["w1"]}
+        defaultView={{
+          columns: { pinned: { start: ["name"], end: ["active"] } },
+        }}
+        contentProps={{
+          renderDetail: (well: Well) => `Detail of ${well.name}`,
+        }}
+      />
+    )
+    const content = screen.getByText("Detail of Well 01")
+    expect(content).toHaveClass("relative")
+    const lines = [...content.parentElement!.querySelectorAll("[aria-hidden]")]
+    expect(lines.map((line) => line.className)).toEqual([
+      expect.stringContaining(
+        "start-[calc(var(--data-table-pinned-start)-1px)]"
+      ),
+      expect.stringContaining("end-[calc(var(--data-table-pinned-end)-1px)]"),
+    ])
   })
 
   it("gives the label a second cell below the breakpoint of a first column hidden there", () => {
@@ -1418,12 +1447,23 @@ describe("DataTable grouping: second review", () => {
     })
     const label = group("Field: Gullfaks").querySelector("th > div")!
     expect(label.className).toContain("w-max")
+    // The group's band bridges the pinned columns' divider while the label
+    // runs on past it, and draws it once scrolled.
+    expect(label.parentElement).toHaveClass(
+      "border-e-transparent",
+      "[[data-group-label-clipped]>table>tbody>tr>&]:border-e-border"
+    )
     left = 80
     fireEvent.scroll(container)
     expect(container).toHaveAttribute("data-group-label-clipped")
     // The structure the label's variants are written against.
     expect(
       label.matches("[data-group-label-clipped]>table>tbody>tr>th>div")
+    ).toBe(true)
+    expect(
+      label.parentElement!.matches(
+        "[data-group-label-clipped]>table>tbody>tr>th"
+      )
     ).toBe(true)
     const prefix = label.querySelector(".truncate > span")!
     expect(prefix).toHaveTextContent("Field:")

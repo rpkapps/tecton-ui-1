@@ -14,12 +14,10 @@
  *
  * The columns: their widths (`column-sizing.ts`; a resize is drawn without
  * rendering while it is dragged), pinned columns that stick to the frame's
- * edges with the content scrolled under them fading in at their inner
- * edge, into each row's own fill (`pinFadeClassName` in `cell.tsx`: the
- * scroll fade's keyframes, shown only while there is content on that
- * side), and
- * reordering, whose drag and drop loads on demand and renders beside the
- * table (`column-reorder.tsx`).
+ * edges, a divider at their inner edge and a shadow past it while content
+ * is scrolled under them (`pinEdgeClassName` in `cell.tsx`: the scroll
+ * fade's keyframes), and reordering, whose drag and drop loads on demand
+ * and renders beside the table (`column-reorder.tsx`).
  *
  * The rows: detail rows under the rows that open (`renderDetail`, which
  * makes the table a treegrid: each row of level 1, its detail row of level

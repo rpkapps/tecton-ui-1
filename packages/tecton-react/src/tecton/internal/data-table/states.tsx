@@ -35,7 +35,7 @@ import { useTranslations } from "../i18n/translations"
 import {
   cellBorderClassName,
   pinnedCellClassName,
-  pinFadeClassName,
+  pinEdgeClassName,
   pinnedRowClassName,
   pinStyle,
   type CellPin,
@@ -188,7 +188,7 @@ function loadingRows<T>(
       className,
       shared.pinned && cellBorderClassName,
       pin && pinnedCellClassName,
-      pinFadeClassName(pin)
+      pinEdgeClassName(pin)
     ),
     style: pin && pinStyle(pin),
   })
