@@ -141,6 +141,18 @@ describe("DatePicker", () => {
     )
   })
 
+  it("submits nothing when disabled", () => {
+    const { container } = en(
+      <form>
+        <DatePicker name="spud" defaultValue={JUNE_1} disabled />
+      </form>
+    )
+    expect(container.querySelector('input[name="spud"]')).toBeDisabled()
+    expect(new FormData(container.querySelector("form")!).has("spud")).toBe(
+      false
+    )
+  })
+
   it("does not open when disabled", async () => {
     const user = userEvent.setup()
     en(<DatePicker disabled />)

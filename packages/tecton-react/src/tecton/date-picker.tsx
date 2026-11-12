@@ -237,7 +237,12 @@ function DatePicker(props: DatePickerProps) {
   )
   const formatter = useFormatter(format, { dateStyle: "long" })
   const hidden = name ? (
-    <input type="hidden" name={name} value={value ? toISODate(value) : ""} />
+    <input
+      type="hidden"
+      name={name}
+      value={value ? toISODate(value) : ""}
+      disabled={disabled}
+    />
   ) : null
 
   if (variant === "input") {
