@@ -338,7 +338,11 @@ function OptionsFilter({
       })}
       {noValue && (
         <>
-          {column.options.length > 0 && <Separator className="my-1" />}
+          {column.options.length > 0 && (
+            // Edge to edge, through the popover's padding, as a menu's
+            // separators are.
+            <Separator className="-mx-4 my-1 data-horizontal:w-auto" />
+          )}
           <NoValueChoice
             checked={empty}
             onCheckedChange={(on) => update(value?.values ?? [], on)}

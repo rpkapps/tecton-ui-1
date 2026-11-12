@@ -411,9 +411,11 @@ function widthOf(element: Element) {
 /**
  * The width a column needs for its header cell: the cell, or, where its
  * menu button floats over the end of the label (absolutely placed, taking
- * no room, with a fine pointer), the label's own width, the cell's padding,
- * the button and a small gap, whichever is wider. A column as wide as its
- * label alone would have the button over its sort arrow.
+ * no room, with a fine pointer), whichever is wider of that and the
+ * padding on the label's side, the label at its own width, a small gap,
+ * the button and its offset from the cell's edge (the button sits in the
+ * padding on its own side, so that padding is not counted again). A column
+ * as wide as its label alone would have the button over its sort arrow.
  */
 function headerWidthOf(cell: Element) {
   const width = widthOf(cell)
@@ -421,16 +423,24 @@ function headerWidthOf(cell: Element) {
     '[data-slot="data-table-column-menu"]'
   )
   const content = cell.firstElementChild as HTMLElement | null
-  if (!button || !content) return width
   const view = cell.ownerDocument.defaultView
-  if (view?.getComputedStyle(button).position !== "absolute") return width
-  // The cell's padding, then the label at its own width, not stretched to
-  // the column's.
-  const padding = width - widthOf(content)
+  if (!button || !content || !view) return width
+  const placed = view.getComputedStyle(button)
+  if (placed.position !== "absolute") return width
+  const box = view.getComputedStyle(cell)
+  // The button is placed from the end edge, or from the start edge in a
+  // column aligned to the end.
+  const atEnd = placed.insetInlineEnd !== "auto"
+  const offset =
+    parseFloat(atEnd ? placed.insetInlineEnd : placed.insetInlineStart) || 0
+  const padding =
+    parseFloat(atEnd ? box.paddingInlineStart : box.paddingInlineEnd) || 0
+  // The label at its own width, not stretched to the column's.
   const saved = content.style.width
   content.style.width = "max-content"
   try {
-    const room = widthOf(content) + padding + widthOf(button) + MENU_GAP
+    const room =
+      padding + widthOf(content) + MENU_GAP + widthOf(button) + offset
     return Math.max(width, room)
   } finally {
     content.style.width = saved
