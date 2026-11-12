@@ -15,10 +15,18 @@
  *   the search and the other filters, counted when the popover opens (in
  *   server mode, the options' own `count`).
  *
+ * Each offers "No value" while a row has none in the column (in server
+ * mode always: the table sees only the loaded rows), and while it is
+ * chosen: the filter's `empty`, the rows without a value besides those the
+ * rest matches. It is the last option, apart, with its count; a checkbox
+ * under a text or number filter's fields and beside a date filter's Clear;
+ * a fourth choice of a yes / no filter.
+ *
  * Text and numbers reach the view `searchDelay` ms after the last key,
  * like search; the other types at once.
  */
 import * as React from "react"
+import { cn } from "cn"
 
 import { Button } from "@tecton/react/components/button"
 import { Checkbox } from "@tecton/react/components/checkbox"
@@ -29,6 +37,7 @@ import {
   RadioGroup,
   RadioGroupItem,
 } from "@tecton/react/components/radio-group"
+import { Separator } from "@tecton/react/components/separator"
 
 import { CalendarLoading } from "../calendar-loading"
 import { useTranslations } from "../i18n/translations"
@@ -53,34 +62,94 @@ type FilterProps<TValue> = {
   delay: number
   /** The table's count of clears (`DataTableState.clears`). */
   clears: number
+  /** The filter offers "No value". */
+  noValue: boolean
 }
+
+/** `{ empty: true }` for a filter's "No value", nothing without it. */
+const emptyFlag = (empty: boolean) => (empty ? { empty } : {})
+
+/**
+ * A filter's "No value" checkbox, with its number of rows when `count`
+ * is known.
+ */
+function NoValueChoice({
+  checked,
+  onCheckedChange,
+  count,
+  className,
+}: {
+  checked: boolean
+  onCheckedChange: (checked: boolean) => void
+  count?: number
+  className?: string
+}) {
+  const t = useTranslations("dataTable")
+  const format = useNumberFormat()
+  const id = React.useId()
+  return (
+    <div
+      data-slot="data-table-filter-no-value"
+      className={cn("flex min-h-8 items-center gap-2", className)}
+    >
+      <Checkbox id={id} checked={checked} onCheckedChange={onCheckedChange} />
+      <Label htmlFor={id} className="flex-1 font-normal">
+        {t("noValue")}
+      </Label>
+      {count !== undefined && (
+        <span className="text-xs text-muted-foreground tabular-nums">
+          {format.format(count)}
+        </span>
+      )}
+    </div>
+  )
+}
+
+type TextDraft = { text: string; empty: boolean }
 
 function TextFilter({
   value,
   set,
   delay,
   clears,
+  noValue,
 }: FilterProps<Extract<DataTableFilterValue, { type: "text" }>>) {
   const t = useTranslations("dataTable")
   const id = React.useId()
-  const { draft, change, flush } = useDelayedCommit({
-    value: value?.value ?? "",
-    commit: (next) =>
-      set(next.trim() === "" ? null : { type: "text", value: next }),
+  const { draft, change, flush } = useDelayedCommit<TextDraft>({
+    value: { text: value?.value ?? "", empty: value?.empty === true },
+    commit: ({ text, empty }) =>
+      set(
+        text.trim() === "" && !empty
+          ? null
+          : { type: "text", value: text, ...emptyFlag(empty) }
+      ),
     delay,
     clears,
+    same: (a, b) => a.text === b.text && a.empty === b.empty,
   })
   return (
     <div className="flex flex-col gap-2">
       <Label htmlFor={id}>{t("filterContains")}</Label>
       <Input
         id={id}
-        value={draft}
-        onChange={(event) => change(event.currentTarget.value)}
+        value={draft.text}
+        onChange={(event) =>
+          change({ ...draft, text: event.currentTarget.value })
+        }
         onKeyDown={(event) => {
           if (event.key === "Enter") flush()
         }}
       />
+      {noValue && (
+        <NoValueChoice
+          checked={draft.empty}
+          onCheckedChange={(empty) => {
+            change({ ...draft, empty })
+            flush()
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -92,7 +161,7 @@ function parseBound(text: string) {
   return Number.isFinite(number) ? number : undefined
 }
 
-type Bounds = { min: string; max: string }
+type Bounds = { min: string; max: string; empty: boolean }
 
 function NumberFilter({
   column,
@@ -100,21 +169,27 @@ function NumberFilter({
   set,
   delay,
   clears,
+  noValue,
 }: FilterProps<Extract<DataTableFilterValue, { type: "number" }>>) {
   const t = useTranslations("dataTable")
   const id = React.useId()
   const { draft, change, flush } = useDelayedCommit<Bounds>({
-    value: { min: String(value?.min ?? ""), max: String(value?.max ?? "") },
-    commit: ({ min: low, max: high }) => {
+    value: {
+      min: String(value?.min ?? ""),
+      max: String(value?.max ?? ""),
+      empty: value?.empty === true,
+    },
+    commit: ({ min: low, max: high, empty }) => {
       const min = parseBound(low)
       const max = parseBound(high)
       return set(
-        min === undefined && max === undefined
+        min === undefined && max === undefined && !empty
           ? null
           : {
               type: "number",
               ...(min === undefined ? {} : { min }),
               ...(max === undefined ? {} : { max }),
+              ...emptyFlag(empty),
             }
       )
     },
@@ -123,9 +198,10 @@ function NumberFilter({
     // "1.0" typed is the 1 the view holds: the field keeps what was typed.
     same: (a, b) =>
       parseBound(a.min) === parseBound(b.min) &&
-      parseBound(a.max) === parseBound(b.max),
+      parseBound(a.max) === parseBound(b.max) &&
+      a.empty === b.empty,
   })
-  const field = (bound: keyof Bounds) => (
+  const field = (bound: "min" | "max") => (
     <div className="flex min-w-0 flex-1 flex-col gap-2">
       <Label htmlFor={`${id}-${bound}`}>
         {bound === "min" ? t("filterMin") : t("filterMax")}
@@ -147,12 +223,23 @@ function NumberFilter({
     </div>
   )
   return (
-    <div className="flex gap-2">
-      <span id={`${id}-column`} hidden>
-        {column.header}
-      </span>
-      {field("min")}
-      {field("max")}
+    <div className="flex flex-col gap-2">
+      <div className="flex gap-2">
+        <span id={`${id}-column`} hidden>
+          {column.header}
+        </span>
+        {field("min")}
+        {field("max")}
+      </div>
+      {noValue && (
+        <NoValueChoice
+          checked={draft.empty}
+          onCheckedChange={(empty) => {
+            change({ ...draft, empty })
+            flush()
+          }}
+        />
+      )}
     </div>
   )
 }
@@ -160,20 +247,37 @@ function NumberFilter({
 function BooleanFilter({
   value,
   set,
+  noValue,
 }: FilterProps<Extract<DataTableFilterValue, { type: "boolean" }>>) {
   const t = useTranslations("dataTable")
   const id = React.useId()
-  const current = value === undefined ? "any" : value.value ? "yes" : "no"
+  const current =
+    value === undefined
+      ? "any"
+      : value.value === undefined
+        ? "none"
+        : value.value
+          ? "yes"
+          : "no"
   const choices = [
     { value: "any", label: t("filterAny") },
     { value: "yes", label: t("yes") },
     { value: "no", label: t("no") },
+    ...(noValue || current === "none"
+      ? [{ value: "none", label: t("noValue") }]
+      : []),
   ]
   return (
     <RadioGroup
       value={current}
       onValueChange={(next) =>
-        set(next === "any" ? null : { type: "boolean", value: next === "yes" })
+        set(
+          next === "any"
+            ? null
+            : next === "none"
+              ? { type: "boolean", empty: true }
+              : { type: "boolean", value: next === "yes" }
+        )
       }
       className="gap-2"
     >
@@ -193,23 +297,34 @@ function OptionsFilter({
   column,
   value,
   set,
+  noValue,
   counts,
+  emptyCount,
 }: FilterProps<Extract<DataTableFilterValue, { type: "options" }>> & {
   /** The number of rows per option value. */
   counts: (value: string) => number | undefined
+  /** The number of rows without a value, when known. */
+  emptyCount: number | undefined
 }) {
   const t = useTranslations("dataTable")
   const format = useNumberFormat()
   const id = React.useId()
   const chosen = new Set(value?.values ?? [])
-  if (column.options.length === 0)
+  const empty = value?.empty === true
+  if (column.options.length === 0 && !noValue)
     return <p className="text-sm text-muted-foreground">{t("noOptions")}</p>
+  const update = (values: ReadonlyArray<string>, empty: boolean) =>
+    set(
+      values.length || empty
+        ? { type: "options", values, ...emptyFlag(empty) }
+        : null
+    )
   const toggle = (option: string, on: boolean) => {
     // In the options' order.
     const values = column.options
       .map((other) => other.value)
       .filter((other) => (other === option ? on : chosen.has(other)))
-    set(values.length ? { type: "options", values } : null)
+    update(values, empty)
   }
   return (
     <div role="group" aria-label={column.header} className="flex flex-col">
@@ -236,6 +351,17 @@ function OptionsFilter({
           </div>
         )
       })}
+      {noValue && (
+        <>
+          {column.options.length > 0 && <Separator className="my-1" />}
+          <NoValueChoice
+            checked={empty}
+            onCheckedChange={(on) => update(value?.values ?? [], on)}
+            count={emptyCount}
+            className="rounded-sm px-1"
+          />
+        </>
+      )}
     </div>
   )
 }
@@ -303,6 +429,7 @@ function DateFilter({
             type: "date",
             from: fromCalendar(range.from),
             to: fromCalendar(range.to),
+            ...emptyFlag(value?.empty === true),
           })
           onPicked()
         }}
@@ -310,6 +437,24 @@ function DateFilter({
       />
     </DayFocusContext>
   )
+}
+
+/**
+ * Whether `column`'s filter offers "No value": a row has none (any row,
+ * matching or not; in server mode always), or the filter has it.
+ */
+function useNoValue(
+  context: DataTableContextValue<unknown>,
+  column: EngineColumn<unknown>,
+  value: DataTableFilterValue | undefined
+) {
+  const server = useDataTableSelector(
+    context,
+    (state) => state.options.dataMode === "server"
+  )
+  const model = useDataTableSelector(context, (state) => state.model)
+  const chosen = value !== undefined && value.type !== "custom" && value.empty
+  return server || chosen === true || model.hasEmptyValues(column.id)
 }
 
 /** The filter of `column`, by its type. */
@@ -342,7 +487,8 @@ function FilterContent({
       column.type === "options" && !server ? model.facets(column.id) : null,
     [column, server, model]
   )
-  const props = { column, set, delay, clears }
+  const noValue = useNoValue(context, column, value)
+  const props = { column, set, delay, clears, noValue }
   switch (column.type) {
     case "text":
       return (
@@ -375,9 +521,10 @@ function FilterContent({
           value={value?.type === "options" ? value : undefined}
           counts={(option) =>
             facets
-              ? (facets.get(option) ?? 0)
+              ? (facets.counts.get(option) ?? 0)
               : column.options.find((other) => other.value === option)?.count
           }
+          emptyCount={facets?.empty}
         />
       )
   }
@@ -421,6 +568,8 @@ function DataTableFilterPopover({
     })
   }
   const keyboard = popup.openedBy === "keyboard"
+  const noValue = useNoValue(context, column, value)
+  const dateValue = value?.type === "date" ? value : undefined
   const contentProps = {
     ref: content,
     anchor: popup.content.anchor,
@@ -440,21 +589,42 @@ function DataTableFilterPopover({
     >
       <DateFilter
         column={column}
-        value={value?.type === "date" ? value : undefined}
+        value={dateValue}
         set={set}
         focusDay={keyboard}
         onPicked={popup.close}
       />
-      {value && (
-        <div className="flex w-0 min-w-full border-t p-3">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1"
-            onClick={clear}
-          >
-            {t("clearFilter")}
-          </Button>
+      {(value || noValue) && (
+        <div className="flex w-0 min-w-full items-center gap-3 border-t p-3">
+          {noValue && (
+            <NoValueChoice
+              className="flex-1"
+              checked={dateValue?.empty === true}
+              onCheckedChange={(empty) => {
+                const { from, to } = dateValue ?? {}
+                set(
+                  from || to || empty
+                    ? {
+                        type: "date",
+                        ...(from ? { from } : {}),
+                        ...(to ? { to } : {}),
+                        ...emptyFlag(empty),
+                      }
+                    : null
+                )
+              }}
+            />
+          )}
+          {value && (
+            <Button
+              variant="outline"
+              size="sm"
+              className={noValue ? undefined : "flex-1"}
+              onClick={clear}
+            >
+              {t("clearFilter")}
+            </Button>
+          )}
         </div>
       )}
     </PopoverContent>

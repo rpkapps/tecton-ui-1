@@ -132,6 +132,7 @@ export default defineTranslations({
     filterAtMost: "≤ {value}",
     filterFrom: "מ-{value}",
     filterUntil: "עד {value}",
+    filterOrNoValue: "{value} או ללא ערך",
     optionsSelected: { other: "{total} נבחרו" },
     filterChip: "{columnName}: {value}",
     activeFilters: "מסננים פעילים",
@@ -155,7 +156,7 @@ export default defineTranslations({
     groupedBy: "מקובץ לפי {columnNames}",
     ungrouped: "השורות כבר אינן מקובצות",
     groupLabel: "{columnName}: {value}",
-    emptyGroup: "(ריק)",
+    noValue: "אין ערך",
     groupCount: {
       one: "{total} שורה",
       two: "{total} שורות",

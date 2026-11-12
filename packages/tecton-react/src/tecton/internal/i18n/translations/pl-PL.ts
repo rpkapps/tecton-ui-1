@@ -139,6 +139,7 @@ export default defineTranslations({
     filterAtMost: "≤ {value}",
     filterFrom: "Od {value}",
     filterUntil: "Do {value}",
+    filterOrNoValue: "{value} lub brak wartości",
     optionsSelected: { other: "Wybrano: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktywne filtry",
@@ -163,7 +164,7 @@ export default defineTranslations({
     groupedBy: "Pogrupowano według {columnNames}",
     ungrouped: "Wiersze nie są już pogrupowane",
     groupLabel: "{columnName}: {value}",
-    emptyGroup: "(Puste)",
+    noValue: "Brak wartości",
     groupCount: {
       one: "{total} wiersz",
       few: "{total} wiersze",

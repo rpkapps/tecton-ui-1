@@ -203,7 +203,7 @@ describe("DataTable grouping", () => {
       { ...WELLS[3], id: "x", name: "Well X", field: "" },
     ]
     render(<Wells items={items} defaultView={{ grouping: ["field"] }} />)
-    expect(groups().at(-1)).toBe("Field: (Empty)")
+    expect(groups().at(-1)).toBe("Field: No value")
   })
 
   it("names a date group by its day in the column's time zone", () => {

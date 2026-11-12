@@ -21,7 +21,9 @@
  *   without one show only with no filter);
  * - options: the value is one of `values`;
  * - the column's own `filter` function, for any filter value, when it has one.
- * An empty value never matches a number, date or options filter.
+ * An empty value (`hasNoValue`) never matches a filter, but one with `empty`
+ * (its "No value"): that matches the rows without a value too, or only them
+ * when the rest of the filter is unset.
  *
  * In a tree (`filterRows`) a matching row keeps its whole subtree, which
  * follows the usual expanded state, and its ancestors, which are kept as
@@ -30,11 +32,13 @@
  *
  * Facets (`countFacets`) count, per value of a column, the rows matching the
  * search and every filter but the column's own: by option value for an
- * options column, by display text for the others.
+ * options column, by display text for the others, and apart the rows
+ * without a value (the "No value" choice, offered while any row has none,
+ * `hasEmptyValues`).
  */
 import type { EngineColumn } from "./columns"
 import type { Core, RowSet } from "./core"
-import { createFolder, foldText, type Formatter } from "./format"
+import { createFolder, foldText, hasNoValue, type Formatter } from "./format"
 import type { IdleTask } from "./idle"
 import type { DataTableFilterValue, DataTableView } from "./types"
 import {
@@ -203,13 +207,36 @@ function columnPredicate<T>(
 ): RowPredicate<T> | null {
   const { filter, getValue } = column
   if (filter) return (_, item) => filter(item, value)
+  if (value.type === "custom") return null
+  const matches = valuePredicate(column, value, index, rowCount)
+  if (!value.empty) return matches ?? null
+  // "No value": the rows without one, and those the rest matches.
+  const blank: RowPredicate<T> = (_, item) => hasNoValue(column, getValue(item))
+  if (!matches) return blank
+  return (row, item) => blank(row, item) || matches(row, item)
+}
+
+/**
+ * The rows a filter matches but for its "No value" (`empty`), or `null`
+ * when the rest of it is unset.
+ */
+function valuePredicate<T>(
+  column: EngineColumn<T>,
+  value: Exclude<DataTableFilterValue, { type: "custom" }>,
+  index: SearchIndex<T>,
+  rowCount: number
+): RowPredicate<T> | null {
+  const { getValue } = column
   switch (value.type) {
     case "text": {
+      const query = foldText(value.value.trim())
+      if (!query) return null
       const mask = new Uint8Array(rowCount)
-      markMatches(index.texts(column), foldText(value.value.trim()), mask)
+      markMatches(index.texts(column), query, mask)
       return (row) => mask[row] === 1
     }
     case "number": {
+      if (value.min === undefined && value.max === undefined) return null
       const { min = -Infinity, max = Infinity } = value
       return (_, item) => {
         const number = toNumber(getValue(item))
@@ -217,6 +244,7 @@ function columnPredicate<T>(
       }
     }
     case "date": {
+      if (!value.from && !value.to) return null
       const from = value.from?.getTime() ?? -Infinity
       const { timeZone } = (column.format ?? {}) as Intl.DateTimeFormatOptions
       const end = value.to
@@ -231,17 +259,19 @@ function columnPredicate<T>(
         )
       }
     }
-    case "boolean":
-      return (_, item) => toBoolean(getValue(item)) === value.value
+    case "boolean": {
+      const wanted = value.value
+      if (wanted === undefined) return null
+      return (_, item) => toBoolean(getValue(item)) === wanted
+    }
     case "options": {
+      if (!value.values.length) return null
       const values = new Set(value.values)
       return (_, item) => {
         const v = getValue(item)
         return v !== null && v !== undefined && values.has(String(v))
       }
     }
-    case "custom":
-      return null
   }
 }
 
@@ -339,22 +369,34 @@ function filterRows<T>(core: Core<T>, predicate: RowPredicate<T>): RowSet {
   }
 }
 
-/** How many rows `predicate` keeps per value of `column` (see the module comment). */
+/**
+ * How many rows `predicate` keeps per value of `column`, and without a
+ * value (`empty`; see the module comment).
+ */
+type Facets = {
+  readonly counts: ReadonlyMap<string, number>
+  readonly empty: number
+}
+
 function countFacets<T>(
   core: Core<T>,
   column: EngineColumn<T>,
   predicate: RowPredicate<T> | null,
   formatter: Formatter<T>
-): ReadonlyMap<string, number> {
+): Facets {
   const { items } = core
   const others = new Map<string, number>()
   const add = (key: string) => others.set(key, (others.get(key) ?? 0) + 1)
+  let empty = 0
   if (column.type === "options") {
     const counts = new Uint32Array(column.options.length)
     for (let i = 0; i < items.length; i++) {
       if (predicate && !predicate(i, items[i])) continue
       const value = column.getValue(items[i])
-      if (isEmptyValue(value)) continue
+      if (hasNoValue(column, value)) {
+        empty++
+        continue
+      }
       const option = column.optionIndex.get(String(value))
       if (option === undefined) add(String(value))
       else counts[option]++
@@ -363,15 +405,30 @@ function countFacets<T>(
       column.options.map((option, i) => [option.value, counts[i]])
     )
     for (const [key, count] of others) facets.set(key, count)
-    return facets
+    return { counts: facets, empty }
   }
   for (let i = 0; i < items.length; i++) {
     if (predicate && !predicate(i, items[i])) continue
     const text = formatter.text(column, items[i])
-    if (text !== "") add(text)
+    if (text === "") empty++
+    else add(text)
   }
-  return others
+  return { counts: others, empty }
 }
 
-export { compileFilter, countFacets, createSearchIndex, filterRows, searchMask }
-export type { ColumnText, RowPredicate, SearchIndex }
+/** Whether any row of `core` has no value in `column` (`hasNoValue`). */
+function hasEmptyValues<T>(core: Core<T>, column: EngineColumn<T>) {
+  for (const item of core.items)
+    if (hasNoValue(column, column.getValue(item))) return true
+  return false
+}
+
+export {
+  compileFilter,
+  countFacets,
+  createSearchIndex,
+  filterRows,
+  hasEmptyValues,
+  searchMask,
+}
+export type { ColumnText, Facets, RowPredicate, SearchIndex }

@@ -135,6 +135,7 @@ export default defineTranslations({
     filterAtMost: "≤ {value}",
     filterFrom: "Od {value}",
     filterUntil: "Do {value}",
+    filterOrNoValue: "{value} ili bez vrijednosti",
     optionsSelected: { other: "Odabrano: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktivni filtri",
@@ -158,7 +159,7 @@ export default defineTranslations({
     groupedBy: "Grupirano po {columnNames}",
     ungrouped: "Retci više nisu grupirani",
     groupLabel: "{columnName}: {value}",
-    emptyGroup: "(Prazno)",
+    noValue: "Nema vrijednosti",
     groupCount: {
       one: "{total} redak",
       few: "{total} retka",

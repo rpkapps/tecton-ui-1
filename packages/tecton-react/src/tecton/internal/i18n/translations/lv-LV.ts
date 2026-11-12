@@ -136,6 +136,7 @@ export default defineTranslations({
     filterAtMost: "≤ {value}",
     filterFrom: "No {value}",
     filterUntil: "Līdz {value}",
+    filterOrNoValue: "{value} vai nav vērtības",
     optionsSelected: { other: "Atlasīti: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Aktīvie filtri",
@@ -159,7 +160,7 @@ export default defineTranslations({
     groupedBy: "Grupēts pēc {columnNames}",
     ungrouped: "Rindas vairs nav grupētas",
     groupLabel: "{columnName}: {value}",
-    emptyGroup: "(Tukšs)",
+    noValue: "Nav vērtības",
     groupCount: {
       zero: "{total} rindu",
       one: "{total} rinda",

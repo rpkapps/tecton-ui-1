@@ -136,6 +136,7 @@ export default defineTranslations({
     filterAtMost: "≤ {value}",
     filterFrom: "De la {value}",
     filterUntil: "Până la {value}",
+    filterOrNoValue: "{value} sau nicio valoare",
     optionsSelected: { other: "Selectate: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Filtre active",
@@ -159,7 +160,7 @@ export default defineTranslations({
     groupedBy: "Grupat după {columnNames}",
     ungrouped: "Rândurile nu mai sunt grupate",
     groupLabel: "{columnName}: {value}",
-    emptyGroup: "(Gol)",
+    noValue: "Nicio valoare",
     groupCount: {
       one: "{total} rând",
       few: "{total} rânduri",

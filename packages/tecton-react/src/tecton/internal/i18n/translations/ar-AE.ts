@@ -138,6 +138,7 @@ export default defineTranslations({
     filterAtMost: "≤ {value}",
     filterFrom: "من {value}",
     filterUntil: "حتى {value}",
+    filterOrNoValue: "{value} أو بلا قيمة",
     optionsSelected: { other: "تم تحديد {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "عوامل التصفية النشطة",
@@ -164,7 +165,7 @@ export default defineTranslations({
     groupedBy: "تم التجميع حسب {columnNames}",
     ungrouped: "لم تعد الصفوف مجمّعة",
     groupLabel: "{columnName}: {value}",
-    emptyGroup: "(فارغ)",
+    noValue: "لا توجد قيمة",
     groupCount: {
       zero: "{total} صف",
       one: "صف واحد",

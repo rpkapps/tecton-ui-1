@@ -139,6 +139,7 @@ export default defineTranslations({
     filterAtMost: "≤ {value}",
     filterFrom: "З {value}",
     filterUntil: "По {value}",
+    filterOrNoValue: "{value} або без значення",
     optionsSelected: { other: "Вибрано: {total}" },
     filterChip: "{columnName}: {value}",
     activeFilters: "Активні фільтри",
@@ -163,7 +164,7 @@ export default defineTranslations({
     groupedBy: "Згруповано за {columnNames}",
     ungrouped: "Рядки більше не згруповані",
     groupLabel: "{columnName}: {value}",
-    emptyGroup: "(Порожньо)",
+    noValue: "Немає значення",
     groupCount: {
       one: "{total} рядок",
       few: "{total} рядки",
