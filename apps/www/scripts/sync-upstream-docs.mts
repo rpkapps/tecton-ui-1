@@ -780,6 +780,15 @@ const PAGE_REWRITES: Record<
       "badge page (API table)"
     )
   },
+  // Tecton's list opens below the trigger unless `alignItemWithTrigger` is
+  // set (overlay, docs/UPSTREAM.md): an aligned list locks the page's scroll.
+  select: (mdx) =>
+    replaceOrThrow(
+      mdx,
+      "When `true` (default), the popup positions so the selected item appears over the trigger. When `false`, the popup aligns to the trigger edge.",
+      "When `true`, the popup positions so the selected item appears over the trigger, and the page's scroll is locked while it is open (see [Modal](#modal)). When `false` (default), the popup opens below the trigger, aligned to its start edge.",
+      "select page (align item with trigger)"
+    ),
   // Upstream's base usage snippet carries the Radix `type` prop; the group is
   // single-select unless `multiple` is set.
   "toggle-group": (mdx) =>

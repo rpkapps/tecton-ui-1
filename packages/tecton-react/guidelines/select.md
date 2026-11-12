@@ -26,7 +26,7 @@ related: [Combobox, NativeSelect, RadioGroup]
 - Drive it with `value` / `defaultValue` / `onValueChange` on `Select`, identify each `SelectItem` by `value`, and narrow the `null` that `onValueChange` hands over when nothing is selected.
 - Pass `items` (`{ msl: "Mean sea level" }` or `[{ value, label }]`) so `SelectValue` shows the label, not the raw value; its `placeholder` shows while nothing is selected.
 - In a `Field`, put the `id` on `SelectTrigger` and point `FieldLabel htmlFor` at it.
-- Choose the surface with `SelectTrigger`'s `variant`, the height with its `size="sm" | "default"`; place the list with `side` / `align` on `SelectContent`, which apply once `alignItemWithTrigger={false}` (by default a mouse-opened list overlaps the trigger so the selected item lines up with the value).
+- Choose the surface with `SelectTrigger`'s `variant`, the height with its `size="sm" | "default"`; leave the list non-modal and below the trigger (the defaults: the page keeps scrolling and an outside press closes the list and still acts), placed with `side` / `align` on `SelectContent` — `modal` on `Select` and `alignItemWithTrigger` on `SelectContent` (the list over the trigger) each lock page scroll.
 - Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`.
 
 ## Don't

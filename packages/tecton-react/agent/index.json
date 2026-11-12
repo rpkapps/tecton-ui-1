@@ -3162,7 +3162,7 @@
     "names": "select select select trigger select value select content select group select label select item select separator select scroll up button select scroll down button select trigger variants",
     "useWhen": "A field picks one value out of a known, closed list: a datum, a unit, a status. The list is short enough to scan and needs no typing to get through. The trigger must match the other controls in a field row: `variant=\"outline\" | \"filled\" | \"text\"`.",
     "routed": "a short fixed list that needs no typing choosing a value for a form field a themed popover with icons, rich items or a searchable list the rows-per-page picker beside the controls more than a handful of options picking a value for a form field",
-    "do": "Drive it with `value` / `defaultValue` / `onValueChange` on `Select`, identify each `SelectItem` by `value`, and narrow the `null` that `onValueChange` hands over when nothing is selected. Pass `items` (`{ msl: \"Mean sea level\" }` or `[{ value, label }]`) so `SelectValue` shows the label, not the raw value; its `placeholder` shows while nothing is selected. In a `Field`, put the `id` on `SelectTrigger` and point `FieldLabel htmlFor` at it. Choose the surface with `SelectTrigger`'s `variant`, the height with its `size=\"sm\" | \"default\"`; place the list with `side` / `align` on `SelectContent`, which apply once `alignItemWithTrigger={false}` (by default a mouse-opened list overlaps the trigger so the selected item lines up with the value). Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`."
+    "do": "Drive it with `value` / `defaultValue` / `onValueChange` on `Select`, identify each `SelectItem` by `value`, and narrow the `null` that `onValueChange` hands over when nothing is selected. Pass `items` (`{ msl: \"Mean sea level\" }` or `[{ value, label }]`) so `SelectValue` shows the label, not the raw value; its `placeholder` shows while nothing is selected. In a `Field`, put the `id` on `SelectTrigger` and point `FieldLabel htmlFor` at it. Choose the surface with `SelectTrigger`'s `variant`, the height with its `size=\"sm\" | \"default\"`; leave the list non-modal and below the trigger (the defaults: the page keeps scrolling and an outside press closes the list and still acts), placed with `side` / `align` on `SelectContent` — `modal` on `Select` and `alignItemWithTrigger` on `SelectContent` (the list over the trigger) each lock page scroll. Structure long lists with `SelectGroup` and `SelectLabel`, divided by `SelectSeparator`."
    },
    "notFor": [
     {
@@ -3201,7 +3201,7 @@
     "selectTriggerVariants"
    ],
    "aliases": [],
-   "tokens": 1256
+   "tokens": 1281
   },
   {
    "id": "separator",
