@@ -76,7 +76,7 @@ import {
   type ItemRow,
 } from "./engine/index"
 import { DataTableRowHandle } from "./row-order"
-import { DataTableSelectionCheckbox } from "./selection-checkbox"
+import { DataTableSelectionCheckbox, hasContent } from "./selection-checkbox"
 
 type RowProps<TRow, T> = Omit<React.ComponentProps<"tr">, "children"> & {
   row: TRow
@@ -148,10 +148,19 @@ function ItemRowComponent<T>({
     }),
     [row, shared, actions]
   )
+  // Why the row cannot be selected (`itemToDisabledReason`): its checkbox's
+  // tooltip and description, and the row's description too, read as focus
+  // reaches it (`disabledBehavior="selection"`).
+  const reason =
+    shared.selection && shared.disabledReasons && row.disabled
+      ? actions.disabledReasonOf(row.item)
+      : undefined
+  const reasonId = React.useId()
   return (
     <TableRowConfig value={config}>
       <TableRow
         {...props}
+        aria-describedby={hasContent(reason) ? reasonId : undefined}
         ref={shared.order?.register(row.id)}
         aria-rowindex={rowIndex(row.id, props["aria-rowindex"], shared)}
         aria-posinset={shared.levelled ? row.posinset : undefined}
@@ -190,7 +199,7 @@ function ItemRowComponent<T>({
             )}
             style={shared.selectionPin && pinStyle(shared.selectionPin)}
           >
-            <DataTableSelectionCheckbox />
+            <DataTableSelectionCheckbox reason={reason} reasonId={reasonId} />
           </TableCell>
         )}
         {shared.columns.map((column, index) =>

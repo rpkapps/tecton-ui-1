@@ -3,6 +3,11 @@
 import * as React from "react"
 
 import { Checkbox } from "@tecton/react/components/checkbox"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@tecton/react/components/tooltip"
 
 import { useTranslations } from "../i18n/translations"
 import { useStore } from "../store"
@@ -11,7 +16,15 @@ import { useTableGridContext, useTableGridRow } from "../table-grid"
 type DataTableSelectionCheckboxProps = Omit<
   React.ComponentProps<typeof Checkbox>,
   "checked" | "defaultChecked" | "indeterminate" | "onCheckedChange"
->
+> & {
+  /**
+   * Why the row cannot be selected (`itemToDisabledReason`): while the
+   * checkbox is disabled, its description and a tooltip on it.
+   */
+  reason?: React.ReactNode
+  /** The id of the reason's hidden text, for the row to be described by it too. */
+  reasonId?: string
+}
 
 /**
  * The selection checkbox of a grid table (`TableGridConfig`), for the
@@ -22,10 +35,18 @@ type DataTableSelectionCheckboxProps = Omit<
  * renders only when `selectionMode="multiple"` (disabled while no row can be
  * selected). It is out of the Tab order:
  * the arrow keys reach it, and Space on the row does what it does.
+ *
+ * A disabled row's checkbox with a `reason` is described by it (hidden
+ * text) and shows it in a tooltip, from a span around the checkbox: the
+ * pointer over the checkbox, or focus on it (the arrow keys reach it when
+ * only selection is disabled), opens it. A checkbox without one renders no
+ * tooltip.
  */
 function DataTableSelectionCheckbox({
   ref,
   disabled,
+  reason,
+  reasonId: reasonIdProp,
   ...props
 }: DataTableSelectionCheckboxProps) {
   const grid = useTableGridContext()
@@ -119,7 +140,12 @@ function DataTableSelectionCheckbox({
     (value !== undefined && !grid.isSelectable(value)) ||
     empty
   const label = row ? t("select") : t("selectAll")
+  const explained = !!row && off && hasContent(reason)
+  const reasonId = reasonIdProp ?? `${id}-reason`
   const own = useSameProps(props)
+  const describedBy = explained
+    ? [own["aria-describedby"], reasonId].filter(Boolean).join(" ")
+    : own["aria-describedby"]
   // The same element while what it shows stays: a row scrolled into
   // another's place renders no checkbox again.
   const box = React.useMemo(
@@ -130,6 +156,7 @@ function DataTableSelectionCheckbox({
         ref={setRef}
         aria-label={label}
         aria-labelledby={labelledBy}
+        aria-describedby={describedBy}
         render={labelledBy ? <span id={selfId} /> : undefined}
         checked={checked}
         indeterminate={indeterminate}
@@ -142,6 +169,7 @@ function DataTableSelectionCheckbox({
       setRef,
       label,
       labelledBy,
+      describedBy,
       selfId,
       checked,
       indeterminate,
@@ -152,7 +180,29 @@ function DataTableSelectionCheckbox({
 
   if (grid.selectionMode === "none") return null
   if (!row && grid.selectionMode !== "multiple") return null
-  return box
+  if (!explained) return box
+  return (
+    <>
+      <Tooltip>
+        <TooltipTrigger
+          render={
+            <span data-slot="table-selection-reason" className="flex w-fit" />
+          }
+        >
+          {box}
+        </TooltipTrigger>
+        <TooltipContent>{reason}</TooltipContent>
+      </Tooltip>
+      <span id={reasonId} hidden>
+        {reason}
+      </span>
+    </>
+  )
+}
+
+/** A reason that shows something: not `undefined`, `null`, `false` or "". */
+function hasContent(node: React.ReactNode) {
+  return node !== undefined && node !== null && node !== false && node !== ""
 }
 
 /** `props` as given last time while each of its values is the same. */
@@ -168,5 +218,5 @@ function useSameProps<T extends object>(props: T): T {
   return same ? last.current : props
 }
 
-export { DataTableSelectionCheckbox }
+export { DataTableSelectionCheckbox, hasContent }
 export type { DataTableSelectionCheckboxProps }

@@ -75,6 +75,8 @@ type RowShared<T> = {
   disableRows: boolean
   /** Row headers are links (`itemToHref`). */
   linked: boolean
+  /** A disabled row's checkbox may say why (`itemToDisabledReason`). */
+  disabledReasons: boolean
   /** Columns may wrap: not in a virtualized table, whose rows are one height. */
   wrap: boolean
   /** Only the rows in view are rendered. */

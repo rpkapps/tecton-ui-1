@@ -120,6 +120,12 @@ type DataTableProps<T> = Omit<
   itemToHref?: (item: T) => string | undefined
   isItemDisabled?: (item: T) => boolean
   /**
+   * Why a disabled row (`isItemDisabled`) cannot be selected: shown in a
+   * tooltip on its checkbox, and as the checkbox's description. `undefined`
+   * for none.
+   */
+  itemToDisabledReason?: (item: T) => React.ReactNode | undefined
+  /**
    * What a disabled row cannot do: `"all"` (default) is neither focused,
    * selected nor activated; `"selection"` is focused and activated, not
    * selected.
@@ -276,6 +282,7 @@ type Latest<T> = {
   selectionMode: DataTableSelectionMode
   disallowEmptySelection: boolean
   itemToHref: DataTableProps<T>["itemToHref"]
+  itemToDisabledReason: DataTableProps<T>["itemToDisabledReason"]
   navigate: ((href: string) => void) | undefined
   onActivate: DataTableProps<T>["onActivate"]
   onRowOrderChange: DataTableProps<T>["onRowOrderChange"]
@@ -664,6 +671,9 @@ function createActions<T>(latest: { current: Latest<T> }, warn: Warn) {
     hrefOf(item) {
       return now().itemToHref?.(item)
     },
+    disabledReasonOf(item) {
+      return now().itemToDisabledReason?.(item)
+    },
     retry() {
       now().onRetry?.()
     },
@@ -741,6 +751,7 @@ function DataTable<T>({
   itemToChildren,
   itemToHref,
   isItemDisabled,
+  itemToDisabledReason,
   disabledBehavior = "all",
   dataMode = "client",
   rowCount,
@@ -895,6 +906,7 @@ function DataTable<T>({
   }, [model])
 
   const linked = itemToHref !== undefined
+  const disabledReasons = itemToDisabledReason !== undefined
   const activatable = onActivate !== undefined || linked
   const retryable = onRetry !== undefined
   // Load more is for a list without pages: pages load their own rows.
@@ -925,6 +937,7 @@ function DataTable<T>({
       disallowEmptySelection,
       tree,
       linked,
+      disabledReasons,
       activatable,
       retryable,
       hasMore: more,
@@ -949,6 +962,7 @@ function DataTable<T>({
       disallowEmptySelection,
       tree,
       linked,
+      disabledReasons,
       activatable,
       retryable,
       more,
@@ -1021,6 +1035,7 @@ function DataTable<T>({
     selectionMode,
     disallowEmptySelection,
     itemToHref,
+    itemToDisabledReason,
     navigate,
     onActivate,
     onRowOrderChange,

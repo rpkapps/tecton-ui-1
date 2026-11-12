@@ -149,6 +149,8 @@ Search matches the shown columns' display text, ignoring case and accents. A col
 
 Select all selects every row the view matches, on every page.
 
+`itemToDisabledReason` says why a disabled row cannot be selected: the reason shows in a tooltip on its checkbox, on hover and when the arrow keys reach it (`disabledBehavior="selection"`), and screen readers announce it with the row.
+
 ## Row reordering
 
 `reorderableRows` adds a drag handle at the start of each row. Drag it, or reach it with <Kbd>→</Kbd> and press <Kbd>Enter</Kbd>: <Kbd>↑</Kbd> / <Kbd>↓</Kbd> move it one place at a time, each place announced ("Insert between 34/7-D-2 and 2/8-C-3"), <Kbd>Enter</Kbd> drops and <Kbd>Escape</Kbd> cancels. `onRowOrderChange(ids, eventDetails)` gets every item's id in the new order: put `items` in that order.
@@ -337,7 +339,7 @@ Turn features on at the root (`selectionMode`, `pagination`, `filterable`, `grou
 
 <Do>
 
-Name the table with `aria-label` on `DataTableContent`, open a row with `itemToHref` or `onActivate` on the root, put a row's commands in a `DataTableRowActions` in a column's `cell`, and the actions on the selected rows in `DataTableActionBar` (each in an `OverflowItem`; the bar shows the count and Clear itself).
+Name the table with `aria-label` on `DataTableContent`, open a row with `itemToHref` or `onActivate` on the root, say why a disabled row cannot be selected with `itemToDisabledReason`, put a row's commands in a `DataTableRowActions` in a column's `cell`, and the actions on the selected rows in `DataTableActionBar` (each in an `OverflowItem`; the bar shows the count and Clear itself).
 
 </Do>
 
@@ -436,6 +438,7 @@ The root `div`. Every `on…Change` gets the new value and `eventDetails` (`reas
 | `itemToChildren` | `(item: T) => ReadonlyArray<T> \| undefined` | - | Makes the rows a tree. |
 | `itemToHref` | `(item: T) => string \| undefined` | - | Makes each row a link. |
 | `isItemDisabled` | `(item: T) => boolean` | - | Disables rows. |
+| `itemToDisabledReason` | `(item: T) => ReactNode \| undefined` | - | Why a disabled row cannot be selected: a tooltip on its checkbox. |
 | `disabledBehavior` | `"all" \| "selection"` | `"all"` | What a disabled row cannot do. |
 | `dataMode` | `"client" \| "server"` | `"client"` | Who sorts, filters and pages. |
 | `rowCount` | `number` | - | Server mode: rows the view matches. |

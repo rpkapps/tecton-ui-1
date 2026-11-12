@@ -121,6 +121,8 @@ type DataTableOptions = {
   readonly tree: boolean
   /** `itemToHref` is set: row headers are links. */
   readonly linked: boolean
+  /** `itemToDisabledReason` is set: a disabled row's checkbox may say why. */
+  readonly disabledReasons: boolean
   /** `onActivate` or `itemToHref` is set: rows activate. */
   readonly activatable: boolean
   /** `onRetry` is set. */
@@ -256,6 +258,8 @@ type DataTableActions<T> = {
   setFrame: (element: HTMLElement | null) => void
   /** The row's link, from `itemToHref`. */
   hrefOf: (item: T) => string | undefined
+  /** Why a disabled row cannot be selected, from `itemToDisabledReason`. */
+  disabledReasonOf: (item: T) => React.ReactNode | undefined
   retry: () => void
   /** The end of the rows came near: `onLoadMore`. */
   loadMore: () => void
