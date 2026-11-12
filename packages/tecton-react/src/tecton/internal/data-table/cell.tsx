@@ -206,8 +206,8 @@ const pinnedCellClassName = cn(
  * as 0); a group row's label cell does not clip (`pinEdgeClassName`).
  */
 const PIN_SHADOW = cn(
-  "after:pointer-events-none after:absolute after:top-0 after:-bottom-[var(--pin-edge-under,0px)] after:content-[''] after:[--scroll-fade-size:--spacing(4)]",
-  "after:from-black/10 after:via-black/3 after:via-40% after:to-transparent dark:after:from-black/70 dark:after:via-black/25",
+  "after:pointer-events-none after:absolute after:top-0 after:-bottom-[var(--pin-edge-under,0px)] after:content-[''] after:[--scroll-fade-size:--spacing(3)]",
+  "after:from-black/6 after:via-black/2 after:via-40% after:to-transparent dark:after:from-black/30 dark:after:via-black/10",
   "after:[animation-duration:1ms] after:[animation-fill-mode:both] after:[animation-timeline:scroll(nearest_inline)] after:[animation-timing-function:ease-in-out]",
   "not-supports-[animation-timeline:scroll()]:after:hidden"
 )
