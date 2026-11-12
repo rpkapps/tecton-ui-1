@@ -106,15 +106,11 @@ const SELECTION_WIDTH = 32
 /** The frame's variables for `sizing`, the scrollbar's width included at the end. */
 function sizingVariables(
   sizing: ColumnSizing,
-  scrollbar: number,
-  rtl: boolean
+  scrollbar: number
 ): Record<string, string> {
   const variables: Record<string, string> = {
     "--data-table-pinned-start": `${sizing.start}px`,
     "--data-table-pinned-end": `${sizing.end > 0 ? sizing.end + scrollbar : 0}px`,
-    "--data-table-fade-start": sizing.start > 0 ? "1" : "0",
-    "--data-table-fade-end": sizing.end > 0 ? "1" : "0",
-    "--data-table-fade-to": rtl ? "left" : "right",
   }
   sizing.offsets.forEach((offset, index) => {
     if (offset !== undefined)
@@ -298,7 +294,7 @@ function useColumnSizing({
     if (!element) return
     // Only what changed: a variable of the frame's restyles every cell.
     for (const [name, value] of Object.entries(
-      sizingVariables(next, scrollbarOf(container.current), latest.current.rtl)
+      sizingVariables(next, scrollbarOf(container.current))
     ))
       if (element.style.getPropertyValue(name) !== value)
         element.style.setProperty(name, value)
@@ -382,9 +378,9 @@ function useColumnSizing({
   const style = React.useMemo(
     () =>
       sizing
-        ? (sizingVariables(sizing, scrollbar, rtl) as React.CSSProperties)
+        ? (sizingVariables(sizing, scrollbar) as React.CSSProperties)
         : undefined,
-    [sizing, scrollbar, rtl]
+    [sizing, scrollbar]
   )
   return { mode, sizing, controls, style, ...actions }
 }

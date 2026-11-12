@@ -9,15 +9,14 @@ import {
 import {
   createColumns,
   DataTable,
+  DataTableActionBar,
   DataTableActiveFilters,
   DataTableContent,
   DataTableFilter,
   DataTableFooter,
   DataTableGroupBy,
-  DataTablePageButtons,
-  DataTablePageInfo,
+  DataTablePagination,
   DataTableSearch,
-  DataTableSelectionCount,
   DataTableToolbar,
 } from "@tecton/react/tecton/data-table"
 
@@ -155,11 +154,10 @@ export default function DataTableRtl() {
         <DataTableGroupBy />
       </DataTableToolbar>
       <DataTableActiveFilters />
+      <DataTableActionBar />
       <DataTableContent aria-label={t.table} totals />
       <DataTableFooter>
-        <DataTableSelectionCount />
-        <DataTablePageInfo />
-        <DataTablePageButtons />
+        <DataTablePagination pageSizes={[]} />
       </DataTableFooter>
     </DataTable>
   )

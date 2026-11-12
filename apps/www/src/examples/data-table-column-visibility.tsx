@@ -7,6 +7,7 @@ import {
   DataTableContent,
   DataTableToolbar,
 } from "@tecton/react/tecton/data-table"
+import { OverflowSpacer } from "@tecton/react/tecton/overflow"
 
 type Allocation = {
   id: string
@@ -115,7 +116,8 @@ export default function DataTableColumnVisibility() {
         <span id="data-table-visibility-title" className="font-medium">
           Daily allocation
         </span>
-        <DataTableColumnsMenu className="ms-auto" />
+        <OverflowSpacer />
+        <DataTableColumnsMenu />
       </DataTableToolbar>
       <DataTableContent aria-labelledby="data-table-visibility-title" />
     </DataTable>

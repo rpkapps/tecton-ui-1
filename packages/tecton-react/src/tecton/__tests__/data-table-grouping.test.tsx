@@ -327,11 +327,22 @@ describe("DataTable group rows: opening and closing", () => {
         '[data-slot="data-table-group-chevron"] svg'
       )
     ).not.toHaveClass("rotate-90")
-    // The second click of a double click does nothing more.
-    fireEvent.click(group("Field: Gullfaks"), { detail: 2 })
-    expect(group("Field: Gullfaks")).toHaveAttribute("aria-expanded", "false")
     fireEvent.click(group("Field: Gullfaks"))
     expect(screen.getByText("Well 01")).toBeInTheDocument()
+  })
+
+  it("opens or closes on every click of a quick series, selecting no text", () => {
+    render(<Wells defaultView={{ grouping: ["field"] }} />)
+    const expanded = () =>
+      group("Field: Gullfaks").getAttribute("aria-expanded")
+    const states = [1, 2, 3].map((detail) => {
+      // The first press may start a selection; the next ones may not.
+      const pressed = fireEvent.mouseDown(group("Field: Gullfaks"), { detail })
+      expect(pressed).toBe(detail === 1)
+      fireEvent.click(group("Field: Gullfaks"), { detail })
+      return expanded()
+    })
+    expect(states).toEqual(["false", "true", "false"])
   })
 
   it("opens and closes with Right / Left and Enter, and Left goes from a row to its group", () => {

@@ -34,6 +34,7 @@ import {
 } from "./context"
 import { useDelayedCommit } from "./delayed-commit"
 import { setSearch } from "./engine/index"
+import { DataTableToolbarSearch } from "./toolbar"
 
 type DataTableSearchProps = Omit<
   React.ComponentProps<"input">,
@@ -74,49 +75,51 @@ function DataTableSearch({
 
   const label = ariaLabel ?? t("search")
   return (
-    <InputGroup
-      data-slot="data-table-search"
-      className={cn("w-full sm:w-64", className)}
-    >
-      <InputGroupAddon>
-        <SearchIcon aria-hidden />
-      </InputGroupAddon>
-      <InputGroupInput
-        ref={input}
-        type="search"
-        // The browser's own clear button: this part draws its own.
-        className="[&::-webkit-search-cancel-button]:appearance-none"
-        placeholder={placeholder ?? t("search")}
-        aria-label={label}
-        value={draft}
-        onChange={(event) => change(event.currentTarget.value)}
-        onKeyDown={(event) => {
-          onKeyDown?.(event)
-          if (event.defaultPrevented) return
-          if (event.key === "Enter") flush()
-          else if (event.key === "Escape" && draft !== "") {
-            event.preventDefault()
-            event.stopPropagation()
-            change("")
-          }
-        }}
-        {...props}
-      />
-      {draft !== "" && (
-        <InputGroupAddon align="inline-end">
-          <InputGroupButton
-            size="icon-xs"
-            aria-label={t("clearSearch")}
-            onClick={() => {
-              change("")
-              input.current?.focus()
-            }}
-          >
-            <XIcon aria-hidden />
-          </InputGroupButton>
+    <DataTableToolbarSearch label={label}>
+      <InputGroup
+        data-slot="data-table-search"
+        className={cn("w-full sm:w-64", className)}
+      >
+        <InputGroupAddon>
+          <SearchIcon aria-hidden />
         </InputGroupAddon>
-      )}
-    </InputGroup>
+        <InputGroupInput
+          ref={input}
+          type="search"
+          // The browser's own clear button: this part draws its own.
+          className="[&::-webkit-search-cancel-button]:appearance-none"
+          placeholder={placeholder ?? t("search")}
+          aria-label={label}
+          value={draft}
+          onChange={(event) => change(event.currentTarget.value)}
+          onKeyDown={(event) => {
+            onKeyDown?.(event)
+            if (event.defaultPrevented) return
+            if (event.key === "Enter") flush()
+            else if (event.key === "Escape" && draft !== "") {
+              event.preventDefault()
+              event.stopPropagation()
+              change("")
+            }
+          }}
+          {...props}
+        />
+        {draft !== "" && (
+          <InputGroupAddon align="inline-end">
+            <InputGroupButton
+              size="icon-xs"
+              aria-label={t("clearSearch")}
+              onClick={() => {
+                change("")
+                input.current?.focus()
+              }}
+            >
+              <XIcon aria-hidden />
+            </InputGroupButton>
+          </InputGroupAddon>
+        )}
+      </InputGroup>
+    </DataTableToolbarSearch>
   )
 }
 

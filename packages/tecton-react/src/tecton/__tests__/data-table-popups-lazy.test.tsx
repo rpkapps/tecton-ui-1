@@ -239,7 +239,9 @@ describe("DataTable popups on demand", () => {
     await user.click(button("Elsewhere"))
     await user.click(actions()[0])
     await user.keyboard("{Escape}")
-    // A press dragged off the button and let go elsewhere: no click.
+    // A press dragged off the button and let go elsewhere: the menu's
+    // press is its down, as a menu trigger's, given up by the next press
+    // elsewhere.
     await user.pointer([
       { keys: "[MouseLeft>]", target: actions()[0] },
       { target: button("Elsewhere") },
@@ -312,6 +314,32 @@ describe("DataTable popups on demand", () => {
     tab()
     expect(filter).toHaveFocus()
     await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+  })
+
+  it("opens a loaded menu on the pointer's down, in the next frame, the click that ends the press keeping it open", async () => {
+    render(<Wells />)
+    const actions = rowActions()
+    // Asked for on the pointer's down too.
+    fireEvent.pointerDown(actions, { button: 0, pointerType: "mouse" })
+    fireEvent.mouseDown(actions, { button: 0, detail: 1 })
+    const menu = await screen.findByRole("menu")
+    expect(actions).toHaveAttribute("aria-expanded", "true")
+    fireEvent.mouseUp(actions, { button: 0, detail: 1 })
+    fireEvent.click(actions, { button: 0, detail: 1 })
+    await settle()
+    expect(screen.getByRole("menu")).toBe(menu)
+    // The next press on its button closes it.
+    fireEvent.mouseDown(actions, { button: 0, detail: 1 })
+    fireEvent.click(actions, { button: 0, detail: 1 })
+    await waitFor(() => expect(screen.queryByRole("menu")).toBeNull())
+    expect(actions).toHaveAttribute("aria-expanded", "false")
+    // A popover opens on the click, as a popover trigger's.
+    const filter = button("Filter by Field")
+    fireEvent.mouseDown(filter, { button: 0, detail: 1 })
+    await settle()
+    expect(screen.queryByRole("dialog")).toBeNull()
+    fireEvent.click(filter, { button: 0, detail: 1 })
+    expect(await screen.findByRole("dialog")).toBeInTheDocument()
   })
 
   it("puts the resizer where its grip was, carrying on a drag started on the grip", async () => {

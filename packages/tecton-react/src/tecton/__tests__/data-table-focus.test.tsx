@@ -4,10 +4,10 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 
 import {
   DataTable,
+  DataTableActionBar,
   DataTableContent,
   DataTableFooter,
-  DataTablePageButtons,
-  DataTableSelectionCount,
+  DataTablePagination,
   type DataTableProps,
 } from "@tecton/react/tecton/data-table"
 
@@ -42,7 +42,7 @@ afterEach(() => {
 })
 
 describe("DataTable focus", () => {
-  it("keeps focus on the footer's button as Select all N turns into Clear selection, then gives it to the table", async () => {
+  it("moves focus from the action bar's Select all N to its Clear, then gives it to the table as the bar goes", async () => {
     render(
       <Wells
         items={WELLS}
@@ -50,9 +50,9 @@ describe("DataTable focus", () => {
         pagination
         defaultPageSize={5}
       >
+        <DataTableActionBar />
         <DataTableFooter>
-          <DataTableSelectionCount />
-          <DataTablePageButtons />
+          <DataTablePagination />
         </DataTableFooter>
       </Wells>
     )
@@ -60,17 +60,21 @@ describe("DataTable focus", () => {
     const action = screen.getByRole("button", { name: "Select all 23" })
     act(() => action.focus())
     fireEvent.click(action)
-    // One button, its label changed: focus stays on it.
-    const clear = screen.getByRole("button", { name: "Clear selection" })
-    expect(clear).toBe(action)
-    expect(focused()).toBe(clear)
-    // The count is a status region: its changes are read.
-    expect(screen.getByText("23 of 23 selected")).toHaveAttribute(
-      "role",
-      "status"
-    )
+    // It goes once every row is selected: focus on the bar's Clear.
+    expect(screen.queryByRole("button", { name: "Select all 23" })).toBeNull()
+    const clear = focused()
+    expect(clear.closest('[data-slot="action-bar-selection"]')).not.toBeNull()
+    expect(clear).toHaveRole("button")
+    // The count is a live region: its changes are read.
+    expect(
+      document.querySelector(
+        '[data-slot="action-bar-selection"] [aria-live="polite"]'
+      )
+    ).not.toBeNull()
     fireEvent.click(clear)
-    expect(screen.queryByRole("button", { name: "Clear selection" })).toBeNull()
+    expect(
+      document.querySelector('[data-slot="data-table-action-bar"]')
+    ).toBeNull()
     expect(focused().closest("table")).toBe(screen.getByRole("grid"))
   })
 
@@ -155,9 +159,7 @@ describe("DataTable focus", () => {
             value={value}
             onValueChange={setValue}
           >
-            <DataTableFooter>
-              <DataTableSelectionCount />
-            </DataTableFooter>
+            <DataTableActionBar />
           </Wells>
         </>
       )
@@ -168,7 +170,7 @@ describe("DataTable focus", () => {
     act(() => action.focus())
     fireEvent.click(action)
     // To the page, then into an input outside the table.
-    act(() => action.blur())
+    act(() => focused().blur())
     await settle()
     const input = screen.getByRole("textbox", { name: "Note" })
     act(() => input.focus())
@@ -180,7 +182,7 @@ describe("DataTable focus", () => {
     const again = screen.getByRole("button", { name: "Select all 23" })
     act(() => again.focus())
     fireEvent.click(again)
-    act(() => again.blur())
+    act(() => focused().blur())
     await settle()
     fireEvent.click(screen.getByRole("button", { name: "Reset" }))
     await settle()

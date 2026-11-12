@@ -3,9 +3,8 @@
 import {
   createColumns,
   DataTable,
+  DataTableActionBar,
   DataTableContent,
-  DataTableFooter,
-  DataTableSelectionCount,
 } from "@tecton/react/tecton/data-table"
 
 type Asset = {
@@ -139,10 +138,8 @@ export default function DataTableTree() {
       selectionMode="multiple"
       className="w-full"
     >
+      <DataTableActionBar />
       <DataTableContent aria-label="Assets" />
-      <DataTableFooter>
-        <DataTableSelectionCount />
-      </DataTableFooter>
     </DataTable>
   )
 }

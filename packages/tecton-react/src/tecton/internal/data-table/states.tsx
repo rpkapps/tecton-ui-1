@@ -17,6 +17,7 @@ import * as React from "react"
 import { cn } from "cn"
 import { CircleAlertIcon, InboxIcon, SearchXIcon } from "lucide-react"
 
+import { Alert, AlertAction, AlertTitle } from "@tecton/react/components/alert"
 import { Button } from "@tecton/react/components/button"
 import {
   Empty,
@@ -33,6 +34,7 @@ import { useTranslations } from "../i18n/translations"
 import {
   cellBorderClassName,
   pinnedCellClassName,
+  pinFadeClassName,
   pinnedRowClassName,
   pinStyle,
   type CellPin,
@@ -56,7 +58,18 @@ function State({
   return (
     <Empty data-slot="data-table-state" role={role}>
       <EmptyHeader>
-        <EmptyMedia variant="icon">{icon}</EmptyMedia>
+        <EmptyMedia
+          variant="icon"
+          // An error's icon on the destructive fill, as a destructive
+          // Badge's or a filled destructive Alert's.
+          className={
+            role === "alert"
+              ? "bg-destructive-surface text-destructive-surface-foreground"
+              : undefined
+          }
+        >
+          {icon}
+        </EmptyMedia>
         <EmptyTitle>{title}</EmptyTitle>
         <EmptyDescription>{description}</EmptyDescription>
       </EmptyHeader>
@@ -124,7 +137,7 @@ function DataTableErrorState({
 
 /**
  * The error of a load of more rows (`hasMore`), after the rows loaded: a
- * row across every column, an alert with "Retry". Not a row of the grid's:
+ * row across every column, a destructive `Alert` with "Retry". Not a row of the grid's:
  * the keyboard stops on its button by Tab.
  */
 function DataTableMoreError({
@@ -141,18 +154,17 @@ function DataTableMoreError({
   return (
     <tr data-slot="data-table-more-error">
       <TableCell colSpan={columns}>
-        <div
-          role="alert"
-          className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm whitespace-normal"
-        >
-          <CircleAlertIcon aria-hidden className="size-4 text-destructive" />
-          <span>{description ?? t("errorTitle")}</span>
+        <Alert variant="destructive" className="whitespace-normal">
+          <CircleAlertIcon aria-hidden />
+          <AlertTitle>{description ?? t("errorTitle")}</AlertTitle>
           {onRetry && (
-            <Button variant="outline" size="sm" onClick={onRetry}>
-              {t("retry")}
-            </Button>
+            <AlertAction>
+              <Button variant="outline" size="sm" onClick={onRetry}>
+                {t("retry")}
+              </Button>
+            </AlertAction>
           )}
-        </div>
+        </Alert>
       </TableCell>
     </tr>
   )
@@ -173,7 +185,8 @@ function loadingRows<T>(
     className: cn(
       className,
       shared.pinned && cellBorderClassName,
-      pin && pinnedCellClassName
+      pin && pinnedCellClassName,
+      pinFadeClassName(pin)
     ),
     style: pin && pinStyle(pin),
   })

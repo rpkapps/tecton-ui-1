@@ -15,9 +15,7 @@
 import * as React from "react"
 import { ListTreeIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
-import { Separator } from "@tecton/react/components/separator"
 import { useLocale } from "@tecton/react/tecton/provider"
 
 import { useTranslations } from "../i18n/translations"
@@ -29,6 +27,8 @@ import {
 import { getColumnModel, resolveLocale } from "./engine/index"
 import { usePrefetchFeatures } from "./lazy"
 import { mergeButtonProps, useLazyPopup } from "./lazy-popup"
+import { DataTableToolbarItem } from "./toolbar"
+import { DataTableTriggerSummary } from "./trigger-summary"
 
 type DataTableGroupByProps = Omit<
   React.ComponentProps<typeof Button>,
@@ -83,26 +83,30 @@ function DataTableGroupBy({
   const Menu = lazy.module?.DataTableGroupByMenu
   return (
     <>
-      <Button
-        data-slot="data-table-group-by"
-        data-active={summary ? "" : undefined}
-        {...mergeButtonProps(trigger, lazy.buttonProps)}
+      <DataTableToolbarItem
+        value="data-table-group-by"
+        label={t("groupBy")}
+        icon={<ListTreeIcon aria-hidden />}
+        open={lazy.openBy}
       >
-        {children ?? (
-          <>
-            <ListTreeIcon aria-hidden />
-            {t("groupBy")}
-            {summary && (
-              <>
-                <Separator orientation="vertical" className="mx-0.5 h-4" />
-                <Badge id={summaryId} variant="secondary" className="max-w-48">
-                  <span className="min-w-0 truncate">{summary}</span>
-                </Badge>
-              </>
-            )}
-          </>
-        )}
-      </Button>
+        <Button
+          data-slot="data-table-group-by"
+          data-active={summary ? "" : undefined}
+          {...mergeButtonProps(trigger, lazy.buttonProps)}
+        >
+          {children ?? (
+            <>
+              <ListTreeIcon aria-hidden />
+              {t("groupBy")}
+              {summary && (
+                <DataTableTriggerSummary id={summaryId}>
+                  {summary}
+                </DataTableTriggerSummary>
+              )}
+            </>
+          )}
+        </Button>
+      </DataTableToolbarItem>
       {lazy.mounted && Menu && (
         <Menu context={context} popup={lazy.popupProps} />
       )}

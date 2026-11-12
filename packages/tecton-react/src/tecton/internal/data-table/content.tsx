@@ -15,8 +15,9 @@
  * The columns: their widths (`column-sizing.ts`; a resize is drawn without
  * rendering while it is dragged), pinned columns that stick to the frame's
  * edges with the content scrolled under them fading in at their inner
- * edge (the `scroll-fade-x` utility, its mask starting where the pinned
- * columns end, shown only while there is content on that side), and
+ * edge, into each row's own fill (`pinFadeClassName` in `cell.tsx`: the
+ * scroll fade's keyframes, shown only while there is content on that
+ * side), and
  * reordering, whose drag and drop loads on demand and renders beside the
  * table (`column-reorder.tsx`).
  *
@@ -168,20 +169,6 @@ function DataTableGrid({
   return <TableGridConfig value={config}>{children}</TableGridConfig>
 }
 
-/**
- * The scrolled content fades in at the inner edge of the pinned columns
- * (`scroll-fade-x` on the table's scroll container, with its mask moved
- * there): the start's fade shows once the table is scrolled from the
- * start, the end's while there is more to scroll to. RTL mirrors it.
- * Without scroll-driven animations the utility would fade for good: the
- * fade is then left out.
- */
-const PINNED_FADE = cn(
-  "scroll-fade-x",
-  "[--scroll-fade-mask:linear-gradient(to_var(--data-table-fade-to),#000_var(--data-table-pinned-start),transparent_var(--data-table-pinned-start),#000_calc(var(--data-table-pinned-start)_+_var(--scroll-fade-s)_*_var(--data-table-fade-start)),#000_calc(100%_-_var(--data-table-pinned-end)_-_var(--scroll-fade-e)_*_var(--data-table-fade-end)),transparent_calc(100%_-_var(--data-table-pinned-end)),#000_calc(100%_-_var(--data-table-pinned-end)))]",
-  "not-supports-[animation-timeline:scroll()]:[--scroll-fade-e-size:0px] not-supports-[animation-timeline:scroll()]:[--scroll-fade-s-size:0px]"
-)
-
 /** Whether the columns are laid out with fixed widths (see `column-sizing.ts`). */
 function hasFixedWidths<T>(layout: ColumnLayout<T>, resizable: boolean) {
   return (
@@ -213,9 +200,9 @@ function useSameItems<TItem>(next: ReadonlyArray<TItem>) {
 function pinsOf(count: number, start: number, end: number) {
   return Array.from({ length: count }, (_, index): CellPin | undefined =>
     index < start
-      ? { side: "start", offset: pinOffset(index) }
+      ? { side: "start", offset: pinOffset(index), edge: index === start - 1 }
       : index >= count - end
-        ? { side: "end", offset: pinOffset(index) }
+        ? { side: "end", offset: pinOffset(index), edge: index === count - end }
         : undefined
   )
 }
@@ -623,11 +610,7 @@ function DataTableContentImpl({
     rtl,
   })
   const { sizing } = sizer
-  const fade = pinned && sizing !== null
-  const containerConfig = React.useMemo(
-    () => ({ ref: container, className: fade ? PINNED_FADE : undefined }),
-    [fade]
-  )
+  const containerConfig = React.useMemo(() => ({ ref: container }), [])
   // The rows render with the columns, their pins and the selection's: a
   // new width alone (a resize) leaves them as they are.
   const shownColumns = useSameItems(layout.columns)

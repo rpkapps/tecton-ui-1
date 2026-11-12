@@ -8,8 +8,10 @@
  * - `loadFeature(name)` imports a feature's module once (later calls share
  *   the promise; a failed load is tried again on the next call).
  * - `usePrefetchFeatures(names)` loads the features a mounted table has on,
- *   in idle time, so they are there before they are first used; an `eager`
- *   feature loads as soon as the table mounts instead.
+ *   in idle time (within two seconds), so they are there before they are
+ *   first used; an `eager` feature loads as soon as the table mounts
+ *   instead. A part's button asks for its popup's code as it is pointed
+ *   at, focused or pressed, before then (`lazy-popup.ts`).
  * - `useFeature(name, on)` is a feature's module for a part to render with:
  *   `undefined` until it has loaded (the part renders without it, with no
  *   change of layout), then the module; and `load`, for a press that needs
@@ -57,6 +59,9 @@ const FEATURES = {
 }
 
 type FeatureName = keyof typeof FEATURES
+
+/** The longest an idle prefetch waits for the browser to be idle. */
+const IDLE_TIMEOUT = 2000
 type FeatureModule<TName extends FeatureName> =
   (typeof FEATURES)[TName] extends Feature<infer TModule> ? TModule : never
 
@@ -83,10 +88,13 @@ function loadFeature<TName extends FeatureName>(
   return load as Promise<FeatureModule<TName>>
 }
 
-/** Runs `task` when the browser is idle; returns its cancel. */
+/**
+ * Runs `task` when the browser is idle, or after `IDLE_TIMEOUT` on a page
+ * that never is (animations, many tables mounting); returns its cancel.
+ */
 function whenIdle(task: () => void): () => void {
   if (typeof requestIdleCallback === "function") {
-    const handle = requestIdleCallback(task)
+    const handle = requestIdleCallback(task, { timeout: IDLE_TIMEOUT })
     return () => cancelIdleCallback(handle)
   }
   // Without idle callbacks (Safari before 18), soon after the first paint.

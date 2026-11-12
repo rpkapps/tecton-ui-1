@@ -274,6 +274,7 @@ function GroupRowComponent<T>({
     [row, label, actions, shared.multiple]
   )
   const pinned = (pin: CellPin | undefined) =>
+    // No fade: the group's label goes on over the columns after its cell.
     cn(shared.pinned && cellBorderClassName, pin && pinnedCellClassName)
   const controlCell = (pin: CellPin | undefined, content?: React.ReactNode) => (
     <TableCell className={cn("w-px", pinned(pin))} style={pin && pinStyle(pin)}>
@@ -419,9 +420,14 @@ function GroupRowComponent<T>({
         aria-posinset={row.posinset}
         aria-setsize={row.setsize}
         className="bg-table-header font-medium"
+        // A quick series of clicks selects no text: each click opens or
+        // closes the group.
+        onMouseDown={(event) => {
+          if (event.detail > 1) event.preventDefault()
+        }}
         onClick={(event) => {
-          // Its checkbox selects; a double click opens and closes it once.
-          if (event.button !== 0 || event.detail > 1) return
+          // Its checkbox selects; every other click opens or closes it.
+          if (event.button !== 0) return
           const target = event.target as HTMLElement
           if (target.closest("button, input, a, label, [role=checkbox]")) return
           const text = target.ownerDocument.getSelection()

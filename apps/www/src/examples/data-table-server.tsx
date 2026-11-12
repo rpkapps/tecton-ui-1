@@ -6,10 +6,9 @@ import {
   createColumns,
   DataTable,
   DataTableContent,
+  DataTableActionBar,
   DataTableFooter,
-  DataTablePageButtons,
-  DataTablePageInfo,
-  DataTableSelectionCount,
+  DataTablePagination,
   type DataTableAllMatching,
   type DataTableSort,
 } from "@tecton/react/tecton/data-table"
@@ -157,11 +156,10 @@ export default function DataTableServer() {
           setSelection(describe(value, allMatching))
         }
       >
+        <DataTableActionBar />
         <DataTableContent aria-label="Well register" />
         <DataTableFooter>
-          <DataTableSelectionCount />
-          <DataTablePageInfo />
-          <DataTablePageButtons />
+          <DataTablePagination pageSizes={[]} />
         </DataTableFooter>
       </DataTable>
       <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-sm">

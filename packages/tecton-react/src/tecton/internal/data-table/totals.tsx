@@ -26,6 +26,7 @@ import { useTranslations } from "../i18n/translations"
 import {
   columnClassName,
   pinnedCellClassName,
+  pinFadeClassName,
   pinStyle,
   type RowShared,
 } from "./cell"
@@ -84,7 +85,8 @@ function DataTableTotals<T>({
             columnClassName(column),
             column.type === "number" && "tabular-nums",
             TOTALS_CELL,
-            pin && pinnedCellClassName
+            pin && pinnedCellClassName,
+            pinFadeClassName(pin)
           )
           const style = pin && pinStyle(pin)
           if (column === label)

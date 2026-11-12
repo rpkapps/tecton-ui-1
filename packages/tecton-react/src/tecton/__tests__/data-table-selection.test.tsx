@@ -6,9 +6,9 @@ import {
   createColumns,
   DataTable,
   DataTableContent,
+  DataTableActionBar,
   DataTableFooter,
-  DataTablePageButtons,
-  DataTableSelectionCount,
+  DataTablePagination,
   DataTableToolbar,
   useDataTable,
   type DataTableProps,
@@ -39,10 +39,10 @@ function Wells({
       selectionMode="multiple"
       {...props}
     >
+      <DataTableActionBar />
       <DataTableContent aria-label="Wells" />
       <DataTableFooter>
-        <DataTableSelectionCount />
-        <DataTablePageButtons />
+        <DataTablePagination />
       </DataTableFooter>
       {children}
     </DataTable>
@@ -54,9 +54,11 @@ const lastValue = (spy: ReturnType<typeof vi.fn>) =>
   (spy.mock.lastCall as [Array<string>, DataTableSelectionChangeDetails])[0]
 const lastDetails = (spy: ReturnType<typeof vi.fn>) =>
   (spy.mock.lastCall as [Array<string>, DataTableSelectionChangeDetails])[1]
+/** The action bar's "3 of 4 selected", while it shows. */
 const count = () =>
-  document.querySelector('[data-slot="data-table-selection-count"] span')
-    ?.textContent
+  document.querySelector(
+    '[data-slot="action-bar-selection"] > [aria-hidden] > span'
+  )?.textContent
 
 afterEach(() => {
   vi.restoreAllMocks()
@@ -169,20 +171,25 @@ describe("DataTable selection", () => {
     render(
       <Wells pagination defaultPageSize={5} onValueChange={onValueChange} />
     )
-    const footer = within(
-      document.querySelector('[data-slot="data-table-footer"]') as HTMLElement
-    )
-    expect(count()).toBe("0 of 23 selected")
+    const bar = () =>
+      within(
+        document.querySelector(
+          '[data-slot="data-table-action-bar"]'
+        ) as HTMLElement
+      )
+    // No rows selected: no bar.
+    expect(count()).toBeUndefined()
     for (const name of ["Well 01", "Well 02", "Well 03", "Well 04"])
       fireEvent.click(checkbox(name))
-    expect(footer.queryByRole("button", { name: "Select all 23" })).toBeNull()
+    expect(bar().queryByRole("button", { name: "Select all 23" })).toBeNull()
     fireEvent.click(checkbox("Well 05"))
-    fireEvent.click(footer.getByRole("button", { name: "Select all 23" }))
+    fireEvent.click(bar().getByRole("button", { name: "Select all 23" }))
     expect(lastValue(onValueChange)).toHaveLength(23)
     expect(lastDetails(onValueChange).reason).toBe("select-all")
     expect(count()).toBe("23 of 23 selected")
-    fireEvent.click(footer.getByRole("button", { name: "Clear selection" }))
+    fireEvent.click(bar().getByRole("button", { name: "Clear selection" }))
     expect(lastValue(onValueChange)).toEqual([])
+    expect(count()).toBeUndefined()
   })
 
   it("shows a controlled value, and starts from defaultValue", () => {
@@ -318,26 +325,26 @@ describe("DataTable server selection", () => {
     fireEvent.click(selectAll())
     expect(lastValue(onValueChange)).toHaveLength(10)
     expect(lastDetails(onValueChange).allMatching).toBeNull()
-    expect(count()).toBe("10 of 1,240 selected")
+    expect(count()).toBe("10 of 1240 selected")
 
     fireEvent.click(screen.getByRole("button", { name: "Select all 1,240" }))
     expect(lastValue(onValueChange)).toHaveLength(10)
     expect(lastDetails(onValueChange).reason).toBe("select-all-matching")
     expect(lastDetails(onValueChange).allMatching).toEqual({ except: [] })
-    expect(count()).toBe("1,240 of 1,240 selected")
+    expect(count()).toBe("1240 of 1240 selected")
 
     // A row deselected is an exception.
     fireEvent.click(checkbox("Well 03"))
     expect(lastDetails(onValueChange).allMatching).toEqual({ except: ["w3"] })
     expect(lastValue(onValueChange)).not.toContain("w3")
-    expect(count()).toBe("1,239 of 1,240 selected")
+    expect(count()).toBe("1239 of 1240 selected")
     fireEvent.click(checkbox("Well 03"))
     expect(lastDetails(onValueChange).allMatching).toEqual({ except: [] })
 
     // Rows loaded later come selected.
     rerender(<Server onValueChange={onValueChange} items={PAGE_TWO} />)
     expect(row("Well 11")).toHaveAttribute("aria-selected", "true")
-    expect(count()).toBe("1,240 of 1,240 selected")
+    expect(count()).toBe("1240 of 1240 selected")
   })
 
   it("leaves all-matching when the search changes", () => {
@@ -345,11 +352,11 @@ describe("DataTable server selection", () => {
     render(<Server onValueChange={onValueChange} controlled />)
     fireEvent.click(selectAll())
     fireEvent.click(screen.getByRole("button", { name: "Select all 1,240" }))
-    expect(count()).toBe("1,240 of 1,240 selected")
+    expect(count()).toBe("1240 of 1240 selected")
     act(() => setSearch?.("Gullfaks"))
     expect(lastDetails(onValueChange).reason).toBe("view")
     expect(lastDetails(onValueChange).allMatching).toBeNull()
-    expect(count()).toBe("10 of 1,240 selected")
+    expect(count()).toBe("10 of 1240 selected")
   })
 
   it("leaves all-matching when a controlled value is set to another selection", () => {
@@ -377,9 +384,9 @@ describe("DataTable server selection", () => {
     render(<Owner />)
     fireEvent.click(selectAll())
     fireEvent.click(screen.getByRole("button", { name: "Select all 1,240" }))
-    expect(count()).toBe("1,240 of 1,240 selected")
+    expect(count()).toBe("1240 of 1240 selected")
     fireEvent.click(screen.getByRole("button", { name: "Reset" }))
-    expect(count()).toBe("1 of 1,240 selected")
+    expect(count()).toBe("1 of 1240 selected")
   })
 })
 
@@ -461,7 +468,7 @@ describe("DataTable render counts", () => {
         </DataTableToolbar>
         <DataTableContent aria-label="Wells" />
         <DataTableFooter>
-          <DataTablePageButtons />
+          <DataTablePagination />
         </DataTableFooter>
       </DataTable>
     )

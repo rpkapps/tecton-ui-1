@@ -18,12 +18,12 @@
  *       <DataTableFilter column="status" />
  *     </DataTableToolbar>
  *     <DataTableActiveFilters />
+ *     <DataTableActionBar>
+ *       <Button size="sm">Shut in</Button>
+ *     </DataTableActionBar>
  *     <DataTableContent aria-label="Wells" />
  *     <DataTableFooter>
- *       <DataTableSelectionCount />
- *       <DataTablePageSize />
- *       <DataTablePageInfo />
- *       <DataTablePageButtons />
+ *       <DataTablePagination pageSizes={[10, 25, 50]} />
  *     </DataTableFooter>
  *   </DataTable>
  *
@@ -41,12 +41,8 @@ export { DataTableColumnsMenu } from "./internal/data-table/columns-menu"
 export { DataTableGroupBy } from "./internal/data-table/group-by"
 export { DataTableRowActions } from "./internal/data-table/row-actions"
 export { DataTableFooter } from "./internal/data-table/footer"
-export { DataTableSelectionCount } from "./internal/data-table/selection-count"
-export {
-  DataTablePageButtons,
-  DataTablePageInfo,
-  DataTablePageSize,
-} from "./internal/data-table/pagination"
+export { DataTableActionBar } from "./internal/data-table/action-bar"
+export { DataTablePagination } from "./internal/data-table/pagination"
 export { useDataTable } from "./internal/data-table/use-data-table"
 
 export type * from "./internal/data-table/engine/types"
@@ -59,6 +55,9 @@ export type { DataTableActiveFiltersProps } from "./internal/data-table/active-f
 export type { DataTableColumnsMenuProps } from "./internal/data-table/columns-menu"
 export type { DataTableGroupByProps } from "./internal/data-table/group-by"
 export type { DataTableRowActionsProps } from "./internal/data-table/row-actions"
+export type { DataTableToolbarProps } from "./internal/data-table/toolbar"
+export type { DataTableActionBarProps } from "./internal/data-table/action-bar"
+export type { DataTablePaginationProps } from "./internal/data-table/pagination"
 export type {
   DataTableChangeDetails,
   DataTableExpandedChangeReason,

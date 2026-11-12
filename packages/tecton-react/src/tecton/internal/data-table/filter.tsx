@@ -18,9 +18,7 @@
 import * as React from "react"
 import { ListFilterIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
 import { Button } from "@tecton/react/components/button"
-import { Separator } from "@tecton/react/components/separator"
 
 import { useTranslations } from "../i18n/translations"
 import {
@@ -38,6 +36,8 @@ import type { SetColumnFilter } from "./filter-popover"
 import { filterText } from "./filter-text"
 import { loadFeature, usePrefetchFeatures } from "./lazy"
 import { mergeButtonProps, useLazyPopup } from "./lazy-popup"
+import { DataTableToolbarItem } from "./toolbar"
+import { DataTableTriggerSummary } from "./trigger-summary"
 
 type DataTableFilterProps = Omit<
   React.ComponentProps<typeof Button>,
@@ -128,25 +128,29 @@ function DataTableFilter({
       <ListFilterIcon aria-hidden />
       {columnName}
       {summary && (
-        <>
-          <Separator orientation="vertical" className="mx-0.5 h-4" />
-          <Badge id={summaryId} variant="secondary" className="max-w-40">
-            <span className="min-w-0 truncate">{summary}</span>
-          </Badge>
-        </>
+        <DataTableTriggerSummary id={summaryId}>
+          {summary}
+        </DataTableTriggerSummary>
       )}
     </>
   )
   const Popover = lazy.module?.DataTableFilterPopover
   return (
     <>
-      <Button
-        data-slot="data-table-filter"
-        data-active={value ? "" : undefined}
-        {...mergeButtonProps(trigger, lazy.buttonProps)}
+      <DataTableToolbarItem
+        value={`data-table-filter:${column.id}`}
+        label={t("filterBy", { columnName })}
+        icon={<ListFilterIcon aria-hidden />}
+        open={lazy.openBy}
       >
-        {content}
-      </Button>
+        <Button
+          data-slot="data-table-filter"
+          data-active={value ? "" : undefined}
+          {...mergeButtonProps(trigger, lazy.buttonProps)}
+        >
+          {content}
+        </Button>
+      </DataTableToolbarItem>
       {lazy.mounted && Popover && (
         <Popover
           context={context}

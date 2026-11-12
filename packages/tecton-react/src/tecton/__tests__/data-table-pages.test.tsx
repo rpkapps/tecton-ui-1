@@ -15,9 +15,7 @@ import {
   DataTable,
   DataTableContent,
   DataTableFooter,
-  DataTablePageButtons,
-  DataTablePageInfo,
-  DataTablePageSize,
+  DataTablePagination,
   useDataTable,
   type DataTableProps,
   type DataTableView,
@@ -35,9 +33,7 @@ function Wells({
     <DataTable items={items} columns={columns} pagination {...props}>
       <DataTableContent aria-label="Wells" />
       <DataTableFooter>
-        <DataTablePageSize />
-        <DataTablePageInfo />
-        <DataTablePageButtons />
+        <DataTablePagination />
       </DataTableFooter>
       {children}
     </DataTable>
@@ -45,8 +41,18 @@ function Wells({
 }
 
 const button = (name: string) => screen.getByRole("button", { name })
-const info = () =>
-  document.querySelector('[data-slot="data-table-page-info"]')?.textContent
+/** "Page 2 of 5": the current page's button, and the last page's. */
+const info = () => {
+  const pages = [
+    ...document.querySelectorAll<HTMLElement>(
+      '[data-slot="pagination-item"] button[aria-label^="Page "]'
+    ),
+  ]
+  const current = pages.find((page) => page.hasAttribute("aria-current"))
+  return `Page ${current?.textContent} of ${pages.at(-1)?.textContent}`
+}
+const range = () =>
+  document.querySelector('[data-slot="data-table-row-range"]')?.textContent
 const ids = (from: number, to: number) =>
   WELLS.slice(from - 1, to).map((well) => well.name)
 
@@ -60,41 +66,96 @@ describe("DataTable pages", () => {
     render(<Wells defaultPageSize={5} onPageChange={onPageChange} />)
     expect(names()).toEqual(ids(1, 5))
     expect(info()).toBe("Page 1 of 5")
+    expect(range()).toBe("1–5 of 23")
     expect(
-      screen.getByRole("group", { name: "Pagination" })
+      screen.getByRole("navigation", { name: "Pagination" })
     ).toBeInTheDocument()
+    // Buttons, not links; the current page's says so.
+    expect(screen.queryAllByRole("link")).toHaveLength(0)
+    expect(button("Page 1")).toHaveAttribute("aria-current", "page")
     // The way back is disabled on the first page, and keeps focus.
-    expect(button("First page")).toHaveAttribute("aria-disabled", "true")
     expect(button("Previous page")).toHaveAttribute("aria-disabled", "true")
 
     fireEvent.click(button("Next page"))
     expect(names()).toEqual(ids(6, 10))
     expect(info()).toBe("Page 2 of 5")
+    expect(range()).toBe("6–10 of 23")
     expect(onPageChange).toHaveBeenLastCalledWith(
       2,
       expect.objectContaining({ reason: "next" })
     )
-    fireEvent.click(button("Last page"))
+    fireEvent.click(button("Page 5"))
     expect(names()).toEqual(ids(21, 23))
+    expect(range()).toBe("21–23 of 23")
     expect(onPageChange).toHaveBeenLastCalledWith(
       5,
-      expect.objectContaining({ reason: "last" })
+      expect.objectContaining({ reason: "page" })
     )
     expect(button("Next page")).toHaveAttribute("aria-disabled", "true")
     fireEvent.click(button("Previous page"))
     expect(info()).toBe("Page 4 of 5")
-    fireEvent.click(button("First page"))
+    fireEvent.click(button("Page 1"))
     expect(info()).toBe("Page 1 of 5")
     expect(onPageChange).toHaveBeenLastCalledWith(
       1,
-      expect.objectContaining({ reason: "first" })
+      expect.objectContaining({ reason: "page" })
     )
   })
 
-  it("announces the page as it changes", () => {
+  it("shows the first, the last and the current page's neighbours, with ellipses", () => {
+    const many = Array.from({ length: 240 }, (_, i) => ({
+      ...WELLS[0],
+      id: `m${i}`,
+      name: `M ${i}`,
+    }))
+    render(<Wells items={many} />)
+    const shown = () =>
+      [...document.querySelectorAll('[data-slot="pagination-item"] > *')]
+        .map((item) =>
+          item.matches('[data-slot="pagination-ellipsis"]')
+            ? "…"
+            : item.getAttribute("aria-label")?.startsWith("Page ")
+              ? item.textContent
+              : null
+        )
+        .filter((item) => item !== null)
+    expect(shown()).toEqual(["1", "2", "3", "4", "5", "…", "24"])
+    expect(range()).toBe("1–10 of 240")
+    fireEvent.click(button("Page 5"))
+    expect(shown()).toEqual(["1", "…", "4", "5", "6", "…", "24"])
+    fireEvent.click(button("Page 24"))
+    expect(shown()).toEqual(["1", "…", "20", "21", "22", "23", "24"])
+    expect(range()).toBe("231–240 of 240")
+  })
+
+  it("announces the rows shown as they change", () => {
     render(<Wells />)
-    const status = document.querySelector('[data-slot="data-table-page-info"]')
-    expect(status).toHaveAttribute("aria-live", "polite")
+    expect(
+      document.querySelector('[data-slot="data-table-row-range"]')
+    ).toHaveAttribute("aria-live", "polite")
+  })
+
+  it("offers its own page sizes, or none", async () => {
+    const user = userEvent.setup()
+    const { unmount } = render(
+      <DataTable items={WELLS} columns={columns} pagination>
+        <DataTablePagination pageSizes={[10, 25, 50]} />
+      </DataTable>
+    )
+    await user.click(screen.getByRole("combobox", { name: "Rows per page" }))
+    const options = await screen.findAllByRole("option")
+    expect(options.map((option) => option.textContent)).toEqual([
+      "10",
+      "25",
+      "50",
+    ])
+    unmount()
+    render(
+      <DataTable items={WELLS} columns={columns} pagination>
+        <DataTablePagination pageSizes={[]} />
+      </DataTable>
+    )
+    expect(screen.queryByRole("combobox")).toBeNull()
   })
 
   it("shows ten rows a page by default", () => {
@@ -233,6 +294,7 @@ describe("DataTable pages", () => {
       </TectonProvider>
     )
     expect(info()).toBe("Page 1 of 12.345")
+    expect(range()).toBe("1–1 of 12.345")
   })
 
   it("pages the server's rows from rowCount, reporting each page", () => {
@@ -329,11 +391,11 @@ describe("DataTable pages", () => {
     const onPageChange = vi.fn()
     render(<Wells page={9} onPageChange={onPageChange} />)
     onPageChange.mockClear()
-    // The table shows page 3, the last; "First page" goes to 1.
-    fireEvent.click(button("First page"))
+    // The table shows page 3, the last; "Previous page" goes to 2.
+    fireEvent.click(button("Previous page"))
     expect(onPageChange).toHaveBeenLastCalledWith(
-      1,
-      expect.objectContaining({ reason: "first" })
+      2,
+      expect.objectContaining({ reason: "previous" })
     )
   })
 

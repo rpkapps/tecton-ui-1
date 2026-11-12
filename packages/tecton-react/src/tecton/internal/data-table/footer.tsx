@@ -6,8 +6,8 @@ import { cn } from "cn"
 import { useDataTableContext } from "./context"
 
 /**
- * The row below the table, for the selection count and the page parts: the
- * count at the start, the rest at the end.
+ * The row below the table, for `DataTablePagination` and the caller's own
+ * parts, at the end.
  */
 function DataTableFooter({ className, ...props }: React.ComponentProps<"div">) {
   useDataTableContext("DataTableFooter")

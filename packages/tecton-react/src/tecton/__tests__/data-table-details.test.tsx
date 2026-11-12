@@ -13,9 +13,8 @@ import { afterEach, describe, expect, it, vi } from "vitest"
 import {
   createColumns,
   DataTable,
+  DataTableActionBar,
   DataTableContent,
-  DataTableFooter,
-  DataTableSelectionCount,
   useDataTable,
   type DataTableProps,
   type DataTableView,
@@ -92,9 +91,7 @@ describe("DataTable selection column", () => {
         rowCount={1240}
         items={WELLS.slice(0, 10)}
       >
-        <DataTableFooter>
-          <DataTableSelectionCount />
-        </DataTableFooter>
+        <DataTableActionBar />
       </Wells>
     )
     fireEvent.click(screen.getByRole("checkbox", { name: "Select All" }))

@@ -75,6 +75,20 @@ afterEach(() => {
 })
 
 describe("DataTable tree", () => {
+  it("opens or closes a row on every click of its chevron, a quick series selecting no text", () => {
+    render(<Assets />)
+    const states = [1, 2, 3].map((detail) => {
+      // Not focused by a press, nor a start of a text selection.
+      expect(fireEvent.mouseDown(chevron("Gullfaks"), { detail })).toBe(false)
+      fireEvent.click(chevron("Gullfaks"), { detail })
+      return row("Gullfaks").getAttribute("aria-expanded")
+    })
+    expect(states).toEqual(["true", "false", "true"])
+    // A ghost icon Button.
+    expect(chevron("Gullfaks")).toHaveAttribute("data-variant", "ghost")
+    expect(chevron("Gullfaks")).toHaveAttribute("data-size", "icon-xs")
+  })
+
   it("is a treegrid whose rows have a level, a place and an expanded state", () => {
     render(<Assets defaultExpanded={["gullfaks"]} />)
     expect(screen.getByRole("treegrid", { name: "Assets" })).toBeInTheDocument()

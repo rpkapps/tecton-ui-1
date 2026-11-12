@@ -7,6 +7,7 @@ import {
   DataTableContent,
   DataTableToolbar,
 } from "@tecton/react/tecton/data-table"
+import { OverflowSpacer } from "@tecton/react/tecton/overflow"
 
 type Well = {
   id: string
@@ -138,7 +139,8 @@ export default function DataTableColumnPinning() {
         <span id="data-table-pinning-title" className="font-medium">
           Well performance
         </span>
-        <DataTableColumnsMenu size="sm" className="ms-auto" />
+        <OverflowSpacer />
+        <DataTableColumnsMenu size="sm" />
       </DataTableToolbar>
       <DataTableContent aria-labelledby="data-table-pinning-title" />
     </DataTable>

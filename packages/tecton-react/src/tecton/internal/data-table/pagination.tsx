@@ -1,21 +1,27 @@
 "use client"
 
 /**
- * The page parts (§4.4), for `pagination`: the rows-per-page `Select`,
- * "Page 2 of 13" (counted from `rowCount` in server mode), and the first,
- * previous, next and last page buttons. Each renders nothing, and warns
- * once in development, while `pagination` is off.
+ * `DataTablePagination` (§4.4), for `pagination`: in one row, the
+ * rows-per-page `Select`, the rows shown ("1–10 of 240", announced as it
+ * changes) and Tecton's `Pagination` with the page buttons: previous, the
+ * pages (the first, the last, the current one and its neighbours, an
+ * ellipsis for the others) and next. The pages are buttons, not links: the
+ * `Button` that `PaginationLink`'s look is (ghost, the current page
+ * outline), in `PaginationItem`s. The rows are the server's `rowCount` in
+ * server mode. It renders nothing, and warns once in development, while
+ * `pagination` is off.
  */
 import * as React from "react"
 import { cn } from "cn"
-import {
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  ChevronsLeftIcon,
-  ChevronsRightIcon,
-} from "lucide-react"
+import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react"
 
 import { Button } from "@tecton/react/components/button"
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+} from "@tecton/react/components/pagination"
 import {
   Select,
   SelectContent,
@@ -33,19 +39,70 @@ import {
   type DataTableContextValue,
 } from "./context"
 
-function usePagination(part: string) {
-  const context = useDataTableContext<unknown>(part)
+type DataTablePaginationProps = React.ComponentProps<"div"> & {
+  /**
+   * The page sizes the rows-per-page `Select` offers: the table's
+   * `pageSizes` by default. An empty list leaves the `Select` out.
+   */
+  pageSizes?: ReadonlyArray<number>
+}
+
+/**
+ * The pages to show a button for, and `null` for an ellipsis: every page
+ * up to 7, else the first, the last, the current one and its neighbours
+ * (five in a row at either end), so the row keeps its length as the page
+ * changes.
+ */
+function pagesToShow(page: number, pageCount: number): Array<number | null> {
+  if (pageCount <= 7)
+    return Array.from({ length: pageCount }, (_, index) => index + 1)
+  if (page <= 4) return [1, 2, 3, 4, 5, null, pageCount]
+  if (page >= pageCount - 3)
+    return [
+      1,
+      null,
+      pageCount - 4,
+      pageCount - 3,
+      pageCount - 2,
+      pageCount - 1,
+      pageCount,
+    ]
+  return [1, null, page - 1, page, page + 1, null, pageCount]
+}
+
+function DataTablePagination({
+  pageSizes: ownSizes,
+  className,
+  ...props
+}: DataTablePaginationProps) {
+  const context = useDataTableContext<unknown>("DataTablePagination")
   const on = useDataTableSelector(context, (state) => state.options.pagination)
-  useFeatureWarning(context, !on, part, "pagination")
-  return { context, on }
+  useFeatureWarning(context, !on, "DataTablePagination", "pagination")
+  if (!on) return null
+  return (
+    <div
+      data-slot="data-table-pagination"
+      className={cn(
+        "flex flex-wrap items-center justify-end gap-x-6 gap-y-2 text-sm",
+        className
+      )}
+      {...props}
+    >
+      <PageSize context={context} ownSizes={ownSizes} />
+      <RowRange context={context} />
+      <PageButtons context={context} />
+    </div>
+  )
 }
 
 /** "Rows per page" and a `Select` of the page sizes. */
-function DataTablePageSize({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
-  const { context, on } = usePagination("DataTablePageSize")
+function PageSize({
+  context,
+  ownSizes,
+}: {
+  context: DataTableContextValue<unknown>
+  ownSizes: ReadonlyArray<number> | undefined
+}) {
   const t = useTranslations("dataTable")
   const format = useNumberFormat()
   const labelId = React.useId()
@@ -53,10 +110,11 @@ function DataTablePageSize({
     context,
     (state) => state.model.pageSize
   )
-  const pageSizes = useDataTableSelector(
+  const tableSizes = useDataTableSelector(
     context,
     (state) => state.options.pageSizes
   )
+  const pageSizes = ownSizes ?? tableSizes
   // A page size the list leaves out is still one to choose.
   const sizes = React.useMemo(
     () =>
@@ -65,13 +123,9 @@ function DataTablePageSize({
         : [...pageSizes, pageSize].sort((a, b) => a - b),
     [pageSizes, pageSize]
   )
-  if (!on) return null
+  if (pageSizes.length === 0) return null
   return (
-    <div
-      data-slot="data-table-page-size"
-      className={cn("flex items-center gap-2 text-sm", className)}
-      {...props}
-    >
+    <div data-slot="data-table-page-size" className="flex items-center gap-2">
       <span id={labelId}>{t("rowsPerPage")}</span>
       <Select
         value={String(pageSize)}
@@ -101,12 +155,41 @@ function DataTablePageSize({
   )
 }
 
-/** "Page 2 of 13", announced as it changes. */
-function DataTablePageInfo({
-  className,
-  ...props
-}: React.ComponentProps<"span">) {
-  const { context, on } = usePagination("DataTablePageInfo")
+/** "1–10 of 240": the rows of the page, announced as they change. */
+function RowRange({ context }: { context: DataTableContextValue<unknown> }) {
+  const t = useTranslations("dataTable")
+  const format = useNumberFormat()
+  const page = useDataTableSelector(context, (state) => state.model.page)
+  const pageSize = useDataTableSelector(
+    context,
+    (state) => state.model.pageSize
+  )
+  // The rows the pages count: the server's, or the item and group rows.
+  const total = useDataTableSelector(context, (state) =>
+    state.options.dataMode === "server"
+      ? state.model.rowCount
+      : state.model.displayRowCount
+  )
+  const from = total === 0 ? 0 : (page - 1) * pageSize + 1
+  const to = Math.min(page * pageSize, total)
+  return (
+    <span
+      data-slot="data-table-row-range"
+      aria-live="polite"
+      aria-atomic="true"
+      className="text-muted-foreground tabular-nums"
+    >
+      {t("rowRange", {
+        from: format.format(from),
+        to: format.format(to),
+        total: format.format(total),
+      })}
+    </span>
+  )
+}
+
+/** Previous, the pages and next: `Pagination`'s parts, as buttons. */
+function PageButtons({ context }: { context: DataTableContextValue<unknown> }) {
   const t = useTranslations("dataTable")
   const format = useNumberFormat()
   const page = useDataTableSelector(context, (state) => state.model.page)
@@ -114,118 +197,82 @@ function DataTablePageInfo({
     context,
     (state) => state.model.pageCount
   )
-  if (!on) return null
-  return (
-    <span
-      data-slot="data-table-page-info"
-      aria-live="polite"
-      aria-atomic="true"
-      className={cn("text-sm tabular-nums", className)}
-      {...props}
-    >
-      {t("pageInfo", {
-        page: format.format(page),
-        pageCount: format.format(pageCount),
-      })}
-    </span>
-  )
-}
-
-function PageButton({
-  context,
-  to,
-  reason,
-  disabled,
-  label,
-  children,
-}: {
-  context: DataTableContextValue<unknown>
-  to: () => number
-  reason: "first" | "previous" | "next" | "last"
-  disabled: boolean
-  label: string
-  children: React.ReactNode
-}) {
-  return (
-    <Button
-      variant="outline"
-      size="icon-sm"
-      aria-label={label}
-      // Focus stays on the button that reached the first or last page.
-      focusableWhenDisabled
-      disabled={disabled}
-      onClick={(event: React.MouseEvent) =>
-        context.actions.setPage(to(), reason, event.nativeEvent)
-      }
-    >
-      {children}
-    </Button>
-  )
-}
-
-/** First, previous, next and last page. */
-function DataTablePageButtons({
-  className,
-  ...props
-}: React.ComponentProps<"div">) {
-  const { context, on } = usePagination("DataTablePageButtons")
-  const t = useTranslations("dataTable")
-  const page = useDataTableSelector(context, (state) => state.model.page)
-  const pageCount = useDataTableSelector(
-    context,
-    (state) => state.model.pageCount
-  )
-  if (!on) return null
-  const first = page <= 1
-  const last = page >= pageCount
   // Read when pressed: the page a click lands on is the current one's neighbour.
-  const current = () => context.store.get().model
+  const current = () => context.store.get().model.page
   return (
-    <div
-      role="group"
+    <Pagination
       aria-label={t("pagination")}
-      data-slot="data-table-page-buttons"
-      className={cn("flex items-center gap-1", className)}
-      {...props}
+      className="mx-0 w-auto justify-end"
     >
-      <PageButton
-        context={context}
-        to={() => 1}
-        reason="first"
-        disabled={first}
-        label={t("firstPage")}
-      >
-        <ChevronsLeftIcon className="rtl:rotate-180" />
-      </PageButton>
-      <PageButton
-        context={context}
-        to={() => current().page - 1}
-        reason="previous"
-        disabled={first}
-        label={t("previousPage")}
-      >
-        <ChevronLeftIcon className="rtl:rotate-180" />
-      </PageButton>
-      <PageButton
-        context={context}
-        to={() => current().page + 1}
-        reason="next"
-        disabled={last}
-        label={t("nextPage")}
-      >
-        <ChevronRightIcon className="rtl:rotate-180" />
-      </PageButton>
-      <PageButton
-        context={context}
-        to={() => current().pageCount}
-        reason="last"
-        disabled={last}
-        label={t("lastPage")}
-      >
-        <ChevronsRightIcon className="rtl:rotate-180" />
-      </PageButton>
-    </div>
+      <PaginationContent>
+        <PaginationItem>
+          <Button
+            variant="ghost"
+            className="ps-2!"
+            aria-label={t("previousPage")}
+            // Focus stays on the button that reached the first page.
+            focusableWhenDisabled
+            disabled={page <= 1}
+            onClick={(event: React.MouseEvent) =>
+              context.actions.setPage(
+                current() - 1,
+                "previous",
+                event.nativeEvent
+              )
+            }
+          >
+            <ChevronLeftIcon
+              data-icon="inline-start"
+              className="rtl:rotate-180"
+            />
+            <span className="hidden sm:block">{t("previous")}</span>
+          </Button>
+        </PaginationItem>
+        {pagesToShow(page, pageCount).map((to, index) =>
+          to === null ? (
+            <PaginationItem key={`ellipsis-${index}`}>
+              <PaginationEllipsis />
+            </PaginationItem>
+          ) : (
+            <PaginationItem key={to}>
+              <Button
+                variant={to === page ? "outline" : "ghost"}
+                size="icon"
+                aria-current={to === page ? "page" : undefined}
+                aria-label={t("goToPage", { page: format.format(to) })}
+                className="tabular-nums"
+                onClick={(event: React.MouseEvent) =>
+                  context.actions.setPage(to, "page", event.nativeEvent)
+                }
+              >
+                {format.format(to)}
+              </Button>
+            </PaginationItem>
+          )
+        )}
+        <PaginationItem>
+          <Button
+            variant="ghost"
+            className="pe-2!"
+            aria-label={t("nextPage")}
+            // Focus stays on the button that reached the last page.
+            focusableWhenDisabled
+            disabled={page >= pageCount}
+            onClick={(event: React.MouseEvent) =>
+              context.actions.setPage(current() + 1, "next", event.nativeEvent)
+            }
+          >
+            <span className="hidden sm:block">{t("next")}</span>
+            <ChevronRightIcon
+              data-icon="inline-end"
+              className="rtl:rotate-180"
+            />
+          </Button>
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
   )
 }
 
-export { DataTablePageButtons, DataTablePageInfo, DataTablePageSize }
+export { DataTablePagination }
+export type { DataTablePaginationProps }

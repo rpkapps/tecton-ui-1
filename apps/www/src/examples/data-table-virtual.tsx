@@ -3,9 +3,8 @@
 import {
   createColumns,
   DataTable,
+  DataTableActionBar,
   DataTableContent,
-  DataTableFooter,
-  DataTableSelectionCount,
 } from "@tecton/react/tecton/data-table"
 
 type Well = {
@@ -79,10 +78,8 @@ export default function DataTableVirtual() {
       // A bounded height: the table scrolls in the space the footer leaves.
       className="h-96 w-full"
     >
+      <DataTableActionBar />
       <DataTableContent aria-label="Wells" virtualized />
-      <DataTableFooter>
-        <DataTableSelectionCount />
-      </DataTableFooter>
     </DataTable>
   )
 }

@@ -9,12 +9,15 @@
  * code is there, the part renders the popup controlled (`popupProps`),
  * placed by the button (`anchor`), focus going back to it as it closes.
  *
- * Pointing at or focusing the button asks for the code. A press made
- * before it is there (a click, Enter or Space, Down for a menu) only
- * records how the popup was asked for, and opens it once the code comes,
- * unless the user moved on meanwhile: pressed elsewhere, moved focus away
- * or pressed Escape. A pointer counts as a press only by its click: down
- * and up on the button. Nothing is replayed or synthesized.
+ * Pointing at, focusing or pressing the button asks for the code (on top
+ * of the parts' idle prefetch). A press opens the popup as the popup's own
+ * trigger would: a menu on the pointer's down, in the frame after it (as a
+ * Tecton `DropdownMenu`'s trigger, the click that follows ignored), a
+ * popover on the click; Enter or Space, and Down for a menu. A press made
+ * before the code is there only records how the popup was asked for, and
+ * opens it once the code comes, unless the user moved on meanwhile:
+ * pressed elsewhere, moved focus away or pressed Escape. Nothing is
+ * replayed or synthesized.
  *
  * Opened from the keyboard, a menu has its first item active; from a
  * pointer, the popup itself takes focus (as a loaded Tecton menu does).
@@ -80,6 +83,10 @@ function useLazyPopup<TName extends FeatureName>(
   const buttonId = ownId ?? `${generated}-button`
   const popupId = `${generated}-popup`
   const [open, setOpen] = React.useState(false)
+  // Opened by another button (a toolbar's "More", the part's own button in
+  // its menu): placed by it, focus going back to it.
+  const other = React.useRef<HTMLButtonElement | null>(null)
+  const [byOther, setByOther] = React.useState(false)
   // Rendered while open, and while it closes (its exit animation).
   const [mounted, setMounted] = React.useState(false)
   const [openedBy, setOpenedBy] = React.useState<OpenedBy | null>(null)
@@ -141,6 +148,13 @@ function useLazyPopup<TName extends FeatureName>(
     ask()
   }
 
+  // A menu opens on the pointer's down; the click that ends that press is
+  // not another press. The opening waits a frame, as a menu trigger's
+  // does, for the button to take focus first.
+  const pressedDown = React.useRef(false)
+  const frame = React.useRef(0)
+  React.useEffect(() => () => cancelAnimationFrame(frame.current), [])
+
   const buttonProps = {
     ref: anchor,
     id: buttonId,
@@ -151,9 +165,24 @@ function useLazyPopup<TName extends FeatureName>(
     "data-popup-open": open ? "" : undefined,
     onPointerEnter: ask,
     onFocus: ask,
+    onPointerDown: ask,
+    onMouseDown: (event: React.MouseEvent<HTMLElement>) => {
+      pressedDown.current = false
+      if (popup !== "menu" || event.button !== 0) return
+      pressedDown.current = true
+      cancelAnimationFrame(frame.current)
+      if (open || intent || !module) return press("pointer")
+      frame.current = requestAnimationFrame(() => press("pointer"))
+    },
     // A click with no pointer (`detail` 0) comes from Enter or Space.
-    onClick: (event: React.MouseEvent<HTMLElement>) =>
-      press(event.detail === 0 ? "keyboard" : "pointer"),
+    onClick: (event: React.MouseEvent<HTMLElement>) => {
+      const keyboard = event.detail === 0
+      if (!keyboard && pressedDown.current) {
+        pressedDown.current = false
+        return
+      }
+      press(keyboard ? "keyboard" : "pointer")
+    },
     onKeyDown: (event: React.KeyboardEvent<HTMLElement>) => {
       // A popover open while focus is back on its button (Shift+Tab from
       // its first control): Tab enters it again, Shift+Tab leaves both.
@@ -187,13 +216,14 @@ function useLazyPopup<TName extends FeatureName>(
     setOpen(false)
   }
 
+  const placedBy = byOther ? other : anchor
   const popupProps: LazyPopupProps = {
     open,
-    anchor,
+    anchor: placedBy,
     popupId,
     buttonId,
     openedBy,
-    finalFocus: () => (movedOn.current ? false : (anchor.current ?? true)),
+    finalFocus: () => (movedOn.current ? false : (placedBy.current ?? true)),
     tabOut,
     onOpenChange: (next, details) => {
       if (next) return
@@ -202,21 +232,33 @@ function useLazyPopup<TName extends FeatureName>(
       if (
         details.reason === "outside-press" &&
         target &&
-        anchor.current?.contains(target)
+        placedBy.current?.contains(target)
       )
         return
       if (details.reason === "focus-out") {
         // Focus on the button keeps the popup open, as on its own trigger
         // (Shift+Tab from a popover's first control, `usePopupTabbing`).
         const to = (details.event as FocusEvent | undefined)?.relatedTarget
-        if (to instanceof Node && anchor.current?.contains(to)) return
+        if (to instanceof Node && placedBy.current?.contains(to)) return
         movedOn.current = true
       }
       setOpen(false)
     },
     onOpenChangeComplete: (next) => {
-      if (!next) setMounted(false)
+      if (next) return
+      setMounted(false)
+      setByOther(false)
     },
+  }
+
+  /** Opens the popup by another button (see `other`). */
+  const openBy = (button: HTMLButtonElement, by: OpenedBy) => {
+    other.current = button
+    setByOther(true)
+    if (open) return
+    if (module) return show(by)
+    setIntent(by)
+    ask()
   }
 
   return {
@@ -228,6 +270,7 @@ function useLazyPopup<TName extends FeatureName>(
     open,
     close: () => setOpen(false),
     load: ask,
+    openBy,
   }
 }
 

@@ -226,6 +226,28 @@ const lastView = (onViewChange: ReturnType<typeof vi.fn>) =>
     { reason: string; cancel: () => void },
   ]
 
+describe("DataTable column groups", () => {
+  it("draws a divider at each group's edges through the header rows, and under the group's name", () => {
+    render(<Fields selectionMode="multiple" />)
+    const group = screen.getByRole("columnheader", { name: "Production" })
+    // Under the group's name, and at its start and its end (the start of
+    // the column after it), in both rows.
+    expect(group).toHaveClass("border-b", "border-s", "border-border")
+    expect(header("Oil")).toHaveClass("border-s")
+    expect(header("Gas")).not.toHaveClass("border-s")
+    expect(header("Water")).not.toHaveClass("border-s")
+    expect(header("Wells")).toHaveClass("border-s")
+    expect(header("Operator")).not.toHaveClass("border-s")
+    // The cell above "Wells", in no group: the end edge goes on through it.
+    const top = screen.getAllByRole("row")[0] as HTMLTableRowElement
+    const above = [...top.cells].at(-1)!
+    expect(above).toHaveClass("border-s")
+    expect(above).not.toHaveClass("border-b")
+    // The group row is as tall as its text.
+    expect(group).toHaveClass("h-8")
+  })
+})
+
 describe("DataTable column widths", () => {
   it("keeps the browser's layout while no column has a width", () => {
     render(<Fields />)
@@ -1063,6 +1085,11 @@ describe("DataTable column hiding rules", () => {
   })
 })
 
+/** The fade a pinned column draws at its inner edge (`cell.tsx`). */
+const START_FADE = "after:[animation-name:scroll-fade-reveal-s]"
+const END_FADE = "after:[animation-name:scroll-fade-reveal-e]"
+const FADE_START = `[class*="${START_FADE}"]`
+
 describe("DataTable column pinning", () => {
   it("pins a column from its header's menu, with its cells stuck to the start in their row's fill", async () => {
     const user = userEvent.setup()
@@ -1076,7 +1103,7 @@ describe("DataTable column pinning", () => {
         onViewChange={onViewChange}
       />
     )
-    expect(container()).not.toHaveClass("scroll-fade-x")
+    expect(document.querySelector(FADE_START)).toBeNull()
     await user.click(screen.getByRole("button", { name: "Wells options" }))
     expect(
       within(await screen.findByRole("menu"))
@@ -1127,8 +1154,13 @@ describe("DataTable column pinning", () => {
     expect(body.closest("tr")).toHaveClass(
       "bg-[var(--surface,var(--color-background))]"
     )
-    expect(container()).toHaveClass("scroll-fade-x")
-    expect(frame().style.getPropertyValue("--data-table-fade-to")).toBe("right")
+    // The columns scrolled under it fade at its inner edge, in each cell's
+    // own fill: the scroll fade's keyframes on the pinned cells, not a mask
+    // over the table.
+    expect(wells).toHaveClass(START_FADE, "after:bg-inherit")
+    expect(body).toHaveClass(START_FADE, "after:bg-inherit")
+    expect(checkbox).not.toHaveClass(START_FADE)
+    expect(container().className).not.toContain("scroll-fade")
   })
 
   it("pins to the end, the selection column scrolling, and mirrors right to left", () => {
@@ -1173,7 +1205,9 @@ describe("DataTable column pinning", () => {
       "140px",
       "160px",
     ])
-    expect(frame().style.getPropertyValue("--data-table-fade-to")).toBe("left")
+    // The first pinned at the end fades the columns under it, the next not.
+    expect(header("Field")).toHaveClass(END_FADE)
+    expect(header("Operator")).not.toHaveClass(END_FADE)
     // The group over the pinned columns' place is split from theirs.
     expect(
       screen.getByRole("columnheader", { name: "Production" })
@@ -1587,7 +1621,7 @@ describe("DataTable grid keys and cells not laid out", () => {
 })
 
 describe("DataTable around other tables and surfaces", () => {
-  it("keeps its container's fade from a plain table in one of its cells", () => {
+  it("keeps the pinned columns' fade from a plain table in one of its cells", () => {
     const nested = createColumns<Field>([
       { id: "name", header: "Field", width: 140 },
       {
@@ -1614,9 +1648,9 @@ describe("DataTable around other tables and surfaces", () => {
     const containers = document.querySelectorAll(
       '[data-slot="table-container"]'
     )
-    expect(containers[0]).toHaveClass("scroll-fade-x")
+    expect(containers[0].querySelector(FADE_START)).not.toBeNull()
     for (const inner of [...containers].slice(1))
-      expect(inner).not.toHaveClass("scroll-fade-x")
+      expect(inner.querySelector(FADE_START)).toBeNull()
   })
 
   it("sets --surface on Panel and the AppShell's surfaces", () => {

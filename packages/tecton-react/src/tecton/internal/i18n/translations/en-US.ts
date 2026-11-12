@@ -58,18 +58,22 @@ const enUS = {
     errorDescription: "Something went wrong while loading the data.",
     retry: "Retry",
     rowsPerPage: "Rows per page",
-    pageInfo: "Page {page} of {pageCount}",
     pagination: "Pagination",
-    firstPage: "First page",
+    // `DataTablePagination`: the rows of the page ({from}, {to} and {total}
+    // are formatted numbers), the short labels of its previous and next
+    // buttons, and the name of a page's button.
+    rowRange: "{from}–{to} of {total}",
+    previous: "Previous",
+    next: "Next",
+    goToPage: "Page {page}",
     previousPage: "Previous page",
     nextPage: "Next page",
-    lastPage: "Last page",
-    // The plural form follows the number of selected rows ({selected});
-    // {total} is the number of rows the view matches. Both are formatted.
-    selectedCount: { other: "{selected} of {total} selected" },
     // The plural form follows the number of rows to select ({total}).
     selectAllMatching: { other: "Select all {total}" },
     clearSelection: "Clear selection",
+    // `DataTableActionBar`: its name, and its actions' toolbar.
+    selectionBar: "Selected rows",
+    selectionActions: "Actions for the selected rows",
     // Read after a load: the plural form follows the number of rows ({total}).
     rowsLoaded: { one: "Showing {total} row", other: "Showing {total} rows" },
     // In a sort button, when the table sorts by several columns.
@@ -87,6 +91,8 @@ const enUS = {
     // The columns menu (`DataTableColumnsMenu`): its button, its sections
     // and its last item.
     columns: "Columns",
+    // The name of `DataTableToolbar`.
+    toolbar: "Table tools",
     showColumns: "Show columns",
     pinColumns: "Pin columns",
     // Where a column is pinned: the choices for it in the columns menu

@@ -51,6 +51,7 @@ import {
   type DataTableView,
   type EngineColumn,
 } from "./engine/index"
+import { DataTableToolbarItem } from "./toolbar"
 
 type DataTableColumnsMenuProps = Omit<
   React.ComponentProps<typeof Button>,
@@ -125,6 +126,11 @@ function DataTableColumnsMenu({
     context,
     (state) => state.options.pinnableColumns
   )
+  // Opened from the toolbar's menu (`DataTableToolbarItem`): placed by its
+  // "More" button, focus going back to it.
+  const [open, setOpen] = React.useState(false)
+  const more = React.useRef<HTMLButtonElement | null>(null)
+  const [byMore, setByMore] = React.useState(false)
   const off = !hideable && !pinnable
   useFeatureWarning(
     context,
@@ -255,48 +261,71 @@ function DataTableColumnsMenu({
     })
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        data-slot="data-table-columns-menu"
-        render={<Button variant={variant} {...props} />}
+    <DataTableToolbarItem
+      value="data-table-columns-menu"
+      label={t("columns")}
+      icon={<Columns3Icon aria-hidden />}
+      open={(button) => {
+        more.current = button
+        setByMore(true)
+        setOpen(true)
+      }}
+    >
+      <DropdownMenu
+        open={open}
+        onOpenChange={setOpen}
+        onOpenChangeComplete={(next) => {
+          if (!next) setByMore(false)
+        }}
       >
-        {children ?? (
-          <>
-            <Columns3Icon aria-hidden />
-            {t("columns")}
-          </>
-        )}
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-auto min-w-52">
-        {hideable && (
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>{t("showColumns")}</DropdownMenuLabel>
-            {showItems(entries, 0)}
-          </DropdownMenuGroup>
-        )}
-        {hideable && pinnable && <DropdownMenuSeparator />}
-        {pinnable && (
-          <DropdownMenuGroup>
-            <DropdownMenuLabel>{t("pinColumns")}</DropdownMenuLabel>
-            {pinItems(entries, 0)}
-          </DropdownMenuGroup>
-        )}
-        <DropdownMenuSeparator />
-        <DropdownMenuItem
-          // Off while the columns are the default view's.
-          disabled={!changed}
-          onClick={(event) =>
-            actions.updateView(
-              (current) => resetColumns(current, context.store.get().defaults),
-              "reset",
-              event.nativeEvent
-            )
-          }
+        <DropdownMenuTrigger
+          data-slot="data-table-columns-menu"
+          render={<Button variant={variant} {...props} />}
         >
-          {t("resetColumns")}
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+          {children ?? (
+            <>
+              <Columns3Icon aria-hidden />
+              {t("columns")}
+            </>
+          )}
+        </DropdownMenuTrigger>
+        <DropdownMenuContent
+          align="end"
+          className="w-auto min-w-52"
+          anchor={byMore ? more : undefined}
+          finalFocus={byMore ? more : undefined}
+        >
+          {hideable && (
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>{t("showColumns")}</DropdownMenuLabel>
+              {showItems(entries, 0)}
+            </DropdownMenuGroup>
+          )}
+          {hideable && pinnable && <DropdownMenuSeparator />}
+          {pinnable && (
+            <DropdownMenuGroup>
+              <DropdownMenuLabel>{t("pinColumns")}</DropdownMenuLabel>
+              {pinItems(entries, 0)}
+            </DropdownMenuGroup>
+          )}
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            // Off while the columns are the default view's.
+            disabled={!changed}
+            onClick={(event) =>
+              actions.updateView(
+                (current) =>
+                  resetColumns(current, context.store.get().defaults),
+                "reset",
+                event.nativeEvent
+              )
+            }
+          >
+            {t("resetColumns")}
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </DataTableToolbarItem>
   )
 }
 

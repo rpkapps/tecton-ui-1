@@ -5,9 +5,7 @@ import {
   DataTable,
   DataTableContent,
   DataTableFooter,
-  DataTablePageButtons,
-  DataTablePageInfo,
-  DataTablePageSize,
+  DataTablePagination,
 } from "@tecton/react/tecton/data-table"
 
 type Run = {
@@ -42,22 +40,19 @@ const columns = createColumns<Run>([
   },
 ])
 
-export default function DataTablePagination() {
+export default function DataTablePaginationDemo() {
   return (
     <DataTable
       items={runs}
       columns={columns}
       pagination
       defaultPageSize={5}
-      pageSizes={[5, 10, 25]}
       size="sm"
       className="w-full"
     >
       <DataTableContent aria-label="Logging runs" />
       <DataTableFooter>
-        <DataTablePageSize />
-        <DataTablePageInfo />
-        <DataTablePageButtons />
+        <DataTablePagination pageSizes={[5, 10, 25]} />
       </DataTableFooter>
     </DataTable>
   )

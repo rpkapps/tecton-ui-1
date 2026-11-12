@@ -26,6 +26,7 @@ import { cn } from "cn"
 import { CheckIcon, ChevronRightIcon } from "lucide-react"
 
 import { Badge } from "@tecton/react/components/badge"
+import { Button } from "@tecton/react/components/button"
 import { Spinner } from "@tecton/react/components/spinner"
 import { TableCell, TableHead } from "@tecton/react/components/table"
 import { Link } from "@tecton/react/tecton/link"
@@ -147,8 +148,12 @@ type GroupCells = {
   reach: number
 }
 
-/** Where a pinned column's cells stick: the edge, and how far from it (a CSS length). */
-type CellPin = { side: "start" | "end"; offset: string }
+/**
+ * Where a pinned column's cells stick: the edge, and how far from it (a
+ * CSS length); `edge` for the column next to the scrolled ones (the last
+ * pinned at the start, the first at the end), which draws their fade.
+ */
+type CellPin = { side: "start" | "end"; offset: string; edge?: boolean }
 
 function pinStyle(pin: CellPin): React.CSSProperties {
   return pin.side === "start"
@@ -170,6 +175,44 @@ const pinnedCellClassName = cn(
   "[tr:focus-visible>&:last-child]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring),inset_-2px_0_0_var(--color-ring)]",
   "rtl:[tr:focus-visible>&:last-child]:shadow-[inset_0_2px_0_var(--color-ring),inset_0_-2px_0_var(--color-ring),inset_2px_0_0_var(--color-ring)]"
 )
+
+/**
+ * The fade of the columns scrolled under the pinned ones, at the inner
+ * edge of the pinned column next to them: a short band past that edge in
+ * the cell's own fill (the header's, the row's stripe, hover or
+ * selection), so the scrolled content dissolves into the row it is in. It
+ * is Tecton's scroll fade (`scroll-fade-x`): its reveal keyframes, run by
+ * the table's scroll position, so the start's fade shows once the table
+ * is scrolled from its start and the end's while there is more to scroll
+ * to, its `--scroll-fade-size` and `--scroll-fade-reveal`. The cell clips
+ * its content but for the band (a length: Chrome computes a `calc()` in
+ * `overflow-clip-margin` as 0). Without scroll-driven animations there is
+ * no fade. RTL mirrors it.
+ */
+const PIN_FADE = cn(
+  "overflow-clip [overflow-clip-margin:0.75rem]",
+  "after:pointer-events-none after:absolute after:inset-y-0 after:bg-inherit after:content-[''] after:[--scroll-fade-size:0.75rem]",
+  "after:[animation-duration:1ms] after:[animation-fill-mode:both] after:[animation-timeline:scroll(nearest_inline)] after:[animation-timing-function:ease-in-out]",
+  "not-supports-[animation-timeline:scroll()]:after:hidden"
+)
+
+const PIN_FADE_SIDE = {
+  start: cn(
+    PIN_FADE,
+    "after:start-full after:w-(--scroll-fade-s) after:[animation-name:scroll-fade-reveal-s] after:[animation-range:0_var(--scroll-fade-reveal,--spacing(24))]",
+    "after:[mask-image:linear-gradient(to_right,#000,transparent)] rtl:after:[mask-image:linear-gradient(to_left,#000,transparent)]"
+  ),
+  end: cn(
+    PIN_FADE,
+    "after:end-full after:w-(--scroll-fade-e) after:[animation-name:scroll-fade-reveal-e] after:[animation-range:calc(100%-var(--scroll-fade-reveal,--spacing(24)))_100%]",
+    "after:[mask-image:linear-gradient(to_left,#000,transparent)] rtl:after:[mask-image:linear-gradient(to_right,#000,transparent)]"
+  ),
+} as const
+
+/** The fade a pinned cell draws, when it is the inner edge's. */
+function pinFadeClassName(pin: CellPin | undefined) {
+  return pin?.edge ? PIN_FADE_SIDE[pin.side] : undefined
+}
 
 /** A pinned header cell: over the other header cells and their resizers. */
 const pinnedHeadClassName = "sticky z-20"
@@ -340,7 +383,8 @@ function bodyClassName<T>(
     shared.fixed && "overflow-hidden text-ellipsis",
     shared.pinned && cellBorderClassName,
     shared.wrap && column.definition.wrap && "whitespace-normal",
-    pin && pinnedCellClassName
+    pin && pinnedCellClassName,
+    pinFadeClassName(pin)
   )
 }
 
@@ -423,12 +467,15 @@ function TreeIndent<T>({
       ) : row.expandable ? (
         // For the pointer: the row says whether it is expanded, and the
         // keyboard opens it with Right / Left.
-        <button
-          type="button"
+        <Button
+          variant="ghost"
+          size="icon-xs"
           tabIndex={-1}
           aria-hidden
           data-slot="data-table-chevron"
           // Not focused by a press: its row is, and becomes the tab stop.
+          // Nor does a press select text: each click of a quick series
+          // opens or closes the row.
           onMouseDown={(event) => event.preventDefault()}
           onClick={(event) => {
             event.currentTarget.closest("tr")?.focus({ preventScroll: true })
@@ -439,7 +486,6 @@ function TreeIndent<T>({
               event.nativeEvent
             )
           }}
-          className="flex size-6 shrink-0 items-center justify-center rounded-sm text-muted-foreground outline-none hover:bg-accent hover:text-foreground"
         >
           <ChevronRightIcon
             className={cn(
@@ -447,7 +493,7 @@ function TreeIndent<T>({
               row.expanded && "rotate-90 rtl:-rotate-90"
             )}
           />
-        </button>
+        </Button>
       ) : spacer ? (
         <span aria-hidden className="size-6 shrink-0" />
       ) : null}
@@ -526,6 +572,7 @@ export {
   pinnedCellClassName,
   pinnedHeadClassName,
   pinnedRowClassName,
+  pinFadeClassName,
   pinStyle,
   renderCell,
   rowText,

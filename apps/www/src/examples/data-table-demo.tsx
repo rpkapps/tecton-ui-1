@@ -9,12 +9,10 @@ import {
   DataTableActiveFilters,
   DataTableContent,
   DataTableFilter,
+  DataTableActionBar,
   DataTableFooter,
-  DataTablePageButtons,
-  DataTablePageInfo,
-  DataTablePageSize,
+  DataTablePagination,
   DataTableSearch,
-  DataTableSelectionCount,
   DataTableToolbar,
   useDataTable,
 } from "@tecton/react/tecton/data-table"
@@ -86,7 +84,7 @@ const columns = createColumns<Well>([
   },
 ])
 
-/** A custom part: acts on the selected rows, then clears the selection. */
+/** An action on the selected rows, then clears the selection. */
 function ShutInButton({
   onShutIn,
 }: {
@@ -97,8 +95,6 @@ function ShutInButton({
     <Button
       variant="outline"
       size="sm"
-      className="ms-auto"
-      disabled={value.length === 0}
       onClick={() => {
         onShutIn(value)
         clearSelection()
@@ -127,6 +123,9 @@ export default function DataTableDemo() {
       <DataTableToolbar>
         <DataTableSearch />
         <DataTableFilter column="status" />
+      </DataTableToolbar>
+      <DataTableActiveFilters />
+      <DataTableActionBar>
         <ShutInButton
           onShutIn={(ids) =>
             setWells((current) =>
@@ -136,14 +135,10 @@ export default function DataTableDemo() {
             )
           }
         />
-      </DataTableToolbar>
-      <DataTableActiveFilters />
+      </DataTableActionBar>
       <DataTableContent aria-labelledby="data-table-demo-title" />
       <DataTableFooter>
-        <DataTableSelectionCount />
-        <DataTablePageSize />
-        <DataTablePageInfo />
-        <DataTablePageButtons />
+        <DataTablePagination pageSizes={[10, 25, 50]} />
       </DataTableFooter>
     </DataTable>
   )

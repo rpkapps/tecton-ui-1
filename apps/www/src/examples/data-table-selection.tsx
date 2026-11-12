@@ -11,9 +11,8 @@ import {
 import {
   createColumns,
   DataTable,
+  DataTableActionBar,
   DataTableContent,
-  DataTableFooter,
-  DataTableSelectionCount,
   DataTableToolbar,
   type DataTableSelectionMode,
 } from "@tecton/react/tecton/data-table"
@@ -133,12 +132,8 @@ export default function DataTableSelection() {
             </FieldLabel>
           </Field>
         </DataTableToolbar>
+        {mode !== "none" && <DataTableActionBar />}
         <DataTableContent aria-label="Wells" />
-        {mode !== "none" && (
-          <DataTableFooter>
-            <DataTableSelectionCount />
-          </DataTableFooter>
-        )}
       </DataTable>
       <p className="text-sm text-muted-foreground">
         Selected: {value.length > 0 ? value.join(", ") : "none"}. Opened:{" "}

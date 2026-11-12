@@ -53,10 +53,10 @@ type DataTableExpandedChangeReason = "item-press" | "keyboard" | "none"
 
 /** Why the page changed. */
 type DataTablePageChangeReason =
-  | "first"
   | "previous"
   | "next"
-  | "last"
+  /** A page's own button. */
+  | "page"
   /** The view's search, filters, sorting or grouping changed: back to page 1. */
   | "reset"
   /** The page size changed: the page that holds the first row shown. */

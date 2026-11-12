@@ -14,9 +14,8 @@ import {
 import {
   createColumns,
   DataTable,
+  DataTableActionBar,
   DataTableContent,
-  DataTableFooter,
-  DataTableSelectionCount,
   DataTableToolbar,
   useDataTable,
   type DataTableSort,
@@ -100,22 +99,14 @@ function SortSelect() {
 
 /** The selected wells' total rate, from the table's rows. */
 function SelectedRate() {
-  const { value, rows, clearSelection } = useDataTable<Well>()
+  const { value, rows } = useDataTable<Well>()
   const { locale } = useLocale()
   const selected = new Set(value)
   const total = rows.all
     .filter((well) => selected.has(well.id))
     .reduce((sum, well) => sum + well.rate, 0)
-  if (value.length === 0) return null
   return (
-    <div className="flex items-center gap-2">
-      <span className="tabular-nums">
-        {total.toLocaleString(locale)} Sm³/d selected
-      </span>
-      <Button variant="ghost" size="xs" onClick={clearSelection}>
-        Clear
-      </Button>
-    </div>
+    <span className="tabular-nums">{total.toLocaleString(locale)} Sm³/d</span>
   )
 }
 
@@ -130,11 +121,10 @@ export default function DataTableCustomPart() {
       <DataTableToolbar>
         <SortSelect />
       </DataTableToolbar>
-      <DataTableContent aria-label="Producing wells" />
-      <DataTableFooter>
-        <DataTableSelectionCount />
+      <DataTableActionBar>
         <SelectedRate />
-      </DataTableFooter>
+      </DataTableActionBar>
+      <DataTableContent aria-label="Producing wells" />
     </DataTable>
   )
 }

@@ -43,6 +43,7 @@ import { useTranslations, type Translator } from "../i18n/translations"
 import { announce } from "../primitives/live-announcer"
 import {
   columnClassName,
+  pinFadeClassName,
   pinnedHeadClassName,
   pinStyle,
   type CellPin,
@@ -127,6 +128,27 @@ const MENU_ROOM =
  */
 const MENU_BUTTON_BESIDE = cn("ms-auto", MENU_SHOWN)
 
+/**
+ * The divider at a column group's edges, through every header row below
+ * the group's own, and under the group's cell: the table's border token.
+ */
+const GROUP_EDGE = "border-s border-border"
+const GROUP_UNDER = "border-b border-border"
+
+/**
+ * A row of group headers above the columns' own: as tall as its text (the
+ * small table's rows are that already), so the columns of no group have
+ * no tall empty band above their names.
+ */
+const GROUP_ROW = "h-8"
+
+/**
+ * A group's name keeps to the start of the part of its cell in view, after
+ * the pinned columns, as the table scrolls sideways.
+ */
+const GROUP_LABEL =
+  "sticky start-[calc(var(--data-table-pinned-start,0px)+--spacing(4))] w-fit max-w-full"
+
 /** A header cell that is its own drag handle. */
 const DRAGGABLE =
   "cursor-grab select-none data-dragging:cursor-grabbing data-dragging:opacity-50"
@@ -176,10 +198,13 @@ function ColumnMenu<T>({
         size="icon-xs"
         data-slot="data-table-column-menu"
         aria-label={t("columnMenu", { columnName: props.column.header })}
-        className={cn("text-muted-foreground hover:text-foreground", className)}
+        className={className}
         {...lazy.buttonProps}
         // The cell's own press drags the column; this one opens the menu.
-        onPointerDown={(event) => event.stopPropagation()}
+        onPointerDown={(event) => {
+          event.stopPropagation()
+          lazy.buttonProps.onPointerDown()
+        }}
       >
         <EllipsisVerticalIcon />
       </Button>
@@ -283,10 +308,6 @@ type HeaderShared<T> = {
   movable: ReadonlySet<string>
 }
 
-/** The look of a description's info button, before and after its popover loads. */
-const DESCRIPTION_BUTTON =
-  "inline-flex size-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground outline-none hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring data-popup-open:text-foreground"
-
 /**
  * A column's or group's description: an info button that shows it in a
  * popover when pressed (a pointer, a finger or the keyboard). Screen
@@ -306,17 +327,20 @@ function ColumnDescription({
   const Description = lazy.module?.DataTableColumnDescription
   return (
     <>
-      <button
-        type="button"
+      <Button
+        variant="ghost"
+        size="icon-xs"
         data-slot="data-table-column-description"
         aria-label={t("columnDescription", { columnName: name })}
-        className={DESCRIPTION_BUTTON}
         {...lazy.buttonProps}
         // The cell's own press drags the column; this one shows the text.
-        onPointerDown={(event) => event.stopPropagation()}
+        onPointerDown={(event) => {
+          event.stopPropagation()
+          lazy.buttonProps.onPointerDown()
+        }}
       >
-        <InfoIcon aria-hidden className="size-3.5" />
-      </button>
+        <InfoIcon aria-hidden />
+      </Button>
       {lazy.mounted && Description && (
         <Description description={description} popup={lazy.popupProps} />
       )}
@@ -397,11 +421,14 @@ function useResizerValue(
 function DataTableColumnHeader<T>({
   column,
   index,
+  edge,
   shared,
 }: {
   column: EngineColumn<T>
   /** The column's place among the shown columns. */
   index: number
+  /** A column group starts or ends at the column's start edge. */
+  edge: boolean
   shared: HeaderShared<T>
 }) {
   const t = useTranslations("dataTable")
@@ -582,7 +609,9 @@ function DataTableColumnHeader<T>({
         "group/head relative",
         columnClassName(column),
         draggable && DRAGGABLE,
-        pin && pinnedHeadClassName
+        pin && pinnedHeadClassName,
+        pinFadeClassName(pin),
+        edge && GROUP_EDGE
       )}
       style={pin && pinStyle(pin)}
     >
@@ -731,10 +760,13 @@ function DataTableColumnHeader<T>({
 function DataTableGroupHeader<T>({
   cell,
   pin,
+  edge,
   shared,
 }: {
   cell: HeaderCell
   pin: CellPin | undefined
+  /** A column group starts or ends at the cell's start edge. */
+  edge: boolean
   shared: HeaderShared<T>
 }) {
   const { byId, groups } = getColumnModel(shared.columns)
@@ -754,12 +786,19 @@ function DataTableGroupHeader<T>({
       aria-label={group?.header}
       aria-describedby={ids.describedBy}
       data-dragging={dragging ? "" : undefined}
-      className={cn(draggable && DRAGGABLE, pin && pinnedHeadClassName)}
+      className={cn(
+        GROUP_ROW,
+        draggable && DRAGGABLE,
+        pin && pinnedHeadClassName,
+        pinFadeClassName(pin),
+        edge && GROUP_EDGE,
+        group && GROUP_UNDER
+      )}
       style={pin && pinStyle(pin)}
     >
       {group ? (
         <>
-          <div className="flex min-w-0 items-center gap-0.5">
+          <div className={cn("flex min-w-0 items-center gap-0.5", GROUP_LABEL)}>
             <span className="min-w-0 truncate">{group.header}</span>
             {group.description && (
               <ColumnDescription
@@ -797,7 +836,10 @@ function cellPin<T>(
   const first = shared.pins[start]
   const last = shared.pins[start + cell.colSpan - 1]
   if (!first || !last || first.side !== last.side) return undefined
-  return first.side === "start" ? first : last
+  // At the inner edge when the column there is.
+  return first.side === "start"
+    ? { ...first, edge: last.edge }
+    : { ...last, edge: first.edge }
 }
 
 function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
@@ -807,6 +849,22 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
   const last = layout.headerRows.length - 1
   const selection = options.selectionMode !== "none"
   const index = new Map(layout.columns.map((column, at) => [column.id, at]))
+  // Where a column group starts or ends: a divider at that edge, in every
+  // row (not at the table's edges, which the frame draws; at its first
+  // column, after the selection column).
+  const edges = new Set<number>()
+  for (const row of layout.headerRows) {
+    let at = 0
+    for (const cell of row.cells) {
+      if (cell.kind === "group" && cell.id !== null) {
+        edges.add(at)
+        edges.add(at + cell.colSpan)
+      }
+      at += cell.colSpan
+    }
+  }
+  edges.delete(layout.columns.length)
+  if (!selection) edges.delete(0)
   // Cells with nothing to show are still named for the grid's keyboard,
   // which stops on every header cell.
   const selectColumn = <span className="sr-only">{t("select")}</span>
@@ -824,7 +882,7 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
             {selection && (
               <TableHead
                 className={cn(
-                  row.level === last && "w-px",
+                  row.level === last ? "w-px" : GROUP_ROW,
                   shared.selectionPin && pinnedHeadClassName
                 )}
                 style={shared.selectionPin && pinStyle(shared.selectionPin)}
@@ -848,6 +906,7 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
                     key={column.id}
                     column={column}
                     index={index.get(column.id) ?? at}
+                    edge={edges.has(at)}
                     shared={shared}
                   />
                 )
@@ -860,6 +919,7 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
                   }
                   cell={cell}
                   pin={cellPin(cell, at, shared)}
+                  edge={edges.has(at)}
                   shared={shared}
                 />
               )

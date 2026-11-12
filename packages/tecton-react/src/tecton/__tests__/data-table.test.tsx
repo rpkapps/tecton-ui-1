@@ -16,8 +16,7 @@ import {
   DataTable,
   DataTableContent,
   DataTableFooter,
-  DataTablePageButtons,
-  DataTablePageInfo,
+  DataTablePagination,
   DataTableToolbar,
   useDataTable,
   type DataTableProps,
@@ -492,6 +491,15 @@ describe("DataTable states", () => {
     const onRetry = vi.fn()
     const { rerender } = render(<Wells error onRetry={onRetry} />)
     expect(screen.getByText("The rows could not be loaded")).toBeInTheDocument()
+    // Its icon on the destructive fill.
+    expect(
+      document.querySelector(
+        '[data-slot="data-table-state"] [data-slot="empty-icon"]'
+      )
+    ).toHaveClass(
+      "bg-destructive-surface",
+      "text-destructive-surface-foreground"
+    )
     expect(
       screen.getByText("Something went wrong while loading the data.")
     ).toBeInTheDocument()
@@ -743,7 +751,7 @@ describe("DataTable right to left", () => {
       <TectonProvider direction="rtl">
         <Wells pagination>
           <DataTableFooter>
-            <DataTablePageButtons />
+            <DataTablePagination />
           </DataTableFooter>
         </Wells>
       </TectonProvider>
@@ -755,12 +763,7 @@ describe("DataTable right to left", () => {
     expect(focused()).toBe(cell("Gullfaks"))
     press("ArrowRight")
     expect(focused()).toBe(cell("Well 01"))
-    for (const name of [
-      "First page",
-      "Previous page",
-      "Next page",
-      "Last page",
-    ])
+    for (const name of ["Previous page", "Next page"])
       expect(
         screen.getByRole("button", { name }).querySelector("svg")
       ).toHaveClass("rtl:rotate-180")
@@ -810,18 +813,18 @@ describe("DataTable development warnings", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {})
     const { rerender } = render(
       <Wells>
-        <DataTablePageInfo data-testid="info" />
+        <DataTablePagination data-testid="info" />
       </Wells>
     )
     rerender(
       <Wells>
-        <DataTablePageInfo data-testid="info" />
+        <DataTablePagination data-testid="info" />
       </Wells>
     )
     expect(screen.queryByTestId("info")).toBeNull()
     expect(warn).toHaveBeenCalledTimes(1)
     expect(String(warn.mock.calls[0][0])).toContain(
-      "DataTablePageInfo renders nothing: pagination is off"
+      "DataTablePagination renders nothing: pagination is off"
     )
   })
 

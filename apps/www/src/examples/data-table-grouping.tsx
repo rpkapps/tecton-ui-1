@@ -3,10 +3,9 @@
 import {
   createColumns,
   DataTable,
+  DataTableActionBar,
   DataTableContent,
-  DataTableFooter,
   DataTableGroupBy,
-  DataTableSelectionCount,
   DataTableToolbar,
 } from "@tecton/react/tecton/data-table"
 
@@ -101,10 +100,8 @@ export default function DataTableGrouping() {
       <DataTableToolbar>
         <DataTableGroupBy />
       </DataTableToolbar>
+      <DataTableActionBar />
       <DataTableContent aria-label="Daily allocation" totals />
-      <DataTableFooter>
-        <DataTableSelectionCount />
-      </DataTableFooter>
     </DataTable>
   )
 }
