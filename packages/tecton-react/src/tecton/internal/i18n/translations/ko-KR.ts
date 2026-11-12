@@ -65,6 +65,8 @@ export default defineTranslations({
     pageOf: "{page}/{pageCount}페이지",
     previousPage: "이전 페이지",
     nextPage: "다음 페이지",
+    previousPages: { other: "이전 {pages}페이지" },
+    nextPages: { other: "다음 {pages}페이지" },
     selectAllMatching: {
       other: "{total}개 행 모두 선택",
     },

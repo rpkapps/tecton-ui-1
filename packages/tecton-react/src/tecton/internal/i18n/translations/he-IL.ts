@@ -65,6 +65,16 @@ export default defineTranslations({
     pageOf: "עמוד {page} מתוך {pageCount}",
     previousPage: "העמוד הקודם",
     nextPage: "העמוד הבא",
+    previousPages: {
+      one: "העמוד הקודם",
+      two: "{pages} העמודים הקודמים",
+      other: "{pages} העמודים הקודמים",
+    },
+    nextPages: {
+      one: "העמוד הבא",
+      two: "{pages} העמודים הבאים",
+      other: "{pages} העמודים הבאים",
+    },
     selectAllMatching: {
       one: "בחר {total} שורה",
       two: "בחר את שתי השורות ({total})",

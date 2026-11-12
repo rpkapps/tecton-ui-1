@@ -65,6 +65,8 @@ export default defineTranslations({
     pageOf: "第 {page} 頁，共 {pageCount} 頁",
     previousPage: "上一頁",
     nextPage: "下一頁",
+    previousPages: { other: "向前 {pages} 頁" },
+    nextPages: { other: "向後 {pages} 頁" },
     selectAllMatching: {
       other: "選取全部 {total} 列",
     },

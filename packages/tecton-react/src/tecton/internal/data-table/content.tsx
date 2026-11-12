@@ -420,6 +420,38 @@ function useGroupLabelClip(
 /** Read by the group rows' label (`row.tsx`). */
 const CLIPPED = "data-group-label-clipped"
 
+/**
+ * On pages, the last page, short of rows, keeps the height of the full
+ * pages before it (the frame's `min-height`, as last measured on one, for
+ * the same page size), so the footer under it, and the pagination there,
+ * stay where they are as the pages change. Set on the frame before paint.
+ */
+function useFullPageHeight(
+  frame: React.RefObject<HTMLDivElement | null>,
+  on: boolean,
+  {
+    page,
+    pageCount,
+    pageSize,
+  }: Record<"page" | "pageCount" | "pageSize", number>
+) {
+  const full = React.useRef<{ pageSize: number; height: number } | null>(null)
+  const set = React.useRef(false)
+  React.useLayoutEffect(() => {
+    const element = frame.current
+    if (!element) return
+    if (set.current) element.style.minHeight = ""
+    set.current = false
+    if (!on || pageCount < 2) return
+    if (page < pageCount)
+      full.current = { pageSize, height: element.offsetHeight }
+    else if (full.current?.pageSize === pageSize) {
+      element.style.minHeight = `${full.current.height}px`
+      set.current = true
+    }
+  })
+}
+
 /** The header's height while `active`, for the bar under it. */
 function useHeaderHeight(
   frame: React.RefObject<HTMLDivElement | null>,
@@ -1015,6 +1047,7 @@ function DataTableContentImpl({
     [actions]
   )
   const headerHeight = useHeaderHeight(frame, refreshing)
+  useFullPageHeight(frame, options.pagination && !virtualized, model)
   const results = useResults({
     matchKey,
     server,

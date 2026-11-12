@@ -55,7 +55,10 @@ type DataTableExpandedChangeReason = "item-press" | "keyboard" | "none"
 type DataTablePageChangeReason =
   | "previous"
   | "next"
-  /** A page's own button. */
+  /**
+   * A page's own button, or an ellipsis: five pages back or forward (to
+   * the first or last page at most).
+   */
   | "page"
   /** The view's search, filters, sorting or grouping changed: back to page 1. */
   | "reset"

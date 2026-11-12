@@ -67,6 +67,18 @@ export default defineTranslations({
     pageOf: "Strona {page} z {pageCount}",
     previousPage: "Poprzednia strona",
     nextPage: "Następna strona",
+    previousPages: {
+      one: "Poprzednia {pages} strona",
+      few: "Poprzednie {pages} strony",
+      many: "Poprzednie {pages} stron",
+      other: "Poprzednie {pages} strony",
+    },
+    nextPages: {
+      one: "Następna {pages} strona",
+      few: "Następne {pages} strony",
+      many: "Następne {pages} stron",
+      other: "Następne {pages} strony",
+    },
     selectAllMatching: {
       one: "Zaznacz {total} wiersz",
       few: "Zaznacz wszystkie {total} wiersze",

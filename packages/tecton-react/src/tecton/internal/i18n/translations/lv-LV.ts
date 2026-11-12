@@ -66,6 +66,16 @@ export default defineTranslations({
     pageOf: "{page}. lapa no {pageCount}",
     previousPage: "Iepriekšējā lapa",
     nextPage: "Nākamā lapa",
+    previousPages: {
+      zero: "Iepriekšējās {pages} lapas",
+      one: "Iepriekšējā {pages} lapa",
+      other: "Iepriekšējās {pages} lapas",
+    },
+    nextPages: {
+      zero: "Nākamās {pages} lapas",
+      one: "Nākamā {pages} lapa",
+      other: "Nākamās {pages} lapas",
+    },
     selectAllMatching: {
       zero: "Atlasīt visas {total} rindas",
       one: "Atlasīt {total} rindu",

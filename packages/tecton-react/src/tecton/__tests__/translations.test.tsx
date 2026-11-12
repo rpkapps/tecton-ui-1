@@ -97,6 +97,22 @@ describe("translations", () => {
     expect(partial("removeDescription")).toBe("Press Delete to remove tag.")
   })
 
+  it("chooses the plural form of the pagination's jumps by the pages they jump", async () => {
+    const tables = Object.fromEntries(await locales())
+    const jump = (locale: string, count: number) =>
+      createTranslator(
+        "dataTable",
+        locale,
+        tables[`${locale}.ts`] as never
+      )("nextPages", { count, pages: count })
+    expect(jump("en-US", 5)).toBe("Next 5 pages")
+    expect(jump("de-DE", 5)).toBe("Nächste 5 Seiten")
+    expect(jump("ru-RU", 5)).toBe("Следующие 5 страниц")
+    expect(jump("ru-RU", 3)).toBe("Следующие 3 страницы")
+    expect(jump("pl-PL", 5)).toBe("Następne 5 stron")
+    expect(jump("ar-AE", 5)).toBe("5 صفحات تالية")
+  })
+
   it("renders en-US first, then the provider's locale once it has loaded", async () => {
     function Label() {
       const t = useTranslations("tree")

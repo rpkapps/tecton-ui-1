@@ -66,6 +66,14 @@ export default defineTranslations({
     pageOf: "Σελίδα {page} από {pageCount}",
     previousPage: "Προηγούμενη σελίδα",
     nextPage: "Επόμενη σελίδα",
+    previousPages: {
+      one: "Προηγούμενη {pages} σελίδα",
+      other: "Προηγούμενες {pages} σελίδες",
+    },
+    nextPages: {
+      one: "Επόμενη {pages} σελίδα",
+      other: "Επόμενες {pages} σελίδες",
+    },
     selectAllMatching: {
       one: "Επιλογή {total} γραμμής",
       other: "Επιλογή και των {total} γραμμών",

@@ -65,6 +65,11 @@ export default defineTranslations({
     pageOf: "Sayfa {page}/{pageCount}",
     previousPage: "Önceki sayfa",
     nextPage: "Sonraki sayfa",
+    previousPages: {
+      one: "Önceki {pages} sayfa",
+      other: "Önceki {pages} sayfa",
+    },
+    nextPages: { one: "Sonraki {pages} sayfa", other: "Sonraki {pages} sayfa" },
     selectAllMatching: {
       one: "{total} satırı seç",
       other: "{total} satırın tümünü seç",

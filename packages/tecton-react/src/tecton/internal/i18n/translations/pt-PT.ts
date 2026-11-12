@@ -65,6 +65,14 @@ export default defineTranslations({
     pageOf: "Página {page} de {pageCount}",
     previousPage: "Página anterior",
     nextPage: "Página seguinte",
+    previousPages: {
+      one: "{pages} página anterior",
+      other: "{pages} páginas anteriores",
+    },
+    nextPages: {
+      one: "{pages} página seguinte",
+      other: "{pages} páginas seguintes",
+    },
     selectAllMatching: {
       one: "Selecionar {total} linha",
       many: "Selecionar todas as {total} de linhas",
