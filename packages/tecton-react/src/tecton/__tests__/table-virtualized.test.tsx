@@ -1,5 +1,5 @@
 import * as React from "react"
-import { act, fireEvent, render, screen } from "@testing-library/react"
+import { act, fireEvent, render, screen, within } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
 import {
@@ -10,6 +10,11 @@ import {
   TableHeader,
   TableRow,
 } from "@tecton/react/components/table"
+import {
+  createColumns,
+  DataTable,
+  DataTableContent,
+} from "@tecton/react/tecton/data-table"
 
 /**
  * jsdom has no layout: the table's container is 400 px tall, the header
@@ -452,5 +457,318 @@ describe("Table virtualized scrollbar jumps", () => {
       (element) => (element as Element).tagName === "TR"
     )
     expect(rowReads).toHaveLength(0)
+  })
+})
+
+/**
+ * A scrollbar drag scrolls in the browser's compositor, before the rows for
+ * its position are rendered: with nothing else there, it drew the spacers,
+ * and the rows stayed blank until the drag stopped, however fast they
+ * rendered. While the pointer is on the scrollbar, and while scrolls jump,
+ * the rows in view are pinned where they are (`sticky`, top and bottom),
+ * so the compositor keeps them in view until the next ones are there. The
+ * pins are set in the render of the press or of the scroll itself, from
+ * where the list puts the rows: no layout is read for them.
+ */
+describe("Table virtualized pins its rows during a scrollbar drag", () => {
+  /** How far the container is scrolled. */
+  let scrolled = 0
+
+  beforeEach(() => {
+    scrolled = 0
+    // The container 400 px square, its scrollbar the last 10 px.
+    vi.spyOn(HTMLElement.prototype, "clientWidth", "get").mockReturnValue(390)
+    const rect = vi.mocked(Element.prototype.getBoundingClientRect)
+    const laidOut = rect.getMockImplementation()!
+    rect.mockImplementation(function (this: Element) {
+      if ((this as HTMLElement).dataset.slot === "table-container")
+        return {
+          ...laidOut.call(this),
+          top: 0,
+          bottom: VIEW,
+          height: VIEW,
+          left: 0,
+          right: 400,
+          width: 400,
+        }
+      return laidOut.call(this)
+    })
+  })
+
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const scrollBy = (top: number) => {
+    scrolled = top
+    scrollTo(top)
+  }
+  const pinned = () => bodyRows().filter((row) => row.style.position)
+  /** Where a row is laid out in the view (the header's top at 0). */
+  const placeOf = (row: HTMLElement) =>
+    HEADER + Number(row.dataset.index) * ROW - scrolled
+  /** The rows rendered that show in the view, the ones pinned. */
+  const inView = () =>
+    bodyRows().filter((row) => placeOf(row) + ROW > 0 && placeOf(row) < VIEW)
+
+  /** Every row in view pinned where it is laid out, and no other. */
+  function expectPinnedInPlace() {
+    const rows = inView()
+    expect(rows.length).toBeGreaterThanOrEqual(
+      Math.floor((VIEW - HEADER) / ROW)
+    )
+    expect(pinned()).toEqual(rows)
+    for (const row of rows) {
+      expect(row.style.position).toBe("sticky")
+      expect(parseFloat(row.style.top)).toBeCloseTo(placeOf(row), 5)
+      expect(parseFloat(row.style.bottom)).toBeCloseTo(
+        VIEW - placeOf(row) - ROW,
+        5
+      )
+    }
+  }
+
+  it("pins the rows in view where they are while the scrollbar is pressed", () => {
+    vi.useFakeTimers()
+    render(<Wells />)
+    scrollBy(HEADER + 30 * ROW)
+    act(() => {
+      vi.advanceTimersByTime(200)
+    })
+    expect(pinned()).toHaveLength(0)
+    // On the scrollbar: past the container's client width. The browser
+    // targets the element around the container (Chromium) or the container.
+    fireEvent.pointerDown(container().parentElement!, {
+      clientX: 395,
+      clientY: 100,
+    })
+    // A viewport of rows beyond each edge is rendered, and not pinned.
+    expect(bodyRows().length).toBeGreaterThan(inView().length)
+    expectPinnedInPlace()
+    // Each scroll of the drag pins the rows it renders, in that render.
+    scrollBy(HEADER + 6_000 * ROW)
+    expect(screen.getByText("Well 6000")).toBeInTheDocument()
+    expectPinnedInPlace()
+    scrollBy(HEADER + 6_003 * ROW + 7)
+    expectPinnedInPlace()
+    // Pressed, the pointer may leave the scrollbar.
+    fireEvent.pointerMove(document.body, {
+      clientX: 600,
+      clientY: 100,
+      buttons: 1,
+    })
+    expectPinnedInPlace()
+    fireEvent.pointerUp(document.body, { clientX: 600, clientY: 100 })
+    act(() => {
+      vi.advanceTimersByTime(200)
+    })
+    expect(pinned()).toHaveLength(0)
+  })
+
+  it("pins the rows in view from when the pointer is on the scrollbar", () => {
+    render(<Wells />)
+    // The drag's first frame is the compositor's: pinned before the press.
+    fireEvent.pointerMove(container().parentElement!, {
+      clientX: 395,
+      clientY: 100,
+    })
+    expectPinnedInPlace()
+    fireEvent.pointerMove(container(), { clientX: 200, clientY: 100 })
+    expect(pinned()).toHaveLength(0)
+    fireEvent.pointerMove(container(), { clientX: 398, clientY: 300 })
+    expectPinnedInPlace()
+    // Out of the page.
+    fireEvent.pointerOut(container(), { relatedTarget: null })
+    expect(pinned()).toHaveLength(0)
+  })
+
+  it("does not pin for a press on the rows or outside the table", () => {
+    render(<Wells />)
+    fireEvent.pointerDown(container(), { clientX: 100, clientY: 100 })
+    fireEvent.pointerDown(bodyRows()[2], { clientX: 395, clientY: 100 })
+    fireEvent.pointerDown(container().parentElement!, {
+      clientX: 405,
+      clientY: 100,
+    })
+    expect(pinned()).toHaveLength(0)
+    fireEvent.pointerDown(container(), { clientX: 395, clientY: 100 })
+    expectPinnedInPlace()
+  })
+
+  it("pins the rows of a jump until the scrolling settles", () => {
+    vi.useFakeTimers()
+    render(<Wells />)
+    // A jump the page saw no press for (the End key, a script).
+    scrollBy(HEADER + 7_000 * ROW)
+    expect(screen.getByText("Well 7000")).toBeInTheDocument()
+    expectPinnedInPlace()
+    act(() => {
+      vi.advanceTimersByTime(200)
+    })
+    expect(pinned()).toHaveLength(0)
+    for (const row of bodyRows()) {
+      expect(row.style.top).toBe("")
+      expect(row.style.bottom).toBe("")
+    }
+  })
+
+  it("renders and pins a DataTable's rows in the render of each jump", () => {
+    render(<Readings />)
+    fireEvent.pointerDown(container(), { clientX: 395, clientY: 100 })
+    // A thumb drag: a jump each frame, no timer or transition run between.
+    for (const row of [70_000, 30_000, 99_990]) {
+      scrollBy(HEADER + row * ROW)
+      expect(screen.getByText(`Reading ${row}`)).toBeInTheDocument()
+      expectPinnedInPlace()
+    }
+  })
+})
+
+type Reading = { id: string; name: string }
+
+const READINGS: Array<Reading> = Array.from({ length: 100_000 }, (_, i) => ({
+  id: `r${i}`,
+  name: `Reading ${i}`,
+}))
+
+/** Each call is a row drawing its cell. */
+const readingRenders = vi.fn((reading: Reading) => reading.name)
+
+const READING_COLUMNS = createColumns<Reading>([
+  { id: "name", header: "Reading", cell: readingRenders },
+])
+
+function Readings() {
+  return (
+    <div style={{ height: VIEW }}>
+      <DataTable
+        items={READINGS}
+        columns={READING_COLUMNS}
+        selectionMode="multiple"
+      >
+        <DataTableContent aria-label="Readings" virtualized />
+      </DataTable>
+    </div>
+  )
+}
+
+/**
+ * A scroll of a virtualized DataTable costs about what a plain Table's
+ * does: the rows staying in view are not rendered again, and nothing reads
+ * layout (the grid's tab stop is looked after from the rows that changed,
+ * not by checking the table's layout), so the browser lays the table out
+ * once, when it paints. While the scrollbar is dragged, the rows a jump
+ * brings take the place of the rows that left, updated in place; they get
+ * their own once the scrolling settles.
+ */
+describe("DataTable virtualized scrolls", () => {
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
+  const layoutReads = () => {
+    const rects = vi.spyOn(Element.prototype, "getClientRects")
+    const boxes = vi.mocked(Element.prototype.getBoundingClientRect)
+    const styles = vi.spyOn(window, "getComputedStyle")
+    rects.mockClear()
+    boxes.mockClear()
+    styles.mockClear()
+    return () =>
+      rects.mock.calls.length +
+      boxes.mock.calls.length +
+      styles.mock.calls.length
+  }
+
+  it("reads no layout and renders only the rows a scroll brings", async () => {
+    render(<Readings />)
+    // The table's tab stop (its first row) stays in view.
+    expect(bodyRows()[0]).toHaveAttribute("tabindex", "0")
+    const reads = layoutReads()
+    readingRenders.mockClear()
+    // Two rows on: two rows come into the window, the rest stay as they are.
+    scrollTo(2 * ROW)
+    expect(reads()).toBe(0)
+    expect(readingRenders.mock.calls.length).toBeGreaterThan(0)
+    expect(readingRenders.mock.calls.length).toBeLessThanOrEqual(3)
+    // The checkboxes of the rows mounted are out of the Tab order too, once
+    // the grid has seen them come (before the browser paints): the table
+    // stays one tab stop.
+    await act(async () => {})
+    const stops = [
+      ...document.querySelectorAll('[data-slot="table-body"] [tabindex="0"]'),
+    ]
+    expect(stops).toHaveLength(1)
+  })
+
+  it("updates the rows in place through a jump, and gives each its own once it settles", () => {
+    vi.useFakeTimers()
+    render(<Readings />)
+    const before = bodyRows()
+    const reads = layoutReads()
+    readingRenders.mockClear()
+    scrollTo(HEADER + 50_000 * ROW)
+    expect(reads()).toBe(0)
+    expect(screen.getByText("Reading 50000")).toBeInTheDocument()
+    const jumped = bodyRows()
+    // Every row of the jump is a row that was there, drawn once with the
+    // row it now is.
+    expect(jumped.every((row) => before.includes(row))).toBe(true)
+    expect(readingRenders.mock.calls.length).toBe(jumped.length)
+    for (const row of jumped) {
+      const index = Number(row.dataset.index)
+      expect(row).toHaveAttribute("aria-rowindex", String(index + 2))
+      expect(row).toHaveTextContent(`Reading ${index}`)
+      // Its checkbox names it, and selects it.
+      expect(within(row).getByRole("checkbox")).toHaveAccessibleName(
+        `Select Reading ${index}`
+      )
+    }
+    expect(document.querySelector("tbody")).toHaveAttribute("data-recycling")
+    fireEvent.click(within(jumped[2]).getByRole("checkbox"))
+    expect(jumped[2]).toHaveAttribute("aria-selected", "true")
+    expect(
+      bodyRows().filter((row) => row.getAttribute("aria-selected") === "true")
+    ).toEqual([jumped[2]])
+    // Settled: each row is its own again.
+    act(() => {
+      vi.advanceTimersByTime(200)
+    })
+    expect(document.querySelector("tbody")).not.toHaveAttribute(
+      "data-recycling"
+    )
+    const settled = bodyRows()
+    expect(settled.some((row) => before.includes(row))).toBe(false)
+    const selected = settled.filter(
+      (row) => row.getAttribute("aria-selected") === "true"
+    )
+    expect(selected).toHaveLength(1)
+    expect(selected[0]).toHaveAttribute("data-index", jumped[2].dataset.index)
+  })
+
+  it("keeps the focused row through a jump and back", () => {
+    vi.useFakeTimers()
+    render(<Readings />)
+    const row = bodyRows()[3]
+    act(() => row.focus())
+    expect(row).toHaveFocus()
+    scrollTo(HEADER + 70_000 * ROW)
+    expect(screen.getByText("Reading 70000")).toBeInTheDocument()
+    // Kept mounted, with its own content, and focus.
+    expect(row).toHaveFocus()
+    expect(row).toHaveAttribute("data-index", "3")
+    expect(row).toHaveTextContent("Reading 3")
+    expect(row).toHaveAttribute("tabindex", "0")
+    scrollTo(HEADER + 70_500 * ROW)
+    act(() => {
+      vi.advanceTimersByTime(200)
+    })
+    expect(row).toHaveFocus()
+    expect(row).toHaveTextContent("Reading 3")
+    scrollTo(0)
+    act(() => {
+      vi.advanceTimersByTime(200)
+    })
+    expect(row).toHaveFocus()
+    expect(screen.getByText("Reading 0")).toBeInTheDocument()
   })
 })

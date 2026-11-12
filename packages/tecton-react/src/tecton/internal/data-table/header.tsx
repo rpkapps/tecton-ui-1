@@ -2,8 +2,10 @@
 
 /**
  * The header: one row per level of column groups (a group spans its
- * columns with `colSpan`; placeholders fill in above a column in fewer
- * groups), the leaf columns in the last row. A column that sorts has a sort
+ * columns with `colSpan`), the leaf columns in the last row; a column in
+ * fewer groups than the deepest spans the rows below its last group
+ * (`rowSpan`), from its group's row down (from the top for a column in
+ * none), so no empty cell stands above its name. A column that sorts has a sort
  * button: a click cycles ascending, descending, off; Shift + click adds the
  * column to a multi-sort (§5.2). The first sort is the header's `aria-sort`,
  * which the grid announces; with several, each sorted header shows its
@@ -16,10 +18,10 @@
  * (`column-order.ts`): a tab stop of the grid's, dragged from anywhere on
  * it. The grid's arrow keys go through each cell's controls in order.
  *
- * The selection column's header holds the select-all checkbox in the last
- * row (a cell named "Select" above it, and in its place for single
- * selection), so every header row has the same columns for the grid to
- * move through. Placeholders are named after the columns below them.
+ * The selection column's header spans every header row too: the
+ * select-all checkbox, or a cell named "Select" for single selection. The
+ * grid moves through the header's columns with the cells spanning rows in
+ * every row they span.
  */
 import * as React from "react"
 import { cn } from "cn"
@@ -72,6 +74,7 @@ import {
   type DataTableSort,
   type EngineColumn,
   type HeaderCell,
+  type HeaderRow,
 } from "./engine/index"
 import { useFeature } from "./lazy"
 import { useLazyPopup } from "./lazy-popup"
@@ -422,6 +425,7 @@ function DataTableColumnHeader<T>({
   column,
   index,
   edge,
+  rowSpan,
   shared,
 }: {
   column: EngineColumn<T>
@@ -429,6 +433,8 @@ function DataTableColumnHeader<T>({
   index: number
   /** A column group starts or ends at the column's start edge. */
   edge: boolean
+  /** The header rows it spans: the rows below its last group. */
+  rowSpan: number
   shared: HeaderShared<T>
 }) {
   const t = useTranslations("dataTable")
@@ -596,6 +602,7 @@ function DataTableColumnHeader<T>({
     <TableHead
       {...drag}
       ref={ref}
+      rowSpan={rowSpan > 1 ? rowSpan : undefined}
       scope="col"
       // The column's name in announcements, whatever the header draws.
       aria-label={column.header}
@@ -756,7 +763,7 @@ function DataTableColumnHeader<T>({
   )
 }
 
-/** A group's header, or a placeholder above columns in fewer groups. */
+/** A group's header (a placeholder, should the layout give one: named after its columns). */
 function DataTableGroupHeader<T>({
   cell,
   pin,
@@ -824,6 +831,47 @@ function DataTableGroupHeader<T>({
   )
 }
 
+/** A header row's cells as drawn, each at its column (`at`). */
+type SpannedRow = {
+  row: HeaderRow
+  cells: Array<{ cell: HeaderCell; at: number; rowSpan: number }>
+}
+
+/**
+ * The header rows as drawn: a column in fewer groups than the deepest is
+ * drawn in the first row where the layout has a placeholder over it,
+ * spanning the rows down to the last, in place of the placeholders and its
+ * own cell in the last row.
+ */
+function spannedRows(rows: ReadonlyArray<HeaderRow>): Array<SpannedRow> {
+  const last = rows.length - 1
+  const leaves = new Map<string, HeaderCell>()
+  for (const cell of rows[last]?.cells ?? [])
+    if (cell.id !== null) leaves.set(cell.id, cell)
+  const placed = new Set<string>()
+  return rows.map((row) => {
+    const cells: SpannedRow["cells"] = []
+    let at = 0
+    for (const cell of row.cells) {
+      if (cell.kind === "placeholder")
+        cell.columns.forEach((id, offset) => {
+          const leaf = leaves.get(id)
+          if (placed.has(id) || !leaf) return
+          placed.add(id)
+          cells.push({
+            cell: leaf,
+            at: at + offset,
+            rowSpan: last - row.level + 1,
+          })
+        })
+      else if (cell.kind !== "column" || !placed.has(cell.id ?? ""))
+        cells.push({ cell, at, rowSpan: 1 })
+      at += cell.colSpan
+    }
+    return { row, cells }
+  })
+}
+
 /**
  * Where a group's or placeholder's cell sticks: where its first column does
  * (its last, at the end), when every column under it is pinned.
@@ -865,38 +913,37 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
   }
   edges.delete(layout.columns.length)
   if (!selection) edges.delete(0)
-  // Cells with nothing to show are still named for the grid's keyboard,
+  // A cell with nothing to show is still named for the grid's keyboard,
   // which stops on every header cell.
   const selectColumn = <span className="sr-only">{t("select")}</span>
+  const rows = spannedRows(layout.headerRows)
   return (
     <TableHeader>
-      {layout.headerRows.map((row) => {
-        let start = 0
+      {rows.map(({ row, cells }) => {
         // A group in one cell is keyed by its id, so it keeps its cell as
         // it moves (and its focus after a keyboard drag).
         const counts = new Map<string | null, number>()
-        for (const cell of row.cells)
+        for (const { cell } of cells)
           counts.set(cell.id, (counts.get(cell.id) ?? 0) + 1)
         return (
           <TableRow key={row.key}>
-            {selection && (
+            {selection && row.level === 0 && (
               <TableHead
+                rowSpan={last > 0 ? last + 1 : undefined}
                 className={cn(
-                  row.level === last ? "w-px" : GROUP_ROW,
+                  "w-px",
                   shared.selectionPin && pinnedHeadClassName
                 )}
                 style={shared.selectionPin && pinStyle(shared.selectionPin)}
               >
-                {row.level === last && options.selectionMode === "multiple" ? (
+                {options.selectionMode === "multiple" ? (
                   <DataTableSelectionCheckbox />
                 ) : (
                   selectColumn
                 )}
               </TableHead>
             )}
-            {row.cells.map((cell) => {
-              const at = start
-              start += cell.colSpan
+            {cells.map(({ cell, at, rowSpan }) => {
               const column = cell.id === null ? undefined : byId.get(cell.id)
               if (cell.kind === "column" && column)
                 return (
@@ -907,6 +954,7 @@ function DataTableHeader<T>({ shared }: { shared: HeaderShared<T> }) {
                     column={column}
                     index={index.get(column.id) ?? at}
                     edge={edges.has(at)}
+                    rowSpan={rowSpan}
                     shared={shared}
                   />
                 )

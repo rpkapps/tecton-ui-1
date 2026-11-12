@@ -29,6 +29,12 @@
  * - A scroll is applied before the browser paints it, with a viewport of
  *   rows ready beyond each edge, and rows that stay in view do not
  *   re-render: a fast flick never shows a blank strip.
+ * - A scrollbar drag is scrolled by the browser ahead of the rows: while
+ *   the pointer is on the scrollbar and while scrolls jump, the rows in
+ *   view are pinned where they are (`sticky`), so every frame of the drag
+ *   shows rows. In a grid table (DataTable), the rows a jump brings take
+ *   the place of the rows that left (`recycle`), so a frame of the drag
+ *   updates rows rather than building them.
  * - The header sticks to the top of the container; the window starts below
  *   it.
  * - The row holding focus stays mounted when it scrolls out of view, so a
@@ -67,6 +73,13 @@ const ESTIMATED_ROW = 49
 
 /** Cells of locked columns clip what no longer fits, with an ellipsis. */
 const LOCKED_CLASS = "table-fixed [&_td]:overflow-hidden [&_td]:text-ellipsis"
+
+/**
+ * Rows updated in place for others (`recycle`, the body's
+ * `data-recycling`) start no transitions: a badge or a row changing colour
+ * as it takes another row's place is not a change the user made.
+ */
+const RECYCLING_CLASS = "[&>tbody[data-recycling]_*]:transition-none"
 
 /**
  * Room past a control (a checkbox, a drag handle): its 2 px focus ring
@@ -244,7 +257,11 @@ function useTableVirtualizer(virtualized: boolean) {
     context,
     containerRef: virtualized ? setContainer : undefined,
     rowCount: virtualized ? rowCount : undefined,
-    tableClassName: locked ? LOCKED_CLASS : undefined,
+    tableClassName: virtualized
+      ? locked
+        ? `${LOCKED_CLASS} ${RECYCLING_CLASS}`
+        : RECYCLING_CLASS
+      : undefined,
     colgroup: locked ? (
       <colgroup data-slot="table-virtual-columns">
         {columns.columns.map((column, at) => (
@@ -338,6 +355,117 @@ function columnCount(body: HTMLTableSectionElement) {
 /** Every row of `items`, for a table that is not virtualized. */
 function renderAll<T>(items: ReadonlyArray<T>, render: RenderRow<T>) {
   return items.map((item, index) => render(item, index))
+}
+
+/** A rendered row's key: its own, or one it took over (`recycle`). */
+type Slot = {
+  key: string | null
+  own: boolean
+  type: unknown
+  /** The row as given (`base`), and with `key` (`element`). */
+  base: React.ReactNode
+  element: React.ReactNode
+}
+
+/**
+ * The key each row renders with. While the scrollbar is dragged (`jumping`)
+ * every frame brings a screenful of rows that were not there: each one takes
+ * the key of a row that left the view, of the same kind, so React updates
+ * that row's components and elements in place instead of unmounting one
+ * row and mounting another. The frame then builds no elements and restyles
+ * only what changed in them, as cheap as the rows' new text. Once the
+ * scrolling settles, every such row takes its own key back, mounting
+ * afresh, so no state of the row it stood in for stays with it. A row that
+ * stays in view keeps its key throughout (the focused row, kept mounted).
+ */
+function recycle({
+  rows,
+  previous,
+  jumping,
+  unique,
+}: {
+  rows: ReadonlyMap<number, React.ReactNode>
+  previous: ReadonlyMap<number, Slot>
+  jumping: boolean
+  unique: () => string
+}) {
+  const next = new Map<number, Slot>()
+  const used = new Set<string>()
+  const typeOf = (row: React.ReactNode) =>
+    React.isValidElement(row) ? row.type : undefined
+  const ownKey = (row: React.ReactNode) =>
+    React.isValidElement(row) ? row.key : null
+  const place = (index: number, row: React.ReactNode, key: string | null) => {
+    const own = key === ownKey(row)
+    const before = previous.get(index)
+    const element =
+      own || !React.isValidElement(row)
+        ? row
+        : before?.base === row && before.key === key
+          ? before.element
+          : React.cloneElement(row, { key })
+    if (key !== null) used.add(key)
+    next.set(index, { key, own, type: typeOf(row), base: row, element })
+  }
+  // The rows staying keep their keys.
+  for (const [index, row] of rows) {
+    const before = previous.get(index)
+    if (!before) continue
+    const kept = before.own
+      ? before.key === ownKey(row)
+      : jumping && before.type === typeOf(row)
+    if (kept && (before.key === null || !used.has(before.key)))
+      place(index, row, before.key)
+  }
+  // Each row's place among the rows rendered before.
+  const places = new Map<string, number>()
+  for (const slot of previous.values())
+    if (slot.key !== null) places.set(slot.key, places.size)
+  // The keys of the rows that left, for the rows coming, in their order.
+  const freed = jumping
+    ? [...previous].flatMap(([index, slot]) =>
+        rows.has(index) || slot.key === null
+          ? []
+          : [{ slot, place: places.get(slot.key) ?? 0 }]
+      )
+    : []
+  // A row staying is never moved among the others (React would take focus
+  // off it): a row coming before it takes the key of a row that was
+  // before it too.
+  const staying = [...next].map(([index, slot]) => ({
+    index,
+    place: slot.key === null ? Infinity : (places.get(slot.key) ?? Infinity),
+  }))
+  for (const [index, row] of rows) {
+    if (next.has(index)) continue
+    const own = ownKey(row)
+    if (own === null) {
+      place(index, row, null)
+      continue
+    }
+    const limit = staying.find((stay) => stay.index > index)?.place ?? Infinity
+    const at = freed.findIndex(
+      ({ slot, place: was }) =>
+        was < limit &&
+        slot.type === typeOf(row) &&
+        slot.key !== null &&
+        !used.has(slot.key)
+    )
+    if (at !== -1) {
+      place(index, row, freed[at].slot.key)
+      freed.splice(at, 1)
+      continue
+    }
+    // Its own key held by a row that took it over: one of its own until
+    // that row settles (the one it had, while it is free).
+    const before = previous.get(index)?.key
+    place(
+      index,
+      row,
+      !used.has(own) ? own : before && !used.has(before) ? before : unique()
+    )
+  }
+  return next
 }
 
 /**
@@ -551,7 +679,8 @@ function useVirtualRows<T>(
       scroller.style.overflowAnchor = before
     }
   }, [virtualized, context?.container])
-  const observed = React.useRef(new Set<HTMLElement>())
+  /** The rows of their own height watched, with the index each was measured at. */
+  const observed = React.useRef(new Map<HTMLElement, string | undefined>())
   React.useLayoutEffect(() => {
     if (!virtualized || !body.current) return
     let changed = false
@@ -559,7 +688,16 @@ function useVirtualRows<T>(
       "tr[data-index][data-variable-height]"
     )
     for (const row of rows) {
-      if (observed.current.has(row)) continue
+      const index = observed.current.get(row)
+      if (index !== undefined) {
+        // A row updated in place for another (`recycle`): its height is
+        // that one's.
+        if (index !== row.dataset.index) {
+          observed.current.set(row, row.dataset.index)
+          changed = record(row) || changed
+        }
+        continue
+      }
       if (!sizeObserver.current && typeof ResizeObserver !== "undefined")
         sizeObserver.current = new ResizeObserver((entries) => {
           let resized = false
@@ -568,11 +706,11 @@ function useVirtualRows<T>(
           // Rendered before the next paint, with the scroll kept.
           if (resized) flushSync(() => setHeightsChanged((n) => n + 1))
         })
-      observed.current.add(row)
+      observed.current.set(row, row.dataset.index)
       sizeObserver.current?.observe(row)
       changed = record(row) || changed
     }
-    for (const row of observed.current)
+    for (const row of observed.current.keys())
       if (!row.isConnected) {
         observed.current.delete(row)
         sizeObserver.current?.unobserve(row)
@@ -580,6 +718,140 @@ function useVirtualRows<T>(
     if (changed) setHeightsChanged((n) => n + 1)
   })
   React.useEffect(() => () => sizeObserver.current?.disconnect(), [])
+
+  // A scrollbar drag scrolls in the browser's compositor, ahead of this
+  // module: each frame of it is a jump to rows not mounted yet, and a frame
+  // the compositor draws before they are shows the spacers, blank. While
+  // the pointer is on the scrollbar (from before it is pressed: the drag's
+  // first frame is the compositor's too), and while scrolls jump, every
+  // row in view is pinned where it is (`sticky`, top and bottom): the
+  // compositor keeps the last rows in view until the next ones are there.
+  const [onScrollbar, setOnScrollbar] = React.useState(false)
+  React.useEffect(() => {
+    const view = container?.ownerDocument.defaultView
+    if (!virtualized || !container || !view) return
+    // On the scrollbar (its thumb, its track): in the container's box,
+    // outside its client area. The browser targets the container or an
+    // element around it, never one inside or over it.
+    const onBar = (event: PointerEvent) => {
+      const target = event.target
+      if (!(target instanceof view.Node) || !target.contains(container))
+        return false
+      const box = container.getBoundingClientRect()
+      const x = event.clientX - box.left
+      const y = event.clientY - box.top
+      if (x < 0 || x >= box.width || y < 0 || y >= box.height) return false
+      const client =
+        x >= container.clientLeft &&
+        x < container.clientLeft + container.clientWidth &&
+        y >= container.clientTop &&
+        y < container.clientTop + container.clientHeight
+      return !client
+    }
+    const down = (event: PointerEvent) => {
+      if (onBar(event)) setOnScrollbar(true)
+    }
+    // Pressed, it stays on until released, wherever the pointer goes.
+    const move = (event: PointerEvent) => {
+      if (event.buttons === 0) setOnScrollbar(onBar(event))
+    }
+    const up = (event: PointerEvent) => setOnScrollbar(onBar(event))
+    // Out of the page.
+    const out = (event: PointerEvent) => {
+      if (!event.relatedTarget) setOnScrollbar(false)
+    }
+    view.addEventListener("pointerdown", down, true)
+    view.addEventListener("pointermove", move, true)
+    view.addEventListener("pointerup", up, true)
+    view.addEventListener("pointercancel", up, true)
+    view.addEventListener("pointerout", out, true)
+    return () => {
+      view.removeEventListener("pointerdown", down, true)
+      view.removeEventListener("pointermove", move, true)
+      view.removeEventListener("pointerup", up, true)
+      view.removeEventListener("pointercancel", up, true)
+      view.removeEventListener("pointerout", out, true)
+    }
+  }, [virtualized, container])
+  const pin = virtualized && (onScrollbar || virtual.jumping)
+  const pinned = React.useRef(new Set<HTMLElement>())
+  /** The rows' heights as last laid out (`ResizeObserver`), by row. */
+  const laidOut = React.useRef(new WeakMap<Element, number>())
+  const rowObserver = React.useRef<ResizeObserver | null>(null)
+  const watched = React.useRef(new Set<Element>())
+  const pinFrom = React.useRef({
+    pin,
+    scrolled: 0,
+    view: 0,
+    offset: virtual.offset,
+  })
+  pinFrom.current = {
+    pin,
+    scrolled: virtual.viewTop - measures.headerHeight,
+    view: virtual.viewHeight,
+    offset: virtual.offset,
+  }
+  // Where each row is in the view, from the top of the body down: the
+  // spacers' heights (the list's), and each row's as last laid out (the
+  // list's until then), so a scroll reads no layout. A row whose height
+  // was not known is placed again once it is laid out, before the frame
+  // is painted. Only the rows in view: one pinned out of view would stay
+  // there.
+  const placePins = React.useCallback(function place() {
+    const { pin: on, scrolled, view, offset } = pinFrom.current
+    const rows = pinned.current
+    const section = body.current
+    const pins = new Map<HTMLElement, [number, number]>()
+    if (on && section && view > 0) {
+      if (!rowObserver.current && typeof ResizeObserver !== "undefined")
+        rowObserver.current = new ResizeObserver((entries) => {
+          for (const entry of entries)
+            laidOut.current.set(
+              entry.target,
+              entry.target.getBoundingClientRect().height
+            )
+          place()
+        })
+      let y = -scrolled
+      let last = -1
+      for (const row of section.rows) {
+        if (row.dataset.index === undefined) continue
+        const index = Number(row.dataset.index)
+        // After a spacer: as tall as the list made it (its style, read
+        // back, is rounded).
+        if (index !== last + 1) y += offset(index) - offset(last + 1)
+        last = index
+        const height =
+          laidOut.current.get(row) ?? offset(index + 1) - offset(index)
+        if (!watched.current.has(row)) {
+          watched.current.add(row)
+          rowObserver.current?.observe(row)
+        }
+        if (y + height > 0 && y < view) pins.set(row, [y, view - y - height])
+        y += height
+      }
+    }
+    for (const row of watched.current)
+      if (!on || !row.isConnected) {
+        rowObserver.current?.unobserve(row)
+        watched.current.delete(row)
+      }
+    for (const row of rows)
+      if (!pins.has(row)) {
+        row.style.position = ""
+        row.style.top = ""
+        row.style.bottom = ""
+        rows.delete(row)
+      }
+    for (const [row, [top, bottom]] of pins) {
+      row.style.position = "sticky"
+      row.style.top = `${top}px`
+      row.style.bottom = `${bottom}px`
+      rows.add(row)
+    }
+  }, [])
+  React.useLayoutEffect(() => placePins())
+  React.useEffect(() => () => rowObserver.current?.disconnect(), [])
 
   // The grid reaches the rows out of view through the body: how many
   // there are, what they are (read from their items), and scrolling one
@@ -646,6 +918,9 @@ function useVirtualRows<T>(
     sources: unknown
     rows: Map<number, { rowIndex: number; row: React.ReactNode }>
   }>({ sources: null, rows: new Map() })
+  /** The key each row was rendered with, by index (`recycle`). */
+  const slots = React.useRef(new Map<number, Slot>())
+  const unique = React.useRef(0)
 
   if (!virtualized) {
     const rows =
@@ -701,14 +976,8 @@ function useVirtualRows<T>(
   const parity = (key: string) => (
     <tr key={key} aria-hidden="true" data-slot="table-virtual-parity" />
   )
-  const rendered: Array<React.ReactNode> = []
-  let previous = -1
+  const bases = new Map<number, React.ReactNode>()
   for (const index of virtual.indices) {
-    if (index > previous + 1)
-      rendered.push(spacer(`spacer-${index}`, previous + 1, index))
-    const stripe = rowParity ? rowParity(index) : index % 2
-    if (stripe !== null && rendered.length % 2 !== stripe)
-      rendered.push(parity(`parity-${index}`))
     const rowIndex = headerRows + index + 1
     const kept = previousRows.get(index)
     let row: React.ReactNode
@@ -725,7 +994,32 @@ function useVirtualRows<T>(
         : source
     }
     rowsNow.set(index, { rowIndex, row })
-    rendered.push(row)
+    bases.set(index, row)
+  }
+  const keyed = recycle({
+    rows: bases,
+    previous: slots.current,
+    // A grid table's rows (DataTable's) while the scrollbar is dragged.
+    jumping: grid !== null && virtual.jumping,
+    unique: () => `table-virtual-row-${unique.current++}`,
+  })
+  slots.current = keyed
+
+  const rendered: Array<React.ReactNode> = []
+  let previous = -1
+  for (const index of virtual.indices) {
+    if (index > previous + 1)
+      rendered.push(
+        spacer(
+          previous === -1 ? "spacer-start" : `spacer-${index}`,
+          previous + 1,
+          index
+        )
+      )
+    const stripe = rowParity ? rowParity(index) : index % 2
+    if (stripe !== null && rendered.length % 2 !== stripe)
+      rendered.push(parity(`parity-${index}`))
+    rendered.push(keyed.get(index)?.element ?? bases.get(index))
     previous = index
   }
   if (previous < count - 1)
@@ -733,7 +1027,15 @@ function useVirtualRows<T>(
   if (isEmpty) rendered.push(emptyRow(empty, columns))
   cache.current = { sources, rows: rowsNow }
 
-  return { ...rest, children: rendered, ref: bodyRef, onFocus, onBlur }
+  const recycling = [...keyed.values()].some((slot) => !slot.own)
+  return {
+    ...rest,
+    children: rendered,
+    ref: bodyRef,
+    onFocus,
+    onBlur,
+    ...{ "data-recycling": recycling ? "" : undefined },
+  }
 }
 
 export {

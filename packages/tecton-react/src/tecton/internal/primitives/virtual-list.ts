@@ -62,6 +62,13 @@ type VirtualList = {
   scrollToIndex: (index: number) => void
   /** The scroll container's height, as last measured (0 before layout). */
   viewHeight: number
+  /** Its scroll position the indices are for. */
+  viewTop: number
+  /**
+   * A jump is under way (`settleMs`): the scroll went past the rows
+   * prepared, and has not stopped for `settleMs` since.
+   */
+  jumping: boolean
 }
 
 /** The view height before any layout (and on the server): ten rows. */
@@ -268,6 +275,8 @@ function useVirtualList({
     size: layout.total,
     scrollToIndex,
     viewHeight: view.height,
+    viewTop: view.top,
+    jumping: view.jumping,
   }
 }
 

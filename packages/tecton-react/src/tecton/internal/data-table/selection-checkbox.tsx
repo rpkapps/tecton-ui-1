@@ -39,7 +39,12 @@ function DataTableSelectionCheckbox({
   const t = useTranslations("table")
   const id = React.useId()
   const element = React.useRef<HTMLElement | null>(null)
-  const [labelledBy, setLabelledBy] = React.useState<string>()
+  // A row's checkbox is named from its first render, by ids of the
+  // grid's own (the checkbox's and its row header's), so the checkbox
+  // never looks for a label of its own: as rows mount while the table
+  // scrolls, that search reads through the whole document.
+  const selfId = `${id}-select`
+  const [header, setHeader] = React.useState<string | null>(`${id}-row`)
 
   const value = row?.value
   const checked = useStore(grid.store, (state) =>
@@ -54,22 +59,24 @@ function DataTableSelectionCheckbox({
   // The header's: nothing to select (no rows, or none selectable).
   const empty = useStore(grid.store, () => !row && !grid.canSelectAll())
 
-  // Named after the row too: "Select" and the row's header (or first text).
+  // Named after the row too: "Select" and the row's header (or first
+  // text), which takes the id named at first unless it has one.
   React.useLayoutEffect(() => {
     const self = element.current
     const tr = row ? self?.closest("tr") : null
     if (!self || !tr) return
     const cells = [...tr.cells].filter((cell) => !cell.contains(self))
-    const header =
-      cells.find((cell) => cell.tagName === "TH") ??
-      cells.find((cell) => cell.textContent.trim())
-    if (!header) {
-      setLabelledBy(undefined)
+    const cell =
+      cells.find((candidate) => candidate.tagName === "TH") ??
+      cells.find((candidate) => candidate.textContent.trim())
+    if (!cell) {
+      setHeader(null)
       return
     }
-    if (!header.id) header.id = `${id}-row`
-    setLabelledBy(self.id ? `${self.id} ${header.id}` : header.id)
+    if (!cell.id) cell.id = `${id}-row`
+    setHeader(cell.id)
   })
+  const labelledBy = row && header ? `${selfId} ${header}` : undefined
 
   const setRef = React.useCallback(
     (node: HTMLElement | null) => {
@@ -80,41 +87,85 @@ function DataTableSelectionCheckbox({
     [ref]
   )
 
+  // The press reads the row it is in now: a row updated in place for
+  // another (the table virtualized) keeps its checkbox.
+  const latest = React.useRef(value)
+  React.useInsertionEffect(() => {
+    latest.current = value
+  })
+  const onCheckedChange = React.useCallback(
+    (_checked: boolean, eventDetails: { event: Event | undefined }): void => {
+      const event = eventDetails.event as MouseEvent | undefined
+      const current = latest.current
+      if (current === undefined) {
+        grid.toggleAll(event)
+        return
+      }
+      grid.select(current, {
+        toggle: true,
+        range: !!event?.shiftKey,
+        event,
+        reason: "item-press",
+      })
+    },
+    [grid]
+  )
+
+  // A row that cannot be selected (`disabledBehavior="selection"`) can
+  // still be focused and activated: only its checkbox is disabled.
+  const off =
+    !!disabled ||
+    !!row?.disabled ||
+    (value !== undefined && !grid.isSelectable(value)) ||
+    empty
+  const label = row ? t("select") : t("selectAll")
+  const own = useSameProps(props)
+  // The same element while what it shows stays: a row scrolled into
+  // another's place renders no checkbox again.
+  const box = React.useMemo(
+    () => (
+      <Checkbox
+        data-slot="table-selection-checkbox"
+        {...own}
+        ref={setRef}
+        aria-label={label}
+        aria-labelledby={labelledBy}
+        render={labelledBy ? <span id={selfId} /> : undefined}
+        checked={checked}
+        indeterminate={indeterminate}
+        disabled={off}
+        onCheckedChange={onCheckedChange}
+      />
+    ),
+    [
+      own,
+      setRef,
+      label,
+      labelledBy,
+      selfId,
+      checked,
+      indeterminate,
+      off,
+      onCheckedChange,
+    ]
+  )
+
   if (grid.selectionMode === "none") return null
   if (!row && grid.selectionMode !== "multiple") return null
+  return box
+}
 
-  return (
-    <Checkbox
-      data-slot="table-selection-checkbox"
-      {...props}
-      ref={setRef}
-      aria-label={row ? t("select") : t("selectAll")}
-      aria-labelledby={row ? labelledBy : undefined}
-      checked={checked}
-      indeterminate={indeterminate}
-      // A row that cannot be selected (`disabledBehavior="selection"`) can
-      // still be focused and activated: only its checkbox is disabled.
-      disabled={
-        !!disabled ||
-        !!row?.disabled ||
-        (value !== undefined && !grid.isSelectable(value)) ||
-        empty
-      }
-      onCheckedChange={(_checked, eventDetails) => {
-        const event = eventDetails.event as MouseEvent | undefined
-        if (value === undefined) {
-          grid.toggleAll(event)
-          return
-        }
-        grid.select(value, {
-          toggle: true,
-          range: !!event?.shiftKey,
-          event,
-          reason: "item-press",
-        })
-      }}
-    />
-  )
+/** `props` as given last time while each of its values is the same. */
+function useSameProps<T extends object>(props: T): T {
+  const last = React.useRef(props)
+  const before = last.current as Record<string, unknown>
+  const now = props as Record<string, unknown>
+  const keys = Object.keys(now)
+  const same =
+    keys.length === Object.keys(before).length &&
+    keys.every((key) => Object.is(before[key], now[key]))
+  if (!same) last.current = props
+  return same ? last.current : props
 }
 
 export { DataTableSelectionCheckbox }
