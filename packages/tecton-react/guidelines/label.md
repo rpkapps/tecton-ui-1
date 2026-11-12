@@ -1,6 +1,6 @@
 ---
 component: Label
-module: "@tecton/react/components/label"
+module: "@tecton/react/label"
 family: forms
 exports: [Label]
 notFor:

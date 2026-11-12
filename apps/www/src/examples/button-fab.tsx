@@ -1,6 +1,6 @@
 import { PlusIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 
 const variants = ["default", "secondary", "ghost", "outline"] as const
 

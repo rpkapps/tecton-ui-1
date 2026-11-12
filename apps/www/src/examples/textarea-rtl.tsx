@@ -11,8 +11,8 @@ import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@tecton/react/components/field"
-import { Textarea } from "@tecton/react/components/textarea"
+} from "@tecton/react/field"
+import { Textarea } from "@tecton/react/textarea"
 
 const translations: Translations = {
   en: {

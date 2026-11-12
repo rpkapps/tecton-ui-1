@@ -1,6 +1,6 @@
 ---
 component: TreeView
-module: "@tecton/react/tecton/tree-view"
+module: "@tecton/react/tree-view"
 family: data
 exports: [TreeView, TreeViewItem, TreeViewItemContent, TreeViewAction, TreeViewVisibilityToggle, TreeViewCollection, moveTreeItems]
 notFor:

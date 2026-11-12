@@ -7,14 +7,14 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Card, CardContent } from "@tecton/react/components/card"
+import { Card, CardContent } from "@tecton/react/card"
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@tecton/react/components/carousel"
+} from "@tecton/react/carousel"
 
 const translations: Translations = {
   en: {

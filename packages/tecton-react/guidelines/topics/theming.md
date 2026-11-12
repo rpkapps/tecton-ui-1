@@ -39,7 +39,9 @@ not cover is a change to the Tecton token export, not to the app stylesheet.
 
 ## Setup
 
-An application that owns the document needs one import and one class:
+An application that owns the document needs one import and one class. The
+example sets the class with `next-themes`, which the application installs itself
+(`pnpm add next-themes`); any code that puts `dark` on `<html>` works the same:
 
 ```css title="src/styles/app.css"
 @import "@tecton/react/globals.css";
@@ -111,7 +113,7 @@ Federation remote, an embedded widget.
 
 ```tsx title="src/mount.tsx"
 import { createRoot } from "react-dom/client"
-import { ThemeRoot } from "@tecton/react/tecton/theme-root"
+import { ThemeRoot } from "@tecton/react/theme-root"
 
 import "./styles/remote.css"
 
@@ -197,21 +199,41 @@ new ModuleFederationPlugin({
 })
 ```
 
-None of the entries is a singleton, so applications on different React or
-Tecton versions can share a page: `@tecton/react/` is a prefix share, and
-`react`, `react-dom`, `sonner`, `recharts` and Tecton's internal libraries are
+None of the entries is a singleton, so applications on different React
+versions can share a page: `react`, `react-dom`, `recharts` and `shiki` are
 shared without being singletons (pin `react` and `react-dom` to the same exact
-version in each application; the internal libraries take their version from
-`@tecton/react` itself).
+version in each application; `recharts` and `shiki` take their version from
+`@tecton/react` itself). `@tecton/react` is deliberately not
+shared: each application renders its own root under its own `ThemeRoot`, so
+every application keeps its own copy.
 The list carries no versions — those come from the application's own install.
 The host mounts exactly one `Toaster` and passes its `toast` to each remote
 through the mount props; a remote mounts no `Toaster` and never imports `toast`
-from `sonner`.
+from `@tecton/react/toast`.
 
 A remote with **no** Tecton shell to inherit from adds
 `@tecton/react/styles/scoped-theme.css` after `scoped.css` and loads Figtree and
-IBM Plex Mono itself. Leave it out whenever there is a shell: it declares the
+IBM Plex Mono itself (Figtree 400, 500, 600 and 700; Plex Mono 400 and 500). Leave it out whenever there is a shell: it declares the
 full variable set on the remote's root and stops it following the host.
+
+### Font URLs in the build
+
+`globals.css` and the font stylesheets load their files by relative URL.
+Rsbuild, Rspack and webpack resolve them with `@tailwindcss/postcss` as is.
+Vite inlines the stylesheet before `@tailwindcss/postcss` runs, so the URLs
+are never rewritten and the fonts 404 in a production build. Use
+`@tailwindcss/vite` with Vite. When a Vite pipeline must use
+`@tailwindcss/postcss`, rebase the URLs first:
+
+```js title="postcss.config.mjs"
+export default {
+  plugins: {
+    "postcss-import": {},
+    "postcss-url": { url: "rebase" },
+    "@tailwindcss/postcss": {},
+  },
+}
+```
 
 ## Common Mistakes
 
@@ -323,7 +345,7 @@ Wrong:
 ```tsx
 import "@tecton/react/styles/scoped.css"
 
-import { ThemeRoot } from "@tecton/react/tecton/theme-root"
+import { ThemeRoot } from "@tecton/react/theme-root"
 import { createRoot } from "react-dom/client"
 
 createRoot(document.getElementById("root")!).render(

@@ -1,14 +1,14 @@
 // Synced from shadcn/ui (apps/v4/examples/base/table-actions.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { MoreHorizontalIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   Table,
   TableBody,
@@ -16,7 +16,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 export function TableActions() {
   return (

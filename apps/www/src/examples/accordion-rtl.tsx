@@ -12,7 +12,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@tecton/react/components/accordion"
+} from "@tecton/react/accordion"
 
 const translations: Translations = {
   en: {

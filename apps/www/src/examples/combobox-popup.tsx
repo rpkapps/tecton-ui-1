@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/base/combobox-popup.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Combobox,
   ComboboxContent,
@@ -11,7 +11,7 @@ import {
   ComboboxList,
   ComboboxTrigger,
   ComboboxValue,
-} from "@tecton/react/components/combobox"
+} from "@tecton/react/combobox"
 
 const countries = [
   { code: "", value: "", continent: "", label: "Select country" },

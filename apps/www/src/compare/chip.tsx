@@ -1,7 +1,7 @@
 import * as React from "react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Chip, ChipGroup, ChipList } from "@tecton/react/tecton/chip"
+import { Badge } from "@tecton/react/badge"
+import { Chip, ChipGroup, ChipList } from "@tecton/react/chip"
 
 import { Caption, Cell, ColumnHeader, Page, Section } from "./matrix"
 

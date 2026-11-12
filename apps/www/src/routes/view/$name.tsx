@@ -1,7 +1,7 @@
 import * as React from "react"
 import { createFileRoute, notFound } from "@tanstack/react-router"
 
-import { Spinner } from "@tecton/react/components/spinner"
+import { Spinner } from "@tecton/react/spinner"
 
 import { getBlock, loadBlock } from "@/lib/blocks"
 

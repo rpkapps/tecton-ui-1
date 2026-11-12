@@ -17,18 +17,18 @@ import {
   TrashIcon,
 } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import { Meter } from "@tecton/react/tecton/meter"
-import { useLocale } from "@tecton/react/tecton/provider"
+} from "@tecton/react/dropdown-menu"
+import { Meter } from "@tecton/react/meter"
+import { useLocale } from "@tecton/react/provider"
 
 import { formatFirstOil, riskLabel, statusMeta } from "../data"
 import type { FieldDevelopmentAlternative } from "../data"

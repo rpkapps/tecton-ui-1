@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/base/card-small.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { ChevronRightIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Card,
   CardContent,
@@ -9,7 +9,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
+} from "@tecton/react/card"
 
 export function CardSmall() {
   const featureName = "Scheduled reports"

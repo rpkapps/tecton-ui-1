@@ -17,7 +17,7 @@ import {
   CommandList,
   CommandSeparator,
   CommandShortcut,
-} from "@tecton/react/components/command"
+} from "@tecton/react/command"
 
 export function CommandDemo() {
   return (

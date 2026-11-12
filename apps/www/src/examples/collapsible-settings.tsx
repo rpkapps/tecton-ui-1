@@ -4,21 +4,21 @@
 import * as React from "react"
 import { MaximizeIcon, MinimizeIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
+} from "@tecton/react/card"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@tecton/react/components/collapsible"
-import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+} from "@tecton/react/collapsible"
+import { Field, FieldGroup, FieldLabel } from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 
 export function CollapsibleSettings() {
   const [isOpen, setIsOpen] = React.useState(false)

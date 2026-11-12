@@ -1,6 +1,6 @@
 ---
 component: Separator
-module: "@tecton/react/components/separator"
+module: "@tecton/react/separator"
 family: surfaces
 exports: [Separator]
 notFor:

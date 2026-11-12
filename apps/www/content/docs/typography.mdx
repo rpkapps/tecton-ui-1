@@ -24,6 +24,7 @@ The Tecton scale, with the closest Tailwind utilities. Headings use weight 500 (
 | heading1 | 1.5rem / 500 / 1.25 | `text-2xl font-medium` |
 | heading2 | 1.25rem / 500 / 1.2 | `text-xl font-medium` |
 | large | 1rem / 500 / 1.25 | `text-base font-medium` |
+| largeStrong | 1rem / 700 / 1.25 | `text-base font-bold` |
 | medium (body) | 0.875rem / 400 / 1.2857 | `text-sm` |
 | mediumStrong | 0.875rem / 500 | `text-sm font-medium` |
 | small | 0.75rem / 400 / 1.333 | `text-xs` |
@@ -37,6 +38,7 @@ The Tecton scale, with the closest Tailwind utilities. Headings use weight 500 (
 
 The raw values are also available as `--tecton-font-size-*`, `--tecton-font-weight-*` and `--tecton-line-height-*` variables in `tecton-tokens.css`.
 
+Figtree is loaded at 400, 500, 600 and 700 (`font-normal`, `font-medium`, `font-semibold`, `font-bold`), and IBM Plex Mono at 400 and 500. The browser does not fake other weights (`font-synthesis-weight: none`): `font-black` renders at the nearest loaded weight instead of a smeared bold.
 <Callout variant="info">
   The shadcn components keep their own text sizes (for example `text-sm` on buttons and inputs), which coincide with Tecton's `actionMedium` / `medium` styles.
 </Callout>

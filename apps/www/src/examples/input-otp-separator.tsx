@@ -4,7 +4,7 @@ import {
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "@tecton/react/components/input-otp"
+} from "@tecton/react/input-otp"
 
 export default function InputOTPWithSeparator() {
   return (

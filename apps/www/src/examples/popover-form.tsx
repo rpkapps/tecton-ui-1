@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/base/popover-form.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Button } from "@tecton/react/components/button"
-import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+import { Button } from "@tecton/react/button"
+import { Field, FieldGroup, FieldLabel } from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 import {
   Popover,
   PopoverContent,
@@ -9,7 +9,7 @@ import {
   PopoverHeader,
   PopoverTitle,
   PopoverTrigger,
-} from "@tecton/react/components/popover"
+} from "@tecton/react/popover"
 
 export function PopoverForm() {
   return (

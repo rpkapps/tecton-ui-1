@@ -11,21 +11,18 @@ import {
   FieldLabel,
   FieldLegend,
   FieldSet,
-} from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
-import { Label } from "@tecton/react/components/label"
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@tecton/react/components/radio-group"
+} from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
+import { Label } from "@tecton/react/label"
+import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { Textarea } from "@tecton/react/components/textarea"
+} from "@tecton/react/select"
+import { Textarea } from "@tecton/react/textarea"
 
 import { defaultWellHeader, operators, rigs, wellTypes } from "../data"
 import type { WellHeader, WellType } from "../data"

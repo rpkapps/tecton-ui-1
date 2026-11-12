@@ -1,4 +1,4 @@
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 
 const variants = ["success", "warning", "info", "destructive"] as const
 

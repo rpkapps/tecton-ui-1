@@ -1,6 +1,6 @@
 ---
 component: CircularProgress
-module: "@tecton/react/tecton/circular-progress"
+module: "@tecton/react/circular-progress"
 family: progress
 exports: [CircularProgress]
 notFor:

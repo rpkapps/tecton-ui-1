@@ -3,7 +3,7 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { Panel, PanelFooter } from "@tecton/react/tecton/panel"
+import { Panel, PanelFooter } from "@tecton/react/panel"
 
 import { AgentComposer } from "./components/agent-composer"
 import { AgentMessageList } from "./components/agent-message-list"

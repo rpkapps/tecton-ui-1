@@ -12,18 +12,18 @@ import {
   ZoomOutIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-} from "@tecton/react/components/dropdown-menu"
-import { Toggle } from "@tecton/react/components/toggle"
+} from "@tecton/react/dropdown-menu"
+import { Toggle } from "@tecton/react/toggle"
 import {
   OverflowDivider,
   OverflowItem,
   OverflowSpacer,
   Toolbar,
-} from "@tecton/react/tecton/overflow"
+} from "@tecton/react/overflow"
 
 const tools = [
   { id: "select", label: "Select", icon: MousePointer2Icon, priority: 3 },

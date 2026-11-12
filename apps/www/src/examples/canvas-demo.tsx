@@ -8,7 +8,7 @@ import {
   CanvasSurface,
   CanvasToolbar,
   CanvasToolbarButton,
-} from "@tecton/react/tecton/canvas"
+} from "@tecton/react/canvas"
 
 export default function CanvasDemo() {
   return (

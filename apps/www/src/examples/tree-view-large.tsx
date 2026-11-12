@@ -1,16 +1,13 @@
 import * as React from "react"
 
-import {
-  ContextMenuContent,
-  ContextMenuItem,
-} from "@tecton/react/components/context-menu"
+import { ContextMenuContent, ContextMenuItem } from "@tecton/react/context-menu"
 import {
   moveTreeItems,
   TreeView,
   TreeViewCollection,
   TreeViewItem,
   TreeViewItemContent,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 type Node = { id: string; name: string; children?: Node[] }
 

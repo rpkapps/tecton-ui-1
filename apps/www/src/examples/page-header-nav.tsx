@@ -8,20 +8,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-} from "@tecton/react/components/dropdown-menu"
-import { Tabs, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
-import { OverflowItem, OverflowSpacer } from "@tecton/react/tecton/overflow"
+} from "@tecton/react/dropdown-menu"
+import { Tabs, TabsList, TabsTrigger } from "@tecton/react/tabs"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
+import { OverflowItem, OverflowSpacer } from "@tecton/react/overflow"
 import {
   PageHeader,
   PageHeaderActions,
   PageHeaderContent,
   PageHeaderNav,
   PageHeaderTitle,
-} from "@tecton/react/tecton/page-header"
+} from "@tecton/react/page-header"
 
 const sections = [
   { id: "overview", label: "Overview" },

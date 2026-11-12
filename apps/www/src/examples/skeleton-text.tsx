@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/skeleton-text.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Skeleton } from "@tecton/react/components/skeleton"
+import { Skeleton } from "@tecton/react/skeleton"
 
 export function SkeletonText() {
   return (

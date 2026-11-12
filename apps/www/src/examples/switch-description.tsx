@@ -4,8 +4,8 @@ import {
   FieldContent,
   FieldDescription,
   FieldLabel,
-} from "@tecton/react/components/field"
-import { Switch } from "@tecton/react/components/switch"
+} from "@tecton/react/field"
+import { Switch } from "@tecton/react/switch"
 
 export function SwitchDescription() {
   return (

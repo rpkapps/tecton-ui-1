@@ -5,7 +5,7 @@ import { cn } from "cn"
 
 import { CopyButton } from "@/components/copy-button"
 import { getIconForLanguageExtension } from "@/components/language-icon"
-import { highlightCode } from "@/lib/highlight"
+import { highlightCode, highlightHtml } from "@/lib/highlight"
 
 /** `null`: highlighting failed, render the plain code. */
 const cache = new Map<string, Promise<string | null>>()
@@ -58,11 +58,11 @@ export function getHighlighted(code: string, lang: string) {
     if (html) {
       promise = fulfilled(html)
     } else {
-      promise = highlightCode({ data: { code, lang } }).catch(() => {
-        // Retry on the next mount; this render falls back to plain code.
-        cache.delete(key)
-        return null
-      })
+      // Code only known at runtime (a block's source) has no prerendered
+      // result on a static host: highlight it in the browser instead.
+      promise = highlightCode({ data: { code, lang } })
+        .catch(() => highlightHtml(code, lang))
+        .catch(() => null)
     }
     cache.set(key, promise)
   }

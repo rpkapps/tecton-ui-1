@@ -1,6 +1,6 @@
 ---
 component: Checkbox
-module: "@tecton/react/components/checkbox"
+module: "@tecton/react/checkbox"
 family: forms
 exports: [Checkbox]
 notFor:

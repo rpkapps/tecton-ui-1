@@ -6,7 +6,7 @@ import type { RowSelectionState, SortingState } from "@tanstack/react-table"
 import { cn } from "cn"
 import { PlusIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Table,
   TableBody,
@@ -14,7 +14,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 import {
   createFdaColumns,

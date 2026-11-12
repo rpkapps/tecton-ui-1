@@ -3,12 +3,8 @@ import path from "node:path"
 import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import {
-  InputOTP,
-  InputOTPGroup,
-  InputOTPSlot,
-} from "@tecton/react/components/input-otp"
-import { Select, SelectTrigger } from "@tecton/react/components/select"
+import { InputOTP, InputOTPGroup, InputOTPSlot } from "@tecton/react/input-otp"
+import { Select, SelectTrigger } from "@tecton/react/select"
 
 // The registry build turns the style's `cn-*` classes into Tailwind classes,
 // but only inside a `className` or a `cva()`. A `cn-*` class anywhere else
@@ -52,21 +48,31 @@ describe("SelectTrigger variant", () => {
     expect(trigger).toHaveClass("rounded-md", "border", "bg-transparent")
   })
 
-  it("renders filled as a muted field with a bottom border", () => {
+  it("renders filled as a filled field with no border", () => {
     const trigger = renderTrigger("filled")
     expect(trigger).toHaveAttribute("data-variant", "filled")
-    expect(trigger).toHaveClass("bg-muted", "border-x-0", "border-t-0")
-    expect(trigger).not.toHaveClass("bg-transparent")
+    expect(trigger).toHaveClass(
+      "bg-input-filled",
+      "border-transparent",
+      "rounded-md"
+    )
+    expect(trigger).not.toHaveClass("bg-transparent", "border-x-0")
   })
 
-  it("renders text as an underline without inline-start padding", () => {
+  it("renders text with no underline until focus, and no inline-start padding", () => {
     const trigger = renderTrigger("text")
     // Logical padding: components.json has "rtl": true.
-    expect(trigger).toHaveClass("rounded-none", "border-x-0", "ps-0")
+    expect(trigger).toHaveClass(
+      "rounded-none",
+      "border-x-0",
+      "border-transparent",
+      "focus-visible:border-ring",
+      "ps-0"
+    )
     expect(trigger).not.toHaveClass("ps-2")
   })
 
-  it("keeps a visible focus ring on every variant", () => {
+  it("keeps a visible focus indicator on every variant", () => {
     for (const variant of ["outline", "filled", "text"] as const) {
       const { unmount } = render(
         <Select>
@@ -75,10 +81,17 @@ describe("SelectTrigger variant", () => {
           </SelectTrigger>
         </Select>
       )
-      expect(screen.getByRole("combobox")).toHaveClass(
-        "focus-visible:ring-2",
-        "focus-visible:ring-ring"
-      )
+      const trigger = screen.getByRole("combobox")
+      if (variant === "text") {
+        // The underline turns the ring colour instead of drawing a ring.
+        expect(trigger).toHaveClass("focus-visible:border-ring")
+        expect(trigger).toHaveClass("focus-visible:ring-0")
+      } else {
+        expect(trigger).toHaveClass(
+          "focus-visible:ring-2",
+          "focus-visible:ring-ring"
+        )
+      }
       unmount()
     }
   })

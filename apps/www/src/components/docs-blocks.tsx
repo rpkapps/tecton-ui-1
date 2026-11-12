@@ -4,17 +4,8 @@ import * as React from "react"
 import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@tecton/react/components/alert"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@tecton/react/components/tabs"
+import { Alert, AlertDescription, AlertTitle } from "@tecton/react/alert"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/tabs"
 
 /* ------------------------------------------------------------------------ */
 /* CodeTabs — "Command" / "Manual" installation tabs. The chosen tab is       */

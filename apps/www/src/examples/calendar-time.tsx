@@ -4,14 +4,14 @@
 import * as React from "react"
 import { Clock2Icon } from "lucide-react"
 
-import { Calendar } from "@tecton/react/components/calendar"
-import { Card, CardContent, CardFooter } from "@tecton/react/components/card"
-import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
+import { Calendar } from "@tecton/react/calendar"
+import { Card, CardContent, CardFooter } from "@tecton/react/card"
+import { Field, FieldGroup, FieldLabel } from "@tecton/react/field"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 
 export function CalendarWithTime() {
   const [date, setDate] = React.useState<Date | undefined>(

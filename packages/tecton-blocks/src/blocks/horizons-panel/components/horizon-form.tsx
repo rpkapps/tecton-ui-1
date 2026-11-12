@@ -3,19 +3,19 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { Field, FieldError, FieldLabel } from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+import { Field, FieldError, FieldLabel } from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { Separator } from "@tecton/react/components/separator"
-import { Slider } from "@tecton/react/components/slider"
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
-import { useLocale } from "@tecton/react/tecton/provider"
+} from "@tecton/react/select"
+import { Separator } from "@tecton/react/separator"
+import { Slider } from "@tecton/react/slider"
+import { ColorSwatch } from "@tecton/react/color-swatch"
+import { useLocale } from "@tecton/react/provider"
 
 import {
   getPair,

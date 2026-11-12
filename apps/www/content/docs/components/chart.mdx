@@ -31,7 +31,7 @@ We designed the `chart` component with composition in mind. **You build your cha
 ```tsx lineNumbers /ChartContainer/ /ChartTooltipContent/
 import { Bar, BarChart } from "recharts"
 
-import { ChartContainer, ChartTooltipContent } from "@tecton/react/components/chart"
+import { ChartContainer, ChartTooltipContent } from "@tecton/react/chart"
 
 export function MyChart() {
   return (
@@ -90,7 +90,7 @@ const chartData = [
 The chart config holds configuration for the chart. This is where you place human-readable strings, such as labels, icons and color tokens for theming.
 
 ```tsx title="components/example-chart.tsx" lineNumbers
-import { type ChartConfig } from "@tecton/react/components/chart"
+import { type ChartConfig } from "@tecton/react/chart"
 
 const chartConfig = {
   desktop: {
@@ -201,7 +201,7 @@ To add a tooltip, we'll use the custom `ChartTooltip` and `ChartTooltipContent` 
 <Step>Import the `ChartTooltip` and `ChartTooltipContent` components.</Step>
 
 ```tsx
-import { ChartTooltip, ChartTooltipContent } from "@tecton/react/components/chart"
+import { ChartTooltip, ChartTooltipContent } from "@tecton/react/chart"
 ```
 
 <Step>Add the components to your chart.</Step>
@@ -242,7 +242,7 @@ We'll do the same for the legend. We'll use the `ChartLegend` and `ChartLegendCo
 <Step>Import the `ChartLegend` and `ChartLegendContent` components.</Step>
 
 ```tsx
-import { ChartLegend, ChartLegendContent } from "@tecton/react/components/chart"
+import { ChartLegend, ChartLegendContent } from "@tecton/react/chart"
 ```
 
 <Step>Add the components to your chart.</Step>
@@ -290,7 +290,7 @@ This allows you to share config and color tokens between charts. It can also wor
 ```tsx lineNumbers /ChartConfig/
 import { Monitor } from "lucide-react"
 
-import { type ChartConfig } from "@tecton/react/components/chart"
+import { type ChartConfig } from "@tecton/react/chart"
 
 const chartConfig = {
   desktop: {
@@ -411,7 +411,7 @@ Use `labelKey` and `nameKey` to use a custom key for the tooltip label and name.
 Chart comes with the `<ChartTooltip>` and `<ChartTooltipContent>` components. You can use these two components to add custom tooltips to your chart.
 
 ```tsx title="components/example-chart.tsx"
-import { ChartTooltip, ChartTooltipContent } from "@tecton/react/components/chart"
+import { ChartTooltip, ChartTooltipContent } from "@tecton/react/chart"
 ```
 
 ```tsx title="components/example-chart.tsx"
@@ -472,7 +472,7 @@ This will use `Total Visitors` for label and `Chrome` and `Safari` for the toolt
 You can use the custom `<ChartLegend>` and `<ChartLegendContent>` components to add a legend to your chart.
 
 ```tsx title="components/example-chart.tsx"
-import { ChartLegend, ChartLegendContent } from "@tecton/react/components/chart"
+import { ChartLegend, ChartLegendContent } from "@tecton/react/chart"
 ```
 
 ```tsx title="components/example-chart.tsx"

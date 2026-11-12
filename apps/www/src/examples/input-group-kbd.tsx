@@ -5,8 +5,8 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
-import { Kbd } from "@tecton/react/components/kbd"
+} from "@tecton/react/input-group"
+import { Kbd } from "@tecton/react/kbd"
 
 export function InputGroupKbd() {
   return (

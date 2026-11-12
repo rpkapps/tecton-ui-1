@@ -7,8 +7,8 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Checkbox } from "@tecton/react/components/checkbox"
-import { Label } from "@tecton/react/components/label"
+import { Checkbox } from "@tecton/react/checkbox"
+import { Label } from "@tecton/react/label"
 
 const translations: Translations = {
   en: {

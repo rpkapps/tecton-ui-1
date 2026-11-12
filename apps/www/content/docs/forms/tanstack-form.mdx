@@ -114,7 +114,7 @@ Use the `useForm` hook from TanStack Form to create your form instance with Zod 
 
 ```tsx lineNumbers title="form.tsx" {10-21}
 import { useForm } from "@tanstack/react-form"
-import { toast } from "sonner"
+import { toast } from "@tecton/react/toast"
 import * as z from "zod"
 
 const formSchema = z.object({
@@ -131,7 +131,7 @@ export function BugReportForm() {
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      toast.success("Form submitted successfully")
+      toast.add({ title: "Form submitted successfully", type: "success" })
     },
   })
 

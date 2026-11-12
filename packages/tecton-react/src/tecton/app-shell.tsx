@@ -4,28 +4,20 @@ import * as React from "react"
 import { cn } from "cn"
 import { EllipsisVerticalIcon, SearchIcon } from "lucide-react"
 
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@tecton/react/components/avatar"
-import { Button } from "@tecton/react/components/button"
+import { Avatar, AvatarFallback, AvatarImage } from "@tecton/react/avatar"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import { Kbd } from "@tecton/react/components/kbd"
+} from "@tecton/react/dropdown-menu"
+import { Kbd } from "@tecton/react/kbd"
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
-} from "@tecton/react/components/resizable"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@tecton/react/components/tooltip"
+} from "@tecton/react/resizable"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@tecton/react/tooltip"
 
 /**
  * Tecton AppShell — the application frame: a solid top navigation bar,

@@ -534,6 +534,22 @@
       "confidence": "exact",
       "note": "Progress track behind the `progress` bar, as the Tecton MUI linear progress."
     },
+    "input-filled": {
+      "dark": "--tecton-color-input-filled-bg",
+      "confidence": "exact",
+      "note": "Surface of the `filled` input, textarea, select trigger and number field."
+    },
+    "input-filled-focus": {
+      "dark": "--tecton-color-input-filled-bg-focus",
+      "confidence": "exact",
+      "note": "Focused `filled` field."
+    },
+    "number-field-fill": {
+      "dark": "--tecton-color-action-secondary-bg-focus",
+      "light": "--tecton-color-accent-lilac-muted",
+      "confidence": "approximated",
+      "note": "Number field slider fill up to the value, also while dragging. The number sits on it, so it keeps text-primary at 7:1 or more in both modes (light 11.2, dark 8.2)."
+    },
     "content-hover": {
       "dark": "--tecton-color-content-bg-hover",
       "confidence": "exact",

@@ -1,4 +1,4 @@
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+import { ColorSwatch } from "@tecton/react/color-swatch"
 
 const sizes = ["xs", "sm", "md", "lg", "xl"] as const
 

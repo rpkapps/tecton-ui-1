@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -23,8 +23,8 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   useSidebar,
-} from "@tecton/react/components/sidebar"
-import { Link } from "@tecton/react/tecton/link"
+} from "@tecton/react/sidebar"
+import { Link } from "@tecton/react/link"
 
 import type { RecentProject } from "../data"
 

@@ -3,13 +3,8 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
-import {
-  Chip,
-  ChipGroup,
-  ChipList,
-  ChipRemove,
-} from "@tecton/react/tecton/chip"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { Chip, ChipGroup, ChipList, ChipRemove } from "@tecton/react/chip"
+import { TectonProvider } from "@tecton/react/provider"
 
 function Tags(
   props: React.ComponentProps<typeof ChipGroup> & {

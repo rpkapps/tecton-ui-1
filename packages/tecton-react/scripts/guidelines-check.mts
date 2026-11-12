@@ -20,8 +20,8 @@
  *     frontmatter);
  *   - the file is 40 to 100 lines;
  *   - no text names a library underneath Tecton (by name, package or escape
- *     hatch) except a package name in an import prohibition —
- *     `libraryNameErrors` in guidelines-lib.mts.
+ *     hatch) — `libraryNameErrors` in guidelines-lib.mts. Only the skill may
+ *     spell a package name, in an import prohibition.
  *
  * The same library-name lint runs over topics/*.md, the Markdown under skills/,
  * every string in families.json and every adopted rule.
@@ -133,10 +133,13 @@ function checkPages(dir: string): string[] {
       if (entry.endsWith(".md")) files.push(path.join(skills, entry))
     }
   }
+  const skillsDir = path.join(PKG_ROOT, "skills") + path.sep
   return files.flatMap((file) =>
     libraryNameErrors(
       readFileSync(file, "utf8"),
-      path.relative(PKG_ROOT, file).split(path.sep).join("/")
+      path.relative(PKG_ROOT, file).split(path.sep).join("/"),
+      // Only the skill (read by AI agents) may spell out the import prohibition.
+      { allowProhibitions: path.resolve(file).startsWith(skillsDir) }
     )
   )
 }

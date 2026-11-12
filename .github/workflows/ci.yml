@@ -1,10 +1,15 @@
-name: CI
+name: Tests and checks
+# Run title: the PR for pull requests, the branch otherwise.
+run-name: >-
+  Tests and checks · ${{ github.event_name == 'pull_request'
+  && format('PR #{0}: {1}', github.event.pull_request.number, github.event.pull_request.title)
+  || github.ref_name }}
 
 on:
   pull_request:
   push:
     branches:
-      - main
+      - dev
   workflow_dispatch:
 
 permissions:
@@ -12,13 +17,14 @@ permissions:
 
 concurrency:
   group: ci-${{ github.ref }}
-  # Superseded PR runs are cancelled; every push to main gets its own full run.
+  # Superseded PR runs are cancelled; every push to dev gets its own full run.
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 # Third-party actions are pinned to the commit their tag resolved to (tag in the comment).
 jobs:
   # Verifies the shadcn-generated components still match the base-tecton registry mirror.
   generated-check:
+    name: Generated components match the registry
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -117,6 +123,7 @@ jobs:
 
   # Builds @tecton/react, typechecks, lints, tests and verifies that generated output is committed.
   checks:
+    name: Format, typecheck, lint, test and build
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -145,11 +152,26 @@ jobs:
       - name: Check formatting
         run: pnpm format:check
 
+      # A released version's notes are its `## [X.Y.Z]` section, so a release pull request
+      # without one fails here. Pre-releases use `## [Unreleased]`.
+      - name: CHANGELOG.md has a section for the package version
+        shell: bash
+        run: |
+          set -euo pipefail
+          version="$(node -p "require('./packages/tecton-react/package.json').version")"
+          if [[ "$version" != *-* ]] && ! grep -q "^## \[${version}\]" CHANGELOG.md; then
+            echo "::error file=CHANGELOG.md::no '## [${version}]' section for the package version; make release pull requests with 'pnpm release'"
+            exit 1
+          fi
+
       - name: Build @tecton/react
         run: pnpm --filter @tecton/react build
 
       - name: Check @tecton/react exports
         run: pnpm --filter @tecton/react exports:check
+
+      - name: Type-check a consumer of the packed @tecton/react
+        run: pnpm --filter @tecton/react consumer:check
 
       - name: Typecheck workspace
         run: pnpm -r run typecheck
@@ -211,7 +233,10 @@ jobs:
           fi
 
   # Builds @tecton/react and prerenders the docs site on every PR (slower crawl, kept out of `checks`).
+  # Skipped on pushes to dev, where the "Deploy docs site" workflow runs the same build.
   docs-build:
+    name: Docs site builds and links resolve
+    if: ${{ github.event_name != 'push' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:

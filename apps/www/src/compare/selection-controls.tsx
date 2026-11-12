@@ -1,11 +1,8 @@
 import * as React from "react"
 
-import { Checkbox } from "@tecton/react/components/checkbox"
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@tecton/react/components/radio-group"
-import { Switch } from "@tecton/react/components/switch"
+import { Checkbox } from "@tecton/react/checkbox"
+import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
+import { Switch } from "@tecton/react/switch"
 
 import { Caption, Matrix, Page, Section } from "./matrix"
 

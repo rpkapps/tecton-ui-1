@@ -28,7 +28,7 @@ Customizable.
 ## Usage
 
 ```tsx lineNumbers title="app/layout.tsx"
-import { SidebarProvider, SidebarTrigger } from "@tecton/react/components/sidebar"
+import { SidebarProvider, SidebarTrigger } from "@tecton/react/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -51,7 +51,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarHeader,
-} from "@tecton/react/components/sidebar"
+} from "@tecton/react/sidebar"
 
 export function AppSidebar() {
   return (
@@ -198,7 +198,7 @@ The main `Sidebar` component used to render a collapsible sidebar.
 The `useSidebar` hook is used to control the sidebar.
 
 ```tsx lineNumbers
-import { useSidebar } from "@tecton/react/components/sidebar"
+import { useSidebar } from "@tecton/react/sidebar"
 
 export function AppSidebar() {
   const {
@@ -419,7 +419,7 @@ The `SidebarMenuSkeleton` component is used to render a skeleton for a `SidebarM
 Use the `SidebarTrigger` component to render a button that toggles the sidebar.
 
 ```tsx lineNumbers
-import { useSidebar } from "@tecton/react/components/sidebar"
+import { useSidebar } from "@tecton/react/sidebar"
 
 export function CustomTrigger() {
   const { toggleSidebar } = useSidebar()
@@ -513,7 +513,7 @@ Here are some tips for styling the sidebar based on different states.
 The sidebar's contents follow the reading direction set with [`TectonProvider`](/docs/tecton/provider). `side` is a physical edge, so put a start-edge sidebar on the right in right-to-left layouts:
 
 ```tsx lineNumbers
-const direction = useDirection() // @tecton/react/tecton/provider
+const direction = useDirection() // @tecton/react/provider
 
 <Sidebar side={direction === "rtl" ? "right" : "left"} />
 ```

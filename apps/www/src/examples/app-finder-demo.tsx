@@ -9,7 +9,7 @@ import {
   AppFinderMenu,
   AppFinderTrigger,
   type AppFinderTone,
-} from "@tecton/react/tecton/app-finder"
+} from "@tecton/react/app-finder"
 
 const catalogue: {
   category: string

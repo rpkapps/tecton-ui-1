@@ -4,13 +4,13 @@ import { render, renderHook } from "@testing-library/react"
 import { renderToString } from "react-dom/server"
 import { afterEach, describe, expect, it, vi } from "vitest"
 
-import { usePortalTarget } from "@tecton/react/tecton/portal"
+import { usePortalTarget } from "@tecton/react/portal"
 import {
   TectonProvider,
   useDirection,
   useLocale,
   type TectonProviderProps,
-} from "@tecton/react/tecton/provider"
+} from "@tecton/react/provider"
 
 import { localeDirection } from "../internal/locale"
 import { shouldClientNavigate, useTectonRouter } from "../internal/router"

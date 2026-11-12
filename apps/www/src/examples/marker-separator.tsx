@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/marker-separator.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Marker, MarkerContent } from "@tecton/react/components/marker"
+import { Marker, MarkerContent } from "@tecton/react/marker"
 
 export function MarkerSeparatorDemo() {
   return (

@@ -1,6 +1,6 @@
 ---
 component: Tabs
-module: "@tecton/react/components/tabs"
+module: "@tecton/react/tabs"
 family: selection
 exports: [Tabs, TabsList, TabsTrigger, TabsContent, tabsListVariants]
 notFor:

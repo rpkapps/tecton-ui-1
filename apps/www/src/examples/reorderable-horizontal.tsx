@@ -6,7 +6,7 @@ import {
   Reorderable,
   ReorderableHandle,
   ReorderableItem,
-} from "@tecton/react/tecton/reorderable"
+} from "@tecton/react/reorderable"
 
 const LOGS = ["Gamma ray", "Resistivity", "Density", "Neutron", "Sonic"]
 

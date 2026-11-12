@@ -7,7 +7,7 @@ import {
   useTable,
 } from "@tanstack/react-table"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 import {
   Table,
   TableBody,
@@ -15,11 +15,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+} from "@tecton/react/table"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
 
 type Well = {
   id: string

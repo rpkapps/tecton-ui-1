@@ -3,17 +3,14 @@ import { act, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import {
-  ContextMenuContent,
-  ContextMenuItem,
-} from "@tecton/react/components/context-menu"
+import { ContextMenuContent, ContextMenuItem } from "@tecton/react/context-menu"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+} from "@tecton/react/dropdown-menu"
+import { TectonProvider } from "@tecton/react/provider"
 import {
   moveTreeItems,
   TreeView,
@@ -23,7 +20,7 @@ import {
   TreeViewItemContent,
   TreeViewVisibilityToggle,
   type TreeViewMove,
-} from "@tecton/react/tecton/tree-view"
+} from "@tecton/react/tree-view"
 
 function Project(props: Partial<React.ComponentProps<typeof TreeView>>) {
   return (

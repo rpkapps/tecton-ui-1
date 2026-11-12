@@ -1,6 +1,6 @@
 // Synced from shadcn/ui (apps/v4/examples/base/switch-sizes.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Field, FieldGroup, FieldLabel } from "@tecton/react/components/field"
-import { Switch } from "@tecton/react/components/switch"
+import { Field, FieldGroup, FieldLabel } from "@tecton/react/field"
+import { Switch } from "@tecton/react/switch"
 
 export function SwitchSizes() {
   return (

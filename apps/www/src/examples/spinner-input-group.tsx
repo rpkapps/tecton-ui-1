@@ -7,8 +7,8 @@ import {
   InputGroupButton,
   InputGroupInput,
   InputGroupTextarea,
-} from "@tecton/react/components/input-group"
-import { Spinner } from "@tecton/react/components/spinner"
+} from "@tecton/react/input-group"
+import { Spinner } from "@tecton/react/spinner"
 
 export function SpinnerInputGroup() {
   return (

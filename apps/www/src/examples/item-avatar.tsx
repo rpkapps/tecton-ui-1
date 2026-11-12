@@ -5,8 +5,8 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@tecton/react/components/avatar"
-import { Button } from "@tecton/react/components/button"
+} from "@tecton/react/avatar"
+import { Button } from "@tecton/react/button"
 import {
   Item,
   ItemActions,
@@ -14,7 +14,7 @@ import {
   ItemDescription,
   ItemMedia,
   ItemTitle,
-} from "@tecton/react/components/item"
+} from "@tecton/react/item"
 
 export function ItemAvatar() {
   return (

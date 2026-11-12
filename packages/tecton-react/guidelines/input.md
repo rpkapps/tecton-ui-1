@@ -1,6 +1,6 @@
 ---
 component: Input
-module: "@tecton/react/components/input"
+module: "@tecton/react/input"
 family: forms
 exports: [Input]
 notFor:
@@ -10,12 +10,14 @@ notFor:
     use: InputGroup
   - need: the label, description and error message around the control
     use: Field
+  - need: a number with bounds, minus and plus buttons, a unit or locale formatting
+    use: NumberField
 related: [Field, InputGroup, Textarea]
 ---
 
 ## Use it when
 
-- A single line of text: name, email, password, number, date, file.
+- A single line of text: name, email, password, date, file.
 - The value is free-form; a fixed set of options belongs in a picker instead.
 - Inside a `Field`, so the control arrives with a label and room for an error.
 

@@ -1,4 +1,4 @@
-import type { AppFinderTone } from "@tecton/react/tecton/app-finder"
+import type { AppFinderTone } from "@tecton/react/app-finder"
 
 export type AppCategory =
   | "Subsurface"

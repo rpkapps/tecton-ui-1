@@ -1,6 +1,6 @@
 ---
 component: Dropzone
-module: "@tecton/react/tecton/dropzone"
+module: "@tecton/react/dropzone"
 family: forms
 exports: [Dropzone, DropzoneArea, DropzoneTrigger, DropzoneList, DropzoneRemove, useDropzone, formatFileSize]
 notFor:

@@ -3,8 +3,8 @@
 
 import * as React from "react"
 
-import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
-import { Button } from "@tecton/react/components/button"
+import { Bubble, BubbleContent } from "@tecton/react/bubble"
+import { Button } from "@tecton/react/button"
 import {
   Card,
   CardContent,
@@ -12,8 +12,8 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
-import { Message, MessageContent } from "@tecton/react/components/message"
+} from "@tecton/react/card"
+import { Message, MessageContent } from "@tecton/react/message"
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -22,8 +22,8 @@ import {
   MessageScrollerProvider,
   MessageScrollerViewport,
   useMessageScroller,
-} from "@tecton/react/components/message-scroller"
-import { Tabs, TabsList, TabsTrigger } from "@tecton/react/components/tabs"
+} from "@tecton/react/message-scroller"
+import { Tabs, TabsList, TabsTrigger } from "@tecton/react/tabs"
 
 const messages = [
   {

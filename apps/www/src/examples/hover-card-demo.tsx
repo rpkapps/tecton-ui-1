@@ -3,13 +3,13 @@ import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@tecton/react/components/avatar"
-import { Button } from "@tecton/react/components/button"
+} from "@tecton/react/avatar"
+import { Button } from "@tecton/react/button"
 import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
-} from "@tecton/react/components/hover-card"
+} from "@tecton/react/hover-card"
 
 export default function HoverCardDemo() {
   return (

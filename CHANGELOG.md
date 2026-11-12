@@ -1,0 +1,171 @@
+# Changelog
+
+All notable changes to `@tecton/react`. The format follows
+[Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html). [RELEASE.md](RELEASE.md) explains how to
+write entries and cut a release.
+
+## [Unreleased]
+
+## [0.3.0] - 2026-11-02
+
+### Added
+
+- `NumberField` (`@tecton/react/number-field`): a numeric input with minus and plus buttons, `min` /
+  `max` / `step`, arrow-key and mouse-wheel stepping, a nullable value, `Intl` formatting in the
+  provider locale, a unit suffix, a
+  scrubbable label, and `NumberFieldSlider`, which fills to the value and changes it on a sideways
+  drag (#14).
+- `Dropzone` (`@tecton/react/dropzone`): a drag-and-drop file picker built on `Empty` and
+  `Attachment`. It checks files against `accept`, `maxSize`, `minSize`, `maxFiles` and `multiple`,
+  reports refused files to `onFileReject` with a reason and a ready message, submits the files with
+  a form through `name`, moves focus sensibly after a removal, and announces added, refused and
+  removed files. `useDropzone()` and `formatFileSize()` are exported too.
+- `DocumentTabs` (`@tecton/react/document-tabs`): workspace tabs the user opens, closes,
+  renames and reorders, like browser tabs. The parts mirror `Tabs`; `onClose`, `onRename` and
+  `onReorder` turn each action on. Tabs that do not fit move into a More menu, a context menu offers
+  Rename, Close and Close other tabs (`DocumentTabsMenu` to choose the items), `size="sm"` gives a
+  nested strip, and `messages` translates the strip's text.
+- `TreeView`: `contextMenu` gives every row a context menu (right-click, long press, Shift+F10 or
+  the Menu key) from a single mounted menu; `onMove` makes rows draggable by pointer, touch and
+  keyboard, between rows at any level or into folders, with `canDrop` for your own rules and
+  `moveTreeItems()` to apply a move to your data; `virtualized` renders only the rows in view, for
+  trees of thousands of rows. Rows also carry `data-context-menu-open` and `data-drop-target`, and
+  a drop animates (`dropAnimation={false}` turns it off; never with reduced motion).
+- `Reorderable` (`@tecton/react/reorderable`): rows, columns or items the user drags into
+  their own order with a pointer, a finger, the keyboard or a screen reader. `ReorderableItem`
+  renders through `render` (a `TableRow`, a `TableHead`, any element), `ReorderableHandle` is the
+  grip, and `orientation` is `"vertical"`, `"horizontal"` (a row of items such as table columns) or
+  `"grid"` (cards in rows that wrap). `mode="swap"` keeps a fixed layout of `ReorderableSlot`s whose
+  items, of any size, swap places like dashboard tiles. A drop animates (`dropAnimation={false}`
+  turns it off; never with reduced motion).
+- `TableColumnResizer` (`@tecton/react/table-column-resizer`): the grip on a column header's
+  edge that sets the column's width by dragging or with the arrow keys, documented in Data Table's
+  Column resizing section.
+- `Table` takes `virtualized`: it scrolls in a parent of bounded height, the header sticks, and
+  `TableBody` with `items` and a render function mounts only the rows in view, with
+  `aria-rowcount` / `aria-rowindex` and the focused row kept. Without `virtualized` the markup is
+  unchanged. The Table and Data Table docs gain virtualized, tree, row-reorder, column-reorder and
+  column-resize examples.
+
+### Changed
+
+- `Input`, `Textarea`, `SelectTrigger` and `NumberField` now look like Tecton's text field. `variant="filled"`
+  is rounded on every side with no underline, keeps its background on hover, and uses the new
+  `input-filled` and `input-filled-focus` tokens for its surface. `variant="text"` shows its
+  underline only on focus. Error and disabled states are unchanged.
+- `TreeView`: rows rendered from `items` are kept while `items` and the render function stay the
+  same, so selecting, focusing or expanding a row re-renders only what changed.
+- `@tecton/react` no longer depends on `react-aria-components`. `TreeView`, `Chip` and the
+  drag-and-drop reordering of `TreeView` and `DocumentTabs` run on Tecton's own primitives, with the
+  same props and keyboard behaviour, so applications install and bundle less.
+- The text Tecton components draw themselves (labels and screen-reader announcements) is
+  translated into 34 locales. Only English is bundled; the `TectonProvider` locale's strings load on
+  demand, so the first render is in English until they arrive.
+- `TreeView` drag and drop: on touch screens a row also drags from its grip without a long press;
+  a collapsed folder held under the dragged rows opens; from the keyboard, Tab also steps through
+  the drop positions and Right / Left open and close the folder aimed at; with a screen reader on a
+  touch screen, activating the grip turns every drop position into a button. A drag near an edge
+  also scrolls the container or page the tree sits in.
+
+### Fixed
+
+- `ColorSwatch`: dragging in the custom colour picker no longer lags. The picker's colour now
+  reaches `onColorChange` at most once per frame (the final colour lands on release), the picker's
+  own value is no longer written back mid-drag, and the presets are resolved only when they change
+  instead of on every pointer move (#26).
+- Field: `FieldError` now has the same line height as `FieldDescription`, so a field that swaps
+  its description for an error keeps its height and its input no longer moves.
+- Typography: `globals.css` now loads Figtree 600 and 700, so `font-semibold` and `font-bold` (and
+  the `largeStrong` style) use real font faces instead of a blurry synthesized bold. The browser no
+  longer fakes missing weights (`font-synthesis-weight: none`) (#23).
+- Command guideline: a new CRITICAL rule says `CommandDialog` needs a `Command` root around
+  `CommandInput` and `CommandList`; without it the palette throws when it opens (#21).
+- Fonts 404 in Vite production builds when `globals.css` goes through `@tailwindcss/postcss`: the
+  installation guide now says to use `@tailwindcss/vite` with Vite, or to run `postcss-import` and
+  `postcss-url` (`{ url: "rebase" }`) before `@tailwindcss/postcss`. Rsbuild, Rspack and webpack are
+  not affected (#20).
+
+## [0.2.1] - 2026-10-15
+
+### Changed
+
+- `toast` (`@tecton/react/toast`): micro-frontend remotes now share the shell's toast stack.
+
+### Fixed
+
+- `CodeBlock`: added and removed lines use a light status tint, so the code on them stays readable.
+
+## [0.2.0] - 2026-10-15
+
+### Added
+
+- `Toaster` and `toast` (`@tecton/react/toast`): temporary messages with `toast.add`,
+  `toast.update`, `toast.close`, `toast.promise` and the Tecton outlined status colours. Mount
+  `<Toaster />` once; it takes `container` (portal target) and `toastManager` (from
+  `createToastManager`, for a queue of your own).
+- `Trace` (`@tecton/react/trace`): one-line rows for an assistant's reasoning, tool calls,
+  sources and plan steps, with `running`, `error` and `pending` states and rows that expand.
+- `CodeBlock` (`@tecton/react/code-block`): code, terminal output and diffs with an
+  optional header, line numbers and a copy button; `useHighlightedCode`
+  (`@tecton/react/use-highlighted-code`) adds syntax colours, and `highlightCode`
+  (`@tecton/react/highlighter`) highlights on the server.
+
+### Changed
+
+- `@tecton/react/federation/shared` no longer shares `@tecton/react/` or the
+  libraries underneath it: each application keeps its own copy. It now lists `react`,
+  `react-dom`, `recharts` and `shiki/`. Removed entries: `@tecton/react/`,
+  `@base-ui/react`, `@base-ui/react/` and `react-aria-components`. Hosts that copied the list
+  by hand should drop them.
+- The package no longer installs `next-themes`. Applications that set the `dark` class with it
+  add it to their own dependencies (`pnpm add next-themes`).
+
+## [0.1.3] - 2026-10-14
+
+### Added
+
+- Every component module exports a `<Part>Props` type for each exported part
+  (`import type { DialogContentProps } from "@tecton/react/dialog"`).
+
+## [0.1.2] - 2026-10-14
+
+### Changed
+
+- README: rewritten install steps.
+
+## [0.1.1] - 2026-10-13
+
+### Added
+
+- A package README covering install, setup and usage.
+
+### Security
+
+- Tag stripping in the icon build, the docs sync and the docs-site page tree now repeats until no
+  tag is left (code scanning `js/incomplete-multi-character-sanitization`).
+
+## [0.1.0] - 2026-10-12
+
+First release.
+
+### Added
+
+- The shadcn/ui components in the Tecton theme, with right-to-left support.
+- Tecton components such as App shell, Panel, Page header, Chip, Stat and Tree view.
+- `TectonProvider`, which sets direction, locale, routing and theme in one place.
+- Oil and gas icons.
+- Stylesheets for standalone apps and for micro-frontends.
+- Usage guidelines for every component, and the `tecton` CLI for coding agents.
+
+Everything is imported one module at a time from the package root, for example
+`@tecton/react/button` or `@tecton/react/icons`.
+
+[Unreleased]: https://github.com/rpkapps/tecton-ui-1/compare/v0.3.0...HEAD
+[0.3.0]: https://github.com/rpkapps/tecton-ui-1/compare/v0.2.1...v0.3.0
+[0.2.1]: https://github.com/rpkapps/tecton-ui-1/compare/v0.2.0...v0.2.1
+[0.2.0]: https://github.com/rpkapps/tecton-ui-1/compare/v0.1.3...v0.2.0
+[0.1.3]: https://github.com/rpkapps/tecton-ui-1/compare/v0.1.2...v0.1.3
+[0.1.2]: https://github.com/rpkapps/tecton-ui-1/compare/v0.1.1...v0.1.2
+[0.1.1]: https://github.com/rpkapps/tecton-ui-1/compare/v0.1.0...v0.1.1
+[0.1.0]: https://github.com/rpkapps/tecton-ui-1/releases/tag/v0.1.0

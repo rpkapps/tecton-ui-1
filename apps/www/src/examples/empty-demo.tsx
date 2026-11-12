@@ -2,7 +2,7 @@
 import { cn } from "cn"
 import { ArrowUpRightIcon, FolderCodeIcon } from "lucide-react"
 
-import { Button, buttonVariants } from "@tecton/react/components/button"
+import { Button, buttonVariants } from "@tecton/react/button"
 import {
   Empty,
   EmptyContent,
@@ -10,7 +10,7 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@tecton/react/components/empty"
+} from "@tecton/react/empty"
 
 export default function EmptyDemo() {
   return (

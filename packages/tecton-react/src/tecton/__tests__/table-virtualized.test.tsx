@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 /**
  * jsdom has no layout: the table's container is 400 px tall, the header

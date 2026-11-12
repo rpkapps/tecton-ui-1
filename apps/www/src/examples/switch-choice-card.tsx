@@ -6,8 +6,8 @@ import {
   FieldGroup,
   FieldLabel,
   FieldTitle,
-} from "@tecton/react/components/field"
-import { Switch } from "@tecton/react/components/switch"
+} from "@tecton/react/field"
+import { Switch } from "@tecton/react/switch"
 
 export function SwitchChoiceCard() {
   return (

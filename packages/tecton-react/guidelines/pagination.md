@@ -1,6 +1,6 @@
 ---
 component: Pagination
-module: "@tecton/react/components/pagination"
+module: "@tecton/react/pagination"
 family: navigation
 exports: [Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext, PaginationEllipsis]
 notFor:

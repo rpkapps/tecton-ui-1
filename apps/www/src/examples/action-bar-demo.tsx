@@ -16,10 +16,10 @@ import {
   UserPlusIcon,
 } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
-import { Input } from "@tecton/react/components/input"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
+import { Input } from "@tecton/react/input"
 import {
   Table,
   TableBody,
@@ -27,17 +27,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 import {
   ActionBar,
   ActionBarActions,
   ActionBarSelection,
-} from "@tecton/react/tecton/action-bar"
+} from "@tecton/react/action-bar"
 import {
   OverflowDivider,
   OverflowItem,
   OverflowLabel,
-} from "@tecton/react/tecton/overflow"
+} from "@tecton/react/overflow"
 
 type Well = {
   id: string

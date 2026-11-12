@@ -4,7 +4,7 @@ import {
   BubbleContent,
   BubbleGroup,
   BubbleReactions,
-} from "@tecton/react/components/bubble"
+} from "@tecton/react/bubble"
 
 export function BubbleGroupDemo() {
   return (

@@ -8,7 +8,7 @@ import {
   StatHelp,
   StatLabel,
   StatValue,
-} from "@tecton/react/tecton/stat"
+} from "@tecton/react/stat"
 
 describe("Stat", () => {
   it("renders the parts with their slots and default variants", () => {

@@ -1,6 +1,6 @@
 ---
 component: Avatar
-module: "@tecton/react/components/avatar"
+module: "@tecton/react/avatar"
 family: presentation
 exports: [Avatar, AvatarImage, AvatarFallback, AvatarGroup, AvatarGroupCount, AvatarBadge]
 notFor:

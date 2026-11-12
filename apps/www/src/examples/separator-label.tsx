@@ -1,4 +1,4 @@
-import { Separator } from "@tecton/react/components/separator"
+import { Separator } from "@tecton/react/separator"
 
 /**
  * The label is ordinary text in a flex row; the two rules are decorative, so

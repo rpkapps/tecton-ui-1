@@ -6,7 +6,7 @@ import {
   useTable,
 } from "@tanstack/react-table"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 import {
   Table,
   TableBody,
@@ -14,7 +14,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 type Well = {
   id: string

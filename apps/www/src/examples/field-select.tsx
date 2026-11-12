@@ -3,7 +3,7 @@ import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 import {
   Select,
   SelectContent,
@@ -11,7 +11,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 
 const items = [
   { label: "Choose department", value: null },

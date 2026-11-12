@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Combobox as ComboboxPrimitive } from "@base-ui/react"
-import { usePortalTarget } from "@tecton/react/tecton/portal"
+import { usePortalTarget } from "@tecton/react/portal"
 import { cn } from "cn"
 
 import { Button } from "@tecton/react/components/button"

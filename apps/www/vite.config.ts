@@ -7,6 +7,7 @@ import tailwindcss from "@tailwindcss/vite"
 import { fumadocsMdx } from "fumadocs-mdx/vite"
 
 import { compareKeys } from "./src/compare/keys.ts"
+import { flatModuleAliases } from "../../packages/tecton-react/scripts/flat-aliases.ts"
 
 const blockNames = readdirSync(
   fileURLToPath(
@@ -27,18 +28,27 @@ const tectonSrc = fileURLToPath(
 // `dist/`. That is what `vite build` (and `tsc`) must see, so the docs site
 // validates the published surface. For `vite dev` there is nothing to rebuild on
 // every edit: alias the package back onto its sources. The order matters —
-// `globals.css` and `styles/` sit under `src/styles/`, everything else under
-// `src/`.
+// `globals.css` and `styles/` sit under `src/styles/`, each flat module
+// (`@tecton/react/<name>`) in the folder of `src/` that holds it, and
+// everything else (`icons`) under `src/`.
 const devAliases = [
   {
     find: /^@tecton\/react\/globals\.css$/,
     replacement: `${tectonSrc}styles/globals.css`,
   },
-  { find: /^@tecton\/react\/styles\//, replacement: `${tectonSrc}styles/` },
+  {
+    find: /^@tecton\/react\/styles\//,
+    replacement: `${tectonSrc}styles/`,
+  },
+  ...flatModuleAliases(tectonSrc),
   { find: /^@tecton\/react\//, replacement: tectonSrc },
 ]
 
+const basePath = process.env.BASE_PATH ?? ""
+
 const config = defineConfig(({ command }) => ({
+  // GitHub Pages serves a project site from `/<repo>/`: build with BASE_PATH=/<repo>.
+  base: `${basePath}/`,
   // PORT lets a harness or a second checkout run the dev server off 3000.
   server: { port: Number(process.env.PORT) || 3000 },
   // The prerender crawler fetches every page from a Vite preview server that
@@ -85,10 +95,13 @@ const config = defineConfig(({ command }) => ({
         // Example previews contain demo links (breadcrumbs, pagination…) that
         // point nowhere; only crawl the site's own sections.
         filter: (page) => {
-          if (page.path === "/") return true
-          const view = page.path.match(/^\/view\/([^/]+)$/)
+          const path = page.path.startsWith(basePath)
+            ? page.path.slice(basePath.length) || "/"
+            : page.path
+          if (path === "/" || path === "") return true
+          const view = path.match(/^\/view\/([^/]+)$/)
           if (view) return blockNames.includes(view[1])
-          return /^\/(docs|blocks|themes|compare)(\/|$)/.test(page.path)
+          return /^\/(docs|blocks|themes|compare)(\/|$)/.test(path)
         },
       },
     }),

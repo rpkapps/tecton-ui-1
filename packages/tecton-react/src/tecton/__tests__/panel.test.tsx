@@ -9,7 +9,7 @@ import {
   PanelFooter,
   PanelHeader,
   PanelTitle,
-} from "@tecton/react/tecton/panel"
+} from "@tecton/react/panel"
 
 describe("Panel", () => {
   it("renders a section with the default variant and size", () => {

@@ -21,16 +21,16 @@ import {
   PlusIcon,
 } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   Empty,
   EmptyContent,
@@ -38,14 +38,14 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@tecton/react/components/empty"
+} from "@tecton/react/empty"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 import {
   Table,
   TableBody,
@@ -53,8 +53,8 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
-import { useLocale } from "@tecton/react/tecton/provider"
+} from "@tecton/react/table"
+import { useLocale } from "@tecton/react/provider"
 
 import { formatDate, statusMeta, typeMeta } from "../data"
 import type { Well } from "../data"

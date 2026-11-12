@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { ContextMenu as ContextMenuPrimitive } from "@base-ui/react/context-menu"
-import { usePortalTarget } from "@tecton/react/tecton/portal"
+import { usePortalTarget } from "@tecton/react/portal"
 import { cn } from "cn"
 import { ChevronRightIcon, CheckIcon } from "lucide-react"
 

@@ -3,8 +3,8 @@ import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+} from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 
 export function InputInvalid() {
   return (

@@ -9,12 +9,12 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
+} from "@tecton/react/card"
 import {
   Reorderable,
   ReorderableHandle,
   ReorderableItem,
-} from "@tecton/react/tecton/reorderable"
+} from "@tecton/react/reorderable"
 
 const TILES = [
   { id: "oil", name: "Oil rate", value: "12,480", unit: "bbl/d" },

@@ -1,6 +1,6 @@
 ---
 component: Bubble
-module: "@tecton/react/components/bubble"
+module: "@tecton/react/bubble"
 family: conversation
 exports: [Bubble, BubbleGroup, BubbleContent, BubbleReactions]
 notFor:

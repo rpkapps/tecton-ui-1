@@ -1,6 +1,6 @@
 ---
 component: ButtonGroup
-module: "@tecton/react/components/button-group"
+module: "@tecton/react/button-group"
 family: actions
 exports: [ButtonGroup, ButtonGroupSeparator, ButtonGroupText, buttonGroupVariants]
 notFor:

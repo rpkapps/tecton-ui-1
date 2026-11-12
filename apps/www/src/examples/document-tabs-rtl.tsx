@@ -15,7 +15,7 @@ import {
   DocumentTabsLabel,
   DocumentTabsList,
   DocumentTabsTrigger,
-} from "@tecton/react/tecton/document-tabs"
+} from "@tecton/react/document-tabs"
 
 const translations: Translations = {
   en: {

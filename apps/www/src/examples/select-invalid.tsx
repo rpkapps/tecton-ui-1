@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/select-invalid.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Field, FieldError, FieldLabel } from "@tecton/react/components/field"
+import { Field, FieldError, FieldLabel } from "@tecton/react/field"
 import {
   Select,
   SelectContent,
@@ -7,7 +7,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 
 const items = [
   { label: "Select a fruit", value: null },

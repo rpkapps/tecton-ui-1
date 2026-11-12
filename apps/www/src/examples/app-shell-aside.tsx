@@ -7,14 +7,14 @@ import {
   AppShellBrand,
   AppShellHeader,
   AppShellMain,
-} from "@tecton/react/tecton/app-shell"
+} from "@tecton/react/app-shell"
 import {
   Panel,
   PanelContent,
   PanelHeader,
   PanelTitle,
-} from "@tecton/react/tecton/panel"
-import { Stat, StatLabel, StatValue } from "@tecton/react/tecton/stat"
+} from "@tecton/react/panel"
+import { Stat, StatLabel, StatValue } from "@tecton/react/stat"
 
 export default function AppShellAsideExample() {
   return (

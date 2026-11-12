@@ -34,18 +34,18 @@ import {
   ChevronsUpDownIcon,
 } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
-import { Label } from "@tecton/react/components/label"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
+import { Label } from "@tecton/react/label"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { Switch } from "@tecton/react/components/switch"
+} from "@tecton/react/select"
+import { Switch } from "@tecton/react/switch"
 import {
   Table,
   TableBody,
@@ -53,17 +53,14 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+} from "@tecton/react/table"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
 import {
   Reorderable,
   ReorderableHandle,
   ReorderableItem,
-} from "@tecton/react/tecton/reorderable"
-import { TableColumnResizer } from "@tecton/react/tecton/table-column-resizer"
+} from "@tecton/react/reorderable"
+import { TableColumnResizer } from "@tecton/react/table-column-resizer"
 
 import { createFastSortedRowModel } from "./lib/fast-sorted-row-model"
 

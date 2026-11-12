@@ -7,8 +7,8 @@ import {
   Field,
   FieldDescription,
   FieldTitle,
-} from "@tecton/react/components/field"
-import { Slider } from "@tecton/react/components/slider"
+} from "@tecton/react/field"
+import { Slider } from "@tecton/react/slider"
 
 export default function FieldSlider() {
   const [value, setValue] = React.useState([200, 800])

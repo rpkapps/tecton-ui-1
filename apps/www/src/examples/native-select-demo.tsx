@@ -2,7 +2,7 @@
 import {
   NativeSelect,
   NativeSelectOption,
-} from "@tecton/react/components/native-select"
+} from "@tecton/react/native-select"
 
 export default function NativeSelectDemo() {
   return (

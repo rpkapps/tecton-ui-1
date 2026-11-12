@@ -3,7 +3,7 @@
 import { useForm } from "@tanstack/react-form"
 import * as z from "zod"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Card,
   CardContent,
@@ -11,7 +11,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
+} from "@tecton/react/card"
 import {
   Field,
   FieldContent,
@@ -19,7 +19,7 @@ import {
   FieldError,
   FieldGroup,
   FieldLabel,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 import {
   Select,
   SelectContent,
@@ -27,7 +27,7 @@ import {
   SelectSeparator,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 
 import { showSubmitted } from "./form-tanstack-demo"
 

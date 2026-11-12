@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/separator-menu.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Separator } from "@tecton/react/components/separator"
+import { Separator } from "@tecton/react/separator"
 
 export function SeparatorMenu() {
   return (

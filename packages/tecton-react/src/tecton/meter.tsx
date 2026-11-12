@@ -5,7 +5,7 @@ import { Meter as MeterPrimitive } from "@base-ui/react/meter"
 import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 
-import { useLocale } from "@tecton/react/tecton/provider"
+import { useLocale } from "@tecton/react/provider"
 
 /**
  * Tecton Meter — a segmented gauge for risk, complexity or confidence

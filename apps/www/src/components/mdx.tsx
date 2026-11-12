@@ -3,8 +3,8 @@ import { Link } from "@tanstack/react-router"
 import { cn } from "cn"
 import type { MDXComponents } from "mdx/types"
 
-import { Button } from "@tecton/react/components/button"
-import { Kbd } from "@tecton/react/components/kbd"
+import { Button } from "@tecton/react/button"
+import { Kbd } from "@tecton/react/kbd"
 
 import { ComponentPreview } from "@/components/component-preview"
 import { ComponentSource } from "@/components/component-source"

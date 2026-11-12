@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/base/button-size.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { ArrowUpRightIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 
 export default function ButtonSize() {
   return (

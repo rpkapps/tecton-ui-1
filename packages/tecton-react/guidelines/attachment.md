@@ -1,6 +1,6 @@
 ---
 component: Attachment
-module: "@tecton/react/components/attachment"
+module: "@tecton/react/attachment"
 family: conversation
 exports: [Attachment, AttachmentGroup, AttachmentMedia, AttachmentContent, AttachmentTitle, AttachmentDescription, AttachmentActions, AttachmentAction, AttachmentTrigger]
 notFor:

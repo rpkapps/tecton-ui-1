@@ -5,7 +5,7 @@ import {
   AvatarGroup,
   AvatarGroupCount,
   AvatarImage,
-} from "@tecton/react/components/avatar"
+} from "@tecton/react/avatar"
 
 export function AvatarGroupCountExample() {
   return (

@@ -25,7 +25,7 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@tecton/react/components/carousel"
+} from "@tecton/react/carousel"
 ```
 
 ```tsx lineNumbers
@@ -155,7 +155,7 @@ Use a state and the `setApi` prop to get an instance of the carousel API.
 />
 
 ```tsx lineNumbers {1,4,22}
-import { type CarouselApi } from "@tecton/react/components/carousel"
+import { type CarouselApi } from "@tecton/react/carousel"
 
 export function Example() {
   const [api, setApi] = React.useState<CarouselApi>()
@@ -192,7 +192,7 @@ export function Example() {
 You can listen to events using the api instance from `setApi`.
 
 ```tsx lineNumbers {1,4-14,16}
-import { type CarouselApi } from "@tecton/react/components/carousel"
+import { type CarouselApi } from "@tecton/react/carousel"
 
 export function Example() {
   const [api, setApi] = React.useState<CarouselApi>()

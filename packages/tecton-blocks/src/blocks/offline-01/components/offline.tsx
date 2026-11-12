@@ -11,7 +11,7 @@ import {
   RefreshCwIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Item,
   ItemContent,
@@ -19,8 +19,8 @@ import {
   ItemGroup,
   ItemMedia,
   ItemTitle,
-} from "@tecton/react/components/item"
-import { LinkButton } from "@tecton/react/tecton/link"
+} from "@tecton/react/item"
+import { LinkButton } from "@tecton/react/link"
 
 import { LogTrack, LogTrackMarker } from "../../page-state/components/log-track"
 import {

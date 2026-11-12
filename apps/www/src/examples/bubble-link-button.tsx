@@ -1,13 +1,12 @@
 // Synced from shadcn/ui (apps/v4/examples/base/bubble-link-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 "use client"
 
-import { toast } from "sonner"
-
+import { toast } from "@tecton/react/toast"
 import {
   Bubble,
   BubbleContent,
   BubbleGroup,
-} from "@tecton/react/components/bubble"
+} from "@tecton/react/bubble"
 
 export function BubbleLinkButtonDemo() {
   return (
@@ -19,7 +18,7 @@ export function BubbleLinkButtonDemo() {
         <Bubble variant="tinted" align="end">
           <BubbleContent
             render={
-              <button onClick={() => toast("You clicked forgot password")} />
+              <button onClick={() => toast.add({ title: "You clicked forgot password" })} />
             }
           >
             I forgot my password
@@ -29,7 +28,7 @@ export function BubbleLinkButtonDemo() {
           <BubbleContent
             render={
               <button
-                onClick={() => toast("You clicked help with subscription")}
+                onClick={() => toast.add({ title: "You clicked help with subscription" })}
               />
             }
           >
@@ -41,7 +40,7 @@ export function BubbleLinkButtonDemo() {
             render={
               <button
                 onClick={() =>
-                  toast("You clicked something else. Talk to a human.")
+                  toast.add({ title: "You clicked something else. Talk to a human." })
                 }
               />
             }

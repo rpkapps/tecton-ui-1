@@ -9,7 +9,7 @@ upstream: apps/v4/content/docs/components/base/button.mdx
 ## Usage
 
 ```tsx
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 ```
 
 ```tsx
@@ -148,7 +148,7 @@ Mark icons with `data-icon="inline-start" | "inline-end"` so the padding adjusts
 
 <Do>
 
-Navigate with `LinkButton` (`@tecton/react/tecton/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: `render={<a />}` needs `nativeButton={false}`, which adds `role="button"`, so the link is announced as a button.
+Navigate with `LinkButton` (`@tecton/react/link`): an `a` with the button look that keeps the link role and uses the `TectonProvider` router. `buttonVariants()` on a plain `a` works too. A `Button` never renders the link itself: `render={<a />}` needs `nativeButton={false}`, which adds `role="button"`, so the link is announced as a button.
 
 </Do>
 

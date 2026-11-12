@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { CopyButton } from "@tecton/react/tecton/copy-button"
+import { CopyButton } from "@tecton/react/copy-button"
 
 export default function CopyButtonFeedback() {
   const [last, setLast] = React.useState<string | null>(null)

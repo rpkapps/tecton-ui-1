@@ -1,6 +1,6 @@
 ---
 component: Reorderable
-module: "@tecton/react/tecton/reorderable"
+module: "@tecton/react/reorderable"
 family: data
 exports: [Reorderable, ReorderableItem, ReorderableHandle]
 notFor:

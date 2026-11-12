@@ -2,7 +2,7 @@
 
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Dialog,
   DialogClose,
@@ -12,8 +12,8 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@tecton/react/components/dialog"
-import { ThemeRoot } from "@tecton/react/tecton/theme-root"
+} from "@tecton/react/dialog"
+import { ThemeRoot } from "@tecton/react/theme-root"
 
 /**
  * The root sets `--primary` for its own subtree. The dialog portals out of

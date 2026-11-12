@@ -1,6 +1,6 @@
 ---
 component: DocumentTabs
-module: "@tecton/react/tecton/document-tabs"
+module: "@tecton/react/document-tabs"
 family: navigation
 exports: [DocumentTabs, DocumentTabsList, DocumentTabsTrigger, DocumentTabsLabel, DocumentTabsClose, DocumentTabsAdd, DocumentTabsMore, DocumentTabsMenu, DocumentTabsMenuRename, DocumentTabsMenuClose, DocumentTabsMenuCloseOthers, DocumentTabsContent, documentTabsListVariants]
 notFor:

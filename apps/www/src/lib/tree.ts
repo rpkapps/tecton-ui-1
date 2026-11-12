@@ -41,6 +41,16 @@ function decodeEntities(text: string) {
   )
 }
 
+function stripTags(html: string) {
+  let text = html
+  let previous: string
+  do {
+    previous = text
+    text = text.replace(/<[^>]+>/g, "")
+  } while (text !== previous)
+  return text
+}
+
 function nodeText(node: React.ReactNode): string {
   if (typeof node === "string" || typeof node === "number") return String(node)
   if (Array.isArray(node)) return node.map(nodeText).join("")
@@ -52,8 +62,7 @@ function nodeText(node: React.ReactNode): string {
   ) {
     // `useFumadocsLoader` turns names into <span dangerouslySetInnerHTML />.
     const html = node.props.dangerouslySetInnerHTML?.__html
-    if (typeof html === "string")
-      return decodeEntities(html.replace(/<[^>]+>/g, ""))
+    if (typeof html === "string") return decodeEntities(stripTags(html))
     return nodeText(node.props.children)
   }
   return ""

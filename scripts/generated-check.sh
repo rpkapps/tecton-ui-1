@@ -62,6 +62,7 @@ fi
 item_for_support_file() {
   case "$1" in
     hooks/use-mobile.ts) echo sidebar ;;
+    hooks/use-highlighted-code.ts | lib/highlighter.tsx) echo use-highlighted-code ;;
     lib/utils.ts) echo utils ;;
     *) return 1 ;;
   esac
@@ -78,7 +79,7 @@ check() {
   status=${PIPESTATUS[0]}
   checked=$((checked + 1))
 
-  header="$(echo "$output" | grep -E "^├ src/$rel \(" || true)"
+  header="$(echo "$output" | grep -E '^├ src[/\\]' | tr '\\' '/' | grep -E "^├ src/$rel \(" || true)"
   diff_lines="$(echo "$output" | grep -E '^│ │ [-+]' | grep -vE '^│ │ [-+]{3} [ab]/' || true)"
   # Only the `"use client"` directive and blank lines may differ: the CLI's
   # --diff view and its add transform disagree on it for rsc:false projects.

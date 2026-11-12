@@ -1,6 +1,6 @@
 // Synced from shadcn/ui (apps/v4/examples/base/radio-group-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Label } from "@tecton/react/components/label"
-import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group"
+import { Label } from "@tecton/react/label"
+import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
 
 export function RadioGroupDemo() {
   return (

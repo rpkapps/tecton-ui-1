@@ -17,15 +17,10 @@ import {
   type MockInstance,
 } from "vitest"
 
-import { Button } from "@tecton/react/components/button"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@tecton/react/components/tabs"
-import { DropdownMenuItem } from "@tecton/react/components/dropdown-menu"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { Button } from "@tecton/react/button"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/tabs"
+import { DropdownMenuItem } from "@tecton/react/dropdown-menu"
+import { TectonProvider } from "@tecton/react/provider"
 import {
   Overflow,
   OverflowDivider,
@@ -36,7 +31,7 @@ import {
   OverflowSpacer,
   Toolbar,
   useIsOverflowItemVisible,
-} from "@tecton/react/tecton/overflow"
+} from "@tecton/react/overflow"
 
 /**
  * jsdom has no layout. Elements declare their size with `data-w`; the row

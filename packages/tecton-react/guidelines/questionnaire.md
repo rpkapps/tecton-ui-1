@@ -1,6 +1,6 @@
 ---
 component: Questionnaire
-module: "@tecton/react/components/questionnaire"
+module: "@tecton/react/questionnaire"
 family: conversation
 exports: [Questionnaire, QuestionnaireProgress, QuestionnaireItem, QuestionnaireTitle, QuestionnaireDescription, QuestionnaireChoices, QuestionnaireChoice, QuestionnaireChoiceDescription, QuestionnaireInput, QuestionnaireError, QuestionnaireActions, QuestionnairePrevious, QuestionnaireSkip, QuestionnaireNext, QuestionnaireSubmit]
 notFor:

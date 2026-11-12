@@ -4,12 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { BuildingIcon, LogInIcon, SaveIcon } from "lucide-react"
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@tecton/react/components/alert"
-import { LinkButton } from "@tecton/react/tecton/link"
+import { Alert, AlertDescription, AlertTitle } from "@tecton/react/alert"
+import { LinkButton } from "@tecton/react/link"
 
 import { LogTrack, LogTrackMarker } from "../../page-state/components/log-track"
 import {

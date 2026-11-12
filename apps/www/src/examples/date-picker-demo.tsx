@@ -5,13 +5,13 @@ import * as React from "react"
 import { format } from "date-fns"
 import { ChevronDownIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { Calendar } from "@tecton/react/components/calendar"
+import { Button } from "@tecton/react/button"
+import { Calendar } from "@tecton/react/calendar"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@tecton/react/components/popover"
+} from "@tecton/react/popover"
 
 export function DatePickerDemo() {
   const [date, setDate] = React.useState<Date>()

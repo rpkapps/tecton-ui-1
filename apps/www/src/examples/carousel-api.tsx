@@ -3,7 +3,7 @@
 
 import * as React from "react"
 
-import { Card, CardContent } from "@tecton/react/components/card"
+import { Card, CardContent } from "@tecton/react/card"
 import {
   Carousel,
   CarouselContent,
@@ -11,7 +11,7 @@ import {
   CarouselNext,
   CarouselPrevious,
   type CarouselApi,
-} from "@tecton/react/components/carousel"
+} from "@tecton/react/carousel"
 
 export default function CarouselDApiDemo() {
   const [api, setApi] = React.useState<CarouselApi>()

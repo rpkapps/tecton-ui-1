@@ -1,7 +1,4 @@
-import {
-  FlowBackground,
-  SeismicBackground,
-} from "@tecton/react/tecton/background"
+import { FlowBackground, SeismicBackground } from "@tecton/react/background"
 
 import { BackgroundPreview } from "@/components/background-preview"
 

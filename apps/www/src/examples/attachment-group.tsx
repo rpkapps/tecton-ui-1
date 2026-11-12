@@ -16,7 +16,7 @@ import {
   AttachmentGroup,
   AttachmentMedia,
   AttachmentTitle,
-} from "@tecton/react/components/attachment"
+} from "@tecton/react/attachment"
 
 type Item = {
   name: string

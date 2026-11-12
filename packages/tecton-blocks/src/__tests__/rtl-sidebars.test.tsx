@@ -1,7 +1,7 @@
 import { render } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { TectonProvider } from "@tecton/react/provider"
 
 import CanvasPage from "../blocks/canvas-01/page"
 import DetailPage from "../blocks/detail-01/page"

@@ -2,7 +2,7 @@ import {
   GridBackground,
   HexagonsBackground,
   TerrainGridBackground,
-} from "@tecton/react/tecton/background"
+} from "@tecton/react/background"
 
 import { BackgroundPreview } from "@/components/background-preview"
 

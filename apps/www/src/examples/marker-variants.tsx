@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/marker-variants.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Marker, MarkerContent } from "@tecton/react/components/marker"
+import { Marker, MarkerContent } from "@tecton/react/marker"
 
 export function MarkerVariantsDemo() {
   return (

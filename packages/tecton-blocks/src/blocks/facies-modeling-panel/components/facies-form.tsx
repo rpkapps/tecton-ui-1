@@ -4,29 +4,29 @@ import * as React from "react"
 import { cn } from "cn"
 import { ChevronDownIcon, DicesIcon, SlidersHorizontalIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   Field,
   FieldContent,
   FieldDescription,
   FieldLabel,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@tecton/react/components/collapsible"
-import { Input } from "@tecton/react/components/input"
+} from "@tecton/react/collapsible"
+import { Input } from "@tecton/react/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { Separator } from "@tecton/react/components/separator"
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
+} from "@tecton/react/select"
+import { Separator } from "@tecton/react/separator"
+import { ColorSwatch } from "@tecton/react/color-swatch"
 
 import {
   densityLabel,

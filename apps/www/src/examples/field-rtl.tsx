@@ -7,8 +7,8 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   Field,
   FieldDescription,
@@ -17,8 +17,8 @@ import {
   FieldLegend,
   FieldSeparator,
   FieldSet,
-} from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+} from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 import {
   Select,
   SelectContent,
@@ -26,8 +26,8 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { Textarea } from "@tecton/react/components/textarea"
+} from "@tecton/react/select"
+import { Textarea } from "@tecton/react/textarea"
 
 const months = [
   { label: "MM", value: null },

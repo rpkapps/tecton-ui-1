@@ -3,7 +3,7 @@
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts"
 
-import { ChartContainer, type ChartConfig } from "@tecton/react/components/chart"
+import { ChartContainer, type ChartConfig } from "@tecton/react/chart"
 
 const chartData = [
   { month: "January", desktop: 186, mobile: 80 },

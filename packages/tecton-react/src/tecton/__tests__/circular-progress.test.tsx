@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import { CircularProgress } from "@tecton/react/tecton/circular-progress"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { CircularProgress } from "@tecton/react/circular-progress"
+import { TectonProvider } from "@tecton/react/provider"
 
 const CIRCUMFERENCE = 2 * Math.PI * 20
 

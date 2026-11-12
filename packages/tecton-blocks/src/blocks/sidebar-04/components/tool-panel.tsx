@@ -4,31 +4,27 @@ import * as React from "react"
 import { cn } from "cn"
 import { PanelRightCloseIcon, RotateCcwIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import {
-  Field,
-  FieldDescription,
-  FieldLabel,
-} from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+import { Button } from "@tecton/react/button"
+import { Field, FieldDescription, FieldLabel } from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
-import { Separator } from "@tecton/react/components/separator"
+} from "@tecton/react/select"
+import { Separator } from "@tecton/react/separator"
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
-} from "@tecton/react/components/sidebar"
-import { Slider } from "@tecton/react/components/slider"
-import { Switch } from "@tecton/react/components/switch"
-import { ColorSwatch } from "@tecton/react/tecton/color-swatch"
-import { useDirection } from "@tecton/react/tecton/provider"
+} from "@tecton/react/sidebar"
+import { Slider } from "@tecton/react/slider"
+import { Switch } from "@tecton/react/switch"
+import { ColorSwatch } from "@tecton/react/color-swatch"
+import { useDirection } from "@tecton/react/provider"
 
 import { defaultWell, wellTypes } from "../data"
 import type { WellProperties, WellType } from "../data"

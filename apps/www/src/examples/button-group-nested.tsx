@@ -1,19 +1,19 @@
 // Synced from shadcn/ui (apps/v4/examples/base/button-group-nested.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { AudioLinesIcon, PlusIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { ButtonGroup } from "@tecton/react/components/button-group"
-import { Input } from "@tecton/react/components/input"
+import { Button } from "@tecton/react/button"
+import { ButtonGroup } from "@tecton/react/button-group"
+import { Input } from "@tecton/react/input"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 import {
   Tooltip,
   TooltipContent,
   TooltipTrigger,
-} from "@tecton/react/components/tooltip"
+} from "@tecton/react/tooltip"
 
 export function ButtonGroupNested() {
   return (

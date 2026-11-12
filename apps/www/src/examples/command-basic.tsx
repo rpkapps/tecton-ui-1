@@ -3,7 +3,7 @@
 
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Command,
   CommandDialog,
@@ -12,7 +12,7 @@ import {
   CommandInput,
   CommandItem,
   CommandList,
-} from "@tecton/react/components/command"
+} from "@tecton/react/command"
 
 export function CommandBasic() {
   const [open, setOpen] = React.useState(false)

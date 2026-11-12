@@ -5,9 +5,9 @@ import {
   FieldDescription,
   FieldError,
   FieldLabel,
-} from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
-import { Textarea } from "@tecton/react/components/textarea"
+} from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
+import { Textarea } from "@tecton/react/textarea"
 
 import { Caption, Matrix, Page, Section } from "./matrix"
 

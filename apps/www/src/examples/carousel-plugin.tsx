@@ -4,14 +4,14 @@
 import * as React from "react"
 import Autoplay from "embla-carousel-autoplay"
 
-import { Card, CardContent } from "@tecton/react/components/card"
+import { Card, CardContent } from "@tecton/react/card"
 import {
   Carousel,
   CarouselContent,
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
-} from "@tecton/react/components/carousel"
+} from "@tecton/react/carousel"
 
 export default function CarouselPlugin() {
   const plugin = React.useRef(

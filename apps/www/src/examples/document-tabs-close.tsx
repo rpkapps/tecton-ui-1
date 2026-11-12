@@ -10,7 +10,7 @@ import {
   DocumentTabsLabel,
   DocumentTabsList,
   DocumentTabsTrigger,
-} from "@tecton/react/tecton/document-tabs"
+} from "@tecton/react/document-tabs"
 
 const WELLS = [
   { id: "ow-b-01", name: "OW-B: Well-01" },

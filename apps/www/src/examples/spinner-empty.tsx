@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/spinner-empty.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Empty,
   EmptyContent,
@@ -7,8 +7,8 @@ import {
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@tecton/react/components/empty"
-import { Spinner } from "@tecton/react/components/spinner"
+} from "@tecton/react/empty"
+import { Spinner } from "@tecton/react/spinner"
 
 export function SpinnerEmpty() {
   return (

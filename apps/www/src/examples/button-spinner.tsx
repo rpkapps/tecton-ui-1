@@ -1,6 +1,6 @@
 // Synced from shadcn/ui (apps/v4/examples/base/button-spinner.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Button } from "@tecton/react/components/button"
-import { Spinner } from "@tecton/react/components/spinner"
+import { Button } from "@tecton/react/button"
+import { Spinner } from "@tecton/react/spinner"
 
 export default function ButtonLoading() {
   return (

@@ -6,14 +6,14 @@ import {
   BreadcrumbLink,
   BreadcrumbList,
   BreadcrumbPage,
-} from "@tecton/react/components/breadcrumb"
-import { Separator } from "@tecton/react/components/separator"
+} from "@tecton/react/breadcrumb"
+import { Separator } from "@tecton/react/separator"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@tecton/react/components/sidebar"
-import { Link } from "@tecton/react/tecton/link"
+} from "@tecton/react/sidebar"
+import { Link } from "@tecton/react/link"
 
 import { AppSidebar } from "./components/app-sidebar"
 import { breadcrumbs } from "./data"

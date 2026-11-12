@@ -1,8 +1,8 @@
 import { render, screen } from "@testing-library/react"
 import { describe, expect, it } from "vitest"
 
-import { Meter } from "@tecton/react/tecton/meter"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { Meter } from "@tecton/react/meter"
+import { TectonProvider } from "@tecton/react/provider"
 
 const segments = (container: HTMLElement) =>
   Array.from(

@@ -7,7 +7,7 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Separator } from "@tecton/react/components/separator"
+import { Separator } from "@tecton/react/separator"
 
 const translations: Translations = {
   en: {

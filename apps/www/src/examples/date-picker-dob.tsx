@@ -3,14 +3,14 @@
 
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
-import { Calendar } from "@tecton/react/components/calendar"
-import { Field, FieldLabel } from "@tecton/react/components/field"
+import { Button } from "@tecton/react/button"
+import { Calendar } from "@tecton/react/calendar"
+import { Field, FieldLabel } from "@tecton/react/field"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@tecton/react/components/popover"
+} from "@tecton/react/popover"
 
 export function DatePickerSimple() {
   const [open, setOpen] = React.useState(false)

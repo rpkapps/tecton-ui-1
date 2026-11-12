@@ -6,13 +6,13 @@ import {
   ThumbsUpIcon,
 } from "lucide-react"
 
-import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
-import { Button } from "@tecton/react/components/button"
+import { Bubble, BubbleContent } from "@tecton/react/bubble"
+import { Button } from "@tecton/react/button"
 import {
   Message,
   MessageContent,
   MessageFooter,
-} from "@tecton/react/components/message"
+} from "@tecton/react/message"
 
 export function MessageActionsDemo() {
   return (

@@ -1,4 +1,4 @@
-/* VENDORED from shadcn@4.21.0 (tailwind.css) by scripts/vendor-shadcn-css.mts — do not edit; re-run tokens:build after bumping shadcn */
+/* VENDORED from shadcn@4.21.5 (tailwind.css) by scripts/vendor-shadcn-css.mts — do not edit; re-run tokens:build after bumping shadcn */
 @theme inline {
   @keyframes accordion-down {
     from {
@@ -584,6 +584,12 @@
   &:where([dir="rtl"], [dir="rtl"] *) {
     animation-direction: reverse;
   }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
+    background-image: none;
+    -webkit-text-fill-color: currentColor;
+  }
 }
 
 @utility shimmer-once {
@@ -621,6 +627,8 @@
   --shimmer-angle: calc(--value(integer) * 1deg);
 }
 
+/* Kept for backwards compatibility. Unlayered, so it still wins over other
+   utilities on a plain .shimmer element. Variants are handled in the utility. */
 @media (prefers-reduced-motion: reduce) {
   .shimmer {
     animation: none;

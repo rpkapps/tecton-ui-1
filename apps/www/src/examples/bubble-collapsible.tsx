@@ -4,12 +4,12 @@
 import * as React from "react"
 import { ChevronDownIcon } from "lucide-react"
 
-import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
-import { Button } from "@tecton/react/components/button"
+import { Bubble, BubbleContent } from "@tecton/react/bubble"
+import { Button } from "@tecton/react/button"
 import {
   Collapsible,
   CollapsibleTrigger,
-} from "@tecton/react/components/collapsible"
+} from "@tecton/react/collapsible"
 
 const text = `The accessibility review found two focus states that were visually too subtle in dark mode.
 

@@ -3,7 +3,7 @@ import {
   PageHeaderContent,
   PageHeaderDescription,
   PageHeaderTitle,
-} from "@tecton/react/tecton/page-header"
+} from "@tecton/react/page-header"
 
 export default function PageHeaderDemo() {
   return (

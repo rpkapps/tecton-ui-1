@@ -73,7 +73,7 @@ Tailwind scans your project from its auto-detected root; add an `@source` after 
 
 <Step>Set the mode</Step>
 
-Tecton is dark-first: put the `dark` class on `<html>` (for example with `next-themes`, `attribute="class"`, `defaultTheme="dark"`). Without it you get the light theme. See [Theming](/docs/theming).
+Tecton is dark-first: put the `dark` class on `<html>` (for example with `next-themes`, installed separately, `attribute="class"`, `defaultTheme="dark"`). Without it you get the light theme. See [Theming](/docs/theming).
 
 <Step>Mount `TectonProvider` when you need it</Step>
 
@@ -84,8 +84,8 @@ An application mounted inside another one (a Module Federation remote, an embedd
 <Step>Use the components</Step>
 
 ```tsx
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
 import { WellIcon } from "@tecton/react/icons"
 
 export function Example() {
@@ -123,6 +123,22 @@ export default defineConfig({ plugins: [react(), tailwindcss()] })
 ```
 
 Import `./styles/app.css` in `src/main.tsx`.
+
+<Callout title="Use the Vite plugin, not the PostCSS one">
+
+`globals.css` loads the Figtree and IBM Plex Mono font files by relative URL. Vite inlines the stylesheet before `@tailwindcss/postcss` runs, so those URLs are never rewritten and a production build ships without the fonts. `@tailwindcss/vite` rewrites them and copies the files into the build. Other bundlers (Rsbuild, Rspack, webpack) work with `@tailwindcss/postcss` as is. If a Vite application must keep `@tailwindcss/postcss`, run `postcss-import` and `postcss-url` before it:
+
+```js title="postcss.config.mjs"
+export default {
+  plugins: {
+    "postcss-import": {},
+    "postcss-url": { url: "rebase" },
+    "@tailwindcss/postcss": {},
+  },
+}
+```
+
+</Callout>
 
 </TabsContent>
 

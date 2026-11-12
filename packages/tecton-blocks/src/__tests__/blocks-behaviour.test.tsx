@@ -2,7 +2,7 @@ import { render, screen, within } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it } from "vitest"
 
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { TectonProvider } from "@tecton/react/provider"
 
 import CanvasPage from "../blocks/canvas-01/page"
 import DetailPage, { project } from "../blocks/detail-01/page"

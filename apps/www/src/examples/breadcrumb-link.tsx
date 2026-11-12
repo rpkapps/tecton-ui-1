@@ -8,7 +8,7 @@ import {
   BreadcrumbList,
   BreadcrumbPage,
   BreadcrumbSeparator,
-} from "@tecton/react/components/breadcrumb"
+} from "@tecton/react/breadcrumb"
 
 export function BreadcrumbLinkDemo() {
   return (

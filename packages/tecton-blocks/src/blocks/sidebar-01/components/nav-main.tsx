@@ -6,7 +6,7 @@ import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@tecton/react/components/collapsible"
+} from "@tecton/react/collapsible"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -14,7 +14,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   SidebarGroup,
   SidebarGroupLabel,
@@ -26,8 +26,8 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   useSidebar,
-} from "@tecton/react/components/sidebar"
-import { Link } from "@tecton/react/tecton/link"
+} from "@tecton/react/sidebar"
+import { Link } from "@tecton/react/link"
 
 import type { NavGroup, NavItem } from "../data"
 

@@ -1,4 +1,4 @@
-import { CircularProgress } from "@tecton/react/tecton/circular-progress"
+import { CircularProgress } from "@tecton/react/circular-progress"
 
 const colors = [
   "default",

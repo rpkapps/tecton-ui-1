@@ -3,7 +3,7 @@
 import { useForm } from "@tanstack/react-form"
 import * as z from "zod"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Card,
   CardContent,
@@ -11,7 +11,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
+} from "@tecton/react/card"
 import {
   Field,
   FieldContent,
@@ -22,11 +22,8 @@ import {
   FieldLegend,
   FieldSet,
   FieldTitle,
-} from "@tecton/react/components/field"
-import {
-  RadioGroup,
-  RadioGroupItem,
-} from "@tecton/react/components/radio-group"
+} from "@tecton/react/field"
+import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
 
 import { showSubmitted } from "./form-tanstack-demo"
 

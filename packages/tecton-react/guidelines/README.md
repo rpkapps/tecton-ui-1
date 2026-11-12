@@ -25,14 +25,14 @@ this guidance lives in a sidecar file instead of JSDoc. The folder ships in the 
 
 ## File name and frontmatter
 
-The file is named after the module: `@tecton/react/components/badge` → `badge.md`,
-`@tecton/react/tecton/count-badge` → `count-badge.md`. Families and membership are declared in
+The file is named after the module: `@tecton/react/badge` → `badge.md`,
+`@tecton/react/count-badge` → `count-badge.md`. Families and membership are declared in
 `families.json`; a module's family in the frontmatter must match it.
 
 ```md
 ---
 component: Badge
-module: "@tecton/react/components/badge"
+module: "@tecton/react/badge"
 family: labels
 exports: [Badge]
 notFor:
@@ -131,10 +131,11 @@ spelling), not by package, and not through an escape hatch such as `preventBaseU
 names the wrong **props** instead: "onPress and isDisabled on a Button", "selectedKey and id
 instead of value", "A trigger wrapping the button and the overlay", "Unlike stock shadcn".
 
-The one exception is an import prohibition, which may spell the package: an `import` line inside a
-`Wrong:` block, or a sentence that forbids it ("nothing is imported from `react-aria-components`
-or `@base-ui/react`"). `guidelines:check` enforces this (`libraryNameErrors` in
-`scripts/guidelines-lib.mts`).
+The one exception is the skill (`skills/`, read by AI agents), whose import prohibition may spell
+the package: an `import` line inside a `Wrong:` block, or a sentence that forbids it. Guidelines,
+topics, `families.json` and adopted rules never name it, not even to forbid it: they say where
+imports come from (`@tecton/react/<name>`) instead. `guidelines:check` enforces this
+(`libraryNameErrors` in `scripts/guidelines-lib.mts`).
 
 ## Tooling
 

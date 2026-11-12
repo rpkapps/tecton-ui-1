@@ -13,7 +13,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-} from "@tecton/react/components/sidebar"
+} from "@tecton/react/sidebar"
 
 import {
   getPagesFromFolder,

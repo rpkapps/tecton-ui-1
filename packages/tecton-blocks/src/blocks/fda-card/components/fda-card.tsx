@@ -10,8 +10,8 @@ import {
   TrashIcon,
 } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
 import {
   Card,
   CardAction,
@@ -19,23 +19,18 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
-import { Checkbox } from "@tecton/react/components/checkbox"
+} from "@tecton/react/card"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import { Separator } from "@tecton/react/components/separator"
-import { Meter } from "@tecton/react/tecton/meter"
-import {
-  Stat,
-  StatGroup,
-  StatLabel,
-  StatValue,
-} from "@tecton/react/tecton/stat"
+} from "@tecton/react/dropdown-menu"
+import { Separator } from "@tecton/react/separator"
+import { Meter } from "@tecton/react/meter"
+import { Stat, StatGroup, StatLabel, StatValue } from "@tecton/react/stat"
 
 import { levelLabel, ratingMeta, statusMeta } from "../data"
 import type { FdaSummary } from "../data"

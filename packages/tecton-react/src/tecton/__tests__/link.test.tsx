@@ -2,8 +2,8 @@ import { fireEvent, render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
-import { Link, LinkButton } from "@tecton/react/tecton/link"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { Link, LinkButton } from "@tecton/react/link"
+import { TectonProvider } from "@tecton/react/provider"
 
 function withRouter(
   ui: React.ReactNode,

@@ -10,7 +10,7 @@ import {
 import {
   NativeSelect,
   NativeSelectOption,
-} from "@tecton/react/components/native-select"
+} from "@tecton/react/native-select"
 
 const translations: Translations = {
   en: {

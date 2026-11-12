@@ -5,8 +5,8 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { XIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { Toolbar, type ToolbarProps } from "@tecton/react/tecton/overflow"
+import { Button } from "@tecton/react/button"
+import { Toolbar, type ToolbarProps } from "@tecton/react/overflow"
 
 /**
  * Tecton ActionBar — a transient bar that appears while there is something

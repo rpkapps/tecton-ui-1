@@ -2,7 +2,7 @@ import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { CopyButton } from "@tecton/react/tecton/copy-button"
+import { CopyButton } from "@tecton/react/copy-button"
 
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms))
 

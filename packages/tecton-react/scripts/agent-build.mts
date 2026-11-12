@@ -308,7 +308,7 @@ function main() {
     process.exit(1)
   }
 
-  // Externals: `toast` is documented by the sonner guideline, the others stand alone.
+  // Externals: one whose docs page has a guideline is documented there, the others stand alone.
   const externalIds = new Map<string, string>()
   const externalDocTarget = new Map<string, string>()
   for (const [name, external] of Object.entries(catalog.families.externals)) {
@@ -363,7 +363,7 @@ function main() {
     })
   }
 
-  // An external documented by a guideline (`toast` by sonner.md) folds into that
+  // An external documented by a guideline folds into that
   // entry, so a search shows it once; the others are entries of their own.
   for (const [name, external] of Object.entries(catalog.families.externals)) {
     const id = externalIds.get(name) as string
@@ -485,7 +485,7 @@ function main() {
     process.exit(1)
   }
 
-  // `→ toast` in a notFor list reads as `→ sonner` once toast is folded in.
+  // `→ <external>` in a notFor list reads as `→ <guideline>` once it is folded in.
   const folded = new Map([...externalDocTarget])
   for (const entry of entries) {
     for (const item of entry.notFor) item.id = folded.get(item.id) ?? item.id

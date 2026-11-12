@@ -2,12 +2,8 @@
 
 import { BellIcon, PinIcon, StarIcon, UserPlusIcon } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import {
-  OverflowItem,
-  OverflowLabel,
-  Toolbar,
-} from "@tecton/react/tecton/overflow"
+import { Button } from "@tecton/react/button"
+import { OverflowItem, OverflowLabel, Toolbar } from "@tecton/react/overflow"
 
 export default function OverflowPriority() {
   return (

@@ -7,7 +7,7 @@ import {
   useTranslation,
   type Translations,
 } from "@/components/language-selector"
-import { Slider } from "@tecton/react/components/slider"
+import { Slider } from "@tecton/react/slider"
 
 const translations: Translations = {
   en: {

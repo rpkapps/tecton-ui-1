@@ -1,4 +1,4 @@
-import { Meter } from "@tecton/react/tecton/meter"
+import { Meter } from "@tecton/react/meter"
 
 const colors = ["default", "info", "success", "warning", "error"] as const
 

@@ -3,7 +3,7 @@
  *
  *   bun run scripts/build.mts          (pnpm --filter @tecton/react build)
  *
- * The package is consumed one module at a time (`@tecton/react/components/button`),
+ * The package is consumed one module at a time (`@tecton/react/button`),
  * so the output is UNBUNDLED: one `.js` + `.js.map` + `.d.ts` per source module,
  * mirroring the `src/` layout under `dist/`. The `.js.map` embeds its sources;
  * there is no `.d.ts.map`, since it could only point into `src/`, which is not
@@ -12,14 +12,21 @@
  * Steps
  *   1. clean dist/
  *   2. JS — esbuild with every specifier marked external, so each entry keeps its
- *      own `"use client"` directive and its imports (`@tecton/react/...` package
- *      self-imports stay verbatim; relative ones gain the `.js` extension).
+ *      own `"use client"` directive and its imports (relative ones gain the `.js`
+ *      extension; `@tecton/react/...` package self-imports stay, except that
+ *      the shadcn folder paths `…/components/<name>`, `…/hooks/<name>` and
+ *      `…/lib/<name>` become the flat `…/<name>` the package exports).
  *   3. .d.ts — `tsconfig.build.json` through the TypeScript API. `paths` is kept on
  *      purpose: the emitted declarations then name `@tecton/react/...` verbatim,
  *      exactly like the sources. `stripInternal` drops every declaration tagged
  *      `@internal` (a context another Tecton module reads, the portal plumbing),
  *      so it never reaches a consumer's types.
- *   4. the relative specifiers inside the emitted `.d.ts` gain `.js` too.
+ *   4. the relative specifiers inside the emitted `.d.ts` gain `.js` too, and the
+ *      shadcn folder self-imports become the flat exported path, as in the JS.
+ *      Then every exported component of a public module (`components/`, `tecton/`)
+ *      gets `export type <Name>Props = ComponentProps<typeof <Name>>` appended to
+ *      its `.d.ts` (props-aliases.mts), so consumers type wrappers from the Tecton
+ *      module and never from the library underneath.
  *   5. CSS — `src/styles/*.css` copied to `dist/styles/`, with every plain
  *      `@source "<path>";` directive collapsed into a single one pointing at `../`
  *      + the built `.js`, so Tailwind scans the built output instead of the
@@ -57,6 +64,7 @@ import {
   specifiersOf,
   splitSpecifier,
 } from "./build-checks.mjs";
+import { applyPropsAliases, propsAliasesOf } from "./props-aliases.mjs";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const pkgRoot = path.resolve(here, "..");
@@ -81,7 +89,7 @@ const ENTRY_DIRS: Array<{ dir: string; exts: Array<string>; recursive?: boolean 
   // `internal/primitives/` nests a directory per primitive.
   { dir: "src/tecton/internal", exts: [".ts", ".tsx"], recursive: true },
   { dir: "src/hooks", exts: [".ts"] },
-  { dir: "src/lib", exts: [".ts"] },
+  { dir: "src/lib", exts: [".ts", ".tsx"] },
   { dir: "src/icons", exts: [".ts", ".tsx"] },
 ];
 
@@ -111,10 +119,28 @@ function collectEntryPoints() {
 }
 
 /**
+ * The generated shadcn sources import each other through the folder layout the
+ * shadcn CLI installs into (`@tecton/react/components/button`,
+ * `…/lib/utils`); the package exports every module from its root instead
+ * (`@tecton/react/button`). Built output names the exported path.
+ */
+const PKG_NAME = (
+  JSON.parse(readFileSync(path.join(pkgRoot, "package.json"), "utf8")) as { name: string }
+).name;
+const FOLDER_SELF_IMPORT = new RegExp(
+  `^${PKG_NAME.replace(/[\\^$.*+?()[\]{}|/-]/g, "\\$&")}/(?:components|hooks|lib)/([a-z0-9-]+)$`
+);
+
+function flatSelfImport(specifier: string) {
+  const match = FOLDER_SELF_IMPORT.exec(specifier);
+  return match ? `${PKG_NAME}/${match[1]}` : specifier;
+}
+
+/**
  * Every import except the entry point itself is left to the consumer's bundler.
  * Relative specifiers are extensionless in the sources (`./types`), so they get
- * the `.js` the emitted ESM needs; bare ones (`react`, `@tecton/react/...`) are
- * passed through untouched.
+ * the `.js` the emitted ESM needs; folder self-imports become the flat exported
+ * path; other bare ones (`react`, `@tecton/react/...`) are passed through.
  */
 const markExternal: esbuild.Plugin = {
   name: "mark-external",
@@ -123,7 +149,9 @@ const markExternal: esbuild.Plugin = {
       if (args.kind === "entry-point") return null;
       const relative = args.path.startsWith(".");
       const resolved =
-        relative && !/\.[cm]?js$/.test(args.path) ? `${args.path}.js` : args.path;
+        relative && !/\.[cm]?js$/.test(args.path)
+          ? `${args.path}.js`
+          : flatSelfImport(args.path);
       return { path: resolved, external: true };
     });
   },
@@ -215,21 +243,61 @@ function buildDeclarations() {
     );
     for (const message of messages) console.warn(`    ${message}`);
   }
+  return program;
 }
 
-/** `from "./x"` / `from "../x"` / `import("./x")` → the same with `.js`. */
+/** Public component modules: the ones a consumer imports (not `tecton/internal`, not icons). */
+const ALIAS_DIRS = ["src/components", "src/tecton"].map((dir) => path.join(pkgRoot, dir));
+
+/**
+ * Appends `export type <Name>Props = ComponentProps<typeof <Name>>` to the
+ * `.d.ts` of every public component module (see props-aliases.mts).
+ */
+function appendPropsAliases(program: ts.Program, entryPoints: Array<string>) {
+  const checker = program.getTypeChecker();
+  const collisions: Array<string> = [];
+  let count = 0;
+  for (const entry of entryPoints) {
+    if (!ALIAS_DIRS.includes(path.dirname(entry))) continue;
+    const sourceFile = program.getSourceFile(entry);
+    if (!sourceFile) continue;
+    const plan = propsAliasesOf(sourceFile, checker);
+    for (const name of plan.collisions) collisions.push(`${relFromPkg(entry)}: ${name} is already a value export`);
+    if (!plan.aliases.length) continue;
+    const dts = path.join(DIST, path.relative(SRC, entry)).replace(/\.tsx?$/, ".d.ts");
+    if (!existsSync(dts)) continue;
+    writeFileSync(dts, applyPropsAliases(readFileSync(dts, "utf8"), plan));
+    count += plan.aliases.length;
+  }
+  if (collisions.length) {
+    throw new Error(`Props aliases clash with value exports:\n  ${collisions.join("\n  ")}`);
+  }
+  return count;
+}
+
+/**
+ * `from "./x"` / `from "../x"` / `import("./x")` → the same with `.js`, and a
+ * folder self-import → the flat exported path.
+ */
 function rewriteDeclarationSpecifiers() {
   const pattern = /(\bfrom\s*|\bimport\s*\(\s*)(["'])(\.{1,2}\/[^"']*)\2/g;
+  const selfPattern =/(\bfrom\s*|\bimport\s*\(\s*)(["'])([^"'.][^"']*)\2/g;
   let rewritten = 0;
   for (const file of walk(DIST)) {
     if (!file.endsWith(".d.ts")) continue;
     const source = readFileSync(file, "utf8");
-    const next = source.replace(pattern, (match, head, quote, specifier: string) => {
-      if (/\.[cm]?js$/.test(specifier)) return match;
-      const target = path.resolve(path.dirname(file), `${specifier}.d.ts`);
-      if (!existsSync(target)) return match;
-      return `${head}${quote}${specifier}.js${quote}`;
-    });
+    const next = source
+      .replace(pattern, (match, head, quote, specifier: string) => {
+        if (/\.[cm]?js$/.test(specifier)) return match;
+        const target = path.resolve(path.dirname(file), `${specifier}.d.ts`);
+        if (!existsSync(target)) return match;
+        return `${head}${quote}${specifier}.js${quote}`;
+      })
+      .replace(
+        selfPattern,
+        (_match, head, quote, specifier: string) =>
+          `${head}${quote}${flatSelfImport(specifier)}${quote}`
+      );
     if (next !== source) {
       writeFileSync(file, next);
       rewritten += 1;
@@ -389,8 +457,9 @@ async function main() {
 
   assertUseClient(entryPoints);
 
-  buildDeclarations();
+  const program = buildDeclarations();
   const rewritten = rewriteDeclarationSpecifiers();
+  const aliases = appendPropsAliases(program, entryPoints);
   const sheets = copyStyles();
   const imports = assertImportsResolve();
 
@@ -401,6 +470,7 @@ async function main() {
   console.log(
     `  styles       ${String(sheets).padStart(3)} css  (${rewritten} d.ts specifiers rewritten)`
   );
+  console.log(`build: ${aliases} <Name>Props aliases added`);
   console.log(`build: ${imports} imports resolve, "use client" kept`);
 }
 

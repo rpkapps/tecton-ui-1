@@ -2,13 +2,13 @@ import { render, screen } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 import {
   Canvas,
@@ -18,7 +18,7 @@ import {
   CanvasSurface,
   CanvasToolbar,
   CanvasToolbarButton,
-} from "@tecton/react/tecton/canvas"
+} from "@tecton/react/canvas"
 
 describe("Canvas", () => {
   it("renders the surface inside the canvas", () => {

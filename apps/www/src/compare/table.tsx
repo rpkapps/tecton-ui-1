@@ -11,8 +11,8 @@ import {
   UserIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Button } from "@tecton/react/button"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   Table,
   TableBody,
@@ -20,7 +20,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 import { Page } from "./matrix"
 

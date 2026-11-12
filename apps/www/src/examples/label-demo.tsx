@@ -1,6 +1,6 @@
 // Synced from shadcn/ui (apps/v4/examples/base/label-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Checkbox } from "@tecton/react/components/checkbox"
-import { Label } from "@tecton/react/components/label"
+import { Checkbox } from "@tecton/react/checkbox"
+import { Label } from "@tecton/react/label"
 
 export default function LabelDemo() {
   return (

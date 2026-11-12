@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 
 import { Caption, Matrix, Page } from "./matrix"
 

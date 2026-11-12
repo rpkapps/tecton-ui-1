@@ -16,8 +16,8 @@ import {
   ChevronsUpDownIcon,
 } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
 import {
   Table,
   TableBody,
@@ -25,7 +25,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 type Asset = {
   id: string

@@ -4,19 +4,19 @@
 import * as React from "react"
 import { CalendarIcon } from "lucide-react"
 
-import { Calendar } from "@tecton/react/components/calendar"
-import { Field, FieldLabel } from "@tecton/react/components/field"
+import { Calendar } from "@tecton/react/calendar"
+import { Field, FieldLabel } from "@tecton/react/field"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@tecton/react/components/popover"
+} from "@tecton/react/popover"
 
 function formatDate(date: Date | undefined) {
   if (!date) {

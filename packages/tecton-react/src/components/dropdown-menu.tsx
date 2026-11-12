@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Menu as MenuPrimitive } from "@base-ui/react/menu"
-import { usePortalTarget } from "@tecton/react/tecton/portal"
+import { usePortalTarget } from "@tecton/react/portal"
 import { cn } from "cn"
 import { ChevronRightIcon, CheckIcon } from "lucide-react"
 

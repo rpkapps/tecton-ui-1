@@ -3,19 +3,19 @@ import { render, renderHook, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { describe, expect, it, vi } from "vitest"
 
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Dialog,
   DialogContent,
   DialogTitle,
   DialogTrigger,
-} from "@tecton/react/components/dialog"
+} from "@tecton/react/dialog"
 import {
   Drawer,
   DrawerContent,
   DrawerTitle,
   DrawerTrigger,
-} from "@tecton/react/components/drawer"
+} from "@tecton/react/drawer"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,14 +24,10 @@ import {
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@tecton/react/components/popover"
-import { PortalProvider, usePortalTarget } from "@tecton/react/tecton/portal"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+} from "@tecton/react/dropdown-menu"
+import { Popover, PopoverContent, PopoverTrigger } from "@tecton/react/popover"
+import { PortalProvider, usePortalTarget } from "@tecton/react/portal"
+import { TectonProvider } from "@tecton/react/provider"
 
 function makeContainer(name: string) {
   const container = document.createElement("div")

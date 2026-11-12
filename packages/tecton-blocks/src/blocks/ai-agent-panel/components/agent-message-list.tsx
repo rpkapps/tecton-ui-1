@@ -4,19 +4,19 @@ import * as React from "react"
 import { cn } from "cn"
 import { CheckIcon, ChevronDownIcon, SparklesIcon } from "lucide-react"
 
-import { Bubble, BubbleContent } from "@tecton/react/components/bubble"
-import { Button } from "@tecton/react/components/button"
+import { Bubble, BubbleContent } from "@tecton/react/bubble"
+import { Button } from "@tecton/react/button"
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
-} from "@tecton/react/components/collapsible"
+} from "@tecton/react/collapsible"
 import {
   Message,
   MessageAvatar,
   MessageContent,
   MessageGroup,
-} from "@tecton/react/components/message"
+} from "@tecton/react/message"
 import {
   MessageScroller,
   MessageScrollerButton,
@@ -24,8 +24,8 @@ import {
   MessageScrollerItem,
   MessageScrollerProvider,
   MessageScrollerViewport,
-} from "@tecton/react/components/message-scroller"
-import { Spinner } from "@tecton/react/components/spinner"
+} from "@tecton/react/message-scroller"
+import { Spinner } from "@tecton/react/spinner"
 
 import type { AgentAction, AgentMessage } from "../data"
 

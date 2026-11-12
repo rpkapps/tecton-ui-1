@@ -5,7 +5,7 @@ import {
   Alert,
   AlertDescription,
   AlertTitle,
-} from "@tecton/react/components/alert"
+} from "@tecton/react/alert"
 
 export default function AlertDemo() {
   return (

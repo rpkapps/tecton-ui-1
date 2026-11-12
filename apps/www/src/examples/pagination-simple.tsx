@@ -4,7 +4,7 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
-} from "@tecton/react/components/pagination"
+} from "@tecton/react/pagination"
 
 export function PaginationSimple() {
   return (

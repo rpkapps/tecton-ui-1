@@ -9,8 +9,8 @@ import {
 import { TanstackProvider } from "fumadocs-core/framework/tanstack"
 import { ThemeProvider } from "next-themes"
 
-import { Toaster } from "@tecton/react/components/sonner"
-import { TectonProvider } from "@tecton/react/tecton/provider"
+import { Toaster } from "@tecton/react/toast"
+import { TectonProvider } from "@tecton/react/provider"
 
 import { siteConfig } from "@/lib/site"
 import appCss from "@/styles/app.css?url"
@@ -26,14 +26,22 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: "stylesheet", href: appCss },
-      { rel: "icon", href: "/favicon.svg", type: "image/svg+xml" },
-      { rel: "icon", href: "/favicon.ico", sizes: "48x48" },
+      {
+        rel: "icon",
+        href: `${import.meta.env.BASE_URL}favicon.svg`,
+        type: "image/svg+xml",
+      },
+      {
+        rel: "icon",
+        href: `${import.meta.env.BASE_URL}favicon.ico`,
+        sizes: "48x48",
+      },
       {
         rel: "apple-touch-icon",
-        href: "/apple-touch-icon.png",
+        href: `${import.meta.env.BASE_URL}apple-touch-icon.png`,
         sizes: "180x180",
       },
-      { rel: "manifest", href: "/manifest.json" },
+      { rel: "manifest", href: `${import.meta.env.BASE_URL}manifest.json` },
     ],
   }),
   notFoundComponent: () => (
@@ -110,9 +118,11 @@ function RootDocument({ children }: { children: React.ReactNode }) {
           disableTransitionOnChange
         >
           <TanstackProvider>
-            <SiteProvider>{children}</SiteProvider>
+            <SiteProvider>
+              {children}
+              <Toaster />
+            </SiteProvider>
           </TanstackProvider>
-          <Toaster position="top-center" />
         </ThemeProvider>
         <Scripts />
       </body>

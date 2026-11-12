@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/base/toggle-demo.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { BookmarkIcon } from "lucide-react"
 
-import { Toggle } from "@tecton/react/components/toggle"
+import { Toggle } from "@tecton/react/toggle"
 
 export function ToggleDemo() {
   return (

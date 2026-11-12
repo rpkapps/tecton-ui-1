@@ -11,7 +11,7 @@ import {
   AttachmentMedia,
   AttachmentTitle,
   AttachmentTrigger,
-} from "@tecton/react/components/attachment"
+} from "@tecton/react/attachment"
 
 const images = [
   {

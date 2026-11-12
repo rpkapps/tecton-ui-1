@@ -2,11 +2,10 @@
 "use client"
 
 import * as React from "react"
-import { toast } from "sonner"
-
-import { useIsMobile } from "@tecton/react/hooks/use-mobile"
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { toast } from "@tecton/react/toast"
+import { useIsMobile } from "@tecton/react/use-mobile"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
 import {
   Drawer,
   DrawerClose,
@@ -16,15 +15,15 @@ import {
   DrawerHeader,
   DrawerTitle,
   DrawerTrigger,
-} from "@tecton/react/components/drawer"
+} from "@tecton/react/drawer"
 import {
   Field,
   FieldContent,
   FieldDescription,
   FieldLabel,
   FieldTitle,
-} from "@tecton/react/components/field"
-import { RadioGroup, RadioGroupItem } from "@tecton/react/components/radio-group"
+} from "@tecton/react/field"
+import { RadioGroup, RadioGroupItem } from "@tecton/react/radio-group"
 
 const deliveryTimes = [
   {
@@ -73,9 +72,7 @@ export function DrawerDemo() {
     }
 
     setOpen(false)
-    toast("Delivery time confirmed", {
-      description: selected.label,
-    })
+    toast.add({ title: "Delivery time confirmed", description: selected.label })
   }
 
   return (

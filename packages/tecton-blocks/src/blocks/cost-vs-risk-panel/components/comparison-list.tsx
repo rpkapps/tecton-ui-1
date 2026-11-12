@@ -3,8 +3,8 @@
 import * as React from "react"
 import { cn } from "cn"
 
-import { Separator } from "@tecton/react/components/separator"
-import { Meter } from "@tecton/react/tecton/meter"
+import { Separator } from "@tecton/react/separator"
+import { Meter } from "@tecton/react/meter"
 
 import type { DesignPoint, Metric, MetricCategory } from "../data"
 

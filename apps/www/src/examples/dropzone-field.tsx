@@ -10,20 +10,20 @@ import {
   AttachmentDescription,
   AttachmentMedia,
   AttachmentTitle,
-} from "@tecton/react/components/attachment"
+} from "@tecton/react/attachment"
 import {
   EmptyContent,
   EmptyDescription,
   EmptyHeader,
   EmptyMedia,
   EmptyTitle,
-} from "@tecton/react/components/empty"
+} from "@tecton/react/empty"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldTitle,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 import {
   Dropzone,
   DropzoneArea,
@@ -32,7 +32,7 @@ import {
   DropzoneTrigger,
   formatFileSize,
   type DropzoneFileRejection,
-} from "@tecton/react/tecton/dropzone"
+} from "@tecton/react/dropzone"
 
 export default function DropzoneField() {
   const [files, setFiles] = React.useState<File[]>([])

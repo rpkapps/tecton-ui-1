@@ -19,11 +19,11 @@
     "feedback": {
       "title": "Feedback",
       "choice": "A message that stays on the page, a transient toast, or an empty state",
-      "modules": ["components/alert", "components/sonner", "components/empty"],
+      "modules": ["components/alert", "components/toast", "components/empty"],
       "checklist": [
-        "A message that stays on the page until it is read or resolved is an `Alert` with `variant` for the severity and `appearance` for the surface; a transient confirmation of something just done is `toast` from `sonner`.",
-        "Every `toast()` call has exactly one `<Toaster />` mounted at the application root — with nothing subscribed the toast renders nothing and throws nothing.",
-        "Toast severity comes from the typed helpers (`toast.success`, `toast.info`, `toast.warning`, `toast.error`, `toast.promise`), never from a colour class, and any `toast.loading` id is reused by the toast that resolves it.",
+        "A message that stays on the page until it is read or resolved is an `Alert` with `variant` for the severity and `appearance` for the surface; a transient confirmation of something just done is `toast.add` from `@tecton/react/toast`.",
+        "Every `toast.add()` call has exactly one `<Toaster />` mounted at the application root — with nothing subscribed the toast renders nothing and throws nothing.",
+        "Toast severity comes from `type` (`\"success\"`, `\"info\"`, `\"warning\"`, `\"error\"`), never from a colour class, and a pending toast is `toast.promise`, which resolves itself.",
         "The `Alert` icon is a direct child of `Alert` (the two-column grid is a `has-[>svg]` rule), and every button in it, including the dismiss control, is inside `AlertAction` and wired with `onClick`.",
         "An empty list, table, panel or search result renders `Empty` with `EmptyHeader`, `EmptyMedia`, `EmptyTitle` and `EmptyDescription` — not a stack of divs and not a bare line of text.",
         "The icon in an empty state is inside `EmptyMedia variant=\"icon\"`, and the next step is one primary `Button` in `EmptyContent` with at most one secondary beside it.",
@@ -158,6 +158,7 @@
         "components/input-group",
         "components/input-otp",
         "components/label",
+        "tecton/number-field",
         "tecton/dropzone"
       ],
       "checklist": [
@@ -167,8 +168,9 @@
         "`Input`, `Textarea` and `NativeSelect` are real DOM elements, so they take `value`, `onChange(event)` read through `event.target.value`, `disabled`, `required` and `aria-invalid`.",
         "An invalid value sets `aria-invalid` on the control **and** `data-invalid` on the `Field`, with the message rendered in `FieldError` rather than a red paragraph.",
         "`Input`, `Textarea` and `SelectTrigger` take their surface from `variant=\"outline\" | \"filled\" | \"text\"`, and `className` on them carries layout only (`w-full`, `col-span-2`).",
-        "An icon, unit, hint or in-field button lives in an `InputGroup` with `InputGroupInput` (never a plain `Input`) and an `InputGroupAddon` placed after the control in the DOM and positioned with `align`.",
+        "An icon, unit, hint or in-field button on a text field lives in an `InputGroup` with `InputGroupInput` (never a plain `Input`) and an `InputGroupAddon` placed after the control in the DOM and positioned with `align`; a `NumberField` uses its own `NumberFieldGroup` instead.",
         "`Slider` is bounded with `min`, `max` and `step`, holds an array `value` and narrows the `number | number[]` that `onValueChange` reports; `FieldTitle` renders a `div` and names a control only through `aria-labelledby`.",
+        "A number the user types or steps is a `NumberField` (never `Input type=\"number\"`): the `id` goes on `NumberField`, the unit in `NumberFieldUnit` or `format`, and `onValueChange` reports `number | null`.",
         "Files are picked with a `Dropzone`: an `Empty`-based `DropzoneArea` holding a `DropzoneTrigger` (the keyboard's way in), the files in `value` / `onValueChange`, limits in `accept`, `maxSize` and `maxFiles`, and each picked file an `Attachment` in `DropzoneList` with a `DropzoneRemove` — never a `div` with `onDrop`."
       ]
     },
@@ -241,10 +243,11 @@
     },
     "presentation": {
       "title": "Presentation",
-      "choice": "Slides, avatars, collapsing toolbars, a full-bleed work surface or a decorative background",
+      "choice": "Slides, avatars, code, collapsing toolbars, a full-bleed work surface or a decorative background",
       "modules": [
         "components/carousel",
         "components/avatar",
+        "components/code-block",
         "tecton/overflow",
         "tecton/canvas",
         "tecton/background"
@@ -270,6 +273,7 @@
         "components/attachment",
         "components/questionnaire",
         "components/marker",
+        "components/trace",
         "tecton/composer"
       ],
       "checklist": [
@@ -293,7 +297,7 @@
       ],
       "checklist": [
         "The application is wrapped once in a `TectonProvider` (with its `locale`, and `navigate` / `useHref` when it has a router) and sets the matching `dir` and `lang` on `<html>`; Tecton components read the direction from the provider, not from the DOM, so `dir` on a wrapper alone changes nothing.",
-        "No other library's provider is mounted (and nothing is imported from `react-aria-components` or `@base-ui/react`): `TectonProvider` is the only one Tecton components read.",
+        "No other UI provider is mounted: `TectonProvider` is the only one Tecton components read.",
         "Inside a flipped tree every spacing and alignment class is logical (`ms-*`, `pe-*`, `text-start`, `border-s`), and the direction is read with `useDirection()` rather than from `document.dir`.",
         "A page holding several React roots wraps each root in a `ThemeRoot` (or a `TectonProvider` with its own body-level `portalContainer`), because `document.body` falls outside that root's `@scope` rule.",
         "No overlay is portalled by hand with `createPortal`: `Dialog`, `Sheet`, `Popover`, `Tooltip`, `Select`, `Combobox`, `DropdownMenu`, `CommandDialog` and `Drawer` all read the portal container themselves.",
@@ -312,11 +316,6 @@
     }
   },
   "externals": {
-    "toast": {
-      "import": "import { toast } from \"sonner\"",
-      "docs": "/docs/components/sonner",
-      "note": "The Toaster component is @tecton/react/components/sonner; toast() itself comes from the sonner package."
-    },
     "TanStack Table": {
       "import": "import { useReactTable } from \"@tanstack/react-table\"",
       "docs": "/docs/components/data-table",

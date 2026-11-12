@@ -2,7 +2,7 @@
 
 import * as React from "react"
 import { Dialog as SheetPrimitive } from "@base-ui/react/dialog"
-import { usePortalTarget } from "@tecton/react/tecton/portal"
+import { usePortalTarget } from "@tecton/react/portal"
 import { cn } from "cn"
 
 import { Button } from "@tecton/react/components/button"

@@ -1,6 +1,6 @@
 ---
 component: RadioGroup
-module: "@tecton/react/components/radio-group"
+module: "@tecton/react/radio-group"
 family: selection
 exports: [RadioGroup, RadioGroupItem]
 notFor:

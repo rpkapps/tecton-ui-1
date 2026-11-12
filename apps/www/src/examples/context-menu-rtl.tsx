@@ -23,7 +23,7 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
   ContextMenuTrigger,
-} from "@tecton/react/components/context-menu"
+} from "@tecton/react/context-menu"
 
 const translations: Translations = {
   en: {

@@ -3,12 +3,8 @@
 import * as React from "react"
 import { MicIcon, PaperclipIcon } from "lucide-react"
 
-import { InputGroupButton } from "@tecton/react/components/input-group"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@tecton/react/components/tooltip"
+import { InputGroupButton } from "@tecton/react/input-group"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@tecton/react/tooltip"
 import {
   Composer,
   ComposerField,
@@ -19,7 +15,7 @@ import {
   ComposerSuggestion,
   ComposerSuggestions,
   ComposerToolbar,
-} from "@tecton/react/tecton/composer"
+} from "@tecton/react/composer"
 
 type AgentComposerProps = Omit<
   React.ComponentProps<typeof Composer>,

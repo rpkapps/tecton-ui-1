@@ -7,30 +7,22 @@ import {
   DropdownMenuLabel,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
-} from "@tecton/react/components/sidebar"
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@tecton/react/components/tabs"
-import {
-  ToggleGroup,
-  ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+} from "@tecton/react/sidebar"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@tecton/react/tabs"
+import { ToggleGroup, ToggleGroupItem } from "@tecton/react/toggle-group"
 import {
   PageHeader,
   PageHeaderActions,
   PageHeaderContent,
   PageHeaderNav,
   PageHeaderTitle,
-} from "@tecton/react/tecton/page-header"
-import { OverflowItem, OverflowSpacer } from "@tecton/react/tecton/overflow"
+} from "@tecton/react/page-header"
+import { OverflowItem, OverflowSpacer } from "@tecton/react/overflow"
 
 import { ConceptSection } from "./components/concept-section"
 import { ProjectSidebar } from "./components/project-sidebar"

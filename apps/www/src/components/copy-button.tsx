@@ -2,7 +2,7 @@
 
 import { cn } from "cn"
 
-import { CopyButton as TectonCopyButton } from "@tecton/react/tecton/copy-button"
+import { CopyButton as TectonCopyButton } from "@tecton/react/copy-button"
 
 /** Copy button positioned in the corner of a code block (shadcn docs style). */
 export function CopyButton({

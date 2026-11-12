@@ -7,13 +7,13 @@ import {
   EmptyDescription,
   EmptyHeader,
   EmptyTitle,
-} from "@tecton/react/components/empty"
+} from "@tecton/react/empty"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
-import { Kbd } from "@tecton/react/components/kbd"
+} from "@tecton/react/input-group"
+import { Kbd } from "@tecton/react/kbd"
 
 export default function EmptyInputGroup() {
   return (

@@ -1,10 +1,11 @@
 /**
- * rename-package — renames the `@tecton/react` package literal across the repo.
+ * rename-package — renames the library package literal (currently
+ * `@tecton/react`, read from packages/tecton-react/package.json)
+ * across the repo.
  *
  *   bun run scripts/rename-package.mts <new-name> [--dry-run]
  *
- * The library package `@tecton/react` may be renamed later (scope and name are
- * both undecided). The literal appears in generated component self-imports,
+ * The literal appears in generated component self-imports,
  * hand-written `src/tecton` and block imports, apps/www examples and docs,
  * config (tsconfig paths, vitest aliases, the eslint config, the registry
  * mirror overlay, the blocks registry builder) and prose (CLAUDE.md,
@@ -19,7 +20,7 @@
  *   4. Replaces every exact literal OLD that ends at a word boundary (the
  *      next character is not a letter, digit, `-` or `_`, nor a `.` followed
  *      by one of those, so the name at the end of a sentence is renamed but
- *      `@tecton/react.d` is not) with NEW, preserving line endings and
+ *      `<name>.d` is not) with NEW, preserving line endings and
  *      everything else in the file byte-for-byte.
  *   5. Prints a per-category summary, the follow-up checklist, and the list
  *      of things this script intentionally does not handle.
@@ -139,8 +140,8 @@ const TEXT_EXTENSIONS = new Set([
 // ---------------------------------------------------------------------------
 // 4. Match OLD ending at a word boundary; collect every edit before writing
 // ---------------------------------------------------------------------------
-// A `.` ends the name only when no name character follows it: `@tecton/react.`
-// at the end of a sentence is renamed, `@tecton/react.d` (a longer name) is not.
+// A `.` ends the name only when no name character follows it: `<name>.`
+// at the end of a sentence is renamed, `<name>.d` (a longer name) is not.
 const MATCH_RE = new RegExp(`${escapeRegExp(OLD_NAME)}(?![A-Za-z0-9_-]|\\.[A-Za-z0-9_])`, "g");
 
 interface FileEdit {
@@ -320,7 +321,7 @@ console.log("  pnpm install");
 console.log("");
 console.log("  scripts/registry-mirror.sh build && scripts/registry-mirror.sh serve   # in a second shell");
 console.log(
-  `  REGISTRY_URL=http://127.0.0.1:4000/r pnpm dlx shadcn@4.21.0 add ${componentItems.join(" ")} \\`
+  `  REGISTRY_URL=http://127.0.0.1:4000/r pnpm dlx shadcn@4.21.5 add ${componentItems.join(" ")} \\`
 );
 console.log("    --overwrite -c packages/tecton-react");
 console.log(`  pnpm --filter ${NEW} use-client:restore   # the CLI drops some "use client" directives`);

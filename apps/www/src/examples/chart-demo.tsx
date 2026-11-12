@@ -10,13 +10,13 @@ import {
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
+} from "@tecton/react/card"
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
   type ChartConfig,
-} from "@tecton/react/components/chart"
+} from "@tecton/react/chart"
 
 export const description = "An interactive bar chart"
 

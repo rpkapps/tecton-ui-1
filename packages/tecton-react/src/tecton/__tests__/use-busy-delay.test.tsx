@@ -1,7 +1,7 @@
 import { act, renderHook } from "@testing-library/react"
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest"
 
-import { useBusyDelay } from "@tecton/react/tecton/use-busy-delay"
+import { useBusyDelay } from "@tecton/react/use-busy-delay"
 
 function setup(initial: boolean, options?: Parameters<typeof useBusyDelay>[1]) {
   return renderHook(({ pending, opts }) => useBusyDelay(pending, opts), {

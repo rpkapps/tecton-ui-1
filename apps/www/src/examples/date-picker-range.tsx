@@ -6,14 +6,14 @@ import { addDays, format } from "date-fns"
 import { CalendarIcon } from "lucide-react"
 import { type DateRange } from "react-day-picker"
 
-import { Button } from "@tecton/react/components/button"
-import { Calendar } from "@tecton/react/components/calendar"
-import { Field, FieldLabel } from "@tecton/react/components/field"
+import { Button } from "@tecton/react/button"
+import { Calendar } from "@tecton/react/calendar"
+import { Field, FieldLabel } from "@tecton/react/field"
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
-} from "@tecton/react/components/popover"
+} from "@tecton/react/popover"
 
 export function DatePickerWithRange() {
   const [date, setDate] = React.useState<DateRange | undefined>({

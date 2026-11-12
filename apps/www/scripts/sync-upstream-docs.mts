@@ -45,6 +45,14 @@ const DOCS = path.join(WWW, "content/docs")
 const OUT_DOCS = path.join(DOCS, "components")
 const OUT_EXAMPLES = path.join(WWW, "src/examples")
 const IMAGES_OUT = path.join(WWW, "public/images")
+/** Every public subpath (`@tecton/react/toast`), so a rewritten import to a missing one is blocked. */
+const TECTON_SUBPATHS = new Set(
+  Object.keys(
+    JSON.parse(
+      await fs.readFile(path.join(REPO, "packages/tecton-react/package.json"), "utf8")
+    ).exports as Record<string, unknown>
+  ).map((subpath) => `@tecton/react${subpath.slice(1)}`)
+)
 
 const SYNCED_EXAMPLE_HEADER = "// Synced from shadcn/ui"
 const SYNCED_PAGE_MARKER = /^upstream: apps\/v4\//m
@@ -53,14 +61,10 @@ const SYNCED_PAGE_MARKER = /^upstream: apps\/v4\//m
 const BASE = "base"
 
 /**
- * Components Tecton ships that the Base UI docs do not document (upstream's
- * `base` pages cover its own `toast` instead of `sonner`). Their page and
- * examples come from the base named here; the sonner examples only call
- * `toast()` from a Button's `onClick`, which is the same on every base.
+ * Components Tecton ships that the Base UI docs do not document. Their page
+ * and examples come from the base named here.
  */
-const PAGE_BASES: Record<string, string> = {
-  sonner: "radix",
-}
+const PAGE_BASES: Record<string, string> = {}
 
 /**
  * Upstream pages of generated components that are not documented here, and
@@ -101,11 +105,13 @@ const EXTRA_FOLDERS: Record<string, { title: string; pages: string[] }> = {
 const IMPORT_REWRITES: [RegExp, string][] = [
   [
     /^@\/styles\/(?:base|radix)-[a-z]+\/ui(?:-rtl)?\/(.+)$/,
-    "@tecton/react/components/$1",
+    "@tecton/react/$1",
   ],
   // a few upstream examples still import the pre-bases registry
-  [/^@\/registry\/new-york-v4\/ui\/(.+)$/, "@tecton/react/components/$1"],
-  [/^@\/hooks\/use-mobile$/, "@tecton/react/hooks/use-mobile"],
+  [/^@\/registry\/new-york-v4\/ui\/(.+)$/, "@tecton/react/$1"],
+  [/^@\/hooks\/use-mobile$/, "@tecton/react/use-mobile"],
+  [/^@\/registry\/bases\/base\/hooks\/(.+)$/, "@tecton/react/$1"],
+  [/^@\/components\/ui\/(.+)$/, "@tecton/react/$1"],
   [/^next\/image$/, "@/components/shims/image"],
   [/^next\/link$/, "@/components/shims/link"],
   [/^@\/components\/language-selector$/, "@/components/language-selector"],
@@ -118,7 +124,6 @@ const ALLOWED_MODULES = new Set([
   "react-dom",
   "cn",
   "lucide-react",
-  "sonner",
   "date-fns",
   "date-fns/locale",
   "react-day-picker",
@@ -228,8 +233,8 @@ function linkWithButtonLook(code: string, label: string): string {
   )
   code = replaceOrThrow(
     code,
-    'import { Button } from "@tecton/react/components/button"',
-    'import { Button, buttonVariants } from "@tecton/react/components/button"',
+    'import { Button } from "@tecton/react/button"',
+    'import { Button, buttonVariants } from "@tecton/react/button"',
     label
   )
   return code.replace(
@@ -504,6 +509,127 @@ function rewriteTablerIcons(source: string): string {
   return code
 }
 
+const SONNER_TYPES = new Set(["success", "info", "warning", "error"])
+/** Sonner options with no effect on the Tecton toast; anything else throws. */
+const SONNER_IGNORED_OPTIONS = new Set(["position"])
+
+/**
+ * Upstream examples still call sonner's `toast`; Tecton ships the Base UI
+ * toast, so each call becomes `toast.add` from `@tecton/react/toast`
+ * (`toast(title, { description })` → `toast.add({ title, description })`,
+ * `toast.success(title)` → `toast.add({ title, type: "success" })`). An
+ * example-local `<Toaster />` goes: the site mounts the one Toaster. Any
+ * other call shape throws, so a new one is handled here, not shipped broken.
+ */
+function rewriteSonner(source: string, exampleName: string): string {
+  const importMatch = source.match(
+    /^import\s*\{([^}]*)\}\s*from\s*["']sonner["']\s*;?[^\S\n]*\n/m
+  )
+  if (!importMatch) {
+    if (/["']sonner["']/.test(source)) {
+      throw new Error(`${exampleName}: unsupported sonner import`)
+    }
+    return source
+  }
+  const names = importMatch[1].split(",").map((n) => n.trim()).filter(Boolean)
+  for (const name of names) {
+    if (name !== "toast" && name !== "Toaster") {
+      throw new Error(`${exampleName}: unsupported sonner import ${name}`)
+    }
+  }
+  const file = ts.createSourceFile(
+    "example.tsx",
+    source,
+    ts.ScriptTarget.Latest,
+    true,
+    ts.ScriptKind.TSX
+  )
+  const edits: { start: number; end: number; text: string }[] = []
+  const handled = new Set<ts.Node>()
+  const fail = (node: ts.Node, why: string): never => {
+    throw new Error(`${exampleName}: ${why}: ${node.getText(file)}`)
+  }
+  const visit = (node: ts.Node) => {
+    if (ts.isCallExpression(node)) {
+      const callee = node.expression
+      let type: string | undefined
+      let isToast = false
+      if (ts.isIdentifier(callee) && callee.text === "toast") isToast = true
+      else if (
+        ts.isPropertyAccessExpression(callee) &&
+        ts.isIdentifier(callee.expression) &&
+        callee.expression.text === "toast"
+      ) {
+        if (!SONNER_TYPES.has(callee.name.text)) fail(node, "unsupported sonner call")
+        type = callee.name.text
+        isToast = true
+      }
+      if (isToast) {
+        handled.add(
+          ts.isIdentifier(callee) ? callee : (callee as ts.PropertyAccessExpression).expression
+        )
+        const [title, options, ...rest] = node.arguments
+        if (!title || rest.length) fail(node, "unsupported sonner call")
+        const props = [`title: ${title.getText(file)}`]
+        if (options) {
+          if (!ts.isObjectLiteralExpression(options)) {
+            fail(node, "unsupported sonner options")
+          }
+          for (const prop of (options as ts.ObjectLiteralExpression).properties) {
+            const key =
+              prop.name && ts.isIdentifier(prop.name) ? prop.name.text : ""
+            if (SONNER_IGNORED_OPTIONS.has(key)) continue
+            if (key !== "description" || !ts.isPropertyAssignment(prop)) {
+              fail(node, "unsupported sonner option")
+            }
+            props.push(
+              `description: ${(prop as ts.PropertyAssignment).initializer.getText(file)}`
+            )
+          }
+        }
+        if (type) props.push(`type: "${type}"`)
+        edits.push({
+          start: node.getStart(file),
+          end: node.getEnd(),
+          text: `toast.add({ ${props.join(", ")} })`,
+        })
+        return
+      }
+    }
+    if (
+      (ts.isJsxSelfClosingElement(node) || ts.isJsxElement(node)) &&
+      (ts.isJsxSelfClosingElement(node) ? node : node.openingElement).tagName.getText(file) === "Toaster"
+    ) {
+      let start = node.getStart(file)
+      while (start > 0 && /[^\S\n]/.test(source[start - 1])) start--
+      if (source[start - 1] === "\n") start--
+      edits.push({ start, end: node.getEnd(), text: "" })
+      return
+    }
+    ts.forEachChild(node, visit)
+  }
+  visit(file)
+  // Every other `toast` reference — a call nested in a handled call's
+  // arguments, a bare `onClick={toast}`, or a local binding that shadows the
+  // import — would be left as sonner code or rewritten wrongly.
+  const checkUnhandled = (node: ts.Node) => {
+    if (ts.isImportDeclaration(node)) return
+    if (ts.isIdentifier(node) && node.text === "toast" && !handled.has(node)) {
+      fail(node.parent, "unsupported use of sonner's toast")
+    }
+    ts.forEachChild(node, checkUnhandled)
+  }
+  checkUnhandled(file)
+  let code = source
+  for (const edit of edits.sort((a, b) => b.start - a.start)) {
+    code = code.slice(0, edit.start) + edit.text + code.slice(edit.end)
+  }
+  const keep = names.includes("toast")
+    ? 'import { toast } from "@tecton/react/toast"\n'
+    : ""
+  return code.replace(importMatch[0], keep)
+}
+
 function rewriteImports(source: string): { code: string; blocked?: string } {
   let blocked: string | undefined
   const code = rewriteTablerIcons(source).replace(
@@ -515,7 +641,12 @@ function rewriteImports(source: string): { code: string; blocked?: string } {
           return `${prefix}${quote}${spec.replace(pattern, replacement)}${quote}`
         }
       }
-      if (ALLOWED_MODULES.has(spec) || spec.startsWith("react/")) return match
+      if (
+        ALLOWED_MODULES.has(spec) ||
+        spec.startsWith("react/") ||
+        TECTON_SUBPATHS.has(spec)
+      )
+        return match
       blocked ??= spec
       return match
     }
@@ -729,6 +860,27 @@ const PAGE_REWRITES: Record<
       "alert page (API table)"
     )
   },
+  // The language list ships inside the package: an application cannot edit it.
+  "code-block": (mdx) => {
+    mdx = replaceOrThrow(
+      mdx,
+      "Each language loads the first time it is used. Edit the list in `lib/highlighter.tsx`. A language that is not in the list renders as plain text.",
+      "Each language loads the first time it is used. A language that is not in the list renders as plain text.",
+      "code-block page (languages)"
+    )
+    mdx = replaceOrThrow(
+      mdx,
+      "A language or alias from `lib/highlighter.tsx`, or `\"ansi\"`.",
+      "A language or alias from [Languages](#languages), or `\"ansi\"`.",
+      "code-block page (API table)"
+    )
+    return replaceOrThrow(
+      mdx,
+      'import { highlightCode } from "@/lib/highlighter"',
+      'import { highlightCode } from "@tecton/react/highlighter"',
+      "code-block page (server rendering)"
+    )
+  },
   badge: (mdx) => {
     mdx = replaceOrThrow(
       mdx,
@@ -837,7 +989,7 @@ const PAGE_REWRITES: Record<
     return replaceOrThrow(
       mdx,
       /\n## RTL\n\nTo enable RTL support in shadcn\/ui, see the \[RTL configuration guide\]\([^)]*\)\.\n\n\{\/\* prettier-ignore \*\/\}\n<Button asChild[^\n]*\n[^\n]*\n<\/Button>\n/,
-      '\n## RTL\n\nThe sidebar\'s contents follow the reading direction set with [`TectonProvider`](/docs/tecton/provider). `side` is a physical edge, so put a start-edge sidebar on the right in right-to-left layouts:\n\n```tsx lineNumbers\nconst direction = useDirection() // @tecton/react/tecton/provider\n\n<Sidebar side={direction === "rtl" ? "right" : "left"} />\n```\n',
+      '\n## RTL\n\nThe sidebar\'s contents follow the reading direction set with [`TectonProvider`](/docs/tecton/provider). `side` is a physical edge, so put a start-edge sidebar on the right in right-to-left layouts:\n\n```tsx lineNumbers\nconst direction = useDirection() // @tecton/react/provider\n\n<Sidebar side={direction === "rtl" ? "right" : "left"} />\n```\n',
       "sidebar page (RTL)"
     )
   },
@@ -935,8 +1087,13 @@ function removeMarkers(mdx: string): string {
 
 /** github-slugger, as fumadocs uses it for heading ids. */
 function slugify(text: string) {
-  return text
-    .replace(/<[^>]*>/g, "")
+  let stripped = text
+  let previous: string
+  do {
+    previous = stripped
+    stripped = stripped.replace(/<[^>]*>/g, "")
+  } while (stripped !== previous)
+  return stripped
     .trim()
     .toLowerCase()
     .replace(/[^\p{L}\p{N}\p{M}\s_-]/gu, "")
@@ -1111,14 +1268,14 @@ function transformMdx(
   mdx = mdx.replace(/\]\(#installation\)/g, "](/docs/installation)")
 
   // import paths and file titles
-  mdx = mdx.replace(/@\/components\/ui\//g, "@tecton/react/components/")
+  mdx = mdx.replace(/@\/components\/ui\//g, "@tecton/react/")
   mdx = mdx.replace(
     /title="components\/ui\/([^"]+)"/g,
-    'title="@tecton/react/components/$1"'
+    'title="@tecton/react/$1"'
   )
   mdx = mdx.replace(
     /`components\/ui\/([a-z0-9-]+\.tsx)`/g,
-    "`@tecton/react/components/$1`"
+    "`@tecton/react/$1`"
   )
 
   // docs links that point at other bases
@@ -1297,7 +1454,7 @@ async function main() {
       )
     }
     const { code: rewritten, blocked } = rewriteImports(
-      await fs.readFile(file, "utf8")
+      rewriteSonner(await fs.readFile(file, "utf8"), exampleName)
     )
     if (blocked) return skip(`unsupported import: ${blocked}`)
     const code = rewriteStockColors(

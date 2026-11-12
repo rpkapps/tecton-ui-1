@@ -7,7 +7,7 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "cn"
 import { ExternalLinkIcon } from "lucide-react"
 
-import { buttonVariants } from "@tecton/react/components/button"
+import { buttonVariants } from "@tecton/react/button"
 
 import { shouldClientNavigate, useTectonRouter } from "./internal/router"
 

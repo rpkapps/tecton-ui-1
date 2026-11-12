@@ -1,12 +1,12 @@
 // Synced from shadcn/ui (apps/v4/examples/base/input-fieldgroup.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Field,
   FieldDescription,
   FieldGroup,
   FieldLabel,
-} from "@tecton/react/components/field"
-import { Input } from "@tecton/react/components/input"
+} from "@tecton/react/field"
+import { Input } from "@tecton/react/input"
 
 export function InputFieldgroup() {
   return (

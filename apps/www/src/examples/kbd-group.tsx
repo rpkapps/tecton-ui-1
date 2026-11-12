@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/kbd-group.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Kbd, KbdGroup } from "@tecton/react/components/kbd"
+import { Kbd, KbdGroup } from "@tecton/react/kbd"
 
 export default function KbdGroupExample() {
   return (

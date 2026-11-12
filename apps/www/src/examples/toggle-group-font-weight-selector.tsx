@@ -7,11 +7,11 @@ import {
   Field,
   FieldDescription,
   FieldLabel,
-} from "@tecton/react/components/field"
+} from "@tecton/react/field"
 import {
   ToggleGroup,
   ToggleGroupItem,
-} from "@tecton/react/components/toggle-group"
+} from "@tecton/react/toggle-group"
 
 export function ToggleGroupFontWeightSelector() {
   const [fontWeight, setFontWeight] = React.useState("normal")

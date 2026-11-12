@@ -10,7 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@tecton/react/components/select"
+} from "@tecton/react/select"
 
 export type Language = "en" | "ar" | "he"
 

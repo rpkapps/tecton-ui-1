@@ -9,21 +9,17 @@ import {
   UserRoundIcon,
 } from "lucide-react"
 
-import {
-  Alert,
-  AlertDescription,
-  AlertTitle,
-} from "@tecton/react/components/alert"
-import { Button } from "@tecton/react/components/button"
+import { Alert, AlertDescription, AlertTitle } from "@tecton/react/alert"
+import { Button } from "@tecton/react/button"
 import {
   Field,
   FieldDescription,
   FieldError,
   FieldLabel,
-} from "@tecton/react/components/field"
-import { Spinner } from "@tecton/react/components/spinner"
-import { Textarea } from "@tecton/react/components/textarea"
-import { LinkButton } from "@tecton/react/tecton/link"
+} from "@tecton/react/field"
+import { Spinner } from "@tecton/react/spinner"
+import { Textarea } from "@tecton/react/textarea"
+import { LinkButton } from "@tecton/react/link"
 
 import {
   LogTrack,

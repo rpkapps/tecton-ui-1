@@ -1,6 +1,6 @@
 import * as React from "react"
 
-import { Separator } from "@tecton/react/components/separator"
+import { Separator } from "@tecton/react/separator"
 
 import { Matrix, Page, Section } from "./matrix"
 

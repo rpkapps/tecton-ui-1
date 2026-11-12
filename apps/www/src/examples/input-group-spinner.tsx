@@ -6,8 +6,8 @@ import {
   InputGroupAddon,
   InputGroupInput,
   InputGroupText,
-} from "@tecton/react/components/input-group"
-import { Spinner } from "@tecton/react/components/spinner"
+} from "@tecton/react/input-group"
+import { Spinner } from "@tecton/react/spinner"
 
 export default function InputGroupSpinner() {
   return (

@@ -1,6 +1,6 @@
 ---
 component: Skeleton
-module: "@tecton/react/components/skeleton"
+module: "@tecton/react/skeleton"
 family: progress
 exports: [Skeleton]
 notFor:

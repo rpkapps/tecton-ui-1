@@ -4,14 +4,14 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@tecton/react/components/accordion"
+} from "@tecton/react/accordion"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
+} from "@tecton/react/card"
 
 const items = [
   {

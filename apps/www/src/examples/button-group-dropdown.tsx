@@ -12,8 +12,8 @@ import {
   VolumeOffIcon,
 } from "lucide-react"
 
-import { Button } from "@tecton/react/components/button"
-import { ButtonGroup } from "@tecton/react/components/button-group"
+import { Button } from "@tecton/react/button"
+import { ButtonGroup } from "@tecton/react/button-group"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,7 +21,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 
 export default function ButtonGroupDropdown() {
   return (

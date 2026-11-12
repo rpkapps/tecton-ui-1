@@ -12,7 +12,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   AppShell,
   AppShellAction,
@@ -21,7 +21,7 @@ import {
   AppShellCommandTrigger,
   AppShellHeader,
   AppShellUserMenu,
-} from "@tecton/react/tecton/app-shell"
+} from "@tecton/react/app-shell"
 
 export default function AppShellActionsExample() {
   return (

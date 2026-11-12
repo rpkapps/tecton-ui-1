@@ -1,7 +1,7 @@
 // Synced from shadcn/ui (apps/v4/examples/base/badge-icon.tsx) by scripts/sync-upstream-docs.mts — do not edit.
 import { BadgeCheck, BookmarkIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
+import { Badge } from "@tecton/react/badge"
 
 export function BadgeWithIconLeft() {
   return (

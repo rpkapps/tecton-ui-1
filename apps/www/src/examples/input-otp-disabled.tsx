@@ -1,11 +1,11 @@
 // Synced from shadcn/ui (apps/v4/examples/base/input-otp-disabled.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Field, FieldLabel } from "@tecton/react/components/field"
+import { Field, FieldLabel } from "@tecton/react/field"
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSeparator,
   InputOTPSlot,
-} from "@tecton/react/components/input-otp"
+} from "@tecton/react/input-otp"
 
 export function InputOTPDisabled() {
   return (

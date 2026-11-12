@@ -6,7 +6,7 @@ import { CopyIcon, PinIcon } from "lucide-react"
 import {
   ContextMenuItem,
   ContextMenuSeparator,
-} from "@tecton/react/components/context-menu"
+} from "@tecton/react/context-menu"
 import { WellIcon } from "@tecton/react/icons/well"
 import {
   DocumentTabs,
@@ -18,7 +18,7 @@ import {
   DocumentTabsMenuCloseOthers,
   DocumentTabsMenuRename,
   DocumentTabsTrigger,
-} from "@tecton/react/tecton/document-tabs"
+} from "@tecton/react/document-tabs"
 
 type Well = { id: string; name: string; pinned?: boolean }
 

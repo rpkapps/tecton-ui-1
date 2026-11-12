@@ -9,8 +9,8 @@ import {
 } from "@tanstack/react-table"
 import type { RowSelectionState } from "@tanstack/react-table"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Checkbox } from "@tecton/react/components/checkbox"
+import { Badge } from "@tecton/react/badge"
+import { Checkbox } from "@tecton/react/checkbox"
 import {
   Table,
   TableBody,
@@ -18,7 +18,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@tecton/react/components/table"
+} from "@tecton/react/table"
 
 type Well = {
   id: string

@@ -3,12 +3,12 @@
 
 import { REGEXP_ONLY_DIGITS } from "input-otp"
 
-import { Field, FieldLabel } from "@tecton/react/components/field"
+import { Field, FieldLabel } from "@tecton/react/field"
 import {
   InputOTP,
   InputOTPGroup,
   InputOTPSlot,
-} from "@tecton/react/components/input-otp"
+} from "@tecton/react/input-otp"
 
 export function InputOTPPattern() {
   return (

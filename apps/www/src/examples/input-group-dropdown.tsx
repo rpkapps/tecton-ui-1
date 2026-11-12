@@ -9,13 +9,13 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@tecton/react/components/dropdown-menu"
+} from "@tecton/react/dropdown-menu"
 import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
   InputGroupInput,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 
 export function InputGroupDropdown() {
   return (

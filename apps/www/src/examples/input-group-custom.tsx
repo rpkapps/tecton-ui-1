@@ -7,7 +7,7 @@ import {
   InputGroup,
   InputGroupAddon,
   InputGroupButton,
-} from "@tecton/react/components/input-group"
+} from "@tecton/react/input-group"
 
 export default function InputGroupCustom() {
   return (

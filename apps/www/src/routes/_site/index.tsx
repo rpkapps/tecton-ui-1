@@ -8,16 +8,16 @@ import {
   TerminalIcon,
 } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { buttonVariants } from "@tecton/react/components/button"
+import { Badge } from "@tecton/react/badge"
+import { buttonVariants } from "@tecton/react/button"
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@tecton/react/components/card"
-import { CopyButton } from "@tecton/react/tecton/copy-button"
+} from "@tecton/react/card"
+import { CopyButton } from "@tecton/react/copy-button"
 
 import { HeroPreview } from "@/components/hero-preview"
 import { siteConfig } from "@/lib/site"

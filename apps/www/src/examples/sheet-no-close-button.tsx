@@ -1,5 +1,5 @@
 // Synced from shadcn/ui (apps/v4/examples/base/sheet-no-close-button.tsx) by scripts/sync-upstream-docs.mts — do not edit.
-import { Button } from "@tecton/react/components/button"
+import { Button } from "@tecton/react/button"
 import {
   Sheet,
   SheetContent,
@@ -7,7 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
   SheetTrigger,
-} from "@tecton/react/components/sheet"
+} from "@tecton/react/sheet"
 
 export default function SheetNoCloseButton() {
   return (

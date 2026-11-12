@@ -280,8 +280,14 @@ const IDENTIFIER = /^[A-Za-z0-9_-]+$/
 const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
 
 /** `.mfe-a` → `mfe-a`, `[data-mfe-scope="operations"]` → `data-mfe-scope-operations`. */
-const identifierSafe = (value) =>
-  value.replace(/[^A-Za-z0-9_-]+/g, "-").replace(/^-+|-+$/g, "")
+const identifierSafe = (value) => {
+  const slug = value.replace(/[^A-Za-z0-9_-]+/g, "-")
+  let start = 0
+  let end = slug.length
+  while (start < end && slug[start] === "-") start++
+  while (end > start && slug[end - 1] === "-") end--
+  return slug.slice(start, end)
+}
 
 const resolveKeyframes = (keyframes, scope) => {
   if (keyframes === false || keyframes === null) return null

@@ -4,8 +4,8 @@ import * as React from "react"
 import { cn } from "cn"
 import { PanelRightIcon, PanelRightOpenIcon } from "lucide-react"
 
-import { Badge } from "@tecton/react/components/badge"
-import { Button } from "@tecton/react/components/button"
+import { Badge } from "@tecton/react/badge"
+import { Button } from "@tecton/react/button"
 import {
   Panel,
   PanelActions,
@@ -13,8 +13,8 @@ import {
   PanelFooter,
   PanelHeader,
   PanelTitle,
-} from "@tecton/react/tecton/panel"
-import { useLocale } from "@tecton/react/tecton/provider"
+} from "@tecton/react/panel"
+import { useLocale } from "@tecton/react/provider"
 
 import { HorizonForm } from "./components/horizon-form"
 import { HorizonReadout } from "./components/horizon-readout"

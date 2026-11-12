@@ -1,6 +1,6 @@
 ---
 component: Toggle
-module: "@tecton/react/components/toggle"
+module: "@tecton/react/toggle"
 family: actions
 exports: [Toggle, toggleVariants]
 notFor:
