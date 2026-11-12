@@ -16,7 +16,6 @@
  * named after them ("Insert between Well 03 and Well 04").
  */
 import * as React from "react"
-import { cn } from "cn"
 
 import { useDirection } from "@tecton/react/tecton/provider"
 
@@ -179,11 +178,7 @@ function DataTableRowReorder({ order }: { order: RowOrder }) {
     >
       <span
         aria-hidden
-        className={cn(
-          "pointer-events-none absolute inset-x-0 -top-px h-0.5 rounded-full bg-primary-active",
-          // A dot at its start, as a tree's drop line has.
-          "before:absolute before:start-0.5 before:top-1/2 before:size-2 before:-translate-y-1/2 before:rounded-full before:border-2 before:border-primary-active before:bg-background"
-        )}
+        className="pointer-events-none absolute inset-x-0 -top-px h-0.5 rounded-full bg-primary-active"
       />
     </DragAndDropPrimitive.DropIndicator>
   )

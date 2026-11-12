@@ -22,7 +22,10 @@ import { useTranslations } from "./internal/i18n/translations"
  * have overflowed.
  */
 const actionBarVariants = cva(
-  "@container/action-bar flex min-w-0 animate-in flex-wrap items-center gap-x-3 gap-y-1.5 text-sm duration-150 fade-in-0",
+  // In a toolbar row the bar swaps in at once: a fade would end with the
+  // text's smoothing switching (Chrome draws fading text greyscale), which
+  // reads as the text shifting. Floating, it slides in.
+  "@container/action-bar flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1.5 text-sm",
   {
     variants: {
       placement: {
@@ -32,7 +35,7 @@ const actionBarVariants = cva(
         // no room. The card takes the width of its scroll container instead;
         // pass `mx-auto max-w-*` to centre a narrower one.
         floating:
-          "sticky bottom-4 z-20 mx-4 rounded-lg border bg-popover px-3 py-2 text-popover-foreground shadow-lg [--surface:var(--color-popover)] slide-in-from-bottom-2",
+          "sticky bottom-4 z-20 mx-4 animate-in rounded-lg border bg-popover px-3 py-2 text-popover-foreground shadow-lg duration-150 fade-in-0 [--surface:var(--color-popover)] slide-in-from-bottom-2",
       },
     },
     defaultVariants: {

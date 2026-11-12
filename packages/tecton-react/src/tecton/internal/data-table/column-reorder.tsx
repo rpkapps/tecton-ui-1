@@ -15,7 +15,6 @@
  * puts focus back on the moved header.
  */
 import * as React from "react"
-import { cn } from "cn"
 
 import { useDirection } from "@tecton/react/tecton/provider"
 
@@ -86,9 +85,20 @@ function ColumnList({
   const getPlacement = React.useCallback(
     (place: ListDropPlace) => {
       const frame = order.frame()
-      return frame
-        ? listPlacement(frame, order.items(list), place, "x", latest.current)
-        : null
+      if (!frame) return null
+      const items = order.items(list)
+      const placement = listPlacement(frame, items, place, "x", latest.current)
+      if (!placement || !items.length) return placement
+      // From the top of the list's own headers down: in a group, the row
+      // under the group's name, not the table's top.
+      const box = frame.getBoundingClientRect()
+      const top = Math.min(
+        ...items.map(({ element }) => element.getBoundingClientRect().top)
+      )
+      return {
+        ...placement,
+        top: Math.max(0, top - box.top - frame.clientTop + frame.scrollTop),
+      }
     },
     [order, list]
   )
@@ -102,11 +112,7 @@ function ColumnList({
     >
       <span
         aria-hidden
-        className={cn(
-          "pointer-events-none absolute inset-y-0 -start-px w-0.5 rounded-full bg-primary-active",
-          // A dot at its top, as a tree's drop line has at its start.
-          "before:absolute before:top-0.5 before:left-1/2 before:size-2 before:-translate-x-1/2 before:rounded-full before:border-2 before:border-primary-active before:bg-background"
-        )}
+        className="pointer-events-none absolute inset-y-0 -start-px w-0.5 rounded-full bg-primary-active"
       />
     </DragAndDropPrimitive.DropIndicator>
   )
