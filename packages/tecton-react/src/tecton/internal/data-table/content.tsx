@@ -142,8 +142,7 @@ const NO_IDS: ReadonlySet<string> = new Set()
 const NO_OPEN: ReadonlyArray<string> = []
 const NO_FEATURES = [] as const
 const NO_LABEL_WIDTH = { "--data-table-group-label": "initial" }
-const HEADER = ["headerPopups"] as const
-const HEADER_AND_RESIZER = ["headerPopups", "resizer"] as const
+const RESIZER = ["resizer"] as const
 
 /** Rows shown while the first rows load, without pages. */
 const LOADING_ROWS = 5
@@ -630,29 +629,8 @@ function DataTableContentImpl({
     options.reorderableColumns
   )
 
-  // The header's on-demand parts, in idle time: its menus and description
-  // popovers where it has some, the resizers.
-  const headerPopups =
-    options.resizableColumns ||
-    options.hideableColumns ||
-    options.pinnableColumns ||
-    options.groupable ||
-    shownColumns.some((column) => column.description !== undefined) ||
-    layout.headerRows.some((row) =>
-      row.cells.some(
-        (cell) =>
-          cell.kind === "group" &&
-          cell.id !== null &&
-          getColumnModel(columns).groups.get(cell.id)?.description !== undefined
-      )
-    )
-  usePrefetchFeatures(
-    headerPopups
-      ? options.resizableColumns
-        ? HEADER_AND_RESIZER
-        : HEADER
-      : NO_FEATURES
-  )
+  // The header's on-demand part, in idle time: the resizers.
+  usePrefetchFeatures(options.resizableColumns ? RESIZER : NO_FEATURES)
 
   const gridController = React.useRef<TableGridController | null>(null)
 

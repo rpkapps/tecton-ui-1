@@ -9,7 +9,6 @@ import {
 } from "@tecton/react/tecton/data-table"
 import { TectonProvider } from "@tecton/react/tecton/provider"
 
-import { loadFeature } from "../internal/data-table/lazy"
 import { columns, WELLS } from "./data-table-fixtures"
 
 /** The date filter's calendar arrives when the test lets it. */
@@ -47,9 +46,6 @@ describe("DataTable date filter on demand", () => {
     expect(chunk.requested).not.toHaveBeenCalled()
     act(() => idle?.())
     await waitFor(() => expect(chunk.requested).toHaveBeenCalled())
-    // The popover's own code first (its arrival during a press is
-    // `data-table-popups-lazy`'s): this test is the calendar's.
-    await act(() => loadFeature("filters"))
     await user.click(
       await screen.findByRole("button", { name: "Nach Spud date filtern" })
     )

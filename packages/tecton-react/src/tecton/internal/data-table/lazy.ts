@@ -10,8 +10,8 @@
  * - `usePrefetchFeatures(names)` loads the features a mounted table has on,
  *   in idle time (within two seconds), so they are there before they are
  *   first used; an `eager` feature loads as soon as the table mounts
- *   instead. A part's button asks for its popup's code as it is pointed
- *   at, focused or pressed, before then (`lazy-popup.ts`).
+ *   instead. A part asks for its feature as it is pointed at or focused,
+ *   before then (a date filter's button, a column's menu button).
  * - `useFeature(name, on)` is a feature's module for a part to render with:
  *   `undefined` until it has loaded (the part renders without it, with no
  *   change of layout), then the module; and `load`, for a press that needs
@@ -46,16 +46,8 @@ const FEATURES = {
   dragAndDrop: feature(() => import("./column-reorder")),
   /** A date filter's calendar: `DateRangePicker`'s (`date-calendar.tsx`). */
   dateInput: feature(() => import("../date-calendar")),
-  /** Column menus and description popovers (`header-popups.tsx`). */
-  headerPopups: feature(() => import("./header-popups")),
   /** `resizableColumns`: the columns' resizers and their drags. */
   resizer: feature(() => import("../../table-column-resizer")),
-  /** `DataTableFilter`'s popover and its filters (`filter-popover.tsx`). */
-  filters: feature(() => import("./filter-popover")),
-  /** `DataTableRowActions`' menu (`row-actions-menu.tsx`). */
-  rowActions: feature(() => import("./row-actions-menu")),
-  /** `DataTableGroupBy`'s menu (`group-by-menu.tsx`). */
-  groupBy: feature(() => import("./group-by-menu")),
 }
 
 type FeatureName = keyof typeof FEATURES

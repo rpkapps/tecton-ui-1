@@ -186,9 +186,9 @@ check. It runs with `NO_COLOR=1` and strips escape sequences.
   `src/tecton/__tests__/overlay-portal-container.test.tsx`.
 - **Anchor** (`dropdown-menu`, `popover`) — `DropdownMenuContent` and `PopoverContent` take the
   positioner's `anchor`, so a controlled menu or popover can sit by an element that is not its
-  `*Trigger`. The DataTable's on-demand popups use it: their buttons are plain buttons that stay
-  mounted, and the popup's code loads later (`src/tecton/internal/data-table/lazy-popup.ts`).
-  Tested in `src/tecton/__tests__/data-table-popups-lazy.test.tsx`.
+  `*Trigger`. The DataTable's toolbar parts use it: opened from the toolbar's "More" menu, their
+  popup sits by the More button (`src/tecton/internal/data-table/part-popup.ts`). Tested in
+  `src/tecton/__tests__/data-table-toolbar.test.tsx`.
 - **Variant axes** — `alert` (`variant` success / warning / info, `appearance` default / outline /
   filled, exposed as `data-variant` / `data-appearance`; `alertVariants` exported), `badge`
   (`variant` success / warning / info, `appearance` solid / outline, `size` default / md / lg,

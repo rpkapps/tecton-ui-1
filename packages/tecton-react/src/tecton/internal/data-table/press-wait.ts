@@ -3,8 +3,8 @@
  * column header before drag and drop (column reordering), on a
  * resizer's grip before the resizer. The press asks for the code and
  * waits; once the code is there, the part gives the press to it (`start`),
- * as if it had come then. (Menus and popovers wait differently: their
- * buttons stay, `lazy-popup.ts`.)
+ * as if it had come then. (Menus and popovers do not wait: their code
+ * comes with the table, `part-popup.ts`.)
  *
  * A waiting press is given up when the user moves on:
  * - a key (Enter, Space): when focus leaves the element, or another key

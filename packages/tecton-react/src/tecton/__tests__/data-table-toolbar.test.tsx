@@ -189,6 +189,37 @@ describe("DataTableToolbar", () => {
     const dialog = await screen.findByRole("dialog")
     expect(within(dialog).getAllByRole("checkbox").length).toBeGreaterThan(0)
   })
+
+  it("moves a part's open popup to its own button as the part comes back into the row and the More button goes", async () => {
+    const user = userEvent.setup()
+    render(<Wells />)
+    resize(100)
+    await user.click(
+      within(toolbar()).getByRole("button", { name: "More actions" })
+    )
+    await user.click(
+      within(await screen.findByRole("menu")).getByRole("menuitem", {
+        name: "Filter by Status",
+      })
+    )
+    const dialog = await screen.findByRole("dialog")
+    // Room for every part: the More button goes, the filter is in the row.
+    resize(1000)
+    expect(hidden()).toEqual([false, false, false, false])
+    expect(
+      within(toolbar()).queryByRole("button", { name: "More actions" })
+    ).toBeNull()
+    expect(screen.getByRole("dialog")).toBe(dialog)
+    // Placed by the filter's button now: focus goes back to it, not to the
+    // More button that is gone.
+    fireEvent.keyDown(document.activeElement!, { key: "Escape" })
+    await waitFor(() => expect(screen.queryByRole("dialog")).toBeNull())
+    await waitFor(() =>
+      expect(
+        within(toolbar()).getByRole("button", { name: "Filter by Status" })
+      ).toHaveFocus()
+    )
+  })
 })
 
 describe("DataTableFilter and DataTableGroupBy", () => {

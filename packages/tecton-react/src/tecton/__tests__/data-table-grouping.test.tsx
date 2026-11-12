@@ -24,7 +24,6 @@ import {
   shownClassName,
 } from "../internal/data-table/cell"
 import { getColumnModel } from "../internal/data-table/engine"
-import { loadFeature } from "../internal/data-table/lazy"
 import { describeRow } from "../internal/data-table/row"
 import * as announcer from "../internal/primitives/live-announcer"
 import {
@@ -892,7 +891,6 @@ describe("DataTableGroupBy", () => {
   it("chooses and orders the grouping columns", async () => {
     const user = userEvent.setup()
     const say = vi.spyOn(announcer, "announce")
-    await loadFeature("groupBy")
     render(
       <Wells>
         <DataTableGroupBy />
@@ -947,7 +945,6 @@ describe("DataTableGroupBy", () => {
 
   it("reports the grouping through onViewChange with the reason group, and can be cancelled", async () => {
     const user = userEvent.setup()
-    await loadFeature("groupBy")
     const onViewChange = vi.fn((_view, details) => details.cancel())
     render(
       <Wells onViewChange={onViewChange}>
@@ -980,9 +977,6 @@ describe("DataTable grouping, server rendered", () => {
     const html = renderToString(tree)
     expect(html).toContain("Status: Producing")
     expect(html).toContain('data-slot="data-table-group-checkbox"')
-    // Loaded by another table meanwhile: still the server's markup first.
-    await loadFeature("groupBy")
-    await loadFeature("headerPopups")
     const error = vi.spyOn(console, "error").mockImplementation(() => {})
     const recoverable = vi.fn()
     const container = document.createElement("div")
@@ -1004,7 +998,6 @@ describe("DataTable grouping: review fixes", () => {
 
   it("keeps focus and highlight together on a move item, with 2 and 3 levels", async () => {
     const user = userEvent.setup()
-    await loadFeature("groupBy")
     render(
       <Wells defaultView={{ grouping: ["field", "status", "spud"] }}>
         <DataTableGroupBy />
@@ -1041,7 +1034,6 @@ describe("DataTable grouping: review fixes", () => {
 
   it("keeps the one move item focused with 2 levels", async () => {
     const user = userEvent.setup()
-    await loadFeature("groupBy")
     render(
       <Wells defaultView={{ grouping: ["field", "status"] }}>
         <DataTableGroupBy />
@@ -1205,7 +1197,6 @@ describe("DataTable grouping: review fixes", () => {
     expect(api?.canCollapseAllGroups).toBe(true)
     // The menu's items follow them.
     const user = userEvent.setup()
-    await loadFeature("groupBy")
     act(() => api?.expandAllGroups())
     render(
       <Wells defaultView={{ grouping: ["field"] }}>
@@ -1484,7 +1475,6 @@ describe("DataTable grouping: third review", () => {
 
   it("moves focus after a move only when the owner takes it", async () => {
     const user = userEvent.setup()
-    await loadFeature("groupBy")
     let setView: (view: { grouping: Array<string> }) => void = () => {}
     function Controlled() {
       const [view, set] = React.useState({
